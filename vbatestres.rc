@@ -1,0 +1,12 @@
+
+#ifdef IMGERMAN
+#include "VBATest_ger.rc"
+#elif IMSPANISH2
+#include "VBATest_spa.rc"
+#elif IMFRENCH
+#include "VBATest_fre.rc"
+#else
+#include "VBATest_eng.rc"
+#endif
+
+

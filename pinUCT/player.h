@@ -1,0 +1,278 @@
+
+#include "..\roms.h"
+
+
+#define FPS 1
+
+#ifdef _DEBUG_
+#define MOUSEPAUSE 1
+#endif
+
+#define DEFAULT_PLAYER_WIDTH 912
+
+
+class IBlink;
+
+enum 
+{
+
+	// LIGHTS GO HERE...
+
+	// Firepower
+    LIGHTHACK_FIREPOWER_P1 = 0,				// Wall height 1.11
+    LIGHTHACK_FIREPOWER_P2,					// Wall height 1.12
+    LIGHTHACK_FIREPOWER_P3,					// Wall height 1.13
+    LIGHTHACK_FIREPOWER_P4,					// Wall height 1.14
+
+	// DISPREELS GO HERE...
+
+	// Strikes & Spares
+    LIGHTHACK_STRIKESANDSPARES_P1,			// Wall height 1.11
+    LIGHTHACK_STRIKESANDSPARES_P2,			// Wall height 1.12
+    LIGHTHACK_STRIKESANDSPARES_P3,			// Wall height 1.13
+    LIGHTHACK_STRIKESANDSPARES_P4,			// Wall height 1.14
+
+	LIGHTHACK_MAX
+
+};
+
+enum EnumAssignKeys
+	{
+	eLeftFlipperKey,
+	eRightFlipperKey,
+	eLeftTiltKey,
+	eRightTiltKey,
+	eCenterTiltKey,
+	ePlungerKey,
+	eAddCreditKey,
+	eAddCreditKey2,
+	eStartGameKey,
+	eMechanicalTilt,
+	eRightMagnaSave,
+	eLeftMagnaSave,
+	eExitGame,
+	eVolumeUp,
+	eVolumeDown,
+	eCKeys,
+	};
+
+class Player
+	{
+public:
+	Player();
+	~Player();
+
+	HRESULT Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName, BOOL fCheckForCache);
+	void InitWindow();
+	void InitDMDHackWindow();
+	void InitKeys();
+	void InitRegValues();
+
+	void InitStatic(HWND hwndProgress);
+	void InitAnimations(HWND hwndProgress);
+
+	void Render();
+
+	void DrawBallShadows();
+	void DrawBalls();
+
+	void DrawAcrylics(void);
+
+	void PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime);
+
+	PINFLOAT UpdatePhysics(PINFLOAT dtime, Ball **pphitball);
+
+	void InvalidateRect(RECT *prc);
+	void DrawLightHack ( void );
+
+	void EraseBall(Ball *pball);
+
+	Ball *CreateBall(float x, float y, float z, float vx, float vy, float vz);
+	void DestroyBall(Ball *pball);
+
+	void CreateBoundingHitShapes(Vector<HitObject> *pvho);
+
+	void InitDebugHitStructure();
+	void DoDebugObjectMenu(int x, int y);
+
+	void PauseMusic();
+	void UnpauseMusic();
+
+	void RecomputePauseState();
+	void RecomputePseudoPauseState();
+	
+	void UltraNudge(void);
+	void UltraPlunger(void);
+	void mechPlungerIn( int z);		
+
+	Vector<Ball> m_vball;
+	Vector<HitObject> m_vho;
+	Vector<AnimObject> m_vmover;
+	Vector<AnimObject> m_vscreenupdate;
+	Vector<HitTimer> m_vht;
+	Vector<IBlink> m_vblink;		// Lights which are set to blink
+
+	Vector<Ball> m_vballDelete;		// Balls to free at the end of the frame
+
+	Ball *m_pactiveball;			// ball the script user can get with ActiveBall
+
+	Vector<UpdateRect> m_vupdaterect;
+
+	HitOctree m_hitoctree;
+
+	HitOctree m_shadowoctree;
+
+	Vector<HitObject> m_vdebugho;
+	HitOctree m_debugoctree;
+	Ball *m_pactiveballDebug;		// ball the debugger will use as Activeball when firing events
+
+	U32 m_jolt_amount;
+	U32 m_tilt_amount;	
+	U32 m_jolt_trigger_time;
+	U32 m_tilt_trigger_time;
+
+	int m_width, m_height;
+
+	int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, m_frotate;
+	BOOL m_fFullScreen;
+
+	PinTable *m_ptable;
+	HWND m_hwnd;
+	HWND m_dmdhackhwnd;
+
+	int m_timerid;
+	HBITMAP m_hbmOffScreen;
+
+	int m_timeCur;
+
+	Pin3D m_pin3d;
+
+private:
+	U64 m_liStartTime;
+	U64 m_curPhysicsFrameTime; // Time when the last frame was drawn
+
+	BOOL m_fLShiftDown; // For our internal bookkeeping since windows won't do it for us
+	BOOL m_fRShiftDown;
+
+	U64 m_PhysicsStepTime; // ticks to go between each gravity update
+	U64 m_nextPhysicsFrameTime; // time at which the next physics update should be
+	U64 m_liPhysicsCalced;
+	PINFLOAT m_physicsdtime; // Float value to move physics forward every physics tick
+
+public:
+	BOOL m_fDetectScriptHang;
+	BOOL m_fNoTimeCorrect; // Used so the frame after debugging does not do normal time correction
+	PinInput m_pininput;
+	Level m_mainlevel; // level object for main table level;
+
+private:
+	BOOL m_fPlayback;
+	char m_szPlaybackFile;
+
+
+	BOOL m_fCheckBlt;
+	BOOL m_fWasteTime;
+	BOOL m_fWasteTime2;
+
+	BOOL m_fBallShadows;
+	BOOL m_fBallDecals;
+	BOOL m_fBallAntialias;
+
+public:
+	float m_NudgeX;
+	float m_NudgeY;
+	int m_nudgetime;
+
+	float m_NudgeBackX;
+	float m_NudgeBackY;
+
+	BOOL m_fCleanBlt; // We can do smart blitting next frame;
+
+	EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments;
+
+	CSimplePlayer *m_pcsimpleplayer;
+	HANDLE m_hSongCompletionEvent;
+
+	XAudPlayer *m_pxap;
+
+	BOOL m_fPlayMusic;
+	BOOL m_fPlaySound;
+	int m_MusicVolume;
+	int m_SoundVolume;
+
+	BOOL m_fCloseDown; // Whether to shut down the player at the end of this frame
+
+	BOOL m_DebugBalls;			// Draw balls in the foreground.
+	BOOL m_ToggleDebugBalls;
+
+	int m_sleeptime; // time to sleep during each frame - can helps side threads like vpinmame
+
+	Vector<CLSID> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
+
+	GPINFLOAT m_pixelaspectratio;
+
+	BOOL m_fDebugMode;
+	HWND m_hwndDebugger;
+	HWND m_hwndDebugOutput;
+
+	U32 m_LastUpdateTime[LIGHTHACK_MAX];
+	BOOL m_LightHackReadyForDrawLightHackFn[LIGHTHACK_MAX];
+	BOOL m_LightHackCurrentState[LIGHTHACK_MAX];
+	BOOL m_LightHackPreviousState[LIGHTHACK_MAX];
+	BOOL m_LightHackCurrentAnimState[LIGHTHACK_MAX];
+	BOOL m_LightHackPreviousAnimState[LIGHTHACK_MAX];
+	PinImage *m_LightHackImage[LIGHTHACK_MAX];
+	char m_LightHackImageName[LIGHTHACK_MAX][32];
+	int m_LightHackX[LIGHTHACK_MAX];
+	int m_LightHackY[LIGHTHACK_MAX];
+	int m_LightHackWidth[LIGHTHACK_MAX];
+	int m_LightHackHeight[LIGHTHACK_MAX];
+
+#ifdef FPS
+private:
+	int m_lastfpstime;
+	int m_cframes;
+	int m_fps;
+	U64 m_count;
+	U64 m_total;
+	U32 m_max;
+	U64 m_phys_total;
+	U64 m_phys_max;
+	U64 m_phys_total_iterations;
+	U64 m_phys_max_iterations;
+	BOOL m_fShowFPS;
+public:
+
+	void ToggleFPS( void );
+	void DisableFPS( void );
+	void EnableFPS( void );
+#endif
+
+	BOOL m_fPause;
+	int m_PauseTimeTarget;
+	BOOL m_fStep;
+
+	BOOL m_fPseudoPause; // Nothing is moving, but we're still redrawing
+
+	BOOL m_fGameWindowActive;
+	BOOL m_fDebugWindowActive;
+	BOOL m_fUserDebugPaused;
+
+	int m_LastKnownGoodCounter;
+	int m_ModalRefCount;
+
+	BOOL m_fDrawCursor;
+	int m_lastcursorx, m_lastcursory; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
+	
+	int m_pauseRefCount;
+	};
+
+F32 GetX( void ); // Get the -1.0f to +1.0f values from joystick.
+F32 GetY( void );
+
+
+
+
+
+
+

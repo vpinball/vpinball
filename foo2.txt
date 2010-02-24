@@ -1,0 +1,18 @@
+VBATest.dsp:# ADD BASE CPP /nologo /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
+VBATest.dsp:# ADD CPP /nologo /W3 /Gm /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
+VBATest.dsp:# ADD BASE RSC /l 0x409 /d "_DEBUG"
+VBATest.dsp:# ADD RSC /l 0x409 /d "_DEBUG"
+VBATest.dsp:# ADD BASE CPP /nologo /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_UNICODE" /Yu"stdafx.h" /FD /GZ /c
+VBATest.dsp:# ADD CPP /nologo /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_UNICODE" /Yu"stdafx.h" /FD /GZ /c
+VBATest.dsp:# ADD BASE RSC /l 0x409 /d "_DEBUG"
+VBATest.dsp:# ADD RSC /l 0x409 /d "_DEBUG"
+VBATest.dsp:# ADD BASE CPP /nologo /W3 /Gm /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
+VBATest.dsp:# ADD BASE RSC /l 0x409 /d "_DEBUG"
+VBATest.dsp:# ADD RSC /l 0x409 /d "_DEBUG"
+vbatest.mak:CPP_PROJ=/nologo /MLd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"$(INTDIR)\VBATest.pch" /Yu"stdafx.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+vbatest.mak:RSC_PROJ=/l 0x409 /fo"$(INTDIR)\VBATest.res" /d "_DEBUG" 
+vbatest.mak:CPP_PROJ=/nologo /MLd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_UNICODE" /Fp"$(INTDIR)\VBATest.pch" /Yu"stdafx.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+vbatest.mak:RSC_PROJ=/l 0x409 /fo"$(INTDIR)\VBATest.res" /d "_DEBUG" 
+vbatest.mak:CPP_SWITCHES=/nologo /MLd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"$(INTDIR)\VBATest.pch" /Yc"stdafx.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+vbatest.mak:CPP_SWITCHES=/nologo /MLd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_UNICODE" /Fp"$(INTDIR)\VBATest.pch" /Yc"stdafx.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+VBATest.rc:#ifdef _DEBUG

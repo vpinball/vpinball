@@ -1,0 +1,255 @@
+
+//#ifdef MYDEBUG
+//#define LOG 1
+//#endif
+
+#define FPS 1
+
+#define STEPPING 1
+#define PLAYBACK 1
+
+//#define MOUSEPAUSE 1
+
+#define DEFAULT_PLAYER_WIDTH 912
+
+class IBlink;
+
+enum EnumAssignKeys
+{
+	eLeftFlipperKey,
+	eRightFlipperKey,
+	eLeftTiltKey,
+	eRightTiltKey,
+	eCenterTiltKey,
+	ePlungerKey,
+	eAddCreditKey,
+	eAddCreditKey2,
+	eStartGameKey,
+	eMechanicalTilt,
+	eRightMagnaSave,
+	eLeftMagnaSave,
+	eExitGame,
+	eVolumeUp,
+	eVolumeDown,
+	eCKeys,
+};
+
+class Player
+	{
+public:
+	Player();
+	~Player();
+
+	HRESULT Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName, BOOL fCheckForCache);
+	void InitWindow();
+	void InitKeys();
+	void InitRegValues();
+
+	void InitStatic(HWND hwndProgress);
+	void InitAnimations(HWND hwndProgress);
+
+	void Render();
+
+	void DrawTest();
+	void DrawBallShadows();
+	void DrawBalls();
+	void DrawBallsDebug();
+	PINFLOAT UpdatePhysics(PINFLOAT dtime, Ball **pphitball);
+
+	void InvalidateRect(RECT *prc);
+
+	void EraseBall(Ball *pball);
+
+	Ball *CreateBall(float x, float y, float z, float vx, float vy, float vz);
+	void DestroyBall(Ball *pball);
+
+	void CreateBoundingHitShapes(Vector<HitObject> *pvho);
+
+	void InitDebugHitStructure();
+	void DoDebugObjectMenu(int x, int y);
+
+	void PauseMusic();
+	void UnpauseMusic();
+
+	void RecomputePauseState();
+	void RecomputePseudoPauseState();
+
+/////////////////////////
+
+	void m_PinBallNudge(void);
+	void m_PinBallPlunger(void);
+	void m_PinBallNudgeX( int x, int j );
+	void m_PinBallNudgeY( int y, int j );
+	int  m_PinBallNudgeGetTilt( void ); // returns non-zero when appropriate to set the tilt switch
+	void mechPlungerIn( int z);	
+
+////////////////////////
+
+#ifdef PLAYBACK
+	float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
+#endif
+
+	Vector<Ball> m_vball;
+	Vector<HitObject> m_vho;
+	Vector<AnimObject> m_vmover;
+	Vector<AnimObject> m_vscreenupdate;
+	//Vector<HitObject> m_vmover;
+	//Vector<HitObject> m_vscreenupdate;
+	Vector<HitTimer> m_vht;
+	Vector<IBlink> m_vblink; // Lights which are set to blink
+
+	Vector<Ball> m_vballDelete; // Balls to free at the end of the frame
+
+	Ball *m_pactiveball; // ball the script user can get with ActiveBall
+
+	Vector<UpdateRect> m_vupdaterect;
+
+	HitOctree m_hitoctree;
+
+	HitOctree m_shadowoctree;
+
+	Vector<HitObject> m_vdebugho;
+	HitOctree m_debugoctree;
+	Ball *m_pactiveballDebug; // ball the debugger will use as Activeball when firing events
+
+	//Ball *phitball;
+
+	int m_width, m_height;
+
+	int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, m_frotate;
+	BOOL m_fFullScreen;
+
+	PinTable *m_ptable;
+	HWND m_hwnd;
+
+	int m_timerid;
+	HBITMAP m_hbmOffScreen;
+
+	int m_timeCur;
+
+	Pin3D m_pin3d;
+
+	LARGE_INTEGER m_liStartTime;
+
+	LARGE_INTEGER m_liOldTime; // Time when the last frame was drawn
+
+	BOOL m_fLShiftDown; // For our internal bookkeeping since windows won't do it for us
+	BOOL m_fRShiftDown;
+
+	PinInput m_pininput;
+
+	LARGE_INTEGER m_liCounterFrequency; // high-performance counter
+	LARGE_INTEGER m_liPhysicsStep; // ticks to go between each gravity update
+	LARGE_INTEGER m_liPhysicsNext; // time at which the next physics update should be
+	LARGE_INTEGER m_liPhysicsCalced;
+	PINFLOAT m_physicsdtime; // Float value to move physics forward every physics tick
+
+	BOOL m_fNoTimeCorrect; // Used so the frame after debugging does not do normal time correction
+
+	BOOL m_fPlayback;
+	//BOOL m_fDoLog;
+	char m_szPlaybackFile;
+
+	Level m_mainlevel; // level object for main table level;
+	PINFLOAT m_gravityz;
+	//PINFLOAT m_gravityy;
+
+	BOOL m_fCheckBlt;
+	BOOL m_fWasteTime;
+	BOOL m_fWasteTime2;
+
+	BOOL m_fBallShadows;
+	BOOL m_fBallDecals;
+	BOOL m_fBallAntialias;
+	BOOL m_fDetectScriptHang;
+
+	float m_NudgeX;
+	float m_NudgeY;
+	int m_nudgetime;
+	float m_NudgeBackX;
+	float m_NudgeBackY;
+
+	int m_NudgeManual;		//index of joystick that has manual control
+	float m_NudgePosX;
+	float m_NudgePosY;
+
+	float m_NudgeVelX;
+	float m_NudgeVelY;
+
+	float m_NudgeAccX;
+	float m_NudgeAccY;
+
+#define ACCELANGLE 0; // (PI/2.0f)
+
+	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
+	BOOL m_AccelNormalMount;	//true if normal mounting (left hand coordinates)
+	float m_AccelAngle;			// 0 Radians rotated counterclockwise (GUI is lefthand coordinates)
+	float m_AccelAmp;			// Accelerometer gain 
+	float m_AccelMAmp;			// manual input gain, generally from joysticks
+
+	unsigned int m_jolt_amount;
+	unsigned int m_tilt_amount;	
+	unsigned int m_jolt_trigger_time;
+	unsigned int m_tilt_trigger_time;
+
+	BOOL m_fCleanBlt; // We can do smart blitting next frame;
+
+	EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments;
+
+	CSimplePlayer *m_pcsimpleplayer;
+	HANDLE m_hSongCompletionEvent;
+
+	XAudPlayer *m_pxap;
+
+	BOOL m_fPlayMusic;
+	BOOL m_fPlaySound;
+	int m_MusicVolume;
+	int m_SoundVolume;
+
+	BOOL m_fCloseDown; // Whether to shut down the player at the end of this frame
+
+	int m_sleeptime; // time to sleep during each frame - can helps side threads like vpinmame
+
+	Vector<CLSID> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
+
+	double m_pixelaspectratio;
+
+	BOOL m_fDebugMode;
+	HWND m_hwndDebugger;
+	HWND m_hwndDebugOutput;
+#ifdef FPS
+	int m_lastfpstime;
+	int m_cframes;
+	int m_fps;
+	BOOL m_fShowFPS;
+#endif
+
+#ifdef LOG
+	FILE *m_flog;
+	int m_timestamp;
+#endif
+
+#ifdef PLAYBACK
+	FILE *m_fplaylog;
+#endif
+
+#ifdef STEPPING
+	BOOL m_fPause;
+	int m_PauseTimeTarget;
+	BOOL m_fStep;
+#endif
+
+	BOOL m_fPseudoPause; // Nothing is moving, but we're still redrawing
+
+	BOOL m_fGameWindowActive;
+	BOOL m_fDebugWindowActive;
+	BOOL m_fUserDebugPaused;
+
+	int m_LastKnownGoodCounter;
+	int m_ModalRefCount;
+
+	BOOL m_fDrawCursor;
+	int m_lastcursorx, m_lastcursory; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
+	
+	int m_pauseRefCount;
+	};

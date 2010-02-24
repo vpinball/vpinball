@@ -1,0 +1,398 @@
+"&File",POPUP,"&Archivo"
+"&New\tCtrl+N",IDM_NEW,"&Nuevo\tCtrl-N"
+"&Open...\tCtrl+O",IDM_OPEN,"&Abrir...\tCtrl-O"
+"&Close",IDM_CLOSE,"&Cerrar"
+"&Save\tCtrl+S",IDM_SAVE,"&Guardar\tCtrl-S"
+"Save &As...",IDM_SAVEAS,"Guardar &Como..."
+"Ex&port",POPUP,"Ex&portar"
+"&Blueprint...",ID_FILE_EXPORT_BLUEPRINT,"&Boceto..."
+"&Edit",POPUP,"&Edición"
+"&Undo\tCtrl+Z",ID_EDIT_UNDO,"&Deshacer\tCtrl+Z"
+"&Copy\tCtrl+C",IDC_COPY,"&Copiar\tCtrl+C"
+"&Paste\tCtrl+V",IDC_PASTE,"&Pegar\tCtrl+V"
+"&Options",ID_EDIT_PROPERTIES,"&Opciones &Objeto"
+"&Script",ID_EDIT_SCRIPT,"&Script"
+"&Backglass View",ID_EDIT_BACKGLASSVIEW
+"&Insert",POPUP
+"&Wall\tCtrl+W",IDC_WALL
+"&Gate\tCtrl+G",IDC_GATE
+"&Ramp\tCtrl+R",IDC_RAMP
+"&Flipper\tCtrl+F",IDC_FLIPPER
+"&Plunger\tCtrl+P",IDC_PLUNGER
+"&Bumper\tCtrl+B",IDC_BUMPER
+"&Spinner\tCtrl+I",IDC_SPINNER
+"&Timer\tCtrl+M",IDC_TIMER
+"Tr&igger\tCtrl+T",IDC_TRIGGER
+"&Light\tCtrl+L",IDC_LIGHT
+"&Kicker\tCtrl+K",IDC_KICKER
+"T&arget\tCtrl+A",IDC_TARGET
+"&Decal\tCtrl+D",IDC_DECAL
+"Te&xtbox\tCtrl+E",IDC_TEXTBOX
+"&Table",POPUP,"&Mesa"
+"&Play\tF5",ID_TABLE_PLAY,"&Jugar\tF5"
+"&Sound Manager...",ID_TABLE_SOUNDMANAGER,"&Sonidos..."
+"&Image Manager...",ID_TABLE_IMAGEMANAGER,"&Imagenes..."
+"&Font Manager...",ID_TABLE_FONTMANAGER,"&Fuentes..."
+"&Magnify",IDC_MAGNIFY
+POPUP "&Preferences","&Preferencias"
+"&Audio Options...",ID_EDIT_AUDIOOPTIONS,"Opciones de &Audio..."
+"&Video Options...",ID_EDIT_VIDEOOPTIONS,"Opciones de &Video..."
+"&Keys...",ID_EDIT_KEYS,"Opciones de &Teclado..."
+"&Window",POPUP,"&Ventana"
+"&Tile",ID_WINDOW_TILE,"&Mosaico"
+"&Cascade",ID_WINDOW_CASCADE,"&Cascada"
+"Arrange &Icons",ID_WINDOW_ARRANGEICONS,"Organizar &Iconos"
+"&Help",POPUP,"&Ayuda"
+"About...",ID_HELP_ABOUT,"Acerca de..."
+"PointMenu",POPUP,"Menú Puntos"
+"Smooth",ID_POINTMENU_SMOOTH,"&Suavizar Contornos"
+"S&lingshot",ID_POINTMENU_SLINGSHOT,"&Banda de Rebote"
+"WallMenu",POPUP,"Menú Guías"
+"Flip &X",ID_WALLMENU_MIRROR,"Simetría &X"
+"Flip &Y",ID_WALLMENU_FLIP,"Simetría &Y"
+"&Rotate",ID_WALLMENU_ROTATE,"&Girar"
+"&Scale",ID_WALLMENU_SCALE,"&Escala"
+"&Translate",ID_WALLMENU_TRANSLATE,"&Desplazar"
+"Add &Point",ID_WALLMENU_ADDPOINT,"Añadir &Punto"
+"&Script",POPUP,"&Script"
+"&Compile",ID_COMPILE,"&Compilar"
+"&Edit",POPUP,"&Edición"
+"&Undo\tCtrl+Z",ID_EDIT_UNDO,"&Deshacer\tCtrl+Z"
+"&Copy\tCrtl+C",ID_EDIT_COPY,"&Copiar\tCrtl+C"
+"Cu&t\tCtrl+X",ID_EDIT_CUT,"Cor&tar\tCtrl+X"
+"&Paste\tCtrl+V",ID_EDIT_PASTE,"&Pegar\tCtrl+V"
+"&Find...\tCtrl+F",ID_FIND,"&Buscar..."
+"Find &Next\tF3",ID_EDIT_FINDNEXT
+
+
+"Sound Manager",CAPTION,"Administrador de Sonidos"
+
+"OK",IDOK,"Aceptar"
+"&Import",IDC_IMPORT,"&Importar"
+"&Reimport",IDC_REIMPORT,"&Reimportar"
+"Reimport &From",IDC_REIMPORTFROM,"Reimportar &Desde"
+"&Play",IDC_PLAY,"&Probar"
+"&Delete",IDC_DELETE,"&Borrar"
+"&Rename",IDC_RENAME,"Re&nombrar"
+
+"Image Manager",CAPTION,"Administrador de Imágenes"
+"&Transparency",IDC_STATIC
+
+"Rotate",CAPTION,"Girar"
+
+"Cancel",IDCANCEL,"Cancelar"
+"Rotate by",IDC_STATIC,"Grados"
+"Center",IDC_STATIC,"Centro"
+"X",IDC_STATIC,"X"
+"Y",IDC_STATIC,"Y"
+
+CAPTION "Escala"
+
+"Scale X",IDC_STATIC
+"Center",IDC_STATIC,"Centro"
+"X",IDC_STATIC,"X"
+"Y",IDC_STATIC,"Y"
+"Square Scaling",IDC_SQUARE
+"Scale Y",IDC_STATIC_SCALEY
+
+"Preparing Table",CAPTION,"Preparando Mesa"
+
+"&Name",IDC_STATIC
+"&Display Image in Editor",107
+"Show &Grid",106
+"Grid Si&ze",IDC_STATIC
+"I&mage",IDC_STATIC
+"&Glass Height",IDC_STATIC
+"&Height",IDC_STATIC
+"&Width",IDC_STATIC
+"&Color",IDC_STATIC
+
+"&Name",IDC_STATIC
+"&Color",IDC_STATIC
+"Custom2",3
+"&Radius",IDC_STATIC
+"&X",IDC_STATIC
+"&Y",IDC_STATIC
+"Blink",IDC_STATIC
+"&Pattern",IDC_STATIC
+"Inter&val",IDC_STATIC
+"Border",IDC_STATIC
+"&Width",IDC_STATIC
+"Co&lor",IDC_STATIC,
+"&Surface",IDC_STATIC
+"Timer &Interval",IDC_STATIC
+"S&tate",IDC_STATIC
+"S&hape",IDC_STATIC
+"&Name",IDC_STATIC
+"&Type",IDC_STATIC
+"&Color",IDC_STATIC
+"To&p Height",IDC_STATIC
+"&Bottom Height",IDC_STATIC
+"Top &Width",IDC_STATIC
+"&Bottom Wi&dth",IDC_STATIC
+"&Name",-1
+"&Enabled",900
+"&Interval",-1
+
+"&Name",IDC_STATIC
+"&Color",IDC_STATIC
+"&X",IDC_STATIC
+"&Y",IDC_STATIC
+"&Surface",IDC_STATIC
+
+"Timer &Interval",IDC_STATIC
+"&Base Radius",IDC_STATIC
+"&End Radius",IDC_STATIC,
+"&Length",IDC_STATIC,
+"&Start Angle",IDC_STATIC
+"End &Angle",IDC_STATIC
+"Custom2",15
+"S&peed",IDC_STATIC
+"&Rubber Color",IDC_STATIC
+"Custom2",17
+"Rubber &Thickness",IDC_STATIC
+"Stre&ngth",IDC_STATIC
+"Visible",20
+
+"&Name",-1
+"&Pull Speed",-1
+"&Release Speed",-1
+"&X",-1
+"&Y",-1
+"&Surface",-1
+"Timer &Interval",-1
+
+"&Name",IDC_STATIC
+"&Text",IDC_STATIC
+"Back &Color",IDC_STATIC
+"Text Co&lor",IDC_STATIC
+"&Font",IDC_STATIC
+"&X",IDC_STATIC
+"&Y",IDC_STATIC
+"&Width",IDC_STATIC
+"&Height",IDC_STATIC
+"Timer &Interval",IDC_STATIC
+"&Alignment",IDC_STATIC
+"T&ransparent",12
+
+"&Name",IDC_STATIC
+"&Color",IDC_STATIC
+"&Radius",IDC_STATIC
+"&Overhang",IDC_STATIC
+"&X",IDC_STATIC
+"&Y",IDC_STATIC
+"&Force",IDC_STATIC
+"&Hit Threshold",IDC_STATIC
+"I&mage",IDC_STATIC
+"&Surface",IDC_STATIC
+"Timer &Interval",IDC_STATIC
+"Custom2",7
+"S&tate",IDC_STATIC
+"Blink &Pattern",IDC_STATIC
+"Blink Inter&val",IDC_STATIC
+"F&lash When Hit",14
+"Si&de Color",IDC_STATIC
+
+"&Name",-1
+"&Radius",-1
+"&Visible",7
+"&Enabled",6
+"&X",-1,
+"&Y",-1
+"&Surface",-1
+"Timer &Interval",-1
+
+"&Name",IDC_STATIC
+"&Enabled",8
+"&X",IDC_STATIC
+"&Y",IDC_STATIC
+"&Surface",IDC_STATIC
+"Timer &Interval",IDC_STATIC
+"&Color",IDC_STATIC
+"&Display",IDC_STATIC
+
+"&X",IDC_STATIC
+"&Y",IDC_STATIC
+"&Width",IDC_STATIC
+"&Height",IDC_STATIC,
+"&Surface",IDC_STATIC
+"I&mage",IDC_STATIC
+"&Rotation",IDC_STATIC
+"&Text",IDC_STATIC
+"Font &Color",IDC_STATIC
+"&Font",IDC_STATIC
+"Ty&pe",IDC_STATIC
+"Si&zing",IDC_STATIC
+"&Vertical Text",13
+
+"&Name",IDC_STATIC
+"&X",IDC_STATIC
+
+"&Y",IDC_STATIC
+"&Length",IDC_STATIC,
+"&Rotation",IDC_STATIC,
+"&Surface",IDC_STATIC,7,91,
+"Timer &Interval",IDC_STATIC
+
+"&Name",IDC_STATIC
+"&X",IDC_STATIC
+"&Y",IDC_STATIC
+"&Length",IDC_STATIC
+"&Height",IDC_STATIC
+"&Rotation",IDC_STATIC
+"&Overhang",IDC_STATIC
+"&Friction",IDC_STATIC
+"Front I&mage",IDC_STATIC
+"&Back Image",IDC_STATIC
+"&Color",IDC_STATIC
+"&Surface",IDC_STATIC
+"Timer &Interval",IDC_STATIC
+"Custom2",10
+
+"&X",-1
+"&Y",-1
+"Smooth",3
+
+"&Name",IDC_STATIC
+"Has &Hit Event",3
+"Hit Threshol&d",IDC_STATIC
+"I&mage",IDC_STATIC
+"Image &Alignment",IDC_STATIC
+"Top &Color",IDC_STATIC
+"Side Co&lor",IDC_STATIC
+"To&p Height",IDC_STATIC
+"&Bottom Height",IDC_STATIC
+"Timer &Interval",IDC_STATIC
+"Can &Drop",11
+"Display &Image in Editor",13
+"Slingshot &Force",IDC_STATIC
+
+"Compile",ID_COMPILE
+"Find",ID_FIND
+
+
+CAPTION "About Visual Pinball"
+
+"OK",IDOK
+"This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,
+"Web Site",IDC_WEBSITE
+"A Randy Davis Production",IDC_STATIC
+"Version (0.3.1412)",IDC_VERSION
+"Randy Davis - designer, developer",IDC_STATIC
+"Mark Parris - testing",IDC_STATIC
+"Credits",IDC_STATIC
+"Jerry Rice - music",IDC_STATIC
+"Copyright (c) 2000-2001 Randy Davis.  All rights reserved",IDC_STATIC
+
+CAPTION "Video Options"
+"OK",IDOK
+"&Window",IDC_WINDOW
+"Full Screen (E_NOIMPL)",IDC_FULLSCREEN
+"Cancel",IDCANCEL
+"Check &Blit Status",IDC_CHECKBLIT
+"Draw Ball &Shadows",IDC_SHADOW
+
+CAPTION "Font Manager"
+"OK",IDOK
+
+"&Import",IDC_IMPORT
+"&Reimport",IDC_REIMPORT
+"Reimport &From",IDC_REIMPORTFROM
+"&Delete",IDC_DELETE,
+"&Rename",IDC_RENAME
+
+CAPTION "Keys"
+"OK",IDOK
+"Cancel",IDCANCEL
+"Left Flipper",IDC_LEFTFLIPPERBUTTON
+"Right Flipper",IDC_RIGHTFLIPPERBUTTON
+"Tilt Left",IDC_LEFTTILTBUTTON
+"Tilt Right",IDC_RIGHTTILTBUTTON,
+"Tilt Center",IDC_CENTERTILTBUTTON
+"Plunger",IDC_PLUNGERBUTTON
+
+CAPTION "Translate"
+"OK",IDOK
+"Cancel",IDCANCEL
+"Offset",-1
+"X",-1,3
+"Y",-1
+
+CAPTION "Audio Options"
+"&Play Music",IDC_PLAY_MUSIC
+"P&lay Sounds",IDC_PLAY_SOUND
+"OK",IDOK,12
+"Cancel",IDCANCEL
+"&Music Voume",IDC_STATIC_MUSIC
+"&Sound Voume",IDC_STATIC_SOUND
+"&Resume Game",ID_RESUME
+"&Quit to Editor",ID_QUIT
+"Paused",IDC_STATIC
+
+"&Display Image in Editor",107
+"Show &Grid",106
+"Grid Si&ze",IDC_STATIC
+"I&mage",IDC_STATIC
+"&Color",IDC_STATIC
+"&Inclination",IDC_STATIC
+"&Field of View",IDC_STATIC
+
+"Visual Pinball",IDS_PROJNAME            
+"Timer",IDS_TB_TIMER            
+"DragPoint Class",IDS_DRAGPOINT_DESC      
+"Select",IDS_TB_SELECT           
+"Wall",IDS_TB_WALL             
+"Flipper",IDS_TB_FLIPPER          
+"Play",IDS_TB_PLAY             
+"Flipper Class",IDS_FLIPPER_DESC        
+"Timer Class",IDS_TIMER_DESC          
+"Plunger Class",IDS_PLUNGER_DESC        
+"Plunger",IDS_TB_PLUNGER          
+"Textbox Class",IDS_TEXTBOX_DESC        
+"TextBox",IDS_TB_TEXTBOX          
+"Bumper Class",IDS_BUMPER_DESC         
+"Bumper",IDS_TB_BUMPER           
+"PIEventHandler Class",IDS_PIEVENTHANDLER_DESC 
+"Trigger Class",IDS_TRIGGER_DESC        
+"Trigger",IDS_TB_TRIGGER          
+
+"Light Class",IDS_LIGHT_DESC          
+"Light",IDS_TB_LIGHT            
+"Kicker Class",IDS_KICKER_DESC         
+"Kicker",IDS_TB_KICKER           
+"Target",IDS_TB_TARGET           
+"Decal",IDS_TB_DECAL            
+"Options",IDS_TB_PROPERTIES       
+"Magnify",IDS_TB_MAGNIFY          
+"Gate Class",IDS_GATE_DESC           
+"Gate",IDS_TB_GATE             
+"Spinner Class",IDS_SPINNER_DESC        
+"Spinner",IDS_TB_SPINNER          
+
+"Ramp Class",IDS_RAMP_DESC           
+"Ramp",IDS_TB_RAMP             
+"Script",IDS_TB_SCRIPT           
+"Name",IDS_NAME                
+"Import Path",IDS_IMPORTPATH          
+"Are you sure you want to replace this sound with a new one?",IDS_REPLACESOUND        
+"Are you sure you want to remove this sound?",IDS_REMOVESOUND         
+"Image\n\nPreview",IDS_IMAGE_PREVIEW       
+"Are you sure you want to remove this image?",IDS_REMOVEIMAGE         
+"Are you sure you want to replace this image with a new one?",IDS_REPLACEIMAGE        
+"Table",IDS_TABLE               
+"Script",IDS_SCRIPT              
+"Table '",IDS_SAVE_CHANGES1       
+"' has changed.  Do you want to save changes before exiting?",IDS_SAVE_CHANGES2       
+"Draw In &Front",IDS_DRAWINFRONT         
+
+"Draw In &Back",IDS_DRAWINBACK          
+"There was an error saving the file.",IDS_SAVEERROR           
+"Backdrop",IDS_TB_BACKGLASS        
+"Visual Pinball can not load a file of that version.",IDS_WRONGFILEVERSION    
+"One or more of the objects on the clipboard can not be placed into the current view.",IDS_NOPASTEINVIEW       
+"Passed the end of the file",IDS_FINDLOOPED          
+"Cannot find the string '",IDS_FINDFAILED          
+"'",IDS_FINDFAILED2         
+"Control Point",IDS_CONTROLPOINT        
+"This beta version of Visual Pinball has expired.  Please visit http://www.visualpinball.com to learn how to get an updated version.",IDS_BETAEXPIRE          
+"This file is corrupt and can not be loaded.",IDS_CORRUPTFILE

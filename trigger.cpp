@@ -1,0 +1,1063 @@
+// Trigger.cpp : Implementation of CVBATestApp and DLL registration.
+
+#include "stdafx.h"
+//#include "VBATest.h"
+#include "main.h"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+
+Trigger::Trigger()
+	{
+	m_ptriggerhitcircle = NULL;
+
+	m_menuid = IDR_SURFACEMENU;
+	}
+
+Trigger::~Trigger()
+	{
+	}
+
+//#define FILEID(a,b,c,d) ('a'<<24 | 'b'<<16 | 'c'<<8 | 'd')
+
+HRESULT Trigger::Init(PinTable *ptable, float x, float y)
+	{
+	m_ptable = ptable;
+
+	m_d.m_vCenter.x = x;
+	m_d.m_vCenter.y = y;
+
+	SetDefaults();
+
+	//HRESULT hr = ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Trigger", NULL);
+
+	return InitVBA(fTrue, 0, NULL);
+	}
+
+void Trigger::SetDefaults()
+	{
+	m_d.m_radius = 25;
+
+	m_d.m_tdr.m_fTimerEnabled = fFalse;
+	m_d.m_tdr.m_TimerInterval = 100;
+	m_d.m_fEnabled = fTrue;
+	m_d.m_fVisible = fTrue;
+
+	m_d.m_shape = ShapeCircle;
+
+	m_d.m_szSurface[0] = 0;
+	}
+
+void Trigger::PreRender(Sur *psur)
+	{
+	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetObject(this);
+
+	switch (m_d.m_shape)
+		{
+		case ShapeCircle:
+		default:
+			psur->SetFillColor(-1);
+			psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
+			break;
+
+		case ShapeCustom:
+			psur->SetFillColor(RGB(200,220,200));
+			Vector<RenderVertex> vvertex;
+			GetRgVertex(&vvertex);
+
+			int cvertex;
+			Vertex *rgv;
+
+			cvertex = vvertex.Size();
+			rgv = new Vertex[cvertex];
+
+			int i;
+			for (i=0;i<vvertex.Size();i++)
+				{
+				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+				delete vvertex.ElementAt(i);
+				}
+
+			psur->Polygon(rgv, cvertex);
+
+			delete rgv;
+			break;
+		}
+	}
+
+void Trigger::Render(Sur *psur)
+	{
+	psur->SetLineColor(RGB(0,0,0), fFalse, 0);
+	psur->SetObject(this);
+	psur->SetFillColor(-1);
+
+	float r2;
+	int i;
+
+	switch (m_d.m_shape)
+		{
+		case ShapeCircle:
+		default:
+			psur->Line(m_d.m_vCenter.x - m_d.m_radius, m_d.m_vCenter.y, m_d.m_vCenter.x + m_d.m_radius, m_d.m_vCenter.y);
+			psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - m_d.m_radius, m_d.m_vCenter.x, m_d.m_vCenter.y + m_d.m_radius);
+
+			r2 = m_d.m_radius * (float)sin(PI/4);
+
+			psur->Line(m_d.m_vCenter.x - r2, m_d.m_vCenter.y - r2, m_d.m_vCenter.x + r2, m_d.m_vCenter.y + r2);
+			psur->Line(m_d.m_vCenter.x - r2, m_d.m_vCenter.y + r2, m_d.m_vCenter.x + r2, m_d.m_vCenter.y - r2);
+			break;
+
+		case ShapeCustom:
+			Vector<RenderVertex> vvertex;
+			GetRgVertex(&vvertex);
+			psur->SetObject(NULL);
+
+			psur->SetBorderColor(RGB(0,180,0),fFalse,1);
+
+			int cvertex;
+			Vertex *rgv;
+
+			cvertex = vvertex.Size();
+			rgv = new Vertex[cvertex];
+
+			int i;
+			for (i=0;i<vvertex.Size();i++)
+				{
+				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+				delete vvertex.ElementAt(i);
+				}
+
+			psur->Polygon(rgv, cvertex);
+
+			delete rgv;
+			break;
+		}
+
+	if (m_d.m_shape == ShapeCustom)
+		{
+		BOOL	fDrawDragpoints;		//>>> added by chris
+
+//>>> added by chris
+		// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
+ 		if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints == fTrue) )
+			{
+			fDrawDragpoints = fTrue;
+			}
+		else
+			{
+			// if any of the dragpoints of this object are selected then draw all the dragpoints
+			fDrawDragpoints = fFalse;
+			for (i=0;i<m_vdpoint.Size();i++)
+				{
+				CComObject<DragPoint> *pdp;
+				pdp = m_vdpoint.ElementAt(i);
+				if (pdp->m_selectstate != eNotSelected)
+					{
+					fDrawDragpoints = fTrue;
+					break;
+					}
+				}
+			}
+
+		if (fDrawDragpoints == fTrue)
+			{
+			for (i=0;i<m_vdpoint.Size();i++)
+				{
+				CComObject<DragPoint> *pdp;
+				pdp = m_vdpoint.ElementAt(i);
+				psur->SetFillColor(-1);
+				psur->SetBorderColor(RGB(0,180,0),fFalse,0);
+				psur->SetObject(pdp);
+
+				if (pdp->m_fDragging)
+					{
+					psur->SetBorderColor(RGB(0,255,0),fFalse,0);
+					}
+
+				psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
+				}
+			}
+		}
+//<<<
+	}
+
+void Trigger::RenderBlueprint(Sur *psur)
+	{
+	psur->SetFillColor(-1);
+	psur->SetBorderColor(RGB(0,0,0), fFalse, 0);
+	psur->SetObject(this);
+
+	psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
+	}
+
+void Trigger::GetTimers(Vector<HitTimer> *pvht)
+	{
+	IEditable::BeginPlay();
+
+	HitTimer *pht;
+	pht = new HitTimer();
+	pht->m_interval = m_d.m_tdr.m_TimerInterval;
+	pht->m_nextfire = pht->m_interval;
+	pht->m_pfe = (IFireEvents *)this;
+
+	m_phittimer = pht;
+
+	if (m_d.m_tdr.m_fTimerEnabled)
+		{
+		pvht->AddElement(pht);
+		}
+	}
+
+void Trigger::GetHitShapes(Vector<HitObject> *pvho)
+	{
+	if (m_d.m_shape == ShapeCircle)
+		{
+		float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+		m_ptriggerhitcircle = new TriggerHitCircle();
+
+		m_ptriggerhitcircle->m_fEnabled = m_d.m_fEnabled;
+		m_ptriggerhitcircle->m_ObjType = eTrigger;
+		m_ptriggerhitcircle->m_pObj = (void*) this;
+
+		m_ptriggerhitcircle->m_pfe = NULL;
+
+		m_ptriggerhitcircle->center.x = m_d.m_vCenter.x;
+		m_ptriggerhitcircle->center.y = m_d.m_vCenter.y;
+		m_ptriggerhitcircle->radius = m_d.m_radius;
+		m_ptriggerhitcircle->zlow = height;
+		m_ptriggerhitcircle->zhigh = height+50;
+
+		m_ptriggerhitcircle->m_ptrigger = this;
+
+		pvho->AddElement(m_ptriggerhitcircle);
+		}
+	else
+		{
+		CurvesToShapes(pvho);
+		}
+	}
+
+void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
+	{
+	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+	switch (m_d.m_shape)
+		{
+		case ShapeCircle:
+		default:
+			{
+			HitObject *pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 10, m_d.m_radius, 32);
+			pvho->AddElement(pho);
+			}
+			break;
+
+		case ShapeCustom:
+			{
+			Vector<RenderVertex> vvertex;
+			GetRgVertex(&vvertex);
+
+			int cvertex;
+			Vertex3D *rgv3d;
+
+			cvertex = vvertex.Size();
+			rgv3d = new Vertex3D[cvertex];
+
+			int i;
+			for (i=0;i<vvertex.Size();i++)
+				{
+				rgv3d[i].x = vvertex.ElementAt(i)->x;
+				rgv3d[i].y = vvertex.ElementAt(i)->y;
+				rgv3d[i].z = height + 10;
+				delete vvertex.ElementAt(i);
+				}
+
+			Hit3DPoly *ph3dp = new Hit3DPoly(rgv3d, cvertex);
+			pvho->AddElement(ph3dp);
+
+			delete rgv3d;
+			}
+			break;
+		}
+	}
+
+void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
+	{
+	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+	int i;
+	int count;
+	RenderVertex *pv1, *pv2, *pv3, *pv4;
+	//Vector<Vertex> vvertex;
+
+	int cpoint;
+	int cpointCur;
+
+	cpoint = m_vdpoint.Size();
+
+	cpointCur = 0;
+
+	RenderVertex *rgv;
+	Vertex3D *rgv3D;
+	//rgv = GetRgRenderVertex(&count);
+
+	{
+	Vector<RenderVertex> vvertex;
+	GetRgVertex(&vvertex);
+
+	count = vvertex.Size();
+	rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
+	rgv3D = new Vertex3D[count + 6];
+
+	if (1)
+		{
+		for (i=0;i<count;i++)
+			{
+			rgv3D[i].x = vvertex.ElementAt(i)->x;
+			rgv3D[i].y = vvertex.ElementAt(i)->y;
+			rgv3D[i].z = height + 50;
+			}
+		}
+
+	for (i=0;i<count;i++)
+		{
+		rgv[i] = *vvertex.ElementAt(i);
+		delete vvertex.ElementAt(i);
+		}
+	}
+
+	for (i=0;i<count;i++)
+		{
+		pv1 = &rgv[i];
+		pv2 = &rgv[(i+1) % count];
+		pv3 = &rgv[(i+2) % count];
+		pv4 = &rgv[(i+3) % count];
+
+		if (1)
+			{
+			AddLine(pvho, pv2, pv3, pv1, height);
+			}
+		else
+			{
+			AddLine(pvho, pv3, pv2, pv4, height);
+			}
+		}
+
+	if (1)
+		{
+		if (0)
+			{
+			// Special hit object that will allow us to animate the surface
+			/*m_phitdrop = new Hit3DPolyDrop(rgv3D,count);
+
+			m_phitdrop->m_fVisible = fTrue;
+
+			m_phitdrop->m_iframedesire = 0;
+
+			pvho->AddElement(m_phitdrop);
+
+			m_vhoDrop.AddElement(m_phitdrop);*/
+			}
+		else
+			{
+			Hit3DPoly *ph3dpoly;
+
+			ph3dpoly = new Hit3DPoly(rgv3D,count);
+
+			ph3dpoly->m_fVisible = fTrue;
+			ph3dpoly->m_ObjType = eTrigger;	
+			ph3dpoly->m_pObj = (void*) this;
+
+
+			pvho->AddElement(ph3dpoly);
+			}
+		}
+
+	delete rgv;
+	delete rgv3D;
+	}
+
+void Trigger::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *pv2, RenderVertex *pv3, float height)
+	{
+	TriggerLineSeg *plineseg;
+	Vertex vt1, vt2;
+
+	plineseg = new TriggerLineSeg();
+
+	plineseg->m_ptrigger = this;
+	plineseg->m_ObjType = eTrigger;	
+	plineseg->m_pObj = (void*) this;
+
+	plineseg->m_rcHitRect.zlow = height;
+	plineseg->m_rcHitRect.zhigh = height+50;
+
+	plineseg->v1.x = pv1->x;
+	plineseg->v1.y = pv1->y;
+	plineseg->v2.x = pv2->x;
+	plineseg->v2.y = pv2->y;
+
+	pvho->AddElement(plineseg);
+
+	plineseg->CalcNormal();
+
+	vt1.x = pv1->x - pv2->x;
+	vt1.y = pv1->y - pv2->y;
+
+	vt2.x = pv1->x - pv3->x;
+	vt2.y = pv1->y - pv3->y;
+
+	return;
+	}
+
+void Trigger::EndPlay()
+	{
+	IEditable::EndPlay();
+
+	m_ptriggerhitcircle = NULL;
+	}
+
+float rgtriggervertex[][3] = {
+	-0.08f, -1, 0,
+	0.08f, -1, 0,
+	-0.08f, -0.5, 5,
+	0.08f, -0.5, 5,
+	-0.08f, 0, 8,
+	0.08f, 0, 8,
+	-0.08f, 0.5, 5,
+	0.08f, 0.5, 5,
+	-0.08f, 1, 0,
+	0.08f, 1, 0,
+	};
+
+WORD rgtriggerface[][5] = {
+	0,2,4,6,8,
+	9,7,5,3,1,
+	0,1,3,2,-1,
+	2,3,5,4,-1,
+	4,5,7,6,-1,
+	6,7,9,8,-1,
+	};
+
+void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
+	int i,l;
+	WORD rgi[8];
+	Vertex3D rgv3D[40];
+
+	if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
+		{
+		return;
+		}
+
+	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+
+	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+	ppin3d->EnableLightMap(fTrue, height);
+
+	D3DMATERIAL7 mtrl;
+	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.diffuse.r = mtrl.ambient.r = 0.5f;
+	mtrl.diffuse.g = mtrl.ambient.g = 0.5f;
+	mtrl.diffuse.b = mtrl.ambient.b = 0.5f;
+	pd3dDevice->SetMaterial(&mtrl);
+
+	for (i=0;i<4;i++)
+		{
+		float angle = PI*2;
+		angle /= 8;
+		angle *= i;
+
+		float sn = (float)sin(angle);
+		float cs = (float)cos(angle);
+
+		int offset = i*10;
+
+		for (l=0;l<10;l++)
+			{
+			/*rgv3D[l].x = sn*m_d.m_radius + m_d.m_vCenter.x + cs*10;
+			rgv3D[l].y = -cs*m_d.m_radius + m_d.m_vCenter.y - sn*10;
+			rgv3D[l].z = height + 0.1f;*/
+
+			float x,y;
+
+			x = rgtriggervertex[l][0]*m_d.m_radius;
+			y = rgtriggervertex[l][1]*m_d.m_radius;
+			rgv3D[l+offset].z = rgtriggervertex[l][2] + height + 0.1f;
+
+			rgv3D[l+offset].x = cs*x + sn*y + m_d.m_vCenter.x;
+			rgv3D[l+offset].y = -sn*x + cs*y + m_d.m_vCenter.y;
+
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+offset]);
+			}
+		}
+
+	/*rgv3D[16].x = m_d.m_vCenter.x;
+	rgv3D[16].y = m_d.m_vCenter.y;
+	rgv3D[16].z = height + 12;*/
+
+	for (i=0;i<4;i++)
+		{
+		int offset = i*10;
+
+		for (l=0;l<6;l++)
+			{
+			int cpt;
+
+			rgi[0] = rgtriggerface[l][0];
+			rgi[1] = rgtriggerface[l][1];
+			rgi[2] = rgtriggerface[l][2];
+			rgi[3] = rgtriggerface[l][3];
+			rgi[4] = rgtriggerface[l][4];
+
+			cpt = (rgtriggerface[l][4] == 65535) ? 4 : 5;
+
+			SetNormal(&rgv3D[offset], rgi, cpt, NULL, NULL, 0);
+
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+													  &rgv3D[offset], 10,
+													  rgi, cpt, NULL);
+			}
+		}
+
+	ppin3d->EnableLightMap(fFalse, -1);
+	}
+	
+void Trigger::RenderMoversFromCache(Pin3D *ppin3d)
+	{
+	}
+
+void Trigger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
+	}
+
+void Trigger::SetObjectPos()
+	{
+	g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+	}
+
+void Trigger::MoveOffset(float dx, float dy)
+	{
+	m_d.m_vCenter.x += dx;
+	m_d.m_vCenter.y += dy;
+
+	int i;
+
+	for (i=0;i<m_vdpoint.Size();i++)
+		{
+		CComObject<DragPoint> *pdp;
+
+		pdp = m_vdpoint.ElementAt(i);
+
+		pdp->m_v.x += dx;
+		pdp->m_v.y += dy;
+		}
+
+	m_ptable->SetDirtyDraw();
+	}
+
+/*void Trigger::GetCenter(Vertex *pv)
+	{
+	pv->x = m_d.m_vCenter.x;
+	pv->y = m_d.m_vCenter.y;
+	}
+
+void Trigger::PutCenter(Vertex *pv)
+	{
+	m_d.m_vCenter.x = pv->x;
+	m_d.m_vCenter.y = pv->y;
+
+	m_ptable->SetDirtyDraw();
+	}*/
+
+void Trigger::GetPointCenter(Vertex *pv)
+	{
+	*pv = m_d.m_vCenter;
+	}
+
+void Trigger::PutPointCenter(Vertex *pv)
+	{
+	m_d.m_vCenter = *pv;
+
+	SetDirtyDraw();
+	}
+
+void Trigger::EditMenu(HMENU hmenu)
+	{
+	EnableMenuItem(hmenu, ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
+	}
+
+void Trigger::DoCommand(int icmd, int x, int y)
+	{
+	ISelect::DoCommand(icmd, x, y);
+
+	switch (icmd)
+		{
+		case ID_WALLMENU_FLIP:
+			{
+			Vertex vCenter;
+			GetPointCenter(&vCenter);
+			FlipPointY(&vCenter);
+			}
+			break;
+
+		case ID_WALLMENU_MIRROR:
+			{
+			Vertex vCenter;
+			GetPointCenter(&vCenter);
+			FlipPointX(&vCenter);
+			}
+			break;
+
+		case ID_WALLMENU_ROTATE:
+			RotateDialog();
+			break;
+
+		case ID_WALLMENU_SCALE:
+			ScaleDialog();
+			break;
+
+		case ID_WALLMENU_TRANSLATE:
+			TranslateDialog();
+			break;
+
+		case ID_WALLMENU_ADDPOINT:
+			{
+			STARTUNDO
+
+			HitSur *phs;
+
+			RECT rc;
+			GetClientRect(m_ptable->m_hwnd, &rc);
+			Vertex v, vOut;
+			int iSeg;
+
+			phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+
+			phs->ScreenToSurface(x, y, &v.x, &v.y);
+			delete phs;
+
+			int cvertex;
+			Vertex *rgv;
+
+			Vector<RenderVertex> vvertex;
+			GetRgVertex(&vvertex);
+
+			cvertex = vvertex.Size();
+			rgv = new Vertex[cvertex];
+
+			int i;
+			for (i=0;i<vvertex.Size();i++)
+				{
+				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+				}
+
+			ClosestPointOnPolygon(rgv, cvertex, &v, &vOut, &iSeg, fTrue);
+
+			// Go through vertices (including iSeg itself) counting control points until iSeg
+			int icp = 0;
+			for (i=0;i<(iSeg+1);i++)
+				{
+				if (vvertex.ElementAt(i)->fControlPoint)
+					{
+					icp++;
+					}
+				}
+
+			//if (icp == 0) // need to add point after the last point
+				//icp = m_vdpoint.Size();
+
+			CComObject<DragPoint> *pdp;
+
+			CComObject<DragPoint>::CreateInstance(&pdp);
+			if (pdp)
+				{
+				pdp->AddRef();
+				pdp->Init(this, vOut.x, vOut.y);
+				m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+				}
+
+			for (i=0;i<vvertex.Size();i++)
+				{
+				delete vvertex.ElementAt(i);
+				}
+
+			delete rgv;
+
+			SetDirtyDraw();
+
+			STOPUNDO
+			}
+			break;
+		}
+	}
+
+HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+	{
+	HRESULT hr;
+
+	BiffWriter bw(pstm, hcrypthash, hcryptkey);
+
+#ifdef VBA
+	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
+#endif
+	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex));
+	bw.WriteFloat(FID(RADI), m_d.m_radius);
+	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+	bw.WriteString(FID(SURF), m_d.m_szSurface);
+	bw.WriteBool(FID(EBLD), m_d.m_fEnabled);
+	bw.WriteBool(FID(VSBL), m_d.m_fVisible);
+	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+	bw.WriteInt(FID(SHAP), m_d.m_shape);
+
+	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+
+	if(FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
+		return hr;
+
+	bw.WriteTag(FID(ENDB));
+
+	return S_OK;
+	/*ULONG writ = 0;
+	HRESULT hr = S_OK;
+
+	DWORD dwID = ApcProjectItem.ID();
+	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
+		return hr;
+
+	if(FAILED(hr = pstm->Write(&m_d, sizeof(TriggerData), &writ)))
+		return hr;
+
+	return hr;*/
+	}
+
+void Trigger::ClearForOverwrite()
+	{
+	ClearPointsForOverwrite();
+	}
+
+HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+	{
+	SetDefaults();
+#ifndef OLDLOAD
+	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+
+	m_ptable = ptable;
+
+	br.Load();
+	return S_OK;
+#else
+	ULONG read = 0;
+	HRESULT hr = S_OK;
+
+	m_ptable = ptable;
+
+	DWORD dwID;
+	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
+		return hr;
+
+	if(FAILED(hr = pstm->Read(&m_d, sizeof(TriggerData), &read)))
+		return hr;
+
+	//ApcProjectItem.Register(ptable->ApcProject, GetDispatch(), dwID);
+	*pid = dwID;
+
+	return hr;
+#endif
+	}
+
+BOOL Trigger::LoadToken(int id, BiffReader *pbr)
+	{
+	if (id == FID(PIID))
+		{
+		pbr->GetInt((int *)pbr->m_pdata);
+		}
+	else if (id == FID(VCEN))
+		{
+		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex));
+		}
+	else if (id == FID(RADI))
+		{
+		pbr->GetFloat(&m_d.m_radius);
+		}
+	else if (id == FID(TMON))
+		{
+		pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+		}
+	else if (id == FID(TMIN))
+		{
+		pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
+		}
+	else if (id == FID(SURF))
+		{
+		pbr->GetString(m_d.m_szSurface);
+		}
+	else if (id == FID(EBLD))
+		{
+		pbr->GetBool(&m_d.m_fEnabled);
+		}
+	else if (id == FID(VSBL))
+		{
+		pbr->GetBool(&m_d.m_fVisible);
+		}
+	else if (id == FID(SHAP))
+		{
+		pbr->GetInt(&m_d.m_shape);
+		}
+	else if (id == FID(NAME))
+		{
+		pbr->GetWideString((WCHAR *)m_wzName);
+		}
+	else
+		{
+		LoadPointToken(id, pbr, pbr->m_version);
+		ISelect::LoadToken(id, pbr);
+		}
+	return fTrue;
+	}
+
+HRESULT Trigger::InitPostLoad()
+	{
+	return S_OK;
+	}
+
+STDMETHODIMP Trigger::InterfaceSupportsErrorInfo(REFIID riid)
+{
+	static const IID* arr[] =
+	{
+		&IID_ITrigger,
+	};
+
+	for (int i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
+	{
+		if (InlineIsEqualGUID(*arr[i],riid))
+			return S_OK;
+	}
+	return S_FALSE;
+}
+
+
+STDMETHODIMP Trigger::get_Radius(float *pVal)
+{
+	*pVal = m_d.m_radius;
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::put_Radius(float newVal)
+{
+	STARTUNDO
+
+	m_d.m_radius = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::get_X(float *pVal)
+{
+	*pVal = m_d.m_vCenter.x;
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::put_X(float newVal)
+{
+	STARTUNDO
+
+	m_d.m_vCenter.x = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::get_Y(float *pVal)
+{
+	*pVal = m_d.m_vCenter.y;
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::put_Y(float newVal)
+{
+	STARTUNDO
+
+	m_d.m_vCenter.y = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
+{
+	unsigned short wz[512];
+
+	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, (LPWSTR)wz, 32);
+	*pVal = SysAllocString((OLECHAR *)wz);
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::put_Surface(BSTR newVal)
+{
+	STARTUNDO
+
+	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::get_Enabled(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fEnabled);
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+
+	m_d.m_fEnabled = VBTOF(newVal);
+
+	if (m_ptriggerhitcircle)
+		{
+		m_ptriggerhitcircle->m_fEnabled = m_d.m_fEnabled;
+		}
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::get_Visible(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fVisible);
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::put_Visible(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+
+	m_d.m_fVisible = VBTOF(newVal);
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+/*HRESULT Trigger::GetTypeName(BSTR *pVal)
+	{
+	*pVal = SysAllocString(L"Trigger");
+
+	return S_OK;
+	}*/
+
+/*int Trigger::GetDialogID()
+	{
+	return IDD_PROPTRIGGER;
+	}*/
+
+void Trigger::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+	{
+	PropertyPane *pproppane;
+
+	pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
+	pvproppane->AddElement(pproppane);
+
+	pproppane = new PropertyPane(IDD_PROPTRIGGER_VISUALS, IDS_VISUALS);
+	pvproppane->AddElement(pproppane);
+
+	pproppane = new PropertyPane(IDD_PROPLIGHT_POSITION, IDS_POSITION);
+	pvproppane->AddElement(pproppane);
+
+	pproppane = new PropertyPane(IDD_PROPTRIGGER_STATE, IDS_STATE);
+	pvproppane->AddElement(pproppane);
+
+	pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
+	pvproppane->AddElement(pproppane);
+	}
+
+STDMETHODIMP Trigger::get_Shape(Shape *pVal)
+{
+	*pVal = m_d.m_shape;
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::put_Shape(Shape newVal)
+{
+	STARTUNDO
+
+	m_d.m_shape = newVal;
+
+	if (m_d.m_shape == ShapeCircle && m_vdpoint.Size() > 0)
+		{
+		// Set the center of the trigger back to something useful
+		float x=0;
+		float y=0;
+		int i;
+
+		for (i=0;i<m_vdpoint.Size();i++)
+			{
+			x += m_vdpoint.ElementAt(i)->m_v.x;
+			y += m_vdpoint.ElementAt(i)->m_v.y;
+			}
+
+		m_d.m_vCenter.x = x/m_vdpoint.Size();
+		m_d.m_vCenter.y = y/m_vdpoint.Size();
+		}
+
+	if (m_d.m_shape == ShapeCustom && m_vdpoint.Size() == 0)
+		{
+		// First time shape has been set to custom - set up some points
+		float x,y;
+
+		x = m_d.m_vCenter.x;
+		y = m_d.m_vCenter.y;
+
+		CComObject<DragPoint> *pdp;
+		CComObject<DragPoint>::CreateInstance(&pdp);
+		if (pdp)
+			{
+			pdp->AddRef();
+			pdp->Init(this, x-30, y-30);
+			m_vdpoint.AddElement(pdp);
+			}
+		CComObject<DragPoint>::CreateInstance(&pdp);
+		if (pdp)
+			{
+			pdp->AddRef();
+			pdp->Init(this, x-30, y+30);
+			m_vdpoint.AddElement(pdp);
+			}
+		CComObject<DragPoint>::CreateInstance(&pdp);
+		if (pdp)
+			{
+			pdp->AddRef();
+			pdp->Init(this, x+30, y+30);
+			m_vdpoint.AddElement(pdp);
+			}
+		CComObject<DragPoint>::CreateInstance(&pdp);
+		if (pdp)
+			{
+			pdp->AddRef();
+			pdp->Init(this, x+30, y-30);
+			m_vdpoint.AddElement(pdp);
+			}
+
+		}
+
+	STOPUNDO
+
+	return S_OK;
+}

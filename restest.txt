@@ -1,0 +1,1 @@
+        MENUITEM "&New\tCtrl+N",                IDM_NEW
