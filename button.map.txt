@@ -1,0 +1,12 @@
+Left Flipper   Button 10  <Left Shift>
+Left 2nd Flipper  Button 11  <>
+Right Flipper  Button 2  <Right Shift>
+Right 2nd Flipper Button 3
+Insert Coin 1  Button 12   <5>
+Start Game  Button 9  <1>
+Digital Plunger  Button 1  <Enter>
+Exit Table  Button 8  <Escape>
+
+Test   Button 14
+Service   Button 15
+Pause    Button 7  <F1>

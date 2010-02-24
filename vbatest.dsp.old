@@ -1,0 +1,1246 @@
+# Microsoft Developer Studio Project File - Name="VBATest" - Package Owner=<4>
+# Microsoft Developer Studio Generated Build File, Format Version 6.00
+# ** DO NOT EDIT **
+
+# TARGTYPE "Win32 (x86) Application" 0x0101
+
+CFG=VBATEST - WIN32 RELEASETEST
+!MESSAGE This is not a valid makefile. To build this project using NMAKE,
+!MESSAGE use the Export Makefile command and run
+!MESSAGE 
+!MESSAGE NMAKE /f "VBATest.mak".
+!MESSAGE 
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "VBATest.mak" CFG="VBATEST - WIN32 RELEASETEST"
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "VBATest - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "VBATest - Win32 Unicode Debug" (based on "Win32 (x86) Application")
+!MESSAGE "VBATest - Win32 Release MinSize" (based on "Win32 (x86) Application")
+!MESSAGE "VBATest - Win32 Release MinDependency" (based on "Win32 (x86) Application")
+!MESSAGE "VBATest - Win32 Unicode Release MinSize" (based on "Win32 (x86) Application")
+!MESSAGE "VBATest - Win32 Unicode Release MinDependency" (based on "Win32 (x86) Application")
+!MESSAGE "VBATest - Win32 ReleaseTest" (based on "Win32 (x86) Application")
+!MESSAGE "VBATest - Win32 ReleaseTestSpanish" (based on "Win32 (x86) Application")
+!MESSAGE "VBATest - Win32 ReleaseTestGerman" (based on "Win32 (x86) Application")
+!MESSAGE "VBATest - Win32 Profile" (based on "Win32 (x86) Application")
+!MESSAGE "VBATest - Win32 ReleaseTestFrench" (based on "Win32 (x86) Application")
+!MESSAGE 
+
+# Begin Project
+# PROP AllowPerConfigDependencies 0
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
+!IF  "$(CFG)" == "VBATest - Win32 Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "Debug"
+# PROP BASE Intermediate_Dir "Debug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "Debug"
+# PROP Intermediate_Dir "Debug"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /Zi /Od /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "MYDEBUG" /FR /Yu"stdafx.h" /FD /GZ /c
+# SUBTRACT MTL /mktyplib203
+# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 comctl32.lib dxguid.lib dsound.lib winmm.lib dinput.lib jpeg.lib dbghelp.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Unicode Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "DebugU"
+# PROP BASE Intermediate_Dir "DebugU"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "DebugU"
+# PROP Intermediate_Dir "DebugU"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_UNICODE" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /ZI /Od /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_UNICODE" /Yu"stdafx.h" /FD /GZ /c
+# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /out:"VPinball.exe" /pdbtype:sept
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Release MinSize"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "ReleaseMinSize"
+# PROP BASE Intermediate_Dir "ReleaseMinSize"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ReleaseMinSize"
+# PROP Intermediate_Dir "ReleaseMinSize"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /W3 /O1 /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_DLL" /Yu"stdafx.h" /FD /c
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /subsystem:windows /machine:I386 /out:"VPinball.exe"
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Release MinDependency"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "ReleaseMinDependency"
+# PROP BASE Intermediate_Dir "ReleaseMinDependency"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ReleaseMinDependency"
+# PROP Intermediate_Dir "ReleaseMinDependency"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /Zi /O1 /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /Yu"stdafx.h" /FD /c
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseMinDependency/VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT LINK32 /pdb:none
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=copy .\releasemindependency\vpinball.exe .\VPinball.exe
+# End Special Build Tool
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Unicode Release MinSize"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "ReleaseUMinSize"
+# PROP BASE Intermediate_Dir "ReleaseUMinSize"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ReleaseUMinSize"
+# PROP Intermediate_Dir "ReleaseUMinSize"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /W3 /O1 /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /subsystem:windows /machine:I386 /out:"VPinball.exe"
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Unicode Release MinDependency"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "ReleaseUMinDependency"
+# PROP BASE Intermediate_Dir "ReleaseUMinDependency"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ReleaseUMinDependency"
+# PROP Intermediate_Dir "ReleaseUMinDependency"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /W3 /O1 /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /subsystem:windows /machine:I386 /out:"VPinball.exe"
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 ReleaseTest"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "VBATest___Win32_ReleaseTest"
+# PROP BASE Intermediate_Dir "VBATest___Win32_ReleaseTest"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "VBATest___Win32_ReleaseTest"
+# PROP Intermediate_Dir "VBATest___Win32_ReleaseTest"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /Zi /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /W3 /Zi /O1 /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /FR /Yu"stdafx.h" /FD /c
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseMinDependency/VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 comctl32.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib jpeg.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT LINK32 /pdb:none
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 ReleaseTestSpanish"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "VBATest___Win32_ReleaseTestSpanish"
+# PROP BASE Intermediate_Dir "VBATest___Win32_ReleaseTestSpanish"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "VBATest___Win32_ReleaseTestSpanish"
+# PROP Intermediate_Dir "VBATest___Win32_ReleaseTestSpanish"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MLd /W3 /Zi /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MLd /W3 /Zi /O1 /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /D "IMSPANISH" /Yu"stdafx.h" /FD /c
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "IMSPANISH2"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib /nologo /subsystem:windows /debug /machine:I386 /out:"VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"VBATest___Win32_ReleaseTestSpanish\VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT LINK32 /pdb:none
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 ReleaseTestGerman"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "VBATest___Win32_ReleaseTestGerman"
+# PROP BASE Intermediate_Dir "VBATest___Win32_ReleaseTestGerman"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "VBATest___Win32_ReleaseTestGerman"
+# PROP Intermediate_Dir "VBATest___Win32_ReleaseTestGerman"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MLd /W3 /Zi /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /D "IMSPANISH" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MLd /W3 /Zi /O1 /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /D "IMGERMAN" /Yu"stdafx.h" /FD /c
+# ADD BASE RSC /l 0x409 /fo"VBATest___Win32_ReleaseTestSpanish/VBATest2.res" /d "NDEBUG" /d "IMSPANISH"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "IMGERMAN"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib /nologo /subsystem:windows /debug /machine:I386 /out:"VBATest___Win32_ReleaseTestSpanish\VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"VBATest___Win32_ReleaseTestGerman\VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT LINK32 /pdb:none
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Profile"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "VBATest___Win32_Profile"
+# PROP BASE Intermediate_Dir "VBATest___Win32_Profile"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "VBATest___Win32_Profile"
+# PROP Intermediate_Dir "VBATest___Win32_Profile"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MLd /W3 /Zi /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /Zi /O1 /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /Yu"stdafx.h" /FD /c
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib /nologo /subsystem:windows /debug /machine:I386 /out:"VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"VBATest___Win32_Profile\VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT LINK32 /pdb:none
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 ReleaseTestFrench"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "VBATest___Win32_ReleaseTestFrench"
+# PROP BASE Intermediate_Dir "VBATest___Win32_ReleaseTestFrench"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "VBATest___Win32_ReleaseTestFrench"
+# PROP Intermediate_Dir "VBATest___Win32_ReleaseTestFrench"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MLd /W3 /Zi /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /D "IMSPANISH" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MLd /W3 /Zi /O1 /I "d:\bin\vpinc" /I "pin\\" /I "media" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /D "IMFRENCH" /Yu"stdafx.h" /FD /c
+# ADD BASE RSC /l 0x409 /d "NDEBUG" /d "IMSPANISH2"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "IMFRENCH"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib /nologo /subsystem:windows /debug /machine:I386 /out:"VBATest___Win32_ReleaseTestSpanish\VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib xaudio.lib scinlib.lib imm32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"VBATest___Win32_ReleaseTestFrench\VPinball.exe" /DEBUGTYPE:CV,FIXUP
+# SUBTRACT LINK32 /pdb:none
+
+!ENDIF 
+
+# Begin Target
+
+# Name "VBATest - Win32 Debug"
+# Name "VBATest - Win32 Unicode Debug"
+# Name "VBATest - Win32 Release MinSize"
+# Name "VBATest - Win32 Release MinDependency"
+# Name "VBATest - Win32 Unicode Release MinSize"
+# Name "VBATest - Win32 Unicode Release MinDependency"
+# Name "VBATest - Win32 ReleaseTest"
+# Name "VBATest - Win32 ReleaseTestSpanish"
+# Name "VBATest - Win32 ReleaseTestGerman"
+# Name "VBATest - Win32 Profile"
+# Name "VBATest - Win32 ReleaseTestFrench"
+# Begin Group "Source Files"
+
+# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Source File
+
+SOURCE=.\Pin\Ball.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\BallEx.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Bumper.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\CodeView.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\collide.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\collideex.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ComControl.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Decal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\def.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\dispreel.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\disputil.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\DragPoint.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\draw.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\eventproxy.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\extern.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Media\FileIO.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Flipper.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Gate.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\hitflipper.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\HitPlunger.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\HitRectSur.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\HitSur.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\IEditable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ISelect.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Kicker.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Light.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\LightSeq.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Media\lzwreader.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Media\lzwwriter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\memutil.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Mesh.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PaintSur.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin3D.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinBinary.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinImage.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinInput.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinSound.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinTable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinUndo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\Player.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Plunger.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PropBrowser.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Ramp.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\RegUtil.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ShadowSur.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Media\simpleplayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Spinner.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\StdAfx.cpp
+# ADD CPP /Yc"stdafx.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\Sur.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Surface.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TableGlobal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Textbox.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Timer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Trigger.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Variant.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\VBATest.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\VBATest.idl
+# ADD MTL /tlb ".\VBATest.tlb" /h "VBATest.h" /iid "VBATest_i.c" /Oicf
+# End Source File
+# Begin Source File
+
+SOURCE=.\VBATest.rc
+# End Source File
+# Begin Source File
+
+SOURCE=.\VPinball.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\wall.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Media\wavread.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Worker.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\XAudPlayer.cpp
+# End Source File
+# End Group
+# Begin Group "Header Files"
+
+# PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\Pin\ball.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\BallEx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Bumper.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\CodeView.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\collide.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\collideex.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ComControl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Decal.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\def.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\dispid.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\dispreel.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\disputil.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DragPoint.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\draw.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\eventproxy.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\extern.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ExVector.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Media\FileIO.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Flipper.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Gate.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\HELPERS.H
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\hitable.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\hitflipper.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\HitPlunger.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\HitRectSur.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\HitSur.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\HitTimer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\IDebug.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\IEditable.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ISelect.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Kicker.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Light.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\LightSeq.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Media\lzwreader.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Media\lzwwriter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\main.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\memutil.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Mesh.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MSSCRIPT.H
+# End Source File
+# Begin Source File
+
+SOURCE=.\OLEAUTO.H
+# End Source File
+# Begin Source File
+
+SOURCE=.\PaintSur.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin3D.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinBinary.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinImage.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinInput.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinSound.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinTable.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PinUndo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\Player.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Plunger.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PropBrowser.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Ramp.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\RegUtil.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ShadowSur.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Media\simpleplayer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Spinner.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\StdAfx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Sur.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Surface.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TableGlobal.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Textbox.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Timer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Trigger.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\variant.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\VBATest.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vector.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\VectorSort.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\VPinball.h
+
+!IF  "$(CFG)" == "VBATest - Win32 Debug"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Unicode Debug"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Release MinSize"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Release MinDependency"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Unicode Release MinSize"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Unicode Release MinDependency"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 ReleaseTest"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 ReleaseTestSpanish"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 ReleaseTestGerman"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 Profile"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "VBATest - Win32 ReleaseTestFrench"
+
+# Begin Custom Build
+InputPath=.\VPinball.h
+
+".\buildnum.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	g:\bin\BuildStamp .\buildnum.h 2000
+
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\Pin\wall.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Worker.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\XAudPlayer.h
+# End Source File
+# End Group
+# Begin Group "Resource Files"
+
+# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# Begin Source File
+
+SOURCE=.\arrow.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\Ball.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\balltex2.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bitmap1.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Bumper.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\ComControl.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur00001.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_bump.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_deca.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_dispreel.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_dispseg.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_flip.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_gate.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_kick.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_ligh.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_lightseq.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_plun.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_spin.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_targ.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_text.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_time.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cur_wall.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\cursor1.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\DispReel.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\DragPoint.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\Flipper.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\Gate.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\ico00001.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icon1.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\IconFlipper.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\IconLight.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\IconTimer.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\IconTrigger.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\IconTrigger.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Kicker.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\Light.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\LightSeq.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\logo25.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\logo28.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PIEventHandler.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\Plunger.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\Ramp.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\Spinner.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\sunburst.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sunburst3.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sunburst4.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Surface.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\table1.bin
+# End Source File
+# Begin Source File
+
+SOURCE=..\Data\Tables\TableIcon.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\TableIcon.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Textbox.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\Timer.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\toolbar.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\toolbar1.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Trigger.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\VBATest.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\wall.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\white.bmp
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\BaseTable17.vpt
+# End Source File
+# End Target
+# End Project

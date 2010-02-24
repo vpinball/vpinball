@@ -1,0 +1,24 @@
+HKCR
+{
+	VBATest.ComControl.1 = s 'ComControl Class'
+	{
+		CLSID = s '{E25B3A0B-D83D-4E96-852B-93339636DCCE}'
+	}
+	VBATest.ComControl = s 'ComControl Class'
+	{
+		CLSID = s '{E25B3A0B-D83D-4E96-852B-93339636DCCE}'
+		CurVer = s 'VBATest.ComControl.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {E25B3A0B-D83D-4E96-852B-93339636DCCE} = s 'ComControl Class'
+		{
+			ProgID = s 'VBATest.ComControl.1'
+			VersionIndependentProgID = s 'VBATest.ComControl'
+			ForceRemove 'Programmable'
+			LocalServer32 = s '%MODULE%'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			'TypeLib' = s '{384DF69D-3592-4041-848D-9A2D5CD081A0}'
+		}
+	}
+}
