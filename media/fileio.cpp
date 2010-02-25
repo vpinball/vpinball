@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "..\main.h"
 
 void ExtensionFromFilename(char *szfilename, char *szextension)
 	{
@@ -67,7 +66,7 @@ void PathFromFilename(char *szfilename, char *szpath)
 	// find the last '\' in the filename
 	for (end=len;end>=0;end--)
 		{
-		if (szfilename[end] == '\\')
+		if (szfilename[end] == '\\' || szfilename[end] == '/' )
 			{
 			break;
 			}
@@ -109,7 +108,7 @@ void TitleAndPathFromFilename(char *szfilename, char *szpath)
 	char *szT = szfilename;
 	int count = end;
 
-	while (count--) {*szpath++ = *szT++;}
+	while (count-- > 0) {*szpath++ = *szT++;}
 	*szpath = '\0';
 	}
 
@@ -335,8 +334,6 @@ HRESULT BiffReader::GetInt(void *pvalue)
 	m_bytesinrecordremaining -= sizeof(int);
 
 	return ReadBytes(pvalue, sizeof(int), &read);
-
-	//return m_pistream->Read(pvalue, sizeof(int), &read);
 	}
 
 HRESULT BiffReader::GetString(char *szvalue)
@@ -345,13 +342,11 @@ HRESULT BiffReader::GetString(char *szvalue)
 	HRESULT hr = S_OK;
 	int len;
 
-	//if(FAILED(hr = m_pistream->Read(&len, sizeof(int), &read)))
 	if(FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
 		return hr;
 
 	m_bytesinrecordremaining -= len+sizeof(int);
 
-	//hr = m_pistream->Read(szvalue, len, &read);
 	hr = ReadBytes(szvalue, len, &read);
 	szvalue[len] = 0;
 	return hr;
@@ -363,13 +358,11 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue)
 	HRESULT hr = S_OK;
 	int len;
 
-	//if(FAILED(hr = m_pistream->Read(&len, sizeof(int), &read)))
 	if(FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
 		return hr;
 
 	m_bytesinrecordremaining -= len+sizeof(int);
 
-	//hr = m_pistream->Read(wzvalue, len, &read);
 	hr = ReadBytes(wzvalue, len, &read);
 	wzvalue[len/sizeof(WCHAR)] = 0;
 	return hr;
@@ -382,7 +375,6 @@ HRESULT BiffReader::GetFloat(float *pvalue)
 
 	m_bytesinrecordremaining -= sizeof(float);
 
-	//return m_pistream->Read(pvalue, sizeof(float), &read);
 	return ReadBytes(pvalue, sizeof(float), &read);
 	}
 
@@ -404,7 +396,6 @@ HRESULT BiffReader::GetStruct(void *pvalue, int size)
 
 	m_bytesinrecordremaining -= size;
 
-	//return m_pistream->Read(pvalue, size, &read);
 	return ReadBytes(pvalue, size, &read);
 	}
 
@@ -437,13 +428,10 @@ HRESULT BiffReader::Load()
 			{
 			if (m_bytesinrecordremaining > 0)
 				{
-				//LARGE_INTEGER li;
-				//li.QuadPart = m_bytesinrecordremaining;
 				BYTE *szT;
 				szT = new BYTE[m_bytesinrecordremaining];
 				GetStruct(szT, m_bytesinrecordremaining);
 				delete szT;
-				//m_pistream->Seek(li, STREAM_SEEK_CUR, NULL);
 				}
 			}
 		}
@@ -498,7 +486,7 @@ unsigned long __stdcall FastIStorage::Release(void)
 	return S_OK;
 	}
 
-long __stdcall FastIStorage::CreateStream(const OLECHAR *wzName,unsigned long,unsigned long,unsigned long,struct IStream **ppstm)
+long __stdcall FastIStorage::CreateStream(const WCHAR *wzName,unsigned long,unsigned long,unsigned long,struct IStream **ppstm)
 	{
 	FastIStream *pfs = new FastIStream();
 	pfs->AddRef(); // AddRef once for us, and once for the caller
@@ -513,12 +501,12 @@ long __stdcall FastIStorage::CreateStream(const OLECHAR *wzName,unsigned long,un
 	return S_OK;
 	}
 
-long __stdcall FastIStorage::OpenStream(const OLECHAR *,void *,unsigned long,unsigned long,struct IStream ** )
+long __stdcall FastIStorage::OpenStream(const WCHAR *,void *,unsigned long,unsigned long,struct IStream ** )
 	{
 	return S_OK;
 	}
 
-long __stdcall FastIStorage::CreateStorage(const OLECHAR *wzName,unsigned long,unsigned long,unsigned long,struct IStorage **ppstg)
+long __stdcall FastIStorage::CreateStorage(const WCHAR *wzName,unsigned long,unsigned long,unsigned long,struct IStorage **ppstg)
 	{
 	FastIStorage *pfs = new FastIStorage();
 	pfs->AddRef(); // AddRef once for us, and once for the caller
@@ -533,12 +521,12 @@ long __stdcall FastIStorage::CreateStorage(const OLECHAR *wzName,unsigned long,u
 	return S_OK;
 	}
 
-long __stdcall FastIStorage::OpenStorage(const OLECHAR *,struct IStorage *,unsigned long,SNB ,unsigned long,struct IStorage ** )
+long __stdcall FastIStorage::OpenStorage(const WCHAR *,struct IStorage *,unsigned long,WCHAR ** ,unsigned long,struct IStorage ** )
 	{
 	return S_OK;
 	}
 
-long __stdcall FastIStorage::CopyTo(unsigned long,const struct _GUID *,SNB ,struct IStorage *pstgNew)
+long __stdcall FastIStorage::CopyTo(unsigned long,const struct _GUID *,WCHAR ** ,struct IStorage *pstgNew)
 	{
 	int i;
 	HRESULT hr;
@@ -570,7 +558,7 @@ long __stdcall FastIStorage::CopyTo(unsigned long,const struct _GUID *,SNB ,stru
 	return S_OK;
 	}
 
-long __stdcall FastIStorage::MoveElementTo(const OLECHAR *,struct IStorage *,const OLECHAR *,unsigned long)
+long __stdcall FastIStorage::MoveElementTo(const WCHAR *,struct IStorage *,const WCHAR *,unsigned long)
 	{
 	return S_OK;
 	}
@@ -590,17 +578,17 @@ long __stdcall FastIStorage::EnumElements(unsigned long,void *,unsigned long,str
 	return S_OK;
 	}
 
-long __stdcall FastIStorage::DestroyElement(const OLECHAR *)
+long __stdcall FastIStorage::DestroyElement(const WCHAR *)
 	{
 	return S_OK;
 	}
 
-long __stdcall FastIStorage::RenameElement(const OLECHAR *,const OLECHAR *)
+long __stdcall FastIStorage::RenameElement(const WCHAR *,const WCHAR *)
 	{
 	return S_OK;
 	}
 
-long __stdcall FastIStorage::SetElementTimes(const OLECHAR *,const struct _FILETIME *,const struct _FILETIME *,const struct _FILETIME *)
+long __stdcall FastIStorage::SetElementTimes(const WCHAR *,const struct _FILETIME *,const struct _FILETIME *,const struct _FILETIME *)
 	{
 	return S_OK;
 	}
@@ -653,10 +641,6 @@ void FastIStream::SetSize(unsigned int i)
 			m_rgNew = malloc(sizeof(void *) * i);
 			}
 
-		/*if (m_rgNew == NULL)
-			{
-			return fFalse;
-			}*/
 		m_rg = (char *)m_rgNew;
 		m_cMax = i;
 		}
@@ -704,8 +688,6 @@ long __stdcall FastIStream::Write(const void *pv,unsigned long count,unsigned lo
 	if((m_cSeek + count) > m_cMax)
 		{
 		SetSize(max(m_cSeek*2, m_cSeek + count));
-		/*if (!SetSize(max(m_cSeek*2, m_cSeek + count)))
-			return -1;*/
 		}
 
 	memcpy(m_rg + m_cSeek, pv, count);

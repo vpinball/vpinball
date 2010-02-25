@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 XAudPlayer::XAudPlayer()
 	{
@@ -88,10 +87,6 @@ int XAudPlayer::Tick()
 		{
 		return 1;
 		}
-	/*if (halfaround < m_dwNextWriteOffset)
-		{
-		return 1; // Don't write more data until we've played the stuff we have - try to keep the write pointer half-way around the circular buffer from the play-pointer
-		}*/
 
 	char buf[10000];
 
@@ -222,27 +217,10 @@ int XAudPlayer::Init(char *szFileName, int volume)
         decoder_input_module_register(m_decoder, &module);
     }
 
-    /* register the audio output module */
-    /*{
-        XA_OutputModule module;
-
-        audio_output_module_register(&module);
-        decoder_output_module_register(m_decoder, &module);
-    }*/
-
-    /* create and open output */
-    /*decoder_output_new(m_decoder, 
-                       NULL,    
-                       XA_DECODER_OUTPUT_AUTOSELECT);
-    status = decoder_output_open(m_decoder);
-    if (status != XA_SUCCESS) {
-        //error("cannot instantiate output [%d]", status);
-        return 0;
-    }*/
-
     /* create and open input object */
     status = decoder_input_new(m_decoder, NULL, XA_DECODER_INPUT_AUTOSELECT);
-    if (status != XA_SUCCESS) {
+    if (status != XA_SUCCESS) 
+	{
         //error("cannot create input [%d]\n", status);
     }
     if (decoder_input_open(m_decoder) != XA_SUCCESS) {
@@ -260,18 +238,7 @@ HRESULT XAudPlayer::CreateBuffer(int volume)
 	WAVEFORMATEX wfex;
 	int status = decoder_decode(m_decoder, NULL);
 	
-	/*if (status == XA_SUCCESS)
-		{		
-		wfex.wFormatTag = WAVE_FORMAT_PCM;
-		wfex.nChannels = m_decoder->output_buffer->nb_channels;
-		wfex.nSamplesPerSec = 22050;//44100; Bogus frequency value - the real value gets set as data is decompressed - look for SetFrequency
-		wfex.wBitsPerSample = m_decoder->output_buffer->bytes_per_sample;
-		wfex.cbSize = 0;
-		wfex.nBlockAlign = (wfex.nChannels * wfex.wBitsPerSample) / 8;
-		wfex.nAvgBytesPerSec = wfex.nBlockAlign * wfex.nSamplesPerSec;
-		}
-	else*/
-		{
+	{
 		wfex.wFormatTag = WAVE_FORMAT_PCM;
 		wfex.nChannels = 2;//m_decoder->output_buffer->nb_channels;
 		wfex.nSamplesPerSec = 22050;//44100; Bogus frequency value - the real value gets set as data is decompressed - look for SetFrequency
@@ -279,7 +246,7 @@ HRESULT XAudPlayer::CreateBuffer(int volume)
 		wfex.cbSize = 0;
 		wfex.nBlockAlign = (wfex.nChannels * wfex.wBitsPerSample) / 8;
 		wfex.nAvgBytesPerSec = wfex.nBlockAlign * wfex.nSamplesPerSec;
-		}
+	}
 
 	CreateStreamingBuffer(&wfex);
 
@@ -329,24 +296,8 @@ HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
     if( FAILED( hr = g_pvp->m_pds.m_pDS->CreateSoundBuffer( &dsbd, &m_pDSBuffer, NULL ) ) )
         return hr;
 
-    /*for( INT i = 0; i < NUM_PLAY_NOTIFICATIONS; i++ )
-    {
-        m_aPosNotify[i].dwOffset = (m_dwNotifySize * i) + m_dwNotifySize - 1;
-        m_aPosNotify[i].hEventNotify = m_hNotificationEvents[0];             
-    }
-    
-    m_aPosNotify[i].dwOffset     = DSBPN_OFFSETSTOP;
-    m_aPosNotify[i].hEventNotify = m_hNotificationEvents[1];*/
-
-    // Tell DirectSound when to notify us. the notification will come in the from 
-    // of signaled events that are handled in WinMain()
-    /*if( FAILED( hr = m_pDSNotify->SetNotificationPositions( NUM_PLAY_NOTIFICATIONS + 1, 
-                                                            m_aPosNotify ) ) )
-        return hr;*/
-
 	{
 	VOID*   pbBuffer = NULL;
-    //DWORD   dwBufferLength;
 
     m_bFoundEnd = FALSE;
     m_dwNextWriteOffset = 0; 
@@ -355,22 +306,7 @@ HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 
 	m_pDSBuffer->SetCurrentPosition(0);
 
-	// Lock the buffer down, 
-    /*if( FAILED( hr = m_pDSBuffer->Lock( 0, m_dwBufferSize, 
-                                        &pbBuffer, &dwBufferLength, 
-                                        NULL, NULL, 0L ) ) )
-        return hr;
-
-    // Now unlock the buffer
-    m_pDSBuffer->Unlock( pbBuffer, dwBufferLength, NULL, 0 );*/
-
 	m_hNotificationEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-
-    /*if( NULL == g_pDSBuffer )
-        return E_FAIL;*/
-
-    //m_dwNextWriteOffset = dwBufferLength; 
-    //m_dwNextWriteOffset %= m_dwBufferSize; // Circular buffer
 	}
 
     return S_OK;

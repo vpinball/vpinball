@@ -10,6 +10,7 @@
 	Development Tools and/or on-line documentation.  See these other
 	materials for detailed information regarding Microsoft code samples.
 */
+#pragma once
 
 //---------------------------------------------------------------------------
 // A little utility which simplifies firing dispatch events.

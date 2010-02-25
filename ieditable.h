@@ -1,11 +1,8 @@
-
+#pragma once
 class Hitable;
 class Collection;
 
 class IScriptable;
-
-		/*CComBSTR bstr; \
-		GetIApcProjectItem()->get_Name(&bstr); \*/
 
 class IFireEvents
 	{
@@ -191,6 +188,7 @@ extern const WCHAR rgwzTypeName[][16];
 	virtual ISelect *GetISelect() {return (ISelect*)this;} \
 	virtual Hitable *GetIHitable() {return (Hitable *)this;} \
 	virtual void RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice); \
+	virtual void PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice); \
 	virtual void RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice); \
 	virtual void RenderMoversFromCache(Pin3D *ppin3d); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}\
@@ -222,6 +220,7 @@ public:
 	virtual ULONG STDMETHODCALLTYPE Release() = 0;
 
 	virtual PinTable *GetPTable()=0;
+
 	void SetDirtyDraw();
 
 	virtual Hitable *GetIHitable();
@@ -253,9 +252,6 @@ public:
 	void Uncreate();
 
 	void InitScript();
-
-	//STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
-	//STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
 
 	HRESULT put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte);
 	HRESULT put_TimerInterval(long newVal, int *pti);

@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "..\main.h"
 
 int LZWWriter::m_masks[17] = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
 		    0x001F, 0x003F, 0x007F, 0x00FF,
@@ -56,7 +55,7 @@ int LZWWriter::bNextPixel()
 HRESULT LZWWriter::CompressBits(int init_bits)
 	{
 	int fcode;
-	int i /* = 0 */;
+	int i;
 	int c;
 	int ent;
 	int disp;

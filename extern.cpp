@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 HINSTANCE g_hinst;
 HINSTANCE g_hinstres;
@@ -9,8 +8,6 @@ Player *g_pplayer;
 HACCEL g_haccel;
 WMAudioCreateReaderFunc g_AudioCreateReaderFunc;
 BOOL g_fKeepUndoRecords = fTrue;
-
-bool fOldPhys = false;
 
 #ifdef GLOBALLOG
 FILE *logfile;
@@ -23,11 +20,72 @@ BOOL g_fWriteHitDeleteLog = fTrue;
 ATOM atom;
 
 void ShowError(char *sz)
-	{
+{
 	MessageBox(g_pvp->m_hwnd, sz, "Error", MB_OK | MB_ICONEXCLAMATION);
-	}
+}
+
+
 void ShowErrorID(int id)
-	{
+{
 	LocalString ls(id);
 	MessageBox(g_pvp->m_hwnd, ls.m_szbuffer, "Error", MB_OK | MB_ICONEXCLAMATION);
+}
+ 
+
+void ExitApp(void)
+{
+
+	bool	fe_shutdown_message_sent;
+	int		retries;
+	HWND	hFrontEndWnd;
+
+	// Check if we need to send a message to the front end.
+	fe_shutdown_message_sent = false;
+	retries = 0;
+	while ( (fe_shutdown_message_sent == false) &&
+		    (retries < 100) )
+	{
+		// Find the front end window.
+		hFrontEndWnd = FindWindow( NULL, "Ultrapin (plfe)" );
+		if ( hFrontEndWnd != NULL )
+		{
+			// Send the message to the front end.
+			if ( SendMessage( hFrontEndWnd, WM_USER, WINDOWMESSAGE_VPINBALLSHUTDOWN, 0 ) == TRUE )
+			{
+				fe_shutdown_message_sent = true;
+			}
+			else
+			{
+				// Sleep.
+				Sleep ( 500 );
+			}
+		}
+
+		retries++;
 	}
+#ifdef ULTRA_FREE
+	if( g_pvp )
+	{
+		g_pvp->Quit();
+	} 
+	else exit(0);
+#else
+
+	// Check if we have a dongle.
+	if ( get_dongle_status() == DONGLE_STATUS_OK )
+	{
+		// Quit nicely.
+		if( g_pvp )
+		{
+			g_pvp->Quit();
+		} 
+		else exit(0);
+	}
+	else
+	{
+		// Quit hard.
+		exit(0);
+	}
+#endif
+
+}

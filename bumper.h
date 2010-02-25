@@ -1,7 +1,7 @@
 // Bumper.h: Definition of the Bumper class
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_)
 #define AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_
 
@@ -39,7 +39,8 @@ public:
 	LightState m_state;
 	BOOL m_fFlashWhenHit; // Hacky flag for cool auto-behavior
 	BOOL m_fCastsShadow;
-
+	BOOL m_fVisible;
+	BOOL m_fSideVisible;
 	//char m_rgblinkpattern[33];
 	//int m_blinkinterval;
 	};
@@ -164,20 +165,11 @@ public:
 	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Disabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Disabled)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_SideVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_SideVisible)(/*[in]*/ VARIANT_BOOL newVal);
 };
-
-/*class PIEventHandler : public CComObjectRootEx<CComSingleThreadModel>,
-	public IApcProjectItemEvents
-	{
-BEGIN_COM_MAP(PIEventHandler)
-END_COM_MAP()
-	virtual HRESULT STDMETHODCALLTYPE View();
-	virtual HRESULT STDMETHODCALLTYPE Activate();
-	virtual HRESULT STDMETHODCALLTYPE CreateInstance(IDispatch __RPC_FAR *__RPC_FAR *Instance);
-	virtual HRESULT STDMETHODCALLTYPE ReleaseInstances();
-	virtual HRESULT STDMETHODCALLTYPE InstanceCreated(IDispatch __RPC_FAR *Instance);
-	long m_advisecookie;
-	};*/
 
 #endif // !defined(AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_)
 

@@ -13,6 +13,7 @@
 // Declarations for Microsoft-provided script engines that support ActiveX Scripting.
 //
 
+#pragma once
 
 #include "windows.h"
 #include "ole2.h"

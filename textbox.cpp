@@ -1,8 +1,7 @@
 // Textbox.cpp : Implementation of CVBATestApp and DLL registration.
 
-#include "stdafx.h"
+#include "StdAfx.h"
 //#include "VBATest.h"
-#include "main.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -134,7 +133,6 @@ void Textbox::GetHitShapesDebug(Vector<HitObject> *pvho)
 
 void Textbox::EndPlay()
 	{
-	//m_pobjframe->pdds->Release();
 
 	if (m_pobjframe) // Failed Player case
 		{
@@ -144,11 +142,6 @@ void Textbox::EndPlay()
 		m_pIFontPlay->Release();
 		}
 
-	/*if (m_hfont)
-		{
-		DeleteObject(m_hfont);
-		}*/
-
 	if (m_ptu)
 		{
 		delete m_ptu;
@@ -156,6 +149,10 @@ void Textbox::EndPlay()
 		}
 
 	IEditable::EndPlay();
+	}
+
+void Textbox::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
 	}
 
 void Textbox::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
@@ -172,16 +169,6 @@ void Textbox::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	Pin3D *ppin3d = &g_pplayer->m_pin3d;
 
 	m_pobjframe = new ObjFrame();
-
-	//m_pobjframe->rc.left = 10;
-	//m_pobjframe->rc.top = 10;
-	//m_pobjframe->rc.right = 100;
-	//m_pobjframe->rc.bottom = 50;
-
-	/*m_pobjframe->rc.left = (int)((m_d.m_v1.x / 1000) * ppin3d->m_dwRenderWidth); // 1000 is always our virtual width for the table or backdrop
-	m_pobjframe->rc.top = (int)((m_d.m_v1.y / 750) * ppin3d->m_dwRenderHeight);
-	m_pobjframe->rc.right = (int)((m_d.m_v2.x / 1000) * ppin3d->m_dwRenderWidth);
-	m_pobjframe->rc.bottom = (int)((m_d.m_v2.y / 750) * ppin3d->m_dwRenderHeight);*/
 	
 	Vertex3D rgv3D[2];
 
@@ -293,21 +280,16 @@ void Textbox::RenderText()
 		rcOut.bottom = m_pobjframe->rc.bottom - m_pobjframe->rc.top - border * 2;
 
 		DrawText(hdc, m_d.sztext, lstrlen(m_d.sztext), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
-
-		//DrawText(hdc, "Hello", 5, &rcOut, DT_NOCLIP | DT_RIGHT/*DT_EXTERNALLEADING | DT_NOPREFIX | DT_WORDBREAK*/);
 		}
 
 	m_pobjframe->pdds->ReleaseDC(hdc);
 
-	//ppin3d->m_pddsStatic->Blt(&m_pobjframe->rc, m_pobjframe->pdds, NULL, DDBLTFAST_WAIT, NULL);
 	ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe->rc, m_pobjframe->pdds, NULL, DDBLTFAST_WAIT, NULL);
 
 	UpdateRect *pur = new UpdateRect();
 	pur->m_rcupdate = m_pobjframe->rc;
 	pur->m_fSeeThrough = fFalse;
 	g_pplayer->m_vupdaterect.AddElement(pur);
-
-	//g_pplayer->InvalidateRect(&m_pobjframe->rc);
 	}
 
 void Textbox::SetObjectPos()
@@ -327,12 +309,22 @@ void Textbox::MoveOffset(float dx, float dy)
 	}
 
 void Textbox::GetCenter(Vertex *pv)
-	{
-	}
+{
+	pv->x = m_d.m_v1.x;
+	pv->y = m_d.m_v1.y;
+}
 
 void Textbox::PutCenter(Vertex *pv)
-	{
-	}
+{
+	m_d.m_v2.x = pv->x + m_d.m_v2.x - m_d.m_v1.x;
+	m_d.m_v2.y = pv->y + m_d.m_v2.y - m_d.m_v1.y;
+
+	m_d.m_v1.x = pv->x;
+	m_d.m_v1.y = pv->y;
+
+
+	m_ptable->SetDirtyDraw();
+}
 
 STDMETHODIMP Textbox::get_BackColor(OLE_COLOR *pVal)
 {
@@ -372,7 +364,7 @@ STDMETHODIMP Textbox::put_FontColor(OLE_COLOR newVal)
 
 STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, (char *)m_d.sztext, -1, wz, 512);
 	*pVal = SysAllocString(wz);
@@ -428,22 +420,6 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-	/*ULONG writ = 0;
-	HRESULT hr = S_OK;
-
-	DWORD dwID = ApcProjectItem.ID();
-	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
-		return hr;
-
-	if(FAILED(hr = pstm->Write(&m_d, sizeof(TextboxData), &writ)))
-		return hr;
-
-	IPersistStream * ips;
-	m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-
-	ips->Save(pstm, TRUE);
-
-	return hr;*/
 	}
 
 HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -510,10 +486,12 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(CLRB))
 		{
 		pbr->GetInt(&m_d.m_backcolor);
+//		if (!(m_d.m_backcolor & MINBLACKMASK)) {m_d.m_backcolor |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(CLRF))
 		{
 		pbr->GetInt(&m_d.m_fontcolor);
+//		if (!(m_d.m_fontcolor & MINBLACKMASK)) {m_d.m_fontcolor |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(TMON))
 		{
@@ -679,18 +657,6 @@ STDMETHODIMP Textbox::put_Y(float newVal)
 
 	return S_OK;
 }
-
-/*HRESULT Textbox::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Textbox");
-
-	return S_OK;
-	}*/
-
-/*int Textbox::GetDialogID()
-	{
-	return IDD_PROPTEXTBOX;
-	}*/
 
 void Textbox::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{

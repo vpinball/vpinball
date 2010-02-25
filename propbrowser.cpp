@@ -1,25 +1,7 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 #define DISPID_FAKE_NAME 30000
 
-/*typedef struct tagCOMBOBOXINFO
-{
-    DWORD cbSize;
-    RECT  rcItem;
-    RECT  rcButton;
-    DWORD stateButton;
-    HWND  hwndCombo;
-    HWND  hwndItem;
-    HWND  hwndList;
-} COMBOBOXINFO, *PCOMBOBOXINFO, *LPCOMBOBOXINFO;
-
-BOOL
-WINAPI
-GetComboBoxInfo(
-    HWND hwndCombo,
-    PCOMBOBOXINFO pcbi
-);*/
 
 enum
 	{
@@ -33,7 +15,6 @@ enum
 
 #define EXPANDO_EXPAND			WM_USER+100
 #define EXPANDO_COLLAPSE		WM_USER+101
-//#define RELAYOUT_EXPANDOS		WM_USER+100
 
 #define EXPANDO_X_OFFSET 0 /*3*/
 #define EXPANDO_Y_OFFSET 30
@@ -50,8 +31,6 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 SmartBrowser::SmartBrowser()
 	{
 	m_hwndFrame = NULL;
-	//m_hwndDialog = NULL;
-	//m_pisel = NULL;
 	m_olddialog = -1;
 	m_pvsel = NULL;
 	m_maxdialogwidth = 20;
@@ -88,10 +67,10 @@ void SmartBrowser::Init(HWND hwndParent)
 	RegisterClassEx(&wcex);
 
 	m_hwndFrame = CreateWindowEx(0, "SBFrame", "SBFrame",
-			WS_CHILD /*| WS_VISIBLE*/ | WS_BORDER,
+			WS_CHILD | WS_BORDER,
 			10, 0, eSmartBrowserWidth, 500, hwndParent, NULL, g_hinst, this);
 
-	m_hfontHeader = CreateFont(-18, 0, 0, 0, /*FW_NORMAL*/ FW_MEDIUM, FALSE, FALSE, FALSE,
+	m_hfontHeader = CreateFont(-18, 0, 0, 0, FW_MEDIUM, FALSE, FALSE, FALSE,
 				DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
 				ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "MS Sans Serif");
 
@@ -212,11 +191,6 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 			}
 			while ((hwndFocus = GetParent(hwndFocus)) != NULL);
 
-		/*if (hwndFocus == m_hwndDialog || GetParent(hwndFocus) == m_hwndDialog)
-			{
-			SetFocus(hwndParent);
-			}*/
-
 		int i;
 		for (i=0;i<m_vhwndExpand.Size();i++)
 			{
@@ -225,8 +199,6 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 		m_vhwndExpand.RemoveAllElements();
 		m_vhwndDialog.RemoveAllElements(); // Dialog windows will have been destroyed along with their parent expando window
 		}
-
-	//m_pisel = pisel;
 
 	if (m_pvsel)
 		{
@@ -272,17 +244,12 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 		m_szHeader[0] = '\0';
 		}
 
-	//m_pdisp = pisel->GetDispatch();
-
 	InvalidateRect(m_hwndFrame, NULL, fTrue);
 
 	for (i=0;i<m_vproppane.Size();i++)
 		{
 		PropertyPane *pproppane = m_vproppane.ElementAt(i);
 		HWND hwndExpand;
-		/*hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", "ExpandoControl",
-			WS_CHILD | WS_VISIBLE | WS_CAPTION,
-			0, 40, eSmartBrowserWidth, 400, m_hwndFrame, NULL, g_hinst, this);*/
 
 		ExpandoInfo *pexinfo = new ExpandoInfo();
 		pexinfo->m_id = i;
@@ -342,12 +309,18 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 	LayoutExpandoWidth();
 
 	for	(i=0;i<m_vhwndExpand.Size();i++)
-		{
-		int fRelayout = (i == m_vhwndExpand.Size()-1) ? 1 : 0;
-		SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, fRelayout, 0);
+	{
+		SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 0, 0);
 		ShowWindow(m_vhwndExpand.ElementAt(i), SW_SHOWNOACTIVATE);
-		}
 	}
+
+	// expand bottom last
+	//for	(i=0;i<m_vhwndExpand.Size();i++)SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0); 
+
+	//expand top last
+	for	(i= m_vhwndExpand.Size()-1; i >= 0;--i)SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
+
+}
 
 BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 	{
@@ -556,33 +529,6 @@ void SmartBrowser::DrawHeader(HDC hdc)
 
 	ExtTextOut(hdc, m_maxdialogwidth>>1, 0, 0, NULL, szText, strlen(szText), NULL);
 
-	// Disable drawing of the object's collection since we can have multiple
-	// collections now.
-	/*if (GetBaseISel())
-		{
-		IEditable *pedit = GetBaseISel()->GetIEditable();
-		if (pedit)
-			{
-			if (pedit->m_vCollection.Size() > 0)
-				{
-				Collection *pcol = pedit->m_vCollection.ElementAt(0);
-				char szCollection[100+32];
-				char szNumber[32];
-
-				itoa((int)pedit->m_viCollection.ElementAt(0), szNumber, 10);
-
-				WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szCollection, 100, NULL, NULL);
-				lstrcat(szCollection, "(");
-				lstrcat(szCollection, szNumber);
-				lstrcat(szCollection, ")");
-
-				SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
-				//hfontOld = (HFONT)SelectObject(hdc, m_hfontHeader);
-				ExtTextOut(hdc, eSmartBrowserWidth>>1, 26, 0, NULL, szCollection, strlen(szCollection), NULL);
-				}
-			}
-		}*/
-
 	SelectObject(hdc, hfontOld);
 	}
 
@@ -591,9 +537,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 	BOOL fNinch = fFalse;
 	char szName[256];
 	GetClassName(hwndControl, szName, 256);
-	//SmartBrowser *psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
 	IDispatch *pdisp = GetBaseIDisp();
-	//IDispatch *pdisp = (IDispatch *)lParam;
 
 	int type = eNotControl;
 
@@ -826,15 +770,8 @@ void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, BOOL fPutRef)
 	DISPPARAMS disp;
 	disp.cNamedArgs = 1;
 	disp.rgdispidNamedArgs = &mydispid;//NULL;
-	//CComVariant var(szText);
 	disp.cArgs = 1;
 	disp.rgvarg = pvar;
-	/*hr = m_pdisp->Invoke(dispid,
-		IID_NULL,
-		LOCALE_USER_DEFAULT,
-		fPutRef ? DISPATCH_PROPERTYPUTREF : DISPATCH_PROPERTYPUT,
-		&disp,
-		NULL, NULL, NULL);*/
 
 	int i;
 	for (i=0;i<m_pvsel->Size();i++)
@@ -878,8 +815,6 @@ void SmartBrowser::RelayoutExpandos()
 	for (i=0;i<m_vhwndExpand.Size();i++)
 		{
 		HWND hwndExpand = m_vhwndExpand.ElementAt(i);
-		//RECT rc;
-		//GetWindowRect(hwndExpand, &rc);
 		ExpandoInfo *pexinfo = (ExpandoInfo *)GetWindowLong(hwndExpand, GWL_USERDATA);
 		if (pexinfo->m_fExpanded)
 			{
@@ -897,6 +832,7 @@ void SmartBrowser::RelayoutExpandos()
 		// We have to shrink some
 		int indexBest = -1;
 		int prioBest = 0xffff;
+		int cnt = 0;
 
 		// Loop through all expandos.  Find the one which is currently expanded
 		// and is the lowest on the priority list (the one that was opened the
@@ -914,8 +850,8 @@ void SmartBrowser::RelayoutExpandos()
 				if ((rc.bottom - rc.top) > EXPANDOHEIGHT)
 					{
 					int prio = m_vproppriority.IndexOf(titleid);
-
-					if (prio <= prioBest && prio != 0) // Check for zero because we don't want to collapse the panel they just opened.
+					cnt++;
+					if (prio != -1 && prio <= prioBest) //
 						{
 						prioBest = prio;
 						indexBest = i;
@@ -923,20 +859,16 @@ void SmartBrowser::RelayoutExpandos()
 					}
 				}
 			}
-
-		if (indexBest != -1)
-			{
-			HWND hwndExpand = m_vhwndExpand.ElementAt(indexBest);
+		
+		if (indexBest != -1 && cnt > 1) //oldest  only the one we expanded
+			{	
 			RECT rc;
+			HWND hwndExpand = m_vhwndExpand.ElementAt(indexBest);
 			GetWindowRect(hwndExpand, &rc);
 			SendMessage(hwndExpand, EXPANDO_COLLAPSE, 0, 0);
 			totalheight -= (rc.bottom - rc.top) - EXPANDOHEIGHT;
 			}
-		else
-			{
-			// Ugh?  No expandos? Or one panel is larget than maximum.
-			totalheight = maxheight; //fake it
-			}
+		else break; // Ugh?  No expandos? Or one panel is larger than maximum.
 		}
 
 	totalheight = 0;
@@ -953,11 +885,11 @@ void SmartBrowser::RelayoutExpandos()
 void SmartBrowser::ResetPriority(int expandoid)
 	{
 	// base prioritys on the title of the property pane
-	int titleid = m_vproppane.ElementAt(expandoid)->titlestringid;
-	
+	int titleid = m_vproppane.ElementAt(expandoid)->titlestringid;	
 	m_vproppriority.RemoveElement(titleid); // Remove this element if it currently exists in our current priority chain
-	m_vproppriority.InsertElementAt((void *)titleid, 0); // Add it back at the end (top) of the chain
+	m_vproppriority.AddElement(titleid); // Add it back at the end (top) of the chain
 	}
+
 
 int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
@@ -1055,20 +987,6 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 						psb->SetProperty(dispid, &var, fFalse);
 
-						/*DISPID mydispid = DISPID_PROPERTYPUT;
-						DISPPARAMS disp;
-						disp.cNamedArgs = 1;
-						disp.rgdispidNamedArgs = &mydispid;//NULL;
-
-						disp.cArgs = 1;
-						disp.rgvarg = &var;
-						hr = pdisp->Invoke(dispid,
-						  IID_NULL,
-						  LOCALE_USER_DEFAULT,
-						  DISPATCH_PROPERTYPUT,
-						  &disp,
-						  NULL, NULL, NULL);*/
-
 						psb->GetControlValue((HWND)lParam); // If the new value was not valid, re-fill the control with the real value
 						}
 					}
@@ -1082,12 +1000,6 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						pt.y = 1;
 						hwndEdit = ChildWindowFromPoint((HWND)lParam, pt);
 						SetWindowLong(hwndEdit, GWL_USERDATA, 1);
-						/*SendMessage(hwndEdit, EM_SETMODIFY, TRUE, 0);
-						if (SendMessage(hwndEdit, EM_GETMODIFY, 0, 0))
-							{
-							int i;
-							i = 9;
-							}*/
 					}
 					break;
 
@@ -1110,20 +1022,6 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					CComVariant var(fChecked);
 
 					psb->SetProperty(dispid, &var, fFalse);
-
-					/*DISPID mydispid = DISPID_PROPERTYPUT;
-					DISPPARAMS disp;
-					disp.cNamedArgs = 1;
-					disp.rgdispidNamedArgs = &mydispid;//NULL;
-
-					disp.cArgs = 1;
-					disp.rgvarg = &var;
-					hr = pdisp->Invoke(dispid,
-					  IID_NULL,
-					  LOCALE_USER_DEFAULT,
-					  DISPATCH_PROPERTYPUT,
-					  &disp,
-					  NULL, NULL, NULL);*/
 
 					psb->GetControlValue((HWND)lParam);
 					}
@@ -1214,12 +1112,6 @@ LRESULT CALLBACK SBFrameProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			return 0;
 			break;
-
-		/*case RELAYOUT_EXPANDOS:
-			{
-			SmartBrowser *psb = (SmartBrowser *)GetWindowLong(hwnd, GWL_USERDATA);
-			psb->RelayoutExpandos();
-			}*/
 		}
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -1233,8 +1125,13 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 			RECT rc;
 			GetClientRect(hwnd, &rc);
+
+			int colorkey;
+			HRESULT hr = GetRegInt("Editor", "TransparentColorKey", &colorkey);
+			if (hr != S_OK) colorkey = (int)NOTRANSCOLOR; //not set assign no transparent color 	
+
 			HWND hwndButton = CreateWindow("BUTTON","Color",WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
-			SetWindowLong(hwnd, GWL_USERDATA, 0);
+			SetWindowLong(hwnd, GWL_USERDATA, colorkey); //0);//rlc  get cached colorkey
 			}
 			break;
 
@@ -1307,14 +1204,6 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				SelectObject(hdc, hbrushOld);
 				}
-			else
-				{
-				// Leave a blank rectangle for ninched value
-
-				/*SelectObject(hdc, GetStockObject(NULL_BRUSH));
-				SelectObject(hdc, GetStockObject(BLACK_PEN));
-				Rectangle(hdc, 6 + offset, 6 + offset, pdis->rcItem.right - 6, pdis->rcItem.bottom - 6);*/
-				}
 			}
 			break;
 
@@ -1329,12 +1218,6 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					HWND hwndDlg = GetParent(hwnd);
 					SmartBrowser *psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
 					CHOOSECOLOR cc;
-					//COLORREF cr[16];
-					//int i;
-					//for (i=0;i<16;i++)
-						//{
-						//cr[i] = RGB(0,255,0);
-						//}
 					cc.lStructSize = sizeof(CHOOSECOLOR);
 					cc.hwndOwner = hwnd;
 					cc.hInstance = NULL;
@@ -1445,16 +1328,6 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					LOGFONT lf;
 					char szstyle[256];
 
-					/*memset(&lf, 0, sizeof(LOGFONT));
-					lf.lfHeight = -20;
-					lf.lfWeight = 400;
-					lf.lfCharSet = DEFAULT_CHARSET;
-					lf.lfOutPrecision = OUT_DEFAULT_PRECIS;
-					lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
-					lf.lfQuality = DEFAULT_QUALITY;
-					lf.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-					lstrcpy(lf.lfFaceName, "Arial");*/
-
 					// Set up logfont to be like our current font
 					IFontDisp *pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);;
 					IFont *pif;
@@ -1484,7 +1357,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						cy.int64 = (cf.iPointSize * 10000 / 10);
 						HRESULT hr = pif->put_Size(cy);
 
-						OLECHAR wzT[64];
+						WCHAR wzT[64];
 						MultiByteToWideChar(CP_ACP, 0, lf.lfFaceName, -1, wzT, 64);
 						CComBSTR bstr(wzT);
 						hr = pif->put_Name(bstr);
@@ -1543,53 +1416,24 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						}
 					else
 						{
-						pexinfo->m_psb->ResetPriority(pexinfo->m_id);
 						SendMessage(hwnd, EXPANDO_EXPAND, 1, 0);
 						}
 					}
 				}
-
-			/*int textlength = GetWindowTextLength(hwnd);
-
-			if (textlength > 0) // Null title means not an expando
-				{
-				int xPos = LOWORD(lParam); 
-				int yPos = HIWORD(lParam);
-				if (yPos < 16)//wParam == HTCAPTION)
-					{
-					RECT rc;
-					GetWindowRect(hwnd, &rc);
-					if ((rc.bottom - rc.top) > EXPANDOHEIGHT)
-						{
-						SendMessage(hwnd, EXPANDO_COLLAPSE, 1, 0);
-						}
-					else
-						{
-						SendMessage(hwnd, EXPANDO_EXPAND, 1, 0);
-						}
-					}
-				}*/
 			}
 			break;
 
 		case EXPANDO_EXPAND:
 			{
 			pexinfo = (ExpandoInfo *)GetWindowLong(hwnd, GWL_USERDATA);
-			pexinfo->m_fExpanded = fTrue;
+			pexinfo->m_fExpanded = fTrue;			
 
-			/*HWND hwndDialog = GetWindow(hwnd, GW_CHILD);
-			RECT rc;
-			GetWindowRect(hwndDialog, &rc);*/
-
-			/*RECT rcCur;
-			GetWindowRect(hwnd, &rcCur);*/
-
-			//int textlength = GetWindowTextLength(hwnd);
 			int titleheight;
 
 			if (pexinfo->m_fHasCaption) // Null title means not an expando
 				{
 				titleheight = EXPANDOHEIGHT;
+				pexinfo->m_psb->ResetPriority(pexinfo->m_id);
 				}
 			else
 				{
@@ -1603,7 +1447,6 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam == 1)
 				{
 				pexinfo->m_psb->RelayoutExpandos();
-				//SendMessage(GetParent(hwnd), RELAYOUT_EXPANDOS, 0, 0);
 				}
 			}
 			break;
@@ -1612,10 +1455,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 			pexinfo = (ExpandoInfo *)GetWindowLong(hwnd, GWL_USERDATA);
 			pexinfo->m_fExpanded = fFalse;
-
-			/*RECT rcCur;
-			GetWindowRect(hwnd, &rcCur);*/
-
+		
 			SetWindowPos(hwnd, NULL, 0, 0, pexinfo->m_psb->m_maxdialogwidth, EXPANDOHEIGHT, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
 			
 			InvalidateRect(hwnd, NULL, fFalse);
@@ -1623,17 +1463,9 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam == 1)
 				{
 				pexinfo->m_psb->RelayoutExpandos();
-				//SendMessage(GetParent(hwnd), RELAYOUT_EXPANDOS, 0, 0);
 				}
 			}
 			break;
-
-		/*case WM_MOUSEACTIVATE:
-			{
-			SetActiveWindow(hwnd);
-			return MA_NOACTIVATEANDEAT;
-			}
-			break;*/
 
 		case WM_SETCURSOR:
 			{

@@ -1,4 +1,4 @@
-
+#pragma once
 #define FID(A) *(int *)#A
 
 void TitleFromFilename(char *szfilename, char *sztitle);
@@ -76,18 +76,18 @@ public:
 	unsigned long __stdcall AddRef(void);
 	unsigned long __stdcall Release(void);
 
-	long __stdcall CreateStream(const OLECHAR *,unsigned long,unsigned long,unsigned long,struct IStream ** );
-	long __stdcall OpenStream(const OLECHAR *,void *,unsigned long,unsigned long,struct IStream ** );
-	long __stdcall CreateStorage(const OLECHAR *,unsigned long,unsigned long,unsigned long,struct IStorage ** );
-	long __stdcall OpenStorage(const OLECHAR *,struct IStorage *,unsigned long,SNB ,unsigned long,struct IStorage ** );
-	long __stdcall CopyTo(unsigned long,const struct _GUID *,SNB ,struct IStorage *);
-	long __stdcall MoveElementTo(const OLECHAR *,struct IStorage *,const OLECHAR *,unsigned long);
+	long __stdcall CreateStream(const WCHAR *,unsigned long,unsigned long,unsigned long,struct IStream ** );
+	long __stdcall OpenStream(const WCHAR *,void *,unsigned long,unsigned long,struct IStream ** );
+	long __stdcall CreateStorage(const WCHAR *,unsigned long,unsigned long,unsigned long,struct IStorage ** );
+	long __stdcall OpenStorage(const WCHAR *,struct IStorage *,unsigned long,WCHAR ** ,unsigned long,struct IStorage ** );
+	long __stdcall CopyTo(unsigned long,const struct _GUID *,WCHAR ** ,struct IStorage *);
+	long __stdcall MoveElementTo(const WCHAR *,struct IStorage *,const WCHAR *,unsigned long);
 	long __stdcall Commit(unsigned long);
 	long __stdcall Revert(void);
 	long __stdcall EnumElements(unsigned long,void *,unsigned long,struct IEnumSTATSTG ** );
-	long __stdcall DestroyElement(const OLECHAR *);
-	long __stdcall RenameElement(const OLECHAR *,const OLECHAR *);
-	long __stdcall SetElementTimes(const OLECHAR *,const struct _FILETIME *,const struct _FILETIME *,const struct _FILETIME *);
+	long __stdcall DestroyElement(const WCHAR *);
+	long __stdcall RenameElement(const WCHAR *,const WCHAR *);
+	long __stdcall SetElementTimes(const WCHAR *,const struct _FILETIME *,const struct _FILETIME *,const struct _FILETIME *);
 	long __stdcall SetClass(const struct _GUID &);
 	long __stdcall SetStateBits(unsigned long,unsigned long);
 	long __stdcall Stat(struct tagSTATSTG *,unsigned long);

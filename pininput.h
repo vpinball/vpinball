@@ -21,6 +21,12 @@
 NOTE THAT MAX_KEYQUEUE_SIZE Must be power of 2
 #endif
 
+struct KeySample
+{
+	U64 stamp;
+	U32 keymask;
+};
+
 class PinInput
 {
 public:
@@ -41,20 +47,20 @@ public:
 	void AdvanceTail ( void ); // called from thread sync'd with visuals as each keystroke is applied to the sim
 
 	void                PushQueue( DIDEVICEOBJECTDATA *data, unsigned int app_data ); // called from sep thread
-	DIDEVICEOBJECTDATA *GetTail  (); // called from visually sync'd main thread
+	DIDEVICEOBJECTDATA *GetTail  ( U32 cur_sim_msec=0xffffffff ); // called from visually sync'd main thread
 
 	// Process keys up until msec_age ago .. don't consider keys that are too new for the current simulation step!
-    void autostart( float secs, float retrysecs );
-    void autoexit( float secs );
-    void autocoin( float secs );
-    void button_exit( float secs );
+    void autostart( F32 secs, F32 retrysecs );
+    void autoexit( F32 secs );
+    void autocoin( F32 secs );
+    void button_exit( F32 secs );
     void tilt_update( void );
-	void ProcessKeys(PinTable *ptable);
+	void ProcessKeys(PinTable *ptable, U32 cur_sim_msec );
 
 	int GetNextKey();
 
 	LPDIRECTINPUT7       m_pDI;         
-	LPDIRECTINPUTDEVICE m_pKeyboard;
+	LPDIRECTINPUTDEVICE  m_pKeyboard;
 	LPDIRECTINPUTDEVICE7 m_pJoystick[PININ_JOYMXCNT];
 
 private:
@@ -74,6 +80,33 @@ private:
 	
 
 public:
+	static U32 m_PreviousKeys;		// Masks of PININ_* inputs used by ultracade - AMH
+	static U32 m_ChangedKeys;		// Masks of PININ_* inputs used by ultracade - AMH
+
 	HWND m_hwnd;
 };
 
+// - Added by AMH
+#define PININ_LEFT       0x00000001
+#define PININ_RIGHT      0x00000002
+#define PININ_LEFT2      0x00000004
+#define PININ_RIGHT2     0x00000008
+#define PININ_START      0x00000010
+#define PININ_COIN1      0x00000020
+#define PININ_COIN2      0x00000040
+#define PININ_PLUNGE     0x00000080
+#define PININ_VOL_UP     0x00000100
+#define PININ_VOL_DOWN   0x00000200
+#define PININ_TEST       0x00000400
+#define PININ_SERVICE1   0x00000800
+#define PININ_DBA		 0x00001000
+#define PININ_EXITGAME   0x00002000
+
+#define PININ_ANY        0xffffffff
+
+U32 Pressed ( U32 mask );
+U32 Released( U32 mask );
+U32 Held    ( U32 mask );
+U32 Down    ( U32 mask );
+U32 Changed ( U32 mask );
+// - end input routines added by AMH

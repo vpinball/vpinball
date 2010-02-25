@@ -1,8 +1,7 @@
 // LightSeq.cpp : Implementation of CVBATestApp and DLL registration.
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "VBATest.h"
-#include "main.h"
 #include <atlbase.h>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -74,7 +73,7 @@ void LightSeq::PutCenter(Vertex *pv)
 void LightSeq::PreRender(Sur *psur)
 {
 	int		i;
-	double	angle;
+	GPINFLOAT	angle;
 	float	sn,cs;
 
 	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
@@ -109,7 +108,7 @@ void LightSeq::PreRender(Sur *psur)
 void LightSeq::Render(Sur *psur)
 {
 	int		i;
-	double	angle;
+	GPINFLOAT	angle;
 	float	sn,cs;
 
 	psur->SetFillColor(-1);
@@ -137,7 +136,7 @@ void LightSeq::Render(Sur *psur)
 void LightSeq::RenderOutline(Sur *psur)
 {
 	int		i;
-	double	angle;
+	GPINFLOAT	angle;
 	float	sn,cs;
 
 	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
@@ -232,6 +231,10 @@ void LightSeq::EndPlay()
 
 	IEditable::EndPlay();
 }
+
+void LightSeq::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
+	}
 
 void LightSeq::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 {
@@ -577,11 +580,6 @@ HRESULT LightSeq::InitPostLoad()
 	return S_OK;
 }
 
-/*int LightSeq::GetDialogID()
-{
-	return IDD_PROPLIGHTSEQ;
-}*/
-
 void LightSeq::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{
 	PropertyPane *pproppane;
@@ -602,7 +600,7 @@ void LightSeq::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	memcpy (wz, m_d.m_wzCollection, sizeof(m_d.m_wzCollection));
 	*pVal = SysAllocString(wz);

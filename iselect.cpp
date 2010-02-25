@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 // BUG - this table must be kept in sync with the ISelectable ItemTypeEnum table
 int rgTypeStringIndex[] = {
@@ -25,26 +24,6 @@ int rgTypeStringIndex[] = {
 	IDS_TB_LIGHTSEQ, //light seq center
 	IDS_TB_COMCONTROL, //eItemComControl
     };
-
-/*int rgTypeStringIndexPlural[] = {
-	IDS_TB_WALLS, //eItemSurface,
-	IDS_TB_FLIPPERS, //eItemFlipper,
-	IDS_TB_TIMERS, //eItemTimer,
-	IDS_TB_PLUNGERS, //eItemPlunger,
-	IDS_TB_TEXTBOXES, //eItemTextbox,
-	IDS_TB_BUMPERS, //eItemBumper,
-	IDS_TB_TRIGGERS, //eItemTrigger,
-	IDS_TB_LIGHTS, //eItemLight,
-	IDS_TB_KICKERS, //eItemKicker,
-	IDS_TB_DECALS, //eItemDecal,
-	IDS_TB_GATES, //eItemGate,
-	IDS_TB_SPINNERS, //eItemSpinner,
-	IDS_TB_RAMPS, //eItemRamp,
-	IDS_TABLE, //eItemTable,
-	IDS_TB_LIGHTS, //eItemLightCenter,
-	IDS_CONTROLPOINTS, //eItemDragPoint,
-	IDS_COLLECTIONS, //eItemCollection,
-	};*/
 
 ISelect::ISelect()
 	{
@@ -89,74 +68,6 @@ void ISelect::OnLButtonUp(int x, int y)
 
 void ISelect::OnRButtonDown(int x, int y, HWND hwnd)
 	{
-	/*HMENU hmenumain;
-	HMENU hmenu;
-	POINT pt;
-	int icmd;
-
-	if (m_menuid == -1 && GetIEditable() == NULL)
-		{
-		return;
-		}
-
-	pt.x = x;
-	pt.y = y;
-	ClientToScreen(hwnd, &pt);
-
-	if (m_menuid != -1)
-		{
-		hmenumain = LoadMenu(g_hinst, MAKEINTRESOURCE(m_menuid));
-
-		hmenu = GetSubMenu(hmenumain, 0);
-		}
-	else
-		{
-		hmenu = CreatePopupMenu();
-		}
-
-	EditMenu(hmenu);
-
-	if (GetIEditable() != NULL)
-		{
-		if (GetMenuItemCount(hmenu) > 0)
-			{
-			AppendMenu(hmenu, MF_SEPARATOR, -1, "");
-			}
-		AppendMenu(hmenu, MF_STRING, ID_DRAWINFRONT, "Draw In &Front");
-		AppendMenu(hmenu, MF_STRING, ID_DRAWINBACK, "Draw In &Back");
-		}
-
-	icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD,
-			pt.x, pt.y, hwnd, NULL);
-
-	if (icmd != 0)
-		{
-		switch (icmd)
-			{
-			case ID_DRAWINFRONT:
-				GetPTable()->m_vedit.RemoveElement(GetIEditable());
-				GetPTable()->m_vedit.AddElement(GetIEditable());
-				GetPTable()->SetDirtyDraw();
-				break;
-			case ID_DRAWINBACK:
-				GetPTable()->m_vedit.RemoveElement(GetIEditable());
-				GetPTable()->m_vedit.InsertElementAt(GetIEditable(), 0);
-				GetPTable()->SetDirtyDraw();
-				break;
-			default:
-				DoCommand(icmd, x, y);
-				break;
-			}
-		}
-
-	DestroyMenu(hmenu);
-
-	if (m_menuid != -1)
-		{
-		DestroyMenu(hmenumain);
-		}
-
-	return;*/
 	}
 
 void ISelect::OnRButtonUp(int x, int y)
@@ -388,3 +299,4 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 
 	return S_OK;
 	}
+

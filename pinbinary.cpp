@@ -2,8 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -58,7 +57,7 @@ void PinBinary::ReadFromFile(char *szfilename)
 	CharLowerBuff(m_szInternalName, lstrlen(m_szInternalName));
 	}
 
-void PinBinary::WriteToFile(char *szfilename)
+bool PinBinary::WriteToFile(char *szfilename)
 	{
 	HANDLE hFile = CreateFile(szfilename,
 		GENERIC_WRITE, FILE_SHARE_READ,
@@ -67,7 +66,7 @@ void PinBinary::WriteToFile(char *szfilename)
 	if (hFile == INVALID_HANDLE_VALUE)
 		{
 		ShowError("The temporary file could not be written.");
-		return;
+		return false;
 		}
 
 	DWORD write;
@@ -77,6 +76,7 @@ void PinBinary::WriteToFile(char *szfilename)
 	foo = GetLastError();
 
 	CloseHandle(hFile);
+	return true;
 	}
 
 HRESULT PinBinary::SaveToStream(IStream *pstream)

@@ -2,27 +2,11 @@
 //  stdafx.pch will be the pre-compiled header
 //  stdafx.obj will contain the pre-compiled type information
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
-/*#ifdef _ATL_STATIC_REGISTRY
-#include <statreg.h>
-#include <statreg.cpp>
-#endif*/
-
-//#include <atlimpl.cpp>
-
-// get rid of crt and include this as a define later
-//,_ATL_MIN_CRT
-
-//#include <apcguids.h>
 #ifdef _ATL_STATIC_REGISTRY
 #include <statreg.h>
-//#include <statreg.cpp>
 #endif
-//#include <atlimpl.cpp>
-//#include <apcimpl.cpp>
-#include "main.h"
-//#include "Surface.h"
 #include "Timer.h"
 #include "Plunger.h"
 #include "Textbox.h"
@@ -37,9 +21,7 @@
 #include "DispReel.h"
 #include "LightSeq.h"
 #include "ComControl.h"
-//#include "Flipper.h"
 
-//CComModule _Module;
 BEGIN_OBJECT_MAP(ObjectMap)
 OBJECT_ENTRY(CLSID_Wall, Surface)
 OBJECT_ENTRY(CLSID_DragPoint, DragPoint)

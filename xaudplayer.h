@@ -1,3 +1,4 @@
+#pragma once
 
 /* xaudio general includes */
 #include "media\xaudio\decoder.h"

@@ -1,3 +1,4 @@
+#pragma once
 // PinImage.h: interface for the PinImage class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -8,6 +9,13 @@
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+#define BGR(b,g,r)((COLORREF)(((BYTE)(b)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(r))<<16)))
+
+#define NOTRANSCOLOR  RGB(123,123,123)
+
+#define MINBLACK 0x00070707
+#define MINBLACKMASK 0x00f8f8f8
 
 class PinImage : public ILoadable 
 {
@@ -51,17 +59,11 @@ public:
 	COLORREF m_rgbTransparent;
 	BOOL m_fTransparent; // Whether this picture actually contains transparent bits
 
-	BOOL m_fUnneededAfterCache; // if true; this image does not need to be loaded when we are playing from a render cache
-
 	COLORREF m_rgbBackdropCur;
 
 	HBITMAP m_hbmGDIVersion; // HBitmap at screen depth so GDI draws it fast
 
 	PinBinary *m_ppb;  // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
-	//BOOL m_fBinary; // whether to save this image as a binary stream, or LZW compressed from the live bitmap
-
-	//char *m_pdata; // Copy of the buffer data so we can save it out
-	//int m_cdata;
 };
 
 typedef int(CALLBACK *DDCreateFunction)(GUID FAR *lpGUID, LPVOID *lplpDD, REFIID iid, IUnknown FAR *pUnkOuter);
@@ -95,6 +97,8 @@ public:
 	void BlurAlpha(LPDIRECTDRAWSURFACE7 pdds);
 
 	BOOL m_fHardwareAccel;
+	BOOL m_fAlternateRender;
+	BOOL m_fUseD3DBlit;
 
 	// variables needed to initialize ddraw.dll
 	HINSTANCE m_DDraw; 

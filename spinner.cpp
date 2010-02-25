@@ -1,7 +1,6 @@
 // Spinner.cpp : Implementation of CVBATestApp and DLL registration.
 
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -9,6 +8,7 @@
 Spinner::Spinner()
 	{
 	m_phitspinner = NULL;
+
 	}
 
 Spinner::~Spinner()
@@ -20,6 +20,7 @@ HRESULT Spinner::Init(PinTable *ptable, float x, float y)
 	HRESULT hr = S_OK;
 
 	m_ptable = ptable;
+	
 
 	m_d.m_vCenter.x = x;
 	m_d.m_vCenter.y = y;
@@ -35,6 +36,7 @@ void Spinner::SetDefaults()
 	{
 	m_d.m_length = 80;
 	m_d.m_rotation = 0;
+	m_d.m_fSupports = fTrue;
 	m_d.m_height = 60;
 	m_d.m_overhang = 10;
 	m_d.m_color = RGB(50,200,50);
@@ -43,14 +45,6 @@ void Spinner::SetDefaults()
 	// Anti-friction is 1-friction (throughput)
 	m_d.m_antifriction = 0.99f;
 
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
-
-	m_d.m_szImageFront[0] = 0;
-	m_d.m_szImageBack[0] = 0;
-	m_d.m_szSurface[0] = 0;
-	
-	m_d.m_fSupports = fTrue;
 	m_d.m_angleMax = 0;
 	m_d.m_angleMin = 0;
 	m_d.m_elasticity = 0.3f;
@@ -60,16 +54,17 @@ void Spinner::SetDefaults()
 	m_d.m_animations = 0;	// manual selection of the animations frame count
 	m_d.m_fVisible = fTrue;
 
+	m_d.m_tdr.m_fTimerEnabled = fFalse;
+	m_d.m_tdr.m_TimerInterval = 100;
 
+	m_d.m_szImageFront[0] = 0;
+	m_d.m_szImageBack[0] = 0;
+	m_d.m_szSurface[0] = 0;
 	}
 
 void Spinner::PreRender(Sur *psur)
 	{
-	/*psur->SetBorderColor(-1,fFalse,0);
-	psur->SetFillColor(-1);
-	psur->SetObject(this);
-
-	psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);*/
+	
 	}
 
 void Spinner::Render(Sur *psur)
@@ -79,9 +74,10 @@ void Spinner::Render(Sur *psur)
 
 	float halflength = m_d.m_length * 0.5f;
 
+
 	Vertex rgv[2];
 
-	float radangle = m_d.m_rotation / 360 * PI * 2;
+	float radangle = m_d.m_rotation / 180 * PI;
 	float sn = (float)sin(radangle);
 	float cs = (float)cos(radangle);
 
@@ -145,10 +141,6 @@ void Spinner::RenderShadow(ShadowSur *psur, float height)
 	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
 	}
 
-/*void Spinner::RenderBlueprint(Sur *psur)
-	{
-	}*/
-
 void Spinner::GetTimers(Vector<HitTimer> *pvht)
 	{
 	IEditable::BeginPlay();
@@ -171,38 +163,47 @@ void Spinner::GetHitShapes(Vector<HitObject> *pvho)
 	{
 	HitSpinner *phitspinner;
 	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-	float h = m_d.m_height/2 +(float)20;
+	float h = m_d.m_height/2 +(float)30;
+
+	float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
+	float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
+
+	m_d.m_angleMin = angleMin;	
+	m_d.m_angleMax = angleMax;
 
 	phitspinner = new HitSpinner(this, height);
 	m_phitspinner = phitspinner;
-
+	
 	pvho->AddElement(phitspinner);
 
-	float halflength = m_d.m_length * 0.5f;
-	float radangle = m_d.m_rotation / 360 * PI * 2;
-	float sn = (float)sin(radangle);
-	float cs = (float)cos(radangle);
+	if(m_d.m_fSupports)
+		{
+		float halflength = m_d.m_length * 0.5f;
+		float radangle = m_d.m_rotation / 180 * PI;
+		float sn = (float)sin(radangle);
+		float cs = (float)cos(radangle);
 
-	halflength += m_d.m_overhang;
+		halflength += m_d.m_overhang;
 
-	HitCircle *phitcircle;
-	phitcircle = new HitCircle();
-	phitcircle->m_pfe = NULL;
-	phitcircle->center.x = m_d.m_vCenter.x + cs*halflength;
-	phitcircle->center.y = m_d.m_vCenter.y + sn*halflength;
-	phitcircle->radius = 0.01f;
-	phitcircle->zlow = height;
-	phitcircle->zhigh = height+h;
-	pvho->AddElement(phitcircle);
+		HitCircle *phitcircle;
+		phitcircle = new HitCircle();
+		phitcircle->m_pfe = NULL;
+		phitcircle->center.x = m_d.m_vCenter.x + cs*halflength;
+		phitcircle->center.y = m_d.m_vCenter.y + sn*halflength;
+		phitcircle->radius = 0.01f;
+		phitcircle->zlow = height;
+		phitcircle->zhigh = height+h;//+50;
+		pvho->AddElement(phitcircle);
 
-	phitcircle = new HitCircle();
-	phitcircle->m_pfe = NULL;
-	phitcircle->center.x = m_d.m_vCenter.x - cs*halflength;
-	phitcircle->center.y = m_d.m_vCenter.y - sn*halflength;
-	phitcircle->radius = 0.01f;
-	phitcircle->zlow = height;
-	phitcircle->zhigh = height+h;
-	pvho->AddElement(phitcircle);
+		phitcircle = new HitCircle();
+		phitcircle->m_pfe = NULL;
+		phitcircle->center.x = m_d.m_vCenter.x - cs*halflength;
+		phitcircle->center.y = m_d.m_vCenter.y - sn*halflength;
+		phitcircle->radius = 0.01f;
+		phitcircle->zlow = height;
+		phitcircle->zhigh = height+h; //+50;
+		pvho->AddElement(phitcircle);
+		}
 	}
 
 void Spinner::GetHitShapesDebug(Vector<HitObject> *pvho)
@@ -225,12 +226,13 @@ void Spinner::EndPlay()
 		}
 	}
 
+void Spinner::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
+	}
+
 void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	if (!m_d.m_fSupports)
-		{
-		return;
-		}
+	if(!m_d.m_fSupports)return;
 
 	Vertex3D rgv3D[12];
 	WORD rgi[8];
@@ -240,13 +242,11 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	Pin3D *ppin3d = &g_pplayer->m_pin3d;
 
-	//pd3dDevice->SetRenderState(D3DRENDERSTATE_LASTPIXEL, FALSE);
-
 	float halflength = (m_d.m_length * 0.5f) + m_d.m_overhang;
 	float halfthick = 2;
-	float h = m_d.m_height/2  +(float)20;
+	float h = m_d.m_height/2  +(float)30;
 
-	float radangle = m_d.m_rotation / 360 * PI * 2;
+	float radangle = m_d.m_rotation / 180 * PI;
 	float snY = (float)sin(radangle);
 	float csY = (float)cos(radangle);
 
@@ -267,10 +267,12 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	rgv3D[2].x = -halflength + halfthick;
 	rgv3D[2].y = 0;
+	//rgv3D[2].z = 60 - halfthick;
 	rgv3D[2].z = h - halfthick;
 
 	rgv3D[3].x = -halflength - halfthick;
 	rgv3D[3].y = 0;
+	//rgv3D[3].z = 60 + halfthick;
 	rgv3D[3].z = h + halfthick;
 
 	rgv3D[4].x = halflength - halfthick;
@@ -283,19 +285,17 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	rgv3D[6].x = halflength - halfthick;
 	rgv3D[6].y = 0;
+	//rgv3D[6].z = 60 - halfthick;
 	rgv3D[6].z = h - halfthick;
 
 	rgv3D[7].x = halflength + halfthick;
 	rgv3D[7].y = 0;
+	//rgv3D[7].z = 60 + halfthick;
 	rgv3D[7].z = h + halfthick;
 
 	float temp;
 	for (l=0;l<8;l++)
 		{
-		//temp = rgv3D[l].y;
-		//rgv3D[l].y = (float)(csTurn*temp + snTurn*rgv3D[l].z);
-		//rgv3D[l].z = (float)(csTurn*rgv3D[l].z - snTurn*temp);
-
 		temp = rgv3D[l].x;
 		rgv3D[l].x = (float)(csY*temp - snY*rgv3D[l].y);
 		rgv3D[l].y = (float)(csY*rgv3D[l].y + snY*temp);
@@ -305,7 +305,7 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[l].z += height;
 
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-		//rgv3D[l].z += 60;
+		
 		}
 
 	WORD rgiNormal[3];
@@ -327,7 +327,7 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
 													  rgv3D, 8,
-													  rgi, 8, NULL);
+													  rgi, 8, 0);
 	rgi[0] = 4;
 	rgi[1] = 5;
 	rgi[2] = 6;
@@ -341,9 +341,7 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
 													  rgv3D, 8,
-													  rgi, 8, NULL);
-
-	//pd3dDevice->SetRenderState(D3DRENDERSTATE_LASTPIXEL, TRUE);
+													  rgi, 8, 0);
 	}
 	
 void Spinner::RenderMoversFromCache(Pin3D *ppin3d)
@@ -356,12 +354,13 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	Pin3D *ppin3d = &g_pplayer->m_pin3d;
 	LPDIRECTDRAWSURFACE7 pdds;
 	ObjFrame *pof;
+	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
 	float maxtuback, maxtvback;
 	float maxtufront, maxtvfront;
 
 	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-	float h = m_d.m_height/2 +(float)20;
+	float h = m_d.m_height/2 +(float)30;
 
 	PinImage *pinback = m_ptable->GetImage(m_d.m_szImageBack);
 	PinImage *pinfront = m_ptable->GetImage(m_d.m_szImageFront);
@@ -384,7 +383,14 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		maxtufront = maxtvfront = 1;
 		}
 
-	int cframes = 40;
+	int cframes;
+
+	if (m_d.m_animations > 0) cframes = m_d.m_animations;
+	else if (m_d.m_angleMax != m_d.m_angleMin)
+		{
+		cframes = (int)((m_d.m_angleMax - m_d.m_angleMin)/90.0f *((20-1)) + (float)1.5); // 15 frames per 90 degrees
+		}
+	else cframes = 80;	
 
 	float halflength = m_d.m_length * 0.5f;
 
@@ -401,42 +407,33 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	float g = (m_d.m_color & 65280) / 65280.0f;
 	float b = (m_d.m_color & 16711680) / 16711680.0f;
 
-	//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-	/*pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND, D3DBLEND_ONE);
-    pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_ZERO);
-	pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MIPFILTER, D3DTFP_NONE);*/
-
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE);
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
+	if (g_pvp->m_pdd.m_fHardwareAccel)
+		{
+		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
+		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
+		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE);
+		}
 
 	// Set texture to mirror, so the alpha state of the texture blends correctly to the outside
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
-
-	//pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
-	//pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-	//pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
 
 	ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
 
 	for (i=0;i<cframes;i++)
 		{
-		//pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET ,
-					   //0x00000000, 1.0f, 0L );
 
 		pof = new ObjFrame();
 
-		angle = (2*PI*i)/(float)cframes;
+		//angle = (2*PI*i)/(float)cframes;
 
-		//SetVertices(anglerad + ((anglerad2 - anglerad)*i/cframes), &vendcenter, rgv);
-
-		//ppin3d->m_pddsBackBuffer->Blt(NULL, ppin3d->m_pddsStatic, NULL, 0, NULL);
-		//ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, 0, NULL);
+		if (m_d.m_angleMax != m_d.m_angleMin)
+			{angle =  ANGTORAD(m_d.m_angleMin + (float)i*(m_d.m_angleMax - m_d.m_angleMin)/(float)cframes);}
+		else angle = (2*PI*i)/(float)cframes;
 
 		Vertex3D rgv3D[8];
 		WORD rgi[4];
 
-		float radangle = m_d.m_rotation / 360 * PI * 2;
+		float radangle = m_d.m_rotation / 180 * PI;
 		float snY = (float)sin(radangle);
 		float csY = (float)cos(radangle);
 
@@ -482,50 +479,71 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			rgv3D[l].x += m_d.m_vCenter.x;
 			rgv3D[l].y += m_d.m_vCenter.y;
+			//rgv3D[l].z += 60 + height;
 			rgv3D[l].z += h + height;
 
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 			}
 
-		/*float halfXYwidth = snTurn * halfwidth;
-
-		rgv3D[0].x = m_d.m_vCenter.x + csY*halflength + snY*halfXYwidth;
-		rgv3D[0].y = m_d.m_vCenter.y + snY*halflength + csY*halfXYwidth;
-		rgv3D[0].z = 30 - csTurn*halfwidth;
-
-		rgv3D[1].x = m_d.m_vCenter.x - csY*halflength - snY*halfXYwidth;
-		rgv3D[1].y = m_d.m_vCenter.y - snY*halflength + csY*halfXYwidth;
-		rgv3D[1].z = 30 - csTurn*halfwidth;
-
-		rgv3D[2].x = m_d.m_vCenter.x + csY*halflength + snY*halfXYwidth;
-		rgv3D[2].y = m_d.m_vCenter.y + snY*halflength - csY*halfXYwidth;
-		rgv3D[2].z = 30 + csTurn*halfwidth;
-
-		rgv3D[3].x = m_d.m_vCenter.x - csY*halflength - snY*halfXYwidth;
-		rgv3D[3].y = m_d.m_vCenter.y - snY*halflength - csY*halfXYwidth;
-		rgv3D[3].z = 30 + csTurn*halfwidth;
-
-		ppin3d->ClearExtents(&pof->rc);
-		ppin3d->ExpandExtents(&pof->rc, rgv3D, 4);*/
-
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar, 8, fFalse);
+
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{			
+			// Clear the texture by copying the color and z values from the "static" buffers.
+			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+			}
 
 		// Draw Backside
 
 		if (pinback)
-			{
-			//pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBuffer);
+			{			
 			pinback->EnsureColorKey();
-			pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
-			//ppin3d->SetTexture(pinback->m_pdsBuffer);
+			//pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
+
+			if (pinback->m_fTransparent)
+				{				
+				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+				if (m_d.m_color != rgbTransparent) rgbTransparent = pinback->m_rgbTransparent;
+				}
+			else 
+				{	
+				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);	
+				if (g_pvp->m_pdd.m_fHardwareAccel)
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					}
+				else
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					}
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+				} 
+
+			if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+			else pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			
 			mtrl.diffuse.r = mtrl.ambient.r = 1;
 			mtrl.diffuse.g = mtrl.ambient.g = 1;
 			mtrl.diffuse.b = mtrl.ambient.b = 1;
 			}
 		else // No image by that name
 			{
-			//pd3dDevice->SetTexture(ePictureTexture, NULL);
 			ppin3d->SetTexture(NULL);
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
@@ -541,25 +559,55 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  rgv3D, 8,
-													  rgi, 4, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi,4,0);
 
 		// Draw Frontside
 
 		if (pinfront)
 			{
 			pinfront->EnsureColorKey();
-			pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
-			//pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBuffer);
-			//ppin3d->SetTexture(pinfront->m_pdsBuffer);
+			//pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
+			if (pinfront->m_fTransparent)
+				{				
+				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);	
+				if (m_d.m_color != rgbTransparent)rgbTransparent = pinfront->m_rgbTransparent;
+				}
+			else 
+				{	
+				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);	
+				if (g_pvp->m_pdd.m_fHardwareAccel)
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					}
+				else
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					}
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+				}
+
+			if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+			else pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+
 			mtrl.diffuse.r = mtrl.ambient.r = 1;
 			mtrl.diffuse.g = mtrl.ambient.g = 1;
 			mtrl.diffuse.b = mtrl.ambient.b = 1;
 			}
 		else // No image by that name
 			{
-			//pd3dDevice->SetTexture(ePictureTexture, NULL);
 			ppin3d->SetTexture(NULL);
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
@@ -575,18 +623,15 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  rgv3D, 8,
-													  rgi, 4, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
 
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
 		mtrl.diffuse.b = mtrl.ambient.b = b;
 		pd3dDevice->SetMaterial(&mtrl);
-		//pd3dDevice->SetTexture(ePictureTexture, NULL);
 		ppin3d->SetTexture(NULL);
 
-		if (m_d.m_color != RGB(0,0,0))
+		if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
 			{
 			// Top & Bottom
 
@@ -597,9 +642,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 8,
-														  rgi, 4, NULL);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
 
 			rgi[0] = 4;
 			rgi[1] = 5;
@@ -608,9 +651,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 8,
-														  rgi, 4, NULL);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
 
 			// Sides
 
@@ -621,9 +662,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 8,
-														  rgi, 4, NULL);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
 
 			rgi[0] = 1;
 			rgi[1] = 3;
@@ -632,42 +671,43 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 8,
-														  rgi, 4, NULL);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
 			}
 
+		// Create offscreen surfaces for color and depth buffers.
 		pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
-		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, 0, NULL);
-		//HRESULT hr = pof->pddsZBuffer->Blt(NULL, ppin3d->m_pddsZBuffer, &pof->rc, 0, NULL);
-		HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY);
-		
-		//pdds->Blt(NULL, NULL, NULL, DDBLT_COLORFILL, &ddbfx);
+		// Copy from the back color and depth buffers to the new surfaces.
+		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
+		HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+				
 		m_phitspinner->m_spinneranim.m_vddsFrame.AddElement(pof);
 		pof->pdds = pdds;
+
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{
+			// Create the D3D texture that we will blit.
+			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
+			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
+			}
 
 		ppin3d->ExpandRectByRect(&m_phitspinner->m_spinneranim.m_rcBounds, &pof->rc);
 
 		// reset the portion of the z-buffer that we changed
-		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY);
+		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
 		ddbltfx.dwSize = sizeof(DDBLTFX);
 		ddbltfx.dwFillColor = 0;
-		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,
-				&pof->rc, DDBLT_COLORFILL, &ddbltfx);
+		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
 		
 	ppin3d->WriteAnimObjectToCacheFile(&m_phitspinner->m_spinneranim, &m_phitspinner->m_spinneranim.m_vddsFrame);
 
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
-	/*pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND, D3DBLEND_SRCALPHA);
-    pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MIPFILTER, D3DTFP_LINEAR);*/
-
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 	}
 
@@ -712,6 +752,13 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteFloat(FID(HIGH), m_d.m_height);
 	bw.WriteFloat(FID(LGTH), m_d.m_length);
 	bw.WriteFloat(FID(AFRC), m_d.m_antifriction);
+
+	bw.WriteFloat(FID(SMAX), m_d.m_angleMax);
+	bw.WriteFloat(FID(SMIN), m_d.m_angleMin);
+	bw.WriteFloat(FID(SELA), m_d.m_elasticity);
+	bw.WriteInt(FID(SANM), m_d.m_animations);
+	bw.WriteInt(FID(SVIS), m_d.m_fVisible);
+	bw.WriteBool(FID(SSUPT), m_d.m_fSupports);
 	bw.WriteFloat(FID(OVRH), m_d.m_overhang);
 	bw.WriteInt(FID(COLR), m_d.m_color);
 	bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);	//<<< added by Chris
@@ -726,17 +773,6 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 
 	return S_OK;
 
-	/*ULONG writ = 0;
-	HRESULT hr = S_OK;
-
-	DWORD dwID = ApcProjectItem.ID();
-	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
-		return hr;
-
-	if(FAILED(hr = pstm->Write(&m_d, sizeof(SpinnerData), &writ)))
-		return hr;
-
-	return hr;*/
 	}
 
 HRESULT Spinner::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -785,6 +821,7 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(COLR))
 		{
 		pbr->GetInt(&m_d.m_color);
+//		if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(TMON))
 		{
@@ -793,6 +830,10 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(TMIN))
 		{
 		pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
+		}
+	else if (id == FID(SSUPT))
+		{
+		pbr->GetBool(&m_d.m_fSupports); 
 		}
 	else if (id == FID(HIGH))
 		{
@@ -805,6 +846,26 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(AFRC))
 		{
 		pbr->GetFloat(&m_d.m_antifriction);
+		}
+	else if (id == FID(SMAX))
+		{
+		pbr->GetFloat(&m_d.m_angleMax);
+		}
+	else if (id == FID(SMIN))
+		{
+		pbr->GetFloat(&m_d.m_angleMin);
+		}
+	else if (id == FID(SELA))
+		{
+		pbr->GetFloat(&m_d.m_elasticity);
+		}
+	else if (id == FID(SANM))
+		{
+		pbr->GetInt(&m_d.m_animations);
+		}
+	else if (id == FID(SVIS))
+		{
+		pbr->GetInt(&m_d.m_fVisible);
 		}
 	else if (id == FID(OVRH))
 		{
@@ -932,7 +993,7 @@ STDMETHODIMP Spinner::put_Overhang(float newVal)
 
 STDMETHODIMP Spinner::get_Friction(float *pVal)
 {
-	*pVal = (float)((1-(double)m_d.m_antifriction)*100);
+	*pVal = (float)((1-(GPINFLOAT)m_d.m_antifriction)*100);
 
 	return S_OK;
 }
@@ -977,7 +1038,7 @@ STDMETHODIMP Spinner::put_Color(OLE_COLOR newVal)
 
 STDMETHODIMP Spinner::get_ImageFront(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageFront, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -998,7 +1059,7 @@ STDMETHODIMP Spinner::put_ImageFront(BSTR newVal)
 
 STDMETHODIMP Spinner::get_ImageBack(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageBack, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -1055,7 +1116,7 @@ STDMETHODIMP Spinner::put_Y(float newVal)
 
 STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -1090,21 +1151,193 @@ STDMETHODIMP Spinner::put_CastsShadow(VARIANT_BOOL newVal)
 
 	return S_OK;
 }
-//<<<
 
-
-
-/*HRESULT Spinner::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Spinner");
+STDMETHODIMP Spinner::get_Supports(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fSupports);
 
 	return S_OK;
-	}*/
+}
 
-/*int Spinner::GetDialogID()
-	{
-	return IDD_PROPSPINNER;
-	}*/
+STDMETHODIMP Spinner::put_Supports(VARIANT_BOOL newVal)
+{	
+	STARTUNDO
+
+	m_d.m_fSupports = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+
+STDMETHODIMP Spinner::get_AngleMax(float *pVal)
+{
+	if (g_pplayer)
+		{
+		*pVal = RADTOANG(m_phitspinner->m_spinneranim.m_angleMax);	//player active value
+		}
+	else
+		{
+		*pVal = m_d.m_angleMax;
+		}
+
+	return S_OK;
+}
+
+STDMETHODIMP Spinner::put_AngleMax(float newVal)
+{
+	if (g_pplayer)
+		{
+		if (m_d.m_angleMin != m_d.m_angleMax)		// allow only if in limited angle mode
+			{
+			if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
+			else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+			
+			newVal = ANGTORAD(newVal);
+
+			if (m_phitspinner->m_spinneranim.m_angleMin < newVal)	// Min is smaller???
+				m_phitspinner->m_spinneranim.m_angleMax = newVal;	//yes set new max
+			else m_phitspinner->m_spinneranim.m_angleMin = newVal;	//no set new minumum
+			}
+		else return S_FAIL;
+		}
+	else
+		{
+		STARTUNDO
+		m_d.m_angleMax = newVal;
+		STOPUNDO
+		}
+
+	return S_OK;
+}
+
+	
+STDMETHODIMP Spinner::get_AngleMin(float *pVal)
+{
+	if (g_pplayer)
+		{
+		*pVal = RADTOANG(m_phitspinner->m_spinneranim.m_angleMin);	//player active value
+		}
+	else
+		{
+		*pVal = m_d.m_angleMin;
+		}
+
+	return S_OK;
+}
+
+STDMETHODIMP Spinner::put_AngleMin(float newVal)
+{
+	if (g_pplayer)
+		{
+		if (m_d.m_angleMin != m_d.m_angleMax)  // allow only if in limited angle mode
+			{
+			if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
+			else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+			
+			newVal = ANGTORAD(newVal);
+
+			if (m_phitspinner->m_spinneranim.m_angleMax > newVal)	// max is bigger
+				m_phitspinner->m_spinneranim.m_angleMin = newVal;	//then set new minumum
+			else m_phitspinner->m_spinneranim.m_angleMax = newVal;	//else set new max
+			}
+		else return S_FAIL;
+		}
+	else
+		{
+		STARTUNDO
+		m_d.m_angleMin = newVal;
+		STOPUNDO
+		}
+	return S_OK;
+}
+
+
+STDMETHODIMP Spinner::get_Elasticity(float *pVal)
+{
+	if (g_pplayer)
+		{
+		*pVal = m_phitspinner->m_spinneranim.m_elasticity;	//player active value
+		}
+	else
+		{
+		*pVal = m_d.m_elasticity;
+		}
+
+	return S_OK;
+}
+
+STDMETHODIMP Spinner::put_Elasticity(float newVal)
+{
+
+	if (g_pplayer)
+		{
+		m_phitspinner->m_spinneranim.m_elasticity = newVal;	//player active value
+		}
+	else
+		{
+        STARTUNDO
+		m_d.m_elasticity = newVal;
+		STOPUNDO
+		}
+
+	return S_OK;
+}
+
+STDMETHODIMP Spinner::get_Animations(int *pVal)
+{
+	if (!g_pplayer)
+		{
+		*pVal = m_d.m_animations;
+		}
+
+	return S_OK;
+}
+
+STDMETHODIMP Spinner::put_Animations(int newVal)
+{	
+	if (!g_pplayer)
+		{
+		STARTUNDO
+		m_d.m_animations = newVal;
+		STOPUNDO
+		}
+
+	return S_OK;
+}
+STDMETHODIMP Spinner::get_Visible(VARIANT_BOOL *pVal)
+{
+	if (g_pplayer)
+		{
+		*pVal = FTOVB(m_phitspinner->m_spinneranim.m_fVisible);
+		}
+	else
+		{
+		*pVal = FTOVB(m_d.m_fVisible);
+		}
+
+	return S_OK;
+}
+
+
+STDMETHODIMP Spinner::put_Visible(VARIANT_BOOL newVal)
+{	
+	if (g_pplayer)
+		{
+		m_phitspinner->m_spinneranim.m_fVisible = newVal;// && m_d.m_fVisible;
+		}
+	else
+		{
+		STARTUNDO
+
+		m_d.m_fVisible = newVal;
+
+		STOPUNDO
+		}
+
+	return S_OK;
+}
 
 void Spinner::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{

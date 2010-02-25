@@ -1,4 +1,5 @@
 // ComControl.h : Declaration of the CComControl
+#pragma once
 
 #ifndef __COMCONTROL_H_
 #define __COMCONTROL_H_
@@ -59,42 +60,6 @@ public:
 	IDispatch *m_pdispEdit;
 	IDispatch *m_pdispPlayer;
 	};
-
-/*class TypeInfoExtender : public ITypeInfo
-	{
-public:
-
-	TypeInfoExtender();
-
-	HRESULT STDMETHODCALLTYPE AddressOfMember(MEMBERID memid, INVOKEKIND invKind, VOID FAR* FAR *ppv);
-	HRESULT STDMETHODCALLTYPE CreateInstance(IUnknown FAR *pUnkOuter, REFIID riid, VOID FAR* FAR *ppvObj);
-	HRESULT STDMETHODCALLTYPE GetContainingTypeLib(ITypeLib FAR *FAR *ppTLib, unsigned int FAR *pIndex);
-	HRESULT STDMETHODCALLTYPE GetDllEntry(MEMBERID memid, INVOKEKIND invKind, BSTR FAR *pBstrDllName, BSTR FAR *pBstrName, unsigned short FAR *pwOrdinal);
-	HRESULT STDMETHODCALLTYPE GetDocumentation(MEMBERID memid, BSTR FAR *pBstrName, BSTR FAR *pBstrDocString, unsigned long FAR *pdwHelpContext, BSTR FAR *pBstrHelpFile);
-	HRESULT STDMETHODCALLTYPE GetFuncDesc(unsigned int index, FUNCDESC FAR *FAR *ppFuncDesc);
-	HRESULT STDMETHODCALLTYPE GetIDsOfNames(OLECHAR FAR *FAR *rgszNames, unsigned int cNames, MEMBERID FAR *pMemId);
-	HRESULT STDMETHODCALLTYPE GetImplTypeFlags(unsigned int index, int *pImplTypeFlags);
-	HRESULT STDMETHODCALLTYPE GetMops(MEMBERID memid, BSTR FAR *pBstrMops);
-	HRESULT STDMETHODCALLTYPE GetNames(MEMBERID memid, BSTR FAR *rgBstrNames, unsigned int cMaxNames, unsigned int FAR *pcNames);
-	HRESULT STDMETHODCALLTYPE GetRefTypeInfo(HREFTYPE hRefType, ITypeInfo FAR *FAR *ppTInfo);
-	HRESULT STDMETHODCALLTYPE GetRefTypeOfImplType(unsigned int index, HREFTYPE FAR *pRefType);
-	HRESULT STDMETHODCALLTYPE GetTypeAttr(TYPEATTR FAR *FAR *ppTypeAttr);
-	HRESULT STDMETHODCALLTYPE GetTypeComp(ITypeComp FAR *FAR *ppTComp);
-	HRESULT STDMETHODCALLTYPE GetVarDesc(unsigned int index, VARDESC FAR *FAR *ppVarDesc);
-	HRESULT STDMETHODCALLTYPE Invoke(VOID FAR *pvInstance, MEMBERID memid, unsigned short wFlags, DISPPARAMS FAR *pDispParams, VARIANT FAR *pVarResult, EXCEPINFO FAR *pExcepInfo, unsigned int FAR *puArgErr);
-	void STDMETHODCALLTYPE ReleaseFuncDesc(FUNCDESC FAR *pFuncDesc);
-	void STDMETHODCALLTYPE ReleaseTypeAttr(TYPEATTR FAR *pTypeAttr);
-	void STDMETHODCALLTYPE ReleaseVarDesc(VARDESC FAR *pVarDesc);
-
-	ULONG STDMETHODCALLTYPE AddRef();
-	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void **ppvObject);
-	ULONG STDMETHODCALLTYPE Release();
-
-	int m_cref;
-
-	ITypeInfo *m_pti;
-	ITypeInfo *m_pti2;
-	};*/
 
 class ComControlData
 	{

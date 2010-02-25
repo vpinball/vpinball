@@ -96,7 +96,6 @@
 ******************************************************************************/
 
 #include "stdafx.h"
-#include "main.h"
 
 static const char REEL_NUMBER_TEXT[] = "01234567890";
 
@@ -255,6 +254,7 @@ void DispReel::PreRender(Sur *psur)
 //
 void DispReel::Render(Sur *psur)
 {
+	if( !GetPTable()->GetEMReelsEnabled() ) return;
 	int     i;
     Vertex  rgv[4];
     float   x,y;
@@ -366,6 +366,10 @@ void DispReel::EndPlay()
 	IEditable::EndPlay();
 }
 
+void DispReel::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+{
+
+}
 void DispReel::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 {
 
@@ -415,8 +419,14 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
     // allocate some object frames
     m_pobjframe  = new ObjFrame();
 
-    if (m_pobjframe == NULL)
+	if( !GetPTable()->GetEMReelsEnabled() )
+	{
+		m_pobjframe  = NULL;
+	}
+
+	if (m_pobjframe == NULL)
         return;
+
 
     // get the render sizes of the objects (reels and frame)
     m_renderwidth    = max(0, (int)((m_d.m_width / 1000) * ppin3d->m_dwRenderWidth));
@@ -952,7 +962,10 @@ void DispReel::RenderText()
     UpdateObjFrame();
 
     // copy the object frame onto the back buffer
-    m_ptu->m_dispreelanim.Draw3D(NULL);
+	if( GetPTable()->GetEMReelsEnabled() )
+	{
+	    m_ptu->m_dispreelanim.Draw3D(NULL);
+	}
     //ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe->rc, m_pobjframe->pdds, NULL, DDBLTFAST_SRCCOLORKEY/*DDBLTFAST_WAIT*/, NULL);
 }
 
@@ -980,12 +993,21 @@ void DispReel::MoveOffset(float dx, float dy)
 
 void DispReel::GetCenter(Vertex *pv)
 {
+	pv->x = m_d.m_v1.x;
+	pv->y = m_d.m_v1.y;
 }
 
 
 
 void DispReel::PutCenter(Vertex *pv)
 {
+	m_d.m_v1.x = pv->x;
+	m_d.m_v1.y = pv->y;
+
+	m_d.m_v2.x = pv->x + getBoxWidth();
+	m_d.m_v2.y = pv->y + getBoxHeight();
+
+	m_ptable->SetDirtyDraw();
 }
 
 
@@ -1024,6 +1046,8 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	IPersistStream * ips;
 	m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
 	ips->Save(pstm, TRUE);
+
+	ISelect::SaveData(pstm, hcrypthash, hcryptkey); //add BDS2
 
 	bw.WriteTag(FID(ENDB));
 
@@ -1197,6 +1221,10 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 
 		ips->Load(pbr->m_pistream);
 	}
+	else
+		{
+		ISelect::LoadToken(id, pbr);
+		}
 	return fTrue;
 }
 
@@ -1752,7 +1780,9 @@ void DispReel::UpdateObjFrame(void)
 	Pin3D	*ppin3d = &g_pplayer->m_pin3d;
 	DDBLTFX	bltFx;
 	DWORD	flags;
-	
+
+	if( !GetPTable()->GetEMReelsEnabled() ) return;
+
 	LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 
     // is the background box transparent?

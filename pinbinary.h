@@ -1,3 +1,4 @@
+#pragma once
 // PinBinary.h: interface for the PinBinary class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -16,7 +17,7 @@ public:
 	virtual ~PinBinary();
 
 	void ReadFromFile(char *szfilename);
-	void WriteToFile(char *szfilename);
+	bool WriteToFile(char *szfilename);
 	HRESULT SaveToStream(IStream *pstream);
 	HRESULT LoadFromStream(IStream *pstream, int version);
 

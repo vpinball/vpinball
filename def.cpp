@@ -1,5 +1,6 @@
 #include "stdafx.h"
-#include "main.h"
+
+
 
 float sz2f(char *sz)
 	{
@@ -10,55 +11,11 @@ float sz2f(char *sz)
 
 	VariantChangeType(&var, &var, 0, VT_R8); 
 
-	double r;
+	GPINFLOAT r;
 	r = V_R8(&var);
 
 	return float(r);
 
-	/*float f=0;
-	BOOL fNeg = fFalse;
-
-	if (*sz == '-')
-		{
-		fNeg = fTrue;
-		sz++;
-		}
-
-	while (*sz != '.' && *sz != '\0')
-		{
-		int digit = *sz++ - '0';
-		if (digit < 0 || digit > 9)
-			{
-			return 0;
-			}
-		f*=10;
-		f+=digit;
-		}
-
-	if (*sz == '.')
-		{
-		sz++;
-		}
-
-	float mult=0.1f;
-
-	while (*sz != '\0')
-		{
-		int digit = *sz++ - '0';
-		if (digit < 0 || digit > 9)
-			{
-			return 0;
-			}
-		f += mult*digit;
-		mult *= 0.1f;
-		}
-
-	if (fNeg)
-		{
-		f *= -1;
-		}
-
-	return f;*/
 	}
 
 void f2sz(float f, char *sz)
@@ -71,46 +28,8 @@ void f2sz(float f, char *sz)
 	wzT = V_BSTR(&var);
 
 	WideCharToMultiByte(CP_ACP, 0, wzT, -1, sz, 256, NULL, NULL);
-
-	/*char szT[256];
-	int cint;
-	int i;
-
-	if (f<0)
-		{
-		f *= -1;
-		*sz++ = '-';
-		}
-
-	i = (int)f;
-	cint = 0;
-
-	while (i>0)
-		{
-		szT[cint++] = (i % 10) + '0';
-		i /= 10;
-		}
-
-	for (i=0;i<cint;i++)
-		{
-		*sz++=szT[cint-i-1];
-		}
-
-	f = f-((int)f);
-	if (f>0.0001)
-		{
-		*sz++ = '.';
-		for (i=0;i<4 , f>0.0001;i++)
-			{
-			f*=10;
-			int digit = (int)f;
-			*sz++ = (digit % 10) + '0';
-			f -= digit;
-			}
-		}
-
-	*sz = 0;*/
 	}
+
 
 void Vertex3D::Normalize()
 	{
@@ -436,10 +355,11 @@ void DumpNameTable (char *pszFile, char *pszName)
 
   for ( i = 0; i < cTables && i < 40; i++)
   {
-    if ((read (fp, &Table, sizeof (Table))) != sizeof(Table)) {
-	//printf("Read failed on table #%d\n", i);
-	//exit(-1);
-    return;
+    if ((read (fp, &Table, sizeof (Table))) != sizeof(Table)) 
+	{
+		//printf("Read failed on table #%d\n", i);
+		//exit(-1);
+		return;
 	}
 	int foo = tag_NamingTable;
     if (Table.tag == tag_NamingTable)	/* defined in sfnt_en.h */

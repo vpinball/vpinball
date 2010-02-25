@@ -1,7 +1,6 @@
 // Ball.cpp : Implementation of CBall
 #include "stdafx.h"
 #include "VBATest.h"
-#include "main.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CBall
@@ -31,7 +30,7 @@ void BallEx::RunDebugCommand(int id)
 		}
 	}
 
-STDMETHODIMP BallEx::get_X(double *pVal)
+STDMETHODIMP BallEx::get_X(float *pVal)
 {
 	CHECKSTALEBALL
 
@@ -40,16 +39,16 @@ STDMETHODIMP BallEx::get_X(double *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::put_X(double newVal)
+STDMETHODIMP BallEx::put_X(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->x = newVal;
+	m_pball->x = (PINFLOAT)newVal;
 
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::get_Y(double *pVal)
+STDMETHODIMP BallEx::get_Y(float *pVal)
 {
 	CHECKSTALEBALL
 
@@ -58,16 +57,16 @@ STDMETHODIMP BallEx::get_Y(double *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::put_Y(double newVal)
+STDMETHODIMP BallEx::put_Y(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->y = newVal;
+	m_pball->y = (PINFLOAT)newVal;
 
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::get_VelX(double *pVal)
+STDMETHODIMP BallEx::get_VelX(float *pVal)
 {
 	CHECKSTALEBALL
 
@@ -76,18 +75,18 @@ STDMETHODIMP BallEx::get_VelX(double *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::put_VelX(double newVal)
+STDMETHODIMP BallEx::put_VelX(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->vx = newVal;
+	m_pball->vx = (PINFLOAT)newVal;
 
 	m_pball->CalcBoundingRect();
 
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::get_VelY(double *pVal)
+STDMETHODIMP BallEx::get_VelY(float *pVal)
 {
 	CHECKSTALEBALL
 
@@ -96,18 +95,18 @@ STDMETHODIMP BallEx::get_VelY(double *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::put_VelY(double newVal)
+STDMETHODIMP BallEx::put_VelY(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->vy = newVal;
+	m_pball->vy = (PINFLOAT)newVal;
 
 	m_pball->CalcBoundingRect();
 
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::get_Z(double *pVal)
+STDMETHODIMP BallEx::get_Z(float *pVal)
 {
 	CHECKSTALEBALL
 
@@ -116,17 +115,16 @@ STDMETHODIMP BallEx::get_Z(double *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::put_Z(double newVal)
+STDMETHODIMP BallEx::put_Z(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->z = newVal;
-	//m_pball->m_plevel = NULL;
+	m_pball->z = (PINFLOAT)newVal;
 
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::get_VelZ(double *pVal)
+STDMETHODIMP BallEx::get_VelZ(float *pVal)
 {
 	CHECKSTALEBALL
 
@@ -135,11 +133,11 @@ STDMETHODIMP BallEx::get_VelZ(double *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::put_VelZ(double newVal)
+STDMETHODIMP BallEx::put_VelZ(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->vz = newVal;
+	m_pball->vz = (PINFLOAT)newVal;
 
 	m_pball->CalcBoundingRect();
 
@@ -166,7 +164,7 @@ STDMETHODIMP BallEx::put_Color(OLE_COLOR newVal)
 
 STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImage, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -207,10 +205,10 @@ HRESULT BallEx::put_UserValue(VARIANT *newVal)
 
 STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageFront, -1, wz, 32);
-	*pVal = SysAllocString((OLECHAR *)wz);
+	*pVal = SysAllocString(wz);
 	return S_OK;
 }
 
@@ -232,7 +230,7 @@ STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
 
 STDMETHODIMP BallEx::get_BackDecal(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageFront, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -265,3 +263,21 @@ STDMETHODIMP BallEx::put_Name(BSTR newVal)
 {
 	return S_OK;
 }
+
+STDMETHODIMP BallEx::DestroyBall(int *pVal)
+{
+	int cnt = 0;
+	if (g_pplayer)
+		{
+		++cnt;
+		g_pplayer->DestroyBall(g_pplayer->m_pactiveball); // 	
+		g_pplayer->m_pactiveball = NULL;				// clear ActiveBall
+		}
+
+	if (pVal) *pVal = cnt;
+
+	return S_OK;
+}
+
+
+

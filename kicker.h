@@ -1,7 +1,7 @@
 // Kicker.h: Definition of the Kicker class
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_KICKER_H__3A9F3FC4_605A_43AD_A430_830279CFE059__INCLUDED_)
 #define AFX_KICKER_H__3A9F3FC4_605A_43AD_A430_830279CFE059__INCLUDED_
 
@@ -21,6 +21,8 @@ public:
 	char m_szSurface[MAXTOKEN];
 	BOOL m_fEnabled;
 	KickerType m_kickertype;
+	float m_scatter;
+	float m_hit_height; //kicker hit object height ... default 40
 	};
 
 class KickerHitCircle;
@@ -105,8 +107,17 @@ public:
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
 	STDMETHOD(Kick)(float angle, float speed, float inclination);
-	STDMETHOD(DestroyBall)();
-	STDMETHOD(CreateBall)(IBall **pBallEx);
+	STDMETHOD(KickZ)(float angle, float speed, float inclination, float heightz);
+	STDMETHOD(KickXYZ)(float angle, float speed, float inclination, float x,float y,float z);
+	//STDMETHOD(DestroyBall)();
+	STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(CreateBall)(IBall **pBallEx);
+	STDMETHOD(BallCntOver)(/*[out, retval]*/ int *pVal);
+
+	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
+	STDMETHOD(get_HitHeight)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_HitHeight)(/*[in]*/ float newVal);
 };
 
 class KickerHitCircle : public TriggerHitCircle

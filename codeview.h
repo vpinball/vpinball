@@ -1,3 +1,4 @@
+#pragma once
 #include <activscp.h>
 
 #include "atlcom.h"
@@ -13,15 +14,7 @@ enum SecurityLevelEnum
 	eSecurityNoControls = 4
 	};
 
-/*struct CONFIRMSAFETY
-    {
-    CLSID clsid;
-    IUnknown __RPC_FAR *pUnk;
-    DWORD dwFlags;
-    };*/
-
 void AddEventToList(char *sz, int dispid, LPARAM lparam);
-//typedef void(__stdcall *)(*EventListCallback)(char *,int,long);
 
 class IScriptable
 	{

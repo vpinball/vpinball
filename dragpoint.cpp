@@ -1,7 +1,6 @@
 // DragPoint.cpp : Implementation of CVBATestApp and DLL registration.
 
 #include "stdafx.h"
-#include "main.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -19,8 +18,6 @@ IHaveDragPoints::~IHaveDragPoints()
 void IHaveDragPoints::GetPointCenter(Vertex *pv)
 	{
 	int i;
-	//float tx = 0;
-	//float ty = 0;
 
 	float minx, maxx, miny, maxy;
 
@@ -35,15 +32,11 @@ void IHaveDragPoints::GetPointCenter(Vertex *pv)
 		maxx = max(maxx, m_vdpoint.ElementAt(i)->m_v.x);
 		miny = min(miny, m_vdpoint.ElementAt(i)->m_v.y);
 		maxy = max(maxy, m_vdpoint.ElementAt(i)->m_v.y);
-		//tx += m_vdpoint.ElementAt(i)->m_v.x;
-		//ty += m_vdpoint.ElementAt(i)->m_v.y;
+		
 		}
 
 	pv->x = (maxx+minx)/2;
 	pv->y = (maxy+miny)/2;
-
-	//pv->x = tx/m_vdpoint.Size();
-	//pv->y = ty/m_vdpoint.Size();
 	}
 
 void IHaveDragPoints::PutPointCenter(Vertex *pv)
@@ -187,7 +180,6 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex *pvCenter)
 		// Move object center as well (if rotating around object center,
 		// this will have no effect)
 		{
-		//DragPoint *pdp1 = m_vdpoint.ElementAt(i);
 		dx = newcenter.x - centerx;
 		dy = newcenter.y - centery;
 		temp = dx;
@@ -240,11 +232,6 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex *pvCenter)
 		newcenter.y = centery + dy;
 		PutPointCenter(&newcenter);
 		}
-
-	/*if (scale < 0)
-		{
-		ReverseOrder();
-		}*/
 
 	GetIEditable()->EndUndo();
 
@@ -381,25 +368,6 @@ void IHaveDragPoints::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
 	pproppane = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
 	pvproppane->AddElement(pproppane);
 	}
-
-/*int IHaveDragPoints::GetNextNonAutoTexPoint(Vector<RenderVertex> *pvv, int startindex)
-	{
-	int i;
-	int cpoints = pvv->Size();
-	int icontrolpoint = 0;
-	for (i=0;i<cpoints;i++)
-		{
-		RenderVertex *prv = pvv->ElementAt(i);
-		if (prv->fControlPoint)
-			{
-			if (!m_vdpoint.ElementAt(icontrolpoint)->m_fAutoTexture)
-				{
-				startpoint = icontrolpoint;
-				}
-			icontrolpoint++;
-			} 
-		}
-	}*/
 
 void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoords)
 	{
@@ -542,74 +510,9 @@ HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash, HCR
 		bw.WriteTag(FID(ENDB));
 		}
 
-	//bw.WriteTag(FID(ENDB));
-
 	return S_OK;
-	/*HRESULT hr = S_OK;
-	int i,temp;
-	ULONG writ = 0;
-
-	temp = m_vdpoint.Size();
-	if(FAILED(hr = pstm->Write(&temp, sizeof(int), &writ)))
-			return hr;
-
-	for (i=0;i<m_vdpoint.Size();i++)
-		{
-		CComObject<DragPoint> *pdp = m_vdpoint.ElementAt(i);
-		if(FAILED(hr = pstm->Write(&(pdp->m_v), sizeof(Vertex), &writ)))
-			return hr;
-		if(FAILED(hr = pstm->Write(&(pdp->m_fSmooth), sizeof(BOOL), &writ)))
-			return hr;
-		if(FAILED(hr = pstm->Write(&(pdp->m_fSlingshot), sizeof(BOOL), &writ)))
-			return hr;
-		}
-
-	return hr;*/
 	}
 
-/*HRESULT IHaveDragPoints::InitPointLoad(IStream *pstm, HCRYPTHASH hcrypthash)
-	{
-#ifndef OLDLOAD
-	//BiffReader br(pstm, this, NULL);
-
-	//br.Load();
-	return S_OK;
-#else
-	HRESULT hr = S_OK;
-	int i,temp;
-	ULONG read = 0;
-
-	if(FAILED(hr = pstm->Read(&temp, sizeof(int), &read)))
-		return hr;
-
-	for (i=0;i<temp;i++)
-		{
-		Vertex v;
-		BOOL fSmooth;
-		BOOL fSlingshot;
-		CComObject<DragPoint> *pdp;
-
-		if(FAILED(hr = pstm->Read(&v, sizeof(Vertex), &read)))
-			return hr;
-		if(FAILED(hr = pstm->Read(&fSmooth, sizeof(BOOL), &read)))
-			return hr;
-		if(FAILED(hr = pstm->Read(&fSlingshot, sizeof(BOOL), &read)))
-			return hr;
-
-		CComObject<DragPoint>::CreateInstance(&pdp);
-		if (pdp)
-			{
-			pdp->AddRef();
-			pdp->Init(this, v.x, v.y);
-			pdp->m_fSmooth = fSmooth;
-			pdp->m_fSlingshot = fSlingshot;
-			m_vdpoint.AddElement(pdp);
-			}
-		}
-
-	return hr;
-#endif
-	}*/
 
 void IHaveDragPoints::LoadPointToken(int id, BiffReader *pbr, int version)
 	{
@@ -757,17 +660,11 @@ void DragPoint::DoCommand(int icmd, int x, int y)
 void DragPoint::SetSelectFormat(Sur *psur)
 	{
 	psur->SetFillColor(RGB(150,200,255));
-	//psur->SetBorderColor(RGB(0,0,0), fFalse, 4);
-	//psur->SetFillColor(RGB(255,192,192));
-	//psur->SetBorderColor(RGB(255,0,0));
 	}
 
 void DragPoint::SetMultiSelectFormat(Sur *psur)
 	{
 	psur->SetFillColor(RGB(200,225,255));
-	//psur->SetBorderColor(RGB(0,0,0), fFalse, 4);
-	//psur->SetFillColor(RGB(255,192,192));
-	//psur->SetBorderColor(RGB(255,0,0));
 	}
 
 STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
@@ -815,22 +712,10 @@ BOOL DragPoint::LoadToken(int id, BiffReader *pbr)
 	return fTrue;
 	}
 
-/*HRESULT DragPoint::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Control Point");
-
-	return S_OK;
-	}*/
-
 IDispatch *DragPoint::GetDispatch(void)
 	{
 	return (IDispatch *)this;
 	}
-
-/*int DragPoint::GetDialogID()
-	{
-	return IDD_PROPPOINT;
-	}*/
 
 void DragPoint::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{
@@ -930,11 +815,7 @@ STDMETHODIMP DragPoint::put_TextureCoordinateU(float newVal)
 
 int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-	//IHaveDragPoints *pihdp;
-	//pihdp = (IHaveDragPoints *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
 	ISelect *psel;
-	//psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch (uMsg)
 		{
@@ -999,9 +880,6 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-	//IHaveDragPoints *pihdp;
-	//pihdp = (IHaveDragPoints *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
 	ISelect *psel;
 
 	switch (uMsg)
@@ -1011,11 +889,8 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 			psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-			//pihdp = (IHaveDragPoints *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
 			Vertex v;
 			char szT[256];
-			//pihdp->GetPointCenter(&v);
 			psel->GetCenter(&v);
 			SetDlgItemInt(hwndDlg, IDC_SCALEFACTOR, 1, TRUE);
 			SetDlgItemInt(hwndDlg, IDC_SCALEY, 1, TRUE);
@@ -1030,8 +905,6 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
 			EnableWindow(hwndEdit, FALSE);
 			EnableWindow(hwndText, FALSE);
-			//SendDlgItemMessage(hwndDlg, IDC_SCALEY, WM_ENABLE, FALSE, 0);
-			//SendDlgItemMessage(hwndDlg, IDC_STATIC_SCALEY, WM_ENABLE, FALSE, 0);
 			}
 			return TRUE;
 			break;
@@ -1111,9 +984,6 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	{
 	ISelect *psel;
 
-	//IHaveDragPoints *pihdp;
-	//pihdp = (IHaveDragPoints *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
 	switch (uMsg)
 		{
 		case WM_INITDIALOG:
@@ -1122,8 +992,6 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 			psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
-			//pihdp = (IHaveDragPoints *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 			char szT[256];
 			f2sz(0, szT);

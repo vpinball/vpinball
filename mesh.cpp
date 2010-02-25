@@ -1,18 +1,28 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 //#include "math.h"
 
 ObjFrame::ObjFrame()
 	{
+	rc.left = 0;
+	rc.top = 0;
+	rc.right = 1000;
+	rc.bottom = 750;
+
 	pdds = NULL;
 	pddsZBuffer = NULL;
+
+	pTexture = NULL;
+	u = 0.0f;
+	v = 0.0f;
 	}
 
 ObjFrame::~ObjFrame()
 	{
 	SAFE_RELEASE(pdds);
 	SAFE_RELEASE(pddsZBuffer);
+
+	SAFE_RELEASE(pTexture);
 	}
 
 void CatmullCurve::SetCurve(Vertex *pv0, Vertex *pv1, Vertex *pv2, Vertex *pv3)
@@ -20,7 +30,7 @@ void CatmullCurve::SetCurve(Vertex *pv0, Vertex *pv1, Vertex *pv2, Vertex *pv3)
 	x1=pv0->x;
 	x2=pv1->x;
 	x3=pv2->x;
-	x4=pv3->x;
+	x4=pv3->x; 
 	y1=pv0->y;
 	y2=pv1->y;
 	y3=pv2->y;
@@ -98,16 +108,16 @@ float GetDot(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2)
 	
 BOOL FLinesIntersect(Vertex *Start1, Vertex *Start2, Vertex *End1, Vertex *End2)
 	{
-	double d123, d124, d341, d342;
+	float d123, d124, d341, d342;
 	
-	double x1 = Start1->x;
-	double y1 = Start1->y;
-	double x2 = Start2->x;
-	double y2 = Start2->y;
-	double x3 = End1->x;
-	double y3 = End1->y;
-	double x4 = End2->x;
-	double y4 = End2->y;
+	float x1 = Start1->x;
+	float y1 = Start1->y;
+	float x2 = Start2->x;
+	float y2 = Start2->y;
+	float x3 = End1->x;
+	float y3 = End1->y;
+	float x4 = End2->x;
+	float y4 = End2->y;
 
     d123 = (x2 - x1)*(y3 - y1) - (x3 - x1)*(y2 - y1);
 
@@ -231,30 +241,6 @@ BOOL AdvancePoint(RenderVertex *rgv, Vector<void> *pvpoly, int a, int b, int c, 
 			{
 			continue; // Line segments don't interact
 			}
-
-		// check intersection point
-		/*double slope1, slope2;
-		double intersect1, intersect2;
-
-		slope1 = (pv3->v.y - pv1->v.y)/(pv3->v.x - pv1->v.x);
-		slope2 = (pvCross2->v.y - pvCross1->v.y)/(pvCross2->v.x - pvCross1->v.x);
-
-		intersect1 = pv3->v.y - (slope1 * pv3->v.x);
-		intersect2 = pvCross2->v.y - (slope2 * pvCross2->v.x);
-
-		double hitx;
-
-		hitx = (intersect2 - intersect1) / (slope1-slope2);
-
-		if (hitx >= minx && hitx <= maxx)
-			{
-			double minCrossx = min(pvCross2->v.x, pvCross1->v.x);
-			double maxCrossx = max(pvCross2->v.x, pvCross1->v.x);
-			if (hitx >= minCrossx && hitx < maxCrossx)
-				{
-				return fFalse; // Lines intersect
-				}
-			}*/
 		
 		if (FLinesIntersect(pv1, pv3, pvCross1, pvCross2))
 			{
@@ -286,7 +272,7 @@ float GetCos(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2)
 
 float GetAngle(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2)
 	{
-	double slope1, slope2;
+	float slope1, slope2;
 
 	slope1 = (pvJoint->y - pvEnd1->y) / (pvJoint->x - pvEnd1->x);
 	slope2 = (pvJoint->y - pvEnd2->y) / (pvJoint->x - pvEnd2->x);
@@ -592,13 +578,16 @@ void RotateAround(Vertex3D *pvAxis, Vertex3D *pvPoint, int count, float angle)
 		pvPoint[i].y = (float)result[1];
 		pvPoint[i].z = (float)result[2];
 
-		result[0] = matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz;
-		result[1] = matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz;
-		result[2] = matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz;
+		if ((pvPoint[i].nx == 0) && (pvPoint[i].ny == 0) && (pvPoint[i].nx == 0)) //rlc optimize, often 0,0,0
+			{
+			result[0] = matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz;
+			result[1] = matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz;
+			result[2] = matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz;
 
-		pvPoint[i].nx = (float)result[0];
-		pvPoint[i].ny = (float)result[1];
-		pvPoint[i].nz = (float)result[2];
+			pvPoint[i].nx = (float)result[0];
+			pvPoint[i].ny = (float)result[1];
+			pvPoint[i].nz = (float)result[2];
+			}		
 		}
 	}
 

@@ -2,8 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -123,7 +122,7 @@ void PinUndo::Undo()
 
 	if (m_cUndoLayer > 0)
 		{
-		_ASSERTE(fFalse);
+		_ASSERTE(fFalse); //rlc-probelm-10 undo assert fixed during exit 
 		m_cUndoLayer = 0;
 		}
 
@@ -172,44 +171,6 @@ void PinUndo::Undo()
 		//pstm->Release();
 		}
 
-	/*IEnumSTATSTG *penum;
-	STATSTG statstg;
-	IStream* pstm;
-	HRESULT hr;
-
-	pstg->EnumElements(0,NULL,0,&penum);
-
-	memset( &statstg, 0, sizeof(statstg) );
-
-	hr = penum->Next( 1, &statstg, 0 );
-
-	while (hr == S_OK)
-		{
-		IEditable *pie;
-
-		if (statstg.type == STGTY_STREAM)
-			{
-			pstg->OpenStream(statstg.pwcsName, 0, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstm);
-
-			MAKE_ANSIPTR_FROMWIDE(szName, statstg.pwcsName);
-
-			pie = (IEditable *)atoi(szName);
-
-			int foo;
-
-			pie->ClearForOverwrite();
-
-			pie->InitLoad(pstm, m_ptable, &foo);
-
-			pstm->Release();
-			}
-
-		CoTaskMemFree( statstg.pwcsName );
-		statstg.pwcsName = NULL;
-
-		hr = penum->Next( 1, &statstg, 0 );
-		}*/
-
 	for (i=0;i<pur->m_vieCreate.Size();i++)
 		{
 		m_ptable->Uncreate(pur->m_vieCreate.ElementAt(i));
@@ -252,10 +213,6 @@ void PinUndo::EndUndo()
 
 UndoRecord::UndoRecord()
 	{
-	/*HRESULT hr;
-
-	hr = StgCreateDocfile(NULL,STGM_TRANSACTED | STGM_READWRITE
-			| STGM_SHARE_EXCLUSIVE | STGM_CREATE | STGM_DELETEONRELEASE, 0, &m_pstg);*/
 	}
 
 UndoRecord::~UndoRecord()
@@ -266,7 +223,6 @@ UndoRecord::~UndoRecord()
 		{
 		m_vstm.ElementAt(i)->Release();
 		}
-	//m_pstg->Release();
 
 	for (i=0;i<m_vieDelete.Size();i++)
 		{
@@ -286,8 +242,6 @@ void UndoRecord::MarkForUndo(IEditable *pie)
 		return;
 		}
 
-	//HRESULT hr;
-
 	m_vieMark.AddElement(pie);
 
 	FastIStream *pstm;
@@ -298,22 +252,10 @@ void UndoRecord::MarkForUndo(IEditable *pie)
 	DWORD write;
 	pstm->Write(&pie, sizeof(IEditable *), &write);
 
-	/*char szT[10];
-
-	wsprintf(szT,"%d",(int)pie);
-
-	MAKE_WIDEPTR_FROMANSI(wszCodeFile, szT);
-
-	hr = m_pstg->CreateStream(wszCodeFile, STGM_DIRECT | STGM_READWRITE |
-		STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm);*/
-
 	pie->SaveData(pstm, NULL, NULL);
 
 	m_vstm.AddElement(pstm);
 
-
-
-	//pstm->Release();
 	}
 
 void UndoRecord::MarkForCreate(IEditable *pie)
@@ -328,10 +270,6 @@ void UndoRecord::MarkForCreate(IEditable *pie)
 
 	m_vieCreate.AddElement(pie);
 	}
-
-//class CodeModule;
-
-//#include "vbaext.h"
 
 void UndoRecord::MarkForDelete(IEditable *pie)
 	{
@@ -351,37 +289,5 @@ void UndoRecord::MarkForDelete(IEditable *pie)
 		return;
 		}
 
-	/*_VBComponent* pComponent;
-	VBIDE::_CodeModule* pCodeModule;
-
-	// Gets the corresponding VBComponent
-	pie->GetIApcProjectItem()->get_VBComponent(&pComponent);
-
-	// Gets the corresponding CodeModule
-	pComponent->get_CodeModule((VBIDE::CodeModule**)&pCodeModule);
-	pComponent->Release();
-
-	CComBSTR bstr;
-	long count;
-
-	pCodeModule->get_CountOfLines(&count);
-	HRESULT hr = pCodeModule->get_Lines(1, count, &bstr);
-
-	//HRESULT hr = pCodeModule->get_Name(&bstr);
-
-	// Inserts the lines
-	//pCodeModule->InsertLines(1, OLESTR("'This is a comment"));
-	pCodeModule->Release();*/
-
-	//Don't need to addref - the table never releases
-	//pie->AddRef();
 	m_vieDelete.AddElement(pie);
-
-//	if (m_vieMark.IndexOf(pie) != -1) // Created and deleted in the same step
-//		{
-
-//		}
-
-
-
 	}

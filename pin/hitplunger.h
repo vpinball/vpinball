@@ -1,12 +1,11 @@
-class HitPlunger;
-
+#pragma once
 class PlungerAnimObject : public AnimObject
 	{
 public:
-	virtual void UpdateTimeTemp(PINFLOAT dtime);
-	virtual void ResetFrameTime();
-	virtual void UpdateTimePermanent();
-	virtual void UpdateAcceleration(PINFLOAT dtime);
+	virtual void UpdateDisplacements(PINFLOAT dtime);
+	//virtual void ResetFrameTime();
+	//virtual void UpdateTimePermanent();
+	virtual void UpdateVelocities(PINFLOAT dtime);
 
 	virtual BOOL FMover() {return fTrue;}
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
@@ -42,24 +41,15 @@ public:
 
 	float m_frameStart;
 	float m_frameEnd;
-	
-	// Start New Physics
 	int m_mechTimeOut;
 
 	bool recock;
 	float err_fil;	// integrate error over multiple update periods 
 
-	BOOL  m_mechPlunger;
 	float m_parkPosition;
 	float m_scatterVelocity;
 	float m_breakOverVelocity;
-	float m_mechStrength;
-
-	
-	//float mechPlunger(void);// Returns mechanical plunger position 0 at rest, +1 pulled (fully extended)
-
-	HitPlunger *m_phitplunger;
-	// End New Physics
+	Plunger* m_plunger;
 	};
 
 class HitPlunger :
@@ -67,7 +57,7 @@ class HitPlunger :
 	{
 public:
 
-	HitPlunger(float x, float y, float x2, float pos, float zheight, float parkPosition, float scatterVelocity, float breakOverVelocity, float mechStrength,BOOL mechPlunger);
+	HitPlunger(float x, float y, float x2, float pos, float zheight, Plunger* pPlunger);
 	~HitPlunger() {}
 
 	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);

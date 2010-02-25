@@ -1,4 +1,4 @@
-
+#pragma once
 class Triangle
 	{
 public:
@@ -13,6 +13,9 @@ public:
 	RECT rc;
 	LPDIRECTDRAWSURFACE7 pdds;
 	LPDIRECTDRAWSURFACE7 pddsZBuffer;
+
+	LPDIRECTDRAWSURFACE7 pTexture;
+	float				 u, v;
 	};
 
 class CatmullCurve
@@ -28,8 +31,6 @@ public:
 class LightProjected
 	{
 public:
-	//Vertex m_vpos;
-	//Vertex m_vdir;
 	float inclination;
 	float rotation;
 	float spin;

@@ -1,5 +1,8 @@
+#pragma once
+
 enum
 	{
+	eNull,
 	eLineSeg,
 	eJoint,
 	eCircle,
@@ -10,25 +13,12 @@ enum
 	e3DPoly,
 	e3DLine,
 	eGate,
-	eTrigger,
 	eTextbox,
     eDispReel,
 	eLightSeq,
+	eTrigger,	// this value and greater are volume set tested, add rigid or non-volume set above
+	eKicker,	// this is done to limit to one test
 	};
-
-#define SHOWNORMAL 1
-
-/*******************
-Begin New Physics constants
-*******************/
-
-#define LeftFace 1 // flipper
-#define RightFace 0 // flipper
-
-#define C_INTERATIONS 20 //flipper
-
-#define C_FLIPPERACCEL  (PINFLOAT)1.25f
-#define C_FLIPPERIMPULSE (PINFLOAT)1.0f
 
 // test near zero conditions in linear, well behaved, conditions
 #define C_PRECISION 0.01f
@@ -38,6 +28,8 @@ Begin New Physics constants
 #define C_TOL_ENDPNTS 0
 
 #define C_TOL_RADIUS 0.005f
+
+#define SHOWNORMAL 1
 
 // Physical Skin ... postive contact layer. Any contact (collision) in this layer reports zero time.
 // layer is used to calculate contact effects ... beyond this and objects pass through each other
@@ -54,7 +46,7 @@ extern PINFLOAT c_dampingFriction;
 extern PINFLOAT c_plungerNormalize;  //Adjust Mech-Plunger, useful for component change or weak spring etc.
 extern bool c_plungerFilter;
 
-extern unsigned int c_PostCheck;
+extern U32 c_PostCheck;
 
 // Layer outside object which increases it's size for contact measurements. Used to determine clearances.
 // Setting this value during testing to 0.1 will insure clearance. After testing set the value to 0.005
@@ -71,15 +63,12 @@ extern unsigned int c_PostCheck;
 #define C_SPEEDLIMIT 60.0f
 
 // low velocity stabalization ... if embedding occurs add some velocity 
-//#define C_EMBEDDED 0.0f - TODOMERGE
+#define C_EMBEDDED 0.0f
 #define C_EMBEDSHOT 0.05f
 
 // Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
-//#define C_DISP_GAIN 0.9875f
+#define C_DISP_GAIN 0.9875f
 #define C_DISP_LIMIT 5.0f
-
-#define C_EMBEDDED 1
-#define C_DISP_GAIN 1
 
 #define RC_FRICTIONCONST 2.5e-3f
 
@@ -88,10 +77,6 @@ extern unsigned int c_PostCheck;
 //trigger/kicker boundary crossing hysterisis
 #define STATICTIME 0.005f
 
-/*******************
-End New Physics constants
-*******************/
-
 //#define INFOARRAY vertex[2];
 //#define INFONORMAL 0
 //#define INFOMOVE 1
@@ -99,7 +84,7 @@ End New Physics constants
 inline BOOL FQuickLineIntersect(PINFLOAT x1, PINFLOAT y1, PINFLOAT x2, PINFLOAT y2,
 		PINFLOAT x3, PINFLOAT y3, PINFLOAT x4, PINFLOAT y4)
 	{
-	double d123, d124, d341, d342;
+	float d123, d124, d341, d342;
 
     d123 = (x2 - x1)*(y3 - y1) - (x3 - x1)*(y2 - y1);
 
@@ -120,7 +105,6 @@ class UpdateRect
 	{
 public:
 	RECT m_rcupdate;
-	//Vector<HitObject> m_vobject;
 	Vector<AnimObject> m_vobject;
 	BOOL m_fSeeThrough;
 	};
@@ -151,7 +135,7 @@ public:
 	//EventProxyBase *m_pep;
 	IFireEvents *m_pfe;
 	float m_threshold;
-
+	
 	//IDispatch *m_pdisp;
 	IFireEvents *m_pfedebug;
 
@@ -161,22 +145,22 @@ public:
 	FRect3D m_rcHitRect;
 
 	BOOL m_fEnabled;
-	BOOL m_fSlipFactor;
-	
 	int  m_ObjType;
 	void* m_pObj;
-
 	float m_elasticity;
+	float m_antifriction;
+	float m_scatter;
+
 	};
 
 class AnimObject
 	{
 public:
 	virtual BOOL FMover() {return fFalse;}
-	virtual void UpdateTimeTemp(PINFLOAT dtime) {}
+	virtual void UpdateDisplacements(PINFLOAT dtime) {}
 	//virtual void ResetFrameTime() {}
 	//virtual void UpdateTimePermanent() {}
-	virtual void UpdateAcceleration(PINFLOAT dtime) {}
+	virtual void UpdateVelocities(PINFLOAT dtime) {}
 
 	virtual BOOL FNeedsScreenUpdate() {return fFalse;}
     virtual void Check3D() {}
@@ -202,15 +186,17 @@ class LineSeg : public HitNormal
 	{
 public:
 	Vertex v1, v2;
+	float length;
 
-	PINFLOAT HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal, bool direction, bool lateral, bool rigid); // Ultracade version
+	virtual PINFLOAT HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal
+									,bool direction, bool lateral, bool rigid);
 	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
 	//float VertHitTest(Ball *pball, float dtime, Vertex *phitnormal);
 	virtual int GetType() {return eLineSeg;}
 	virtual void Draw(HDC hdc);
 	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
 	void CalcNormal();
-	double CalcLength();
+	void CalcLength();
 	virtual void CalcHitRect();
 	};
 
@@ -225,8 +211,10 @@ public:
 
 	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
 
-	PINFLOAT HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal, bool direction,bool lateral, bool rigid);
-	PINFLOAT HitTestRadius(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal, float ballradius);
+	PINFLOAT HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal
+								,bool direction, bool lateral, bool rigid);
+
+	PINFLOAT HitTestRadius(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
 
 	virtual int GetType() {return eCircle;}
 

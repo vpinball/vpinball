@@ -1,11 +1,9 @@
+#pragma once
 // Surface.h : Declaration of the Surface
 
 #ifndef __SURFACE_H_
 #define __SURFACE_H_
 
-/*#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000*/
 
 #include "resource.h"       // main symbols
 
@@ -24,7 +22,8 @@ public:
 	Vertex m_Center;
 	TimerDataRoot m_tdr;
 	BOOL m_fHitEvent;
-	float m_threshold; // speed at which ball needs to hit to register a hit
+	float m_threshold;			// speed at which ball needs to hit to register a hit
+	float m_slingshot_threshold;	// speed at which ball needs to trigger slingshot 
 	char m_szImage[MAXTOKEN];
 	char m_szSideImage[MAXTOKEN];
 	ImageAlignment m_ia;
@@ -33,12 +32,19 @@ public:
 	float m_heighttop;
 	COLORREF m_topcolor;
 	BOOL m_fDroppable;
+	BOOL m_fFlipbook;
+	BOOL m_fFloor;
 	BOOL m_fDisplayTexture; //In editor
 	float m_slingshotforce;
 	float m_elasticity;
+	float m_friction;
+	float m_scatter;
 	BOOL m_fCastsShadow;
 	BOOL m_fVisible;
 	BOOL m_fSideVisible;
+	BOOL m_fEnabled;
+	BOOL m_fCollidable; //wall must be droppable too!
+	BOOL m_fSlingshotAnimation;
 	COLORREF m_slingshotColor;
 	};
 
@@ -146,9 +152,10 @@ END_CONNECTION_POINT_MAP()
 
 	BOOL m_fIsDropped;
 	BOOL m_fDisabled;
-
+	
 	Hit3DPolyDrop *m_phitdrop;
 	Vector<HitObject> m_vhoDrop; // Objects to disable when dropped
+	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
 // ISurface
 public:
@@ -160,6 +167,12 @@ public:
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
+
+	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
+	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
+
 	STDMETHOD(get_SlingshotStrength)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_SlingshotStrength)(/*[in]*/ float newVal);
 	STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -168,6 +181,8 @@ public:
 	STDMETHOD(put_IsDropped)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_CanDrop)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_CanDrop)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_FlipbookAnimation)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_FlipbookAnimation)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_FaceColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_FaceColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_HeightTop)(/*[out, retval]*/ float *pVal);
@@ -188,8 +203,16 @@ public:
 	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Disabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Disabled)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
+
+	STDMETHOD (get_SlingshotThreshold)(/*[out, retval]*/ float *pVal);
+	STDMETHOD (put_SlingshotThreshold)(/*[in]*/ float newVal);
+	STDMETHOD (get_SlingshotAnimation)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD (put_SlingshotAnimation)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_SlingshotColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_SlingshotColor)(/*[in]*/ OLE_COLOR newVal);
+
 };
 
 #endif //__SURFACE_H_

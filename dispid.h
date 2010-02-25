@@ -1,4 +1,4 @@
-
+#pragma once
 // Table
 
 #define DISPID_Table_GridSize 109
@@ -75,6 +75,8 @@
 // Generic
 #define DISPID_HitEvents_Hit 1400
 #define DISPID_HitEvents_Unhit 1401
+#define DISPID_LimitEvents_EOS 1402
+#define DISPID_LimitEvents_BOS 1403
 
 // PerPropetyDispids
 #define DISPID_Image 1500
@@ -88,5 +90,9 @@
 #define DISPID_Image4 1508
 #define DISPID_Image5 1509
 
+
 // Must have a carriage return at end of file for correct resource file parsing
+
+
+
 

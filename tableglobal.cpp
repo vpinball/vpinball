@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 STDMETHODIMP ScriptGlobalTable::BeginModal()
 {

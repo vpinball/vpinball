@@ -1,15 +1,14 @@
 // Plunger.cpp : Implementation of CVBATestApp and DLL registration.
 
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 /////////////////////////////////////////////////////////////////////////////
-//
+
 
 Plunger::Plunger()
-	{
+{
 	m_phitplunger = NULL;
-	}
+}
 
 Plunger::~Plunger()
 	{
@@ -32,30 +31,28 @@ void Plunger::SetDefaults()
 	m_d.m_width = 25;
 	m_d.m_height = 20;
 
-	m_d.m_heightPulled = 0;
+	m_d.m_stroke = m_d.m_height*4;
 
 	m_d.m_speedPull = 5;
 	m_d.m_speedFire = 80;
-	m_d.m_powerBias = 0;					//>>> added by chris
-
+	
 	m_d.m_tdr.m_fTimerEnabled = fFalse;
 	m_d.m_tdr.m_TimerInterval = 100;
 
 	m_d.m_szSurface[0] = 0;
-	
-	/* BEGIN NEW PHYSICS */
-	m_d.m_stroke = m_d.m_height*4;
+
 	m_d.m_mechPlunger = fFalse;		//rlc plungers require selection for mechanical input
 	m_d.m_autoPlunger = fFalse;		
 	m_d.m_mechStrength = 85;		//rlc
 	m_d.m_parkPosition = 0.5f/3.0f;	// typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
 
+	m_d.m_fVisible = fTrue;
 	m_d.m_scatterVelocity = 0;
 	m_d.m_breakOverVelocity = 18.0f;
-
-
-	/* END NEW PHYSICS */
+	
 	}
+
+
 
 void Plunger::PreRender(Sur *psur)
 	{
@@ -71,6 +68,8 @@ void Plunger::Render(Sur *psur)
 			m_d.m_v.x + m_d.m_width, m_d.m_v.y + m_d.m_height);
 	}
 
+
+
 void Plunger::GetHitShapes(Vector<HitObject> *pvho)
 	{
 	HitPlunger *php;
@@ -78,13 +77,12 @@ void Plunger::GetHitShapes(Vector<HitObject> *pvho)
 	float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
 	php = new HitPlunger(m_d.m_v.x - m_d.m_width, m_d.m_v.y + m_d.m_height, m_d.m_v.x + m_d.m_width,
-			m_d.m_autoPlunger ? m_d.m_v.y - m_d.m_heightPulled : m_d.m_v.y - m_d.m_stroke, zheight, 
-			m_d.m_parkPosition, m_d.m_scatterVelocity, m_d.m_breakOverVelocity, m_d.m_mechStrength,m_d.m_mechPlunger);
+			m_d.m_v.y - m_d.m_stroke, zheight, this);
 
 	php->m_pfe = NULL;
 
-	php->m_plungeranim.m_frameStart = m_d.m_v.y; //- m_d.m_heightPulled;
-	php->m_plungeranim.m_frameEnd = m_d.m_v.y - m_d.m_stroke;//m_d.m_height*4;
+	php->m_plungeranim.m_frameStart = m_d.m_v.y;
+	php->m_plungeranim.m_frameEnd = m_d.m_v.y - m_d.m_stroke;
 
 	pvho->AddElement(php);
 	php->m_pplunger = this;
@@ -121,11 +119,11 @@ void Plunger::EndPlay()
 		{
 		for (i=0;i<m_phitplunger->m_plungeranim.m_vddsFrame.Size();i++)
 			{
-			//m_phitplunger->m_vddsFrame.ElementAt(i)->ppds->Release();
 			delete m_phitplunger->m_plungeranim.m_vddsFrame.ElementAt(i);
 			}
 
 		m_phitplunger = NULL;
+
 		}
 
 	IEditable::EndPlay();
@@ -140,7 +138,6 @@ void Plunger::MoveOffset(float dx, float dy)
 	{
 	m_d.m_v.x += dx;
 	m_d.m_v.y += dy;
-
 	m_ptable->SetDirtyDraw();
 	}
 
@@ -154,8 +151,11 @@ void Plunger::PutCenter(Vertex *pv)
 	{
 	m_d.m_v.x = pv->x;
 	m_d.m_v.y = pv->y;
-
 	m_ptable->SetDirtyDraw();
+	}
+
+void Plunger::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
 	}
 
 void Plunger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
@@ -180,7 +180,7 @@ float rgcrossplungerNormal[][2] = {
 	1, 0,
 	};
 	
-#define PLUNGER_FRAME_COUNT 10
+#define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
 
 void Plunger::RenderMoversFromCache(Pin3D *ppin3d)
 	{
@@ -189,10 +189,11 @@ void Plunger::RenderMoversFromCache(Pin3D *ppin3d)
 
 void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
+	if(m_d.m_fVisible)
+	{
 	_ASSERTE(m_phitplunger);
 	Pin3D *ppin3d = &g_pplayer->m_pin3d;
 	LPDIRECTDRAWSURFACE7 pdds;
-	//DDBLTFX ddbfx;
 	ObjFrame *pof;
 
 	float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
@@ -208,14 +209,8 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	int i;
 
-	//ddbfx.dwSize = sizeof(DDBLTFX);
-	//ddbfx.dwFillColor = RGB(0,0,0);
-
-	//float anglerad = ANGTORAD(m_d.m_StartAngle);
-	//float anglerad2 = ANGTORAD(m_d.m_EndAngle);
-
-	float beginy = m_d.m_v.y;// - m_d.m_heightPulled;
-	float endy = m_d.m_v.y - m_d.m_stroke;//m_d.m_height*4;
+	float beginy = m_d.m_v.y;
+	float endy = m_d.m_v.y - m_d.m_stroke;
 
 	WORD rgi[8];
 
@@ -229,9 +224,6 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pof = new ObjFrame();
 
-		//ppin3d->m_pddsBackBuffer->Blt(NULL, ppin3d->m_pddsStatic, NULL, 0, NULL);
-		//ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, 0, NULL);
-
 		int l,m;
 		for (l=0;l<16;l++)
 			{
@@ -241,8 +233,8 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			float sn,cs;
 
-			sn = (float)sin(angle);
-			cs = (float)cos(angle);
+			sn = sin(angle);
+			cs = cos(angle);
 
 			int offset = l*PLUNGEPOINTS;
 
@@ -259,18 +251,18 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[PLUNGEPOINTS-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
 			}
 
-		/*int l;
-		for (l=0;l<8;l++)
-			{
-			rgv3D[l].x = (l&1) ? (m_d.m_v.x - m_d.m_width) : (m_d.m_v.x + m_d.m_width);
-			rgv3D[l].y = (l&2) ? height + 20 : height;
-			rgv3D[l].z = (l&4) ? 50.0f : 0.02f;
-
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-			}*/
-
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
-		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS), fFalse);
+		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitplunger->m_plungeranim.m_znear
+									  , &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS), fFalse);
+
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{			
+			// Clear the texture by copying the color and z values from the "static" buffers.
+			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ
+				                                              , &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+			}
 
 		for (l=0;l<16;l++)
 			{
@@ -283,83 +275,41 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgi[2] = (m + 1 + offset + PLUNGEPOINTS) % (16*PLUNGEPOINTS);
 				rgi[1] = (m + offset + PLUNGEPOINTS) % (16*PLUNGEPOINTS);
 
-				//SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-															  rgv3D, (16*PLUNGEPOINTS),
-															  rgi, 4, NULL);
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D
+													   ,(16*PLUNGEPOINTS),rgi, 4, 0);
 				}
 			}
-
-		/*rgi[0] = 0;
-		rgi[1] = 1;
-		rgi[2] = 3;
-		rgi[3] = 2;
-
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  rgv3D, 8,
-													  rgi, 4, NULL);
-
-		rgi[0] = 4;
-		rgi[3] = 5;
-		rgi[2] = 7;
-		rgi[1] = 6;
-
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  rgv3D, 8,
-													  rgi, 4, NULL);
-
-		rgi[0] = 1;
-		rgi[3] = 3;
-		rgi[2] = 7;
-		rgi[1] = 5;
-
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  rgv3D, 8,
-													  rgi, 4, NULL);
-
-		rgi[0] = 2;
-		rgi[1] = 3;
-		rgi[2] = 7;
-		rgi[3] = 6;
-
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  rgv3D, 8,
-													  rgi, 4, NULL);*/
 
 		pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
-		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, 0, NULL);
-		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY);
+		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
+		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
-		//pdds->Blt(NULL, NULL, NULL, DDBLT_COLORFILL, &ddbfx);
 		m_phitplunger->m_plungeranim.m_vddsFrame.AddElement(pof);
 		pof->pdds = pdds;
 		
-		//ppin3d->WriteObjFrameToCacheFile(pof);
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{
+			// Create the D3D texture that we will blit.
+			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
+			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
+			}
 
 		ppin3d->ExpandRectByRect(&m_phitplunger->m_plungeranim.m_rcBounds, &pof->rc);
 
 		// reset the portion of the z-buffer that we changed
-		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY);
+		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
 		ddbltfx.dwSize = sizeof(DDBLTFX);
 		ddbltfx.dwFillColor = 0;
-		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,
-				&pof->rc, DDBLT_COLORFILL, &ddbltfx);
+		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
-		
-		ppin3d->WriteAnimObjectToCacheFile(&m_phitplunger->m_plungeranim, &m_phitplunger->m_plungeranim.m_vddsFrame);
+
+	ppin3d->WriteAnimObjectToCacheFile(&m_phitplunger->m_plungeranim, &m_phitplunger->m_plungeranim.m_vddsFrame);
+	}
 	}
 
 STDMETHODIMP Plunger::InterfaceSupportsErrorInfo(REFIID riid)
@@ -387,23 +337,21 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex));
 	bw.WriteFloat(FID(WDTH), m_d.m_width);
 	bw.WriteFloat(FID(HIGH), m_d.m_height);
-	bw.WriteFloat(FID(HGHP), m_d.m_heightPulled);
+	bw.WriteFloat(FID(HPSL), m_d.m_stroke);
 	bw.WriteFloat(FID(SPDP), m_d.m_speedPull);
 	bw.WriteFloat(FID(SPDF), m_d.m_speedFire);
-	bw.WriteFloat(FID(PWRB), m_d.m_powerBias);		//>>> added by chris
 
-	bw.WriteFloat(FID(HPSL), m_d.m_stroke);
 	bw.WriteFloat(FID(MESTH), m_d.m_mechStrength);		//rlc
 	bw.WriteBool(FID(MECH), m_d.m_mechPlunger);		//
 	bw.WriteBool(FID(APLG), m_d.m_autoPlunger);		//
-
+	
 	bw.WriteFloat(FID(MPRK), m_d.m_parkPosition);		//
 	bw.WriteFloat(FID(PSCV), m_d.m_scatterVelocity);	//
 	bw.WriteFloat(FID(PBOV), m_d.m_breakOverVelocity);	//
 
-
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+	bw.WriteBool(FID(VSBL), m_d.m_fVisible);
 	bw.WriteString(FID(SURF), m_d.m_szSurface);
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 
@@ -412,17 +360,7 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-	/*ULONG writ = 0;
-	HRESULT hr = S_OK;
-
-	DWORD dwID = ApcProjectItem.ID();
-	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
-		return hr;
-
-	if(FAILED(hr = pstm->Write(&m_d, sizeof(PlungerData), &writ)))
-		return hr;
-
-	return hr;*/
+	
 	}
 
 HRESULT Plunger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -473,9 +411,9 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetFloat(&m_d.m_height);
 		}
-	else if (id == FID(HGHP))
+	else if (id == FID(HPSL))
 		{
-		pbr->GetFloat(&m_d.m_heightPulled);
+		pbr->GetFloat(&m_d.m_stroke);
 		}
 	else if (id == FID(SPDP))
 		{
@@ -484,30 +422,6 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(SPDF))
 		{
 		pbr->GetFloat(&m_d.m_speedFire);
-		}
-	else if (id == FID(PWRB))
-		{
-		pbr->GetFloat(&m_d.m_powerBias);
-		}
-	else if (id == FID(TMON))
-		{
-		pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
-		}
-	else if (id == FID(TMIN))
-		{
-		pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-		}
-	else if (id == FID(NAME))
-		{
-		pbr->GetWideString((WCHAR *)m_wzName);
-		}
-	else if (id == FID(SURF))
-		{
-		pbr->GetString(m_d.m_szSurface);
-		}
-	else if (id == FID(HPSL))
-		{
-			pbr->GetFloat(&m_d.m_stroke);
 		}
 	else if (id == FID(MESTH))
 		{
@@ -525,6 +439,10 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetFloat(&m_d.m_breakOverVelocity);
 		}
+	else if (id == FID(TMON))
+		{
+		pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+		}
 	else if (id == FID(MECH))
 		{
 		pbr->GetBool(&m_d.m_mechPlunger);
@@ -533,7 +451,26 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetBool(&m_d.m_autoPlunger);
 		}
-
+	else if (id == FID(TMIN))
+		{
+		pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
+		}
+	else if (id == FID(NAME))
+		{
+		pbr->GetWideString((WCHAR *)m_wzName);
+		}
+	else if (id == FID(VSBL))
+		{
+		pbr->GetBool(&m_d.m_fVisible);
+		}
+	else if (id == FID(SURF))
+		{
+		pbr->GetString(m_d.m_szSurface);
+		}
+	else
+		{
+		ISelect::LoadToken(id, pbr);
+		}
 	return fTrue;
 	}
 
@@ -546,20 +483,47 @@ STDMETHODIMP Plunger::PullBack()
 {
 	if (m_phitplunger)
 		{
-		m_phitplunger->m_plungeranim.m_posdesired = m_d.m_v.y - m_d.m_heightPulled;
-		m_phitplunger->m_plungeranim.m_speed = /*m_d.m_speedPull*/0;
+		m_phitplunger->m_plungeranim.m_posdesired = m_d.m_v.y;
+		m_phitplunger->m_plungeranim.m_speed = 0;  // m_d.m_speedPull
 		m_phitplunger->m_plungeranim.m_force = m_d.m_speedPull;
-		//m_phitplunger->m_acc = 0;
-		m_phitplunger->m_plungeranim.m_fAcc = fTrue;
 
-/*#ifdef LOG
-		{
-		int i = g_pplayer->m_vmover.IndexOf(m_phitplunger);
-		fprintf(g_pplayer->m_flog, "Plunger Pull %d\n", i);
-		}
-#endif*/
+		if (m_phitplunger->m_plungeranim.m_mechTimeOut <= 0)
+			{			
+			m_phitplunger->m_plungeranim.m_fAcc = fTrue;
+			}
 		}
 
+	return S_OK;
+}
+
+extern int uShockType;
+
+STDMETHODIMP Plunger::MotionDevice(int *pVal)
+{
+	*pVal=uShockType;
+
+	return S_OK;
+
+}
+
+//float mechPlunger(void);
+extern float curMechPlungerPos;
+
+STDMETHODIMP Plunger::Position(int *pVal)
+{
+//	*pVal=curMechPlungerPos;
+
+	float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
+	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : curMechPlungerPos*(1.0f - m_d.m_parkPosition);
+	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
+	*pVal = int(tmp/.04);
+//	return tmp;
+
+	
+//	float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
+//	float tmp = ((float)JOYRANGEMN-1 < 0) ? (float)JOYRANGEMN-1*m_d.m_parkPosition : (float)JOYRANGEMN-1*(1.0f - m_d.m_parkPosition);
+//	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
+//	*pVal = tmp;
 	return S_OK;
 }
 
@@ -572,25 +536,32 @@ STDMETHODIMP Plunger::Fire()
 		if ( m_d.m_autoPlunger == fTrue ) 
 		{
 			// Use max strength.
-			m_phitplunger->m_plungeranim.m_posdesired = m_d.m_v.y - m_d.m_stroke; 
+			// I don't understand where the strength for the button plunger is coming from.
+			// The strength is always larger than the mechanical one.  So I scaled by a contstant.
+			m_phitplunger->m_plungeranim.m_posdesired = m_d.m_v.y; 
 			m_phitplunger->m_plungeranim.m_speed = 0;
-			m_phitplunger->m_plungeranim.m_force = -m_d.m_speedFire;;//-m_d.m_mechStrength;
+			m_phitplunger->m_plungeranim.m_force = -m_d.m_mechStrength * 1.0613f;
 
 			m_phitplunger->m_plungeranim.m_fAcc = fTrue;			
-			m_phitplunger->m_plungeranim.m_mechTimeOut = 0; 
+			m_phitplunger->m_plungeranim.m_mechTimeOut = 100;	
 		}
 		else
 		{
 			m_phitplunger->m_plungeranim.m_posdesired = m_d.m_v.y - m_d.m_stroke;
-			m_phitplunger->m_plungeranim.m_speed = 0;
+			m_phitplunger->m_plungeranim.m_speed = 0;//m_d.m_speedFire;
 			m_phitplunger->m_plungeranim.m_force = -m_d.m_speedFire;
-			m_phitplunger->m_plungeranim.m_fAcc = fTrue;	
+
+			if (m_phitplunger->m_plungeranim.m_mechTimeOut <= 0)
+			{			
+				m_phitplunger->m_plungeranim.m_fAcc = fTrue;			
+				m_phitplunger->m_plungeranim.m_mechTimeOut = 20;	//rlc disable for 200 millisconds
+			}
 		}
 	}
 
 #ifdef LOG
-		int i = g_pplayer->m_vmover.IndexOf(m_phitplunger);
-		fprintf(g_pplayer->m_flog, "Plunger Release %d\n", i);
+	int i = g_pplayer->m_vmover.IndexOf(m_phitplunger);
+	fprintf(g_pplayer->m_flog, "Plunger Release %d\n", i);
 #endif
 
 	return S_OK;
@@ -616,6 +587,7 @@ STDMETHODIMP Plunger::put_PullSpeed(float newVal)
 
 STDMETHODIMP Plunger::get_FireSpeed(float *pVal)
 {
+
 	*pVal = m_d.m_speedFire;
 
 	return S_OK;
@@ -646,14 +618,6 @@ STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
 
 		Ball *pball = g_pplayer->CreateBall(x, y, height, 0.1f, 0, 0);
 		
-		/*Ball *pball = new Ball();
-		pball->radius = 25;
-		pball->x = (m_phitplunger->m_x + m_phitplunger->m_x2) / 2;
-		pball->y = m_phitplunger->m_pos - pball->radius - 0.01f;
-		pball->vx = 0.1f;
-		pball->vy = 0;
-		g_pplayer->m_vball.AddElement(pball);*/
-
 		*pBallEx = pball->m_pballex;
 		pball->m_pballex->AddRef();
 		}
@@ -699,7 +663,7 @@ STDMETHODIMP Plunger::put_Y(float newVal)
 
 STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -718,24 +682,17 @@ STDMETHODIMP Plunger::put_Surface(BSTR newVal)
 	return S_OK;
 }
 
-/*HRESULT Plunger::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Plunger");
-
-	return S_OK;
-	}*/
-
-STDMETHODIMP Plunger::get_PowerBias(float *pVal)
+STDMETHODIMP Plunger::get_MechStrength(float *pVal)
 {
-	*pVal = m_d.m_powerBias;
+	*pVal = m_d.m_mechStrength;
 
 	return S_OK;
 }
 
-STDMETHODIMP Plunger::put_PowerBias(float newVal)
+STDMETHODIMP Plunger::put_MechStrength(float newVal)
 {
 	STARTUNDO
-	m_d.m_powerBias = newVal;
+	m_d.m_mechStrength = newVal;
 	STOPUNDO
 
 	return S_OK;
@@ -751,10 +708,10 @@ STDMETHODIMP Plunger::get_MechPlunger(VARIANT_BOOL *pVal)
 STDMETHODIMP Plunger::put_MechPlunger(VARIANT_BOOL newVal)
 {
 	STARTUNDO
-		m_d.m_mechPlunger = VBTOF(newVal);
+	m_d.m_mechPlunger = VBTOF(newVal);
 	STOPUNDO
 
-		return S_OK;
+	return S_OK;
 }
 
 
@@ -768,12 +725,30 @@ STDMETHODIMP Plunger::get_AutoPlunger(VARIANT_BOOL *pVal)
 STDMETHODIMP Plunger::put_AutoPlunger(VARIANT_BOOL newVal)
 {
 	STARTUNDO
-		m_d.m_autoPlunger = VBTOF(newVal);
+	m_d.m_autoPlunger = VBTOF(newVal);
 	STOPUNDO
 
-		return S_OK;
+	return S_OK;
 }
 
+
+STDMETHODIMP Plunger::get_Visible(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fVisible);
+
+	return S_OK;
+}
+
+STDMETHODIMP Plunger::put_Visible(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+
+	m_d.m_fVisible = VBTOF(newVal);
+
+	STOPUNDO
+
+	return S_OK;
+}
 
 STDMETHODIMP Plunger::get_ParkPosition(float *pVal)
 {
@@ -787,7 +762,7 @@ STDMETHODIMP Plunger::put_ParkPosition(float newVal)
 	m_d.m_parkPosition = newVal;
 	STOPUNDO
 
-		return S_OK;
+	return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Stroke(float *pVal)
@@ -800,14 +775,12 @@ STDMETHODIMP Plunger::put_Stroke(float newVal)
 {
 	STARTUNDO
 
-	if(newVal < 16.5f)
-		newVal = 16.5f;
-	
+	if(newVal < 16.5f) newVal = 16.5f;
 	m_d.m_stroke = newVal;
 
 	STOPUNDO
 
-		return S_OK;
+	return S_OK;
 }
 
 
@@ -820,10 +793,10 @@ STDMETHODIMP Plunger::get_ScatterVelocity(float *pVal)
 STDMETHODIMP Plunger::put_ScatterVelocity(float newVal)
 {
 	STARTUNDO
-		m_d.m_scatterVelocity = newVal;
+	m_d.m_scatterVelocity = newVal;
 	STOPUNDO
 
-		return S_OK;
+	return S_OK;
 }
 
 STDMETHODIMP Plunger::get_BreakOverVelocity(float *pVal)
@@ -838,23 +811,7 @@ STDMETHODIMP Plunger::put_BreakOverVelocity(float newVal)
 	m_d.m_breakOverVelocity = newVal;
 	STOPUNDO
 
-		return S_OK;
-}
-
-STDMETHODIMP Plunger::get_MechStrength(float *pVal)
-{
-	*pVal = m_d.m_mechStrength;
-
 	return S_OK;
-}
-
-STDMETHODIMP Plunger::put_MechStrength(float newVal)
-{
-	STARTUNDO
-		m_d.m_mechStrength = newVal;
-	STOPUNDO
-
-		return S_OK;
 }
 
 void Plunger::GetDialogPanes(Vector<PropertyPane> *pvproppane)

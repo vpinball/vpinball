@@ -1,9 +1,5 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
-/*#define SCALEX(x) ((int)((x - m_offx)*m_zoom))
-#define SCALEY(y) ((int)((y - m_offy)*m_zoom))
-#define SCALED(d) ((int)(d*m_zoom))*/
 
 PaintSur::PaintSur(HDC hdc, float zoom, float offx, float offy, int width, int height, ISelect *psel) : Sur(hdc, zoom, offx, offy, width, height)
 	{
@@ -196,11 +192,6 @@ void PaintSur::Image(float x, float y, float x2, float y2, HDC hdcSrc, int width
 
 void PaintSur::SetObject(ISelect *psel)
 	{
-	/*if ((m_psel != NULL) && (psel == m_psel))
-		{
-		m_psel->SetSelectFormat(this);
-		}*/
-
 	if ((m_psel != NULL) && (psel != NULL)) // m_psel can be null when rendering a blueprint or other item which has no selection feedback
 		{
 		if (psel->m_selectstate == eSelected)

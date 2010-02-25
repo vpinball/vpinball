@@ -1,9 +1,6 @@
 #include "stdafx.h"
-#include "..\main.h"
 
-//#include "gifreader.h"
 
-//#define LOCAL
 #define FAST register
 #define OUT_OF_MEMORY -10
 #define BAD_CODE_SIZE -20
@@ -392,14 +389,6 @@ ByteCorrection:
  */
 int LZWReader::get_byte()
 	{
-	//if (m_linesleft == 0)
-		//{
-		/*int toofar = m_readahead - m_cfilebuffer; // bytes we already read that we shouldn't have
-		LARGE_INTEGER li;
-		li.QuadPart = -toofar;
-		m_pstm->Seek(li, STREAM_SEEK_CUR, NULL);*/
-		//return -1;
-		//}
 
 	m_cfilebuffer++;
 	if (m_cfilebuffer == FILE_BUF_SIZE)
@@ -411,9 +400,8 @@ int LZWReader::get_byte()
 		}
 	
 	return m_pfilebufferbytes[m_cfilebuffer];
-
-	//return *(m_pbGifBitsCur++);
 	}
+
 
 BYTE *LZWReader::NextLine()
 	{

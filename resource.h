@@ -13,6 +13,7 @@
 #define DISPID_Textbox_Font             4
 #define DISPID_Surface_SideColor        6
 #define DISPID_Surface_SideColor2       7
+#define DISPID_Gate_Rotation3           8
 #define DISPID_Decal_SizingType         9
 #define DISPID_Surface_FaceColor        10
 #define DISPID_Light_BlinkInterval      10
@@ -48,11 +49,15 @@
 #define IDC_STARTGAME                   118
 #define IDR_Textbox                     119
 #define IDS_TB_TEXTBOX                  119
+#define IDC_LMAGSAVE                    119
 #define IDC_TEXTBOX                     120
 #define IDS_DISPREEL_DESC               120
+#define IDC_RMAGSAVE                    120
 #define IDS_BUMPER_DESC                 121
+#define IDC_MECHTILT                    121
 #define IDR_Bumper                      122
 #define IDS_TB_BUMPER                   122
+#define IDC_STARTGAME2                  122
 #define IDC_BUMPER                      123
 #define IDS_TB_DISPREEL                 123
 #define IDS_PIEVENTHANDLER_DESC         124
@@ -80,8 +85,6 @@
 #define IDC_ANTIALIAS                   137
 #define IDS_GATE_DESC                   138
 #define IDC_CUR_WALL                    138
-#define IDC_ANTIALIAS2                  138
-#define IDC_RENDERCACHE                 138
 #define IDR_Gate                        139
 #define IDS_TB_GATE                     139
 #define IDC_CUR_FLIPPER                 139
@@ -144,6 +147,7 @@
 #define IDS_COLLECTION                  174
 #define IDS_IMAGETOOLARGE               175
 #define IDS_NEED_DD7                    176
+#define IDS_NEED_DD9                    176
 #define IDS_LOCK                        177
 #define IDS_MISC                        178
 #define ID_LOCK                         179
@@ -169,7 +173,9 @@
 #define IDC_PICTUREPREVIEW              209
 #define IDC_EDIT                        209
 #define IDC_PAUSE                       209
+#define IDC_SNDEXPORT                   209
 #define IDC_ROTATEBY                    210
+#define IDC_EXPORT                      210
 #define IDC_CENTERX                     211
 #define IDC_CENTERY                     212
 #define IDB_ICON_TIMER                  213
@@ -231,7 +237,6 @@
 #define IDD_TRANSLATE                   262
 #define IDC_RIGHTFLIPPERBUTTON          264
 #define IDB_LOGO                        264
-#define IDR_TABLE_NEW                   265
 #define IDC_LEFTTILTBUTTON              266
 #define IDI_TABLEICON                   266
 #define IDR_SCRIPTMENU                  267
@@ -262,10 +267,14 @@
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
+#define IDC_LMAGSAVEBUTTON              281
 #define IDC_EVENTLIST                   282
 #define IDC_OFFSETX                     282
+#define IDC_RIGHTMAGNASAVE              282
+#define IDC_RMAGSAVEBUTTON              282
 #define IDC_OFFSETY                     283
 #define IDC_DOWN                        283
+#define IDC_MECHTILTBUTTON              283
 #define IDC_UP                          284
 #define IDC_PLAY_MUSIC                  285
 #define IDC_OUT2                        285
@@ -294,6 +303,7 @@
 #define IDC_TRANSWEBSITE                303
 #define IDC_TRANSNAME                   304
 #define IDC_NEW                         305
+#define IDC_TRANSNAME2                  305
 #define IDC_CREATEFROMSELECTION         306
 #define IDC_NAME                        307
 #define IDC_OUTLIST                     309
@@ -384,6 +394,7 @@
 #define IDS_TB_COMCONTROL               350
 #define IDD_PROPLIGHTSEQ_STATE          351
 #define IDC_STEPAMOUNT                  351
+#define IDS_JPG_FORMAT_ERR              351
 #define IDD_PROPTEXTBOX_VISUALS         352
 #define IDD_PROPTEXTBOX_POSITION        353
 #define IDD_PROPTEXTBOX_STATE           354
@@ -406,19 +417,26 @@
 #define IDD_PROPPOINT_VISUALS           364
 #define IDC_HANGDETECT                  364
 #define IDD_SECURITY_OPTIONS            365
-#define IDC_UNNEEDEDAFTERCACHE          365
 #define IDD_PROPPOINT_VISUALSWTEX       366
 #define IDC_PROTECT_SAVEASPROT          367
 #define IDD_PROPGATE_PHYSICS            367
 #define IDD_DEBUGGER                    368
+#define DISPID_SPIN_SUPPORTS            368
 #define IDI_PLAY                        369
+#define IDC_TREE1                       369
 #define IDI_PAUSE                       370
 #define IDI_STEP                        371
 #define IDB_TARGET                      376
 #define IDB_TB_DEBUG                    377
 #define IDD_COMLIST                     378
-#define IDD_GAMEPAUSENoEDIT             379
-#define IDD_GAMEPAUSENOEDIT             379
+#define IDD_PROPKICKER_STATE            379
+#define IDR_TABLE_NEW                   383
+#define IDC_ADDCREDITBUTTON2            400
+#define IDC_ADDCREDIT2                  401
+#define IDC_ADDCREDITKEY2               401
+#define IDC_EXITGAME                    402
+#define IDC_EXITGAMEBUTTON              403
+#define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
@@ -472,9 +490,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        379
+#define _APS_NEXT_RESOURCE_VALUE        384
 #define _APS_NEXT_COMMAND_VALUE         32842
-#define _APS_NEXT_CONTROL_VALUE         366
+#define _APS_NEXT_CONTROL_VALUE         370
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

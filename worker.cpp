@@ -1,8 +1,6 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 HANDLE g_hWorkerStarted;
-HANDLE g_hProgressWindowStarted;
 
 int hangsnooptimerid;
 int lasthangsnoopvalue;
@@ -22,7 +20,8 @@ VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
 		//eiInterrupt.scode = E_NOTIMPL;
 		eiInterrupt.wCode = 2345;
 		delete wzError;
-		HRESULT hr = g_pplayer->m_ptable->m_pcv->m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE/*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
+		HRESULT hr = g_pplayer->m_ptable->m_pcv->m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE/*SCRIPTTHREADID_ALL*/
+			, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
 		}
 	lasthangsnoopvalue = newvalue;
 	}
@@ -64,21 +63,6 @@ DWORD WINAPI VPWorkerThreadStart(void *param)
 				CloseHandle(hEvent);
 				}
 				break;
-				
-			case CREATE_PROGRESS_WINDOW:
-				{
-				HWND *phwndProgressDialog = (HWND *)msg.lParam;
-				*phwndProgressDialog = CreateDialog(g_hinstres, MAKEINTRESOURCE(IDD_PROGRESS), NULL/*g_pvp->m_hwnd*/, ProgressProc);
-				SetEvent(g_hProgressWindowStarted);
-				}
-				break;
-				
-			case DESTROY_PROGRESS_WINDOW:
-				{
-				HWND hwndProgressDialog = (HWND)msg.lParam;
-				DestroyWindow(hwndProgressDialog);
-				}
-				break;
 
 			default:
 				{
@@ -99,13 +83,12 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
 	FastIStorage *pstgroot = pasp->pstg;
 
-	//pstgroot->Commit(STGC_DEFAULT);
 	IStorage *pstgDisk;
 
 	WCHAR *wzSaveName = L"AutoSave";
 	WCHAR *wzSaveExtension = L".vpt";
 	WCHAR wzSuffix[32];
-	_itow_s(pasp->tableindex, wzSuffix, 10);
+	_itow(pasp->tableindex, wzSuffix, 10);
 
 	WCHAR *wzT = new WCHAR[MAX_PATH + 32 + lstrlenW(wzSaveName) + lstrlenW(wzSaveExtension)+ 1];
 
@@ -119,19 +102,11 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 		0, &pstgDisk)))
 		{
 		pstgroot->CopyTo(0, NULL, NULL, pstgDisk);
-		//MessageBox(NULL, "Copied", NULL, 0);
 		hr = pstgDisk->Commit(STGC_DEFAULT);
 		pstgDisk->Release();
 		}
-	/*else
-		{
-		//LocalString ls(IDS_SAVEERROR);
-		//MessageBox(NULL, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
-		}*/
 
 	pstgroot->Release();
-
-	//MessageBox(NULL, "Written", NULL, 0);
 
 	SetEvent(hEvent);
 

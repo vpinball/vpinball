@@ -3,15 +3,6 @@
 
 void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM lparam)
 	{
-	//int index;
-	//IScriptable *pscript;
-
-	// Clear old events
-	//SendMessage(m_hwndEventList, CB_RESETCONTENT, 0, 0);
-
-	//index = SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
-	//pscript = (IScriptable *)SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
-	//IDispatch *pdisp = pscript->GetDispatch();
 	IProvideClassInfo* pClassInfo;
 	pdisp->QueryInterface(IID_IProvideClassInfo, (void **)&pClassInfo);
 
@@ -20,6 +11,8 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 		ITypeInfo *pti;
 
 		pClassInfo->GetClassInfo(&pti);
+
+		if (!pti) return; //rlc debug failure... GetClassInfo set pti null 
 
 		TYPEATTR *pta;
 
@@ -42,8 +35,6 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 
 				ptiChild->GetTypeAttr(&ptaChild);
 
-			//if (ptaChild->wTypeFlags == 4096) // Events
-				//{
 				int l;
 				for (l=0;l<ptaChild->cFuncs;l++)
 					{
@@ -63,8 +54,6 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 						char szT[512];
 						WideCharToMultiByte(CP_ACP, 0, rgstr[0], -1, szT, 512, NULL, NULL);
 						(*Callback)(szT, l, pfd->memid, lparam);
-						/*int index = SendMessage(m_hwndEventList, CB_ADDSTRING, 0, (int)szT);
-						SendMessage(m_hwndEventList, CB_SETITEMDATA, index, l);*/
 
 						unsigned int i;
 						for (i=0; i < cnames; i++)
@@ -76,8 +65,6 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 						}
 
 					ptiChild->ReleaseFuncDesc(pfd);
-
-					//SendMessage(pcv->m_hwndFuncList, CB_ADDSTRING, 0, (long)"Hello");
 					}
 
 				ptiChild->ReleaseTypeAttr(ptaChild);

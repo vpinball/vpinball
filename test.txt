@@ -1,1 +1,0 @@
-	CTEXT           "Version (0.3.1412)",IDC_STATIC,147,7,68,8
