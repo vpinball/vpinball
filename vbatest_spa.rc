@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -47,7 +47,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -70,19 +69,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "Visual Pinball\0"
-            VALUE "FileVersion", "1, 0, 0, 3\0"
-            VALUE "InternalName", "Visual Pinball\0"
-            VALUE "LegalCopyright", "Copyright 2000\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OLESelfRegister", "\0"
-            VALUE "OriginalFilename", "VPinball.EXE\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Visual Pinball\0"
-            VALUE "ProductVersion", "1, 0, 0, 3\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "FileDescription", "Visual Pinball"
+            VALUE "FileVersion", "1, 0, 0, 3"
+            VALUE "InternalName", "Visual Pinball"
+            VALUE "LegalCopyright", "Copyright 2000"
+            VALUE "OriginalFilename", "VPinball.EXE"
+            VALUE "ProductName", "Visual Pinball"
+            VALUE "ProductVersion", "1, 0, 0, 3"
         END
     END
     BLOCK "VarFileInfo"
@@ -91,161 +84,159 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // REGISTRY
 //
 
-IDR_VBATest             REGISTRY MOVEABLE PURE  "VBATest.rgs"
-IDR_SURFACE             REGISTRY DISCARDABLE    "Surface.rgs"
-IDR_DragPoint           REGISTRY DISCARDABLE    "DragPoint.rgs"
-IDR_Flipper             REGISTRY DISCARDABLE    "Flipper.rgs"
-IDR_Timer               REGISTRY DISCARDABLE    "Timer.rgs"
-IDR_Plunger             REGISTRY DISCARDABLE    "Plunger.rgs"
-IDR_Textbox             REGISTRY DISCARDABLE    "Textbox.rgs"
-IDR_Bumper              REGISTRY DISCARDABLE    "Bumper.rgs"
-IDR_PIEventHandler      REGISTRY DISCARDABLE    "PIEventHandler.rgs"
-IDR_Trigger             REGISTRY DISCARDABLE    "Trigger.rgs"
-IDR_Light               REGISTRY DISCARDABLE    "Light.rgs"
-IDR_Kicker              REGISTRY DISCARDABLE    "Kicker.rgs"
-IDR_Gate                REGISTRY DISCARDABLE    "Gate.rgs"
-IDR_Spinner             REGISTRY DISCARDABLE    "Spinner.rgs"
-IDR_Ramp                REGISTRY DISCARDABLE    "Ramp.rgs"
+IDR_VBATest             REGISTRY                "VBATest.rgs"
+IDR_SURFACE             REGISTRY                "Surface.rgs"
+IDR_DragPoint           REGISTRY                "DragPoint.rgs"
+IDR_Flipper             REGISTRY                "Flipper.rgs"
+IDR_Timer               REGISTRY                "Timer.rgs"
+IDR_Plunger             REGISTRY                "Plunger.rgs"
+IDR_Textbox             REGISTRY                "Textbox.rgs"
+IDR_Bumper              REGISTRY                "Bumper.rgs"
+IDR_PIEventHandler      REGISTRY                "PIEventHandler.rgs"
+IDR_Trigger             REGISTRY                "Trigger.rgs"
+IDR_Light               REGISTRY                "Light.rgs"
+IDR_Kicker              REGISTRY                "Kicker.rgs"
+IDR_Gate                REGISTRY                "Gate.rgs"
+IDR_Spinner             REGISTRY                "Spinner.rgs"
+IDR_Ramp                REGISTRY                "Ramp.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_APPMENU MENU DISCARDABLE 
+IDR_APPMENU MENU 
 BEGIN
     POPUP "&Archivo"
     BEGIN
-        MENUITEM "&Nuevo\tCtrl-N",                IDM_NEW
-        MENUITEM "&Abrir...\tCtrl-O",            IDM_OPEN
-        MENUITEM "&Cerrar",                      IDM_CLOSE
+        MENUITEM "&Nuevo\tCtrl-N",              IDM_NEW
+        MENUITEM "&Abrir...\tCtrl-O",           IDM_OPEN
+        MENUITEM "&Cerrar",                     IDM_CLOSE
         MENUITEM SEPARATOR
-        MENUITEM "&Guardar\tCtrl-S",               IDM_SAVE
-        MENUITEM "Guardar &Como...",                 IDM_SAVEAS
+        MENUITEM "&Guardar\tCtrl-S",            IDM_SAVE
+        MENUITEM "Guardar &Como...",            IDM_SAVEAS
         MENUITEM SEPARATOR
         POPUP "Ex&portar"
         BEGIN
-            MENUITEM "&Boceto...",               ID_FILE_EXPORT_BLUEPRINT
+            MENUITEM "&Boceto...",                  ID_FILE_EXPORT_BLUEPRINT
         END
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
     END
     POPUP "&Edición"
     BEGIN
-        MENUITEM "&Deshacer\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM "&Deshacer\tCtrl+Z",           ID_EDIT_UNDO
         MENUITEM SEPARATOR
-        MENUITEM "&Copiar\tCtrl+C",               IDC_COPY
+        MENUITEM "&Copiar\tCtrl+C",             IDC_COPY
         MENUITEM "&Pegar\tCtrl+V",              IDC_PASTE
         MENUITEM "&Delete\tDel",                ID_DELETE
         MENUITEM SEPARATOR
-        MENUITEM "&Opciones ",                    ID_EDIT_PROPERTIES
+        MENUITEM "&Opciones ",                  ID_EDIT_PROPERTIES
         MENUITEM "&Script",                     ID_EDIT_SCRIPT
-        MENUITEM "&Vista Cabezal",             ID_EDIT_BACKGLASSVIEW
+        MENUITEM "&Vista Cabezal",              ID_EDIT_BACKGLASSVIEW
     END
     POPUP "&Insertar"
     BEGIN
-        MENUITEM "&Pared\tCtrl+W",               IDC_WALL
-        MENUITEM "P&uerta\tCtrl+G",               IDC_GATE
-        MENUITEM "&Rampa\tCtrl+R",               IDC_RAMP
+        MENUITEM "&Pared\tCtrl+W",              IDC_WALL
+        MENUITEM "P&uerta\tCtrl+G",             IDC_GATE
+        MENUITEM "&Rampa\tCtrl+R",              IDC_RAMP
         MENUITEM "&Flipper\tCtrl+F",            IDC_FLIPPER
-        MENUITEM "&Lanzador\tCtrl+P",            IDC_PLUNGER
+        MENUITEM "&Lanzador\tCtrl+P",           IDC_PLUNGER
         MENUITEM "&Bumper\tCtrl+B",             IDC_BUMPER
-        MENUITEM "&Molinillo\tCtrl+I",            IDC_SPINNER
+        MENUITEM "&Molinillo\tCtrl+I",          IDC_SPINNER
         MENUITEM "&Timer\tCtrl+M",              IDC_TIMER
-        MENUITEM "&Contacto\tCtrl+T",            IDC_TRIGGER
-        MENUITEM "&Luz\tCtrl+L",              IDC_LIGHT
-        MENUITEM "Patea&dor\tCtrl+K",             IDC_KICKER
-        MENUITEM "Di&ana\tCtrl+A",             IDC_TARGET
-        MENUITEM "Pe&gatina\tCtrl+D",              IDC_DECAL
-        MENUITEM "Cart&el\tCtrl+E",            IDC_TEXTBOX
+        MENUITEM "&Contacto\tCtrl+T",           IDC_TRIGGER
+        MENUITEM "&Luz\tCtrl+L",                IDC_LIGHT
+        MENUITEM "Patea&dor\tCtrl+K",           IDC_KICKER
+        MENUITEM "Di&ana\tCtrl+A",              IDC_TARGET
+        MENUITEM "Pe&gatina\tCtrl+D",           IDC_DECAL
+        MENUITEM "Cart&el\tCtrl+E",             IDC_TEXTBOX
     END
     POPUP "&Mesa"
     BEGIN
-        MENUITEM "&Jugar\tF5",                   ID_TABLE_PLAY
+        MENUITEM "&Jugar\tF5",                  ID_TABLE_PLAY
         MENUITEM SEPARATOR
-        MENUITEM "&Sonidos...",           ID_TABLE_SOUNDMANAGER
-        MENUITEM "&Imagenes...",           ID_TABLE_IMAGEMANAGER
-        MENUITEM "&Fuentes...",            ID_TABLE_FONTMANAGER, GRAYED
+        MENUITEM "&Sonidos...",                 ID_TABLE_SOUNDMANAGER
+        MENUITEM "&Imagenes...",                ID_TABLE_IMAGEMANAGER
+        MENUITEM "&Fuentes...",                 ID_TABLE_FONTMANAGER, GRAYED
         MENUITEM "&Collection Manager...",      ID_TABLE_COLLECTIONMANAGER
         MENUITEM SEPARATOR
-        MENUITEM "Zoo&m",                    IDC_MAGNIFY
+        MENUITEM "Zoo&m",                       IDC_MAGNIFY
     END
     POPUP "&Preferencias"
     BEGIN
-        MENUITEM "Opciones de &Audio...",           ID_EDIT_AUDIOOPTIONS
-        MENUITEM "Opciones de &Video...",           ID_EDIT_VIDEOOPTIONS
-        MENUITEM "Opciones de &Teclado...",                    ID_EDIT_KEYS
+        MENUITEM "Opciones de &Audio...",       ID_EDIT_AUDIOOPTIONS
+        MENUITEM "Opciones de &Video...",       ID_EDIT_VIDEOOPTIONS
+        MENUITEM "Opciones de &Teclado...",     ID_EDIT_KEYS
     END
     POPUP "&Ventana"
     BEGIN
-        MENUITEM "&Mosaico",                       ID_WINDOW_TILE
+        MENUITEM "&Mosaico",                    ID_WINDOW_TILE
         MENUITEM "&Cascada",                    ID_WINDOW_CASCADE
-        MENUITEM "Organizar &Iconos",              ID_WINDOW_ARRANGEICONS
+        MENUITEM "Organizar &Iconos",           ID_WINDOW_ARRANGEICONS
     END
     POPUP "&Ayuda"
     BEGIN
-        MENUITEM "Acerca de...",                    ID_HELP_ABOUT
+        MENUITEM "Acerca de...",                ID_HELP_ABOUT
     END
 END
 
-IDR_POINTMENU MENU DISCARDABLE 
+IDR_POINTMENU MENU 
 BEGIN
     POPUP "Menú Puntos"
     BEGIN
-        MENUITEM "&Suavizar Contornos",                      ID_POINTMENU_SMOOTH
-        MENUITEM "&Banda de Rebote",                  ID_POINTMENU_SLINGSHOT
+        MENUITEM "&Suavizar Contornos",         ID_POINTMENU_SMOOTH
+        MENUITEM "&Banda de Rebote",            ID_POINTMENU_SLINGSHOT
     END
 END
 
-IDR_SURFACEMENU MENU DISCARDABLE 
+IDR_SURFACEMENU MENU 
 BEGIN
     POPUP "Menú Pared"
     BEGIN
-        MENUITEM "Simetría &X",                     ID_WALLMENU_MIRROR
-        MENUITEM "Simetría &Y",                     ID_WALLMENU_FLIP
-        MENUITEM "&Girar",                     ID_WALLMENU_ROTATE
-        MENUITEM "&Escala",                      ID_WALLMENU_SCALE
+        MENUITEM "Simetría &X",                 ID_WALLMENU_MIRROR
+        MENUITEM "Simetría &Y",                 ID_WALLMENU_FLIP
+        MENUITEM "&Girar",                      ID_WALLMENU_ROTATE
+        MENUITEM "&Escala",                     ID_WALLMENU_SCALE
         MENUITEM "&Desplazar",                  ID_WALLMENU_TRANSLATE
-        MENUITEM "Añadir &Punto",                  ID_WALLMENU_ADDPOINT
+        MENUITEM "Añadir &Punto",               ID_WALLMENU_ADDPOINT
     END
 END
 
-IDR_MULTIMENU MENU DISCARDABLE 
+IDR_MULTIMENU MENU 
 BEGIN
     POPUP "Menú Pared"
     BEGIN
-        MENUITEM "Simetría &X",                     ID_WALLMENU_MIRROR
-        MENUITEM "Simetría &Y",                     ID_WALLMENU_FLIP
-        MENUITEM "&Girar",                     ID_WALLMENU_ROTATE
-        MENUITEM "&Escala",                      ID_WALLMENU_SCALE
+        MENUITEM "Simetría &X",                 ID_WALLMENU_MIRROR
+        MENUITEM "Simetría &Y",                 ID_WALLMENU_FLIP
+        MENUITEM "&Girar",                      ID_WALLMENU_ROTATE
+        MENUITEM "&Escala",                     ID_WALLMENU_SCALE
         MENUITEM "&Desplazar",                  ID_WALLMENU_TRANSLATE
     END
 END
 
-IDR_SCRIPTMENU MENU DISCARDABLE 
+IDR_SCRIPTMENU MENU 
 BEGIN
     POPUP "&Script"
     BEGIN
-        MENUITEM "&Compilar",                    ID_COMPILE
+        MENUITEM "&Compilar",                   ID_COMPILE
     END
     POPUP "&Edición"
     BEGIN
-        MENUITEM "&Deshacer\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM "&Deshacer\tCtrl+Z",           ID_EDIT_UNDO
         MENUITEM SEPARATOR
-        MENUITEM "&Copiar\tCrtl+C",               ID_EDIT_COPY
-        MENUITEM "Cor&tar\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copiar\tCrtl+C",             ID_EDIT_COPY
+        MENUITEM "Cor&tar\tCtrl+X",             ID_EDIT_CUT
         MENUITEM "&Pegar\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM SEPARATOR
-        MENUITEM "&Buscar...",            ID_FIND
-        MENUITEM "Buscar &Siguiente\tF3",              ID_EDIT_FINDNEXT
+        MENUITEM "&Buscar...",                  ID_FIND
+        MENUITEM "Buscar &Siguiente\tF3",       ID_EDIT_FINDNEXT
     END
 END
 
@@ -255,23 +246,23 @@ END
 // Bitmap
 //
 
-IDB_TB_SELECT           BITMAP  DISCARDABLE     "toolbar.bmp"
-IDB_ICON_TRIGGER        BITMAP  DISCARDABLE     "IconTrigger.bmp"
-IDB_ICON_TIMER          BITMAP  DISCARDABLE     "IconTimer.bmp"
-IDB_ICON_FLIPPER        BITMAP  DISCARDABLE     "IconFlipper.bmp"
-IDB_ICON_LIGHT          BITMAP  DISCARDABLE     "IconLight.bmp"
-IDB_SUNBURST            BITMAP  DISCARDABLE     "sunburst.bmp"
-IDB_BALLTEXTURE         BITMAP  DISCARDABLE     "balltex2.bmp"
-IDB_WHITE               BITMAP  DISCARDABLE     "white.bmp"
-IDB_SUNBURST3           BITMAP  DISCARDABLE     "sunburst4.bmp"
-IDB_LOGO                BITMAP  DISCARDABLE     "logo25.bmp"
+IDB_TB_SELECT           BITMAP                  "toolbar.bmp"
+IDB_ICON_TRIGGER        BITMAP                  "IconTrigger.bmp"
+IDB_ICON_TIMER          BITMAP                  "IconTimer.bmp"
+IDB_ICON_FLIPPER        BITMAP                  "IconFlipper.bmp"
+IDB_ICON_LIGHT          BITMAP                  "IconLight.bmp"
+IDB_SUNBURST            BITMAP                  "sunburst.bmp"
+IDB_BALLTEXTURE         BITMAP                  "balltex2.bmp"
+IDB_WHITE               BITMAP                  "white.bmp"
+IDB_SUNBURST3           BITMAP                  "sunburst4.bmp"
+IDB_LOGO                BITMAP                  "logo25.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Accelerator
 //
 
-IDR_VPACCEL ACCELERATORS DISCARDABLE 
+IDR_VPACCEL ACCELERATORS 
 BEGIN
     "A",            IDC_TARGET,             VIRTKEY, CONTROL, NOINVERT
     "B",            IDC_BUMPER,             VIRTKEY, CONTROL, NOINVERT
@@ -298,7 +289,7 @@ BEGIN
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_CODEVIEWACCEL ACCELERATORS DISCARDABLE 
+IDR_CODEVIEWACCEL ACCELERATORS 
 BEGIN
     "F",            ID_FIND,                VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_EDIT_FINDNEXT,       VIRTKEY, NOINVERT
@@ -310,13 +301,15 @@ END
 // Dialog
 //
 
-IDD_SOUNDDIALOG DIALOG DISCARDABLE  0, 0, 316, 167
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SOUNDDIALOG DIALOG  0, 0, 316, 167
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Administrador de Sonidos"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Aceptar",IDOK,259,146,50,14
-    CONTROL         "List1",IDC_SOUNDLIST,"SysListView32",LVS_REPORT |                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS |                     WS_BORDER | WS_TABSTOP,7,7,240,153
+    CONTROL         "List1",IDC_SOUNDLIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS | 
+                    WS_BORDER | WS_TABSTOP,7,7,240,153
     PUSHBUTTON      "&Importar",IDC_IMPORT,259,7,50,14
     PUSHBUTTON      "&Reimportar",IDC_REIMPORT,259,25,50,14
     PUSHBUTTON      "Reimportar &Desde",IDC_REIMPORTFROM,259,43,50,14
@@ -325,25 +318,29 @@ BEGIN
     PUSHBUTTON      "Re&nombrar",IDC_RENAME,259,79,50,14
 END
 
-IDD_IMAGEDIALOG DIALOG DISCARDABLE  0, 0, 415, 167
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_IMAGEDIALOG DIALOG  0, 0, 415, 167
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Administrador de Imágenes"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Aceptar",IDOK,358,146,50,14
-    CONTROL         "List1",IDC_SOUNDLIST,"SysListView32",LVS_REPORT |                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS |                     WS_BORDER | WS_TABSTOP,7,7,240,153
+    CONTROL         "List1",IDC_SOUNDLIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS | 
+                    WS_BORDER | WS_TABSTOP,7,7,240,153
     PUSHBUTTON      "&Importar",IDC_IMPORT,358,7,50,14
     PUSHBUTTON      "&Reimportar",IDC_REIMPORT,358,26,50,14
     PUSHBUTTON      "Reimportar &Desde",IDC_REIMPORTFROM,358,44,50,14
     PUSHBUTTON      "&Borrar",IDC_DELETE,358,62,50,14
     PUSHBUTTON      "Re&nombrar",IDC_RENAME,358,80,50,14
-    CONTROL         "Button1",IDC_PICTUREPREVIEW,"Button",BS_OWNERDRAW |                     WS_TABSTOP,252,14,101,140
-    CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,368,118,40,                    14
+    CONTROL         "Button1",IDC_PICTUREPREVIEW,"Button",BS_OWNERDRAW | 
+                    WS_TABSTOP,252,14,101,140
+    CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,368,118,40,
+                    14
     LTEXT           "&Transparencia",IDC_STATIC,363,106,45,10
 END
 
-IDD_ROTATE DIALOG DISCARDABLE  0, 0, 186, 95
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ROTATE DIALOG  0, 0, 186, 95
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Girar"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -358,8 +355,8 @@ BEGIN
     LTEXT           "Y",IDC_STATIC,37,65,8,10
 END
 
-IDD_SCALE DIALOG DISCARDABLE  0, 0, 185, 150
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SCALE DIALOG  0, 0, 185, 150
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Escalar"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -372,32 +369,37 @@ BEGIN
     LTEXT           "Centro",IDC_STATIC,7,75,24,11
     LTEXT           "X",IDC_STATIC,37,75,8,10
     LTEXT           "Y",IDC_STATIC,37,89,8,10
-    CONTROL         "Escalado Uniforme",IDC_SQUARE,"Button",BS_AUTOCHECKBOX |                     WS_TABSTOP,43,22,64,10
+    CONTROL         "Escalado Uniforme",IDC_SQUARE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,43,22,64,10
     EDITTEXT        IDC_SCALEY,53,49,52,12,ES_AUTOHSCROLL
     LTEXT           "Escalado Y",IDC_STATIC_SCALEY,19,51,26,8
 END
 
-IDD_PROGRESS DIALOG DISCARDABLE  0, 0, 167, 44
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_PROGRESS DIALOG  0, 0, 167, 44
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Preparando Mesa"
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "Progress2",IDC_PROGRESS2,"msctls_progress32",WS_BORDER,                    7,23,153,14
+    CONTROL         "Progress2",IDC_PROGRESS2,"msctls_progress32",WS_BORDER,
+                    7,23,153,14
     LTEXT           "",IDC_STATUSNAME,7,7,153,15
 END
 
-IDD_PROPTABLE DIALOG DISCARDABLE  0, 0, 151, 231
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPTABLE DIALOG  0, 0, 151, 231
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,21,9
     EDITTEXT        30000,30,7,55,12,ES_AUTOHSCROLL
-    CONTROL         "Mostrar Imagen en &Editor",107,"Button",BS_AUTOCHECKBOX |                     WS_TABSTOP,7,78,91,14
-    CONTROL         "&Mostrar Rejilla",106,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,                    25,66,14
+    CONTROL         "Mostrar Imagen en &Editor",107,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,78,91,14
+    CONTROL         "&Mostrar Rejilla",106,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,25,66,14
     LTEXT           "Tamaño &Rejilla",IDC_STATIC,7,42,32,9
     EDITTEXT        109,41,41,40,12,ES_AUTOHSCROLL
     LTEXT           "I&magen",IDC_STATIC,7,97,20,8
-    COMBOBOX        1500,31,95,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1500,31,95,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "Altura &Cristal",IDC_STATIC,7,153,41,8
     EDITTEXT        3,49,151,40,12,ES_AUTOHSCROLL
     LTEXT           "Al&to",IDC_STATIC,7,137,22,8
@@ -409,11 +411,12 @@ BEGIN
     LTEXT           "&Table Slope",IDC_STATIC,7,180,39,8
     EDITTEXT        6,49,177,40,12,ES_AUTOHSCROLL
     LTEXT           "&Ball Image",IDC_STATIC,7,202,34,8
-    COMBOBOX        1502,44,200,49,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1502,44,200,49,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
 END
 
-IDD_PROPLIGHT DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPLIGHT DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,8
@@ -437,18 +440,21 @@ BEGIN
     LTEXT           "Co&lor",IDC_STATIC,13,198,17,8
     CONTROL         "Custom2",11,"ColorControl",WS_TABSTOP,33,195,40,14
     LTEXT           "&Base",IDC_STATIC,7,220,26,9
-    COMBOBOX        1502,35,219,61,84,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1502,35,219,61,84,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,240,11,10
     LTEXT           "&Temporizador",IDC_STATIC,19,241,44,9
     EDITTEXT        901,65,239,31,12,ES_AUTOHSCROLL
     LTEXT           "&Estado",IDC_STATIC,7,62,18,8
     LTEXT           "&Forma",IDC_STATIC,7,81,22,8
-    COMBOBOX        2,27,60,69,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
-    COMBOBOX        1503,32,78,64,60,CBS_DROPDOWNLIST | CBS_SORT |                     WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        2,27,60,69,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        1503,32,78,64,60,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_PROPRAMP DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPRAMP DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
@@ -463,28 +469,33 @@ BEGIN
     EDITTEXT        4,59,101,31,12,ES_AUTOHSCROLL
     LTEXT           "Anc&ho Inf.",IDC_STATIC,7,120,47,8
     EDITTEXT        3,59,118,31,12,ES_AUTOHSCROLL
-    COMBOBOX        6,27,24,69,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        6,27,24,69,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,43,40,14
     LTEXT           "&Image",IDC_STATIC,7,138,20,8
-    COMBOBOX        1500,33,136,63,60,CBS_DROPDOWNLIST | CBS_SORT |                     WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        1500,33,136,63,60,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
     LTEXT           "&Mode",IDC_STATIC,7,153,19,8
-    COMBOBOX        8,33,150,63,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
-    CONTROL         "Apply Ima&ge to Walls",9,"Button",BS_AUTOCHECKBOX |                     WS_TABSTOP,7,167,82,10
+    COMBOBOX        8,33,150,63,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "Apply Ima&ge to Walls",9,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,167,82,10
 END
 
-IDD_PROPTIMER DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPTIMER DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
     EDITTEXT        30000,29,7,55,12,ES_AUTOHSCROLL
-    CONTROL         "&Habilitado",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,                    26,45,10
+    CONTROL         "&Habilitado",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    7,26,45,10
     LTEXT           "&Intervalo",IDC_STATIC,7,41,24,8
     EDITTEXT        901,36,39,31,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPFLIPPER DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPFLIPPER DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
@@ -495,7 +506,8 @@ BEGIN
     LTEXT           "&Y",IDC_STATIC,53,81,8,8
     EDITTEXT        14,63,79,31,12,ES_AUTOHSCROLL
     LTEXT           "&Base",IDC_STATIC,7,228,26,9
-    COMBOBOX        1502,33,227,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1502,33,227,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,247,11,10
     LTEXT           "&Temporizador",IDC_STATIC,19,248,44,9
     EDITTEXT        901,63,246,31,12,ES_AUTOHSCROLL
@@ -518,13 +530,14 @@ BEGIN
     EDITTEXT        18,69,61,25,12,ES_AUTOHSCROLL
     LTEXT           "&Fuerza",IDC_STATIC,7,188,28,8
     EDITTEXT        19,37,186,48,12,ES_AUTOHSCROLL
-    CONTROL         "Vi&sible",20,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,                    213,36,10
+    CONTROL         "Vi&sible",20,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
+                    213,36,10
     LTEXT           "Elast&icity",IDC_STATIC,7,201,28,8
     EDITTEXT        21,37,199,48,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPPLUNGER DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPPLUNGER DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
@@ -538,14 +551,15 @@ BEGIN
     LTEXT           "&Y",IDC_STATIC,53,62,8,8
     EDITTEXT        9,63,60,31,12,ES_AUTOHSCROLL
     LTEXT           "&Base",IDC_STATIC,7,82,26,9
-    COMBOBOX        1502,35,81,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1502,35,81,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,102,11,10
     LTEXT           "&Temporizador",IDC_STATIC,19,103,44,9
     EDITTEXT        901,65,101,31,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPTEXTBOX DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPTEXTBOX DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
@@ -570,12 +584,14 @@ BEGIN
     LTEXT           "&Temporizador",IDC_STATIC,19,204,44,9
     EDITTEXT        901,65,202,31,12,ES_AUTOHSCROLL
     LTEXT           "Alin&eación",IDC_STATIC,7,121,32,8
-    COMBOBOX        11,41,119,55,55,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
-    CONTROL         "T&ransparente",12,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,                    7,42,54,10
+    COMBOBOX        11,41,119,55,55,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "T&ransparente",12,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    7,42,54,10
 END
 
-IDD_PROPBUMPER DIALOG DISCARDABLE  0, 0, 103, 279
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPBUMPER DIALOG  0, 0, 103, 279
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
@@ -594,71 +610,82 @@ BEGIN
     LTEXT           "&Umbral Golpeo",IDC_STATIC,7,197,43,8
     EDITTEXT        3,51,195,31,12,ES_AUTOHSCROLL
     LTEXT           "I&magen",IDC_STATIC,7,63,20,8
-    COMBOBOX        1500,31,62,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1500,31,62,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "&Base",IDC_STATIC,7,212,26,9
-    COMBOBOX        1502,35,212,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1502,35,212,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,242,11,10
     LTEXT           "&Temporizador",IDC_STATIC,19,243,44,9
     EDITTEXT        901,65,241,31,12,ES_AUTOHSCROLL
     CONTROL         "Custom2",7,"ColorControl",WS_TABSTOP,28,24,40,14
     LTEXT           "&Estado",IDC_STATIC,7,115,18,8
-    COMBOBOX        11,27,112,69,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        11,27,112,69,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "&Patrón Interm.",IDC_STATIC,7,131,43,9
     EDITTEXT        12,51,128,45,12,ES_AUTOHSCROLL
     LTEXT           "&Intervalo Interm.",IDC_STATIC,7,145,41,9
     EDITTEXT        13,51,144,31,12,ES_AUTOHSCROLL
-    CONTROL         "F&lash al Golpear",14,"Button",BS_AUTOCHECKBOX |                     WS_TABSTOP,7,229,65,10
+    CONTROL         "F&lash al Golpear",14,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,229,65,10
     LTEXT           "Color &Lateral",IDC_STATIC,7,47,35,9
     CONTROL         "Custom2",15,"ColorControl",WS_TABSTOP,45,43,40,14
 END
 
-IDD_PROPTRIGGER DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPTRIGGER DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
     EDITTEXT        30000,29,7,55,12,ES_AUTOHSCROLL
     LTEXT           "&Radio",IDC_STATIC,7,58,23,9
     EDITTEXT        1,44,57,31,12,ES_AUTOHSCROLL
-    CONTROL         "&Visible",7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,24,                    36,10
-    CONTROL         "&Habilitado",6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,41,                    42,10
+    CONTROL         "&Visible",7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,24,
+                    36,10
+    CONTROL         "&Habilitado",6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
+                    41,42,10
     LTEXT           "&X",IDC_STATIC,9,95,8,8
     EDITTEXT        4,19,93,31,12,ES_AUTOHSCROLL
     LTEXT           "&Y",IDC_STATIC,55,95,8,8
     EDITTEXT        5,65,93,31,12,ES_AUTOHSCROLL
     LTEXT           "&Base",IDC_STATIC,7,112,26,9
-    COMBOBOX        1502,35,111,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1502,35,111,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,132,11,10
     LTEXT           "&Temporizador",IDC_STATIC,19,132,44,9
     EDITTEXT        901,65,132,31,12,ES_AUTOHSCROLL
     LTEXT           "&Forma",IDC_STATIC,7,78,22,8
-    COMBOBOX        1503,32,75,64,60,CBS_DROPDOWNLIST | CBS_SORT |                     WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        1503,32,75,64,60,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_PROPKICKER DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPKICKER DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
     EDITTEXT        30000,29,7,55,12,ES_AUTOHSCROLL
-    CONTROL         "&Habilitado",8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,60,                    42,10
+    CONTROL         "&Habilitado",8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
+                    60,42,10
     LTEXT           "&X",IDC_STATIC,7,79,8,8
     EDITTEXT        6,17,77,31,12,ES_AUTOHSCROLL
     LTEXT           "&Y",IDC_STATIC,53,79,8,8
     EDITTEXT        7,63,77,31,12,ES_AUTOHSCROLL
     LTEXT           "&Base",IDC_STATIC,7,97,26,9
-    COMBOBOX        1502,35,97,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1502,35,97,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,119,11,10
     LTEXT           "&Temporizador",IDC_STATIC,19,119,44,9
     EDITTEXT        901,65,118,31,12,ES_AUTOHSCROLL
     LTEXT           "&Color",IDC_STATIC,7,27,17,8
     CONTROL         "Custom2",10,"ColorControl",WS_TABSTOP,27,24,40,14
     LTEXT           "&Mostrar",IDC_STATIC,7,46,24,8
-    COMBOBOX        9,34,43,62,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        9,34,43,62,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
 END
 
-IDD_PROPDECAL DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPDECAL DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&X",IDC_STATIC,7,136,8,8
@@ -670,9 +697,11 @@ BEGIN
     LTEXT           "Al&to",IDC_STATIC,7,186,22,8
     EDITTEXT        4,31,183,31,12,ES_AUTOHSCROLL
     LTEXT           "&Base",IDC_STATIC,7,218,26,9
-    COMBOBOX        1502,35,217,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1502,35,217,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "I&magen",IDC_STATIC,7,100,20,8
-    COMBOBOX        1500,31,97,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1500,31,97,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "&Rotación",IDC_STATIC,7,202,28,8
     EDITTEXT        1,37,200,31,12,ES_AUTOHSCROLL
     LTEXT           "&Texto",IDC_STATIC,7,26,20,9
@@ -682,14 +711,17 @@ BEGIN
     LTEXT           "&Fuente",IDC_STATIC,7,81,15,8
     CONTROL         "Custom2",12,"FontControl",WS_TABSTOP,27,78,58,14
     LTEXT           "Ti&po",IDC_STATIC,7,9,17,8
-    COMBOBOX        7,27,7,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        7,27,7,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "&Tamaño",IDC_STATIC,7,118,20,8
-    COMBOBOX        9,28,116,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
-    CONTROL         "Texto &Vertical",13,"Button",BS_AUTOCHECKBOX |                     WS_TABSTOP,7,43,55,10
+    COMBOBOX        9,28,116,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "Texto &Vertical",13,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,43,55,10
 END
 
-IDD_PROPGATE DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPGATE DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
@@ -703,14 +735,15 @@ BEGIN
     LTEXT           "&Rotación",IDC_STATIC,7,75,28,8
     EDITTEXT        4,37,73,31,12,ES_AUTOHSCROLL
     LTEXT           "&Base",IDC_STATIC,7,91,26,9
-    COMBOBOX        1502,35,90,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1502,35,90,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,110,12,8
     LTEXT           "&Temporizador",IDC_STATIC,19,110,44,8
     EDITTEXT        901,65,108,31,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPSPINNER DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPSPINNER DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
@@ -730,40 +763,46 @@ BEGIN
     LTEXT           "&Fricción",IDC_STATIC,7,126,24,8
     EDITTEXT        7,43,124,44,12,ES_AUTOHSCROLL
     LTEXT           "Imagen &Fr.",IDC_STATIC,7,143,38,8
-    COMBOBOX        1500,49,141,47,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1500,49,141,47,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "Imagen &Rev.",IDC_STATIC,7,161,39,8
-    COMBOBOX        1501,49,159,47,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1501,49,159,47,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "&Color",IDC_STATIC,7,180,20,9
     LTEXT           "&Base",IDC_STATIC,7,199,26,9
-    COMBOBOX        1502,35,197,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1502,35,197,61,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     CONTROL         "",900,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,216,12,8
     LTEXT           "&Temporizador",IDC_STATIC,19,216,44,8
     EDITTEXT        901,65,214,31,12,ES_AUTOHSCROLL
     CONTROL         "Custom2",10,"ColorControl",WS_TABSTOP,27,177,40,14
 END
 
-IDD_PROPPOINT DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPPOINT DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&X",IDC_STATIC,7,9,8,8
     EDITTEXT        1,31,7,49,12,ES_AUTOHSCROLL
     LTEXT           "&Y",IDC_STATIC,7,25,8,8
     EDITTEXT        2,31,23,49,12,ES_AUTOHSCROLL
-    CONTROL         "Suavizar Contornos",3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,40,40,                    10
+    CONTROL         "Suavizar Contornos",3,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,40,40,10
 END
 
-IDD_PROPWALL DIALOG DISCARDABLE  0, 0, 103, 265
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPWALL DIALOG  0, 0, 103, 265
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "&Nombre",IDC_STATIC,7,8,20,9
     EDITTEXT        30000,29,7,55,12,ES_AUTOHSCROLL
-    CONTROL         "Evento al &Golpear",3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,                    7,151,60,10
+    CONTROL         "Evento al &Golpear",3,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,151,60,10
     LTEXT           "&Umbral Golpeo",IDC_STATIC,7,166,43,8
     EDITTEXT        4,56,164,31,12,ES_AUTOHSCROLL
     LTEXT           "I&magen",IDC_STATIC,7,26,20,8
-    COMBOBOX        1500,31,24,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1500,31,24,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "&Alineación Imagen",IDC_STATIC,7,41,59,9
     LTEXT           "&Color Sup.",IDC_STATIC,7,76,32,8
     LTEXT           "Co&lor Lados",IDC_STATIC,7,95,33,8
@@ -776,67 +815,82 @@ BEGIN
     EDITTEXT        901,65,233,31,12,ES_AUTOHSCROLL
     CONTROL         "Custom2",10,"ColorControl",WS_TABSTOP,43,74,40,14
     CONTROL         "Custom2",6,"ColorControl",WS_TABSTOP,43,92,40,14
-    CONTROL         "&Puede Caer",11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,                    217,46,10
-    CONTROL         "Mostrar &Imagen en Editor",13,"Button",BS_AUTOCHECKBOX |                     WS_TABSTOP,7,57,87,10
+    CONTROL         "&Puede Caer",11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,
+                    217,46,10
+    CONTROL         "Mostrar &Imagen en Editor",13,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,57,87,10
     LTEXT           "&Fuerza Banda Reb.",IDC_STATIC,7,182,50,8
     EDITTEXT        14,59,181,31,12,ES_AUTOHSCROLL
     LTEXT           "&Elasticity",IDC_STATIC,7,200,28,8
     EDITTEXT        15,39,199,31,12,ES_AUTOHSCROLL
 END
 
-IDD_CODEVIEW DIALOG DISCARDABLE  0, 0, 332, 214
-STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+IDD_CODEVIEW DIALOG  0, 0, 332, 214
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Script"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Compilar",ID_COMPILE,275,7,50,14
     PUSHBUTTON      "Buscar",ID_FIND,275,24,50,14
-    COMBOBOX        IDC_ITEMLIST,7,7,94,14,CBS_DROPDOWN | CBS_SORT |                     WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_EVENTLIST,121,7,94,14,CBS_DROPDOWN | CBS_SORT |                     WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_ITEMLIST,7,7,94,14,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_EVENTLIST,121,7,94,14,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_ABOUT DIALOG DISCARDABLE  0, 0, 222, 183
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUT DIALOG  0, 0, 222, 183
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Acerca de Visual Pinball"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Aceptar",IDOK,165,162,50,14
-    CTEXT           "Esta aplicación usa Microsoft Visual Basic Scripting Edition",                    IDC_STATIC,7,151,76,25
+    CTEXT           "Esta aplicación usa Microsoft Visual Basic Scripting Edition",
+                    IDC_STATIC,7,151,76,25
     PUSHBUTTON      "Página Web",IDC_WEBSITE,165,121,50,14
     CONTROL         264,IDC_STATIC,"Static",SS_BITMAP,7,7,125,27
     CTEXT           "A Randy Davis Production",IDC_STATIC,7,39,98,12
     CTEXT           "Versión (0.3.1314)",IDC_VERSION,147,7,68,8
-    LTEXT           "Randy Davis - diseño, desarrollo",IDC_STATIC,13,77,115,                    9
+    LTEXT           "Randy Davis - diseño, desarrollo",IDC_STATIC,13,77,115,
+                    9
     LTEXT           "Mark Parris - prueba",IDC_STATIC,13,89,115,9
     GROUPBOX        "Créditos",IDC_STATIC,7,62,126,65
     LTEXT           "Jerry Rice - música",IDC_STATIC,13,101,115,9
-    CTEXT           "Copyright (C) 2000-2001 Randy Davis.  Reservados todos los derechos",                    IDC_STATIC,7,129,124,19
-    LTEXT           "Juaney - traducción",IDC_TRANSNAME,13,113,                    115,9
-    PUSHBUTTON      "TecnoPinball",IDC_TRANSLATEWEBSITE,165,                    142,50,14
-    LTEXT           "http://perso.wanadoo.es/tecnopinball/",IDC_TRANSWEBSITE,184,98,                    10,8,NOT WS_VISIBLE | WS_DISABLED
+    CTEXT           "Copyright (C) 2000-2001 Randy Davis.  Reservados todos los derechos",
+                    IDC_STATIC,7,129,124,19
+    LTEXT           "Juaney - traducción",IDC_TRANSNAME,13,113,115,9
+    PUSHBUTTON      "TecnoPinball",IDC_TRANSLATEWEBSITE,165,142,50,14
+    LTEXT           "http://perso.wanadoo.es/tecnopinball/",IDC_TRANSWEBSITE,
+                    184,98,10,8,NOT WS_VISIBLE | WS_DISABLED
 END
 
-IDD_VIDEO_OPTIONS DIALOG DISCARDABLE  0, 0, 126, 178
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_VIDEO_OPTIONS DIALOG  0, 0, 126, 178
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Opciones de Video"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Aceptar",IDOK,7,157,50,14
-    CONTROL         "Ventana",IDC_WINDOW,"Button",BS_AUTORADIOBUTTON,7,7,42,                    10
-    CONTROL         "Full Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,                    7,20,56,10
-    LISTBOX         IDC_SIZELIST,7,37,112,81,LBS_NOINTEGRALHEIGHT |                     WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Ventana",IDC_WINDOW,"Button",BS_AUTORADIOBUTTON,7,7,42,
+                    10
+    CONTROL         "Full Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,
+                    7,20,56,10
+    LISTBOX         IDC_SIZELIST,7,37,112,81,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Cancelar",IDCANCEL,69,157,50,14
-    CONTROL         "Comprobar &Estado Blit",IDC_CHECKBLIT,"Button",                    BS_AUTOCHECKBOX | WS_TABSTOP,7,126,70,10
-    CONTROL         "Dibujar &Sombra Bola",IDC_SHADOW,"Button",BS_AUTOCHECKBOX |                     WS_TABSTOP,7,140,77,10
+    CONTROL         "Comprobar &Estado Blit",IDC_CHECKBLIT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,126,70,10
+    CONTROL         "Dibujar &Sombra Bola",IDC_SHADOW,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,140,77,10
 END
 
-IDD_FONTDIALOG DIALOG DISCARDABLE  0, 0, 316, 167
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_FONTDIALOG DIALOG  0, 0, 316, 167
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Fuentes"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Aceptar",IDOK,259,146,50,14
-    CONTROL         "List1",IDC_SOUNDLIST,"SysListView32",LVS_REPORT |                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER |                     WS_TABSTOP,7,7,240,153
+    CONTROL         "List1",IDC_SOUNDLIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | 
+                    WS_TABSTOP,7,7,240,153
     PUSHBUTTON      "&Importar",IDC_IMPORT,259,7,50,14
     PUSHBUTTON      "&Reimportar",IDC_REIMPORT,259,43,50,14
     PUSHBUTTON      "Reimportar &Desde",IDC_REIMPORTFROM,259,61,50,14
@@ -844,8 +898,8 @@ BEGIN
     PUSHBUTTON      "Re&nombrar",IDC_RENAME,259,97,50,14,WS_DISABLED
 END
 
-IDD_KEYS DIALOG DISCARDABLE  0, 0, 139, 189
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_KEYS DIALOG  0, 0, 139, 189
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Opciones de Teclado"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -869,8 +923,8 @@ BEGIN
     CTEXT           "",IDC_STARTGAME,82,142,50,14,SS_CENTERIMAGE
 END
 
-IDD_TRANSLATE DIALOG DISCARDABLE  0, 0, 186, 52
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_TRANSLATE DIALOG  0, 0, 186, 52
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Desplazar"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -883,23 +937,27 @@ BEGIN
     LTEXT           "Y",IDC_STATIC,37,28,8,10
 END
 
-IDD_AUDIO_OPTIONS DIALOG DISCARDABLE  0, 0, 185, 149
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_AUDIO_OPTIONS DIALOG  0, 0, 185, 149
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Opciones de Audio"
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "&Reproducir Música",IDC_PLAY_MUSIC,"Button",BS_AUTOCHECKBOX |                     WS_TABSTOP,7,21,50,10
-    CONTROL         "Slider1",IDC_MUSIC_SLIDER,"msctls_trackbar32",TBS_BOTH |                     TBS_NOTICKS | WS_TABSTOP,9,49,110,18
-    CONTROL         "Re&producir Sonidos",IDC_PLAY_SOUND,"Button",BS_AUTOCHECKBOX |                     WS_TABSTOP,9,84,55,10
-    CONTROL         "Slider1",IDC_SOUND_SLIDER,"msctls_trackbar32",TBS_BOTH |                     TBS_NOTICKS | WS_TABSTOP,7,113,110,18
+    CONTROL         "&Reproducir Música",IDC_PLAY_MUSIC,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,21,50,10
+    CONTROL         "Slider1",IDC_MUSIC_SLIDER,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,9,49,110,18
+    CONTROL         "Re&producir Sonidos",IDC_PLAY_SOUND,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,9,84,55,10
+    CONTROL         "Slider1",IDC_SOUND_SLIDER,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,7,113,110,18
     DEFPUSHBUTTON   "Aceptar",IDOK,128,7,50,14
     PUSHBUTTON      "Cancelar",IDCANCEL,128,24,50,14
     LTEXT           "Volumen &Música",IDC_STATIC_MUSIC,42,36,44,8
     LTEXT           "Volumen &Sonidos",IDC_STATIC_SOUND,39,99,46,8
 END
 
-IDD_GAMEPAUSE DIALOG DISCARDABLE  0, 0, 78, 58
-STYLE WS_POPUP | WS_BORDER
+IDD_GAMEPAUSE DIALOG  0, 0, 78, 58
+STYLE DS_SETFONT | WS_POPUP | WS_BORDER
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Volver al &Juego",ID_RESUME,7,37,64,14
@@ -907,16 +965,19 @@ BEGIN
     CTEXT           "Pausa",IDC_STATIC,7,7,64,10
 END
 
-IDD_PROPBACKGLASS DIALOG DISCARDABLE  0, 0, 151, 218
-STYLE WS_CHILD | WS_VISIBLE
+IDD_PROPBACKGLASS DIALOG  0, 0, 151, 218
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "Mostrar Imagen en &Editor",107,"Button",BS_AUTOCHECKBOX |                     WS_TABSTOP,7,84,91,14
-    CONTROL         "&Mostrar Rejilla",106,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,                    25,66,14
+    CONTROL         "Mostrar Imagen en &Editor",107,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,84,91,14
+    CONTROL         "&Mostrar Rejilla",106,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,25,66,14
     LTEXT           "Tamaño &Rejilla",IDC_STATIC,7,42,32,9
     EDITTEXT        109,41,41,40,12,ES_AUTOHSCROLL
     LTEXT           "I&magen",IDC_STATIC,7,102,20,8
-    COMBOBOX        1501,31,100,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL |                     WS_TABSTOP
+    COMBOBOX        1501,31,100,62,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "&Color",IDC_STATIC,7,66,20,9
     CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,63,40,14
     LTEXT           "&Inclinación",IDC_STATIC,7,120,32,9
@@ -925,22 +986,25 @@ BEGIN
     EDITTEXT        105,53,136,40,12,ES_AUTOHSCROLL
 END
 
-IDD_COLLECTDIALOG DIALOG DISCARDABLE  0, 0, 316, 167
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_COLLECTDIALOG DIALOG  0, 0, 316, 167
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Collection Manager"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Aceptar",IDOK,259,146,50,14
-    CONTROL         "List1",IDC_SOUNDLIST,"SysListView32",LVS_REPORT |                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS |                     WS_BORDER | WS_TABSTOP,7,7,240,153
+    CONTROL         "List1",IDC_SOUNDLIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS | 
+                    WS_BORDER | WS_TABSTOP,7,7,240,153
     PUSHBUTTON      "&New",IDC_NEW,259,7,50,14
-    PUSHBUTTON      "&Create From Selection",IDC_CREATEFROMSELECTION,259,25,                    50,31,BS_CENTER | BS_VCENTER | BS_MULTILINE
+    PUSHBUTTON      "&Create From Selection",IDC_CREATEFROMSELECTION,259,25,
+                    50,31,BS_CENTER | BS_VCENTER | BS_MULTILINE
     PUSHBUTTON      "&Borrar",IDC_DELETE,259,79,50,14
     PUSHBUTTON      "Re&nombrar",IDC_RENAME,259,97,50,14
     PUSHBUTTON      "&Edit",IDC_EDIT,259,60,50,14
 END
 
-IDD_COLLECTION DIALOG DISCARDABLE  0, 0, 232, 205
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_COLLECTION DIALOG  0, 0, 232, 205
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Collection"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -948,10 +1012,12 @@ BEGIN
     PUSHBUTTON      "Cancelar",IDCANCEL,148,183,50,14
     LTEXT           "&Nombre",IDC_STATIC,7,8,22,10
     EDITTEXT        IDC_NAME,30,7,67,12,ES_AUTOHSCROLL
-    LISTBOX         IDC_OUTLIST,7,41,76,134,LBS_SORT | LBS_NOINTEGRALHEIGHT |                     LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_OUTLIST,7,41,76,134,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      ">",IDC_IN,95,53,13,13
     PUSHBUTTON      "<",IDC_OUT,95,71,14,12
-    LISTBOX         IDC_INLIST,122,41,76,134,LBS_NOINTEGRALHEIGHT |                     LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_INLIST,122,41,76,134,LBS_NOINTEGRALHEIGHT | 
+                    LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Not Included",IDC_STATIC,7,32,60,9
     LTEXT           "Included",IDC_STATIC,122,32,60,9
     PUSHBUTTON      "Up",IDC_UP,199,89,26,13
@@ -965,7 +1031,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_SOUNDDIALOG, DIALOG
     BEGIN
@@ -1225,45 +1291,45 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_APPICON             ICON    DISCARDABLE     "icon1.ico"
-IDI_SCRIPTICON          ICON    DISCARDABLE     "ico00001.ico"
-IDI_TABLEICON           ICON    DISCARDABLE     "TableIcon.ico"
+IDI_APPICON             ICON                    "icon1.ico"
+IDI_SCRIPTICON          ICON                    "ico00001.ico"
+IDI_TABLEICON           ICON                    "TableIcon.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // TABLE
 //
 
-IDR_TABLE_NEW           TABLE   DISCARDABLE     "BaseTable17.vpt"
+IDR_TABLE_NEW           TABLE                   "BaseTable17.vpt"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_CUR_MAGNIFY         CURSOR  DISCARDABLE     "cursor1.cur"
-IDC_POINTER             CURSOR  DISCARDABLE     "arrow.cur"
-IDC_CUR_LIGHT           CURSOR  DISCARDABLE     "wall.cur"
-IDC_CUR_WALL            CURSOR  DISCARDABLE     "cur_wall.cur"
-IDC_CUR_FLIPPER         CURSOR  DISCARDABLE     "cur_ligh.cur"
-IDC_CUR_TRIGGER         CURSOR  DISCARDABLE     "cur_flip.cur"
-IDC_CUR_GATE            CURSOR  DISCARDABLE     "cur00001.cur"
-IDC_CUR_TIMER           CURSOR  DISCARDABLE     "cur_gate.cur"
-IDC_CUR_PLUNGER         CURSOR  DISCARDABLE     "cur_time.cur"
-IDC_CUR_TEXTBOX         CURSOR  DISCARDABLE     "cur_plun.cur"
-IDC_CUR_BUMPER          CURSOR  DISCARDABLE     "cur_text.cur"
-IDC_CUR_KICKER          CURSOR  DISCARDABLE     "cur_bump.cur"
-IDC_CUR_TARGET          CURSOR  DISCARDABLE     "cur_kick.cur"
-IDC_CUR_DECAL           CURSOR  DISCARDABLE     "cur_targ.cur"
-IDC_CUR_SPINNER         CURSOR  DISCARDABLE     "cur_deca.cur"
-IDC_CUR_RAMP            CURSOR  DISCARDABLE     "cur_spin.cur"
+IDC_CUR_MAGNIFY         CURSOR                  "cursor1.cur"
+IDC_POINTER             CURSOR                  "arrow.cur"
+IDC_CUR_LIGHT           CURSOR                  "wall.cur"
+IDC_CUR_WALL            CURSOR                  "cur_wall.cur"
+IDC_CUR_FLIPPER         CURSOR                  "cur_ligh.cur"
+IDC_CUR_TRIGGER         CURSOR                  "cur_flip.cur"
+IDC_CUR_GATE            CURSOR                  "cur00001.cur"
+IDC_CUR_TIMER           CURSOR                  "cur_gate.cur"
+IDC_CUR_PLUNGER         CURSOR                  "cur_time.cur"
+IDC_CUR_TEXTBOX         CURSOR                  "cur_plun.cur"
+IDC_CUR_BUMPER          CURSOR                  "cur_text.cur"
+IDC_CUR_KICKER          CURSOR                  "cur_bump.cur"
+IDC_CUR_TARGET          CURSOR                  "cur_kick.cur"
+IDC_CUR_DECAL           CURSOR                  "cur_targ.cur"
+IDC_CUR_SPINNER         CURSOR                  "cur_deca.cur"
+IDC_CUR_RAMP            CURSOR                  "cur_spin.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "Visual Pinball"
     IDS_TB_TIMER            "Timer"
@@ -1275,7 +1341,7 @@ BEGIN
     IDS_FLIPPER_DESC        "Flipper Class"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_TIMER_DESC          "Timer Class"
     IDS_PLUNGER_DESC        "Plunger Class"
@@ -1289,7 +1355,7 @@ BEGIN
     IDS_TB_TRIGGER          "Contacto"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_LIGHT_DESC          "Light Class"
     IDS_TB_LIGHT            "Luz"
@@ -1305,7 +1371,7 @@ BEGIN
     IDS_TB_SPINNER          "Molinillo"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_RAMP_DESC           "Ramp Class"
     IDS_TB_RAMP             "Rampa"
@@ -1324,7 +1390,7 @@ BEGIN
     IDS_DRAWINFRONT         "Editar en Pri&mer Plano"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_DRAWINBACK          "Editar en &Segundo Plano"
     IDS_SAVEERROR           "Hubo un error al salvar la mesa"
@@ -1340,12 +1406,12 @@ BEGIN
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object is not marked as being safe, and may represent a security threat.  Do you want to allow this object to be created?  Only answer Yes if you completely trust the source of this table."
     IDS_COLLECTION          "Collection"
-    IDS_IMAGETOOLARGE       "The maximum resolution for imported images is 1024x1024."
+    IDS_IMAGETOOLARGE       "The maximum resolution for imported images is 4096x4096."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
-    IDS_NEED_DD7            "Visual Pinball requires DirectX 7.0 or higher from Microsoft."
+    IDS_NEED_DD9            "Visual Pinball requires DirectX 9.0 or higher from Microsoft."
 END
 
 #endif    // English (U.S.) resources
@@ -1362,5 +1428,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
 

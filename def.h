@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef __DEF_H__
+#define __DEF_H__
+
 #ifdef VBA
 using namespace MSAPC;
 #endif
@@ -9,7 +14,8 @@ using namespace MSAPC;
 
 #define BOOL int
 
-#define PINFLOAT double
+//#define PINFLOAT double //rlc change back to single percision
+#define PINFLOAT float
 
 #define MAXSTRING 1024
 #define MAXTOKEN 32*4
@@ -157,11 +163,11 @@ public:
 
 #define PI 3.141592654f
 
-#define ANGTORAD(x) (x / 360 * 2 * PI)
-#define RADTOANG(x) (x * 360 / (2 * PI))
+#define ANGTORAD(x) ((x) *PI/180.0f)
+#define RADTOANG(x) ((x) *180.0f/PI)
 
-#define VBTOF(x) (x ? fTrue : fFalse)
-#define FTOVB(x) (x ? -1 : 0)
+#define VBTOF(x) ((x) ? fTrue : fFalse)
+#define FTOVB(x) ((x) ? -1 : 0)
 
 #include "HELPERS.H"
 
@@ -179,3 +185,5 @@ HRESULT OpenURL(char *szURL);
 
 WCHAR *MakeWide(char *sz);
 char *MakeChar(WCHAR *wz);
+
+#endif/* !__DEF_H__ */

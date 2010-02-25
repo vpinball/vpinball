@@ -1,4 +1,4 @@
-
+#pragma once
 class Surface;
 class Level;
 
@@ -15,6 +15,8 @@ public:
 	int m_TimeReset; // Time at which to turn off light
 	int m_iframedesired;
 	BOOL m_fAutoTurnedOff;
+	BOOL m_fDisabled;
+	BOOL m_fVisible;
 
 	ObjFrame *m_pobjframe[2];
 	};
@@ -46,6 +48,7 @@ public:
 
 	int m_iframe;
 	int m_TimeReset; // Time at which to pull in slingshot
+	bool m_fAnimations;
 
 	ObjFrame *m_pobjframe;
 	};
@@ -83,18 +86,17 @@ class Hit3DPoly : public HitObject
 public:
 	Hit3DPoly(Vertex3D *rgv, int count);
 	virtual ~Hit3DPoly();
+	virtual PINFLOAT  HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal,bool direction, bool rigid);
 	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
 	virtual int GetType() {return e3DPoly;}
 	virtual void Draw(HDC hdc);
 	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
 	void CalcNormal();
 	virtual void CalcHitRect();
-	
-	PINFLOAT HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal,bool direction, bool rigid);
 
 	Vertex3D *m_rgv;
 	Vertex3D normal;
-	float D; // D for the plane equation.  A,B, and C are in the normal
+	float D; // D for the plane equation.  A,B, and C are the plane normal (A x' + B y' +C z' = D, normal= x',y'+z'
 	int m_cvertex;
 	BOOL m_fVisible; // for ball shadows
 	};
@@ -102,10 +104,10 @@ public:
 class SpinnerAnimObject : public AnimObject
 	{
 public:
-	virtual void UpdateTimeTemp(PINFLOAT dtime);
+	virtual void UpdateDisplacements(PINFLOAT dtime);
 	//virtual void ResetFrameTime();
 	//virtual void UpdateTimePermanent();
-	virtual void UpdateAcceleration(PINFLOAT dtime);
+	virtual void UpdateVelocities(PINFLOAT dtime);
 
 	virtual BOOL FMover() {return fTrue;}
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
@@ -122,8 +124,6 @@ public:
 
 	float m_anglespeed;
 	float m_angle;
-	
-	// new phys
 	float m_angleMax;
 	float m_angleMin;
 	float m_elasticity;
@@ -158,10 +158,10 @@ public:
 class GateAnimObject : public AnimObject
 	{
 public:
-	virtual void UpdateTimeTemp(PINFLOAT dtime);
+	virtual void UpdateDisplacements(PINFLOAT dtime);
 	//virtual void ResetFrameTime();
 	//virtual void UpdateTimePermanent();
-	virtual void UpdateAcceleration(PINFLOAT dtime);
+	virtual void UpdateVelocities(PINFLOAT dtime);
 
 	virtual BOOL FMover() {return fTrue;}
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
@@ -172,11 +172,16 @@ public:
 
 	Vector<ObjFrame> m_vddsFrame;
 
+	Gate *m_pgate;
+
 	int m_iframe; //Frame index that this flipper is currently displaying
 
 	float m_anglespeed;
 	float m_angle;
-
+	PINFLOAT m_angleMin, m_angleMax;
+	PINFLOAT m_friction;
+	BOOL m_fVisible; 
+	
 	BOOL m_fOpen; // True when the table logic is opening the gate, not just the ball passing through
 	};
 

@@ -1,9 +1,8 @@
 // Decal.cpp: implementation of the Decal class.
 //
 //////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "main.h"
+ 
+#include "stdafx.h" 
 
 #define AUTOLEADING (tm.tmAscent - (tm.tmInternalLeading*1/4))
 
@@ -14,9 +13,9 @@
 Decal::Decal()
 	{
 	m_pIFont = NULL;
-	}
-
-Decal::~Decal()
+	} 
+  
+Decal::~Decal() 
 	{
 	m_pIFont->Release();
 	}
@@ -58,11 +57,8 @@ void Decal::SetDefaults()
 		{
 		FONTDESC fd;
 		fd.cbSizeofstruct = sizeof(FONTDESC);
-		//fd.lpstrName = L"Arial";
-		//fd.cySize.int64 = 142500;
 		fd.cySize.int64 = 142500;
 		fd.lpstrName = L"Arial Black";
-		//fd.cySize.Lo = 0;
 		fd.sWeight = FW_NORMAL;
 		fd.sCharset = 0;
 		fd.fItalic = 0;
@@ -95,63 +91,69 @@ HRESULT Decal::InitVBA(BOOL fNew, int id, WCHAR *wzName)
 
 void Decal::PreRender(Sur *psur)
 	{
-	psur->SetBorderColor(-1,fFalse,0);
-	psur->SetFillColor(RGB(0,0,255));
-	psur->SetObject(this);
+	if( !m_fBackglass || GetPTable()->GetDecalsEnabled() )
+		{
+		psur->SetBorderColor(-1,fFalse,0);
+		psur->SetFillColor(RGB(0,0,255));
+		psur->SetObject(this);
 
-	float halfwidth = m_realwidth/*m_d.m_width*/ * 0.5f;
-	float halfheight = m_realheight/*m_d.m_height*/ * 0.5f;
+		float halfwidth = m_realwidth/*m_d.m_width*/ * 0.5f;
+		float halfheight = m_realheight/*m_d.m_height*/ * 0.5f;
 
-	Vertex rgv[4];
+		Vertex rgv[4];
 
-	float radangle = m_d.m_rotation / 360 * PI * 2;
-	float sn = (float)sin(radangle);
-	float cs = (float)cos(radangle);
+		float radangle = m_d.m_rotation / 180 * PI;
+		float sn = (float)sin(radangle);
+		float cs = (float)cos(radangle);
 
-	rgv[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
-	rgv[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
+		rgv[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
+		rgv[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
 
-	rgv[1].x = m_d.m_vCenter.x + sn*halfheight + cs*halfwidth;
-	rgv[1].y = m_d.m_vCenter.y - cs*halfheight + sn*halfwidth;
+		rgv[1].x = m_d.m_vCenter.x + sn*halfheight + cs*halfwidth;
+		rgv[1].y = m_d.m_vCenter.y - cs*halfheight + sn*halfwidth;
 
-	rgv[2].x = m_d.m_vCenter.x - sn*halfheight + cs*halfwidth;
-	rgv[2].y = m_d.m_vCenter.y + cs*halfheight + sn*halfwidth;
+		rgv[2].x = m_d.m_vCenter.x - sn*halfheight + cs*halfwidth;
+		rgv[2].y = m_d.m_vCenter.y + cs*halfheight + sn*halfwidth;
 
-	rgv[3].x = m_d.m_vCenter.x - sn*halfheight - cs*halfwidth;
-	rgv[3].y = m_d.m_vCenter.y + cs*halfheight - sn*halfwidth;
+		rgv[3].x = m_d.m_vCenter.x - sn*halfheight - cs*halfwidth;
+		rgv[3].y = m_d.m_vCenter.y + cs*halfheight - sn*halfwidth;
 
-	psur->Polygon(rgv, 4);
+		psur->Polygon(rgv, 4);
+		}
 	}
 
 void Decal::Render(Sur *psur)
 	{
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
-	psur->SetFillColor(-1);
-	psur->SetObject(this);
-	psur->SetObject(NULL);
+	if( !m_fBackglass || GetPTable()->GetDecalsEnabled() )
+		{
+		psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+		psur->SetFillColor(-1);
+		psur->SetObject(this);
+		psur->SetObject(NULL);
 
-	Vertex rgv[4];
+		Vertex rgv[4];
 
-	float halfwidth = m_realwidth * 0.5f;
-	float halfheight = m_realheight * 0.5f;
+		float halfwidth = m_realwidth * 0.5f;
+		float halfheight = m_realheight * 0.5f;
 
-	float radangle = m_d.m_rotation / 360 * PI * 2;
-	float sn = (float)sin(radangle);
-	float cs = (float)cos(radangle);
+		float radangle = m_d.m_rotation / 180 * PI;
+		float sn = (float)sin(radangle);
+		float cs = (float)cos(radangle);
 
-	rgv[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
-	rgv[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
+		rgv[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
+		rgv[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
 
-	rgv[1].x = m_d.m_vCenter.x + sn*halfheight + cs*halfwidth;
-	rgv[1].y = m_d.m_vCenter.y - cs*halfheight + sn*halfwidth;
+		rgv[1].x = m_d.m_vCenter.x + sn*halfheight + cs*halfwidth;
+		rgv[1].y = m_d.m_vCenter.y - cs*halfheight + sn*halfwidth;
 
-	rgv[2].x = m_d.m_vCenter.x - sn*halfheight + cs*halfwidth;
-	rgv[2].y = m_d.m_vCenter.y + cs*halfheight + sn*halfwidth;
+		rgv[2].x = m_d.m_vCenter.x - sn*halfheight + cs*halfwidth;
+		rgv[2].y = m_d.m_vCenter.y + cs*halfheight + sn*halfwidth;
 
-	rgv[3].x = m_d.m_vCenter.x - sn*halfheight - cs*halfwidth;
-	rgv[3].y = m_d.m_vCenter.y + cs*halfheight - sn*halfwidth;
+		rgv[3].x = m_d.m_vCenter.x - sn*halfheight - cs*halfwidth;
+		rgv[3].y = m_d.m_vCenter.y + cs*halfheight - sn*halfwidth;
 
-	psur->Polygon(rgv, 4);
+		psur->Polygon(rgv, 4);
+		}
 	}
 
 void Decal::GetTimers(Vector<HitTimer> *pvht)
@@ -179,13 +181,12 @@ void Decal::GetTextSize(int *px, int *py)
 		{
 		// Do huge amounts of work to get rid of the descent and internal ascent of the font, because it leaves ugly spaces
 		*py = AUTOLEADING * len;
-
 		*px = 0;
 		int i;
 		for (i=0;i<len;i++)
 			{
 			rcOut.left = 0;
-			rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
+			rcOut.top = 0;		//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
 			rcOut.right = 0x1;
 			rcOut.bottom = 0x1;
 			DrawText(hdcNull, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
@@ -196,9 +197,8 @@ void Decal::GetTextSize(int *px, int *py)
 	else
 		{
 		*py = tm.tmAscent;
-
 		rcOut.left = 0;
-		rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
+		rcOut.top = 0;			//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
 		rcOut.right = 0x1;
 		rcOut.bottom = 0x1;
 		DrawText(hdcNull, m_d.m_sztext, len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
@@ -210,15 +210,12 @@ void Decal::GetTextSize(int *px, int *py)
 	ReleaseDC(NULL, hdcNull);
 
 	DeleteObject(hFont);
-	//*py = rcOut.bottom;
-	//*py = tm.tmAscent;
 	}
 
 void Decal::GetHitShapes(Vector<HitObject> *pvho)
 	{
 	if (m_d.m_decaltype != DecalImage)
 		{
-		//char szText[] = "2\nx";//1000";
 		RECT rcOut;
 		int len = lstrlen(m_d.m_sztext);
 		int alignment;
@@ -226,18 +223,8 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 		hFont = GetFont();
 		alignment = DT_LEFT;
 
-		/*LOGFONT lf;
-		ZeroMemory(&lf, sizeof(lf));
-		lf.lfHeight = -20;
-		lf.lfWeight = FW_NORMAL;
-		lf.lfCharSet = DEFAULT_CHARSET;
-		lf.lfQuality = NONANTIALIASED_QUALITY;
-		lstrcpy(lf.lfFaceName, "Arial Black");
-		hFont = CreateFontIndirect(&lf);*/
-
 		HDC hdcNull;
 		hdcNull = GetDC(NULL);
-		//m_pIFont->get_hFont(&hFont);
 		hFontOld = (HFONT)SelectObject(hdcNull, hFont);
 
 		TEXTMETRIC tm;
@@ -247,7 +234,6 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 		if (m_d.m_fVerticalText)
 			{
 			int maxwidth = 0;
-			//int height;
 			int i;
 
 			for (i=0;i<len;i++)
@@ -273,7 +259,6 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 			rcOut.bottom = 1;
 			DrawText(hdcNull, m_d.m_sztext, len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
 
-		//rcOut.bottom -= (tm.tmDescent - 1); // Leave a pixel for anti-aliasing;
 			charheight = m_realheight;
 			}
 
@@ -283,7 +268,6 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 		// Calculate the percentage of the texture which is for oomlats and commas.
 		m_leading = ((float)tm.tmInternalLeading / (float)tm.tmAscent) * charheight/*m_d.m_height*/;
 		m_descent = ((float)tm.tmDescent / (float)tm.tmAscent) * charheight;
-		//rcOut.bottom = tm.tmAscent;
 
 		m_pinimage.m_width = rcOut.right;
 		m_pinimage.m_height = rcOut.bottom;
@@ -304,8 +288,8 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 			{
 			SelectObject(hdc, GetStockObject(WHITE_BRUSH));
 			}
+
 		PatBlt(hdc,0,0,m_pinimage.m_width,m_pinimage.m_height,PATCOPY);
-		//m_pIFont->get_hFont(&hFont);
 		hFontOld = (HFONT)SelectObject(hdc, hFont);
 		SetTextColor(hdc, m_d.m_color);
 		SetBkMode(hdc, TRANSPARENT);
@@ -314,14 +298,11 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 
 		if (m_d.m_fVerticalText)
 			{
-			//int height;
 			int i;
 
 			for (i=0;i<len;i++)
 				{
-				//rcOut.left = 0;
 				rcOut.top = AUTOLEADING*i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
-				//rcOut.right = 1;
 				rcOut.bottom = rcOut.top + 100;
 				int foo = DrawText(hdc, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 				}
@@ -331,8 +312,6 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 			DrawText(hdc, m_d.m_sztext, len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 			}
 
-		//hdcNull = GetDC(NULL);
-		//BitBlt(hdcNull, 0, 0, m_pinimage.m_width, m_pinimage.m_height, hdc, 0, 0, SRCCOPY);
 		SelectObject(hdcNull, hFontOld);
 		ReleaseDC(NULL, hdcNull);
 
@@ -354,12 +333,15 @@ void Decal::EndPlay()
 		}
 	}
 
+void Decal::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
+	}
+
 void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	int l;
 	WORD rgi[4];
 	Vertex3D rgv3D[4];
-	//BOOL fText = fTrue;
 	PinImage *pin;
 	float leading, descent; // For fonts
 
@@ -395,6 +377,8 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		pin = m_ptable->GetImage(m_d.m_szImage);
 		leading = 0;
 		descent = 0;
+		maxtu = 1; //rlc was uninitialize, assume one ok
+		maxtv = 1; //rlc was uninitialize, assume one ok
 		}
 
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
@@ -412,13 +396,8 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		pin->EnsureColorKey();
 		pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 
-		//pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
-		//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-
-		pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-		pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-		pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MIPFILTER, D3DTFP_LINEAR/*D3DTFP_NONE*//*D3DTFP_POINT*//*LINEAR*/);
+		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
@@ -431,6 +410,18 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 		}
 
+	// Check if we are in hardware.
+	if (g_pvp->m_pdd.m_fHardwareAccel == fTrue)
+		{
+		// Render all alpha pixels.
+		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE); 
+
+		// Turn on anisotopic filtering. 
+		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
+		}
+
 	for (l=0;l<4;l++)
 		{
 		rgi[l] = l;
@@ -439,10 +430,10 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
 
-	float halfwidth = m_realwidth/*m_d.m_width*/ * 0.5f;
-	float halfheight = m_realheight/*m_d.m_height*/ * 0.5f;
+	float halfwidth = m_realwidth * 0.5f;
+	float halfheight = m_realheight * 0.5f;
 
-	float radangle = m_d.m_rotation / 360 * PI * 2;
+	float radangle = m_d.m_rotation / 180* PI;
 	float sn = (float)sin(radangle);
 	float cs = (float)cos(radangle);
 
@@ -470,27 +461,26 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		{
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 4,
-														  rgi, 4, NULL);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi,4,0);
 		}
 	else
 		{
 		SetHUDVertices(rgv3D, 4);
 		SetDiffuseFromMaterial(rgv3D, 4, &mtrl);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
-												  rgv3D, 4,
-												  rgi, 4, NULL);
+		if( GetPTable()->GetDecalsEnabled() )
+			{
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,rgv3D, 4,rgi,4,0);
+			}
 		}
 
 	ppin3d->ExpandExtents(&m_rcBounds, rgv3D, NULL, NULL, 4, m_fBackglass);
 
+	// Set the texture state.
 	pd3dDevice->SetTexture(ePictureTexture, NULL);
-	pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-	pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-	pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+	g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
+	// Set the rendrer state.
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
@@ -572,17 +562,6 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-	/*ULONG writ = 0;
-	HRESULT hr = S_OK;
-
-	DWORD dwID = ApcControl.ID();
-	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
-		return hr;
-
-	if(FAILED(hr = pstm->Write(&m_d, sizeof(DecalData), &writ)))
-		return hr;
-
-	return hr;*/
 	}
 
 HRESULT Decal::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -659,6 +638,7 @@ BOOL Decal::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(COLR))
 		{
 		pbr->GetInt(&m_d.m_color);
+//		if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(SIZE))
 		{
@@ -674,14 +654,12 @@ BOOL Decal::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(FONT))
 		{
-		//SAFE_RELEASE(m_pIFont);
 		if (!m_pIFont)
 			{
 			FONTDESC fd;
 			fd.cbSizeofstruct = sizeof(FONTDESC);
 			fd.lpstrName = L"Arial";
 			fd.cySize.int64 = 142500;
-			//fd.cySize.Lo = 0;
 			fd.sWeight = FW_NORMAL;
 			fd.sCharset = 0;
 			fd.fItalic = 0;
@@ -735,12 +713,12 @@ void Decal::EnsureSize()
 			{
 			m_realheight*=lstrlen(m_d.m_sztext);
 			}
-
 		m_realwidth = m_realheight * (float)sizex / (float)sizey;
 		}
 	else // Auto aspect
 		{
 		m_realheight = m_d.m_height;
+
 		if (m_d.m_decaltype == DecalImage)
 			{
 			PinImage *pin;
@@ -762,6 +740,7 @@ void Decal::EnsureSize()
 			GetTextSize(&sizex, &sizey);
 
 			m_realheight = (float)cy.Lo / 2545;
+
 			if (m_d.m_fVerticalText)
 				{
 				m_realheight*=lstrlen(m_d.m_sztext);
@@ -772,8 +751,6 @@ void Decal::EnsureSize()
 				m_realwidth = m_realheight * (float)sizex / (float)sizey;
 				m_realheight = m_d.m_height;
 				}
-
-			//m_realheight = m_realwidth * (float)sizey / (float)sizex;
 			}
 		}
 	}
@@ -785,7 +762,6 @@ HFONT Decal::GetFont()
 	LOGFONT lf;
 	ZeroMemory(&lf, sizeof(lf));
 	lf.lfHeight = -32;
-	//lf.lfWeight = FW_NORMAL;
 	lf.lfCharSet = DEFAULT_CHARSET;
 	lf.lfQuality = NONANTIALIASED_QUALITY;
 
@@ -804,7 +780,6 @@ HFONT Decal::GetFont()
 
 	lf.lfItalic = bl;
 
-	//lstrcpy(lf.lfFaceName, "Arial Black");
 	hFont = CreateFontIndirect(&lf);
 
 	return hFont;
@@ -830,7 +805,7 @@ STDMETHODIMP Decal::put_Rotation(float newVal)
 
 STDMETHODIMP Decal::get_Image(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -927,7 +902,7 @@ STDMETHODIMP Decal::put_Y(float newVal)
 
 STDMETHODIMP Decal::get_Surface(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -945,18 +920,6 @@ STDMETHODIMP Decal::put_Surface(BSTR newVal)
 
 	return S_OK;
 }
-
-/*HRESULT Decal::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Decal");
-
-	return S_OK;
-	}*/
-
-/*int Decal::GetDialogID()
-	{
-	return IDD_PROPDECAL;
-	}*/
 
 void Decal::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{
@@ -991,7 +954,7 @@ STDMETHODIMP Decal::put_Type(DecalType newVal)
 
 STDMETHODIMP Decal::get_Text(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, (char *)m_d.m_sztext, -1, wz, 512);
 	*pVal = SysAllocString(wz);
@@ -1063,9 +1026,6 @@ STDMETHODIMP Decal::get_Font(IFontDisp **pVal)
 STDMETHODIMP Decal::putref_Font(IFontDisp *pFont)
 {
 	//We know that our own property browser gives us the same pointer
-
-	/*m_pIFont->Release();
-	pFont->QueryInterface(IID_IFont, (void **)&m_pIFont);*/
 
 	SetDirtyDraw();
 

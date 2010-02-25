@@ -11,8 +11,7 @@
 	materials for detailed information regarding Microsoft code samples.
 */
 
-#include "stdafx.h"
-#include "Main.h"
+#include "StdAfx.h"
 
 #define NUM_RESERVED_EXTENDER_DISPIDS 500
 #define EXTENDER_DISPID_BASE ((ULONG)(0x80010000))

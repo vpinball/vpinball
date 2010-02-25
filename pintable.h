@@ -1,6 +1,7 @@
 // PinTable.h: interface for the PinTable class.
 //
 //////////////////////////////////////////////////////////////////////
+#pragma once
 
 #if !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
 #define AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_
@@ -9,10 +10,10 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-int CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 #define MIN_ZOOM 0.126 // purposely make them offset from powers to 2 to account for roundoff error
 #define MAX_ZOOM 63.9
+
+#define MAX_TEXTURE_SIZE 4096
 
 // define table protection flags
 #define DISABLE_TABLE_SAVE		0x00000001      // cannot save table (or export)
@@ -69,8 +70,40 @@ public:
 	STDMETHOD(put_YieldTime)(/*[in]*/ long newVal);
 	STDMETHOD(get_BallImage)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_BallImage)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_Slope)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Slope)(/*[in]*/ float newVal);
+	
+	STDMETHOD(get_Gravity)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Gravity)(/*[in]*/ float newVal);
+	STDMETHOD(get_HardFriction)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_HardFriction)(/*[in]*/ float newVal);
+	STDMETHOD(get_HardScatter)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_HardScatter)(/*[in]*/ float newVal);
+	STDMETHOD(get_MaxBallSpeed)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_MaxBallSpeed)(/*[in]*/ float newVal);
+	STDMETHOD(get_DampingFriction)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_DampingFriction)(/*[in]*/ float newVal);
+	STDMETHOD(get_PlungerNormalize)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_PlungerNormalize)(/*[in]*/ int newVal);
+
+	STDMETHOD(get_PlungerFilter)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_PlungerFilter)(/*[in]*/ VARIANT_BOOL newVal);
+
+	STDMETHOD(get_PhysicsLoopTime)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_PhysicsLoopTime)(/*[in]*/ int newVal);
+
+	STDMETHOD(get_Scalex)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Scalex)(/*[in]*/ float newVal);
+	STDMETHOD(get_Scaley)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Scaley)(/*[in]*/ float newVal);
+	STDMETHOD(get_Xlatex)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Xlatex)(/*[in]*/ float newVal);
+	STDMETHOD(get_Xlatey)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Xlatey)(/*[in]*/ float newVal);
+	STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
+	STDMETHOD(get_SlopeMax)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_SlopeMax)(/*[in]*/ float newVal);
+	STDMETHOD(get_SlopeMin)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_SlopeMin)(/*[in]*/ float newVal);
 	STDMETHOD(get_BackdropImage)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_BackdropImage)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_BackdropColor)(/*[out, retval]*/ OLE_COLOR *pVal);
@@ -83,6 +116,8 @@ public:
 	STDMETHOD(put_Width)(/*[in]*/ float newVal);
 	STDMETHOD(get_GlassHeight)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_GlassHeight)(/*[in]*/ float newVal);
+	STDMETHOD(get_TableHeight)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_TableHeight)(/*[in]*/ float newVal);
 	STDMETHOD(Nudge)(float Angle, float Force);
 	STDMETHOD(get_DisplayBackdrop)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_DisplayBackdrop)(/*[in]*/ VARIANT_BOOL newVal);
@@ -90,7 +125,14 @@ public:
 	STDMETHOD(put_DisplayGrid)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
+
 	STDMETHOD(PlaySound)(BSTR bstr, int loopcount, float volume);
+	STDMETHOD(FireKnocker)(/*[in]*/ int Count);
+	STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
+	STDMETHOD(StartShake)(/*[in]*/ void);
+	STDMETHOD(StopShake)(/*[in]*/ void);
+	
+
 	STDMETHOD(get_FieldOfView)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_FieldOfView)(/*[in]*/ float newVal);
 	STDMETHOD(get_Inclination)(/*[out, retval]*/ float *pVal);
@@ -99,8 +141,11 @@ public:
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_PhysicsType)(/*[out, retval]*/ PhysicsType *pVal);
-	STDMETHOD(put_PhysicsType)(/*[in]*/ PhysicsType newVal);
+
+	STDMETHOD(get_EnableDecals)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_EnableDecals)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_EnableEMReels)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_EnableEMReels)(/*[in]*/ VARIANT_BOOL newVal);
 
 	/////////////////////////////////////////////
 	STDMETHOD(get_Accelerometer)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -113,13 +158,29 @@ public:
 	STDMETHOD(put_AccelerometerAmp)(/*[in]*/ float newVal);
 	STDMETHOD(get_AccelerManualAmp)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_AccelerManualAmp)(/*[in]*/ float newVal);
+	STDMETHOD(get_GlobalDifficulty)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_GlobalDifficulty)(/*[in]*/ float newVal);
+	STDMETHOD(get_TableCaching)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_TableCaching)(/*[in]*/ VARIANT_BOOL newVal);
 
-	STDMETHOD(get_PlungerNormalize)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_PlungerNormalize)(/*[in]*/ int newVal);
-	STDMETHOD(get_PlungerFilter)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_PlungerFilter)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_HardwareRender)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_HardwareRender)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_AlternateRender)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_AlternateRender)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_UseD3DBlit)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_UseD3DBlit)(/*[in]*/ VARIANT_BOOL newVal);
+	/////////////////////////////////////////////
 
-
+	STDMETHOD(get_JoltAmount)(/*[out, retval]*/  int *pVal);
+	STDMETHOD(put_JoltAmount)(/*[in]*/ int newVal);
+	STDMETHOD(get_TiltAmount)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_TiltAmount)(/*[in]*/ int newVal);
+	STDMETHOD(get_JoltTriggerTime)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_JoltTriggerTime)(/*[in]*/ int newVal);
+	STDMETHOD(get_TiltTriggerTime)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_TiltTriggerTime)(/*[in]*/ int newVal);
+	
+	/////////////////////////////////////////////
 	PinTable();
 	virtual ~PinTable();
 
@@ -143,6 +204,9 @@ public:
 
 	void Render3DProjection(Sur *psur);
 
+	BOOL GetDecalsEnabled(void);
+	BOOL GetEMReelsEnabled(void);
+
 	void Copy();
 	void Paste(BOOL fAtLocation, int x, int y);
 
@@ -156,6 +220,7 @@ public:
 
 	void ImportSound(HWND hwndListView, char *filename, BOOL fPlay);
 	void ReImportSound(HWND hwndListView, PinSound *pps, char *filename, BOOL fPlay);
+	bool ExportSound(HWND hwndListView, PinSound *pps,char *filename);
 	void ListSounds(HWND hwndListView);
 	int AddListSound(HWND hwndListView, PinSound *pps);
 	//void RemoveListSound(HWND hwndListView, PinSound *pps);
@@ -163,7 +228,7 @@ public:
 	HRESULT SaveSoundToStream(PinSound *pps, IStream *pstm);
 	HRESULT LoadSoundFromStream(IStream *pstm);
 	void ClearOldSounds();
-
+	bool ExportImage(HWND hwndListView, PinImage *ppi, char *filename);
 	void ImportImage(HWND hwndListView, char *filename);
 	void ReImportImage(HWND hwndListView, PinImage *ppi, char *filename);
 	void ListImages(HWND hwndListView);
@@ -213,8 +278,6 @@ public:
 
 	// IEditable (mostly bogus for now)
 	virtual void PreRender(Sur *psur);
-	//virtual void Render(Sur *psur);
-	//virtual HRESULT SaveData(IStream *pstm);
 	virtual ItemTypeEnum GetItemType();
 	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
 	virtual HRESULT InitPostLoad();
@@ -224,14 +287,6 @@ public:
 	virtual IScriptable *GetScriptable();
 
 	virtual PinTable *GetPTable() {return this;}
-/*#ifdef VBA
-	virtual IApcProjectItem *GetIApcProjectItem() {return ApcProjectItem.GetApcProjectItem();}
-	virtual IApcControl *GetIApcControl() {return NULL;}
-#endif
-
-#ifdef VBA
-	HRESULT ApcProject_ModuleDirtyChange(IApcProjectItem* pProjectItem, VARIANT_BOOL fDirty);
-#endif*/
 
 	void OnDelete();
 
@@ -246,12 +301,9 @@ public:
 
 	void TransformPoint(int x, int y, Vertex *pv);
 
-	//STDMETHOD(get_Application)(IVisualPinball **lppaReturn);
-	//STDMETHOD(get_Parent)(IVisualPinball **lppaReturn);
 	STDMETHOD(get_GridSize)(float *pgs);
 	STDMETHOD(put_GridSize)(float gs);
 
-	//void SetSel(ISelect *psel);
 	void AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate);
 
 	void BeginAutoSaveCounter();
@@ -319,9 +371,7 @@ public:
 	void SetLoadDefaults();
 
 	void SetDirty(SaveDirtyState sds);
-	//void UnsetDirty();
 	void SetNonUndoableDirty(SaveDirtyState sds);
-	//void UnsetNonUndoableDirty(SaveDirtyState sds);
 	void CheckDirty();
 	BOOL FDirty();
 
@@ -364,6 +414,8 @@ END_CONNECTION_POINT_MAP()
 	float m_zoom;
 	//ISelect *m_pselcur;
 	Vector<ISelect> m_vmultisel;
+	
+	bool  m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 
 	float m_left; // always zero for now
 	float m_top; // always zero for now
@@ -371,10 +423,19 @@ END_CONNECTION_POINT_MAP()
 	float m_bottom;
 
 	float m_glassheight;
+	float m_tableheight;
 
+	BOOL m_fRenderDecals;
+	BOOL m_fRenderEMReels;
+	float m_rotation;
 	float m_inclination;
 	float m_FOV;
-	float m_angletilt;
+	float m_xlatex;
+	float m_xlatey;
+	float m_scalex;
+	float m_scaley;
+	float m_angletiltMax;
+	float m_angletiltMin;
 
 	float m_Gravity;
 	float m_hardFriction;
@@ -385,18 +446,47 @@ END_CONNECTION_POINT_MAP()
 	BOOL m_plungerFilter;
 	int m_PhysicsLoopTime;
 
+    static int m_tblNumStartBalls;		// The number of balls that are on the table at startup minus the current player ball.
+	static int NumStartBalls( void );	// Returns the number of start balls.
+
 	BOOL m_tblAccelerometer;		// true if electronic accelerometer enabled
 	BOOL m_tblAccelNormalMount;		// true is Normal Mounting (Left Hand Coordinates)
-	BOOL m_tblAutoStartEnabled;
-	BOOL m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
+    BOOL m_tblAutoStartEnabled;
+    BOOL m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
 	float m_tblAccelAngle;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
 	float m_tblAccelAmp;			// Accelerometer gain 
 	float m_tblAccelManualAmp;		// manual input gain, generally from joysticks
+    float m_tblAutoStart;           // seconds before trying an autostart if doing once-only method .. 0 is automethod
+    float m_tblAutoStartRetry;      // seconds before retrying to autostart.
+    float m_tblVolmod;              // volume modulation for doing audio balancing
+    float m_tblExitConfirm;         // seconds before trying an autostart if doing once-only method .. 0 is automethod
 
 	float m_globalDifficulty;		// Table Difficulty Level
+    float m_timeout;                // 0 means no timeout, otherwise in units of seconds when the table timeout should occur
+	BOOL m_TableCaching;			// Table Render Cacheing
+	BOOL m_CacheEnabled;			// Table Render Cacheing
+
+    // 1.0f means constantly tilting (an invalid/degenerative state)
+    // 0.0f means will never tilt
+    F32 m_tiltsens;  // 0.0f to 1.0f
+
+    // NOTE: m_nudgesens is not strictly needed
+    // as is duplicate data as in the joystick calibration
+    // but it is here for completeness
+    F32 m_nudgesens; // 0.0f to 1.0f
+
+    int m_units_coin1;				// The number of units added on an event from coin switch 1.
+    int m_units_coin2;				// The number of units added on an event from coin switch 2.
+    int m_units_bonus;				// The number of units required for a bonus credit.
+    int m_units_credit;				// The number of units for a credit.
+    int m_custom_coins;
+	
+	int m_jolt_amount;
+	int m_tilt_amount;	
+	int m_jolt_trigger_time;
+	int m_tilt_trigger_time;
 
 	BOOL	m_fRenderShadows;
-	PhysicsType m_PhysicsType;
 	_protectionData	m_protectionData;
 
 	char m_szImage[MAXTOKEN];
@@ -420,7 +510,7 @@ END_CONNECTION_POINT_MAP()
 
 	Vector< CComObject<Collection> > m_vcollection;
 
-	COLORREF rgcolorcustom[16]; // array for the choosecolor in property browser
+	COLORREF rgcolorcustom[16];		// array for the choosecolor in property browser
 
 	Vector< PinSoundCopy > m_voldsound; // copied sounds currently playing
 

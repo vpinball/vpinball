@@ -1,7 +1,7 @@
 // Flipper.h: Definition of the Flipper class
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)
 #define AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_
 
@@ -18,6 +18,7 @@ class FlipperData
 public:
 	float m_BaseRadius;
 	float m_EndRadius;
+	float m_FlipperRadiusMax;  
 	float m_FlipperRadius;
 	float m_StartAngle;
 	float m_EndAngle;
@@ -28,28 +29,22 @@ public:
 	COLORREF m_rubbercolor;
 	float m_force;
 	int m_rubberthickness;
+	int m_rubberheight;
+	int m_rubberwidth;
 	float m_strength;
 	BOOL m_fVisible;
 	float m_elasticity;
-	
 	float m_friction;
-	float m_scatter; //-
-	float m_height; //-
+	float m_scatter;
+	float m_height;
 	float m_mass;
 	float m_powerlaw;
-	float m_baseobliquecorrection; //-
-	float m_obliquecorrection; //-
-	float m_tipobliquecorrection; //-
-	float m_scatterangle; //-
-	float m_FlipperRadiusMin; //-	// the flipper length reduction at maximum difficulty 
+	float m_obliquecorrection;
+	float m_scatterangle;
+	float m_FlipperRadiusMin;	// the flipper length reduction at maximum difficulty 
 	float m_recoil;
 	float m_return;
-	float m_angleEOS;	//- //angle at which EOS switch opens, as measured from EOS parked position
-	float m_returnforce;
-	float m_returnstrength;
-	int m_rubberheight; //-
-	int m_rubberwidth; //-
-
+	float m_angleEOS;	//angle at which EOS switch opens, as measured from EOS parked position
 	};
 
 class Flipper : 
@@ -117,13 +112,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flipper)
 
 	FlipperData m_d;
 
-	/*float m_BaseRadius;
-	float m_EndRadius;
-	float m_FlipperRadius;
-	float m_StartAngle;
-	float m_EndAngle;
-	Vertex m_Center;*/
-
 	HitFlipper *m_phitflipper;
 
 // IFlipper
@@ -136,6 +124,10 @@ public:
 	STDMETHOD(put_Strength)(/*[in]*/ float newVal);
 	STDMETHOD(get_RubberThickness)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(put_RubberThickness)(/*[in]*/ long newVal);
+	STDMETHOD(get_RubberWidth)(/*[out, retval]*/ long *pVal);
+	STDMETHOD(put_RubberWidth)(/*[in]*/ long newVal);
+	STDMETHOD(get_RubberHeight)(/*[out, retval]*/ long *pVal);
+	STDMETHOD(put_RubberHeight)(/*[in]*/ long newVal);
 	STDMETHOD(get_RubberColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_RubberColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_Speed)(/*[out, retval]*/ float *pVal);
@@ -177,22 +169,10 @@ public:
 	STDMETHOD(put_PowerLaw)(/*[in]*/ float newVal);
 	STDMETHOD(get_ObliqueCorrection)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_ObliqueCorrection)(/*[in]*/ float newVal);
-	STDMETHOD(get_BaseObliqueCorrection)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_BaseObliqueCorrection)(/*[in]*/ float newVal);
-	STDMETHOD(get_TipObliqueCorrection)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_TipObliqueCorrection)(/*[in]*/ float newVal);
 	STDMETHOD(get_FlipperRadiusMin)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_FlipperRadiusMin)(/*[in]*/ float newVal);
 	STDMETHOD(get_ScatterAngle)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_ScatterAngle)(/*[in]*/ float newVal);
-	STDMETHOD(get_ReturnStrength)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_ReturnStrength)(/*[in]*/ float newVal);
-	STDMETHOD(get_RubberWidth)(/*[out, retval]*/ long *pVal);
-	STDMETHOD(put_RubberWidth)(/*[in]*/ long newVal);
-	STDMETHOD(get_RubberHeight)(/*[out, retval]*/ long *pVal);
-	STDMETHOD(put_RubberHeight)(/*[in]*/ long newVal);
-	STDMETHOD(get_ReturnSpeed)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_ReturnSpeed)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)

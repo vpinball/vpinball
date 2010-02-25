@@ -1,11 +1,11 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 //#include "memutil.h"
 #include "dbghelp.h"
 
 #define STACKLEVEL (5)
 #define PREEXTRA (STACKLEVEL*sizeof(int))
 
-#ifdef DEBUG
+#ifdef DEBUG_XXX  //rlc remove these method in perference to DevPartner
 
 void __cdecl MemLeakAlert(void * pUserData, size_t nBytes)
 {
@@ -27,12 +27,7 @@ void __cdecl MemLeakAlert(void * pUserData, size_t nBytes)
 			_asm int 3; // Super-secret opcode that makes us break into the debugger.
 						// For some reason it works better than DebugBreak - that
 						// call gives us a funny call stack which isn't very useful.
-			/*BOOL foo = DebugActiveProcess(GetCurrentProcessId());
-			foo = GetLastError();
-			sprintf(szT,"%d",foo);
-			MessageBox(NULL,szT,NULL,0);*/
 			}
-			//DebugBreak();
 			break;
 		case IDNO:
 			break;
@@ -41,7 +36,6 @@ void __cdecl MemLeakAlert(void * pUserData, size_t nBytes)
 			_CrtSetDumpClient(NULL);
 			break;
 		}
-	//DebugBreak();
 }
 
 DWORD CALLBACK SwGetModuleBase(HANDLE dp, DWORD ReturnAddress)

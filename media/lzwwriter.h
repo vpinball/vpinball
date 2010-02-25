@@ -1,3 +1,4 @@
+#pragma once
 #ifndef __LZWWRITER_H_
 #define __LZWWRITER_H_
 

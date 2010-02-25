@@ -2,14 +2,16 @@
 //      or project specific include files that are used frequently,
 //      but are changed infrequently
 
+#define ULTRA_FREE 1
+
+#define GPINFLOAT double 
+
 #if !defined(AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_)
 #define AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-
-#define _CRT_SECURE_NO_DEPRECATE 1
 
 #define STRICT
 #ifndef _WIN32_WINNT
@@ -54,11 +56,15 @@ using namespace MSAPC;
 
 //#include "evalkey.h"
 
+#include <fpieee.h>
+#include <excpt.h>
+
 #include "math.h"
+#include "float.h"
 
 #include "commctrl.h"
 
-#include "vp-sup\inc\activdbg.h"
+#include <activdbg.h>
 
 #include <atlctl.h>
 #include <atlhost.h>
@@ -72,6 +78,9 @@ using namespace MSAPC;
 #include <ocidl.h>	// Added by ClassView
 
 #include "stdio.h"
+#include "wchar.h"
+
+#include "main.h"
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

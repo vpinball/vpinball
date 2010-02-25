@@ -1,3 +1,4 @@
+#pragma once
 class PaintSur : public Sur
 	{
 public:

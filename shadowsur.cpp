@@ -1,9 +1,5 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
-/*#define SCALEX(x) ((int)((x - m_offx)*m_zoom))
-#define SCALEY(y) ((int)((y - m_offy)*m_zoom))
-#define SCALED(d) ((int)(d*m_zoom))*/
 
 ShadowSur::ShadowSur(HDC hdc, float zoom, float offx, float offy, int width, int height, float z, ISelect *psel) : Sur(hdc, zoom, offx, offy, width, height)
 	{
@@ -45,25 +41,11 @@ void ShadowSur::Rectangle(float x, float y, float x2, float y2)
 	int ix2 = SCALEX(x2);
 	int iy2 = SCALEY(y2);
 
-	//SelectObject(m_hdc, m_hbr);
-	//SelectObject(m_hdc, m_hpnOutline);
-
 	::Rectangle(m_hdc, ix, iy, ix2, iy2);
 	}
 
 void ShadowSur::Rectangle2(int x, int y, int x2, int y2)
 	{
-	//SelectObject(m_hdc, m_hbr);
-	//SelectObject(m_hdc, m_hpnOutline);
-
-	/*if (m_fNullBorder)
-		{
-		::Rectangle(m_hdc, x, y, x2+1, y2+1);
-		}
-	else
-		{
-		::Rectangle(m_hdc, x, y, x2, y2);
-		}*/
 	}
 
 void ShadowSur::Ellipse(float centerx, float centery, float radius)
@@ -218,16 +200,6 @@ void ShadowSur::PolylineSkew(Vertex *rgv, int count, float *rgz, float z1, float
 	int bottom = SCALEX(z1) - basepixel;
 	int top = SCALEX(z2) - basepixel;
 
-	/*if (top <= 0)
-		{
-		return; //This entire polygon is underneath this shadow level
-		}
-
-	if (bottom < 0)
-		{
-		bottom = 0; // Polygon crosses shadow level
-		}*/
-
 	rgpt = new POINT[count];
 
 	int i;
@@ -248,7 +220,6 @@ void ShadowSur::PolylineSkew(Vertex *rgv, int count, float *rgz, float z1, float
 
 	SelectObject(m_hdc, m_hpnLine);
 
-	//for (i=bottom;i<top;i++)
 	for (i=0;i<1;i++)
 		{
 		SetViewportOrgEx(m_hdc, i, -i, NULL);

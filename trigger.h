@@ -1,3 +1,4 @@
+#pragma once
 // Trigger.h: Definition of the Trigger class
 //
 //////////////////////////////////////////////////////////////////////
@@ -21,6 +22,7 @@ public:
 	BOOL m_fEnabled;
 	BOOL m_fVisible;
 	Shape m_shape;
+	float m_hit_height; //trigger hit object height ... default 50
 	};
 
 /////////////////////////////////////////////////////////////////////////////
@@ -73,27 +75,27 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Trigger)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-	// DragPoints
-	virtual void GetCenter(Vertex *pv) {GetPointCenter(pv);}
-	virtual void PutCenter(Vertex *pv) {PutPointCenter(pv);}
-	virtual void GetPointCenter(Vertex *pv);
-	virtual void PutPointCenter(Vertex *pv);
-
-	//virtual HRESULT GetTypeName(BSTR *pVal);
-	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void RenderBlueprint(Sur *psur);
 
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
-	// Multi-object manipulation
-	//virtual void GetCenter(Vertex *pv);
-	//virtual void PutCenter(Vertex *pv);
 
 	virtual void EditMenu(HMENU hmenu);
 	virtual void DoCommand(int icmd, int x, int y);
 
+		// Multi-object manipulation
+	virtual void FlipY(Vertex *pvCenter);
+	virtual void FlipX(Vertex *pvCenter);
+	virtual void Rotate(float ang, Vertex *pvCenter);
+	virtual void Scale(float scalex, float scaley, Vertex *pvCenter);
+	virtual void Translate(Vertex *pvOffset);
+	virtual void GetCenter(Vertex *pv) {GetPointCenter(pv);}
+	virtual void PutCenter(Vertex *pv) {PutPointCenter(pv);}
+	virtual void GetPointCenter(Vertex *pv);
+	virtual void PutPointCenter(Vertex *pv);
+	
 	void CurvesToShapes(Vector<HitObject> *pvho);
 	void AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *pv2, RenderVertex *pv3, float height);
 
@@ -104,6 +106,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Trigger)
 	TriggerData m_d;
 
 	TriggerHitCircle *m_ptriggerhitcircle;
+
+	BOOL m_hitEnabled;		//rlc for custom shape triggers
 
 // ITrigger
 public:
@@ -121,6 +125,10 @@ public:
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
 	STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Radius)(/*[in]*/ float newVal);
+	STDMETHOD(BallCntOver)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_HitHeight)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_HitHeight)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)

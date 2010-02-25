@@ -1,7 +1,7 @@
+#pragma once
 // VPinball.h: interface for the VPinball class.
 //
 //////////////////////////////////////////////////////////////////////
-
 
 #if !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
 #define AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_
@@ -10,10 +10,13 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-//#include "VBATest.h"
 
 #define CURRENT_FILE_FORMAT_VERSION 601
 #define BEYOND_FILE_FORMAT_VERSION 701
+
+#define	WINDOWMESSAGE_ADDUNITS			5150			// Message ID to request the game window to add units (coins).
+#define	WINDOWMESSAGE_FIRSTBALLEJECTED	37				// Message ID to indicate that the first ball has been ejected.
+#define	WINDOWMESSAGE_VPINBALLSHUTDOWN	86				// Message ID indicating that VPinball is shutting down.
 
 #define DEFAULT_SECURITY_LEVEL 0
 
@@ -38,6 +41,8 @@ public CApcHost<VPinball>,
 public:
 	VPinball();
 	virtual ~VPinball();
+
+	void Quit();
 
 	void Init();
 	void RegisterClasses();
@@ -114,6 +119,7 @@ public:
 	HANDLE PostWorkToWorkerThread(int workid, LPARAM lParam);
 
 	void SetAutoSaveMinutes(int minutes);
+	static void SetOpenMinimized( void );
 
 	ULONG m_cref;
 	ITypeInfo *m_ptinfoCls;
@@ -127,6 +133,8 @@ public:
 	CComObject<PinTable> *m_ptableActive;
 
 	// From VBA APC
+	static bool m_open_minimized;
+	static int NumPlays;
 	bool m_bWinHelp;
 	int m_lcidVBA;
 
@@ -172,12 +180,15 @@ public:
 
 	STDMETHOD(PlaySound)(BSTR bstr);
 
+	STDMETHOD(FireKnocker)(int Count);
+	STDMETHOD(QuitPlayer)(int CloseType);
+	STDMETHOD(StartShake)(void);
+	STDMETHOD(StopShake)(void);
+
 	HANDLE m_workerthread;
 	DWORD m_workerthreadid;
 
 	int m_autosaveTime;
-	
-	BOOL m_fPlayOnly;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

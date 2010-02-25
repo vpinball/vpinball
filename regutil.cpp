@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 HRESULT GetRegString(char *szKey, char *szValue, void *szbuffer, DWORD size)
 	{

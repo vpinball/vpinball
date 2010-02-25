@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 // TEXT
 const WCHAR rgwzTypeName[][16] = {L"Wall",
@@ -28,9 +27,6 @@ IEditable::IEditable()
 	m_fBackglass = fFalse;
 	
 	VariantInit(&m_uservalue);
-
-	//m_pcollection = NULL;
-	//m_iCollection = -1;
 	}
 
 IEditable::~IEditable()
@@ -289,102 +285,9 @@ void IEditable::InitScript()
 	if (lstrlenW((WCHAR *)GetScriptable()->m_wzName) == 0)
 		{
 		// Just in case something screws up - not good having a null script name
-		// TODO
-		//swprintf((WCHAR *)GetScriptable()->m_wzName, L"%d", (long)this);
+		swprintf((WCHAR *)GetScriptable()->m_wzName, L"%d", (long)this);
 		}
 
 	GetPTable()->m_pcv->AddItem(GetScriptable(), fFalse);
 	}
 
-/*HRESULT IEditable::SaveUndoData(IStream *pstm)
-	{
-	HRESULT hr = S_OK;
-
-	_VBComponent* pComponent;
-	VBIDE::_CodeModule* pCodeModule;
-	// Gets the corresponding VBComponent
-	GetIApcProjectItem()->get_VBComponent(&pComponent);
-	// Gets the corresponding CodeModule
-	pComponent->get_CodeModule((VBIDE::CodeModule**)&pCodeModule);
-	pComponent->Release();
-	CComBSTR bstr;
-	long count;
-	pCodeModule->get_CountOfLines(&count);
-	HRESULT hr = pCodeModule->get_Lines(1, count, &bstr);
-
-	int len = lstrlenW(bstr);
-
-	ULONG writ = 0;
-
-	if(FAILED(hr = pstm->Write(&len, sizeof(len), &writ)))
-		return hr;
-
-	if(FAILED(hr = pstm->Write((WCHAR *)bstr, len*sizeof(WCHAR), &writ)))
-		return hr;
-
-	SaveData(pstm);
-
-	return hr;
-	}
-
-/*STDMETHODIMP IEditable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut)
-	{
-    if (dispID != DISPID_Image && dispID != DISPID_Image2)
-		{
-		return hrNotImplemented;
-		}
-
-	if (pcaStringsOut == NULL || pcaCookiesOut == NULL)
-		return S_OK;
-
-	int cvar = GetPTable()->m_vimage.Size();
-	int ivar;
-
-	WCHAR **rgstr = (WCHAR **) CoTaskMemAlloc(cvar * sizeof(WCHAR *));
-	DWORD *rgdw = (DWORD *) CoTaskMemAlloc(cvar * sizeof DWORD);
-
-	for (ivar = 0 ; ivar < cvar ; ivar++)
-		{
-		char *szSrc = GetPTable()->m_vimage.ElementAt(ivar)->m_szName;
-		DWORD cwch = lstrlen(szSrc)+1;
-		WCHAR *wzDst = (WCHAR *) CoTaskMemAlloc(cwch*sizeof(WCHAR));
-		if (wzDst == NULL)
-			{
-			ShowError("Damn");
-			}
-
-		MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
-
-		//MsoWzCopy(szSrc,szDst);
-		rgstr[ivar] = wzDst;
-		rgdw[ivar] = ivar;
-		}
-
-	pcaStringsOut->cElems = cvar;
-	pcaStringsOut->pElems = rgstr;
-
-	pcaCookiesOut->cElems = cvar;
-	pcaCookiesOut->pElems = rgdw;
-
-	return S_OK;
-	}
-
-STDMETHODIMP IEditable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut)
-	{
-    if (dispID != DISPID_Image && dispID != DISPID_Image2)
-		{
-		return hrNotImplemented;
-		}
-
-	char *szSrc = GetPTable()->m_vimage.ElementAt(dwCookie)->m_szName;
-	DWORD cwch = lstrlen(szSrc)+1;
-	WCHAR *wzDst = (WCHAR *) CoTaskMemAlloc(cwch*sizeof(WCHAR));
-
-	MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
-
-	CComVariant var(wzDst);
-
-	CoTaskMemFree(wzDst);
-
-	return var.Detach(pVarOut);
-	}*/

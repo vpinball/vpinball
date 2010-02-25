@@ -1,6 +1,7 @@
 // Light.h: Definition of the Light class
 //
 //////////////////////////////////////////////////////////////////////
+#pragma once
 
 #if !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)
 #define AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_
@@ -25,6 +26,9 @@ public:
 	float m_borderwidth;
 	COLORREF m_bordercolor;
 	char m_szSurface[MAXTOKEN];
+	char m_szOnImage[MAXTOKEN];
+	char m_szOffImage[MAXTOKEN];
+	BOOL m_fDisplayImage;
 	};
 
 class LightCenter : public ISelect
@@ -182,12 +186,16 @@ public:
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
 	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
-	//STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
-	//STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_State)(/*[out, retval]*/ LightState *pVal);
 	STDMETHOD(put_State)(/*[in]*/ LightState newVal);
 	STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Radius)(/*[in]*/ float newVal);
+	STDMETHOD(get_OffImage)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_OffImage)(/*[in]*/ BSTR newVal);
+	STDMETHOD(get_OnImage)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_OnImage)(/*[in]*/ BSTR newVal);
+	STDMETHOD(get_DisplayImage)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_DisplayImage)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

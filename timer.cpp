@@ -1,8 +1,7 @@
 // Timer.cpp : Implementation of CVBATestApp and DLL registration.
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "VBATest.h"
-#include "main.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -78,7 +77,7 @@ void Timer::Render(Sur *psur)
 	psur->Ellipse(m_d.m_v.x, m_d.m_v.y, 15);
 
 	int i;
-	double angle;
+	GPINFLOAT angle;
 	float sn,cs;
 
 	for (i=0;i<12;i++)
@@ -106,6 +105,7 @@ void Timer::GetTimers(Vector<HitTimer> *pvht)
 	pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
+
 	pht->m_pfe = (IFireEvents *)this;
 
 	m_phittimer = pht;
@@ -128,6 +128,10 @@ void Timer::GetHitShapesDebug(Vector<HitObject> *pvho)
 void Timer::EndPlay()
 	{
 	IEditable::EndPlay();
+	}
+
+void Timer::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
 	}
 
 void Timer::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
@@ -211,7 +215,6 @@ STDMETHODIMP Timer::put_Interval(long newVal)
 		m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval;
 		m_phittimer->m_nextfire = g_pplayer->m_timeCur + m_phittimer->m_interval;
 		}
-
 	STOPUNDO
 
 	return S_OK;
@@ -236,17 +239,6 @@ HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-	/*ULONG writ = 0;
-	HRESULT hr = S_OK;
-
-	DWORD dwID = ApcProjectItem.ID();
-	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
-		return hr;
-
-	if(FAILED(hr = pstm->Write(&m_d, sizeof(TimerData), &writ)))
-		return hr;
-
-	return hr;*/
 	}
 
 HRESULT Timer::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -317,18 +309,6 @@ HRESULT Timer::InitPostLoad()
 	{
 	return S_OK;
 	}
-
-/*HRESULT Timer::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Timer");
-
-	return S_OK;
-	}*/
-
-/*int Timer::GetDialogID()
-	{
-	return IDD_PROPTIMER;
-	}*/
 
 void Timer::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{

@@ -1,8 +1,7 @@
 // Trigger.cpp : Implementation of CVBATestApp and DLL registration.
 
-#include "stdafx.h"
-//#include "VBATest.h"
-#include "main.h"
+#include "StdAfx.h"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -11,14 +10,14 @@ Trigger::Trigger()
 	{
 	m_ptriggerhitcircle = NULL;
 
+	m_hitEnabled = fTrue;
+
 	m_menuid = IDR_SURFACEMENU;
 	}
 
 Trigger::~Trigger()
 	{
 	}
-
-//#define FILEID(a,b,c,d) ('a'<<24 | 'b'<<16 | 'c'<<8 | 'd')
 
 HRESULT Trigger::Init(PinTable *ptable, float x, float y)
 	{
@@ -28,8 +27,6 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y)
 	m_d.m_vCenter.y = y;
 
 	SetDefaults();
-
-	//HRESULT hr = ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Trigger", NULL);
 
 	return InitVBA(fTrue, 0, NULL);
 	}
@@ -42,6 +39,7 @@ void Trigger::SetDefaults()
 	m_d.m_tdr.m_TimerInterval = 100;
 	m_d.m_fEnabled = fTrue;
 	m_d.m_fVisible = fTrue;
+	m_d.m_hit_height = 50;
 
 	m_d.m_shape = ShapeCircle;
 
@@ -211,6 +209,8 @@ void Trigger::GetTimers(Vector<HitTimer> *pvht)
 
 void Trigger::GetHitShapes(Vector<HitObject> *pvho)
 	{
+	m_hitEnabled = m_d.m_fEnabled;
+
 	if (m_d.m_shape == ShapeCircle)
 		{
 		float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -227,7 +227,7 @@ void Trigger::GetHitShapes(Vector<HitObject> *pvho)
 		m_ptriggerhitcircle->center.y = m_d.m_vCenter.y;
 		m_ptriggerhitcircle->radius = m_d.m_radius;
 		m_ptriggerhitcircle->zlow = height;
-		m_ptriggerhitcircle->zhigh = height+50;
+		m_ptriggerhitcircle->zhigh = height + m_d.m_hit_height;
 
 		m_ptriggerhitcircle->m_ptrigger = this;
 
@@ -242,14 +242,17 @@ void Trigger::GetHitShapes(Vector<HitObject> *pvho)
 void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
 	{
 	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
+	m_hitEnabled = m_d.m_fEnabled;
 	switch (m_d.m_shape)
 		{
 		case ShapeCircle:
 		default:
 			{
 			HitObject *pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 10, m_d.m_radius, 32);
-			pvho->AddElement(pho);
+			pho->m_ObjType = eTrigger;
+			pho->m_pObj = (void*) this;
+
+			pvho->AddElement(pho);			
 			}
 			break;
 
@@ -269,13 +272,16 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
 				{
 				rgv3d[i].x = vvertex.ElementAt(i)->x;
 				rgv3d[i].y = vvertex.ElementAt(i)->y;
-				rgv3d[i].z = height + 10;
+				rgv3d[i].z = height + PHYS_SKIN*2;// + 10;
 				delete vvertex.ElementAt(i);
 				}
 
 			Hit3DPoly *ph3dp = new Hit3DPoly(rgv3d, cvertex);
-			pvho->AddElement(ph3dp);
+			ph3dp->m_ObjType = eTrigger;
+			ph3dp->m_pObj = (void*) this;
 
+			pvho->AddElement(ph3dp);
+			//ph3dp->m_fEnabled = fFalse;	//rlc ... error: disable hit process on polygon body, only trigger edges 
 			delete rgv3d;
 			}
 			break;
@@ -288,7 +294,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 
 	int i;
 	int count;
-	RenderVertex *pv1, *pv2, *pv3, *pv4;
+	
 	//Vector<Vertex> vvertex;
 
 	int cpoint;
@@ -302,77 +308,55 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 	Vertex3D *rgv3D;
 	//rgv = GetRgRenderVertex(&count);
 
-	{
-	Vector<RenderVertex> vvertex;
-	GetRgVertex(&vvertex);
-
-	count = vvertex.Size();
-	rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
-	rgv3D = new Vertex3D[count + 6];
-
-	if (1)
 		{
+		Vector<RenderVertex> vvertex;
+		GetRgVertex(&vvertex);
+
+		count = vvertex.Size();
+		rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
+		rgv3D = new Vertex3D[count + 6];
+
+		if (1)
+			{
+			for (i=0;i<count;i++)
+				{
+				rgv3D[i].x = vvertex.ElementAt(i)->x;
+				rgv3D[i].y = vvertex.ElementAt(i)->y;
+				rgv3D[i].z = height + PHYS_SKIN*2;// + 50;	//rlc fix 
+				}
+			}
+
 		for (i=0;i<count;i++)
 			{
-			rgv3D[i].x = vvertex.ElementAt(i)->x;
-			rgv3D[i].y = vvertex.ElementAt(i)->y;
-			rgv3D[i].z = height + 50;
+			rgv[i] = *vvertex.ElementAt(i);
+			delete vvertex.ElementAt(i);
 			}
 		}
-
-	for (i=0;i<count;i++)
-		{
-		rgv[i] = *vvertex.ElementAt(i);
-		delete vvertex.ElementAt(i);
-		}
-	}
-
-	for (i=0;i<count;i++)
+#if 1	
+	RenderVertex *pv1, *pv2, *pv3, *pv4;
+	for (i=0;i<count;i++)	
 		{
 		pv1 = &rgv[i];
 		pv2 = &rgv[(i+1) % count];
 		pv3 = &rgv[(i+2) % count];
 		pv4 = &rgv[(i+3) % count];
 
-		if (1)
-			{
-			AddLine(pvho, pv2, pv3, pv1, height);
-			}
-		else
-			{
-			AddLine(pvho, pv3, pv2, pv4, height);
-			}
-		}
+		AddLine(pvho, pv2, pv3, pv1, height);
+		} 
+#endif
 
-	if (1)
-		{
-		if (0)
-			{
-			// Special hit object that will allow us to animate the surface
-			/*m_phitdrop = new Hit3DPolyDrop(rgv3D,count);
+#if 1	
+	Hit3DPoly *ph3dpoly;
 
-			m_phitdrop->m_fVisible = fTrue;
+	ph3dpoly = new Hit3DPoly(rgv3D,count);
 
-			m_phitdrop->m_iframedesire = 0;
+	ph3dpoly->m_fVisible = fTrue;
+	ph3dpoly->m_ObjType = eTrigger;	
+	ph3dpoly->m_pObj = (void*) this;
 
-			pvho->AddElement(m_phitdrop);
-
-			m_vhoDrop.AddElement(m_phitdrop);*/
-			}
-		else
-			{
-			Hit3DPoly *ph3dpoly;
-
-			ph3dpoly = new Hit3DPoly(rgv3D,count);
-
-			ph3dpoly->m_fVisible = fTrue;
-			ph3dpoly->m_ObjType = eTrigger;	
-			ph3dpoly->m_pObj = (void*) this;
-
-
-			pvho->AddElement(ph3dpoly);
-			}
-		}
+	pvho->AddElement(ph3dpoly);
+	
+#endif
 
 	delete rgv;
 	delete rgv3D;
@@ -390,7 +374,7 @@ void Trigger::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 	plineseg->m_pObj = (void*) this;
 
 	plineseg->m_rcHitRect.zlow = height;
-	plineseg->m_rcHitRect.zhigh = height+50;
+	plineseg->m_rcHitRect.zhigh = height + m_d.m_hit_height -8.0f; //adjust for same hit height as circular
 
 	plineseg->v1.x = pv1->x;
 	plineseg->v1.y = pv1->y;
@@ -438,6 +422,10 @@ WORD rgtriggerface[][5] = {
 	4,5,7,6,-1,
 	6,7,9,8,-1,
 	};
+
+void Trigger::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
+	}
 
 void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
@@ -493,10 +481,6 @@ void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 		}
 
-	/*rgv3D[16].x = m_d.m_vCenter.x;
-	rgv3D[16].y = m_d.m_vCenter.y;
-	rgv3D[16].z = height + 12;*/
-
 	for (i=0;i<4;i++)
 		{
 		int offset = i*10;
@@ -517,7 +501,7 @@ void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[offset], 10,
-													  rgi, cpt, NULL);
+													  rgi, cpt, 0);
 			}
 		}
 
@@ -557,20 +541,6 @@ void Trigger::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-/*void Trigger::GetCenter(Vertex *pv)
-	{
-	pv->x = m_d.m_vCenter.x;
-	pv->y = m_d.m_vCenter.y;
-	}
-
-void Trigger::PutCenter(Vertex *pv)
-	{
-	m_d.m_vCenter.x = pv->x;
-	m_d.m_vCenter.y = pv->y;
-
-	m_ptable->SetDirtyDraw();
-	}*/
-
 void Trigger::GetPointCenter(Vertex *pv)
 	{
 	*pv = m_d.m_vCenter;
@@ -585,6 +555,10 @@ void Trigger::PutPointCenter(Vertex *pv)
 
 void Trigger::EditMenu(HMENU hmenu)
 	{
+	EnableMenuItem(hmenu, ID_WALLMENU_FLIP, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
+	EnableMenuItem(hmenu, ID_WALLMENU_MIRROR, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
+	EnableMenuItem(hmenu, ID_WALLMENU_ROTATE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
+	EnableMenuItem(hmenu, ID_WALLMENU_SCALE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
 	EnableMenuItem(hmenu, ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
 	}
 
@@ -693,6 +667,31 @@ void Trigger::DoCommand(int icmd, int x, int y)
 		}
 	}
 
+void Trigger::FlipY(Vertex *pvCenter)
+	{
+	IHaveDragPoints::FlipPointY(pvCenter);
+	}
+
+void Trigger::FlipX(Vertex *pvCenter)
+	{
+	IHaveDragPoints::FlipPointX(pvCenter);
+	}
+
+void Trigger::Rotate(float ang, Vertex *pvCenter)
+	{
+	IHaveDragPoints::RotatePoints(ang, pvCenter);
+	}
+
+void Trigger::Scale(float scalex, float scaley, Vertex *pvCenter)
+	{
+	IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter);
+	}
+
+void Trigger::Translate(Vertex *pvOffset)
+	{
+	IHaveDragPoints::TranslatePoints(pvOffset);
+	}
+
 HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
 	HRESULT hr;
@@ -709,6 +708,7 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteString(FID(SURF), m_d.m_szSurface);
 	bw.WriteBool(FID(EBLD), m_d.m_fEnabled);
 	bw.WriteBool(FID(VSBL), m_d.m_fVisible);
+	bw.WriteFloat(FID(THOT), m_d.m_hit_height);
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 	bw.WriteInt(FID(SHAP), m_d.m_shape);
 
@@ -720,17 +720,6 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-	/*ULONG writ = 0;
-	HRESULT hr = S_OK;
-
-	DWORD dwID = ApcProjectItem.ID();
-	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
-		return hr;
-
-	if(FAILED(hr = pstm->Write(&m_d, sizeof(TriggerData), &writ)))
-		return hr;
-
-	return hr;*/
 	}
 
 void Trigger::ClearForOverwrite()
@@ -797,6 +786,10 @@ BOOL Trigger::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(EBLD))
 		{
 		pbr->GetBool(&m_d.m_fEnabled);
+		}
+	else if (id == FID(THOT))
+		{
+		pbr->GetFloat(&m_d.m_hit_height);
 		}
 	else if (id == FID(VSBL))
 		{
@@ -895,10 +888,10 @@ STDMETHODIMP Trigger::put_Y(float newVal)
 
 STDMETHODIMP Trigger::get_Surface(BSTR *pVal)
 {
-	unsigned short wz[512];
+	WCHAR wz[512];
 
-	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, (LPWSTR)wz, 32);
-	*pVal = SysAllocString((OLECHAR *)wz);
+	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
+	*pVal = SysAllocString(wz);
 
 	return S_OK;
 }
@@ -916,25 +909,32 @@ STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 
 STDMETHODIMP Trigger::get_Enabled(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fEnabled);
+	if (g_pplayer) *pVal = FTOVB(m_hitEnabled);
+	else *pVal = FTOVB(m_d.m_fEnabled);
 
 	return S_OK;
 }
 
 STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
 {
-	STARTUNDO
-
-	m_d.m_fEnabled = VBTOF(newVal);
-
-	if (m_ptriggerhitcircle)
+	if (g_pplayer)
 		{
-		m_ptriggerhitcircle->m_fEnabled = m_d.m_fEnabled;
+		m_hitEnabled = VBTOF(newVal);
+
+		if (m_ptriggerhitcircle){m_ptriggerhitcircle->m_fEnabled = m_hitEnabled;}
+		}
+	else 
+		{
+		STARTUNDO
+
+		m_d.m_fEnabled = VBTOF(newVal);
+		m_hitEnabled = m_d.m_fEnabled;
+
+		STOPUNDO
 		}
 
-	STOPUNDO
-
 	return S_OK;
+
 }
 
 STDMETHODIMP Trigger::get_Visible(VARIANT_BOOL *pVal)
@@ -955,17 +955,78 @@ STDMETHODIMP Trigger::put_Visible(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
-/*HRESULT Trigger::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Trigger");
+STDMETHODIMP Trigger::BallCntOver(int *pVal)
+{
+	int cnt = 0;
+
+	if (g_pplayer)
+		{
+		Ball *pball;
+		
+		int vballsize = g_pplayer->m_vball.Size();
+
+		for (int i = 0; i < vballsize; i++)
+			{
+			pball = g_pplayer->m_vball.ElementAt(i);
+
+			if (pball->m_vpVolObjs && pball->m_vpVolObjs->IndexOf(this) >= 0)
+				{
+				g_pplayer->m_pactiveball = pball;	// set active ball for scriptor
+				++cnt;
+				}
+			}		
+		}
+
+	*pVal = cnt;
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::DestroyBall(int *pVal)
+{
+	int cnt = 0;
+
+	if (g_pplayer)
+		{
+		Ball *pball;
+		int j;
+		
+		for (int i = 0; i < g_pplayer->m_vball.Size(); i++)
+			{
+			pball = g_pplayer->m_vball.ElementAt(i);
+
+			if (pball->m_vpVolObjs && (j = pball->m_vpVolObjs->IndexOf(this)) >= 0)
+				{
+				++cnt;
+				pball->m_vpVolObjs->RemoveElementAt(j);
+				g_pplayer->DestroyBall(pball); // inside trigger volume?
+				}
+			}
+		}
+
+	if (pVal) *pVal = cnt;
 
 	return S_OK;
-	}*/
+}
 
-/*int Trigger::GetDialogID()
-	{
-	return IDD_PROPTRIGGER;
-	}*/
+
+
+STDMETHODIMP Trigger::get_HitHeight(float *pVal)
+{
+	*pVal = m_d.m_hit_height;
+
+	return S_OK;
+}
+
+STDMETHODIMP Trigger::put_HitHeight(float newVal)
+{
+	STARTUNDO
+
+	m_d.m_hit_height = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
 
 void Trigger::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{

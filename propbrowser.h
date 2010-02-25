@@ -1,3 +1,4 @@
+#pragma once
 
 #ifndef IMGERMAN
 enum
@@ -60,7 +61,6 @@ public:
 	void CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel);
 	void GetControlValue(HWND hwndControl);
 	HWND GetHWnd() {return m_hwndFrame;}
-	//HWND GetDialog() {return m_hwndDialog;}
 	void Init(HWND hwndParent);
 	void SetVisible(BOOL fVisible);
 	BOOL GetVisible();
@@ -79,11 +79,7 @@ public:
 	ISelect *GetBaseISel() {if (!m_pvsel || m_pvsel->Size() == 0) {return NULL;} return m_pvsel->ElementAt(0);}
 	IDispatch *GetBaseIDisp() {if (!m_pvsel || m_pvsel->Size() == 0) {return NULL;} return m_pvsel->ElementAt(0)->GetDispatch();}
 
-	//IDispatch *m_pdisp;
-	//ISelect *m_pisel;
-
 	HWND m_hwndFrame;
-	//HWND m_hwndDialog;
 
 	VectorInt<HWND> m_vhwndExpand;
 	VectorInt<HWND> m_vhwndDialog;

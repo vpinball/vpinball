@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "main.h"
 
 void EventProxyBase::FireBallEvent(int dispid, Ball *pball)
 	{

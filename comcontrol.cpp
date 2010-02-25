@@ -1,8 +1,6 @@
 // ComControl.cpp : Implementation of CComControl
 
 #include "stdafx.h"
-//#include "VBATest.h"
-#include "main.h"
 #include <initguid.h>
 
 #define FREE_MEMORY WM_USER+1000
@@ -273,19 +271,6 @@ HRESULT MyCaxWindow::ActivateAx(IUnknown* pUnkControl, bool bInited, IStream* pS
 		if (m_dwViewObjectType)
 			m_spViewObject->SetAdvise(DVASPECT_CONTENT, 0, spAdviseSink);
 		m_spOleObject->SetHostNames(OLESTR("AXWIN"), NULL);
-		/*GetClientRect(&m_rcPos);
-		m_pxSize.cx = m_rcPos.right - m_rcPos.left;
-		m_pxSize.cy = m_rcPos.bottom - m_rcPos.top;
-		AtlPixelToHiMetric(&m_pxSize, &m_hmSize);
-		m_spOleObject->SetExtent(DVASPECT_CONTENT, &m_hmSize);
-		m_spOleObject->GetExtent(DVASPECT_CONTENT, &m_hmSize);
-		AtlHiMetricToPixel(&m_hmSize, &m_pxSize);
-		m_rcPos.right = m_rcPos.left + m_pxSize.cx;
-		m_rcPos.bottom = m_rcPos.top + m_pxSize.cy;
-
-		CComQIPtr<IOleClientSite> spClientSite(GetControllingUnknown());
-		hr = m_spOleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, spClientSite, 0, m_hWnd, &m_rcPos);
-		RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_INTERNALPAINT | RDW_FRAME);*/
 	}
 	CComPtr<IObjectWithSite> spSite;
 	pUnkControl->QueryInterface(IID_IObjectWithSite, (void**)&spSite);
@@ -331,18 +316,6 @@ HRESULT MyCaxWindow::GetWindowContext(IOleInPlaceFrame** ppFrame, IOleInPlaceUIW
 			m_spInPlaceFrame.CopyTo(ppFrame);
 			m_spInPlaceUIWindow.CopyTo(ppDoc);
 
-			/*lprcPosRect->left = 0;
-			lprcPosRect->top = 0;
-			lprcPosRect->right = 200;
-			lprcPosRect->bottom = 200;
-
-			lprcClipRect->left = 0;
-			lprcClipRect->top = 0;
-			lprcClipRect->right = 200;
-			lprcClipRect->bottom = 200;*/
-			//::GetClientRect(g_pplayer->m_hwnd, lprcPosRect);
-			//::GetClientRect(g_pplayer->m_hwnd, lprcClipRect);
-
 			*lprcPosRect = m_rc;
 			*lprcClipRect = m_rc;
 
@@ -367,11 +340,6 @@ HRESULT MyCaxWindow::OnInPlaceActivateEx(BOOL* pfNoRedraw, DWORD dwFlags)
 	m_bInPlaceActive = TRUE;
 	OleLockRunning(m_spOleObject, TRUE, FALSE);
 	HRESULT hr = E_FAIL;
-	/*if (dwFlags & ACTIVATE_WINDOWLESS)
-	{
-		m_bWindowless = TRUE;
-		hr = m_spOleObject->QueryInterface(IID_IOleInPlaceObjectWindowless, (void**) &m_spInPlaceObjectWindowless);
-	}*/
 	if (FAILED(hr))
 	{
 		m_bWindowless = FALSE;
@@ -389,9 +357,7 @@ DispExtender::DispExtender()
 
 DispExtender::~DispExtender()
 	{
-	//m_pdisp->Release();
 	m_pdispEdit->Release();
-	//m_pti->Release();
 	if (m_pti2)
 		{
 		m_pti2->Release();
@@ -522,158 +488,9 @@ HRESULT DispExtender::GetInfoOfIndex(ULONG iti, DWORD dwFlags, ITypeInfo** pptiC
 			}
 		}
 
-	/*if (dwFlags & MULTICLASSINFO_GETNUMRESERVEDDISPIDS)
-		{
-		*pcdispidReserved = 256;
-		}
-
-	if (dwFlags & MULTICLASSINFO_GETIIDPRIMARY)
-		{
-		if (iti == 0)
-			{
-			*piidPrimary = IID_IComControl;
-			}
-		else
-			{
-			TYPEATTR *pta;
-			m_ptiPri->GetTypeAttr(&pta);
-			//*piidPrimary = IID_IComControl;
-			m_ptiPri->ReleaseTypeAttr(pta);
-			}
-		}
-
-	if (dwFlags & MULTICLASSINFO_GETIIDSOURCE)
-		{
-		if (iti == 0)
-			{
-			*piidSource = DIID_IComControlEvents;
-			}
-		else
-			{
-			//*piidSource = IID_IGame;
-			}
-		}*/
-
 	return S_OK;
 	}
 
-/*TypeInfoExtender::TypeInfoExtender()
-	{
-	m_cref = 0;
-	}
-
-ULONG TypeInfoExtender::AddRef()
-	{
-	m_cref++;
-	m_pti->AddRef();
-	m_pti2->AddRef();
-	return m_cref;
-	}
-
-ULONG TypeInfoExtender::Release()
-	{
-	m_cref--;
-	m_pti->Release();
-	m_pti2->Release();
-	return m_cref;
-	}
-
-HRESULT TypeInfoExtender::QueryInterface(REFIID iid, void **ppvObject)
-	{
-	return m_pti->QueryInterface(iid, ppvObject);
-	}
-
-HRESULT TypeInfoExtender::AddressOfMember(MEMBERID memid, INVOKEKIND invKind, VOID FAR* FAR *ppv)
-	{
-	return m_pti->AddressOfMember(memid, invKind, ppv);
-	}
-
-HRESULT TypeInfoExtender::CreateInstance(IUnknown FAR *pUnkOuter, REFIID riid, VOID FAR* FAR *ppvObj)
-	{
-	return S_OK;
-	}
-
-HRESULT TypeInfoExtender::GetContainingTypeLib(ITypeLib FAR *FAR *ppTLib, unsigned int FAR *pIndex)
-	{
-	return S_OK;
-	}
-
-HRESULT TypeInfoExtender::GetDllEntry(MEMBERID memid, INVOKEKIND invKind, BSTR FAR *pBstrDllName, BSTR FAR *pBstrName, unsigned short FAR *pwOrdinal)
-	{
-	return S_OK;
-	}
-
-HRESULT TypeInfoExtender::GetDocumentation(MEMBERID memid, BSTR FAR *pBstrName, BSTR FAR *pBstrDocString, unsigned long FAR *pdwHelpContext, BSTR FAR *pBstrHelpFile)
-	{
-	return S_OK;
-	}
-
-HRESULT TypeInfoExtender::GetFuncDesc(unsigned int index, FUNCDESC FAR *FAR *ppFuncDesc)
-	{
-	return S_OK;
-	}
-
-HRESULT TypeInfoExtender::GetIDsOfNames(OLECHAR FAR *FAR *rgszNames, unsigned int cNames, MEMBERID FAR *pMemId)
-	{
-	return S_OK;
-	}
-
-HRESULT TypeInfoExtender::GetImplTypeFlags(unsigned int index, int *pImplTypeFlags)
-	{
-	return m_pti->GetImplTypeFlags(index, pImplTypeFlags);
-	}
-
-HRESULT TypeInfoExtender::GetMops(MEMBERID memid, BSTR FAR *pBstrMops)
-	{
-	return S_OK;
-	}
-
-HRESULT TypeInfoExtender::GetNames(MEMBERID memid, BSTR FAR *rgBstrNames, unsigned int cMaxNames, unsigned int FAR *pcNames)
-	{
-	return S_OK;
-	}
-
-HRESULT TypeInfoExtender::GetRefTypeInfo(HREFTYPE hRefType, ITypeInfo FAR *FAR *ppTInfo)
-	{
-	return m_pti->GetRefTypeInfo(hRefType, ppTInfo);
-	}
-
-HRESULT TypeInfoExtender::GetRefTypeOfImplType(unsigned int index, HREFTYPE FAR *pRefType)
-	{
-	return m_pti->GetRefTypeOfImplType(index, pRefType);
-	}
-
-HRESULT TypeInfoExtender::GetTypeAttr(TYPEATTR FAR *FAR *ppTypeAttr)
-	{
-	return m_pti->GetTypeAttr(ppTypeAttr);
-	}
-
-HRESULT TypeInfoExtender::GetTypeComp(ITypeComp FAR *FAR *ppTComp)
-	{
-	return S_OK;
-	}
-
-HRESULT TypeInfoExtender::GetVarDesc(unsigned int index, VARDESC FAR *FAR *ppVarDesc)
-	{
-	return S_OK;
-	}
-
-HRESULT TypeInfoExtender::Invoke(VOID FAR *pvInstance, MEMBERID memid, unsigned short wFlags, DISPPARAMS FAR *pDispParams, VARIANT FAR *pVarResult, EXCEPINFO FAR *pExcepInfo, unsigned int FAR *puArgErr)
-	{
-	return S_OK;
-	}
-
-void TypeInfoExtender::ReleaseFuncDesc(FUNCDESC FAR *pFuncDesc)
-	{
-	}
-
-void TypeInfoExtender::ReleaseTypeAttr(TYPEATTR FAR *pTypeAttr)
-	{
-	}
-
-void TypeInfoExtender::ReleaseVarDesc(VARDESC FAR *pVarDesc)
-	{
-	}*/
 
 PinComControl::PinComControl()
 	{
@@ -681,10 +498,6 @@ PinComControl::PinComControl()
 	m_ptemplate = NULL;
 
 	m_pdispextender = NULL;
-	//m_ptiextenderEvents = NULL;
-
-	//m_ptiPri = NULL;
-	//m_ptiSec = NULL;
 	}
 
 PinComControl::~PinComControl()
@@ -708,11 +521,6 @@ PinComControl::~PinComControl()
 		{
 		m_pmcw->FinalRelease();
 		}
-
-	/*if (m_ptiextenderEvents)
-		{
-		delete m_ptiextenderEvents;
-		}*/
 	}
 
 HRESULT PinComControl::Init(PinTable *ptable, float x, float y)
@@ -737,7 +545,7 @@ HRESULT PinComControl::Init(PinTable *ptable, float x, float y)
 
 	CreateControl(NULL);
 
-	return InitVBA(fTrue, 0, NULL);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Textbox", NULL);
+	return InitVBA(fTrue, 0, NULL);
 	}
 
 void PinComControl::SetDefaults()
@@ -769,65 +577,31 @@ void PinComControl::CreateControl(IStream *pstm)
 
 	AtlAxWinInit();
 	RECT rcWnd = {0, 0, 200, 200};
-	//HWND hwnd = m_caxwindow.Create(m_ptable->m_hwnd, &rcWnd, NULL, WS_VISIBLE | WS_CHILD);
-	//HRESULT hr = m_caxwindow.CreateControl(m_d.m_progid, NULL, &m_punk);
 
 	CComPtr<IUnknown> spUnkContainer;
-	//hr = MyCaxWindow::_CreatorClass::CreateInstance(NULL, IID_IUnknown, (void**)&spUnkContainer);
 
 	CComObject<MyCaxWindow>::CreateInstance(&m_pmcw);
 
 	m_pmcw->m_ppcc = this;
 
-	//CLSID clsid;
 	IUnknown *punk;
-	//hr = CLSIDFromProgID(m_d.m_progid, &clsid); // How about a ProgID?
 	hr = CoCreateInstance(m_d.m_clsid, NULL, CLSCTX_SERVER, IID_IUnknown, (void **)&punk);
 
 	if (SUCCEEDED(hr))
 	{
 		m_pmcw->QueryInterface(IID_IAxWinHostWindow, (void**)&m_pAxWindow);
 		hr = m_pmcw->ActivateAx(punk, false, pstm);
-		//hr = pAxWindow->AttachControl(punk, NULL);
 	}
-	/*if (ppUnkContainer != NULL)
-	{
-		*ppUnkContainer = SUCCEEDED(hr) ? spUnkContainer.p : NULL;
-		spUnkContainer.p = NULL;
-	}*/
-
-	//pAxWindow->AttachControl(punk, NULL);
-
-	//IPersistStreamInit *pps;
-	//pAxWindow->QueryControl(IID_IPersistStreamInit, (void **)&pps);
-	/*if (pps)  // I suppose some people might not want to persist anything?
-		{
-		if (pstm)
-			{
-			pps->Load(pstm);
-			}
-		else
-			{
-			pps->InitNew();
-			}
-		pps->Release();
-		}*/
 
 	m_pdispextender = new DispExtender();
 	m_pdispextender->m_pdisp = (IDispatch *)this;
 	m_pAxWindow->QueryControl(IID_IDispatch, (void **)&m_pdispextender->m_pdispEdit);
 	m_pdispextender->m_pdispControl = m_pdispextender->m_pdispEdit;
 
-	//m_ptiextenderEvents = new TypeInfoExtender();
-	//m_pdispextender->m_pti = m_ptiextenderEvents;
-
 	IProvideClassInfo* pClassInfo;
 	QueryInterface(IID_IProvideClassInfo, (void **)&pClassInfo);
 	ITypeInfo *pti;
 	pClassInfo->GetClassInfo(&pti);
-
-	//m_ptiextenderEvents->m_pti = pti;
-	//m_ptiextenderEvents->m_pti2 = pti;
 
 	m_pdispextender->m_pti = pti;
 
@@ -849,127 +623,8 @@ void PinComControl::CreateControl(IStream *pstm)
 
 	punk->Release(); // Don't need to keep the IUnknown pointer around anymore
 	
-	//m_pdispextender->m_pdisp->GetTypeInfo(0, LANG_NEUTRAL, &m_ptiextenderEvents->m_pti);
-	//m_pdispextender->m_pdisp->GetTypeInfo(0, LANG_NEUTRAL, &m_ptiextenderEvents->m_pti2);
-	/*IProvideClassInfo* pClassInfo;
-	m_caxwindow.QueryControl(IID_IProvideClassInfo, (void **)&pClassInfo);
-	
-	if (pClassInfo)
-		{
-		ITypeInfo *pti;
-
-		pClassInfo->GetClassInfo(&pti);
-
-		TYPEATTR *pta;
-
-		pti->GetTypeAttr(&pta);
-
-		int i;
-		for (i=0;i<pta->cImplTypes;i++)
-			{
-			HREFTYPE href;
-			ITypeInfo *ptiChild;
-			TYPEATTR *ptaChild;
-
-			pti->GetRefTypeOfImplType(i, &href);
-			pti->GetRefTypeInfo(href, &ptiChild);
-
-			ptiChild->GetTypeAttr(&ptaChild);
-
-			ptiChild->ReleaseTypeAttr(ptaChild);
-
-			ptiChild->Release();
-			}
-
-		pti->ReleaseTypeAttr(pta);
-		
-		pti->Release();
-
-		pClassInfo->Release();
-		}
-	else
-		{
-		IDispatch* pdisp;
-		m_caxwindow.QueryControl(IID_IDispatch, (void **)&pdisp);
-		pdisp->GetTypeInfo(0, LANG_NEUTRAL, &m_ptiPri);
-		pdisp->Release();
-		}*/
 	}
 
-/*HRESULT PinComControl::GetClassInfo(ITypeInfo** pptinfoOut)
-	{
-	GetTypeInfo(0, LANG_NEUTRAL, pptinfoOut);
-	return S_OK;
-	}
-
-HRESULT PinComControl::GetGUID(DWORD dwGuidKind, GUID* pGUID)
-	{
-	if (dwGuidKind != GUIDKIND_DEFAULT_SOURCE_DISP_IID)
-		return E_INVALIDARG;
-
-	*pGUID = DIID_IComControlEvents;
-	return S_OK;
-	}
-
-HRESULT PinComControl::GetMultiTypeInfoCount(ULONG *pcti)
-	{
-	*pcti = 1;
-	return S_OK;
-	}
-
-HRESULT PinComControl::GetInfoOfIndex(ULONG iti, DWORD dwFlags, ITypeInfo** pptiCoClass, DWORD* pdwTIFlags, ULONG* pcdispidReserved, IID* piidPrimary, IID* piidSource)
-	{
-	if (dwFlags & MULTICLASSINFO_GETTYPEINFO)
-		{
-		*pdwTIFlags  = 0L;
-		*pptiCoClass = NULL;
-		if (iti == 0)
-			{
-			GetTypeInfo(0, LANG_NEUTRAL, pptiCoClass);
-			}
-		else
-			{
-			IDispatch *pdisp;
-			m_caxwindow.QueryControl(IID_IDispatch, (void **)&pdisp);
-			pdisp->GetTypeInfo(0, LANG_NEUTRAL, pptiCoClass);
-			pdisp->Release();
-			}
-		}
-
-	if (dwFlags & MULTICLASSINFO_GETNUMRESERVEDDISPIDS)
-		{
-		*pcdispidReserved = 256;
-		}
-
-	if (dwFlags & MULTICLASSINFO_GETIIDPRIMARY)
-		{
-		if (iti == 0)
-			{
-			*piidPrimary = IID_IComControl;
-			}
-		else
-			{
-			TYPEATTR *pta;
-			m_ptiPri->GetTypeAttr(&pta);
-			//*piidPrimary = IID_IComControl;
-			m_ptiPri->ReleaseTypeAttr(pta);
-			}
-		}
-
-	if (dwFlags & MULTICLASSINFO_GETIIDSOURCE)
-		{
-		if (iti == 0)
-			{
-			*piidSource = DIID_IComControlEvents;
-			}
-		else
-			{
-			//*piidSource = IID_IGame;
-			}
-		}
-
-	return S_OK;
-	}*/
 
 LPWORD lpwAlign ( LPWORD lpIn)
 {
@@ -994,33 +649,6 @@ int nCopyAnsiToWideChar (LPWORD lpWCStr, LPSTR lpAnsiIn)
   return nChar;
 }
 
-/*int CALLBACK TempProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-	{
-	switch (uMsg)
-		{
-		case WM_INITDIALOG:
-			return TRUE;
-			break;
-
-		case WM_COMMAND:
-			{
-			switch (HIWORD(wParam))
-				{
-				case BN_CLICKED:
-					switch (LOWORD(wParam))
-						{
-						case IDOK:
-						case IDCANCEL:
-							EndDialog(hwndDlg, TRUE);
-							break;
-						}
-				break;
-				}
-			}
-			break;
-		}
-	return FALSE;
-	}*/
 
 void PinComControl::CreateControlDialogTemplate()
 	{
@@ -1157,11 +785,6 @@ void PinComControl::CreateControlDialogTemplate()
 					}
 					break;
 
-				/*case VT_USERDEFINED:
-					lStyleControl = BS_PUSHBUTTON;
-					szControlName = "ColorControl";
-					break;*/
-
 				default:
 					cdispfuncs--;
 					piti->ReleaseFuncDesc(pfd);
@@ -1193,9 +816,6 @@ void PinComControl::CreateControlDialogTemplate()
 			/* Fill in class i.d., this time by name. */ 
 			nchar = nCopyAnsiToWideChar (p, TEXT("STATIC"));
 			p += nchar;
-
-			//*p++ = 0xffff;
-			//*p++ = 0x0080;
 
 			/* Copy the text of the first item. */
 			//nchar = nCopyAnsiToWideChar (p, TEXT(L"OK"));
@@ -1229,9 +849,7 @@ void PinComControl::CreateControlDialogTemplate()
 
 			nchar = nCopyAnsiToWideChar (p, szControlName);
 			p += nchar;
-			//*p++ = 0xffff;
-			//*p++ = 0x0080;
-
+			
 			/* Copy the text of the first item. */ 
 			nchar = nCopyAnsiToWideChar (p, TEXT(""));
 			p += nchar;
@@ -1263,19 +881,10 @@ void PinComControl::CreateControlDialogTemplate()
 	*pitemcount = cdispfuncs*2;  // NumberOfItems (post-calculated)
 	*pdialogheight = 10+16*cdispfuncs;
 
-//int foo = DialogBoxIndirect (g_hinst, (LPDLGTEMPLATE) pdlgtemplate, NULL, (DLGPROC) TempProc);
-
-//DWORD bar = GetLastError();
-
-//LocalFree (LocalHandle (pdlgtemplate));
-
-//delete [] pdlgtemplate;
-
-m_ptemplate = (DLGTEMPLATE *)pdlgtemplate;
+	m_ptemplate = (DLGTEMPLATE *)pdlgtemplate;
 
 	}
 
-//#include "ocidl.h"
 
 void PinComControl::PreRender(Sur *psur)
 	{
@@ -1311,14 +920,9 @@ void PinComControl::PreRender(Sur *psur)
 	pvo->Release();
 
 	RestoreDC(psur->m_hdc, savestate);
-
-	/*SetWindowPos(m_pAxWindow->m_hWnd, NULL,
-			x1,
-			y1,
-			x2-x1, y2-y1, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);*/
-
 	
 	}
+
 
 void PinComControl::Render(Sur *psur)
 	{
@@ -1329,6 +933,7 @@ void PinComControl::Render(Sur *psur)
 
 	psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 	}
+
 
 void PinComControl::GetCenter(Vertex *pv)
 	{
@@ -1382,8 +987,7 @@ void PinComControl::GetTimers(Vector<HitTimer> *pvht)
 		}
 
 	CComPtr<IUnknown> spUnkContainer;
-	//hr = MyCaxWindow::_CreatorClass::CreateInstance(NULL, IID_IUnknown, (void**)&spUnkContainer);
-
+	
 	CComObject<MyCaxWindow>::CreateInstance(&m_pmcwPlayer);
 
 	RECT rcWnd;
@@ -1398,16 +1002,13 @@ void PinComControl::GetTimers(Vector<HitTimer> *pvht)
 	m_pmcwPlayer->SetRect(&rcWnd);
 
 	HRESULT hr;
-	//CLSID clsid;
 	IUnknown *punk;
-	//hr = CLSIDFromProgID(m_d.m_progid, &clsid); // How about a ProgID?
 	hr = CoCreateInstance(m_d.m_clsid, NULL, CLSCTX_SERVER, IID_IUnknown, (void **)&punk);
 
 	if (SUCCEEDED(hr))
 	{
 		m_pmcwPlayer->QueryInterface(IID_IAxWinHostWindow, (void**)&m_pAxWindowPlayer);
 		hr = m_pmcwPlayer->ActivateAx(punk, false, NULL);
-		//hr = pAxWindow->AttachControl(punk, NULL);
 	}
 
 	CComQIPtr<IOleClientSite> spClientSite(m_pmcwPlayer->GetControllingUnknown());
@@ -1418,13 +1019,7 @@ void PinComControl::GetTimers(Vector<HitTimer> *pvht)
 
 	punk->Release(); // Don't need to keep the IUnknown pointer around anymore
 
-	/*HWND hwnd = m_caxwindowPlayer.Create(g_pplayer->m_hwnd, &rcWnd, NULL, WS_VISIBLE | WS_CHILD);
-	
-	//m_caxwindowPlayer.put_AllowWindowlessActivation(false);
-	
-	HRESULT hr = m_caxwindowPlayer.CreateControl(m_d.m_progid, NULL, NULL/*&m_punk*///);
-
-	    // If in windowed-mode, create a clipper object
+	// If in windowed-mode, create a clipper object
     LPDIRECTDRAWCLIPPER pcClipper;
     hr = g_pplayer->m_pin3d.m_pDD->CreateClipper( 0, &pcClipper, NULL );
 
@@ -1448,6 +1043,10 @@ void PinComControl::EndPlay()
 		}
 
 	IEditable::EndPlay();
+	}
+
+void PinComControl::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
 	}
 
 void PinComControl::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)

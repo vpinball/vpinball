@@ -1,8 +1,6 @@
 // Bumper.cpp : Implementation of CVBATestApp and DLL registration.
 
 #include "stdafx.h"
-//#include "VBATest.h"
-#include "main.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -27,7 +25,7 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y)
 
 	m_fLockedByLS = fFalse;			//>>> added by chris
 	m_realState	= m_d.m_state;		//>>> added by chris
-
+	
 	return InitVBA(fTrue, 0, NULL);
 	}
 
@@ -47,11 +45,13 @@ void Bumper::SetDefaults()
 	m_d.m_tdr.m_TimerInterval = 100;
 
 	m_d.m_state = LightStateOff;
-	strcpy_s(m_rgblinkpattern, "10");
+	strcpy(m_rgblinkpattern, "10");
 	m_blinkinterval = 125;
 
 	m_d.m_fFlashWhenHit = fTrue;
 	m_d.m_fCastsShadow = fTrue;
+	m_d.m_fVisible = fTrue;
+	m_d.m_fSideVisible = fTrue;
 	}
 
 STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)
@@ -76,8 +76,6 @@ void Bumper::PreRender(Sur *psur)
 	psur->SetObject(this);
 
 	psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
-
-	//psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 	}
 
 void Bumper::Render(Sur *psur)
@@ -96,8 +94,6 @@ void Bumper::Render(Sur *psur)
 		psur->Line(m_d.m_vCenter.x - 10, m_d.m_vCenter.y, m_d.m_vCenter.x + 10, m_d.m_vCenter.y);
 		psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10, m_d.m_vCenter.x, m_d.m_vCenter.y + 10);
 	}
-
-//	psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 	}
 
 void Bumper::RenderShadow(ShadowSur *psur, float z)
@@ -107,7 +103,6 @@ void Bumper::RenderShadow(ShadowSur *psur, float z)
 
 	psur->SetBorderColor(-1,fFalse,0);
 	psur->SetFillColor(RGB(0,0,0));
-	//psur->SetObject(this);
 
 	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -156,6 +151,8 @@ void Bumper::GetHitShapes(Vector<HitObject> *pvho)
 
 	m_pbumperhitcircle = phitcircle;
 
+	phitcircle->m_bumperanim.m_fVisible = m_d.m_fVisible;
+
 	// HACK - should pass pointer to vector in
 	if (m_d.m_state == LightStateBlinking)
 		{
@@ -177,16 +174,14 @@ void Bumper::EndPlay()
 	{
 	IEditable::EndPlay();
 
-	/*int i;
-	for (i=0;i<2;i++)
-		{
-		delete m_pbumperhitcircle->m_pobjframe[i];
-		}*/
-
 	// ensure not locked just incase the player exits during a LS sequence
 	m_fLockedByLS = fFalse;
 
 	m_pbumperhitcircle = NULL;
+	}
+
+void Bumper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
 	}
 
 void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
@@ -198,6 +193,8 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	D3DMATERIAL7 mtrl;
 	int l;
 
+	if(!m_d.m_fVisible)	return;
+		
 	// All this function does is render the bumper image so the black shows through where it's missing in the animated form
 
 	PinImage *pin = m_ptable->GetImage(m_d.m_szImage);
@@ -267,7 +264,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  &rgv3D[64], 32,
-												  rgi, 32, NULL);
+												  rgi, 32, 0);
 
 		for (l=0;l<32;l++)
 				{
@@ -290,7 +287,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[96], 64,
-														  rgi, 4, NULL);
+														  rgi, 4, 0);
 				}
 
 			for (l=0;l<32;l++)
@@ -314,7 +311,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[64], 64,
-														  rgi, 4, NULL);
+														  rgi, 4, 0);
 				}
 
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
@@ -340,6 +337,8 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	ObjFrame *pof;
 	Pin3D *ppin3d = &g_pplayer->m_pin3d;
 	float maxtu, maxtv;
+
+	if(!m_d.m_fVisible)	return;
 
 	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -401,27 +400,23 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+128]);
 		}
 
-	/*rgv3D[128].x = m_d.m_vCenter.x;
-	rgv3D[128].y = m_d.m_vCenter.y;
-	rgv3D[128].z = height+65;
-	rgv3D[128].tu = 0.5;
-	rgv3D[128].tv = 0.5;
-	ppin3d->m_lightproject.CalcCoordinates(&rgv3D[128]);*/
-
 	ppin3d->ClearExtents(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar);
 
-	for (i=0;i<2;i++)
+	for (i=0;i<2;i++)	//0 is unlite, while 1 is lite
 		{
-		//pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET ,
-					   //0x00000000, 1.0f, 0L );
-
-		//ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, 0, NULL);
-
 		pof = new ObjFrame();
 
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar, 160, fFalse);
+
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{			
+			// Clear the texture by copying the color and z values from the "static" buffers.
+			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+			}
 
 		if (!pin) // Top solid color
 			{
@@ -457,9 +452,9 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(&rgv3D[64], rgi, 32, NULL, NULL, 0);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[64], 32,
-													  rgi, 32, NULL);
+													  rgi, 32, 0);
 
 			for (l=0;l<32;l++)
 				{
@@ -480,9 +475,9 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, &rgi[2], 2);
 
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[96], 64,
-														  rgi, 4, NULL);
+														  rgi, 4, 0);
 				}
 
 			for (l=0;l<32;l++)
@@ -504,38 +499,40 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				SetNormal(&rgv3D[64], rgiNormal, 3, NULL, &rgi[2], 2);
 
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[64], 64,
-														  rgi, 4, NULL);
+														  rgi, 4, 0);
 				}
 			}
 
-		// Side color
-		switch (i)
+		if (m_d.m_fSideVisible)
 			{
-			case 0:
-				ppin3d->SetTexture(NULL);
-				mtrl.diffuse.r = mtrl.ambient.r = rside * 0.5f;
-				mtrl.diffuse.g = mtrl.ambient.g = gside * 0.5f;
-				mtrl.diffuse.b = mtrl.ambient.b = bside * 0.5f;
-				mtrl.emissive.r = 0;
-				mtrl.emissive.g = 0;
-				mtrl.emissive.b = 0;
-				break;
-			case 1:
-				ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
-				ppin3d->EnableLightMap(fFalse, -1);
-				mtrl.diffuse.r = mtrl.ambient.r = 0;//r/2;//r;
-				mtrl.diffuse.g = mtrl.ambient.g = 0;//g/2;//g;
-				mtrl.diffuse.b = mtrl.ambient.b = 0;//b/2;//b;
-				mtrl.emissive.r = rside;
-				mtrl.emissive.g = gside;
-				mtrl.emissive.b = bside;
-				break;
-			}
-		pd3dDevice->SetMaterial(&mtrl);
+			// Side color
+			switch (i)
+				{
+				case 0:
+					ppin3d->SetTexture(NULL);
+					mtrl.diffuse.r = mtrl.ambient.r = rside * 0.5f;
+					mtrl.diffuse.g = mtrl.ambient.g = gside * 0.5f;
+					mtrl.diffuse.b = mtrl.ambient.b = bside * 0.5f;
+					mtrl.emissive.r = 0;
+					mtrl.emissive.g = 0;
+					mtrl.emissive.b = 0;
+					break;
+				case 1:
+					ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+					ppin3d->EnableLightMap(fFalse, -1);
+					mtrl.diffuse.r = mtrl.ambient.r = 0;//r/2;//r;
+					mtrl.diffuse.g = mtrl.ambient.g = 0;//g/2;//g;
+					mtrl.diffuse.b = mtrl.ambient.b = 0;//b/2;//b;
+					mtrl.emissive.r = rside;
+					mtrl.emissive.g = gside;
+					mtrl.emissive.b = bside;
+					break;
+				}
+			pd3dDevice->SetMaterial(&mtrl);
 
-		for (l=0;l<32;l++)
+			for (l=0;l<32;l++)
 				{
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
@@ -554,10 +551,9 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, &rgi[2], 2);
 
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 64,
-														  rgi, 4, NULL);
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D,64,rgi, 4, 0);
 				}
+			}
 
 		if (pin)
 			{
@@ -579,7 +575,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			// with the background color swapped out in a pre-processing step.*/
 
 			switch (i)
-			{
+				{
 				case 0:
 					ppin3d->EnableLightMap(fFalse, -1);
 					mtrl.diffuse.r = mtrl.ambient.r = 0.5f;
@@ -591,8 +587,6 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					break;
 
 				case 1:
-					//ppin3d->EnableLightMap(fTrue, 0);
-					//pd3dDevice->SetTexture(eLightProject1, pin->m_pdsBufferColorKey);
 					ppin3d->m_pd3dDevice->SetTexture(eLightProject1, ppin3d->m_pddsLightTexture);
 					mtrl.diffuse.r = mtrl.ambient.r = 0;
 					mtrl.diffuse.g = mtrl.ambient.g = 0;
@@ -601,7 +595,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					mtrl.emissive.g = 1;
 					mtrl.emissive.b = 1;
 					break;
-			}
+				}
 			pd3dDevice->SetMaterial(&mtrl);
 
 			// Set all the texture coordinates to match maxtu/tv
@@ -639,9 +633,9 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(&rgv3D[64], rgi, 32, NULL, NULL, 0);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[64], 32,
-													  rgi, 32, NULL);
+													  rgi, 32, 0);
 
 			for (l=0;l<32;l++)
 				{
@@ -662,13 +656,13 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, &rgi[2], 2);
 
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[96], 64,
-														  rgi, 4, NULL);
+														  rgi, 4, 0);
 				}
 
 			for (l=0;l<32;l++)
-					{
+				{
 					rgiNormal[0] = (l - 1 + 32) % 32;
 					rgiNormal[1] = rgiNormal[0] + 32;
 					rgiNormal[2] = rgiNormal[0] + 2;
@@ -686,10 +680,10 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 					SetNormal(&rgv3D[64], rgiNormal, 3, NULL, &rgi[2], 2);
 
-					pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  &rgv3D[64], 64,
-															  rgi, 4, NULL);
-					}
+															  rgi, 4, 0);
+				}
 
 			// Reset all the texture coordinates
 			if (i == 0)
@@ -717,28 +711,33 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
-		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, 0, NULL);
-		//HRESULT hr = pof->pddsZBuffer->Blt(NULL, ppin3d->m_pddsZBuffer, &pof->rc, 0, NULL);
-		HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY);
+		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
+		HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
-		//pdds->Blt(NULL, NULL, NULL, DDBLT_COLORFILL, &ddbfx);
 		m_pbumperhitcircle->m_bumperanim.m_pobjframe[i] = pof;
+
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{
+			// Create the D3D texture that we will blit.
+			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
+			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
+			}
 
 		ppin3d->ExpandRectByRect(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &pof->rc);
 
 		// reset the portion of the z-buffer that we changed
-		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY);
+		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
 		ddbltfx.dwSize = sizeof(DDBLTFX);
 		ddbltfx.dwFillColor = 0;
 		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,
-				&pof->rc, DDBLT_COLORFILL, &ddbltfx);
+				&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
 		
 	ppin3d->WriteAnimObjectToCacheFile(&m_pbumperhitcircle->m_bumperanim, m_pbumperhitcircle->m_bumperanim.m_pobjframe, 2);
 
-	//ppin3d->EnableLightMap(fTrue);
 	ppin3d->SetTexture(NULL);
 	}
 
@@ -797,24 +796,17 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 	bw.WriteBool(FID(TRNS), m_d.m_fFlashWhenHit);
 
 	bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
+	bw.WriteBool(FID(BVIS), m_d.m_fVisible);
+	bw.WriteBool(FID(BSVS), m_d.m_fSideVisible);
 
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-	/*ULONG writ = 0;
-	HRESULT hr = S_OK;
 
-	DWORD dwID = ApcProjectItem.ID();
-	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
-		return hr;
-
-	if(FAILED(hr = pstm->Write(&m_d, sizeof(BumperData), &writ)))
-		return hr;
-
-	return hr;*/
 	}
+
 
 HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
@@ -845,7 +837,6 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
 	if(FAILED(hr = pstm->Read(&m_d, sizeof(BumperData), &read)))
 		return hr;
 
-	//ApcProjectItem.Register(ptable->ApcProject, GetDispatch(), dwID);
 	*pid = dwID;
 
 	return hr;
@@ -869,10 +860,12 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(COLR))
 		{
 		pbr->GetInt(&m_d.m_color);
+//		if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(SCLR))
 		{
 		pbr->GetInt(&m_d.m_sidecolor);
+//		if (!(m_d.m_sidecolor & MINBLACKMASK)) {m_d.m_sidecolor |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(TMON))
 		{
@@ -926,6 +919,14 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(CSHD))
 		{
 		pbr->GetBool(&m_d.m_fCastsShadow);
+		}
+	else if (id == FID(BVIS))
+		{
+		pbr->GetBool(&m_d.m_fVisible);
+		}
+	else if (id == FID(BSVS))
+		{
+		pbr->GetBool(&m_d.m_fSideVisible);
 		}
 	else
 		{
@@ -1018,34 +1019,6 @@ STDMETHODIMP Bumper::put_Overhang(float newVal)
 	return S_OK;
 }
 
-/*HRESULT PIEventHandler::Activate()
-	{
-	int i=1;
-	i=i+2;
-
-	return S_OK;
-	}
-
-HRESULT PIEventHandler::View()
-	{
-	return S_OK;
-	}
-
-HRESULT PIEventHandler::CreateInstance(IDispatch __RPC_FAR *__RPC_FAR *Instance)
-	{
-	return S_OK;
-	}
-
-HRESULT PIEventHandler::ReleaseInstances()
-	{
-	return S_OK;
-	}
-
-HRESULT PIEventHandler::InstanceCreated(IDispatch __RPC_FAR *Instance)
-	{
-	return S_OK;
-	}*/
-
 STDMETHODIMP Bumper::get_Color(OLE_COLOR *pVal)
 {
 	*pVal = m_d.m_color;
@@ -1084,7 +1057,7 @@ STDMETHODIMP Bumper::put_SideColor(OLE_COLOR newVal)
 
 STDMETHODIMP Bumper::get_Image(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -1141,7 +1114,7 @@ STDMETHODIMP Bumper::put_Y(float newVal)
 
 STDMETHODIMP Bumper::get_Surface(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -1159,18 +1132,6 @@ STDMETHODIMP Bumper::put_Surface(BSTR newVal)
 
 	return S_OK;
 }
-
-/*HRESULT Bumper::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Bumper");
-
-	return S_OK;
-	}*/
-
-/*int Bumper::GetDialogID()
-	{
-	return IDD_PROPBUMPER;
-	}*/
 
 void Bumper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{
@@ -1220,7 +1181,7 @@ STDMETHODIMP Bumper::put_State(LightState newVal)
 
 STDMETHODIMP Bumper::get_BlinkPattern(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_rgblinkpattern, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -1249,7 +1210,6 @@ STDMETHODIMP Bumper::put_BlinkPattern(BSTR newVal)
 		char cnew = m_rgblinkpattern[m_iblinkframe];
 		if (cold != cnew)
 			{
-			//m_pbumperhitcircle->m_iframedesired = (cnew == '1') ? 1: 0;
 			DrawFrame(cnew == '1');
 			}
 		m_timenextblink = g_pplayer->m_timeCur + m_blinkinterval;
@@ -1329,6 +1289,38 @@ STDMETHODIMP Bumper::put_Disabled(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
+STDMETHODIMP Bumper::get_Visible(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fVisible);
+
+	return S_OK;
+}
+
+STDMETHODIMP Bumper::put_Visible(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+	m_d.m_fVisible = VBTOF(newVal);
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Bumper::get_SideVisible(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fSideVisible);
+
+	return S_OK;
+}
+
+STDMETHODIMP Bumper::put_SideVisible(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+	m_d.m_fSideVisible = VBTOF(newVal);
+	STOPUNDO
+
+	return S_OK;
+}
+
 void Bumper::lockLight()
 	{
 		m_fLockedByLS = fTrue;
@@ -1349,12 +1341,12 @@ void Bumper::setLightState(LightState newVal)
 	{
 	if (newVal != m_realState)
 		{
-		BOOL fWasBlinking = (m_realState == LightStateBlinking);
+		LightState lastState = m_realState;		//rlc make a bit more obvious
 		m_realState = newVal;
 
 		if (m_pbumperhitcircle)
 			{
-			if (fWasBlinking)
+			if (lastState == LightStateBlinking)
 				{
 				// must not be blinking anymore
 				g_pplayer->m_vblink.RemoveElement((IBlink *)this);
@@ -1369,12 +1361,10 @@ void Bumper::setLightState(LightState newVal)
 			switch (m_realState)
 				{
 				case LightStateOff:
-					//m_pbumperhitcircle->m_iframedesired = 0;
 					DrawFrame(fFalse);
 					break;
 
 				case LightStateOn:
-					//m_pbumperhitcircle->m_iframedesired = 1;
 					DrawFrame(fTrue);
 					break;
 

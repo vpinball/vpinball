@@ -1,3 +1,4 @@
+#pragma once
 // Plunger.h: Definition of the Plunger class
 //
 //////////////////////////////////////////////////////////////////////
@@ -17,23 +18,18 @@ public:
 	Vertex m_v;
 	float m_width;
 	float m_height;
-	float m_heightPulled;
+	float m_stroke;
 	float m_speedPull;
 	float m_speedFire;
-	float m_powerBias;					//>>> added by chris
-	TimerDataRoot m_tdr;
-	char m_szSurface[MAXTOKEN];
-	
-/* BEGIN NEW PHYSICS */
-	float m_stroke;
 	float m_mechStrength;
+	TimerDataRoot m_tdr;
 	BOOL m_mechPlunger;
 	BOOL m_autoPlunger;
+	BOOL m_fVisible;
 	float m_parkPosition;
+	char m_szSurface[MAXTOKEN];
 	float m_scatterVelocity;
 	float m_breakOverVelocity;
-
-/* END NEW PHYSICS */
 	};
 
 /////////////////////////////////////////////////////////////////////////////
@@ -104,6 +100,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
 
 	HitPlunger *m_phitplunger;
 
+private:
+
+
 // IPlunger
 public:
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
@@ -117,18 +116,16 @@ public:
 	STDMETHOD(put_FireSpeed)(/*[in]*/ float newVal);
 	STDMETHOD(get_PullSpeed)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_PullSpeed)(/*[in]*/ float newVal);
-	STDMETHOD(get_PowerBias)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_PowerBias)(/*[in]*/ float newVal);
-	STDMETHOD(Fire)();
-	STDMETHOD(PullBack)();
-	
 	STDMETHOD(get_MechStrength)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_MechStrength)(/*[in]*/ float newVal);
-
+	STDMETHOD(Fire)();
+	STDMETHOD(PullBack)();
 	STDMETHOD(get_MechPlunger)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_MechPlunger)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_AutoPlunger)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_AutoPlunger)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_ParkPosition)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_ParkPosition)(/*[in]*/ float newVal);
 	STDMETHOD(get_Stroke)(/*[out, retval]*/ float *pVal);
@@ -137,7 +134,8 @@ public:
 	STDMETHOD(put_ScatterVelocity)(/*[in]*/ float newVal);
 	STDMETHOD(get_BreakOverVelocity)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_BreakOverVelocity)(/*[in]*/ float newVal);
-
+	STDMETHOD(Position)(int *pVal); //added for mechanical plunger position
+	STDMETHOD(MotionDevice)(int *pVal);
 };
 
 #endif // !defined(AFX_PLUNGER_H__A729D2E2_D68F_4DD6_BE4B_D8AD1B8C7B66__INCLUDED_)

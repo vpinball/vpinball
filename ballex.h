@@ -1,5 +1,5 @@
 // Ball.h : Declaration of the CBall
-
+#pragma once
 #ifndef __BALL_H_
 #define __BALL_H_
 
@@ -43,20 +43,21 @@ public:
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
-	STDMETHOD(get_VelZ)(/*[out, retval]*/ double *pVal);
-	STDMETHOD(put_VelZ)(/*[in]*/ double newVal);
-	STDMETHOD(get_Z)(/*[out, retval]*/ double *pVal);
-	STDMETHOD(put_Z)(/*[in]*/ double newVal);
-	STDMETHOD(get_VelY)(/*[out, retval]*/ double *pVal);
-	STDMETHOD(put_VelY)(/*[in]*/ double newVal);
-	STDMETHOD(get_VelX)(/*[out, retval]*/ double *pVal);
-	STDMETHOD(put_VelX)(/*[in]*/ double newVal);
-	STDMETHOD(get_Y)(/*[out, retval]*/ double *pVal);
-	STDMETHOD(put_Y)(/*[in]*/ double newVal);
-	STDMETHOD(get_X)(/*[out, retval]*/ double *pVal);
-	STDMETHOD(put_X)(/*[in]*/ double newVal);
+	STDMETHOD(get_VelZ)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_VelZ)(/*[in]*/ float newVal);
+	STDMETHOD(get_Z)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Z)(/*[in]*/ float newVal);
+	STDMETHOD(get_VelY)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_VelY)(/*[in]*/ float newVal);
+	STDMETHOD(get_VelX)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_VelX)(/*[in]*/ float newVal);
+	STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Y)(/*[in]*/ float newVal);
+	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_X)(/*[in]*/ float newVal);
 	STDMETHOD(get_UserValue)(VARIANT *pVal);
 	STDMETHOD(put_UserValue)(VARIANT *newVal);
+	STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);
 
 	virtual void FireGroupEvent(int dispid) {}
 	virtual IDispatch *GetDispatch() {return ((IDispatch *) this);}

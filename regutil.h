@@ -1,3 +1,4 @@
+#pragma once
 
 HRESULT GetRegString(char *szKey, char *szValue, void *szbuffer, DWORD size);
 HRESULT GetRegInt(char *szKey, char *szValue, int *pint);

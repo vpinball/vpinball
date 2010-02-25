@@ -1,3 +1,4 @@
+#pragma once
 #include "def.h"
 #include "resource.h"
 
@@ -6,9 +7,17 @@
 class HitTimer;
 class PinBinary;
 
-#define INCLUDE_DEPRECATED_FEATURES 1
-#include "vp-sup\inc\ScinAll.h"
+// if defined, we are compiling in changes which should only be active
+// for ultracade products and are changes never intended to be released
+// to the public either because they have no value to the public in general
+//
+// EG: bugfixes and so on should not be in #ifdef ULTRACADE blocks...
+#define ULTRACADE
 
+#define INCLUDE_DEPRECATED_FEATURES 1
+#include "ScinAll.h"
+
+#include "pintypes.h"
 #include "memutil.h"
 #include "disputil.h"
 
@@ -29,7 +38,7 @@ class PinBinary;
 #include "worker.h"
 
 #include "media/simpleplayer.h"
-#include "vp-sup\inc\cdjpeg.h"
+#include "cdjpeg.h"
 #include "XAudPlayer.h"
 #include "media/FileIO.h"
 #include "PinUndo.h"
@@ -70,16 +79,7 @@ class PinBinary;
 #include "pin/wall.h"
 #include "pin/hitflipper.h"
 #include "pin/hitplunger.h"
-
-// BEGIN NEW PHYSICS
-
-#include "pinUCT/hitflipperUC.h"
-#include "pinUCT/hitplungerUC.h"
-
-// END NEW PHYSICS
-
 #include "pin/player.h"
-
 
 #include "DragPoint.h"
 #include "timer.h"
@@ -98,8 +98,14 @@ class PinBinary;
 #include "Gate.h"
 #include "Spinner.h"
 #include "Ramp.h"
+#include "display.h"
+#include "mixer.h"
+#include "hid.h"
+#include "plumb.h"
 
 #include "wintimer.h"
+
+#include "slintf.h"
 
 #include "extern.h"
 //

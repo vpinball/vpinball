@@ -1,3 +1,4 @@
+#pragma once
 #ifndef __GIFREADER_H_
 #define __GIFREADER_H_
 
@@ -11,21 +12,9 @@ public:
 	LZWReader(IStream *pstm, int *bits, int width, int height, int pitch);
 	~LZWReader();
 
-	//AniBitmap *LoadURL(WCHAR *szURL);
-	//AniBitmap *Read(BYTE *pbGifBits, int cbGifBits);
-	//AniBitmap *LoadResource(HINSTANCE hinst, int idb);
-
-	//BYTE *m_pbGifBitsMac;
-	//BYTE *m_pbGifBitsCur;
-
 	IStream *m_pstm;
 
-	//AniBitmap *m_panibitmap;
-	//DIB256ColorTable m_clrtGlobal;
 	int m_msDelayCur;
-//	COlOR m_clrTransparent;
-//	RGBQUAD m_rgbqTransparent;
-	//int m_icvTransparent;
 
 	/* output */
 	BYTE *m_pbBitsOutCur;
@@ -51,12 +40,10 @@ public:
 	
 	BYTE stack[MAX_CODES + 1];            /* Stack for storing pixels */
 	BYTE suffix[MAX_CODES + 1];           /* Suffix table */
-	unsigned short prefix[MAX_CODES + 1];           /* Prefix linked list */
+	WCHAR prefix[MAX_CODES + 1];           /* Prefix linked list */
 
 
 	int get_byte();
-	//int fread(void *pv, int cb);
-	//int skip(int cb);
 	BYTE *NextLine();
 
 	short init_exp(short size);
@@ -71,10 +58,6 @@ public:
 	int m_linesleft;
 
 	ULONG m_readahead; // How many bytes we read into our buffer
-
-	//BOOL FReadClrt(int size, DIB256ColorTable *pclrt);
-
-	//BOOL GIFimage();
 	};
 #endif
 

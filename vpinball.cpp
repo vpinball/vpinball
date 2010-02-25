@@ -1,11 +1,12 @@
 // VPinball.cpp: implementation of the VPinball class.
 //
-//////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
+
 #include "buildnumber.h"
-
+#include "SVNRevision.h"
+//#include "Freeimage.h" //ADDED BDS
 
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
@@ -28,6 +29,7 @@
 #define	RECENT_LAST_MENU_IDM	RECENT_FIRST_MENU_IDM+LAST_OPENED_TABLE_COUNT
 
 #define AUTOSAVE_DEFAULT_TIME 10
+//extern int uShockType;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -97,27 +99,25 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+
 VPinball::VPinball()
 	{
+//	DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
+
 	m_cref = 0;
+	m_open_minimized = 0;
+
+	NumPlays = 0;
 
 	m_pcv = NULL;
-	
-	m_fPlayOnly = fFalse;
 	}
 
 VPinball::~VPinball()
 	{
-	//int i;
-
+//	DLL_API void DLL_CALLCONV FreeImage_DeInitialise(void); //remove FreeImage support BDS
 	SetClipboard(NULL);
 
 	Scintilla_ReleaseResources();
-
-	/*for (i=0;i<m_vtable.Size();i++)
-		{
-		CloseTable(m_vtable.ElementAt(i));
-		}*/
 	}
 
 void VPinball::GetMyPath()
@@ -144,8 +144,17 @@ void VPinball::GetMyPath()
 	MultiByteToWideChar(CP_ACP, 0, szPath, -1, m_wzMyPath, MAX_PATH);
 	}
 
-void VPinball::Init()
+bool VPinball::m_open_minimized;
+int VPinball::NumPlays;
+
+void VPinball::SetOpenMinimized( void )
+{
+	m_open_minimized = 1;
+}
+
+void VPinball::Init() 
 	{
+
 	HRESULT hr;
 	m_NextTableID = 1;
 
@@ -179,50 +188,58 @@ void VPinball::Init()
 	width = MAIN_WINDOW_WIDTH;
 	height = MAIN_WINDOW_HEIGHT;
 
+    LPTSTR lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
+
+	if( strstr( lpCmdLine, "minimized" ) )
+	{
+		SetOpenMinimized();
+	}
+
 	m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW,"VPinball",szName,
-			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+			( m_open_minimized ? WS_MINIMIZE : 0 ) | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
 			x,y,width,height,NULL,NULL,g_hinst,0);
 
-	if (!m_fPlayOnly)
+	// See if we have previous window size information
 		{
-		// See if we have previous window size information
+		int left,top,right,bottom;
+		BOOL fMaximized;
+		HRESULT hrleft, hrtop, hrright, hrbottom, hrmax;
+
+		hrleft = GetRegInt("Editor", "WindowLeft", &left);
+		hrtop = GetRegInt("Editor", "WindowTop", &top);
+		hrright = GetRegInt("Editor", "WindowRight", &right);
+		hrbottom = GetRegInt("Editor", "WindowBottom", &bottom);
+
+		hrmax = GetRegInt("Editor", "WindowMaximized", &fMaximized);
+
+		if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
 			{
-			int left,top,right,bottom;
-			BOOL fMaximized;
-			HRESULT hrleft, hrtop, hrright, hrbottom, hrmax;
+			WINDOWPLACEMENT winpl;
 
-			hrleft = GetRegInt("Editor", "WindowLeft", &left);
-			hrtop = GetRegInt("Editor", "WindowTop", &top);
-			hrright = GetRegInt("Editor", "WindowRight", &right);
-			hrbottom = GetRegInt("Editor", "WindowBottom", &bottom);
+			winpl.length = sizeof(winpl);
 
-			hrmax = GetRegInt("Editor", "WindowMaximized", &fMaximized);
+			GetWindowPlacement(m_hwnd, &winpl);
 
-			if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
-				{
-				WINDOWPLACEMENT winpl;
+			winpl.rcNormalPosition.left = left;
+			winpl.rcNormalPosition.top = top;
+			winpl.rcNormalPosition.right = right;
+			winpl.rcNormalPosition.bottom = bottom;
 
-				winpl.length = sizeof(winpl);
-
-				GetWindowPlacement(m_hwnd, &winpl);
-
-				winpl.rcNormalPosition.left = left;
-				winpl.rcNormalPosition.top = top;
-				winpl.rcNormalPosition.right = right;
-				winpl.rcNormalPosition.bottom = bottom;
-
-				if (hrmax == S_OK && fMaximized)
-					{
-					winpl.showCmd |= SW_MAXIMIZE;
-					}
-
-				SetWindowPlacement(m_hwnd, &winpl);
-				}
+			if( m_open_minimized )
+			{
+				winpl.showCmd |= SW_MINIMIZE;
 			}
-		
-		ShowWindow(m_hwnd, SW_SHOW);
+			else if (hrmax == S_OK && fMaximized)
+			{
+				winpl.showCmd |= SW_MAXIMIZE;
+			}
+
+			SetWindowPlacement(m_hwnd, &winpl);
+			}
 		}
-		
+
+	ShowWindow(m_hwnd, SW_SHOW);
+
 	SetWindowLong(m_hwnd, GWL_USERDATA, (long)this);
 
 	CreateSideBar();
@@ -231,7 +248,7 @@ void VPinball::Init()
 
 	int foo[4] = {120,240,400,600};
 
-    m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE /*| SBT_NOBORDERS/*| SBARS_SIZEGRIP | WS_BORDER*/,
+    m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
                                        "",
                                        m_hwnd,
                                        1);
@@ -262,21 +279,25 @@ void VPinball::Init()
 	SetEnableToolbar();
 	SetEnableMenuItems();
 	UpdateRecentFileList(NULL);		// update the recent loaded file list
+
+    wintimer_init(); // calibrate the timer routines
+	slintf_init();
+
 	}
 
 void VPinball::EnsureWorkerThread()
 	{
+
 	if (!m_workerthread)
 		{
 		g_hWorkerStarted = CreateEvent(NULL,TRUE,FALSE,NULL);
-		g_hProgressWindowStarted = CreateEvent(NULL,TRUE,FALSE,NULL);
-		ResetEvent(g_hWorkerStarted);
 		m_workerthread = CreateThread(NULL, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid);
 		if (WaitForSingleObject(g_hWorkerStarted, 5000) == WAIT_TIMEOUT)
 			{
 			}
 		//SetThreadPriority(m_workerthread, THREAD_PRIORITY_LOWEST);
 		}
+
 	}
 
 HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
@@ -308,11 +329,11 @@ void VPinball::InitTools()
 	HRESULT hr;
 	int		state;
 
-	hr = GetRegInt("Editor", "PropertiesVisable", (int *)&state);
+	hr = GetRegInt("Editor", "PropertiesVisible", (int *)&state);
 	if ((hr == S_OK) && (state == 1))
 		{
 		// if so then re-open it
-		ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 0);
+		ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 1);//display
 		}
 
 	m_ToolCur = IDC_SELECT;
@@ -375,7 +396,7 @@ void VPinball::InitRegValues()
 		{
 		char szRegName[MAX_PATH];
 
-		sprintf_s(szRegName, "TableFileName%d", i);
+		sprintf(szRegName, "TableFileName%d", i);
 		m_szRecentTableList[i][0] = 0x00;
 		hr = GetRegString("RecentDir",szRegName, m_szRecentTableList[i], MAX_PATH);
 		}
@@ -432,20 +453,6 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 	int i;
 	HWND hwnd;
 
-	/*TBBUTTON rgtbb[4];
-
-	memset(&rgtbb, 0, sizeof(TBBUTTON)*2);
-
-	int i;
-	for (i=0;i<4;i++)
-		{
-		rgtbb[i].iBitmap = i;
-		rgtbb[i].idCommand = i;
-		rgtbb[i].fsState = TBSTATE_ENABLED;
-		rgtbb[i].fsStyle = TBSTYLE_CHECKGROUP;// | BTNS_SHOWTEXT;
-		rgtbb[i].iString = i;
-		}*/
-
 	hwnd = CreateToolbarEx(hwndParent,
 		WS_CHILD | WS_VISIBLE | TBSTYLE_FLAT | TBSTYLE_WRAPABLE,
 		1, count, g_hinst, IDB_TB_SELECT, p_tbbutton, count, 24, 24, 24, 24,
@@ -466,15 +473,6 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 		foo = SendMessage(hwnd, TB_ADDSTRING, 0, (LPARAM) szBuf);
 		}
 
-	/*LoadString(g_hinst, IDS_TB_SELECT, szBuf, MAXRESLEN-1);
-	szBuf[lstrlen(szBuf) + 1] = 0;  //Double-null terminate.
-	foo = SendMessage(m_hwndToolbar, TB_ADDSTRING, 0, (LPARAM) szBuf);
-
-
-	SendMessage(m_hwndToolbar, TB_ADDSTRING, NULL, (long)"Test1\0\0");
-	SendMessage(m_hwndToolbar, TB_ADDSTRING, NULL, (long)"Test2\0\0");
-	SendMessage(m_hwndToolbar, TB_ADDSTRING, NULL, (long)"Test3\0\0");*/
-
 #ifdef IMSPANISH
 	SendMessage(m_hwndToolbar, TB_SETBUTTONWIDTH, 0,
 		(LPARAM)(DWORD)MAKELONG(50,48));
@@ -485,8 +483,6 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 	SendMessage(hwnd, TB_SETBUTTONWIDTH, 0,
 		(LPARAM)(DWORD)MAKELONG(50,50));
 #endif
-
-	//SendMessage(hwnd, TB_AUTOSIZE, 0, 0);
 
 	for (i=0;i<count;i++)
 		{
@@ -537,13 +533,6 @@ void VPinball::SetClipboard(Vector<IStream> *pvstm)
 			m_vstmclipboard.AddElement(pvstm->ElementAt(i));
 			}
 		}
-
-	/*if (m_pistgClipboard)
-		{
-		m_pistgClipboard->Release();
-		}
-
-	m_pistgClipboard = pistg;*/
 	}
 
 void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
@@ -563,7 +552,7 @@ void VPinball::SetPosCur(float x, float y)
 	char szT[256];
 
 #ifndef PERFTEST
-	sprintf_s(szT, "%.4f, %.4f", x, y);
+	sprintf(szT, "%.4f, %.4f", x, y);
 #endif
 	SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (long)szT);
 	}
@@ -573,7 +562,7 @@ void VPinball::SetObjectPosCur(float x, float y)
 	char szT[256];
 
 #ifndef PERFTEST
-	sprintf_s(szT, "%.4f, %.4f", x, y);
+	sprintf(szT, "%.4f, %.4f", x, y);
 #endif
 	SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (long)szT);
 	}
@@ -595,6 +584,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 	switch (code)
 		{
 		case IDM_NEW:
+			{
 			CComObject<PinTable> *pt;
 			CComObject<PinTable>::CreateInstance(&pt);
 			pt->AddRef();
@@ -603,6 +593,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			m_vtable.AddElement(pt);
 			SetEnableToolbar();
 			SetEnableMenuItems();
+			}
 			break;
 
 		case ID_DELETE:
@@ -621,6 +612,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			break;
 
 		case ID_TABLE_PLAY:
+//				MessageBox(g_pvp->m_hwnd, FreeImage_GetCopyrightMessage(), "Error", MB_OK | MB_ICONEXCLAMATION); //ADDED BDS
 			DoPlay();
 			break;
 
@@ -649,22 +641,42 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			papw->get_Visible(&fVisible);
 			papw->put_Visible(!fVisible);
 #endif
-			BOOL fShow;
-			fShow = !m_sb.GetVisible(); //((tbinfo.fsState & TBSTATE_CHECKED) != 0);
+			BOOL fShow = fFalse;
+
+			if(!g_pplayer) fShow = m_sb.GetVisible(); // Get the current display state 
+
+			switch(notify)//rlc set, redisplay, toggle
+			{
+			case 0: 
+			case 1: fShow = !fShow; //set
+				break;
+			case 2:;  //re-display 
+				break;
+			
+			default:fShow = !fShow; //toggle
+				break;
+			}
+			
+			SetRegValue("Editor", "PropertiesVisible", REG_DWORD, &fShow, 4);
 
 			// Set toolbar button to the correct state
 			TBBUTTONINFO tbinfo;
 			tbinfo.cbSize = sizeof(TBBUTTONINFO);
 			tbinfo.dwMask  = TBIF_STATE;
-			//>>> Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
+			//+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
 			SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,ID_EDIT_PROPERTIES,(long)&tbinfo);
 
-			if (fShow ^ ((tbinfo.fsState & TBSTATE_CHECKED) != 0))
-				{
-				tbinfo.fsState ^= TBSTATE_CHECKED;
-				}
+			if(!g_pplayer)
+			{
+				if(notify == 2) fShow = (tbinfo.fsState & TBSTATE_CHECKED) != 0;
 
-			SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,ID_EDIT_PROPERTIES,(long)&tbinfo);
+				if (fShow ^ ((tbinfo.fsState & TBSTATE_CHECKED) != 0))
+				{
+					tbinfo.fsState ^= TBSTATE_CHECKED;
+				}
+				SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,ID_EDIT_PROPERTIES,(long)&tbinfo);
+			}
+			
 
 			// Set menu item to the correct state
 			HMENU hmenu = GetMenu(m_hwnd);
@@ -682,6 +694,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			DWORD foo = CheckMenuItem(hmenuEdit, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
 
 			m_sb.SetVisible(fShow);
+
 			SendMessage(m_hwnd, WM_SIZE, 0, 0);
 			if (fShow)
 				{
@@ -705,7 +718,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			TBBUTTONINFO tbinfo;
 			tbinfo.cbSize = sizeof(TBBUTTONINFO);
 			tbinfo.dwMask  = TBIF_STATE;
-			//>>> Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
+			//+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
 			SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,ID_EDIT_BACKGLASSVIEW,(long)&tbinfo);
 
 			// Set toolbar button to the correct state
@@ -895,7 +908,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			break;
 //<<<
 
-//>>> added by Chris
+//>>> added by Chris 
 		case RECENT_FIRST_MENU_IDM:
 		case RECENT_FIRST_MENU_IDM+1:
 		case RECENT_FIRST_MENU_IDM+2:
@@ -1031,8 +1044,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 		case ID_EDIT_KEYS:
 			{
-			int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_KEYS),
-				  m_hwnd, KeysProc, 0);
+			int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_KEYS),m_hwnd, KeysProc, 0);
 			}
 			break;
 
@@ -1066,11 +1078,11 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
 					ApcHost->BeginModalDialog();
 #endif
-					int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SOUNDDIALOG),
-						  m_hwnd, SoundManagerProc, (long)ptCur);
+					int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SOUNDDIALOG),m_hwnd, SoundManagerProc, (long)ptCur);
 #ifdef VBA
 					ApcHost->EndModalDialog();
 #endif
+					
 					}
 				}
 			break;
@@ -1088,8 +1100,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
 					ApcHost->BeginModalDialog();
 #endif
-					int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_IMAGEDIALOG),
-						  m_hwnd, ImageManagerProc, (long)ptCur);
+					int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_IMAGEDIALOG), m_hwnd, ImageManagerProc, (long)ptCur);
 					m_sb.PopulateDropdowns(); // May need to update list of images
 					m_sb.RefreshProperties();
 #ifdef VBA
@@ -1261,6 +1272,7 @@ void VPinball::SetEnableToolbar()
 		int id = rgToolEnable[i][0];
 		BOOL fEnable = fTableActive;
 
+
 		if (ptCur)
 			{
 			if ((id == ID_EDIT_SCRIPT) && (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING) == fTrue))
@@ -1284,10 +1296,13 @@ void VPinball::SetEnableToolbar()
 		}
 
 	SetEnablePalette();
+
+	ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 2);//redisplay 
 	}
 
 void VPinball::DoPlay()
 	{
+	NumVideoBytes=0;
 	CComObject<PinTable> *ptCur;
 
 	ptCur = GetActiveTable();
@@ -1312,7 +1327,8 @@ void VPinball::LoadFile()
 	ofn.hInstance = g_hinst;
 	ofn.hwndOwner = g_pvp->m_hwnd;
 	// TEXT
-	ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt\0";
+	//ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt\0";
+	ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt\0"; //test.rlc
 	ofn.lpstrFile = szFileName;
 	ofn.nMaxFile = _MAX_PATH;
 	ofn.lpstrDefExt = "vpt";
@@ -1429,10 +1445,12 @@ BOOL VPinball::FCanClose()
 		}
 
 	return fTrue;
-	}
+
+}
+
 
 BOOL VPinball::CloseTable(PinTable *ppt)
-	{
+{
 	if ((ppt->FDirty()) && (ppt->CheckPermissions(DISABLE_TABLE_SAVE) == fFalse) )
 		{
 		LocalString ls1(IDS_SAVE_CHANGES1);
@@ -1440,7 +1458,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 		char *szText = new char[lstrlen(ls1.m_szbuffer) + lstrlen(ls2.m_szbuffer) + lstrlen(ppt->m_szTitle) + 1];
 		lstrcpy(szText, ls1.m_szbuffer/*"Do you want to save the changes you made to '"*/);
 		lstrcat(szText, ppt->m_szTitle);
-		lstrcat(szText, ls2.m_szbuffer/*"'?"*/);
+		lstrcat(szText, ls2.m_szbuffer);
 		// TEXT
 		int result = MessageBox(m_hwnd, szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
 		delete szText;
@@ -1478,16 +1496,21 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 	SetEnableMenuItems();
 
 	return fTrue;
-	}
+
+}
+
 
 BOOL VPinball::FDefaultCheckBlit()
-	{
+{
+
 	DWORD ver = GetVersion();
 
 	BOOL fCheckBlt = (ver & 0x80000000) != 0; // check blt status on Win9x
 
 	return fCheckBlt;
-	}
+
+}
+
 
 void VPinball::InitVBA()
 	{
@@ -1727,7 +1750,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 			// if this entry is empty then all the rest are empty
 			if (m_szRecentTableList[i][0] == 0x00) break;
 			// write entry to the registry
-			sprintf_s(szRegName, "TableFileName%d", i);
+			sprintf(szRegName, "TableFileName%d", i);
 			SetRegValue("RecentDir", szRegName, REG_SZ, m_szRecentTableList[i], strlen(m_szRecentTableList[i]));
 			}
 		} // (szfilename != NULL)
@@ -1799,12 +1822,6 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 	{
 	*pfConsumed = FALSE;
 	
-	/*if (IsDialogMessage(pmsg->hwnd, pmsg))
-		{
-		*pfConsumed = TRUE;
-		return S_OK;
-		}*/
-
 	if (!g_pplayer)
 		{
 		int i;
@@ -1863,11 +1880,6 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 		if (*pfConsumed != TRUE)
 			{
 			int fTranslated = TranslateMessage(pmsg);
-
-			if (fTranslated != 0)
-				{
-				//*pfConsumed = TRUE;
-				}
 			}
 		}
 	else
@@ -1898,11 +1910,6 @@ HRESULT VPinball::MainMsgLoop()
 			{
 			if (msg.message == WM_QUIT)
 				break;
-
-			/*if (msg.message == WM_SYSCHAR || msg.message == WM_SYSDEADCHAR)
-				{
-				int i = 9;
-				}*/
 
 			fConsumed = fFalse;
 
@@ -1995,34 +2002,12 @@ HRESULT VPinball::ShowIDE()
 #endif
 	}
 
-/*STDMETHODIMP VPinball::get_Application(IVisualPinball **lppaReturn)
-	{
-	return this->QueryInterface(IID_IVisualPinball, (void **)lppaReturn);
-	}
-
-STDMETHODIMP VPinball::get_Parent(IVisualPinball **lppaReturn)
-	{
-	return this->QueryInterface(IID_IVisualPinball, (void **)lppaReturn);
-	}*/
-
 STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
 	{
 	if (!ppvObjOut)
 		return E_INVALIDARG;
 
 	*ppvObjOut = NULL;
-
-	/*if (iid == IID_IUnknown)
-		*ppvObjOut = this->GetUnknown();
-		else if (iid == IID_IDispatch)
-	*ppvObjOut = this->GetDispatch();
-		else if (iid == IID_ISpruuidsApp)
-	*ppvObjOut = (ISpruuidsApp *)this;*/
-
-	/*if (iid == IID_IUnknown || iid == IID_IDispatch || iid == IID_IVisualPinball)
-		{
-		*ppvObjOut = (IVisualPinball *)this;
-		}*/
 
 	if (*ppvObjOut)
 		{
@@ -2031,7 +2016,8 @@ STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
 		}
 
 	return E_NOINTERFACE;
-	}
+}
+
 
 HRESULT VPinball::GetTypeLibInfo
 (
@@ -2044,83 +2030,42 @@ HRESULT VPinball::GetTypeLibInfo
   ITypeLib   ***ppptlOut
 )
 {
-  /**phinstOut  = g_hinst;
-  *pplibidOut = &LIBID_VBATESTLib;
-  *pwMajLib   = 1;
-  *pwMinLib   = 0;
-  *ppclsidOut = &CLSID_Application;
-  *ppiidOut   = &IID_IVisualPinball;
-  *ppptlOut   = &g_ptlMain;*/
+
   return S_OK;
+
 }
 
-STDMETHODIMP_(ULONG) VPinball::AddRef
-(
-  void
-)
+
+STDMETHODIMP_(ULONG) VPinball::AddRef ( void )
 {
-  ASSERT(m_cref, "bad m_cref");
-  return ++m_cref;
+
+	ASSERT(m_cref, "bad m_cref");
+	return ++m_cref;
+
 }
 
-STDMETHODIMP_(ULONG) VPinball::Release
-(
-  void
-)
+
+STDMETHODIMP_(ULONG) VPinball::Release ( void )
 {
-  ASSERT(m_cref, "bad m_cref");
-  m_cref--;
-  if (!m_cref)
-    {
-    delete this;
-    return 0;
+
+	ASSERT(m_cref, "bad m_cref");
+	m_cref--;
+
+	if (!m_cref)
+	{
+		delete this;
+		return 0;
     }
-  return m_cref;
+
+	return m_cref;
+
 }
+
 
 LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	HDC hdc;
 	PAINTSTRUCT ps;
-
-/*#ifdef DEBUG
-	switch (uMsg)
-		{
-		case WM_GETMINMAXINFO:
-		case WM_NCCREATE:
-		case WM_NCCALCSIZE:
-		case WM_CREATE:
-		case WM_SHOWWINDOW:
-		case WM_WINDOWPOSCHANGING:
-		case WM_ACTIVATEAPP:
-		case WM_NCACTIVATE:
-		case WM_GETTEXT:
-		case WM_ACTIVATE:
-		case WM_SETFOCUS:
-		case WM_NCPAINT:
-		case WM_ERASEBKGND:
-		case WM_WINDOWPOSCHANGED:
-		case WM_SIZE:
-		case WM_MOVE:
-		case WM_PARENTNOTIFY:
-		case WM_NOTIFYFORMAT:
-		case WM_SETCURSOR:
-		case 297:
-		case 136:
-		case WM_PAINT:
-		case WM_NCHITTEST:
-		case WM_NCMOUSEMOVE:
-		case WM_MOUSEACTIVATE:
-			break;
-
-		default:
-			{
-			int i = 9;
-			}
-			break;
-
-		}
-#endif // DEBUG*/
 
 	switch (uMsg)
 		{
@@ -2178,9 +2123,6 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_SIZE:
 			if (g_pvp && g_pvp->m_hwndSideBar)
 				{
-				//WINDOWPOS *pwp;
-				//pwp = (WINDOWPOS *)lParam;
-
 				RECT rc;
 				GetClientRect(hwnd, &rc);
 
@@ -2195,18 +2137,11 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				SetWindowPos(g_pvp->m_hwndSideBarScroll,NULL,
 					0, scrollwindowtop, TOOLBAR_WIDTH + SCROLL_WIDTH, scrollwindowheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
-				/*SetWindowPos(g_pvp->m_hwndWork,NULL,
-					TOOLBAR_WIDTH, 0, rc.right - rc.left - TOOLBAR_WIDTH, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);*/
-
 				HWND hwndSB = g_pvp->m_sb.GetHWnd();
 				int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
 
 				if (hwndSB && IsWindowVisible(hwndSB))
 					{
-					//RECT rcSB;
-					//GetWindowRect(hwndSB, &rcSB);
-					//SBwidth = rcSB.right-rcSB.left;
-
 					SetWindowPos(hwndSB,NULL,
 					rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 					}
@@ -2259,23 +2194,9 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				SetWindowPos(g_pvp->m_hwndWork,NULL,
 					sidebarwidth, 0, rc.right - rc.left - (sidebarwidth) - SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-				// if the active table is maximized, size it along with the main window
-				/*if (g_pvp->m_ptableActive)
-					{
-					//int style = GetWindowLong(g_pvp->m_ptableActive->m_hwnd, GWL_STYLE);
-					if (IsZoomed(g_pvp->m_ptableActive->m_hwnd))
-						{
-						SetWindowPos(g_pvp->m_ptableActive->m_hwnd,NULL,
-							TOOLBAR_WIDTH, 0, rc.right - rc.left - TOOLBAR_WIDTH, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-						}
-					}*/
 				return 0;
 				}
 			break;
-
-		/*case WM_LBUTTONDOWN:
-			g_pvp->ShowIDE();
-			break;*/
 
 		case WM_COMMAND:
 			g_pvp->ParseCommand(LOWORD(wParam), (HWND)lParam, HIWORD(wParam));
@@ -2291,91 +2212,82 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pvp->ApcHost.WmEnable(wParam);
 			break;
 #endif
-
-		//case WM_NCCREATE:
-		//case WM_SIZE:
-			//return DefWindowProc(hwnd, uMsg, wParam, lParam);
-			//break;
 		}
 
-	// DefFrameProc is for MDI
 	return DefFrameProc(hwnd, g_pvp->m_hwndWork, uMsg, wParam, lParam);
-	//return DefWindowProc(hwnd, uMsg, wParam, lParam);
-	}
+
+}
+
 
 LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-	{
+{
+
 	switch (uMsg)
-		{
+	{
 		case WM_NOTIFY:
-			{
+		{
 			LPNMHDR pnmhdr = (LPNMHDR)lParam;
 			switch (pnmhdr->code)
-				{
+			{
 				case TBN_DROPDOWN:
-					{
+				{
 					PinTable *pt = g_pvp->GetActiveTable();
 
 					if (pt)
-						{
-						//>>> added by chris as part of table protection
+					{
 						if (pt->CheckPermissions(DISABLE_TABLEVIEW) == fTrue)
 							{
 							break;
 							}
-						//<<<
 
 						HMENU hmenu = CreatePopupMenu();
-						/*MENUINFO mi;
-						GetMenuInfo(hmenu, &mi);
-						int maxheight = mi.cyMax;*/
 
 						HWND hwndList = CreateWindowEx(0, "ListBox", "", WS_CHILD | LBS_SORT, 0, 0, 10, 10, hwnd, NULL, g_hinst, 0);
 
 						int i;
 						int menucount=0;
 						for (i=0;i<pt->m_vedit.Size();i++)
-							{
+						{
 							IEditable *piedit = pt->m_vedit.ElementAt(i);
 							// check scriptable - decals don't have scripts and therefore don't have names
 							if (piedit->GetScriptable() && piedit->m_fBackglass == g_pvp->m_fBackglassView)
-								{
+							{
 								char szT[64]; // Names can only be 32 characters (plus terminator)
 								WideCharToMultiByte(CP_ACP, 0, pt->m_vedit.ElementAt(i)->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);
 
 								int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
 								SendMessage(hwndList, LB_SETITEMDATA, index, i+1);// menu can't have an item with id 0, so bump everything up one
-								}
 							}
+						}
 
 						for (i=0;i<pt->m_vcollection.Size();i++)
-							{
+						{
 							char szT[64]; // Names can only be 32 characters (plus terminator)
 							WideCharToMultiByte(CP_ACP, 0, pt->m_vcollection.ElementAt(i)->m_wzName, -1, szT, 64, NULL, NULL);
 
 							int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
 							SendMessage(hwndList, LB_SETITEMDATA, index, i | 0x80000000);
-							}
+						}
 
 						int listcount = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
 
 						// Take the items from our sorted list and put them into the menu
 						for (i=0;i<listcount;i++)
-							{
+						{
 							char szT[64];
 							int flags = MF_STRING;
 
 							if ((menucount%30 == 0) && (menucount != 0))
-								{
+							{
 								flags |= MF_MENUBARBREAK;
-								}
+							}
 
 							SendMessage(hwndList, LB_GETTEXT, i, (LPARAM)szT);
 							int data = SendMessage(hwndList, LB_GETITEMDATA, i, 0);
 
 							AppendMenu(hmenu, flags, data, szT);
 							menucount++;
-							}
+						}
 
 						DestroyWindow(hwndList);
 
@@ -2392,26 +2304,25 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 							mousept.x, mousept.y, hwnd, NULL);
 
 						if (icmd != 0)
-							{
+						{
 							if (icmd & 0x80000000) // collection
-								{
+							{
 								int i;
 								Collection *pcol = pt->m_vcollection.ElementAt(icmd & 0x7fffffff);
 								for (i=0;i<pcol->m_visel.Size();i++)
-									{
-									pt->AddMultiSel(pcol->m_visel.ElementAt(i), i == 0 ? fAdd : TRUE, TRUE);
-									}
-								}
-							else
 								{
-								pt->AddMultiSel(pt->m_vedit.ElementAt(icmd-1)->GetISelect(), fAdd, TRUE);
+									pt->AddMultiSel(pcol->m_visel.ElementAt(i), i == 0 ? fAdd : TRUE, TRUE);
 								}
 							}
-
-						DestroyMenu(hmenu);
+							else
+							{
+								pt->AddMultiSel(pt->m_vedit.ElementAt(icmd-1)->GetISelect(), fAdd, TRUE);
+							}
 						}
+						DestroyMenu(hmenu);
 					}
-					break;
+				}
+				break;
 				}
 			}
 			break;
@@ -2456,22 +2367,68 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		}
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
-	}
+
+}
+
 
 STDMETHODIMP VPinball::PlaySound(BSTR bstr)
 {
-	if (!g_pplayer)
-		{
-		return S_OK;
-		}
 
-	g_pplayer->m_ptable->PlaySound(bstr, 0, 1);
+	if (g_pplayer) g_pplayer->m_ptable->PlaySound(bstr, 0, 1);
 
 	return S_OK;
+
 }
 
-int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+
+STDMETHODIMP VPinball::FireKnocker(int Count)
+{
+	if (g_pplayer) g_pplayer->m_ptable->FireKnocker(Count);
+
+	return S_OK;
+
+}
+
+STDMETHODIMP VPinball::QuitPlayer(int CloseType)
+{
+	if (g_pplayer)g_pplayer->m_ptable->QuitPlayer(CloseType);
+
+	return S_OK;
+
+}
+
+STDMETHODIMP VPinball::StartShake(void)
+{
+	if (g_pplayer) g_pplayer->m_ptable->StartShake();
+
+	return S_OK;
+
+}
+
+
+STDMETHODIMP VPinball::StopShake(void)
+{
+	if (g_pplayer) g_pplayer->m_ptable->StopShake();
+
+	return S_OK;
+
+}
+
+
+void VPinball::Quit( void )
+{
+
+	if( g_pplayer ) g_pplayer->m_fCloseDown = fTrue;
+	else
 	{
+		PostMessage(m_hwnd, WM_CLOSE, 0, 0);
+	}
+}
+
+
+int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+
 	CCO(PinTable) *pt;
 	pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
@@ -2594,7 +2551,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 							if(ret)
 								{
-								strcpy_s(szInitialDir, szFileName);
+								strcpy(szInitialDir, szFileName);
 
 								int len = lstrlen(szFileName);
 								if (len < ofn.nFileOffset)
@@ -2643,12 +2600,21 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
 										PinSound *pps = (PinSound *)lvitem.lParam;
 
-										pt->ReImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, pps->m_szPath, count == 1);									
+										//pt->ReImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, pps->m_szPath, count == 1);									
+										HANDLE hFile = CreateFile(pps->m_szPath,GENERIC_READ, FILE_SHARE_READ,	
+														NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
+										if (hFile != INVALID_HANDLE_VALUE)
+											{
+											CloseHandle(hFile);	
+											pt->ReImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, pps->m_szPath, count == 1);									
+											pt->SetNonUndoableDirty(eSaveDirty);
+											}
+										else MessageBox(hwndDlg,pps->m_szPath, "  FILE NOT FOUND!  ", MB_OK);
 										sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
 										}
 									}
-								pt->SetNonUndoableDirty(eSaveDirty);
+								//pt->SetNonUndoableDirty(eSaveDirty);
 								}
 							}
 							break;
@@ -2708,6 +2674,75 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							}
 							break;
 
+//++++++++++++++++++++++++++++++++++++++++++++++++//rlc
+
+						case IDC_SNDEXPORT:
+							{								
+							if(ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST)))
+								{	
+								OPENFILENAME ofn;
+								LVITEM lvitem;
+								char szInitialDir[2096];
+								HRESULT hr;		
+								int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED); //next selected item 	
+								 while (sel != -1)
+									{									
+									lvitem.mask = LVIF_PARAM;
+									lvitem.iItem = sel;
+									lvitem.iSubItem = 0;
+									ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+									PinSound *pps = (PinSound *)lvitem.lParam;								
+
+									memset(&ofn, 0, sizeof(OPENFILENAME));
+									ofn.lStructSize = sizeof(OPENFILENAME);
+									ofn.hInstance = g_hinst;
+									ofn.hwndOwner = g_pvp->m_hwnd;
+									//TEXT
+									ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
+									
+									int begin;		//select only file name from pathfilename
+									int len = lstrlen(pps->m_szPath);
+
+									for (begin=len;begin>=0;begin--)
+										{
+										if (pps->m_szPath[begin] == '\\')
+											{
+											begin++;
+											break;
+											}
+										}
+									ofn.lpstrFile = &pps->m_szPath[begin];
+									ofn.nMaxFile = 2096;
+									ofn.lpstrDefExt = "wav";
+									hr = GetRegString("RecentDir","SoundDir", szInitialDir,2096);
+
+									if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
+									else ofn.lpstrInitialDir = NULL;	
+																
+									ofn.lpstrTitle = "SAVE AS";
+									ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
+									
+									szInitialDir[ofn.nFileOffset] = 0;
+
+									if (GetSaveFileName(&ofn))	//Get filename from user
+										{																	
+										if (pt->ExportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, ofn.lpstrFile))
+											{
+											//pt->ReImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, ofn.lpstrFile, fTrue);
+											//pt->SetNonUndoableDirty(eSaveDirty);
+											}
+										}
+									sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
+									
+									}
+								hr = SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+								EndDialog(hwndDlg, TRUE);
+								}	
+							}
+							break;
+
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//rlc
+
 						case IDC_PLAY:
 							{
 							int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
@@ -2723,6 +2758,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								}
 							}
 							break;
+							
 
 						case IDC_RENAME:
 							{
@@ -2859,10 +2895,6 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								PinImage *ppi = (PinImage *)lvitem.lParam;
 								HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
 								SendMessage(hwndColor, CHANGE_COLOR, 0, ppi->m_rgbTransparent);
-								
-								HWND hwndCache = GetDlgItem(hwndDlg, IDC_UNNEEDEDAFTERCACHE);
-								SendMessage(hwndCache, BM_SETCHECK, ppi->m_fUnneededAfterCache, 0);
-								
 								InvalidateRect(hwndColor, NULL, FALSE);
 								}
 							}
@@ -2876,6 +2908,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 						int fEnable = (count > 1) ? FALSE : TRUE;
 						EnableWindow(GetDlgItem(hwndDlg, IDC_REIMPORTFROM), fEnable);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), fEnable);
+						//EnableWindow(GetDlgItem(hwndDlg, IDC_EXPORT), fEnable);
 						}
 					break;
 				}
@@ -2982,6 +3015,8 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							PinImage *ppi = (PinImage *)lvitem.lParam;
 							ppi->SetTransparentColor(color);
 
+							HRESULT hr = SetRegValue("Editor", "TransparentColorKey", REG_DWORD, &color, 4);
+
 							// The previous selection is now deleted, so look again from the top of the list
 							sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
 							}
@@ -3001,35 +3036,6 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 						case IDCANCEL:
 							EndDialog(hwndDlg, FALSE);
 							break;
-							
-						case IDC_UNNEEDEDAFTERCACHE:
-							{
-							HWND hwndCache = GetDlgItem(hwndDlg, IDC_UNNEEDEDAFTERCACHE);
-							BOOL fUnneeded = SendMessage(hwndCache, BM_GETCHECK, 0, 0);
-								
-							int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-							if (count > 0)
-								{
-								int color = SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);
-								int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
-								while (sel != -1)
-									{							
-									LVITEM lvitem;
-									lvitem.mask = LVIF_PARAM;
-									lvitem.iItem = sel;
-									lvitem.iSubItem = 0;
-									ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-									PinImage *ppi = (PinImage *)lvitem.lParam;
-									ppi->m_fUnneededAfterCache = fUnneeded;
-
-									// The previous selection is now deleted, so look again from the top of the list
-									sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
-									}
-
-								pt->SetNonUndoableDirty(eSaveDirty);
-								}
-							}
-							break;
 
 						case IDC_IMPORT:
 							{
@@ -3046,7 +3052,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							ofn.hInstance = g_hinst;
 							ofn.hwndOwner = g_pvp->m_hwnd;
 							// TEXT
-							ofn.lpstrFilter = "Bitmap and JPEG Files (*.bmp, *.jpg)\0*.bmp;*.jpg;*.jpeg\0";
+							ofn.lpstrFilter = "Bitmap and JPEG Files (*.bmp, *.jpg, *.png)\0*.bmp;*.jpg;*.jpeg;*.png\0";
 							ofn.lpstrFile = szFileName;
 							ofn.nMaxFile = 10240;
 							ofn.lpstrDefExt = "bmp";
@@ -3066,7 +3072,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 							if(ret)
 								{
-								strcpy_s(szInitialDir, szFileName);
+								strcpy(szInitialDir, szFileName);
 
 								int len = lstrlen(szFileName);
 								if (len < ofn.nFileOffset)
@@ -3106,7 +3112,73 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								}
 							}
 							break;
+/////////////////////////////rlc  begin
+						case IDC_EXPORT:
+							{
+							if(ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST)))	// if some items are selected???
+                            	{
+								HRESULT hr;
+								char szInitialDir[2096];
+								OPENFILENAME ofn;
+								LVITEM lvitem;
+								int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);								
+								while (sel != -1)
+									{									
+									lvitem.mask = LVIF_PARAM;
+									lvitem.iItem = sel;
+									lvitem.iSubItem = 0;
+									ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+									PinImage *ppi = (PinImage *)lvitem.lParam;									
 
+									memset(&ofn, 0, sizeof(OPENFILENAME));
+									ofn.lStructSize = sizeof(OPENFILENAME);
+									ofn.hInstance = g_hinst;
+									ofn.hwndOwner = g_pvp->m_hwnd;
+									//TEXT
+									ofn.lpstrFilter = "Bitmap and JPEG Files (*.bmp, *.jpg, *.png)\0*.bmp;*.jpg;*.jpeg;*.png\0";
+									
+									int begin;		//select only file name from pathfilename
+									int len = lstrlen(ppi->m_szPath);
+
+									for (begin=len;begin>=0;begin--)
+										{
+										if (ppi->m_szPath[begin] == '\\')
+											{
+											begin++;
+											break;
+											}
+										}
+									ofn.lpstrFile = &ppi->m_szPath[begin];
+									ofn.nMaxFile = 2096;
+									ofn.lpstrDefExt = "bmp";
+									
+									hr = GetRegString("RecentDir","ImageDir", szInitialDir, 2096);
+
+									if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
+									else ofn.lpstrInitialDir = NULL;	
+																
+									ofn.lpstrTitle = "SAVE AS";
+									ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
+									
+									szInitialDir[ofn.nFileOffset] = 0;
+
+									if (GetSaveFileName(&ofn))	//Get filename from user
+										{																	
+										if (pt->ExportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile))
+											{
+											//pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
+											//pt->SetNonUndoableDirty(eSaveDirty);
+											}
+										}
+									sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
+									} // finished all selected items
+								hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+								EndDialog(hwndDlg, TRUE);
+								}							
+							}	
+
+							break;
+///////////////////////////rlc end
 						case IDC_DELETE:
 							{
 							int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
@@ -3143,7 +3215,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							if (count > 0)
 								{
 								LocalString ls(IDS_REPLACEIMAGE);
-								int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+								int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to replace this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
 								if (ans == IDYES)
 									{
 									int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
@@ -3155,15 +3227,21 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										lvitem.iSubItem = 0;
 										ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
 										PinImage *ppi = (PinImage *)lvitem.lParam;
+										HANDLE hFile = CreateFile(ppi->m_szPath,GENERIC_READ, FILE_SHARE_READ,	
+														NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-										pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ppi->m_szPath);									
-
+										if (hFile != INVALID_HANDLE_VALUE)
+											{
+											CloseHandle(hFile);	
+											pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ppi->m_szPath);
+											pt->SetNonUndoableDirty(eSaveDirty);
+											}
+										else MessageBox(hwndDlg,ppi->m_szPath, "  FILE NOT FOUND!  ", MB_OK);
 										sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
 										}
 									}
 								// Display new image
-								InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
-								pt->SetNonUndoableDirty(eSaveDirty);
+								InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);								
 								}
 							}
 							break;
@@ -3189,7 +3267,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									ofn.hInstance = g_hinst;
 									ofn.hwndOwner = g_pvp->m_hwnd;
 									// TEXT
-									ofn.lpstrFilter = "Bitmap and JPEG Files (*.bmp, *.jpg)\0*.bmp;*.jpg;*.jpeg\0";
+									ofn.lpstrFilter = "Bitmap and JPEG Files (*.bmp, *.jpg, *.png)\0*.bmp;*.jpg;*.jpeg;*.png\0";
 									ofn.lpstrFile = szFileName;
 									ofn.nMaxFile = _MAX_PATH;
 									ofn.lpstrDefExt = "bmp";
@@ -3216,7 +3294,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
 										PinImage *ppi = (PinImage *)lvitem.lParam;
 
-										strcpy_s(szInitialDir, szFileName);
+										strcpy(szInitialDir, szFileName);
 										szInitialDir[ofn.nFileOffset] = 0;
 										hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 
@@ -3258,12 +3336,29 @@ int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			char szVersion[256];
 			char szBuild[32];
+//			char szTime[]=__TIME__;
+//			char szDate[]=__DATE__; 
 
-			lstrcpy(szVersion, "Version (0.8.");
-
-			_itoa(BUILDNUMBER, szBuild, 10);
+//			char szSVNDate[]= SVNDATE;
+//			char szSVNRev[]= SVNREVISION;
+		
+			lstrcpy(szVersion, "Version 9.0.7 - "); //rlc add time and date to compilation version
+			_itoa(BUILD_NUMBER, szBuild, 10);
 			lstrcat(szVersion, szBuild);
-			lstrcat(szVersion, ")");
+//			lstrcat(szVersion, "-");
+			
+//			lstrcat(szVersion, szTime);
+//			lstrcat(szVersion, "-");
+//			lstrcat(szVersion, szDate);
+
+//			lstrcat(szVersion, ")\n\nSVN");		//rlc place Subversion revision and date in About Dialog
+
+//			szSVNRev[0]= ' '; szSVNRev[strlen(szSVNRev)-1] = 0; 
+//			lstrcat(szVersion, szSVNRev);
+//
+//			szSVNDate[0] = ' '; szSVNDate[strlen(szSVNDate)-1] = 0;
+//			lstrcat(szVersion, szSVNDate);
+			
 
 			HWND hwndVersion = GetDlgItem(hwndDlg, IDC_VERSION);
 			SetWindowText(hwndVersion, szVersion);
@@ -3299,7 +3394,7 @@ int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							HRESULT hr;
 							if (LOWORD(wParam) == IDC_WEBSITE)
 								{
-								hr = OpenURL("http://www.visualpinball.com");
+								hr = OpenURL("http://www.nanotechent.com/vpin.php");
 								}
 							else
 								{
@@ -3381,16 +3476,21 @@ struct EnumVideoModeStruct
 
 HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpContext)
 	{
+//#ifdef ULTRACADE
+	// Only allow 32-bit color depths on minimum 640 size monitors.
+//	if (lpDDSurfaceDesc->dwWidth >= 640 && lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount >= 32)
+//#else
 	// Throw away displays we won't do (ModeX and 8-bit)
 	if (lpDDSurfaceDesc->dwWidth >= 640 && lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount >= 16)
-		{
+//#endif		
+	{
 		char szT[128];
 		EnumVideoModeStruct *pevms = (EnumVideoModeStruct *)lpContext;
 		HWND hwndList = pevms->hwndList;
 		int widthcur = pevms->widthcur;
 		int heightcur = pevms->heightcur;
 		int depthcur = pevms->depthcur;
-		sprintf_s(szT, "%d x %d x %d", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
+		sprintf(szT, "%d x %d x %d", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
 		int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
 
 		VideoMode* pvm = new VideoMode();
@@ -3408,7 +3508,8 @@ HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpCon
 	return DDENUMRET_OK;
 	}
 
-const int rgwindowsize[] = {640, 720, 800, 912, 1024, 1152, 1280, 1600};
+
+const int rgwindowsize[] = {640, 720, 800, 912, 1024, 1152, 1280, 1600};  //rlc  What is this?
 
 int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
@@ -3465,15 +3566,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, antialias ? BST_CHECKED : BST_UNCHECKED, 0);
 
-			hwndCheck = GetDlgItem(hwndDlg, IDC_RENDERCACHE);
-			int rendercache;
-			hr = GetRegInt("Player", "RenderCache", &rendercache);
-			if (hr != S_OK)
-				{
-				rendercache = fTrue; // The default
-				}
-			SendMessage(hwndCheck, BM_SETCHECK, rendercache ? BST_CHECKED : BST_UNCHECKED, 0);
-
 			int widthcur = 0;
 			//int indexcur = -1;
 			hr = GetRegInt("Player", "Width", &widthcur);
@@ -3493,7 +3585,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			hr = GetRegInt("Player", "ColorDepth", &depthcur);
 			if (hr != S_OK)
 				{
-				depthcur = 16; // The default
+				depthcur = 32; // The default
 				}
 
 			int fullscreen;
@@ -3515,32 +3607,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				HWND hwndRadio = GetDlgItem(hwndDlg, IDC_WINDOW);
 				SendMessage(hwndRadio, BM_SETCHECK, BST_CHECKED, 0);
 				}
-
-			/*HWND hwndList = GetDlgItem(hwndDlg, IDC_SIZELIST);
-			int i;
-			int csize;
-			csize = sizeof(rgwindowsize)/sizeof(int);
-			int screenwidth = GetSystemMetrics(SM_CXSCREEN);
-			char szT[128];
-			for (i=0;i<csize;i++)
-				{
-				int xsize = rgwindowsize[i];
-				if (xsize <= screenwidth)
-					{
-					if (xsize == widthcur)
-						{
-						indexcur = i;
-						}
-					sprintf(szT, "%d x %d", xsize, xsize*3/4);
-					int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)szT);
-					SendMessage(hwndList, LB_SETITEMDATA, index, xsize);
-					}
-				}
-
-			if (indexcur != -1)
-				{
-				SendMessage(hwndList, LB_SETCURSEL, indexcur, 0);
-				}*/
 			}
 
 			return TRUE;
@@ -3561,7 +3627,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 							HWND hwndList = GetDlgItem(hwndDlg, IDC_SIZELIST);
 							int index = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
-							//int xsize = SendMessage(hwndList, LB_GETITEMDATA, index, 0);
 							VideoMode* pvm = (VideoMode*)SendMessage(hwndList, LB_GETITEMDATA, index, 0);
 							SetRegValue("Player", "Width", REG_DWORD, &pvm->width, 4);
 							SetRegValue("Player", "Height", REG_DWORD, &pvm->height, 4);
@@ -3586,10 +3651,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							hwndCheck = GetDlgItem(hwndDlg, IDC_ANTIALIAS);
 							int antialias = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "BallAntialias", REG_DWORD, &antialias, 4);
-
-							hwndCheck = GetDlgItem(hwndDlg, IDC_RENDERCACHE);
-							int rendercache = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
-							SetRegValue("Player", "RenderCache", REG_DWORD, &rendercache, 4);
 
 							EndDialog(hwndDlg, TRUE);
 							}
@@ -3637,7 +3698,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 						{
 						indexcur = i;
 						}
-					sprintf_s(szT, "%d x %d", xsize, xsize*3/4);
+					sprintf(szT, "%d x %d", xsize, xsize*3/4);
 					int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)szT);
 					VideoMode* pvm = new VideoMode();
 					pvm->width = xsize;
@@ -3654,11 +3715,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				{
 				SendMessage(hwndList, LB_SETCURSEL, 0, 0);
 				}
-
-			/*HWND hwndRList = GetDlgItem(hwndDlg, IDC_REFRESHLIST);
-			ShowWindow(hwndRList, SW_HIDE);
-			hwndRList = GetDlgItem(hwndDlg, IDC_REFRESHTEXT);
-			ShowWindow(hwndRList, SW_HIDE);*/
 			}
 			break;
 
@@ -3677,11 +3733,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				{
 				SendMessage(hwndList, LB_SETCURSEL, 0, 0);
 				}
-
-			/*HWND hwndRList = GetDlgItem(hwndDlg, IDC_REFRESHLIST);
-			ShowWindow(hwndRList, SW_HIDE);
-			hwndRList = GetDlgItem(hwndDlg, IDC_REFRESHTEXT);
-			ShowWindow(hwndRList, SW_HIDE);*/
 			}
 			break;
 
@@ -3843,42 +3894,6 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			EndDialog(hwndDlg, FALSE);
 			break;
 
-		/*case WM_NOTIFY:
-			{
-			LPNMHDR pnmhdr = (LPNMHDR)lParam;
-			switch (pnmhdr->code)
-				{
-				case LVN_ENDLABELEDIT:
-					NMLVDISPINFO *pinfo;
-					pinfo = (NMLVDISPINFO *)lParam;
-					if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
-						{
-						return FALSE;
-						}
-					ListView_SetItemText(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pinfo->item.iItem, 0, pinfo->item.pszText);
-					LVITEM lvitem;
-					lvitem.mask = LVIF_PARAM;
-					lvitem.iItem = pinfo->item.iItem;
-					lvitem.iSubItem = 0;
-					ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-					PinImage *ppi;
-					ppi = (PinImage *)lvitem.lParam;
-					lstrcpy(ppi->m_szName, pinfo->item.pszText);
-					lstrcpy(ppi->m_szInternalName, pinfo->item.pszText);
-					CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
-					return TRUE;
-					break;
-				case LVN_ITEMCHANGING:
-					NMLISTVIEW *plistview = (LPNMLISTVIEW)lParam;
-					if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
-						{
-						InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
-						}
-					break;
-				}
-			}
-			break;*/
-
 		case WM_COMMAND:
 			switch (HIWORD(wParam))
 				{
@@ -3927,7 +3942,7 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 							if(ret)
 								{
-								strcpy_s(szInitialDir, szFileName);
+								strcpy(szInitialDir, szFileName);
 								szInitialDir[ofn.nFileOffset] = 0;
 								hr = SetRegValue("RecentDir","FontDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 								pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ofn.lpstrFile);
@@ -4899,32 +4914,8 @@ const char rgszKeyName[][10] = {
 	"", //0x9A
 	"", //0x9B
 
-//#define DIK_KANA            0x70    /* (Japanese keyboard)            */
-//#define DIK_ABNT_C1         0x73    /* / ? on Portugese (Brazilian) keyboards */
-//#define DIK_CONVERT         0x79    /* (Japanese keyboard)            */
-//#define DIK_NOCONVERT       0x7B    /* (Japanese keyboard)            */
-//#define DIK_YEN             0x7D    /* (Japanese keyboard)            */
-//#define DIK_ABNT_C2         0x7E    /* Numpad . on Portugese (Brazilian) keyboards */
-//#define DIK_NUMPADEQUALS    0x8D    /* = on numeric keypad (NEC PC98) */
-//#define DIK_PREVTRACK       0x90    /* Previous Track (DIK_CIRCUMFLEX on Japanese keyboard) */
-//#define DIK_AT              0x91    /*                     (NEC PC98) */
-//#define DIK_COLON           0x92    /*                     (NEC PC98) */
-//#define DIK_UNDERLINE       0x93    /*                     (NEC PC98) */
-//#define DIK_KANJI           0x94    /* (Japanese keyboard)            */
-//#define DIK_STOP            0x95    /*                     (NEC PC98) */
-//#define DIK_AX              0x96    /*                     (Japan AX) */
-//#define DIK_UNLABELED       0x97    /*                        (J3100) */
-//#define DIK_NEXTTRACK       0x99    /* Next Track */
-	"Num Enter", //#define DIK_NUMPADENTER     0x9C    /* Enter on numeric keypad */
-	"R Ctrl", //DIK_RCONTROL        0x9D
-//#define DIK_MUTE            0xA0    /* Mute */
-//#define DIK_CALCULATOR      0xA1    /* Calculator */
-//#define DIK_PLAYPAUSE       0xA2    /* Play / Pause */
-//#define DIK_MEDIASTOP       0xA4    /* Media Stop */
-//#define DIK_VOLUMEDOWN      0xAE    /* Volume - */
-//#define DIK_VOLUMEUP        0xB0    /* Volume + */
-//#define DIK_WEBHOME         0xB2    /* Web home */
-//#define DIK_NUMPADCOMMA     0xB3    /* , on numeric keypad (NEC PC98) */
+	"Num Enter",	//#define DIK_NUMPADENTER     0x9C    /* Enter on numeric keypad */
+	"R Ctrl",		//DIK_RCONTROL        0x9D
 
 	"", //0x9E
 	"", //0x9F
@@ -4965,8 +4956,6 @@ const char rgszKeyName[][10] = {
 	"", //0xBE
 	"", //0xBF
 
-//#define DIK_PAUSE           0xC5    /* Pause */
-
 	"", //0xC0
 	"", //0xC1
 	"", //0xC2
@@ -5001,18 +4990,7 @@ const char rgszKeyName[][10] = {
 	"R Windows", //DIK_RWIN            0xDC    /* Right Windows key */
 	"Apps Menu", //DIK_APPS            0xDD    /* AppMenu key */
 	};
-//#define DIK_POWER           0xDE    /* System Power */
-//#define DIK_SLEEP           0xDF    /* System Sleep */
-//#define DIK_WAKE            0xE3    /* System Wake */
-//#define DIK_WEBSEARCH       0xE5    /* Web Search */
-//#define DIK_WEBFAVORITES    0xE6    /* Web Favorites */
-//#define DIK_WEBREFRESH      0xE7    /* Web Refresh */
-//#define DIK_WEBSTOP         0xE8    /* Web Stop */
-//#define DIK_WEBFORWARD      0xE9    /* Web Forward */
-//#define DIK_WEBBACK         0xEA    /* Web Back */
-//#define DIK_MYCOMPUTER      0xEB    /* My Computer */
-//#define DIK_MAIL            0xEC    /* Mail */
-//#define DIK_MEDIASELECT     0xED    /* Media Select */
+
 
 class KeyWindowStruct
 	{
@@ -5041,6 +5019,8 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	//CCO(PinTable) *pt;
 	//pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+//	KeyWindowStruct *pksw;//moved to expand scope
+//	pksw = new KeyWindowStruct();// moved to expand scope
 
 	switch (uMsg)
 		{
@@ -5123,6 +5103,15 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowText(hwndControl, rgszKeyName[key]);
 			SetWindowLong(hwndControl, GWL_USERDATA, key);
 
+			hr = GetRegInt("Player","AddCreditKey2", &key);
+			if (hr != S_OK || key > 0xdd)
+				{
+				key = DIK_4;
+				}
+			hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDITKEY2);
+			SetWindowText(hwndControl, rgszKeyName[key]);
+			SetWindowLong(hwndControl, GWL_USERDATA, key);
+
 			hr = GetRegInt("Player","StartGameKey", &key);
 			if (hr != S_OK || key > 0xdd)
 				{
@@ -5132,14 +5121,49 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowText(hwndControl, rgszKeyName[key]);
 			SetWindowLong(hwndControl, GWL_USERDATA, key);
 
+			hr = GetRegInt("Player","ExitGameKey", &key);
+			if (hr != S_OK || key > 0xdd)
+				{
+				key = DIK_Q;
+				}
+			hwndControl = GetDlgItem(hwndDlg, IDC_EXITGAME);
+			SetWindowText(hwndControl, rgszKeyName[key]);
+			SetWindowLong(hwndControl, GWL_USERDATA, key);
+
+			hr = GetRegInt("Player","RMagnaSave", &key);
+			if (hr != S_OK || key > 0xdd)
+				{
+				//key = DIK_BACKSPACE;
+				key = DIK_RCONTROL;		//157 (0x9D) DIK_RCONTROL 
+				}
+			hwndControl = GetDlgItem(hwndDlg, IDC_RMAGSAVE);
+			SetWindowText(hwndControl, rgszKeyName[key]);
+			SetWindowLong(hwndControl, GWL_USERDATA, key);
+
+			hr = GetRegInt("Player","LMagnaSave", &key);
+			if (hr != S_OK || key > 0xdd)
+				{
+				//key = DIK_APOSTROPHE;
+				key = DIK_LCONTROL; //29 (0x1D)
+				}
+			hwndControl = GetDlgItem(hwndDlg, IDC_LMAGSAVE );
+			SetWindowText(hwndControl, rgszKeyName[key]);
+			SetWindowLong(hwndControl, GWL_USERDATA, key);
+
+			hr = GetRegInt("Player","MechTilt", &key);
+			if (hr != S_OK || key > 0xdd)
+				{
+				key = DIK_T;
+				}
+			hwndControl = GetDlgItem(hwndDlg, IDC_MECHTILT );
+			SetWindowText(hwndControl, rgszKeyName[key]);
+			SetWindowLong(hwndControl, GWL_USERDATA, key);
+
 			KeyWindowStruct *pksw;
 			pksw = new KeyWindowStruct();
 			pksw->pi.Init(hwndDlg);
 			pksw->m_timerid = 0;
 			SetWindowLong(hwndDlg, GWL_USERDATA, (long)pksw);
-			/*PinInput *ppi = new PinInput();
-			ppi->Init(hwndDlg);
-			SetWindowLong(hwndDlg, GWL_USERDATA, (long)ppi);*/
 
 				{
 				// Set buttons to ignore keyboard shortcuts when using DirectInput
@@ -5173,7 +5197,27 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
 				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
 
+				hwndButton = GetDlgItem(hwndDlg, IDC_ADDCREDITBUTTON2);
+				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
+				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+
 				hwndButton = GetDlgItem(hwndDlg, IDC_STARTGAMEBUTTON);
+				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
+				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+
+				hwndButton = GetDlgItem(hwndDlg, IDC_EXITGAMEBUTTON);
+				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
+				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+
+				hwndButton = GetDlgItem(hwndDlg, IDC_RMAGSAVEBUTTON);
+				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
+				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+
+				hwndButton = GetDlgItem(hwndDlg, IDC_LMAGSAVEBUTTON);
+				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
+				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+
+				hwndButton = GetDlgItem(hwndDlg, IDC_MECHTILTBUTTON);
 				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
 				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
 				}
@@ -5192,10 +5236,6 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				pksw->m_timerid = 0;
 				}
 			pksw->pi.UnInit();
-			/*PinInput *ppi;
-			ppi = (PinInput *)GetWindowLong(hwndDlg, GWL_USERDATA);
-			ppi->UnInit();
-			delete ppi;*/
 			}
 			break;
 
@@ -5203,24 +5243,25 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 			KeyWindowStruct *pksw;
 			pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
-			//PinInput *ppi;
-			//ppi = (PinInput *)GetWindowLong(hwndDlg, GWL_USERDATA);
 			int key = pksw->pi.GetNextKey();
-			if (key != 0 && key < 0xdd)
+			if (key != 0)
 				{
-				if (key == DIK_ESCAPE)
+				if(key < 0xdd)			//rlc   Key mapping, add cases for joystick here!!!!!!!!!
 					{
-					// reset key to old value
-					int oldkey = GetWindowLong(pksw->hwndKeyControl, GWL_USERDATA);
-					SetWindowText(pksw->hwndKeyControl, rgszKeyName[oldkey]);
+					if (key == DIK_ESCAPE)
+						{
+						// reset key to old value
+						int oldkey = GetWindowLong(pksw->hwndKeyControl, GWL_USERDATA);
+						SetWindowText(pksw->hwndKeyControl, rgszKeyName[oldkey]);
+						}
+					else
+						{
+						SetWindowText(pksw->hwndKeyControl, rgszKeyName[key]);
+						SetWindowLong(pksw->hwndKeyControl, GWL_USERDATA, key);
+						}
+					KillTimer(hwndDlg, pksw->m_timerid);
+					pksw->m_timerid = 0;
 					}
-				else
-					{
-					SetWindowText(pksw->hwndKeyControl, rgszKeyName[key]);
-					SetWindowLong(pksw->hwndKeyControl, GWL_USERDATA, key);
-					}
-				KillTimer(hwndDlg, pksw->m_timerid);
-				pksw->m_timerid = 0;
 				}
 			}
 			break;
@@ -5229,7 +5270,9 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 			switch (HIWORD(wParam))
 				{
-				case BN_CLICKED:
+					case BN_CLICKED:
+				KeyWindowStruct *pksw;
+				pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
 					switch (LOWORD(wParam))
 						{
 						case IDC_LEFTFLIPPERBUTTON:
@@ -5239,10 +5282,16 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						case IDC_CENTERTILTBUTTON:
 						case IDC_PLUNGERBUTTON:
 						case IDC_ADDCREDITBUTTON:
+						case IDC_ADDCREDITBUTTON2:
 						case IDC_STARTGAMEBUTTON:
+						case IDC_EXITGAMEBUTTON:
+						case IDC_RMAGSAVEBUTTON:
+						case IDC_LMAGSAVEBUTTON:
+						case IDC_MECHTILTBUTTON:
 							{
 							HWND hwndKeyWindow;
-
+						if(pksw->m_timerid == NULL) //add
+						{ //add
 							switch (LOWORD(wParam))
 								{
 								case IDC_LEFTFLIPPERBUTTON:
@@ -5273,22 +5322,55 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_ADDCREDIT);
 									break;
 
+								case IDC_ADDCREDITBUTTON2:
+									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_ADDCREDIT2);
+									break;
+
 								case IDC_STARTGAMEBUTTON:
 									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_STARTGAME);
+									break;
+
+								case IDC_EXITGAMEBUTTON:
+									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_EXITGAME);
+									break;
+
+								case IDC_RMAGSAVEBUTTON:
+									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_RMAGSAVE);
+									break;
+
+								case IDC_LMAGSAVEBUTTON:
+									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_LMAGSAVE);
+									break;
+
+								case IDC_MECHTILTBUTTON:
+									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_MECHTILT);
 									break;
 								}
 
 							KeyWindowStruct *pksw;
 							pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
+							// corrects input error with spacebar
+								int key = pksw->pi.GetNextKey();
+								if (key == 0x39)
+								{
+								pksw->pi.GetNextKey(); // Clear the current buffer out
+								break;
+								}
+
+
 							pksw->pi.GetNextKey(); // Clear the current buffer out
 
 							pksw->m_timerid = SetTimer(hwndDlg, 100, 50, NULL);
 							pksw->hwndKeyControl = hwndKeyWindow;
 							SetWindowText(pksw->hwndKeyControl, "????");
+							while (key = pksw->pi.GetNextKey()!=NULL) //clear entire keyboard buffer contents
+								{
+									pksw->pi.GetNextKey();
+								}
 							}
+							} //add
 							break;
-
 						case IDOK:
 							{
 							HWND hwndControl;
@@ -5322,9 +5404,29 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							key = GetWindowLong(hwndControl, GWL_USERDATA);
 							SetRegValue("Player", "AddCreditKey", REG_DWORD, &key, 4);
 
+							hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDITKEY2);
+							key = GetWindowLong(hwndControl, GWL_USERDATA);
+							SetRegValue("Player", "AddCreditKey2", REG_DWORD, &key, 4);
+
 							hwndControl = GetDlgItem(hwndDlg, IDC_STARTGAME);
 							key = GetWindowLong(hwndControl, GWL_USERDATA);
 							SetRegValue("Player", "StartGameKey", REG_DWORD, &key, 4);
+
+							hwndControl = GetDlgItem(hwndDlg, IDC_EXITGAME);
+							key = GetWindowLong(hwndControl, GWL_USERDATA);
+							SetRegValue("Player", "ExitGameKey", REG_DWORD, &key, 4);
+
+							hwndControl = GetDlgItem(hwndDlg, IDC_RMAGSAVE);
+							key = GetWindowLong(hwndControl, GWL_USERDATA);
+							SetRegValue("Player", "RMagnaSave", REG_DWORD, &key, 4);
+
+							hwndControl = GetDlgItem(hwndDlg, IDC_LMAGSAVE);
+							key = GetWindowLong(hwndControl, GWL_USERDATA);
+							SetRegValue("Player", "LMagnaSave", REG_DWORD, &key, 4);
+							
+							hwndControl = GetDlgItem(hwndDlg, IDC_MECHTILT);
+							key = GetWindowLong(hwndControl, GWL_USERDATA);
+							SetRegValue("Player", "MechTilt", REG_DWORD, &key, 4);
 
 							EndDialog(hwndDlg, TRUE);
 							}

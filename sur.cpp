@@ -1,9 +1,5 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
-/*#define SCALEX(x) ((int)((x - m_offx)*m_zoom))
-#define SCALEY(y) ((int)((y - m_offy)*m_zoom))
-#define SCALED(d) ((int)(d*m_zoom))*/
 
 Sur::Sur(HDC hdc, float zoom, float offx, float offy, int width, int height)
 	{

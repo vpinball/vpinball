@@ -1,9 +1,7 @@
 // Surface.cpp : Implementation of Surface
-#include "stdafx.h"
-//#include "VBATest.h"
-#include "main.h"
+#include "StdAfx.h"
 
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 // Surface
 
 Surface::Surface()
@@ -13,6 +11,8 @@ Surface::Surface()
 	m_menuid = IDR_SURFACEMENU;
 
 	m_phitdrop = NULL;
+	m_d.m_fCollidable = fTrue;
+	m_d.m_fSlingshotAnimation = fTrue;
 	}
 
 Surface::~Surface()
@@ -114,6 +114,7 @@ void Surface::SetDefaults()
 
 	m_d.m_fHitEvent = fFalse;
 	m_d.m_threshold = 1;
+	m_d.m_slingshot_threshold = 0;
 
 	m_d.m_fInner = fTrue;
 
@@ -121,11 +122,12 @@ void Surface::SetDefaults()
 	m_d.m_sidecolor = RGB(255,255,255);
 	m_d.m_szImage[0] = 0;
 	m_d.m_slingshotColor = RGB(242,242,242);
-	//m_d.m_topcolor = RGB(230,210,255);
 
 	m_d.m_topcolor = RGB(63,63,63);
 
 	m_d.m_fDroppable = fFalse;
+	m_d.m_fFlipbook = fFalse;
+	m_d.m_fFloor = fFalse;
 	m_d.m_fCastsShadow = fTrue;
 
 	m_d.m_heightbottom = 0;
@@ -134,72 +136,21 @@ void Surface::SetDefaults()
 	m_d.m_fDisplayTexture = fFalse;
 
 	m_d.m_slingshotforce = 80;
+	
+	m_d.m_fSlingshotAnimation = fTrue;
 
 	m_d.m_elasticity = 0.3f;
+	m_d.m_friction = 0;	//zero uses global value
+	m_d.m_scatter = 0;	//zero uses global value
 
 	m_d.m_fVisible = fTrue;
 	m_d.m_fSideVisible = fTrue;
+	m_d.m_fCollidable = fTrue;
 	}
 
-/*void Surface::GetRgVertex(Vector<RenderVertex> *pvv)
-	{
-	//int cpointCur;
-	int i;
-	int cpoint;
-
-	cpoint = m_vdpoint.Size();
-
-	//cpointCur = 0;
-
-	for (i=0;i<cpoint;i++)
-		{
-		BOOL fNoSmooth = fTrue;
-		CComObject<DragPoint> *pdp0;
-		CComObject<DragPoint> *pdp3;
-		CComObject<DragPoint> *pdp1 = m_vdpoint.ElementAt(i);
-		CComObject<DragPoint> *pdp2 = m_vdpoint.ElementAt((i+1)%cpoint);
-
-		if (pdp1->m_fSmooth)
-			{
-			fNoSmooth = fFalse;
-			pdp0 = m_vdpoint.ElementAt((i+cpoint-1)%cpoint);
-			}
-		else
-			{
-			pdp0 = pdp1;
-			}
-
-		if (pdp2->m_fSmooth)
-			{
-			fNoSmooth = fFalse;
-			pdp3 = m_vdpoint.ElementAt((i+2)%cpoint);
-			}
-		else
-			{
-			pdp3 = pdp2;
-			}
-
-		CatmullCurve cc;
-		cc.SetCurve(&pdp0->m_v, &pdp1->m_v, &pdp2->m_v, &pdp3->m_v);
-
-		RenderVertex rendv1, rendv2; // Create these to add the special properties
-
-		rendv1.x = pdp1->m_v.x;
-		rendv1.y = pdp1->m_v.y;
-		rendv1.fSmooth = pdp1->m_fSmooth;
-		rendv1.fSlingshot = pdp1->m_fSlingshot;
-
-		// Properties of last point don't matter, because it won't be added to the list on this pass (it'll get added as the first point of the next curve)
-		rendv2.x = pdp2->m_v.x;
-		rendv2.y = pdp2->m_v.y;
-
-		RecurseSmoothLine(&cc, 0, 1, &rendv1, &rendv2, pvv);
-		}
-	}*/
 
 void Surface::PreRender(Sur *psur)
 	{
-	//m_rgvT = GetRgVertex(&m_cvertexT);
 
 	int cvertex;
 
@@ -238,12 +189,11 @@ void Surface::PreRender(Sur *psur)
 		m_rgvT[m_cvertexT+5].x = m_rgvT[m_cvertexT-1].x;
 		m_rgvT[m_cvertexT+5].y = m_rgvT[m_cvertexT-1].y;
 
-		//psur->Polygon(m_rgvT, m_cvertexT+6);
 		cvertex = m_cvertexT + 6;
 		}
 	else
 		{
-		//psur->Polygon(m_rgvT, m_cvertexT);
+		
 		cvertex = m_cvertexT;
 		}
 
@@ -264,28 +214,6 @@ void Surface::PreRender(Sur *psur)
 		{
 		psur->Polygon(m_rgvT, cvertex);
 		}
-
-	/*PinImage *ppi = m_ptable->GetImage(m_d.m_szImage);
-
-	if (ppi)
-		{
-		HDC hdcScreen;
-		HDC hdcNew;
-		HBITMAP hbmOld;
-		ppi->EnsureHBitmap();
-		if (ppi->m_hbmGDIVersion)
-			{
-			hdcScreen = GetDC(NULL);
-			hdcNew = CreateCompatibleDC(hdcScreen);
-			hbmOld = (HBITMAP)SelectObject(hdcNew, ppi->m_hbmGDIVersion);
-
-			psur->Image(m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, hdcNew, ppi->m_width, ppi->m_height);
-
-			SelectObject(hdcNew, hbmOld);
-			DeleteDC(hdcNew);
-			ReleaseDC(NULL, hdcScreen);
-			}
-		}*/
 	}
 
 void Surface::Render(Sur *psur)
@@ -396,8 +324,6 @@ void Surface::RenderBlueprint(Sur *psur)
 		delete vvertex.ElementAt(i);
 		}
 
-	//m_rgvT = GetRgVertex(&m_cvertexT);
-
 	psur->Polygon(m_rgvT, m_cvertexT);
 	delete m_rgvT;
 	m_rgvT = NULL;
@@ -405,13 +331,9 @@ void Surface::RenderBlueprint(Sur *psur)
 
 void Surface::RenderShadow(ShadowSur *psur, float height)
 	{
+	
 	if ( (m_d.m_fCastsShadow != fTrue) || (m_ptable->m_fRenderShadows == fFalse) )
 		return;
-
-	/*if (m_d.m_fDroppable)
-		{
-		return; // Don't want an orphan shadow when the wall drops
-		}*/
 
 	psur->SetFillColor(RGB(0,0,0));
 	psur->SetBorderColor(-1,fFalse,0);
@@ -429,13 +351,8 @@ void Surface::RenderShadow(ShadowSur *psur, float height)
 		{
 		m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
 
-		//m_rgvT[i].x += m_d.m_heightbottom;
-		//m_rgvT[i].y -= m_d.m_heightbottom;
-
 		delete vvertex.ElementAt(i);
 		}
-
-	//m_rgvT = GetRgVertex(&m_cvertexT);
 
 	if (!m_d.m_fInner)
 		{
@@ -487,6 +404,7 @@ void Surface::GetHitShapes(Vector<HitObject> *pvho)
 
 	m_fIsDropped = fFalse;
 	m_fDisabled = fFalse;
+		
 	}
 
 void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
@@ -530,6 +448,9 @@ void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
 
 		Hit3DPoly *ph3dp = new Hit3DPoly(rgv3d, cvertex+5);
 		pvho->AddElement(ph3dp);
+
+		m_vhoCollidable.AddElement(ph3dp);
+		ph3dp->m_fEnabled = m_d.m_fCollidable;
 
 		delete rgv3d;
 		}
@@ -607,9 +528,12 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 
 			m_phitdrop->m_polydropanim.m_iframedesire = 0;
 
-			pvho->AddElement(m_phitdrop);
+			pvho->AddElement(m_phitdrop);			
 
-			m_vhoDrop.AddElement(m_phitdrop);
+			m_vhoDrop.AddElement(m_phitdrop);	
+
+			m_vhoCollidable.AddElement(m_phitdrop);
+			m_phitdrop->m_fEnabled = m_d.m_fCollidable;
 			}
 		else
 			{
@@ -621,6 +545,9 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 			ph3dpoly->m_fVisible = fTrue;
 
 			pvho->AddElement(ph3dpoly);
+
+			m_vhoCollidable.AddElement(ph3dpoly);
+			ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 			}
 		}
 
@@ -636,12 +563,6 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 	float dot;
 	Vertex vt1, vt2;
 	float length;
-
-	/*if (pv1->x == pv2->x && pv1->y == pv2->y)
-		{
-		// Special case - wall has two points which coincide
-		return;
-		}*/
 
 	if (!fSlingshot)
 		{
@@ -681,30 +602,22 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 	plineseg->v2.y = pv2->y;
 
 	plineseg->m_elasticity = m_d.m_elasticity;
-	/*if (plineseg->v1.x == plineseg->v2.x)
-		{
-		plineseg->v2.x += 0.0001f;
-		}
-	if (plineseg->v1.y == plineseg->v2.y)
-		{
-		plineseg->v2.y += 0.0001f;
-		}*/
-
+	plineseg->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+	plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
+	
 	pvho->AddElement(plineseg);
 	if (m_d.m_fDroppable)
 		{
 		m_vhoDrop.AddElement(plineseg);
 		}
 
+	m_vhoCollidable.AddElement(plineseg);
+	plineseg->m_fEnabled = m_d.m_fCollidable;
+
 	plineseg->CalcNormal();
 
 	vt1.x = pv1->x - pv2->x;
 	vt1.y = pv1->y - pv2->y;
-
-	// Set up line normal
-	/*length = (float)sqrt((vt1.x * vt1.x) + (vt1.y * vt1.y));
-	plineseg->normal.x = vt1.y / length;
-	plineseg->normal.y = -vt1.x / length;*/
 
 	vt2.x = pv1->x - pv3->x;
 	vt2.y = pv1->y - pv3->y;
@@ -729,6 +642,9 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 		pjoint->m_rcHitRect.zhigh = m_d.m_heighttop;
 
 		pjoint->m_elasticity = m_d.m_elasticity;
+		pjoint->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+		pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
+		
 
 		pjoint->center.x = pv1->x;
 		pjoint->center.y = pv1->y;
@@ -737,6 +653,9 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 			{
 			m_vhoDrop.AddElement(pjoint);
 			}
+
+		m_vhoCollidable.AddElement(pjoint);
+		pjoint->m_fEnabled = m_d.m_fCollidable;
 
 		Vertex normalT;
 
@@ -750,8 +669,8 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 
 		// Set up line normal
 		length = (float)sqrt((pjoint->normal.x * pjoint->normal.x) + (pjoint->normal.y * pjoint->normal.y));
-		pjoint->normal.x = pjoint->normal.x / length;
-		pjoint->normal.y = pjoint->normal.y / length;
+		pjoint->normal.x = pjoint->normal.x/length;
+		pjoint->normal.y = pjoint->normal.y/length;
 		}
 
 	return;
@@ -798,6 +717,7 @@ void Surface::EndPlay()
 
 	m_vlinesling.RemoveAllElements();
 	m_vhoDrop.RemoveAllElements();
+	m_vhoCollidable.RemoveAllElements();
 	}
 
 void Surface::MoveOffset(float dx, float dy)
@@ -817,30 +737,11 @@ void Surface::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-/*void Surface::CheckIntersecting()
+
+void Surface::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	int i;
-	int l;
-	int cvertex;
+	}
 
-	RenderVertex *rgv;
-
-	rgv = GetRgRenderVertex(&cvertex);
-
-	for (i=0;i<cvertex;i++)
-		{
-		//Vertex vPath;
-
-		//int crosscount;
-
-		for (l=0;l<cvertex;l++)
-			{
-
-			}
-		}
-
-	delete rgv;
-	}*/
 
 void Surface::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
@@ -848,308 +749,6 @@ void Surface::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		{
 		RenderWallsAtHeight(pd3dDevice, fFalse, fFalse);
 		}
-	/*Vertex3D rgv3D[4];
-	WORD rgi[4];
-	int i;
-
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
-
-	PinImage *pin = m_ptable->GetImage(m_d.m_szImage);
-	float maxtu, maxtv;
-
-	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-
-	float r = (m_d.m_sidecolor & 255) / 255.0f;
-	float g = (m_d.m_sidecolor & 65280) / 65280.0f;
-	float b = (m_d.m_sidecolor & 16711680) / 16711680.0f;
-
-	mtrl.diffuse.r = mtrl.ambient.r = r;
-	mtrl.diffuse.g = mtrl.ambient.g = g;
-	mtrl.diffuse.b = mtrl.ambient.b = b;
-	mtrl.diffuse.a = mtrl.ambient.a = 1;
-
-	int cvertex;
-
-	RenderVertex *rgv;
-	Vertex *rgnormal;
-
-		{
-		Vector<RenderVertex> vvertex;
-		GetRgVertex(&vvertex);
-
-		cvertex = vvertex.Size();
-		rgv = new RenderVertex[cvertex + 6]; // Add points so inverted polygons can be drawn
-
-		int i;
-		for (i=0;i<vvertex.Size();i++)
-			{
-			rgv[i] = *vvertex.ElementAt(i);
-			delete vvertex.ElementAt(i);
-			}
-		}
-
-	rgnormal = new Vertex[cvertex];
-
-	pd3dDevice->SetMaterial(&mtrl);
-
-	for (i=0;i<4;i++)
-		{
-		rgi[i] = i;
-		}
-
-	for (i=0;i<cvertex;i++)
-		{
-		RenderVertex *pv1 = &rgv[i];
-		RenderVertex *pv2 = &rgv[(i+1) % cvertex];
-		float dx = pv1->x - pv2->x;
-		float dy = pv1->y - pv2->y;
-
-		float len = (float)sqrt(dx*dx + dy*dy);
-
-		rgnormal[i].x = dy/len;
-		rgnormal[i].y = dx/len;
-		}
-
-	ppin3d->EnableLightMap(fTrue, m_d.m_heighttop);
-
-	for (i=0;i<cvertex;i++)
-		{
-		RenderVertex *pv0 = &rgv[(i-1+cvertex) % cvertex];
-		RenderVertex *pv1 = &rgv[i];
-		RenderVertex *pv2 = &rgv[(i+1) % cvertex];
-		RenderVertex *pv3 = &rgv[(i+2) % cvertex];
-
-		rgv3D[0].Set(pv1->x,pv1->y,m_d.m_heightbottom);
-		rgv3D[1].Set(pv1->x,pv1->y,m_d.m_heighttop);
-		rgv3D[2].Set(pv2->x,pv2->y,m_d.m_heighttop);
-		rgv3D[3].Set(pv2->x,pv2->y,m_d.m_heightbottom);
-
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[0]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[3]);
-
-		Vertex vnormal[2];
-
-		int a,b,c;;
-		a = (i-1+cvertex) % cvertex;
-		b = i;
-		c = (i+1)%cvertex;
-
-		if (pv1->fSmooth)
-			{
-			vnormal[0].x = (rgnormal[a].x + rgnormal[b].x)/2;
-			vnormal[0].y = (rgnormal[a].y + rgnormal[b].y)/2;
-			}
-		else
-			{
-			vnormal[0].x = rgnormal[b].x;
-			vnormal[0].y = rgnormal[b].y;
-			}
-
-		if (pv2->fSmooth)
-			{
-			vnormal[1].x = (rgnormal[b].x + rgnormal[c].x)/2;
-			vnormal[1].y = (rgnormal[b].y + rgnormal[c].y)/2;
-			}
-		else
-			{
-			vnormal[1].x = rgnormal[b].x;
-			vnormal[1].y = rgnormal[b].y;
-			}
-
-		float len;
-		len = (vnormal[0].x * vnormal[0].x + vnormal[0].y * vnormal[0].y);
-		vnormal[0].x /= len;
-		vnormal[0].y /= len;
-		len = (vnormal[1].x * vnormal[1].x + vnormal[1].y * vnormal[1].y);
-		vnormal[1].x /= len;
-		vnormal[1].y /= len;
-
-		if (m_d.m_fInner)
-			{
-			rgi[1] = 1;
-			rgi[3] = 3;
-
-			int l;
-			for (l=0;l<2;l++)
-				{
-				rgv3D[l].nx = -vnormal[0].x;
-				rgv3D[l].ny = vnormal[0].y;
-				rgv3D[l].nz = 0;
-
-				rgv3D[l+2].nx = -vnormal[1].x;
-				rgv3D[l+2].ny = vnormal[1].y;
-				rgv3D[l+2].nz = 0;
-				}
-			}
-		else
-			{
-			rgi[1] = 3;
-			rgi[3] = 1;
-
-			int l;
-			for (l=0;l<2;l++)
-				{
-				rgv3D[l].nx = vnormal[0].x;
-				rgv3D[l].ny = -vnormal[0].y;
-				rgv3D[l].nz = 0;
-
-				rgv3D[l+2].nx = vnormal[1].x;
-				rgv3D[l+2].ny = -vnormal[1].y;
-				rgv3D[l+2].nz = 0;
-				}
-			}
-
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 4,
-												  rgi, 4, NULL);
-
-		}
-
-	//if (m_fInner)
-		{
-		Vector<void> vpoly;
-		Vector<Triangle> vtri;
-
-		if (!m_d.m_fInner)
-			{
-			float miny = FLT_MAX;
-			int minyindex;
-
-			// Find smallest y point - use it to connect with surrounding border
-
-			for (i=0;i<cvertex;i++)
-				{
-				if (rgv[i].y < miny)
-					{
-					miny = rgv[i].y;
-					minyindex = i;
-					}
-				}
-
-			rgv[cvertex].x = m_ptable->m_left;
-			rgv[cvertex].y = m_ptable->m_top;
-			rgv[cvertex+3].x = m_ptable->m_left;
-			rgv[cvertex+3].y = m_ptable->m_bottom;
-			rgv[cvertex+2].x = m_ptable->m_right;
-			rgv[cvertex+2].y = m_ptable->m_bottom;
-			rgv[cvertex+1].x = m_ptable->m_right;
-			rgv[cvertex+1].y = m_ptable->m_top;
-			rgv[cvertex+4].x = m_ptable->m_left-1; // put tiny gap in to avoid errors
-			rgv[cvertex+4].y = m_ptable->m_top;
-			rgv[cvertex+5].x = rgv[minyindex].x;
-			rgv[cvertex+5].y = rgv[minyindex].y - 1; // put tiny gap in to avoid errors
-
-			for (i=0;i<cvertex;i++)
-				{
-				vpoly.AddElement((void *)(cvertex-i-1));
-				}
-
-			for (i=0;i<6;i++)
-				{
-				vpoly.InsertElementAt((void *)(cvertex+i), (cvertex-minyindex-1));
-				}
-			}
-		else
-			{
-			for (i=0;i<cvertex;i++)
-				{
-				vpoly.AddElement((void *)i);
-				}
-			}
-
-		if (pin)
-			{
-			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
-			//pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBuffer);
-			ppin3d->SetTexture(pin->m_pdsBuffer);
-
-			mtrl.diffuse.r = mtrl.ambient.r = 1;
-			mtrl.diffuse.g = mtrl.ambient.g = 1;
-			mtrl.diffuse.b = mtrl.ambient.b = 1;
-			mtrl.diffuse.a = mtrl.ambient.a = 0.5;
-			}
-		else
-			{
-			float r = (m_d.m_topcolor & 255) / 255.0f;
-			float g = (m_d.m_topcolor & 65280) / 65280.0f;
-			float b = (m_d.m_topcolor & 16711680) / 16711680.0f;
-
-			mtrl.diffuse.r = mtrl.ambient.r = r;
-			mtrl.diffuse.g = mtrl.ambient.g = g;
-			mtrl.diffuse.b = mtrl.ambient.b = b;
-			mtrl.diffuse.a = mtrl.ambient.a = 1;
-			}
-
-		PolygonToTriangles(rgv, &vpoly, &vtri);
-
-		if (!m_d.m_fInner)
-			{
-			// Remove tiny gap
-			rgv[cvertex+4].x += 1;
-			rgv[cvertex+5].y += 1;
-			}
-
-		pd3dDevice->SetMaterial(&mtrl);
-
-		for (i=0;i<vtri.Size();i++)
-			{
-			Triangle *ptri = vtri.ElementAt(i);
-
-			RenderVertex *pv0 = &rgv[ptri->a];
-			RenderVertex *pv1 = &rgv[ptri->b];
-			RenderVertex *pv2 = &rgv[ptri->c];
-
-			rgv3D[0].Set(pv0->x,pv0->y,m_d.m_heighttop);
-			rgv3D[2].Set(pv1->x,pv1->y,m_d.m_heighttop);
-			rgv3D[1].Set(pv2->x,pv2->y,m_d.m_heighttop);
-
-			float tablewidth = m_ptable->m_right - m_ptable->m_left;
-			float tableheight = m_ptable->m_bottom - m_ptable->m_top;
-
-			rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
-			rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
-			rgv3D[1].tu = rgv3D[1].x / tablewidth * maxtu;
-			rgv3D[1].tv = rgv3D[1].y / tableheight* maxtv;
-			rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
-			rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
-
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[0]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2]);
-
-			WORD rgi[3];
-			int l;
-			for (l=0;l<3;l++)
-				{
-				rgi[l] = l;
-				rgv3D[l].nx = 0;
-				rgv3D[l].ny = 0;
-				rgv3D[l].nz = -1;
-				}
-
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  rgv3D, 3,
-													  rgi, 3, NULL);
-
-			//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-			}
-
-		for (i=0;i<vtri.Size();i++)
-			{
-			delete vtri.ElementAt(i);
-			}
-
-		//pd3dDevice->SetTexture(ePictureTexture, NULL);
-		ppin3d->SetTexture(NULL);
-		}
-
-	ppin3d->EnableLightMap(fFalse, -1);
-
-	delete [] rgv;
-	delete [] rgnormal;*/
 	}
 
 void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
@@ -1166,18 +765,16 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 
-	//ppin3d->m_pddsBackBuffer->Blt(NULL, ppin3d->m_pddsStatic, NULL, 0, NULL);
-	//ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, 0, NULL);
-
 	for (i=0;i<m_vlinesling.Size();i++)
 		{
 		LineSegSlingshot *plinesling = m_vlinesling.ElementAt(i);
-
-		pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET ,
-					   0x00000000, 1.0f, 0L );
-
-		ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, 0, NULL);
 		
+		plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation == fTrue); //rlc
+
+		pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET,0x00000000, 1.0f, 0L );
+
+		ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, DDBLT_WAIT, NULL);
+
 		float r = (m_d.m_slingshotColor & 255) / 255.0f;
 		float g = (m_d.m_slingshotColor & 65280) / 65280.0f;
 		float b = (m_d.m_slingshotColor & 16711680) / 16711680.0f;
@@ -1187,14 +784,11 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		mtrl.diffuse.b = mtrl.ambient.b = b;
 		mtrl.diffuse.a = mtrl.ambient.a = 1;
 
-		//mtrl.diffuse.r = mtrl.ambient.r = 0.95f;
-		//mtrl.diffuse.g = mtrl.ambient.g = 0.95f;
-		//mtrl.diffuse.b = mtrl.ambient.b = 0.95f;
-
 		pd3dDevice->SetMaterial(&mtrl);
 
 		pof = new ObjFrame();
-		plinesling->m_slingshotanim.m_pobjframe = pof;
+		
+		plinesling->m_slingshotanim.m_pobjframe = pof;		
 
 		ppin3d->ClearExtents(&plinesling->m_slingshotanim.m_rcBounds, &plinesling->m_slingshotanim.m_znear, &plinesling->m_slingshotanim.m_zfar);
 
@@ -1232,6 +826,14 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &plinesling->m_slingshotanim.m_znear, &plinesling->m_slingshotanim.m_zfar, 6, fFalse);
 
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{			
+			// Clear the texture by copying the color and z values from the "static" buffers.
+			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+			}
+
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
@@ -1242,9 +844,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 12,
-												  rgi, 4, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
 
 		rgi[0] = 1;
 		rgi[1] = 2;
@@ -1253,9 +853,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 12,
-												  rgi, 4, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
 
 		rgi[0] = 0;
 		rgi[3] = 1;
@@ -1264,9 +862,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 12,
-												  rgi, 4, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
 
 		rgi[0] = 1;
 		rgi[3] = 2;
@@ -1275,9 +871,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 12,
-												  rgi, 4, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
 
 		rgi[0] = 3;
 		rgi[1] = 9;
@@ -1286,9 +880,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 12,
-												  rgi, 4, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
 
 		rgi[0] = 4;
 		rgi[1] = 10;
@@ -1297,25 +889,30 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 12,
-												  rgi, 4, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
 
-		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, 0, NULL);
-		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY);
+		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
+		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{
+			// Create the D3D texture that we will blit.
+			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
+			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
+			}
+
 		ppin3d->ExpandRectByRect(&plinesling->m_slingshotanim.m_rcBounds, &pof->rc);
 
 		ppin3d->WriteAnimObjectToCacheFile(&plinesling->m_slingshotanim, &plinesling->m_slingshotanim.m_pobjframe, 1);
 
 		// reset the portion of the z-buffer that we changed
-		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY);
+		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
 		ddbltfx.dwSize = sizeof(DDBLTFX);
 		ddbltfx.dwFillColor = 0;
-		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,
-				&pof->rc, DDBLT_COLORFILL, &ddbltfx);
+		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT,&ddbltfx);
 		}
 	}
 
@@ -1335,19 +932,29 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	PinImage *pinSide = m_ptable->GetImage(m_d.m_szSideImage);
 	float maxtuSide, maxtvSide;
 
-	//ppin3d->SetTexture(NULL);
-
 	if (fMover)
 		{
-		//pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET ,
-			//0x00000000, 1.0f, 0L );
-
-		//ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, 0, NULL);
-
 		pof = new ObjFrame();
 
 		ppin3d->ClearExtents(&m_phitdrop->m_polydropanim.m_rcBounds, &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar);
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{			
+			RECT	Rect;
+
+			// Since we don't know the final dimensions of the 
+			// object we're rendering, clear the whole buffer.
+			Rect.top = 0;
+			Rect.left = 0;
+			Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
+			Rect.right = g_pplayer->m_pin3d.m_dwRenderWidth - 1;
+
+			// Clear the texture by copying the color and z values from the "static" buffers.
+			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			ppin3d->m_pddsZTextureBuffer->BltFast(Rect.left, Rect.top, ppin3d->m_pddsStaticZ, &Rect, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+			}
 		}
 
 	D3DMATERIAL7 mtrl;
@@ -1355,41 +962,59 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 	if (pinSide)
 		{
-		m_ptable->GetTVTU(pinSide, &maxtuSide, &maxtvSide);
-		//ppin3d->SetTexture(pinSide->m_pdsBuffer);
+		m_ptable->GetTVTU(pinSide, &maxtuSide, &maxtvSide);		
 
+	//rlc add transparent texture support ... replaced this line with >>>>	
 		pinSide->EnsureColorKey();
+		if (pinSide->m_fTransparent)
+			{				
+			if (g_pvp->m_pdd.m_fHardwareAccel)
+				{
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 128);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+				}
+			else
+				{
+				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+				}
+			}
+		else 
+			{	
+			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);     //rlc  alpha channel support		
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+			if (g_pvp->m_pdd.m_fHardwareAccel)
+				{
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 128);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+				}
+			else
+				{
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+				}
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 			
+			}
+
+		pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+		pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 		mtrl.diffuse.r = mtrl.ambient.r = 1;
 		mtrl.diffuse.g = mtrl.ambient.g = 1;
 		mtrl.diffuse.b = mtrl.ambient.b = 1;
 		mtrl.diffuse.a = mtrl.ambient.a = 1;
-
-		if (pinSide->m_fTransparent)
-			{
-			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-
-			//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-			//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-
-			/*pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x0000002f);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);*/
-
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
-
-			pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MAGFILTER, D3DTFG_POINT);
-			pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MINFILTER, D3DTFN_POINT);
-			pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MIPFILTER, D3DTFP_NONE);
-			}
-		else
-			{
-			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBuffer);
-			//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-			//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-			}
 		}
 	else
 		{
@@ -1451,15 +1076,8 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		rgnormal[i].y = dx/len;
 		}
 
-	//if (!pinSide)
-		{
 		ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
-		}
-	/*else
-		{
-		ppin3d->EnableLightMap(fFalse, -1);
-		}*/
-
+	
 		// Render side
 		{
 		for (i=0;i<cvertex;i++)
@@ -1539,14 +1157,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				int l;
 				for (l=0;l<2;l++)
 					{
-					/*rgv3D[l].nx = -vnormal[0].x;
-					rgv3D[l].ny = 0;
-					rgv3D[l].nz = -vnormal[0].y;
-
-					rgv3D[l+2].nx = -vnormal[1].x;
-					rgv3D[l+2].ny = 0;
-					rgv3D[l+2].nz = -vnormal[1].y;*/
-
 					rgv3D[l].nx = -vnormal[0].x;
 					rgv3D[l].ny = vnormal[0].y;
 					rgv3D[l].nz = 0;
@@ -1564,14 +1174,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				int l;
 				for (l=0;l<2;l++)
 					{
-					/*rgv3D[l].nx = vnormal[0].x;
-					rgv3D[l].ny = 0;
-					rgv3D[l].nz = vnormal[0].y;
-
-					rgv3D[l+2].nx = vnormal[1].x;
-					rgv3D[l+2].ny = 0;
-					rgv3D[l+2].nz = vnormal[1].y;*/
-
 					rgv3D[l].nx = vnormal[0].x;
 					rgv3D[l].ny = -vnormal[0].y;
 					rgv3D[l].nz = 0;
@@ -1584,15 +1186,15 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 			if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped, but we do need to extend the extrema
 				{
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 4,
-														  rgi, 4, NULL);
+				// Draw side.
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi,4,0);
 				}
 
 			if (fMover)
 				{
 				// Only do two points - each segment has two new points
-				ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar, 2, fFalse);
+				ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitdrop->m_polydropanim.m_znear
+											, &m_phitdrop->m_polydropanim.m_zfar, 2, fFalse);
 				}
 			}
 		}
@@ -1656,21 +1258,78 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		if (pinSide)
 			{
 			ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE); 
+
+			//rlc add transparent texture support ... replaced this line with >>>>	
+			pinSide->EnsureColorKey();
 			if (pinSide->m_fTransparent)
-				{
-				pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-				pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-				pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+				{				
+				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
 				}
+			else // ppin3d->SetTexture(pin->m_pdsBuffer);
+				{
+				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+				if (g_pvp->m_pdd.m_fHardwareAccel)
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 128);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					}
+				else
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					}
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+				}
+
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			}
 
 		if (pin)
 			{
 			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
-			//pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBuffer);
-			ppin3d->SetTexture(pin->m_pdsBuffer);
+			
+			pin->EnsureColorKey();
+			if (pin->m_fTransparent)
+				{				
+				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+				}
+			else 
+				{
+				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+				if (g_pvp->m_pdd.m_fHardwareAccel)
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 128);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					}
+				else
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					}
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+				}
+
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 			mtrl.diffuse.r = mtrl.ambient.r = 1;
 			mtrl.diffuse.g = mtrl.ambient.g = 1;
@@ -1750,21 +1409,14 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				rgv3D[l].nz = -1;
 				}
 
-			//SetNormal(rgv3D, rgi, 3, NULL, NULL, NULL);
-
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  rgv3D, 3,
-													  rgi, 3, NULL);
-
-			//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
+			// Draw top.
+			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 3,rgi, 3, 0);
 			}
 
 		for (i=0;i<vtri.Size();i++)
 			{
 			delete vtri.ElementAt(i);
 			}
-
-		//pd3dDevice->SetTexture(ePictureTexture, NULL);
 		}
 
 	ppin3d->SetTexture(NULL);
@@ -1776,27 +1428,35 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 	if (fMover)
 		{
+		// Create the color surface.
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
+		
+		// Check if we are a floor... in which case we don't want to affect z.
+		if (m_d.m_fFloor == fFalse)
+			{
+			// Create the z surface.
+			pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+			HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+			}
 
-		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, 0, NULL);
-		//HRESULT hr = pof->pddsZBuffer->Blt(NULL, ppin3d->m_pddsZBuffer, &pof->rc, 0, NULL);
-		HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY);
-
-		//pdds->Blt(NULL, NULL, NULL, DDBLT_COLORFILL, &ddbfx);
-		//m_pbumperhitcircle->m_pobjframe[i] = pof;
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{
+			// Create the D3D texture that we will blit.
+			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
+			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
+			}
 
 		ppin3d->ExpandRectByRect(&m_phitdrop->m_polydropanim.m_rcBounds, &pof->rc);
 
-
 		// reset the portion of the z-buffer that we changed
-		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY);
+		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
 		ddbltfx.dwSize = sizeof(DDBLTFX);
 		ddbltfx.dwFillColor = 0;
-		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,
-				&pof->rc, DDBLT_COLORFILL, &ddbltfx);
+		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
 
 	return pof;
@@ -1825,11 +1485,24 @@ void Surface::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		{
 		ObjFrame *pof;
 
+		// Render wall raised.
 		pof = RenderWallsAtHeight(pd3dDevice, fTrue, fFalse);
 		m_phitdrop->m_polydropanim.m_pobjframe[0] = pof;
-		pof = RenderWallsAtHeight(pd3dDevice, fTrue, fTrue);
-		m_phitdrop->m_polydropanim.m_pobjframe[1] = pof;
-		
+
+		// Check if this wall is being 
+		// used as a flipbook animation.
+		if (m_d.m_fFlipbook)
+			{
+			// Don't render a dropped wall. 
+			m_phitdrop->m_polydropanim.m_pobjframe[1] = NULL;
+			}
+		else
+			{
+			// Render wall dropped (smashed to a pancake at bottom height).
+			pof = RenderWallsAtHeight(pd3dDevice, fTrue, fTrue); 
+			m_phitdrop->m_polydropanim.m_pobjframe[1] = pof;
+			}
+
 		Pin3D *ppin3d = &g_pplayer->m_pin3d;
 		ppin3d->WriteAnimObjectToCacheFile(&m_phitdrop->m_polydropanim, m_phitdrop->m_polydropanim.m_pobjframe, 2);
 		}
@@ -1909,9 +1582,6 @@ void Surface::DoCommand(int icmd, int x, int y)
 					}
 				}
 
-			//if (icp == 0) // need to add point after the last point
-				//icp = m_vdpoint.Size();
-
 			CComObject<DragPoint> *pdp;
 
 			CComObject<DragPoint>::CreateInstance(&pdp);
@@ -1971,9 +1641,12 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	//bw.WriteStruct(FID(VCEN), &m_d.m_Center, sizeof(Vertex));
+	
 	bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
 	bw.WriteBool(FID(DROP), m_d.m_fDroppable);
+	bw.WriteBool(FID(FLIP), m_d.m_fFlipbook);
+	bw.WriteBool(FID(FLOR), m_d.m_fFloor);
+	bw.WriteBool(FID(CLDW), m_d.m_fCollidable);
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
 	bw.WriteFloat(FID(THRS), m_d.m_threshold);
@@ -1989,9 +1662,13 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 	bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
 	bw.WriteFloat(FID(SLGF), m_d.m_slingshotforce);
+	bw.WriteFloat(FID(SLTH), m_d.m_slingshot_threshold);
 	bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
+	bw.WriteFloat(FID(WFCT), m_d.m_friction);
+	bw.WriteFloat(FID(WSCT), m_d.m_scatter);
 	bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
 	bw.WriteBool(FID(VSBL), m_d.m_fVisible);
+	bw.WriteBool(FID(SLGA), m_d.m_fSlingshotAnimation);
 	bw.WriteBool(FID(SVBL), m_d.m_fSideVisible);
 
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
@@ -2004,53 +1681,11 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 
 	return S_OK;
 
-	/*ULONG writ = 0;
-	HRESULT hr = S_OK;
-	int i,temp;
-
-	DWORD dwID = ApcProjectItem.ID();
-	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
-		return hr;
-
-	temp = m_vdpoint.Size();
-	if(FAILED(hr = pstm->Write(&temp, sizeof(int), &writ)))
-			return hr;
-
-	for (i=0;i<m_vdpoint.Size();i++)
-		{
-		CComObject<DragPoint> *pdp = m_vdpoint.ElementAt(i);
-		if(FAILED(hr = pstm->Write(&(pdp->m_v), sizeof(Vertex), &writ)))
-			return hr;
-		if(FAILED(hr = pstm->Write(&(pdp->m_fSmooth), sizeof(BOOL), &writ)))
-			return hr;
-		if(FAILED(hr = pstm->Write(&(pdp->m_fSlingshot), sizeof(BOOL), &writ)))
-			return hr;
-		}
-
-	//if(FAILED(hr = pstm->Write(&m_fInner, sizeof(BOOL), &writ)))
-			//return hr;
-
-	if(FAILED(hr = pstm->Write(&m_d, sizeof(SurfaceData), &writ)))
-		return hr;
-
-	return hr;*/
+	
 	}
 
 void Surface::ClearForOverwrite()
 	{
-	/*int i;
-
-	for (i=0;i<m_vdpoint.Size();i++)
-		{
-		if (m_ptable->m_pselcur == m_vdpoint.ElementAt(i))
-			{
-			m_ptable->SetSel(m_ptable);
-			}
-
-		m_vdpoint.ElementAt(i)->Release();
-		}
-
-	m_vdpoint.RemoveAllElements();*/
 	ClearPointsForOverwrite();
 	}
 
@@ -2103,9 +1738,6 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 			}
 		}
 
-	//if(FAILED(hr = pstm->Read(&m_fInner, sizeof(BOOL), &read)))
-			//return hr;
-
 	if(FAILED(hr = pstm->Read(&m_d, sizeof(SurfaceData), &read)))
 			return hr;
 
@@ -2128,6 +1760,18 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(DROP))
 		{
 		pbr->GetBool(&m_d.m_fDroppable);
+		}
+	else if (id == FID(FLIP))
+		{
+		pbr->GetBool(&m_d.m_fFlipbook);
+		}
+	else if (id == FID(FLOR))
+		{
+		pbr->GetBool(&m_d.m_fFloor);
+		}
+	else if (id == FID(CLDW))
+		{
+		pbr->GetBool(&m_d.m_fCollidable); 
 		}
 	else if (id == FID(TMON))
 		{
@@ -2152,10 +1796,12 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(COLR))
 		{
 		pbr->GetInt(&m_d.m_sidecolor);
+		//if (!(m_d.m_sidecolor & MINBLACKMASK)) {m_d.m_sidecolor |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(TCLR))
 		{
 		pbr->GetInt(&m_d.m_topcolor);
+		//if (!(m_d.m_topcolor & MINBLACKMASK)) {m_d.m_topcolor |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(SCLR))
 		{
@@ -2189,9 +1835,21 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetFloat(&m_d.m_slingshotforce);
 		}
+	else if (id == FID(SLTH))
+		{
+		pbr->GetFloat(&m_d.m_slingshot_threshold);
+		}
 	else if (id == FID(ELAS))
 		{
 		pbr->GetFloat(&m_d.m_elasticity);
+		}
+	else if (id == FID(WFCT))
+		{
+		pbr->GetFloat(&m_d.m_friction);
+		}
+	else if (id == FID(WSCT))
+		{
+		pbr->GetFloat(&m_d.m_scatter);
 		}
 	else if (id == FID(CSHD))
 		{
@@ -2200,6 +1858,10 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(VSBL))
 		{
 		pbr->GetBool(&m_d.m_fVisible);
+		}
+	else if (id == FID(SLGA))
+		{
+		pbr->GetBool(&m_d.m_fSlingshotAnimation);
 		}
 	else if (id == FID(SVBL))
 		{
@@ -2256,7 +1918,7 @@ STDMETHODIMP Surface::put_Threshold(float newVal)
 
 STDMETHODIMP Surface::get_Image(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -2310,7 +1972,6 @@ STDMETHODIMP Surface::put_SlingshotColor(OLE_COLOR newVal)
 
 	return S_OK;
 }
-
 STDMETHODIMP Surface::get_ImageAlignment(ImageAlignment *pVal)
 {
 	*pVal = m_d.m_ia;
@@ -2383,18 +2044,6 @@ STDMETHODIMP Surface::put_FaceColor(OLE_COLOR newVal)
 	return S_OK;
 }
 
-/*HRESULT Surface::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Wall");
-
-	return S_OK;
-	}*/
-
-/*int Surface::GetDialogID()
-	{
-	return IDD_PROPWALL;
-	}*/
-
 void Surface::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{
 	PropertyPane *pproppane;
@@ -2435,9 +2084,37 @@ STDMETHODIMP Surface::get_CanDrop(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_CanDrop(VARIANT_BOOL newVal)
 {
+	if(!m_d.m_fInner)
+		{
+		if(!m_d.m_fDroppable) return S_OK;			//can not drop outer wall
+		else 
+			{
+			newVal = fFalse;						 // always force to false and cause update pending
+			return S_FAIL;
+			}
+		}
+
 	STARTUNDO
 
 	m_d.m_fDroppable = VBTOF(newVal);
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Surface::get_FlipbookAnimation(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fFlipbook);
+
+	return S_OK;
+}
+
+STDMETHODIMP Surface::put_FlipbookAnimation(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+
+	m_d.m_fFlipbook = VBTOF(newVal);
 
 	STOPUNDO
 
@@ -2458,6 +2135,7 @@ STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 {
+
 	if (!g_pplayer || !m_d.m_fDroppable || !m_d.m_fInner)
 		{
 		return E_FAIL;
@@ -2466,7 +2144,7 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 	BOOL fNewVal = VBTOF(newVal);
 
 	if (m_fIsDropped != fNewVal)
-		{
+	{
 		int i;
 
 		m_fIsDropped = fNewVal;
@@ -2474,10 +2152,28 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 		m_phitdrop->m_polydropanim.m_iframedesire = m_fIsDropped ? 1 : 0;
 
 		for (i=0;i<m_vhoDrop.Size();i++)
+		{
+			m_vhoDrop.ElementAt(i)->m_fEnabled = !m_fIsDropped && m_d.m_fCollidable; //disable hit on enities composing the object 
+		}
+
+		// Check if this surface has a user value.
+		int index = ((int) ((m_d.m_heighttop * 100.0f) - 111.0f + 0.25f));
+		if ( (index >= 0) && (index < LIGHTHACK_MAX) )
+		{
+			// The same light is getting multiple updates per frame.
+			// In the case of player lights, the light is on... then immediately turned off.
+			// I don't know why this behavior happens; but it's causing problems.
+			
+			if ( (m_fIsDropped == TRUE) &&
+				 (g_pplayer->m_LightHackReadyForDrawLightHackFn[index] == FALSE) )
 			{
-			m_vhoDrop.ElementAt(i)->m_fEnabled = !m_fIsDropped;
+				// Set the value.
+				g_pplayer->m_LightHackCurrentState[index] = m_fIsDropped;
+				g_pplayer->m_LightHackReadyForDrawLightHackFn[index] = TRUE;
+				g_pplayer->m_LastUpdateTime[index] = msec();
 			}
 		}
+	}
 
 	return S_OK;
 }
@@ -2538,6 +2234,48 @@ STDMETHODIMP Surface::put_Elasticity(float newVal)
 	return S_OK;
 }
 
+
+STDMETHODIMP Surface::get_Friction(float *pVal)
+{
+	*pVal = m_d.m_friction;
+
+	return S_OK;
+}
+
+STDMETHODIMP Surface::put_Friction(float newVal)
+{
+	STARTUNDO
+
+	if (newVal > 1) newVal = 1;
+	else if (newVal < 0) newVal = 0;
+
+	m_d.m_friction = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+
+STDMETHODIMP Surface::get_Scatter(float *pVal)
+{
+	*pVal = m_d.m_scatter;
+
+	return S_OK;
+}
+
+STDMETHODIMP Surface::put_Scatter(float newVal)
+{
+	STARTUNDO
+
+	m_d.m_scatter = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+///////////////////////////////////////////////////////////
+
 STDMETHODIMP Surface::get_CastsShadow(VARIANT_BOOL *pVal)
 {
 	*pVal = FTOVB(m_d.m_fCastsShadow);
@@ -2574,7 +2312,7 @@ STDMETHODIMP Surface::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSideImage, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -2626,3 +2364,79 @@ STDMETHODIMP Surface::put_SideVisible(VARIANT_BOOL newVal)
 
 	return S_OK;
 }
+
+STDMETHODIMP Surface::get_Collidable(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fCollidable);
+
+	return S_OK;
+}
+
+STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
+{
+	BOOL fNewVal = VBTOF(newVal);	
+
+	if(!m_d.m_fInner)	//outer wall must always be colliable
+		{
+		if(!newVal) return E_FAIL;		//outer wall must be collidable
+		}
+
+	STARTUNDO
+
+	m_d.m_fCollidable = fNewVal;
+
+	int i;
+	
+	for (i=0;i<m_vhoCollidable.Size();i++)
+		{
+		if (m_d.m_fDroppable) m_vhoCollidable.ElementAt(i)->m_fEnabled = fNewVal && !m_fIsDropped;
+		else m_vhoCollidable.ElementAt(i)->m_fEnabled = fNewVal; //copy to hit checking on enities composing the object 
+		}	
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+/////////////////////////////////////////////////////////////
+
+STDMETHODIMP Surface::get_SlingshotThreshold(float *pVal)
+{
+	*pVal = m_d.m_slingshot_threshold;
+
+	return S_OK;
+}
+
+STDMETHODIMP Surface::put_SlingshotThreshold(float newVal)
+{
+	STARTUNDO
+
+	m_d.m_slingshot_threshold = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Surface::get_SlingshotAnimation(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fSlingshotAnimation);
+
+	return S_OK;
+}
+
+STDMETHODIMP Surface::put_SlingshotAnimation(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+
+	m_d.m_fSlingshotAnimation = VBTOF(newVal);
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+
+
+
+  

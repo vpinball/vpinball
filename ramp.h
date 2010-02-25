@@ -1,3 +1,4 @@
+#pragma once
 // Ramp.h: Definition of the Ramp class
 //
 //////////////////////////////////////////////////////////////////////
@@ -10,6 +11,10 @@
 #endif // _MSC_VER > 1000
 
 #include "resource.h"       // main symbols
+
+
+//#define		RAMP_RENDER8BITALPHA						// Render acrylic ramps with an 8 bit alpha.
+
 
 class RampData
 	{
@@ -25,11 +30,16 @@ public:
 	RampImageAlignment m_imagealignment;
 	BOOL m_fImageWalls;
 	BOOL m_fCastsShadow;
+	BOOL m_fAcrylic;
 	float m_leftwallheight;
 	float m_rightwallheight;
 	float m_leftwallheightvisible;
 	float m_rightwallheightvisible;
 	float m_elasticity;
+	float m_friction;
+	float m_scatter;
+	BOOL m_fCollidable;
+	BOOL m_IsVisible;
 	};
 
 /////////////////////////////////////////////////////////////////////////////
@@ -95,6 +105,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	void GetRgVertex(Vector<RenderVertex> *pvv);
 	Vertex *GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, float **ppratio);
 
+	void Ramp::AddSideWall(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2,float height1,float height2, float wallheight);
+
 	void AddLine(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2, Vertex *pv3, float height1, float height2);
 
 	virtual void MoveOffset(float dx, float dy);
@@ -116,6 +128,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	PinTable *m_ptable;
 
 	RampData m_d;
+		
+	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
 	virtual void RenderShadow(ShadowSur *psur, float height);
 
@@ -125,6 +139,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 
 	void CheckJoint(Vector<HitObject> *pvho, Hit3DPoly *ph3d1, Hit3DPoly *ph3d2);
 
+	void RenderAcrylic(LPDIRECT3DDEVICE7 pd3dDevice);
 	void RenderStaticHabitrail(LPDIRECT3DDEVICE7 pd3dDevice);
 	void RenderPolygons(LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D *rgv3D, int *rgicrosssection, int start, int stop);
 
@@ -162,6 +177,17 @@ public:
 	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
 //<<<
+	STDMETHOD(get_Acrylic)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Acrylic)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_IsVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_IsVisible)(/*[in]*/ VARIANT_BOOL newVal);
+
+	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
+	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)

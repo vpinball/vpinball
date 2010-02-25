@@ -1,3 +1,5 @@
+#pragma once
+
 extern HINSTANCE g_hinst;
 extern HINSTANCE g_hinstres;
 extern ITypeLib *g_ptlMain;
@@ -6,12 +8,6 @@ extern Player *g_pplayer; // Game currently being played
 extern HACCEL g_haccel; // Accelerator keys
 extern WMAudioCreateReaderFunc g_AudioCreateReaderFunc;
 extern BOOL g_fKeepUndoRecords;
-
-extern bool fOldPhys;
-
-#ifdef DEBUG
-#define GLOBALLOG 1
-#endif
 
 #ifdef GLOBALLOG
 extern FILE *logfile;
@@ -24,3 +20,4 @@ extern BOOL g_fWriteHitDeleteLog; // For debugging VP 7 crash
 extern ATOM atom;
 
 void ShowError(char *sz);void ShowErrorID(int id);
+void ExitApp( void );

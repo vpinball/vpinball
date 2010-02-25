@@ -1,8 +1,7 @@
 // Light.cpp : Implementation of CVBATestApp and DLL registration.
 
-#include "stdafx.h"
-//#include "VBATest.h"
-#include "main.h"
+#include "StdAfx.h"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -13,7 +12,6 @@ LightCenter::LightCenter(Light *plight)
 	}
 HRESULT LightCenter::GetTypeName(BSTR *pVal) {return m_plight->GetTypeName(pVal);}
 IDispatch *LightCenter::GetDispatch() {return m_plight->GetDispatch();}
-//int LightCenter::GetDialogID() {return m_plight->GetDialogID();}
 void LightCenter::GetDialogPanes(Vector<PropertyPane> *pvproppane) {m_plight->GetDialogPanes(pvproppane);}
 void LightCenter::Delete() {m_plight->Delete();}
 void LightCenter::Uncreate() {m_plight->Uncreate();}
@@ -88,6 +86,11 @@ void Light::SetDefaults()
 
 	m_d.m_color = RGB(255,255,0);
 
+	m_d.m_szOffImage[0] = 0;
+	m_d.m_szOnImage[0] = 0;
+
+	m_d.m_fDisplayImage = fFalse;
+
 	strcpy(m_rgblinkpattern, "10");
 	m_blinkinterval = 125;
 	m_d.m_borderwidth = 0;
@@ -98,6 +101,8 @@ void Light::SetDefaults()
 
 void Light::PreRender(Sur *psur)
 	{
+	PinImage *ppi = NULL;
+
 	psur->SetBorderColor(-1,fFalse,0);
 	psur->SetFillColor(m_d.m_color);
 	psur->SetObject(this);
@@ -136,7 +141,44 @@ void Light::PreRender(Sur *psur)
 				delete vvertex.ElementAt(i);
 				}
 
-			psur->Polygon(rgv, cvertex);
+			// Check if we should display the image in the editor.
+			if ((m_d.m_fDisplayImage) && (m_d.m_szOnImage[0]) && (m_d.m_szOffImage[0])) 
+				{
+				// Get the image.
+				switch (m_d.m_state)
+					{
+					case LightStateOff:	
+						ppi = m_ptable->GetImage(m_d.m_szOffImage);
+						break;
+					case LightStateOn:	
+						ppi = m_ptable->GetImage(m_d.m_szOnImage);
+						break;
+					default:
+						ppi = NULL;
+						break;
+					}
+
+				// Make sure we have an image.
+				if (ppi != NULL)
+					{
+					ppi->EnsureHBitmap();
+					if (ppi->m_hbmGDIVersion)
+						{
+						// Draw the polygon with an image applied.
+						psur->PolygonImage(rgv, cvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+						}
+					}
+				else
+					{
+					// Error.  Just draw the polygon.
+					psur->Polygon(rgv, cvertex);
+					}
+				}
+			else
+				{
+				// Draw the polygon.
+				psur->Polygon(rgv, cvertex);
+				}
 
 			delete rgv;
 			break;
@@ -190,11 +232,6 @@ void Light::Render(Sur *psur)
 			}
 		}
 
-	/*else if ( (m_d.m_shape == ShapeCircle) && (g_pvp->m_fAlwaysDrawLightCenters == fTrue) )
-	{
-		psur->Line(m_d.m_vCenter.x - 3, m_d.m_vCenter.y, m_d.m_vCenter.x + 3, m_d.m_vCenter.y);
-		psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 3, m_d.m_vCenter.x, m_d.m_vCenter.y + 3);
-	}*/
 	}
 
 void Light::RenderOutline(Sur *psur)
@@ -423,16 +460,6 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		rgv[i].x = (float)intersectx;
 		rgv[i].y = (float)intersecty;
-
-		/*v1.Normalize();
-		v2.Normalize();
-		vnormal.x = -v1.x - v2.x;
-		vnormal.y = -v1.y - v2.y;
-		vnormal.Normalize();
-
-		rgv[i] = *vvertex.ElementAt(i);
-		rgv[i].x += vnormal.x * m_d.m_borderwidth;
-		rgv[i].y += vnormal.y * m_d.m_borderwidth;*/
 		}
 
 	for (i=0;i<cvertex;i++)
@@ -444,8 +471,6 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	float r = (m_d.m_bordercolor & 255) / 255.0f;
 	float g = (m_d.m_bordercolor & 65280) / 65280.0f;
 	float b = (m_d.m_bordercolor & 16711680) / 16711680.0f;
-
-	//ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
 
 	Vector<void> vpoly;
 	Vector<Triangle> vtri;
@@ -513,7 +538,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
-													  rgi, 3, NULL);
+													  rgi, 3, 0);
 			}
 		else
 			{
@@ -521,7 +546,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 													  rgv3D, 3,
-													  rgi, 3, NULL);
+													  rgi, 3, 0);
 			}
 
 
@@ -580,30 +605,24 @@ void Light::RenderStaticCircle(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 32,
-												  rgi, 32, NULL);
+												  rgi, 32, 0);
 		}
 	else
 		{
 		SetHUDVertices(rgv3D, 32);
 		SetDiffuseFromMaterial(rgv3D, 32, &mtrl);
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
-												  rgv3D, 32,
-												  rgi, 32, NULL);
+		if( GetPTable()->GetDecalsEnabled() )
+			{
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+													  rgv3D, 32,
+													  rgi, 32, 0);
+			}
 		}
+	}
 
-	/*for (l=1;l<15;l++)
-		{
-		rgi[0] = 0;
-		rgi[1] = l;
-		rgi[2] = l+1;
-
-		SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
-
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 32,
-												  rgi, 3, NULL);
-		}*/
+void Light::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
 	}
 
 void Light::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
@@ -632,8 +651,9 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	int i,t;
 	//WORD rgi[3];
 	Vertex3D rgv3D[3];
+	PinImage* pin = NULL;
 
-	RenderVertex *rgv;
+	RenderVertex* rgv;
 	int cvertex;
 
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
@@ -663,8 +683,6 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	float g = (m_d.m_color & 65280) / 65280.0f;
 	float b = (m_d.m_color & 16711680) / 16711680.0f;
 
-	ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
-
 	Vector<void> vpoly;
 	Vector<Triangle> vtri;
 
@@ -690,30 +708,62 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	for (i=0;i<2;i++)
 		{
-		//ppin3d->m_pd3dDevice->BeginScene();
-
-		//pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET ,
-					   //0x00000000, 1.0f, 0L );
-
 		switch (i)
 			{
-			case 0:
-				ppin3d->EnableLightMap(!m_fBackglass, height);
-				mtrl.diffuse.r = mtrl.ambient.r = r/3;
-				mtrl.diffuse.g = mtrl.ambient.g = g/3;
-				mtrl.diffuse.b = mtrl.ambient.b = b/3;
-				mtrl.emissive.r = 0;
-				mtrl.emissive.g = 0;
-				mtrl.emissive.b = 0;
+			case LightStateOff:
+				// Check if the light has an "off" texture.
+				if (m_d.m_szOffImage[0] != 0 && (pin = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
+					{
+					// Set the texture to the one defined in the editor.
+
+					ppin3d->SetTexture(pin->m_pdsBuffer);
+					ppin3d->EnableLightMap(fFalse, -1);
+					mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+					mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+					mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+					mtrl.emissive.r = 0.0f;
+					mtrl.emissive.g = 0.0f;
+					mtrl.emissive.b = 0.0f;
+					}
+				else
+					{
+					// Set the texture to a default.
+					ppin3d->SetTexture(ppin3d->m_pddsLightTexture);					
+					ppin3d->EnableLightMap(!m_fBackglass, height);
+					mtrl.diffuse.r = mtrl.ambient.r = r/3;
+					mtrl.diffuse.g = mtrl.ambient.g = g/3;
+					mtrl.diffuse.b = mtrl.ambient.b = b/3;
+					mtrl.emissive.r = 0;
+					mtrl.emissive.g = 0;
+					mtrl.emissive.b = 0;
+					}
 				break;
-			case 1:
-				ppin3d->EnableLightMap(fFalse, -1);
-				mtrl.diffuse.r = mtrl.ambient.r = 0;//r;
-				mtrl.diffuse.g = mtrl.ambient.g = 0;//g;
-				mtrl.diffuse.b = mtrl.ambient.b = 0;//b;
-				mtrl.emissive.r = r;
-				mtrl.emissive.g = g;
-				mtrl.emissive.b = b;
+			case LightStateOn:
+				// Check if the light has an "on" texture.
+				if (m_d.m_szOnImage[0] != 0 && (pin = m_ptable->GetImage(m_d.m_szOnImage)) != NULL)
+					{
+					// Set the texture to the one defined in the editor.
+					ppin3d->SetTexture(pin->m_pdsBuffer);
+					ppin3d->EnableLightMap(fFalse, -1);
+					mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+					mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+					mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+					mtrl.emissive.r = 0.0f;
+					mtrl.emissive.g = 0.0f;
+					mtrl.emissive.b = 0.0f;
+					}
+				else
+					{
+					// Set the texture to a default.
+					ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+					ppin3d->EnableLightMap(fFalse, -1);
+					mtrl.diffuse.r = mtrl.ambient.r = 0;//r;
+					mtrl.diffuse.g = mtrl.ambient.g = 0;//g;
+					mtrl.diffuse.b = mtrl.ambient.b = 0;//b;
+					mtrl.emissive.r = r;
+					mtrl.emissive.g = g;
+					mtrl.emissive.b = b;
+					}
 				break;
 			}
 
@@ -722,6 +772,23 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		m_pobjframe[i] = new ObjFrame();
 
 		ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
+
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{
+			RECT	Rect;
+
+			// Since we don't know the final dimensions of the 
+			// object we're rendering, clear the whole buffer.
+			Rect.top = 0;
+			Rect.left = 0;
+			Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
+			Rect.right = g_pplayer->m_pin3d.m_dwRenderWidth - 1;
+
+			// Clear the texture by copying the color and z values from the "static" buffers.
+			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			ppin3d->m_pddsZTextureBuffer->BltFast(Rect.left, Rect.top, ppin3d->m_pddsStaticZ, &Rect, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+			}
 
 		WORD rgi[3];
 		rgi[0] = 0;
@@ -777,35 +844,54 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 					}
 
-				float dist, ang;
-				float dx,dy;
-				dx = rgv3D[l].x - m_d.m_vCenter.x;
-				dy = rgv3D[l].y - m_d.m_vCenter.y;
-				ang = (float)atan2(dy,dx);
-				dist = (float)sqrt(dx*dx + dy*dy);
-				rgv3D[l].tu = 0.5f + ((float)sin(ang) * 0.5f * (dist/maxdist));
-				rgv3D[l].tv = 0.5f + ((float)cos(ang) * 0.5f * (dist/maxdist));
+				// Check if we are using a custom texture.
+				if (pin != NULL)
+					{
+					float tablewidth = m_ptable->m_right - m_ptable->m_left;
+					float tableheight = m_ptable->m_bottom - m_ptable->m_top;
+
+					float maxtu, maxtv;
+					m_ptable->GetTVTU(pin, &maxtu, &maxtv);
+
+					// Set texture coordinates for custom texture (world mode).
+					rgv3D[l].tu = rgv3D[l].x / tablewidth * maxtu;
+					rgv3D[l].tv = rgv3D[l].y / tableheight * maxtv;
+					}
+				else
+					{
+					// Set texture coordinates for default light.
+					float dist, ang;
+					float dx,dy;
+					dx = rgv3D[l].x - m_d.m_vCenter.x;
+					dy = rgv3D[l].y - m_d.m_vCenter.y;
+					ang = (float)atan2(dy,dx);
+					dist = (float)sqrt(dx*dx + dy*dy);
+					rgv3D[l].tu = 0.5f + ((float)sin(ang) * 0.5f * (dist/maxdist));
+					rgv3D[l].tv = 0.5f + ((float)cos(ang) * 0.5f * (dist/maxdist));
+					}
 				}
 
 			if (!m_fBackglass)
 				{
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
-													  rgi, 3, NULL);
+													  rgi, 3, 0);
 				}
 			else
 				{
 				SetHUDVertices(rgv3D, 3);
 
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
-													  rgv3D, 3,
-													  rgi, 3, NULL);
+				if( GetPTable()->GetDecalsEnabled() )
+					{
+					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+														  rgv3D, 3,
+														  rgi, 3, 0);
+					}
 				}
 
 			ppin3d->ExpandExtents(&m_pobjframe[i]->rc, rgv3D, NULL, NULL, 3, m_fBackglass);
 			}
 
-		//if (i != 0)
 			{
 			int iedit;
 			for (iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
@@ -819,21 +905,28 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 						}
 					}
 				}
-			ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+			ppin3d->SetTexture(ppin3d->m_pddsLightTexture);	
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 			}
-
-		//ppin3d->m_pd3dDevice->EndScene();
 
 		ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
 		m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 
 		if (m_pobjframe[i]->pdds == NULL)
 			{
+			ppin3d->WriteObjFrameToCacheFile(NULL);
 			continue;
 			}
 			
-		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, 0, NULL);
+		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
+
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{
+			// Create the D3D texture that we will blit.
+			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
+			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
+			}
 
 		ppin3d->WriteObjFrameToCacheFile(m_pobjframe[i]);
 
@@ -842,7 +935,7 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ddbltfx.dwSize = sizeof(DDBLTFX);
 		ddbltfx.dwFillColor = 0;
 		ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe[i]->rc, NULL,
-				&m_pobjframe[i]->rc, DDBLT_COLORFILL, &ddbltfx);
+				&m_pobjframe[i]->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
 
 	for (i=0;i<vtri.Size();i++)
@@ -852,7 +945,6 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	delete rgv;
 
-	//pd3dDevice->SetTexture(ePictureTexture, NULL);
 	ppin3d->SetTexture(NULL);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 	}
@@ -880,15 +972,6 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	if (m_d.m_shape == ShapeCustom)
 		{
 		RenderCustomMovers(pd3dDevice);
-
-		/*if (m_d.m_state == LightStateBlinking)
-			{
-			DrawFrame(m_d.m_rgblinkpattern[0] == '1');
-			}
-		else
-			{
-			DrawFrame(m_d.m_state != LightStateOff);
-			}*/
 		return;
 		}
 
@@ -902,16 +985,12 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	//pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	//pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-	pd3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-	pd3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFG_LINEAR);
-	pd3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+
+	g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0;
-
-	//ppin3d->m_pddsBackBuffer->Blt(NULL, ppin3d->m_pddsStatic, NULL, 0, NULL);
-	//ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, 0, NULL);
 
 	for (l=0;l<32;l++)
 		{
@@ -944,11 +1023,6 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	for (i=0;i<2;i++)
 		{
-		//ppin3d->m_pd3dDevice->BeginScene();
-
-		//pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET,
-					   //0x00000000, 1.0f, 0L );
-
 		switch (i)
 			{
 			case 0:
@@ -983,40 +1057,37 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
 		ppin3d->ExpandExtents(&m_pobjframe[i]->rc, rgv3D, NULL, NULL, 32, m_fBackglass);
 
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{			
+			// Clear the texture by copying the color and z values from the "static" buffers.
+			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			ppin3d->m_pddsZTextureBuffer->BltFast(m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.top, ppin3d->m_pddsStaticZ, &(m_pobjframe[i]->rc), DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+			}
+
 		ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
 
 		m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 
 		if (m_pobjframe[i]->pdds == NULL)
 			{
+			ppin3d->WriteObjFrameToCacheFile(NULL);
 			continue;
 			}
 
 		if (!m_fBackglass)
 			{
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  rgv3D, 32,
-														  rgi, 32, NULL);
+														  rgi, 32, 0);
 			}
-		else
-			{
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
-													  rgv3D, 32,
-													  rgi, 32, NULL);
-			}
-
-		/*for (l=1;l<31;l++)
-			{
-			rgi[0] = 0;
-			rgi[1] = l;
-			rgi[2] = l+1;
-
-			SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
-
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  rgv3D, 32,
-													  rgi, 3, NULL);
-			}*/
+		else 
+			if( GetPTable()->GetDecalsEnabled() )
+				{
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+														  rgv3D, 32,
+														  rgi, 32, 0);
+				}
 
 			{
 			int iedit;
@@ -1035,9 +1106,15 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 			}
 
-		//ppin3d->m_pd3dDevice->EndScene();
+		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
 
-		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, 0, NULL);
+		// Check if we are blitting with D3D.
+		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+			{
+			// Create the D3D texture that we will blit.
+			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
+			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
+			}
 
 		ppin3d->WriteObjFrameToCacheFile(m_pobjframe[i]);
 
@@ -1046,36 +1123,9 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ddbltfx.dwSize = sizeof(DDBLTFX);
 		ddbltfx.dwFillColor = 0;//0xffff;
 		ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe[i]->rc, NULL,
-				&m_pobjframe[i]->rc, DDBLT_COLORFILL, &ddbltfx);
-
-		//pd3dDevice->Clear( 1, &m_pobjframe[i]->rc, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0L );
+				&m_pobjframe[i]->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
 
-	/*int frame;
-
-
-	if (m_d.m_state == LightStateOff)
-		{
-		frame = 0;
-		}
-	else
-		{
-		frame = 1;
-		}*/
-
-	/*if (m_d.m_state == LightStateBlinking)
-		{
-		DrawFrame(m_d.m_rgblinkpattern[0] == '1');
-		}
-	else
-		{
-		DrawFrame(m_d.m_state != LightStateOff);
-		}*/
-
-	//ppin3d->m_pddsStatic->Blt(&m_pobjframe[frame]->rc, m_pobjframe[frame]->pdds, NULL, 0, NULL);
-
-	//ppin3d->EnableLightMap(fTrue);
-	//pd3dDevice->SetTexture(ePictureTexture, NULL);
 	ppin3d->SetTexture(NULL);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 	}
@@ -1119,9 +1169,12 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 	bw.WriteInt(FID(STAT), m_d.m_state);
 	bw.WriteInt(FID(COLR), m_d.m_color);
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+	bw.WriteBool(FID(DISP), m_d.m_fDisplayImage);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
 	bw.WriteInt(FID(SHAP), m_d.m_shape);
 	bw.WriteString(FID(BPAT), m_rgblinkpattern);
+	bw.WriteString(FID(IMG1), m_d.m_szOffImage);
+	bw.WriteString(FID(IMG2), m_d.m_szOnImage);
 	bw.WriteInt(FID(BINT), m_blinkinterval);
 	bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
 	bw.WriteFloat(FID(BWTH), m_d.m_borderwidth);
@@ -1139,21 +1192,6 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-
-	/*ULONG writ = 0;
-	HRESULT hr = S_OK;
-
-	DWORD dwID = ApcProjectItem.ID();
-	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
-		return hr;
-
-	if(FAILED(hr = SavePointData(pstm)))
-		return hr;
-
-	if(FAILED(hr = pstm->Write(&m_d, sizeof(LightData), &writ)))
-		return hr;
-
-	return hr;*/
 	}
 
 HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -1225,10 +1263,23 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(COLR))
 		{
 		pbr->GetInt(&m_d.m_color);
+//		if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
+		}
+	else if (id == FID(IMG1))
+		{
+		pbr->GetString(m_d.m_szOffImage);
+		}
+	else if (id == FID(IMG2))
+		{
+		pbr->GetString(m_d.m_szOnImage);
 		}
 	else if (id == FID(TMON))
 		{
 		pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+		}
+	else if (id == FID(DISP))
+		{
+		pbr->GetBool(&m_d.m_fDisplayImage);
 		}
 	else if (id == FID(TMIN))
 		{
@@ -1249,15 +1300,12 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(BCOL))
 		{
 		pbr->GetInt(&m_d.m_bordercolor);
+//		if (!(m_d.m_bordercolor & MINBLACKMASK)) {m_d.m_bordercolor |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(BWTH))
 		{
 		pbr->GetFloat(&m_d.m_borderwidth);
 		}
-	/*else if (id == FID(PNTS))
-		{
-		InitPointLoad(pbr->m_pistream, NULL);
-		}*/
 	else if (id == FID(SURF))
 		{
 		pbr->GetString(m_d.m_szSurface);
@@ -1301,6 +1349,10 @@ void Light::PutPointCenter(Vertex *pv)
 
 void Light::EditMenu(HMENU hmenu)
 	{
+	EnableMenuItem(hmenu, ID_WALLMENU_FLIP, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
+	EnableMenuItem(hmenu, ID_WALLMENU_MIRROR, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
+	EnableMenuItem(hmenu, ID_WALLMENU_ROTATE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
+	EnableMenuItem(hmenu, ID_WALLMENU_SCALE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
 	EnableMenuItem(hmenu, ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
 	}
 
@@ -1457,14 +1509,13 @@ STDMETHODIMP Light::get_State(LightState *pVal)
 STDMETHODIMP Light::put_State(LightState newVal)
 {
 	STARTUNDO
-//>>> added by Chris
 	// if the light is locked by the LS then just change the state and don't change the actual light
 	if (m_fLockedByLS != fTrue)
 		{
 		setLightState(newVal);
 		}
 	m_d.m_state = newVal;
-//<<<
+
 	STOPUNDO
 
 	return S_OK;
@@ -1477,38 +1528,48 @@ void Light::DrawFrame(BOOL fOn)
 
 	int frame = fOn ? 1 : 0;
 
-	//ppin3d->m_pddsStatic->Blt(&m_pobjframe[frame]->rc, m_pobjframe[frame]->pdds, NULL, 0, NULL);
-
 	// Light might be off the screen and have no image
-	if (m_pobjframe[frame]->pdds != NULL)
-		{
-		// We can use BltFast here because we are drawing to our own offscreen iamge
-		HRESULT hr = ppin3d->m_pddsStatic->BltFast(m_pobjframe[frame]->rc.left, m_pobjframe[frame]->rc.top, m_pobjframe[frame]->pdds, NULL, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
+	// Check if we are blitting with D3D.
 
-		g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
+#if 0 // Switching render targets mid-frame kills performance.   - JEP
+
+	if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)		
+	{
+		// Make sure we have a D3D texture.
+		if (m_pobjframe[frame]->pTexture)
+		{
+			// Direct all renders to the "static" buffer.
+			g_pplayer->m_pin3d.SetRenderTarget(g_pplayer->m_pin3d.m_pddsStatic);
+
+			// Blit with D3D.
+			Display_DrawSprite(g_pplayer->m_pin3d.m_pd3dDevice, 
+							(float) m_pobjframe[frame]->rc.left, (float) m_pobjframe[frame]->rc.top, 
+							(float) (m_pobjframe[frame]->rc.right - m_pobjframe[frame]->rc.left), (float) (m_pobjframe[frame]->rc.bottom - m_pobjframe[frame]->rc.top), 
+							1.0f, 1.0f, 1.0f, 1.0f, 
+							0.0f, 
+							m_pobjframe[frame]->pTexture, m_pobjframe[frame]->u, m_pobjframe[frame]->v, 
+							DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT);
+
+			g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
+
+			// Direct all renders to the back buffer.
+			g_pplayer->m_pin3d.SetRenderTarget(g_pplayer->m_pin3d.m_pddsBackBuffer);
 		}
 	}
-
-/*STDMETHODIMP Light::get_Name(BSTR *pVal)
-{
-	CComBSTR bstr;
-
-	GetApcProjectItem()->get_Name(&bstr);
-
-	//unsigned short wz[512];
-
-	//MultiByteToWideChar(CP_ACP, 0, (char *)m_d.sztext, -1, wz, 512);
-	*pVal = SysAllocString(bstr);
-
-	return S_OK;
+	else
+#endif
+	{
+		// Make sure we have a DDraw surface. 
+		if (m_pobjframe[frame]->pdds != NULL)
+		{
+			// NOTE: They are drawing to their own static buffer below in the BltFast... NOT the back buffer!
+			// We can use BltFast here because we are drawing to our own offscreen iamge
+			HRESULT hr = ppin3d->m_pddsStatic->BltFast(m_pobjframe[frame]->rc.left, m_pobjframe[frame]->rc.top, m_pobjframe[frame]->pdds, NULL, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
+			
+			g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
+		}
+	}
 }
-
-STDMETHODIMP Light::put_Name(BSTR newVal)
-{
-	GetApcProjectItem()->put_Name(newVal);
-
-	return S_OK;
-}*/
 
 void Light::FlipY(Vertex *pvCenter)
 	{
@@ -1545,20 +1606,10 @@ STDMETHODIMP Light::get_Color(OLE_COLOR *pVal)
 STDMETHODIMP Light::put_Color(OLE_COLOR newVal)
 {
 	STARTUNDO
-	/*if (!g_pplayer)
-		{
-		BeginUndo();
-		MarkForUndo();
-		}*/
 
 	m_d.m_color = newVal;
 
 	STOPUNDO
-	/*if (!g_pplayer)
-		{
-		EndUndo();
-		SetDirtyDraw();
-		}*/
 
 	return S_OK;
 }
@@ -1659,7 +1710,7 @@ STDMETHODIMP Light::put_Shape(Shape newVal)
 
 STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_rgblinkpattern, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -1759,7 +1810,7 @@ STDMETHODIMP Light::put_BorderWidth(float newVal)
 
 STDMETHODIMP Light::get_Surface(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -1778,17 +1829,68 @@ STDMETHODIMP Light::put_Surface(BSTR newVal)
 	return S_OK;
 }
 
-/*HRESULT Light::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Light");
+
+STDMETHODIMP Light::get_OffImage(BSTR *pVal)
+{
+	WCHAR wz[512];
+
+	MultiByteToWideChar(CP_ACP, 0, m_d.m_szOffImage, -1, wz, 32);
+	*pVal = SysAllocString(wz);
 
 	return S_OK;
-	}*/
+}
 
-/*int Light::GetDialogID()
-	{
-	return IDD_PROPLIGHT;
-	}*/
+STDMETHODIMP Light::put_OffImage(BSTR newVal)
+{
+	STARTUNDO
+
+	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, 32, NULL, NULL);
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+
+STDMETHODIMP Light::get_OnImage(BSTR *pVal)
+{
+	WCHAR wz[512];
+
+	MultiByteToWideChar(CP_ACP, 0, m_d.m_szOnImage, -1, wz, 32);
+	*pVal = SysAllocString(wz);
+
+	return S_OK;
+}
+
+STDMETHODIMP Light::put_OnImage(BSTR newVal)
+{
+	STARTUNDO
+
+	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOnImage, 32, NULL, NULL);
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+
+STDMETHODIMP Light::get_DisplayImage(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fDisplayImage);
+
+	return S_OK;
+}
+
+STDMETHODIMP Light::put_DisplayImage(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+
+	m_d.m_fDisplayImage = VBTOF(newVal);
+
+	STOPUNDO
+
+	return S_OK;
+}
 
 void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{
@@ -1827,14 +1929,14 @@ void Light::setLightStateBypass(LightState newVal)
 	}
 void Light::setLightState(LightState newVal)
 	{
-   	if (newVal != m_realState)
+   	if (newVal != m_realState)//state changed???
    		{
-   		BOOL fWasBlinking = (m_realState == LightStateBlinking);
+   		LightState lastState = m_realState;		//rlc make a bit more obvious
 		m_realState = newVal;
 
    		if (g_pplayer)
    			{
-   			if (fWasBlinking)
+   			if (lastState == LightStateBlinking)
    				{
    				// must not be blinking anymore
    				g_pplayer->m_vblink.RemoveElement((IBlink *)this);
@@ -1867,5 +1969,4 @@ void Light::setLightState(LightState newVal)
    			}
    		}
    	}
-//<<<
 

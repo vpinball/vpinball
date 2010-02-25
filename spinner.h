@@ -1,3 +1,4 @@
+#pragma once
 // Spinner.h: Definition of the Spinner class
 //
 //////////////////////////////////////////////////////////////////////
@@ -17,18 +18,12 @@ public:
 	Vertex m_vCenter;
 	float m_length;
 	float m_rotation;
+	BOOL m_fSupports; 
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
 	float m_overhang;
 	float m_height;
 	float m_antifriction;
-	BOOL m_fCastsShadow;		//>>> added by Chris
-	char m_szImageFront[MAXTOKEN];
-	char m_szImageBack[MAXTOKEN];
-	char m_szSurface[MAXTOKEN];
-	
-	// new phys
-	BOOL m_fSupports; 
 	float m_angleMax;
 	float m_angleMin;
 	float m_elasticity;
@@ -36,7 +31,10 @@ public:
 	float m_scatter;
 	int m_animations;			 //animation frames
 	BOOL m_fVisible;
-
+	BOOL m_fCastsShadow;		//>>> added by Chris
+	char m_szImageFront[MAXTOKEN];
+	char m_szImageBack[MAXTOKEN];
+	char m_szSurface[MAXTOKEN];
 	};
 
 class HitSpinner;
@@ -135,8 +133,7 @@ public:
 	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
 //<<<
-
-#ifdef NO
+	
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Supports)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -150,9 +147,6 @@ public:
 	STDMETHOD (put_Elasticity)(/*[in]*/ float newVal);
 	STDMETHOD(get_Animations)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Animations)(/*[in]*/ int newVal);
-
-#endif // NO
-
 };
 
 #endif // !defined(AFX_SPINNER_H__8D8CB0E1_8C8F_49BF_A639_4DFA12DD4C3C__INCLUDED_)

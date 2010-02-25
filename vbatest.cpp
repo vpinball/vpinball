@@ -5,11 +5,10 @@
 //      To build a separate proxy/stub DLL,
 //      run nmake -f VBATestps.mk in the project directory.
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 #include "resource.h"
 #include <initguid.h>
-#include "main.h"
 
 #define  SET_CRT_DEBUG_FIELD(a)   _CrtSetDbgFlag((a) | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))
 
@@ -113,44 +112,42 @@ LPCTSTR FindOneOf(LPCTSTR p1, LPCTSTR p2, LPTSTR pOut)
         p1 = CharNext(p1);
     }
     return NULL;
+
 }
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
-extern "C" int WINAPI _tWinMain(HINSTANCE hInstance,
-    HINSTANCE /*hPrevInstance*/, LPTSTR lpCmdLine, int /*nShowCmd*/)
+//rlc the beginning of it all  <<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>
+//
+//
+extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpCmdLine, int /*nShowCmd*/)
 {
-
 #ifdef GLOBALLOG
 	logfile = fopen("c:\\vpgloballog.txt","w");
 #endif
 	
 	g_hinst = hInstance;
 
-	g_hinstres = LoadLibrary("vpinres.dll");
+//	g_hinstres = LoadLibrary("vpinres.dll");
 
-	if (g_hinstres == NULL)
-		{
+//	if (g_hinstres == NULL)
+//		{
 		g_hinstres = g_hinst;
-		}
+//		}
 
 	SYSTEMTIME systime; // time bomb
 	GetSystemTime(&systime);
-
-	/*if (systime.wYear > 2008)
-		{
-		LocalString ls(IDS_BETAEXPIRE);
-		MessageBox(NULL, ls.m_szbuffer, "Visual Pinball", 0);
-		return 10;
-		}*/
 
     lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
 
 	BOOL fFile = fFalse;
 	BOOL fPlay = fFalse;
-	TCHAR szTableFileName[_MAX_PATH];
+	TCHAR szTableFileName[_MAX_PATH] = {0};
+	char  szTableResolution[64] = {0};
+	BOOL  fullscreen = fFalse;
 
-	TCHAR szOption[256];
+	TCHAR szOption[256]= {0};
 
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
     HRESULT hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -165,6 +162,8 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance,
     int nRet = 0;
     BOOL bRun = TRUE;
     LPCTSTR lpszToken = FindOneOf(lpCmdLine, szTokens, szOption);
+
+
     while (lpszToken != NULL)
     {
         if (lstrcmpi(szOption, _T("UnregServer"))==0)
@@ -193,7 +192,32 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance,
 			fFile = fTrue;
 			fPlay = fTrue;
 			lpszToken = FindOneOf(lpszToken, szTokens, szTableFileName);
-			//MessageBox(NULL, szTableFileName, "File", 0);
+
+//#ifdef ULTRACADE
+			char *play = StrStrI( lpCmdLine, "Play");
+		
+			if( play )
+			{
+				sprintf( szTableFileName, "%s", play+6 );
+				VPinball::SetOpenMinimized();
+				if(1)
+				{
+					char szLoadDir[MAX_PATH];
+					PathFromFilename(szTableFileName, szLoadDir);
+					DWORD err = SetCurrentDirectory(szLoadDir);
+				}
+			}
+
+			char *resolution = StrStrI( lpCmdLine, "Resolution");
+
+			if( resolution )
+			{
+				sprintf( szTableResolution, "%s", resolution+11 );				
+			}
+
+			fullscreen = StrStrI( lpCmdLine, "Fullscreen") != NULL;
+
+//#endif
             break;
         }
         lpszToken = FindOneOf(lpszToken, szTokens, szOption);
@@ -233,23 +257,24 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance,
 
 		g_pvp = new VPinball();
 		g_pvp->AddRef();
-		
-		if (fFile && fPlay)
-			{
-			// This value has to be set before calling Init, or the editor window will appear
-			g_pvp->m_fPlayOnly = fTrue;
-			}
-			
 		g_pvp->Init();
 		g_haccel = LoadAccelerators(g_hinstres,MAKEINTRESOURCE(IDR_VPACCEL));
 
 		if (fFile)
 			{
 			int len;
-			// Strip header and trailer quotes
+			// Strip header and trailer quotes (but only if they exist - AMH)
 			len = lstrlen(szTableFileName);
-			szTableFileName[len-1] = 0;
-			g_pvp->LoadFileName(&szTableFileName[1]);
+
+			if( szTableFileName[0] == '"' )
+			{
+				szTableFileName[len-1] = 0;
+				g_pvp->LoadFileName(&szTableFileName[1]);
+			}
+			else
+			{
+				g_pvp->LoadFileName(&szTableFileName[0]);
+			}
 
 			if (fPlay)
 				{
@@ -260,16 +285,10 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance,
 		// VBA APC handles message loop (bastards)
 		g_pvp->MainMsgLoop();
 
-		//delete g_pvp;
-
 #ifdef VBA
 		g_pvp->ApcHost.Destroy();
 #endif
 		g_pvp->Release();
-
-        /*MSG msg;
-        while (GetMessage(&msg, 0, 0, 0))
-            DispatchMessage(&msg);*/
 
 		DestroyAcceleratorTable(g_haccel);
 
@@ -283,8 +302,10 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance,
 
     _Module.Term();
     CoUninitialize();
+#ifdef DEBUGxxx  //disable this in perference to DevPartner
 	_CrtSetDumpClient(MemLeakAlert);
 	_CrtDumpMemoryLeaks( );
+#endif
 	//SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
 
     return nRet;

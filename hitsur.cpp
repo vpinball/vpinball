@@ -1,9 +1,5 @@
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
-/*#define SCALEX(x) ((int)((x - m_offx)*m_zoom))
-#define SCALEY(y) ((int)((y - m_offy)*m_zoom))
-#define SCALED(d) ((int)(d*m_zoom))*/
 
 HitSur::HitSur(HDC hdc, float zoom, float offx, float offy, int width, int height, int hitx, int hity, ISelect *pbackground) : Sur(hdc, zoom, offx, offy, width, height)
 	{
@@ -49,7 +45,7 @@ void HitSur::Line(float rx, float ry, float rx2, float ry2)
 
 		if (m_hitx>=x1 && m_hitx<=x2)
 			{
-				int lineY = (int) (( ((double)(y2-y1)) / ((double)(x2-x1)) )*(m_hitx-x1)) + y1;
+				int lineY = (int) (( ((float)(y2-y1)) / ((float)(x2-x1)) )*(m_hitx-x1)) + y1;
 
 				if (m_hity>lineY-4 && m_hity<lineY+4)
 					{
@@ -74,7 +70,7 @@ void HitSur::Line(float rx, float ry, float rx2, float ry2)
 
 		if (m_hity>=y1 && m_hity<=y2)
 			{
-				int lineX = (int) (( ((double)(x2-x1)) / ((double)(y2-y1)) )*(m_hity-y1)) + x1;
+				int lineX = (int) (( ((float)(x2-x1)) / ((float)(y2-y1)) )*(m_hity-y1)) + x1;
 
 				if (m_hitx>lineX-4 && m_hitx<lineX+4)	
 					{

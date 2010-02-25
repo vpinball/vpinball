@@ -1,3 +1,4 @@
+#pragma once
 //
 //  Microsoft Windows Media Technologies
 //  Copyright (C) Microsoft Corporation, 1999 - 1999  All rights reserved.
@@ -55,15 +56,6 @@ public:
 public:
 
 	void Stop();
-
-    //id OnWaveOutMsg( UINT uMsg, DWORD dwParam1, DWORD dwParam2 );
-
-    /*atic void CALLBACK WaveProc(
-                          HWAVEOUT hwo,      
-                          UINT uMsg,         
-                          DWORD dwInstance,  
-                          DWORD dwParam1,    
-                          DWORD dwParam2 );*/
  
     HRESULT DoCodecDownload( GUID*  pCodecID );
 
@@ -83,8 +75,6 @@ public:
         BYTE m_WfxBuf[1024];
     };
 
-    //LPWSTR  m_pszUrl;
-
 	BOOL fStartedPlay;
 
 #ifdef SUPPORT_DRM
@@ -95,13 +85,8 @@ public:
 
 #define NUM_PLAY_NOTIFICATIONS  16
 
-	//LPDIRECTSOUND       m_pDS            = NULL;
 	LPDIRECTSOUNDBUFFER m_pDSBuffer;
 	LPDIRECTSOUNDNOTIFY m_pDSNotify;
-	//CWaveSoundRead*     m_pWaveSoundRead;
-
-	//DSBPOSITIONNOTIFY   m_aPosNotify[NUM_PLAY_NOTIFICATIONS + 1];  
-	//HANDLE              m_hNotificationEvents[2];
 
 	DSBPOSITIONNOTIFY   m_aPosNotify;  
 	HANDLE              m_hNotificationEvent;

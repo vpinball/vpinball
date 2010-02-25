@@ -1,3 +1,4 @@
+#pragma once
 class PinTable;
 
 class ScriptGlobalTable:
@@ -6,11 +7,13 @@ class ScriptGlobalTable:
 	public IScriptable
 	{
 public:
+		// Headers to support communication between the game and the script.
 		STDMETHOD(EndModal)();
 		STDMETHOD(BeginModal)();
 		STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
 		STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
 		STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);
+		STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ long *pVal);
 		STDMETHOD(get_ActiveBall)(/*[out, retval]*/ IBall **pVal);
 		STDMETHOD(LoadValue)(BSTR TableName, BSTR ValueName, /*[out, retval]*/ VARIANT *Value);
 		STDMETHOD(SaveValue)(BSTR TableName, BSTR ValueName, VARIANT Value);
@@ -31,9 +34,21 @@ public:
 		STDMETHOD(SeqSoundPlay)(/*[in]*/ long Channel, /*[in]*/ BSTR Sound, /*[in]*/ long LoopCount, /*[in]*/ float Volume, /*[in]*/ long Delay);
 		STDMETHOD(SeqSoundStop)(/*[in]*/ long Channel, /*[in]*/ BSTR Sound, /*[in]*/ float Volume, /*[in]*/ long Delay);
 		STDMETHOD(SeqSoundFlush)(/*[in]*/ long Channel);
+
 		STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume);
+		STDMETHOD(FireKnocker)(/*[in]*/ int Count);
+		STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
+		STDMETHOD(StartShake)(/*[in]*/ void);
+		STDMETHOD(StopShake)(/*[in]*/ void);
+		
+
    		STDMETHOD(Nudge)(float Angle, float Force);
 		STDMETHOD(get_Name)(BSTR *pVal);
+		STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ long *pVal);
+		STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ long *pVal);
+		STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ long *pVal);
+		STDMETHOD(get_ExitGame)(/*[out, retval]*/ long *pVal);
+		
 
 	void Init(PinTable *pt);
 	void SeqSoundInit(void);

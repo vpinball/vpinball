@@ -1,13 +1,14 @@
 // Ramp.cpp : Implementation of CVBATestApp and DLL registration.
 
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 Ramp::Ramp()
 	{
 	m_menuid = IDR_SURFACEMENU;
+	m_d.m_fCollidable = fTrue;
+	m_d.m_IsVisible = fTrue;
 	}
 
 Ramp::~Ramp()
@@ -19,7 +20,8 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y)
 	HRESULT hr = S_OK;
 
 	m_ptable = ptable;
-
+	m_d.m_IsVisible = fTrue;
+	
 	CComObject<DragPoint> *pdp;
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
@@ -65,12 +67,18 @@ void Ramp::SetDefaults()
 
 	m_d.m_fCastsShadow = fTrue;
 
+	m_d.m_fAcrylic = fFalse;
+
 	m_d.m_leftwallheight = 62;
 	m_d.m_rightwallheight = 62;
 	m_d.m_leftwallheightvisible = 30;
 	m_d.m_rightwallheightvisible = 30;
 
-	m_d.m_elasticity = 0.2f;
+	m_d.m_elasticity = 0.3f;
+	m_d.m_friction = 0;	//zero uses global value
+	m_d.m_scatter = 0;	//zero uses global value
+
+	m_d.m_fCollidable = fTrue;
 	}
 
 void Ramp::PreRender(Sur *psur)
@@ -211,8 +219,8 @@ void Ramp::RenderBlueprint(Sur *psur)
 
 void Ramp::RenderShadow(ShadowSur *psur, float height)
 	{
-	if ( (m_d.m_fCastsShadow != fTrue) || (m_ptable->m_fRenderShadows == fFalse) )
-		return;
+	if (!m_d.m_fCastsShadow || !m_ptable->m_fRenderShadows || !m_d.m_IsVisible) 
+		return; //skip render if not visible
 
 	psur->SetFillColor(RGB(0,0,0));
 	psur->SetBorderColor(-1,fFalse,0);
@@ -224,15 +232,6 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 	int cvertex;
 
 	rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
-
-	/*int i;
-	for (i=0;i<cvertex;i++)
-		{
-		rgv[i].x += rgheight[i];
-		rgv[i].y -= rgheight[i];
-		rgv[cvertex*2 - i - 1].x += rgheight[i];
-		rgv[cvertex*2 - i - 1].y -= rgheight[i];
-		}*/
 
 	// Find the range of vertices to draw a shadow for
 	int startvertex, stopvertex;
@@ -252,7 +251,10 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 
 	if (range > 0)
 		{
-		if (m_d.m_type == RampType4Wire || m_d.m_type == RampType2Wire || m_d.m_type == RampType3WireLeft || m_d.m_type == RampType3WireRight)
+		if (m_d.m_type == RampType4Wire 
+			|| m_d.m_type == RampType2Wire 
+			|| m_d.m_type == RampType3WireLeft 
+			|| m_d.m_type == RampType3WireRight)
 			{
 			int i;
 			float *rgheight2 = new float[cvertex];
@@ -495,22 +497,22 @@ Vertex *Ramp::GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, fl
 			}
 		}
 
-			{
-			Vertex *pvT;
-			float dx,dy;
-			pvT = (Vertex *)vvertex.ElementAt(i);
-			dx = pv1->x - pvT->x;
-			dy = pv1->y - pvT->y;
-			float length = (float)sqrt(dx*dx + dy*dy);
+		{
+		Vertex *pvT;
+		float dx,dy;
+		pvT = (Vertex *)vvertex.ElementAt(i);
+		dx = pv1->x - pvT->x;
+		dy = pv1->y - pvT->y;
+		float length = (float)sqrt(dx*dx + dy*dy);
 
-			currentlength += length;
-			}
+		currentlength += length;
+		}
 
 		float widthcur = ((currentlength/totallength) * (m_d.m_widthtop - m_d.m_widthbottom)) + m_d.m_widthbottom;
 
 		if (ppheight)
 			{
-			float percentage = 1-(currentlength/totallength);
+			float percentage = 1-(currentlength/totallength);//rlc ramps have no ends ... a line joint is needed
 			float heightcur = ((1 - percentage) * (m_d.m_heighttop - m_d.m_heightbottom)) + m_d.m_heightbottom;
 			(*ppheight)[i] = heightcur;
 			}
@@ -608,6 +610,7 @@ void Ramp::GetRgVertex(Vector<RenderVertex> *pvv)
 
 	// Add the very last point to the list because nobody else added it
 	RenderVertex *pvT = new RenderVertex;
+	rendv2.fControlPoint = fFalse;	//rlc --- trapped on uninitialized varible (DevPartner)
 	*pvT = rendv2;
 	pvv->AddElement(pvT);
 	}
@@ -648,34 +651,28 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 		wallheightright = m_d.m_rightwallheight;
 		wallheightleft = m_d.m_leftwallheight;
 		}
-	else
+	else if (m_d.m_type == RampType2Wire)
 		{
-		if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-			{
-			wallheightright = 62.0f;
-			}
-		else
-			{
-			wallheightright = 6+12.5f;
-			}
-
-		if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-			{
-			wallheightleft = 62.0f;
-			}
-		else
-			{
-			wallheightleft = 6+12.5f;
-			}
-
-		if (m_d.m_type == RampType2Wire)
-			{
-			// backwards compatible physics
-			wallheightright = 31.0f;
-			wallheightleft = 31.0f;
-			}
+		// backwards compatible physics
+		wallheightright = 31.0f;
+		wallheightleft = 31.0f;
 		}
-
+	else if (m_d.m_type == RampType4Wire)
+		{
+		wallheightleft = 62.0f;
+		wallheightright = 62.0f;
+		}
+	else if (m_d.m_type == RampType3WireRight)
+		{
+		wallheightright = 62.0f;
+		wallheightleft = 6+12.5f;
+		}
+	else if (m_d.m_type == RampType3WireLeft)
+		{
+		wallheightleft = 62.0f;
+		wallheightright = 6+12.5f;
+		}
+			
 	if (wallheightright > 0)
 		{
 		for (i=0;i<(cvertex-1);i++)
@@ -689,10 +686,8 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 				pv1 = NULL;
 				}
 
-			//pv1 = &rgv[i];
 			pv2 = &rgv[i];
 			pv3 = &rgv[i+1];
-			//pv4 = &rgv[(i+3) % count];
 
 			if (i<(cvertex-2))
 				{
@@ -702,10 +697,13 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 				{
 				pv4 = NULL;
 				}
-
+#ifndef RAMPTEST
 			AddLine(pvho, pv2, pv3, pv1, rgheight[i], rgheight[i+1]+wallheightright);
-
 			AddLine(pvho, pv3, pv2, pv4, rgheight[i], rgheight[i+1]+wallheightright);
+#else
+			AddSideWall(pvho, pv2, pv3,rgheight[i],rgheight[i+1], wallheightright);
+			AddSideWall(pvho, pv3, pv2,rgheight[i+1],rgheight[i], wallheightright);
+#endif
 			}
 		}
 
@@ -722,10 +720,8 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 				pv1 = NULL;
 				}
 
-			//pv1 = &rgv[i];
 			pv2 = &rgv[cvertex + i];
 			pv3 = &rgv[cvertex + i + 1];
-			//pv4 = &rgv[(i+3) % count];
 
 			if (i<(cvertex-2))
 				{
@@ -735,15 +731,18 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 				{
 				pv4 = NULL;
 				}
-
+#ifndef RAMPTEST
 			AddLine(pvho, pv2, pv3, pv1, rgheight[cvertex - i - 2], rgheight[cvertex - i - 1] + wallheightleft);
-
 			AddLine(pvho, pv3, pv2, pv4, rgheight[cvertex - i - 2], rgheight[cvertex - i - 1] + wallheightleft);
+#else
+			AddSideWall(pvho, pv2, pv3,rgheight[cvertex - i - 1],rgheight[cvertex - i - 2], wallheightleft);
+			AddSideWall(pvho, pv3, pv2,rgheight[cvertex - i - 2],rgheight[cvertex - i - 1], wallheightleft);
+#endif
 			}
 		}
 
 	//Level *plevel;
-
+#ifndef RAMPTEST
 	Hit3DPoly *ph3dpolyOld = NULL;
 
 	for (i=0;i<(cvertex-1);i++)
@@ -769,6 +768,9 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 
 		ph3dpoly = new Hit3DPoly(rgv3D,3);
 		ph3dpoly->m_elasticity = m_d.m_elasticity;
+		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+	
 
 		if (m_d.m_type == RampTypeFlat)
 			{
@@ -777,12 +779,16 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 
 		pvho->AddElement(ph3dpoly);
 
+		m_vhoCollidable.AddElement(ph3dpoly);	//remember hit components of ramp
+		ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+
 		if (ph3dpolyOld)
 			{
 			CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
 			}
 
 		ph3dpolyOld = ph3dpoly;
+
 
 		rgv3D[1].x = pv1->x;
 		rgv3D[1].y = pv1->y;
@@ -796,6 +802,9 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 
 		ph3dpoly = new Hit3DPoly(rgv3D,3);
 		ph3dpoly->m_elasticity = m_d.m_elasticity;
+		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+		
 
 		if (m_d.m_type == RampTypeFlat)
 			{
@@ -804,9 +813,12 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 
 		pvho->AddElement(ph3dpoly);
 
-		CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
+		m_vhoCollidable.AddElement(ph3dpoly);	//remember hit components of ramp
+		ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 
+		CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
 		ph3dpolyOld = ph3dpoly;
+
 		}
 
 	Vertex3D rgv3D[4];
@@ -820,9 +832,68 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 	rgv3D[0].y = pv4->y;
 	rgv3D[0].z = rgheight[i];
 	ph3dpolyOld = new Hit3DPoly(rgv3D,3);
+	
 	CheckJoint(pvho, ph3dpolyOld, ph3dpolyOld);
 	delete ph3dpolyOld;
+	ph3dpolyOld = NULL;
 
+	// add outside bottom, 
+	// joints at the intersections are not needed since the inner surface has them
+	// this surface is identical... except for the direction of the normal face.
+	// hence the joints protect both surface edges from haveing a fall through
+
+	for (i=0;i<(cvertex-1);i++)
+		{
+		Vertex3D rgv3D[4];
+
+		Hit3DPoly *ph3dpoly;
+
+		pv1 = &rgv[i];
+		pv2 = &rgv[cvertex*2 - i - 1];
+		pv3 = &rgv[cvertex*2 - i - 2];
+		pv4 = &rgv[i+1];
+
+		rgv3D[0].x = pv1->x;
+		rgv3D[0].y = pv1->y;
+		rgv3D[0].z = rgheight[i];
+		rgv3D[1].x = pv2->x;
+		rgv3D[1].y = pv2->y;
+		rgv3D[1].z = rgheight[i];
+		rgv3D[2].x = pv3->x;
+		rgv3D[2].y = pv3->y;
+		rgv3D[2].z = rgheight[i+1];
+
+		ph3dpoly = new Hit3DPoly(rgv3D,3);
+		ph3dpoly->m_elasticity = m_d.m_elasticity;
+		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+
+		pvho->AddElement(ph3dpoly);
+
+		m_vhoCollidable.AddElement(ph3dpoly);	//remember hit components of ramp
+		ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+
+		rgv3D[2].x = pv1->x;
+		rgv3D[2].y = pv1->y;
+		rgv3D[2].z = rgheight[i];
+		rgv3D[0].x = pv3->x;
+		rgv3D[0].y = pv3->y;
+		rgv3D[0].z = rgheight[i+1];
+		rgv3D[1].x = pv4->x;
+		rgv3D[1].y = pv4->y;
+		rgv3D[1].z = rgheight[i+1];
+
+		ph3dpoly = new Hit3DPoly(rgv3D,3);
+		ph3dpoly->m_elasticity = m_d.m_elasticity;
+		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+		
+		pvho->AddElement(ph3dpoly);
+
+		m_vhoCollidable.AddElement(ph3dpoly);	//remember hit components of ramp
+		ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+		}
+#endif
 	delete rgheight;
 	delete rgv;
 	}
@@ -831,51 +902,72 @@ void Ramp::GetHitShapesDebug(Vector<HitObject> *pvho)
 	{
 	}
 
+#define walltilt 0.5f
+
+void Ramp::AddSideWall(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2,float height1,float height2, float wallheight)
+	{
+	Vertex3D rgv3D[4];
+
+	Hit3DPoly *ph3dpoly;
+
+	rgv3D[0].x = pv1->x;
+	rgv3D[0].y = pv1->y;
+	rgv3D[0].z = height1 - PHYS_SKIN;
+	rgv3D[1].x = pv2->x;
+	rgv3D[1].y = pv2->y;
+	rgv3D[1].z = height2 -PHYS_SKIN;
+
+	rgv3D[2].x = pv2->x +walltilt;
+	rgv3D[2].y = pv2->y +walltilt;
+	rgv3D[2].z = height2 + wallheight;
+	rgv3D[3].x = pv1->x +walltilt;
+	rgv3D[3].y = pv1->y +walltilt;
+	rgv3D[3].z = height1 + wallheight;	
+
+	ph3dpoly = new Hit3DPoly(rgv3D,4);
+	
+	ph3dpoly->m_elasticity = m_d.m_elasticity;
+	ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+	ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+		
+	pvho->AddElement(ph3dpoly);
+
+	m_vhoCollidable.AddElement(ph3dpoly);	//remember hit components of ramp
+	ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+	}
+
+
 void Ramp::CheckJoint(Vector<HitObject> *pvho, Hit3DPoly *ph3d1, Hit3DPoly *ph3d2)
 	{
-	Vertex3D vCrossProduct;
-	Vertex3D vCrossFace;
-
-	// Calculate vector perpendicular to both normals.
-	// Then, calculate the vector perpendicular to normal1 and the previous
-	// cross product.  This will give the vector co-planar to hitpoly1 that
-	// is perpendicular to its common edge with hitpoly2.
-	// The angle between the second cross-product and normal2 can then
-	// be measured against 90 degrees.
-
-	vCrossProduct.x = ph3d1->normal.y * ph3d2->normal.z - ph3d1->normal.z * ph3d2->normal.y;
-	vCrossProduct.y = ph3d1->normal.z * ph3d2->normal.x - ph3d1->normal.x * ph3d2->normal.z;
-	vCrossProduct.z = ph3d1->normal.x * ph3d2->normal.y - ph3d1->normal.y * ph3d2->normal.x;
-
-	vCrossFace.x = ph3d1->normal.y * vCrossProduct.z - ph3d1->normal.z * vCrossProduct.y;
-	vCrossFace.y = ph3d1->normal.z * vCrossProduct.x - ph3d1->normal.x * vCrossProduct.z;
-	vCrossFace.z = ph3d1->normal.x * vCrossProduct.y - ph3d1->normal.y * vCrossProduct.x;
-
-	float dot;
-
-	dot = ph3d1->normal.x*vCrossFace.x + ph3d1->normal.y*vCrossFace.y + ph3d1->normal.z*vCrossFace.z;
-
-	if (1)//dot > 0) // Triangles are greater than zero degrees apart - need joint
-		{
 		Vertex3D vjointnormal;
-		vjointnormal.x = ph3d1->normal.x + ph3d2->normal.x;
-		vjointnormal.y = ph3d1->normal.y + ph3d2->normal.y;
-		vjointnormal.z = ph3d1->normal.z + ph3d2->normal.z;
+		//vjointnormal.x = ph3d1->normal.x + ph3d2->normal.x;
+		//vjointnormal.y = ph3d1->normal.y + ph3d2->normal.y;
+		//vjointnormal.z = ph3d1->normal.z + ph3d2->normal.z;
 
-		float length = (float)sqrt(vjointnormal.x * vjointnormal.x + vjointnormal.y * vjointnormal.y + vjointnormal.z * vjointnormal.z);
-		vjointnormal.x /= length;
-		vjointnormal.y /= length;
-		vjointnormal.z /= length;
+		CrossProduct(&ph3d1->normal, &ph3d2->normal, &vjointnormal);
 
-		// By convention of the calling function, points 1 and 2 of the second polygon will
+		float length = sqrt(vjointnormal.x * vjointnormal.x + vjointnormal.y * vjointnormal.y + vjointnormal.z * vjointnormal.z);
+		if (length < 1.0e-4f) return;
+
+		length = 1.0f/length;
+		vjointnormal.x *= length;
+		vjointnormal.y *= length;
+		vjointnormal.z *= length;
+
+		// By convention of the calling function, points 1 [0] and 2 [1] of the second polygon will
 		// be the common-edge points
 
 		Hit3DCylinder *ph3dc;
 		ph3dc = new Hit3DCylinder(&ph3d2->m_rgv[0], &ph3d2->m_rgv[1], &vjointnormal);
 		ph3dc->m_elasticity = m_d.m_elasticity;
+		ph3dc->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+		ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
 		pvho->AddElement(ph3dc);
-		}
+
+		m_vhoCollidable.AddElement(ph3dc);	//remember hit components of ramp
+		ph3dc->m_fEnabled = m_d.m_fCollidable;
 	}
+
 
 void Ramp::AddLine(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2, Vertex *pv3, float height1, float height2)
 	{
@@ -887,17 +979,11 @@ void Ramp::AddLine(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2, Vertex *pv
 
 	plineseg = new LineSeg();
 	plineseg->m_elasticity = m_d.m_elasticity;
+	plineseg->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+	plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
 
-	//if (m_d.m_fHitEvent)
-		//{
-		//plineseg->m_pep = (EventProxyBase *)this;
-		//plineseg->m_threshold = m_d.m_threshold;
-		//}
-	//else
-		//{
-		plineseg->m_pfe = NULL;
-		//}
-
+	plineseg->m_pfe = NULL;
+	
 	plineseg->m_rcHitRect.zlow = height1;//m_d.m_heightbottom;
 	plineseg->m_rcHitRect.zhigh = height2;//m_d.m_heighttop;
 
@@ -908,15 +994,13 @@ void Ramp::AddLine(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2, Vertex *pv
 
 	pvho->AddElement(plineseg);
 
+	m_vhoCollidable.AddElement(plineseg);	//remember hit components of ramp
+	plineseg->m_fEnabled = m_d.m_fCollidable;
+
 	plineseg->CalcNormal();
 
 	vt1.x = pv1->x - pv2->x;
 	vt1.y = pv1->y - pv2->y;
-
-	// Set up line normal
-	/*length = (float)sqrt((vt1.x * vt1.x) + (vt1.y * vt1.y));
-	plineseg->normal.x = vt1.y / length;
-	plineseg->normal.y = -vt1.x / length;*/
 
 	if (pv3)
 		{
@@ -929,23 +1013,20 @@ void Ramp::AddLine(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2, Vertex *pv
 			{
 			pjoint = new Joint();
 			pjoint->m_elasticity = m_d.m_elasticity;
+			pjoint->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+			pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
 
-			//if (m_d.m_fHitEvent)
-				//{
-				//pjoint->m_pep = (EventProxyBase *)this;
-				//pjoint->m_threshold = m_d.m_threshold;
-				//}
-			//else
-				//{
-				pjoint->m_pfe = NULL;
-				//}
-
+			pjoint->m_pfe = NULL;
+		
 			pjoint->m_rcHitRect.zlow = height1;//m_d.m_heightbottom;
 			pjoint->m_rcHitRect.zhigh = height2;//m_d.m_heighttop;
 
 			pjoint->center.x = pv1->x;
 			pjoint->center.y = pv1->y;
 			pvho->AddElement(pjoint);
+
+			m_vhoCollidable.AddElement(pjoint);	//remember hit components of ramp
+			pjoint->m_fEnabled = m_d.m_fCollidable;
 
 			Vertex normalT;
 
@@ -977,6 +1058,7 @@ void Ramp::EndPlay()
 		delete m_vlevel.ElementAt(i);
 		}
 	m_vlevel.RemoveAllElements();
+	m_vhoCollidable.RemoveAllElements();
 	}
 
 int rgicrosssection[][3] = {
@@ -1145,9 +1227,9 @@ void Ramp::RenderStaticHabitrail(LPDIRECT3DDEVICE7 pd3dDevice)
 		vacross.Normalize();
 
 		// vnewup is the beginning up vector of the cross-section
-		vnewup.x = 0;
-		vnewup.y = 1;
-		vnewup.z = 0;
+		vnewup.x = 0; vnewup.nx = 0;  //rlc  initialize .nx, .ny and .nz 
+		vnewup.y = 1; vnewup.ny = 0;  //rlc
+		vnewup.z = 0; vnewup.nz = 0;  //rlc
 
 		tangent.x = (rgv[p3].x - rgv[p1].x);
 		tangent.y = (rgv[p3].y - rgv[p1].y);
@@ -1197,21 +1279,9 @@ void Ramp::RenderStaticHabitrail(LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[l].z += rgheight[p2];
 			}
 
-		//int maxsegments = (m_d.m_type == RampType4Wire) ? 32 : 16;
-
 		if (i != 0)
 			{
 			RenderPolygons(pd3dDevice, rgv3D, (int *)rgicrosssection, 0, 16);
-			/*for (l=0;l<16;l++)
-				{
-				rgi[0] = rgicrosssection[l][0];
-				rgi[1] = rgicrosssection[l][1];
-				rgi[2] = rgicrosssection[l][2];
-
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 32,
-														  rgi, 3, NULL);
-				}*/
 
 			if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
 				{
@@ -1226,16 +1296,6 @@ void Ramp::RenderStaticHabitrail(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		memcpy(&rgv3D[16], &rgv3D[0], sizeof(Vertex3D)*16);
 		}
-		/*rgvnormal[0].x = rgv[p1].x - rgv[p2].x;
-		rgvnormal[0].y = rgv[p1].y - rgv[p2].y;
-		rgvnormal[0].z = rgheight[p1] - rgheight[p2];
-
-		rgvnormal[1].x = rgv[p1].x - rgv[p4].x;
-		rgvnormal[1].y = rgv[p1].y - rgv[p4].y;
-		rgvnormal[1].z = rgheight[p1] - rgheight[p2];
-
-		// Get the normal to the ramp in this section
-		CrossProduct(&rgvnormal[0], &rgvnormal[1], rgvnormal[2]);*/
 
 	delete rgv;
 	delete rgheight;
@@ -1253,15 +1313,25 @@ void Ramp::RenderPolygons(LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D *rgv3D, int *rg
 		rgi[1] = rgicrosssection[i*3 + 1];
 		rgi[2] = rgicrosssection[i*3 + 2];
 
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 32,
-												  rgi, 3, NULL);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32, rgi, 3, 0);
 		}
 	}
 
 void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	if (m_d.m_type == RampType4Wire || m_d.m_type == RampType2Wire || m_d.m_type == RampType3WireLeft || m_d.m_type == RampType3WireRight)
+	
+	if (!m_d.m_IsVisible) return;		// return if no Visible
+
+#ifdef RAMP_RENDER8BITALPHA
+	// Don't render acrylics.  
+	// They are rendered after the ball.
+	if (m_d.m_fAcrylic) return;
+#endif
+
+	if (m_d.m_type == RampType4Wire 
+		|| m_d.m_type == RampType2Wire 
+		|| m_d.m_type == RampType3WireLeft 
+		|| m_d.m_type == RampType3WireRight)
 		{
 		RenderStaticHabitrail(pd3dDevice);
 		}
@@ -1276,23 +1346,74 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		PinImage *pin = m_ptable->GetImage(m_d.m_szImage);
 		float maxtu, maxtv;
 
-		//float r = (m_d.m_color & 255) / 255.0f;
-		//float g = (m_d.m_color & 65280) / 65280.0f;
-		//float b = (m_d.m_color & 16711680) / 16711680.0f;
-
 		D3DMATERIAL7 mtrl;
 		ZeroMemory( &mtrl, sizeof(mtrl) );
+
 
 		if (pin)
 			{
 			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
-			//pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBuffer);
-			ppin3d->SetTexture(pin->m_pdsBuffer);
+
+			//ppin3d->SetTexture(pin->m_pdsBuffer);					//rlc replace with .....	
+
+//rlc add transparent texture support ... replaced this line with >>>>	
+			pin->EnsureColorKey();
+			if (pin->m_fTransparent)
+				{				
+				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+				}
+			else // ppin3d->SetTexture(pin->m_pdsBuffer);
+				{	
+				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+				if (g_pvp->m_pdd.m_fHardwareAccel)
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					}
+				else
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					}
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+				}
+			
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+
+			// Check if this is an acrylic.
+			if  (m_d.m_fAcrylic)
+				{
+				// Set a high threshold for writing transparent pixels to the z buffer.  
+				// This allows some of the ball's pixels to write when under the ramp... 
+				// giving the illusion of transparency (screen door). 
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD) 127);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+
+				// Make sure our textures tile.
+				pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+
+				// Turn off texture filtering.
+				g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_POINT );
+				}
+			else
+				{
+				g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+				}
 
 			mtrl.diffuse.r = mtrl.ambient.r = 1;
 			mtrl.diffuse.g = mtrl.ambient.g = 1;
 			mtrl.diffuse.b = mtrl.ambient.b = 1;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0;//0.5;
+			mtrl.diffuse.a = mtrl.ambient.a = 1;
 			}
 		else
 			{
@@ -1323,6 +1444,9 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		float tablewidth = m_ptable->m_right - m_ptable->m_left;
 		float tableheight = m_ptable->m_bottom - m_ptable->m_top;
 
+		float scalewidth = (((float) g_pplayer->m_pin3d.m_dwRenderWidth) / 64.055f);		// 64.0f is texture width.			
+		float scaleheight = (((float) g_pplayer->m_pin3d.m_dwRenderHeight) / 64.055f);		// 64.0f is texture height.
+		
 		for (i=0;i<(cvertex-1);i++)
 			{
 			rgv3D[0].x = rgv[i].x;
@@ -1345,14 +1469,34 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				{
 				if (m_d.m_imagealignment == ImageModeWorld)
 					{
-					rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
-					rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
-					rgv3D[1].tu = rgv3D[1].x / tablewidth * maxtu;
-					rgv3D[1].tv = rgv3D[1].y / tableheight* maxtv;
-					rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
-					rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
-					rgv3D[3].tu = rgv3D[3].x / tablewidth * maxtu;
-					rgv3D[3].tv = rgv3D[3].y / tableheight* maxtv;
+					// Check if this is an acrylic.
+					if (m_d.m_fAcrylic)
+						{
+							Vertex3D rgvOut[4];
+
+							// Transform vertecies into screen coordinates.
+							g_pplayer->m_pin3d.TransformVertices(&(rgv3D[0]), NULL, 4, &(rgvOut[0]));
+
+							// Calculate texture coordinate for each vertex.
+							for (int r=0; r<4; r++)
+								{
+								// Set texture coordinates so that there is a 1 to 1 correspondence
+								// between texels and pixels.  This is the best case for screen door transparency.
+								rgv3D[r].tu = (rgvOut[r].x / g_pplayer->m_pin3d.m_dwRenderWidth) * scalewidth; 
+								rgv3D[r].tv = (rgvOut[r].y / g_pplayer->m_pin3d.m_dwRenderHeight) * scaleheight; 
+								}
+						}
+					else
+						{
+						rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
+						rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
+						rgv3D[1].tu = rgv3D[1].x / tablewidth * maxtu;
+						rgv3D[1].tv = rgv3D[1].y / tableheight* maxtv;
+						rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
+						rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
+						rgv3D[3].tu = rgv3D[3].x / tablewidth * maxtu;
+						rgv3D[3].tv = rgv3D[3].y / tableheight* maxtv;
+						}
 					}
 				else
 					{
@@ -1369,9 +1513,8 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 4,
-														  rgi, 4, NULL);
+			// Draw the floor of the ramp.
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi, 4, 0);
 			}
 
 		if (pin && !m_d.m_fImageWalls)
@@ -1412,10 +1555,35 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				{
 				if (m_d.m_imagealignment == ImageModeWorld)
 					{
-					rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
-					rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
-					rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
-					rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
+					// Check if this is an acrylic.
+					if (m_d.m_fAcrylic)
+						{
+							Vertex3D rgvOut[4];
+
+							// Transform vertecies into screen coordinates.
+							g_pplayer->m_pin3d.TransformVertices(&(rgv3D[0]), NULL, 4, &(rgvOut[0]));
+
+							// Calculate texture coordinate for each vertex.
+							for (int r=0; r<4; r++)
+								{
+								// Set texture coordinates so that there is a 1 to 1 correspondence
+								// between texels and pixels.  This is the best case for screen door transparency.
+								rgv3D[r].tu = (rgvOut[r].x / g_pplayer->m_pin3d.m_dwRenderWidth) * scalewidth; 
+								rgv3D[r].tv = (rgvOut[r].y / g_pplayer->m_pin3d.m_dwRenderHeight) * scaleheight; 
+								}
+						}
+					else
+						{
+						rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
+						rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
+						rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
+						rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
+
+						rgv3D[1].tu = rgv3D[0].tu;
+						rgv3D[1].tv = rgv3D[0].tv;
+						rgv3D[3].tu = rgv3D[2].tu;
+						rgv3D[3].tv = rgv3D[2].tv;
+						}
 					}
 				else
 					{
@@ -1423,12 +1591,12 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					rgv3D[0].tv = rgratio[i] * maxtv;
 					rgv3D[2].tu = maxtu;
 					rgv3D[2].tv = rgratio[i+1] * maxtv;
-					}
 
-				rgv3D[1].tu = rgv3D[0].tu;
-				rgv3D[1].tv = rgv3D[0].tv;
-				rgv3D[3].tu = rgv3D[2].tu;
-				rgv3D[3].tv = rgv3D[2].tv;
+					rgv3D[1].tu = rgv3D[0].tu;
+					rgv3D[1].tv = rgv3D[0].tv;
+					rgv3D[3].tu = rgv3D[2].tu;
+					rgv3D[3].tv = rgv3D[2].tv;
+					}
 				}
 
 			//2-Sided polygon
@@ -1440,9 +1608,8 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 4,
-														  rgi, 4, NULL);
+			// Draw the wall of the ramp.
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi, 4, 0);
 			rgi[0] = 0;
 			rgi[1] = 3;
 			rgi[2] = 2;
@@ -1450,9 +1617,8 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 4,
-														  rgi, 4, NULL);
+			// Draw the wall of the ramp.
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi, 4, 0);
 			}
 
 		for (i=0;i<(cvertex-1);i++)
@@ -1477,10 +1643,35 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				{
 				if (m_d.m_imagealignment == ImageModeWorld)
 					{
-					rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
-					rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
-					rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
-					rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
+					// Check if this is an acrylic.
+					if (m_d.m_fAcrylic)
+						{
+							Vertex3D rgvOut[4];
+
+							// Transform vertecies into screen coordinates.
+							g_pplayer->m_pin3d.TransformVertices(&(rgv3D[0]), NULL, 4, &(rgvOut[0]));
+
+							// Calculate texture coordinate for each vertex.
+							for (int r=0; r<4; r++)
+								{
+								// Set texture coordinates so that there is a 1 to 1 correspondence
+								// between texels and pixels.  This is the best case for screen door transparency.
+								rgv3D[r].tu = (rgvOut[r].x / g_pplayer->m_pin3d.m_dwRenderWidth) * scalewidth; 
+								rgv3D[r].tv = (rgvOut[r].y / g_pplayer->m_pin3d.m_dwRenderHeight) * scaleheight; 
+								}
+						}
+					else
+						{
+						rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
+						rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
+						rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
+						rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
+
+						rgv3D[1].tu = rgv3D[0].tu;
+						rgv3D[1].tv = rgv3D[0].tv;
+						rgv3D[3].tu = rgv3D[2].tu;
+						rgv3D[3].tv = rgv3D[2].tv;
+						}
 					}
 				else
 					{
@@ -1488,12 +1679,12 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					rgv3D[0].tv = rgratio[i] * maxtv;
 					rgv3D[2].tu = 0;
 					rgv3D[2].tv = rgratio[i+1] * maxtv;
-					}
 
-				rgv3D[1].tu = rgv3D[0].tu;
-				rgv3D[1].tv = rgv3D[0].tv;
-				rgv3D[3].tu = rgv3D[2].tu;
-				rgv3D[3].tv = rgv3D[2].tv;
+					rgv3D[1].tu = rgv3D[0].tu;
+					rgv3D[1].tv = rgv3D[0].tv;
+					rgv3D[3].tu = rgv3D[2].tu;
+					rgv3D[3].tv = rgv3D[2].tv;
+					}
 				}
 
 			//2-Sided polygon
@@ -1505,9 +1696,8 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 4,
-														  rgi, 4, NULL);
+			// Draw the wall of the ramp.
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, rgi, 4, 0);
 			rgi[0] = 0;
 			rgi[1] = 3;
 			rgi[2] = 2;
@@ -1515,9 +1705,8 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  rgv3D, 4,
-														  rgi, 4, NULL);
+			// Draw the wall of the ramp.
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 4,rgi, 4, 0);
 			}
 
 		delete rgv;
@@ -1532,9 +1721,11 @@ void Ramp::RenderMoversFromCache(Pin3D *ppin3d)
 	{
 	}
 
+
 void Ramp::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
+
 
 void Ramp::SetObjectPos()
 	{
@@ -1585,11 +1776,16 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 	bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
 	bw.WriteBool(FID(IMGW), m_d.m_fImageWalls);
 	bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
+	bw.WriteBool(FID(ACRY), m_d.m_fAcrylic);
 	bw.WriteFloat(FID(WLHL), m_d.m_leftwallheight);
 	bw.WriteFloat(FID(WLHR), m_d.m_rightwallheight);
 	bw.WriteFloat(FID(WVHL), m_d.m_leftwallheightvisible);
 	bw.WriteFloat(FID(WVHR), m_d.m_rightwallheightvisible);
 	bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
+	bw.WriteFloat(FID(RFCT), m_d.m_friction);
+	bw.WriteFloat(FID(RSCT), m_d.m_scatter);
+	bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
+	bw.WriteBool(FID(RVIS), m_d.m_IsVisible);	
 
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1600,21 +1796,6 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-	/*ULONG writ = 0;
-	HRESULT hr = S_OK;
-	//int i,temp;
-
-	DWORD dwID = ApcProjectItem.ID();
-	if(FAILED(hr = pstm->Write(&dwID, sizeof dwID, &writ)))
-		return hr;
-
-	if(FAILED(hr = SavePointData(pstm)))
-		return hr;
-
-	if(FAILED(hr = pstm->Write(&m_d, sizeof(RampData), &writ)))
-		return hr;
-
-	return hr;*/
 	}
 
 HRESULT Ramp::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -1630,7 +1811,6 @@ HRESULT Ramp::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, H
 #else
 	ULONG read = 0;
 	HRESULT hr = S_OK;
-	//int i,temp;
 
 	m_ptable = ptable;
 
@@ -1675,6 +1855,7 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(COLR))
 		{
 		pbr->GetInt(&m_d.m_color);
+	//	if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(TMON))
 		{
@@ -1704,6 +1885,10 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetBool(&m_d.m_fCastsShadow);
 		}
+	else if (id == FID(ACRY))
+		{
+		pbr->GetBool(&m_d.m_fAcrylic);
+		}
 	else if (id == FID(NAME))
 		{
 		pbr->GetWideString((WCHAR *)m_wzName);
@@ -1727,6 +1912,22 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(ELAS))
 		{
 		pbr->GetFloat(&m_d.m_elasticity);
+		}
+	else if (id == FID(RFCT))
+		{
+		pbr->GetFloat(&m_d.m_friction);
+		}
+	else if (id == FID(RSCT))
+		{
+		pbr->GetFloat(&m_d.m_scatter);
+		}
+	else if (id == FID(CLDRP))
+		{
+		pbr->GetBool(&m_d.m_fCollidable);
+		}
+	else if (id == FID(RVIS))
+		{
+		pbr->GetBool(&m_d.m_IsVisible);///////////////////////////
 		}
 	else
 		{
@@ -1996,18 +2197,6 @@ STDMETHODIMP Ramp::put_Type(RampType newVal)
 	return S_OK;
 }
 
-/*HRESULT Ramp::GetTypeName(BSTR *pVal)
-	{
-	*pVal = SysAllocString(L"Ramp");
-
-	return S_OK;
-	}*/
-
-/*int Ramp::GetDialogID()
-	{
-	return IDD_PROPRAMP;
-	}*/
-
 void Ramp::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{
 	PropertyPane *pproppane;
@@ -2031,7 +2220,7 @@ void Ramp::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 STDMETHODIMP Ramp::get_Image(BSTR *pVal)
 {
-	OLECHAR wz[512];
+	WCHAR wz[512];
 
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
 	*pVal = SysAllocString(wz);
@@ -2097,6 +2286,22 @@ STDMETHODIMP Ramp::put_CastsShadow(VARIANT_BOOL newVal)
 {
 	STARTUNDO
 	m_d.m_fCastsShadow = VBTOF(newVal);
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::get_Acrylic(VARIANT_BOOL *pVal)
+{
+	*pVal = FTOVB(m_d.m_fAcrylic);
+
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::put_Acrylic(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+	m_d.m_fAcrylic = VBTOF(newVal);
 	STOPUNDO
 
 	return S_OK;
@@ -2211,3 +2416,405 @@ STDMETHODIMP Ramp::put_Elasticity(float newVal)
 
 	return S_OK;
 }
+
+STDMETHODIMP Ramp::get_Friction(float *pVal)
+{
+	*pVal = m_d.m_friction;
+
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::put_Friction(float newVal)
+{
+	STARTUNDO
+
+	if (newVal > 1) newVal = 1;
+	else if (newVal < 0) newVal = 0;
+	m_d.m_friction = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+
+STDMETHODIMP Ramp::get_Scatter(float *pVal)
+{
+	*pVal = m_d.m_scatter;
+
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::put_Scatter(float newVal)
+{
+	STARTUNDO
+
+	m_d.m_scatter = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+//////////////////////////////////////////////////////////
+STDMETHODIMP Ramp::get_Collidable(VARIANT_BOOL *pVal)
+{
+	if (!g_pplayer)	*pVal = FTOVB(m_d.m_fCollidable);
+	else *pVal = FTOVB(m_vhoCollidable.ElementAt(0)->m_fEnabled); 
+
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
+{
+	BOOL fNewVal = VBTOF(newVal);	
+	int i;
+
+	if (!g_pplayer)
+		{	
+		STARTUNDO
+
+		m_d.m_fCollidable = fNewVal;		
+		
+		STOPUNDO
+		}
+	else for (i=0;i < m_vhoCollidable.Size();i++)
+		{
+		m_vhoCollidable.ElementAt(i)->m_fEnabled = fNewVal;	//copy to hit checking on enities composing the object 
+		}		
+
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::get_IsVisible(VARIANT_BOOL *pVal) //temporary value of object
+{
+	*pVal = FTOVB(m_d.m_IsVisible);
+
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
+{
+	
+	if (!g_pplayer )
+		{
+		STARTUNDO
+		m_d.m_IsVisible = VBTOF(newVal);			// set visibility
+		STOPUNDO
+		}
+
+	return S_OK;
+}
+
+
+// Same code as RenderStatic (with the exception of the acrylic test).
+// Copied here to order the rendering of transparent and opaque ramps.
+void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
+	
+	// Don't render if invisible.
+	if (!m_d.m_IsVisible) return;		
+
+	// Don't render non-acrylics. 
+	if (!m_d.m_fAcrylic) return;
+
+	if (m_d.m_type == RampType4Wire 
+		|| m_d.m_type == RampType2Wire 
+		|| m_d.m_type == RampType3WireLeft 
+		|| m_d.m_type == RampType3WireRight)
+		{
+		RenderStaticHabitrail(pd3dDevice);
+		}
+	else
+		{
+		Vertex3D rgv3D[4];
+		WORD rgi[4];
+		int i;
+
+		Pin3D *ppin3d = &g_pplayer->m_pin3d;
+
+		PinImage *pin = m_ptable->GetImage(m_d.m_szImage);
+		float maxtu, maxtv;
+
+		D3DMATERIAL7 mtrl;
+		ZeroMemory( &mtrl, sizeof(mtrl) );
+
+
+		if (pin)
+			{
+			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
+
+			//ppin3d->SetTexture(pin->m_pdsBuffer);					//rlc replace with .....	
+
+//rlc add transparent texture support ... replaced this line with >>>>	
+			pin->EnsureColorKey();
+			if (pin->m_fTransparent)
+				{				
+				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+				}
+			else // ppin3d->SetTexture(pin->m_pdsBuffer);
+				{	
+				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+				if (g_pvp->m_pdd.m_fHardwareAccel)
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					}
+				else
+					{
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+					}
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+				}
+			
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+
+			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+
+			mtrl.diffuse.r = mtrl.ambient.r = 1;
+			mtrl.diffuse.g = mtrl.ambient.g = 1;
+			mtrl.diffuse.b = mtrl.ambient.b = 1;
+			mtrl.diffuse.a = mtrl.ambient.a = 1;
+			}
+		else
+			{
+			float r = (m_d.m_color & 255) / 255.0f;
+			float g = (m_d.m_color & 65280) / 65280.0f;
+			float b = (m_d.m_color & 16711680) / 16711680.0f;
+
+			mtrl.diffuse.r = mtrl.ambient.r = r;
+			mtrl.diffuse.g = mtrl.ambient.g = g;
+			mtrl.diffuse.b = mtrl.ambient.b = b;
+			mtrl.diffuse.a = mtrl.ambient.a = 1;
+			}
+
+		pd3dDevice->SetMaterial(&mtrl);
+
+		Vertex *rgv;
+		float *rgheight;
+		float *rgratio;
+		int cvertex;
+
+		rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
+
+		for (i=0;i<4;i++)
+			{
+			rgi[i]=i;
+			}
+
+		float tablewidth = m_ptable->m_right - m_ptable->m_left;
+		float tableheight = m_ptable->m_bottom - m_ptable->m_top;
+
+		for (i=0;i<(cvertex-1);i++)
+			{
+			rgv3D[0].x = rgv[i].x;
+			rgv3D[0].y = rgv[i].y;
+			rgv3D[0].z = rgheight[i];
+
+			rgv3D[3].x = rgv[i+1].x;
+			rgv3D[3].y = rgv[i+1].y;
+			rgv3D[3].z = rgheight[i+1];
+
+			rgv3D[2].x = rgv[cvertex*2-i-2].x;
+			rgv3D[2].y = rgv[cvertex*2-i-2].y;
+			rgv3D[2].z = rgheight[i+1];
+
+			rgv3D[1].x = rgv[cvertex*2-i-1].x;
+			rgv3D[1].y = rgv[cvertex*2-i-1].y;
+			rgv3D[1].z = rgheight[i];
+
+			if (pin)
+				{
+				if (m_d.m_imagealignment == ImageModeWorld)
+					{
+					rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
+					rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
+					rgv3D[1].tu = rgv3D[1].x / tablewidth * maxtu;
+					rgv3D[1].tv = rgv3D[1].y / tableheight* maxtv;
+					rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
+					rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
+					rgv3D[3].tu = rgv3D[3].x / tablewidth * maxtu;
+					rgv3D[3].tv = rgv3D[3].y / tableheight* maxtv;
+					}
+				else
+					{
+					rgv3D[0].tu = maxtu;
+					rgv3D[0].tv = rgratio[i] * maxtv;
+					rgv3D[1].tu = 0;
+					rgv3D[1].tv = rgratio[i] * maxtv;
+					rgv3D[2].tu = 0;
+					rgv3D[2].tv = rgratio[i+1] * maxtv;
+					rgv3D[3].tu = maxtu;
+					rgv3D[3].tv = rgratio[i+1] * maxtv;
+					}
+				}
+
+			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
+
+			// Draw the floor of the ramp.
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi, 4, 0);
+			}
+
+		if (pin && !m_d.m_fImageWalls)
+			{
+			ppin3d->SetTexture(NULL);
+
+			float r = (m_d.m_color & 255) / 255.0f;
+			float g = (m_d.m_color & 65280) / 65280.0f;
+			float b = (m_d.m_color & 16711680) / 16711680.0f;
+
+			mtrl.diffuse.r = mtrl.ambient.r = r;
+			mtrl.diffuse.g = mtrl.ambient.g = g;
+			mtrl.diffuse.b = mtrl.ambient.b = b;
+			mtrl.diffuse.a = mtrl.ambient.a = 1;
+
+			pd3dDevice->SetMaterial(&mtrl);
+			}
+
+		for (i=0;i<(cvertex-1);i++)
+			{
+			rgv3D[0].x = rgv[i].x;
+			rgv3D[0].y = rgv[i].y;
+			rgv3D[0].z = rgheight[i];
+
+			rgv3D[3].x = rgv[i+1].x;
+			rgv3D[3].y = rgv[i+1].y;
+			rgv3D[3].z = rgheight[i+1];
+
+			rgv3D[2].x = rgv[i+1].x;
+			rgv3D[2].y = rgv[i+1].y;
+			rgv3D[2].z = rgheight[i+1] + m_d.m_rightwallheightvisible;
+
+			rgv3D[1].x = rgv[i].x;
+			rgv3D[1].y = rgv[i].y;
+			rgv3D[1].z = rgheight[i] + m_d.m_rightwallheightvisible;
+
+			if (pin && m_d.m_fImageWalls)
+				{
+				if (m_d.m_imagealignment == ImageModeWorld)
+					{
+					rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
+					rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
+					rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
+					rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
+					}
+				else
+					{
+					rgv3D[0].tu = maxtu;
+					rgv3D[0].tv = rgratio[i] * maxtv;
+					rgv3D[2].tu = maxtu;
+					rgv3D[2].tv = rgratio[i+1] * maxtv;
+					}
+
+				rgv3D[1].tu = rgv3D[0].tu;
+				rgv3D[1].tv = rgv3D[0].tv;
+				rgv3D[3].tu = rgv3D[2].tu;
+				rgv3D[3].tv = rgv3D[2].tv;
+				}
+
+			//2-Sided polygon
+
+			rgi[0] = 0;
+			rgi[1] = 1;
+			rgi[2] = 2;
+			rgi[3] = 3;
+
+			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
+
+			// Draw the wall of the ramp.
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi, 4, 0);
+			rgi[0] = 0;
+			rgi[1] = 3;
+			rgi[2] = 2;
+			rgi[3] = 1;
+
+			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
+
+			// Draw the wall of the ramp.
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi, 4, 0);
+			}
+
+		for (i=0;i<(cvertex-1);i++)
+			{
+			rgv3D[0].x = rgv[cvertex*2-i-2].x;
+			rgv3D[0].y = rgv[cvertex*2-i-2].y;
+			rgv3D[0].z = rgheight[i+1];
+
+			rgv3D[3].x = rgv[cvertex*2-i-1].x;
+			rgv3D[3].y = rgv[cvertex*2-i-1].y;
+			rgv3D[3].z = rgheight[i];
+
+			rgv3D[2].x = rgv[cvertex*2-i-1].x;
+			rgv3D[2].y = rgv[cvertex*2-i-1].y;
+			rgv3D[2].z = rgheight[i] + m_d.m_leftwallheightvisible;
+
+			rgv3D[1].x = rgv[cvertex*2-i-2].x;
+			rgv3D[1].y = rgv[cvertex*2-i-2].y;
+			rgv3D[1].z = rgheight[i+1] + m_d.m_leftwallheightvisible;
+
+			if (pin && m_d.m_fImageWalls)
+				{
+				if (m_d.m_imagealignment == ImageModeWorld)
+					{
+					rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
+					rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
+					rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
+					rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
+					}
+				else
+					{
+					rgv3D[0].tu = 0;
+					rgv3D[0].tv = rgratio[i] * maxtv;
+					rgv3D[2].tu = 0;
+					rgv3D[2].tv = rgratio[i+1] * maxtv;
+					}
+
+				rgv3D[1].tu = rgv3D[0].tu;
+				rgv3D[1].tv = rgv3D[0].tv;
+				rgv3D[3].tu = rgv3D[2].tu;
+				rgv3D[3].tv = rgv3D[2].tv;
+				}
+
+			//2-Sided polygon
+
+			rgi[0] = 0;
+			rgi[1] = 1;
+			rgi[2] = 2;
+			rgi[3] = 3;
+
+			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
+
+			// Draw the wall of the ramp.
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, rgi, 4, 0);
+			rgi[0] = 0;
+			rgi[1] = 3;
+			rgi[2] = 2;
+			rgi[3] = 1;
+
+			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
+
+			// Draw the wall of the ramp.
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 4,rgi, 4, 0);
+			}
+
+		delete rgv;
+		delete rgheight;
+		delete rgratio;
+
+		ppin3d->SetTexture(NULL);
+		}
+	}
+	
+
+
+

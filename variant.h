@@ -1,3 +1,4 @@
+#pragma once
 #ifndef __VARIANT_H__
 #define __VARIANT_H__
 
@@ -42,13 +43,6 @@ HRESULT HrSysAllocString(BSTR *pdest, const OLECHAR *);
 #define hrNotImplemented	ResultFromScode(E_NOTIMPL)
 #define hrFalse				ResultFromScode(S_FALSE)
 #define hrUnexpected		ResultFromScode(E_UNEXPECTED)
-
-// Automation booleans
-/*#define vbTrue  (-1)
-#define vbFalse (0)
-#define VbBoolFromF(f)		(!(f) - 1)
-#define FFromVbBool(vb)		((vb) != 0)
-#define HrFromF(f)			((f) ? hrNoError : hrFail)*/
 
 // Variant helpers
 #define VariantAlloc(_pvar)			{_pvar = (VARIANT *) MsoPvAlloc(sizeof(VARIANT), dgMisc); if (_pvar != NULL) VariantInit(_pvar);}

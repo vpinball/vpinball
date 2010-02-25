@@ -2,8 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "main.h"
+#include "StdAfx.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -28,15 +27,13 @@ PinSound::~PinSound()
 PinDirectSound::PinDirectSound()
 	{
 	m_pDS = NULL;
-	//m_pDSBuffer = NULL;
 	m_pWaveSoundRead = NULL;
 	}
 
 PinDirectSound::~PinDirectSound()
 	{
 	SAFE_DELETE(m_pWaveSoundRead);
-	//SAFE_RELEASE(m_pDSBuffer);
-    SAFE_RELEASE(m_pDS);
+	SAFE_RELEASE(m_pDS);
 	}
 
 void PinDirectSound::InitDirectSound(HWND hwnd)
@@ -93,8 +90,6 @@ void PinDirectSound::InitDirectSound(HWND hwnd)
 		}
 
     SAFE_RELEASE( pDSBPrimary );
-
-	//LoadWaveFile("d:\\gdk\\vbatest\\sounds\\sound18.wav");
 
     return;// S_OK;
 }
@@ -156,8 +151,7 @@ HRESULT PinDirectSound::CreateStaticBuffer(TCHAR* strFileName, PinSound *pps)
     if( FAILED( m_pWaveSoundRead->Open( strFileName ) ) )
     {
 		ShowError("Could not open file.");
-        //SetFileUI( hDlg, TEXT("Bad wave file.") );
-		return E_FAIL;
+        return E_FAIL;
     }
 
     // Set up the direct sound buffer, and only request the flags needed
@@ -304,36 +298,14 @@ PinMusic::PinMusic()
 		{
 		g_AudioCreateReaderFunc = NULL;
 		}
-
-	//XAudPlayer xap;
-
-	//xap.Init("D:\\Games\\AOK\\Sound\\stream\\Celt.mp3");
-
-	//m_hmodWMA = NULL;
-	//g_AudioCreateReaderFunc = NULL;
 	}
 
 void PinMusic::Foo()
 	{
-	/*if (g_AudioCreateReaderFunc)
-		{
-		m_pcsimpleplayer = new CSimplePlayer();
-		HRESULT hrFoo;
-		hrFoo = m_pcsimpleplayer->Play(L"d:\\songs\\raw\\wm_start.wma", NULL, &hrFoo);
-		}*/
 	}
 
 PinMusic::~PinMusic()
 	{
-	/*if (m_pcsimpleplayer)
-		{
-		m_pcsimpleplayer->Stop();
-		//m_csimpleplayer.m_pReader->Stop();
-		//m_csimpleplayer.m_pDSBuffer->Stop();
-
-		//m_csimpleplayer->Release();
-		m_pcsimpleplayer->Release();
-		}*/
 
 	if (m_hmodWMA)
 		{
