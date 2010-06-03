@@ -91,7 +91,7 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
         dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
 		dipdw.diph.dwObj        = pdidoi->dwType; // Specify the enumerated axis
 		dipdw.diph.dwHow        = DIPH_BYID;         
-		dipdw.dwData            = 0;
+		dipdw.dwData            = 1000; //used to be 0 -- 1000 changes deadzone to 10% of total range
  
         // Set the deadband to zero
         if( FAILED( ppinput->m_pJoystick[e_JoyCnt]->SetProperty( DIPROP_DEADZONE, &dipdw.diph))) 
@@ -313,7 +313,7 @@ void PinInput::Init(HWND hwnd)
 
 		hr = m_pKeyboard->SetDataFormat( &c_dfDIKeyboard );
 
-		hr = m_pKeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
+		hr = m_pKeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 		
 		DIPROPDWORD dipdw;
 
