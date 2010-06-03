@@ -3342,7 +3342,7 @@ int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //			char szSVNDate[]= SVNDATE;
 //			char szSVNRev[]= SVNREVISION;
 		
-			lstrcpy(szVersion, "Version 9.0.7 - "); //rlc add time and date to compilation version
+			lstrcpy(szVersion, "Version 9.0.8 - "); //rlc add time and date to compilation version
 			_itoa(BUILD_NUMBER, szBuild, 10);
 			lstrcat(szVersion, szBuild);
 //			lstrcat(szVersion, "-");
