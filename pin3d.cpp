@@ -263,12 +263,14 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateZBufferOffscreen(int width, int height)
 	if (g_pvp->m_pdd.m_fHardwareAccel == fTrue)
 		{
 		ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
-//		ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM; //added BDS - corrects "Could not create offscreen Z-surface.", however renders slower on lower end hardware
 		}
 	else
 		{
 		ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
 		}
+
+	bool retry = true;
+retryall:
 
     // Find a suitable z buffer format.
     m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback, (VOID*)&ddsd.ddpfPixelFormat );
@@ -342,8 +344,15 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateZBufferOffscreen(int width, int height)
 
 		count++;
 	}
-	 
+
 	if(FAILED(hr)) {
+		// if all failed try with additional flag
+		if(retry) {
+			retry = false;
+			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM; //added BDS - corrects "Could not create offscreen Z-surface.", however renders slower on lower end hardware
+			goto retryall;
+		}
+
 		if( hr != DDERR_OUTOFVIDEOMEMORY )
 		{
 			ShowError("Could not create offscreen Z-surface.");
