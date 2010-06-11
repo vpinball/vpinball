@@ -1383,8 +1383,8 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (pexinfo->m_fHasCaption) // Null title means not an expando
 				{
-				int xPos = LOWORD(lParam); 
-				int yPos = HIWORD(lParam);
+				//const int xPos = LOWORD(lParam); 
+				const int yPos = HIWORD(lParam);
 				if (yPos < 16)//wParam == HTCAPTION)
 					{
 					if (pexinfo->m_fExpanded)

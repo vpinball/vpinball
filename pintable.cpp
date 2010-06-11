@@ -1583,7 +1583,6 @@ HANDLE hmyfont;
 
 void PinTable::Play()
 	{
-	short foo = 1;
 	char szLoadDir[MAX_PATH];
 
 	mixer_volmod( m_tblVolmod );
@@ -2184,7 +2183,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 		if(SUCCEEDED(hr = pstgData->CreateStream(L"MAC", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
 			{
 			ULONG writ;
-			int version = CURRENT_FILE_FORMAT_VERSION; //0.3
+			//int version = CURRENT_FILE_FORMAT_VERSION; //0.3
 			pstmItem->Write(hashval, hashlen, &writ);
 			pstmItem->Release();
 			pstmItem = NULL;
@@ -2904,7 +2903,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 			// Authentication block
 
 			BYTE hashvalOld[256];
-			DWORD hashlenOld = 256;
+			//DWORD hashlenOld = 256;
 
 			if (version > 40)
 				{
@@ -6436,8 +6435,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 		case DISPID_Image5:
 			{
 			cvar = m_vimage.Size();
-			int ivar;
-
+			
 			rgstr = (WCHAR **) CoTaskMemAlloc((cvar+1) * sizeof(WCHAR *));
 			rgdw = (DWORD *) CoTaskMemAlloc((cvar+1) * sizeof DWORD);
 
@@ -6448,7 +6446,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 			rgstr[0] = wzDst;
 			rgdw[0] = -1;
 
-			for (ivar = 0 ; ivar < cvar ; ivar++)
+			for (int ivar = 0 ; ivar < cvar ; ivar++)
 				{
 				char *szSrc = m_vimage.ElementAt(ivar)->m_szName;
 				DWORD cwch = lstrlen(szSrc)+1;
@@ -6471,8 +6469,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
         case DISPID_Sound:
 			{
             cvar = m_vsound.Size();
-			int ivar;
-
+			
 			rgstr = (WCHAR **) CoTaskMemAlloc((cvar+1) * sizeof(WCHAR *));
 			rgdw = (DWORD *) CoTaskMemAlloc((cvar+1) * sizeof DWORD);
 
@@ -6482,7 +6479,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 			rgstr[0] = wzDst;
 			rgdw[0] = -1;
 
-			for (ivar = 0 ; ivar < cvar ; ivar++)
+			for (int ivar = 0 ; ivar < cvar ; ivar++)
 				{
                 char *szSrc = m_vsound.ElementAt(ivar)->m_szName;
 				DWORD cwch = lstrlen(szSrc)+1;
@@ -6505,7 +6502,6 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
         case DISPID_Collection:
 			{
             cvar = m_vcollection.Size();
-			int ivar;
 
 			rgstr = (WCHAR **) CoTaskMemAlloc((cvar+1) * sizeof(WCHAR *));
 			rgdw = (DWORD *) CoTaskMemAlloc((cvar+1) * sizeof DWORD);
@@ -6516,7 +6512,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 			rgstr[0] = wzDst;
 			rgdw[0] = -1;
 
-			for (ivar = 0 ; ivar < cvar ; ivar++)
+			for (int ivar = 0 ; ivar < cvar ; ivar++)
 				{
 				DWORD cwch = sizeof(m_vcollection.ElementAt(ivar)->m_wzName)+sizeof(DWORD);
 				wzDst = (WCHAR *) CoTaskMemAlloc(cwch);
@@ -6538,11 +6534,10 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 		case DISPID_Surface:
 			{
 			cvar = 0;
-			int ivar;
 
 			BOOL fRamps = fTrue;
 
-			for (ivar = 0;ivar < m_vedit.Size();ivar++)
+			for (int ivar = 0;ivar < m_vedit.Size();ivar++)
 				{
 				if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface || (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp))
 					{
@@ -6563,7 +6558,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 			rgdw[cvar] = -1;
 			cvar++;
 
-			for (ivar = 0;ivar < m_vedit.Size();ivar++)
+			for (int ivar = 0;ivar < m_vedit.Size();ivar++)
 				{
 				if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface|| (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp))
 					{

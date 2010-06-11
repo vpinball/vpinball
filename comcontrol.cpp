@@ -575,7 +575,7 @@ void PinComControl::CreateControl(IStream *pstm)
 	HRESULT hr;
 
 	AtlAxWinInit();
-	RECT rcWnd = {0, 0, 200, 200};
+	//RECT rcWnd = {0, 0, 200, 200};
 
 	CComPtr<IUnknown> spUnkContainer;
 

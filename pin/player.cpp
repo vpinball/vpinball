@@ -1635,7 +1635,7 @@ void Player::UltraPlunger(void)	// called on every intergral physics frame
 
 	if (movedPlunger < 3) 
 		{
-		int init = IIR_Order;
+		//int init = IIR_Order;
 		curMechPlungerPos = 0;
 		return;	// not until a real value is entered
 		}
@@ -1925,7 +1925,7 @@ void Player::Render()
 #endif
 
 	const U64 m_RealTimeClock = usec();
-	const U32 new_msec = m_RealTimeClock/1000;
+	const U32 new_msec = (U32)(m_RealTimeClock/1000);
 
 	if (m_fNoTimeCorrect) // After debugging script
 		{
@@ -2007,7 +2007,7 @@ void Player::Render()
 #else // PLAYBACK
 
 #ifdef TIMECORRECT
-	frametime = timepassed * 100.0;
+	frametime = (float)(timepassed * 100.0);
 	//frametime = 1.456927f;
 #else // TIMECORRECT
 	frametime = 0.45f;
@@ -3304,10 +3304,10 @@ void Player::DoDebugObjectMenu(int x, int y)
 	ballT.m_hittime = 1;
 	ballT.CalcBoundingRect();
 
-	const float slope = (v3d2.y - v3d.y)/(v3d2.z - v3d.z);
+	//const float slope = (v3d2.y - v3d.y)/(v3d2.z - v3d.z);
 	//const float yhit = v3d.y - (v3d.z*slope);
 
-	const float slopex = (v3d2.x - v3d.x)/(v3d2.z - v3d.z);
+	//const float slopex = (v3d2.x - v3d.x)/(v3d2.z - v3d.z);
 	//const float xhit = v3d.x - (v3d.z*slopex);
 
 	Vector<HitObject> vhoHit;
@@ -3762,10 +3762,10 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case WM_NOTIFY:
 				{
-				int idCtrl = (int) wParam;
+				//int idCtrl = (int) wParam;
 				NMHDR *pnmh = (LPNMHDR) lParam;
 				SCNotification *pscnmh = (SCNotification *)lParam;
-				HWND hwndRE = pnmh->hwndFrom;
+				//HWND hwndRE = pnmh->hwndFrom;
 				int code = pnmh->code;
 				
 				switch (code)

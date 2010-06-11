@@ -127,10 +127,6 @@ void Kicker::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	WORD rgi[8];
-	Vertex3D rgv3D[49];
-	Vertex3D rgvBorder[16];
-	WORD rgiNormal[3];
 	RECT rcBounds;
 	LPDIRECTDRAWSURFACE7 pddsBufferBack;
 	LPDIRECTDRAWSURFACE7 pddsMask;
@@ -160,6 +156,8 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
 	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
+	Vertex3D rgv3D[49];
+	Vertex3D rgvBorder[16];
 	for (int l=0;l<16;l++)
 		{
 		const float angle = (float)(M_PI*2.0/16.0)*(float)l;
@@ -197,6 +195,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		// Draw outer ring
 		for (WORD l=1;l<15;l++)
 			{
+			WORD rgi[3];
 			rgi[0] = 0;
 			rgi[1] = l;
 			rgi[2] = l+1;
@@ -228,6 +227,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	// Draw mask
 	for (WORD l=1;l<15;l++)
 			{
+			WORD rgi[3];
 			rgi[0] = 16+0;
 			rgi[1] = 16+l;
 			rgi[2] = 16+l+1;
@@ -307,6 +307,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (WORD l=1;l<15;l++)
 					{
+					WORD rgi[3];
 					rgi[0] = 0;
 					rgi[1] = l;
 					rgi[2] = l+1;
@@ -325,10 +326,12 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<16;l++)
 				{
+				WORD rgiNormal[3];
 				rgiNormal[0] = (l - 1 + 16) % 16;
 				rgiNormal[1] = rgiNormal[0] + 16;
 				rgiNormal[2] = rgiNormal[0] + 2;
 
+				WORD rgi[4];
 				rgi[0] = l;
 				rgi[1] = l+16;
 				rgi[2] = (l+1) % 16 + 16;
@@ -356,6 +359,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<16;l++)
 				{
+				WORD rgi[3];
 				rgi[0] = 48;
 				rgi[1] = l + 16;
 				rgi[2] = ((l + 1)&15) + 16;

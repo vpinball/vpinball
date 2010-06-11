@@ -1732,7 +1732,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			int id;
 			code = HIWORD(wParam);
 			id = LOWORD(wParam);
-			HWND hwndControl = (HWND)lParam;
+			//HWND hwndControl = (HWND)lParam;
 
 			switch (code)
 				{
@@ -1838,7 +1838,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 		case WM_NOTIFY:
 			{
-			int idCtrl = (int) wParam;
+			//int idCtrl = (int) wParam;
 			NMHDR *pnmh = (LPNMHDR) lParam;
 			HWND hwndRE = pnmh->hwndFrom;
 			int code = pnmh->code;

@@ -188,7 +188,7 @@ void ShadowSur::PolygonSkew(Vertex *rgv, int count, float *rgz, float z1, float 
 
 void ShadowSur::PolylineSkew(Vertex *rgv, int count, float *rgz, float z1, float z2)
 	{
-	const int basepixel = SCALEXf(m_z);
+	//const int basepixel = SCALEXf(m_z);
 	//const int bottom = SCALEX(z1) - basepixel;
 	//const int top = SCALEX(z2) - basepixel;
 

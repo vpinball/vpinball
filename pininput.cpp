@@ -57,7 +57,7 @@ PinInput::~PinInput()
 BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
                                    VOID* pContext )
 {
-    HWND hDlg = (HWND)pContext;
+    //HWND hDlg = (HWND)pContext;
 	PinInput *ppinput = (PinInput *)pContext;
 
 #ifdef _DEBUG
