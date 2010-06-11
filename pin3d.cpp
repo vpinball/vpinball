@@ -467,7 +467,7 @@ HRESULT Pin3D::InitDD(HWND hwnd, BOOL fFullScreen, int screenwidth, int screenhe
 		ddsd.dwFlags	= DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT | DDSD_TEXTURESTAGE;
 		ddsd.dwWidth	= m_dwRenderWidth; 
 		ddsd.dwHeight	= m_dwRenderHeight; 
-		ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_3DDEVICE | DDSCAPS_VIDEOMEMORY; 
+		ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_3DDEVICE | DDSCAPS_VIDEOMEMORY;
 
 		// Find a transparent pixel format with 8 bit alpha.
 		m_pd3dDevice->EnumTextureFormats ( Display_EnumurateTransparentTextureFormats, &(ddsd.ddpfPixelFormat) );
@@ -545,15 +545,16 @@ HRESULT Pin3D::Create3DDevice(GUID* pDeviceGUID)
 
 	DWORD caps = ddfoo.dpcLineCaps.dwRasterCaps;
 
-	if (caps & D3DPRASTERCAPS_ANTIALIASEDGES)
+	if (caps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT)
 		{
-
+			//!! hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ANTIALIAS, D3DANTIALIAS_SORTINDEPENDENT);
+			//   and/or set ddsCaps.dwCaps2 = DDSCAPS2_HINTANTIALIASING (if DDSCAPS_3DDEVICE also enabled)
 		}
 
 	// Finally, set the viewport for the newly created device
 	D3DVIEWPORT7 vp = { 0, 0, m_dwRenderWidth, m_dwRenderHeight, 0.0f, 1.0f };
 
-	if( FAILED( m_pd3dDevice->SetViewport( &vp ) ) )
+	if( FAILED(hr = m_pd3dDevice->SetViewport( &vp ) ) )
 		{
 			ShowError("Could not set viewport.");
 			return hr; 
