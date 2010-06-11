@@ -1109,12 +1109,12 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				}
 
 			{
-			const float inv_len = 1.0f/(vnormal[0].x * vnormal[0].x + vnormal[0].y * vnormal[0].y); //!! BUG?! sqrtf?
+			const float inv_len = 1.0f/sqrtf(vnormal[0].x * vnormal[0].x + vnormal[0].y * vnormal[0].y);
 			vnormal[0].x *= inv_len;
 			vnormal[0].y *= inv_len;
 			}
 			{
-			const float inv_len = 1.0f/(vnormal[1].x * vnormal[1].x + vnormal[1].y * vnormal[1].y); //!! BUG?! sqrtf?
+			const float inv_len = 1.0f/sqrtf(vnormal[1].x * vnormal[1].x + vnormal[1].y * vnormal[1].y);
 			vnormal[1].x *= inv_len;
 			vnormal[1].y *= inv_len;
 			}
