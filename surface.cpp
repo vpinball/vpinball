@@ -67,14 +67,14 @@ HRESULT Surface::InitTarget(PinTable *ptable, float x, float y)
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x-30, y-6);
+		pdp->Init(this, x-30.0f, y-6.0f);
 		m_vdpoint.AddElement(pdp);
 		}
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x-30, y+6);
+		pdp->Init(this, x-30.0f, y+6.0f);
 		pdp->m_fAutoTexture = fFalse;
 		pdp->m_texturecoord = 0.0;
 		m_vdpoint.AddElement(pdp);
@@ -83,7 +83,7 @@ HRESULT Surface::InitTarget(PinTable *ptable, float x, float y)
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x+30, y+6);
+		pdp->Init(this, x+30.0f, y+6.0f);
 		pdp->m_fAutoTexture = fFalse;
 		pdp->m_texturecoord = 1.0;
 		m_vdpoint.AddElement(pdp);
@@ -92,7 +92,7 @@ HRESULT Surface::InitTarget(PinTable *ptable, float x, float y)
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x+30, y-6);
+		pdp->Init(this, x+30.0f, y-6.0f);
 		m_vdpoint.AddElement(pdp);
 		}
 
@@ -151,9 +151,6 @@ void Surface::SetDefaults()
 
 void Surface::PreRender(Sur *psur)
 	{
-
-	int cvertex;
-
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
 
@@ -173,6 +170,7 @@ void Surface::PreRender(Sur *psur)
 	// Don't want border color to be over-ridden when selected - that will be drawn later
 	psur->SetBorderColor(-1,fFalse,0);
 
+	int cvertex;
 	if (!m_d.m_fInner)
 		{
 		m_rgvT[m_cvertexT].x = m_ptable->m_left;
@@ -326,8 +324,7 @@ void Surface::RenderBlueprint(Sur *psur)
 	}
 
 void Surface::RenderShadow(ShadowSur *psur, float height)
-	{
-	
+	{	
 	if ( (m_d.m_fCastsShadow != fTrue) || (m_ptable->m_fRenderShadows == fFalse) )
 		return;
 
@@ -452,9 +449,6 @@ void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
 
 void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 	{
-	RenderVertex *pv1, *pv2, *pv3, *pv4;
-	//Vector<Vertex> vvertex;
-
 	int count;
 	int cpoint;
 	int cpointCur;
@@ -494,10 +488,10 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 
 	for (int i=0;i<count;i++)
 		{
-		pv1 = &rgv[i];
-		pv2 = &rgv[(i+1) % count];
-		pv3 = &rgv[(i+2) % count];
-		pv4 = &rgv[(i+3) % count];
+		RenderVertex * const pv1 = &rgv[i];
+		RenderVertex * const pv2 = &rgv[(i+1) % count];
+		RenderVertex * const pv3 = &rgv[(i+2) % count];
+		RenderVertex * const pv4 = &rgv[(i+3) % count];
 
 		if (m_d.m_fInner)
 			{
@@ -530,9 +524,7 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 			}
 		else
 			{
-			Hit3DPoly *ph3dpoly;
-
-			ph3dpoly = new Hit3DPoly(rgv3D,count);
+			Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
 			ph3dpoly->m_pfe = (IFireEvents *)this;
 
 			ph3dpoly->m_fVisible = fTrue;
@@ -552,8 +544,6 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 	{
 	LineSeg *plineseg;
 	LineSegSlingshot *plinesling;
-	Joint *pjoint;
-	Vertex vt1, vt2;
 
 	if (!fSlingshot)
 		{
@@ -607,6 +597,7 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 
 	plineseg->CalcNormal();
 
+	Vertex vt1, vt2;
 	vt1.x = pv1->x - pv2->x;
 	vt1.y = pv1->y - pv2->y;
 
@@ -617,7 +608,7 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 
 	if (dot < 0) // Inside edges don't need joint hit-testing (dot == 0 continuous segments should mathematically never hit)
 		{
-		pjoint = new Joint();
+		Joint * const pjoint = new Joint();
 
 		if (m_d.m_fHitEvent)
 			{
@@ -667,8 +658,6 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 		pjoint->normal.y = pjoint->normal.y*inv_length;
 		}
 		}
-
-	return;
 	}
 
 void Surface::GetBoundingVertices(Vector<Vertex3D> *pvvertex3D)
@@ -739,20 +728,17 @@ void Surface::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	WORD rgi[8];
-	Vertex3D rgv3D[32];
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
-	ObjFrame *pof;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	float slingbottom = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.2f) + m_d.m_heightbottom;
-	float slingtop = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.8f) + m_d.m_heightbottom;
+	const float slingbottom = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.2f) + m_d.m_heightbottom;
+	const float slingtop = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.8f) + m_d.m_heightbottom;
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 
 	for (int i=0;i<m_vlinesling.Size();i++)
 		{
-		LineSegSlingshot *plinesling = m_vlinesling.ElementAt(i);
+		LineSegSlingshot * const plinesling = m_vlinesling.ElementAt(i);
 		
 		plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation == fTrue); //rlc
 
@@ -771,12 +757,13 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetMaterial(&mtrl);
 
-		pof = new ObjFrame();
+		ObjFrame * const pof = new ObjFrame();
 		
 		plinesling->m_slingshotanim.m_pobjframe = pof;		
 
 		ppin3d->ClearExtents(&plinesling->m_slingshotanim.m_rcBounds, &plinesling->m_slingshotanim.m_znear, &plinesling->m_slingshotanim.m_zfar);
 
+		Vertex3D rgv3D[32];
 		rgv3D[0].x = plinesling->v1.x;
 		rgv3D[0].y = plinesling->v1.y;
 		rgv3D[0].z = slingbottom;
@@ -822,6 +809,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
+		WORD rgi[8];
 		rgi[0] = 0;
 		rgi[1] = 1;
 		rgi[2] = 4;
@@ -905,15 +893,12 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	{
 	ObjFrame *pof = NULL;
 
-	Vertex3D rgv3D[4];
-	WORD rgi[4];
-	
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	PinImage *pin = m_ptable->GetImage(m_d.m_szImage);
+	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 	float maxtu, maxtv;
 
-	PinImage *pinSide = m_ptable->GetImage(m_d.m_szSideImage);
+	PinImage * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
 	float maxtuSide, maxtvSide;
 
 	if (fMover)
@@ -1015,7 +1000,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	int cvertex;
 
 	RenderVertex *rgv;
-	Vertex *rgnormal;
 	float *rgtexcoord = NULL;
 
 		{
@@ -1037,10 +1021,11 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			}
 		}
 
-	rgnormal = new Vertex[cvertex];
+	Vertex * const rgnormal = new Vertex[cvertex];
 
 	pd3dDevice->SetMaterial(&mtrl);
 
+	WORD rgi[4];
 	for (WORD i=0;i<4;i++)
 		{
 		rgi[i] = i;
@@ -1048,8 +1033,8 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 	for (int i=0;i<cvertex;i++)
 		{
-		RenderVertex *pv1 = &rgv[i];
-		RenderVertex *pv2 = &rgv[(i+1) % cvertex];
+		const RenderVertex * const pv1 = &rgv[i];
+		const RenderVertex * const pv2 = &rgv[(i+1) % cvertex];
 		const float dx = pv1->x - pv2->x;
 		const float dy = pv1->y - pv2->y;
 
@@ -1066,10 +1051,11 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		for (int i=0;i<cvertex;i++)
 			{
 			//RenderVertex *pv0 = &rgv[(i-1+cvertex) % cvertex];
-			RenderVertex *pv1 = &rgv[i];
-			RenderVertex *pv2 = &rgv[(i+1) % cvertex];
+			const RenderVertex * const pv1 = &rgv[i];
+			const RenderVertex * const pv2 = &rgv[(i+1) % cvertex];
 			//RenderVertex *pv3 = &rgv[(i+2) % cvertex];
 
+			Vertex3D rgv3D[4];
 			rgv3D[0].Set(pv1->x,pv1->y,m_d.m_heightbottom);
 			rgv3D[1].Set(pv1->x,pv1->y,m_d.m_heighttop);
 			rgv3D[2].Set(pv2->x,pv2->y,m_d.m_heighttop);
@@ -1366,6 +1352,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			const RenderVertex * const pv1 = &rgv[ptri->b];
 			const RenderVertex * const pv2 = &rgv[ptri->c];
 
+			Vertex3D rgv3D[3];
 			rgv3D[0].Set(pv0->x,pv0->y,height);
 			rgv3D[2].Set(pv1->x,pv1->y,height);
 			rgv3D[1].Set(pv2->x,pv2->y,height);
@@ -1526,15 +1513,12 @@ void Surface::DoCommand(int icmd, int x, int y)
 			{
 			STARTUNDO
 
-			HitSur *phs;
-
 			RECT rc;
 			GetClientRect(m_ptable->m_hwnd, &rc);
-			Vertex v, vOut;
-			int iSeg;
 
-			phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+			HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
+			Vertex v;
 			phs->ScreenToSurface(x, y, &v.x, &v.y);
 			delete phs;
 
@@ -1549,6 +1533,8 @@ void Surface::DoCommand(int icmd, int x, int y)
 				m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
 				}
 
+			Vertex vOut;
+			int iSeg;
 			ClosestPointOnPolygon(m_rgvT, m_cvertexT, &v, &vOut, &iSeg, fTrue);
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
@@ -1658,9 +1644,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 
 	bw.WriteTag(FID(ENDB));
 
-	return S_OK;
-
-	
+	return S_OK;	
 	}
 
 void Surface::ClearForOverwrite()

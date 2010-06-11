@@ -175,9 +175,7 @@ void hid_init( void )
 
 		printf( "%d bytes read: ", bytes_read );
 
-		U32 i;
-
-		for( i=0; i<bytes_read; i++ )
+		for( U32 i=0; i<bytes_read; i++ )
 		{
 			printf( "%02x ", inbuffer[i] );
 		}

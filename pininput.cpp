@@ -244,7 +244,6 @@ DIDEVICEOBJECTDATA *PinInput::GetTail( U32 cur_sim_msec )
 
 void GetInputDeviceData() 
 	{
-	DWORD i;
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
 	DWORD dwElements;
 	HRESULT hr;		
@@ -267,7 +266,7 @@ void GetInputDeviceData()
 				{					
 				if (hwnd == GetForegroundWindow())
 					{
-					for (i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_KEYBOARD ); 
+					for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_KEYBOARD ); 
 					}
 				}
 			}
@@ -290,7 +289,7 @@ void GetInputDeviceData()
 					{	
 					if (hwnd == GetForegroundWindow())
 						{														
-						for (i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_JOYSTICK(k)); 
+						for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_JOYSTICK(k)); 
 						}
 					}	
 				}

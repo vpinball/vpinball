@@ -2285,7 +2285,7 @@ STDMETHODIMP Ramp::put_Friction(float newVal)
 {
 	STARTUNDO
 
-	if (newVal > 1) newVal = 1;
+	if (newVal > 1.0f) newVal = 1.0f;
 	else if (newVal < 0) newVal = 0;
 	m_d.m_friction = newVal;
 
@@ -2316,8 +2316,7 @@ STDMETHODIMP Ramp::put_Scatter(float newVal)
 //////////////////////////////////////////////////////////
 STDMETHODIMP Ramp::get_Collidable(VARIANT_BOOL *pVal)
 {
-	if (!g_pplayer)	*pVal = FTOVB(m_d.m_fCollidable);
-	else *pVal = FTOVB(m_vhoCollidable.ElementAt(0)->m_fEnabled); 
+	*pVal = FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable.ElementAt(0)->m_fEnabled);
 
 	return S_OK;
 }
@@ -2349,8 +2348,7 @@ STDMETHODIMP Ramp::get_IsVisible(VARIANT_BOOL *pVal) //temporary value of object
 }
 
 STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
-{
-	
+{	
 	if (!g_pplayer )
 		{
 		STARTUNDO
@@ -2381,17 +2379,14 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		RenderStaticHabitrail(pd3dDevice);
 		}
 	else
-		{
-		Vertex3D rgv3D[4];
-		WORD rgi[4];
-		Pin3D *ppin3d = &g_pplayer->m_pin3d;
+		{		
+		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-		PinImage *pin = m_ptable->GetImage(m_d.m_szImage);
+		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 		float maxtu, maxtv;
 
 		D3DMATERIAL7 mtrl;
 		ZeroMemory( &mtrl, sizeof(mtrl) );
-
 
 		if (pin)
 			{
@@ -2453,13 +2448,12 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetMaterial(&mtrl);
 
-		Vertex *rgv;
 		float *rgheight;
 		float *rgratio;
 		int cvertex;
+		const Vertex * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
 
-		rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
-
+		WORD rgi[4];
 		for (WORD i=0;i<4;i++)
 			{
 			rgi[i]=i;
@@ -2470,6 +2464,7 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		for (int i=0;i<(cvertex-1);i++)
 			{
+			Vertex3D rgv3D[4];
 			rgv3D[0].x = rgv[i].x;
 			rgv3D[0].y = rgv[i].y;
 			rgv3D[0].z = rgheight[i];
@@ -2522,20 +2517,21 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			ppin3d->SetTexture(NULL);
 
-			float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-			float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-			float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+			const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+			const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+			const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
-			mtrl.diffuse.a = mtrl.ambient.a = 1;
+			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 			pd3dDevice->SetMaterial(&mtrl);
 			}
 
 		for (int i=0;i<(cvertex-1);i++)
 			{
+			Vertex3D rgv3D[4];
 			rgv3D[0].x = rgv[i].x;
 			rgv3D[0].y = rgv[i].y;
 			rgv3D[0].z = rgheight[i];
@@ -2599,6 +2595,7 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		for (int i=0;i<(cvertex-1);i++)
 			{
+			Vertex3D rgv3D[4];
 			rgv3D[0].x = rgv[cvertex*2-i-2].x;
 			rgv3D[0].y = rgv[cvertex*2-i-2].y;
 			rgv3D[0].z = rgheight[i+1];
@@ -2667,7 +2664,3 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->SetTexture(NULL);
 		}
 	}
-	
-
-
-

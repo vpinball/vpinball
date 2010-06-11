@@ -1810,13 +1810,10 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 
 void LightSeq::SetAllLightsToState(LightState State)
 {
-	int	i;
-	int	size;
-
 	if (m_pcollection != NULL)
 	{
-		size = m_pcollection->m_visel.Size();
-		for(i=0; i<size; i++)
+		const int size = m_pcollection->m_visel.Size();
+		for(int i=0; i<size; i++)
 		{
 			SetElementToState(i, State);
 		}

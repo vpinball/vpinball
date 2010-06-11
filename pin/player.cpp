@@ -4085,14 +4085,13 @@ void Player::DrawAcrylics ( void )
 	if (g_pvp->m_pdd.m_fHardwareAccel == fTrue)
 		{
 		// Build a set of clipping planes which tightly bound the ball.
-		int			i;
 		HRESULT		ReturnCode;
 
 		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
 		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
 
 		// Draw acrylic ramps (they have transparency, so they have to be drawn last).
-		for (i=0;i<m_ptable->m_vedit.Size();i++)
+		for (int i=0;i<m_ptable->m_vedit.Size();i++)
 			{
 			if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp)
 				{
@@ -4171,11 +4170,8 @@ int get_dongle_status( void )
 // a proper backglass display that can be animated.
 void Player::DrawLightHack ( void )
 {
-
-	int			i;
-
 	// Check the state of all lights.
-	for ( i=0; i<LIGHTHACK_MAX; i++ )
+	for ( int i=0; i<LIGHTHACK_MAX; i++ )
 	{
 		if ( g_pplayer->m_LightHackReadyForDrawLightHackFn[i] == TRUE )
 		{
@@ -4271,9 +4267,4 @@ void Player::DrawLightHack ( void )
 			}
 		}
 	}
-
 }
-
-
-
-
