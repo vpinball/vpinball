@@ -501,8 +501,8 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
             m_reeldigitheight = pin->m_height / GridRows;
 
             // work out the size of the reel image strip (adds room for an extra digit at the end)
-            const int width  = m_reeldigitwidth;
-            const int height = (m_reeldigitheight * (int)(m_d.m_digitrange+1)) + m_reeldigitheight;
+            //const int width  = m_reeldigitwidth;
+            //const int height = (m_reeldigitheight * (int)(m_d.m_digitrange+1)) + m_reeldigitheight;
             // allocate some memory for this strip
 			for (int i=0; i <= m_d.m_digitrange; i++)
 				{
@@ -943,7 +943,7 @@ bool DispReel::RenderAnimation()
 //
 void DispReel::RenderText()
 {
-	Pin3D	*ppin3d = &g_pplayer->m_pin3d;
+	//Pin3D	* const ppin3d = &g_pplayer->m_pin3d;
 
     // update the object frame (or in this case, draw it for the first time)
     UpdateObjFrame();
@@ -1594,7 +1594,6 @@ STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
 }
 
 
-
 // function Methods available for the scripters.
 //
 STDMETHODIMP DispReel::AddValue(long Value)
@@ -1640,13 +1639,13 @@ STDMETHODIMP DispReel::SetValue(long Value)
 	const long valbase = (int)(m_d.m_digitrange+1);
 
     // reset the motor
-    for (int i=0; i<m_d.m_reelcount; i++)
+    for (int l=0; l<(int)m_d.m_reelcount; l++)
     {
-		ReelInfo[i].currentValue	= 0;
-        ReelInfo[i].motorPulses 	= 0;
-        ReelInfo[i].motorStepCount	= 0;
-        ReelInfo[i].motorCalcStep	= 0;
-        ReelInfo[i].motorOffset		= 0;
+		ReelInfo[l].currentValue	= 0;
+        ReelInfo[l].motorPulses 	= 0;
+        ReelInfo[l].motorStepCount	= 0;
+        ReelInfo[l].motorCalcStep	= 0;
+        ReelInfo[l].motorOffset		= 0;
 	}
 
     // set the reel values (startint at the right most reel and move left)
@@ -1699,7 +1698,7 @@ STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
 {
 	if ( (ReelNumber >= 1) && (ReelNumber <= m_d.m_reelcount) )
 	{
-		int reel = (int)ReelNumber-1;
+		const int reel = (int)ReelNumber-1;
 		ReelInfo[reel].motorPulses += (int)PulseCount;
 		return S_OK;
 	}
@@ -1731,7 +1730,7 @@ float DispReel::getBoxHeight(void)
     height =  m_d.m_height;
     height += 2.0f * m_d.m_reelspacing;		// spacing also includes edges
 
-    return (height);
+    return height;
 }
 
 
@@ -1742,13 +1741,13 @@ float DispReel::getBoxHeight(void)
 void DispReel::UpdateObjFrame(void)
 {
     RECT    reelstriprc;
-	Pin3D	*ppin3d = &g_pplayer->m_pin3d;
+	Pin3D	* const ppin3d = &g_pplayer->m_pin3d;
 	DDBLTFX	bltFx;
 	DWORD	flags;
 
 	if( !GetPTable()->GetEMReelsEnabled() ) return;
 
-	LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
+	//LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 
     // is the background box transparent?
 #define Foo 1
@@ -1790,7 +1789,7 @@ void DispReel::UpdateObjFrame(void)
 
         reelstriprc.left  = 0;
 	    reelstriprc.right = m_renderwidth;//m_reeldigitwidth;
-        for (int i=0; i<m_d.m_reelcount; i++)
+        for (int i=0; i<(int)m_d.m_reelcount; i++)
         {
             reelstriprc.top = /*(ReelInfo[i].currentValue * m_renderheight) +*/ (int)(ReelInfo[i].motorOffset);
 			if (reelstriprc.top < 0)

@@ -458,25 +458,15 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 
 	Vertex vendcenter;
 	Vertex rgv[4];
-	WORD rgi[8];
-	WORD rgiNormal[3];
-
-	Vertex3D rgv3D[32];
-
 	SetVertices(angle, &vendcenter, rgv, baseradius, endradius);
 
+	Vertex3D rgv3D[32];
+	WORD rgi[8];
 	for (int l=0;l<8;l++)
 		{
 		rgv3D[l].x = rgv[l&3].x;
 		rgv3D[l].y = rgv[l&3].y;
-		if (l<4)
-			{
-			rgv3D[l].z = height + flipperheight + 0.1f; // Make flippers a bit taller so they draw above walls
-			}
-		else
-			{
-			rgv3D[l].z = height + 0;
-			}
+		rgv3D[l].z = (l<4) ? height + flipperheight + 0.1f : height; // Make flippers a bit taller so they draw above walls
 		rgi[l] = l;
 
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);		
@@ -539,6 +529,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 		// Draw end caps of cylinders of large ends.
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 3, 0);
 
+		WORD rgiNormal[3];
 		rgiNormal[0] = (l+14) % 16;
 		rgiNormal[1] = rgiNormal[0] + 16;
 		rgiNormal[2] = l;
@@ -588,6 +579,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 		// Draw end caps to vertical cylinder at small end.
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 3, 0);
 
+		WORD rgiNormal[3];
 		rgiNormal[0] = (l+14) % 16;
 		rgiNormal[1] = rgiNormal[0] + 16;
 		rgiNormal[2] = l;

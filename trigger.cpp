@@ -281,9 +281,6 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 
 	//Vector<Vertex> vvertex;
 
-	const int cpoint = m_vdpoint.Size();
-	int cpointCur = 0;
-
 	RenderVertex *rgv;
 	//RenderVertex * const rgv = GetRgRenderVertex(&count);
 	Vertex3D *rgv3D;
@@ -319,7 +316,6 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 		RenderVertex * const pv1 = &rgv[i];
 		RenderVertex * const pv2 = &rgv[(i+1) % count];
 		RenderVertex * const pv3 = &rgv[(i+2) % count];
-		RenderVertex * const pv4 = &rgv[(i+3) % count];
 
 		AddLine(pvho, pv2, pv3, pv1, height);
 		} 
