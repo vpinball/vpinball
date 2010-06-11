@@ -42,8 +42,8 @@ public:
 
 	void RecomputeSearchStart()
 		{
-		unsigned int size = m_vindex.Size();
-		unsigned int i = 1<<31;
+		const unsigned int size = m_vindex.Size();
+		unsigned int i = 1u<<31;
 		while ((!(i & size)) && (i>1))
 			{
 			i >>= 1;
@@ -60,7 +60,6 @@ public:
 	BOOL AddElement(void *pobj, int iex)
 		{
 		BOOL fFound = fFalse;
-		// int i;
 
 		if (iex == xvBaseElement)
 			{

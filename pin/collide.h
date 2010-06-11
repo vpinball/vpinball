@@ -35,7 +35,7 @@ enum
 // layer is used to calculate contact effects ... beyond this and objects pass through each other
 // Default 25.0
 
-#define PHYS_SKIN 25.0f
+#define PHYS_SKIN 25.0
 
 extern PINFLOAT c_Gravity;
 extern PINFLOAT c_hardFriction; 
@@ -52,7 +52,7 @@ extern U32 c_PostCheck;
 // Setting this value during testing to 0.1 will insure clearance. After testing set the value to 0.005
 // Default 0.01
 
-#define PHYS_TOUCH  0.05f
+#define PHYS_TOUCH  0.05
 
 // Low Normal speed collison is handled as contact process rather than impulse collision
 #define C_LOWNORMVEL 0.0001f

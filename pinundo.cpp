@@ -139,9 +139,7 @@ void PinUndo::Undo()
 	UndoRecord *pur = m_vur.ElementAt(m_vur.Size()-1);
 	//IStorage *pstg = pur->m_pstg;
 
-	int i;
-
-	for (i=0;i<pur->m_vieDelete.Size();i++)
+	for (int i=0;i<pur->m_vieDelete.Size();i++)
 		{
 		m_ptable->Undelete(pur->m_vieDelete.ElementAt(i));
 		}
@@ -150,7 +148,7 @@ void PinUndo::Undo()
 
 	IStream* pstm;
 	IEditable *pie;
-	for (i=0;i<pur->m_vstm.Size();i++)
+	for (int i=0;i<pur->m_vstm.Size();i++)
 		{
 		pstm = pur->m_vstm.ElementAt(i);
 
@@ -171,7 +169,7 @@ void PinUndo::Undo()
 		//pstm->Release();
 		}
 
-	for (i=0;i<pur->m_vieCreate.Size();i++)
+	for (int i=0;i<pur->m_vieCreate.Size();i++)
 		{
 		m_ptable->Uncreate(pur->m_vieCreate.ElementAt(i));
 		}
@@ -217,14 +215,12 @@ UndoRecord::UndoRecord()
 
 UndoRecord::~UndoRecord()
 	{
-	int i;
-
-	for (i=0;i<m_vstm.Size();i++)
+	for (int i=0;i<m_vstm.Size();i++)
 		{
 		m_vstm.ElementAt(i)->Release();
 		}
 
-	for (i=0;i<m_vieDelete.Size();i++)
+	for (int i=0;i<m_vieDelete.Size();i++)
 		{
 		m_vieDelete.ElementAt(i)->Release();
 		}

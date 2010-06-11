@@ -21,10 +21,10 @@ PaintSur::~PaintSur()
 
 void PaintSur::Line(float x, float y, float x2, float y2)
 	{
-	int ix = SCALEX(x);
-	int iy = SCALEY(y);
-	int ix2 = SCALEX(x2);
-	int iy2 = SCALEY(y2);
+	const int ix = SCALEXf(x);
+	const int iy = SCALEYf(y);
+	const int ix2 = SCALEXf(x2);
+	const int iy2 = SCALEYf(y2);
 
 	SelectObject(m_hdc, m_hpnLine);
 
@@ -35,10 +35,10 @@ void PaintSur::Line(float x, float y, float x2, float y2)
 
 void PaintSur::Rectangle(float x, float y, float x2, float y2)
 	{
-	int ix = SCALEX(x);
-	int iy = SCALEY(y);
-	int ix2 = SCALEX(x2);
-	int iy2 = SCALEY(y2);
+	const int ix = SCALEXf(x);
+	const int iy = SCALEYf(y);
+	const int ix2 = SCALEXf(x2);
+	const int iy2 = SCALEYf(y2);
 
 	SelectObject(m_hdc, m_hbr);
 	SelectObject(m_hdc, m_hpnOutline);
@@ -63,9 +63,9 @@ void PaintSur::Rectangle2(int x, int y, int x2, int y2)
 
 void PaintSur::Ellipse(float centerx, float centery, float radius)
 	{
-	int ix = SCALEX(centerx);
-	int iy = SCALEY(centery);
-	int ir = SCALED(radius);
+	const int ix = SCALEXf(centerx);
+	const int iy = SCALEYf(centery);
+	const int ir = SCALEDf(radius);
 
 	SelectObject(m_hdc, m_hbr);
 	SelectObject(m_hdc, m_hpnOutline);
@@ -75,9 +75,9 @@ void PaintSur::Ellipse(float centerx, float centery, float radius)
 
 void PaintSur::Ellipse2(float centerx, float centery, int radius)
 	{
-	int ix = SCALEX(centerx);
-	int iy = SCALEY(centery);
-	int ir = radius;
+	const int ix = SCALEXf(centerx);
+	const int iy = SCALEYf(centery);
+	const int ir = radius;
 
 	SelectObject(m_hdc, m_hbr);
 	SelectObject(m_hdc, m_hpnOutline);
@@ -87,15 +87,12 @@ void PaintSur::Ellipse2(float centerx, float centery, int radius)
 
 void PaintSur::Polygon(Vertex *rgv, int count)
 	{
-	POINT *rgpt;
+	POINT * const rgpt = new POINT[count];
 
-	rgpt = new POINT[count];
-
-	int i;
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
-		rgpt[i].x = SCALEX(rgv[i].x);
-		rgpt[i].y = SCALEY(rgv[i].y);
+		rgpt[i].x = SCALEXf(rgv[i].x);
+		rgpt[i].y = SCALEYf(rgv[i].y);
 		}
 
 	SelectObject(m_hdc, m_hbr);
@@ -108,21 +105,18 @@ void PaintSur::Polygon(Vertex *rgv, int count)
 
 void PaintSur::PolygonImage(Vertex *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
 	{
-	POINT *rgpt;
+	POINT * const rgpt = new POINT[count];
 
-	rgpt = new POINT[count];
-
-	int i;
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
-		rgpt[i].x = SCALEX(rgv[i].x);
-		rgpt[i].y = SCALEY(rgv[i].y);
+		rgpt[i].x = SCALEXf(rgv[i].x);
+		rgpt[i].y = SCALEYf(rgv[i].y);
 		}
 
-	int ix = SCALEX(left);
-	int iy = SCALEY(top);
-	int ix2 = SCALEX(right);
-	int iy2 = SCALEY(bottom);
+	const int ix = SCALEXf(left);
+	const int iy = SCALEYf(top);
+	const int ix2 = SCALEXf(right);
+	const int iy2 = SCALEYf(bottom);
 
 	HDC hdcNew;
 	HBITMAP hbmOld;
@@ -146,15 +140,12 @@ void PaintSur::PolygonImage(Vertex *rgv, int count, HBITMAP hbm, float left, flo
 
 void PaintSur::Polyline(Vertex *rgv, int count)
 	{
-	POINT *rgpt;
+	POINT * const rgpt = new POINT[count];
 
-	rgpt = new POINT[count];
-
-	int i;
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
-		rgpt[i].x = SCALEX(rgv[i].x);
-		rgpt[i].y = SCALEY(rgv[i].y);
+		rgpt[i].x = SCALEXf(rgv[i].x);
+		rgpt[i].y = SCALEYf(rgv[i].y);
 		}
 
 	SelectObject(m_hdc, m_hpnLine);
@@ -166,14 +157,14 @@ void PaintSur::Polyline(Vertex *rgv, int count)
 
 void PaintSur::Arc(float x, float y, float radius, float pt1x, float pt1y, float pt2x, float pt2y)
 	{
-	int ix = SCALEX(x);
-	int iy = SCALEY(y);
-	int ir = SCALED(radius);
+	const int ix = SCALEXf(x);
+	const int iy = SCALEYf(y);
+	const int ir = SCALEDf(radius);
 
-	int x1 = SCALEX(pt1x);
-	int y1 = SCALEY(pt1y);
-	int x2 = SCALEX(pt2x);
-	int y2 = SCALEY(pt2y);
+	const int x1 = SCALEXf(pt1x);
+	const int y1 = SCALEYf(pt1y);
+	const int x2 = SCALEXf(pt2x);
+	const int y2 = SCALEYf(pt2y);
 
 	SelectObject(m_hdc, m_hpnLine);
 
@@ -182,10 +173,10 @@ void PaintSur::Arc(float x, float y, float radius, float pt1x, float pt1y, float
 
 void PaintSur::Image(float x, float y, float x2, float y2, HDC hdcSrc, int width, int height)
 	{
-	int ix = SCALEX(x);
-	int iy = SCALEY(y);
-	int ix2 = SCALEX(x2);
-	int iy2 = SCALEY(y2);
+	const int ix = SCALEXf(x);
+	const int iy = SCALEYf(y);
+	const int ix2 = SCALEXf(x2);
+	const int iy2 = SCALEYf(y2);
 	
 	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcSrc, 0, 0, width, height, SRCCOPY);
 	}
@@ -229,8 +220,7 @@ void PaintSur::SetFillColor(int rgb)
 void PaintSur::SetBorderColor(int rgb, BOOL fDashed, int width)
 	{
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
-	DeleteObject(m_hpnOutline);
-	int style = fDashed ? PS_DOT : PS_SOLID;
+	DeleteObject(m_hpnOutline);	
 
 	if (rgb == -1)
 		{
@@ -239,6 +229,7 @@ void PaintSur::SetBorderColor(int rgb, BOOL fDashed, int width)
 		}
 	else
 		{
+		const int style = fDashed ? PS_DOT : PS_SOLID;
 		m_hpnOutline = CreatePen(style, width, rgb);
 		m_fNullBorder = fFalse;
 		}
@@ -247,8 +238,7 @@ void PaintSur::SetBorderColor(int rgb, BOOL fDashed, int width)
 void PaintSur::SetLineColor(int rgb, BOOL fDashed, int width)
 	{
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
-	DeleteObject(m_hpnLine);
-	int style = fDashed ? PS_DOT : PS_SOLID;
+	DeleteObject(m_hpnLine);	
 
 	SetBkMode(m_hdc, TRANSPARENT);
 
@@ -258,6 +248,7 @@ void PaintSur::SetLineColor(int rgb, BOOL fDashed, int width)
 		}
 	else
 		{
+		const int style = fDashed ? PS_DOT : PS_SOLID;
 		m_hpnLine = CreatePen(style, width, rgb);
 		}
 	}

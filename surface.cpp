@@ -160,8 +160,7 @@ void Surface::PreRender(Sur *psur)
 	m_cvertexT = vvertex.Size();
 	m_rgvT = new Vertex[m_cvertexT + 6]; // Add points so inverted polygons can be drawn
 
-	int i;
-	for (i=0;i<vvertex.Size();i++)
+	for (int i=0;i<vvertex.Size();i++)
 		{
 		m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
 		delete vvertex.ElementAt(i);
@@ -218,7 +217,6 @@ void Surface::PreRender(Sur *psur)
 
 void Surface::Render(Sur *psur)
 	{
-	int		i;
 	BOOL	fDrawDragpoints;		//>>> added by chris
 
 	psur->SetFillColor(-1);
@@ -235,8 +233,7 @@ void Surface::Render(Sur *psur)
 		m_cvertexT = vvertex.Size();
 		m_rgvT = new Vertex[m_cvertexT];
 
-		int i;
-		for (i=0;i<vvertex.Size();i++)
+		for (int i=0;i<vvertex.Size();i++)
 			{
 			m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
 			delete vvertex.ElementAt(i);
@@ -257,7 +254,7 @@ void Surface::Render(Sur *psur)
 		{
 		// if any of the dragpoints of this object are selected then draw all the dragpoints
 		fDrawDragpoints = fFalse;
-		for (i=0;i<m_vdpoint.Size();i++)
+		for (int i=0;i<m_vdpoint.Size();i++)
 			{
 			CComObject<DragPoint> *pdp;
 			pdp = m_vdpoint.ElementAt(i);
@@ -269,7 +266,7 @@ void Surface::Render(Sur *psur)
 			}
 		}
 
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		CComObject<DragPoint> *pdp;
 		pdp = m_vdpoint.ElementAt(i);
@@ -317,8 +314,7 @@ void Surface::RenderBlueprint(Sur *psur)
 	m_cvertexT = vvertex.Size();
 	m_rgvT = new Vertex[m_cvertexT];
 
-	int i;
-	for (i=0;i<vvertex.Size();i++)
+	for (int i=0;i<vvertex.Size();i++)
 		{
 		m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
 		delete vvertex.ElementAt(i);
@@ -346,8 +342,7 @@ void Surface::RenderShadow(ShadowSur *psur, float height)
 	m_cvertexT = vvertex.Size();
 	m_rgvT = new Vertex[m_cvertexT+6];
 
-	int i;
-	for (i=0;i<vvertex.Size();i++)
+	for (int i=0;i<vvertex.Size();i++)
 		{
 		m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
 
@@ -420,8 +415,7 @@ void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
 		cvertex = vvertex.Size();
 		rgv3d = new Vertex3D[cvertex + 5];
 
-		int i;
-		for (i=0;i<cvertex;i++)
+		for (int i=0;i<cvertex;i++)
 			{
 			rgv3d[i].x = vvertex.ElementAt(i)->x;
 			rgv3d[i].y = vvertex.ElementAt(i)->y;
@@ -458,11 +452,10 @@ void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
 
 void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 	{
-	int i;
-	int count;
 	RenderVertex *pv1, *pv2, *pv3, *pv4;
 	//Vector<Vertex> vvertex;
 
+	int count;
 	int cpoint;
 	int cpointCur;
 
@@ -484,7 +477,7 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 
 	if (m_d.m_fInner)
 		{
-		for (i=0;i<count;i++)
+		for (int i=0;i<count;i++)
 			{
 			rgv3D[i].x = vvertex.ElementAt(i)->x;
 			rgv3D[i].y = vvertex.ElementAt(i)->y;
@@ -492,14 +485,14 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 			}
 		}
 
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
 		rgv[i] = *vvertex.ElementAt(i);
 		delete vvertex.ElementAt(i);
 		}
 	}
 
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
 		pv1 = &rgv[i];
 		pv2 = &rgv[(i+1) % count];
@@ -560,9 +553,7 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 	LineSeg *plineseg;
 	LineSegSlingshot *plinesling;
 	Joint *pjoint;
-	float dot;
 	Vertex vt1, vt2;
-	float length;
 
 	if (!fSlingshot)
 		{
@@ -622,7 +613,7 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 	vt2.x = pv1->x - pv3->x;
 	vt2.y = pv1->y - pv3->y;
 
-	dot = vt1.x*vt2.y - vt1.y*vt2.x;
+	const float dot = vt1.x*vt2.y - vt1.y*vt2.x;
 
 	if (dot < 0) // Inside edges don't need joint hit-testing (dot == 0 continuous segments should mathematically never hit)
 		{
@@ -660,17 +651,21 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 		Vertex normalT;
 
 		// Set up line normal
-		length = (float)sqrt((vt2.x * vt2.x) + (vt2.y * vt2.y));
-		normalT.x = -vt2.y / length;
-		normalT.y = vt2.x / length;
+		{
+		const float inv_length = 1.0f/sqrtf((vt2.x * vt2.x) + (vt2.y * vt2.y));
+		normalT.x = -vt2.y * inv_length;
+		normalT.y = vt2.x * inv_length;
+		}
 
 		pjoint->normal.x = normalT.x + plineseg->normal.x;
 		pjoint->normal.y = normalT.y + plineseg->normal.y;
 
 		// Set up line normal
-		length = (float)sqrt((pjoint->normal.x * pjoint->normal.x) + (pjoint->normal.y * pjoint->normal.y));
-		pjoint->normal.x = pjoint->normal.x/length;
-		pjoint->normal.y = pjoint->normal.y/length;
+		{
+		const float inv_length = 1.0f/sqrtf((pjoint->normal.x * pjoint->normal.x) + (pjoint->normal.y * pjoint->normal.y));
+		pjoint->normal.x = pjoint->normal.x*inv_length;
+		pjoint->normal.y = pjoint->normal.y*inv_length;
+		}
 		}
 
 	return;
@@ -678,18 +673,12 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 
 void Surface::GetBoundingVertices(Vector<Vertex3D> *pvvertex3D)
 	{
-	Vertex3D *pv;
-	int i;
-	//float minx, maxx, miny, maxy;
+	const float top = m_d.m_heighttop;
+	const float bottom = m_d.m_heightbottom;
 
-	float top,bottom;
-
-	top = m_d.m_heighttop;
-	bottom = m_d.m_heightbottom;
-
-	for (i=0;i<8;i++)
+	for (int i=0;i<8;i++)
 		{
-		pv = new Vertex3D();
+		Vertex3D * const pv = new Vertex3D();
 		pv->x = i&1 ? m_ptable->m_right : m_ptable->m_left;
 		pv->y = i&2 ? m_ptable->m_bottom : m_ptable->m_top;
 		pv->z = i&4 ? top : bottom;
@@ -705,8 +694,7 @@ void Surface::EndPlay()
 		{
 		if (m_d.m_fDroppable)
 			{
-			int i;
-			for (i=0;i<2;i++)
+			for (int i=0;i<2;i++)
 				{
 				delete m_phitdrop->m_polydropanim.m_pobjframe[i];
 				}
@@ -722,9 +710,7 @@ void Surface::EndPlay()
 
 void Surface::MoveOffset(float dx, float dy)
 	{
-	int i;
-
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		CComObject<DragPoint> *pdp;
 
@@ -753,7 +739,6 @@ void Surface::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	int i,l;
 	WORD rgi[8];
 	Vertex3D rgv3D[32];
 	Pin3D *ppin3d = &g_pplayer->m_pin3d;
@@ -765,7 +750,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 
-	for (i=0;i<m_vlinesling.Size();i++)
+	for (int i=0;i<m_vlinesling.Size();i++)
 		{
 		LineSegSlingshot *plinesling = m_vlinesling.ElementAt(i);
 		
@@ -775,14 +760,14 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, DDBLT_WAIT, NULL);
 
-		float r = (m_d.m_slingshotColor & 255) / 255.0f;
-		float g = (m_d.m_slingshotColor & 65280) / 65280.0f;
-		float b = (m_d.m_slingshotColor & 16711680) / 16711680.0f;
+		const float r = (m_d.m_slingshotColor & 255) * (float)(1.0/255.0);
+		const float g = (m_d.m_slingshotColor & 65280) * (float)(1.0/65280.0);
+		const float b = (m_d.m_slingshotColor & 16711680) * (float)(1.0/16711680.0);
 
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
 		mtrl.diffuse.b = mtrl.ambient.b = b;
-		mtrl.diffuse.a = mtrl.ambient.a = 1;
+		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 		pd3dDevice->SetMaterial(&mtrl);
 
@@ -796,29 +781,29 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[0].y = plinesling->v1.y;
 		rgv3D[0].z = slingbottom;
 
-		rgv3D[1].x = (plinesling->v1.x + plinesling->v2.x)/2 + plinesling->normal.x*(m_d.m_slingshotforce * 0.25f);//40;//20;
-		rgv3D[1].y = (plinesling->v1.y + plinesling->v2.y)/2 + plinesling->normal.y*(m_d.m_slingshotforce * 0.25f);//20;
+		rgv3D[1].x = (plinesling->v1.x + plinesling->v2.x)*0.5f + plinesling->normal.x*(m_d.m_slingshotforce * 0.25f);//40;//20;
+		rgv3D[1].y = (plinesling->v1.y + plinesling->v2.y)*0.5f + plinesling->normal.y*(m_d.m_slingshotforce * 0.25f);//20;
 		rgv3D[1].z = slingbottom;
 
 		rgv3D[2].x = plinesling->v2.x;
 		rgv3D[2].y = plinesling->v2.y;
 		rgv3D[2].z = slingbottom;
 
-		for (l=0;l<3;l++)
+		for (int l=0;l<3;l++)
 			{
 			rgv3D[l+3].x = rgv3D[l].x;
 			rgv3D[l+3].y = rgv3D[l].y;
 			rgv3D[l+3].z = slingtop;
 			}
 
-		for (l=0;l<6;l++)
+		for (int l=0;l<6;l++)
 			{
 			rgv3D[l+6].x = rgv3D[l].x - plinesling->normal.x*5;
 			rgv3D[l+6].y = rgv3D[l].y - plinesling->normal.y*5;
 			rgv3D[l+6].z = rgv3D[l].z;
 			}
 
-		for (l=0;l<12;l++)
+		for (int l=0;l<12;l++)
 			{
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 			}
@@ -922,8 +907,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 	Vertex3D rgv3D[4];
 	WORD rgi[4];
-	int i;
-
+	
 	Pin3D *ppin3d = &g_pplayer->m_pin3d;
 
 	PinImage *pin = m_ptable->GetImage(m_d.m_szImage);
@@ -1011,21 +995,21 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-		mtrl.diffuse.r = mtrl.ambient.r = 1;
-		mtrl.diffuse.g = mtrl.ambient.g = 1;
-		mtrl.diffuse.b = mtrl.ambient.b = 1;
-		mtrl.diffuse.a = mtrl.ambient.a = 1;
+		mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+		mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+		mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 		}
 	else
 		{
-		float r = (m_d.m_sidecolor & 255) / 255.0f;
-		float g = (m_d.m_sidecolor & 65280) / 65280.0f;
-		float b = (m_d.m_sidecolor & 16711680) / 16711680.0f;
+		const float r = (m_d.m_sidecolor & 255) * (float)(1.0/255.0);
+		const float g = (m_d.m_sidecolor & 65280) * (float)(1.0/65280.0);
+		const float b = (m_d.m_sidecolor & 16711680) * (float)(1.0/16711680.0);
 
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
 		mtrl.diffuse.b = mtrl.ambient.b = b;
-		mtrl.diffuse.a = mtrl.ambient.a = 1;
+		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 		}
 
 	int cvertex;
@@ -1046,8 +1030,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		cvertex = vvertex.Size();
 		rgv = new RenderVertex[cvertex + 6]; // Add points so inverted polygons can be drawn
 
-		int i;
-		for (i=0;i<vvertex.Size();i++)
+		for (int i=0;i<vvertex.Size();i++)
 			{
 			rgv[i] = *vvertex.ElementAt(i);
 			delete vvertex.ElementAt(i);
@@ -1058,34 +1041,34 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 	pd3dDevice->SetMaterial(&mtrl);
 
-	for (i=0;i<4;i++)
+	for (WORD i=0;i<4;i++)
 		{
 		rgi[i] = i;
 		}
 
-	for (i=0;i<cvertex;i++)
+	for (int i=0;i<cvertex;i++)
 		{
 		RenderVertex *pv1 = &rgv[i];
 		RenderVertex *pv2 = &rgv[(i+1) % cvertex];
-		float dx = pv1->x - pv2->x;
-		float dy = pv1->y - pv2->y;
+		const float dx = pv1->x - pv2->x;
+		const float dy = pv1->y - pv2->y;
 
-		float len = (float)sqrt(dx*dx + dy*dy);
+		const float inv_len = 1.0f/sqrtf(dx*dx + dy*dy);
 
-		rgnormal[i].x = dy/len;
-		rgnormal[i].y = dx/len;
+		rgnormal[i].x = dy*inv_len;
+		rgnormal[i].y = dx*inv_len;
 		}
 
 		ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 	
 		// Render side
 		{
-		for (i=0;i<cvertex;i++)
+		for (int i=0;i<cvertex;i++)
 			{
-			RenderVertex *pv0 = &rgv[(i-1+cvertex) % cvertex];
+			//RenderVertex *pv0 = &rgv[(i-1+cvertex) % cvertex];
 			RenderVertex *pv1 = &rgv[i];
 			RenderVertex *pv2 = &rgv[(i+1) % cvertex];
-			RenderVertex *pv3 = &rgv[(i+2) % cvertex];
+			//RenderVertex *pv3 = &rgv[(i+2) % cvertex];
 
 			rgv3D[0].Set(pv1->x,pv1->y,m_d.m_heightbottom);
 			rgv3D[1].Set(pv1->x,pv1->y,m_d.m_heighttop);
@@ -1112,17 +1095,15 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2]);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[3]);
 
+			const int a = (i-1+cvertex) % cvertex;
+			const int b = i;
+			const int c = (i+1)%cvertex;
+
 			Vertex vnormal[2];
-
-			int a,b,c;
-			a = (i-1+cvertex) % cvertex;
-			b = i;
-			c = (i+1)%cvertex;
-
 			if (pv1->fSmooth)
 				{
-				vnormal[0].x = (rgnormal[a].x + rgnormal[b].x)/2;
-				vnormal[0].y = (rgnormal[a].y + rgnormal[b].y)/2;
+				vnormal[0].x = (rgnormal[a].x + rgnormal[b].x)*0.5f;
+				vnormal[0].y = (rgnormal[a].y + rgnormal[b].y)*0.5f;
 				}
 			else
 				{
@@ -1132,8 +1113,8 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 			if (pv2->fSmooth)
 				{
-				vnormal[1].x = (rgnormal[b].x + rgnormal[c].x)/2;
-				vnormal[1].y = (rgnormal[b].y + rgnormal[c].y)/2;
+				vnormal[1].x = (rgnormal[b].x + rgnormal[c].x)*0.5f;
+				vnormal[1].y = (rgnormal[b].y + rgnormal[c].y)*0.5f;
 				}
 			else
 				{
@@ -1141,21 +1122,23 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				vnormal[1].y = rgnormal[b].y;
 				}
 
-			float len;
-			len = (vnormal[0].x * vnormal[0].x + vnormal[0].y * vnormal[0].y);
-			vnormal[0].x /= len;
-			vnormal[0].y /= len;
-			len = (vnormal[1].x * vnormal[1].x + vnormal[1].y * vnormal[1].y);
-			vnormal[1].x /= len;
-			vnormal[1].y /= len;
+			{
+			const float inv_len = 1.0f/(vnormal[0].x * vnormal[0].x + vnormal[0].y * vnormal[0].y); //!! BUG?! sqrtf?
+			vnormal[0].x *= inv_len;
+			vnormal[0].y *= inv_len;
+			}
+			{
+			const float inv_len = 1.0f/(vnormal[1].x * vnormal[1].x + vnormal[1].y * vnormal[1].y); //!! BUG?! sqrtf?
+			vnormal[1].x *= inv_len;
+			vnormal[1].y *= inv_len;
+			}
 
 			if (m_d.m_fInner)
 				{
 				rgi[1] = 1;
 				rgi[3] = 3;
 
-				int l;
-				for (l=0;l<2;l++)
+				for (int l=0;l<2;l++)
 					{
 					rgv3D[l].nx = -vnormal[0].x;
 					rgv3D[l].ny = vnormal[0].y;
@@ -1171,8 +1154,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				rgi[1] = 3;
 				rgi[3] = 1;
 
-				int l;
-				for (l=0;l<2;l++)
+				for (int l=0;l<2;l++)
 					{
 					rgv3D[l].nx = vnormal[0].x;
 					rgv3D[l].ny = -vnormal[0].y;
@@ -1213,7 +1195,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 			// Find smallest y point - use it to connect with surrounding border
 
-			for (i=0;i<cvertex;i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				if (rgv[i].y < miny)
 					{
@@ -1235,19 +1217,19 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			rgv[cvertex+5].x = rgv[minyindex].x;
 			rgv[cvertex+5].y = rgv[minyindex].y - 1; // put tiny gap in to avoid errors
 
-			for (i=0;i<cvertex;i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				vpoly.AddElement((void *)(cvertex-i-1));
 				}
 
-			for (i=0;i<6;i++)
+			for (int i=0;i<6;i++)
 				{
 				vpoly.InsertElementAt((void *)(cvertex+i), (cvertex-minyindex-1));
 				}
 			}
 		else
 			{
-			for (i=0;i<cvertex;i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				vpoly.AddElement((void *)i);
 				}
@@ -1331,24 +1313,24 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-			mtrl.diffuse.r = mtrl.ambient.r = 1;
-			mtrl.diffuse.g = mtrl.ambient.g = 1;
-			mtrl.diffuse.b = mtrl.ambient.b = 1;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0;//0.5;
+			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;//0.5f;
 			}
 		else
 			{
 			ppin3d->SetTexture(NULL);
-			float r = (m_d.m_topcolor & 255) / 255.0f;
-			float g = (m_d.m_topcolor & 65280) / 65280.0f;
-			float b = (m_d.m_topcolor & 16711680) / 16711680.0f;
+			const float r = (m_d.m_topcolor & 255) * (float)(1.0/255.0);
+			const float g = (m_d.m_topcolor & 65280) * (float)(1.0/65280.0);
+			const float b = (m_d.m_topcolor & 16711680) * (float)(1.0/16711680.0);
 
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
-			mtrl.diffuse.a = mtrl.ambient.a = 1;
+			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 			
-			maxtv = maxtu = 1;
+			maxtv = maxtu = 1.0f;
 			}
 
 		PolygonToTriangles(rgv, &vpoly, &vtri);
@@ -1356,8 +1338,8 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		if (!m_d.m_fInner)
 			{
 			// Remove tiny gap
-			rgv[cvertex+4].x += 1;
-			rgv[cvertex+5].y += 1;
+			rgv[cvertex+4].x += 1.0f;
+			rgv[cvertex+5].y += 1.0f;
 			}
 
 		pd3dDevice->SetMaterial(&mtrl);
@@ -1373,47 +1355,46 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			height = m_d.m_heightbottom + 0.1f;
 			}
 
-		float tablewidth = m_ptable->m_right - m_ptable->m_left;
-		float tableheight = m_ptable->m_bottom - m_ptable->m_top;
+		const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);
+		const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
 
-		for (i=0;i<vtri.Size();i++)
+		for (int i=0;i<vtri.Size();i++)
 			{
-			Triangle *ptri = vtri.ElementAt(i);
+			const Triangle * const ptri = vtri.ElementAt(i);
 
-			RenderVertex *pv0 = &rgv[ptri->a];
-			RenderVertex *pv1 = &rgv[ptri->b];
-			RenderVertex *pv2 = &rgv[ptri->c];
+			const RenderVertex * const pv0 = &rgv[ptri->a];
+			const RenderVertex * const pv1 = &rgv[ptri->b];
+			const RenderVertex * const pv2 = &rgv[ptri->c];
 
 			rgv3D[0].Set(pv0->x,pv0->y,height);
 			rgv3D[2].Set(pv1->x,pv1->y,height);
 			rgv3D[1].Set(pv2->x,pv2->y,height);
 
-			rgv3D[0].tu = rgv3D[0].x / tablewidth * maxtu;
-			rgv3D[0].tv = rgv3D[0].y / tableheight * maxtv;
-			rgv3D[1].tu = rgv3D[1].x / tablewidth * maxtu;
-			rgv3D[1].tv = rgv3D[1].y / tableheight* maxtv;
-			rgv3D[2].tu = rgv3D[2].x / tablewidth * maxtu;
-			rgv3D[2].tv = rgv3D[2].y / tableheight* maxtv;
+			rgv3D[0].tu = rgv3D[0].x *inv_tablewidth;
+			rgv3D[0].tv = rgv3D[0].y *inv_tableheight;
+			rgv3D[1].tu = rgv3D[1].x *inv_tablewidth;
+			rgv3D[1].tv = rgv3D[1].y *inv_tableheight;
+			rgv3D[2].tu = rgv3D[2].x *inv_tablewidth;
+			rgv3D[2].tv = rgv3D[2].y *inv_tableheight;
 
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[0]);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1]);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2]);
 
 			WORD rgi[3];
-			int l;
-			for (l=0;l<3;l++)
+			for (WORD l=0;l<3;l++)
 				{
 				rgi[l] = l;
 				rgv3D[l].nx = 0;
 				rgv3D[l].ny = 0;
-				rgv3D[l].nz = -1;
+				rgv3D[l].nz = -1.0f;
 				}
 
 			// Draw top.
 			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 3,rgi, 3, 0);
 			}
 
-		for (i=0;i<vtri.Size();i++)
+		for (int i=0;i<vtri.Size();i++)
 			{
 			delete vtri.ElementAt(i);
 			}
@@ -1464,8 +1445,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	
 void Surface::RenderMoversFromCache(Pin3D *ppin3d)
 	{
-	int i;
-	for (i=0;i<m_vlinesling.Size();i++)
+	for (int i=0;i<m_vlinesling.Size();i++)
 		{
 		LineSegSlingshot *plinesling = m_vlinesling.ElementAt(i);
 		ppin3d->ReadAnimObjectFromCacheFile(&plinesling->m_slingshotanim, &plinesling->m_slingshotanim.m_pobjframe, 1);
@@ -1564,8 +1544,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 			m_cvertexT = vvertex.Size();
 			m_rgvT = new Vertex[m_cvertexT];
 
-			int i;
-			for (i=0;i<vvertex.Size();i++)
+			for (int i=0;i<vvertex.Size();i++)
 				{
 				m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
 				}
@@ -1574,7 +1553,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
 			int icp = 0;
-			for (i=0;i<(iSeg+1);i++)
+			for (int i=0;i<(iSeg+1);i++)
 				{
 				if (vvertex.ElementAt(i)->fControlPoint)
 					{
@@ -1592,7 +1571,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 				m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 				}
 
-			for (i=0;i<vvertex.Size();i++)
+			for (int i=0;i<vvertex.Size();i++)
 				{
 				delete vvertex.ElementAt(i);
 				}
@@ -2145,13 +2124,11 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 
 	if (m_fIsDropped != fNewVal)
 	{
-		int i;
-
 		m_fIsDropped = fNewVal;
 
 		m_phitdrop->m_polydropanim.m_iframedesire = m_fIsDropped ? 1 : 0;
 
-		for (i=0;i<m_vhoDrop.Size();i++)
+		for (int i=0;i<m_vhoDrop.Size();i++)
 		{
 			m_vhoDrop.ElementAt(i)->m_fEnabled = !m_fIsDropped && m_d.m_fCollidable; //disable hit on enities composing the object 
 		}
@@ -2385,9 +2362,7 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 
 	m_d.m_fCollidable = fNewVal;
 
-	int i;
-	
-	for (i=0;i<m_vhoCollidable.Size();i++)
+	for (int i=0;i<m_vhoCollidable.Size();i++)
 		{
 		if (m_d.m_fDroppable) m_vhoCollidable.ElementAt(i)->m_fEnabled = fNewVal && !m_fIsDropped;
 		else m_vhoCollidable.ElementAt(i)->m_fEnabled = fNewVal; //copy to hit checking on enities composing the object 
@@ -2435,8 +2410,3 @@ STDMETHODIMP Surface::put_SlingshotAnimation(VARIANT_BOOL newVal)
 
 	return S_OK;
 }
-
-
-
-
-  

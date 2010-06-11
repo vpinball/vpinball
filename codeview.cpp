@@ -16,8 +16,6 @@ static bool IsVBComment(Accessor &styler, int pos, int len) {
 static void ColouriseVBDoc(UINT startPos, int length, int initStyle,
                            WordList *keywordlists[], Accessor &styler)
 	{
-	int i;
-
 	if (length == 0)
 		{
 		return;
@@ -61,7 +59,7 @@ static void ColouriseVBDoc(UINT startPos, int length, int initStyle,
 	wzText = new WCHAR[length+1];
 	
 
-	for (i=0;i<length;i++)
+	for (int i=0;i<length;i++)
 		{
 		szText[i] = styler.SafeGetCharAt(startPos+i);
 		}
@@ -248,8 +246,7 @@ CodeViewer::~CodeViewer()
 	{
 	Destroy();
 
-	int i;
-	for (i=0;i<m_vcvd.Size();i++)
+	for (int i=0;i<m_vcvd.Size();i++)
 		{
 		delete m_vcvd.ElementAt(i);
 		}
@@ -280,13 +277,11 @@ void CodeViewer::SetClean(SaveDirtyState sds)
 
 void CodeViewer::EndSession()
 	{
-	int i;
-
 	CleanUpScriptEngine();
 
 	InitializeScriptEngine();
 
-	for (i=0;i<m_vcvdTemp.Size();i++)
+	for (int i=0;i<m_vcvdTemp.Size();i++)
 		{
 		delete m_vcvdTemp.ElementAt(i);
 		}
@@ -748,8 +743,6 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
 void CodeViewer::Compile()
 	{
-	int i;
-
 	char *szText;
 	WCHAR *wzText;
 
@@ -768,7 +761,7 @@ void CodeViewer::Compile()
 
 	HRESULT hr = m_pScript->AddTypeLib(LIBID_VBATESTLib, 1, 0, 0);
 
-	for (i=0;i<m_vcvd.Size();i++)
+	for (int i=0;i<m_vcvd.Size();i++)
 		{
 		int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
 		if (m_vcvd.ElementAt(i)->m_fGlobal)
@@ -1069,8 +1062,6 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
 	BYTE *szText;
 	ULONG read = 0;
 	int cchar;
-	int i;
-
 	m_fIgnoreDirty = fTrue;
 
 	hr = pistream->Read(&cchar, sizeof(int), &read);
@@ -1108,7 +1099,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
 	szText[cchar] = L'\0';
 
 	// check for bogus control characters
-	for (i=0;i<cchar;i++)
+	for (int i=0;i<cchar;i++)
 		{
 		if (szText[i] < 9 || (szText[i] > 9 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
 			{
@@ -1198,8 +1189,7 @@ void CodeViewer::GetParamsFromEvent(int iEvent, char *szParams)
 
 		pti->GetTypeAttr(&pta);
 
-		int i;
-		for (i=0;i<pta->cImplTypes;i++)
+		for (int i=0;i<pta->cImplTypes;i++)
 			{
 			HREFTYPE href;
 			ITypeInfo *ptiChild;
@@ -1228,8 +1218,7 @@ void CodeViewer::GetParamsFromEvent(int iEvent, char *szParams)
 					// Add enum string to combo control
 					char szT[512];
 
-					unsigned int l;
-					for (l=1;l<cnames;l++)
+					for (unsigned int l=1;l<cnames;l++)
 						{
 						WideCharToMultiByte(CP_ACP, 0, rgstr[l], -1, szT, 512, NULL, NULL);
 						if (l > 1)
@@ -1239,7 +1228,7 @@ void CodeViewer::GetParamsFromEvent(int iEvent, char *szParams)
 						lstrcat(szParams, szT);
 						}
 
-					for (l=0; l < cnames; l++)
+					for (unsigned int l=0; l < cnames; l++)
 						{
 						SysFreeString(rgstr[l]);
 						}
@@ -1524,8 +1513,7 @@ BOOL CodeViewer::FControlAlreadyOkayed(CONFIRMSAFETY *pcs)
 	{
 	if (g_pplayer)
 		{
-		int i;
-		for (i=0;i<g_pplayer->m_controlclsidsafe.Size();i++)
+		for (int i=0;i<g_pplayer->m_controlclsidsafe.Size();i++)
 			{
 			CLSID *pclsid = g_pplayer->m_controlclsidsafe.ElementAt(i);
 			if (*pclsid == pcs->clsid)
@@ -1903,10 +1891,9 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 		case RECOLOR_LINE:
 			{
-			int i;
 			CodeViewer *pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-			for (i=wParam; i<=lParam; i++)
+			for (int i=wParam; i<=lParam; i++)
 				{
 				pcv->ColorLine(i);
 				}
@@ -1968,8 +1955,7 @@ HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcr
 
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 
-	int i;
-	for (i=0;i<m_visel.Size();i++)
+	for (int i=0;i<m_visel.Size();i++)
 		{
 		IEditable *piedit = m_visel.ElementAt(i)->GetIEditable();
 		IScriptable *piscript = piedit->GetScriptable();
@@ -2014,8 +2000,7 @@ BOOL Collection::LoadToken(int id, BiffReader *pbr)
 		WCHAR wzT[MAXNAMEBUFFER];
 		pbr->GetWideString((WCHAR *)wzT);
 
-		int i;
-		for (i=0;i<ppt->m_vedit.Size();i++)
+		for (int i=0;i<ppt->m_vedit.Size();i++)
 			{
 			IScriptable *piscript = ppt->m_vedit.ElementAt(i)->GetScriptable();
 			if (piscript) // skip decals
@@ -2087,7 +2072,6 @@ STDMETHODIMP OMCollectionEnum::Init(Collection *pcol)
 
 STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG __RPC_FAR *pCeltFetched)
 	{
-	int i;
 	int last;
 	HRESULT hr;
 	int cwanted = celt;
@@ -2106,7 +2090,7 @@ STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG 
 		creturned = cwanted;
 		}
 
-	for (i=m_index;i<last;i++)
+	for (int i=m_index;i<last;i++)
 		{
 		IDispatch *pdisp;
 		pdisp = m_pcol->m_visel.ElementAt(i)->GetDispatch();

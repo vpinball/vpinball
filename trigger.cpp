@@ -64,14 +64,10 @@ void Trigger::PreRender(Sur *psur)
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
-			int cvertex;
-			Vertex *rgv;
+			const int cvertex = vvertex.Size();
+			Vertex * const rgv = new Vertex[cvertex];
 
-			cvertex = vvertex.Size();
-			rgv = new Vertex[cvertex];
-
-			int i;
-			for (i=0;i<vvertex.Size();i++)
+			for (int i=0;i<vvertex.Size();i++)
 				{
 				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
@@ -90,37 +86,31 @@ void Trigger::Render(Sur *psur)
 	psur->SetObject(this);
 	psur->SetFillColor(-1);
 
-	float r2;
-	int i;
-
 	switch (m_d.m_shape)
 		{
 		case ShapeCircle:
-		default:
+		default: {
 			psur->Line(m_d.m_vCenter.x - m_d.m_radius, m_d.m_vCenter.y, m_d.m_vCenter.x + m_d.m_radius, m_d.m_vCenter.y);
 			psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - m_d.m_radius, m_d.m_vCenter.x, m_d.m_vCenter.y + m_d.m_radius);
 
-			r2 = m_d.m_radius * (float)sin(PI/4);
+			const float r2 = m_d.m_radius * (float)sin(M_PI/4.0);
 
 			psur->Line(m_d.m_vCenter.x - r2, m_d.m_vCenter.y - r2, m_d.m_vCenter.x + r2, m_d.m_vCenter.y + r2);
 			psur->Line(m_d.m_vCenter.x - r2, m_d.m_vCenter.y + r2, m_d.m_vCenter.x + r2, m_d.m_vCenter.y - r2);
 			break;
+				 }
 
-		case ShapeCustom:
+		case ShapeCustom: {
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 			psur->SetObject(NULL);
 
 			psur->SetBorderColor(RGB(0,180,0),fFalse,1);
 
-			int cvertex;
-			Vertex *rgv;
+			const int cvertex = vvertex.Size();
+			Vertex * const rgv = new Vertex[cvertex];
 
-			cvertex = vvertex.Size();
-			rgv = new Vertex[cvertex];
-
-			int i;
-			for (i=0;i<vvertex.Size();i++)
+			for (int i=0;i<vvertex.Size();i++)
 				{
 				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
@@ -130,6 +120,7 @@ void Trigger::Render(Sur *psur)
 
 			delete rgv;
 			break;
+						  }
 		}
 
 	if (m_d.m_shape == ShapeCustom)
@@ -146,7 +137,7 @@ void Trigger::Render(Sur *psur)
 			{
 			// if any of the dragpoints of this object are selected then draw all the dragpoints
 			fDrawDragpoints = fFalse;
-			for (i=0;i<m_vdpoint.Size();i++)
+			for (int i=0;i<m_vdpoint.Size();i++)
 				{
 				CComObject<DragPoint> *pdp;
 				pdp = m_vdpoint.ElementAt(i);
@@ -160,7 +151,7 @@ void Trigger::Render(Sur *psur)
 
 		if (fDrawDragpoints == fTrue)
 			{
-			for (i=0;i<m_vdpoint.Size();i++)
+			for (int i=0;i<m_vdpoint.Size();i++)
 				{
 				CComObject<DragPoint> *pdp;
 				pdp = m_vdpoint.ElementAt(i);
@@ -241,7 +232,7 @@ void Trigger::GetHitShapes(Vector<HitObject> *pvho)
 
 void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
 	{
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 	m_hitEnabled = m_d.m_fEnabled;
 	switch (m_d.m_shape)
 		{
@@ -253,60 +244,50 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
 			pho->m_pObj = (void*) this;
 
 			pvho->AddElement(pho);			
-			}
 			break;
+			}
 
 		case ShapeCustom:
 			{
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
-			int cvertex;
-			Vertex3D *rgv3d;
+			const int cvertex = vvertex.Size();
+			Vertex3D * const rgv3d = new Vertex3D[cvertex];
 
-			cvertex = vvertex.Size();
-			rgv3d = new Vertex3D[cvertex];
-
-			int i;
-			for (i=0;i<vvertex.Size();i++)
+			for (int i=0;i<vvertex.Size();i++)
 				{
 				rgv3d[i].x = vvertex.ElementAt(i)->x;
 				rgv3d[i].y = vvertex.ElementAt(i)->y;
-				rgv3d[i].z = height + PHYS_SKIN*2;// + 10;
+				rgv3d[i].z = height + (float)(PHYS_SKIN*2.0);// + 10.0f;
 				delete vvertex.ElementAt(i);
 				}
 
-			Hit3DPoly *ph3dp = new Hit3DPoly(rgv3d, cvertex);
+			Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
 			ph3dp->m_ObjType = eTrigger;
 			ph3dp->m_pObj = (void*) this;
 
 			pvho->AddElement(ph3dp);
 			//ph3dp->m_fEnabled = fFalse;	//rlc ... error: disable hit process on polygon body, only trigger edges 
 			delete rgv3d;
-			}
 			break;
+			}
 		}
 	}
 
 void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 	{
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	int i;
-	int count;
-	
 	//Vector<Vertex> vvertex;
 
-	int cpoint;
-	int cpointCur;
-
-	cpoint = m_vdpoint.Size();
-
-	cpointCur = 0;
+	const int cpoint = m_vdpoint.Size();
+	int cpointCur = 0;
 
 	RenderVertex *rgv;
+	//RenderVertex * const rgv = GetRgRenderVertex(&count);
 	Vertex3D *rgv3D;
-	//rgv = GetRgRenderVertex(&count);
+	int count;
 
 		{
 		Vector<RenderVertex> vvertex;
@@ -318,40 +299,37 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 
 		if (1)
 			{
-			for (i=0;i<count;i++)
+			for (int i=0;i<count;i++)
 				{
 				rgv3D[i].x = vvertex.ElementAt(i)->x;
 				rgv3D[i].y = vvertex.ElementAt(i)->y;
-				rgv3D[i].z = height + PHYS_SKIN*2;// + 50;	//rlc fix 
+				rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);// + 50.0f; //rlc fix 
 				}
 			}
 
-		for (i=0;i<count;i++)
+		for (int i=0;i<count;i++)
 			{
 			rgv[i] = *vvertex.ElementAt(i);
 			delete vvertex.ElementAt(i);
 			}
 		}
 #if 1	
-	RenderVertex *pv1, *pv2, *pv3, *pv4;
-	for (i=0;i<count;i++)	
+	for (int i=0;i<count;i++)	
 		{
-		pv1 = &rgv[i];
-		pv2 = &rgv[(i+1) % count];
-		pv3 = &rgv[(i+2) % count];
-		pv4 = &rgv[(i+3) % count];
+		RenderVertex * const pv1 = &rgv[i];
+		RenderVertex * const pv2 = &rgv[(i+1) % count];
+		RenderVertex * const pv3 = &rgv[(i+2) % count];
+		RenderVertex * const pv4 = &rgv[(i+3) % count];
 
 		AddLine(pvho, pv2, pv3, pv1, height);
 		} 
 #endif
 
 #if 1	
-	Hit3DPoly *ph3dpoly;
-
-	ph3dpoly = new Hit3DPoly(rgv3D,count);
+	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
 
 	ph3dpoly->m_fVisible = fTrue;
-	ph3dpoly->m_ObjType = eTrigger;	
+	ph3dpoly->m_ObjType = eTrigger;
 	ph3dpoly->m_pObj = (void*) this;
 
 	pvho->AddElement(ph3dpoly);
@@ -364,17 +342,14 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 
 void Trigger::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *pv2, RenderVertex *pv3, float height)
 	{
-	TriggerLineSeg *plineseg;
-	Vertex vt1, vt2;
-
-	plineseg = new TriggerLineSeg();
+	TriggerLineSeg * const plineseg = new TriggerLineSeg();
 
 	plineseg->m_ptrigger = this;
-	plineseg->m_ObjType = eTrigger;	
+	plineseg->m_ObjType = eTrigger;
 	plineseg->m_pObj = (void*) this;
 
 	plineseg->m_rcHitRect.zlow = height;
-	plineseg->m_rcHitRect.zhigh = height + m_d.m_hit_height -8.0f; //adjust for same hit height as circular
+	plineseg->m_rcHitRect.zhigh = height + m_d.m_hit_height - 8.0f; //adjust for same hit height as circular
 
 	plineseg->v1.x = pv1->x;
 	plineseg->v1.y = pv1->y;
@@ -385,6 +360,7 @@ void Trigger::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 
 	plineseg->CalcNormal();
 
+	Vertex vt1, vt2;
 	vt1.x = pv1->x - pv2->x;
 	vt1.y = pv1->y - pv2->y;
 
@@ -401,7 +377,7 @@ void Trigger::EndPlay()
 	m_ptriggerhitcircle = NULL;
 	}
 
-float rgtriggervertex[][3] = {
+const float rgtriggervertex[][3] = {
 	-0.08f, -1, 0,
 	0.08f, -1, 0,
 	-0.08f, -0.5, 5,
@@ -414,7 +390,7 @@ float rgtriggervertex[][3] = {
 	0.08f, 1, 0,
 	};
 
-WORD rgtriggerface[][5] = {
+const WORD rgtriggerface[][5] = {
 	0,2,4,6,8,
 	9,7,5,3,1,
 	0,1,3,2,-1,
@@ -429,18 +405,14 @@ void Trigger::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	int i,l;
-	WORD rgi[8];
-	Vertex3D rgv3D[40];
-
 	if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
 		{
 		return;
 		}
 
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	ppin3d->EnableLightMap(fTrue, height);
 
@@ -451,51 +423,47 @@ void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	mtrl.diffuse.b = mtrl.ambient.b = 0.5f;
 	pd3dDevice->SetMaterial(&mtrl);
 
-	for (i=0;i<4;i++)
+	Vertex3D rgv3D[40];
+	for (int i=0;i<4;i++)
 		{
-		float angle = PI*2;
-		angle /= 8;
-		angle *= i;
+		const float angle = (float)(M_PI*2.0/8.0)*(float)i;
 
-		float sn = (float)sin(angle);
-		float cs = (float)cos(angle);
+		const float sn = sinf(angle);
+		const float cs = cosf(angle);
 
-		int offset = i*10;
+		const int offset = i*10;
 
-		for (l=0;l<10;l++)
+		for (int l=0;l<10;l++)
 			{
 			/*rgv3D[l].x = sn*m_d.m_radius + m_d.m_vCenter.x + cs*10;
 			rgv3D[l].y = -cs*m_d.m_radius + m_d.m_vCenter.y - sn*10;
 			rgv3D[l].z = height + 0.1f;*/
 
-			float x,y;
-
-			x = rgtriggervertex[l][0]*m_d.m_radius;
-			y = rgtriggervertex[l][1]*m_d.m_radius;
+			const float x = rgtriggervertex[l][0]*m_d.m_radius;
+			const float y = rgtriggervertex[l][1]*m_d.m_radius;
 			rgv3D[l+offset].z = rgtriggervertex[l][2] + height + 0.1f;
 
-			rgv3D[l+offset].x = cs*x + sn*y + m_d.m_vCenter.x;
+			rgv3D[l+offset].x =  cs*x + sn*y + m_d.m_vCenter.x;
 			rgv3D[l+offset].y = -sn*x + cs*y + m_d.m_vCenter.y;
 
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+offset]);
 			}
 		}
 
-	for (i=0;i<4;i++)
+	WORD rgi[8];
+	for (int i=0;i<4;i++)
 		{
-		int offset = i*10;
+		const int offset = i*10;
 
-		for (l=0;l<6;l++)
+		for (int l=0;l<6;l++)
 			{
-			int cpt;
-
 			rgi[0] = rgtriggerface[l][0];
 			rgi[1] = rgtriggerface[l][1];
 			rgi[2] = rgtriggerface[l][2];
 			rgi[3] = rgtriggerface[l][3];
 			rgi[4] = rgtriggerface[l][4];
 
-			cpt = (rgtriggerface[l][4] == 65535) ? 4 : 5;
+			const int cpt = (rgtriggerface[l][4] == 65535) ? 4 : 5;
 
 			SetNormal(&rgv3D[offset], rgi, cpt, NULL, NULL, 0);
 
@@ -526,9 +494,7 @@ void Trigger::MoveOffset(float dx, float dy)
 	m_d.m_vCenter.x += dx;
 	m_d.m_vCenter.y += dy;
 
-	int i;
-
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		CComObject<DragPoint> *pdp;
 
@@ -612,17 +578,13 @@ void Trigger::DoCommand(int icmd, int x, int y)
 			phs->ScreenToSurface(x, y, &v.x, &v.y);
 			delete phs;
 
-			int cvertex;
-			Vertex *rgv;
-
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
-			cvertex = vvertex.Size();
-			rgv = new Vertex[cvertex];
+			const int cvertex = vvertex.Size();
+			Vertex * const rgv = new Vertex[cvertex];
 
-			int i;
-			for (i=0;i<vvertex.Size();i++)
+			for (int i=0;i<vvertex.Size();i++)
 				{
 				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
 				}
@@ -631,7 +593,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
 			int icp = 0;
-			for (i=0;i<(iSeg+1);i++)
+			for (int i=0;i<(iSeg+1);i++)
 				{
 				if (vvertex.ElementAt(i)->fControlPoint)
 					{
@@ -652,7 +614,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
 				m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 				}
 
-			for (i=0;i<vvertex.Size();i++)
+			for (int i=0;i<vvertex.Size();i++)
 				{
 				delete vvertex.ElementAt(i);
 				}
@@ -987,13 +949,11 @@ STDMETHODIMP Trigger::DestroyBall(int *pVal)
 
 	if (g_pplayer)
 		{
-		Ball *pball;
-		int j;
-		
 		for (int i = 0; i < g_pplayer->m_vball.Size(); i++)
 			{
-			pball = g_pplayer->m_vball.ElementAt(i);
+			Ball *pball = g_pplayer->m_vball.ElementAt(i);
 
+			int j;
 			if (pball->m_vpVolObjs && (j = pball->m_vpVolObjs->IndexOf(this)) >= 0)
 				{
 				++cnt;
@@ -1064,11 +1024,9 @@ STDMETHODIMP Trigger::put_Shape(Shape newVal)
 	if (m_d.m_shape == ShapeCircle && m_vdpoint.Size() > 0)
 		{
 		// Set the center of the trigger back to something useful
-		float x=0;
-		float y=0;
-		int i;
-
-		for (i=0;i<m_vdpoint.Size();i++)
+		float x=0.0f;
+		float y=0.0f;
+		for (int i=0;i<m_vdpoint.Size();i++)
 			{
 			x += m_vdpoint.ElementAt(i)->m_v.x;
 			y += m_vdpoint.ElementAt(i)->m_v.y;
@@ -1081,38 +1039,36 @@ STDMETHODIMP Trigger::put_Shape(Shape newVal)
 	if (m_d.m_shape == ShapeCustom && m_vdpoint.Size() == 0)
 		{
 		// First time shape has been set to custom - set up some points
-		float x,y;
-
-		x = m_d.m_vCenter.x;
-		y = m_d.m_vCenter.y;
+		const float x = m_d.m_vCenter.x;
+		const float y = m_d.m_vCenter.y;
 
 		CComObject<DragPoint> *pdp;
 		CComObject<DragPoint>::CreateInstance(&pdp);
 		if (pdp)
 			{
 			pdp->AddRef();
-			pdp->Init(this, x-30, y-30);
+			pdp->Init(this, x-30.0f, y-30.0f);
 			m_vdpoint.AddElement(pdp);
 			}
 		CComObject<DragPoint>::CreateInstance(&pdp);
 		if (pdp)
 			{
 			pdp->AddRef();
-			pdp->Init(this, x-30, y+30);
+			pdp->Init(this, x-30.0f, y+30.0f);
 			m_vdpoint.AddElement(pdp);
 			}
 		CComObject<DragPoint>::CreateInstance(&pdp);
 		if (pdp)
 			{
 			pdp->AddRef();
-			pdp->Init(this, x+30, y+30);
+			pdp->Init(this, x+30.0f, y+30.0f);
 			m_vdpoint.AddElement(pdp);
 			}
 		CComObject<DragPoint>::CreateInstance(&pdp);
 		if (pdp)
 			{
 			pdp->AddRef();
-			pdp->Init(this, x+30, y-30);
+			pdp->Init(this, x+30.0f, y-30.0f);
 			m_vdpoint.AddElement(pdp);
 			}
 

@@ -343,7 +343,6 @@ void VPinball::InitTools()
 
 void VPinball::InitRegValues()
 	{
-	int i;
 	HRESULT hr;
 
 	hr = GetRegInt("Editor", "ShowDragPoints", &m_fAlwaysDrawDragPoints);
@@ -392,7 +391,7 @@ void VPinball::InitRegValues()
 		}
 
 	// get the list of the last n loaded tables
-	for (i=0; i<LAST_OPENED_TABLE_COUNT; i++)
+	for (int i=0; i<LAST_OPENED_TABLE_COUNT; i++)
 		{
 		char szRegName[MAX_PATH];
 
@@ -450,7 +449,6 @@ void VPinball::CreateSideBar()
 
 HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 	{
-	int i;
 	HWND hwnd;
 
 	hwnd = CreateToolbarEx(hwndParent,
@@ -466,7 +464,7 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 
 	char szBuf[MAXRESLEN];
 
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
 		LoadString(g_hinstres, p_tbbutton[i].dwData, szBuf, MAXRESLEN-1);
 		szBuf[lstrlen(szBuf) + 1] = 0;  //Double-null terminate.
@@ -484,7 +482,7 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 		(LPARAM)(DWORD)MAKELONG(50,50));
 #endif
 
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
 		TBBUTTONINFO tbbi;
 		tbbi.cbSize = sizeof(tbbi);
@@ -518,9 +516,7 @@ void VPinball::CreateMDIClient()
 
 void VPinball::SetClipboard(Vector<IStream> *pvstm)
 	{
-	int i;
-
-	for (i=0;i<m_vstmclipboard.Size();i++)
+	for (int i=0;i<m_vstmclipboard.Size();i++)
 		{
 		m_vstmclipboard.ElementAt(i)->Release();
 		}
@@ -528,7 +524,7 @@ void VPinball::SetClipboard(Vector<IStream> *pvstm)
 
 	if (pvstm)
 		{
-		for (i=0;i<pvstm->Size();i++)
+		for (int i=0;i<pvstm->Size();i++)
 			{
 			m_vstmclipboard.AddElement(pvstm->ElementAt(i));
 			}
@@ -746,8 +742,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 			m_fBackglassView = fShow;
 
-			int i;
-			for (i=0;i<m_vtable.Size();i++)
+			for (int i=0;i<m_vtable.Size();i++)
 				{
 				PinTable *ptT = m_vtable.ElementAt(i);
 				ptT->SetDefaultView();
@@ -1198,7 +1193,6 @@ int rgToolEnable[22][2] = {
 
 void VPinball::SetEnablePalette()
 	{
-	int i;
 	BOOL fTableActive;
 
 	PinTable *ptCur = GetActiveTable();
@@ -1217,7 +1211,7 @@ void VPinball::SetEnablePalette()
 
 	int state = (m_fBackglassView ? 2 : 1);
 
-	for (i=0;i<TBCOUNTPALETTE;i++)		//<<< changed by Chris from 0->14 to 0->15
+	for (int i=0;i<TBCOUNTPALETTE;i++)		//<<< changed by Chris from 0->14 to 0->15
 		{
 		int id = rgToolEnable[i][0];
 		int enablecode = rgToolEnable[i][1];
@@ -1258,16 +1252,15 @@ void VPinball::SetEnablePalette()
 
 void VPinball::SetEnableToolbar()
 	{
-	int i;
 	BOOL fTableActive;
 
 	PinTable *ptCur = GetActiveTable();
 
 	fTableActive = (ptCur != NULL) && !g_pplayer;
 
-	int state = (m_fBackglassView ? 2 : 1);
+	//int state = (m_fBackglassView ? 2 : 1);
 
-	for (i=TBCOUNTPALETTE;i<(TBCOUNTPALETTE+5);i++)
+	for (int i=TBCOUNTPALETTE;i<(TBCOUNTPALETTE+5);i++)
 		{
 		int id = rgToolEnable[i][0];
 		BOOL fEnable = fTableActive;
@@ -1702,17 +1695,12 @@ void VPinball::SetEnableMenuItems()
 //>>> added by Chris
 void VPinball::UpdateRecentFileList(char *szfilename)
 	{
-	int i;
-	int	index;
-//	char 	szFile[MAX_PATH];
-
 	// if the loaded file name is not null then add it to the top of the list
 	if (szfilename != NULL)
 		{
-		BOOL	bFound;
-
 		// does this file name aready exist in the list?
-		bFound = fFalse;
+		BOOL bFound = fFalse;
+		int i;
 		for (i=0; i<LAST_OPENED_TABLE_COUNT; i++)
 			{
 			if (strcmp(m_szRecentTableList[i], szfilename) == 0)
@@ -1724,6 +1712,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 			}
 
 		// if the entry is already in the list then copy all the items above it down one position
+		int index;
 		if (bFound == fTrue)
 			{
 			index = i-1;
@@ -1776,7 +1765,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 	   		}
 
 	   	// delete all the recent file IDM's from this menu
-	   	for (i=RECENT_FIRST_MENU_IDM; i<=RECENT_LAST_MENU_IDM; i++)
+	   	for (int i=RECENT_FIRST_MENU_IDM; i<=RECENT_LAST_MENU_IDM; i++)
 	   		{
 	   		DeleteMenu(hmenuFile, i, MF_BYCOMMAND);
 	   		}
@@ -1793,7 +1782,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 		menuInfo.fType = MFT_STRING;
 
 	   	// add in the list of recently accessed files
-		for (i=0; i<LAST_OPENED_TABLE_COUNT; i++)
+		for (int i=0; i<LAST_OPENED_TABLE_COUNT; i++)
 			{
 			// if this entry is empty then all the rest are empty
 			if (m_szRecentTableList[i][0] == 0x00) break;
@@ -1824,8 +1813,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 	
 	if (!g_pplayer)
 		{
-		int i;
-		for (i=0;i<m_sb.m_vhwndDialog.Size();i++)
+		for (int i=0;i<m_sb.m_vhwndDialog.Size();i++)
 			{
 			if (IsDialogMessage(m_sb.m_vhwndDialog.ElementAt(i), pmsg))
 				{
@@ -2244,9 +2232,8 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 						HWND hwndList = CreateWindowEx(0, "ListBox", "", WS_CHILD | LBS_SORT, 0, 0, 10, 10, hwnd, NULL, g_hinst, 0);
 
-						int i;
 						int menucount=0;
-						for (i=0;i<pt->m_vedit.Size();i++)
+						for (int i=0;i<pt->m_vedit.Size();i++)
 						{
 							IEditable *piedit = pt->m_vedit.ElementAt(i);
 							// check scriptable - decals don't have scripts and therefore don't have names
@@ -2255,24 +2242,24 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 								char szT[64]; // Names can only be 32 characters (plus terminator)
 								WideCharToMultiByte(CP_ACP, 0, pt->m_vedit.ElementAt(i)->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);
 
-								int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
+								const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
 								SendMessage(hwndList, LB_SETITEMDATA, index, i+1);// menu can't have an item with id 0, so bump everything up one
 							}
 						}
 
-						for (i=0;i<pt->m_vcollection.Size();i++)
+						for (int i=0;i<pt->m_vcollection.Size();i++)
 						{
 							char szT[64]; // Names can only be 32 characters (plus terminator)
 							WideCharToMultiByte(CP_ACP, 0, pt->m_vcollection.ElementAt(i)->m_wzName, -1, szT, 64, NULL, NULL);
 
-							int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
+							const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
 							SendMessage(hwndList, LB_SETITEMDATA, index, i | 0x80000000);
 						}
 
-						int listcount = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+						const int listcount = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
 
 						// Take the items from our sorted list and put them into the menu
-						for (i=0;i<listcount;i++)
+						for (int i=0;i<listcount;i++)
 						{
 							char szT[64];
 							int flags = MF_STRING;
@@ -2295,9 +2282,8 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 						GetCursorPos(&mousept);
 
-						int ksshift;
-						ksshift = GetKeyState(VK_SHIFT);
-						BOOL fAdd = (ksshift & 0x80000000) != 0;
+						const int ksshift = GetKeyState(VK_SHIFT);
+						const BOOL fAdd = ((ksshift & 0x80000000) != 0);
 
 						int icmd;
 						icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | 16384/*TPM_NOANIMATION*/,
@@ -2307,9 +2293,8 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 						{
 							if (icmd & 0x80000000) // collection
 							{
-								int i;
 								Collection *pcol = pt->m_vcollection.ElementAt(icmd & 0x7fffffff);
-								for (i=0;i<pcol->m_visel.Size();i++)
+								for (int i=0;i<pcol->m_visel.Size();i++)
 								{
 									pt->AddMultiSel(pcol->m_visel.ElementAt(i), i == 0 ? fAdd : TRUE, TRUE);
 								}
@@ -3684,12 +3669,10 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			SendMessage(hwndDlg, RESET_SIZELIST_CONTENT, 0, 0);
 			HWND hwndList = GetDlgItem(hwndDlg, IDC_SIZELIST);
 
-			int i;
-			int csize;
-			csize = sizeof(rgwindowsize)/sizeof(int);
-			int screenwidth = GetSystemMetrics(SM_CXSCREEN);
+			const int csize = sizeof(rgwindowsize)/sizeof(int);
+			const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
 			char szT[128];
-			for (i=0;i<csize;i++)
+			for (int i=0;i<csize;i++)
 				{
 				int xsize = rgwindowsize[i];
 				if (xsize <= screenwidth)
@@ -3699,7 +3682,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 						indexcur = i;
 						}
 					sprintf(szT, "%d x %d", xsize, xsize*3/4);
-					int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)szT);
+					const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)szT);
 					VideoMode* pvm = new VideoMode();
 					pvm->width = xsize;
 					pvm->height = xsize*3/4;
@@ -3739,9 +3722,8 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		case RESET_SIZELIST_CONTENT:
 			{
 			HWND hwndList = GetDlgItem(hwndDlg, IDC_SIZELIST);
-			int i,size;
-			size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-			for (i=0;i<size;i++)
+			const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+			for (int i=0;i<size;i++)
 				{
 				VideoMode *pvm = (VideoMode *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
 				delete pvm;
@@ -3824,8 +3806,7 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 						case IDOK:
 							{
 							HWND hwndCheck;
-							int i;
-							for (i=0;i<5;i++)
+							for (int i=0;i<5;i++)
 								{
 								hwndCheck = GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]);
 								int checked = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
@@ -4253,8 +4234,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			HWND hwndOut = GetDlgItem(hwndDlg, IDC_OUTLIST);
 			HWND hwndIn = GetDlgItem(hwndDlg, IDC_INLIST);
 
-			int i;
-			for (i=0;i<pcol->m_visel.Size();i++)
+			for (int i=0;i<pcol->m_visel.Size();i++)
 				{
 				ISelect *pisel = pcol->m_visel.ElementAt(i);
 				IEditable *piedit = pisel->GetIEditable();
@@ -4262,22 +4242,21 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				if (piscript)
 					{
 					WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
-					int index = SendMessage(hwndIn, LB_ADDSTRING, 0, (long)szT);
+					const int index = SendMessage(hwndIn, LB_ADDSTRING, 0, (long)szT);
 					SendMessage(hwndIn, LB_SETITEMDATA, index, (long)piscript);
 					}
 				}
 
 			PinTable *ppt = pcds->ppt;
 
-			for (i=0;i<ppt->m_vedit.Size();i++)
+			for (int i=0;i<ppt->m_vedit.Size();i++)
 				{
 				IEditable *piedit = ppt->m_vedit.ElementAt(i);
 				IScriptable *piscript = piedit->GetScriptable();
 				ISelect *pisel = piedit->GetISelect();
 
-				int l;
-
 				// Only process objects not in this collection
+				int l;
 				for (l=0;l<pcol->m_visel.Size();l++)
 					{
 					if (pisel == pcol->m_visel.ElementAt(l))
@@ -4319,11 +4298,10 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 							int *rgsel = new int[count];
 							SendMessage(hwndList, LB_GETSELITEMS, count, (LPARAM)rgsel);
 
-							int loop;
-							int i;
-							for (loop=0;loop<count;loop++)
+							for (int loop=0;loop<count;loop++)
 							//for (i=count-1;i>=0;i--)
 								{
+								int i;
 								if (LOWORD(wParam) == IDC_UP)
 									{
 									i = loop;
@@ -4390,8 +4368,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 							int count = SendMessage(hwndOut, LB_GETSELCOUNT, 0, 0);
 							int *rgsel = new int[count];
 							SendMessage(hwndOut, LB_GETSELITEMS, count, (LPARAM)rgsel);
-							int i;
-							for (i=0;i<count;i++)
+							for (int i=0;i<count;i++)
 								{
 								int data;
 								int len = SendMessage(hwndOut, LB_GETTEXTLEN, rgsel[i], 0);
@@ -4406,7 +4383,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 							// Remove the old strings after everything else, to avoid messing up indices
 							// Remove things in reverse order, so we don't get messed up inside this loop
-							for (i=0;i<count;i++)
+							for (int i=0;i<count;i++)
 								{
 								SendMessage(hwndOut, LB_DELETESTRING, rgsel[count-i-1], 0);
 								}
@@ -4421,9 +4398,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 							Collection *pcol = pcds->pcol;
 
-							int i;
-
-							for (i=0;i<pcol->m_visel.Size();i++)
+							for (int i=0;i<pcol->m_visel.Size();i++)
 								{
 								int index = pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.IndexOf(pcol);
 								if (index != -1)
@@ -4437,9 +4412,9 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 							HWND hwndIn = GetDlgItem(hwndDlg, IDC_INLIST);
 
-							int count = SendMessage(hwndIn, LB_GETCOUNT, 0, 0);
+							const int count = SendMessage(hwndIn, LB_GETCOUNT, 0, 0);
 
-							for (i=0;i<count;i++)
+							for (int i=0;i<count;i++)
 								{
 								IScriptable *piscript;
 								ISelect *pisel;
@@ -4538,8 +4513,7 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			LocalString ls(IDS_NONE);
 			SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)ls.m_szbuffer);
 
-			int i;
-			for (i=0;i<pt->m_vimage.Size();i++)
+			for (int i=0;i<pt->m_vimage.Size();i++)
 				{
 				PinImage *pin = pt->m_vimage.ElementAt(i);
 				if (pin->m_ppb)
@@ -4645,8 +4619,6 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 						case IDOK:
 							{
-							int i;
-
 							SAFE_DELETE(pt->m_szTableName);
 							SAFE_DELETE(pt->m_szAuthor);
 							SAFE_DELETE(pt->m_szVersion);
@@ -4679,7 +4651,7 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 								}
 
 							// Clear old custom values, read back new ones
-							for (i=0;i<pt->m_vCustomInfoTag.Size();i++)
+							for (int i=0;i<pt->m_vCustomInfoTag.Size();i++)
 								{
 								delete pt->m_vCustomInfoTag.ElementAt(i);
 								delete pt->m_vCustomInfoContent.ElementAt(i);
@@ -4688,7 +4660,7 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							pt->m_vCustomInfoContent.RemoveAllElements();
 
 							int customcount = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_CUSTOMLIST));
-							for (i=0;i<customcount;i++)
+							for (int i=0;i<customcount;i++)
 								{
 								char szT[1024];
 								char *szName;
@@ -5695,7 +5667,6 @@ int CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 							SetRegValue("Editor", "ShowDragPoints", REG_DWORD, &fdrawpoints, 4);
 
 							// light centers
-							int fdrawcenters = 0;
 							hwndControl = GetDlgItem(hwndDlg, IDC_DRAW_LIGHTCENTERS);
 							checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
 							fdrawpoints = (checked == BST_CHECKED) ? 1:0;
@@ -5713,8 +5684,7 @@ int CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 
 							// Go through and reset the autosave time on all the tables
 							g_pvp->SetAutoSaveMinutes(autosavetime);
-							int i;
-							for (i=0;i<g_pvp->m_vtable.Size();i++)
+							for (int i=0;i<g_pvp->m_vtable.Size();i++)
 								{
 								g_pvp->m_vtable.ElementAt(i)->BeginAutoSaveCounter();
 								}

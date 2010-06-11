@@ -10,7 +10,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#define BGR(b,g,r)((COLORREF)(((BYTE)(b)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(r))<<16)))
+#define BGR(b,g,r) ((COLORREF)(((DWORD)(b)) | (((DWORD)(g))<<8) | (((DWORD)(r))<<16)))
 
 #define NOTRANSCOLOR  RGB(123,123,123)
 
@@ -78,21 +78,21 @@ public:
 
 	LPDIRECTDRAW7 m_pDD;
 
-	LPDIRECTDRAWSURFACE7 CreateTextureOffscreen(int width, int height);
+	LPDIRECTDRAWSURFACE7 CreateTextureOffscreen(const int width, const int height);
 	LPDIRECTDRAWSURFACE7 CreateFromFile(char *szfile, int *pwidth, int *pheight);
 	LPDIRECTDRAWSURFACE7 CreateFromResource(int id, int *pwidth, int *pheight);
 	LPDIRECTDRAWSURFACE7 CreateFromHBitmap(HBITMAP hbm, int *pwidth, int *pheight);
 
 	LPDIRECTDRAWSURFACE7 DecompressJPEG(PinImage *ppi/*char *szfile*/, PinBinary *ppb, int *pwidth, int *pheight);
 
-	void SetOpaque(LPDIRECTDRAWSURFACE7 pdds, int width, int height);
-	void SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, COLORREF rgbTransparent, COLORREF rgbBackdrop, int width, int height);
+	void SetOpaque(LPDIRECTDRAWSURFACE7 pdds, const int width, const int height);
+	void SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop, const int width, const int height);
 
-	BOOL SetAlpha(LPDIRECTDRAWSURFACE7 pdds, COLORREF rgbTransparent, int width, int height);
+	BOOL SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const int width, const int height);
 
 	void CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds);
 
-	void Blur(LPDIRECTDRAWSURFACE7 pdds, BYTE *pbits, int shadwidth, int shadheight);
+	void Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, const int shadwidth, const int shadheight);
 
 	void BlurAlpha(LPDIRECTDRAWSURFACE7 pdds);
 

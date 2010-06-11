@@ -183,9 +183,7 @@ Player::Player()
 
 Player::~Player()
 	{
-	int i;
-
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
@@ -194,13 +192,13 @@ Player::~Player()
 			}
 		}
 
-	for (i=0;i<m_vho.Size();i++)
+	for (int i=0;i<m_vho.Size();i++)
 		{
 		delete m_vho.ElementAt(i);
 		}
 	m_vho.RemoveAllElements();
 
-	for (i=0;i<m_vdebugho.Size();i++)
+	for (int i=0;i<m_vdebugho.Size();i++)
 		{
 		delete m_vdebugho.ElementAt(i);
 		}
@@ -208,7 +206,7 @@ Player::~Player()
 
 	// balls get deleted by the hit object vector
 	// not anymore - balls are added to the octree, but not the main list
-	for (i=0;i<m_vball.Size();i++)
+	for (int i=0;i<m_vball.Size();i++)
 		{
 		Ball *pball = m_vball.ElementAt(i);
 		if (pball->m_pballex)
@@ -254,7 +252,7 @@ Player::~Player()
 		m_pxap = NULL;
 		}
 
-	for (i=0;i<m_controlclsidsafe.Size();i++)
+	for (int i=0;i<m_controlclsidsafe.Size();i++)
 		{
 		delete m_controlclsidsafe.ElementAt(i);
 		}
@@ -534,8 +532,7 @@ void Player::InitRegValues()
 
 void Player::InitDebugHitStructure()
 	{
-	int i;
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
@@ -552,7 +549,7 @@ void Player::InitDebugHitStructure()
 			}
 		}
 
-	for (i=0;i<m_vdebugho.Size();i++)
+	for (int i=0;i<m_vdebugho.Size();i++)
 		{
 		m_vdebugho.ElementAt(i)->CalcHitRect();
 		m_debugoctree.m_vho.AddElement(m_vdebugho.ElementAt(i));
@@ -565,9 +562,9 @@ void Player::InitDebugHitStructure()
 	m_debugoctree.m_rectbounds.zlow = m_ptable->m_tableheight;
 	m_debugoctree.m_rectbounds.zhigh = m_ptable->m_glassheight;
 
-	m_debugoctree.m_vcenter.x = (m_hitoctree.m_rectbounds.left + m_hitoctree.m_rectbounds.right)/2;
-	m_debugoctree.m_vcenter.y = (m_hitoctree.m_rectbounds.top + m_hitoctree.m_rectbounds.bottom)/2;
-	m_debugoctree.m_vcenter.z = (m_hitoctree.m_rectbounds.zlow + m_hitoctree.m_rectbounds.zhigh)/2;
+	m_debugoctree.m_vcenter.x = (m_hitoctree.m_rectbounds.left + m_hitoctree.m_rectbounds.right)*0.5f;
+	m_debugoctree.m_vcenter.y = (m_hitoctree.m_rectbounds.top + m_hitoctree.m_rectbounds.bottom)*0.5f;
+	m_debugoctree.m_vcenter.z = (m_hitoctree.m_rectbounds.zlow + m_hitoctree.m_rectbounds.zhigh)*0.5f;
 
 	m_debugoctree.CreateNextLevel();
 	}
@@ -575,14 +572,13 @@ void Player::InitDebugHitStructure()
 HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName, BOOL fCheckForCache)
 	{
 	HRESULT hr;
-	int		i;
-
+	
 	m_ptable = ptable;
 
 	//accelerometer normal mounting is 90 degrees in left-hand coordinates (1/4 turn counterclockwise)
 	m_fAccelerometer = m_ptable->m_tblAccelerometer;		// true if electronic Accelerometer enabled m_ptable->
 	m_AccelNormalMount = m_ptable->m_tblAccelNormalMount;	// true is normal mounting (left hand coordinates)
-	m_AccelAngle = (m_ptable->m_tblAccelAngle) * PI/180.0f; // 0 rotated counterclockwise (GUI is lefthand coordinates)
+	m_AccelAngle = (m_ptable->m_tblAccelAngle) * (float)(M_PI/180.0); // 0 rotated counterclockwise (GUI is lefthand coordinates)
 	m_AccelAmp = m_ptable->m_tblAccelAmp;					// Accelerometer gain 
 	m_AccelMAmp = m_ptable->m_tblAccelManualAmp;			// manual input gain, generally from joysticks
 
@@ -632,7 +628,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	m_pininput.Init(m_hwnd);
 
 	// Initialize light hack states.
-	for ( i=0; i<LIGHTHACK_MAX; i++ )
+	for (int i=0; i<LIGHTHACK_MAX; i++)
 	{
 		m_LastUpdateTime[i] = 0;
 		m_LightHackReadyForDrawLightHackFn[i] = FALSE;
@@ -672,7 +668,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 	float realFOV = ptable->m_FOV;
 
-	if (realFOV <= 0)
+	if (realFOV < 0.01f)
 		{
 		realFOV = 0.01f; // Can't have a real zero FOV, but this will look the same
 		}
@@ -684,13 +680,13 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	m_mainlevel.n = 0;
 	m_mainlevel.b = 0;
 
-	float slope = ptable->m_angletiltMin 
+	const float slope = ptable->m_angletiltMin 
 					  + (ptable->m_angletiltMax - ptable->m_angletiltMin) 
 					  * ptable->m_globalDifficulty;
 	
 	m_mainlevel.m_gravity.x = (D3DVALUE)0;
-	m_mainlevel.m_gravity.y = (D3DVALUE)(sin(ANGTORAD(slope))*ptable->m_Gravity); 
-	m_mainlevel.m_gravity.z = (D3DVALUE)(-cos(ANGTORAD(slope))*ptable->m_Gravity);
+	m_mainlevel.m_gravity.y = (D3DVALUE)( sinf(ANGTORAD(slope))*ptable->m_Gravity);
+	m_mainlevel.m_gravity.z = (D3DVALUE)(-cosf(ANGTORAD(slope))*ptable->m_Gravity);
 
 	m_NudgeX = 0;
 	m_NudgeY = 0;
@@ -717,7 +713,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	m_phys_total_iterations = 0;
 #endif
 
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
@@ -737,7 +733,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 	CreateBoundingHitShapes(&m_vho);
 
-	for (i=0;i<m_vho.Size();i++)
+	for (int i=0;i<m_vho.Size();i++)
 		{
 		m_vho.ElementAt(i)->CalcHitRect();
 
@@ -769,9 +765,9 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	m_hitoctree.m_rectbounds.zlow = m_ptable->m_tableheight;
 	m_hitoctree.m_rectbounds.zhigh = m_ptable->m_glassheight;
 
-	m_hitoctree.m_vcenter.x = (m_hitoctree.m_rectbounds.left + m_hitoctree.m_rectbounds.right)/2;
-	m_hitoctree.m_vcenter.y = (m_hitoctree.m_rectbounds.top + m_hitoctree.m_rectbounds.bottom)/2;
-	m_hitoctree.m_vcenter.z = (m_hitoctree.m_rectbounds.zlow + m_hitoctree.m_rectbounds.zhigh)/2;
+	m_hitoctree.m_vcenter.x = (m_hitoctree.m_rectbounds.left + m_hitoctree.m_rectbounds.right)*0.5f;
+	m_hitoctree.m_vcenter.y = (m_hitoctree.m_rectbounds.top + m_hitoctree.m_rectbounds.bottom)*0.5f;
+	m_hitoctree.m_vcenter.z = (m_hitoctree.m_rectbounds.zlow + m_hitoctree.m_rectbounds.zhigh)*0.5f;
 
 	m_hitoctree.CreateNextLevel();
 
@@ -782,9 +778,9 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	m_shadowoctree.m_rectbounds.zlow = m_ptable->m_tableheight;
 	m_shadowoctree.m_rectbounds.zhigh = m_ptable->m_glassheight;
 
-	m_shadowoctree.m_vcenter.x = (m_hitoctree.m_rectbounds.left + m_hitoctree.m_rectbounds.right)/2;
-	m_shadowoctree.m_vcenter.y = (m_hitoctree.m_rectbounds.top + m_hitoctree.m_rectbounds.bottom)/2;
-	m_shadowoctree.m_vcenter.z = (m_hitoctree.m_rectbounds.zlow + m_hitoctree.m_rectbounds.zhigh)/2;
+	m_shadowoctree.m_vcenter.x = (m_hitoctree.m_rectbounds.left + m_hitoctree.m_rectbounds.right)*0.5f;
+	m_shadowoctree.m_vcenter.y = (m_hitoctree.m_rectbounds.top + m_hitoctree.m_rectbounds.bottom)*0.5f;
+	m_shadowoctree.m_vcenter.z = (m_hitoctree.m_rectbounds.zlow + m_hitoctree.m_rectbounds.zhigh)*0.5f;
 
 	m_shadowoctree.CreateNextLevel();
 
@@ -859,26 +855,25 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	///// (List of movers which can be blitted at any time)
 	/////////////////////////
 
-	for (i=0;i<m_vho.Size();i++)
+	for (int i=0;i<m_vho.Size();i++)
 		{
 		if (m_vho.ElementAt(i)->GetAnimObject() != NULL)
 			{
-			int l;
-
 			// Put the screenupdate vector in sorted order back to
 			// front so that invalidated objects draw over each-other
 			// correctly
 
 			AnimObject *pao = m_vho.ElementAt(i)->GetAnimObject();
 
-			float myz = (pao->m_znear + pao->m_zfar) / 2;
+			const float myz = (pao->m_znear + pao->m_zfar)*0.5f;
 
+			int l;
 			for (l=0;l<m_vscreenupdate.Size();l++)
 				{
 				BOOL fInBack = fFalse;
 
 					{
-					float comparez = (m_vscreenupdate.ElementAt(l)->m_znear + m_vscreenupdate.ElementAt(l)->m_zfar)/2;
+					const float comparez = (m_vscreenupdate.ElementAt(l)->m_znear + m_vscreenupdate.ElementAt(l)->m_zfar)*0.5f;
 
 					if (myz > comparez)
 						{
@@ -908,7 +903,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 		}
 
 	// Render inital textbox text
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemTextbox)
             {
@@ -918,7 +913,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 		}
 
     // Render inital dispreel(s)
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDispReel)
 			{
@@ -987,7 +982,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	}
 
 	// Call Init
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
@@ -1016,10 +1011,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 void Player::ReOrder() // Reorder playfield objects for ATI configurations
 {
-
-	int i;
-
-	for (i=0;i<m_ptable->m_vedit.Size();i++) //fix render walls
+	for (int i=0;i<m_ptable->m_vedit.Size();i++) //fix render walls
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemSurface)
 			{
@@ -1034,7 +1026,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 			}
 		}
 
-	for (i=0;i<m_ptable->m_vedit.Size();i++) //fix render bumpers
+	for (int i=0;i<m_ptable->m_vedit.Size();i++) //fix render bumpers
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemBumper)
 			{
@@ -1045,7 +1037,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 			}
 		}
 
-	for (i=0;i<m_ptable->m_vedit.Size();i++) //fix render gates
+	for (int i=0;i<m_ptable->m_vedit.Size();i++) //fix render gates
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemGate)
 			{
@@ -1056,7 +1048,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 			}
 		}
 
-	for (i=0;i<m_ptable->m_vedit.Size();i++) //fix render spinners
+	for (int i=0;i<m_ptable->m_vedit.Size();i++) //fix render spinners
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemSpinner)
 			{
@@ -1067,7 +1059,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 			}
 		}
 
-	for (i=0;i<m_ptable->m_vedit.Size();i++) //fix render flippers
+	for (int i=0;i<m_ptable->m_vedit.Size();i++) //fix render flippers
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
 			{
@@ -1078,7 +1070,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 			}
 		}
 
-	for (i=0;i<m_ptable->m_vedit.Size();i++) //fix render lights
+	for (int i=0;i<m_ptable->m_vedit.Size();i++) //fix render lights
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemLight)
 			{
@@ -1093,8 +1085,6 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 void Player::InitStatic(HWND hwndProgress)
 	{
 	HRESULT hr;
-	int i;
-	
 	if (m_pin3d.m_fReadingFromCache)
 		{
 		m_pin3d.ReadSurfaceFromCacheFile(m_pin3d.m_pddsStatic);
@@ -1109,7 +1099,7 @@ void Player::InitStatic(HWND hwndProgress)
 	m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
 
 	// Draw stuff
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal && m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemKicker)
 			{
@@ -1126,7 +1116,7 @@ void Player::InitStatic(HWND hwndProgress)
 		}
 
 	// Draw decals (they have transparency, so they have to be drawn after the wall they are on)
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDecal)
 			{
@@ -1143,7 +1133,7 @@ void Player::InitStatic(HWND hwndProgress)
 		}
 
 	// Draw kickers (they change z-buffer, so they have to be drawn after the wall they are on)
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemKicker)
 			{
@@ -1166,8 +1156,6 @@ void Player::InitStatic(HWND hwndProgress)
 void Player::InitAnimations(HWND hwndProgress)
 {
 	HRESULT hr;
-	int i;
-
 	hr = m_pin3d.m_pd3dDevice->BeginScene();
 
 	// Direct all renders to the back buffer.
@@ -1178,7 +1166,7 @@ void Player::InitAnimations(HWND hwndProgress)
 	m_pin3d.m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0L );
 
 	// Draw stuff
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
@@ -1199,7 +1187,7 @@ void Player::InitAnimations(HWND hwndProgress)
 	}
 
 	// Init lights to initial state
-	for (i=0;i<m_ptable->m_vedit.Size();i++)
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 	{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemLight)
 		{
@@ -1602,8 +1590,8 @@ void Player::UltraNudge(void)	// called on every intergral physics frame
 	if( na != m_AccelAngle )
 	{
 		na = m_AccelAngle;
-		cna = cos(na);
-		sna = sin(na);
+		cna = cosf(na);
+		sna = sinf(na);
 	}
 
 	for(int j = 0; j < e_JoyCnt; ++j)
@@ -1706,32 +1694,30 @@ void Player::mechPlungerIn(int z)
 #define EMBEDED_LIMIT  0.0875f
 #define STATICCNTS 10
 
-void Player::PhysicsSimulateCycle( PINFLOAT dtime,U64 startTime) // move physics forward to this time
+void Player::PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime) // move physics forward to this time
 	{
-	int i = 0;
 	PINFLOAT hittime,htz;
 	PINFLOAT staticTime = STATICTIME;
-	int limitTime = m_ptable->m_PhysicsLoopTime;
+	const int limitTime = m_ptable->m_PhysicsLoopTime;
 	int halfLimitTime = limitTime/2;
 
-	Ball *pball;
-	int vballsize = m_vball.Size();
+	const int vballsize = m_vball.Size();
 
-	int StaticCnts = STATICCNTS;			// maximum number of static counts
+	int StaticCnts = STATICCNTS;	// maximum number of static counts
 
 	while (dtime > 0) 	
 		{
 
 		if (limitTime)//time in microseconds
 			{
-			int time_elasped = (int)(usec()- startTime);
+			const int time_elasped = (int)(usec()- startTime);
 
 			if (time_elasped > limitTime)//time in microseconds
 				{return;} // hung in the physics loop
 
-			if (time_elasped > halfLimitTime)//time in microseconds
+			if (time_elasped > halfLimitTime)		//time in microseconds
 				{
-				staticTime += staticTime/2;			//increase minimum time step by 50%
+				staticTime += staticTime*0.5f;		//increase minimum time step by 50%
 				halfLimitTime += halfLimitTime/2;	// set next half limit time step (logrithmic)			
 				}
 			}
@@ -1740,20 +1726,20 @@ void Player::PhysicsSimulateCycle( PINFLOAT dtime,U64 startTime) // move physics
 
 		hittime = dtime;	//begin time search from now ...  until delta ends
 
-		for (i = 0; i < vballsize; i++)
+		for (int i = 0; i < vballsize; i++)
 			{
-			pball = m_vball.ElementAt(i);
+			Ball * const pball = m_vball.ElementAt(i);
 
 			if (!pball->fFrozen && pball->m_fDynamic > 0)// && !pball->fTempFrozen )	// don't play with frozen balls
 				{
 				pball->m_hittime = hittime;				// search upto current hittime
 				pball->m_pho = NULL;
 
-				m_hitoctree.HitTestBall(pball);			 // find the hit objects and hit times
+				m_hitoctree.HitTestBall(pball);			// find the hit objects and hit times
 
 				htz = pball->m_hittime;					// this ball's hit time
 
-				if( htz < 0) pball->m_pho = NULL;		// no negative time allowed
+				if(htz < 0) pball->m_pho = NULL;		// no negative time allowed
 
 				if (pball->m_pho)						// hit object
 					{
@@ -1788,16 +1774,16 @@ void Player::PhysicsSimulateCycle( PINFLOAT dtime,U64 startTime) // move physics
 
 		if (hittime > staticTime) StaticCnts = STATICCNTS;	// allow more zeros next round
 	
-		for (i=0;i<m_vmover.Size();i++)
+		for (int i=0;i<m_vmover.Size();i++)
 			{
 			m_vmover.ElementAt(i)->UpdateDisplacements(hittime); //step 2:  move the objects about according to velocities
 			} 
 
 		//  ok find balls that need to be collided and script'ed (generally there will be one, but more are possible)
 
-		for (i=0; i < m_vball.Size(); i++)			// use m_vball.Size(), in case script deletes a ball
+		for (int i=0; i < m_vball.Size(); i++)			// use m_vball.Size(), in case script deletes a ball
 			{
-			pball = m_vball.ElementAt(i);			// local pointer
+			Ball * const pball = m_vball.ElementAt(i);			// local pointer
 
 			if (pball->m_fDynamic > 0 && pball->m_pho && pball->m_hittime <= hittime) // find balls with hit objects and minimum time			
 				{			
@@ -1820,11 +1806,11 @@ void Player::PhysicsSimulateCycle( PINFLOAT dtime,U64 startTime) // move physics
 					pball->CalcBoundingRect();		// do new boundings 
 
 					// is this ball static? .. set static and quench	
-					if (pball->m_HitRigid && pball->m_HitDist < PHYS_TOUCH) //rigid and close distance
+					if (pball->m_HitRigid && pball->m_HitDist < (float)PHYS_TOUCH) //rigid and close distance
 						{//contacts
 						c_contactcnt++;
-						PINFLOAT mag = pball->vx*pball->vx + pball->vy*pball->vy; // values below are taken from simulation
-						if (pball->drsq < (PINFLOAT)8.0e-5 && mag < (PINFLOAT)1.0e-3 && fabsf(pball->vz)< (PINFLOAT)0.2)
+						const PINFLOAT mag = pball->vx*pball->vx + pball->vy*pball->vy; // values below are taken from simulation
+						if (pball->drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->vz)< 0.2f)
 							{
 							if(--pball->m_fDynamic <= 0)						//... ball static, cancels next gravity increment
 								{												// m_fDynamic is cleared in ball gravity section
@@ -1858,7 +1844,7 @@ int fpieee_handler( _FPIEEE_RECORD *pieee )
 
    if ((pieee->Cause.InvalidOperation) && (pieee->Result.Format == _FpFormatFp32)) 
    {
-        pieee->Result.Value.Fp32Value = 0.0F;
+        pieee->Result.Value.Fp32Value = 0.0f;
 
         return EXCEPTION_CONTINUE_EXECUTION;
    }
@@ -1873,18 +1859,14 @@ int fpieee_handler( _FPIEEE_RECORD *pieee )
 
 void Player::Render()
 	{
-	int iball;
-	int i;
-	Ball *pball;
-	int cball = m_vball.Size();
+	const int cball = m_vball.Size();
 	RenderStateType		RestoreRenderState;
 	TextureStateType	RestoreTextureState;
 	D3DMATRIX			RestoreWorldMatrix;
 	HRESULT				ReturnCode;
-	HRESULT hr;
+	HRESULT				hr;
 
 	//_controlfp(_PC_24, MCW_PC);
-
 
 	 __try {
       // unmask invalid operation exception
@@ -1904,8 +1886,6 @@ void Player::Render()
 
    }
 
-
-
 	// Don't calculate the next frame if the last one isn't done blitting yet
 	// On Win95 when there are no balls, frame updates happen so fast the
 	// blitter gets stuck
@@ -1922,7 +1902,7 @@ void Player::Render()
 
 	if (m_fCheckBlt)
 		{
-		HRESULT hrdone = m_pin3d.m_pddsFrontBuffer->GetBltStatus(DDGBS_ISBLTDONE);
+		const HRESULT hrdone = m_pin3d.m_pddsFrontBuffer->GetBltStatus(DDGBS_ISBLTDONE);
 
 		if (hrdone != DD_OK)
 			{
@@ -1944,14 +1924,14 @@ void Player::Render()
 	sync = usec();
 #endif
 
-	U64 m_RealTimeClock = usec();
-	U32 new_msec = msec();
+	const U64 m_RealTimeClock = usec();
+	const U32 new_msec = m_RealTimeClock/1000;
 
 	if (m_fNoTimeCorrect) // After debugging script
 		{
 		// Shift whole game foward in time
-		m_liStartTime += (m_RealTimeClock - m_curPhysicsFrameTime);
-		m_nextPhysicsFrameTime += (m_RealTimeClock - m_curPhysicsFrameTime);
+		m_liStartTime += m_RealTimeClock - m_curPhysicsFrameTime;
+		m_nextPhysicsFrameTime += m_RealTimeClock - m_curPhysicsFrameTime;
 		m_curPhysicsFrameTime = m_RealTimeClock; // 0 time frame
 		m_fNoTimeCorrect = fFalse;
 		}
@@ -1961,8 +1941,8 @@ void Player::Render()
 	if (m_fDebugWindowActive || m_fUserDebugPaused)
 		{
 		// Shift whole game foward in time
-		m_liStartTime += (m_RealTimeClock - m_curPhysicsFrameTime);
-		m_nextPhysicsFrameTime += (m_RealTimeClock - m_curPhysicsFrameTime);
+		m_liStartTime += m_RealTimeClock - m_curPhysicsFrameTime;
+		m_nextPhysicsFrameTime += m_RealTimeClock - m_curPhysicsFrameTime;
 		if (m_fStep)
 			{
 			// Walk one physics step foward
@@ -1989,7 +1969,7 @@ void Player::Render()
 		}
 #endif
 
-	float timepassed = (float)(m_RealTimeClock - m_curPhysicsFrameTime) / (float)1000000.0f;
+	const double timepassed = (double)(m_RealTimeClock - m_curPhysicsFrameTime) * (1.0/1000000.0);
 
 	// Get time in milliseconds for timers
 	m_timeCur = (int)((m_RealTimeClock - m_liStartTime)/1000);
@@ -2014,7 +1994,7 @@ void Player::Render()
 #ifdef PLAYBACK
 	if (!m_fPlayback)
 		{
-		frametime = timepassed * 100;
+		frametime = timepassed * 100.0;
 		}
 	else
 		{
@@ -2027,7 +2007,7 @@ void Player::Render()
 #else // PLAYBACK
 
 #ifdef TIMECORRECT
-	frametime = timepassed * 100;
+	frametime = timepassed * 100.0;
 	//frametime = 1.456927f;
 #else // TIMECORRECT
 	frametime = 0.45f;
@@ -2040,9 +2020,9 @@ void Player::Render()
 		fprintf(m_flog, "End Frame\n");
 #endif
 
-	for (iball=0;iball<cball;iball++)
+	for (int iball=0;iball<cball;iball++)
 		{
-		pball = m_vball.ElementAt(iball);
+		Ball * const pball = m_vball.ElementAt(iball);
 
 		if (pball->m_fErase) // Need to clear the ball off the playfield
 			{
@@ -2072,17 +2052,17 @@ void Player::Render()
 		// If the frame is the next thing to happen, update physics to that
 		// point next update acceleration, and continue loop
 
-		PINFLOAT physics_dtime	= (float)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)/10000.0f;
-		PINFLOAT physics_to_graphic_dtime  = (float)(m_RealTimeClock - m_curPhysicsFrameTime)/10000.0f;
+		const PINFLOAT physics_dtime = (PINFLOAT)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/10000.0));
+		const PINFLOAT physics_to_graphic_dtime  = (PINFLOAT)((double)(m_RealTimeClock - m_curPhysicsFrameTime)*(1.0/10000.0));
 
 		if (physics_to_graphic_dtime < physics_dtime )				// is graphic frame time next???
 			{		
-			PhysicsSimulateCycle(physics_to_graphic_dtime, usec());			// advance physics to this time	
+			PhysicsSimulateCycle(physics_to_graphic_dtime, usec());	// advance physics to this time
 			m_curPhysicsFrameTime = m_RealTimeClock;				// now current to the wall clock
 			break;	//this is the common exit from the loop			// exit skipping accelerate
 			}		// some rare cases will exit from while()
 
-		if ((int)(usec()- m_RealTimeClock) > 200000)				// hung in the physics loop over 200 milliseconds
+		if (usec()- m_RealTimeClock > 200000)						// hung in the physics loop over 200 milliseconds
 			{														// can not keep up to real time
 			m_curPhysicsFrameTime = m_RealTimeClock;				// skip physics forward ... slip-cycles
 			m_nextPhysicsFrameTime = m_RealTimeClock + m_PhysicsStepTime;
@@ -2090,15 +2070,15 @@ void Player::Render()
 			}
 		
 		//primary physics loop
-		PhysicsSimulateCycle(physics_dtime, usec());						// main simulator call physics_dtime
+		PhysicsSimulateCycle(physics_dtime, usec());				// main simulator call physics_dtime
 
  		m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				// new cycle, on physics frame boundary
 		m_nextPhysicsFrameTime += m_PhysicsStepTime;				// advance physics position
 
 		// now get and/or calculate integral cycle physics events, digital filters, external acceleration inputs, etc.
 
-		U32 sim_msec = new_msec - (U32) ( ( m_RealTimeClock - m_curPhysicsFrameTime ) / 1000 );
-		m_pininput.ProcessKeys(m_ptable, sim_msec );
+		const U32 sim_msec = new_msec - (U32)((m_RealTimeClock - m_curPhysicsFrameTime) / 1000);
+		m_pininput.ProcessKeys(m_ptable, sim_msec);
         mixer_update();
 
         hid_update();
@@ -2112,7 +2092,7 @@ void Player::Render()
 
 	int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); //rlc 10 milli-seconds
 
-	for (i=0;i<m_vht.Size();i++)
+	for (int i=0;i<m_vht.Size();i++)
 		{
 		HitTimer *pht = m_vht.ElementAt(i);
 		if (pht->m_nextfire <= p_timeCur)
@@ -2165,7 +2145,7 @@ void Player::Render()
 		}
 	}
 
-	for (i=0;i<m_vmover.Size();i++)
+	for (int i=0;i<m_vmover.Size();i++)
 	{
 		m_vmover.ElementAt(i)->UpdateVelocities(1.0f);	// always on integral physics frame boundary
 	}			
@@ -2221,7 +2201,7 @@ void Player::Render()
 #else // GDIDRAW
 
 	// Check all elements that could possibly need updating.
-	for (i=0;i<m_vscreenupdate.Size();i++)
+	for (int i=0;i<m_vscreenupdate.Size();i++)
 	{
 		// Check if the element is invalid (its frame changed).
 		m_vscreenupdate.ElementAt(i)->m_fInvalid = fFalse;
@@ -2238,7 +2218,7 @@ void Player::Render()
 	// Notice - the light can only update once per frame, so if the light
 	// is blinking faster than the frame rate, the user will still see
 	// the light blinking, it will just be slower than intended.
-	for (i=0;i<m_vblink.Size();i++)
+	for (int i=0;i<m_vblink.Size();i++)
 	{
 		IBlink *pblink = m_vblink.ElementAt(i);
 		if (pblink->m_timenextblink <= m_timeCur)
@@ -2265,7 +2245,7 @@ void Player::Render()
 
 	// Initialize all invalid regions by resetting the region (basically clear) 
 	// it with the contents of the static buffer.
-	for (i=0;i<m_vupdaterect.Size();i++)
+	for (int i=0;i<m_vupdaterect.Size();i++)
 		{
 		UpdateRect *pur = m_vupdaterect.ElementAt(i);
 		if (pur->m_fSeeThrough)													
@@ -2325,13 +2305,12 @@ void Player::Render()
 
 	// Process all regions that need updating.  
 	// The region will be drawn with the current frame.
-	for (i=0;i<m_vupdaterect.Size();i++)
+	for (int i=0;i<m_vupdaterect.Size();i++)
 	{
 		UpdateRect *pur = m_vupdaterect.ElementAt(i);
-		int l;
-
+		
 		// Process all objects associated with this region.
-		for (l=0;l<pur->m_vobject.Size();l++)
+		for (int l=0;l<pur->m_vobject.Size();l++)
 		{
 			// Get the object's frame to draw.
 			ObjFrame *pobjframe = pur->m_vobject.ElementAt(l)->Draw3D(&pur->m_rcupdate);
@@ -2351,9 +2330,8 @@ void Player::Render()
 				rcUpdate.right = min(pobjframe->rc.right, prc->right) - pobjframe->rc.left;
 				rcUpdate.bottom = min(pobjframe->rc.bottom, prc->bottom) - pobjframe->rc.top;
 
-				int bltleft, blttop;
-				bltleft = max(pobjframe->rc.left, prc->left);
-				blttop = max(pobjframe->rc.top, prc->top);
+				const int bltleft = max(pobjframe->rc.left, prc->left);
+				const int blttop = max(pobjframe->rc.top, prc->top);
 
 				// Make sure our rectangle dimensions aren't wacky.
 				if ((rcUpdate.right > rcUpdate.left) && (rcUpdate.bottom > rcUpdate.top))
@@ -2489,7 +2467,7 @@ void Player::Render()
 		if (m_fCleanBlt)
 		{
 			// Smart Blit - only update the invalidated areas
-			for (i=0;i<m_vupdaterect.Size();i++)
+			for (int i=0;i<m_vupdaterect.Size();i++)
 			{
 				UpdateRect *pur = m_vupdaterect.ElementAt(i);
 				RECT *prc = &pur->m_rcupdate;
@@ -2517,7 +2495,7 @@ void Player::Render()
 	// Remove the list of update regions.
 	// Note:  The ball and the mixer update rects are removed here as well...
 	//        so if we need a clear, we need to do it somewhere else.
-	for (i=0;i<m_vupdaterect.Size();i++)
+	for (int i=0;i<m_vupdaterect.Size();i++)
 	{
 		UpdateRect *pur = m_vupdaterect.ElementAt(i);
 		delete pur;
@@ -2529,7 +2507,7 @@ void Player::Render()
 #ifndef ACCURATETIMERS
 	m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 
-	for (i=0;i<m_vht.Size();i++)
+	for (int i=0;i<m_vht.Size();i++)
 	{
 		HitTimer *pht = m_vht.ElementAt(i);
 		if (pht->m_nextfire <= m_timeCur)
@@ -2553,7 +2531,7 @@ void Player::Render()
 		}
 	}
 
-	for (i=0;i<m_vballDelete.Size();i++)
+	for (int i=0;i<m_vballDelete.Size();i++)
 	{
 		Ball* pball = m_vballDelete.ElementAt(i);
 		delete pball->m_vpVolObjs;
@@ -2612,9 +2590,7 @@ void Player::Render()
 
 			stamp = msec();
 
-			int i;
-
-			for( i=0; i<TSIZE; i++ )
+			for(int i=0; i<TSIZE; i++)
 			{
 				len = sprintf( szFoo, "%d", period[i] );
 				TextOut( hdcNull,  20 + i * 20, 10 + period[i], szFoo, len );
@@ -2766,8 +2742,6 @@ void Player::DrawBallShadows()
 	// Nobody likes the ball shadows.		- JEP
 	//return;
 
-	int i;
-
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 	mtrl.diffuse.a = mtrl.ambient.a = 1;
@@ -2776,7 +2750,7 @@ void Player::DrawBallShadows()
 
 	WORD rgi[4];
 
-	for (i=0;i<4;i++)
+	for (WORD i=0;i<4;i++)
 		{
 		rgi[i] = i;
 		}
@@ -2785,10 +2759,10 @@ void Player::DrawBallShadows()
 
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);// WRAP
 
-	float sn = (float)sin(m_pin3d.m_inclination);
-	float cs = (float)cos(m_pin3d.m_inclination);
+	//const float sn = sinf(m_pin3d.m_inclination);
+	//const float cs = cosf(m_pin3d.m_inclination);
 
-	for (i=0;i<m_vball.Size();i++)
+	for (int i=0;i<m_vball.Size();i++)
 		{
 		Ball *pball = m_vball.ElementAt(i);
 
@@ -2796,10 +2770,10 @@ void Player::DrawBallShadows()
 			{
 			Vertex3D *rgv3DShadow = pball->m_rgv3DShadow;
 
-			mtrl.diffuse.r = mtrl.ambient.r = 1;
-			mtrl.diffuse.g = mtrl.ambient.g = 1;
-			mtrl.diffuse.b = mtrl.ambient.b = 1;
-			mtrl.diffuse.a = mtrl.ambient.a = 1;
+			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 			m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
@@ -2840,70 +2814,70 @@ void Player::DrawBallShadows()
 
 			if (ballT.m_hittime < 1) // shadow falls on an object
 				{
-				shadowz = (float)(pball->z + 0.1f - ballT.m_hittime * 200);
+				shadowz = pball->z + 0.1f - ballT.m_hittime * 200.0f;
 
-				offsetx = (float)(ballT.m_hittime * 200 - 12.5);
-				offsety = (float)(-ballT.m_hittime * 200 + 12.5);
+				offsetx = ballT.m_hittime * 200.0f - 12.5f;
+				offsety = ballT.m_hittime * -200.0f + 12.5f;
 				}
 			else // shadow is on the floor
 				{
-				offsetx = (float)(pball->z/2);
-				offsety = (float)(-pball->z/2);
+				offsetx = pball->z*0.5f;
+				offsety = pball->z*-0.5f;
 				shadowz = 0.1f;//(float)(pball->z - pball->radius + 0.1f);
 				}
 
-			float shadowradius = pball->radius*1.2f;
+			const float shadowradius = pball->radius*1.2f;
 
-			rgv3DShadow[0].x = (float)pball->x - shadowradius + offsetx;
-			rgv3DShadow[0].y = (float)pball->y - shadowradius + offsety;
+			rgv3DShadow[0].x = pball->x - shadowradius + offsetx;
+			rgv3DShadow[0].y = pball->y - shadowradius + offsety;
 			rgv3DShadow[0].z = shadowz;
 			rgv3DShadow[0].tu = 0;
 			rgv3DShadow[0].tv = 0;
 			rgv3DShadow[0].nx = 0;
 			rgv3DShadow[0].ny = 0;
-			rgv3DShadow[0].nz = -1;
+			rgv3DShadow[0].nz = -1.0f;
 
-			rgv3DShadow[1].x = (float)pball->x + shadowradius + offsetx;
-			rgv3DShadow[1].y = (float)pball->y - shadowradius + offsety;
+			rgv3DShadow[1].x = pball->x + shadowradius + offsetx;
+			rgv3DShadow[1].y = pball->y - shadowradius + offsety;
 			rgv3DShadow[1].z = shadowz;
-			rgv3DShadow[1].tu = 1;
+			rgv3DShadow[1].tu = 1.0f;
 			rgv3DShadow[1].tv = 0;
 			rgv3DShadow[1].nx = 0;
 			rgv3DShadow[1].ny = 0;
-			rgv3DShadow[1].nz = -1;
+			rgv3DShadow[1].nz = -1.0f;
 
-			rgv3DShadow[2].x = (float)pball->x + shadowradius + offsetx;
-			rgv3DShadow[2].y = (float)pball->y + shadowradius + offsety;
+			rgv3DShadow[2].x = pball->x + shadowradius + offsetx;
+			rgv3DShadow[2].y = pball->y + shadowradius + offsety;
 			rgv3DShadow[2].z = shadowz;
-			rgv3DShadow[2].tu = 1;
+			rgv3DShadow[2].tu = 1.0f;
 			rgv3DShadow[2].tv = 1;
 			rgv3DShadow[2].nx = 0;
 			rgv3DShadow[2].ny = 0;
-			rgv3DShadow[2].nz = -1;
+			rgv3DShadow[2].nz = -1.0f;
 
-			rgv3DShadow[3].x = (float)pball->x - shadowradius + offsetx;
-			rgv3DShadow[3].y = (float)pball->y + shadowradius + offsety;
+			rgv3DShadow[3].x = pball->x - shadowradius + offsetx;
+			rgv3DShadow[3].y = pball->y + shadowradius + offsety;
 			rgv3DShadow[3].z = shadowz;
 			rgv3DShadow[3].tu = 0;
-			rgv3DShadow[3].tv = 1;
+			rgv3DShadow[3].tv = 1.0f;
 			rgv3DShadow[3].nx = 0;
 			rgv3DShadow[3].ny = 0;
-			rgv3DShadow[3].nz = -1;
+			rgv3DShadow[3].nz = -1.0f;
 
 			if (!pball->fFrozen && rgv3DShadow[0].x <= m_ptable->m_right && rgv3DShadow[2].y >= m_ptable->m_top)
 				{
 				if (rgv3DShadow[2].x > m_ptable->m_right)
 					{
-					float newtu = (rgv3DShadow[2].x - m_ptable->m_right) / (2*shadowradius);
-					rgv3DShadow[2].tu = 1-newtu;
-					rgv3DShadow[1].tu = 1-newtu;
+					const float newtu = (rgv3DShadow[2].x - m_ptable->m_right) / (2.0f*shadowradius);
+					rgv3DShadow[2].tu = 1.0f-newtu;
+					rgv3DShadow[1].tu = 1.0f-newtu;
 					rgv3DShadow[2].x = m_ptable->m_right;
 					rgv3DShadow[1].x = m_ptable->m_right;
 					}
 
 				if (rgv3DShadow[1].y < m_ptable->m_top)
 					{
-					float newtv = (m_ptable->m_top - rgv3DShadow[1].y) / (2*shadowradius);
+					const float newtv = (m_ptable->m_top - rgv3DShadow[1].y) / (2.0f*shadowradius);
 					rgv3DShadow[1].tv = newtv;
 					rgv3DShadow[0].tv = newtv;
 					rgv3DShadow[1].tv = m_ptable->m_top;
@@ -2923,26 +2897,24 @@ void Player::DrawBallShadows()
 
 void Player::DrawBalls()
 	{
-	int i;
-
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
-	/*mtrl.diffuse.r = mtrl.ambient.r = 1;
-	mtrl.diffuse.g = mtrl.ambient.g = 1;
-	mtrl.diffuse.b = mtrl.ambient.b = 1;*/
-	mtrl.diffuse.a = mtrl.ambient.a = 1;
+	/*mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+	mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+	mtrl.diffuse.b = mtrl.ambient.b = 1.0f;*/
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 	m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
 	WORD rgi[4];
 
-	for (i=0;i<4;i++)
+	for (WORD i=0;i<4;i++)
 		{
 		rgi[i] = i;
 
 		//rgv3D[i].nx = 0;
 		//rgv3D[i].ny = 0;
-		//rgv3D[i].nz = 1;
+		//rgv3D[i].nz = 1.0f;
 		}
 
 	//m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
@@ -2951,16 +2923,16 @@ void Player::DrawBalls()
 
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
 
-	float sn = (float)sin(m_pin3d.m_inclination);
-	float cs = (float)cos(m_pin3d.m_inclination);
+	const float sn = sinf(m_pin3d.m_inclination);
+	const float cs = cosf(m_pin3d.m_inclination);
 
-	for (i=0;i<m_vball.Size();i++)
+	for (int i=0;i<m_vball.Size();i++)
 		{
 		Ball *pball = m_vball.ElementAt(i);
 
-		float r = (pball->m_color & 255) / 255.0f;
-		float g = (pball->m_color & 65280) / 65280.0f;
-		float b = (pball->m_color & 16711680) / 16711680.0f;
+		float r = (pball->m_color & 255) * (float)(1.0/255.0);
+		float g = (pball->m_color & 65280) * (float)(1.0/65280.0);
+		float b = (pball->m_color & 16711680) * (float)(1.0/16711680.0);
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
 		mtrl.diffuse.b = mtrl.ambient.b = b;
@@ -2984,7 +2956,7 @@ void Player::DrawBalls()
 		rgv3D[0].tv = 0;
 		rgv3D[0].nx = 0;
 		rgv3D[0].ny = 0;
-		rgv3D[0].nz = -1;
+		rgv3D[0].nz = -1.0f;
 
 		rgv3D[3].x = (float)(pball->x - pball->radius);
 		rgv3D[3].y = (float)(pball->y + (pball->radius * cs));
@@ -2993,7 +2965,7 @@ void Player::DrawBalls()
 		//rgv3D[3].tv = 1; // decided by ball picture
 		rgv3D[3].nx = 0;
 		rgv3D[3].ny = 0;
-		rgv3D[3].nz = -1;
+		rgv3D[3].nz = -1.0f;
 
 		rgv3D[2].x = (float)(pball->x + pball->radius);
 		rgv3D[2].y = (float)(pball->y + (pball->radius * cs));
@@ -3002,24 +2974,24 @@ void Player::DrawBalls()
 		//rgv3D[2].tv = 1;  // decided by ball picture
 		rgv3D[2].nx = 0;
 		rgv3D[2].ny = 0;
-		rgv3D[2].nz = -1;
+		rgv3D[2].nz = -1.0f;
 
 		rgv3D[1].x = (float)(pball->x + pball->radius);
 		rgv3D[1].y = (float)(pball->y - (pball->radius * cs));
 		rgv3D[1].z = (float)(zheight + (pball->radius * sn));
-		//rgv3D[1].tu = 1;  // decided by ball picture
+		//rgv3D[1].tu = 1.0f;  // decided by ball picture
 		rgv3D[1].tv = 0;
 		rgv3D[1].nx = 0;
 		rgv3D[1].ny = 0;
-		rgv3D[1].nz = -1;
+		rgv3D[1].nz = -1.0f;
 
 		if (!pball->m_pin)
 			{
 			m_pin3d.m_pd3dDevice->SetTexture(0, m_pin3d.m_pddsBallTexture);
-			rgv3D[3].tv = 1;
-			rgv3D[2].tu = 1;
-			rgv3D[2].tv = 1;
-			rgv3D[1].tu = 1;
+			rgv3D[3].tv = 1.0f;
+			rgv3D[2].tu = 1.0f;
+			rgv3D[2].tv = 1.0f;
+			rgv3D[1].tu = 1.0f;
 			}
 		else
 			{
@@ -3089,20 +3061,20 @@ void Player::DrawBalls()
 				rgv3DArrow[0].y = -0.333333333f;
 				rgv3DArrow[0].z = -0.881917103f;
 
-				rgv3DArrow[1].tu = 1;
+				rgv3DArrow[1].tu = 1.0f;
 				rgv3DArrow[1].tv = 0;
 				rgv3DArrow[1].x = 0.333333333f;
 				rgv3DArrow[1].y = -0.333333333f;
 				rgv3DArrow[1].z = -0.881917103f;
 
-				rgv3DArrow[2].tu = 1;
-				rgv3DArrow[2].tv = 1;
+				rgv3DArrow[2].tu = 1.0f;
+				rgv3DArrow[2].tv = 1.0f;
 				rgv3DArrow[2].x = 0.333333333f;
 				rgv3DArrow[2].y = 0.333333333f;
 				rgv3DArrow[2].z = -0.881917103f;
 
 				rgv3DArrow[3].tu = 0;
-				rgv3DArrow[3].tv = 1;
+				rgv3DArrow[3].tv = 1.0f;
 				rgv3DArrow[3].x = -0.333333333f;
 				rgv3DArrow[3].y = 0.333333333f;
 				rgv3DArrow[3].z = -0.881917103f;
@@ -3122,8 +3094,7 @@ void Player::DrawBalls()
 					pball->m_pinFront->EnsureColorKey();
 					m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinFront->m_pdsBufferColorKey);
 
-					int iPoint;
-					for (iPoint=0;iPoint<DECALPOINTS;iPoint++)
+					for (int iPoint=0;iPoint<DECALPOINTS;iPoint++)
 						{
 						rgiDecal[iPoint] = iPoint;
 						pball->m_orientation.MultiplyVector(&rgv3DArrow[iPoint], &rgv3DArrowTransformed[iPoint]);
@@ -3154,8 +3125,7 @@ void Player::DrawBalls()
 					pball->m_pinBack->EnsureColorKey();
 					m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinBack->m_pdsBufferColorKey);
 							
-					int iPoint;
-					for (iPoint=0;iPoint<DECALPOINTS;iPoint++)
+					for (int iPoint=0;iPoint<DECALPOINTS;iPoint++)
 						{
 						rgiDecal[iPoint] = iPoint;
 						rgv3DArrow[iPoint].x = -rgv3DArrow[iPoint].x;
@@ -3228,8 +3198,6 @@ int totalrects = 0;
 
 void Player::InvalidateRect(RECT *prc)
 	{
-	int i;
-
 	totalrects++;
 
 	// This assumes the caller does not need *prc any more!!!
@@ -3246,7 +3214,7 @@ void Player::InvalidateRect(RECT *prc)
 	pur->m_fSeeThrough = fTrue;
 
 	// Check all animated objects.
-	for (i=0;i<m_vscreenupdate.Size();i++)
+	for (int i=0;i<m_vscreenupdate.Size();i++)
 		{
 		// Get the bounds of this animated object.
 		RECT *prc2 = &m_vscreenupdate.ElementAt(i)->m_rcBounds;
@@ -3291,8 +3259,6 @@ void AddEventToDebugMenu(char *sz, int index, int dispid, LPARAM lparam)
 
 void Player::DoDebugObjectMenu(int x, int y)
 	{
-	int i;
-
 	if (g_pplayer->m_vdebugho.Size() == 0)
 		{
 		// First time the debug hit-testing has been used
@@ -3338,11 +3304,11 @@ void Player::DoDebugObjectMenu(int x, int y)
 	ballT.m_hittime = 1;
 	ballT.CalcBoundingRect();
 
-	float slope = (v3d2.y - v3d.y)/(v3d2.z - v3d.z);
-	float yhit = v3d.y - (v3d.z*slope);
+	const float slope = (v3d2.y - v3d.y)/(v3d2.z - v3d.z);
+	//const float yhit = v3d.y - (v3d.z*slope);
 
-	float slopex = (v3d2.x - v3d.x)/(v3d2.z - v3d.z);
-	float xhit = v3d.x - (v3d.z*slopex);
+	const float slopex = (v3d2.x - v3d.x)/(v3d2.z - v3d.z);
+	//const float xhit = v3d.x - (v3d.z*slopex);
 
 	Vector<HitObject> vhoHit;
 	Vector<IFireEvents> vpfe;
@@ -3363,7 +3329,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 
 	PauseMusic();
 
-	for (i=0;i<vhoHit.Size();i++)
+	for (int i=0;i<vhoHit.Size();i++)
 		{
 		HitObject *pho = vhoHit.ElementAt(i);
 		// Make sure we don't do the same object twice through 2 different Hitobjs.
@@ -3408,8 +3374,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 				VectorInt<int> vcommandid;
 
 				pdc->GetDebugCommands(&vids, &vcommandid);
-				int l;
-				for (l=0;l<vids.Size();l++)
+				for (int l=0;l<vids.Size();l++)
 					{
 					LocalString ls(vids.ElementAt(l));
 					AppendMenu(submenu, MF_STRING, ((i+1)<<16) | vcommandid.ElementAt(l) | 0x8000, ls.m_szbuffer);
@@ -3450,12 +3415,12 @@ void Player::DoDebugObjectMenu(int x, int y)
 		}
 
 	DestroyMenu(hmenu);
-	for (i=0;i<vsubmenu.Size();i++)
+	for (int i=0;i<vsubmenu.Size();i++)
 		{
 		DestroyMenu(vsubmenu.ElementAt(i));
 		}
 
-	for (i=0;i<vvdispid.Size();i++)
+	for (int i=0;i<vvdispid.Size();i++)
 		{
 		if (vvdispid.ElementAt(i))
 			{

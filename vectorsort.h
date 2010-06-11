@@ -26,8 +26,8 @@ public:
 		// Find log base 2 of size of vector
 		// Set the search start element to the middle one
 		// Note that this value will be one based
-		unsigned int size = m_cSize;
-		unsigned int i = 1<<31;
+		const unsigned int size = m_cSize;
+		unsigned int i = 1u<<31;
 		while ((!(i & size)) && (i>1))
 			{
 			i >>= 1;

@@ -32,12 +32,9 @@ Ball::~Ball()
 void Ball::Init()
 	{
 	// Only called by real balls, not temporary objects created for physics/rendering
-	int i;
-	int l;
-
-	for (i=0;i<3;i++)
+	for (int i=0;i<3;i++)
 		{
-		for (l=0;l<3;l++)
+		for (int l=0;l<3;l++)
 			{
 			if (i==l)
 				{
@@ -192,14 +189,14 @@ void Ball::CollideWall(Vertex3D *phitnormal, float m_elasticity, float antifrict
 	if (scatter_angle <= 0) scatter_angle = c_hardScatter;				// if <= 0 use global value
 	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply dificulty weighting
 
-	if (dot > 1.0f && scatter_angle > 1.0e-5) //no scatter at low velocity 
+	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
 		{
 		float scatter = 2.0f* ((float)rand()/((float)RAND_MAX) - 0.5f);  // -1.0f..1.0f
 		scatter *=  (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
-		float radsin = sin(scatter);//  Green's transform matrix... rotate angle delta 
-		float radcos = cos(scatter);//  rotational transform from current position to position at time t
-		float vxt = vx; 
-		float vyt = vy;
+		const float radsin = sinf(scatter);//  Green's transform matrix... rotate angle delta 
+		const float radcos = cosf(scatter);//  rotational transform from current position to position at time t
+		const float vxt = vx; 
+		const float vyt = vy;
 
 		vx = vxt *radcos - vyt *radsin;  // rotate to random scatter angle
 		vy = vyt *radcos + vxt *radsin;  // 
@@ -230,7 +227,7 @@ void Ball::Collide3DWall(Vertex3D *phitnormal, float m_elasticity, float antifri
 #ifdef C_DISP_GAIN 		
 	// correct displacements, mostly from low velocity, alternative to acceleration processing
 	float hdist = -C_DISP_GAIN * m_HitDist;			// limit delta noise crossing ramps, 
-	if (hdist > 1.0e-4)					// when hit detection checked it what was the displacement
+	if (hdist > 1.0e-4f)					// when hit detection checked it what was the displacement
 		{			
 		if (hdist > C_DISP_LIMIT) 
 			{hdist = C_DISP_LIMIT;}	// crossing ramps, delta noise			
@@ -252,14 +249,14 @@ void Ball::Collide3DWall(Vertex3D *phitnormal, float m_elasticity, float antifri
 	if (scatter_angle <= 0) scatter_angle = c_hardScatter;						// if <= zero use global value
 	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;	// apply dificulty weighting
 	
-	if (dot > 1.0f && scatter_angle > 1.0e-5) //no scatter at low velocity 
+	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
 		{
 		float scatter = 2.0f* ((float)rand()/((float)RAND_MAX) - 0.5f);  // -1.0f..1.0f
 		scatter *=  (1.0f - scatter*scatter)*2.59808f  * scatter_angle;	// shape quadratic distribution and scale
-		float radsin = sin(scatter);//  Green's transform matrix... rotate angle delta 
-		float radcos = cos(scatter);//  rotational transform from current position to position at time t
-		float vxt = vx; 
-		float vyt = vy;
+		const float radsin = sinf(scatter);//  Green's transform matrix... rotate angle delta 
+		const float radcos = cosf(scatter);//  rotational transform from current position to position at time t
+		const float vxt = vx; 
+		const float vyt = vy;
 
 		vx = vxt *radcos - vyt *radsin;  // rotate to random scatter angle
 		vy = vyt *radcos + vxt *radsin;  //
@@ -285,8 +282,8 @@ PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) //rlc 
 
 	PINFLOAT bcddsq = dx*dx + dy*dy + dz*dz;	//square of ball center's delta distance
 
-	bcdd = sqrt(bcddsq);						// length of delta
-	if (bcdd < (float)1.0e-8)					// two balls center-over-center embedded
+	bcdd = sqrtf(bcddsq);						// length of delta
+	if (bcdd < 1.0e-8f)					// two balls center-over-center embedded
 		{ //return -1;
 		dz = -1.0f;								// patch up			
 		pball->z -= dz;							//lift up
@@ -300,55 +297,56 @@ PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) //rlc 
 	b = dvx*dx + dvy*dy + dvz*dz;				// inner product
 	bnv = b/bcdd;								// normal speed of balls toward each other
 
-	if ( bnv >  C_LOWNORMVEL) return -1;		// dot of delta velocity and delta displacement, postive if receding no collison
+	if ( bnv >  C_LOWNORMVEL) return -1.0f;		// dot of delta velocity and delta displacement, postive if receding no collison
 
 	PINFLOAT totalradius = pball->radius + radius;
 	PINFLOAT bnd = bcdd - totalradius;
 
-	if (bnd < PHYS_TOUCH)								// in contact??? 
+	if (bnd < (float)PHYS_TOUCH)				// in contact??? 
 		{
-		if (bnd <= -PHYS_SKIN *2) 	
-			{return -1;}				// embedded too deep
+		if (bnd <= (float)(-PHYS_SKIN*2.0))
+			{return -1.0f;}				// embedded too deep
 
 		if (fabsf(bnv) > C_CONTACTVEL)		// >fast velocity, return zero time
 			hittime = 0;								//zero time for rigid fast bodies
-		else if(bnd <= -PHYS_TOUCH) hittime = 0;						// slow moving but embedded
-		else hittime = (bnd + PHYS_TOUCH) * (1.0f/PHYS_TOUCH/2);		// don't compete for fast zero time events
+		else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;						// slow moving but embedded
+		else hittime = (bnd + (float)PHYS_TOUCH) * (float)(1.0/PHYS_TOUCH/2.0);		// don't compete for fast zero time events
 		}
 	else
 		{	
 		a = dvx*dvx + dvy*dvy + dvz*dvz;				//square of differential velocity 
 		c = bcddsq - totalradius*totalradius;			//first contact test: square delta position - square of radii
 
-		if (a < (float)1.0e-12) return -1;				// ball moving really slow, then wait for contact
+		if (a < 1.0e-12f) return -1.0f;				// ball moving really slow, then wait for contact
 
-		b *= 2;;										// two inner products
-		result = (b*b) - (4*a*c);						// squareroot term in Quadratic equation
+		b += b;										// two inner products
+		result = b*b - 4.0f*a*c;						// squareroot term in Quadratic equation
 
-		if (result < 0)	return -1;						// no collision path exist	
+		if (result < 0.0f)	return -1.0f;						// no collision path exist	
 
-		result = sqrt(result); a = 2*a;					// optimize calculation
+		result = sqrtf(result); a += a;					// optimize calculation
 
-		PINFLOAT time1 = (-b + result)/a;
-		PINFLOAT time2 = (-b - result)/a;
+		const float inv_a = 1.0f/a;
+		PINFLOAT time1 = (-b + result)*inv_a;
+		PINFLOAT time2 = (-b - result)*inv_a;
 
 		if (time1 < 0) time1 = time2;				// if time1 negative, assume time2 postive
 
 		if (time1 < time2) hittime = time1;			// select lessor
 		else hittime = time2;						// if time2 is negative ... 
 
-		if (hittime < 0 || hittime > dtime) return -1; // .. was some time previous || beyond the next physics tick
+		if (hittime < 0 || hittime > dtime) return -1.0f; // .. was some time previous || beyond the next physics tick
 		}
 
-	PINFLOAT hitx = pball->x + dvx * hittime;  // new ball position
-	PINFLOAT hity = pball->y + dvy * hittime;
-	PINFLOAT hitz = pball->z + dvz * hittime;
+	const PINFLOAT hitx = pball->x + dvx * hittime;  // new ball position
+	const PINFLOAT hity = pball->y + dvy * hittime;
+	const PINFLOAT hitz = pball->z + dvz * hittime;
 	
-	PINFLOAT len = sqrt((hitx - x)*(hitx - x)+(hity - y)*(hity - y)+(hitz - z)*(hitz - z));
+	const PINFLOAT inv_len = 1.0f/sqrtf((hitx - x)*(hitx - x)+(hity - y)*(hity - y)+(hitz - z)*(hitz - z));
 
-	((Vertex3D *)phitnormal)->x = (hitx - x)/len;	//calc unit normal of collision
-	((Vertex3D *)phitnormal)->y = (hity - y)/len;
-	((Vertex3D *)phitnormal)->z = (hitz - z)/len;
+	((Vertex3D *)phitnormal)->x = (hitx - x)*inv_len;	//calc unit normal of collision
+	((Vertex3D *)phitnormal)->y = (hity - y)*inv_len;
+	((Vertex3D *)phitnormal)->z = (hitz - z)*inv_len;
 
 	m_HitDist = bnd;								//actual contact distance 
 	m_HitNormVel = bnv;
@@ -364,7 +362,7 @@ void Ball::Collide(Ball *pball, Vertex3D *phitnormal)
 		{return;}
 
 	Vertex3D vel;
-	Vertex3D vnormal = *(Vertex3D *)phitnormal;
+	const Vertex3D vnormal = *(Vertex3D *)phitnormal;
 	
 	// correct displacements, mostly from low velocity, alternative to true acceleration processing
 
@@ -386,29 +384,29 @@ void Ball::Collide(Ball *pball, Vertex3D *phitnormal)
 			
 #ifdef C_DISP_GAIN 		
 		float edist = -C_DISP_GAIN * pball->m_HitDist; // 
-		if (edist > 1.0e-4)
+		if (edist > 1.0e-4f)
 			{										
 			if (edist > C_DISP_LIMIT) 
 				{edist = C_DISP_LIMIT;}		// crossing ramps, delta noise
-			if (!fFrozen) edist /= 2;		// if the hitten ball is not frozen
+			if (!fFrozen) edist *= 0.5f;		// if the hitten ball is not frozen
 			pball->x += edist * vnormal.x;	// push along norm, back to free area
 			pball->y += edist * vnormal.y;	// use the norm, but is not correct, but cheaply handled
 			pball->z += edist * vnormal.z;	// 
 			}
 
 		edist = -C_DISP_GAIN * m_HitDist;	// noisy value .... needs investigation
-		if (!fFrozen && edist > 1.0e-4)
+		if (!fFrozen && edist > 1.0e-4f)
 			{ 
 			if (edist > C_DISP_LIMIT) 
 				{edist = C_DISP_LIMIT;}		// crossing ramps, delta noise
-			edist /= 2;		
+			edist *= 0.5f;		
 			x -= edist * vnormal.x;			// pull along norm, back to free area
 			y -= edist * vnormal.y;			// use the norm
 			z -= edist * vnormal.z;			//
 			}
 #endif				
 
-	float impulse = -(float)1.8f * dot / 2;
+	float impulse = (float)(-1.8 * 0.5) * dot;
 
 	if (!fFrozen)
 		{
@@ -417,7 +415,7 @@ void Ball::Collide(Ball *pball, Vertex3D *phitnormal)
 		vz -= impulse * vnormal.z;
 		m_fDynamic = C_DYNAMIC;		
 		}
-	else impulse *= 2;	
+	else impulse += impulse;
 		
 	pball->vx += impulse * vnormal.x;
 	pball->vy += impulse * vnormal.y;
@@ -454,7 +452,7 @@ void Ball::AngularAcceleration(Vertex3D *phitnormal)
 
 	Vertex3D cpvt;						// contact point velocity tangential to hit face
 
-	float dot = bstv.Dot(&bvT);			// speed ball surface contact point tangential to contact surface point
+	const float dot = bstv.Dot(&bvT);	// speed ball surface contact point tangential to contact surface point
 	cpvt.x = bvT.x * dot;				//contact point velocity tangent to hit face
 	cpvt.y = bvT.y * dot;
 	cpvt.z = bvT.z * dot;
@@ -471,7 +469,6 @@ void Ball::AngularAcceleration(Vertex3D *phitnormal)
 	// then we have a natural rool
 	
 	Vertex3D cpctrv;
-
 	cpctrv.x = -slideVel.x;	//contact point co-tangential reverse velocity
 	cpctrv.y = -slideVel.y;
 	cpctrv.z = -slideVel.z;
@@ -479,10 +476,9 @@ void Ball::AngularAcceleration(Vertex3D *phitnormal)
 	// Calculate the maximum amount the point velocity can change this
 	// time segment due to friction
 	Vertex3D FrictionForce;
-
-	FrictionForce.x = cpvt.x - (-bvt.x);
-	FrictionForce.y = cpvt.y - (-bvt.y);
-	FrictionForce.z = cpvt.z - (-bvt.z);	
+	FrictionForce.x = cpvt.x + bvt.x;
+	FrictionForce.y = cpvt.y + bvt.y;
+	FrictionForce.z = cpvt.z + bvt.z;
 
 #define ANGULARFORCE 1   
 					// Number I pulled out of my butt - this number indicates the maximum angular change 
@@ -491,13 +487,13 @@ void Ball::AngularAcceleration(Vertex3D *phitnormal)
 
 	// If the point can change fast enough to go directly to a natural roll, then do it.
 
-	if (FrictionForce.LengthSquared() > ANGULARFORCE*ANGULARFORCE)
+	if (FrictionForce.LengthSquared() > (float)(ANGULARFORCE*ANGULARFORCE))
 		{
 		FrictionForce.Normalize();
 		FrictionForce.MultiplyScalar(ANGULARFORCE);
 		}
 
-	if ((vx*vx + vy*vy + vz*vz) > (0.7*0.7))
+	if ((vx*vx + vy*vy + vz*vz) > (float)(0.7*0.7))
 		{
 		cpctrv.x -= FrictionForce.x;
 		cpctrv.y -= FrictionForce.y;
@@ -506,9 +502,9 @@ void Ball::AngularAcceleration(Vertex3D *phitnormal)
 
 	// Divide by the inertial tensor for a sphere in order to change
 	// linear force into angular momentum
-	cpctrv.x /= 2.5; // Inertial tensor for a sphere
-	cpctrv.y /= 2.5;
-	cpctrv.z /= 2.5;
+	cpctrv.x *= (float)(1.0/2.5); // Inertial tensor for a sphere
+	cpctrv.y *= (float)(1.0/2.5);
+	cpctrv.z *= (float)(1.0/2.5);
 
 	Vertex3D vResult;
 
@@ -557,40 +553,40 @@ void Ball::UpdateDisplacements(PINFLOAT dtime)
 		if (vz < 0 && z <= z_min)						//rolling point below the table and velocity driving deeper
 			{
 			z = z_min;									// set rolling point to table surface
-			vz *= (PINFLOAT)-0.2;						// reflect velocity  ...  dull bounce
+			vz *= -0.2f;							    // reflect velocity  ...  dull bounce
 
 			vx *= c_hardFriction; vy *= c_hardFriction;  //friction other axiz
 			
 			Vertex3D vnormal;
-			vnormal.Set(0,0,1);
+			vnormal.Set(0.0f,0.0f,1.0f);
 			AngularAcceleration(&vnormal);
 			}
 		else if (vz > 0 && z >= z_max)						//top glass ...contact and going higher
 			{
 			z = z_max;									// set diametric rolling point to top glass
-			vz *= (PINFLOAT)-0.2;						// reflect velocity  ...  dull bounce
+			vz *= -0.2f;								// reflect velocity  ...  dull bounce
 			}
 
 /*		if (vx < 0 && x <= x_min)						//left wall
 			{
 			x = x_min;									
-			vx *= (PINFLOAT)-0.2;					
+			vx *= -0.2f;
 			}
 		else if (vx > 0 && x >= x_max)				//right wall
 			{
 			x = x_max;							
-			vx *= (PINFLOAT)-0.2;		
+			vx *= -0.2f;
 			}
 
 		if (vy < 0 && y <= y_min)					//top wall
 			{
 			y = y_min;									
-			vy *= (PINFLOAT)-0.2;					
+			vy *= -0.2f;
 			}
 		else if (vy > 0 && y >= y_max)				//bottom wall
 			{
 			y = y_max;							
-			vy *= (PINFLOAT)-0.2;		
+			vy *= -0.2f;
 			}
 */	
 		CalcBoundingRect();
@@ -601,7 +597,7 @@ void Ball::UpdateDisplacements(PINFLOAT dtime)
 		
 		addedorientation.MultiplyMatrix(&mat3, &m_orientation);
 
-		addedorientation.MultiplyScalar((float)dtime);
+		addedorientation.MultiplyScalar(dtime);
 
 		m_orientation.AddMatrix(&addedorientation, &m_orientation);
 
@@ -624,11 +620,10 @@ void BallAnimObject::UpdateVelocities(PINFLOAT dtime)
 void Ball::UpdateVelocities(PINFLOAT dtime)
 	{
 	///  dtime is always 1.0	
-	float g = g_pplayer->m_mainlevel.m_gravity.z;
+	const float g = g_pplayer->m_mainlevel.m_gravity.z;
 	float nx = g_pplayer->m_NudgeX;
 	float ny = g_pplayer->m_NudgeY;
-	float mag;
-
+	
 	if( g_pplayer && g_pplayer->m_NudgeManual >= 0) //joystick control of ball roll
 		{
 		vx *=  0.92f;//*dtime;	//rolling losses high for easy manual control
@@ -637,13 +632,13 @@ void Ball::UpdateVelocities(PINFLOAT dtime)
 
 #define JOY_DEADBAND  5.0e-2f
 
-		mag = nx*nx + ny*ny;// + nz*nz;
+		const float mag = nx*nx + ny*ny;// + nz*nz;
 		if (mag > (JOY_DEADBAND * JOY_DEADBAND))			//joystick dead band, allows hold and very slow motion
 			{
-			mag = sqrt(mag);
-			nx -= nx/mag * JOY_DEADBAND;	// remove deadband offsets
-			ny -= ny/mag * JOY_DEADBAND; 
-			//nz -= nz/mag*JOY_DEADBAND;
+			const float inv = JOY_DEADBAND/sqrtf(mag);
+			nx -= nx*inv;	// remove deadband offsets
+			ny -= ny*inv; 
+			//nz -= nz*inv;
 
 			vx +=  nx;// *dtime;
 			vy +=  ny;// *dtime;
@@ -663,7 +658,7 @@ void Ball::UpdateVelocities(PINFLOAT dtime)
 		vy += ny;// *dtime;
 		}
 
-		mag = vx*vx + vy*vy + vz*vz; //speed check 
+		const float mag = vx*vx + vy*vy + vz*vz; //speed check 
 		float antifrict = (mag > c_maxBallSpeedSqed) ? c_dampingFriction : 0.99875f;
 		
 		vx *= antifrict;//*dtime;	// speed damping

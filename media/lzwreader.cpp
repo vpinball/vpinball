@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 
-#define FAST register
 #define OUT_OF_MEMORY -10
 #define BAD_CODE_SIZE -20
 #define READ_ERROR -1
@@ -119,7 +118,6 @@ short LZWReader::init_exp(short size)
  */
 int LZWReader::get_next_code()
 	{
-	short i, x;
 	unsigned long ret;
 
 	if (nbits_left == 0)
@@ -134,8 +132,9 @@ int LZWReader::get_next_code()
 				return (navail_bytes);
 			else if (navail_bytes)
 				{
-				for (i = 0; i < navail_bytes; ++i)
+				for (int i = 0; i < navail_bytes; ++i)
 					{
+					int x;
 					if ((x = get_byte()) < 0)
 						return (x);
 					byte_buff[i] = (BYTE) x;
@@ -160,8 +159,9 @@ int LZWReader::get_next_code()
 				return (navail_bytes);
 			else if (navail_bytes)
 				{
-				for (i = 0; i < navail_bytes; ++i)
+				for (int i = 0; i < navail_bytes; ++i)
 					{
+					int x;
 					if ((x = get_byte()) < 0)
 						return (x);
 					byte_buff[i] = (BYTE) x;
@@ -208,9 +208,9 @@ int LZWReader::get_next_code()
 
 short LZWReader::Decoder()
 	{
-	FAST BYTE *sp, *bufptr;
+	BYTE *sp, *bufptr;
 	BYTE *buf;
-	FAST short code, fc, oc;
+	short code, fc, oc;
 	DWORD bufcnt;
 	short c, size, ret;
 

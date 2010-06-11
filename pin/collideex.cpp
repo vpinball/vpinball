@@ -57,12 +57,12 @@ void BumperAnimObject::Check3D()
 	{
 	if(!m_fVisible) return;
 	
-	if (m_iframe == 0 && m_TimeReset != 0)
+	if ((m_iframe == 0) && (m_TimeReset != 0))
 		{
 		m_iframe = 1;
 		m_fInvalid = fTrue;
 		}
-	else if (m_fAutoTurnedOff && m_iframe == 1 && (m_TimeReset < g_pplayer->m_timeCur) && (m_iframe != m_iframedesired))
+	else if (m_fAutoTurnedOff && (m_iframe == 1) && (m_TimeReset < g_pplayer->m_timeCur) && (m_iframe != m_iframedesired))
 		{
 		m_iframe = m_iframedesired;
 		m_fInvalid = fTrue;
@@ -112,7 +112,7 @@ LineSegSlingshot::~LineSegSlingshot()
 
 PINFLOAT LineSegSlingshot::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)//rlc begin change >>>>>>>>>>>>>>>>
 	{
-	if (!m_fEnabled) return -1;	
+	if (!m_fEnabled) return -1.0f;	
 
 	return this->HitTestBasic(pball, dtime, phitnormal, true, true, true);	
 	}
@@ -120,9 +120,9 @@ PINFLOAT LineSegSlingshot::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitno
 
 void LineSegSlingshot::Collide(Ball *pball, Vertex3D *phitnormal)
 	{	
-	float dot = pball->vx*phitnormal->x  + pball->vy*phitnormal->y; // normal velocity to slingshot
+	const float dot = pball->vx*phitnormal->x  + pball->vy*phitnormal->y; // normal velocity to slingshot
 
-	bool threshold = dot <= -m_psurface->m_d.m_slingshot_threshold;  // normal greater than threshold?
+	const bool threshold = (dot <= -m_psurface->m_d.m_slingshot_threshold);  // normal greater than threshold?
 
 	if (!m_psurface->m_fDisabled && threshold) // enabled and if velocity greater than threshold level		
 		{
@@ -130,19 +130,18 @@ void LineSegSlingshot::Collide(Ball *pball, Vertex3D *phitnormal)
 #define TANX  phitnormal->y
 #define TANY -phitnormal->x
 
-		float len = (v2.x - v1.x)*TANX + (v2.y - v1.y)*TANY; //rlc length of segment, Unit TAN points from V1 to V2
+		const float len = (v2.x - v1.x)*TANX + (v2.y - v1.y)*TANY; //rlc length of segment, Unit TAN points from V1 to V2
 
 		Vertex vhitpoint;
-
 		vhitpoint.x = pball->x - phitnormal->x * pball->radius; //project ball radius along norm
 		vhitpoint.y = pball->y - phitnormal->y * pball->radius;
 
 		// vhitpoint will now be the point where the ball hits the line
 		// Calculate this distance from the center of the slingshot to get force
 
-		float btd = (vhitpoint.x - v1.x)*TANX + (vhitpoint.y - v1.y)*TANY; //rlc distance to vhit from V1
-		float force = 2*btd/len - (float)1;		// -1..+1
-		force = (float)0.5 *(1-force*force);	//rlc maximum value 0.5 ...I think this should have been 1.0...oh well
+		const float btd = (vhitpoint.x - v1.x)*TANX + (vhitpoint.y - v1.y)*TANY; //rlc distance to vhit from V1
+		float force = (btd+btd)/len - 1.0f;		// -1..+1
+		force = 0.5f *(1.0f-force*force);	//rlc maximum value 0.5 ...I think this should have been 1.0...oh well
 												// will match the previous physics
 		force *= m_force;//-80;
 
@@ -156,11 +155,11 @@ void LineSegSlingshot::Collide(Ball *pball, Vertex3D *phitnormal)
 		{			
 			if (dot <= -m_threshold)
 			{
-			float dx = pball->m_Event_Pos.x - pball->x; // is this the same place as last event????
-			float dy = pball->m_Event_Pos.y - pball->y; // if same then ignore it
-			float dz = pball->m_Event_Pos.z - pball->z;
+			const float dx = pball->m_Event_Pos.x - pball->x; // is this the same place as last event????
+			const float dy = pball->m_Event_Pos.y - pball->y; // if same then ignore it
+			const float dz = pball->m_Event_Pos.z - pball->z;
 
-			if ((dx*dx + dy*dy + dz*dz) > (float)0.25)// must be a new place if only by a little
+			if ((dx*dx + dy*dy + dz*dz) > 0.25f)// must be a new place if only by a little
 				{
 				if (m_psurface->m_d.m_slingshot_threshold != 0.0f)// if new slingshot threshold is set use it
 					{			
@@ -185,7 +184,7 @@ void LineSegSlingshot::Collide(Ball *pball, Vertex3D *phitnormal)
 
 PINFLOAT LineSegLevelEdge::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	{
-	if (!m_fEnabled) return -1;	
+	if (!m_fEnabled) return -1.0f;	
 
 		// approach from either face, lateral contact, not rigid
 	return this->HitTestBasic(pball, dtime, phitnormal, false, true, false);
@@ -197,12 +196,12 @@ void LineSegLevelEdge::Collide(Ball *pball, Vertex3D *phitnormal)
 
 void SlingshotAnimObject::Check3D()
 	{
-	if (m_iframe == 0 && m_TimeReset != 0 && m_fAnimations)
+	if ((m_iframe == 0) && (m_TimeReset != 0) && m_fAnimations)
 		{
 		m_iframe = 1;
 		m_fInvalid = fTrue;
 		}
-	else if (m_iframe == 1 && (m_TimeReset < g_pplayer->m_timeCur))
+	else if ((m_iframe == 1) && (m_TimeReset < g_pplayer->m_timeCur))
 		{
 		m_iframe = 0;
 		m_fInvalid = fTrue;
@@ -248,7 +247,7 @@ HitGate::HitGate(Gate *pgate)
 //rlc begin Change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 PINFLOAT HitGate::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	{	
-	if (!m_fEnabled) return -1;		
+	if (!m_fEnabled) return -1.0f;		
 
 	//return LineSeg::HitTest(pball, dtime, phitnormal);		//rlc test ok
 
@@ -260,30 +259,31 @@ PINFLOAT HitGate::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 void HitGate::Collide(Ball *pball, Vertex3D *phitnormal)
 	{
 
-	PINFLOAT dot = pball->vx * phitnormal->x + pball->vy * phitnormal->y;
-	if (dot > 0) return;	//hit from back doesn't count
+	const PINFLOAT dot = pball->vx * phitnormal->x + pball->vy * phitnormal->y;
+	if (dot > 0.0f) return;	//hit from back doesn't count
 
-	float h = m_pgate->m_d.m_height;
+	const float h = m_pgate->m_d.m_height;
 
 	//linear speed = ball speed
 	//angular speed = linear/radius (height of hit)
 
 	// h is the height of the gate axis.
-	if (fabsf(h - pball->radius) > 1)				// avoid divide by zero
-		m_gateanim.m_anglespeed = fabsf(dot)/(h - pball->radius);
-	else m_gateanim.m_anglespeed = fabsf(dot);		// use this until a better value comes along
+	m_gateanim.m_anglespeed = fabsf(dot); // use this until a better value comes along
+
+	if (fabsf(h - pball->radius) > 1.0f)				// avoid divide by zero
+		m_gateanim.m_anglespeed /= h - pball->radius;
 
 	if (m_pfe)
 		{			
-		float dx = pball->m_Event_Pos.x - pball->x; // is this the same place as last event????
-		float dy = pball->m_Event_Pos.y - pball->y; // if same then ignore it
-		float dz = pball->m_Event_Pos.z - pball->z;
+		const float dx = pball->m_Event_Pos.x - pball->x; // is this the same place as last event????
+		const float dy = pball->m_Event_Pos.y - pball->y; // if same then ignore it
+		const float dz = pball->m_Event_Pos.z - pball->z;
 
-		pball->m_Event_Pos.x = pball->x; 
-		pball->m_Event_Pos.y = pball->y; 
+		pball->m_Event_Pos.x = pball->x;
+		pball->m_Event_Pos.y = pball->y;
 		pball->m_Event_Pos.z = pball->z; //remember last collide position
 
-		if ((dx*dx + dy*dy + dz*dz) > 0.25f)// must be a new place if only by a little
+		if (dx*dx + dy*dy + dz*dz > 0.25f)// must be a new place if only by a little
 			{
 			m_pfe->FireGroupEvent(DISPID_HitEvents_Hit);
 			}		
@@ -297,14 +297,14 @@ void GateAnimObject::UpdateDisplacements(PINFLOAT dtime)
 	if (m_angle > m_angleMax)
 		{
 		m_angle = m_angleMax;
-		m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabs(RADTOANG(m_anglespeed)));	// send EOS event
-		if (m_anglespeed > 0) m_anglespeed = 0;
+		m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
+		if (m_anglespeed > 0.0f) m_anglespeed = 0.0f;
 		}
 	if (m_angle < m_angleMin)
 		{
 		m_angle = m_angleMin;
-		m_pgate->FireVoidEventParm(DISPID_LimitEvents_BOS, fabs(RADTOANG(m_anglespeed)));	// send Park event
-		if (m_anglespeed < 0) m_anglespeed = 0;
+		m_pgate->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed)));	// send Park event
+		if (m_anglespeed < 0.0f) m_anglespeed = 0.0f;
 		}
 	}
 
@@ -312,10 +312,10 @@ void GateAnimObject::UpdateVelocities(PINFLOAT dtime)
 	{
 	if (!m_fOpen)
 		{
-		if (m_angle == m_angleMin) m_anglespeed = 0;
-		else {m_anglespeed -= sin(m_angle)*dtime * 0.0025f;} // Center of gravity towards bottom of object, makes it stop vertical
-		//else {m_anglespeed -= sin((m_angle - m_angleMin)/2)*dtime * 0.02f;} // Center of gravity towards bottom of object, makes it stop vertical
-		m_anglespeed *= 1 - m_friction*dtime;
+		if (m_angle == m_angleMin) m_anglespeed = 0.0f;
+		else {m_anglespeed -= sinf(m_angle)*dtime * 0.0025f;} // Center of gravity towards bottom of object, makes it stop vertical
+		//else {m_anglespeed -= sinf((m_angle - m_angleMin)*0.5f)*dtime * 0.02f;} // Center of gravity towards bottom of object, makes it stop vertical
+		m_anglespeed *= 1.0f - m_friction*dtime;
 		}	
 	}
 
@@ -335,7 +335,7 @@ void GateAnimObject::Check3D()
 	if (m_pgate->m_d.m_angleMin != m_pgate->m_d.m_angleMax)
 		{
 		frame = (int)(((m_angle - m_pgate->m_d.m_angleMin)/(m_pgate->m_d.m_angleMax - m_pgate->m_d.m_angleMin)
-				* m_vddsFrame.Size()) + 0.5);
+				* m_vddsFrame.Size()) + 0.5f);
 		}
 	else frame = 1;
 
@@ -380,21 +380,21 @@ HitSpinner::HitSpinner(Spinner *pspinner, float height)
 	float halflength = pspinner->m_d.m_length * 0.5f;
 
 	float radangle = ANGTORAD(pspinner->m_d.m_rotation);
-	float sn = (float)sin(radangle);
-	float cs = (float)cos(radangle);
+	float sn = sinf(radangle);
+	float cs = cosf(radangle);
 
 	m_lineseg[0].m_rcHitRect.zlow = height;
-	m_lineseg[0].m_rcHitRect.zhigh = height + 50;
+	m_lineseg[0].m_rcHitRect.zhigh = height + 50.0f;
 	m_lineseg[1].m_rcHitRect.zlow = height;
-	m_lineseg[1].m_rcHitRect.zhigh = height + 50;
+	m_lineseg[1].m_rcHitRect.zhigh = height + 50.0f;
 
 	m_lineseg[0].m_pfe = NULL;
 	m_lineseg[1].m_pfe = NULL;
 
-	m_lineseg[0].v2.x = pspinner->m_d.m_vCenter.x + cs*(halflength + PHYS_SKIN); //oversize  by the ball radius
-	m_lineseg[0].v2.y = pspinner->m_d.m_vCenter.y + sn*(halflength + PHYS_SKIN); //this will prevent clipping
-	m_lineseg[0].v1.x = pspinner->m_d.m_vCenter.x - cs*(halflength + PHYS_SKIN); // throught the edge of the
-	m_lineseg[0].v1.y = pspinner->m_d.m_vCenter.y - sn*(halflength + PHYS_SKIN); //spinner
+	m_lineseg[0].v2.x = pspinner->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize  by the ball radius
+	m_lineseg[0].v2.y = pspinner->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
+	m_lineseg[0].v1.x = pspinner->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); // throught the edge of the
+	m_lineseg[0].v1.y = pspinner->m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN); //spinner
 
 	m_lineseg[1].v1.x = m_lineseg[0].v2.x;
 	m_lineseg[1].v1.y = m_lineseg[0].v2.y;
@@ -449,10 +449,10 @@ PINFLOAT HitSpinner::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 void HitSpinner::Collide(Ball *pball, Vertex3D *phitnormal)
 	{
 
-	PINFLOAT dot = pball->vx * phitnormal->x + pball->vy * phitnormal->y;
+	const PINFLOAT dot = pball->vx * phitnormal->x + pball->vy * phitnormal->y;
 	if (dot < 0) return;	//hit from back doesn't count
 	
-	PINFLOAT h = m_spinneranim.m_pspinner->m_d.m_height/2  + 30.0f;
+	const PINFLOAT h = m_spinneranim.m_pspinner->m_d.m_height*0.5f  + 30.0f;
 
 	//linear speed = ball speed
 	//angular speed = linear/radius (height of hit)
@@ -462,12 +462,13 @@ void HitSpinner::Collide(Ball *pball, Vertex3D *phitnormal)
 	// h -pball->radius will be moving a at linear rate of
 	// 'speed'.  We can calculate the angular speed from that.
 
-	if (fabsf(h - pball->radius) > 1)				// avoid divide by zero
-		m_spinneranim.m_anglespeed = fabsf(dot)/(h - pball->radius);
-	else m_spinneranim.m_anglespeed = fabsf(dot);		// use this until a better value comes along
+	m_spinneranim.m_anglespeed = fabsf(dot);		// use this until a better value comes along
+
+	if (fabsf(h - pball->radius) > 1.0f)				// avoid divide by zero
+		m_spinneranim.m_anglespeed /= h - pball->radius;
 
 	// We encoded which side of the spinner the ball hit
-	if (phitnormal[1].x > 0)
+	if (phitnormal[1].x > 0.0f)
 		{
 		m_spinneranim.m_anglespeed = -m_spinneranim.m_anglespeed; 
 		}
@@ -483,7 +484,7 @@ void SpinnerAnimObject::UpdateDisplacements(PINFLOAT dtime)
 		if (m_angle > m_angleMax)
 			{
 			m_angle = m_angleMax;
-			m_pspinner->FireVoidEventParm(DISPID_LimitEvents_EOS, fabs(m_anglespeed*180/PI));	// send EOS event
+			m_pspinner->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(m_anglespeed*(float)(180.0/M_PI)));	// send EOS event
 
 			if (m_anglespeed > 0) m_anglespeed *= -(0.005f + m_elasticity);
 			}
@@ -491,7 +492,7 @@ void SpinnerAnimObject::UpdateDisplacements(PINFLOAT dtime)
 			{
 			m_angle = m_angleMin;
 
-			m_pspinner->FireVoidEventParm(DISPID_LimitEvents_BOS, fabs(m_anglespeed*180/PI));	// send Park event
+			m_pspinner->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(m_anglespeed*(float)(180.0/M_PI)));	// send Park event
 
 			if (m_anglespeed < 0) m_anglespeed *= -(0.005f + m_elasticity);
 			}
@@ -502,13 +503,13 @@ void SpinnerAnimObject::UpdateDisplacements(PINFLOAT dtime)
 
 		if (m_anglespeed > 0)
 			{
-			if (m_angle < PI)target = PI;
-			else target = 3*PI;
+			if (m_angle < (float)M_PI) target = (float)M_PI;
+			else target = (float)(3.0*M_PI);
 			}
 		else
 			{
-			if (m_angle < PI) target = -PI;
-			else target = PI;
+			if (m_angle < (float)M_PI) target = (float)(-M_PI);
+			else target = (float)M_PI;
 			}
 
 		m_angle += m_anglespeed * dtime;
@@ -524,15 +525,15 @@ void SpinnerAnimObject::UpdateDisplacements(PINFLOAT dtime)
 				{m_pspinner->FireGroupEvent(DISPID_SpinnerEvents_Spin);}
 			}
 
-		while (m_angle > (2*PI)) m_angle -= (2*PI);
-		while (m_angle < 0)m_angle += 2*PI;	
+		while (m_angle > (float)(2.0*M_PI)) m_angle -= (float)(2.0*M_PI);
+		while (m_angle < 0.0f) m_angle += (float)(2.0*M_PI);
 			
 		}
 	}
 
 void SpinnerAnimObject::UpdateVelocities(PINFLOAT dtime)
 	{
-	m_anglespeed -= sin(m_angle) *dtime *0.0025f; // Center of gravity towards bottom of object, makes it stop vertical
+	m_anglespeed -= sinf(m_angle) *dtime *0.0025f; // Center of gravity towards bottom of object, makes it stop vertical
 
 	m_anglespeed *= 1.0f - (1.0f - m_pspinner->m_d.m_antifriction)*dtime;
 	}
@@ -568,10 +569,10 @@ void SpinnerAnimObject::Check3D()
 	else 
 		{
 		float ang = m_angle;
-		while (ang > (2*PI)) ang -= (2*PI);
-		while (ang < 0) ang += 2*PI;
+		while (ang > (float)(2.0*M_PI)) ang -= (float)(2.0*M_PI);
+		while (ang < 0.0f) ang += (float)(2.0*M_PI);
 
-		frame = (int)(((ang / (2*PI)) * (float)cframes) + 0.5f);
+		frame = (int)(((ang * (float)(1.0/(2.0*M_PI))) * (float)cframes) + 0.5f);
 
 		if (frame >= cframes) frame = 0;		//wrap
 		}
@@ -651,7 +652,7 @@ PINFLOAT Hit3DPoly::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 
 PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal,bool direction, bool rigid)
 	{
-	if (!m_fEnabled) return -1;
+	if (!m_fEnabled) return -1.0f;
 
 	PINFLOAT hittime,bnd;
 	PINFLOAT bnv; 
@@ -660,7 +661,7 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *p
 	bnv = (normal.x*pball->vx) + (normal.y*pball->vy) + (normal.z*pball->vz);  //speed in Normal-vector direction
 
 	if (direction && bnv >= 0)								//rlc ... return if clearly ball is receding from object
-		{return -1;}
+		{return -1.0f;}
 
 	PINFLOAT bRadius = pball->radius;
 	hitx = (-normal.x) * bRadius + pball->x; //rlc nearest point on ball ... projected radius along norm
@@ -674,28 +675,28 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *p
 
 	if (rigid) //rigid polygon
 		{
-		if (bnd < -PHYS_SKIN) return -1;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
+		if (bnd < (float)(-PHYS_SKIN)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
 			
-		if (bnd >= -PHYS_SKIN && bnd <= PHYS_TOUCH)
+		if (bnd >= (float)(-PHYS_SKIN) && bnd <= (float)PHYS_TOUCH)
 			{
 			if (inside || fabsf(bnv) > C_CONTACTVEL)		// fast velocity, return zero time
 				hittime = 0;													//zero time for rigid fast bodies
-			else if(bnd <= -PHYS_TOUCH) hittime = 0;							// slow moving but embedded
-			else hittime = (bnd + PHYS_TOUCH) * (1.0f/PHYS_TOUCH/2);			// don't compete for fast zero time events															
+			else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;					// slow moving but embedded
+			else hittime = (bnd + (float)PHYS_TOUCH) * (float)(1.0/PHYS_TOUCH/2.0);	// don't compete for fast zero time events
 			}
 		else if (fabsf(bnv) > C_LOWNORMVEL )					// not velocity low ????
 			hittime = bnd/(-bnv);								// rate ok for safe divide 
-		else return -1;											// wait for touching
+		else return -1.0f;										// wait for touching
 		}
 	else //non-rigid polygon
 		{
 		if (bnv * bnd >= 0)										// outside-receding || inside-approaching
 			{
-			if (m_ObjType != eTrigger)return -1;				// not a trigger
-			if (!pball->m_vpVolObjs) return -1;					// temporary ball
+			if (m_ObjType != eTrigger) return -1.0f;				// not a trigger
+			if (!pball->m_vpVolObjs) return -1.0f;					// temporary ball
 
-			if (fabs(bnd) >= PHYS_SKIN/2)		// not to close ... nor to far away
-				{return -1;}
+			if (fabsf(bnd) >= (float)(PHYS_SKIN/2.0))		// not to close ... nor to far away
+				{return -1.0f;}
 
 			bool hit = pball->m_vpVolObjs->IndexOf(m_pObj) >= 0;	// hit already???
 
@@ -704,12 +705,12 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *p
 				hittime = 0;
 				bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
 				}	
-			else return -1;	
+			else return -1.0f;	
 			}
 		else hittime = bnd/(-bnv);	
 		}
 
-	if (hittime < 0 || hittime > dtime) return -1;	// time is outside this frame ... no collision
+	if (hittime < 0 || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
 
 	hitx += pball->vx*hittime;	// advance hit point to contact
 	hity += pball->vy*hittime;
@@ -718,12 +719,11 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *p
 	// Do a point in poly test, using the xy plane, to see if the hit point is inside the polygon
 	//this need to be changed to a point in polygon on 3D plane
 
-	int i,j;
 	PINFLOAT x1,y1,x2,y2;
 	int crosscount=0;	// count of lines which the hit point is to the left of
-	for (i=0;i<m_cvertex;i++)
+	for (int i=0;i<m_cvertex;i++)
 		{
-		j = ((i+1) % m_cvertex);
+		const int j = (i+1) % m_cvertex;
 
 		y1 = m_rgv[i].y;
 		y2 = m_rgv[j].y;
@@ -776,7 +776,7 @@ done:
 		return hittime;
 		}
 
-	return -1;
+	return -1.0f;
 	}
 
 
@@ -816,11 +816,10 @@ void Hit3DPoly::Collide(Ball *pball, Vertex3D *phitnormal)
 void Hit3DPoly::CalcNormal()
 	{
 	WORD *rgi;
-	int i;
-
+	
 	rgi = new WORD[m_cvertex];
 
-	for (i=0;i<m_cvertex;i++)
+	for (int i=0;i<m_cvertex;i++)
 		{
 		rgi[i]= i;
 		}
@@ -837,8 +836,6 @@ void Hit3DPoly::CalcNormal()
 
 void Hit3DPoly::CalcHitRect()
 	{
-	int i;
-
 	m_rcHitRect.left = FLT_MAX;
 	m_rcHitRect.right = -FLT_MAX;
 	m_rcHitRect.top = FLT_MAX;
@@ -846,7 +843,7 @@ void Hit3DPoly::CalcHitRect()
 	m_rcHitRect.zlow = FLT_MAX;
 	m_rcHitRect.zhigh = -FLT_MAX;
 
-	for (i=0;i<m_cvertex;i++)
+	for (int i=0;i<m_cvertex;i++)
 		{
 		m_rcHitRect.left = min(m_rgv[i].x, m_rcHitRect.left);
 		m_rcHitRect.right = max(m_rgv[i].x, m_rcHitRect.right);
@@ -869,7 +866,6 @@ Hit3DCylinder::Hit3DCylinder(Vertex3D *pv1, Vertex3D *pv2, Vertex3D *pvnormal)
 void Hit3DCylinder::CacheHitTransform()
 	{
 	Vertex3D vLine;
-
 	vLine.x = v2.x - v1.x;
 	vLine.y = v2.y - v1.y;
 	vLine.z = v2.z - v1.z;
@@ -877,19 +873,17 @@ void Hit3DCylinder::CacheHitTransform()
 	vLine.Normalize();
 
 	Vertex3D vup;
-
 	vup.x = 0;
 	vup.y = 0;
-	vup.z = 1;
+	vup.z = 1.0f;
 
 	// Axis of rotation to make 3D cynlinder a cylinder along the z-axis
 	CrossProduct(&vLine, &vup, &transaxis);
 
 	// Angle to rotate the cylinder into the z-axis
-	PINFLOAT dot;
-	dot = vLine.Dot(&vup);
+	const PINFLOAT dot = vLine.Dot(&vup);
 
-	transangle = acos(-dot);
+	transangle = acosf(-dot);
 
 	vtrans[0] = v1;
 	vtrans[1] = v2;
@@ -899,7 +893,7 @@ void Hit3DCylinder::CacheHitTransform()
 
 PINFLOAT Hit3DCylinder::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	{
-	if (!m_fEnabled) return -1;	
+	if (!m_fEnabled) return -1.0f;	
 
 	Ball ballT = *pball;
 
@@ -1063,7 +1057,7 @@ TriggerLineSeg::TriggerLineSeg()
 PINFLOAT TriggerLineSeg::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)//rlc problem-5
 	{
 
-	if (!m_ptrigger->m_hitEnabled) return -1;				//rlc custom shape trigger
+	if (!m_ptrigger->m_hitEnabled) return -1.0f;				//rlc custom shape trigger
 	
     // approach either face, not lateral-rolling point (assume center),  not a rigid body contact
 	return this->HitTestBasic(pball, dtime, phitnormal, false,false, false); 	
@@ -1078,9 +1072,9 @@ void TriggerLineSeg::Collide(Ball *pball, Vertex3D *phitnormal)
 
 	if (!pball->m_vpVolObjs) return;
 
-	int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
+	const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-	if ((phitnormal[1].x < 1) == (i < 0))	// Hit == NotAlreadyHit
+	if ((phitnormal[1].x < 1.0f) == (i < 0))	// Hit == NotAlreadyHit
 		{		
 		pball->x += pball->vx * STATICTIME; //move ball slightly forward
 		pball->y += pball->vy * STATICTIME;		
@@ -1117,9 +1111,9 @@ void TriggerHitCircle::Collide(Ball *pball, Vertex3D *phitnormal)
 
 	if (!pball->m_vpVolObjs) return;
 
-	int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
+	const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-	if ((phitnormal[1].x < 1) == (i < 0))	// Hit == NotAlreadyHit
+	if ((phitnormal[1].x < 1.0f) == (i < 0))	// Hit == NotAlreadyHit
 		{			
 		pball->x += pball->vx * STATICTIME; //move ball slightly forward
 		pball->y += pball->vy * STATICTIME;		
@@ -1137,10 +1131,3 @@ void TriggerHitCircle::Collide(Ball *pball, Vertex3D *phitnormal)
 			}
 		}	
 	}	
-
-
-
-
-
-
-

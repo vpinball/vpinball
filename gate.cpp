@@ -40,7 +40,7 @@ void Gate::SetDefaults()
 	m_d.m_fCollidable = fTrue;
 
 	m_d.m_angleMin = 0;
-	m_d.m_angleMax = PI/2.0f;
+	m_d.m_angleMax = (float)(M_PI/2.0);
 
 	m_d.m_friction = 0.005f; //rlc set a little bit of friction
 	m_d.m_fVisible = fTrue;
@@ -71,14 +71,14 @@ void Gate::Render(Sur *psur)
 	psur->SetLineColor(RGB(0,0,0),fFalse,2);
 	psur->SetObject(this);
 
-	float halflength = m_d.m_length * 0.5f;
-	float arrowang;
+	float halflength = m_d.m_length * 0.5f;	
 	
 	Vertex rgv[2];
 
-	float radangle = m_d.m_rotation / 180 * PI;
-	float sn = sin(radangle);
-	float cs = cos(radangle);
+	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	{
+	const float sn = sinf(radangle);
+	const float cs = cosf(radangle);
 
 	rgv[0].x = m_d.m_vCenter.x + cs*halflength;
 	rgv[0].y = m_d.m_vCenter.y + sn*halflength;
@@ -92,30 +92,33 @@ void Gate::Render(Sur *psur)
 
 	psur->SetLineColor(RGB(0,0,0),fFalse,1);
 
-	halflength *= 0.5;
+	halflength *= 0.5f;
 
 	rgv[0].x = m_d.m_vCenter.x + sn*halflength;
 	rgv[0].y = m_d.m_vCenter.y - cs*halflength;
+	}
 
 	rgv[1].x = m_d.m_vCenter.x;
 	rgv[1].y = m_d.m_vCenter.y;
 
 	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
 
-	halflength *= 0.5;
+	halflength *= 0.5f;
 
-	arrowang = radangle+0.6f;
-	sn = (float)sin(arrowang);
-	cs = (float)cos(arrowang);
+	{
+	const float arrowang = radangle+0.6f;
+	const float sn = sinf(arrowang);
+	const float cs = cosf(arrowang);
 
 	rgv[1].x = m_d.m_vCenter.x + sn*halflength;
 	rgv[1].y = m_d.m_vCenter.y - cs*halflength;
+	}
 
 	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
 
-	arrowang = radangle-0.6f;
-	sn = (float)sin(arrowang);
-	cs = (float)cos(arrowang);
+	const float arrowang = radangle-0.6f;
+	const float sn = sinf(arrowang);
+	const float cs = cosf(arrowang);
 
 	rgv[1].x = m_d.m_vCenter.x + sn*halflength;
 	rgv[1].y = m_d.m_vCenter.y - cs*halflength;
@@ -148,35 +151,35 @@ void Gate::GetTimers(Vector<HitTimer> *pvht)
 void Gate::GetHitShapes(Vector<HitObject> *pvho)
 	{
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-	float h = m_d.m_height;		//relative height of the gate 
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float h = m_d.m_height;		//relative height of the gate 
 
 	float halflength = m_d.m_length * 0.5f;	
 
-	float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
-	float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
+	const float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
+	const float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
 
 	m_d.m_angleMin = angleMin;	
 	m_d.m_angleMax = angleMax;
 
 	Vertex rgv[2];
 
-	float radangle = m_d.m_rotation / 180 * PI;
-	float sn = (float)sin(radangle);
-	float cs = (float)cos(radangle);
+	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float sn = sinf(radangle);
+	const float cs = cosf(radangle);
 
-	rgv[0].x = m_d.m_vCenter.x + cs*(halflength + PHYS_SKIN);//oversize by the ball's radius
-	rgv[0].y = m_d.m_vCenter.y + sn*(halflength + PHYS_SKIN);// to prevent the ball from clipping through
+	rgv[0].x = m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN);//oversize by the ball's radius
+	rgv[0].y = m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN);// to prevent the ball from clipping through
 
-	rgv[1].x = m_d.m_vCenter.x - cs*(halflength + PHYS_SKIN);//the gate's edge
-	rgv[1].y = m_d.m_vCenter.y - sn*(halflength + PHYS_SKIN);
+	rgv[1].x = m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN);//the gate's edge
+	rgv[1].y = m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN);
 
 	m_plineseg = new LineSeg();
 
 	m_plineseg->m_pfe = NULL;
 
 	m_plineseg->m_rcHitRect.zlow = height;
-	m_plineseg->m_rcHitRect.zhigh = height+ 2*PHYS_SKIN;//+50 //ball diameter
+	m_plineseg->m_rcHitRect.zhigh = height+ (float)(2.0*PHYS_SKIN);//+50.0f //ball diameter
 	
 	m_plineseg->v1.x = rgv[0].x;
 	m_plineseg->v1.y = rgv[0].y;
@@ -251,8 +254,7 @@ void Gate::EndPlay()
 
 	if (m_phitgate) // Failed Player case
 		{
-		int i;
-		for (i=0;i<m_phitgate->m_gateanim.m_vddsFrame.Size();i++)
+		for (int i=0;i<m_phitgate->m_gateanim.m_vddsFrame.Size();i++)
 			{
 			delete m_phitgate->m_gateanim.m_vddsFrame.ElementAt(i);
 			}
@@ -273,19 +275,18 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	Vertex3D rgv3D[12];
 	WORD rgi[8];
-	int l;
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 	
 	Pin3D *ppin3d = &g_pplayer->m_pin3d;
 
-	float halflength = (m_d.m_length * 0.5f);// + m_d.m_overhang;
-	float halfthick = 2;
-	float h = m_d.m_height;
+	const float halflength = (m_d.m_length * 0.5f);// + m_d.m_overhang;
+	const float halfthick = 2.0f;
+	const float h = m_d.m_height;
 
-	float radangle = m_d.m_rotation / 180 * PI;
-	float snY = (float)sin(radangle);
-	float csY = (float)cos(radangle);
+	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float snY = sinf(radangle);
+	const float csY = cosf(radangle);
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
@@ -326,12 +327,11 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	rgv3D[7].y = 0;
 	rgv3D[7].z = h + halfthick;
 
-	float temp;
-	for (l=0;l<8;l++)
+	for (int l=0;l<8;l++)
 		{
-		temp = rgv3D[l].x;
-		rgv3D[l].x = (float)(csY*temp - snY*rgv3D[l].y);
-		rgv3D[l].y = (float)(csY*rgv3D[l].y + snY*temp);
+		const float temp = rgv3D[l].x;
+		rgv3D[l].x = csY*temp - snY*rgv3D[l].y;
+		rgv3D[l].y = csY*rgv3D[l].y + snY*temp;
 
 		rgv3D[l].x += m_d.m_vCenter.x;
 		rgv3D[l].y += m_d.m_vCenter.y;
@@ -388,8 +388,8 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	float maxtuback, maxtvback;
 	float maxtufront, maxtvfront;
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);//surface gate is on
-	float h = m_d.m_height;		//relative height of the gate 
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);//surface gate is on
+	const float h = m_d.m_height;		//relative height of the gate 
 
 	PinImage *pinback = m_ptable->GetImage(m_d.m_szImageBack);
 	PinImage *pinfront = m_ptable->GetImage(m_d.m_szImageFront);
@@ -400,7 +400,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	else
 		{
-		maxtuback = maxtvback = 1;
+		maxtuback = maxtvback = 1.0f;
 		}
 
 	if (pinfront)
@@ -409,7 +409,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	else
 		{
-		maxtufront = maxtvfront = 1;
+		maxtufront = maxtvfront = 1.0f;
 		}
 
 	int cframes;
@@ -417,24 +417,20 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	if (m_d.m_animations > 0)  cframes = m_d.m_animations;
 	else if (m_d.m_angleMax || m_d.m_angleMin)
 		{
-		cframes = (int)((m_d.m_angleMax - m_d.m_angleMin)*((15-1)*2)/PI + (float)1.5); // 15 frames per 90 degrees
+		cframes = (int)((m_d.m_angleMax - m_d.m_angleMin)*(float)((15-1)*2/M_PI) + 1.5f); // 15 frames per 90 degrees
 		}
 	else cframes = 1;
 
-	float halflength = m_d.m_length * 0.5f;
+	const float halflength = m_d.m_length * 0.5f;
 
-	float halfwidth =  m_d.m_height; //50;
-
-	int i,l;
-
-	float angle;
+	const float halfwidth =  m_d.m_height; //50;
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 
-	float r = (m_d.m_color & 255) / 255.0f;
-	float g = (m_d.m_color & 65280) / 65280.0f;
-	float b = (m_d.m_color & 16711680) / 16711680.0f;
+	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
 	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
@@ -454,33 +450,32 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->ClearExtents(&m_phitgate->m_gateanim.m_rcBounds, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar);
 
-	for (i=0;i<cframes;i++)
-		{
+	const float inv_cframes = (m_d.m_angleMax - m_d.m_angleMin)/(float)(cframes-1);
 
+	for (int i=0;i<cframes;i++)
+		{
 		pof = new ObjFrame(); 
 
-		angle =  m_d.m_angleMin + ((m_d.m_angleMax - m_d.m_angleMin)*(float)i)/(float)(cframes-1);
+		const float angle = m_d.m_angleMin + inv_cframes*(float)i;
 
 		Vertex3D rgv3D[8];
 		WORD rgi[4];
 
-		float radangle = m_d.m_rotation / 180 * PI;
-		float snY = (float)sin(radangle);
-		float csY = (float)cos(radangle);
+		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+		const float snY = sinf(radangle);
+		const float csY = cosf(radangle);
 
-		float snTurn = (float)sin(angle);
-		float csTurn = (float)cos(angle);
+		const float snTurn = sinf(angle);
+		const float csTurn = cosf(angle);
 
-		float minx = -halflength;
-		float maxx = halflength;
-		float miny = -1;
-		float maxy = 1;
-		float minz = -halfwidth;
-		float maxz = 0;
+		const float minx = -halflength;
+		const float maxx = halflength;
+		const float miny = -1.0f;
+		const float maxy = 1.0f;
+		const float minz = -halfwidth;
+		const float maxz = 0;
 
-		float temp;
-
-		for (l=0;l<8;l++)
+		for (int l=0;l<8;l++)
 			{
 			rgv3D[l].x = (l & 1) ? maxx : minx;
 			rgv3D[l].y = (l & 2) ? maxy : miny;
@@ -498,19 +493,23 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 			}
 
-		for (l=0;l<8;l++)
+		for (int l=0;l<8;l++)
 			{
-			temp = rgv3D[l].y;
-			rgv3D[l].y = (float)(csTurn*temp + snTurn*rgv3D[l].z);
-			rgv3D[l].z = (float)(csTurn*rgv3D[l].z - snTurn*temp);
+			{
+			const float temp = rgv3D[l].y;
+			rgv3D[l].y = csTurn*temp + snTurn*rgv3D[l].z;
+			rgv3D[l].z = csTurn*rgv3D[l].z - snTurn*temp;
+			}
 
-			temp = rgv3D[l].x;
-			rgv3D[l].x = (float)(csY*temp - snY*rgv3D[l].y);
-			rgv3D[l].y = (float)(csY*rgv3D[l].y + snY*temp);
+			{
+			const float temp = rgv3D[l].x;
+			rgv3D[l].x = csY*temp - snY*rgv3D[l].y;
+			rgv3D[l].y = csY*rgv3D[l].y + snY*temp;
+			}
 
 			rgv3D[l].x += m_d.m_vCenter.x;
 			rgv3D[l].y += m_d.m_vCenter.y;
-			//rgv3D[l].z += height + 50;
+			//rgv3D[l].z += height + 50.0f;
 			rgv3D[l].z += height + h;
 
 
@@ -570,9 +569,9 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			
-			mtrl.diffuse.r = mtrl.ambient.r = 1;
-			mtrl.diffuse.g = mtrl.ambient.g = 1;
-			mtrl.diffuse.b = mtrl.ambient.b = 1;
+			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
 			}
 		else // No image by that name  
 			{
@@ -633,9 +632,9 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			
-			mtrl.diffuse.r = mtrl.ambient.r = 1;
-			mtrl.diffuse.g = mtrl.ambient.g = 1;
-			mtrl.diffuse.b = mtrl.ambient.b = 1;
+			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
 			}
 		else // No image by that name  
 			{
@@ -1199,14 +1198,7 @@ STDMETHODIMP Gate::put_Supports(VARIANT_BOOL newVal)
 
 STDMETHODIMP Gate::get_CloseAngle(float *pVal)
 {
-	if (g_pplayer)
-		{
-		*pVal = RADTOANG(m_phitgate->m_gateanim.m_angleMin);
-		}
-	else
-		{
-		*pVal = RADTOANG(m_d.m_angleMin);
-		}
+	*pVal = RADTOANG(g_pplayer ? m_phitgate->m_gateanim.m_angleMin : m_d.m_angleMin);
 
 	return S_OK;
 }
@@ -1322,22 +1314,22 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle)//move non-collidable 
 		m_plineseg->m_fEnabled = fFalse;		
 
 		if (speed <= 0.0f) speed = 0.2f;		//default gate angle speed
-		else speed *= PI/180.0f;				// convert to radians
+		else speed *= (float)(M_PI/180.0);				// convert to radians
 
 		if (!dir || angle != 0)					// if no direction or non-zero angle
 			{
-			angle *= PI/180.0f;					// convert to radians
+			angle *= (float)(M_PI/180.0);					// convert to radians
 
 			if (angle < m_d.m_angleMin) angle = m_d.m_angleMin;
 			else if (angle > m_d.m_angleMax) angle = m_d.m_angleMax;
 
 			float da = angle - m_phitgate->m_gateanim.m_angle; //calc true direction
 		
-			if (da > 1.0e-5) dir = +1;
-			else if (da < -1.0e-5) dir = -1;
+			if (da > 1.0e-5f) dir = +1;
+			else if (da < -1.0e-5f) dir = -1;
 			else 
 				{
-				dir = 0;									// do noting
+				dir = 0;									// do nothing
 				m_phitgate->m_gateanim.m_anglespeed = 0;	//stop 
 				}
 			}

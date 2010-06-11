@@ -7,9 +7,7 @@
 
 IHaveDragPoints::~IHaveDragPoints()
 	{
-	int i;
-
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		m_vdpoint.ElementAt(i)->Release();
 		}
@@ -17,8 +15,6 @@ IHaveDragPoints::~IHaveDragPoints()
 
 void IHaveDragPoints::GetPointCenter(Vertex *pv)
 	{
-	int i;
-
 	float minx, maxx, miny, maxy;
 
 	minx = FLT_MAX;
@@ -26,7 +22,7 @@ void IHaveDragPoints::GetPointCenter(Vertex *pv)
 	miny = FLT_MAX;
 	maxy = -FLT_MAX;
 
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		minx = min(minx, m_vdpoint.ElementAt(i)->m_v.x);
 		maxx = max(maxx, m_vdpoint.ElementAt(i)->m_v.x);
@@ -35,8 +31,8 @@ void IHaveDragPoints::GetPointCenter(Vertex *pv)
 		
 		}
 
-	pv->x = (maxx+minx)/2;
-	pv->y = (maxy+miny)/2;
+	pv->x = (maxx+minx)*0.5f;
+	pv->y = (maxy+miny)*0.5f;
 	}
 
 void IHaveDragPoints::PutPointCenter(Vertex *pv)
@@ -45,7 +41,6 @@ void IHaveDragPoints::PutPointCenter(Vertex *pv)
 
 void IHaveDragPoints::FlipPointY(Vertex *pvCenter)
 	{
-	int i;
 	float deltay;
 
 	GetIEditable()->BeginUndo();
@@ -58,15 +53,15 @@ void IHaveDragPoints::FlipPointY(Vertex *pvCenter)
 
 	ycenter = pvCenter->y;
 
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		deltay = m_vdpoint.ElementAt(i)->m_v.y - ycenter;
 
-		m_vdpoint.ElementAt(i)->m_v.y -= deltay*2;
+		m_vdpoint.ElementAt(i)->m_v.y -= deltay*2.0f;
 		}
 
 	deltay = newcenter.y - ycenter;
-	newcenter.y -= deltay*2;
+	newcenter.y -= deltay*2.0f;
 	PutPointCenter(&newcenter);
 
 	ReverseOrder();
@@ -78,7 +73,6 @@ void IHaveDragPoints::FlipPointY(Vertex *pvCenter)
 
 void IHaveDragPoints::FlipPointX(Vertex *pvCenter)
 	{
-	int i;
 	float deltax;
 
 	GetIEditable()->BeginUndo();
@@ -91,15 +85,15 @@ void IHaveDragPoints::FlipPointX(Vertex *pvCenter)
 
 	xcenter = pvCenter->x;
 
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		deltax = m_vdpoint.ElementAt(i)->m_v.x - xcenter;
 
-		m_vdpoint.ElementAt(i)->m_v.x -= deltax*2;
+		m_vdpoint.ElementAt(i)->m_v.x -= deltax*2.0f;
 		}
 
 	deltax = newcenter.x - xcenter;
-	newcenter.x -= deltax*2;
+	newcenter.x -= deltax*2.0f;
 	PutPointCenter(&newcenter);
 
 	ReverseOrder();
@@ -147,9 +141,7 @@ void IHaveDragPoints::TranslateDialog()
 
 void IHaveDragPoints::RotatePoints(float ang, Vertex *pvCenter)
 	{
-	int i;
 	float dx,dy;
-	float sn,cs;
 	float temp;
 	float centerx, centery;
 	Vertex newcenter;
@@ -162,10 +154,10 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex *pvCenter)
 	centerx = pvCenter->x;
 	centery = pvCenter->y;
 
-	sn = (float)sin(ANGTORAD(ang));
-	cs = (float)cos(ANGTORAD(ang));
+	const float sn = sinf(ANGTORAD(ang));
+	const float cs = cosf(ANGTORAD(ang));
 
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		DragPoint *pdp1 = m_vdpoint.ElementAt(i);
 		dx = pdp1->m_v.x - centerx;
@@ -197,7 +189,6 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex *pvCenter)
 
 void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex *pvCenter)
 	{
-	int i;
 	float dx,dy;
 	float centerx, centery;
 	Vertex newcenter;
@@ -210,7 +201,7 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex *pvCenter)
 	centerx = pvCenter->x;
 	centery = pvCenter->y;
 
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		DragPoint *pdp1 = m_vdpoint.ElementAt(i);
 		dx = pdp1->m_v.x - centerx;
@@ -240,13 +231,12 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex *pvCenter)
 
 void IHaveDragPoints::TranslatePoints(Vertex *pvOffset)
 	{
-	int i;
 	Vertex newcenter;
 
 	GetIEditable()->BeginUndo();
 	GetIEditable()->MarkForUndo();
 
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		DragPoint *pdp1 = m_vdpoint.ElementAt(i);
 		pdp1->m_v.x += pvOffset->x;
@@ -267,15 +257,13 @@ void IHaveDragPoints::TranslatePoints(Vertex *pvOffset)
 
 void IHaveDragPoints::ReverseOrder()
 	{
-	int i;
-
 	if (m_vdpoint.Size() == 0)
 		{
 		return;
 		}
 
 	// Reverse order of points (switches winding, reverses inside/outside)
-	for (i=0;i<m_vdpoint.Size()/2;i++)
+	for (int i=0;i<m_vdpoint.Size()/2;i++)
 		{
 		DragPoint *pdp1 = m_vdpoint.ElementAt(i);
 		DragPoint *pdp2 = m_vdpoint.ElementAt(m_vdpoint.Size() - 1 - i);
@@ -285,7 +273,7 @@ void IHaveDragPoints::ReverseOrder()
 
 	BOOL fSlingshotTemp = m_vdpoint.ElementAt(0)->m_fSlingshot;
 
-	for (i=0;i<m_vdpoint.Size()-1;i++)
+	for (int i=0;i<m_vdpoint.Size()-1;i++)
 		{
 		DragPoint *pdp1 = m_vdpoint.ElementAt(i);
 		DragPoint *pdp2 = m_vdpoint.ElementAt(i+1);
@@ -298,14 +286,11 @@ void IHaveDragPoints::ReverseOrder()
 
 void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> *pvv)
 	{
-	int i;
-	int cpoint;
-
-	cpoint = m_vdpoint.Size();
+	const int cpoint = m_vdpoint.Size();
 
 	//cpointCur = 0;
 
-	for (i=0;i<cpoint;i++)
+	for (int i=0;i<cpoint;i++)
 		{
 		BOOL fNoSmooth = fTrue;
 		CComObject<DragPoint> *pdp0;
@@ -375,13 +360,12 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 	VectorInt<int> virenderpoints;
 	BOOL m_fNoCoords = fFalse;
 
-	int i;
-	int cpoints = pvv->Size();
+	const int cpoints = pvv->Size();
 	int icontrolpoint = 0;
 
 	*ppcoords = new float[cpoints];
 
-	for (i=0;i<cpoints;i++)
+	for (int i=0;i<cpoints;i++)
 		{
 		RenderVertex *prv = pvv->ElementAt(i);
 		if (prv->fControlPoint)
@@ -409,13 +393,12 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 	vitexpoints.AddElement(vitexpoints.ElementAt(0) + m_vdpoint.Size());
 	virenderpoints.AddElement(virenderpoints.ElementAt(0) + cpoints);
 
-	for (i=0;i<(vitexpoints.Size() - 1);i++)
+	for (int i=0;i<(vitexpoints.Size() - 1);i++)
 		{
 		float totallength = 0;
 		float starttexcoord;
 		float endtexcoord;
 
-		int l;
 		Vertex *pv1, *pv2;
 		int startrenderpoint, endrenderpoint;
 		startrenderpoint = virenderpoints.ElementAt(i) % cpoints;
@@ -432,38 +415,36 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 			endtexcoord = m_vdpoint.ElementAt(vitexpoints.ElementAt((i+1) % vitexpoints.Size()) % m_vdpoint.Size())->m_texturecoord;
 			}
 
-		float deltacoord = endtexcoord - starttexcoord;
+		const float deltacoord = endtexcoord - starttexcoord;
 
 		if (endrenderpoint <= startrenderpoint)
 			{
 			endrenderpoint += cpoints;
 			}
-		for (l=startrenderpoint;l<endrenderpoint;l++)
+		for (int l=startrenderpoint;l<endrenderpoint;l++)
 			{
 			pv1 = (Vertex *)pvv->ElementAt(l % cpoints);
 			pv2 = (Vertex *)pvv->ElementAt((l+1) % cpoints);
 
-			float dx,dy;
-			dx = pv1->x - pv2->x;
-			dy = pv1->y - pv2->y;
-			float length = (float)sqrt(dx*dx + dy*dy);
+			const float dx = pv1->x - pv2->x;
+			const float dy = pv1->y - pv2->y;
+			const float length = sqrtf(dx*dx + dy*dy);
 
 			totallength += length;
 			}
 
 		float partiallength = 0;
 
-		for (l=startrenderpoint;l<endrenderpoint;l++)
+		for (int l=startrenderpoint;l<endrenderpoint;l++)
 			{
 			pv1 = (Vertex *)pvv->ElementAt(l % cpoints);
 			pv2 = (Vertex *)pvv->ElementAt((l+1) % cpoints);
 
-			float dx,dy;
-			dx = pv1->x - pv2->x;
-			dy = pv1->y - pv2->y;
-			float length = (float)sqrt(dx*dx + dy*dy);
+			const float dx = pv1->x - pv2->x;
+			const float dy = pv1->y - pv2->y;
+			const float length = sqrtf(dx*dx + dy*dy);
 
-			float texcoord = partiallength / totallength;
+			const float texcoord = partiallength / totallength;
 
 			(*ppcoords)[l % cpoints] = (texcoord * deltacoord) + starttexcoord;
 
@@ -474,9 +455,7 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 
 void IHaveDragPoints::ClearPointsForOverwrite()
 	{
-	int i;
-
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		if (m_vdpoint.ElementAt(i)->m_selectstate != eNotSelected/*GetPTable()->m_pselcur == m_vdpoint.ElementAt(i)*/)
 			{
@@ -492,10 +471,9 @@ void IHaveDragPoints::ClearPointsForOverwrite()
 
 HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	int i;
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-	for (i=0;i<m_vdpoint.Size();i++)
+	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		bw.WriteTag(FID(DPNT));
 		CComObject<DragPoint> *pdp = m_vdpoint.ElementAt(i);

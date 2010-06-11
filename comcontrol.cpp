@@ -86,13 +86,12 @@ int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 			HWND hwndList;
 			hwndList = GetDlgItem(hwndDlg, IDC_LIST);
-			int i;
 			int count;
 			CLSID *pclsid;
 
 			count = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
 
-			for (i=0;i<count;i++)
+			for (int i=0;i<count;i++)
 				{
 				pclsid = (CLSID *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
 				delete pclsid;
@@ -668,9 +667,8 @@ void PinComControl::CreateControlDialogTemplate()
 	int cdispfuncs = 0; // Count of functions that will appear in the dialog
 	int cfunccur = 0; // Function we are currently creating a template for
 
-	int i;
 	FUNCDESC *pfd;
-	for (i=0;i<cfunc;i++)
+	for (int i=0;i<cfunc;i++)
 		{
 		piti->GetFuncDesc(i, &pfd);
 
@@ -726,7 +724,7 @@ void PinComControl::CreateControlDialogTemplate()
 	/* Make sure the first item starts on a DWORD boundary. */ 
 	p = lpwAlign (p);
 
-	for (i=0;i<cfunc;i++)
+	for (int i=0;i<cfunc;i++)
 		{
 		piti->GetFuncDesc(i, &pfd);
 
@@ -860,8 +858,7 @@ void PinComControl::CreateControlDialogTemplate()
 			p = lpwAlign (p);
 			cfunccur++;
 
-			unsigned int i;
-			for (i=0; i < cnames; i++)
+			for (unsigned int i=0; i < cnames; i++)
 				{
 				SysFreeString(rgstr[i]);
 				}
@@ -1170,8 +1167,6 @@ BOOL PinComControl::LoadToken(int id, BiffReader *pbr)
 
 		if (m_pAxWindow != NULL)
 			{
-			int i;
-			i = 9;
 			// Control already exists - must be undoing something
 			}
 		else

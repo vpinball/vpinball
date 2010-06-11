@@ -578,8 +578,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			WORD rgi[4];
 			Vertex3D rgv3D[4];
 			
-			int l;
-			for (l=0;l<4;l++)
+			for (WORD l=0;l<4;l++)
 				{
 				rgi[l] = l;
 				rgv3D[l].z = 1;//height + 0.2f;
@@ -630,7 +629,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			ppin3d->m_pddsBackBuffer->Blt(&rectSrc, NULL,
 					&rectSrc, DDBLT_COLORFILL, &ddbltfx);
 
-			for (i=0; i<=(int)m_d.m_digitrange; i++)
+			for (int i=0; i<=(int)m_d.m_digitrange; i++)
 			{
 				rgv3D[0].tu = rgv3D[3].tu = (float)(((double)gc*m_reeldigitwidth)/pin->m_width) * pin->m_maxtu;
 				rgv3D[0].tv = rgv3D[1].tv = (float)(((double)gr*m_reeldigitheight)/pin->m_height) * pin->m_maxtv;
@@ -1700,7 +1699,6 @@ STDMETHODIMP DispReel::SetValue(long Value)
 
 STDMETHODIMP DispReel::ResetToZero(void)
 {
-    int i;
     int carry;
     int adjust;
     int overflowValue;
@@ -1709,7 +1707,7 @@ STDMETHODIMP DispReel::ResetToZero(void)
     overflowValue = (int)m_d.m_digitrange+1;
 
     // work for the last reel to the first one
-    for (i=(int)m_d.m_reelcount-1; i>=0; i--)
+    for (int i=(int)m_d.m_reelcount-1; i>=0; i--)
     {
 		adjust = overflowValue - carry;
         carry = 0;

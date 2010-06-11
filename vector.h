@@ -30,9 +30,7 @@ public:
 		}
 
 	VectorVoid(VectorVoid *pvector)
-		{
-		int i;
-		
+		{		
 		m_rg = (void **)malloc(sizeof(void *) * m_cMax);
 
 		if (!m_rg)
@@ -45,7 +43,7 @@ public:
 		m_cMax = pvector->m_cMax;
 		m_cSize = pvector->m_cSize;
 
-		for (i=0;i<m_cSize;i++)	// We need this for smart pointers - they need to be ref counted
+		for (int i=0;i<m_cSize;i++)	// We need this for smart pointers - they need to be ref counted
 			{
 			m_rg[i] = pvector->m_rg[i];
 			}
@@ -137,8 +135,6 @@ public:
 
 	BOOL Clone(VectorVoid *pvector)
 		{
-		int i;
-
 		if (m_rg)
 			{
 			pvector->Reset();
@@ -157,7 +153,7 @@ public:
 		pvector->m_cMax = m_cMax;
 		pvector->m_cSize = m_cSize;
 			
-		for (i=0;i<m_cSize;i++)	// We need this for smart pointers - they need to be ref counted
+		for (int i=0;i<m_cSize;i++)	// We need this for smart pointers - they need to be ref counted
 			{
 			pvector->m_rg[i] = m_rg[i];
 			}
@@ -167,11 +163,10 @@ public:
 
 	int LastIndexOf(void *pT)
 		{
-		int i;
-		
 		if (!m_rg)
 			return -1;
 
+		int i;
 		for (i=m_cSize-1;i >= 0; i--)
 			if (m_rg[i] == pT)
 				break;
@@ -180,12 +175,10 @@ public:
 
 	int IndexOf(void *pvItem)
 		{
-		int i;
-
 		if (m_rg == NULL)
 			return -1;
 
-		for (i=0;i<m_cSize;i++)
+		for (int i=0;i<m_cSize;i++)
 			{
 			if (pvItem == m_rg[i])
 				return i;
@@ -255,10 +248,9 @@ public:
 
 	void RemoveAllElements(void)
 		{
-		//int i;
 		if (!m_rg)
 			return;
-		//for (i=0;i<m_cSize;i++) 	// We need this for smart pointers - they need to be ref counted
+		//for (int i=0;i<m_cSize;i++) 	// We need this for smart pointers - they need to be ref counted
 			//{
 			//m_rg[i] = NULL;
 			//}
@@ -324,12 +316,10 @@ public:
 
 	int IndexOf(int pvItem)
 		{
-		int i;
-
 		if (m_rg == NULL)
 			return -1;
 
-		for (i=0;i<m_cSize;i++)
+		for (int i=0;i<m_cSize;i++)
 			{
 			if ((void *)pvItem == m_rg[i])
 				return i;

@@ -102,8 +102,7 @@ void SmartBrowser::Init(HWND hwndParent)
 
 void SmartBrowser::FreePropPanes()
 	{
-	int i;
-	for (i=0;i<m_vproppane.Size();i++)
+	for (int i=0;i<m_vproppane.Size();i++)
 		{
 		delete m_vproppane.ElementAt(i);
 		}
@@ -115,19 +114,16 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 	{
 	//int resourceid;
 	ISelect *pisel = NULL;
-	int i;
-
 	FreePropPanes();
 
 	if (pvsel != NULL)
 		{
 		ItemTypeEnum maintype = pvsel->ElementAt(0)->GetItemType();
-		int i;
 		BOOL fSame = fTrue;
 
 		// See if all items in multi-select are of the same type.
 		// If not, we can't edit their collective properties
-		for (i=1;i<pvsel->Size();i++)
+		for (int i=1;i<pvsel->Size();i++)
 			{
 			if (pvsel->ElementAt(i)->GetItemType() != maintype)
 				{
@@ -160,9 +156,8 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 	// Have to check resourceid too, since there can be more than one dialog view of the same object (table/backdrop)
 	if ((pvsel && m_pvsel) && pvsel->Size() == m_pvsel->Size() /*m_pisel == pisel*/ && m_olddialog == propID)
 		{
-		int i;
 		BOOL fSame = fTrue;
-		for (i=0;i<pvsel->Size();i++)
+		for (int i=0;i<pvsel->Size();i++)
 			{
 			if (pvsel->ElementAt(i) != m_pvsel->ElementAt(i))
 				{
@@ -191,8 +186,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 			}
 			while ((hwndFocus = GetParent(hwndFocus)) != NULL);
 
-		int i;
-		for (i=0;i<m_vhwndExpand.Size();i++)
+		for (int i=0;i<m_vhwndExpand.Size();i++)
 			{
 			DestroyWindow(m_vhwndExpand.ElementAt(i));
 			}
@@ -246,7 +240,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
 	InvalidateRect(m_hwndFrame, NULL, fTrue);
 
-	for (i=0;i<m_vproppane.Size();i++)
+	for (int i=0;i<m_vproppane.Size();i++)
 		{
 		PropertyPane *pproppane = m_vproppane.ElementAt(i);
 		HWND hwndExpand;
@@ -308,17 +302,17 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
 	LayoutExpandoWidth();
 
-	for	(i=0;i<m_vhwndExpand.Size();i++)
+	for	(int i=0;i<m_vhwndExpand.Size();i++)
 	{
 		SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 0, 0);
 		ShowWindow(m_vhwndExpand.ElementAt(i), SW_SHOWNOACTIVATE);
 	}
 
 	// expand bottom last
-	//for	(i=0;i<m_vhwndExpand.Size();i++)SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0); 
+	//for (int i=0;i<m_vhwndExpand.Size();i++)SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0); 
 
 	//expand top last
-	for	(i= m_vhwndExpand.Size()-1; i >= 0;--i)SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
+	for	(int i= m_vhwndExpand.Size()-1; i >= 0;--i)SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
 
 }
 
@@ -397,12 +391,11 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
 				piti->GetTypeAttr(&pta);
 
-				int cfunc = pta->cFuncs;
+				const int cfunc = pta->cFuncs;
 
 				FUNCDESC *pfd;
 
-				int i;
-				for (i=0;i<cfunc;i++)
+				for (int i=0;i<cfunc;i++)
 					{
 					piti->GetFuncDesc(i, &pfd);
 
@@ -425,12 +418,9 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
 							VARDESC *pvd;
 
-							int cenum;
-							int l;
+							const int cenum = ptaEnum->cVars;
 
-							cenum = ptaEnum->cVars;
-
-							for (l=0;l<cenum;l++)
+							for (int l=0;l<cenum;l++)
 								{
 								pitiEnum->GetVarDesc(l, &pvd);
 
@@ -439,18 +429,16 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 									BSTR *rgstr = (BSTR *) CoTaskMemAlloc(6 * sizeof(BSTR *));
 
 									unsigned int cnames;
-
 									HRESULT hr = pitiEnum->GetNames(pvd->memid, rgstr, 6, &cnames);
 
 									// Add enum string to combo control
 									WideCharToMultiByte(CP_ACP, 0, rgstr[0], -1, szT, 512, NULL, NULL);
-									int index = SendMessage(hwnd, CB_ADDSTRING, 0, (int)szT);
+									const int index = SendMessage(hwnd, CB_ADDSTRING, 0, (int)szT);
 									SendMessage(hwnd, CB_SETITEMDATA, index, V_I4(pvd->lpvarValue));
 
-									unsigned int i;
-									for (i=0; i < cnames; i++)
+									for (unsigned int i2=0; i2 < cnames; i2++)
 										{
-										SysFreeString(rgstr[i]);
+										SysFreeString(rgstr[i2]);
 										}
 
 									CoTaskMemFree(rgstr);
@@ -488,8 +476,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 
 void SmartBrowser::PopulateDropdowns()
 	{
-	int i;
-	for (i=0;i<m_vhwndDialog.Size();i++)
+	for (int i=0;i<m_vhwndDialog.Size();i++)
 		{
 		EnumChildWindows(m_vhwndDialog.ElementAt(i), EnumChildInitList, (long)this);
 		}
@@ -497,8 +484,7 @@ void SmartBrowser::PopulateDropdowns()
 
 void SmartBrowser::RefreshProperties()
 	{
-	int i;
-	for (i=0;i<m_vhwndDialog.Size();i++)
+	for (int i=0;i<m_vhwndDialog.Size();i++)
 		{
 		EnumChildWindows(m_vhwndDialog.ElementAt(i), EnumChildProc, (long)this);
 		}
@@ -605,8 +591,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
 	// Check each selection in a multiple selection and see if everything
 	// has the same value.  If not, set a ninched state to the control
-	int i;
-	for (i=1;i<m_pvsel->Size();i++)
+	for (int i=1;i<m_pvsel->Size();i++)
 		{
 		CComVariant varCheck;
 
@@ -723,7 +708,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 					{
 					// Entry must be on the list - search for existing match
 
-					int index = SendMessage(hwndControl, CB_FINDSTRINGEXACT, -1,
+					const int index = SendMessage(hwndControl, CB_FINDSTRINGEXACT, -1,
 							(LPARAM)szT);
 
 					if (index == CB_ERR)
@@ -731,12 +716,10 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 						// No string - look for numerical match in itemdata
 						VariantChangeType(&var, &var, 0, VT_INT);
 
-						int data = V_INT(&var);
+						const int data = V_INT(&var);
+						const int citems = SendMessage(hwndControl, CB_GETCOUNT, 0, 0);
 
-						int citems = SendMessage(hwndControl, CB_GETCOUNT, 0, 0);
-
-						int i;
-						for (i=0;i<citems;i++)
+						for (int i=0;i<citems;i++)
 							{
 							int matchdata = SendMessage(hwndControl, CB_GETITEMDATA, i, 0);
 
@@ -764,19 +747,16 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
 void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, BOOL fPutRef)
 	{
-	HRESULT hr;
-	DISPID mydispid;
-	mydispid = DISPID_PROPERTYPUT;
+	DISPID mydispid = DISPID_PROPERTYPUT;
 	DISPPARAMS disp;
 	disp.cNamedArgs = 1;
 	disp.rgdispidNamedArgs = &mydispid;//NULL;
 	disp.cArgs = 1;
 	disp.rgvarg = pvar;
 
-	int i;
-	for (i=0;i<m_pvsel->Size();i++)
+	for (int i=0;i<m_pvsel->Size();i++)
 		{
-		hr = m_pvsel->ElementAt(i)->GetDispatch()->Invoke(dispid,
+		HRESULT hr = m_pvsel->ElementAt(i)->GetDispatch()->Invoke(dispid,
 		IID_NULL,
 		LOCALE_USER_DEFAULT,
 		fPutRef ? DISPATCH_PROPERTYPUTREF : DISPATCH_PROPERTYPUT,
@@ -787,9 +767,8 @@ void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, BOOL fPutRef)
 
 void SmartBrowser::LayoutExpandoWidth()
 	{
-	int i;
 	int maxwidth = 20; // Just in case we have a weird situation where there are no dialogs
-	for (i=0;i<m_vhwndDialog.Size();i++)
+	for (int i=0;i<m_vhwndDialog.Size();i++)
 		{
 		HWND hwnd = m_vhwndDialog.ElementAt(i);
 		RECT rc;
@@ -797,7 +776,7 @@ void SmartBrowser::LayoutExpandoWidth()
 		maxwidth = max(maxwidth, (rc.right - rc.left));
 		}
 
-	for (i=0;i<m_vhwndExpand.Size();i++)
+	for (int i=0;i<m_vhwndExpand.Size();i++)
 		{
 		HWND hwndExpand = m_vhwndExpand.ElementAt(i);
 		SetWindowPos(hwndExpand, NULL, 0, 0, maxwidth, 20, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
@@ -810,9 +789,8 @@ void SmartBrowser::LayoutExpandoWidth()
 
 void SmartBrowser::RelayoutExpandos()
 	{
-	int i;
 	int totalheight = 0;
-	for (i=0;i<m_vhwndExpand.Size();i++)
+	for (int i=0;i<m_vhwndExpand.Size();i++)
 		{
 		HWND hwndExpand = m_vhwndExpand.ElementAt(i);
 		ExpandoInfo *pexinfo = (ExpandoInfo *)GetWindowLong(hwndExpand, GWL_USERDATA);
@@ -839,7 +817,7 @@ void SmartBrowser::RelayoutExpandos()
 		// longest time ago)
 		// If nothing has ever been expanded by the user, higher panels will
 		// get priority over lower panels
-		for (i=0;i<m_vhwndExpand.Size();i++)
+		for (int i=0;i<m_vhwndExpand.Size();i++)
 			{			
 			int titleid = m_vproppane.ElementAt(i)->titlestringid;
 			if (titleid != NULL)
@@ -872,7 +850,7 @@ void SmartBrowser::RelayoutExpandos()
 		}
 
 	totalheight = 0;
-	for (i=0;i<m_vhwndExpand.Size();i++)
+	for (int i=0;i<m_vhwndExpand.Size();i++)
 		{
 		HWND hwndExpand = m_vhwndExpand.ElementAt(i);
 		SetWindowPos(hwndExpand, NULL, EXPANDO_X_OFFSET, totalheight + EXPANDO_Y_OFFSET, 0, 0, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);

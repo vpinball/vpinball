@@ -52,7 +52,7 @@ public:
 
 	void Normalize()
 		{
-		float oneoverlength = (float)(1/(sqrt(x*x + y*y)));
+		const float oneoverlength = 1.0f/sqrtf(x*x + y*y);
 		x *= oneoverlength;
 		y *= oneoverlength;
 		}
@@ -61,12 +61,12 @@ public:
 class VertexD
 	{
 public:
-	PINFLOAT x;
-	PINFLOAT y;
+	float x;
+	float y;
 
 	void Normalize()
 		{
-		PINFLOAT oneoverlength = (PINFLOAT)(1/(sqrt(x*x + y*y)));
+		const float oneoverlength = 1.0f/sqrtf(x*x + y*y);
 		x *= oneoverlength;
 		y *= oneoverlength;
 		}
@@ -116,27 +116,27 @@ public:
 	D3DVALUE tu2;
 	D3DVALUE tv2;
 
-	inline void Set(float a, float b, float c) {x=a; y=b; z=c;}
-	inline void SetDouble(double a, double b, double c) {x=(float)a; y=(float)b; z=(float)c;}
+	inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
+	inline void SetDouble(const double a, const double b, const double c) {x=(float)a; y=(float)b; z=(float)c;}
 	void Normalize();
 	void NormalizeNormal();
-	float Dot(Vertex3D *pv);
-	float DistanceSquared(Vertex3D *pv);
-	float LengthSquared();
-	void MultiplyScalar(float scalar);
-	void Add(Vertex3D *pv);
+	float Dot(const Vertex3D * const pv) const;
+	float DistanceSquared(const Vertex3D * const pv) const;
+	float LengthSquared() const;
+	void MultiplyScalar(const float scalar);
+	void Add(const Vertex3D * const pv);
 	};
 
 class Matrix3
 	{
 public:
-	void CreateSkewSymmetric(Vertex3D *pv3D);
-	void MultiplyScalar(float scalar);
-	void MultiplyVector(Vertex3D *pv3D, Vertex3D *pv3DOut);
-	void MultiplyMatrix(Matrix3 *pmat1, Matrix3 *pmat2);
-	void AddMatrix(Matrix3 *pmat1, Matrix3 *pmat2);
+	void CreateSkewSymmetric(const Vertex3D * const pv3D);
+	void MultiplyScalar(const float scalar);
+	void MultiplyVector(const Vertex3D * const pv3D, Vertex3D * const pv3DOut);
+	void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2);
+	void AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2);
 	void OrthoNormalize();
-	void Transpose(Matrix3 *pmatOut);
+	void Transpose(Matrix3 * const pmatOut) const;
 
 	float m_d[3][3];
 	};
@@ -161,10 +161,10 @@ public:
 	char m_szbuffer[256];
 	};
 
-#define PI 3.141592654f
+#define M_PI 3.1415926535897932384626433832795
 
-#define ANGTORAD(x) ((x) *PI/180.0f)
-#define RADTOANG(x) ((x) *180.0f/PI)
+#define ANGTORAD(x) ((x) *(float)(M_PI/180.0))
+#define RADTOANG(x) ((x) *(float)(180.0/M_PI))
 
 #define VBTOF(x) ((x) ? fTrue : fFalse)
 #define FTOVB(x) ((x) ? -1 : 0)

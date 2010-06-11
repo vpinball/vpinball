@@ -9,16 +9,15 @@
 
 void __cdecl MemLeakAlert(void * pUserData, size_t nBytes)
 {
-	int i;
 	int st[5];
 	int *pdata = (int *)pUserData;
 	char szT[1024];
-	for (i=0;i<5;i++)
+	for (int i=0;i<5;i++)
 		{
 		st[i] = pdata[i];
 		}
 	sprintf(szT,"Memory leak at 0x%.8x.\nStack trace:\n0x%.8x\n0x%.8x\n0x%.8x\n0x%.8x\n0x%.8x\n\nWould you like to debug?  (Cancel skips reporting any other leaks)",(int)pUserData+PREEXTRA,st[0],st[1],st[2],st[3],st[4]);
-	int ans = MessageBox(NULL, szT, "Memory Leak", MB_YESNOCANCEL | MB_ICONWARNING | MB_DEFBUTTON2);
+	const int ans = MessageBox(NULL, szT, "Memory Leak", MB_YESNOCANCEL | MB_ICONWARNING | MB_DEFBUTTON2);
 	switch (ans)
 		{
 		case IDYES:
@@ -82,8 +81,7 @@ void * operator new( unsigned int cb )
     stFrame.AddrFrame.Offset = stCtx.Ebp; 
     stFrame.AddrFrame.Mode = AddrModeFlat; 
 
-	int i;
-	for (i=0;i<5;i++)
+	for (int i=0;i<5;i++)
 		{
 		StackWalk(IMAGE_FILE_MACHINE_I386,
 				hProcess, hThread, &stFrame, &stCtx,

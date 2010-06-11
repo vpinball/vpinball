@@ -22,30 +22,28 @@ void HitSur::Line(float rx, float ry, float rx2, float ry2)
 		return;
 		}
 
-	int x1 = SCALEX(rx);
-	int y1 = SCALEY(ry);
-	int x2 = SCALEX(rx2);
-	int y2 = SCALEY(ry2);
-
-	int temp;
+	int x1 = SCALEXf(rx);
+	int y1 = SCALEYf(ry);
+	int x2 = SCALEXf(rx2);
+	int y2 = SCALEYf(ry2);
 
 	if (abs(x2-x1) > abs(y2-y1))
 		{
 		
 		if (x1>x2)
 			{
-			temp=x1;
+			const int temp=x1;
 			x1=x2;
 			x2=temp;
 
-			temp=y1;
+			const int temp2=y1;
 			y1=y2;
-			y2=temp;
+			y2=temp2;
 			}
 
 		if (m_hitx>=x1 && m_hitx<=x2)
 			{
-				int lineY = (int) (( ((float)(y2-y1)) / ((float)(x2-x1)) )*(m_hitx-x1)) + y1;
+				const int lineY = (int) ((float)(y2-y1) / (float)(x2-x1) * (float)(m_hitx-x1)) + y1;
 
 				if (m_hity>lineY-4 && m_hity<lineY+4)
 					{
@@ -59,18 +57,18 @@ void HitSur::Line(float rx, float ry, float rx2, float ry2)
 
 		if (y1>y2)
 			{
-			temp=x1;
+			const int temp=x1;
 			x1=x2;
 			x2=temp;
 
-			temp=y1;
+			const int temp2=y1;
 			y1=y2;
-			y2=temp;
+			y2=temp2;
 			}
 
 		if (m_hity>=y1 && m_hity<=y2)
 			{
-				int lineX = (int) (( ((float)(x2-x1)) / ((float)(y2-y1)) )*(m_hity-y1)) + x1;
+				const int lineX = (int) ((float)(x2-x1) / (float)(y2-y1) * (float)(m_hity-y1)) + x1;
 
 				if (m_hitx>lineX-4 && m_hitx<lineX+4)	
 					{
@@ -88,21 +86,21 @@ void HitSur::Rectangle(float x, float y, float x2, float y2)
 		return;
 		}
 
-	int ix = SCALEX(x);
-	int iy = SCALEY(y);
-	int ix2 = SCALEX(x2);
-	int iy2 = SCALEY(y2);
+	int ix = SCALEXf(x);
+	int iy = SCALEYf(y);
+	int ix2 = SCALEXf(x2);
+	int iy2 = SCALEYf(y2);
 
 	if (ix > ix2)
 		{
-		int temp = ix;
+		const int temp = ix;
 		ix = ix2;
 		ix2 = temp;
 		}
 
 	if (iy > iy2)
 		{
-		int temp = iy;
+		const int temp = iy;
 		iy = iy2;
 		iy2 = temp;
 		}
@@ -129,15 +127,15 @@ void HitSur::Ellipse(float centerx, float centery, float radius)
 		return;
 		}
 
-	int ix = SCALEX(centerx);
-	int iy = SCALEY(centery);
-	int ir = SCALED(radius);
+	const int ix = SCALEXf(centerx);
+	const int iy = SCALEYf(centery);
+	const int ir = SCALEDf(radius);
 
-	int dx = m_hitx - ix;
-	int dy = m_hity - iy;
-	int dist = (dx*dx + dy*dy);
+	const int dx = m_hitx - ix;
+	const int dy = m_hity - iy;
+	const int dist = dx*dx + dy*dy;
 
-	if (dist <= (ir*ir))
+	if (dist <= ir*ir)
 		{
 		m_pselected = m_pcur;
 		}
@@ -150,15 +148,15 @@ void HitSur::Ellipse2(float centerx, float centery, int radius)
 		return;
 		}
 
-	int ix = SCALEX(centerx);
-	int iy = SCALEY(centery);
-	int ir = (int)(radius);
+	const int ix = SCALEXf(centerx);
+	const int iy = SCALEYf(centery);
+	//int ir = (int)(radius);
 
-	int dx = m_hitx - ix;
-	int dy = m_hity - iy;
-	int dist = (dx*dx + dy*dy);
+	const int dx = m_hitx - ix;
+	const int dy = m_hity - iy;
+	const int dist = dx*dx + dy*dy;
 
-	if (dist <= (radius*radius))
+	if (dist <= radius*radius)
 		{
 		m_pselected = m_pcur;
 		}
@@ -171,29 +169,21 @@ void HitSur::Polygon(Vertex *rgv, int count)
 		return;
 		}
 
-	POINT *rgpt;
+	POINT * const rgpt = new POINT[count];
 
-	rgpt = new POINT[count];
-
-	int i;
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
-		rgpt[i].x = SCALEX(rgv[i].x);
-		rgpt[i].y = SCALEY(rgv[i].y);
+		rgpt[i].x = SCALEXf(rgv[i].x);
+		rgpt[i].y = SCALEYf(rgv[i].y);
 		}
 
-	int j;
-	int x1,y1,x2,y2;
 	int crosscount=0;	// count of lines which the hit point is to the left of
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
-		if (i==0)
-			j=count-1;
-		else
-			j=i-1;
+		const int j = (i==0) ? (count-1) : (i-1);
 
-		y1 = rgpt[i].y;
-		y2 = rgpt[j].y;
+		const int y1 = rgpt[i].y;
+		const int y2 = rgpt[j].y;
 		
 		if (y1==y2)
 			goto done;
@@ -201,8 +191,8 @@ void HitSur::Polygon(Vertex *rgv, int count)
 		if ((m_hity <= y1 && m_hity <= y2) || (m_hity > y1 && m_hity > y2)) // if out of y range, forget about this segment
 			goto done;
 			
-		x1 = rgpt[i].x;
-		x2 = rgpt[j].x;
+		const int x1 = rgpt[i].x;
+		const int x2 = rgpt[j].x;
 			
 		if (m_hitx >= x1 && m_hitx >= x2) // Hit point is on the right of the line
 			goto done;

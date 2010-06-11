@@ -77,7 +77,7 @@ void ISelect::OnRButtonUp(int x, int y)
 void ISelect::OnMouseMove(int x, int y)
 	{
 	PinTable *ptable = GetPTable();
-	float zoom = ptable->m_zoom;
+	const float zoom = ptable->m_zoom;
 
 	if ((x == m_ptLast.x) && (y == m_ptLast.y))
 		{
@@ -210,19 +210,15 @@ void ISelect::Rotate(float ang, Vertex *pvCenter)
 	{
 	GetIEditable()->MarkForUndo();
 
-	float dx,dy;
-	float sn,cs;
-	float temp;
-
 	Vertex vCenter;
 	GetCenter(&vCenter);
 
-	sn = (float)sin(ANGTORAD(ang));
-	cs = (float)cos(ANGTORAD(ang));
+	const float sn = sinf(ANGTORAD(ang));
+	const float cs = cosf(ANGTORAD(ang));
 
-	dx = vCenter.x - pvCenter->x;
-	dy = vCenter.y - pvCenter->y;
-	temp = dx;
+	float dx = vCenter.x - pvCenter->x;
+	float dy = vCenter.y - pvCenter->y;
+	const float temp = dx;
 	dx = cs*dx - sn*dy;
 	dy = cs*dy + sn*temp;
 	vCenter.x = pvCenter->x + dx;
@@ -234,13 +230,11 @@ void ISelect::Scale(float scalex, float scaley, Vertex *pvCenter)
 	{
 	GetIEditable()->MarkForUndo();
 
-	float dx,dy;
-
 	Vertex vCenter;
 	GetCenter(&vCenter);
 
-	dx = vCenter.x - pvCenter->x;
-	dy = vCenter.y - pvCenter->y;
+	float dx = vCenter.x - pvCenter->x;
+	float dy = vCenter.y - pvCenter->y;
 
 	dx *= scalex;
 	dy *= scaley;
@@ -299,4 +293,3 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 
 	return S_OK;
 	}
-

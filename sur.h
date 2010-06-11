@@ -1,7 +1,7 @@
 #pragma once
-#define SCALEX(x) ((int)((x - m_offx)*m_zoom + 0.5))
-#define SCALEY(y) ((int)((y - m_offy)*m_zoom + 0.5))
-#define SCALED(d) ((int)(d*m_zoom + 0.5))
+#define SCALEXf(x) ((int)(((x) - m_offx)*m_zoom + 0.5f))
+#define SCALEYf(y) ((int)(((y) - m_offy)*m_zoom + 0.5f))
+#define SCALEDf(d) ((int)((d)*m_zoom + 0.5f))
 
 class Sur
 	{

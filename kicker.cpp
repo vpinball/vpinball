@@ -127,7 +127,6 @@ void Kicker::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	int l;
 	WORD rgi[8];
 	Vertex3D rgv3D[49];
 	Vertex3D rgvBorder[16];
@@ -145,7 +144,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	Pin3D *ppin3d = &g_pplayer->m_pin3d;
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	ppin3d->ClearExtents(&rcBounds, NULL, NULL);	
 
@@ -157,25 +156,23 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 
-	float r = (m_d.m_color & 255) / 255.0f;
-	float g = (m_d.m_color & 65280) / 65280.0f;
-	float b = (m_d.m_color & 16711680) / 16711680.0f;
+	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
-	for (l=0;l<16;l++)
+	for (int l=0;l<16;l++)
 		{
-		float angle = PI*2;
-		angle /= 16;
-		angle *= l;
-		rgv3D[l].x = (float)sin(angle)*m_d.m_radius + m_d.m_vCenter.x;
-		rgv3D[l].y = (float)-cos(angle)*m_d.m_radius + m_d.m_vCenter.y;
-		rgv3D[l].z = height + 0.1f - 30;
+		const float angle = (float)(M_PI*2.0/16.0)*(float)l;
+		rgv3D[l].x = m_d.m_vCenter.x + sinf(angle)*m_d.m_radius;
+		rgv3D[l].y = m_d.m_vCenter.y - cosf(angle)*m_d.m_radius;
+		rgv3D[l].z = height + (0.1f - 30.0f);
 
 		rgv3D[l+16].x = rgv3D[l].x;
 		rgv3D[l+16].y = rgv3D[l].y;
 		rgv3D[l+16].z = height + 0.1f;
 
-		rgvBorder[l].x = (float)sin(angle)*(m_d.m_radius+6) + m_d.m_vCenter.x;
-		rgvBorder[l].y = (float)-cos(angle)*(m_d.m_radius+6) + m_d.m_vCenter.y;
+		rgvBorder[l].x = m_d.m_vCenter.x + sinf(angle)*(m_d.m_radius+6.0f);
+		rgvBorder[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius+6.0f);
 		rgvBorder[l].z = height + 0.05f;
 
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
@@ -185,7 +182,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	rgv3D[48].x = m_d.m_vCenter.x;
 	rgv3D[48].y = m_d.m_vCenter.y;
-	rgv3D[48].z = height + 0.1f - 30;
+	rgv3D[48].z = height + (0.1f - 30.0f);
 	ppin3d->m_lightproject.CalcCoordinates(&rgv3D[48]);
 
 	mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
@@ -198,7 +195,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	if (m_d.m_kickertype == KickerCup)
 		{
 		// Draw outer ring
-		for (l=1;l<15;l++)
+		for (WORD l=1;l<15;l++)
 			{
 			rgi[0] = 0;
 			rgi[1] = l;
@@ -229,7 +226,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	ppin3d->EnableLightMap(fFalse, height);
 
 	// Draw mask
-	for (l=1;l<15;l++)
+	for (WORD l=1;l<15;l++)
 			{
 			rgi[0] = 16+0;
 			rgi[1] = 16+l;
@@ -262,7 +259,6 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			int lenx, leny;
 			lenx = rcBounds.right - rcBounds.left;
 			leny = rcBounds.bottom - rcBounds.top;
-			int x,y;
 			int pitch;
 			pitch = ddsd.lPitch;
 			BYTE *pch = (BYTE *)ddsd.lpSurface;
@@ -270,14 +266,13 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			int pitchMask = ddsdMask.lPitch;
 			BYTE *pchMask = (BYTE *)ddsdMask.lpSurface;
 
-			for (y=0;y<leny;y++)
+			for (int y=0;y<leny;y++)
 				{
-				for (x=0;x<lenx;x++)
+				for (int x=0;x<lenx;x++)
 					{
 					if (*pchMask == 0)
 						{
-						int l;
-						for (l=0;l<zbytes;l++)
+						for (int l=0;l<zbytes;l++)
 							{
 							*pch++ = 0xff;
 							}
@@ -310,7 +305,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
 			pd3dDevice->SetMaterial(&mtrl);
 
-			for (l=1;l<15;l++)
+			for (WORD l=1;l<15;l++)
 					{
 					rgi[0] = 0;
 					rgi[1] = l;
@@ -328,7 +323,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			ppin3d->EnableLightMap(fTrue, height);
 
-			for (l=0;l<16;l++)
+			for (int l=0;l<16;l++)
 				{
 				rgiNormal[0] = (l - 1 + 16) % 16;
 				rgiNormal[1] = rgiNormal[0] + 16;
@@ -337,7 +332,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgi[0] = l;
 				rgi[1] = l+16;
 				rgi[2] = (l+1) % 16 + 16;
-				rgi[3] = ((l+1) % 16);
+				rgi[3] = (l+1) % 16;
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
@@ -359,7 +354,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			ppin3d->EnableLightMap(fTrue, height);
 
-			for (l=0;l<16;l++)
+			for (int l=0;l<16;l++)
 				{
 				rgi[0] = 48;
 				rgi[1] = l + 16;
@@ -599,10 +594,10 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 {
 	if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pball)
 		{
-		float anglerad = angle/180*PI;		// yaw angle, zero is along -Y axis		
+		float anglerad = angle*(float)(M_PI/180.0);		// yaw angle, zero is along -Y axis		
 
-		if (fabs(inclination) > PI/2)		// radians or degrees?  if greater PI/2 assume degrees
-			inclination *= PI/180;			// convert to radians
+		if (fabsf(inclination) > (float)(M_PI/2.0))		// radians or degrees?  if greater PI/2 assume degrees
+			inclination *= (float)(M_PI/180.0);			// convert to radians
 		
 		float scatterAngle = (m_d.m_scatter <= 0) ? c_hardScatter : ANGTORAD(m_d.m_scatter); // if <= 0 use global value
 		scatterAngle *= g_pplayer->m_ptable->m_globalDifficulty;		// apply dificulty weighting
@@ -614,7 +609,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 			anglerad += scatter;
 			}
 		
-		float speedz = sin(inclination) * speed;
+		float speedz = sinf(inclination) * speed;
 
 		if (speedz > 0 ) speed = cos(inclination)*speed;
 
@@ -622,8 +617,8 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 		m_phitkickercircle->m_pball->y += y; 
 		m_phitkickercircle->m_pball->z += z; 
 
-		m_phitkickercircle->m_pball->vx = sin(anglerad) * speed;
-		m_phitkickercircle->m_pball->vy = -cos(anglerad) * speed;
+		m_phitkickercircle->m_pball->vx =  sinf(anglerad) * speed;
+		m_phitkickercircle->m_pball->vy = -cosf(anglerad) * speed;
 		m_phitkickercircle->m_pball->vz = speedz;	
 		m_phitkickercircle->m_pball->fFrozen = fFalse;
 		m_phitkickercircle->m_pball = NULL;

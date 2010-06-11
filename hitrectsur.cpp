@@ -79,19 +79,19 @@ void HitRectSur::Ellipse2(float centerx, float centery, int radius)
 		return;
 		}
 
-	int ix = SCALEX(centerx);
-	int iy = SCALEY(centery);
-	int ir = (int)(radius);
+	const int ix = SCALEXf(centerx);
+	const int iy = SCALEYf(centery);
+	const int ir = (radius);
 
-	int circleleft = ix - ir;
-	int circletop = iy - ir;
-	int circleright = ix + ir;
-	int circlebottom = iy + ir;
+	const int circleleft = ix - ir;
+	const int circletop = iy - ir;
+	const int circleright = ix + ir;
+	const int circlebottom = iy + ir;
 	
-	int left = SCALEX(m_rcRect.left);
-	int top = SCALEY(m_rcRect.top);
-	int right = SCALEX(m_rcRect.right);
-	int bottom = SCALEY(m_rcRect.bottom);
+	const int left = SCALEXf(m_rcRect.left);
+	const int top = SCALEYf(m_rcRect.top);
+	const int right = SCALEXf(m_rcRect.right);
+	const int bottom = SCALEYf(m_rcRect.bottom);
 	
 	if (circleleft < left || circletop < top || circleright > right || circlebottom > bottom)
 		{
@@ -106,9 +106,7 @@ void HitRectSur::Polygon(Vertex *rgv, int count)
 		return;
 		}
 
-	int i;
-
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
 		if (!PTINRECT(rgv[i].x,rgv[i].y))
 			{

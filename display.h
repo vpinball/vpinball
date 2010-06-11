@@ -8,8 +8,8 @@
 #include <d3d.h>
 
 
-#define     RGBA_TO_D3DARGB(r,g,b,a)	((((long)((a) * 255)) << 24) | (((long)((r) * 255)) << 16) | (((long)((g) * 255)) << 8) | (long)((b) * 255))
-#define     RGBA_TO_D3DRGBA(r,g,b,a)	((((long)((r) * 255)) << 24) | (((long)((g) * 255)) << 16) | (((long)((b) * 255)) << 8) | (long)((a) * 255))
+#define     RGBA_TO_D3DARGB(r,g,b,a)	((((long)((a) * 255.0f)) << 24) | (((long)((r) * 255.0f)) << 16) | (((long)((g) * 255.0f)) << 8) | (long)((b) * 255.0f))
+#define     RGBA_TO_D3DRGBA(r,g,b,a)	((((long)((r) * 255.0f)) << 24) | (((long)((g) * 255.0f)) << 16) | (((long)((b) * 255.0f)) << 8) | (long)((a) * 255.0f))
 
 #define		DISPLAY_MAXTEXTURES			1
 
