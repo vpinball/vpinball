@@ -396,7 +396,6 @@ printf("(%ld) platform=%u, specific=%u, lang=%x, name=%u (%u, %u)\n", curseek,
   printf("%s: ** No name table found **\n", pszFile);
 
 cleanup:
-  close (fp);
-  return;
+  close (fp);  
 }
 #endif FONTMANAGER

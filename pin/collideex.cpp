@@ -815,9 +815,7 @@ void Hit3DPoly::Collide(Ball *pball, Vertex3D *phitnormal)
 
 void Hit3DPoly::CalcNormal()
 	{
-	WORD *rgi;
-	
-	rgi = new WORD[m_cvertex];
+	WORD * const rgi = new WORD[m_cvertex];
 
 	for (int i=0;i<m_cvertex;i++)
 		{

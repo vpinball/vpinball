@@ -186,7 +186,6 @@ void Light::PreRender(Sur *psur)
 
 void Light::Render(Sur *psur)
 	{
-	int 	i;
 	BOOL	fDrawDragpoints;		//>>> added by chris
 
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
@@ -198,7 +197,7 @@ void Light::Render(Sur *psur)
 		{
 		// if any of the dragpoints of this object are selected then draw all the dragpoints
 		fDrawDragpoints = fFalse;
-		for (i=0;i<m_vdpoint.Size();i++)
+		for (int i=0;i<m_vdpoint.Size();i++)
 			{
 			CComObject<DragPoint> *pdp;
 			pdp = m_vdpoint.ElementAt(i);
@@ -214,7 +213,7 @@ void Light::Render(Sur *psur)
 
 	if ( (m_d.m_shape == ShapeCustom) && (fDrawDragpoints == fTrue) )	//<<< modified by chris
 		{
-		for (i=0;i<m_vdpoint.Size();i++)
+		for (int i=0;i<m_vdpoint.Size();i++)
 			{
 			CComObject<DragPoint> *pdp;
 			pdp = m_vdpoint.ElementAt(i);

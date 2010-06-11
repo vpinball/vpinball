@@ -341,7 +341,6 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 			{
 			CALPOLESTR     castr;
 			CADWORD        cadw;
-			ULONG          i;
 			IPerPropertyBrowsing *pippb;
 			char szT[512];
 
@@ -361,7 +360,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
 					SendMessage(hwnd, CB_RESETCONTENT, 0, 0);
 
-					for (i=0;i<castr.cElems;i++)
+					for (ULONG i=0;i<castr.cElems;i++)
 						{
 						WideCharToMultiByte(CP_ACP, 0, castr.pElems[i], -1, szT, 512, NULL, NULL);
 						int index = SendMessage(hwnd, CB_ADDSTRING, 0, (int)szT);
@@ -370,7 +369,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
 					CoTaskMemFree((void *)cadw.pElems);
 
-					for (i=0; i < castr.cElems; i++)
+					for (ULONG i=0; i < castr.cElems; i++)
 						CoTaskMemFree((void *)castr.pElems[i]);
 
 					CoTaskMemFree((void *)castr.pElems);

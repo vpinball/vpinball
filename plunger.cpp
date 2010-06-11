@@ -208,18 +208,16 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float beginy = m_d.m_v.y;
 	const float endy = m_d.m_v.y - m_d.m_stroke;
 
-	WORD rgi[8];
-
-	Vertex3D rgv3D[16*PLUNGEPOINTS];
-
 	ppin3d->ClearExtents(&m_phitplunger->m_plungeranim.m_rcBounds, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar);
 
+	const float inv_cframes = (endy - beginy)/(float)(cframes-1);
 	for (int i=0;i<cframes;i++)
 		{
-		const float height = beginy + (endy - beginy)/(cframes-1)*i;
+		const float height = beginy + inv_cframes*(float)i;
 
 		pof = new ObjFrame();
 
+		Vertex3D rgv3D[16*PLUNGEPOINTS];
 		for (int l=0;l<16;l++)
 			{
 			const float angle = (float)(M_PI*2.0/16.0)*(float)l;
@@ -260,6 +258,7 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int m=0;m<(PLUNGEPOINTS-1);m++)
 				{
+				WORD rgi[4];
 				rgi[0] = m + offset;
 				rgi[3] = m + 1 + offset;
 				rgi[2] = (m + 1 + offset + PLUNGEPOINTS) % (16*PLUNGEPOINTS);
