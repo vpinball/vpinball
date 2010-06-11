@@ -124,7 +124,7 @@ void PlungerAnimObject::SetObjects(float len)
 	m_linesegSide[0].CalcNormal();
 	m_linesegSide[1].CalcNormal();
 
-	float deg45 = sin(PI/4.0f);
+	float deg45 = (float)sin(M_PI/4.0);
 
 	m_jointBase[0].normal.x = -deg45;
 	m_jointBase[0].normal.y = deg45;
@@ -143,14 +143,14 @@ void PlungerAnimObject::UpdateDisplacements(PINFLOAT dtime)
 
 	if (m_pos < m_frameEnd)	
 		{		
-		m_plunger->FireVoidEventParm(DISPID_LimitEvents_EOS, fabs(m_speed));	// send EOS event
+		m_plunger->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(m_speed));	// send EOS event
 		m_speed = 0;
 		m_pos = m_frameEnd;						// hard limit plunger position range
 		m_mechTimeOut = 0;						// stroke complete ...then clear timer
 		}
 	else if (m_pos > m_frameStart)
 		{
-		m_plunger->FireVoidEventParm(DISPID_LimitEvents_BOS, fabs(m_speed));	// send Park event		
+		m_plunger->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(m_speed));	// send Park event		
 		m_speed = 0;
 		m_pos = m_frameStart;		// using either control method		
 		}
@@ -172,8 +172,7 @@ void PlungerAnimObject::UpdateDisplacements(PINFLOAT dtime)
 	}
 
 void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
-	{
-	
+	{	
 	if (m_fAcc)
 		{
 		m_speed += (m_force/m_mass);//*(float)dtime;		
@@ -252,8 +251,6 @@ void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
 
 PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	{
-	int i;
-
 	float newtime;
 	float hittime = dtime; //start time
 	BOOL fHit = fFalse;
@@ -281,7 +278,7 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 		phitnormal[1].y = 0;
 		}
 
-	for (i=0;i<2;i++)
+	for (int i=0;i<2;i++)
 		{
 		newtime = (float)m_plungeranim.m_linesegSide[i].HitTest(&BallT, hittime, &hitnormal[0]);
 			if (newtime >= 0 && newtime <= hittime)
@@ -329,7 +326,7 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 		phitnormal[1].y = deltay;	 //m_speed;		//>>> changed by chris
 		}
 
-	for (i=0;i<2;i++)
+	for (int i=0;i<2;i++)
 		{
 		newtime = (float)m_plungeranim.m_jointEnd[i].HitTest(&BallT, hittime, &hitnormal[0]);
 		if (newtime >= 0 && newtime <= hittime)
@@ -346,7 +343,7 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 			}
 		}
 
-	return fHit ? hittime : -1;
+	return fHit ? hittime : -1.0f;
 	}
 
 void HitPlunger::Draw(HDC hdc)
@@ -354,9 +351,7 @@ void HitPlunger::Draw(HDC hdc)
 	m_plungeranim.m_linesegBase.Draw(hdc);
 	m_plungeranim.m_linesegEnd.Draw(hdc);
 	
-	int i;
-
-	for (i=0;i<2;i++)
+	for (int i=0;i<2;i++)
 		{
 		m_plungeranim.m_linesegSide[i].Draw(hdc);
 		m_plungeranim.m_jointBase[i].Draw(hdc);
@@ -381,7 +376,7 @@ void HitPlunger::Collide(Ball *pball, Vertex3D *phitnormal)
 #ifdef C_DISP_GAIN 
 		// correct displacements, mostly from low velocity blidness, an alternative to true acceleration processing	
 		float hdist = -C_DISP_GAIN * pball->m_HitDist;				// distance found in hit detection
-		if (hdist > 1.0e-4)
+		if (hdist > 1.0e-4f)
 			{													// maginitude of jump
 			if (hdist > C_DISP_LIMIT) 
 				{hdist = C_DISP_LIMIT;}		// crossing ramps, delta noise
@@ -391,7 +386,7 @@ void HitPlunger::Collide(Ball *pball, Vertex3D *phitnormal)
 #endif
 			
 
-	float impulse = -(dot * ((float)1.45)/(1+1/m_plungeranim.m_mass));
+	const float impulse = -(dot * 1.45f/(1.0f+1.0f/m_plungeranim.m_mass));
 
 	pball->vx += impulse *phitnormal->x;  
 	pball->vy += impulse *phitnormal->y; 
@@ -403,7 +398,7 @@ void HitPlunger::Collide(Ball *pball, Vertex3D *phitnormal)
 	if ( scatter_vel > 0  && fabsf(pball->vy) > scatter_vel) //skip if low velocity 
 		{
 		float scatter = 2.0f* ((float)rand()/((float)RAND_MAX) - 0.5f);  // -1.0f..1.0f
-		scatter *=  (1.0f - scatter*scatter)*2.59808f * scatter_vel;	// shape quadratic distribution and scale
+		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_vel;	// shape quadratic distribution and scale
 		pball->vy += scatter;
 		}
 
@@ -420,7 +415,7 @@ void PlungerAnimObject::Check3D()
 
 	pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 																		//rlc fixed frame jitter by rounding up 0.5
-	int frame = (int)((m_pos - m_frameStart + (float)1.0)/(m_frameEnd-m_frameStart) * (m_vddsFrame.Size()-1)+(float)0.5);
+	int frame = (int)((m_pos - m_frameStart + 1.0f)/(m_frameEnd-m_frameStart) * (m_vddsFrame.Size()-1)+0.5f);
 
 	if (frame != m_iframe)
 		{

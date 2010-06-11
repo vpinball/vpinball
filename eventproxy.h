@@ -64,8 +64,7 @@ public:
 	void FireVoidGroupEvent(int dispid)
 		{
 		T* pT = (T*)this;
-		int i;
-		for (i=0;i<pT->m_vEventCollection.Size();i++)
+		for (int i=0;i<pT->m_vEventCollection.Size();i++)
 			{
 			Collection *pcollection = pT->m_vEventCollection.ElementAt(i);
 		

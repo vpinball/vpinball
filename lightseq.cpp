@@ -72,14 +72,10 @@ void LightSeq::PutCenter(Vertex *pv)
 //
 void LightSeq::PreRender(Sur *psur)
 {
-	int		i;
-	GPINFLOAT	angle;
-	float	sn,cs;
-
 	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
 	psur->SetObject(this);
 
-	for (i=0;i<8;i++)
+	for (int i=0;i<8;i++)
 	{
 		if (i % 2 == 0)
 		{
@@ -89,14 +85,14 @@ void LightSeq::PreRender(Sur *psur)
 		{
 			psur->SetFillColor(RGB(128,0,0));
 		}
-		angle = ((PI*2)/8)*i;
-		sn = (float)sin(angle);
-		cs = (float)cos(angle);
-		psur->Ellipse(m_d.m_v.x + sn*12, m_d.m_v.y - cs*12, 4);
+		const float angle = (float)((M_PI*2.0)/8.0)*(float)i;
+		const float sn = sinf(angle);
+		const float cs = cosf(angle);
+		psur->Ellipse(m_d.m_v.x + sn*12.0f, m_d.m_v.y - cs*12.0f, 4.0f);
 	}
 
 	psur->SetFillColor(RGB(255,0,0));
-	psur->Ellipse(m_d.m_v.x, m_d.m_v.y-3, 4);
+	psur->Ellipse(m_d.m_v.x, m_d.m_v.y-3.0f, 4.0f);
 }
 
 // this function draws the shape of the object with a black outline (no solid fill)
@@ -107,26 +103,22 @@ void LightSeq::PreRender(Sur *psur)
 //
 void LightSeq::Render(Sur *psur)
 {
-	int		i;
-	GPINFLOAT	angle;
-	float	sn,cs;
-
 	psur->SetFillColor(-1);
 	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
 
 	psur->SetObject(this);
 
-	psur->Ellipse(m_d.m_v.x, m_d.m_v.y, 18);
+	psur->Ellipse(m_d.m_v.x, m_d.m_v.y, 18.0f);
 
-	for (i=0;i<8;i++)
+	for (int i=0;i<8;i++)
 	{
-		angle = ((PI*2)/8)*i;
-		sn = (float)sin(angle);
-		cs = (float)cos(angle);
-		psur->Ellipse(m_d.m_v.x + sn*12, m_d.m_v.y - cs*12, 4);
+		const float angle = (float)((M_PI*2.0)/8.0)*(float)i;
+		const float sn = sinf(angle);
+		const float cs = cosf(angle);
+		psur->Ellipse(m_d.m_v.x + sn*12.0f, m_d.m_v.y - cs*12.0f, 4.0f);
 	}
 
-	psur->Ellipse(m_d.m_v.x, m_d.m_v.y-3, 4);
+	psur->Ellipse(m_d.m_v.x, m_d.m_v.y-3.0f, 4.0f);
 
 	RenderOutline(psur);
 }
@@ -135,17 +127,13 @@ void LightSeq::Render(Sur *psur)
 
 void LightSeq::RenderOutline(Sur *psur)
 {
-	int		i;
-	GPINFLOAT	angle;
-	float	sn,cs;
-
 	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
 	psur->SetObject((ISelect *)&m_LightSeqCenter);
 
-	psur->Line(m_d.m_vCenter.x - 10, m_d.m_vCenter.y, m_d.m_vCenter.x + 10, m_d.m_vCenter.y);
-	psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10, m_d.m_vCenter.x, m_d.m_vCenter.y + 10);
+	psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
+	psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
 
-	for (i=0;i<8;i++)
+	for (int i=0;i<8;i++)
 	{
 		if (i % 2 == 0)
 		{
@@ -155,14 +143,14 @@ void LightSeq::RenderOutline(Sur *psur)
 		{
 			psur->SetFillColor(RGB(128,0,0));
 		}
-		angle = ((PI*2)/8)*i;
-		sn = (float)sin(angle);
-		cs = (float)cos(angle);
-		psur->Ellipse(m_d.m_vCenter.x + sn*7, m_d.m_vCenter.y - cs*7, 2);
+		const float angle = (float)((M_PI*2.0)/8.0)*(float)i;
+		const float sn = sinf(angle);
+		const float cs = cosf(angle);
+		psur->Ellipse(m_d.m_vCenter.x + sn*7.0f, m_d.m_vCenter.y - cs*7.0f, 2.0f);
 	}
 
 	psur->SetFillColor(RGB(255,0,0));
-	psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y-2.5f, 2);
+	psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y-2.5f, 2.0f);
 }
 
 // Renders the image onto the Blueprint
@@ -247,14 +235,11 @@ void LightSeq::RenderMoversFromCache(Pin3D *ppin3d)
 
 void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 {
-	long 			i;
-	long			size;
 	CComBSTR 		bstr;
 	CComBSTR 		bstrCollection;
 	ItemTypeEnum	type;
 	Light			*pLight;
 	Bumper			*pBumper;
-	float			x, y;
 	int				ix, iy;
 
 	// zero pointers as a safe guard
@@ -276,8 +261,8 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	bstrCollection = m_d.m_wzCollection;
 
 	// get the number of collections available
-	size = m_ptable->m_vcollection.Size();
-	for(i=0; i<size; i++)
+	int size = m_ptable->m_vcollection.Size();
+	for(int i=0; i<size; i++)
 	{
 		// get the name of this collection
 		m_ptable->m_vcollection.ElementAt(i)->get_Name(&bstr);
@@ -297,15 +282,15 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	}
 
 	// get the grid demensions (from the table size)
-	float tablewidth = m_ptable->m_right - m_ptable->m_left;
-	float tableheight = m_ptable->m_bottom - m_ptable->m_top;
+	const float tablewidth = m_ptable->m_right - m_ptable->m_left;
+	const float tableheight = m_ptable->m_bottom - m_ptable->m_top;
 
 	m_lightSeqGridWidth  = (int)tablewidth / LIGHTSEQGRIDSCALE;
 	m_lightSeqGridHeight = (int)tableheight / LIGHTSEQGRIDSCALE;
 
 	// set the centre point of the grid for effects which start from the center
-	m_GridXCenter = (float)((int)(m_d.m_vCenter.x / LIGHTSEQGRIDSCALE));
-	m_GridYCenter = (float)((int)(m_d.m_vCenter.y / LIGHTSEQGRIDSCALE));
+	m_GridXCenter = (float)((int)(m_d.m_vCenter.x / (float)LIGHTSEQGRIDSCALE));
+	m_GridYCenter = (float)((int)(m_d.m_vCenter.y / (float)LIGHTSEQGRIDSCALE));
 	m_GridXCenterAdjust	= abs(m_lightSeqGridWidth/2 - (int)m_GridXCenter);
 	m_GridYCenterAdjust = abs(m_lightSeqGridHeight/2 - (int)m_GridYCenter);
 
@@ -326,13 +311,14 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	size = m_pcollection->m_visel.Size();
 
 	// go though the collection and get the cordinates of all the lights and bumper
-	for(i=0; i<size; i++)
+	for(int i=0; i<size; i++)
 	{
 		// get the type of object
 		type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
 		// must be a light or bumper
 		if ( (type == eItemLight) || (type == eItemBumper) )
 		{
+			float x,y;
 			if (type == eItemLight)
 			{
 				// process a light
@@ -343,7 +329,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				if (pLight->m_fBackglass == fTrue)
 				{
 					// if the light is on the backglass then scale up its Y position
-					y = y * 2.666f; // 2 little devils ;-)
+					y *= 2.666f; // 2 little devils ;-)
 				}
 			}
 			else
@@ -355,8 +341,8 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 
 			// scale down to suit the size of the light sequence grid
-			ix = (int)(x / LIGHTSEQGRIDSCALE);
-			iy = (int)(y / LIGHTSEQGRIDSCALE);
+			ix = (int)(x / (float)LIGHTSEQGRIDSCALE);
+			iy = (int)(y / (float)LIGHTSEQGRIDSCALE);
 			// if on the playfield (1000 by 2000)
 			if ( ((ix >= 0) && (ix < m_lightSeqGridWidth)) &&
 				 ((iy >= 0) && (iy < m_lightSeqGridHeight)) )
@@ -378,9 +364,6 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 //
 bool LightSeq::RenderAnimation()
 {
-	bool	th1finished, th2finished, tt1finished, tt2finished;
-	int		Tail;
-
 	if (m_playInProgress == true)
 	{
 	    if (g_pplayer->m_timeCur >= m_timeNextUpdate)
@@ -389,17 +372,14 @@ bool LightSeq::RenderAnimation()
 			{
 	    	    m_timeNextUpdate = g_pplayer->m_timeCur + m_updateRate;
 				// process the head tracers
-				th1finished = ProcessTracer(&m_th1, LightStateOn);
-				th2finished = ProcessTracer(&m_th2, LightStateOn);
+				const bool th1finished = ProcessTracer(&m_th1, LightStateOn);
+				const bool th2finished = ProcessTracer(&m_th2, LightStateOn);
 				// and any tail tracers
-				tt1finished = ProcessTracer(&m_tt1, LightStateOff);
-				tt2finished = ProcessTracer(&m_tt2, LightStateOff);
+				const bool tt1finished = ProcessTracer(&m_tt1, LightStateOff);
+				const bool tt2finished = ProcessTracer(&m_tt2, LightStateOff);
 
 				// has the animation finished
-				if ( (th1finished == true) &&
-					 (th2finished == true) &&
-					 (tt1finished == true) &&
-					 (tt2finished == true) )
+				if ( th1finished && th2finished && tt1finished && tt2finished )
 				{
 					// the sequence has finished, paused for the specified value or a single interval
 					// (bit of a breather or load balance)
@@ -419,7 +399,7 @@ bool LightSeq::RenderAnimation()
 				else
 				{
 					// move the tail to the next position
-					Tail = m_queue.Tail + 1;
+					int Tail = m_queue.Tail + 1;
 					if (Tail >= LIGHTSEQQUEUESIZE)
 	   	   			{
 	   	   				Tail = 0;
@@ -444,7 +424,7 @@ bool LightSeq::RenderAnimation()
 		if (m_queue.Head != m_queue.Tail)
 		{
 			// yes
-			Tail = m_queue.Tail;
+			const int Tail = m_queue.Tail;
 			// set the update rate for this sequence
 			m_updateRate = m_queue.Data[Tail].UpdateRate;
 			// set up the tracers
@@ -677,10 +657,7 @@ STDMETHODIMP LightSeq::put_UpdateInterval(long newVal)
 
 STDMETHODIMP LightSeq::Play(SequencerState Animation, long TailLength, long Repeat, long Pause)
 {
-	HRESULT	rc;
-	int		newHead;
-
-	rc = S_OK;
+	HRESULT	rc = S_OK;
 
 	// sanity check the parameters
 	if (TailLength < 0)
@@ -712,7 +689,7 @@ STDMETHODIMP LightSeq::Play(SequencerState Animation, long TailLength, long Repe
 		else
 		{
 	   	   	// move the head of the queue to the next position
-	   	   	newHead = m_queue.Head + 1;
+	   	   	int newHead = m_queue.Head + 1;
 	   	   	// handle the wrap around (circlular queue)
 	   	   	if (newHead >= LIGHTSEQQUEUESIZE)
 	   	   	{
@@ -758,9 +735,8 @@ STDMETHODIMP LightSeq::StopPlay(void)
 	// Reset lights back to original state
 	if (m_pcollection != NULL)
 	{
-		int i;
 		int size = m_pcollection->m_visel.Size();
-		for(i=0; i<size; i++)
+		for(int i=0; i<size; i++)
 		{
 			type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
 			if (type == eItemLight)
@@ -1621,14 +1597,9 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 {
 	bool 		rc;
-	int 		i;
-	float		fi;
-	float 		x, y;
 	int			size;
 	int			randomLight;
 	LightState	state;
-	float		angle, angle2, angle3, angle4;
-	float		sn, cs, sn2, cs2, sn3, cs3, sn4, cs4;
 
 	rc = false;
 
@@ -1665,7 +1636,7 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 				// get the number of elements in this
 				size = m_pcollection->m_visel.Size();
 				// randomly pick n elements and invert their state
-				for (i=0; i<pTracer->length; i++)
+				for (int i=0; i<pTracer->length; i++)
 				{
 					// Generates integer random number 0..(size-1)
 					randomLight = (int)(size * ( ((float)rand()) / ((float)(RAND_MAX+1)) ) );
@@ -1693,12 +1664,12 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 				break;
 
 	   		// process the line tracers
-	   		case eSeqLine:
+			case eSeqLine: {
 	   			// get the start of the trace line
-	   			x = pTracer->x;
-	   			y = pTracer->y;
+	   			float x = pTracer->x;
+	   			float y = pTracer->y;
 
-	   			for (i=0; i<pTracer->length; i++)
+	   			for (int i=0; i<pTracer->length; i++)
 	   			{
 	   				VerifyAndSetGridElement((int)x, (int)y, State);
 	   				// move to the next position in the line
@@ -1720,16 +1691,17 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 	   				pTracer->y += pTracer->stepY;
 				}
 	   			break;
+						   }
 
 	   		// process the circle type of effect
 	   		case eSeqCircle:
-				for (fi=0;fi<360;fi+=0.5f)
+				for (float fi=0;fi<360;fi+=0.5f)
 				{
-					angle = ((PI*2)/360)*fi;
-					sn = (float)sin(angle);
-					cs = (float)cos(angle);
-					x = pTracer->x + sn*pTracer->radius;
-					y = pTracer->y - cs*pTracer->radius;
+					const float angle = (float)(M_PI * 2.0/360.0)*(float)fi;
+					const float sn = sinf(angle);
+					const float cs = cosf(angle);
+					const float x = pTracer->x + sn*pTracer->radius;
+					const float y = pTracer->y - cs*pTracer->radius;
 	   				VerifyAndSetGridElement((int)x, (int)y, State);
 				}
 	   			pTracer->frameCount -= 1;
@@ -1746,55 +1718,57 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 				break;
 
 			// process the radar type of effect
-			case eSeqRadar:
-				angle = pTracer->angle / 360 * PI * 2;
-				sn = (float)sin(angle);
-				cs = (float)cos(angle);
+			case eSeqRadar: {
+				const float angle = pTracer->angle * (float)(M_PI * 2.0/360.0);
+				const float sn = sinf(angle);
+				const float cs = cosf(angle);
 				// we need to process an extra 3 quarter steps for radar effects or it tends to miss lights
 				// when the radius get big and setting the step to .250 makes the effect too slow
-				angle2 = (pTracer->angle + pTracer->stepAngle/4) / 360 * PI * 2;
-				sn2 = (float)sin(angle2);
-				cs2 = (float)cos(angle2);
-				angle3 = (pTracer->angle + ((pTracer->stepAngle/4)*2)) / 360 * PI * 2;
-				sn3 = (float)sin(angle3);
-				cs3 = (float)cos(angle3);
-				angle4 = (pTracer->angle + ((pTracer->stepAngle/4)*3)) / 360 * PI * 2;
-				sn4 = (float)sin(angle4);
-				cs4 = (float)cos(angle4);
+				const float angle2 = (pTracer->angle + pTracer->stepAngle*0.25f) * (float)(M_PI * 2.0/360.0);
+				const float sn2 = sinf(angle2);
+				const float cs2 = cosf(angle2);
+				const float angle3 = (pTracer->angle + ((pTracer->stepAngle*0.25f)*2.0f)) * (float)(M_PI * 2.0/360.0);
+				const float sn3 = sinf(angle3);
+				const float cs3 = cosf(angle3);
+				const float angle4 = (pTracer->angle + ((pTracer->stepAngle*0.25f)*3.0f)) * (float)(M_PI * 2.0/360.0);
+				const float sn4 = sinf(angle4);
+				const float cs4 = cosf(angle4);
 
 				if (m_th1.processRadius == 1)
 				{
-					for (i=0; i<pTracer->length; i++)
+					for (int i=0; i<pTracer->length; i++)
 		   			{
-						x = pTracer->x + sn*i;
-						y = pTracer->y - cs*i;
+						const float fi = (float)i;
+						float x = pTracer->x + sn*fi;
+						float y = pTracer->y - cs*fi;
 	   					VerifyAndSetGridElement((int)x, (int)y, State);
-						x = pTracer->x + sn2*i;
-						y = pTracer->y - cs2*i;
+						x = pTracer->x + sn2*fi;
+						y = pTracer->y - cs2*fi;
 	   					VerifyAndSetGridElement((int)x, (int)y, State);
-						x = pTracer->x + sn3*i;
-						y = pTracer->y - cs3*i;
+						x = pTracer->x + sn3*fi;
+						y = pTracer->y - cs3*fi;
 	   					VerifyAndSetGridElement((int)x, (int)y, State);
-						x = pTracer->x + sn4*i;
-						y = pTracer->y - cs4*i;
+						x = pTracer->x + sn4*fi;
+						y = pTracer->y - cs4*fi;
 	   					VerifyAndSetGridElement((int)x, (int)y, State);
 					}
 				}
 				else
 				{
-					for (i=0; i<pTracer->length; i++)
+					for (int i=0; i<pTracer->length; i++)
 		   			{
-						x = pTracer->x - sn*i;
-						y = pTracer->y + cs*i;
+						const float fi = (float)i;
+						float x = pTracer->x - sn*fi;
+						float y = pTracer->y + cs*fi;
 	   					VerifyAndSetGridElement((int)x, (int)y, State);
-						x = pTracer->x - sn2*i;
-						y = pTracer->y + cs2*i;
+						x = pTracer->x - sn2*fi;
+						y = pTracer->y + cs2*fi;
 	   					VerifyAndSetGridElement((int)x, (int)y, State);
-						x = pTracer->x - sn3*i;
-						y = pTracer->y + cs3*i;
+						x = pTracer->x - sn3*fi;
+						y = pTracer->y + cs3*fi;
 	   					VerifyAndSetGridElement((int)x, (int)y, State);
-						x = pTracer->x - sn4*i;
-						y = pTracer->y + cs4*i;
+						x = pTracer->x - sn4*fi;
+						y = pTracer->y + cs4*fi;
 	   					VerifyAndSetGridElement((int)x, (int)y, State);
 					}
 				}
@@ -1810,16 +1784,17 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 					// move to the next angle
 					pTracer->angle += pTracer->stepAngle;
 					// process any wrap around
-					if (pTracer->angle >= 360)
+					if (pTracer->angle >= 360.0f)
 					{
-						pTracer->angle -= 360;
+						pTracer->angle -= 360.0f;
 					}
 					if (pTracer->angle < 0)
 					{
-						pTracer->angle += 360;
+						pTracer->angle += 360.0f;
 					}
 				}
 				break;
+							}
 
 	   		// invalid tracer type (shouldn't happen but hey!)
 	   		default:
@@ -1871,19 +1846,19 @@ bool LightSeq::VerifyAndSetGridElement(int x, int y, LightState State)
 	if ( ((x >=0) && (x < m_lightSeqGridWidth)) &&
 		 ((y >=0) && (y < m_lightSeqGridHeight)) )
 	{
-		int	register gridIndex = (y * m_lightSeqGridWidth) + x;
+		int	gridIndex = (y * m_lightSeqGridWidth) + x;
 
-		int	register index = m_pgridData[gridIndex];
+		int	index = m_pgridData[gridIndex];
 		if (index != 0)
 		{
 			index--;
  			SetElementToState(index, State);
 		}
-		return (true);
+		return true;
 	}
 	else
 	{
-		return (false);
+		return false;
 	}
 }
 
@@ -1906,7 +1881,7 @@ LightState LightSeq::GetElementState(int index)
 		Bumper *pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(index);
 		rc = pBumper->m_realState;
 	}
-	return (rc);
+	return rc;
 }
 
 
@@ -2025,9 +2000,9 @@ int LightSeqCenter::GetSelectLevel()
 			case eSeqTwirl:
 				for (i=0; i<pTracer->length; i++)
 	   			{
-					angle = ((PI*2)/360)*pTracer->angle;
-					sn = (float)sin(angle);
-					cs = (float)cos(angle);
+					angle = (float)((M_PI*2.0)/360.0)*pTracer->angle;
+					sn = sinf(angle);
+					cs = cosf(angle);
 					x = pTracer->x + sn*pTracer->radius;
 					y = pTracer->y - cs*pTracer->radius;
 	   				VerifyAndSetGridElement((int)x, (int)y, State);

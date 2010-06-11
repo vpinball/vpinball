@@ -5,8 +5,9 @@ Sur::Sur(HDC hdc, float zoom, float offx, float offy, int width, int height)
 	{
 	m_hdc = hdc;
 	m_zoom = zoom;
-	m_offx = offx - ((width*0.5f)/zoom);
-	m_offy = offy - ((height*0.5f)/zoom);
+	const float inv_zoom = 0.5f/zoom;
+	m_offx = offx - (float)width*inv_zoom;
+	m_offy = offy - (float)height*inv_zoom;
 	}
 
 Sur::~Sur()
@@ -15,12 +16,13 @@ Sur::~Sur()
 
 void Sur::ScreenToSurface(int screenx, int screeny, float *fx, float *fy)
 	{
-	*fx = (screenx/m_zoom) + m_offx;
-	*fy = (screeny/m_zoom) + m_offy;
+	const float inv_zoom = 1.0f/m_zoom;
+	*fx = (float)screenx*inv_zoom + m_offx;
+	*fy = (float)screeny*inv_zoom + m_offy;
 	}
 
 void Sur::SurfaceToScreen(float fx, float fy, int *screenx, int *screeny)
 	{
-	*screenx = SCALEX(fx);
-	*screeny = SCALEY(fy);
+	*screenx = SCALEXf(fx);
+	*screeny = SCALEYf(fy);
 	}

@@ -17,25 +17,25 @@ enum
 class Matrix3D : public D3DMATRIX
 	{
 public:
-	void Multiply(Matrix3D &mult, Matrix3D &result);
-	void RotateXMatrix(GPINFLOAT x);
-	void RotateYMatrix(GPINFLOAT y);
-	void RotateZMatrix(GPINFLOAT z);
+	void Multiply(const Matrix3D &mult, Matrix3D &result) const;
+	void RotateXMatrix(const GPINFLOAT x);
+	void RotateYMatrix(const GPINFLOAT y);
+	void RotateZMatrix(const GPINFLOAT z);
 	void SetIdentity();
-	void Scale( float x, float y, float z );
+	void Scale(const float x, const float y, const float z );
 	void Invert();
-	void MultiplyVector(float x, float y, float z, Vertex3D *pv3DOut);
+	void MultiplyVector(const float x, const float y, const float z, Vertex3D * const pv3DOut) const;
 	};
 
 class PinProjection
 	{
 public:
-	void Rotate(GPINFLOAT x, GPINFLOAT y, GPINFLOAT z);
-	void Translate(GPINFLOAT x, GPINFLOAT y, GPINFLOAT z);
-	void FitCameraToVertices(Vector<Vertex3D> *pvvertex3D, int cvert, GPINFLOAT aspect, GPINFLOAT rotation, GPINFLOAT inclination, GPINFLOAT FOV);
+	void Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z);
+	void Translate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z);
+	void FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV);
 	void CacheTransform();
-	void TransformVertices(Vertex3D* rgv, WORD *rgi, int count, Vertex3D *rgvout);
-	void SetFieldOfView(GPINFLOAT rFOV, GPINFLOAT raspect, GPINFLOAT rznear, GPINFLOAT rzfar);
+	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout) const;
+	void SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar);
 
 	Matrix3D m_matWorld;
 	Matrix3D m_matView;
@@ -64,29 +64,29 @@ public:
 
 	void InitBackGraphics();
 
-	void InitLayout(float left, float top, float right, float bottom, float inclination, float FOV, float rotation, float scalex, float scaley, float xlatex, float xlatey);
-	void SetFieldOfView(GPINFLOAT rFOV, GPINFLOAT raspect, GPINFLOAT rznear, GPINFLOAT rzfar);
-	void Identity(void);
-	void Rotate(GPINFLOAT x, GPINFLOAT y, GPINFLOAT z);
-	void Scale( float x, float y, float z );
-	void Translate(GPINFLOAT x, GPINFLOAT y, GPINFLOAT z);
-	void FitCameraToVertices(Vector<Vertex3D> *pvvertex3D, int cvert, GPINFLOAT aspect, GPINFLOAT rotation, GPINFLOAT inclination, GPINFLOAT FOV);
-	void TransformVertices(Vertex3D* rgv, WORD *rgi, int count, Vertex3D *rgvout);
+	void InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey);
+	void SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar);
+	void Identity();
+	void Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z);
+	void Scale(const float x, const float y, const float z);
+	void Translate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z);
+	void FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV);
+	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout);
 	void CacheTransform();
-	LPDIRECTDRAWSURFACE7 CreateShadow(float height);
+	LPDIRECTDRAWSURFACE7 CreateShadow(const float height);
 
 	void CreateBallShadow();
 
-	void SetUpdatePos(int left, int top);
-	void Flip(int offsetx, int offsety);
+	void SetUpdatePos(const int left, const int top);
+	void Flip(const int offsetx, const int offsety);
 
 	void SetRenderTarget(LPDIRECTDRAWSURFACE7 pddsSurface, LPDIRECTDRAWSURFACE7 pddsZ);
-	void SetTextureFilter( int TextureNum, int Mode );
+	void SetTextureFilter(const int TextureNum, const int Mode);
 	
 	void SetTexture(LPDIRECTDRAWSURFACE7 pddsTexture);
-	void EnableLightMap(BOOL fEnable, float z);
+	void EnableLightMap(const BOOL fEnable, const float z);
 
-	void SetMaterial(float r, float g, float b, float a);
+	void SetMaterial(const float r, const float g, const float b, const float a);
 	void SetColorKeyEnabled(BOOL fColorKey);
 	void SetAlphaEnabled(BOOL fAlpha);
 	void SetFiltersLinear();
@@ -111,8 +111,8 @@ public:
 	
 	// Handy functions for creating obj frames
 
-	void ClearExtents(RECT *prc, float *pznear, float *pzfar);
-	void ExpandExtents(RECT *prc, Vertex3D* rgv, float *pznear, float *pzfar, int count, BOOL fTransformed);
+	void ClearExtents(RECT * const prc, float * const pznear, float * const pzfar);
+	void ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed);
 	void ExpandRectByRect(RECT *prc, RECT *prcNew);
 
 	void ClipRectToVisibleArea(RECT *prc);

@@ -146,11 +146,9 @@ void Flipper::GetHitShapesDebug(Vector<HitObject> *pvho)
 
 void Flipper::EndPlay()
 	{
-	int i;
-
 	if (m_phitflipper) // Failed player case
 		{
-		for (i=0;i<m_phitflipper->m_flipperanim.m_vddsFrame.Size();i++)
+		for (int i=0;i<m_phitflipper->m_flipperanim.m_vddsFrame.Size();i++)
 			{
 			delete m_phitflipper->m_flipperanim.m_vddsFrame.ElementAt(i); //
 			}
@@ -163,19 +161,19 @@ void Flipper::EndPlay()
 
 void Flipper::SetVertices(float angle, Vertex *pvEndCenter, Vertex *rgvTangents, float baseradius, float endradius)
 	{
-	float  endx,endy, basex,basey;
-	float fradius = m_d.m_FlipperRadius;
-	float fa = asin ((baseradius-endradius)/fradius); //face to centerline angle (center to center)
+	float endx,endy, basex,basey;
+	const float fradius = m_d.m_FlipperRadius;
+	const float fa = asinf((baseradius-endradius)/fradius); //face to centerline angle (center to center)
 
-	float faceNormOffset = PI/2- fa; //angle of normal when flipper center line at angle zero	
+	const float faceNormOffset = (float)(M_PI/2.0) - fa; //angle of normal when flipper center line at angle zero	
 
-	pvEndCenter->x = endx = (basex = m_d.m_Center.x) + fradius*sin(angle); //place end radius center
-	pvEndCenter->y = endy = (basey = m_d.m_Center.y) - fradius*cos(angle);	
+	pvEndCenter->x = endx = (basex = m_d.m_Center.x) + fradius*sinf(angle); //place end radius center
+	pvEndCenter->y = endy = (basey = m_d.m_Center.y) - fradius*cosf(angle);	
 
-	float faceNormx1 =   sin(angle - faceNormOffset); // normals to new face positions
-	float faceNormy1 =  -cos(angle - faceNormOffset);
-	float faceNormx2 =   sin(angle + faceNormOffset); // both faces
-	float faceNormy2 =  -cos(angle + faceNormOffset);
+	const float faceNormx1 =   sinf(angle - faceNormOffset); // normals to new face positions
+	const float faceNormy1 =  -cosf(angle - faceNormOffset);
+	const float faceNormx2 =   sinf(angle + faceNormOffset); // both faces
+	const float faceNormy2 =  -cosf(angle + faceNormOffset);
 
 	rgvTangents[0].x = basex + baseradius*faceNormx1;	// endpoints of faces
 	rgvTangents[0].y = basey + baseradius*faceNormy1;
@@ -188,13 +186,12 @@ void Flipper::SetVertices(float angle, Vertex *pvEndCenter, Vertex *rgvTangents,
 
 	rgvTangents[2].x = endx + endradius*faceNormx2;
 	rgvTangents[2].y = endy + endradius*faceNormy2;
-
 	}
 
 void Flipper::PreRender(Sur *psur)
 	{
-	float anglerad = ANGTORAD(m_d.m_StartAngle);
-	float anglerad2 = ANGTORAD(m_d.m_EndAngle);
+	const float anglerad = ANGTORAD(m_d.m_StartAngle);
+	//const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
 
 	m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
@@ -246,11 +243,11 @@ void Flipper::Render(Sur *psur)
 	psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
 	psur->Arc(vendcenter.x, vendcenter.y, m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-	rgv[0].x = m_d.m_Center.x + (((float)sin(anglerad)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
-	rgv[0].y = m_d.m_Center.y - (((float)cos(anglerad)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
+	rgv[0].x = m_d.m_Center.x + sinf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+	rgv[0].y = m_d.m_Center.y - cosf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
 
-	rgv[1].x = m_d.m_Center.x + (((float)sin(anglerad2)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
-	rgv[1].y = m_d.m_Center.y - (((float)cos(anglerad2)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
+	rgv[1].x = m_d.m_Center.x + sinf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+	rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
 
 	if (m_d.m_EndAngle < m_d.m_StartAngle)
 		{psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
@@ -287,11 +284,11 @@ void Flipper::Render(Sur *psur)
 		psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
 		psur->Arc(vendcenter.x, vendcenter.y, m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-		rgv[0].x = m_d.m_Center.x + (((float)sin(anglerad)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
-		rgv[0].y = m_d.m_Center.y - (((float)cos(anglerad)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
+		rgv[0].x = m_d.m_Center.x + sinf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+		rgv[0].y = m_d.m_Center.y - cosf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
 
-		rgv[1].x = m_d.m_Center.x + (((float)sin(anglerad2)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
-		rgv[1].y = m_d.m_Center.y - (((float)cos(anglerad2)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
+		rgv[1].x = m_d.m_Center.x + sinf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+		rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
 
 		if (m_d.m_EndAngle < m_d.m_StartAngle)
 			{psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
@@ -323,11 +320,11 @@ void Flipper::Render(Sur *psur)
 		psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
 		psur->Arc(vendcenter.x, vendcenter.y, m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-		rgv[0].x = m_d.m_Center.x + (((float)sin(anglerad)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
-		rgv[0].y = m_d.m_Center.y - (((float)cos(anglerad)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
+		rgv[0].x = m_d.m_Center.x + sinf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+		rgv[0].y = m_d.m_Center.y - cosf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
 
-		rgv[1].x = m_d.m_Center.x + (((float)sin(anglerad2)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
-		rgv[1].y = m_d.m_Center.y - (((float)cos(anglerad2)) * (m_d.m_FlipperRadius+m_d.m_EndRadius));
+		rgv[1].x = m_d.m_Center.x + sinf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+		rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
 
 		if (m_d.m_EndAngle < m_d.m_StartAngle)
 			{psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
@@ -447,16 +444,16 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	{
 	Pin3D *ppin3d = &g_pplayer->m_pin3d;
 
-	float r = (float)(color & 255) / 255.0f;
-	float g = (float)(color & 65280) / 65280.0f;
-	float b = (float)(color & 16711680) / 16711680.0f;
+	const float r = (float)(color & 255) * (float)(1.0/255.0);
+	const float g = (float)(color & 65280) * (float)(1.0/65280.0);
+	const float b = (float)(color & 16711680) * (float)(1.0/16711680.0);
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 	mtrl.diffuse.r = mtrl.ambient.r = r;
 	mtrl.diffuse.g = mtrl.ambient.g = g;
 	mtrl.diffuse.b = mtrl.ambient.b = b;
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 	pd3dDevice->SetMaterial(&mtrl);
 
 	Vertex vendcenter;
@@ -468,8 +465,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 
 	SetVertices(angle, &vendcenter, rgv, baseradius, endradius);
 
-	int l;
-	for (l=0;l<8;l++)
+	for (int l=0;l<8;l++)
 		{
 		rgv3D[l].x = rgv[l&3].x;
 		rgv3D[l].y = rgv[l&3].y;
@@ -515,17 +511,15 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
 
 	// Base circle
-	for (l=0;l<16;l++)
+	for (int l=0;l<16;l++)
 		{
-		float angle = PI*2;
-		angle /= 16;
-		angle *= l;
-		rgv3D[l].x =  sin(angle)*baseradius + m_d.m_Center.x;
-		rgv3D[l].y = -cos(angle)*baseradius + m_d.m_Center.y;
+		const float angle = (float)(M_PI*2.0/16.0)*(float)l;
+		rgv3D[l].x = m_d.m_Center.x + sinf(angle)*baseradius;
+		rgv3D[l].y = m_d.m_Center.y - cosf(angle)*baseradius;
 		rgv3D[l].z = height + flipperheight + 0.1f;
 		rgv3D[l+16].x = rgv3D[l].x;
 		rgv3D[l+16].y = rgv3D[l].y;
-		rgv3D[l+16].z = height + 0;
+		rgv3D[l+16].z = height;
 
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16]);
@@ -534,7 +528,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	ppin3d->ExpandExtents(&pof->rc, rgv3D,&m_phitflipper->m_flipperanim.m_znear
 										 , &m_phitflipper->m_flipperanim.m_zfar, 32, fFalse);
 
-	for (l=1;l<15;l++)
+	for (int l=1;l<15;l++)
 		{
 		rgi[0] = 0;
 		rgi[1] = l;
@@ -567,17 +561,15 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 		}
 
 	// End circle.
-	for (l=0;l<16;l++)
+	for (int l=0;l<16;l++)
 		{
-		float angle = PI*2;
-		angle /= 16;
-		angle *= l;
-		rgv3D[l].x =  sin(angle)*endradius + vendcenter.x;
-		rgv3D[l].y = -cos(angle)*endradius + vendcenter.y;
+		const float angle = (float)(M_PI*2.0/16.0)*(float)l;
+		rgv3D[l].x = vendcenter.x + sinf(angle)*endradius;
+		rgv3D[l].y = vendcenter.y - cosf(angle)*endradius;
 		rgv3D[l].z = height + flipperheight + 0.1f;
 		rgv3D[l+16].x = rgv3D[l].x;
 		rgv3D[l+16].y = rgv3D[l].y;
-		rgv3D[l+16].z = height + 0;
+		rgv3D[l+16].z = height;
 
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16]);
@@ -585,7 +577,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 
 	ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear, &m_phitflipper->m_flipperanim.m_zfar, 32, fFalse);
 
-	for (l=1;l<15;l++)
+	for (int l=1;l<15;l++)
 		{
 		rgi[0] = 0;
 		rgi[1] = l;
@@ -630,27 +622,25 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	LPDIRECTDRAWSURFACE7 pdds;
 	ObjFrame *pof;
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
 	ppin3d->ClearExtents(&m_phitflipper->m_flipperanim.m_rcBounds, &m_phitflipper->m_flipperanim.m_znear, &m_phitflipper->m_flipperanim.m_zfar);
 
-	float anglerad = ANGTORAD(m_d.m_StartAngle);
-	float anglerad2 = ANGTORAD(m_d.m_EndAngle);
+	const float anglerad = ANGTORAD(m_d.m_StartAngle);
+	const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
 
 	ppin3d->SetTexture(NULL);		
 
-	int cframes = abs(((int)(m_d.m_EndAngle - m_d.m_StartAngle))/2);//10;
-	cframes = max(cframes,2);
-
-	int i;
+	const int cframes = max(abs(((int)(m_d.m_EndAngle - m_d.m_StartAngle))/2),2);//10),2);
 
 	// Direct all renders to the back buffer.
 	//g_pplayer->m_pin3d.SetRenderTarget(g_pplayer->m_pin3d.m_pddsBackBuffer);
 
+	const float inv_cframes = (anglerad2 - anglerad)/(float)(cframes-1);
 	// Pre-render each of the frames.
-	for (i=0;i<cframes;i++)
+	for (int i=0;i<cframes;i++)
 		{
-		float angle = anglerad + ((anglerad2 - anglerad)*i/(cframes-1));
+		const float angle = anglerad + inv_cframes*(float)i;
 
 		pof = new ObjFrame();
 
@@ -679,7 +669,7 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		// Render just the rubber.
 		if (m_d.m_rubberthickness > 0)
 			{
-			RenderAtThickness(pd3dDevice, pof, angle,  (float) (height + m_d.m_rubberheight), m_d.m_rubbercolor, m_d.m_BaseRadius, m_d.m_EndRadius, (float) m_d.m_rubberwidth);// 34);
+			RenderAtThickness(pd3dDevice, pof, angle, height + (float)m_d.m_rubberheight, m_d.m_rubbercolor, m_d.m_BaseRadius, m_d.m_EndRadius, (float)m_d.m_rubberwidth);// 34);
 			}
 
 		// Create offscreen surfaces for color and depth buffers.
@@ -1022,7 +1012,7 @@ STDMETHODIMP Flipper::get_CurrentAngle(float *pVal)
 {
 	if (m_phitflipper)
 		{
-		*pVal = (float)(m_phitflipper->m_flipperanim.m_angleCur * 180.0f / (PI));
+		*pVal = m_phitflipper->m_flipperanim.m_angleCur * (float)(180.0/M_PI);
 		return S_OK;
 		}
 	else
@@ -1410,8 +1400,8 @@ STDMETHODIMP Flipper::put_PowerLaw(float newVal)
 {
 	STARTUNDO
 
-	if (newVal < 0) newVal = 0;
-	else if (newVal > 4) newVal = 4;
+	if (newVal < 0.0f) newVal = 0.0f;
+	else if (newVal > 4.0f) newVal = 4.0f;
 
 	m_d.m_powerlaw = newVal;
 
@@ -1422,7 +1412,7 @@ STDMETHODIMP Flipper::put_PowerLaw(float newVal)
 
 STDMETHODIMP Flipper::get_ObliqueCorrection(float *pVal)
 {
-	*pVal = m_d.m_obliquecorrection*180.0f/PI;
+	*pVal = m_d.m_obliquecorrection*(float)(180.0/M_PI);
 
 	return S_OK;
 }
@@ -1449,7 +1439,7 @@ STDMETHODIMP Flipper::put_ObliqueCorrection(float newVal)
 {
 	STARTUNDO
 
-	m_d.m_obliquecorrection = newVal*PI/180.0f;
+	m_d.m_obliquecorrection = newVal*(float)(M_PI/180.0);
 
 	STOPUNDO
 
@@ -1467,7 +1457,7 @@ STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 {
 	STARTUNDO
 
-	if (newVal < 0) newVal = 0;
+	if (newVal < 0.0f) newVal = 0.0f;
 
 	m_d.m_FlipperRadiusMin = newVal;
 

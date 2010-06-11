@@ -142,14 +142,12 @@ void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, float x, float y, fl
 
     D3DMATRIX       WorldMatrix;
     HRESULT	        ReturnCode;
-	float			Radians;
     D3DTLVertexType	Vertices[4];
-	float			SinTheta, CosTheta;
 
 	// Calculate sin and cos theta.
-	Radians = (Angle * ((2.0f * 3.1415f) / 360.0f));
-	SinTheta = (float) sin ( (GPINFLOAT) Radians );
-	CosTheta = (float) cos ( (GPINFLOAT) Radians );
+	//const float Radians = Angle * (float)(2.0 * M_PI / 360.0);
+	//const float SinTheta = sinf ( Radians );
+	//const float CosTheta = cosf ( Radians );
 
 	// ToDo: Calculate vertices with rotation applied.	
 	//       We can probably get away without implementing a matrix library. -JEP
@@ -470,9 +468,7 @@ void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 {
 
     HRESULT         ReturnCode;
-	int				i;											
-
-	for ( i=0; i<DISPLAY_MAXTEXTURES; i++ )
+	for (int i=0; i<DISPLAY_MAXTEXTURES; i++ )
 	{
 		// Get the texture.
 		ReturnCode = Direct3DDevice->GetTexture ( i, (LPDIRECTDRAWSURFACE7 *) &(TextureState->Texture[i]) );
@@ -504,12 +500,11 @@ void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState )
 {
 
-    HRESULT         ReturnCode;
-	int				i;											
-
+	HRESULT         ReturnCode;
+	
 	return;
 
-	for ( i=0; i<DISPLAY_MAXTEXTURES; i++ )
+	for (int i=0; i<DISPLAY_MAXTEXTURES; i++ )
 	{
 		// Set the texture.
 		ReturnCode = Direct3DDevice->SetTexture ( i, (LPDIRECTDRAWSURFACE7) TextureState->Texture[i] );
@@ -536,7 +531,7 @@ void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 
 #if 0				
 	// Clear all remaining stages.
-	for ( i=DISPLAY_MAXTEXTURES; i<8; i++ )
+	for (int i=DISPLAY_MAXTEXTURES; i<8; i++ )
 	{
 		// Set the texture.
 		ReturnCode = Direct3DDevice->SetTexture ( i, (LPDIRECTDRAWSURFACE7) NULL );
@@ -570,8 +565,6 @@ void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 void Display_ClearTextureState ( TextureStateType *TextureState )
 {
 
-	int		i;
-
 	// Set the texture.
 	TextureState->Texture[0] = NULL;
 
@@ -595,7 +588,7 @@ void Display_ClearTextureState ( TextureStateType *TextureState )
 	TextureState->TextureCoordinateTransformFlags[0] = D3DTTFF_DISABLE;
 
 	// Clear all remaining stages.
-	for ( i=1; i<DISPLAY_MAXTEXTURES; i++ )
+	for (int i=1; i<DISPLAY_MAXTEXTURES; i++ )
 	{
 		// Set the texture.
 		TextureState->Texture[i] = NULL;
@@ -632,8 +625,7 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
     char					*SourceLockedSurface, *DestLockedSurface;
     LPDIRECTDRAWSURFACE7	VidSurface;
 	int						TextureWidth, TextureHeight;
-	int						i, r;
-
+	
 	// Initialize.
 	*DestD3DTexture = NULL;
 	*u = 0.0f;
@@ -645,8 +637,8 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
 
 	// The texture's dimensions will probably be larger than the original DDraw surface.
 	// Calculate the texture coordinates so that it leaves out unwanted area.
-	*u = (float) (((float) Width) / ((float) TextureWidth));
-	*v = (float) (((float) Height) / ((float) TextureHeight));
+	*u = ((float) Width) / ((float) TextureWidth);
+	*v = ((float) Height) / ((float) TextureHeight);
 
     // Describe the type of surface we want to create.
     memset ( &DestSurfaceDescription, 0, sizeof ( DestSurfaceDescription ) );
@@ -713,13 +705,13 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
 					DestLockedSurface = (char *) DestSurfaceDescription.lpSurface;
 
 					// Copy the pixels.
-					for ( i=0; i<Height; i++ )
+					for (int i=0; i<Height; i++ )
 					{
-						for ( r=0; r<Width; r++ )
+						for (int r=0; r<Width; r++ )
 						{
 							// Copy the pixel.
 #if 1
-							DestLockedSurface[(r * 4) + 3] = (char) 0xff;								// alpha
+							(unsigned char&)DestLockedSurface[(r * 4) + 3] = (unsigned char) 0xff;		// alpha
 #else
 							DestLockedSurface[(r * 4) + 3] = (char) SourceLockedSurface[(r * 4) + 3];	// alpha								// alpha
 #endif
@@ -836,7 +828,6 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
     char					*SourceLockedSurface, *DestLockedSurface;
 	RECT					ClippedRect;
 	int						Width, Height;
-	int						i, r;
 
 	// Check if we have a source and destination texture.
 	if ( (SourceTexture != NULL) &&
@@ -882,9 +873,9 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 					Height = min ( Height, (ClippedRect.bottom - ClippedRect.top) );
 
 					// Copy the pixels.
-					for ( i=0; i<Height; i++ )
+					for (int i=0; i<Height; i++ )
 					{
-						for ( r=0; r<Width; r++ )
+						for (int r=0; r<Width; r++ )
 						{
 #if 1
 							// Copy the pixel.
@@ -933,8 +924,7 @@ void Display_ClearTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFAC
     HRESULT					ReturnCode;
     DDSURFACEDESC2			SurfaceDescription;
     char					*LockedSurface;
-	int						i, r;
-
+	
 	// Check if we have a texture.
 	if ( Texture != NULL )
 	{
@@ -950,9 +940,9 @@ void Display_ClearTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFAC
 			LockedSurface = (char *) SurfaceDescription.lpSurface;
 
 			// Clear the pixels.
-			for ( i=0; i<((int)(SurfaceDescription.dwHeight)); i++ )
+			for (int i=0; i<((int)(SurfaceDescription.dwHeight)); i++ )
 			{
-				for ( r=0; r<((int)(SurfaceDescription.dwWidth)); r++ )
+				for (int r=0; r<((int)(SurfaceDescription.dwWidth)); r++ )
 				{
 					// Clear the pixel.
 					LockedSurface[(r * 4) + 3] = (char) Value;		// alpha
@@ -1003,5 +993,3 @@ HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIM
 	return ( ReturnCode );
 
 }
-
-

@@ -191,7 +191,6 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	WORD rgiNormal[3];
 	float maxtu, maxtv;
 	D3DMATERIAL7 mtrl;
-	int l;
 
 	if(!m_d.m_fVisible)	return;
 		
@@ -215,7 +214,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
 		ZeroMemory( &mtrl, sizeof(mtrl) );
-		mtrl.diffuse.a = mtrl.ambient.a = 1.0;
+		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 		mtrl.diffuse.r = mtrl.ambient.r = 1;
 		mtrl.diffuse.g = mtrl.ambient.g = 1;
@@ -225,37 +224,37 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		mtrl.emissive.b = 0;
 		pd3dDevice->SetMaterial(&mtrl);
 
-		for (l=0;l<32;l++)
+		for (int l=0;l<32;l++)
 			{
-			float angle = PI*2;
-			angle /= 32;
-			angle *= l;
+			const float angle = (float)(M_PI*2.0/32.0)*(float)l;
+			const float sinangle =  sinf(angle);
+			const float cosangle = -cosf(angle);
 
-			rgv3D[l+64].x = (float)sin(angle)*outerradius*0.5f + m_d.m_vCenter.x;
-			rgv3D[l+64].y = (float)-cos(angle)*outerradius*0.5f + m_d.m_vCenter.y;
-			rgv3D[l+64].z = height+60;
+			rgv3D[l+64].x = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
+			rgv3D[l+64].y = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
+			rgv3D[l+64].z = height+60.0f;
 
-			rgv3D[l+96].x = (float)sin(angle)*outerradius*0.9f + m_d.m_vCenter.x;
-			rgv3D[l+96].y = (float)-cos(angle)*outerradius*0.9f + m_d.m_vCenter.y;
-			rgv3D[l+96].z = height+50;
+			rgv3D[l+96].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
+			rgv3D[l+96].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
+			rgv3D[l+96].z = height+50.0f;
 
-			rgv3D[l+128].x = (float)sin(angle)*outerradius + m_d.m_vCenter.x;
-			rgv3D[l+128].y = (float)-cos(angle)*outerradius + m_d.m_vCenter.y;
-			rgv3D[l+128].z = height+40;
+			rgv3D[l+128].x = sinangle*outerradius + m_d.m_vCenter.x;
+			rgv3D[l+128].y = cosangle*outerradius + m_d.m_vCenter.y;
+			rgv3D[l+128].z = height+40.0f;
 
-			rgv3D[l+64].tu = (0.5f+(float)(sin(angle)*0.25))*maxtu;
-			rgv3D[l+64].tv = (0.5f-(float)(cos(angle)*0.25))*maxtv;
-			rgv3D[l+96].tu = (0.5f+(float)(sin(angle)*0.5*0.9))*maxtu;
-			rgv3D[l+96].tv = (0.5f-(float)(cos(angle)*0.5*0.9))*maxtv;
-			rgv3D[l+128].tu = (0.5f+(float)(sin(angle)*0.5))*maxtu;
-			rgv3D[l+128].tv = (0.5f-(float)(cos(angle)*0.5))*maxtv;
+			rgv3D[l+ 64].tu = (0.5f+sinangle*0.25f)*maxtu;
+			rgv3D[l+ 64].tv = (0.5f+cosangle*0.25f)*maxtv;
+			rgv3D[l+ 96].tu = (0.5f+sinangle*(float)(0.5*0.9))*maxtu;
+			rgv3D[l+ 96].tv = (0.5f+cosangle*(float)(0.5*0.9))*maxtv;
+			rgv3D[l+128].tu = (0.5f+sinangle*0.5f)*maxtu;
+			rgv3D[l+128].tv = (0.5f+cosangle*0.5f)*maxtv;
 
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64]);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+96]);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+128]);
 			}
 
-		for (l=0;l<32;l++)
+		for (WORD l=0;l<32;l++)
 			{
 			rgi[l] = l;
 			}
@@ -266,7 +265,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 												  &rgv3D[64], 32,
 												  rgi, 32, 0);
 
-		for (l=0;l<32;l++)
+		for (int l=0;l<32;l++)
 				{
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
@@ -290,7 +289,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 														  rgi, 4, 0);
 				}
 
-			for (l=0;l<32;l++)
+			for (int l=0;l<32;l++)
 				{
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
@@ -330,7 +329,6 @@ void Bumper::RenderMoversFromCache(Pin3D *ppin3d)
 
 void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	int i,l;
 	WORD rgi[32];
 	Vertex3D rgv3D[160];
 	WORD rgiNormal[3];
@@ -340,58 +338,59 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	if(!m_d.m_fVisible)	return;
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	float r = (m_d.m_color & 255) / 255.0f;
-	float g = (m_d.m_color & 65280) / 65280.0f;
-	float b = (m_d.m_color & 16711680) / 16711680.0f;
+	const float r = (m_d.m_color & 255) * (float) (1.0/255.0);
+	const float g = (m_d.m_color & 65280) * (float) (1.0/65280.0);
+	const float b = (m_d.m_color & 16711680) * (float) (1.0/16711680.0);
 
-	float rside = (m_d.m_sidecolor & 255) / 255.0f;
-	float gside = (m_d.m_sidecolor & 65280) / 65280.0f;
-	float bside = (m_d.m_sidecolor & 16711680) / 16711680.0f;
+	const float rside = (m_d.m_sidecolor & 255) * (float) (1.0/255.0);
+	const float gside = (m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
+	const float bside = (m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
-	float outerradius = m_d.m_radius + m_d.m_overhang;
+	const float outerradius = m_d.m_radius + m_d.m_overhang;
 
 	PinImage *pin = m_ptable->GetImage(m_d.m_szImage);
 
-	for (l=0;l<32;l++)
+	for (int l=0;l<32;l++)
 		{
-		float angle = PI*2;
-		angle /= 32;
-		angle *= l;
-		rgv3D[l].x = (float)sin(angle)*m_d.m_radius + m_d.m_vCenter.x;
-		rgv3D[l].y = (float)-cos(angle)*m_d.m_radius + m_d.m_vCenter.y;
-		rgv3D[l].z = height+40;
+		const float angle = (float)(M_PI*2.0/32.0)*(float)l;
+		const float sinangle =  sinf(angle);
+		const float cosangle = -cosf(angle);
+
+		rgv3D[l].x = sinangle*m_d.m_radius + m_d.m_vCenter.x;
+		rgv3D[l].y = cosangle*m_d.m_radius + m_d.m_vCenter.y;
+		rgv3D[l].z = height+40.0f;
 		rgv3D[l+32].x = rgv3D[l].x;
 		rgv3D[l+32].y = rgv3D[l].y;
-		rgv3D[l+32].z = height+0;
+		rgv3D[l+32].z = height;
 
-		rgv3D[l+64].x = (float)sin(angle)*outerradius*0.5f + m_d.m_vCenter.x;
-		rgv3D[l+64].y = (float)-cos(angle)*outerradius*0.5f + m_d.m_vCenter.y;
-		rgv3D[l+64].z = height+60;
+		rgv3D[l+64].x = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
+		rgv3D[l+64].y = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
+		rgv3D[l+64].z = height+60.0f;
 
-		rgv3D[l+96].x = (float)sin(angle)*outerradius*0.9f + m_d.m_vCenter.x;
-		rgv3D[l+96].y = (float)-cos(angle)*outerradius*0.9f + m_d.m_vCenter.y;
-		rgv3D[l+96].z = height+50;
+		rgv3D[l+96].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
+		rgv3D[l+96].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
+		rgv3D[l+96].z = height+50.0f;
 
-		rgv3D[l+128].x = (float)sin(angle)*outerradius + m_d.m_vCenter.x;
-		rgv3D[l+128].y = (float)-cos(angle)*outerradius + m_d.m_vCenter.y;
-		rgv3D[l+128].z = height+40;
+		rgv3D[l+128].x = sinangle*outerradius + m_d.m_vCenter.x;
+		rgv3D[l+128].y = cosangle*outerradius + m_d.m_vCenter.y;
+		rgv3D[l+128].z = height+40.0f;
 
-		rgv3D[l].tu = 0.5f+(float)(sin(angle)*0.5);
-		rgv3D[l].tv = 0.5f+(float)(cos(angle)*0.5);
-		rgv3D[l+32].tu = 0.5f+(float)(sin(angle)*0.5);
-		rgv3D[l+32].tv = 0.5f+(float)(cos(angle)*0.5);
-		rgv3D[l+64].tu = 0.5f+(float)(sin(angle)*0.25);
-		rgv3D[l+64].tv = 0.5f+(float)(cos(angle)*0.25);
-		rgv3D[l+96].tu = 0.5f+(float)(sin(angle)*0.5*0.9);
-		rgv3D[l+96].tv = 0.5f+(float)(cos(angle)*0.5*0.9);
-		rgv3D[l+128].tu = 0.5f+(float)(sin(angle)*0.5);
-		rgv3D[l+128].tv = 0.5f+(float)(cos(angle)*0.5);
+		rgv3D[l].tu = 0.5f+sinangle*0.5f;
+		rgv3D[l].tv = 0.5f-cosangle*0.5f;
+		rgv3D[l+32].tu = 0.5f+sinangle*0.5f;
+		rgv3D[l+32].tv = 0.5f-cosangle*0.5f;
+		rgv3D[l+64].tu = 0.5f+sinangle*0.25f;
+		rgv3D[l+64].tv = 0.5f-cosangle*0.25f;
+		rgv3D[l+96].tu = 0.5f+sinangle*(float)(0.5*0.9);
+		rgv3D[l+96].tv = 0.5f-cosangle*(float)(0.5*0.9);
+		rgv3D[l+128].tu = 0.5f+sinangle*0.5f;
+		rgv3D[l+128].tv = 0.5f-cosangle*0.5f;
 
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+32]);
@@ -402,7 +401,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->ClearExtents(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar);
 
-	for (i=0;i<2;i++)	//0 is unlite, while 1 is lite
+	for (int i=0;i<2;i++)	//0 is unlite, while 1 is lite
 		{
 		pof = new ObjFrame();
 
@@ -445,7 +444,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->SetMaterial(&mtrl);
 
-			for (l=0;l<32;l++)
+			for (int l=0;l<32;l++)
 				{
 				rgi[l] = l;
 				}
@@ -456,7 +455,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 													  &rgv3D[64], 32,
 													  rgi, 32, 0);
 
-			for (l=0;l<32;l++)
+			for (int l=0;l<32;l++)
 				{
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
@@ -480,7 +479,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 														  rgi, 4, 0);
 				}
 
-			for (l=0;l<32;l++)
+			for (int l=0;l<32;l++)
 				{
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
@@ -532,7 +531,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 			pd3dDevice->SetMaterial(&mtrl);
 
-			for (l=0;l<32;l++)
+			for (int l=0;l<32;l++)
 				{
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
@@ -591,42 +590,43 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					mtrl.diffuse.r = mtrl.ambient.r = 0;
 					mtrl.diffuse.g = mtrl.ambient.g = 0;
 					mtrl.diffuse.b = mtrl.ambient.b = 0;
-					mtrl.emissive.r = 1;
-					mtrl.emissive.g = 1;
-					mtrl.emissive.b = 1;
+					mtrl.emissive.r = 1.0f;
+					mtrl.emissive.g = 1.0f;
+					mtrl.emissive.b = 1.0f;
 					break;
 				}
 			pd3dDevice->SetMaterial(&mtrl);
 
 			// Set all the texture coordinates to match maxtu/tv
-			for (l=0;l<32;l++)
+			for (int l=0;l<32;l++)
 				{
-				float angle = PI*2;
-				angle /= 32;
-				angle *= l;
-				rgv3D[l+64].tu = (0.5f+(float)(sin(angle)*0.25))*maxtu;
-				rgv3D[l+64].tv = (0.5f-(float)(cos(angle)*0.25))*maxtv;
-				rgv3D[l+96].tu = (0.5f+(float)(sin(angle)*0.5*0.9))*maxtu;
-				rgv3D[l+96].tv = (0.5f-(float)(cos(angle)*0.5*0.9))*maxtv;
-				rgv3D[l+128].tu = (0.5f+(float)(sin(angle)*0.5))*maxtu;
-				rgv3D[l+128].tv = (0.5f-(float)(cos(angle)*0.5))*maxtv;
+				const float angle = (float)(M_PI*2.0/32.0)*(float)l;
+				const float sinangle =  sinf(angle);
+				const float cosangle = -cosf(angle);
 
-				float lightmaxtu = 0.8f;
-				float lightmaxtv = 0.8f;
+				rgv3D[l+64].tu = (0.5f+sinangle*0.25f)*maxtu;
+				rgv3D[l+64].tv = (0.5f+cosangle*0.25f)*maxtv;
+				rgv3D[l+96].tu = (0.5f+sinangle*(float)(0.5*0.9))*maxtu;
+				rgv3D[l+96].tv = (0.5f+cosangle*(float)(0.5*0.9))*maxtv;
+				rgv3D[l+128].tu = (0.5f+sinangle*0.5f)*maxtu;
+				rgv3D[l+128].tv = (0.5f+cosangle*0.5f)*maxtv;
+
+				const float lightmaxtu = 0.8f;
+				const float lightmaxtv = 0.8f;
 
 				rgv3D[l].tu2 = rgv3D[l].tu;
 				rgv3D[l+32].tu2 = rgv3D[l+32].tu;
 				rgv3D[l].tv2 = rgv3D[l].tv;
 				rgv3D[l+32].tv = rgv3D[l+32].tv;
-				rgv3D[l+64].tu2 = (0.5f+(float)(sin(angle)*0.25))*lightmaxtu;
-				rgv3D[l+64].tv2 = (0.5f-(float)(cos(angle)*0.25))*lightmaxtv;
-				rgv3D[l+96].tu2 = (0.5f+(float)(sin(angle)*0.5*0.9))*lightmaxtu;
-				rgv3D[l+96].tv2 = (0.5f-(float)(cos(angle)*0.5*0.9))*lightmaxtv;
-				rgv3D[l+128].tu2 = (0.5f+(float)(sin(angle)*0.5))*lightmaxtu;
-				rgv3D[l+128].tv2 = (0.5f-(float)(cos(angle)*0.5))*lightmaxtv;
+				rgv3D[l+64].tu2 = (0.5f+sinangle*0.25f)*lightmaxtu;
+				rgv3D[l+64].tv2 = (0.5f+cosangle*0.25f)*lightmaxtv;
+				rgv3D[l+96].tu2 = (0.5f+sinangle*(float)(0.5*0.9))*lightmaxtu;
+				rgv3D[l+96].tv2 = (0.5f+cosangle*(float)(0.5*0.9))*lightmaxtv;
+				rgv3D[l+128].tu2 = (0.5f+sinangle*0.5f)*lightmaxtu;
+				rgv3D[l+128].tv2 = (0.5f+cosangle*0.5f)*lightmaxtv;
 				}
 
-			for (l=0;l<32;l++)
+			for (WORD l=0;l<32;l++)
 				{
 				rgi[l] = l;
 				}
@@ -637,7 +637,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 													  &rgv3D[64], 32,
 													  rgi, 32, 0);
 
-			for (l=0;l<32;l++)
+			for (int l=0;l<32;l++)
 				{
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
@@ -661,7 +661,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 														  rgi, 4, 0);
 				}
 
-			for (l=0;l<32;l++)
+			for (int l=0;l<32;l++)
 				{
 					rgiNormal[0] = (l - 1 + 32) % 32;
 					rgiNormal[1] = rgiNormal[0] + 32;
@@ -688,17 +688,17 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			// Reset all the texture coordinates
 			if (i == 0)
 				{
-				float angle = PI*2;
-				angle /= 32;
-				angle *= l;
-				for (l=0;l<32;l++)
+				const float angle = (float)(M_PI*2.0/32.0)*(float)32.0; //!! potential bug?! (last 32.0 was l)
+				const float sinangle = sinf(angle);
+				const float cosangle = cosf(angle);
+				for (int l=0;l<32;l++)
 					{
-					rgv3D[l+64].tu = 0.5f+(float)(sin(angle)*0.25);
-					rgv3D[l+64].tv = 0.5f+(float)(cos(angle)*0.25);
-					rgv3D[l+96].tu = 0.5f+(float)(sin(angle)*0.5*0.9);
-					rgv3D[l+96].tv = 0.5f+(float)(cos(angle)*0.5*0.9);
-					rgv3D[l+128].tu = 0.5f+(float)(sin(angle)*0.5);
-					rgv3D[l+128].tv = 0.5f+(float)(cos(angle)*0.5);
+					rgv3D[l+64].tu = 0.5f+sinangle*0.25f;
+					rgv3D[l+64].tv = 0.5f+cosangle*0.25f;
+					rgv3D[l+96].tu = 0.5f+sinangle*(float)(0.5*0.9);
+					rgv3D[l+96].tv = 0.5f+cosangle*(float)(0.5*0.9);
+					rgv3D[l+128].tu = 0.5f+sinangle*0.5f;
+					rgv3D[l+128].tv = 0.5f+cosangle*0.5f;
 					}
 				}
 

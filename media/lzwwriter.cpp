@@ -55,7 +55,6 @@ int LZWWriter::bNextPixel()
 HRESULT LZWWriter::CompressBits(int init_bits)
 	{
 	int fcode;
-	int i;
 	int c;
 	int ent;
 	int disp;
@@ -103,7 +102,7 @@ HRESULT LZWWriter::CompressBits(int init_bits)
 	while ( (c = bNextPixel()) != GIFEOF )
 	    {
 	    fcode = ( c << MAXBITS ) + ent;
-	    i = ( c << hshift ) ^ ent;		// xor hashing
+	    int i = ( c << hshift ) ^ ent;		// xor hashing
 			
 		if (m_codetab[i] != 0)
 			{	/* is first probed slot empty? */

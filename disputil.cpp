@@ -18,8 +18,7 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 
 		pti->GetTypeAttr(&pta);
 
-		int i;
-		for (i=0;i<pta->cImplTypes;i++)
+		for (int i=0;i<pta->cImplTypes;i++)
 			{
 			HREFTYPE href;
 			ITypeInfo *ptiChild;
@@ -35,11 +34,9 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 
 				ptiChild->GetTypeAttr(&ptaChild);
 
-				int l;
-				for (l=0;l<ptaChild->cFuncs;l++)
+				for (int l=0;l<ptaChild->cFuncs;l++)
 					{
 					FUNCDESC *pfd;
-
 					ptiChild->GetFuncDesc(l, &pfd);
 
 					// Get Name
@@ -47,7 +44,6 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 						BSTR *rgstr = (BSTR *) CoTaskMemAlloc(6 * sizeof(BSTR *));
 
 						unsigned int cnames;
-
 						HRESULT hr = ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
 
 						// Add enum string to combo control
@@ -55,8 +51,7 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 						WideCharToMultiByte(CP_ACP, 0, rgstr[0], -1, szT, 512, NULL, NULL);
 						(*Callback)(szT, l, pfd->memid, lparam);
 
-						unsigned int i;
-						for (i=0; i < cnames; i++)
+						for (unsigned int i=0; i < cnames; i++)
 							{
 							SysFreeString(rgstr[i]);
 							}

@@ -113,11 +113,9 @@ void Plunger::GetTimers(Vector<HitTimer> *pvht)
 
 void Plunger::EndPlay()
 	{
-	int i;
-
 	if (m_phitplunger) // Failed Player case
 		{
-		for (i=0;i<m_phitplunger->m_plungeranim.m_vddsFrame.Size();i++)
+		for (int i=0;i<m_phitplunger->m_plungeranim.m_vddsFrame.Size();i++)
 			{
 			delete m_phitplunger->m_plungeranim.m_vddsFrame.ElementAt(i);
 			}
@@ -164,7 +162,7 @@ void Plunger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 #define PLUNGEPOINTS 5
 
-float rgcrossplunger[][2] = {
+const float rgcrossplunger[][2] = {
 	1, 0,
 	1, 10,
 	0.35f, 20,
@@ -172,7 +170,7 @@ float rgcrossplunger[][2] = {
 	0.35f, 100,
 	};
 
-float rgcrossplungerNormal[][2] = {
+const float rgcrossplungerNormal[][2] = {
 	1, 0,
 	0.8f, 0.6f,
 	0, 1,
@@ -196,7 +194,7 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	LPDIRECTDRAWSURFACE7 pdds;
 	ObjFrame *pof;
 
-	float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
+	const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
@@ -205,12 +203,10 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	mtrl.diffuse.b = mtrl.ambient.b = 0.3f;
 	pd3dDevice->SetMaterial(&mtrl);
 
-	int cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke/80.0f)) + 1; // 25 frames per 80 units travel
+	const int cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke/80.0f)) + 1; // 25 frames per 80 units travel
 
-	int i;
-
-	float beginy = m_d.m_v.y;
-	float endy = m_d.m_v.y - m_d.m_stroke;
+	const float beginy = m_d.m_v.y;
+	const float endy = m_d.m_v.y - m_d.m_stroke;
 
 	WORD rgi[8];
 
@@ -218,27 +214,21 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->ClearExtents(&m_phitplunger->m_plungeranim.m_rcBounds, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar);
 
-	for (i=0;i<cframes;i++)
+	for (int i=0;i<cframes;i++)
 		{
-		float height = beginy + (endy - beginy)/(cframes-1)*i;
+		const float height = beginy + (endy - beginy)/(cframes-1)*i;
 
 		pof = new ObjFrame();
 
-		int l,m;
-		for (l=0;l<16;l++)
+		for (int l=0;l<16;l++)
 			{
-			float angle = PI*2;
-			angle /= 16;
-			angle *= l;
+			const float angle = (float)(M_PI*2.0/16.0)*(float)l;
+			const float sn = sinf(angle);
+			const float cs = cosf(angle);
 
-			float sn,cs;
+			const int offset = l*PLUNGEPOINTS;
 
-			sn = sin(angle);
-			cs = cos(angle);
-
-			int offset = l*PLUNGEPOINTS;
-
-			for (m=0;m<PLUNGEPOINTS;m++)
+			for (int m=0;m<PLUNGEPOINTS;m++)
 				{
 				rgv3D[m + offset].x = rgcrossplunger[m][0] * sn * m_d.m_width + m_d.m_v.x;
 				rgv3D[m + offset].y = height + rgcrossplunger[m][1];
@@ -264,11 +254,11 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				                                              , &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
-		for (l=0;l<16;l++)
+		for (int l=0;l<16;l++)
 			{
-			int offset = l*PLUNGEPOINTS;
+			const int offset = l*PLUNGEPOINTS;
 
-			for (m=0;m<(PLUNGEPOINTS-1);m++)
+			for (int m=0;m<(PLUNGEPOINTS-1);m++)
 				{
 				rgi[0] = m + offset;
 				rgi[3] = m + 1 + offset;
@@ -516,7 +506,7 @@ STDMETHODIMP Plunger::Position(int *pVal)
 	float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
 	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : curMechPlungerPos*(1.0f - m_d.m_parkPosition);
 	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
-	*pVal = int(tmp/.04);
+	*pVal = int(tmp*(float)(1.0/0.04));
 //	return tmp;
 
 	
@@ -608,13 +598,11 @@ STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
 {
 	if (m_phitplunger)
 		{
-		float radius = 25;
-		float x,y;
+		float radius = 25.0f;
+		const float x = (m_phitplunger->m_plungeranim.m_x + m_phitplunger->m_plungeranim.m_x2) * 0.5f;
+		const float y = m_phitplunger->m_plungeranim.m_pos - radius - 0.01f;
 
-		x = (m_phitplunger->m_plungeranim.m_x + m_phitplunger->m_plungeranim.m_x2) / 2;
-		y = m_phitplunger->m_plungeranim.m_pos - radius - 0.01f;
-
-		float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, x, y);
+		const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, x, y);
 
 		Ball *pball = g_pplayer->CreateBall(x, y, height, 0.1f, 0, 0);
 		

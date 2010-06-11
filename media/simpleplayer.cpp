@@ -364,7 +364,6 @@ HRESULT CSimplePlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
         return hr;
 
 	{
-	VOID*   pbBuffer = NULL;
 
     m_bFoundEnd = FALSE;
     m_dwNextWriteOffset = 0; 

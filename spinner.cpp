@@ -77,9 +77,9 @@ void Spinner::Render(Sur *psur)
 
 	Vertex rgv[2];
 
-	float radangle = m_d.m_rotation / 180 * PI;
-	float sn = (float)sin(radangle);
-	float cs = (float)cos(radangle);
+	float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	float sn = sinf(radangle);
+	float cs = cosf(radangle);
 
 	rgv[0].x = m_d.m_vCenter.x + cs*halflength;
 	rgv[0].y = m_d.m_vCenter.y + sn*halflength;
@@ -115,9 +115,9 @@ void Spinner::RenderShadow(ShadowSur *psur, float height)
 
 	Vertex rgv[2];
 
-	float radangle = m_d.m_rotation / 360 * PI * 2;
-	float sn = (float)sin(radangle);
-	float cs = (float)cos(radangle);
+	float radangle = m_d.m_rotation * (float)(M_PI*2.0/360.0);
+	float sn = sinf(radangle);
+	float cs = cosf(radangle);
 
 	rgv[0].x = m_d.m_vCenter.x + cs*halflength;
 	rgv[0].y = m_d.m_vCenter.y + sn*halflength;
@@ -161,17 +161,16 @@ void Spinner::GetTimers(Vector<HitTimer> *pvht)
 
 void Spinner::GetHitShapes(Vector<HitObject> *pvho)
 	{
-	HitSpinner *phitspinner;
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-	float h = m_d.m_height/2 +(float)30;
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float h = m_d.m_height*0.5f + 30.0f;
 
-	float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
-	float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
+	const float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
+	const float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
 
 	m_d.m_angleMin = angleMin;	
 	m_d.m_angleMax = angleMax;
 
-	phitspinner = new HitSpinner(this, height);
+	HitSpinner * const phitspinner = new HitSpinner(this, height);
 	m_phitspinner = phitspinner;
 	
 	pvho->AddElement(phitspinner);
@@ -179,9 +178,9 @@ void Spinner::GetHitShapes(Vector<HitObject> *pvho)
 	if(m_d.m_fSupports)
 		{
 		float halflength = m_d.m_length * 0.5f;
-		float radangle = m_d.m_rotation / 180 * PI;
-		float sn = (float)sin(radangle);
-		float cs = (float)cos(radangle);
+		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+		const float sn = sinf(radangle);
+		const float cs = cosf(radangle);
 
 		halflength += m_d.m_overhang;
 
@@ -192,7 +191,7 @@ void Spinner::GetHitShapes(Vector<HitObject> *pvho)
 		phitcircle->center.y = m_d.m_vCenter.y + sn*halflength;
 		phitcircle->radius = 0.01f;
 		phitcircle->zlow = height;
-		phitcircle->zhigh = height+h;//+50;
+		phitcircle->zhigh = height+h;//+50.0f;
 		pvho->AddElement(phitcircle);
 
 		phitcircle = new HitCircle();
@@ -201,7 +200,7 @@ void Spinner::GetHitShapes(Vector<HitObject> *pvho)
 		phitcircle->center.y = m_d.m_vCenter.y - sn*halflength;
 		phitcircle->radius = 0.01f;
 		phitcircle->zlow = height;
-		phitcircle->zhigh = height+h; //+50;
+		phitcircle->zhigh = height+h; //+50.0f;
 		pvho->AddElement(phitcircle);
 		}
 	}
@@ -216,8 +215,7 @@ void Spinner::EndPlay()
 
 	if (m_phitspinner) // Failed Player case
 		{
-		int i;
-		for (i=0;i<m_phitspinner->m_spinneranim.m_vddsFrame.Size();i++)
+		for (int i=0;i<m_phitspinner->m_spinneranim.m_vddsFrame.Size();i++)
 			{
 			delete m_phitspinner->m_spinneranim.m_vddsFrame.ElementAt(i);
 			}
@@ -234,21 +232,17 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fSupports)return;
 
-	Vertex3D rgv3D[12];
-	WORD rgi[8];
-	int l;
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	const float halflength = m_d.m_length * 0.5f + m_d.m_overhang;
+	const float halfthick = 2.0f;
+	const float h = m_d.m_height*0.5f + 30.0f;
 
-	float halflength = (m_d.m_length * 0.5f) + m_d.m_overhang;
-	float halfthick = 2;
-	float h = m_d.m_height/2  +(float)30;
-
-	float radangle = m_d.m_rotation / 180 * PI;
-	float snY = (float)sin(radangle);
-	float csY = (float)cos(radangle);
+	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float snY = sinf(radangle);
+	const float csY = cosf(radangle);
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
@@ -257,6 +251,7 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	mtrl.diffuse.b = mtrl.ambient.b = 0.6f;
 	pd3dDevice->SetMaterial(&mtrl);
 
+	Vertex3D rgv3D[12];
 	rgv3D[0].x = -halflength + halfthick;
 	rgv3D[0].y = 0;
 	rgv3D[0].z = 0;
@@ -267,12 +262,12 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	rgv3D[2].x = -halflength + halfthick;
 	rgv3D[2].y = 0;
-	//rgv3D[2].z = 60 - halfthick;
+	//rgv3D[2].z = 60.0f - halfthick;
 	rgv3D[2].z = h - halfthick;
 
 	rgv3D[3].x = -halflength - halfthick;
 	rgv3D[3].y = 0;
-	//rgv3D[3].z = 60 + halfthick;
+	//rgv3D[3].z = 60.0f + halfthick;
 	rgv3D[3].z = h + halfthick;
 
 	rgv3D[4].x = halflength - halfthick;
@@ -285,20 +280,19 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	rgv3D[6].x = halflength - halfthick;
 	rgv3D[6].y = 0;
-	//rgv3D[6].z = 60 - halfthick;
+	//rgv3D[6].z = 60.0f - halfthick;
 	rgv3D[6].z = h - halfthick;
 
 	rgv3D[7].x = halflength + halfthick;
 	rgv3D[7].y = 0;
-	//rgv3D[7].z = 60 + halfthick;
+	//rgv3D[7].z = 60.0f + halfthick;
 	rgv3D[7].z = h + halfthick;
 
-	float temp;
-	for (l=0;l<8;l++)
+	for (int l=0;l<8;l++)
 		{
-		temp = rgv3D[l].x;
-		rgv3D[l].x = (float)(csY*temp - snY*rgv3D[l].y);
-		rgv3D[l].y = (float)(csY*rgv3D[l].y + snY*temp);
+		const float temp = rgv3D[l].x;
+		rgv3D[l].x = csY*temp - snY*rgv3D[l].y;
+		rgv3D[l].y = csY*rgv3D[l].y + snY*temp;
 
 		rgv3D[l].x += m_d.m_vCenter.x;
 		rgv3D[l].y += m_d.m_vCenter.y;
@@ -309,11 +303,11 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	WORD rgiNormal[3];
-
 	rgiNormal[0] = 0;
 	rgiNormal[1] = 1;
 	rgiNormal[2] = 3;
 
+	WORD rgi[8];
 	rgi[0] = 0;
 	rgi[1] = 1;
 	rgi[2] = 2;
@@ -351,20 +345,18 @@ void Spinner::RenderMoversFromCache(Pin3D *ppin3d)
 
 void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	LPDIRECTDRAWSURFACE7 pdds;
-	ObjFrame *pof;
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
+
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float h = m_d.m_height*0.5f + 30.0f;
+
+	PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
+	PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
 	float maxtuback, maxtvback;
 	float maxtufront, maxtvfront;
-
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-	float h = m_d.m_height/2 +(float)30;
-
-	PinImage *pinback = m_ptable->GetImage(m_d.m_szImageBack);
-	PinImage *pinfront = m_ptable->GetImage(m_d.m_szImageFront);
-
 	if (pinback)
 		{
 		m_ptable->GetTVTU(pinback, &maxtuback, &maxtvback);
@@ -384,28 +376,22 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	int cframes;
-
 	if (m_d.m_animations > 0) cframes = m_d.m_animations;
 	else if (m_d.m_angleMax != m_d.m_angleMin)
 		{
-		cframes = (int)((m_d.m_angleMax - m_d.m_angleMin)/90.0f *((20-1)) + (float)1.5); // 15 frames per 90 degrees
+		cframes = (int)((m_d.m_angleMax - m_d.m_angleMin)*(float)((20-1)/90.0) + 1.5f); // 15 frames per 90 degrees
 		}
-	else cframes = 80;	
+	else cframes = 80;
 
-	float halflength = m_d.m_length * 0.5f;
-
-	float halfwidth = m_d.m_height/2;
-
-	int i,l;
-
-	float angle;
+	const float halflength = m_d.m_length * 0.5f;
+	const float halfwidth = m_d.m_height * 0.5f;
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 
-	float r = (m_d.m_color & 255) / 255.0f;
-	float g = (m_d.m_color & 65280) / 65280.0f;
-	float b = (m_d.m_color & 16711680) / 16711680.0f;
+	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
 	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
@@ -419,37 +405,34 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
 
-	for (i=0;i<cframes;i++)
+	const float inv_cframes = 1.0f/(float)cframes;
+	for (int i=0;i<cframes;i++)
 		{
+		ObjFrame * const pof = new ObjFrame();
 
-		pof = new ObjFrame();
+		//angle = (float)*(2.0*M_PI)*inv_cframes*(float)i;
 
-		//angle = (2*PI*i)/(float)cframes;
-
+		float angle;
 		if (m_d.m_angleMax != m_d.m_angleMin)
-			{angle =  ANGTORAD(m_d.m_angleMin + (float)i*(m_d.m_angleMax - m_d.m_angleMin)/(float)cframes);}
-		else angle = (2*PI*i)/(float)cframes;
+			{angle =  ANGTORAD(m_d.m_angleMin + (m_d.m_angleMax - m_d.m_angleMin)*inv_cframes*(float)i);}
+		else angle = (float)(2.0*M_PI)*inv_cframes*(float)i;
+
+		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+		const float snY = sinf(radangle);
+		const float csY = cosf(radangle);
+
+		const float snTurn = sinf(angle);
+		const float csTurn = cosf(angle);
+
+		const float minx = -halflength;
+		const float maxx = halflength;
+		const float miny = -3.0f;
+		const float maxy = 3.0f;
+		const float minz = -halfwidth;
+		const float maxz = halfwidth;
 
 		Vertex3D rgv3D[8];
-		WORD rgi[4];
-
-		float radangle = m_d.m_rotation / 180 * PI;
-		float snY = (float)sin(radangle);
-		float csY = (float)cos(radangle);
-
-		float snTurn = (float)sin(angle);
-		float csTurn = (float)cos(angle);
-
-		float minx = -halflength;
-		float maxx = halflength;
-		float miny = -3;
-		float maxy = 3;
-		float minz = -halfwidth;
-		float maxz = halfwidth;
-
-		float temp;
-
-		for (l=0;l<8;l++)
+		for (int l=0;l<8;l++)
 			{
 			rgv3D[l].x = (l & 1) ? maxx : minx;
 			rgv3D[l].y = (l & 2) ? maxy : miny;
@@ -467,19 +450,23 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 			}
 
-		for (l=0;l<8;l++)
+		for (int l=0;l<8;l++)
 			{
-			temp = rgv3D[l].y;
-			rgv3D[l].y = (float)(csTurn*temp + snTurn*rgv3D[l].z);
-			rgv3D[l].z = (float)(csTurn*rgv3D[l].z - snTurn*temp);
+				{
+			const float temp = rgv3D[l].y;
+			rgv3D[l].y = csTurn*temp + snTurn*rgv3D[l].z;
+			rgv3D[l].z = csTurn*rgv3D[l].z - snTurn*temp;
+				}
 
-			temp = rgv3D[l].x;
-			rgv3D[l].x = (float)(csY*temp - snY*rgv3D[l].y);
-			rgv3D[l].y = (float)(csY*rgv3D[l].y + snY*temp);
+				{
+			const float temp = rgv3D[l].x;
+			rgv3D[l].x = csY*temp - snY*rgv3D[l].y;
+			rgv3D[l].y = csY*rgv3D[l].y + snY*temp;
+				}
 
 			rgv3D[l].x += m_d.m_vCenter.x;
 			rgv3D[l].y += m_d.m_vCenter.y;
-			//rgv3D[l].z += 60 + height;
+			//rgv3D[l].z += 60.0f + height;
 			rgv3D[l].z += h + height;
 
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
@@ -552,6 +539,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetMaterial(&mtrl);
 
+		WORD rgi[4];
 		rgi[0] = 0;
 		rgi[1] = 1;
 		rgi[2] = 5;
@@ -602,9 +590,9 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-			mtrl.diffuse.r = mtrl.ambient.r = 1;
-			mtrl.diffuse.g = mtrl.ambient.g = 1;
-			mtrl.diffuse.b = mtrl.ambient.b = 1;
+			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
 			}
 		else // No image by that name
 			{
@@ -993,7 +981,7 @@ STDMETHODIMP Spinner::put_Overhang(float newVal)
 
 STDMETHODIMP Spinner::get_Friction(float *pVal)
 {
-	*pVal = (float)((1-(GPINFLOAT)m_d.m_antifriction)*100);
+	*pVal = (1.0f-m_d.m_antifriction)*100.0f;
 
 	return S_OK;
 }
@@ -1002,15 +990,15 @@ STDMETHODIMP Spinner::put_Friction(float newVal)
 {
 	STARTUNDO
 
-	m_d.m_antifriction = 1-(newVal/100);
+	m_d.m_antifriction = 1.0f - newVal*(float)(1.0/100.0);
 
 	if (m_d.m_antifriction < 0)
 		{
 		m_d.m_antifriction = 0;
 		}
-	else if (m_d.m_antifriction > 1)
+	else if (m_d.m_antifriction > 1.0f)
 		{
-		m_d.m_antifriction = 1;
+		m_d.m_antifriction = 1.0f;
 		}
 
 	STOPUNDO
@@ -1173,14 +1161,8 @@ STDMETHODIMP Spinner::put_Supports(VARIANT_BOOL newVal)
 
 STDMETHODIMP Spinner::get_AngleMax(float *pVal)
 {
-	if (g_pplayer)
-		{
-		*pVal = RADTOANG(m_phitspinner->m_spinneranim.m_angleMax);	//player active value
-		}
-	else
-		{
-		*pVal = m_d.m_angleMax;
-		}
+	*pVal = (g_pplayer) ? RADTOANG(m_phitspinner->m_spinneranim.m_angleMax) :	//player active value
+				          m_d.m_angleMax;
 
 	return S_OK;
 }
@@ -1215,14 +1197,8 @@ STDMETHODIMP Spinner::put_AngleMax(float newVal)
 	
 STDMETHODIMP Spinner::get_AngleMin(float *pVal)
 {
-	if (g_pplayer)
-		{
-		*pVal = RADTOANG(m_phitspinner->m_spinneranim.m_angleMin);	//player active value
-		}
-	else
-		{
-		*pVal = m_d.m_angleMin;
-		}
+	*pVal = (g_pplayer) ? RADTOANG(m_phitspinner->m_spinneranim.m_angleMin) :	//player active value
+						  m_d.m_angleMin;
 
 	return S_OK;
 }
@@ -1256,21 +1232,14 @@ STDMETHODIMP Spinner::put_AngleMin(float newVal)
 
 STDMETHODIMP Spinner::get_Elasticity(float *pVal)
 {
-	if (g_pplayer)
-		{
-		*pVal = m_phitspinner->m_spinneranim.m_elasticity;	//player active value
-		}
-	else
-		{
-		*pVal = m_d.m_elasticity;
-		}
+	*pVal = (g_pplayer) ? m_phitspinner->m_spinneranim.m_elasticity :	//player active value
+						  m_d.m_elasticity;
 
 	return S_OK;
 }
 
 STDMETHODIMP Spinner::put_Elasticity(float newVal)
 {
-
 	if (g_pplayer)
 		{
 		m_phitspinner->m_spinneranim.m_elasticity = newVal;	//player active value
@@ -1308,14 +1277,7 @@ STDMETHODIMP Spinner::put_Animations(int newVal)
 }
 STDMETHODIMP Spinner::get_Visible(VARIANT_BOOL *pVal)
 {
-	if (g_pplayer)
-		{
-		*pVal = FTOVB(m_phitspinner->m_spinneranim.m_fVisible);
-		}
-	else
-		{
-		*pVal = FTOVB(m_d.m_fVisible);
-		}
+	*pVal = FTOVB((g_pplayer) ? m_phitspinner->m_spinneranim.m_fVisible : m_d.m_fVisible);
 
 	return S_OK;
 }

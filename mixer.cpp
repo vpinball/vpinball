@@ -183,7 +183,7 @@ F32 mixer_get_volume( void )
 	
 	if( m_dwMaximum > m_dwMinimum )
 	{
-		gMixerVolume = sqrt( ( ( F32 ) ( mxcdVolume.dwValue - m_dwMinimum ) ) / ( ( F32 ) ( m_dwMaximum - m_dwMinimum ) ) );
+		gMixerVolume = sqrtf( ( ( F32 ) ( mxcdVolume.dwValue - m_dwMinimum ) ) / ( ( F32 ) ( m_dwMaximum - m_dwMinimum ) ) );
 	}
 
     if( volume_modulation ) gMixerVolume /= volume_modulation;
@@ -256,7 +256,7 @@ void mixer_draw( void )
     F32 y;
     F32 vol;
 
-    for( vol = 0, y= - ( volume_adjustment_bar_ysize /2.0f );
+    for( vol = 0, y= - ( volume_adjustment_bar_ysize*0.5f );
             vol < 1.0f;
             vol += ( 1.0f * yoff / volume_adjustment_bar_ysize ), y += yoff )
     {
@@ -305,10 +305,10 @@ void mixer_draw( void )
 		Height = size[1] * sY;
 
 		// Set the color.
-		r = ((float) ((drop_color & 0xff000000) >> 24)) / 255.0f;	
-		g = ((float) ((drop_color & 0x00ff0000) >> 16)) / 255.0f;	
-		b = ((float) ((drop_color & 0x0000ff00) >> 8)) / 255.0f;	
-		a = ((float) ((drop_color & 0x000000ff) >> 0)) / 255.0f;	
+		r = ((float) ((drop_color             ) >> 24)) * (float)(1.0/255.0);
+		g = ((float) ((drop_color & 0x00ff0000) >> 16)) * (float)(1.0/255.0);
+		b = ((float) ((drop_color & 0x0000ff00) >>  8)) * (float)(1.0/255.0);
+		a = ((float) ((drop_color & 0x000000ff)      )) * (float)(1.0/255.0);
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
 		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
@@ -320,10 +320,10 @@ void mixer_draw( void )
 							DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT );
 
 		// Set the color.
-		r = ((float) ((color & 0xff000000) >> 24)) / 255.0f;	
-		g = ((float) ((color & 0x00ff0000) >> 16)) / 255.0f;	
-		b = ((float) ((color & 0x0000ff00) >> 8)) / 255.0f;	
-		a = ((float) ((color & 0x000000ff) >> 0)) / 255.0f;	
+		r = ((float) ((color             ) >> 24)) * (float)(1.0/255.0);
+		g = ((float) ((color & 0x00ff0000) >> 16)) * (float)(1.0/255.0);
+		b = ((float) ((color & 0x0000ff00) >>  8)) * (float)(1.0/255.0);
+		a = ((float) ((color & 0x000000ff)      )) * (float)(1.0/255.0);
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
 		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 

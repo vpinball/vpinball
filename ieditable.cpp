@@ -62,8 +62,7 @@ void IEditable::Delete()
 	MarkForDelete();
 	APCPROJECTUNDEFINE
 	GetPTable()->m_pcv->RemoveItem(GetScriptable());
-	int i;
-	for (i=0;i<m_vCollection.Size();i++)
+	for (int i=0;i<m_vCollection.Size();i++)
 		{
 		Collection *pcollection = m_vCollection.ElementAt(i);
 		pcollection->m_visel.RemoveElement(GetISelect());
@@ -148,9 +147,8 @@ void IEditable::BeginPlay()
 	m_vEventCollection.RemoveAllElements();
 	m_viEventCollection.RemoveAllElements();
 
-	int i;
 	m_fSingleEvents = fTrue;
-	for(i=0;i<m_vCollection.Size();i++)
+	for(int i=0;i<m_vCollection.Size();i++)
 		{
 		Collection *pcol = m_vCollection.ElementAt(i);
 		if (pcol->m_fFireEvents)
@@ -245,8 +243,7 @@ void IEditable::Undelete()
 	InitVBA(fTrue, 0, (WCHAR *)this);
 #endif
 
-	int i;
-	for (i=0;i<m_vCollection.Size();i++)
+	for (int i=0;i<m_vCollection.Size();i++)
 		{
 		Collection *pcollection = m_vCollection.ElementAt(i);
 		pcollection->m_visel.AddElement(GetISelect());

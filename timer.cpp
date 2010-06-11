@@ -76,16 +76,12 @@ void Timer::Render(Sur *psur)
 
 	psur->Ellipse(m_d.m_v.x, m_d.m_v.y, 15);
 
-	int i;
-	GPINFLOAT angle;
-	float sn,cs;
-
-	for (i=0;i<12;i++)
+	for (int i=0;i<12;i++)
 		{
-		angle = ((PI*2)/12)*i;
-		sn = (float)sin(angle);
-		cs = (float)cos(angle);
-		psur->Line(m_d.m_v.x + sn*9, m_d.m_v.y - cs*9, m_d.m_v.x + sn*15, m_d.m_v.y - cs*15);
+		const float angle = (float)(M_PI*2.0/12.0)*(float)i;
+		const float sn = sinf(angle);
+		const float cs = cosf(angle);
+		psur->Line(m_d.m_v.x + sn*9.0f, m_d.m_v.y - cs*9.0f, m_d.m_v.x + sn*15, m_d.m_v.y - cs*15.0f);
 		}
 
 	//angle = ((PI*2)/24) * 3;

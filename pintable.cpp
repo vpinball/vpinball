@@ -710,8 +710,7 @@ PinTable::PinTable()
 	m_psgt->AddRef();
 	m_psgt->Init(this);
 
-	int i;
-	for (i=0;i<eItemTypeCount;i++)
+	for (int i=0;i<eItemTypeCount;i++)
 		{
 		m_suffixcount[i] = 1;
 		}
@@ -860,38 +859,36 @@ PinTable::PinTable()
 
 PinTable::~PinTable()
 	{
-	int i;
-
-	for (i=0;i<m_vedit.Size();i++)
+	for (int i=0;i<m_vedit.Size();i++)
 		{
 		m_vedit.ElementAt(i)->Release();
 		}
 
 	ClearOldSounds();
 
-	for (i=0;i<m_vsound.Size();i++)
+	for (int i=0;i<m_vsound.Size();i++)
 		{
 		//m_vsound.ElementAt(i)->m_pDSBuffer->Release();
 		delete m_vsound.ElementAt(i);
 		}
 
-	for (i=0;i<m_vimage.Size();i++)
+	for (int i=0;i<m_vimage.Size();i++)
 		{
 		delete m_vimage.ElementAt(i);
 		}
 
-	for (i=0;i<m_vfont.Size();i++)
+	for (int i=0;i<m_vfont.Size();i++)
 		{
 		m_vfont.ElementAt(i)->UnRegister();
 		delete m_vfont.ElementAt(i);
 		}
 
-	for (i=0;i<m_vcollection.Size();i++)
+	for (int i=0;i<m_vcollection.Size();i++)
 		{
 		m_vcollection.ElementAt(i)->Release();
 		}
 
-	for (i=0;i<m_vCustomInfoTag.Size();i++)
+	for (int i=0;i<m_vCustomInfoTag.Size();i++)
 		{
 		delete m_vCustomInfoTag.ElementAt(i);
 		delete m_vCustomInfoContent.ElementAt(i);
@@ -932,8 +929,7 @@ BOOL PinTable::FVerifySaveToClose()
 		//MessageBox(NULL, "Async work items not done", NULL, 0);
 
 		// Close the remaining handles here, since the window messages will never be processed
-		int i;
-		for (i=0;i<m_vAsyncHandles.Size();i++)
+		for (int i=0;i<m_vAsyncHandles.Size();i++)
 			{
 			CloseHandle(m_vAsyncHandles.ElementAt(i));
 			}
@@ -1126,8 +1122,7 @@ void PinTable::Init(VPinball *pvp)
 	m_glassheight = 210;
 	m_tableheight = 0;
 
-	int i;
-	for (i=0;i<16;i++)
+	for (int i=0;i<16;i++)
 		{
 		rgcolorcustom[i] = RGB(0,0,0);
 		}
@@ -1206,9 +1201,9 @@ void PinTable::SetDefaultView()
 	FRect frect;
 	GetViewRect(&frect);
 
-	m_offsetx = (frect.left+frect.right) / 2;
-	m_offsety = (frect.top+frect.bottom) / 2;
-	m_zoom = 0.5;
+	m_offsetx = (frect.left+frect.right) * 0.5f;
+	m_offsety = (frect.top+frect.bottom) * 0.5f;
+	m_zoom = 0.5f;
 	}
 
 
@@ -1262,7 +1257,6 @@ BOOL FWzEqual(WCHAR *wz1, WCHAR *wz2)
 void PinTable::GetUniqueName(int type, WCHAR *wzUniqueName)
 	{
 	int suffix = 1;
-	//int i;
 	BOOL fFound = fFalse;
 	WCHAR wzRoot[128];
 	WCHAR wzName[128];
@@ -1297,7 +1291,6 @@ void PinTable::Render(Sur *psur)
 	GetClientRect(m_hwnd, &rc);
 	psur->SetFillColor(RGB(255,255,255));
 	psur->SetBorderColor(-1,fFalse,0);
-	int i;
 
 	FRect frect;
 	GetViewRect(&frect);
@@ -1368,7 +1361,7 @@ void PinTable::Render(Sur *psur)
 		Render3DProjection(psur);
 		}
 
-	for (i=0;i<m_vedit.Size();i++)
+	for (int i=0;i<m_vedit.Size();i++)
 		{
 		if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
 			{
@@ -1388,30 +1381,28 @@ void PinTable::Render(Sur *psur)
 		rright = min(rright, frect.right);
 		rbottom = min(rbottom, frect.bottom);
 
-		int beginx = (int)((rleft / m_gridsize));
-		float lenx = (rright - rleft) / m_gridsize;//(((rc.right - rc.left)/m_zoom));
-		int beginy = (int)((rtop / m_gridsize));
-		float leny = (rbottom - rtop) / m_gridsize;//(((rc.bottom - rc.top)/m_zoom));
+		const int beginx = (int)((rleft / m_gridsize));
+		const float lenx = (rright - rleft) / m_gridsize;//(((rc.right - rc.left)/m_zoom));
+		const int beginy = (int)((rtop / m_gridsize));
+		const float leny = (rbottom - rtop) / m_gridsize;//(((rc.bottom - rc.top)/m_zoom));
 
 		psur->SetObject(NULL); // Don't hit test gridlines
 
 		psur->SetLineColor(RGB(190,220,240), fFalse, 0);
-		for (i=0;i<(lenx+1);i+=1)
+		for (int i=0;i<(lenx+1);i++)
 			{
-			float x;
-			x = (beginx+i)*m_gridsize;
+			const float x = (beginx+i)*m_gridsize;
 			psur->Line(x, rtop, x, rbottom);
 			}
 
-		for (i=0;i<(leny+1);i+=1)
+		for (int i=0;i<(leny+1);i++)
 			{
-			float y;
-			y = (beginy+i)*m_gridsize;
+			const float y = (beginy+i)*m_gridsize;
 			psur->Line(rleft, y, rright, y);
 			}
 		}
 
-	for (i=0;i<m_vedit.Size();i++)
+	for (int i=0;i<m_vedit.Size();i++)
 		{
 		if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
 			{
@@ -1438,14 +1429,13 @@ void PinTable::Render(Sur *psur)
 
 void PinTable::Render3DProjection(Sur *psur)
 	{
-	int i;
 	PinProjection pinproj;
 	float rotation = 0;
 	float inclination = ANGTORAD(m_inclination);
 
 	Vector<Vertex3D> vvertex3D;
 
-	for (i=0;i<m_vedit.Size();i++)
+	for (int i=0;i<m_vedit.Size();i++)
 		{
 		m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
 		}
@@ -1459,8 +1449,7 @@ void PinTable::Render3DProjection(Sur *psur)
 	GPINFLOAT aspect = ((GPINFLOAT)1000)/750;
 
 	float realFOV = m_FOV;
-
-	if (realFOV <= 0)
+	if (realFOV < 0.001f)
 		{
 		realFOV = 0.001f; // Can't have a real zero FOV, but this will look the same
 		}
@@ -1471,7 +1460,7 @@ void PinTable::Render3DProjection(Sur *psur)
 	pinproj.Rotate(inclination,0,rotation);
 	pinproj.CacheTransform();
 
-	for (i=0;i<vvertex3D.Size();i++)
+	for (int i=0;i<vvertex3D.Size();i++)
 		{
 		delete vvertex3D.ElementAt(i);
 		}
@@ -1493,7 +1482,7 @@ void PinTable::Render3DProjection(Sur *psur)
 
 	pinproj.TransformVertices(rgvIn, NULL, 6, rgvOut);
 
-	for (i=0;i<6;i++)
+	for (int i=0;i<6;i++)
 		{
 		rgv[i].x = rgvOut[i].x;
 		rgv[i].y = rgvOut[i].y;
@@ -1661,8 +1650,8 @@ void PinTable::Play()
 		float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
 		g_pplayer->m_mainlevel.m_gravity.x = (D3DVALUE)0; 
-		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)(sin(ANGTORAD(slope))*m_Gravity); //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cos(ANGTORAD(slope))*m_Gravity);
+		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)( sinf(ANGTORAD(slope))*m_Gravity); //0.06f;
+		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cosf(ANGTORAD(slope))*m_Gravity);
 
 		m_pcv->SetEnabled(fFalse); // Can't edit script while playing
 
@@ -1702,13 +1691,12 @@ void PinTable::StopPlaying()
 
 	// Stop all sounds
 	// In case we were playing any of the main buffers
-	int i;
-	for (i=0;i<m_vsound.Size();i++)
+	for (int i=0;i<m_vsound.Size();i++)
 		{
 		m_vsound.ElementAt(i)->m_pDSBuffer->Stop();
 		}
 	// The usual case - copied sounds
-	for (i=0;i<m_voldsound.Size();i++)
+	for (int i=0;i<m_voldsound.Size();i++)
 		{
 		PinSoundCopy *ppsc = m_voldsound.ElementAt(i);
 		ppsc->m_pDSBuffer->Stop();
@@ -2400,10 +2388,9 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
 
 HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash)
 	{
-	int i;
 	BiffWriter bw(pstmTags, hcrypthash, NULL);
 
-	for (i=0;i<m_vCustomInfoTag.Size();i++)
+	for (int i=0;i<m_vCustomInfoTag.Size();i++)
 		{
 		bw.WriteString(FID(CUST), m_vCustomInfoTag.ElementAt(i));
 		}
@@ -2411,7 +2398,7 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
 	bw.WriteTag(FID(ENDB));
 
-	for (i=0;i<m_vCustomInfoTag.Size();i++)
+	for (int i=0;i<m_vCustomInfoTag.Size();i++)
 		{
 		char *szName = m_vCustomInfoTag.ElementAt(i);
 		int len = lstrlen(szName);
@@ -2512,8 +2499,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 	BiffReader br(pstmTags, this, NULL, version, hcrypthash, NULL);
 	br.Load();
 
-	int i;
-	for (i=0;i<m_vCustomInfoTag.Size();i++)
+	for (int i=0;i<m_vCustomInfoTag.Size();i++)
 		{
 		char *szName = m_vCustomInfoTag.ElementAt(i);
 		char *szValue;
@@ -2786,8 +2772,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 				cloadeditems = 0;
 				SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
 
-				int i;
-				for(i = 0; i < csubobj; i++)
+				for(int i = 0; i < csubobj; i++)
 					{
 					char szSuffix[32], szStmName[64];
 					strcpy(szStmName, "GameItem");
@@ -2822,7 +2807,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 					SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 					}
 
-				for(i = 0; i < csounds; i++)
+				for(int i = 0; i < csounds; i++)
 					{
 					char szSuffix[32], szStmName[64];
 					strcpy(szStmName, "Sound");
@@ -2841,7 +2826,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 					SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 					}
 
-				for(i = 0; i < ctextures; i++)
+				for(int i = 0; i < ctextures; i++)
 					{
 					char szSuffix[32], szStmName[64];
 					strcpy(szStmName, "Image");
@@ -2860,7 +2845,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 					SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 					}
 
-				for(i = 0; i < cfonts; i++)
+				for(int i = 0; i < cfonts; i++)
 					{
 					char szSuffix[32], szStmName[64];
 					strcpy(szStmName, "Font");
@@ -2883,7 +2868,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 					SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 					}
 
-				for(i = 0; i < ccollection; i++)
+				for(int i = 0; i < ccollection; i++)
 					{
 					char szSuffix[32], szStmName[64];
 					strcpy(szStmName, "Collection");
@@ -2907,7 +2892,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 					SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 					}
 
-				for (i=0;i<m_vedit.Size();i++)
+				for (int i=0;i<m_vedit.Size();i++)
 					{
 					IEditable *piedit;
 					piedit = m_vedit.ElementAt(i);
@@ -2947,8 +2932,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
 				foo = CryptReleaseContext(hcp, 0);
 
-				int i;
-				for (i=0;i<HASHLENGTH;i++)
+				for (int i=0;i<HASHLENGTH;i++)
 					{
 					if (hashval[i] != hashvalOld[i])
 						{
@@ -3127,12 +3111,10 @@ void PinTable::SetLoadDefaults()
 HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
 #ifndef OLDLOAD
-	int rgi[6];
-	int i;
-
 	SetLoadDefaults();
 
-	for (i=0;i<6;i++)
+	int rgi[6];
+	for (int i=0;i<6;i++)
 		{
 		rgi[i] = 0;
 		}
@@ -3586,7 +3568,6 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
 	MMCKINFO pck;
 	ZeroMemory( &mmio, sizeof(mmio));	
 	ZeroMemory( &pck, sizeof(pck));
-	int i;
 	WAVEFORMATEX wfx;
 
 	HMMIO hmmio = mmioOpen( szfilename, &mmio,  MMIO_ALLOCBUF |MMIO_CREATE |MMIO_EXCLUSIVE |MMIO_READWRITE);
@@ -3608,7 +3589,8 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
 			pck.cksize = sizeof(WAVEFORMATEX);
 			result = mmioCreateChunk(hmmio, &pck, 4);//0
 			// Write the wave format data.
-			i=16;	mmioWrite(hmmio, (char *)&i, 4);
+			int i=16;
+			mmioWrite(hmmio, (char *)&i, 4);
 			mmioWrite(hmmio, (char*)&wfx, sizeof(wfx)-2); //END OF CORRECTION
 
 			mmioWrite(hmmio, "data", 4);						//data chunk
@@ -3681,8 +3663,7 @@ void PinTable::ImportSound(HWND hwndListView, char *szfilename, BOOL fPlay)
 
 void PinTable::ListSounds(HWND hwndListView)
 	{
-	int i;
-	for (i=0;i<m_vsound.Size();i++)
+	for (int i=0;i<m_vsound.Size();i++)
 		{
 		AddListSound(hwndListView, m_vsound.ElementAt(i));
 		}
@@ -3745,8 +3726,7 @@ void PinTable::RemoveFont(PinFont *ppf)
 
 void PinTable::ListFonts(HWND hwndListView)
 	{
-	int i;
-	for (i=0;i<m_vfont.Size();i++)
+	for (int i=0;i<m_vfont.Size();i++)
 		{
 		AddListBinary(hwndListView, m_vfont.ElementAt(i));
 		}
@@ -3783,8 +3763,7 @@ void PinTable::NewCollection(HWND hwndListView, BOOL fFromSelection)
 
 	if (fFromSelection && (m_vmultisel.ElementAt(0) != this))
 		{
-		int i;
-		for (i=0;i<m_vmultisel.Size();i++)
+		for (int i=0;i<m_vmultisel.Size();i++)
 			{
 			ISelect *pisel = m_vmultisel.ElementAt(i);
 			IEditable *piedit = pisel->GetIEditable();
@@ -3831,8 +3810,7 @@ void PinTable::ListCollections(HWND hwndListView)
 	{
 	//ListView_DeleteAllItems(hwndListView);
 
-	int i;
-	for (i=0;i<m_vcollection.Size();i++)
+	for (int i=0;i<m_vcollection.Size();i++)
 		{
 		CComObject<Collection> *pcol = m_vcollection.ElementAt(i);
 
@@ -4018,8 +3996,7 @@ void PinTable::DoLButtonDown(int x,int y)
 
 		AddMultiSel(pisel, fAdd, fTrue);
 
-		int i;
-		for (i=0;i<m_vmultisel.Size();i++)
+		for (int i=0;i<m_vmultisel.Size();i++)
 			{
 			m_vmultisel.ElementAt(i)->OnLButtonDown(x,y);
 			}
@@ -4028,12 +4005,11 @@ void PinTable::DoLButtonDown(int x,int y)
 
 void PinTable::DoLButtonUp(int x,int y)
 	{
-	int i;
 	//m_pselcur->OnLButtonUp(x,y);
 
 	if (!m_fDragging) // Not doing band select
 		{
-		for (i=0;i<m_vmultisel.Size();i++)
+		for (int i=0;i<m_vmultisel.Size();i++)
 			{
 			m_vmultisel.ElementAt(i)->OnLButtonUp(x,y);
 			}
@@ -4141,8 +4117,7 @@ BOOL PinTable::FMutilSelLocked()
 	{
 	BOOL fLocked = fFalse;
 
-	int i;
-	for (i=0;i<m_vmultisel.Size();i++)
+	for (int i=0;i<m_vmultisel.Size();i++)
 		{
 		if (m_vmultisel.ElementAt(i)->m_fLocked)
 			{
@@ -4161,8 +4136,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 		case ID_DRAWINFRONT:
 		case ID_DRAWINBACK:
 			{
-			int i;
-			for (i=0;i<m_vmultisel.Size();i++)
+			for (int i=0;i<m_vmultisel.Size();i++)
 				{
 				ISelect *psel;
 				psel = m_vmultisel.ElementAt(i);
@@ -4176,8 +4150,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 			{
 			BeginUndo();
 			BOOL fLock = FMutilSelLocked() ? fFalse : fTrue;
-			int i;
-			for (i=0;i<m_vmultisel.Size();i++)
+			for (int i=0;i<m_vmultisel.Size();i++)
 				{
 				ISelect *psel;
 				psel = m_vmultisel.ElementAt(i);
@@ -4256,11 +4229,9 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
 void PinTable::FlipY(Vertex *pvCenter)
 	{
-	int i;
-
 	BeginUndo();
 
-	for (i=0;i<m_vmultisel.Size();i++)
+	for (int i=0;i<m_vmultisel.Size();i++)
 		{
 		m_vmultisel.ElementAt(i)->FlipY(pvCenter);
 		}
@@ -4270,11 +4241,9 @@ void PinTable::FlipY(Vertex *pvCenter)
 
 void PinTable::FlipX(Vertex *pvCenter)
 	{
-	int i;
-
 	BeginUndo();
 
-	for (i=0;i<m_vmultisel.Size();i++)
+	for (int i=0;i<m_vmultisel.Size();i++)
 		{
 		m_vmultisel.ElementAt(i)->FlipX(pvCenter);
 		}
@@ -4284,11 +4253,9 @@ void PinTable::FlipX(Vertex *pvCenter)
 
 void PinTable::Rotate(float ang, Vertex *pvCenter)
 	{
-	int i;
-
 	BeginUndo();
 
-	for (i=0;i<m_vmultisel.Size();i++)
+	for (int i=0;i<m_vmultisel.Size();i++)
 		{
 		m_vmultisel.ElementAt(i)->Rotate(ang, pvCenter);
 		}
@@ -4298,11 +4265,9 @@ void PinTable::Rotate(float ang, Vertex *pvCenter)
 
 void PinTable::Scale(float scalex, float scaley, Vertex *pvCenter)
 	{
-	int i;
-
 	BeginUndo();
 
-	for (i=0;i<m_vmultisel.Size();i++)
+	for (int i=0;i<m_vmultisel.Size();i++)
 		{
 		m_vmultisel.ElementAt(i)->Scale(scalex, scaley, pvCenter);
 		}
@@ -4312,11 +4277,9 @@ void PinTable::Scale(float scalex, float scaley, Vertex *pvCenter)
 
 void PinTable::Translate(Vertex *pvOffset)
 	{
-	int i;
-
 	BeginUndo();
 
-	for (i=0;i<m_vmultisel.Size();i++)
+	for (int i=0;i<m_vmultisel.Size();i++)
 		{
 		m_vmultisel.ElementAt(i)->Translate(pvOffset);
 		}
@@ -4326,17 +4289,15 @@ void PinTable::Translate(Vertex *pvOffset)
 
 void PinTable::GetCenter(Vertex *pv)
 	{
-	int i;
 	Vertex vCenter;
 
 	float minx, maxx, miny, maxy;
-
 	minx = FLT_MAX;
 	maxx = -FLT_MAX;
 	miny = FLT_MAX;
 	maxy = -FLT_MAX;
 
-	for (i=0;i<m_vmultisel.Size();i++)
+	for (int i=0;i<m_vmultisel.Size();i++)
 		{
 		ISelect *psel;
 		psel = m_vmultisel.ElementAt(i);
@@ -4350,8 +4311,8 @@ void PinTable::GetCenter(Vertex *pv)
 		//ty += m_vdpoint.ElementAt(i)->m_v.y;
 		}
 
-	pv->x = (maxx+minx)/2;
-	pv->y = (maxy+miny)/2;
+	pv->x = (maxx+minx)*0.5f;
+	pv->y = (maxy+miny)*0.5f;
 	}
 
 void PinTable::PutCenter(Vertex *pv)
@@ -4362,8 +4323,7 @@ void PinTable::DoRButtonUp(int x,int y)
 	{
 	m_vmultisel.ElementAt(0)->OnRButtonUp(x,y);
 
-	int ks;
-	ks = GetKeyState(VK_CONTROL);
+	const int ks = GetKeyState(VK_CONTROL);
 
 	// Only bring up context menu if we weren't in magnify mode
 	if (!((g_pvp->m_ToolCur == IDC_MAGNIFY) || (ks & 0x80000000)))
@@ -4401,8 +4361,7 @@ void PinTable::DoMouseMove(int x,int y)
 
 	if (!m_fDragging) // Not doing band select
 		{
-		int i;
-		for (i=0;i<m_vmultisel.Size();i++)
+		for (int i=0;i<m_vmultisel.Size();i++)
 			{
 			m_vmultisel.ElementAt(i)->OnMouseMove(x,y);
 			}
@@ -4442,7 +4401,6 @@ void PinTable::DoLDoubleClick(int x, int y)
 void PinTable::ExportBlueprint()
 	{
 	BOOL fSaveAs = fTrue;
-	int i,l;
 
 	HANDLE hfile;
 
@@ -4556,7 +4514,7 @@ void PinTable::ExportBlueprint()
 		Render3DProjection(psur);
 		}
 
-	for (i=0;i<m_vedit.Size();i++)
+	for (int i=0;i<m_vedit.Size();i++)
 		{
 		if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
 			{
@@ -4568,7 +4526,7 @@ void PinTable::ExportBlueprint()
 
 	delete psur;
 
-	for (i=0;i<bmheight;i++)
+	for (int i=0;i<bmheight;i++)
 		{
 		WriteFile(hfile, (pbits + ((i*bmwidth) * 3)), bmwidth*3, &foo, NULL);
 		}
@@ -4576,9 +4534,9 @@ void PinTable::ExportBlueprint()
 	// For some reason to make our bitmap compatible with all programs,
 	// We need to write out dummy bytes as if our totalwidthbytes had been
 	// a multiple of 4.
-	for (i=0;i<bmheight;i++)
+	for (int i=0;i<bmheight;i++)
 		{
-		for (l=0;l<bmlinebuffer;l++)
+		for (int l=0;l<bmlinebuffer;l++)
 			{
 			WriteFile(hfile, pbits, 1, &foo, NULL);
 			}
@@ -4705,12 +4663,10 @@ void PinTable::Undelete(IEditable *pie)
 void PinTable::BackupForPlay()
 	{
 #ifndef PERFTEST
-	int i;
-
 	m_undo.BeginUndo();
 
 	m_undo.MarkForUndo((IEditable *)this);
-	for (i=0;i<m_vedit.Size();i++)
+	for (int i=0;i<m_vedit.Size();i++)
 		{
 		m_undo.MarkForUndo(m_vedit.ElementAt(i));
 		}
@@ -4726,7 +4682,6 @@ void PinTable::RestoreBackup()
 
 void PinTable::Copy()
 	{
-	int i;
 	Vector<IStream> vstm;
 	ULONG writ = 0;
 
@@ -4737,7 +4692,7 @@ void PinTable::Copy()
 
 	//m_vstmclipboard
 
-	for (i=0;i<m_vmultisel.Size();i++)
+	for (int i=0;i<m_vmultisel.Size();i++)
 		{
 		IStream *pstm;
 		HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, 1);
@@ -4786,8 +4741,6 @@ int rgItemViewAllowed[] =
 void PinTable::Paste(BOOL fAtLocation, int x, int y)
 	{
 	IEditable *peditNew;
-	int id;
-	int i;
 	BOOL fError = fFalse;
 	int viewflag;
 	int cpasted = 0;
@@ -4812,7 +4765,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 	// Do a backwards loop, so that the primary selection we had when
 	// copying will again be the primary selection, since it will be
 	// selected last.  Purely cosmetic.
-	for (i=(g_pvp->m_vstmclipboard.Size()-1);i>=0;i--)
+	for (int i=(g_pvp->m_vstmclipboard.Size()-1);i>=0;i--)
 	//for (i=0;i<g_pvp->m_vstmclipboard.Size();i++)
 		{
 		pstm = g_pvp->m_vstmclipboard.ElementAt(i);
@@ -4835,6 +4788,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 			CreateIEditableFromType(type, &peditNew);
 			peditNew->AddRef();
 
+			int id;
 			peditNew->InitLoad(pstm, this, &id, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
 			peditNew->InitVBA(fTrue, 0, NULL);
 			m_vedit.AddElement(peditNew);
@@ -4935,8 +4889,7 @@ void PinTable::AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate)
 		// If the table is currently selected, deselect it - the table can not be part of a multi-select
 		if (!fAdd || (m_vmultisel.ElementAt(0) == (ISelect *)this))
 			{
-			int i;
-			for (i=0;i<m_vmultisel.Size();i++)
+			for (int i=0;i<m_vmultisel.Size();i++)
 				{
 				m_vmultisel.ElementAt(i)->m_selectstate = eNotSelected;
 				}
@@ -4997,10 +4950,9 @@ void PinTable::AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate)
 
 void PinTable::OnDelete()
 	{
-	int i;
 	Vector<ISelect> m_vseldelete;
 
-	for (i=0;i<m_vmultisel.Size();i++)
+	for (int i=0;i<m_vmultisel.Size();i++)
 		{
 		// Can't delete these items yet - AddMultiSel will try to mark them as unselected
 		m_vseldelete.AddElement(m_vmultisel.ElementAt(i));
@@ -5008,7 +4960,7 @@ void PinTable::OnDelete()
 
 	AddMultiSel((ISelect *)this, fFalse, fTrue); // Will get rid of the multi-selection
 
-	for (i=0;i<m_vseldelete.Size();i++)
+	for (int i=0;i<m_vseldelete.Size();i++)
 		{
 		m_vseldelete.ElementAt(i)->Delete();
 		}
@@ -5025,10 +4977,9 @@ void PinTable::OnKeyDown(int key)
 		{
 		case VK_DELETE:
 			{
-			int i;
 			Vector<ISelect> m_vseldelete;
 
-			for (i=0;i<m_vmultisel.Size();i++)
+			for (int i=0;i<m_vmultisel.Size();i++)
 				{
 				// Can't delete these items yet - AddMultiSel will try to mark them as unselected
 				m_vseldelete.AddElement(m_vmultisel.ElementAt(i));
@@ -5036,7 +4987,7 @@ void PinTable::OnKeyDown(int key)
 
 			AddMultiSel((ISelect *)this, fFalse, fTrue); // Will get rid of the multi-selection
 
-			for (i=0;i<m_vseldelete.Size();i++)
+			for (int i=0;i<m_vseldelete.Size();i++)
 				{
 				m_vseldelete.ElementAt(i)->Delete();
 				}
@@ -5049,9 +5000,8 @@ void PinTable::OnKeyDown(int key)
 		case VK_DOWN:
 			{
 			BeginUndo();
-			int distance = fShift ? 10 : 1;
-			int i;
-			for (i=0;i<m_vmultisel.Size();i++)
+			const int distance = fShift ? 10 : 1;
+			for (int i=0;i<m_vmultisel.Size();i++)
 				{
 				ISelect *pisel = m_vmultisel.ElementAt(i);
 				if (!pisel->GetIEditable()->GetISelect()->m_fLocked) // control points get lock info from parent - UNDONE - make this code snippet be in one place
@@ -5334,8 +5284,7 @@ void PinTable::OnLButtonUp(int x, int y)
 			HitRectSur *phrs;
 			HDC hdc;
 			Vector<ISelect> vsel;
-			int i;
-
+			
 			hdc = GetDC(m_hwnd);
 
 			RECT rc;
@@ -5350,9 +5299,9 @@ void PinTable::OnLButtonUp(int x, int y)
 			ksshift = GetKeyState(VK_SHIFT);
 			BOOL fAdd = (ksshift & 0x80000000) != 0;
 
-			int minlevel = 999;
+			int minlevel = INT_MAX;
 
-			for (i=0;i<vsel.Size();i++)
+			for (int i=0;i<vsel.Size();i++)
 				{
 				minlevel = min(minlevel, vsel.ElementAt(i)->GetSelectLevel());
 				}
@@ -5361,7 +5310,7 @@ void PinTable::OnLButtonUp(int x, int y)
 				{
 				BOOL fFirstAdd = fTrue;
 
-				for (i=0;i<vsel.Size();i++)
+				for (int i=0;i<vsel.Size();i++)
 					{
 					if (vsel.ElementAt(i)->GetSelectLevel() == minlevel)
 						{
@@ -5873,13 +5822,11 @@ STDMETHODIMP PinTable::put_FieldOfView(float newVal)
 
 void PinTable::ClearOldSounds()
 	{
-	int i;
-	DWORD status;
-
-	for (i=0;i<m_voldsound.Size();i++)
+	for (int i=0;i<m_voldsound.Size();i++)
 		{
 		//LPDIRECTSOUNDBUFFER pdsbOld = (LPDIRECTSOUNDBUFFER)(m_voldsound.ElementAt(i));
 		PinSoundCopy *ppsc = m_voldsound.ElementAt(i);
+		DWORD status;
 		ppsc->m_pDSBuffer->GetStatus(&status);
 		if (!(status & DSBSTATUS_PLAYING)) //sound is done, we can throw it away now
 			{
@@ -5893,13 +5840,11 @@ void PinTable::ClearOldSounds()
 
 HRESULT PinTable::StopSound(BSTR Sound)
 	{
-	int i;
-
 	MAKE_ANSIPTR_FROMWIDE(szName, Sound);
 	CharLowerBuff(szName, lstrlen(szName));
 
 	// In case we were playing any of the main buffers
-	for (i=0;i<m_vsound.Size();i++)
+	for (int i=0;i<m_vsound.Size();i++)
 		{
 		if (!lstrcmp(m_vsound.ElementAt(i)->m_szInternalName, szName))
 			{
@@ -5908,7 +5853,7 @@ HRESULT PinTable::StopSound(BSTR Sound)
 			}
 		}
 
-	for (i=0;i<m_voldsound.Size();i++)
+	for (int i=0;i<m_voldsound.Size();i++)
 		{
 		PinSoundCopy *ppsc = m_voldsound.ElementAt(i);
 		if (!lstrcmp(ppsc->m_ppsOriginal->m_szInternalName, szName))
@@ -5926,13 +5871,12 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume)
 	MAKE_ANSIPTR_FROMWIDE(szName, bstr);
 	CharLowerBuff(szName, lstrlen(szName));
 
-	int i;
-
-    if( !lstrcmp( "knock", szName ) || !lstrcmp( "knocker", szName ) )
+	if( !lstrcmp( "knock", szName ) || !lstrcmp( "knocker", szName ) )
     {
         hid_knock();
     }
 
+	int i;
 	for (i=0;i<m_vsound.Size();i++)
 		{
 		if (!lstrcmp(m_vsound.ElementAt(i)->m_szInternalName, szName))
@@ -5993,9 +5937,7 @@ PinImage *PinTable::GetImage(char *szName)
 	{
 	CharLowerBuff(szName, lstrlen(szName));
 
-	int i;
-
-	for (i=0;i<m_vimage.Size();i++)
+	for (int i=0;i<m_vimage.Size();i++)
 		{
 		if (!lstrcmp(m_vimage.ElementAt(i)->m_szInternalName, szName))
 			{
@@ -6097,7 +6039,6 @@ bool PinTable::ExportImage(HWND hwndListView, PinImage *ppi, char *szfilename)
 		DDSURFACEDESC2 ddsd;
 		unsigned char* info;
 		unsigned char* sinfo;	
-		int surfwidth, surfheight; int i, l;
 		info = NULL; sinfo = NULL;
 		ddsd.dwSize = sizeof(ddsd);
 		ppi->m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
@@ -6111,8 +6052,8 @@ bool PinTable::ExportImage(HWND hwndListView, PinImage *ppi, char *szfilename)
 			return false;
 			}
 		DWORD write; int foo;
-		surfwidth = ppi->m_width;					// texture width 
-		surfheight = ppi->m_height;					// and height		
+		const int surfwidth = ppi->m_width;					// texture width 
+		const int surfheight = ppi->m_height;					// and height		
 
 		int bmplnsize = (surfwidth*4+3) & -4;		// line size ... 4 bytes per pixel + pad to 4 byte boundary		
 
@@ -6155,15 +6096,14 @@ bool PinTable::ExportImage(HWND hwndListView, PinImage *ppi, char *szfilename)
 			
 		for (info = sinfo + surfwidth*3; info < sinfo + bmplnsize; *info++ = 0); //fill padding with 0			
 		
-		BYTE *spch = (BYTE *)ddsd.lpSurface + (surfheight * ddsd.lPitch);	// just past the end of the Texture part of DD surface
-		BYTE *pch;
-			
-		for (i=0;i<surfheight;i++)
+		const BYTE *spch = (BYTE *)ddsd.lpSurface + (surfheight * ddsd.lPitch);	// just past the end of the Texture part of DD surface
+
+		for (int i=0;i<surfheight;i++)
 		{
 			info = sinfo; //reset to start	
-			pch = (spch-= ddsd.lPitch);  // start on previous previous line			
+			const BYTE *pch = (spch -= ddsd.lPitch);  // start on previous previous line			
 
-			for (l=0;l<surfwidth;l++)
+			for (int l=0;l<surfwidth;l++)
 			{					
 				*info++ = *pch++;
 				*info++ = *pch++;
@@ -6260,8 +6200,7 @@ void PinTable::ImportImage(HWND hwndListView, char *filename)
 
 void PinTable::ListImages(HWND hwndListView)
 	{
-	int i;
-	for (i=0;i<m_vimage.Size();i++)
+	for (int i=0;i<m_vimage.Size();i++)
 		{
 		AddListImage(hwndListView, m_vimage.ElementAt(i));
 		}
@@ -6317,8 +6256,7 @@ PinBinary *PinTable::GetImageLinkBinary(int id)
 
 void PinTable::ListCustomInfo(HWND hwndListView)
 	{
-	int i;
-	for (i=0;i<m_vCustomInfoTag.Size();i++)
+	for (int i=0;i<m_vCustomInfoTag.Size();i++)
 		{
 		AddListItem(hwndListView, m_vCustomInfoTag.ElementAt(i), m_vCustomInfoContent.ElementAt(i), NULL);
 		}
@@ -6398,8 +6336,6 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
 		ddsd.dwSize = sizeof(ddsd);
 
 		hr = ppi->m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-
-		char *pch = (char *)ddsd.lpSurface;
 
 		// 32-bit picture
 		LZWReader lzwreader(pstm, (int *)ddsd.lpSurface, width*4, height, ddsd.lPitch);
@@ -6782,8 +6718,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 
 float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 	{
-	int i;
-	for (i=0;i<m_vedit.Size();i++)
+	for (int i=0;i<m_vedit.Size();i++)
 		{
 		if (m_vedit.ElementAt(i)->GetItemType() == eItemSurface || m_vedit.ElementAt(i)->GetItemType() == eItemRamp)
 			{
@@ -6818,8 +6753,7 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 						cvertex = vvertex.Size();
 						rgv = new Vertex[cvertex];
 						
-						int i;
-						for (i=0;i<vvertex.Size();i++)
+						for (int i=0;i<vvertex.Size();i++)
 							{
 							rgv[i] = *((Vertex *)vvertex.ElementAt(i));
 							}
@@ -6829,8 +6763,6 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 						// Go through vertices (including iSeg itself) counting control points until iSeg
 						float totallength = 0;
 						float startlength = 0;
-						float len;
-
 						float zheight = 0;
 
 						if (iSeg == -1)
@@ -6840,12 +6772,11 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 							//return 0; // Object is not on ramp path
 							}
 
-						float dx,dy;
-						for (i=1;i<cvertex;i++)
+						for (int i=1;i<cvertex;i++)
 							{
-							dx = (float)rgv[i].x - (float)rgv[i-1].x;
-							dy = (float)rgv[i].y - (float)rgv[i-1].y;
-							len = (float)sqrt(dx*dx + dy*dy);
+							const float dx = rgv[i].x - rgv[i-1].x;
+							const float dy = rgv[i].y - rgv[i-1].y;
+							const float len = sqrtf(dx*dx + dy*dy);
 							if (i <= iSeg)
 								{
 								startlength += len;
@@ -6853,15 +6784,15 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 							totallength += len;
 							}
 
-						dx = (float)vOut.x - (float)rgv[iSeg].x;
-						dy = (float)vOut.y - (float)rgv[iSeg].y;
-						len = (float)sqrt(dx*dx + dy*dy);
+						const float dx = vOut.x - rgv[iSeg].x;
+						const float dy = vOut.y - rgv[iSeg].y;
+						const float len = sqrtf(dx*dx + dy*dy);
 						startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
 
 						zheight = ((startlength/totallength) * (pramp->m_d.m_heighttop - pramp->m_d.m_heightbottom)) + pramp->m_d.m_heightbottom;
 
 HeightError:
-						for (i=0;i<vvertex.Size();i++)
+						for (int i=0;i<vvertex.Size();i++)
 							{
 							delete vvertex.ElementAt(i);
 							}
@@ -6947,8 +6878,8 @@ STDMETHODIMP PinTable::Nudge(float Angle, float Force)
 		{
 		float sn, cs;
 
-		sn = (float)sin(ANGTORAD(Angle));
-		cs = (float)cos(ANGTORAD(Angle));
+		sn = sinf(ANGTORAD(Angle));
+		cs = cosf(ANGTORAD(Angle));
 
 		g_pplayer->m_NudgeX = -sn * Force;
 		g_pplayer->m_NudgeY = cs * Force;
@@ -7138,8 +7069,8 @@ STDMETHODIMP PinTable::put_Gravity(float newVal )
 		float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
 		g_pplayer->m_mainlevel.m_gravity.x = (D3DVALUE)0; 
-		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)(sin(ANGTORAD(slope))*m_Gravity); //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cos(ANGTORAD(slope))*m_Gravity);
+		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)( sinf(ANGTORAD(slope))*m_Gravity); //0.06f;
+		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cosf(ANGTORAD(slope))*m_Gravity);
 		}
 	else
 		{
@@ -7387,8 +7318,8 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
 		float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
 		g_pplayer->m_mainlevel.m_gravity.x = (D3DVALUE)0; 
-		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)(sin(ANGTORAD(slope))*m_Gravity); //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cos(ANGTORAD(slope))*m_Gravity);
+		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)( sinf(ANGTORAD(slope))*m_Gravity); //0.06f;
+		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cosf(ANGTORAD(slope))*m_Gravity);
 		}
 	else
 		{
@@ -7416,8 +7347,8 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
 		float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
 		g_pplayer->m_mainlevel.m_gravity.x = (D3DVALUE)0; 
-		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)(sin(ANGTORAD(slope))*m_Gravity); //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cos(ANGTORAD(slope))*m_Gravity);
+		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)( sinf(ANGTORAD(slope))*m_Gravity); //0.06f;
+		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cosf(ANGTORAD(slope))*m_Gravity);
 		}
 	else
 		{
@@ -7733,14 +7664,14 @@ STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_AccelerometerAngle(float *pVal)
 {
-	if (g_pplayer) *pVal = g_pplayer->m_AccelAngle * 180.0f/PI;			//VB Script convert to radians
+	if (g_pplayer) *pVal = g_pplayer->m_AccelAngle * (float)(180.0/M_PI);			//VB Script convert to radians
 	else *pVal = m_tblAccelAngle;										//VP Editor in degrees
 	return S_OK;
 }
 
 STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 {
-	if (g_pplayer) g_pplayer->m_AccelAngle = newVal * PI/180.0f;	//VB Script conert to radians
+	if (g_pplayer) g_pplayer->m_AccelAngle = newVal * (float)(M_PI/180.0);	//VB Script conert to radians
 	else
 		{	//VP Editor in degrees
 		int tmp;

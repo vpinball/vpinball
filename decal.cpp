@@ -97,14 +97,14 @@ void Decal::PreRender(Sur *psur)
 		psur->SetFillColor(RGB(0,0,255));
 		psur->SetObject(this);
 
-		float halfwidth = m_realwidth/*m_d.m_width*/ * 0.5f;
-		float halfheight = m_realheight/*m_d.m_height*/ * 0.5f;
+		const float halfwidth = m_realwidth/*m_d.m_width*/ * 0.5f;
+		const float halfheight = m_realheight/*m_d.m_height*/ * 0.5f;
 
 		Vertex rgv[4];
 
-		float radangle = m_d.m_rotation / 180 * PI;
-		float sn = (float)sin(radangle);
-		float cs = (float)cos(radangle);
+		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+		const float sn = sinf(radangle);
+		const float cs = cosf(radangle);
 
 		rgv[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
 		rgv[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
@@ -133,12 +133,12 @@ void Decal::Render(Sur *psur)
 
 		Vertex rgv[4];
 
-		float halfwidth = m_realwidth * 0.5f;
-		float halfheight = m_realheight * 0.5f;
+		const float halfwidth = m_realwidth * 0.5f;
+		const float halfheight = m_realheight * 0.5f;
 
-		float radangle = m_d.m_rotation / 180 * PI;
-		float sn = (float)sin(radangle);
-		float cs = (float)cos(radangle);
+		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+		const float sn = sinf(radangle);
+		const float cs = cosf(radangle);
 
 		rgv[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
 		rgv[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
@@ -182,8 +182,7 @@ void Decal::GetTextSize(int *px, int *py)
 		// Do huge amounts of work to get rid of the descent and internal ascent of the font, because it leaves ugly spaces
 		*py = AUTOLEADING * len;
 		*px = 0;
-		int i;
-		for (i=0;i<len;i++)
+		for (int i=0;i<len;i++)
 			{
 			rcOut.left = 0;
 			rcOut.top = 0;		//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
@@ -234,9 +233,8 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 		if (m_d.m_fVerticalText)
 			{
 			int maxwidth = 0;
-			int i;
-
-			for (i=0;i<len;i++)
+			
+			for (int i=0;i<len;i++)
 				{
 				rcOut.left = 0;
 				rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
@@ -298,9 +296,7 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 
 		if (m_d.m_fVerticalText)
 			{
-			int i;
-
-			for (i=0;i<len;i++)
+			for (int i=0;i<len;i++)
 				{
 				rcOut.top = AUTOLEADING*i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
 				rcOut.bottom = rcOut.top + 100;
@@ -339,7 +335,6 @@ void Decal::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	int l;
 	WORD rgi[4];
 	Vertex3D rgv3D[4];
 	PinImage *pin;
@@ -422,7 +417,7 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
 		}
 
-	for (l=0;l<4;l++)
+	for (WORD l=0;l<4;l++)
 		{
 		rgi[l] = l;
 		rgv3D[l].z = height + 0.2f;
@@ -430,12 +425,12 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
 
-	float halfwidth = m_realwidth * 0.5f;
-	float halfheight = m_realheight * 0.5f;
+	const float halfwidth = m_realwidth * 0.5f;
+	const float halfheight = m_realheight * 0.5f;
 
-	float radangle = m_d.m_rotation / 180* PI;
-	float sn = (float)sin(radangle);
-	float cs = (float)cos(radangle);
+	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float sn = sinf(radangle);
+	const float cs = cosf(radangle);
 
 	rgv3D[0].x = m_d.m_vCenter.x + sn*(halfheight+leading) - cs*halfwidth;
 	rgv3D[0].y = m_d.m_vCenter.y - cs*(halfheight+leading) - sn*halfwidth;
@@ -707,7 +702,7 @@ void Decal::EnsureSize()
 		CY cy;
 		m_pIFont->get_Size(&cy);
 
-		m_realheight = (float)cy.Lo / 2545;
+		m_realheight = (float)cy.Lo * (float)(1.0/2545.0);
 
 		if (m_d.m_fVerticalText)
 			{
@@ -739,7 +734,7 @@ void Decal::EnsureSize()
 
 			GetTextSize(&sizex, &sizey);
 
-			m_realheight = (float)cy.Lo / 2545;
+			m_realheight = (float)cy.Lo * (float)(1.0/2545.0);
 
 			if (m_d.m_fVerticalText)
 				{

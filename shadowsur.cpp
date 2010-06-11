@@ -23,10 +23,10 @@ ShadowSur::~ShadowSur()
 
 void ShadowSur::Line(float x, float y, float x2, float y2)
 	{
-	int ix = SCALEX(x);
-	int iy = SCALEY(y);
-	int ix2 = SCALEX(x2);
-	int iy2 = SCALEY(y2);
+	const int ix = SCALEXf(x);
+	const int iy = SCALEYf(y);
+	const int ix2 = SCALEXf(x2);
+	const int iy2 = SCALEYf(y2);
 
 	SelectObject(m_hdc, m_hpnLine);
 
@@ -36,10 +36,10 @@ void ShadowSur::Line(float x, float y, float x2, float y2)
 
 void ShadowSur::Rectangle(float x, float y, float x2, float y2)
 	{
-	int ix = SCALEX(x);
-	int iy = SCALEY(y);
-	int ix2 = SCALEX(x2);
-	int iy2 = SCALEY(y2);
+	const int ix = SCALEXf(x);
+	const int iy = SCALEYf(y);
+	const int ix2 = SCALEXf(x2);
+	const int iy2 = SCALEYf(y2);
 
 	::Rectangle(m_hdc, ix, iy, ix2, iy2);
 	}
@@ -50,9 +50,9 @@ void ShadowSur::Rectangle2(int x, int y, int x2, int y2)
 
 void ShadowSur::Ellipse(float centerx, float centery, float radius)
 	{
-	int ix = SCALEX(centerx);
-	int iy = SCALEY(centery);
-	int ir = SCALED(radius);
+	const int ix = SCALEXf(centerx);
+	const int iy = SCALEYf(centery);
+	const int ir = SCALEDf(radius);
 
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
@@ -62,9 +62,9 @@ void ShadowSur::Ellipse(float centerx, float centery, float radius)
 
 void ShadowSur::Ellipse2(float centerx, float centery, int radius)
 	{
-	int ix = SCALEX(centerx);
-	int iy = SCALEY(centery);
-	int ir = radius;
+	const int ix = SCALEXf(centerx);
+	const int iy = SCALEYf(centery);
+	const int ir = radius;
 
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
@@ -74,11 +74,10 @@ void ShadowSur::Ellipse2(float centerx, float centery, int radius)
 
 void ShadowSur::EllipseSkew(float centerx, float centery, float radius, float z1, float z2)
 	{
-	int basepixel = SCALEX(m_z);
-	int bottom = SCALEX(z1) - basepixel;
-	int top = SCALEX(z2) - basepixel;
-	int i;
-
+	const int basepixel = SCALEXf(m_z);
+	int bottom = SCALEXf(z1) - basepixel;
+	const int top = SCALEXf(z2) - basepixel;
+	
 	if (top <= 0)
 		{
 		return; //This entire polygon is underneath this shadow level
@@ -89,14 +88,14 @@ void ShadowSur::EllipseSkew(float centerx, float centery, float radius, float z1
 		bottom = 0; // Polygon crosses shadow level
 		}
 
-	int ix = SCALEX(centerx);
-	int iy = SCALEY(centery);
-	int ir = SCALED(radius);
+	const int ix = SCALEXf(centerx);
+	const int iy = SCALEYf(centery);
+	const int ir = SCALEDf(radius);
 
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
 
-	for (i=bottom;i<top;i++)
+	for (int i=bottom;i<top;i++)
 		{
 		SetViewportOrgEx(m_hdc, i, -i, NULL);
 		::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir, iy + ir);
@@ -111,11 +110,10 @@ void ShadowSur::Polygon(Vertex *rgv, int count)
 
 	rgpt = new POINT[count];
 
-	int i;
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
-		rgpt[i].x = SCALEX(rgv[i].x);
-		rgpt[i].y = SCALEY(rgv[i].y);
+		rgpt[i].x = SCALEXf(rgv[i].x);
+		rgpt[i].y = SCALEYf(rgv[i].y);
 		}
 
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
@@ -133,11 +131,9 @@ void ShadowSur::PolygonImage(Vertex *rgv, int count, HBITMAP hbm, float left, fl
 
 void ShadowSur::PolygonSkew(Vertex *rgv, int count, float *rgz, float z1, float z2, BOOL fPreClip)
 	{
-	POINT *rgpt;
-
-	int basepixel = SCALEX(m_z);
-	int bottom = SCALEX(z1) - basepixel;
-	int top = SCALEX(z2) - basepixel;
+	const int basepixel = SCALEXf(m_z);
+	int bottom = SCALEXf(z1) - basepixel;
+	int top = SCALEXf(z2) - basepixel;
 
 	if (!fPreClip)
 		{
@@ -157,31 +153,29 @@ void ShadowSur::PolygonSkew(Vertex *rgv, int count, float *rgz, float z1, float 
 		bottom = 0;
 		}
 
-	rgpt = new POINT[count];
-
-	int i;
+	POINT * const rgpt = new POINT[count];
 
 	if (rgz)
 		{
-		for (i=0;i<count;i++)
+		for (int i=0;i<count;i++)
 			{
-			rgpt[i].x = SCALEX(rgv[i].x + rgz[i]);
-			rgpt[i].y = SCALEY(rgv[i].y - rgz[i]);
+			rgpt[i].x = SCALEXf(rgv[i].x + rgz[i]);
+			rgpt[i].y = SCALEYf(rgv[i].y - rgz[i]);
 			}
 		}
 	else
 		{
-		for (i=0;i<count;i++)
+		for (int i=0;i<count;i++)
 			{
-			rgpt[i].x = SCALEX(rgv[i].x);
-			rgpt[i].y = SCALEY(rgv[i].y);
+			rgpt[i].x = SCALEXf(rgv[i].x);
+			rgpt[i].y = SCALEYf(rgv[i].y);
 			}
 		}
 
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
 
-	for (i=bottom;i<top;i++)
+	for (int i=bottom;i<top;i++)
 		{
 		SetViewportOrgEx(m_hdc, i, -i, NULL);
 		::Polygon(m_hdc, rgpt, count);
@@ -194,25 +188,22 @@ void ShadowSur::PolygonSkew(Vertex *rgv, int count, float *rgz, float z1, float 
 
 void ShadowSur::PolylineSkew(Vertex *rgv, int count, float *rgz, float z1, float z2)
 	{
-	POINT *rgpt;
+	const int basepixel = SCALEXf(m_z);
+	//const int bottom = SCALEX(z1) - basepixel;
+	//const int top = SCALEX(z2) - basepixel;
 
-	int basepixel = SCALEX(m_z);
-	int bottom = SCALEX(z1) - basepixel;
-	int top = SCALEX(z2) - basepixel;
+	POINT * const rgpt = new POINT[count];
 
-	rgpt = new POINT[count];
-
-	int i;
 	int cpoints = 0; // points above the shadow level
 
 	if (rgz)
 		{
-		for (i=0;i<count;i++)
+		for (int i=0;i<count;i++)
 			{
 			if (rgz[i] > m_z)
 				{
-				rgpt[cpoints].x = SCALEX(rgv[cpoints].x + rgz[cpoints]);
-				rgpt[cpoints].y = SCALEY(rgv[cpoints].y - rgz[cpoints]);
+				rgpt[cpoints].x = SCALEXf(rgv[cpoints].x + rgz[cpoints]);
+				rgpt[cpoints].y = SCALEYf(rgv[cpoints].y - rgz[cpoints]);
 				cpoints++;
 				}
 			}
@@ -220,7 +211,7 @@ void ShadowSur::PolylineSkew(Vertex *rgv, int count, float *rgz, float z1, float
 
 	SelectObject(m_hdc, m_hpnLine);
 
-	for (i=0;i<1;i++)
+	for (int i=0;i<1;i++)
 		{
 		SetViewportOrgEx(m_hdc, i, -i, NULL);
 		::Polyline(m_hdc, rgpt, cpoints);
@@ -233,15 +224,12 @@ void ShadowSur::PolylineSkew(Vertex *rgv, int count, float *rgz, float z1, float
 
 void ShadowSur::Polyline(Vertex *rgv, int count)
 	{
-	POINT *rgpt;
+	POINT * const rgpt = new POINT[count];
 
-	rgpt = new POINT[count];
-
-	int i;
-	for (i=0;i<count;i++)
+	for (int i=0;i<count;i++)
 		{
-		rgpt[i].x = SCALEX(rgv[i].x);
-		rgpt[i].y = SCALEY(rgv[i].y);
+		rgpt[i].x = SCALEXf(rgv[i].x);
+		rgpt[i].y = SCALEYf(rgv[i].y);
 		}
 
 	SelectObject(m_hdc, m_hpnLine);
@@ -253,14 +241,14 @@ void ShadowSur::Polyline(Vertex *rgv, int count)
 
 void ShadowSur::Arc(float x, float y, float radius, float pt1x, float pt1y, float pt2x, float pt2y)
 	{
-	int ix = SCALEX(x);
-	int iy = SCALEY(y);
-	int ir = SCALED(radius);
+	const int ix = SCALEXf(x);
+	const int iy = SCALEYf(y);
+	const int ir = SCALEDf(radius);
 
-	int x1 = SCALEX(pt1x);
-	int y1 = SCALEY(pt1y);
-	int x2 = SCALEX(pt2x);
-	int y2 = SCALEY(pt2y);
+	const int x1 = SCALEXf(pt1x);
+	const int y1 = SCALEYf(pt1y);
+	const int x2 = SCALEXf(pt2x);
+	const int y2 = SCALEYf(pt2y);
 
 	SelectObject(m_hdc, m_hpnLine);
 
@@ -269,10 +257,10 @@ void ShadowSur::Arc(float x, float y, float radius, float pt1x, float pt1y, floa
 
 void ShadowSur::Image(float x, float y, float x2, float y2, HDC hdcSrc, int width, int height)
 	{
-	int ix = SCALEX(x);
-	int iy = SCALEY(y);
-	int ix2 = SCALEX(x2);
-	int iy2 = SCALEY(y2);
+	const int ix = SCALEXf(x);
+	const int iy = SCALEYf(y);
+	const int ix2 = SCALEXf(x2);
+	const int iy2 = SCALEYf(y2);
 	
 	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcSrc, 0, 0, width, height, SRCCOPY);
 	}

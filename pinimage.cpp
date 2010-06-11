@@ -44,7 +44,6 @@ HRESULT PinImage::SaveToStream(IStream *pstream, PinTable *pt)
 		ddsd.dwSize = sizeof(ddsd);
 
 		m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-		char *pch = (char *)ddsd.lpSurface;
 
 		bw.WriteTag(FID(BITS));
 
@@ -57,7 +56,7 @@ HRESULT PinImage::SaveToStream(IStream *pstream, PinTable *pt)
 		}
 	else // JPEG (or other binary format)
 		{
-		int linkid = pt->GetImageLink(this);
+		const int linkid = pt->GetImageLink(this);
 		if (linkid == 0)
 			{
 			bw.WriteTag(FID(JPEG));
@@ -125,8 +124,6 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		ddsd.dwSize = sizeof(ddsd);
 
 		hr = m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-
-		char *pch = (char *)ddsd.lpSurface;
 
 		// 32-bit picture
 		LZWReader lzwreader(pbr->m_pistream, (int *)ddsd.lpSurface, m_width*4, m_height, ddsd.lPitch);
@@ -248,7 +245,6 @@ void PinImage::EnsureHBitmap()
 
 void PinImage::CreateGDIVersion()
 	{
-
 	HDC hdcImage;
 	m_pdsBuffer->GetDC(&hdcImage);
 
@@ -275,11 +271,11 @@ PinDirectDraw::PinDirectDraw()
 
 	tmp = 0;										
 	hr = GetRegInt("Player", "HardwareRender", &tmp);
-	m_fHardwareAccel = tmp != 0;
+	m_fHardwareAccel = (tmp != 0);
 
 	tmp = 0;										
 	hr = GetRegInt("Player", "UseD3DBlit", &tmp);
-	m_fUseD3DBlit = tmp != 0;
+	m_fUseD3DBlit = (tmp != 0);
 
 	}
 
@@ -323,16 +319,15 @@ HRESULT PinDirectDraw::InitDD()
 	return S_OK;
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(int width, int height)
+LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, const int height)
 	{
 	DDSURFACEDESC2 ddsd;
     ZeroMemory( &ddsd, sizeof(ddsd) );
 	ddsd.dwSize = sizeof(ddsd);
 
 	// Texture dimensions must be in powers of 2
-	int texwidth, texheight;
-	texwidth = 1 << ((int)(log((float)(width-1))/log(2.0f) + 0.001f/*round-off*/)+1);
-	texheight = 1 << ((int)(log((float)(height-1))/log(2.0f) + 0.001f/*round-off*/)+1);
+	int texwidth  = 1 << ((int)(log((float)(width-1))/logf(2.0f) + 0.001f/*round-off*/)+1);
+	int texheight = 1 << ((int)(log((float)(height-1))/logf(2.0f) + 0.001f/*round-off*/)+1);
 
 	// D3D does not support textures greater than 4096 in either dimension
 	if (texwidth > MAX_TEXTURE_SIZE)
@@ -501,8 +496,8 @@ METHODDEF(void) put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, JD
 {
   bmp_dest_ptr dest = (bmp_dest_ptr) dinfo;
   JSAMPARRAY image_ptr;
-  register JSAMPROW inptr, outptr;
-  register JDIMENSION col;
+  JSAMPROW inptr, outptr;
+  JDIMENSION col;
   int pad;
 
   /* Access next row in virtual array */
@@ -725,76 +720,64 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage *ppi, PinBinary *ppb
 	return pdds;
 	}
 
-void PinDirectDraw::SetOpaque(LPDIRECTDRAWSURFACE7 pdds, int width, int height)
+void PinDirectDraw::SetOpaque(LPDIRECTDRAWSURFACE7 pdds, const int width, const int height)
 	{
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);	
 
 	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-	int surfwidth, surfheight;
-	int pitch;
-
-	surfwidth = ddsd.dwWidth;
-	surfheight = ddsd.dwHeight;
-	pitch = ddsd.lPitch;
+	
+	const int pitch = ddsd.lPitch;
 
 	// Assume our 32 bit color structure
-	int i,l;
 	BYTE *pch = (BYTE *)ddsd.lpSurface;
 
-	for (i=0;i<height;i++)
+	for (int i=0;i<height;i++)
 		{
-		for (l=0;l<width;l++)
-			{
-				pch+=3;
-				*pch++ = 0xff;
+		for (int l=0;l<width;l++)
+			{				
+				pch[3] = 0xff;
+				pch += 4;
 			}
-		pch+=(pitch-(width*4));
+		pch += pitch-(width*4);
 		}
 
 	pdds->Unlock(NULL);
 
 	}
 
-void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, COLORREF rgbTransparent, COLORREF rgbBackdrop, int width, int height)
+void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop, const int width, const int height)
 	{
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);
 	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-	int surfwidth, surfheight;
-	int pitch;
+	
+	const int pitch = ddsd.lPitch;
 
-	surfwidth = ddsd.dwWidth;
-	surfheight = ddsd.dwHeight;
-	pitch = ddsd.lPitch;
+	const int rback = (rgbBackdrop & 0x00ff0000) >> 16;
+	const int gback = (rgbBackdrop & 0x0000ff00) >> 8;
+	const int bback = (rgbBackdrop & 0x000000ff);
 
-	int rback, gback, bback;
-	rback = (rgbBackdrop & 0x00ff0000) >> 16;
-	gback = (rgbBackdrop & 0x0000ff00) >> 8;
-	bback = (rgbBackdrop & 0x000000ff);
-
-	int  rgbBd = rback | (gback << 8) | (bback << 16) | 0xff << 24;
+	const int rgbBd = rback | (gback << 8) | (bback << 16) | (0xff << 24);
 
 	// Assume our 32 bit color structure	
-	int i,l;
 	BYTE *pch = (BYTE *)ddsd.lpSurface;	
 	
-	for (i=0;i<height;i++)
+	for (int i=0;i<height;i++)
 		{
-		for (l=0;l<width;l++)
+		for (int l=0;l<width;l++)
 			{
 			if ((*(unsigned int *)pch & 0xffffff) != rgbTransparent)
 				{
-				pch+=3;
-				*pch++ = 0xff;
+				pch[3] = 0xff;
 				}
 			else
 				{
 				*(unsigned int *)pch = rgbBd;  //rlc optimized
-				pch+=4;
 				}
+			pch += 4;
 			}
-		pch+=(pitch-(width*4));
+		pch += pitch-(width*4);
 		}
 
 	pdds->Unlock(NULL);
@@ -802,38 +785,31 @@ void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, COLORREF rgbTra
 
 
 
-BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, COLORREF rgbTransparent, int width, int height)
+BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const int width, const int height)
 	{
 	// Set alpha of each pixel
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);
 	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-	int surfwidth, surfheight;
-	int pitch;
+	
 	BOOL fTransparent = fFalse;	
 
-	surfwidth = ddsd.dwWidth;
-	surfheight = ddsd.dwHeight;
-	pitch = ddsd.lPitch;
+	const int pitch = ddsd.lPitch;
 
-	COLORREF rtrans, gtrans, btrans;
-	rtrans = (rgbTransparent & 0x000000ff);			//rlc fixed directx texture red-blue color reversal
-	gtrans = (rgbTransparent & 0x0000ff00) >> 8;
-	btrans = (rgbTransparent & 0x00ff0000) >> 16;
+	const COLORREF rtrans = (rgbTransparent & 0x000000ff);			//rlc fixed directx texture red-blue color reversal
+	const COLORREF gtrans = (rgbTransparent & 0x0000ff00) >> 8;
+	const COLORREF btrans = (rgbTransparent & 0x00ff0000) >> 16;
 
-	COLORREF bgrTransparent = btrans | (gtrans << 8) | (rtrans << 16) | 0xff000000;  //rlc color order different in DirectX texture buffer
+	const COLORREF bgrTransparent = btrans | (gtrans << 8) | (rtrans << 16) | 0xff000000;  //rlc color order different in DirectX texture buffer
 	COLORREF tc;
 	// Assume our 32 bit color structure
 
-
-
-	int i,l;
 	BYTE *pch = (BYTE *)ddsd.lpSurface; 
 	if (rgbTransparent == NOTRANSCOLOR)
 		{
-		for (i=0;i<height;i++)
+		for (int i=0;i<height;i++)
 			{
-			for (l=0;l<width;l++)
+			for (int l=0;l<width;l++)
 				{	
 				tc = *(COLORREF *)pch;
 				//if (!(tc & MINBLACKMASK)) 
@@ -846,9 +822,9 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, COLORREF rgbTransparent,
 		}
 	else  
 		{
-			for (i=0;i<height;i++)
+		for (int i=0;i<height;i++)
 			{
-			for (l=0;l<width;l++)
+			for (int l=0;l<width;l++)
 				{	
 				tc = (*(COLORREF *)pch) | 0xff000000;		//set to opaque
 				if (tc == bgrTransparent )					//rlc reg-blue order reversed
@@ -865,7 +841,7 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, COLORREF rgbTransparent,
 					}
 				pch += 4;
 				}
-			pch += (pitch-(width*4));
+			pch += pitch-(width*4);
 			}	
 		}
 	pdds->Unlock(NULL);
@@ -875,7 +851,7 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, COLORREF rgbTransparent,
 
 
 
-int rgfilterwindow[7][7] = {
+const int rgfilterwindow[7][7] = {
 	1, 2, 3, 4, 3, 2, 1,
 	2, 3, 4, 5, 4, 3, 2,
 	3, 4, 5, 6, 5, 4, 3,
@@ -884,17 +860,15 @@ int rgfilterwindow[7][7] = {
 	2, 3, 4, 5, 4, 3, 2,
 	1, 2, 3, 4, 3, 2, 1};
 
-void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, BYTE *pbits, int shadwidth, int shadheight)
+void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, const int shadwidth, const int shadheight)
 	{
-	int i,l;
-
 	if (!pbits) return;	//rlc  found this pointer to be NULL after some graphics errors
 
 	// Create Guassian window (actually its not really Guassian, but same idea)
 
 	int window[7][7];
 
-	for (i=0;i<4;i++)
+	for (int i=0;i<4;i++)
 		{
 		window[0][i] = i+1;
 		window[0][6-i] = i+1;
@@ -904,9 +878,9 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, BYTE *pbits, int shadwidth, 
 
 	int totalwindow = 0;
 
-	for (i=0;i<7;i++)
+	for (int i=0;i<7;i++)
 		{
-		for (l=0;l<7;l++)
+		for (int l=0;l<7;l++)
 			{
 			window[i][l] = window[0][l] * window[i][0];
 			window[i][l] = rgfilterwindow[i][l];
@@ -921,33 +895,25 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, BYTE *pbits, int shadwidth, 
 
 	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 	
-	int width, height;
-	int pitch = ddsd.lPitch;
-	int pitchSharp = 256*3;
+	const int pitch = ddsd.lPitch;
+	const int pitchSharp = 256*3;
 	BYTE *pc = (BYTE *)ddsd.lpSurface;
 
-	width = (int)ddsd.dwWidth;
-	height = (int)ddsd.dwHeight;
-
-	for (i=0;i<shadheight;i++)
+	for (int i=0;i<shadheight;i++)
 		{
-		for (l=0;l<shadwidth;l++)
+		for (int l=0;l<shadwidth;l++)
 			{
-
-			int m,n;
 			int value = 0;
 			int totalvalue = totalwindow;
 
-			for (m=0;m<7;m++)
+			for (int m=0;m<7;m++)
 				{
-				for (n=0;n<7;n++)
+				for (int n=0;n<7;n++)
 					{
-					int x,y;
-					x = l+m-3;
-					y = i+n-3;
+					const int x = l+m-3;
+					const int y = i+n-3;
 					if (x>=0 && x<=(shadwidth-1) && y>=0 && y<=(shadheight- 1))
-						{
-						
+						{						
 						value += (int)(*(pbits+x*3 + pitchSharp*y)) * window[m][n];
 						}
 					else
@@ -961,15 +927,14 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, BYTE *pbits, int shadwidth, 
 
 			value = 127 + (value>>1);
 
-			*pc++ = value;
-			*pc++ = value;
-			*pc++ = value;
-			*pc++ = value;
-			
+			pc[0] = value;
+			pc[1] = value;
+			pc[2] = value;
+			pc[3] = value;
+			pc += 4;
 			}
-		pc -= shadwidth*4;
-		pc += pitch;
-		
+
+		pc += pitch - shadwidth*4;
 		}
 
 	pdds->Unlock(NULL);
@@ -977,13 +942,11 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, BYTE *pbits, int shadwidth, 
 
 void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 	{
-	int i,l;
-
 	// Create Guassian window (actually its not really Guassian, but same idea)
 
 	int window[7][7];
 
-	for (i=0;i<4;i++)
+	for (int i=0;i<4;i++)
 		{
 		window[0][i] = i+1;
 		window[0][6-i] = i+1;
@@ -993,47 +956,42 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 
 	int totalwindow = 0;
 
-	for (i=0;i<7;i++)
+	for (int i=0;i<7;i++)
 		{
-		for (l=0;l<7;l++)
+		for (int l=0;l<7;l++)
 			{
 			window[i][l] = window[0][l] * window[i][0];
 			window[i][l] = rgfilterwindow[i][l];
-			totalwindow+=window[i][l];
+			totalwindow += window[i][l];
 			}
 		}
 
 	// Guassian Blur the sharp shadows
-
 
 	DDSURFACEDESC2 ddsd;//, ddsdSharp;
 	ddsd.dwSize = sizeof(ddsd);
 
 	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 	
-	int width, height;
-	int pitch = ddsd.lPitch;
+	const int pitch = ddsd.lPitch;
 	
 	BYTE *pc = (BYTE *)ddsd.lpSurface;
 
-	width = (int)ddsd.dwWidth;
-	height = (int)ddsd.dwHeight;
+	const int width = (int)ddsd.dwWidth;
+	const int height = (int)ddsd.dwHeight;
 
-	for (i=0;i<height;i++)
+	for (int i=0;i<height;i++)
 		{
-		for (l=0;l<width;l++)
+		for (int l=0;l<width;l++)
 			{
-
-			int m,n;
 			int value = 0;
 
-			for (m=0;m<7;m++)
+			for (int m=0;m<7;m++)
 				{
-				for (n=0;n<7;n++)
+				for (int n=0;n<7;n++)
 					{
-					int x,y;
-					x = l+m-3;
-					y = i+n-3;
+					const int x = l+m-3;
+					const int y = i+n-3;
 					if (x>=0 && x<=15 && y>=0 && y<=15)
 						{
 						value += (int)(*(pc + 4*x + pitch*y)) * window[m][n];
@@ -1061,9 +1019,6 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 	ddsdNext.dwSize = sizeof(ddsd);
 	HRESULT hr;
 	DDSCAPS2 ddsCaps;
-	int pitch, pitchNext;
-	int x,y;
-	int width, height;
 	LPDIRECTDRAWSURFACE7 pddsNext;
 
 	ddsCaps.dwCaps2 = 0;
@@ -1078,30 +1033,22 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 		hr = pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 		hr = pddsNext->Lock(NULL, &ddsdNext, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
-		pitch = ddsd.lPitch;
-		pitchNext = ddsdNext.lPitch;
-		width = ddsdNext.dwWidth;
-		height = ddsdNext.dwHeight;
-		BYTE *pch = (BYTE *)ddsd.lpSurface;
+		const int pitch = ddsd.lPitch;
+		const int pitchNext = ddsdNext.lPitch;
+		const int width = ddsdNext.dwWidth;
+		const int height = ddsdNext.dwHeight;
+		const BYTE * const pch = (BYTE *)ddsd.lpSurface;
 		BYTE *pchNext = (BYTE *)ddsdNext.lpSurface;
 
-		BYTE *pbytes1, *pbytes2;
+		const BYTE* pbytes1 = pch;
+		const BYTE* pbytes2 = pch + pitch;
 
-		pbytes1 = pch;
-		pbytes2 = pch + pitch;
+		int addtoouterpitch = pitch*2 - (width*2*4);
 
-		int addtoouterpitch = (pitch*2 - (width*2*4));
-
-		for (y=0;y<height;y++)
+		for (int y=0;y<height;y++)
 			{
-			for (x=0;x<width;x++)
+			for (int x=0;x<width;x++)
 				{
-				int rtotal = 0;
-				int gtotal = 0;
-				int btotal = 0;
-				int atotal;
-				int count = 0;
-
 				int r[4];
 				int g[4];
 				int b[4];
@@ -1127,19 +1074,23 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 				r[3] = *pbytes2++;
 				a[3] = *pbytes2++;
 
+				int rtotal = 0;
+				int gtotal = 0;
+				int btotal = 0;
+				int count = 0;
 				if (a[0]) {count++; rtotal+=r[0]; gtotal+=g[0];	btotal+=b[0]; }//rlc faster code
 				if (a[1]) {count++; rtotal+=r[1]; gtotal+=g[1];	btotal+=b[1]; }
 				if (a[2]) {count++; rtotal+=r[2]; gtotal+=g[2];	btotal+=b[2]; }
 				if (a[3]) {count++; rtotal+=r[3]; gtotal+=g[3];	btotal+=b[3]; }
 			
-				atotal = a[0]+ a[1]+ a[2]+ a[3];
+				const int atotal = a[0]+ a[1]+ a[2]+ a[3];
 
 				if (!count) // all pixels are transparent - do whatever
 					{
 					count = 1;
 					}
 
-				int round = count>>1;
+				const int round = count>>1;
 
 				*pchNext++ = (btotal+round)/count;
 				*pchNext++ = (gtotal+round)/count;
