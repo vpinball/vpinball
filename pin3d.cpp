@@ -1406,13 +1406,13 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D/*Vertex3D *r
 		
 		// Rotate vertex about y axis according to incoming rotation
 		const GPINFLOAT temp = (*pvvertex3D->ElementAt(i)).x;
-		const GPINFLOAT vertexTx = (float)(rrotcos*temp + rrotsin*(*pvvertex3D->ElementAt(i)).z);
-			  GPINFLOAT vertexTz = (float)(rrotcos*(*pvvertex3D->ElementAt(i)).z - rrotsin*temp);
+		const GPINFLOAT vertexTx = rrotcos*temp + rrotsin*(*pvvertex3D->ElementAt(i)).z;
+			  GPINFLOAT vertexTz = rrotcos*(*pvvertex3D->ElementAt(i)).z - rrotsin*temp;
 
 		// Rotate vertex about x axis according to incoming inclination
 		const GPINFLOAT temp2 = (*pvvertex3D->ElementAt(i)).y;
-		const GPINFLOAT vertexTy = (float)(rinccos*temp2 + rincsin*vertexTz);
-						vertexTz = (float)(rinccos*vertexTz - rincsin*temp2);
+		const GPINFLOAT vertexTy = rinccos*temp2 + rincsin*vertexTz;
+						vertexTz = rinccos*vertexTz - rincsin*temp2;
 
 		// Extend z-range if necessary
 		m_rznear = min(m_rznear, -vertexTz);
