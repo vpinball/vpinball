@@ -272,25 +272,78 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateZBufferOffscreen(int width, int height)
 
     // Find a suitable z buffer format.
     m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback, (VOID*)&ddsd.ddpfPixelFormat );
-/*    if( 0 == ddsd.ddpfPixelFormat.dwSize )
-    {
-		// Print an error.
-		ShowError("Could not create offscreen 32-bit z buffer.");
-    }
-*/
-    // Create a z buffer
-	HRESULT hr;   
-	if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
-    {
-       ddsd.ddpfPixelFormat.dwZBufferBitDepth = 16;
-       m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback,
-                                    (VOID*)&ddsd.ddpfPixelFormat );
 
-	   //!! loop over 8/24/32bits, too
-	   //!! plus try setting dwStencilBitDepth to 8, each time, for a second loop
+	// Create the z buffer, loop over possible other modes until one found
+	HRESULT hr;
+	int count = 0;
+	while(( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) ) && (count <= 6))
+    {
+		switch(count) {
+		case 0: {
+			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 32;
+			ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
+			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFFFF;
+			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
+			ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
+			break;
+				}
+		case 1: {
+			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 16;
+			ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
+			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFF;
+			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
+			ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
+			break;
+				}
+		case 2: {
+			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 24;
+			ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
+			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFF;
+			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
+			ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
+			break;
+				}
+		case 3: {
+			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 8;
+			ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
+			ddsd.ddpfPixelFormat.dwZBitMask = 0xFF;
+			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
+			ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
+			break;
+				}
 
-	   if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
-	   {
+		case 4: {
+			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 32;
+			ddsd.ddpfPixelFormat.dwStencilBitDepth = 8;
+			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFFFF;
+			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER | DDPF_STENCILBUFFER;
+			ddsd.ddpfPixelFormat.dwStencilBitMask = 0xFF;
+			break;
+				}
+		case 5: {
+			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 24;
+			ddsd.ddpfPixelFormat.dwStencilBitDepth = 8;
+			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFF;
+			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER | DDPF_STENCILBUFFER;
+			ddsd.ddpfPixelFormat.dwStencilBitMask = 0xFF;
+			break;
+				}
+		case 6: {
+			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 16;
+			ddsd.ddpfPixelFormat.dwStencilBitDepth = 8;
+			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFF;
+			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER | DDPF_STENCILBUFFER;
+			ddsd.ddpfPixelFormat.dwStencilBitMask = 0xFF;
+			break;
+				}
+		}
+
+        m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback, (VOID*)&ddsd.ddpfPixelFormat );
+
+		count++;
+	}
+	 
+	if(FAILED(hr)) {
 		if( hr != DDERR_OUTOFVIDEOMEMORY )
 		{
 			ShowError("Could not create offscreen Z-surface.");
@@ -300,11 +353,10 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateZBufferOffscreen(int width, int height)
 			ShowError("Out of Video Memory for offscreen Z-surface.");
 		}
 		return NULL;
-	   }
     }
 
 	// Update the count.
-	NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * 4;
+	NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwZBufferBitDepth/8);
 
     return pdds;// S_OK;
 }
