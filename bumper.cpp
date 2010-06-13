@@ -221,47 +221,43 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		mtrl.emissive.b = 0;
 		pd3dDevice->SetMaterial(&mtrl);
 
-		Vertex3D rgv3D[160];
+		Vertex3D rgv3D[96];
 		for (int l=0;l<32;l++)
 			{
 			const float angle = (float)(M_PI*2.0/32.0)*(float)l;
 			const float sinangle =  sinf(angle);
 			const float cosangle = -cosf(angle);
 
-			rgv3D[l+64].x = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
-			rgv3D[l+64].y = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
-			rgv3D[l+64].z = height+60.0f;
+			rgv3D[l].x    = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
+			rgv3D[l].y    = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
+			rgv3D[l].z    = height+60.0f;
 
-			rgv3D[l+96].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
-			rgv3D[l+96].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
-			rgv3D[l+96].z = height+50.0f;
+			rgv3D[l+32].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
+			rgv3D[l+32].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
+			rgv3D[l+32].z = height+50.0f;
 
-			rgv3D[l+128].x = sinangle*outerradius + m_d.m_vCenter.x;
-			rgv3D[l+128].y = cosangle*outerradius + m_d.m_vCenter.y;
-			rgv3D[l+128].z = height+40.0f;
+			rgv3D[l+64].x = sinangle*outerradius + m_d.m_vCenter.x;
+			rgv3D[l+64].y = cosangle*outerradius + m_d.m_vCenter.y;
+			rgv3D[l+64].z = height+40.0f;
 
-			rgv3D[l+ 64].tu = (0.5f+sinangle*0.25f)*maxtu;
-			rgv3D[l+ 64].tv = (0.5f+cosangle*0.25f)*maxtv;
-			rgv3D[l+ 96].tu = (0.5f+sinangle*(float)(0.5*0.9))*maxtu;
-			rgv3D[l+ 96].tv = (0.5f+cosangle*(float)(0.5*0.9))*maxtv;
-			rgv3D[l+128].tu = (0.5f+sinangle*0.5f)*maxtu;
-			rgv3D[l+128].tv = (0.5f+cosangle*0.5f)*maxtv;
+			rgv3D[l].tu    = (0.5f+sinangle*0.25f)*maxtu;
+			rgv3D[l].tv    = (0.5f+cosangle*0.25f)*maxtv;
+			rgv3D[l+32].tu = (0.5f+sinangle*(float)(0.5*0.9))*maxtu;
+			rgv3D[l+32].tv = (0.5f+cosangle*(float)(0.5*0.9))*maxtv;
+			rgv3D[l+64].tu = (0.5f+sinangle*0.5f)*maxtu;
+			rgv3D[l+64].tv = (0.5f+cosangle*0.5f)*maxtv;
 
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+32]);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+96]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+128]);
 			}
 
-		WORD rgi[32];
-		for (WORD l=0;l<32;l++)
-			{
-			rgi[l] = l;
-			}
+		WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 
-		SetNormal(&rgv3D[64], rgi, 32, NULL, NULL, 0);
+		SetNormal(rgv3D, rgi, 32, NULL, NULL, 0);
 
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  &rgv3D[64], 32,
+												  rgv3D, 32,
 												  rgi, 32, 0);
 
 		for (int l=0;l<32;l++)
@@ -276,16 +272,16 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgi[2] = (l+1) % 32 + 32;
 				rgi[3] = ((l+1) % 32);
 
-				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, rgi, 2);
+				SetNormal(&rgv3D[32], rgiNormal, 3, NULL, rgi, 2);
 
 				rgiNormal[0] = l;
 				rgiNormal[1] = l+32;
 				rgiNormal[2] = (l+2) % 32;
 
-				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, &rgi[2], 2);
+				SetNormal(&rgv3D[32], rgiNormal, 3, NULL, &rgi[2], 2);
 
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  &rgv3D[96], 64,
+														  &rgv3D[32], 64,
 														  rgi, 4, 0);
 				}
 
@@ -301,16 +297,16 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgi[2] = (l+1) % 32 + 32;
 				rgi[3] = ((l+1) % 32);
 
-				SetNormal(&rgv3D[64], rgiNormal, 3, NULL, rgi, 2);
+				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
 				rgiNormal[0] = l;
 				rgiNormal[1] = l+32;
 				rgiNormal[2] = (l+2) % 32;
 
-				SetNormal(&rgv3D[64], rgiNormal, 3, NULL, &rgi[2], 2);
+				SetNormal(rgv3D, rgiNormal, 3, NULL, &rgi[2], 2);
 
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  &rgv3D[64], 64,
+														  rgv3D, 64,
 														  rgi, 4, 0);
 				}
 
@@ -322,7 +318,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	// ensure we are not disabled at game start
 	m_fDisabled = fFalse;
 	}
-	
+
 void Bumper::RenderMoversFromCache(Pin3D *ppin3d)
 	{
 	ppin3d->ReadAnimObjectFromCacheFile(&m_pbumperhitcircle->m_bumperanim, m_pbumperhitcircle->m_bumperanim.m_pobjframe, 2);
@@ -442,11 +438,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->SetMaterial(&mtrl);
 
-			WORD rgi[32];
-			for (int l=0;l<32;l++)
-				{
-				rgi[l] = l;
-				}
+			WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 
 			SetNormal(&rgv3D[64], rgi, 32, NULL, NULL, 0);
 
@@ -629,11 +621,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgv3D[l+128].tv2 = (0.5f+cosangle*0.5f)*lightmaxtv;
 				}
 
-			WORD rgi[32];
-			for (WORD l=0;l<32;l++)
-				{
-				rgi[l] = l;
-				}
+			WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 
 			SetNormal(&rgv3D[64], rgi, 32, NULL, NULL, 0);
 

@@ -363,8 +363,8 @@ void LightProjected::CalcCoordinates(Vertex3D * const pv)
 	vT.y += m_v.y;
 	//vT.z += 0;
 
-	const float width  = (g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	const float height = (g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+	const float width  = g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right;
+	const float height = g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom;
 
 	pv->tu2 = (((vT.x - m_v.x) / width)  + 0.5f) * g_pplayer->m_pin3d.m_maxtu;
 	pv->tv2 = (((vT.y - m_v.y) / height) + 0.5f) * g_pplayer->m_pin3d.m_maxtv;
@@ -507,10 +507,10 @@ void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoint, cons
 
 	for (int i=0;i<count;i++)
 		{
-		PINFLOAT result[3];
-		result[0] = matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z;
-		result[1] = matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z;
-		result[2] = matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z;
+		const PINFLOAT result[3] = {
+			matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z,
+			matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z,
+			matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z};
 
 		pvPoint[i].x = result[0];
 		pvPoint[i].y = result[1];
@@ -519,13 +519,14 @@ void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoint, cons
 		//!! the following doesn't make too much sense (i.e. last check is nx not nz) and also produces all 0,0,0 again!
 		if ((pvPoint[i].nx == 0) && (pvPoint[i].ny == 0) && (pvPoint[i].nx == 0)) //rlc optimize, often 0,0,0
 			{
-			result[0] = matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz;
-			result[1] = matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz;
-			result[2] = matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz;
+			const PINFLOAT resultn[3] = {
+				matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz,
+				matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz,
+				matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz};
 
-			pvPoint[i].nx = result[0];
-			pvPoint[i].ny = result[1];
-			pvPoint[i].nz = result[2];
+			pvPoint[i].nx = resultn[0];
+			pvPoint[i].ny = resultn[1];
+			pvPoint[i].nz = resultn[2];
 			}
 		}
 	}
@@ -557,10 +558,10 @@ void RotateAround(const Vertex3Ds * const pvAxis, Vertex3Ds * const pvPoint, con
 
 	for (int i=0;i<count;i++)
 		{
-		PINFLOAT result[3];
-		result[0] = matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z;
-		result[1] = matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z;
-		result[2] = matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z;
+		const PINFLOAT result[3] = {
+			matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z,
+			matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z,
+			matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z};
 
 		pvPoint[i].x = result[0];
 		pvPoint[i].y = result[1];

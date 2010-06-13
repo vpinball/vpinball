@@ -491,10 +491,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		{
 		const Triangle * const ptri = vtri.ElementAt(t);
 
-		int ip[3];
-		ip[0] = ptri->a;
-		ip[1] = ptri->c;
-		ip[2] = ptri->b;
+		const int ip[3] = {ptri->a,ptri->c,ptri->b};
 
 		const RenderVertex * const pv0 = &rgv[ip[0]];
 		const RenderVertex * const pv1 = &rgv[ip[1]];
@@ -507,9 +504,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (!m_fBackglass)
 			{
 			for (int l=0;l<3;l++)
-				{
 				ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-				}
 
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
@@ -526,9 +521,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	for (int i=0;i<vtri.Size();i++)
-		{
 		delete vtri.ElementAt(i);
-		}
 
 	delete rgv;
 	}
@@ -562,11 +555,7 @@ void Light::RenderStaticCircle(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 		}
 
-	WORD rgi[32];
-	for (WORD l=0;l<32;l++)
-		{
-		rgi[l] = l;
-		}
+	WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 
 	if (!m_fBackglass)
 		{
@@ -604,13 +593,9 @@ void Light::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->EnableLightMap(!m_fBackglass, height);
 		if (m_d.m_shape == ShapeCustom)
-			{
 			RenderCustomStatic(pd3dDevice);
-			}
 		else
-			{
 			RenderStaticCircle(pd3dDevice);
-			}
 		ppin3d->EnableLightMap(fFalse, -1);
 		}
 	}
@@ -662,9 +647,7 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		const float dy = rgv[i].y - m_d.m_vCenter.y;
 		const float dist = dx*dx + dy*dy;
 		if (dist > maxdist)
-			{
 			maxdist = dist;
-			}
 		}
 
 	maxdist = sqrtf(maxdist);
@@ -742,7 +725,6 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
 			{
 			RECT	Rect;
-
 			// Since we don't know the final dimensions of the 
 			// object we're rendering, clear the whole buffer.
 			Rect.top = 0;
@@ -755,10 +737,7 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			ppin3d->m_pddsZTextureBuffer->BltFast(Rect.left, Rect.top, ppin3d->m_pddsStaticZ, &Rect, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
-		WORD rgi[3];
-		rgi[0] = 0;
-		rgi[1] = 1;
-		rgi[2] = 2;
+		WORD rgi[3] = {0,1,2};
 
 		Vertex3D rgv3D[3];
 		if (!m_fBackglass)
@@ -782,10 +761,7 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			const Triangle * const ptri = vtri.ElementAt(t);
 
-			int ip[3];
-			ip[0] = ptri->a;
-			ip[1] = ptri->c;
-			ip[2] = ptri->b;
+			const int ip[3] = {ptri->a,ptri->c,ptri->b};
 
 			const RenderVertex * const pv0 = &rgv[ip[0]];
 			const RenderVertex * const pv1 = &rgv[ip[1]];
@@ -948,7 +924,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 	Vertex3D rgv3D[32];
 	for (int l=0;l<32;l++)
@@ -964,11 +940,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 		}
 
-	WORD rgi[32];
-	for (WORD l=0;l<32;l++)
-		{
-		rgi[l] = l;
-		}
+	WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 
 	if (!m_fBackglass)
 		{

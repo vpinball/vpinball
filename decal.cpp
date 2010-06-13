@@ -365,8 +365,8 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		pin = m_ptable->GetImage(m_d.m_szImage);
 		leading = 0;
 		descent = 0;
-		maxtu = 1; //rlc was uninitialize, assume one ok
-		maxtv = 1; //rlc was uninitialize, assume one ok
+		maxtu = 1.0f; //rlc was uninitialize, assume one ok
+		maxtv = 1.0f; //rlc was uninitialize, assume one ok
 		}
 
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
@@ -410,13 +410,9 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
 		}
 
-	WORD rgi[4];
 	Vertex3D rgv3D[4];
 	for (WORD l=0;l<4;l++)
-		{
-		rgi[l] = l;
 		rgv3D[l].z = height + 0.2f;
-		}
 
 	ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
 
@@ -446,6 +442,8 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	rgv3D[3].y = m_d.m_vCenter.y + cs*(halfheight+descent) - sn*halfwidth;
 	rgv3D[3].tu = 0;
 	rgv3D[3].tv = maxtv;
+
+	WORD rgi[4] = {0,1,2,3};
 
 	if (!m_fBackglass)
 		{

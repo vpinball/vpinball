@@ -565,14 +565,10 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				ppin3d->EnableLightMap(fFalse, -1);
 				}
 				
-			WORD rgi[4];
 			Vertex3D rgv3D[4];
 			for (WORD l=0;l<4;l++)
-				{
-				rgi[l] = l;
 				rgv3D[l].z = 1.0f;//height + 0.2f;
-				}
-				
+
 			RECT rectSrc;
 			rectSrc.left = 0;
 			rectSrc.top = 0;
@@ -607,6 +603,8 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			
 			//ppin3d->ExpandExtents(&m_preelframe->rc, rgv3D, NULL, NULL, 4, m_fBackglass);
 
+			WORD rgi[4] = {0,1,2,3};
+			
 			// Reset color key in back buffer
 			// this is usually not done since the buffer
 			// should be clear from the last object,
@@ -1260,10 +1258,12 @@ STDMETHODIMP DispReel::get_Reels(float *pVal)
 STDMETHODIMP DispReel::put_Reels(float newVal)
 {
 	STARTUNDO
-    m_d.m_reelcount = max(1.0f, newVal);               // must have at least 1 reel
+
+	m_d.m_reelcount = max(1.0f, newVal);               // must have at least 1 reel
     if (m_d.m_reelcount > MAX_REELS) m_d.m_reelcount = MAX_REELS;   // and a max of MAX_REELS
 	m_d.m_v2.x = m_d.m_v1.x+getBoxWidth();
 	m_d.m_v2.y = m_d.m_v1.y+getBoxHeight();
+
 	STOPUNDO
 
     return S_OK;
@@ -1279,8 +1279,10 @@ STDMETHODIMP DispReel::get_Width(float *pVal)
 STDMETHODIMP DispReel::put_Width(float newVal)
 {
 	STARTUNDO
-    m_d.m_width = max(0.0f, newVal);
+    
+	m_d.m_width = max(0.0f, newVal);
 	m_d.m_v2.x = m_d.m_v1.x+getBoxWidth();
+	
 	STOPUNDO
 
 	return S_OK;
@@ -1296,8 +1298,10 @@ STDMETHODIMP DispReel::get_Height(float *pVal)
 STDMETHODIMP DispReel::put_Height(float newVal)
 {
 	STARTUNDO
-    m_d.m_height = max(0.0f, newVal);
+    
+	m_d.m_height = max(0.0f, newVal);
 	m_d.m_v2.y = m_d.m_v1.y+getBoxHeight();
+	
 	STOPUNDO
 
 	return S_OK;
@@ -1313,9 +1317,11 @@ STDMETHODIMP DispReel::get_X(float *pVal)
 STDMETHODIMP DispReel::put_X(float newVal)
 {
 	STARTUNDO
+	
 	const float delta = newVal - m_d.m_v1.x;
 	m_d.m_v1.x += delta;
 	m_d.m_v2.x = m_d.m_v1.x+getBoxWidth();
+	
 	STOPUNDO
 
 	return S_OK;
@@ -1360,7 +1366,6 @@ STDMETHODIMP DispReel::put_IsTransparent(VARIANT_BOOL newVal)
 STDMETHODIMP DispReel::get_Image(BSTR *pVal)
 {
 	OLECHAR wz[512];
-
     MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
 	*pVal = SysAllocString(wz);
 
@@ -1385,17 +1390,19 @@ STDMETHODIMP DispReel::get_Spacing(float *pVal)
 STDMETHODIMP DispReel::put_Spacing(float newVal)
 {
 	STARTUNDO
-    m_d.m_reelspacing = max(0.0f, newVal);
+
+	m_d.m_reelspacing = max(0.0f, newVal);
 	m_d.m_v2.x = m_d.m_v1.x+getBoxWidth();
 	m_d.m_v2.y = m_d.m_v1.y+getBoxHeight();
+
 	STOPUNDO
+
 	return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Sound(BSTR *pVal)
 {
 	OLECHAR wz[512];
-
     MultiByteToWideChar(CP_ACP, 0, m_d.m_szSound, -1, wz, 32);
 	*pVal = SysAllocString(wz);
 
@@ -1525,9 +1532,12 @@ STDMETHODIMP DispReel::get_Range(float *pVal)
 STDMETHODIMP DispReel::put_Range(float newVal)
 {
 	STARTUNDO
-    m_d.m_digitrange = max(0.0f,floorf(newVal));        // must have at least 1 digit (0 is a digit)
+    
+	m_d.m_digitrange = max(0.0f,floorf(newVal));        // must have at least 1 digit (0 is a digit)
     if (m_d.m_digitrange >= 200.0f) m_d.m_digitrange = (float)(200-1);  // and a max of 200 (0->199)
+	
 	STOPUNDO
+	
 	return S_OK;
 }
 
@@ -1541,12 +1551,13 @@ STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
 STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 {
 	STARTUNDO
-    m_d.m_updateinterval = max(5, newVal);
+    
+	m_d.m_updateinterval = max(5, newVal);
 	if (g_pplayer)
-    {
-        m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
-    }
+		m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
+    
 	STOPUNDO
+	
 	return S_OK;
 }
 
@@ -1577,6 +1588,7 @@ STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
 	STARTUNDO
     m_d.m_imagesPerGridRow = max(1, newVal);
 	STOPUNDO
+	
 	return S_OK;
 }
 
@@ -1600,13 +1612,10 @@ STDMETHODIMP DispReel::AddValue(long Value)
 		const int digitValue = val % valbase;
 
 		if (bNegative == fTrue)
-		{
 			ReelInfo[i].motorPulses -= digitValue;
-		}
 		else
-		{
 			ReelInfo[i].motorPulses += digitValue;
-		}
+		
 		// remove the value for this reel from the overall number
 		val /= valbase;
 		// move to next reel
@@ -1690,9 +1699,7 @@ STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
 		return S_OK;
 	}
 	else
-	{
 		return E_FAIL;
-	}
 }
 
 
@@ -1700,22 +1707,17 @@ STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
 //
 float DispReel::getBoxWidth(void)
 {
-    float width;
-
-    width =  m_d.m_reelcount * m_d.m_width;
-    width += m_d.m_reelcount * m_d.m_reelspacing;
-    width += m_d.m_reelspacing;				// spacing also includes edges
-
+    const float width =  m_d.m_reelcount * m_d.m_width
+					   + m_d.m_reelcount * m_d.m_reelspacing
+					   + m_d.m_reelspacing;	// spacing also includes edges
     return width;
 }
 
 
 float DispReel::getBoxHeight(void)
 {
-    float height;
-
-    height =  m_d.m_height;
-    height += 2.0f * m_d.m_reelspacing;		// spacing also includes edges
+    const float height = m_d.m_height
+					   + 2.0f * m_d.m_reelspacing; // spacing also includes edges
 
     return height;
 }
@@ -1801,8 +1803,8 @@ void DispReel::UpdateObjFrame(void)
 
 			if (ReelInfo[i].motorOffset != 0)
 				{
-				int nextval = (ReelInfo[i].currentValue + 1) % m_vreelframe.Size();
-				int top = ReelInfo[i].position.top + (reelstriprc.bottom - reelstriprc.top);
+				const int nextval = (ReelInfo[i].currentValue + 1) % m_vreelframe.Size();
+				const int top = ReelInfo[i].position.top + (reelstriprc.bottom - reelstriprc.top);
 				reelstriprc.top = 0;
 				reelstriprc.bottom = (int)ReelInfo[i].motorOffset;
 				

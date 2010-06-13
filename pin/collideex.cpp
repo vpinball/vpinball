@@ -617,10 +617,8 @@ void HitSpinner::CalcHitRect()
 
 
 
-Hit3DPoly::Hit3DPoly(Vertex3D *rgv, int count)
+Hit3DPoly::Hit3DPoly(Vertex3D *rgv, int count) : m_cvertex(count)
 	{
-	m_cvertex = count;
-
 	m_rgv = new Vertex3D[count];
 
 	memcpy(m_rgv, rgv, count * sizeof(Vertex3D));
@@ -640,13 +638,10 @@ Hit3DPoly::~Hit3DPoly()
 
 PINFLOAT Hit3DPoly::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
-	if (m_ObjType == eTrigger)
-		{return HitTestBasicPolygon(pball, dtime, phitnormal,false, false);}
-
-	return HitTestBasicPolygon(pball, dtime, phitnormal,true, true); 
+	return HitTestBasicPolygon(pball, dtime, phitnormal, (m_ObjType != eTrigger), (m_ObjType != eTrigger));
 	}
 
-PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal,bool direction, bool rigid)
+PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal, bool direction, bool rigid)
 	{
 	if (!m_fEnabled) return -1.0f;
 
@@ -693,7 +688,7 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3Ds *
 			if (fabsf(bnd) >= (float)(PHYS_SKIN/2.0))		// not to close ... nor to far away
 				return -1.0f;
 
-			const bool hit = pball->m_vpVolObjs->IndexOf(m_pObj) >= 0;	// hit already???
+			const bool hit = (pball->m_vpVolObjs->IndexOf(m_pObj) >= 0);	// hit already???
 
 			if (inside == !hit) // ...ball outside and hit set or  ball inside and no hit set
 				{
@@ -754,7 +749,7 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3Ds *
 		phitnormal->y = m_rgv[2].z;
 
 		if (!rigid)								// non rigid body collision? return direction
-			{ phitnormal[1].x = (float)bUnHit;}	// UnHit signal	is receding from outside target
+			phitnormal[1].x = (float)bUnHit;	// UnHit signal	is receding from outside target
 			
 		pball->m_HitDist = bnd;					//rlc-3dhit actual contact distance ... 
 		pball->m_HitNormVel = bnv;
@@ -923,9 +918,7 @@ PINFLOAT Hit3DCylinder::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnorm
 		mynormal.z = 0;
 
 		RotateAround(&transaxis, &mynormal, 1, -transangle);
-		(*phitnormal).x = mynormal.x;
-		(*phitnormal).y = mynormal.y;
-		(*phitnormal).z = mynormal.z;
+		*phitnormal = mynormal;
 		}
 
 	return hittime;

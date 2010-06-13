@@ -14,7 +14,7 @@ PINFLOAT c_Gravity = GRAVITYCONST;
 
 U32 c_PostCheck = 0;
 
-HitObject *CreateCircularHitPoly(PINFLOAT x, PINFLOAT y, PINFLOAT z, PINFLOAT r, int sections)
+HitObject *CreateCircularHitPoly(const PINFLOAT x, const PINFLOAT y, const PINFLOAT z, const PINFLOAT r, const int sections)
 	{
 	Vertex3D * const rgv3d = new Vertex3D[sections];
 
@@ -56,8 +56,8 @@ void LineSeg::CalcHitRect()
 #define TANX  normal.y
 #define TANY -normal.x
 
-PINFLOAT  LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal
-								,bool direction, bool lateral, bool rigid)
+PINFLOAT LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal,
+							   bool direction, bool lateral, bool rigid)
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
 

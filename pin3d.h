@@ -36,6 +36,7 @@ public:
 	void FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV);
 	void CacheTransform();
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout) const;
+	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 	void SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar);
 
 	Matrix3D m_matWorld;
@@ -73,6 +74,7 @@ public:
 	void Translate(const float x, const float y, const float z);
 	void FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV);
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout);
+	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout);
 	void CacheTransform();
 	LPDIRECTDRAWSURFACE7 CreateShadow(const float height);
 

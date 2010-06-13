@@ -277,7 +277,7 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	const float halflength = (m_d.m_length * 0.5f);// + m_d.m_overhang;
+	const float halflength = m_d.m_length * 0.5f;// + m_d.m_overhang;
 	const float halfthick = 2.0f;
 	const float h = m_d.m_height;
 
@@ -292,7 +292,7 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	mtrl.diffuse.b = mtrl.ambient.b = 0.6f;
 	pd3dDevice->SetMaterial(&mtrl);
 
-	Vertex3D rgv3D[12];
+	Vertex3D rgv3D[8];
 	rgv3D[0].x = -halflength + halfthick;
 	rgv3D[0].y = 0;
 	rgv3D[0].z = 0;
@@ -336,27 +336,15 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[l].z += height;
 
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-		
 		}
 
-	WORD rgiNormal[3];
-	rgiNormal[0] = 0;
-	rgiNormal[1] = 1;
-	rgiNormal[2] = 3;
-
-	WORD rgi[8];
-	rgi[0] = 0;
-	rgi[1] = 1;
-	rgi[2] = 2;
-	rgi[3] = 3;
-	rgi[4] = 6;
-	rgi[5] = 7;
-	rgi[6] = 4;
-	rgi[7] = 5;
+	WORD rgiNormal[3] = {0,1,3};
+	WORD rgi[8] = {0,1,2,3,6,7,4,5};
 
 	SetNormal(rgv3D, rgiNormal, 3, rgv3D, rgi, 8);
 
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,rgi, 8, 0);
+
 	rgi[0] = 4;
 	rgi[1] = 5;
 	rgi[2] = 6;
@@ -411,15 +399,14 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	int cframes;
 
-	if (m_d.m_animations > 0)  cframes = m_d.m_animations;
+	if (m_d.m_animations > 0)
+		cframes = m_d.m_animations;
 	else if (m_d.m_angleMax || m_d.m_angleMin)
-		{
 		cframes = (int)((m_d.m_angleMax - m_d.m_angleMin)*(float)((15-1)*2/M_PI) + 1.5f); // 15 frames per 90 degrees
-		}
-	else cframes = 1;
+	else
+		cframes = 1;
 
 	const float halflength = m_d.m_length * 0.5f;
-
 	const float halfwidth =  m_d.m_height; //50;
 
 	D3DMATERIAL7 mtrl;
@@ -577,11 +564,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetMaterial(&mtrl);
 
-		WORD rgi[4];
-		rgi[0] = 0;
-		rgi[1] = 1;
-		rgi[2] = 5;
-		rgi[3] = 4;
+		WORD rgi[4] = {0,1,5,4};
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
@@ -659,7 +642,6 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR) //
 			{
 			// Top & Bottom
-
 			rgi[0] = 0;
 			rgi[1] = 2;
 			rgi[2] = 3;
@@ -679,7 +661,6 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
 
 			// Sides
-
 			rgi[0] = 0;
 			rgi[1] = 4;
 			rgi[2] = 6;
@@ -1030,7 +1011,6 @@ STDMETHODIMP Gate::put_Y(float newVal)
 STDMETHODIMP Gate::get_Surface(BSTR *pVal)
 {
 	WCHAR wz[512];
-
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
 	*pVal = SysAllocString(wz);
 
@@ -1069,7 +1049,6 @@ STDMETHODIMP Gate::put_Color(OLE_COLOR newVal)
 STDMETHODIMP Gate::get_ImageFront(BSTR *pVal)
 {
 	WCHAR wz[512];
-
 	MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageFront, -1, wz, 32);
 	*pVal = SysAllocString(wz);
 
@@ -1111,14 +1090,7 @@ STDMETHODIMP Gate::put_ImageBack(BSTR newVal)
 
 STDMETHODIMP Gate::get_Open(VARIANT_BOOL *pVal)
 {
-	if (m_phitgate)
-		{
-		*pVal = FTOVB(m_phitgate->m_gateanim.m_fOpen);
-		}
-	else
-		{
-		*pVal = FTOVB(fFalse);
-		}
+	*pVal = FTOVB((m_phitgate) ? m_phitgate->m_gateanim.m_fOpen : fFalse);
 
 	return S_OK;
 }
@@ -1224,14 +1196,7 @@ STDMETHODIMP Gate::put_CloseAngle(float newVal)
 
 STDMETHODIMP Gate::get_OpenAngle(float *pVal)
 {
-	if (g_pplayer)
-		{
-		*pVal = RADTOANG(m_phitgate->m_gateanim.m_angleMax);	//player active value
-		}
-	else
-		{
-		*pVal = RADTOANG(m_d.m_angleMax);
-		}
+	*pVal = RADTOANG((g_pplayer) ? m_phitgate->m_gateanim.m_angleMax : m_d.m_angleMax);	//player active value
 
 	return S_OK;
 }
@@ -1262,14 +1227,7 @@ if (m_d.m_fCollidable) newVal = 0;
 
 STDMETHODIMP Gate::get_Collidable(VARIANT_BOOL *pVal)
 {
-	if (g_pplayer)
-		{
-		*pVal = FTOVB(m_phitgate->m_fEnabled);
-		}
-	else
-		{
-		*pVal = FTOVB(m_d.m_fCollidable);
-		}
+	*pVal = FTOVB((g_pplayer) ? m_phitgate->m_fEnabled : m_d.m_fCollidable);
 
 	return S_OK;
 }
@@ -1318,7 +1276,7 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle)//move non-collidable 
 			if (angle < m_d.m_angleMin) angle = m_d.m_angleMin;
 			else if (angle > m_d.m_angleMax) angle = m_d.m_angleMax;
 
-			float da = angle - m_phitgate->m_gateanim.m_angle; //calc true direction
+			const float da = angle - m_phitgate->m_gateanim.m_angle; //calc true direction
 		
 			if (da > 1.0e-5f) dir = +1;
 			else if (da < -1.0e-5f) dir = -1;
@@ -1351,14 +1309,7 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle)//move non-collidable 
 
 STDMETHODIMP Gate::get_Friction(float *pVal)
 {
-	if (g_pplayer)
-		{
-		*pVal = m_phitgate->m_gateanim.m_friction;	
-		}
-	else
-		{
-		*pVal = m_d.m_friction;
-		}
+	*pVal = (g_pplayer) ? m_phitgate->m_gateanim.m_friction : m_d.m_friction;	
 
 	return S_OK;
 }
@@ -1410,14 +1361,7 @@ STDMETHODIMP Gate::put_Animations(int newVal)
 
 STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 {
-	if (g_pplayer)
-		{
-		*pVal = FTOVB(m_phitgate->m_gateanim.m_fVisible);
-		}
-	else
-		{
-		*pVal = FTOVB(m_d.m_fVisible);
-		}
+	*pVal = FTOVB((g_pplayer) ? m_phitgate->m_gateanim.m_fVisible : m_d.m_fVisible);
 
 	return S_OK;
 }
@@ -1460,5 +1404,3 @@ void Gate::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
 	pvproppane->AddElement(pproppane);
 	}
-
-

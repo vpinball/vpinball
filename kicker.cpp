@@ -81,18 +81,16 @@ void Kicker::GetTimers(Vector<HitTimer> *pvht)
 
 void Kicker::GetHitShapes(Vector<HitObject> *pvho)
 	{
-	KickerHitCircle *phitcircle;
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-	phitcircle = new KickerHitCircle();
+	KickerHitCircle * const phitcircle = new KickerHitCircle();
 
 	phitcircle->m_pfe = NULL;
 
 	phitcircle->center.x = m_d.m_vCenter.x;
 	phitcircle->center.y = m_d.m_vCenter.y;
 	phitcircle->radius = m_d.m_radius;
-	phitcircle->zlow = height + 0;
+	phitcircle->zlow = height;
 	
 	phitcircle->zhigh = height + m_d.m_hit_height;	// height of kicker hit cylinder  
 
@@ -264,23 +262,16 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			BYTE *pch = (BYTE *)ddsd.lpSurface;
 
 			int pitchMask = ddsdMask.lPitch;
-			BYTE *pchMask = (BYTE *)ddsdMask.lpSurface;
+			const BYTE *pchMask = (BYTE *)ddsdMask.lpSurface;
 
 			for (int y=0;y<leny;y++)
 				{
 				for (int x=0;x<lenx;x++)
 					{
 					if (*pchMask == 0)
-						{
 						for (int l=0;l<zbytes;l++)
-							{
-							*pch++ = 0xff;
-							}
-						}
-					else
-						{
-						pch+=zbytes;
-						}
+							pch[l] = 0xff;
+					pch+=zbytes;
 					pchMask+=colorbytes;
 					}
 				pch += pitch - lenx*zbytes;
