@@ -11,6 +11,7 @@
 #endif // _MSC_VER > 1000
 
 #define BGR(b,g,r) ((COLORREF)(((DWORD)(b)) | (((DWORD)(g))<<8) | (((DWORD)(r))<<16)))
+#define RGB(r,g,b) ((COLORREF)(((DWORD)(r)) | (((DWORD)(g))<<8) | (((DWORD)(b))<<16)))
 
 #define NOTRANSCOLOR  RGB(123,123,123)
 
