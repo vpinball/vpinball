@@ -118,13 +118,13 @@ public:
 	HitObject();
 	virtual ~HitObject(){}
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) = 0;
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal) = 0;
 
 	virtual int GetType() = 0;
 
 	virtual void Draw(HDC hdc) = 0;
 
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal) = 0;
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal) = 0;
 
 	virtual void CalcHitRect() = 0;
 	
@@ -188,13 +188,13 @@ public:
 	Vertex2D v1, v2;
 	float length;
 
-	virtual PINFLOAT HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal
+	virtual PINFLOAT HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal
 									,bool direction, bool lateral, bool rigid);
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
 	//float VertHitTest(Ball *pball, float dtime, Vertex2D *phitnormal);
 	virtual int GetType() {return eLineSeg;}
 	virtual void Draw(HDC hdc);
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 	void CalcNormal();
 	void CalcLength();
 	virtual void CalcHitRect();
@@ -209,18 +209,18 @@ public:
 	float zlow;
 	float zhigh;
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
 
-	PINFLOAT HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal
+	PINFLOAT HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal
 								,bool direction, bool lateral, bool rigid);
 
-	PINFLOAT HitTestRadius(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
+	PINFLOAT HitTestRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
 
 	virtual int GetType() {return eCircle;}
 
 	virtual void Draw(HDC hdc);
 
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual void CalcHitRect();
 	};
@@ -230,13 +230,13 @@ class Joint : public HitCircle
 public:
 	Joint();
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
 
 	virtual int GetType() {return eJoint;}
 
 	virtual void Draw(HDC hdc);
 
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual void CalcHitRect();
 

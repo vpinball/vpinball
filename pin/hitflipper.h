@@ -79,17 +79,17 @@ public:
 
 	//void GetHitShapes(Vector<HitObject> *pvho);
 
-	virtual PINFLOAT HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal, bool face1);
+	virtual PINFLOAT HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal, bool face1);
 
-	virtual PINFLOAT HitTestFlipperEnd(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal); 
+	virtual PINFLOAT HitTestFlipperEnd(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal); 
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
 	
 	virtual int GetType() {return eFlipper;}
 
 	virtual void Draw(HDC hdc);
 
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual AnimObject *GetAnimObject() {return &m_flipperanim;}
 

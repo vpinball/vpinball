@@ -1547,20 +1547,16 @@ void PinTable::Paint(HDC hdc)
 
 ISelect *PinTable::HitTest(int x, int y)
 	{
-	HitSur *phs;
-	HDC hdc;
-	ISelect *pisel;
-
-	hdc = GetDC(m_hwnd);
+	HDC hdc = GetDC(m_hwnd);
 
 	RECT rc;
 	GetClientRect(m_hwnd, &rc);
 
-	phs = new HitSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
+	HitSur * const phs = new HitSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
 
 	Render(phs);
 
-	pisel = phs->m_pselected;
+	ISelect * const pisel = phs->m_pselected;
 
 	delete phs;
 
@@ -1644,11 +1640,11 @@ void PinTable::Play()
 		c_plungerNormalize  = m_plungerNormalize/1300.0f; 
 		c_plungerFilter  = m_plungerFilter != 0; 
 
-		float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
+		const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
-		g_pplayer->m_mainlevel.m_gravity.x = (D3DVALUE)0; 
-		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)( sinf(ANGTORAD(slope))*m_Gravity); //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cosf(ANGTORAD(slope))*m_Gravity);
+		g_pplayer->m_mainlevel.m_gravity.x = 0; 
+		g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
+		g_pplayer->m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
 
 		m_pcv->SetEnabled(fFalse); // Can't edit script while playing
 
@@ -1718,7 +1714,6 @@ void PinTable::StopPlaying()
 
 void PinTable::CreateTableWindow()
 	{
-
 	WNDCLASSEX wcex;
 
 	memset(&wcex, 0, sizeof(WNDCLASSEX));

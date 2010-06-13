@@ -249,15 +249,12 @@ void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
 	}	
 
 
-PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	float newtime;
 	float hittime = dtime; //start time
 	BOOL fHit = fFalse;
-	Ball BallT;
-	Vertex3D hitnormal[5];
-
-	BallT = *pball;	
+	Ball BallT = *pball;	
 
 	// If we got here, then the ball is close enough to the plunger
 	// to where we should animate the button's light.
@@ -265,6 +262,7 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	LastPlungerHit = msec();
 
 	// We are close enable the plunger light.
+	Vertex3Ds hitnormal[5];
 	newtime = m_plungeranim.m_linesegBase.HitTest(&BallT, dtime, &hitnormal[0]);
 	if (newtime >= 0 && newtime <= hittime)
 		{
@@ -359,7 +357,7 @@ void HitPlunger::Draw(HDC hdc)
 		}
 	}
 
-void HitPlunger::Collide(Ball *pball, Vertex3D *phitnormal)
+void HitPlunger::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	float dot = (pball->vx - phitnormal[1].x)* phitnormal->x + (pball->vy - phitnormal[1].y) * phitnormal->y;
 
@@ -404,7 +402,7 @@ void HitPlunger::Collide(Ball *pball, Vertex3D *phitnormal)
 
 	pball->m_fDynamic = C_DYNAMIC;
 
-	Vertex3D vnormal;
+	Vertex3Ds vnormal;
 	vnormal.Set(phitnormal->x, phitnormal->y, 0);
 	pball->AngularAcceleration(&vnormal);	
 	}

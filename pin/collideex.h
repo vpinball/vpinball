@@ -28,7 +28,7 @@ public:
 	BumperHitCircle();
 	virtual ~BumperHitCircle();
 
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual AnimObject *GetAnimObject() {return &m_bumperanim;}
 
@@ -60,8 +60,8 @@ public:
 	LineSegSlingshot();
 	virtual ~LineSegSlingshot();
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual AnimObject *GetAnimObject() {return &m_slingshotanim;}
 
@@ -75,8 +75,8 @@ public:
 class LineSegLevelEdge : public LineSeg
 	{
 public:
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	Level *m_plevel1, *m_plevel2;
 	};
@@ -86,16 +86,16 @@ class Hit3DPoly : public HitObject
 public:
 	Hit3DPoly(Vertex3D *rgv, int count);
 	virtual ~Hit3DPoly();
-	virtual PINFLOAT HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal,bool direction, bool rigid);
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal,bool direction, bool rigid);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
 	virtual int GetType() {return e3DPoly;}
 	virtual void Draw(HDC hdc);
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 	void CalcNormal();
 	virtual void CalcHitRect();
 
 	Vertex3D *m_rgv;
-	Vertex3D normal;
+	Vertex3Ds normal;
 	float D; // D for the plane equation.  A,B, and C are the plane normal (A x' + B y' +C z' = D, normal= x',y'+z'
 	int m_cvertex;
 	BOOL m_fVisible; // for ball shadows
@@ -142,9 +142,9 @@ public:
 
 	virtual int GetType() {return eSpinner;}
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
 
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual void CalcHitRect();
 
@@ -193,9 +193,9 @@ public:
 
 	virtual int GetType() {return eGate;}
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
 
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual AnimObject *GetAnimObject() {return &m_gateanim;}
 
@@ -210,8 +210,8 @@ public:
 
 	TriggerLineSeg();
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual int GetType() {return eTrigger;}
 
@@ -224,8 +224,8 @@ public:
 
 	TriggerHitCircle();
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual int GetType() {return eTrigger;}
 
@@ -236,10 +236,10 @@ class Hit3DCylinder : public HitCircle
 	{
 public:
 
-	Hit3DCylinder(Vertex3D *pv1, Vertex3D *pv2, Vertex3D *pvnormal);
+	Hit3DCylinder(Vertex3D *pv1, Vertex3D *pv2, Vertex3Ds *pvnormal);
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual void CalcHitRect();
 
@@ -305,8 +305,8 @@ public:
 
 	// Bogus methods
 	virtual void Draw(HDC hdc) {}
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal) {}
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) {return -1;}
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal) {}
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal) {return -1;}
 	virtual void CalcHitRect() {}
 
 	virtual AnimObject *GetAnimObject() {return &m_textboxanim;}
@@ -337,8 +337,8 @@ public:
 
 	// Bogus methods
 	virtual void Draw(HDC hdc) {}
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal) {}
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) {return -1;}
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal) {}
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal) {return -1;}
 	virtual void CalcHitRect() {}
 
 	virtual AnimObject *GetAnimObject() {return &m_dispreelanim;}
@@ -368,8 +368,8 @@ public:
 
 	// Bogus methods
 	virtual void Draw(HDC hdc) {}
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal) {}
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) {return -1;}
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal) {}
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal) {return -1;}
 	virtual void CalcHitRect() {}
 
 	virtual AnimObject *GetAnimObject() {return &m_lightseqanim;}
