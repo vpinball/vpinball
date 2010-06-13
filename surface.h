@@ -7,14 +7,6 @@
 
 #include "resource.h"       // main symbols
 
-class RenderVertex : public Vertex2D
-	{
-public:
-	BOOL fSmooth;
-	BOOL fSlingshot;
-	BOOL fControlPoint; // Whether this point was a control point on the curve
-	};
-
 class SurfaceData
 	{
 public:

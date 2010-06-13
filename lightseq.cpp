@@ -77,14 +77,7 @@ void LightSeq::PreRender(Sur *psur)
 
 	for (int i=0;i<8;i++)
 	{
-		if (i % 2 == 0)
-		{
-			psur->SetFillColor(RGB(255,0,0));
-		}
-		else
-		{
-			psur->SetFillColor(RGB(128,0,0));
-		}
+		psur->SetFillColor((i % 2 == 0) ? RGB(255,0,0) : RGB(128,0,0));
 		const float angle = (float)((M_PI*2.0)/8.0)*(float)i;
 		const float sn = sinf(angle);
 		const float cs = cosf(angle);
