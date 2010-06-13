@@ -29,14 +29,12 @@ struct _D3DTLVertexType
     DWORD                   SpecularColor;					// Vertex2D specular color.                                           
     float                   TU1, TV1;						// Vertex2D texture coordinate.                                      
     float                   TU2, TV2;						// Vertex2D texture coordinate.                                      
-
 };
 
 
 typedef enum _DISPLAY_RENDERSTATE		DISPLAY_RENDERSTATE;
 enum _DISPLAY_RENDERSTATE 
 {
-
 	// Generic render state.
     DISPLAY_RENDERSTATE_GENERIC		= 0,
 
@@ -47,14 +45,12 @@ enum _DISPLAY_RENDERSTATE
 	DISPLAY_RENDERSTATE_BALL,
 
 	DISPLAY_RENDERSTATE_MAX
-
 };
 
 
 typedef enum _DISPLAY_TEXTURESTATE	DISPLAY_TEXTURESTATE;
 enum _DISPLAY_TEXTURESTATE 
 {
-
 	// Generic texture state.
     DISPLAY_TEXTURESTATE_GENERIC	= 0,
 
@@ -64,14 +60,12 @@ enum _DISPLAY_TEXTURESTATE
   	DISPLAY_TEXTURESTATE_BALL,
 
 	DISPLAY_TEXTURESTATE_MAX
-
 };
 
 
 typedef struct _RenderStateType     RenderStateType;
 struct _RenderStateType
 {
-
     DWORD           ZEnable;
     DWORD           ZWriteEnable;
     DWORD           AlphaTestEnable;
@@ -133,14 +127,12 @@ struct _RenderStateType
     DWORD           EmissiveMaterialSource;
     DWORD           VertexBlend;
     DWORD           ClipPlaneEnable;
-
 };
 
 
 typedef struct _TextureStateType     TextureStateType;
 struct _TextureStateType
 {
-
     void            *Texture[DISPLAY_MAXTEXTURES];
 
     DWORD           AddressU[DISPLAY_MAXTEXTURES];
@@ -160,37 +152,35 @@ struct _TextureStateType
 
     DWORD           TextureCoordinateIndex[DISPLAY_MAXTEXTURES];
     DWORD           TextureCoordinateTransformFlags[DISPLAY_MAXTEXTURES];
-    
 };
 
 
 // Function headers.
-void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, float x, float y, float Width, float Height, float r, float g, float b, float a, float Angle, void *Texture, float u, float v, int TextureStateIndex, int RenderStateIndex );
+void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const float r, const float g, const float b, const float a, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex );
 
-void Display_InitializeRenderStates ( void );
+void Display_InitializeRenderStates ();
 void Display_GetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState );
 void Display_SetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState );
 void Display_ClearRenderState ( RenderStateType *RenderState );
 
-void Display_InitializeTextureStates ( void );
+void Display_InitializeTextureStates ();
 void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState );
 void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState );
 void Display_ClearTextureState ( TextureStateType *TextureState );
 
 void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 DirectDrawObject, LPDIRECTDRAWSURFACE7 DDrawSurface, int Width, int Height, LPDIRECTDRAWSURFACE7 *Texture, float *u, float *v );
 void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 DestTexture, RECT *Rect, LPDIRECTDRAWSURFACE7 SourceTexture );
-void Display_ClearTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 Texture, char Value );
+void Display_ClearTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 Texture, const char Value );
 void Display_DestroyTexture ( LPDIRECTDRAWSURFACE7 Texture );
 
 HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT *pddpf, VOID *param );
 
-int Display_GetPowerOfTwo ( int Value );
+int Display_GetPowerOfTwo ( const int Value );
 extern int NumVideoBytes;
 
 extern RenderStateType RenderStates[DISPLAY_RENDERSTATE_MAX];
 extern TextureStateType TextureStates[DISPLAY_TEXTURESTATE_MAX];
 
 HRESULT Display_DrawIndexedPrimitive( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIMITIVETYPE d3dptPrimitiveType, DWORD dwVertexTypeDesc, LPVOID lpvVertices, DWORD dwVertexCount, LPWORD lpwIndices, DWORD dwIndexCount, DWORD dwFlags );
-
 
 #endif

@@ -579,7 +579,7 @@ void SpinnerAnimObject::Check3D()
 
 	if (frame != m_iframe)
 		{
-		LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
+		//LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 
 		m_iframe = frame;
 		m_fInvalid = fTrue;
@@ -590,9 +590,9 @@ ObjFrame *SpinnerAnimObject::Draw3D(RECT *prc)
 	{
 	if (!m_fVisible || m_iframe == -1) return NULL;
 
-	LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
+	//LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 
-	ObjFrame *pobjframe = m_vddsFrame.ElementAt(m_iframe);
+	ObjFrame * const pobjframe = m_vddsFrame.ElementAt(m_iframe);
 
 	return pobjframe;
 	}

@@ -301,20 +301,8 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 		}
 
-	WORD rgiNormal[3];
-	rgiNormal[0] = 0;
-	rgiNormal[1] = 1;
-	rgiNormal[2] = 3;
-
-	WORD rgi[8];
-	rgi[0] = 0;
-	rgi[1] = 1;
-	rgi[2] = 2;
-	rgi[3] = 3;
-	rgi[4] = 6;
-	rgi[5] = 7;
-	rgi[6] = 4;
-	rgi[7] = 5;
+	WORD rgiNormal[3] = {0,1,3};
+	WORD rgi[8] = {0,1,2,3,6,7,4,5};
 
 	SetNormal(rgv3D, rgiNormal, 3, rgv3D, rgi, 8);
 
@@ -538,11 +526,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetMaterial(&mtrl);
 
-		WORD rgi[4];
-		rgi[0] = 0;
-		rgi[1] = 1;
-		rgi[2] = 5;
-		rgi[3] = 4;
+		WORD rgi[4] = {0,1,5,4};
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
@@ -667,7 +651,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		// Copy from the back color and depth buffers to the new surfaces.
 		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
-		HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+		const HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 				
 		m_phitspinner->m_spinneranim.m_vddsFrame.AddElement(pof);
 		pof->pdds = pdds;

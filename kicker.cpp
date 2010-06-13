@@ -193,10 +193,10 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		// Draw outer ring
 		for (WORD l=1;l<15;l++)
 			{
-			WORD rgi[3];
-			rgi[0] = 0;
-			rgi[1] = l;
-			rgi[2] = l+1;
+			WORD rgi[3] = {
+				0,
+				l,
+				l+1};
 
 			SetNormal(rgvBorder, rgi, 3, NULL, NULL, 0);
 
@@ -225,10 +225,10 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	// Draw mask
 	for (WORD l=1;l<15;l++)
 			{
-			WORD rgi[3];
-			rgi[0] = 16+0;
-			rgi[1] = 16+l;
-			rgi[2] = 16+l+1;
+			WORD rgi[3] = {
+				16,
+				16+l,
+				16+l+1};
 
 			SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
 
@@ -298,10 +298,10 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (WORD l=1;l<15;l++)
 					{
-					WORD rgi[3];
-					rgi[0] = 0;
-					rgi[1] = l;
-					rgi[2] = l+1;
+					WORD rgi[3] = {
+						0,
+						l,
+						l+1};
 
 					SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
 
@@ -322,11 +322,11 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgiNormal[1] = rgiNormal[0] + 16;
 				rgiNormal[2] = rgiNormal[0] + 2;
 
-				WORD rgi[4];
-				rgi[0] = l;
-				rgi[1] = l+16;
-				rgi[2] = (l+1) % 16 + 16;
-				rgi[3] = (l+1) % 16;
+				WORD rgi[4] = {
+					l,
+					l+16,
+					(l+1) % 16 + 16,
+					(l+1) % 16};
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
@@ -350,12 +350,13 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<16;l++)
 				{
-				WORD rgi[3];
-				rgi[0] = 48;
-				rgi[1] = l + 16;
-				rgi[2] = ((l + 1)&15) + 16;
+				WORD rgi[3] = {
+					48,
+					l + 16,
+					((l + 1)&15) + 16};
 
 				SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
+				
 				rgv3D[48].nx = 0;
 				rgv3D[48].ny = 0;
 				rgv3D[48].nz = -1;

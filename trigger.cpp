@@ -446,18 +446,18 @@ void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 		}
 
-	WORD rgi[8];
 	for (int i=0;i<4;i++)
 		{
 		const int offset = i*10;
 
 		for (int l=0;l<6;l++)
 			{
-			rgi[0] = rgtriggerface[l][0];
-			rgi[1] = rgtriggerface[l][1];
-			rgi[2] = rgtriggerface[l][2];
-			rgi[3] = rgtriggerface[l][3];
-			rgi[4] = rgtriggerface[l][4];
+			WORD rgi[5] = {
+				rgtriggerface[l][0],
+				rgtriggerface[l][1],
+				rgtriggerface[l][2],
+				rgtriggerface[l][3],
+				rgtriggerface[l][4]};
 
 			const int cpt = (rgtriggerface[l][4] == 65535) ? 4 : 5;
 
@@ -492,9 +492,7 @@ void Trigger::MoveOffset(float dx, float dy)
 
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
-		CComObject<DragPoint> *pdp;
-
-		pdp = m_vdpoint.ElementAt(i);
+		CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 
 		pdp->m_v.x += dx;
 		pdp->m_v.y += dy;
@@ -562,14 +560,12 @@ void Trigger::DoCommand(int icmd, int x, int y)
 			{
 			STARTUNDO
 
-			HitSur *phs;
-
 			RECT rc;
 			GetClientRect(m_ptable->m_hwnd, &rc);
 			Vertex2D v, vOut;
 			int iSeg;
 
-			phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+			HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
 			phs->ScreenToSurface(x, y, &v.x, &v.y);
 			delete phs;

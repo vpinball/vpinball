@@ -318,28 +318,24 @@ HRESULT BiffReader::ReadBytes(void *pv,unsigned long count,unsigned long *foo)
 
 HRESULT BiffReader::GetIntNoHash(void *pvalue)
 	{
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
 	m_bytesinrecordremaining -= sizeof(int);
 
+	ULONG read = 0;
 	return m_pistream->Read(pvalue, sizeof(int), &read);
 	}
 
 HRESULT BiffReader::GetInt(void *pvalue)
 	{
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
 	m_bytesinrecordremaining -= sizeof(int);
 
+	ULONG read = 0;
 	return ReadBytes(pvalue, sizeof(int), &read);
 	}
 
 HRESULT BiffReader::GetString(char *szvalue)
 	{
 	ULONG read = 0;
-	HRESULT hr = S_OK;
+	HRESULT hr;
 	int len;
 
 	if(FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
@@ -355,7 +351,7 @@ HRESULT BiffReader::GetString(char *szvalue)
 HRESULT BiffReader::GetWideString(WCHAR *wzvalue)
 	{
 	ULONG read = 0;
-	HRESULT hr = S_OK;
+	HRESULT hr;
 	int len;
 
 	if(FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
@@ -370,41 +366,32 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue)
 
 HRESULT BiffReader::GetFloat(float *pvalue)
 	{
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
 	m_bytesinrecordremaining -= sizeof(float);
 
+	ULONG read = 0;
 	return ReadBytes(pvalue, sizeof(float), &read);
 	}
 
 HRESULT BiffReader::GetBool(BOOL *pfvalue)
 	{
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
 	m_bytesinrecordremaining -= sizeof(BOOL);
 
+	ULONG read = 0;
 	//return m_pistream->Read(pfvalue, sizeof(BOOL), &read);
 	return ReadBytes(pfvalue, sizeof(BOOL), &read);
 	}
 
 HRESULT BiffReader::GetStruct(void *pvalue, int size)
 	{
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
 	m_bytesinrecordremaining -= size;
 
+	ULONG read = 0;
 	return ReadBytes(pvalue, size, &read);
 	}
 
 HRESULT BiffReader::Load()
 	{
 	int tag = 0;
-	HRESULT hr;
-	BOOL fContinue;
-
 	while (tag != FID(ENDB))
 		{
 		if (m_version > 30)
@@ -412,8 +399,9 @@ HRESULT BiffReader::Load()
 			GetIntNoHash(&m_bytesinrecordremaining);
 			}
 
-		hr = GetInt(&tag);
+		const HRESULT hr = GetInt(&tag);
 
+		BOOL fContinue = false;
 		if (hr == S_OK)
 			{
 			fContinue = m_piloadable->LoadToken(tag, this);

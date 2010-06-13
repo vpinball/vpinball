@@ -28,8 +28,8 @@ static void ColouriseVBDoc(UINT startPos, int length, int initStyle,
 		return;
 		}
 
-	UINT startErrorChar = -1;
-	UINT endErrorChar = -1;
+	UINT startErrorChar = ~0u;
+	UINT endErrorChar = ~0u;
 
 	if (pcv->m_errorLineNumber != -1)
 		{
@@ -308,9 +308,9 @@ HRESULT CodeViewer::AddTemporaryItem(BSTR bstr, IDispatch *pdisp)
 
 	m_vcvdTemp.AddSortedString(pcvd);
 
-	int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
+	const int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
 
-	HRESULT hr = m_pScript->AddNamedItem(bstr, flags);
+	const HRESULT hr = m_pScript->AddNamedItem(bstr, flags);
 
 	m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
 
@@ -460,7 +460,7 @@ STDMETHODIMP CodeViewer::InitializeScriptEngine()
 			DWORD supported, enabled;
 			pios->GetInterfaceSafetyOptions(IID_IActiveScript, &supported, &enabled);
 
-			HRESULT hr = pios->SetInterfaceSafetyOptions(IID_IActiveScript, supported, INTERFACE_USES_SECURITY_MANAGER);
+			const HRESULT hr = pios->SetInterfaceSafetyOptions(IID_IActiveScript, supported, INTERFACE_USES_SECURITY_MANAGER);
 
 			pios->Release();
 			}
@@ -726,7 +726,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		}
 	EnableWindow(g_pvp->m_hwnd, FALSE);
 
-	int result = MessageBoxW(m_hwndMain,
+	const int result = MessageBoxW(m_hwndMain,
 				wszOutput,
 				L"Script Error",
 				MB_SETFOREGROUND);
@@ -759,7 +759,7 @@ void CodeViewer::Compile()
 	ZeroMemory(&exception, sizeof(exception));
 	m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
-	HRESULT hr = m_pScript->AddTypeLib(LIBID_VBATESTLib, 1, 0, 0);
+	const HRESULT hr = m_pScript->AddTypeLib(LIBID_VBATESTLib, 1, 0, 0);
 
 	for (int i=0;i<m_vcvd.Size();i++)
 		{
@@ -1040,7 +1040,7 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
 					 &cryptlen,			// size of data to encrypt
 					 bufferSize);		// maximum size of buffer (includes padding)
 
-		int foo = GetLastError();		// purge any errors
+		const int foo = GetLastError();	// purge any errors
 
 		// update the size of the buffer to stream out (and create hash for)
 		cchar = cryptlen;
@@ -1088,7 +1088,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
 					 (BYTE *)szText,	// buffer to decrypt
 					 &cryptlen);		// size of data to decrypt
 
-		int foo = GetLastError();		// purge any errors
+		const int foo = GetLastError();	// purge any errors
 
 		// update the size of the buffer
 		cchar = cryptlen;
@@ -1213,7 +1213,7 @@ void CodeViewer::GetParamsFromEvent(int iEvent, char *szParams)
 
 					unsigned int cnames;
 
-					HRESULT hr = ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
+					const HRESULT hr = ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
 
 					// Add enum string to combo control
 					char szT[512];
@@ -1358,10 +1358,10 @@ void CodeViewer::FindCodeFromEvent()
 			if (ichar == -1)
 				{
 				// The function was declared as the last line of the script - rare but possible
-				int ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
+				const int ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
 				}
 
-			int lineEvent = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, ichar, 0);
+			const int lineEvent = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, ichar, 0);
 			SendMessage(m_hwndScintilla, SCI_ENSUREVISIBLEENFORCEPOLICY, lineEvent, 0);
 			SendMessage(m_hwndScintilla, SCI_SETSEL, ichar, ichar);
 			}

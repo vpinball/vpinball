@@ -184,12 +184,12 @@ void PinFont::Register()
 
 	WriteToFile(m_szTempFile);
 
-	int fonts = AddFontResource(m_szTempFile);
+	const int fonts = AddFontResource(m_szTempFile);
 	}
 
 void PinFont::UnRegister()
 	{
-	BOOL fFoo = RemoveFontResource(m_szTempFile);
+	const BOOL fFoo = RemoveFontResource(m_szTempFile);
 
 	DeleteFile(m_szTempFile);
 	}

@@ -531,11 +531,11 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgiNormal[1] = rgiNormal[0] + 32;
 				rgiNormal[2] = rgiNormal[0] + 2;
 
-				WORD rgi[4];
-				rgi[0] = l;
-				rgi[1] = l+32;
-				rgi[2] = (l+1) % 32 + 32;
-				rgi[3] = ((l+1) % 32);
+				WORD rgi[4] = {
+					l,
+					l+32,
+					(l+1) % 32 + 32,
+					((l+1) % 32)};
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
@@ -706,7 +706,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
-		HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+		const HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
 		m_pbumperhitcircle->m_bumperanim.m_pobjframe[i] = pof;
 

@@ -999,11 +999,7 @@ void Ramp::RenderStaticHabitrail(LPDIRECT3DDEVICE7 pd3dDevice)
 	int cvertex;
 	const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
 
-	WORD rgi[4];
-	for (WORD i=0;i<4;i++)
-		{
-		rgi[i]=i;
-		}
+	WORD rgi[4] = {0,1,2,3};
 
 	for (int i=0;i<cvertex;i++)
 		{
@@ -1167,10 +1163,10 @@ void Ramp::RenderPolygons(LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D *rgv3D, int *rg
 	{
 	for (int i=start;i<stop;i++)
 		{
-		WORD rgi[3];
-		rgi[0] = rgicrosssection[i*3 + 0];
-		rgi[1] = rgicrosssection[i*3 + 1];
-		rgi[2] = rgicrosssection[i*3 + 2];
+		WORD rgi[3] = {
+			rgicrosssection[i*3 + 0],
+			rgicrosssection[i*3 + 1],
+			rgicrosssection[i*3 + 2]};
 
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32, rgi, 3, 0);
 		}
@@ -1288,11 +1284,7 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		int cvertex;
 		const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
 
-		WORD rgi[4];
-		for (WORD i=0;i<4;i++)
-			{
-			rgi[i]=i;
-			}
+		WORD rgi[4] = {0,1,2,3};
 
 		const float tablewidth = m_ptable->m_right - m_ptable->m_left;
 		const float tableheight = m_ptable->m_bottom - m_ptable->m_top;
@@ -2443,11 +2435,7 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		int cvertex;
 		const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
 
-		WORD rgi[4];
-		for (WORD i=0;i<4;i++)
-			{
-			rgi[i]=i;
-			}
+		WORD rgi[4] = {0,1,2,3};
 
 		const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);
 		const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
