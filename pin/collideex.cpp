@@ -28,7 +28,7 @@ BumperHitCircle::~BumperHitCircle()
 
 void BumperHitCircle::Collide(Ball *pball, Vertex3D *phitnormal)
 	{
-	float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
+	const float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
 
 	pball->CollideWall(phitnormal, m_elasticity, m_antifriction, m_scatter);	//reflect ball from wall
 
@@ -132,7 +132,7 @@ void LineSegSlingshot::Collide(Ball *pball, Vertex3D *phitnormal)
 
 		const float len = (v2.x - v1.x)*TANX + (v2.y - v1.y)*TANY; //rlc length of segment, Unit TAN points from V1 to V2
 
-		Vertex vhitpoint;
+		Vertex2D vhitpoint;
 		vhitpoint.x = pball->x - phitnormal->x * pball->radius; //project ball radius along norm
 		vhitpoint.y = pball->y - phitnormal->y * pball->radius;
 
@@ -335,7 +335,7 @@ void GateAnimObject::Check3D()
 	if (m_pgate->m_d.m_angleMin != m_pgate->m_d.m_angleMax)
 		{
 		frame = (int)(((m_angle - m_pgate->m_d.m_angleMin)/(m_pgate->m_d.m_angleMax - m_pgate->m_d.m_angleMin)
-				* m_vddsFrame.Size()) + 0.5f);
+				* (float)m_vddsFrame.Size()) + 0.5f);
 		}
 	else frame = 1;
 
@@ -579,9 +579,7 @@ void SpinnerAnimObject::Check3D()
 
 	if (frame != m_iframe)
 		{
-		LPDIRECTDRAWSURFACE7 pdds;
-
-		pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
+		LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 
 		m_iframe = frame;
 		m_fInvalid = fTrue;
@@ -590,11 +588,9 @@ void SpinnerAnimObject::Check3D()
 
 ObjFrame *SpinnerAnimObject::Draw3D(RECT *prc)
 	{
-	LPDIRECTDRAWSURFACE7 pdds;
-
 	if (!m_fVisible || m_iframe == -1) return NULL;
 
-	pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
+	LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 
 	ObjFrame *pobjframe = m_vddsFrame.ElementAt(m_iframe);
 
@@ -654,25 +650,24 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *p
 	{
 	if (!m_fEnabled) return -1.0f;
 
-	PINFLOAT hittime,bnd;
-	PINFLOAT bnv; 
-	PINFLOAT hitx, hity, hitz; // Point on the ball that will hit the polygon, if it hits at all
-
-	bnv = (normal.x*pball->vx) + (normal.y*pball->vy) + (normal.z*pball->vz);  //speed in Normal-vector direction
+	const PINFLOAT bnv = (normal.x*pball->vx) + (normal.y*pball->vy) + (normal.z*pball->vz);  //speed in Normal-vector direction
 
 	if (direction && bnv >= 0)								//rlc ... return if clearly ball is receding from object
-		{return -1.0f;}
+		return -1.0f;
 
-	PINFLOAT bRadius = pball->radius;
-	hitx = (-normal.x) * bRadius + pball->x; //rlc nearest point on ball ... projected radius along norm
-	hity = (-normal.y) * bRadius + pball->y;
-	hitz = (-normal.z) * bRadius + pball->z;
+	PINFLOAT hitx, hity, hitz; // Point on the ball that will hit the polygon, if it hits at all
 
-	bnd = normal.x * hitx + normal.y * hity + normal.z * hitz + D; // distance from plane to ball
+	const PINFLOAT bRadius = pball->radius;
+	hitx = pball->x - normal.x * bRadius; //rlc nearest point on ball ... projected radius along norm
+	hity = pball->y - normal.y * bRadius;
+	hitz = pball->z - normal.z * bRadius;
 
-	bool bUnHit = bnv > C_LOWNORMVEL;
-	bool inside = bnd <= 0;									// in ball inside object volume
+	const PINFLOAT bnd = normal.x * hitx + normal.y * hity + normal.z * hitz + D; // distance from plane to ball
 
+	bool bUnHit = (bnv > C_LOWNORMVEL);
+	bool inside = (bnd <= 0);									// in ball inside object volume
+
+	PINFLOAT hittime;
 	if (rigid) //rigid polygon
 		{
 		if (bnd < (float)(-PHYS_SKIN)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
@@ -682,7 +677,7 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *p
 			if (inside || fabsf(bnv) > C_CONTACTVEL)		// fast velocity, return zero time
 				hittime = 0;													//zero time for rigid fast bodies
 			else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;					// slow moving but embedded
-			else hittime = (bnd + (float)PHYS_TOUCH) * (float)(1.0/PHYS_TOUCH/2.0);	// don't compete for fast zero time events
+			else hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
 			}
 		else if (fabsf(bnv) > C_LOWNORMVEL )					// not velocity low ????
 			hittime = bnd/(-bnv);								// rate ok for safe divide 
@@ -696,9 +691,9 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *p
 			if (!pball->m_vpVolObjs) return -1.0f;					// temporary ball
 
 			if (fabsf(bnd) >= (float)(PHYS_SKIN/2.0))		// not to close ... nor to far away
-				{return -1.0f;}
+				return -1.0f;
 
-			bool hit = pball->m_vpVolObjs->IndexOf(m_pObj) >= 0;	// hit already???
+			const bool hit = pball->m_vpVolObjs->IndexOf(m_pObj) >= 0;	// hit already???
 
 			if (inside == !hit) // ...ball outside and hit set or  ball inside and no hit set
 				{
@@ -719,46 +714,38 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *p
 	// Do a point in poly test, using the xy plane, to see if the hit point is inside the polygon
 	//this need to be changed to a point in polygon on 3D plane
 
-	PINFLOAT x1,y1,x2,y2;
 	int crosscount=0;	// count of lines which the hit point is to the left of
 	for (int i=0;i<m_cvertex;i++)
 		{
 		const int j = (i+1) % m_cvertex;
 
-		y1 = m_rgv[i].y;
-		y2 = m_rgv[j].y;
+		const PINFLOAT x1 = m_rgv[i].x;
+		const PINFLOAT y1 = m_rgv[i].y;
+		const PINFLOAT x2 = m_rgv[j].x;
+		const PINFLOAT y2 = m_rgv[j].y;
 
-		if (y1==y2)
-			goto done;
-
-		if ((hity <= y1 && hity <= y2) || (hity > y1 && hity > y2)) // if out of y range, forget about this segment
-			goto done;
-
-		x1 = m_rgv[i].x;
-		x2 = m_rgv[j].x;
-
-		if (hitx >= x1 && hitx >= x2) // Hit point is on the right of the line
-			goto done;
+		if ((y1==y2) ||
+		    (hity <= y1 && hity <= y2) || (hity > y1 && hity > y2) || // if out of y range, forget about this segment
+		    (hitx >= x1 && hitx >= x2)) // Hit point is on the right of the line
+			continue;
 
 		if (hitx < x1 && hitx < x2)
 			{
 			crosscount++;
-			goto done;
+			continue;
 			}
 
 		if (x2 == x1)
 			{
 			if (hitx < x2)
 				crosscount++;
-			goto done;
+			continue;
 			}
 
 		// Now the hard part - the hit point is in the line bounding box
 
-		if ( (x2 - ( (y2 - hity) * (x1 - x2) / (y1 - y2) ) ) > hitx)
+		if (x2 - (y2 - hity)*(x1 - x2)/(y1 - y2) > hitx)
 			crosscount++;
-done:
-;
 		}
 
 	if (crosscount & 1)
@@ -791,7 +778,7 @@ void Hit3DPoly::Collide(Ball *pball, Vertex3D *phitnormal)
 		{
 		if (!pball->m_vpVolObjs) return;
 
-		int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
+		const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
 		if ((phitnormal[1].x < 1) == (i < 0))	// Hit == NotAlreadyHit
 			{			
@@ -854,23 +841,29 @@ void Hit3DPoly::CalcHitRect()
 
 Hit3DCylinder::Hit3DCylinder(Vertex3D *pv1, Vertex3D *pv2, Vertex3D *pvnormal)
 	{
-	v1 = *pv1;
-	v2 = *pv2;
-	normal = *pvnormal;
+	v1.x = (*pv1).x;
+	v1.y = (*pv1).y;
+	v1.z = (*pv1).z;
+	v2.x = (*pv2).x;
+	v2.y = (*pv2).y;
+	v2.z = (*pv2).z;
+	normal.x = (*pvnormal).x;
+	normal.y = (*pvnormal).y;
+	normal.z = (*pvnormal).z;
 	radius = 0;
 	CacheHitTransform();
 	}
 
 void Hit3DCylinder::CacheHitTransform()
 	{
-	Vertex3D vLine;
+	Vertex3Ds vLine;
 	vLine.x = v2.x - v1.x;
 	vLine.y = v2.y - v1.y;
 	vLine.z = v2.z - v1.z;
 
 	vLine.Normalize();
 
-	Vertex3D vup;
+	Vertex3Ds vup;
 	vup.x = 0;
 	vup.y = 0;
 	vup.z = 1.0f;
@@ -886,7 +879,7 @@ void Hit3DCylinder::CacheHitTransform()
 	vtrans[0] = v1;
 	vtrans[1] = v2;
 
-	RotateAround(&transaxis, vtrans, 2, (float)transangle);
+	RotateAround(&transaxis, vtrans, 2, transangle);
 	}
 
 PINFLOAT Hit3DCylinder::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
@@ -895,19 +888,19 @@ PINFLOAT Hit3DCylinder::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnorma
 
 	Ball ballT = *pball;
 
-	Vertex3D vball;
-	vball.x = (float)(ballT.x);
-	vball.y = (float)(ballT.y);
-	vball.z = (float)(ballT.z);
+	Vertex3Ds vball;
+	vball.x = ballT.x;
+	vball.y = ballT.y;
+	vball.z = ballT.z;
 
-	RotateAround(&transaxis, &vball, 1, (float)transangle);
+	RotateAround(&transaxis, &vball, 1, transangle);
 
-	Vertex3D vvelocity;
-	vvelocity.x = (float)(ballT.vx);
-	vvelocity.y = (float)(ballT.vy);
-	vvelocity.z = (float)(ballT.vz);
+	Vertex3Ds vvelocity;
+	vvelocity.x = ballT.vx;
+	vvelocity.y = ballT.vy;
+	vvelocity.z = ballT.vz;
 
-	RotateAround(&transaxis, &vvelocity, 1, (float)transangle);
+	RotateAround(&transaxis, &vvelocity, 1, transangle);
 
 	ballT.x = vball.x;
 	ballT.y = vball.y;
@@ -922,17 +915,19 @@ PINFLOAT Hit3DCylinder::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnorma
 	zlow = min(vtrans[0].z, vtrans[1].z);
 	zhigh = max(vtrans[0].z, vtrans[1].z);
 
-	PINFLOAT hittime = HitTestRadius(&ballT, dtime, phitnormal);
+	const PINFLOAT hittime = HitTestRadius(&ballT, dtime, phitnormal);
 
 	if (hittime >= 0)
 		{
-		Vertex3D mynormal;
+		Vertex3Ds mynormal;
 		mynormal.x = phitnormal->x;
 		mynormal.y = phitnormal->y;
 		mynormal.z = 0;
 
-		RotateAround(&transaxis, &mynormal, 1, (float)-transangle);
-		*(Vertex3D *)phitnormal = mynormal;
+		RotateAround(&transaxis, &mynormal, 1, -transangle);
+		(*phitnormal).x = mynormal.x;
+		(*phitnormal).y = mynormal.y;
+		(*phitnormal).z = mynormal.z;
 		}
 
 	return hittime;
@@ -1066,7 +1061,7 @@ PINFLOAT TriggerLineSeg::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnorm
 
 void TriggerLineSeg::Collide(Ball *pball, Vertex3D *phitnormal)
 	{
-	if (m_ObjType != eTrigger)return;
+	if (m_ObjType != eTrigger) return;
 
 	if (!pball->m_vpVolObjs) return;
 
@@ -1105,7 +1100,7 @@ PINFLOAT TriggerHitCircle::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitno
 
 void TriggerHitCircle::Collide(Ball *pball, Vertex3D *phitnormal)
 	{
-	if (m_ObjType < eTrigger)return;// triggers and kickers
+	if (m_ObjType < eTrigger) return;// triggers and kickers
 
 	if (!pball->m_vpVolObjs) return;
 

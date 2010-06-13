@@ -186,8 +186,6 @@ void Bumper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	WORD rgi[32];
-	Vertex3D rgv3D[160];
 	WORD rgiNormal[3];
 	float maxtu, maxtv;
 	D3DMATERIAL7 mtrl;
@@ -196,15 +194,15 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		
 	// All this function does is render the bumper image so the black shows through where it's missing in the animated form
 
-	PinImage *pin = m_ptable->GetImage(m_d.m_szImage);
+	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	if (pin)
 		{
-		Pin3D *ppin3d = &g_pplayer->m_pin3d;
+		Pin3D *const ppin3d = &g_pplayer->m_pin3d;
 
-		float outerradius = m_d.m_radius + m_d.m_overhang;
+		const float outerradius = m_d.m_radius + m_d.m_overhang;
 
 		m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
@@ -224,6 +222,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		mtrl.emissive.b = 0;
 		pd3dDevice->SetMaterial(&mtrl);
 
+		Vertex3D rgv3D[160];
 		for (int l=0;l<32;l++)
 			{
 			const float angle = (float)(M_PI*2.0/32.0)*(float)l;
@@ -254,6 +253,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+128]);
 			}
 
+		WORD rgi[32];
 		for (WORD l=0;l<32;l++)
 			{
 			rgi[l] = l;
@@ -329,11 +329,7 @@ void Bumper::RenderMoversFromCache(Pin3D *ppin3d)
 
 void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	WORD rgi[32];
-	Vertex3D rgv3D[160];
-	WORD rgiNormal[3];
-	ObjFrame *pof;
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	float maxtu, maxtv;
 
 	if(!m_d.m_fVisible)	return;
@@ -354,8 +350,9 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	const float outerradius = m_d.m_radius + m_d.m_overhang;
 
-	PinImage *pin = m_ptable->GetImage(m_d.m_szImage);
+	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 
+	Vertex3D rgv3D[160];
 	for (int l=0;l<32;l++)
 		{
 		const float angle = (float)(M_PI*2.0/32.0)*(float)l;
@@ -403,7 +400,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	for (int i=0;i<2;i++)	//0 is unlite, while 1 is lite
 		{
-		pof = new ObjFrame();
+		ObjFrame * const pof = new ObjFrame();
 
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 
@@ -444,6 +441,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->SetMaterial(&mtrl);
 
+			WORD rgi[32];
 			for (int l=0;l<32;l++)
 				{
 				rgi[l] = l;
@@ -457,6 +455,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
+				WORD rgiNormal[3];
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
 				rgiNormal[2] = rgiNormal[0] + 2;
@@ -481,6 +480,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
+				WORD rgiNormal[3];
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
 				rgiNormal[2] = rgiNormal[0] + 2;
@@ -533,10 +533,12 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
+				WORD rgiNormal[3];
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
 				rgiNormal[2] = rgiNormal[0] + 2;
 
+				WORD rgi[4];
 				rgi[0] = l;
 				rgi[1] = l+32;
 				rgi[2] = (l+1) % 32 + 32;
@@ -626,6 +628,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgv3D[l+128].tv2 = (0.5f+cosangle*0.5f)*lightmaxtv;
 				}
 
+			WORD rgi[32];
 			for (WORD l=0;l<32;l++)
 				{
 				rgi[l] = l;
@@ -639,6 +642,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
+				WORD rgiNormal[3];
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
 				rgiNormal[2] = rgiNormal[0] + 2;
@@ -663,6 +667,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
+					WORD rgiNormal[3];
 					rgiNormal[0] = (l - 1 + 32) % 32;
 					rgiNormal[1] = rgiNormal[0] + 32;
 					rgiNormal[2] = rgiNormal[0] + 2;
@@ -754,13 +759,13 @@ void Bumper::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Bumper::GetCenter(Vertex *pv)
+void Bumper::GetCenter(Vertex2D *pv)
 	{
 	pv->x = m_d.m_vCenter.x;
 	pv->y = m_d.m_vCenter.y;
 	}
 
-void Bumper::PutCenter(Vertex *pv)
+void Bumper::PutCenter(Vertex2D *pv)
 	{
 	m_d.m_vCenter.x = pv->x;
 	m_d.m_vCenter.y = pv->y;
@@ -777,7 +782,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
 	bw.WriteFloat(FID(RADI), m_d.m_radius);
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -851,7 +856,7 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
 		}
 	else if (id == FID(RADI))
 		{

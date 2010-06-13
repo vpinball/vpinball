@@ -85,7 +85,7 @@ void PaintSur::Ellipse2(float centerx, float centery, int radius)
 	::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir + 1, iy + ir + 1);
 	}
 
-void PaintSur::Polygon(Vertex *rgv, int count)
+void PaintSur::Polygon(Vertex2D *rgv, int count)
 	{
 	POINT * const rgpt = new POINT[count];
 
@@ -103,7 +103,7 @@ void PaintSur::Polygon(Vertex *rgv, int count)
 	delete rgpt;
 	}
 
-void PaintSur::PolygonImage(Vertex *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
+void PaintSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
 	{
 	POINT * const rgpt = new POINT[count];
 
@@ -138,7 +138,7 @@ void PaintSur::PolygonImage(Vertex *rgv, int count, HBITMAP hbm, float left, flo
 	delete rgpt;
 	}
 
-void PaintSur::Polyline(Vertex *rgv, int count)
+void PaintSur::Polyline(Vertex2D *rgv, int count)
 	{
 	POINT * const rgpt = new POINT[count];
 

@@ -43,7 +43,7 @@ STDMETHODIMP BallEx::put_X(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->x = (PINFLOAT)newVal;
+	m_pball->x = newVal;
 
 	return S_OK;
 }
@@ -61,7 +61,7 @@ STDMETHODIMP BallEx::put_Y(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->y = (PINFLOAT)newVal;
+	m_pball->y = newVal;
 
 	return S_OK;
 }
@@ -79,7 +79,7 @@ STDMETHODIMP BallEx::put_VelX(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->vx = (PINFLOAT)newVal;
+	m_pball->vx = newVal;
 
 	m_pball->CalcBoundingRect();
 
@@ -99,7 +99,7 @@ STDMETHODIMP BallEx::put_VelY(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->vy = (PINFLOAT)newVal;
+	m_pball->vy = newVal;
 
 	m_pball->CalcBoundingRect();
 
@@ -119,7 +119,7 @@ STDMETHODIMP BallEx::put_Z(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->z = (PINFLOAT)newVal;
+	m_pball->z = newVal;
 
 	return S_OK;
 }
@@ -137,7 +137,7 @@ STDMETHODIMP BallEx::put_VelZ(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->vz = (PINFLOAT)newVal;
+	m_pball->vz = newVal;
 
 	m_pball->CalcBoundingRect();
 
@@ -175,14 +175,7 @@ STDMETHODIMP BallEx::put_Image(BSTR newVal)
 {
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImage, 32, NULL, NULL);
 
-	if (lstrlen(m_pball->m_szImage) > 0)
-		{
-		m_pball->m_pin = g_pplayer->m_ptable->GetImage(m_pball->m_szImage);
-		}
-	else
-		{
-		m_pball->m_pin = NULL;
-		}
+	m_pball->m_pin = (lstrlen(m_pball->m_szImage) > 0) ? g_pplayer->m_ptable->GetImage(m_pball->m_szImage) : NULL;
 
 	return S_OK;
 }
@@ -216,14 +209,7 @@ STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
 {
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImageFront, 32, NULL, NULL);
 
-	if (lstrlen(m_pball->m_szImageFront) > 0)
-		{
-		m_pball->m_pinFront = g_pplayer->m_ptable->GetImage(m_pball->m_szImageFront);
-		}
-	else
-		{
-		m_pball->m_pinFront = NULL;
-		}
+	m_pball->m_pinFront = (lstrlen(m_pball->m_szImageFront) > 0) ? g_pplayer->m_ptable->GetImage(m_pball->m_szImageFront) : NULL;
 
 	return S_OK;
 }
@@ -241,14 +227,7 @@ STDMETHODIMP BallEx::put_BackDecal(BSTR newVal)
 {
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImageBack, 32, NULL, NULL);
 
-	if (lstrlen(m_pball->m_szImageBack) > 0)
-		{
-		m_pball->m_pinBack = g_pplayer->m_ptable->GetImage(m_pball->m_szImageBack);
-		}
-	else
-		{
-		m_pball->m_pinBack = NULL;
-		}
+	m_pball->m_pinBack = (lstrlen(m_pball->m_szImageBack) > 0) ? g_pplayer->m_ptable->GetImage(m_pball->m_szImageBack) : NULL;
 
 	return S_OK;
 }
@@ -278,6 +257,3 @@ STDMETHODIMP BallEx::DestroyBall(int *pVal)
 
 	return S_OK;
 }
-
-
-

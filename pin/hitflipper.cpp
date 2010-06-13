@@ -224,7 +224,7 @@ void FlipperAnimObject::UpdateVelocities(PINFLOAT dtime)
 #define LeftFace 1
 #define RightFace 0
 
-	PINFLOAT HitFlipper::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT HitFlipper::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	{
 	if (!m_flipperanim.m_fEnabled)return -1;
 
@@ -281,7 +281,7 @@ PINFLOAT HitFlipper::HitTestFlipperEnd(Ball *pball, PINFLOAT dtime, Vertex3D *ph
 	const PINFLOAT angleCur = m_flipperanim.m_angleCur;
 	PINFLOAT anglespeed = m_flipperanim.m_anglespeed;				// rotation rate
 	
-	Vertex flipperbase;
+	Vertex2D flipperbase;
 	flipperbase.x =	m_flipperanim.m_hitcircleBase.center.x;
 	flipperbase.y =	m_flipperanim.m_hitcircleBase.center.y;
 			
@@ -301,7 +301,7 @@ PINFLOAT HitFlipper::HitTestFlipperEnd(Ball *pball, PINFLOAT dtime, Vertex3D *ph
 
 	PINFLOAT bfend, cbcedist;
 	PINFLOAT t,t0,t1, d0,d1,dp; // Modified False Position control
-	Vertex vp,vt;
+	Vertex2D vp,vt;
 	
 	vp.x = (PINFLOAT) 0.0;					//m_flipperradius*sin(0));   
 	vp.y = -m_flipperanim.m_flipperradius;  //m_flipperradius*(-cos(0));
@@ -378,12 +378,12 @@ PINFLOAT HitFlipper::HitTestFlipperEnd(Ball *pball, PINFLOAT dtime, Vertex3D *ph
 	// ok we have a confirmed contact, calc the stats, remember there are "near" solution, so all
 	// parameters need to be calculated from the actual configuration, i.e contact radius must be calc'ed
 
-	Vertex N;
+	Vertex2D N;
 	const float inv_cbcedist = 1.0f/cbcedist;
 	phitnormal[0].x = N.x = ballvtx*inv_cbcedist;				// normal vector from flipper end to ball
 	phitnormal[0].y = N.y = ballvty*inv_cbcedist;
 	
-	Vertex dist = m_flipperanim.m_hitcircleBase.center;  // flipper base center
+	Vertex2D dist = m_flipperanim.m_hitcircleBase.center;  // flipper base center
 
 	dist.x =  (pball->x + ballvx*t - ballr*N.x - dist.x); // vector from base to flipperEnd plus the projected End radius
 	dist.y =  (pball->y + ballvy*t - ballr*N.y - dist.y);
@@ -402,7 +402,7 @@ PINFLOAT HitFlipper::HitTestFlipperEnd(Ball *pball, PINFLOAT dtime, Vertex3D *ph
 
 	
 	//recheck using actual contact angle of velocity direction
-	Vertex dv;	
+	Vertex2D dv;	
 	dv.x = (ballvx - phitnormal[1].x *anglespeed*distance); 
 	dv.y = (ballvy - phitnormal[1].y *anglespeed*distance); //delta velocity ball to face
 
@@ -421,8 +421,8 @@ PINFLOAT HitFlipper::HitTestFlipperEnd(Ball *pball, PINFLOAT dtime, Vertex3D *ph
 
 PINFLOAT HitFlipper::HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal, bool face) // replacement
 	{ 
-	Vertex F;			// flipper face normal
-	Vertex T;			// flipper face tangent
+	Vertex2D F;			// flipper face normal
+	Vertex2D T;			// flipper face tangent
 	
 	PINFLOAT bffnd;		//ball flipper face normal distance (negative for normal side)
 	PINFLOAT bfftd;		// ball to flipper face tanget distance 
@@ -433,7 +433,7 @@ PINFLOAT HitFlipper::HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3D *p
 	const PINFLOAT angleCur = m_flipperanim.m_angleCur;
 	PINFLOAT anglespeed = m_flipperanim.m_anglespeed;				// rotation rate
 	
-	Vertex flipperbase;
+	Vertex2D flipperbase;
 	flipperbase.x =	m_flipperanim.m_hitcircleBase.center.x;
 	flipperbase.y =	m_flipperanim.m_hitcircleBase.center.y;
 	const PINFLOAT feRadius = m_flipperanim.m_hitcircleEnd.radius;
@@ -447,18 +447,18 @@ PINFLOAT HitFlipper::HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3D *p
 	//PINFLOAT ballrEndr = m_flipperanim.m_hitcircleEnd.radius + ballr;// magnititude of (ball - flipperEnd)
 	
 	PINFLOAT t,t0,t1, d0,d1,dp; // Modified False Position control
-	PINFLOAT ffnx, ffny, len; // flipper face normal vector
-	Vertex vp,vt;				// face segment V1 point
+	PINFLOAT ffnx; // flipper face normal vector
+	Vertex2D vp,vt;				// face segment V1 point
 		
 	// flipper positions at zero degrees rotation
 
 	ffnx = m_flipperanim.zeroAngNorm.x; //Face2 
 	if (face == LeftFace) ffnx = -ffnx;	// negative for face1
 
-	ffny = m_flipperanim.zeroAngNorm.y;// norm y component same for either face
+	const PINFLOAT ffny = m_flipperanim.zeroAngNorm.y;// norm y component same for either face
 	vp.x = m_flipperanim.m_hitcircleBase.radius*ffnx; // face endpoint of line segment on base radius
 	vp.y = m_flipperanim.m_hitcircleBase.radius*ffny;		
-	len  = m_flipperanim.m_lineseg1.length;	// face segment length ... i.g same on either face									
+	const PINFLOAT len  = m_flipperanim.m_lineseg1.length;	// face segment length ... i.g same on either face									
 
 	t = 0; //start first interval ++++++++++++++++++++++++++
 	int k;
@@ -533,7 +533,7 @@ PINFLOAT HitFlipper::HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3D *p
 
 	if (bfftd < -C_TOL_ENDPNTS || bfftd > len + C_TOL_ENDPNTS) return -1.0f;	// not in range of touching
 	
-	PINFLOAT hitz = pball->z - ballr + pball->vz*t;	// check for a hole, relative to ball rolling point at hittime
+	const PINFLOAT hitz = pball->z - ballr + pball->vz*t;	// check for a hole, relative to ball rolling point at hittime
 
 	if ((hitz + (ballr * 1.5f)) < m_rcHitRect.zlow			//check limits of object's height and depth 
 		|| (hitz + (ballr * 0.5f)) > m_rcHitRect.zhigh)
@@ -545,12 +545,12 @@ PINFLOAT HitFlipper::HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3D *p
 	phitnormal[0].x = F.x;	// hit normal is same as line segment normal
 	phitnormal[0].y = F.y;	
 
-	Vertex dist = m_flipperanim.m_hitcircleBase.center;  // calculate moment from flipper base center
+	Vertex2D dist = m_flipperanim.m_hitcircleBase.center;  // calculate moment from flipper base center
 
-	dist.x =  (pball->x + ballvx*t + ballr*(-F.x) - dist.x); //center of ball + projected radius to contact point
-	dist.y =  (pball->y + ballvy*t + ballr*(-F.y) - dist.y); // all at time t
+	dist.x =  (pball->x + ballvx*t - ballr*F.x - dist.x); //center of ball + projected radius to contact point
+	dist.y =  (pball->y + ballvy*t - ballr*F.y - dist.y); // all at time t
 
-	PINFLOAT distance = sqrtf(dist.x*dist.x + dist.y*dist.y);	// distance from base center to contact point
+	const PINFLOAT distance = sqrtf(dist.x*dist.x + dist.y*dist.y);	// distance from base center to contact point
 
 	if (contactAng >= angleMax && anglespeed > 0 || contactAng <= angleMin && anglespeed < 0)	// hit limits ??? 
 		anglespeed = 0.0f;							// rotation stopped
@@ -561,7 +561,7 @@ PINFLOAT HitFlipper::HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3D *p
 	phitnormal[2].x = distance;				//moment arm diameter
 	phitnormal[2].y = anglespeed;			//radians/time at collison
 	
-	Vertex dv;	
+	Vertex2D dv;	
 	dv.x = (ballvx - phitnormal[1].x *anglespeed*distance); 
 	dv.y = (ballvy - phitnormal[1].y *anglespeed*distance); //delta velocity ball to face
 
@@ -587,7 +587,7 @@ void HitFlipper::Collide(Ball *pball, Vertex3D *phitnormal)
 	PINFLOAT tanspd = distance * angsp;						// distance * anglespeed
 	PINFLOAT flipperHit = 0;
 
-	Vertex dv;	
+	Vertex2D dv;	
 	dv.x = (vx - phitnormal[1].x*tanspd); 
 	dv.y = (vy - phitnormal[1].y*tanspd);					//delta velocity ball to face
 

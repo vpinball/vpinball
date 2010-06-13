@@ -46,13 +46,13 @@ void Timer::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Timer::GetCenter(Vertex *pv)
+void Timer::GetCenter(Vertex2D *pv)
 	{
 	pv->x = m_d.m_v.x;
 	pv->y = m_d.m_v.y;
 	}
 
-void Timer::PutCenter(Vertex *pv)
+void Timer::PutCenter(Vertex2D *pv)
 	{
 	m_d.m_v.x = pv->x;
 	m_d.m_v.y = pv->y;
@@ -223,7 +223,7 @@ HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex2D));
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -275,7 +275,7 @@ BOOL Timer::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_v, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_v, sizeof(Vertex2D));
 		}
 	else if (id == FID(TMON))
 		{

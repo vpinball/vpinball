@@ -26,8 +26,8 @@ public:
 
 	// rlc New Flipper motion basis, uses Green's transform to rotate these valuse to curAngle
 	bool m_lastHitFace;
-	Vertex m_leftFaceNormal, m_rightFaceNormal, m_leftFaceBase,m_rightFaceBase;
-	Vertex m_endRadiusCenter;
+	Vertex2D m_leftFaceNormal, m_rightFaceNormal, m_leftFaceBase,m_rightFaceBase;
+	Vertex2D m_endRadiusCenter;
 	float m_lengthFace;
 	//rlc end
 
@@ -63,14 +63,14 @@ public:
 
 	short int m_EnableRotateEvent;
 
-	Vertex zeroAngNorm; // base norms at zero degrees	
+	Vertex2D zeroAngNorm; // base norms at zero degrees	
 	};
 
 class HitFlipper :
 	public HitObject
 	{
 public:
-	Vertex v;
+	Vertex2D v;
 	//float rad1, rad2;
 
 	HitFlipper(float x, float y, float baser, float endr, float flipr, float angle, float zlow, float zhigh

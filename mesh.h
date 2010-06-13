@@ -10,6 +10,7 @@ class ObjFrame
 public:
 	ObjFrame();
 	~ObjFrame();
+
 	RECT rc;
 	LPDIRECTDRAWSURFACE7 pdds;
 	LPDIRECTDRAWSURFACE7 pddsZBuffer;
@@ -21,8 +22,8 @@ public:
 class CatmullCurve
 	{
 public:	
-	void SetCurve(Vertex *pv0, Vertex *pv1, Vertex *pv2, Vertex *pv3);
-	void GetPointAt(float t, Vertex *pv);
+	void SetCurve(const Vertex2D * const pv0, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3);
+	void GetPointAt(const float t, Vertex2D * const pv) const;
 	
 	float x1,x2,x3,x4;
 	float y1,y2,y3,y4;
@@ -35,37 +36,39 @@ public:
 	float rotation;
 	float spin;
 
-	Vertex3D m_v;
+	Vertex3Ds m_v;
 
-	void CalcCoordinates(Vertex3D *pv);
+	void CalcCoordinates(Vertex3D * const pv);
 	};
 
 class RenderVertex;
 
-void PolygonToTriangles(RenderVertex *rgv, Vector<void> *pvpoly, Vector<Triangle> *pvtri);
+void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri);
 
-BOOL AdvancePoint(RenderVertex *rgv, Vector<void> *pvpoly, int a, int b, int c, int pre, int post);
+BOOL AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pvpoly, const int a, const int b, const int c, const int pre, const int post);
 
-float GetDot(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2);
-float GetCos(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2);
-float GetAngle(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2);
+float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2);
+float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2);
+float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2);
 
-void Calc2DNormal(Vertex *pv1, Vertex *pv2, Vertex *pnormal);
+void Calc2DNormal(const Vertex2D * const pv1, const Vertex2D * const pv2, Vertex2D * const pnormal);
 
-BOOL FLinesIntersect(Vertex *Start1, Vertex *Start2, Vertex *End1, Vertex *End2);
+BOOL FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * const Start2, const Vertex2D * const End1, const Vertex2D * const End2);
 
 //void SetNormal(Vertex3D *rgv, WORD *rgi, int count);
 
-void SetNormal(Vertex3D *rgv, WORD *rgi, int count, Vertex3D *rgvApply, WORD *rgiApply, int applycount);
+void SetNormal(Vertex3D * rgv, const WORD * rgi, const int count, Vertex3D *rgvApply, const WORD *rgiApply, int applycount);
 
-void SetHUDVertices(Vertex3D *rgv, int count);
-void SetDiffuseFromMaterial(Vertex3D *rgv, int count, D3DMATERIAL7 *pmtrl);
+void SetHUDVertices(Vertex3D * const rgv, const int count);
+void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const D3DMATERIAL7 * const pmtrl);
 
-BOOL Flat(Vertex *pvt1, Vertex *pvt2, Vertex *pvtMid);
-void RecurseSmoothLine(CatmullCurve *pcc, float t1, float t2, RenderVertex *pvt1, RenderVertex *pvt2, Vector<RenderVertex> *pvv);
+BOOL Flat(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid);
+void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv);
 
-void ClosestPointOnPolygon(Vertex *rgv, int count, Vertex *pvin, Vertex *pvout, int *piseg, BOOL fClosed);
+void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, const Vertex2D * const pvin, Vertex2D * const pvout, int * const piseg, const BOOL fClosed);
 
-void RotateAround(Vertex3D *pvAxis, Vertex3D *pvPoint, int count, float angle);
+void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoint, const int count, const float angle);
+void RotateAround(const Vertex3Ds * const pvAxis, Vertex3Ds * const pvPoint, const int count, const float angle);
 
-void CrossProduct(Vertex3D *pv1, Vertex3D *pv2, Vertex3D *pvCross);
+void CrossProduct(const Vertex3D * const pv1, const Vertex3D * const pv2, Vertex3D * const pvCross);
+void CrossProduct(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, Vertex3Ds * const pvCross);

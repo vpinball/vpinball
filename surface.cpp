@@ -28,28 +28,28 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y)
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x-50, y-50);
+		pdp->Init(this, x-50.0f, y-50.0f);
 		m_vdpoint.AddElement(pdp);
 		}
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x-50, y+50);
+		pdp->Init(this, x-50.0f, y+50.0f);
 		m_vdpoint.AddElement(pdp);
 		}
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x+50, y+50);
+		pdp->Init(this, x+50.0f, y+50.0f);
 		m_vdpoint.AddElement(pdp);
 		}
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x+50, y-50);
+		pdp->Init(this, x+50.0f, y-50.0f);
 		m_vdpoint.AddElement(pdp);
 		}
 
@@ -76,7 +76,7 @@ HRESULT Surface::InitTarget(PinTable *ptable, float x, float y)
 		pdp->AddRef();
 		pdp->Init(this, x-30.0f, y+6.0f);
 		pdp->m_fAutoTexture = fFalse;
-		pdp->m_texturecoord = 0.0;
+		pdp->m_texturecoord = 0.0f;
 		m_vdpoint.AddElement(pdp);
 		}
 	CComObject<DragPoint>::CreateInstance(&pdp);
@@ -113,7 +113,7 @@ void Surface::SetDefaults()
 	m_d.m_tdr.m_TimerInterval = 100;
 
 	m_d.m_fHitEvent = fFalse;
-	m_d.m_threshold = 1;
+	m_d.m_threshold = 1.0f;
 	m_d.m_slingshot_threshold = 0;
 
 	m_d.m_fInner = fTrue;
@@ -131,11 +131,11 @@ void Surface::SetDefaults()
 	m_d.m_fCastsShadow = fTrue;
 
 	m_d.m_heightbottom = 0;
-	m_d.m_heighttop = 50;
+	m_d.m_heighttop = 50.0f;
 
 	m_d.m_fDisplayTexture = fFalse;
 
-	m_d.m_slingshotforce = 80;
+	m_d.m_slingshotforce = 80.0f;
 	
 	m_d.m_fSlingshotAnimation = fTrue;
 
@@ -155,11 +155,11 @@ void Surface::PreRender(Sur *psur)
 	GetRgVertex(&vvertex);
 
 	m_cvertexT = vvertex.Size();
-	m_rgvT = new Vertex[m_cvertexT + 6]; // Add points so inverted polygons can be drawn
+	m_rgvT = new Vertex2D[m_cvertexT + 6]; // Add points so inverted polygons can be drawn
 
 	for (int i=0;i<vvertex.Size();i++)
 		{
-		m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
+		m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 		delete vvertex.ElementAt(i);
 		}
 
@@ -190,7 +190,6 @@ void Surface::PreRender(Sur *psur)
 		}
 	else
 		{
-		
 		cvertex = m_cvertexT;
 		}
 
@@ -229,11 +228,11 @@ void Surface::Render(Sur *psur)
 		GetRgVertex(&vvertex);
 
 		m_cvertexT = vvertex.Size();
-		m_rgvT = new Vertex[m_cvertexT];
+		m_rgvT = new Vertex2D[m_cvertexT];
 
 		for (int i=0;i<vvertex.Size();i++)
 			{
-			m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
+			m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 			delete vvertex.ElementAt(i);
 			}
 		//m_rgvT = GetRgVertex(&m_cvertexT);
@@ -310,11 +309,11 @@ void Surface::RenderBlueprint(Sur *psur)
 	GetRgVertex(&vvertex);
 
 	m_cvertexT = vvertex.Size();
-	m_rgvT = new Vertex[m_cvertexT];
+	m_rgvT = new Vertex2D[m_cvertexT];
 
 	for (int i=0;i<vvertex.Size();i++)
 		{
-		m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
+		m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 		delete vvertex.ElementAt(i);
 		}
 
@@ -337,11 +336,11 @@ void Surface::RenderShadow(ShadowSur *psur, float height)
 	GetRgVertex(&vvertex);
 
 	m_cvertexT = vvertex.Size();
-	m_rgvT = new Vertex[m_cvertexT+6];
+	m_rgvT = new Vertex2D[m_cvertexT+6];
 
 	for (int i=0;i<vvertex.Size();i++)
 		{
-		m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
+		m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 
 		delete vvertex.ElementAt(i);
 		}
@@ -376,8 +375,7 @@ void Surface::GetTimers(Vector<HitTimer> *pvht)
 	{
 	IEditable::BeginPlay();
 
-	HitTimer *pht;
-	pht = new HitTimer();
+	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
 	pht->m_pfe = (IFireEvents *)this;
@@ -406,11 +404,8 @@ void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
 		Vector<RenderVertex> vvertex;
 		GetRgVertex(&vvertex);
 
-		int cvertex;
-		Vertex3D *rgv3d;
-
-		cvertex = vvertex.Size();
-		rgv3d = new Vertex3D[cvertex + 5];
+		const int cvertex = vvertex.Size();
+		Vertex3D * const rgv3d = new Vertex3D[cvertex + 5];
 
 		for (int i=0;i<cvertex;i++)
 			{
@@ -436,8 +431,7 @@ void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
 		rgv3d[cvertex+4].y = m_ptable->m_top;
 		rgv3d[cvertex+4].z = m_d.m_heighttop;
 
-
-		Hit3DPoly *ph3dp = new Hit3DPoly(rgv3d, cvertex+5);
+		Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex+5);
 		pvho->AddElement(ph3dp);
 
 		m_vhoCollidable.AddElement(ph3dp);
@@ -450,12 +444,6 @@ void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
 void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 	{
 	int count;
-	int cpoint;
-	int cpointCur;
-
-	cpoint = m_vdpoint.Size();
-
-	cpointCur = 0;
 
 	RenderVertex *rgv;
 	Vertex3D *rgv3D;
@@ -597,7 +585,7 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 
 	plineseg->CalcNormal();
 
-	Vertex vt1, vt2;
+	Vertex2D vt1, vt2;
 	vt1.x = pv1->x - pv2->x;
 	vt1.y = pv1->y - pv2->y;
 
@@ -639,7 +627,7 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 		m_vhoCollidable.AddElement(pjoint);
 		pjoint->m_fEnabled = m_d.m_fCollidable;
 
-		Vertex normalT;
+		Vertex2D normalT;
 
 		// Set up line normal
 		{
@@ -785,8 +773,8 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		for (int l=0;l<6;l++)
 			{
-			rgv3D[l+6].x = rgv3D[l].x - plinesling->normal.x*5;
-			rgv3D[l+6].y = rgv3D[l].y - plinesling->normal.y*5;
+			rgv3D[l+6].x = rgv3D[l].x - plinesling->normal.x*5.0f;
+			rgv3D[l+6].y = rgv3D[l].y - plinesling->normal.y*5.0f;
 			rgv3D[l+6].z = rgv3D[l].z;
 			}
 
@@ -809,7 +797,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
-		WORD rgi[8];
+		WORD rgi[4];
 		rgi[0] = 0;
 		rgi[1] = 1;
 		rgi[2] = 4;
@@ -1021,7 +1009,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			}
 		}
 
-	Vertex * const rgnormal = new Vertex[cvertex];
+	Vertex2D * const rgnormal = new Vertex2D[cvertex];
 
 	pd3dDevice->SetMaterial(&mtrl);
 
@@ -1085,7 +1073,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			const int b = i;
 			const int c = (i+1)%cvertex;
 
-			Vertex vnormal[2];
+			Vertex2D vnormal[2];
 			if (pv1->fSmooth)
 				{
 				vnormal[0].x = (rgnormal[a].x + rgnormal[b].x)*0.5f;
@@ -1198,10 +1186,10 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			rgv[cvertex+2].y = m_ptable->m_bottom;
 			rgv[cvertex+1].x = m_ptable->m_right;
 			rgv[cvertex+1].y = m_ptable->m_top;
-			rgv[cvertex+4].x = m_ptable->m_left-1; // put tiny gap in to avoid errors
+			rgv[cvertex+4].x = m_ptable->m_left - 1.0f; // put tiny gap in to avoid errors
 			rgv[cvertex+4].y = m_ptable->m_top;
 			rgv[cvertex+5].x = rgv[minyindex].x;
-			rgv[cvertex+5].y = rgv[minyindex].y - 1; // put tiny gap in to avoid errors
+			rgv[cvertex+5].y = rgv[minyindex].y - 1.0f; // put tiny gap in to avoid errors
 
 			for (int i=0;i<cvertex;i++)
 				{
@@ -1330,16 +1318,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 		pd3dDevice->SetMaterial(&mtrl);
 
-		float height;
-
-		if (!fDrop)
-			{
-			height = m_d.m_heighttop;
-			}
-		else
-			{
-			height = m_d.m_heightbottom + 0.1f;
-			}
+		const float height = (!fDrop) ? m_d.m_heighttop : (m_d.m_heightbottom + 0.1f);
 
 		const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);
 		const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
@@ -1434,7 +1413,7 @@ void Surface::RenderMoversFromCache(Pin3D *ppin3d)
 	{
 	for (int i=0;i<m_vlinesling.Size();i++)
 		{
-		LineSegSlingshot *plinesling = m_vlinesling.ElementAt(i);
+		LineSegSlingshot * const plinesling = m_vlinesling.ElementAt(i);
 		ppin3d->ReadAnimObjectFromCacheFile(&plinesling->m_slingshotanim, &plinesling->m_slingshotanim.m_pobjframe, 1);
 		}
 	
@@ -1450,10 +1429,8 @@ void Surface::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	if (m_d.m_fDroppable && m_d.m_fInner)
 		{
-		ObjFrame *pof;
-
 		// Render wall raised.
-		pof = RenderWallsAtHeight(pd3dDevice, fTrue, fFalse);
+		ObjFrame * const pof = RenderWallsAtHeight(pd3dDevice, fTrue, fFalse);
 		m_phitdrop->m_polydropanim.m_pobjframe[0] = pof;
 
 		// Check if this wall is being 
@@ -1466,8 +1443,8 @@ void Surface::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		else
 			{
 			// Render wall dropped (smashed to a pancake at bottom height).
-			pof = RenderWallsAtHeight(pd3dDevice, fTrue, fTrue); 
-			m_phitdrop->m_polydropanim.m_pobjframe[1] = pof;
+			ObjFrame * const pof2 = RenderWallsAtHeight(pd3dDevice, fTrue, fTrue); 
+			m_phitdrop->m_polydropanim.m_pobjframe[1] = pof2;
 			}
 
 		Pin3D *ppin3d = &g_pplayer->m_pin3d;
@@ -1483,7 +1460,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 		{
 		case ID_WALLMENU_FLIP:
 			{
-			Vertex vCenter;
+			Vertex2D vCenter;
 			GetPointCenter(&vCenter);
 			FlipPointY(&vCenter);
 			}
@@ -1491,7 +1468,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 
 		case ID_WALLMENU_MIRROR:
 			{
-			Vertex vCenter;
+			Vertex2D vCenter;
 			GetPointCenter(&vCenter);
 			FlipPointX(&vCenter);
 			}
@@ -1518,7 +1495,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 
 			HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
-			Vertex v;
+			Vertex2D v;
 			phs->ScreenToSurface(x, y, &v.x, &v.y);
 			delete phs;
 
@@ -1526,14 +1503,14 @@ void Surface::DoCommand(int icmd, int x, int y)
 			GetRgVertex(&vvertex);
 
 			m_cvertexT = vvertex.Size();
-			m_rgvT = new Vertex[m_cvertexT];
+			m_rgvT = new Vertex2D[m_cvertexT];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
-				m_rgvT[i] = *((Vertex *)vvertex.ElementAt(i));
+				m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				}
 
-			Vertex vOut;
+			Vertex2D vOut;
 			int iSeg;
 			ClosestPointOnPolygon(m_rgvT, m_cvertexT, &v, &vOut, &iSeg, fTrue);
 
@@ -1573,27 +1550,27 @@ void Surface::DoCommand(int icmd, int x, int y)
 		}
 	}
 
-void Surface::FlipY(Vertex *pvCenter)
+void Surface::FlipY(Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::FlipPointY(pvCenter);
 	}
 
-void Surface::FlipX(Vertex *pvCenter)
+void Surface::FlipX(Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::FlipPointX(pvCenter);
 	}
 
-void Surface::Rotate(float ang, Vertex *pvCenter)
+void Surface::Rotate(float ang, Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::RotatePoints(ang, pvCenter);
 	}
 
-void Surface::Scale(float scalex, float scaley, Vertex *pvCenter)
+void Surface::Scale(float scalex, float scaley, Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter);
 	}
 
-void Surface::Translate(Vertex *pvOffset)
+void Surface::Translate(Vertex2D *pvOffset)
 	{
 	IHaveDragPoints::TranslatePoints(pvOffset);
 	}
@@ -1665,25 +1642,25 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 #else
 	ULONG read = 0;
 	HRESULT hr = S_OK;
-	int i,temp;
-
+	
 	m_ptable = ptable;
 
 	DWORD dwID;
 	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
 		return hr;
 
+	int temp;
 	if(FAILED(hr = pstm->Read(&temp, sizeof(int), &read)))
 		return hr;
 
-	for (i=0;i<temp;i++)
+	for (int i=0;i<temp;i++)
 		{
-		Vertex v;
+		Vertex2D v;
 		BOOL fSmooth;
 		BOOL fSlingshot;
 		CComObject<DragPoint> *pdp;
 
-		if(FAILED(hr = pstm->Read(&v, sizeof(Vertex), &read)))
+		if(FAILED(hr = pstm->Read(&v, sizeof(Vertex2D), &read)))
 			return hr;
 		if(FAILED(hr = pstm->Read(&fSmooth, sizeof(BOOL), &read)))
 			return hr;
@@ -2104,7 +2081,7 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 		return E_FAIL;
 		}
 
-	BOOL fNewVal = VBTOF(newVal);
+	const BOOL fNewVal = VBTOF(newVal);
 
 	if (m_fIsDropped != fNewVal)
 	{
@@ -2118,7 +2095,7 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 		}
 
 		// Check if this surface has a user value.
-		int index = ((int) ((m_d.m_heighttop * 100.0f) - 111.0f + 0.25f));
+		const int index = ((int) ((m_d.m_heighttop * 100.0f) - 111.0f + 0.25f));
 		if ( (index >= 0) && (index < LIGHTHACK_MAX) )
 		{
 			// The same light is getting multiple updates per frame.
@@ -2159,7 +2136,7 @@ STDMETHODIMP Surface::put_DisplayTexture(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_SlingshotStrength(float *pVal)
 {
-	*pVal = m_d.m_slingshotforce/10;
+	*pVal = m_d.m_slingshotforce*(float)(1.0/10.0);
 
 	// Force value divided by 10 to make it look more like flipper strength value
 
@@ -2170,7 +2147,7 @@ STDMETHODIMP Surface::put_SlingshotStrength(float newVal)
 {
 	STARTUNDO
 
-	m_d.m_slingshotforce = newVal*10;
+	m_d.m_slingshotforce = newVal*10.0f;
 
 	STOPUNDO
 
@@ -2207,7 +2184,7 @@ STDMETHODIMP Surface::put_Friction(float newVal)
 {
 	STARTUNDO
 
-	if (newVal > 1) newVal = 1;
+	if (newVal > 1.0f) newVal = 1.0f;
 	else if (newVal < 0) newVal = 0;
 
 	m_d.m_friction = newVal;

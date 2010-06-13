@@ -43,7 +43,7 @@ void HitSur::Line(float rx, float ry, float rx2, float ry2)
 
 		if (m_hitx>=x1 && m_hitx<=x2)
 			{
-				const int lineY = (int) ((float)(y2-y1) / (float)(x2-x1) * (float)(m_hitx-x1)) + y1;
+				const int lineY = ((y2-y1)*(m_hitx-x1))/(x2-x1) + y1;
 
 				if (m_hity>lineY-4 && m_hity<lineY+4)
 					{
@@ -68,7 +68,7 @@ void HitSur::Line(float rx, float ry, float rx2, float ry2)
 
 		if (m_hity>=y1 && m_hity<=y2)
 			{
-				const int lineX = (int) ((float)(x2-x1) / (float)(y2-y1) * (float)(m_hity-y1)) + x1;
+				const int lineX = ((x2-x1)*(m_hity-y1))/(y2-y1) + x1;
 
 				if (m_hitx>lineX-4 && m_hitx<lineX+4)	
 					{
@@ -162,7 +162,7 @@ void HitSur::Ellipse2(float centerx, float centery, int radius)
 		}
 	}
 
-void HitSur::Polygon(Vertex *rgv, int count)
+void HitSur::Polygon(Vertex2D *rgv, int count)
 	{
 	if (m_pcur == NULL)
 		{
@@ -182,40 +182,33 @@ void HitSur::Polygon(Vertex *rgv, int count)
 		{
 		const int j = (i==0) ? (count-1) : (i-1);
 
+		const int x1 = rgpt[i].x;
 		const int y1 = rgpt[i].y;
+		const int x2 = rgpt[j].x;
 		const int y2 = rgpt[j].y;
 		
-		if (y1==y2)
-			goto done;
-			
-		if ((m_hity <= y1 && m_hity <= y2) || (m_hity > y1 && m_hity > y2)) // if out of y range, forget about this segment
-			goto done;
-			
-		const int x1 = rgpt[i].x;
-		const int x2 = rgpt[j].x;
-			
-		if (m_hitx >= x1 && m_hitx >= x2) // Hit point is on the right of the line
-			goto done;
-			
-		if (m_hitx < x1 && m_hitx < x2)
+		if ((y1==y2) ||
+		    (m_hity <= y1 && m_hity <= y2) || (m_hity > y1 && m_hity > y2) || // if out of y range, forget about this segment
+			(m_hitx >= x1 && m_hitx >= x2)) // Hit point is on the right of the line
+			continue;
+		
+		const bool xsx2 = (m_hitx < x2);
+		if (m_hitx < x1 && xsx2)
 			{
 			crosscount++;
-			goto done;
+			continue;
 			}
 
 		if (x2 == x1)
 			{
-			if (m_hitx < x2)
+			if (xsx2)
 				crosscount++;
-			goto done;
+			continue;
 			}
 			
 		// Now the hard part - the hit point is in the line bounding box
-	
-		if ( (x2 - ( (y2 - m_hity) * (x1 - x2) / (y1 - y2) ) ) > m_hitx)
+		if (x2 - (y2 - m_hity)*(x1 - x2)/(y1 - y2) > m_hitx)
 			crosscount++;				
-done:
-;			
 		}
 		
 	if (crosscount & 1)
@@ -226,12 +219,12 @@ done:
 	delete rgpt;
 	}
 
-void HitSur::PolygonImage(Vertex *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
+void HitSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
 	{
 	Polygon(rgv, count);
 	}
 
-void HitSur::Polyline(Vertex *rgv, int count)
+void HitSur::Polyline(Vertex2D *rgv, int count)
 	{
 	}
 

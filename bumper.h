@@ -26,7 +26,7 @@ public:
 class BumperData
 	{
 public:
-	Vertex m_vCenter;
+	Vertex2D m_vCenter;
 	float m_radius;
 	float m_threshold; // speed at which ball needs to hit to register a hit
 	float m_force; // force the bumper kicks back with
@@ -106,8 +106,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 	virtual void DrawFrame(BOOL fOn);
 

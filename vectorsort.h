@@ -39,32 +39,22 @@ public:
 		{
 		BOOL fFound = fFalse;
 
-		int currentnode, jumpnode;								  
-		int strcmp;
-		
-		currentnode = m_searchstart-1;  // Zero based
-		jumpnode = m_searchstart >> 1;
+		int currentnode = m_searchstart-1;  // Zero based
+		int jumpnode = m_searchstart >> 1;
 		
 		while (1)
 			{
 			//Assert(currentnode >= 0);
 
-			if (currentnode >= m_cSize)
-				{
-				strcmp = 1;
-				}
-			else
-				{
-				strcmp = pT->SortAgainst(ElementAt(currentnode));
-				}
-
+			const int strcmp = (currentnode >= m_cSize) ? 1 : pT->SortAgainst(ElementAt(currentnode));
+			
 			if (jumpnode == 0)
 				{
 				if (strcmp < 0)
 					{
 					currentnode++; // insert new node after this one
 					}
-				goto EndSearch;
+				break;
 				}
 
 			if (strcmp == 1)
@@ -78,8 +68,6 @@ public:
 			jumpnode >>= 1;
 			}
 
-EndSearch:
-
 		if (fFound == fFalse)
 			{
 			InsertElementAt(pT, currentnode);
@@ -90,15 +78,13 @@ EndSearch:
 
 	inline int GetSortedIndex(void *pvoid)
 		{
-		int currentnode, jumpnode;
-		int strcmp;
-		
-		currentnode = m_searchstart-1;  // Zero based
-		jumpnode = m_searchstart >> 1;
+		int currentnode = m_searchstart-1;  // Zero based
+		int jumpnode = m_searchstart >> 1;
 		
 		while (1)
 			{
 			//Assert(currentnode >= 0);
+			int strcmp;
 			if (currentnode >= m_cSize)
 				{
 				strcmp = -1;
@@ -114,7 +100,7 @@ EndSearch:
 				}
 			
 			if (jumpnode == 0)
-				goto NotFound;
+				break;
 
 			if (strcmp == 1)
 				{
@@ -127,13 +113,12 @@ EndSearch:
 			jumpnode >>= 1;
 			}
 
-NotFound:
 		return -1;
 		}
 
 	inline T *GetSortedElement(void *pvoid)
 		{			
-		int i = GetSortedIndex(pvoid);
+		const int i = GetSortedIndex(pvoid);
 		if (i != -1)
 			{
 			return ElementAt(i);

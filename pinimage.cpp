@@ -393,7 +393,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 		}
 
 	// Update the count (including mipmaps).
-//	NumVideoBytes = NumVideoBytes + ((ddsd.dwWidth * ddsd.dwHeight * 4) * ((int)(4.0f/3.0f)));
+//	NumVideoBytes += (ddsd.dwWidth * ddsd.dwHeight * 4) * (4.0/3.0);
 
 	pdds->SetLOD(0);
 

@@ -675,7 +675,7 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
 		}
 
 	// Update the count.
-//	NumVideoBytes = NumVideoBytes + (DestSurfaceDescription.dwWidth * DestSurfaceDescription.dwHeight * 4);
+//	NumVideoBytes += DestSurfaceDescription.dwWidth * DestSurfaceDescription.dwHeight * 4;
 
 	// Check if we have a source surface to copy from.
 	if ( SourceTexture != NULL )

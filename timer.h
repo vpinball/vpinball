@@ -26,7 +26,7 @@ class TimerData
 	{
 public:
 	TimerDataRoot m_tdr;
-	Vertex m_v;
+	Vertex2D m_v;
 	};
 
 class Timer :
@@ -76,8 +76,8 @@ END_CONNECTION_POINT_MAP()
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 	virtual void RenderBlueprint(Sur *psur);
 

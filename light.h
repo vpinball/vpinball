@@ -15,7 +15,7 @@
 class LightData
 	{
 public:
-	Vertex m_vCenter;
+	Vertex2D m_vCenter;
 	float m_radius;
 	LightState m_state;
 	COLORREF m_color;
@@ -51,8 +51,8 @@ public:
 
 	virtual BOOL LoadToken(int id, BiffReader *pbr) {return fTrue;}
 
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 	virtual void MoveOffset(float dx, float dy);
 
@@ -131,17 +131,17 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 	virtual void EditMenu(HMENU hmenu);
 	virtual void DoCommand(int icmd, int x, int y);
 
-	virtual void FlipY(Vertex *pvCenter);
-	virtual void FlipX(Vertex *pvCenter);
-	virtual void Rotate(float ang, Vertex *pvCenter);
-	virtual void Scale(float scalex, float scaley, Vertex *pvCenter);
-	virtual void Translate(Vertex *pvOffset);
+	virtual void FlipY(Vertex2D *pvCenter);
+	virtual void FlipX(Vertex2D *pvCenter);
+	virtual void Rotate(float ang, Vertex2D *pvCenter);
+	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+	virtual void Translate(Vertex2D *pvOffset);
 
 	// DragPoints
-	virtual void GetCenter(Vertex *pv) {GetPointCenter(pv);}
-	virtual void PutCenter(Vertex *pv) {PutPointCenter(pv);}
-	virtual void GetPointCenter(Vertex *pv);
-	virtual void PutPointCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv) {GetPointCenter(pv);}
+	virtual void PutCenter(Vertex2D *pv) {PutPointCenter(pv);}
+	virtual void GetPointCenter(Vertex2D *pv);
+	virtual void PutPointCenter(Vertex2D *pv);
 
 	virtual void DrawFrame(BOOL fOn);
 

@@ -10,8 +10,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#define MIN_ZOOM 0.126 // purposely make them offset from powers to 2 to account for roundoff error
-#define MAX_ZOOM 63.9
+#define MIN_ZOOM 0.126f // purposely make them offset from powers to 2 to account for roundoff error
+#define MAX_ZOOM 63.9f
 
 #define MAX_TEXTURE_SIZE 4096
 
@@ -268,13 +268,13 @@ public:
 	//virtual void UnsetDirtyScript();
 
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
-	virtual void FlipY(Vertex *pvCenter);
-	virtual void FlipX(Vertex *pvCenter);
-	virtual void Rotate(float ang, Vertex *pvCenter);
-	virtual void Scale(float scalex, float scaley, Vertex *pvCenter);
-	virtual void Translate(Vertex *pvOffset);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
+	virtual void FlipY(Vertex2D *pvCenter);
+	virtual void FlipX(Vertex2D *pvCenter);
+	virtual void Rotate(float ang, Vertex2D *pvCenter);
+	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+	virtual void Translate(Vertex2D *pvOffset);
 
 	// IEditable (mostly bogus for now)
 	virtual void PreRender(Sur *psur);
@@ -299,7 +299,7 @@ public:
 	void UseTool(int x,int y,int tool);
 	void OnKeyDown(int key);
 
-	void TransformPoint(int x, int y, Vertex *pv);
+	void TransformPoint(int x, int y, Vertex2D *pv);
 
 	STDMETHOD(get_GridSize)(float *pgs);
 	STDMETHOD(put_GridSize)(float gs);

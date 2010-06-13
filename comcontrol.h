@@ -64,7 +64,7 @@ public:
 class ComControlData
 	{
 public:
-	Vertex m_v1, m_v2;
+	Vertex2D m_v1, m_v2;
 	TimerDataRoot m_tdr;
 	WCHAR m_progid[50]; // progid can't be more than 39 chars, but just to make sure.
 	CLSID m_clsid;
@@ -123,8 +123,8 @@ STANDARD_EDITABLE_DECLARES(eItemComControl)
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 	void FireVoidGroupEvent(int dispid) {} // Since we have no events right now
 

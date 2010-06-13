@@ -12,7 +12,7 @@
 class DecalData
 	{
 public:
-	Vertex m_vCenter;
+	Vertex2D m_vCenter;
 	float m_width, m_height;
 	float m_rotation;
 	char m_szImage[MAXTOKEN];
@@ -80,10 +80,10 @@ STANDARD_NONAPC_EDITABLE_DECLARES(eItemDecal)
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
-	virtual void Rotate(float ang, Vertex *pvCenter);
+	virtual void Rotate(float ang, Vertex2D *pvCenter);
 
 	STDMETHOD(get_Name)(BSTR *pVal) {return E_FAIL;}
 

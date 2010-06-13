@@ -18,12 +18,12 @@ void LightCenter::Uncreate() {m_plight->Uncreate();}
 IEditable *LightCenter::GetIEditable() {return (IEditable *)m_plight;}
 PinTable *LightCenter::GetPTable() {return m_plight->GetPTable();}
 
-void LightCenter::GetCenter(Vertex *pv)
+void LightCenter::GetCenter(Vertex2D *pv)
 	{
 	*pv = m_plight->m_d.m_vCenter;
 	}
 
-void LightCenter::PutCenter(Vertex *pv)
+void LightCenter::PutCenter(Vertex2D *pv)
 	{
 	m_plight->m_d.m_vCenter = *pv;
 	}
@@ -129,14 +129,14 @@ void Light::PreRender(Sur *psur)
 			GetRgVertex(&vvertex);
 
 			int cvertex;
-			Vertex *rgv;
+			Vertex2D *rgv;
 
 			cvertex = vvertex.Size();
-			rgv = new Vertex[cvertex];
+			rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
-				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
 				}
 
@@ -252,14 +252,14 @@ void Light::RenderOutline(Sur *psur)
 			GetRgVertex(&vvertex);
 
 			int cvertex;
-			Vertex *rgv;
+			Vertex2D *rgv;
 
 			cvertex = vvertex.Size();
-			rgv = new Vertex[cvertex];
+			rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
-				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
 				}
 
@@ -332,11 +332,8 @@ void Light::GetHitShapesDebug(Vector<HitObject> *pvho)
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
-			int cvertex;
-			Vertex3D *rgv3d;
-
-			cvertex = vvertex.Size();
-			rgv3d = new Vertex3D[cvertex];
+			const int cvertex = vvertex.Size();
+			Vertex3D * const rgv3d = new Vertex3D[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
@@ -346,7 +343,7 @@ void Light::GetHitShapesDebug(Vector<HitObject> *pvho)
 				delete vvertex.ElementAt(i);
 				}
 
-			Hit3DPoly *ph3dp = new Hit3DPoly(rgv3d, cvertex);
+			Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
 			pvho->AddElement(ph3dp);
 
 			delete rgv3d;
@@ -377,12 +374,7 @@ void Light::ClearForOverwrite()
 
 void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	//WORD rgi[3];
-	Vertex3D rgv3D[3];
-
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-	RenderVertex *rgv;
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
@@ -392,26 +384,24 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	GetRgVertex(&vvertex);
 
 	const int cvertex = vvertex.Size();
-	rgv = new RenderVertex[cvertex];
+	RenderVertex *const rgv = new RenderVertex[cvertex];
 
 	for (int i=0;i<cvertex;i++)
 		{
-		Vertex v1,v2,vmiddle;
 		const int p1 = (i+cvertex-1) % cvertex;
 		const int p2 = (i+1) % cvertex;
 
-		v1 = *vvertex.ElementAt(p1);
-		v2 = *vvertex.ElementAt(p2);
-		vmiddle = *vvertex.ElementAt(i);
+		Vertex2D v1 = *vvertex.ElementAt(p1);
+		Vertex2D v2 = *vvertex.ElementAt(p2);
+		const Vertex2D vmiddle = *vvertex.ElementAt(i);
 
-		Vertex v1normal, v2normal;
-
+		Vertex2D v1normal, v2normal;
 		// Notice that these values equal the ones in the line
 		// equation and could probably be substituted by them.
-		v1normal.x = -(v1.y - vmiddle.y);
-		v1normal.y = (v1.x - vmiddle.x);
-		v2normal.x = -(vmiddle.y - v2.y);
-		v2normal.y = (vmiddle.x - v2.x);
+		v1normal.x = vmiddle.y - v1.y;
+		v1normal.y = v1.x - vmiddle.x;
+		v2normal.x = v2.y - vmiddle.y;
+		v2normal.y = vmiddle.x - v2.x;
 
 		v1normal.Normalize();
 		v2normal.Normalize();
@@ -420,8 +410,8 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		// shift those lines outwards along their normals
 
 		// First line
-		const float A = -(vmiddle.y - v1.y);
-		const float B = (vmiddle.x - v1.x);
+		const float A = v1.y - vmiddle.y;
+		const float B = vmiddle.x - v1.x;
 
 		// Shift line along the normal
 		v1.x -= v1normal.x*m_d.m_borderwidth;
@@ -430,8 +420,8 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		const float C = -(A*v1.x + B*v1.y);
 
 		// Second line
-		const float D = -(vmiddle.y - v2.y);
-		const float E = (vmiddle.x - v2.x);
+		const float D = v2.y - vmiddle.y;
+		const float E = vmiddle.x - v2.x;
 
 		// Shift line along the normal
 		v2.x -= v2normal.x*m_d.m_borderwidth;
@@ -453,7 +443,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		delete vvertex.ElementAt(i);
 		}
 
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
 	const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
 	const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
@@ -479,6 +469,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	rgi[1] = 1;
 	rgi[2] = 2;
 
+	Vertex3D rgv3D[3];
 	if (!m_fBackglass)
 		{
 		rgv3D[0].nx = 0;
@@ -498,17 +489,16 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	for (int t=0;t<vtri.Size();t++)
 		{
-		Triangle *ptri = vtri.ElementAt(t);
+		const Triangle * const ptri = vtri.ElementAt(t);
 
 		int ip[3];
-
 		ip[0] = ptri->a;
 		ip[1] = ptri->c;
 		ip[2] = ptri->b;
 
-		RenderVertex *pv0 = &rgv[ip[0]];
-		RenderVertex *pv1 = &rgv[ip[1]];
-		RenderVertex *pv2 = &rgv[ip[2]];
+		const RenderVertex * const pv0 = &rgv[ip[0]];
+		const RenderVertex * const pv1 = &rgv[ip[1]];
+		const RenderVertex * const pv2 = &rgv[ip[2]];
 
 		rgv3D[0].Set(pv0->x,pv0->y,height + 0.05f);
 		rgv3D[1].Set(pv1->x,pv1->y,height + 0.05f);
@@ -533,8 +523,6 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 													  rgv3D, 3,
 													  rgi, 3, 0);
 			}
-
-
 		}
 
 	for (int i=0;i<vtri.Size();i++)
@@ -547,10 +535,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Light::RenderStaticCircle(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	WORD rgi[32];
-	Vertex3D rgv3D[32];
-
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -566,6 +551,7 @@ void Light::RenderStaticCircle(LPDIRECT3DDEVICE7 pd3dDevice)
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 	pd3dDevice->SetMaterial(&mtrl);
 
+	Vertex3D rgv3D[32];
 	for (int l=0;l<32;l++)
 		{
 		const float angle = (float)(M_PI*2.0/32.0)*(float)l;
@@ -576,6 +562,7 @@ void Light::RenderStaticCircle(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 		}
 
+	WORD rgi[32];
 	for (WORD l=0;l<32;l++)
 		{
 		rgi[l] = l;
@@ -630,8 +617,6 @@ void Light::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	//WORD rgi[3];
-	Vertex3D rgv3D[3];
 	PinImage* pin = NULL;
 
 	RenderVertex* rgv;
@@ -659,7 +644,7 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 	}
 
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
 	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
 	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
@@ -774,6 +759,8 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		rgi[0] = 0;
 		rgi[1] = 1;
 		rgi[2] = 2;
+
+		Vertex3D rgv3D[3];
 		if (!m_fBackglass)
 			{
 			rgv3D[0].nx = 0;
@@ -793,17 +780,16 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		for (int t=0;t<vtri.Size();t++)
 			{
-			Triangle *ptri = vtri.ElementAt(t);
+			const Triangle * const ptri = vtri.ElementAt(t);
 
 			int ip[3];
-
 			ip[0] = ptri->a;
 			ip[1] = ptri->c;
 			ip[2] = ptri->b;
 
-			RenderVertex *pv0 = &rgv[ip[0]];
-			RenderVertex *pv1 = &rgv[ip[1]];
-			RenderVertex *pv2 = &rgv[ip[2]];
+			const RenderVertex * const pv0 = &rgv[ip[0]];
+			const RenderVertex * const pv1 = &rgv[ip[1]];
+			const RenderVertex * const pv2 = &rgv[ip[2]];
 
 			rgv3D[0].Set(pv0->x,pv0->y,height + 0.1f);
 			rgv3D[1].Set(pv1->x,pv1->y,height + 0.1f);
@@ -872,7 +858,7 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
 				{
-				IEditable *pie = m_ptable->m_vedit.ElementAt(iedit);
+				IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
 				if (pie->GetItemType() == eItemDecal)
 					{
 					if (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc))
@@ -936,9 +922,7 @@ void Light::RenderMoversFromCache(Pin3D *ppin3d)
 
 void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	WORD rgi[32];
-	Vertex3D rgv3D[32];
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
 	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
 	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
@@ -966,6 +950,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0;
 
+	Vertex3D rgv3D[32];
 	for (int l=0;l<32;l++)
 		{
 		const float angle = (float)(M_PI*2.0/32.0)*(float)l;
@@ -979,6 +964,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 		}
 
+	WORD rgi[32];
 	for (WORD l=0;l<32;l++)
 		{
 		rgi[l] = l;
@@ -1064,7 +1050,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
 				{
-				IEditable *pie = m_ptable->m_vedit.ElementAt(iedit);
+				IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
 				if (pie->GetItemType() == eItemDecal)
 					{
 					if (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc))
@@ -1133,7 +1119,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
 	bw.WriteFloat(FID(RADI), m_d.m_radius);
 	bw.WriteInt(FID(STAT), m_d.m_state);
 	bw.WriteInt(FID(COLR), m_d.m_color);
@@ -1218,7 +1204,7 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
 		}
 	else if (id == FID(RADI))
 		{
@@ -1304,12 +1290,12 @@ HRESULT Light::InitPostLoad()
 	return S_OK;
 	}
 
-void Light::GetPointCenter(Vertex *pv)
+void Light::GetPointCenter(Vertex2D *pv)
 	{
 	*pv = m_d.m_vCenter;
 	}
 
-void Light::PutPointCenter(Vertex *pv)
+void Light::PutPointCenter(Vertex2D *pv)
 	{
 	m_d.m_vCenter = *pv;
 
@@ -1333,7 +1319,7 @@ void Light::DoCommand(int icmd, int x, int y)
 		{
 		case ID_WALLMENU_FLIP:
 			{
-			Vertex vCenter;
+			Vertex2D vCenter;
 			GetPointCenter(&vCenter);
 			FlipPointY(&vCenter);
 			}
@@ -1341,7 +1327,7 @@ void Light::DoCommand(int icmd, int x, int y)
 
 		case ID_WALLMENU_MIRROR:
 			{
-			Vertex vCenter;
+			Vertex2D vCenter;
 			GetPointCenter(&vCenter);
 			FlipPointX(&vCenter);
 			}
@@ -1367,7 +1353,7 @@ void Light::DoCommand(int icmd, int x, int y)
 
 			RECT rc;
 			GetClientRect(m_ptable->m_hwnd, &rc);
-			Vertex v, vOut;
+			Vertex2D v, vOut;
 			int iSeg;
 
 			phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
@@ -1376,17 +1362,17 @@ void Light::DoCommand(int icmd, int x, int y)
 			delete phs;
 
 			int cvertex;
-			Vertex *rgv;
+			Vertex2D *rgv;
 
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
 			cvertex = vvertex.Size();
-			rgv = new Vertex[cvertex];
+			rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
-				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				}
 
 			ClosestPointOnPolygon(rgv, cvertex, &v, &vOut, &iSeg, fTrue);
@@ -1539,27 +1525,27 @@ void Light::DrawFrame(BOOL fOn)
 	}
 }
 
-void Light::FlipY(Vertex *pvCenter)
+void Light::FlipY(Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::FlipPointY(pvCenter);
 	}
 
-void Light::FlipX(Vertex *pvCenter)
+void Light::FlipX(Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::FlipPointX(pvCenter);
 	}
 
-void Light::Rotate(float ang, Vertex *pvCenter)
+void Light::Rotate(float ang, Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::RotatePoints(ang, pvCenter);
 	}
 
-void Light::Scale(float scalex, float scaley, Vertex *pvCenter)
+void Light::Scale(float scalex, float scaley, Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter);
 	}
 
-void Light::Translate(Vertex *pvOffset)
+void Light::Translate(Vertex2D *pvOffset)
 	{
 	IHaveDragPoints::TranslatePoints(pvOffset);
 	}

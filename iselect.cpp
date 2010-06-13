@@ -184,33 +184,33 @@ void ISelect::SetLockedFormat(Sur *psur)
 	psur->SetLineColor(COLOR_LOCKED, fFalse, 1);
 	}
 
-void ISelect::FlipY(Vertex *pvCenter)
+void ISelect::FlipY(Vertex2D *pvCenter)
 	{
 	GetIEditable()->MarkForUndo();
 
-	Vertex vCenter;
+	Vertex2D vCenter;
 	GetCenter(&vCenter);
 	float delta = vCenter.y - pvCenter->y;
 	vCenter.y -= delta*2;
 	PutCenter(&vCenter);
 	}
 
-void ISelect::FlipX(Vertex *pvCenter)
+void ISelect::FlipX(Vertex2D *pvCenter)
 	{
 	GetIEditable()->MarkForUndo();
 
-	Vertex vCenter;
+	Vertex2D vCenter;
 	GetCenter(&vCenter);
 	float delta = vCenter.x - pvCenter->x;
 	vCenter.x -= delta*2;
 	PutCenter(&vCenter);
 	}
 
-void ISelect::Rotate(float ang, Vertex *pvCenter)
+void ISelect::Rotate(float ang, Vertex2D *pvCenter)
 	{
 	GetIEditable()->MarkForUndo();
 
-	Vertex vCenter;
+	Vertex2D vCenter;
 	GetCenter(&vCenter);
 
 	const float sn = sinf(ANGTORAD(ang));
@@ -226,11 +226,11 @@ void ISelect::Rotate(float ang, Vertex *pvCenter)
 	PutCenter(&vCenter);
 	}
 
-void ISelect::Scale(float scalex, float scaley, Vertex *pvCenter)
+void ISelect::Scale(float scalex, float scaley, Vertex2D *pvCenter)
 	{
 	GetIEditable()->MarkForUndo();
 
-	Vertex vCenter;
+	Vertex2D vCenter;
 	GetCenter(&vCenter);
 
 	float dx = vCenter.x - pvCenter->x;
@@ -244,11 +244,11 @@ void ISelect::Scale(float scalex, float scaley, Vertex *pvCenter)
 	PutCenter(&vCenter);
 	}
 
-void ISelect::Translate(Vertex *pvOffset)
+void ISelect::Translate(Vertex2D *pvOffset)
 	{
 	GetIEditable()->MarkForUndo();
 
-	Vertex vCenter;
+	Vertex2D vCenter;
 	GetCenter(&vCenter);
 
 	vCenter.x += pvOffset->x;
@@ -256,11 +256,11 @@ void ISelect::Translate(Vertex *pvOffset)
 	PutCenter(&vCenter);
 	}
 
-void ISelect::GetCenter(Vertex *pv)
+void ISelect::GetCenter(Vertex2D *pv)
 	{
 	}
 
-void ISelect::PutCenter(Vertex *pv)
+void ISelect::PutCenter(Vertex2D *pv)
 	{
 	}
 HRESULT ISelect::GetTypeName(BSTR *pVal)

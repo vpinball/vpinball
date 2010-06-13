@@ -73,7 +73,7 @@ void Gate::Render(Sur *psur)
 
 	float halflength = m_d.m_length * 0.5f;	
 	
-	Vertex rgv[2];
+	Vertex2D rgv[2];
 
 	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
 	{
@@ -162,7 +162,7 @@ void Gate::GetHitShapes(Vector<HitObject> *pvho)
 	m_d.m_angleMin = angleMin;	
 	m_d.m_angleMax = angleMax;
 
-	Vertex rgv[2];
+	Vertex2D rgv[2];
 
 	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
 	const float sn = sinf(radangle);
@@ -273,12 +273,9 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fSupports)return; // no support structures are allocated ... therfore render none
 
-	Vertex3D rgv3D[12];
-	WORD rgi[8];
-
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 	
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float halflength = (m_d.m_length * 0.5f);// + m_d.m_overhang;
 	const float halfthick = 2.0f;
@@ -295,6 +292,7 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	mtrl.diffuse.b = mtrl.ambient.b = 0.6f;
 	pd3dDevice->SetMaterial(&mtrl);
 
+	Vertex3D rgv3D[12];
 	rgv3D[0].x = -halflength + halfthick;
 	rgv3D[0].y = 0;
 	rgv3D[0].z = 0;
@@ -342,11 +340,11 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	WORD rgiNormal[3];
-
 	rgiNormal[0] = 0;
 	rgiNormal[1] = 1;
 	rgiNormal[2] = 3;
 
+	WORD rgi[8];
 	rgi[0] = 0;
 	rgi[1] = 1;
 	rgi[2] = 2;
@@ -380,9 +378,8 @@ void Gate::RenderMoversFromCache(Pin3D *ppin3d)
 
 void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	LPDIRECTDRAWSURFACE7 pdds;
-	ObjFrame *pof;
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
 	float maxtuback, maxtvback;
@@ -391,8 +388,8 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);//surface gate is on
 	const float h = m_d.m_height;		//relative height of the gate 
 
-	PinImage *pinback = m_ptable->GetImage(m_d.m_szImageBack);
-	PinImage *pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+	PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
+	PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
 	if (pinback)
 		{
@@ -454,12 +451,9 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	for (int i=0;i<cframes;i++)
 		{
-		pof = new ObjFrame(); 
+		ObjFrame * const pof = new ObjFrame(); 
 
 		const float angle = m_d.m_angleMin + inv_cframes*(float)i;
-
-		Vertex3D rgv3D[8];
-		WORD rgi[4];
 
 		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
 		const float snY = sinf(radangle);
@@ -475,6 +469,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		const float minz = -halfwidth;
 		const float maxz = 0;
 
+		Vertex3D rgv3D[8];
 		for (int l=0;l<8;l++)
 			{
 			rgv3D[l].x = (l & 1) ? maxx : minx;
@@ -511,7 +506,6 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[l].y += m_d.m_vCenter.y;
 			//rgv3D[l].z += height + 50.0f;
 			rgv3D[l].z += height + h;
-
 
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 			}
@@ -583,6 +577,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetMaterial(&mtrl);
 
+		WORD rgi[4];
 		rgi[0] = 0;
 		rgi[1] = 1;
 		rgi[2] = 5;
@@ -754,13 +749,13 @@ void Gate::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Gate::GetCenter(Vertex *pv)
+void Gate::GetCenter(Vertex2D *pv)
 	{
 	pv->x = m_d.m_vCenter.x;
 	pv->y = m_d.m_vCenter.y;
 	}
 
-void Gate::PutCenter(Vertex *pv)
+void Gate::PutCenter(Vertex2D *pv)
 	{
 	m_d.m_vCenter.x = pv->x;
 	m_d.m_vCenter.y = pv->y;
@@ -775,7 +770,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
 	bw.WriteFloat(FID(LGTH), m_d.m_length);
 	bw.WriteFloat(FID(HGTH), m_d.m_height);
 	bw.WriteFloat(FID(ROTA), m_d.m_rotation);
@@ -839,7 +834,7 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
 		}
 	else if (id == FID(LGTH))
 		{

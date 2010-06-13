@@ -23,8 +23,8 @@
 class LightSeqData
 	{
 public:
-	Vertex 			m_v;
-	Vertex			m_vCenter;
+	Vertex2D 			m_v;
+	Vertex2D			m_vCenter;
 	WCHAR 			m_wzCollection[MAXNAMEBUFFER];	// collection to use
 	long			m_updateinterval;
 	TimerDataRoot 	m_tdr;
@@ -92,8 +92,8 @@ public:
 
 	virtual BOOL LoadToken(int id, BiffReader *pbr) {return fTrue;}
 
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 	virtual void MoveOffset(float dx, float dy);
 
@@ -150,8 +150,8 @@ END_CONNECTION_POINT_MAP()
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 	virtual void RenderBlueprint(Sur *psur);
 

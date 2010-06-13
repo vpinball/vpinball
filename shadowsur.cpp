@@ -104,7 +104,7 @@ void ShadowSur::EllipseSkew(float centerx, float centery, float radius, float z1
 	SetViewportOrgEx(m_hdc, 0, 0, NULL);
 	}
 
-void ShadowSur::Polygon(Vertex *rgv, int count)
+void ShadowSur::Polygon(Vertex2D *rgv, int count)
 	{
 	POINT *rgpt;
 
@@ -124,12 +124,12 @@ void ShadowSur::Polygon(Vertex *rgv, int count)
 	delete rgpt;
 	}
 
-void ShadowSur::PolygonImage(Vertex *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
+void ShadowSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
 	{
 	Polygon(rgv, count);
 	}
 
-void ShadowSur::PolygonSkew(Vertex *rgv, int count, float *rgz, float z1, float z2, BOOL fPreClip)
+void ShadowSur::PolygonSkew(Vertex2D *rgv, int count, float *rgz, float z1, float z2, BOOL fPreClip)
 	{
 	const int basepixel = SCALEXf(m_z);
 	int bottom = SCALEXf(z1) - basepixel;
@@ -186,7 +186,7 @@ void ShadowSur::PolygonSkew(Vertex *rgv, int count, float *rgz, float z1, float 
 	delete rgpt;
 	}
 
-void ShadowSur::PolylineSkew(Vertex *rgv, int count, float *rgz, float z1, float z2)
+void ShadowSur::PolylineSkew(Vertex2D *rgv, int count, float *rgz, float z1, float z2)
 	{
 	//const int basepixel = SCALEXf(m_z);
 	//const int bottom = SCALEX(z1) - basepixel;
@@ -222,7 +222,7 @@ void ShadowSur::PolylineSkew(Vertex *rgv, int count, float *rgz, float z1, float
 	delete rgpt;
 	}
 
-void ShadowSur::Polyline(Vertex *rgv, int count)
+void ShadowSur::Polyline(Vertex2D *rgv, int count)
 	{
 	POINT * const rgpt = new POINT[count];
 

@@ -7,7 +7,7 @@
 
 #include "resource.h"       // main symbols
 
-class RenderVertex : public Vertex
+class RenderVertex : public Vertex2D
 	{
 public:
 	BOOL fSmooth;
@@ -19,7 +19,7 @@ class SurfaceData
 	{
 public:
 	BOOL m_fInner; // Inside or outside wall;
-	Vertex m_Center;
+	Vertex2D m_Center;
 	TimerDataRoot m_tdr;
 	BOOL m_fHitEvent;
 	float m_threshold;			// speed at which ball needs to hit to register a hit
@@ -76,7 +76,7 @@ public:
 	HRESULT InitTarget(PinTable *ptable, float x, float y);
 
 	//int GetPointCount();
-	//Vertex *GetRgVertex(int *pcount);
+	//Vertex2D *GetRgVertex(int *pcount);
 	//void GetRgVertex(Vector<RenderVertex> *pvv);
 
 	//RenderVertex *GetRgRenderVertex(int *pcount);
@@ -126,14 +126,14 @@ END_CONNECTION_POINT_MAP()
 
 	virtual void DoCommand(int icmd, int x, int y);
 
-	virtual void FlipY(Vertex *pvCenter);
-	virtual void FlipX(Vertex *pvCenter);
-	virtual void Rotate(float ang, Vertex *pvCenter);
-	virtual void Scale(float scalex, float scaley, Vertex *pvCenter);
-	virtual void Translate(Vertex *pvOffset);
+	virtual void FlipY(Vertex2D *pvCenter);
+	virtual void FlipX(Vertex2D *pvCenter);
+	virtual void Rotate(float ang, Vertex2D *pvCenter);
+	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+	virtual void Translate(Vertex2D *pvOffset);
 
-	virtual void GetCenter(Vertex *pv) {GetPointCenter(pv);}
-	virtual void PutCenter(Vertex *pv) {PutPointCenter(pv);}
+	virtual void GetCenter(Vertex2D *pv) {GetPointCenter(pv);}
+	virtual void PutCenter(Vertex2D *pv) {PutPointCenter(pv);}
 
 	//void CheckIntersecting();
 
@@ -141,7 +141,7 @@ END_CONNECTION_POINT_MAP()
 
 	BSTR m_bstrName;
 
-	Vertex *m_rgvT; // keeps vertices around between PreRender and Render
+	Vertex2D *m_rgvT; // keeps vertices around between PreRender and Render
 	int m_cvertexT;
 
 	SurfaceData m_d;

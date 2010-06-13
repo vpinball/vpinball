@@ -16,7 +16,7 @@ U32 c_PostCheck = 0;
 
 HitObject *CreateCircularHitPoly(PINFLOAT x, PINFLOAT y, PINFLOAT z, PINFLOAT r, int sections)
 	{
-	Vertex3D *rgv3d = new Vertex3D[sections];
+	Vertex3D * const rgv3d = new Vertex3D[sections];
 
 	const float inv_sections = (float)(M_PI*2.0)/(float)sections;
 	
@@ -29,7 +29,7 @@ HitObject *CreateCircularHitPoly(PINFLOAT x, PINFLOAT y, PINFLOAT z, PINFLOAT r,
 		rgv3d[i].z = z;
 		}
 
-	Hit3DPoly *ph3p = new Hit3DPoly(rgv3d, sections);
+	Hit3DPoly * const ph3p = new Hit3DPoly(rgv3d, sections);
 
 	delete rgv3d;
 
@@ -100,7 +100,7 @@ PINFLOAT  LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3D *phitnorma
 			if (inside || fabsf(bnv) > C_CONTACTVEL)						// fast velocity, return zero time
 				hittime = 0;												//zero time for rigid fast bodies				
 			else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;				// slow moving but embedded
-			else hittime = (bnd + (float)PHYS_TOUCH) * (float)(1.0/PHYS_TOUCH/2.0);	// don't compete for fast zero time events
+			else hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
             }
 		else if (fabsf(bnv) > C_LOWNORMVEL )					// not velocity low ????
 			hittime = bnd/(-bnv);								// rate ok for safe divide 
@@ -110,12 +110,12 @@ PINFLOAT  LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3D *phitnorma
 		{
 		if (bnv * bnd >= 0)										// outside-receding || inside-approaching
 			{
-			if (m_ObjType != eTrigger)return -1.0f;				// no a trigger
+			if (m_ObjType != eTrigger) return -1.0f;				// no a trigger
 
 			if (!pball->m_vpVolObjs) return -1.0f;
 
 			if (fabsf(bnd) >= (float)(PHYS_SKIN/2.0))			// not to close ... nor to far away
-				{return -1.0f;}
+				return -1.0f;
 			
 			const bool hit = pball->m_vpVolObjs->IndexOf(m_pObj) >= 0;	// hit already???
 
@@ -134,10 +134,10 @@ PINFLOAT  LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3D *phitnorma
 	btd += btv * hittime;	// ball tangent distance (projection) (initial position + velocity * hitime)
 
 	if (btd < -C_TOL_ENDPNTS|| btd > length + C_TOL_ENDPNTS) // is the contact off the line segment??? 
-		{return -1.0f;}
+		return -1.0f;
 
 	if (!rigid)												// non rigid body collision? return direction
-		{phitnormal[1].x = (float)bUnHit;}	// UnHit signal	is receding from outside target
+		phitnormal[1].x = (float)bUnHit;	// UnHit signal	is receding from outside target
 	
 	
 	const PINFLOAT ballr = pball->radius;
@@ -145,7 +145,7 @@ PINFLOAT  LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3D *phitnorma
 
 	if ((hitz + (ballr * 1.5f)) < m_rcHitRect.zlow			//check limits of object's height and depth  
 		|| (hitz + (ballr * 0.5f)) > m_rcHitRect.zhigh)
-		{return -1.0f;}
+		return -1.0f;
 
 	phitnormal->x = normal.x;				// hit normal is same as line segment normal
 	phitnormal->y = normal.y;
@@ -220,12 +220,12 @@ PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3D *ph
 
 	if (rigid && bnd < (float)PHYS_TOUCH)			// postive: contact possible in future ... Negative: objects in contact now
 		{
-		if (bnd < (float)(-PHYS_SKIN)) {return -1.0f;} 	
+		if (bnd < (float)(-PHYS_SKIN)) return -1.0f;	
 
 		if (fabsf(bnv) > C_CONTACTVEL)				// >fast velocity, return zero time
 			hittime = 0;							//zero time for rigid fast bodies
 		else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;						// slow moving but embedded
-		else hittime = (bnd + (float)PHYS_TOUCH) * (float)(1.0/PHYS_TOUCH/2.0);	// don't compete for fast zero time events
+		else hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
 		}
 	else if (m_ObjType >= eTrigger && pball->m_vpVolObjs && (bnd < 0 == pball->m_vpVolObjs->IndexOf(m_pObj) < 0))
 		{ // here if ... ball inside and no hit set .... or ... ball outside and hit set
@@ -373,7 +373,7 @@ void LineSeg::Collide(Ball *pball, Vertex3D *phitnormal)
 
 void LineSeg::CalcNormal()
 	{
-	Vertex vT;
+	Vertex2D vT;
 	vT.x = v1.x - v2.x;
 	vT.y = v1.y - v2.y;
 
@@ -524,7 +524,7 @@ void HitOctree::CreateNextLevel()
 	for (int i=0;i<m_vho.Size();i++)
 		{
 		int oct;
-		HitObject *pho = m_vho.ElementAt(i);
+		HitObject * const pho = m_vho.ElementAt(i);
 
 		if (pho->m_rcHitRect.right < m_vcenter.x)
 			{
@@ -608,11 +608,8 @@ collisions
 
 void HitOctree::HitTestBall(Ball *pball)
 	{
-	PINFLOAT newtime;
-
 	for (int i=0; i<m_vho.Size(); i++)
-		{
-		
+		{		
 
 #ifdef LOG
 		cTested++;
@@ -624,7 +621,7 @@ void HitOctree::HitTestBall(Ball *pball)
 #ifdef LOG
 			cDeepTested++;
 #endif
-			newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal); // test for hit
+			const PINFLOAT newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal); // test for hit
 			if (newtime >= 0 && newtime <= pball->m_hittime)
 				{
 				pball->m_pho = m_vho.ElementAt(i);
@@ -637,12 +634,10 @@ void HitOctree::HitTestBall(Ball *pball)
 
 	if (!m_fLeaf)
 		{
-		BOOL fLeft, fRight, fTop, fBottom;
-
-		fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
-		fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
-		fTop = (pball->m_rcHitRect.top <= m_vcenter.y);
-		fBottom = (pball->m_rcHitRect.bottom >= m_vcenter.y);
+		const BOOL fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
+		const BOOL fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
+		const BOOL fTop = (pball->m_rcHitRect.top <= m_vcenter.y);
+		const BOOL fBottom = (pball->m_rcHitRect.bottom >= m_vcenter.y);
 
 #ifdef LOG
 		cTested++;
@@ -651,12 +646,10 @@ void HitOctree::HitTestBall(Ball *pball)
 			{
 			m_phitoct[0]->HitTestBall(pball);
 			}
-			
 		if (fRight && fTop)
 			{
 			m_phitoct[1]->HitTestBall(pball);
 			}
-
 		if (fLeft && fBottom)
 			{
 			m_phitoct[2]->HitTestBall(pball);
@@ -672,8 +665,6 @@ void HitOctree::HitTestXRay(Ball *pball, Vector<HitObject> *pvhoHit)
 	{
 	for (int i=0; i<m_vho.Size(); i++)
 		{
-		PINFLOAT newtime;
-
 #ifdef LOG
 		cTested++;
 #endif
@@ -682,7 +673,7 @@ void HitOctree::HitTestXRay(Ball *pball, Vector<HitObject> *pvhoHit)
 #ifdef LOG
 		cDeepTested++;
 #endif
-			newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal);
+			const PINFLOAT newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal);
 			if (newtime >= 0)
 				{
 				pvhoHit->AddElement(m_vho.ElementAt(i));
@@ -692,12 +683,10 @@ void HitOctree::HitTestXRay(Ball *pball, Vector<HitObject> *pvhoHit)
 
 	if (!m_fLeaf)
 		{
-		BOOL fLeft, fRight, fTop, fBottom;
-
-		fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
-		fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
-		fTop = (pball->m_rcHitRect.top <= m_vcenter.y);
-		fBottom = (pball->m_rcHitRect.bottom >= m_vcenter.y);
+		const BOOL fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
+		const BOOL fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
+		const BOOL fTop = (pball->m_rcHitRect.top <= m_vcenter.y);
+		const BOOL fBottom = (pball->m_rcHitRect.bottom >= m_vcenter.y);
 
 #ifdef LOG
 		cTested++;

@@ -159,7 +159,7 @@ void Flipper::EndPlay()
 	IEditable::EndPlay();
 	}
 
-void Flipper::SetVertices(float angle, Vertex *pvEndCenter, Vertex *rgvTangents, float baseradius, float endradius)
+void Flipper::SetVertices(float angle, Vertex2D *pvEndCenter, Vertex2D *rgvTangents, float baseradius, float endradius)
 	{
 	float endx,endy, basex,basey;
 	const float fradius = m_d.m_FlipperRadius;
@@ -195,8 +195,8 @@ void Flipper::PreRender(Sur *psur)
 
 	m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-	Vertex vendcenter;
-	Vertex rgv[4];
+	Vertex2D vendcenter;
+	Vertex2D rgv[4];
 
 	psur->SetFillColor(RGB(192,192,192));
 	psur->SetBorderColor(-1,fFalse,0);
@@ -216,8 +216,8 @@ void Flipper::Render(Sur *psur)
 	float anglerad = ANGTORAD(m_d.m_StartAngle);
 	float anglerad2 = ANGTORAD(m_d.m_EndAngle);
 
-	Vertex vendcenter;
-	Vertex rgv[4];
+	Vertex2D vendcenter;
+	Vertex2D rgv[4];
 
 	SetVertices(anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
@@ -353,13 +353,13 @@ void Flipper::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Flipper::GetCenter(Vertex *pv)
+void Flipper::GetCenter(Vertex2D *pv)
 	{
 	pv->x = m_d.m_Center.x;
 	pv->y = m_d.m_Center.y;
 	}
 
-void Flipper::PutCenter(Vertex *pv)
+void Flipper::PutCenter(Vertex2D *pv)
 	{
 	m_d.m_Center.x = pv->x;
 	m_d.m_Center.y = pv->y;
@@ -456,8 +456,8 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 	pd3dDevice->SetMaterial(&mtrl);
 
-	Vertex vendcenter;
-	Vertex rgv[4];
+	Vertex2D vendcenter;
+	Vertex2D rgv[4];
 	SetVertices(angle, &vendcenter, rgv, baseradius, endradius);
 
 	Vertex3D rgv3D[32];
@@ -708,7 +708,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_Center, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_Center, sizeof(Vertex2D));
 	bw.WriteFloat(FID(BASR), m_d.m_BaseRadius);
 	bw.WriteFloat(FID(ENDR), m_d.m_EndRadius);
 	bw.WriteFloat(FID(FLPR), m_d.m_FlipperRadiusMax);
@@ -780,7 +780,7 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_Center, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_Center, sizeof(Vertex2D));
 		}
 	else if (id == FID(BASR))
 		{

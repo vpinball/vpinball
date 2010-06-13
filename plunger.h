@@ -15,7 +15,7 @@
 class PlungerData
 	{
 public:
-	Vertex m_v;
+	Vertex2D m_v;
 	float m_width;
 	float m_height;
 	float m_stroke;
@@ -87,8 +87,8 @@ STANDARD_EDITABLE_DECLARES(eItemPlunger)
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
 // ISupportsErrorInfo

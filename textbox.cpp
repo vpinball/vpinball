@@ -166,12 +166,11 @@ void Textbox::RenderMoversFromCache(Pin3D *ppin3d)
 
 void Textbox::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	m_pobjframe = new ObjFrame();
-	
-	Vertex3D rgv3D[2];
 
+	Vertex3D rgv3D[2];
 	rgv3D[0].x = m_d.m_v1.x;
 	rgv3D[0].y = m_d.m_v1.y;
 	rgv3D[1].x = m_d.m_v2.x;
@@ -201,7 +200,7 @@ void Textbox::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 void Textbox::RenderText()
 	{
 	//DDBLTFX ddbfx;
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D *const ppin3d = &g_pplayer->m_pin3d;
 
 	HDC hdc;
 
@@ -308,13 +307,13 @@ void Textbox::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Textbox::GetCenter(Vertex *pv)
+void Textbox::GetCenter(Vertex2D *pv)
 {
 	pv->x = m_d.m_v1.x;
 	pv->y = m_d.m_v1.y;
 }
 
-void Textbox::PutCenter(Vertex *pv)
+void Textbox::PutCenter(Vertex2D *pv)
 {
 	m_d.m_v2.x = pv->x + m_d.m_v2.x - m_d.m_v1.x;
 	m_d.m_v2.y = pv->y + m_d.m_v2.y - m_d.m_v1.y;
@@ -398,8 +397,8 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex));
-	bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex));
+	bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex2D));
+	bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
 	bw.WriteInt(FID(CLRB), m_d.m_backcolor);
 	bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
 	bw.WriteString(FID(TEXT), m_d.sztext);
@@ -477,11 +476,11 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VER1))
 		{
-		pbr->GetStruct(&m_d.m_v1, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_v1, sizeof(Vertex2D));
 		}
 	else if (id == FID(VER2))
 		{
-		pbr->GetStruct(&m_d.m_v2, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_v2, sizeof(Vertex2D));
 		}
 	else if (id == FID(CLRB))
 		{

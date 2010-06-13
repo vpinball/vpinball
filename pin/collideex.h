@@ -86,7 +86,7 @@ class Hit3DPoly : public HitObject
 public:
 	Hit3DPoly(Vertex3D *rgv, int count);
 	virtual ~Hit3DPoly();
-	virtual PINFLOAT  HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal,bool direction, bool rigid);
+	virtual PINFLOAT HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal,bool direction, bool rigid);
 	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
 	virtual int GetType() {return e3DPoly;}
 	virtual void Draw(HDC hdc);
@@ -247,11 +247,11 @@ public:
 
 	void CacheHitTransform();
 
-	Vertex3D v1, v2;
-	Vertex3D normal;
+	Vertex3Ds v1, v2;
+	Vertex3Ds normal;
 
-	Vertex3D vtrans[2];
-	Vertex3D transaxis;
+	Vertex3Ds vtrans[2];
+	Vertex3Ds transaxis;
 	PINFLOAT transangle;
 	};
 

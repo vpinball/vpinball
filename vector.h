@@ -10,7 +10,7 @@ class VectorVoid
 protected:
 	int		m_cMax;		// Number of elements allocated
 	int		m_cSize;	// Last element used
-	void 		**m_rg;		// Data buffer
+	void 	**m_rg;		// Data buffer
 
 public:
 
@@ -241,7 +241,7 @@ public:
 		if (!m_rg)
 			return;
 
-		int i = IndexOf(pvItem);
+		const int i = IndexOf(pvItem);
 		if (i>=0)
 			RemoveElementAt(i);
 		}
@@ -358,8 +358,3 @@ public:
 	};
 
 #endif
-
-
-
-
-

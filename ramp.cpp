@@ -27,7 +27,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y)
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x, y+100);
+		pdp->Init(this, x, y+100.0f);
 		pdp->m_fSmooth = fTrue;
 		m_vdpoint.AddElement(pdp);
 		}
@@ -35,7 +35,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y)
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x, y-100);
+		pdp->Init(this, x, y-100.0f);
 		pdp->m_fSmooth = fTrue;
 		m_vdpoint.AddElement(pdp);
 		}
@@ -88,7 +88,7 @@ void Ramp::PreRender(Sur *psur)
 	psur->SetObject(this);
 
 	int cvertex;
-	Vertex * const rgv = GetRampVertex(&cvertex, NULL, NULL, NULL);
+	Vertex2D * const rgv = GetRampVertex(&cvertex, NULL, NULL, NULL);
 
 	psur->Polygon(rgv, cvertex*2);
 
@@ -107,7 +107,7 @@ void Ramp::Render(Sur *psur)
 
 	int cvertex;
 	BOOL *pfCross;
-	Vertex * const rgv = GetRampVertex(&cvertex, NULL, &pfCross, NULL);
+	Vertex2D * const rgv = GetRampVertex(&cvertex, NULL, &pfCross, NULL);
 
 	psur->Polygon(rgv, cvertex*2);
 
@@ -187,7 +187,7 @@ void Ramp::RenderOutline(Sur *psur)
 
 	int cvertex;
 	BOOL *pfCross;
-	Vertex * const rgv = GetRampVertex(&cvertex, NULL, &pfCross, NULL);
+	Vertex2D * const rgv = GetRampVertex(&cvertex, NULL, &pfCross, NULL);
 
 	psur->Polygon(rgv, cvertex*2);
 
@@ -220,7 +220,7 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 
 	float *rgheight;
 	int cvertex;
-	Vertex * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
+	Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
 
 	// Find the range of vertices to draw a shadow for
 	int startvertex = cvertex;
@@ -273,7 +273,7 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 			}
 		else
 			{
-			Vertex * const rgv2 = new Vertex[cvertex*2];
+			Vertex2D * const rgv2 = new Vertex2D[cvertex*2];
 			float * const rgheight2 = new float[cvertex*2];
 
 			for (int i=0;i<range;i++)
@@ -299,7 +299,7 @@ void Ramp::GetBoundingVertices(Vector<Vertex3D> *pvvertex3D)
 	{
 	float *rgheight;
 	int cvertex;
-	const Vertex * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
+	const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
 
 	for (int i=0;i<cvertex;i++)
 		{
@@ -307,14 +307,14 @@ void Ramp::GetBoundingVertices(Vector<Vertex3D> *pvvertex3D)
 		Vertex3D * const pv = new Vertex3D();
 		pv->x = rgv[i].x;
 		pv->y = rgv[i].y;
-		pv->z = rgheight[i]+50; // leave room for ball
+		pv->z = rgheight[i]+50.0f; // leave room for ball
 		pvvertex3D->AddElement(pv);
 			}
 
 		Vertex3D * const pv = new Vertex3D();
 		pv->x = rgv[cvertex*2-i-1].x;
 		pv->y = rgv[cvertex*2-i-1].y;
-		pv->z = rgheight[i]+50; // leave room for ball
+		pv->z = rgheight[i]+50.0f; // leave room for ball
 		pvvertex3D->AddElement(pv);
 		}
 
@@ -322,13 +322,13 @@ void Ramp::GetBoundingVertices(Vector<Vertex3D> *pvvertex3D)
 	delete rgheight;
 	}
 
-Vertex *Ramp::GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, float **ppratio)
+Vertex2D *Ramp::GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, float **ppratio)
 	{
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
 
 	const int cvertex = vvertex.Size();
-	Vertex * const rgv = new Vertex[cvertex * 2];
+	Vertex2D * const rgv = new Vertex2D[cvertex * 2];
 	if (ppheight)
 		{
 		*ppheight = new float[cvertex];
@@ -347,8 +347,8 @@ Vertex *Ramp::GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, fl
 
 	for (int i=0;i<(cvertex-1);i++)
 		{
-		const Vertex * const pv1 = (Vertex *)vvertex.ElementAt(i);
-		const Vertex * const pv2 = (Vertex *)vvertex.ElementAt(i+1);
+		const Vertex2D * const pv1 = (Vertex2D *)vvertex.ElementAt(i);
+		const Vertex2D * const pv2 = (Vertex2D *)vvertex.ElementAt(i+1);
 
 		const float dx = pv1->x - pv2->x;
 		const float dy = pv1->y - pv2->y;
@@ -357,25 +357,25 @@ Vertex *Ramp::GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, fl
 		totallength += length;
 		}
 
-	Vertex vnormal;
+	Vertex2D vnormal;
 	for (int i=0;i<cvertex;i++)
 		{
-		const Vertex * const pv1 = (Vertex *)vvertex.ElementAt((i>0) ? i-1 : i);
-		const Vertex * const pv2 = (Vertex *)vvertex.ElementAt((i < (cvertex-1)) ? i+1 : i);
-		const Vertex * const pvmiddle = (Vertex *)vvertex.ElementAt(i);
+		const Vertex2D * const pv1 = (Vertex2D *)vvertex.ElementAt((i>0) ? i-1 : i);
+		const Vertex2D * const pv2 = (Vertex2D *)vvertex.ElementAt((i < (cvertex-1)) ? i+1 : i);
+		const Vertex2D * const pvmiddle = (Vertex2D *)vvertex.ElementAt(i);
 
 		{
 		// Get normal at this point
-		Vertex v1 = *pv1;
-		Vertex v2 = *pv2;
+		Vertex2D v1 = *pv1;
+		Vertex2D v2 = *pv2;
 
-		Vertex v1normal, v2normal;
+		Vertex2D v1normal, v2normal;
 		// Notice that these values equal the ones in the line
 		// equation and could probably be substituted by them.
-		v1normal.x = (pv1->y - pvmiddle->y);
-		v1normal.y = -(pv1->x - pvmiddle->x);
-		v2normal.x = (pvmiddle->y - pv2->y);
-		v2normal.y = -(pvmiddle->x - pv2->x);
+		v1normal.x = pv1->y - pvmiddle->y;
+		v1normal.y = pvmiddle->x - pv1->x;
+		v2normal.x = pvmiddle->y - pv2->y;
+		v2normal.y = pv2->x - pvmiddle->x;
 
 		if (i == (cvertex-1))
 			{
@@ -409,8 +409,8 @@ Vertex *Ramp::GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, fl
 				// shift those lines outwards along their normals
 
 				// First line
-				const float A = -(pvmiddle->y - pv1->y);
-				const float B = (pvmiddle->x - pv1->x);
+				const float A = pv1->y - pvmiddle->y;
+				const float B = pvmiddle->x - pv1->x;
 
 				// Shift line along the normal
 				v1.x -= v1normal.x;
@@ -419,8 +419,8 @@ Vertex *Ramp::GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, fl
 				const float C = -(A*v1.x + B*v1.y);
 
 				// Second line
-				const float D = -(pvmiddle->y - pv2->y);
-				const float E = (pvmiddle->x - pv2->x);
+				const float D = pv2->y - pvmiddle->y;
+				const float E = pvmiddle->x - pv2->x;
 
 				// Shift line along the normal
 				v2.x -= v2normal.x;
@@ -445,7 +445,7 @@ Vertex *Ramp::GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, fl
 		}
 
 		{
-		const Vertex * const pvT = (Vertex *)vvertex.ElementAt(i);
+		const Vertex2D * const pvT = (Vertex2D *)vvertex.ElementAt(i);
 		const float dx = pv1->x - pvT->x;
 		const float dy = pv1->y - pvT->y;
 		const float length = sqrtf(dx*dx + dy*dy);
@@ -468,8 +468,8 @@ Vertex *Ramp::GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, fl
 			(*ppratio)[i] = percentage;
 			}
 
-		rgv[i] = *((Vertex *)vvertex.ElementAt(i));
-		rgv[cvertex*2 - i - 1] = *((Vertex *)vvertex.ElementAt(i));
+		rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
+		rgv[cvertex*2 - i - 1] = *((Vertex2D *)vvertex.ElementAt(i));
 
 		rgv[i].x += vnormal.x * (widthcur*0.5f);
 		rgv[i].y += vnormal.y * (widthcur*0.5f);
@@ -485,7 +485,7 @@ Vertex *Ramp::GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, fl
 			}
 		}
 
-	//rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+	//rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 	//delete vvertex.ElementAt(i);
 
 	for (int i=0;i<cvertex;i++)
@@ -553,7 +553,7 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 	{
 	int cvertex;
 	float *rgheight;
-	Vertex * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
+	Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
 
 	float wallheightright;
 	float wallheightleft;
@@ -577,22 +577,22 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 	else if (m_d.m_type == RampType3WireRight)
 		{
 		wallheightright = 62.0f;
-		wallheightleft = 6+12.5f;
+		wallheightleft = (float)(6+12.5);
 		}
 	else if (m_d.m_type == RampType3WireLeft)
 		{
 		wallheightleft = 62.0f;
-		wallheightright = 6+12.5f;
+		wallheightright = (float)(6+12.5);
 		}
 			
 	if (wallheightright > 0)
 		{
 		for (int i=0;i<(cvertex-1);i++)
 			{
-			Vertex * const pv1 = (i>0) ? &rgv[i-1] : NULL;
-			Vertex * const pv2 = &rgv[i];
-			Vertex * const pv3 = &rgv[i+1];
-			Vertex * const pv4 = (i<(cvertex-2)) ? &rgv[i+2] : NULL;
+			Vertex2D * const pv1 = (i>0) ? &rgv[i-1] : NULL;
+			Vertex2D * const pv2 = &rgv[i];
+			Vertex2D * const pv3 = &rgv[i+1];
+			Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgv[i+2] : NULL;
 
 #ifndef RAMPTEST
 			AddLine(pvho, pv2, pv3, pv1, rgheight[i], rgheight[i+1]+wallheightright);
@@ -608,10 +608,10 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 		{
 		for (int i=0;i<(cvertex-1);i++)
 			{
-			Vertex * const pv1 = (i>0) ? &rgv[cvertex + i - 1] : NULL;
-			Vertex * const pv2 = &rgv[cvertex + i];
-			Vertex * const pv3 = &rgv[cvertex + i + 1];
-			Vertex * const pv4 = (i<(cvertex-2)) ? &rgv[cvertex + i + 2] : NULL;
+			Vertex2D * const pv1 = (i>0) ? &rgv[cvertex + i - 1] : NULL;
+			Vertex2D * const pv2 = &rgv[cvertex + i];
+			Vertex2D * const pv3 = &rgv[cvertex + i + 1];
+			Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgv[cvertex + i + 2] : NULL;
 
 #ifndef RAMPTEST
 			AddLine(pvho, pv2, pv3, pv1, rgheight[cvertex - i - 2], rgheight[cvertex - i - 1] + wallheightleft);
@@ -628,10 +628,10 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 	{
 	Hit3DPoly *ph3dpolyOld = NULL;
 
-	const Vertex *pv1;
-	const Vertex *pv2;
-	const Vertex *pv3;
-	const Vertex *pv4;
+	const Vertex2D *pv1;
+	const Vertex2D *pv2;
+	const Vertex2D *pv3;
+	const Vertex2D *pv4;
 
 	for (int i=0;i<(cvertex-1);i++)
 		{
@@ -726,10 +726,10 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 
 	for (int i=0;i<(cvertex-1);i++)
 		{
-		const Vertex * const pv1 = &rgv[i];
-		const Vertex * const pv2 = &rgv[cvertex*2 - i - 1];
-		const Vertex * const pv3 = &rgv[cvertex*2 - i - 2];
-		const Vertex * const pv4 = &rgv[i+1];
+		const Vertex2D * const pv1 = &rgv[i];
+		const Vertex2D * const pv2 = &rgv[cvertex*2 - i - 1];
+		const Vertex2D * const pv3 = &rgv[cvertex*2 - i - 2];
+		const Vertex2D * const pv4 = &rgv[i+1];
 
 		Vertex3D rgv3D[4];
 		rgv3D[0].x = pv1->x;
@@ -783,7 +783,7 @@ void Ramp::GetHitShapesDebug(Vector<HitObject> *pvho)
 
 #define walltilt 0.5f
 
-void Ramp::AddSideWall(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2,float height1,float height2, float wallheight)
+void Ramp::AddSideWall(Vector<HitObject> *pvho, Vertex2D *pv1, Vertex2D *pv2,float height1,float height2, float wallheight)
 	{
 	Vertex3D rgv3D[4];
 	rgv3D[0].x = pv1->x;
@@ -832,8 +832,7 @@ void Ramp::CheckJoint(Vector<HitObject> *pvho, Hit3DPoly *ph3d1, Hit3DPoly *ph3d
 		// By convention of the calling function, points 1 [0] and 2 [1] of the second polygon will
 		// be the common-edge points
 
-		Hit3DCylinder *ph3dc;
-		ph3dc = new Hit3DCylinder(&ph3d2->m_rgv[0], &ph3d2->m_rgv[1], &vjointnormal);
+		Hit3DCylinder * const ph3dc = new Hit3DCylinder(&ph3d2->m_rgv[0], &ph3d2->m_rgv[1], &vjointnormal);
 		ph3dc->m_elasticity = m_d.m_elasticity;
 		ph3dc->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 		ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -844,12 +843,9 @@ void Ramp::CheckJoint(Vector<HitObject> *pvho, Hit3DPoly *ph3d1, Hit3DPoly *ph3d
 	}
 
 
-void Ramp::AddLine(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2, Vertex *pv3, float height1, float height2)
+void Ramp::AddLine(Vector<HitObject> *pvho, Vertex2D *pv1, Vertex2D *pv2, Vertex2D *pv3, float height1, float height2)
 	{
-	LineSeg *plineseg;
-	Joint *pjoint;
-
-	plineseg = new LineSeg();
+	LineSeg * const plineseg = new LineSeg();
 	plineseg->m_elasticity = m_d.m_elasticity;
 	plineseg->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 	plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -871,13 +867,13 @@ void Ramp::AddLine(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2, Vertex *pv
 
 	plineseg->CalcNormal();
 
-	Vertex vt1;
+	Vertex2D vt1;
 	vt1.x = pv1->x - pv2->x;
 	vt1.y = pv1->y - pv2->y;
 
 	if (pv3)
 		{
-		Vertex vt2;
+		Vertex2D vt2;
 		vt2.x = pv1->x - pv3->x;
 		vt2.y = pv1->y - pv3->y;
 
@@ -885,7 +881,7 @@ void Ramp::AddLine(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2, Vertex *pv
 
 		if (dot < 0) // Inside edges don't need joint hit-testing (dot == 0 continuous segments should mathematically never hit)
 			{
-			pjoint = new Joint();
+			Joint * const pjoint = new Joint();
 			pjoint->m_elasticity = m_d.m_elasticity;
 			pjoint->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 			pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -902,7 +898,7 @@ void Ramp::AddLine(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2, Vertex *pv
 			m_vhoCollidable.AddElement(pjoint);	//remember hit components of ramp
 			pjoint->m_fEnabled = m_d.m_fCollidable;
 
-			Vertex normalT;
+			Vertex2D normalT;
 
 			// Set up line normal
 			{
@@ -1001,7 +997,7 @@ void Ramp::RenderStaticHabitrail(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	float *rgheight;
 	int cvertex;
-	const Vertex * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
+	const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
 
 	WORD rgi[4];
 	for (WORD i=0;i<4;i++)
@@ -1100,20 +1096,20 @@ void Ramp::RenderStaticHabitrail(LPDIRECT3DDEVICE7 pd3dDevice)
 		vnewup.y = 1.0f; vnewup.ny = 0;  //rlc
 		vnewup.z = 0;    vnewup.nz = 0;  //rlc
 
-		Vertex3D tangent;
-		tangent.x = (rgv[p3].x - rgv[p1].x);
-		tangent.y = (rgv[p3].y - rgv[p1].y);
-		tangent.z = (rgheight[p3] - rgheight[p1]);
+		Vertex3Ds tangent;
+		tangent.x = rgv[p3].x - rgv[p1].x;
+		tangent.y = rgv[p3].y - rgv[p1].y;
+		tangent.z = rgheight[p3] - rgheight[p1];
 
 		// This is the vector describing the tangent to the ramp at this point
 		tangent.Normalize();
 
-		Vertex3D up;
+		Vertex3Ds up;
 		up.x = 0;
 		up.y = 0;
 		up.z = 1.0f;
 
-		Vertex3D rotationaxis;
+		Vertex3Ds rotationaxis;
 		// Get axis of rotation to rotate our cross-section into place
 		CrossProduct(&tangent, &up, &rotationaxis);
 
@@ -1290,7 +1286,7 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		float *rgheight;
 		float *rgratio;
 		int cvertex;
-		const Vertex * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
+		const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
 
 		WORD rgi[4];
 		for (WORD i=0;i<4;i++)
@@ -1301,8 +1297,8 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		const float tablewidth = m_ptable->m_right - m_ptable->m_left;
 		const float tableheight = m_ptable->m_bottom - m_ptable->m_top;
 
-		const float scalewidth = (((float) g_pplayer->m_pin3d.m_dwRenderWidth) / 64.055f);		// 64.0f is texture width.			
-		const float scaleheight = (((float) g_pplayer->m_pin3d.m_dwRenderHeight) / 64.055f);		// 64.0f is texture height.
+		const float scalewidth  = (float) g_pplayer->m_pin3d.m_dwRenderWidth  * (float)(1.0/64.055);		// 64.0f is texture width.			
+		const float scaleheight = (float) g_pplayer->m_pin3d.m_dwRenderHeight * (float)(1.0/64.055);		// 64.0f is texture height.
 		
 		const float inv_width = scalewidth / (float)g_pplayer->m_pin3d.m_dwRenderWidth;
 		const float inv_height = scaleheight / (float)g_pplayer->m_pin3d.m_dwRenderHeight;
@@ -1338,7 +1334,7 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 						{
 							Vertex3D rgvOut[4];
 							// Transform vertecies into screen coordinates.
-							g_pplayer->m_pin3d.TransformVertices(&(rgv3D[0]), NULL, 4, &(rgvOut[0]));
+							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
 							// Calculate texture coordinate for each vertex.
 							for (int r=0; r<4; r++)
@@ -1423,9 +1419,8 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					if (m_d.m_fAcrylic)
 						{
 							Vertex3D rgvOut[4];
-
 							// Transform vertecies into screen coordinates.
-							g_pplayer->m_pin3d.TransformVertices(&(rgv3D[0]), NULL, 4, &(rgvOut[0]));
+							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
 							// Calculate texture coordinate for each vertex.
 							for (int r=0; r<4; r++)
@@ -1464,7 +1459,6 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 
 			//2-Sided polygon
-
 			rgi[0] = 0;
 			rgi[1] = 1;
 			rgi[2] = 2;
@@ -1513,7 +1507,7 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 						{
 							Vertex3D rgvOut[4];
 							// Transform vertecies into screen coordinates.
-							g_pplayer->m_pin3d.TransformVertices(&(rgv3D[0]), NULL, 4, &(rgvOut[0]));
+							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
 							// Calculate texture coordinate for each vertex.
 							for (int r=0; r<4; r++)
@@ -1600,9 +1594,7 @@ void Ramp::MoveOffset(float dx, float dy)
 	{
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
-		CComObject<DragPoint> *pdp;
-
-		pdp = m_vdpoint.ElementAt(i);
+		CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 
 		pdp->m_v.x += dx;
 		pdp->m_v.y += dy;
@@ -1812,7 +1804,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
 		{
 		case ID_WALLMENU_FLIP:
 			{
-			Vertex vCenter;
+			Vertex2D vCenter;
 			GetPointCenter(&vCenter);
 			FlipPointY(&vCenter);
 			}
@@ -1820,7 +1812,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
 
 		case ID_WALLMENU_MIRROR:
 			{
-			Vertex vCenter;
+			Vertex2D vCenter;
 			GetPointCenter(&vCenter);
 			FlipPointX(&vCenter);
 			}
@@ -1842,14 +1834,12 @@ void Ramp::DoCommand(int icmd, int x, int y)
 			{
 			STARTUNDO
 
-			HitSur *phs;
-
 			RECT rc;
 			GetClientRect(m_ptable->m_hwnd, &rc);
-			Vertex v, vOut;
+			Vertex2D v, vOut;
 			int iSeg;
 
-			phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+			HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
 			phs->ScreenToSurface(x, y, &v.x, &v.y);
 			delete phs;
@@ -1858,11 +1848,11 @@ void Ramp::DoCommand(int icmd, int x, int y)
 			GetRgVertex(&vvertex);
 
 			const int cvertex = vvertex.Size();
-			Vertex * const rgv = new Vertex[cvertex];
+			Vertex2D * const rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<cvertex;i++)
 				{
-				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				}
 
 			ClosestPointOnPolygon(rgv, cvertex, &v, &vOut, &iSeg, fFalse);
@@ -1906,27 +1896,27 @@ void Ramp::DoCommand(int icmd, int x, int y)
 		}
 	}
 
-void Ramp::FlipY(Vertex *pvCenter)
+void Ramp::FlipY(Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::FlipPointY(pvCenter);
 	}
 
-void Ramp::FlipX(Vertex *pvCenter)
+void Ramp::FlipX(Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::FlipPointX(pvCenter);
 	}
 
-void Ramp::Rotate(float ang, Vertex *pvCenter)
+void Ramp::Rotate(float ang, Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::RotatePoints(ang, pvCenter);
 	}
 
-void Ramp::Scale(float scalex, float scaley, Vertex *pvCenter)
+void Ramp::Scale(float scalex, float scaley, Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter);
 	}
 
-void Ramp::Translate(Vertex *pvOffset)
+void Ramp::Translate(Vertex2D *pvOffset)
 	{
 	IHaveDragPoints::TranslatePoints(pvOffset);
 	}
@@ -2451,7 +2441,7 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		float *rgheight;
 		float *rgratio;
 		int cvertex;
-		const Vertex * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
+		const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
 
 		WORD rgi[4];
 		for (WORD i=0;i<4;i++)

@@ -75,7 +75,7 @@ void Spinner::Render(Sur *psur)
 	float halflength = m_d.m_length * 0.5f;
 
 
-	Vertex rgv[2];
+	Vertex2D rgv[2];
 
 	float radangle = m_d.m_rotation * (float)(M_PI/180.0);
 	float sn = sinf(radangle);
@@ -113,7 +113,7 @@ void Spinner::RenderShadow(ShadowSur *psur, float height)
 
 	float halflength = m_d.m_length * 0.5f;
 
-	Vertex rgv[2];
+	Vertex2D rgv[2];
 
 	float radangle = m_d.m_rotation * (float)(M_PI*2.0/360.0);
 	float sn = sinf(radangle);
@@ -299,7 +299,6 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[l].z += height;
 
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-		
 		}
 
 	WORD rgiNormal[3];
@@ -712,13 +711,13 @@ void Spinner::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Spinner::GetCenter(Vertex *pv)
+void Spinner::GetCenter(Vertex2D *pv)
 	{
 	pv->x = m_d.m_vCenter.x;
 	pv->y = m_d.m_vCenter.y;
 	}
 
-void Spinner::PutCenter(Vertex *pv)
+void Spinner::PutCenter(Vertex2D *pv)
 	{
 	m_d.m_vCenter.x = pv->x;
 	m_d.m_vCenter.y = pv->y;
@@ -733,7 +732,7 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
 	bw.WriteFloat(FID(ROTA), m_d.m_rotation);
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -800,7 +799,7 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
 		}
 	else if (id == FID(ROTA))
 		{

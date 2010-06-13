@@ -176,7 +176,7 @@ public:
 class HitNormal : public HitObject
 	{
 public:
-	Vertex normal;
+	Vertex2D normal;
 #ifdef SHOWNORMAL
 	int check1;
 #endif
@@ -185,13 +185,13 @@ public:
 class LineSeg : public HitNormal
 	{
 public:
-	Vertex v1, v2;
+	Vertex2D v1, v2;
 	float length;
 
 	virtual PINFLOAT HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal
 									,bool direction, bool lateral, bool rigid);
 	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
-	//float VertHitTest(Ball *pball, float dtime, Vertex *phitnormal);
+	//float VertHitTest(Ball *pball, float dtime, Vertex2D *phitnormal);
 	virtual int GetType() {return eLineSeg;}
 	virtual void Draw(HDC hdc);
 	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
@@ -204,7 +204,7 @@ class HitCircle : public HitObject
 	{
 public:
 
-	Vertex center;
+	Vertex2D center;
 	float radius;
 	float zlow;
 	float zhigh;
@@ -240,8 +240,8 @@ public:
 
 	virtual void CalcHitRect();
 
-	//Vertex v;
-	Vertex normal;
+	//Vertex2D v;
+	Vertex2D normal;
 	};
 
 class HitOctree
@@ -264,7 +264,7 @@ public:
 	Vector<HitObject> m_vho;
 
 	FRect3D m_rectbounds;
-	Vertex3D m_vcenter;
+	Vertex3Ds m_vcenter;
 
 	BOOL m_fLeaf;
 	};

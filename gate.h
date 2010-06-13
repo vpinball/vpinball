@@ -17,7 +17,7 @@
 class GateData
 	{
 public:
-	Vertex m_vCenter;
+	Vertex2D m_vCenter;
 	float m_length;
 	float m_height;
 	float m_rotation;
@@ -94,8 +94,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Gate)
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 	virtual void RenderBlueprint(Sur *psur);
 

@@ -139,13 +139,13 @@ void Plunger::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Plunger::GetCenter(Vertex *pv)
+void Plunger::GetCenter(Vertex2D *pv)
 	{
 	pv->x = m_d.m_v.x;
 	pv->y = m_d.m_v.y;
 	}
 
-void Plunger::PutCenter(Vertex *pv)
+void Plunger::PutCenter(Vertex2D *pv)
 	{
 	m_d.m_v.x = pv->x;
 	m_d.m_v.y = pv->y;
@@ -323,7 +323,7 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex2D));
 	bw.WriteFloat(FID(WDTH), m_d.m_width);
 	bw.WriteFloat(FID(HIGH), m_d.m_height);
 	bw.WriteFloat(FID(HPSL), m_d.m_stroke);
@@ -389,7 +389,7 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_v, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_v, sizeof(Vertex2D));
 		}
 	else if (id == FID(WDTH))
 		{

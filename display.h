@@ -22,13 +22,13 @@ struct _D3DTLVertexType
     // The flags to use this vertex type are... 
     // (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1).
 
-    float                   X, Y;                           // Vertex screen position.                                         
-    float                   Z;                              // Vertex z buffer depth.                                          
-    float                   RHW;                            // Vertex rhw.                                                     
-    DWORD                   DiffuseColor;                   // Vertex diffuse color.                                           
-    DWORD                   SpecularColor;					// Vertex specular color.                                           
-    float                   TU1, TV1;						// Vertex texture coordinate.                                      
-    float                   TU2, TV2;						// Vertex texture coordinate.                                      
+    float                   X, Y;                           // Vertex2D screen position.                                         
+    float                   Z;                              // Vertex2D z buffer depth.                                          
+    float                   RHW;                            // Vertex2D rhw.                                                     
+    DWORD                   DiffuseColor;                   // Vertex2D diffuse color.                                           
+    DWORD                   SpecularColor;					// Vertex2D specular color.                                           
+    float                   TU1, TV1;						// Vertex2D texture coordinate.                                      
+    float                   TU2, TV2;						// Vertex2D texture coordinate.                                      
 
 };
 
