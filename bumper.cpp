@@ -186,7 +186,6 @@ void Bumper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	WORD rgiNormal[3];
 	float maxtu, maxtv;
 	D3DMATERIAL7 mtrl;
 
@@ -267,6 +266,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		for (int l=0;l<32;l++)
 				{
+				WORD rgiNormal[3];
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
 				rgiNormal[2] = rgiNormal[0] + 2;
@@ -291,6 +291,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
+				WORD rgiNormal[3];
 				rgiNormal[0] = (l - 1 + 32) % 32;
 				rgiNormal[1] = rgiNormal[0] + 32;
 				rgiNormal[2] = rgiNormal[0] + 2;

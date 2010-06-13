@@ -26,7 +26,7 @@ BumperHitCircle::~BumperHitCircle()
 		}
 	}
 
-void BumperHitCircle::Collide(Ball *pball, Vertex3D *phitnormal)
+void BumperHitCircle::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	const float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
 
@@ -110,7 +110,7 @@ LineSegSlingshot::~LineSegSlingshot()
 	}
 
 
-PINFLOAT LineSegSlingshot::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)//rlc begin change >>>>>>>>>>>>>>>>
+PINFLOAT LineSegSlingshot::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)//rlc begin change >>>>>>>>>>>>>>>>
 	{
 	if (!m_fEnabled) return -1.0f;	
 
@@ -118,7 +118,7 @@ PINFLOAT LineSegSlingshot::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitno
 	}
 
 
-void LineSegSlingshot::Collide(Ball *pball, Vertex3D *phitnormal)
+void LineSegSlingshot::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{	
 	const float dot = pball->vx*phitnormal->x  + pball->vy*phitnormal->y; // normal velocity to slingshot
 
@@ -182,7 +182,7 @@ void LineSegSlingshot::Collide(Ball *pball, Vertex3D *phitnormal)
 		}
 	}
 
-PINFLOAT LineSegLevelEdge::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT LineSegLevelEdge::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	if (!m_fEnabled) return -1.0f;	
 
@@ -190,7 +190,7 @@ PINFLOAT LineSegLevelEdge::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitno
 	return this->HitTestBasic(pball, dtime, phitnormal, false, true, false);
 	}
 
-void LineSegLevelEdge::Collide(Ball *pball, Vertex3D *phitnormal)
+void LineSegLevelEdge::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	}
 
@@ -245,7 +245,7 @@ HitGate::HitGate(Gate *pgate)
 	}
 
 //rlc begin Change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-PINFLOAT HitGate::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT HitGate::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{	
 	if (!m_fEnabled) return -1.0f;		
 
@@ -256,7 +256,7 @@ PINFLOAT HitGate::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	}
 //rlc end Change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-void HitGate::Collide(Ball *pball, Vertex3D *phitnormal)
+void HitGate::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 
 	const PINFLOAT dot = pball->vx * phitnormal->x + pball->vy * phitnormal->y;
@@ -422,7 +422,7 @@ HitSpinner::HitSpinner(Spinner *pspinner, float height)
 
 	}
 
-PINFLOAT HitSpinner::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT HitSpinner::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	PINFLOAT hittime;
 
@@ -431,7 +431,7 @@ PINFLOAT HitSpinner::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	hittime = m_lineseg[0].HitTestBasic(pball, dtime, phitnormal, false, true, false);// any face, lateral, non-rigid
 	if (hittime >= 0)
 		{
-		phitnormal[1].x = 1;
+		phitnormal[1].x = 1.0f;
 		phitnormal[1].y = 0;
 
 		return hittime;
@@ -446,7 +446,7 @@ PINFLOAT HitSpinner::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	return hittime;
 	}
 
-void HitSpinner::Collide(Ball *pball, Vertex3D *phitnormal)
+void HitSpinner::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 
 	const PINFLOAT dot = pball->vx * phitnormal->x + pball->vy * phitnormal->y;
@@ -638,7 +638,7 @@ Hit3DPoly::~Hit3DPoly()
 	delete m_rgv;
 	}
 
-PINFLOAT Hit3DPoly::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT Hit3DPoly::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	if (m_ObjType == eTrigger)
 		{return HitTestBasicPolygon(pball, dtime, phitnormal,false, false);}
@@ -646,7 +646,7 @@ PINFLOAT Hit3DPoly::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	return HitTestBasicPolygon(pball, dtime, phitnormal,true, true); 
 	}
 
-PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal,bool direction, bool rigid)
+PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal,bool direction, bool rigid)
 	{
 	if (!m_fEnabled) return -1.0f;
 
@@ -771,7 +771,7 @@ void Hit3DPoly::Draw(HDC hdc)
 	{
 	}
 
-void Hit3DPoly::Collide(Ball *pball, Vertex3D *phitnormal)
+void Hit3DPoly::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	if (m_ObjType != eTrigger) pball->Collide3DWall(&normal, m_elasticity, m_antifriction, m_scatter); 
 	else		
@@ -780,7 +780,7 @@ void Hit3DPoly::Collide(Ball *pball, Vertex3D *phitnormal)
 
 		const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-		if ((phitnormal[1].x < 1) == (i < 0))	// Hit == NotAlreadyHit
+		if ((phitnormal[1].x < 1.0f) == (i < 0))	// Hit == NotAlreadyHit
 			{			
 			pball->x += pball->vx * STATICTIME; //move ball slightly forward
 			pball->y += pball->vy * STATICTIME;		
@@ -839,7 +839,7 @@ void Hit3DPoly::CalcHitRect()
 		}
 	}
 
-Hit3DCylinder::Hit3DCylinder(Vertex3D *pv1, Vertex3D *pv2, Vertex3D *pvnormal)
+Hit3DCylinder::Hit3DCylinder(Vertex3D *pv1, Vertex3D *pv2, Vertex3Ds *pvnormal)
 	{
 	v1.x = (*pv1).x;
 	v1.y = (*pv1).y;
@@ -847,9 +847,7 @@ Hit3DCylinder::Hit3DCylinder(Vertex3D *pv1, Vertex3D *pv2, Vertex3D *pvnormal)
 	v2.x = (*pv2).x;
 	v2.y = (*pv2).y;
 	v2.z = (*pv2).z;
-	normal.x = (*pvnormal).x;
-	normal.y = (*pvnormal).y;
-	normal.z = (*pvnormal).z;
+	normal = *pvnormal;
 	radius = 0;
 	CacheHitTransform();
 	}
@@ -882,7 +880,7 @@ void Hit3DCylinder::CacheHitTransform()
 	RotateAround(&transaxis, vtrans, 2, transangle);
 	}
 
-PINFLOAT Hit3DCylinder::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT Hit3DCylinder::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	if (!m_fEnabled) return -1.0f;	
 
@@ -933,9 +931,9 @@ PINFLOAT Hit3DCylinder::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnorma
 	return hittime;
 	}
 
-void Hit3DCylinder::Collide(Ball *pball, Vertex3D *phitnormal)
+void Hit3DCylinder::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
-	pball->Collide3DWall((Vertex3D *)phitnormal, m_elasticity, m_antifriction, m_scatter);
+	pball->Collide3DWall(phitnormal, m_elasticity, m_antifriction, m_scatter);
 	}
 
 void Hit3DCylinder::CalcHitRect()
@@ -1047,7 +1045,7 @@ TriggerLineSeg::TriggerLineSeg()
 
 //rlc change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-PINFLOAT TriggerLineSeg::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)//rlc problem-5
+PINFLOAT TriggerLineSeg::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)//rlc problem-5
 	{
 
 	if (!m_ptrigger->m_hitEnabled) return -1.0f;				//rlc custom shape trigger
@@ -1059,7 +1057,7 @@ PINFLOAT TriggerLineSeg::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnorm
 
 	//rlc  end change <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-void TriggerLineSeg::Collide(Ball *pball, Vertex3D *phitnormal)
+void TriggerLineSeg::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	if (m_ObjType != eTrigger) return;
 
@@ -1092,13 +1090,13 @@ TriggerHitCircle::TriggerHitCircle()
 	}
 
 
-PINFLOAT TriggerHitCircle::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT TriggerHitCircle::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	return HitTestBasicRadius(pball, dtime, phitnormal, false, false, false);//any face, not-lateral, non-rigid
 	}
 
 
-void TriggerHitCircle::Collide(Ball *pball, Vertex3D *phitnormal)
+void TriggerHitCircle::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	if (m_ObjType < eTrigger) return;// triggers and kickers
 

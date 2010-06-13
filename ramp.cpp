@@ -814,7 +814,7 @@ void Ramp::AddSideWall(Vector<HitObject> *pvho, Vertex2D *pv1, Vertex2D *pv2,flo
 
 void Ramp::CheckJoint(Vector<HitObject> *pvho, Hit3DPoly *ph3d1, Hit3DPoly *ph3d2)
 	{
-		Vertex3D vjointnormal;
+		Vertex3Ds vjointnormal;
 		//vjointnormal.x = ph3d1->normal.x + ph3d2->normal.x;
 		//vjointnormal.y = ph3d1->normal.y + ph3d2->normal.y;
 		//vjointnormal.z = ph3d1->normal.z + ph3d2->normal.z;

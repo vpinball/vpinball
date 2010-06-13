@@ -224,7 +224,7 @@ void FlipperAnimObject::UpdateVelocities(PINFLOAT dtime)
 #define LeftFace 1
 #define RightFace 0
 
-PINFLOAT HitFlipper::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT HitFlipper::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	if (!m_flipperanim.m_fEnabled)return -1;
 
@@ -273,7 +273,7 @@ PINFLOAT HitFlipper::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 // acceptable contact time ... near zero time
 
 
-PINFLOAT HitFlipper::HitTestFlipperEnd(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) // replacement
+PINFLOAT HitFlipper::HitTestFlipperEnd(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal) // replacement
 	{ 	 
 	PINFLOAT ballvtx, ballvty;	// new ball position at time t in flipper face coordinate
 	PINFLOAT contactAng;
@@ -419,7 +419,7 @@ PINFLOAT HitFlipper::HitTestFlipperEnd(Ball *pball, PINFLOAT dtime, Vertex3D *ph
 	}
 
 
-PINFLOAT HitFlipper::HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal, bool face) // replacement
+PINFLOAT HitFlipper::HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal, bool face) // replacement
 	{ 
 	Vertex2D F;			// flipper face normal
 	Vertex2D T;			// flipper face tangent
@@ -578,7 +578,7 @@ PINFLOAT HitFlipper::HitTestFlipperFace(Ball *pball, PINFLOAT dtime, Vertex3D *p
 	}
 
 
-void HitFlipper::Collide(Ball *pball, Vertex3D *phitnormal)
+void HitFlipper::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	PINFLOAT vx = pball->vx;
 	PINFLOAT vy = pball->vy;
@@ -712,7 +712,7 @@ void HitFlipper::Collide(Ball *pball, Vertex3D *phitnormal)
 		else m_pflipper->FireVoidEventParm(DISPID_FlipperEvents_Collide,flipperHit); // collision velocity (normal to face)	
 		}
 
-	Vertex3D vnormal;
+	Vertex3Ds vnormal;
 	vnormal.Set(phitnormal->x, phitnormal->y, 0);
 	pball->AngularAcceleration(&vnormal);
 	}

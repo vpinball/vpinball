@@ -60,13 +60,13 @@ public:
 	HitPlunger(float x, float y, float x2, float pos, float zheight, Plunger* pPlunger);
 	~HitPlunger() {}
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
 
 	virtual int GetType() {return ePlunger;}
 
 	virtual void Draw(HDC hdc);
 
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 
 	virtual void CalcHitRect();
 

@@ -56,7 +56,7 @@ void LineSeg::CalcHitRect()
 #define TANX  normal.y
 #define TANY -normal.x
 
-PINFLOAT  LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal
+PINFLOAT  LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal
 								,bool direction, bool lateral, bool rigid)
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
@@ -157,13 +157,13 @@ PINFLOAT  LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3D *phitnorma
 	return hittime;
 	}	
 
-PINFLOAT LineSeg::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) 
+PINFLOAT LineSeg::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal) 
 	{															// normal face, lateral, rigid
 	return HitTestBasic(pball, dtime, phitnormal, true, true, true);
 	}
 
 
-PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal, bool direction,bool lateral, bool rigid)
+PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal, bool direction,bool lateral, bool rigid)
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
 
@@ -310,7 +310,7 @@ PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3D *ph
 	}	
 
 
-PINFLOAT HitCircle::HitTestRadius(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT HitCircle::HitTestRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{	
 													//normal face, lateral, rigid
 	return HitTestBasicRadius(pball, dtime, phitnormal, true, true, true);		
@@ -345,7 +345,7 @@ void LineSeg::Draw(HDC hdc)
 #endif
 	}
 
-void LineSeg::Collide(Ball *pball, Vertex3D *phitnormal)
+void LineSeg::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	const float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
 
@@ -401,7 +401,7 @@ void Joint::CalcHitRect()
 	zhigh = m_rcHitRect.zhigh;
 	}
 
-PINFLOAT Joint::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT Joint::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	if (!m_fEnabled)
 		{
@@ -418,7 +418,7 @@ void Joint::Draw(HDC hdc)
 	DrawCircleAbsolute(hdc, center.x, center.y, 3.0f);
 	}
 
-void Joint::Collide(Ball *pball, Vertex3D *phitnormal)
+void Joint::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	const float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
 
@@ -455,7 +455,7 @@ void HitCircle::CalcHitRect()
 	m_rcHitRect.zhigh = zhigh;
 	}
 
-PINFLOAT HitCircle::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
+PINFLOAT HitCircle::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	return HitTestRadius(pball, dtime, phitnormal);
 	}
@@ -468,7 +468,7 @@ void HitCircle::Draw(HDC hdc)
 	DrawCircle(hdc, center.x, center.y, radius);
 	}
 
-void HitCircle::Collide(Ball *pball, Vertex3D *phitnormal)
+void HitCircle::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	pball->CollideWall(phitnormal, m_elasticity, m_antifriction, m_scatter);
 	}

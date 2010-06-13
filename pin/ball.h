@@ -38,17 +38,17 @@ public:
 	virtual void UpdateVelocities(PINFLOAT dtime);
 
 	// From HitObject
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal);	
+	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);	
 	virtual int GetType() {return eBall;}
 	virtual void Draw(HDC hdc) {} // Dead function
-	virtual void Collide(Ball *pball, Vertex3D *phitnormal);
+	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
 	virtual void CalcHitRect();
 
 	//semi-generic collide methods
-	void CollideWall(Vertex3D *phitnormal, float elasticity, float antifriction, float scatter_angle);
-	void Collide3DWall(Vertex3D *phitnormal, float m_elasticity, float antifriction, float scatter_angle);
+	void CollideWall(Vertex3Ds *phitnormal, float elasticity, float antifriction, float scatter_angle);
+	void Collide3DWall(Vertex3Ds *phitnormal, float m_elasticity, float antifriction, float scatter_angle);
 
-	void AngularAcceleration(Vertex3D *phitnormal);
+	void AngularAcceleration(Vertex3Ds *phitnormal);
 
 	virtual AnimObject *GetAnimObject() {return &m_ballanim;}
 
@@ -78,7 +78,7 @@ public:
 	PINFLOAT m_HitNormVel;	// hit normal Velocity
 	BOOL m_HitRigid; // Rigid = 1, Non-Rigid = 0	
 	int m_fDynamic; // used to determine static ball conditions and velocity quenching, 
-	Vertex3D m_hitnormal[5];//rlc 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
+	Vertex3Ds m_hitnormal[5];//rlc 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
 
 	//Level *m_plevel; // Level this ball is rolling on
 

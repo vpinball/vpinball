@@ -152,7 +152,7 @@ void Ball::CalcBoundingRect()
 	m_rcHitRect.zlow -= radius /*+ 0.f*/;
 	}
 
-void Ball::CollideWall(Vertex3D *phitnormal, float m_elasticity, float antifriction, float scatter_angle)
+void Ball::CollideWall(Vertex3Ds *phitnormal, float m_elasticity, float antifriction, float scatter_angle)
 	{
 	PINFLOAT dot = vx * phitnormal->x + vy * phitnormal->y; //speed normal to wall
 
@@ -202,14 +202,13 @@ void Ball::CollideWall(Vertex3D *phitnormal, float m_elasticity, float antifrict
 		vy = vyt *radcos + vxt *radsin;  // 
 		}
 
-	Vertex3D vnormal;
+	Vertex3Ds vnormal;
 	vnormal.Set(phitnormal->x, phitnormal->y, 0); //??? contact point 
-
 	AngularAcceleration(&vnormal);	//calc new rolling dynamics
 	}
 
 
-void Ball::Collide3DWall(Vertex3D *phitnormal, float m_elasticity, float antifriction, float scatter_angle)
+void Ball::Collide3DWall(Vertex3Ds *phitnormal, float m_elasticity, float antifriction, float scatter_angle)
 	{
 	PINFLOAT dot = vx * phitnormal->x + vy * phitnormal->y + vz * phitnormal->z; //speed normal to wall
 
@@ -266,7 +265,7 @@ void Ball::Collide3DWall(Vertex3D *phitnormal, float m_elasticity, float antifri
 	}
 
 
-PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) //rlc change begin >>>>>>>>>>>>>>>>>>>>>>
+PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal) //rlc change begin >>>>>>>>>>>>>>>>>>>>>>
 	{	
 	PINFLOAT dvx = vx - pball->vx;		 // delta velocity 
 	PINFLOAT dvy = vy - pball->vy;
@@ -290,8 +289,8 @@ PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) //rlc 
 		pball->vz -= dvz;
 		}
 
-	PINFLOAT b = dvx*dx + dvy*dy + dvz*dz;				// inner product
-	const PINFLOAT bnv = b/bcdd;								// normal speed of balls toward each other
+	PINFLOAT b = dvx*dx + dvy*dy + dvz*dz;		// inner product
+	const PINFLOAT bnv = b/bcdd;				// normal speed of balls toward each other
 
 	if ( bnv >  C_LOWNORMVEL) return -1.0f;		// dot of delta velocity and delta displacement, postive if receding no collison
 
@@ -353,12 +352,12 @@ PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) //rlc 
 	}
 
 
-void Ball::Collide(Ball *pball, Vertex3D *phitnormal)
+void Ball::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
 	if (pball->fFrozen) 
 		return;
 
-	const Vertex3D vnormal = *phitnormal;
+	const Vertex3Ds vnormal = *phitnormal;
 	
 	// correct displacements, mostly from low velocity, alternative to true acceleration processing
 
@@ -420,7 +419,7 @@ void Ball::Collide(Ball *pball, Vertex3D *phitnormal)
 	pball->m_fDynamic = C_DYNAMIC;
 	}
 
-void Ball::AngularAcceleration(Vertex3D *phitnormal)
+void Ball::AngularAcceleration(Vertex3Ds *phitnormal)
 	{
 	Vertex3Ds bccpd; // vector ball center to contact point displacement
 	bccpd.Set(-radius * phitnormal->x, -radius * phitnormal->y, -radius * phitnormal->z); //from ball center to contact point
@@ -552,7 +551,7 @@ void Ball::UpdateDisplacements(PINFLOAT dtime)
 
 			vx *= c_hardFriction; vy *= c_hardFriction;  //friction other axiz
 			
-			Vertex3D vnormal;
+			Vertex3Ds vnormal;
 			vnormal.Set(0.0f,0.0f,1.0f);
 			AngularAcceleration(&vnormal);
 			}
