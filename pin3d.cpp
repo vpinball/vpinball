@@ -131,8 +131,46 @@ void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi
 		rgvout[l].z = zp * inv_wp;
 		rgvout[l].nx = wp;
 		}
+	}
 
-	return;
+void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout)
+	{
+	// Get the width and height of the viewport. This is needed to scale the
+	// transformed vertices to fit the render window.
+	D3DVIEWPORT7 vp;
+	m_pd3dDevice->GetViewport( &vp );
+	const float rClipWidth  = vp.dwWidth*0.5f;
+	const float rClipHeight = vp.dwHeight*0.5f;
+	const int xoffset = vp.dwX;
+	const int yoffset = vp.dwY;
+
+	// Transform each vertex through the current matrix set
+	for(int i=0; i<count; i++ )
+		{
+		const int l = rgi ? rgi[i] : i;
+
+		// Get the untransformed vertex position
+		const FLOAT x = rgv[l].x;
+		const FLOAT y = rgv[l].y;
+		const FLOAT z = rgv[l].z;
+
+		// Transform it through the current matrix set
+		const FLOAT xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
+		const FLOAT yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
+		const FLOAT wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
+
+		// Finally, scale the vertices to screen coords. This step first
+		// "flattens" the coordinates from 3D space to 2D device coordinates,
+		// by dividing each coordinate by the wp value. Then, the x- and
+		// y-components are transformed from device coords to screen coords.
+		// Note 1: device coords range from -1 to +1 in the viewport.
+		const FLOAT inv_wp = 1.0f/wp;
+		const FLOAT vTx  = ( 1.0f + xp*inv_wp ) * rClipWidth  + xoffset;
+		const FLOAT vTy  = ( 1.0f - yp*inv_wp ) * rClipHeight + yoffset;
+
+		rgvout[l].x = vTx;
+		rgvout[l].y	= vTy;
+		}
 	}
 
 LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreenWithCustomTransparency(int width, int height, int color)
@@ -1020,7 +1058,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 
-	GPINFLOAT m_aspect = 4.0/3.0;//((GPINFLOAT)m_dwRenderWidth)/m_dwRenderHeight;
+	const GPINFLOAT m_aspect = 4.0/3.0;//((GPINFLOAT)m_dwRenderWidth)/m_dwRenderHeight;
 
 	// Clear the world matrix.
 	Identity();
@@ -2242,8 +2280,46 @@ void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * c
 		rgvout[l].z = zp * inv_wp;
 		rgvout[l].nx = wp;
 		}
+	}
 
-	return;
+void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
+	{
+	// Get the width and height of the viewport. This is needed to scale the
+	// transformed vertices to fit the render window.
+	//D3DVIEWPORT7 vp;
+	//m_pd3dDevice->GetViewport( &vp );
+	const float rClipWidth  = (m_rcviewport.right - m_rcviewport.left)*0.5f;
+	const float rClipHeight = (m_rcviewport.bottom - m_rcviewport.top)*0.5f;
+	const int xoffset = m_rcviewport.left;
+	const int yoffset = m_rcviewport.top;
+
+	// Transform each vertex through the current matrix set
+	for(int i=0; i<count; i++ )
+		{
+		const int l = rgi ? rgi[i] : i;
+
+		// Get the untransformed vertex position
+		const FLOAT x = rgv[l].x;
+		const FLOAT y = rgv[l].y;
+		const FLOAT z = rgv[l].z;
+
+		// Transform it through the current matrix set
+		const FLOAT xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
+		const FLOAT yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
+		const FLOAT wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
+
+		// Finally, scale the vertices to screen coords. This step first
+		// "flattens" the coordinates from 3D space to 2D device coordinates,
+		// by dividing each coordinate by the wp value. Then, the x- and
+		// y-components are transformed from device coords to screen coords.
+		// Note 1: device coords range from -1 to +1 in the viewport.
+		const FLOAT inv_wp = 1.0f/wp;
+		const float vTx  = ( 1.0f + xp*inv_wp ) * rClipWidth  + xoffset;
+		const float vTy  = ( 1.0f - yp*inv_wp ) * rClipHeight + yoffset;
+
+		rgvout[l].x = vTx;
+		rgvout[l].y	= vTy;
+		}
 	}
 
 void Matrix3D::Multiply(const Matrix3D &mult, Matrix3D &result) const

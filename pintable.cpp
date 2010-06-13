@@ -1469,24 +1469,16 @@ void PinTable::Render3DProjection(Sur *psur)
 	psur->SetBorderColor(-1,fFalse,0);
 
 	Vertex3D rgvIn[6];
-	Vertex3D rgvOut[6];
-	rgvIn[0].Set(m_left, m_top, 50);
-	rgvIn[1].Set(m_right, m_top, 50);
-	rgvIn[2].Set(m_right, m_bottom, 50);
-	rgvIn[3].Set(m_right, m_bottom, 0);
-	rgvIn[4].Set(m_left, m_bottom, 0);
-	rgvIn[5].Set(m_left, m_bottom, 50);
+	rgvIn[0].Set(m_left, m_top, 50.0f);
+	rgvIn[1].Set(m_right, m_top, 50.0f);
+	rgvIn[2].Set(m_right, m_bottom, 50.0f);
+	rgvIn[3].Set(m_right, m_bottom, 0.0f);
+	rgvIn[4].Set(m_left, m_bottom, 0.0f);
+	rgvIn[5].Set(m_left, m_bottom, 50.0f);
 
+	Vertex2D rgvOut[6];
 	pinproj.TransformVertices(rgvIn, NULL, 6, rgvOut);
-
-	Vertex2D rgv[6];
-	for (int i=0;i<6;i++)
-		{
-		rgv[i].x = rgvOut[i].x;
-		rgv[i].y = rgvOut[i].y;
-		}
-
-	psur->Polygon(rgv, 6);
+	psur->Polygon(rgvOut, 6);
 	}
 
 
@@ -1504,13 +1496,10 @@ BOOL PinTable::GetEMReelsEnabled( void )
 
 void PinTable::Paint(HDC hdc)
 	{
-	Sur *psur;
 	//HBITMAP hbmOffScreen;
 	HBITMAP hbmOld;
-	HDC hdc2;
 
 	RECT rc;
-
 	GetClientRect(m_hwnd, &rc);
 
 	if (m_fDirtyDraw)
@@ -1522,13 +1511,13 @@ void PinTable::Paint(HDC hdc)
 		m_hbmOffScreen = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
 		}
 
-	hdc2 = CreateCompatibleDC(hdc);
+	HDC hdc2 = CreateCompatibleDC(hdc);
 
 	hbmOld = (HBITMAP)SelectObject(hdc2, m_hbmOffScreen);
 
 	if (m_fDirtyDraw)
 		{
-		psur = new PaintSur(hdc2, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, m_vmultisel.ElementAt(0)/*m_pselcur*/);
+		Sur * const psur = new PaintSur(hdc2, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, m_vmultisel.ElementAt(0)/*m_pselcur*/);
 		Render(psur);
 
 		delete psur;
@@ -1840,7 +1829,7 @@ void PinTable::AutoSave()
 	m_pcv->SetClean(min(m_sdsDirtyScript, eSaveAutosaved));
 	SetNonUndoableDirty(min(m_sdsNonUndoableDirty, eSaveAutosaved));
 
-	AutoSavePackage *pasp = new AutoSavePackage();
+	AutoSavePackage * const pasp = new AutoSavePackage();
 	pasp->pstg = pstgroot;
 	pasp->tableindex = g_pvp->m_vtable.IndexOf(this);
 	pasp->HwndTable = m_hwnd;
@@ -2217,11 +2206,10 @@ Error:
 
 HRESULT PinTable::SaveSoundToStream(PinSound *pps, IStream *pstm)
 	{
-	int len;
 	ULONG writ = 0;
 	HRESULT hr = S_OK;
 
-	len = lstrlen(pps->m_szName);
+	int len = lstrlen(pps->m_szName);
 
 	if(FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
 		return hr;

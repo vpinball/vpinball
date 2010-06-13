@@ -461,20 +461,18 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	SetVertices(angle, &vendcenter, rgv, baseradius, endradius);
 
 	Vertex3D rgv3D[32];
-	WORD rgi[8];
 	for (int l=0;l<8;l++)
 		{
 		rgv3D[l].x = rgv[l&3].x;
 		rgv3D[l].y = rgv[l&3].y;
 		rgv3D[l].z = (l<4) ? height + flipperheight + 0.1f : height; // Make flippers a bit taller so they draw above walls
-		rgi[l] = l;
-
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);		
 		}
 
 	ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear
 										 , &m_phitflipper->m_flipperanim.m_zfar, 8, fFalse);
 
+	WORD rgi[8] = {0,1,2,3,4,5,6,7};
 	SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 	
 	// Draw top.

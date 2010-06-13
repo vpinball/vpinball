@@ -57,77 +57,59 @@ void Matrix3::MultiplyScalar(const float scalar)
 
 void Matrix3::MultiplyVector(const Vertex3D * const pv3D, Vertex3D * const pv3DOut)
 	{
-    float ans[3];
-
-    for(int i = 0;i < 3;i++)
-		{
-        float value = 0.0f;
-      
-        for(int l = 0;l < 3;l++)
-			{
-            value += m_d[i][l] *
-                    pv3D->m_d[l];
-			}
-
-        ans[i] = value;
-		}
+	const float ans[3] = {
+				 m_d[0][0] * pv3D->m_d[0]
+			   + m_d[0][1] * pv3D->m_d[1]
+			   + m_d[0][2] * pv3D->m_d[2],
+			     m_d[1][0] * pv3D->m_d[0]
+			   + m_d[1][1] * pv3D->m_d[1]
+			   + m_d[1][2] * pv3D->m_d[2],
+			     m_d[2][0] * pv3D->m_d[0]
+			   + m_d[2][1] * pv3D->m_d[1]
+			   + m_d[2][2] * pv3D->m_d[2]};
 
 	// Copy the final values over later.  This makes it so pv3D and pv3DOut can
 	// point to the same vertex.
-    for(int i = 0;i < 3;i++)
-		{
-        pv3DOut->m_d[i] = ans[i];
-		}
+    pv3DOut->x = ans[0];
+	pv3DOut->y = ans[1];
+	pv3DOut->z = ans[2];
 	}
 
 void Matrix3::MultiplyVector(const Vertex3Ds * const pv3D, Vertex3Ds * const pv3DOut)
 	{
-    float ans[3];
-
-    for(int i = 0;i < 3;i++)
-		{
-        float value = 0.0f;
-      
-        for(int l = 0;l < 3;l++)
-			{
-            value += m_d[i][l] *
-                    pv3D->m_d[l];
-			}
-
-        ans[i] = value;
-		}
+    const float ans[3] = {
+				 m_d[0][0] * pv3D->m_d[0]
+			   + m_d[0][1] * pv3D->m_d[1]
+			   + m_d[0][2] * pv3D->m_d[2],
+			     m_d[1][0] * pv3D->m_d[0]
+			   + m_d[1][1] * pv3D->m_d[1]
+			   + m_d[1][2] * pv3D->m_d[2],
+			     m_d[2][0] * pv3D->m_d[0]
+			   + m_d[2][1] * pv3D->m_d[1]
+			   + m_d[2][2] * pv3D->m_d[2]};
 
 	// Copy the final values over later.  This makes it so pv3D and pv3DOut can
 	// point to the same vertex.
-    for(int i = 0;i < 3;i++)
-		{
-        pv3DOut->m_d[i] = ans[i];
-		}
+    pv3DOut->x = ans[0];
+	pv3DOut->y = ans[1];
+	pv3DOut->z = ans[2];
 	}
 
 void Matrix3::MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
 	{
 	Matrix3 matans;
-
     for(int i=0;i<3;i++)
     {
         for(int l=0;l<3;l++)
         {
-            float value = 0.0f;
-          
-            for(int m=0;m<3;m++)
-            {
-                value += pmat1->m_d[i][m] *
-                        pmat2->m_d[m][l];
-            }
-
-            matans.m_d[i][l] = value;
+            matans.m_d[i][l] = pmat1->m_d[i][0] * pmat2->m_d[0][l] +
+					           pmat1->m_d[i][1] * pmat2->m_d[1][l] +
+						       pmat1->m_d[i][2] * pmat2->m_d[2][l];
         }
     }
 
 	// Copy the final values over later.  This makes it so pmat1 and pmat2 can
 	// point to the same matrix.
-
     for(int i=0;i<3;i++)
 		{
 		for (int l=0;l<3;l++)
@@ -244,7 +226,7 @@ LocalString::LocalString(int resid)
 
 WCHAR *MakeWide(char *sz)
 	{
-	int len = lstrlen(sz);
+	const int len = lstrlen(sz);
 	WCHAR *wzT = new WCHAR[len+1];
 	MultiByteToWideChar(CP_ACP, 0, sz, -1, wzT, len+1);
 
@@ -253,7 +235,7 @@ WCHAR *MakeWide(char *sz)
 
 char *MakeChar(WCHAR *wz)
 	{
-	int len = lstrlenW(wz);
+	const int len = lstrlenW(wz);
 	char *szT = new char[len+1];
 	WideCharToMultiByte(CP_ACP, 0, wz, -1, szT, len+1, NULL, NULL);
 
@@ -301,12 +283,10 @@ HRESULT OpenURL(char *szURL)
 
 void DumpNameTable (char *pszFile, char *pszName)
 {
-  unsigned            i;
-  char		      namebuf[255];
+  char				  namebuf[255];
   int                 fp;
   unsigned short      numNames;
-  long		      curseek;
-  unsigned            cTables;
+  long				  curseek;
   sfnt_OffsetTable    OffsetTable;
   sfnt_DirectoryEntry Table;
   sfnt_NamingTable    NamingTable;
@@ -323,9 +303,9 @@ void DumpNameTable (char *pszFile, char *pszName)
    * Little Endian).
    */
   read (fp, &OffsetTable, sizeof (OffsetTable) - sizeof (sfnt_DirectoryEntry));
-  cTables = (int) SWAPW (OffsetTable.numOffsets);
+  const unsigned int cTables = SWAPW (OffsetTable.numOffsets);
 
-  for ( i = 0; i < cTables && i < 40; i++)
+  for (unsigned int i = 0; i < cTables && i < 40; i++)
   {
     if ((read (fp, &Table, sizeof (Table))) != sizeof(Table)) 
 	{

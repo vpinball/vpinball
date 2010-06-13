@@ -1332,7 +1332,7 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					// Check if this is an acrylic.
 					if (m_d.m_fAcrylic)
 						{
-							Vertex3D rgvOut[4];
+							Vertex2D rgvOut[4];
 							// Transform vertecies into screen coordinates.
 							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
@@ -1418,7 +1418,7 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					// Check if this is an acrylic.
 					if (m_d.m_fAcrylic)
 						{
-							Vertex3D rgvOut[4];
+							Vertex2D rgvOut[4];
 							// Transform vertecies into screen coordinates.
 							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
@@ -1505,7 +1505,7 @@ void Ramp::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					// Check if this is an acrylic.
 					if (m_d.m_fAcrylic)
 						{
-							Vertex3D rgvOut[4];
+							Vertex2D rgvOut[4];
 							// Transform vertecies into screen coordinates.
 							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
