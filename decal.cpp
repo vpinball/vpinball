@@ -297,7 +297,7 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 				{
 				rcOut.top = AUTOLEADING*i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
 				rcOut.bottom = rcOut.top + 100;
-				int foo = DrawText(hdc, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+				const int foo = DrawText(hdc, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 				}
 			}
 		else

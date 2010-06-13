@@ -2352,7 +2352,7 @@ void Player::Render()
 						if (pobjframe->pdds != NULL)
 						{
 							// Blit to the backbuffer with DDraw.   
-							HRESULT hr = pdds->BltFast(bltleft, blttop, pobjframe->pdds, &rcUpdate, DDBLTFAST_SRCCOLORKEY);
+							const HRESULT hr = pdds->BltFast(bltleft, blttop, pobjframe->pdds, &rcUpdate, DDBLTFAST_SRCCOLORKEY);
 						}
 					}
 					
@@ -2360,7 +2360,7 @@ void Player::Render()
 					if (pobjframe->pddsZBuffer != NULL)
 					{
 						// Blit to the z buffer.	
-						HRESULT hr = g_pplayer->m_pin3d.m_pddsZBuffer->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
+						const HRESULT hr = g_pplayer->m_pin3d.m_pddsZBuffer->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
 					}
 				}
 			}
@@ -2745,12 +2745,7 @@ void Player::DrawBallShadows()
 
 	m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
-	WORD rgi[4];
-
-	for (WORD i=0;i<4;i++)
-		{
-		rgi[i] = i;
-		}
+	WORD rgi[4] = {0,1,2,3};
 
 	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
 
@@ -2903,16 +2898,14 @@ void Player::DrawBalls()
 
 	m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
-	WORD rgi[4];
+	WORD rgi[4] = {0,1,2,3};
 
-	for (WORD i=0;i<4;i++)
+	/*for (int i=0;i<4;i++)
 		{
-		rgi[i] = i;
-
-		//rgv3D[i].nx = 0;
-		//rgv3D[i].ny = 0;
-		//rgv3D[i].nz = 1.0f;
-		}
+		rgv3D[i].nx = 0;
+		rgv3D[i].ny = 0;
+		rgv3D[i].nz = 1.0f;
+		}*/
 
 	//m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
 

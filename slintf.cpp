@@ -145,7 +145,7 @@ void slintf( const char *str, ... )
 
 	va_start(ap,str);
 
-	int len = vsprintf( buffer, str, ap );
+	const int len = vsprintf( buffer, str, ap );
 
 	slintf_popup_console();
 

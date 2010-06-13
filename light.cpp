@@ -464,10 +464,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	pd3dDevice->SetMaterial(&mtrl);
 
-	WORD rgi[3];
-	rgi[0] = 0;
-	rgi[1] = 1;
-	rgi[2] = 2;
+	WORD rgi[3] = {0,1,2};
 
 	Vertex3D rgv3D[3];
 	if (!m_fBackglass)
@@ -1490,7 +1487,7 @@ void Light::DrawFrame(BOOL fOn)
 		{
 			// NOTE: They are drawing to their own static buffer below in the BltFast... NOT the back buffer!
 			// We can use BltFast here because we are drawing to our own offscreen iamge
-			HRESULT hr = ppin3d->m_pddsStatic->BltFast(m_pobjframe[frame]->rc.left, m_pobjframe[frame]->rc.top, m_pobjframe[frame]->pdds, NULL, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
+			const HRESULT hr = ppin3d->m_pddsStatic->BltFast(m_pobjframe[frame]->rc.left, m_pobjframe[frame]->rc.top, m_pobjframe[frame]->pdds, NULL, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
 			
 			g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
 		}

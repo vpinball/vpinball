@@ -191,7 +191,7 @@ HRESULT BallEx::put_UserValue(VARIANT *newVal)
 	{
 	VariantInit(&m_uservalue);
 	VariantClear(&m_uservalue);
-	HRESULT hr = VariantCopy(&m_uservalue, newVal);
+	const HRESULT hr = VariantCopy(&m_uservalue, newVal);
 	return S_OK;
 	}
 

@@ -258,11 +258,11 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int m=0;m<(PLUNGEPOINTS-1);m++)
 				{
-				WORD rgi[4];
-				rgi[0] = m + offset;
-				rgi[3] = m + 1 + offset;
-				rgi[2] = (m + 1 + offset + PLUNGEPOINTS) % (16*PLUNGEPOINTS);
-				rgi[1] = (m + offset + PLUNGEPOINTS) % (16*PLUNGEPOINTS);
+				WORD rgi[4] = {
+					 m + offset,
+					(m + offset + PLUNGEPOINTS) % (16*PLUNGEPOINTS),
+					(m + offset + 1 + PLUNGEPOINTS) % (16*PLUNGEPOINTS),
+					 m + offset + 1};
 
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D
 													   ,(16*PLUNGEPOINTS),rgi, 4, 0);

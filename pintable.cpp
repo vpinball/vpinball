@@ -925,7 +925,7 @@ BOOL PinTable::FVerifySaveToClose()
 	{
 	if (m_vAsyncHandles.Size() > 0)
 		{
-		DWORD wait = WaitForMultipleObjects(m_vAsyncHandles.Size(), (HANDLE *)m_vAsyncHandles.GetArray(), TRUE, INFINITE);
+		const DWORD wait = WaitForMultipleObjects(m_vAsyncHandles.Size(), (HANDLE *)m_vAsyncHandles.GetArray(), TRUE, INFINITE);
 		//MessageBox(NULL, "Async work items not done", NULL, 0);
 
 		// Close the remaining handles here, since the window messages will never be processed
@@ -3093,11 +3093,7 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 #ifndef OLDLOAD
 	SetLoadDefaults();
 
-	int rgi[6];
-	for (int i=0;i<6;i++)
-		{
-		rgi[i] = 0;
-		}
+	int rgi[6] = {0,0,0,0,0,0};
 
 	BiffReader br(pstm, this, rgi, version, hcrypthash, hcryptkey);
 
@@ -3288,19 +3284,19 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	else if( id == FID(MPGC))
 		{
 		pbr->GetInt(&m_plungerNormalize);	
-		HRESULT hr = GetRegInt("Player", "PlungerNormalize", &m_plungerNormalize);	
+		const HRESULT hr = GetRegInt("Player", "PlungerNormalize", &m_plungerNormalize);	
 		}
 	else if( id == FID(MPDF))
 		{
 		int tmp;
 		pbr->GetBool(&tmp);	
-		HRESULT hr = GetRegInt("Player", "PlungerFilter", &tmp);
-		m_plungerFilter = tmp != 0;		
+		const HRESULT hr = GetRegInt("Player", "PlungerFilter", &tmp);
+		m_plungerFilter = (tmp != 0);		
 		}
 	else if( id == FID(PLTMX))
 		{
 		pbr->GetInt(&m_PhysicsLoopTime);	
-		HRESULT hr = GetRegInt("Player", "PhysicsLoopTime", &m_PhysicsLoopTime);
+		const HRESULT hr = GetRegInt("Player", "PhysicsLoopTime", &m_PhysicsLoopTime);
 		}
 	else if (id == FID(DECL))
 		{
@@ -4481,10 +4477,9 @@ void PinTable::ExportBlueprint()
 
 	hdib = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
 
-	HBITMAP hbmOld = (HBITMAP)SelectObject(hdc2, hdib);
+	const HBITMAP hbmOld = (HBITMAP)SelectObject(hdc2, hdib);
 
-	PaintSur *psur;
-	psur = new PaintSur(hdc2, bmwidth/tablewidth, tablewidth/2, tableheight/2, bmwidth, bmheight, NULL);
+	PaintSur * const psur = new PaintSur(hdc2, bmwidth/tablewidth, tablewidth/2, tableheight/2, bmwidth, bmheight, NULL);
 
 	SelectObject(hdc2, GetStockObject(WHITE_BRUSH));
 	PatBlt(hdc2, 0, 0, bmwidth, bmheight, PATCOPY);
@@ -4533,7 +4528,7 @@ void PinTable::ExportBlueprint()
 
 void PinTable::SelectItem(IScriptable *piscript)
 	{
-	ISelect *pisel = piscript->GetISelect();
+	ISelect * const pisel = piscript->GetISelect();
 	if (pisel)
 		{
 		AddMultiSel(pisel, fFalse, fTrue);
@@ -4757,7 +4752,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 
 		ULONG writ = 0;
 		int type;
-		HRESULT hr = pstm->Read(&type, sizeof(int), &writ);
+		const HRESULT hr = pstm->Read(&type, sizeof(int), &writ);
 
 		if (!(rgItemViewAllowed[type] & viewflag))
 			{

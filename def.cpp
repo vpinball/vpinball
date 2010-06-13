@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-
-
 float sz2f(char *sz)
 	{
 	WCHAR wzT[256];
@@ -11,14 +9,11 @@ float sz2f(char *sz)
 
 	VariantChangeType(&var, &var, 0, VT_R8); 
 
-	GPINFLOAT r;
-	r = V_R8(&var);
-
-	return float(r);
-
+	const GPINFLOAT r = V_R8(&var);
+	return (float)r;
 	}
 
-void f2sz(float f, char *sz)
+void f2sz(const float f, char *sz)
 	{
 	CComVariant var = f;
 
@@ -28,136 +23,6 @@ void f2sz(float f, char *sz)
 	wzT = V_BSTR(&var);
 
 	WideCharToMultiByte(CP_ACP, 0, wzT, -1, sz, 256, NULL, NULL);
-	}
-
-void Matrix3::CreateSkewSymmetric(const Vertex3D * const pv3D)
-	{
-	m_d[0][0] = 0; m_d[0][1] = -pv3D->z; m_d[0][2] = pv3D->y;
-	m_d[1][0] = pv3D->z; m_d[1][1] = 0; m_d[1][2] = -pv3D->x;
-	m_d[2][0] = -pv3D->y; m_d[2][1] = pv3D->x; m_d[2][2] = 0;
-	}
-
-void Matrix3::CreateSkewSymmetric(const Vertex3Ds * const pv3D)
-	{
-	m_d[0][0] = 0; m_d[0][1] = -pv3D->z; m_d[0][2] = pv3D->y;
-	m_d[1][0] = pv3D->z; m_d[1][1] = 0; m_d[1][2] = -pv3D->x;
-	m_d[2][0] = -pv3D->y; m_d[2][1] = pv3D->x; m_d[2][2] = 0;
-	}
-
-void Matrix3::MultiplyScalar(const float scalar)
-	{
-	for (int i=0;i<3;i++)
-		{
-		for (int l=0;l<3;l++)
-			{
-			m_d[i][l] *= scalar;
-			}
-		}
-	}
-
-void Matrix3::MultiplyVector(const Vertex3D * const pv3D, Vertex3D * const pv3DOut)
-	{
-	const float ans[3] = {
-				 m_d[0][0] * pv3D->m_d[0]
-			   + m_d[0][1] * pv3D->m_d[1]
-			   + m_d[0][2] * pv3D->m_d[2],
-			     m_d[1][0] * pv3D->m_d[0]
-			   + m_d[1][1] * pv3D->m_d[1]
-			   + m_d[1][2] * pv3D->m_d[2],
-			     m_d[2][0] * pv3D->m_d[0]
-			   + m_d[2][1] * pv3D->m_d[1]
-			   + m_d[2][2] * pv3D->m_d[2]};
-
-	// Copy the final values over later.  This makes it so pv3D and pv3DOut can
-	// point to the same vertex.
-    pv3DOut->x = ans[0];
-	pv3DOut->y = ans[1];
-	pv3DOut->z = ans[2];
-	}
-
-void Matrix3::MultiplyVector(const Vertex3Ds * const pv3D, Vertex3Ds * const pv3DOut)
-	{
-    const float ans[3] = {
-				 m_d[0][0] * pv3D->m_d[0]
-			   + m_d[0][1] * pv3D->m_d[1]
-			   + m_d[0][2] * pv3D->m_d[2],
-			     m_d[1][0] * pv3D->m_d[0]
-			   + m_d[1][1] * pv3D->m_d[1]
-			   + m_d[1][2] * pv3D->m_d[2],
-			     m_d[2][0] * pv3D->m_d[0]
-			   + m_d[2][1] * pv3D->m_d[1]
-			   + m_d[2][2] * pv3D->m_d[2]};
-
-	// Copy the final values over later.  This makes it so pv3D and pv3DOut can
-	// point to the same vertex.
-    pv3DOut->x = ans[0];
-	pv3DOut->y = ans[1];
-	pv3DOut->z = ans[2];
-	}
-
-void Matrix3::MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
-	{
-	Matrix3 matans;
-    for(int i=0;i<3;i++)
-    {
-        for(int l=0;l<3;l++)
-        {
-            matans.m_d[i][l] = pmat1->m_d[i][0] * pmat2->m_d[0][l] +
-					           pmat1->m_d[i][1] * pmat2->m_d[1][l] +
-						       pmat1->m_d[i][2] * pmat2->m_d[2][l];
-        }
-    }
-
-	// Copy the final values over later.  This makes it so pmat1 and pmat2 can
-	// point to the same matrix.
-    for(int i=0;i<3;i++)
-		{
-		for (int l=0;l<3;l++)
-			{
-			m_d[i][l] = matans.m_d[i][l];
-			}
-		}
-	}
-
-void Matrix3::AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
-	{
-	for (int i=0;i<3;i++)
-		{
-		for (int l=0;l<3;l++)
-			{
-			m_d[i][l] = pmat1->m_d[i][l] + pmat2->m_d[i][l];
-			}
-		}
-	}
-
-void Matrix3::OrthoNormalize()
-	{
-	Vertex3Ds vX;
-	Vertex3Ds vY;
-	Vertex3Ds vZ;
-
-	vX.Set(m_d[0][0], m_d[1][0], m_d[2][0]);
-	vY.Set(m_d[0][1], m_d[1][1], m_d[2][1]);
-
-	vX.Normalize();
-	CrossProduct(&vX, &vY, &vZ);
-	vZ.Normalize();
-	CrossProduct(&vZ, &vX, &vY);
-	vY.Normalize();
-
-	m_d[0][0] = vX.m_d[0]; m_d[0][1] = vY.m_d[0]; m_d[0][2] = vZ.m_d[0];
-	m_d[1][0] = vX.m_d[1]; m_d[1][1] = vY.m_d[1]; m_d[1][2] = vZ.m_d[1];
-	m_d[2][0] = vX.m_d[2]; m_d[2][1] = vY.m_d[2]; m_d[2][2] = vZ.m_d[2];
-	}
-
-void Matrix3::Transpose(Matrix3 * const pmatOut) const
-	{
-	for(int i = 0;i < 3;i++)
-		{
-        pmatOut->m_d[0][i] = m_d[i][0];
-        pmatOut->m_d[1][i] = m_d[i][1];
-        pmatOut->m_d[2][i] = m_d[i][2];
-		}
 	}
 
 void WideStrCopy(WCHAR *wzin, WCHAR *wzout)

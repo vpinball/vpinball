@@ -797,11 +797,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
-		WORD rgi[4];
-		rgi[0] = 0;
-		rgi[1] = 1;
-		rgi[2] = 4;
-		rgi[3] = 3;
+		WORD rgi[4] = {0,1,4,3};
 
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
@@ -1013,11 +1009,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 	pd3dDevice->SetMaterial(&mtrl);
 
-	WORD rgi[4];
-	for (WORD i=0;i<4;i++)
-		{
-		rgi[i] = i;
-		}
+	WORD rgi[4] = {0,1,2,3};
 
 	for (int i=0;i<cvertex;i++)
 		{
@@ -1347,10 +1339,9 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1]);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2]);
 
-			WORD rgi[3];
-			for (WORD l=0;l<3;l++)
+			WORD rgi[3] = {0,1,2};
+			for (int l=0;l<3;l++)
 				{
-				rgi[l] = l;
 				rgv3D[l].nx = 0;
 				rgv3D[l].ny = 0;
 				rgv3D[l].nz = -1.0f;
@@ -1384,7 +1375,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			{
 			// Create the z surface.
 			pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-			HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+			const HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
 		// Check if we are blitting with D3D.

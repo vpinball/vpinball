@@ -895,11 +895,7 @@ void Pin3D::DrawBackground()
 		rgv3D[3].tu = 0;
 		rgv3D[3].tv = maxtv;
 
-		WORD rgi[4];
-		rgi[0] = 0;
-		rgi[1] = 1;
-		rgi[2] = 2;
-		rgi[3] = 3;
+		WORD rgi[4] = {0,1,2,3};
 
 		SetTexture(pin->m_pdsBuffer);
 
@@ -1163,15 +1159,11 @@ void Pin3D::InitBackGraphics()
 		m_lightproject.CalcCoordinates(&rgv[i]);
 		}
 
-	WORD rgi[4];
-	for (WORD i=0;i<4;i++)
-		{
-		rgi[i] = i;
-		}
-
 	m_pd3dDevice->SetMaterial(&mtrl);
 
-	HRESULT hr = m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+	WORD rgi[4] = {0,1,2,3};
+
+	const HRESULT hr = m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv, 4,
 												  rgi, 4, 0);
 
@@ -1351,7 +1343,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 
 void Pin3D::SetTexture(LPDIRECTDRAWSURFACE7 pddsTexture)
 	{
-	HRESULT hr = m_pd3dDevice->SetTexture(ePictureTexture, (pddsTexture == NULL) ? m_pddsLightWhite : pddsTexture);
+	const HRESULT hr = m_pd3dDevice->SetTexture(ePictureTexture, (pddsTexture == NULL) ? m_pddsLightWhite : pddsTexture);
 	}
 
 void Pin3D::EnableLightMap(const BOOL fEnable, const float z)
@@ -1875,7 +1867,7 @@ void Pin3D::ReadObjFrameFromCacheFile(ObjFrame *pobjframe)
 	DWORD bytesRead;
 	int ret = ReadFile(m_hFileCache, &pobjframe->rc, sizeof(RECT), &bytesRead, NULL);
 
-	if (ret == 0) { DWORD foo = GetLastError(); }
+	if (ret == 0) { const DWORD foo = GetLastError(); }
 
 	if (pobjframe->rc.right == 0 && pobjframe->rc.left == 0)
 		{
@@ -2022,7 +2014,7 @@ void Pin3D::WriteObjFrameToCacheFile(ObjFrame *pobjframe)
 	ret = WriteFile(m_hFileCache, &pobjframe->rc, sizeof(RECT), &bytesWritten, NULL);
 	if (ret == 0)
 		{
-		DWORD foo = GetLastError();
+		const DWORD foo = GetLastError();
 		}
 
 	DDSURFACEDESC2 ddsd;

@@ -51,8 +51,6 @@ float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, cons
 float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2);
 float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2);
 
-void Calc2DNormal(const Vertex2D * const pv1, const Vertex2D * const pv2, Vertex2D * const pnormal);
-
 BOOL FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * const Start2, const Vertex2D * const End1, const Vertex2D * const End2);
 
 //void SetNormal(Vertex3D *rgv, WORD *rgi, int count);
@@ -64,11 +62,3 @@ void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const D3DMATE
 
 BOOL Flat(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid);
 void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv);
-
-void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, const Vertex2D * const pvin, Vertex2D * const pvout, int * const piseg, const BOOL fClosed);
-
-void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoint, const int count, const float angle);
-void RotateAround(const Vertex3Ds * const pvAxis, Vertex3Ds * const pvPoint, const int count, const float angle);
-
-void CrossProduct(const Vertex3D * const pv1, const Vertex3D * const pv2, Vertex3D * const pvCross);
-void CrossProduct(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, Vertex3Ds * const pvCross);
