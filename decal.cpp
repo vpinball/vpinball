@@ -38,8 +38,8 @@ HRESULT Decal::Init(PinTable *ptable, float x, float y)
 
 void Decal::SetDefaults()
 	{
-	m_d.m_width = 100;
-	m_d.m_height = 100;
+	m_d.m_width = 100.0f;
+	m_d.m_height = 100.0f;
 	m_d.m_rotation = 0;
 
 	m_d.m_szImage[0] = 0;
@@ -100,12 +100,11 @@ void Decal::PreRender(Sur *psur)
 		const float halfwidth = m_realwidth/*m_d.m_width*/ * 0.5f;
 		const float halfheight = m_realheight/*m_d.m_height*/ * 0.5f;
 
-		Vertex rgv[4];
-
 		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
 		const float sn = sinf(radangle);
 		const float cs = cosf(radangle);
 
+		Vertex2D rgv[4];
 		rgv[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
 		rgv[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
 
@@ -131,8 +130,6 @@ void Decal::Render(Sur *psur)
 		psur->SetObject(this);
 		psur->SetObject(NULL);
 
-		Vertex rgv[4];
-
 		const float halfwidth = m_realwidth * 0.5f;
 		const float halfheight = m_realheight * 0.5f;
 
@@ -140,6 +137,7 @@ void Decal::Render(Sur *psur)
 		const float sn = sinf(radangle);
 		const float cs = cosf(radangle);
 
+		Vertex2D rgv[4];
 		rgv[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
 		rgv[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
 
@@ -216,11 +214,10 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 	if (m_d.m_decaltype != DecalImage)
 		{
 		RECT rcOut;
-		int len = lstrlen(m_d.m_sztext);
-		int alignment;
+		const int len = lstrlen(m_d.m_sztext);
 		HFONT hFont, hFontOld;
 		hFont = GetFont();
-		alignment = DT_LEFT;
+		int alignment = DT_LEFT;
 
 		HDC hdcNull;
 		hdcNull = GetDC(NULL);
@@ -335,16 +332,9 @@ void Decal::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	WORD rgi[4];
-	Vertex3D rgv3D[4];
-	PinImage *pin;
-	float leading, descent; // For fonts
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	float maxtu, maxtv;
-
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
-
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
@@ -354,6 +344,9 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	mtrl.diffuse.a = mtrl.ambient.a = 0.5f;
 	pd3dDevice->SetMaterial(&mtrl);
 
+	float leading, descent; // For fonts
+	float maxtu, maxtv;
+	PinImage *pin;
 	if (m_d.m_decaltype != DecalImage)
 		{
 		leading = m_leading;
@@ -417,6 +410,8 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
 		}
 
+	WORD rgi[4];
+	Vertex3D rgv3D[4];
 	for (WORD l=0;l<4;l++)
 		{
 		rgi[l] = l;
@@ -502,13 +497,13 @@ void Decal::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Decal::GetCenter(Vertex *pv)
+void Decal::GetCenter(Vertex2D *pv)
 	{
 	pv->x = m_d.m_vCenter.x;
 	pv->y = m_d.m_vCenter.y;
 	}
 
-void Decal::PutCenter(Vertex *pv)
+void Decal::PutCenter(Vertex2D *pv)
 	{
 	m_d.m_vCenter.x = pv->x;
 	m_d.m_vCenter.y = pv->y;
@@ -516,7 +511,7 @@ void Decal::PutCenter(Vertex *pv)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Decal::Rotate(float ang, Vertex *pvCenter)
+void Decal::Rotate(float ang, Vertex2D *pvCenter)
 	{
 	ISelect::Rotate(ang, pvCenter);
 
@@ -530,7 +525,7 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcControl.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
 	bw.WriteFloat(FID(WDTH), m_d.m_width);
 	bw.WriteFloat(FID(HIGH), m_d.m_height);
 	bw.WriteFloat(FID(ROTA), m_d.m_rotation);
@@ -596,7 +591,7 @@ BOOL Decal::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
 		}
 	else if (id == FID(WDTH))
 		{
@@ -685,8 +680,6 @@ HRESULT Decal::InitPostLoad()
 
 void Decal::EnsureSize()
 	{
-	int sizex, sizey;
-
 	if (((m_d.m_sizingtype != AutoSize) ||
 		(m_d.m_decaltype == DecalImage)) && (m_d.m_sizingtype != AutoWidth) ||
 		(m_d.m_decaltype == DecalText && (lstrlen(m_d.m_sztext) == 0)))
@@ -697,6 +690,7 @@ void Decal::EnsureSize()
 	else if ((m_d.m_sizingtype == AutoSize) && (m_d.m_decaltype != DecalImage))
 		{
 		// ignore the auto aspect flag
+		int sizex, sizey;
 		GetTextSize(&sizex, &sizey);
 
 		CY cy;
@@ -716,8 +710,7 @@ void Decal::EnsureSize()
 
 		if (m_d.m_decaltype == DecalImage)
 			{
-			PinImage *pin;
-			pin = m_ptable->GetImage(m_d.m_szImage);
+			PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 			if (pin)
 				{
 				m_realwidth = m_realheight * (float)pin->m_width / (float)pin->m_height;
@@ -732,13 +725,14 @@ void Decal::EnsureSize()
 			CY cy;
 			m_pIFont->get_Size(&cy);
 
+			int sizex, sizey;
 			GetTextSize(&sizex, &sizey);
 
 			m_realheight = (float)cy.Lo * (float)(1.0/2545.0);
 
 			if (m_d.m_fVerticalText)
 				{
-				m_realheight*=lstrlen(m_d.m_sztext);
+				m_realheight *= lstrlen(m_d.m_sztext);
 				m_realwidth = m_d.m_width;
 				}
 			else

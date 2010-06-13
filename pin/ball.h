@@ -119,15 +119,15 @@ public:
 //	PINFLOAT y_min, y_max;
 	PINFLOAT z_min, z_max;
 
-	Vertex3D m_Event_Pos;
+	Vertex3Ds m_Event_Pos;
 
 	BOOL fFrozen;
 	//BOOL fTempFrozen; //if the ball is stuck and we are avoiding hittesting
 	//unsigned int  fFrozenCount; // number of sequential zero hit times
 
 	Matrix3 m_orientation;
-	Vertex3D m_angularmomentum;
-	Vertex3D m_angularvelocity;
+	Vertex3Ds m_angularmomentum;
+	Vertex3Ds m_angularvelocity;
 	Matrix3 m_inverseworldinertiatensor;
 	Matrix3 m_inversebodyinertiatensor;
 	};
@@ -136,7 +136,7 @@ class Level
 	{
 public:
 	float m,n,b; // Plane equation z = mx + ny + b
-	Vertex3D m_gravity; // Gravity vector (2-D - cheating)
+	Vertex3Ds m_gravity; // Gravity vector (2-D - cheating)
 
 	Vector<HitObject> m_vho;
 	};

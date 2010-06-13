@@ -1470,7 +1470,6 @@ void PinTable::Render3DProjection(Sur *psur)
 
 	Vertex3D rgvIn[6];
 	Vertex3D rgvOut[6];
-
 	rgvIn[0].Set(m_left, m_top, 50);
 	rgvIn[1].Set(m_right, m_top, 50);
 	rgvIn[2].Set(m_right, m_bottom, 50);
@@ -1478,10 +1477,9 @@ void PinTable::Render3DProjection(Sur *psur)
 	rgvIn[4].Set(m_left, m_bottom, 0);
 	rgvIn[5].Set(m_left, m_bottom, 50);
 
-	Vertex rgv[6];
-
 	pinproj.TransformVertices(rgvIn, NULL, 6, rgvOut);
 
+	Vertex2D rgv[6];
 	for (int i=0;i<6;i++)
 		{
 		rgv[i].x = rgvOut[i].x;
@@ -3895,7 +3893,7 @@ void PinTable::SetMyScrollInfo()
 
 	RECT rc;
 	GetClientRect(m_hwnd, &rc);
-	Vertex rgv[2];
+	Vertex2D rgv[2];
 
 	phs = new HitSur(NULL, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
@@ -3966,7 +3964,7 @@ void PinTable::DoLButtonDown(int x,int y)
 		{
 		if (m_zoom < MAX_ZOOM)
 			{
-			Vertex v;
+			Vertex2D v;
 			TransformPoint(x,y,&v);
 			m_offsetx = v.x;
 			m_offsety = v.y;
@@ -4030,7 +4028,7 @@ void PinTable::DoRButtonDown(int x,int y)
 		{
 		if (m_zoom > MIN_ZOOM)
 			{
-			Vertex v;
+			Vertex2D v;
 			TransformPoint(x,y,&v);
 			m_offsetx = v.x;
 			m_offsety = v.y;
@@ -4163,7 +4161,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
 		case ID_WALLMENU_FLIP:
 			{
-			Vertex vCenter;
+			Vertex2D vCenter;
 
 			GetCenter(&vCenter);
 
@@ -4173,7 +4171,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
 		case ID_WALLMENU_MIRROR:
 			{
-			Vertex vCenter;
+			Vertex2D vCenter;
 
 			GetCenter(&vCenter);
 
@@ -4226,7 +4224,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 		}
 	}
 
-void PinTable::FlipY(Vertex *pvCenter)
+void PinTable::FlipY(Vertex2D *pvCenter)
 	{
 	BeginUndo();
 
@@ -4238,7 +4236,7 @@ void PinTable::FlipY(Vertex *pvCenter)
 	EndUndo();
 	}
 
-void PinTable::FlipX(Vertex *pvCenter)
+void PinTable::FlipX(Vertex2D *pvCenter)
 	{
 	BeginUndo();
 
@@ -4250,7 +4248,7 @@ void PinTable::FlipX(Vertex *pvCenter)
 	EndUndo();
 	}
 
-void PinTable::Rotate(float ang, Vertex *pvCenter)
+void PinTable::Rotate(float ang, Vertex2D *pvCenter)
 	{
 	BeginUndo();
 
@@ -4262,7 +4260,7 @@ void PinTable::Rotate(float ang, Vertex *pvCenter)
 	EndUndo();
 	}
 
-void PinTable::Scale(float scalex, float scaley, Vertex *pvCenter)
+void PinTable::Scale(float scalex, float scaley, Vertex2D *pvCenter)
 	{
 	BeginUndo();
 
@@ -4274,7 +4272,7 @@ void PinTable::Scale(float scalex, float scaley, Vertex *pvCenter)
 	EndUndo();
 	}
 
-void PinTable::Translate(Vertex *pvOffset)
+void PinTable::Translate(Vertex2D *pvOffset)
 	{
 	BeginUndo();
 
@@ -4286,9 +4284,9 @@ void PinTable::Translate(Vertex *pvOffset)
 	EndUndo();
 	}
 
-void PinTable::GetCenter(Vertex *pv)
+void PinTable::GetCenter(Vertex2D *pv)
 	{
-	Vertex vCenter;
+	Vertex2D vCenter;
 
 	float minx, maxx, miny, maxy;
 	minx = FLT_MAX;
@@ -4314,7 +4312,7 @@ void PinTable::GetCenter(Vertex *pv)
 	pv->y = (maxy+miny)*0.5f;
 	}
 
-void PinTable::PutCenter(Vertex *pv)
+void PinTable::PutCenter(Vertex2D *pv)
 	{
 	}
 
@@ -4352,7 +4350,7 @@ void PinTable::DoRButtonUp(int x,int y)
 
 void PinTable::DoMouseMove(int x,int y)
 	{
-	Vertex v;
+	Vertex2D v;
 
 	TransformPoint(x,y,&v);
 
@@ -4802,20 +4800,20 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 	// Center view on newly created objects, if they are off the screen
 	if (cpasted > 0)
 		{
-		Vertex vcenter;
+		Vertex2D vcenter;
 		GetCenter(&vcenter);
 		}
 
 	if ((cpasted > 0) && fAtLocation)
 		{
-		Vertex vcenter;
+		Vertex2D vcenter;
 		GetCenter(&vcenter);
 
-		Vertex vPos;
+		Vertex2D vPos;
 
 		TransformPoint(x,y,&vPos);
 
-		Vertex vOffset;
+		Vertex2D vOffset;
 		vOffset.x = vPos.x-vcenter.x;
 		vOffset.y = vPos.y-vcenter.y;
 		Translate(&vOffset);
@@ -5037,7 +5035,7 @@ void PinTable::OnKeyDown(int key)
 
 void PinTable::UseTool(int x,int y,int tool)
 	{
-	Vertex v;
+	Vertex2D v;
 	TransformPoint(x,y,&v);
 	IEditable *pie;
 
@@ -5240,7 +5238,7 @@ void PinTable::UseTool(int x,int y,int tool)
 	g_pvp->ParseCommand(IDC_SELECT, g_pvp->m_hwnd, 0);
 	}
 
-void PinTable::TransformPoint(int x, int y, Vertex *pv)
+void PinTable::TransformPoint(int x, int y, Vertex2D *pv)
 	{
 	HitSur *phs;
 
@@ -5256,7 +5254,7 @@ void PinTable::TransformPoint(int x, int y, Vertex *pv)
 
 void PinTable::OnLButtonDown(int x, int y)
 	{
-	Vertex v;
+	Vertex2D v;
 
 	TransformPoint(x,y,&v);
 
@@ -5344,7 +5342,7 @@ void PinTable::OnLButtonUp(int x, int y)
 
 void PinTable::OnMouseMove(int x, int y)
 	{
-	Vertex v;
+	Vertex2D v;
 
 	TransformPoint(x,y,&v);
 
@@ -6735,8 +6733,8 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 					case eItemRamp:
 						Ramp *pramp = (Ramp *)piedit;
 						int cvertex;
-						Vertex *rgv;
-						Vertex v, vOut;
+						Vertex2D *rgv;
+						Vertex2D v, vOut;
 						int iSeg;
 
 						v.x = x;
@@ -6746,11 +6744,11 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 						pramp->GetRgVertex(&vvertex);
 
 						cvertex = vvertex.Size();
-						rgv = new Vertex[cvertex];
+						rgv = new Vertex2D[cvertex];
 						
 						for (int i=0;i<vvertex.Size();i++)
 							{
-							rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+							rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 							}
 
 						ClosestPointOnPolygon(rgv, cvertex, &v, &vOut, &iSeg, fFalse);

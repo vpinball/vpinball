@@ -18,7 +18,7 @@
 class TextboxData
 	{
 public:
-	Vertex m_v1, m_v2;
+	Vertex2D m_v1, m_v2;
 	float m_fontsize;
 	COLORREF m_backcolor;
 	COLORREF m_fontcolor;
@@ -76,8 +76,8 @@ STANDARD_EDITABLE_DECLARES(eItemTextbox)
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 DECLARE_REGISTRY_RESOURCEID(IDR_Textbox)
 // ISupportsErrorInfo

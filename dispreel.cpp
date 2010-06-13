@@ -226,17 +226,19 @@ void DispReel::PreRender(Sur *psur)
         // set up top corner point
         const float x = m_d.m_v1.x + i*m_d.m_width + i*m_d.m_reelspacing + m_d.m_reelspacing;
         const float y = m_d.m_v1.y + m_d.m_reelspacing;
+		const float x2 = x+m_d.m_width;
+		const float y2 = y+m_d.m_height;
 
-		Vertex rgv[4];
+		Vertex2D rgv[4];
         // set up points (clockwise)
         rgv[0].x = x;
         rgv[0].y = y;
-        rgv[1].x = x+m_d.m_width;
+        rgv[1].x = x2;
         rgv[1].y = y;
-        rgv[2].x = x+m_d.m_width;
-        rgv[2].y = y+m_d.m_height;
+        rgv[2].x = x2;
+        rgv[2].y = y2;
         rgv[3].x = x;
-        rgv[3].y = y+m_d.m_height;
+        rgv[3].y = y2;
         psur->Polygon(rgv, 4);
     }
 }
@@ -267,17 +269,19 @@ void DispReel::Render(Sur *psur)
         // set up top corner point
         const float x = m_d.m_v1.x + i*m_d.m_width + i*m_d.m_reelspacing + m_d.m_reelspacing;
         const float y = m_d.m_v1.y + m_d.m_reelspacing;
+		const float x2 = x+m_d.m_width;
+		const float y2 = y+m_d.m_height;
 
         // set up points (clockwise)
-		Vertex rgv[4];
+		Vertex2D rgv[4];
         rgv[0].x = x;
         rgv[0].y = y;
-        rgv[1].x = x+m_d.m_width;
+        rgv[1].x = x2;
         rgv[1].y = y;
-        rgv[2].x = x+m_d.m_width;
-        rgv[2].y = y+m_d.m_height;
+        rgv[2].x = x2;
+        rgv[2].y = y2;
         rgv[3].x = x;
-        rgv[3].y = y+m_d.m_height;
+        rgv[3].y = y2;
         psur->Polygon(rgv, 4);
     }
 }
@@ -294,8 +298,7 @@ void DispReel::GetTimers(Vector<HitTimer> *pvht)
 {
 	IEditable::BeginPlay();
 
-	HitTimer *pht;
-	pht = new HitTimer();
+	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
 	pht->m_pfe = (IFireEvents *)this;
@@ -398,8 +401,6 @@ void DispReel::RenderMoversFromCache(Pin3D *ppin3d)
 //
 void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 {
-    PinImage *pin;                              // pointer to image information from the image manager
-
     // set any defaults for the game rendering
     m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
     m_fforceupdate = false;
@@ -437,12 +438,11 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
     // set up all the reel positions within the object frame
     int x1 = m_renderspacingx;
-    int x2 = x1 + m_renderwidth;
-
-    for (int i=0; i<m_d.m_reelcount; i++)
+    
+	for (int i=0; i<m_d.m_reelcount; i++)
     {
         ReelInfo[i].position.left	= x1/* + m_pobjframe->rc.left*/;
-        ReelInfo[i].position.right	= x2/* + m_pobjframe->rc.left*/;
+        ReelInfo[i].position.right	= x1 + m_renderwidth/* + m_pobjframe->rc.left*/;
         ReelInfo[i].position.top	= m_renderspacingy/* + m_pobjframe->rc.top*/;
         ReelInfo[i].position.bottom	= m_renderspacingy + m_renderheight/* + m_pobjframe->rc.top*/;
 
@@ -454,14 +454,13 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
         // move to the next reel
         x1 += m_renderspacingx+m_renderwidth;
-        x2 += m_renderspacingx+m_renderwidth;
     }
 
     // Set up the reel strip (either using bitmaps or fonts)
     if (m_d.m_reeltype == ReelImage)
     {
 		// get a pointer to the image specified in the object
-		pin = m_ptable->GetImage(m_d.m_szImage);
+		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
 
         // was there a valid image (if not then m_preelframe->pdds remains NULL and void)
         if (pin)
@@ -476,8 +475,8 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				GridCols = m_d.m_imagesPerGridRow;
 				if (GridCols != 0) // best to be safe
 				{
-					GridRows = (int)(m_d.m_digitrange+1) / GridCols;
-					if ( (GridRows * GridCols) < (int)(m_d.m_digitrange+1) )
+					GridRows = (int)(m_d.m_digitrange+1.0f) / GridCols;
+					if ( (GridRows * GridCols) < (int)(m_d.m_digitrange+1.0f) )
 					{
 						GridRows++;
 					}
@@ -489,7 +488,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 			else
 			{
-				GridCols = (int)(m_d.m_digitrange+1);
+				GridCols = (int)(m_d.m_digitrange+1.0f);
 				GridRows = 1;
 			}
 
@@ -506,7 +505,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
             // allocate some memory for this strip
 			for (int i=0; i <= m_d.m_digitrange; i++)
 				{
-				ObjFrame *pobjframe = new ObjFrame();
+				ObjFrame * const pobjframe = new ObjFrame();
 				pobjframe->pdds	= NULL;
 				m_vreelframe.AddElement(pobjframe);
 				if (pobjframe == NULL)
@@ -541,7 +540,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			
 			// New rendering stuff
 				{					
-				ppin3d->SetMaterial(1, 1, 1, 0.5f);
+				ppin3d->SetMaterial(1.0f, 1.0f, 1.0f, 0.5f);
 				
 				pin->EnsureMaxTextureCoordinates();
 				
@@ -568,7 +567,6 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				
 			WORD rgi[4];
 			Vertex3D rgv3D[4];
-			
 			for (WORD l=0;l<4;l++)
 				{
 				rgi[l] = l;
@@ -620,13 +618,15 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			ppin3d->m_pddsBackBuffer->Blt(&rectSrc, NULL,
 					&rectSrc, DDBLT_COLORFILL, &ddbltfx);
 
+			const float ratiox = pin->m_maxtu/(float)pin->m_width;
+			const float ratioy = pin->m_maxtv/(float)pin->m_height;
 			for (int i=0; i<=(int)m_d.m_digitrange; i++)
 			{
-				rgv3D[0].tu = rgv3D[3].tu = (float)(((double)gc*m_reeldigitwidth)/pin->m_width) * pin->m_maxtu;
-				rgv3D[0].tv = rgv3D[1].tv = (float)(((double)gr*m_reeldigitheight)/pin->m_height) * pin->m_maxtv;
+				rgv3D[0].tu = rgv3D[3].tu = (float)(gc*m_reeldigitwidth) * ratiox;
+				rgv3D[0].tv = rgv3D[1].tv = (float)(gr*m_reeldigitheight) * ratioy;
 			
-				rgv3D[1].tu = rgv3D[2].tu = (float)(((double)(gc+1)*m_reeldigitwidth)/pin->m_width) * pin->m_maxtu;
-				rgv3D[2].tv = rgv3D[3].tv = (float)(((double)(gr+1)*m_reeldigitheight)/pin->m_height) * pin->m_maxtv;
+				rgv3D[1].tu = rgv3D[2].tu = (float)((gc+1)*m_reeldigitwidth) * ratiox;
+				rgv3D[2].tv = rgv3D[3].tv = (float)((gr+1)*m_reeldigitheight) * ratioy;
 			
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 												  rgv3D, 4,
@@ -683,7 +683,6 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				gc = 0;
 				gr = 0;
 				}
-
 			}
 
 			// now copy the first digit graphic onto the end on the reel object frame
@@ -717,7 +716,6 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
     }
     else    /* generate a strip of numbers using font rendering */
 	{
-        HDC     hdc;
         RECT	rcOut;
         HFONT   hFont;
 
@@ -733,7 +731,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
         m_pIFontPlay->put_Size(size);
 
         m_pIFontPlay->get_hFont(&hFont);
-	    hdc = GetDC(NULL);
+	    HDC hdc = GetDC(NULL);
         SelectObject(hdc, hFont);
         SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
 
@@ -834,8 +832,6 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 bool DispReel::RenderAnimation()
 {
     bool    rc = false;
-    float   step;
-    int     OverflowValue, AdjustValue;
     OLECHAR mySound[256];
 
     if (g_pplayer->m_timeCur >= m_timenextupdate)
@@ -843,8 +839,8 @@ bool DispReel::RenderAnimation()
         m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
 
         // work out the roll over values
-        OverflowValue = (int)m_d.m_digitrange;
-        AdjustValue   = OverflowValue+1;
+        const int OverflowValue = (int)m_d.m_digitrange;
+        const int AdjustValue   = OverflowValue+1;
 
         // start at the last reel and work forwards (right to left)
         for (int i=(int)m_d.m_reelcount-1; i>=0; i--)
@@ -853,20 +849,11 @@ bool DispReel::RenderAnimation()
             if ((ReelInfo[i].motorPulses != 0) && (ReelInfo[i].motorStepCount == 0))
             {
                 // get the number of steps (or increments) needed to move the reel
-				step = m_reeldigitheight / m_d.m_motorsteps;
+				const float step = m_reeldigitheight / m_d.m_motorsteps;
 
                 ReelInfo[i].motorStepCount = (int)m_d.m_motorsteps;
-
-				if (ReelInfo[i].motorPulses > 0)
-				{
-	                ReelInfo[i].motorCalcStep = step;
-	                ReelInfo[i].motorOffset = 0;
-				}
-				else
-				{
-	                ReelInfo[i].motorCalcStep = -step;
-	                ReelInfo[i].motorOffset = 0;
-				}
+				ReelInfo[i].motorCalcStep = (ReelInfo[i].motorPulses > 0) ? step : -step;	                
+				ReelInfo[i].motorOffset = 0;
 
                 // play the sound (if any) for each click of the reel
 				if (m_d.m_szSound[0] != 0)
@@ -978,7 +965,7 @@ void DispReel::MoveOffset(float dx, float dy)
 
 
 
-void DispReel::GetCenter(Vertex *pv)
+void DispReel::GetCenter(Vertex2D *pv)
 {
 	pv->x = m_d.m_v1.x;
 	pv->y = m_d.m_v1.y;
@@ -986,7 +973,7 @@ void DispReel::GetCenter(Vertex *pv)
 
 
 
-void DispReel::PutCenter(Vertex *pv)
+void DispReel::PutCenter(Vertex2D *pv)
 {
 	m_d.m_v1.x = pv->x;
 	m_d.m_v1.y = pv->y;
@@ -1006,8 +993,8 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex));
-	bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex));
+	bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex2D));
+	bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
     bw.WriteInt(FID(TYPE), m_d.m_reeltype);
 	bw.WriteInt(FID(CLRB), m_d.m_backcolor);
 	bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
@@ -1100,11 +1087,11 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 	}
 	else if (id == FID(VER1))
 		{
-			pbr->GetStruct(&m_d.m_v1, sizeof(Vertex));
+			pbr->GetStruct(&m_d.m_v1, sizeof(Vertex2D));
 		}
 	else if (id == FID(VER2))
 		{
-			pbr->GetStruct(&m_d.m_v2, sizeof(Vertex));
+			pbr->GetStruct(&m_d.m_v2, sizeof(Vertex2D));
 		}
 	else if (id == FID(WDTH))
 		{
@@ -1273,7 +1260,7 @@ STDMETHODIMP DispReel::get_Reels(float *pVal)
 STDMETHODIMP DispReel::put_Reels(float newVal)
 {
 	STARTUNDO
-    m_d.m_reelcount = max(1, newVal);               // must have at least 1 reel
+    m_d.m_reelcount = max(1.0f, newVal);               // must have at least 1 reel
     if (m_d.m_reelcount > MAX_REELS) m_d.m_reelcount = MAX_REELS;   // and a max of MAX_REELS
 	m_d.m_v2.x = m_d.m_v1.x+getBoxWidth();
 	m_d.m_v2.y = m_d.m_v1.y+getBoxHeight();
@@ -1292,7 +1279,7 @@ STDMETHODIMP DispReel::get_Width(float *pVal)
 STDMETHODIMP DispReel::put_Width(float newVal)
 {
 	STARTUNDO
-    m_d.m_width = max(0, newVal);
+    m_d.m_width = max(0.0f, newVal);
 	m_d.m_v2.x = m_d.m_v1.x+getBoxWidth();
 	STOPUNDO
 
@@ -1309,7 +1296,7 @@ STDMETHODIMP DispReel::get_Height(float *pVal)
 STDMETHODIMP DispReel::put_Height(float newVal)
 {
 	STARTUNDO
-    m_d.m_height = max(0, newVal);
+    m_d.m_height = max(0.0f, newVal);
 	m_d.m_v2.y = m_d.m_v1.y+getBoxHeight();
 	STOPUNDO
 
@@ -1326,7 +1313,7 @@ STDMETHODIMP DispReel::get_X(float *pVal)
 STDMETHODIMP DispReel::put_X(float newVal)
 {
 	STARTUNDO
-	float delta = newVal - m_d.m_v1.x;
+	const float delta = newVal - m_d.m_v1.x;
 	m_d.m_v1.x += delta;
 	m_d.m_v2.x = m_d.m_v1.x+getBoxWidth();
 	STOPUNDO
@@ -1345,7 +1332,7 @@ STDMETHODIMP DispReel::put_Y(float newVal)
 {
 	STARTUNDO
 
-	float delta = newVal - m_d.m_v1.y;
+	const float delta = newVal - m_d.m_v1.y;
 	m_d.m_v1.y += delta;
 	m_d.m_v2.y = m_d.m_v1.y+getBoxHeight();
 
@@ -1398,7 +1385,7 @@ STDMETHODIMP DispReel::get_Spacing(float *pVal)
 STDMETHODIMP DispReel::put_Spacing(float newVal)
 {
 	STARTUNDO
-    m_d.m_reelspacing = max(0, newVal);
+    m_d.m_reelspacing = max(0.0f, newVal);
 	m_d.m_v2.x = m_d.m_v1.x+getBoxWidth();
 	m_d.m_v2.y = m_d.m_v1.y+getBoxHeight();
 	STOPUNDO
@@ -1426,7 +1413,7 @@ STDMETHODIMP DispReel::put_Sound(BSTR newVal)
 
 STDMETHODIMP DispReel::get_Steps(float *pVal)
 {
-    *pVal = (float)((int)m_d.m_motorsteps);
+    *pVal = floorf(m_d.m_motorsteps);
 
     return S_OK;
 }
@@ -1434,7 +1421,7 @@ STDMETHODIMP DispReel::get_Steps(float *pVal)
 STDMETHODIMP DispReel::put_Steps(float newVal)
 {
 	STARTUNDO
-    m_d.m_motorsteps = (float)((int)max(1, newVal));	// must have at least 1 step
+    m_d.m_motorsteps = max(1.0f,floorf(newVal));	// must have at least 1 step
 	STOPUNDO
 
     return S_OK;
@@ -1530,7 +1517,7 @@ STDMETHODIMP DispReel::put_ReelColor(OLE_COLOR newVal)
 
 STDMETHODIMP DispReel::get_Range(float *pVal)
 {
-    *pVal = (float)((int)m_d.m_digitrange);
+    *pVal = floorf(m_d.m_digitrange);
 
     return S_OK;
 }
@@ -1538,8 +1525,8 @@ STDMETHODIMP DispReel::get_Range(float *pVal)
 STDMETHODIMP DispReel::put_Range(float newVal)
 {
 	STARTUNDO
-    m_d.m_digitrange = (float)((int)max(0, newVal));        // must have at least 1 digit (0 is a digit)
-    if (m_d.m_digitrange >= 200) m_d.m_digitrange = 200-1;  // and a max of 200 (0->199)
+    m_d.m_digitrange = max(0.0f,floorf(newVal));        // must have at least 1 digit (0 is a digit)
+    if (m_d.m_digitrange >= 200.0f) m_d.m_digitrange = (float)(200-1);  // and a max of 200 (0->199)
 	STOPUNDO
 	return S_OK;
 }
@@ -1794,7 +1781,7 @@ void DispReel::UpdateObjFrame(void)
             reelstriprc.top = /*(ReelInfo[i].currentValue * m_renderheight) +*/ (int)(ReelInfo[i].motorOffset);
 			if (reelstriprc.top < 0)
 			{
-				reelstriprc.top += m_renderheight/*m_reeldigitheight*/ * (int)(m_d.m_digitrange+1);
+				reelstriprc.top += m_renderheight/*m_reeldigitheight*/ * (int)(m_d.m_digitrange+1.0f);
 			}
 			reelstriprc.bottom = /*reelstriprc.top +*/ m_renderheight/*m_reeldigitheight*/;
 

@@ -405,12 +405,12 @@ void Kicker::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Kicker::GetCenter(Vertex *pv)
+void Kicker::GetCenter(Vertex2D *pv)
 	{
 	*pv = m_d.m_vCenter;
 	}
 
-void Kicker::PutCenter(Vertex *pv)
+void Kicker::PutCenter(Vertex2D *pv)
 	{
 	m_d.m_vCenter = *pv;
 
@@ -425,7 +425,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
 	bw.WriteFloat(FID(RADI), m_d.m_radius);
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -481,7 +481,7 @@ BOOL Kicker::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
 		}
 	else if (id == FID(RADI))
 		{

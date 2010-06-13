@@ -11,15 +11,15 @@ public:
 	virtual void Rectangle2(int x, int y, int x2, int y2);
 	virtual void Ellipse(float centerx, float centery, float radius);
 	virtual void Ellipse2(float centerx, float centery, int radius);
-	virtual void Polygon(Vertex *rgv, int count);
-	virtual void PolygonImage(Vertex *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight);
-	virtual void Polyline(Vertex *rgv, int count);
+	virtual void Polygon(Vertex2D *rgv, int count);
+	virtual void PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight);
+	virtual void Polyline(Vertex2D *rgv, int count);
 	virtual void Arc(float x, float y, float radius, float pt1x, float pt1y, float pt2x, float pt2y);
 	virtual void Image(float x, float y, float x2, float y2, HDC hdcSrc, int width, int height);
 	
 	void EllipseSkew(float centerx, float centery, float radius, float z1, float z2);
-	void PolygonSkew(Vertex *rgv, int count, float *rgz, float z1, float z2, BOOL fPreClip);
-	void PolylineSkew(Vertex *rgv, int count, float *rgz, float z1, float z2);
+	void PolygonSkew(Vertex2D *rgv, int count, float *rgz, float z1, float z2, BOOL fPreClip);
+	void PolylineSkew(Vertex2D *rgv, int count, float *rgz, float z1, float z2);
 
 	virtual void SetObject(ISelect *psel);
 

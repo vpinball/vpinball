@@ -13,7 +13,7 @@ IHaveDragPoints::~IHaveDragPoints()
 		}
 	}
 
-void IHaveDragPoints::GetPointCenter(Vertex *pv)
+void IHaveDragPoints::GetPointCenter(Vertex2D *pv)
 	{
 	float minx, maxx, miny, maxy;
 
@@ -35,18 +35,18 @@ void IHaveDragPoints::GetPointCenter(Vertex *pv)
 	pv->y = (maxy+miny)*0.5f;
 	}
 
-void IHaveDragPoints::PutPointCenter(Vertex *pv)
+void IHaveDragPoints::PutPointCenter(Vertex2D *pv)
 	{
 	}
 
-void IHaveDragPoints::FlipPointY(Vertex *pvCenter)
+void IHaveDragPoints::FlipPointY(Vertex2D *pvCenter)
 	{
 	float deltay;
 
 	GetIEditable()->BeginUndo();
 	GetIEditable()->MarkForUndo();
 
-	Vertex newcenter;
+	Vertex2D newcenter;
 
 	GetPointCenter(&newcenter);
 	float ycenter;
@@ -71,14 +71,14 @@ void IHaveDragPoints::FlipPointY(Vertex *pvCenter)
 	GetPTable()->SetDirtyDraw();
 	}
 
-void IHaveDragPoints::FlipPointX(Vertex *pvCenter)
+void IHaveDragPoints::FlipPointX(Vertex2D *pvCenter)
 	{
 	float deltax;
 
 	GetIEditable()->BeginUndo();
 	GetIEditable()->MarkForUndo();
 
-	Vertex newcenter;
+	Vertex2D newcenter;
 
 	GetPointCenter(&newcenter);
 	float xcenter;
@@ -139,12 +139,12 @@ void IHaveDragPoints::TranslateDialog()
 #endif
 	}
 
-void IHaveDragPoints::RotatePoints(float ang, Vertex *pvCenter)
+void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter)
 	{
 	float dx,dy;
 	float temp;
 	float centerx, centery;
-	Vertex newcenter;
+	Vertex2D newcenter;
 
 	GetPointCenter(&newcenter);
 
@@ -187,11 +187,11 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex *pvCenter)
 	GetPTable()->SetDirtyDraw();
 	}
 
-void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex *pvCenter)
+void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter)
 	{
 	float dx,dy;
 	float centerx, centery;
-	Vertex newcenter;
+	Vertex2D newcenter;
 
 	GetPointCenter(&newcenter);
 
@@ -229,9 +229,9 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex *pvCenter)
 	GetPTable()->SetDirtyDraw();
 	}
 
-void IHaveDragPoints::TranslatePoints(Vertex *pvOffset)
+void IHaveDragPoints::TranslatePoints(Vertex2D *pvOffset)
 	{
-	Vertex newcenter;
+	Vertex2D newcenter;
 
 	GetIEditable()->BeginUndo();
 	GetIEditable()->MarkForUndo();
@@ -399,7 +399,7 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 		float starttexcoord;
 		float endtexcoord;
 
-		Vertex *pv1, *pv2;
+		Vertex2D *pv1, *pv2;
 		int startrenderpoint, endrenderpoint;
 		startrenderpoint = virenderpoints.ElementAt(i) % cpoints;
 		endrenderpoint = virenderpoints.ElementAt((i+1) % cpoints) % cpoints;
@@ -423,8 +423,8 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 			}
 		for (int l=startrenderpoint;l<endrenderpoint;l++)
 			{
-			pv1 = (Vertex *)pvv->ElementAt(l % cpoints);
-			pv2 = (Vertex *)pvv->ElementAt((l+1) % cpoints);
+			pv1 = (Vertex2D *)pvv->ElementAt(l % cpoints);
+			pv2 = (Vertex2D *)pvv->ElementAt((l+1) % cpoints);
 
 			const float dx = pv1->x - pv2->x;
 			const float dy = pv1->y - pv2->y;
@@ -437,8 +437,8 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 
 		for (int l=startrenderpoint;l<endrenderpoint;l++)
 			{
-			pv1 = (Vertex *)pvv->ElementAt(l % cpoints);
-			pv2 = (Vertex *)pvv->ElementAt((l+1) % cpoints);
+			pv1 = (Vertex2D *)pvv->ElementAt(l % cpoints);
+			pv2 = (Vertex2D *)pvv->ElementAt((l+1) % cpoints);
 
 			const float dx = pv1->x - pv2->x;
 			const float dy = pv1->y - pv2->y;
@@ -477,7 +477,7 @@ HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash, HCR
 		{
 		bw.WriteTag(FID(DPNT));
 		CComObject<DragPoint> *pdp = m_vdpoint.ElementAt(i);
-		bw.WriteStruct(FID(VCEN), &(pdp->m_v), sizeof(Vertex));
+		bw.WriteStruct(FID(VCEN), &(pdp->m_v), sizeof(Vertex2D));
 		bw.WriteBool(FID(SMTH), pdp->m_fSmooth);
 		bw.WriteBool(FID(SLNG), pdp->m_fSlingshot);
 		bw.WriteBool(FID(ATEX), pdp->m_fAutoTexture);
@@ -550,13 +550,13 @@ void DragPoint::MoveOffset(float dx, float dy)
 	m_pihdp->GetIEditable()->SetDirtyDraw();
 	}
 
-void DragPoint::GetCenter(Vertex *pv)
+void DragPoint::GetCenter(Vertex2D *pv)
 	{
 	pv->x = m_v.x;
 	pv->y = m_v.y;
 	}
 
-void DragPoint::PutCenter(Vertex *pv)
+void DragPoint::PutCenter(Vertex2D *pv)
 	{
 	m_v.x = pv->x;
 	m_v.y = pv->y;
@@ -664,7 +664,7 @@ BOOL DragPoint::LoadToken(int id, BiffReader *pbr)
 	{
 	if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_v, sizeof(Vertex));
+		pbr->GetStruct(&m_v, sizeof(Vertex2D));
 		}
 	else if (id == FID(SMTH))
 		{
@@ -803,7 +803,7 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-			Vertex v;
+			Vertex2D v;
 			char szT[256];
 			psel->GetCenter(&v);
 			SetDlgItemInt(hwndDlg, IDC_ROTATEBY, 0, TRUE);
@@ -830,7 +830,7 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							{
 							char szT[256];
 							float f;
-							Vertex v;
+							Vertex2D v;
 							GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);
 							f = sz2f(szT);
 							GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
@@ -867,7 +867,7 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 			psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-			Vertex v;
+			Vertex2D v;
 			char szT[256];
 			psel->GetCenter(&v);
 			SetDlgItemInt(hwndDlg, IDC_SCALEFACTOR, 1, TRUE);
@@ -902,7 +902,7 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							{
 							char szT[256];
 							float fx,fy;
-							Vertex v;
+							Vertex2D v;
 							GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
 							fx = sz2f(szT);
 							int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
@@ -994,7 +994,7 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 						case IDOK:
 							{
 							char szT[256];
-							Vertex v;
+							Vertex2D v;
 							GetDlgItemText(hwndDlg, IDC_OFFSETX, szT, 255);
 							v.x = sz2f(szT);
 							GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);

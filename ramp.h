@@ -103,11 +103,11 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	virtual void ClearForOverwrite();
 
 	void GetRgVertex(Vector<RenderVertex> *pvv);
-	Vertex *GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, float **ppratio);
+	Vertex2D *GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, float **ppratio);
 
-	void Ramp::AddSideWall(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2,float height1,float height2, float wallheight);
+	void Ramp::AddSideWall(Vector<HitObject> *pvho, Vertex2D *pv1, Vertex2D *pv2,float height1,float height2, float wallheight);
 
-	void AddLine(Vector<HitObject> *pvho, Vertex *pv1, Vertex *pv2, Vertex *pv3, float height1, float height2);
+	void AddLine(Vector<HitObject> *pvho, Vertex2D *pv1, Vertex2D *pv2, Vertex2D *pv3, float height1, float height2);
 
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
@@ -116,14 +116,14 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 
 	virtual int GetMinimumPoints() {return 2;}
 
-	virtual void FlipY(Vertex *pvCenter);
-	virtual void FlipX(Vertex *pvCenter);
-	virtual void Rotate(float ang, Vertex *pvCenter);
-	virtual void Scale(float scalex, float scaley, Vertex *pvCenter);
-	virtual void Translate(Vertex *pvOffset);
+	virtual void FlipY(Vertex2D *pvCenter);
+	virtual void FlipX(Vertex2D *pvCenter);
+	virtual void Rotate(float ang, Vertex2D *pvCenter);
+	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+	virtual void Translate(Vertex2D *pvOffset);
 
-	virtual void GetCenter(Vertex *pv) {GetPointCenter(pv);}
-	virtual void PutCenter(Vertex *pv) {PutPointCenter(pv);}
+	virtual void GetCenter(Vertex2D *pv) {GetPointCenter(pv);}
+	virtual void PutCenter(Vertex2D *pv) {PutPointCenter(pv);}
 
 	PinTable *m_ptable;
 

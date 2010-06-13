@@ -22,7 +22,7 @@ public:
 	float m_FlipperRadius;
 	float m_StartAngle;
 	float m_EndAngle;
-	Vertex m_Center;
+	Vertex2D m_Center;
 	TimerDataRoot m_tdr;
 	char m_szSurface[MAXTOKEN];
 	COLORREF m_color;
@@ -68,7 +68,7 @@ public:
 	Flipper();
 	virtual ~Flipper();
 
-	void SetVertices(float angle, Vertex *pvEndCenter, Vertex *rgvTangents, float baseradius, float endradius);
+	void SetVertices(float angle, Vertex2D *pvEndCenter, Vertex2D *rgvTangents, float baseradius, float endradius);
 
 	//virtual HRESULT GetTypeName(BSTR *pVal);
 	//virtual int GetDialogID();
@@ -93,8 +93,8 @@ END_CONNECTION_POINT_MAP()
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 	virtual void RenderShadow(ShadowSur *psur, float height);
 

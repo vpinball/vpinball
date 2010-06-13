@@ -9,14 +9,14 @@ HitRectSur::HitRectSur(HDC hdc, float zoom, float offx, float offy, int width, i
 
 	if (m_rcRect.right < m_rcRect.left)
 		{
-		float temp = m_rcRect.right;
+		const float temp = m_rcRect.right;
 		m_rcRect.right = m_rcRect.left;
 		m_rcRect.left = temp;
 		}
 
 	if (m_rcRect.bottom < m_rcRect.top)
 		{
-		float temp = m_rcRect.bottom;
+		const float temp = m_rcRect.bottom;
 		m_rcRect.bottom = m_rcRect.top;
 		m_rcRect.top = temp;
 		}
@@ -99,7 +99,7 @@ void HitRectSur::Ellipse2(float centerx, float centery, int radius)
 		}
 	}
 
-void HitRectSur::Polygon(Vertex *rgv, int count)
+void HitRectSur::Polygon(Vertex2D *rgv, int count)
 	{
 	if (m_fFailedAlready)
 		{
@@ -116,12 +116,12 @@ void HitRectSur::Polygon(Vertex *rgv, int count)
 		}
 	}
 
-void HitRectSur::PolygonImage(Vertex *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
+void HitRectSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
 	{
 	Polygon(rgv, count);
 	}
 
-void HitRectSur::Polyline(Vertex *rgv, int count)
+void HitRectSur::Polyline(Vertex2D *rgv, int count)
 	{
 	return;
 	}

@@ -38,8 +38,8 @@ void Ball::Init()
 			{
 			if (i==l)
 				{
-				m_orientation.m_d[i][l] = 1;
-				m_inversebodyinertiatensor.m_d[i][l] = 1/(2*1*radius*radius/5.0f);
+				m_orientation.m_d[i][l] = 1.0f;
+				m_inversebodyinertiatensor.m_d[i][l] = 1.0f/(radius*radius*(float)(2.0/5.0));
 				}
 			else
 				{
@@ -131,25 +131,25 @@ void Ball::EnsureOMObject()
  
 void Ball::CalcBoundingRect()
 	{
-	PINFLOAT dx = fabsf(vx);
-	PINFLOAT dy = fabsf(vy);
+	const PINFLOAT dx = fabsf(vx);
+	const PINFLOAT dy = fabsf(vy);
 
-	brc.left = (float)(x - radius - dx - 0.1); //rlc make more accurate ????
-	brc.top = (float)(y - radius - dy - 0.1);
-	brc.right = (float)(x + radius + dx + 0.1);
-	brc.bottom = (float)(y + radius + dy + 0.1);
+	brc.left = x - (radius + 0.1f + dx); //rlc make more accurate ????
+	brc.top = y - (radius + 0.1f + dy);
+	brc.right = x + (radius + 0.1f + dx);
+	brc.bottom = y + (radius + 0.1f + dy);
 
 	m_rcHitRect.left = brc.left;
 	m_rcHitRect.top = brc.top;
 	m_rcHitRect.right = brc.right;
 	m_rcHitRect.bottom = brc.bottom;
 
-	m_rcHitRect.zlow = (float)min(z, z+vz);
-	m_rcHitRect.zhigh = (float)max(z, z+vz);
+	m_rcHitRect.zlow = min(z, z+vz);
+	m_rcHitRect.zhigh = max(z, z+vz);
 
 
-	m_rcHitRect.zhigh += (float)(radius + 0.1);
-	m_rcHitRect.zlow -= (float)(radius + 0.f);
+	m_rcHitRect.zhigh += radius + 0.1f;
+	m_rcHitRect.zlow -= radius /*+ 0.f*/;
 	}
 
 void Ball::CollideWall(Vertex3D *phitnormal, float m_elasticity, float antifriction, float scatter_angle)
@@ -168,10 +168,10 @@ void Ball::CollideWall(Vertex3D *phitnormal, float m_elasticity, float antifrict
 		
 #ifdef C_DISP_GAIN 
 		float hdist = -C_DISP_GAIN * m_HitDist;			// limit delta noise crossing ramps,
-		if (hdist > 1.0e-4)
+		if (hdist > 1.0e-4f)
 			{
 			if (hdist > C_DISP_LIMIT) 
-				{hdist = C_DISP_LIMIT;}	// crossing ramps, delta noise
+				hdist = C_DISP_LIMIT;	// crossing ramps, delta noise
 			x += hdist * phitnormal->x;	// push along norm, back to free area
 			y += hdist * phitnormal->y;	// use the norm, but this is not correct, reverse time is correct
 			}
@@ -179,7 +179,7 @@ void Ball::CollideWall(Vertex3D *phitnormal, float m_elasticity, float antifrict
 
 	dot *= -(1.005f + m_elasticity);//rlc some small minimum
 	vx += dot * phitnormal->x;	
-	vy += dot * phitnormal->y; 
+	vy += dot * phitnormal->y;
 
 	if (antifriction >= 1.0f || antifriction <= 0) 
 		{antifriction = c_hardFriction;} // use global
@@ -230,7 +230,7 @@ void Ball::Collide3DWall(Vertex3D *phitnormal, float m_elasticity, float antifri
 	if (hdist > 1.0e-4f)					// when hit detection checked it what was the displacement
 		{			
 		if (hdist > C_DISP_LIMIT) 
-			{hdist = C_DISP_LIMIT;}	// crossing ramps, delta noise			
+			hdist = C_DISP_LIMIT;	// crossing ramps, delta noise			
 		x += hdist * phitnormal->x;	// push along norm, back to free area
 		y += hdist * phitnormal->y;	// use the norm, but his is not correct
 		z += hdist * phitnormal->z;	// 
@@ -268,10 +268,6 @@ void Ball::Collide3DWall(Vertex3D *phitnormal, float m_elasticity, float antifri
 
 PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) //rlc change begin >>>>>>>>>>>>>>>>>>>>>>
 	{	
-	PINFLOAT hittime;
-	PINFLOAT a,b,c,bcdd,bnv;
-	PINFLOAT result;
-
 	PINFLOAT dvx = vx - pball->vx;		 // delta velocity 
 	PINFLOAT dvy = vy - pball->vy;
 	PINFLOAT dvz = vz - pball->vz;
@@ -282,7 +278,7 @@ PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) //rlc 
 
 	PINFLOAT bcddsq = dx*dx + dy*dy + dz*dz;	//square of ball center's delta distance
 
-	bcdd = sqrtf(bcddsq);						// length of delta
+	PINFLOAT bcdd = sqrtf(bcddsq);						// length of delta
 	if (bcdd < 1.0e-8f)					// two balls center-over-center embedded
 		{ //return -1;
 		dz = -1.0f;								// patch up			
@@ -294,35 +290,36 @@ PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) //rlc 
 		pball->vz -= dvz;
 		}
 
-	b = dvx*dx + dvy*dy + dvz*dz;				// inner product
-	bnv = b/bcdd;								// normal speed of balls toward each other
+	PINFLOAT b = dvx*dx + dvy*dy + dvz*dz;				// inner product
+	const PINFLOAT bnv = b/bcdd;								// normal speed of balls toward each other
 
 	if ( bnv >  C_LOWNORMVEL) return -1.0f;		// dot of delta velocity and delta displacement, postive if receding no collison
 
-	PINFLOAT totalradius = pball->radius + radius;
-	PINFLOAT bnd = bcdd - totalradius;
+	const PINFLOAT totalradius = pball->radius + radius;
+	const PINFLOAT bnd = bcdd - totalradius;
 
+	PINFLOAT hittime;
 	if (bnd < (float)PHYS_TOUCH)				// in contact??? 
 		{
 		if (bnd <= (float)(-PHYS_SKIN*2.0))
-			{return -1.0f;}				// embedded too deep
+			return -1.0f;				// embedded too deep
 
 		if (fabsf(bnv) > C_CONTACTVEL)		// >fast velocity, return zero time
 			hittime = 0;								//zero time for rigid fast bodies
-		else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;						// slow moving but embedded
-		else hittime = (bnd + (float)PHYS_TOUCH) * (float)(1.0/PHYS_TOUCH/2.0);		// don't compete for fast zero time events
+		else if (bnd <= (float)(-PHYS_TOUCH)) hittime = 0;				// slow moving but embedded
+		else hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;		// don't compete for fast zero time events
 		}
 	else
-		{	
-		a = dvx*dvx + dvy*dvy + dvz*dvz;				//square of differential velocity 
-		c = bcddsq - totalradius*totalradius;			//first contact test: square delta position - square of radii
+		{
+		PINFLOAT a = dvx*dvx + dvy*dvy + dvz*dvz;				//square of differential velocity 
+		const PINFLOAT c = bcddsq - totalradius*totalradius;			//first contact test: square delta position - square of radii
 
 		if (a < 1.0e-12f) return -1.0f;				// ball moving really slow, then wait for contact
 
 		b += b;										// two inner products
-		result = b*b - 4.0f*a*c;						// squareroot term in Quadratic equation
+		PINFLOAT result = b*b - 4.0f*a*c;						// squareroot term in Quadratic equation
 
-		if (result < 0.0f)	return -1.0f;						// no collision path exist	
+		if (result < 0.0f) return -1.0f;						// no collision path exist	
 
 		result = sqrtf(result); a += a;					// optimize calculation
 
@@ -344,9 +341,9 @@ PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) //rlc 
 	
 	const PINFLOAT inv_len = 1.0f/sqrtf((hitx - x)*(hitx - x)+(hity - y)*(hity - y)+(hitz - z)*(hitz - z));
 
-	((Vertex3D *)phitnormal)->x = (hitx - x)*inv_len;	//calc unit normal of collision
-	((Vertex3D *)phitnormal)->y = (hity - y)*inv_len;
-	((Vertex3D *)phitnormal)->z = (hitz - z)*inv_len;
+	phitnormal->x = (hitx - x)*inv_len;	//calc unit normal of collision
+	phitnormal->y = (hity - y)*inv_len;
+	phitnormal->z = (hitz - z)*inv_len;
 
 	m_HitDist = bnd;								//actual contact distance 
 	m_HitNormVel = bnv;
@@ -359,13 +356,13 @@ PINFLOAT Ball::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal) //rlc 
 void Ball::Collide(Ball *pball, Vertex3D *phitnormal)
 	{
 	if (pball->fFrozen) 
-		{return;}
+		return;
 
-	Vertex3D vel;
-	const Vertex3D vnormal = *(Vertex3D *)phitnormal;
+	const Vertex3D vnormal = *phitnormal;
 	
 	// correct displacements, mostly from low velocity, alternative to true acceleration processing
 
+	Vertex3Ds vel;
 	vel.x = pball->vx -vx;  //target ball to object ball
 	vel.y = pball->vy -vy;  //delta velocity
 	vel.z = pball->vz -vz;
@@ -387,8 +384,8 @@ void Ball::Collide(Ball *pball, Vertex3D *phitnormal)
 		if (edist > 1.0e-4f)
 			{										
 			if (edist > C_DISP_LIMIT) 
-				{edist = C_DISP_LIMIT;}		// crossing ramps, delta noise
-			if (!fFrozen) edist *= 0.5f;		// if the hitten ball is not frozen
+				edist = C_DISP_LIMIT;		// crossing ramps, delta noise
+			if (!fFrozen) edist *= 0.5f;	// if the hitten ball is not frozen
 			pball->x += edist * vnormal.x;	// push along norm, back to free area
 			pball->y += edist * vnormal.y;	// use the norm, but is not correct, but cheaply handled
 			pball->z += edist * vnormal.z;	// 
@@ -398,7 +395,7 @@ void Ball::Collide(Ball *pball, Vertex3D *phitnormal)
 		if (!fFrozen && edist > 1.0e-4f)
 			{ 
 			if (edist > C_DISP_LIMIT) 
-				{edist = C_DISP_LIMIT;}		// crossing ramps, delta noise
+				edist = C_DISP_LIMIT;		// crossing ramps, delta noise
 			edist *= 0.5f;		
 			x -= edist * vnormal.x;			// pull along norm, back to free area
 			y -= edist * vnormal.y;			// use the norm
@@ -421,43 +418,41 @@ void Ball::Collide(Ball *pball, Vertex3D *phitnormal)
 	pball->vy += impulse * vnormal.y;
 	pball->vz += impulse * vnormal.z;
 	pball->m_fDynamic = C_DYNAMIC;
-
 	}
 
 void Ball::AngularAcceleration(Vertex3D *phitnormal)
 	{
-
-	Vertex3D bccpd; // vector ball center to contact point displacement
+	Vertex3Ds bccpd; // vector ball center to contact point displacement
 	bccpd.Set(-radius * phitnormal->x, -radius * phitnormal->y, -radius * phitnormal->z); //from ball center to contact point
 
-	PINFLOAT bnv = vx * phitnormal->x + vy * phitnormal->y + vz * phitnormal->z; //ball normal velocity to hit face
+	const PINFLOAT bnv = vx * phitnormal->x + vy * phitnormal->y + vz * phitnormal->z; //ball normal velocity to hit face
 
-	Vertex3D bvn;
+	Vertex3Ds bvn;
 	bvn.x = bnv * phitnormal->x;						//project the normal velocity along normal
 	bvn.y = bnv * phitnormal->y;
 	bvn.z = bnv * phitnormal->z;
 
-	Vertex3D bvt;
+	Vertex3Ds bvt;
 	bvt.x = vx - bvn.x;									// calc the tangent velocity
 	bvt.y = vy - bvn.y;
 	bvt.z = vz - bvn.z;
 
-	Vertex3D bvT;										// ball tangent velocity Unit Tangent
+	Vertex3Ds bvT;										// ball tangent velocity Unit Tangent
 	bvT.Set(bvt.x, bvt.y, bvt.z);						//copy ball tangent velocity
 	bvT.Normalize();	
 
-	Vertex3D bstv;										// ball surface tangential velocity
+	Vertex3Ds bstv;										// ball surface tangential velocity
 
 	CrossProduct(&m_angularvelocity, &bccpd, &bstv);	// velocity of ball surface at contact point
 
-	Vertex3D cpvt;						// contact point velocity tangential to hit face
+	Vertex3Ds cpvt;						// contact point velocity tangential to hit face
 
 	const float dot = bstv.Dot(&bvT);	// speed ball surface contact point tangential to contact surface point
 	cpvt.x = bvT.x * dot;				//contact point velocity tangent to hit face
 	cpvt.y = bvT.y * dot;
 	cpvt.z = bvT.z * dot;
 
-	Vertex3D slideVel;	// contact point slide velocity with ball center velocity
+	Vertex3Ds slideVel;	// contact point slide velocity with ball center velocity
 	slideVel.x = bstv.x - cpvt.x;  // slide velocity
 	slideVel.y = bstv.y - cpvt.y;
 	slideVel.z = bstv.z - cpvt.z;
@@ -468,14 +463,14 @@ void Ball::AngularAcceleration(Vertex3D *phitnormal)
 	// and the point's velocity is at least the magnitude of the balls,
 	// then we have a natural rool
 	
-	Vertex3D cpctrv;
+	Vertex3Ds cpctrv;
 	cpctrv.x = -slideVel.x;	//contact point co-tangential reverse velocity
 	cpctrv.y = -slideVel.y;
 	cpctrv.z = -slideVel.z;
 
 	// Calculate the maximum amount the point velocity can change this
 	// time segment due to friction
-	Vertex3D FrictionForce;
+	Vertex3Ds FrictionForce;
 	FrictionForce.x = cpvt.x + bvt.x;
 	FrictionForce.y = cpvt.y + bvt.y;
 	FrictionForce.z = cpvt.z + bvt.z;
@@ -493,7 +488,7 @@ void Ball::AngularAcceleration(Vertex3D *phitnormal)
 		FrictionForce.MultiplyScalar(ANGULARFORCE);
 		}
 
-	if ((vx*vx + vy*vy + vz*vz) > (float)(0.7*0.7))
+	if (vx*vx + vy*vy + vz*vz > (float)(0.7*0.7))
 		{
 		cpctrv.x -= FrictionForce.x;
 		cpctrv.y -= FrictionForce.y;
@@ -506,7 +501,7 @@ void Ball::AngularAcceleration(Vertex3D *phitnormal)
 	cpctrv.y *= (float)(1.0/2.5);
 	cpctrv.z *= (float)(1.0/2.5);
 
-	Vertex3D vResult;
+	Vertex3Ds vResult;
 
 	CrossProduct(&bccpd, &cpctrv, &vResult);//ball center contact point displacement X reverse contact point co-tan vel
 
@@ -592,9 +587,9 @@ void Ball::UpdateDisplacements(PINFLOAT dtime)
 		CalcBoundingRect();
 		
 		Matrix3 mat3;
-		Matrix3 addedorientation;
 		mat3.CreateSkewSymmetric(&m_angularvelocity);
 		
+		Matrix3 addedorientation;
 		addedorientation.MultiplyMatrix(&mat3, &m_orientation);
 
 		addedorientation.MultiplyScalar(dtime);
@@ -659,7 +654,7 @@ void Ball::UpdateVelocities(PINFLOAT dtime)
 		}
 
 		const float mag = vx*vx + vy*vy + vz*vz; //speed check 
-		float antifrict = (mag > c_maxBallSpeedSqed) ? c_dampingFriction : 0.99875f;
+		const float antifrict = (mag > c_maxBallSpeedSqed) ? c_dampingFriction : 0.99875f;
 		
 		vx *= antifrict;//*dtime;	// speed damping
 		vy *= antifrict;//*dtime;
@@ -668,5 +663,4 @@ void Ball::UpdateVelocities(PINFLOAT dtime)
 	m_fDynamic = C_DYNAMIC;		// always set .. after adding velocity
 
 	CalcBoundingRect();
-
 	}

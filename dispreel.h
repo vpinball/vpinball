@@ -20,7 +20,7 @@
 class DispReelData
 {
 public:
-    Vertex      m_v1, m_v2;             // position on map (top right corner)
+    Vertex2D      m_v1, m_v2;             // position on map (top right corner)
     BOOL        m_fTransparent;         // is the background transparent
     char        m_szImage[MAXTOKEN];    // image to use for the decals.
     ReelType    m_reeltype;
@@ -102,8 +102,8 @@ STANDARD_EDITABLE_DECLARES(eItemDispReel)
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 DECLARE_REGISTRY_RESOURCEID(IDR_DispReel)
 // ISupportsErrorInfo
@@ -195,4 +195,3 @@ private:
 };
 
 #endif // !defined(AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_)
-

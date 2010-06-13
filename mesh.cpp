@@ -25,7 +25,7 @@ ObjFrame::~ObjFrame()
 	SAFE_RELEASE(pTexture);
 	}
 
-void CatmullCurve::SetCurve(Vertex *pv0, Vertex *pv1, Vertex *pv2, Vertex *pv3)
+void CatmullCurve::SetCurve(const Vertex2D * const pv0, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3)
 	{
 	x1=pv0->x;
 	x2=pv1->x;
@@ -37,7 +37,7 @@ void CatmullCurve::SetCurve(Vertex *pv0, Vertex *pv1, Vertex *pv2, Vertex *pv3)
 	y4=pv3->y;
 	}
 
-void CatmullCurve::GetPointAt(float t, Vertex *pv)
+void CatmullCurve::GetPointAt(const float t, Vertex2D * const pv) const
 	{
 	const float t2 = t*t;
 	const float t3 = t2*t;
@@ -52,7 +52,7 @@ void CatmullCurve::GetPointAt(float t, Vertex *pv)
 		+ 2.0f*y2);
 	}
 
-void PolygonToTriangles(RenderVertex *rgv, Vector<void> *pvpoly, Vector<Triangle> *pvtri)
+void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri)
 	{
 	// There should be this many convex triangles.
 	// If not, the polygon is self-intersecting
@@ -63,7 +63,6 @@ void PolygonToTriangles(RenderVertex *rgv, Vector<void> *pvpoly, Vector<Triangle
 	for (int l = 0; l<tricount; l++)
 	//while (pvpoly->Size() > 2)
 		{
-
 		for (int i=0;i<pvpoly->Size();i++)
 			{
 			const int a = (int)pvpoly->ElementAt(i);
@@ -73,7 +72,7 @@ void PolygonToTriangles(RenderVertex *rgv, Vector<void> *pvpoly, Vector<Triangle
 			const int post = (int)pvpoly->ElementAt((i+3) % pvpoly->Size());
 			if (AdvancePoint(rgv, pvpoly, a, b, c, pre, post))
 				{
-				Triangle *ptri = new Triangle();
+				Triangle * const ptri = new Triangle();
 				ptri->a = a;
 				ptri->b = b;
 				ptri->c = c;
@@ -82,13 +81,12 @@ void PolygonToTriangles(RenderVertex *rgv, Vector<void> *pvpoly, Vector<Triangle
 				break;
 				}
 			}
-
 		}
 	}
 
-float GetDot(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2)
+float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 	{
-	Vertex vt1, vt2;
+	Vertex2D vt1, vt2;
 
 	vt1.x = pvJoint->x - pvEnd1->x;
 	vt1.y = pvJoint->y - pvEnd1->y;
@@ -99,7 +97,7 @@ float GetDot(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2)
 	return vt1.x*vt2.y - vt1.y*vt2.x;
 	}
 	
-BOOL FLinesIntersect(Vertex *Start1, Vertex *Start2, Vertex *End1, Vertex *End2)
+BOOL FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * const Start2, const Vertex2D * const End1, const Vertex2D * const End2)
 	{
 	const float x1 = Start1->x;
 	const float y1 = Start1->y;
@@ -141,14 +139,14 @@ BOOL FLinesIntersect(Vertex *Start1, Vertex *Start2, Vertex *End1, Vertex *End2)
 	return ((d123 * d124 < 0) && (d341 * d342 < 0));
 	}
 
-BOOL AdvancePoint(RenderVertex *rgv, Vector<void> *pvpoly, int a, int b, int c, int pre, int post)
+BOOL AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pvpoly, const int a, const int b, const int c, const int pre, const int post)
 	{
-	RenderVertex *pv1 = &rgv[a];
-	RenderVertex *pv2 = &rgv[b];
-	RenderVertex *pv3 = &rgv[c];
+	const RenderVertex * const pv1 = &rgv[a];
+	const RenderVertex * const pv2 = &rgv[b];
+	const RenderVertex * const pv3 = &rgv[c];
 
-	RenderVertex *pvPre = &rgv[pre];
-	RenderVertex *pvPost = &rgv[post];
+	const RenderVertex * const pvPre = &rgv[pre];
+	const RenderVertex * const pvPost = &rgv[post];
 
 	float dot = GetDot(pv1,pv2,pv3);
 
@@ -195,36 +193,18 @@ BOOL AdvancePoint(RenderVertex *rgv, Vector<void> *pvpoly, int a, int b, int c, 
 	const float maxy = max(pv1->y, pv3->y);
 
 	for (int i=0;i<pvpoly->Size();i++)
-		{
-		
-		RenderVertex *pvCross1 = &rgv[(int)pvpoly->ElementAt(i)];
-		RenderVertex *pvCross2 = &rgv[(int)pvpoly->ElementAt((i+1) % pvpoly->Size())];
+		{		
+		const RenderVertex * const pvCross1 = &rgv[(int)pvpoly->ElementAt(i)];
+		const RenderVertex * const pvCross2 = &rgv[(int)pvpoly->ElementAt((i+1) % pvpoly->Size())];
 	
-		if (pvCross1 == pv1 || pvCross2 == pv1 || pvCross1 == pv3 || pvCross2 == pv3)
+		if ( pvCross1 == pv1 || pvCross2 == pv1 || pvCross1 == pv3 || pvCross2 == pv3 ||
+		    (pvCross1->y < miny && pvCross2->y < miny) ||
+			(pvCross1->y > maxy && pvCross2->y > maxy) ||
+			(pvCross1->x < minx && pvCross2->x < minx) ||
+            (pvCross1->x > maxx && pvCross2->y > maxx))
 			{
-			continue;
 			}
-
-		if (pvCross1->y < miny && pvCross2->y < miny)
-			{
-			continue; // Line segments don't interact
-			}
-
-		if (pvCross1->y > maxy && pvCross2->y > maxy)
-			{
-			continue; // Line segments don't interact
-			}
-
-		if (pvCross1->x < minx && pvCross2->x < minx)
-			{
-			continue; // Line segments don't interact
-			}
-
-		if (pvCross1->x > maxx && pvCross2->y > maxx)
-			{
-			continue; // Line segments don't interact
-			}
-		
+		else	
 		if (FLinesIntersect(pv1, pv3, pvCross1, pvCross2))
 			{
 			return fFalse;
@@ -234,9 +214,9 @@ BOOL AdvancePoint(RenderVertex *rgv, Vector<void> *pvpoly, int a, int b, int c, 
 	return true;
 	}
 
-float GetCos(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2)
+float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 	{
-	Vertex vt1, vt2;
+	Vertex2D vt1, vt2;
 
 	vt1.x = pvJoint->x - pvEnd1->x;
 	vt1.y = pvJoint->y - pvEnd1->y;
@@ -252,17 +232,15 @@ float GetCos(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2)
 	return dot/(len1*len2);
 	}
 
-float GetAngle(Vertex *pvEnd1, Vertex *pvJoint, Vertex *pvEnd2)
+float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 	{
 	const float slope1 = (pvJoint->y - pvEnd1->y) / (pvJoint->x - pvEnd1->x);
 	const float slope2 = (pvJoint->y - pvEnd2->y) / (pvJoint->x - pvEnd2->x);
 	return atan2f((slope2-slope1),(1.0f+slope1*slope2));
 	}
 
-void SetNormal(Vertex3D *rgv, WORD *rgi, int count, Vertex3D *rgvApply, WORD *rgiApply, int applycount)
+void SetNormal(Vertex3D * rgv, const WORD * rgi, const int count, Vertex3D * rgvApply, const WORD * rgiApply, int applycount)
 	{
-	Vertex3D vnormal;
-	
 	// If apply-to array is null, just apply the resulting normal to incoming array
 	if (rgvApply == NULL)
 		{
@@ -279,36 +257,36 @@ void SetNormal(Vertex3D *rgv, WORD *rgi, int count, Vertex3D *rgvApply, WORD *rg
 		applycount = count;
 		}
 
-	vnormal.nx = 0;
-	vnormal.ny = 0;
-	vnormal.nz = 0;
+	Vertex3Ds vnormal;
+	vnormal.x = 0;
+	vnormal.y = 0;
+	vnormal.z = 0;
 
 	for (int i=0;i<count;i++)
 		{
 		const int l = rgi[i];
 		const int m = rgi[(i+1) % count];
 
-		vnormal.nx += (rgv[l].y - rgv[m].y) * (rgv[l].z + rgv[m].z);
-		vnormal.ny += (rgv[l].z - rgv[m].z) * (rgv[l].x + rgv[m].x);
-		vnormal.nz += (rgv[l].x - rgv[m].x) * (rgv[l].y + rgv[m].y);		
+		vnormal.x += (rgv[l].y - rgv[m].y) * (rgv[l].z + rgv[m].z);
+		vnormal.y += (rgv[l].z - rgv[m].z) * (rgv[l].x + rgv[m].x);
+		vnormal.z += (rgv[l].x - rgv[m].x) * (rgv[l].y + rgv[m].y);		
 		}
 
-	const float inv_len = 1.0f/sqrtf((vnormal.nx * vnormal.nx) + (vnormal.ny * vnormal.ny) + (vnormal.nz * vnormal.nz));
-	
-	vnormal.nx *= inv_len;
-	vnormal.ny *= inv_len;
-	vnormal.nz *= inv_len;
+	const float inv_len = 1.0f/sqrtf((vnormal.x * vnormal.x) + (vnormal.y * vnormal.y) + (vnormal.z * vnormal.z));
+	vnormal.x *= inv_len;
+	vnormal.y *= inv_len;
+	vnormal.z *= inv_len;
 
 	for (int i=0;i<applycount;i++)
 		{
 		const int l = rgiApply[i];
-		rgvApply[l].nx = -vnormal.nx;
-		rgvApply[l].ny = -vnormal.ny;
-		rgvApply[l].nz = -vnormal.nz;
+		rgvApply[l].nx = -vnormal.x;
+		rgvApply[l].ny = -vnormal.y;
+		rgvApply[l].nz = -vnormal.z;
 		}
 	}
 
-void SetHUDVertices(Vertex3D *rgv, int count)
+void SetHUDVertices(Vertex3D * const rgv, const int count)
 	{
 	const float mult = (float)g_pplayer->m_pin3d.m_dwRenderWidth * (float)(1.0/1000.0);
 	const float ymult = mult / (float)g_pplayer->m_pixelaspectratio;
@@ -335,7 +313,7 @@ void SetHUDVertices(Vertex3D *rgv, int count)
 		}
 	}
 
-void SetDiffuseFromMaterial(Vertex3D *rgv, int count, D3DMATERIAL7 *pmtrl)
+void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const D3DMATERIAL7 * const pmtrl)
 	{
 	const int r = (int)(((pmtrl->diffuse.r + pmtrl->emissive.r) * 255.0f) + 0.5f);
 	const int g = (int)(((pmtrl->diffuse.g + pmtrl->emissive.g) * 255.0f) + 0.5f);
@@ -349,9 +327,9 @@ void SetDiffuseFromMaterial(Vertex3D *rgv, int count, D3DMATERIAL7 *pmtrl)
 		}
 	}
 
-void LightProjected::CalcCoordinates(Vertex3D *pv)
+void LightProjected::CalcCoordinates(Vertex3D * const pv)
 	{
-	Vertex3D vOrigin, vT;
+	Vertex3Ds vOrigin, vT;
 
 	// light is rotated around the light as the origin
 	// z doesn't matter because the texture is projected through z
@@ -392,22 +370,21 @@ void LightProjected::CalcCoordinates(Vertex3D *pv)
 	pv->tv2 = (((vT.y - m_v.y) / height) + 0.5f) * g_pplayer->m_pin3d.m_maxtv;
 	}
 
-BOOL Flat(Vertex *pvt1, Vertex *pvt2, Vertex *pvtMid)
+BOOL Flat(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid)
 	{
 	const float det1 = pvt1->x*pvtMid->y - pvt1->y*pvtMid->x;
 	const float det2 = pvtMid->x*pvt2->y - pvtMid->y*pvt2->x;
 	const float det3 = pvt2->x*pvt1->y - pvt2->y*pvt1->x;
 
-	const float area = 0.5f*(det1+det2+det3);
+	const float dblarea = det1+det2+det3;
 
-	return (area*area < 1.0f);
+	return (dblarea*dblarea < (float)(1.0/(0.5*0.5)));
 	}
 
-void RecurseSmoothLine(CatmullCurve *pcc, float t1, float t2, RenderVertex *pvt1, RenderVertex *pvt2, Vector<RenderVertex> *pvv)
+void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv)
 	{
-	RenderVertex vmid;
-
 	const float tMid = (t1+t2)*0.5f;
+	RenderVertex vmid;
 	pcc->GetPointAt(tMid, &vmid);
 	vmid.fSmooth = fTrue; // Generated points must always be smooth, because they are part of the curve
 	vmid.fSlingshot = fFalse; // Slingshots can't be along curves
@@ -418,7 +395,7 @@ void RecurseSmoothLine(CatmullCurve *pcc, float t1, float t2, RenderVertex *pvt1
 		// Add first segment point to array.
 		// Last point never gets added by this recursive loop,
 		// but that's where it wraps around to the next curve.
-		RenderVertex *pvT = new RenderVertex;
+		RenderVertex * const pvT = new RenderVertex;
 		*pvT = *pvt1;
 		pvv->AddElement(pvT);
 		}
@@ -429,9 +406,9 @@ void RecurseSmoothLine(CatmullCurve *pcc, float t1, float t2, RenderVertex *pvt1
 		} 
 	}
 
-void Calc2DNormal(Vertex *pv1, Vertex *pv2, Vertex *pnormal)
+void Calc2DNormal(const Vertex2D * const pv1, const Vertex2D * const pv2, Vertex2D * const pnormal)
 	{
-	Vertex vT;
+	Vertex2D vT;
 	vT.x = pv1->x - pv2->x;
 	vT.y = pv1->y - pv2->y;
 
@@ -441,7 +418,7 @@ void Calc2DNormal(Vertex *pv1, Vertex *pv2, Vertex *pnormal)
 	pnormal->y = -vT.x * inv_length;
 	}
 
-void ClosestPointOnPolygon(Vertex *rgv, int count, Vertex *pvin, Vertex *pvout, int *piseg, BOOL fClosed)
+void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, const Vertex2D * const pvin, Vertex2D * const pvout, int * const piseg, const BOOL fClosed)
 	{
 	float mindist = FLT_MAX;
 	int seg = -1;
@@ -460,8 +437,8 @@ void ClosestPointOnPolygon(Vertex *rgv, int count, Vertex *pvin, Vertex *pvout, 
 		const int p1 = i;
 		const int p2 = (i+1)%count;
 
-		const float A = -(rgv[p2].y - rgv[p1].y);
-		const float B =   rgv[p2].x - rgv[p1].x;
+		const float A = rgv[p1].y - rgv[p2].y;
+		const float B = rgv[p2].x - rgv[p1].x;
 		const float C = -(A*rgv[p1].x + B*rgv[p1].y);
 
 		const float dist = fabsf((A*pvin->x + B*pvin->y + C) / sqrtf(A*A + B*B));
@@ -474,7 +451,7 @@ void ClosestPointOnPolygon(Vertex *rgv, int count, Vertex *pvin, Vertex *pvout, 
 			const int p1 = i;
 			const int p2 = (i+1)%count;
 
-			const float A = -(rgv[p2].y - rgv[p1].y);
+			const float A = rgv[p1].y - rgv[p2].y;
 			const float B = rgv[p2].x - rgv[p1].x;
 			const float C = -(A*rgv[p1].x + B*rgv[p1].y);
 
@@ -503,7 +480,7 @@ void ClosestPointOnPolygon(Vertex *rgv, int count, Vertex *pvin, Vertex *pvout, 
 		}
 	}
 
-void RotateAround(Vertex3D *pvAxis, Vertex3D *pvPoint, int count, float angle)
+void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoint, const int count, const float angle)
 	{
 	const PINFLOAT x = pvAxis->x;
 	const PINFLOAT y = pvAxis->y;
@@ -535,24 +512,70 @@ void RotateAround(Vertex3D *pvAxis, Vertex3D *pvPoint, int count, float angle)
 		result[1] = matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z;
 		result[2] = matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z;
 
-		pvPoint[i].x = (float)result[0];
-		pvPoint[i].y = (float)result[1];
-		pvPoint[i].z = (float)result[2];
+		pvPoint[i].x = result[0];
+		pvPoint[i].y = result[1];
+		pvPoint[i].z = result[2];
 
+		//!! the following doesn't make too much sense (i.e. last check is nx not nz) and also produces all 0,0,0 again!
 		if ((pvPoint[i].nx == 0) && (pvPoint[i].ny == 0) && (pvPoint[i].nx == 0)) //rlc optimize, often 0,0,0
 			{
 			result[0] = matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz;
 			result[1] = matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz;
 			result[2] = matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz;
 
-			pvPoint[i].nx = (float)result[0];
-			pvPoint[i].ny = (float)result[1];
-			pvPoint[i].nz = (float)result[2];
-			}		
+			pvPoint[i].nx = result[0];
+			pvPoint[i].ny = result[1];
+			pvPoint[i].nz = result[2];
+			}
 		}
 	}
 
-void CrossProduct(Vertex3D *pv1, Vertex3D *pv2, Vertex3D *pvCross)
+void RotateAround(const Vertex3Ds * const pvAxis, Vertex3Ds * const pvPoint, const int count, const float angle)
+	{
+	const PINFLOAT x = pvAxis->x;
+	const PINFLOAT y = pvAxis->y;
+	const PINFLOAT z = pvAxis->z;
+
+	const PINFLOAT rsin = (PINFLOAT)sinf(angle);
+	const PINFLOAT rcos = (PINFLOAT)cosf(angle);
+
+	PINFLOAT matrix[3][3];
+
+	// Matrix for rotating around an arbitrary vector
+
+	matrix[0][0] = x*x + rcos*(1.0f-x*x);
+	matrix[1][0] = x*y*(1.0f-rcos) - z*rsin;
+	matrix[2][0] = z*x*(1.0f-rcos) + y*rsin;
+
+	matrix[0][1] = x*y*(1.0f-rcos) + z*rsin;
+	matrix[1][1] = y*y + rcos*(1.0f-y*y);
+	matrix[2][1] = y*z*(1.0f-rcos) - x*rsin;
+
+	matrix[0][2] = z*x*(1.0f-rcos) - y*rsin;
+	matrix[1][2] = y*z*(1.0f-rcos) + x*rsin;
+	matrix[2][2] = z*z + rcos*(1.0f-z*z);
+
+	for (int i=0;i<count;i++)
+		{
+		PINFLOAT result[3];
+		result[0] = matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z;
+		result[1] = matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z;
+		result[2] = matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z;
+
+		pvPoint[i].x = result[0];
+		pvPoint[i].y = result[1];
+		pvPoint[i].z = result[2];
+		}
+	}
+
+void CrossProduct(const Vertex3D * const pv1, const Vertex3D * const pv2, Vertex3D * const pvCross)
+	{
+	pvCross->x = pv1->y * pv2->z - pv1->z * pv2->y;
+	pvCross->y = pv1->z * pv2->x - pv1->x * pv2->z;
+	pvCross->z = pv1->x * pv2->y - pv1->y * pv2->x;
+	}
+
+void CrossProduct(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, Vertex3Ds * const pvCross)
 	{
 	pvCross->x = pv1->y * pv2->z - pv1->z * pv2->y;
 	pvCross->y = pv1->z * pv2->x - pv1->x * pv2->z;

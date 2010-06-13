@@ -30,56 +30,14 @@ void f2sz(float f, char *sz)
 	WideCharToMultiByte(CP_ACP, 0, wzT, -1, sz, 256, NULL, NULL);
 	}
 
-
-void Vertex3D::Normalize()
-	{
-	const float oneoverlength = 1.0f/sqrtf(x*x + y*y + z*z);
-	x *= oneoverlength;
-	y *= oneoverlength;
-	z *= oneoverlength;
-	}
-
-void Vertex3D::NormalizeNormal()
-	{
-	const float oneoverlength = 1.0f/sqrtf(nx*nx + ny*ny + nz*nz);
-	nx *= oneoverlength;
-	ny *= oneoverlength;
-	nz *= oneoverlength;
-	}
-
-float Vertex3D::Dot(const Vertex3D * const pv) const
-	{
-	return x*pv->x + y*pv->y + z*pv->z;
-	}
-
-float Vertex3D::DistanceSquared(const Vertex3D * const pv) const
-	{
-	const float dx = (pv->x - x);
-	const float dy = (pv->y - y);
-	const float dz = (pv->z - z);
-	return dx*dx + dy*dy + dz*dz;
-	}
-
-float Vertex3D::LengthSquared() const
-	{
-	return x*x + y*y + z*z;
-	}
-
-void Vertex3D::MultiplyScalar(const float scalar)
-	{
-	x *= scalar;
-	y *= scalar;
-	z *= scalar;
-	}
-
-void Vertex3D::Add(const Vertex3D * const pv)
-	{
-	x += pv->x;
-	y += pv->y;
-	z += pv->z;
-	}
-
 void Matrix3::CreateSkewSymmetric(const Vertex3D * const pv3D)
+	{
+	m_d[0][0] = 0; m_d[0][1] = -pv3D->z; m_d[0][2] = pv3D->y;
+	m_d[1][0] = pv3D->z; m_d[1][1] = 0; m_d[1][2] = -pv3D->x;
+	m_d[2][0] = -pv3D->y; m_d[2][1] = pv3D->x; m_d[2][2] = 0;
+	}
+
+void Matrix3::CreateSkewSymmetric(const Vertex3Ds * const pv3D)
 	{
 	m_d[0][0] = 0; m_d[0][1] = -pv3D->z; m_d[0][2] = pv3D->y;
 	m_d[1][0] = pv3D->z; m_d[1][1] = 0; m_d[1][2] = -pv3D->x;
@@ -99,7 +57,32 @@ void Matrix3::MultiplyScalar(const float scalar)
 
 void Matrix3::MultiplyVector(const Vertex3D * const pv3D, Vertex3D * const pv3DOut)
 	{
-    	float ans[3];
+    float ans[3];
+
+    for(int i = 0;i < 3;i++)
+		{
+        float value = 0.0f;
+      
+        for(int l = 0;l < 3;l++)
+			{
+            value += m_d[i][l] *
+                    pv3D->m_d[l];
+			}
+
+        ans[i] = value;
+		}
+
+	// Copy the final values over later.  This makes it so pv3D and pv3DOut can
+	// point to the same vertex.
+    for(int i = 0;i < 3;i++)
+		{
+        pv3DOut->m_d[i] = ans[i];
+		}
+	}
+
+void Matrix3::MultiplyVector(const Vertex3Ds * const pv3D, Vertex3Ds * const pv3DOut)
+	{
+    float ans[3];
 
     for(int i = 0;i < 3;i++)
 		{
@@ -167,9 +150,9 @@ void Matrix3::AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2
 
 void Matrix3::OrthoNormalize()
 	{
-	Vertex3D vX;
-	Vertex3D vY;
-	Vertex3D vZ;
+	Vertex3Ds vX;
+	Vertex3Ds vY;
+	Vertex3Ds vZ;
 
 	vX.Set(m_d[0][0], m_d[1][0], m_d[2][0]);
 	vY.Set(m_d[0][1], m_d[1][1], m_d[2][1]);

@@ -15,7 +15,7 @@
 class TriggerData
 	{
 public:
-	Vertex m_vCenter;
+	Vertex2D m_vCenter;
 	float m_radius;
 	TimerDataRoot m_tdr;
 	char m_szSurface[MAXTOKEN];
@@ -86,15 +86,15 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Trigger)
 	virtual void DoCommand(int icmd, int x, int y);
 
 		// Multi-object manipulation
-	virtual void FlipY(Vertex *pvCenter);
-	virtual void FlipX(Vertex *pvCenter);
-	virtual void Rotate(float ang, Vertex *pvCenter);
-	virtual void Scale(float scalex, float scaley, Vertex *pvCenter);
-	virtual void Translate(Vertex *pvOffset);
-	virtual void GetCenter(Vertex *pv) {GetPointCenter(pv);}
-	virtual void PutCenter(Vertex *pv) {PutPointCenter(pv);}
-	virtual void GetPointCenter(Vertex *pv);
-	virtual void PutPointCenter(Vertex *pv);
+	virtual void FlipY(Vertex2D *pvCenter);
+	virtual void FlipX(Vertex2D *pvCenter);
+	virtual void Rotate(float ang, Vertex2D *pvCenter);
+	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+	virtual void Translate(Vertex2D *pvOffset);
+	virtual void GetCenter(Vertex2D *pv) {GetPointCenter(pv);}
+	virtual void PutCenter(Vertex2D *pv) {PutPointCenter(pv);}
+	virtual void GetPointCenter(Vertex2D *pv);
+	virtual void PutPointCenter(Vertex2D *pv);
 	
 	void CurvesToShapes(Vector<HitObject> *pvho);
 	void AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *pv2, RenderVertex *pv3, float height);

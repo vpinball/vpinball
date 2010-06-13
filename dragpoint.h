@@ -29,17 +29,17 @@ public:
 
 	virtual void ClearPointsForOverwrite();
 
-	virtual void GetPointCenter(Vertex *pv);
-	virtual void PutPointCenter(Vertex *pv);
+	virtual void GetPointCenter(Vertex2D *pv);
+	virtual void PutPointCenter(Vertex2D *pv);
 
-	void FlipPointY(Vertex *pvCenter);
-	void FlipPointX(Vertex *pvCenter);
+	void FlipPointY(Vertex2D *pvCenter);
+	void FlipPointX(Vertex2D *pvCenter);
 	void RotateDialog();
-	void RotatePoints(float ang, Vertex *pvCenter);
+	void RotatePoints(float ang, Vertex2D *pvCenter);
 	void ScaleDialog();
-	void ScalePoints(float scalex, float scaley, Vertex *pvCenter);
+	void ScalePoints(float scalex, float scaley, Vertex2D *pvCenter);
 	void TranslateDialog();
-	void TranslatePoints(Vertex *pvOffset);
+	void TranslatePoints(Vertex2D *pvOffset);
 	void ReverseOrder();
 	virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
 
@@ -72,8 +72,8 @@ public:
 	virtual ItemTypeEnum GetItemType() {return eItemDragPoint;}
 
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 	virtual void EditMenu(HMENU hmenu);
 	virtual void DoCommand(int icmd, int x, int y);
@@ -126,7 +126,7 @@ public:
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
 
-	Vertex m_v;
+	Vertex2D m_v;
 	BOOL m_fSmooth;
 	BOOL m_fSlingshot;
 	BOOL m_fAutoTexture;

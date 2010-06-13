@@ -87,15 +87,15 @@ public:
 	virtual void Delete()=0;
 	virtual void Uncreate()=0;
 
-	virtual void FlipY(Vertex *pvCenter);
-	virtual void FlipX(Vertex *pvCenter);
-	virtual void Rotate(float ang, Vertex *pvCenter);
-	virtual void Scale(float scalex, float scaley, Vertex *pvCenter);
-	virtual void Translate(Vertex *pvOffset);
+	virtual void FlipY(Vertex2D *pvCenter);
+	virtual void FlipX(Vertex2D *pvCenter);
+	virtual void Rotate(float ang, Vertex2D *pvCenter);
+	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+	virtual void Translate(Vertex2D *pvOffset);
 
 	// So objects don't have to implement all the transformation functions themselves
-	virtual void GetCenter(Vertex *pv) = 0;
-	virtual void PutCenter(Vertex *pv) = 0;
+	virtual void GetCenter(Vertex2D *pv) = 0;
+	virtual void PutCenter(Vertex2D *pv) = 0;
 
 	virtual IEditable *GetIEditable()=0;
 

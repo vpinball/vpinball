@@ -14,7 +14,7 @@
 class KickerData
 	{
 public:
-	Vertex m_vCenter;
+	Vertex2D m_vCenter;
 	float m_radius;
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
@@ -83,8 +83,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Kicker)
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex *pv);
-	virtual void PutCenter(Vertex *pv);
+	virtual void GetCenter(Vertex2D *pv);
+	virtual void PutCenter(Vertex2D *pv);
 
 	PinTable *m_ptable;
 

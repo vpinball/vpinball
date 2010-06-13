@@ -51,13 +51,13 @@ void LightSeq::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 }
 
-void LightSeq::GetCenter(Vertex *pv)
+void LightSeq::GetCenter(Vertex2D *pv)
 {
 	pv->x = m_d.m_v.x;
 	pv->y = m_d.m_v.y;
 }
 
-void LightSeq::PutCenter(Vertex *pv)
+void LightSeq::PutCenter(Vertex2D *pv)
 {
 	m_d.m_v.x = pv->x;
 	m_d.m_v.y = pv->y;
@@ -464,7 +464,7 @@ HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex2D));
     bw.WriteWideString(FID(COLC), (WCHAR *)m_d.m_wzCollection);
 	bw.WriteFloat(FID(CTRX), m_d.m_vCenter.x);
 	bw.WriteFloat(FID(CTRY), m_d.m_vCenter.y);
@@ -518,7 +518,7 @@ BOOL LightSeq::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_v, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_v, sizeof(Vertex2D));
 		}
 	else if (id == FID(COLC))
 		{
@@ -1929,12 +1929,12 @@ PinTable *LightSeqCenter::GetPTable()
 	return m_pLightSeq->GetPTable();
 }
 
-void LightSeqCenter::GetCenter(Vertex *pv)
+void LightSeqCenter::GetCenter(Vertex2D *pv)
 {
 	*pv = m_pLightSeq->m_d.m_vCenter;
 }
 
-void LightSeqCenter::PutCenter(Vertex *pv)
+void LightSeqCenter::PutCenter(Vertex2D *pv)
 {
 	m_pLightSeq->m_d.m_vCenter = *pv;
 }

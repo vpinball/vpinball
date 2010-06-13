@@ -265,7 +265,7 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 	LastPlungerHit = msec();
 
 	// We are close enable the plunger light.
-	newtime = (float)m_plungeranim.m_linesegBase.HitTest(&BallT, dtime, &hitnormal[0]);
+	newtime = m_plungeranim.m_linesegBase.HitTest(&BallT, dtime, &hitnormal[0]);
 	if (newtime >= 0 && newtime <= hittime)
 		{
 		fHit = fTrue;
@@ -280,8 +280,8 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 
 	for (int i=0;i<2;i++)
 		{
-		newtime = (float)m_plungeranim.m_linesegSide[i].HitTest(&BallT, hittime, &hitnormal[0]);
-			if (newtime >= 0 && newtime <= hittime)
+		newtime = m_plungeranim.m_linesegSide[i].HitTest(&BallT, hittime, &hitnormal[0]);
+		if (newtime >= 0 && newtime <= hittime)
 			{
 			fHit = fTrue;
 			hittime = newtime;
@@ -294,7 +294,7 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 			phitnormal[1].y = 0;
 			}
 
-		newtime = (float)m_plungeranim.m_jointBase[i].HitTest(&BallT, hittime, &hitnormal[0]);
+		newtime = m_plungeranim.m_jointBase[i].HitTest(&BallT, hittime, &hitnormal[0]);
 		if (newtime >= 0 && newtime <= hittime)
 			{
 			fHit = fTrue;
@@ -308,11 +308,11 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 			}
 		}
 
-	float deltay = m_plungeranim.m_speed;
+	const float deltay = m_plungeranim.m_speed;
 	
 	BallT.vy -= deltay;
 
-	newtime = (float)m_plungeranim.m_linesegEnd.HitTest(&BallT, hittime, &hitnormal[0]);
+	newtime = m_plungeranim.m_linesegEnd.HitTest(&BallT, hittime, &hitnormal[0]);
 	if (newtime >= 0 && newtime <= hittime)
 		{
 		fHit = fTrue;
@@ -328,7 +328,7 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3D *phitnormal)
 
 	for (int i=0;i<2;i++)
 		{
-		newtime = (float)m_plungeranim.m_jointEnd[i].HitTest(&BallT, hittime, &hitnormal[0]);
+		newtime = m_plungeranim.m_jointEnd[i].HitTest(&BallT, hittime, &hitnormal[0]);
 		if (newtime >= 0 && newtime <= hittime)
 			{
 			fHit = fTrue;

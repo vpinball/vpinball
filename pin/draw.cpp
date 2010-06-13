@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#define zoom 0.3
+#define zoom 0.3f
 
 void DrawLine(HDC hdc, float x1, float y1, float x2, float y2)
 	{

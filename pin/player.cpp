@@ -368,9 +368,6 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 	pvho->AddElement(plineseg);
 
 	Vertex3D rgv3D[4];
-
-	Hit3DPoly *ph3dpoly;
-
 	rgv3D[0].x = m_ptable->m_left;
 	rgv3D[0].y = m_ptable->m_top;
 	rgv3D[0].z = m_ptable->m_glassheight;
@@ -387,7 +384,7 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 	rgv3D[3].y = m_ptable->m_bottom;
 	rgv3D[3].z = m_ptable->m_glassheight;
 
-	ph3dpoly = new Hit3DPoly(rgv3D,4);
+	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4);
 
 	pvho->AddElement(ph3dpoly);
 	}
@@ -2764,11 +2761,11 @@ void Player::DrawBallShadows()
 
 	for (int i=0;i<m_vball.Size();i++)
 		{
-		Ball *pball = m_vball.ElementAt(i);
+		Ball * const pball = m_vball.ElementAt(i);
 
 		if (m_fBallShadows)
 			{
-			Vertex3D *rgv3DShadow = pball->m_rgv3DShadow;
+			Vertex3D * const rgv3DShadow = pball->m_rgv3DShadow;
 
 			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
 			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
@@ -2797,9 +2794,9 @@ void Player::DrawBallShadows()
 			ballT.x = pball->x;
 			ballT.y = pball->y;
 			ballT.z = pball->z;
-			ballT.vx = 200;
-			ballT.vy = -200;
-			ballT.vz = -200;
+			ballT.vx = 200.0f;
+			ballT.vy = -200.0f;
+			ballT.vz = -200.0f;
 			ballT.radius = 0;
 			
 			ballT.m_hittime = 1;
@@ -2928,17 +2925,17 @@ void Player::DrawBalls()
 
 	for (int i=0;i<m_vball.Size();i++)
 		{
-		Ball *pball = m_vball.ElementAt(i);
+		Ball * const pball = m_vball.ElementAt(i);
 
-		float r = (pball->m_color & 255) * (float)(1.0/255.0);
-		float g = (pball->m_color & 65280) * (float)(1.0/65280.0);
-		float b = (pball->m_color & 16711680) * (float)(1.0/16711680.0);
+		const float r = (pball->m_color & 255) * (float)(1.0/255.0);
+		const float g = (pball->m_color & 65280) * (float)(1.0/65280.0);
+		const float b = (pball->m_color & 16711680) * (float)(1.0/16711680.0);
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
 		mtrl.diffuse.b = mtrl.ambient.b = b;
 		m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
-		Vertex3D *rgv3D = pball->m_rgv3D;
+		Vertex3D * const rgv3D = pball->m_rgv3D;
 
 		PINFLOAT zheight;
 
@@ -2949,36 +2946,36 @@ void Player::DrawBalls()
 			zheight += pball->radius;
 			}
 
-		rgv3D[0].x = (float)(pball->x - pball->radius);
-		rgv3D[0].y = (float)(pball->y - (pball->radius * cs));
-		rgv3D[0].z = (float)(zheight + (pball->radius * sn));
+		rgv3D[0].x = pball->x - pball->radius;
+		rgv3D[0].y = pball->y - (pball->radius * cs);
+		rgv3D[0].z = zheight + (pball->radius * sn);
 		rgv3D[0].tu = 0;
 		rgv3D[0].tv = 0;
 		rgv3D[0].nx = 0;
 		rgv3D[0].ny = 0;
 		rgv3D[0].nz = -1.0f;
 
-		rgv3D[3].x = (float)(pball->x - pball->radius);
-		rgv3D[3].y = (float)(pball->y + (pball->radius * cs));
-		rgv3D[3].z = (float)(zheight - (pball->radius * sn));
+		rgv3D[3].x = pball->x - pball->radius;
+		rgv3D[3].y = pball->y + (pball->radius * cs);
+		rgv3D[3].z = zheight - (pball->radius * sn);
 		rgv3D[3].tu = 0;
-		//rgv3D[3].tv = 1; // decided by ball picture
+		//rgv3D[3].tv = 1.0f; // decided by ball picture
 		rgv3D[3].nx = 0;
 		rgv3D[3].ny = 0;
 		rgv3D[3].nz = -1.0f;
 
-		rgv3D[2].x = (float)(pball->x + pball->radius);
-		rgv3D[2].y = (float)(pball->y + (pball->radius * cs));
-		rgv3D[2].z = (float)(zheight - (pball->radius * sn));
-		//rgv3D[2].tu = 1;  // decided by ball picture
-		//rgv3D[2].tv = 1;  // decided by ball picture
+		rgv3D[2].x = pball->x + pball->radius;
+		rgv3D[2].y = pball->y + (pball->radius * cs);
+		rgv3D[2].z = zheight - (pball->radius * sn);
+		//rgv3D[2].tu = 1.0f;  // decided by ball picture
+		//rgv3D[2].tv = 1.0f;  // decided by ball picture
 		rgv3D[2].nx = 0;
 		rgv3D[2].ny = 0;
 		rgv3D[2].nz = -1.0f;
 
-		rgv3D[1].x = (float)(pball->x + pball->radius);
-		rgv3D[1].y = (float)(pball->y - (pball->radius * cs));
-		rgv3D[1].z = (float)(zheight + (pball->radius * sn));
+		rgv3D[1].x = pball->x + pball->radius;
+		rgv3D[1].y = pball->y - (pball->radius * cs);
+		rgv3D[1].z = zheight + (pball->radius * sn);
 		//rgv3D[1].tu = 1.0f;  // decided by ball picture
 		rgv3D[1].tv = 0;
 		rgv3D[1].nx = 0;
@@ -3106,9 +3103,9 @@ void Player::DrawBalls()
 						rgv3DArrowTransformed[iPoint].z *= -pball->radius;
 						rgv3DArrowTransformed[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinFront->m_maxtu;
 						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinFront->m_maxtv;
-						rgv3DArrowTransformed[iPoint].x += (float)pball->x;
-						rgv3DArrowTransformed[iPoint].y += (float)pball->y;
-						rgv3DArrowTransformed[iPoint].z += (float)zheight;
+						rgv3DArrowTransformed[iPoint].x += pball->x;
+						rgv3DArrowTransformed[iPoint].y += pball->y;
+						rgv3DArrowTransformed[iPoint].z += zheight;
 						}
 
 					//m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
@@ -3139,9 +3136,9 @@ void Player::DrawBalls()
 						rgv3DArrowTransformed[iPoint].z *= -pball->radius;
 						rgv3DArrowTransformed[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinBack->m_maxtu;
 						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinBack->m_maxtv;
-						rgv3DArrowTransformed[iPoint].x += (float)pball->x;
-						rgv3DArrowTransformed[iPoint].y += (float)pball->y;
-						rgv3DArrowTransformed[iPoint].z += (float)zheight;
+						rgv3DArrowTransformed[iPoint].x += pball->x;
+						rgv3DArrowTransformed[iPoint].y += pball->y;
+						rgv3DArrowTransformed[iPoint].z += zheight;
 						}
 
 					/*m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
@@ -3269,15 +3266,13 @@ void Player::DoDebugObjectMenu(int x, int y)
 
 	mat3D.Invert();
 
-	Vertex3D v3d, v3d2;
-
 	D3DVIEWPORT7 vp;
 	g_pplayer->m_pin3d.m_pd3dDevice->GetViewport( &vp );
-	float rClipWidth  = vp.dwWidth/2.0f;
-	float rClipHeight = vp.dwHeight/2.0f;
+	const float rClipWidth  = (float)vp.dwWidth*0.5f;
+	const float rClipHeight = (float)vp.dwHeight*0.5f;
 
-	float xcoord = (x-rClipWidth)/rClipWidth;
-	float ycoord = (-(y-rClipHeight))/rClipHeight;
+	const float xcoord = ((float)x-rClipWidth)/rClipWidth;
+	const float ycoord = (-((float)y-rClipHeight))/rClipHeight;
 
 	Vertex3D vT, vT2;
 	g_pplayer->m_pin3d.m_matrixTotal.MultiplyVector(798,1465,89,&vT);
@@ -3287,6 +3282,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 	// screen pixel the user clicked on is at.  Get the point at the near
 	// clipping plane (z=0) and the far clipping plane (z=1) to get the whole
 	// range we need to hit test
+	Vertex3Ds v3d, v3d2;
 	mat3D.MultiplyVector(xcoord,ycoord,0,&v3d);
 	mat3D.MultiplyVector(xcoord,ycoord,1,&v3d2);
 

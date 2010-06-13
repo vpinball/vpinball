@@ -65,11 +65,11 @@ void Trigger::PreRender(Sur *psur)
 			GetRgVertex(&vvertex);
 
 			const int cvertex = vvertex.Size();
-			Vertex * const rgv = new Vertex[cvertex];
+			Vertex2D * const rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
-				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
 				}
 
@@ -108,11 +108,11 @@ void Trigger::Render(Sur *psur)
 			psur->SetBorderColor(RGB(0,180,0),fFalse,1);
 
 			const int cvertex = vvertex.Size();
-			Vertex * const rgv = new Vertex[cvertex];
+			Vertex2D * const rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
-				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
 				}
 
@@ -279,7 +279,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	//Vector<Vertex> vvertex;
+	//Vector<Vertex2D> vvertex;
 
 	RenderVertex *rgv;
 	//RenderVertex * const rgv = GetRgRenderVertex(&count);
@@ -356,7 +356,7 @@ void Trigger::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 
 	plineseg->CalcNormal();
 
-	Vertex vt1, vt2;
+	Vertex2D vt1, vt2;
 	vt1.x = pv1->x - pv2->x;
 	vt1.y = pv1->y - pv2->y;
 
@@ -503,12 +503,12 @@ void Trigger::MoveOffset(float dx, float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Trigger::GetPointCenter(Vertex *pv)
+void Trigger::GetPointCenter(Vertex2D *pv)
 	{
 	*pv = m_d.m_vCenter;
 	}
 
-void Trigger::PutPointCenter(Vertex *pv)
+void Trigger::PutPointCenter(Vertex2D *pv)
 	{
 	m_d.m_vCenter = *pv;
 
@@ -532,7 +532,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
 		{
 		case ID_WALLMENU_FLIP:
 			{
-			Vertex vCenter;
+			Vertex2D vCenter;
 			GetPointCenter(&vCenter);
 			FlipPointY(&vCenter);
 			}
@@ -540,7 +540,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
 
 		case ID_WALLMENU_MIRROR:
 			{
-			Vertex vCenter;
+			Vertex2D vCenter;
 			GetPointCenter(&vCenter);
 			FlipPointX(&vCenter);
 			}
@@ -566,7 +566,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
 
 			RECT rc;
 			GetClientRect(m_ptable->m_hwnd, &rc);
-			Vertex v, vOut;
+			Vertex2D v, vOut;
 			int iSeg;
 
 			phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
@@ -578,11 +578,11 @@ void Trigger::DoCommand(int icmd, int x, int y)
 			GetRgVertex(&vvertex);
 
 			const int cvertex = vvertex.Size();
-			Vertex * const rgv = new Vertex[cvertex];
+			Vertex2D * const rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
-				rgv[i] = *((Vertex *)vvertex.ElementAt(i));
+				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				}
 
 			ClosestPointOnPolygon(rgv, cvertex, &v, &vOut, &iSeg, fTrue);
@@ -625,27 +625,27 @@ void Trigger::DoCommand(int icmd, int x, int y)
 		}
 	}
 
-void Trigger::FlipY(Vertex *pvCenter)
+void Trigger::FlipY(Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::FlipPointY(pvCenter);
 	}
 
-void Trigger::FlipX(Vertex *pvCenter)
+void Trigger::FlipX(Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::FlipPointX(pvCenter);
 	}
 
-void Trigger::Rotate(float ang, Vertex *pvCenter)
+void Trigger::Rotate(float ang, Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::RotatePoints(ang, pvCenter);
 	}
 
-void Trigger::Scale(float scalex, float scaley, Vertex *pvCenter)
+void Trigger::Scale(float scalex, float scaley, Vertex2D *pvCenter)
 	{
 	IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter);
 	}
 
-void Trigger::Translate(Vertex *pvOffset)
+void Trigger::Translate(Vertex2D *pvOffset)
 	{
 	IHaveDragPoints::TranslatePoints(pvOffset);
 	}
@@ -659,7 +659,7 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex));
+	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
 	bw.WriteFloat(FID(RADI), m_d.m_radius);
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -723,7 +723,7 @@ BOOL Trigger::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VCEN))
 		{
-		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
 		}
 	else if (id == FID(RADI))
 		{

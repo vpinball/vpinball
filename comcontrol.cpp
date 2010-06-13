@@ -932,11 +932,11 @@ void PinComControl::Render(Sur *psur)
 	}
 
 
-void PinComControl::GetCenter(Vertex *pv)
+void PinComControl::GetCenter(Vertex2D *pv)
 	{
 	}
 
-void PinComControl::PutCenter(Vertex *pv)
+void PinComControl::PutCenter(Vertex2D *pv)
 	{
 	}
 
@@ -1062,8 +1062,8 @@ HRESULT PinComControl::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY 
 	{
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-	bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex));
-	bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex));
+	bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex2D));
+	bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
 
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -1138,11 +1138,11 @@ BOOL PinComControl::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VER1))
 		{
-		pbr->GetStruct(&m_d.m_v1, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_v1, sizeof(Vertex2D));
 		}
 	else if (id == FID(VER2))
 		{
-		pbr->GetStruct(&m_d.m_v2, sizeof(Vertex));
+		pbr->GetStruct(&m_d.m_v2, sizeof(Vertex2D));
 		}
 	else if (id == FID(TMON))
 		{
