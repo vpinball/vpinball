@@ -608,7 +608,6 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	_ASSERTE(m_phitflipper);
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-	LPDIRECTDRAWSURFACE7 pdds;
 	
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
@@ -661,7 +660,7 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 
 		// Create offscreen surfaces for color and depth buffers.
-		pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		LPDIRECTDRAWSURFACE7 pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		// Copy the back buffer to the new offscreen surfaces.

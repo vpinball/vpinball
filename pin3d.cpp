@@ -236,7 +236,6 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreen(int width, int height)
 		return NULL;
 	}
 
-	LPDIRECTDRAWSURFACE7 pdds;
 	ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_CKSRCBLT;
 	ddsd.ddckCKSrcBlt.dwColorSpaceLowValue = 0;//0xffffff;
 	ddsd.ddckCKSrcBlt.dwColorSpaceHighValue = 0;//0xffffff;
@@ -255,7 +254,8 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreen(int width, int height)
 		}
 
 	HRESULT hr;
-    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
+	LPDIRECTDRAWSURFACE7 pdds;
+	if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
 		{
 		ShowError("Could not create offscreen surface.");
 		exit(-1400); //rlc exit after show error
@@ -281,9 +281,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateZBufferOffscreen(int width, int height)
 		pDeviceGUID = &IID_IDirect3DRGBDevice;
 		}
 
-	LPDIRECTDRAWSURFACE7 pdds;
-
-    // Get z-buffer dimensions from the render target
+	// Get z-buffer dimensions from the render target
     DDSURFACEDESC2 ddsd;
     ddsd.dwSize = sizeof(ddsd);
     m_pddsBackBuffer->GetSurfaceDesc( &ddsd ); // read description out of backbuffer so we get the current pixelformat depth to look for
@@ -314,6 +312,7 @@ retryall:
 	// Create the z buffer, loop over possible other modes until one found
 	HRESULT hr;
 	int count = 0;
+	LPDIRECTDRAWSURFACE7 pdds;
 	while(( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) ) && (count <= 6))
     {
 		switch(count) {

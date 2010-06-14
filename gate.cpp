@@ -367,7 +367,6 @@ void Gate::RenderMoversFromCache(Pin3D *ppin3d)
 void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-	LPDIRECTDRAWSURFACE7 pdds;
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
 	float maxtuback, maxtvback;
@@ -680,7 +679,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
 			}
 
-		pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		LPDIRECTDRAWSURFACE7 pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
