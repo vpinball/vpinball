@@ -97,7 +97,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Trigger)
 	virtual void PutPointCenter(Vertex2D *pv);
 	
 	void CurvesToShapes(Vector<HitObject> *pvho);
-	void AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *pv2, RenderVertex *pv3, float height);
+	void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const float height);
 
 	virtual void ClearForOverwrite();
 

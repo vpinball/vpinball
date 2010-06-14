@@ -531,15 +531,14 @@ void Player::InitDebugHitStructure()
 	{
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
-		Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+		Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
 			{
-			int currentsize = m_vdebugho.Size();
+			const int currentsize = m_vdebugho.Size();
 			ph->GetHitShapesDebug(&m_vdebugho);
-			int newsize = m_vdebugho.Size();
-			int hitloop;
+			const int newsize = m_vdebugho.Size();
 			// Save the objects the trouble of having the set the idispatch pointer themselves
-			for (hitloop = currentsize;hitloop < newsize;hitloop++)
+			for (int hitloop = currentsize;hitloop < newsize;hitloop++)
 				{
 				m_vdebugho.ElementAt(hitloop)->m_pfedebug = m_ptable->m_vedit.ElementAt(i)->GetIFireEvents();
 				}
@@ -681,9 +680,9 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 					  + (ptable->m_angletiltMax - ptable->m_angletiltMin) 
 					  * ptable->m_globalDifficulty;
 	
-	m_mainlevel.m_gravity.x = (D3DVALUE)0;
-	m_mainlevel.m_gravity.y = (D3DVALUE)( sinf(ANGTORAD(slope))*ptable->m_Gravity);
-	m_mainlevel.m_gravity.z = (D3DVALUE)(-cosf(ANGTORAD(slope))*ptable->m_Gravity);
+	m_mainlevel.m_gravity.x = 0;
+	m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*ptable->m_Gravity;
+	m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*ptable->m_Gravity;
 
 	m_NudgeX = 0;
 	m_NudgeY = 0;
@@ -712,15 +711,14 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
-		Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+		Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
 			{
-			int currentsize = m_vho.Size();
+			const int currentsize = m_vho.Size();
 			ph->GetHitShapes(&m_vho);
-			int newsize = m_vho.Size();
-			int hitloop;
+			const int newsize = m_vho.Size();
 			// Save the objects the trouble of having the set the idispatch pointer themselves
-			for (hitloop = currentsize;hitloop < newsize;hitloop++)
+			for (int hitloop = currentsize;hitloop < newsize;hitloop++)
 				{
 				m_vho.ElementAt(hitloop)->m_pfedebug = m_ptable->m_vedit.ElementAt(i)->GetIFireEvents();
 				}
@@ -790,7 +788,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 	if (fCheckForCache)
 		{
-		BOOL fGotCache = m_pin3d.OpenCacheFileForRead();
+		const BOOL fGotCache = m_pin3d.OpenCacheFileForRead();
 
 		if (!fGotCache)
 			{
@@ -981,7 +979,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	// Call Init
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
-		Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+		Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
 			{
 			if (ph->GetEventProxyBase())
@@ -1012,10 +1010,10 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemSurface)
 			{
-			Surface *psurface = ((Surface *)m_ptable->m_vedit.ElementAt(i));
+			const Surface * const psurface = ((Surface *)m_ptable->m_vedit.ElementAt(i));
 			if (psurface->m_d.m_fDroppable)
 				{
-				IEditable *piedit = m_ptable->m_vedit.ElementAt(i);
+				IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 				m_ptable->m_vedit.RemoveElement(piedit);
 				m_ptable->m_vedit.InsertElementAt(piedit,0);
 				m_ptable->SetDirtyDraw();
@@ -1071,7 +1069,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemLight)
 			{
-			IEditable *piedit = m_ptable->m_vedit.ElementAt(i);
+			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 			m_ptable->m_vedit.RemoveElement(piedit);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
 			m_ptable->SetDirtyDraw();
@@ -1100,7 +1098,7 @@ void Player::InitStatic(HWND hwndProgress)
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal && m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemKicker)
 			{
-			Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+			Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 			if (ph)
 				{
 				ph->RenderStatic(m_pin3d.m_pd3dDevice);
@@ -1117,7 +1115,7 @@ void Player::InitStatic(HWND hwndProgress)
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDecal)
 			{
-			Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+			Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 			if (ph)
 				{
 				ph->RenderStatic(m_pin3d.m_pd3dDevice);
@@ -1134,7 +1132,7 @@ void Player::InitStatic(HWND hwndProgress)
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemKicker)
 			{
-			Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+			Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 			if (ph)
 				{
 				ph->RenderStatic(m_pin3d.m_pd3dDevice);
@@ -1165,7 +1163,7 @@ void Player::InitAnimations(HWND hwndProgress)
 	// Draw stuff
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
-		Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+		Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
 		{
 			if (m_pin3d.m_fReadingFromCache)
@@ -1188,7 +1186,7 @@ void Player::InitAnimations(HWND hwndProgress)
 	{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemLight)
 		{
-			Light *plight = ((Light *)m_ptable->m_vedit.ElementAt(i));
+			Light * const plight = ((Light *)m_ptable->m_vedit.ElementAt(i));
 			if (plight->m_d.m_state == LightStateBlinking)
 			{
 				plight->DrawFrame(plight->m_rgblinkpattern[0] == '1');
@@ -1200,7 +1198,7 @@ void Player::InitAnimations(HWND hwndProgress)
 		}
 		else if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemBumper)
 		{
-			Bumper *pbumper = ((Bumper *)m_ptable->m_vedit.ElementAt(i));
+			Bumper * const pbumper = ((Bumper *)m_ptable->m_vedit.ElementAt(i));
 			if (pbumper->m_d.m_state == LightStateBlinking)
 			{
 				pbumper->DrawFrame(pbumper->m_rgblinkpattern[0] == '1');
@@ -1223,8 +1221,8 @@ void Player::InitAnimations(HWND hwndProgress)
 
 Ball *Player::CreateBall(float x, float y, float z, float vx, float vy, float vz)
 	{
-	Ball *pball = new Ball();
-	pball->radius = 25;
+	Ball * const pball = new Ball();
+	pball->radius = 25.0f;
 	pball->x = x;
 	pball->y = y;
 	pball->z = z+pball->radius;
@@ -1256,32 +1254,19 @@ Ball *Player::CreateBall(float x, float y, float z, float vx, float vy, float vz
 
 void Player::EraseBall(Ball *pball)
 {
-
-	int blur;
-
 	// Erase each ball blur.
-	for ( blur=0; blur<BALL_NUMBLURS; blur++ )
+	for ( int blur=0; blur<BALL_NUMBLURS; blur++ )
 	{
 		// Flag the region as needing to be updated.
 		if (m_fBallShadows)
 		{
-			if (fIntRectIntersect(pball->m_rcScreen[blur], pball->m_rcScreenShadow[blur]))
+			if (!(fIntRectIntersect(pball->m_rcScreen[blur], pball->m_rcScreenShadow[blur])))
 			{
-				// Rect already merged
-				InvalidateRect(&pball->m_rcScreen[blur]);
-			}
-			else
-			{
-				InvalidateRect(&pball->m_rcScreen[blur]);
 				InvalidateRect(&pball->m_rcScreenShadow[blur]);
 			}
 		}
-		else
-		{
-			InvalidateRect(&pball->m_rcScreen[blur]);
-		}
+		InvalidateRect(&pball->m_rcScreen[blur]);
 	}
-
 }
 
 
@@ -1309,23 +1294,13 @@ void Player::DestroyBall(Ball *pball)
 
 	if (m_pactiveballDebug == pball)
 		{
-		if (m_vball.Size() > 0)
-			{
-			m_pactiveballDebug = m_vball.ElementAt(0);
-			}
-		else
-			{
-			m_pactiveballDebug = NULL;
-			}
+		m_pactiveballDebug = (m_vball.Size() > 0) ? m_vball.ElementAt(0) : NULL;
 		}
 	}
 
 void Player::InitDMDHackWindow()
 {
-
 	WNDCLASSEX	wcex;
-	int			x, y;
-	int			width, height;
 
 	// Define the window.
 	memset ( &wcex, 0, sizeof ( WNDCLASSEX ) );
@@ -1340,26 +1315,22 @@ void Player::InitDMDHackWindow()
 	RegisterClassEx ( &wcex );
 
 	// Place window in top-left corner.
-	x = 0;
-	y = 0;
+	const int x = 0;
+	const int y = 0;
 
 	// Set the width and height.
-	width = 200;
-	height = 100;
+	const int width = 200;
+	const int height = 100;
 
 	// TEXT
 	m_dmdhackhwnd = ::CreateWindowEx( (WS_EX_TOPMOST), "VPPlayerDMDHack", "Visual Pinball Player DMD Hack", (WS_POPUP | WS_CLIPCHILDREN), x, y, width, height, NULL, NULL, g_hinst, 0);
-
 }
 
 
 void Player::InitWindow()
 	{
-
 	WNDCLASSEX wcex;
-
 	memset(&wcex, 0, sizeof(WNDCLASSEX));
-
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = 0;
 	wcex.lpfnWndProc = (WNDPROC) PlayerWndProc;
@@ -1416,8 +1387,6 @@ void Player::InitWindow()
 		screenheight = GetSystemMetrics(SM_CYSCREEN);
 		}
 
-	int x,y;
-
 	// constrain window to screen
 	if (!m_fFullScreen & (m_width > screenwidth))
 		{
@@ -1431,13 +1400,13 @@ void Player::InitWindow()
 		m_width = m_height * 4 / 3;
 		}
 
-	x = (screenwidth - m_width) / 2;
-	y = (screenheight - m_height) / 2;
+	int x = (screenwidth - m_width) / 2;
+	int y = (screenheight - m_height) / 2;
 
 	int windowflags = WS_POPUP | WS_CLIPCHILDREN;
 	int windowflagsex = 0;
 
-	int captionheight = GetSystemMetrics(SM_CYCAPTION);
+	const int captionheight = GetSystemMetrics(SM_CYCAPTION);
 
 	if (!m_fFullScreen & (screenheight - m_height >= (captionheight*2))) // We have enough room for a frame
 	{
@@ -1509,7 +1478,7 @@ void Player::UltraNudgeY(int y, int j )
 F32 GetX()
 {
 
-	return ((F32)curAccel_x[0]) * (2.0f / ((F32)(JOYRANGEMX-JOYRANGEMN)));
+	return ((F32)curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN));
 
 }
 
@@ -1517,14 +1486,13 @@ F32 GetX()
 F32 GetY()
 {
 
-    return ((F32)curAccel_y[0]) * (2.0f / ((F32)(JOYRANGEMX-JOYRANGEMN)));
+    return ((F32)curAccel_y[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN));
 
 }
 
 
 int Player::UltraNudgeGetTilt()
 {
-
 	static U32 last_tilt_time;
 	static U32 last_jolt_time;
 
@@ -1532,7 +1500,7 @@ int Player::UltraNudgeGetTilt()
 
 	if (m_tilt_amount == 0 || m_jolt_amount == 0)return 0;	//disabled
 
-	U32 ms = msec();
+	const U32 ms = msec();
 
 	U32 tilt_2 = 0;
 	for(int j = 0; j < e_JoyCnt; ++j)	//find largest value
@@ -1555,21 +1523,17 @@ int Player::UltraNudgeGetTilt()
 	}
 
 	return 0;
-
 }
 
 
 void Player::UltraNudge()	// called on every intergral physics frame
 {	
-
 	static F32 cna=1,sna=0,na=0;	//rlc initialize for angle 0
-	float dx, dy;
-
+	
 	if (m_NudgeManual >= 0)			// Only one joystick controls in manual mode
-	{
-		
-		m_NudgeX = m_AccelMAmp * ((float)curAccel_x[m_NudgeManual])/((float)JOYRANGE); // * Manual Gain
-		m_NudgeY =  m_AccelMAmp * ((float)curAccel_y[m_NudgeManual])/((float)JOYRANGE);
+	{		
+		m_NudgeX = m_AccelMAmp * ((float)curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE); // * Manual Gain
+		m_NudgeY = m_AccelMAmp * ((float)curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
 
 		if (g_pplayer->m_ptable->m_tblMirrorEnabled)
 			m_NudgeX = -m_NudgeX;
@@ -1592,14 +1556,13 @@ void Player::UltraNudge()	// called on every intergral physics frame
 	}
 
 	for(int j = 0; j < e_JoyCnt; ++j)
-	{
-		
-		dx = ((float)curAccel_x[j])/((float)JOYRANGE);							// norm range -1 .. 1	
-		dy =  ((float)curAccel_y[j])/((float)JOYRANGE);	
+	{		
+		float dx = ((float)curAccel_x[j])*(float)(1.0/JOYRANGE);		// norm range -1 .. 1	
+		const float dy = ((float)curAccel_y[j])*(float)(1.0/JOYRANGE);	
 		if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
 			dx = -dx;
 
-		m_NudgeX += m_AccelAmp*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());	//calc Green's transform component for X
+		m_NudgeX += m_AccelAmp*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
 		float nugY = m_AccelAmp*(dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
 		m_NudgeY = m_AccelNormalMount ? (m_NudgeY + nugY): (m_NudgeY - nugY);	// add as left or right hand coordinate system
 	}
@@ -1670,7 +1633,7 @@ void Player::UltraPlunger()	// called on every intergral physics frame
 // that matches the mechanical plunger zero position
 float PlungerAnimObject::mechPlunger()
 {
-	float range = (float)JOYRANGEMX * (1.0f - m_parkPosition) - (float)JOYRANGEMN *m_parkPosition; // final range limit
+	const float range = (float)JOYRANGEMX * (1.0f - m_parkPosition) - (float)JOYRANGEMN *m_parkPosition; // final range limit
 	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_parkPosition : curMechPlungerPos*(1.0f - m_parkPosition);
 	tmp = tmp/range + m_parkPosition;		//scale and offset
 	return tmp;
@@ -1693,7 +1656,7 @@ void Player::mechPlungerIn(int z)
 
 void Player::PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime) // move physics forward to this time
 	{
-	PINFLOAT hittime,htz;
+	PINFLOAT hittime;
 	PINFLOAT staticTime = STATICTIME;
 	const int limitTime = m_ptable->m_PhysicsLoopTime;
 	int halfLimitTime = limitTime/2;
@@ -1734,7 +1697,7 @@ void Player::PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime) // move physics
 
 				m_hitoctree.HitTestBall(pball);			// find the hit objects and hit times
 
-				htz = pball->m_hittime;					// this ball's hit time
+				PINFLOAT htz = pball->m_hittime;		// this ball's hit time
 
 				if(htz < 0) pball->m_pho = NULL;		// no negative time allowed
 
@@ -1786,7 +1749,7 @@ void Player::PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime) // move physics
 				{			
 	
 				// now collision, contact and script reactions on active ball (object)+++++++++
-				HitObject *pho =  pball->m_pho;		// object that ball hit in trials
+				HitObject * const pho = pball->m_pho;// object that ball hit in trials
 				pball->m_pho = NULL;				// remove trial hit object pointer
 				m_pactiveball = pball;				// For script that wants the ball doing the collision
 
@@ -1807,7 +1770,7 @@ void Player::PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime) // move physics
 						{//contacts
 						c_contactcnt++;
 						const PINFLOAT mag = pball->vx*pball->vx + pball->vy*pball->vy; // values below are taken from simulation
-						if (pball->drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->vz)< 0.2f)
+						if (pball->drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->vz) < 0.2f)
 							{
 							if(--pball->m_fDynamic <= 0)						//... ball static, cancels next gravity increment
 								{												// m_fDynamic is cleared in ball gravity section
@@ -1995,7 +1958,7 @@ void Player::Render()
 		}
 	else
 		{
-		float temp = ParseLog((LARGE_INTEGER*)&m_RealTimeClock, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
+		const float temp = ParseLog((LARGE_INTEGER*)&m_RealTimeClock, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
 		if (m_fPlayback)
 			{
 			frametime = temp;
@@ -2087,11 +2050,11 @@ void Player::Render()
 #ifdef ACCURATETIMERS
 	m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 
-	int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); //rlc 10 milli-seconds
+	const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); //rlc 10 milli-seconds
 
 	for (int i=0;i<m_vht.Size();i++)
 		{
-		HitTimer *pht = m_vht.ElementAt(i);
+		HitTimer * const pht = m_vht.ElementAt(i);
 		if (pht->m_nextfire <= p_timeCur)
 			{
 			pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
@@ -2107,7 +2070,6 @@ void Player::Render()
 		UltraNudge();		//rlc physics_dtime is the balance of time to move from the graphic frame position to the next
 		UltraPlunger();		// integral physics frame.  So the previous graphics frame was (1.0 - physics_dtime) before 
 							// this integral physics frame. Accelerations and inputs are always physics frame aligned
-
 #else
 		if (m_nudgetime)
 			{
@@ -2115,8 +2077,8 @@ void Player::Render()
 
 			if (m_nudgetime == 5)
 				{
-				m_NudgeX = -m_NudgeBackX * 2;
-				m_NudgeY = m_NudgeBackY * 2;
+				m_NudgeX = -m_NudgeBackX * 2.0f;
+				m_NudgeY = m_NudgeBackY * 2.0f;
 				}
 			else if (m_nudgetime == 0)
 				{
@@ -2132,8 +2094,8 @@ void Player::Render()
 
 		if (m_nudgetime == 5)
 		{
-			m_NudgeX = -m_NudgeBackX * 2;
-			m_NudgeY = m_NudgeBackY * 2;
+			m_NudgeX = -m_NudgeBackX * 2.0f;
+			m_NudgeY = m_NudgeBackY * 2.0f;
 		}
 		else if (m_nudgetime == 0)
 		{
@@ -2174,12 +2136,12 @@ void Player::Render()
 
 	PatBlt(hdcT, 0, 0, m_width, m_height, PATCOPY);
 
-	for (i=0;i<m_vho.Size();i++)
+	for (int i=0;i<m_vho.Size();i++)
 		{
 		m_vho.ElementAt(i)->Draw(hdcT);
 		}
 
-	for (i=0;i<m_vball.Size();i++)
+	for (int i=0;i<m_vball.Size();i++)
 		{
 		SelectObject(hdcT, GetStockObject(NULL_BRUSH));
 		SelectObject(hdcT, GetStockObject(BLACK_PEN));
@@ -2217,10 +2179,10 @@ void Player::Render()
 	// the light blinking, it will just be slower than intended.
 	for (int i=0;i<m_vblink.Size();i++)
 	{
-		IBlink *pblink = m_vblink.ElementAt(i);
+		IBlink * const pblink = m_vblink.ElementAt(i);
 		if (pblink->m_timenextblink <= m_timeCur)
 		{
-			char cold = pblink->m_rgblinkpattern[pblink->m_iblinkframe];
+			const char cold = pblink->m_rgblinkpattern[pblink->m_iblinkframe];
 			pblink->m_iblinkframe++;
 			char cnew = pblink->m_rgblinkpattern[pblink->m_iblinkframe];
 			if (cnew == 0)
@@ -2244,10 +2206,10 @@ void Player::Render()
 	// it with the contents of the static buffer.
 	for (int i=0;i<m_vupdaterect.Size();i++)
 		{
-		UpdateRect *pur = m_vupdaterect.ElementAt(i);
+		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
 		if (pur->m_fSeeThrough)													
 			{
-			RECT *prc = &pur->m_rcupdate;
+			RECT * const prc = &pur->m_rcupdate;
 		
 			// Redraw the region from the static buffers to the back and z buffers.
 			m_pin3d.m_pddsBackBuffer->Blt(prc, m_pin3d.m_pddsStatic, prc, 0, NULL);
@@ -2310,14 +2272,14 @@ void Player::Render()
 		for (int l=0;l<pur->m_vobject.Size();l++)
 		{
 			// Get the object's frame to draw.
-			ObjFrame *pobjframe = pur->m_vobject.ElementAt(l)->Draw3D(&pur->m_rcupdate);
+			ObjFrame * const pobjframe = pur->m_vobject.ElementAt(l)->Draw3D(&pur->m_rcupdate);
 
 			// Make sure we have a frame.
 			if (pobjframe != NULL)
 			{
-				LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
+				const LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 				RECT rcUpdate;
-				RECT *prc = &pur->m_rcupdate;
+				RECT * const prc = &pur->m_rcupdate;
 
 				// NOTE: prc is the rectangle of the region needing to be updated.
 				// NOTE: pobjframe->rc is the rectangle of the entire object that intersects the region needing to updated.
@@ -2423,14 +2385,7 @@ void Player::Render()
 	// Check if we should turn animate the plunger light.
 	if ( (msec() - LastPlungerHit) < 512 )
 	{
-		if ( (msec() & 512) > 0 )
-		{
-			hid_set_output ( HID_OUTPUT_PLUNGER, true );
-		}
-		else
-		{
-			hid_set_output ( HID_OUTPUT_PLUNGER, false );
-		}
+		hid_set_output ( HID_OUTPUT_PLUNGER, ( (msec() & 512) > 0 ) );
 	}
 	else
 	{
@@ -2466,8 +2421,8 @@ void Player::Render()
 			// Smart Blit - only update the invalidated areas
 			for (int i=0;i<m_vupdaterect.Size();i++)
 			{
-				UpdateRect *pur = m_vupdaterect.ElementAt(i);
-				RECT *prc = &pur->m_rcupdate;
+				UpdateRect * const pur = m_vupdaterect.ElementAt(i);
+				RECT * const prc = &pur->m_rcupdate;
 
 				RECT rcNew;
 				rcNew.left = prc->left + m_pin3d.m_rcUpdate.left;
@@ -2494,7 +2449,7 @@ void Player::Render()
 	//        so if we need a clear, we need to do it somewhere else.
 	for (int i=0;i<m_vupdaterect.Size();i++)
 	{
-		UpdateRect *pur = m_vupdaterect.ElementAt(i);
+		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
 		delete pur;
 	}
 	m_vupdaterect.RemoveAllElements();
@@ -2506,7 +2461,7 @@ void Player::Render()
 
 	for (int i=0;i<m_vht.Size();i++)
 	{
-		HitTimer *pht = m_vht.ElementAt(i);
+		HitTimer * const pht = m_vht.ElementAt(i);
 		if (pht->m_nextfire <= m_timeCur)
 		{
 			pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
@@ -2530,7 +2485,7 @@ void Player::Render()
 
 	for (int i=0;i<m_vballDelete.Size();i++)
 	{
-		Ball* pball = m_vballDelete.ElementAt(i);
+		Ball * const pball = m_vballDelete.ElementAt(i);
 		delete pball->m_vpVolObjs;
 		delete pball;
 	}
@@ -2578,9 +2533,8 @@ void Player::Render()
 			static int speriod[TSIZE];
 			static int idx;
 			static U32 stamp;
-			U32 tmp;
-
-			tmp = msec() - stamp;
+			
+			const U32 tmp = msec() - stamp;
 			period[idx] = tmp;
 			idx++;
 			if( idx >= TSIZE ) idx = 0;
@@ -2681,7 +2635,6 @@ void Player::Render()
 					}
 				}
 */
-
 			}
 		}
 	}
@@ -2735,7 +2688,6 @@ void Player::UnpauseMusic()
 
 void Player::DrawBallShadows()
 	{
-
 	// Nobody likes the ball shadows.		- JEP
 	//return;
 
@@ -2770,18 +2722,9 @@ void Player::DrawBallShadows()
 			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
-			if (g_pvp->m_pdd.m_fHardwareAccel)
-				{
-				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x0000001);
-				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-				}
-			else
-				{
-				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x0000001);
-				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-				}
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x0000001);
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
 
 			Ball ballT;
 			ballT.x = pball->x;
@@ -2792,7 +2735,7 @@ void Player::DrawBallShadows()
 			ballT.vz = -200.0f;
 			ballT.radius = 0;
 			
-			ballT.m_hittime = 1;
+			ballT.m_hittime = 1.0f;
 			
 			ballT.CalcBoundingRect();
 
@@ -2840,7 +2783,7 @@ void Player::DrawBallShadows()
 			rgv3DShadow[2].y = pball->y + shadowradius + offsety;
 			rgv3DShadow[2].z = shadowz;
 			rgv3DShadow[2].tu = 1.0f;
-			rgv3DShadow[2].tv = 1;
+			rgv3DShadow[2].tv = 1.0f;
 			rgv3DShadow[2].nx = 0;
 			rgv3DShadow[2].ny = 0;
 			rgv3DShadow[2].nz = -1.0f;
@@ -3122,7 +3065,7 @@ void Player::DrawBalls()
 					}
 			}
 
-		pball->m_fErase = fTrue;
+			pball->m_fErase = fTrue;
 
 			// Mark ball rect as dirty for blitting to the screen
 			m_pin3d.ClearExtents(&pball->m_rcScreen[0], NULL, NULL);
@@ -3208,9 +3151,9 @@ struct DebugMenuItem
 
 void AddEventToDebugMenu(char *sz, int index, int dispid, LPARAM lparam)
 {
-	DebugMenuItem *pdmi = (DebugMenuItem *)lparam;
+	DebugMenuItem * const pdmi = (DebugMenuItem *)lparam;
 	HMENU hmenu = pdmi->hmenu;
-	int menuid = ((pdmi->objectindex+1)<<16) | pdmi->pvdispid->Size();
+	const int menuid = ((pdmi->objectindex+1)<<16) | pdmi->pvdispid->Size();
 	pdmi->pvdispid->AddElement(dispid);
 	AppendMenu(hmenu, MF_STRING, menuid, sz);
 	
@@ -3259,7 +3202,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 	ballT.vy = v3d2.y - v3d.y;
 	ballT.vz = v3d2.z - v3d.z;
 	ballT.radius = 0;
-	ballT.m_hittime = 1;
+	ballT.m_hittime = 1.0f;
 	ballT.CalcBoundingRect();
 
 	//const float slope = (v3d2.y - v3d.y)/(v3d2.z - v3d.z);
@@ -3289,7 +3232,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 
 	for (int i=0;i<vhoHit.Size();i++)
 		{
-		HitObject *pho = vhoHit.ElementAt(i);
+		HitObject * const pho = vhoHit.ElementAt(i);
 		// Make sure we don't do the same object twice through 2 different Hitobjs.
 		if (pho->m_pfedebug && (vpfe.IndexOf(pho->m_pfedebug) == -1))
 			{
@@ -3346,26 +3289,25 @@ void Player::DoDebugObjectMenu(int x, int y)
 		}
 				
 	POINT pt;
-
 	pt.x = x;
 	pt.y = y;
 	ClientToScreen(m_hwnd, &pt);
 
-	int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | TPM_RIGHTBUTTON,
-	pt.x, pt.y, m_hwnd, NULL);
+	const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | TPM_RIGHTBUTTON,
+									  pt.x, pt.y, m_hwnd, NULL);
 
 	if (icmd != 0 && vsubmenu.Size() > 0)
 		{
-		int highword = HIWORD(icmd) - 1;
-		int lowword = icmd & 0xffff;
-		IFireEvents *pfe = vhoHit.ElementAt(highword)->m_pfedebug;
+		const int highword = HIWORD(icmd) - 1;
+		const int lowword = icmd & 0xffff;
+		IFireEvents * const pfe = vhoHit.ElementAt(highword)->m_pfedebug;
 		if (lowword & 0x8000) // custom debug command
 			{
 			pfe->GetDebugCommands()->RunDebugCommand(lowword & 0x7fff);
 			}
 		else
 			{
-			int dispid = vvdispid.ElementAt(highword)->ElementAt(lowword);
+			const int dispid = vvdispid.ElementAt(highword)->ElementAt(lowword);
 			g_pplayer->m_pactiveball = m_pactiveballDebug;
 			pfe->FireGroupEvent(dispid);
 			g_pplayer->m_pactiveball = NULL;
@@ -3391,7 +3333,6 @@ void Player::DoDebugObjectMenu(int x, int y)
 
 LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-
 	switch ( uMsg )
 	{
         case MM_MIXM_CONTROL_CHANGE:
@@ -3447,7 +3388,6 @@ LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	}
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
-
 }
 
 
@@ -3550,8 +3490,8 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			{
 			if (g_pplayer->m_fDebugMode)
 				{
-				int x = lParam & 0xffff;
-				int y = (lParam>>16) & 0xffff;
+				const int x = lParam & 0xffff;
+				const int y = (lParam>>16) & 0xffff;
 				g_pplayer->DoDebugObjectMenu(x, y);
 				}
 			return 0;
@@ -3624,7 +3564,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 							if ( (lParam > 0) && (lParam < 10) )
 							{
 								// Add the coins.
-								Coins = Coins + lParam;
+								Coins += lParam;
 								ReturnCode = TRUE;
 							}
 							else
@@ -3717,7 +3657,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				NMHDR *pnmh = (LPNMHDR) lParam;
 				SCNotification *pscnmh = (SCNotification *)lParam;
 				//HWND hwndRE = pnmh->hwndFrom;
-				int code = pnmh->code;
+				const int code = pnmh->code;
 				
 				switch (code)
 					{
@@ -3726,10 +3666,10 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							{
 							SendMessage(pnmh->hwndFrom, SCI_DELETEBACK, 0, 0);
 							
-							int curpos = SendMessage(pnmh->hwndFrom, SCI_GETCURRENTPOS, 0, 0);
-							int line = SendMessage(pnmh->hwndFrom, SCI_LINEFROMPOSITION, curpos, 0);
-							int lineStart = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line, 0);
-							int lineEnd = SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
+							const int curpos = SendMessage(pnmh->hwndFrom, SCI_GETCURRENTPOS, 0, 0);
+							const int line = SendMessage(pnmh->hwndFrom, SCI_LINEFROMPOSITION, curpos, 0);
+							const int lineStart = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line, 0);
+							const int lineEnd = SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
 
 							char *szText = new char[lineEnd - lineStart + 1];
 							TextRange tr;
@@ -3738,7 +3678,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							tr.lpstrText = szText;
 							SendMessage(pnmh->hwndFrom, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 							
-							int maxlines = SendMessage(pnmh->hwndFrom, SCI_GETLINECOUNT, 0, 0);
+							const int maxlines = SendMessage(pnmh->hwndFrom, SCI_GETLINECOUNT, 0, 0);
 
 							if (maxlines == line+1)
 								{
@@ -3748,7 +3688,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 								}
 							else
 								{
-								int pos = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line+1, 0);
+								const int pos = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line+1, 0);
 								SendMessage(pnmh->hwndFrom, SCI_SETCURRENTPOS, pos, 0);	
 								}
 
@@ -3807,7 +3747,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case RESIZE_FROM_EXPAND:
 				{
-				int state = SendDlgItemMessage(hwndDlg, IDC_EXPAND, BM_GETCHECK, 0, 0);
+				const int state = SendDlgItemMessage(hwndDlg, IDC_EXPAND, BM_GETCHECK, 0, 0);
 				HWND hwndSizer1 = GetDlgItem(hwndDlg, IDC_GUIDE1);
 				HWND hwndSizer2 = GetDlgItem(hwndDlg, IDC_GUIDE2);
 				int mult;
@@ -3828,8 +3768,8 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				GetWindowRect(hwndSizer1, &rcSizer1);
 				GetWindowRect(hwndSizer2, &rcSizer2);
 
-				int diffx = rcSizer2.right - rcSizer1.right;
-				int diffy = rcSizer2.bottom - rcSizer1.bottom;
+				const int diffx = rcSizer2.right - rcSizer1.right;
+				const int diffy = rcSizer2.bottom - rcSizer1.bottom;
 
 				RECT rcDialog;
 				GetWindowRect(hwndDlg, &rcDialog);
@@ -3953,12 +3893,11 @@ int CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 	{
 	char szLine[1024];
-	int c;
-	float dtime = 0.45f;
+	const float dtime = 0.45f;
 
 	while (1)
 		{
-		c=0;
+		int c=0;
 
 		while ((szLine[c] = getc(m_fplaylog)) != '\n')
 			{
@@ -4029,17 +3968,15 @@ void Player::DrawAcrylics ()
 	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		// Build a set of clipping planes which tightly bound the ball.
-		HRESULT		ReturnCode;
-
 		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
-		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
+		const HRESULT ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
 
 		// Draw acrylic ramps (they have transparency, so they have to be drawn last).
 		for (int i=0;i<m_ptable->m_vedit.Size();i++)
 			{
 			if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp)
 				{
-				Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+				Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 				if (ph)
 					{
 					ph->PostRenderStatic(m_pin3d.m_pd3dDevice);

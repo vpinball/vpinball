@@ -336,7 +336,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 	delete rgv3D;
 	}
 
-void Trigger::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *pv2, RenderVertex *pv3, float height)
+void Trigger::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const float height)
 	{
 	TriggerLineSeg * const plineseg = new TriggerLineSeg();
 
