@@ -999,8 +999,6 @@ void Ramp::RenderStaticHabitrail(LPDIRECT3DDEVICE7 pd3dDevice)
 	int cvertex;
 	const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
 
-	WORD rgi[4] = {0,1,2,3};
-
 	for (int i=0;i<cvertex;i++)
 		{
 		Vertex3D rgv3D[32];

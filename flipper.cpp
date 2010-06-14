@@ -442,7 +442,7 @@ void Flipper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, float angle,  float height, 
 								COLORREF color, float baseradius, float endradius, float flipperheight)
 	{
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float r = (float)(color & 255) * (float)(1.0/255.0);
 	const float g = (float)(color & 65280) * (float)(1.0/65280.0);
@@ -583,9 +583,9 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 		rgiNormal[2] = l;
 
 		rgi[0] = l-1;
-		rgi[1] = l-1+16;
-		rgi[3] = l;
+		rgi[1] = l-1+16;		
 		rgi[2] = l+16;
+		rgi[3] = l;
 
 		SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
@@ -608,10 +608,9 @@ void Flipper::RenderMoversFromCache(Pin3D *ppin3d)
 void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	_ASSERTE(m_phitflipper);
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	LPDIRECTDRAWSURFACE7 pdds;
-	ObjFrame *pof;
-
+	
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
 	ppin3d->ClearExtents(&m_phitflipper->m_flipperanim.m_rcBounds, &m_phitflipper->m_flipperanim.m_znear, &m_phitflipper->m_flipperanim.m_zfar);
@@ -632,7 +631,7 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		{
 		const float angle = anglerad + inv_cframes*(float)i;
 
-		pof = new ObjFrame();
+		ObjFrame * const pof = new ObjFrame();
 
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 

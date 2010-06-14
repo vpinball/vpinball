@@ -1358,7 +1358,7 @@ void CodeViewer::FindCodeFromEvent()
 			if (ichar == -1)
 				{
 				// The function was declared as the last line of the script - rare but possible
-				const int ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
+				ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
 				}
 
 			const int lineEvent = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, ichar, 0);

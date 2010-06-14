@@ -6420,7 +6420,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 			LocalString ls(IDS_NONE);
 			MultiByteToWideChar(CP_ACP, 0, ls.m_szbuffer, -1, wzDst, 7);
 			rgstr[0] = wzDst;
-			rgdw[0] = -1;
+			rgdw[0] = ~0u;
 
 			for (int ivar = 0 ; ivar < cvar ; ivar++)
 				{
@@ -6453,7 +6453,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 			// TEXT
 			MultiByteToWideChar(CP_ACP, 0, "<None>", -1, wzDst, 7);
 			rgstr[0] = wzDst;
-			rgdw[0] = -1;
+			rgdw[0] = ~0u;
 
 			for (int ivar = 0 ; ivar < cvar ; ivar++)
 				{
@@ -6486,7 +6486,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 			// TEXT
 			MultiByteToWideChar(CP_ACP, 0, "<None>", -1, wzDst, 7);
 			rgstr[0] = wzDst;
-			rgdw[0] = -1;
+			rgdw[0] = ~0u;
 
 			for (int ivar = 0 ; ivar < cvar ; ivar++)
 				{
@@ -6531,7 +6531,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 			// TEXT
 			WideStrCopy(L"<None>", wzDst);
 			rgstr[cvar] = wzDst;
-			rgdw[cvar] = -1;
+			rgdw[cvar] = ~0u;
 			cvar++;
 
 			for (int ivar = 0;ivar < m_vedit.Size();ivar++)
