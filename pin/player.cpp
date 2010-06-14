@@ -2745,8 +2745,6 @@ void Player::DrawBallShadows()
 
 	m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
-	WORD rgi[4] = {0,1,2,3};
-
 	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
 
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);// WRAP
@@ -2880,7 +2878,7 @@ void Player::DrawBallShadows()
 
 				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 
-				m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DShadow, 4,0);
+				m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3DShadow, 4,0);
 				}
 			}
 		}
@@ -2897,16 +2895,7 @@ void Player::DrawBalls()
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 	m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
-
-	WORD rgi[4] = {0,1,2,3};
-
-	/*for (int i=0;i<4;i++)
-		{
-		rgv3D[i].nx = 0;
-		rgv3D[i].ny = 0;
-		rgv3D[i].nz = 1.0f;
-		}*/
-
+	
 	//m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
 
 	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
@@ -2928,17 +2917,9 @@ void Player::DrawBalls()
 		mtrl.diffuse.b = mtrl.ambient.b = b;
 		m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
+		const PINFLOAT zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
+
 		Vertex3D * const rgv3D = pball->m_rgv3D;
-
-		PINFLOAT zheight;
-
-		zheight = pball->z - pball->radius;
-
-		if (!pball->fFrozen)
-			{
-			zheight += pball->radius;
-			}
-
 		rgv3D[0].x = pball->x - pball->radius;
 		rgv3D[0].y = pball->y - (pball->radius * cs);
 		rgv3D[0].z = zheight + (pball->radius * sn);
@@ -3039,12 +3020,7 @@ void Player::DrawBalls()
 			mtrl.diffuse.a = mtrl.ambient.a = 0.8f;//0.7f;
 			m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
-#define DECALPOINTS 4
-
-			Vertex3D rgv3DArrow[DECALPOINTS];
-			Vertex3D rgv3DArrowTransformed[DECALPOINTS];
-			WORD rgiDecal[DECALPOINTS];
-				{
+				Vertex3D rgv3DArrow[4];
 				rgv3DArrow[0].tu = 0;
 				rgv3DArrow[0].tv = 0;
 				rgv3DArrow[0].x = -0.333333333f;
@@ -3084,9 +3060,10 @@ void Player::DrawBalls()
 					pball->m_pinFront->EnsureColorKey();
 					m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinFront->m_pdsBufferColorKey);
 
-					for (int iPoint=0;iPoint<DECALPOINTS;iPoint++)
+					//WORD rgiDecal[4] = {0,1,2,3};
+					Vertex3D rgv3DArrowTransformed[4];
+					for (int iPoint=0;iPoint<4;iPoint++)
 						{
-						rgiDecal[iPoint] = iPoint;
 						pball->m_orientation.MultiplyVector(&rgv3DArrow[iPoint], &rgv3DArrowTransformed[iPoint]);
 						rgv3DArrowTransformed[iPoint].nx = rgv3DArrowTransformed[iPoint].x;
 						rgv3DArrowTransformed[iPoint].ny = rgv3DArrowTransformed[iPoint].y;
@@ -3102,10 +3079,10 @@ void Player::DrawBalls()
 						}
 
 					//m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-															  //rgv3DArrowTransformed, DECALPOINTS,
+															  //rgv3DArrowTransformed, 4,
 															  //rgiDecal, DECALPOINTS, NULL);
 					m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-															  rgv3DArrowTransformed, DECALPOINTS,
+															  rgv3DArrowTransformed, 4,
 															  NULL);
 					}
 
@@ -3114,10 +3091,11 @@ void Player::DrawBalls()
 					// Other side of ball
 					pball->m_pinBack->EnsureColorKey();
 					m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinBack->m_pdsBufferColorKey);
-							
-					for (int iPoint=0;iPoint<DECALPOINTS;iPoint++)
+
+					//WORD rgiDecal[4] = {0,1,2,3};
+					Vertex3D rgv3DArrowTransformed[4];
+					for (int iPoint=0;iPoint<4;iPoint++)
 						{
-						rgiDecal[iPoint] = iPoint;
 						rgv3DArrow[iPoint].x = -rgv3DArrow[iPoint].x;
 						rgv3DArrow[iPoint].z = -rgv3DArrow[iPoint].z;
 						pball->m_orientation.MultiplyVector(&rgv3DArrow[iPoint], &rgv3DArrowTransformed[iPoint]);
@@ -3135,20 +3113,18 @@ void Player::DrawBalls()
 						}
 
 					/*m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-															  rgv3DArrowTransformed, DECALPOINTS,
+															  rgv3DArrowTransformed, 4,
 															  rgiDecal, DECALPOINTS, NULL);*/
 
 					m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-															  rgv3DArrowTransformed, DECALPOINTS,
+															  rgv3DArrowTransformed, 4,
 															  NULL);
 					}
-				}
 			}
 
 		pball->m_fErase = fTrue;
 
 			// Mark ball rect as dirty for blitting to the screen
-			{
 			m_pin3d.ClearExtents(&pball->m_rcScreen[0], NULL, NULL);
 			m_pin3d.ExpandExtents(&pball->m_rcScreen[0], pball->m_rgv3D, NULL, NULL, 4, fFalse);
 
@@ -3165,19 +3141,13 @@ void Player::DrawBalls()
 					pball->m_rcScreen[0].top = min(pball->m_rcScreen[0].top, pball->m_rcScreenShadow[0].top);
 					pball->m_rcScreen[0].right = max(pball->m_rcScreen[0].right, pball->m_rcScreenShadow[0].right);
 					pball->m_rcScreen[0].bottom = max(pball->m_rcScreen[0].bottom, pball->m_rcScreenShadow[0].bottom);
-					InvalidateRect(&pball->m_rcScreen[0]);
 					}
 				else
 					{
-					InvalidateRect(&pball->m_rcScreen[0]);
 					InvalidateRect(&pball->m_rcScreenShadow[0]);
 					}
 				}
-			else
-				{
-				InvalidateRect(&pball->m_rcScreen[0]);
-				}
-			}
+			InvalidateRect(&pball->m_rcScreen[0]);
 		}
 
 	m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
@@ -3198,8 +3168,7 @@ void Player::InvalidateRect(RECT *prc)
 		prc->top = 0;
 		}
 
-	UpdateRect *pur;
-	pur = new UpdateRect();
+	UpdateRect * const pur = new UpdateRect();
 	pur->m_rcupdate = *prc;
 	pur->m_fSeeThrough = fTrue;
 
@@ -3207,7 +3176,7 @@ void Player::InvalidateRect(RECT *prc)
 	for (int i=0;i<m_vscreenupdate.Size();i++)
 		{
 		// Get the bounds of this animated object.
-		RECT *prc2 = &m_vscreenupdate.ElementAt(i)->m_rcBounds;
+		const RECT * const prc2 = &m_vscreenupdate.ElementAt(i)->m_rcBounds;
 
 		// Check if the bounds of the animated object are within the bounds of our invalid rectangle.
 		if (!((prc->right < prc2->left) || (prc->left > prc2->right) || (prc->bottom < prc2->top) || (prc->top > prc2->bottom)))

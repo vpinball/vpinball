@@ -35,7 +35,7 @@ int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				CATID rgcid[1];
 				rgcid[0] = CATID_Control;
 
-				hr = pci->EnumClassesOfCategories(1, rgcid, -1, 0, &pec);
+				hr = pci->EnumClassesOfCategories(1, rgcid, ~0u, 0, &pec);
 
 				if (hr == S_OK)
 					{

@@ -191,8 +191,6 @@ HRESULT CSimplePlayer::Play(LPCWSTR pszUrl, HANDLE hCompletionEvent, HRESULT *ph
     //
     // Set up for audio playback
     //
-    WAVEFORMATEX*   pbFormat = (WAVEFORMATEX*)new BYTE[1024];
-
     hr = m_pReader->GetOutputFormat( &m_wfx, sizeof( m_WfxBuf ) );
 
     if( FAILED( hr ) )

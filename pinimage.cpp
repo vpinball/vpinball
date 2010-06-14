@@ -912,7 +912,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 					{
 					const int x = l+m-3;
 					const int y = i+n-3;
-					if (x>=0 && x<=(shadwidth-1) && y>=0 && y<=(shadheight- 1))
+					if (x>=0 && x<=(shadwidth-1) && y>=0 && y<=(shadheight-1)) //!! opt.
 						{						
 						value += (int)(*(pbits+x*3 + pitchSharp*y)) * window[m][n];
 						}
@@ -927,7 +927,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 
 			value = 127 + (value>>1);
 
-			pc[0] = value;
+			pc[0] = value; //!! opt.
 			pc[1] = value;
 			pc[2] = value;
 			pc[3] = value;
@@ -945,7 +945,6 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 	// Create Guassian window (actually its not really Guassian, but same idea)
 
 	int window[7][7];
-
 	for (int i=0;i<4;i++)
 		{
 		window[0][i] = i+1;
@@ -955,7 +954,6 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 		}
 
 	int totalwindow = 0;
-
 	for (int i=0;i<7;i++)
 		{
 		for (int l=0;l<7;l++)
@@ -975,7 +973,7 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 	
 	const int pitch = ddsd.lPitch;
 	
-	BYTE *pc = (BYTE *)ddsd.lpSurface;
+	BYTE * const pc = (BYTE *)ddsd.lpSurface;
 
 	const int width = (int)ddsd.dwWidth;
 	const int height = (int)ddsd.dwHeight;
@@ -985,14 +983,13 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 		for (int l=0;l<width;l++)
 			{
 			int value = 0;
-
 			for (int m=0;m<7;m++)
 				{
 				for (int n=0;n<7;n++)
 					{
 					const int x = l+m-3;
 					const int y = i+n-3;
-					if (x>=0 && x<=15 && y>=0 && y<=15)
+					if (x>=0 && x<=15 && y>=0 && y<=15) //!! opt.
 						{
 						value += (int)(*(pc + 4*x + pitch*y)) * window[m][n];
 						}
@@ -1043,7 +1040,7 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 		const BYTE* pbytes1 = pch;
 		const BYTE* pbytes2 = pch + pitch;
 
-		int addtoouterpitch = pitch*2 - (width*2*4);
+		const int addtoouterpitch = pitch*2 - (width*2*4);
 
 		for (int y=0;y<height;y++)
 			{

@@ -374,16 +374,16 @@ void Trigger::EndPlay()
 	}
 
 const float rgtriggervertex[][3] = {
-	-0.08f, -1, 0,
-	0.08f, -1, 0,
-	-0.08f, -0.5, 5,
-	0.08f, -0.5, 5,
-	-0.08f, 0, 8,
-	0.08f, 0, 8,
-	-0.08f, 0.5, 5,
-	0.08f, 0.5, 5,
-	-0.08f, 1, 0,
-	0.08f, 1, 0,
+	-0.08f, -1.0f, 0,
+	0.08f,  -1.0f, 0,
+	-0.08f, -0.5f, 5.0f,
+	0.08f,  -0.5f, 5.0f,
+	-0.08f, 0,     8.0f,
+	0.08f,  0,     8.0f,
+	-0.08f, 0.5f,  5.0f,
+	0.08f,  0.5f,  5.0f,
+	-0.08f, 1.0f,  0,
+	0.08f,  1.0f,  0
 	};
 
 const WORD rgtriggerface[][5] = {
@@ -392,7 +392,7 @@ const WORD rgtriggerface[][5] = {
 	0,1,3,2,-1,
 	2,3,5,4,-1,
 	4,5,7,6,-1,
-	6,7,9,8,-1,
+	6,7,9,8,-1
 	};
 
 void Trigger::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
