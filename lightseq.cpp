@@ -128,14 +128,7 @@ void LightSeq::RenderOutline(Sur *psur)
 
 	for (int i=0;i<8;i++)
 	{
-		if (i % 2 == 0)
-		{
-			psur->SetFillColor(RGB(255,0,0));
-		}
-		else
-		{
-			psur->SetFillColor(RGB(128,0,0));
-		}
+		psur->SetFillColor((i % 2 == 0) ? RGB(255,0,0) : RGB(128,0,0));
 		const float angle = (float)((M_PI*2.0)/8.0)*(float)i;
 		const float sn = sinf(angle);
 		const float cs = cosf(angle);
@@ -161,8 +154,7 @@ void LightSeq::RenderBlueprint(Sur *psur)
 //
 void LightSeq::GetTimers(Vector<HitTimer> *pvht)
 {
-	HitTimer *pht;
-	pht = new HitTimer();
+	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
 	pht->m_pfe = (IFireEvents *)this;
@@ -228,13 +220,6 @@ void LightSeq::RenderMoversFromCache(Pin3D *ppin3d)
 
 void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 {
-	CComBSTR 		bstr;
-	CComBSTR 		bstrCollection;
-	ItemTypeEnum	type;
-	Light			*pLight;
-	Bumper			*pBumper;
-	int				ix, iy;
-
 	// zero pointers as a safe guard
 	m_pcollection	= NULL;
 	m_pgridData	= NULL;
@@ -251,13 +236,14 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	m_queue.Tail = 0;
 
 	// get a BSTR version of the collection we are to use
-	bstrCollection = m_d.m_wzCollection;
+	CComBSTR bstrCollection = m_d.m_wzCollection;
 
 	// get the number of collections available
 	int size = m_ptable->m_vcollection.Size();
 	for(int i=0; i<size; i++)
 	{
 		// get the name of this collection
+		CComBSTR bstr;
 		m_ptable->m_vcollection.ElementAt(i)->get_Name(&bstr);
 		// is it the one we are to use?
 		if (WideStrCmp(bstr, bstrCollection) == 0)
@@ -282,8 +268,8 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	m_lightSeqGridHeight = (int)tableheight / LIGHTSEQGRIDSCALE;
 
 	// set the centre point of the grid for effects which start from the center
-	m_GridXCenter = (float)((int)(m_d.m_vCenter.x / (float)LIGHTSEQGRIDSCALE));
-	m_GridYCenter = (float)((int)(m_d.m_vCenter.y / (float)LIGHTSEQGRIDSCALE));
+	m_GridXCenter = floorf(m_d.m_vCenter.x * (float)(1.0/LIGHTSEQGRIDSCALE));
+	m_GridYCenter = floorf(m_d.m_vCenter.y * (float)(1.0/LIGHTSEQGRIDSCALE));
 	m_GridXCenterAdjust	= abs(m_lightSeqGridWidth/2 - (int)m_GridXCenter);
 	m_GridYCenterAdjust = abs(m_lightSeqGridHeight/2 - (int)m_GridYCenter);
 
@@ -307,7 +293,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	for(int i=0; i<size; i++)
 	{
 		// get the type of object
-		type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
+		const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
 		// must be a light or bumper
 		if ( (type == eItemLight) || (type == eItemBumper) )
 		{
@@ -315,7 +301,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			if (type == eItemLight)
 			{
 				// process a light
-				pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
+				Light	* const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
 				pLight->get_X(&x);
 				pLight->get_Y(&y);
 
@@ -328,19 +314,19 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			else
 			{
 				// process a bumper
-				pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(i);
+				Bumper * const pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(i);
 				pBumper->get_X(&x);
 				pBumper->get_Y(&y);
 			}
 
 			// scale down to suit the size of the light sequence grid
-			ix = (int)(x / (float)LIGHTSEQGRIDSCALE);
-			iy = (int)(y / (float)LIGHTSEQGRIDSCALE);
+			const int ix = (int)(x * (float)(1.0/LIGHTSEQGRIDSCALE));
+			const int iy = (int)(y * (float)(1.0/LIGHTSEQGRIDSCALE));
 			// if on the playfield (1000 by 2000)
 			if ( ((ix >= 0) && (ix < m_lightSeqGridWidth)) &&
 				 ((iy >= 0) && (iy < m_lightSeqGridHeight)) )
 			{
-				int	gridIndex = (iy * m_lightSeqGridWidth) + ix;
+				const int gridIndex = (iy * m_lightSeqGridWidth) + ix;
 
 				// then store the index offset into the grid (plus 1, 0 is no object)
 				m_pgridData[gridIndex] = (short)i + 1;
@@ -486,7 +472,7 @@ HRESULT LightSeq::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
 	return S_OK;
 #else
 	ULONG read = 0;
-	HRESULT hr = S_OK;
+	HRESULT hr;
 
 	m_ptable = ptable;
 
@@ -604,7 +590,7 @@ STDMETHODIMP LightSeq::put_CenterX(float newVal)
 	STARTUNDO
 	m_d.m_vCenter.x = newVal;
 	// set the centre point of the grid for effects which start from the center
-	m_GridXCenter = (float)((int)(m_d.m_vCenter.x / LIGHTSEQGRIDSCALE));
+	m_GridXCenter = floorf(m_d.m_vCenter.x * (float)(1.0/LIGHTSEQGRIDSCALE));
 	m_GridXCenterAdjust	= abs( (int)m_lightSeqGridWidth/2 - (int)m_GridXCenter);
 	STOPUNDO
 
@@ -620,13 +606,13 @@ STDMETHODIMP LightSeq::get_CenterY(float *pVal)
 
 STDMETHODIMP LightSeq::put_CenterY(float newVal)
 {
-	if ((newVal < 0) || (newVal >= 2000))
+	if ((newVal < 0) || (newVal >= 2000.0f))
 		return E_FAIL;
 
 	STARTUNDO
 	m_d.m_vCenter.y = newVal;
 	// set the centre point of the grid for effects which start from the center
-	m_GridYCenter = (float)((int)(m_d.m_vCenter.y / LIGHTSEQGRIDSCALE));
+	m_GridYCenter = floorf(m_d.m_vCenter.y * (float)(1.0/LIGHTSEQGRIDSCALE));
 	m_GridYCenterAdjust = abs( (int)m_lightSeqGridHeight/2 - (int)m_GridYCenter);
 	STOPUNDO
 
@@ -710,9 +696,6 @@ STDMETHODIMP LightSeq::Play(SequencerState Animation, long TailLength, long Repe
 
 STDMETHODIMP LightSeq::StopPlay()
 {
-	LightState		state;
-	ItemTypeEnum	type;
-
 	// no animation in progress
 	m_playInProgress = false;
 	m_pauseInProgress = false;
@@ -728,21 +711,23 @@ STDMETHODIMP LightSeq::StopPlay()
 	// Reset lights back to original state
 	if (m_pcollection != NULL)
 	{
-		int size = m_pcollection->m_visel.Size();
+		const int size = m_pcollection->m_visel.Size();
 		for(int i=0; i<size; i++)
 		{
-			type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
+			const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
 			if (type == eItemLight)
 			{
-				Light *pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
+				Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
 				pLight->unLockLight();
+				LightState state;
 				pLight->get_State(&state);
 				pLight->put_State(state);
 			}
 			else if (type == eItemBumper)
 			{
-				Bumper *pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(i);
+				Bumper * const pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(i);
 				pBumper->unLockLight();
+				LightState state;
 				pBumper->get_State(&state);
 				pBumper->put_State(state);
 			}
@@ -755,7 +740,7 @@ STDMETHODIMP LightSeq::StopPlay()
 
 void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repeat, long Pause)
 {
-	bool	inverse;
+	bool inverse = false;
 
 	// no animation in progress
 	m_playInProgress = false;
@@ -772,8 +757,6 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 	m_tailLength 	= TailLength;
 	m_replayCount 	= Repeat;
 	m_pauseValue 	= Pause;
-
-	inverse = false;
 
 	switch (Animation)
 	{
@@ -805,9 +788,9 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			m_th1.type			= eSeqLine;
 			m_th1.x				= 0;
 			m_th1.stepX			= 0;
-			m_th1.processStepX 	= 1;
-			m_th1.y				= (float)m_lightSeqGridHeight-1;
-			m_th1.stepY			= -1;
+			m_th1.processStepX 	= 1.0f;
+			m_th1.y				= (float)m_lightSeqGridHeight-1.0f;
+			m_th1.stepY			= -1.0f;
 			m_th1.processStepY 	= 0;
 			m_th1.length		= m_lightSeqGridWidth;
 			m_th1.frameCount	= m_lightSeqGridHeight;
@@ -820,9 +803,9 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			m_th1.type			= eSeqLine;
 			m_th1.x				= 0;
 			m_th1.stepX			= 0;
-			m_th1.processStepX 	= 1;
+			m_th1.processStepX 	= 1.0f;
 			m_th1.y				= 0;
-			m_th1.stepY			= 1;
+			m_th1.stepY			= 1.0f;
 			m_th1.processStepY 	= 0;
 			m_th1.length		= m_lightSeqGridWidth;
 			m_th1.frameCount	= m_lightSeqGridHeight;
@@ -834,11 +817,11 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqRightOn:
 			m_th1.type			= eSeqLine;
 			m_th1.x				= 0;
-			m_th1.stepX			= 1;
+			m_th1.stepX			= 1.0f;
 			m_th1.processStepX 	= 0;
 			m_th1.y				= 0;
 			m_th1.stepY			= 0;
-			m_th1.processStepY 	= 1;
+			m_th1.processStepY 	= 1.0f;
 			m_th1.length		= m_lightSeqGridHeight;
 			m_th1.frameCount	= m_lightSeqGridWidth;
 			TailLength 			/= 2;
@@ -849,12 +832,12 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqLeftOn:
 			m_th1.type			= eSeqLine;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
-			m_th1.stepX			= -1;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
+			m_th1.stepX			= -1.0f;
 			m_th1.processStepX 	= 0;
 			m_th1.y				= 0;
 			m_th1.stepY			= 0;
-			m_th1.processStepY 	= 1;
+			m_th1.processStepY 	= 1.0f;
 			m_th1.length		= m_lightSeqGridHeight;
 			m_th1.frameCount	= m_lightSeqGridWidth;
 			TailLength 			/= 2;
@@ -869,8 +852,8 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			m_th1.stepX			= 0;
 			m_th1.processStepX 	= 0.5f;
 			m_th1.y				= (float)m_lightSeqGridHeight-1;
-			m_th1.stepY			= -1;
-			m_th1.processStepY 	= 1;
+			m_th1.stepY			= -1.0f;
+			m_th1.processStepY 	= 1.0f;
 			m_th1.length		= m_lightSeqGridWidth*2;
 			m_th1.frameCount	= m_lightSeqGridHeight + (m_lightSeqGridWidth*2);
 			break;
@@ -880,12 +863,12 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqDiagUpLeftOn:
 			m_th1.type			= eSeqLine;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
 			m_th1.stepX			= 0;
 			m_th1.processStepX 	= -0.5f;
-			m_th1.y				= (float)m_lightSeqGridHeight-1;
-			m_th1.stepY			= -1;
-			m_th1.processStepY 	= 1;
+			m_th1.y				= (float)m_lightSeqGridHeight-1.0f;
+			m_th1.stepY			= -1.0f;
+			m_th1.processStepY 	= 1.0f;
 			m_th1.length		= m_lightSeqGridWidth*2;
 			m_th1.frameCount	= m_lightSeqGridHeight + (m_lightSeqGridWidth*2);
 			break;
@@ -899,8 +882,8 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			m_th1.stepX			= 0;
 			m_th1.processStepX 	= 0.5f;
 			m_th1.y				= 0;
-			m_th1.stepY			= 1;
-			m_th1.processStepY 	= -1;
+			m_th1.stepY			= 1.0f;
+			m_th1.processStepY 	= -1.0f;
 			m_th1.length		= m_lightSeqGridWidth*2;
 			m_th1.frameCount	= m_lightSeqGridHeight + (m_lightSeqGridWidth*2);
 			break;
@@ -910,12 +893,12 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqDiagDownLeftOn:
 			m_th1.type			= eSeqLine;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
 			m_th1.stepX			= 0;
 			m_th1.processStepX 	= -0.5f;
 			m_th1.y				= 0;
-			m_th1.stepY			= 1;
-			m_th1.processStepY 	= -1;
+			m_th1.stepY			= 1.0f;
+			m_th1.processStepY 	= -1.0f;
 			m_th1.length		= m_lightSeqGridWidth*2;
 			m_th1.frameCount	= m_lightSeqGridHeight + (m_lightSeqGridWidth*2);
 			break;
@@ -925,21 +908,21 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqMiddleOutHorizOn:
 			m_th1.type			= eSeqLine;
-			m_th1.x				= m_GridXCenter-1;
-			m_th1.stepX			= -1;
+			m_th1.x				= m_GridXCenter-1.0f;
+			m_th1.stepX			= -1.0f;
 			m_th1.processStepX 	= 0;
 			m_th1.y				= 0;
 			m_th1.stepY			= 0;
-			m_th1.processStepY 	= 1;
+			m_th1.processStepY 	= 1.0f;
 			m_th1.length		= m_lightSeqGridHeight;
 			m_th1.frameCount	= m_lightSeqGridWidth/2+m_GridXCenterAdjust;
 			m_th2.type			= eSeqLine;
 			m_th2.x				= m_GridXCenter;
-			m_th2.stepX			= 1;
+			m_th2.stepX			= 1.0f;
 			m_th2.processStepX 	= 0;
 			m_th2.y				= 0;
 			m_th2.stepY			= 0;
-			m_th2.processStepY 	= 1;
+			m_th2.processStepY 	= 1.0f;
 			m_th2.length		= m_lightSeqGridHeight;
 			m_th2.frameCount	= m_lightSeqGridWidth/2+m_GridXCenterAdjust;
 			TailLength 			/= 4;
@@ -950,23 +933,23 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqMiddleInHorizOn:
 			{
-			float effectlength	= (float)(m_lightSeqGridWidth/2+m_GridXCenterAdjust);
+			const float effectlength = (float)(m_lightSeqGridWidth/2+m_GridXCenterAdjust);
 			m_th1.type			= eSeqLine;
 			m_th1.x				= m_GridXCenter - effectlength;
-			m_th1.stepX			= 1;
+			m_th1.stepX			= 1.0f;
 			m_th1.processStepX 	= 0;
 			m_th1.y				= 0;
 			m_th1.stepY			= 0;
-			m_th1.processStepY 	= 1;
+			m_th1.processStepY 	= 1.0f;
 			m_th1.length		= m_lightSeqGridHeight;
 			m_th1.frameCount	= (int)effectlength+1;
 			m_th2.type			= eSeqLine;
 			m_th2.x				= m_GridXCenter + effectlength;
-			m_th2.stepX			= -1;
+			m_th2.stepX			= -1.0f;
 			m_th2.processStepX 	= 0;
 			m_th2.y				= 0;
 			m_th2.stepY			= 0;
-			m_th2.processStepY 	= 1;
+			m_th2.processStepY 	= 1.0f;
 			m_th2.length		= m_lightSeqGridHeight;
 			m_th2.frameCount	= (int)effectlength;
 			TailLength 			/= 4;
@@ -980,18 +963,18 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			m_th1.type			= eSeqLine;
 			m_th1.x				= 0;
 			m_th1.stepX			= 0;
-			m_th1.processStepX 	= 1;
-			m_th1.y				= m_GridYCenter-1;
+			m_th1.processStepX 	= 1.0f;
+			m_th1.y				= m_GridYCenter-1.0f;
 			m_th1.stepY			= -1;
 			m_th1.processStepY 	= 0;
-			m_th1.length		= (int)m_lightSeqGridWidth;
-			m_th1.frameCount	= (int)m_lightSeqGridHeight/2+m_GridYCenterAdjust;
+			m_th1.length		= m_lightSeqGridWidth;
+			m_th1.frameCount	= m_lightSeqGridHeight/2+m_GridYCenterAdjust;
 			m_th2.type			= eSeqLine;
 			m_th2.x				= 0;
 			m_th2.stepX			= 0;
-			m_th2.processStepX 	= 1;
+			m_th2.processStepX 	= 1.0f;
 			m_th2.y				= m_GridYCenter;
-			m_th2.stepY			= 1;
+			m_th2.stepY			= 1.0f;
 			m_th2.processStepY 	= 0;
 			m_th2.length		= m_lightSeqGridWidth;
 			m_th2.frameCount	= m_lightSeqGridHeight/2+m_GridYCenterAdjust;
@@ -1003,22 +986,22 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqMiddleInVertOn:
 			{
-			float effectlength	= (float)(m_lightSeqGridHeight/2+m_GridYCenterAdjust);
+			const float effectlength	= (float)(m_lightSeqGridHeight/2+m_GridYCenterAdjust);
 			m_th1.type			= eSeqLine;
 			m_th1.x				= 0;
 			m_th1.stepX			= 0;
-			m_th1.processStepX 	= 1;
+			m_th1.processStepX 	= 1.0f;
 			m_th1.y				= m_GridYCenter - effectlength;
-			m_th1.stepY			= 1;
+			m_th1.stepY			= 1.0f;
 			m_th1.processStepY 	= 0;
 			m_th1.length		= m_lightSeqGridWidth;
 			m_th1.frameCount	= (int)effectlength+1;
 			m_th2.type			= eSeqLine;
 			m_th2.x				= 0;
 			m_th2.stepX			= 0;
-			m_th2.processStepX 	= 1;
+			m_th2.processStepX 	= 1.0f;
 			m_th2.y				= m_GridYCenter + effectlength;
-			m_th2.stepY			= -1;
+			m_th2.stepY			= -1.0f;
 			m_th2.processStepY 	= 0;
 			m_th2.length		= m_lightSeqGridWidth;
 			m_th2.frameCount	= (int)effectlength;
@@ -1032,20 +1015,20 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqStripe1HorizOn:
 			m_th1.type			= eSeqLine;
 			m_th1.x				= 0;
-			m_th1.stepX			= 1;
+			m_th1.stepX			= 1.0f;
 			m_th1.processStepX 	= 0;
-			m_th1.y				= m_GridYCenter-1;
+			m_th1.y				= m_GridYCenter-1.0f;
 			m_th1.stepY			= 0;
-			m_th1.processStepY 	= -1;
+			m_th1.processStepY 	= -1.0f;
 			m_th1.length		= m_lightSeqGridHeight/2+m_GridYCenterAdjust;
 			m_th1.frameCount	= m_lightSeqGridWidth;
 			m_th2.type			= eSeqLine;
-			m_th2.x				= (float)m_lightSeqGridWidth-1;
-			m_th2.stepX			= -1;
+			m_th2.x				= (float)m_lightSeqGridWidth-1.0f;
+			m_th2.stepX			= -1.0f;
 			m_th2.processStepX 	= 0;
 			m_th2.y				= m_GridYCenter;
 			m_th2.stepY			= 0;
-			m_th2.processStepY 	= 1;
+			m_th2.processStepY 	= 1.0f;
 			m_th2.length		= m_lightSeqGridHeight/2+m_GridXCenterAdjust;
 			m_th2.frameCount	= m_lightSeqGridWidth;
 			TailLength 			/= 2;
@@ -1056,21 +1039,21 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqStripe2HorizOn:
 			m_th1.type			= eSeqLine;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
-			m_th1.stepX			= -1;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
+			m_th1.stepX			= -1.0f;
 			m_th1.processStepX 	= 0;
-			m_th1.y				= m_GridYCenter-1;
+			m_th1.y				= m_GridYCenter-1.0f;
 			m_th1.stepY			= 0;
-			m_th1.processStepY 	= -1;
+			m_th1.processStepY 	= -1.0f;
 			m_th1.length		= m_lightSeqGridHeight/2+m_GridYCenterAdjust;
 			m_th1.frameCount	= m_lightSeqGridWidth;
 			m_th2.type			= eSeqLine;
 			m_th2.x				= 0;
-			m_th2.stepX			= 1;
+			m_th2.stepX			= 1.0f;
 			m_th2.processStepX 	= 0;
 			m_th2.y				= m_GridYCenter;
 			m_th2.stepY			= 0;
-			m_th2.processStepY 	= 1;
+			m_th2.processStepY 	= 1.0f;
 			m_th2.length		= m_lightSeqGridHeight/2+m_GridYCenterAdjust;
 			m_th2.frameCount	= m_lightSeqGridWidth;
 			TailLength 			/= 2;
@@ -1081,20 +1064,20 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqStripe1VertOn:
 			m_th1.type			= eSeqLine;
-			m_th1.x				= m_GridXCenter-1;
+			m_th1.x				= m_GridXCenter-1.0f;
 			m_th1.stepX			= 0;
-			m_th1.processStepX 	= -1;
-			m_th1.y				= (float)m_lightSeqGridHeight-1;
-			m_th1.stepY			= -1;
+			m_th1.processStepX 	= -1.0f;
+			m_th1.y				= (float)m_lightSeqGridHeight-1.0f;
+			m_th1.stepY			= -1.0f;
 			m_th1.processStepY 	= 0;
 			m_th1.length		= m_lightSeqGridWidth/2+m_GridXCenterAdjust;
 			m_th1.frameCount	= m_lightSeqGridHeight;
 			m_th2.type			= eSeqLine;
 			m_th2.x				= m_GridXCenter;
 			m_th2.stepX			= 0;
-			m_th2.processStepX 	= 1;
+			m_th2.processStepX 	= 1.0f;
 			m_th2.y				= 0;
-			m_th2.stepY			= 1;
+			m_th2.stepY			= 1.0f;
 			m_th2.processStepY 	= 0;
 			m_th2.length		= m_lightSeqGridWidth/2+m_GridXCenterAdjust;
 			m_th2.frameCount	= m_lightSeqGridHeight;
@@ -1105,20 +1088,20 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqStripe2VertOn:
 			m_th1.type			= eSeqLine;
-			m_th1.x				= m_GridXCenter-1;
+			m_th1.x				= m_GridXCenter-1.0f;
 			m_th1.stepX			= 0;
-			m_th1.processStepX 	= -1;
+			m_th1.processStepX 	= -1.0f;
 			m_th1.y				= 0;
-			m_th1.stepY			= 1;
+			m_th1.stepY			= 1.0f;
 			m_th1.processStepY 	= 0;
 			m_th1.length		= m_lightSeqGridWidth/2+m_GridXCenterAdjust;
 			m_th1.frameCount	= m_lightSeqGridHeight;
 			m_th2.type			= eSeqLine;
 			m_th2.x				= m_GridXCenter;
 			m_th2.stepX			= 0;
-			m_th2.processStepX 	= 1;
-			m_th2.y				= (float)m_lightSeqGridHeight-1;
-			m_th2.stepY			= -1;
+			m_th2.processStepX 	= 1.0f;
+			m_th2.y				= (float)m_lightSeqGridHeight-1.0f;
+			m_th2.stepY			= -1.0f;
 			m_th2.processStepY 	= 0;
 			m_th2.length		= m_lightSeqGridWidth/2+m_GridXCenterAdjust;
 			m_th2.frameCount	= m_lightSeqGridHeight;
@@ -1130,20 +1113,20 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqHatch1HorizOn:
 			m_th1.type			= eSeqLine;
 			m_th1.x				= 0;
-			m_th1.stepX			= 1;
+			m_th1.stepX			= 1.0f;
 			m_th1.processStepX 	= 0;
 			m_th1.y				= 0;
 			m_th1.stepY			= 0;
-			m_th1.processStepY 	= 2;
+			m_th1.processStepY 	= 2.0f;
 			m_th1.length		= m_lightSeqGridHeight/2;
 			m_th1.frameCount	= m_lightSeqGridWidth;
 			m_th2.type			= eSeqLine;
-			m_th2.x				= (float)m_lightSeqGridWidth-1;
-			m_th2.stepX			= -1;
+			m_th2.x				= (float)m_lightSeqGridWidth-1.0f;
+			m_th2.stepX			= -1.0f;
 			m_th2.processStepX 	= 0;
-			m_th2.y				= 1;
+			m_th2.y				= 1.0f;
 			m_th2.stepY			= 0;
-			m_th2.processStepY 	= 2;
+			m_th2.processStepY 	= 2.0f;
 			m_th2.length		= m_lightSeqGridHeight/2;
 			m_th2.frameCount	= m_lightSeqGridWidth;
 			TailLength 			/= 2;
@@ -1154,21 +1137,21 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqHatch2HorizOn:
 			m_th1.type			= eSeqLine;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
-			m_th1.stepX			= -1;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
+			m_th1.stepX			= -1.0f;
 			m_th1.processStepX 	= 0;
 			m_th1.y				= 0;
 			m_th1.stepY			= 0;
-			m_th1.processStepY 	= 2;
+			m_th1.processStepY 	= 2.0f;
 			m_th1.length		= m_lightSeqGridHeight/2;
 			m_th1.frameCount	= m_lightSeqGridWidth;
 			m_th2.type			= eSeqLine;
 			m_th2.x				= 0;
-			m_th2.stepX			= 1;
+			m_th2.stepX			= 1.0f;
 			m_th2.processStepX 	= 0;
-			m_th2.y				= 1;
+			m_th2.y				= 1.0f;
 			m_th2.stepY			= 0;
-			m_th2.processStepY 	= 2;
+			m_th2.processStepY 	= 2.0f;
 			m_th2.length		= m_lightSeqGridHeight/2;
 			m_th2.frameCount	= m_lightSeqGridWidth;
 			TailLength 			/= 2;
@@ -1181,18 +1164,18 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			m_th1.type			= eSeqLine;
 			m_th1.x				= 0;
 			m_th1.stepX			= 0;
-			m_th1.processStepX 	= 2;
-			m_th1.y				= (float)m_lightSeqGridHeight-1;
-			m_th1.stepY			= -1;
+			m_th1.processStepX 	= 2.0f;
+			m_th1.y				= (float)m_lightSeqGridHeight-1.0f;
+			m_th1.stepY			= -1.0f;
 			m_th1.processStepY 	= 0;
 			m_th1.length		= m_lightSeqGridWidth/2;
 			m_th1.frameCount	= m_lightSeqGridHeight;
 			m_th2.type			= eSeqLine;
-			m_th2.x				= 1;
+			m_th2.x				= 1.0f;
 			m_th2.stepX			= 0;
-			m_th2.processStepX 	= 2;
+			m_th2.processStepX 	= 2.0f;
 			m_th2.y				= 0;
-			m_th2.stepY			= 1;
+			m_th2.stepY			= 1.0f;
 			m_th2.processStepY 	= 0;
 			m_th2.length		= m_lightSeqGridWidth/2;
 			m_th2.frameCount	= m_lightSeqGridHeight;
@@ -1205,18 +1188,18 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			m_th1.type			= eSeqLine;
 			m_th1.x				= 0;
 			m_th1.stepX			= 0;
-			m_th1.processStepX 	= 2;
+			m_th1.processStepX 	= 2.0f;
 			m_th1.y				= 0;
-			m_th1.stepY			= 1;
+			m_th1.stepY			= 1.0f;
 			m_th1.processStepY 	= 0;
 			m_th1.length		= m_lightSeqGridWidth/2;
 			m_th1.frameCount	= m_lightSeqGridHeight;
 			m_th2.type			= eSeqLine;
-			m_th2.x				= 1;
+			m_th2.x				= 1.0f;
 			m_th2.stepX			= 0;
-			m_th2.processStepX 	= 2;
-			m_th2.y				= (float)m_lightSeqGridHeight-1;
-			m_th2.stepY			= -1;
+			m_th2.processStepX 	= 2.0f;
+			m_th2.y				= (float)m_lightSeqGridHeight-1.0f;
+			m_th2.stepY			= -1.0f;
 			m_th2.processStepY 	= 0;
 			m_th2.length		= m_lightSeqGridWidth/2;
 			m_th2.frameCount	= m_lightSeqGridHeight;
@@ -1228,7 +1211,7 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqCircleOutOn:
 			m_th1.type			= eSeqCircle;
 			m_th1.radius		= 0;
-			m_th1.stepRadius	= 1;
+			m_th1.stepRadius	= 1.0f;
 			m_th1.x				= m_GridXCenter;
 			m_th1.y				= m_GridYCenter;
 			m_th1.frameCount	= m_lightSeqGridWidth/2+m_GridXCenterAdjust+m_lightSeqGridHeight/2+m_GridYCenterAdjust;
@@ -1240,7 +1223,7 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqCircleInOn:
 			m_th1.type			= eSeqCircle;
 			m_th1.radius		= (float)(m_lightSeqGridWidth/2+m_GridXCenterAdjust+m_lightSeqGridHeight/2+m_GridYCenterAdjust);
-			m_th1.stepRadius	= -1;
+			m_th1.stepRadius	= -1.0f;
 			m_th1.x				= m_GridXCenter;
 			m_th1.y				= m_GridYCenter;
 			m_th1.frameCount	= m_lightSeqGridWidth/2+m_GridXCenterAdjust+m_lightSeqGridHeight/2+m_GridYCenterAdjust;
@@ -1252,8 +1235,8 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqClockRightOn:
 			m_th1.type			= eSeqRadar;
 			m_th1.angle			= 0;
-			m_th1.stepAngle		= 1;
-			m_th1.processRadius = 1;
+			m_th1.stepAngle		= 1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= m_GridXCenter;
 			m_th1.y				= m_GridYCenter;
 			m_th1.length		= m_lightSeqGridWidth/2+m_GridXCenterAdjust+m_lightSeqGridHeight/2+m_GridYCenterAdjust;
@@ -1266,8 +1249,8 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqClockLeftOn:
 			m_th1.type			= eSeqRadar;
 			m_th1.angle			= 0;
-			m_th1.stepAngle		= -1;
-			m_th1.processRadius = 1;
+			m_th1.stepAngle		= -1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= m_GridXCenter;
 			m_th1.y				= m_GridYCenter;
 			m_th1.length		= m_lightSeqGridWidth/2+m_GridXCenterAdjust+m_lightSeqGridHeight/2+m_GridYCenterAdjust;
@@ -1279,11 +1262,11 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqRadarRightOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 270;
-			m_th1.stepAngle		= 1;
-			m_th1.processRadius = 1;
+			m_th1.angle			= 270.0f;
+			m_th1.stepAngle		= 1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= m_GridXCenter;
-			m_th1.y				= (float)m_lightSeqGridHeight-1;
+			m_th1.y				= (float)m_lightSeqGridHeight-1.0f;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth+m_GridYCenterAdjust+m_GridXCenterAdjust;
 			m_th1.frameCount	= 180;
 			break;
@@ -1293,11 +1276,11 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqRadarLeftOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 90;
-			m_th1.stepAngle		= -1;
-			m_th1.processRadius = 1;
+			m_th1.angle			= 90.0f;
+			m_th1.stepAngle		= -1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= m_GridXCenter;
-			m_th1.y				= (float)m_lightSeqGridHeight-1;
+			m_th1.y				= (float)m_lightSeqGridHeight-1.0f;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth+m_GridYCenterAdjust+m_GridXCenterAdjust;
 			m_th1.frameCount	= 180;
 			break;
@@ -1307,9 +1290,9 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqWiperRightOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 270;
-			m_th1.stepAngle		= -1;
-			m_th1.processRadius = 1;
+			m_th1.angle			= 270.0f;
+			m_th1.stepAngle		= -1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= m_GridXCenter;
 			m_th1.y				= 0;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth+m_GridYCenterAdjust+m_GridXCenterAdjust;
@@ -1321,9 +1304,9 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqWiperLeftOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 90;
-			m_th1.stepAngle		= 1;
-			m_th1.processRadius = 1;
+			m_th1.angle			= 90.0f;
+			m_th1.stepAngle		= 1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= m_GridXCenter;
 			m_th1.y				= 0;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth+m_GridYCenterAdjust+m_GridXCenterAdjust;
@@ -1335,9 +1318,9 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqFanLeftUpOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 180;
-			m_th1.stepAngle		= -1;
-			m_th1.processRadius = 1;
+			m_th1.angle			= 180.0f;
+			m_th1.stepAngle		= -1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= 0;
 			m_th1.y				= m_GridYCenter;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth+m_GridYCenterAdjust+m_GridXCenterAdjust;
@@ -1350,8 +1333,8 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqFanLeftDownOn:
 			m_th1.type			= eSeqRadar;
 			m_th1.angle			= 0;
-			m_th1.stepAngle		= 1;
-			m_th1.processRadius = 1;
+			m_th1.stepAngle		= 1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= 0;
 			m_th1.y				= m_GridYCenter;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth+m_GridYCenterAdjust+m_GridXCenterAdjust;
@@ -1363,10 +1346,10 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqFanRightUpOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 180;
-			m_th1.stepAngle		= -1;
-			m_th1.processRadius = -1;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
+			m_th1.angle			= 180.0f;
+			m_th1.stepAngle		= -1.0f;
+			m_th1.processRadius = -1.0f;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
 			m_th1.y				= m_GridYCenter;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth+m_GridYCenterAdjust+m_GridXCenterAdjust;
 			m_th1.frameCount	= 180;
@@ -1378,9 +1361,9 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqFanRightDownOn:
 			m_th1.type			= eSeqRadar;
 			m_th1.angle			= 0;
-			m_th1.stepAngle		= 1;
-			m_th1.processRadius = -1;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
+			m_th1.stepAngle		= 1.0f;
+			m_th1.processRadius = -1.0f;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
 			m_th1.y				= m_GridYCenter;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth+m_GridYCenterAdjust+m_GridXCenterAdjust;
 			m_th1.frameCount	= 180;
@@ -1391,11 +1374,11 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqArcBottomLeftUpOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 90;
-			m_th1.stepAngle		= -1;
-			m_th1.processRadius = 1;
+			m_th1.angle			= 90.0f;
+			m_th1.stepAngle		= -1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= 0;
-			m_th1.y				= (float)m_lightSeqGridHeight-1;
+			m_th1.y				= (float)m_lightSeqGridHeight-1.0f;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth;
 			m_th1.frameCount	= 90;
 			break;
@@ -1406,10 +1389,10 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqArcBottomLeftDownOn:
 			m_th1.type			= eSeqRadar;
 			m_th1.angle			= 0;
-			m_th1.stepAngle		= 1;
-			m_th1.processRadius = 1;
+			m_th1.stepAngle		= 1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= 0;
-			m_th1.y				= (float)m_lightSeqGridHeight-1;
+			m_th1.y				= (float)m_lightSeqGridHeight-1.0f;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth;
 			m_th1.frameCount	= 90;
 			break;
@@ -1419,11 +1402,11 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqArcBottomRightUpOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 90;
-			m_th1.stepAngle		= 1;
-			m_th1.processRadius = -1;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
-			m_th1.y				= (float)m_lightSeqGridHeight-1;
+			m_th1.angle			= 90.0f;
+			m_th1.stepAngle		= 1.0f;
+			m_th1.processRadius = -1.0f;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
+			m_th1.y				= (float)m_lightSeqGridHeight-1.0f;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth;
 			m_th1.frameCount	= 90;
 			break;
@@ -1433,11 +1416,11 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqArcBottomRightDownOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 180;
-			m_th1.stepAngle		= -1;
-			m_th1.processRadius = -1;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
-			m_th1.y				= (float)m_lightSeqGridHeight-1;
+			m_th1.angle			= 180.0f;
+			m_th1.stepAngle		= -1.0f;
+			m_th1.processRadius = -1.0f;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
+			m_th1.y				= (float)m_lightSeqGridHeight-1.0f;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth;
 			m_th1.frameCount	= 90;
 			break;
@@ -1447,9 +1430,9 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqArcTopLeftUpOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 180;
-			m_th1.stepAngle		= -1;
-			m_th1.processRadius = 1;
+			m_th1.angle			= 180.0f;
+			m_th1.stepAngle		= -1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= 0;
 			m_th1.y				= 0;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth;
@@ -1461,9 +1444,9 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqArcTopLeftDownOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 90;
-			m_th1.stepAngle		= 1;
-			m_th1.processRadius = 1;
+			m_th1.angle			= 90.0f;
+			m_th1.stepAngle		= 1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= 0;
 			m_th1.y				= 0;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth;
@@ -1476,9 +1459,9 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqArcTopRightUpOn:
 			m_th1.type			= eSeqRadar;
 			m_th1.angle			= 0;
-			m_th1.stepAngle		= 1;
-			m_th1.processRadius = -1;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
+			m_th1.stepAngle		= 1.0f;
+			m_th1.processRadius = -1.0f;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
 			m_th1.y				= 0;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth;
 			m_th1.frameCount	= 90;
@@ -1489,10 +1472,10 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 			inverse				= true;
 		case SeqArcTopRightDownOn:
 			m_th1.type			= eSeqRadar;
-			m_th1.angle			= 90;
-			m_th1.stepAngle		= -1;
-			m_th1.processRadius = -1;
-			m_th1.x				= (float)m_lightSeqGridWidth-1;
+			m_th1.angle			= 90.0f;
+			m_th1.stepAngle		= -1.0f;
+			m_th1.processRadius = -1.0f;
+			m_th1.x				= (float)m_lightSeqGridWidth-1.0f;
 			m_th1.y				= 0;
 			m_th1.length		= m_lightSeqGridHeight+m_lightSeqGridWidth;
 			m_th1.frameCount	= 90;
@@ -1504,16 +1487,16 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqScrewRightOn:
 			m_th1.type			= eSeqRadar;
 			m_th1.angle			= 0;
-			m_th1.stepAngle		= 1;
-			m_th1.processRadius = 1;
+			m_th1.stepAngle		= 1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= m_GridXCenter;
-			m_th1.y				= m_GridYCenter-1;
+			m_th1.y				= m_GridYCenter-1.0f;
 			m_th1.length		= m_lightSeqGridHeight/2+m_GridYCenterAdjust+m_lightSeqGridWidth/2+m_GridXCenterAdjust;
 			m_th1.frameCount	= 180;
 			m_th2.type			= eSeqRadar;
-			m_th2.angle			= 180-1;
-			m_th2.stepAngle		= 1;
-			m_th2.processRadius = 1;
+			m_th2.angle			= (float)(180-1);
+			m_th2.stepAngle		= 1.0f;
+			m_th2.processRadius = 1.0f;
 			m_th2.x				= m_GridXCenter;
 			m_th2.y				= m_GridYCenter;
 			m_th2.length		= m_lightSeqGridHeight/2+m_GridYCenterAdjust+m_lightSeqGridWidth/2+m_GridXCenterAdjust;
@@ -1526,16 +1509,16 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 		case SeqScrewLeftOn:
 			m_th1.type			= eSeqRadar;
 			m_th1.angle			= 0;
-			m_th1.stepAngle		= -1;
-			m_th1.processRadius = 1;
+			m_th1.stepAngle		= -1.0f;
+			m_th1.processRadius = 1.0f;
 			m_th1.x				= m_GridXCenter;
-			m_th1.y				= m_GridYCenter-1;
+			m_th1.y				= m_GridYCenter-1.0f;
 			m_th1.length		= m_lightSeqGridHeight/2+m_GridYCenterAdjust+m_lightSeqGridWidth/2+m_GridXCenterAdjust;
 			m_th1.frameCount	= 180;
 			m_th2.type			= eSeqRadar;
-			m_th2.angle			= 180-1;
-			m_th2.stepAngle		= -1;
-			m_th2.processRadius = 1;
+			m_th2.angle			= (float)(180-1);
+			m_th2.stepAngle		= -1.0f;
+			m_th2.processRadius = 1.0f;
 			m_th2.x				= m_GridXCenter;
 			m_th2.y				= m_GridYCenter;
 			m_th2.length		= m_lightSeqGridHeight/2+m_GridYCenterAdjust+m_lightSeqGridWidth/2+m_GridXCenterAdjust;
@@ -1589,12 +1572,7 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 
 bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 {
-	bool 		rc;
-	int			size;
-	int			randomLight;
-	LightState	state;
-
-	rc = false;
+	bool rc = false;
 
 	// if this tracer isn't valid, then exit with a finished return code
 	if (pTracer->type == eSeqNull)
@@ -1625,16 +1603,16 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 	   			break;
 
 	   		// process the random type of effect
-	   		case eSeqRandom:
+			case eSeqRandom: {
 				// get the number of elements in this
-				size = m_pcollection->m_visel.Size();
+				const float size = (float)m_pcollection->m_visel.Size();
 				// randomly pick n elements and invert their state
 				for (int i=0; i<pTracer->length; i++)
 				{
 					// Generates integer random number 0..(size-1)
-					randomLight = (int)(size * ( ((float)rand()) / ((float)(RAND_MAX+1)) ) );
+					const int randomLight = (int)(size * ( ((float)rand()) / ((float)(RAND_MAX+1)) ) );
 					// get the state of this light
-					state = GetElementState(randomLight);
+					LightState state = GetElementState(randomLight);
 					// invert the state
 					if (state == LightStateOn)
 					{
@@ -1655,6 +1633,7 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 	   				rc = true;
 	   			}
 				break;
+							 }
 
 	   		// process the line tracers
 			case eSeqLine: {
@@ -1720,10 +1699,10 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 				const float angle2 = (pTracer->angle + pTracer->stepAngle*0.25f) * (float)(M_PI * 2.0/360.0);
 				const float sn2 = sinf(angle2);
 				const float cs2 = cosf(angle2);
-				const float angle3 = (pTracer->angle + ((pTracer->stepAngle*0.25f)*2.0f)) * (float)(M_PI * 2.0/360.0);
+				const float angle3 = (pTracer->angle + pTracer->stepAngle*0.5f) * (float)(M_PI * 2.0/360.0);
 				const float sn3 = sinf(angle3);
 				const float cs3 = cosf(angle3);
-				const float angle4 = (pTracer->angle + ((pTracer->stepAngle*0.25f)*3.0f)) * (float)(M_PI * 2.0/360.0);
+				const float angle4 = (pTracer->angle + pTracer->stepAngle*0.75f) * (float)(M_PI * 2.0/360.0);
 				const float sn4 = sinf(angle4);
 				const float cs4 = cosf(angle4);
 
@@ -1815,17 +1794,15 @@ void LightSeq::SetAllLightsToState(LightState State)
 
 void LightSeq::SetElementToState(int index, LightState State)
 {
-	ItemTypeEnum	type;
-
-	type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
+	const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
 	if (type == eItemLight)
 	{
-		Light *pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
+		Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
 		pLight->setLightStateBypass(State);
 	}
 	else if (type == eItemBumper)
 	{
-		Bumper *pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(index);
+		Bumper * const pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(index);
 		pBumper->setLightStateBypass(State);
 	}
 }
@@ -1836,7 +1813,7 @@ bool LightSeq::VerifyAndSetGridElement(int x, int y, LightState State)
 	if ( ((x >=0) && (x < m_lightSeqGridWidth)) &&
 		 ((y >=0) && (y < m_lightSeqGridHeight)) )
 	{
-		int	gridIndex = (y * m_lightSeqGridWidth) + x;
+		const int gridIndex = (y * m_lightSeqGridWidth) + x;
 
 		int	index = m_pgridData[gridIndex];
 		if (index != 0)
@@ -1854,21 +1831,18 @@ bool LightSeq::VerifyAndSetGridElement(int x, int y, LightState State)
 
 LightState LightSeq::GetElementState(int index)
 {
-	ItemTypeEnum	type;
-	LightState		rc;
-
 	// just incase the element isn't a light or bumper
-	rc = LightStateOff;
+	LightState rc = LightStateOff;
 
-	type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
+	const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
 	if (type == eItemLight)
 	{
-		Light *pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
+		Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
 		rc = pLight->m_realState;
 	}
 	else if (type == eItemBumper)
 	{
-		Bumper *pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(index);
+		Bumper * const pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(index);
 		rc = pBumper->m_realState;
 	}
 	return rc;
@@ -1884,7 +1858,7 @@ LightSeqCenter::LightSeqCenter(LightSeq *pLightSeq)
 
 HRESULT LightSeqCenter::GetTypeName(BSTR *pVal)
 {
-return m_pLightSeq->GetTypeName(pVal);
+	return m_pLightSeq->GetTypeName(pVal);
 }
 
 IDispatch *LightSeqCenter::GetDispatch()
@@ -1947,8 +1921,6 @@ int LightSeqCenter::GetSelectLevel()
 
 
 
-
-
 // un-used code but kept
 
 #if 0
@@ -2000,14 +1972,14 @@ int LightSeqCenter::GetSelectLevel()
 					// move to the next angle
 					pTracer->angle += pTracer->stepAngle;
 					// process any wrap around
-					if (pTracer->angle >= 360)
+					if (pTracer->angle >= 360.0f)
 					{
-						pTracer->angle -= 360;
+						pTracer->angle -= 360.0f;
 						pTracer->radius += pTracer->stepRadius;
 					}
 					if (pTracer->angle < 0)
 					{
-						pTracer->angle += 360;
+						pTracer->angle += 360.0f;
 						pTracer->radius += pTracer->stepRadius;
 					}
 				}
