@@ -56,7 +56,7 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
                                    VOID* pContext )
 {
     //HWND hDlg = (HWND)pContext;
-	PinInput *ppinput = (PinInput *)pContext;
+	PinInput * const ppinput = (PinInput *)pContext;
 
 #ifdef _DEBUG
 	static int nAxis = 0;
@@ -127,7 +127,7 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	dstr.diph.dwObj = 0;
 	dstr.diph.dwHow = 0;
 
-	PinInput *ppinput = (PinInput *)pvRef;
+	PinInput * const ppinput = (PinInput *)pvRef;
 	
 	HRESULT hr;
 	
@@ -221,11 +221,11 @@ DIDEVICEOBJECTDATA *PinInput::GetTail( U32 cur_sim_msec )
 {
 	if( QueueEmpty() ) return NULL;
 
-	int tmp = m_tail;
+	const int tmp = m_tail;
 
 	DIDEVICEOBJECTDATA *ptr = &m_diq[tmp];
 
-	int diff = (int) ((U32)( cur_sim_msec - ptr->dwTimeStamp ));
+	const int diff = (int) ((U32)( cur_sim_msec - ptr->dwTimeStamp ));
 
 	// If we've simulated to or beyond the timestamp of when this control was received then process the control into the system
 	if( diff > 0 || cur_sim_msec == 0xffffffff )
@@ -245,13 +245,12 @@ void GetInputDeviceData()
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
 	DWORD dwElements;
 	HRESULT hr;		
-	LPDIRECTINPUTDEVICE pkyb = s_pPinInput->m_pKeyboard;
-	LPDIRECTINPUTDEVICE pjoy;
 	HWND hwnd = s_pPinInput->m_hwnd;
 
 	if(!s_pPinInput) return;	// bad pointer exit
 
-	{	
+	{
+	LPDIRECTINPUTDEVICE pkyb = s_pPinInput->m_pKeyboard;
 	if (pkyb) //keyboard
 		{	
 		hr = pkyb->Acquire();				// try to Acquire keyboard input
@@ -274,7 +273,7 @@ void GetInputDeviceData()
 
 	for (int k = 0; k < e_JoyCnt; ++k)
 		{
-		pjoy = s_pPinInput->m_pJoystick[k];
+		LPDIRECTINPUTDEVICE pjoy = s_pPinInput->m_pJoystick[k];
 		if (pjoy)
 			{				
 			hr = pjoy->Acquire();							// try to Acquire joustick input
@@ -313,7 +312,6 @@ void PinInput::Init(HWND hwnd)
 		hr = m_pKeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 		
 		DIPROPDWORD dipdw;
-
 		dipdw.diph.dwSize = sizeof(DIPROPDWORD);
 		dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
 		dipdw.diph.dwObj = 0;
@@ -399,10 +397,9 @@ void PinInput::FireKeyEvent( int dispid, int key )
 {
 	U32 val = 0;
 	U32 tmp = m_PreviousKeys;
-	int	mkey;
-
+	
 	// Initialize.
-	mkey = key;
+	int mkey = key;
 
 	// Check if we are mirrored.
 	if ( g_pplayer->m_ptable->m_tblMirrorEnabled )

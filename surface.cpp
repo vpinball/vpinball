@@ -85,7 +85,7 @@ HRESULT Surface::InitTarget(PinTable *ptable, float x, float y)
 		pdp->AddRef();
 		pdp->Init(this, x+30.0f, y+6.0f);
 		pdp->m_fAutoTexture = fFalse;
-		pdp->m_texturecoord = 1.0;
+		pdp->m_texturecoord = 1.0f;
 		m_vdpoint.AddElement(pdp);
 		}
 	CComObject<DragPoint>::CreateInstance(&pdp);
@@ -114,7 +114,7 @@ void Surface::SetDefaults()
 
 	m_d.m_fHitEvent = fFalse;
 	m_d.m_threshold = 1.0f;
-	m_d.m_slingshot_threshold = 0;
+	m_d.m_slingshot_threshold = 0.0f;
 
 	m_d.m_fInner = fTrue;
 
@@ -214,8 +214,6 @@ void Surface::PreRender(Sur *psur)
 
 void Surface::Render(Sur *psur)
 	{
-	BOOL	fDrawDragpoints;		//>>> added by chris
-
 	psur->SetFillColor(-1);
 	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
 	psur->SetObject(this); // For selected formatting
@@ -243,6 +241,8 @@ void Surface::Render(Sur *psur)
 	m_rgvT = NULL;
 
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
+	BOOL	fDrawDragpoints;		//>>> added by chris
+
 	if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
 		{
 		fDrawDragpoints = fTrue;
@@ -253,8 +253,7 @@ void Surface::Render(Sur *psur)
 		fDrawDragpoints = fFalse;
 		for (int i=0;i<m_vdpoint.Size();i++)
 			{
-			CComObject<DragPoint> *pdp;
-			pdp = m_vdpoint.ElementAt(i);
+			const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 			if (pdp->m_selectstate != eNotSelected)
 				{
 				fDrawDragpoints = fTrue;
@@ -265,8 +264,7 @@ void Surface::Render(Sur *psur)
 
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
-		CComObject<DragPoint> *pdp;
-		pdp = m_vdpoint.ElementAt(i);
+		CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 		psur->SetFillColor(-1);
 		psur->SetBorderColor(RGB(255,0,0),fFalse,0);
 
@@ -284,16 +282,13 @@ void Surface::Render(Sur *psur)
 
 		if (pdp->m_fSlingshot)
 			{
-			CComObject<DragPoint> *pdp2;
-
 			psur->SetObject(NULL);
-			pdp2 = m_vdpoint.ElementAt((i+1) % m_vdpoint.Size());
+			const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i+1) % m_vdpoint.Size());
 
 			psur->SetLineColor(RGB(0,0,0),fFalse,3);
 			psur->Line(pdp->m_v.x, pdp->m_v.y, pdp2->m_v.x, pdp2->m_v.y);
 			}
 		}
-
 	}
 
 void Surface::RenderBlueprint(Sur *psur)
@@ -341,7 +336,6 @@ void Surface::RenderShadow(ShadowSur *psur, float height)
 	for (int i=0;i<vvertex.Size();i++)
 		{
 		m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
-
 		delete vvertex.ElementAt(i);
 		}
 
@@ -475,10 +469,10 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 
 	for (int i=0;i<count;i++)
 		{
-		RenderVertex * const pv1 = &rgv[i];
-		RenderVertex * const pv2 = &rgv[(i+1) % count];
-		RenderVertex * const pv3 = &rgv[(i+2) % count];
-		RenderVertex * const pv4 = &rgv[(i+3) % count];
+		const RenderVertex * const pv1 = &rgv[i];
+		const RenderVertex * const pv2 = &rgv[(i+1) % count];
+		const RenderVertex * const pv3 = &rgv[(i+2) % count];
+		const RenderVertex * const pv4 = &rgv[(i+3) % count];
 
 		if (m_d.m_fInner)
 			{
@@ -527,11 +521,10 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 	delete rgv3D;
 	}
 
-void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *pv2, RenderVertex *pv3, BOOL fSlingshot)
+void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const BOOL fSlingshot)
 	{
 	LineSeg *plineseg;
-	LineSegSlingshot *plinesling;
-
+	
 	if (!fSlingshot)
 		{
 		plineseg = new LineSeg();
@@ -548,7 +541,7 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 		}
 	else
 		{
-		plinesling = new LineSegSlingshot();
+		LineSegSlingshot * const plinesling = new LineSegSlingshot();
 		plineseg = (LineSeg *)plinesling;
 
 		// Slingshots always have hit events
@@ -613,7 +606,6 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 		pjoint->m_elasticity = m_d.m_elasticity;
 		pjoint->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 		pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
-		
 
 		pjoint->center.x = pv1->x;
 		pjoint->center.y = pv1->y;
@@ -641,8 +633,8 @@ void Surface::AddLine(Vector<HitObject> *pvho, RenderVertex *pv1, RenderVertex *
 		// Set up line normal
 		{
 		const float inv_length = 1.0f/sqrtf((pjoint->normal.x * pjoint->normal.x) + (pjoint->normal.y * pjoint->normal.y));
-		pjoint->normal.x = pjoint->normal.x*inv_length;
-		pjoint->normal.y = pjoint->normal.y*inv_length;
+		pjoint->normal.x *= inv_length;
+		pjoint->normal.y *= inv_length;
 		}
 		}
 	}
@@ -688,9 +680,7 @@ void Surface::MoveOffset(float dx, float dy)
 	{
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
-		CComObject<DragPoint> *pdp;
-
-		pdp = m_vdpoint.ElementAt(i);
+		CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 
 		pdp->m_v.x += dx;
 		pdp->m_v.y += dy;
@@ -750,7 +740,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->ClearExtents(&plinesling->m_slingshotanim.m_rcBounds, &plinesling->m_slingshotanim.m_znear, &plinesling->m_slingshotanim.m_zfar);
 
-		Vertex3D rgv3D[32];
+		Vertex3D rgv3D[12];
 		rgv3D[0].x = plinesling->v1.x;
 		rgv3D[0].y = plinesling->v1.y;
 		rgv3D[0].z = slingbottom;
@@ -878,12 +868,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
-	float maxtu, maxtv;
-
-	PinImage * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
-	float maxtuSide, maxtvSide;
-
 	if (fMover)
 		{
 		pof = new ObjFrame();
@@ -894,10 +878,9 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		// Check if we are blitting with D3D.
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
-			RECT	Rect;
-
 			// Since we don't know the final dimensions of the 
 			// object we're rendering, clear the whole buffer.
+			RECT Rect;
 			Rect.top = 0;
 			Rect.left = 0;
 			Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
@@ -912,11 +895,13 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
 
+	PinImage * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
+	float maxtuSide, maxtvSide;
 	if (pinSide)
 		{
 		m_ptable->GetTVTU(pinSide, &maxtuSide, &maxtvSide);		
 
-	//rlc add transparent texture support ... replaced this line with >>>>	
+		//rlc add transparent texture support ... replaced this line with >>>>	
 		pinSide->EnsureColorKey();
 		if (pinSide->m_fTransparent)
 			{				
@@ -1023,10 +1008,10 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		rgnormal[i].y = dx*inv_len;
 		}
 
-		ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
+	ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 	
 		// Render side
-		{
+	{
 		for (int i=0;i<cvertex;i++)
 			{
 			//RenderVertex *pv0 = &rgv[(i-1+cvertex) % cvertex];
@@ -1144,7 +1129,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 											, &m_phitdrop->m_polydropanim.m_zfar, 2, fFalse);
 				}
 			}
-		}
+	}
 
 	SAFE_DELETE(rgtexcoord);
 
@@ -1240,6 +1225,9 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			}
+
+		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+		float maxtu, maxtv;
 
 		if (pin)
 			{
@@ -1437,7 +1425,7 @@ void Surface::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			m_phitdrop->m_polydropanim.m_pobjframe[1] = pof2;
 			}
 
-		Pin3D *ppin3d = &g_pplayer->m_pin3d;
+		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 		ppin3d->WriteAnimObjectToCacheFile(&m_phitdrop->m_polydropanim, m_phitdrop->m_polydropanim.m_pobjframe, 2);
 		}
 	}
@@ -1648,7 +1636,6 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 		Vertex2D v;
 		BOOL fSmooth;
 		BOOL fSlingshot;
-		CComObject<DragPoint> *pdp;
 
 		if(FAILED(hr = pstm->Read(&v, sizeof(Vertex2D), &read)))
 			return hr;
@@ -1656,7 +1643,8 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 			return hr;
 		if(FAILED(hr = pstm->Read(&fSlingshot, sizeof(BOOL), &read)))
 			return hr;
-
+		
+		CComObject<DragPoint> *pdp;
 		CComObject<DragPoint>::CreateInstance(&pdp);
 		if (pdp)
 			{
@@ -1669,7 +1657,7 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 		}
 
 	if(FAILED(hr = pstm->Read(&m_d, sizeof(SurfaceData), &read)))
-			return hr;
+		return hr;
 
 	*pid = dwID;
 
@@ -2214,7 +2202,9 @@ STDMETHODIMP Surface::get_CastsShadow(VARIANT_BOOL *pVal)
 STDMETHODIMP Surface::put_CastsShadow(VARIANT_BOOL newVal)
 {
 	STARTUNDO
+
 	m_d.m_fCastsShadow = VBTOF(newVal);
+
 	STOPUNDO
 
 	return S_OK;
@@ -2269,7 +2259,9 @@ STDMETHODIMP Surface::get_Disabled(VARIANT_BOOL *pVal)
 STDMETHODIMP Surface::put_Disabled(VARIANT_BOOL newVal)
 {
 	STARTUNDO
+
 	m_fDisabled = VBTOF(newVal);
+
 	STOPUNDO
 
 	return S_OK;
@@ -2302,7 +2294,7 @@ STDMETHODIMP Surface::get_Collidable(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 {
-	BOOL fNewVal = VBTOF(newVal);	
+	const BOOL fNewVal = VBTOF(newVal);	
 
 	if(!m_d.m_fInner)	//outer wall must always be colliable
 		{

@@ -884,7 +884,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 			{
 			window[i][l] = window[0][l] * window[i][0];
 			window[i][l] = rgfilterwindow[i][l];
-			totalwindow+=window[i][l];
+			totalwindow += window[i][l];
 			}
 		}
 
@@ -1051,25 +1051,25 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 				int b[4];
 				int a[4];
 
-				b[0] = *pbytes1++;
-				g[0] = *pbytes1++;
-				r[0] = *pbytes1++;
-				a[0] = *pbytes1++;
+				b[0] = pbytes1[0];
+				g[0] = pbytes1[1];
+				r[0] = pbytes1[2];
+				a[0] = pbytes1[3];
 
-				b[1] = *pbytes1++;
-				g[1] = *pbytes1++;
-				r[1] = *pbytes1++;
-				a[1] = *pbytes1++;
+				b[1] = pbytes1[4];
+				g[1] = pbytes1[5];
+				r[1] = pbytes1[6];
+				a[1] = pbytes1[7];
 
-				b[2] = *pbytes2++;
-				g[2] = *pbytes2++;
-				r[2] = *pbytes2++;
-				a[2] = *pbytes2++;
+				b[2] = pbytes2[0];
+				g[2] = pbytes2[1];
+				r[2] = pbytes2[2];
+				a[2] = pbytes2[3];
 
-				b[3] = *pbytes2++;
-				g[3] = *pbytes2++;
-				r[3] = *pbytes2++;
-				a[3] = *pbytes2++;
+				b[3] = pbytes2[4];
+				g[3] = pbytes2[5];
+				r[3] = pbytes2[6];
+				a[3] = pbytes2[7];
 
 				int rtotal = 0;
 				int gtotal = 0;
@@ -1089,14 +1089,19 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 
 				const int round = count>>1;
 
-				*pchNext++ = (btotal+round)/count;
-				*pchNext++ = (gtotal+round)/count;
-				*pchNext++ = (rtotal+round)/count;
-				*pchNext++ = (atotal+2)/4;				
+				pchNext[0] = (btotal+round)/count;
+				pchNext[1] = (gtotal+round)/count;
+				pchNext[2] = (rtotal+round)/count;
+				pchNext[3] = (atotal+2)/4;
+
+				pchNext += 4;
+
+				pbytes1 += 8;
+				pbytes2 += 8;
 				}
 			pbytes1 += addtoouterpitch;
 			pbytes2 += addtoouterpitch;
-			pchNext += (pitchNext - (width*4));
+			pchNext += pitchNext - (width*4);
 			}
 		pdds->Unlock(NULL);
 		pddsNext->Unlock(NULL);
