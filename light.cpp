@@ -10,6 +10,7 @@ LightCenter::LightCenter(Light *plight)
 	{
 	m_plight = plight;
 	}
+
 HRESULT LightCenter::GetTypeName(BSTR *pVal) {return m_plight->GetTypeName(pVal);}
 IDispatch *LightCenter::GetDispatch() {return m_plight->GetDispatch();}
 void LightCenter::GetDialogPanes(Vector<PropertyPane> *pvproppane) {m_plight->GetDialogPanes(pvproppane);}
@@ -101,8 +102,6 @@ void Light::SetDefaults()
 
 void Light::PreRender(Sur *psur)
 	{
-	PinImage *ppi = NULL;
-
 	psur->SetBorderColor(-1,fFalse,0);
 	psur->SetFillColor(m_d.m_color);
 	psur->SetObject(this);
@@ -124,15 +123,12 @@ void Light::PreRender(Sur *psur)
 			psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 			break;
 
-		case ShapeCustom:
+		case ShapeCustom: {
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
-			int cvertex;
-			Vertex2D *rgv;
-
-			cvertex = vvertex.Size();
-			rgv = new Vertex2D[cvertex];
+			const int cvertex = vvertex.Size();
+			Vertex2D * const rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
@@ -143,6 +139,7 @@ void Light::PreRender(Sur *psur)
 			// Check if we should display the image in the editor.
 			if ((m_d.m_fDisplayImage) && (m_d.m_szOnImage[0]) && (m_d.m_szOffImage[0])) 
 				{
+				PinImage *ppi;
 				// Get the image.
 				switch (m_d.m_state)
 					{
@@ -181,6 +178,7 @@ void Light::PreRender(Sur *psur)
 
 			delete rgv;
 			break;
+						  }
 		}
 	}
 
@@ -199,8 +197,7 @@ void Light::Render(Sur *psur)
 		fDrawDragpoints = fFalse;
 		for (int i=0;i<m_vdpoint.Size();i++)
 			{
-			CComObject<DragPoint> *pdp;
-			pdp = m_vdpoint.ElementAt(i);
+			const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 			if (pdp->m_selectstate != eNotSelected)
 				{
 				fDrawDragpoints = fTrue;
@@ -247,15 +244,12 @@ void Light::RenderOutline(Sur *psur)
 			psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_borderwidth);
 			break;
 
-		case ShapeCustom:
+		case ShapeCustom: {
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
-			int cvertex;
-			Vertex2D *rgv;
-
-			cvertex = vvertex.Size();
-			rgv = new Vertex2D[cvertex];
+			const int cvertex = vvertex.Size();
+			Vertex2D * const rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
@@ -269,12 +263,13 @@ void Light::RenderOutline(Sur *psur)
 
 			psur->SetObject((ISelect *)&m_lightcenter);
 			break;
+						  }
 		}
 
 	if (m_d.m_shape == ShapeCustom || g_pvp->m_fAlwaysDrawLightCenters)
 		{
-		psur->Line(m_d.m_vCenter.x - 10, m_d.m_vCenter.y, m_d.m_vCenter.x + 10, m_d.m_vCenter.y);
-		psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10, m_d.m_vCenter.x, m_d.m_vCenter.y + 10);
+		psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
+		psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
 		}
 	}
 
@@ -287,8 +282,7 @@ void Light::GetTimers(Vector<HitTimer> *pvht)
 	{
 	IEditable::BeginPlay();
 
-	HitTimer *pht;
-	pht = new HitTimer();
+	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
 	pht->m_pfe = (IFireEvents *)this;
@@ -315,14 +309,14 @@ void Light::GetHitShapes(Vector<HitObject> *pvho)
 
 void Light::GetHitShapesDebug(Vector<HitObject> *pvho)
 	{
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	switch (m_d.m_shape)
 		{
 		case ShapeCircle:
 		default:
 			{
-			HitObject *pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_radius, 32);
+			HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_radius, 32);
 			pvho->AddElement(pho);
 			}
 			break;
@@ -378,7 +372,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
@@ -584,7 +578,7 @@ void Light::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if (m_d.m_borderwidth > 0)
 		{
-		Pin3D *ppin3d = &g_pplayer->m_pin3d;
+		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 		const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -610,7 +604,7 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 	{
 		Vector<RenderVertex> vvertex;
@@ -1318,26 +1312,21 @@ void Light::DoCommand(int icmd, int x, int y)
 			{
 			STARTUNDO
 
-			HitSur *phs;
-
 			RECT rc;
 			GetClientRect(m_ptable->m_hwnd, &rc);
 			Vertex2D v, vOut;
 			int iSeg;
 
-			phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+			HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
 			phs->ScreenToSurface(x, y, &v.x, &v.y);
 			delete phs;
 
-			int cvertex;
-			Vertex2D *rgv;
-
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
-			cvertex = vvertex.Size();
-			rgv = new Vertex2D[cvertex];
+			const int cvertex = vvertex.Size();
+			Vertex2D * const rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
@@ -1447,9 +1436,9 @@ STDMETHODIMP Light::put_State(LightState newVal)
 void Light::DrawFrame(BOOL fOn)
 	{
 	m_fOn = fOn;
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	int frame = fOn ? 1 : 0;
+	const int frame = fOn ? 1 : 0;
 
 	// Light might be off the screen and have no image
 	// Check if we are blitting with D3D.
@@ -1655,9 +1644,9 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 		{
 		// Restart the sequence
 		// BUG - merge with code in player for light blinking someday
-		char cold = m_rgblinkpattern[m_iblinkframe];
+		const char cold = m_rgblinkpattern[m_iblinkframe];
 		m_iblinkframe = 0;
-		char cnew = m_rgblinkpattern[m_iblinkframe];
+		const char cnew = m_rgblinkpattern[m_iblinkframe];
 		if (cold != cnew)
 			{
 			DrawFrame(cnew == '1');
