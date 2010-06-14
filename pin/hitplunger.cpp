@@ -391,7 +391,7 @@ void HitPlunger::Collide(Ball *pball, Vertex3Ds *phitnormal)
 
 	pball->vx *= c_hardFriction; pball->vy *= c_hardFriction; pball->vz *= c_hardFriction; //friction all axiz
 		
-	float scatter_vel = m_plungeranim.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;			// apply dificulty weighting
+	const float scatter_vel = m_plungeranim.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;// apply dificulty weighting
 
 	if ( scatter_vel > 0  && fabsf(pball->vy) > scatter_vel) //skip if low velocity 
 		{
@@ -409,11 +409,8 @@ void HitPlunger::Collide(Ball *pball, Vertex3Ds *phitnormal)
 
 void PlungerAnimObject::Check3D()
 	{
-	LPDIRECTDRAWSURFACE7 pdds;
-
-	pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 																		//rlc fixed frame jitter by rounding up 0.5
-	int frame = (int)((m_pos - m_frameStart + 1.0f)/(m_frameEnd-m_frameStart) * (m_vddsFrame.Size()-1)+0.5f);
+	const int frame = (int)((m_pos - m_frameStart + 1.0f)/(m_frameEnd-m_frameStart) * (m_vddsFrame.Size()-1)+0.5f);
 
 	if (frame != m_iframe)
 		{
@@ -424,14 +421,9 @@ void PlungerAnimObject::Check3D()
 
 ObjFrame *PlungerAnimObject::Draw3D(RECT *prc)
 	{
-	LPDIRECTDRAWSURFACE7 pdds;
-
 	if (m_iframe == -1) return NULL;
 
-	pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
-
-	ObjFrame *pobjframe = m_vddsFrame.ElementAt(m_iframe);
+	ObjFrame * const pobjframe = m_vddsFrame.ElementAt(m_iframe);
 
 	return pobjframe;
-
 	}

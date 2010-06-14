@@ -1736,9 +1736,7 @@ void DispReel::UpdateObjFrame()
 
 	if( !GetPTable()->GetEMReelsEnabled() ) return;
 
-	//LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
-
-    // is the background box transparent?
+	// is the background box transparent?
 #define Foo 1
 #ifdef Foo
     if (m_d.m_fTransparent)

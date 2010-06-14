@@ -34,10 +34,8 @@ void BumperHitCircle::Collide(Ball *pball, Vertex3Ds *phitnormal)
 
 	// if the bumper is disabled then don't activate the bumper
 	if (m_pbumper->m_fDisabled)
-	{
 		return;
-	}
-	
+
 	if (dot <= -m_pbumper->m_d.m_threshold)// if velocity greater than threshold level
 		{
 		pball->vx += phitnormal[0].x * m_pbumper->m_d.m_force;	// add a chunk of velocity to drive ball away 
@@ -85,7 +83,7 @@ ObjFrame *BumperAnimObject::Draw3D(RECT *prc)
 	{
 	if(!m_fVisible || m_iframe == -1) return NULL;
 	
-	ObjFrame *pobjframe = m_pobjframe[m_iframe];
+	ObjFrame * const pobjframe = m_pobjframe[m_iframe];
 
 	return pobjframe;
 	}
@@ -213,7 +211,7 @@ ObjFrame *SlingshotAnimObject::Draw3D(RECT *prc)
 	{
 	if (m_iframe == 1)
 		{
-		ObjFrame *pobjframe = m_pobjframe;
+		ObjFrame * const pobjframe = m_pobjframe;
 		return pobjframe;
 		}
 
@@ -313,8 +311,8 @@ void GateAnimObject::UpdateVelocities(PINFLOAT dtime)
 	if (!m_fOpen)
 		{
 		if (m_angle == m_angleMin) m_anglespeed = 0.0f;
-		else {m_anglespeed -= sinf(m_angle)*dtime * 0.0025f;} // Center of gravity towards bottom of object, makes it stop vertical
-		//else {m_anglespeed -= sinf((m_angle - m_angleMin)*0.5f)*dtime * 0.02f;} // Center of gravity towards bottom of object, makes it stop vertical
+		else m_anglespeed -= sinf(m_angle)*dtime * 0.0025f; // Center of gravity towards bottom of object, makes it stop vertical
+		//else m_anglespeed -= sinf((m_angle - m_angleMin)*0.5f)*dtime * 0.02f; // Center of gravity towards bottom of object, makes it stop vertical
 		m_anglespeed *= 1.0f - m_friction*dtime;
 		}	
 	}
@@ -330,8 +328,8 @@ void GateAnimObject::Check3D()
 			}
 		return;
 		}
+	
 	int frame;
-
 	if (m_pgate->m_d.m_angleMin != m_pgate->m_d.m_angleMax)
 		{
 		frame = (int)(((m_angle - m_pgate->m_d.m_angleMin)/(m_pgate->m_d.m_angleMax - m_pgate->m_d.m_angleMin)
@@ -346,10 +344,6 @@ void GateAnimObject::Check3D()
 
 	if (frame != m_iframe)
 		{
-		LPDIRECTDRAWSURFACE7 pdds;
-
-		pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
-
 		m_iframe = frame;
 		m_fInvalid = fTrue;
 		}
@@ -357,13 +351,9 @@ void GateAnimObject::Check3D()
 
 ObjFrame *GateAnimObject::Draw3D(RECT *prc)
 	{
-	LPDIRECTDRAWSURFACE7 pdds;
-
 	if (!m_fVisible || m_iframe == -1) return NULL;
 
-	pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
-
-	ObjFrame *pobjframe = m_vddsFrame.ElementAt(m_iframe);
+	ObjFrame * const pobjframe = m_vddsFrame.ElementAt(m_iframe);
 
 	return pobjframe;
 	}
@@ -377,11 +367,11 @@ HitSpinner::HitSpinner(Spinner *pspinner, float height)
 	{
 	m_spinneranim.m_pspinner = pspinner;
 
-	float halflength = pspinner->m_d.m_length * 0.5f;
+	const float halflength = pspinner->m_d.m_length * 0.5f;
 
-	float radangle = ANGTORAD(pspinner->m_d.m_rotation);
-	float sn = sinf(radangle);
-	float cs = cosf(radangle);
+	const float radangle = ANGTORAD(pspinner->m_d.m_rotation);
+	const float sn = sinf(radangle);
+	const float cs = cosf(radangle);
 
 	m_lineseg[0].m_rcHitRect.zlow = height;
 	m_lineseg[0].m_rcHitRect.zhigh = height + 50.0f;
@@ -412,21 +402,20 @@ HitSpinner::HitSpinner(Spinner *pspinner, float height)
 	m_spinneranim.m_angle = 0;
 	m_spinneranim.m_anglespeed = 0;
 
-	if (m_spinneranim.m_angle > m_spinneranim.m_angleMax)m_spinneranim.m_angle = m_spinneranim.m_angleMax;
-	else if (m_spinneranim.m_angle < m_spinneranim.m_angleMin)m_spinneranim.m_angle = m_spinneranim.m_angleMin;	
+	if (m_spinneranim.m_angle > m_spinneranim.m_angleMax) m_spinneranim.m_angle = m_spinneranim.m_angleMax;
+	else if (m_spinneranim.m_angle < m_spinneranim.m_angleMin) m_spinneranim.m_angle = m_spinneranim.m_angleMin;	
 	
 	m_spinneranim.m_elasticity = pspinner->m_d.m_elasticity;
 	m_spinneranim.m_friction = 1.0f - pspinner->m_d.m_friction;	//antifriction
 	m_spinneranim.m_scatter = pspinner->m_d.m_scatter;
 	m_spinneranim.m_fVisible = pspinner->m_d.m_fVisible;	
-
 	}
 
 PINFLOAT HitSpinner::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	PINFLOAT hittime;
 
-	if (!m_fEnabled) return -1;	
+	if (!m_fEnabled) return -1.0f;	
 
 	hittime = m_lineseg[0].HitTestBasic(pball, dtime, phitnormal, false, true, false);// any face, lateral, non-rigid
 	if (hittime >= 0)
@@ -448,7 +437,6 @@ PINFLOAT HitSpinner::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 
 void HitSpinner::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
-
 	const PINFLOAT dot = pball->vx * phitnormal->x + pball->vy * phitnormal->y;
 	if (dot < 0) return;	//hit from back doesn't count
 	
@@ -517,17 +505,16 @@ void SpinnerAnimObject::UpdateDisplacements(PINFLOAT dtime)
 		if (m_anglespeed > 0)
 			{
 			if (m_angle > target) 
-				{m_pspinner->FireGroupEvent(DISPID_SpinnerEvents_Spin);}
+				m_pspinner->FireGroupEvent(DISPID_SpinnerEvents_Spin);
 			}
 		else
 			{
 			if (m_angle < target) 
-				{m_pspinner->FireGroupEvent(DISPID_SpinnerEvents_Spin);}
+				m_pspinner->FireGroupEvent(DISPID_SpinnerEvents_Spin);
 			}
 
 		while (m_angle > (float)(2.0*M_PI)) m_angle -= (float)(2.0*M_PI);
 		while (m_angle < 0.0f) m_angle += (float)(2.0*M_PI);
-			
 		}
 	}
 
@@ -551,20 +538,19 @@ void SpinnerAnimObject::Check3D()
 		}
 
 	int frame;	
-	int cframes = m_vddsFrame.Size();
+	const int cframes = m_vddsFrame.Size();
 
 	if (m_pspinner->m_d.m_angleMin != m_pspinner->m_d.m_angleMax)
 		{
-		float ang = RADTOANG(m_angle);
-		
-		
+		const float ang = RADTOANG(m_angle);
+
 		frame = (int)(((ang - m_pspinner->m_d.m_angleMin)/(m_pspinner->m_d.m_angleMax - m_pspinner->m_d.m_angleMin))
 				* (float)cframes - 0.5f);
 
 		if (frame >= cframes) 
-			{frame = cframes-1;}		//hold 	
+			frame = cframes-1;		//hold 	
 		else if (frame < 0) 
-			{frame = 0;} 
+			frame = 0; 
 		}
 	else 
 		{
@@ -579,8 +565,6 @@ void SpinnerAnimObject::Check3D()
 
 	if (frame != m_iframe)
 		{
-		//LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
-
 		m_iframe = frame;
 		m_fInvalid = fTrue;
 		}
@@ -589,8 +573,6 @@ void SpinnerAnimObject::Check3D()
 ObjFrame *SpinnerAnimObject::Draw3D(RECT *prc)
 	{
 	if (!m_fVisible || m_iframe == -1) return NULL;
-
-	//LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 
 	ObjFrame * const pobjframe = m_vddsFrame.ElementAt(m_iframe);
 
@@ -685,20 +667,14 @@ PINFLOAT Hit3DPoly::HitTestBasicPolygon(Ball *pball, PINFLOAT dtime, Vertex3Ds *
 		{
 		if (bnv * bnd >= 0)										// outside-receding || inside-approaching
 			{
-			if (m_ObjType != eTrigger) return -1.0f;				// not a trigger
-			if (!pball->m_vpVolObjs) return -1.0f;					// temporary ball
-
-			if (fabsf(bnd) >= (float)(PHYS_SKIN/2.0))		// not to close ... nor to far away
+			if((m_ObjType != eTrigger) ||				// not a trigger
+			   (!pball->m_vpVolObjs) ||					// temporary ball
+			   (fabsf(bnd) >= (float)(PHYS_SKIN/2.0)) ||		// not to close ... nor to far away
+			   (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0)))// ...ball outside and hit set or  ball inside and no hit set
 				return -1.0f;
 
-			const bool hit = (pball->m_vpVolObjs->IndexOf(m_pObj) >= 0);	// hit already???
-
-			if (inside == !hit) // ...ball outside and hit set or  ball inside and no hit set
-				{
-				hittime = 0;
-				bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
-				}	
-			else return -1.0f;	
+			hittime = 0;
+			bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
 			}
 		else hittime = bnd/(-bnv);	
 		}
@@ -1055,9 +1031,8 @@ PINFLOAT TriggerLineSeg::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnor
 
 void TriggerLineSeg::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
-	if (m_ObjType != eTrigger) return;
-
-	if (!pball->m_vpVolObjs) return;
+	if((m_ObjType != eTrigger) ||
+	   (!pball->m_vpVolObjs)) return;
 
 	const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
@@ -1094,9 +1069,8 @@ PINFLOAT TriggerHitCircle::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitn
 
 void TriggerHitCircle::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
-	if (m_ObjType < eTrigger) return;// triggers and kickers
-
-	if (!pball->m_vpVolObjs) return;
+	if((m_ObjType < eTrigger) || // triggers and kickers
+	   (!pball->m_vpVolObjs)) return;
 
 	const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 

@@ -190,10 +190,9 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	if(m_d.m_fVisible)
 	{
 	_ASSERTE(m_phitplunger);
-	Pin3D *ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	LPDIRECTDRAWSURFACE7 pdds;
-	ObjFrame *pof;
-
+	
 	const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
 	D3DMATERIAL7 mtrl;
@@ -215,7 +214,7 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		{
 		const float height = beginy + inv_cframes*(float)i;
 
-		pof = new ObjFrame();
+		ObjFrame *pof = new ObjFrame();
 
 		Vertex3D rgv3D[16*PLUNGEPOINTS];
 		for (int l=0;l<16;l++)

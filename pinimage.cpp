@@ -426,8 +426,6 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(int id, int *pwidth, int 
 
 LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int *pwidth, int *pheight)
 	{
-	LPDIRECTDRAWSURFACE7 pdds;
-
 	BITMAP bm;
 	HBITMAP hbmOld;
 
@@ -448,7 +446,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int *pwidth, 
 		return NULL; //rlc MAX_TEXTURE_SIZE is the limit for directx textures
 		}
 
-	pdds = CreateTextureOffscreen(bm.bmWidth, bm.bmHeight);
+	LPDIRECTDRAWSURFACE7 pdds = CreateTextureOffscreen(bm.bmWidth, bm.bmHeight);
 
 	HDC hdc;
 
@@ -681,8 +679,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage *ppi, PinBinary *ppb
 		return NULL; // 4k*4k is the limit for directx textures
 		}
 
-	LPDIRECTDRAWSURFACE7 pdds;
-	pdds = CreateTextureOffscreen(cinfo.image_width, cinfo.image_height);
+	LPDIRECTDRAWSURFACE7 pdds = CreateTextureOffscreen(cinfo.image_width, cinfo.image_height);
 	if (pdds == NULL)
 		{
 		return NULL;

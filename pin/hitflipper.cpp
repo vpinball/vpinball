@@ -748,9 +748,6 @@ void HitFlipper::Draw(HDC hdc)
 void FlipperAnimObject::Check3D()
 	{
 	int frame;
-	LPDIRECTDRAWSURFACE7 pdds;
-
-	pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 
 	if (m_fEnabled)
 		{
@@ -771,14 +768,10 @@ void FlipperAnimObject::Check3D()
 
 ObjFrame *FlipperAnimObject::Draw3D(RECT *prc)
 	{
-	LPDIRECTDRAWSURFACE7 pdds;
-
 	if (m_iframe == -1) return NULL;
 
 	if (m_fEnabled)
 		{
-		pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
-
 		ObjFrame *pobjframe = m_vddsFrame.ElementAt(m_iframe);
 
 		return pobjframe;

@@ -108,21 +108,14 @@ PINFLOAT LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnorma
 		{
 		if (bnv * bnd >= 0)										// outside-receding || inside-approaching
 			{
-			if (m_ObjType != eTrigger) return -1.0f;				// no a trigger
-
-			if (!pball->m_vpVolObjs) return -1.0f;
-
-			if (fabsf(bnd) >= (float)(PHYS_SKIN/2.0))			// not to close ... nor to far away
+			if ((m_ObjType != eTrigger) ||				// no a trigger
+			    (!pball->m_vpVolObjs) ||
+			    (fabsf(bnd) >= (float)(PHYS_SKIN/2.0)) ||			// not to close ... nor to far away
+			    (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0))) // ...ball outside and hit set or  ball inside and no hit set
 				return -1.0f;
 			
-			const bool hit = pball->m_vpVolObjs->IndexOf(m_pObj) >= 0;	// hit already???
-
-			if (inside == !hit) // ...ball outside and hit set or  ball inside and no hit set
-				{
-				hittime = 0;
-				bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
-				}	
-			else return -1.0f;	
+			hittime = 0;
+			bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
 			}
 		else hittime = bnd/(-bnv);	
 		}
@@ -131,18 +124,17 @@ PINFLOAT LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnorma
 
 	btd += btv * hittime;	// ball tangent distance (projection) (initial position + velocity * hitime)
 
-	if (btd < -C_TOL_ENDPNTS|| btd > length + C_TOL_ENDPNTS) // is the contact off the line segment??? 
+	if (btd < -C_TOL_ENDPNTS || btd > length + C_TOL_ENDPNTS) // is the contact off the line segment??? 
 		return -1.0f;
 
 	if (!rigid)												// non rigid body collision? return direction
 		phitnormal[1].x = (float)bUnHit;	// UnHit signal	is receding from outside target
 	
-	
 	const PINFLOAT ballr = pball->radius;
 	const PINFLOAT hitz = pball->z - ballr + pball->vz*hittime;	// check too high or low relative to ball rolling point at hittime
 
-	if ((hitz + (ballr * 1.5f)) < m_rcHitRect.zlow			//check limits of object's height and depth  
-		|| (hitz + (ballr * 0.5f)) > m_rcHitRect.zhigh)
+	if (hitz + (ballr * 1.5f) < m_rcHitRect.zlow			//check limits of object's height and depth  
+		|| hitz + (ballr * 0.5f) > m_rcHitRect.zhigh)
 		return -1.0f;
 
 	phitnormal->x = normal.x;				// hit normal is same as line segment normal
@@ -180,18 +172,20 @@ PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *p
 	const PINFLOAT dvy = pball->vy;
 
 	PINFLOAT z,dz,dvz;
-	z = dz = dvz = 0.0f;
-
 	PINFLOAT targetRadius = lateral ? radius + pball->radius : radius;	// 	
 	
 	if (!lateral && pball->z > zhigh)
 		{
-		const float hcap =  radius*(float)(1.0/5.0);			// cap height to hit-circle radius ratio
+		const float hcap = radius*(float)(1.0/5.0);			    // cap height to hit-circle radius ratio
 		capsule3D = true;										// handle ball over target? 
 		dvz = pball->vz;										// differential velocity
 		targetRadius = (radius*radius + hcap*hcap)/(hcap*2.0f);	// c = (r^2+h^2)/(2*h)
 		z = zhigh - (targetRadius - hcap);						// b = c - h
 		dz = pball->z  - z;										// ball rolling point - capsule center height 			
+		}
+	else
+		{
+		z = dz = dvz = 0.0f;
 		}
 	
 	const PINFLOAT bcddsq = dx*dx + dy*dy + dz*dz;	// ball center to circle center distance ... squared
@@ -240,11 +234,10 @@ PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *p
 		}
 	else
 		{	
-		if(!rigid && bnd * bnv > 0) return -1.0f;	// (outside and receding) or (inside and approaching)
+		if((!rigid && bnd * bnv > 0) ||	// (outside and receding) or (inside and approaching)
+		   (a < 1.0e-8f)) return -1.0f;				//no hit ... ball not moving relative to object
 
 		const PINFLOAT c = bcddsq - targetRadius*targetRadius; // contact distance ... square delta distance (outer product)
-
-		if (a < 1.0e-8f) return -1.0f;				//no hit ... ball not moving relative to object
 
 		b += b;										// twice the (inner products)
 
@@ -274,11 +267,9 @@ PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *p
 	
 	const PINFLOAT hitz = pball->z - pball->radius + pball->vz * hittime; //rolling point
 
-	if ((hitz + pball->radius *1.50f) < zlow)return -1.0f;
-
-	if (!capsule3D && (hitz + pball->radius*0.5f) > zhigh) return -1.0f;
-
-	if (capsule3D && (pball->z + pball->vz * hittime) < zhigh) return -1.0f;
+	if(((hitz + pball->radius *1.50f) < zlow) ||
+	   (!capsule3D && (hitz + pball->radius*0.5f) > zhigh) ||
+	   (capsule3D && (pball->z + pball->vz * hittime) < zhigh)) return -1.0f;
 		
 	const PINFLOAT hitx = pball->x + pball->vx*hittime;
 	const PINFLOAT hity = pball->y + pball->vy*hittime;
@@ -304,8 +295,8 @@ PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *p
 	pball->m_HitNormVel = bnv;
 	pball->m_HitRigid = rigid;				// collision type
 
-	return hittime;	
-	}	
+	return hittime;
+	}
 
 
 PINFLOAT HitCircle::HitTestRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
@@ -328,15 +319,7 @@ void LineSeg::Draw(HDC hdc)
 	const float x = (v1.x + v2.x) *0.5f;
 	const float y = (v1.y + v2.y) *0.5f;
 
-	if (!check1)
-		{
-		SelectObject(hdc, GetStockObject(BLACK_PEN));
-		}
-	else
-		{
-		SelectObject(hdc, GetStockObject(WHITE_PEN));
-		}
-
+	SelectObject(hdc, GetStockObject(!check1 ? BLACK_PEN : WHITE_PEN));
 	SelectObject(hdc, GetStockObject(BLACK_PEN));
 
 	DrawLine(hdc, x, y, x+normal.x*20.0f, y+normal.y*20.0f);
@@ -402,9 +385,7 @@ void Joint::CalcHitRect()
 PINFLOAT Joint::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
 	if (!m_fEnabled)
-		{
 		return -1.0f;
-		}
 
 	return HitTestRadius(pball, dtime, phitnormal);	
 	}
@@ -502,16 +483,16 @@ void HitOctree::CreateNextLevel()
 		m_phitoct[i] = new HitOctree();
 
 		m_phitoct[i]->m_rectbounds.left = (i&1) ? m_vcenter.x : m_rectbounds.left;
-		m_phitoct[i]->m_rectbounds.top = (i&2) ?  m_vcenter.y : m_rectbounds.top;
+		m_phitoct[i]->m_rectbounds.top  = (i&2) ? m_vcenter.y : m_rectbounds.top;
 		m_phitoct[i]->m_rectbounds.zlow = (i&4) ? m_vcenter.z : m_rectbounds.zlow;
 
-		m_phitoct[i]->m_rectbounds.right = (i&1) ?  m_rectbounds.right : m_vcenter.x;
+		m_phitoct[i]->m_rectbounds.right  = (i&1) ?  m_rectbounds.right : m_vcenter.x;
 		m_phitoct[i]->m_rectbounds.bottom = (i&2) ? m_rectbounds.bottom : m_vcenter.y;
-		m_phitoct[i]->m_rectbounds.zhigh = (i&4) ? m_rectbounds.zhigh : m_vcenter.z;
+		m_phitoct[i]->m_rectbounds.zhigh  = (i&4) ? m_rectbounds.zhigh  : m_vcenter.z;
 
-		m_phitoct[i]->m_vcenter.x = (m_phitoct[i]->m_rectbounds.left + m_phitoct[i]->m_rectbounds.right)*0.5f;
-		m_phitoct[i]->m_vcenter.y = (m_phitoct[i]->m_rectbounds.top + m_phitoct[i]->m_rectbounds.bottom)*0.5f;
-		m_phitoct[i]->m_vcenter.z = (m_phitoct[i]->m_rectbounds.zlow + m_phitoct[i]->m_rectbounds.zhigh)*0.5f;
+		m_phitoct[i]->m_vcenter.x = (m_phitoct[i]->m_rectbounds.left + m_phitoct[i]->m_rectbounds.right )*0.5f;
+		m_phitoct[i]->m_vcenter.y = (m_phitoct[i]->m_rectbounds.top  + m_phitoct[i]->m_rectbounds.bottom)*0.5f;
+		m_phitoct[i]->m_vcenter.z = (m_phitoct[i]->m_rectbounds.zlow + m_phitoct[i]->m_rectbounds.zhigh )*0.5f;
 
 		m_phitoct[i]->m_fLeaf = fTrue;
 		}
@@ -624,18 +605,18 @@ void HitOctree::HitTestBall(Ball *pball)
 				{
 				pball->m_pho = m_vho.ElementAt(i);
 				pball->m_hittime = newtime;
-				pball->m_hitx = (pball->x + pball->vx*newtime);
-				pball->m_hity = (pball->y + pball->vy*newtime);
+				pball->m_hitx = pball->x + pball->vx*newtime;
+				pball->m_hity = pball->y + pball->vy*newtime;
 				}
 			}
 		}//end for loop
 
 	if (!m_fLeaf)
 		{
-		const BOOL fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
-		const BOOL fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
-		const BOOL fTop = (pball->m_rcHitRect.top <= m_vcenter.y);
-		const BOOL fBottom = (pball->m_rcHitRect.bottom >= m_vcenter.y);
+		const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
+		const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
+		const bool fTop = (pball->m_rcHitRect.top <= m_vcenter.y);
+		const bool fBottom = (pball->m_rcHitRect.bottom >= m_vcenter.y);
 
 #ifdef LOG
 		cTested++;
@@ -681,10 +662,10 @@ void HitOctree::HitTestXRay(Ball *pball, Vector<HitObject> *pvhoHit)
 
 	if (!m_fLeaf)
 		{
-		const BOOL fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
-		const BOOL fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
-		const BOOL fTop = (pball->m_rcHitRect.top <= m_vcenter.y);
-		const BOOL fBottom = (pball->m_rcHitRect.bottom >= m_vcenter.y);
+		const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
+		const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
+		const bool fTop = (pball->m_rcHitRect.top <= m_vcenter.y);
+		const bool fBottom = (pball->m_rcHitRect.bottom >= m_vcenter.y);
 
 #ifdef LOG
 		cTested++;

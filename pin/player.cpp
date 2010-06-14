@@ -208,7 +208,7 @@ Player::~Player()
 	// not anymore - balls are added to the octree, but not the main list
 	for (int i=0;i<m_vball.Size();i++)
 		{
-		Ball *pball = m_vball.ElementAt(i);
+		Ball * const pball = m_vball.ElementAt(i);
 		if (pball->m_pballex)
 			{
 			pball->m_pballex->m_pball = NULL;
@@ -289,8 +289,8 @@ void Player::DisableFPS()
 
 void Player::RecomputePauseState()
 	{
-	BOOL fOldPause = m_fPause;
-	BOOL fNewPause = !(m_fGameWindowActive || m_fDebugWindowActive);// || m_fUserDebugPaused;
+	const BOOL fOldPause = m_fPause;
+	const BOOL fNewPause = !(m_fGameWindowActive || m_fDebugWindowActive);// || m_fUserDebugPaused;
 	
 	if (fOldPause && fNewPause)
 		{
