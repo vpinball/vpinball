@@ -68,7 +68,7 @@ public:
 			jumpnode >>= 1;
 			}
 
-		if (fFound == fFalse)
+		if (!fFound)
 			{
 			InsertElementAt(pT, currentnode);
 			RecomputeSearchStart();

@@ -642,12 +642,12 @@ extern "C" {
 // Init / Error routines ----------------------------------------------------
 
 DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE));
-DLL_API void DLL_CALLCONV FreeImage_DeInitialise(void);
+DLL_API void DLL_CALLCONV FreeImage_DeInitialise();
 
 // Version routines ---------------------------------------------------------
 
-DLL_API const char *DLL_CALLCONV FreeImage_GetVersion(void);
-DLL_API const char *DLL_CALLCONV FreeImage_GetCopyrightMessage(void);
+DLL_API const char *DLL_CALLCONV FreeImage_GetVersion();
+DLL_API const char *DLL_CALLCONV FreeImage_GetCopyrightMessage();
 
 // Message output functions -------------------------------------------------
 
@@ -684,7 +684,7 @@ DLL_API BOOL DLL_CALLCONV FreeImage_AcquireMemory(FIMEMORY *stream, BYTE **data,
 
 DLL_API FREE_IMAGE_FORMAT DLL_CALLCONV FreeImage_RegisterLocalPlugin(FI_InitProc proc_address, const char *format FI_DEFAULT(0), const char *description FI_DEFAULT(0), const char *extension FI_DEFAULT(0), const char *regexpr FI_DEFAULT(0));
 DLL_API FREE_IMAGE_FORMAT DLL_CALLCONV FreeImage_RegisterExternalPlugin(const char *path, const char *format FI_DEFAULT(0), const char *description FI_DEFAULT(0), const char *extension FI_DEFAULT(0), const char *regexpr FI_DEFAULT(0));
-DLL_API int DLL_CALLCONV FreeImage_GetFIFCount(void);
+DLL_API int DLL_CALLCONV FreeImage_GetFIFCount();
 DLL_API int DLL_CALLCONV FreeImage_SetPluginEnabled(FREE_IMAGE_FORMAT fif, BOOL enable);
 DLL_API int DLL_CALLCONV FreeImage_IsPluginEnabled(FREE_IMAGE_FORMAT fif);
 DLL_API FREE_IMAGE_FORMAT DLL_CALLCONV FreeImage_GetFIFFromFormat(const char *format);
@@ -726,7 +726,7 @@ DLL_API FREE_IMAGE_TYPE DLL_CALLCONV FreeImage_GetImageType(FIBITMAP *dib);
 
 // FreeImage helper routines ------------------------------------------------
 
-DLL_API BOOL DLL_CALLCONV FreeImage_IsLittleEndian(void);
+DLL_API BOOL DLL_CALLCONV FreeImage_IsLittleEndian();
 DLL_API BOOL DLL_CALLCONV FreeImage_LookupX11Color(const char *szColor, BYTE *nRed, BYTE *nGreen, BYTE *nBlue);
 DLL_API BOOL DLL_CALLCONV FreeImage_LookupSVGColor(const char *szColor, BYTE *nRed, BYTE *nGreen, BYTE *nBlue);
 

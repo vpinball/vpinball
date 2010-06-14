@@ -1559,7 +1559,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(18), helpstring("property ImagesPerGridRow")] HRESULT ImagesPerGridRow([in] long newVal);
 
 		[id(30), helpstring("method AddValue")] HRESULT AddValue([in] long Value);
-		[id(31), helpstring("method ResetToZero")] HRESULT ResetToZero(void);
+		[id(31), helpstring("method ResetToZero")] HRESULT ResetToZero();
 		[id(32), helpstring("method SpinReel")] HRESULT SpinReel([in] long ReelNumber, [in] long PulseCount);
 		[id(33), helpstring("method SetValue")] HRESULT SetValue([in] long Value);
 	};
@@ -1601,7 +1601,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 		[id(32), helpstring("method Play")] HRESULT Play([in] SequencerState Animation, [defaultvalue(0)] long TailLength, [defaultvalue(1)] long Repeat, [defaultvalue(0)] long Pause);
-		[id(33), helpstring("method StopPlay")] HRESULT StopPlay(void);
+		[id(33), helpstring("method StopPlay")] HRESULT StopPlay();
       };
 
 	[

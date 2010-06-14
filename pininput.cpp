@@ -4,8 +4,6 @@
 
 static PinInput *s_pPinInput;
 
-static __forceinline U64 get_tick_count(void) {__asm rdtsc};
-
 U32 PinInput::m_PreviousKeys;
 U32 PinInput::m_ChangedKeys;
 //int InputControlRun;
@@ -182,25 +180,25 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	}
 
 
-int PinInput::QueueFull( void )
+int PinInput::QueueFull()
 {
 	return ( ( ( m_head+1 ) % MAX_KEYQUEUE_SIZE ) == m_tail );
 }
 
 
-int PinInput::QueueEmpty( void )
+int PinInput::QueueEmpty()
 {
 	return m_head == m_tail;
 }
 
 
-void PinInput::AdvanceHead( void )
+void PinInput::AdvanceHead()
 {
 	m_head = ( m_head + 1 ) % MAX_KEYQUEUE_SIZE;
 }
 
 
-void PinInput::AdvanceTail( void )
+void PinInput::AdvanceTail()
 {
 	m_tail = ( m_tail + 1 ) % MAX_KEYQUEUE_SIZE;
 }
@@ -407,7 +405,7 @@ void PinInput::FireKeyEvent( int dispid, int key )
 	mkey = key;
 
 	// Check if we are mirrored.
-	if ( g_pplayer->m_ptable->m_tblMirrorEnabled == TRUE )
+	if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
 	{
 		// Swap left & right input.
 			 if( mkey == g_pplayer->m_rgKeys[eLeftFlipperKey]  ) {mkey = g_pplayer->m_rgKeys[eRightFlipperKey];		val |= PININ_RIGHT;}
@@ -477,7 +475,7 @@ static int pressed_start;
 
 
 // Returns true if the table has started at least 1 player.
-static int started( void )
+static int started()
 {
 
 	// Was the start button pressed?
@@ -504,7 +502,7 @@ static int started( void )
 				}
 
 				// Send the ball eject message to the front end.
-				if ( SendMessage( hFrontEndWnd, WM_USER, WINDOWMESSAGE_FIRSTBALLEJECTED, 0 ) == TRUE )
+				if ( SendMessage( hFrontEndWnd, WM_USER, WINDOWMESSAGE_FIRSTBALLEJECTED, 0 ) )
 				{
 					fe_message_sent = true;
 				}
@@ -538,7 +536,6 @@ static U32 LastAttempt;
 // credit manager via a window message. 
 void PinInput::autocoin( F32 secs )
 {
-
 	// Make sure we have a player.
 	if( !g_pplayer ) 
 	{
@@ -702,7 +699,7 @@ void PinInput::button_exit( F32 secs )
 
 }
 
-void PinInput::tilt_update( void )
+void PinInput::tilt_update()
 {
     if( !g_pplayer || g_pplayer->m_NudgeManual >= 0) return;
 

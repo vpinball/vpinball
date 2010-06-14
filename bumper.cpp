@@ -89,26 +89,26 @@ void Bumper::Render(Sur *psur)
 
 	psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_overhang);
 
-	if (g_pvp->m_fAlwaysDrawLightCenters == fTrue)
+	if (g_pvp->m_fAlwaysDrawLightCenters)
 	{
-		psur->Line(m_d.m_vCenter.x - 10, m_d.m_vCenter.y, m_d.m_vCenter.x + 10, m_d.m_vCenter.y);
-		psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10, m_d.m_vCenter.x, m_d.m_vCenter.y + 10);
+		psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
+		psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
 	}
 	}
 
 void Bumper::RenderShadow(ShadowSur *psur, float z)
 	{
-	if ( (m_d.m_fCastsShadow != fTrue) || (m_ptable->m_fRenderShadows == fFalse) )
+	if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
 		return;
 
 	psur->SetBorderColor(-1,fFalse,0);
 	psur->SetFillColor(RGB(0,0,0));
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	psur->EllipseSkew(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius, height, height+40);
+	psur->EllipseSkew(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius, height, height+40.0f);
 
-	psur->EllipseSkew(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_overhang, height+40, height+65);
+	psur->EllipseSkew(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_overhang, height+40.0f, height+65.0f);
 	}
 
 void Bumper::GetTimers(Vector<HitTimer> *pvht)
@@ -166,7 +166,7 @@ void Bumper::GetHitShapesDebug(Vector<HitObject> *pvho)
 	{
 	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	HitObject *pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 50, m_d.m_radius + m_d.m_overhang, 32);
+	HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 50, m_d.m_radius + m_d.m_overhang, 32);
 	pvho->AddElement(pho);
 	}
 
@@ -404,7 +404,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar, 160, fFalse);
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			// Clear the texture by copying the color and z values from the "static" buffers.
 			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
@@ -711,7 +711,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		m_pbumperhitcircle->m_bumperanim.m_pobjframe[i] = pof;
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
 			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
@@ -1162,7 +1162,7 @@ STDMETHODIMP Bumper::put_State(LightState newVal)
 	STARTUNDO
 
 	// if the light is locked by the LS then just change the state and don't change the actual light
-	if (m_fLockedByLS != fTrue)
+	if (!m_fLockedByLS)
 		{
 		setLightState(newVal);
 		}

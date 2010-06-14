@@ -1,11 +1,9 @@
 #pragma once
 #define MAXBALLS 256
  
-//#define c_Gravity 0.65f //0.574f
-
 #define GRAVITYCONST 0.86543f
 
-#define BALL_NUMBLURS				5				// The number of ball blur images to draw.
+#define BALL_NUMBLURS 5				// The number of ball blur images to draw.
 
  
 class HitObject;
@@ -32,7 +30,7 @@ public:
 
 	void Init();
 
-    static int NumInitted( void );
+    static int NumInitted();
 
 	virtual void UpdateDisplacements(PINFLOAT dtime);
 	virtual void UpdateVelocities(PINFLOAT dtime);
@@ -141,29 +139,17 @@ public:
 	Vector<HitObject> m_vho;
 	};
 
-inline BOOL fIntRectIntersect(RECT &rc1, RECT &rc2)
+inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)
 	{
-	if (rc1.right < rc2.left || rc1.bottom < rc2.top || rc1.left > rc2.right || rc1.top > rc2.bottom)
-		{
-		return fFalse;
-		}
-	return fTrue;
+	return (!(rc1.right < rc2.left || rc1.bottom < rc2.top || rc1.left > rc2.right || rc1.top > rc2.bottom));
 	}
 
-inline BOOL fRectIntersect(FRect &rc1, FRect &rc2)
+inline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
 	{
-	if (rc1.right < rc2.left || rc1.bottom < rc2.top || rc1.left > rc2.right || rc1.top > rc2.bottom)
-		{
-		return fFalse;
-		}
-	return fTrue;
+	return (!(rc1.right < rc2.left || rc1.bottom < rc2.top || rc1.left > rc2.right || rc1.top > rc2.bottom));
 	}
 
-inline BOOL fRectIntersect3D(FRect3D &rc1, FRect3D &rc2)
+inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 	{
-	if (rc1.right < rc2.left || rc1.bottom < rc2.top || rc1.left > rc2.right || rc1.top > rc2.bottom || rc1.zlow > rc2.zhigh || rc1.zhigh < rc2.zlow)
-		{
-		return fFalse;
-		}
-	return fTrue;
+	return (!(rc1.right < rc2.left || rc1.bottom < rc2.top || rc1.left > rc2.right || rc1.top > rc2.bottom || rc1.zlow > rc2.zhigh || rc1.zhigh < rc2.zlow));
 	}

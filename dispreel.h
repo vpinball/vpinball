@@ -20,7 +20,7 @@
 class DispReelData
 {
 public:
-    Vertex2D      m_v1, m_v2;             // position on map (top right corner)
+    Vertex2D    m_v1, m_v2;             // position on map (top right corner)
     BOOL        m_fTransparent;         // is the background transparent
     char        m_szImage[MAXTOKEN];    // image to use for the decals.
     ReelType    m_reeltype;
@@ -181,16 +181,16 @@ public:
     STDMETHOD(get_ImagesPerGridRow)(/*[out, retval]*/ long *pVal);
     STDMETHOD(put_ImagesPerGridRow)(/*[in]*/ long newVal);
     // methods
-    STDMETHOD(ResetToZero)(void);
+    STDMETHOD(ResetToZero)();
     STDMETHOD(AddValue)(/*[in]*/ long Value);
 	STDMETHOD(SetValue)(/*[in]*/ long Value);
     STDMETHOD(SpinReel)(/*[in]*/ long ReelNumber, /*[in]*/ long PulseCount);
 
-	void    UpdateObjFrame(void);
+	void    UpdateObjFrame();
 
 private:
-    float   getBoxWidth(void);
-    float   getBoxHeight(void);
+    float   getBoxWidth();
+    float   getBoxHeight();
     
 };
 

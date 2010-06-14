@@ -20,4 +20,4 @@ extern BOOL g_fWriteHitDeleteLog; // For debugging VP 7 crash
 extern ATOM atom;
 
 void ShowError(char *sz);void ShowErrorID(int id);
-void ExitApp( void );
+void ExitApp();

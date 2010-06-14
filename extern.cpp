@@ -32,7 +32,7 @@ void ShowErrorID(int id)
 }
  
 
-void ExitApp(void)
+void ExitApp()
 {
 
 	bool	fe_shutdown_message_sent;
@@ -50,7 +50,7 @@ void ExitApp(void)
 		if ( hFrontEndWnd != NULL )
 		{
 			// Send the message to the front end.
-			if ( SendMessage( hFrontEndWnd, WM_USER, WINDOWMESSAGE_VPINBALLSHUTDOWN, 0 ) == TRUE )
+			if ( SendMessage( hFrontEndWnd, WM_USER, WINDOWMESSAGE_VPINBALLSHUTDOWN, 0 ) )
 			{
 				fe_shutdown_message_sent = true;
 			}

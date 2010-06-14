@@ -501,7 +501,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar, 8, fFalse);
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			// Clear the texture by copying the color and z values from the "static" buffers.
 			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
@@ -691,7 +691,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pdds = pdds;
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
 			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
@@ -1267,11 +1267,11 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle)//move non-collidable 
 		m_plineseg->m_fEnabled = fFalse;		
 
 		if (speed <= 0.0f) speed = 0.2f;		//default gate angle speed
-		else speed *= (float)(M_PI/180.0);				// convert to radians
+		else speed *= (float)(M_PI/180.0);		// convert to radians
 
 		if (!dir || angle != 0)					// if no direction or non-zero angle
 			{
-			angle *= (float)(M_PI/180.0);					// convert to radians
+			angle *= (float)(M_PI/180.0);		// convert to radians
 
 			if (angle < m_d.m_angleMin) angle = m_d.m_angleMin;
 			else if (angle > m_d.m_angleMax) angle = m_d.m_angleMax;

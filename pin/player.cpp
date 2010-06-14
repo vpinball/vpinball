@@ -259,7 +259,7 @@ Player::~Player()
 	m_controlclsidsafe.RemoveAllElements();
 	}
 
-void Player::ToggleFPS( void )
+void Player::ToggleFPS()
 {
 	m_fShowFPS = !m_fShowFPS;
 	m_lastfpstime = m_timeCur;
@@ -275,13 +275,13 @@ void Player::ToggleFPS( void )
 	m_phys_total_iterations = 0;
 }
 
-void Player::EnableFPS( void )
+void Player::EnableFPS()
 {
 	ToggleFPS();
 	m_fShowFPS = 1;
 }
 
-void Player::DisableFPS( void )
+void Player::DisableFPS()
 {
 	ToggleFPS();
 	m_fShowFPS = 0;
@@ -504,14 +504,14 @@ void Player::InitRegValues()
 		{
 		fmusic = 1; // default value
 		}
-	m_fPlayMusic = fmusic ? fTrue:fFalse;
+	m_fPlayMusic = fmusic;
 
 	hr = GetRegInt("Player", "PlaySound", &fmusic);
 	if (hr != S_OK)
 		{
 		fmusic = 1; // default value
 		}
-	m_fPlaySound = fmusic ? fTrue:fFalse;
+	m_fPlaySound = fmusic;
 
 	hr = GetRegInt("Player", "MusicVolume", &m_MusicVolume);
 	if (hr != S_OK)
@@ -1506,7 +1506,7 @@ void Player::UltraNudgeY(int y, int j )
 }
 
 
-F32 GetX( void )
+F32 GetX()
 {
 
 	return ((F32)curAccel_x[0]) * (2.0f / ((F32)(JOYRANGEMX-JOYRANGEMN)));
@@ -1514,7 +1514,7 @@ F32 GetX( void )
 }
 
 
-F32 GetY( void )
+F32 GetY()
 {
 
     return ((F32)curAccel_y[0]) * (2.0f / ((F32)(JOYRANGEMX-JOYRANGEMN)));
@@ -1522,7 +1522,7 @@ F32 GetY( void )
 }
 
 
-int Player::UltraNudgeGetTilt( void )
+int Player::UltraNudgeGetTilt()
 {
 
 	static U32 last_tilt_time;
@@ -1559,7 +1559,7 @@ int Player::UltraNudgeGetTilt( void )
 }
 
 
-void Player::UltraNudge(void)	// called on every intergral physics frame
+void Player::UltraNudge()	// called on every intergral physics frame
 {	
 
 	static F32 cna=1,sna=0,na=0;	//rlc initialize for angle 0
@@ -1571,7 +1571,7 @@ void Player::UltraNudge(void)	// called on every intergral physics frame
 		m_NudgeX = m_AccelMAmp * ((float)curAccel_x[m_NudgeManual])/((float)JOYRANGE); // * Manual Gain
 		m_NudgeY =  m_AccelMAmp * ((float)curAccel_y[m_NudgeManual])/((float)JOYRANGE);
 
-		if (g_pplayer->m_ptable->m_tblMirrorEnabled == TRUE)
+		if (g_pplayer->m_ptable->m_tblMirrorEnabled)
 			m_NudgeX = -m_NudgeX;
 
 		return;
@@ -1596,7 +1596,7 @@ void Player::UltraNudge(void)	// called on every intergral physics frame
 		
 		dx = ((float)curAccel_x[j])/((float)JOYRANGE);							// norm range -1 .. 1	
 		dy =  ((float)curAccel_y[j])/((float)JOYRANGE);	
-		if ( g_pplayer->m_ptable->m_tblMirrorEnabled == TRUE )
+		if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
 			dx = -dx;
 
 		m_NudgeX += m_AccelAmp*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());	//calc Green's transform component for X
@@ -1605,7 +1605,7 @@ void Player::UltraNudge(void)	// called on every intergral physics frame
 	}
 }
 
-void Player::UltraPlunger(void)	// called on every intergral physics frame
+void Player::UltraPlunger()	// called on every intergral physics frame
 {	
 #define IIR_Order 4
 
@@ -2260,7 +2260,7 @@ void Player::Render()
 	hr = m_pin3d.m_pd3dDevice->BeginScene();
 
 	// Check if we are blitting with D3D.								
-	if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)				
+	if (g_pvp->m_pdd.m_fUseD3DBlit)				
 		{
 		// Save the current transformation state.
 		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
@@ -2274,7 +2274,7 @@ void Player::Render()
 
 
 	// Check if we are blitting with D3D.
-	if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+	if (g_pvp->m_pdd.m_fUseD3DBlit)
 		{
 		// Restore the render states.
 		Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
@@ -2287,7 +2287,7 @@ void Player::Render()
 		}
 
 	// Check if we are blitting with D3D.								
-	if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)				
+	if (g_pvp->m_pdd.m_fUseD3DBlit)				
 		{
 		// Save the current transformation state.
 		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
@@ -2334,7 +2334,7 @@ void Player::Render()
 				if ((rcUpdate.right > rcUpdate.left) && (rcUpdate.bottom > rcUpdate.top))
 				{
 					// Check if we are blitting with D3D.
-					if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)					
+					if (g_pvp->m_pdd.m_fUseD3DBlit)					
 					{
 						// Blit to the backbuffer with D3D.
 						// NOTE: Rather than drawing just a portion of the sprite... draw the whole thing.
@@ -2368,7 +2368,7 @@ void Player::Render()
 	}
 
 	// Check if we are blitting with D3D.
-	if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+	if (g_pvp->m_pdd.m_fUseD3DBlit)
 	{
 		// Restore the render states.
 		Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
@@ -2445,15 +2445,15 @@ void Player::Render()
 	hr = m_pin3d.m_pd3dDevice->EndScene();
 
 	// Check if we are mirrored.
-	if ( g_pplayer->m_ptable->m_tblMirrorEnabled == TRUE )
+	if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
 	{
 		// Mirroring only works if we mirror the entire backbuffer.
 		// Flag to draw the entire backbuffer.
 		m_fCleanBlt = fFalse;
 	}
 
-	if ( (m_nudgetime) &&							// Table is being nudged.
-		 (g_pplayer->m_ptable->m_Shake == true) )	// The "EarthShaker" effect is active.
+	if ( m_nudgetime &&							// Table is being nudged.
+		 g_pplayer->m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
 		// Draw with an offset to shake the display.
 		m_pin3d.Flip((int)m_NudgeBackX, (int)m_NudgeBackY);
@@ -3585,14 +3585,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			g_pplayer->RecomputePauseState();
 			
 #else
-			if (wParam != WA_INACTIVE)
-				{
-				g_pplayer->m_fGameWindowActive = fTrue;
-				}
-			else
-				{
-				g_pplayer->m_fGameWindowActive = fFalse;
-				}
+			g_pplayer->m_fGameWindowActive = (wParam != WA_INACTIVE);
 			g_pplayer->RecomputePauseState();			
 #endif
 #endif
@@ -3807,14 +3800,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case WM_ACTIVATE:
-				if (wParam != WA_INACTIVE)
-					{
-					g_pplayer->m_fDebugWindowActive = fTrue;
-					}
-				else
-					{
-					g_pplayer->m_fDebugWindowActive = fFalse;
-					}
+				g_pplayer->m_fDebugWindowActive = (wParam != WA_INACTIVE);
 				g_pplayer->RecomputePauseState();
 				g_pplayer->RecomputePseudoPauseState();
 				break;
@@ -4036,11 +4022,11 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 
 
 // Draws all transparent ramps that are in the vicinity of the ball.
-void Player::DrawAcrylics ( void )
+void Player::DrawAcrylics ()
 	{
 
 	// Check if we are hardware accelerated.
-	if (g_pvp->m_pdd.m_fHardwareAccel == fTrue)
+	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		// Build a set of clipping planes which tightly bound the ball.
 		HRESULT		ReturnCode;
@@ -4064,7 +4050,7 @@ void Player::DrawAcrylics ( void )
 	}
 
 
-int get_dongle_status( void )
+int get_dongle_status()
 {
 
 	int		Status;
@@ -4074,7 +4060,7 @@ int get_dongle_status( void )
 	Status = DONGLE_STATUS_NOTFOUND;
 
 	// Check for HASP dongle.
-	if ( DongleAPI_IsValid() == true )
+	if ( DongleAPI_IsValid() )
 	{
 		char GameName[1024];
 		char Version[1024];
@@ -4126,12 +4112,12 @@ int get_dongle_status( void )
 // Performs special draws... ok, hacks!
 // These are to address shortcomings in not having
 // a proper backglass display that can be animated.
-void Player::DrawLightHack ( void )
+void Player::DrawLightHack ()
 {
 	// Check the state of all lights.
 	for ( int i=0; i<LIGHTHACK_MAX; i++ )
 	{
-		if ( g_pplayer->m_LightHackReadyForDrawLightHackFn[i] == TRUE )
+		if ( g_pplayer->m_LightHackReadyForDrawLightHackFn[i] )
 		{
 			// Process based on the type of light.
 			switch ( i )
@@ -4141,17 +4127,10 @@ void Player::DrawLightHack ( void )
 				case LIGHTHACK_FIREPOWER_P3:
 				case LIGHTHACK_FIREPOWER_P4:
 					// Check if the light is on.
-					if ( m_LightHackCurrentState[i] == TRUE )
+					if ( m_LightHackCurrentState[i] )
 					{
 						// Update the blink animation.
-						if ( (msec() & 256) > 0 )
-						{
-							m_LightHackCurrentAnimState[i] = TRUE;
-						}
-						else
-						{
-							m_LightHackCurrentAnimState[i] = FALSE;
-						}
+						m_LightHackCurrentAnimState[i] = ( (msec() & 256) > 0 );
 
 //						// Check if the state changed.
 //						if ( m_LightHackPreviousState[i] != m_LightHackCurrentState[i] )
@@ -4165,7 +4144,7 @@ void Player::DrawLightHack ( void )
 						if ( m_LightHackPreviousAnimState[i] != m_LightHackCurrentAnimState[i] )
 						{
 							// Check if we are on.
-							if ( m_LightHackCurrentAnimState[i] == TRUE )
+							if ( m_LightHackCurrentAnimState[i] )
 							{
 								// Show the window.
 								SetWindowPos ( m_dmdhackhwnd, HWND_TOPMOST, m_LightHackX[i], m_LightHackY[i], m_LightHackWidth[i], m_LightHackHeight[i], (SWP_SHOWWINDOW | SWP_NOACTIVATE) );
@@ -4188,8 +4167,8 @@ void Player::DrawLightHack ( void )
 						}
 						
 						// Check if the state changed.
-						if ( (m_LightHackCurrentAnimState[i] == TRUE) ||
-							 (m_LightHackPreviousAnimState[i] == TRUE) )
+						if ( (m_LightHackCurrentAnimState[i]) ||
+							 (m_LightHackPreviousAnimState[i]) )
 						{
 							// Hide the window.
 							ShowWindow ( m_dmdhackhwnd, SW_HIDE );
@@ -4217,7 +4196,7 @@ void Player::DrawLightHack ( void )
 		{
 			// Check if we got an update from IsDropped a while ago, but never updated the visual.
 			// This happens when the light changes state from on to off.
-			if ( (m_LightHackPreviousState[i] == TRUE) &&
+			if ( (m_LightHackPreviousState[i]) &&
 				 ((msec() - m_LastUpdateTime[i]) > 500) )
 			{
 				// Flag that it's safe to update.  We'll update on the next frame.

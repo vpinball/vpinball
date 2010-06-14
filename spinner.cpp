@@ -105,7 +105,7 @@ void Spinner::Render(Sur *psur)
 
 void Spinner::RenderShadow(ShadowSur *psur, float height)
 	{
-	if ( (m_d.m_fCastsShadow != fTrue) || (m_ptable->m_fRenderShadows == fFalse) )
+	if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
 		return;
 
 	psur->SetLineColor(RGB(0,0,0),fFalse,4);
@@ -113,12 +113,11 @@ void Spinner::RenderShadow(ShadowSur *psur, float height)
 
 	float halflength = m_d.m_length * 0.5f;
 
+	const float radangle = m_d.m_rotation * (float)(M_PI*2.0/360.0);
+	const float sn = sinf(radangle);
+	const float cs = cosf(radangle);
+
 	Vertex2D rgv[2];
-
-	float radangle = m_d.m_rotation * (float)(M_PI*2.0/360.0);
-	float sn = sinf(radangle);
-	float cs = cosf(radangle);
-
 	rgv[0].x = m_d.m_vCenter.x + cs*halflength;
 	rgv[0].y = m_d.m_vCenter.y + sn*halflength;
 
@@ -463,7 +462,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar, 8, fFalse);
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			// Clear the texture by copying the color and z values from the "static" buffers.
 			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
@@ -657,7 +656,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pdds = pdds;
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
 			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );

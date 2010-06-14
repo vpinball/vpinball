@@ -2,8 +2,8 @@
 #ifndef __VECTOR_H__
 #define __VECTOR_H__
 
-static const int START_SIZE=10;
-static const int GROW_SIZE=10;
+const int START_SIZE=10;
+const int GROW_SIZE=10;
 
 class VectorVoid
 {
@@ -56,7 +56,7 @@ public:
 		}
 		
 	// essentially a debug-only method to tell the Vector to toss its heap mem
-	inline void Reset(void)
+	inline void Reset()
 		{
 		if (m_rg)
 			{
@@ -67,7 +67,7 @@ public:
 			}
 		}
 
-	inline void Empty(void)
+	inline void Empty()
 		{
 		if (m_rg)
 			free(m_rg);
@@ -76,12 +76,12 @@ public:
 		m_cMax = (!m_rg) ? 0 : START_SIZE;  // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
 		}
 
-	inline int Size(void)
+	inline int Size()
 		{
 		return m_cSize;
 		}
 
-	inline int Capacity(void)
+	inline int Capacity()
 		{
 		return m_cMax;
 		}
@@ -246,7 +246,7 @@ public:
 			RemoveElementAt(i);
 		}
 
-	void RemoveAllElements(void)
+	void RemoveAllElements()
 		{
 		if (!m_rg)
 			return;

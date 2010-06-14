@@ -97,7 +97,7 @@
 
 #include "stdafx.h"
 
-static const char REEL_NUMBER_TEXT[] = "01234567890";
+const char REEL_NUMBER_TEXT[] = "01234567890";
 
 
 // Constructor
@@ -470,7 +470,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			int	GridCols, GridRows;
 
 			// get the number of images per row of the image
-			if (m_d.m_fUseImageGrid == fTrue)
+			if (m_d.m_fUseImageGrid)
 			{
 				GridCols = m_d.m_imagesPerGridRow;
 				if (GridCols != 0) // best to be safe
@@ -790,7 +790,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
             rcOut.top = 0;//i * maxheight;
             rcOut.right = maxwidth;
             rcOut.bottom = rcOut.top + maxheight;
-            DrawText(hdc, (char *)&REEL_NUMBER_TEXT[i], 1, &rcOut, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOCLIP | DT_NOPREFIX);
+            DrawText(hdc, &REEL_NUMBER_TEXT[i], 1, &rcOut, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOCLIP | DT_NOPREFIX);
             m_vreelframe.ElementAt(i)->pdds->ReleaseDC(hdc);
 		}
 		m_pIFontPlay->Release();
@@ -908,7 +908,7 @@ bool DispReel::RenderAnimation()
         }
 
         // if there is a change or we are forced to update, then do so..
-        if ((rc == true) || (m_fforceupdate == true))
+        if (rc || m_fforceupdate)
         {
 			// redraw the reels (and boarder) into the objectframe
 			RenderText();
@@ -1611,7 +1611,7 @@ STDMETHODIMP DispReel::AddValue(long Value)
 	{
 		const int digitValue = val % valbase;
 
-		if (bNegative == fTrue)
+		if (bNegative)
 			ReelInfo[i].motorPulses -= digitValue;
 		else
 			ReelInfo[i].motorPulses += digitValue;
@@ -1664,7 +1664,7 @@ STDMETHODIMP DispReel::SetValue(long Value)
 }
 
 
-STDMETHODIMP DispReel::ResetToZero(void)
+STDMETHODIMP DispReel::ResetToZero()
 {
     int carry = 0;
     int overflowValue = (int)m_d.m_digitrange+1;
@@ -1705,7 +1705,7 @@ STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
 
 // Private functions
 //
-float DispReel::getBoxWidth(void)
+float DispReel::getBoxWidth()
 {
     const float width =  m_d.m_reelcount * m_d.m_width
 					   + m_d.m_reelcount * m_d.m_reelspacing
@@ -1714,7 +1714,7 @@ float DispReel::getBoxWidth(void)
 }
 
 
-float DispReel::getBoxHeight(void)
+float DispReel::getBoxHeight()
 {
     const float height = m_d.m_height
 					   + 2.0f * m_d.m_reelspacing; // spacing also includes edges
@@ -1727,7 +1727,7 @@ float DispReel::getBoxHeight(void)
 //
 // It firsts draws the object box (either solid or transparent) and draws the reels within it
 //
-void DispReel::UpdateObjFrame(void)
+void DispReel::UpdateObjFrame()
 {
     RECT    reelstriprc;
 	Pin3D	* const ppin3d = &g_pplayer->m_pin3d;
@@ -1741,7 +1741,7 @@ void DispReel::UpdateObjFrame(void)
     // is the background box transparent?
 #define Foo 1
 #ifdef Foo
-    if (m_d.m_fTransparent == TRUE)
+    if (m_d.m_fTransparent)
     {
         // yes, then copy the current backgrount into the object frame
         m_pobjframe->pdds->Blt(NULL, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLTFAST_WAIT, NULL);

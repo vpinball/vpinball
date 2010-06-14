@@ -513,7 +513,7 @@ void CodeViewer::SetVisible(BOOL fVisible)
 
 void CodeViewer::SetEnabled(BOOL fEnabled)
 	{
-	SendMessage(m_hwndScintilla, SCI_SETREADONLY, fEnabled ? FALSE : TRUE, 0);
+	SendMessage(m_hwndScintilla, SCI_SETREADONLY, !fEnabled, 0);
 
 	EnableWindow(m_hwndItemList, fEnabled);
 	EnableWindow(m_hwndEventList, fEnabled);
@@ -704,7 +704,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	m_fScriptError = fTrue;
 
 	PinTable *pt = g_pvp->GetActiveTable();
-	if (pt->CheckPermissions(DISABLE_TABLEVIEW) == fFalse)
+	if (!pt->CheckPermissions(DISABLE_TABLEVIEW))
 		{
 		SetVisible(fTrue);
 		ShowWindow(m_hwndMain, SW_RESTORE);
@@ -733,7 +733,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
 	EnableWindow(g_pvp->m_hwnd, TRUE);
 
-	if (pt->CheckPermissions(DISABLE_TABLEVIEW) == fFalse)
+	if (!pt->CheckPermissions(DISABLE_TABLEVIEW))
 		{
 		SetFocus(m_hwndScintilla);
 		}
@@ -855,7 +855,7 @@ void CodeViewer::ShowFindReplaceDialog()
 
 void CodeViewer::Find(FINDREPLACE *pfr)
 	{
-	DWORD		selstart, selend;
+	DWORD selstart, selend;
 	BOOL fWrapped = fFalse;
 
 	if (pfr->lStructSize == 0) // Our built-in signal that we are doing 'find next' and nothing has been searched for yet
@@ -2120,7 +2120,7 @@ STDMETHODIMP OMCollectionEnum::Skip(ULONG celt)
 		return S_OK;
 	}
 
-STDMETHODIMP OMCollectionEnum::Reset(void)
+STDMETHODIMP OMCollectionEnum::Reset()
 	{
 	m_index = 0;
 

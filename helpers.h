@@ -54,7 +54,7 @@ class TempBuffer
       }
     ~TempBuffer()
       { if (m_pbBuf && m_fAlloc) delete m_pbBuf; }
-    void *GetBuffer(void)
+    void *GetBuffer()
       { return m_pbBuf; }
 
   private:

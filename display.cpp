@@ -623,7 +623,7 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
     DestSurfaceDescription.dwHeight = (unsigned long) (TextureHeight);
 
 	// Check if we are rendering with hardware.
-	if ( g_pvp->m_pdd.m_fHardwareAccel == fTrue )
+	if ( g_pvp->m_pdd.m_fHardwareAccel )
 	{
 #if 1
 		// Create the texture and let D3D driver decide where it store it.
@@ -922,7 +922,7 @@ HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIM
 	ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
 
 	// Check if we are blitting with D3D.
-	if ( g_pvp->m_pdd.m_fUseD3DBlit == fTrue )
+	if ( g_pvp->m_pdd.m_fUseD3DBlit )
 	{
 		LPDIRECTDRAWSURFACE7	RestoreRenderTarget;
 		// Save the render target.

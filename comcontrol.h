@@ -128,7 +128,7 @@ STANDARD_EDITABLE_DECLARES(eItemComControl)
 
 	void FireVoidGroupEvent(int dispid) {} // Since we have no events right now
 
-	inline IDispatch *GetDispatch(void) {return (IDispatch *)m_pdispextender;}
+	inline IDispatch *GetDispatch() {return (IDispatch *)m_pdispextender;}
 
 	void CreateControl(IStream *pstm);
 	void CreateControlDialogTemplate();

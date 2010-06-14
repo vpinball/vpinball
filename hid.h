@@ -12,11 +12,11 @@
 #define		HID_OUTPUT_ALL			(HID_OUTPUT_KNOCKER | HID_OUTPUT_START | HID_OUTPUT_PLUNGER)
 
 
-void hid_init( void );
-void hid_shutdown( void );
+void hid_init();
+void hid_shutdown();
 void hid_set_output( U08 mask, bool on );
 
-void hid_update( void );
+void hid_update();
 
 void hid_knock( int count=1 ); // Do a single knock
 

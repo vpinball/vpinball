@@ -399,7 +399,7 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	// Check if we are in hardware.
-	if (g_pvp->m_pdd.m_fHardwareAccel == fTrue)
+	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		// Render all alpha pixels.
 		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);

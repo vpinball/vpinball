@@ -601,7 +601,7 @@ void DragPoint::DoCommand(int icmd, int x, int y)
 			m_pihdp->GetIEditable()->BeginUndo();
 			m_pihdp->GetIEditable()->MarkForUndo();
 
-			m_fSmooth = m_fSmooth ? fFalse : fTrue;
+			m_fSmooth = !m_fSmooth;
 			index2 = (m_pihdp->m_vdpoint.IndexOf(this) - 1 + m_pihdp->m_vdpoint.Size()) % m_pihdp->m_vdpoint.Size();
 			if (m_fSmooth && m_fSlingshot)
 				{
@@ -621,7 +621,7 @@ void DragPoint::DoCommand(int icmd, int x, int y)
 			m_pihdp->GetIEditable()->BeginUndo();
 			m_pihdp->GetIEditable()->MarkForUndo();
 
-			m_fSlingshot = m_fSlingshot ? fFalse : fTrue;
+			m_fSlingshot = !m_fSlingshot;
 			if (m_fSlingshot)
 				{
 				m_fSmooth = fFalse;
@@ -690,7 +690,7 @@ BOOL DragPoint::LoadToken(int id, BiffReader *pbr)
 	return fTrue;
 	}
 
-IDispatch *DragPoint::GetDispatch(void)
+IDispatch *DragPoint::GetDispatch()
 	{
 	return (IDispatch *)this;
 	}
@@ -937,16 +937,9 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 								int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
 								HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
 								HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
-								if (checked == BST_CHECKED)
-									{
-									EnableWindow(hwndEdit, FALSE);
-									EnableWindow(hwndText, FALSE);
-									}
-								else
-									{
-									EnableWindow(hwndEdit, TRUE);
-									EnableWindow(hwndText, TRUE);
-									}
+								
+								EnableWindow(hwndEdit, !(checked == BST_CHECKED));
+								EnableWindow(hwndText, !(checked == BST_CHECKED));
 								}
 							break;
 						}

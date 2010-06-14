@@ -127,7 +127,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
 		case ID_LOCK:
 			GetIEditable()->BeginUndo();
 			GetIEditable()->MarkForUndo();
-			m_fLocked = m_fLocked ? fFalse : fTrue;
+			m_fLocked = !m_fLocked;
 			GetIEditable()->EndUndo();
 			GetPTable()->SetDirtyDraw();
 			break;

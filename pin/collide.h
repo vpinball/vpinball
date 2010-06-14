@@ -81,18 +81,16 @@ extern U32 c_PostCheck;
 //#define INFONORMAL 0
 //#define INFOMOVE 1
 
-inline BOOL FQuickLineIntersect(PINFLOAT x1, PINFLOAT y1, PINFLOAT x2, PINFLOAT y2,
-		PINFLOAT x3, PINFLOAT y3, PINFLOAT x4, PINFLOAT y4)
+inline bool FQuickLineIntersect(const PINFLOAT x1, const PINFLOAT y1, const PINFLOAT x2, const PINFLOAT y2,
+								const PINFLOAT x3, const PINFLOAT y3, const PINFLOAT x4, const PINFLOAT y4)
 	{
-	float d123, d124, d341, d342;
+	const PINFLOAT d123 = (x2 - x1)*(y3 - y1) - (x3 - x1)*(y2 - y1);
 
-    d123 = (x2 - x1)*(y3 - y1) - (x3 - x1)*(y2 - y1);
+	const PINFLOAT d124 = (x2 - x1)*(y4 - y1) - (x4 - x1)*(y2 - y1);
 
-	d124 = (x2 - x1)*(y4 - y1) - (x4 - x1)*(y2 - y1);
+    const PINFLOAT d341 = (x3 - x1)*(y4 - y1) - (x4 - x1)*(y3 - y1);
 
-    d341 = (x3 - x1)*(y4 - y1) - (x4 - x1)*(y3 - y1);
-
-    d342 = d123 - d124 + d341;
+    const PINFLOAT d342 = d123 - d124 + d341;
 
 	return ((d123 * d124 <= 0) && (d341 * d342 <= 0));
 	}
@@ -109,7 +107,7 @@ public:
 	BOOL m_fSeeThrough;
 	};
 
-HitObject *CreateCircularHitPoly(PINFLOAT x, PINFLOAT y, PINFLOAT z, PINFLOAT r, int sections);
+HitObject *CreateCircularHitPoly(const PINFLOAT x, const PINFLOAT y, const PINFLOAT z, const PINFLOAT r, const int sections);
 
 class HitObject
 	{

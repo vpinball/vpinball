@@ -694,7 +694,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage *ppi, PinBinary *ppb
 
     dest_mgr = jinit_write_bmp(&cinfo, FALSE, &ddsd);
 
-  (void) jpeg_start_decompress(&cinfo);
+  jpeg_start_decompress(&cinfo);
 
   (*dest_mgr->start_output) (&cinfo, dest_mgr);
 
@@ -707,7 +707,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage *ppi, PinBinary *ppb
 	
 	(*dest_mgr->finish_output) (&cinfo, dest_mgr);
 	
-	(void) jpeg_finish_decompress(&cinfo);
+	jpeg_finish_decompress(&cinfo);
 
 	pdds->Unlock(NULL);
 

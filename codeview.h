@@ -320,7 +320,7 @@ END_COM_MAP()
 
 	STDMETHOD(Next)(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG __RPC_FAR *pCeltFetched);
 	STDMETHOD(Skip)(ULONG celt);
-	STDMETHOD(Reset)(void);
+	STDMETHOD(Reset)();
 	STDMETHOD(Clone)(IEnumVARIANT __RPC_FAR *__RPC_FAR *ppEnum);
 
 private:
