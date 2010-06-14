@@ -39,7 +39,7 @@ void Ball::Init()
 			if (i==l)
 				{
 				m_orientation.m_d[i][l] = 1.0f;
-				m_inversebodyinertiatensor.m_d[i][l] = 1.0f/(radius*radius*(float)(2.0/5.0));
+				m_inversebodyinertiatensor.m_d[i][l] = (float)(5.0/2.0)/(radius*radius);
 				}
 			else
 				{
@@ -63,10 +63,10 @@ void Ball::Init()
 	m_contacts = 0;
 
 	// world limits on ball displacements
-//	x_min = g_pplayer->m_ptable->m_left + radius;		
-//	x_max = g_pplayer->m_ptable->m_right - radius;	
-//	y_min = g_pplayer->m_ptable->m_top + radius;		
-//	y_max = g_pplayer->m_ptable->m_bottom - radius;	
+//	x_min = g_pplayer->m_ptable->m_left + radius;
+//	x_max = g_pplayer->m_ptable->m_right - radius;
+//	y_min = g_pplayer->m_ptable->m_top + radius;
+//	y_max = g_pplayer->m_ptable->m_bottom - radius;
 	z_min = g_pplayer->m_ptable->m_tableheight + radius;
 	z_max = g_pplayer->m_ptable->m_glassheight - radius;
 
@@ -177,12 +177,12 @@ void Ball::CollideWall(Vertex3Ds *phitnormal, float m_elasticity, float antifric
 			}
 #endif		
 
-	dot *= -(1.005f + m_elasticity);//rlc some small minimum
+	dot *= -1.005f - m_elasticity; //rlc some small minimum
 	vx += dot * phitnormal->x;	
 	vy += dot * phitnormal->y;
 
 	if (antifriction >= 1.0f || antifriction <= 0) 
-		{antifriction = c_hardFriction;} // use global
+		antifriction = c_hardFriction; // use global
 
 	vx *= antifriction; vy *= antifriction; vz *= antifriction; //friction all axiz
 
@@ -191,8 +191,8 @@ void Ball::CollideWall(Vertex3Ds *phitnormal, float m_elasticity, float antifric
 
 	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
 		{
-		float scatter = 2.0f* ((float)rand()/((float)RAND_MAX) - 0.5f);  // -1.0f..1.0f
-		scatter *=  (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
+		float scatter = 2.0f* ((float)rand()*(float)(1.0/RAND_MAX) - 0.5f);  // -1.0f..1.0f
+		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
 		const float radsin = sinf(scatter);//  Green's transform matrix... rotate angle delta 
 		const float radcos = cosf(scatter);//  rotational transform from current position to position at time t
 		const float vxt = vx; 
@@ -237,9 +237,9 @@ void Ball::Collide3DWall(Vertex3Ds *phitnormal, float m_elasticity, float antifr
 #endif					
 
 	if (antifriction >= 1.0f || antifriction <= 0) 
-		{antifriction = c_hardFriction;} // use global
+		antifriction = c_hardFriction; // use global
 
-	dot *= -(1.005f + m_elasticity);	
+	dot *= -1.005f - m_elasticity;	
 	vx += dot * phitnormal->x; vx *= antifriction;
 	vy += dot * phitnormal->y; vy *= antifriction;
 	vz += dot * phitnormal->z; vz *= antifriction;
@@ -250,8 +250,8 @@ void Ball::Collide3DWall(Vertex3Ds *phitnormal, float m_elasticity, float antifr
 	
 	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
 		{
-		float scatter = 2.0f* ((float)rand()/((float)RAND_MAX) - 0.5f);  // -1.0f..1.0f
-		scatter *=  (1.0f - scatter*scatter)*2.59808f  * scatter_angle;	// shape quadratic distribution and scale
+		float scatter = 2.0f* ((float)rand()*(float)(1.0/RAND_MAX) - 0.5f);  // -1.0f..1.0f
+		scatter *=  (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
 		const float radsin = sinf(scatter);//  Green's transform matrix... rotate angle delta 
 		const float radcos = cosf(scatter);//  rotational transform from current position to position at time t
 		const float vxt = vx; 
@@ -645,7 +645,7 @@ void Ball::UpdateVelocities(PINFLOAT dtime)
 		vy += g_pplayer->m_mainlevel.m_gravity.y;// *dtime;	
 
 		if (z > z_min + 0.05f || g > 0)// off the deck??? or gravity postive Z direction	
-			vz +=  g;
+			vz += g;
 		else vz += g *0.001f;			// don't add so much energy if already on the world floor
 
 		vx += nx;// *dtime;

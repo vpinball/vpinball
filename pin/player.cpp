@@ -384,7 +384,7 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 	rgv3D[3].y = m_ptable->m_bottom;
 	rgv3D[3].z = m_ptable->m_glassheight;
 
-	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4);
+	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4,false);
 
 	pvho->AddElement(ph3dpoly);
 	}

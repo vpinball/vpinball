@@ -651,7 +651,7 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 		rgv3D[2].y = pv3->y;
 		rgv3D[2].z = rgheight[i+1];
 
-		Hit3DPoly * ph3dpoly = new Hit3DPoly(rgv3D,3);
+		Hit3DPoly * ph3dpoly = new Hit3DPoly(rgv3D,3,false);
 		ph3dpoly->m_elasticity = m_d.m_elasticity;
 		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -683,7 +683,7 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 		rgv3D[2].y = pv4->y;
 		rgv3D[2].z = rgheight[i+1];
 
-		ph3dpoly = new Hit3DPoly(rgv3D,3);
+		ph3dpoly = new Hit3DPoly(rgv3D,3,false);
 		ph3dpoly->m_elasticity = m_d.m_elasticity;
 		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -712,7 +712,7 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 	rgv3D[0].x = pv4->x;
 	rgv3D[0].y = pv4->y;
 	rgv3D[0].z = rgheight[cvertex-1];
-	ph3dpolyOld = new Hit3DPoly(rgv3D,3);
+	ph3dpolyOld = new Hit3DPoly(rgv3D,3,false);
 	
 	CheckJoint(pvho, ph3dpolyOld, ph3dpolyOld);
 	delete ph3dpolyOld;
@@ -742,7 +742,7 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 		rgv3D[2].y = pv3->y;
 		rgv3D[2].z = rgheight[i+1];
 
-		Hit3DPoly *ph3dpoly = new Hit3DPoly(rgv3D,3);
+		Hit3DPoly *ph3dpoly = new Hit3DPoly(rgv3D,3,false);
 		ph3dpoly->m_elasticity = m_d.m_elasticity;
 		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -762,7 +762,7 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 		rgv3D[1].y = pv4->y;
 		rgv3D[1].z = rgheight[i+1];
 
-		ph3dpoly = new Hit3DPoly(rgv3D,3);
+		ph3dpoly = new Hit3DPoly(rgv3D,3,false);
 		ph3dpoly->m_elasticity = m_d.m_elasticity;
 		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -800,7 +800,7 @@ void Ramp::AddSideWall(Vector<HitObject> *pvho, Vertex2D *pv1, Vertex2D *pv2,flo
 	rgv3D[3].y = pv1->y +walltilt;
 	rgv3D[3].z = height1 + wallheight;	
 
-	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4);	
+	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4,false);	
 	ph3dpoly->m_elasticity = m_d.m_elasticity;
 	ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 	ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);

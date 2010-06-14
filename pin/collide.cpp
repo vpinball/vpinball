@@ -29,9 +29,7 @@ HitObject *CreateCircularHitPoly(const PINFLOAT x, const PINFLOAT y, const PINFL
 		rgv3d[i].z = z;
 		}
 
-	Hit3DPoly * const ph3p = new Hit3DPoly(rgv3d, sections);
-
-	delete rgv3d;
+	Hit3DPoly * const ph3p = new Hit3DPoly(rgv3d, sections, true);
 
 	return ph3p;
 	}

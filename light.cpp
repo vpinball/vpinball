@@ -337,10 +337,8 @@ void Light::GetHitShapesDebug(Vector<HitObject> *pvho)
 				delete vvertex.ElementAt(i);
 				}
 
-			Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
+			Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex, true);
 			pvho->AddElement(ph3dp);
-
-			delete rgv3d;
 			}
 			break;
 		}
@@ -1438,7 +1436,7 @@ void Light::DrawFrame(BOOL fOn)
 	m_fOn = fOn;
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	const int frame = fOn ? 1 : 0;
+	const int frame = fOn;
 
 	// Light might be off the screen and have no image
 	// Check if we are blitting with D3D.

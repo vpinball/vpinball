@@ -424,13 +424,11 @@ void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
 		rgv3d[cvertex+4].y = m_ptable->m_top;
 		rgv3d[cvertex+4].z = m_d.m_heighttop;
 
-		Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex+5);
+		Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex+5, true);
 		pvho->AddElement(ph3dp);
 
 		m_vhoCollidable.AddElement(ph3dp);
 		ph3dp->m_fEnabled = m_d.m_fCollidable;
-
-		delete rgv3d;
 		}
 	}
 
@@ -489,7 +487,7 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 		if (m_d.m_fDroppable)
 			{
 			// Special hit object that will allow us to animate the surface
-			m_phitdrop = new Hit3DPolyDrop(rgv3D,count);
+			m_phitdrop = new Hit3DPolyDrop(rgv3D,count,true);
 			m_phitdrop->m_pfe = (IFireEvents *)this;
 
 			m_phitdrop->m_fVisible = fTrue;
@@ -505,7 +503,7 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 			}
 		else
 			{
-			Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
+			Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count,true);
 			ph3dpoly->m_pfe = (IFireEvents *)this;
 
 			ph3dpoly->m_fVisible = fTrue;
@@ -516,9 +514,10 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 			ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 			}
 		}
+	else
+		delete rgv3D;
 
 	delete rgv;
-	delete rgv3D;
 	}
 
 void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const BOOL fSlingshot)

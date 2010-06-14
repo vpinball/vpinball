@@ -395,7 +395,7 @@ void HitPlunger::Collide(Ball *pball, Vertex3Ds *phitnormal)
 
 	if ( scatter_vel > 0  && fabsf(pball->vy) > scatter_vel) //skip if low velocity 
 		{
-		float scatter = 2.0f* ((float)rand()/((float)RAND_MAX) - 0.5f);  // -1.0f..1.0f
+		float scatter = 2.0f* ((float)rand()*(float)(1.0/RAND_MAX) - 0.5f);  // -1.0f..1.0f
 		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_vel;	// shape quadratic distribution and scale
 		pball->vy += scatter;
 		}

@@ -115,8 +115,7 @@ void Bumper::GetTimers(Vector<HitTimer> *pvht)
 	{
 	IEditable::BeginPlay();
 
-	HitTimer *pht;
-	pht = new HitTimer();
+	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
 	pht->m_pfe = (IFireEvents *)this;
@@ -131,11 +130,9 @@ void Bumper::GetTimers(Vector<HitTimer> *pvht)
 
 void Bumper::GetHitShapes(Vector<HitObject> *pvho)
 	{
-	BumperHitCircle *phitcircle;
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-	phitcircle = new BumperHitCircle();
+	BumperHitCircle * const phitcircle = new BumperHitCircle();
 
 	phitcircle->m_pfe = NULL;
 
@@ -143,7 +140,7 @@ void Bumper::GetHitShapes(Vector<HitObject> *pvho)
 	phitcircle->center.y = m_d.m_vCenter.y;
 	phitcircle->radius = m_d.m_radius;
 	phitcircle->zlow = height;
-	phitcircle->zhigh = height+50;
+	phitcircle->zhigh = height+50.0f;
 
 	phitcircle->m_pbumper = this;
 
@@ -164,9 +161,9 @@ void Bumper::GetHitShapes(Vector<HitObject> *pvho)
 
 void Bumper::GetHitShapesDebug(Vector<HitObject> *pvho)
 	{
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 50, m_d.m_radius + m_d.m_overhang, 32);
+	HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 50.0f, m_d.m_radius + m_d.m_overhang, 32);
 	pvho->AddElement(pho);
 	}
 
@@ -186,9 +183,6 @@ void Bumper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	float maxtu, maxtv;
-	D3DMATERIAL7 mtrl;
-
 	if(!m_d.m_fVisible)	return;
 		
 	// All this function does is render the bumper image so the black shows through where it's missing in the animated form
@@ -203,6 +197,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		const float outerradius = m_d.m_radius + m_d.m_overhang;
 
+		float maxtu, maxtv;
 		m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
 		pin->EnsureColorKey();
@@ -210,6 +205,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
+		D3DMATERIAL7 mtrl;
 		ZeroMemory( &mtrl, sizeof(mtrl) );
 		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
@@ -326,29 +322,14 @@ void Bumper::RenderMoversFromCache(Pin3D *ppin3d)
 
 void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-	float maxtu, maxtv;
-
 	if(!m_d.m_fVisible)	return;
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-	const float r = (m_d.m_color & 255) * (float) (1.0/255.0);
-	const float g = (m_d.m_color & 65280) * (float) (1.0/65280.0);
-	const float b = (m_d.m_color & 16711680) * (float) (1.0/16711680.0);
-
-	const float rside = (m_d.m_sidecolor & 255) * (float) (1.0/255.0);
-	const float gside = (m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
-	const float bside = (m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
-
-	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
+	
 	const float outerradius = m_d.m_radius + m_d.m_overhang;
 
-	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
-
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	
 	Vertex3D rgv3D[160];
 	for (int l=0;l<32;l++)
 		{
@@ -411,8 +392,16 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
+		D3DMATERIAL7 mtrl;
+		ZeroMemory( &mtrl, sizeof(mtrl) );
+		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+
+		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 		if (!pin) // Top solid color
 			{
+			const float r = (m_d.m_color & 255) * (float) (1.0/255.0);
+			const float g = (m_d.m_color & 65280) * (float) (1.0/65280.0);
+			const float b = (m_d.m_color & 16711680) * (float) (1.0/16711680.0);
 			switch (i)
 				{
 				case 0:
@@ -499,6 +488,9 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		if (m_d.m_fSideVisible)
 			{
+			const float rside = (m_d.m_sidecolor & 255) * (float) (1.0/255.0);
+			const float gside = (m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
+			const float bside = (m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
 			// Side color
 			switch (i)
 				{
@@ -551,6 +543,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		if (pin)
 			{
+			float maxtu, maxtv;
 			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
 			pin->EnsureBackdrop(m_d.m_color);
@@ -798,7 +791,6 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-
 	}
 
 
@@ -938,7 +930,7 @@ void Bumper::DrawFrame(BOOL fOn)
 	{
 	m_fOn = fOn;
 
-	m_pbumperhitcircle->m_bumperanim.m_iframedesired = fOn ? 1 : 0;
+	m_pbumperhitcircle->m_bumperanim.m_iframedesired = fOn;
 	}
 
 STDMETHODIMP Bumper::get_Radius(float *pVal)
@@ -1199,9 +1191,9 @@ STDMETHODIMP Bumper::put_BlinkPattern(BSTR newVal)
 		{
 		// Restart the sequence
 		// BUG - merge with code in player for light blinking someday
-		char cold = m_rgblinkpattern[m_iblinkframe];
+		const char cold = m_rgblinkpattern[m_iblinkframe];
 		m_iblinkframe = 0;
-		char cnew = m_rgblinkpattern[m_iblinkframe];
+		const char cnew = m_rgblinkpattern[m_iblinkframe];
 		if (cold != cnew)
 			{
 			DrawFrame(cnew == '1');
@@ -1335,7 +1327,7 @@ void Bumper::setLightState(LightState newVal)
 	{
 	if (newVal != m_realState)
 		{
-		LightState lastState = m_realState;		//rlc make a bit more obvious
+		const LightState lastState = m_realState;		//rlc make a bit more obvious
 		m_realState = newVal;
 
 		if (m_pbumperhitcircle)

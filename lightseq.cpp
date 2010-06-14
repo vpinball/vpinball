@@ -1610,7 +1610,7 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 				for (int i=0; i<pTracer->length; i++)
 				{
 					// Generates integer random number 0..(size-1)
-					const int randomLight = (int)(size * ( ((float)rand()) / ((float)(RAND_MAX+1)) ) );
+					const int randomLight = (int)(size * ( (float)rand() * (float)(1.0/(RAND_MAX+1)) ) );
 					// get the state of this light
 					LightState state = GetElementState(randomLight);
 					// invert the state
