@@ -263,13 +263,12 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
 				delete vvertex.ElementAt(i);
 				}
 
-			Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
+			Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex, true);
 			ph3dp->m_ObjType = eTrigger;
 			ph3dp->m_pObj = (void*) this;
 
 			pvho->AddElement(ph3dp);
 			//ph3dp->m_fEnabled = fFalse;	//rlc ... error: disable hit process on polygon body, only trigger edges 
-			delete rgv3d;
 			break;
 			}
 		}
@@ -322,7 +321,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 #endif
 
 #if 1	
-	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
+	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count,true);
 
 	ph3dpoly->m_fVisible = fTrue;
 	ph3dpoly->m_ObjType = eTrigger;
@@ -330,10 +329,11 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 
 	pvho->AddElement(ph3dpoly);
 	
+#else
+	delete rgv3D;
 #endif
 
 	delete rgv;
-	delete rgv3D;
 	}
 
 void Trigger::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const float height)

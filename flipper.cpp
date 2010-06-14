@@ -68,7 +68,7 @@ void Flipper::SetDefaults()
 
 	m_d.m_rubberthickness = 0;
 	m_d.m_rubberheight = 8;
-	m_d.m_rubberwidth = (int) (m_d.m_height - 16);
+	m_d.m_rubberwidth = (int) (m_d.m_height - 16.0f);
 
 	m_d.m_mass = 1;
 
@@ -79,8 +79,7 @@ void Flipper::GetTimers(Vector<HitTimer> *pvht)
 	{
 	IEditable::BeginPlay();
 
-	HitTimer *pht;
-	pht = new HitTimer();
+	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
 	pht->m_pfe = (IFireEvents *)this;
@@ -95,7 +94,7 @@ void Flipper::GetTimers(Vector<HitTimer> *pvht)
 
 void Flipper::GetHitShapes(Vector<HitObject> *pvho)
 	{
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
 	if (m_d.m_FlipperRadiusMin > 0 && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
 		{
@@ -104,8 +103,7 @@ void Flipper::GetHitShapes(Vector<HitObject> *pvho)
 		}
 	else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-	HitFlipper *phf;
-	phf = new HitFlipper(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, m_d.m_EndRadius,
+	HitFlipper * const phf = new HitFlipper(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, m_d.m_EndRadius,
 	m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), height, height + m_d.m_height, m_d.m_strength,m_d.m_mass);
 
 	phf->m_elasticity = m_d.m_elasticity;
@@ -131,7 +129,7 @@ void Flipper::GetHitShapes(Vector<HitObject> *pvho)
 
 void Flipper::GetHitShapesDebug(Vector<HitObject> *pvho)
 	{
-	float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
 	if (m_d.m_FlipperRadiusMin > 0 && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
 		{
@@ -140,7 +138,7 @@ void Flipper::GetHitShapesDebug(Vector<HitObject> *pvho)
 		}
 	else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-	HitObject *pho = CreateCircularHitPoly(m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height, m_d.m_FlipperRadius + m_d.m_EndRadius, 32);
+	HitObject * const pho = CreateCircularHitPoly(m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height, m_d.m_FlipperRadius + m_d.m_EndRadius, 32);
 	pvho->AddElement(pho);
 	}
 
@@ -161,14 +159,17 @@ void Flipper::EndPlay()
 
 void Flipper::SetVertices(float angle, Vertex2D *pvEndCenter, Vertex2D *rgvTangents, float baseradius, float endradius)
 	{
-	float endx,endy, basex,basey;
 	const float fradius = m_d.m_FlipperRadius;
 	const float fa = asinf((baseradius-endradius)/fradius); //face to centerline angle (center to center)
 
 	const float faceNormOffset = (float)(M_PI/2.0) - fa; //angle of normal when flipper center line at angle zero	
 
-	pvEndCenter->x = endx = (basex = m_d.m_Center.x) + fradius*sinf(angle); //place end radius center
-	pvEndCenter->y = endy = (basey = m_d.m_Center.y) - fradius*cosf(angle);	
+	const float basex = m_d.m_Center.x;
+	const float endx = m_d.m_Center.x + fradius*sinf(angle); //place end radius center
+	pvEndCenter->x = endx;
+	const float basey = m_d.m_Center.y;
+	const float endy = m_d.m_Center.y - fradius*cosf(angle);	
+	pvEndCenter->y = endy;
 
 	const float faceNormx1 =   sinf(angle - faceNormOffset); // normals to new face positions
 	const float faceNormy1 =  -cosf(angle - faceNormOffset);
@@ -195,13 +196,12 @@ void Flipper::PreRender(Sur *psur)
 
 	m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-	Vertex2D vendcenter;
-	Vertex2D rgv[4];
-
 	psur->SetFillColor(RGB(192,192,192));
 	psur->SetBorderColor(-1,fFalse,0);
 	psur->SetLineColor(RGB(0,0,0), fFalse, 0);
 
+	Vertex2D vendcenter;
+	Vertex2D rgv[4];
 	SetVertices(anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);	
 
 	psur->SetObject(this);
@@ -213,12 +213,11 @@ void Flipper::PreRender(Sur *psur)
 
 void Flipper::Render(Sur *psur)
 	{
-	float anglerad = ANGTORAD(m_d.m_StartAngle);
-	float anglerad2 = ANGTORAD(m_d.m_EndAngle);
+	const float anglerad = ANGTORAD(m_d.m_StartAngle);
+	const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
 
 	Vertex2D vendcenter;
 	Vertex2D rgv[4];
-
 	SetVertices(anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
 	psur->SetFillColor(RGB(192,192,192));
@@ -250,14 +249,14 @@ void Flipper::Render(Sur *psur)
 	rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
 
 	if (m_d.m_EndAngle < m_d.m_StartAngle)
-		{psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
-							, rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);}
-	else {psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
-							, rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);}
+		 psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+							, rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+	else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+							, rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);
 
 	if (m_d.m_FlipperRadiusMin > 0 && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
 		{
-		m_d.m_FlipperRadius = (m_ptable->m_globalDifficulty > 0) ?  m_d.m_FlipperRadiusMin : m_d.m_FlipperRadiusMax;
+		m_d.m_FlipperRadius = (m_ptable->m_globalDifficulty > 0) ? m_d.m_FlipperRadiusMin : m_d.m_FlipperRadiusMax;
 		m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
 		}
 	else return;
@@ -291,10 +290,10 @@ void Flipper::Render(Sur *psur)
 		rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
 
 		if (m_d.m_EndAngle < m_d.m_StartAngle)
-			{psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
-								, rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);	}
-		else {psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
-								, rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);	}
+			 psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+								, rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+		else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+								, rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);
 
 		m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax -( m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) 
 														*m_ptable->m_globalDifficulty;
@@ -327,10 +326,10 @@ void Flipper::Render(Sur *psur)
 		rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
 
 		if (m_d.m_EndAngle < m_d.m_StartAngle)
-			{psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
-								, rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);	}
-		else {psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
-								, rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);	}
+			 psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+								, rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+		else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+								, rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);
 		}
 
 	m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
@@ -386,7 +385,7 @@ STDMETHODIMP Flipper::RotateToEnd() //power stroke to hit ball
 {
 	if (m_phitflipper)
 		{
-		float endAng = ANGTORAD(m_d.m_EndAngle);
+		const float endAng = ANGTORAD(m_d.m_EndAngle);
 		m_phitflipper->m_flipperanim.m_EnableRotateEvent = 1;
 		m_phitflipper->m_flipperanim.m_angleEnd = endAng;
 
@@ -395,7 +394,7 @@ STDMETHODIMP Flipper::RotateToEnd() //power stroke to hit ball
 			m_phitflipper->m_flipperanim.m_fAcc = 0;
 			m_phitflipper->m_flipperanim.m_anglespeed = 0;
 			}
-		else { m_phitflipper->m_flipperanim.m_fAcc = (endAng > m_phitflipper->m_flipperanim.m_angleCur)? +1:-1;}
+		else m_phitflipper->m_flipperanim.m_fAcc = (endAng > m_phitflipper->m_flipperanim.m_angleCur) ? +1 : -1;
 
 		m_phitflipper->m_flipperanim.m_maxvelocity = m_d.m_force * 4.5f;
 		m_phitflipper->m_flipperanim.m_force = m_d.m_force;
@@ -409,21 +408,21 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
 {
 	if (m_phitflipper)
 		{
-		float startAng =  ANGTORAD(m_d.m_StartAngle);		
+		const float startAng =  ANGTORAD(m_d.m_StartAngle);		
 		m_phitflipper->m_flipperanim.m_EnableRotateEvent = -1;
 		m_phitflipper->m_flipperanim.m_angleEnd = startAng;
 
-		if (fabsf(startAng - m_phitflipper->m_flipperanim.m_angleCur)< 1.0e-5f)//already there?
+		if (fabsf(startAng - m_phitflipper->m_flipperanim.m_angleCur) < 1.0e-5f)//already there?
 			{
 			m_phitflipper->m_flipperanim.m_fAcc = 0;
 			m_phitflipper->m_flipperanim.m_anglespeed = 0;
 			}
-		else { m_phitflipper->m_flipperanim.m_fAcc = (startAng > m_phitflipper->m_flipperanim.m_angleCur)? +1:-1;}
+		else m_phitflipper->m_flipperanim.m_fAcc = (startAng > m_phitflipper->m_flipperanim.m_angleCur) ? +1 : -1;
 
 		m_phitflipper->m_flipperanim.m_maxvelocity = m_d.m_force * 4.5f;
 		
 		float rtn = m_d.m_return;
-		if (rtn <= 0)rtn = 1.0f;
+		if (rtn <= 0) rtn = 1.0f;
 
 		m_phitflipper->m_flipperanim.m_force = m_d.m_force * rtn;
 		m_phitflipper->m_forcemass = m_d.m_strength * rtn;		
@@ -897,14 +896,15 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Flipper::InitPostLoad()
 	{
-		if(m_d.m_height>1000) {m_d.m_height = 50;}
-		if(m_d.m_rubberheight>1000) {m_d.m_rubberheight = 8;}
-		if(m_d.m_rubberthickness>0 && m_d.m_height>16 && m_d.m_rubberwidth==0)
+		if(m_d.m_height > 1000.0f) m_d.m_height = 50.0f;
+		if(m_d.m_rubberheight > 1000) m_d.m_rubberheight = 8;
+		if(m_d.m_rubberthickness > 0 && m_d.m_height > 16.0f && m_d.m_rubberwidth == 0)
 			{
-			m_d.m_rubberwidth=(int) (m_d.m_height-16);
+			m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
 			}
-		if(m_d.m_rubberwidth>1000) {m_d.m_rubberwidth=(int) (m_d.m_height-16);}
-	return S_OK;
+		if(m_d.m_rubberwidth>1000) m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
+	
+		return S_OK;
 	}
 
 STDMETHODIMP Flipper::get_BaseRadius(float *pVal)
@@ -1263,14 +1263,7 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 
 STDMETHODIMP Flipper::get_Visible(VARIANT_BOOL *pVal)
 {
-	if (m_phitflipper)
-		{
-		*pVal = FTOVB(m_phitflipper->m_flipperanim.m_fEnabled);
-		}
-	else
-		{
-		*pVal = FTOVB(m_d.m_fVisible);
-		}
+	*pVal = FTOVB(m_phitflipper ? m_phitflipper->m_flipperanim.m_fEnabled : m_d.m_fVisible);
 
 	return S_OK;
 }
@@ -1293,14 +1286,7 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Flipper::get_Elasticity(float *pVal)
 {
-	if (m_phitflipper)
-		{
-		*pVal = m_phitflipper->m_elasticity;
-		}
-	else
-		{
-		*pVal = m_d.m_elasticity;
-		}
+	*pVal = (m_phitflipper) ? m_phitflipper->m_elasticity : m_d.m_elasticity;
 
 	return S_OK;
 }

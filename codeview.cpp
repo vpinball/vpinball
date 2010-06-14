@@ -290,8 +290,7 @@ void CodeViewer::EndSession()
 
 HRESULT CodeViewer::AddTemporaryItem(BSTR bstr, IDispatch *pdisp)
 	{
-	CodeViewDispatch *pcvd;
-	pcvd = new CodeViewDispatch();
+	CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
 	WideStrCopy(bstr, pcvd->m_wzName);
 	pcvd->m_pdisp = pdisp;
@@ -319,11 +318,9 @@ HRESULT CodeViewer::AddTemporaryItem(BSTR bstr, IDispatch *pdisp)
 
 HRESULT CodeViewer::AddItem(IScriptable *piscript, BOOL fGlobal)
 	{
-	CodeViewDispatch *pcvd;
-	pcvd = new CodeViewDispatch();
+	CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
 	CComBSTR bstr;
-
 	piscript->get_Name(&bstr);
 
 	WideStrCopy(bstr, pcvd->m_wzName);
@@ -1530,7 +1527,7 @@ void CodeViewer::AddControlToOkayedList(CONFIRMSAFETY *pcs)
 	{
 	if (g_pplayer)
 		{
-		CLSID *pclsid = new CLSID();
+		CLSID * const pclsid = new CLSID();
 		*pclsid = pcs->clsid;
 		g_pplayer->m_controlclsidsafe.AddElement(pclsid);
 		}
