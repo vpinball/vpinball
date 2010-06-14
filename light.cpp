@@ -189,7 +189,7 @@ void Light::Render(Sur *psur)
 	BOOL	fDrawDragpoints;		//>>> added by chris
 
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-	if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints == fTrue) )
+	if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
 		{
 		fDrawDragpoints = fTrue;
 		}
@@ -211,7 +211,7 @@ void Light::Render(Sur *psur)
 
 	RenderOutline(psur);
 
-	if ( (m_d.m_shape == ShapeCustom) && (fDrawDragpoints == fTrue) )	//<<< modified by chris
+	if ( (m_d.m_shape == ShapeCustom) && (fDrawDragpoints) )	//<<< modified by chris
 		{
 		for (int i=0;i<m_vdpoint.Size();i++)
 			{
@@ -719,7 +719,7 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			RECT	Rect;
 			// Since we don't know the final dimensions of the 
@@ -856,7 +856,7 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
 			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
@@ -985,7 +985,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ExpandExtents(&m_pobjframe[i]->rc, rgv3D, NULL, NULL, 32, m_fBackglass);
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			// Clear the texture by copying the color and z values from the "static" buffers.
 			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
@@ -1035,7 +1035,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
 			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
@@ -1433,7 +1433,7 @@ STDMETHODIMP Light::put_State(LightState newVal)
 {
 	STARTUNDO
 	// if the light is locked by the LS then just change the state and don't change the actual light
-	if (m_fLockedByLS != fTrue)
+	if (!m_fLockedByLS)
 		{
 		setLightState(newVal);
 		}
@@ -1456,7 +1456,7 @@ void Light::DrawFrame(BOOL fOn)
 
 #if 0 // Switching render targets mid-frame kills performance.   - JEP
 
-	if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)		
+	if (g_pvp->m_pdd.m_fUseD3DBlit)		
 	{
 		// Make sure we have a D3D texture.
 		if (m_pobjframe[frame]->pTexture)

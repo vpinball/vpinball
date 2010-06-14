@@ -51,7 +51,7 @@ public:
 		
 
 	void Init(PinTable *pt);
-	void SeqSoundInit(void);
+	void SeqSoundInit();
 
 	virtual IDispatch *GetDispatch();
 

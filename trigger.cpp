@@ -129,7 +129,7 @@ void Trigger::Render(Sur *psur)
 
 //>>> added by chris
 		// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
- 		if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints == fTrue) )
+ 		if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
 			{
 			fDrawDragpoints = fTrue;
 			}
@@ -149,7 +149,7 @@ void Trigger::Render(Sur *psur)
 				}
 			}
 
-		if (fDrawDragpoints == fTrue)
+		if (fDrawDragpoints)
 			{
 			for (int i=0;i<m_vdpoint.Size();i++)
 				{
@@ -875,7 +875,7 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
 		{
 		m_hitEnabled = VBTOF(newVal);
 
-		if (m_ptriggerhitcircle){m_ptriggerhitcircle->m_fEnabled = m_hitEnabled;}
+		if (m_ptriggerhitcircle) m_ptriggerhitcircle->m_fEnabled = m_hitEnabled;
 		}
 	else 
 		{

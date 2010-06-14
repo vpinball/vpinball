@@ -148,14 +148,7 @@ int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 					int selection = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
 
-					if (selection != -1)
-						{
-						EnableWindow(hwndOk, TRUE);
-						}
-					else
-						{
-						EnableWindow(hwndOk, FALSE);
-						}
+					EnableWindow(hwndOk, (selection != -1));
 					}
 					break;
 				}
@@ -562,7 +555,7 @@ HRESULT PinComControl::ChooseComponent()
 	int response = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_COMLIST),
 		m_ptable->m_hwnd, ComListProc, (LPARAM)this);
 
-	if (response == FALSE)
+	if (!response)
 		{
 		return E_FAIL;
 		}

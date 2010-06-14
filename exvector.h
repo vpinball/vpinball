@@ -67,16 +67,14 @@ public:
 			return fTrue;
 			}
 
-		int currentnode, jumpnode;								  
-		int currentvalue;
-		
-		currentnode = m_searchstart-1;  // Zero based
-		jumpnode = m_searchstart >> 1;
+		int currentnode = m_searchstart-1;  // Zero based
+		int jumpnode = m_searchstart >> 1;
 		
 		while (1)
 			{
 			//Assert(currentnode >= 0);
 
+			int currentvalue;
 			if (currentnode >= m_vindex.Size())
 				{
 				currentvalue = 0x7fffffff;
@@ -88,7 +86,7 @@ public:
 					{
 					m_vobj.ReplaceElementAt(pobj, currentnode);
 					fFound = fTrue;
-					goto EndSearch;
+					break;
 					}
 				}
 
@@ -98,7 +96,7 @@ public:
 					{
 					currentnode++; // insert new node after this one
 					}
-				goto EndSearch;
+				break;
 				}
 
 			if (currentvalue < iex)
@@ -112,9 +110,7 @@ public:
 			jumpnode >>= 1;
 			}
 
-EndSearch:
-
-		if (fFound == fFalse)
+		if (!fFound)
 			{
 			m_vobj.InsertElementAt(pobj, currentnode);
 			m_vindex.InsertElementAt((void *)iex, currentnode);
@@ -188,9 +184,7 @@ NotFound:
 	// returns fTrue iff index has an exception record
 	BOOL FIsExceptionItem(int j)
 		{
-		if (ElementAtVoid(j) != m_pbaseobj)
-			return fTrue;
-		return fFalse;
+		return (ElementAtVoid(j) != m_pbaseobj);
 		}
 
 	void RemoveExceptions()
@@ -226,7 +220,7 @@ NotFound:
 		}
 
 	// a debug-thing:  free heap-alloced memory otherwise our quit-time mem checking will report leaks
-	inline void Reset(void)
+	inline void Reset()
 		{
 		m_vobj.Reset();
 		m_vindex.Reset();

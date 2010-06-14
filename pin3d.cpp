@@ -206,7 +206,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreenWithCustomTransparency(int width, int
     ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;// | DDSCAPS_3DDEVICE;
 
 	// Check if we are rendering in hardware.
-	if (g_pvp->m_pdd.m_fHardwareAccel == fTrue)
+	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
 		}
@@ -245,7 +245,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreen(int width, int height)
     ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
 
 	// Check if we are rendering in hardware.
-	if (g_pvp->m_pdd.m_fHardwareAccel == fTrue)
+	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
 		}
@@ -296,7 +296,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateZBufferOffscreen(int width, int height)
     ddsd.ddpfPixelFormat.dwSize = 0;  // Tag the pixel format as unitialized
 
 	// Check if we are rendering in hardware.
-	if (g_pvp->m_pdd.m_fHardwareAccel == fTrue)
+	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
 		}
@@ -683,7 +683,7 @@ HRESULT Pin3D::CreateZBuffer( GUID* pDeviceGUID )
     ddsd.ddpfPixelFormat.dwSize = 0;  // Tag the pixel format as unitialized
 
 	// Check if we are rendering in software.
-	if (g_pvp->m_pdd.m_fHardwareAccel == fFalse)
+	if (!g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
 		}
@@ -1426,7 +1426,7 @@ void Pin3D::Flip(const int offsetx, const int offsety)
 	//ddbltfx.dwDDFX = DDBLTFX_NOTEARING;
 
 	// Check if we are mirrored.
-	if ( g_pplayer->m_ptable->m_tblMirrorEnabled == TRUE )
+	if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
 	{
 		// Mirror the table.
 		ddbltfx.dwDDFX = (ddbltfx.dwDDFX | DDBLTFX_MIRRORUPDOWN);

@@ -7,9 +7,8 @@ static DWORD m_dwMaximum;
 static DWORD m_dwVolumeControlID;
 static F32 gMixerVolume;
 static int nmixers;
-static F32 fade = 1.0f;
-static U32 volume_stamp;
-static bool m_bUpdate;
+static U32 volume_stamp = 0;
+static bool m_bUpdate = false;
 
 int mixer_init( HWND wnd )
 {
@@ -86,12 +85,12 @@ int mixer_init( HWND wnd )
 	return 1;
 }
 
-void mixer_display_volume( void )
+void mixer_display_volume()
 {
 	volume_stamp = msec();
 }
 
-void mixer_shutdown( void )
+void mixer_shutdown()
 {
 	::mixerClose(m_hMixer);
 	nmixers = 0;
@@ -99,7 +98,7 @@ void mixer_shutdown( void )
 
 static F32 volume_modulation = 1.0f;
 
-static void set_cp_master_volume( void )
+static void set_cp_master_volume()
 {
     F32 modded_volume = gMixerVolume * volume_modulation;
 
@@ -135,29 +134,23 @@ void mixer_volmod( F32 volmod )
 
 void mixer_volume( F32 vol )
 {
-	if( !nmixers ) return;
+	if(!nmixers) return;
 
 	if( vol < 0.01f ) vol = 0.01f;
-	if( vol >= 1 ) vol = 1;
+	if( vol > 1.0f ) vol = 1.0f;
 
-	if( vol == gMixerVolume ) return;
+	if(vol == gMixerVolume) return;
 
 	mixer_display_volume();
 
-	if (!m_hMixer)
-	{
-		return;
-	}
-
-	if( vol > 1.0f ) vol = 1.0f;
-	if( vol < 0.0f ) vol = 0.0f;
+	if(!m_hMixer) return;
 
 	gMixerVolume = vol;
 
     set_cp_master_volume();
 }
 
-F32 mixer_get_volume( void )
+F32 mixer_get_volume()
 {
 	if (m_hMixer == NULL || !nmixers)
 	{
@@ -192,10 +185,10 @@ F32 mixer_get_volume( void )
 	return gMixerVolume;
 }
 
-void mixer_update( void )
+void mixer_update()
 {
 
-    F32 delta = 1.0f / 500.0f; 
+    const F32 delta = (F32)(1.0 / 500.0);
 
     if( Down( PININ_VOL_DOWN ) )
     {
@@ -209,30 +202,25 @@ void mixer_update( void )
 }
 
 
-static F32 volume_adjustment_bar_pos[2] = { 15, 400 };
-static F32 volume_adjustment_bar_big_size[2] = { 20, 4 };
-static F32 volume_adjustment_bar_small_size[2] = { 10, 2 };
-static F32 volume_adjustment_bar_ysize = 720.0f;
-static U32 volume_adjustment_color[3] = { 0x00ff00df, 0xffff00df, 0xff0000df };
-static U32 volume_adjustment_drop_color = 0x0000001f;
+const F32 volume_adjustment_bar_pos[2] = { 15.0f, 400.0f };
+const F32 volume_adjustment_bar_big_size[2] = { 20.0f, 4.0f };
+const F32 volume_adjustment_bar_small_size[2] = { 10.0f, 2.0f };
+const F32 volume_adjustment_bar_ysize = 720.0f;
+const U32 volume_adjustment_color[3] = { 0x00ff00df, 0xffff00df, 0xff0000df };
+const U32 volume_adjustment_drop_color = 0x0000001f;
 
-void mixer_draw( void )
+void mixer_draw()
 {
-	float	sX, sY;
-	float	fX, fY;
-	float	Width, Height;
-	float	r, g, b, a;
-	F32 fade = 0.0f;
 	RenderStateType		RestoreRenderState;
 	TextureStateType	RestoreTextureState;
 	D3DMATRIX			RestoreWorldMatrix;
 	HRESULT				ReturnCode;
 
 	if( !volume_stamp ) return;
-	fade = 1.0f - ( ( (F32) ( msec() - volume_stamp ) ) * 0.001f );
 
 	m_bUpdate = true;
 
+	F32 fade = 1.0f - ( ( (F32) ( msec() - volume_stamp ) ) * 0.001f );
     if( fade > 1.0f ) fade = 1.0f;
     if( fade <= 0.0f )
 	{
@@ -247,22 +235,19 @@ void mixer_draw( void )
 	// Save the current texture state.
 	Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 
-    U32 alpha = (U32) ( fade * 222.2f );
-
-    F32 size[2];
+    const U32 alpha = (U32) ( fade * 222.2f );
 
     F32 ypos = (F32)( -((S32)g_pplayer->m_pin3d.m_dwRenderHeight/2) );
     F32 yoff = volume_adjustment_bar_big_size[1] * 2.0f;
-    F32 y;
-    F32 vol;
 
-    for( vol = 0, y= - ( volume_adjustment_bar_ysize*0.5f );
+    for(F32 vol = 0, y= - ( volume_adjustment_bar_ysize*0.5f );
             vol < 1.0f;
             vol += ( 1.0f * yoff / volume_adjustment_bar_ysize ), y += yoff )
     {
 		U32 color = ( volume_adjustment_color[0] & 0xffffff00 ) | alpha;
         ypos += yoff;
 
+		F32 size[2];
         if( vol > gMixerVolume )
         {
             size[0] = volume_adjustment_bar_small_size[0];
@@ -287,28 +272,28 @@ void mixer_draw( void )
 			}
         }
 
-		U32 drop_color = ( volume_adjustment_drop_color & 0xffffff00 ) | alpha;
+		const U32 drop_color = ( volume_adjustment_drop_color & 0xffffff00 ) | alpha;
 
 //        draw_transparent_box( size[0]+2, size[1]+2, volume_adjustment_bar_pos[0], volume_adjustment_bar_pos[1]+y, drop_color );
 //        draw_transparent_box( size[0], size[1], volume_adjustment_bar_pos[0], volume_adjustment_bar_pos[1]+y, color );
 
 		// Calculate the scale.
-		sX = -1.0f * (((float) g_pplayer->m_pin3d.m_dwRenderHeight)/600.0f);
-		sY = -1.0f * (((float) g_pplayer->m_pin3d.m_dwRenderWidth)/800.0f);
+		const float sX = - (float)g_pplayer->m_pin3d.m_dwRenderHeight*(float)(1.0/600.0);
+		const float sY = - (float)g_pplayer->m_pin3d.m_dwRenderWidth *(float)(1.0/800.0);
 
 		// Set the position.  
-		fX = ((float) g_pplayer->m_pin3d.m_dwRenderHeight) + (volume_adjustment_bar_pos[0] * sX);
-		fY = ((float) g_pplayer->m_pin3d.m_dwRenderWidth) + ((volume_adjustment_bar_pos[1] * sY) + (y * sY));
+		const float fX = (float)g_pplayer->m_pin3d.m_dwRenderHeight + (volume_adjustment_bar_pos[0] * sX);
+		const float fY = (float)g_pplayer->m_pin3d.m_dwRenderWidth  + (volume_adjustment_bar_pos[1] * sY) + (y * sY);
 
 		// Set the width and height.
-		Width = size[0] * sX;
-		Height = size[1] * sY;
+		const float Width = size[0] * sX;
+		const float Height = size[1] * sY;
 
 		// Set the color.
-		r = ((float) ((drop_color             ) >> 24)) * (float)(1.0/255.0);
-		g = ((float) ((drop_color & 0x00ff0000) >> 16)) * (float)(1.0/255.0);
-		b = ((float) ((drop_color & 0x0000ff00) >>  8)) * (float)(1.0/255.0);
-		a = ((float) ((drop_color & 0x000000ff)      )) * (float)(1.0/255.0);
+		float r = ((float) ((drop_color             ) >> 24)) * (float)(1.0/255.0);
+		float g = ((float) ((drop_color & 0x00ff0000) >> 16)) * (float)(1.0/255.0);
+		float b = ((float) ((drop_color & 0x0000ff00) >>  8)) * (float)(1.0/255.0);
+		float a = ((float) ((drop_color & 0x000000ff)      )) * (float)(1.0/255.0);
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
 		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
@@ -344,25 +329,21 @@ void mixer_draw( void )
 }
 
 // Flags that the region behind the mixer volume should be refreshed.
-void mixer_erase( void )
+void mixer_erase()
 {
-	float	sX;
-	float	fX;
-	float	Width;
-	RECT	Rect;
-
 	if( !m_bUpdate ) return;
 
 	// Calculate the scale.
-	sX = -1.0f * (((float) g_pplayer->m_pin3d.m_dwRenderHeight)/600.0f);
+	const float sX = - (float)g_pplayer->m_pin3d.m_dwRenderHeight*(float)(1.0/600.0);
 
 	// Set the position.  
-	fX = ((float) g_pplayer->m_pin3d.m_dwRenderHeight) + (volume_adjustment_bar_pos[0] * sX);
+	//const float fX = ((float) g_pplayer->m_pin3d.m_dwRenderHeight) + (volume_adjustment_bar_pos[0] * sX);
 
 	// Set the width and height.
-	Width = volume_adjustment_bar_big_size[0] * sX;
+	const float Width = volume_adjustment_bar_big_size[0] * sX;
 
 	// Invalidate the window region to signal an update from the back buffer (after render is complete).
+	RECT	Rect;
 	Rect.top = (LONG) ((g_pplayer->m_pin3d.m_dwRenderHeight) + (volume_adjustment_bar_pos[0] * sX) + (Width));
 	Rect.left = 0;			
 	Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;

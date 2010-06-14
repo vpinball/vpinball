@@ -199,14 +199,14 @@ public:
     STDMETHOD(put_UpdateInterval)(/*[in]*/ long newVal);
     // methods
     STDMETHOD(Play)(/*[in]*/ SequencerState Animation, /*[in]*/ long TailLength, /*[in]*/ long Repeat, /*[in]*/ long Pause);
-    STDMETHOD(StopPlay)(void);
+    STDMETHOD(StopPlay)();
 
 	PinTable 		*m_ptable;
 	LightSeqData 	m_d;
     LightSeqUpdater *m_ptu;
 	LightSeqCenter	m_LightSeqCenter;
 
-    bool	RenderAnimation(void);
+    bool	RenderAnimation();
 
 private:
     void		SetupTracers(SequencerState Animation, long TailLength, long Repeat, long Pause);

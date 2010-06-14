@@ -287,4 +287,3 @@ void IEditable::InitScript()
 
 	GetPTable()->m_pcv->AddItem(GetScriptable(), fFalse);
 	}
-

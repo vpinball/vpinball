@@ -127,10 +127,10 @@ extern const WCHAR rgwzTypeName[][16];
 	virtual void Uncreate() {GetPTable()->m_vedit.RemoveElement((IEditable *)this); APCCONTROLUNDEFINE}
 
 #define STANDARD_DISPATCH_DECLARE \
-	inline IDispatch *GetDispatch(void) {return (IDispatch *)this;} \
+	inline IDispatch *GetDispatch() {return (IDispatch *)this;} \
 
 #define STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType) \
-	inline IFireEvents *GetIFireEvents(void) {return (IFireEvents *)this;} \
+	inline IFireEvents *GetIFireEvents() {return (IFireEvents *)this;} \
 	inline IDebugCommands *GetDebugCommands() {return NULL;} \
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
 	INITVBA(ItemType) \
@@ -164,8 +164,8 @@ extern const WCHAR rgwzTypeName[][16];
 	virtual void FireGroupEvent(int dispid) {FireVoidGroupEvent(dispid);}
 
 #define STANDARD_NON_DISPATCH_EDITABLE_DECLARES(ItemType) \
-	inline IDispatch *GetDispatch(void) {return (IDispatch *)this;} \
-	inline IFireEvents *GetIFireEvents(void) {return NULL;} \
+	inline IDispatch *GetDispatch() {return (IDispatch *)this;} \
+	inline IFireEvents *GetIFireEvents() {return NULL;} \
 	inline IDebugCommands *GetDebugCommands() {return NULL;} \
 	INITVBANODISPATCH
 	//virtual HRESULT InitVBA(BOOL fNew, int id) {return S_OK;}

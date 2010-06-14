@@ -2,10 +2,9 @@
 
 void ExtensionFromFilename(char *szfilename, char *szextension)
 	{
+	const int len = lstrlen(szfilename);
+
 	int begin;
-
-	int len = lstrlen(szfilename);
-
 	for (begin=len;begin>=0;begin--)
 		{
 		if (szfilename[begin] == '.')
@@ -25,10 +24,9 @@ void ExtensionFromFilename(char *szfilename, char *szextension)
 
 void TitleFromFilename(char *szfilename, char *sztitle)
 	{
-	int begin, end;
+	const int len = lstrlen(szfilename);
 
-	int len = lstrlen(szfilename);
-
+	int begin;
 	for (begin=len;begin>=0;begin--)
 		{
 		if (szfilename[begin] == '\\')
@@ -38,6 +36,7 @@ void TitleFromFilename(char *szfilename, char *sztitle)
 			}
 		}
 
+	int end;
 	for (end=len;end>=0;end--)
 		{
 		if (szfilename[end] == '.')
@@ -60,10 +59,9 @@ void TitleFromFilename(char *szfilename, char *sztitle)
 
 void PathFromFilename(char *szfilename, char *szpath)
 	{
-	int end;
-
-	int len = lstrlen(szfilename);
+	const int len = lstrlen(szfilename);
 	// find the last '\' in the filename
+	int end;
 	for (end=len;end>=0;end--)
 		{
 		if (szfilename[end] == '\\' || szfilename[end] == '/' )
@@ -87,10 +85,9 @@ void PathFromFilename(char *szfilename, char *szpath)
 	
 void TitleAndPathFromFilename(char *szfilename, char *szpath)
 	{
-	int end;
-
-	int len = lstrlen(szfilename);
+	const int len = lstrlen(szfilename);
 	// find the last '.' in the filename
+	int end;
 	for (end=len;end>=0;end--)
 		{
 		if (szfilename[end] == '.')
@@ -161,9 +158,7 @@ HRESULT BiffWriter::WriteBytes(const void *pv,unsigned long count,unsigned long 
 HRESULT BiffWriter::WriteRecordSize(int size)
 	{
 	ULONG writ = 0;
-	HRESULT hr = S_OK;
-
-	hr = m_pistream->Write(&size, sizeof(size), &writ);
+	HRESULT hr = m_pistream->Write(&size, sizeof(size), &writ);
 
 	return hr;
 	}
@@ -171,9 +166,9 @@ HRESULT BiffWriter::WriteRecordSize(int size)
 HRESULT BiffWriter::WriteInt(int id, int value)
 	{
 	ULONG writ = 0;
-	HRESULT hr = S_OK;
+	HRESULT hr;
 
-	if(FAILED(WriteRecordSize(sizeof(int)*2)))
+	if(FAILED(hr = WriteRecordSize(sizeof(int)*2)))
 		return hr;
 
 	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
@@ -187,12 +182,10 @@ HRESULT BiffWriter::WriteInt(int id, int value)
 HRESULT BiffWriter::WriteString(int id, char *szvalue)
 	{
 	ULONG writ = 0;
-	HRESULT hr = S_OK;
-	int len;
+	HRESULT hr;
+	int len = lstrlen(szvalue);
 
-	len = lstrlen(szvalue);
-
-	if(FAILED(WriteRecordSize(sizeof(int)*2 + len)))
+	if(FAILED(hr = WriteRecordSize(sizeof(int)*2 + len)))
 		return hr;
 
 	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
@@ -209,12 +202,10 @@ HRESULT BiffWriter::WriteString(int id, char *szvalue)
 HRESULT BiffWriter::WriteWideString(int id, WCHAR *wzvalue)
 	{
 	ULONG writ = 0;
-	HRESULT hr = S_OK;
-	int len;
+	HRESULT hr;
+	int len = lstrlenW(wzvalue) * sizeof(WCHAR);
 
-	len = lstrlenW(wzvalue) * sizeof(WCHAR);
-
-	if(FAILED(WriteRecordSize(sizeof(int)*2 + len)))
+	if(FAILED(hr = WriteRecordSize(sizeof(int)*2 + len)))
 		return hr;
 
 	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
@@ -231,9 +222,9 @@ HRESULT BiffWriter::WriteWideString(int id, WCHAR *wzvalue)
 HRESULT BiffWriter::WriteBool(int id, BOOL fvalue)
 	{
 	ULONG writ = 0;
-	HRESULT hr = S_OK;
+	HRESULT hr;
 
-	if(FAILED(WriteRecordSize(sizeof(int)*2)))
+	if(FAILED(hr = WriteRecordSize(sizeof(int)*2)))
 		return hr;
 
 	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
@@ -247,9 +238,9 @@ HRESULT BiffWriter::WriteBool(int id, BOOL fvalue)
 HRESULT BiffWriter::WriteFloat(int id, float value)
 	{
 	ULONG writ = 0;
-	HRESULT hr = S_OK;
+	HRESULT hr;
 
-	if(FAILED(WriteRecordSize(sizeof(int) + sizeof(float))))
+	if(FAILED(hr = WriteRecordSize(sizeof(int) + sizeof(float))))
 		return hr;
 
 	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
@@ -263,9 +254,9 @@ HRESULT BiffWriter::WriteFloat(int id, float value)
 HRESULT BiffWriter::WriteStruct(int id, void *pvalue, int size)
 	{
 	ULONG writ = 0;
-	HRESULT hr = S_OK;
+	HRESULT hr;
 
-	if(FAILED(WriteRecordSize(sizeof(int) + size)))
+	if(FAILED(hr = WriteRecordSize(sizeof(int) + size)))
 		return hr;
 
 	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
@@ -279,9 +270,9 @@ HRESULT BiffWriter::WriteStruct(int id, void *pvalue, int size)
 HRESULT BiffWriter::WriteTag(int id)
 	{
 	ULONG writ = 0;
-	HRESULT hr = S_OK;
+	HRESULT hr;
 
-	if(FAILED(WriteRecordSize(sizeof(int))))
+	if(FAILED(hr = WriteRecordSize(sizeof(int))))
 		return hr;
 
 	hr = WriteBytes(&id, sizeof(int), &writ);
@@ -304,9 +295,7 @@ BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata
 
 HRESULT BiffReader::ReadBytes(void *pv,unsigned long count,unsigned long *foo)
 	{
-	HRESULT hr;
-
-	hr = m_pistream->Read(pv, count, foo);
+	HRESULT hr = m_pistream->Read(pv, count, foo);
 
 	if (m_hcrypthash)
 		{
@@ -453,14 +442,14 @@ long __stdcall FastIStorage::QueryInterface(const struct _GUID &,void ** )
 	return S_OK;
 	}
 
-unsigned long __stdcall FastIStorage::AddRef(void)
+unsigned long __stdcall FastIStorage::AddRef()
 	{
 	m_cref++;
 
 	return S_OK;
 	}
 
-unsigned long __stdcall FastIStorage::Release(void)
+unsigned long __stdcall FastIStorage::Release()
 	{
 	m_cref--;
 
@@ -553,7 +542,7 @@ long __stdcall FastIStorage::Commit(unsigned long)
 	return S_OK;
 	}
 
-long __stdcall FastIStorage::Revert(void)
+long __stdcall FastIStorage::Revert()
 	{
 	return S_OK;
 	}
@@ -636,14 +625,14 @@ long __stdcall FastIStream::QueryInterface(const struct _GUID &,void ** )
 	return S_OK;
 	}
 
-unsigned long __stdcall FastIStream::AddRef(void)
+unsigned long __stdcall FastIStream::AddRef()
 	{
 	m_cref++;
 
 	return S_OK;
 	}
 
-unsigned long __stdcall FastIStream::Release(void)
+unsigned long __stdcall FastIStream::Release()
 	{
 	m_cref--;
 
@@ -724,7 +713,7 @@ long __stdcall FastIStream::Commit(unsigned long)
 	return S_OK;
 	}
 
-long __stdcall FastIStream::Revert(void)
+long __stdcall FastIStream::Revert()
 	{
 	return S_OK;
 	}

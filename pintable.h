@@ -332,7 +332,7 @@ public:
 	virtual BOOL LoadToken(int id, BiffReader *pbr);
 
 	virtual IDispatch *GetPrimary() {return this->GetDispatch();}
-	virtual IDispatch *GetDispatch(void) {return (IDispatch *)this;}
+	virtual IDispatch *GetDispatch() {return (IDispatch *)this;}
 	virtual IFireEvents *GetIFireEvents() {return (IFireEvents *)this;}
 	virtual IDebugCommands *GetDebugCommands() {return NULL;}
 
@@ -446,8 +446,8 @@ END_CONNECTION_POINT_MAP()
 	BOOL m_plungerFilter;
 	int m_PhysicsLoopTime;
 
-    static int m_tblNumStartBalls;		// The number of balls that are on the table at startup minus the current player ball.
-	static int NumStartBalls( void );	// Returns the number of start balls.
+    static int m_tblNumStartBalls;	// The number of balls that are on the table at startup minus the current player ball.
+	static int NumStartBalls();		// Returns the number of start balls.
 
 	BOOL m_tblAccelerometer;		// true if electronic accelerometer enabled
 	BOOL m_tblAccelNormalMount;		// true is Normal Mounting (Left Hand Coordinates)

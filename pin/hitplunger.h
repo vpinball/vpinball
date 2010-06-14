@@ -15,7 +15,7 @@ public:
 
 	void SetObjects(float len);
 
-	float mechPlunger(void);// Returns mechanical plunger position 0 at rest, +1 pulled (fully extended)
+	float mechPlunger();// Returns mechanical plunger position 0 at rest, +1 pulled (fully extended)
 
 	LineSeg m_linesegBase;
 	LineSeg m_linesegEnd;

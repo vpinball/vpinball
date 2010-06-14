@@ -114,7 +114,7 @@ VPinball::VPinball()
 
 VPinball::~VPinball()
 	{
-//	DLL_API void DLL_CALLCONV FreeImage_DeInitialise(void); //remove FreeImage support BDS
+//	DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
 	SetClipboard(NULL);
 
 	Scintilla_ReleaseResources();
@@ -147,7 +147,7 @@ void VPinball::GetMyPath()
 bool VPinball::m_open_minimized;
 int VPinball::NumPlays;
 
-void VPinball::SetOpenMinimized( void )
+void VPinball::SetOpenMinimized()
 {
 	m_open_minimized = 1;
 }
@@ -596,7 +596,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE) == fTrue)
+				if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE))
 					{
 					ShowPermissionError();
 					}
@@ -617,7 +617,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING) == fTrue)
+				if (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING))
 					{
 					ShowPermissionError();
 					}
@@ -697,7 +697,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 				ptCur = GetActiveTable();
 				if (ptCur)
 					{
-					if (ptCur->CheckPermissions(DISABLE_TABLEVIEW) == fFalse)
+					if (!ptCur->CheckPermissions(DISABLE_TABLEVIEW))
 						{
 						m_sb.CreateFromDispatch(m_hwnd, &ptCur->m_vmultisel);
 						}
@@ -753,7 +753,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_TABLEVIEW) == fFalse)
+				if (!ptCur->CheckPermissions(DISABLE_TABLEVIEW))
 					{
 					// Set selection to something in the new view (unless hiding table elements)
 					ptCur->AddMultiSel((ISelect *)ptCur, fFalse, fTrue);
@@ -816,7 +816,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE) == fTrue)
+				if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
 					{
 					ShowPermissionError();
 					}
@@ -835,7 +835,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE) == fTrue)
+				if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
 					{
 					ShowPermissionError();
 					}
@@ -854,8 +854,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if ( (ptCur->CheckPermissions(DISABLE_TABLE_SAVE) == fTrue) ||
-					 (ptCur->CheckPermissions(DISABLE_TABLE_SAVEPROT) == fTrue) )
+				if ( (ptCur->CheckPermissions(DISABLE_TABLE_SAVE)) ||
+					 (ptCur->CheckPermissions(DISABLE_TABLE_SAVEPROT)) )
 					{
 					ShowPermissionError();
 					}
@@ -864,7 +864,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 					int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_PROTECT_DIALOG),
 						  m_hwnd, ProtectTableProc, 0);
 					// if the dialog returned ok then perform a normal save as
-					if (foo == TRUE)
+					if (foo)
 						{
 						foo = ptCur->SaveAs();
 						if (foo == S_OK)
@@ -892,7 +892,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 				int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_UNLOCK_DIALOG),
 					  m_hwnd, UnlockTableProc, 0);
 				// if the dialog returned ok then table is unlocked
-				if (foo == TRUE)
+				if (foo)
 					{
 					// re-enable any disabled menu items
 					SetEnableToolbar();			// disable any tool bars
@@ -940,7 +940,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE) == fTrue)
+				if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE))
 					{
 					ShowPermissionError();
 					}
@@ -982,7 +982,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE) == fTrue)
+				if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
 					{
 					ShowPermissionError();
 					}
@@ -1064,7 +1064,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS) == fTrue)
+				if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
 					{
 					ShowPermissionError();
 					}
@@ -1085,7 +1085,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS) == fTrue)
+				if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
 					{
 					ShowPermissionError();
 					}
@@ -1108,7 +1108,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS) == fTrue)
+				if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
 					{
 					ShowPermissionError();
 					}
@@ -1130,7 +1130,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS) == fTrue)
+				if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
 					{
 					ShowPermissionError();
 					}
@@ -1202,7 +1202,7 @@ void VPinball::SetEnablePalette()
 	// ensure all menu and toolbars are disabled.
 	if (ptCur)
 		{
-		if (ptCur->CheckPermissions(DISABLE_TABLEVIEW) == fTrue)
+		if (ptCur->CheckPermissions(DISABLE_TABLEVIEW))
 			{
 			fTableActive = fFalse;
 			}
@@ -1267,7 +1267,7 @@ void VPinball::SetEnableToolbar()
 
 		if (ptCur)
 			{
-			if ((id == ID_EDIT_SCRIPT) && (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING) == fTrue))
+			if ((id == ID_EDIT_SCRIPT) && (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING)))
 				{
 					fEnable = fFalse;
 				}
@@ -1389,7 +1389,7 @@ void VPinball::LoadFileName(char *szFileName)
 
 		// get the load path from the filename
 		PathFromFilename(szFileName, szLoadDir);
-		(void)SetRegValue("RecentDir","LoadDir", REG_SZ, szLoadDir, strlen(szLoadDir));
+		SetRegValue("RecentDir","LoadDir", REG_SZ, szLoadDir, strlen(szLoadDir));
 
 		// make sure the load directory is the active directory
 		DWORD err = SetCurrentDirectory(szLoadDir);
@@ -1430,7 +1430,7 @@ BOOL VPinball::FCanClose()
 		{
 		fCanClose = CloseTable(m_vtable.ElementAt(0));
 
-		if (fCanClose == fFalse)
+		if (!fCanClose)
 			{
 			return fFalse;
 			}
@@ -1443,7 +1443,7 @@ BOOL VPinball::FCanClose()
 
 BOOL VPinball::CloseTable(PinTable *ppt)
 {
-	if ((ppt->FDirty()) && (ppt->CheckPermissions(DISABLE_TABLE_SAVE) == fFalse) )
+	if ((ppt->FDirty()) && (!ppt->CheckPermissions(DISABLE_TABLE_SAVE)) )
 		{
 		LocalString ls1(IDS_SAVE_CHANGES1);
 		LocalString ls2(IDS_SAVE_CHANGES2);
@@ -1488,19 +1488,16 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 	SetEnableMenuItems();
 
 	return fTrue;
-
 }
 
 
 BOOL VPinball::FDefaultCheckBlit()
 {
+	const DWORD ver = GetVersion();
 
-	DWORD ver = GetVersion();
-
-	BOOL fCheckBlt = (ver & 0x80000000) != 0; // check blt status on Win9x
+	const bool fCheckBlt = ((ver & 0x80000000) != 0); // check blt status on Win9x
 
 	return fCheckBlt;
-
 }
 
 
@@ -1590,7 +1587,7 @@ void VPinball::SetEnableMenuItems()
 		EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_ENABLED);
 
 		// enable/disable save options
-		if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE) == fTrue)
+		if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
 			{
 			flags = MF_BYCOMMAND | MF_GRAYED;
 			}
@@ -1605,14 +1602,14 @@ void VPinball::SetEnableMenuItems()
 
 		// if we can do a normal save but not a protected save then disable 'save as protected'
 		// (if we cant do any saves it is already disabled)
-		if ( (ptCur->CheckPermissions(DISABLE_TABLE_SAVE) == fFalse)	&&
-			 (ptCur->CheckPermissions(DISABLE_TABLE_SAVEPROT) == fTrue) )
+		if ( (!ptCur->CheckPermissions(DISABLE_TABLE_SAVE))	&&
+			 (ptCur->CheckPermissions(DISABLE_TABLE_SAVEPROT)) )
 			{
 			EnableMenuItem(hmenu, IDM_SAVEASPROTECTED, MF_BYCOMMAND | MF_GRAYED);
 			}
 
 		// enable/disable script option
-		if (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING) == fTrue)
+		if (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING))
 			{
 			flags = MF_BYCOMMAND | MF_GRAYED;
 			}
@@ -1623,7 +1620,7 @@ void VPinball::SetEnableMenuItems()
 		EnableMenuItem(hmenu, ID_EDIT_SCRIPT, flags);
 
 		// enable/disable managers options
-		if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS) == fTrue)
+		if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
 			{
 			flags = MF_BYCOMMAND | MF_GRAYED;
 			}
@@ -1637,7 +1634,7 @@ void VPinball::SetEnableMenuItems()
 		EnableMenuItem(hmenu, ID_TABLE_COLLECTIONMANAGER, flags);
 
 		// enable/disable editing options
-		if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE) == fTrue)
+		if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE))
 			{
 			flags = MF_BYCOMMAND | MF_GRAYED;
 			}
@@ -1651,7 +1648,7 @@ void VPinball::SetEnableMenuItems()
 		EnableMenuItem(hmenu, ID_DELETE, flags);
 
 		// if the table is protected enable the unlock and disable 'save as protected' always
-		if (ptCur->IsTableProtected() == fTrue)
+		if (ptCur->IsTableProtected())
 			{
 			EnableMenuItem(hmenu, IDM_SAVEASPROTECTED, MF_BYCOMMAND | MF_GRAYED);
 			EnableMenuItem(hmenu, IDM_UNLOCKPROTECTED, MF_BYCOMMAND | MF_ENABLED);
@@ -1712,7 +1709,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 
 		// if the entry is already in the list then copy all the items above it down one position
 		int index;
-		if (bFound == fTrue)
+		if (bFound)
 			{
 			index = i-1;
 			}
@@ -1854,7 +1851,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 				}
 			}
 
-		if (*pfConsumed != TRUE)
+		if (!(*pfConsumed))
 			{
 			int fTranslated = TranslateAccelerator(m_hwnd, g_haccel, pmsg);
 
@@ -1864,7 +1861,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 				}
 			}
 
-		if (*pfConsumed != TRUE)
+		if (!(*pfConsumed))
 			{
 			const int fTranslated = TranslateMessage(pmsg);
 			}
@@ -2023,7 +2020,7 @@ HRESULT VPinball::GetTypeLibInfo
 }
 
 
-STDMETHODIMP_(ULONG) VPinball::AddRef ( void )
+STDMETHODIMP_(ULONG) VPinball::AddRef ()
 {
 
 	ASSERT(m_cref, "bad m_cref");
@@ -2032,7 +2029,7 @@ STDMETHODIMP_(ULONG) VPinball::AddRef ( void )
 }
 
 
-STDMETHODIMP_(ULONG) VPinball::Release ( void )
+STDMETHODIMP_(ULONG) VPinball::Release ()
 {
 
 	ASSERT(m_cref, "bad m_cref");
@@ -2222,7 +2219,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 					if (pt)
 					{
-						if (pt->CheckPermissions(DISABLE_TABLEVIEW) == fTrue)
+						if (pt->CheckPermissions(DISABLE_TABLEVIEW))
 							{
 							break;
 							}
@@ -2381,7 +2378,7 @@ STDMETHODIMP VPinball::QuitPlayer(int CloseType)
 
 }
 
-STDMETHODIMP VPinball::StartShake(void)
+STDMETHODIMP VPinball::StartShake()
 {
 	if (g_pplayer) g_pplayer->m_ptable->StartShake();
 
@@ -2390,7 +2387,7 @@ STDMETHODIMP VPinball::StartShake(void)
 }
 
 
-STDMETHODIMP VPinball::StopShake(void)
+STDMETHODIMP VPinball::StopShake()
 {
 	if (g_pplayer) g_pplayer->m_ptable->StopShake();
 
@@ -2399,7 +2396,7 @@ STDMETHODIMP VPinball::StopShake(void)
 }
 
 
-void VPinball::Quit( void )
+void VPinball::Quit()
 {
 
 	if( g_pplayer ) g_pplayer->m_fCloseDown = fTrue;
@@ -2476,7 +2473,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				case LVN_ITEMCHANGED:
 					{
 					int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-					int fEnable = (count > 1) ? FALSE : TRUE;
+					int fEnable = !(count > 1);
 					EnableWindow(GetDlgItem(hwndDlg, IDC_REIMPORTFROM), fEnable);
 					EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), fEnable);
 					EnableWindow(GetDlgItem(hwndDlg, IDC_PLAY), fEnable);
@@ -2889,7 +2886,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					case LVN_ITEMCHANGED:
 						{
 						int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-						int fEnable = (count > 1) ? FALSE : TRUE;
+						int fEnable = !(count > 1);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_REIMPORTFROM), fEnable);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), fEnable);
 						//EnableWindow(GetDlgItem(hwndDlg, IDC_EXPORT), fEnable);
@@ -3425,8 +3422,8 @@ int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							ivci.pcszVerb = "open";
 							hres = pURL->InvokeCommand(&ivci);
 							pURL->Release();
-							return (SUCCEEDED(hres) ? TRUE : FALSE);*/
-							return (SUCCEEDED(hr) ? TRUE : FALSE);
+							return (SUCCEEDED(hres));*/
+							return (SUCCEEDED(hr));
 							}
 							break;
 						}
@@ -4148,7 +4145,7 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 								int ret = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_COLLECTION),
 									hwndDlg, CollectionProc, (long)&cds/*pcol*/);
 
-								if (ret == TRUE)
+								if (ret)
 									{
 									pt->SetNonUndoableDirty(eSaveDirty);
 									}
@@ -5545,16 +5542,9 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							int checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_MUSIC, BM_GETCHECK, 0, 0);
 							HWND hwndSlider = GetDlgItem(hwndDlg, IDC_MUSIC_SLIDER);
 							HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_MUSIC);
-							if (checked == BST_CHECKED)
-								{
-								EnableWindow(hwndSlider, TRUE);
-								EnableWindow(hwndText, TRUE);
-								}
-							else
-								{
-								EnableWindow(hwndSlider, FALSE);
-								EnableWindow(hwndText, FALSE);
-								}
+							
+							EnableWindow(hwndSlider, (checked == BST_CHECKED));
+							EnableWindow(hwndText, (checked == BST_CHECKED));
 							}
 							break;
 
@@ -5563,16 +5553,9 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							int checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_SOUND, BM_GETCHECK, 0, 0);
 							HWND hwndSlider = GetDlgItem(hwndDlg, IDC_SOUND_SLIDER);
 							HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SOUND);
-							if (checked == BST_CHECKED)
-								{
-								EnableWindow(hwndSlider, TRUE);
-								EnableWindow(hwndText, TRUE);
-								}
-							else
-								{
-								EnableWindow(hwndSlider, FALSE);
-								EnableWindow(hwndText, FALSE);
-								}
+							
+							EnableWindow(hwndSlider, (checked == BST_CHECKED));
+							EnableWindow(hwndText, (checked == BST_CHECKED));
 							}
 							break;
 						}
@@ -5754,7 +5737,7 @@ int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							HWND hwndView = GetDlgItem(hwndDlg,IDC_PROTECT_VIEWTABLE);
 							HWND hwndDebugger = GetDlgItem(hwndDlg,IDC_PROTECT_DEBUGGER);
 
-							int checkstate = (checked == BST_CHECKED) ? FALSE : TRUE;
+							int checkstate = !(checked == BST_CHECKED);
 
 							EnableWindow(hwndScript, checkstate);
 							EnableWindow(hwndSaveAs, checkstate);
@@ -5851,20 +5834,12 @@ int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								}
 
 							// has anything failed the sanity check?
-							if (fail == fFalse)
+							if (!fail)
 								{
 								// nope.. lets get started
 								PinTable *pt = g_pvp->GetActiveTable();
 								rc = pt->SetupProtectionBlock((unsigned char *)pw, flags);
-								if (rc == fTrue)
-									{
-									// and return happy
-									EndDialog(hwndDlg, TRUE);
-									}
-									else
-									{
-									EndDialog(hwndDlg, FALSE);
-									}
+								EndDialog(hwndDlg, rc);
 								}
 							}
 							break;
@@ -5936,7 +5911,7 @@ int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 								{
 								PinTable *pt = g_pvp->GetActiveTable();
 								rc = pt->UnlockProtectionBlock((unsigned char *)pw);
-								if (rc == fTrue)
+								if (rc)
 									{
 										LocalString ls(IDS_UNLOCK_SUCCESS);
 										MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONINFORMATION);
@@ -5966,4 +5941,3 @@ int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 	return FALSE;
 	}
-

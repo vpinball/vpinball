@@ -244,7 +244,7 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 									  , &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS), fFalse);
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			// Clear the texture by copying the color and z values from the "static" buffers.
 			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
@@ -279,7 +279,7 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pdds = pdds;
 		
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
 			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
@@ -495,7 +495,7 @@ STDMETHODIMP Plunger::MotionDevice(int *pVal)
 
 }
 
-//float mechPlunger(void);
+//float mechPlunger();
 extern float curMechPlungerPos;
 
 STDMETHODIMP Plunger::Position(int *pVal)
@@ -522,7 +522,7 @@ STDMETHODIMP Plunger::Fire()
 	{
 		// Check if this is an auto-plunger.
 		// They always use max strength (as in a button).
-		if ( m_d.m_autoPlunger == fTrue ) 
+		if ( m_d.m_autoPlunger ) 
 		{
 			// Use max strength.
 			// I don't understand where the strength for the button plunger is coming from.

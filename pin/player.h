@@ -89,14 +89,14 @@ public:
 	void DrawBallShadows();
 	void DrawBalls();
 
-	void DrawAcrylics(void);
+	void DrawAcrylics();
 
 	void PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime);
 
 	PINFLOAT UpdatePhysics(PINFLOAT dtime, Ball **pphitball);
 
 	void InvalidateRect(RECT *prc);
-	void DrawLightHack ( void );
+	void DrawLightHack ();
 
 	void EraseBall(Ball *pball);
 
@@ -114,13 +114,13 @@ public:
 	void RecomputePauseState();
 	void RecomputePseudoPauseState();
 
-	void UltraNudge(void);
+	void UltraNudge();
 	void UltraNudgeX( int x, int j );
 	void UltraNudgeY( int y, int j );
-	int  UltraNudgeGetTilt( void ); // returns non-zero when appropriate to set the tilt switch
+	int  UltraNudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
 
 #ifdef ULTRACADE
-	void UltraPlunger(void);
+	void UltraPlunger();
 	void mechPlungerIn( int z);		
 #endif
 
@@ -150,8 +150,6 @@ public:
 	Vector<HitObject> m_vdebugho;
 	HitOctree m_debugoctree;
 	Ball *m_pactiveballDebug;	// ball the debugger will use as Activeball when firing events
-
-#define ACCELANGLE 0; // (PI/2.0f)
 
 	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
 	BOOL m_AccelNormalMount;	//true if normal mounting (left hand coordinates)
@@ -290,9 +288,9 @@ private:
 	BOOL m_fShowFPS;
 public:
 
-	void ToggleFPS( void );
-	void DisableFPS( void );
-	void EnableFPS( void );
+	void ToggleFPS();
+	void DisableFPS();
+	void EnableFPS();
 #endif
 
 #ifdef LOG
@@ -325,13 +323,7 @@ public:
 	int m_pauseRefCount;
 	};
 
-F32 GetX( void ); // Get the -1.0f to +1.0f values from joystick input tilt sensor / ushock
-F32 GetY( void );
+F32 GetX(); // Get the -1.0f to +1.0f values from joystick input tilt sensor / ushock
+F32 GetY();
 
-int get_dongle_status( void );
-
-
-
-
-
-
+int get_dongle_status();

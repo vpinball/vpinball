@@ -8,12 +8,11 @@
 
 #include <time.h>
 
-static __forceinline U64 get_tick_count(void) {__asm rdtsc};
 static U64 sCpuSpeed;
 static U64 sCpuSpeed_1024_M;
 static U64 sStartTick;
 
-void wintimer_init(void)
+void wintimer_init()
 {
 	if( sCpuSpeed ) return;
 
@@ -45,7 +44,7 @@ void wintimer_init(void)
 //	debug_message("    main CPU speed: %ld MHz\n", sCpuSpeed / 1000000);
 }
 
-U64 usec(void)
+U64 usec()
 {
 	U64		usec_time;
 	U64		cur_tick;
@@ -60,7 +59,7 @@ U64 usec(void)
 	return (usec_time);
 }
 
-U32 msec(void)
+U32 msec()
 {
 	U64		usec_time;
 	U64		cur_tick;

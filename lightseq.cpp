@@ -319,7 +319,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				pLight->get_X(&x);
 				pLight->get_Y(&y);
 
-				if (pLight->m_fBackglass == fTrue)
+				if (pLight->m_fBackglass)
 				{
 					// if the light is on the backglass then scale up its Y position
 					y *= 2.666f; // 2 little devils ;-)
@@ -357,7 +357,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 //
 bool LightSeq::RenderAnimation()
 {
-	if (m_playInProgress == true)
+	if (m_playInProgress)
 	{
 	    if (g_pplayer->m_timeCur >= m_timeNextUpdate)
 		{
@@ -708,7 +708,7 @@ STDMETHODIMP LightSeq::Play(SequencerState Animation, long TailLength, long Repe
 	return rc;
 }
 
-STDMETHODIMP LightSeq::StopPlay(void)
+STDMETHODIMP LightSeq::StopPlay()
 {
 	LightState		state;
 	ItemTypeEnum	type;
@@ -1570,7 +1570,7 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 	}
 
 	// are we are in inverse mode (tail is the lead) or not?
-	if (inverse == true)
+	if (inverse)
 	{
 		_tracer	temp;
 		// swap the head and tail over

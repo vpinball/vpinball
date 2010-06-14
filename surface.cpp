@@ -243,7 +243,7 @@ void Surface::Render(Sur *psur)
 	m_rgvT = NULL;
 
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-	if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints == fTrue) )
+	if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
 		{
 		fDrawDragpoints = fTrue;
 		}
@@ -276,7 +276,7 @@ void Surface::Render(Sur *psur)
 			psur->SetBorderColor(RGB(0,255,0),fFalse,0);
 			}
 
-		if (fDrawDragpoints == fTrue)
+		if (fDrawDragpoints)
 			{
 			psur->SetObject(pdp);
 			psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -324,7 +324,7 @@ void Surface::RenderBlueprint(Sur *psur)
 
 void Surface::RenderShadow(ShadowSur *psur, float height)
 	{	
-	if ( (m_d.m_fCastsShadow != fTrue) || (m_ptable->m_fRenderShadows == fFalse) )
+	if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
 		return;
 
 	psur->SetFillColor(RGB(0,0,0));
@@ -394,7 +394,6 @@ void Surface::GetHitShapes(Vector<HitObject> *pvho)
 
 	m_fIsDropped = fFalse;
 	m_fDisabled = fFalse;
-		
 	}
 
 void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
@@ -728,7 +727,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		{
 		LineSegSlingshot * const plinesling = m_vlinesling.ElementAt(i);
 		
-		plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation == fTrue); //rlc
+		plinesling->m_slingshotanim.m_fAnimations = m_d.m_fSlingshotAnimation; //rlc
 
 		pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET,0x00000000, 1.0f, 0L );
 
@@ -787,7 +786,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &plinesling->m_slingshotanim.m_znear, &plinesling->m_slingshotanim.m_zfar, 6, fFalse);
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			// Clear the texture by copying the color and z values from the "static" buffers.
 			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
@@ -852,7 +851,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
 			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
@@ -893,7 +892,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			RECT	Rect;
 
@@ -1371,7 +1370,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
 		
 		// Check if we are a floor... in which case we don't want to affect z.
-		if (m_d.m_fFloor == fFalse)
+		if (!m_d.m_fFloor)
 			{
 			// Create the z surface.
 			pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
@@ -1379,7 +1378,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			}
 
 		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit == fTrue)
+		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
 			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
@@ -2017,7 +2016,7 @@ STDMETHODIMP Surface::put_CanDrop(VARIANT_BOOL newVal)
 {
 	if(!m_d.m_fInner)
 		{
-		if(!m_d.m_fDroppable) return S_OK;			//can not drop outer wall
+		if(!m_d.m_fDroppable) return S_OK;		//can not drop outer wall
 		else 
 			{
 			newVal = fFalse;						 // always force to false and cause update pending
@@ -2093,8 +2092,8 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 			// In the case of player lights, the light is on... then immediately turned off.
 			// I don't know why this behavior happens; but it's causing problems.
 			
-			if ( (m_fIsDropped == TRUE) &&
-				 (g_pplayer->m_LightHackReadyForDrawLightHackFn[index] == FALSE) )
+			if ( (m_fIsDropped) &&
+				 (!g_pplayer->m_LightHackReadyForDrawLightHackFn[index]) )
 			{
 				// Set the value.
 				g_pplayer->m_LightHackCurrentState[index] = m_fIsDropped;

@@ -496,7 +496,7 @@ void SmartBrowser::SetVisible(BOOL fVisible)
 
 BOOL SmartBrowser::GetVisible()
 	{
-	return IsWindowVisible(m_hwndFrame) ? fTrue : fFalse;
+	return IsWindowVisible(m_hwndFrame);
 	}
 
 void SmartBrowser::DrawHeader(HDC hdc)
@@ -1306,7 +1306,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					char szstyle[256];
 
 					// Set up logfont to be like our current font
-					IFontDisp *pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);;
+					IFontDisp *pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);
 					IFont *pif;
 					pifd->QueryInterface(IID_IFont, (void **)&pif);
 
@@ -1326,7 +1326,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					cf.Flags = CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT;
 					if (ChooseFont(&cf))
 						{
-						IFontDisp *pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);;
+						IFontDisp *pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);
 						IFont *pif;
 						pifd->QueryInterface(IID_IFont, (void **)&pif);
 

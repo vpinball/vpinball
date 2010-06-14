@@ -4,10 +4,10 @@
 // What's your prob plumb? 
 #undef  DEBUG_PLUMB
 
-#define	VELOCITY_EPSILON		0.050f			// The threshold for zero velocity.
+#define	VELOCITY_EPSILON 0.050f			// The threshold for zero velocity.
 
 
-static F32 ac = 0.75f; // aspect ratio correction
+const F32 ac = 0.75f; // aspect ratio correction
 static int tilted;
 
 typedef struct
@@ -31,7 +31,7 @@ void nudge_set_sensitivity( F32 sens )
     nudgesens = sens;
 }
 
-F32 nudge_get_sensitivity( void )
+F32 nudge_get_sensitivity()
 {
 	return( nudgesens );
 }
@@ -43,7 +43,7 @@ F32 nudge_get_sensitivity( void )
 // force of the hook, and the dampening force of the air.  Here, force is exerted only by the table tilting 
 // (the string) and dampening and friction forces are lumped together with a constant, and gravity is not 
 // present.
-void plumb_update( void )
+void plumb_update()
 {
     F32 &x = gPlumb.x;
     F32 &y = gPlumb.y;
@@ -51,7 +51,7 @@ void plumb_update( void )
     F32 &vy = gPlumb.vy;
     const F32 ax = sinf( ( GetX() - x ) * (float)( M_PI / 5.0 ) );
     const F32 ay = sinf( ( GetY() - y ) * (float)( M_PI / 5.0 ) );
-    static U32 stamp;
+    static U32 stamp = 0;
     
 	// Get the time since the last frame.
     const F32 dt = (F32)(((double)( msec() - stamp ) ) * 0.001 );
@@ -107,7 +107,7 @@ void plumb_update( void )
 }
 
 
-int plumb_tilted( void )
+int plumb_tilted()
 {
     if( tilted )
     {
@@ -118,16 +118,15 @@ int plumb_tilted( void )
     return 0;
 }
 
-static void
-draw_transparent_box( F32 sx, F32 sy, F32 x, F32 y, U32 color )
+void draw_transparent_box( F32 sx, F32 sy, F32 x, F32 y, U32 color )
 {
     sx *= ((float) g_pplayer->m_pin3d.m_dwRenderHeight)*(float)(1.0/600.0);
     sy *= ((float) g_pplayer->m_pin3d.m_dwRenderWidth )*(float)(1.0/800.0);
 
-	F32 r = ((float) ((color             ) >> 24)) *(float)(1.0/255.0);
-    F32 g = ((float) ((color & 0x00ff0000) >> 16)) *(float)(1.0/255.0);
-    F32 b = ((float) ((color & 0x0000ff00) >>  8)) *(float)(1.0/255.0);
-    F32 a = ((float) ((color & 0x000000ff)      )) *(float)(1.0/255.0);
+	const F32 r = ((float) ((color             ) >> 24)) *(float)(1.0/255.0);
+    const F32 g = ((float) ((color & 0x00ff0000) >> 16)) *(float)(1.0/255.0);
+    const F32 b = ((float) ((color & 0x0000ff00) >>  8)) *(float)(1.0/255.0);
+    const F32 a = ((float) ((color & 0x000000ff)      )) *(float)(1.0/255.0);
 
     Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
                         y, x,
@@ -139,8 +138,7 @@ draw_transparent_box( F32 sx, F32 sy, F32 x, F32 y, U32 color )
 }
 
 #ifdef DEBUG_PLUMB
-static void
-invalidate_box( F32 sx, F32 sy, F32 x, F32 y )
+void invalidate_box( F32 sx, F32 sy, F32 x, F32 y )
 {
 	RECT	Rect;
 
@@ -156,7 +154,7 @@ invalidate_box( F32 sx, F32 sy, F32 x, F32 y )
 F32 sPlumbPos[2] = { 300, 100 };
 static int dirty;
 
-void plumb_draw( void )
+void plumb_draw()
 {
 #ifdef DEBUG_PLUMB
 	RenderStateType		RestoreRenderState;
@@ -194,7 +192,7 @@ void plumb_draw( void )
 }
 
 // Flags that the region behind the mixer volume should be refreshed.
-void plumb_erase( void )
+void plumb_erase()
 {
 #ifdef DEBUG_PLUMB
     invalidate_box( 120, 120, sPlumbPos[0], sPlumbPos[1] );

@@ -59,8 +59,8 @@ class COleAuto : public IDispatch
 public:
   // *** IUnknown methods ***
   STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj) PURE;
-  STDMETHOD_(ULONG, AddRef)(void) PURE;
-  STDMETHOD_(ULONG, Release)(void) PURE;
+  STDMETHOD_(ULONG, AddRef)() PURE;
+  STDMETHOD_(ULONG, Release)() PURE;
 
   // *** IDispatch methods ***
   STDMETHOD(GetTypeInfoCount)(UINT* pctinfo);
@@ -73,13 +73,13 @@ public:
   //STDMETHOD(GetInfoOfIndex)(ULONG itinfo, DWORD dwFlags, ITypeInfo** pptinfoCoClass, DWORD* pdwTIFlags, ULONG* pcdispidReserved, IID* piidPrimary, IID* piidSource);
 
   // *** Pure virtual methods for derived class to implement ***
-  virtual ITypeInfo **GetTinfoClsAddr(void) PURE;
-  virtual ITypeInfo **GetTinfoIntAddr(void) PURE;
+  virtual ITypeInfo **GetTinfoClsAddr() PURE;
+  virtual ITypeInfo **GetTinfoIntAddr() PURE;
   virtual HRESULT GetTypeLibInfo(HINSTANCE *phinstOut, const GUID **pplibidOut, 
                                  SHORT *pwMajLibOut, SHORT *pwMinLibOut,
                                  const CLSID **ppclsidOut, const IID **ppiidOut, 
                                  ITypeLib ***ppptlOut) PURE;
-  virtual IDispatch *GetPrimary(void) PURE;
+  virtual IDispatch *GetPrimary() PURE;
 
   // *** Other methods for derived class to call ***
   HRESULT CheckTypeInfo(UINT itinfo, LCID lcid);

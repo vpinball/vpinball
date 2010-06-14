@@ -73,8 +73,8 @@ public:
 	virtual ~FastIStorage();
 
 	long __stdcall QueryInterface(const struct _GUID &,void ** );
-	unsigned long __stdcall AddRef(void);
-	unsigned long __stdcall Release(void);
+	unsigned long __stdcall AddRef();
+	unsigned long __stdcall Release();
 
 	long __stdcall CreateStream(const WCHAR *,unsigned long,unsigned long,unsigned long,struct IStream ** );
 	long __stdcall OpenStream(const WCHAR *,void *,unsigned long,unsigned long,struct IStream ** );
@@ -83,7 +83,7 @@ public:
 	long __stdcall CopyTo(unsigned long,const struct _GUID *,WCHAR ** ,struct IStorage *);
 	long __stdcall MoveElementTo(const WCHAR *,struct IStorage *,const WCHAR *,unsigned long);
 	long __stdcall Commit(unsigned long);
-	long __stdcall Revert(void);
+	long __stdcall Revert();
 	long __stdcall EnumElements(unsigned long,void *,unsigned long,struct IEnumSTATSTG ** );
 	long __stdcall DestroyElement(const WCHAR *);
 	long __stdcall RenameElement(const WCHAR *,const WCHAR *);
@@ -106,15 +106,15 @@ public:
 	virtual ~FastIStream();
 
 	long __stdcall QueryInterface(const struct _GUID &,void ** );
-	unsigned long __stdcall AddRef(void);
-	unsigned long __stdcall Release(void);
+	unsigned long __stdcall AddRef();
+	unsigned long __stdcall Release();
 	long __stdcall Read(void *pv,unsigned long count,unsigned long *foo);
 	long __stdcall Write(const void *pv,unsigned long count,unsigned long *foo);
 	long __stdcall Seek(union _LARGE_INTEGER,unsigned long,union _ULARGE_INTEGER *);
 	long __stdcall SetSize(union _ULARGE_INTEGER);
 	long __stdcall CopyTo(struct IStream *,union _ULARGE_INTEGER,union _ULARGE_INTEGER *,union _ULARGE_INTEGER *);
 	long __stdcall Commit(unsigned long);
-	long __stdcall Revert(void);
+	long __stdcall Revert();
 
 	long __stdcall LockRegion(union _ULARGE_INTEGER,union _ULARGE_INTEGER,unsigned long);
 	long __stdcall UnlockRegion(union _ULARGE_INTEGER,union _ULARGE_INTEGER,unsigned long);

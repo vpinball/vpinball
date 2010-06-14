@@ -3,7 +3,7 @@
 #ifndef ALTSTARTUPBALLCNT
 static int _balls_created;
 
-int Ball::NumInitted( void )  //
+int Ball::NumInitted()  //
 {
     return ( _balls_created );
 }

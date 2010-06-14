@@ -42,7 +42,7 @@ void ScriptGlobalTable::Init(PinTable *pt)
 
 // Returns the number of balls that are expected to be on the table
 // prior to a game start. 
-int PinTable::NumStartBalls( void )
+int PinTable::NumStartBalls()
 {
 
 	return ( PinTable::m_tblNumStartBalls );
@@ -113,7 +113,7 @@ STDMETHODIMP ScriptGlobalTable::QuitPlayer(int CloseType)
 }
 
 
-STDMETHODIMP ScriptGlobalTable::StartShake(void)
+STDMETHODIMP ScriptGlobalTable::StartShake()
 {
 	m_pt->StartShake();
 
@@ -121,7 +121,7 @@ STDMETHODIMP ScriptGlobalTable::StartShake(void)
 }
 
 
-STDMETHODIMP ScriptGlobalTable::StopShake(void)
+STDMETHODIMP ScriptGlobalTable::StopShake()
 {
 	m_pt->StopShake();
 
@@ -740,12 +740,12 @@ PinTable::PinTable()
 
 	m_tiltsens = 0.40f;
 	hr = GetRegInt("Player", "TiltSensitivity", &tmp);
-	if (hr == S_OK) m_tiltsens = (float)tmp/1000.0f;	
+	if (hr == S_OK) m_tiltsens = (float)tmp*(float)(1.0/1000.0);	
     plumb_set_sensitivity( m_tiltsens );
 
 	m_nudgesens = 0.50f;
 	hr = GetRegInt("Player", "NudgeSensitivity", &tmp);
-	if (hr == S_OK) m_nudgesens = (float)tmp/1000.0f;	
+	if (hr == S_OK) m_nudgesens = (float)tmp*(float)(1.0/1000.0);	
 	nudge_set_sensitivity( m_nudgesens );
 
 	m_units_coin1 = 1;
@@ -770,11 +770,11 @@ PinTable::PinTable()
 
 	m_globalDifficulty = 0;								// easy by default
 	hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
-	if (hr == S_OK) m_globalDifficulty = (float)tmp/100.0f;	
+	if (hr == S_OK) m_globalDifficulty = (float)tmp*(float)(1.0/100.0);
 
 	m_timeout = 0;								// easy by default
 	hr = GetRegInt("Player", "Timeout", &tmp);
-	if (hr == S_OK) m_timeout = tmp ? ((F32)tmp) / 60.0f : 0.0f;
+	if (hr == S_OK) m_timeout = (float)tmp*(float)(1.0/60.0);
 
 	tmp = 0;										
 	hr = GetRegInt("Player", "HardwareRender", &tmp);
@@ -810,15 +810,15 @@ PinTable::PinTable()
 
 	m_tblAccelAmp = 1.5f;								// Accelerometer gain 
 	hr = GetRegInt("Player", "PBWAccelGain", &tmp);
-	if (hr == S_OK) m_tblAccelAmp = (float)tmp/100.0f;
+	if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);
 
     m_tblAutoStart = 0.0f;
     hr = GetRegInt("Player", "Autostart", &tmp);
-    if( hr == S_OK ) m_tblAutoStart = tmp ? ((F32)tmp) / 100.0f : 0.0f;
+    if( hr == S_OK ) m_tblAutoStart = (float)tmp*(float)(1.0/100.0);
 
     m_tblAutoStartRetry = 0.0f;
     hr = GetRegInt("Player", "AutostartRetry", &tmp);
-    if( hr == S_OK ) m_tblAutoStartRetry = tmp ? ((F32)tmp) / 100.0f : 0.0f;
+    if( hr == S_OK ) m_tblAutoStartRetry = (float)tmp*(float)(1.0/100.0);
 
 	PinTable::m_tblNumStartBalls = 0;
     hr = GetRegInt("Player", "NumStartBalls", &tmp);
@@ -826,7 +826,7 @@ PinTable::PinTable()
 
     m_tblVolmod = 1.0f;
     hr = GetRegInt("Player", "Volmod", &tmp);
-    if( hr == S_OK ) m_tblVolmod = tmp ? ((F32)tmp) / 1000.0f : 0.0f;
+    if( hr == S_OK ) m_tblVolmod = (float)tmp*(float)(1.0/1000.0);
 
     m_tblAutoStartEnabled = 0;
     hr = GetRegInt("Player", "asenable", &tmp);
@@ -838,11 +838,11 @@ PinTable::PinTable()
 
     m_tblExitConfirm = 0.0f;
     hr = GetRegInt("Player", "Exitconfirm", &tmp);
-    if( hr == S_OK ) m_tblExitConfirm = tmp ? ((F32)tmp) / 60.0f : 0.0f;
+    if( hr == S_OK ) m_tblExitConfirm = (float)tmp*(float)(1.0/60.0);
 
 	m_tblAccelManualAmp = 3.5f;							// manual input gain, generally from joysticks
 	hr = GetRegInt("Player", "JoystickGain", &tmp);
-	if (hr == S_OK) m_tblAccelManualAmp = (float)tmp/100.0f;
+	if (hr == S_OK) m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
 
 	// Write the version of this exe to the registry.  
 	// This will be read later by the front end.
@@ -943,28 +943,14 @@ BOOL PinTable::FVerifySaveToClose()
 
 BOOL PinTable::CheckPermissions(unsigned long flag)
 	{
-	if ( ((m_protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) ||
-		 ((m_protectionData.flags & flag) 				== flag) 				)
-		{
-		return fTrue;	// cannot perform this operation
-		}
-	else
-		{
-		return fFalse;
-		}
+	return ( ((m_protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) ||
+		     ((m_protectionData.flags & flag) 				== flag) 				);
 	}
 
 
 BOOL PinTable::IsTableProtected()
 	{
-	if (m_protectionData.flags != 0)
-		{
-		return fTrue;	// table is protected
-		}
-	else
-		{
-		return fFalse;
-		}
+	return (m_protectionData.flags != 0);
 	}
 
 
@@ -1299,7 +1285,7 @@ void PinTable::Render(Sur *psur)
 
 	// can we view the table elements?? if not then draw a box for the table outline
 	// got to give the punters at least something to know that the table has loaded
-	if (CheckPermissions(DISABLE_TABLEVIEW) == fTrue)
+	if (CheckPermissions(DISABLE_TABLEVIEW))
 		{
 		float rleft, rtop, rright, rbottom;
 
@@ -1482,13 +1468,13 @@ void PinTable::Render3DProjection(Sur *psur)
 	}
 
 
-BOOL PinTable::GetDecalsEnabled( void )
+BOOL PinTable::GetDecalsEnabled()
 {
 	return m_fRenderDecals;
 }
 
 
-BOOL PinTable::GetEMReelsEnabled( void )
+BOOL PinTable::GetEMReelsEnabled()
 {
 	return m_fRenderEMReels;
 }
@@ -2596,7 +2582,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 		// save the script source code
 		bw.WriteTag(FID(CODE));
 		// if the script is protected then we pass in the proper cyptokey into the code savestream
-		if (CheckPermissions(DISABLE_SCRIPT_EDITING) == fTrue)
+		if (CheckPermissions(DISABLE_SCRIPT_EDITING))
 			{
 			m_pcv->SaveToStream(pstm, hcrypthash, hcryptkey);
 			}
@@ -3426,7 +3412,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(CODE))
 		{
 		// if the script is protected then we pass in the proper cyptokey into the code loadstream
-		if (CheckPermissions(DISABLE_SCRIPT_EDITING) == fTrue)
+		if (CheckPermissions(DISABLE_SCRIPT_EDITING))
 			{
 			m_pcv->LoadFromStream(pbr->m_pistream, pbr->m_hcrypthash, pbr->m_hcryptkey);
 			}
@@ -3953,14 +3939,14 @@ void PinTable::DoLButtonDown(int x,int y)
 		}
 
 	// if disabling table view then don't allow the table to be selected (thus bringing up table properties)
-	else if (CheckPermissions(DISABLE_TABLEVIEW) == fFalse)
+	else if (!CheckPermissions(DISABLE_TABLEVIEW))
 	// Normal click
 		{
 		ISelect *pisel = HitTest(x,y);
 
 		BOOL fAdd = (ksshift & 0x80000000) != 0;
 
-		if (pisel == (ISelect *)this && fAdd == fTrue)
+		if (pisel == (ISelect *)this && fAdd)
 			{
 			// Can not include the table in multi-select
 			// and table will not be unselected, because the
@@ -4541,7 +4527,7 @@ void PinTable::DoCodeViewCommand(int command)
 		{
 		case ID_SAVE:
 			// added by chris as part of table protection
-			if (CheckPermissions(DISABLE_TABLE_SAVE) == fFalse)
+			if (!CheckPermissions(DISABLE_TABLE_SAVE))
 				{
 				TableSave();
 				}
@@ -4720,7 +4706,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 	int viewflag;
 	int cpasted = 0;
 
-	if (CheckPermissions(DISABLE_CUTCOPYPASTE) == fTrue)
+	if (CheckPermissions(DISABLE_CUTCOPYPASTE))
 		{
 		g_pvp->ShowPermissionError();
 		return;
@@ -7025,7 +7011,7 @@ STDMETHODIMP PinTable::put_BackdropImage(BSTR newVal)
 
 STDMETHODIMP PinTable::get_Gravity(float *pVal)
 {
-	*pVal = m_Gravity/GRAVITYCONST;
+	*pVal = m_Gravity*(float)(1.0/GRAVITYCONST);
 
 	return S_OK;
 }
@@ -7039,9 +7025,9 @@ STDMETHODIMP PinTable::put_Gravity(float newVal )
 		m_Gravity = newVal*GRAVITYCONST;
 		float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
-		g_pplayer->m_mainlevel.m_gravity.x = (D3DVALUE)0; 
-		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)( sinf(ANGTORAD(slope))*m_Gravity); //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cosf(ANGTORAD(slope))*m_Gravity);
+		g_pplayer->m_mainlevel.m_gravity.x = 0; 
+		g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
+		g_pplayer->m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
 		}
 	else
 		{
@@ -7814,7 +7800,7 @@ STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 **						**
 \************************/
 
-void ScriptGlobalTable::SeqSoundInit(void)
+void ScriptGlobalTable::SeqSoundInit()
 {
 
 }

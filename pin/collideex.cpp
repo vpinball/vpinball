@@ -33,7 +33,7 @@ void BumperHitCircle::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	pball->CollideWall(phitnormal, m_elasticity, m_antifriction, m_scatter);	//reflect ball from wall
 
 	// if the bumper is disabled then don't activate the bumper
-	if (m_pbumper->m_fDisabled == fTrue)
+	if (m_pbumper->m_fDisabled)
 	{
 		return;
 	}

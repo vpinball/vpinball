@@ -80,16 +80,16 @@ public:
 	void UpdateRecentFileList(char *szfilename);	//>>> added by chris
 
 	STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
-	STDMETHOD_(ULONG, AddRef)(void);
-	STDMETHOD_(ULONG, Release)(void);
-	//inline IUnknown  *GetUnknown(void)  {return (IVisualPinball *)this;}
-	//inline IDispatch *GetDispatch(void) {return (IVisualPinball *)this;}
+	STDMETHOD_(ULONG, AddRef)();
+	STDMETHOD_(ULONG, Release)();
+	//inline IUnknown  *GetUnknown()  {return (IVisualPinball *)this;}
+	//inline IDispatch *GetDispatch() {return (IVisualPinball *)this;}
 
 	//DECLARE_STANDARD_DISPATCH();
 
 	HRESULT CheckTypeInfo(UINT itinfo, LCID lcid);
-	ITypeInfo **GetTinfoClsAddr(void) { return &m_ptinfoCls; }
-	ITypeInfo **GetTinfoIntAddr(void) { return &m_ptinfoInt; }
+	ITypeInfo **GetTinfoClsAddr() { return &m_ptinfoCls; }
+	ITypeInfo **GetTinfoIntAddr() { return &m_ptinfoInt; }
 
 	//virtual IDispatch *GetPrimary() {return this->GetDispatch(); }
 
@@ -119,7 +119,7 @@ public:
 	HANDLE PostWorkToWorkerThread(int workid, LPARAM lParam);
 
 	void SetAutoSaveMinutes(int minutes);
-	static void SetOpenMinimized( void );
+	static void SetOpenMinimized();
 
 	ULONG m_cref;
 	ITypeInfo *m_ptinfoCls;
@@ -182,8 +182,8 @@ public:
 
 	STDMETHOD(FireKnocker)(int Count);
 	STDMETHOD(QuitPlayer)(int CloseType);
-	STDMETHOD(StartShake)(void);
-	STDMETHOD(StopShake)(void);
+	STDMETHOD(StartShake)();
+	STDMETHOD(StopShake)();
 
 	HANDLE m_workerthread;
 	DWORD m_workerthreadid;

@@ -41,10 +41,10 @@ public:
 
 	void FireKeyEvent( int dispid, int keycode );
 
-	int  QueueFull   ( void );
-	int  QueueEmpty  ( void );
-	void AdvanceHead ( void ); // called from sep thread
-	void AdvanceTail ( void ); // called from thread sync'd with visuals as each keystroke is applied to the sim
+	int  QueueFull   ();
+	int  QueueEmpty  ();
+	void AdvanceHead (); // called from sep thread
+	void AdvanceTail (); // called from thread sync'd with visuals as each keystroke is applied to the sim
 
 	void                PushQueue( DIDEVICEOBJECTDATA *data, unsigned int app_data ); // called from sep thread
 	DIDEVICEOBJECTDATA *GetTail  ( U32 cur_sim_msec=0xffffffff ); // called from visually sync'd main thread
@@ -54,7 +54,7 @@ public:
     void autoexit( F32 secs );
     void autocoin( F32 secs );
     void button_exit( F32 secs );
-    void tilt_update( void );
+    void tilt_update();
 	void ProcessKeys(PinTable *ptable, U32 cur_sim_msec );
 
 	int GetNextKey();

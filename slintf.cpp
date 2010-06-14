@@ -8,12 +8,12 @@
 
 static int sbConsole;
 
-void slintf_init( void )
+void slintf_init()
 {
 	sbConsole = 0;
 }
 
-static const int MAX_CONSOLE_LINES = 5000;
+const int MAX_CONSOLE_LINES = 5000;
 
 void RedirectIoToConsole()
 {
@@ -88,7 +88,7 @@ void RedirectIoToConsole()
 //	ios::sync_with_stdio();
 }
 
-void slintf_popup_console( void )
+void slintf_popup_console()
 {
 	if( !sbConsole )
 	{
@@ -97,7 +97,7 @@ void slintf_popup_console( void )
 	}
 }
 
-void slintf_close_console( void )
+void slintf_close_console()
 {
 	if( sbConsole )
 	{
@@ -108,7 +108,7 @@ void slintf_close_console( void )
 
 #define MAX_SCREEN_BUFER_SIZE 8192
 
-static int file_exists( const char *filename )
+int file_exists( const char *filename )
 {
 	FILE *file = fopen( filename, "r" );
 
