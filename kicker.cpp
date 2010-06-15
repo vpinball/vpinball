@@ -610,7 +610,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 		m_phitkickercircle->m_pball->vx =  sinf(anglerad) * speed;
 		m_phitkickercircle->m_pball->vy = -cosf(anglerad) * speed;
 		m_phitkickercircle->m_pball->vz = speedz;
-		m_phitkickercircle->m_pball->fFrozen = fFalse;
+		m_phitkickercircle->m_pball->fFrozen = false;
 		m_phitkickercircle->m_pball = NULL;
 		}
 
@@ -848,7 +848,7 @@ void KickerHitCircle::Collide(Ball *pball, Vertex3Ds *phitnormal)
 			pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
 				
 			m_pball = pball;
-			pball->fFrozen = fTrue;			
+			pball->fFrozen = true;			
 
 			// Don't fire the hit event if the ball was just created
 			// Fire the event before changing ball attributes, so scripters can get a useful ball state

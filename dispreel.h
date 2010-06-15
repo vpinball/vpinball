@@ -189,8 +189,8 @@ public:
 	void    UpdateObjFrame();
 
 private:
-    float   getBoxWidth();
-    float   getBoxHeight();
+    float   getBoxWidth() const;
+    float   getBoxHeight() const;
     
 };
 

@@ -94,7 +94,7 @@ STANDARD_NONAPC_EDITABLE_DECLARES(eItemDecal)
 
 	void EnsureSize();
 	HFONT GetFont();
-	void GetTextSize(int *px, int *py);
+	void GetTextSize(int * const px, int * const py);
 
 	virtual IScriptable *GetScriptable() {return NULL;}
 

@@ -159,18 +159,14 @@ void Decal::GetTimers(Vector<HitTimer> *pvht)
 	IEditable::BeginPlay();
 	}
 
-void Decal::GetTextSize(int *px, int *py)
+void Decal::GetTextSize(int * const px, int * const py)
 	{
-	RECT rcOut;
-	int len = lstrlen(m_d.m_sztext);
-	int alignment;
-	HFONT hFont, hFontOld;
-	hFont = GetFont();
-	alignment = DT_LEFT;
+	const int len = lstrlen(m_d.m_sztext);
+	HFONT hFont = GetFont();
+	const int alignment = DT_LEFT;
 
-	HDC hdcNull;
-	hdcNull = GetDC(NULL);
-	hFontOld = (HFONT)SelectObject(hdcNull, hFont);
+	HDC hdcNull = GetDC(NULL);
+	HFONT hFontOld = (HFONT)SelectObject(hdcNull, hFont);
 
 	TEXTMETRIC tm;
 	GetTextMetrics(hdcNull, &tm);
@@ -182,6 +178,7 @@ void Decal::GetTextSize(int *px, int *py)
 		*px = 0;
 		for (int i=0;i<len;i++)
 			{
+			RECT rcOut;
 			rcOut.left = 0;
 			rcOut.top = 0;		//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
 			rcOut.right = 0x1;
@@ -194,6 +191,8 @@ void Decal::GetTextSize(int *px, int *py)
 	else
 		{
 		*py = tm.tmAscent;
+
+		RECT rcOut;
 		rcOut.left = 0;
 		rcOut.top = 0;			//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
 		rcOut.right = 0x1;
@@ -744,8 +743,6 @@ void Decal::EnsureSize()
 
 HFONT Decal::GetFont()
 	{
-	HFONT hFont;
-
 	LOGFONT lf;
 	ZeroMemory(&lf, sizeof(lf));
 	lf.lfHeight = -32;
@@ -758,7 +755,6 @@ HFONT Decal::GetFont()
 	WideCharToMultiByte(CP_ACP, 0, bstr, -1, lf.lfFaceName, LF_FACESIZE, NULL, NULL);
 
 	BOOL bl;
-
 	hr = m_pIFont->get_Bold(&bl);
 
 	lf.lfWeight = bl ? FW_BOLD : FW_NORMAL;
@@ -767,7 +763,7 @@ HFONT Decal::GetFont()
 
 	lf.lfItalic = bl;
 
-	hFont = CreateFontIndirect(&lf);
+	HFONT hFont = CreateFontIndirect(&lf);
 
 	return hFont;
 	}

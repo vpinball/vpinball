@@ -142,13 +142,12 @@ public:
 
 	FRect3D m_rcHitRect;
 
-	BOOL m_fEnabled;
-	int  m_ObjType;
+	BOOL  m_fEnabled;
+	int   m_ObjType;
 	void* m_pObj;
 	float m_elasticity;
 	float m_antifriction;
 	float m_scatter;
-
 	};
 
 class AnimObject
