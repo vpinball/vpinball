@@ -931,8 +931,6 @@ HRESULT Bumper::InitPostLoad()
 
 void Bumper::DrawFrame(BOOL fOn)
 	{
-	m_fOn = fOn;
-
 	m_pbumperhitcircle->m_bumperanim.m_iframedesired = fOn;
 	}
 

@@ -1705,7 +1705,7 @@ STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
 
 // Private functions
 //
-float DispReel::getBoxWidth()
+float DispReel::getBoxWidth() const
 {
     const float width =  m_d.m_reelcount * m_d.m_width
 					   + m_d.m_reelcount * m_d.m_reelspacing
@@ -1714,7 +1714,7 @@ float DispReel::getBoxWidth()
 }
 
 
-float DispReel::getBoxHeight()
+float DispReel::getBoxHeight() const
 {
     const float height = m_d.m_height
 					   + 2.0f * m_d.m_reelspacing; // spacing also includes edges

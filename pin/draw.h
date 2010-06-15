@@ -1,6 +1,6 @@
 #pragma once
 
-void DrawLine(HDC hdc, float x1, float y1, float x2, float y2);
-void DrawCircleAbsolute(HDC hdc, float x, float y, float radius);
-void DrawCircle(HDC hdc, float x, float y, float radius);
-void DrawArc(HDC hdc, float x, float y, float radius, float pt1x, float pt1y, float pt2x, float pt2y);
+void DrawLine(const HDC hdc, const float x1, const float y1, const float x2, const float y2);
+void DrawCircleAbsolute(const HDC hdc, const float x, const float y, const float radius);
+void DrawCircle(const HDC hdc, const float x, const float y, const float radius);
+void DrawArc(const HDC hdc, const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y);

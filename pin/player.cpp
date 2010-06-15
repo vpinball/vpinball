@@ -2710,8 +2710,6 @@ void Player::DrawBallShadows()
 
 		if (m_fBallShadows)
 			{
-			Vertex3D * const rgv3DShadow = pball->m_rgv3DShadow;
-
 			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
 			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
 			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
@@ -2761,6 +2759,7 @@ void Player::DrawBallShadows()
 
 			const float shadowradius = pball->radius*1.2f;
 
+			Vertex3D * const rgv3DShadow = pball->m_rgv3DShadow;
 			rgv3DShadow[0].x = pball->x - shadowradius + offsetx;
 			rgv3DShadow[0].y = pball->y - shadowradius + offsety;
 			rgv3DShadow[0].z = shadowz;
@@ -3065,7 +3064,7 @@ void Player::DrawBalls()
 					}
 			}
 
-			pball->m_fErase = fTrue;
+			pball->m_fErase = true;
 
 			// Mark ball rect as dirty for blitting to the screen
 			m_pin3d.ClearExtents(&pball->m_rcScreen[0], NULL, NULL);

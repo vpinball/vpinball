@@ -116,7 +116,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 	BumperData m_d;
 
 	BumperHitCircle *m_pbumperhitcircle;
-	BOOL m_fOn; // Whether the light is actually currently on (different than the state, because of blinking)
 
 	//int m_iblinkframe;
 	//int m_timenextblink;
@@ -172,4 +171,3 @@ public:
 };
 
 #endif // !defined(AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_)
-

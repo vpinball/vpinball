@@ -17,9 +17,7 @@ Ball::Ball()
 	m_pho = NULL;
 	m_pballex = NULL;
 	m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
-	m_contacts = 0;
-	m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1;
-	IsBlurReady = false;
+	m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
 	}
 
 Ball::~Ball()	
@@ -54,13 +52,7 @@ void Ball::Init()
 
 	m_ballanim.m_pball = this;
 
-	IsBlurReady = false;
-	prev_x = 0.0f;
-	prev_y = 0.0f;
-	prev_z = 0.0f;
-
-	fFrozen = fFalse;
-	m_contacts = 0;
+	fFrozen = false;
 
 	// world limits on ball displacements
 //	x_min = g_pplayer->m_ptable->m_left + radius;
@@ -70,7 +62,7 @@ void Ball::Init()
 	z_min = g_pplayer->m_ptable->m_tableheight + radius;
 	z_max = g_pplayer->m_ptable->m_glassheight - radius;
 
-	m_fErase = fFalse;
+	m_fErase = false;
 
 	m_pho = NULL;
 	m_fDynamic = C_DYNAMIC; //rlc assume dynamic
@@ -147,12 +139,11 @@ void Ball::CalcBoundingRect()
 	m_rcHitRect.zlow = min(z, z+vz);
 	m_rcHitRect.zhigh = max(z, z+vz);
 
-
 	m_rcHitRect.zhigh += radius + 0.1f;
 	m_rcHitRect.zlow -= radius /*+ 0.f*/;
 	}
 
-void Ball::CollideWall(Vertex3Ds *phitnormal, float m_elasticity, float antifriction, float scatter_angle)
+void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elasticity, float antifriction, float scatter_angle)
 	{
 	PINFLOAT dot = vx * phitnormal->x + vy * phitnormal->y; //speed normal to wall
 
@@ -208,7 +199,7 @@ void Ball::CollideWall(Vertex3Ds *phitnormal, float m_elasticity, float antifric
 	}
 
 
-void Ball::Collide3DWall(Vertex3Ds *phitnormal, float m_elasticity, float antifriction, float scatter_angle)
+void Ball::Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elasticity, float antifriction, float scatter_angle)
 	{
 	PINFLOAT dot = vx * phitnormal->x + vy * phitnormal->y + vz * phitnormal->z; //speed normal to wall
 
@@ -419,7 +410,7 @@ void Ball::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	pball->m_fDynamic = C_DYNAMIC;
 	}
 
-void Ball::AngularAcceleration(Vertex3Ds *phitnormal)
+void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	{
 	Vertex3Ds bccpd; // vector ball center to contact point displacement
 	bccpd.Set(-radius * phitnormal->x, -radius * phitnormal->y, -radius * phitnormal->z); //from ball center to contact point
@@ -538,9 +529,12 @@ void Ball::UpdateDisplacements(PINFLOAT dtime)
 				z = z_max/2; vz = 0;
 			}
 #endif
-		x += (dsx = vx * dtime);
-		y += (dsy = vy * dtime);		
-		z += (dsz = vz * dtime);
+		const float dsx = vx * dtime;
+		const float dsy = vy * dtime;
+		const float dsz = vz * dtime;
+		x += dsx;
+		y += dsy;
+		z += dsz;
 
 		drsq = dsx*dsx + dsy*dsy + dsz*dsz;				// used to determine if static ball
 
