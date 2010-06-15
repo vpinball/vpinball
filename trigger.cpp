@@ -389,10 +389,10 @@ const float rgtriggervertex[][3] = {
 const WORD rgtriggerface[][5] = {
 	0,2,4,6,8,
 	9,7,5,3,1,
-	0,1,3,2,-1,
-	2,3,5,4,-1,
-	4,5,7,6,-1,
-	6,7,9,8,-1
+	0,1,3,2,0xFFFF,
+	2,3,5,4,0xFFFF,
+	4,5,7,6,0xFFFF,
+	6,7,9,8,0xFFFF
 	};
 
 void Trigger::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)

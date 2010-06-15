@@ -4518,7 +4518,7 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 					}
 				}
 
-			SendMessage(hwndList, CB_SELECTSTRING, -1, (LPARAM)pt->m_szScreenShot);
+			SendMessage(hwndList, CB_SELECTSTRING, ~0u, (LPARAM)pt->m_szScreenShot);
 
 			// Set up custom info list
 				{

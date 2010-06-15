@@ -256,7 +256,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 												  rgv3D, 32,
 												  rgi, 32, 0);
 
-		for (int l=0;l<32;l++)
+			for (int l=0;l<32;l++)
 				{
 				WORD rgiNormal[3];
 				rgiNormal[0] = (l - 1 + 32) % 32;
@@ -266,7 +266,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgi[0] = l;
 				rgi[1] = l+32;
 				rgi[2] = (l+1) % 32 + 32;
-				rgi[3] = ((l+1) % 32);
+				rgi[3] = (l+1) % 32;
 
 				SetNormal(&rgv3D[32], rgiNormal, 3, NULL, rgi, 2);
 
@@ -291,7 +291,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgi[0] = l;
 				rgi[1] = l+32;
 				rgi[2] = (l+1) % 32 + 32;
-				rgi[3] = ((l+1) % 32);
+				rgi[3] = (l+1) % 32;
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
@@ -470,7 +470,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgi[0] = l;
 				rgi[1] = l+32;
 				rgi[2] = (l+1) % 32 + 32;
-				rgi[3] = ((l+1) % 32);
+				rgi[3] = (l+1) % 32;
 
 				SetNormal(&rgv3D[64], rgiNormal, 3, NULL, rgi, 2);
 
@@ -527,7 +527,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					l,
 					l+32,
 					(l+1) % 32 + 32,
-					((l+1) % 32)};
+					(l+1) % 32};
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
@@ -657,7 +657,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					rgi[0] = l;
 					rgi[1] = l+32;
 					rgi[2] = (l+1) % 32 + 32;
-					rgi[3] = ((l+1) % 32);
+					rgi[3] = (l+1) % 32;
 
 					SetNormal(&rgv3D[64], rgiNormal, 3, NULL, rgi, 2);
 

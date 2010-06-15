@@ -707,7 +707,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 					{
 					// Entry must be on the list - search for existing match
 
-					const int index = SendMessage(hwndControl, CB_FINDSTRINGEXACT, -1,
+					const int index = SendMessage(hwndControl, CB_FINDSTRINGEXACT, ~0u,
 							(LPARAM)szT);
 
 					if (index == CB_ERR)
