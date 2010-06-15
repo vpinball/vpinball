@@ -1060,9 +1060,7 @@ void Light::MoveOffset(float dx, float dy)
 
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
-		CComObject<DragPoint> *pdp;
-
-		pdp = m_vdpoint.ElementAt(i);
+		CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 
 		pdp->m_v.x += dx;
 		pdp->m_v.y += dy;
@@ -1132,6 +1130,9 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
 	m_ptable = ptable;
+
+	m_fLockedByLS = fFalse;			//>>> added by chris
+	m_realState	= m_d.m_state;		//>>> added by chris
 
 	br.Load();
 	return S_OK;
