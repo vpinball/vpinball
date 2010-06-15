@@ -802,6 +802,9 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
 
 	m_ptable = ptable;
 
+	m_fLockedByLS = fFalse;			//>>> added by chris
+	m_realState	= m_d.m_state;		//>>> added by chris
+	
 	br.Load();
 
 	if (version < 41)
