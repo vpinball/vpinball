@@ -3,13 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 9.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VBATest", "VBATest.net2005.vcproj", "{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
 EndProject
 Global
-	GlobalSection(SubversionScc) = preSolution
-		Svn-Managed = True
-		Manager = AnkhSVN - Subversion Support for Visual Studio
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Profile|Win32 = Profile|Win32
+		Release MinDependency Fast|Win32 = Release MinDependency Fast|Win32
+		Release MinDependency Fast+SSE|Win32 = Release MinDependency Fast+SSE|Win32
 		Release MinDependency|Win32 = Release MinDependency|Win32
 		Release MinSize|Win32 = Release MinSize|Win32
 		Release|Win32 = Release|Win32
@@ -26,6 +24,10 @@ Global
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|Win32.Build.0 = Debug|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Profile|Win32.ActiveCfg = Profile|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Profile|Win32.Build.0 = Profile|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinDependency Fast|Win32.ActiveCfg = Release MinDependency Fast|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinDependency Fast|Win32.Build.0 = Release MinDependency Fast|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinDependency Fast+SSE|Win32.ActiveCfg = Release MinDependency Fast+SSE|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinDependency Fast+SSE|Win32.Build.0 = Release MinDependency Fast+SSE|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinDependency|Win32.ActiveCfg = Release MinDependency|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinDependency|Win32.Build.0 = Release MinDependency|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinSize|Win32.ActiveCfg = Release MinSize|Win32
@@ -49,6 +51,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
 	EndGlobalSection
 	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
 		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}

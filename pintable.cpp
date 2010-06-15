@@ -55,13 +55,11 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 #ifndef ULTRACADE
 	if (g_pplayer && (g_pplayer->m_nudgetime == 0))
 	{
-		float sn, cs;
-
-		sn = (float) sin (ANGTORAD(Angle));
-		cs = (float) cos (ANGTORAD(Angle));
+		const float sn = sinf(ANGTORAD(Angle));
+		const float cs = cosf(ANGTORAD(Angle));
 		
 		g_pplayer->m_NudgeX = -sn*Force;
-		g_pplayer->m_NudgeY = cs*Force;
+		g_pplayer->m_NudgeY =  cs*Force;
 		
 		g_pplayer->m_NudgeBackX = -g_pplayer->m_NudgeX;
 		g_pplayer->m_NudgeBackY = -g_pplayer->m_NudgeY;
@@ -71,16 +69,14 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 #else
 	if (g_pplayer && (g_pplayer->m_nudgetime == 0))
 	{
-		float sn, cs;
-
-		sn = (float) sin (ANGTORAD(Angle));
-		cs = (float) cos (ANGTORAD(Angle));
+		const float sn = sinf(ANGTORAD(Angle));
+		const float cs = cosf(ANGTORAD(Angle));
 		
 		//g_pplayer->m_NudgeX = -sn*Force;
 		//g_pplayer->m_NudgeY = cs*Force;
 		
-		g_pplayer->m_NudgeBackX = sn * Force;
-		g_pplayer->m_NudgeBackY = -(cs * Force);
+		g_pplayer->m_NudgeBackX =  sn * Force;
+		g_pplayer->m_NudgeBackY = -cs * Force;
 		
 		g_pplayer->m_nudgetime = 10;
 	}
@@ -179,8 +175,8 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str)
 			//lstrcatW(wz, str);
 
 			g_pplayer->m_pcsimpleplayer = new CSimplePlayer();
-			HRESULT hr;
-			hr = g_pplayer->m_pcsimpleplayer->Play(wz, g_pplayer->m_hSongCompletionEvent, &hr, g_pplayer->m_MusicVolume);
+			HRESULT phr;
+			const HRESULT hr = g_pplayer->m_pcsimpleplayer->Play(wz, g_pplayer->m_hSongCompletionEvent, &phr, g_pplayer->m_MusicVolume);
 			if (hr != S_OK)
 				{
 				g_pplayer->m_pcsimpleplayer->Release();
@@ -1607,12 +1603,12 @@ void PinTable::Play()
 		g_pplayer = new Player();
 		HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName, fCheckForCache);
 
-		c_Gravity  = m_Gravity;						// set physical constants
-		c_hardFriction  = 1.0f - m_hardFriction;	// convert to reciprocal
-		c_hardScatter  = m_hardScatter;
-		c_maxBallSpeedSqed  = m_maxBallSpeed*m_maxBallSpeed;
+		c_Gravity = m_Gravity;					// set physical constants
+		c_hardFriction = 1.0f - m_hardFriction;	// convert to reciprocal
+		c_hardScatter = m_hardScatter;
+		c_maxBallSpeedSqed = m_maxBallSpeed*m_maxBallSpeed;
 		c_dampingFriction = m_dampingFriction;
-		c_plungerNormalize  = m_plungerNormalize/1300.0f; 
+		c_plungerNormalize = m_plungerNormalize*(float)(1.0/1300.0);
 		c_plungerFilter  = m_plungerFilter != 0; 
 
 		const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
@@ -4036,7 +4032,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 		{
 		if (GetMenuItemCount(hmenu) > 0)
 			{
-			AppendMenu(hmenu, MF_SEPARATOR, -1, "");
+			AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
 			}
 		// TEXT
 		LocalString ls1(IDS_DRAWINFRONT);
@@ -6849,16 +6845,14 @@ STDMETHODIMP PinTable::Nudge(float Angle, float Force)
 #else
 	if (g_pplayer && (g_pplayer->m_nudgetime == 0))
 	{
-		float sn, cs;
-
-		sn = (float) sin (ANGTORAD(Angle));
-		cs = (float) cos (ANGTORAD(Angle));
+		const float sn = sinf(ANGTORAD(Angle));
+		const float cs = cosf(ANGTORAD(Angle));
 		
 		//g_pplayer->m_NudgeX = -sn*Force;
 		//g_pplayer->m_NudgeY = cs*Force;
 		
-		g_pplayer->m_NudgeBackX = sn * Force;
-		g_pplayer->m_NudgeBackY = -(cs * Force);
+		g_pplayer->m_NudgeBackX =  sn * Force;
+		g_pplayer->m_NudgeBackY = -cs * Force;
 		
 		g_pplayer->m_nudgetime = 10;
 	}
@@ -7023,7 +7017,7 @@ STDMETHODIMP PinTable::put_Gravity(float newVal )
 	if (g_pplayer)
 		{
 		m_Gravity = newVal*GRAVITYCONST;
-		float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
+		const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
 		g_pplayer->m_mainlevel.m_gravity.x = 0; 
 		g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
@@ -7046,11 +7040,10 @@ STDMETHODIMP PinTable::get_HardFriction(float *pVal)
 }
 
 STDMETHODIMP PinTable::put_HardFriction(float newVal )
-{
-	
+{	
 	STARTUNDO
 
-	if (newVal > 1) newVal = 1;
+	if (newVal > 1.0f) newVal = 1.0f;
 	else if (newVal < 0) newVal = 0;
 
 	m_hardFriction = newVal ;
@@ -7141,8 +7134,7 @@ STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal )
 {
 	STARTUNDO
 
-	BOOL tmp;
-	tmp = VBTOF(newVal);
+	BOOL tmp = VBTOF(newVal);
 	GetRegInt("Player", "PlungerFilter", &tmp);
 	m_plungerFilter = tmp != 0;
 
@@ -7261,7 +7253,7 @@ STDMETHODIMP PinTable::put_Rotation(float newVal)
 
 STDMETHODIMP PinTable::get_SlopeMax(float *pVal)
 {
-	if (m_angletiltMax == 726) m_angletiltMax = m_angletiltMin;
+	if (m_angletiltMax == 726.0f) m_angletiltMax = m_angletiltMin;
 	*pVal = m_angletiltMax;
 
 	return S_OK;
@@ -7272,11 +7264,11 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
 	if (g_pplayer)
 		{
 		m_angletiltMax = newVal;
-		float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
+		const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
-		g_pplayer->m_mainlevel.m_gravity.x = (D3DVALUE)0; 
-		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)( sinf(ANGTORAD(slope))*m_Gravity); //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cosf(ANGTORAD(slope))*m_Gravity);
+		g_pplayer->m_mainlevel.m_gravity.x = 0; 
+		g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
+		g_pplayer->m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
 		}
 	else
 		{
@@ -7286,7 +7278,6 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
 		}
 	return S_OK;
 }
-
 
 
 STDMETHODIMP PinTable::get_SlopeMin(float *pVal)
@@ -7301,11 +7292,11 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
 	if (g_pplayer)
 		{
 		m_angletiltMin = newVal;
-		float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
+		const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
-		g_pplayer->m_mainlevel.m_gravity.x = (D3DVALUE)0; 
-		g_pplayer->m_mainlevel.m_gravity.y = (D3DVALUE)( sinf(ANGTORAD(slope))*m_Gravity); //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = (D3DVALUE)(-cosf(ANGTORAD(slope))*m_Gravity);
+		g_pplayer->m_mainlevel.m_gravity.x = 0;
+		g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
+		g_pplayer->m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
 		}
 	else
 		{
@@ -7431,13 +7422,13 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
 	if (!g_pplayer)
 		{						//VP Editor
 		int tmp;
-		HRESULT hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
-		if (hr == S_OK) m_globalDifficulty = (float)tmp/100.0f;	
+		const HRESULT hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
+		if (hr == S_OK) m_globalDifficulty = (float)tmp*(float)(1.0/100.0);
 		else 
 			{
 			STARTUNDO
 			if (newVal < 0) newVal = 0;
-			else if (newVal > 1) newVal = 1;
+			else if (newVal > 1.0f) newVal = 1.0f;
 
 			m_globalDifficulty = newVal;
 			STOPUNDO
@@ -7458,7 +7449,7 @@ STDMETHODIMP PinTable::put_TableCaching(VARIANT_BOOL newVal)
 	if (!g_pplayer) 
 		{														//VP Editor
 		int tmp;
-		HRESULT hr = GetRegInt("Player", "TableRenderCaching", &tmp);
+		const HRESULT hr = GetRegInt("Player", "TableRenderCaching", &tmp);
 		if (hr == S_OK) m_TableCaching = tmp != 0;
 		else
 			{
@@ -7484,10 +7475,9 @@ STDMETHODIMP PinTable::put_TableCaching(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
-STDMETHODIMP PinTable::get_AlternateRender(VARIANT_BOOL *pVal)//TableCaching
+STDMETHODIMP PinTable::get_AlternateRender(VARIANT_BOOL *pVal) //TableCaching
 {
-	if (g_pvp) *pVal = FTOVB(g_pvp->m_pdd.m_fAlternateRender);							//VP Editor
-	else *pVal = FTOVB(false);	
+	*pVal = FTOVB((g_pvp) ? g_pvp->m_pdd.m_fAlternateRender : false); //VP Editor
 
 	return S_OK;
 }
@@ -7497,7 +7487,7 @@ STDMETHODIMP PinTable::put_AlternateRender(VARIANT_BOOL newVal)
 	if (!g_pplayer && g_pvp) 
 		{														//VP Editor
 		int tmp;
-		HRESULT hr = GetRegInt("Player", "AlternateRender", &tmp);
+		const HRESULT hr = GetRegInt("Player", "AlternateRender", &tmp);
 		if ((hr == S_OK) && (tmp == 1))
 			{
 			tmp = 0;
@@ -7514,10 +7504,9 @@ STDMETHODIMP PinTable::put_AlternateRender(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
-STDMETHODIMP PinTable::get_HardwareRender(VARIANT_BOOL *pVal)//TableCaching
+STDMETHODIMP PinTable::get_HardwareRender(VARIANT_BOOL *pVal) //TableCaching
 {
-	if (g_pvp) *pVal = FTOVB(g_pvp->m_pdd.m_fHardwareAccel);							//VP Editor
-	else *pVal = FTOVB(false);	
+	*pVal = FTOVB((g_pvp) ? g_pvp->m_pdd.m_fHardwareAccel : false);	//VP Editor
 
 	return S_OK;
 }
@@ -7527,7 +7516,7 @@ STDMETHODIMP PinTable::put_HardwareRender(VARIANT_BOOL newVal)
 	if (!g_pplayer && g_pvp) 
 		{														//VP Editor
 		int tmp;
-		HRESULT hr = GetRegInt("Player", "HardwareRender", &tmp);
+		const HRESULT hr = GetRegInt("Player", "HardwareRender", &tmp);
 		if (hr == S_OK) g_pvp->m_pdd.m_fHardwareAccel = tmp != 0;
 		else
 			{
@@ -7540,20 +7529,19 @@ STDMETHODIMP PinTable::put_HardwareRender(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
-STDMETHODIMP PinTable::get_UseD3DBlit(VARIANT_BOOL *pVal)//TableCaching
+STDMETHODIMP PinTable::get_UseD3DBlit(VARIANT_BOOL *pVal) //TableCaching
 {
-	if (g_pvp) *pVal = FTOVB(g_pvp->m_pdd.m_fUseD3DBlit);							//VP Editor
-	else *pVal = FTOVB(false);	
+	*pVal = FTOVB((g_pvp) ? g_pvp->m_pdd.m_fUseD3DBlit : false); //VP Editor
 
 	return S_OK;
 }
 
 STDMETHODIMP PinTable::put_UseD3DBlit(VARIANT_BOOL newVal)
 {
-	if (!g_pplayer  && g_pvp) 
+	if (!g_pplayer && g_pvp) 
 		{														//VP Editor
 		int tmp;
-		HRESULT hr = GetRegInt("Player", "UseD3DBlit", &tmp);
+		const HRESULT hr = GetRegInt("Player", "UseD3DBlit", &tmp);
 		if (hr == S_OK) g_pvp->m_pdd.m_fUseD3DBlit = tmp != 0;
 		else
 			{
@@ -7566,12 +7554,9 @@ STDMETHODIMP PinTable::put_UseD3DBlit(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
-
-
-STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)//
+STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 {
-	if (g_pplayer) *pVal = FTOVB(g_pplayer->m_fAccelerometer);	//VB Script
-	else *pVal = FTOVB(m_tblAccelerometer);						//VP Editor
+	*pVal = FTOVB((g_pplayer) ? g_pplayer->m_fAccelerometer : m_tblAccelerometer); //VB Script or VP Editor
 
 	return S_OK;
 }
@@ -7581,7 +7566,7 @@ STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 	if (g_pplayer) g_pplayer->m_fAccelerometer = VBTOF(newVal); //VB Script
 	else
 		{														//VP Editor
-		HRESULT hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
+		const HRESULT hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
 		if (hr == S_OK) m_tblAccelerometer = (BOOL)m_tblAccelerometer != fFalse;
 		else
 			{
@@ -7596,8 +7581,7 @@ STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_AccelNormalMount(VARIANT_BOOL *pVal)
 {
-	if (g_pplayer) *pVal = FTOVB(g_pplayer->m_AccelNormalMount); //VB Script
-	else *pVal = FTOVB(m_tblAccelNormalMount);					//VP Editor
+	*pVal = FTOVB((g_pplayer) ? g_pplayer->m_AccelNormalMount : m_tblAccelNormalMount); //VB Script or VP Editor
 
 	return S_OK;
 }
@@ -7607,7 +7591,7 @@ STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 	if (g_pplayer) g_pplayer->m_AccelNormalMount = VBTOF(newVal); //VB Script
 	else 
 		{			
-		HRESULT hr = GetRegInt("Player", "PBWNormalMount", &m_tblAccelNormalMount);
+		const HRESULT hr = GetRegInt("Player", "PBWNormalMount", &m_tblAccelNormalMount);
 		if (hr == S_OK) m_tblAccelNormalMount = (BOOL)m_tblAccelNormalMount != fFalse;
 		else
 			{
@@ -7621,18 +7605,18 @@ STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_AccelerometerAngle(float *pVal)
 {
-	if (g_pplayer) *pVal = g_pplayer->m_AccelAngle * (float)(180.0/M_PI);			//VB Script convert to radians
-	else *pVal = m_tblAccelAngle;										//VP Editor in degrees
+	*pVal = (g_pplayer) ? g_pplayer->m_AccelAngle * (float)(180.0/M_PI) : m_tblAccelAngle; //VB Script convert to radians or VP Editor in degrees
+	
 	return S_OK;
 }
 
 STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 {
-	if (g_pplayer) g_pplayer->m_AccelAngle = newVal * (float)(M_PI/180.0);	//VB Script conert to radians
+	if (g_pplayer) g_pplayer->m_AccelAngle = newVal * (float)(M_PI/180.0); //VB Script conert to radians
 	else
 		{	//VP Editor in degrees
 		int tmp;
-		HRESULT hr = GetRegInt("Player", "PBWRotation", &tmp);
+		const HRESULT hr = GetRegInt("Player", "PBWRotation", &tmp);
 		if (hr == S_OK) m_tblAccelAngle = (float)tmp;
 		else 
 			{		
@@ -7646,8 +7630,7 @@ STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 
 STDMETHODIMP PinTable::get_AccelerometerAmp(float *pVal)
 {
-	if (g_pplayer) *pVal = g_pplayer->m_AccelAmp; //VB Script
-	else *pVal = m_tblAccelAmp;						//VP Editor
+	*pVal = (g_pplayer) ? g_pplayer->m_AccelAmp : m_tblAccelAmp; //VB Script or VP Editor
 
 	return S_OK;
 }
@@ -7658,8 +7641,8 @@ STDMETHODIMP PinTable::put_AccelerometerAmp(float newVal)
 	else
 		{						//VP Editor
 		int tmp;
-		HRESULT hr = GetRegInt("Player", "PBWAccelGain", &tmp);
-		if (hr == S_OK) m_tblAccelAmp = (float)tmp/100.0f;
+		const HRESULT hr = GetRegInt("Player", "PBWAccelGain", &tmp);
+		if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);
 		else 
 			{
 			STARTUNDO
@@ -7672,8 +7655,7 @@ STDMETHODIMP PinTable::put_AccelerometerAmp(float newVal)
 
 STDMETHODIMP PinTable::get_AccelerManualAmp(float *pVal)
 {
-	if (g_pplayer) *pVal = g_pplayer->m_AccelMAmp; //VB Script
-	else *pVal = m_tblAccelManualAmp;						//VP Editor
+	*pVal = (g_pplayer) ? g_pplayer->m_AccelMAmp : m_tblAccelManualAmp; //VB Script or VP Editor
 
 	return S_OK;
 }
@@ -7684,8 +7666,8 @@ STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
 	else
 		{						//VP Editor		
 		int tmp;
-		HRESULT hr = GetRegInt("Player", "JoystickGain", &tmp);
-		if (hr == S_OK) m_tblAccelManualAmp = (float)tmp/100.0f;
+		const HRESULT hr = GetRegInt("Player", "JoystickGain", &tmp);
+		if (hr == S_OK) m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
 		else
 			{
 			STARTUNDO
@@ -7700,8 +7682,7 @@ STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
 
 STDMETHODIMP PinTable::get_JoltAmount(int *pVal)
 {
-	if (g_pplayer) *pVal = (int)g_pplayer->m_jolt_amount;	//VB Script
-	else *pVal = m_jolt_amount;								//VP Editor
+	*pVal = (g_pplayer) ? g_pplayer->m_jolt_amount : m_jolt_amount;	//VB Script or VP Editor
 
 	return S_OK;
 }
@@ -7711,7 +7692,7 @@ STDMETHODIMP PinTable::put_JoltAmount(int newVal)
 	if (g_pplayer) g_pplayer->m_jolt_amount = (U32)newVal; //VB Script
 	else
 		{						//VP Editor				
-		HRESULT hr = GetRegInt("Player", "JoltAmount", &m_jolt_amount);
+		const HRESULT hr = GetRegInt("Player", "JoltAmount", &m_jolt_amount);
 		if (hr != S_OK) 
 			{
 			STARTUNDO
@@ -7724,8 +7705,7 @@ STDMETHODIMP PinTable::put_JoltAmount(int newVal)
 
 STDMETHODIMP PinTable::get_TiltAmount(int *pVal)
 {
-	if (g_pplayer) *pVal = (int)g_pplayer->m_tilt_amount; //VB Script
-	else *pVal = m_tilt_amount;						//VP Editor
+	*pVal = (g_pplayer) ? g_pplayer->m_tilt_amount : m_tilt_amount; //VB Script or VP Editor
 
 	return S_OK;
 }
@@ -7735,7 +7715,7 @@ STDMETHODIMP PinTable::put_TiltAmount(int newVal)
 	if (g_pplayer) g_pplayer->m_tilt_amount = (U32)newVal; //VB Script
 	else
 		{						//VP Editor		
-		HRESULT hr = GetRegInt("Player", "TiltAmount", &m_tilt_amount);
+		const HRESULT hr = GetRegInt("Player", "TiltAmount", &m_tilt_amount);
 		if (hr != S_OK) 
 			{
 			STARTUNDO
@@ -7748,8 +7728,7 @@ STDMETHODIMP PinTable::put_TiltAmount(int newVal)
 
 STDMETHODIMP PinTable::get_JoltTriggerTime(int *pVal)
 {
-	if (g_pplayer) *pVal = (int)g_pplayer->m_jolt_trigger_time; //VB Script
-	else *pVal = m_jolt_trigger_time;						//VP Editor
+	*pVal = (g_pplayer) ? g_pplayer->m_jolt_trigger_time : m_jolt_trigger_time; //VB Script or VP Editor
 
 	return S_OK;
 }
@@ -7759,7 +7738,7 @@ STDMETHODIMP PinTable::put_JoltTriggerTime(int newVal)
 	if (g_pplayer) g_pplayer->m_jolt_trigger_time = (U32)newVal; //VB Script
 	else
 		{						//VP Editor		
-		HRESULT hr = GetRegInt("Player", "JoltTriggerTime", &m_jolt_trigger_time);
+		const HRESULT hr = GetRegInt("Player", "JoltTriggerTime", &m_jolt_trigger_time);
 		if (hr != S_OK)
 			{
 			STARTUNDO
@@ -7772,8 +7751,7 @@ STDMETHODIMP PinTable::put_JoltTriggerTime(int newVal)
 
 STDMETHODIMP PinTable::get_TiltTriggerTime(int *pVal)
 {
-	if (g_pplayer) *pVal = (int)g_pplayer->m_tilt_trigger_time; //VB Script
-	else *pVal = m_tilt_trigger_time;						//VP Editor
+	*pVal = (g_pplayer) ? g_pplayer->m_tilt_trigger_time : m_tilt_trigger_time; //VB Script or VP Editor
 
 	return S_OK;
 }
@@ -7783,7 +7761,7 @@ STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 	if (g_pplayer) g_pplayer->m_tilt_trigger_time = (U32)newVal; //VB Script
 	else
 		{						//VP Editor		
-		HRESULT hr = GetRegInt("Player", "TiltTriggerTime", &m_tilt_trigger_time);
+		const HRESULT hr = GetRegInt("Player", "TiltTriggerTime", &m_tilt_trigger_time);
 		if (hr != S_OK)
 			{
 			STARTUNDO
@@ -7897,6 +7875,3 @@ STDMETHODIMP PinTable::StopShake()
 
 	return S_OK;
 }
-
-
-

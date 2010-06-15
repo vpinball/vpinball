@@ -367,7 +367,7 @@ void CodeViewer::RemoveItem(IScriptable *piscript)
 	// Remove item from dropdown
 	char szT[64]; // Names can only be 32 characters (plus terminator)
 	WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
-	index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, -1, (long)szT);
+	index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (long)szT);
 	SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
 	delete pcvd;
@@ -383,7 +383,7 @@ void CodeViewer::SelectItem(IScriptable *piscript)
 	char szT[64]; // Names can only be 32 characters (plus terminator)
 	WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
 
-	index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, -1, (long)szT);
+	index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (long)szT);
 	SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
 
 	ListEventsFromItem();
@@ -417,7 +417,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable *piscript, WCHAR *wzNew)
 	// Remove old name from dropdown and replace it with the new
 	char szT[64]; // Names can only be 32 characters (plus terminator)
 	WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
-	index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, -1, (long)szT);
+	index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (long)szT);
 	SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
 	WideCharToMultiByte(CP_ACP, 0, wzNew, -1, szT, 64, NULL, NULL);

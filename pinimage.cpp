@@ -864,7 +864,6 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 	// Create Guassian window (actually its not really Guassian, but same idea)
 
 	int window[7][7];
-
 	for (int i=0;i<4;i++)
 		{
 		window[0][i] = i+1;
@@ -874,7 +873,6 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 		}
 
 	int totalwindow = 0;
-
 	for (int i=0;i<7;i++)
 		{
 		for (int l=0;l<7;l++)
@@ -911,7 +909,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 					const int y = i+n-3;
 					if (x>=0 && x<=(shadwidth-1) && y>=0 && y<=(shadheight-1)) //!! opt.
 						{						
-						value += (int)(*(pbits+x*3 + pitchSharp*y)) * window[m][n];
+						value += (int)(*(pbits + x*3 + pitchSharp*y)) * window[m][n];
 						}
 					else
 						{
@@ -920,14 +918,10 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 					}
 				}
 
-			value /= totalvalue;//totalwindow;
+			value /= totalvalue; //totalwindow;
 
-			value = 127 + (value>>1);
-
-			pc[0] = value; //!! opt.
-			pc[1] = value;
-			pc[2] = value;
-			pc[3] = value;
+			const unsigned int valueu = 127 + (value>>1);
+			*((unsigned int*)pc) = valueu | (valueu<<8) | (valueu<<16) | (valueu<<24); // all R,G,B,A get same value
 			pc += 4;
 			}
 
@@ -997,7 +991,7 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 
 			value = /*127 + */(value*5)>>3;
 
-			*(pc + pitch*i + l*4 + 3) = value;
+			*(pc + pitch*i + l*4 + 3) = value; //!! potential bug: blurring within the same buffer leads to artifacts
 			}
 		}
 
