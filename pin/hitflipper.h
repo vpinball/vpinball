@@ -2,7 +2,7 @@
 class FlipperAnimObject : public AnimObject
 	{
 public:
-	void SetObjects(PINFLOAT angle);
+	void SetObjects(const PINFLOAT angle);
 	//BOOL FIsInside(Ball *pball);
 	virtual void UpdateDisplacements(PINFLOAT dtime);
 	//virtual void ResetFrameTime();
@@ -26,7 +26,7 @@ public:
 
 	// rlc New Flipper motion basis, uses Green's transform to rotate these valuse to curAngle
 	bool m_lastHitFace;
-	Vertex2D m_leftFaceNormal, m_rightFaceNormal, m_leftFaceBase,m_rightFaceBase;
+	Vertex2D m_leftFaceNormal, m_rightFaceNormal, m_leftFaceBase, m_rightFaceBase;
 	Vertex2D m_endRadiusCenter;
 	float m_lengthFace;
 	//rlc end
@@ -59,9 +59,9 @@ public:
 
 	int m_iframe; //Frame index that this flipper is currently displaying
 
-	BOOL m_fEnabled;
+	bool m_fEnabled;
 
-	short int m_EnableRotateEvent;
+	int m_EnableRotateEvent;
 
 	Vertex2D zeroAngNorm; // base norms at zero degrees	
 	};
@@ -73,8 +73,8 @@ public:
 	Vertex2D v;
 	//float rad1, rad2;
 
-	HitFlipper(float x, float y, float baser, float endr, float flipr, float angle, float zlow, float zhigh
-																, float strength, float mass);
+	HitFlipper(const float x, const float y, float baser, float endr, float flipr, const float angle,
+		       const float zlow, const float zhigh, float strength, const float mass);
 	~HitFlipper();
 
 	//void GetHitShapes(Vector<HitObject> *pvho);

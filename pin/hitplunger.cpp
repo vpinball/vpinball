@@ -6,7 +6,7 @@
 extern U32 LastPlungerHit;
 
 
-HitPlunger::HitPlunger(float x, float y, float x2, float pos, float zheight,Plunger* pPlunger)
+HitPlunger::HitPlunger(const float x, const float y, const float x2, const float pos, const float zheight, Plunger * const pPlunger)
 		{
 		m_plungeranim.m_plunger = pPlunger;
 		m_plungeranim.m_x = x;
@@ -25,7 +25,7 @@ HitPlunger::HitPlunger(float x, float y, float x2, float pos, float zheight,Plun
 		m_plungeranim.m_mechTimeOut = 0;	//must be zero at game start, scripts will cock button plungers
 		
 		m_plungeranim.m_mass = 30;
-		m_plungeranim.m_fAcc = fFalse;
+		m_plungeranim.m_fAcc = false;
 		m_plungeranim.m_speed = 0;
 		m_plungeranim.m_parkPosition = pPlunger->m_d.m_parkPosition;
 		m_plungeranim.m_scatterVelocity = pPlunger->m_d.m_scatterVelocity;
@@ -86,7 +86,7 @@ void HitPlunger::CalcHitRect()
 	//m_rcHitRect.zhigh = 50;
 	}
 
-void PlungerAnimObject::SetObjects(float len)
+void PlungerAnimObject::SetObjects(const float len)
 	{
 	m_linesegBase.v1.x = m_x;
 	m_linesegBase.v1.y = m_y;
@@ -124,22 +124,22 @@ void PlungerAnimObject::SetObjects(float len)
 	m_linesegSide[0].CalcNormal();
 	m_linesegSide[1].CalcNormal();
 
-	float deg45 = (float)sin(M_PI/4.0);
+	const float deg45 = (float)sin(M_PI/4.0);
 
 	m_jointBase[0].normal.x = -deg45;
-	m_jointBase[0].normal.y = deg45;
-	m_jointBase[1].normal.x = deg45;
-	m_jointBase[1].normal.y = deg45;
+	m_jointBase[0].normal.y =  deg45;
+	m_jointBase[1].normal.x =  deg45;
+	m_jointBase[1].normal.y =  deg45;
 
 	m_jointEnd[0].normal.x = -deg45;
 	m_jointEnd[0].normal.y = -deg45;
-	m_jointEnd[1].normal.x = deg45;
+	m_jointEnd[1].normal.x =  deg45;
 	m_jointEnd[1].normal.y = -deg45;
 	}
 
 void PlungerAnimObject::UpdateDisplacements(PINFLOAT dtime)
-	{
-	m_pos += (float)dtime*m_speed;
+{
+	m_pos += dtime*m_speed;
 
 	if (m_pos < m_frameEnd)	
 		{		
@@ -161,15 +161,12 @@ void PlungerAnimObject::UpdateDisplacements(PINFLOAT dtime)
 
 	m_posFrame = m_pos;
 
-	if (m_fAcc)
+	if (m_fAcc && (m_pos == m_posdesired))
 		{
-		if (m_pos == m_posdesired)
-			{
-			m_fAcc = fFalse;
-			m_speed = 0;
-			}		
+		m_fAcc = false;
+		m_speed = 0;
 		}
-	}
+}
 
 void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
 	{	
@@ -181,9 +178,9 @@ void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
 	else {	
 		if(m_posdesired == m_frameEnd) // mechanical plunger position ...make sure button control is idle
 			{	
-			float mech_pos  = mechPlunger();										// mechanical position
-			float cur_pos = (m_frameEnd - m_pos)/(m_frameEnd - m_frameStart);		// VP plunger position
-			float error = mech_pos - cur_pos;										// error
+			const float mech_pos = mechPlunger();										// mechanical position
+			const float cur_pos = (m_frameEnd - m_pos)/(m_frameEnd - m_frameStart);		// VP plunger position
+			const float error = mech_pos - cur_pos;										// error
 
 			err_fil = error + err_fil * 0.60f;
 
@@ -196,7 +193,7 @@ void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
 					{														// will alias at high speed and EOS 
 					m_force = -m_plunger->m_d.m_mechStrength;				// set to mechnical plunger force
 					m_posdesired = m_frameEnd;								// set to button controller 
-					m_fAcc = fTrue;											// enable animation
+					m_fAcc = true;											// enable animation
 					m_mechTimeOut = 5;										// stay any other actions until completed
 					}
 				}															// no interaction with mech plunger
@@ -205,8 +202,8 @@ void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
 			{	
 			static float last_pos = 0;										// assume initial uncocked
 
-			float mech_pos  = mechPlunger();								// mechanical position
-			float diff = mech_pos - last_pos;								// change
+			const float mech_pos = mechPlunger();							// mechanical position
+			const float diff = mech_pos - last_pos;							// change
 			last_pos = mech_pos;											//remember last position			
 			err_fil = 0;
 			if (!recock && m_mechTimeOut <= 0)
@@ -217,7 +214,7 @@ void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
 					m_speed = 0;											// starting from fully cocked
 					m_force = -m_plunger->m_d.m_mechStrength;				// set to mechnical plunger force
 					m_posdesired = m_frameEnd;								// set to button controller 
-					m_fAcc = fTrue;											// enable animation
+					m_fAcc = true;											// enable animation
 					m_mechTimeOut = 15;										// stay any other actions until completed
 					if (g_pplayer)
 						{
@@ -236,7 +233,7 @@ void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
 				m_speed = 0;					// quench any motion
 				m_force = 10;					// retract plunger slowly .... v about 1
 				m_posdesired = m_frameStart;	// return to the cocked position
-				m_fAcc = fTrue;					// enable animation
+				m_fAcc = true;					// enable animation
 				m_mechTimeOut = 15;				// stay any other actions until completed					
 				if (recock && g_pplayer)
 					{
@@ -251,9 +248,8 @@ void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
 
 PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	{
-	float newtime;
 	float hittime = dtime; //start time
-	BOOL fHit = fFalse;
+	bool fHit = false;
 	Ball BallT = *pball;	
 
 	// If we got here, then the ball is close enough to the plunger
@@ -262,13 +258,14 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	LastPlungerHit = msec();
 
 	// We are close enable the plunger light.
-	Vertex3Ds hitnormal[5];
-	newtime = m_plungeranim.m_linesegBase.HitTest(&BallT, dtime, &hitnormal[0]);
+	Vertex3Ds hitnormal;
+	float newtime = m_plungeranim.m_linesegBase.HitTest(&BallT, dtime, &hitnormal);
 	if (newtime >= 0 && newtime <= hittime)
 		{
-		fHit = fTrue;
+		fHit = true;
 		hittime = newtime;
-		phitnormal[0] = hitnormal[0];	
+
+		phitnormal[0] = hitnormal;	
 		pball->m_HitDist = BallT.m_HitDist;
 		pball->m_HitNormVel = BallT.m_HitNormVel;
 		pball->m_HitRigid = true;
@@ -278,12 +275,13 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 
 	for (int i=0;i<2;i++)
 		{
-		newtime = m_plungeranim.m_linesegSide[i].HitTest(&BallT, hittime, &hitnormal[0]);
+		newtime = m_plungeranim.m_linesegSide[i].HitTest(&BallT, hittime, &hitnormal);
 		if (newtime >= 0 && newtime <= hittime)
 			{
-			fHit = fTrue;
+			fHit = true;
 			hittime = newtime;
-			phitnormal[0] = hitnormal[0];
+
+			phitnormal[0] = hitnormal;
 			pball->m_HitDist = BallT.m_HitDist;
 			pball->m_HitNormVel = BallT.m_HitNormVel;
 			pball->m_HitRigid = true;
@@ -292,12 +290,13 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 			phitnormal[1].y = 0;
 			}
 
-		newtime = m_plungeranim.m_jointBase[i].HitTest(&BallT, hittime, &hitnormal[0]);
+		newtime = m_plungeranim.m_jointBase[i].HitTest(&BallT, hittime, &hitnormal);
 		if (newtime >= 0 && newtime <= hittime)
 			{
-			fHit = fTrue;
+			fHit = true;
 			hittime = newtime;
-			phitnormal[0] = hitnormal[0];
+
+			phitnormal[0] = hitnormal;
 			pball->m_HitDist = BallT.m_HitDist;
 			pball->m_HitNormVel = BallT.m_HitNormVel;
 			pball->m_HitRigid = true;
@@ -310,13 +309,13 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 	
 	BallT.vy -= deltay;
 
-	newtime = m_plungeranim.m_linesegEnd.HitTest(&BallT, hittime, &hitnormal[0]);
+	newtime = m_plungeranim.m_linesegEnd.HitTest(&BallT, hittime, &hitnormal);
 	if (newtime >= 0 && newtime <= hittime)
 		{
-		fHit = fTrue;
+		fHit = true;
 		hittime = newtime;
 
-		phitnormal[0] = hitnormal[0];
+		phitnormal[0] = hitnormal;
 		pball->m_HitDist = BallT.m_HitDist;
 		pball->m_HitNormVel = BallT.m_HitNormVel;
 		pball->m_HitRigid = true;
@@ -326,13 +325,13 @@ PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
 
 	for (int i=0;i<2;i++)
 		{
-		newtime = m_plungeranim.m_jointEnd[i].HitTest(&BallT, hittime, &hitnormal[0]);
+		newtime = m_plungeranim.m_jointEnd[i].HitTest(&BallT, hittime, &hitnormal);
 		if (newtime >= 0 && newtime <= hittime)
 			{
-			fHit = fTrue;
+			fHit = true;
 			hittime = newtime;
 
-			phitnormal[0] = hitnormal[0];
+			phitnormal[0] = hitnormal;
 			pball->m_HitDist = BallT.m_HitDist;
 			pball->m_HitNormVel = BallT.m_HitNormVel;
 			pball->m_HitRigid = true;

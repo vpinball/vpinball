@@ -23,8 +23,8 @@
 class LightSeqData
 	{
 public:
-	Vertex2D 			m_v;
-	Vertex2D			m_vCenter;
+	Vertex2D 		m_v;
+	Vertex2D		m_vCenter;
 	WCHAR 			m_wzCollection[MAXNAMEBUFFER];	// collection to use
 	long			m_updateinterval;
 	TimerDataRoot 	m_tdr;

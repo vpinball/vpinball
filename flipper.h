@@ -68,7 +68,7 @@ public:
 	Flipper();
 	virtual ~Flipper();
 
-	void SetVertices(float angle, Vertex2D *pvEndCenter, Vertex2D *rgvTangents, float baseradius, float endradius);
+	void SetVertices(const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
 
 	//virtual HRESULT GetTypeName(BSTR *pVal);
 	//virtual int GetDialogID();

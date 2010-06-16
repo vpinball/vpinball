@@ -70,7 +70,7 @@ HRESULT Light::Init(PinTable *ptable, float x, float y)
 
 	SetDefaults();
 
-	m_fLockedByLS = fFalse;			//>>> added by chris
+	m_fLockedByLS = false;			//>>> added by chris
 	m_realState	= m_d.m_state;		//>>> added by chris
 
 	return InitVBA(fTrue, 0, NULL);
@@ -229,7 +229,7 @@ void Light::Render(Sur *psur)
 
 	}
 
-void Light::RenderOutline(Sur *psur)
+void Light::RenderOutline(Sur * const psur)
 	{
 	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
 	psur->SetLineColor(RGB(0,0,0),fFalse,0);
@@ -354,7 +354,7 @@ void Light::EndPlay()
 		}
 
 	// ensure not locked just incase the player exits during a LS sequence
-	m_fLockedByLS = fFalse;			//>>> added by chris
+	m_fLockedByLS = false;			//>>> added by chris
 
 	IEditable::EndPlay();
 	}
@@ -364,7 +364,7 @@ void Light::ClearForOverwrite()
 	ClearPointsForOverwrite();
 	}
 
-void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -435,7 +435,6 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		delete vvertex.ElementAt(i);
 		}
 
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
 	const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
 	const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
@@ -492,6 +491,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		if (!m_fBackglass)
 			{
+			Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 			for (int l=0;l<3;l++)
 				ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
 
@@ -515,7 +515,7 @@ void Light::RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	delete rgv;
 	}
 
-void Light::RenderStaticCircle(LPDIRECT3DDEVICE7 pd3dDevice)
+void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -589,7 +589,7 @@ void Light::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	}
 
-void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	PinImage* pin = NULL;
 
@@ -624,8 +624,6 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
 	Vector<void> vpoly;
-	Vector<Triangle> vtri;
-
 	float maxdist = 0;
 
 	for (int i=0;i<cvertex;i++)
@@ -641,6 +639,7 @@ void Light::RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	maxdist = sqrtf(maxdist);
 
+	Vector<Triangle> vtri;
 	PolygonToTriangles(rgv, &vpoly, &vtri);
 
 	for (int i=0;i<2;i++)
@@ -1071,8 +1070,6 @@ void Light::MoveOffset(float dx, float dy)
 
 HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	HRESULT hr;
-
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
 #ifdef VBA
@@ -1100,6 +1097,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
 	//bw.WriteTag(FID(PNTS));
+	HRESULT hr;
 	if(FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
 		return hr;
 
@@ -1131,7 +1129,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 
 	m_ptable = ptable;
 
-	m_fLockedByLS = fFalse;			//>>> added by chris
+	m_fLockedByLS = false;			//>>> added by chris
 	m_realState	= m_d.m_state;		//>>> added by chris
 
 	br.Load();
@@ -1348,7 +1346,6 @@ void Light::DoCommand(int icmd, int x, int y)
 				//icp = m_vdpoint.Size();
 
 			CComObject<DragPoint> *pdp;
-
 			CComObject<DragPoint>::CreateInstance(&pdp);
 			if (pdp)
 				{
@@ -1434,7 +1431,6 @@ STDMETHODIMP Light::put_State(LightState newVal)
 
 void Light::DrawFrame(BOOL fOn)
 	{
-	m_fOn = fOn;
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const int frame = fOn;
@@ -1823,24 +1819,25 @@ void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 void Light::lockLight()
 	{
-		m_fLockedByLS = fTrue;
+		m_fLockedByLS = true;
 	}
 
 void Light::unLockLight()
 	{
-		m_fLockedByLS = fFalse;
+		m_fLockedByLS = false;
 	}
 
-void Light::setLightStateBypass(LightState newVal)
+void Light::setLightStateBypass(const LightState newVal)
 	{
 		lockLight();
 		setLightState(newVal);
 	}
-void Light::setLightState(LightState newVal)
+
+void Light::setLightState(const LightState newVal)
 	{
    	if (newVal != m_realState)//state changed???
    		{
-   		LightState lastState = m_realState;		//rlc make a bit more obvious
+   		const LightState lastState = m_realState;		//rlc make a bit more obvious
 		m_realState = newVal;
 
    		if (g_pplayer)
