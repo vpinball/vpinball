@@ -2,7 +2,7 @@
 
 #define PTINRECT(x,y) ((x) >= m_rcRect.left && (x) <= m_rcRect.right && (y) > m_rcRect.top && (y) < m_rcRect.bottom)
 
-HitRectSur::HitRectSur(HDC hdc, float zoom, float offx, float offy, int width, int height, FRect *prcRect, Vector<ISelect> *pvsel) : Sur(hdc, zoom, offx, offy, width, height)
+HitRectSur::HitRectSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, FRect * const prcRect, Vector<ISelect> * const pvsel) : Sur(hdc, zoom, offx, offy, width, height)
 	{
 	m_rcRect = *prcRect;
 	m_pvsel = pvsel;
@@ -145,7 +145,7 @@ void HitRectSur::SetObject(ISelect *psel)
 		if (index != -1)
 			{
 			// Object failed previously - just skip this time
-			m_fFailedAlready = fTrue;
+			m_fFailedAlready = true;
 			}
 		else
 			{
@@ -159,18 +159,18 @@ void HitRectSur::SetObject(ISelect *psel)
 				{
 				m_indexcur = index;
 				}
-			m_fFailedAlready = fFalse;
+			m_fFailedAlready = false;
 			}
 		}
 	else
 		{
-		m_fFailedAlready = fTrue;
+		m_fFailedAlready = true;
 		}
 	}
 
 void HitRectSur::FailObject()
 	{
-	m_fFailedAlready = fTrue;
+	m_fFailedAlready = true;
 
 	_ASSERTE(m_indexcur < m_pvsel->Size());
 

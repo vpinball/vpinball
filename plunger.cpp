@@ -477,7 +477,7 @@ STDMETHODIMP Plunger::PullBack()
 
 		if (m_phitplunger->m_plungeranim.m_mechTimeOut <= 0)
 			{			
-			m_phitplunger->m_plungeranim.m_fAcc = fTrue;
+			m_phitplunger->m_plungeranim.m_fAcc = true;
 			}
 		}
 
@@ -530,7 +530,7 @@ STDMETHODIMP Plunger::Fire()
 			m_phitplunger->m_plungeranim.m_speed = 0;
 			m_phitplunger->m_plungeranim.m_force = -m_d.m_mechStrength * 1.0613f;
 
-			m_phitplunger->m_plungeranim.m_fAcc = fTrue;			
+			m_phitplunger->m_plungeranim.m_fAcc = true;			
 			m_phitplunger->m_plungeranim.m_mechTimeOut = 100;	
 		}
 		else
@@ -541,7 +541,7 @@ STDMETHODIMP Plunger::Fire()
 
 			if (m_phitplunger->m_plungeranim.m_mechTimeOut <= 0)
 			{			
-				m_phitplunger->m_plungeranim.m_fAcc = fTrue;			
+				m_phitplunger->m_plungeranim.m_fAcc = true;			
 				m_phitplunger->m_plungeranim.m_mechTimeOut = 20;	//rlc disable for 200 millisconds
 			}
 		}

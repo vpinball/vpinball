@@ -13,9 +13,9 @@ public:
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(RECT *prc);
 
-	void SetObjects(float len);
+	void SetObjects(const float len);
 
-	float mechPlunger();// Returns mechanical plunger position 0 at rest, +1 pulled (fully extended)
+	float mechPlunger() const; // Returns mechanical plunger position 0 at rest, +1 pulled (fully extended)
 
 	LineSeg m_linesegBase;
 	LineSeg m_linesegEnd;
@@ -32,7 +32,7 @@ public:
 	float m_pos;
 	float m_posdesired;
 	float m_posFrame; // Location of plunger at beginning of frame
-	BOOL  m_fAcc;
+	bool  m_fAcc;
 	float m_mass;
 
 	float m_x,m_x2,m_y;
@@ -57,7 +57,7 @@ class HitPlunger :
 	{
 public:
 
-	HitPlunger(float x, float y, float x2, float pos, float zheight, Plunger* pPlunger);
+	HitPlunger(const float x, const float y, const float x2, const float pos, const float zheight, Plunger * const pPlunger);
 	~HitPlunger() {}
 
 	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);

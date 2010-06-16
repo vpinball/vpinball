@@ -3,7 +3,7 @@ class HitRectSur : public Sur
 	{
 public:
 
-	HitRectSur(HDC hdc, float zoom, float offx, float offy, int width, int height, FRect *prcRect, Vector<ISelect> *pvsel);
+	HitRectSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, FRect * const prcRect, Vector<ISelect> * const pvsel);
 	virtual ~HitRectSur();
 
 	virtual void Line(float x, float y, float x2, float y2);
@@ -27,7 +27,7 @@ public:
 
 	ISelect *m_pcur;
 
-	BOOL m_fFailedAlready; // Object has already been discounted from selection
+	bool m_fFailedAlready; // Object has already been discounted from selection
 	int m_indexcur;
 
 	FRect m_rcRect;

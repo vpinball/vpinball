@@ -23,7 +23,7 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y)
 	m_d.m_vCenter.x = x;
 	m_d.m_vCenter.y = y;
 
-	m_fLockedByLS = fFalse;			//>>> added by chris
+	m_fLockedByLS = false;			//>>> added by chris
 	m_realState	= m_d.m_state;		//>>> added by chris
 	
 	return InitVBA(fTrue, 0, NULL);
@@ -172,7 +172,7 @@ void Bumper::EndPlay()
 	IEditable::EndPlay();
 
 	// ensure not locked just incase the player exits during a LS sequence
-	m_fLockedByLS = fFalse;
+	m_fLockedByLS = false;
 
 	m_pbumperhitcircle = NULL;
 	}
@@ -802,7 +802,7 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
 
 	m_ptable = ptable;
 
-	m_fLockedByLS = fFalse;			//>>> added by chris
+	m_fLockedByLS = false;			//>>> added by chris
 	m_realState	= m_d.m_state;		//>>> added by chris
 	
 	br.Load();
@@ -1310,21 +1310,21 @@ STDMETHODIMP Bumper::put_SideVisible(VARIANT_BOOL newVal)
 
 void Bumper::lockLight()
 	{
-		m_fLockedByLS = fTrue;
+		m_fLockedByLS = true;
 	}
 
 void Bumper::unLockLight()
 	{
-		m_fLockedByLS = fFalse;
+		m_fLockedByLS = false;
 	}
 
-void Bumper::setLightStateBypass(LightState newVal)
+void Bumper::setLightStateBypass(const LightState newVal)
 	{
 		lockLight();
 		setLightState(newVal);
 	}
 
-void Bumper::setLightState(LightState newVal)
+void Bumper::setLightState(const LightState newVal)
 	{
 	if (newVal != m_realState)
 		{

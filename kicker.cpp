@@ -240,8 +240,8 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	ddsdMask.dwSize = sizeof(ddsdMask);
 
 	// Use mask to reset z-values underneath kicker
-	hr = ppin3d->m_pddsStatic->Lock(&rcBounds, &ddsdMask, DDLOCK_READONLY	| DDLOCK_SURFACEMEMORYPTR 
-																			| DDLOCK_WAIT, NULL);
+	hr = ppin3d->m_pddsStatic->Lock(&rcBounds, &ddsdMask, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR 
+																		  | DDLOCK_WAIT, NULL);
 	if (hr == S_OK)
 		{
 		hr = ppin3d->m_pddsStaticZ->Lock(&rcBounds, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR 

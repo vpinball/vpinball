@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 
 
-Sur::Sur(HDC hdc, float zoom, float offx, float offy, int width, int height)
+Sur::Sur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height)
 	{
 	m_hdc = hdc;
 	m_zoom = zoom;
@@ -14,14 +14,14 @@ Sur::~Sur()
 	{
 	}
 
-void Sur::ScreenToSurface(int screenx, int screeny, float *fx, float *fy)
+void Sur::ScreenToSurface(const int screenx, const int screeny, float * const fx, float * const fy) const
 	{
 	const float inv_zoom = 1.0f/m_zoom;
 	*fx = (float)screenx*inv_zoom + m_offx;
 	*fy = (float)screeny*inv_zoom + m_offy;
 	}
 
-void Sur::SurfaceToScreen(float fx, float fy, int *screenx, int *screeny)
+void Sur::SurfaceToScreen(const float fx, const float fy, int * const screenx, int * const screeny) const
 	{
 	*screenx = SCALEXf(fx);
 	*screeny = SCALEYf(fy);

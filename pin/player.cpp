@@ -1631,7 +1631,7 @@ void Player::UltraPlunger()	// called on every intergral physics frame
 // the method below uses a dual - piecewise linear function to map the mechanical pull and push 
 // onto the virtual plunger position from 0..1, the pulunger properties has a ParkPosition setting 
 // that matches the mechanical plunger zero position
-float PlungerAnimObject::mechPlunger()
+float PlungerAnimObject::mechPlunger() const
 {
 	const float range = (float)JOYRANGEMX * (1.0f - m_parkPosition) - (float)JOYRANGEMN *m_parkPosition; // final range limit
 	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_parkPosition : curMechPlungerPos*(1.0f - m_parkPosition);

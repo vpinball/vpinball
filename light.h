@@ -115,7 +115,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-	void RenderOutline(Sur *psur);
+	void RenderOutline(Sur * const psur);
 	virtual void RenderBlueprint(Sur *psur);
 
 	virtual void MoveOffset(float dx, float dy);
@@ -123,10 +123,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 
 	virtual void ClearForOverwrite();
 
-	void RenderStaticCircle(LPDIRECT3DDEVICE7 pd3dDevice);
-	void RenderCustomStatic(LPDIRECT3DDEVICE7 pd3dDevice);
+	void RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice);
+	void RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice);
 
-	void RenderCustomMovers(LPDIRECT3DDEVICE7 pd3dDevice);
+	void RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice);
 
 	virtual void EditMenu(HMENU hmenu);
 	virtual void DoCommand(int icmd, int x, int y);
@@ -151,19 +151,18 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 
 	// Run-time
 	ObjFrame *m_pobjframe[2];
-	BOOL m_fOn; // Whether the light is actually currently on (different than the state, because of blinking)
 	//int m_iblinkframe;
 	//int m_timenextblink;
 
 	LightCenter m_lightcenter;
 
 //>>> Added By Chris
-	BOOL		m_fLockedByLS;
+	bool		m_fLockedByLS;
 	LightState 	m_realState;
 	void		lockLight();
 	void		unLockLight();
-	void		setLightStateBypass(LightState newVal);
-	void		setLightState(LightState newVal);
+	void		setLightStateBypass(const LightState newVal);
+	void		setLightState(const LightState newVal);
 //<<<
 
 // ILight

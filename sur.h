@@ -1,4 +1,5 @@
 #pragma once
+
 #define SCALEXf(x) ((int)(((x) - m_offx)*m_zoom + 0.5f))
 #define SCALEYf(y) ((int)(((y) - m_offy)*m_zoom + 0.5f))
 #define SCALEDf(d) ((int)((d)*m_zoom + 0.5f))
@@ -7,7 +8,7 @@ class Sur
 	{
 public:
 
-	Sur(HDC hdc, float zoom, float offx, float offy, int width, int height);
+	Sur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height);
 	virtual ~Sur();
 
 	virtual void Line(float x, float y, float x2, float y2) = 0;
@@ -27,8 +28,8 @@ public:
 	virtual void SetBorderColor(int rgb, BOOL fDashed, int width) = 0;
 	virtual void SetLineColor(int rgb, BOOL fDashed, int width) = 0;
 
-	void ScreenToSurface(int screenx, int screeny, float *fx, float *fy);
-	void SurfaceToScreen(float fx, float fy, int *screenx, int *screeny);
+	void ScreenToSurface(const int screenx, const int screeny, float * const fx, float * const fy) const;
+	void SurfaceToScreen(const float fx, const float fy, int * const screenx, int * const screeny) const;
 
 	HDC m_hdc;
 	float m_zoom;

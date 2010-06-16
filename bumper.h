@@ -122,12 +122,12 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 
 //>>> Added By Chris
 	BOOL		m_fDisabled;
-	BOOL		m_fLockedByLS;
+	bool		m_fLockedByLS;
 	LightState 	m_realState;
 	void		lockLight();
 	void		unLockLight();
-	void		setLightStateBypass(LightState newVal);
-	void		setLightState(LightState newVal);
+	void		setLightStateBypass(const LightState newVal);
+	void		setLightState(const LightState newVal);
 //<<<
 
 // IBumper

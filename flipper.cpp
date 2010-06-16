@@ -98,7 +98,7 @@ void Flipper::GetHitShapes(Vector<HitObject> *pvho)
 
 	if (m_d.m_FlipperRadiusMin > 0 && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
 		{
-		m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax -( m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) *m_ptable->m_globalDifficulty;
+		m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - (m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
 		m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
 		}
 	else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
@@ -157,7 +157,7 @@ void Flipper::EndPlay()
 	IEditable::EndPlay();
 	}
 
-void Flipper::SetVertices(float angle, Vertex2D *pvEndCenter, Vertex2D *rgvTangents, float baseradius, float endradius)
+void Flipper::SetVertices(const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const
 	{
 	const float fradius = m_d.m_FlipperRadius;
 	const float fa = asinf((baseradius-endradius)/fradius); //face to centerline angle (center to center)
