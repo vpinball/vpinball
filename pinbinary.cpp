@@ -44,7 +44,7 @@ void PinBinary::ReadFromFile(char *szfilename)
 
 	DWORD read;
 
-	BOOL fFoo = ReadFile(hFile, m_pdata, m_cdata, &read, NULL);
+	int fFoo = ReadFile(hFile, m_pdata, m_cdata, &read, NULL);
 
 	fFoo = CloseHandle(hFile);
 
