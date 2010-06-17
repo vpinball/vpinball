@@ -197,15 +197,15 @@ public:
 	HRESULT InitVBA();
 	void CloseVBA();
 
-	void Render(Sur *psur);
+	void Render(Sur * psur);
 	void Paint(HDC hdc);
-	ISelect *HitTest(int x, int y);
+	ISelect *HitTest(const int x, const int y);
 	void SetDirtyDraw();
 
-	void Render3DProjection(Sur *psur);
+	void Render3DProjection(Sur * const psur);
 
-	BOOL GetDecalsEnabled(void);
-	BOOL GetEMReelsEnabled(void);
+	BOOL GetDecalsEnabled() const;
+	BOOL GetEMReelsEnabled() const;
 
 	void Copy();
 	void Paste(BOOL fAtLocation, int x, int y);

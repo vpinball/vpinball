@@ -37,9 +37,9 @@ public:
 	virtual BOOL LoadToken(int id, BiffReader *pbr);
 
 	void EnsureColorKey();
-	void EnsureBackdrop(COLORREF color);
+	void EnsureBackdrop(const COLORREF color);
 	void FreeStuff();
-	void SetTransparentColor(COLORREF color);
+	void SetTransparentColor(const COLORREF color);
 	void EnsureMaxTextureCoordinates();
 
 	void EnsureHBitmap();
@@ -80,11 +80,11 @@ public:
 	LPDIRECTDRAW7 m_pDD;
 
 	LPDIRECTDRAWSURFACE7 CreateTextureOffscreen(const int width, const int height);
-	LPDIRECTDRAWSURFACE7 CreateFromFile(char *szfile, int *pwidth, int *pheight);
-	LPDIRECTDRAWSURFACE7 CreateFromResource(int id, int *pwidth, int *pheight);
-	LPDIRECTDRAWSURFACE7 CreateFromHBitmap(HBITMAP hbm, int *pwidth, int *pheight);
+	LPDIRECTDRAWSURFACE7 CreateFromFile(char *szfile, int * const pwidth, int * const pheight);
+	LPDIRECTDRAWSURFACE7 CreateFromResource(const int id, int * const pwidth, int * const pheight);
+	LPDIRECTDRAWSURFACE7 CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
 
-	LPDIRECTDRAWSURFACE7 DecompressJPEG(PinImage *ppi/*char *szfile*/, PinBinary *ppb, int *pwidth, int *pheight);
+	LPDIRECTDRAWSURFACE7 DecompressJPEG(PinImage * const ppi/*char *szfile*/, PinBinary * const ppb, int * const pwidth, int * const pheight);
 
 	void SetOpaque(LPDIRECTDRAWSURFACE7 pdds, const int width, const int height);
 	void SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop, const int width, const int height);

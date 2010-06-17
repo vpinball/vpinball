@@ -119,11 +119,10 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 			return fFalse;
 			}
 
-		HRESULT hr;
 		DDSURFACEDESC2 ddsd;
 		ddsd.dwSize = sizeof(ddsd);
 
-		hr = m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+		const HRESULT hr = m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
 		// 32-bit picture
 		LZWReader lzwreader(pbr->m_pistream, (int *)ddsd.lpSurface, m_width*4, m_height, ddsd.lPitch);
@@ -146,7 +145,7 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(LINK))
 		{
 		int linkid;
-		PinTable *pt = (PinTable *)pbr->m_pdata;
+		PinTable * const pt = (PinTable *)pbr->m_pdata;
 		pbr->GetInt(&linkid);
 		m_ppb = pt->GetImageLinkBinary(linkid);
 		m_pdsBuffer = g_pvp->m_pdd.DecompressJPEG(this, m_ppb, &m_width, &m_height);
@@ -159,7 +158,7 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 	return fTrue;
 	}
 
-void PinImage::SetTransparentColor(COLORREF color)
+void PinImage::SetTransparentColor(const COLORREF color)
 	{
 	m_fTransparent = fFalse;
 	if (m_rgbTransparent != color)
@@ -185,7 +184,7 @@ void PinImage::EnsureColorKey()
 		}
 	}
 
-void PinImage::EnsureBackdrop(COLORREF color)
+void PinImage::EnsureBackdrop(const COLORREF color)
 	{
 	if (!m_pdsBufferBackdrop || color != m_rgbBackdropCur)
 		{
@@ -264,13 +263,10 @@ void PinImage::CreateGDIVersion()
 
 PinDirectDraw::PinDirectDraw()
 	{
-	HRESULT hr;
-	int tmp;
-
 	m_pDD = NULL;
 
-	tmp = 0;										
-	hr = GetRegInt("Player", "HardwareRender", &tmp);
+	int tmp = 0;										
+	HRESULT hr = GetRegInt("Player", "HardwareRender", &tmp);
 	m_fHardwareAccel = (tmp != 0);
 
 	tmp = 0;										
@@ -286,8 +282,6 @@ PinDirectDraw::~PinDirectDraw()
 
 HRESULT PinDirectDraw::InitDD()
 	{
-	HRESULT hr;
-
 	m_DDraw=LoadLibrary("ddraw.dll");
 	m_DDCreate=(DDCreateFunction)GetProcAddress(m_DDraw,"DirectDrawCreateEx");
 
@@ -304,7 +298,7 @@ HRESULT PinDirectDraw::InitDD()
 		return E_FAIL;
 		}
 
-	hr = (*m_DDCreate)(NULL, (VOID **)&m_pDD, IID_IDirectDraw7, NULL);
+	HRESULT hr = (*m_DDCreate)(NULL, (VOID **)&m_pDD, IID_IDirectDraw7, NULL);
 	if (hr != S_OK)
 		{
 		ShowError("Could not create Direct Draw.");
@@ -326,8 +320,8 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 	ddsd.dwSize = sizeof(ddsd);
 
 	// Texture dimensions must be in powers of 2
-	int texwidth  = 1 << ((int)(log((float)(width-1))/logf(2.0f) + 0.001f/*round-off*/)+1);
-	int texheight = 1 << ((int)(log((float)(height-1))/logf(2.0f) + 0.001f/*round-off*/)+1);
+	int texwidth  = 1 << ((int)(log((float)(width -1))*(float)(1.0/log(2.0)) + 0.001f/*round-off*/)+1);
+	int texheight = 1 << ((int)(log((float)(height-1))*(float)(1.0/log(2.0)) + 0.001f/*round-off*/)+1);
 
 	// D3D does not support textures greater than 4096 in either dimension
 	if (texwidth > MAX_TEXTURE_SIZE)
@@ -350,9 +344,6 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 		{
 		texheight = 8;
 		}
-
-	LPDIRECTDRAWSURFACE7 pdds;
-	HRESULT hr;
 
 	ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | /*DDSD_CKSRCBLT |*/ DDSD_PIXELFORMAT | DDSD_MIPMAPCOUNT;
 	ddsd.ddckCKSrcBlt.dwColorSpaceLowValue = 0;
@@ -386,6 +377,8 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 	ddsd.ddpfPixelFormat.dwBBitMask = 0x0000ff;
 	ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff000000;
 
+	LPDIRECTDRAWSURFACE7 pdds;
+	HRESULT hr;
     if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
 		{
 		ShowError("Could not create texture offscreen surface.");
@@ -400,7 +393,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 	return pdds;
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int *pwidth, int *pheight)
+LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwidth, int * const pheight)
 	{
 	HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, szfile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 
@@ -412,7 +405,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int *pwidth, in
 	return CreateFromHBitmap(hbm, pwidth, pheight);
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(int id, int *pwidth, int *pheight)
+LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(const int id, int * const pwidth, int * const pheight)
 	{
 	HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, MAKEINTRESOURCE(id), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 
@@ -424,11 +417,9 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(int id, int *pwidth, int 
 	return CreateFromHBitmap(hbm, pwidth, pheight);
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int *pwidth, int *pheight)
+LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight)
 	{
 	BITMAP bm;
-	HBITMAP hbmOld;
-
 	GetObject(hbm, sizeof(bm), &bm);
 
 	if (pwidth)
@@ -449,12 +440,11 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int *pwidth, 
 	LPDIRECTDRAWSURFACE7 pdds = CreateTextureOffscreen(bm.bmWidth, bm.bmHeight);
 
 	HDC hdc;
-
 	pdds->GetDC(&hdc);
 
 	HDC hdcFoo = CreateCompatibleDC(hdc);
 
-	hbmOld = (HBITMAP)SelectObject(hdcFoo, hbm);
+	HBITMAP hbmOld = (HBITMAP)SelectObject(hdcFoo, hbm);
 
 	BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcFoo, 0, 0, SRCCOPY);
 
@@ -469,7 +459,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int *pwidth, 
 	//bm.bmBitsPixel
 	//SetAlpha(pdds, RGB(0,0,0));
 
-	if (bm.bmBitsPixel != 32 )g_pvp->m_pdd.SetOpaque(pdds, bm.bmWidth, bm.bmHeight);
+	if (bm.bmBitsPixel != 32) g_pvp->m_pdd.SetOpaque(pdds, bm.bmWidth, bm.bmHeight);
 
 	return pdds;
 	}
@@ -492,14 +482,10 @@ typedef bmp_dest_struct * bmp_dest_ptr;
 METHODDEF(void) put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, JDIMENSION rows_supplied)
 /* This version is for writing 24-bit pixels */
 {
-  bmp_dest_ptr dest = (bmp_dest_ptr) dinfo;
-  JSAMPARRAY image_ptr;
-  JSAMPROW inptr, outptr;
-  JDIMENSION col;
-  int pad;
+  bmp_dest_ptr const dest = (bmp_dest_ptr) dinfo;
 
   /* Access next row in virtual array */
-  image_ptr = (*cinfo->mem->access_virt_sarray)
+  const JSAMPARRAY const image_ptr = (*cinfo->mem->access_virt_sarray)
     ((j_common_ptr) cinfo, dest->whole_image,
      dest->cur_output_row, (JDIMENSION) 1, TRUE);
 
@@ -510,38 +496,35 @@ METHODDEF(void) put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, JD
   /* Transfer data.  Note destination values must be in BGR order
    * (even though Microsoft's own documents say the opposite).
    */
-  inptr = dest->pub.buffer[0];
-  outptr = image_ptr[0];
-  for (col = cinfo->output_width; col > 0; col--) {
+  JSAMPROW inptr = dest->pub.buffer[0];
+  JSAMPROW outptr = image_ptr[0];
+  for (JDIMENSION col = cinfo->output_width; col > 0; col--) {
     outptr += 3;
-	prawcolor[2] = *inptr++;
-	prawcolor[1] = *inptr++;
-	prawcolor[0] = *inptr++;
+	prawcolor[2] = inptr[0];
+	prawcolor[1] = inptr[1];
+	prawcolor[0] = inptr[2];
 	prawcolor[3] = 255;		//alpha set to opaque
-	prawcolor+=4;
+	prawcolor += 4;
+	inptr += 3;
   }
 
   /* Zero out the pad bytes. */
-  pad = dest->pad_bytes;
+  int pad = dest->pad_bytes;
   while (--pad >= 0)
     *outptr++ = 0;
 }
-METHODDEF(void)
-start_output_bmp (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
+METHODDEF(void) start_output_bmp (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   /* no work here */
 }
-METHODDEF(void)finish_output_bmp (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
+METHODDEF(void) finish_output_bmp (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   
 }
 GLOBAL(djpeg_dest_ptr)jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2, DDSURFACEDESC2 *pddsd)
 {
-  bmp_dest_ptr dest;
-  JDIMENSION row_width;
-
   /* Create module interface object, fill in method pointers */
-  dest = (bmp_dest_ptr)
+  bmp_dest_ptr const dest = (bmp_dest_ptr)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				  SIZEOF(bmp_dest_struct));
   dest->pub.start_output = start_output_bmp;
@@ -550,10 +533,9 @@ GLOBAL(djpeg_dest_ptr)jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2, D
   dest->pddsd = pddsd;
 
   if (cinfo->out_color_space == JCS_GRAYSCALE) {
-    
+
   } else if (cinfo->out_color_space == JCS_RGB) {
-   
-      dest->pub.put_pixel_rows = put_pixel_rows;
+    dest->pub.put_pixel_rows = put_pixel_rows;
   } else {
     ERREXIT(cinfo, JERR_BMP_COLORSPACE);
   }
@@ -562,7 +544,7 @@ GLOBAL(djpeg_dest_ptr)jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2, D
   jpeg_calc_output_dimensions(cinfo);
 
   /* Determine width of rows in the BMP file (padded to 4-byte boundary). */
-  row_width = cinfo->output_width * cinfo->output_components;
+  JDIMENSION row_width = cinfo->output_width * cinfo->output_components;
   dest->data_width = row_width;
   while ((row_width & 3) != 0) row_width++;
   dest->row_width = row_width;
@@ -593,9 +575,9 @@ typedef struct {
   PinBinary *m_ppb;
 } PinImageSourceManager;
 
-METHODDEF(boolean)fill_input_buffer (j_decompress_ptr cinfo)
+METHODDEF(boolean) fill_input_buffer (j_decompress_ptr cinfo)
 {
-  PinImageSourceManager *src = (PinImageSourceManager *) cinfo->src;
+  PinImageSourceManager * const src = (PinImageSourceManager *) cinfo->src;
 
   src->pub.next_input_byte = (BYTE *)src->m_ppb->m_pdata;
   src->pub.bytes_in_buffer = src->m_ppb->m_cdata;
@@ -603,7 +585,7 @@ METHODDEF(boolean)fill_input_buffer (j_decompress_ptr cinfo)
   return TRUE;
 }
 
-METHODDEF(void)init_source (j_decompress_ptr cinfo)
+METHODDEF(void) init_source (j_decompress_ptr cinfo)
 {
   //my_src_ptr src = (my_src_ptr) cinfo->src;
 
@@ -614,29 +596,25 @@ METHODDEF(void)init_source (j_decompress_ptr cinfo)
   //src->start_of_file = TRUE;
 }
 
-METHODDEF(void)skip_input_data (j_decompress_ptr cinfo, long num_bytes)
+METHODDEF(void) skip_input_data (j_decompress_ptr cinfo, long num_bytes)
 {
-  PinImageSourceManager *src = (PinImageSourceManager *) cinfo->src;
+  PinImageSourceManager * const src = (PinImageSourceManager *) cinfo->src;
 
   src->pub.next_input_byte += num_bytes;//(BYTE *)src->m_ppb->m_pdata;
   src->pub.bytes_in_buffer -= num_bytes;//src->m_ppb->m_cdata;
   
 }
 
-METHODDEF(void)term_source (j_decompress_ptr cinfo)
+METHODDEF(void) term_source (j_decompress_ptr cinfo)
 {
   /* no work necessary here */
 }
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage *ppi, PinBinary *ppb, int *pwidth, int *pheight)
+LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage * const ppi, PinBinary * const ppb, int * const pwidth, int * const pheight)
 	{
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 	djpeg_dest_ptr dest_mgr = NULL;
-	
-	JDIMENSION num_scanlines;	
-
-	PinImageSourceManager* pism;
 
 	cinfo.err = jpeg_std_error(&jerr);
 	cinfo.err->msg_code = 0;
@@ -646,10 +624,8 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage *ppi, PinBinary *ppb
     cinfo.src = (struct jpeg_source_mgr *)
       (cinfo.mem->alloc_small) ((j_common_ptr) &cinfo, JPOOL_PERMANENT,
 				  SIZEOF(PinImageSourceManager));
-    pism = (PinImageSourceManager *) cinfo.src;
-   
   }
-  pism = (PinImageSourceManager *) cinfo.src;
+  PinImageSourceManager * const pism = (PinImageSourceManager *) cinfo.src;
   pism->pub.init_source = init_source;
   pism->pub.fill_input_buffer = fill_input_buffer;
   pism->pub.skip_input_data = skip_input_data;
@@ -660,7 +636,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage *ppi, PinBinary *ppb
   pism->pub.bytes_in_buffer = 0; /* forces fill_input_buffer on first read */
   pism->pub.next_input_byte = NULL; /* until buffer loaded */	
 
-	(void) jpeg_read_header(&cinfo, TRUE);
+	(void)jpeg_read_header(&cinfo, TRUE);
 
 	if (pwidth)
 		{
@@ -697,7 +673,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage *ppi, PinBinary *ppb
 
   while (cinfo.output_scanline < cinfo.output_height) 
 	  {
-		num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer, dest_mgr->buffer_height);
+		JDIMENSION num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer, dest_mgr->buffer_height);
 		(*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
 	 }
 
@@ -740,7 +716,6 @@ void PinDirectDraw::SetOpaque(LPDIRECTDRAWSURFACE7 pdds, const int width, const 
 		}
 
 	pdds->Unlock(NULL);
-
 	}
 
 void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop, const int width, const int height)
@@ -751,11 +726,11 @@ void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF 
 	
 	const int pitch = ddsd.lPitch;
 
-	const int rback = (rgbBackdrop & 0x00ff0000) >> 16;
-	const int gback = (rgbBackdrop & 0x0000ff00) >> 8;
-	const int bback = (rgbBackdrop & 0x000000ff);
+	const unsigned int rback = (rgbBackdrop & 0x00ff0000) >> 16;
+	const unsigned int gback = (rgbBackdrop & 0x0000ff00) >> 8;
+	const unsigned int bback = (rgbBackdrop & 0x000000ff);
 
-	const int rgbBd = rback | (gback << 8) | (bback << 16) | (0xff << 24);
+	const unsigned int rgbBd = rback | (gback << 8) | (bback << 16) | ((unsigned int)0xff << 24);
 
 	// Assume our 32 bit color structure	
 	BYTE *pch = (BYTE *)ddsd.lpSurface;	
@@ -781,7 +756,6 @@ void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF 
 	}
 
 
-
 BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const int width, const int height)
 	{
 	// Set alpha of each pixel
@@ -798,24 +772,23 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 	const COLORREF btrans = (rgbTransparent & 0x00ff0000) >> 16;
 
 	const COLORREF bgrTransparent = btrans | (gtrans << 8) | (rtrans << 16) | 0xff000000;  //rlc color order different in DirectX texture buffer
-	COLORREF tc;
 	// Assume our 32 bit color structure
 
-	BYTE *pch = (BYTE *)ddsd.lpSurface; 
+	BYTE *pch = (BYTE *)ddsd.lpSurface;
 	if (rgbTransparent == NOTRANSCOLOR)
 		{
-		for (int i=0;i<height;i++)
+		/*for (int i=0;i<height;i++)
 			{
 			for (int l=0;l<width;l++)
 				{	
-				tc = *(COLORREF *)pch;
-				//if (!(tc & MINBLACKMASK)) 
-				//	{*(COLORREF *)pch = tc | MINBLACK;}	//preserve alpha channel
+				const COLORREF tc = *(COLORREF *)pch;
+				if (!(tc & MINBLACKMASK)) 
+					*(COLORREF *)pch = tc | MINBLACK;	//preserve alpha channel
 
 				pch += 4;
 				}
-			pch += (pitch-(width*4));
-			}
+			pch += pitch-(width*4);
+			}*/
 		}
 	else  
 		{
@@ -823,7 +796,7 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 			{
 			for (int l=0;l<width;l++)
 				{	
-				tc = (*(COLORREF *)pch) | 0xff000000;		//set to opaque
+				const COLORREF tc = (*(COLORREF *)pch) | 0xff000000; //set to opaque
 				if (tc == bgrTransparent )					//rlc reg-blue order reversed
 					{
 					*(unsigned int *)pch = 0x00000000;		//rlc set transparent colorkey to black	and alpha transparent	
@@ -833,7 +806,6 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 					{ 
 					//if (!(tc & MINBLACKMASK)) 
 					//	{tc |= MINBLACK;}	// set minimum black
-
 					*(COLORREF *)pch = tc; 
 					}
 				pch += 4;
@@ -845,8 +817,6 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 
 	return fTransparent;
 	}
-
-
 
 const int rgfilterwindow[7][7] = {
 	1, 2, 3, 4, 3, 2, 1,
@@ -1005,16 +975,14 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 	DDSURFACEDESC2 ddsd, ddsdNext;
 	ddsd.dwSize = sizeof(ddsd);
 	ddsdNext.dwSize = sizeof(ddsd);
-	HRESULT hr;
 	DDSCAPS2 ddsCaps;
-	LPDIRECTDRAWSURFACE7 pddsNext;
-
 	ddsCaps.dwCaps2 = 0;
 	ddsCaps.dwCaps3 = 0;
 	ddsCaps.dwCaps4 = 0;
 	ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;	
 
-	hr = pdds->GetAttachedSurface(&ddsCaps, &pddsNext);
+	LPDIRECTDRAWSURFACE7 pddsNext;
+	HRESULT hr = pdds->GetAttachedSurface(&ddsCaps, &pddsNext);
 
 	if (hr == S_OK)
 		{

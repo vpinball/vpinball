@@ -96,9 +96,7 @@ void PinDirectSound::InitDirectSound(HWND hwnd)
 
 PinSound *PinDirectSound::LoadWaveFile(TCHAR* strFileName )
 {
-	PinSound *pps;
-
-	pps = new PinSound();
+	PinSound * const pps = new PinSound();
 
     // Create the sound buffer object from the wave file data
     if( FAILED( CreateStaticBuffer( strFileName, pps ) ) )
