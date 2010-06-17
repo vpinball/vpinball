@@ -9,6 +9,8 @@ Global
 		Release MinDependency|Win32 = Release MinDependency|Win32
 		Release MinSize|Win32 = Release MinSize|Win32
 		Release|Win32 = Release|Win32
+		ReleaseTest Fast|Win32 = ReleaseTest Fast|Win32
+		ReleaseTest Fast+SSE|Win32 = ReleaseTest Fast+SSE|Win32
 		ReleaseTest|Win32 = ReleaseTest|Win32
 		ReleaseTestFrench|Win32 = ReleaseTestFrench|Win32
 		ReleaseTestGerman|Win32 = ReleaseTestGerman|Win32
@@ -28,6 +30,10 @@ Global
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinSize|Win32.Build.0 = Release MinSize|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release|Win32.ActiveCfg = ReleaseTest|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release|Win32.Build.0 = ReleaseTest|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.ReleaseTest Fast|Win32.ActiveCfg = ReleaseTest Fast|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.ReleaseTest Fast|Win32.Build.0 = ReleaseTest Fast|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.ReleaseTest Fast+SSE|Win32.ActiveCfg = ReleaseTest Fast+SSE|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.ReleaseTest Fast+SSE|Win32.Build.0 = ReleaseTest Fast+SSE|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.ReleaseTest|Win32.ActiveCfg = ReleaseTest|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.ReleaseTest|Win32.Build.0 = ReleaseTest|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.ReleaseTestFrench|Win32.ActiveCfg = ReleaseTestFrench|Win32
