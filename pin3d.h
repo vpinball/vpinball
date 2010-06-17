@@ -17,15 +17,89 @@ enum
 class Matrix3D : public D3DMATRIX
 	{
 public:
-	void Multiply(const Matrix3D &mult, Matrix3D &result) const;
-	void RotateXMatrix(const GPINFLOAT x);
-	void RotateYMatrix(const GPINFLOAT y);
-	void RotateZMatrix(const GPINFLOAT z);
-	void SetIdentity();
-	void Scale(const float x, const float y, const float z );
+	inline void Multiply(const Matrix3D &mult, Matrix3D &result) const
+	{
+	Matrix3D matrixT;
+	for (int i=0;i<4;i++)
+		{
+		for (int l=0;l<4;l++)
+			{
+			matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) +
+						      (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
+			}
+		}
+	result = matrixT;
+	}
+	inline void RotateXMatrix(const GPINFLOAT x)
+	{
+	SetIdentity();
+	_22 = _33 = (float)cos(x);
+	_23 = (float)sin(x);
+	_32 = -_23;
+	}
+	inline void RotateYMatrix(const GPINFLOAT y)
+	{
+	SetIdentity();
+	_11 = _33 = (float)cos(y);
+	_31 = (float)sin(y);
+	_13 = -_31;
+	}
+	inline void RotateZMatrix(const GPINFLOAT z)
+	{
+	SetIdentity();
+	_11 = _22 = (float)cos(z);
+	_12 = (float)sin(z);
+	_21 = -_12;
+	}
+	inline void SetIdentity()
+	{
+	_11 = _22 = _33 = _44 = 1.0f;
+	_12 = _13 = _14 = _41 =
+	_21 = _23 = _24 = _42 =
+	_31 = _32 = _34 = _43 = 0.0f;
+	}
+	inline void Scale(const float x, const float y, const float z)
+	{
+	_11 *= x;
+	_12 *= x;
+	_13 *= x;
+	_21 *= y;
+	_22 *= y;
+	_23 *= y;
+	_31 *= z;
+	_32 *= z;
+	_33 *= z;
+	}
+	inline void MultiplyVector(const float x, const float y, const float z, Vertex3D * const pv3DOut) const
+	{
+	// Transform it through the current matrix set
+	const FLOAT xp = _11*x + _21*y + _31*z + _41;
+	const FLOAT yp = _12*x + _22*y + _32*z + _42;
+	const FLOAT wp = _14*x + _24*y + _34*z + _44;
+
+	const FLOAT zp = _13*x + _23*y + _33*z + _43;
+
+	const FLOAT inv_wp = 1.0f/wp;
+	pv3DOut->x = xp*inv_wp;
+	pv3DOut->y = yp*inv_wp;
+	pv3DOut->z = zp*inv_wp;
+	}
+	inline void MultiplyVector(const float x, const float y, const float z, Vertex3Ds * const pv3DOut) const
+	{
+	// Transform it through the current matrix set
+	const FLOAT xp = _11*x + _21*y + _31*z + _41;
+	const FLOAT yp = _12*x + _22*y + _32*z + _42;
+	const FLOAT wp = _14*x + _24*y + _34*z + _44;
+
+	const FLOAT zp = _13*x + _23*y + _33*z + _43;
+
+	const FLOAT inv_wp = 1.0f/wp;
+	pv3DOut->x = xp*inv_wp;
+	pv3DOut->y = yp*inv_wp;
+	pv3DOut->z = zp*inv_wp;
+	}
+
 	void Invert();
-	void MultiplyVector(const float x, const float y, const float z, Vertex3D * const pv3DOut) const;
-	void MultiplyVector(const float x, const float y, const float z, Vertex3Ds * const pv3DOut) const;
 	};
 
 class PinProjection
@@ -56,13 +130,13 @@ public:
 	Pin3D();
 	~Pin3D();
 
-	HRESULT InitDD(HWND hwnd, BOOL fFullScreen, int screenwidth, int screenheight, int colordepth, int refreshrate);
-	HRESULT Create3DDevice(GUID* pDeviceGUID);
-	HRESULT CreateZBuffer(GUID* pDeviceGUID);
+	HRESULT InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, const int refreshrate);
+	HRESULT Create3DDevice(const GUID * const pDeviceGUID);
+	HRESULT CreateZBuffer(const GUID * const pDeviceGUID);
 
 	void DrawBackground();
 
-	void InitRenderState();
+	void InitRenderState() const;
 
 	void InitBackGraphics();
 
@@ -73,8 +147,8 @@ public:
 	void Scale(const float x, const float y, const float z);
 	void Translate(const float x, const float y, const float z);
 	void FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV);
-	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout);
-	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout);
+	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout) const;
+	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 	void CacheTransform();
 	LPDIRECTDRAWSURFACE7 CreateShadow(const float height);
 
@@ -83,16 +157,16 @@ public:
 	void SetUpdatePos(const int left, const int top);
 	void Flip(const int offsetx, const int offsety);
 
-	void SetRenderTarget(LPDIRECTDRAWSURFACE7 pddsSurface, LPDIRECTDRAWSURFACE7 pddsZ);
-	void SetTextureFilter(const int TextureNum, const int Mode);
+	void SetRenderTarget(const LPDIRECTDRAWSURFACE7 pddsSurface, const LPDIRECTDRAWSURFACE7 pddsZ) const;
+	void SetTextureFilter(const int TextureNum, const int Mode) const;
 	
 	void SetTexture(LPDIRECTDRAWSURFACE7 pddsTexture);
 	void EnableLightMap(const BOOL fEnable, const float z);
 
 	void SetMaterial(const float r, const float g, const float b, const float a);
-	void SetColorKeyEnabled(BOOL fColorKey);
-	void SetAlphaEnabled(BOOL fAlpha);
-	void SetFiltersLinear();
+	void SetColorKeyEnabled(const BOOL fColorKey) const;
+	void SetAlphaEnabled(const BOOL fAlpha) const;
+	void SetFiltersLinear() const;
 
 	HRESULT DrawIndexedPrimitive(D3DPRIMITIVETYPE d3dptPrimitiveType, DWORD  dwVertexTypeDesc,
 												  LPVOID lpvVertices, DWORD dwVertexCount,
@@ -116,14 +190,14 @@ public:
 
 	void ClearExtents(RECT * const prc, float * const pznear, float * const pzfar);
 	void ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed);
-	void ExpandRectByRect(RECT *prc, RECT *prcNew);
+	void ExpandRectByRect(RECT * const prc, const RECT * const prcNew) const;
 
-	void ClipRectToVisibleArea(RECT *prc);
+	void ClipRectToVisibleArea(RECT * const prc) const;
 	void EnsureDebugTextures();
 
-	LPDIRECTDRAWSURFACE7 CreateOffscreen(int width, int height);
-	LPDIRECTDRAWSURFACE7 CreateOffscreenWithCustomTransparency(int width, int height, int color);
-	LPDIRECTDRAWSURFACE7 CreateZBufferOffscreen(int width, int height);
+	LPDIRECTDRAWSURFACE7 CreateOffscreen(const int width, const int height) const;
+	LPDIRECTDRAWSURFACE7 CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const;
+	LPDIRECTDRAWSURFACE7 CreateZBufferOffscreen(const int width, const int height) const;
 
 	LPDIRECTDRAW7 m_pDD;
 	LPDIRECTDRAWSURFACE7 m_pddsFrontBuffer;
@@ -165,8 +239,6 @@ public:
 	float m_maxtv;
 
 	float m_rotation, m_inclination;
-
-	BOOL m_fFlatRot;
 	float m_scalex, m_scaley;
 	float m_xlatex, m_xlatey;
 
@@ -176,6 +248,6 @@ public:
 	LightProjected m_lightproject;
 
 	HANDLE m_hFileCache;
-	BOOL m_fReadingFromCache;
-	BOOL m_fWritingToCache;
+	bool m_fReadingFromCache;
+	bool m_fWritingToCache;
 	};
