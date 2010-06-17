@@ -97,17 +97,17 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-	void RenderOutline(Sur *psur);
+	void RenderOutline(Sur * const psur);
 	virtual void RenderBlueprint(Sur *psur);
 
 	virtual void ClearForOverwrite();
 
-	void GetRgVertex(Vector<RenderVertex> *pvv);
-	Vertex2D *GetRampVertex(int *pcvertex, float **ppheight, BOOL **ppfCross, float **ppratio);
+	void GetRgVertex(Vector<RenderVertex> * const pvv);
+	Vertex2D *GetRampVertex(int * const pcvertex, float ** const ppheight, BOOL ** const ppfCross, float ** const ppratio);
 
-	void Ramp::AddSideWall(Vector<HitObject> *pvho, Vertex2D *pv1, Vertex2D *pv2,float height1,float height2, float wallheight);
+	void AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight);
 
-	void AddLine(Vector<HitObject> *pvho, Vertex2D *pv1, Vertex2D *pv2, Vertex2D *pv3, float height1, float height2);
+	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
 
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
@@ -137,11 +137,11 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 
 	virtual void GetBoundingVertices(Vector<Vertex3D> *pvvertex3D);
 
-	void CheckJoint(Vector<HitObject> *pvho, Hit3DPoly *ph3d1, Hit3DPoly *ph3d2);
+	void CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph3d1, const Hit3DPoly * const ph3d2);
 
-	void RenderAcrylic(LPDIRECT3DDEVICE7 pd3dDevice);
-	void RenderStaticHabitrail(LPDIRECT3DDEVICE7 pd3dDevice);
-	void RenderPolygons(LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D *rgv3D, int *rgicrosssection, int start, int stop);
+	void RenderAcrylic(const LPDIRECT3DDEVICE7 pd3dDevice);
+	void RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice);
+	void RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D * const rgv3D, WORD * const rgicrosssection, const int start, const int stop);
 
 // IRamp
 public:

@@ -62,7 +62,7 @@ public:
 
 	Vertex3Ds m_v;
 
-	void CalcCoordinates(Vertex3D * const pv);
+	void CalcCoordinates(Vertex3D * const pv) const;
 	};
 
 class RenderVertex : public Vertex2D

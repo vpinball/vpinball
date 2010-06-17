@@ -3,7 +3,7 @@ class PaintSur : public Sur
 	{
 public:
 
-	PaintSur(HDC hdc, float zoom, float offx, float offy, int width, int height, ISelect *psel);
+	PaintSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, ISelect * const psel);
 	virtual ~PaintSur();
 
 	virtual void Line(float x, float y, float x2, float y2);
@@ -27,7 +27,7 @@ public:
 	HPEN m_hpnOutline;
 	HPEN m_hpnLine;
 
-	BOOL m_fNullBorder;
+	bool m_fNullBorder;
 
 	ISelect *m_psel;
 	};

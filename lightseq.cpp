@@ -118,7 +118,7 @@ void LightSeq::Render(Sur *psur)
 
 // this function draw the little center marker which is a cross with the usual LS circles on it
 
-void LightSeq::RenderOutline(Sur *psur)
+void LightSeq::RenderOutline(Sur * const psur)
 {
 	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
 	psur->SetObject((ISelect *)&m_LightSeqCenter);
@@ -329,7 +329,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				const int gridIndex = (iy * m_lightSeqGridWidth) + ix;
 
 				// then store the index offset into the grid (plus 1, 0 is no object)
-				m_pgridData[gridIndex] = (short)i + 1;
+				m_pgridData[gridIndex] = i + 1;
 			}
 		}
 	}
@@ -416,7 +416,7 @@ bool LightSeq::RenderAnimation()
 		}
 	}
 
-	return (false);
+	return false;
 }
 
 
@@ -585,13 +585,13 @@ STDMETHODIMP LightSeq::get_CenterX(float *pVal)
 
 STDMETHODIMP LightSeq::put_CenterX(float newVal)
 {
-	if ((newVal < 0) || (newVal >= 1000))
+	if ((newVal < 0) || (newVal >= 1000.0f))
 		return E_FAIL;
 	STARTUNDO
 	m_d.m_vCenter.x = newVal;
 	// set the centre point of the grid for effects which start from the center
 	m_GridXCenter = floorf(m_d.m_vCenter.x * (float)(1.0/LIGHTSEQGRIDSCALE));
-	m_GridXCenterAdjust	= abs( (int)m_lightSeqGridWidth/2 - (int)m_GridXCenter);
+	m_GridXCenterAdjust	= abs( m_lightSeqGridWidth/2 - (int)m_GridXCenter);
 	STOPUNDO
 
 	return S_OK;
@@ -613,7 +613,7 @@ STDMETHODIMP LightSeq::put_CenterY(float newVal)
 	m_d.m_vCenter.y = newVal;
 	// set the centre point of the grid for effects which start from the center
 	m_GridYCenter = floorf(m_d.m_vCenter.y * (float)(1.0/LIGHTSEQGRIDSCALE));
-	m_GridYCenterAdjust = abs( (int)m_lightSeqGridHeight/2 - (int)m_GridYCenter);
+	m_GridYCenterAdjust = abs( m_lightSeqGridHeight/2 - (int)m_GridYCenter);
 	STOPUNDO
 
 	return S_OK;
@@ -738,7 +738,7 @@ STDMETHODIMP LightSeq::StopPlay()
 
 
 
-void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repeat, long Pause)
+void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause)
 {
 	bool inverse = false;
 
@@ -1570,13 +1570,13 @@ void LightSeq::SetupTracers(SequencerState Animation, long TailLength, long Repe
 	m_playInProgress = true;
 }
 
-bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
+bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 {
 	bool rc = false;
 
 	// if this tracer isn't valid, then exit with a finished return code
 	if (pTracer->type == eSeqNull)
-		return (true);
+		return true;
 
 	if (pTracer->delay == 0)
 	{
@@ -1667,7 +1667,7 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 
 	   		// process the circle type of effect
 	   		case eSeqCircle:
-				for (float fi=0;fi<360;fi+=0.5f)
+				for (float fi=0;fi<360.0f;fi+=0.5f)
 				{
 					const float angle = (float)(M_PI * 2.0/360.0)*(float)fi;
 					const float sn = sinf(angle);
@@ -1780,7 +1780,7 @@ bool LightSeq::ProcessTracer(_tracer *pTracer, LightState State)
 	return (rc);
 }
 
-void LightSeq::SetAllLightsToState(LightState State)
+void LightSeq::SetAllLightsToState(const LightState State)
 {
 	if (m_pcollection != NULL)
 	{
@@ -1792,7 +1792,7 @@ void LightSeq::SetAllLightsToState(LightState State)
 	}
 }
 
-void LightSeq::SetElementToState(int index, LightState State)
+void LightSeq::SetElementToState(const int index, const LightState State)
 {
 	const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
 	if (type == eItemLight)
@@ -1807,7 +1807,7 @@ void LightSeq::SetElementToState(int index, LightState State)
 	}
 }
 
-bool LightSeq::VerifyAndSetGridElement(int x, int y, LightState State)
+bool LightSeq::VerifyAndSetGridElement(const int x, const int y, const LightState State)
 {
 
 	if ( ((x >=0) && (x < m_lightSeqGridWidth)) &&
@@ -1829,7 +1829,7 @@ bool LightSeq::VerifyAndSetGridElement(int x, int y, LightState State)
 	}
 }
 
-LightState LightSeq::GetElementState(int index)
+LightState LightSeq::GetElementState(const int index)
 {
 	// just incase the element isn't a light or bumper
 	LightState rc = LightStateOff;
@@ -1851,7 +1851,7 @@ LightState LightSeq::GetElementState(int index)
 
 // Methods used by the light sequencer center marker
 
-LightSeqCenter::LightSeqCenter(LightSeq *pLightSeq)
+LightSeqCenter::LightSeqCenter(LightSeq * const pLightSeq)
 {
 	m_pLightSeq = pLightSeq;
 }

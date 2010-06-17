@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 
 
-PaintSur::PaintSur(HDC hdc, float zoom, float offx, float offy, int width, int height, ISelect *psel) : Sur(hdc, zoom, offx, offy, width, height)
+PaintSur::PaintSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, ISelect * const psel) : Sur(hdc, zoom, offx, offy, width, height)
 	{
 	m_hbr = CreateSolidBrush(RGB(255,255,255));
 	m_hpnOutline = CreatePen(PS_SOLID, 1, RGB(0,0,0));
@@ -118,11 +118,8 @@ void PaintSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, f
 	const int ix2 = SCALEXf(right);
 	const int iy2 = SCALEYf(bottom);
 
-	HDC hdcNew;
-	HBITMAP hbmOld;
-
-	hdcNew = CreateCompatibleDC(m_hdc);
-	hbmOld = (HBITMAP)SelectObject(hdcNew, hbm);
+	HDC hdcNew = CreateCompatibleDC(m_hdc);
+	HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, hbm);
 	
 	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
 
@@ -225,13 +222,13 @@ void PaintSur::SetBorderColor(int rgb, BOOL fDashed, int width)
 	if (rgb == -1)
 		{
 		m_hpnOutline = CreatePen(PS_NULL, width, rgb);
-		m_fNullBorder = fTrue;
+		m_fNullBorder = true;
 		}
 	else
 		{
 		const int style = fDashed ? PS_DOT : PS_SOLID;
 		m_hpnOutline = CreatePen(style, width, rgb);
-		m_fNullBorder = fFalse;
+		m_fNullBorder = false;
 		}
 	}
 
