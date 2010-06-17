@@ -782,8 +782,8 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	hr = m_pin3d.m_pd3dDevice->EndScene();
 	
 	// Start Cache
-	m_pin3d.m_fWritingToCache = fFalse;
-	m_pin3d.m_fReadingFromCache = fFalse;
+	m_pin3d.m_fWritingToCache = false;
+	m_pin3d.m_fReadingFromCache = false;
 	m_pin3d.m_hFileCache = NULL;
 
 	if (fCheckForCache)

@@ -68,10 +68,10 @@ Pin3D::~Pin3D()
 		m_pd3dDevice->Release();
 	}
 
-static HRESULT WINAPI EnumZBufferFormatsCallback( DDPIXELFORMAT* pddpf,
-                                                  VOID* pContext )
+static HRESULT WINAPI EnumZBufferFormatsCallback( DDPIXELFORMAT * pddpf,
+                                                  VOID * pContext )
 {
-    DDPIXELFORMAT* pddpfOut = (DDPIXELFORMAT*)pContext;
+    DDPIXELFORMAT * const pddpfOut = (DDPIXELFORMAT*)pContext;
 
     if((pddpf->dwRGBBitCount > 0) && (pddpfOut->dwRGBBitCount == pddpf->dwRGBBitCount))
     {
@@ -82,7 +82,7 @@ static HRESULT WINAPI EnumZBufferFormatsCallback( DDPIXELFORMAT* pddpf,
     return D3DENUMRET_OK;
 }
 
-void Pin3D::ClipRectToVisibleArea(RECT *prc)
+void Pin3D::ClipRectToVisibleArea(RECT * const prc) const
 {
 	prc->top = max(prc->top, 0);
 	prc->left = max(prc->left, 0);
@@ -90,7 +90,7 @@ void Pin3D::ClipRectToVisibleArea(RECT *prc)
 	prc->bottom = min(prc->bottom, m_dwRenderHeight);
 }
 
-void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout)
+void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout) const
 	{
 	// Get the width and height of the viewport. This is needed to scale the
 	// transformed vertices to fit the render window.
@@ -133,7 +133,7 @@ void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi
 		}
 	}
 
-void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout)
+void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
 	{
 	// Get the width and height of the viewport. This is needed to scale the
 	// transformed vertices to fit the render window.
@@ -173,7 +173,7 @@ void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi
 		}
 	}
 
-LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreenWithCustomTransparency(int width, int height, int color)
+LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const
 	{
 	//const GUID* pDeviceGUID = &IID_IDirect3DRGBDevice;
 	DDSURFACEDESC2 ddsd;
@@ -184,25 +184,13 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreenWithCustomTransparency(int width, int
 	{
 		return NULL;
 	}*/
-	
-	if (width < 1)
-		{
-		// This can happen if an object is completely off screen.  Since that's
-		// rare, it's easier just to create a tiny surface to handle it.
-		width = 1;
-		}
-		
-	if (height < 1)
-		{
-		height = 1;
-		}
 
 	LPDIRECTDRAWSURFACE7 pdds;
 	ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_CKSRCBLT;
 	ddsd.ddckCKSrcBlt.dwColorSpaceLowValue = color;//0xffffff;
 	ddsd.ddckCKSrcBlt.dwColorSpaceHighValue = color;//0xffffff;
-    ddsd.dwWidth        = width;
-    ddsd.dwHeight       = height;
+	ddsd.dwWidth        = width < 1 ? 1 : width;   // This can happen if an object is completely off screen.  Since that's
+	ddsd.dwHeight       = height < 1 ? 1 : height; // rare, it's easier just to create a tiny surface to handle it.
     ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;// | DDSCAPS_3DDEVICE;
 
 	// Check if we are rendering in hardware.
@@ -225,7 +213,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreenWithCustomTransparency(int width, int
 	return pdds;
 	}
 	
-LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreen(int width, int height)
+LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreen(const int width, const int height) const
 	{
 	DDSURFACEDESC2 ddsd;
     ZeroMemory( &ddsd, sizeof(ddsd) );
@@ -268,7 +256,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreen(int width, int height)
 	return pdds;
 	}
 
-LPDIRECTDRAWSURFACE7 Pin3D::CreateZBufferOffscreen(int width, int height)
+LPDIRECTDRAWSURFACE7 Pin3D::CreateZBufferOffscreen(const int width, const int height) const
 {
     const GUID* pDeviceGUID;
 
@@ -289,8 +277,8 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateZBufferOffscreen(int width, int height)
     // Setup the surface desc for the z-buffer.
     ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
     ddsd.ddsCaps.dwCaps = DDSCAPS_ZBUFFER; 
-	ddsd.dwWidth        = width;
-    ddsd.dwHeight       = height;
+	ddsd.dwWidth        = width < 1 ? 1 : width;
+    ddsd.dwHeight       = height < 1 ? 1 : height;
     ddsd.ddpfPixelFormat.dwSize = 0;  // Tag the pixel format as unitialized
 
 	// Check if we are rendering in hardware.
@@ -405,7 +393,7 @@ retryall:
     return pdds;// S_OK;
 }
 
-HRESULT Pin3D::InitDD(HWND hwnd, BOOL fFullScreen, int screenwidth, int screenheight, int colordepth, int refreshrate)
+HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, const int refreshrate)
 {
     m_hwnd = hwnd;
 
@@ -620,7 +608,7 @@ HRESULT Pin3D::InitDD(HWND hwnd, BOOL fFullScreen, int screenwidth, int screenhe
     return S_OK;
 }
 
-HRESULT Pin3D::Create3DDevice(GUID* pDeviceGUID)
+HRESULT Pin3D::Create3DDevice(const GUID * const pDeviceGUID)
 	{
 	HRESULT hr;
 
@@ -633,10 +621,9 @@ HRESULT Pin3D::Create3DDevice(GUID* pDeviceGUID)
 		}
 
 	D3DDEVICEDESC7 ddfoo;
-
 	m_pd3dDevice->GetCaps(&ddfoo);
 
-	DWORD caps = ddfoo.dpcLineCaps.dwRasterCaps;
+	const DWORD caps = ddfoo.dpcLineCaps.dwRasterCaps;
 
 	if (caps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT)
 		{
@@ -667,10 +654,8 @@ void Pin3D::EnsureDebugTextures()
 		}
 	}
 
-HRESULT Pin3D::CreateZBuffer( GUID* pDeviceGUID )
+HRESULT Pin3D::CreateZBuffer(const GUID* const pDeviceGUID )
 {
-    HRESULT hr;
-
     // Get z-buffer dimensions from the render target
     DDSURFACEDESC2 ddsd;
     ddsd.dwSize = sizeof(ddsd);
@@ -711,6 +696,7 @@ HRESULT Pin3D::CreateZBuffer( GUID* pDeviceGUID )
         }
     }
     // Create the z buffer.
+    HRESULT hr;
     if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsZBuffer, NULL ) ) )
     {
 		ShowError("Could not create Z Buffer.");
@@ -730,10 +716,9 @@ HRESULT Pin3D::CreateZBuffer( GUID* pDeviceGUID )
 	// Update the count.
 	NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwRGBBitCount/8);
 
-	int width, height;
-
 	CreateBallShadow();
 
+	int width, height;
 	m_pddsBallTexture = g_pvp->m_pdd.CreateFromResource(IDB_BALLTEXTURE, &width, &height);
 	g_pvp->m_pdd.SetAlpha(m_pddsBallTexture, RGB(0,0,0), width, height);
 	g_pvp->m_pdd.CreateNextMipMapLevel(m_pddsBallTexture);
@@ -765,7 +750,7 @@ HRESULT Pin3D::CreateZBuffer( GUID* pDeviceGUID )
 }
 
 // Sets the texture filtering state.
-void Pin3D::SetTextureFilter(const int TextureNum, const int Mode) 
+void Pin3D::SetTextureFilter(const int TextureNum, const int Mode) const
 {
 #if 0
 	// Don't filter textures.  Don't filter between mip levels.
@@ -820,14 +805,14 @@ void Pin3D::SetTextureFilter(const int TextureNum, const int Mode)
 }
 
 
-void Pin3D::SetRenderTarget(LPDIRECTDRAWSURFACE7 pddsSurface, LPDIRECTDRAWSURFACE7 pddsZ)
+void Pin3D::SetRenderTarget(const LPDIRECTDRAWSURFACE7 pddsSurface, const LPDIRECTDRAWSURFACE7 pddsZ) const
 	{
 	HRESULT hr;
 	hr = m_pd3dDevice->SetRenderTarget(pddsSurface, 0L);
 	hr = m_pd3dDevice->SetRenderTarget(pddsZ, 0L);
 	}
 
-void Pin3D::InitRenderState()
+void Pin3D::InitRenderState() const
 	{
 	HRESULT hr;
 	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
@@ -922,7 +907,6 @@ void Pin3D::DrawBackground()
 void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey)
 	{
 	RECT rc;
-
 	rc.left = 0;
 	rc.top = 0;
 	rc.right = m_width;
@@ -938,7 +922,6 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	m_inclination = inclination*(float)(M_PI/180.0);
 
 	HRESULT hr;
-
 	hr = m_pd3dDevice->SetTexture(ePictureTexture, NULL);
 
 	//hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
@@ -970,8 +953,8 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	//light.dvDirection = D3DVECTOR( -5.0f, 20.0f, -(float)cos(0.5) );
 	//light.dvDirection = D3DVECTOR(-5.0f, 20.0f, -5.0f);
 
-	float sn = sinf(m_inclination + (float)(M_PI - (M_PI*3.0/16.0)));
-	float cs = cosf(m_inclination + (float)(M_PI - (M_PI*3.0/16.0)));
+	const float sn = sinf(m_inclination + (float)(M_PI - (M_PI*3.0/16.0)));
+	const float cs = cosf(m_inclination + (float)(M_PI - (M_PI*3.0/16.0)));
 
 	light.dvDirection = D3DVECTOR(5.0f, sn * 21.0f, cs * -21.0f);
 	light.dvRange        = D3DLIGHT_RANGE_MAX;
@@ -1279,9 +1262,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 
 	// Create Shadow Picture
 	BITMAPINFO bmi;
-
 	memset(&bmi, 0, sizeof(bmi));
-
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	bmi.bmiHeader.biWidth = 256;//shadwidth;
 	bmi.bmiHeader.biHeight = -256;//-shadheight;
@@ -1292,15 +1273,11 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 
 	//WriteFile(hfile, &bmi, sizeof(bmi), &foo, NULL);
 
-	HBITMAP hdib;
-	HDC hdcScreen;
-	HDC hdc2;
+	HDC hdcScreen = GetDC(NULL);
+	HDC hdc2 = CreateCompatibleDC(hdcScreen);
+
 	BYTE *pbits;
-
-	hdcScreen = GetDC(NULL);
-	hdc2 = CreateCompatibleDC(hdcScreen);
-
-	hdib = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
+	HBITMAP hdib = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
 
 	HBITMAP hbmOld = (HBITMAP)SelectObject(hdc2, hdib);
 	const float zoom = shadwidth/(centerx*2.0f);
@@ -1373,17 +1350,17 @@ void Pin3D::SetMaterial(const float r, const float g, const float b, const float
 	m_pd3dDevice->SetMaterial(&mtrl);
 	}
 	
-void Pin3D::SetColorKeyEnabled(BOOL fColorKey)
+void Pin3D::SetColorKeyEnabled(const BOOL fColorKey) const
 	{
 	m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, fColorKey);
 	}
 
-void Pin3D::SetAlphaEnabled(BOOL fAlpha)
+void Pin3D::SetAlphaEnabled(const BOOL fAlpha) const
 	{
 	m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, fAlpha);
 	}
 
-void Pin3D::SetFiltersLinear()
+void Pin3D::SetFiltersLinear() const
 	{
 	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
 	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MINFILTER, D3DTFN_LINEAR);
@@ -1411,8 +1388,6 @@ void Pin3D::SetUpdatePos(const int left, const int top)
 void Pin3D::Flip(const int offsetx, const int offsety)
 	{
 	RECT	rcNew;
-	DDBLTFX ddbltfx;
-
 	// Set the region to the entire screen dimensions.
 	rcNew.left = m_rcUpdate.left + offsetx;
 	rcNew.right = m_rcUpdate.right + offsetx;
@@ -1420,7 +1395,8 @@ void Pin3D::Flip(const int offsetx, const int offsety)
 	rcNew.bottom = m_rcUpdate.bottom + offsety;
 
 	// Set blt effects to minimize tearing.
-    ZeroMemory(&ddbltfx, sizeof(DDBLTFX));
+    DDBLTFX ddbltfx;
+	ZeroMemory(&ddbltfx, sizeof(DDBLTFX));
 	ddbltfx.dwSize = sizeof(DDBLTFX);
 	//ddbltfx.dwDDFX = DDBLTFX_NOTEARING;
 
@@ -1519,14 +1495,13 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D/*Vertex3D *r
 void Pin3D::Identity()
 	{
 	Matrix3D matTrans;
-
 	matTrans._11 = matTrans._22 = matTrans._33 = matTrans._44 = 1.0f;
 	matTrans._12 = matTrans._13 = matTrans._14 = 0.0f;
 	matTrans._21 = matTrans._23 = matTrans._24 = 0.0f;
 	matTrans._31 = matTrans._32 = matTrans._34 = 0.0f;
 	matTrans._41 = matTrans._42 = matTrans._43 = 0.0f;
 
-	m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTrans);
+	m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matTrans);
 	}
 
 void Pin3D::Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z)
@@ -1548,7 +1523,6 @@ void Pin3D::Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z)
 void Pin3D::Scale(const float x, const float y, const float z)
 {
 	Matrix3D matTemp;
-
 	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 	matTemp.Scale( x, y, z );
 	m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
@@ -1564,7 +1538,6 @@ void Pin3D::Translate(const float x, const float y, const float z)
 	matTrans._12 = matTrans._13 = matTrans._14 = 0.0f;
 	matTrans._21 = matTrans._23 = matTrans._24 = 0.0f;
 	matTrans._31 = matTrans._32 = matTrans._34 = 0.0f;
-
 	matTrans._41 = x;
 	matTrans._42 = y;
 	matTrans._43 = z;
@@ -1657,7 +1630,7 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const p
 		}
 	}
 
-void Pin3D::ExpandRectByRect(RECT *prc, RECT *prcNew)
+void Pin3D::ExpandRectByRect(RECT * const prc, const RECT * const prcNew) const
 	{
 	prc->left = min(prc->left, prcNew->left);
 	prc->top = min(prc->top, prcNew->top);
@@ -1669,9 +1642,9 @@ void Pin3D::ExpandRectByRect(RECT *prc, RECT *prcNew)
 
 BOOL Pin3D::OpenCacheFileForRead()
 	{
-	m_fReadingFromCache = fFalse;
+	m_fReadingFromCache = false;
 
-	if(!g_pplayer || !g_pplayer->m_ptable->m_TableCaching)return fFalse;
+	if(!g_pplayer || !g_pplayer->m_ptable->m_TableCaching) return fFalse;
 	
 	char szCacheFileName[_MAX_PATH];
 	if (!GetCacheFileName(szCacheFileName))
@@ -1680,7 +1653,7 @@ BOOL Pin3D::OpenCacheFileForRead()
 		}
 
 	WIN32_FILE_ATTRIBUTE_DATA fileinfo;
-	BOOL fGotInfo = GetFileAttributesEx(g_pplayer->m_ptable->m_szFileName,
+	const BOOL fGotInfo = GetFileAttributesEx(g_pplayer->m_ptable->m_szFileName,
 			GetFileExInfoStandard, &fileinfo);
 
 	if (!fGotInfo)
@@ -1747,7 +1720,7 @@ BOOL Pin3D::OpenCacheFileForRead()
 		return fFalse;
 		}
 
-	m_fReadingFromCache = fTrue;
+	m_fReadingFromCache = true;
 	return fTrue;
 	}
 
@@ -1777,7 +1750,7 @@ void Pin3D::DeleteCacheFileName()
 		m_hFileCache = NULL;
 		}
 
-	m_fWritingToCache = fFalse;
+	m_fWritingToCache = false;
 
 	if (!GetCacheFileName(szCacheFileName))
 		return;
@@ -1787,7 +1760,7 @@ void Pin3D::DeleteCacheFileName()
 
 void Pin3D::OpenCacheFileForWrite()
 	{
-	m_fWritingToCache = fFalse;
+	m_fWritingToCache = false;
 	
 	if(!g_pplayer || !g_pplayer->m_ptable->m_TableCaching)
 		return;
@@ -1831,7 +1804,7 @@ void Pin3D::OpenCacheFileForWrite()
 	hr = m_pddsStaticZ->GetPixelFormat(&ddpf);
 	ret = WriteFile(m_hFileCache, &ddpf, sizeof(ddpf), &bytesWritten, NULL);
 
-	m_fWritingToCache = fTrue;
+	m_fWritingToCache = true;
 	}
 
 void Pin3D::ReadSurfaceFromCacheFile(LPDIRECTDRAWSURFACE7 pdds)
@@ -2313,65 +2286,6 @@ void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * c
 		}
 	}
 
-void Matrix3D::Multiply(const Matrix3D &mult, Matrix3D &result) const
-	{
-	Matrix3D matrixT;
-	for (int i=0;i<4;i++)
-		{
-		for (int l=0;l<4;l++)
-			{
-			matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) +
-						      (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
-			}
-		}
-	result = matrixT;
-	}
-
-void Matrix3D::RotateXMatrix(const GPINFLOAT x)
-	{
-	SetIdentity();
-	_22 = _33 = (float)cos(x);
-	_23 = (float)sin(x);
-	_32 = -_23;
-	}
-
-void Matrix3D::RotateYMatrix(const GPINFLOAT y)
-	{
-	SetIdentity();
-	_11 = _33 = (float)cos(y);
-	_31 = (float)sin(y);
-	_13 = -_31;
-	}
-
-void Matrix3D::RotateZMatrix(const GPINFLOAT z)
-	{
-	SetIdentity();
-	_11 = _22 = (float)cos(z);
-	_12 = (float)sin(z);
-	_21 = -_12;
-	}
-
-void Matrix3D::Scale(const float x, const float y, const float z )
-	{
-	_11 *= x;
-	_12 *= x;
-	_13 *= x;
-	_21 *= y;
-	_22 *= y;
-	_23 *= y;
-	_31 *= z;
-	_32 *= z;
-	_33 *= z;
-	}
-
-void Matrix3D::SetIdentity()
-	{
-	_11 = _22 = _33 = _44 = 1.0f;
-	_12 = _13 = _14 = _41 =
-	_21 = _23 = _24 = _42 =
-	_31 = _32 = _34 = _43 = 0.0f;
-	}
-
 #define MATRIXSIZE 4
 
 void Matrix3D::Invert()
@@ -2440,38 +2354,4 @@ void Matrix3D::Invert()
 		{
 		memcpy (m[i], mat3D.m[i], sizeof(float) * nn);
 		}
-	}
-
-void Matrix3D::MultiplyVector(const float x, const float y, const float z, Vertex3D * const pv3DOut) const
-	{
-	// Transform it through the current matrix set
-	const FLOAT xp = _11*x + _21*y + _31*z + _41;
-	const FLOAT yp = _12*x + _22*y + _32*z + _42;
-	const FLOAT wp = _14*x + _24*y + _34*z + _44;
-
-	const FLOAT zp = _13*x + _23*y + _33*z + _43;
-
-	const FLOAT inv_wp = 1.0f/wp;
-	pv3DOut->x = xp*inv_wp;
-	pv3DOut->y = yp*inv_wp;
-	pv3DOut->z = zp*inv_wp;
-
-	return;
-	}
-
-void Matrix3D::MultiplyVector(const float x, const float y, const float z, Vertex3Ds * const pv3DOut) const
-	{
-	// Transform it through the current matrix set
-	const FLOAT xp = _11*x + _21*y + _31*z + _41;
-	const FLOAT yp = _12*x + _22*y + _32*z + _42;
-	const FLOAT wp = _14*x + _24*y + _34*z + _44;
-
-	const FLOAT zp = _13*x + _23*y + _33*z + _43;
-
-	const FLOAT inv_wp = 1.0f/wp;
-	pv3DOut->x = xp*inv_wp;
-	pv3DOut->y = yp*inv_wp;
-	pv3DOut->z = zp*inv_wp;
-
-	return;
 	}
