@@ -57,7 +57,7 @@ void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvp
 		}
 	}
 
-void LightProjected::CalcCoordinates(Vertex3D * const pv)
+void LightProjected::CalcCoordinates(Vertex3D * const pv) const
 	{
 	Vertex3Ds vOrigin, vT;
 

@@ -75,7 +75,7 @@ typedef struct {
 class LightSeqCenter : public ISelect
 	{
 public:
-	LightSeqCenter(LightSeq *pLightSeq);
+	LightSeqCenter(LightSeq * const pLightSeq);
 	virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual IDispatch *GetDispatch();
 	//virtual int GetDialogID();
@@ -146,7 +146,7 @@ END_CONNECTION_POINT_MAP()
 	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-	void RenderOutline(Sur *psur);
+	void RenderOutline(Sur * const psur);
 	virtual void MoveOffset(float dx, float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
@@ -209,12 +209,12 @@ public:
     bool	RenderAnimation();
 
 private:
-    void		SetupTracers(SequencerState Animation, long TailLength, long Repeat, long Pause);
-	bool		ProcessTracer(_tracer *pTracer, LightState State);
-	void		SetAllLightsToState(LightState State);
-	void 		SetElementToState(int index, LightState State);
-	LightState	GetElementState(int index);
-	bool		VerifyAndSetGridElement(int x, int y, LightState State);
+    void		SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause);
+	bool		ProcessTracer(_tracer * const pTracer, const LightState State);
+	void		SetAllLightsToState(const LightState State);
+	void 		SetElementToState(const int index, const LightState State);
+	LightState	GetElementState(const int index);
+	bool		VerifyAndSetGridElement(const int x, const int y, const LightState State);
 };
 
 #endif // !defined(AFX_LIGHTSEQ_H__5EC2D0B7_3868_4CCC_81EC_A4653460DF7E__INCLUDED_)
