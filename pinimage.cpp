@@ -537,7 +537,9 @@ GLOBAL(djpeg_dest_ptr)jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2, D
   } else if (cinfo->out_color_space == JCS_RGB) {
     dest->pub.put_pixel_rows = put_pixel_rows;
   } else {
-    ERREXIT(cinfo, JERR_BMP_COLORSPACE);
+      //SHagendo 18 June 2010: cinfo's errexit pointer is invalid, caller must check for returned NULL pointer
+      //ERREXIT(cinfo, JERR_BMP_COLORSPACE);      
+      return NULL;
   }
 
   /* Calculate output image dimensions so we can allocate space */
@@ -666,6 +668,12 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage * const ppi, PinBina
 	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
     dest_mgr = jinit_write_bmp(&cinfo, FALSE, &ddsd);
+    //SHagendo 18 June 2010: jinit_write_bmp will return NULL pointer if colorspace is invalid (not RGB or Grayscale)
+   if (dest_mgr == NULL)
+   {
+      MessageBox(g_pvp->m_hwnd, "Import aborted. Image is not in RGB or Grayscale format.", "Visual Pinball", MB_ICONWARNING);
+      return NULL;
+   }
 
   jpeg_start_decompress(&cinfo);
 
