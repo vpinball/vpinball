@@ -100,9 +100,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
 
 	HitPlunger *m_phitplunger;
 
-private:
-
-
 // IPlunger
 public:
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

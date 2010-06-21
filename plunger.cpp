@@ -44,15 +44,13 @@ void Plunger::SetDefaults()
 	m_d.m_mechPlunger = fFalse;		//rlc plungers require selection for mechanical input
 	m_d.m_autoPlunger = fFalse;		
 	m_d.m_mechStrength = 85;		//rlc
-	m_d.m_parkPosition = 0.5f/3.0f;	// typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
+	m_d.m_parkPosition = (float)(0.5/3.0);	// typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
 
 	m_d.m_fVisible = fTrue;
 	m_d.m_scatterVelocity = 0;
 	m_d.m_breakOverVelocity = 18.0f;
 	
 	}
-
-
 
 void Plunger::PreRender(Sur *psur)
 	{
@@ -65,19 +63,16 @@ void Plunger::Render(Sur *psur)
 	psur->SetObject(this);
 
 	psur->Rectangle(m_d.m_v.x - m_d.m_width, m_d.m_v.y - m_d.m_stroke,
-			m_d.m_v.x + m_d.m_width, m_d.m_v.y + m_d.m_height);
+			        m_d.m_v.x + m_d.m_width, m_d.m_v.y + m_d.m_height);
 	}
-
-
 
 void Plunger::GetHitShapes(Vector<HitObject> *pvho)
 	{
-	HitPlunger *php;
+	const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
-	float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
-
-	php = new HitPlunger(m_d.m_v.x - m_d.m_width, m_d.m_v.y + m_d.m_height, m_d.m_v.x + m_d.m_width,
-			m_d.m_v.y - m_d.m_stroke, zheight, this);
+	HitPlunger * const php = new HitPlunger(m_d.m_v.x - m_d.m_width,
+											m_d.m_v.y + m_d.m_height, m_d.m_v.x + m_d.m_width,
+											m_d.m_v.y - m_d.m_stroke, zheight, this);
 
 	php->m_pfe = NULL;
 
@@ -97,8 +92,7 @@ void Plunger::GetTimers(Vector<HitTimer> *pvht)
 	{
 	IEditable::BeginPlay();
 
-	HitTimer *pht;
-	pht = new HitTimer();
+	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
 	pht->m_pfe = (IFireEvents *)this;
@@ -121,7 +115,6 @@ void Plunger::EndPlay()
 			}
 
 		m_phitplunger = NULL;
-
 		}
 
 	IEditable::EndPlay();
@@ -163,19 +156,19 @@ void Plunger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 #define PLUNGEPOINTS 5
 
 const float rgcrossplunger[][2] = {
-	1, 0,
-	1, 10,
-	0.35f, 20,
-	0.35f, 24,
-	0.35f, 100,
+	1.0f, 0.0f,
+	1.0f, 10.0f,
+	0.35f, 20.0f,
+	0.35f, 24.0f,
+	0.35f, 100.0f
 	};
 
 const float rgcrossplungerNormal[][2] = {
-	1, 0,
+	1.0f, 0.0f,
 	0.8f, 0.6f,
-	0, 1,
-	1, 0,
-	1, 0,
+	0.0f, 1.0f,
+	1.0f, 0.0f,
+	1.0f, 0.0f
 	};
 	
 #define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
@@ -191,7 +184,6 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	_ASSERTE(m_phitplunger);
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-	LPDIRECTDRAWSURFACE7 pdds;
 	
 	const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
@@ -239,12 +231,12 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
-		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitplunger->m_plungeranim.m_znear
-									  , &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS), fFalse);
+		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitplunger->m_plungeranim.m_znear,
+							  &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS), fFalse);
 
 		// Check if we are blitting with D3D.
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{			
+			{
 			// Clear the texture by copying the color and z values from the "static" buffers.
 			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
 			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ
@@ -263,11 +255,12 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					(m + offset + 1 + PLUNGEPOINTS) % (16*PLUNGEPOINTS),
 					 m + offset + 1};
 
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D
-													   ,(16*PLUNGEPOINTS),rgi, 4, 0);
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
+													     (16*PLUNGEPOINTS),rgi, 4, 0);
 				}
 			}
 
+		LPDIRECTDRAWSURFACE7 pdds;
 		pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
@@ -348,7 +341,6 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-	
 	}
 
 HRESULT Plunger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -362,11 +354,10 @@ HRESULT Plunger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 	br.Load();
 	return S_OK;
 #else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
 	m_ptable = ptable;
 
+	HRESULT hr;
+	ULONG read = 0;
 	DWORD dwID;
 	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
 		return hr;
@@ -393,7 +384,7 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(WDTH))
 		{
 		pbr->GetFloat(&m_d.m_width);
-		m_d.m_width = 25;
+		m_d.m_width = 25.0f;
 		}
 	else if (id == FID(HIGH))
 		{
@@ -491,7 +482,6 @@ STDMETHODIMP Plunger::MotionDevice(int *pVal)
 	*pVal=uShockType;
 
 	return S_OK;
-
 }
 
 //float mechPlunger();
@@ -501,10 +491,10 @@ STDMETHODIMP Plunger::Position(int *pVal)
 {
 //	*pVal=curMechPlungerPos;
 
-	float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : curMechPlungerPos*(1.0f - m_d.m_parkPosition);
+	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
+	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
-	*pVal = int(tmp*(float)(1.0/0.04));
+	*pVal = (int)(tmp*(float)(1.0/0.04));
 //	return tmp;
 
 	
@@ -548,7 +538,7 @@ STDMETHODIMP Plunger::Fire()
 	}
 
 #ifdef LOG
-	int i = g_pplayer->m_vmover.IndexOf(m_phitplunger);
+	const int i = g_pplayer->m_vmover.IndexOf(m_phitplunger);
 	fprintf(g_pplayer->m_flog, "Plunger Release %d\n", i);
 #endif
 
@@ -575,7 +565,6 @@ STDMETHODIMP Plunger::put_PullSpeed(float newVal)
 
 STDMETHODIMP Plunger::get_FireSpeed(float *pVal)
 {
-
 	*pVal = m_d.m_speedFire;
 
 	return S_OK;
@@ -596,13 +585,13 @@ STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
 {
 	if (m_phitplunger)
 		{
-		float radius = 25.0f;
+		const float radius = 25.0f;
 		const float x = (m_phitplunger->m_plungeranim.m_x + m_phitplunger->m_plungeranim.m_x2) * 0.5f;
 		const float y = m_phitplunger->m_plungeranim.m_pos - radius - 0.01f;
 
 		const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, x, y);
 
-		Ball *pball = g_pplayer->CreateBall(x, y, height, 0.1f, 0, 0);
+		Ball * const pball = g_pplayer->CreateBall(x, y, height, 0.1f, 0, 0);
 		
 		*pBallEx = pball->m_pballex;
 		pball->m_pballex->AddRef();
@@ -717,7 +706,6 @@ STDMETHODIMP Plunger::put_AutoPlunger(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP Plunger::get_Visible(VARIANT_BOOL *pVal)
 {
 	*pVal = FTOVB(m_d.m_fVisible);
@@ -754,6 +742,7 @@ STDMETHODIMP Plunger::put_ParkPosition(float newVal)
 STDMETHODIMP Plunger::get_Stroke(float *pVal)
 {
 	*pVal = m_d.m_stroke;
+
 	return S_OK;
 }
 
@@ -773,6 +762,7 @@ STDMETHODIMP Plunger::put_Stroke(float newVal)
 STDMETHODIMP Plunger::get_ScatterVelocity(float *pVal)
 {
 	*pVal = m_d.m_scatterVelocity;
+
 	return S_OK;
 }
 
@@ -788,6 +778,7 @@ STDMETHODIMP Plunger::put_ScatterVelocity(float newVal)
 STDMETHODIMP Plunger::get_BreakOverVelocity(float *pVal)
 {
 	*pVal = m_d.m_breakOverVelocity;
+
 	return S_OK;
 }
 

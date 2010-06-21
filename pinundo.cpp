@@ -40,8 +40,6 @@ void PinUndo::BeginUndo()
 
 	if (m_cUndoLayer == 1)
 		{
-		UndoRecord *pur;
-
 		if (m_vur.Size() == MAXUNDO)
 			{
 			delete m_vur.ElementAt(0);
@@ -49,7 +47,7 @@ void PinUndo::BeginUndo()
 			m_cleanpoint--;
 			}
 
-		pur = new UndoRecord();
+		UndoRecord * const pur = new UndoRecord();
 
 		m_vur.AddElement(pur);
 		}
@@ -69,7 +67,7 @@ void PinUndo::MarkForUndo(IEditable *pie)
 		BeginUndo();
 		}
 
-	UndoRecord *pur = m_vur.ElementAt(m_vur.Size()-1);
+	UndoRecord * const pur = m_vur.ElementAt(m_vur.Size()-1);
 
 	pur->MarkForUndo(pie);
 	}
@@ -88,7 +86,7 @@ void PinUndo::MarkForCreate(IEditable *pie)
 		BeginUndo();
 		}
 
-	UndoRecord *pur = m_vur.ElementAt(m_vur.Size()-1);
+	UndoRecord * const pur = m_vur.ElementAt(m_vur.Size()-1);
 
 	pur->MarkForCreate(pie);
 	}
@@ -107,7 +105,7 @@ void PinUndo::MarkForDelete(IEditable *pie)
 		BeginUndo();
 		}
 
-	UndoRecord *pur = m_vur.ElementAt(m_vur.Size()-1);
+	UndoRecord * const pur = m_vur.ElementAt(m_vur.Size()-1);
 
 	pur->MarkForDelete(pie);
 	}
@@ -129,14 +127,14 @@ void PinUndo::Undo()
 	if (m_vur.Size() == m_cleanpoint)
 		{
 		LocalString ls(IDS_UNDOPASTSAVE);
-		int result = MessageBox(m_ptable->m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_YESNO);
+		const int result = MessageBox(m_ptable->m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_YESNO);
 		if (result != IDYES)
 			{
 			return;
 			}
 		}
 
-	UndoRecord *pur = m_vur.ElementAt(m_vur.Size()-1);
+	UndoRecord * const pur = m_vur.ElementAt(m_vur.Size()-1);
 	//IStorage *pstg = pur->m_pstg;
 
 	for (int i=0;i<pur->m_vieDelete.Size();i++)
@@ -146,11 +144,9 @@ void PinUndo::Undo()
 
 	pur->m_vieDelete.RemoveAllElements(); // Don't want these released when this record gets deleted
 
-	IStream* pstm;
-	IEditable *pie;
 	for (int i=0;i<pur->m_vstm.Size();i++)
 		{
-		pstm = pur->m_vstm.ElementAt(i);
+		IStream * const pstm = pur->m_vstm.ElementAt(i);
 
 		// Go back to beginning of stream to load
 		LARGE_INTEGER foo;
@@ -158,6 +154,7 @@ void PinUndo::Undo()
 		pstm->Seek(foo, STREAM_SEEK_SET, NULL);
 
 		DWORD read;
+		IEditable *pie;
 		pstm->Read(&pie, sizeof(IEditable *), &read);
 
 		pie->ClearForOverwrite();
@@ -240,9 +237,7 @@ void UndoRecord::MarkForUndo(IEditable *pie)
 
 	m_vieMark.AddElement(pie);
 
-	FastIStream *pstm;
-
-	pstm = new FastIStream();
+	FastIStream * const pstm = new FastIStream();
 	pstm->AddRef();
 
 	DWORD write;
@@ -251,7 +246,6 @@ void UndoRecord::MarkForUndo(IEditable *pie)
 	pie->SaveData(pstm, NULL, NULL);
 
 	m_vstm.AddElement(pstm);
-
 	}
 
 void UndoRecord::MarkForCreate(IEditable *pie)

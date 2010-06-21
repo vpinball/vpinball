@@ -14,20 +14,17 @@ class IBlink;
 
 enum
 {
-
 	// Halt application.
 	DONGLE_STATUS_NOTFOUND			= 0,
 	DONGLE_STATUS_INCORRECT,
 
 	// Run application.
-	DONGLE_STATUS_OK,
-
+	DONGLE_STATUS_OK
 };
 
 
 enum 
 {
-
 	// Firepower
     LIGHTHACK_FIREPOWER_P1			= 0,
     LIGHTHACK_FIREPOWER_P2,
@@ -43,7 +40,6 @@ enum
     LIGHTHACK_BK2K_M,
 
 	LIGHTHACK_MAX
-
 };
 
 enum EnumAssignKeys
@@ -63,7 +59,7 @@ enum EnumAssignKeys
 	eExitGame,
 	eVolumeUp,
 	eVolumeDown,
-	eCKeys,
+	eCKeys
 	};
 
 class Player

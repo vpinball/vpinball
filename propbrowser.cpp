@@ -2,7 +2,6 @@
 
 #define DISPID_FAKE_NAME 30000
 
-
 enum
 	{
 	eNotControl,
@@ -52,9 +51,7 @@ SmartBrowser::~SmartBrowser()
 void SmartBrowser::Init(HWND hwndParent)
 	{
 	WNDCLASSEX wcex;
-
 	memset(&wcex, 0, sizeof(WNDCLASSEX));
-
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_DBLCLKS;//CS_NOCLOSE | CS_OWNDC;
 	wcex.lpfnWndProc = (WNDPROC) SBFrameProc;
@@ -119,7 +116,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 	if (pvsel != NULL)
 		{
 		ItemTypeEnum maintype = pvsel->ElementAt(0)->GetItemType();
-		BOOL fSame = fTrue;
+		bool fSame = true;
 
 		// See if all items in multi-select are of the same type.
 		// If not, we can't edit their collective properties
@@ -130,7 +127,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 				PropertyPane *pproppane = new PropertyPane(IDD_PROPMULTI, NULL);
 				m_vproppane.AddElement(pproppane);
 				//resourceid = IDD_PROPMULTI;
-				fSame = fFalse;
+				fSame = false;
 				}
 			}
 
@@ -142,26 +139,18 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 			}
 		}
 
-	int propID;
-	if (m_vproppane.Size() > 0)
-		{
-		propID = m_vproppane.ElementAt(0)->dialogid;
-		}
-	else
-		{
-		propID = -1;
-		}
+	const int propID = (m_vproppane.Size() > 0) ? m_vproppane.ElementAt(0)->dialogid : -1;
 
 	// Optimized for selecting the same object
 	// Have to check resourceid too, since there can be more than one dialog view of the same object (table/backdrop)
-	if ((pvsel && m_pvsel) && pvsel->Size() == m_pvsel->Size() /*m_pisel == pisel*/ && m_olddialog == propID)
+	if (pvsel && m_pvsel && (pvsel->Size() == m_pvsel->Size()) /*m_pisel == pisel*/ && (m_olddialog == propID))
 		{
-		BOOL fSame = fTrue;
+		bool fSame = fTrue;
 		for (int i=0;i<pvsel->Size();i++)
 			{
 			if (pvsel->ElementAt(i) != m_pvsel->ElementAt(i))
 				{
-				fSame = fFalse;
+				fSame = false;
 				break;
 				}
 			}
@@ -216,7 +205,6 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 	if (pisel)
 		{
 		CComBSTR bstr;
-
 		pisel->GetTypeName(&bstr);
 
 		char szTemp[64];
@@ -242,10 +230,8 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
 	for (int i=0;i<m_vproppane.Size();i++)
 		{
-		PropertyPane *pproppane = m_vproppane.ElementAt(i);
-		HWND hwndExpand;
-
-		ExpandoInfo *pexinfo = new ExpandoInfo();
+		PropertyPane * const pproppane = m_vproppane.ElementAt(i);
+		ExpandoInfo * const pexinfo = new ExpandoInfo();
 		pexinfo->m_id = i;
 		pexinfo->m_fExpanded = fFalse;
 		pexinfo->m_psb = this;
@@ -263,7 +249,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 			pexinfo->m_fHasCaption = fFalse;
 			}
 
-		hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
+		HWND hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
 			WS_CHILD /*| WS_VISIBLE /*| WS_BORDER*/,
 			2, EXPANDO_Y_OFFSET, eSmartBrowserWidth-5, 300, m_hwndFrame, NULL, g_hinst, pexinfo);
 
@@ -309,16 +295,15 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 	}
 
 	// expand bottom last
-	//for (int i=0;i<m_vhwndExpand.Size();i++)SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0); 
+	//for (int i=0;i<m_vhwndExpand.Size();i++) SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0); 
 
 	//expand top last
-	for	(int i= m_vhwndExpand.Size()-1; i >= 0;--i)SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
-
+	for	(int i= m_vhwndExpand.Size()-1; i >= 0;--i) SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
 }
 
 BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 	{
-	SmartBrowser *psb = (SmartBrowser *)lParam;
+	SmartBrowser *const psb = (SmartBrowser *)lParam;
 
 	char szName[256];
 	GetClassName(hwnd, szName, 256);
@@ -363,7 +348,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 					for (ULONG i=0;i<castr.cElems;i++)
 						{
 						WideCharToMultiByte(CP_ACP, 0, castr.pElems[i], -1, szT, 512, NULL, NULL);
-						int index = SendMessage(hwnd, CB_ADDSTRING, 0, (int)szT);
+						const int index = SendMessage(hwnd, CB_ADDSTRING, 0, (int)szT);
 						SendMessage(hwnd, CB_SETITEMDATA, index, (DWORD)cadw.pElems[i]);
 						}
 
@@ -383,19 +368,16 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 				SetWindowLong(hwnd, GWL_USERDATA, 1); // So we know later whether to set the property as a string or a number from itemdata
 
 				ITypeInfo *piti;
-
 				psb->GetBaseIDisp()->GetTypeInfo(0, 0x409, &piti);
 
 				TYPEATTR *pta;
-
 				piti->GetTypeAttr(&pta);
 
 				const int cfunc = pta->cFuncs;
 
-				FUNCDESC *pfd;
-
 				for (int i=0;i<cfunc;i++)
 					{
+					FUNCDESC *pfd;
 					piti->GetFuncDesc(i, &pfd);
 
 					if (pfd->memid == dispid && pfd->invkind == INVOKE_PROPERTYGET)
@@ -412,20 +394,18 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 						if (pitiEnum)
 							{
 							TYPEATTR *ptaEnum;
-
 							pitiEnum->GetTypeAttr(&ptaEnum);
-
-							VARDESC *pvd;
 
 							const int cenum = ptaEnum->cVars;
 
 							for (int l=0;l<cenum;l++)
 								{
+								VARDESC *pvd;
 								pitiEnum->GetVarDesc(l, &pvd);
 
 								// Get Name
 									{
-									BSTR *rgstr = (BSTR *) CoTaskMemAlloc(6 * sizeof(BSTR *));
+									BSTR * const rgstr = (BSTR *) CoTaskMemAlloc(6 * sizeof(BSTR *));
 
 									unsigned int cnames;
 									const HRESULT hr = pitiEnum->GetNames(pvd->memid, rgstr, 6, &cnames);
@@ -466,7 +446,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
 BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 	{
-	SmartBrowser *psb = (SmartBrowser *)lParam;
+	SmartBrowser * const psb = (SmartBrowser *)lParam;
 
 	psb->GetControlValue(hwnd);
 
@@ -519,10 +499,10 @@ void SmartBrowser::DrawHeader(HDC hdc)
 
 void SmartBrowser::GetControlValue(HWND hwndControl)
 	{
-	BOOL fNinch = fFalse;
+	bool fNinch = false;
 	char szName[256];
 	GetClassName(hwndControl, szName, 256);
-	IDispatch *pdisp = GetBaseIDisp();
+	IDispatch * const pdisp = GetBaseIDisp();
 
 	int type = eNotControl;
 
@@ -570,8 +550,6 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 	// Get value of first object in multi-select
 	// If there is only one object in list, we just end up using that value
 
-	CComVariant var;
-	HRESULT hr;
 	DISPID dispid = GetDlgCtrlID(hwndControl);
 
 	// We use a fake name id in the property browser since the official OLE
@@ -582,7 +560,8 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 		dispid = 0x80010000;
 		}
 
-	hr = pdisp->Invoke(
+	CComVariant var;
+	HRESULT hr = pdisp->Invoke(
 		dispid, IID_NULL,
 		LOCALE_USER_DEFAULT,
 		DISPATCH_PROPERTYGET,
@@ -614,7 +593,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
 		if (hrEqual != VARCMP_EQ)
 			{
-			fNinch = fTrue;
+			fNinch = true;
 			break;
 			}
 		}
@@ -694,7 +673,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 				{
 				char szT[512];
 
-				int style = GetWindowLong(hwndControl, GWL_STYLE);
+				const int style = GetWindowLong(hwndControl, GWL_STYLE);
 
 				VariantChangeType(&var, &var, 0, VT_BSTR);
 
@@ -720,7 +699,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
 						for (int i=0;i<citems;i++)
 							{
-							int matchdata = SendMessage(hwndControl, CB_GETITEMDATA, i, 0);
+							const int matchdata = SendMessage(hwndControl, CB_GETITEMDATA, i, 0);
 
 							if (data == matchdata)
 								{
@@ -756,11 +735,11 @@ void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, BOOL fPutRef)
 	for (int i=0;i<m_pvsel->Size();i++)
 		{
 		const HRESULT hr = m_pvsel->ElementAt(i)->GetDispatch()->Invoke(dispid,
-		IID_NULL,
-		LOCALE_USER_DEFAULT,
-		fPutRef ? DISPATCH_PROPERTYPUTREF : DISPATCH_PROPERTYPUT,
-		&disp,
-		NULL, NULL, NULL);
+				IID_NULL,
+				LOCALE_USER_DEFAULT,
+				fPutRef ? DISPATCH_PROPERTYPUTREF : DISPATCH_PROPERTYPUT,
+				&disp,
+				NULL, NULL, NULL);
 		}
 	}
 
@@ -802,7 +781,7 @@ void SmartBrowser::RelayoutExpandos()
 
 	RECT rcFrame;
 	GetWindowRect(m_hwndFrame, &rcFrame);
-	int maxheight = (rcFrame.bottom - rcFrame.top) - EXPANDO_Y_OFFSET;
+	const int maxheight = (rcFrame.bottom - rcFrame.top) - EXPANDO_Y_OFFSET;
 	while (totalheight > maxheight)
 		{
 		// The total height of our expandos is taller than our window
@@ -818,7 +797,7 @@ void SmartBrowser::RelayoutExpandos()
 		// get priority over lower panels
 		for (int i=0;i<m_vhwndExpand.Size();i++)
 			{			
-			int titleid = m_vproppane.ElementAt(i)->titlestringid;
+			const int titleid = m_vproppane.ElementAt(i)->titlestringid;
 			if (titleid != NULL)
 				{
 				HWND hwndExpand = m_vhwndExpand.ElementAt(i);
@@ -862,7 +841,7 @@ void SmartBrowser::RelayoutExpandos()
 void SmartBrowser::ResetPriority(int expandoid)
 	{
 	// base prioritys on the title of the property pane
-	int titleid = m_vproppane.ElementAt(expandoid)->titlestringid;	
+	const int titleid = m_vproppane.ElementAt(expandoid)->titlestringid;	
 	m_vproppriority.RemoveElement(titleid); // Remove this element if it currently exists in our current priority chain
 	m_vproppriority.AddElement(titleid); // Add it back at the end (top) of the chain
 	}
@@ -883,17 +862,8 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			EnumChildWindows(hwndDlg, EnumChildProc, lParam);
 
 			HWND hwndExpando = GetParent(hwndDlg);
-			int textlength = GetWindowTextLength(hwndExpando);
-			int titleheight;
-
-			if (textlength > 0)
-				{
-				titleheight = EXPANDOHEIGHT;
-				}
-			else
-				{
-				titleheight = 0;
-				}
+			const int textlength = GetWindowTextLength(hwndExpando);
+			const int titleheight = (textlength > 0) ? EXPANDOHEIGHT : 0;
 
 			SetWindowPos(hwndDlg, NULL,
 					0, titleheight, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
@@ -908,7 +878,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case GET_COLOR_TABLE:
 			{
-			SmartBrowser *psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
+			SmartBrowser * const psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
 			*((unsigned long **)lParam) = psb->GetBaseISel()->GetPTable()->rgcolorcustom;
 			return TRUE;
 			}
@@ -916,17 +886,15 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_COMMAND:
 			{
-			int code;
-			int dispid;
-			code = HIWORD(wParam);
-			dispid = LOWORD(wParam);
+			const int code = HIWORD(wParam);
+			int dispid = LOWORD(wParam);
 
 			if (dispid == DISPID_FAKE_NAME)
 				{
 				dispid = 0x80010000;
 				}
 
-			SmartBrowser *psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
+			SmartBrowser * const psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
 			//IDispatch *pdisp = psb->m_pdisp;
 			switch (code)
 				{
@@ -971,11 +939,10 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				case CBN_EDITCHANGE:
 					{
-						HWND hwndEdit;
 						POINT pt;
 						pt.x = 1;
 						pt.y = 1;
-						hwndEdit = ChildWindowFromPoint((HWND)lParam, pt);
+						HWND hwndEdit = ChildWindowFromPoint((HWND)lParam, pt);
 						SetWindowLong(hwndEdit, GWL_USERDATA, 1);
 					}
 					break;
@@ -992,9 +959,9 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						return TRUE;
 						}
 
-					int state = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
+					const int state = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
 
-					BOOL fChecked = (state & BST_CHECKED) != 0;
+					const BOOL fChecked = (state & BST_CHECKED) != 0;
 
 					CComVariant var(fChecked);
 
@@ -1006,10 +973,10 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				case CBN_SELENDOK://CBN_SELCHANGE:
 					{
-					int sel = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
-					DWORD cookie = SendMessage((HWND)lParam, CB_GETITEMDATA, sel, 0);
+					const int sel = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+					const DWORD cookie = SendMessage((HWND)lParam, CB_GETITEMDATA, sel, 0);
 
-					int proptype = GetWindowLong((HWND)lParam, GWL_USERDATA);
+					const int proptype = GetWindowLong((HWND)lParam, GWL_USERDATA);
 
 					if (proptype == 0)
 						{
@@ -1037,7 +1004,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				case COLOR_CHANGED:
 					{
-					int color = GetWindowLong((HWND)lParam, GWL_USERDATA);/*SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);*/
+					const int color = GetWindowLong((HWND)lParam, GWL_USERDATA);/*SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);*/
 
 					CComVariant var(color);
 
@@ -1049,7 +1016,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				case FONT_CHANGED:
 					{
-					IFontDisp *pifd = (IFontDisp*)GetWindowLong((HWND)lParam, GWL_USERDATA);
+					IFontDisp * const pifd = (IFontDisp*)GetWindowLong((HWND)lParam, GWL_USERDATA);
 					// Addred because the object will release the old one (really this one), before addreffing it again
 					pifd->AddRef();
 					CComVariant var(pifd);
@@ -1070,19 +1037,17 @@ LRESULT CALLBACK SBFrameProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 		case WM_CREATE:
 			{
-			CREATESTRUCT *pcs;
-			pcs = (CREATESTRUCT *)lParam;
+			CREATESTRUCT * const pcs = (CREATESTRUCT *)lParam;
 			SetWindowLong(hwnd, GWL_USERDATA, (long)pcs->lpCreateParams);
 			}
 			break;
 
 		case WM_PAINT:
 			{
-			HDC hdc;
 			PAINTSTRUCT ps;
-			hdc = BeginPaint(hwnd,&ps);
+			HDC hdc = BeginPaint(hwnd,&ps);
 
-			SmartBrowser *psb = (SmartBrowser *)GetWindowLong(hwnd, GWL_USERDATA);
+			SmartBrowser * const psb = (SmartBrowser *)GetWindowLong(hwnd, GWL_USERDATA);
 			psb->DrawHeader(hdc);
 
 			EndPaint(hwnd,&ps);
@@ -1154,8 +1119,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_DRAWITEM:
 			{
-			DRAWITEMSTRUCT *pdis;
-			pdis = (DRAWITEMSTRUCT *)lParam;
+			DRAWITEMSTRUCT * const pdis = (DRAWITEMSTRUCT *)lParam;
 			HDC hdc = pdis->hDC;
 			int offset = 0;
 
@@ -1168,11 +1132,11 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			DrawFrameControl(hdc, &pdis->rcItem, DFC_BUTTON, state);
 
-			int color = GetWindowLong(hwnd, GWL_USERDATA);
+			const int color = GetWindowLong(hwnd, GWL_USERDATA);
 
 			if (!(color & 0x80000000)) // normal color, not ninched
 				{
-				int oldcolor = GetWindowLong(hwnd, GWL_USERDATA) & 0xffffff; // have to AND it to get rid of ninch bit
+				const int oldcolor = GetWindowLong(hwnd, GWL_USERDATA) & 0xffffff; // have to AND it to get rid of ninch bit
 				HBRUSH hbrush = CreateSolidBrush(oldcolor);
 
 				HBRUSH hbrushOld = (HBRUSH)SelectObject(hdc, hbrush);
@@ -1186,8 +1150,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_COMMAND:
 			{
-			int code;
-			code = HIWORD(wParam);
+			const int code = HIWORD(wParam);
 			switch (code)
 				{
 				case BN_CLICKED:
@@ -1207,7 +1170,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					cc.lpTemplateName = NULL;
 					if (ChooseColor(&cc))
 						{
-						int id = GetDlgCtrlID(hwnd);
+						const int id = GetDlgCtrlID(hwnd);
 						SetWindowLong(hwnd, GWL_USERDATA, cc.rgbResult);
 						SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(id, COLOR_CHANGED), (LPARAM)hwnd);
 						InvalidateRect(hwnd, NULL, fFalse);
@@ -1267,10 +1230,10 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			pt.y = 1;
 			HWND hwndButton = ChildWindowFromPoint(hwnd, pt);
 
-			CComBSTR bstrName;
-			IFontDisp *pifd = (IFontDisp *)lParam;
+			IFontDisp * const pifd = (IFontDisp *)lParam;
 			IFont *pif;
 			pifd->QueryInterface(IID_IFont, (void **)&pif);
+			CComBSTR bstrName;
 			const HRESULT hr = pif->get_Name(&bstrName);
 			pif->Release();
 
@@ -1295,8 +1258,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_COMMAND:
 			{
-			int code;
-			code = HIWORD(wParam);
+			const int code = HIWORD(wParam);
 			switch (code)
 				{
 				case BN_CLICKED:
@@ -1326,7 +1288,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					cf.Flags = CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT;
 					if (ChooseFont(&cf))
 						{
-						IFontDisp *pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);
+						IFontDisp * const pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);
 						IFont *pif;
 						pifd->QueryInterface(IID_IFont, (void **)&pif);
 
@@ -1346,7 +1308,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						SendMessage(hwnd, CHANGE_FONT, 0, (long)pifd);
 
 						HWND hwndDlg = GetParent(hwnd);
-						int id = GetDlgCtrlID(hwnd);
+						const int id = GetDlgCtrlID(hwnd);
 						SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(id, FONT_CHANGED), (LPARAM)hwnd);
 
 						pif->Release();
@@ -1367,15 +1329,18 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 		{
 		case WM_CREATE:
-			CREATESTRUCT *pcs;
-			pcs = (CREATESTRUCT *)lParam;
+			{
+			CREATESTRUCT * const pcs = (CREATESTRUCT *)lParam;
 			SetWindowLong(hwnd, GWL_USERDATA, (long)pcs->lpCreateParams);
 			break;
+			}
 
 		case WM_DESTROY:
+			{
 			pexinfo = (ExpandoInfo *)GetWindowLong(hwnd, GWL_USERDATA);
 			delete pexinfo;
 			break;
+			}
 
 		case WM_LBUTTONUP:
 			{
@@ -1462,16 +1427,14 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_PAINT:
 			{
-			HDC hdc;
 			PAINTSTRUCT ps;
-			RECT rc;
-
-			hdc = BeginPaint(hwnd,&ps);
+			HDC hdc = BeginPaint(hwnd,&ps);
 
 			pexinfo = (ExpandoInfo *)GetWindowLong(hwnd, GWL_USERDATA);
 
 			//int textlength = GetWindowTextLength(hwnd);
 
+			RECT rc;
 			if (pexinfo->m_fHasCaption) // Null title means not an expando
 				{
 				RECT rcCur;
@@ -1487,7 +1450,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				HBITMAP hbmchevron = (HBITMAP)LoadImage(g_hinst, MAKEINTRESOURCE(IDB_CHEVRON), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
 				HDC hdcbmp = CreateCompatibleDC(hdc);
 				HBITMAP hbmOld = (HBITMAP)SelectObject(hdcbmp, hbmchevron);
-				int offsetx = (rcCur.bottom - rcCur.top > EXPANDOHEIGHT) ? 18 : 0;
+				const int offsetx = (rcCur.bottom - rcCur.top > EXPANDOHEIGHT) ? 18 : 0;
 				BitBlt(hdc, rc.right - 20, 0, 18, 18, hdcbmp, offsetx, 0, SRCPAINT);
 				SelectObject(hdcbmp, hbmOld);
 				DeleteDC(hdcbmp);
