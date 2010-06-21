@@ -185,7 +185,7 @@ Player::~Player()
 	{
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
-		Hitable *ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+		Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
 			{
 			ph->EndPlay();
@@ -304,7 +304,7 @@ void Player::RecomputePauseState()
 
 void Player::RecomputePseudoPauseState()
 	{
-	BOOL fOldPseudoPause = m_fPseudoPause;
+	const BOOL fOldPseudoPause = m_fPseudoPause;
 	m_fPseudoPause = m_fUserDebugPaused || m_fDebugWindowActive;
 	if (fOldPseudoPause != m_fPseudoPause)
 		{
@@ -518,7 +518,7 @@ void Player::InitRegValues()
 		{
 		m_MusicVolume = 100; // default value
 		}
-	m_MusicVolume = (int)(((log((float)m_MusicVolume)/log(10.0f))*1000) - 2000); // 10 volume = -10Db
+	m_MusicVolume = (int)(((logf((float)m_MusicVolume)*(1.0/log(10.0)))*1000.0f) - 2000.0f); // 10 volume = -10Db
 
 	hr = GetRegInt("Player", "SoundVolume", &m_SoundVolume);
 	if (hr != S_OK)
@@ -567,8 +567,6 @@ void Player::InitDebugHitStructure()
 
 HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName, BOOL fCheckForCache)
 	{
-	HRESULT hr;
-	
 	m_ptable = ptable;
 
 	//accelerometer normal mounting is 90 degrees in left-hand coordinates (1/4 turn counterclockwise)
@@ -597,7 +595,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	InitRegValues();
 
 	// width, height, and colordepth are only defined if fullscreen is true.
-	hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate);
+	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate);
 
 	if (m_fFullScreen)
 		{
@@ -670,7 +668,9 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 		}
 
 	m_pin3d.InitLayout(ptable->m_left, ptable->m_top, ptable->m_right,
-		ptable->m_bottom, ptable->m_inclination, realFOV, ptable->m_rotation, ptable->m_scalex, ptable->m_scaley, ptable->m_xlatex, ptable->m_xlatey);
+					   ptable->m_bottom, ptable->m_inclination, realFOV,
+					   ptable->m_rotation, ptable->m_scalex, ptable->m_scaley,
+					   ptable->m_xlatex, ptable->m_xlatey);
 
 	m_mainlevel.m = 0;
 	m_mainlevel.n = 0;
@@ -734,7 +734,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 		m_hitoctree.m_vho.AddElement(m_vho.ElementAt(i));
 
-		if (m_vho.ElementAt(i)->GetType() == e3DPoly && ((Hit3DPoly *)m_vho.ElementAt(i))->m_fVisible)
+		if ((m_vho.ElementAt(i)->GetType() == e3DPoly) && ((Hit3DPoly *)m_vho.ElementAt(i))->m_fVisible)
 			{
 			m_shadowoctree.m_vho.AddElement(m_vho.ElementAt(i));
 			}
@@ -858,21 +858,21 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 			// front so that invalidated objects draw over each-other
 			// correctly
 
-			AnimObject *pao = m_vho.ElementAt(i)->GetAnimObject();
+			AnimObject * const pao = m_vho.ElementAt(i)->GetAnimObject();
 
 			const float myz = (pao->m_znear + pao->m_zfar)*0.5f;
 
 			int l;
 			for (l=0;l<m_vscreenupdate.Size();l++)
 				{
-				BOOL fInBack = fFalse;
+				bool fInBack = false;
 
 					{
 					const float comparez = (m_vscreenupdate.ElementAt(l)->m_znear + m_vscreenupdate.ElementAt(l)->m_zfar)*0.5f;
 
 					if (myz > comparez)
 						{
-						fInBack = fTrue;
+						fInBack = true;
 						}
 					}
 
@@ -902,7 +902,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemTextbox)
             {
-			Textbox *ptb = (Textbox *)m_ptable->m_vedit.ElementAt(i);
+			Textbox * const ptb = (Textbox *)m_ptable->m_vedit.ElementAt(i);
 			ptb->RenderText();
 			}
 		}
@@ -912,7 +912,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDispReel)
 			{
-			DispReel *pdr = (DispReel *)m_ptable->m_vedit.ElementAt(i);
+			DispReel * const pdr = (DispReel *)m_ptable->m_vedit.ElementAt(i);
 			pdr->RenderText();
 			}
 		}
@@ -1025,7 +1025,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemBumper)
 			{
-			IEditable *piedit = m_ptable->m_vedit.ElementAt(i);
+			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 			m_ptable->m_vedit.RemoveElement(piedit);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
 			m_ptable->SetDirtyDraw();
@@ -1036,7 +1036,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemGate)
 			{
-			IEditable *piedit = m_ptable->m_vedit.ElementAt(i);
+			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 			m_ptable->m_vedit.RemoveElement(piedit);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
 			m_ptable->SetDirtyDraw();
@@ -1047,7 +1047,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemSpinner)
 			{
-			IEditable *piedit = m_ptable->m_vedit.ElementAt(i);
+			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 			m_ptable->m_vedit.RemoveElement(piedit);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
 			m_ptable->SetDirtyDraw();
@@ -1058,7 +1058,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
 			{
-			IEditable *piedit = m_ptable->m_vedit.ElementAt(i);
+			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 			m_ptable->m_vedit.RemoveElement(piedit);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
 			m_ptable->SetDirtyDraw();
@@ -1079,7 +1079,6 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 
 void Player::InitStatic(HWND hwndProgress)
 	{
-	HRESULT hr;
 	if (m_pin3d.m_fReadingFromCache)
 		{
 		m_pin3d.ReadSurfaceFromCacheFile(m_pin3d.m_pddsStatic);
@@ -1088,7 +1087,7 @@ void Player::InitStatic(HWND hwndProgress)
 		}
 
 	// Start the frame.
-	hr = m_pin3d.m_pd3dDevice->BeginScene();
+	HRESULT hr = m_pin3d.m_pd3dDevice->BeginScene();
 
 	// Direct all renders to the "static" buffer.
 	m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
@@ -1150,8 +1149,7 @@ void Player::InitStatic(HWND hwndProgress)
 
 void Player::InitAnimations(HWND hwndProgress)
 {
-	HRESULT hr;
-	hr = m_pin3d.m_pd3dDevice->BeginScene();
+	HRESULT hr = m_pin3d.m_pd3dDevice->BeginScene();
 
 	// Direct all renders to the back buffer.
 	m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
@@ -1461,33 +1459,25 @@ int curPlunger = JOYRANGEMN-1;	// assume
 
 void Player::UltraNudgeX(int x, int j )
 {
-
 	curAccel_x[j] = x;
-
 }
 
 
 void Player::UltraNudgeY(int y, int j )
 {
-
 	curAccel_y[j] = y;
-
 }
 
 
 F32 GetX()
 {
-
 	return ((F32)curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN));
-
 }
 
 
 F32 GetY()
 {
-
     return ((F32)curAccel_y[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN));
-
 }
 
 
@@ -1496,9 +1486,8 @@ int Player::UltraNudgeGetTilt()
 	static U32 last_tilt_time;
 	static U32 last_jolt_time;
 
-	if( !m_fAccelerometer || m_NudgeManual >= 0) return 0;	//disabled or in joystick test mode
-
-	if (m_tilt_amount == 0 || m_jolt_amount == 0)return 0;	//disabled
+	if( !m_fAccelerometer || m_NudgeManual >= 0 ||	         //disabled or in joystick test mode
+	     m_tilt_amount == 0 || m_jolt_amount == 0) return 0; //disabled
 
 	const U32 ms = msec();
 
@@ -1563,7 +1552,7 @@ void Player::UltraNudge()	// called on every intergral physics frame
 			dx = -dx;
 
 		m_NudgeX += m_AccelAmp*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
-		float nugY = m_AccelAmp*(dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
+		const float nugY = m_AccelAmp*(dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
 		m_NudgeY = m_AccelNormalMount ? (m_NudgeY + nugY): (m_NudgeY - nugY);	// add as left or right hand coordinate system
 	}
 }
@@ -1673,7 +1662,7 @@ void Player::PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime) // move physics
 			const int time_elasped = (int)(usec()- startTime);
 
 			if (time_elasped > limitTime)//time in microseconds
-				{return;} // hung in the physics loop
+				return; // hung in the physics loop
 
 			if (time_elasped > halfLimitTime)		//time in microseconds
 				{
@@ -1814,7 +1803,7 @@ int fpieee_handler( _FPIEEE_RECORD *pieee )
 
 
 
-#define _EXC_MASK  _EM_UNDERFLOW  + _EM_OVERFLOW   + _EM_ZERODIVIDE \
+#define _EXC_MASK  _EM_UNDERFLOW + _EM_OVERFLOW + _EM_ZERODIVIDE \
 		+ _EM_INEXACT + _EM_DENORMAL +_EM_INVALID
 
 void Player::Render()
@@ -1954,7 +1943,7 @@ void Player::Render()
 #ifdef PLAYBACK
 	if (!m_fPlayback)
 		{
-		frametime = timepassed * 100.0;
+		frametime = (float)(timepassed * 100.0);
 		}
 	else
 		{
@@ -3826,7 +3815,7 @@ int CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (uMsg)
 			{
 			case WM_INITDIALOG:
-
+				{
 				RECT rcDialog;
 				RECT rcMain;
 				GetWindowRect(GetParent(hwndDlg), &rcMain);
@@ -3839,7 +3828,7 @@ int CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				return TRUE;
 				break;
-
+				}
 			case WM_COMMAND:
 				switch (HIWORD(wParam))
 					{
@@ -3988,7 +3977,6 @@ void Player::DrawAcrylics ()
 
 int get_dongle_status()
 {
-
 	int		Status;
 #ifndef ULTRA_FREE
 #ifdef DONGLE_SUPPORT
@@ -4041,7 +4029,6 @@ int get_dongle_status()
 	
 	Status = DONGLE_STATUS_OK;
 	return ( Status );
-	
 }
 
 

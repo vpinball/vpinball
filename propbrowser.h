@@ -24,14 +24,14 @@ class SmartBrowser;
 
 struct PropertyPane
 	{
-	PropertyPane(int dialog, int title)
+	PropertyPane(const int dialog, const int title)
 		{
 		dialogid = dialog;
 		titlestringid = title;
 		ptemplate = NULL;
 		}
 
-	PropertyPane(LPDLGTEMPLATE pdt, int title)
+	PropertyPane(LPDLGTEMPLATE pdt, const int title)
 		{
 		ptemplate = pdt;
 		titlestringid = title;
