@@ -25,8 +25,6 @@ CSimplePlayer::CSimplePlayer()
     m_pReader = NULL;
     m_hwo = NULL;
 
-    m_fEof = FALSE;
-
 	m_pDSBuffer = NULL;
 	m_pDSNotify = NULL;
 
@@ -41,12 +39,9 @@ CSimplePlayer::CSimplePlayer()
 ///////////////////////////////////////////////////////////////////////////////
 CSimplePlayer::~CSimplePlayer()
 {
-
-	{
-		// Release DirectSound interfaces
-		SAFE_RELEASE( m_pDSNotify );
-		SAFE_RELEASE( m_pDSBuffer );
-	}
+	// Release DirectSound interfaces
+	SAFE_RELEASE( m_pDSNotify );
+	SAFE_RELEASE( m_pDSBuffer );
 
 	if (m_hNotificationEvent)
 		{
@@ -89,7 +84,7 @@ ULONG STDMETHODCALLTYPE CSimplePlayer::Release()
         delete this;
     }
 
-    return( uRet );
+    return uRet;
 }
 
 void CSimplePlayer::Stop()
@@ -126,8 +121,6 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnSample(
         /* [in] */ DWORD cbData,
         /* [in] */ DWORD dwMsTime )
 {
-    HRESULT hr = S_OK;
-	   
     VOID* pbBuffer  = NULL;
     DWORD dwBufferLength;
 
@@ -135,6 +128,7 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnSample(
     DWORD dwBufferLength2;
 
     // Lock the buffer down
+	HRESULT hr;
     if( FAILED( hr = m_pDSBuffer->Lock( m_dwNextWriteOffset, cbData/*m_dwNotifySize*/, 
                                         &pbBuffer, &dwBufferLength, &pbBuffer2, &dwBufferLength2, 0L ) ) )
         return hr;
@@ -156,7 +150,7 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnSample(
 
 	if (!fStartedPlay)
 		{
-		fStartedPlay = fTrue;
+		fStartedPlay = true;
 		m_pDSBuffer->SetCurrentPosition(0);
 		hr = m_pDSBuffer->Play(0, 0, DSBPLAY_LOOPING);
 		}
@@ -165,7 +159,7 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnSample(
 
     InterlockedIncrement( &m_cBuffersOutstanding );
 
-    return( S_OK );
+    return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -185,7 +179,7 @@ HRESULT CSimplePlayer::Play(LPCWSTR pszUrl, HANDLE hCompletionEvent, HRESULT *ph
     if( FAILED( hr ) )
     {
         //printf( "failed to create audio reader (hr=%#X)\n", hr );
-        return( hr );
+        return hr;
     }
 
     //
@@ -196,14 +190,14 @@ HRESULT CSimplePlayer::Play(LPCWSTR pszUrl, HANDLE hCompletionEvent, HRESULT *ph
     if( FAILED( hr ) )
     {
         //printf( "failed GetOutputFormat(), hr=0x%lX\n", hr );
-        return( hr );
+        return hr;
     }
 
 	CreateStreamingBuffer(&m_wfx);
 
 	m_pDSBuffer->SetVolume(volume);
 
-	fStartedPlay = fFalse;
+	fStartedPlay = false;
 
     //
     // Start reading the data (and rendering the audio)
@@ -213,10 +207,10 @@ HRESULT CSimplePlayer::Play(LPCWSTR pszUrl, HANDLE hCompletionEvent, HRESULT *ph
     if( FAILED( hr ) )
     {
         //printf( "failed Start(), hr=0x%lX\n", hr );
-        return( hr );
+        return hr;
     }
 
-    return( hr );
+    return hr;
 }
 
 
@@ -247,8 +241,6 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnStatus(
         //
         // cleanup and exit
         //
-
-        m_fEof = TRUE;
 
 		// Create a notification event, for when the sound gets to the end
 		// of the last buffered sequence
@@ -301,13 +293,13 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnStatus(
         hr = CLSIDFromString( pParam->bstrVal, &guidCodecID );
         if( FAILED( hr ) )
         {
-            return( hr );
+            return hr;
         }
 
         hr = DoCodecDownload( &guidCodecID );
         if( FAILED( hr ) )
         {
-            return( hr );
+            return hr;
         }
 
         break;
@@ -341,7 +333,6 @@ HRESULT CSimplePlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 
     // The buffersize should approximately 3 seconds of wav data
     m_dwBufferSize  = m_dwNotifySize;// * NUM_PLAY_NOTIFICATIONS;
-    m_bFoundEnd     = FALSE;
     m_dwProgress    = 0;
     m_dwLastPos     = 0;
 
@@ -360,9 +351,6 @@ HRESULT CSimplePlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
     if( FAILED( hr = g_pvp->m_pds.m_pDS->CreateSoundBuffer( &dsbd, &m_pDSBuffer, NULL ) ) )
         return hr;
 
-	{
-
-    m_bFoundEnd = FALSE;
     m_dwNextWriteOffset = 0; 
     m_dwProgress = 0;
     m_dwLastPos  = 0;
@@ -370,7 +358,6 @@ HRESULT CSimplePlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 	m_pDSBuffer->SetCurrentPosition(0);
 
 	m_hNotificationEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-	}
 
     return S_OK;
 }

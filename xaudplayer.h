@@ -11,8 +11,8 @@
 class XAudPlayer
 	{
 public:
-	XAudPlayer::XAudPlayer();
-	XAudPlayer::~XAudPlayer();
+	XAudPlayer();
+	~XAudPlayer();
 
 	int Init(char *szFileName, int volume);
 
@@ -27,16 +27,16 @@ public:
 
 	FILE           *file;
 
-	BOOL m_fStarted;
+	bool m_fStarted;
 
-	BOOL m_fEndData; // all data has been decoded - wait for buffer to play
+	bool m_fEndData; // all data has been decoded - wait for buffer to play
 	int m_cDataLeft;
 	int m_lastplaypos;
 
 	HRESULT CreateBuffer(int volume); 
 	HRESULT CreateStreamingBuffer(WAVEFORMATEX *pwfx);
 
-#define NUM_PLAY_NOTIFICATIONS  16
+//#define NUM_PLAY_NOTIFICATIONS  16
 
 	//LPDIRECTSOUND       m_pDS            = NULL;
 	LPDIRECTSOUNDBUFFER m_pDSBuffer;
@@ -50,5 +50,4 @@ public:
 	DWORD               m_dwNextWriteOffset;
 	DWORD               m_dwProgress;
 	DWORD               m_dwLastPos;
-	BOOL                m_bFoundEnd;
 	};

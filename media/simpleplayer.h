@@ -15,7 +15,6 @@
 #include "wmaudiosdk.h"
 
 #include <mmsystem.h>
-#include <vfw.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 class CSimplePlayer : 
@@ -61,7 +60,6 @@ public:
 
     LONG    m_cRef;
     LONG    m_cBuffersOutstanding;
-    BOOL    m_fEof;
     HANDLE  m_hCompletionEvent;
 
     IWMAudioReader *m_pReader;
@@ -75,7 +73,7 @@ public:
         BYTE m_WfxBuf[1024];
     };
 
-	BOOL fStartedPlay;
+	bool fStartedPlay;
 
 #ifdef SUPPORT_DRM
     IWMAudioReadCallback *m_pDRMCallback;
@@ -83,7 +81,7 @@ public:
 
 	HRESULT CreateStreamingBuffer(WAVEFORMATEX *pwfx);
 
-#define NUM_PLAY_NOTIFICATIONS  16
+//#define NUM_PLAY_NOTIFICATIONS  16
 
 	LPDIRECTSOUNDBUFFER m_pDSBuffer;
 	LPDIRECTSOUNDNOTIFY m_pDSNotify;
@@ -96,7 +94,6 @@ public:
 	DWORD               m_dwNextWriteOffset;
 	DWORD               m_dwProgress;
 	DWORD               m_dwLastPos;
-	BOOL                m_bFoundEnd;
 };
 
 #endif // SIMPLEPLAYER_H
