@@ -21,7 +21,7 @@ public:
 		m_searchstart = 1;
 		}
 
-	void RecomputeSearchStart()
+	inline void RecomputeSearchStart()
 		{
 		// Find log base 2 of size of vector
 		// Set the search start element to the middle one
@@ -35,9 +35,9 @@ public:
 		m_searchstart = i;
 		}
 
-	inline int AddSortedString(T *pT)
+	inline int AddSortedString(T * const pT)
 		{
-		BOOL fFound = fFalse;
+		bool fFound = fFalse;
 
 		int currentnode = m_searchstart-1;  // Zero based
 		int jumpnode = m_searchstart >> 1;
@@ -76,7 +76,7 @@ public:
 		return fFound;
 		}
 
-	inline int GetSortedIndex(void *pvoid)
+	inline int GetSortedIndex(void * const pvoid)
 		{
 		int currentnode = m_searchstart-1;  // Zero based
 		int jumpnode = m_searchstart >> 1;
@@ -116,7 +116,7 @@ public:
 		return -1;
 		}
 
-	inline T *GetSortedElement(void *pvoid)
+	inline T *GetSortedElement(void * const pvoid)
 		{			
 		const int i = GetSortedIndex(pvoid);
 		if (i != -1)
@@ -127,7 +127,7 @@ public:
 		return NULL;
 		}
 
-	inline void RemoveElementAt(int iItem)
+	inline void RemoveElementAt(const int iItem)
 		{
 		Vector<T>::RemoveElementAt(iItem);
 		RecomputeSearchStart();

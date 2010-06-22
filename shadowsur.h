@@ -3,7 +3,7 @@ class ShadowSur : public Sur
 	{
 public:
 
-	ShadowSur(HDC hdc, float zoom, float offx, float offy, int width, int height, float z, ISelect *psel);
+	ShadowSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const float z, ISelect *psel);
 	virtual ~ShadowSur();
 
 	virtual void Line(float x, float y, float x2, float y2);
@@ -17,9 +17,9 @@ public:
 	virtual void Arc(float x, float y, float radius, float pt1x, float pt1y, float pt2x, float pt2y);
 	virtual void Image(float x, float y, float x2, float y2, HDC hdcSrc, int width, int height);
 	
-	void EllipseSkew(float centerx, float centery, float radius, float z1, float z2);
-	void PolygonSkew(Vertex2D *rgv, int count, float *rgz, float z1, float z2, BOOL fPreClip);
-	void PolylineSkew(Vertex2D *rgv, int count, float *rgz, float z1, float z2);
+	void EllipseSkew(const float centerx, const float centery, const float radius, const float z1, const float z2) const;
+	void PolygonSkew(const Vertex2D * const rgv, const int count, const float * const rgz, const float z1, const float z2, const bool fPreClip) const;
+	void PolylineSkew(const Vertex2D * const rgv, const int count, const float * const rgz, const float z1, const float z2) const;
 
 	virtual void SetObject(ISelect *psel);
 

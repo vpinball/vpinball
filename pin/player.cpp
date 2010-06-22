@@ -1780,6 +1780,7 @@ void Player::PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime) // move physics
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#ifndef NO_X87_FPU
 //int fpieee_handler( _FPIEEE_RECORD * );
 
 int fpieee_handler( _FPIEEE_RECORD *pieee )
@@ -1801,10 +1802,8 @@ int fpieee_handler( _FPIEEE_RECORD *pieee )
       return EXCEPTION_EXECUTE_HANDLER;
 }
 
-
-
-#define _EXC_MASK  _EM_UNDERFLOW + _EM_OVERFLOW + _EM_ZERODIVIDE \
-		+ _EM_INEXACT + _EM_DENORMAL +_EM_INVALID
+#define _EXC_MASK  (_EM_UNDERFLOW | _EM_OVERFLOW | _EM_ZERODIVIDE | _EM_INEXACT | _EM_DENORMAL | _EM_INVALID)
+#endif
 
 void Player::Render()
 	{
@@ -1815,6 +1814,7 @@ void Player::Render()
 	HRESULT				ReturnCode;
 	HRESULT				hr;
 
+#ifndef NO_X87_FPU
 	//_controlfp(_PC_24, MCW_PC);
 
 	 __try {
@@ -1832,8 +1832,8 @@ void Player::Render()
 
       // if fpieee_handler returns
       // EXCEPTION_EXECUTE_HANDLER goes here
-
    }
+#endif
 
 	// Don't calculate the next frame if the last one isn't done blitting yet
 	// On Win95 when there are no balls, frame updates happen so fast the

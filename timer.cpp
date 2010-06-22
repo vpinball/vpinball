@@ -97,8 +97,7 @@ void Timer::GetTimers(Vector<HitTimer> *pvht)
 	{
 	IEditable::BeginPlay();
 
-	HitTimer *pht;
-	pht = new HitTimer();
+	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
 
@@ -168,7 +167,7 @@ STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
 {
 	STARTUNDO
 
-	BOOL fNew = VBTOF(newVal);
+	const BOOL fNew = VBTOF(newVal);
 
 	if (fNew != m_d.m_tdr.m_fTimerEnabled)
 		{
@@ -211,6 +210,7 @@ STDMETHODIMP Timer::put_Interval(long newVal)
 		m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval;
 		m_phittimer->m_nextfire = g_pplayer->m_timeCur + m_phittimer->m_interval;
 		}
+
 	STOPUNDO
 
 	return S_OK;
@@ -248,12 +248,11 @@ HRESULT Timer::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 	br.Load();
 	return S_OK;
 #else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
 	m_ptable = ptable;
 
+	ULONG read = 0;
 	DWORD dwID;
+	HRESULT hr;
 	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
 		return hr;
 

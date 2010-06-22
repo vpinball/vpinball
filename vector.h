@@ -14,7 +14,7 @@ protected:
 
 public:
 
-	VectorVoid()
+	inline VectorVoid()
 		{
 		m_cSize = 0;
 		m_cMax = 0;
@@ -22,14 +22,14 @@ public:
 		SetSize(8);
 		}
 
-	VectorVoid(int cSize)
+	inline VectorVoid(const int cSize)
 		{
 		m_cSize = 0;
 		m_rg = (void **)malloc(sizeof(void *) * cSize);
 		m_cMax = (!m_rg) ? 0 : cSize;
 		}
 
-	VectorVoid(VectorVoid *pvector)
+	inline VectorVoid(const VectorVoid * const pvector)
 		{		
 		m_rg = (void **)malloc(sizeof(void *) * m_cMax);
 
@@ -37,6 +37,7 @@ public:
 			{
 			m_cMax = 0;
 			m_cSize = 0;
+
 			return;
 			}
 
@@ -49,7 +50,7 @@ public:
 			}
 		}
 
-	~VectorVoid()
+	inline ~VectorVoid()
 		{
 		if (m_rg)
 			free(m_rg);
@@ -76,27 +77,27 @@ public:
 		m_cMax = (!m_rg) ? 0 : START_SIZE;  // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
 		}
 
-	inline int Size()
+	inline int Size() const
 		{
 		return m_cSize;
 		}
 
-	inline int Capacity()
+	inline int Capacity() const
 		{
 		return m_cMax;
 		}
 		
-	inline void *ElementAt(int iItem)
+	inline void *ElementAt(const int iItem) const
 		{
-		return ((m_rg[iItem]));
+		return m_rg[iItem];
 		}
 
-	inline void *GetArray()
+	inline void *GetArray() const
 		{
 		return m_rg;
 		}
 
-	BOOL SetSize(int i)
+	inline BOOL SetSize(const int i)
 		{
 		if (i > m_cMax)
 			{		
@@ -115,25 +116,28 @@ public:
 				{
 				return fFalse;
 				}
+
 			m_rg = m_rgNew;
 			m_cMax = i;
 			}
+
 		return fTrue;
 		}
 
-	BOOL Extend(int cNewSize)
+	inline BOOL Extend(const int cNewSize)
 		{
 		if (cNewSize > m_cSize)
 			{
 			if (!SetSize(cNewSize))
 				return FALSE;
+
 			memset(&m_rg[m_cSize], 0, sizeof(void *) * (cNewSize - m_cSize));
 			m_cSize = cNewSize;
 			}
 		return fTrue;
 		}
 
-	BOOL Clone(VectorVoid *pvector)
+	inline BOOL Clone(VectorVoid * const pvector) const
 		{
 		if (m_rg)
 			{
@@ -142,6 +146,7 @@ public:
 				{
 				pvector->m_cMax = 0;
 				pvector->m_cSize = 0;
+
 				return fFalse;  // OOM
 				}
 			}
@@ -161,33 +166,33 @@ public:
 		return fTrue;
 		}
 
-	int LastIndexOf(void *pT)
+	inline int LastIndexOf(const void * const pT) const
 		{
 		if (!m_rg)
 			return -1;
 
 		int i;
-		for (i=m_cSize-1;i >= 0; i--)
+		for (i = m_cSize-1; i >= 0; i--)
 			if (m_rg[i] == pT)
 				break;
+
 		return i;
 		}
 
-	int IndexOf(void *pvItem)
+	inline int IndexOf(const void * const pvItem) const
 		{
 		if (m_rg == NULL)
 			return -1;
 
-		for (int i=0;i<m_cSize;i++)
-			{
+		for (int i=0; i < m_cSize; i++)
 			if (pvItem == m_rg[i])
 				return i;
-			}
+
 		return -1;
 		}
 
 	// returns current size of the Vector, or -1 on failure (OOM)
-	int AddElement(void *pItem)
+	inline int AddElement(void * const pItem)
 		{
 		if(m_cSize == m_cMax)
 			{
@@ -197,11 +202,11 @@ public:
 
 		m_rg[m_cSize++] = pItem;
 
-		return(m_cSize - 1);
+		return (m_cSize - 1);
 		}
 
 	// fTrue for success, fFalse if failure (OOM)
-	BOOL InsertElementAt(void *pItem, int iPos)
+	inline BOOL InsertElementAt(void * const pItem, const int iPos)
 		{					
 		if(m_cSize == m_cMax)
 			{		
@@ -209,9 +214,9 @@ public:
 				return fFalse;
 			}
 
-		if (m_cSize!=iPos)
+		if (m_cSize != iPos)
 			{
-			memcpy(m_rg+iPos+1,m_rg+iPos,sizeof(void *) * (m_cSize-iPos));
+			memcpy(m_rg+iPos+1, m_rg+iPos, sizeof(void *) * (m_cSize-iPos));
 			}
 
 		m_rg[iPos] = pItem;
@@ -219,7 +224,7 @@ public:
 		return fTrue;
 		}
 
-	inline void ReplaceElementAt(void *pItem, int iPos)
+	inline void ReplaceElementAt(void * const pItem, const int iPos)
 		{
 		if (!m_rg)
 			return;
@@ -227,26 +232,26 @@ public:
 		m_rg[iPos] = pItem;
 		}
 
-	inline void RemoveElementAt(int iItem)
+	inline void RemoveElementAt(const int iItem)
 		{
 		if (!m_rg)
 			return;
 
-		memcpy(m_rg+iItem,m_rg+iItem+1,sizeof(void *) * (m_cSize-iItem-1));
+		memcpy(m_rg+iItem, m_rg+iItem+1, sizeof(void *) * (m_cSize-iItem-1));
 		m_cSize--;
 		}
 
-	inline void RemoveElement(void *pvItem)
+	inline void RemoveElement(void * const pvItem)
 		{
 		if (!m_rg)
 			return;
 
 		const int i = IndexOf(pvItem);
-		if (i>=0)
+		if (i >= 0)
 			RemoveElementAt(i);
 		}
 
-	void RemoveAllElements()
+	inline void RemoveAllElements()
 		{
 		if (!m_rg)
 			return;
@@ -258,12 +263,12 @@ public:
 		}
 
     // LIFO stack support
-    inline int Push(void *pItem)
+    inline int Push(void * const pItem)
     {
         return AddElement(pItem);
     }
 
-    inline BOOL Pop(void **ppItem)
+    inline BOOL Pop(void ** const ppItem)
 		{
         if(m_cSize)
         {
@@ -275,7 +280,7 @@ public:
         return FALSE;
 		}
 
-	BOOL Top(void **ppItem)
+	inline BOOL Top(void ** const ppItem)
 		{
 		if(m_cSize)
 			{
@@ -289,51 +294,50 @@ public:
 template<class T> class Vector : public VectorVoid
 	{
 public:
-	Vector() : VectorVoid() {}
-	Vector(int cSize) : VectorVoid(cSize) {}
+	inline Vector() : VectorVoid() {}
+	inline Vector(const int cSize) : VectorVoid(cSize) {}
 
-	inline T *ElementAt(int iItem)
+	inline T *ElementAt(const int iItem) const
 		{
-		return (T *) ((m_rg[iItem]));
+		return (T *) (m_rg[iItem]);
 		}	
 	};
 
 template<class T> class VectorInt : public VectorVoid
 	{
 public:
-	VectorInt() : VectorVoid() {}
-	VectorInt(int cSize) : VectorVoid(cSize) {}
+	inline VectorInt() : VectorVoid() {}
+	inline VectorInt(const int cSize) : VectorVoid(cSize) {}
 
-	inline T ElementAt(int iItem)
+	inline T ElementAt(const int iItem) const
 		{
-		return (T) ((m_rg[iItem]));
+		return (T) (m_rg[iItem]);
 		}
 
-	inline int AddElement(T item)
+	inline int AddElement(const T item)
 		{
 		return VectorVoid::AddElement((void *)item);
 		}
 
-	int IndexOf(int pvItem)
+	inline int IndexOf(const int pvItem) const
 		{
 		if (m_rg == NULL)
 			return -1;
 
-		for (int i=0;i<m_cSize;i++)
-			{
+		for (int i=0; i<m_cSize; i++)
 			if ((void *)pvItem == m_rg[i])
 				return i;
-			}
+
 		return -1;
 		}
 
-	inline void RemoveElement(int pvItem)
+	inline void RemoveElement(const int pvItem)
 		{
 		if (!m_rg)
 			return;
 
-		int i = IndexOf(pvItem);
-		if (i>=0)
+		const int i = IndexOf(pvItem);
+		if (i >= 0)
 			RemoveElementAt(i);
 		}
 	};
@@ -345,13 +349,13 @@ template<class T>
 class VecClean : public Vector<T>
 	{
 public:
-	VecClean(){};
-	~VecClean()
+	inline VecClean() {};
+	inline ~VecClean()
 		{
 		int cSize = m_cSize;
-		while (--cSize>=0)
+		while (--cSize >= 0)
 			{
-			T * pElem = ElementAt(cSize);
+			T * const pElem = ElementAt(cSize);
 			delete pElem;
 			}
 		}

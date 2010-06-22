@@ -17,10 +17,7 @@ Spinner::~Spinner()
 
 HRESULT Spinner::Init(PinTable *ptable, float x, float y)
 	{
-	HRESULT hr = S_OK;
-
 	m_ptable = ptable;
-	
 
 	m_d.m_vCenter.x = x;
 	m_d.m_vCenter.y = y;
@@ -29,7 +26,7 @@ HRESULT Spinner::Init(PinTable *ptable, float x, float y)
 
 	InitVBA(fTrue, 0, NULL);
 
-	return hr;
+	return S_OK;
 	}
 
 void Spinner::SetDefaults()
@@ -74,13 +71,11 @@ void Spinner::Render(Sur *psur)
 
 	float halflength = m_d.m_length * 0.5f;
 
+	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float sn = sinf(radangle);
+	const float cs = cosf(radangle);
 
 	Vertex2D rgv[2];
-
-	float radangle = m_d.m_rotation * (float)(M_PI/180.0);
-	float sn = sinf(radangle);
-	float cs = cosf(radangle);
-
 	rgv[0].x = m_d.m_vCenter.x + cs*halflength;
 	rgv[0].y = m_d.m_vCenter.y + sn*halflength;
 
@@ -144,8 +139,7 @@ void Spinner::GetTimers(Vector<HitTimer> *pvht)
 	{
 	IEditable::BeginPlay();
 
-	HitTimer *pht;
-	pht = new HitTimer();
+	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
 	pht->m_pfe = (IFireEvents *)this;
@@ -229,7 +223,7 @@ void Spinner::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	if(!m_d.m_fSupports)return;
+	if(!m_d.m_fSupports) return;
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -332,7 +326,6 @@ void Spinner::RenderMoversFromCache(Pin3D *ppin3d)
 void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-	LPDIRECTDRAWSURFACE7 pdds;
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -349,7 +342,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	else
 		{
-		maxtuback = maxtvback = 1;
+		maxtuback = maxtvback = 1.0f;
 		}
 
 	if (pinfront)
@@ -358,7 +351,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	else
 		{
-		maxtufront = maxtvfront = 1;
+		maxtufront = maxtvfront = 1.0f;
 		}
 
 	int cframes;
@@ -400,7 +393,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		float angle;
 		if (m_d.m_angleMax != m_d.m_angleMin)
-			{angle =  ANGTORAD(m_d.m_angleMin + (m_d.m_angleMax - m_d.m_angleMin)*inv_cframes*(float)i);}
+			angle = ANGTORAD(m_d.m_angleMin + (m_d.m_angleMax - m_d.m_angleMin)*inv_cframes*(float)i);
 		else angle = (float)(2.0*M_PI)*inv_cframes*(float)i;
 
 		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
@@ -511,9 +504,9 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			
-			mtrl.diffuse.r = mtrl.ambient.r = 1;
-			mtrl.diffuse.g = mtrl.ambient.g = 1;
-			mtrl.diffuse.b = mtrl.ambient.b = 1;
+			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
 			}
 		else // No image by that name
 			{
@@ -645,7 +638,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 
 		// Create offscreen surfaces for color and depth buffers.
-		pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		LPDIRECTDRAWSURFACE7 pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		// Copy from the back color and depth buffers to the new surfaces.
@@ -742,7 +735,6 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-
 	}
 
 HRESULT Spinner::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -756,12 +748,11 @@ HRESULT Spinner::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 	br.Load();
 	return S_OK;
 #else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
 	m_ptable = ptable;
 
+	ULONG read = 0;
 	DWORD dwID;
+	HRESULT hr;
 	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
 		return hr;
 
@@ -1116,7 +1107,9 @@ STDMETHODIMP Spinner::get_CastsShadow(VARIANT_BOOL *pVal)
 STDMETHODIMP Spinner::put_CastsShadow(VARIANT_BOOL newVal)
 {
 	STARTUNDO
+
 	m_d.m_fCastsShadow = VBTOF(newVal);
+
 	STOPUNDO
 
 	return S_OK;

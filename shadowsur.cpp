@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 
 
-ShadowSur::ShadowSur(HDC hdc, float zoom, float offx, float offy, int width, int height, float z, ISelect *psel) : Sur(hdc, zoom, offx, offy, width, height)
+ShadowSur::ShadowSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const float z, ISelect *psel) : Sur(hdc, zoom, offx, offy, width, height)
 	{
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
@@ -72,7 +72,7 @@ void ShadowSur::Ellipse2(float centerx, float centery, int radius)
 	::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir + 1, iy + ir + 1);
 	}
 
-void ShadowSur::EllipseSkew(float centerx, float centery, float radius, float z1, float z2)
+void ShadowSur::EllipseSkew(const float centerx, const float centery, const float radius, const float z1, const float z2) const
 	{
 	const int basepixel = SCALEXf(m_z);
 	int bottom = SCALEXf(z1) - basepixel;
@@ -106,9 +106,7 @@ void ShadowSur::EllipseSkew(float centerx, float centery, float radius, float z1
 
 void ShadowSur::Polygon(Vertex2D *rgv, int count)
 	{
-	POINT *rgpt;
-
-	rgpt = new POINT[count];
+	POINT * const rgpt = new POINT[count];
 
 	for (int i=0;i<count;i++)
 		{
@@ -129,7 +127,7 @@ void ShadowSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, 
 	Polygon(rgv, count);
 	}
 
-void ShadowSur::PolygonSkew(Vertex2D *rgv, int count, float *rgz, float z1, float z2, BOOL fPreClip)
+void ShadowSur::PolygonSkew(const Vertex2D * const rgv, const int count, const float * const rgz, const float z1, const float z2, const bool fPreClip) const
 	{
 	const int basepixel = SCALEXf(m_z);
 	int bottom = SCALEXf(z1) - basepixel;
@@ -186,7 +184,7 @@ void ShadowSur::PolygonSkew(Vertex2D *rgv, int count, float *rgz, float z1, floa
 	delete rgpt;
 	}
 
-void ShadowSur::PolylineSkew(Vertex2D *rgv, int count, float *rgz, float z1, float z2)
+void ShadowSur::PolylineSkew(const Vertex2D * const rgv, const int count, const float * const rgz, const float z1, const float z2) const
 	{
 	//const int basepixel = SCALEXf(m_z);
 	//const int bottom = SCALEX(z1) - basepixel;
@@ -285,16 +283,9 @@ void ShadowSur::SetLineColor(int rgb, BOOL fDashed, int width)
 	{
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	DeleteObject(m_hpnLine);
-	int style = fDashed ? PS_DOT : PS_SOLID;
+	const int style = fDashed ? PS_DOT : PS_SOLID;
 
 	SetBkMode(m_hdc, TRANSPARENT);
 
-	if (rgb == -1)
-		{
-		m_hpnLine = CreatePen(PS_NULL, width, rgb);
-		}
-	else
-		{
-		m_hpnLine = CreatePen(style, width, rgb);
-		}
+	m_hpnLine = CreatePen((rgb == -1) ? PS_NULL : style, width, rgb);
 	}

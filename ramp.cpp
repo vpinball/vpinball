@@ -17,8 +17,6 @@ Ramp::~Ramp()
 
 HRESULT Ramp::Init(PinTable *ptable, float x, float y)
 	{
-	HRESULT hr = S_OK;
-
 	m_ptable = ptable;
 	m_d.m_IsVisible = fTrue;
 	
@@ -45,7 +43,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y)
 
 	InitVBA(fTrue, 0, NULL);
 
-	return hr;
+	return S_OK;
 	}
 
 void Ramp::SetDefaults()
@@ -98,8 +96,6 @@ void Ramp::PreRender(Sur *psur)
 
 void Ramp::Render(Sur *psur)
 	{
-	BOOL	fDrawDragpoints;		//>>> added by chris
-
 	psur->SetFillColor(-1);
 	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
 	psur->SetLineColor(RGB(0,0,0),fFalse,0);
@@ -107,7 +103,7 @@ void Ramp::Render(Sur *psur)
 	psur->SetObject(NULL); // NULL so this won't be hit-tested
 
 	int cvertex;
-	BOOL *pfCross;
+	bool *pfCross;
 	Vertex2D * const rgv = GetRampVertex(&cvertex, NULL, &pfCross, NULL);
 
 	psur->Polygon(rgv, cvertex*2);
@@ -136,21 +132,22 @@ void Ramp::Render(Sur *psur)
 	delete pfCross;
 
 //>>> added by chris
+	bool fDrawDragpoints;
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
 	if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
 		{
-		fDrawDragpoints = fTrue;
+		fDrawDragpoints = true;
 		}
 	else
 		{
 		// if any of the dragpoints of this object are selected then draw all the dragpoints
-		fDrawDragpoints = fFalse;
+		fDrawDragpoints = false;
 		for (int i=0;i<m_vdpoint.Size();i++)
 			{
 			const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 			if (pdp->m_selectstate != eNotSelected)
 				{
-				fDrawDragpoints = fTrue;
+				fDrawDragpoints = true;
 				break;
 				}
 			}
@@ -185,7 +182,7 @@ void Ramp::RenderOutline(Sur * const psur)
 	psur->SetObject(NULL); // NULL so this won't be hit-tested
 
 	int cvertex;
-	BOOL *pfCross;
+	bool *pfCross;
 	Vertex2D * const rgv = GetRampVertex(&cvertex, NULL, &pfCross, NULL);
 
 	psur->Polygon(rgv, cvertex*2);
@@ -254,7 +251,7 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 
 			for (int i=0;i<cvertex;i++)
 				{
-				rgheight[i] += 44.0f;
+				rgheight[i]  += 44.0f;
 				rgheight2[i] += 44.0f;
 				}
 
@@ -272,8 +269,8 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 			}
 		else
 			{
-			Vertex2D * const rgv2 = new Vertex2D[cvertex*2];
-			float * const rgheight2 = new float[cvertex*2];
+			Vertex2D * const rgv2 = new Vertex2D[range*2];
+			float * const rgheight2 = new float[range*2];
 
 			for (int i=0;i<range;i++)
 				{
@@ -283,7 +280,7 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 				rgheight2[range*2 - i - 1] = rgheight[i + startvertex];
 				}
 
-			psur->PolygonSkew(rgv2, range*2, rgheight2, 0, 0, fTrue);
+			psur->PolygonSkew(rgv2, range*2, rgheight2, 0, 0, true);
 
 			delete rgv2;
 			delete rgheight2;
@@ -321,7 +318,7 @@ void Ramp::GetBoundingVertices(Vector<Vertex3D> *pvvertex3D)
 	delete rgheight;
 	}
 
-Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, BOOL ** const ppfCross, float ** const ppratio)
+Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio)
 	{
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
@@ -334,7 +331,7 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, BOO
 		}
 	if (ppfCross)
 		{
-		*ppfCross = new BOOL[cvertex];
+		*ppfCross = new bool[cvertex];
 		}
 	if (ppratio)
 		{
@@ -420,8 +417,8 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, BOO
 				const float intersectx=(B*F-E*C)*inv_det;
 				const float intersecty=(C*D-A*F)*inv_det;
 
-				//rgv[i].x = (float)intersectx;
-				//rgv[i].y = (float)intersecty;
+				//rgv[i].x = intersectx;
+				//rgv[i].y = intersecty;
 
 				//Calc2DNormal(pv1, pv2, &vnormal);
 
@@ -444,7 +441,7 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, BOO
 
 		if (ppheight)
 			{
-			const float percentage = 1.0f-(currentlength/totallength);//rlc ramps have no ends ... a line joint is needed
+			const float percentage = 1.0f-(currentlength/totallength); //rlc ramps have no ends ... a line joint is needed
 			const float heightcur = ((1.0f - percentage) * (m_d.m_heighttop - m_d.m_heightbottom)) + m_d.m_heightbottom;
 			(*ppheight)[i] = heightcur;
 			}
@@ -1430,7 +1427,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 					}
 				}
 
-			//2-Sided polygon
+			// 2-Sided polygon
 			rgi[0] = 0;
 			rgi[1] = 1;
 			rgi[2] = 2;
@@ -1440,6 +1437,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 			// Draw the wall of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi, 4, 0);
+
 			rgi[0] = 0;
 			rgi[1] = 3;
 			rgi[2] = 2;
@@ -1517,8 +1515,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 					}
 				}
 
-			//2-Sided polygon
-
+			// 2-Sided polygon
 			rgi[0] = 0;
 			rgi[1] = 1;
 			rgi[2] = 2;
@@ -1528,6 +1525,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 			// Draw the wall of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, rgi, 4, 0);
+			
 			rgi[0] = 0;
 			rgi[1] = 3;
 			rgi[2] = 2;
@@ -1582,8 +1580,6 @@ void Ramp::ClearForOverwrite()
 
 HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	HRESULT hr;
-
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
 #ifdef VBA
@@ -1616,6 +1612,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
 	bw.WriteTag(FID(PNTS));
+	HRESULT hr;
 	if(FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
 		return hr;
 
@@ -1635,12 +1632,12 @@ HRESULT Ramp::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, H
 	br.Load();
 	return S_OK;
 #else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
+	ULONG read = 0;	
 
 	m_ptable = ptable;
 
 	DWORD dwID;
+	HRESULT hr;
 	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
 		return hr;
 
@@ -1808,11 +1805,10 @@ void Ramp::DoCommand(int icmd, int x, int y)
 
 			RECT rc;
 			GetClientRect(m_ptable->m_hwnd, &rc);
-			Vertex2D v, vOut;
-			int iSeg;
 
 			HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
+			Vertex2D v;
 			phs->ScreenToSurface(x, y, &v.x, &v.y);
 			delete phs;
 
@@ -1827,6 +1823,8 @@ void Ramp::DoCommand(int icmd, int x, int y)
 				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				}
 
+			Vertex2D vOut;
+			int iSeg;
 			ClosestPointOnPolygon(rgv, cvertex, &v, &vOut, &iSeg, fFalse);
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
@@ -1843,7 +1841,6 @@ void Ramp::DoCommand(int icmd, int x, int y)
 				//icp = m_vdpoint.Size();
 
 			CComObject<DragPoint> *pdp;
-
 			CComObject<DragPoint>::CreateInstance(&pdp);
 			if (pdp)
 				{
@@ -2528,8 +2525,7 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgv3D[3].tv = rgv3D[2].tv;
 				}
 
-			//2-Sided polygon
-
+			// 2-Sided polygon
 			rgi[0] = 0;
 			rgi[1] = 1;
 			rgi[2] = 2;
@@ -2539,6 +2535,7 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			// Draw the wall of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi, 4, 0);
+
 			rgi[0] = 0;
 			rgi[1] = 3;
 			rgi[2] = 2;
@@ -2592,8 +2589,7 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgv3D[3].tv = rgv3D[2].tv;
 				}
 
-			//2-Sided polygon
-
+			// 2-Sided polygon
 			rgi[0] = 0;
 			rgi[1] = 1;
 			rgi[2] = 2;
@@ -2603,6 +2599,7 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			// Draw the wall of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, rgi, 4, 0);
+
 			rgi[0] = 0;
 			rgi[1] = 3;
 			rgi[2] = 2;

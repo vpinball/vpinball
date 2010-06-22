@@ -33,13 +33,13 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y)
 
 void Trigger::SetDefaults()
 	{
-	m_d.m_radius = 25;
+	m_d.m_radius = 25.0f;
 
 	m_d.m_tdr.m_fTimerEnabled = fFalse;
 	m_d.m_tdr.m_TimerInterval = 100;
 	m_d.m_fEnabled = fTrue;
 	m_d.m_fVisible = fTrue;
-	m_d.m_hit_height = 50;
+	m_d.m_hit_height = 50.0f;
 
 	m_d.m_shape = ShapeCircle;
 
@@ -55,11 +55,14 @@ void Trigger::PreRender(Sur *psur)
 		{
 		case ShapeCircle:
 		default:
+			{
 			psur->SetFillColor(-1);
 			psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
+			}
 			break;
 
 		case ShapeCustom:
+			{
 			psur->SetFillColor(RGB(200,220,200));
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
@@ -76,6 +79,7 @@ void Trigger::PreRender(Sur *psur)
 			psur->Polygon(rgv, cvertex);
 
 			delete rgv;
+			}
 			break;
 		}
 	}
@@ -125,25 +129,23 @@ void Trigger::Render(Sur *psur)
 
 	if (m_d.m_shape == ShapeCustom)
 		{
-		BOOL	fDrawDragpoints;		//>>> added by chris
-
 //>>> added by chris
+		bool fDrawDragpoints;		//>>> added by chris
 		// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
  		if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
 			{
-			fDrawDragpoints = fTrue;
+			fDrawDragpoints = true;
 			}
 		else
 			{
 			// if any of the dragpoints of this object are selected then draw all the dragpoints
-			fDrawDragpoints = fFalse;
+			fDrawDragpoints = false;
 			for (int i=0;i<m_vdpoint.Size();i++)
 				{
-				CComObject<DragPoint> *pdp;
-				pdp = m_vdpoint.ElementAt(i);
+				CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 				if (pdp->m_selectstate != eNotSelected)
 					{
-					fDrawDragpoints = fTrue;
+					fDrawDragpoints = true;
 					break;
 					}
 				}
@@ -153,8 +155,7 @@ void Trigger::Render(Sur *psur)
 			{
 			for (int i=0;i<m_vdpoint.Size();i++)
 				{
-				CComObject<DragPoint> *pdp;
-				pdp = m_vdpoint.ElementAt(i);
+				CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 				psur->SetFillColor(-1);
 				psur->SetBorderColor(RGB(0,180,0),fFalse,0);
 				psur->SetObject(pdp);
@@ -184,8 +185,7 @@ void Trigger::GetTimers(Vector<HitTimer> *pvht)
 	{
 	IEditable::BeginPlay();
 
-	HitTimer *pht;
-	pht = new HitTimer();
+	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
 	pht->m_nextfire = pht->m_interval;
 	pht->m_pfe = (IFireEvents *)this;
@@ -204,7 +204,7 @@ void Trigger::GetHitShapes(Vector<HitObject> *pvho)
 
 	if (m_d.m_shape == ShapeCircle)
 		{
-		float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+		const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 		m_ptriggerhitcircle = new TriggerHitCircle();
 
@@ -239,9 +239,9 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
 		case ShapeCircle:
 		default:
 			{
-			HitObject *pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 10, m_d.m_radius, 32);
+			HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 10, m_d.m_radius, 32);
 			pho->m_ObjType = eTrigger;
-			pho->m_pObj = (void*) this;
+			pho->m_pObj = (void*)this;
 
 			pvho->AddElement(pho);			
 			break;
@@ -274,40 +274,32 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
 		}
 	}
 
-void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
+void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	//Vector<Vertex2D> vvertex;
 
-	RenderVertex *rgv;
 	//RenderVertex * const rgv = GetRgRenderVertex(&count);
-	Vertex3D *rgv3D;
-	int count;
 
+	Vector<RenderVertex> vvertex;
+	GetRgVertex(&vvertex);
+
+	const int count = vvertex.Size();
+	RenderVertex * const rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
+	Vertex3D * const rgv3D = new Vertex3D[count + 6];
+
+	for (int i=0;i<count;i++)
 		{
-		Vector<RenderVertex> vvertex;
-		GetRgVertex(&vvertex);
+		rgv3D[i].x = vvertex.ElementAt(i)->x;
+		rgv3D[i].y = vvertex.ElementAt(i)->y;
+		rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);// + 50.0f; //rlc fix 
+		}
 
-		count = vvertex.Size();
-		rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
-		rgv3D = new Vertex3D[count + 6];
-
-		if (1)
-			{
-			for (int i=0;i<count;i++)
-				{
-				rgv3D[i].x = vvertex.ElementAt(i)->x;
-				rgv3D[i].y = vvertex.ElementAt(i)->y;
-				rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);// + 50.0f; //rlc fix 
-				}
-			}
-
-		for (int i=0;i<count;i++)
-			{
-			rgv[i] = *vvertex.ElementAt(i);
-			delete vvertex.ElementAt(i);
-			}
+	for (int i=0;i<count;i++)
+		{
+		rgv[i] = *vvertex.ElementAt(i);
+		delete vvertex.ElementAt(i);
 		}
 #if 1	
 	for (int i=0;i<count;i++)	
@@ -328,7 +320,6 @@ void Trigger::CurvesToShapes(Vector<HitObject> *pvho)
 	ph3dpoly->m_pObj = (void*) this;
 
 	pvho->AddElement(ph3dpoly);
-	
 #else
 	delete rgv3D;
 #endif
@@ -362,8 +353,6 @@ void Trigger::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
 	vt2.x = pv1->x - pv3->x;
 	vt2.y = pv1->y - pv3->y;
-
-	return;
 	}
 
 void Trigger::EndPlay()
@@ -562,11 +551,9 @@ void Trigger::DoCommand(int icmd, int x, int y)
 
 			RECT rc;
 			GetClientRect(m_ptable->m_hwnd, &rc);
-			Vertex2D v, vOut;
-			int iSeg;
-
 			HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
+			Vertex2D v;
 			phs->ScreenToSurface(x, y, &v.x, &v.y);
 			delete phs;
 
@@ -581,6 +568,8 @@ void Trigger::DoCommand(int icmd, int x, int y)
 				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				}
 
+			int iSeg;
+			Vertex2D vOut;
 			ClosestPointOnPolygon(rgv, cvertex, &v, &vOut, &iSeg, fTrue);
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
@@ -597,7 +586,6 @@ void Trigger::DoCommand(int icmd, int x, int y)
 				//icp = m_vdpoint.Size();
 
 			CComObject<DragPoint> *pdp;
-
 			CComObject<DragPoint>::CreateInstance(&pdp);
 			if (pdp)
 				{
@@ -648,8 +636,6 @@ void Trigger::Translate(Vertex2D *pvOffset)
 
 HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	HRESULT hr;
-
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
 #ifdef VBA
@@ -668,6 +654,7 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
+	HRESULT hr;
 	if(FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
 		return hr;
 
@@ -692,12 +679,11 @@ HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 	br.Load();
 	return S_OK;
 #else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
 	m_ptable = ptable;
 
+	ULONG read = 0;
 	DWORD dwID;
+	HRESULT hr;
 	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
 		return hr;
 
@@ -915,13 +901,11 @@ STDMETHODIMP Trigger::BallCntOver(int *pVal)
 
 	if (g_pplayer)
 		{
-		Ball *pball;
-		
-		int vballsize = g_pplayer->m_vball.Size();
+		const int vballsize = g_pplayer->m_vball.Size();
 
 		for (int i = 0; i < vballsize; i++)
 			{
-			pball = g_pplayer->m_vball.ElementAt(i);
+			Ball * const pball = g_pplayer->m_vball.ElementAt(i);
 
 			if (pball->m_vpVolObjs && pball->m_vpVolObjs->IndexOf(this) >= 0)
 				{
@@ -943,7 +927,7 @@ STDMETHODIMP Trigger::DestroyBall(int *pVal)
 		{
 		for (int i = 0; i < g_pplayer->m_vball.Size(); i++)
 			{
-			Ball *pball = g_pplayer->m_vball.ElementAt(i);
+			Ball * const pball = g_pplayer->m_vball.ElementAt(i);
 
 			int j;
 			if (pball->m_vpVolObjs && (j = pball->m_vpVolObjs->IndexOf(this)) >= 0)
@@ -1016,16 +1000,17 @@ STDMETHODIMP Trigger::put_Shape(Shape newVal)
 	if (m_d.m_shape == ShapeCircle && m_vdpoint.Size() > 0)
 		{
 		// Set the center of the trigger back to something useful
-		float x=0.0f;
-		float y=0.0f;
+		float x = 0.0f;
+		float y = 0.0f;
 		for (int i=0;i<m_vdpoint.Size();i++)
 			{
 			x += m_vdpoint.ElementAt(i)->m_v.x;
 			y += m_vdpoint.ElementAt(i)->m_v.y;
 			}
 
-		m_d.m_vCenter.x = x/m_vdpoint.Size();
-		m_d.m_vCenter.y = y/m_vdpoint.Size();
+		const float inv_s = 1.0f/(float)m_vdpoint.Size();
+		m_d.m_vCenter.x = x*inv_s;
+		m_d.m_vCenter.y = y*inv_s;
 		}
 
 	if (m_d.m_shape == ShapeCustom && m_vdpoint.Size() == 0)
@@ -1063,7 +1048,6 @@ STDMETHODIMP Trigger::put_Shape(Shape newVal)
 			pdp->Init(this, x+30.0f, y-30.0f);
 			m_vdpoint.AddElement(pdp);
 			}
-
 		}
 
 	STOPUNDO

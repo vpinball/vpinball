@@ -292,7 +292,7 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnStatus(
         break;
 
     case WMT_MISSING_CODEC:
-
+		{
         //
         // find the guid for the missing codec
         //
@@ -309,10 +309,10 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnStatus(
         {
             return( hr );
         }
-        break;
 
         break;
-    };
+		}
+    }
 
     return( S_OK );
 }
@@ -326,8 +326,6 @@ HRESULT CSimplePlayer::DoCodecDownload( GUID* pguidCodecID )
 
 HRESULT CSimplePlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 {
-    HRESULT hr; 
-
     // This samples works by dividing a 3 second streaming buffer into 
     // NUM_PLAY_NOTIFICATIONS (or 16) pieces.  it creates a notification for each
     // piece and when a notification arrives then it fills the circular streaming 
@@ -358,6 +356,7 @@ HRESULT CSimplePlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
     dsbd.lpwfxFormat   = pwfx;
 
     // Create a DirectSound buffer
+	HRESULT hr;
     if( FAILED( hr = g_pvp->m_pds.m_pDS->CreateSoundBuffer( &dsbd, &m_pDSBuffer, NULL ) ) )
         return hr;
 
@@ -375,4 +374,3 @@ HRESULT CSimplePlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 
     return S_OK;
 }
-
