@@ -65,7 +65,7 @@ public:
 	Surface();
 	virtual ~Surface();
 
-	HRESULT InitTarget(PinTable *ptable, float x, float y);
+	HRESULT InitTarget(PinTable * const ptable, const float x, const float y);
 
 	//int GetPointCount();
 	//Vertex2D *GetRgVertex(int *pcount);
@@ -82,7 +82,7 @@ public:
 	virtual void GetBoundingVertices(Vector<Vertex3D> *pvvertex3D);
 
 	// IHitable
-	void CurvesToShapes(Vector<HitObject> *pvho);
+	void CurvesToShapes(Vector<HitObject> * const pvho);
 	void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const BOOL fSlingshot);
 
 	STANDARD_DISPATCH_DECLARE
@@ -137,8 +137,6 @@ END_CONNECTION_POINT_MAP()
 	int m_cvertexT;
 
 	SurfaceData m_d;
-
-	BOOL m_fSelfIntersecting;
 
 	Vector<LineSegSlingshot> m_vlinesling;
 

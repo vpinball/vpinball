@@ -58,7 +58,7 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y)
 	return InitVBA(fTrue, 0, NULL);
 	}
 
-HRESULT Surface::InitTarget(PinTable *ptable, float x, float y)
+HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float y)
 	{
 	m_ptable = ptable;
 
@@ -241,22 +241,22 @@ void Surface::Render(Sur *psur)
 	m_rgvT = NULL;
 
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-	BOOL	fDrawDragpoints;		//>>> added by chris
+	bool fDrawDragpoints;		//>>> added by chris
 
 	if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
 		{
-		fDrawDragpoints = fTrue;
+		fDrawDragpoints = true;
 		}
 	else
 		{
 		// if any of the dragpoints of this object are selected then draw all the dragpoints
-		fDrawDragpoints = fFalse;
+		fDrawDragpoints = false;
 		for (int i=0;i<m_vdpoint.Size();i++)
 			{
 			const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 			if (pdp->m_selectstate != eNotSelected)
 				{
-				fDrawDragpoints = fTrue;
+				fDrawDragpoints = true;
 				break;
 				}
 			}
@@ -354,11 +354,11 @@ void Surface::RenderShadow(ShadowSur *psur, float height)
 		m_rgvT[m_cvertexT+5].x = m_rgvT[m_cvertexT-1].x;
 		m_rgvT[m_cvertexT+5].y = m_rgvT[m_cvertexT-1].y;
 
-		psur->PolygonSkew(m_rgvT, m_cvertexT+6, NULL, m_d.m_heightbottom, m_d.m_heighttop, fFalse);
+		psur->PolygonSkew(m_rgvT, m_cvertexT+6, NULL, m_d.m_heightbottom, m_d.m_heighttop, false);
 		}
 	else
 		{
-		psur->PolygonSkew(m_rgvT, m_cvertexT, NULL, m_d.m_heightbottom, m_d.m_heighttop, fFalse);
+		psur->PolygonSkew(m_rgvT, m_cvertexT  , NULL, m_d.m_heightbottom, m_d.m_heighttop, false);
 		}
 
 	delete m_rgvT;
@@ -432,21 +432,16 @@ void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
 		}
 	}
 
-void Surface::CurvesToShapes(Vector<HitObject> *pvho)
+void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 	{
-	int count;
-
-	RenderVertex *rgv;
-	Vertex3D *rgv3D;
 	//rgv = GetRgRenderVertex(&count);
 
-	{
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
 
-	count = vvertex.Size();
-	rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
-	rgv3D = new Vertex3D[count + 6];
+	const int count = vvertex.Size();
+	RenderVertex * const rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
+	Vertex3D * const rgv3D = new Vertex3D[count + 6];
 
 	if (m_d.m_fInner)
 		{
@@ -463,7 +458,6 @@ void Surface::CurvesToShapes(Vector<HitObject> *pvho)
 		rgv[i] = *vvertex.ElementAt(i);
 		delete vvertex.ElementAt(i);
 		}
-	}
 
 	for (int i=0;i<count;i++)
 		{
@@ -964,28 +958,22 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 		}
 
-	int cvertex;
+	Vector<RenderVertex> vvertex;
+	GetRgVertex(&vvertex);
 
-	RenderVertex *rgv;
 	float *rgtexcoord = NULL;
-
+	if (pinSide)
 		{
-		Vector<RenderVertex> vvertex;
-		GetRgVertex(&vvertex);
+		GetTextureCoords(&vvertex, &rgtexcoord);
+		}
 
-		if (pinSide)
-			{
-			GetTextureCoords(&vvertex, &rgtexcoord);
-			}
+	const int cvertex = vvertex.Size();
+	RenderVertex * const rgv = new RenderVertex[cvertex + 6]; // Add points so inverted polygons can be drawn
 
-		cvertex = vvertex.Size();
-		rgv = new RenderVertex[cvertex + 6]; // Add points so inverted polygons can be drawn
-
-		for (int i=0;i<vvertex.Size();i++)
-			{
-			rgv[i] = *vvertex.ElementAt(i);
-			delete vvertex.ElementAt(i);
-			}
+	for (int i=0;i<vvertex.Size();i++)
+		{
+		rgv[i] = *vvertex.ElementAt(i);
+		delete vvertex.ElementAt(i);
 		}
 
 	Vertex2D * const rgnormal = new Vertex2D[cvertex];
@@ -1554,7 +1542,6 @@ void Surface::Translate(Vertex2D *pvOffset)
 
 HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	HRESULT hr;
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
 #ifdef VBA
@@ -1593,6 +1580,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
 	bw.WriteTag(FID(PNTS));
+	HRESULT hr;
 	if(FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
 		return hr;
 
@@ -1617,12 +1605,11 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 	br.Load();
 	return S_OK;
 #else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-	
 	m_ptable = ptable;
 
+	ULONG read = 0;
 	DWORD dwID;
+	HRESULT hr;
 	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
 		return hr;
 

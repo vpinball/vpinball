@@ -21,14 +21,14 @@ const DWORD dwPause = 1000; // time to wait for threads to finish up
 // Passed to CreateThread to monitor the shutdown event
 static DWORD WINAPI MonitorProc(void* pv)
 {
-    CExeModule* p = (CExeModule*)pv;
+    CExeModule * const p = (CExeModule*)pv;
     p->MonitorShutdown();
     return 0;
 }
 
 LONG CExeModule::Unlock()
 {
-    LONG l = CComModule::Unlock();
+    const LONG l = CComModule::Unlock();
     if (l == 0)
     {
         bActivity = true;
@@ -81,7 +81,7 @@ END_OBJECT_MAP()
 
 LPCTSTR FindOneOf(LPCTSTR p1, LPCTSTR p2, LPTSTR pOut)
 {
-	BOOL fQuoteOn = fFalse;
+	bool fQuoteOn = false;
 
     while (p1 != NULL && *p1 != NULL)
     {
@@ -310,4 +310,3 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 
     return nRet;
 }
-

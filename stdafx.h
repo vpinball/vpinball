@@ -4,6 +4,8 @@
 
 #define ULTRA_FREE 1
 
+#define NO_X87_FPU 1
+
 #define GPINFLOAT double 
 
 #if !defined(AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_)
@@ -56,11 +58,11 @@ using namespace MSAPC;
 
 //#include "evalkey.h"
 
+#ifndef NO_X87_FPU
 #include <fpieee.h>
-#include <excpt.h>
+#endif
 
 #include "math.h"
-#include "float.h"
 
 #include "commctrl.h"
 
