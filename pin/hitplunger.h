@@ -2,10 +2,10 @@
 class PlungerAnimObject : public AnimObject
 	{
 public:
-	virtual void UpdateDisplacements(PINFLOAT dtime);
+	virtual void UpdateDisplacements(float dtime);
 	//virtual void ResetFrameTime();
 	//virtual void UpdateTimePermanent();
-	virtual void UpdateVelocities(PINFLOAT dtime);
+	virtual void UpdateVelocities(float dtime);
 
 	virtual BOOL FMover() {return fTrue;}
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
@@ -60,7 +60,7 @@ public:
 	HitPlunger(const float x, const float y, const float x2, const float pos, const float zheight, Plunger * const pPlunger);
 	~HitPlunger() {}
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
+	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
 
 	virtual int GetType() {return ePlunger;}
 

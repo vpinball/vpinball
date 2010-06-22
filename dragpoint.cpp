@@ -333,7 +333,7 @@ void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> *pvv)
 		rendv1.y = pdp1->m_v.y;
 		rendv1.fSmooth = pdp1->m_fSmooth;
 		rendv1.fSlingshot = pdp1->m_fSlingshot;
-		rendv1.fControlPoint = fTrue;
+		rendv1.fControlPoint = true;
 
 		// Properties of last point don't matter, because it won't be added to the list on this pass (it'll get added as the first point of the next curve)
 		rendv2.x = pdp2->m_v.x;

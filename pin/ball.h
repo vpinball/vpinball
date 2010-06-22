@@ -16,8 +16,8 @@ public:
 	virtual BOOL FMover() {return fFalse;} // We add ourselves to the mover list.  
 											// If we allow the table to do that, we might get added twice, 
 											// if we get created in Init code
-	virtual void UpdateDisplacements(PINFLOAT dtime);
-	virtual void UpdateVelocities(PINFLOAT dtime);
+	virtual void UpdateDisplacements(float dtime);
+	virtual void UpdateVelocities(float dtime);
 
 	Ball *m_pball;
 	};
@@ -32,11 +32,11 @@ public:
 
     static int NumInitted();
 
-	virtual void UpdateDisplacements(PINFLOAT dtime);
-	virtual void UpdateVelocities(PINFLOAT dtime);
+	virtual void UpdateDisplacements(float dtime);
+	virtual void UpdateVelocities(float dtime);
 
 	// From HitObject
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);	
+	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);	
 	virtual int GetType() {return eBall;}
 	virtual void Draw(HDC hdc) {} // Dead function
 	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
@@ -79,10 +79,10 @@ public:
 
 	HitObject *m_pho;		//pointer to hit object trial, may not be a actual hit if something else happens first
 	VectorVoid* m_vpVolObjs;// vector of triggers we are now inside
-	PINFLOAT m_hittime;		// time at which this ball will hit something
-	PINFLOAT m_hitx, m_hity;// position of the ball at hit time (saved to avoid floating point errors with multiple time slices)
-	PINFLOAT m_HitDist;		// hit distance 
-	PINFLOAT m_HitNormVel;	// hit normal Velocity
+	float m_hittime;		// time at which this ball will hit something
+	float m_hitx, m_hity;// position of the ball at hit time (saved to avoid floating point errors with multiple time slices)
+	float m_HitDist;		// hit distance 
+	float m_HitNormVel;	// hit normal Velocity
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
 	Vertex3Ds m_hitnormal[5];//rlc 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
 
@@ -90,24 +90,24 @@ public:
 
 	BallAnimObject m_ballanim;
 
-	PINFLOAT x;
-	PINFLOAT y;
-	PINFLOAT z;
+	float x;
+	float y;
+	float z;
 	
 	//float GetZ() const {return z - radius;}
 	//void PutZ(const float newz) {z = newz + radius;}
 
-	PINFLOAT vx;
-	PINFLOAT vy;
-	PINFLOAT vz;
+	float vx;
+	float vy;
+	float vz;
 
-	PINFLOAT drsq;	// square of distance moved
+	float drsq;	// square of distance moved
 
 	float radius;
 
-//	PINFLOAT x_min, x_max;	// world limits on ball displacements
-//	PINFLOAT y_min, y_max;
-	PINFLOAT z_min, z_max;
+//	float x_min, x_max;	// world limits on ball displacements
+//	float y_min, y_max;
+	float z_min, z_max;
 
 	Vertex3Ds m_Event_Pos;
 	

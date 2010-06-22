@@ -238,7 +238,7 @@ HRESULT LZWWriter::FlushChar()
 	{
 	if ( m_a_count > 0 )
 	    {
-	    WriteByte(m_a_count );
+	    WriteByte(m_a_count);
 	    WriteSz((char *)m_accum, m_a_count);
 	    m_a_count = 0;
 	    }

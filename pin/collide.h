@@ -37,13 +37,13 @@ enum
 
 #define PHYS_SKIN 25.0
 
-extern PINFLOAT c_Gravity;
-extern PINFLOAT c_hardFriction; 
-extern PINFLOAT c_hardScatter; 
-extern PINFLOAT c_maxBallSpeedSqed; 
-extern PINFLOAT c_dampingFriction;
+extern float c_Gravity;
+extern float c_hardFriction; 
+extern float c_hardScatter; 
+extern float c_maxBallSpeedSqed; 
+extern float c_dampingFriction;
 
-extern PINFLOAT c_plungerNormalize;  //Adjust Mech-Plunger, useful for component change or weak spring etc.
+extern float c_plungerNormalize;  //Adjust Mech-Plunger, useful for component change or weak spring etc.
 extern bool c_plungerFilter;
 
 extern U32 c_PostCheck;
@@ -81,16 +81,16 @@ extern U32 c_PostCheck;
 //#define INFONORMAL 0
 //#define INFOMOVE 1
 
-inline bool FQuickLineIntersect(const PINFLOAT x1, const PINFLOAT y1, const PINFLOAT x2, const PINFLOAT y2,
-								const PINFLOAT x3, const PINFLOAT y3, const PINFLOAT x4, const PINFLOAT y4)
+inline bool FQuickLineIntersect(const float x1, const float y1, const float x2, const float y2,
+								const float x3, const float y3, const float x4, const float y4)
 	{
-	const PINFLOAT d123 = (x2 - x1)*(y3 - y1) - (x3 - x1)*(y2 - y1);
+	const float d123 = (x2 - x1)*(y3 - y1) - (x3 - x1)*(y2 - y1);
 
-	const PINFLOAT d124 = (x2 - x1)*(y4 - y1) - (x4 - x1)*(y2 - y1);
+	const float d124 = (x2 - x1)*(y4 - y1) - (x4 - x1)*(y2 - y1);
 
-    const PINFLOAT d341 = (x3 - x1)*(y4 - y1) - (x4 - x1)*(y3 - y1);
+    const float d341 = (x3 - x1)*(y4 - y1) - (x4 - x1)*(y3 - y1);
 
-    const PINFLOAT d342 = d123 - d124 + d341;
+    const float d342 = d123 - d124 + d341;
 
 	return ((d123 * d124 <= 0) && (d341 * d342 <= 0));
 	}
@@ -107,7 +107,7 @@ public:
 	BOOL m_fSeeThrough;
 	};
 
-HitObject *CreateCircularHitPoly(const PINFLOAT x, const PINFLOAT y, const PINFLOAT z, const PINFLOAT r, const int sections);
+HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections);
 
 class HitObject
 	{
@@ -116,7 +116,7 @@ public:
 	HitObject();
 	virtual ~HitObject(){}
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal) = 0;
+	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal) = 0;
 
 	virtual int GetType() = 0;
 
@@ -154,10 +154,10 @@ class AnimObject
 	{
 public:
 	virtual BOOL FMover() {return fFalse;}
-	virtual void UpdateDisplacements(PINFLOAT dtime) {}
+	virtual void UpdateDisplacements(float dtime) {}
 	//virtual void ResetFrameTime() {}
 	//virtual void UpdateTimePermanent() {}
-	virtual void UpdateVelocities(PINFLOAT dtime) {}
+	virtual void UpdateVelocities(float dtime) {}
 
 	virtual BOOL FNeedsScreenUpdate() {return fFalse;}
     virtual void Check3D() {}
@@ -185,9 +185,9 @@ public:
 	Vertex2D v1, v2;
 	float length;
 
-	virtual PINFLOAT HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal
-									,bool direction, bool lateral, bool rigid);
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
+	virtual float HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
+							   bool direction, bool lateral, bool rigid);
+	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
 	//float VertHitTest(Ball *pball, float dtime, Vertex2D *phitnormal);
 	virtual int GetType() {return eLineSeg;}
 	virtual void Draw(HDC hdc);
@@ -206,12 +206,12 @@ public:
 	float zlow;
 	float zhigh;
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
+	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
 
-	PINFLOAT HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal
-								,bool direction, bool lateral, bool rigid);
+	float HitTestBasicRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal,
+		                     bool direction, bool lateral, bool rigid);
 
-	PINFLOAT HitTestRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
+	float HitTestRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal);
 
 	virtual int GetType() {return eCircle;}
 
@@ -227,7 +227,7 @@ class Joint : public HitCircle
 public:
 	Joint();
 
-	virtual PINFLOAT HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal);
+	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
 
 	virtual int GetType() {return eJoint;}
 

@@ -44,9 +44,9 @@
 class TempBuffer
   {
   public:
-    TempBuffer(ULONG cb)
+    TempBuffer(const ULONG cb)
       {
-      m_fAlloc = (cb > 120);
+      m_fAlloc = (cb > 256);
       if (m_fAlloc)
         m_pbBuf = new char[cb];
       else
@@ -54,13 +54,13 @@ class TempBuffer
       }
     ~TempBuffer()
       { if (m_pbBuf && m_fAlloc) delete m_pbBuf; }
-    void *GetBuffer()
+    void *GetBuffer() const
       { return m_pbBuf; }
 
   private:
     void *m_pbBuf;
-    char  m_szBufT[120];  // We'll use this temp buffer for small cases.
-    int   m_fAlloc;
+    char  m_szBufT[256];  // We'll use this temp buffer for small cases.
+    bool  m_fAlloc;
   };
 
 

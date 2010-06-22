@@ -14,9 +14,6 @@ using namespace MSAPC;
 
 #define BOOL int
 
-//#define PINFLOAT double //rlc change back to single percision
-#define PINFLOAT float
-
 #define MAXSTRING 1024
 #define MAXTOKEN 32*4
 
@@ -267,14 +264,14 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 
 inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoint, const int count, const float angle)
 	{
-	const PINFLOAT x = pvAxis->x;
-	const PINFLOAT y = pvAxis->y;
-	const PINFLOAT z = pvAxis->z;
+	const float x = pvAxis->x;
+	const float y = pvAxis->y;
+	const float z = pvAxis->z;
 
-	const PINFLOAT rsin = (PINFLOAT)sinf(angle);
-	const PINFLOAT rcos = (PINFLOAT)cosf(angle);
+	const float rsin = sinf(angle);
+	const float rcos = cosf(angle);
 
-	PINFLOAT matrix[3][3];
+	float matrix[3][3];
 
 	// Matrix for rotating around an arbitrary vector
 
@@ -292,7 +289,7 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoin
 
 	for (int i=0;i<count;i++)
 		{
-		const PINFLOAT result[3] = {
+		const float result[3] = {
 			matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z,
 			matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z,
 			matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z};
@@ -304,7 +301,7 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoin
 		//!! the following doesn't make too much sense (i.e. last check is nx not nz) and also produces all 0,0,0 again!
 		if ((pvPoint[i].nx == 0) && (pvPoint[i].ny == 0) && (pvPoint[i].nx == 0)) //rlc optimize, often 0,0,0
 			{
-			const PINFLOAT resultn[3] = {
+			const float resultn[3] = {
 				matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz,
 				matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz,
 				matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz};
@@ -318,14 +315,14 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoin
 
 inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3Ds * const pvPoint, const int count, const float angle)
 	{
-	const PINFLOAT x = pvAxis->x;
-	const PINFLOAT y = pvAxis->y;
-	const PINFLOAT z = pvAxis->z;
+	const float x = pvAxis->x;
+	const float y = pvAxis->y;
+	const float z = pvAxis->z;
 
-	const PINFLOAT rsin = (PINFLOAT)sinf(angle);
-	const PINFLOAT rcos = (PINFLOAT)cosf(angle);
+	const float rsin = sinf(angle);
+	const float rcos = cosf(angle);
 
-	PINFLOAT matrix[3][3];
+	float matrix[3][3];
 
 	// Matrix for rotating around an arbitrary vector
 
@@ -343,7 +340,7 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3Ds * const pvPoi
 
 	for (int i=0;i<count;i++)
 		{
-		const PINFLOAT result[3] = {
+		const float result[3] = {
 			matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z,
 			matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z,
 			matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z};

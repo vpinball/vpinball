@@ -499,7 +499,7 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
 		rendv1.x = pdp1->m_v.x;
 		rendv1.y = pdp1->m_v.y;
 		rendv1.fSmooth = pdp1->m_fSmooth;
-		rendv1.fControlPoint = fTrue;
+		rendv1.fControlPoint = true;
 
 		// Properties of last point don't matter, because it won't be added to the list on this pass (it'll get added as the first point of the next curve)
 		rendv2.x = pdp2->m_v.x;
@@ -509,9 +509,9 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
 		}
 
 	// Add the very last point to the list because nobody else added it
-	rendv2.fSmooth = fTrue;
-	rendv2.fSlingshot = fFalse;
-	rendv2.fControlPoint = fFalse;	//rlc --- trapped on uninitialized varible (DevPartner)
+	rendv2.fSmooth = true;
+	rendv2.fSlingshot = false;
+	rendv2.fControlPoint = false;	//rlc --- trapped on uninitialized varible (DevPartner)
 	RenderVertex * const pvT = new RenderVertex;
 	*pvT = rendv2;
 	pvv->AddElement(pvT);

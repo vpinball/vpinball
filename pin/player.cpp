@@ -1,8 +1,6 @@
 #include "stdafx.h"
-#include <time.h>
 
 #include "..\DongleAPI.h"
-
 
 #define DONGLE_SUPPORT								// Remember to run hdd32.exe (HASP dongle driver setup) on host.
 //#define _DEBUGPHYSICSx
@@ -1643,10 +1641,10 @@ void Player::mechPlungerIn(int z)
 #define EMBEDED_LIMIT  0.0875f
 #define STATICCNTS 10
 
-void Player::PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime) // move physics forward to this time
+void Player::PhysicsSimulateCycle(float dtime, U64 startTime) // move physics forward to this time
 	{
-	PINFLOAT hittime;
-	PINFLOAT staticTime = STATICTIME;
+	float hittime;
+	float staticTime = STATICTIME;
 	const int limitTime = m_ptable->m_PhysicsLoopTime;
 	int halfLimitTime = limitTime/2;
 
@@ -1686,7 +1684,7 @@ void Player::PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime) // move physics
 
 				m_hitoctree.HitTestBall(pball);			// find the hit objects and hit times
 
-				PINFLOAT htz = pball->m_hittime;		// this ball's hit time
+				float htz = pball->m_hittime;		// this ball's hit time
 
 				if(htz < 0) pball->m_pho = NULL;		// no negative time allowed
 
@@ -1758,7 +1756,7 @@ void Player::PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime) // move physics
 					if (pball->m_HitRigid && pball->m_HitDist < (float)PHYS_TOUCH) //rigid and close distance
 						{//contacts
 						c_contactcnt++;
-						const PINFLOAT mag = pball->vx*pball->vx + pball->vy*pball->vy; // values below are taken from simulation
+						const float mag = pball->vx*pball->vx + pball->vy*pball->vy; // values below are taken from simulation
 						if (pball->drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->vz) < 0.2f)
 							{
 							if(--pball->m_fDynamic <= 0)						//... ball static, cancels next gravity increment
@@ -2001,8 +1999,8 @@ void Player::Render()
 		// If the frame is the next thing to happen, update physics to that
 		// point next update acceleration, and continue loop
 
-		const PINFLOAT physics_dtime = (PINFLOAT)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/10000.0));
-		const PINFLOAT physics_to_graphic_dtime  = (PINFLOAT)((double)(m_RealTimeClock - m_curPhysicsFrameTime)*(1.0/10000.0));
+		const float physics_dtime = (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/10000.0));
+		const float physics_to_graphic_dtime  = (float)((double)(m_RealTimeClock - m_curPhysicsFrameTime)*(1.0/10000.0));
 
 		if (physics_to_graphic_dtime < physics_dtime )				// is graphic frame time next???
 			{		
@@ -2848,7 +2846,7 @@ void Player::DrawBalls()
 		mtrl.diffuse.b = mtrl.ambient.b = b;
 		m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
-		const PINFLOAT zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
+		const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
 		Vertex3D * const rgv3D = pball->m_rgv3D;
 		rgv3D[0].x = pball->x - pball->radius;

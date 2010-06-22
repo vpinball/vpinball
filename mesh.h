@@ -68,9 +68,9 @@ public:
 class RenderVertex : public Vertex2D
 	{
 public:
-	BOOL fSmooth;
-	BOOL fSlingshot;
-	BOOL fControlPoint; // Whether this point was a control point on the curve
+	bool fSmooth;
+	bool fSlingshot;
+	bool fControlPoint; // Whether this point was a control point on the curve
 	};
 
 void SetHUDVertices(Vertex3D * const rgv, const int count);

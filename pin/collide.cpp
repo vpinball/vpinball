@@ -3,18 +3,18 @@
 //spare
 
 
-PINFLOAT c_maxBallSpeedSqed = C_SPEEDLIMIT*C_SPEEDLIMIT; 
-PINFLOAT c_dampingFriction = 0.95f;
-PINFLOAT c_plungerNormalize = (PINFLOAT)(1.0/13.0);  //match button plunger physics
+float c_maxBallSpeedSqed = C_SPEEDLIMIT*C_SPEEDLIMIT; 
+float c_dampingFriction = 0.95f;
+float c_plungerNormalize = (float)(1.0/13.0);  //match button plunger physics
 bool c_plungerFilter = false;
 
-PINFLOAT c_hardScatter = 0;
-PINFLOAT c_hardFriction = 1.0f - RC_FRICTIONCONST;
-PINFLOAT c_Gravity = GRAVITYCONST;
+float c_hardScatter = 0;
+float c_hardFriction = 1.0f - RC_FRICTIONCONST;
+float c_Gravity = GRAVITYCONST;
 
 U32 c_PostCheck = 0;
 
-HitObject *CreateCircularHitPoly(const PINFLOAT x, const PINFLOAT y, const PINFLOAT z, const PINFLOAT r, const int sections)
+HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections)
 	{
 	Vertex3D * const rgv3d = new Vertex3D[sections];
 
@@ -54,16 +54,16 @@ void LineSeg::CalcHitRect()
 #define TANX  normal.y
 #define TANY -normal.x
 
-PINFLOAT LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal,
-							   bool direction, bool lateral, bool rigid)
+float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
+							bool direction, bool lateral, bool rigid)
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
 
-	PINFLOAT hittime;
-	PINFLOAT ballvx = pball->vx;						// ball velocity
-	PINFLOAT ballvy = pball->vy;
+	float hittime;
+	float ballvx = pball->vx;						// ball velocity
+	float ballvy = pball->vy;
 
-	PINFLOAT bnv = ballvx*normal.x + ballvy*normal.y;	//ball velocity normal to segment, positive if receding, zero=parallel
+	float bnv = ballvx*normal.x + ballvy*normal.y;	//ball velocity normal to segment, positive if receding, zero=parallel
 
 	if (direction &&  bnv > C_LOWNORMVEL)				//direction true and clearly receding from normal face
 		{
@@ -73,16 +73,16 @@ PINFLOAT LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnorma
 		return -1.0f;
 		}
 
-	const PINFLOAT ballx = pball->x;	//ball position
-	const PINFLOAT bally = pball->y;
+	const float ballx = pball->x;	//ball position
+	const float bally = pball->y;
 
 	// ball normal distance: contact distance normal to segment. lateral contact subtract the ball radius 
 
-	const PINFLOAT rollingRadius = (lateral ? pball->radius : C_TOL_RADIUS);	//lateral or rolling point
-	const PINFLOAT bcpd = (ballx - v1.x)*normal.x + (bally - v1.y)*normal.y ;	// ball center to plane distance
-	const PINFLOAT bnd = bcpd - rollingRadius;
-	const PINFLOAT btv = ballvx*TANX + ballvy*TANY;		//ball velocity tangent to segment with respect to direction from V1 to V2
-	PINFLOAT btd = (ballx - v1.x)*TANX + (bally - v1.y)* TANY ;	// ball tangent distance 
+	const float rollingRadius = (lateral ? pball->radius : C_TOL_RADIUS);	//lateral or rolling point
+	const float bcpd = (ballx - v1.x)*normal.x + (bally - v1.y)*normal.y ;	// ball center to plane distance
+	const float bnd = bcpd - rollingRadius;
+	const float btv = ballvx*TANX + ballvy*TANY;		//ball velocity tangent to segment with respect to direction from V1 to V2
+	float btd = (ballx - v1.x)*TANX + (bally - v1.y)* TANY ;	// ball tangent distance 
 
 
 	bool bUnHit = (bnv > C_LOWNORMVEL);
@@ -130,8 +130,8 @@ PINFLOAT LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnorma
 	if (!rigid)												// non rigid body collision? return direction
 		phitnormal[1].x = (float)bUnHit;	// UnHit signal	is receding from outside target
 	
-	const PINFLOAT ballr = pball->radius;
-	const PINFLOAT hitz = pball->z - ballr + pball->vz*hittime;	// check too high or low relative to ball rolling point at hittime
+	const float ballr = pball->radius;
+	const float hitz = pball->z - ballr + pball->vz*hittime;	// check too high or low relative to ball rolling point at hittime
 
 	if (hitz + (ballr * 1.5f) < m_rcHitRect.zlow			//check limits of object's height and depth  
 		|| hitz + (ballr * 0.5f) > m_rcHitRect.zhigh)
@@ -147,32 +147,32 @@ PINFLOAT LineSeg::HitTestBasic(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnorma
 	return hittime;
 	}	
 
-PINFLOAT LineSeg::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal) 
+float LineSeg::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal) 
 	{															// normal face, lateral, rigid
 	return HitTestBasic(pball, dtime, phitnormal, true, true, true);
 	}
 
 
-PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal, bool direction,bool lateral, bool rigid)
+float HitCircle::HitTestBasicRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal, bool direction,bool lateral, bool rigid)
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
 
-	PINFLOAT hittime; 
-	BOOL fUnhit;
+	float hittime; 
+	bool fUnhit;
 	
 	bool capsule3D = false;
 
-	const PINFLOAT x = center.x;
-	const PINFLOAT y = center.y;	
+	const float x = center.x;
+	const float y = center.y;	
 	
-	const PINFLOAT dx = pball->x - x;	// form delta components (i.e. translate coordinate frame)
-	const PINFLOAT dy = pball->y - y;
+	const float dx = pball->x - x;	// form delta components (i.e. translate coordinate frame)
+	const float dy = pball->y - y;
 
-	const PINFLOAT dvx = pball->vx;		// delta velocity from ball's coordinate frame
-	const PINFLOAT dvy = pball->vy;
+	const float dvx = pball->vx;		// delta velocity from ball's coordinate frame
+	const float dvy = pball->vy;
 
-	PINFLOAT z,dz,dvz;
-	PINFLOAT targetRadius = lateral ? radius + pball->radius : radius;	// 	
+	float z,dz,dvz;
+	float targetRadius = lateral ? radius + pball->radius : radius;	// 	
 	
 	if (!lateral && pball->z > zhigh)
 		{
@@ -188,21 +188,21 @@ PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *p
 		z = dz = dvz = 0.0f;
 		}
 	
-	const PINFLOAT bcddsq = dx*dx + dy*dy + dz*dz;	// ball center to circle center distance ... squared
+	const float bcddsq = dx*dx + dy*dy + dz*dz;	// ball center to circle center distance ... squared
 
-	const PINFLOAT bcdd = sqrtf(bcddsq);			//distance center to center
+	const float bcdd = sqrtf(bcddsq);			//distance center to center
 
-	PINFLOAT b = dx*dvx + dy*dvy + dz*dvz;			//inner product
+	float b = dx*dvx + dy*dvy + dz*dvz;			//inner product
 
-	PINFLOAT bnv;
+	float bnv;
 	if (bcdd > 1.0e-6f) bnv = b/bcdd;				//ball normal velocity, 
 	else return -1.0f;								// no hit on exact center
 
 	if (direction && bnv > C_LOWNORMVEL) return -1.0f; // clearly receding from radius
 
-	PINFLOAT a = dvx*dvx + dvy*dvy +dvz*dvz;	// square of the delta velocity (outer product)
+	float a = dvx*dvx + dvy*dvy +dvz*dvz;	// square of the delta velocity (outer product)
  
-	const PINFLOAT bnd = bcdd - targetRadius;		// ball normal distance to 
+	const float bnd = bcdd - targetRadius;		// ball normal distance to 
 
 // Kicker is special.. handle ball stalled on kicker, commonly hit while receding, knocking back into kicker pocket
 	if (m_ObjType == eKicker && bnd <= 0 && bnd >= -radius &&  a < C_CONTACTVEL*C_CONTACTVEL )	
@@ -237,44 +237,44 @@ PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *p
 		if((!rigid && bnd * bnv > 0) ||	// (outside and receding) or (inside and approaching)
 		   (a < 1.0e-8f)) return -1.0f;				//no hit ... ball not moving relative to object
 
-		const PINFLOAT c = bcddsq - targetRadius*targetRadius; // contact distance ... square delta distance (outer product)
+		const float c = bcddsq - targetRadius*targetRadius; // contact distance ... square delta distance (outer product)
 
 		b += b;										// twice the (inner products)
 
-		PINFLOAT result = b*b - 4.0f*a*c;			// inner products minus the outer products
+		float result = b*b - 4.0f*a*c;			// inner products minus the outer products
 
 		if (result < 0) return -1.0f;				// contact impossible 
 			
 		result = sqrtf(result); a += a;
 
 		const float inv_a = 1.0f/a;
-		const PINFLOAT time1 = (-b + result)* inv_a;
-		const PINFLOAT time2 = (-b - result)* inv_a;
+		const float time1 = (-b + result)* inv_a;
+		const float time2 = (-b - result)* inv_a;
 		
 		if (time1*time2 < 0)						// ball is inside the circle
 			{
-			fUnhit = fTrue;
+			fUnhit = true;
 			hittime = max(time1,time2);  			
 			}
 		else
 			{
-			fUnhit = fFalse;
+			fUnhit = false;
 			hittime = min(time1,time2);
 			}
 
 		if (hittime < 0 || hittime > dtime) return -1.0f;	// contact out of physics frame
 		}
 	
-	const PINFLOAT hitz = pball->z - pball->radius + pball->vz * hittime; //rolling point
+	const float hitz = pball->z - pball->radius + pball->vz * hittime; //rolling point
 
 	if(((hitz + pball->radius *1.50f) < zlow) ||
 	   (!capsule3D && (hitz + pball->radius*0.5f) > zhigh) ||
 	   (capsule3D && (pball->z + pball->vz * hittime) < zhigh)) return -1.0f;
 		
-	const PINFLOAT hitx = pball->x + pball->vx*hittime;
-	const PINFLOAT hity = pball->y + pball->vy*hittime;
+	const float hitx = pball->x + pball->vx*hittime;
+	const float hity = pball->y + pball->vy*hittime;
 
-	const PINFLOAT len = sqrtf((hitx - x)*(hitx - x)+(hity - y)*(hity - y));
+	const float len = sqrtf((hitx - x)*(hitx - x)+(hity - y)*(hity - y));
 
 	 if (len > 1.0e-8f)										// over center???
 		{//no
@@ -289,7 +289,7 @@ PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *p
 		}
 	
 	if (!rigid)											// non rigid body collision? return direction
-		phitnormal[1].x = (float)fUnhit;				// UnHit signal	is receding from target
+		phitnormal[1].x = fUnhit ? 1.0f : 0.0f;			// UnHit signal	is receding from target
 
 	pball->m_HitDist = bnd;					//actual contact distance ... 
 	pball->m_HitNormVel = bnv;
@@ -299,7 +299,7 @@ PINFLOAT HitCircle::HitTestBasicRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *p
 	}
 
 
-PINFLOAT HitCircle::HitTestRadius(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
+float HitCircle::HitTestRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 	{	
 													//normal face, lateral, rigid
 	return HitTestBasicRadius(pball, dtime, phitnormal, true, true, true);		
@@ -382,7 +382,7 @@ void Joint::CalcHitRect()
 	zhigh = m_rcHitRect.zhigh;
 	}
 
-PINFLOAT Joint::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
+float Joint::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 	{
 	if (!m_fEnabled)
 		return -1.0f;
@@ -434,7 +434,7 @@ void HitCircle::CalcHitRect()
 	m_rcHitRect.zhigh = zhigh;
 	}
 
-PINFLOAT HitCircle::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
+float HitCircle::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 	{
 	return HitTestRadius(pball, dtime, phitnormal);
 	}
@@ -600,7 +600,7 @@ void HitOctree::HitTestBall(Ball *pball)
 #ifdef LOG
 			cDeepTested++;
 #endif
-			const PINFLOAT newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal); // test for hit
+			const float newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal); // test for hit
 			if (newtime >= 0 && newtime <= pball->m_hittime)
 				{
 				pball->m_pho = m_vho.ElementAt(i);
@@ -652,7 +652,7 @@ void HitOctree::HitTestXRay(Ball *pball, Vector<HitObject> *pvhoHit)
 #ifdef LOG
 		cDeepTested++;
 #endif
-			const PINFLOAT newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal);
+			const float newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal);
 			if (newtime >= 0)
 				{
 				pvhoHit->AddElement(m_vho.ElementAt(i));

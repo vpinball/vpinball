@@ -87,9 +87,9 @@ public:
 
 	void DrawAcrylics();
 
-	void PhysicsSimulateCycle(PINFLOAT dtime, U64 startTime);
+	void PhysicsSimulateCycle(float dtime, U64 startTime);
 
-	PINFLOAT UpdatePhysics(PINFLOAT dtime, Ball **pphitball);
+	float UpdatePhysics(float dtime, Ball **pphitball);
 
 	void InvalidateRect(RECT *prc);
 	void DrawLightHack ();
@@ -184,7 +184,7 @@ private:
 	U64 m_PhysicsStepTime; // ticks to go between each gravity update
 	U64 m_nextPhysicsFrameTime; // time at which the next physics update should be
 	U64 m_liPhysicsCalced;
-	PINFLOAT m_physicsdtime; // Float value to move physics forward every physics tick
+	float m_physicsdtime; // Float value to move physics forward every physics tick
 
 public:
 	BOOL m_fDetectScriptHang;

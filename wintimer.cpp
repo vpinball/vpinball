@@ -6,8 +6,6 @@
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 #include "StdAfx.h"
 
-#include <time.h>
-
 static U64 sCpuSpeed;
 static U64 sCpuSpeed_1024_M;
 static U64 sStartTick;
