@@ -83,7 +83,7 @@ public:
 
 	// IHitable
 	void CurvesToShapes(Vector<HitObject> * const pvho);
-	void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const BOOL fSlingshot);
+	void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const bool fSlingshot);
 
 	STANDARD_DISPATCH_DECLARE
 	STANDARD_EDITABLE_DECLARES(eItemSurface)

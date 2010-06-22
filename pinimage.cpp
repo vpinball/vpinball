@@ -485,7 +485,7 @@ METHODDEF(void) put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, JD
   bmp_dest_ptr const dest = (bmp_dest_ptr) dinfo;
 
   /* Access next row in virtual array */
-  const JSAMPARRAY const image_ptr = (*cinfo->mem->access_virt_sarray)
+  const JSAMPARRAY image_ptr = (*cinfo->mem->access_virt_sarray)
     ((j_common_ptr) cinfo, dest->whole_image,
      dest->cur_output_row, (JDIMENSION) 1, TRUE);
 

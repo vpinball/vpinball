@@ -137,7 +137,7 @@ void PlungerAnimObject::SetObjects(const float len)
 	m_jointEnd[1].normal.y = -deg45;
 	}
 
-void PlungerAnimObject::UpdateDisplacements(PINFLOAT dtime)
+void PlungerAnimObject::UpdateDisplacements(float dtime)
 {
 	m_pos += dtime*m_speed;
 
@@ -168,7 +168,7 @@ void PlungerAnimObject::UpdateDisplacements(PINFLOAT dtime)
 		}
 }
 
-void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
+void PlungerAnimObject::UpdateVelocities(float dtime)//dtime always 1.0f
 	{	
 	if (m_fAcc)
 		{
@@ -246,7 +246,7 @@ void PlungerAnimObject::UpdateVelocities(PINFLOAT dtime)//dtime always 1.0f
 	}	
 
 
-PINFLOAT HitPlunger::HitTest(Ball *pball, PINFLOAT dtime, Vertex3Ds *phitnormal)
+float HitPlunger::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 	{
 	float hittime = dtime; //start time
 	bool fHit = false;

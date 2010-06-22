@@ -132,9 +132,9 @@ void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const flo
 	const float tMid = (t1+t2)*0.5f;
 	RenderVertex vmid;
 	pcc->GetPointAt(tMid, &vmid);
-	vmid.fSmooth = fTrue; // Generated points must always be smooth, because they are part of the curve
-	vmid.fSlingshot = fFalse; // Slingshots can't be along curves
-	vmid.fControlPoint = fFalse; // We created this point, so it can't be a control point
+	vmid.fSmooth = true; // Generated points must always be smooth, because they are part of the curve
+	vmid.fSlingshot = false; // Slingshots can't be along curves
+	vmid.fControlPoint = false; // We created this point, so it can't be a control point
 
 	if (Flat(pvt1, pvt2, &vmid))
 		{

@@ -31,8 +31,8 @@ public:
 	char m_szSurface[MAXTOKEN];
 	char m_szImageFront[MAXTOKEN];
 	char m_szImageBack[MAXTOKEN];
-	PINFLOAT m_angleMin;
-	PINFLOAT m_angleMax;
+	float m_angleMin;
+	float m_angleMax;
 	int m_animations; //animation frames
 	BOOL m_fVisible;
 	};

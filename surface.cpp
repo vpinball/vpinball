@@ -514,7 +514,7 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 	delete rgv;
 	}
 
-void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const BOOL fSlingshot)
+void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const bool fSlingshot)
 	{
 	LineSeg *plineseg;
 	
@@ -710,7 +710,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		{
 		LineSegSlingshot * const plinesling = m_vlinesling.ElementAt(i);
 		
-		plinesling->m_slingshotanim.m_fAnimations = m_d.m_fSlingshotAnimation; //rlc
+		plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation != 0); //rlc
 
 		pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET,0x00000000, 1.0f, 0L );
 

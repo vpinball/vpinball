@@ -5626,10 +5626,8 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			break;
 			}
 
-		case WM_COMMAND: {
-			const int blah = 1;
+		case WM_COMMAND:
 			break;
-						 }
 
 		case DONE_AUTOSAVE:
 			{
