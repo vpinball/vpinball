@@ -16,7 +16,7 @@
 #define TOOLBAR_WIDTH 102 //98 //102
 #endif
 
-#define SCROLL_WIDTH (GetSystemMetrics(SM_CXVSCROLL))
+#define SCROLL_WIDTH GetSystemMetrics(SM_CXVSCROLL)
 
 #define MAIN_WINDOW_WIDTH		800
 #define MAIN_WINDOW_HEIGHT		550
@@ -175,18 +175,15 @@ void VPinball::Init()
 	Scintilla_RegisterClasses(g_hinst);
 
 	char szName[256];
-
 	LoadString(g_hinstres, IDS_PROJNAME, szName, 256);
 
-	int x,y,width,height;
+	const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
+	const int screenheight = GetSystemMetrics(SM_CYSCREEN);
 
-	int screenwidth = GetSystemMetrics(SM_CXSCREEN);
-	int screenheight = GetSystemMetrics(SM_CYSCREEN);
-
-	x = (screenwidth - MAIN_WINDOW_WIDTH)/2;
-	y = (screenheight - MAIN_WINDOW_HEIGHT)/2;
-	width = MAIN_WINDOW_WIDTH;
-	height = MAIN_WINDOW_HEIGHT;
+	const int x = (screenwidth - MAIN_WINDOW_WIDTH)/2;
+	const int y = (screenheight - MAIN_WINDOW_HEIGHT)/2;
+	const int width = MAIN_WINDOW_WIDTH;
+	const int height = MAIN_WINDOW_HEIGHT;
 
     LPTSTR lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
 
@@ -203,19 +200,17 @@ void VPinball::Init()
 		{
 		int left,top,right,bottom;
 		BOOL fMaximized;
-		HRESULT hrleft, hrtop, hrright, hrbottom, hrmax;
 
-		hrleft = GetRegInt("Editor", "WindowLeft", &left);
-		hrtop = GetRegInt("Editor", "WindowTop", &top);
-		hrright = GetRegInt("Editor", "WindowRight", &right);
-		hrbottom = GetRegInt("Editor", "WindowBottom", &bottom);
+		const HRESULT hrleft = GetRegInt("Editor", "WindowLeft", &left);
+		const HRESULT hrtop = GetRegInt("Editor", "WindowTop", &top);
+		const HRESULT hrright = GetRegInt("Editor", "WindowRight", &right);
+		const HRESULT hrbottom = GetRegInt("Editor", "WindowBottom", &bottom);
 
-		hrmax = GetRegInt("Editor", "WindowMaximized", &fMaximized);
+		const HRESULT hrmax = GetRegInt("Editor", "WindowMaximized", &fMaximized);
 
 		if (hrleft == S_OK && hrtop == S_OK && hrright == S_OK && hrbottom == S_OK)
 			{
 			WINDOWPLACEMENT winpl;
-
 			winpl.length = sizeof(winpl);
 
 			GetWindowPlacement(m_hwnd, &winpl);
@@ -282,12 +277,10 @@ void VPinball::Init()
 
     wintimer_init(); // calibrate the timer routines
 	slintf_init();
-
 	}
 
 void VPinball::EnsureWorkerThread()
 	{
-
 	if (!m_workerthread)
 		{
 		g_hWorkerStarted = CreateEvent(NULL,TRUE,FALSE,NULL);
@@ -297,7 +290,6 @@ void VPinball::EnsureWorkerThread()
 			}
 		//SetThreadPriority(m_workerthread, THREAD_PRIORITY_LOWEST);
 		}
-
 	}
 
 HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
@@ -326,10 +318,8 @@ void VPinball::SetAutoSaveMinutes(int minutes)
 void VPinball::InitTools()
 	{
 	// was the properties panel open last time we used VP?
-	HRESULT hr;
 	int		state;
-
-	hr = GetRegInt("Editor", "PropertiesVisible", (int *)&state);
+	const HRESULT hr = GetRegInt("Editor", "PropertiesVisible", (int *)&state);
 	if ((hr == S_OK) && (state == 1))
 		{
 		// if so then re-open it
@@ -404,9 +394,7 @@ void VPinball::InitRegValues()
 void VPinball::RegisterClasses()
 	{
 	WNDCLASSEX wcex;
-
 	memset(&wcex, 0, sizeof(WNDCLASSEX));
-
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_DBLCLKS;//CS_NOCLOSE | CS_OWNDC;
 	wcex.lpfnWndProc = (WNDPROC) VPWndProc;
@@ -449,16 +437,12 @@ void VPinball::CreateSideBar()
 
 HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 	{
-	HWND hwnd;
-
-	hwnd = CreateToolbarEx(hwndParent,
+	HWND hwnd = CreateToolbarEx(hwndParent,
 		WS_CHILD | WS_VISIBLE | TBSTYLE_FLAT | TBSTYLE_WRAPABLE,
 		1, count, g_hinst, IDB_TB_SELECT, p_tbbutton, count, 24, 24, 24, 24,
 		sizeof(TBBUTTON));
 
 	SendMessage(hwnd, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);
-
-	int foo;
 
 #define MAXRESLEN 128
 
@@ -468,7 +452,7 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 		{
 		LoadString(g_hinstres, p_tbbutton[i].dwData, szBuf, MAXRESLEN-1);
 		szBuf[lstrlen(szBuf) + 1] = 0;  //Double-null terminate.
-		foo = SendMessage(hwnd, TB_ADDSTRING, 0, (LPARAM) szBuf);
+		const int foo = SendMessage(hwnd, TB_ADDSTRING, 0, (LPARAM) szBuf);
 		}
 
 #ifdef IMSPANISH
@@ -487,7 +471,7 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 		TBBUTTONINFO tbbi;
 		tbbi.cbSize = sizeof(tbbi);
 		tbbi.dwMask = TBIF_SIZE | TBIF_COMMAND | TBIF_STATE | TBIF_STYLE;
-		foo = SendMessage(hwnd, TB_GETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
+		int foo = SendMessage(hwnd, TB_GETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
 		if (tbbi.fsStyle & TBSTYLE_DROPDOWN)
 			{
 			tbbi.cx = 48;
@@ -502,11 +486,10 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 
 void VPinball::CreateMDIClient()
 	{
-	CLIENTCREATESTRUCT ccs;
-
 	RECT rc;
 	GetWindowRect(m_hwnd, &rc);
 
+	CLIENTCREATESTRUCT ccs;
 	ccs.hWindowMenu = GetSubMenu(GetMenu(g_pvp->m_hwnd), WINDOWMENU); // Window menu is third from the left
 	ccs.idFirstChild = 4000;//129;
 
@@ -533,8 +516,7 @@ void VPinball::SetClipboard(Vector<IStream> *pvstm)
 
 void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
 	{
-	HCURSOR hcursor;
-	hcursor = LoadCursor(hInstance, lpCursorName);
+	HCURSOR hcursor = LoadCursor(hInstance, lpCursorName);
 	SetCursor(hcursor);
 	}
 
@@ -593,6 +575,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			break;
 
 		case ID_DELETE:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -605,6 +588,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 					ptCur->OnDelete();
 					}
 				}
+			}
 			break;
 
 		case ID_TABLE_PLAY:
@@ -614,6 +598,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 		case ID_SCRIPT_SHOWIDE:
 		case ID_EDIT_SCRIPT:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -626,6 +611,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 					ptCur->m_pcv->SetVisible(fTrue);
 					}
 				}
+			}
 			break;
 
 		case ID_EDIT_PROPERTIES:
@@ -646,10 +632,10 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			case 0: 
 			case 1: fShow = !fShow; //set
 				break;
-			case 2:;  //re-display 
+			case 2:  //re-display 
 				break;
 			
-			default:fShow = !fShow; //toggle
+			default: fShow = !fShow; //toggle
 				break;
 			}
 			
@@ -676,7 +662,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 			// Set menu item to the correct state
 			HMENU hmenu = GetMenu(m_hwnd);
-			int count = GetMenuItemCount(hmenu);
+			const int count = GetMenuItemCount(hmenu);
 			HMENU hmenuEdit;
 			if (count > 7)
 				{
@@ -708,8 +694,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 		case ID_EDIT_BACKGLASSVIEW:
 			{
-			BOOL fShow;
-			fShow = !m_fBackglassView;
+			const BOOL fShow = !m_fBackglassView;
 
 			TBBUTTONINFO tbinfo;
 			tbinfo.cbSize = sizeof(TBBUTTONINFO);
@@ -727,7 +712,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 			// Set menu item to the correct state
 			HMENU hmenu = GetMenu(m_hwnd);
-			int count = GetMenuItemCount(hmenu);
+			const int count = GetMenuItemCount(hmenu);
 			HMENU hmenuEdit;
 			if (count > 7)
 				{
@@ -744,7 +729,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 			for (int i=0;i<m_vtable.Size();i++)
 				{
-				PinTable *ptT = m_vtable.ElementAt(i);
+				PinTable * const ptT = m_vtable.ElementAt(i);
 				ptT->SetDefaultView();
 				ptT->SetDirtyDraw();
 				ptT->SetMyScrollInfo();
@@ -813,6 +798,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			break;
 
 		case IDM_SAVE:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -829,9 +815,11 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 						}
 					}
 				}
+			}
 			break;
 
 		case IDM_SAVEAS:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -848,9 +836,11 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 						}
 					}
 				}
+			}
 			break;
 
 		case IDM_SAVEASPROTECTED:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -883,9 +873,11 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 						}
 					}
 				}
+			}
 			break;
 
 		case IDM_UNLOCKPROTECTED:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -900,6 +892,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 					ptCur->SetDirtyDraw();		// redraw the screen (incase hiding elements)
 					}
 				}
+			}
 			break;
 //<<<
 
@@ -914,9 +907,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 		case RECENT_FIRST_MENU_IDM+7:
 			{
 			char	szFileName[MAX_PATH];
-			int 	Index;
 			// get the index into the recent list menu
-			Index = code - RECENT_FIRST_MENU_IDM;
+			const int Index = code - RECENT_FIRST_MENU_IDM;
 			// copy it into a temporary string so it can be correctly processed
 			memcpy(szFileName, m_szRecentTableList[Index], sizeof(szFileName));
 			LoadFileName(szFileName);
@@ -929,14 +921,17 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			break;
 
 		case IDM_CLOSE:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
 				CloseTable(ptCur);
 				}
+			}
 			break;
 
 		case IDC_COPY:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -949,17 +944,21 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 					ptCur->Copy();
 					}
 				}
+			}
 			break;
 
 		case IDC_PASTE:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
 				ptCur->Paste(fFalse, 0, 0);
 				}
+			}
 			break;
 
 		case IDC_PASTEAT:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -968,17 +967,21 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 				ScreenToClient(ptCur->m_hwnd, &ptCursor);
 				ptCur->Paste(fTrue, ptCursor.x, ptCursor.y);
 				}
+			}
 			break;
 
 		case ID_EDIT_UNDO:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
 				ptCur->Undo();
 				}
+			}
 			break;
 
 		case ID_FILE_EXPORT_BLUEPRINT:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -991,6 +994,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 					ptCur->ExportBlueprint();
 					}
 				}
+			}
 			break;
 
 		case ID_FILE_EXIT:
@@ -1061,6 +1065,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			break;
 
 		case ID_TABLE_SOUNDMANAGER:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -1079,9 +1084,11 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #endif					
 					}
 				}
+			}
 			break;
 
 		case ID_TABLE_IMAGEMANAGER:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -1102,9 +1109,11 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #endif
 					}
 				}
+			}
 			break;
 
 		case ID_TABLE_FONTMANAGER:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -1124,9 +1133,11 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #endif
 					}
 				}
+			}
 			break;
 
 		case ID_TABLE_COLLECTIONMANAGER:
+			{
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
@@ -1149,9 +1160,11 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #endif
 					}
 				}
+			}
 			break;
 
 		case ID_HELP_ABOUT:
+			{
 #ifdef VBA
 			ApcHost->BeginModalDialog();
 #endif
@@ -1160,11 +1173,12 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
 			ApcHost->EndModalDialog();
 #endif
+			}
 			break;
 		}
 	}
 
-int rgToolEnable[22][2] = {
+const int rgToolEnable[22][2] = {
 	IDC_WALL, 1,
 	IDC_GATE, 1,
 	IDC_RAMP, 1,
@@ -1192,11 +1206,9 @@ int rgToolEnable[22][2] = {
 
 void VPinball::SetEnablePalette()
 	{
-	BOOL fTableActive;
+	PinTable * const ptCur = GetActiveTable();
 
-	PinTable *ptCur = GetActiveTable();
-
-	fTableActive = (ptCur != NULL) && !g_pplayer;
+	bool fTableActive = (ptCur != NULL) && !g_pplayer;
 
 	// if we can't view the table elements then make the table as not active as that
 	// ensure all menu and toolbars are disabled.
@@ -1204,18 +1216,18 @@ void VPinball::SetEnablePalette()
 		{
 		if (ptCur->CheckPermissions(DISABLE_TABLEVIEW))
 			{
-			fTableActive = fFalse;
+			fTableActive = false;
 			}
 		}
 
-	int state = (m_fBackglassView ? 2 : 1);
+	const int state = (m_fBackglassView ? 2 : 1);
 
 	for (int i=0;i<TBCOUNTPALETTE;i++)		//<<< changed by Chris from 0->14 to 0->15
 		{
-		int id = rgToolEnable[i][0];
-		int enablecode = rgToolEnable[i][1];
+		const int id = rgToolEnable[i][0];
+		const int enablecode = rgToolEnable[i][1];
 
-		BOOL fEnable = fTableActive && ((enablecode & state) != 0);
+		const BOOL fEnable = fTableActive && ((enablecode & state) != 0);
 
 		// Set toolbar state
 		TBBUTTONINFO tbinfo;
@@ -1232,7 +1244,7 @@ void VPinball::SetEnablePalette()
 
 		// Set menu item
 		HMENU hmenu = GetMenu(m_hwnd);
-		int count = GetMenuItemCount(hmenu);
+		const int count = GetMenuItemCount(hmenu);
 		HMENU hmenuEdit;
 		// Get the insert menu
 		if (count > 7)
@@ -1251,19 +1263,16 @@ void VPinball::SetEnablePalette()
 
 void VPinball::SetEnableToolbar()
 	{
-	BOOL fTableActive;
-
 	PinTable *ptCur = GetActiveTable();
 
-	fTableActive = (ptCur != NULL) && !g_pplayer;
+	const bool fTableActive = (ptCur != NULL) && !g_pplayer;
 
 	//int state = (m_fBackglassView ? 2 : 1);
 
 	for (int i=TBCOUNTPALETTE;i<(TBCOUNTPALETTE+5);i++)
 		{
-		int id = rgToolEnable[i][0];
+		const int id = rgToolEnable[i][0];
 		BOOL fEnable = fTableActive;
-
 
 		if (ptCur)
 			{
@@ -1294,10 +1303,8 @@ void VPinball::SetEnableToolbar()
 
 void VPinball::DoPlay()
 	{
-	NumVideoBytes=0;
-	CComObject<PinTable> *ptCur;
-
-	ptCur = GetActiveTable();
+	NumVideoBytes = 0;
+	CComObject<PinTable> * const ptCur = GetActiveTable();
 	if (ptCur)
 		{
 		ptCur->Play();
@@ -1307,10 +1314,7 @@ void VPinball::DoPlay()
 void VPinball::LoadFile()
 	{
 	char szFileName[1024];
-
 	char szInitialDir[1024];
-	HRESULT hr;
-
 	szFileName[0] = '\0';
 
 	OPENFILENAME ofn;
@@ -1326,7 +1330,7 @@ void VPinball::LoadFile()
 	ofn.lpstrDefExt = "vpt";
 	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-	hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+	const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
 	if (hr == S_OK)
 		{
 		ofn.lpstrInitialDir = szInitialDir;
@@ -1342,7 +1346,7 @@ void VPinball::LoadFile()
 #ifdef VBA
 	ApcHost->BeginModalDialog();
 #endif
-	int ret = GetOpenFileName(&ofn);
+	const int ret = GetOpenFileName(&ofn);
 #ifdef VBA
 	ApcHost->EndModalDialog();
 #endif
@@ -1366,7 +1370,7 @@ void VPinball::LoadFileName(char *szFileName)
 	ppt->AddRef();
 	//ppt->Init(this);
 	m_vtable.AddElement(ppt);
-	HRESULT hr = ppt->LoadGameFromFilename(szFileName);
+	const HRESULT hr = ppt->LoadGameFromFilename(szFileName);
 
 	if (!SUCCEEDED(hr))
 		{
@@ -1407,9 +1411,7 @@ void VPinball::LoadFileName(char *szFileName)
 
 CComObject<PinTable> *VPinball::GetActiveTable()
 	{
-	HWND hwndT;
-
-	hwndT = (HWND)SendMessage(m_hwndWork, WM_MDIGETACTIVE, 0, 0);
+	HWND hwndT = (HWND)SendMessage(m_hwndWork, WM_MDIGETACTIVE, 0, 0);
 
 	if (hwndT)
 		{
@@ -1452,7 +1454,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 		lstrcat(szText, ppt->m_szTitle);
 		lstrcat(szText, ls2.m_szbuffer);
 		// TEXT
-		int result = MessageBox(m_hwnd, szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
+		const int result = MessageBox(m_hwnd, szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
 		delete szText;
 		if (result == IDCANCEL)
 			{
@@ -1503,7 +1505,7 @@ BOOL VPinball::FDefaultCheckBlit()
 
 void VPinball::InitVBA()
 	{
-	m_fDebugging = fFalse;
+	m_fDebugging = false;
 #ifdef VBA
 	m_ptinfoCls       = NULL;
 	m_ptinfoInt       = NULL;
@@ -1527,7 +1529,7 @@ HRESULT VPinball::AddMiniBitmaps()
 {
 #ifdef VBA
 	IApcMiniBitmaps* pBmps;
-	HRESULT hr = S_OK;
+	HRESULT hr;
 	if(SUCCEEDED(hr = ApcHost->APC_GET(MiniBitmaps)(&pBmps)))
 	{
 		PICTDESC pd;
@@ -1569,10 +1571,7 @@ void VPinball::ShowPermissionError()
 
 void VPinball::SetEnableMenuItems()
 	{
-	CComObject<PinTable> *ptCur;
-	UINT flags;
-
-	ptCur = GetActiveTable();
+	CComObject<PinTable> * const ptCur = GetActiveTable();
 
 	// Set menu item to the correct state
 	HMENU hmenu = GetMenu(m_hwnd);
@@ -1587,6 +1586,7 @@ void VPinball::SetEnableMenuItems()
 		EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_ENABLED);
 
 		// enable/disable save options
+		UINT flags;
 		if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
 			{
 			flags = MF_BYCOMMAND | MF_GRAYED;
@@ -1695,29 +1695,22 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 	if (szfilename != NULL)
 		{
 		// does this file name aready exist in the list?
-		BOOL bFound = fFalse;
+		bool bFound = false;
 		int i;
 		for (i=0; i<LAST_OPENED_TABLE_COUNT; i++)
 			{
 			if (strcmp(m_szRecentTableList[i], szfilename) == 0)
 				{
 				// yes it does
-				bFound = fTrue;
+				bFound = true;
 				break;
 				}
 			}
 
 		// if the entry is already in the list then copy all the items above it down one position
-		int index;
-		if (bFound)
-			{
-			index = i-1;
-			}
-		else
-			{
-			// else copy the entire list down
-			index = LAST_OPENED_TABLE_COUNT-2;
-			}
+		const int index = (bFound) ? i-1 :
+					// else copy the entire list down
+					(LAST_OPENED_TABLE_COUNT-2);
 
 		// copy the entrys in the list down one position
 		for (i=index; i>=0; i--)
@@ -1853,7 +1846,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 
 		if (!(*pfConsumed))
 			{
-			int fTranslated = TranslateAccelerator(m_hwnd, g_haccel, pmsg);
+			const int fTranslated = TranslateAccelerator(m_hwnd, g_haccel, pmsg);
 
 			if (fTranslated != 0)
 				{
@@ -1955,7 +1948,7 @@ HRESULT VPinball::ApcHost_OnIdle(BOOL* pfContinue)
 
 HRESULT VPinball::ApcHost_BeforePause()
 	{
-	m_fDebugging = fTrue;
+	m_fDebugging = true;
 	if (g_pplayer)
 		{
 		g_pplayer->m_fNoTimeCorrect = fTrue; // So ball doesn't jump ahead next frame
@@ -1965,16 +1958,16 @@ HRESULT VPinball::ApcHost_BeforePause()
 
 HRESULT VPinball::ApcHost_AfterPause()
 	{
-	m_fDebugging = fFalse;
+	m_fDebugging = false;
 	return S_OK;
 	}
 
 HRESULT VPinball::ShowIDE()
 	{
 #ifdef VBA
-	HRESULT hr = S_OK;
 	IApcIde *pIDE = NULL;
 	VARIANT_BOOL vbVisible = VARIANT_TRUE;
+	HRESULT hr;
 	if(SUCCEEDED(hr = ApcHost->APC_GET(Ide)(&pIDE)))
 		{
 		hr = pIDE->APC_PUT(Visible)(vbVisible);
@@ -2014,24 +2007,19 @@ HRESULT VPinball::GetTypeLibInfo
   ITypeLib   ***ppptlOut
 )
 {
-
   return S_OK;
-
 }
 
 
 STDMETHODIMP_(ULONG) VPinball::AddRef ()
 {
-
 	ASSERT(m_cref, "bad m_cref");
 	return ++m_cref;
-
 }
 
 
 STDMETHODIMP_(ULONG) VPinball::Release ()
 {
-
 	ASSERT(m_cref, "bad m_cref");
 	m_cref--;
 
@@ -2042,18 +2030,15 @@ STDMETHODIMP_(ULONG) VPinball::Release ()
     }
 
 	return m_cref;
-
 }
 
 
 LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-	HDC hdc;
-	PAINTSTRUCT ps;
-
 	switch (uMsg)
 		{
 		case WM_CLOSE:
+			{
 			BOOL fCanClose;
 #ifdef VBA
 			g_pvp->ApcHost.WmClose(fCanClose);
@@ -2088,7 +2073,9 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					DestroyWindow(hwnd);
 					}
 				}
+
 			return 0;
+			}
 			break;
 
 		case WM_DESTROY:
@@ -2096,12 +2083,15 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case WM_PAINT:
-			hdc = BeginPaint(hwnd,&ps);
+			{
+			PAINTSTRUCT ps;
+			HDC hdc = BeginPaint(hwnd,&ps);
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 			SelectObject(hdc, GetStockObject(WHITE_BRUSH));
 			PatBlt(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
 			EndPaint(hwnd,&ps);
+			}
 			break;
 
 		case WM_SIZE:
@@ -2114,10 +2104,10 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				RECT rcStatus;
 				GetWindowRect(g_pvp->m_hwndStatusBar, &rcStatus);
-				int statheight = rcStatus.bottom - rcStatus.top;
+				const int statheight = rcStatus.bottom - rcStatus.top;
 
-				int scrollwindowtop = 48*(TBCOUNTMAIN/2);
-				int scrollwindowheight = rc.bottom - rc.top - statheight - scrollwindowtop;
+				const int scrollwindowtop = 48*(TBCOUNTMAIN/2);
+				const int scrollwindowheight = rc.bottom - rc.top - statheight - scrollwindowtop;
 				SetWindowPos(g_pvp->m_hwndSideBarScroll,NULL,
 					0, scrollwindowtop, TOOLBAR_WIDTH + SCROLL_WIDTH, scrollwindowheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
@@ -2136,12 +2126,10 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				// Set scroll info for the palette scrollbar
 				SCROLLINFO si;
-				long padding;
-				long buttonsize;
-				padding = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETPADDING, 0, 0);
-				buttonsize = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETBUTTONSIZE, 0, 0);
-				int vertpadding = HIWORD(padding);
-				int vertbutsize = HIWORD(buttonsize);
+				const long padding = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETPADDING, 0, 0);
+				const long buttonsize = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETBUTTONSIZE, 0, 0);
+				const int vertpadding = HIWORD(padding);
+				const int vertbutsize = HIWORD(buttonsize);
 
 				si.cbSize = sizeof(si);
 				si.fMask = SIF_ALL;
@@ -2186,7 +2174,6 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			g_pvp->ParseCommand(LOWORD(wParam), (HWND)lParam, HIWORD(wParam));
 			break;
 
-
 #ifdef VBA
 		case WM_ACTIVATE:
 			g_pvp->ApcHost.WmActivate(wParam);
@@ -2199,13 +2186,11 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 	return DefFrameProc(hwnd, g_pvp->m_hwndWork, uMsg, wParam, lParam);
-
 }
 
 
 LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-
 	switch (uMsg)
 	{
 		case WM_NOTIFY:
@@ -2215,7 +2200,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			{
 				case TBN_DROPDOWN:
 				{
-					PinTable *pt = g_pvp->GetActiveTable();
+					PinTable * const pt = g_pvp->GetActiveTable();
 
 					if (pt)
 					{
@@ -2231,7 +2216,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 						int menucount=0;
 						for (int i=0;i<pt->m_vedit.Size();i++)
 						{
-							IEditable *piedit = pt->m_vedit.ElementAt(i);
+							IEditable * const piedit = pt->m_vedit.ElementAt(i);
 							// check scriptable - decals don't have scripts and therefore don't have names
 							if (piedit->GetScriptable() && piedit->m_fBackglass == g_pvp->m_fBackglassView)
 							{
@@ -2266,7 +2251,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 							}
 
 							SendMessage(hwndList, LB_GETTEXT, i, (LPARAM)szT);
-							int data = SendMessage(hwndList, LB_GETITEMDATA, i, 0);
+							const int data = SendMessage(hwndList, LB_GETITEMDATA, i, 0);
 
 							AppendMenu(hmenu, flags, data, szT);
 							menucount++;
@@ -2275,21 +2260,19 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 						DestroyWindow(hwndList);
 
 						POINT mousept;
-
 						GetCursorPos(&mousept);
 
 						const int ksshift = GetKeyState(VK_SHIFT);
 						const BOOL fAdd = ((ksshift & 0x80000000) != 0);
 
-						int icmd;
-						icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | 16384/*TPM_NOANIMATION*/,
+						const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | 16384/*TPM_NOANIMATION*/,
 							mousept.x, mousept.y, hwnd, NULL);
 
 						if (icmd != 0)
 						{
 							if (icmd & 0x80000000) // collection
 							{
-								Collection *pcol = pt->m_vcollection.ElementAt(icmd & 0x7fffffff);
+								Collection * const pcol = pt->m_vcollection.ElementAt(icmd & 0x7fffffff);
 								for (int i=0;i<pcol->m_visel.Size();i++)
 								{
 									pt->AddMultiSel(pcol->m_visel.ElementAt(i), i == 0 ? fAdd : TRUE, TRUE);
@@ -2333,9 +2316,10 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 					g_pvp->palettescroll += si.nPage/2;
 					break;
 				case SB_THUMBTRACK:
-					int delta;
-					delta = (int)(g_pvp->palettescroll - si.nPos);
+					{
+					const int delta = (int)(g_pvp->palettescroll - si.nPos);
 					g_pvp->palettescroll = ((short)HIWORD(wParam) + delta);
+					}
 					break;
 				}
 
@@ -2348,17 +2332,14 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		}
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
-
 }
 
 
 STDMETHODIMP VPinball::PlaySound(BSTR bstr)
 {
-
 	if (g_pplayer) g_pplayer->m_ptable->PlaySound(bstr, 0, 1);
 
 	return S_OK;
-
 }
 
 
@@ -2375,7 +2356,6 @@ STDMETHODIMP VPinball::QuitPlayer(int CloseType)
 	if (g_pplayer)g_pplayer->m_ptable->QuitPlayer(CloseType);
 
 	return S_OK;
-
 }
 
 STDMETHODIMP VPinball::StartShake()
@@ -2383,7 +2363,6 @@ STDMETHODIMP VPinball::StartShake()
 	if (g_pplayer) g_pplayer->m_ptable->StartShake();
 
 	return S_OK;
-
 }
 
 
@@ -2392,13 +2371,11 @@ STDMETHODIMP VPinball::StopShake()
 	if (g_pplayer) g_pplayer->m_ptable->StopShake();
 
 	return S_OK;
-
 }
 
 
 void VPinball::Quit()
 {
-
 	if( g_pplayer ) g_pplayer->m_fCloseDown = fTrue;
 	else
 	{
@@ -2409,9 +2386,7 @@ void VPinball::Quit()
 
 int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-
-	CCO(PinTable) *pt;
-	pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch (uMsg)
 		{
@@ -2472,8 +2447,8 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 				case LVN_ITEMCHANGED:
 					{
-					int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-					int fEnable = !(count > 1);
+					const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+					const int fEnable = !(count > 1);
 					EnableWindow(GetDlgItem(hwndDlg, IDC_REIMPORTFROM), fEnable);
 					EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), fEnable);
 					EnableWindow(GetDlgItem(hwndDlg, IDC_PLAY), fEnable);
@@ -2502,7 +2477,6 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							char szFileName[10240];
 							char szInitialDir[10240];
 							char szT[MAX_PATH];
-							HRESULT hr;
 
 							szFileName[0] = '\0';
 
@@ -2518,7 +2492,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							ofn.lpstrDefExt = "wav";
 							ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
-							hr = GetRegString("RecentDir","SoundDir", szInitialDir, 1024);
+							HRESULT hr = GetRegString("RecentDir","SoundDir", szInitialDir, 1024);
 							if (hr == S_OK)
 								{
 								ofn.lpstrInitialDir = szInitialDir;
@@ -2528,7 +2502,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								ofn.lpstrInitialDir = NULL;
 								}
 
-							int ret = GetOpenFileName(&ofn);
+							const int ret = GetOpenFileName(&ofn);
 
 							if(ret)
 								{
@@ -2564,11 +2538,11 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 						case IDC_REIMPORT:
 							{
-							int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+							const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 							if (count > 0)
 								{
 								LocalString ls(IDS_REPLACESOUND);
-								int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+								const int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
 								if (ans == IDYES)
 									{
 									int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
@@ -2579,7 +2553,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										lvitem.iItem = sel;
 										lvitem.iSubItem = 0;
 										ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-										PinSound *pps = (PinSound *)lvitem.lParam;
+										PinSound * const pps = (PinSound *)lvitem.lParam;
 
 										//pt->ReImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, pps->m_szPath, count == 1);									
 										HANDLE hFile = CreateFile(pps->m_szPath,GENERIC_READ, FILE_SHARE_READ,	
@@ -2602,7 +2576,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 						case IDC_REIMPORTFROM:
 							{
-							int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+							const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
 							if (sel != -1)
 								{
 								char szFileName[1024];
@@ -2636,7 +2610,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										ofn.lpstrInitialDir = NULL;
 										}
 
-									int ret = GetOpenFileName(&ofn);
+									const int ret = GetOpenFileName(&ofn);
 
 									if(ret)
 										{
@@ -2664,9 +2638,8 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								OPENFILENAME ofn;
 								LVITEM lvitem;
 								char szInitialDir[2096];
-								HRESULT hr;		
 								int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED); //next selected item 	
-								 while (sel != -1)
+								while (sel != -1)
 									{									
 									lvitem.mask = LVIF_PARAM;
 									lvitem.iItem = sel;
@@ -2682,7 +2655,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
 									
 									int begin;		//select only file name from pathfilename
-									int len = lstrlen(pps->m_szPath);
+									const int len = lstrlen(pps->m_szPath);
 
 									for (begin=len;begin>=0;begin--)
 										{
@@ -2695,7 +2668,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									ofn.lpstrFile = &pps->m_szPath[begin];
 									ofn.nMaxFile = 2096;
 									ofn.lpstrDefExt = "wav";
-									hr = GetRegString("RecentDir","SoundDir", szInitialDir,2096);
+									const HRESULT hr = GetRegString("RecentDir","SoundDir", szInitialDir,2096);
 
 									if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
 									else ofn.lpstrInitialDir = NULL;	
@@ -2716,9 +2689,9 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
 									
 									}
-								hr = SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+								const HRESULT hr = SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 								EndDialog(hwndDlg, TRUE);
-								}	
+								}
 							}
 							break;
 
@@ -2726,7 +2699,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 						case IDC_PLAY:
 							{
-							int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+							const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
 							if (sel != -1)
 								{
 								LVITEM lvitem;
@@ -2734,7 +2707,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								lvitem.iItem = sel;
 								lvitem.iSubItem = 0;
 								ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-								PinSound *pps = (PinSound *)lvitem.lParam;
+								PinSound * const pps = (PinSound *)lvitem.lParam;
 								pps->m_pDSBuffer->Play(0,0,0);
 								}
 							}
@@ -2743,7 +2716,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 						case IDC_RENAME:
 							{
-							int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+							const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
 							if (sel != -1)
 								{
 								SetFocus(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
@@ -2754,11 +2727,11 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 						case IDC_DELETE:
 							{
-							int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+							const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 							if (count > 0)
 								{
 								LocalString ls(IDS_REMOVESOUND);
-								int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+								const int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
 								if (ans == IDYES)
 									{
 									int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
@@ -2792,8 +2765,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-	CCO(PinTable) *pt;
-	pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch (uMsg)
 		{
@@ -2838,8 +2810,8 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			switch (pnmhdr->code)
 				{
 				case LVN_ENDLABELEDIT:
-					NMLVDISPINFO *pinfo;
-					pinfo = (NMLVDISPINFO *)lParam;
+					{
+					NMLVDISPINFO * const pinfo = (NMLVDISPINFO *)lParam;
 					if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
 						{
 						return FALSE;
@@ -2850,34 +2822,32 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					lvitem.iItem = pinfo->item.iItem;
 					lvitem.iSubItem = 0;
 					ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-					PinImage *ppi;
-					ppi = (PinImage *)lvitem.lParam;
+					PinImage * const ppi = (PinImage *)lvitem.lParam;
 					lstrcpy(ppi->m_szName, pinfo->item.pszText);
 					lstrcpy(ppi->m_szInternalName, pinfo->item.pszText);
 					CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
 					pt->SetNonUndoableDirty(eSaveDirty);
 					return TRUE;
+					}
 					break;
 				case LVN_ITEMCHANGING:
 					{
-					NMLISTVIEW *plistview = (LPNMLISTVIEW)lParam;
+					NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
 					if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
 						{
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
 						if (plistview->uNewState & LVIS_SELECTED)
 							{
-							int sel = plistview->iItem;
-								{
-								LVITEM lvitem;
-								lvitem.mask = LVIF_PARAM;
-								lvitem.iItem = sel;
-								lvitem.iSubItem = 0;
-								ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-								PinImage *ppi = (PinImage *)lvitem.lParam;
-								HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
-								SendMessage(hwndColor, CHANGE_COLOR, 0, ppi->m_rgbTransparent);
-								InvalidateRect(hwndColor, NULL, FALSE);
-								}
+							const int sel = plistview->iItem;
+							LVITEM lvitem;
+							lvitem.mask = LVIF_PARAM;
+							lvitem.iItem = sel;
+							lvitem.iSubItem = 0;
+							ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+							PinImage * const ppi = (PinImage *)lvitem.lParam;
+							HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
+							SendMessage(hwndColor, CHANGE_COLOR, 0, ppi->m_rgbTransparent);
+							InvalidateRect(hwndColor, NULL, FALSE);
 							}
 						}
 					}
@@ -2885,8 +2855,8 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 					case LVN_ITEMCHANGED:
 						{
-						int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-						int fEnable = !(count > 1);
+						const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+						const int fEnable = !(count > 1);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_REIMPORTFROM), fEnable);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), fEnable);
 						//EnableWindow(GetDlgItem(hwndDlg, IDC_EXPORT), fEnable);
@@ -2898,9 +2868,8 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		case WM_DRAWITEM:
 			{
-			DRAWITEMSTRUCT *pdis;
-			pdis = (DRAWITEMSTRUCT *)lParam;
-			int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+			DRAWITEMSTRUCT * const pdis = (DRAWITEMSTRUCT *)lParam;
+			const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
 			if (sel != -1)
 				{
 				LVITEM lvitem;
@@ -2908,7 +2877,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				lvitem.iItem = sel;
 				lvitem.iSubItem = 0;
 				ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-				PinImage *ppi = (PinImage *)lvitem.lParam;
+				PinImage * const ppi = (PinImage *)lvitem.lParam;
 				HDC hdcDD;
 				//DDSURFACEDESC2 ddsd;
 				//ddsd.dwSize = sizeof(ddsd);
@@ -2918,14 +2887,13 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 				GetWindowRect(pdis->hwndItem , &rcClient);
 
-				int xsize = rcClient.right - rcClient.left;
-				int ysize =	rcClient.bottom - rcClient.top;
+				const int xsize = rcClient.right - rcClient.left;
+				const int ysize =	rcClient.bottom - rcClient.top;
 
-				int x,y,width, height;
+				const float controlaspect = (float)xsize/(float)ysize;
+				const float aspect = (float)ppi->m_width/(float)ppi->m_height;
 
-				float controlaspect = (float)xsize/(float)ysize;
-				float aspect = (float)ppi->m_width/(float)ppi->m_height;
-
+				int width, height;
 				if (aspect > controlaspect)
 					{
 					width = xsize;
@@ -2937,8 +2905,8 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					width = (int)(ysize*aspect);
 					}
 
-				x = (xsize - width) / 2;
-				y = (ysize - height) / 2;
+				const int x = (xsize - width) / 2;
+				const int y = (ysize - height) / 2;
 
 				ppi->m_pdsBuffer->GetDC(&hdcDD);
 				StretchBlt(pdis->hDC, x, y, width, height, hdcDD, 0, 0, ppi->m_width, ppi->m_height, SRCCOPY);
@@ -2959,11 +2927,11 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 				//ExtTextOut(pdis->hDC, 0, 20, 0, NULL, "Image\nPreview", 13, NULL);
 				LocalString ls(IDS_IMAGE_PREVIEW);
-				int len = lstrlen(ls.m_szbuffer);
+				const int len = lstrlen(ls.m_szbuffer);
 				DrawText(pdis->hDC, ls.m_szbuffer/*"Image\n\nPreview"*/, len, &rcText, DT_CALCRECT);
 
-				int halfheight = (rcClient.bottom - rcClient.top) / 2;
-				int halffont = (rcText.bottom - rcText.top) / 2;
+				const int halfheight = (rcClient.bottom - rcClient.top) / 2;
+				const int halffont = (rcText.bottom - rcText.top) / 2;
 
 				rcText.left = rcClient.left;
 				rcText.right = rcClient.right;
@@ -2981,7 +2949,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				{
 				case COLOR_CHANGED:
 					{
-					int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+					const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 					if (count > 0)
 						{
 						int color = SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);
@@ -2993,7 +2961,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							lvitem.iItem = sel;
 							lvitem.iSubItem = 0;
 							ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-							PinImage *ppi = (PinImage *)lvitem.lParam;
+							PinImage * const ppi = (PinImage *)lvitem.lParam;
 							ppi->SetTransparentColor(color);
 
 							const HRESULT hr = SetRegValue("Editor", "TransparentColorKey", REG_DWORD, &color, 4);
@@ -3023,8 +2991,6 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							char szFileName[10240];
 							char szInitialDir[10240];
 							char szT[MAX_PATH];
-							HRESULT hr;
-
 							szFileName[0] = '\0';
 
 							OPENFILENAME ofn;
@@ -3039,17 +3005,10 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							ofn.lpstrDefExt = "bmp";
 							ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
-							hr = GetRegString("RecentDir","ImageDir", szInitialDir, 1024);
-							if (hr == S_OK)
-								{
-								ofn.lpstrInitialDir = szInitialDir;
-								}
-							else
-								{
-								ofn.lpstrInitialDir = NULL;
-								}
+							HRESULT hr = GetRegString("RecentDir","ImageDir", szInitialDir, 1024);
+							ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
-							int ret = GetOpenFileName(&ofn);
+							const int ret = GetOpenFileName(&ofn);
 
 							if(ret)
 								{
@@ -3085,7 +3044,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 						case IDC_RENAME:
 							{
-							int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+							const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
 							if (sel != -1)
 								{
 								SetFocus(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
@@ -3098,19 +3057,18 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							{
 							if(ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST)))	// if some items are selected???
                             	{
-								HRESULT hr;
 								char szInitialDir[2096];
-								OPENFILENAME ofn;
-								LVITEM lvitem;
 								int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);								
 								while (sel != -1)
 									{									
+									LVITEM lvitem;
 									lvitem.mask = LVIF_PARAM;
 									lvitem.iItem = sel;
 									lvitem.iSubItem = 0;
 									ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-									PinImage *ppi = (PinImage *)lvitem.lParam;									
+									PinImage * const ppi = (PinImage *)lvitem.lParam;									
 
+									OPENFILENAME ofn;
 									memset(&ofn, 0, sizeof(OPENFILENAME));
 									ofn.lStructSize = sizeof(OPENFILENAME);
 									ofn.hInstance = g_hinst;
@@ -3132,8 +3090,8 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									ofn.lpstrFile = &ppi->m_szPath[begin];
 									ofn.nMaxFile = 2096;
 									ofn.lpstrDefExt = "bmp";
-									
-									hr = GetRegString("RecentDir","ImageDir", szInitialDir, 2096);
+
+									const HRESULT hr = GetRegString("RecentDir","ImageDir", szInitialDir, 2096);
 
 									if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
 									else ofn.lpstrInitialDir = NULL;	
@@ -3153,7 +3111,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										}
 									sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
 									} // finished all selected items
-								hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+								const HRESULT hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 								EndDialog(hwndDlg, TRUE);
 								}							
 							}	
@@ -3162,11 +3120,11 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 ///////////////////////////rlc end
 						case IDC_DELETE:
 							{
-							int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+							const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 							if (count > 0)
 								{
 								LocalString ls(IDS_REMOVEIMAGE);
-								int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+								const int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
 								if (ans == IDYES)
 									{
 									int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
@@ -3177,7 +3135,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										lvitem.iItem = sel;
 										lvitem.iSubItem = 0;
 										ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-										PinImage *ppi = (PinImage *)lvitem.lParam;
+										PinImage * const ppi = (PinImage *)lvitem.lParam;
 										pt->RemoveImage(ppi);
 										ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
 
@@ -3192,11 +3150,11 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 						case IDC_REIMPORT:
 							{
-							int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+							const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 							if (count > 0)
 								{
 								LocalString ls(IDS_REPLACEIMAGE);
-								int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to replace this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+								const int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to replace this image?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
 								if (ans == IDYES)
 									{
 									int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
@@ -3207,7 +3165,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										lvitem.iItem = sel;
 										lvitem.iSubItem = 0;
 										ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-										PinImage *ppi = (PinImage *)lvitem.lParam;
+										PinImage * const ppi = (PinImage *)lvitem.lParam;
 										HANDLE hFile = CreateFile(ppi->m_szPath,GENERIC_READ, FILE_SHARE_READ,	
 														NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -3229,7 +3187,6 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 						case IDC_REIMPORTFROM:
 							{
-							HRESULT hr;
 							int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
 							if (sel != -1)
 								{
@@ -3237,7 +3194,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								char szInitialDir[1024];
 
 								LocalString ls(IDS_REPLACEIMAGE);
-								int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to replace this image with a new one?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+								const int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to replace this image with a new one?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
 								if (ans == IDYES)
 									{
 									szFileName[0] = '\0';
@@ -3254,17 +3211,10 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									ofn.lpstrDefExt = "bmp";
 									ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-									hr = GetRegString("RecentDir","ImageDir", szInitialDir, 1024);
-									if (hr == S_OK)
-										{
-										ofn.lpstrInitialDir = szInitialDir;
-										}
-									else
-										{
-										ofn.lpstrInitialDir = NULL;
-										}
+									HRESULT hr = GetRegString("RecentDir","ImageDir", szInitialDir, 1024);
+									ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
-									int ret = GetOpenFileName(&ofn);
+									const int ret = GetOpenFileName(&ofn);
 
 									if(ret)
 										{
@@ -3273,7 +3223,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										lvitem.iItem = sel;
 										lvitem.iSubItem = 0;
 										ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-										PinImage *ppi = (PinImage *)lvitem.lParam;
+										PinImage * const ppi = (PinImage *)lvitem.lParam;
 
 										strcpy(szInitialDir, szFileName);
 										szInitialDir[ofn.nFileOffset] = 0;
@@ -3468,13 +3418,13 @@ HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpCon
 		char szT[128];
 		EnumVideoModeStruct *pevms = (EnumVideoModeStruct *)lpContext;
 		HWND hwndList = pevms->hwndList;
-		int widthcur = pevms->widthcur;
-		int heightcur = pevms->heightcur;
-		int depthcur = pevms->depthcur;
+		const int widthcur = pevms->widthcur;
+		const int heightcur = pevms->heightcur;
+		const int depthcur = pevms->depthcur;
 		sprintf(szT, "%d x %d x %d", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
-		int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
+		const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
 
-		VideoMode* pvm = new VideoMode();
+		VideoMode * const pvm = new VideoMode();
 		pvm->width = lpDDSurfaceDesc->dwWidth;
 		pvm->height = lpDDSurfaceDesc->dwHeight;
 		pvm->depth = lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount;
@@ -3509,11 +3459,9 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				(rcMain.bottom + rcMain.top)/2 - (rcDlg.bottom - rcDlg.top)/2,
 				0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-			HRESULT hr;
-
 			HWND hwndCheck = GetDlgItem(hwndDlg, IDC_CHECKBLIT);
 			int checkblit;
-			hr = GetRegInt("Player", "CheckBlit", &checkblit);
+			HRESULT hr = GetRegInt("Player", "CheckBlit", &checkblit);
 			if (hr != S_OK)
 				{
 				checkblit = g_pvp->FDefaultCheckBlit(); // The default
@@ -3670,7 +3618,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			char szT[128];
 			for (int i=0;i<csize;i++)
 				{
-				int xsize = rgwindowsize[i];
+				const int xsize = rgwindowsize[i];
 				if (xsize <= screenwidth)
 					{
 					if (xsize == widthcur)
@@ -3679,7 +3627,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 						}
 					sprintf(szT, "%d x %d", xsize, xsize*3/4);
 					const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)szT);
-					VideoMode* pvm = new VideoMode();
+					VideoMode * const pvm = new VideoMode();
 					pvm->width = xsize;
 					pvm->height = xsize*3/4;
 					SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)pvm);
@@ -3721,7 +3669,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
 			for (int i=0;i<size;i++)
 				{
-				VideoMode *pvm = (VideoMode *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
+				VideoMode * const pvm = (VideoMode *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
 				delete pvm;
 				}
 			SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
@@ -3759,10 +3707,8 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				(rcMain.bottom + rcMain.top)/2 - (rcDlg.bottom - rcDlg.top)/2,
 				0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-			HRESULT hr;
-
 			int security;
-			hr = GetRegInt("Player", "SecurityLevel", &security);
+			HRESULT hr = GetRegInt("Player", "SecurityLevel", &security);
 			if (hr != S_OK)
 				{
 				security = DEFAULT_SECURITY_LEVEL; // The default
@@ -3773,7 +3719,7 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				security = 0;
 				}
 
-			int buttonid = rgDlgIDFromSecurityLevel[security];
+			const int buttonid = rgDlgIDFromSecurityLevel[security];
 
 			HWND hwndCheck = GetDlgItem(hwndDlg, buttonid);
 
@@ -3801,10 +3747,9 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 						{
 						case IDOK:
 							{
-							HWND hwndCheck;
 							for (int i=0;i<5;i++)
 								{
-								hwndCheck = GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]);
+								HWND hwndCheck = GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]);
 								int checked = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
 								if (checked == BST_CHECKED)
 									{
@@ -3812,7 +3757,7 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 									}
 								}
 								
-							hwndCheck = GetDlgItem(hwndDlg, IDC_HANGDETECT);
+							HWND hwndCheck = GetDlgItem(hwndDlg, IDC_HANGDETECT);
 							int hangdetect = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "DetectHang", REG_DWORD, &hangdetect, 4);
 
@@ -3838,16 +3783,15 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-	CCO(PinTable) *pt;
-	pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch (uMsg)
 		{
 		case WM_INITDIALOG:
 			{
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+			
 			LVCOLUMN lvcol;
-
 			lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
 			LocalString ls(IDS_NAME);
 			lvcol.pszText = ls.m_szbuffer;// = "Name";
@@ -3889,8 +3833,7 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 							{
 							char szFileName[1024];
 							char szInitialDir[1024];
-							HRESULT hr;
-
+							
 							szFileName[0] = '\0';
 
 							OPENFILENAME ofn;
@@ -3905,18 +3848,10 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 							ofn.lpstrDefExt = "ttf";
 							ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-							hr = GetRegString("RecentDir","FontDir", szInitialDir, 1024);
-							if (hr == S_OK)
-								{
-								ofn.lpstrInitialDir = szInitialDir;
-								}
-							else
-								{
-								ofn.lpstrInitialDir = NULL;
-								}
+							HRESULT hr = GetRegString("RecentDir","FontDir", szInitialDir, 1024);
+							ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
-							int ret = GetOpenFileName(&ofn);
-
+							const int ret = GetOpenFileName(&ofn);
 							if(ret)
 								{
 								strcpy(szInitialDir, szFileName);
@@ -3940,11 +3875,11 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 						case IDC_DELETE:
 							{
-							int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+							const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
 							if (sel != -1)
 								{
 								// TEXT
-								int ans = MessageBox(hwndDlg, "Are you sure you want to remove this font?", "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
+								const int ans = MessageBox(hwndDlg, "Are you sure you want to remove this font?", "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
 								if (ans == IDYES)
 									{
 									LVITEM lvitem;
@@ -3952,7 +3887,7 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 									lvitem.iItem = sel;
 									lvitem.iSubItem = 0;
 									ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-									PinFont *ppf = (PinFont *)lvitem.lParam;
+									PinFont * const ppf = (PinFont *)lvitem.lParam;
 									pt->RemoveFont(ppf);
 									ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
 									}
@@ -3962,10 +3897,10 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 						/*case IDC_REIMPORT:
 							{
-							int ans = MessageBox(hwndDlg, "Are you sure you want to replace this image with a new one?", "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
+							const int ans = MessageBox(hwndDlg, "Are you sure you want to replace this image with a new one?", "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
 							if (ans == IDYES)
 								{
-								int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+								const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
 								if (sel != -1)
 									{
 									LVITEM lvitem;
@@ -3973,7 +3908,7 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 									lvitem.iItem = sel;
 									lvitem.iSubItem = 0;
 									ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-									PinImage *ppi = (PinImage *)lvitem.lParam;
+									PinImage * const ppi = (PinImage *)lvitem.lParam;
 
 									pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ppi->m_szPath);
 
@@ -3986,12 +3921,12 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 						case IDC_REIMPORTFROM:
 							{
-							int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+							const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
 							if (sel != -1)
 								{
 								char szFileName[1024];
 
-								int ans = MessageBox(hwndDlg, "Are you sure you want to replace this image with a new one?", "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
+								const int ans = MessageBox(hwndDlg, "Are you sure you want to replace this image with a new one?", "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
 								if (ans == IDYES)
 									{
 									szFileName[0] = '\0';
@@ -4007,7 +3942,7 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 									ofn.lpstrDefExt = "ttf";
 									ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-									int ret = GetOpenFileName(&ofn);
+									const int ret = GetOpenFileName(&ofn);
 
 									if(ret)
 										{
@@ -4016,7 +3951,7 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 										lvitem.iItem = sel;
 										lvitem.iSubItem = 0;
 										ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-										PinImage *ppi = (PinImage *)lvitem.lParam;
+										PinImage * const ppi = (PinImage *)lvitem.lParam;
 
 										pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
 
@@ -4045,16 +3980,15 @@ public:
 
 int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-	CCO(PinTable) *pt;
-	pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch (uMsg)
 		{
 		case WM_INITDIALOG:
 			{
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-			LVCOLUMN lvcol;
 
+			LVCOLUMN lvcol;
 			lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
 			LocalString ls(IDS_NAME);
 			lvcol.pszText = ls.m_szbuffer;// = "Name";
@@ -4085,7 +4019,7 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					lvitem.iItem = pinfo->item.iItem;
 					lvitem.iSubItem = 0;
 					ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-					Collection *pcol = (Collection *)lvitem.lParam;
+					Collection * const pcol = (Collection *)lvitem.lParam;
 					//lstrcpy(pps->m_szName, pinfo->item.pszText);
 					//lstrcpy(pps->m_szInternalName, pinfo->item.pszText);
 					//CharLowerBuff(pps->m_szInternalName, lstrlen(pps->m_szInternalName));
@@ -4127,22 +4061,21 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 						case IDC_EDIT:
 							{
-							int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+							const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
 							if (sel != -1)
 								{
-								CollectionDialogStruct cds;
-
 								LVITEM lvitem;
 								lvitem.mask = LVIF_PARAM;
 								lvitem.iItem = sel;
 								lvitem.iSubItem = 0;
 								ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-								CComObject<Collection> *pcol = (CComObject<Collection> *)lvitem.lParam;
+								CComObject<Collection> * const pcol = (CComObject<Collection> *)lvitem.lParam;
 
+								CollectionDialogStruct cds;
 								cds.pcol = pcol;
 								cds.ppt = pt;
 
-								int ret = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_COLLECTION),
+								const int ret = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_COLLECTION),
 									hwndDlg, CollectionProc, (long)&cds/*pcol*/);
 
 								if (ret)
@@ -4182,7 +4115,7 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 									lvitem.iItem = sel;
 									lvitem.iSubItem = 0;
 									ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-									CComObject<Collection> *pcol = (CComObject<Collection> *)lvitem.lParam;
+									CComObject<Collection> * const pcol = (CComObject<Collection> *)lvitem.lParam;
 									pt->RemoveCollection(pcol);
 									ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
 									pt->SetNonUndoableDirty(eSaveDirty);
@@ -4201,7 +4134,6 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-	Collection *pcol;
 	//CCO(PinTable) *pt;
 	//pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
@@ -4209,10 +4141,10 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		{
 		case WM_INITDIALOG:
 			{
-			CollectionDialogStruct *pcds = (CollectionDialogStruct *)lParam;
+			CollectionDialogStruct * const pcds = (CollectionDialogStruct *)lParam;
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 
-			pcol = pcds->pcol;
+			Collection * const pcol = pcds->pcol;
 
 			HWND hwndName = GetDlgItem(hwndDlg, IDC_NAME);
 
@@ -4232,9 +4164,9 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 			for (int i=0;i<pcol->m_visel.Size();i++)
 				{
-				ISelect *pisel = pcol->m_visel.ElementAt(i);
-				IEditable *piedit = pisel->GetIEditable();
-				IScriptable *piscript = piedit->GetScriptable();
+				ISelect * const pisel = pcol->m_visel.ElementAt(i);
+				IEditable * const piedit = pisel->GetIEditable();
+				IScriptable * const piscript = piedit->GetScriptable();
 				if (piscript)
 					{
 					WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
@@ -4243,17 +4175,17 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					}
 				}
 
-			PinTable *ppt = pcds->ppt;
+			PinTable * const ppt = pcds->ppt;
 
 			for (int i=0;i<ppt->m_vedit.Size();i++)
 				{
-				IEditable *piedit = ppt->m_vedit.ElementAt(i);
-				IScriptable *piscript = piedit->GetScriptable();
-				ISelect *pisel = piedit->GetISelect();
+				IEditable * const piedit = ppt->m_vedit.ElementAt(i);
+				IScriptable * const piscript = piedit->GetScriptable();
+				ISelect * const pisel = piedit->GetISelect();
 
 				// Only process objects not in this collection
 				int l;
-				for (l=0;l<pcol->m_visel.Size();l++)
+				for (l=0; l<pcol->m_visel.Size(); l++)
 					{
 					if (pisel == pcol->m_visel.ElementAt(l))
 						{
@@ -4265,7 +4197,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				//if (!piedit->m_pcollection)
 					{
 					WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
-					int index = SendMessage(hwndOut, LB_ADDSTRING, 0, (long)szT);
+					const int index = SendMessage(hwndOut, LB_ADDSTRING, 0, (long)szT);
 					SendMessage(hwndOut, LB_SETITEMDATA, index, (long)piscript);
 					}
 				}
@@ -4289,50 +4221,30 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 							{
 							// Mode items up or down in the collection list
 							HWND hwndList = GetDlgItem(hwndDlg, IDC_INLIST);
-							int listsize = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-							int count = SendMessage(hwndList, LB_GETSELCOUNT, 0, 0);
-							int *rgsel = new int[count];
+							const int listsize = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+							const int count = SendMessage(hwndList, LB_GETSELCOUNT, 0, 0);
+							int * const rgsel = new int[count];
 							SendMessage(hwndList, LB_GETSELITEMS, count, (LPARAM)rgsel);
 
 							for (int loop=0;loop<count;loop++)
 							//for (i=count-1;i>=0;i--)
 								{
-								int i;
-								if (LOWORD(wParam) == IDC_UP)
-									{
-									i = loop;
-									}
-								else // Down
-									{
-									i = count - loop - 1;
-									}
+								const int i = (LOWORD(wParam) == IDC_UP) ? loop : (count - loop - 1);
 
-								int data;
-								int len = SendMessage(hwndList, LB_GETTEXTLEN, rgsel[i], 0);
-								char *szT = new char[len+1]; // include null terminator
+								const int len = SendMessage(hwndList, LB_GETTEXTLEN, rgsel[i], 0);
+								char * const szT = new char[len+1]; // include null terminator
 								SendMessage(hwndList, LB_GETTEXT, rgsel[i], (LPARAM)szT);
-								data = SendMessage(hwndList, LB_GETITEMDATA, rgsel[i], 0);
+								const int data = SendMessage(hwndList, LB_GETITEMDATA, rgsel[i], 0);
 
-								int oldindex;
-								int newindex;
-
-								if (LOWORD(wParam) == IDC_UP)
-									{
-									newindex = max(rgsel[i]-1, i);
-									}
-								else // Down
-									{
-									i = count - loop - 1;
-									newindex = min(rgsel[i]+2, listsize - (count - 1) + i);
-									}
-								oldindex = rgsel[i];
+								const int newindex = (LOWORD(wParam) == IDC_UP) ? max(rgsel[i]-1, i) : min(rgsel[i]+2, listsize - (count - 1) + i);
+								int oldindex = rgsel[i];
 
 								if (oldindex > newindex)
 									{
 									oldindex++; // old item will be one lower when we try to delete it
 									}
 
-								int index = SendMessage(hwndList, LB_INSERTSTRING, newindex, (LPARAM)szT);
+								const int index = SendMessage(hwndList, LB_INSERTSTRING, newindex, (LPARAM)szT);
 								SendMessage(hwndList, LB_SETITEMDATA, index, data);
 								// Set the new value to be selected, like the old one was
 								SendMessage(hwndList, LB_SETSEL, TRUE, index);
@@ -4341,7 +4253,6 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 								delete szT;
 								}
 							}
-
 							break;
 
 						case IDC_IN:
@@ -4361,18 +4272,17 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 								hwndIn = GetDlgItem(hwndDlg, IDC_OUTLIST);
 								}
 
-							int count = SendMessage(hwndOut, LB_GETSELCOUNT, 0, 0);
-							int *rgsel = new int[count];
+							const int count = SendMessage(hwndOut, LB_GETSELCOUNT, 0, 0);
+							int * const rgsel = new int[count];
 							SendMessage(hwndOut, LB_GETSELITEMS, count, (LPARAM)rgsel);
 							for (int i=0;i<count;i++)
 								{
-								int data;
-								int len = SendMessage(hwndOut, LB_GETTEXTLEN, rgsel[i], 0);
-								char *szT = new char[len+1]; // include null terminator
+								const int len = SendMessage(hwndOut, LB_GETTEXTLEN, rgsel[i], 0);
+								char * const szT = new char[len+1]; // include null terminator
 								SendMessage(hwndOut, LB_GETTEXT, rgsel[i], (LPARAM)szT);
-								data = SendMessage(hwndOut, LB_GETITEMDATA, rgsel[i], 0);
+								const int data = SendMessage(hwndOut, LB_GETITEMDATA, rgsel[i], 0);
 
-								int index = SendMessage(hwndIn, LB_ADDSTRING, 0, (LPARAM)szT);
+								const int index = SendMessage(hwndIn, LB_ADDSTRING, 0, (LPARAM)szT);
 								SendMessage(hwndIn, LB_SETITEMDATA, index, data);
 								delete szT;
 								}
@@ -4390,13 +4300,13 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 						case IDOK:
 							{
-							CollectionDialogStruct *pcds = (CollectionDialogStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
+							CollectionDialogStruct * const pcds = (CollectionDialogStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-							Collection *pcol = pcds->pcol;
+							Collection * const pcol = pcds->pcol;
 
 							for (int i=0;i<pcol->m_visel.Size();i++)
 								{
-								int index = pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.IndexOf(pcol);
+								const int index = pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.IndexOf(pcol);
 								if (index != -1)
 									{
 									pcol->m_visel.ElementAt(i)->GetIEditable()->m_vCollection.RemoveElementAt(index);
@@ -4412,10 +4322,8 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 							for (int i=0;i<count;i++)
 								{
-								IScriptable *piscript;
-								ISelect *pisel;
-								piscript = (IScriptable *)SendMessage(hwndIn, LB_GETITEMDATA, i, 0);
-								pisel = piscript->GetISelect();
+								IScriptable * const piscript = (IScriptable *)SendMessage(hwndIn, LB_GETITEMDATA, i, 0);
+								ISelect * const pisel = piscript->GetISelect();								
 								if (pisel) // Not sure how we could possibly get an iscript here that was never an iselect
 									{
 									pcol->m_visel.AddElement(pisel);
@@ -4424,14 +4332,12 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 									}
 								}
 
-							int fEvents;
 							HWND hwndFireEvents = GetDlgItem(hwndDlg, IDC_FIRE);
-							fEvents = SendMessage(hwndFireEvents, BM_GETCHECK, 0, 0);
+							const int fEvents = SendMessage(hwndFireEvents, BM_GETCHECK, 0, 0);
 							pcol->m_fFireEvents = fEvents;
 
-							int fStopSingle;
 							HWND hwndStopSingle = GetDlgItem(hwndDlg, IDC_SUPPRESS);
-							fStopSingle = SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
+							const int fStopSingle = SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
 							pcol->m_fStopSingleEvents = fStopSingle;
 
 							char szT[1024];
@@ -4460,8 +4366,7 @@ void VPGetDialogItemText(HWND hDlg, int nIDDlgItem, char **psztext)
 	{
 	HWND hwndItem = GetDlgItem(hDlg, nIDDlgItem);
 
-	int length = GetWindowTextLength(hwndItem);
-
+	const int length = GetWindowTextLength(hwndItem);
 	*psztext = new char[length+1];
 
 	GetWindowText(hwndItem, *psztext, length+1);
@@ -4469,8 +4374,7 @@ void VPGetDialogItemText(HWND hDlg, int nIDDlgItem, char **psztext)
 
 int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-	CCO(PinTable) *pt;
-	pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch (uMsg)
 		{
@@ -4511,7 +4415,7 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 			for (int i=0;i<pt->m_vimage.Size();i++)
 				{
-				PinImage *pin = pt->m_vimage.ElementAt(i);
+				PinImage * const pin = pt->m_vimage.ElementAt(i);
 				if (pin->m_ppb)
 					{
 					SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)pin->m_szName);
@@ -4523,7 +4427,6 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			// Set up custom info list
 				{
 				LVCOLUMN lvcol;
-
 				lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
 				LocalString ls(IDS_NAME);
 				lvcol.pszText = ls.m_szbuffer;// = "Name";
@@ -4548,21 +4451,19 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			switch (pnmhdr->code)
 				{
 				case LVN_ITEMCHANGING:
-					NMLISTVIEW *plistview = (LPNMLISTVIEW)lParam;
+					NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
 					if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
 						{
 						if (plistview->uNewState & LVIS_SELECTED)
 							{
-							int sel = plistview->iItem;
-								{
-								char szT[1024];
+							const int sel = plistview->iItem;
+							char szT[1024];
 	
-								ListView_GetItemText(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), sel, 0, szT, 1024);
-								SetWindowText(GetDlgItem(hwndDlg, IDC_CUSTOMNAME), szT);
+							ListView_GetItemText(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), sel, 0, szT, 1024);
+							SetWindowText(GetDlgItem(hwndDlg, IDC_CUSTOMNAME), szT);
 
-								ListView_GetItemText(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), sel, 1, szT, 1024);
-								SetWindowText(GetDlgItem(hwndDlg, IDC_CUSTOMVALUE), szT);
-								}
+							ListView_GetItemText(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), sel, 1, szT, 1024);
+							SetWindowText(GetDlgItem(hwndDlg, IDC_CUSTOMVALUE), szT);
 							}
 						}
 					break;
@@ -4583,7 +4484,6 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 						case IDC_ADD:
 							{
 							char *szCustomName;
-							char *szCustomValue;
 							VPGetDialogItemText(hwndDlg, IDC_CUSTOMNAME, &szCustomName);
 							if (lstrlen(szCustomName) > 0)
 								{
@@ -4591,13 +4491,14 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 								lvfi.flags = LVFI_STRING;
 								lvfi.psz = szCustomName;
 
-								int found = ListView_FindItem(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), -1, &lvfi);
+								const int found = ListView_FindItem(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), -1, &lvfi);
 
 								if (found != -1)
 									{
 									ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), found);
 									}
 
+								char *szCustomValue;
 								VPGetDialogItemText(hwndDlg, IDC_CUSTOMVALUE, &szCustomValue);
 								pt->AddListItem(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), szCustomName, szCustomValue, NULL);
 								delete szCustomValue;
@@ -4608,7 +4509,7 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 						case IDC_DELETE:
 							{
-							int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), -1, LVNI_SELECTED);
+							const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), -1, LVNI_SELECTED);
 							ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), sel);
 							}
 							break;
@@ -4655,20 +4556,18 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							pt->m_vCustomInfoTag.RemoveAllElements();
 							pt->m_vCustomInfoContent.RemoveAllElements();
 
-							int customcount = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_CUSTOMLIST));
+							const int customcount = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_CUSTOMLIST));
 							for (int i=0;i<customcount;i++)
 								{
 								char szT[1024];
-								char *szName;
-								char *szValue;
-	
 								ListView_GetItemText(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), i, 0, szT, 1024);
-								szName = new char[lstrlen(szT) + 1];
+
+								char * const szName = new char[lstrlen(szT) + 1];
 								lstrcpy(szName, szT);
 								pt->m_vCustomInfoTag.AddElement(szName);
 
 								ListView_GetItemText(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), i, 1, szT, 1024);
-								szValue = new char[lstrlen(szT) + 1];
+								char * const szValue = new char[lstrlen(szT) + 1];
 								lstrcpy(szValue, szT);
 								pt->m_vCustomInfoContent.AddElement(szValue);
 								}
@@ -4696,12 +4595,11 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							{
 							char *szEMail;
 							char *szTableName;
-							char *szLong;
 							char szMail[] = "mailto:";
 							char szHeaders[] = "?subject=";
 							VPGetDialogItemText(hwndDlg, IDC_EMAIL, &szEMail);
 							VPGetDialogItemText(hwndDlg, IDC_TABLENAME, &szTableName);
-							szLong = new char[lstrlen(szMail) + lstrlen(szEMail) + lstrlen(szHeaders) + lstrlen(szTableName) + 1];
+							char * const szLong = new char[lstrlen(szMail) + lstrlen(szEMail) + lstrlen(szHeaders) + lstrlen(szTableName) + 1];
 							lstrcpy(szLong, szMail);
 							lstrcat(szLong, szEMail);
 							lstrcat(szLong, szHeaders);
@@ -5127,13 +5025,11 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowText(hwndControl, rgszKeyName[key]);
 			SetWindowLong(hwndControl, GWL_USERDATA, key);
 
-			KeyWindowStruct *pksw;
-			pksw = new KeyWindowStruct();
+			KeyWindowStruct * const pksw = new KeyWindowStruct();
 			pksw->pi.Init(hwndDlg);
 			pksw->m_timerid = 0;
 			SetWindowLong(hwndDlg, GWL_USERDATA, (long)pksw);
 
-				{
 				// Set buttons to ignore keyboard shortcuts when using DirectInput
 				HWND hwndButton;
 				hwndButton = GetDlgItem(hwndDlg, IDC_LEFTFLIPPERBUTTON);
@@ -5188,7 +5084,6 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				hwndButton = GetDlgItem(hwndDlg, IDC_MECHTILTBUTTON);
 				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
 				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
-				}
 
 			return TRUE;
 			}
@@ -5196,8 +5091,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_DESTROY:
 			{
-			KeyWindowStruct *pksw;
-			pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
+			KeyWindowStruct * const pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
 			if (pksw->m_timerid)
 				{
 				KillTimer(hwndDlg, pksw->m_timerid);
@@ -5209,9 +5103,8 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_TIMER:
 			{
-			KeyWindowStruct *pksw;
-			pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
-			int key = pksw->pi.GetNextKey();
+			KeyWindowStruct * const pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
+			const int key = pksw->pi.GetNextKey();
 			if (key != 0)
 				{
 				if(key < 0xdd)			//rlc   Key mapping, add cases for joystick here!!!!!!!!!
@@ -5219,7 +5112,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					if (key == DIK_ESCAPE)
 						{
 						// reset key to old value
-						int oldkey = GetWindowLong(pksw->hwndKeyControl, GWL_USERDATA);
+						const int oldkey = GetWindowLong(pksw->hwndKeyControl, GWL_USERDATA);
 						SetWindowText(pksw->hwndKeyControl, rgszKeyName[oldkey]);
 						}
 					else
@@ -5238,9 +5131,8 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 			switch (HIWORD(wParam))
 				{
-					case BN_CLICKED:
-				KeyWindowStruct *pksw;
-				pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
+				case BN_CLICKED:
+					KeyWindowStruct * const pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
 					switch (LOWORD(wParam))
 						{
 						case IDC_LEFTFLIPPERBUTTON:
@@ -5258,8 +5150,8 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						case IDC_MECHTILTBUTTON:
 							{
 							HWND hwndKeyWindow;
-						if(pksw->m_timerid == NULL) //add
-						{ //add
+							if(pksw->m_timerid == NULL) //add
+							{ //add
 							switch (LOWORD(wParam))
 								{
 								case IDC_LEFTFLIPPERBUTTON:
@@ -5315,11 +5207,8 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 									break;
 								}
 
-							KeyWindowStruct *pksw;
-							pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
-							// corrects input error with spacebar
-								int key = pksw->pi.GetNextKey();
+								// corrects input error with spacebar
+								const int key = pksw->pi.GetNextKey();
 								if (key == 0x39)
 								{
 								pksw->pi.GetNextKey(); // Clear the current buffer out
@@ -5332,13 +5221,14 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							pksw->m_timerid = SetTimer(hwndDlg, 100, 50, NULL);
 							pksw->hwndKeyControl = hwndKeyWindow;
 							SetWindowText(pksw->hwndKeyControl, "????");
-							while (key = pksw->pi.GetNextKey()!=NULL) //clear entire keyboard buffer contents
+							while (pksw->pi.GetNextKey()!=NULL) //clear entire keyboard buffer contents
 								{
 									pksw->pi.GetNextKey();
 								}
 							}
 							} //add
 							break;
+
 						case IDOK:
 							{
 							HWND hwndControl;
@@ -5539,7 +5429,7 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 						case IDC_PLAY_MUSIC:
 							{
-							int checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_MUSIC, BM_GETCHECK, 0, 0);
+							const int checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_MUSIC, BM_GETCHECK, 0, 0);
 							HWND hwndSlider = GetDlgItem(hwndDlg, IDC_MUSIC_SLIDER);
 							HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_MUSIC);
 							
@@ -5550,7 +5440,7 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 						case IDC_PLAY_SOUND:
 							{
-							int checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_SOUND, BM_GETCHECK, 0, 0);
+							const int checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_SOUND, BM_GETCHECK, 0, 0);
 							HWND hwndSlider = GetDlgItem(hwndDlg, IDC_SOUND_SLIDER);
 							HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SOUND);
 							
@@ -5727,7 +5617,7 @@ int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 						case IDC_PROTECT_TOTALLOCK:
 							{
 							// if the total lock check box is checked then disable any other options
-							int checked = SendDlgItemMessage(hwndDlg, IDC_PROTECT_TOTALLOCK, BM_GETCHECK, 0, 0);
+							const int checked = SendDlgItemMessage(hwndDlg, IDC_PROTECT_TOTALLOCK, BM_GETCHECK, 0, 0);
 
 							HWND hwndScript = GetDlgItem(hwndDlg,IDC_PROTECT_SCRIPT);
 							HWND hwndSaveAs = GetDlgItem(hwndDlg,IDC_PROTECT_SAVEAS);
@@ -5737,7 +5627,7 @@ int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							HWND hwndView = GetDlgItem(hwndDlg,IDC_PROTECT_VIEWTABLE);
 							HWND hwndDebugger = GetDlgItem(hwndDlg,IDC_PROTECT_DEBUGGER);
 
-							int checkstate = !(checked == BST_CHECKED);
+							const int checkstate = !(checked == BST_CHECKED);
 
 							EnableWindow(hwndScript, checkstate);
 							EnableWindow(hwndSaveAs, checkstate);
@@ -5754,7 +5644,7 @@ int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							HWND hwndPassword = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD);
 							HWND hwndPassword2 = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD2);
 
-							int checked = SendDlgItemMessage(hwndDlg, IDD_PROTECT_SHOWPASSWORD, BM_GETCHECK, 0, 0);
+							const int checked = SendDlgItemMessage(hwndDlg, IDD_PROTECT_SHOWPASSWORD, BM_GETCHECK, 0, 0);
 							if (checked == BST_CHECKED)
 								{
 	        						SendMessage(hwndPassword,  EM_SETPASSWORDCHAR, 0, 0L);
@@ -5777,21 +5667,21 @@ int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 							// get the check box status(s)
 							unsigned long flags = 0;
-							int checked1 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SAVEAS, BM_GETCHECK, 0, 0);
+							const int checked1 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SAVEAS, BM_GETCHECK, 0, 0);
 							if (checked1 == BST_CHECKED) flags |= DISABLE_TABLE_SAVE;
-							int checked2 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SAVEASPROT, BM_GETCHECK, 0, 0);
+							const int checked2 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SAVEASPROT, BM_GETCHECK, 0, 0);
 							if (checked2 == BST_CHECKED) flags |= DISABLE_TABLE_SAVEPROT;
-							int checked3 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SCRIPT, BM_GETCHECK, 0, 0);
+							const int checked3 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SCRIPT, BM_GETCHECK, 0, 0);
 							if (checked3 == BST_CHECKED) flags |= DISABLE_SCRIPT_EDITING;
-							int checked4 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_MANAGERS, BM_GETCHECK, 0, 0);
+							const int checked4 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_MANAGERS, BM_GETCHECK, 0, 0);
 							if (checked4 == BST_CHECKED) flags |= DISABLE_OPEN_MANAGERS;
-							int checked5 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_COPY, BM_GETCHECK, 0, 0);
+							const int checked5 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_COPY, BM_GETCHECK, 0, 0);
 							if (checked5 == BST_CHECKED) flags |= DISABLE_CUTCOPYPASTE;
-							int checked6 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_VIEWTABLE, BM_GETCHECK, 0, 0);
+							const int checked6 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_VIEWTABLE, BM_GETCHECK, 0, 0);
 							if (checked6 == BST_CHECKED) flags |= DISABLE_TABLEVIEW;
-							int checked7 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_DEBUGGER, BM_GETCHECK, 0, 0);
+							const int checked7 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_DEBUGGER, BM_GETCHECK, 0, 0);
 							if (checked7 == BST_CHECKED) flags |= DISABLE_DEBUGGER;
-							int checked0 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_TOTALLOCK, BM_GETCHECK, 0, 0);
+							const int checked0 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_TOTALLOCK, BM_GETCHECK, 0, 0);
 							if (checked0 == BST_CHECKED) flags |= DISABLE_EVERYTHING;
 
 							// get the passwords
@@ -5893,8 +5783,6 @@ int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 						{
 						case IDOK:
 							{
-							BOOL rc;
-
 							// get the password
 							char pw[PROT_PASSWORD_LENGTH+1];
 							memset (pw,  0x00, sizeof(pw));
@@ -5909,8 +5797,8 @@ int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 								}
 							else
 								{
-								PinTable *pt = g_pvp->GetActiveTable();
-								rc = pt->UnlockProtectionBlock((unsigned char *)pw);
+								PinTable * const pt = g_pvp->GetActiveTable();
+								const BOOL rc = pt->UnlockProtectionBlock((unsigned char *)pw);
 								if (rc)
 									{
 										LocalString ls(IDS_UNLOCK_SUCCESS);

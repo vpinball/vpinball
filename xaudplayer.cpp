@@ -6,7 +6,7 @@ XAudPlayer::XAudPlayer()
 	m_pDSNotify = NULL;
 	m_decoder = NULL;
 	m_hNotificationEvent = NULL;
-	m_fEndData = fFalse;
+	m_fEndData = false;
 	m_lastplaypos = 0;
 	}
 
@@ -44,13 +44,7 @@ void XAudPlayer::Unpause()
 
 int XAudPlayer::Tick()
 	{
-	unsigned char  *mp3_buffer;
-	int nb_read;
-	int status;
-	HRESULT hr;
-
 	DWORD playpos, writepos;
-
 	m_pDSBuffer->GetCurrentPosition(&playpos, &writepos);
 
 	if (m_fEndData)
@@ -74,7 +68,7 @@ int XAudPlayer::Tick()
 		return 1;
 		}
 
-	DWORD halfaround = (playpos + m_dwBufferSize/2);// % m_dwBufferSize;
+	const DWORD halfaround = (playpos + m_dwBufferSize/2);// % m_dwBufferSize;
 	
 	if (halfaround > m_dwBufferSize)
 		{
@@ -89,15 +83,13 @@ int XAudPlayer::Tick()
 		}
 
 	char buf[10000];
+    unsigned char mp3_buffer[4096];
 
-    /* allocate a buffer for the MP3 stream */
-    mp3_buffer = (unsigned char *)malloc(4096);
-
-	status = decoder_decode(m_decoder, buf);
+	int status = decoder_decode(m_decoder, buf);
 
 	if (status == XA_ERROR_TIMEOUT) // Need more input
 		{
-		nb_read = fread(mp3_buffer, 1, 4096, file);
+		const int nb_read = fread(mp3_buffer, 1, 4096, file);
 
 		if (nb_read == 0)
 			{
@@ -126,9 +118,9 @@ int XAudPlayer::Tick()
 
 	if (status == XA_SUCCESS)
 		{
-		hr = m_pDSBuffer->SetFrequency(m_decoder->status->info.frequency);
+		HRESULT hr = m_pDSBuffer->SetFrequency(m_decoder->status->info.frequency);
 
-		unsigned int cbData = m_decoder->output_buffer->nb_samples*m_decoder->output_buffer->bytes_per_sample*m_decoder->output_buffer->nb_channels;
+		const unsigned int cbData = m_decoder->output_buffer->nb_samples*m_decoder->output_buffer->bytes_per_sample*m_decoder->output_buffer->nb_channels;
 
 		VOID* pbBuffer  = NULL;
 		DWORD dwBufferLength;
@@ -153,17 +145,15 @@ int XAudPlayer::Tick()
 		m_dwNextWriteOffset += cbData;
 		m_dwNextWriteOffset %= m_dwBufferSize;
 
-		free(mp3_buffer);
-
 		if (!m_fStarted)
 			{
 			m_pDSBuffer->Play(0, 0, DSBPLAY_LOOPING);
-			m_fStarted = fTrue;
+			m_fStarted = true;
 			}
 		}
 	else
 		{
-		m_fEndData = fTrue;
+		m_fEndData = true;
 		m_cDataLeft = m_dwNextWriteOffset - playpos;
 		if (m_cDataLeft < 0)
 			{
@@ -184,9 +174,7 @@ void XAudPlayer::End()
 
 int XAudPlayer::Init(char *szFileName, int volume)
 	{
-	int status;
-
-	m_fStarted = fFalse;
+	m_fStarted = false;
 
     /* open the mp3 file (name passed as program argument */
     file = fopen(szFileName, "rb");
@@ -218,7 +206,7 @@ int XAudPlayer::Init(char *szFileName, int volume)
     }
 
     /* create and open input object */
-    status = decoder_input_new(m_decoder, NULL, XA_DECODER_INPUT_AUTOSELECT);
+    const int status = decoder_input_new(m_decoder, NULL, XA_DECODER_INPUT_AUTOSELECT);
     if (status != XA_SUCCESS) 
 	{
         //error("cannot create input [%d]\n", status);
@@ -235,18 +223,16 @@ int XAudPlayer::Init(char *szFileName, int volume)
 
 HRESULT XAudPlayer::CreateBuffer(int volume)
 	{
-	WAVEFORMATEX wfex;
 	const int status = decoder_decode(m_decoder, NULL);
 	
-	{
-		wfex.wFormatTag = WAVE_FORMAT_PCM;
-		wfex.nChannels = 2;//m_decoder->output_buffer->nb_channels;
-		wfex.nSamplesPerSec = 22050;//44100; Bogus frequency value - the real value gets set as data is decompressed - look for SetFrequency
-		wfex.wBitsPerSample = 16;//m_decoder->output_buffer->bytes_per_sample;
-		wfex.cbSize = 0;
-		wfex.nBlockAlign = (wfex.nChannels * wfex.wBitsPerSample) / 8;
-		wfex.nAvgBytesPerSec = wfex.nBlockAlign * wfex.nSamplesPerSec;
-	}
+	WAVEFORMATEX wfex;
+	wfex.wFormatTag = WAVE_FORMAT_PCM;
+	wfex.nChannels = 2;//m_decoder->output_buffer->nb_channels;
+	wfex.nSamplesPerSec = 22050;//44100; Bogus frequency value - the real value gets set as data is decompressed - look for SetFrequency
+	wfex.wBitsPerSample = 16;//m_decoder->output_buffer->bytes_per_sample;
+	wfex.cbSize = 0;
+	wfex.nBlockAlign = (wfex.nChannels * wfex.wBitsPerSample) / 8;
+	wfex.nAvgBytesPerSec = wfex.nBlockAlign * wfex.nSamplesPerSec;
 
 	CreateStreamingBuffer(&wfex);
 
@@ -261,24 +247,21 @@ HRESULT XAudPlayer::CreateBuffer(int volume)
 
 HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 {
-    HRESULT hr; 
-
     // This samples works by dividing a 3 second streaming buffer into 
     // NUM_PLAY_NOTIFICATIONS (or 16) pieces.  it creates a notification for each
     // piece and when a notification arrives then it fills the circular streaming 
     // buffer with new wav data over the sound data which was just played
 
     // The size of wave data is in pWaveFileSound->m_ckIn
-    DWORD nBlockAlign = pwfx->nBlockAlign;
-    INT nSamplesPerSec = pwfx->nSamplesPerSec;
+    const DWORD nBlockAlign = pwfx->nBlockAlign;
+    const INT nSamplesPerSec = pwfx->nSamplesPerSec;
 
     // The g_dwNotifySize should be an integer multiple of nBlockAlign
     m_dwNotifySize = nSamplesPerSec * 3 * nBlockAlign;// / NUM_PLAY_NOTIFICATIONS;
-    m_dwNotifySize -= m_dwNotifySize % nBlockAlign;   
+    m_dwNotifySize -= m_dwNotifySize % nBlockAlign;
 
     // The buffersize should approximately 3 seconds of wav data
     m_dwBufferSize  = m_dwNotifySize;// * NUM_PLAY_NOTIFICATIONS;
-    m_bFoundEnd     = FALSE;
     m_dwProgress    = 0;
     m_dwLastPos     = 0;
 
@@ -293,20 +276,17 @@ HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
     dsbd.lpwfxFormat   = pwfx;
 
     // Create a DirectSound buffer
+	HRESULT hr;
     if( FAILED( hr = g_pvp->m_pds.m_pDS->CreateSoundBuffer( &dsbd, &m_pDSBuffer, NULL ) ) )
         return hr;
 
-	{
-
-    m_bFoundEnd = FALSE;
-    m_dwNextWriteOffset = 0; 
+	m_dwNextWriteOffset = 0; 
     m_dwProgress = 0;
     m_dwLastPos  = 0;
 
 	m_pDSBuffer->SetCurrentPosition(0);
 
 	m_hNotificationEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-	}
 
     return S_OK;
 }

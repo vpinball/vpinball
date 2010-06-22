@@ -89,9 +89,6 @@ HRESULT ReadMMIO( HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfxInfo )
     return S_OK;
 }
 
-
-
-
 //-----------------------------------------------------------------------------
 // Name: WaveOpenFile()
 // Desc: This function will open a wave input file and prepare it for reading,
@@ -118,9 +115,6 @@ HRESULT WaveOpenFile( CHAR* strFileName, HMMIO* phmmioIn, WAVEFORMATEX** ppwfxIn
     return S_OK;
 }
 
-
-
-
 //-----------------------------------------------------------------------------
 // Name: WaveStartDataRead()
 // Desc: Routine has to be called before WaveReadFile as it searches for the
@@ -144,9 +138,6 @@ HRESULT WaveStartDataRead( HMMIO* phmmioIn, MMCKINFO* pckIn,
 
     return S_OK;
 }
-
-
-
 
 //-----------------------------------------------------------------------------
 // Name: WaveReadFile()
@@ -196,9 +187,6 @@ HRESULT WaveReadFile( HMMIO hmmioIn, UINT cbRead, BYTE* pbDest,
     *cbActualRead = cbDataIn;
     return S_OK;
 }
-
-
-
   
 //-----------------------------------------------------------------------------
 // Name: CWaveSoundRead()
@@ -209,9 +197,6 @@ CWaveSoundRead::CWaveSoundRead()
     m_pwfx   = NULL;
 }
 
-
-
-
 //-----------------------------------------------------------------------------
 // Name: ~CWaveSoundRead()
 // Desc: Destructs the class
@@ -221,9 +206,6 @@ CWaveSoundRead::~CWaveSoundRead()
     Close();
     SAFE_DELETE( m_pwfx );
 }
-
-
-
 
 //-----------------------------------------------------------------------------
 // Name: Open()
@@ -244,9 +226,6 @@ HRESULT CWaveSoundRead::Open( CHAR* strFilename )
     return hr;
 }
 
-
-
-
 //-----------------------------------------------------------------------------
 // Name: Reset()
 // Desc: Resets the internal m_ckIn pointer so reading starts from the 
@@ -256,9 +235,6 @@ HRESULT CWaveSoundRead::Reset()
 {
     return WaveStartDataRead( &m_hmmioIn, &m_ckIn, &m_ckInRiff );
 }
-
-
-
 
 //-----------------------------------------------------------------------------
 // Name: Read()
@@ -270,9 +246,6 @@ HRESULT CWaveSoundRead::Read( UINT nSizeToRead, BYTE* pbData, UINT* pnSizeRead )
     return WaveReadFile( m_hmmioIn, nSizeToRead, pbData, &m_ckIn, pnSizeRead );
 }
 
-
-
-
 //-----------------------------------------------------------------------------
 // Name: Close()
 // Desc: Closes an open wave file 
@@ -282,6 +255,3 @@ HRESULT CWaveSoundRead::Close()
     mmioClose( m_hmmioIn, 0 );
     return S_OK;
 }
-
-
-

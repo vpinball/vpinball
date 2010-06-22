@@ -156,7 +156,7 @@ public:
 	PinDirectDraw m_pdd;
 	PinMusic m_music;
 
-	BOOL m_fDebugging; // Whether VBA is currently in debugging mode
+	bool m_fDebugging; // Whether VBA is currently in debugging mode
 
 	int m_ToolCur; // Palette button currently pressed
 

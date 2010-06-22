@@ -9,7 +9,7 @@ int lasthangsnoopvalue;
 
 VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 	{
-	int newvalue = g_pplayer->m_LastKnownGoodCounter;
+	const int newvalue = g_pplayer->m_LastKnownGoodCounter;
 	if (!g_pplayer->m_fPause && newvalue == lasthangsnoopvalue && !g_pplayer->m_ModalRefCount)
 		{
 		// Nothing happened since the last time - we are probably hung
@@ -77,8 +77,6 @@ DWORD WINAPI VPWorkerThreadStart(void *param)
 
 void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 	{
-	HRESULT hr;
-
 	AutoSavePackage *pasp = (AutoSavePackage *)lParam;
 
 	FastIStorage *pstgroot = pasp->pstg;
@@ -90,7 +88,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 	WCHAR wzSuffix[32];
 	_itow(pasp->tableindex, wzSuffix, 10);
 
-	WCHAR *wzT = new WCHAR[MAX_PATH + 32 + lstrlenW(wzSaveName) + lstrlenW(wzSaveExtension)+ 1];
+	WCHAR * const wzT = new WCHAR[MAX_PATH + 32 + lstrlenW(wzSaveName) + lstrlenW(wzSaveExtension)+ 1];
 
 	WideStrCopy(g_pvp->m_wzMyPath, wzT);
 	WideStrCat(wzSaveName, wzT);
@@ -98,6 +96,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 	WideStrCat(wzSaveExtension, wzT);
 	
 	//MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
+	HRESULT hr;
 	if(SUCCEEDED(hr = StgCreateDocfile(wzT/*L"c:\\test.vpt"*/, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
 		0, &pstgDisk)))
 		{
