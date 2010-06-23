@@ -339,8 +339,6 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 		}
 
 	float totallength = 0;
-	float currentlength = 0;
-
 	for (int i=0;i<(cvertex-1);i++)
 		{
 		const Vertex2D * const pv1 = (Vertex2D *)vvertex.ElementAt(i);
@@ -353,13 +351,14 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 		totallength += length;
 		}
 
-	Vertex2D vnormal;
+	float currentlength = 0;
 	for (int i=0;i<cvertex;i++)
 		{
 		const Vertex2D * const pv1 = (Vertex2D *)vvertex.ElementAt((i>0) ? i-1 : i);
 		const Vertex2D * const pv2 = (Vertex2D *)vvertex.ElementAt((i < (cvertex-1)) ? i+1 : i);
 		const Vertex2D * const pvmiddle = (Vertex2D *)vvertex.ElementAt(i);
 
+		Vertex2D vnormal;
 		{
 		// Get normal at this point
 		Vertex2D v1normal, v2normal;
@@ -414,8 +413,8 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 
 				const float inv_det = 1.0f/((A*E) - (B*D));
 
-				const float intersectx=(B*F-E*C)*inv_det;
-				const float intersecty=(C*D-A*F)*inv_det;
+				const float intersectx = (B*F-E*C)*inv_det;
+				const float intersecty = (C*D-A*F)*inv_det;
 
 				//rgv[i].x = intersectx;
 				//rgv[i].y = intersecty;
@@ -429,9 +428,8 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 		}
 
 		{
-		const Vertex2D * const pvT = (Vertex2D *)vvertex.ElementAt(i);
-		const float dx = pv1->x - pvT->x;
-		const float dy = pv1->y - pvT->y;
+		const float dx = pv1->x - pvmiddle->x;
+		const float dy = pv1->y - pvmiddle->y;
 		const float length = sqrtf(dx*dx + dy*dy);
 
 		currentlength += length;
@@ -452,13 +450,10 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 			(*ppratio)[i] = percentage;
 			}
 
-		rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
-		rgv[cvertex*2 - i - 1] = *((Vertex2D *)vvertex.ElementAt(i));
-
-		rgv[i].x += vnormal.x * (widthcur*0.5f);
-		rgv[i].y += vnormal.y * (widthcur*0.5f);
-		rgv[cvertex*2 - i - 1].x -= vnormal.x * (widthcur*0.5f);
-		rgv[cvertex*2 - i - 1].y -= vnormal.y * (widthcur*0.5f);
+		rgv[i].x = pvmiddle->x + vnormal.x * (widthcur*0.5f);
+		rgv[i].y = pvmiddle->y + vnormal.y * (widthcur*0.5f);
+		rgv[cvertex*2 - i - 1].x = pvmiddle->x - vnormal.x * (widthcur*0.5f);
+		rgv[cvertex*2 - i - 1].y = pvmiddle->y - vnormal.y * (widthcur*0.5f);
 		}
 
 	if (ppfCross)
@@ -472,7 +467,7 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 	//rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 	//delete vvertex.ElementAt(i);
 
-	for (int i=0;i<cvertex;i++)
+	for (int i=0;i<vvertex.Size();i++)
 		{
 		delete vvertex.ElementAt(i);
 		}
@@ -485,6 +480,11 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
 	{
 	const int cpoint = m_vdpoint.Size();
 	RenderVertex rendv2;
+	if(cpoint < 2) {
+		const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(0);
+		rendv2.x = pdp->m_v.x;
+		rendv2.y = pdp->m_v.y;
+	}
 
 	for (int i=0;i<(cpoint-1);i++)
 		{
@@ -498,7 +498,8 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
 		RenderVertex rendv1;
 		rendv1.x = pdp1->m_v.x;
 		rendv1.y = pdp1->m_v.y;
-		rendv1.fSmooth = pdp1->m_fSmooth;
+		rendv1.fSlingshot = (pdp1->m_fSlingshot != 0);
+		rendv1.fSmooth = (pdp1->m_fSmooth != 0);
 		rendv1.fControlPoint = true;
 
 		// Properties of last point don't matter, because it won't be added to the list on this pass (it'll get added as the first point of the next curve)
@@ -625,7 +626,7 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 		pv3 = &rgv[cvertex*2 - i - 2];
 		pv4 = &rgv[i+1];
 
-		Vertex3D rgv3D[4];
+		Vertex3D rgv3D[3];
 		rgv3D[1].x = pv1->x;
 		rgv3D[1].y = pv1->y;
 		rgv3D[1].z = rgheight[i];
@@ -687,7 +688,7 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 		ph3dpolyOld = ph3dpoly;
 		}
 
-	Vertex3D rgv3D[4];
+	Vertex3D rgv3D[3];
 	rgv3D[2].x = pv1->x;
 	rgv3D[2].y = pv1->y;
 	rgv3D[2].z = rgheight[cvertex-1];
@@ -716,7 +717,7 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 		const Vertex2D * const pv3 = &rgv[cvertex*2 - i - 2];
 		const Vertex2D * const pv4 = &rgv[i+1];
 
-		Vertex3D rgv3D[4];
+		Vertex3D rgv3D[3];
 		rgv3D[0].x = pv1->x;
 		rgv3D[0].y = pv1->y;
 		rgv3D[0].z = rgheight[i];
@@ -883,23 +884,15 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 			m_vhoCollidable.AddElement(pjoint);	//remember hit components of ramp
 			pjoint->m_fEnabled = m_d.m_fCollidable;
 
-			Vertex2D normalT;
 			// Set up line normal
-			{
-			const float inv_length = 1.0f/sqrtf((vt2.x * vt2.x) + (vt2.y * vt2.y));
-			normalT.x = -vt2.y *inv_length;
-			normalT.y =  vt2.x *inv_length;
-			}
+			const float inv_length = 1.0f/sqrtf(vt2.x * vt2.x + vt2.y * vt2.y);
+			pjoint->normal.x = plineseg->normal.x - vt2.y *inv_length;
+			pjoint->normal.y = vt2.x *inv_length + plineseg->normal.y;
 
-			pjoint->normal.x = normalT.x + plineseg->normal.x;
-			pjoint->normal.y = normalT.y + plineseg->normal.y;
-
-			{
 			// Set up line normal
-			const float inv_length = 1.0f/sqrtf((pjoint->normal.x * pjoint->normal.x) + (pjoint->normal.y * pjoint->normal.y));
-			pjoint->normal.x = pjoint->normal.x *inv_length;
-			pjoint->normal.y = pjoint->normal.y *inv_length;
-			}
+			const float inv_length2 = 1.0f/sqrtf(pjoint->normal.x * pjoint->normal.x + pjoint->normal.y * pjoint->normal.y);
+			pjoint->normal.x *= inv_length2;
+			pjoint->normal.y *= inv_length2;
 			}
 		}
 
@@ -953,7 +946,7 @@ WORD rgicrosssection[] = {
 	14,15,30,
 	15,31,30,
 	15,12,31,
-	12,28,31,
+	12,28,31
 	};
 
 void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
@@ -983,9 +976,9 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 	int cvertex;
 	const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
 
+	Vertex3D rgv3D[32];
 	for (int i=0;i<cvertex;i++)
 		{
-		Vertex3D rgv3D[32];
 		rgv3D[0].x = -3.0f;
 		rgv3D[0].y = -3.0f;
 		rgv3D[0].z = 0;
@@ -1020,29 +1013,22 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 		for (int l=0;l<4;l++)
 			{
-			rgv3D[l+4].x = rgv3D[l].x + 44.0f; //44.0f
-			rgv3D[l+4].y = rgv3D[l].y - 19.0f; //22.0f
-			rgv3D[l+4].z = rgv3D[l].z;
-			rgv3D[l+4].nx = rgv3D[l].nx;
-			rgv3D[l+4].ny = rgv3D[l].ny;
-			rgv3D[l+4].nz = rgv3D[l].nz;
-			}
-
-		for (int l=0;l<4;l++)
-			{
-			rgv3D[l+8].x = rgv3D[l].x + 9.5f;
-			rgv3D[l+8].y = rgv3D[l].y + 19.0f;
-			rgv3D[l+8].z = rgv3D[l].z;
-			rgv3D[l+8].nx = rgv3D[l].nx;
-			rgv3D[l+8].ny = rgv3D[l].ny;
-			rgv3D[l+8].nz = rgv3D[l].nz;
-			}
-
-		for (int l=0;l<4;l++)
-			{
+			rgv3D[l+ 4].x = rgv3D[l].x + 44.0f; //44.0f
+			rgv3D[l+ 4].y = rgv3D[l].y - 19.0f; //22.0f
+			rgv3D[l+ 4].z = rgv3D[l].z;
+			rgv3D[l+ 8].x = rgv3D[l].x + 9.5f;
+			rgv3D[l+ 8].y = rgv3D[l].y + 19.0f;
+			rgv3D[l+ 8].z = rgv3D[l].z;
 			rgv3D[l+12].x = rgv3D[l].x + 44.0f;
 			rgv3D[l+12].y = rgv3D[l].y + 19.0f;
 			rgv3D[l+12].z = rgv3D[l].z;
+
+			rgv3D[l+ 4].nx = rgv3D[l].nx;
+			rgv3D[l+ 4].ny = rgv3D[l].ny;
+			rgv3D[l+ 4].nz = rgv3D[l].nz;
+			rgv3D[l+ 8].nx = rgv3D[l].nx;
+			rgv3D[l+ 8].ny = rgv3D[l].ny;
+			rgv3D[l+ 8].nz = rgv3D[l].nz;
 			rgv3D[l+12].nx = rgv3D[l].nx;
 			rgv3D[l+12].ny = rgv3D[l].ny;
 			rgv3D[l+12].nz = rgv3D[l].nz;
@@ -1054,12 +1040,12 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[l].y = rgv3D[l].y - 19.0f;
 			}
 
-		const int p1 = (i==0) ? 0 : i-1;
+		const int p1 = (i==0) ? 0 : (i-1);
 		const int p2 = i;
-		const int p3 = (i==(cvertex-1)) ? cvertex-1 : i+1;
-		const int p4 = cvertex*2 - i -1;
+		const int p3 = (i==(cvertex-1)) ? i : (i+1);
+		const int p4 = cvertex*2 - i - 1; //!! ?? *2 valid?
 
-		Vertex3D vacross;
+		Vertex3Ds vacross;
 		vacross.x = rgv[p4].x - rgv[p2].x;
 		vacross.y = rgv[p4].y - rgv[p2].y;
 		vacross.z = 0;
@@ -1069,10 +1055,10 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 		vacross.Normalize();
 
 		// vnewup is the beginning up vector of the cross-section
-		Vertex3D vnewup;
-		vnewup.x = 0;    vnewup.nx = 0;  //rlc  initialize .nx, .ny and .nz 
-		vnewup.y = 1.0f; vnewup.ny = 0;  //rlc
-		vnewup.z = 0;    vnewup.nz = 0;  //rlc
+		Vertex3Ds vnewup;
+		vnewup.x = 0;    //vnewup.nx = 0;  //rlc  initialize .nx, .ny and .nz 
+		vnewup.y = 1.0f; //vnewup.ny = 0;  //rlc
+		vnewup.z = 0;    //vnewup.nz = 0;  //rlc
 
 		Vertex3Ds tangent;
 		tangent.x = rgv[p3].x - rgv[p1].x;
@@ -1132,7 +1118,7 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 			}
 
-		memcpy(&rgv3D[16], &rgv3D[0], sizeof(Vertex3D)*16);
+		memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D)*16);
 		}
 
 	delete rgv;
