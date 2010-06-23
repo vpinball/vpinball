@@ -452,7 +452,7 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 		{
 		LoadString(g_hinstres, p_tbbutton[i].dwData, szBuf, MAXRESLEN-1);
 		szBuf[lstrlen(szBuf) + 1] = 0;  //Double-null terminate.
-		const int foo = SendMessage(hwnd, TB_ADDSTRING, 0, (LPARAM) szBuf);
+		/*const int foo =*/ SendMessage(hwnd, TB_ADDSTRING, 0, (LPARAM) szBuf);
 		}
 
 #ifdef IMSPANISH
@@ -673,7 +673,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 				{
 				hmenuEdit = GetSubMenu(hmenu, 1);
 				}
-			const DWORD foo = CheckMenuItem(hmenuEdit, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
+			/*const DWORD foo =*/ CheckMenuItem(hmenuEdit, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
 
 			m_sb.SetVisible(fShow);
 
@@ -723,7 +723,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 				{
 				hmenuEdit = GetSubMenu(hmenu, 1);
 				}
-			const DWORD foo = CheckMenuItem(hmenuEdit, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
+			/*const DWORD foo =*/ CheckMenuItem(hmenuEdit, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
 
 			m_fBackglassView = fShow;
 
@@ -1003,7 +1003,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 		case ID_EDIT_AUDIOOPTIONS:
 			{
-			const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_AUDIO_OPTIONS),
+			/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_AUDIO_OPTIONS),
 				  m_hwnd, AudioOptionsProc, 0);
 			}
 			break;
@@ -1011,7 +1011,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 		case ID_EDIT_EDITOROPTIONS:
 			{
-			const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_EDITOR_OPTIONS),
+			/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_EDITOR_OPTIONS),
 				  m_hwnd, EditorOptionsProc, 0);
 			// refresh editor options from the registry
 			InitRegValues();
@@ -1026,14 +1026,14 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 		case ID_EDIT_VIDEOOPTIONS:
 			{
-			const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_VIDEO_OPTIONS),
+			/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_VIDEO_OPTIONS),
 				  m_hwnd, VideoOptionsProc, 0);
 			}
 			break;
 
 		case ID_PREFERENCES_SECURITYOPTIONS:
 			{
-			const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS),
+			/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS),
 				  m_hwnd, SecurityOptionsProc, 0);
 
 			// refresh editor options from the registry
@@ -1043,7 +1043,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 		case ID_EDIT_KEYS:
 			{
-			const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_KEYS),m_hwnd, KeysProc, 0);
+			/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_KEYS),m_hwnd, KeysProc, 0);
 			}
 			break;
 
@@ -1055,7 +1055,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
 				ApcHost->BeginModalDialog();
 #endif
-				const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_TABLEINFO),
+				/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_TABLEINFO),
 					  m_hwnd, TableInfoProc, (long)ptCur);
 #ifdef VBA
 				ApcHost->EndModalDialog();
@@ -1078,7 +1078,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
 					ApcHost->BeginModalDialog();
 #endif
-					const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SOUNDDIALOG),m_hwnd, SoundManagerProc, (long)ptCur);
+					/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SOUNDDIALOG),m_hwnd, SoundManagerProc, (long)ptCur);
 #ifdef VBA
 					ApcHost->EndModalDialog();
 #endif					
@@ -1101,7 +1101,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
 					ApcHost->BeginModalDialog();
 #endif
-					const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_IMAGEDIALOG), m_hwnd, ImageManagerProc, (long)ptCur);
+					/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_IMAGEDIALOG), m_hwnd, ImageManagerProc, (long)ptCur);
 					m_sb.PopulateDropdowns(); // May need to update list of images
 					m_sb.RefreshProperties();
 #ifdef VBA
@@ -1126,7 +1126,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
 					ApcHost->BeginModalDialog();
 #endif
-					const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_FONTDIALOG),
+					/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_FONTDIALOG),
 						  m_hwnd, FontManagerProc, (long)ptCur);
 #ifdef VBA
 					ApcHost->EndModalDialog();
@@ -1150,7 +1150,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
 					ApcHost->BeginModalDialog();
 #endif
-					const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_COLLECTDIALOG),
+					/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_COLLECTDIALOG),
 						  m_hwnd, CollectManagerProc, (long)ptCur);
 
 					m_sb.PopulateDropdowns(); // May need to update list of collections
@@ -1168,7 +1168,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
 			ApcHost->BeginModalDialog();
 #endif
-			const int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_ABOUT),
+			/*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_ABOUT),
 				  m_hwnd, AboutProc, 0);
 #ifdef VBA
 			ApcHost->EndModalDialog();
@@ -1256,7 +1256,7 @@ void VPinball::SetEnablePalette()
 			{
 			hmenuEdit = GetSubMenu(hmenu, 2);
 			}
-		const DWORD foo = EnableMenuItem(hmenuEdit, id, MF_BYCOMMAND | (fEnable ? MF_ENABLED : MF_GRAYED));
+		/*const DWORD foo =*/ EnableMenuItem(hmenuEdit, id, MF_BYCOMMAND | (fEnable ? MF_ENABLED : MF_GRAYED));
 		}
 	}
 
@@ -1471,7 +1471,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 			}
 		}
 
-	const BOOL fSafe = ppt->FVerifySaveToClose();
+	/*const BOOL fSafe =*/ ppt->FVerifySaveToClose();
 
 	if (m_sb.GetBaseISel() && (ppt == m_sb.GetBaseISel()->GetPTable()))
 		{
@@ -1856,7 +1856,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 
 		if (!(*pfConsumed))
 			{
-			const int fTranslated = TranslateMessage(pmsg);
+			/*const int fTranslated =*/ TranslateMessage(pmsg);
 			}
 		}
 	else
@@ -2689,7 +2689,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
 									
 									}
-								const HRESULT hr = SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+								/*const HRESULT hr =*/ SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 								EndDialog(hwndDlg, TRUE);
 								}
 							}
@@ -2720,7 +2720,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							if (sel != -1)
 								{
 								SetFocus(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-								const HWND hwndFoo = ListView_EditLabel(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
+								/*const HWND hwndFoo =*/ ListView_EditLabel(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
 								}
 							}
 							break;
@@ -2964,7 +2964,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							PinImage * const ppi = (PinImage *)lvitem.lParam;
 							ppi->SetTransparentColor(color);
 
-							const HRESULT hr = SetRegValue("Editor", "TransparentColorKey", REG_DWORD, &color, 4);
+							/*const HRESULT hr =*/ SetRegValue("Editor", "TransparentColorKey", REG_DWORD, &color, 4);
 
 							// The previous selection is now deleted, so look again from the top of the list
 							sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
@@ -3048,7 +3048,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							if (sel != -1)
 								{
 								SetFocus(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-								const HWND hwndFoo = ListView_EditLabel(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
+								/*const HWND hwndFoo =*/ ListView_EditLabel(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
 								}
 							}
 							break;
@@ -3111,7 +3111,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										}
 									sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
 									} // finished all selected items
-								const HRESULT hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+								/*const HRESULT hr =*/ SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 								EndDialog(hwndDlg, TRUE);
 								}							
 							}	
@@ -4096,7 +4096,7 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 							if (sel != -1)
 								{
 								SetFocus(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-								const HWND hwndFoo = ListView_EditLabel(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
+								/*const HWND hwndFoo =*/ ListView_EditLabel(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
 								}
 							}
 							break;

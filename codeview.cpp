@@ -309,7 +309,7 @@ HRESULT CodeViewer::AddTemporaryItem(BSTR bstr, IDispatch *pdisp)
 
 	const int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
 
-	const HRESULT hr = m_pScript->AddNamedItem(bstr, flags);
+	/*const HRESULT hr =*/ m_pScript->AddNamedItem(bstr, flags);
 
 	m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
 
@@ -457,7 +457,7 @@ STDMETHODIMP CodeViewer::InitializeScriptEngine()
 			DWORD supported, enabled;
 			pios->GetInterfaceSafetyOptions(IID_IActiveScript, &supported, &enabled);
 
-			const HRESULT hr = pios->SetInterfaceSafetyOptions(IID_IActiveScript, supported, INTERFACE_USES_SECURITY_MANAGER);
+			/*const HRESULT hr =*/ pios->SetInterfaceSafetyOptions(IID_IActiveScript, supported, INTERFACE_USES_SECURITY_MANAGER);
 
 			pios->Release();
 			}
@@ -723,7 +723,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		}
 	EnableWindow(g_pvp->m_hwnd, FALSE);
 
-	const int result = MessageBoxW(m_hwndMain,
+	/*const int result =*/ MessageBoxW(m_hwndMain,
 				wszOutput,
 				L"Script Error",
 				MB_SETFOREGROUND);
@@ -756,7 +756,7 @@ void CodeViewer::Compile()
 	ZeroMemory(&exception, sizeof(exception));
 	m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
-	const HRESULT hr = m_pScript->AddTypeLib(LIBID_VBATESTLib, 1, 0, 0);
+	/*const HRESULT hr =*/ m_pScript->AddTypeLib(LIBID_VBATESTLib, 1, 0, 0);
 
 	for (int i=0;i<m_vcvd.Size();i++)
 		{
@@ -1037,7 +1037,7 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
 					 &cryptlen,			// size of data to encrypt
 					 bufferSize);		// maximum size of buffer (includes padding)
 
-		const int foo = GetLastError();	// purge any errors
+		/*const int foo =*/ GetLastError();	// purge any errors
 
 		// update the size of the buffer to stream out (and create hash for)
 		cchar = cryptlen;
@@ -1085,7 +1085,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
 					 (BYTE *)szText,	// buffer to decrypt
 					 &cryptlen);		// size of data to decrypt
 
-		const int foo = GetLastError();	// purge any errors
+		/*const int foo =*/ GetLastError();	// purge any errors
 
 		// update the size of the buffer
 		cchar = cryptlen;
@@ -1210,7 +1210,7 @@ void CodeViewer::GetParamsFromEvent(int iEvent, char *szParams)
 
 					unsigned int cnames;
 
-					const HRESULT hr = ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
+					/*const HRESULT hr =*/ ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
 
 					// Add enum string to combo control
 					char szT[512];

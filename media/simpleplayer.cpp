@@ -256,7 +256,7 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnStatus(
 				{
 				m_pDSBuffer->Play(0,0,DSBPLAY_LOOPING);
 				// time out after length of buffer, since obviously we'd be done by then
-				const DWORD foo = WaitForSingleObjectEx(m_hNotificationEvent, 3000, FALSE);
+				/*const DWORD foo =*/ WaitForSingleObjectEx(m_hNotificationEvent, 3000, FALSE);
 				}
 			}
 

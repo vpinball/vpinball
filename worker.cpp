@@ -20,8 +20,8 @@ VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
 		//eiInterrupt.scode = E_NOTIMPL;
 		eiInterrupt.wCode = 2345;
 		delete wzError;
-		const HRESULT hr = g_pplayer->m_ptable->m_pcv->m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE/*SCRIPTTHREADID_ALL*/
-			, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
+		/*const HRESULT hr =*/ g_pplayer->m_ptable->m_pcv->m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE/*SCRIPTTHREADID_ALL*/,
+																							&eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
 		}
 	lasthangsnoopvalue = newvalue;
 	}

@@ -44,7 +44,7 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 						BSTR *rgstr = (BSTR *) CoTaskMemAlloc(6 * sizeof(BSTR *));
 
 						unsigned int cnames;
-						const HRESULT hr = ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
+						/*const HRESULT hr =*/ ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
 
 						// Add enum string to combo control
 						char szT[512];
