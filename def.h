@@ -55,50 +55,6 @@ public:
 		}
 	};
 
-class Vertex3Ds
-	{
-public:
-	union
-		{
-			struct {
-			D3DVALUE x; 
-			D3DVALUE y; 
-			D3DVALUE z;
-			};
-			D3DVALUE m_d[3];
-		};
-
-	inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
-	inline void SetDouble(const double a, const double b, const double c) {x=(float)a; y=(float)b; z=(float)c;}
-	inline void Normalize()
-		{
-		const float oneoverlength = 1.0f/sqrtf(x*x + y*y + z*z);
-		x *= oneoverlength;
-		y *= oneoverlength;
-		z *= oneoverlength;
-		}
-	inline float Dot(const Vertex3Ds * const pv) const
-		{
-		return x*pv->x + y*pv->y + z*pv->z;
-		}
-	inline float LengthSquared() const
-		{
-		return x*x + y*y + z*z;
-		}
-	inline void MultiplyScalar(const float scalar)
-		{
-		x *= scalar;
-		y *= scalar;
-		z *= scalar;
-		}
-	inline void Add(const Vertex3Ds * const pv)
-		{
-		x += pv->x;
-		y += pv->y;
-		z += pv->z;
-		}
-	};
-
 #define MY_D3DFVF_VERTEX (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2)
 
 #define MY_D3DTRANSFORMED_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
@@ -186,6 +142,54 @@ public:
 		y += pv->y;
 		z += pv->z;
 	}
+	};
+
+class Vertex3Ds
+	{
+public:
+	union
+		{
+			struct {
+			D3DVALUE x; 
+			D3DVALUE y; 
+			D3DVALUE z;
+			};
+			D3DVALUE m_d[3];
+		};
+
+	inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
+	inline void SetDouble(const double a, const double b, const double c) {x=(float)a; y=(float)b; z=(float)c;}
+	inline void Normalize()
+		{
+		const float oneoverlength = 1.0f/sqrtf(x*x + y*y + z*z);
+		x *= oneoverlength;
+		y *= oneoverlength;
+		z *= oneoverlength;
+		}
+	inline float Dot(const Vertex3Ds * const pv) const
+		{
+		return x*pv->x + y*pv->y + z*pv->z;
+		}
+	inline float Dot(const Vertex3D * const pv) const
+		{
+		return x*pv->x + y*pv->y + z*pv->z;
+		}
+	inline float LengthSquared() const
+		{
+		return x*x + y*y + z*z;
+		}
+	inline void MultiplyScalar(const float scalar)
+		{
+		x *= scalar;
+		y *= scalar;
+		z *= scalar;
+		}
+	inline void Add(const Vertex3Ds * const pv)
+		{
+		x += pv->x;
+		y += pv->y;
+		z += pv->z;
+		}
 	};
 
 inline void Calc2DNormal(const Vertex2D * const pv1, const Vertex2D * const pv2, Vertex2D * const pnormal)
