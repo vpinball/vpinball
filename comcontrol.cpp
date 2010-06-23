@@ -786,7 +786,7 @@ void PinComControl::CreateControlDialogTemplate()
 			BSTR *rgstr = (BSTR *) CoTaskMemAlloc(6 * sizeof(BSTR *));
 
 			unsigned int cnames;
-			const HRESULT hr = piti->GetNames(pfd->memid, rgstr, 6, &cnames);
+			/*const HRESULT hr =*/ piti->GetNames(pfd->memid, rgstr, 6, &cnames);
 
 			/* Now start with the first item. */ 
 			lStyle = WS_VISIBLE | WS_CHILD;

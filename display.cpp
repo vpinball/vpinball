@@ -719,7 +719,7 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
 void Display_DestroyTexture ( LPDIRECTDRAWSURFACE7 Texture )
 {
     // Destroy the texture.
-	const HRESULT ReturnCode = Texture->Release ( ); 
+	/*const HRESULT ReturnCode =*/ Texture->Release ( ); 
 }
 
 

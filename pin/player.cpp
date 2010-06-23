@@ -2301,7 +2301,7 @@ void Player::Render()
 						if (pobjframe->pdds != NULL)
 						{
 							// Blit to the backbuffer with DDraw.   
-							const HRESULT hr = pdds->BltFast(bltleft, blttop, pobjframe->pdds, &rcUpdate, DDBLTFAST_SRCCOLORKEY);
+							/*const HRESULT hr =*/ pdds->BltFast(bltleft, blttop, pobjframe->pdds, &rcUpdate, DDBLTFAST_SRCCOLORKEY);
 						}
 					}
 					
@@ -2309,7 +2309,7 @@ void Player::Render()
 					if (pobjframe->pddsZBuffer != NULL)
 					{
 						// Blit to the z buffer.	
-						const HRESULT hr = g_pplayer->m_pin3d.m_pddsZBuffer->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
+						/*const HRESULT hr =*/ g_pplayer->m_pin3d.m_pddsZBuffer->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
 					}
 				}
 			}
@@ -3955,7 +3955,7 @@ void Player::DrawAcrylics ()
 		{
 		// Build a set of clipping planes which tightly bound the ball.
 		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
-		const HRESULT ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
+		/*const HRESULT ReturnCode =*/ g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
 
 		// Draw acrylic ramps (they have transparency, so they have to be drawn last).
 		for (int i=0;i<m_ptable->m_vedit.Size();i++)

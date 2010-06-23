@@ -12,27 +12,27 @@ private:
 
 public:
 
-	ExVectorVoid()
+	inline ExVectorVoid()
 		{
 		m_pbaseobj = 0;
 		m_searchstart = 1;
 		}
 
-	ExVectorVoid(void *pobj)
+	inline ExVectorVoid(void * const pobj)
 		{
 		m_pbaseobj = pobj;
 		m_searchstart = 1;
 		}
 
-	ExVectorVoid(ExVectorVoid *xv)
+	inline ExVectorVoid(ExVectorVoid * const xv)
 		{
 		m_pbaseobj = xv->m_pbaseobj;
-		m_vobj=VectorVoid(xv->m_vobj);
-		m_vindex=VectorVoid(xv->m_vindex);
+		m_vobj = VectorVoid(xv->m_vobj);
+		m_vindex = VectorVoid(xv->m_vindex);
 		xv->m_searchstart=m_searchstart;
 		}
 
-	void Clone(ExVectorVoid *xv)
+	inline void Clone(ExVectorVoid * const xv)
 		{
 		xv->m_pbaseobj=m_pbaseobj;
 		m_vobj.Clone(&(xv->m_vobj));
@@ -40,7 +40,7 @@ public:
 		xv->m_searchstart=m_searchstart;
 		}
 
-	void RecomputeSearchStart()
+	inline void RecomputeSearchStart()
 		{
 		const unsigned int size = m_vindex.Size();
 		unsigned int i = 1u<<31;
@@ -51,26 +51,26 @@ public:
 		m_searchstart = i;
 		}
 
-	void SetBase(void *pobj)
+	inline void SetBase(void * const pobj)
 		{
 		m_pbaseobj = pobj;
 		}
 
 	// return fTrue for REPLACING, fFalse for ADDING
-	BOOL AddElement(void *pobj, int iex)
+	bool AddElement(void * const pobj, const int iex)
 		{
-		BOOL fFound = fFalse;
+		bool fFound = false;
 
 		if (iex == xvBaseElement)
 			{
 			SetBase(pobj);
-			return fTrue;
+			return true;
 			}
 
 		int currentnode = m_searchstart-1;  // Zero based
 		int jumpnode = m_searchstart >> 1;
 		
-		while (1)
+		while(1)
 			{
 			//Assert(currentnode >= 0);
 
@@ -85,7 +85,7 @@ public:
 				if (currentvalue == iex)
 					{
 					m_vobj.ReplaceElementAt(pobj, currentnode);
-					fFound = fTrue;
+					fFound = true;
 					break;
 					}
 				}
@@ -119,37 +119,35 @@ public:
 		return fFound;
 		}
 
-	void RemoveAbsoluteElementAt(int iex)
+	void RemoveAbsoluteElementAt(const int iex)
 		{
 		m_vobj.RemoveElementAt(iex);
 		m_vindex.RemoveElementAt(iex);
 		RecomputeSearchStart();
 		}
 		
-	void RemoveElementAt(void *pv)
+	inline void RemoveElementAt(void * const pv)
 		{
-		int index;
-		index = m_vindex.IndexOf(pv);
+		const int index = m_vindex.IndexOf(pv);
 		if (index != -1)
 			{
 			RemoveAbsoluteElementAt(index);
 			}
 		}
 
-	void *ElementAtVoid(int m)
+	void *ElementAtVoid(const int m) const
 		{
 		if ((m == xvBaseElement) || (m_vindex.Size() == 0))
 			return m_pbaseobj;
 			
-		int currentnode, jumpnode;
-		int currentvalue;
+		int currentnode = m_searchstart-1;  // Zero based
+		int jumpnode = m_searchstart >> 1;
 		
-		currentnode = m_searchstart-1;  // Zero based
-		jumpnode = m_searchstart >> 1;
-		
-		while (1)
+		while(1)
 			{
 			//Assert(currentnode >= 0);
+
+			int currentvalue;
 			if (currentnode >= m_vindex.Size())
 				{
 				currentvalue = 0x7fffffff;
@@ -159,12 +157,12 @@ public:
 				currentvalue = (int)m_vindex.ElementAt(currentnode);
 				if (currentvalue == m)
 					{
-					return (m_vobj.ElementAt(currentnode));
+					return m_vobj.ElementAt(currentnode);
 					}
 				}
 			
 			if (jumpnode == 0)
-				goto NotFound;
+				break;
 
 			if (currentvalue < m)
 				{
@@ -177,12 +175,11 @@ public:
 			jumpnode >>= 1;
 			}
 
-NotFound:
 		return m_pbaseobj;
 		}
 
-	// returns fTrue iff index has an exception record
-	BOOL FIsExceptionItem(int j)
+	// returns true iff index has an exception record
+	inline bool FIsExceptionItem(const int j) const
 		{
 		return (ElementAtVoid(j) != m_pbaseobj);
 		}
@@ -194,27 +191,26 @@ NotFound:
 		RecomputeSearchStart();
 		}
 
-
 	// number of exceptions
-	int AbsoluteSize()
+	int AbsoluteSize() const
 		{
 		return m_vobj.Size();
 		}
 
 	// provides direct access to exceptions
-	inline void *AbsoluteElementAtVoid(int item)
+	inline void *AbsoluteElementAtVoid(const int item) const
 		{
 		return m_vobj.ElementAt(item);
 		}
      	
 	// allows direct replacement of exceptions
-	void ReplaceAbsoluteElementAt(void * pT, int item)
+	inline void ReplaceAbsoluteElementAt(void * const pT, const int item)
 		{
 		m_vobj.ReplaceElementAt(pT, item);
 		}
 
 	// Get the Exception index from absolute index
-	int RelPosFromAbsPos(int item)
+	inline int RelPosFromAbsPos(const int item) const
 		{
 		return (int)m_vindex.ElementAt(item);
 		}
@@ -226,7 +222,6 @@ NotFound:
 		m_vindex.Reset();
 		RecomputeSearchStart();		
 		}
-
 	};
 	
 template<class T> class ExVector : public ExVectorVoid
@@ -236,8 +231,6 @@ public:
 	inline ExVector(void *pobj) : ExVectorVoid(void *pobj) {}
 	//inline ExVector(ExVector *xv) : ExVectorVoid(ExVector *xv)
 	
-	inline T *ElementAt(int m)	{return (T *)ElementAtVoid(m);}
-	inline T *AbsoluteElementAt(int item) {return (T *)AbsoluteElementAtVoid(item);}
+	inline T *ElementAt(const int m) const {return (T *)ElementAtVoid(m);}
+	inline T *AbsoluteElementAt(const int item) const {return (T *)AbsoluteElementAtVoid(item);}
 	};
-
-

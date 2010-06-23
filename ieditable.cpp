@@ -135,7 +135,7 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
 
 	VariantInit(&m_uservalue);
 	VariantClear(&m_uservalue);
-	const HRESULT hr = VariantCopy(&m_uservalue, newVal);
+	/*const HRESULT hr =*/ VariantCopy(&m_uservalue, newVal);
 	
 	STOPUNDO
 	

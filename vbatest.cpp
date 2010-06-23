@@ -204,7 +204,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 				{
 					char szLoadDir[MAX_PATH];
 					PathFromFilename(szTableFileName, szLoadDir);
-					const DWORD err = SetCurrentDirectory(szLoadDir);
+					/*const DWORD err =*/ SetCurrentDirectory(szLoadDir);
 				}
 			}
 

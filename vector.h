@@ -97,7 +97,7 @@ public:
 		return m_rg;
 		}
 
-	inline BOOL SetSize(const int i)
+	inline bool SetSize(const int i)
 		{
 		if (i > m_cMax)
 			{		
@@ -114,30 +114,30 @@ public:
 
 			if (m_rgNew == NULL)
 				{
-				return fFalse;
+				return false;
 				}
 
 			m_rg = m_rgNew;
 			m_cMax = i;
 			}
 
-		return fTrue;
+		return true;
 		}
 
-	inline BOOL Extend(const int cNewSize)
+	inline bool Extend(const int cNewSize)
 		{
 		if (cNewSize > m_cSize)
 			{
 			if (!SetSize(cNewSize))
-				return FALSE;
+				return false;
 
 			memset(&m_rg[m_cSize], 0, sizeof(void *) * (cNewSize - m_cSize));
 			m_cSize = cNewSize;
 			}
-		return fTrue;
+		return true;
 		}
 
-	inline BOOL Clone(VectorVoid * const pvector) const
+	inline bool Clone(VectorVoid * const pvector) const
 		{
 		if (m_rg)
 			{
@@ -147,7 +147,7 @@ public:
 				pvector->m_cMax = 0;
 				pvector->m_cSize = 0;
 
-				return fFalse;  // OOM
+				return false;  // OOM
 				}
 			}
 		else
@@ -163,7 +163,7 @@ public:
 			pvector->m_rg[i] = m_rg[i];
 			}
 			
-		return fTrue;
+		return true;
 		}
 
 	inline int LastIndexOf(const void * const pT) const
@@ -206,22 +206,22 @@ public:
 		}
 
 	// fTrue for success, fFalse if failure (OOM)
-	inline BOOL InsertElementAt(void * const pItem, const int iPos)
+	inline bool InsertElementAt(void * const pItem, const int iPos)
 		{					
 		if(m_cSize == m_cMax)
 			{		
 			if (!SetSize(m_cSize+GROW_SIZE))
-				return fFalse;
+				return false;
 			}
 
 		if (m_cSize != iPos)
 			{
-			memcpy(m_rg+iPos+1, m_rg+iPos, sizeof(void *) * (m_cSize-iPos));
+			memmove(m_rg+iPos+1, m_rg+iPos, sizeof(void *) * (m_cSize-iPos));
 			}
 
 		m_rg[iPos] = pItem;
 		m_cSize++;
-		return fTrue;
+		return true;
 		}
 
 	inline void ReplaceElementAt(void * const pItem, const int iPos)
@@ -237,7 +237,7 @@ public:
 		if (!m_rg)
 			return;
 
-		memcpy(m_rg+iItem, m_rg+iItem+1, sizeof(void *) * (m_cSize-iItem-1));
+		memmove(m_rg+iItem, m_rg+iItem+1, sizeof(void *) * (m_cSize-iItem-1));
 		m_cSize--;
 		}
 
@@ -268,26 +268,26 @@ public:
         return AddElement(pItem);
     }
 
-    inline BOOL Pop(void ** const ppItem)
+    inline bool Pop(void ** const ppItem)
 		{
         if(m_cSize)
         {
             *ppItem = m_rg[--m_cSize];
             m_rg[m_cSize] = NULL;
-			return TRUE;
+			return true;
         }
 
-        return FALSE;
+        return false;
 		}
 
-	inline BOOL Top(void ** const ppItem)
+	inline bool Top(void ** const ppItem)
 		{
 		if(m_cSize)
 			{
 			*ppItem = m_rg[m_cSize-1];
-			return TRUE;
+			return true;
 			}
-		return FALSE;
+		return false;
 		}
 	};
 	

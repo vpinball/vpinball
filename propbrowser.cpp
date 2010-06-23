@@ -408,7 +408,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 									BSTR * const rgstr = (BSTR *) CoTaskMemAlloc(6 * sizeof(BSTR *));
 
 									unsigned int cnames;
-									const HRESULT hr = pitiEnum->GetNames(pvd->memid, rgstr, 6, &cnames);
+									/*const HRESULT hr =*/ pitiEnum->GetNames(pvd->memid, rgstr, 6, &cnames);
 
 									// Add enum string to combo control
 									WideCharToMultiByte(CP_ACP, 0, rgstr[0], -1, szT, 512, NULL, NULL);
@@ -734,7 +734,7 @@ void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, BOOL fPutRef)
 
 	for (int i=0;i<m_pvsel->Size();i++)
 		{
-		const HRESULT hr = m_pvsel->ElementAt(i)->GetDispatch()->Invoke(dispid,
+		/*const HRESULT hr =*/ m_pvsel->ElementAt(i)->GetDispatch()->Invoke(dispid,
 				IID_NULL,
 				LOCALE_USER_DEFAULT,
 				fPutRef ? DISPATCH_PROPERTYPUTREF : DISPATCH_PROPERTYPUT,
@@ -1072,7 +1072,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			const HRESULT hr = GetRegInt("Editor", "TransparentColorKey", &colorkey);
 			if (hr != S_OK) colorkey = (int)NOTRANSCOLOR; //not set assign no transparent color 	
 
-			const HWND hwndButton = CreateWindow("BUTTON","Color",WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
+			/*const HWND hwndButton =*/ CreateWindow("BUTTON","Color",WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
 			SetWindowLong(hwnd, GWL_USERDATA, colorkey); //0);//rlc  get cached colorkey
 			}
 			break;
@@ -1156,7 +1156,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				case BN_CLICKED:
 					{
 					HWND hwndDlg = GetParent(hwnd);
-					SmartBrowser * const psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
+					/*SmartBrowser * const psb =*/ (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
 					CHOOSECOLOR cc;
 					cc.lStructSize = sizeof(CHOOSECOLOR);
 					cc.hwndOwner = hwnd;
@@ -1234,7 +1234,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			IFont *pif;
 			pifd->QueryInterface(IID_IFont, (void **)&pif);
 			CComBSTR bstrName;
-			const HRESULT hr = pif->get_Name(&bstrName);
+			/*const HRESULT hr =*/ pif->get_Name(&bstrName);
 			pif->Release();
 
 			if (wParam != 1) // non-niched value

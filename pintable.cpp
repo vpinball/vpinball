@@ -915,7 +915,7 @@ BOOL PinTable::FVerifySaveToClose()
 	{
 	if (m_vAsyncHandles.Size() > 0)
 		{
-		const DWORD wait = WaitForMultipleObjects(m_vAsyncHandles.Size(), (HANDLE *)m_vAsyncHandles.GetArray(), TRUE, INFINITE);
+		/*const DWORD wait =*/ WaitForMultipleObjects(m_vAsyncHandles.Size(), (HANDLE *)m_vAsyncHandles.GetArray(), TRUE, INFINITE);
 		//MessageBox(NULL, "Async work items not done", NULL, 0);
 
 		// Close the remaining handles here, since the window messages will never be processed
@@ -3220,19 +3220,19 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	else if( id == FID(MPGC))
 		{
 		pbr->GetInt(&m_plungerNormalize);	
-		const HRESULT hr = GetRegInt("Player", "PlungerNormalize", &m_plungerNormalize);	
+		/*const HRESULT hr =*/ GetRegInt("Player", "PlungerNormalize", &m_plungerNormalize);	
 		}
 	else if( id == FID(MPDF))
 		{
 		int tmp;
 		pbr->GetBool(&tmp);	
-		const HRESULT hr = GetRegInt("Player", "PlungerFilter", &tmp);
+		/*const HRESULT hr =*/ GetRegInt("Player", "PlungerFilter", &tmp);
 		m_plungerFilter = (tmp != 0);		
 		}
 	else if( id == FID(PLTMX))
 		{
 		pbr->GetInt(&m_PhysicsLoopTime);	
-		const HRESULT hr = GetRegInt("Player", "PhysicsLoopTime", &m_PhysicsLoopTime);
+		/*const HRESULT hr =*/ GetRegInt("Player", "PhysicsLoopTime", &m_PhysicsLoopTime);
 		}
 	else if (id == FID(DECL))
 		{
@@ -4381,7 +4381,7 @@ void PinTable::ExportBlueprint()
 	char *pbits;
 	HBITMAP hdib = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
 
-	const HBITMAP hbmOld = (HBITMAP)SelectObject(hdc2, hdib);
+	/*const HBITMAP hbmOld =*/ (HBITMAP)SelectObject(hdc2, hdib);
 
 	PaintSur * const psur = new PaintSur(hdc2, bmwidth/tablewidth, tablewidth/2, tableheight/2, bmwidth, bmheight, NULL);
 
@@ -4656,7 +4656,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 
 		ULONG writ = 0;
 		int type;
-		const HRESULT hr = pstm->Read(&type, sizeof(int), &writ);
+		/*const HRESULT hr =*/ pstm->Read(&type, sizeof(int), &writ);
 
 		if (!(rgItemViewAllowed[type] & viewflag))
 			{

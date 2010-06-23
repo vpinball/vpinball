@@ -223,7 +223,7 @@ int XAudPlayer::Init(char *szFileName, int volume)
 
 HRESULT XAudPlayer::CreateBuffer(int volume)
 	{
-	const int status = decoder_decode(m_decoder, NULL);
+	/*const int status =*/ decoder_decode(m_decoder, NULL);
 	
 	WAVEFORMATEX wfex;
 	wfex.wFormatTag = WAVE_FORMAT_PCM;

@@ -119,7 +119,7 @@ void Flipper::GetHitShapes(Vector<HitObject> *pvho)
 	phf->m_flipperanim.m_angleMin = min(phf->m_flipperanim.m_frameStart, phf->m_flipperanim.m_frameEnd);
 	phf->m_flipperanim.m_angleMax = max(phf->m_flipperanim.m_frameStart, phf->m_flipperanim.m_frameEnd);
 
-	phf->m_flipperanim.m_fEnabled = m_d.m_fVisible;
+	phf->m_flipperanim.m_fEnabled = (m_d.m_fVisible != 0);
 
 	pvho->AddElement(phf);
 	phf->m_pflipper = this;
@@ -665,7 +665,7 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		// Copy the back buffer to the new offscreen surfaces.
 		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
-		const HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+		/*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
 		// Add the frame to the list.
 		m_phitflipper->m_flipperanim.m_vddsFrame.AddElement(pof);

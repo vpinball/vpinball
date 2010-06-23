@@ -1471,7 +1471,7 @@ void Light::DrawFrame(BOOL fOn)
 		{
 			// NOTE: They are drawing to their own static buffer below in the BltFast... NOT the back buffer!
 			// We can use BltFast here because we are drawing to our own offscreen iamge
-			const HRESULT hr = ppin3d->m_pddsStatic->BltFast(m_pobjframe[frame]->rc.left, m_pobjframe[frame]->rc.top, m_pobjframe[frame]->pdds, NULL, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
+			/*const HRESULT hr =*/ ppin3d->m_pddsStatic->BltFast(m_pobjframe[frame]->rc.left, m_pobjframe[frame]->rc.top, m_pobjframe[frame]->pdds, NULL, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
 			
 			g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
 		}

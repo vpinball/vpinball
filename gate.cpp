@@ -683,7 +683,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
 	
-		const HRESULT hr = pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+		/*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			
 		m_phitgate->m_gateanim.m_vddsFrame.AddElement(pof);
 		pof->pdds = pdds;
