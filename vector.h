@@ -2,8 +2,8 @@
 #ifndef __VECTOR_H__
 #define __VECTOR_H__
 
-const int START_SIZE=10;
-const int GROW_SIZE=10;
+#define START_SIZE 16
+#define GROW_SIZE  16
 
 class VectorVoid
 {
@@ -17,9 +17,8 @@ public:
 	inline VectorVoid()
 		{
 		m_cSize = 0;
-		m_cMax = 0;
-		m_rg = NULL;
-		SetSize(8);
+		m_rg = (void **)malloc(sizeof(void *) * START_SIZE);
+		m_cMax = (!m_rg) ? 0 : START_SIZE;  // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
 		}
 
 	inline VectorVoid(const int cSize)
@@ -31,7 +30,7 @@ public:
 
 	inline VectorVoid(const VectorVoid * const pvector)
 		{		
-		m_rg = (void **)malloc(sizeof(void *) * m_cMax);
+		m_rg = (void **)malloc(sizeof(void *) * pvector->m_cMax);
 
 		if (!m_rg)
 			{
@@ -171,12 +170,11 @@ public:
 		if (!m_rg)
 			return -1;
 
-		int i;
-		for (i = m_cSize-1; i >= 0; i--)
+		for (int i = m_cSize-1; i >= 0; i--)
 			if (m_rg[i] == pT)
-				break;
+				return i;
 
-		return i;
+		return -1;
 		}
 
 	inline int IndexOf(const void * const pvItem) const
@@ -196,7 +194,7 @@ public:
 		{
 		if(m_cSize == m_cMax)
 			{
-			if (!SetSize(m_cSize*2))
+			if (!SetSize(m_cSize+GROW_SIZE))
 				return -1;
 			}
 
