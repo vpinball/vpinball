@@ -4329,8 +4329,8 @@ void PinTable::ExportBlueprint()
 	float tableheight, tablewidth;
 	if (g_pvp->m_fBackglassView)
 		{
-		tablewidth = 1000;
-		tableheight = 750;
+		tablewidth = 1000.0f;
+		tableheight = 750.0f;
 		}
 	else
 		{
@@ -4342,12 +4342,12 @@ void PinTable::ExportBlueprint()
 	if (tableheight > tablewidth)
 		{
 		bmheight = 1024;
-		bmwidth = (int)((tablewidth/tableheight) * bmheight + 0.5);
+		bmwidth = (int)((tablewidth/tableheight) * bmheight + 0.5f);
 		}
 	else
 		{
 		bmwidth = 1024;
-		bmheight = (int)((tableheight/tablewidth) * bmwidth + 0.5);
+		bmheight = (int)((tableheight/tablewidth) * bmwidth + 0.5f);
 		}
 
 	int totallinebytes = bmwidth * 3;
@@ -4383,7 +4383,7 @@ void PinTable::ExportBlueprint()
 
 	/*const HBITMAP hbmOld =*/ (HBITMAP)SelectObject(hdc2, hdib);
 
-	PaintSur * const psur = new PaintSur(hdc2, bmwidth/tablewidth, tablewidth/2, tableheight/2, bmwidth, bmheight, NULL);
+	PaintSur * const psur = new PaintSur(hdc2, (float)bmwidth/tablewidth, tablewidth*0.5f, tableheight*0.5f, bmwidth, bmheight, NULL);
 
 	SelectObject(hdc2, GetStockObject(WHITE_BRUSH));
 	PatBlt(hdc2, 0, 0, bmwidth, bmheight, PATCOPY);
