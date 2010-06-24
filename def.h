@@ -302,18 +302,14 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoin
 		pvPoint[i].y = result[1];
 		pvPoint[i].z = result[2];
 
-		//!! the following doesn't make too much sense (i.e. last check is nx not nz) and also produces all 0,0,0 again!
-		if ((pvPoint[i].nx == 0) && (pvPoint[i].ny == 0) && (pvPoint[i].nx == 0)) //rlc optimize, often 0,0,0
-			{
-			const float resultn[3] = {
+		const float resultn[3] = {
 				matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz,
 				matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz,
 				matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz};
 
-			pvPoint[i].nx = resultn[0];
-			pvPoint[i].ny = resultn[1];
-			pvPoint[i].nz = resultn[2];
-			}
+		pvPoint[i].nx = resultn[0];
+		pvPoint[i].ny = resultn[1];
+		pvPoint[i].nz = resultn[2];
 		}
 	}
 
