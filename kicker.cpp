@@ -190,7 +190,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	if (m_d.m_kickertype == KickerCup)
 		{
 		// Draw outer ring
-		for (WORD l=1;l<15;l++)
+		for (int l=1;l<15;l++)
 			{
 			WORD rgi[3] = {
 				0,
@@ -222,7 +222,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	ppin3d->EnableLightMap(fFalse, height);
 
 	// Draw mask
-	for (WORD l=1;l<15;l++)
+	for (int l=1;l<15;l++)
 			{
 			WORD rgi[3] = {
 				16,
@@ -290,7 +290,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
 			pd3dDevice->SetMaterial(&mtrl);
 
-			for (WORD l=1;l<15;l++)
+			for (int l=1;l<15;l++)
 					{
 					WORD rgi[3] = {
 						0,
