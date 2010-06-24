@@ -676,9 +676,6 @@ void PinComControl::CreateControlDialogTemplate()
 	WORD *p, *pdlgtemplate;
 	pdlgtemplate = p = new WORD[100 + (100*cdispfuncs*2)];//(PWORD)LocalAlloc (LPTR, 100 + (100*cdispfuncs*2));
 
-	WORD *pitemcount;
-	WORD *pdialogheight;
-
 	/* Start to fill in the dlgtemplate information, addressing by WORDs. */ 
 	DWORD lStyle = WS_CHILD /*WS_POPUP*/ | WS_VISIBLE | DS_SETFONT | DS_3DLOOK;
 	*p++ = 1;          // DlgVer
@@ -689,12 +686,12 @@ void PinComControl::CreateControlDialogTemplate()
 	*p++ = 0;          // HIWORD (lExtendedStyle)
 	*p++ = LOWORD (lStyle);
 	*p++ = HIWORD (lStyle);
-	pitemcount = p;
+	WORD *pitemcount = p;
 	*p++ = cdispfuncs*2;          // NumberOfItems
 	*p++ = 0;        // x
 	*p++ = 0;         // y
 	*p++ = 100;        // cx
-	pdialogheight = p;
+	WORD *pdialogheight = p;
 	*p++ = 200;        // cy
 	*p++ = 0;          // Menu
 	*p++ = 0;          // Class

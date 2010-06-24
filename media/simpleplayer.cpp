@@ -157,7 +157,7 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnSample(
 
     return S_OK;
 
-    InterlockedIncrement( &m_cBuffersOutstanding );
+    InterlockedIncrement( &m_cBuffersOutstanding ); //!! ??
 
     return S_OK;
 }
