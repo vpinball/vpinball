@@ -1652,14 +1652,14 @@ void Player::PhysicsSimulateCycle(float dtime, U64 startTime) // move physics fo
 
 	int StaticCnts = STATICCNTS;	// maximum number of static counts
 
-	while (dtime > 0) 	
+	while (dtime > 0)
 		{
 
 		if (limitTime)//time in microseconds
 			{
 			const int time_elasped = (int)(usec()- startTime);
 
-			if (time_elasped > limitTime)//time in microseconds
+			if (time_elasped > limitTime) //time in microseconds
 				return; // hung in the physics loop
 
 			if (time_elasped > halfLimitTime)		//time in microseconds
@@ -1995,7 +1995,7 @@ void Player::Render()
 
 		phys_iterations++;
 		// Get the time until the next physics tick is done, and get the time
-		// Unitl the next frame is done (newtime)
+		// Until the next frame is done (newtime)
 		// If the frame is the next thing to happen, update physics to that
 		// point next update acceleration, and continue loop
 
@@ -2253,7 +2253,7 @@ void Player::Render()
 	// The region will be drawn with the current frame.
 	for (int i=0;i<m_vupdaterect.Size();i++)
 	{
-		UpdateRect *pur = m_vupdaterect.ElementAt(i);
+		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
 		
 		// Process all objects associated with this region.
 		for (int l=0;l<pur->m_vobject.Size();l++)
@@ -2265,12 +2265,12 @@ void Player::Render()
 			if (pobjframe != NULL)
 			{
 				const LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
-				RECT rcUpdate;
 				RECT * const prc = &pur->m_rcupdate;
 
 				// NOTE: prc is the rectangle of the region needing to be updated.
 				// NOTE: pobjframe->rc is the rectangle of the entire object that intersects the region needing to updated.
 				// I think they are trying to define a rectangle that intersects... but why subtract pobjframe->rc?   -JEP
+				RECT rcUpdate;
 				rcUpdate.left = max(pobjframe->rc.left, prc->left) - pobjframe->rc.left;
 				rcUpdate.top = max(pobjframe->rc.top, prc->top) - pobjframe->rc.top;
 				rcUpdate.right = min(pobjframe->rc.right, prc->right) - pobjframe->rc.left;
@@ -2346,7 +2346,7 @@ void Player::Render()
 			ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, TRUE );
 		}
 
-		g_pplayer->m_ToggleDebugBalls = False;
+		g_pplayer->m_ToggleDebugBalls = fFalse;
 	}
 
 	if (m_fBallAntialias)
@@ -2680,7 +2680,7 @@ void Player::DrawBallShadows()
 
 	D3DMATERIAL7 mtrl;
 	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.a = mtrl.ambient.a = 1;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 	m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
@@ -2745,6 +2745,7 @@ void Player::DrawBallShadows()
 				}
 
 			const float shadowradius = pball->radius*1.2f;
+			const float inv_shadowradius = 0.5f/shadowradius;
 
 			Vertex3D * const rgv3DShadow = pball->m_rgv3DShadow;
 			rgv3DShadow[0].x = pball->x - shadowradius + offsetx;
@@ -2787,7 +2788,7 @@ void Player::DrawBallShadows()
 				{
 				if (rgv3DShadow[2].x > m_ptable->m_right)
 					{
-					const float newtu = (rgv3DShadow[2].x - m_ptable->m_right) / (2.0f*shadowradius);
+					const float newtu = (rgv3DShadow[2].x - m_ptable->m_right) * inv_shadowradius;
 					rgv3DShadow[2].tu = 1.0f-newtu;
 					rgv3DShadow[1].tu = 1.0f-newtu;
 					rgv3DShadow[2].x = m_ptable->m_right;
@@ -2796,7 +2797,7 @@ void Player::DrawBallShadows()
 
 				if (rgv3DShadow[1].y < m_ptable->m_top)
 					{
-					const float newtv = (m_ptable->m_top - rgv3DShadow[1].y) / (2.0f*shadowradius);
+					const float newtv = (m_ptable->m_top - rgv3DShadow[1].y) * inv_shadowradius;
 					rgv3DShadow[1].tv = newtv;
 					rgv3DShadow[0].tv = newtv;
 					rgv3DShadow[1].tv = m_ptable->m_top;
@@ -2997,14 +2998,11 @@ void Player::DrawBalls()
 						rgv3DArrowTransformed[iPoint].nx = rgv3DArrowTransformed[iPoint].x;
 						rgv3DArrowTransformed[iPoint].ny = rgv3DArrowTransformed[iPoint].y;
 						rgv3DArrowTransformed[iPoint].nz = rgv3DArrowTransformed[iPoint].z;
-						rgv3DArrowTransformed[iPoint].x *= -pball->radius;
-						rgv3DArrowTransformed[iPoint].y *= -pball->radius;
-						rgv3DArrowTransformed[iPoint].z *= -pball->radius;
+						rgv3DArrowTransformed[iPoint].x = pball->x - rgv3DArrowTransformed[iPoint].x*pball->radius;
+						rgv3DArrowTransformed[iPoint].y = pball->y - rgv3DArrowTransformed[iPoint].y*pball->radius;
+						rgv3DArrowTransformed[iPoint].z = zheight  - rgv3DArrowTransformed[iPoint].z*pball->radius;
 						rgv3DArrowTransformed[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinFront->m_maxtu;
 						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinFront->m_maxtv;
-						rgv3DArrowTransformed[iPoint].x += pball->x;
-						rgv3DArrowTransformed[iPoint].y += pball->y;
-						rgv3DArrowTransformed[iPoint].z += zheight;
 						}
 
 					//m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
@@ -3031,14 +3029,11 @@ void Player::DrawBalls()
 						rgv3DArrowTransformed[iPoint].nx = rgv3DArrowTransformed[iPoint].x;
 						rgv3DArrowTransformed[iPoint].ny = rgv3DArrowTransformed[iPoint].y;
 						rgv3DArrowTransformed[iPoint].nz = rgv3DArrowTransformed[iPoint].z;
-						rgv3DArrowTransformed[iPoint].x *= -pball->radius;
-						rgv3DArrowTransformed[iPoint].y *= -pball->radius;
-						rgv3DArrowTransformed[iPoint].z *= -pball->radius;
+						rgv3DArrowTransformed[iPoint].x = pball->x - rgv3DArrowTransformed[iPoint].x*pball->radius;
+						rgv3DArrowTransformed[iPoint].y = pball->y - rgv3DArrowTransformed[iPoint].y*pball->radius;
+						rgv3DArrowTransformed[iPoint].z = zheight  - rgv3DArrowTransformed[iPoint].z*pball->radius;
 						rgv3DArrowTransformed[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinBack->m_maxtu;
 						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinBack->m_maxtv;
-						rgv3DArrowTransformed[iPoint].x += pball->x;
-						rgv3DArrowTransformed[iPoint].y += pball->y;
-						rgv3DArrowTransformed[iPoint].z += zheight;
 						}
 
 					/*m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
@@ -3254,7 +3249,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 				EnumEventsFromDispatch(pho->m_pfedebug->GetDispatch(), AddEventToDebugMenu, (LPARAM)&dmi);
 				}
 
-			IDebugCommands *pdc = pho->m_pfedebug->GetDebugCommands();
+			IDebugCommands * const pdc = pho->m_pfedebug->GetDebugCommands();
 			if (pdc)
 				{
 				VectorInt<int> vids;
