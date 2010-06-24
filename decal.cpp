@@ -410,7 +410,7 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	Vertex3D rgv3D[4];
-	for (WORD l=0;l<4;l++)
+	for (int l=0;l<4;l++)
 		rgv3D[l].z = height + 0.2f;
 
 	ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
