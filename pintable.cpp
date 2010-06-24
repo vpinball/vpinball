@@ -5998,10 +5998,7 @@ bool PinTable::ExportImage(HWND hwndListView, PinImage *ppi, char *szfilename)
 
 			for (int l=0;l<surfwidth;l++)
 			{					
-				info[0] = pch[0];
-				info[1] = pch[1];
-				info[2] = pch[2];
-				info[3] = pch[3];
+				*(unsigned int*)info = *(unsigned int*)pch;
 				info += 4;
 				pch += 4;
 			}
