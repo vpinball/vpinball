@@ -1042,21 +1042,36 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 				unsigned int gtotal = 0;
 				unsigned int btotal = 0;
 				unsigned int count = 0;
-				if (a[0]) {count++; rtotal+=r[0]; gtotal+=g[0];	btotal+=b[0]; }//rlc faster code
-				if (a[1]) {count++; rtotal+=r[1]; gtotal+=g[1];	btotal+=b[1]; }
-				if (a[2]) {count++; rtotal+=r[2]; gtotal+=g[2];	btotal+=b[2]; }
-				if (a[3]) {count++; rtotal+=r[3]; gtotal+=g[3];	btotal+=b[3]; }
-			
-				const unsigned int atotal = a[0] + a[1] + a[2] + a[3];
+				if (a[0]) { count++; rtotal+=r[0]; gtotal+=g[0]; btotal+=b[0]; }//rlc faster code
+				if (a[1]) { count++; rtotal+=r[1]; gtotal+=g[1]; btotal+=b[1]; }
+				if (a[2]) { count++; rtotal+=r[2]; gtotal+=g[2]; btotal+=b[2]; }
+				if (a[3]) { count++; rtotal+=r[3]; gtotal+=g[3]; btotal+=b[3]; }
 
-				if (!count) // all pixels are transparent - do whatever
+				if (count == 0) // all pixels are transparent - do whatever
 					{
-					count = 1;
+					*(unsigned int*)pchNext = 0;
+					} else {
+					const unsigned int atotal = ((a[0] + a[1] + a[2] + a[3] + 2)>>2)<<24;
+					const unsigned int round = count>>1;
+					btotal += round;
+					gtotal += round;
+					rtotal += round;
+					if(count == 2) {
+						btotal >>= 1;
+						gtotal >>= 1;
+						rtotal >>= 1;
+					} else if(count == 4) {
+						btotal >>= 2;
+						gtotal >>= 2;
+						rtotal >>= 2;
+					} else if(count == 3) {
+						btotal /= 3; // compiler optimizations will turn this into a mul
+						gtotal /= 3;
+						rtotal /= 3;
 					}
 
-				const unsigned int round = count>>1;
-
-				*(unsigned int*)pchNext = ((btotal+round)/count) | (((gtotal+round)/count)<<8) | (((rtotal+round)/count)<<16) | (((atotal+2)/4)<<24);
+					*(unsigned int*)pchNext = btotal | (gtotal<<8) | (rtotal<<16) | atotal;
+					}
 				pchNext += 4;
 
 				pbytes1 += 8;
