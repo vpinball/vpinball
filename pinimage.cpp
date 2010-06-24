@@ -969,7 +969,7 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 
 			value = /*127 + */(value*5)>>3;
 
-			*(pc + pitch*i + l*4 + 3) = value; //!! potential bug: blurring within the same buffer leads to artifacts
+			*(pc + pitch*i + l*4 + 3) = (BYTE)value; //!! potential bug: blurring within the same buffer leads to artifacts
 			}
 		}
 
@@ -1013,10 +1013,10 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 			{
 			for (int x=0;x<width;x++)
 				{
-				int r[4];
-				int g[4];
-				int b[4];
-				int a[4];
+				unsigned int r[4];
+				unsigned int g[4];
+				unsigned int b[4];
+				unsigned int a[4];
 
 				b[0] = pbytes1[0];
 				g[0] = pbytes1[1];
@@ -1038,29 +1038,25 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 				r[3] = pbytes2[6];
 				a[3] = pbytes2[7];
 
-				int rtotal = 0;
-				int gtotal = 0;
-				int btotal = 0;
-				int count = 0;
+				unsigned int rtotal = 0;
+				unsigned int gtotal = 0;
+				unsigned int btotal = 0;
+				unsigned int count = 0;
 				if (a[0]) {count++; rtotal+=r[0]; gtotal+=g[0];	btotal+=b[0]; }//rlc faster code
 				if (a[1]) {count++; rtotal+=r[1]; gtotal+=g[1];	btotal+=b[1]; }
 				if (a[2]) {count++; rtotal+=r[2]; gtotal+=g[2];	btotal+=b[2]; }
 				if (a[3]) {count++; rtotal+=r[3]; gtotal+=g[3];	btotal+=b[3]; }
 			
-				const int atotal = a[0]+ a[1]+ a[2]+ a[3];
+				const unsigned int atotal = a[0] + a[1] + a[2] + a[3];
 
 				if (!count) // all pixels are transparent - do whatever
 					{
 					count = 1;
 					}
 
-				const int round = count>>1;
+				const unsigned int round = count>>1;
 
-				pchNext[0] = (btotal+round)/count;
-				pchNext[1] = (gtotal+round)/count;
-				pchNext[2] = (rtotal+round)/count;
-				pchNext[3] = (atotal+2)/4;
-
+				*(unsigned int*)pchNext = ((btotal+round)/count) | (((gtotal+round)/count)<<8) | (((rtotal+round)/count)<<16) | (((atotal+2)/4)<<24);
 				pchNext += 4;
 
 				pbytes1 += 8;

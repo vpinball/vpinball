@@ -1113,9 +1113,9 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SelectObject(hdc, hbrushOld);
 
 			EndPaint(hwnd,&ps);
-			}*/
+			}
 			return 0;
-			break;
+			break;*/
 
 		case WM_DRAWITEM:
 			{

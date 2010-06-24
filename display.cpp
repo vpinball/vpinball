@@ -308,9 +308,9 @@ void Display_GetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType 
 // Sets the current render state of the D3D device.
 void Display_SetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState )
 {
-    HRESULT     ReturnCode;
+    return;
 
-	return;
+	HRESULT     ReturnCode;
 
     // Set the render state.
     ReturnCode = Direct3DDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, RenderState->ZEnable );
@@ -481,7 +481,7 @@ void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 {
 	return;
 
-	for (int i=0; i<DISPLAY_MAXTEXTURES; i++ )
+	for (int i=0; i<DISPLAY_MAXTEXTURES; i++)
 	{
 		HRESULT         ReturnCode;
 
@@ -510,7 +510,7 @@ void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 
 #if 0				
 	// Clear all remaining stages.
-	for (int i=DISPLAY_MAXTEXTURES; i<8; i++ )
+	for (int i=DISPLAY_MAXTEXTURES; i<8; i++)
 	{
 		HRESULT         ReturnCode;
 
