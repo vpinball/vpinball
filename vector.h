@@ -2,8 +2,8 @@
 #ifndef __VECTOR_H__
 #define __VECTOR_H__
 
-#define START_SIZE 16
-#define GROW_SIZE  16
+#define START_SIZE 32
+#define GROW_SIZE  32
 
 class VectorVoid
 {
