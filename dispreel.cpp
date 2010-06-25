@@ -169,12 +169,12 @@ void DispReel::SetDefaults()
 	m_d.m_fUseImageGrid = fFalse;
     m_d.m_imagesPerGridRow = 1;
 	m_d.m_fTransparent = fFalse;
-    m_d.m_reelcount = 5.0f;
-    m_d.m_width = 30;
-    m_d.m_height = 40;
-    m_d.m_reelspacing = 4;
-    m_d.m_motorsteps = 2;
-	m_d.m_digitrange = 9.0f;
+    m_d.m_reelcount = 5;
+    m_d.m_width = 30.0f;
+    m_d.m_height = 40.0f;
+    m_d.m_reelspacing = 4.0f;
+    m_d.m_motorsteps = 2.0f;
+	m_d.m_digitrange = 9;
     m_d.m_fShading = fFalse;
     m_d.m_updateinterval = 50;
 
@@ -221,10 +221,11 @@ void DispReel::PreRender(Sur *psur)
 
     // draw n reels in the box (in blue)
     psur->SetFillColor(m_d.m_reelcolor);
-    for (int i=0; i<(int)m_d.m_reelcount; i++)
+    for (int i=0; i<m_d.m_reelcount; i++)
     {
         // set up top corner point
-        const float x = m_d.m_v1.x + i*m_d.m_width + i*m_d.m_reelspacing + m_d.m_reelspacing;
+		const float fi = (float)i;
+        const float x = m_d.m_v1.x + fi*m_d.m_width + fi*m_d.m_reelspacing + m_d.m_reelspacing;
         const float y = m_d.m_v1.y + m_d.m_reelspacing;
 		const float x2 = x+m_d.m_width;
 		const float y2 = y+m_d.m_height;
@@ -264,10 +265,11 @@ void DispReel::Render(Sur *psur)
 	psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 
     // draw n reels in the box
-    for (int i=0; i<(int)m_d.m_reelcount; i++)
+    for (int i=0; i<m_d.m_reelcount; i++)
     {
         // set up top corner point
-        const float x = m_d.m_v1.x + i*m_d.m_width + i*m_d.m_reelspacing + m_d.m_reelspacing;
+		const float fi = (float)i;
+        const float x = m_d.m_v1.x + fi*m_d.m_width + fi*m_d.m_reelspacing + m_d.m_reelspacing;
         const float y = m_d.m_v1.y + m_d.m_reelspacing;
 		const float x2 = x+m_d.m_width;
 		const float y2 = y+m_d.m_height;
@@ -417,13 +419,13 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
     m_renderwidth    = max(0, (int)((m_d.m_width * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth));
     m_renderheight   = max(0, (int)((m_d.m_height * (float)(1.0/750.0)) * ppin3d->m_dwRenderHeight));
     const int m_renderspacingx = max(0, (int)((m_d.m_reelspacing * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth));
-    const int m_renderspacingy = max(0, (int)((m_d.m_reelspacing * (float)(1.0/750.0)) * ppin3d->m_dwRenderHeight));
+    const int m_renderspacingy = max(0, (int)((m_d.m_reelspacing * (float)(1.0/750.0))  * ppin3d->m_dwRenderHeight));
 
     // get the size of the object frame (size of entire reel set and border)
 	m_pobjframe->rc.left = (int)((m_d.m_v1.x * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth);
 	m_pobjframe->rc.top = (int)((m_d.m_v1.y * (float)(1.0/750.0)) * ppin3d->m_dwRenderHeight);
 	// i cant use v2 as it really doesn't scale properly.
-	m_pobjframe->rc.right = m_pobjframe->rc.left + ((int)m_d.m_reelcount * (m_renderwidth+m_renderspacingx)) + m_renderspacingx;
+	m_pobjframe->rc.right = m_pobjframe->rc.left + m_d.m_reelcount * (m_renderwidth+m_renderspacingx) + m_renderspacingx;
 	m_pobjframe->rc.bottom = m_pobjframe->rc.top + m_renderheight + (2 * m_renderspacingy);
 
     // set the boundarys of the object frame (used for clipping I assume)
@@ -432,7 +434,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
     // set up all the reel positions within the object frame
     int x1 = m_renderspacingx;
     
-	for (int i=0; i<(int)m_d.m_reelcount; i++)
+	for (int i=0; i<m_d.m_reelcount; i++)
     {
         ReelInfo[i].position.left	= x1/* + m_pobjframe->rc.left*/;
         ReelInfo[i].position.right	= x1 + m_renderwidth/* + m_pobjframe->rc.left*/;
@@ -468,8 +470,8 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				GridCols = m_d.m_imagesPerGridRow;
 				if (GridCols != 0) // best to be safe
 				{
-					GridRows = (int)(m_d.m_digitrange+1.0f) / GridCols;
-					if ( (GridRows * GridCols) < (int)(m_d.m_digitrange+1.0f) )
+					GridRows = (m_d.m_digitrange+1) / GridCols;
+					if ( (GridRows * GridCols) < (m_d.m_digitrange+1) )
 					{
 						GridRows++;
 					}
@@ -481,7 +483,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 			else
 			{
-				GridCols = (int)(m_d.m_digitrange+1.0f);
+				GridCols = m_d.m_digitrange+1;
 				GridRows = 1;
 			}
 
@@ -494,9 +496,9 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
             // work out the size of the reel image strip (adds room for an extra digit at the end)
             //const int width  = m_reeldigitwidth;
-            //const int height = (m_reeldigitheight * (int)(m_d.m_digitrange+1.0f)) + m_reeldigitheight;
+            //const int height = (m_reeldigitheight * (m_d.m_digitrange+1)) + m_reeldigitheight;
             // allocate some memory for this strip
-			for (int i=0; i<=(int)m_d.m_digitrange; i++)
+			for (int i=0; i<=m_d.m_digitrange; i++)
 				{
 				ObjFrame * const pobjframe = new ObjFrame();
 				if (pobjframe == NULL)
@@ -601,25 +603,23 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			ppin3d->m_pddsBackBuffer->Blt(&rectSrc, NULL,
 					&rectSrc, DDBLT_COLORFILL, &ddbltfx);
 
-			const float ratiox = pin->m_maxtu/(float)pin->m_width;
-			const float ratioy = pin->m_maxtv/(float)pin->m_height;
-			const float ratiox2 = (float)m_reeldigitwidth  * ratiox;
-			const float ratioy2 = (float)m_reeldigitheight * ratioy;
+			const float ratiox = (float)m_reeldigitwidth  * pin->m_maxtu / (float)pin->m_width;
+			const float ratioy = (float)m_reeldigitheight * pin->m_maxtv / (float)pin->m_height;
 
 			WORD rgi[4] = {0,1,2,3};
 
-			for (int i=0; i<=(int)m_d.m_digitrange; i++)
+			for (int i=0; i<=m_d.m_digitrange; i++)
 			{
-				rgv3D[0].tu = rgv3D[3].tu = (float)(gc*m_reeldigitwidth)  * ratiox;
-				rgv3D[0].tv = rgv3D[1].tv = (float)(gr*m_reeldigitheight) * ratioy;
+				rgv3D[0].tu = rgv3D[3].tu = (float)gc * ratiox;
+				rgv3D[0].tv = rgv3D[1].tv = (float)gr * ratioy;
 			
-				rgv3D[1].tu = rgv3D[2].tu = rgv3D[0].tu + ratiox2;
-				rgv3D[2].tv = rgv3D[3].tv = rgv3D[0].tv + ratioy2;
+				rgv3D[1].tu = rgv3D[2].tu = rgv3D[0].tu + ratiox;
+				rgv3D[2].tv = rgv3D[3].tv = rgv3D[0].tv + ratioy;
 			
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 												  rgv3D, 4,
 												  rgi, 4, NULL);
-												  
+
 				RECT rectDst;
 				rectDst.left = 0;
 				rectDst.top = 0;//m_renderheight*i;
@@ -666,7 +666,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					gr++;
 				}
 				
-			if (i == (int)m_d.m_digitrange)
+			if (i == m_d.m_digitrange)
 				{
 				// Go back and draw the first picture at the end of the strip
 				gc = 0;
@@ -678,7 +678,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			// this means the bitmap starts and ends with the same graphic
 			/*BitBlt(hdcReelFrame,
 					0,
-					m_reeldigitheight * (int)(m_d.m_digitrange+1.0f),	// start after the last number
+					m_reeldigitheight * (m_d.m_digitrange+1),	// start after the last number
 					m_reeldigitwidth,
 					m_reeldigitheight,
 					hdcImage,
@@ -709,7 +709,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
         HFONT   hFont;
 
         // text reels are purely 0-9 and nothing else
-        m_d.m_digitrange = 9.0f;
+        m_d.m_digitrange = 9;
 
         // make a clone of the specified font
         m_pIFont->Clone(&m_pIFontPlay);
@@ -825,17 +825,17 @@ bool DispReel::RenderAnimation()
         m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
 
         // work out the roll over values
-        const int OverflowValue = (int)m_d.m_digitrange;
+        const int OverflowValue = m_d.m_digitrange;
         const int AdjustValue   = OverflowValue+1;
 
         // start at the last reel and work forwards (right to left)
-        for (int i=(int)(m_d.m_reelcount-1.0f); i>=0; i--)
+        for (int i=m_d.m_reelcount-1; i>=0; i--)
         {
             // if the motor has stoped, and there are still motor steps then start another one
             if ((ReelInfo[i].motorPulses != 0) && (ReelInfo[i].motorStepCount == 0))
             {
                 // get the number of steps (or increments) needed to move the reel
-				const float step = m_reeldigitheight / m_d.m_motorsteps;
+				const float step = (float)m_reeldigitheight / m_d.m_motorsteps;
 
                 ReelInfo[i].motorStepCount = (int)m_d.m_motorsteps;
 				ReelInfo[i].motorCalcStep = (ReelInfo[i].motorPulses > 0) ? step : -step;	                
@@ -993,11 +993,13 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 	bw.WriteFloat(FID(WDTH), m_d.m_width);
 	bw.WriteFloat(FID(HIGH), m_d.m_height);
-    bw.WriteFloat(FID(RCNT), m_d.m_reelcount);
+	const float reel = m_d.m_reelcount;
+    bw.WriteFloat(FID(RCNT), reel);
     bw.WriteFloat(FID(RSPC), m_d.m_reelspacing);
     bw.WriteFloat(FID(MSTP), m_d.m_motorsteps);
     bw.WriteBool(FID(SHAD), m_d.m_fShading);
-    bw.WriteFloat(FID(RANG), m_d.m_digitrange);
+	const float dig = m_d.m_digitrange;
+    bw.WriteFloat(FID(RANG), dig);
     bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
     bw.WriteBool(FID(UGRD), m_d.m_fUseImageGrid);
     bw.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
@@ -1121,7 +1123,9 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 		}
     else if (id == FID(RCNT))
 		{
-			pbr->GetFloat(&m_d.m_reelcount);
+			float reel;
+			pbr->GetFloat(&reel);
+			m_d.m_reelcount = (int)reel;
 		}
     else if (id == FID(RSPC))
 		{
@@ -1153,7 +1157,9 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(RANG))
 		{
-            pbr->GetFloat(&m_d.m_digitrange);
+			float dig;
+            pbr->GetFloat(&dig);
+			m_d.m_digitrange = (int)dig;
 		}
     else if (id == FID(UPTM))
 		{
@@ -1238,7 +1244,7 @@ STDMETHODIMP DispReel::put_BackColor(OLE_COLOR newVal)
 
 STDMETHODIMP DispReel::get_Reels(float *pVal)
 {
-    *pVal = m_d.m_reelcount;
+    *pVal = (float)m_d.m_reelcount;
 
     return S_OK;
 }
@@ -1247,8 +1253,7 @@ STDMETHODIMP DispReel::put_Reels(float newVal)
 {
 	STARTUNDO
 
-	m_d.m_reelcount = max(1.0f, newVal);               // must have at least 1 reel
-    if (m_d.m_reelcount > MAX_REELS) m_d.m_reelcount = MAX_REELS;   // and a max of MAX_REELS
+	m_d.m_reelcount = min(max(1, (int)newVal), MAX_REELS); // must have at least 1 reel and a max of MAX_REELS
 	m_d.m_v2.x = m_d.m_v1.x+getBoxWidth();
 	m_d.m_v2.y = m_d.m_v1.y+getBoxHeight();
 
@@ -1512,7 +1517,7 @@ STDMETHODIMP DispReel::put_ReelColor(OLE_COLOR newVal)
 
 STDMETHODIMP DispReel::get_Range(float *pVal)
 {
-    *pVal = floorf(m_d.m_digitrange);
+    *pVal = (float)m_d.m_digitrange;
 
     return S_OK;
 }
@@ -1521,8 +1526,8 @@ STDMETHODIMP DispReel::put_Range(float newVal)
 {
 	STARTUNDO
 
-	m_d.m_digitrange = max(0.0f,floorf(newVal));        // must have at least 1 digit (0 is a digit)
-    if (m_d.m_digitrange > (float)(512-1)) m_d.m_digitrange = (float)(512-1);  // and a max of 512 (0->511) //!! 512 requested by highrise
+	m_d.m_digitrange = (int)max(0.0f,floorf(newVal));        // must have at least 1 digit (0 is a digit)
+    if (m_d.m_digitrange > 512-1) m_d.m_digitrange = 512-1;  // and a max of 512 (0->511) //!! 512 requested by highrise
 
 	STOPUNDO
 	
@@ -1591,10 +1596,10 @@ STDMETHODIMP DispReel::AddValue(long Value)
 	long val = labs(Value);
 
 	// get the base of this reel
-	const long valbase = (int)(m_d.m_digitrange+1.0f);
+	const long valbase = m_d.m_digitrange+1;
 
 	// start at the right most reel and move left
-	int i = (int)(m_d.m_reelcount-1.0f);
+	int i = m_d.m_reelcount-1;
 	while ( (val != 0) && (i >= 0) )
 	{
 		const int digitValue = val % valbase;
@@ -1620,10 +1625,10 @@ STDMETHODIMP DispReel::SetValue(long Value)
 	long val = labs(Value);
 
 	// get the base of this reel
-	const long valbase = (int)(m_d.m_digitrange+1.0f);
+	const long valbase = m_d.m_digitrange+1;
 
     // reset the motor
-    for (int l=0; l<(int)m_d.m_reelcount; l++)
+    for (int l=0; l<m_d.m_reelcount; l++)
     {
 		ReelInfo[l].currentValue	= 0;
         ReelInfo[l].motorPulses 	= 0;
@@ -1633,7 +1638,7 @@ STDMETHODIMP DispReel::SetValue(long Value)
 	}
 
     // set the reel values (startint at the right most reel and move left)
-	int i = (int)(m_d.m_reelcount-1.0f);
+	int i = m_d.m_reelcount-1;
 	while ( (val != 0) && (i >= 0) )
 	{
 		const int digitValue = val % valbase;
@@ -1655,10 +1660,10 @@ STDMETHODIMP DispReel::SetValue(long Value)
 STDMETHODIMP DispReel::ResetToZero()
 {
     int carry = 0;
-    int overflowValue = (int)(m_d.m_digitrange+1.0f);
+    int overflowValue = m_d.m_digitrange+1;
 
     // work for the last reel to the first one
-    for (int i=(int)(m_d.m_reelcount-1.0f); i>=0; i--)
+    for (int i=m_d.m_reelcount-1; i>=0; i--)
     {
 		int adjust = overflowValue - carry;
         carry = 0;
@@ -1680,7 +1685,7 @@ STDMETHODIMP DispReel::ResetToZero()
 
 STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
 {
-	if ( (ReelNumber >= 1) && (ReelNumber <= (int)m_d.m_reelcount) )
+	if ( (ReelNumber >= 1) && (ReelNumber <= m_d.m_reelcount) )
 	{
 		const int reel = ReelNumber-1;
 		ReelInfo[reel].motorPulses += PulseCount;
@@ -1695,8 +1700,8 @@ STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
 //
 float DispReel::getBoxWidth() const
 {
-    const float width =  m_d.m_reelcount * m_d.m_width
-					   + m_d.m_reelcount * m_d.m_reelspacing
+    const float width =  (float)m_d.m_reelcount * m_d.m_width
+					   + (float)m_d.m_reelcount * m_d.m_reelspacing
 					   + m_d.m_reelspacing;	// spacing also includes edges
     return width;
 }
@@ -1725,8 +1730,7 @@ void DispReel::UpdateObjFrame()
 	if( !GetPTable()->GetEMReelsEnabled() ) return;
 
 	// is the background box transparent?
-#define Foo 1
-#ifdef Foo
+#if 1
     if (m_d.m_fTransparent)
     {
         // yes, then copy the current backgrount into the object frame
@@ -1763,19 +1767,18 @@ void DispReel::UpdateObjFrame()
 
         reelstriprc.left  = 0;
 	    reelstriprc.right = m_renderwidth;//m_reeldigitwidth;
-        for (int i=0; i<(int)m_d.m_reelcount; i++)
+        for (int i=0; i<m_d.m_reelcount; i++)
         {
             reelstriprc.top = /*(ReelInfo[i].currentValue * m_renderheight) +*/ (int)(ReelInfo[i].motorOffset);
 			if (reelstriprc.top < 0)
 			{
-				reelstriprc.top += m_renderheight/*m_reeldigitheight*/ * (int)(m_d.m_digitrange+1.0f);
+				reelstriprc.top += m_renderheight/*m_reeldigitheight*/ * (m_d.m_digitrange+1);
 			}
 			reelstriprc.bottom = /*reelstriprc.top +*/ m_renderheight/*m_reeldigitheight*/;
 
     		// Set the color key for this bitmap (black)
 
-//#define FOO2
-#ifdef FOO2
+#if 0
             m_pobjframe->pdds->Blt(&ReelInfo[i].position,   // destination rectangle
                                    m_preelframe->pdds,      // source image (LPDIRECTDRAWSURFACE7)
                                    &reelstriprc,            // source rectangle

@@ -26,11 +26,11 @@ public:
     ReelType    m_reeltype;
 	BOOL		m_fUseImageGrid;
     long		m_imagesPerGridRow;
-    float       m_reelcount;            // number of individual reel in the set
+    int			m_reelcount;			// number of individual reel in the set
     float       m_width, m_height;      // size of each reel
     float       m_reelspacing;          // spacing between each reel and the boarders
     float       m_motorsteps;           // steps (or frames) to move each reel each frame
-	float		m_digitrange;			// max number of digits per reel (usually 9)
+	int			m_digitrange;			// max number of digits per reel (usually 9)
 
     char        m_szSound[MAXTOKEN];    // sound to play for each turn of a digit
     BOOL        m_fShading;             // apply alpha shading to the reel (darken the Y axis edges)
