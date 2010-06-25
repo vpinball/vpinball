@@ -774,7 +774,7 @@ int Display_GetPowerOfTwo ( const int Value )
 	int PowerOfTwo = 1;
     do
     {
-        PowerOfTwo = PowerOfTwo << 1;
+        PowerOfTwo <<= 1;
 	}
 	while ( PowerOfTwo < Value );
 
@@ -829,19 +829,21 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 					int Height = min ( SourceSurfaceDescription.dwHeight, DestSurfaceDescription.dwHeight );
 					    Height = min ( Height, (ClippedRect.bottom - ClippedRect.top) );
 
+					const int offset = (ClippedRect.top * SourceSurfaceDescription.lPitch) + ClippedRect.left * 4;
+
 					// Copy the pixels.
 					for (int i=0; i<Height; i++ )
 					{
 						for (int r=0; r<Width; r++ )
 						{
 							// Copy the pixel.
-							DestLockedSurface[(r * 4) + 0] = SourceLockedSurface[(ClippedRect.top * SourceSurfaceDescription.lPitch) + (ClippedRect.left * 4) + (r * 4) + 0];		// blue
-							DestLockedSurface[(r * 4) + 1] = SourceLockedSurface[(ClippedRect.top * SourceSurfaceDescription.lPitch) + (ClippedRect.left * 4) + (r * 4) + 1];		// green
-							DestLockedSurface[(r * 4) + 2] = SourceLockedSurface[(ClippedRect.top * SourceSurfaceDescription.lPitch) + (ClippedRect.left * 4) + (r * 4) + 2];		// red
 #if 1
-							DestLockedSurface[(r * 4) + 3] = SourceLockedSurface[(ClippedRect.top * SourceSurfaceDescription.lPitch) + (ClippedRect.left * 4) + (r * 4) + 3];		// alpha							
+							*((unsigned int*)&(DestLockedSurface[r * 4])) = *((unsigned int*)&(SourceLockedSurface[offset + r * 4]));
 #else
-							DestLockedSurface[(r * 4) + 3] = (unsigned char) 0xff;																													// alpha							
+							DestLockedSurface[(r * 4) + 0] = SourceLockedSurface[offset + (r * 4) + 0];		// blue
+							DestLockedSurface[(r * 4) + 1] = SourceLockedSurface[offset + (r * 4) + 1];		// green
+							DestLockedSurface[(r * 4) + 2] = SourceLockedSurface[offset + (r * 4) + 2];		// red
+							DestLockedSurface[(r * 4) + 3] = (unsigned char) 0xff;																									// alpha
 #endif
 						}
 
@@ -872,37 +874,32 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 // Fills a texture with a constant Value in all channels.
 void Display_ClearTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 Texture, const char Value )
 {
-    HRESULT					ReturnCode;
-    DDSURFACEDESC2			SurfaceDescription;
-	
-	// Check if we have a texture.
+    // Check if we have a texture.
 	if ( Texture != NULL )
 	{
 		// Lock the texture so we can clear the pixels.
+		DDSURFACEDESC2 SurfaceDescription;
 		memset ( &SurfaceDescription, 0, sizeof ( SurfaceDescription ) );
 		SurfaceDescription.dwSize = sizeof ( SurfaceDescription );
-		ReturnCode = Texture->Lock ( NULL, &SurfaceDescription, 0, NULL );
+		const HRESULT ReturnCode = Texture->Lock ( NULL, &SurfaceDescription, 0, NULL );
 
 		// Make sure we locked the texture.
 		if ( ReturnCode == 0 )
 		{
 			// Get the pointer to the actual pixel data.
-			char * LockedSurface = (char *) SurfaceDescription.lpSurface;
+			unsigned int* LockedSurface = (unsigned int *) SurfaceDescription.lpSurface;
+
+			const unsigned int ValueU = (unsigned int)Value | ((unsigned int)Value<<8) | ((unsigned int)Value<<16) | ((unsigned int)Value<<24);
 
 			// Clear the pixels.
-			for (int i=0; i<((int)(SurfaceDescription.dwHeight)); i++ )
+			for (int i=0; i<(int)SurfaceDescription.dwHeight; i++ )
 			{
-				for (int r=0; r<((int)(SurfaceDescription.dwWidth)); r++ )
-				{
+				for (int r=0; r<(int)SurfaceDescription.dwWidth; r++ )
 					// Clear the pixel.
-					LockedSurface[(r * 4) + 0] = Value;		// blue
-					LockedSurface[(r * 4) + 1] = Value;		// green
-					LockedSurface[(r * 4) + 2] = Value;		// red
-					LockedSurface[(r * 4) + 3] = Value;		// alpha
-				}
+					LockedSurface[r] = ValueU;
 
 				// Increment to the next horizontal line.
-				LockedSurface += SurfaceDescription.lPitch;
+				LockedSurface += SurfaceDescription.lPitch/4;
 			}
 
 			// Unlock the texture.
@@ -916,10 +913,8 @@ void Display_ClearTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFAC
 // If D3D blitting is enabled, the primitive is also drawn to the texture buffer.
 HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIMITIVETYPE d3dptPrimitiveType, DWORD dwVertexTypeDesc, LPVOID lpvVertices, DWORD dwVertexCount, LPWORD lpwIndices, DWORD dwIndexCount, DWORD dwFlags )
 {
-	HRESULT					ReturnCode;
-
 	// Draw the primitive.
-	ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
+	HRESULT	ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
 
 	// Check if we are blitting with D3D.
 	if ( g_pvp->m_pdd.m_fUseD3DBlit )
@@ -938,5 +933,5 @@ HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIM
 		Direct3DDevice->SetRenderTarget ( RestoreRenderTarget, 0L );	
 	}
 
-	return ( ReturnCode );
+	return ReturnCode;
 }
