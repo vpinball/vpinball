@@ -334,7 +334,7 @@ void DispReel::GetHitShapesDebug(Vector<HitObject> *pvho)
 
 
 // This method is called as the game exits..
-// it cleans up any allocated memory used by the instace of the object
+// it cleans up any allocated memory used by the instance of the object
 //
 void DispReel::EndPlay()
 {
@@ -405,21 +405,15 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
     m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
     m_fforceupdate = false;
 
-    // get information about the table player (size sizes, resolution, etc..)
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-    // allocate some object frames
-    m_pobjframe  = new ObjFrame();
-
-	if( !GetPTable()->GetEMReelsEnabled() )
-	{
-		m_pobjframe  = NULL;
-	}
+    m_pobjframe = GetPTable()->GetEMReelsEnabled() ? (new ObjFrame()) : NULL;
 
 	if (m_pobjframe == NULL)
         return;
 
-    // get the render sizes of the objects (reels and frame)
+    // get information about the table player (size sizes, resolution, etc..)
+    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
+	// get the render sizes of the objects (reels and frame)
     m_renderwidth    = max(0, (int)((m_d.m_width * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth));
     m_renderheight   = max(0, (int)((m_d.m_height * (float)(1.0/750.0)) * ppin3d->m_dwRenderHeight));
     const int m_renderspacingx = max(0, (int)((m_d.m_reelspacing * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth));
@@ -505,22 +499,15 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			for (int i=0; i<=(int)m_d.m_digitrange; i++)
 				{
 				ObjFrame * const pobjframe = new ObjFrame();
-				pobjframe->pdds	= NULL;
-				m_vreelframe.AddElement(pobjframe);
 				if (pobjframe == NULL)
 					{
 					return;
 					}
+				pobjframe->pdds	= NULL;
+				m_vreelframe.AddElement(pobjframe);				
 				}
             
-            for (int i=0; i<=(int)m_d.m_digitrange; i++)
-				{
-				m_vreelframe.ElementAt(i)->pdds = ppin3d->CreateOffscreenWithCustomTransparency(/*m_reeldigitwidth*/m_renderwidth, /*m_reeldigitheight*/m_renderheight, m_rgbImageTransparent);
-				}
-
-			int gr, gc;
-			
-			// now make the reel image strip..  It has to use the BitBlt function and not the direct draw
+            // now make the reel image strip..  It has to use the BitBlt function and not the direct draw
 			// blt function (ie. m_preelframe->pdds->Blt) to copy the bitmaps as this function coverts the
 			// destination bitmap to the same colour depth of the game (all images in the image manager
 			// are stored as 32bit).
@@ -533,47 +520,42 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			// get the HDC of the reel frame object
 			//m_preelframe->pdds->GetDC(&hdcReelFrame);
 
-			gr = gc = 0;
+			int gr = 0;
+			int gc = 0;
 			
 			// Render images and collect them
 			
 			// New rendering stuff
-				{					
-				ppin3d->SetMaterial(1.0f, 1.0f, 1.0f, 0.5f);
+			ppin3d->SetMaterial(1.0f, 1.0f, 1.0f, 0.5f);
 				
-				pin->EnsureMaxTextureCoordinates();
+			pin->EnsureMaxTextureCoordinates();
 				
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
-				// Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-				pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
+			// Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+			pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
 				
-				pin->EnsureColorKey();
-				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+			pin->EnsureColorKey();
+			pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 
-				//pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
-				//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-				ppin3d->SetColorKeyEnabled(fFalse);
-				ppin3d->SetFiltersLinear();
-				ppin3d->SetAlphaEnabled(fTrue);
+			//pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+			//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+			ppin3d->SetColorKeyEnabled(fFalse);
+			ppin3d->SetFiltersLinear();
+			ppin3d->SetAlphaEnabled(fTrue);
 				
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0xe0);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0xe0);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
 
-				ppin3d->EnableLightMap(fFalse, -1);
-				}
-				
+			ppin3d->EnableLightMap(fFalse, -1);
+			
+			//
+
 			Vertex3D rgv3D[4];
 			for (int l=0;l<4;l++)
 				rgv3D[l].z = 1.0f;//height + 0.2f;
 
-			RECT rectSrc;
-			rectSrc.left = 0;
-			rectSrc.top = 0;
-			rectSrc.right = m_renderwidth;
-			rectSrc.bottom = m_renderheight;
-				
 			rgv3D[0].x = 0;//(float)rectSrc.left;
 			rgv3D[0].y = 0;//(float)rectSrc.top;
 			rgv3D[0].tu = 0;
@@ -602,8 +584,12 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			
 			//ppin3d->ExpandExtents(&m_preelframe->rc, rgv3D, NULL, NULL, 4, m_fBackglass);
 
-			WORD rgi[4] = {0,1,2,3};
-			
+			RECT rectSrc;
+			rectSrc.left = 0;
+			rectSrc.top = 0;
+			rectSrc.right = m_renderwidth;
+			rectSrc.bottom = m_renderheight;
+
 			// Reset color key in back buffer
 			// this is usually not done since the buffer
 			// should be clear from the last object,
@@ -617,13 +603,18 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			const float ratiox = pin->m_maxtu/(float)pin->m_width;
 			const float ratioy = pin->m_maxtv/(float)pin->m_height;
+			const float ratiox2 = (float)m_reeldigitwidth  * ratiox;
+			const float ratioy2 = (float)m_reeldigitheight * ratioy;
+
+			WORD rgi[4] = {0,1,2,3};
+
 			for (int i=0; i<=(int)m_d.m_digitrange; i++)
 			{
-				rgv3D[0].tu = rgv3D[3].tu = (float)(gc*m_reeldigitwidth) * ratiox;
+				rgv3D[0].tu = rgv3D[3].tu = (float)(gc*m_reeldigitwidth)  * ratiox;
 				rgv3D[0].tv = rgv3D[1].tv = (float)(gr*m_reeldigitheight) * ratioy;
 			
-				rgv3D[1].tu = rgv3D[2].tu = (float)((gc+1)*m_reeldigitwidth) * ratiox;
-				rgv3D[2].tv = rgv3D[3].tv = (float)((gr+1)*m_reeldigitheight) * ratioy;
+				rgv3D[1].tu = rgv3D[2].tu = rgv3D[0].tu + ratiox2;
+				rgv3D[2].tv = rgv3D[3].tv = rgv3D[0].tv + ratioy2;
 			
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 												  rgv3D, 4,
@@ -634,7 +625,8 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rectDst.top = 0;//m_renderheight*i;
 				rectDst.right = m_renderwidth;
 				rectDst.bottom = rectDst.top + m_renderheight;
-												  
+
+				m_vreelframe.ElementAt(i)->pdds = ppin3d->CreateOffscreenWithCustomTransparency(/*m_reeldigitwidth*/m_renderwidth, /*m_reeldigitheight*/m_renderheight, m_rgbImageTransparent);
 				m_vreelframe.ElementAt(i)->pdds->Blt(&rectDst, ppin3d->m_pddsBackBuffer, &rectSrc, 0, NULL);
 
 				// Reset color key in back buffer
@@ -654,11 +646,11 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 						SRCCOPY);				// raster operation code
 				*/
 				
-				/*StretchBlt(hdcReelFrame,			// handle to destination device context
+				/*StretchBlt(hdcReelFrame,		// handle to destination device context
 						0,						// x-coordinate of destination rectangle's upper-left corner
-						i*m_renderheight,	// y-coordinate of destination rectangle's upper-left corner
-						m_renderwidth,		// width of destination rectangle
-						m_renderheight,		// height of destination rectangle
+						i*m_renderheight,		// y-coordinate of destination rectangle's upper-left corner
+						m_renderwidth,			// width of destination rectangle
+						m_renderheight,			// height of destination rectangle
 						hdcImage,				// handle to source device context
 						gc*m_reeldigitwidth,	// x-coordinate of source rectangle's upper-left corner
 						gr*m_reeldigitheight,	// y-coordinate of source rectangle's upper-left corner
@@ -755,24 +747,21 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		for (int i=0; i < length; i++)
 			{
 			ObjFrame * const pobjframe = new ObjFrame();
-			pobjframe->pdds	= NULL;
-			m_vreelframe.AddElement(pobjframe);
 			if (pobjframe == NULL)
 				{
 				return;
 				}
+			pobjframe->pdds	= NULL;
+			m_vreelframe.AddElement(pobjframe);			
 			}
 
-        // allocate some memory for this strip
-		for (int i=0; i<length; i++)
-			{
-			m_vreelframe.ElementAt(i)->pdds = ppin3d->CreateOffscreen(maxwidth, maxheight);
-			}
-
+        
 		SetTextColor(hdc, m_d.m_fontcolor);		// set the font colour
 		SetBkMode(hdc, TRANSPARENT);
-		for (int i=0; i<length; i++)
+		for (int i=0; i < length; i++)
         {
+			// allocate some memory for this strip
+			m_vreelframe.ElementAt(i)->pdds = ppin3d->CreateOffscreen(maxwidth, maxheight);
 			// fill the strip with the reel colour
 			m_vreelframe.ElementAt(i)->pdds->GetDC(&hdc);
 			HBRUSH hbrush = CreateSolidBrush(m_d.m_reelcolor);
@@ -1747,7 +1736,6 @@ void DispReel::UpdateObjFrame()
     {
         // nope, fill the box with the background colour
         HDC hdc;
-
         m_pobjframe->pdds->GetDC(&hdc);
         HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
         HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
@@ -1796,7 +1784,7 @@ void DispReel::UpdateObjFrame()
 #else
 			m_pobjframe->pdds->BltFast(ReelInfo[i].position.left, ReelInfo[i].position.top, m_vreelframe.ElementAt(ReelInfo[i].currentValue)->pdds,
 						&reelstriprc, DDBLTFAST_NOCOLORKEY/*DDBLTFAST_SRCCOLORKEY*/);
-#endif FOO2
+#endif
 
 			if (ReelInfo[i].motorOffset != 0)
 				{

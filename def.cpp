@@ -226,4 +226,4 @@ printf("(%ld) platform=%u, specific=%u, lang=%x, name=%u (%u, %u)\n", curseek,
 cleanup:
   close (fp);  
 }
-#endif FONTMANAGER
+#endif
