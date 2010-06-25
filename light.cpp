@@ -873,8 +873,8 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	for (int l=0;l<32;l++)
 		{
 		const float angle = (float)(M_PI*2.0/32.0)*(float)l;
-		const sinangle = sinf(angle);
-		const cosangle = cosf(angle);
+		const float sinangle = sinf(angle);
+		const float cosangle = cosf(angle);
 		rgv3D[l].x = m_d.m_vCenter.x + sinangle*m_d.m_radius;
 		rgv3D[l].y = m_d.m_vCenter.y - cosangle*m_d.m_radius;
 		rgv3D[l].z = height + 0.1f;
