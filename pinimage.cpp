@@ -272,7 +272,6 @@ PinDirectDraw::PinDirectDraw()
 	tmp = 0;										
 	hr = GetRegInt("Player", "UseD3DBlit", &tmp);
 	m_fUseD3DBlit = (tmp != 0);
-
 	}
 
 PinDirectDraw::~PinDirectDraw()
@@ -357,7 +356,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 		{
 #if 1
 		// Create the texture and let D3D driver decide where it store it.
-		ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE;			
+		ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE;
 #else
 		// Create the texture in video memory.
 		ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
@@ -372,9 +371,9 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 	ddsd.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
 	ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB | DDPF_ALPHAPIXELS;
 	ddsd.ddpfPixelFormat.dwRGBBitCount = 32;
-	ddsd.ddpfPixelFormat.dwRBitMask = 0xff0000;
-	ddsd.ddpfPixelFormat.dwGBitMask = 0x00ff00;
-	ddsd.ddpfPixelFormat.dwBBitMask = 0x0000ff;
+	ddsd.ddpfPixelFormat.dwRBitMask        = 0x00ff0000;
+	ddsd.ddpfPixelFormat.dwGBitMask        = 0x0000ff00;
+	ddsd.ddpfPixelFormat.dwBBitMask        = 0x000000ff;
 	ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff000000;
 
 	LPDIRECTDRAWSURFACE7 pdds;

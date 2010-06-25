@@ -768,23 +768,23 @@ PinTable::PinTable()
 
 	tmp = 0;										
 	hr = GetRegInt("Player", "HardwareRender", &tmp);
-	g_pvp->m_pdd.m_fHardwareAccel = tmp != 0;
+	g_pvp->m_pdd.m_fHardwareAccel = (tmp != 0);
 		
 	tmp = 0;										
 	hr = GetRegInt("Player", "AlternateRender", &tmp);
-	g_pvp->m_pdd.m_fAlternateRender = tmp != 0;
+	g_pvp->m_pdd.m_fAlternateRender = (tmp != 0);
 		
 	tmp = 0;								
 	hr = GetRegInt("Player", "UseD3DBlit", &tmp);
-	g_pvp->m_pdd.m_fUseD3DBlit = tmp != 0;
+	g_pvp->m_pdd.m_fUseD3DBlit = (tmp != 0);
 
 	tmp = 0;							
 	hr = GetRegInt("Player", "TableRenderCaching", &tmp);
-	m_TableCaching = ( tmp != fFalse );
+	m_TableCaching = (tmp != fFalse);
 
 	tmp = 1; // enabled by default .. but allow front-end to disable the use of any cache files present
 	hr = GetRegInt("Player", "CacheEnabled", &tmp);
-	m_CacheEnabled = ( tmp != fFalse );
+	m_CacheEnabled = (tmp != fFalse);
 
 	m_tblAccelerometer = fTrue;							// true if electronic accelerometer enabled
 	hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
