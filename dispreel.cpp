@@ -522,9 +522,6 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			// get the HDC of the reel frame object
 			//m_preelframe->pdds->GetDC(&hdcReelFrame);
 
-			int gr = 0;
-			int gc = 0;
-			
 			// Render images and collect them
 			
 			// New rendering stuff
@@ -608,6 +605,9 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			WORD rgi[4] = {0,1,2,3};
 
+			int gr = 0;
+			int gc = 0;
+
 			for (int i=0; i<=m_d.m_digitrange; i++)
 			{
 				rgv3D[0].tu = rgv3D[3].tu = (float)gc * ratiox;
@@ -630,9 +630,6 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				m_vreelframe.ElementAt(i)->pdds->Blt(&rectDst, ppin3d->m_pddsBackBuffer, &rectSrc, 0, NULL);
 
 				// Reset color key in back buffer
-				DDBLTFX ddbltfx;
-				ddbltfx.dwSize = sizeof(DDBLTFX);
-				ddbltfx.dwFillColor = m_rgbImageTransparent;
 				ppin3d->m_pddsBackBuffer->Blt(&rectSrc, NULL,
 						&rectSrc, DDBLT_COLORFILL, &ddbltfx);
 				/*BitBlt(hdcReelFrame,			// handle to destination device context
@@ -666,11 +663,11 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					gr++;
 				}
 				
-			if (i == m_d.m_digitrange)
+				if (i == m_d.m_digitrange)
 				{
-				// Go back and draw the first picture at the end of the strip
-				gc = 0;
-				gr = 0;
+					// Go back and draw the first picture at the end of the strip
+					gc = 0;
+					gr = 0;
 				}
 			}
 
@@ -828,6 +825,8 @@ bool DispReel::RenderAnimation()
         const int OverflowValue = m_d.m_digitrange;
         const int AdjustValue   = OverflowValue+1;
 
+		const float step = (float)m_reeldigitheight / m_d.m_motorsteps;
+
         // start at the last reel and work forwards (right to left)
         for (int i=m_d.m_reelcount-1; i>=0; i--)
         {
@@ -835,10 +834,8 @@ bool DispReel::RenderAnimation()
             if ((ReelInfo[i].motorPulses != 0) && (ReelInfo[i].motorStepCount == 0))
             {
                 // get the number of steps (or increments) needed to move the reel
-				const float step = (float)m_reeldigitheight / m_d.m_motorsteps;
-
                 ReelInfo[i].motorStepCount = (int)m_d.m_motorsteps;
-				ReelInfo[i].motorCalcStep = (ReelInfo[i].motorPulses > 0) ? step : -step;	                
+				ReelInfo[i].motorCalcStep = (ReelInfo[i].motorPulses > 0) ? step : -step;
 				ReelInfo[i].motorOffset = 0;
 
                 // play the sound (if any) for each click of the reel
@@ -853,7 +850,7 @@ bool DispReel::RenderAnimation()
             if (ReelInfo[i].motorStepCount != 0)
             {
                 ReelInfo[i].motorOffset += ReelInfo[i].motorCalcStep;
-                ReelInfo[i].motorStepCount -= 1;
+                ReelInfo[i].motorStepCount--;
                 // have re reached the end of the step
                 if (ReelInfo[i].motorStepCount <= 0)
                 {
@@ -862,22 +859,22 @@ bool DispReel::RenderAnimation()
 
 					if (ReelInfo[i].motorPulses < 0)
 					{
-						ReelInfo[i].motorPulses	 += 1;
-					    ReelInfo[i].currentValue -= 1;
+						ReelInfo[i].motorPulses++;
+					    ReelInfo[i].currentValue--;
 				        if (ReelInfo[i].currentValue < 0)
 						{
 		                    ReelInfo[i].currentValue += AdjustValue;
 			                // if not the first reel then decrement the next reel by 1
 					        if (i != 0)
 						    {
-			                    ReelInfo[i-1].motorPulses -= 1;
+			                    ReelInfo[i-1].motorPulses--;
 							}
 						}
 					}
 					else
 					{
-						ReelInfo[i].motorPulses  -= 1;
-					    ReelInfo[i].currentValue += 1;
+						ReelInfo[i].motorPulses--;
+					    ReelInfo[i].currentValue++;
 				        if (ReelInfo[i].currentValue > OverflowValue)
 						{
 		                    ReelInfo[i].currentValue -= AdjustValue;
@@ -885,7 +882,7 @@ bool DispReel::RenderAnimation()
 							// along by 1 (just like a car odometer)
 					        if (i != 0)
 						    {
-			                    ReelInfo[i-1].motorPulses += 1;
+			                    ReelInfo[i-1].motorPulses++;
 							}
 						}
 					}
@@ -905,7 +902,7 @@ bool DispReel::RenderAnimation()
 		}
 	}
 
-	return(rc);
+	return rc;
 }
 
 
@@ -993,12 +990,12 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 	bw.WriteFloat(FID(WDTH), m_d.m_width);
 	bw.WriteFloat(FID(HIGH), m_d.m_height);
-	const float reel = m_d.m_reelcount;
+	const float reel = (float)m_d.m_reelcount;
     bw.WriteFloat(FID(RCNT), reel);
     bw.WriteFloat(FID(RSPC), m_d.m_reelspacing);
     bw.WriteFloat(FID(MSTP), m_d.m_motorsteps);
     bw.WriteBool(FID(SHAD), m_d.m_fShading);
-	const float dig = m_d.m_digitrange;
+	const float dig = (float)m_d.m_digitrange;
     bw.WriteFloat(FID(RANG), dig);
     bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
     bw.WriteBool(FID(UGRD), m_d.m_fUseImageGrid);
@@ -1590,7 +1587,7 @@ STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
 //
 STDMETHODIMP DispReel::AddValue(long Value)
 {
-	const BOOL bNegative = (Value < 0);
+	const bool bNegative = (Value < 0);
 
 	// ensure a positive number
 	long val = labs(Value);
@@ -1603,14 +1600,14 @@ STDMETHODIMP DispReel::AddValue(long Value)
 	while ( (val != 0) && (i >= 0) )
 	{
 		const int digitValue = val % valbase;
+		// remove the value for this reel from the overall number
+		val /= valbase;
 
 		if (bNegative)
 			ReelInfo[i].motorPulses -= digitValue;
 		else
-			ReelInfo[i].motorPulses += digitValue;
+			ReelInfo[i].motorPulses += digitValue;		
 		
-		// remove the value for this reel from the overall number
-		val /= valbase;
 		// move to next reel
 		i--;
 	}
@@ -1642,9 +1639,9 @@ STDMETHODIMP DispReel::SetValue(long Value)
 	while ( (val != 0) && (i >= 0) )
 	{
 		const int digitValue = val % valbase;
-        ReelInfo[i].currentValue = digitValue;
 		// remove the value for this reel from the overall number
 		val /= valbase;
+        ReelInfo[i].currentValue = digitValue;		
 		// move to next reel
 		i--;
     }
@@ -1660,15 +1657,13 @@ STDMETHODIMP DispReel::SetValue(long Value)
 STDMETHODIMP DispReel::ResetToZero()
 {
     int carry = 0;
-    int overflowValue = m_d.m_digitrange+1;
+    const int overflowValue = m_d.m_digitrange+1;
 
     // work for the last reel to the first one
     for (int i=m_d.m_reelcount-1; i>=0; i--)
     {
-		int adjust = overflowValue - carry;
+		const int adjust = overflowValue - carry - ReelInfo[i].currentValue;
         carry = 0;
-
-        adjust -= ReelInfo[i].currentValue;
 
 		if (adjust != overflowValue)
 		{
