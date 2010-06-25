@@ -2326,13 +2326,11 @@ void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * c
 		}
 	}
 
-#define MATRIXSIZE 4
-
 void Matrix3D::Invert()
 //void Gauss (RK8 ** a, RK8 ** b, int n)
 	{
-	int ipvt[MATRIXSIZE];
-	const int nn = MATRIXSIZE;
+	int ipvt[4];
+	const int nn = 4;
 	for (int i = 0; i < nn; i++)
 		{
 		ipvt[i] = i;
