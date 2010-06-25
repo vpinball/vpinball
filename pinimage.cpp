@@ -306,7 +306,7 @@ HRESULT PinDirectDraw::InitDD()
 	hr = m_pDD->SetCooperativeLevel(NULL, DDSCL_NORMAL | DDSCL_FPUPRESERVE);
 	if (hr != S_OK)
 		{
-		ShowError("Could not set direct draw cooperative level.");
+		ShowError("Could not set Direct Draw cooperative level.");
 		}
 
 	return S_OK;

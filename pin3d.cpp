@@ -434,7 +434,7 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 	HRESULT hr = m_pDD->QueryInterface( IID_IDirect3D7, (VOID**)&m_pD3D );
 	if (hr != S_OK)
 		{
-		ShowError("Could not create Direct3D.");
+		ShowError("Could not create Direct 3D.");
 		return hr;
 		}
 
@@ -509,7 +509,7 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 		ddsd.ddpfPixelFormat.dwBBitMask = 0x00001f;
 		ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = 0;*/
 
-		ShowError("Color depth must be 16-bit or greater.");
+		ShowError("Color depth must be 16 bit or greater.");
 		return E_FAIL;
 		}
 
@@ -607,7 +607,7 @@ retry4:
 /*		if( 32 != ddsd.ddpfPixelFormat.dwZBufferBitDepth )
 		{
 			// We couldn't find a 32-bit z texture buffer.  Print an error.
-			ShowError("Could not find 32bpp z texture buffer format.");
+			ShowError("Could not find 32 bit Z-texture buffer format.");
 		}
 */
 		// Create the z texture buffer.
@@ -618,7 +618,7 @@ retry5:
 				ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
 				goto retry5;
 			}
-			ShowError("Could not create Z Buffer.");
+			ShowError("Could not create Z-Buffer.");
 			return hr; 
 		}
 
@@ -627,7 +627,7 @@ retry5:
 
 		if( FAILED( hr = m_pddsBackTextureBuffer->AddAttachedSurface( m_pddsZTextureBuffer ) ) )
 		{
-			ShowError("Could not attach Z texture buffer to texture buffer.");
+			ShowError("Could not attach Z-texture buffer to texture buffer.");
 			return hr; 
 		}
 	}
@@ -645,7 +645,7 @@ HRESULT Pin3D::Create3DDevice(const GUID * const pDeviceGUID)
 	if( FAILED( hr = m_pD3D->CreateDevice( *pDeviceGUID, m_pddsBackBuffer,
 										  &m_pd3dDevice) ) )
 		{
-			ShowError("Could not create D3D Device.");
+			ShowError("Could not create Direct 3D device.");
 			//DEBUG_MSG( _T("Couldn't create the D3DDevice") );
 			return hr;// D3DFWERR_NO3DDEVICE;
 		}
@@ -720,7 +720,7 @@ HRESULT Pin3D::CreateZBuffer(const GUID* const pDeviceGUID )
 
         if( 0 == ddsd.ddpfPixelFormat.dwSize )
         {
-			ShowError("Could not find z-buffer format.");
+			ShowError("Could not find Z-Buffer format.");
             //DEBUG_MSG( _T("Device doesn't support requested zbuffer format") );
             return E_FAIL;// D3DFWERR_NOZBUFFER;
         }
@@ -734,7 +734,7 @@ retry6:
 			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
 			goto retry6;
 		}
-		ShowError("Could not create Z Buffer.");
+		ShowError("Could not create Z-Buffer.");
         return hr; 
     }
 
@@ -749,7 +749,7 @@ retry7:
 			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
 			goto retry7;
 		}
-		ShowError("Could not create static Z Buffer.");
+		ShowError("Could not create static Z-Buffer.");
         return hr; 
     }
 
