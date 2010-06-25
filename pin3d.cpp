@@ -500,22 +500,27 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 	m_pDD->GetDisplayMode( &ddsdPrimary );
 	if( ddsdPrimary.ddpfPixelFormat.dwRGBBitCount <= 8 )
 		{
-		ddsd.dwFlags |= DDSD_PIXELFORMAT;
+		/*ddsd.dwFlags |= DDSD_PIXELFORMAT;
 		ddsd.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
 		ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB;
 		ddsd.ddpfPixelFormat.dwRGBBitCount = 16;
 		ddsd.ddpfPixelFormat.dwRBitMask = 0x007c00;
 		ddsd.ddpfPixelFormat.dwGBitMask = 0x0003e0;
 		ddsd.ddpfPixelFormat.dwBBitMask = 0x00001f;
-		ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = 0;
+		ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = 0;*/
 
 		ShowError("Color depth must be 16-bit or greater.");
 		return E_FAIL;
 		}
 
-	// Create the back buffer.  
+	// Create the back buffer.
+retry2:
     if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsBackBuffer, NULL ) ) )
     {
+		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+			goto retry2;
+		}
 		ShowError("Could not create back buffer.");
         return hr;
     }
@@ -525,8 +530,13 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 
 	// Create the "static" color buffer.  
 	// This is will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
+retry3:
     if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsStatic, NULL ) ) )
     {
+		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+			goto retry3;
+		}
 		ShowError("Could not create static buffer.");
         return hr;
     }
@@ -564,8 +574,13 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 		m_pd3dDevice->EnumTextureFormats ( Display_EnumurateTransparentTextureFormats, &(ddsd.ddpfPixelFormat) );
 
 		// Create the back texture buffer.
+retry4:
 		if( FAILED( hr = m_pDD->CreateSurface ( &ddsd, &m_pddsBackTextureBuffer, NULL ) ) )
 		{
+			if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+				ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+				goto retry4;
+			}
 			ShowError("Could not create back texture buffer.");
 			return hr;
 		}
@@ -596,8 +611,13 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 		}
 */
 		// Create the z texture buffer.
+retry5:
 		if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsZTextureBuffer, NULL ) ) )
 		{
+			if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+				ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+				goto retry5;
+			}
 			ShowError("Could not create Z Buffer.");
 			return hr; 
 		}
@@ -706,9 +726,14 @@ HRESULT Pin3D::CreateZBuffer(const GUID* const pDeviceGUID )
         }
     }
     // Create the z buffer.
+retry6:
     HRESULT hr;
     if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsZBuffer, NULL ) ) )
     {
+		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+			goto retry6;
+		}
 		ShowError("Could not create Z Buffer.");
         return hr; 
     }
@@ -717,8 +742,13 @@ HRESULT Pin3D::CreateZBuffer(const GUID* const pDeviceGUID )
 	NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwRGBBitCount/8);
 
 	// Create the "static" z buffer.
+retry7:
     if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsStaticZ, NULL ) ) )
     {
+		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+			goto retry7;
+		}
 		ShowError("Could not create static Z Buffer.");
         return hr; 
     }

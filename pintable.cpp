@@ -5932,8 +5932,6 @@ bool PinTable::ExportImage(HWND hwndListView, PinImage *ppi, char *szfilename)
 		else if (ppi->m_pdsBuffer != NULL)
 		{
 		DDSURFACEDESC2 ddsd;
-		unsigned char* info = NULL;
-		unsigned char* sinfo = NULL;
 		ddsd.dwSize = sizeof(ddsd);
 		ppi->m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
@@ -5980,13 +5978,14 @@ bool PinTable::ExportImage(HWND hwndListView, PinImage *ppi, char *szfilename)
 		//write BMP Info Header
 		foo = WriteFile(hFile, &bmpi, sizeof(BITMAPINFOHEADER), &write, NULL);
 
-		sinfo = new unsigned char[bmplnsize+4]; //linebuffer and safty pad
+		unsigned char* sinfo = new unsigned char[bmplnsize+4]; //linebuffer and safty pad
 		if (!sinfo) 
 		{
 			CloseHandle(hFile);
 			return false;
 		}
-			
+
+		unsigned char* info;
 		for (info = sinfo + surfwidth*3; info < sinfo + bmplnsize; *info++ = 0); //fill padding with 0			
 		
 		const BYTE *spch = (BYTE *)ddsd.lpSurface + (surfheight * ddsd.lPitch);	// just past the end of the Texture part of DD surface

@@ -618,8 +618,8 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
     memset ( &DestSurfaceDescription, 0, sizeof ( DestSurfaceDescription ) );
     DestSurfaceDescription.dwSize = sizeof ( DDSURFACEDESC2 );
     DestSurfaceDescription.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT | DDSD_TEXTURESTAGE;
-    DestSurfaceDescription.dwWidth = (unsigned long) (TextureWidth);
-    DestSurfaceDescription.dwHeight = (unsigned long) (TextureHeight);
+    DestSurfaceDescription.dwWidth = TextureWidth;
+    DestSurfaceDescription.dwHeight = TextureHeight;
 
 	// Check if we are rendering with hardware.
 	if ( g_pvp->m_pdd.m_fHardwareAccel )
