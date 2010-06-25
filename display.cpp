@@ -599,8 +599,7 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
 {
     HRESULT					ReturnCode;
     DDSURFACEDESC2			SourceSurfaceDescription, DestSurfaceDescription;
-    LPDIRECTDRAWSURFACE7	VidSurface;
-
+   
 	// Initialize.
 	*DestD3DTexture = NULL;
 	*u = 0.0f;
@@ -644,6 +643,7 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
     Direct3DDevice->EnumTextureFormats ( Display_EnumurateTransparentTextureFormats, &(DestSurfaceDescription.ddpfPixelFormat) );
 
     // Create a new surface for the texture.
+	LPDIRECTDRAWSURFACE7	VidSurface;
     if( FAILED( ReturnCode = DirectDrawObject->CreateSurface ( &DestSurfaceDescription, &VidSurface, NULL ) ) )
 		{
 		ShowError("Could not create texture surface.");

@@ -185,7 +185,6 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreenWithCustomTransparency(const int widt
 		return NULL;
 	}*/
 
-	LPDIRECTDRAWSURFACE7 pdds;
 	ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_CKSRCBLT;
 	ddsd.ddckCKSrcBlt.dwColorSpaceLowValue = color;//0xffffff;
 	ddsd.ddckCKSrcBlt.dwColorSpaceHighValue = color;//0xffffff;
@@ -203,9 +202,15 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreenWithCustomTransparency(const int widt
 		ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
 		}
 
+retry0:
+	LPDIRECTDRAWSURFACE7 pdds;
 	HRESULT hr;
     if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
 		{
+		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+			goto retry0;
+		}
 		ShowError("Could not create offscreen surface.");
 		return NULL;
 		}
@@ -241,10 +246,15 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreen(const int width, const int height) c
 		ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
 		}
 
+retry1:
 	HRESULT hr;
 	LPDIRECTDRAWSURFACE7 pdds;
 	if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
 		{
+		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+			goto retry1;
+		}
 		ShowError("Could not create offscreen surface.");
 		exit(-1400); //rlc exit after show error
 		return NULL;
