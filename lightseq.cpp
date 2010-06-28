@@ -1706,7 +1706,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 				const float sn4 = sinf(angle4);
 				const float cs4 = cosf(angle4);
 
-				if (m_th1.processRadius == 1)
+				if (m_th1.processRadius == 1.0f)
 				{
 					for (int i=0; i<pTracer->length; i++)
 		   			{

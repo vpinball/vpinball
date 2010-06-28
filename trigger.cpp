@@ -347,12 +347,12 @@ void Trigger::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
 	plineseg->CalcNormal();
 
-	Vertex2D vt1, vt2;
+	/*Vertex2D vt1, vt2;
 	vt1.x = pv1->x - pv2->x;
 	vt1.y = pv1->y - pv2->y;
 
 	vt2.x = pv1->x - pv3->x;
-	vt2.y = pv1->y - pv3->y;
+	vt2.y = pv1->y - pv3->y;*/
 	}
 
 void Trigger::EndPlay()
@@ -849,8 +849,7 @@ STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 
 STDMETHODIMP Trigger::get_Enabled(VARIANT_BOOL *pVal)
 {
-	if (g_pplayer) *pVal = FTOVB(m_hitEnabled);
-	else *pVal = FTOVB(m_d.m_fEnabled);
+	*pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_hitEnabled : m_d.m_fEnabled);
 
 	return S_OK;
 }
@@ -879,7 +878,7 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Trigger::get_Visible(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fVisible);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
 	return S_OK;
 }

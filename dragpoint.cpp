@@ -292,11 +292,8 @@ void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> *pvv)
 
 	for (int i=0;i<cpoint;i++)
 		{
-		BOOL fNoSmooth = fTrue;
-		CComObject<DragPoint> *pdp0;
-		CComObject<DragPoint> *pdp3;
-		CComObject<DragPoint> *pdp1 = m_vdpoint.ElementAt(i);
-		CComObject<DragPoint> *pdp2 = m_vdpoint.ElementAt((i+1)%cpoint);
+		const CComObject<DragPoint> * const pdp1 = m_vdpoint.ElementAt(i);
+		const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i+1)%cpoint);
 
 		if ((pdp1->m_v.x == pdp2->m_v.x) && (pdp1->m_v.y == pdp2->m_v.y))
 			{
@@ -304,25 +301,8 @@ void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> *pvv)
 			continue;
 			}
 
-		if (pdp1->m_fSmooth)
-			{
-			fNoSmooth = fFalse;
-			pdp0 = m_vdpoint.ElementAt((i+cpoint-1)%cpoint);
-			}
-		else
-			{
-			pdp0 = pdp1;
-			}
-
-		if (pdp2->m_fSmooth)
-			{
-			fNoSmooth = fFalse;
-			pdp3 = m_vdpoint.ElementAt((i+2)%cpoint);
-			}
-		else
-			{
-			pdp3 = pdp2;
-			}
+		const CComObject<DragPoint> * const pdp0 = pdp1->m_fSmooth ? m_vdpoint.ElementAt((i+cpoint-1)%cpoint) : pdp1;
+		const CComObject<DragPoint> * const pdp3 = pdp2->m_fSmooth ? m_vdpoint.ElementAt((i+2)%cpoint) : pdp2;
 
 		CatmullCurve cc;
 		cc.SetCurve(&pdp0->m_v, &pdp1->m_v, &pdp2->m_v, &pdp3->m_v);
@@ -739,7 +719,7 @@ STDMETHODIMP DragPoint::put_Y(float newVal)
 
 STDMETHODIMP DragPoint::get_Smooth(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_fSmooth);
+	*pVal = (VARIANT_BOOL)FTOVB(m_fSmooth);
 
 	return S_OK;
 }
@@ -757,7 +737,7 @@ STDMETHODIMP DragPoint::put_Smooth(VARIANT_BOOL newVal)
 
 STDMETHODIMP DragPoint::get_IsAutoTextureCoordinate(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_fAutoTexture);
+	*pVal = (VARIANT_BOOL)FTOVB(m_fAutoTexture);
 
 	return S_OK;
 }

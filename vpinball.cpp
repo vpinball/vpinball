@@ -471,12 +471,12 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 		TBBUTTONINFO tbbi;
 		tbbi.cbSize = sizeof(tbbi);
 		tbbi.dwMask = TBIF_SIZE | TBIF_COMMAND | TBIF_STATE | TBIF_STYLE;
-		int foo = SendMessage(hwnd, TB_GETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
+		/*int foo =*/ SendMessage(hwnd, TB_GETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
 		if (tbbi.fsStyle & TBSTYLE_DROPDOWN)
 			{
 			tbbi.cx = 48;
 			}
-		foo = SendMessage(hwnd, TB_SETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
+		/*foo =*/ SendMessage(hwnd, TB_SETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
 		}
 
 	SendMessage(hwnd, TB_AUTOSIZE, 0, 0);
@@ -3421,7 +3421,7 @@ HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpCon
 		const int widthcur = pevms->widthcur;
 		const int heightcur = pevms->heightcur;
 		const int depthcur = pevms->depthcur;
-		sprintf(szT, "%d x %d x %d", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
+		sprintf(szT, "%u x %u x %u", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
 		const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
 
 		VideoMode * const pvm = new VideoMode();
@@ -4428,8 +4428,8 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 				{
 				LVCOLUMN lvcol;
 				lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
-				LocalString ls(IDS_NAME);
-				lvcol.pszText = ls.m_szbuffer;// = "Name";
+				LocalString ls3(IDS_NAME);
+				lvcol.pszText = ls3.m_szbuffer;// = "Name";
 				lvcol.cx = 90;
 				ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), 0, &lvcol);
 

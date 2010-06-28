@@ -38,7 +38,4 @@ public:
 };
 
 
-#endif WAVE_READ_H
-
-
-
+#endif

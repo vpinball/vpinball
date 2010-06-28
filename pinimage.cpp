@@ -319,8 +319,8 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 	ddsd.dwSize = sizeof(ddsd);
 
 	// Texture dimensions must be in powers of 2
-	int texwidth  = 1 << ((int)(log((float)(width -1))*(float)(1.0/log(2.0)) + 0.001f/*round-off*/)+1);
-	int texheight = 1 << ((int)(log((float)(height-1))*(float)(1.0/log(2.0)) + 0.001f/*round-off*/)+1);
+	int texwidth  = 1 << ((int)(logf((float)(width -1))*((float)(1.0/log(2.0))) + 0.001f/*round-off*/)+1);
+	int texheight = 1 << ((int)(logf((float)(height-1))*((float)(1.0/log(2.0))) + 0.001f/*round-off*/)+1);
 
 	// D3D does not support textures greater than 4096 in either dimension
 	if (texwidth > MAX_TEXTURE_SIZE)

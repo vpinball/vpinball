@@ -1354,7 +1354,7 @@ Notes:
 //	 %2 is the device name
 //	 %3 is the Content Server ID
 //
-;/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 //
 // MessageId: NS_E_CUB_FAIL_LINK
@@ -1627,5 +1627,4 @@ Notes:
 #define NS_W_INITIAL                     0x800D2710L
 
 
-#endif _NSERROR_H
-
+#endif

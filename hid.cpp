@@ -163,7 +163,7 @@ void hid_init()
 		CloseHandle( sReportEvent );
 		sReportEvent = INVALID_HANDLE_VALUE;
 
-		printf( "%d bytes written\n", written );
+		printf( "%u bytes written\n", written );
 
 		DWORD bytes_read;
 
@@ -173,7 +173,7 @@ void hid_init()
 					&bytes_read,
 					&ol );
 
-		printf( "%d bytes read: ", bytes_read );
+		printf( "%u bytes read: ", bytes_read );
 
 		for( U32 i=0; i<bytes_read; i++ )
 		{
@@ -235,7 +235,7 @@ void hid_update()
     {
         if( msec() - sKnockStamp < (U32) ( sKnockState ? KNOCK_PERIOD_ON : KNOCK_PERIOD_OFF ) )
         {
-            mask |= sKnockState ? HID_OUTPUT_KNOCKER : 0x00;
+            mask |= sKnockState ? (U08)HID_OUTPUT_KNOCKER : (U08)0x00;
         }
         else
         {

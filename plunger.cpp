@@ -675,7 +675,7 @@ STDMETHODIMP Plunger::put_MechStrength(float newVal)
 
 STDMETHODIMP Plunger::get_MechPlunger(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_mechPlunger);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_mechPlunger);
 
 	return S_OK;
 }
@@ -692,7 +692,7 @@ STDMETHODIMP Plunger::put_MechPlunger(VARIANT_BOOL newVal)
 
 STDMETHODIMP Plunger::get_AutoPlunger(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_autoPlunger);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_autoPlunger);
 
 	return S_OK;
 }
@@ -708,7 +708,7 @@ STDMETHODIMP Plunger::put_AutoPlunger(VARIANT_BOOL newVal)
 
 STDMETHODIMP Plunger::get_Visible(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fVisible);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
 	return S_OK;
 }

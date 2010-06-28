@@ -516,7 +516,7 @@ void Player::InitRegValues()
 		{
 		m_MusicVolume = 100; // default value
 		}
-	m_MusicVolume = (int)(((logf((float)m_MusicVolume)*(1.0/log(10.0)))*1000.0f) - 2000.0f); // 10 volume = -10Db
+	m_MusicVolume = (int)(logf((float)m_MusicVolume)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
 
 	hr = GetRegInt("Player", "SoundVolume", &m_SoundVolume);
 	if (hr != S_OK)
@@ -1861,7 +1861,7 @@ void Player::Render()
 			}
 		}
 
-#if ANTI_TEAR
+#if defined(ANTI_TEAR)
 	static U64 sync;
 
 	if( sync ) // Spin the CPU to prevent from running graphics faster than necessary
@@ -1934,9 +1934,8 @@ void Player::Render()
 		}
 #endif
 
+#ifdef LOG
 	float frametime;
-
-#define TIMECORRECT 1
 
 #ifdef PLAYBACK
 	if (!m_fPlayback)
@@ -1945,14 +1944,11 @@ void Player::Render()
 		}
 	else
 		{
-		const float temp = ParseLog((LARGE_INTEGER*)&m_RealTimeClock, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
-		if (m_fPlayback)
-			{
-			frametime = temp;
-			}
+		frametime = ParseLog((LARGE_INTEGER*)&m_RealTimeClock, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
 		}
 #else // PLAYBACK
 
+#define TIMECORRECT 1
 #ifdef TIMECORRECT
 	frametime = (float)(timepassed * 100.0);
 	//frametime = 1.456927f;
@@ -1962,7 +1958,6 @@ void Player::Render()
 
 #endif //PLACKBACK
 
-#ifdef LOG
 		fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, m_RealTimeClock>>32, m_RealTimeClock, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
 		fprintf(m_flog, "End Frame\n");
 #endif
@@ -2492,7 +2487,7 @@ void Player::Render()
 		TextOut(hdcNull, 10, 75, szFoo, len);
 
 		// Draw the framerate.
-		len = sprintf(szFoo, "%d %x %d", m_fps, _controlfp(_PC_53, 0), m_PhysicsStepTime);
+		len = sprintf(szFoo, "%d %x %llu", m_fps, _controlfp(_PC_53, 0), m_PhysicsStepTime);
 		TextOut(hdcNull, 10, 10, szFoo, len);
 		period = msec()-stamp;
 		if( period > m_max ) m_max = period;
@@ -3820,7 +3815,6 @@ int CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
 				return TRUE;
-				break;
 				}
 			case WM_COMMAND:
 				switch (HIWORD(wParam))

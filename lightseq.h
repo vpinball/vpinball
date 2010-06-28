@@ -50,7 +50,7 @@ enum {
 	eSeqRandom,
 	eSeqLine,
 	eSeqCircle,
-	eSeqRadar,
+	eSeqRadar
 	};
 
 typedef struct {

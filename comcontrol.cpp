@@ -50,9 +50,6 @@ int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							{
 							for (ULONG i = 0; i < cActual; i++)
 								{
-								int goo;
-								goo = 9;
-
 								WCHAR *ppwz;
 
 								OleRegGetUserType(rgclsid[i], USERCLASSTYPE_FULL, &ppwz);
@@ -758,16 +755,16 @@ void PinComControl::CreateControlDialogTemplate()
 					piti->GetRefTypeInfo(pfd->lprgelemdescParam[0].tdesc.hreftype, &pitiUser);
 					if (pitiUser)
 						{
-						TYPEATTR *pta;
-						pitiUser->GetTypeAttr(&pta);
+						TYPEATTR *pta2;
+						pitiUser->GetTypeAttr(&pta2);
 
-						if (InlineIsEqualGUID(pta->guid, GUID_OLE_COLOR))
+						if (InlineIsEqualGUID(pta2->guid, GUID_OLE_COLOR))
 							{
 							lStyleControl = BS_PUSHBUTTON;
 							szControlName = "ColorControl";
 							}
 
-						pitiUser->ReleaseTypeAttr(pta);
+						pitiUser->ReleaseTypeAttr(pta2);
 						pitiUser->Release();
 						}
 					}
@@ -847,9 +844,9 @@ void PinComControl::CreateControlDialogTemplate()
 			p = lpwAlign (p);
 			cfunccur++;
 
-			for (unsigned int i=0; i < cnames; i++)
+			for (unsigned int i2=0; i2 < cnames; i2++)
 				{
-				SysFreeString(rgstr[i]);
+				SysFreeString(rgstr[i2]);
 				}
 
 			CoTaskMemFree(rgstr);

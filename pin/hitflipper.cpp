@@ -613,7 +613,7 @@ void HitFlipper::Collide(Ball *pball, Vertex3Ds *phitnormal)
 
 	if ((dot < -0.25f) && (g_pplayer->m_timeCur - m_last_hittime) > 250) //limit rate to 333 milliseconds per event 
 		{
-			flipperHit = (!distance) ? -1.0f : -dot; // move event processing to end of collision handler...
+			flipperHit = (distance == 0.0f) ? -1.0f : -dot; // move event processing to end of collision handler...
 		}
 
 	m_last_hittime = g_pplayer->m_timeCur; // keep resetting until idle for 250 milliseconds
@@ -673,10 +673,10 @@ void HitFlipper::Collide(Ball *pball, Vertex3Ds *phitnormal)
 		scatter_angle = obliquecorr + scatter;
 		const float radsin = sinf(scatter_angle);	//  Green's transform matrix... rotate angle delta 
 		const float radcos = cosf(scatter_angle);	//  rotational transform from current position to position at time t
-		const float vx = pball->vx;
-		const float vy = pball->vy;
-		pball->vx = vx *radcos - vy *radsin;  // rotate trajectory more accurately
-		pball->vy = vy *radcos + vx *radsin;
+		const float vx2 = pball->vx;
+		const float vy2 = pball->vy;
+		pball->vx = vx2 *radcos - vy2 *radsin;  // rotate trajectory more accurately
+		pball->vy = vy2 *radcos + vx2 *radsin;
 		}
 
 	pball->vx *= 0.985f; pball->vy *= 0.985f; pball->vz *= 0.96f;	// friction

@@ -1019,7 +1019,7 @@ STDMETHODIMP Decal::putref_Font(IFontDisp *pFont)
 
 STDMETHODIMP Decal::get_HasVerticalText(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fVerticalText);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVerticalText);
 
 	return S_OK;
 }

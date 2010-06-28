@@ -500,9 +500,9 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	// Base circle
 	for (int l=0;l<16;l++)
 		{
-		const float angle = (float)(M_PI*2.0/16.0)*(float)l;
-		rgv3D[l].x = m_d.m_Center.x + sinf(angle)*baseradius;
-		rgv3D[l].y = m_d.m_Center.y - cosf(angle)*baseradius;
+		const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
+		rgv3D[l].x = m_d.m_Center.x + sinf(anglel)*baseradius;
+		rgv3D[l].y = m_d.m_Center.y - cosf(anglel)*baseradius;
 		rgv3D[l].z = height + flipperheight + 0.1f;
 		rgv3D[l+16].x = rgv3D[l].x;
 		rgv3D[l+16].y = rgv3D[l].y;
@@ -551,9 +551,9 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	// End circle.
 	for (int l=0;l<16;l++)
 		{
-		const float angle = (float)(M_PI*2.0/16.0)*(float)l;
-		rgv3D[l].x = vendcenter.x + sinf(angle)*endradius;
-		rgv3D[l].y = vendcenter.y - cosf(angle)*endradius;
+		const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
+		rgv3D[l].x = vendcenter.x + sinf(anglel)*endradius;
+		rgv3D[l].y = vendcenter.y - cosf(anglel)*endradius;
 		rgv3D[l].z = height + flipperheight + 0.1f;
 		rgv3D[l+16].x = rgv3D[l].x;
 		rgv3D[l+16].y = rgv3D[l].y;
@@ -1262,7 +1262,7 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 
 STDMETHODIMP Flipper::get_Visible(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_phitflipper ? m_phitflipper->m_flipperanim.m_fEnabled : m_d.m_fVisible);
+	*pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperanim.m_fEnabled : m_d.m_fVisible);
 
 	return S_OK;
 }

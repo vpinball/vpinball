@@ -8,13 +8,13 @@ class LZWWriter
 public:
 
 enum {
-    BITS = 12,
+     BITS = 12,
 	 MAXBITS = BITS,
 	 MAXMAXCODE = 1<<BITS,
-    HSIZE = 5003,		// 80% occupancy
+     HSIZE = 5003,		// 80% occupancy
 	 GIFEOF = -1,
 	 MAXLEAF = 4000,
-	 PALETTESIZE = 256,
+	 PALETTESIZE = 256
 	 };	
 
 LZWWriter(IStream * pistream, int *bits, int width, int height, int pitch);

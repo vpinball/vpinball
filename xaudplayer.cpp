@@ -231,7 +231,7 @@ HRESULT XAudPlayer::CreateBuffer(int volume)
 	wfex.nSamplesPerSec = 22050;//44100; Bogus frequency value - the real value gets set as data is decompressed - look for SetFrequency
 	wfex.wBitsPerSample = 16;//m_decoder->output_buffer->bytes_per_sample;
 	wfex.cbSize = 0;
-	wfex.nBlockAlign = (wfex.nChannels * wfex.wBitsPerSample) / 8;
+	wfex.nBlockAlign = (wfex.nChannels * wfex.wBitsPerSample) / (WORD)8;
 	wfex.nAvgBytesPerSec = wfex.nBlockAlign * wfex.nSamplesPerSec;
 
 	CreateStreamingBuffer(&wfex);

@@ -1099,7 +1099,7 @@ STDMETHODIMP Spinner::put_Surface(BSTR newVal)
 //>>> added by Chris
 STDMETHODIMP Spinner::get_CastsShadow(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fCastsShadow);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCastsShadow);
 
 	return S_OK;
 }
@@ -1117,7 +1117,7 @@ STDMETHODIMP Spinner::put_CastsShadow(VARIANT_BOOL newVal)
 
 STDMETHODIMP Spinner::get_Supports(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fSupports);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fSupports);
 
 	return S_OK;
 }
@@ -1146,7 +1146,7 @@ STDMETHODIMP Spinner::put_AngleMax(float newVal)
 {
 	if (g_pplayer)
 		{
-		if (m_d.m_angleMin != m_d.m_angleMax)		// allow only if in limited angle mode
+		if (m_d.m_angleMin != m_d.m_angleMax)	// allow only if in limited angle mode
 			{
 			if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
 			else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
@@ -1182,7 +1182,7 @@ STDMETHODIMP Spinner::put_AngleMin(float newVal)
 {
 	if (g_pplayer)
 		{
-		if (m_d.m_angleMin != m_d.m_angleMax)  // allow only if in limited angle mode
+		if (m_d.m_angleMin != m_d.m_angleMax)	// allow only if in limited angle mode
 			{
 			if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
 			else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
@@ -1252,7 +1252,7 @@ STDMETHODIMP Spinner::put_Animations(int newVal)
 }
 STDMETHODIMP Spinner::get_Visible(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB((g_pplayer) ? m_phitspinner->m_spinneranim.m_fVisible : m_d.m_fVisible);
+	*pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitspinner->m_spinneranim.m_fVisible : m_d.m_fVisible);
 
 	return S_OK;
 }

@@ -1339,7 +1339,7 @@ STDMETHODIMP DispReel::put_Y(float newVal)
 
 STDMETHODIMP DispReel::get_IsTransparent(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fTransparent);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fTransparent);
 
 	return S_OK;
 }
@@ -1426,7 +1426,7 @@ STDMETHODIMP DispReel::put_Steps(float newVal)
 
 STDMETHODIMP DispReel::get_IsShading(VARIANT_BOOL *pVal)
 {
-    *pVal = FTOVB(m_d.m_fShading);
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fShading);
 
 	return S_OK;
 }
@@ -1553,7 +1553,7 @@ STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 
 STDMETHODIMP DispReel::get_UseImageGrid(VARIANT_BOOL *pVal)
 {
-    *pVal = FTOVB(m_d.m_fUseImageGrid);
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fUseImageGrid);
 
 	return S_OK;
 }
@@ -1784,7 +1784,7 @@ void DispReel::UpdateObjFrame()
 						&reelstriprc, DDBLTFAST_NOCOLORKEY/*DDBLTFAST_SRCCOLORKEY*/);
 #endif
 
-			if (ReelInfo[i].motorOffset != 0)
+			if (ReelInfo[i].motorOffset != 0.0f)
 				{
 				const int nextval = (ReelInfo[i].currentValue + 1) % m_vreelframe.Size();
 				const int top = ReelInfo[i].position.top + (reelstriprc.bottom - reelstriprc.top);
