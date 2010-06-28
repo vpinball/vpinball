@@ -9,7 +9,7 @@ enum
 	eButton,
 	eCombo,
 	eColor,
-	eFont,
+	eFont
 	};
 
 #define EXPANDO_EXPAND			WM_USER+100
@@ -250,7 +250,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 			}
 
 		HWND hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
-			WS_CHILD /*| WS_VISIBLE /*| WS_BORDER*/,
+			WS_CHILD /*| WS_VISIBLE *//*| WS_BORDER*/,
 			2, EXPANDO_Y_OFFSET, eSmartBrowserWidth-5, 300, m_hwndFrame, NULL, g_hinst, pexinfo);
 
 		m_vhwndExpand.AddElement(hwndExpand);
@@ -1268,7 +1268,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					char szstyle[256];
 
 					// Set up logfont to be like our current font
-					IFontDisp *pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);
+					IFontDisp * const pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);
 					IFont *pif;
 					pifd->QueryInterface(IID_IFont, (void **)&pif);
 
@@ -1288,30 +1288,30 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					cf.Flags = CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT;
 					if (ChooseFont(&cf))
 						{
-						IFontDisp * const pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);
-						IFont *pif;
-						pifd->QueryInterface(IID_IFont, (void **)&pif);
+						IFontDisp * const pifd2 = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);
+						IFont *pif2;
+						pifd2->QueryInterface(IID_IFont, (void **)&pif2);
 
 						CY cy;
 						cy.int64 = (cf.iPointSize * 10000 / 10);
-						HRESULT hr = pif->put_Size(cy);
+						/*HRESULT hr =*/ pif2->put_Size(cy);
 
 						WCHAR wzT[64];
 						MultiByteToWideChar(CP_ACP, 0, lf.lfFaceName, -1, wzT, 64);
 						CComBSTR bstr(wzT);
-						hr = pif->put_Name(bstr);
+						/*hr =*/ pif2->put_Name(bstr);
 
-						pif->put_Weight((short)lf.lfWeight);
+						pif2->put_Weight((short)lf.lfWeight);
 
-						pif->put_Italic(lf.lfItalic);
+						pif2->put_Italic(lf.lfItalic);
 
-						SendMessage(hwnd, CHANGE_FONT, 0, (long)pifd);
+						SendMessage(hwnd, CHANGE_FONT, 0, (long)pifd2);
 
 						HWND hwndDlg = GetParent(hwnd);
 						const int id = GetDlgCtrlID(hwnd);
 						SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(id, FONT_CHANGED), (LPARAM)hwnd);
 
-						pif->Release();
+						pif2->Release();
 						}
 					break;
 					}

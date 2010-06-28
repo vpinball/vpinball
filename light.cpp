@@ -1739,7 +1739,7 @@ STDMETHODIMP Light::put_OnImage(BSTR newVal)
 
 STDMETHODIMP Light::get_DisplayImage(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fDisplayImage);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisplayImage);
 
 	return S_OK;
 }

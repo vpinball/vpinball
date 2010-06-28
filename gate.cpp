@@ -399,7 +399,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	if (m_d.m_animations > 0)
 		cframes = m_d.m_animations;
-	else if (m_d.m_angleMax || m_d.m_angleMin)
+	else if (m_d.m_angleMax != 0.0f || m_d.m_angleMin != 0.0f)
 		cframes = (int)((m_d.m_angleMax - m_d.m_angleMin)*(float)((15-1)*2/M_PI) + 1.5f); // 15 frames per 90 degrees
 	else
 		cframes = 1;
@@ -1088,7 +1088,7 @@ STDMETHODIMP Gate::put_ImageBack(BSTR newVal)
 
 STDMETHODIMP Gate::get_Open(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB((m_phitgate) ? m_phitgate->m_gateanim.m_fOpen : fFalse);
+	*pVal = (VARIANT_BOOL)FTOVB((m_phitgate) ? m_phitgate->m_gateanim.m_fOpen : fFalse);
 
 	return S_OK;
 }
@@ -1144,7 +1144,7 @@ STDMETHODIMP Gate::put_Elasticity(float newVal)
 
 STDMETHODIMP Gate::get_Supports(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fSupports);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fSupports);
 
 	return S_OK;
 }
@@ -1225,7 +1225,7 @@ if (m_d.m_fCollidable) newVal = 0;
 
 STDMETHODIMP Gate::get_Collidable(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB((g_pplayer) ? m_phitgate->m_fEnabled : m_d.m_fCollidable);
+	*pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitgate->m_fEnabled : m_d.m_fCollidable);
 
 	return S_OK;
 }
@@ -1359,7 +1359,7 @@ STDMETHODIMP Gate::put_Animations(int newVal)
 
 STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB((g_pplayer) ? m_phitgate->m_gateanim.m_fVisible : m_d.m_fVisible);
+	*pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitgate->m_gateanim.m_fVisible : m_d.m_fVisible);
 
 	return S_OK;
 }

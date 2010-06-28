@@ -80,7 +80,7 @@ void PinDirectSound::InitDirectSound(HWND hwnd)
     wfx.nChannels       = 2; 
     wfx.nSamplesPerSec  = 22050; 
     wfx.wBitsPerSample  = 16; 
-    wfx.nBlockAlign     = wfx.wBitsPerSample / 8 * wfx.nChannels;
+    wfx.nBlockAlign     = wfx.wBitsPerSample / (WORD)8 * wfx.nChannels;
     wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
 
     if( FAILED( hr = pDSBPrimary->SetFormat(&wfx) ) )

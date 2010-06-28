@@ -3,7 +3,7 @@
 #define __WINTIMER_H__
 
 inline void SLEEP( const int x ) { Sleep((x > 0) ? x : 1); }
-inline U64 get_tick_count() {__asm rdtsc};
+inline U64 get_tick_count() {__asm rdtsc}
 
 extern void wintimer_init();
 

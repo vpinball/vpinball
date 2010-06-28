@@ -51,9 +51,9 @@ void EnumEventsFromDispatch(IDispatch *pdisp, EventListCallback Callback, LPARAM
 						WideCharToMultiByte(CP_ACP, 0, rgstr[0], -1, szT, 512, NULL, NULL);
 						(*Callback)(szT, l, pfd->memid, lparam);
 
-						for (unsigned int i=0; i < cnames; i++)
+						for (unsigned int i2=0; i2 < cnames; i2++)
 							{
-							SysFreeString(rgstr[i]);
+							SysFreeString(rgstr[i2]);
 							}
 
 						CoTaskMemFree(rgstr);

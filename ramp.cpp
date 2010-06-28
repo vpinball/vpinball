@@ -2061,7 +2061,7 @@ STDMETHODIMP Ramp::put_ImageAlignment(RampImageAlignment newVal)
 
 STDMETHODIMP Ramp::get_HasWallImage(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fImageWalls);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fImageWalls);
 
 	return S_OK;
 }
@@ -2079,7 +2079,7 @@ STDMETHODIMP Ramp::put_HasWallImage(VARIANT_BOOL newVal)
 
 STDMETHODIMP Ramp::get_CastsShadow(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fCastsShadow);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCastsShadow);
 
 	return S_OK;
 }
@@ -2095,7 +2095,7 @@ STDMETHODIMP Ramp::put_CastsShadow(VARIANT_BOOL newVal)
 
 STDMETHODIMP Ramp::get_Acrylic(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fAcrylic);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fAcrylic);
 
 	return S_OK;
 }
@@ -2261,7 +2261,7 @@ STDMETHODIMP Ramp::put_Scatter(float newVal)
 //////////////////////////////////////////////////////////
 STDMETHODIMP Ramp::get_Collidable(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable.ElementAt(0)->m_fEnabled);
+	*pVal = (VARIANT_BOOL)FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable.ElementAt(0)->m_fEnabled);
 
 	return S_OK;
 }
@@ -2287,7 +2287,7 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
 
 STDMETHODIMP Ramp::get_IsVisible(VARIANT_BOOL *pVal) //temporary value of object
 {
-	*pVal = FTOVB(m_d.m_IsVisible);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_IsVisible);
 
 	return S_OK;
 }

@@ -227,26 +227,18 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 		const float B = rgv[p2].x - rgv[p1].x;
 		const float C = -(A*rgv[p1].x + B*rgv[p1].y);
 
-		const float dist = fabsf((A*pvin->x + B*pvin->y + C) / sqrtf(A*A + B*B));
+		const float dist = fabsf((A*pvin->x + B*pvin->y + C)) / sqrtf(A*A + B*B);
 
 		if (dist < mindist)
 			{
 			// Assuming we got a segment that we are closet to, calculate the intersection
 			// of the line with the perpenticular line projected from the point,
 			// to find the closest point on the line
-			const int p1 = i;
-			const int p2 = (i+1)%count;
-
-			const float A = rgv[p1].y - rgv[p2].y;
-			const float B = rgv[p2].x - rgv[p1].x;
-			const float C = -(A*rgv[p1].x + B*rgv[p1].y);
-
 			const float D = -B;
-			const float E = A;
-			const float F = -(D*pvin->x + E*pvin->y);
+			const float F = -(D*pvin->x + A*pvin->y);
 			
-			const float inv_det = 1.0f/((A*E) - (B*D));
-			const float intersectx = (B*F-E*C)*inv_det;
+			const float inv_det = 1.0f/(A*A - B*D);
+			const float intersectx = (B*F-A*C)*inv_det;
 			const float intersecty = (C*D-A*F)*inv_det;
 
 			// If the intersect point lies on the polygon segment

@@ -179,7 +179,7 @@ F32 mixer_get_volume()
 		gMixerVolume = sqrtf( ( ( F32 ) ( mxcdVolume.dwValue - m_dwMinimum ) ) / ( ( F32 ) ( m_dwMaximum - m_dwMinimum ) ) );
 	}
 
-    if( volume_modulation ) gMixerVolume /= volume_modulation;
+    if( volume_modulation != 0.0f) gMixerVolume /= volume_modulation;
     else gMixerVolume = 0.0f; // mute
 
 	return gMixerVolume;

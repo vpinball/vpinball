@@ -17,7 +17,7 @@ enum
     eDispReel,
 	eLightSeq,
 	eTrigger,	// this value and greater are volume set tested, add rigid or non-volume set above
-	eKicker,	// this is done to limit to one test
+	eKicker		// this is done to limit to one test
 	};
 
 // test near zero conditions in linear, well behaved, conditions

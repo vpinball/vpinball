@@ -1313,7 +1313,9 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1]);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2]);
 
-			WORD rgi[3] = {0,1,2};
+			rgi[0] = 0;
+			rgi[1] = 1;
+			rgi[2] = 2;
 			for (int l=0;l<3;l++)
 				{
 				rgv3D[l].nx = 0;
@@ -1786,7 +1788,7 @@ HRESULT Surface::InitPostLoad()
 
 STDMETHODIMP Surface::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fHitEvent);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fHitEvent);
 
 	return S_OK;
 }
@@ -1981,7 +1983,7 @@ void Surface::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
 
 STDMETHODIMP Surface::get_CanDrop(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fDroppable);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDroppable);
 
 	return S_OK;
 }
@@ -2009,7 +2011,7 @@ STDMETHODIMP Surface::put_CanDrop(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_FlipbookAnimation(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fFlipbook);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fFlipbook);
 
 	return S_OK;
 }
@@ -2032,7 +2034,7 @@ STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL *pVal)
 		return E_FAIL;
 		}
 
-	*pVal = FTOVB(m_fIsDropped);
+	*pVal = (VARIANT_BOOL)FTOVB(m_fIsDropped);
 
 	return S_OK;
 }
@@ -2082,7 +2084,7 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_DisplayTexture(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fDisplayTexture);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisplayTexture);
 
 	return S_OK;
 }
@@ -2180,7 +2182,7 @@ STDMETHODIMP Surface::put_Scatter(float newVal)
 
 STDMETHODIMP Surface::get_CastsShadow(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fCastsShadow);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCastsShadow);
 
 	return S_OK;
 }
@@ -2198,7 +2200,7 @@ STDMETHODIMP Surface::put_CastsShadow(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_Visible(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fVisible);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
 	return S_OK;
 }
@@ -2237,7 +2239,7 @@ STDMETHODIMP Surface::put_SideImage(BSTR newVal)
 
 STDMETHODIMP Surface::get_Disabled(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_fDisabled);
+	*pVal = (VARIANT_BOOL)FTOVB(m_fDisabled);
 
 	return S_OK;
 }
@@ -2255,7 +2257,7 @@ STDMETHODIMP Surface::put_Disabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_SideVisible(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fSideVisible);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fSideVisible);
 
 	return S_OK;
 }
@@ -2273,7 +2275,7 @@ STDMETHODIMP Surface::put_SideVisible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_Collidable(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fCollidable);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCollidable);
 
 	return S_OK;
 }
@@ -2324,7 +2326,7 @@ STDMETHODIMP Surface::put_SlingshotThreshold(float newVal)
 
 STDMETHODIMP Surface::get_SlingshotAnimation(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fSlingshotAnimation);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fSlingshotAnimation);
 
 	return S_OK;
 }

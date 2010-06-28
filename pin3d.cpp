@@ -1245,7 +1245,7 @@ void Pin3D::CreateBallShadow()
 			const int dx = 8-x;
 			const int dy = 8-y;
 			const int dist = dx*dx + dy*dy;
-			*pch = (dist < 25) ? 255 : 0;
+			*pch = (dist < 25) ? (BYTE)255 : (BYTE)0;
 			pch += 4;
 			}
 		pch += pitch - (width*4);
@@ -1916,6 +1916,7 @@ void Pin3D::ReadObjFrameFromCacheFile(ObjFrame *pobjframe)
 
 	HRESULT hr = pobjframe->pdds->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
+	{
 	DWORD width;
 	DWORD height;
 	long pitch;
@@ -1925,6 +1926,7 @@ void Pin3D::ReadObjFrameFromCacheFile(ObjFrame *pobjframe)
 	ReadFile(m_hFileCache, &pitch, sizeof(pitch), &bytesRead, NULL);
 	ReadFile(m_hFileCache, ddsd.lpSurface, pitch*height, &bytesRead, NULL);
 	hr = pobjframe->pdds->Unlock(NULL);
+	}
 
 	if (format == 2) // there's a z-buffer
 		{

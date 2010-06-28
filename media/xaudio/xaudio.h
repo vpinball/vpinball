@@ -69,7 +69,7 @@ if ((_client) && (_client)->notify_private_data)                              \
 |       macros
 +---------------------------------------------------------------------*/
 #if defined(WIN32) || defined(_WIN32) || defined(_WIN32_WCE)
-#if UNDER_CE
+#if defined(UNDER_CE)
 #define XA_EXPORT __cdecl
 #define XA_IMPORT __cdecl
 #else

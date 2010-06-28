@@ -687,7 +687,7 @@ STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 
 STDMETHODIMP Kicker::get_Enabled(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fEnabled);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fEnabled);
 
 	return S_OK;
 }

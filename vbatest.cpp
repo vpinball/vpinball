@@ -145,7 +145,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 	BOOL fPlay = fFalse;
 	TCHAR szTableFileName[_MAX_PATH] = {0};
 	char  szTableResolution[64] = {0};
-	BOOL  fullscreen = fFalse;
+	//BOOL  fullscreen = fFalse;
 
 	TCHAR szOption[256]= {0};
 
@@ -215,7 +215,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 				sprintf( szTableResolution, "%s", resolution+11 );				
 			}
 
-			fullscreen = StrStrI( lpCmdLine, "Fullscreen") != NULL;
+			//fullscreen = StrStrI( lpCmdLine, "Fullscreen") != NULL;
 
 //#endif
             break;

@@ -2,7 +2,7 @@
 enum
 {
 	eLightProject1 = 1,
-	ePictureTexture = 0,
+	ePictureTexture = 0
 };
 
 enum

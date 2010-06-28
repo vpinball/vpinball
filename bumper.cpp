@@ -1232,7 +1232,7 @@ STDMETHODIMP Bumper::put_BlinkInterval(long newVal)
 
 STDMETHODIMP Bumper::get_FlashWhenHit(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fFlashWhenHit);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fFlashWhenHit);
 
 	return S_OK;
 }
@@ -1246,7 +1246,7 @@ STDMETHODIMP Bumper::put_FlashWhenHit(VARIANT_BOOL newVal)
 
 STDMETHODIMP Bumper::get_CastsShadow(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fCastsShadow);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCastsShadow);
 
 	return S_OK;
 }
@@ -1262,7 +1262,7 @@ STDMETHODIMP Bumper::put_CastsShadow(VARIANT_BOOL newVal)
 
 STDMETHODIMP Bumper::get_Disabled(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_fDisabled);
+	*pVal = (VARIANT_BOOL)FTOVB(m_fDisabled);
 
 	return S_OK;
 }
@@ -1278,7 +1278,7 @@ STDMETHODIMP Bumper::put_Disabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Bumper::get_Visible(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fVisible);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
 	return S_OK;
 }
@@ -1294,7 +1294,7 @@ STDMETHODIMP Bumper::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Bumper::get_SideVisible(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fSideVisible);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fSideVisible);
 
 	return S_OK;
 }

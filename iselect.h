@@ -23,7 +23,7 @@ enum ItemTypeEnum
 	eItemLightSeqCenter,
 	eItemComControl,
 	eItemTypeCount,
-	eItemPad = 0xffffffff, // Force enum to be 32 bits
+	eItemPad = 0xffffffff // Force enum to be 32 bits
 	};
 
 int rgTypeStringIndex[];
@@ -41,7 +41,7 @@ enum SelectState
 	{
 	eNotSelected,
 	eSelected,
-	eMultiSelected,
+	eMultiSelected
 	};
 
 int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);

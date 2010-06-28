@@ -4847,10 +4847,9 @@ void PinTable::OnDelete()
 
 void PinTable::OnKeyDown(int key)
 	{
-	int fShift, fCtrl, fAlt;
-	fShift = GetKeyState(VK_SHIFT) & 0x8000;
-	fCtrl = GetKeyState(VK_CONTROL) & 0x8000;
-	fAlt = GetKeyState(VK_MENU) & 0x8000;
+	const int fShift = GetKeyState(VK_SHIFT) & 0x8000;
+	//const int fCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+	//const int fAlt = GetKeyState(VK_MENU) & 0x8000;
 
 	switch (key)
 		{
@@ -4882,7 +4881,7 @@ void PinTable::OnKeyDown(int key)
 			const int distance = fShift ? 10 : 1;
 			for (int i=0;i<m_vmultisel.Size();i++)
 				{
-				ISelect *pisel = m_vmultisel.ElementAt(i);
+				ISelect *const pisel = m_vmultisel.ElementAt(i);
 				if (!pisel->GetIEditable()->GetISelect()->m_fLocked) // control points get lock info from parent - UNDONE - make this code snippet be in one place
 					{
 					switch (key)
@@ -5327,7 +5326,6 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			SetTimer(hwnd, TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
 
 			return 0;	// destroy the WM_CLOSE message
-			break;
 			}
 
 		case WM_TIMER:
@@ -5793,7 +5791,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume)
 
 	const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
 	const float totalvolume = ((float)g_pplayer->m_SoundVolume)*volume;
-	const int decibelvolume = (int)(((logf((float)totalvolume)*(float)(1.0/log(10.0)))*1000.0f) - 2000.0f); // 10 volume = -10Db
+	const int decibelvolume = (int)(logf((float)totalvolume)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
 
 	LPDIRECTSOUNDBUFFER pdsb = m_vsound.ElementAt(i)->m_pDSBuffer;
 	PinSoundCopy * const ppsc = new PinSoundCopy();
@@ -6625,9 +6623,9 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 						const int cvertex = vvertex.Size();
 						Vertex2D * const rgv = new Vertex2D[cvertex];
 						
-						for (int i=0;i<vvertex.Size();i++)
+						for (int i2=0;i2<vvertex.Size();i2++)
 							{
-							rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
+							rgv[i2] = *((Vertex2D *)vvertex.ElementAt(i2));
 							}
 
 						int iSeg;
@@ -6646,34 +6644,34 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 							//return 0; // Object is not on ramp path
 							}
 
-						for (int i=1;i<cvertex;i++)
+						for (int i2=1;i2<cvertex;i2++)
 							{
-							const float dx = rgv[i].x - rgv[i-1].x;
-							const float dy = rgv[i].y - rgv[i-1].y;
+							const float dx = rgv[i2].x - rgv[i2-1].x;
+							const float dy = rgv[i2].y - rgv[i2-1].y;
 							const float len = sqrtf(dx*dx + dy*dy);
-							if (i <= iSeg)
+							if (i2 <= iSeg)
 								{
 								startlength += len;
 								}
 							totallength += len;
 							}
 
+						{
 						const float dx = vOut.x - rgv[iSeg].x;
 						const float dy = vOut.y - rgv[iSeg].y;
 						const float len = sqrtf(dx*dx + dy*dy);
 						startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
 
 						zheight = ((startlength/totallength) * (pramp->m_d.m_heighttop - pramp->m_d.m_heightbottom)) + pramp->m_d.m_heightbottom;
-
+						}
 HeightError:
-						for (int i=0;i<vvertex.Size();i++)
+						for (int i2=0;i2<vvertex.Size();i2++)
 							{
-							delete vvertex.ElementAt(i);
+							delete vvertex.ElementAt(i2);
 							}
 
 						delete rgv;
 						return zheight;
-						break;
 									}
 					}
 				}
@@ -6685,7 +6683,7 @@ HeightError:
 
 STDMETHODIMP PinTable::get_DisplayGrid(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_fGrid);
+	*pVal = (VARIANT_BOOL)FTOVB(m_fGrid);
 
 	return S_OK;
 }
@@ -6705,7 +6703,7 @@ STDMETHODIMP PinTable::put_DisplayGrid(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_DisplayBackdrop(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_fBackdrop);
+	*pVal = (VARIANT_BOOL)FTOVB(m_fBackdrop);
 
 	return S_OK;
 }
@@ -7046,7 +7044,7 @@ STDMETHODIMP PinTable::put_PlungerNormalize(int newVal )
 
 STDMETHODIMP PinTable::get_PlungerFilter(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_plungerFilter);
+	*pVal = (VARIANT_BOOL)FTOVB(m_plungerFilter);
 	return S_OK;
 }
 
@@ -7283,7 +7281,7 @@ STDMETHODIMP PinTable::put_YieldTime(long newVal)
 
 STDMETHODIMP PinTable::get_RenderShadows(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_fRenderShadows);
+	*pVal = (VARIANT_BOOL)FTOVB(m_fRenderShadows);
 
 	return S_OK;
 }
@@ -7299,7 +7297,7 @@ STDMETHODIMP PinTable::put_RenderShadows(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_fRenderDecals);
+	*pVal = (VARIANT_BOOL)FTOVB(m_fRenderDecals);
 
 	return S_OK;
 }
@@ -7315,7 +7313,7 @@ STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_EnableEMReels(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_fRenderEMReels);
+	*pVal = (VARIANT_BOOL)FTOVB(m_fRenderEMReels);
 
 	return S_OK;
 }
@@ -7359,7 +7357,7 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
 
 STDMETHODIMP PinTable::get_TableCaching(VARIANT_BOOL *pVal)//TableCaching
 {
-	*pVal = FTOVB(m_TableCaching);							//VP Editor
+	*pVal = (VARIANT_BOOL)FTOVB(m_TableCaching);				//VP Editor
 
 	return S_OK;
 }
@@ -7397,7 +7395,7 @@ STDMETHODIMP PinTable::put_TableCaching(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_AlternateRender(VARIANT_BOOL *pVal) //TableCaching
 {
-	*pVal = FTOVB((g_pvp) ? g_pvp->m_pdd.m_fAlternateRender : false); //VP Editor
+	*pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_pdd.m_fAlternateRender : false); //VP Editor
 
 	return S_OK;
 }
@@ -7426,7 +7424,7 @@ STDMETHODIMP PinTable::put_AlternateRender(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_HardwareRender(VARIANT_BOOL *pVal) //TableCaching
 {
-	*pVal = FTOVB((g_pvp) ? g_pvp->m_pdd.m_fHardwareAccel : false);	//VP Editor
+	*pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_pdd.m_fHardwareAccel : false);	//VP Editor
 
 	return S_OK;
 }
@@ -7451,7 +7449,7 @@ STDMETHODIMP PinTable::put_HardwareRender(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_UseD3DBlit(VARIANT_BOOL *pVal) //TableCaching
 {
-	*pVal = FTOVB((g_pvp) ? g_pvp->m_pdd.m_fUseD3DBlit : false); //VP Editor
+	*pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_pdd.m_fUseD3DBlit : false); //VP Editor
 
 	return S_OK;
 }
@@ -7476,7 +7474,7 @@ STDMETHODIMP PinTable::put_UseD3DBlit(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB((g_pplayer) ? g_pplayer->m_fAccelerometer : m_tblAccelerometer); //VB Script or VP Editor
+	*pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? g_pplayer->m_fAccelerometer : m_tblAccelerometer); //VB Script or VP Editor
 
 	return S_OK;
 }
@@ -7501,7 +7499,7 @@ STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_AccelNormalMount(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB((g_pplayer) ? g_pplayer->m_AccelNormalMount : m_tblAccelNormalMount); //VB Script or VP Editor
+	*pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? g_pplayer->m_AccelNormalMount : m_tblAccelNormalMount); //VB Script or VP Editor
 
 	return S_OK;
 }
