@@ -46,7 +46,7 @@ public:
 	int get_byte();
 	BYTE *NextLine();
 
-	short init_exp(short size);
+	short init_exp(int size);
 	int get_next_code();
 	short Decoder();
 

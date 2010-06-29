@@ -52,7 +52,7 @@ public:
 				{
 				if (strcmp < 0)
 					{
-					currentnode++; // insert new node after this one
+					++currentnode; // insert new node after this one
 					}
 				break;
 				}

@@ -160,7 +160,7 @@ inline BOOL AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pv
 
 		if (dotDelta < 0)
 			{
-			return false;
+			return fFalse;
 			}
 		}
 
@@ -171,7 +171,7 @@ inline BOOL AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pv
 
 		if (dotDelta < 0)
 			{
-			return false;
+			return fFalse;
 			}
 		}
 
@@ -185,7 +185,7 @@ inline BOOL AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pv
 	const float miny = min(pv1->y, pv3->y);
 	const float maxy = max(pv1->y, pv3->y);
 
-	for (int i=0;i<pvpoly->Size();i++)
+	for (int i=0; i<pvpoly->Size(); ++i)
 		{		
 		const RenderVertex * const pvCross1 = &rgv[(int)pvpoly->ElementAt(i)];
 		const RenderVertex * const pvCross2 = &rgv[(int)pvpoly->ElementAt((i+1) % pvpoly->Size())];
@@ -204,7 +204,7 @@ inline BOOL AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pv
 			}
 		}
 
-	return true;
+	return fTrue;
 	}
 
 inline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
@@ -255,7 +255,7 @@ inline void SetNormal(Vertex3D * rgv, const WORD * rgi, const int count, Vertex3
 	vnormal.y = 0;
 	vnormal.z = 0;
 
-	for (int i=0;i<count;i++)
+	for (int i=0; i<count; ++i)
 		{
 		const int l = rgi[i];
 		const int m = rgi[(i+1) % count];
@@ -270,7 +270,7 @@ inline void SetNormal(Vertex3D * rgv, const WORD * rgi, const int count, Vertex3
 	vnormal.y *= inv_len;
 	vnormal.z *= inv_len;
 
-	for (int i=0;i<applycount;i++)
+	for (int i=0; i<applycount; ++i)
 		{
 		const int l = rgiApply[i];
 		rgvApply[l].nx = -vnormal.x;
@@ -287,7 +287,7 @@ inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const 
 
 	const int color = (r<<16) | (g<<8) | b;
 
-	for (int i=0;i<count;i++)
+	for (int i=0; i<count; ++i)
 		{
 		rgv[i].color = color;
 		}

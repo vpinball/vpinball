@@ -10,6 +10,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#ifdef RGB
+#undef RGB
+#endif
 #define BGR(b,g,r) ((COLORREF)(((DWORD)(b)) | (((DWORD)(g))<<8) | (((DWORD)(r))<<16)))
 #define RGB(r,g,b) ((COLORREF)(((DWORD)(r)) | (((DWORD)(g))<<8) | (((DWORD)(b))<<16)))
 

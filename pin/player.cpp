@@ -1215,7 +1215,7 @@ void Player::InitAnimations(HWND hwndProgress)
 	m_pin3d.m_pddsZBuffer->Blt(NULL, m_pin3d.m_pddsStaticZ, NULL, DDBLTFAST_WAIT , NULL);
 }
 
-Ball *Player::CreateBall(float x, float y, float z, float vx, float vy, float vz)
+Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz)
 	{
 	Ball * const pball = new Ball();
 	pball->radius = 25.0f;
@@ -1641,7 +1641,7 @@ void Player::mechPlungerIn(int z)
 #define EMBEDED_LIMIT  0.0875f
 #define STATICCNTS 10
 
-void Player::PhysicsSimulateCycle(float dtime, U64 startTime) // move physics forward to this time
+void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move physics forward to this time
 	{
 	float hittime;
 	float staticTime = STATICTIME;

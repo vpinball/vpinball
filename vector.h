@@ -43,7 +43,7 @@ public:
 		m_cMax = pvector->m_cMax;
 		m_cSize = pvector->m_cSize;
 
-		for (int i=0;i<m_cSize;i++)	// We need this for smart pointers - they need to be ref counted
+		for (int i=0; i<m_cSize; ++i)	// We need this for smart pointers - they need to be ref counted
 			{
 			m_rg[i] = pvector->m_rg[i];
 			}
@@ -157,7 +157,7 @@ public:
 		pvector->m_cMax = m_cMax;
 		pvector->m_cSize = m_cSize;
 			
-		for (int i=0;i<m_cSize;i++)	// We need this for smart pointers - they need to be ref counted
+		for (int i=0; i<m_cSize; ++i)	// We need this for smart pointers - they need to be ref counted
 			{
 			pvector->m_rg[i] = m_rg[i];
 			}
@@ -170,7 +170,7 @@ public:
 		if (!m_rg)
 			return -1;
 
-		for (int i = m_cSize-1; i >= 0; i--)
+		for (int i = m_cSize-1; i >= 0; --i)
 			if (m_rg[i] == pT)
 				return i;
 
@@ -182,7 +182,7 @@ public:
 		if (m_rg == NULL)
 			return -1;
 
-		for (int i=0; i < m_cSize; i++)
+		for (int i=0; i < m_cSize; ++i)
 			if (pvItem == m_rg[i])
 				return i;
 
@@ -218,7 +218,7 @@ public:
 			}
 
 		m_rg[iPos] = pItem;
-		m_cSize++;
+		++m_cSize;
 		return true;
 		}
 
@@ -253,7 +253,7 @@ public:
 		{
 		if (!m_rg)
 			return;
-		//for (int i=0;i<m_cSize;i++) 	// We need this for smart pointers - they need to be ref counted
+		//for (int i=0; i<m_cSize; ++i) 	// We need this for smart pointers - they need to be ref counted
 			//{
 			//m_rg[i] = NULL;
 			//}
@@ -322,7 +322,7 @@ public:
 		if (m_rg == NULL)
 			return -1;
 
-		for (int i=0; i<m_cSize; i++)
+		for (int i=0; i<m_cSize; ++i)
 			if ((void *)pvItem == m_rg[i])
 				return i;
 

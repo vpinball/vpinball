@@ -75,7 +75,7 @@ void LightSeq::PreRender(Sur *psur)
 	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
 	psur->SetObject(this);
 
-	for (int i=0;i<8;i++)
+	for (int i=0; i<8; ++i)
 	{
 		psur->SetFillColor((i % 2 == 0) ? RGB(255,0,0) : RGB(128,0,0));
 		const float angle = (float)((M_PI*2.0)/8.0)*(float)i;
@@ -103,7 +103,7 @@ void LightSeq::Render(Sur *psur)
 
 	psur->Ellipse(m_d.m_v.x, m_d.m_v.y, 18.0f);
 
-	for (int i=0;i<8;i++)
+	for (int i=0; i<8; ++i)
 	{
 		const float angle = (float)((M_PI*2.0)/8.0)*(float)i;
 		const float sn = sinf(angle);
@@ -126,7 +126,7 @@ void LightSeq::RenderOutline(Sur * const psur)
 	psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
 	psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
 
-	for (int i=0;i<8;i++)
+	for (int i=0; i<8; ++i)
 	{
 		psur->SetFillColor((i % 2 == 0) ? RGB(255,0,0) : RGB(128,0,0));
 		const float angle = (float)((M_PI*2.0)/8.0)*(float)i;
@@ -240,7 +240,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	// get the number of collections available
 	int size = m_ptable->m_vcollection.Size();
-	for(int i=0; i<size; i++)
+	for(int i=0; i<size; ++i)
 	{
 		// get the name of this collection
 		CComBSTR bstr;
@@ -290,7 +290,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	size = m_pcollection->m_visel.Size();
 
 	// go though the collection and get the cordinates of all the lights and bumper
-	for(int i=0; i<size; i++)
+	for(int i=0; i<size; ++i)
 	{
 		// get the type of object
 		const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
@@ -301,7 +301,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			if (type == eItemLight)
 			{
 				// process a light
-				Light	* const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
+				Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
 				pLight->get_X(&x);
 				pLight->get_Y(&y);
 
@@ -428,7 +428,7 @@ STDMETHODIMP LightSeq::InterfaceSupportsErrorInfo(REFIID riid)
 		&IID_ILightSeq,
 	};
 
-	for (int i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
+	for (int i=0; i<sizeof(arr)/sizeof(arr[0]); ++i)
 	{
 		if (InlineIsEqualGUID(*arr[i],riid))
 			return S_OK;
@@ -712,7 +712,7 @@ STDMETHODIMP LightSeq::StopPlay()
 	if (m_pcollection != NULL)
 	{
 		const int size = m_pcollection->m_visel.Size();
-		for(int i=0; i<size; i++)
+		for(int i=0; i<size; ++i)
 		{
 			const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
 			if (type == eItemLight)
@@ -1605,12 +1605,12 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 	   		// process the random type of effect
 			case eSeqRandom: {
 				// get the number of elements in this
-				const float size = (float)m_pcollection->m_visel.Size();
+				const float size = (float)m_pcollection->m_visel.Size() * (float)(1.0/(RAND_MAX+1));
 				// randomly pick n elements and invert their state
-				for (int i=0; i<pTracer->length; i++)
+				for (int i=0; i<pTracer->length; ++i)
 				{
 					// Generates integer random number 0..(size-1)
-					const int randomLight = (int)(size * ( (float)rand() * (float)(1.0/(RAND_MAX+1)) ) );
+					const int randomLight = (int)(size * (float)rand());
 					// get the state of this light
 					LightState state = GetElementState(randomLight);
 					// invert the state
@@ -1641,7 +1641,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 	   			float x = pTracer->x;
 	   			float y = pTracer->y;
 
-	   			for (int i=0; i<pTracer->length; i++)
+	   			for (int i=0; i<pTracer->length; ++i)
 	   			{
 	   				VerifyAndSetGridElement((int)x, (int)y, State);
 	   				// move to the next position in the line
@@ -1708,7 +1708,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 
 				if (m_th1.processRadius == 1.0f)
 				{
-					for (int i=0; i<pTracer->length; i++)
+					for (int i=0; i<pTracer->length; ++i)
 		   			{
 						const float fi = (float)i;
 						float x = pTracer->x + sn*fi;
@@ -1727,7 +1727,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 				}
 				else
 				{
-					for (int i=0; i<pTracer->length; i++)
+					for (int i=0; i<pTracer->length; ++i)
 		   			{
 						const float fi = (float)i;
 						float x = pTracer->x - sn*fi;
@@ -1785,7 +1785,7 @@ void LightSeq::SetAllLightsToState(const LightState State)
 	if (m_pcollection != NULL)
 	{
 		const int size = m_pcollection->m_visel.Size();
-		for(int i=0; i<size; i++)
+		for(int i=0; i<size; ++i)
 		{
 			SetElementToState(i, State);
 		}
@@ -1960,13 +1960,13 @@ int LightSeqCenter::GetSelectLevel()
 
 			// process the twirl type of effect
 			case eSeqTwirl:
-				for (i=0; i<pTracer->length; i++)
+				for (int i=0; i<pTracer->length; ++i)
 	   			{
-					angle = (float)((M_PI*2.0)/360.0)*pTracer->angle;
-					sn = sinf(angle);
-					cs = cosf(angle);
-					x = pTracer->x + sn*pTracer->radius;
-					y = pTracer->y - cs*pTracer->radius;
+					const float angle = (float)((M_PI*2.0)/360.0)*pTracer->angle;
+					const float sn = sinf(angle);
+					const float cs = cosf(angle);
+					const float x = pTracer->x + sn*pTracer->radius;
+					const float y = pTracer->y - cs*pTracer->radius;
 	   				VerifyAndSetGridElement((int)x, (int)y, State);
 
 					// move to the next angle

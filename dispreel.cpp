@@ -195,7 +195,7 @@ STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
         &IID_IDispReel,
 	};
 
-	for (int i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
+	for (int i=0; i<sizeof(arr)/sizeof(arr[0]); ++i)
 	{
 		if (InlineIsEqualGUID(*arr[i],riid))
 			return S_OK;
@@ -221,7 +221,7 @@ void DispReel::PreRender(Sur *psur)
 
     // draw n reels in the box (in blue)
     psur->SetFillColor(m_d.m_reelcolor);
-    for (int i=0; i<m_d.m_reelcount; i++)
+    for (int i=0; i<m_d.m_reelcount; ++i)
     {
         // set up top corner point
 		const float fi = (float)i;
@@ -265,7 +265,7 @@ void DispReel::Render(Sur *psur)
 	psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 
     // draw n reels in the box
-    for (int i=0; i<m_d.m_reelcount; i++)
+    for (int i=0; i<m_d.m_reelcount; ++i)
     {
         // set up top corner point
 		const float fi = (float)i;
@@ -434,7 +434,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
     // set up all the reel positions within the object frame
     int x1 = m_renderspacingx;
     
-	for (int i=0; i<m_d.m_reelcount; i++)
+	for (int i=0; i<m_d.m_reelcount; ++i)
     {
         ReelInfo[i].position.left	= x1/* + m_pobjframe->rc.left*/;
         ReelInfo[i].position.right	= x1 + m_renderwidth/* + m_pobjframe->rc.left*/;
@@ -473,7 +473,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					GridRows = (m_d.m_digitrange+1) / GridCols;
 					if ( (GridRows * GridCols) < (m_d.m_digitrange+1) )
 					{
-						GridRows++;
+						++GridRows;
 					}
 				}
 				else
@@ -498,7 +498,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
             //const int width  = m_reeldigitwidth;
             //const int height = (m_reeldigitheight * (m_d.m_digitrange+1)) + m_reeldigitheight;
             // allocate some memory for this strip
-			for (int i=0; i<=m_d.m_digitrange; i++)
+			for (int i=0; i<=m_d.m_digitrange; ++i)
 				{
 				ObjFrame * const pobjframe = new ObjFrame();
 				if (pobjframe == NULL)
@@ -552,7 +552,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			//
 
 			Vertex3D rgv3D[4];
-			for (int l=0;l<4;l++)
+			for (int l=0; l<4; ++l)
 				rgv3D[l].z = 1.0f;//height + 0.2f;
 
 			rgv3D[0].x = 0;//(float)rectSrc.left;
@@ -608,7 +608,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			int gr = 0;
 			int gc = 0;
 
-			for (int i=0; i<=m_d.m_digitrange; i++)
+			for (int i=0; i<=m_d.m_digitrange; ++i)
 			{
 				rgv3D[0].tu = rgv3D[3].tu = (float)gc * ratiox;
 				rgv3D[0].tv = rgv3D[1].tv = (float)gr * ratioy;
@@ -656,11 +656,11 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 						SRCCOPY);				// raster operation code
 				*/
 				
-				gc++;
+				++gc;
 				if (gc >= GridCols)
 				{
 					gc = 0;
-					gr++;
+					++gr;
 				}
 				
 				if (i == m_d.m_digitrange)
@@ -725,7 +725,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
         int maxwidth = m_renderwidth;
         int maxheight = m_renderheight;
         const int length = lstrlen(REEL_NUMBER_TEXT);
-        for (int i=0; i<length; i++)
+        for (int i=0; i<length; ++i)
         {
             rcOut.left = 0;
             rcOut.top = 0;
@@ -741,13 +741,11 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
         m_reeldigitwidth  = maxwidth;
         m_reeldigitheight = maxheight;
 
-		for (int i=0; i < length; i++)
+		for (int i=0; i < length; ++i)
 			{
 			ObjFrame * const pobjframe = new ObjFrame();
 			if (pobjframe == NULL)
-				{
 				return;
-				}
 			pobjframe->pdds	= NULL;
 			m_vreelframe.AddElement(pobjframe);			
 			}
@@ -755,7 +753,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
         
 		SetTextColor(hdc, m_d.m_fontcolor);		// set the font colour
 		SetBkMode(hdc, TRANSPARENT);
-		for (int i=0; i < length; i++)
+		for (int i=0; i < length; ++i)
         {
 			// allocate some memory for this strip
 			m_vreelframe.ElementAt(i)->pdds = ppin3d->CreateOffscreen(maxwidth, maxheight);
@@ -1625,7 +1623,7 @@ STDMETHODIMP DispReel::SetValue(long Value)
 	const long valbase = m_d.m_digitrange+1;
 
     // reset the motor
-    for (int l=0; l<m_d.m_reelcount; l++)
+    for (int l=0; l<m_d.m_reelcount; ++l)
     {
 		ReelInfo[l].currentValue	= 0;
         ReelInfo[l].motorPulses 	= 0;
@@ -1762,7 +1760,7 @@ void DispReel::UpdateObjFrame()
 
         reelstriprc.left  = 0;
 	    reelstriprc.right = m_renderwidth;//m_reeldigitwidth;
-        for (int i=0; i<m_d.m_reelcount; i++)
+        for (int i=0; i<m_d.m_reelcount; ++i)
         {
             reelstriprc.top = /*(ReelInfo[i].currentValue * m_renderheight) +*/ (int)(ReelInfo[i].motorOffset);
 			if (reelstriprc.top < 0)

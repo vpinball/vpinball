@@ -20,9 +20,9 @@ public:
 	inline void Multiply(const Matrix3D &mult, Matrix3D &result) const
 	{
 	Matrix3D matrixT;
-	for (int i=0;i<4;i++)
+	for (int i=0; i<4; ++i)
 		{
-		for (int l=0;l<4;l++)
+		for (int l=0; l<4; ++l)
 			{
 			matrixT.m[i][l] = (m[0][l] * mult.m[i][0]) + (m[1][l] * mult.m[i][1]) +
 						      (m[2][l] * mult.m[i][2]) + (m[3][l] * mult.m[i][3]);
@@ -73,13 +73,13 @@ public:
 	inline void MultiplyVector(const float x, const float y, const float z, Vertex3D * const pv3DOut) const
 	{
 	// Transform it through the current matrix set
-	const FLOAT xp = _11*x + _21*y + _31*z + _41;
-	const FLOAT yp = _12*x + _22*y + _32*z + _42;
-	const FLOAT wp = _14*x + _24*y + _34*z + _44;
+	const float xp = _11*x + _21*y + _31*z + _41;
+	const float yp = _12*x + _22*y + _32*z + _42;
+	const float wp = _14*x + _24*y + _34*z + _44;
 
-	const FLOAT zp = _13*x + _23*y + _33*z + _43;
+	const float zp = _13*x + _23*y + _33*z + _43;
 
-	const FLOAT inv_wp = 1.0f/wp;
+	const float inv_wp = 1.0f/wp;
 	pv3DOut->x = xp*inv_wp;
 	pv3DOut->y = yp*inv_wp;
 	pv3DOut->z = zp*inv_wp;
@@ -87,13 +87,13 @@ public:
 	inline void MultiplyVector(const float x, const float y, const float z, Vertex3Ds * const pv3DOut) const
 	{
 	// Transform it through the current matrix set
-	const FLOAT xp = _11*x + _21*y + _31*z + _41;
-	const FLOAT yp = _12*x + _22*y + _32*z + _42;
-	const FLOAT wp = _14*x + _24*y + _34*z + _44;
+	const float xp = _11*x + _21*y + _31*z + _41;
+	const float yp = _12*x + _22*y + _32*z + _42;
+	const float wp = _14*x + _24*y + _34*z + _44;
 
-	const FLOAT zp = _13*x + _23*y + _33*z + _43;
+	const float zp = _13*x + _23*y + _33*z + _43;
 
-	const FLOAT inv_wp = 1.0f/wp;
+	const float inv_wp = 1.0f/wp;
 	pv3DOut->x = xp*inv_wp;
 	pv3DOut->y = yp*inv_wp;
 	pv3DOut->z = zp*inv_wp;

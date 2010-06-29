@@ -168,9 +168,9 @@ void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState );
 void Display_ClearTextureState ( TextureStateType *TextureState );
 
-void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 DirectDrawObject, LPDIRECTDRAWSURFACE7 DDrawSurface, int Width, int Height, LPDIRECTDRAWSURFACE7 *Texture, float *u, float *v );
+void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAW7 DirectDrawObject, const LPDIRECTDRAWSURFACE7 DDrawSurface, const int Width, const int Height, LPDIRECTDRAWSURFACE7 * const DestD3DTexture, float * const u, float * const v );
 void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 DestTexture, RECT *Rect, LPDIRECTDRAWSURFACE7 SourceTexture );
-void Display_ClearTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 Texture, const char Value );
+void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAWSURFACE7 Texture, const char Value );
 void Display_DestroyTexture ( LPDIRECTDRAWSURFACE7 Texture );
 
 HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT *pddpf, VOID *param );

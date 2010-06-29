@@ -64,13 +64,13 @@ public:
 	void FireVoidGroupEvent(int dispid)
 		{
 		T* pT = (T*)this;
-		for (int i=0;i<pT->m_vEventCollection.Size();i++)
+		for (int i=0; i<pT->m_vEventCollection.Size(); ++i)
 			{
-			Collection *pcollection = pT->m_vEventCollection.ElementAt(i);
+			Collection * const pcollection = pT->m_vEventCollection.ElementAt(i);
 		
 			CComVariant rgvar[1] = {CComVariant((int)pT->m_viEventCollection.ElementAt(i))};
 				
-			DISPPARAMS dispparams  = {rgvar,NULL,1,0};
+			DISPPARAMS dispparams = {rgvar,NULL,1,0};
 
 			pcollection->FireDispID(dispid, &dispparams);
 			}
@@ -90,10 +90,10 @@ public:
 			{
 			if (*pp != NULL)
 				{   
-				IDispatch* pDispatch = reinterpret_cast<IDispatch*>(*pp);
+				IDispatch* const pDispatch = reinterpret_cast<IDispatch*>(*pp);
 				pDispatch->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, NULL, NULL, NULL);  
 				}
-			pp++;
+			++pp;
 			}
 		pT->Unlock();
 				

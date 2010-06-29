@@ -35,14 +35,12 @@ HRESULT LZWWriter::WriteWord(short word)
 	
 int LZWWriter::bNextPixel()
 	{
-	int ch;
-	
 	if (m_iPixelCur == m_pitch*m_height)
 		return GIFEOF;
 
-	ch = *(((unsigned char *)m_bits) + m_iPixelCur);
-	m_iPixelCur++;
-	m_iXCur++;
+	const int ch = *(((unsigned char *)m_bits) + m_iPixelCur);
+	++m_iPixelCur;
+	++m_iXCur;
 	if (m_iXCur == m_width)
 		{
 		m_iPixelCur += (m_pitch-m_width);
@@ -54,7 +52,6 @@ int LZWWriter::bNextPixel()
 
 HRESULT LZWWriter::CompressBits(int init_bits)
 	{
-	int fcode;
 	int c;
 	int ent;
 	int disp;
@@ -90,9 +87,9 @@ HRESULT LZWWriter::CompressBits(int init_bits)
 	ent = bNextPixel();
 
 	hshift = 0;
-	for ( fcode = HSIZE; fcode < 65536; fcode *= 2 )
+	for (int fcode = HSIZE; fcode < 65536; fcode *= 2)
 	    ++hshift;
-	hshift = 8 - hshift;			// set hash code range bound
+	hshift = 8 - hshift;	// set hash code range bound
 
 	hsize_reg = HSIZE;
 	ClearHash(hsize_reg );	// clear hash table
@@ -101,7 +98,7 @@ HRESULT LZWWriter::CompressBits(int init_bits)
 
 	while ( (c = bNextPixel()) != GIFEOF )
 	    {
-	    fcode = ( c << MAXBITS ) + ent;
+	    const int fcode = ( c << MAXBITS ) + ent;
 	    int i = ( c << hshift ) ^ ent;		// xor hashing
 			
 		if (m_codetab[i] != 0)
@@ -238,11 +235,9 @@ HRESULT LZWWriter::FlushChar()
 	{
 	if ( m_a_count > 0 )
 	    {
-	    WriteByte(m_a_count);
+	    WriteByte((char)m_a_count);
 	    WriteSz((char *)m_accum, m_a_count);
 	    m_a_count = 0;
 	    }
 	return S_OK;
 	}
-	
-

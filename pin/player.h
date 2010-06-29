@@ -87,16 +87,14 @@ public:
 
 	void DrawAcrylics();
 
-	void PhysicsSimulateCycle(float dtime, U64 startTime);
-
-	float UpdatePhysics(float dtime, Ball **pphitball);
+	void PhysicsSimulateCycle(float dtime, const U64 startTime);
 
 	void InvalidateRect(RECT *prc);
 	void DrawLightHack ();
 
 	void EraseBall(Ball *pball);
 
-	Ball *CreateBall(float x, float y, float z, float vx, float vy, float vz);
+	Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz);
 	void DestroyBall(Ball *pball);
 
 	void CreateBoundingHitShapes(Vector<HitObject> *pvho);

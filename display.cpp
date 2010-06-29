@@ -447,7 +447,7 @@ void Display_ClearRenderState ( RenderStateType *RenderState )
 // Here for debugging purposes.
 void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState )
 {
-	for (int i=0; i<DISPLAY_MAXTEXTURES; i++ )
+	for (int i=0; i<DISPLAY_MAXTEXTURES; ++i)
 	{
 	    HRESULT         ReturnCode;
 		// Get the texture.
@@ -472,7 +472,6 @@ void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 		ReturnCode = Direct3DDevice->GetTextureStageState ( i, D3DTSS_TEXCOORDINDEX, &(TextureState->TextureCoordinateIndex[i]) );
 		ReturnCode = Direct3DDevice->GetTextureStageState ( i, D3DTSS_TEXTURETRANSFORMFLAGS, &(TextureState->TextureCoordinateTransformFlags[i]) );
 	}
-
 }
     
     
@@ -481,7 +480,7 @@ void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 {
 	return;
 
-	for (int i=0; i<DISPLAY_MAXTEXTURES; i++)
+	for (int i=0; i<DISPLAY_MAXTEXTURES; ++i)
 	{
 		HRESULT         ReturnCode;
 
@@ -510,7 +509,7 @@ void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 
 #if 0				
 	// Clear all remaining stages.
-	for (int i=DISPLAY_MAXTEXTURES; i<8; i++)
+	for (int i=DISPLAY_MAXTEXTURES; i<8; ++i)
 	{
 		HRESULT         ReturnCode;
 
@@ -567,7 +566,7 @@ void Display_ClearTextureState ( TextureStateType *TextureState )
 	TextureState->TextureCoordinateTransformFlags[0] = D3DTTFF_DISABLE;
 
 	// Clear all remaining stages.
-	for (int i=1; i<DISPLAY_MAXTEXTURES; i++ )
+	for (int i=1; i<DISPLAY_MAXTEXTURES; ++i)
 	{
 		// Set the texture.
 		TextureState->Texture[i] = NULL;
@@ -595,10 +594,9 @@ void Display_ClearTextureState ( TextureStateType *TextureState )
 
 
 // Creates a D3D texture surface from an existing DDraw surface. 
-void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 DirectDrawObject, LPDIRECTDRAWSURFACE7 SourceTexture, int Width, int Height, LPDIRECTDRAWSURFACE7 *DestD3DTexture, float *u, float *v )
+void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAW7 DirectDrawObject, const LPDIRECTDRAWSURFACE7 SourceTexture, const int Width, const int Height, LPDIRECTDRAWSURFACE7 * const DestD3DTexture, float * const u, float * const v )
 {
-    HRESULT					ReturnCode;
-    DDSURFACEDESC2			SourceSurfaceDescription, DestSurfaceDescription;
+    DDSURFACEDESC2 SourceSurfaceDescription, DestSurfaceDescription;
    
 	// Initialize.
 	*DestD3DTexture = NULL;
@@ -644,6 +642,7 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
 
     // Create a new surface for the texture.
 	LPDIRECTDRAWSURFACE7	VidSurface;
+	HRESULT					ReturnCode;
     if( FAILED( ReturnCode = DirectDrawObject->CreateSurface ( &DestSurfaceDescription, &VidSurface, NULL ) ) )
 		{
 		ShowError("Could not create texture surface.");
@@ -676,28 +675,31 @@ void Display_CreateTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAW7 Dir
 				if ( ReturnCode == 0 )
 				{
 					// Get the pointer to the actual pixel data.
-					const unsigned char *SourceLockedSurface = (unsigned char *) SourceSurfaceDescription.lpSurface;
-					unsigned char *DestLockedSurface = (unsigned char *) DestSurfaceDescription.lpSurface;
+					const unsigned char * const SourceLockedSurface = (unsigned char *) SourceSurfaceDescription.lpSurface;
+					unsigned char * const DestLockedSurface = (unsigned char *) DestSurfaceDescription.lpSurface;
+
+					int offset0 = 0;
+					int offset1 = 0;
 
 					// Copy the pixels.
-					for (int i=0; i<Height; i++ )
+					for (int i=0; i<Height; ++i)
 					{
-						for (int r=0; r<Width; r++ )
+						for (int r=0; r<Width*4; r+=4)
 						{
 							// Copy the pixel.
-							DestLockedSurface[(r * 4) + 0] = SourceLockedSurface[(r * 4) + 0];	// blue
-							DestLockedSurface[(r * 4) + 1] = SourceLockedSurface[(r * 4) + 1];	// green
-							DestLockedSurface[(r * 4) + 2] = SourceLockedSurface[(r * 4) + 2];	// red
+							DestLockedSurface[offset0 + r    ] = SourceLockedSurface[offset1 + r    ];	// blue
+							DestLockedSurface[offset0 + r + 1] = SourceLockedSurface[offset1 + r + 1];	// green
+							DestLockedSurface[offset0 + r + 2] = SourceLockedSurface[offset1 + r + 2];	// red
 #if 1
-							DestLockedSurface[(r * 4) + 3] = (unsigned char) 0xff;		// alpha
+							DestLockedSurface[offset0 + r + 3] = (unsigned char) 0xff;					// alpha
 #else
-							DestLockedSurface[(r * 4) + 3] = SourceLockedSurface[(r * 4) + 3];	// alpha								// alpha
+							DestLockedSurface[offset0 + r + 3] = SourceLockedSurface[offset1 + r + 3];	// alpha
 #endif						
 						}
 
 						// Increment to the next horizontal line.
-						SourceLockedSurface += SourceSurfaceDescription.lPitch;
-						DestLockedSurface += DestSurfaceDescription.lPitch;
+						offset1 += SourceSurfaceDescription.lPitch;
+						offset0 += DestSurfaceDescription.lPitch;
 					}
 
 					// Unlock the source surface.
@@ -811,8 +813,8 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 			if ( ReturnCode == 0 )
 			{
 				// Get the pointer to the actual pixel data.
-				const unsigned char * SourceLockedSurface = (unsigned char *) SourceSurfaceDescription.lpSurface;
-				unsigned char * DestLockedSurface = (unsigned char *) DestSurfaceDescription.lpSurface;
+				const unsigned char * const SourceLockedSurface = (unsigned char *) SourceSurfaceDescription.lpSurface;
+				unsigned char * const DestLockedSurface = (unsigned char *) DestSurfaceDescription.lpSurface;
 
 				// Sanity check.
 				if ( (SourceLockedSurface != NULL) && (DestLockedSurface != NULL) )
@@ -824,32 +826,31 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 					ClippedRect.right = min ( Rect->right, g_pplayer->m_pin3d.m_dwRenderWidth );
 
 					// Calculate the width and height (so we don't extend outside of memory on either surface).
-					int Width = min ( SourceSurfaceDescription.dwWidth, DestSurfaceDescription.dwWidth );
-					    Width = min ( Width, (ClippedRect.right - ClippedRect.left) );
-					int Height = min ( SourceSurfaceDescription.dwHeight, DestSurfaceDescription.dwHeight );
-					    Height = min ( Height, (ClippedRect.bottom - ClippedRect.top) );
+					const int Width = min ( (int)min ( SourceSurfaceDescription.dwWidth, DestSurfaceDescription.dwWidth ) , (ClippedRect.right - ClippedRect.left) );
+					const int Height = min ( (int)min ( SourceSurfaceDescription.dwHeight, DestSurfaceDescription.dwHeight ) , (ClippedRect.bottom - ClippedRect.top) );
 
-					const int offset = (ClippedRect.top * SourceSurfaceDescription.lPitch) + ClippedRect.left * 4;
+					int offset0 = 0;
+					int offset1 = (ClippedRect.top * SourceSurfaceDescription.lPitch) + ClippedRect.left * 4;
 
 					// Copy the pixels.
-					for (int i=0; i<Height; i++ )
+					for (int i=0; i<Height; ++i)
 					{
-						for (int r=0; r<Width; r++ )
+						for (int r=0; r<Width*4; r+=4)
 						{
 							// Copy the pixel.
 #if 1
-							*((unsigned int*)&(DestLockedSurface[r * 4])) = *((unsigned int*)&(SourceLockedSurface[offset + r * 4]));
+							*((unsigned int*)&(DestLockedSurface[offset0 + r])) = *((unsigned int*)&(SourceLockedSurface[offset1 + r]));
 #else
-							DestLockedSurface[(r * 4) + 0] = SourceLockedSurface[offset + (r * 4) + 0];		// blue
-							DestLockedSurface[(r * 4) + 1] = SourceLockedSurface[offset + (r * 4) + 1];		// green
-							DestLockedSurface[(r * 4) + 2] = SourceLockedSurface[offset + (r * 4) + 2];		// red
-							DestLockedSurface[(r * 4) + 3] = (unsigned char) 0xff;																									// alpha
+							DestLockedSurface[offset0 + r + 0] = SourceLockedSurface[offset1 + r + 0];		// blue
+							DestLockedSurface[offset0 + r + 1] = SourceLockedSurface[offset1 + r + 1];		// green
+							DestLockedSurface[offset0 + r + 2] = SourceLockedSurface[offset1 + r + 2];		// red
+							DestLockedSurface[offset0 + r + 3] = (unsigned char) 0xff;							// alpha																		// alpha
 #endif
 						}
 
 						// Increment to the next horizontal line.
-						SourceLockedSurface += SourceSurfaceDescription.lPitch;
-						DestLockedSurface += DestSurfaceDescription.lPitch;
+						offset1 += SourceSurfaceDescription.lPitch;
+						offset0 += DestSurfaceDescription.lPitch;
 					}
 				}
 
@@ -872,7 +873,7 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 }
 
 // Fills a texture with a constant Value in all channels.
-void Display_ClearTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 Texture, const char Value )
+void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAWSURFACE7 Texture, const char Value )
 {
     // Check if we have a texture.
 	if ( Texture != NULL )
@@ -887,19 +888,21 @@ void Display_ClearTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFAC
 		if ( ReturnCode == 0 )
 		{
 			// Get the pointer to the actual pixel data.
-			unsigned int* LockedSurface = (unsigned int *) SurfaceDescription.lpSurface;
+			unsigned int * const LockedSurface = (unsigned int *) SurfaceDescription.lpSurface;
 
 			const unsigned int ValueU = (unsigned int)Value | ((unsigned int)Value<<8) | ((unsigned int)Value<<16) | ((unsigned int)Value<<24);
 
+			DWORD offset = 0;
 			// Clear the pixels.
-			for (int i=0; i<(int)SurfaceDescription.dwHeight; i++ )
+			for (DWORD i=0; i<SurfaceDescription.dwHeight; ++i)
 			{
-				for (int r=0; r<(int)SurfaceDescription.dwWidth; r++ )
+				const DWORD end = SurfaceDescription.dwWidth+offset;
+				for (DWORD r=offset; r<end; ++r)
 					// Clear the pixel.
 					LockedSurface[r] = ValueU;
 
 				// Increment to the next horizontal line.
-				LockedSurface += SurfaceDescription.lPitch/4;
+				offset += SurfaceDescription.lPitch/4;
 			}
 
 			// Unlock the texture.
