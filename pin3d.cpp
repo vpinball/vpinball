@@ -56,7 +56,7 @@ Pin3D::~Pin3D()
 
 	SAFE_RELEASE(m_pddsShadowTexture);
 
-	for (int i=0;i<m_xvShadowMap.AbsoluteSize();i++)
+	for (int i=0; i<m_xvShadowMap.AbsoluteSize(); ++i)
 		((LPDIRECTDRAWSURFACE)m_xvShadowMap.AbsoluteElementAt(i))->Release();
 
 	SAFE_RELEASE(m_pddsLightWhite);
@@ -102,30 +102,30 @@ void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi
 	const int yoffset = vp.dwY;
 
 	// Transform each vertex through the current matrix set
-	for(int i=0; i<count; i++ )
+	for(int i=0; i<count; ++i)
 		{
 		const int l = rgi ? rgi[i] : i;
 
 		// Get the untransformed vertex position
-		const FLOAT x = rgv[l].x;
-		const FLOAT y = rgv[l].y;
-		const FLOAT z = rgv[l].z;
+		const float x = rgv[l].x;
+		const float y = rgv[l].y;
+		const float z = rgv[l].z;
 
 		// Transform it through the current matrix set
-		const FLOAT xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
-		const FLOAT yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
-		const FLOAT wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
+		const float xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
+		const float yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
+		const float wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
 
 		// Finally, scale the vertices to screen coords. This step first
 		// "flattens" the coordinates from 3D space to 2D device coordinates,
 		// by dividing each coordinate by the wp value. Then, the x- and
 		// y-components are transformed from device coords to screen coords.
 		// Note 1: device coords range from -1 to +1 in the viewport.
-		const FLOAT inv_wp = 1.0f/wp;
-		const FLOAT vTx  = ( 1.0f + xp*inv_wp ) * rClipWidth  + xoffset;
-		const FLOAT vTy  = ( 1.0f - yp*inv_wp ) * rClipHeight + yoffset;
+		const float inv_wp = 1.0f/wp;
+		const float vTx  = ( 1.0f + xp*inv_wp ) * rClipWidth  + xoffset;
+		const float vTy  = ( 1.0f - yp*inv_wp ) * rClipHeight + yoffset;
 
-		const FLOAT zp = m_matrixTotal._13*x + m_matrixTotal._23*y + m_matrixTotal._33*z + m_matrixTotal._43;
+		const float zp = m_matrixTotal._13*x + m_matrixTotal._23*y + m_matrixTotal._33*z + m_matrixTotal._43;
 		rgvout[l].x = vTx;
 		rgvout[l].y	= vTy;
 		rgvout[l].z = zp * inv_wp;
@@ -145,28 +145,28 @@ void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi
 	const int yoffset = vp.dwY;
 
 	// Transform each vertex through the current matrix set
-	for(int i=0; i<count; i++ )
+	for(int i=0; i<count; ++i)
 		{
 		const int l = rgi ? rgi[i] : i;
 
 		// Get the untransformed vertex position
-		const FLOAT x = rgv[l].x;
-		const FLOAT y = rgv[l].y;
-		const FLOAT z = rgv[l].z;
+		const float x = rgv[l].x;
+		const float y = rgv[l].y;
+		const float z = rgv[l].z;
 
 		// Transform it through the current matrix set
-		const FLOAT xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
-		const FLOAT yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
-		const FLOAT wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
+		const float xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
+		const float yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
+		const float wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
 
 		// Finally, scale the vertices to screen coords. This step first
 		// "flattens" the coordinates from 3D space to 2D device coordinates,
 		// by dividing each coordinate by the wp value. Then, the x- and
 		// y-components are transformed from device coords to screen coords.
 		// Note 1: device coords range from -1 to +1 in the viewport.
-		const FLOAT inv_wp = 1.0f/wp;
-		const FLOAT vTx  = ( 1.0f + xp*inv_wp ) * rClipWidth  + xoffset;
-		const FLOAT vTy  = ( 1.0f - yp*inv_wp ) * rClipHeight + yoffset;
+		const float inv_wp = 1.0f/wp;
+		const float vTx  = ( 1.0f + xp*inv_wp ) * rClipWidth  + xoffset;
+		const float vTy  = ( 1.0f - yp*inv_wp ) * rClipHeight + yoffset;
 
 		rgvout[l].x = vTx;
 		rgvout[l].y	= vTy;
@@ -375,7 +375,7 @@ retryall:
 
         m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback, (VOID*)&ddsd.ddpfPixelFormat );
 
-		count++;
+		++count;
 	}
 
 	if(FAILED(hr)) {
@@ -1069,7 +1069,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	Vector<Vertex3D> vvertex3D;
 
-	for (int i=0;i<g_pplayer->m_ptable->m_vedit.Size();i++)
+	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
 		{
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
 		}
@@ -1098,7 +1098,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 		}
 	CacheTransform();
 
-	for (int i=0;i<vvertex3D.Size();i++)
+	for (int i=0; i<vvertex3D.Size(); ++i)
 		{
 		delete vvertex3D.ElementAt(i);
 		}
@@ -1169,7 +1169,7 @@ void Pin3D::InitBackGraphics()
 		maxtv = maxtu = 1.0f;
 		}
 
-	for (int i=0;i<4;i++)
+	for (int i=0; i<4; ++i)
 		{
 		rgv[i].nx = 0;
 		rgv[i].ny = 0;
@@ -1235,20 +1235,19 @@ void Pin3D::CreateBallShadow()
 	const int pitch = ddsd.lPitch;
 	const int width = ddsd.dwWidth;
 	const int height = ddsd.dwHeight;
-	BYTE *pch = (BYTE *)ddsd.lpSurface;
+	BYTE * const pch = (BYTE *)ddsd.lpSurface;
+	int offset = 0;
 
-	for (int y=0;y<height;y++)
+	for (int y=0; y<height; ++y)
 		{
-		for (int x=0;x<width;x++)
+		for (int x=0; x<width; ++x)
 			{
-			//pch += 3;
 			const int dx = 8-x;
 			const int dy = 8-y;
 			const int dist = dx*dx + dy*dy;
-			*pch = (dist < 25) ? (BYTE)255 : (BYTE)0;
-			pch += 4;
+			pch[offset+x*4] = (dist < 25) ? (BYTE)255 : (BYTE)0;
 			}
-		pch += pitch - (width*4);
+		offset += pitch;
 		}
 	}
 
@@ -1261,18 +1260,18 @@ void Pin3D::CreateBallShadow()
 	const int pitch = ddsd.lPitch;
 	const int width = ddsd.dwWidth;
 	const int height = ddsd.dwHeight;
-	BYTE *pch = (BYTE *)ddsd.lpSurface;
+	BYTE * const pch = (BYTE *)ddsd.lpSurface;
+	int offset = 0;
 
-	for (int y=0;y<height;y++)
+	for (int y=0; y<height; ++y)
 		{
-		for (int x=0;x<width;x++)
+		for (int x=0; x<width*4; x+=4)
 			{
-			pch[0] = 0;
-			pch[1] = 0;
-			pch[2] = 0;
-			pch += 4;
+			pch[offset+x  ] = 0;
+			pch[offset+x+1] = 0;
+			pch[offset+x+2] = 0;
 			}
-		pch += pitch - (width*4);
+		offset += pitch;
 		}
 
 	m_pddsShadowTexture->Unlock(NULL);
@@ -1326,7 +1325,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 	SelectObject(hdc2, GetStockObject(WHITE_BRUSH));
 	PatBlt(hdc2, 0, 0, shadwidth, shadheight, PATCOPY);
 
-	for (int i=0;i<g_pplayer->m_ptable->m_vedit.Size();i++)
+	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
 		{
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->RenderShadow(psur, z);
 		}
@@ -1480,7 +1479,7 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D/*Vertex3D *r
 	m_rznear = 0;
 	m_rzfar = 0;
 
-	for (int i=0;i<cvert;i++)
+	for (int i=0; i<cvert; ++i)
 		{
 		//vertexT = rgv[i];
 		
@@ -1595,7 +1594,7 @@ void Pin3D::SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const 
 	D3DMATRIX mat;
 	memset(&mat, 0, sizeof(D3DMATRIX));
 
-    const FLOAT Q = (float)(rzfar / ( rzfar - rznear ));
+    const float Q = (float)(rzfar / ( rzfar - rznear ));
 
 	mat._11 = (float)(rznear / xrange);
 	mat._22 = -(float)(rznear / yrange);
@@ -1648,7 +1647,7 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const p
 	if (!fTransformed)
 		TransformVertices(rgv, NULL, count, rgvOut);
 
-	for (int i=0;i<count;i++)
+	for (int i=0; i<count; ++i)
 		{
 		const int x = (int)(rgvOut[i].x + 0.5f);
 		const int y = (int)(rgvOut[i].y + 0.5f);
@@ -1952,7 +1951,7 @@ void Pin3D::ReadAnimObjectFromCacheFile(AnimObject *panimobj, ObjFrame **rgpobjf
 	Vector<ObjFrame> vframe;
 	ReadAnimObjectFromCacheFile(panimobj, &vframe);
 
-	for (int i=0;i<count;i++)
+	for (int i=0; i<count; ++i)
 		{
 		rgpobjframe[i] = vframe.ElementAt(i);
 		}
@@ -1975,9 +1974,9 @@ void Pin3D::ReadAnimObjectFromCacheFile(AnimObject *panimobj, Vector<ObjFrame> *
 	int framecount;
 	ret = ReadFile(m_hFileCache, &framecount, sizeof(int), &bytesRead, NULL);
 
-	for (int i=0;i<framecount;i++)
+	for (int i=0; i<framecount; ++i)
 		{
-		ObjFrame *pof = new ObjFrame();
+		ObjFrame * const pof = new ObjFrame();
 		Assert( pof );//out of memory
 		ReadObjFrameFromCacheFile(pof);
 		pvobjframe->AddElement(pof);
@@ -2059,7 +2058,7 @@ void Pin3D::WriteObjFrameToCacheFile(ObjFrame *pobjframe)
 void Pin3D::WriteAnimObjectToCacheFile(AnimObject *panimobj, ObjFrame **rgobjframe, int count)
 	{
 	Vector<ObjFrame> vframe;
-	for (int i=0;i<count;i++)
+	for (int i=0; i<count; ++i)
 		{
 		vframe.AddElement(rgobjframe[i]);
 		}
@@ -2083,7 +2082,7 @@ void Pin3D::WriteAnimObjectToCacheFile(AnimObject *panimobj, Vector<ObjFrame> *p
 	int framecount = pvobjframe->Size();
 	ret = WriteFile(m_hFileCache, &framecount, sizeof(int), &bytesWritten, NULL);
 
-	for (int i=0;i<pvobjframe->Size();i++)
+	for (int i=0; i<pvobjframe->Size(); ++i)
 		{
 		WriteObjFrameToCacheFile(pvobjframe->ElementAt(i));
 		}
@@ -2156,7 +2155,7 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D, con
 	m_rznear = 0;
 	m_rzfar = 0;
 
-	for (int i=0;i<cvert;i++)
+	for (int i=0; i<cvert; ++i)
 		{
 		//vertexT = rgv[i];
 		
@@ -2214,7 +2213,7 @@ void PinProjection::SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect
 
 	memset(&m_matProj, 0, sizeof(D3DMATRIX));
 
-    const FLOAT Q = (float)(rzfar / ( rzfar - rznear ));
+    const float Q = (float)(rzfar / ( rzfar - rznear ));
 
 	m_matProj._11 = (float)(rznear / xrange);
 	m_matProj._22 = -(float)(rznear / yrange);
@@ -2257,30 +2256,30 @@ void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * c
 	const int yoffset = m_rcviewport.top;
 
 	// Transform each vertex through the current matrix set
-	for(int i=0; i<count; i++ )
+	for(int i=0; i<count;  ++i)
 		{
 		const int l = rgi ? rgi[i] : i;
 
 		// Get the untransformed vertex position
-		const FLOAT x = rgv[l].x;
-		const FLOAT y = rgv[l].y;
-		const FLOAT z = rgv[l].z;
+		const float x = rgv[l].x;
+		const float y = rgv[l].y;
+		const float z = rgv[l].z;
 
 		// Transform it through the current matrix set
-		const FLOAT xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
-		const FLOAT yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
-		const FLOAT wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
+		const float xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
+		const float yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
+		const float wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
 
 		// Finally, scale the vertices to screen coords. This step first
 		// "flattens" the coordinates from 3D space to 2D device coordinates,
 		// by dividing each coordinate by the wp value. Then, the x- and
 		// y-components are transformed from device coords to screen coords.
 		// Note 1: device coords range from -1 to +1 in the viewport.
-		const FLOAT inv_wp = 1.0f/wp;
+		const float inv_wp = 1.0f/wp;
 		const float vTx  = ( 1.0f + xp*inv_wp ) * rClipWidth  + xoffset;
 		const float vTy  = ( 1.0f - yp*inv_wp ) * rClipHeight + yoffset;
 
-		const FLOAT zp = m_matrixTotal._13*x + m_matrixTotal._23*y + m_matrixTotal._33*z + m_matrixTotal._43;
+		const float zp = m_matrixTotal._13*x + m_matrixTotal._23*y + m_matrixTotal._33*z + m_matrixTotal._43;
 		rgvout[l].x = vTx;
 		rgvout[l].y	= vTy;
 		rgvout[l].z = zp * inv_wp;
@@ -2300,26 +2299,26 @@ void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * c
 	const int yoffset = m_rcviewport.top;
 
 	// Transform each vertex through the current matrix set
-	for(int i=0; i<count; i++ )
+	for(int i=0; i<count; ++i)
 		{
 		const int l = rgi ? rgi[i] : i;
 
 		// Get the untransformed vertex position
-		const FLOAT x = rgv[l].x;
-		const FLOAT y = rgv[l].y;
-		const FLOAT z = rgv[l].z;
+		const float x = rgv[l].x;
+		const float y = rgv[l].y;
+		const float z = rgv[l].z;
 
 		// Transform it through the current matrix set
-		const FLOAT xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
-		const FLOAT yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
-		const FLOAT wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
+		const float xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
+		const float yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
+		const float wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
 
 		// Finally, scale the vertices to screen coords. This step first
 		// "flattens" the coordinates from 3D space to 2D device coordinates,
 		// by dividing each coordinate by the wp value. Then, the x- and
 		// y-components are transformed from device coords to screen coords.
 		// Note 1: device coords range from -1 to +1 in the viewport.
-		const FLOAT inv_wp = 1.0f/wp;
+		const float inv_wp = 1.0f/wp;
 		const float vTx  = ( 1.0f + xp*inv_wp ) * rClipWidth  + xoffset;
 		const float vTy  = ( 1.0f - yp*inv_wp ) * rClipHeight + yoffset;
 
@@ -2332,17 +2331,16 @@ void Matrix3D::Invert()
 //void Gauss (RK8 ** a, RK8 ** b, int n)
 	{
 	int ipvt[4];
-	const int nn = 4;
-	for (int i = 0; i < nn; i++)
+	for (int i = 0; i < 4; ++i)
 		{
 		ipvt[i] = i;
 		}
 
-	for (int k = 0; k < nn; k++)
+	for (int k = 0; k < 4; ++k)
 		{
 		float temp = 0.f;
 		int l = k;
-		for (int i = k; i < nn; i++)
+		for (int i = k; i < 4; ++i)
 			{
 			const float d = fabsf(m[k][i]);
 			if (d > temp)
@@ -2356,7 +2354,7 @@ void Matrix3D::Invert()
 			const int tmp = ipvt[k];
 			ipvt[k] = ipvt[l];
 			ipvt[l] = tmp;
-			for (int j = 0; j < nn; j++)
+			for (int j = 0; j < 4; ++j)
 				{
 				temp = m[j][k];
 				m[j][k] = m[j][l];
@@ -2364,21 +2362,21 @@ void Matrix3D::Invert()
 				}
 			}
 		const float d = 1.0f / m[k][k];
-		for (int j = 0; j < k; j++)
+		for (int j = 0; j < k; ++j)
 			{
 			const float c = m[j][k] * d;
-			for (int i = 0; i < nn; i++)
+			for (int i = 0; i < 4; ++i)
 				m[j][i] -= m[k][i] * c;
 			m[j][k] = c;
 			}
-		for (int j = k + 1; j < nn; j++)
+		for (int j = k + 1; j < 4; ++j)
 			{
 			const float c = m[j][k] * d;
-			for (int i = 0; i < nn; i++)
+			for (int i = 0; i < 4; ++i)
 				m[j][i] -= m[k][i] * c;
 			m[j][k] = c;
 			}
-		for (int i = 0; i < nn; i++)
+		for (int i = 0; i < 4; ++i)
 			m[k][i] = -m[k][i] * d;
 		m[k][k] = d;
 		}

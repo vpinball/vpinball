@@ -101,7 +101,7 @@ LONG code_mask[13] = {
 
 /* This function initializes the decoder for reading a new image.
  */
-short LZWReader::init_exp(short size)
+short LZWReader::init_exp(int size)
 	{
 	curr_size = size + 1;
 	top_slot = 1 << curr_size;
@@ -210,9 +210,8 @@ short LZWReader::Decoder()
 	{
 	BYTE *sp, *bufptr;
 	BYTE *buf;
-	short code, fc, oc;
 	DWORD bufcnt;
-	short c, size, ret;
+	int c, oc, fc, code, size;
 
 	/* Initialize for decoding a new image...
 	 */
@@ -253,7 +252,7 @@ short LZWReader::Decoder()
 		 */
 		if (c < 0)
 			{
-			goto ByteCorrection;
+			break;
 			//return (0);
 			}
 
@@ -344,7 +343,7 @@ short LZWReader::Decoder()
 				{
 				fc = code;
 				suffix[slot] = (BYTE) fc;	// = code;
-				prefix[slot++] = oc;
+				prefix[slot++] = (WCHAR) oc;
 				oc = c;
 				}
 			if (slot >= top_slot)
@@ -373,15 +372,13 @@ short LZWReader::Decoder()
 		}
 
 	// BUG - is all this necessary?  Is it correct?
-ByteCorrection:
 	int toofar = m_readahead - m_cfilebuffer; // bytes we already read that we shouldn't have
 	toofar--;  // m_readahead == the byte we just read, so we actually used up one more than the math shows
 	LARGE_INTEGER li;
 	li.QuadPart = -toofar;
 	m_pstm->Seek(li, STREAM_SEEK_CUR, NULL);
 
-	ret = 0;
-	return (ret);
+	return (0);
 	}
 
 /*
@@ -390,7 +387,7 @@ ByteCorrection:
 int LZWReader::get_byte()
 	{
 
-	m_cfilebuffer++;
+	++m_cfilebuffer;
 	if (m_cfilebuffer == FILE_BUF_SIZE)
 		{
 		m_cfilebuffer = 0;

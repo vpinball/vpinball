@@ -218,7 +218,7 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 
 	// Go through line segment, calculate distance from point to the line
 	// then pick the shortest distance
-	for (int i=0;i<cloop;i++)
+	for (int i=0; i<cloop; ++i)
 		{
 		const int p1 = i;
 		const int p2 = (i+1)%count;
@@ -267,10 +267,9 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoin
 	const float rsin = sinf(angle);
 	const float rcos = cosf(angle);
 
-	float matrix[3][3];
-
 	// Matrix for rotating around an arbitrary vector
 
+	float matrix[3][3];
 	matrix[0][0] = x*x + rcos*(1.0f-x*x);
 	matrix[1][0] = x*y*(1.0f-rcos) - z*rsin;
 	matrix[2][0] = z*x*(1.0f-rcos) + y*rsin;
@@ -283,7 +282,7 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoin
 	matrix[1][2] = y*z*(1.0f-rcos) + x*rsin;
 	matrix[2][2] = z*z + rcos*(1.0f-z*z);
 
-	for (int i=0;i<count;i++)
+	for (int i=0; i<count; ++i)
 		{
 		const float result[3] = {
 			matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z,
@@ -314,10 +313,9 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3Ds * const pvPoi
 	const float rsin = sinf(angle);
 	const float rcos = cosf(angle);
 
-	float matrix[3][3];
-
 	// Matrix for rotating around an arbitrary vector
 
+	float matrix[3][3];
 	matrix[0][0] = x*x + rcos*(1.0f-x*x);
 	matrix[1][0] = x*y*(1.0f-rcos) - z*rsin;
 	matrix[2][0] = z*x*(1.0f-rcos) + y*rsin;
@@ -330,7 +328,7 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3Ds * const pvPoi
 	matrix[1][2] = y*z*(1.0f-rcos) + x*rsin;
 	matrix[2][2] = z*z + rcos*(1.0f-z*z);
 
-	for (int i=0;i<count;i++)
+	for (int i=0; i<count; ++i)
 		{
 		const float result[3] = {
 			matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z,
@@ -376,8 +374,8 @@ public:
 
 	inline void MultiplyScalar(const float scalar)
 	{
-	for (int i=0;i<3;i++)
-		for (int l=0;l<3;l++)
+	for (int i=0; i<3; ++i)
+		for (int l=0; l<3; ++l)
 			m_d[i][l] *= scalar;
 	}
 
@@ -424,23 +422,23 @@ public:
 	inline void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
 	{
 	Matrix3 matans;
-    for(int i=0;i<3;i++)
-        for(int l=0;l<3;l++)
+    for(int i=0; i<3; ++i)
+        for(int l=0; l<3; ++l)
             matans.m_d[i][l] = pmat1->m_d[i][0] * pmat2->m_d[0][l] +
 					           pmat1->m_d[i][1] * pmat2->m_d[1][l] +
 						       pmat1->m_d[i][2] * pmat2->m_d[2][l];
 
 	// Copy the final values over later.  This makes it so pmat1 and pmat2 can
 	// point to the same matrix.
-    for(int i=0;i<3;i++)
-		for (int l=0;l<3;l++)
+    for(int i=0; i<3; ++i)
+		for (int l=0; l<3; ++l)
 			m_d[i][l] = matans.m_d[i][l];
 	}
 
 	inline void AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
 	{
-	for (int i=0;i<3;i++)
-		for (int l=0;l<3;l++)
+	for (int i=0; i<3; ++i)
+		for (int l=0; l<3; ++l)
 			m_d[i][l] = pmat1->m_d[i][l] + pmat2->m_d[i][l];
 	}
 
@@ -464,7 +462,7 @@ public:
 
 	inline void Transpose(Matrix3 * const pmatOut) const
 	{
-	for(int i = 0;i < 3;i++)
+	for(int i=0; i<3; ++i)
 		{
         pmatOut->m_d[0][i] = m_d[i][0];
         pmatOut->m_d[1][i] = m_d[i][1];
