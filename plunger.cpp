@@ -187,12 +187,18 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	
 	const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
+	{
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.r = mtrl.ambient.r = 0.3f;
-	mtrl.diffuse.g = mtrl.ambient.g = 0.3f;
+	mtrl.diffuse.a = 
+	mtrl.ambient.a =
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
+	mtrl.diffuse.r = mtrl.ambient.r =
+	mtrl.diffuse.g = mtrl.ambient.g =
 	mtrl.diffuse.b = mtrl.ambient.b = 0.3f;
 	pd3dDevice->SetMaterial(&mtrl);
+	}
 
 	const int cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke/80.0f)) + 1; // 25 frames per 80 units travel
 

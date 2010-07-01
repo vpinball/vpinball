@@ -146,12 +146,12 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
-	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-
 	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
 	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
 	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 	Vertex3D rgv3D[49];
 	Vertex3D rgvBorder[16];
@@ -170,16 +170,22 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		rgvBorder[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius+6.0f);
 		rgvBorder[l].z = height + 0.05f;
 
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgvBorder[l]);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16],inv_width,inv_height);
+		ppin3d->m_lightproject.CalcCoordinates(&rgvBorder[l],inv_width,inv_height);
 		}
 
 	rgv3D[48].x = m_d.m_vCenter.x;
 	rgv3D[48].y = m_d.m_vCenter.y;
 	rgv3D[48].z = height + (0.1f - 30.0f);
-	ppin3d->m_lightproject.CalcCoordinates(&rgv3D[48]);
+	ppin3d->m_lightproject.CalcCoordinates(&rgv3D[48],inv_width,inv_height);
 
+	D3DMATERIAL7 mtrl;
+	mtrl.diffuse.a = 
+	mtrl.ambient.a =
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
 	mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
 	mtrl.diffuse.g = mtrl.ambient.g = g;//0.2f;
 	mtrl.diffuse.b = mtrl.ambient.b = b;//0.2f;
@@ -214,8 +220,9 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	ddbltfx.ddckSrcColorkey.dwColorSpaceLowValue = 0;
 	ddbltfx.ddckSrcColorkey.dwColorSpaceHighValue = 0;
 	pd3dDevice->Clear( 1, (D3DRECT *)&rcBounds, D3DCLEAR_TARGET, 0x00ffffff, 1.0f, 0L );
-	mtrl.diffuse.r = mtrl.ambient.r = 0.0f;
-	mtrl.diffuse.g = mtrl.ambient.g = 0.0f;
+
+	mtrl.diffuse.r = mtrl.ambient.r = 
+	mtrl.diffuse.g = mtrl.ambient.g = 
 	mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
 	pd3dDevice->SetMaterial(&mtrl);
 
@@ -283,10 +290,10 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	// Draw the inside of the kicker based on its type.
 	switch (m_d.m_kickertype)
 		{
-		case KickerHole:
+		case KickerHole: {
 			// Draw the kicker itself
-			mtrl.diffuse.r = mtrl.ambient.r = 0.0f;
-			mtrl.diffuse.g = mtrl.ambient.g = 0.0f;
+			mtrl.diffuse.r = mtrl.ambient.r =
+			mtrl.diffuse.g = mtrl.ambient.g =
 			mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
 			pd3dDevice->SetMaterial(&mtrl);
 
@@ -332,9 +339,10 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 4, 0);
 				}
+			}
 			break;
 
-		case KickerCup:
+		case KickerCup: {
 			mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
 			mtrl.diffuse.g = mtrl.ambient.g = g;//0.2f;
 			mtrl.diffuse.b = mtrl.ambient.b = b;//0.2f;
@@ -357,6 +365,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 49,rgi, 3, 0);
 				}
+			}
 			break;
 
 		case KickerHidden:

@@ -2673,11 +2673,17 @@ void Player::DrawBallShadows()
 	// Nobody likes the ball shadows.		- JEP
 	//return;
 
+	{
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.diffuse.r = mtrl.ambient.r =
+	mtrl.diffuse.g = mtrl.ambient.g =
+	mtrl.diffuse.b = mtrl.ambient.b =
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;	
 	m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
+	}
 
 	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
 
@@ -2692,13 +2698,6 @@ void Player::DrawBallShadows()
 
 		if (m_fBallShadows)
 			{
-			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
-			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
-			m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
-
 			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
@@ -2812,20 +2811,17 @@ void Player::DrawBallShadows()
 
 void Player::DrawBalls()
 	{
-	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-	/*mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-	mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
-	mtrl.diffuse.b = mtrl.ambient.b = 1.0f;*/
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
-	m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
-	
 	//m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
 
 	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
 
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
+
+	D3DMATERIAL7 mtrl;
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 	const float sn = sinf(m_pin3d.m_inclination);
 	const float cs = cosf(m_pin3d.m_inclination);

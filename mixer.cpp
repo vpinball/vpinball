@@ -18,7 +18,7 @@ int mixer_init( HWND wnd )
 	if( !nmixers ) return 0;
 
 	m_hMixer = NULL;
-	::ZeroMemory(&sMxCaps, sizeof(MIXERCAPS));
+	ZeroMemory(&sMxCaps, sizeof(MIXERCAPS));
 
 	m_dwMinimum = 0;
 	m_dwMaximum = 0;

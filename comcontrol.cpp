@@ -683,12 +683,12 @@ void PinComControl::CreateControlDialogTemplate()
 	*p++ = 0;          // HIWORD (lExtendedStyle)
 	*p++ = LOWORD (lStyle);
 	*p++ = HIWORD (lStyle);
-	WORD *pitemcount = p;
+	WORD * const pitemcount = p;
 	*p++ = cdispfuncs*2;          // NumberOfItems
 	*p++ = 0;        // x
 	*p++ = 0;         // y
 	*p++ = 100;        // cx
-	WORD *pdialogheight = p;
+	WORD * const pdialogheight = p;
 	*p++ = 200;        // cy
 	*p++ = 0;          // Menu
 	*p++ = 0;          // Class

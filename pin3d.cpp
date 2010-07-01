@@ -884,10 +884,14 @@ void Pin3D::DrawBackground()
 	if (pin)
 		{
 		D3DMATERIAL7 mtrl;
-		ZeroMemory( &mtrl, sizeof(mtrl) );
+		mtrl.diffuse.a = 
+		mtrl.ambient.a =
+		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+		mtrl.power = 0;
 
-		mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-		mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+		mtrl.diffuse.r = mtrl.ambient.r =
+		mtrl.diffuse.g = mtrl.ambient.g =
 		mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
 
 		m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER,
@@ -1063,9 +1067,9 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	m_lightproject.m_v.x = g_pplayer->m_ptable->m_right *0.5f;//500;
 	m_lightproject.m_v.y = g_pplayer->m_ptable->m_bottom *0.5f;
-	m_lightproject.inclination = 0;
-	m_lightproject.rotation = 0;
-	m_lightproject.spin = 0;
+//	m_lightproject.inclination = 0;
+//	m_lightproject.rotation = 0;
+//	m_lightproject.spin = 0;
 
 	Vector<Vertex3D> vvertex3D;
 
@@ -1133,7 +1137,10 @@ void Pin3D::InitBackGraphics()
 	rgv[7].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_top,50.0f);
 
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
 
 	PinImage * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
 
@@ -1150,10 +1157,9 @@ void Pin3D::InitBackGraphics()
 		//m_pd3dDevice->SetTextureStageState(eLightProject1, D3DTSS_COLOROP, D3DTOP_DISABLE);
 		//m_pd3dDevice->SetTextureStageState(eLightProject1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
-		mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-		mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
-		mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+		mtrl.diffuse.r = mtrl.ambient.r =
+		mtrl.diffuse.g = mtrl.ambient.g =
+		mtrl.diffuse.b = mtrl.ambient.b = 1.0f;		
 
 		SetTexture(pin->m_pdsBuffer);
 		}
@@ -1164,10 +1170,12 @@ void Pin3D::InitBackGraphics()
 		mtrl.diffuse.r = mtrl.ambient.r = (g_pplayer->m_ptable->m_colorplayfield & 255) * (float)(1.0/255.0);
 		mtrl.diffuse.g = mtrl.ambient.g = (g_pplayer->m_ptable->m_colorplayfield & 65280) * (float)(1.0/65280.0);
 		mtrl.diffuse.b = mtrl.ambient.b = (g_pplayer->m_ptable->m_colorplayfield & 16711680) * (float)(1.0/16711680.0);
-		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 		maxtv = maxtu = 1.0f;
 		}
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 	for (int i=0; i<4; ++i)
 		{
@@ -1178,7 +1186,7 @@ void Pin3D::InitBackGraphics()
 		rgv[i].tv = i&2 ? maxtv : 0;
 		rgv[i].tu = (i==1 || i==2) ? maxtu : 0;
 
-		m_lightproject.CalcCoordinates(&rgv[i]);
+		m_lightproject.CalcCoordinates(&rgv[i],inv_width,inv_height);
 		}
 
 	m_pd3dDevice->SetMaterial(&mtrl);
@@ -1381,7 +1389,9 @@ void Pin3D::EnableLightMap(const BOOL fEnable, const float z)
 void Pin3D::SetMaterial(const float r, const float g, const float b, const float a)
 	{
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
 	mtrl.diffuse.r = mtrl.ambient.r = r;
 	mtrl.diffuse.g = mtrl.ambient.g = g;
 	mtrl.diffuse.b = mtrl.ambient.b = b;

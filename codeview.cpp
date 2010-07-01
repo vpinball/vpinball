@@ -685,7 +685,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	LONG nChar;
 	ULONG nLine;
 	BSTR bstr = 0;
-	EXCEPINFO ei; ZeroMemory(&ei, sizeof(ei));
+	EXCEPINFO ei;
+	ZeroMemory(&ei, sizeof(ei));
 	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
 	pscripterror->GetSourceLineText(&bstr);
 	pscripterror->GetExceptionInfo(&ei);
@@ -785,7 +786,6 @@ void CodeViewer::Start()
 
 void CodeViewer::EvaluateScriptStatement(char *szScript)
 	{
-
 	EXCEPINFO exception;
 	ZeroMemory(&exception, sizeof(exception));
 

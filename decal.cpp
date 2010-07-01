@@ -336,9 +336,11 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-	mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
+	mtrl.diffuse.r = mtrl.ambient.r =
+	mtrl.diffuse.g = mtrl.ambient.g =
 	mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
 	mtrl.diffuse.a = mtrl.ambient.a = 0.5f;
 	pd3dDevice->SetMaterial(&mtrl);

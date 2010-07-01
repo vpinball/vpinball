@@ -577,9 +577,11 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			
 			SetHUDVertices(rgv3D, 4);
 			
+			{
 			D3DMATERIAL7 mtrl;
 			pd3dDevice->GetMaterial(&mtrl);
 			SetDiffuseFromMaterial(rgv3D, 4, &mtrl);
+			}
 			
 			//ppin3d->ExpandExtents(&m_preelframe->rc, rgv3D, NULL, NULL, 4, m_fBackglass);
 

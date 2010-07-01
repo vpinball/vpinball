@@ -367,10 +367,6 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
 
@@ -438,10 +434,14 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	Vector<Triangle> vtri;
 	PolygonToTriangles(rgv, &vpoly, &vtri);
 
+	D3DMATERIAL7 mtrl;
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;	
 	mtrl.diffuse.r = mtrl.ambient.r = r;///4;
 	mtrl.diffuse.g = mtrl.ambient.g = g;///4;
 	mtrl.diffuse.b = mtrl.ambient.b = b;///4;
-
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 	pd3dDevice->SetMaterial(&mtrl);
 
 	WORD rgi[3] = {0,1,2};
@@ -464,6 +464,9 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		SetDiffuseFromMaterial(rgv3D, 3, &mtrl);
 		}
 
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
 	for (int t=0;t<vtri.Size();t++)
 		{
 		const Triangle * const ptri = vtri.ElementAt(t);
@@ -480,7 +483,7 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 			for (int l=0;l<3;l++)
-				ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+				ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
@@ -512,12 +515,17 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 	const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
 
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
 	mtrl.diffuse.r = mtrl.ambient.r = r;
 	mtrl.diffuse.g = mtrl.ambient.g = g;
 	mtrl.diffuse.b = mtrl.ambient.b = b;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 	pd3dDevice->SetMaterial(&mtrl);
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 	Vertex3D rgv3D[32];
 	for (int l=0;l<32;l++)
@@ -527,7 +535,7 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius + m_d.m_borderwidth);
 		rgv3D[l].z = height + 0.05f;
 
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 		}
 
 	WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
@@ -581,10 +589,6 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
 
@@ -598,9 +602,6 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
 	Vector<void> vpoly;
 	float maxdist = 0;
@@ -623,6 +624,19 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	Vector<Triangle> vtri;
 	PolygonToTriangles(rgv, &vpoly, &vtri);
 
+	D3DMATERIAL7 mtrl;
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.a =
+	mtrl.power = 0;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+
+	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
 	for (int i=0;i<2;i++)
 		{
 			PinImage* pin = NULL;
@@ -634,11 +648,11 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 					ppin3d->SetTexture(pin->m_pdsBuffer);
 					ppin3d->EnableLightMap(fFalse, -1);
-					mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-					mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+					mtrl.diffuse.r = mtrl.ambient.r = 
+					mtrl.diffuse.g = mtrl.ambient.g = 
 					mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-					mtrl.emissive.r = 0.0f;
-					mtrl.emissive.g = 0.0f;
+					mtrl.emissive.r = 
+					mtrl.emissive.g = 
 					mtrl.emissive.b = 0.0f;
 					}
 				else
@@ -649,9 +663,9 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0);
 					mtrl.diffuse.g = mtrl.ambient.g = g*(float)(1.0/3.0);
 					mtrl.diffuse.b = mtrl.ambient.b = b*(float)(1.0/3.0);
-					mtrl.emissive.r = 0;
-					mtrl.emissive.g = 0;
-					mtrl.emissive.b = 0;
+					mtrl.emissive.r = 
+					mtrl.emissive.g = 
+					mtrl.emissive.b = 0.0f;
 					}
 			} else { //LightStateOn
 				// Check if the light has an "on" texture.
@@ -660,11 +674,11 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					// Set the texture to the one defined in the editor.
 					ppin3d->SetTexture(pin->m_pdsBuffer);
 					ppin3d->EnableLightMap(fFalse, -1);
-					mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-					mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+					mtrl.diffuse.r = mtrl.ambient.r = 
+					mtrl.diffuse.g = mtrl.ambient.g = 
 					mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-					mtrl.emissive.r = 0.0f;
-					mtrl.emissive.g = 0.0f;
+					mtrl.emissive.r = 
+					mtrl.emissive.g = 
 					mtrl.emissive.b = 0.0f;
 					}
 				else
@@ -738,7 +752,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 				{
 				if (!m_fBackglass)
 					{
-					ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+					ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 					}
 
 				// Check if we are using a custom texture.
@@ -869,6 +883,9 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
 	Vertex3D rgv3D[32];
 	for (int l=0;l<32;l++)
 		{
@@ -882,7 +899,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[l].tu = 0.5f + sinangle*0.5f;
 		rgv3D[l].tv = 0.5f + cosangle*0.5f;
 
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 		}
 
 	WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
@@ -900,7 +917,9 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.a =
+	mtrl.power = 0;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 	for (int i=0;i<2;i++)
@@ -910,8 +929,8 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0);
 				mtrl.diffuse.g = mtrl.ambient.g = g*(float)(1.0/3.0);
 				mtrl.diffuse.b = mtrl.ambient.b = b*(float)(1.0/3.0);
-				mtrl.emissive.r = 0;
-				mtrl.emissive.g = 0;
+				mtrl.emissive.r =
+				mtrl.emissive.g =
 				mtrl.emissive.b = 0;
 			} else {
 				ppin3d->EnableLightMap(fFalse, -1);
