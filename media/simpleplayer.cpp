@@ -134,11 +134,11 @@ HRESULT STDMETHODCALLTYPE CSimplePlayer::OnSample(
         return hr;
 
 	// Fill the DirectSound buffer with WAV data
-	CopyMemory(pbBuffer, pData, dwBufferLength);
+	memcpy(pbBuffer, pData, dwBufferLength);
 
 	if (dwBufferLength < cbData)
 		{
-		CopyMemory(pbBuffer2, &pData[dwBufferLength], dwBufferLength2);
+		memcpy(pbBuffer2, &pData[dwBufferLength], dwBufferLength2);
 		}
 
     // Now unlock the buffer

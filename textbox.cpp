@@ -697,7 +697,7 @@ STDMETHODIMP Textbox::put_Alignment(TextAlignment newVal)
 
 STDMETHODIMP Textbox::get_IsTransparent(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_fTransparent);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fTransparent);
 
 	return S_OK;
 }

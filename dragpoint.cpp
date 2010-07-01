@@ -380,7 +380,7 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 		float endtexcoord;
 
 		const int startrenderpoint = virenderpoints.ElementAt(i) % cpoints;
-		int endrenderpoint = virenderpoints.ElementAt((i+1) % cpoints) % cpoints;
+		int endrenderpoint = virenderpoints.ElementAt((i < cpoints-1) ? (i+1) : 0) % cpoints;
 
 		if (m_fNoCoords)
 			{
@@ -390,7 +390,7 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 		else
 			{
 			starttexcoord = m_vdpoint.ElementAt(vitexpoints.ElementAt(i) % m_vdpoint.Size())->m_texturecoord;
-			endtexcoord = m_vdpoint.ElementAt(vitexpoints.ElementAt((i+1) % vitexpoints.Size()) % m_vdpoint.Size())->m_texturecoord;
+			endtexcoord = m_vdpoint.ElementAt(vitexpoints.ElementAt(i+1) % m_vdpoint.Size())->m_texturecoord;
 			}
 
 		const float deltacoord = endtexcoord - starttexcoord;

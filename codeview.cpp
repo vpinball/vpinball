@@ -990,7 +990,7 @@ next:
 			MessageBeep(MB_ICONEXCLAMATION);
 			SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (long)szT);
 		}
-		goto done;
+		return;
 	}
 
 	ft.chrg.cpMin = ft.chrgText.cpMin;
@@ -1004,9 +1004,6 @@ next:
 		cszReplaced++;
 		goto next;
 	}
-
-done:
-;
 }
 
 void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -1588,7 +1585,7 @@ BOOL CodeViewer::FUserManuallyOkaysControl(CONFIRMSAFETY *pcs)
 
 	if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
 		{
-		goto End;
+		return fFalse;
 		}
 
 	len = lstrlenW(wzT) + 1; // include null termination
@@ -1612,8 +1609,6 @@ BOOL CodeViewer::FUserManuallyOkaysControl(CONFIRMSAFETY *pcs)
 
 	delete szName;
 	delete szT;
-
-End:
 
 	return fSafe;
 	}

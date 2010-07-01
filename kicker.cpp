@@ -214,11 +214,11 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	pddsMask = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
 
 	hr = pddsBufferBack->Blt(NULL, ppin3d->m_pddsStatic, &rcBounds, DDBLT_WAIT, NULL);
-	DDBLTFX ddbltfx;
+	/*DDBLTFX ddbltfx;
 	ddbltfx.dwSize = sizeof(DDBLTFX);
 	ddbltfx.dwFillDepth = 0xffffffff;
 	ddbltfx.ddckSrcColorkey.dwColorSpaceLowValue = 0;
-	ddbltfx.ddckSrcColorkey.dwColorSpaceHighValue = 0;
+	ddbltfx.ddckSrcColorkey.dwColorSpaceHighValue = 0;*/
 	pd3dDevice->Clear( 1, (D3DRECT *)&rcBounds, D3DCLEAR_TARGET, 0x00ffffff, 1.0f, 0L );
 
 	mtrl.diffuse.r = mtrl.ambient.r = 

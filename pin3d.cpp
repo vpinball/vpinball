@@ -950,11 +950,11 @@ void Pin3D::DrawBackground()
 
 void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey)
 	{
-	RECT rc;
+	/*RECT rc;
 	rc.left = 0;
 	rc.top = 0;
 	rc.right = m_width;
-	rc.bottom = m_height;
+	rc.bottom = m_height;*/
 
 	m_scalex = scalex;
 	m_scaley = scaley;

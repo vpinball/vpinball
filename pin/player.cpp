@@ -1805,10 +1805,6 @@ int fpieee_handler( _FPIEEE_RECORD *pieee )
 
 void Player::Render()
 	{
-	const int cball = m_vball.Size();
-	RenderStateType		RestoreRenderState;
-	TextureStateType	RestoreTextureState;
-	D3DMATRIX			RestoreWorldMatrix;
 	HRESULT				ReturnCode;
 	HRESULT				hr;
 
@@ -1837,6 +1833,7 @@ void Player::Render()
 	// On Win95 when there are no balls, frame updates happen so fast the
 	// blitter gets stuck
 
+	const int cball = m_vball.Size();
 	if ((cball == 0) && m_fWasteTime2)
 		{
 		Sleep(1);
@@ -2202,17 +2199,20 @@ void Player::Render()
 	// Start rendering the next frame.
 	hr = m_pin3d.m_pd3dDevice->BeginScene();
 
-	// Check if we are blitting with D3D.								
-	if (g_pvp->m_pdd.m_fUseD3DBlit)				
+	D3DMATRIX RestoreWorldMatrix;
+	RenderStateType	RestoreRenderState;
+	TextureStateType RestoreTextureState;
+	// Check if we are blitting with D3D.
+	if (g_pvp->m_pdd.m_fUseD3DBlit)
 		{
 		// Save the current transformation state.
-		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix );
 
 		// Save the current render state.
-		Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
+		Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Save the current texture state.
-		Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+		Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 		}
 
 
@@ -2220,10 +2220,10 @@ void Player::Render()
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
 		{
 		// Restore the render states.
-		Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
+		Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Restore the texture state.
-		Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+		Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 
 		// Restore the transformation state.
 		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
@@ -2236,10 +2236,10 @@ void Player::Render()
 		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 
 		// Save the current render state.
-		Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
+		Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Save the current texture state.
-		Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+		Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 		}
 
 
@@ -2314,10 +2314,10 @@ void Player::Render()
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
 	{
 		// Restore the render states.
-		Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
+		Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Restore the texture state.
-		Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+		Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 
 		// Restore the transformation state.
 		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
