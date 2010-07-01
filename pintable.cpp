@@ -1911,6 +1911,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 	m_pcv->SetClean(eSaveClean);
 	SetNonUndoableDirty(eSaveClean);
 	}
+	return S_OK;
 	}
 
 HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
@@ -2154,7 +2155,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 		pstgData->Release();
 		}
 
-Error:
+//Error:
 
 	DestroyWindow(hwndProgressBar);
 
