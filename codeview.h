@@ -327,3 +327,15 @@ private:
 	Collection *m_pcol;
 	int m_index;
 	};
+
+inline bool FIsWhitespace(const char ch)
+	{
+	return (ch == ' ' || ch == 9/*tab*/);
+	}
+
+inline void AddEventToList(char * const sz, const int index, const int dispid, const LPARAM lparam)
+{
+	HWND hwnd = (HWND)lparam;
+	const int listindex = SendMessage(hwnd, CB_ADDSTRING, 0, (int)sz);
+	SendMessage(hwnd, CB_SETITEMDATA, listindex, index);
+}
