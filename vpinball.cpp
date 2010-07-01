@@ -6,6 +6,8 @@
 
 #include "buildnumber.h"
 #include "SVNRevision.h"
+#include "resource.h"
+
 //#include "Freeimage.h" //ADDED BDS
 
 #if defined(IMSPANISH)
@@ -952,7 +954,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			ptCur = GetActiveTable();
 			if (ptCur)
 				{
-				ptCur->Paste(fFalse, 0, 0);
+				ptCur->Paste(fFalse, 0, 0, false);
 				}
 			}
 			break;
@@ -965,7 +967,17 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 				POINT ptCursor;
 				GetCursorPos(&ptCursor);
 				ScreenToClient(ptCur->m_hwnd, &ptCursor);
-				ptCur->Paste(fTrue, ptCursor.x, ptCursor.y);
+				ptCur->Paste(fTrue, ptCursor.x, ptCursor.y, false);
+				}
+			}
+			break;
+
+			case IDC_PASTE_PRESERVINGNAMES:
+			{
+			ptCur = GetActiveTable();
+			if (ptCur)
+				{
+				ptCur->Paste(fFalse, 0, 0, true);
 				}
 			}
 			break;
@@ -1645,6 +1657,7 @@ void VPinball::SetEnableMenuItems()
 		EnableMenuItem(hmenu, IDC_COPY, flags);
 		EnableMenuItem(hmenu, IDC_PASTE, flags);
 		EnableMenuItem(hmenu, IDC_PASTEAT, flags);
+		EnableMenuItem(hmenu, IDC_PASTE_PRESERVINGNAMES, flags);
 		EnableMenuItem(hmenu, ID_DELETE, flags);
 
 		// if the table is protected enable the unlock and disable 'save as protected' always
@@ -1673,6 +1686,7 @@ void VPinball::SetEnableMenuItems()
 			EnableMenuItem(hmenu, IDC_COPY, MF_BYCOMMAND | MF_GRAYED);
 			EnableMenuItem(hmenu, IDC_PASTE, MF_BYCOMMAND | MF_GRAYED);
 			EnableMenuItem(hmenu, IDC_PASTEAT, MF_BYCOMMAND | MF_GRAYED);
+			EnableMenuItem(hmenu, IDC_PASTE_PRESERVINGNAMES, MF_BYCOMMAND | MF_GRAYED);
 			EnableMenuItem(hmenu, ID_DELETE, MF_BYCOMMAND | MF_GRAYED);
 			EnableMenuItem(hmenu, ID_EDIT_SCRIPT, MF_BYCOMMAND | MF_GRAYED);
 			EnableMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_GRAYED);

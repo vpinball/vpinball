@@ -208,7 +208,8 @@ public:
 	BOOL GetEMReelsEnabled() const;
 
 	void Copy();
-	void Paste(BOOL fAtLocation, int x, int y);
+	void Paste(BOOL fAtLocation, int x, int y, bool keepName);
+	void SetResolvedName(WCHAR *p_resolvedName);
 
 	void ExportBlueprint();
 
@@ -364,6 +365,7 @@ public:
 	void SetDefaultView();
 	void GetViewRect(FRect *pfrect);
 
+	bool IsNameUnique(WCHAR *wzName);
 	void GetUniqueName(int type, WCHAR *wzUniqueName);
 
 	float GetSurfaceHeight(char *szName, float x, float y);
@@ -540,6 +542,9 @@ END_CONNECTION_POINT_MAP()
 	SaveDirtyState m_sdsCurrentDirtyState;
 
 	//BOOL m_fScriptDirtyBeforePlay;
+
+	//temp storage for resolved name
+	WCHAR mp_resolvedName[MAXNAMEBUFFER];
 
 	// Table info
 	char *m_szTableName;
