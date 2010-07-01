@@ -3069,12 +3069,8 @@ void Player::DrawBalls()
 	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
 }
 
-int totalrects = 0;
-
 void Player::InvalidateRect(RECT *prc)
 	{
-	totalrects++;
-
 	// This assumes the caller does not need *prc any more!!!
 	// Either that, or we assume it can be permantnently changed,
 	// Because we never care about redrawing stuff off the screen.
@@ -3140,7 +3136,6 @@ void Player::DoDebugObjectMenu(int x, int y)
 		}
 
 	Matrix3D mat3D = g_pplayer->m_pin3d.m_matrixTotal;
-
 	mat3D.Invert();
 
 	D3DVIEWPORT7 vp;
@@ -3362,7 +3357,6 @@ LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-
 	
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
@@ -3550,7 +3544,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			}
 
 			return ReturnCode;
-			break;
 		}
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -3643,7 +3636,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							const int lineStart = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line, 0);
 							const int lineEnd = SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
 
-							char *szText = new char[lineEnd - lineStart + 1];
+							char * const szText = new char[lineEnd - lineStart + 1];
 							TextRange tr;
 							tr.chrg.cpMin = lineStart;
 							tr.chrg.cpMax = lineEnd;

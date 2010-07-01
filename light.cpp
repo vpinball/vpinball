@@ -373,10 +373,10 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	const int cvertex = vvertex.Size();
 	RenderVertex *const rgv = new RenderVertex[cvertex];
 
-	for (int i=0;i<cvertex;i++)
+	for (int i=0; i<cvertex; ++i)
 		{
-		const int p1 = (i+cvertex-1) % cvertex;
-		const int p2 = (i+1) % cvertex;
+		const int p1 = (i == 0) ? (cvertex-1) : (i-1);
+		const int p2 = (i < cvertex-1) ? (i+1) : 0;
 
 		const Vertex2D v1 = *vvertex.ElementAt(p1);
 		const Vertex2D v2 = *vvertex.ElementAt(p2);

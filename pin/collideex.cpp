@@ -689,7 +689,7 @@ float Hit3DPoly::HitTestBasicPolygon(Ball *pball, float dtime, Vertex3Ds *phitno
 	int crosscount=0;	// count of lines which the hit point is to the left of
 	for (int i=0;i<m_cvertex;i++)
 		{
-		const int j = (i+1) % m_cvertex;
+		const int j = (i < m_cvertex-1) ? (i+1) : 0;
 
 		const float x1 = m_rgv[i].x;
 		const float y1 = m_rgv[i].y;

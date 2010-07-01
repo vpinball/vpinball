@@ -1392,8 +1392,8 @@ void PinTable::Render(Sur * psur)
 
 void PinTable::Render3DProjection(Sur * const psur)
 	{
-	float rotation = 0;
-	float inclination = ANGTORAD(m_inclination);
+	const GPINFLOAT rotation = 0;
+	const GPINFLOAT inclination = ANGTORAD(m_inclination);
 
 	Vector<Vertex3D> vvertex3D;
 
@@ -1409,12 +1409,12 @@ void PinTable::Render3DProjection(Sur * const psur)
 	pinproj.m_rcviewport.right = 1000;
 	pinproj.m_rcviewport.bottom = 750;
 
-	GPINFLOAT aspect = ((GPINFLOAT)1000)/750;
+	const GPINFLOAT aspect = (GPINFLOAT)1000/(GPINFLOAT)750;
 
-	float realFOV = m_FOV;
-	if (realFOV < 0.001f)
+	GPINFLOAT realFOV = m_FOV;
+	if (realFOV < 0.001)
 		{
-		realFOV = 0.001f; // Can't have a real zero FOV, but this will look the same
+		realFOV = 0.001; // Can't have a real zero FOV, but this will look the same
 		}
 
 	pinproj.FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), aspect, rotation, inclination, realFOV);
