@@ -1240,7 +1240,7 @@
 				AssemblerListingLocation=".\ReleaseMinDependency/"
 				ObjectFile=".\ReleaseMinDependency/"
 				ProgramDataBaseFileName=".\ReleaseMinDependency/"
-				WarningLevel="4"
+				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
 				CompileAs="0"
