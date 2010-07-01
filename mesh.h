@@ -8,8 +8,26 @@ public:
 class ObjFrame
 	{
 public:
-	ObjFrame();
-	~ObjFrame();
+	inline ObjFrame() {
+		rc.left = 0;
+		rc.top = 0;
+		rc.right = 1000;
+		rc.bottom = 750;
+
+		pdds = NULL;
+		pddsZBuffer = NULL;
+
+		pTexture = NULL;
+		u = 0.0f;
+		v = 0.0f;
+	}
+	
+	inline ~ObjFrame() {
+		SAFE_RELEASE(pdds);
+		SAFE_RELEASE(pddsZBuffer);
+
+		SAFE_RELEASE(pTexture);
+	}
 
 	RECT rc;
 	LPDIRECTDRAWSURFACE7 pdds;
@@ -39,16 +57,17 @@ public:
 	const float t2 = t*t;
 	const float t3 = t2*t;
 	pv->x = 0.5f * ((3.0f*x2 -x1 -3.0f*x3 + x4)*t3
-		+ (2.0f*x1 -5.0f*x2 + 4.0f*x3 - x4)*t2
+		+ (x1+x1 -5.0f*x2 + 4.0f*x3 - x4)*t2
 		+ (x3 - x1)*t
-		+ 2.0f*x2);
+		+ x2+x2);
 
 	pv->y = 0.5f * ((3.0f*y2 -y1 -3.0f*y3 + y4)*t3
-		+ (2.0f*y1 -5.0f*y2 + 4.0f*y3 - y4)*t2
+		+ (y1+y1 -5.0f*y2 + 4.0f*y3 - y4)*t2
 		+ (y3-y1)*t
-		+ 2.0f*y2);
+		+ y2+y2);
 	}
-	
+
+private:	
 	float x1,x2,x3,x4;
 	float y1,y2,y3,y4;
 	};
@@ -56,13 +75,13 @@ public:
 class LightProjected
 	{
 public:
-	float inclination;
-	float rotation;
-	float spin;
+	//float inclination;
+	//float rotation;
+	//float spin;
 
 	Vertex3Ds m_v;
 
-	void CalcCoordinates(Vertex3D * const pv) const;
+	void CalcCoordinates(Vertex3D * const pv, const float inv_width, const float inv_height) const;
 	};
 
 class RenderVertex : public Vertex2D
@@ -79,18 +98,10 @@ void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const flo
 
 inline float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 	{
-	Vertex2D vt1, vt2;
-
-	vt1.x = pvJoint->x - pvEnd1->x;
-	vt1.y = pvJoint->y - pvEnd1->y;
-
-	vt2.x = pvJoint->x - pvEnd2->x;
-	vt2.y = pvJoint->y - pvEnd2->y;
-
-	return vt1.x*vt2.y - vt1.y*vt2.x;
+	return (pvJoint->x - pvEnd1->x)*(pvJoint->y - pvEnd2->y) - (pvJoint->y - pvEnd1->y)*(pvJoint->x - pvEnd2->x);
 	}
 	
-inline BOOL FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * const Start2, const Vertex2D * const End1, const Vertex2D * const End2)
+inline bool FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * const Start2, const Vertex2D * const End1, const Vertex2D * const End2)
 	{
 	const float x1 = Start1->x;
 	const float y1 = Start1->y;
@@ -132,7 +143,7 @@ inline BOOL FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * cons
 	return ((d123 * d124 < 0) && (d341 * d342 < 0));
 	}
 
-inline BOOL AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pvpoly, const int a, const int b, const int c, const int pre, const int post)
+inline bool AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pvpoly, const int a, const int b, const int c, const int pre, const int post)
 	{
 	const RenderVertex * const pv1 = &rgv[a];
 	const RenderVertex * const pv2 = &rgv[b];
@@ -141,42 +152,16 @@ inline BOOL AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pv
 	const RenderVertex * const pvPre = &rgv[pre];
 	const RenderVertex * const pvPost = &rgv[post];
 
-	float dot = GetDot(pv1,pv2,pv3);
-
-	if (dot < 0)
-		{
-		return fFalse;
-		}
-
-	// Make sure angle created by new triangle line falls inside existing angles
-	// If the existing angle is a concave angle, then new angle must be smaller,
-	// because our triangle can't have angles greater than 180
-
-	dot = GetDot(pvPre, pv1, pv2);
-	if (dot > 0)
-		{
-		// convex angle, make sure new angle is smaller than it
-		const float dotDelta = GetDot(pvPre, pv1, pv3);
-
-		if (dotDelta < 0)
-			{
-			return fFalse;
-			}
-		}
-
-	dot = GetDot(pv2, pv3, pvPost);
-	if (dot > 0)
-		{
-		const float dotDelta = GetDot(pv1, pv3, pvPost);
-
-		if (dotDelta < 0)
-			{
-			return fFalse;
-			}
-		}
-
+	if ((GetDot(pv1,pv2,pv3) < 0) ||
+		// Make sure angle created by new triangle line falls inside existing angles
+		// If the existing angle is a concave angle, then new angle must be smaller,
+		// because our triangle can't have angles greater than 180
+	   ((GetDot(pvPre, pv1, pv2)  > 0) && (GetDot(pvPre, pv1, pv3)  < 0)) || // convex angle, make sure new angle is smaller than it
+	   ((GetDot(pv2, pv3, pvPost) > 0) && (GetDot(pv1, pv3, pvPost) < 0)))
+	   return false;
+	
 	// Now make sure the interior segment of this triangle (line ac) does not
-	//intersect the polygon anywhere
+	// intersect the polygon anywhere
 
 	// sort our static line segment
 
@@ -190,27 +175,23 @@ inline BOOL AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pv
 		const RenderVertex * const pvCross1 = &rgv[(int)pvpoly->ElementAt(i)];
 		const RenderVertex * const pvCross2 = &rgv[(int)pvpoly->ElementAt((i+1) % pvpoly->Size())];
 	
-		if ( pvCross1 == pv1 || pvCross2 == pv1 || pvCross1 == pv3 || pvCross2 == pv3 ||
-		    (pvCross1->y < miny && pvCross2->y < miny) ||
-			(pvCross1->y > maxy && pvCross2->y > maxy) ||
-			(pvCross1->x < minx && pvCross2->x < minx) ||
-            (pvCross1->x > maxx && pvCross2->y > maxx))
+		if ( pvCross1 != pv1 && pvCross2 != pv1 && pvCross1 != pv3 && pvCross2 != pv3 &&
+		    (pvCross1->y >= miny || pvCross2->y >= miny) &&
+			(pvCross1->y <= maxy || pvCross2->y <= maxy) &&
+			(pvCross1->x >= minx || pvCross2->x >= minx) &&
+            (pvCross1->x <= maxx || pvCross2->y <= maxx) &&
+			FLinesIntersect(pv1, pv3, pvCross1, pvCross2))
 			{
-			}
-		else	
-		if (FLinesIntersect(pv1, pv3, pvCross1, pvCross2))
-			{
-			return fFalse;
+			return false;
 			}
 		}
 
-	return fTrue;
+	return true;
 	}
 
 inline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 	{
 	Vertex2D vt1, vt2;
-
 	vt1.x = pvJoint->x - pvEnd1->x;
 	vt1.y = pvJoint->y - pvEnd1->y;
 
@@ -219,10 +200,7 @@ inline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoin
 
 	const float dot = vt1.x*vt2.y - vt1.y*vt2.x;
 
-	const float len1 = sqrtf((vt1.x * vt1.x) + (vt1.y * vt1.y));
-	const float len2 = sqrtf((vt2.x * vt2.x) + (vt2.y * vt2.y));
-
-	return dot/(len1*len2);
+	return dot/sqrtf(((vt1.x * vt1.x) + (vt1.y * vt1.y))*((vt2.x * vt2.x) + (vt2.y * vt2.y)));
 	}
 
 inline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
@@ -258,7 +236,7 @@ inline void SetNormal(Vertex3D * rgv, const WORD * rgi, const int count, Vertex3
 	for (int i=0; i<count; ++i)
 		{
 		const int l = rgi[i];
-		const int m = rgi[(i+1) % count];
+		const int m = rgi[(i < count-1) ? (i+1) : 0];
 
 		vnormal.x += (rgv[l].y - rgv[m].y) * (rgv[l].z + rgv[m].z);
 		vnormal.y += (rgv[l].z - rgv[m].z) * (rgv[l].x + rgv[m].x);
@@ -281,11 +259,11 @@ inline void SetNormal(Vertex3D * rgv, const WORD * rgi, const int count, Vertex3
 
 inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const D3DMATERIAL7 * const pmtrl)
 	{
-	const int r = (int)(((pmtrl->diffuse.r + pmtrl->emissive.r) * 255.0f) + 0.5f);
-	const int g = (int)(((pmtrl->diffuse.g + pmtrl->emissive.g) * 255.0f) + 0.5f);
-	const int b = (int)(((pmtrl->diffuse.b + pmtrl->emissive.b) * 255.0f) + 0.5f);
+	const unsigned int r = (int)(((pmtrl->diffuse.r + pmtrl->emissive.r) * 255.0f) + 0.5f);
+	const unsigned int g = (int)(((pmtrl->diffuse.g + pmtrl->emissive.g) * 255.0f) + 0.5f);
+	const unsigned int b = (int)(((pmtrl->diffuse.b + pmtrl->emissive.b) * 255.0f) + 0.5f);
 
-	const int color = (r<<16) | (g<<8) | b;
+	const unsigned int color = (r<<16) | (g<<8) | b;
 
 	for (int i=0; i<count; ++i)
 		{

@@ -447,17 +447,24 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	const float g = (float)(color & 65280) * (float)(1.0/65280.0);
 	const float b = (float)(color & 16711680) * (float)(1.0/16711680.0);
 
+	{
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
 	mtrl.diffuse.r = mtrl.ambient.r = r;
 	mtrl.diffuse.g = mtrl.ambient.g = g;
 	mtrl.diffuse.b = mtrl.ambient.b = b;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 	pd3dDevice->SetMaterial(&mtrl);
+	}
 
 	Vertex2D vendcenter;
 	Vertex2D rgv[4];
 	SetVertices(angle, &vendcenter, rgv, baseradius, endradius);
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 	Vertex3D rgv3D[32];
 	for (int l=0;l<8;l++)
@@ -465,7 +472,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 		rgv3D[l].x = rgv[l&3].x;
 		rgv3D[l].y = rgv[l&3].y;
 		rgv3D[l].z = (l<4) ? height + flipperheight + 0.1f : height; // Make flippers a bit taller so they draw above walls
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);		
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);		
 		}
 
 	ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear
@@ -508,8 +515,8 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 		rgv3D[l+16].y = rgv3D[l].y;
 		rgv3D[l+16].z = height;
 
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16]);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16],inv_width,inv_height);
 		}
 
 	ppin3d->ExpandExtents(&pof->rc, rgv3D,&m_phitflipper->m_flipperanim.m_znear
@@ -559,8 +566,8 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 		rgv3D[l+16].y = rgv3D[l].y;
 		rgv3D[l+16].z = height;
 
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16]);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16],inv_width,inv_height);
 		}
 
 	ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear, &m_phitflipper->m_flipperanim.m_zfar, 32, fFalse);

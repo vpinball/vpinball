@@ -236,7 +236,7 @@ public:
 			return;
 
 		memmove(m_rg+iItem, m_rg+iItem+1, sizeof(void *) * (m_cSize-iItem-1));
-		m_cSize--;
+		--m_cSize;
 		}
 
 	inline void RemoveElement(void * const pvItem)

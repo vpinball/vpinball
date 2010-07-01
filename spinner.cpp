@@ -233,17 +233,6 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float halfthick = 2.0f;
 	const float h = m_d.m_height*0.5f + 30.0f;
 
-	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
-	const float snY = sinf(radangle);
-	const float csY = cosf(radangle);
-
-	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.r = mtrl.ambient.r = 0.6f;
-	mtrl.diffuse.g = mtrl.ambient.g = 0.6f;
-	mtrl.diffuse.b = mtrl.ambient.b = 0.6f;
-	pd3dDevice->SetMaterial(&mtrl);
-
 	Vertex3D rgv3D[12];
 	rgv3D[0].x = -halflength + halfthick;
 	rgv3D[0].y = 0;
@@ -281,6 +270,13 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	//rgv3D[7].z = 60.0f + halfthick;
 	rgv3D[7].z = h + halfthick;
 
+	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float snY = sinf(radangle);
+	const float csY = cosf(radangle);
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
 	for (int l=0;l<8;l++)
 		{
 		const float temp = rgv3D[l].x;
@@ -291,13 +287,26 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[l].y += m_d.m_vCenter.y;
 		rgv3D[l].z += height;
 
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 		}
 
 	WORD rgiNormal[3] = {0,1,3};
 	WORD rgi[8] = {0,1,2,3,6,7,4,5};
 
 	SetNormal(rgv3D, rgiNormal, 3, rgv3D, rgi, 8);
+
+	{
+	D3DMATERIAL7 mtrl;
+	mtrl.diffuse.a = 
+	mtrl.ambient.a =
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
+	mtrl.diffuse.r = mtrl.ambient.r =
+	mtrl.diffuse.g = mtrl.ambient.g =
+	mtrl.diffuse.b = mtrl.ambient.b = 0.6f;
+	pd3dDevice->SetMaterial(&mtrl);
+	}
 
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
 													  rgv3D, 8,
@@ -365,13 +374,6 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float halflength = m_d.m_length * 0.5f;
 	const float halfwidth = m_d.m_height * 0.5f;
 
-	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-
-	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
 	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
@@ -384,7 +386,22 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
 
+	D3DMATERIAL7 mtrl;
+	mtrl.diffuse.a = 
+	mtrl.ambient.a =
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
+
+	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+
 	const float inv_cframes = 1.0f/(float)cframes;
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
 	for (int i=0;i<cframes;i++)
 		{
 		ObjFrame * const pof = new ObjFrame();
@@ -448,7 +465,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			//rgv3D[l].z += 60.0f + height;
 			rgv3D[l].z += h + height;
 
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 			}
 
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
@@ -504,8 +521,8 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			
-			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.r = mtrl.ambient.r =
+			mtrl.diffuse.g = mtrl.ambient.g =
 			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
 			}
 		else // No image by that name

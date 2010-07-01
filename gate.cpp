@@ -270,7 +270,7 @@ void Gate::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	if(!m_d.m_fSupports)return; // no support structures are allocated ... therfore render none
+	if(!m_d.m_fSupports) return; // no support structures are allocated ... therfore render none
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 	
@@ -284,12 +284,18 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float snY = sinf(radangle);
 	const float csY = cosf(radangle);
 
+	{
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.r = mtrl.ambient.r = 0.6f;
-	mtrl.diffuse.g = mtrl.ambient.g = 0.6f;
+	mtrl.diffuse.a = 
+	mtrl.ambient.a =
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
+	mtrl.diffuse.r = mtrl.ambient.r =
+	mtrl.diffuse.g = mtrl.ambient.g =
 	mtrl.diffuse.b = mtrl.ambient.b = 0.6f;
 	pd3dDevice->SetMaterial(&mtrl);
+	}
 
 	Vertex3D rgv3D[8];
 	rgv3D[0].x = -halflength + halfthick;
@@ -324,6 +330,9 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	rgv3D[7].y = 0;
 	rgv3D[7].z = h + halfthick;
 
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
 	for (int l=0;l<8;l++)
 		{
 		const float temp = rgv3D[l].x;
@@ -334,7 +343,7 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[l].y += m_d.m_vCenter.y;
 		rgv3D[l].z += height;
 
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 		}
 
 	WORD rgiNormal[3] = {0,1,3};
@@ -408,7 +417,11 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float halfwidth =  m_d.m_height; //50;
 
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.diffuse.a = 
+	mtrl.ambient.a =
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
 
 	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
 	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
@@ -433,6 +446,9 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	ppin3d->ClearExtents(&m_phitgate->m_gateanim.m_rcBounds, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar);
 
 	const float inv_cframes = (m_d.m_angleMax - m_d.m_angleMin)/(float)(cframes-1);
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 	for (int i=0;i<cframes;i++)
 		{
@@ -492,7 +508,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			//rgv3D[l].z += height + 50.0f;
 			rgv3D[l].z += height + h;
 
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 			}
 
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
@@ -548,8 +564,8 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			
-			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.r = mtrl.ambient.r =
+			mtrl.diffuse.g = mtrl.ambient.g =
 			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
 			}
 		else // No image by that name  
@@ -608,8 +624,8 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			
-			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.r = mtrl.ambient.r =
+			mtrl.diffuse.g = mtrl.ambient.g =
 			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
 			}
 		else // No image by that name  

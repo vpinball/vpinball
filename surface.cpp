@@ -704,7 +704,13 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float slingtop = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.8f) + m_d.m_heightbottom;
 
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 	for (int i=0;i<m_vlinesling.Size();i++)
 		{
@@ -722,8 +728,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
-		mtrl.diffuse.b = mtrl.ambient.b = b;
-		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+		mtrl.diffuse.b = mtrl.ambient.b = b;		
 
 		pd3dDevice->SetMaterial(&mtrl);
 
@@ -762,7 +767,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		for (int l=0;l<12;l++)
 			{
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 			}
 
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
@@ -861,6 +866,9 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
 	if (fMover)
 		{
 		pof = new ObjFrame();
@@ -886,7 +894,10 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		}
 
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 	PinImage * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
 	float maxtuSide, maxtvSide;
@@ -941,10 +952,9 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-		mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-		mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+		mtrl.diffuse.r = mtrl.ambient.r =
+		mtrl.diffuse.g = mtrl.ambient.g =
 		mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 		}
 	else
 		{
@@ -955,7 +965,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
 		mtrl.diffuse.b = mtrl.ambient.b = b;
-		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 		}
 
 	Vector<RenderVertex> vvertex;
@@ -1027,10 +1036,10 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				rgv3D[3].tv = maxtvSide;
 				}
 
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[0]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[3]);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[0],inv_width,inv_height);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1],inv_width,inv_height);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2],inv_width,inv_height);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[3],inv_width,inv_height);
 
 			const int a = (i-1+cvertex) % cvertex;
 			const int b = i;
@@ -1253,10 +1262,9 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.r = mtrl.ambient.r =
+			mtrl.diffuse.g = mtrl.ambient.g =
 			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;//0.5f;
 			}
 		else
 			{
@@ -1268,7 +1276,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 			
 			maxtv = maxtu = 1.0f;
 			}
@@ -1309,9 +1316,9 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			rgv3D[2].tu = rgv3D[2].x *inv_tablewidth;
 			rgv3D[2].tv = rgv3D[2].y *inv_tableheight;
 
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[0]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2]);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[0],inv_width,inv_height);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1],inv_width,inv_height);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2],inv_width,inv_height);
 
 			rgi[0] = 0;
 			rgi[1] = 1;

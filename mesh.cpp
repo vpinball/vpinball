@@ -1,30 +1,5 @@
 #include "StdAfx.h"
 
-//#include "math.h"
-
-ObjFrame::ObjFrame()
-	{
-	rc.left = 0;
-	rc.top = 0;
-	rc.right = 1000;
-	rc.bottom = 750;
-
-	pdds = NULL;
-	pddsZBuffer = NULL;
-
-	pTexture = NULL;
-	u = 0.0f;
-	v = 0.0f;
-	}
-
-ObjFrame::~ObjFrame()
-	{
-	SAFE_RELEASE(pdds);
-	SAFE_RELEASE(pddsZBuffer);
-
-	SAFE_RELEASE(pTexture);
-	}
-
 void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri)
 	{
 	// There should be this many convex triangles.
@@ -33,16 +8,16 @@ void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvp
 
 	Assert(tricount > 0);
 
-	for (int l = 0; l<tricount; l++)
+	for (int l=0; l<tricount; ++l)
 	//while (pvpoly->Size() > 2)
 		{
-		for (int i=0;i<pvpoly->Size();i++)
+		for (int i=0; i<pvpoly->Size(); ++i)
 			{
-			const int a = (int)pvpoly->ElementAt(i);
-			const int b = (int)pvpoly->ElementAt((i+1) % pvpoly->Size());
-			const int c = (int)pvpoly->ElementAt((i+2) % pvpoly->Size());
-			const int pre = (int)pvpoly->ElementAt((i-1+pvpoly->Size()) % pvpoly->Size());
+			const int a    = (int)pvpoly->ElementAt(i);
+			const int b    = (int)pvpoly->ElementAt((i+1) % pvpoly->Size());
+			const int c    = (int)pvpoly->ElementAt((i+2) % pvpoly->Size());
 			const int post = (int)pvpoly->ElementAt((i+3) % pvpoly->Size());
+			const int pre  = (int)pvpoly->ElementAt((i-1+pvpoly->Size()) % pvpoly->Size());
 			if (AdvancePoint(rgv, pvpoly, a, b, c, pre, post))
 				{
 				Triangle * const ptri = new Triangle();
@@ -57,47 +32,41 @@ void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvp
 		}
 	}
 
-void LightProjected::CalcCoordinates(Vertex3D * const pv) const
+void LightProjected::CalcCoordinates(Vertex3D * const pv, const float inv_width, const float inv_height) const
 	{
-	Vertex3Ds vOrigin, vT;
+	Vertex2D vOrigin;//, vT;
 
 	// light is rotated around the light as the origin
 	// z doesn't matter because the texture is projected through z
 	vOrigin.x = pv->x - m_v.x;
 	vOrigin.y = pv->y - m_v.y;
-	vOrigin.z = pv->z - 0;
+	//vOrigin.z = pv->z;
 
 	// Rotation
-
 	{
-	const float sn = (float)sin(0.0);
-	const float cs = (float)cos(0.0);
+	//const float sn = sinf(rotation);
+	//const float cs = cosf(rotation);
 
-	vT.x = cs * vOrigin.x + sn * vOrigin.y;
-	vT.y = cs * vOrigin.y - sn * vOrigin.x;
+	//vT.x = cs * vOrigin.x + sn * vOrigin.y;
+	//vT.y = cs * vOrigin.y - sn * vOrigin.x;
 	}
 
 	// Inclination
-
 	{
-	const float sn = (float)sin(0.0);
-	const float cs = (float)cos(0.0);
+	//const float sn = sinf(inclination);
+	//const float cs = cosf(inclination);
 
-	vT.z = cs * vOrigin.z - sn * vT.y;
-	vT.y = cs * vT.y + sn * vOrigin.z;
+	//vT.z = cs * vOrigin.z - sn * vT.y;
+	//vT.y = cs * vT.y + sn * vOrigin.z;
 	}
 
 	// Put coordinates into vertex
-
-	vT.x += m_v.x;
-	vT.y += m_v.y;
+	//vT.x += m_v.x;
+	//vT.y += m_v.y;
 	//vT.z += 0;
 
-	const float width  = g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right;
-	const float height = g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom;
-
-	pv->tu2 = (((vT.x - m_v.x) / width)  + 0.5f) * g_pplayer->m_pin3d.m_maxtu;
-	pv->tv2 = (((vT.y - m_v.y) / height) + 0.5f) * g_pplayer->m_pin3d.m_maxtv;
+	pv->tu2 = (vOrigin.x /*(vT.x - m_v.x)*/ * inv_width  + 0.5f) * g_pplayer->m_pin3d.m_maxtu;
+	pv->tv2 = (vOrigin.y /*(vT.y - m_v.y)*/ * inv_height + 0.5f) * g_pplayer->m_pin3d.m_maxtv;
 	}
 
 void SetHUDVertices(Vertex3D * const rgv, const int count)

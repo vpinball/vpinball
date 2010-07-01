@@ -187,35 +187,35 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		
 	// All this function does is render the bumper image so the black shows through where it's missing in the animated form
 
-	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
-
-	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);	
 
 	if (pin)
 		{
 		Pin3D *const ppin3d = &g_pplayer->m_pin3d;
-
-		const float outerradius = m_d.m_radius + m_d.m_overhang;
 
 		float maxtu, maxtv;
 		m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
 		pin->EnsureColorKey();
 		pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
+		{
 		D3DMATERIAL7 mtrl;
-		ZeroMemory( &mtrl, sizeof(mtrl) );
-		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
-		mtrl.diffuse.r = mtrl.ambient.r = 1;
-		mtrl.diffuse.g = mtrl.ambient.g = 1;
-		mtrl.diffuse.b = mtrl.ambient.b = 1;
-		mtrl.emissive.r = 0;
-		mtrl.emissive.g = 0;
-		mtrl.emissive.b = 0;
+		mtrl.diffuse.r = mtrl.diffuse.g = mtrl.diffuse.b = mtrl.diffuse.a = 
+		mtrl.ambient.r = mtrl.ambient.g = mtrl.ambient.b = mtrl.ambient.a = 1.0f;
+		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+		mtrl.power = 0;
 		pd3dDevice->SetMaterial(&mtrl);
+		}
+
+		const float outerradius = m_d.m_radius + m_d.m_overhang;
+
+		const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+		const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+		const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 		Vertex3D rgv3D[96];
 		for (int l=0;l<32;l++)
@@ -243,9 +243,9 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[l+64].tu = (0.5f+sinangle*0.5f)*maxtu;
 			rgv3D[l+64].tv = (0.5f+cosangle*0.5f)*maxtv;
 
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+32]);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64]);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+32],inv_width,inv_height);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64],inv_width,inv_height);
 			}
 
 		WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
@@ -329,6 +329,9 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float outerradius = m_d.m_radius + m_d.m_overhang;
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 	
 	Vertex3D rgv3D[160];
 	for (int l=0;l<32;l++)
@@ -367,11 +370,11 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[l+128].tu = 0.5f+sinangle*0.5f;
 		rgv3D[l+128].tv = 0.5f-cosangle*0.5f;
 
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+32]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+96]);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+128]);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+32],inv_width,inv_height);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64],inv_width,inv_height);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+96],inv_width,inv_height);
+		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+128],inv_width,inv_height);
 		}
 
 	ppin3d->ClearExtents(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar);
@@ -393,7 +396,8 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 
 		D3DMATERIAL7 mtrl;
-		ZeroMemory( &mtrl, sizeof(mtrl) );
+		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+		mtrl.emissive.a = mtrl.power = 0;
 		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -409,8 +413,8 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					mtrl.diffuse.r = mtrl.ambient.r = r * 0.5f;
 					mtrl.diffuse.g = mtrl.ambient.g = g * 0.5f;
 					mtrl.diffuse.b = mtrl.ambient.b = b * 0.5f;
-					mtrl.emissive.r = 0;
-					mtrl.emissive.g = 0;
+					mtrl.emissive.r =
+					mtrl.emissive.g =
 					mtrl.emissive.b = 0;
 					break;
 				case 1:
@@ -499,8 +503,8 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					mtrl.diffuse.r = mtrl.ambient.r = rside * 0.5f;
 					mtrl.diffuse.g = mtrl.ambient.g = gside * 0.5f;
 					mtrl.diffuse.b = mtrl.ambient.b = bside * 0.5f;
-					mtrl.emissive.r = 0;
-					mtrl.emissive.g = 0;
+					mtrl.emissive.r =
+					mtrl.emissive.g =
 					mtrl.emissive.b = 0;
 					break;
 				case 1:
@@ -565,21 +569,21 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				{
 				case 0:
 					ppin3d->EnableLightMap(fFalse, -1);
-					mtrl.diffuse.r = mtrl.ambient.r = 0.5f;
-					mtrl.diffuse.g = mtrl.ambient.g = 0.5f;
+					mtrl.diffuse.r = mtrl.ambient.r = 
+					mtrl.diffuse.g = mtrl.ambient.g = 
 					mtrl.diffuse.b = mtrl.ambient.b = 0.5f;
-					mtrl.emissive.r = 0;
-					mtrl.emissive.g = 0;
+					mtrl.emissive.r = 
+					mtrl.emissive.g = 
 					mtrl.emissive.b = 0;
 					break;
 
 				case 1:
 					ppin3d->m_pd3dDevice->SetTexture(eLightProject1, ppin3d->m_pddsLightTexture);
-					mtrl.diffuse.r = mtrl.ambient.r = 0;
-					mtrl.diffuse.g = mtrl.ambient.g = 0;
+					mtrl.diffuse.r = mtrl.ambient.r =
+					mtrl.diffuse.g = mtrl.ambient.g =
 					mtrl.diffuse.b = mtrl.ambient.b = 0;
-					mtrl.emissive.r = 1.0f;
-					mtrl.emissive.g = 1.0f;
+					mtrl.emissive.r =
+					mtrl.emissive.g =
 					mtrl.emissive.b = 1.0f;
 					break;
 				}

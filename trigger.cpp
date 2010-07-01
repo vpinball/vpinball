@@ -401,12 +401,21 @@ void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->EnableLightMap(fTrue, height);
 
+	{
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
-	mtrl.diffuse.r = mtrl.ambient.r = 0.5f;
-	mtrl.diffuse.g = mtrl.ambient.g = 0.5f;
+	mtrl.diffuse.a = 
+	mtrl.ambient.a =
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
+	mtrl.diffuse.r = mtrl.ambient.r =
+	mtrl.diffuse.g = mtrl.ambient.g =
 	mtrl.diffuse.b = mtrl.ambient.b = 0.5f;
 	pd3dDevice->SetMaterial(&mtrl);
+	}
+
+	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 	Vertex3D rgv3D[40];
 	for (int i=0;i<4;i++)
@@ -431,7 +440,7 @@ void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[l+offset].x =  cs*x + sn*y + m_d.m_vCenter.x;
 			rgv3D[l+offset].y = -sn*x + cs*y + m_d.m_vCenter.y;
 
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+offset]);
+			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+offset],inv_width,inv_height);
 			}
 		}
 

@@ -957,20 +957,17 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
 	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
+	{
 	D3DMATERIAL7 mtrl;
-	ZeroMemory( &mtrl, sizeof(mtrl) );
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a = 0.0f;
 	mtrl.diffuse.r = mtrl.ambient.r = r;
 	mtrl.diffuse.g = mtrl.ambient.g = g;
 	mtrl.diffuse.b = mtrl.ambient.b = b;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
-	mtrl.specular.r = 1.0f;
-	mtrl.specular.g = 1.0f;
-	mtrl.specular.b = 1.0f;
-	mtrl.specular.a = 1.0f;
+	mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a = 1.0f;
 	mtrl.power = 8.0f;
-
 	pd3dDevice->SetMaterial(&mtrl);
+	}
 
 	float *rgheight;
 	int cvertex;
@@ -1161,7 +1158,10 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		float maxtu, maxtv;
 
 		D3DMATERIAL7 mtrl;
-		ZeroMemory( &mtrl, sizeof(mtrl) );
+		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+		mtrl.power = 0;
+		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 		if (pin)
 			{
@@ -1223,10 +1223,9 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 				g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 				}
 
-			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
-			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+			mtrl.diffuse.r = mtrl.ambient.r =
+			mtrl.diffuse.g = mtrl.ambient.g =
+			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;			
 			}
 		else
 			{
@@ -1237,7 +1236,6 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 			}
 
 		pd3dDevice->SetMaterial(&mtrl);
@@ -1342,8 +1340,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
+			
 			pd3dDevice->SetMaterial(&mtrl);
 			}
 
@@ -2330,7 +2327,10 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		float maxtu, maxtv;
 
 		D3DMATERIAL7 mtrl;
-		ZeroMemory( &mtrl, sizeof(mtrl) );
+		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+		mtrl.power = 0;
+		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 		if (pin)
 			{
@@ -2373,10 +2373,9 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+			mtrl.diffuse.r = mtrl.ambient.r =
+			mtrl.diffuse.g = mtrl.ambient.g =
 			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 			}
 		else
 			{
@@ -2387,7 +2386,6 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 			}
 
 		pd3dDevice->SetMaterial(&mtrl);
@@ -2464,7 +2462,6 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
-			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
 			pd3dDevice->SetMaterial(&mtrl);
 			}
