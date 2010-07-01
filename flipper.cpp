@@ -478,7 +478,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear
 										 , &m_phitflipper->m_flipperanim.m_zfar, 8, fFalse);
 
-	WORD rgi[8] = {0,1,2,3,4,5,6,7};
+	WORD rgi[4] = {0,1,2,3};
 	SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 	
 	// Draw top.

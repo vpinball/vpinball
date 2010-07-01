@@ -173,7 +173,7 @@ inline bool AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pv
 	for (int i=0; i<pvpoly->Size(); ++i)
 		{		
 		const RenderVertex * const pvCross1 = &rgv[(int)pvpoly->ElementAt(i)];
-		const RenderVertex * const pvCross2 = &rgv[(int)pvpoly->ElementAt((i+1) % pvpoly->Size())];
+		const RenderVertex * const pvCross2 = &rgv[(int)pvpoly->ElementAt((i < pvpoly->Size()-1) ? (i+1) : 0)];
 	
 		if ( pvCross1 != pv1 && pvCross2 != pv1 && pvCross1 != pv3 && pvCross2 != pv3 &&
 		    (pvCross1->y >= miny || pvCross2->y >= miny) &&
@@ -203,12 +203,14 @@ inline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoin
 	return dot/sqrtf(((vt1.x * vt1.x) + (vt1.y * vt1.y))*((vt2.x * vt2.x) + (vt2.y * vt2.y)));
 	}
 
+/*
 inline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 	{
 	const float slope1 = (pvJoint->y - pvEnd1->y) / (pvJoint->x - pvEnd1->x);
 	const float slope2 = (pvJoint->y - pvEnd2->y) / (pvJoint->x - pvEnd2->x);
 	return atan2f((slope2-slope1),(1.0f+slope1*slope2));
 	}
+*/
 
 inline void SetNormal(Vertex3D * rgv, const WORD * rgi, const int count, Vertex3D * rgvApply, const WORD * rgiApply, int applycount)
 	{

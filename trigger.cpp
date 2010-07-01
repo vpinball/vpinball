@@ -305,8 +305,8 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
 	for (int i=0;i<count;i++)	
 		{
 		RenderVertex * const pv1 = &rgv[i];
-		RenderVertex * const pv2 = &rgv[(i+1) % count];
-		RenderVertex * const pv3 = &rgv[(i+2) % count];
+		RenderVertex * const pv2 = &rgv[(i < count-1) ? (i+1) : 0];
+		RenderVertex * const pv3 = &rgv[(i < count-2) ? (i+2) : (i+2-count)];
 
 		AddLine(pvho, pv2, pv3, pv1, height);
 		} 

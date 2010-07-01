@@ -13,11 +13,12 @@ void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvp
 		{
 		for (int i=0; i<pvpoly->Size(); ++i)
 			{
+			const int s    = pvpoly->Size();
+			const int pre  = (int)pvpoly->ElementAt((i == 0) ? (s-1) : (i-1));
 			const int a    = (int)pvpoly->ElementAt(i);
-			const int b    = (int)pvpoly->ElementAt((i+1) % pvpoly->Size());
-			const int c    = (int)pvpoly->ElementAt((i+2) % pvpoly->Size());
-			const int post = (int)pvpoly->ElementAt((i+3) % pvpoly->Size());
-			const int pre  = (int)pvpoly->ElementAt((i-1+pvpoly->Size()) % pvpoly->Size());
+			const int b    = (int)pvpoly->ElementAt((i < s-1) ? (i+1) : 0);
+			const int c    = (int)pvpoly->ElementAt((i < s-2) ? (i+2) : ((i+2) - s));
+			const int post = (int)pvpoly->ElementAt((i < s-3) ? (i+3) : ((i+3) - s));			
 			if (AdvancePoint(rgv, pvpoly, a, b, c, pre, post))
 				{
 				Triangle * const ptri = new Triangle();
@@ -74,20 +75,20 @@ void SetHUDVertices(Vertex3D * const rgv, const int count)
 	const float mult = (float)g_pplayer->m_pin3d.m_dwRenderWidth * (float)(1.0/1000.0);
 	const float ymult = mult / (float)g_pplayer->m_pixelaspectratio;
 
-	for (int i=0;i<count;i++)
+	for (int i=0; i<count; ++i)
 		{
 		rgv[i].x *= mult;
 		rgv[i].y *= ymult;
 		rgv[i].x -= 0.5f;
 		rgv[i].y -= 0.5f;
-		rgv[i].z = 0;//1.0f;//0;
+		rgv[i].z = 0;//1.0f;
 		rgv[i].rhw = 0.1f;
 		rgv[i].specular = 0;
 		}
 
 	if (g_pplayer->m_frotate)
 		{
-		for (int i=0;i<count;i++)
+		for (int i=0; i<count; ++i)
 			{
 			const float ftemp = rgv[i].x;
 			rgv[i].x = rgv[i].y;

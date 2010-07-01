@@ -293,7 +293,7 @@ void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> *pvv)
 	for (int i=0;i<cpoint;i++)
 		{
 		const CComObject<DragPoint> * const pdp1 = m_vdpoint.ElementAt(i);
-		const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i+1)%cpoint);
+		const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i < cpoint-1) ? (i+1) : 0);
 
 		if ((pdp1->m_v.x == pdp2->m_v.x) && (pdp1->m_v.y == pdp2->m_v.y))
 			{
@@ -301,8 +301,8 @@ void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> *pvv)
 			continue;
 			}
 
-		const CComObject<DragPoint> * const pdp0 = pdp1->m_fSmooth ? m_vdpoint.ElementAt((i+cpoint-1)%cpoint) : pdp1;
-		const CComObject<DragPoint> * const pdp3 = pdp2->m_fSmooth ? m_vdpoint.ElementAt((i+2)%cpoint) : pdp2;
+		const CComObject<DragPoint> * const pdp0 = pdp1->m_fSmooth ? m_vdpoint.ElementAt((i == 0) ? (cpoint-1) : (i-1)) : pdp1;
+		const CComObject<DragPoint> * const pdp3 = pdp2->m_fSmooth ? m_vdpoint.ElementAt((i < cpoint-2) ? (i+2) : ((i+2)-cpoint)) : pdp2;
 
 		CatmullCurve cc;
 		cc.SetCurve(&pdp0->m_v, &pdp1->m_v, &pdp2->m_v, &pdp3->m_v);
@@ -338,16 +338,16 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 	{
 	VectorInt<int> vitexpoints;
 	VectorInt<int> virenderpoints;
-	BOOL m_fNoCoords = fFalse;
+	bool m_fNoCoords = false;
 
 	const int cpoints = pvv->Size();
 	int icontrolpoint = 0;
 
 	*ppcoords = new float[cpoints];
 
-	for (int i=0;i<cpoints;i++)
+	for (int i=0; i<cpoints; ++i)
 		{
-		RenderVertex *prv = pvv->ElementAt(i);
+		RenderVertex * const prv = pvv->ElementAt(i);
 		if (prv->fControlPoint)
 			{
 			if (!m_vdpoint.ElementAt(icontrolpoint)->m_fAutoTexture)
@@ -355,7 +355,7 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 				vitexpoints.AddElement(icontrolpoint);
 				virenderpoints.AddElement(i);
 				}
-			icontrolpoint++;
+			++icontrolpoint;
 			}
 		}
 
@@ -366,23 +366,21 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 		vitexpoints.AddElement(0);
 		virenderpoints.AddElement(0);
 
-		m_fNoCoords = fTrue;
+		m_fNoCoords = true;
 		}
 
 	// Wrap the array around so we cover the last section
 	vitexpoints.AddElement(vitexpoints.ElementAt(0) + m_vdpoint.Size());
 	virenderpoints.AddElement(virenderpoints.ElementAt(0) + cpoints);
 
-	for (int i=0;i<(vitexpoints.Size() - 1);i++)
+	for (int i=0; i<vitexpoints.Size()-1; ++i)
 		{
 		float totallength = 0;
 		float starttexcoord;
 		float endtexcoord;
 
-		Vertex2D *pv1, *pv2;
-		int startrenderpoint, endrenderpoint;
-		startrenderpoint = virenderpoints.ElementAt(i) % cpoints;
-		endrenderpoint = virenderpoints.ElementAt((i+1) % cpoints) % cpoints;
+		const int startrenderpoint = virenderpoints.ElementAt(i) % cpoints;
+		int endrenderpoint = virenderpoints.ElementAt((i+1) % cpoints) % cpoints;
 
 		if (m_fNoCoords)
 			{
@@ -401,10 +399,10 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 			{
 			endrenderpoint += cpoints;
 			}
-		for (int l=startrenderpoint;l<endrenderpoint;l++)
+		for (int l=startrenderpoint; l<endrenderpoint; ++l)
 			{
-			pv1 = (Vertex2D *)pvv->ElementAt(l % cpoints);
-			pv2 = (Vertex2D *)pvv->ElementAt((l+1) % cpoints);
+			const Vertex2D * const pv1 = (Vertex2D *)pvv->ElementAt(l % cpoints);
+			const Vertex2D * const pv2 = (Vertex2D *)pvv->ElementAt((l+1) % cpoints);
 
 			const float dx = pv1->x - pv2->x;
 			const float dy = pv1->y - pv2->y;
@@ -415,10 +413,10 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 
 		float partiallength = 0;
 
-		for (int l=startrenderpoint;l<endrenderpoint;l++)
+		for (int l=startrenderpoint; l<endrenderpoint; ++l)
 			{
-			pv1 = (Vertex2D *)pvv->ElementAt(l % cpoints);
-			pv2 = (Vertex2D *)pvv->ElementAt((l+1) % cpoints);
+			const Vertex2D * const pv1 = (Vertex2D *)pvv->ElementAt(l % cpoints);
+			const Vertex2D * const pv2 = (Vertex2D *)pvv->ElementAt((l+1) % cpoints);
 
 			const float dx = pv1->x - pv2->x;
 			const float dy = pv1->y - pv2->y;

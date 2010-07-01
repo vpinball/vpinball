@@ -283,7 +283,7 @@ void Surface::Render(Sur *psur)
 		if (pdp->m_fSlingshot)
 			{
 			psur->SetObject(NULL);
-			const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i+1) % m_vdpoint.Size());
+			const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i < m_vdpoint.Size()-1) ? (i+1) : 0);
 
 			psur->SetLineColor(RGB(0,0,0),fFalse,3);
 			psur->Line(pdp->m_v.x, pdp->m_v.y, pdp2->m_v.x, pdp2->m_v.y);
@@ -462,9 +462,9 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 	for (int i=0;i<count;i++)
 		{
 		const RenderVertex * const pv1 = &rgv[i];
-		const RenderVertex * const pv2 = &rgv[(i+1) % count];
-		const RenderVertex * const pv3 = &rgv[(i+2) % count];
-		const RenderVertex * const pv4 = &rgv[(i+3) % count];
+		const RenderVertex * const pv2 = &rgv[(i < count-1) ? (i+1) : 0];
+		const RenderVertex * const pv3 = &rgv[(i < count-2) ? (i+2) : (i+2-count)];
+		const RenderVertex * const pv4 = &rgv[(i < count-3) ? (i+3) : (i+3-count)];
 
 		if (m_d.m_fInner)
 			{
@@ -994,7 +994,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	for (int i=0;i<cvertex;i++)
 		{
 		const RenderVertex * const pv1 = &rgv[i];
-		const RenderVertex * const pv2 = &rgv[(i+1) % cvertex];
+		const RenderVertex * const pv2 = &rgv[(i < cvertex-1) ? (i+1) : 0];
 		const float dx = pv1->x - pv2->x;
 		const float dy = pv1->y - pv2->y;
 
@@ -1012,7 +1012,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			{
 			//RenderVertex *pv0 = &rgv[(i-1+cvertex) % cvertex];
 			const RenderVertex * const pv1 = &rgv[i];
-			const RenderVertex * const pv2 = &rgv[(i+1) % cvertex];
+			const RenderVertex * const pv2 = &rgv[(i < cvertex-1) ? (i+1) : 0];
 			//RenderVertex *pv3 = &rgv[(i+2) % cvertex];
 
 			Vertex3D rgv3D[4];
@@ -1020,6 +1020,10 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			rgv3D[1].Set(pv1->x,pv1->y,m_d.m_heighttop);
 			rgv3D[2].Set(pv2->x,pv2->y,m_d.m_heighttop);
 			rgv3D[3].Set(pv2->x,pv2->y,m_d.m_heightbottom);
+
+			const int a = (i == 0) ? (cvertex-1) : (i-1);
+			const int b = i;
+			const int c = (i < cvertex-1) ? (i+1) : 0;
 
 			if (pinSide)
 				{
@@ -1029,10 +1033,10 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				rgv3D[1].tu = rgtexcoord[i] * maxtuSide;
 				rgv3D[1].tv = 0;
 
-				rgv3D[2].tu = rgtexcoord[(i+1) % cvertex] * maxtuSide;
+				rgv3D[2].tu = rgtexcoord[c] * maxtuSide;
 				rgv3D[2].tv = 0;
 
-				rgv3D[3].tu = rgtexcoord[(i+1) % cvertex] * maxtuSide;
+				rgv3D[3].tu = rgtexcoord[c] * maxtuSide;
 				rgv3D[3].tv = maxtvSide;
 				}
 
@@ -1040,10 +1044,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1],inv_width,inv_height);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2],inv_width,inv_height);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[3],inv_width,inv_height);
-
-			const int a = (i-1+cvertex) % cvertex;
-			const int b = i;
-			const int c = (i+1)%cvertex;
 
 			Vertex2D vnormal[2];
 			if (pv1->fSmooth)

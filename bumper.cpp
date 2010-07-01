@@ -258,21 +258,21 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
-				WORD rgiNormal[3];
-				rgiNormal[0] = (l - 1 + 32) % 32;
-				rgiNormal[1] = rgiNormal[0] + 32;
-				rgiNormal[2] = rgiNormal[0] + 2;
+				WORD rgiNormal[3] = {
+					(l == 0) ? 31 : (l-1),
+					(l == 0) ? 63 : (l+31),
+					(l == 0) ? 33 : (l+1)};
 
 				rgi[0] = l;
 				rgi[1] = l+32;
-				rgi[2] = (l+1) % 32 + 32;
-				rgi[3] = (l+1) % 32;
+				rgi[2] = (l == 31) ? 32 : (l+33);
+				rgi[3] = (l == 31) ? 0 : (l+1);
 
 				SetNormal(&rgv3D[32], rgiNormal, 3, NULL, rgi, 2);
 
 				rgiNormal[0] = l;
 				rgiNormal[1] = l+32;
-				rgiNormal[2] = (l+2) % 32;
+				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(&rgv3D[32], rgiNormal, 3, NULL, &rgi[2], 2);
 
@@ -283,21 +283,21 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
-				WORD rgiNormal[3];
-				rgiNormal[0] = (l - 1 + 32) % 32;
-				rgiNormal[1] = rgiNormal[0] + 32;
-				rgiNormal[2] = rgiNormal[0] + 2;
+				WORD rgiNormal[3] = {
+					(l == 0) ? 31 : (l-1),
+					(l == 0) ? 63 : (l+31),
+					(l == 0) ? 33 : (l+1)};
 
 				rgi[0] = l;
 				rgi[1] = l+32;
-				rgi[2] = (l+1) % 32 + 32;
-				rgi[3] = (l+1) % 32;
+				rgi[2] = (l == 31) ? 32 : (l+33);
+				rgi[3] = (l == 31) ? 0 : (l+1);
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
 				rgiNormal[0] = l;
 				rgiNormal[1] = l+32;
-				rgiNormal[2] = (l+2) % 32;
+				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, &rgi[2], 2);
 
@@ -431,31 +431,34 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->SetMaterial(&mtrl);
 
+			{
 			WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 
 			SetNormal(&rgv3D[64], rgi, 32, NULL, NULL, 0);
-
+			
 			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[64], 32,
 													  rgi, 32, 0);
+			}
 
 			for (int l=0;l<32;l++)
 				{
-				WORD rgiNormal[3];
-				rgiNormal[0] = (l - 1 + 32) % 32;
-				rgiNormal[1] = rgiNormal[0] + 32;
-				rgiNormal[2] = rgiNormal[0] + 2;
+				WORD rgiNormal[3] = {
+					(l == 0) ? 31 : (l-1),
+					(l == 0) ? 63 : (l+31),
+					(l == 0) ? 33 : (l+1)};
 
-				rgi[0] = l;
-				rgi[1] = l+32;
-				rgi[2] = (l+1) % 32 + 32;
-				rgi[3] = ((l+1) % 32);
+				WORD rgi[4] = {
+					l,
+					l+32,
+					(l == 31) ? 32 : (l+33),
+					(l == 31) ? 0 : (l+1)};
 
 				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, rgi, 2);
 
 				rgiNormal[0] = l;
 				rgiNormal[1] = l+32;
-				rgiNormal[2] = (l+2) % 32;
+				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, &rgi[2], 2);
 
@@ -466,21 +469,22 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
-				WORD rgiNormal[3];
-				rgiNormal[0] = (l - 1 + 32) % 32;
-				rgiNormal[1] = rgiNormal[0] + 32;
-				rgiNormal[2] = rgiNormal[0] + 2;
+				WORD rgiNormal[3] = {
+					(l == 0) ? 31 : (l-1),
+					(l == 0) ? 63 : (l+31),
+					(l == 0) ? 33 : (l+1)};
 
-				rgi[0] = l;
-				rgi[1] = l+32;
-				rgi[2] = (l+1) % 32 + 32;
-				rgi[3] = (l+1) % 32;
+				WORD rgi[4] = {
+					l,
+					l+32,
+					(l == 31) ? 32 : (l+33),
+					(l == 31) ? 0 : (l+1)};
 
 				SetNormal(&rgv3D[64], rgiNormal, 3, NULL, rgi, 2);
 
 				rgiNormal[0] = l;
 				rgiNormal[1] = l+32;
-				rgiNormal[2] = (l+2) % 32;
+				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(&rgv3D[64], rgiNormal, 3, NULL, &rgi[2], 2);
 
@@ -522,22 +526,22 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
-				WORD rgiNormal[3];
-				rgiNormal[0] = (l - 1 + 32) % 32;
-				rgiNormal[1] = rgiNormal[0] + 32;
-				rgiNormal[2] = rgiNormal[0] + 2;
+				WORD rgiNormal[3] = {
+					(l == 0) ? 31 : (l-1),
+					(l == 0) ? 63 : (l+31),
+					(l == 0) ? 33 : (l+1)};
 
 				WORD rgi[4] = {
 					l,
 					l+32,
-					(l+1) % 32 + 32,
-					(l+1) % 32};
+					(l == 31) ? 32 : (l+33),
+					(l == 31) ? 0 : (l+1)};
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
 				rgiNormal[0] = l;
 				rgiNormal[1] = l+32;
-				rgiNormal[2] = (l+2) % 32;
+				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, &rgi[2], 2);
 
@@ -628,21 +632,22 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
-				WORD rgiNormal[3];
-				rgiNormal[0] = (l - 1 + 32) % 32;
-				rgiNormal[1] = rgiNormal[0] + 32;
-				rgiNormal[2] = rgiNormal[0] + 2;
+				WORD rgiNormal[3] = {
+					(l == 0) ? 31 : (l-1),
+					(l == 0) ? 63 : (l+31),
+					(l == 0) ? 33 : (l+1)};
 
-				rgi[0] = l;
-				rgi[1] = l+32;
-				rgi[2] = (l+1) % 32 + 32;
-				rgi[3] = ((l+1) % 32);
+				WORD rgi[4] = {
+					l,
+					l+32,
+					(l == 31) ? 32 : (l+33),
+					(l == 31) ? 0 : (l+1)};
 
 				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, rgi, 2);
 
 				rgiNormal[0] = l;
 				rgiNormal[1] = l+32;
-				rgiNormal[2] = (l+2) % 32;
+				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, &rgi[2], 2);
 
@@ -653,21 +658,22 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
-					WORD rgiNormal[3];
-					rgiNormal[0] = (l - 1 + 32) % 32;
-					rgiNormal[1] = rgiNormal[0] + 32;
-					rgiNormal[2] = rgiNormal[0] + 2;
+					WORD rgiNormal[3] = {
+					(l == 0) ? 31 : (l-1),
+					(l == 0) ? 63 : (l+31),
+					(l == 0) ? 33 : (l+1)};
 
-					rgi[0] = l;
-					rgi[1] = l+32;
-					rgi[2] = (l+1) % 32 + 32;
-					rgi[3] = (l+1) % 32;
+					WORD rgi[4] = {
+					l,
+					l+32,
+					(l == 31) ? 32 : (l+33),
+					(l == 31) ? 0 : (l+1)};
 
 					SetNormal(&rgv3D[64], rgiNormal, 3, NULL, rgi, 2);
 
 					rgiNormal[0] = l;
 					rgiNormal[1] = l+32;
-					rgiNormal[2] = (l+2) % 32;
+					rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 					SetNormal(&rgv3D[64], rgiNormal, 3, NULL, &rgi[2], 2);
 

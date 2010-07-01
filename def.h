@@ -213,7 +213,7 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 	int cloop = count;
 	if (!fClosed)
 		{
-		cloop--; // Don't check segment running from the end point to the beginning point
+		--cloop; // Don't check segment running from the end point to the beginning point
 		}
 
 	// Go through line segment, calculate distance from point to the line
@@ -221,7 +221,7 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 	for (int i=0; i<cloop; ++i)
 		{
 		const int p1 = i;
-		const int p2 = (i+1)%count;
+		const int p2 = (i < count-1) ? (i+1) : 0;
 
 		const float A = rgv[p1].y - rgv[p2].y;
 		const float B = rgv[p2].x - rgv[p1].x;
