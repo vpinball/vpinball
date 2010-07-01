@@ -1916,8 +1916,6 @@ void Player::Render()
 		}
 #endif
 
-	const double timepassed = (double)(m_RealTimeClock - m_curPhysicsFrameTime) * (1.0/1000000.0);
-
 	// Get time in milliseconds for timers
 	m_timeCur = (int)((m_RealTimeClock - m_liStartTime)/1000);
 
@@ -1935,6 +1933,7 @@ void Player::Render()
 #endif
 
 #ifdef LOG
+	const double timepassed = (double)(m_RealTimeClock - m_curPhysicsFrameTime) * (1.0/1000000.0);
 	float frametime;
 
 #ifdef PLAYBACK

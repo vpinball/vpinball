@@ -245,7 +245,7 @@ inline void SetNormal(Vertex3D * rgv, const WORD * rgi, const int count, Vertex3
 		vnormal.z += (rgv[l].x - rgv[m].x) * (rgv[l].y + rgv[m].y);		
 		}
 
-	const float inv_len = 1.0f/sqrtf((vnormal.x * vnormal.x) + (vnormal.y * vnormal.y) + (vnormal.z * vnormal.z));
+	const float inv_len = -1.0f/sqrtf((vnormal.x * vnormal.x) + (vnormal.y * vnormal.y) + (vnormal.z * vnormal.z));
 	vnormal.x *= inv_len;
 	vnormal.y *= inv_len;
 	vnormal.z *= inv_len;
@@ -253,9 +253,9 @@ inline void SetNormal(Vertex3D * rgv, const WORD * rgi, const int count, Vertex3
 	for (int i=0; i<applycount; ++i)
 		{
 		const int l = rgiApply[i];
-		rgvApply[l].nx = -vnormal.x;
-		rgvApply[l].ny = -vnormal.y;
-		rgvApply[l].nz = -vnormal.z;
+		rgvApply[l].nx = vnormal.x;
+		rgvApply[l].ny = vnormal.y;
+		rgvApply[l].nz = vnormal.z;
 		}
 	}
 

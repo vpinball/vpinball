@@ -776,7 +776,7 @@ void Hit3DPoly::CalcNormal()
 	{
 	WORD * const rgi = new WORD[m_cvertex];
 
-	for (int i=0;i<m_cvertex;i++)
+	for (int i=0; i<m_cvertex; ++i)
 		{
 		rgi[i]= i;
 		}
