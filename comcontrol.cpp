@@ -896,8 +896,7 @@ void PinComControl::PreRender(Sur *psur)
 	rc.right = x2;
 	rc.bottom = y2;
 
-	HRESULT hr;
-	hr = pvo->Draw(DVASPECT_CONTENT, 0, NULL, NULL, NULL, psur->m_hdc,
+	/*HRESULT hr =*/ pvo->Draw(DVASPECT_CONTENT, 0, NULL, NULL, NULL, psur->m_hdc,
 		(const struct _RECTL *)&rc, NULL, NULL, NULL);
 
 	pvo->Release();

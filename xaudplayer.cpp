@@ -118,7 +118,7 @@ int XAudPlayer::Tick()
 
 	if (status == XA_SUCCESS)
 		{
-		HRESULT hr = m_pDSBuffer->SetFrequency(m_decoder->status->info.frequency);
+		/*HRESULT hr =*/ m_pDSBuffer->SetFrequency(m_decoder->status->info.frequency);
 
 		const unsigned int cbData = m_decoder->output_buffer->nb_samples*m_decoder->output_buffer->bytes_per_sample*m_decoder->output_buffer->nb_channels;
 
@@ -128,15 +128,16 @@ int XAudPlayer::Tick()
 		VOID* pbBuffer2  = NULL;
 		DWORD dwBufferLength2;
 
+		HRESULT hr;
 		if( FAILED( hr = m_pDSBuffer->Lock(m_dwNextWriteOffset, cbData/*m_dwNotifySize*/, 
 											&pbBuffer, &dwBufferLength, &pbBuffer2, &dwBufferLength2, 0L) ) )
 			return 0;
 
-		CopyMemory(pbBuffer, buf, dwBufferLength);
+		memcpy(pbBuffer, buf, dwBufferLength);
 
 		if (dwBufferLength < cbData)
 			{
-			CopyMemory(pbBuffer2, &buf[dwBufferLength], dwBufferLength2);
+			memcpy(pbBuffer2, &buf[dwBufferLength], dwBufferLength2);
 			}
 
 		m_pDSBuffer->Unlock(pbBuffer,dwBufferLength, pbBuffer2, dwBufferLength2);

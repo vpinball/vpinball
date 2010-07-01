@@ -645,7 +645,7 @@ void PinInput::autoexit( F32 secs )
 
     if( !VPinball::m_open_minimized ) return;
     if( !g_pplayer ) return;
-    if( secs == 0.0) return;
+    if( secs == 0.0f) return;
 
 	// Check if we have not started.
     if( !started() )

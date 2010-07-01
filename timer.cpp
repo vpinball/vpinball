@@ -158,7 +158,7 @@ STDMETHODIMP Timer::InterfaceSupportsErrorInfo(REFIID riid)
 
 STDMETHODIMP Timer::get_Enabled(VARIANT_BOOL *pVal)
 {
-	*pVal = FTOVB(m_d.m_tdr.m_fTimerEnabled);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_tdr.m_fTimerEnabled);
 
 	return S_OK;
 }

@@ -1810,7 +1810,6 @@ void PinTable::AutoSave()
 HRESULT PinTable::Save(BOOL fSaveAs)
 	{
 	IStorage* pstgRoot;
-	HRESULT hr = S_OK;
 
 #ifdef VBA
 	pstgRoot = m_pStg;
@@ -1863,7 +1862,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 				{
 				LocalString ls(IDS_SAVEERROR);
 				MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
-				goto Error;
+				return hr;
 				}
 			}
 
@@ -1874,12 +1873,13 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 		{
 			{
 			MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
+			HRESULT hr;
 			if(FAILED(hr = StgCreateDocfile(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
 				0, &pstgRoot)))
 				{
 				LocalString ls(IDS_SAVEERROR);
 				MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
-				goto Error;
+				return hr;
 				}
 			}
 		}
@@ -1890,7 +1890,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 		g_pvp->SetCursorCur(NULL, IDC_WAIT);
 	}
 
-	hr = SaveToStorage(pstgRoot);
+	HRESULT hr = SaveToStorage(pstgRoot);
 
 	if(!FAILED(hr))
 	{
@@ -1904,8 +1904,6 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 	m_pcv->SetClean(eSaveClean);
 	SetNonUndoableDirty(eSaveClean);
 	}
-Error:
-	return hr;
 	}
 
 HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
@@ -2142,11 +2140,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 		else
 			{
 			pstgData->Revert();
-			pstgData->Release();
 			pstgRoot->Revert();
 			LocalString ls(IDS_SAVEERROR);
 			MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
-			goto Error;
 			}
 		pstgData->Release();
 		}
@@ -2161,10 +2157,9 @@ Error:
 HRESULT PinTable::SaveSoundToStream(PinSound *pps, IStream *pstm)
 	{
 	ULONG writ = 0;
-	HRESULT hr = S_OK;
-
 	int len = lstrlen(pps->m_szName);
 
+	HRESULT hr;
 	if(FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
 		return hr;
 
@@ -2657,8 +2652,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 				pstmVersion->Release();
 				if (version >= BEYOND_FILE_FORMAT_VERSION)
 					{
-					LocalString ls(IDS_WRONGFILEVERSION);
-					ShowError(ls.m_szbuffer);
+					LocalString ls2(IDS_WRONGFILEVERSION);
+					ShowError(ls2.m_szbuffer);
 					pstgRoot->Release();
 					pstmGame->Release();
 					pstgData->Release();
