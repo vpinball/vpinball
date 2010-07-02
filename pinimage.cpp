@@ -913,7 +913,7 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 	// Create Guassian window (actually its not really Guassian, but same idea)
 
 	int window[7][7];
-	for (int i=0;i<4;i++)
+	for (int i=0;i<4;++i)
 		{
 		window[0][i] = i+1;
 		window[0][6-i] = i+1;
@@ -922,9 +922,9 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 		}
 
 	int totalwindow = 0;
-	for (int i=0;i<7;i++)
+	for (int i=0;i<7;++i)
 		{
-		for (int l=0;l<7;l++)
+		for (int l=0;l<7;++l)
 			{
 			window[i][l] = window[0][l] * window[i][0];
 			window[i][l] = rgfilterwindow[i][l];
