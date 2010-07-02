@@ -59,7 +59,7 @@ BOOL CALLBACK DoMemoryRead(HANDLE dp, DWORD addr, LPVOID buf, DWORD size, LPDWOR
 
 void * operator new( unsigned int cb )
 {
-	int extraspace = 5*sizeof(void*);
+	const int extraspace = 5*sizeof(void*);
     void *res = _malloc_dbg(cb + extraspace, _CLIENT_BLOCK, "", 0);
 
 	HANDLE hProcess = GetCurrentProcess();
@@ -73,7 +73,6 @@ void * operator new( unsigned int cb )
 
 	STACKFRAME stFrame;
 	ZeroMemory(&stFrame, sizeof(STACKFRAME));
-
 	stFrame.AddrPC.Offset = stCtx.Eip;
     stFrame.AddrPC.Mode = AddrModeFlat; 
     stFrame.AddrStack.Offset = stCtx.Esp; 
@@ -87,7 +86,7 @@ void * operator new( unsigned int cb )
 				hProcess, hThread, &stFrame, &stCtx,
 				DoMemoryRead, SwFunctionTableAccess, SwGetModuleBase, NULL);
 
-		DWORD address = stFrame.AddrReturn.Offset;
+		const DWORD address = stFrame.AddrReturn.Offset;
 		((int *)res)[i] = address;
 		}
 
@@ -104,7 +103,7 @@ void operator delete( void * p )
 		return;
 		}
 
-	int extraspace = 5*sizeof(void*);
+	const int extraspace = 5*sizeof(void*);
 
 	_free_dbg((void *)((int)p-extraspace), _CLIENT_BLOCK);
 }

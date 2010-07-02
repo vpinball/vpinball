@@ -1705,7 +1705,7 @@ float DispReel::getBoxWidth() const
 float DispReel::getBoxHeight() const
 {
     const float height = m_d.m_height
-					   + 2.0f * m_d.m_reelspacing; // spacing also includes edges
+					   + m_d.m_reelspacing + m_d.m_reelspacing; // spacing also includes edges
 
     return height;
 }

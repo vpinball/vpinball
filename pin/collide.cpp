@@ -20,7 +20,7 @@ HitObject *CreateCircularHitPoly(const float x, const float y, const float z, co
 
 	const float inv_sections = (float)(M_PI*2.0)/(float)sections;
 	
-	for (int i=0;i<sections;i++)
+	for (int i=0; i<sections; ++i)
 		{
 		const float angle = inv_sections * (float)i;
 
@@ -65,10 +65,10 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 
 	float bnv = ballvx*normal.x + ballvy*normal.y;	//ball velocity normal to segment, positive if receding, zero=parallel
 
-	if (direction &&  bnv > C_LOWNORMVEL)				//direction true and clearly receding from normal face
+	if (direction &&  bnv > C_LOWNORMVEL)			//direction true and clearly receding from normal face
 		{
 #ifndef SHOWNORMAL
-		check1 = (bnv < 0.0f);							// true is approaching to normal face: !UnHit signal
+		check1 = (bnv < 0.0f);						// true is approaching to normal face: !UnHit signal
 #endif
 		return -1.0f;
 		}
@@ -81,7 +81,7 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 	const float rollingRadius = (lateral ? pball->radius : C_TOL_RADIUS);	//lateral or rolling point
 	const float bcpd = (ballx - v1.x)*normal.x + (bally - v1.y)*normal.y ;	// ball center to plane distance
 	const float bnd = bcpd - rollingRadius;
-	const float btv = ballvx*TANX + ballvy*TANY;		//ball velocity tangent to segment with respect to direction from V1 to V2
+	const float btv = ballvx*TANX + ballvy*TANY;				//ball velocity tangent to segment with respect to direction from V1 to V2
 	float btd = (ballx - v1.x)*TANX + (bally - v1.y)* TANY ;	// ball tangent distance 
 
 
@@ -95,9 +95,9 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 			
 		if (lateral && bnd >= (float)(-PHYS_SKIN) && bnd <= (float)PHYS_TOUCH)
 			{
-			if (inside || fabsf(bnv) > C_CONTACTVEL)						// fast velocity, return zero time
-				hittime = 0;												//zero time for rigid fast bodies				
-			else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;				// slow moving but embedded
+			if (inside || fabsf(bnv) > C_CONTACTVEL)					// fast velocity, return zero time
+				hittime = 0;											//zero time for rigid fast bodies				
+			else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;			// slow moving but embedded
 			else hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
             }
 		else if (fabsf(bnv) > C_LOWNORMVEL )					// not velocity low ????
@@ -152,14 +152,11 @@ float LineSeg::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 	return HitTestBasic(pball, dtime, phitnormal, true, true, true);
 	}
 
-
-float HitCircle::HitTestBasicRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal, bool direction,bool lateral, bool rigid)
+float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal,
+									const bool direction, const bool lateral, const bool rigid)
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
 
-	float hittime; 
-	bool fUnhit;
-	
 	bool capsule3D = false;
 
 	const float x = center.x;
@@ -168,20 +165,23 @@ float HitCircle::HitTestBasicRadius(Ball *pball, float dtime, Vertex3Ds *phitnor
 	const float dx = pball->x - x;	// form delta components (i.e. translate coordinate frame)
 	const float dy = pball->y - y;
 
-	const float dvx = pball->vx;		// delta velocity from ball's coordinate frame
+	const float dvx = pball->vx;	// delta velocity from ball's coordinate frame
 	const float dvy = pball->vy;
 
 	float z,dz,dvz;
-	float targetRadius = lateral ? radius + pball->radius : radius;	// 	
+	float targetRadius = radius;
+	if(lateral)
+		targetRadius += pball->radius; 	
 	
 	if (!lateral && pball->z > zhigh)
 		{
-		const float hcap = radius*(float)(1.0/5.0);			    // cap height to hit-circle radius ratio
 		capsule3D = true;										// handle ball over target? 
 		dvz = pball->vz;										// differential velocity
-		targetRadius = (radius*radius + hcap*hcap)/(hcap*2.0f);	// c = (r^2+h^2)/(2*h)
-		z = zhigh - (targetRadius - hcap);						// b = c - h
-		dz = pball->z  - z;										// ball rolling point - capsule center height 			
+		//const float hcap = radius*(float)(1.0/5.0);			// cap height to hit-circle radius ratio
+		//targetRadius = radius*radius/(hcap*2.0f) + hcap*0.5f;	// c = (r^2+h^2)/(2*h)
+		//z = zhigh - (targetRadius - hcap);					// b = c - h
+		z = zhigh - radius*(float)(12.0/5.0);					// optimized version of above code
+		dz = pball->z - z;										// ball rolling point - capsule center height 			
 		}
 	else
 		{
@@ -204,20 +204,24 @@ float HitCircle::HitTestBasicRadius(Ball *pball, float dtime, Vertex3Ds *phitnor
  
 	const float bnd = bcdd - targetRadius;		// ball normal distance to 
 
+	float hittime;
+	bool fUnhit;
 // Kicker is special.. handle ball stalled on kicker, commonly hit while receding, knocking back into kicker pocket
 	if (m_ObjType == eKicker && bnd <= 0 && bnd >= -radius &&  a < C_CONTACTVEL*C_CONTACTVEL )	
 		{
 		if (pball->m_vpVolObjs) pball->m_vpVolObjs->RemoveElement(m_pObj);	// cause capture
 		}
 
-	if (rigid && bnd < (float)PHYS_TOUCH)			// postive: contact possible in future ... Negative: objects in contact now
+	if (rigid && bnd < (float)PHYS_TOUCH)		// positive: contact possible in future ... Negative: objects in contact now
 		{
 		if (bnd < (float)(-PHYS_SKIN)) return -1.0f;	
 
-		if (fabsf(bnv) > C_CONTACTVEL)				// >fast velocity, return zero time
-			hittime = 0;							//zero time for rigid fast bodies
-		else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;						// slow moving but embedded
-		else hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
+		if (fabsf(bnv) > C_CONTACTVEL)			// >fast velocity, return zero time
+			hittime = 0;						//zero time for rigid fast bodies
+		else if(bnd <= (float)(-PHYS_TOUCH))
+			hittime = 0;						// slow moving but embedded
+		else
+			hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
 		}
 	else if (m_ObjType >= eTrigger && pball->m_vpVolObjs && (bnd < 0 == pball->m_vpVolObjs->IndexOf(m_pObj) < 0))
 		{ // here if ... ball inside and no hit set .... or ... ball outside and hit set
@@ -235,17 +239,18 @@ float HitCircle::HitTestBasicRadius(Ball *pball, float dtime, Vertex3Ds *phitnor
 	else
 		{	
 		if((!rigid && bnd * bnv > 0) ||	// (outside and receding) or (inside and approaching)
-		   (a < 1.0e-8f)) return -1.0f;				//no hit ... ball not moving relative to object
+		   (a < 1.0e-8f)) return -1.0f;	//no hit ... ball not moving relative to object
 
 		const float c = bcddsq - targetRadius*targetRadius; // contact distance ... square delta distance (outer product)
 
-		b += b;										// twice the (inner products)
+		b += b;									// twice the (inner products)
 
 		float result = b*b - 4.0f*a*c;			// inner products minus the outer products
 
-		if (result < 0) return -1.0f;				// contact impossible 
+		if (result < 0) return -1.0f;			// contact impossible 
 			
-		result = sqrtf(result); a += a;
+		result = sqrtf(result);
+		a += a;
 
 		const float inv_a = 1.0f/a;
 		const float time1 = (-b + result)* inv_a;
@@ -267,7 +272,7 @@ float HitCircle::HitTestBasicRadius(Ball *pball, float dtime, Vertex3Ds *phitnor
 	
 	const float hitz = pball->z - pball->radius + pball->vz * hittime; //rolling point
 
-	if(((hitz + pball->radius *1.50f) < zlow) ||
+	if(((hitz + pball->radius *1.5f) < zlow) ||
 	   (!capsule3D && (hitz + pball->radius*0.5f) > zhigh) ||
 	   (capsule3D && (pball->z + pball->vz * hittime) < zhigh)) return -1.0f;
 		
@@ -297,7 +302,6 @@ float HitCircle::HitTestBasicRadius(Ball *pball, float dtime, Vertex3Ds *phitnor
 
 	return hittime;
 	}
-
 
 float HitCircle::HitTestRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 	{	
@@ -585,7 +589,7 @@ collisions
 
 */
 
-void HitOctree::HitTestBall(Ball *pball)
+void HitOctree::HitTestBall(Ball * const pball)
 	{
 	for (int i=0; i<m_vho.Size(); i++)
 		{		
@@ -640,7 +644,7 @@ void HitOctree::HitTestBall(Ball *pball)
 		}
 	}
 
-void HitOctree::HitTestXRay(Ball *pball, Vector<HitObject> *pvhoHit)
+void HitOctree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit)
 	{
 	for (int i=0; i<m_vho.Size(); i++)
 		{

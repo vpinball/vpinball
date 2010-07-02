@@ -208,10 +208,10 @@ public:
 
 	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
 
-	float HitTestBasicRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal,
-		                     bool direction, bool lateral, bool rigid);
+	float HitTestBasicRadius(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal,
+									const bool direction, const bool lateral, const bool rigid);
 
-	float HitTestRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal);
+	float HitTestRadius(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 
 	virtual int GetType() {return eCircle;}
 
@@ -250,9 +250,9 @@ public:
 		
 	~HitOctree();
 
-	void HitTestXRay(Ball *pball, Vector<HitObject> *pvhoHit);
+	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit);
 
-	void HitTestBall(Ball *pball);
+	void HitTestBall(Ball * const pball);
 
 	void CreateNextLevel();
 

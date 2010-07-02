@@ -29,6 +29,7 @@ Ball::~Ball()
 
 void Ball::Init()
 	{
+	const float tmp = (float)(5.0/2.0)/(radius*radius);
 	// Only called by real balls, not temporary objects created for physics/rendering
 	for (int i=0;i<3;i++)
 		{
@@ -37,7 +38,7 @@ void Ball::Init()
 			if (i==l)
 				{
 				m_orientation.m_d[i][l] = 1.0f;
-				m_inversebodyinertiatensor.m_d[i][l] = (float)(5.0/2.0)/(radius*radius);
+				m_inversebodyinertiatensor.m_d[i][l] = tmp;
 				}
 			else
 				{
@@ -242,7 +243,7 @@ void Ball::Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elast
 	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
 		{
 		float scatter = 2.0f* ((float)rand()*(float)(1.0/RAND_MAX) - 0.5f);  // -1.0f..1.0f
-		scatter *=  (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
+		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
 		const float radsin = sinf(scatter);//  Green's transform matrix... rotate angle delta 
 		const float radcos = cosf(scatter);//  rotational transform from current position to position at time t
 		const float vxt = vx; 
@@ -262,56 +263,59 @@ float Ball::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal) //rlc chang
 	float dvy = vy - pball->vy;
 	float dvz = vz - pball->vz;
 
-	float dx = x - pball->x;					// delta position
+	float dx = x - pball->x;				// delta position
 	float dy = y - pball->y;
 	float dz = z - pball->z;
 
 	float bcddsq = dx*dx + dy*dy + dz*dz;	//square of ball center's delta distance
 
-	float bcdd = sqrtf(bcddsq);						// length of delta
-	if (bcdd < 1.0e-8f)					// two balls center-over-center embedded
+	float bcdd = sqrtf(bcddsq);				// length of delta
+	if (bcdd < 1.0e-8f)						// two balls center-over-center embedded
 		{ //return -1;
-		dz = -1.0f;								// patch up			
-		pball->z -= dz;							//lift up
+		dz = -1.0f;							// patch up			
+		pball->z -= dz;						//lift up
 		
-		bcdd = 1.0f;							//patch up
-		bcddsq = 1.0f;							//patch up
-		dvz = 0.1f;								// small speed difference
+		bcdd = 1.0f;						//patch up
+		bcddsq = 1.0f;						//patch up
+		dvz = 0.1f;							// small speed difference
 		pball->vz -= dvz;
 		}
 
 	float b = dvx*dx + dvy*dy + dvz*dz;		// inner product
 	const float bnv = b/bcdd;				// normal speed of balls toward each other
 
-	if ( bnv >  C_LOWNORMVEL) return -1.0f;		// dot of delta velocity and delta displacement, postive if receding no collison
+	if ( bnv >  C_LOWNORMVEL) return -1.0f;	// dot of delta velocity and delta displacement, postive if receding no collison
 
 	const float totalradius = pball->radius + radius;
 	const float bnd = bcdd - totalradius;
 
 	float hittime;
-	if (bnd < (float)PHYS_TOUCH)				// in contact??? 
+	if (bnd < (float)PHYS_TOUCH)			// in contact??? 
 		{
 		if (bnd <= (float)(-PHYS_SKIN*2.0))
-			return -1.0f;				// embedded too deep
+			return -1.0f;					// embedded too deep
 
-		if (fabsf(bnv) > C_CONTACTVEL)		// >fast velocity, return zero time
-			hittime = 0;								//zero time for rigid fast bodies
-		else if (bnd <= (float)(-PHYS_TOUCH)) hittime = 0;				// slow moving but embedded
-		else hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;		// don't compete for fast zero time events
+		if (fabsf(bnv) > C_CONTACTVEL)			// >fast velocity, return zero time
+			hittime = 0;						//zero time for rigid fast bodies
+		else if (bnd <= (float)(-PHYS_TOUCH))
+			hittime = 0;						// slow moving but embedded
+		else
+			hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;		// don't compete for fast zero time events
 		}
 	else
 		{
 		float a = dvx*dvx + dvy*dvy + dvz*dvz;				//square of differential velocity 
-		const float c = bcddsq - totalradius*totalradius;			//first contact test: square delta position - square of radii
+		const float c = bcddsq - totalradius*totalradius;	//first contact test: square delta position - square of radii
 
 		if (a < 1.0e-12f) return -1.0f;				// ball moving really slow, then wait for contact
 
 		b += b;										// two inner products
-		float result = b*b - 4.0f*a*c;						// squareroot term in Quadratic equation
+		float result = b*b - 4.0f*a*c;				// squareroot term in Quadratic equation
 
-		if (result < 0.0f) return -1.0f;						// no collision path exist	
+		if (result < 0.0f) return -1.0f;			// no collision path exist	
 
-		result = sqrtf(result); a += a;					// optimize calculation
+		result = sqrtf(result);
+		a += a;										// optimize calculation
 
 		const float inv_a = 1.0f/a;
 		float time1 = (-b + result)*inv_a;
@@ -319,8 +323,8 @@ float Ball::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal) //rlc chang
 
 		if (time1 < 0) time1 = time2;				// if time1 negative, assume time2 postive
 
-		if (time1 < time2) hittime = time1;			// select lessor
-		else hittime = time2;						// if time2 is negative ... 
+		hittime = (time1 < time2) ? time1 : time2;	// select lessor
+													// if time2 is negative ... 
 
 		if (hittime < 0 || hittime > dtime) return -1.0f; // .. was some time previous || beyond the next physics tick
 		}
@@ -335,9 +339,9 @@ float Ball::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal) //rlc chang
 	phitnormal->y = (hity - y)*inv_len;
 	phitnormal->z = (hitz - z)*inv_len;
 
-	m_HitDist = bnd;								//actual contact distance 
+	m_HitDist = bnd;					//actual contact distance 
 	m_HitNormVel = bnv;
-	m_HitRigid = true;								//rigid collision type
+	m_HitRigid = true;					//rigid collision type
 
 	return hittime;	
 	}
@@ -492,7 +496,6 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	cpctrv.z *= (float)(1.0/2.5);
 
 	Vertex3Ds vResult;
-
 	CrossProduct(&bccpd, &cpctrv, &vResult);//ball center contact point displacement X reverse contact point co-tan vel
 
 	m_angularmomentum.Add(&vResult);	// add delta 
@@ -614,9 +617,9 @@ void Ball::UpdateVelocities(float dtime)
 	
 	if( g_pplayer && g_pplayer->m_NudgeManual >= 0) //joystick control of ball roll
 		{
-		vx *=  0.92f;//*dtime;	//rolling losses high for easy manual control
-		vy *=  0.92f;//*dtime;
-		vz *=  0.92f;//*dtime;	
+		vx *= 0.92f;//*dtime;	//rolling losses high for easy manual control
+		vy *= 0.92f;//*dtime;
+		vz *= 0.92f;//*dtime;	
 
 #define JOY_DEADBAND  5.0e-2f
 
@@ -628,9 +631,9 @@ void Ball::UpdateVelocities(float dtime)
 			ny -= ny*inv; 
 			//nz -= nz*inv;
 
-			vx +=  nx;// *dtime;
-			vy +=  ny;// *dtime;
-			vz +=  g;// *dtime;//-c_Gravity;
+			vx += nx;// *dtime;
+			vy += ny;// *dtime;
+			vz += g;// *dtime;//-c_Gravity;
 			}
 		}//manual joystick control
 	else if (!fFrozen)  // Gravity	

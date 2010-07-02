@@ -687,14 +687,11 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 						for (int r=0; r<Width*4; r+=4)
 						{
 							// Copy the pixel.
-							DestLockedSurface[offset0 + r    ] = SourceLockedSurface[offset1 + r    ];	// blue
-							DestLockedSurface[offset0 + r + 1] = SourceLockedSurface[offset1 + r + 1];	// green
-							DestLockedSurface[offset0 + r + 2] = SourceLockedSurface[offset1 + r + 2];	// red
 #if 1
-							DestLockedSurface[offset0 + r + 3] = (unsigned char) 0xff;					// alpha
+							*((unsigned int*)&(DestLockedSurface[offset0 + r])) = *((unsigned int*)&(SourceLockedSurface[offset1 + r])) | 0xFF000000;
 #else
-							DestLockedSurface[offset0 + r + 3] = SourceLockedSurface[offset1 + r + 3];	// alpha
-#endif						
+							*((unsigned int*)&(DestLockedSurface[offset0 + r])) = *((unsigned int*)&(SourceLockedSurface[offset1 + r]));
+#endif
 						}
 
 						// Increment to the next horizontal line.
@@ -841,10 +838,7 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 #if 1
 							*((unsigned int*)&(DestLockedSurface[offset0 + r])) = *((unsigned int*)&(SourceLockedSurface[offset1 + r]));
 #else
-							DestLockedSurface[offset0 + r + 0] = SourceLockedSurface[offset1 + r + 0];		// blue
-							DestLockedSurface[offset0 + r + 1] = SourceLockedSurface[offset1 + r + 1];		// green
-							DestLockedSurface[offset0 + r + 2] = SourceLockedSurface[offset1 + r + 2];		// red
-							DestLockedSurface[offset0 + r + 3] = (unsigned char) 0xff;							// alpha																		// alpha
+							*((unsigned int*)&(DestLockedSurface[offset0 + r])) = *((unsigned int*)&(SourceLockedSurface[offset1 + r])) | 0xFF000000;
 #endif
 						}
 

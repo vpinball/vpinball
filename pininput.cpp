@@ -206,9 +206,7 @@ void PinInput::AdvanceTail()
 
 void PinInput::PushQueue( DIDEVICEOBJECTDATA *data, unsigned int app_data )
 {
-	if( !data ) return;
-
-	if( QueueFull() ) return;
+	if(( !data ) || QueueFull()) return;
 
 	m_diq[m_head] = *data;
 	m_diq[m_head].dwTimeStamp = msec();		//rewrite time from game start
@@ -535,9 +533,7 @@ void PinInput::autocoin( F32 secs )
 {
 	// Make sure we have a player.
 	if( !g_pplayer ) 
-	{
 		return;
-	}
 
 	static int down = 0;
 	static int didonce = 0;
@@ -587,16 +583,10 @@ void PinInput::autostart( F32 secs, F32 retrysecs )
 //	}
     
 	// Make sure we have a player.
-	if( !g_pplayer ) 
-	{
-		return;
-	}
-
+	if(( !g_pplayer ) ||
 	// Check if we already started.
-	if( started() )
-	{
+	   ( started() ))
 		return;
-	}
 
 	static int down = 0;
 	static int didonce = 0;
@@ -642,23 +632,16 @@ void PinInput::autostart( F32 secs, F32 retrysecs )
 
 void PinInput::autoexit( F32 secs )
 {
-
-    if( !VPinball::m_open_minimized ) return;
-    if( !g_pplayer ) return;
-    if( secs == 0.0f) return;
-
-	// Check if we have not started.
-    if( !started() )
-    {
-        return;
-    }
+    if(( !VPinball::m_open_minimized ) ||
+       ( !g_pplayer ) ||
+       ( secs == 0.0f) ||
+	   // Check if we have not started.
+	   ( !started() ))
+	   return;
 
 	// Check if we can exit.
     if (started())													// No coins queued for entry.
-    {
         ExitApp();
-    }
-
 }
 
 

@@ -895,8 +895,6 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 			pjoint->normal.y *= inv_length2;
 			}
 		}
-
-	return;
 	}
 
 void Ramp::EndPlay()

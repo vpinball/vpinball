@@ -91,7 +91,7 @@ void PinDirectSound::InitDirectSound(HWND hwnd)
 
     SAFE_RELEASE( pDSBPrimary );
 
-    return;// S_OK;
+    //return S_OK;
 }
 
 PinSound *PinDirectSound::LoadWaveFile(TCHAR* strFileName )
