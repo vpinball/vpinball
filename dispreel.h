@@ -191,7 +191,6 @@ public:
 private:
     float   getBoxWidth() const;
     float   getBoxHeight() const;
-    
 };
 
 #endif // !defined(AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_)

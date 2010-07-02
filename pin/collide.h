@@ -46,7 +46,7 @@ extern float c_dampingFriction;
 extern float c_plungerNormalize;  //Adjust Mech-Plunger, useful for component change or weak spring etc.
 extern bool c_plungerFilter;
 
-extern U32 c_PostCheck;
+//extern U32 c_PostCheck;
 
 // Layer outside object which increases it's size for contact measurements. Used to determine clearances.
 // Setting this value during testing to 0.1 will insure clearance. After testing set the value to 0.005

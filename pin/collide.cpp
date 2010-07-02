@@ -2,7 +2,6 @@
 
 //spare
 
-
 float c_maxBallSpeedSqed = C_SPEEDLIMIT*C_SPEEDLIMIT; 
 float c_dampingFriction = 0.95f;
 float c_plungerNormalize = (float)(1.0/13.0);  //match button plunger physics
@@ -12,7 +11,7 @@ float c_hardScatter = 0;
 float c_hardFriction = 1.0f - RC_FRICTIONCONST;
 float c_Gravity = GRAVITYCONST;
 
-U32 c_PostCheck = 0;
+//U32 c_PostCheck = 0;
 
 HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections)
 	{
@@ -65,7 +64,7 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 
 	float bnv = ballvx*normal.x + ballvy*normal.y;	//ball velocity normal to segment, positive if receding, zero=parallel
 
-	if (direction &&  bnv > C_LOWNORMVEL)			//direction true and clearly receding from normal face
+	if (direction && bnv > C_LOWNORMVEL)			//direction true and clearly receding from normal face
 		{
 #ifndef SHOWNORMAL
 		check1 = (bnv < 0.0f);						// true is approaching to normal face: !UnHit signal
@@ -95,10 +94,12 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 			
 		if (lateral && bnd >= (float)(-PHYS_SKIN) && bnd <= (float)PHYS_TOUCH)
 			{
-			if (inside || fabsf(bnv) > C_CONTACTVEL)					// fast velocity, return zero time
-				hittime = 0;											//zero time for rigid fast bodies				
-			else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;			// slow moving but embedded
-			else hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
+			if (inside || fabsf(bnv) > C_CONTACTVEL)				// fast velocity, return zero time
+				hittime = 0;										//zero time for rigid fast bodies				
+			else if(bnd <= (float)(-PHYS_TOUCH))
+				hittime = 0;										// slow moving but embedded
+			else
+				hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
             }
 		else if (fabsf(bnv) > C_LOWNORMVEL )					// not velocity low ????
 			hittime = bnd/(-bnv);								// rate ok for safe divide 
@@ -127,13 +128,13 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 	if (btd < -C_TOL_ENDPNTS || btd > length + C_TOL_ENDPNTS) // is the contact off the line segment??? 
 		return -1.0f;
 
-	if (!rigid)												// non rigid body collision? return direction
-		phitnormal[1].x = (float)bUnHit;	// UnHit signal	is receding from outside target
+	if (!rigid)												  // non rigid body collision? return direction
+		phitnormal[1].x = bUnHit ? 1.0f : 0.0f;				  // UnHit signal	is receding from outside target
 	
 	const float ballr = pball->radius;
-	const float hitz = pball->z - ballr + pball->vz*hittime;	// check too high or low relative to ball rolling point at hittime
+	const float hitz = pball->z - ballr + pball->vz*hittime;  // check too high or low relative to ball rolling point at hittime
 
-	if (hitz + (ballr * 1.5f) < m_rcHitRect.zlow			//check limits of object's height and depth  
+	if (hitz + (ballr * 1.5f) < m_rcHitRect.zlow			  //check limits of object's height and depth  
 		|| hitz + (ballr * 0.5f) > m_rcHitRect.zhigh)
 		return -1.0f;
 
@@ -461,7 +462,7 @@ HitOctree::~HitOctree()
 #ifdef HITLOG
 	if (g_fWriteHitDeleteLog)
 		{
-		FILE *file = fopen("c:\\log.txt", "a");
+		FILE * const file = fopen("c:\\log.txt", "a");
 		fprintf(file,"Deleting %f %f %f %f %d\n", m_rectbounds.left, m_rectbounds.top, m_rectbounds.right, m_rectbounds.bottom, m_fLeaf); 
 		fclose(file);
 		}
@@ -556,7 +557,7 @@ void HitOctree::CreateNextLevel()
 
 	if (m_vcenter.x - m_rectbounds.left > 125.0f)
 		{
-		for (int i=0;i<8;i++)
+		for (int i=0; i<8; ++i)
 			{
 			m_phitoct[i]->CreateNextLevel();
 			}
