@@ -56,7 +56,6 @@ void HitRectSur::Rectangle(float x, float y, float x2, float y2)
 
 void HitRectSur::Rectangle2(int x, int y, int x2, int y2)
 	{
-	return;
 	}
 
 void HitRectSur::Ellipse(float centerx, float centery, float radius)
@@ -123,17 +122,14 @@ void HitRectSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left,
 
 void HitRectSur::Polyline(Vertex2D *rgv, int count)
 	{
-	return;
 	}
 
 void HitRectSur::Arc(float x, float y, float radius, float pt1x, float pt1y, float pt2x, float pt2y)
 	{
-	return;
 	}
 
 void HitRectSur::Image(float x, float y, float x2, float y2, HDC hdcSrc, int width, int height)
 	{
-	return;
 	}
 
 void HitRectSur::SetObject(ISelect *psel)

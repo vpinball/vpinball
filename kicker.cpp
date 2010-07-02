@@ -130,9 +130,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	HRESULT hr;
 	
 	// Don't process "invisible" kickers.
-	if (m_d.m_kickertype == KickerInvisible)
-		return;
-	if (m_d.m_kickertype == KickerHidden)
+	if ((m_d.m_kickertype == KickerInvisible) || (m_d.m_kickertype == KickerHidden))
 		return;
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;

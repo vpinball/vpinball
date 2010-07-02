@@ -4008,8 +4008,6 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 		{
 		DestroyMenu(hmenumain);
 		}
-
-	return;
 	}
 
 BOOL PinTable::FMutilSelLocked()

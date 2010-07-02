@@ -83,31 +83,35 @@ HitFlipper::HitFlipper(const float x, const float y, float baser, float endr, fl
 	// I(area)FE = re^4/4*(theta - sin(theta)+2/3*sin(theta)*sin(theta/2)^2),requires translation to centroidial axis
 	// then translate these using the parallel axis theorem to the flipper rotational axis
 
-	const float etheta = (float)M_PI - 2.0f*fa; // end radius section angle
-	const float btheta = (float)M_PI + 2.0f*fa;	// base radius section angle
-	const float a = 2.0f*endr*sinf(etheta*0.5f); 
-	const float b = 2.0f*baser*sinf(btheta*0.5f); // face thickness at end and base radii
+	const float etheta = (float)M_PI - (fa+fa); // end radius section angle
+	const float btheta = (float)M_PI + (fa+fa);	// base radius section angle
+	const float tmp1 = sinf(btheta*0.5f);
+	const float tmp2 = sinf(etheta*0.5f);
+	const float a = 2.0f*endr*tmp2; 
+	const float b = 2.0f*baser*tmp1; // face thickness at end and base radii
 
 	const float baseh = baser*cosf(btheta*0.5f);
 	const float endh = endr*cosf(etheta*0.5f);
 	const float h = flipr + baseh + endh;
 	
-	float Irb_inertia = baser*baser*baser*baser*0.25f*(btheta - sinf(btheta) + (float)(2.0/3.0)*sinf(btheta)*powf(sinf(btheta*0.5f),2.0f));//base radius
+	float Irb_inertia = baser*baser*baser*baser*0.25f*(btheta - sinf(btheta) + (float)(2.0/3.0)*sinf(btheta)*tmp1*tmp1);//base radius
 	Irb_inertia /= baser*baser*(btheta - sinf(btheta)); // divide by area to obtain simple Inertia
-
-	float Ire_inertia = endr*endr*endr*endr*0.25f*(etheta - sinf(etheta) + (float)(2.0/3.0)*sinf(etheta)*powf(sinf(etheta*0.5f),2.0f));//end radius
+	
+	float Ire_inertia = endr*endr*endr*endr*0.25f*(etheta - sinf(etheta) + (float)(2.0/3.0)*sinf(etheta)*(tmp2*tmp2));//end radius
 	Ire_inertia /= endr*endr*(etheta - sinf(etheta)); // divide by area
 
 	// translate to centroidal and then flipper axis.. subtract section radius squared then add (flipper radius + section radius) squared
-	Ire_inertia = Ire_inertia + (powf(flipr+(float)(4.0/3.0)*endr*powf(sinf(etheta*0.5f),3.0f)/(etheta-sinf(etheta)),2.0f)
-							  - powf((float)(4.0/3.0)*endr*powf(sinf(etheta*0.5f),3.0f)/(etheta-sinf(etheta)),2.0f));// double parallel axis
+	const float tmp3 = (float)(4.0/3.0)*endr*(tmp2*tmp2*tmp2)/(etheta-sinf(etheta));
+	Ire_inertia = Ire_inertia + ((flipr+tmp3)*(flipr+tmp3)
+							    -       tmp3 *       tmp3);// double parallel axis
 	
 	//flipper body trapizoidal section
-	float Ifb_inertia =  h/(144.0f*(a+b))*(16.0f*h*h*a*b+4.0f*h*h*b*b+4.0f*h*h*a*a+3.0f*a*a*a*a
-							+6.0f*a*a*b*b+6.0f*a*a*a*b+6.0f*a*b*b*b+3.0f*b*b*b*b);
+	float Ifb_inertia = h/(144.0f*(a+b))*(16.0f*(h*h)*a*b+4.0f*(h*h)*(b*b)+4.0f*(h*h)*(a*a)+3.0f*(a*a)*(a*a)
+							              +6.0f*(a*a)*(b*b)+6.0f*(a*a)*(a*b)+6.0f*(a*b)*(b*b)+3.0f*(b*b)*(b*b));
 	Ifb_inertia /= h*0.5f*(a+b); // divide by area
 
-	Ifb_inertia = Ifb_inertia + powf(h*(float)(1.0/3.0)*(2.0f*a+b)/(a+b),2.0f); //flipper body translated to flipper axis ...parallel axis
+	const float tmp4 = h*(float)(1.0/3.0)*(2.0f*a+b)/(a+b);
+	Ifb_inertia = Ifb_inertia + tmp4*tmp4; //flipper body translated to flipper axis ...parallel axis
 
 	const float Iff = Irb_inertia + Ifb_inertia + Ire_inertia; //scalar moment of inertia ... multiply by weight next
 
@@ -577,21 +581,21 @@ void HitFlipper::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	const float vy = pball->vy;
 	const float distance = phitnormal[2].x;				// moment .... and the flipper response
 	const float angsp = m_flipperanim.m_anglespeed;		// angular rate of flipper at impact moment
-	float tanspd = distance * angsp;						// distance * anglespeed
+	float tanspd = distance * angsp;					// distance * anglespeed
 	float flipperHit = 0;
 
 	Vertex2D dv;	
 	dv.x = vx - phitnormal[1].x*tanspd; 
-	dv.y = vy - phitnormal[1].y*tanspd;						//delta velocity ball to face
+	dv.y = vy - phitnormal[1].y*tanspd;					 //delta velocity ball to face
 
 	float dot = dv.x*phitnormal->x + dv.y*phitnormal->y; //dot Normal to delta v
 
-	if (dot >= -C_LOWNORMVEL )								// nearly receding ... make sure of conditions
-		{													// otherwise if clearly approaching .. process the collision
-		if (dot > C_LOWNORMVEL) return;						//is this velocity clearly receding (i.e must > a minimum)		
+	if (dot >= -C_LOWNORMVEL )							 // nearly receding ... make sure of conditions
+		{												 // otherwise if clearly approaching .. process the collision
+		if (dot > C_LOWNORMVEL) return;					 //is this velocity clearly receding (i.e must > a minimum)		
 #ifdef C_EMBEDDED
 		if (pball->m_HitDist < -C_EMBEDDED)
-			dot = -C_EMBEDSHOT;								// has ball become embedded???, give it a kick
+			dot = -C_EMBEDSHOT;							 // has ball become embedded???, give it a kick
 		else return;
 #endif		
 		}
@@ -599,7 +603,7 @@ void HitFlipper::Collide(Ball *pball, Vertex3Ds *phitnormal)
 #ifdef C_DISP_GAIN 
 		// correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing
 		float hdist = -C_DISP_GAIN * pball->m_HitDist;				// distance found in hit detection
-		if (hdist > 1.0e-4)
+		if (hdist > 1.0e-4f)
 			{
 			if (hdist > C_DISP_LIMIT) 
 				hdist = C_DISP_LIMIT;	// crossing ramps, delta noise
