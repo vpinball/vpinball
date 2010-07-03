@@ -4643,6 +4643,9 @@ INT CALLBACK ResolveNameConflictProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 			// limit the name field to MAXNAMEBUFFER characters
 			hwndControl = GetDlgItem(hwndDlg, IDC_RESOLVEDNAME);
 			SendMessage(hwndControl, EM_LIMITTEXT, MAXNAMEBUFFER-2, 0L);
+
+			PinTable * const pt = g_pvp->GetActiveTable();
+			pt->mCancelResolvingNames = false;
 			return TRUE;
 			}
 			break;
@@ -4664,7 +4667,14 @@ INT CALLBACK ResolveNameConflictProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 							pName[textlength] = 0;
 							// and store it
 							PinTable * const pt = g_pvp->GetActiveTable();
-							pt->SetResolvedName(pName);
+							pt->SetResolvedName(pName, false);
+							EndDialog(hwndDlg, TRUE);
+							}
+							break;
+						case IDC_USEDEFAULTNAMES:
+							{
+							PinTable * const pt = g_pvp->GetActiveTable();
+							pt->SetResolvedName(NULL, true);
 							EndDialog(hwndDlg, TRUE);
 							}
 							break;
@@ -4686,10 +4696,13 @@ INT CALLBACK ResolveNameConflictProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 	return FALSE;
 	}
 
-void PinTable::SetResolvedName(WCHAR *p_resolvedName)
+void PinTable::SetResolvedName(WCHAR *p_resolvedName, bool cancelResolvingNames)
 {
-	//mp_resolvedName = (WCHAR *)malloc(lstrlenW(p_resolvedName)*sizeof(WCHAR));
-	WideStrCopy(p_resolvedName, mp_resolvedName);
+	//if cancelResolvingNames==true then the user wants to return to the default naming scheme.
+	mCancelResolvingNames = cancelResolvingNames;
+
+	if (!mCancelResolvingNames)
+		WideStrCopy(p_resolvedName, mp_resolvedName);
 }
 
 void PinTable::Paste(BOOL fAtLocation, int x, int y, bool keepName)
@@ -4757,12 +4770,23 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y, bool keepName)
 					if (res == 0)
 						return;
 
+					if (mCancelResolvingNames)
+						break;
+
 					if (lstrlenW(mp_resolvedName)> 0)
 						p_tmpName = mp_resolvedName;
 				}
 				
-				WideStrCopy(p_tmpName, peditNew->GetScriptable()->m_wzName);
-				peditNew->InitVBA(fTrue, 0, p_tmpName);
+				if (mCancelResolvingNames)
+				{
+					keepName = false;
+					peditNew->InitVBA(fTrue, 0, NULL);
+				}
+				else
+				{
+					WideStrCopy(p_tmpName, peditNew->GetScriptable()->m_wzName);
+					peditNew->InitVBA(fTrue, 0, p_tmpName);
+				}
 			}
 			else
 				peditNew->InitVBA(fTrue, 0, NULL);
