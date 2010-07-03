@@ -433,6 +433,7 @@
 #define IDD_RESOLVENAMECONFLICT			380
 #define IDC_CONFLICTINGNAME				380
 #define IDC_RESOLVEDNAME				381
+#define IDC_USEDEFAULTNAMES				382
 #define IDR_TABLE_NEW                   383
 #define IDC_ADDCREDITBUTTON2            400
 #define IDC_ADDCREDIT2                  401

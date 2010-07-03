@@ -209,7 +209,8 @@ public:
 
 	void Copy();
 	void Paste(BOOL fAtLocation, int x, int y, bool keepName);
-	void SetResolvedName(WCHAR *p_resolvedName);
+	void SetResolvedName(WCHAR *p_resolvedName, bool cancelResolvingNames);
+	bool mCancelResolvingNames;
 
 	void ExportBlueprint();
 
