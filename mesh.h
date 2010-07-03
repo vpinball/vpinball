@@ -212,7 +212,7 @@ inline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJo
 	}
 */
 
-inline void SetNormal(Vertex3D * rgv, const WORD * rgi, const int count, Vertex3D * rgvApply, const WORD * rgiApply, int applycount)
+inline void SetNormal(Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * rgvApply, const WORD * rgiApply, int applycount)
 	{
 	// If apply-to array is null, just apply the resulting normal to incoming array
 	if (rgvApply == NULL)

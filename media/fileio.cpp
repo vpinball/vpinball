@@ -405,8 +405,7 @@ HRESULT BiffReader::Load()
 			{
 			if (m_bytesinrecordremaining > 0)
 				{
-				BYTE *szT;
-				szT = new BYTE[m_bytesinrecordremaining];
+				BYTE * const szT = new BYTE[m_bytesinrecordremaining];
 				GetStruct(szT, m_bytesinrecordremaining);
 				delete szT;
 				}
@@ -463,7 +462,7 @@ unsigned long __stdcall FastIStorage::Release()
 
 long __stdcall FastIStorage::CreateStream(const WCHAR *wzName,unsigned long,unsigned long,unsigned long,struct IStream **ppstm)
 	{
-	FastIStream *pfs = new FastIStream();
+	FastIStream * const pfs = new FastIStream();
 	pfs->AddRef(); // AddRef once for us, and once for the caller
 	pfs->AddRef();
 	pfs->m_wzName = new WCHAR[lstrlenW(wzName)+1];
@@ -483,7 +482,7 @@ long __stdcall FastIStorage::OpenStream(const WCHAR *,void *,unsigned long,unsig
 
 long __stdcall FastIStorage::CreateStorage(const WCHAR *wzName,unsigned long,unsigned long,unsigned long,struct IStorage **ppstg)
 	{
-	FastIStorage *pfs = new FastIStorage();
+	FastIStorage * const pfs = new FastIStorage();
 	pfs->AddRef(); // AddRef once for us, and once for the caller
 	pfs->AddRef();
 	pfs->m_wzName = new WCHAR[lstrlenW(wzName)+1];

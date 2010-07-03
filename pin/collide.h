@@ -244,7 +244,7 @@ public:
 class HitOctree
 	{
 public:
-	HitOctree():m_fLeaf(fTrue)
+	HitOctree() : m_fLeaf(true)
 		{
 		}
 		
@@ -263,5 +263,5 @@ public:
 	FRect3D m_rectbounds;
 	Vertex3Ds m_vcenter;
 
-	BOOL m_fLeaf;
+	bool m_fLeaf;
 	};

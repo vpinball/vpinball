@@ -159,7 +159,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str)
 
 		if (!lstrcmpi(szextension, "wma"))
 			{
-			WCHAR *wz = new WCHAR[MAX_PATH + lstrlenW(str) + 1];
+			WCHAR * const wz = new WCHAR[MAX_PATH + lstrlenW(str) + 1];
 			//WCHAR wz[MAX_PATH];
 
 			//MultiByteToWideChar(CP_ACP, 0, szPath, -1, wz, MAX_PATH);

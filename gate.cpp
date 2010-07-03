@@ -221,8 +221,8 @@ void Gate::GetHitShapes(Vector<HitObject> *pvho)
 
 	if(m_d.m_fSupports)
 		{
-		HitCircle *phitcircle;
-		phitcircle = new HitCircle();
+			{
+		HitCircle * const phitcircle = new HitCircle();
 		phitcircle->m_pfe = NULL;
 		phitcircle->center.x = m_d.m_vCenter.x + cs*halflength;
 		phitcircle->center.y = m_d.m_vCenter.y + sn*halflength;
@@ -231,8 +231,9 @@ void Gate::GetHitShapes(Vector<HitObject> *pvho)
 		phitcircle->zhigh = height+h; //+50;
 
 		pvho->AddElement(phitcircle);
-
-		phitcircle = new HitCircle();
+			}
+		
+		HitCircle * const phitcircle = new HitCircle();
 		phitcircle->m_pfe = NULL;
 		phitcircle->center.x = m_d.m_vCenter.x - cs*halflength;
 		phitcircle->center.y = m_d.m_vCenter.y - sn*halflength;
@@ -1196,7 +1197,7 @@ STDMETHODIMP Gate::put_CloseAngle(float newVal)
 
 		if (m_phitgate->m_gateanim.m_angleMax > newVal)	// max is bigger
 			m_phitgate->m_gateanim.m_angleMin = newVal;	//then set new minumum
-		else m_phitgate->m_gateanim.m_angleMax = newVal;	//else set new max
+		else m_phitgate->m_gateanim.m_angleMax = newVal;//else set new max
 		}
 	else
 		{
@@ -1227,7 +1228,7 @@ if (m_d.m_fCollidable) newVal = 0;
 
 		if (m_phitgate->m_gateanim.m_angleMin < newVal)	// min is smaller
 			m_phitgate->m_gateanim.m_angleMax = newVal;	//then set new maximum
-		else m_phitgate->m_gateanim.m_angleMin = newVal;	//else set new min
+		else m_phitgate->m_gateanim.m_angleMin = newVal;//else set new min
 		}
 	else
 		{

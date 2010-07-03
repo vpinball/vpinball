@@ -84,7 +84,7 @@ public:
 class Hit3DPoly : public HitObject
 	{
 public:
-	Hit3DPoly(Vertex3D *rgv, int count, bool keepptr);
+	Hit3DPoly(Vertex3D * const rgv, const int count, const bool keepptr);
 	virtual ~Hit3DPoly();
 	virtual float HitTestBasicPolygon(Ball *pball, float dtime, Vertex3Ds *phitnormal,bool direction, bool rigid);
 	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
@@ -136,7 +136,7 @@ class HitSpinner : public HitObject
 	{
 public:
 
-	HitSpinner(Spinner *pspinner, float height);
+	HitSpinner(Spinner * const pspinner, const float height);
 
 	virtual void Draw(HDC hdc);
 
@@ -189,7 +189,7 @@ class HitGate : public LineSeg
 	{
 public:
 
-	HitGate(Gate *pgate);
+	HitGate(Gate * const pgate);
 
 	virtual int GetType() {return eGate;}
 
@@ -236,7 +236,7 @@ class Hit3DCylinder : public HitCircle
 	{
 public:
 
-	Hit3DCylinder(Vertex3D *pv1, Vertex3D *pv2, Vertex3Ds *pvnormal);
+	Hit3DCylinder(const Vertex3D * const pv1, const Vertex3D * const pv2, const Vertex3Ds * const pvnormal);
 
 	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
 	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
@@ -275,7 +275,7 @@ public:
 class Hit3DPolyDrop : public Hit3DPoly
 	{
 public:
-	Hit3DPolyDrop(Vertex3D *rgv, int count, bool keepptr);
+	Hit3DPolyDrop(Vertex3D * const rgv, const int count, const bool keepptr);
 
 	virtual AnimObject *GetAnimObject() {return &m_polydropanim;}
 
@@ -298,7 +298,7 @@ class TextboxUpdater : public HitObject
 	{
 public:
 
-	TextboxUpdater(Textbox *ptb) {m_textboxanim.m_ptextbox = ptb;}
+	TextboxUpdater(Textbox * const ptb) {m_textboxanim.m_ptextbox = ptb;}
 	virtual ~TextboxUpdater() {}
 
 	virtual int GetType() {return eTextbox;}
@@ -330,7 +330,7 @@ class DispReelUpdater : public HitObject
 	{
 public:
 
-	DispReelUpdater(DispReel *ptb) {m_dispreelanim.m_pDispReel = ptb;}
+	DispReelUpdater(DispReel * const ptb) {m_dispreelanim.m_pDispReel = ptb;}
 	virtual ~DispReelUpdater() {}
 
 	virtual int GetType() {return eDispReel;}
@@ -361,7 +361,7 @@ class LightSeqUpdater : public HitObject
 	{
 public:
 
-	LightSeqUpdater(LightSeq *ptb) {m_lightseqanim.m_pLightSeq = ptb;}
+	LightSeqUpdater(LightSeq * const ptb) {m_lightseqanim.m_pLightSeq = ptb;}
 	virtual ~LightSeqUpdater() {}
 
 	virtual int GetType() {return eLightSeq;}
