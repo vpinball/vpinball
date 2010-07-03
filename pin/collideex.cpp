@@ -138,9 +138,9 @@ void LineSegSlingshot::Collide(Ball *pball, Vertex3Ds *phitnormal)
 		// Calculate this distance from the center of the slingshot to get force
 
 		const float btd = (vhitpoint.x - v1.x)*TANX + (vhitpoint.y - v1.y)*TANY; //rlc distance to vhit from V1
-		float force = (btd+btd)/len - 1.0f;		// -1..+1
+		float force = (btd+btd)/len - 1.0f;	// -1..+1
 		force = 0.5f *(1.0f-force*force);	//rlc maximum value 0.5 ...I think this should have been 1.0...oh well
-												// will match the previous physics
+											// will match the previous physics
 		force *= m_force;//-80;
 
 		pball->vx -= phitnormal->x * force;	// boost velocity, drive into slingshot (counter normal)
@@ -150,7 +150,7 @@ void LineSegSlingshot::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	pball->CollideWall(phitnormal, m_elasticity, m_antifriction, m_scatter);
 
 	if (m_pfe && !m_psurface->m_fDisabled)
-		{			
+		{
 			if (dot <= -m_threshold)
 			{
 			const float dx = pball->m_Event_Pos.x - pball->x; // is this the same place as last event????
@@ -160,13 +160,13 @@ void LineSegSlingshot::Collide(Ball *pball, Vertex3Ds *phitnormal)
 			if ((dx*dx + dy*dy + dz*dz) > 0.25f)// must be a new place if only by a little
 				{
 				if (m_psurface->m_d.m_slingshot_threshold != 0.0f)// if new slingshot threshold is set use it
-					{			
+					{
 					if (threshold)
 						{
 						m_pfe->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
 						m_slingshotanim.m_TimeReset = g_pplayer->m_timeCur + 100;
 						}
-					}	
+					}
 				else if (dot <= -m_threshold)//legacy wall threshold
 					{
 					m_pfe->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
@@ -182,9 +182,9 @@ void LineSegSlingshot::Collide(Ball *pball, Vertex3Ds *phitnormal)
 
 float LineSegLevelEdge::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 	{
-	if (!m_fEnabled) return -1.0f;	
+	if (!m_fEnabled) return -1.0f;
 
-		// approach from either face, lateral contact, not rigid
+	// approach from either face, lateral contact, not rigid
 	return this->HitTestBasic(pball, dtime, phitnormal, false, true, false);
 	}
 
@@ -223,7 +223,7 @@ void SlingshotAnimObject::Reset()
 	// Do nothing right now - just let it draw as not hit
 	}
 
-HitGate::HitGate(Gate *pgate)
+HitGate::HitGate(Gate * const pgate)
 	{
 	m_pgate = pgate;
 
@@ -247,7 +247,7 @@ float HitGate::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 	{	
 	if (!m_fEnabled) return -1.0f;		
 
-	//return LineSeg::HitTest(pball, dtime, phitnormal);		//rlc test ok
+	//return LineSeg::HitTest(pball, dtime, phitnormal);			 //rlc test ok
 
 	return HitTestBasic(pball, dtime, phitnormal, true, true, false);// normal face, lateral, non-rigid
 
@@ -256,7 +256,6 @@ float HitGate::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 
 void HitGate::Collide(Ball *pball, Vertex3Ds *phitnormal)
 	{
-
 	const float dot = pball->vx * phitnormal->x + pball->vy * phitnormal->y;
 	if (dot > 0.0f) return;	//hit from back doesn't count
 
@@ -363,7 +362,7 @@ void GateAnimObject::Reset()
 	m_iframe = -1;
 	}
 
-HitSpinner::HitSpinner(Spinner *pspinner, float height)
+HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
 	{
 	m_spinneranim.m_pspinner = pspinner;
 
@@ -597,7 +596,7 @@ void HitSpinner::CalcHitRect()
 
 
 
-Hit3DPoly::Hit3DPoly(Vertex3D *rgv, int count, bool keepptr) : m_cvertex(count)
+Hit3DPoly::Hit3DPoly(Vertex3D * const rgv, const int count, const bool keepptr) : m_cvertex(count)
 	{
 	if(keepptr)
 		m_rgv = rgv;
@@ -774,21 +773,32 @@ void Hit3DPoly::Collide(Ball *pball, Vertex3Ds *phitnormal)
 
 void Hit3DPoly::CalcNormal()
 	{
-	WORD * const rgi = new WORD[m_cvertex];
+	normal.x = 0;
+	normal.y = 0;
+	normal.z = 0;
 
 	for (int i=0; i<m_cvertex; ++i)
 		{
-		rgi[i]= i;
+		const int m = (i < m_cvertex-1) ? (i+1) : 0;
+
+		normal.x += (m_rgv[i].y - m_rgv[m].y) * (m_rgv[i].z + m_rgv[m].z);
+		normal.y += (m_rgv[i].z - m_rgv[m].z) * (m_rgv[i].x + m_rgv[m].x);
+		normal.z += (m_rgv[i].x - m_rgv[m].x) * (m_rgv[i].y + m_rgv[m].y);		
 		}
 
-	SetNormal(m_rgv, rgi, m_cvertex, NULL, NULL, NULL);
+	const float inv_len = -1.0f/sqrtf((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
+	normal.x *= inv_len;
+	normal.y *= inv_len;
+	normal.z *= inv_len;
 
-	normal.x = m_rgv[0].nx;
-	normal.y = m_rgv[0].ny;
-	normal.z = m_rgv[0].nz;
+	for (int i=0; i<m_cvertex; ++i)
+		{
+		m_rgv[i].nx = normal.x;
+		m_rgv[i].ny = normal.y;
+		m_rgv[i].nz = normal.z;
+		}
+
 	D = -(normal.x * m_rgv[0].x + normal.y * m_rgv[0].y + normal.z * m_rgv[0].z);
-
-	delete rgi;
 	}
 
 void Hit3DPoly::CalcHitRect()
@@ -811,7 +821,7 @@ void Hit3DPoly::CalcHitRect()
 		}
 	}
 
-Hit3DCylinder::Hit3DCylinder(Vertex3D *pv1, Vertex3D *pv2, Vertex3Ds *pvnormal)
+Hit3DCylinder::Hit3DCylinder(const Vertex3D * const pv1, const Vertex3D * const pv2, const Vertex3Ds * const pvnormal)
 	{
 	v1.x = (*pv1).x;
 	v1.y = (*pv1).y;
@@ -916,7 +926,7 @@ void Hit3DCylinder::CalcHitRect()
 	m_rcHitRect.zhigh = max(v1.z, v2.z);
 	}
 
-Hit3DPolyDrop::Hit3DPolyDrop(Vertex3D *rgv, int count, bool keepptr) : Hit3DPoly(rgv, count, keepptr)
+Hit3DPolyDrop::Hit3DPolyDrop(Vertex3D * const rgv, const int count, const bool keepptr) : Hit3DPoly(rgv, count, keepptr)
 	{
 	m_polydropanim.m_iframe = -1;
 	m_fVisible = fFalse;

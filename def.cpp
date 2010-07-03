@@ -92,7 +92,7 @@ LocalString::LocalString(int resid)
 WCHAR *MakeWide(char *sz)
 	{
 	const int len = lstrlen(sz);
-	WCHAR *wzT = new WCHAR[len+1];
+	WCHAR * const wzT = new WCHAR[len+1];
 	MultiByteToWideChar(CP_ACP, 0, sz, -1, wzT, len+1);
 
 	return wzT;
@@ -101,7 +101,7 @@ WCHAR *MakeWide(char *sz)
 char *MakeChar(WCHAR *wz)
 	{
 	const int len = lstrlenW(wz);
-	char *szT = new char[len+1];
+	char * const szT = new char[len+1];
 	WideCharToMultiByte(CP_ACP, 0, wz, -1, szT, len+1, NULL, NULL);
 
 	return szT;

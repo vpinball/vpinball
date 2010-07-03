@@ -28,9 +28,7 @@ HitObject *CreateCircularHitPoly(const float x, const float y, const float z, co
 		rgv3d[i].z = z;
 		}
 
-	Hit3DPoly * const ph3p = new Hit3DPoly(rgv3d, sections, true);
-
-	return ph3p;
+	return new Hit3DPoly(rgv3d, sections, true);
 	}
 
 HitObject::HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL)
@@ -479,7 +477,7 @@ HitOctree::~HitOctree()
 
 void HitOctree::CreateNextLevel()
 	{
-	m_fLeaf = fFalse;
+	m_fLeaf = false;
 
 	Vector<HitObject> vRemain; // hit objects which did not go to an octant
 
@@ -491,7 +489,7 @@ void HitOctree::CreateNextLevel()
 		m_phitoct[i]->m_rectbounds.top  = (i&2) ? m_vcenter.y : m_rectbounds.top;
 		m_phitoct[i]->m_rectbounds.zlow = (i&4) ? m_vcenter.z : m_rectbounds.zlow;
 
-		m_phitoct[i]->m_rectbounds.right  = (i&1) ?  m_rectbounds.right : m_vcenter.x;
+		m_phitoct[i]->m_rectbounds.right  = (i&1) ? m_rectbounds.right  : m_vcenter.x;
 		m_phitoct[i]->m_rectbounds.bottom = (i&2) ? m_rectbounds.bottom : m_vcenter.y;
 		m_phitoct[i]->m_rectbounds.zhigh  = (i&4) ? m_rectbounds.zhigh  : m_vcenter.z;
 
@@ -499,7 +497,7 @@ void HitOctree::CreateNextLevel()
 		m_phitoct[i]->m_vcenter.y = (m_phitoct[i]->m_rectbounds.top  + m_phitoct[i]->m_rectbounds.bottom)*0.5f;
 		m_phitoct[i]->m_vcenter.z = (m_phitoct[i]->m_rectbounds.zlow + m_phitoct[i]->m_rectbounds.zhigh )*0.5f;
 
-		m_phitoct[i]->m_fLeaf = fTrue;
+		m_phitoct[i]->m_fLeaf = true;
 		}
 
 	int ccross = 0;
@@ -620,28 +618,24 @@ void HitOctree::HitTestBall(Ball * const pball)
 		{
 		const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
 		const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
-		const bool fTop = (pball->m_rcHitRect.top <= m_vcenter.y);
-		const bool fBottom = (pball->m_rcHitRect.bottom >= m_vcenter.y);
 
 #ifdef LOG
 		cTested++;
 #endif
-		if (fLeft && fTop)
-			{
-			m_phitoct[0]->HitTestBall(pball);
-			}
-		if (fRight && fTop)
-			{
-			m_phitoct[1]->HitTestBall(pball);
-			}
-		if (fLeft && fBottom)
-			{
-			m_phitoct[2]->HitTestBall(pball);
-			}
-		if (fRight && fBottom)
-			{
-			m_phitoct[3]->HitTestBall(pball);
-			}
+		if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
+		{
+			if (fLeft)
+				m_phitoct[0]->HitTestBall(pball);
+			if (fRight)
+				m_phitoct[1]->HitTestBall(pball);
+		}
+		if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
+		{
+			if (fLeft)
+				m_phitoct[2]->HitTestBall(pball);
+			if (fRight)
+				m_phitoct[3]->HitTestBall(pball);
+		}
 		}
 	}
 
@@ -669,28 +663,24 @@ void HitOctree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHi
 		{
 		const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
 		const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
-		const bool fTop = (pball->m_rcHitRect.top <= m_vcenter.y);
-		const bool fBottom = (pball->m_rcHitRect.bottom >= m_vcenter.y);
 
 #ifdef LOG
 		cTested++;
 #endif
 
-		if (fLeft && fTop)
-			{
-			m_phitoct[0]->HitTestXRay(pball, pvhoHit);
-			}
-		if (fRight && fTop)
-			{
-			m_phitoct[1]->HitTestXRay(pball, pvhoHit);
-			}
-		if (fLeft && fBottom)
-			{
-			m_phitoct[2]->HitTestXRay(pball, pvhoHit);
-			}
-		if (fRight && fBottom)
-			{
-			m_phitoct[3]->HitTestXRay(pball, pvhoHit);
-			}
+		if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
+		{
+			if (fLeft)
+				m_phitoct[0]->HitTestXRay(pball, pvhoHit);
+			if (fRight)
+				m_phitoct[1]->HitTestXRay(pball, pvhoHit);
+		}
+		if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
+		{
+			if (fLeft)
+				m_phitoct[2]->HitTestXRay(pball, pvhoHit);
+			if (fRight)
+				m_phitoct[3]->HitTestXRay(pball, pvhoHit);
+		}
 		}
 	}

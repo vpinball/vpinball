@@ -424,7 +424,7 @@ float HitFlipper::HitTestFlipperFace(Ball *pball, float dtime, Vertex3Ds *phitno
 	
 	float bffnd;		// ball flipper face normal distance (negative for normal side)
 	float bfftd;		// ball to flipper face tanget distance 
-	float ballvtx;	// new ball position at time t in flipper face coordinate
+	float ballvtx;		// new ball position at time t in flipper face coordinate
 	float ballvty;
 	float contactAng;
 	
@@ -449,13 +449,13 @@ float HitFlipper::HitTestFlipperFace(Ball *pball, float dtime, Vertex3Ds *phitno
 	// flipper positions at zero degrees rotation
 
 	float ffnx = m_flipperanim.zeroAngNorm.x; // flipper face normal vector //Face2 
-	if (face == LeftFace) ffnx = -ffnx;	// negative for face1
+	if (face == LeftFace) ffnx = -ffnx;		  // negative for face1
 
-	const float ffny = m_flipperanim.zeroAngNorm.y;// norm y component same for either face
+	const float ffny = m_flipperanim.zeroAngNorm.y;	  // norm y component same for either face
 	Vertex2D vp;									  // face segment V1 point
 	vp.x = m_flipperanim.m_hitcircleBase.radius*ffnx; // face endpoint of line segment on base radius
 	vp.y = m_flipperanim.m_hitcircleBase.radius*ffny;		
-	const float len = m_flipperanim.m_lineseg1.length; // face segment length ... i.g same on either face									
+	const float len = m_flipperanim.m_lineseg1.length;// face segment length ... i.g same on either face									
 
 	t = 0; //start first interval ++++++++++++++++++++++++++
 	int k;
