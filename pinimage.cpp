@@ -122,7 +122,7 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		DDSURFACEDESC2 ddsd;
 		ddsd.dwSize = sizeof(ddsd);
 
-		/*const HRESULT hr =*/ m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+		/*const HRESULT hr =*/ m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
 		// 32-bit picture
 		LZWReader lzwreader(pbr->m_pistream, (int *)ddsd.lpSurface, m_width*4, m_height, ddsd.lPitch);
@@ -664,7 +664,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage * const ppi, PinBina
 
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);
-	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+	pdds->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
     dest_mgr = jinit_write_bmp(&cinfo, FALSE, &ddsd);
     //SHagendo 18 June 2010: jinit_write_bmp will return NULL pointer if colorspace is invalid (not RGB or Grayscale)
@@ -705,7 +705,7 @@ void PinDirectDraw::SetOpaque(LPDIRECTDRAWSURFACE7 pdds, const int width, const 
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);	
 
-	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+	pdds->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 	
 	const int pitch = ddsd.lPitch;
 
@@ -729,7 +729,7 @@ void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF 
 	{
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);
-	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+	pdds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 	
 	const int pitch = ddsd.lPitch;
 
@@ -768,7 +768,7 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 	// Set alpha of each pixel
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);
-	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+	pdds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 	
 	BOOL fTransparent = fFalse;	
 
@@ -860,12 +860,12 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 			}
 		}
 
-	// Guassian Blur the sharp shadows
+	// Gaussian Blur the sharp shadows
 
 	DDSURFACEDESC2 ddsd;//, ddsdSharp;
 	ddsd.dwSize = sizeof(ddsd);
 
-	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+	pdds->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 	
 	const int pitch = ddsd.lPitch;
 	const int pitchSharp = 256*3;
@@ -932,12 +932,12 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 			}
 		}
 
-	// Guassian Blur the sharp shadows
+	// Gaussian Blur the sharp shadows
 
 	DDSURFACEDESC2 ddsd;//, ddsdSharp;
 	ddsd.dwSize = sizeof(ddsd);
 
-	pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+	pdds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 	
 	const int pitch = ddsd.lPitch;
 	
@@ -994,7 +994,7 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 	if (hr == S_OK)
 		{
 		hr = pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-		hr = pddsNext->Lock(NULL, &ddsdNext, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+		hr = pddsNext->Lock(NULL, &ddsdNext, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
 		const int pitch = ddsd.lPitch;
 		const int pitchNext = ddsdNext.lPitch;
