@@ -838,7 +838,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 	{
 	if (!pbits) return;	//rlc  found this pointer to be NULL after some graphics errors
 
-	// Create Guassian window (actually its not really Guassian, but same idea)
+	// Create Gaussian window (actually its not really Gaussian, but same idea)
 
 	int window[7][7];
 	for (int i=0;i<4;i++)
@@ -865,7 +865,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 	DDSURFACEDESC2 ddsd;//, ddsdSharp;
 	ddsd.dwSize = sizeof(ddsd);
 
-	pdds->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+	pdds->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 	
 	const int pitch = ddsd.lPitch;
 	const int pitchSharp = 256*3;
@@ -910,7 +910,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 
 void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 	{
-	// Create Guassian window (actually its not really Guassian, but same idea)
+	// Create Gaussian window (actually its not really Gaussian, but same idea)
 
 	int window[7][7];
 	for (int i=0;i<4;++i)
@@ -994,7 +994,7 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 	if (hr == S_OK)
 		{
 		hr = pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-		hr = pddsNext->Lock(NULL, &ddsdNext, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+		hr = pddsNext->Lock(NULL, &ddsdNext, DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
 		const int pitch = ddsd.lPitch;
 		const int pitchNext = ddsdNext.lPitch;
@@ -1012,45 +1012,24 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 			{
 			for (int x=0;x<width;x++)
 				{
-				unsigned int r[4];
-				unsigned int g[4];
-				unsigned int b[4];
-				unsigned int a[4];
-
-				b[0] = pbytes1[0];
-				g[0] = pbytes1[1];
-				r[0] = pbytes1[2];
-				a[0] = pbytes1[3];
-
-				b[1] = pbytes1[4];
-				g[1] = pbytes1[5];
-				r[1] = pbytes1[6];
-				a[1] = pbytes1[7];
-
-				b[2] = pbytes2[0];
-				g[2] = pbytes2[1];
-				r[2] = pbytes2[2];
-				a[2] = pbytes2[3];
-
-				b[3] = pbytes2[4];
-				g[3] = pbytes2[5];
-				r[3] = pbytes2[6];
-				a[3] = pbytes2[7];
-
 				unsigned int rtotal = 0;
 				unsigned int gtotal = 0;
 				unsigned int btotal = 0;
 				unsigned int count = 0;
-				if (a[0]) { count++; rtotal+=r[0]; gtotal+=g[0]; btotal+=b[0]; }//rlc faster code
-				if (a[1]) { count++; rtotal+=r[1]; gtotal+=g[1]; btotal+=b[1]; }
-				if (a[2]) { count++; rtotal+=r[2]; gtotal+=g[2]; btotal+=b[2]; }
-				if (a[3]) { count++; rtotal+=r[3]; gtotal+=g[3]; btotal+=b[3]; }
+				const unsigned int a0 = pbytes1[3];
+				if (a0) { count++; rtotal+=pbytes1[2]; gtotal+=pbytes1[1]; btotal+=pbytes1[0]; } //rlc faster code
+				const unsigned int a1 = pbytes1[7];
+				if (a1) { count++; rtotal+=pbytes1[6]; gtotal+=pbytes1[5]; btotal+=pbytes1[4]; }
+				const unsigned int a2 = pbytes2[3];
+				if (a2) { count++; rtotal+=pbytes2[2]; gtotal+=pbytes2[1]; btotal+=pbytes2[0]; }
+				const unsigned int a3 = pbytes2[7];
+				if (a3) { count++; rtotal+=pbytes2[6]; gtotal+=pbytes2[5]; btotal+=pbytes2[4]; }
 
 				if (count == 0) // all pixels are transparent - do whatever
 					{
 					*(unsigned int*)pchNext = 0;
 					} else {
-					const unsigned int atotal = ((a[0] + a[1] + a[2] + a[3] + 2)>>2)<<24;
+					const unsigned int atotal = ((a0 + a1 + a2 + a3 + 2)>>2)<<24;
 					const unsigned int round = count>>1;
 					btotal += round;
 					gtotal += round;
