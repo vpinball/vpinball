@@ -414,7 +414,8 @@ float HitSpinner::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 	{
 	if (!m_fEnabled) return -1.0f;	
 
-	float hittime = m_lineseg[0].HitTestBasic(pball, dtime, phitnormal, false, true, false);// any face, lateral, non-rigid
+	{
+	const float hittime = m_lineseg[0].HitTestBasic(pball, dtime, phitnormal, false, true, false);// any face, lateral, non-rigid
 	if (hittime >= 0)
 		{
 		phitnormal[1].x = 1.0f;
@@ -422,8 +423,9 @@ float HitSpinner::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 
 		return hittime;
 		}
+	}
 
-	hittime = m_lineseg[1].HitTestBasic(pball, dtime, phitnormal, false, true, false);// any face, lateral, non-rigid
+	const float hittime = m_lineseg[1].HitTestBasic(pball, dtime, phitnormal, false, true, false);// any face, lateral, non-rigid
 	if (hittime >= 0)
 		{
 		phitnormal[1].x = 0;
@@ -471,7 +473,7 @@ void SpinnerAnimObject::UpdateDisplacements(float dtime)
 			m_angle = m_angleMax;
 			m_pspinner->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(m_anglespeed*(float)(180.0/M_PI)));	// send EOS event
 
-			if (m_anglespeed > 0) m_anglespeed *= -(0.005f + m_elasticity);
+			if (m_anglespeed > 0) m_anglespeed *= -0.005f - m_elasticity;
 			}
 		if (m_angle < m_angleMin)
 			{
@@ -479,7 +481,7 @@ void SpinnerAnimObject::UpdateDisplacements(float dtime)
 
 			m_pspinner->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(m_anglespeed*(float)(180.0/M_PI)));	// send Park event
 
-			if (m_anglespeed < 0) m_anglespeed *= -(0.005f + m_elasticity);
+			if (m_anglespeed < 0) m_anglespeed *= -0.005f - m_elasticity;
 			}
 		}
 	else
@@ -488,13 +490,11 @@ void SpinnerAnimObject::UpdateDisplacements(float dtime)
 
 		if (m_anglespeed > 0)
 			{
-			if (m_angle < (float)M_PI) target = (float)M_PI;
-			else target = (float)(3.0*M_PI);
+			target = (m_angle < (float)M_PI) ? (float)M_PI : (float)(3.0*M_PI);
 			}
 		else
 			{
-			if (m_angle < (float)M_PI) target = (float)(-M_PI);
-			else target = (float)M_PI;
+			target = (m_angle < (float)M_PI) ? (float)(-M_PI) : (float)M_PI;
 			}
 
 		m_angle += m_anglespeed * dtime;
@@ -632,12 +632,11 @@ float Hit3DPoly::HitTestBasicPolygon(Ball *pball, float dtime, Vertex3Ds *phitno
 	if (direction && bnv >= 0)								//rlc ... return if clearly ball is receding from object
 		return -1.0f;
 
-	float hitx, hity, hitz; // Point on the ball that will hit the polygon, if it hits at all
-
+	// Point on the ball that will hit the polygon, if it hits at all
 	const float bRadius = pball->radius;
-	hitx = pball->x - normal.x * bRadius; //rlc nearest point on ball ... projected radius along norm
-	hity = pball->y - normal.y * bRadius;
-	hitz = pball->z - normal.z * bRadius;
+	float hitx = pball->x - normal.x * bRadius; //rlc nearest point on ball ... projected radius along norm
+	float hity = pball->y - normal.y * bRadius;
+	float hitz = pball->z - normal.z * bRadius;
 
 	const float bnd = normal.x * hitx + normal.y * hity + normal.z * hitz + D; // distance from plane to ball
 
@@ -649,12 +648,14 @@ float Hit3DPoly::HitTestBasicPolygon(Ball *pball, float dtime, Vertex3Ds *phitno
 		{
 		if (bnd < (float)(-PHYS_SKIN)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
 			
-		if (bnd >= (float)(-PHYS_SKIN) && bnd <= (float)PHYS_TOUCH)
+		if (bnd <= (float)PHYS_TOUCH)
 			{
-			if (inside || fabsf(bnv) > C_CONTACTVEL)		// fast velocity, return zero time
-				hittime = 0;													//zero time for rigid fast bodies
-			else if(bnd <= (float)(-PHYS_TOUCH)) hittime = 0;					// slow moving but embedded
-			else hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
+			if (inside || (fabsf(bnv) > C_CONTACTVEL)		// fast velocity, return zero time
+															//zero time for rigid fast bodies
+			|| (bnd <= (float)(-PHYS_TOUCH)))				// slow moving but embedded
+				hittime = 0;
+			else
+				hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
 			}
 		else if (fabsf(bnv) > C_LOWNORMVEL )					// not velocity low ????
 			hittime = bnd/(-bnv);								// rate ok for safe divide 
@@ -685,38 +686,46 @@ float Hit3DPoly::HitTestBasicPolygon(Ball *pball, float dtime, Vertex3Ds *phitno
 	// Do a point in poly test, using the xy plane, to see if the hit point is inside the polygon
 	//this need to be changed to a point in polygon on 3D plane
 
+	float x2 = m_rgv[0].x;
+	float y2 = m_rgv[0].y;
+	bool hx2 = (hitx >= x2);
+	bool hy2 = (hity <= y2);
 	int crosscount=0;	// count of lines which the hit point is to the left of
 	for (int i=0;i<m_cvertex;i++)
 		{
+		const float x1 = x2;
+		const float y1 = y2;
+		const bool hx1 = hx2;
+		const bool hy1 = hy2;
+		
 		const int j = (i < m_cvertex-1) ? (i+1) : 0;
-
-		const float x1 = m_rgv[i].x;
-		const float y1 = m_rgv[i].y;
-		const float x2 = m_rgv[j].x;
-		const float y2 = m_rgv[j].y;
+		x2 = m_rgv[j].x;
+		y2 = m_rgv[j].y;
+		hx2 = (hitx >= x2);
+		hy2 = (hity <= y2);
 
 		if ((y1==y2) ||
-		    (hity <= y1 && hity <= y2) || (hity > y1 && hity > y2) || // if out of y range, forget about this segment
-		    (hitx >= x1 && hitx >= x2)) // Hit point is on the right of the line
+		    (hy1 && hy2) || (!hy1 && !hy2) || // if out of y range, forget about this segment
+		    (hx1 && hx2)) // Hit point is on the right of the line
 			continue;
 
-		if (hitx < x1 && hitx < x2)
+		if (!hx1 && !hx2)
 			{
-			crosscount++;
+			crosscount^=1;
 			continue;
 			}
 
 		if (x2 == x1)
 			{
-			if (hitx < x2)
-				crosscount++;
+			if (!hx2)
+				crosscount^=1;
 			continue;
 			}
 
 		// Now the hard part - the hit point is in the line bounding box
 
 		if (x2 - (y2 - hity)*(x1 - x2)/(y1 - y2) > hitx)
-			crosscount++;
+			crosscount^=1;
 		}
 
 	if (crosscount & 1)
@@ -945,8 +954,7 @@ ObjFrame *PolyDropAnimObject::Draw3D(RECT *prc)
 	{
 	if (m_iframe == -1) return NULL;
 
-	ObjFrame * const pobjframe = m_pobjframe[m_iframe];
-	return pobjframe;
+	return m_pobjframe[m_iframe];
 	}
 
 void PolyDropAnimObject::Reset()

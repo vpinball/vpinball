@@ -80,12 +80,11 @@ void HitRectSur::Ellipse2(const float centerx, const float centery, const int ra
 
 	const int ix = SCALEXf(centerx);
 	const int iy = SCALEYf(centery);
-	const int ir = radius;
 
-	const int circleleft = ix - ir;
-	const int circletop = iy - ir;
-	const int circleright = ix + ir;
-	const int circlebottom = iy + ir;
+	const int circleleft = ix - radius;
+	const int circletop = iy - radius;
+	const int circleright = ix + radius;
+	const int circlebottom = iy + radius;
 	
 	const int left = SCALEXf(m_rcRect.left);
 	const int top = SCALEYf(m_rcRect.top);
@@ -137,15 +136,14 @@ void HitRectSur::SetObject(ISelect *psel)
 	m_pcur = psel;
 	if (m_pcur)
 		{
-		int index = m_vselFailed.IndexOf(psel);
-		if (index != -1)
+		if (m_vselFailed.IndexOf(psel) != -1)
 			{
 			// Object failed previously - just skip this time
 			m_fFailedAlready = true;
 			}
 		else
 			{
-			index = m_pvsel->IndexOf(psel);
+			const int index = m_pvsel->IndexOf(psel);
 			if (index == -1)
 				{
 				// Object not in list yet - add it

@@ -60,9 +60,10 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 	float ballvx = pball->vx;						// ball velocity
 	float ballvy = pball->vy;
 
-	float bnv = ballvx*normal.x + ballvy*normal.y;	//ball velocity normal to segment, positive if receding, zero=parallel
+	const float bnv = ballvx*normal.x + ballvy*normal.y;	//ball velocity normal to segment, positive if receding, zero=parallel
+	bool bUnHit = (bnv > C_LOWNORMVEL);
 
-	if (direction && bnv > C_LOWNORMVEL)			//direction true and clearly receding from normal face
+	if (direction && bUnHit)						//direction true and clearly receding from normal face
 		{
 #ifndef SHOWNORMAL
 		check1 = (bnv < 0.0f);						// true is approaching to normal face: !UnHit signal
@@ -81,8 +82,6 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 	const float btv = ballvx*TANX + ballvy*TANY;				//ball velocity tangent to segment with respect to direction from V1 to V2
 	float btd = (ballx - v1.x)*TANX + (bally - v1.y)* TANY ;	// ball tangent distance 
 
-
-	bool bUnHit = (bnv > C_LOWNORMVEL);
 	const bool inside = (bnd <= 0);							// in ball inside object volume
 	
 	//HitTestBasic
@@ -90,16 +89,16 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 		{
 		if (bnv > C_LOWNORMVEL || bnd < (float)(-PHYS_SKIN) || (lateral && bcpd < 0)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
 			
-		if (lateral && bnd >= (float)(-PHYS_SKIN) && bnd <= (float)PHYS_TOUCH)
+		if (lateral && (bnd <= (float)PHYS_TOUCH))
 			{
-			if (inside || fabsf(bnv) > C_CONTACTVEL)				// fast velocity, return zero time
-				hittime = 0;										//zero time for rigid fast bodies				
-			else if(bnd <= (float)(-PHYS_TOUCH))
+			if (inside || (fabsf(bnv) > C_CONTACTVEL)				// fast velocity, return zero time
+																	//zero time for rigid fast bodies				
+			|| (bnd <= (float)(-PHYS_TOUCH)))
 				hittime = 0;										// slow moving but embedded
 			else
 				hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
             }
-		else if (fabsf(bnv) > C_LOWNORMVEL )					// not velocity low ????
+		else if (fabsf(bnv) > C_LOWNORMVEL) 					// not velocity low ????
 			hittime = bnd/(-bnv);								// rate ok for safe divide 
 		else return -1.0f;										// wait for touching
 		}
@@ -107,7 +106,7 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 		{
 		if (bnv * bnd >= 0)										// outside-receding || inside-approaching
 			{
-			if ((m_ObjType != eTrigger) ||				// no a trigger
+			if ((m_ObjType != eTrigger) ||						// no a trigger
 			    (!pball->m_vpVolObjs) ||
 			    (fabsf(bnd) >= (float)(PHYS_SKIN/2.0)) ||			// not to close ... nor to far away
 			    (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0))) // ...ball outside and hit set or  ball inside and no hit set
@@ -116,7 +115,8 @@ float LineSeg::HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
 			hittime = 0;
 			bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
 			}
-		else hittime = bnd/(-bnv);	
+		else
+			hittime = bnd/(-bnv);	
 		}
 
 	if (hittime < 0 || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
@@ -190,23 +190,22 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 	const float bcddsq = dx*dx + dy*dy + dz*dz;	// ball center to circle center distance ... squared
 
 	const float bcdd = sqrtf(bcddsq);			//distance center to center
+	if (bcdd <= 1.0e-6f) return -1.0f;			// no hit on exact center
 
 	float b = dx*dvx + dy*dvy + dz*dvz;			//inner product
 
-	float bnv;
-	if (bcdd > 1.0e-6f) bnv = b/bcdd;				//ball normal velocity, 
-	else return -1.0f;								// no hit on exact center
+	const float bnv = b/bcdd;					//ball normal velocity
 
 	if (direction && bnv > C_LOWNORMVEL) return -1.0f; // clearly receding from radius
 
-	float a = dvx*dvx + dvy*dvy +dvz*dvz;	// square of the delta velocity (outer product)
- 
 	const float bnd = bcdd - targetRadius;		// ball normal distance to 
+
+	const float a = dvx*dvx + dvy*dvy +dvz*dvz;	// square of the delta velocity (outer product)
 
 	float hittime;
 	bool fUnhit;
 // Kicker is special.. handle ball stalled on kicker, commonly hit while receding, knocking back into kicker pocket
-	if (m_ObjType == eKicker && bnd <= 0 && bnd >= -radius &&  a < C_CONTACTVEL*C_CONTACTVEL )	
+	if (m_ObjType == eKicker && bnd <= 0 && bnd >= -radius && a < C_CONTACTVEL*C_CONTACTVEL )	
 		{
 		if (pball->m_vpVolObjs) pball->m_vpVolObjs->RemoveElement(m_pObj);	// cause capture
 		}
@@ -215,9 +214,9 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 		{
 		if (bnd < (float)(-PHYS_SKIN)) return -1.0f;	
 
-		if (fabsf(bnv) > C_CONTACTVEL)			// >fast velocity, return zero time
-			hittime = 0;						//zero time for rigid fast bodies
-		else if(bnd <= (float)(-PHYS_TOUCH))
+		if ((fabsf(bnv) > C_CONTACTVEL)			// >fast velocity, return zero time
+												//zero time for rigid fast bodies
+		|| (bnd <= (float)(-PHYS_TOUCH)))
 			hittime = 0;						// slow moving but embedded
 		else
 			hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
@@ -236,7 +235,7 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 			}
 		}
 	else
-		{	
+		{
 		if((!rigid && bnd * bnv > 0) ||	// (outside and receding) or (inside and approaching)
 		   (a < 1.0e-8f)) return -1.0f;	//no hit ... ball not moving relative to object
 
@@ -249,9 +248,8 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 		if (result < 0) return -1.0f;			// contact impossible 
 			
 		result = sqrtf(result);
-		a += a;
-
-		const float inv_a = 1.0f/a;
+		
+		const float inv_a = 0.5f/a;
 		const float time1 = (-b + result)* inv_a;
 		const float time2 = (-b - result)* inv_a;
 		
@@ -500,8 +498,8 @@ void HitOctree::CreateNextLevel()
 		m_phitoct[i]->m_fLeaf = true;
 		}
 
-	int ccross = 0;
-	int ccrossx = 0, ccrossy = 0;
+	//int ccross = 0;
+	//int ccrossx = 0, ccrossy = 0;
 
 	for (int i=0;i<m_vho.Size();i++)
 		{
@@ -519,7 +517,7 @@ void HitOctree::CreateNextLevel()
 		else
 			{
 			oct = 128;
-			ccrossx++;
+			//ccrossx++;
 			}
 
 		if (pho->m_rcHitRect.bottom < m_vcenter.y)
@@ -533,7 +531,7 @@ void HitOctree::CreateNextLevel()
 		else
 			{
 			oct |= 128;
-			ccrossy++;
+			//ccrossy++;
 			}
 
 		if ((oct & 128) == 0)
@@ -543,7 +541,7 @@ void HitOctree::CreateNextLevel()
 		else
 			{
 			vRemain.AddElement(pho);
-			ccross++;
+			//ccross++;
 			}
 		}
 

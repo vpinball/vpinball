@@ -64,18 +64,16 @@ void ShadowSur::Ellipse2(const float centerx, const float centery, const int rad
 	{
 	const int ix = SCALEXf(centerx);
 	const int iy = SCALEYf(centery);
-	const int ir = radius;
 
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
 
-	::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir + 1, iy + ir + 1);
+	::Ellipse(m_hdc, ix - radius, iy - radius, ix + radius + 1, iy + radius + 1);
 	}
 
 void ShadowSur::EllipseSkew(const float centerx, const float centery, const float radius, const float z1, const float z2) const
 	{
 	const int basepixel = SCALEXf(m_z);
-	int bottom = SCALEXf(z1) - basepixel;
 	const int top = SCALEXf(z2) - basepixel;
 	
 	if (top <= 0)
@@ -83,6 +81,7 @@ void ShadowSur::EllipseSkew(const float centerx, const float centery, const floa
 		return; //This entire polygon is underneath this shadow level
 		}
 
+	int bottom = SCALEXf(z1) - basepixel;
 	if (bottom < 0)
 		{
 		bottom = 0; // Polygon crosses shadow level
@@ -196,20 +195,20 @@ void ShadowSur::PolylineSkew(const Vertex2D * const rgv, const int count, const 
 
 	if (rgz)
 		{
-		for (int i=0;i<count;i++)
+		for (int i=0;i<count;++i)
 			{
 			if (rgz[i] > m_z)
 				{
 				rgpt[cpoints].x = SCALEXf(rgv[cpoints].x + rgz[cpoints]);
 				rgpt[cpoints].y = SCALEYf(rgv[cpoints].y - rgz[cpoints]);
-				cpoints++;
+				++cpoints;
 				}
 			}
 		}
 
 	SelectObject(m_hdc, m_hpnLine);
 
-	for (int i=0;i<1;i++)
+	for (int i=0;i<1;++i)
 		{
 		SetViewportOrgEx(m_hdc, i, -i, NULL);
 		::Polyline(m_hdc, rgpt, cpoints);
@@ -224,7 +223,7 @@ void ShadowSur::Polyline(const Vertex2D * const rgv, const int count)
 	{
 	POINT * const rgpt = new POINT[count];
 
-	for (int i=0;i<count;i++)
+	for (int i=0;i<count;++i)
 		{
 		rgpt[i].x = SCALEXf(rgv[i].x);
 		rgpt[i].y = SCALEYf(rgv[i].y);

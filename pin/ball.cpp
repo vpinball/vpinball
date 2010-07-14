@@ -295,29 +295,28 @@ float Ball::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal) //rlc chang
 		if (bnd <= (float)(-PHYS_SKIN*2.0))
 			return -1.0f;					// embedded too deep
 
-		if (fabsf(bnv) > C_CONTACTVEL)			// >fast velocity, return zero time
-			hittime = 0;						//zero time for rigid fast bodies
-		else if (bnd <= (float)(-PHYS_TOUCH))
+		if ((fabsf(bnv) > C_CONTACTVEL)			// >fast velocity, return zero time
+												//zero time for rigid fast bodies
+		|| (bnd <= (float)(-PHYS_TOUCH)))
 			hittime = 0;						// slow moving but embedded
 		else
 			hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;		// don't compete for fast zero time events
 		}
 	else
 		{
-		float a = dvx*dvx + dvy*dvy + dvz*dvz;				//square of differential velocity 
-		const float c = bcddsq - totalradius*totalradius;	//first contact test: square delta position - square of radii
+		const float a = dvx*dvx + dvy*dvy + dvz*dvz;				//square of differential velocity 
 
 		if (a < 1.0e-12f) return -1.0f;				// ball moving really slow, then wait for contact
 
+		const float c = bcddsq - totalradius*totalradius;	//first contact test: square delta position - square of radii
 		b += b;										// two inner products
 		float result = b*b - 4.0f*a*c;				// squareroot term in Quadratic equation
 
 		if (result < 0.0f) return -1.0f;			// no collision path exist	
 
 		result = sqrtf(result);
-		a += a;										// optimize calculation
 
-		const float inv_a = 1.0f/a;
+		const float inv_a = 0.5f/a;
 		float time1 = (-b + result)*inv_a;
 		float time2 = (-b - result)*inv_a;
 
