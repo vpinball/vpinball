@@ -79,15 +79,15 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Trigger)
 
 	virtual void RenderBlueprint(Sur *psur);
 
-	virtual void MoveOffset(float dx, float dy);
+	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 
 	virtual void EditMenu(HMENU hmenu);
 	virtual void DoCommand(int icmd, int x, int y);
 
-		// Multi-object manipulation
-	virtual void FlipY(Vertex2D *pvCenter);
-	virtual void FlipX(Vertex2D *pvCenter);
+	// Multi-object manipulation
+	virtual void FlipY(Vertex2D * const pvCenter);
+	virtual void FlipX(Vertex2D * const pvCenter);
 	virtual void Rotate(float ang, Vertex2D *pvCenter);
 	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
 	virtual void Translate(Vertex2D *pvOffset);

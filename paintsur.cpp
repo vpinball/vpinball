@@ -19,7 +19,7 @@ PaintSur::~PaintSur()
 	DeleteObject(m_hpnOutline);
 	}
 
-void PaintSur::Line(float x, float y, float x2, float y2)
+void PaintSur::Line(const float x, const float y, const float x2, const float y2)
 	{
 	const int ix = SCALEXf(x);
 	const int iy = SCALEYf(y);
@@ -33,7 +33,7 @@ void PaintSur::Line(float x, float y, float x2, float y2)
 	::LineTo(m_hdc, ix, iy); // To get the last pixel drawn
 	}
 
-void PaintSur::Rectangle(float x, float y, float x2, float y2)
+void PaintSur::Rectangle(const float x, const float y, const float x2, float y2)
 	{
 	const int ix = SCALEXf(x);
 	const int iy = SCALEYf(y);
@@ -46,7 +46,7 @@ void PaintSur::Rectangle(float x, float y, float x2, float y2)
 	::Rectangle(m_hdc, ix, iy, ix2, iy2);
 	}
 
-void PaintSur::Rectangle2(int x, int y, int x2, int y2)
+void PaintSur::Rectangle2(const int x, const int y, const int x2, const int y2)
 	{
 	SelectObject(m_hdc, m_hbr);
 	SelectObject(m_hdc, m_hpnOutline);
@@ -73,7 +73,7 @@ void PaintSur::Ellipse(float centerx, float centery, float radius)
 	::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir, iy + ir);
 	}
 
-void PaintSur::Ellipse2(float centerx, float centery, int radius)
+void PaintSur::Ellipse2(const float centerx, const float centery, const int radius)
 	{
 	const int ix = SCALEXf(centerx);
 	const int iy = SCALEYf(centery);
@@ -85,7 +85,7 @@ void PaintSur::Ellipse2(float centerx, float centery, int radius)
 	::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir + 1, iy + ir + 1);
 	}
 
-void PaintSur::Polygon(Vertex2D *rgv, int count)
+void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
 	{
 	POINT * const rgpt = new POINT[count];
 
@@ -103,16 +103,8 @@ void PaintSur::Polygon(Vertex2D *rgv, int count)
 	delete rgpt;
 	}
 
-void PaintSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
+void PaintSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
-	POINT * const rgpt = new POINT[count];
-
-	for (int i=0;i<count;i++)
-		{
-		rgpt[i].x = SCALEXf(rgv[i].x);
-		rgpt[i].y = SCALEYf(rgv[i].y);
-		}
-
 	const int ix = SCALEXf(left);
 	const int iy = SCALEYf(top);
 	const int ix2 = SCALEXf(right);
@@ -125,6 +117,15 @@ void PaintSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, f
 
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
 	SelectObject(m_hdc, GetStockObject(NULL_PEN));
+
+	POINT * const rgpt = new POINT[count];
+
+	for (int i=0;i<count;i++)
+		{
+		rgpt[i].x = SCALEXf(rgv[i].x);
+		rgpt[i].y = SCALEYf(rgv[i].y);
+		}
+
 	::Polygon(m_hdc, rgpt, count);
 			
 	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
@@ -135,7 +136,7 @@ void PaintSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, f
 	delete rgpt;
 	}
 
-void PaintSur::Polyline(Vertex2D *rgv, int count)
+void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
 	{
 	POINT * const rgpt = new POINT[count];
 
@@ -152,7 +153,7 @@ void PaintSur::Polyline(Vertex2D *rgv, int count)
 	delete rgpt;
 	}
 
-void PaintSur::Arc(float x, float y, float radius, float pt1x, float pt1y, float pt2x, float pt2y)
+void PaintSur::Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y)
 	{
 	const int ix = SCALEXf(x);
 	const int iy = SCALEYf(y);
@@ -168,7 +169,7 @@ void PaintSur::Arc(float x, float y, float radius, float pt1x, float pt1y, float
 	::Arc(m_hdc, ix-ir, iy-ir, ix+ir, iy+ir, x1, y1, x2, y2);
 	}
 
-void PaintSur::Image(float x, float y, float x2, float y2, HDC hdcSrc, int width, int height)
+void PaintSur::Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height)
 	{
 	const int ix = SCALEXf(x);
 	const int iy = SCALEYf(y);
@@ -197,7 +198,7 @@ void PaintSur::SetObject(ISelect *psel)
 		}
 	}
 
-void PaintSur::SetFillColor(int rgb)
+void PaintSur::SetFillColor(const int rgb)
 	{
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
 	DeleteObject(m_hbr);
@@ -214,7 +215,7 @@ void PaintSur::SetFillColor(int rgb)
 		}
 	}
 
-void PaintSur::SetBorderColor(int rgb, BOOL fDashed, int width)
+void PaintSur::SetBorderColor(const int rgb, const bool fDashed, const int width)
 	{
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	DeleteObject(m_hpnOutline);	
@@ -232,7 +233,7 @@ void PaintSur::SetBorderColor(int rgb, BOOL fDashed, int width)
 		}
 	}
 
-void PaintSur::SetLineColor(int rgb, BOOL fDashed, int width)
+void PaintSur::SetLineColor(const int rgb, const bool fDashed, const int width)
 	{
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	DeleteObject(m_hpnLine);	

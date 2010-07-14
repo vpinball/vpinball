@@ -68,7 +68,7 @@ void Gate::PreRender(Sur *psur)
 
 void Gate::Render(Sur *psur)
 	{
-	psur->SetLineColor(RGB(0,0,0),fFalse,2);
+	psur->SetLineColor(RGB(0,0,0),false,2);
 	psur->SetObject(this);
 
 	float halflength = m_d.m_length * 0.5f;	
@@ -90,7 +90,7 @@ void Gate::Render(Sur *psur)
 
 	// Draw Arrow
 
-	psur->SetLineColor(RGB(0,0,0),fFalse,1);
+	psur->SetLineColor(RGB(0,0,0),false,1);
 
 	halflength *= 0.5f;
 
@@ -737,7 +737,7 @@ void Gate::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 	}
 
-void Gate::MoveOffset(float dx, float dy)
+void Gate::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_vCenter.x += dx;
 	m_d.m_vCenter.y += dy;

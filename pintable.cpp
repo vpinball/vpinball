@@ -1273,7 +1273,7 @@ void PinTable::Render(Sur * psur)
 	RECT rc;
 	GetClientRect(m_hwnd, &rc);
 	psur->SetFillColor(RGB(255,255,255));
-	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetBorderColor(-1,false,0);
 
 	FRect frect;
 	GetViewRect(&frect);
@@ -1295,7 +1295,7 @@ void PinTable::Render(Sur * psur)
 
 		psur->SetObject(NULL); 							// Don't hit test edgelines
 
-		psur->SetLineColor(RGB(0,0,0), fFalse, 0);		// black outline
+		psur->SetLineColor(RGB(0,0,0), false, 0);		// black outline
 
 		psur->Line(rleft, rtop, rright, rtop);
 		psur->Line(rright, rtop, rright, rbottom);
@@ -1358,7 +1358,7 @@ void PinTable::Render(Sur * psur)
 
 		psur->SetObject(NULL); // Don't hit test gridlines
 
-		psur->SetLineColor(RGB(190,220,240), fFalse, 0);
+		psur->SetLineColor(RGB(190,220,240), false, 0);
 		for (int i=0;i<(lenx+1);i++)
 			{
 			const float x = (beginx+i)*m_gridsize;
@@ -1384,14 +1384,14 @@ void PinTable::Render(Sur * psur)
 		{
 		psur->SetObject(NULL);
 		psur->SetFillColor(-1);
-		psur->SetBorderColor(RGB(0,0,0), fFalse, 1);
+		psur->SetBorderColor(RGB(0,0,0), false, 1);
 		psur->Rectangle(0,0,1000,750);
 		}
 
 	if (m_fDragging)
 		{
 		psur->SetFillColor(-1);
-		psur->SetBorderColor(RGB(0,0,0),fTrue,0);
+		psur->SetBorderColor(RGB(0,0,0),true,0);
 		psur->Rectangle(m_rcDragRect.left, m_rcDragRect.top, m_rcDragRect.right, m_rcDragRect.bottom);
 		}
 	}
@@ -1436,7 +1436,7 @@ void PinTable::Render3DProjection(Sur * const psur)
 		}
 
 	psur->SetFillColor(RGB(200,200,200));
-	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetBorderColor(-1,false,0);
 
 	Vertex3D rgvIn[6];
 	rgvIn[0].Set(m_left, m_top, 50.0f);
@@ -4124,7 +4124,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 		}
 	}
 
-void PinTable::FlipY(Vertex2D *pvCenter)
+void PinTable::FlipY(Vertex2D * const pvCenter)
 	{
 	BeginUndo();
 
@@ -4136,7 +4136,7 @@ void PinTable::FlipY(Vertex2D *pvCenter)
 	EndUndo();
 	}
 
-void PinTable::FlipX(Vertex2D *pvCenter)
+void PinTable::FlipX(Vertex2D * const pvCenter)
 	{
 	BeginUndo();
 

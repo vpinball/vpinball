@@ -38,7 +38,7 @@ void Timer::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
 	}
 
-void Timer::MoveOffset(float dx, float dy)
+void Timer::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_v.x += dx;
 	m_d.m_v.y += dy;
@@ -67,8 +67,8 @@ void Timer::PreRender(Sur *psur)
 void Timer::Render(Sur *psur)
 	{
 	psur->SetFillColor(-1);//RGB(192,192,192));
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
-	psur->SetLineColor(RGB(0,0,0), fFalse, 0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
+	psur->SetLineColor(RGB(0,0,0), false, 0);
 
 	psur->SetObject(this);
 

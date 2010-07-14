@@ -93,7 +93,7 @@ void Decal::PreRender(Sur *psur)
 	{
 	if( !m_fBackglass || GetPTable()->GetDecalsEnabled() )
 		{
-		psur->SetBorderColor(-1,fFalse,0);
+		psur->SetBorderColor(-1,false,0);
 		psur->SetFillColor(RGB(0,0,255));
 		psur->SetObject(this);
 
@@ -125,7 +125,7 @@ void Decal::Render(Sur *psur)
 	{
 	if( !m_fBackglass || GetPTable()->GetDecalsEnabled() )
 		{
-		psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+		psur->SetBorderColor(RGB(0,0,0),false,0);
 		psur->SetFillColor(-1);
 		psur->SetObject(this);
 		psur->SetObject(NULL);
@@ -488,7 +488,7 @@ void Decal::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 	}
 
-void Decal::MoveOffset(float dx, float dy)
+void Decal::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_vCenter.x += dx;
 	m_d.m_vCenter.y += dy;

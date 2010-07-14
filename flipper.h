@@ -90,7 +90,7 @@ BEGIN_CONNECTION_POINT_MAP(Flipper)
 	CONNECTION_POINT_ENTRY(DIID_IFlipperEvents)
 END_CONNECTION_POINT_MAP()
 
-	virtual void MoveOffset(float dx, float dy);
+	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
 	virtual void GetCenter(Vertex2D *pv);

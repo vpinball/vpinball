@@ -15,35 +15,33 @@ HitSur::~HitSur()
 	{
 	}
 
-void HitSur::Line(float rx, float ry, float rx2, float ry2)
+void HitSur::Line(const float x, const float y, const float x2, const float y2)
 	{
 	if (m_pcur == NULL)
-		{
 		return;
-		}
 
-	int x1 = SCALEXf(rx);
-	int y1 = SCALEYf(ry);
-	int x2 = SCALEXf(rx2);
-	int y2 = SCALEYf(ry2);
+	int x_1 = SCALEXf(x);
+	int y_1 = SCALEYf(y);
+	int x_2 = SCALEXf(x2);
+	int y_2 = SCALEYf(y2);
 
-	if (abs(x2-x1) > abs(y2-y1))
+	if (abs(x_2-x_1) > abs(y_2-y_1))
 		{
 		
-		if (x1>x2)
+		if (x_1>x_2)
 			{
-			const int temp=x1;
-			x1=x2;
-			x2=temp;
+			const int temp=x_1;
+			x_1=x_2;
+			x_2=temp;
 
-			const int temp2=y1;
-			y1=y2;
-			y2=temp2;
+			const int temp2=y_1;
+			y_1=y_2;
+			y_2=temp2;
 			}
 
-		if (m_hitx>=x1 && m_hitx<=x2)
+		if (m_hitx>=x_1 && m_hitx<=x_2)
 			{
-				const int lineY = ((y2-y1)*(m_hitx-x1))/(x2-x1) + y1;
+				const int lineY = ((y_2-y_1)*(m_hitx-x_1))/(x_2-x_1) + y_1;
 
 				if (m_hity>lineY-4 && m_hity<lineY+4)
 					{
@@ -55,20 +53,20 @@ void HitSur::Line(float rx, float ry, float rx2, float ry2)
 	else
 		{
 
-		if (y1>y2)
+		if (y_1>y_2)
 			{
-			const int temp=x1;
-			x1=x2;
-			x2=temp;
+			const int temp=x_1;
+			x_1=x_2;
+			x_2=temp;
 
-			const int temp2=y1;
-			y1=y2;
-			y2=temp2;
+			const int temp2=y_1;
+			y_1=y_2;
+			y_2=temp2;
 			}
 
-		if (m_hity>=y1 && m_hity<=y2)
+		if (m_hity>=y_1 && m_hity<=y_2)
 			{
-				const int lineX = ((x2-x1)*(m_hity-y1))/(y2-y1) + x1;
+				const int lineX = ((x_2-x_1)*(m_hity-y_1))/(y_2-y_1) + x_1;
 
 				if (m_hitx>lineX-4 && m_hitx<lineX+4)	
 					{
@@ -79,12 +77,10 @@ void HitSur::Line(float rx, float ry, float rx2, float ry2)
 		}
 	}
 
-void HitSur::Rectangle(float x, float y, float x2, float y2)
+void HitSur::Rectangle(const float x, const float y, const float x2, float y2)
 	{
 	if (m_pcur == NULL)
-		{
 		return;
-		}
 
 	int ix = SCALEXf(x);
 	int iy = SCALEYf(y);
@@ -111,7 +107,7 @@ void HitSur::Rectangle(float x, float y, float x2, float y2)
 		}
 	}
 
-void HitSur::Rectangle2(int x, int y, int x2, int y2)
+void HitSur::Rectangle2(const int x, const int y, const int x2, const int y2)
 	{
 	if (m_pcur == NULL)
 		{
@@ -120,7 +116,7 @@ void HitSur::Rectangle2(int x, int y, int x2, int y2)
 
 	}
 
-void HitSur::Ellipse(float centerx, float centery, float radius)
+void HitSur::Ellipse(const float centerx, const float centery, const float radius)
 	{
 	if (m_pcur == NULL)
 		{
@@ -141,7 +137,7 @@ void HitSur::Ellipse(float centerx, float centery, float radius)
 		}
 	}
 
-void HitSur::Ellipse2(float centerx, float centery, int radius)
+void HitSur::Ellipse2(const float centerx, const float centery, const int radius)
 	{
 	if (m_pcur == NULL)
 		{
@@ -150,7 +146,6 @@ void HitSur::Ellipse2(float centerx, float centery, int radius)
 
 	const int ix = SCALEXf(centerx);
 	const int iy = SCALEYf(centery);
-	//int ir = (int)(radius);
 
 	const int dx = m_hitx - ix;
 	const int dy = m_hity - iy;
@@ -162,19 +157,11 @@ void HitSur::Ellipse2(float centerx, float centery, int radius)
 		}
 	}
 
-void HitSur::Polygon(Vertex2D *rgv, int count)
+void HitSur::Polygon(const Vertex2D * const rgv, const int count)
 	{
 	if (m_pcur == NULL)
 		{
 		return;
-		}
-
-	POINT * const rgpt = new POINT[count];
-
-	for (int i=0;i<count;i++)
-		{
-		rgpt[i].x = SCALEXf(rgv[i].x);
-		rgpt[i].y = SCALEYf(rgv[i].y);
 		}
 
 	int crosscount=0;	// count of lines which the hit point is to the left of
@@ -182,10 +169,10 @@ void HitSur::Polygon(Vertex2D *rgv, int count)
 		{
 		const int j = (i==0) ? (count-1) : (i-1);
 
-		const int x1 = rgpt[i].x;
-		const int y1 = rgpt[i].y;
-		const int x2 = rgpt[j].x;
-		const int y2 = rgpt[j].y;
+		const int x1 = SCALEXf(rgv[i].x);
+		const int y1 = SCALEYf(rgv[i].y);
+		const int x2 = SCALEXf(rgv[j].x);
+		const int y2 = SCALEYf(rgv[j].y);
 		
 		if ((y1==y2) ||
 		    (m_hity <= y1 && m_hity <= y2) || (m_hity > y1 && m_hity > y2) || // if out of y range, forget about this segment
@@ -215,25 +202,23 @@ void HitSur::Polygon(Vertex2D *rgv, int count)
 		{
 		m_pselected = m_pcur;
 		}
-	
-	delete rgpt;
 	}
 
-void HitSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
+void HitSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
 	Polygon(rgv, count);
 	}
 
-void HitSur::Polyline(Vertex2D *rgv, int count)
+void HitSur::Polyline(const Vertex2D * const rgv, const int count)
 	{
 	}
 
-void HitSur::Arc(float x, float y, float radius, float pt1x, float pt1y, float pt2x, float pt2y)
+void HitSur::Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y)
 	{
 	//Ellipse(x, y, radius);
 	}
 
-void HitSur::Image(float x, float y, float x2, float y2, HDC hdcSrc, int width, int height)
+void HitSur::Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height)
 	{
 
 	}
@@ -243,14 +228,14 @@ void HitSur::SetObject(ISelect *psel)
 	m_pcur = psel;
 	}
 
-void HitSur::SetFillColor(int rgb)
+void HitSur::SetFillColor(const int rgb)
 	{
 	}
 
-void HitSur::SetBorderColor(int rgb, BOOL fDashed, int width)
+void HitSur::SetBorderColor(const int rgb, const bool fDashed, const int width)
 	{
 	}
 
-void HitSur::SetLineColor(int rgb, BOOL fDashed, int width)
+void HitSur::SetLineColor(const int rgb, const bool fDashed, const int width)
 	{
 	}

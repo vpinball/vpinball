@@ -48,7 +48,7 @@ void Trigger::SetDefaults()
 
 void Trigger::PreRender(Sur *psur)
 	{
-	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetBorderColor(-1,false,0);
 	psur->SetObject(this);
 
 	switch (m_d.m_shape)
@@ -86,7 +86,7 @@ void Trigger::PreRender(Sur *psur)
 
 void Trigger::Render(Sur *psur)
 	{
-	psur->SetLineColor(RGB(0,0,0), fFalse, 0);
+	psur->SetLineColor(RGB(0,0,0), false, 0);
 	psur->SetObject(this);
 	psur->SetFillColor(-1);
 
@@ -109,7 +109,7 @@ void Trigger::Render(Sur *psur)
 			GetRgVertex(&vvertex);
 			psur->SetObject(NULL);
 
-			psur->SetBorderColor(RGB(0,180,0),fFalse,1);
+			psur->SetBorderColor(RGB(0,180,0),false,1);
 
 			const int cvertex = vvertex.Size();
 			Vertex2D * const rgv = new Vertex2D[cvertex];
@@ -157,12 +157,12 @@ void Trigger::Render(Sur *psur)
 				{
 				CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 				psur->SetFillColor(-1);
-				psur->SetBorderColor(RGB(0,180,0),fFalse,0);
+				psur->SetBorderColor(RGB(0,180,0),false,0);
 				psur->SetObject(pdp);
 
 				if (pdp->m_fDragging)
 					{
-					psur->SetBorderColor(RGB(0,255,0),fFalse,0);
+					psur->SetBorderColor(RGB(0,255,0),false,0);
 					}
 
 				psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -175,7 +175,7 @@ void Trigger::Render(Sur *psur)
 void Trigger::RenderBlueprint(Sur *psur)
 	{
 	psur->SetFillColor(-1);
-	psur->SetBorderColor(RGB(0,0,0), fFalse, 0);
+	psur->SetBorderColor(RGB(0,0,0), false, 0);
 	psur->SetObject(this);
 
 	psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
@@ -483,7 +483,7 @@ void Trigger::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 	}
 
-void Trigger::MoveOffset(float dx, float dy)
+void Trigger::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_vCenter.x += dx;
 	m_d.m_vCenter.y += dy;
@@ -618,12 +618,12 @@ void Trigger::DoCommand(int icmd, int x, int y)
 		}
 	}
 
-void Trigger::FlipY(Vertex2D *pvCenter)
+void Trigger::FlipY(Vertex2D * const pvCenter)
 	{
 	IHaveDragPoints::FlipPointY(pvCenter);
 	}
 
-void Trigger::FlipX(Vertex2D *pvCenter)
+void Trigger::FlipX(Vertex2D * const pvCenter)
 	{
 	IHaveDragPoints::FlipPointX(pvCenter);
 	}

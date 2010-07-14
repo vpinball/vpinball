@@ -168,7 +168,7 @@ void Surface::PreRender(Sur *psur)
 	psur->SetObject(this);
 
 	// Don't want border color to be over-ridden when selected - that will be drawn later
-	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetBorderColor(-1,false,0);
 
 	int cvertex;
 	if (!m_d.m_fInner)
@@ -215,7 +215,7 @@ void Surface::PreRender(Sur *psur)
 void Surface::Render(Sur *psur)
 	{
 	psur->SetFillColor(-1);
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetObject(this); // For selected formatting
 	psur->SetObject(NULL);
 
@@ -237,6 +237,7 @@ void Surface::Render(Sur *psur)
 		}
 
 	psur->Polygon(m_rgvT, m_cvertexT);
+
 	delete m_rgvT;
 	m_rgvT = NULL;
 
@@ -266,12 +267,12 @@ void Surface::Render(Sur *psur)
 		{
 		CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 		psur->SetFillColor(-1);
-		psur->SetBorderColor(RGB(255,0,0),fFalse,0);
+		psur->SetBorderColor(RGB(255,0,0),false,0);
 
 		if (pdp->m_fDragging)
 			{
 			//psur->SetFillColor(RGB(0,255,0));
-			psur->SetBorderColor(RGB(0,255,0),fFalse,0);
+			psur->SetBorderColor(RGB(0,255,0),false,0);
 			}
 
 		if (fDrawDragpoints)
@@ -285,7 +286,7 @@ void Surface::Render(Sur *psur)
 			psur->SetObject(NULL);
 			const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i < m_vdpoint.Size()-1) ? (i+1) : 0);
 
-			psur->SetLineColor(RGB(0,0,0),fFalse,3);
+			psur->SetLineColor(RGB(0,0,0),false,3);
 			psur->Line(pdp->m_v.x, pdp->m_v.y, pdp2->m_v.x, pdp2->m_v.y);
 			}
 		}
@@ -296,7 +297,7 @@ void Surface::RenderBlueprint(Sur *psur)
 	// Don't render dragpoints for blueprint
 
 	psur->SetFillColor(-1);
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetObject(this); // For selected formatting
 	psur->SetObject(NULL);
 
@@ -313,6 +314,7 @@ void Surface::RenderBlueprint(Sur *psur)
 		}
 
 	psur->Polygon(m_rgvT, m_cvertexT);
+
 	delete m_rgvT;
 	m_rgvT = NULL;
 	}
@@ -323,7 +325,7 @@ void Surface::RenderShadow(ShadowSur *psur, float height)
 		return;
 
 	psur->SetFillColor(RGB(0,0,0));
-	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetBorderColor(-1,false,0);
 	psur->SetObject(this); // For selected formatting
 	psur->SetObject(NULL);
 
@@ -632,7 +634,7 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 		}
 	}
 
-void Surface::GetBoundingVertices(Vector<Vertex3D> *pvvertex3D)
+void Surface::GetBoundingVertices(Vector<Vertex3D> * const pvvertex3D)
 	{
 	const float top = m_d.m_heighttop;
 	const float bottom = m_d.m_heightbottom;
@@ -669,7 +671,7 @@ void Surface::EndPlay()
 	m_vhoCollidable.RemoveAllElements();
 	}
 
-void Surface::MoveOffset(float dx, float dy)
+void Surface::MoveOffset(const float dx, const float dy)
 	{
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
@@ -1524,12 +1526,12 @@ void Surface::DoCommand(int icmd, int x, int y)
 		}
 	}
 
-void Surface::FlipY(Vertex2D *pvCenter)
+void Surface::FlipY(Vertex2D * const pvCenter)
 	{
 	IHaveDragPoints::FlipPointY(pvCenter);
 	}
 
-void Surface::FlipX(Vertex2D *pvCenter)
+void Surface::FlipX(Vertex2D * const pvCenter)
 	{
 	IHaveDragPoints::FlipPointX(pvCenter);
 	}

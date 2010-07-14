@@ -83,7 +83,7 @@ void Ramp::SetDefaults()
 void Ramp::PreRender(Sur *psur)
 	{
 	psur->SetFillColor(RGB(192,192,192));
-	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetBorderColor(-1,false,0);
 	psur->SetObject(this);
 
 	int cvertex;
@@ -97,8 +97,8 @@ void Ramp::PreRender(Sur *psur)
 void Ramp::Render(Sur *psur)
 	{
 	psur->SetFillColor(-1);
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
-	psur->SetLineColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
+	psur->SetLineColor(RGB(0,0,0),false,0);
 	psur->SetObject(this);
 	psur->SetObject(NULL); // NULL so this won't be hit-tested
 
@@ -118,13 +118,13 @@ void Ramp::Render(Sur *psur)
 
 	if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
 		{
-		psur->SetLineColor(RGB(0,0,0),fFalse,3);
+		psur->SetLineColor(RGB(0,0,0),false,3);
 		psur->Polyline(rgv, cvertex);
 		}
 
 	if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
 		{
-		psur->SetLineColor(RGB(0,0,0),fFalse,3);
+		psur->SetLineColor(RGB(0,0,0),false,3);
 		psur->Polyline(&rgv[cvertex], cvertex);
 		}
 
@@ -160,12 +160,12 @@ void Ramp::Render(Sur *psur)
 			{
 			CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 			psur->SetFillColor(-1);
-			psur->SetBorderColor(RGB(255,0,0),fFalse,0);
+			psur->SetBorderColor(RGB(255,0,0),false,0);
 			psur->SetObject(pdp);
 
 			if (pdp->m_fDragging)
 				{
-				psur->SetBorderColor(RGB(0,255,0),fFalse,0);
+				psur->SetBorderColor(RGB(0,255,0),false,0);
 				}
 
 			psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -176,8 +176,8 @@ void Ramp::Render(Sur *psur)
 void Ramp::RenderOutline(Sur * const psur)
 	{
 	psur->SetFillColor(-1);
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
-	psur->SetLineColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
+	psur->SetLineColor(RGB(0,0,0),false,0);
 	psur->SetObject(this);
 	psur->SetObject(NULL); // NULL so this won't be hit-tested
 
@@ -210,8 +210,8 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 		return; //skip render if not visible
 
 	psur->SetFillColor(RGB(0,0,0));
-	psur->SetBorderColor(-1,fFalse,0);
-	psur->SetLineColor(RGB(0,0,0),fFalse,2);
+	psur->SetBorderColor(-1,false,0);
+	psur->SetLineColor(RGB(0,0,0),false,2);
 	psur->SetObject(this);
 
 	float *rgheight;
@@ -291,7 +291,7 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 	delete rgheight;
 	}
 
-void Ramp::GetBoundingVertices(Vector<Vertex3D> *pvvertex3D)
+void Ramp::GetBoundingVertices(Vector<Vertex3D> * const pvvertex3D)
 	{
 	float *rgheight;
 	int cvertex;
@@ -1541,7 +1541,7 @@ void Ramp::SetObjectPos()
 	g_pvp->SetObjectPosCur(0, 0);
 	}
 
-void Ramp::MoveOffset(float dx, float dy)
+void Ramp::MoveOffset(const float dx, const float dy)
 	{
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
@@ -1846,12 +1846,12 @@ void Ramp::DoCommand(int icmd, int x, int y)
 		}
 	}
 
-void Ramp::FlipY(Vertex2D *pvCenter)
+void Ramp::FlipY(Vertex2D * const pvCenter)
 	{
 	IHaveDragPoints::FlipPointY(pvCenter);
 	}
 
-void Ramp::FlipX(Vertex2D *pvCenter)
+void Ramp::FlipX(Vertex2D * const pvCenter)
 	{
 	IHaveDragPoints::FlipPointX(pvCenter);
 	}

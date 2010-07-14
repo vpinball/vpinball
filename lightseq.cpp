@@ -43,7 +43,7 @@ void LightSeq::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
 }
 
-void LightSeq::MoveOffset(float dx, float dy)
+void LightSeq::MoveOffset(const float dx, const float dy)
 {
 	m_d.m_v.x += dx;
 	m_d.m_v.y += dy;
@@ -72,7 +72,7 @@ void LightSeq::PutCenter(Vertex2D *pv)
 //
 void LightSeq::PreRender(Sur *psur)
 {
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetObject(this);
 
 	for (int i=0; i<8; ++i)
@@ -97,7 +97,7 @@ void LightSeq::PreRender(Sur *psur)
 void LightSeq::Render(Sur *psur)
 {
 	psur->SetFillColor(-1);
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
 
 	psur->SetObject(this);
 
@@ -120,7 +120,7 @@ void LightSeq::Render(Sur *psur)
 
 void LightSeq::RenderOutline(Sur * const psur)
 {
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetObject((ISelect *)&m_LightSeqCenter);
 
 	psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
@@ -1906,7 +1906,7 @@ void LightSeqCenter::PutCenter(Vertex2D *pv)
 	m_pLightSeq->m_d.m_vCenter = *pv;
 }
 
-void LightSeqCenter::MoveOffset(float dx, float dy)
+void LightSeqCenter::MoveOffset(const float dx, const float dy)
 {
 	m_pLightSeq->m_d.m_vCenter.x += dx;
 	m_pLightSeq->m_d.m_vCenter.y += dy;

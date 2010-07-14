@@ -212,7 +212,7 @@ STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
 //
 void DispReel::PreRender(Sur *psur)
 {
-    psur->SetBorderColor(-1,fFalse,0);
+    psur->SetBorderColor(-1,false,0);
 	psur->SetFillColor(m_d.m_backcolor);
 	psur->SetObject(this);
 
@@ -256,7 +256,7 @@ void DispReel::Render(Sur *psur)
 {
 	if( !GetPTable()->GetEMReelsEnabled() ) return;
 
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
 	psur->SetObject(this);
 	psur->SetObject(NULL);
@@ -935,7 +935,7 @@ void DispReel::SetObjectPos()
 
 
 
-void DispReel::MoveOffset(float dx, float dy)
+void DispReel::MoveOffset(const float dx, const float dy)
 {
 	m_d.m_v1.x += dx;
 	m_d.m_v1.y += dy;

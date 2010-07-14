@@ -29,7 +29,7 @@ void LightCenter::PutCenter(Vertex2D *pv)
 	m_plight->m_d.m_vCenter = *pv;
 	}
 
-void LightCenter::MoveOffset(float dx, float dy)
+void LightCenter::MoveOffset(const float dx, const float dy)
 	{
 	m_plight->m_d.m_vCenter.x += dx;
 	m_plight->m_d.m_vCenter.y += dy;
@@ -102,7 +102,7 @@ void Light::SetDefaults()
 
 void Light::PreRender(Sur *psur)
 	{
-	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetBorderColor(-1,false,0);
 	psur->SetFillColor(m_d.m_color);
 	psur->SetObject(this);
 
@@ -112,12 +112,12 @@ void Light::PreRender(Sur *psur)
 		default:
 			if (m_d.m_borderwidth > 0)
 				{
-				psur->SetBorderColor(m_d.m_bordercolor, fFalse, 0); // For off-by-one GDI outline error
+				psur->SetBorderColor(m_d.m_bordercolor, false, 0); // For off-by-one GDI outline error
 				psur->SetFillColor(m_d.m_bordercolor);
 				psur->SetObject(this);
 				psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_borderwidth);
 				}
-			psur->SetBorderColor(m_d.m_color, fFalse, 0); // For off-by-one GDI outline error
+			psur->SetBorderColor(m_d.m_color, false, 0); // For off-by-one GDI outline error
 			psur->SetFillColor(m_d.m_color);
 			psur->SetObject(m_d.m_borderwidth > 0 ? NULL :this);
 			psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
@@ -215,12 +215,12 @@ void Light::Render(Sur *psur)
 			CComObject<DragPoint> *pdp;
 			pdp = m_vdpoint.ElementAt(i);
 			psur->SetFillColor(-1);
-			psur->SetBorderColor(RGB(0,0,200),fFalse,0);
+			psur->SetBorderColor(RGB(0,0,200),false,0);
 			psur->SetObject(pdp);
 
 			if (pdp->m_fDragging)
 				{
-				psur->SetBorderColor(RGB(0,255,0),fFalse,0);
+				psur->SetBorderColor(RGB(0,255,0),false,0);
 				}
 
 			psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
@@ -230,8 +230,8 @@ void Light::Render(Sur *psur)
 
 void Light::RenderOutline(Sur * const psur)
 	{
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
-	psur->SetLineColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
+	psur->SetLineColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
 	psur->SetObject(this);
 	psur->SetObject(NULL);
@@ -1031,7 +1031,7 @@ void Light::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 	}
 
-void Light::MoveOffset(float dx, float dy)
+void Light::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_vCenter.x += dx;
 	m_d.m_vCenter.y += dy;
@@ -1456,12 +1456,12 @@ void Light::DrawFrame(BOOL fOn)
 	}
 }
 
-void Light::FlipY(Vertex2D *pvCenter)
+void Light::FlipY(Vertex2D * const pvCenter)
 	{
 	IHaveDragPoints::FlipPointY(pvCenter);
 	}
 
-void Light::FlipX(Vertex2D *pvCenter)
+void Light::FlipX(Vertex2D * const pvCenter)
 	{
 	IHaveDragPoints::FlipPointX(pvCenter);
 	}

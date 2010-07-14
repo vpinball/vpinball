@@ -63,7 +63,7 @@ public:
 	virtual void OnMouseMove(int x, int y);
 
 	// Things to override
-	virtual void MoveOffset(float dx, float dy);
+	virtual void MoveOffset(const float dx, const float dy);
 	virtual void EditMenu(HMENU hmenu);
 	virtual void DoCommand(int icmd, int x, int y);
 	virtual void SetObjectPos();
@@ -87,8 +87,8 @@ public:
 	virtual void Delete()=0;
 	virtual void Uncreate()=0;
 
-	virtual void FlipY(Vertex2D *pvCenter);
-	virtual void FlipX(Vertex2D *pvCenter);
+	virtual void FlipY(Vertex2D * const pvCenter);
+	virtual void FlipX(Vertex2D * const pvCenter);
 	virtual void Rotate(float ang, Vertex2D *pvCenter);
 	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
 	virtual void Translate(Vertex2D *pvOffset);
