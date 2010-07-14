@@ -225,7 +225,8 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 		{
 		if (rgheight[i] >= height)
 			{
-			startvertex = min(startvertex, i);
+			if(i < startvertex)
+				startvertex = i;
 			stopvertex = i;
 			}
 		}
