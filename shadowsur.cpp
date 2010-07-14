@@ -21,7 +21,7 @@ ShadowSur::~ShadowSur()
 	DeleteObject(m_hpnLine);
 	}
 
-void ShadowSur::Line(float x, float y, float x2, float y2)
+void ShadowSur::Line(const float x, const float y, const float x2, const float y2)
 	{
 	const int ix = SCALEXf(x);
 	const int iy = SCALEYf(y);
@@ -34,7 +34,7 @@ void ShadowSur::Line(float x, float y, float x2, float y2)
 	::LineTo(m_hdc, ix2, iy2);
 	}
 
-void ShadowSur::Rectangle(float x, float y, float x2, float y2)
+void ShadowSur::Rectangle(const float x, const float y, const float x2, float y2)
 	{
 	const int ix = SCALEXf(x);
 	const int iy = SCALEYf(y);
@@ -44,11 +44,11 @@ void ShadowSur::Rectangle(float x, float y, float x2, float y2)
 	::Rectangle(m_hdc, ix, iy, ix2, iy2);
 	}
 
-void ShadowSur::Rectangle2(int x, int y, int x2, int y2)
+void ShadowSur::Rectangle2(const int x, const int y, const int x2, const int y2)
 	{
 	}
 
-void ShadowSur::Ellipse(float centerx, float centery, float radius)
+void ShadowSur::Ellipse(const float centerx, const float centery, const float radius)
 	{
 	const int ix = SCALEXf(centerx);
 	const int iy = SCALEYf(centery);
@@ -60,7 +60,7 @@ void ShadowSur::Ellipse(float centerx, float centery, float radius)
 	::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir, iy + ir);
 	}
 
-void ShadowSur::Ellipse2(float centerx, float centery, int radius)
+void ShadowSur::Ellipse2(const float centerx, const float centery, const int radius)
 	{
 	const int ix = SCALEXf(centerx);
 	const int iy = SCALEYf(centery);
@@ -104,7 +104,7 @@ void ShadowSur::EllipseSkew(const float centerx, const float centery, const floa
 	SetViewportOrgEx(m_hdc, 0, 0, NULL);
 	}
 
-void ShadowSur::Polygon(Vertex2D *rgv, int count)
+void ShadowSur::Polygon(const Vertex2D * const rgv, const int count)
 	{
 	POINT * const rgpt = new POINT[count];
 
@@ -122,7 +122,7 @@ void ShadowSur::Polygon(Vertex2D *rgv, int count)
 	delete rgpt;
 	}
 
-void ShadowSur::PolygonImage(Vertex2D *rgv, int count, HBITMAP hbm, float left, float top, float right, float bottom, int bitmapwidth, int bitmapheight)
+void ShadowSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
 	Polygon(rgv, count);
 	}
@@ -220,7 +220,7 @@ void ShadowSur::PolylineSkew(const Vertex2D * const rgv, const int count, const 
 	delete rgpt;
 	}
 
-void ShadowSur::Polyline(Vertex2D *rgv, int count)
+void ShadowSur::Polyline(const Vertex2D * const rgv, const int count)
 	{
 	POINT * const rgpt = new POINT[count];
 
@@ -237,7 +237,7 @@ void ShadowSur::Polyline(Vertex2D *rgv, int count)
 	delete rgpt;
 	}
 
-void ShadowSur::Arc(float x, float y, float radius, float pt1x, float pt1y, float pt2x, float pt2y)
+void ShadowSur::Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y)
 	{
 	const int ix = SCALEXf(x);
 	const int iy = SCALEYf(y);
@@ -253,7 +253,7 @@ void ShadowSur::Arc(float x, float y, float radius, float pt1x, float pt1y, floa
 	::Arc(m_hdc, ix-ir, iy-ir, ix+ir, iy+ir, x1, y1, x2, y2);
 	}
 
-void ShadowSur::Image(float x, float y, float x2, float y2, HDC hdcSrc, int width, int height)
+void ShadowSur::Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height)
 	{
 	const int ix = SCALEXf(x);
 	const int iy = SCALEYf(y);
@@ -271,21 +271,19 @@ void ShadowSur::SetObject(ISelect *psel)
 		}
 	}
 
-void ShadowSur::SetFillColor(int rgb)
+void ShadowSur::SetFillColor(const int rgb)
 	{
 	}
 
-void ShadowSur::SetBorderColor(int rgb, BOOL fDashed, int width)
+void ShadowSur::SetBorderColor(const int rgb, const bool fDashed, const int width)
 	{
 	}
 
-void ShadowSur::SetLineColor(int rgb, BOOL fDashed, int width)
+void ShadowSur::SetLineColor(const int rgb, const bool fDashed, const int width)
 	{
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	DeleteObject(m_hpnLine);
-	const int style = fDashed ? PS_DOT : PS_SOLID;
-
 	SetBkMode(m_hdc, TRANSPARENT);
-
+	const int style = fDashed ? PS_DOT : PS_SOLID;
 	m_hpnLine = CreatePen((rgb == -1) ? PS_NULL : style, width, rgb);
 	}

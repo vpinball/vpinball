@@ -73,7 +73,7 @@ STANDARD_EDITABLE_DECLARES(eItemTextbox)
 	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-	virtual void MoveOffset(float dx, float dy);
+	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
 	virtual void GetCenter(Vertex2D *pv);

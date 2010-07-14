@@ -67,7 +67,7 @@ public:
 	// From ISelect
 	virtual void OnLButtonDown(int x, int y);
 	virtual void OnLButtonUp(int x, int y);
-	virtual void MoveOffset(float dx, float dy);
+	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 	virtual ItemTypeEnum GetItemType() {return eItemDragPoint;}
 

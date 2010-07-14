@@ -71,7 +71,7 @@ STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)
 
 void Bumper::PreRender(Sur *psur)
 	{
-	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetBorderColor(-1,false,0);
 	psur->SetFillColor(m_d.m_color);
 	psur->SetObject(this);
 
@@ -80,7 +80,7 @@ void Bumper::PreRender(Sur *psur)
 
 void Bumper::Render(Sur *psur)
 	{
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
 	psur->SetObject(this);
 	psur->SetObject(NULL);
@@ -101,7 +101,7 @@ void Bumper::RenderShadow(ShadowSur *psur, float z)
 	if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
 		return;
 
-	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetBorderColor(-1,false,0);
 	psur->SetFillColor(RGB(0,0,0));
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -743,7 +743,7 @@ void Bumper::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 	}
 
-void Bumper::MoveOffset(float dx, float dy)
+void Bumper::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_vCenter.x += dx;
 	m_d.m_vCenter.y += dy;

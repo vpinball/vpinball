@@ -76,8 +76,8 @@ void ISelect::OnRButtonUp(int x, int y)
 
 void ISelect::OnMouseMove(int x, int y)
 	{
-	PinTable *ptable = GetPTable();
-	const float zoom = ptable->m_zoom;
+	PinTable * const ptable = GetPTable();
+	const float inv_zoom = 1.0f/ptable->m_zoom;
 
 	if ((x == m_ptLast.x) && (y == m_ptLast.y))
 		{
@@ -92,14 +92,14 @@ void ISelect::OnMouseMove(int x, int y)
 			GetIEditable()->BeginUndo();
 			GetIEditable()->MarkForUndo();
 			}
-		MoveOffset((x - m_ptLast.x)/zoom, (y - m_ptLast.y)/zoom);
+		MoveOffset((x - m_ptLast.x)*inv_zoom, (y - m_ptLast.y)*inv_zoom);
 		m_ptLast.x = x;
 		m_ptLast.y = y;
 		SetObjectPos();
 		}
 	}
 
-void ISelect::MoveOffset(float dx, float dy)
+void ISelect::MoveOffset(const float dx, const float dy)
 	{
 	// Implement in child class to enable dragging
 	}
@@ -157,8 +157,8 @@ void ISelect::SetSelectFormat(Sur *psur)
 		color = GetSysColor(COLOR_HIGHLIGHT);
 		}
 
-	psur->SetBorderColor(color, fFalse, 4);
-	psur->SetLineColor(color, fFalse, 4);
+	psur->SetBorderColor(color, false, 4);
+	psur->SetLineColor(color, false, 4);
 	}
 
 void ISelect::SetMultiSelectFormat(Sur *psur)
@@ -174,34 +174,34 @@ void ISelect::SetMultiSelectFormat(Sur *psur)
 		color = GetSysColor(COLOR_HIGHLIGHT);
 		}
 
-	psur->SetBorderColor(color, fFalse, 3);
-	psur->SetLineColor(color, fFalse, 3);
+	psur->SetBorderColor(color, false, 3);
+	psur->SetLineColor(color, false, 3);
 	}
 
 void ISelect::SetLockedFormat(Sur *psur)
 	{
-	psur->SetBorderColor(COLOR_LOCKED, fFalse, 1);
-	psur->SetLineColor(COLOR_LOCKED, fFalse, 1);
+	psur->SetBorderColor(COLOR_LOCKED, false, 1);
+	psur->SetLineColor(COLOR_LOCKED, false, 1);
 	}
 
-void ISelect::FlipY(Vertex2D *pvCenter)
+void ISelect::FlipY(Vertex2D * const pvCenter)
 	{
 	GetIEditable()->MarkForUndo();
 
 	Vertex2D vCenter;
 	GetCenter(&vCenter);
-	float delta = vCenter.y - pvCenter->y;
+	const float delta = vCenter.y - pvCenter->y;
 	vCenter.y -= delta*2;
 	PutCenter(&vCenter);
 	}
 
-void ISelect::FlipX(Vertex2D *pvCenter)
+void ISelect::FlipX(Vertex2D * const pvCenter)
 	{
 	GetIEditable()->MarkForUndo();
 
 	Vertex2D vCenter;
 	GetCenter(&vCenter);
-	float delta = vCenter.x - pvCenter->x;
+	const float delta = vCenter.x - pvCenter->x;
 	vCenter.x -= delta*2;
 	PutCenter(&vCenter);
 	}
@@ -216,13 +216,11 @@ void ISelect::Rotate(float ang, Vertex2D *pvCenter)
 	const float sn = sinf(ANGTORAD(ang));
 	const float cs = cosf(ANGTORAD(ang));
 
-	float dx = vCenter.x - pvCenter->x;
-	float dy = vCenter.y - pvCenter->y;
-	const float temp = dx;
-	dx = cs*dx - sn*dy;
-	dy = cs*dy + sn*temp;
-	vCenter.x = pvCenter->x + dx;
-	vCenter.y = pvCenter->y + dy;
+	const float dx = vCenter.x - pvCenter->x;
+	const float dy = vCenter.y - pvCenter->y;
+
+	vCenter.x = pvCenter->x + cs*dx - sn*dy;
+	vCenter.y = pvCenter->y + cs*dy + sn*dx;
 	PutCenter(&vCenter);
 	}
 
@@ -233,14 +231,11 @@ void ISelect::Scale(float scalex, float scaley, Vertex2D *pvCenter)
 	Vertex2D vCenter;
 	GetCenter(&vCenter);
 
-	float dx = vCenter.x - pvCenter->x;
-	float dy = vCenter.y - pvCenter->y;
+	const float dx = vCenter.x - pvCenter->x;
+	const float dy = vCenter.y - pvCenter->y;
 
-	dx *= scalex;
-	dy *= scaley;
-
-	vCenter.x = pvCenter->x + dx;
-	vCenter.y = pvCenter->y + dy;
+	vCenter.x = pvCenter->x + dx*scalex;
+	vCenter.y = pvCenter->y + dy*scaley;
 	PutCenter(&vCenter);
 	}
 

@@ -58,7 +58,7 @@ void Plunger::PreRender(Sur *psur)
 
 void Plunger::Render(Sur *psur)
 	{
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
 	psur->SetObject(this);
 
@@ -125,7 +125,7 @@ void Plunger::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
 	}
 
-void Plunger::MoveOffset(float dx, float dy)
+void Plunger::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_v.x += dx;
 	m_d.m_v.y += dy;

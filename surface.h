@@ -75,11 +75,11 @@ public:
 
 	virtual void ClearForOverwrite();
 
-	virtual void MoveOffset(float dx, float dy);
+	virtual void MoveOffset(const float dx, const float dy);
 
 	virtual void RenderShadow(ShadowSur *psur, float height);
 
-	virtual void GetBoundingVertices(Vector<Vertex3D> *pvvertex3D);
+	virtual void GetBoundingVertices(Vector<Vertex3D> * const pvvertex3D);
 
 	// IHitable
 	void CurvesToShapes(Vector<HitObject> * const pvho);
@@ -118,8 +118,8 @@ END_CONNECTION_POINT_MAP()
 
 	virtual void DoCommand(int icmd, int x, int y);
 
-	virtual void FlipY(Vertex2D *pvCenter);
-	virtual void FlipX(Vertex2D *pvCenter);
+	virtual void FlipY(Vertex2D * const pvCenter);
+	virtual void FlipX(Vertex2D * const pvCenter);
 	virtual void Rotate(float ang, Vertex2D *pvCenter);
 	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
 	virtual void Translate(Vertex2D *pvOffset);

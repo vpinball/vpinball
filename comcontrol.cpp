@@ -872,7 +872,7 @@ void PinComControl::CreateControlDialogTemplate()
 void PinComControl::PreRender(Sur *psur)
 	{
 	// Draw an invisible box to give us something to hittest
-	psur->SetBorderColor(-1,fFalse,0);
+	psur->SetBorderColor(-1,false,0);
 	psur->SetFillColor(-1);
 	psur->SetObject(this);
 
@@ -908,7 +908,7 @@ void PinComControl::PreRender(Sur *psur)
 
 void PinComControl::Render(Sur *psur)
 	{
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
 	psur->SetObject(this);
 	psur->SetObject(NULL);
@@ -930,7 +930,7 @@ void PinComControl::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
 	}
 
-void PinComControl::MoveOffset(float dx, float dy)
+void PinComControl::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_v1.x += dx;
 	m_d.m_v1.y += dy;

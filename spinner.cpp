@@ -66,7 +66,7 @@ void Spinner::PreRender(Sur *psur)
 
 void Spinner::Render(Sur *psur)
 	{
-	psur->SetLineColor(RGB(0,0,0),fFalse,3);
+	psur->SetLineColor(RGB(0,0,0),false,3);
 	psur->SetObject(this);
 
 	float halflength = m_d.m_length * 0.5f;
@@ -84,7 +84,7 @@ void Spinner::Render(Sur *psur)
 
 	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
 
-	psur->SetLineColor(RGB(0,0,0),fFalse,1);
+	psur->SetLineColor(RGB(0,0,0),false,1);
 	psur->SetObject(this);
 
 	halflength += m_d.m_overhang;
@@ -103,7 +103,7 @@ void Spinner::RenderShadow(ShadowSur *psur, float height)
 	if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
 		return;
 
-	psur->SetLineColor(RGB(0,0,0),fFalse,4);
+	psur->SetLineColor(RGB(0,0,0),false,4);
 	psur->SetObject(this);
 
 	float halflength = m_d.m_length * 0.5f;
@@ -121,7 +121,7 @@ void Spinner::RenderShadow(ShadowSur *psur, float height)
 
 	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
 
-	psur->SetLineColor(RGB(0,0,0),fFalse,1);
+	psur->SetLineColor(RGB(0,0,0),false,1);
 	psur->SetObject(this);
 
 	halflength += m_d.m_overhang;
@@ -696,7 +696,7 @@ void Spinner::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 	}
 
-void Spinner::MoveOffset(float dx, float dy)
+void Spinner::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_vCenter.x += dx;
 	m_d.m_vCenter.y += dy;

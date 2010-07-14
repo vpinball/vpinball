@@ -97,7 +97,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-	virtual void MoveOffset(float dx, float dy);
+	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 	virtual void RenderShadow(ShadowSur *psur, float height);
 

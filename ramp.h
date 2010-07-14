@@ -109,15 +109,15 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 
 	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
 
-	virtual void MoveOffset(float dx, float dy);
+	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 
 	virtual void DoCommand(int icmd, int x, int y);
 
 	virtual int GetMinimumPoints() {return 2;}
 
-	virtual void FlipY(Vertex2D *pvCenter);
-	virtual void FlipX(Vertex2D *pvCenter);
+	virtual void FlipY(Vertex2D * const pvCenter);
+	virtual void FlipX(Vertex2D * const pvCenter);
 	virtual void Rotate(float ang, Vertex2D *pvCenter);
 	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
 	virtual void Translate(Vertex2D *pvOffset);
@@ -135,7 +135,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 
 	Vector<Level> m_vlevel;
 
-	virtual void GetBoundingVertices(Vector<Vertex3D> *pvvertex3D);
+	virtual void GetBoundingVertices(Vector<Vertex3D> * const pvvertex3D);
 
 	void CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph3d1, const Hit3DPoly * const ph3d2);
 

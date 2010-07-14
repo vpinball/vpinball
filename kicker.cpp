@@ -51,7 +51,7 @@ void Kicker::PreRender(Sur *psur)
 
 void Kicker::Render(Sur *psur)
 	{
-	psur->SetBorderColor(RGB(0,0,0),fFalse,0);
+	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
 	psur->SetObject(this);
 
@@ -390,7 +390,7 @@ void Kicker::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
 	}
 
-void Kicker::MoveOffset(float dx, float dy)
+void Kicker::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_vCenter.x += dx;
 	m_d.m_vCenter.y += dy;

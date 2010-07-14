@@ -518,7 +518,7 @@ void DragPoint::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_v.x, m_v.y);
 	}
 
-void DragPoint::MoveOffset(float dx, float dy)
+void DragPoint::MoveOffset(const float dx, const float dy)
 	{
 	m_v.x += dx;
 	m_v.y += dy;

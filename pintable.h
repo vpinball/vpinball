@@ -272,8 +272,8 @@ public:
 	// Multi-object manipulation
 	virtual void GetCenter(Vertex2D *pv);
 	virtual void PutCenter(Vertex2D *pv);
-	virtual void FlipY(Vertex2D *pvCenter);
-	virtual void FlipX(Vertex2D *pvCenter);
+	virtual void FlipY(Vertex2D * const pvCenter);
+	virtual void FlipX(Vertex2D * const pvCenter);
 	virtual void Rotate(float ang, Vertex2D *pvCenter);
 	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
 	virtual void Translate(Vertex2D *pvOffset);

@@ -197,8 +197,8 @@ void Flipper::PreRender(Sur *psur)
 	m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
 	psur->SetFillColor(RGB(192,192,192));
-	psur->SetBorderColor(-1,fFalse,0);
-	psur->SetLineColor(RGB(0,0,0), fFalse, 0);
+	psur->SetBorderColor(-1,false,0);
+	psur->SetLineColor(RGB(0,0,0), false, 0);
 
 	Vertex2D vendcenter;
 	Vertex2D rgv[4];
@@ -221,8 +221,8 @@ void Flipper::Render(Sur *psur)
 	SetVertices(anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
 	psur->SetFillColor(RGB(192,192,192));
-	psur->SetBorderColor(-1,fFalse,0);
-	psur->SetLineColor(RGB(0,0,0), fFalse, 0);
+	psur->SetBorderColor(-1,false,0);
+	psur->SetLineColor(RGB(0,0,0), false, 0);
 
 	psur->SetObject(this);
 
@@ -234,7 +234,7 @@ void Flipper::Render(Sur *psur)
 
 	SetVertices(anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
-	psur->SetLineColor(RGB(128,128,128), fTrue, 0);
+	psur->SetLineColor(RGB(128,128,128), true, 0);
 
 	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
 	psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
@@ -275,7 +275,7 @@ void Flipper::Render(Sur *psur)
 
 		SetVertices(anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
-		psur->SetLineColor(RGB(128,128,128), fTrue, 0);
+		psur->SetLineColor(RGB(128,128,128), true, 0);
 
 		psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
 		psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
@@ -311,7 +311,7 @@ void Flipper::Render(Sur *psur)
 
 		SetVertices(anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
-		psur->SetLineColor(RGB(128,128,128), fTrue, 0);
+		psur->SetLineColor(RGB(128,128,128), true, 0);
 
 		psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
 		psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
@@ -344,7 +344,7 @@ void Flipper::SetObjectPos()
 	g_pvp->SetObjectPosCur(m_d.m_Center.x, m_d.m_Center.y);
 	}
 
-void Flipper::MoveOffset(float dx, float dy)
+void Flipper::MoveOffset(const float dx, const float dy)
 	{
 	m_d.m_Center.x += dx;
 	m_d.m_Center.y += dy;

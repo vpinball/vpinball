@@ -95,7 +95,7 @@ public:
 	virtual void GetCenter(Vertex2D *pv);
 	virtual void PutCenter(Vertex2D *pv);
 
-	virtual void MoveOffset(float dx, float dy);
+	virtual void MoveOffset(const float dx, const float dy);
 
 	virtual ItemTypeEnum GetItemType() {return eItemLightSeqCenter;}
 
@@ -147,7 +147,7 @@ END_CONNECTION_POINT_MAP()
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	void RenderOutline(Sur * const psur);
-	virtual void MoveOffset(float dx, float dy);
+	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
 	virtual void GetCenter(Vertex2D *pv);
