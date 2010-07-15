@@ -55,7 +55,6 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
 
-	float hittime;
 	float ballvx = pball->vx;						// ball velocity
 	float ballvy = pball->vy;
 
@@ -75,15 +74,14 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 
 	// ball normal distance: contact distance normal to segment. lateral contact subtract the ball radius 
 
-	const float rollingRadius = (lateral ? pball->radius : C_TOL_RADIUS);	//lateral or rolling point
+	const float rollingRadius = lateral ? pball->radius : C_TOL_RADIUS;	//lateral or rolling point
 	const float bcpd = (ballx - v1.x)*normal.x + (bally - v1.y)*normal.y ;	// ball center to plane distance
 	const float bnd = bcpd - rollingRadius;
-	const float btv = ballvx*TANX + ballvy*TANY;				//ball velocity tangent to segment with respect to direction from V1 to V2
-	float btd = (ballx - v1.x)*TANX + (bally - v1.y)* TANY ;	// ball tangent distance 
 
 	const bool inside = (bnd <= 0);							// in ball inside object volume
 	
 	//HitTestBasic
+	float hittime;
 	if (rigid)
 		{
 		if (bnv > C_LOWNORMVEL || bnd < (float)(-PHYS_SKIN) || (lateral && bcpd < 0)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
@@ -107,7 +105,7 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 			{
 			if ((m_ObjType != eTrigger) ||						// no a trigger
 			    (!pball->m_vpVolObjs) ||
-			    (fabsf(bnd) >= (float)(PHYS_SKIN/2.0)) ||			// not to close ... nor to far away
+			    (fabsf(bnd) >= (float)(PHYS_SKIN/2.0)) ||		// not to close ... nor to far away
 			    (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0))) // ...ball outside and hit set or  ball inside and no hit set
 				return -1.0f;
 			
@@ -120,25 +118,27 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 
 	if (hittime < 0 || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
 
-	btd += btv * hittime;	// ball tangent distance (projection) (initial position + velocity * hitime)
+	const float btv = ballvx*TANX + ballvy*TANY;					//ball velocity tangent to segment with respect to direction from V1 to V2
+	const float btd = (ballx - v1.x)*TANX + (bally - v1.y)* TANY 	// ball tangent distance 
+					+ btv * hittime;								// ball tangent distance (projection) (initial position + velocity * hitime)
 
 	if (btd < -C_TOL_ENDPNTS || btd > length + C_TOL_ENDPNTS) // is the contact off the line segment??? 
 		return -1.0f;
 
 	if (!rigid)												  // non rigid body collision? return direction
-		phitnormal[1].x = bUnHit ? 1.0f : 0.0f;				  // UnHit signal	is receding from outside target
+		phitnormal[1].x = bUnHit ? 1.0f : 0.0f;				  // UnHit signal is receding from outside target
 	
 	const float ballr = pball->radius;
 	const float hitz = pball->z - ballr + pball->vz*hittime;  // check too high or low relative to ball rolling point at hittime
 
-	if (hitz + (ballr * 1.5f) < m_rcHitRect.zlow			  //check limits of object's height and depth  
+	if (hitz + (ballr * 1.5f) < m_rcHitRect.zlow			  // check limits of object's height and depth  
 		|| hitz + (ballr * 0.5f) > m_rcHitRect.zhigh)
 		return -1.0f;
 
 	phitnormal->x = normal.x;				// hit normal is same as line segment normal
 	phitnormal->y = normal.y;
 		
-	pball->m_HitDist = bnd;					//actual contact distance ... 
+	pball->m_HitDist = bnd;					// actual contact distance ... 
 	pball->m_HitNormVel = bnv;
 	pball->m_HitRigid = rigid;				// collision type
 
@@ -155,8 +155,6 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
 
-	bool capsule3D = false;
-
 	const float x = center.x;
 	const float y = center.y;	
 	
@@ -166,11 +164,13 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 	const float dvx = pball->vx;	// delta velocity from ball's coordinate frame
 	const float dvy = pball->vy;
 
-	float z,dz,dvz;
 	float targetRadius = radius;
 	if(lateral)
 		targetRadius += pball->radius; 	
-	
+
+	bool capsule3D = false;
+	float z,dz,dvz;
+
 	if (!lateral && pball->z > zhigh)
 		{
 		capsule3D = true;										// handle ball over target? 
@@ -252,16 +252,8 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 		const float time1 = (-b + result)* inv_a;
 		const float time2 = (-b - result)* inv_a;
 		
-		if (time1*time2 < 0)						// ball is inside the circle
-			{
-			fUnhit = true;
-			hittime = max(time1,time2);  			
-			}
-		else
-			{
-			fUnhit = false;
-			hittime = min(time1,time2);
-			}
+		fUnhit = (time1*time2 < 0);
+		hittime = fUnhit ? max(time1,time2) : min(time1,time2); // ball is inside the circle
 
 		if (hittime < 0 || hittime > dtime) return -1.0f;	// contact out of physics frame
 		}
@@ -601,7 +593,7 @@ void HitOctree::HitTestBall(Ball * const pball)
 			cDeepTested++;
 #endif
 			const float newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal); // test for hit
-			if (newtime >= 0 && newtime <= pball->m_hittime)
+			if ((newtime >= 0) && (newtime <= pball->m_hittime))
 				{
 				pball->m_pho = m_vho.ElementAt(i);
 				pball->m_hittime = newtime;

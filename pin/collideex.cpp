@@ -13,7 +13,7 @@ BumperHitCircle::BumperHitCircle()
 	m_bumperanim.m_fVisible = fTrue;
 	for (int i=0;i<2;i++)
 		{
-		m_bumperanim.m_pobjframe[i]= NULL;
+		m_bumperanim.m_pobjframe[i] = NULL;
 		}
 	}
 
@@ -209,13 +209,7 @@ void SlingshotAnimObject::Check3D()
 
 ObjFrame *SlingshotAnimObject::Draw3D(RECT *prc)
 	{
-	if (m_iframe == 1)
-		{
-		ObjFrame * const pobjframe = m_pobjframe;
-		return pobjframe;
-		}
-
-	return NULL;
+	return (m_iframe == 1) ? m_pobjframe : NULL;
 	}
 
 void SlingshotAnimObject::Reset()
@@ -310,9 +304,8 @@ void GateAnimObject::UpdateVelocities(float dtime)
 	if (!m_fOpen)
 		{
 		if (m_angle == m_angleMin) m_anglespeed = 0.0f;
-		else m_anglespeed -= sinf(m_angle)*dtime * 0.0025f; // Center of gravity towards bottom of object, makes it stop vertical
-		//else m_anglespeed -= sinf((m_angle - m_angleMin)*0.5f)*dtime * 0.02f; // Center of gravity towards bottom of object, makes it stop vertical
-		m_anglespeed *= 1.0f - m_friction*dtime;
+		else m_anglespeed = (m_anglespeed-sinf(m_angle)*dtime * 0.0025f)*(1.0f - m_friction*dtime); // Center of gravity towards bottom of object, makes it stop vertical
+		//else m_anglespeed = (m_anglespeed-sinf((m_angle - m_angleMin)*0.5f)*dtime * 0.02f)*(1.0f - m_friction*dtime); // Center of gravity towards bottom of object, makes it stop vertical
 		}	
 	}
 
@@ -328,13 +321,10 @@ void GateAnimObject::Check3D()
 		return;
 		}
 	
-	int frame;
-	if (m_pgate->m_d.m_angleMin != m_pgate->m_d.m_angleMax)
-		{
-		frame = (int)(((m_angle - m_pgate->m_d.m_angleMin)/(m_pgate->m_d.m_angleMax - m_pgate->m_d.m_angleMin)
-				* (float)m_vddsFrame.Size()) + 0.5f);
-		}
-	else frame = 1;
+	int frame = (m_pgate->m_d.m_angleMin != m_pgate->m_d.m_angleMax) ?
+				(int)(((m_angle - m_pgate->m_d.m_angleMin)/(m_pgate->m_d.m_angleMax - m_pgate->m_d.m_angleMin)
+				* (float)m_vddsFrame.Size()) + 0.5f)
+				: 1;
 
 	if (frame == m_vddsFrame.Size()) // Happens when the angle exactly equals m_angleMax
 		{
@@ -352,9 +342,7 @@ ObjFrame *GateAnimObject::Draw3D(RECT *prc)
 	{
 	if (!m_fVisible || m_iframe == -1) return NULL;
 
-	ObjFrame * const pobjframe = m_vddsFrame.ElementAt(m_iframe);
-
-	return pobjframe;
+	return m_vddsFrame.ElementAt(m_iframe);
 	}
 
 void GateAnimObject::Reset()
@@ -486,16 +474,10 @@ void SpinnerAnimObject::UpdateDisplacements(float dtime)
 		}
 	else
 		{
-		float target;
-
-		if (m_anglespeed > 0)
-			{
-			target = (m_angle < (float)M_PI) ? (float)M_PI : (float)(3.0*M_PI);
-			}
-		else
-			{
-			target = (m_angle < (float)M_PI) ? (float)(-M_PI) : (float)M_PI;
-			}
+		const float target = (m_anglespeed > 0) ?
+			((m_angle < (float)M_PI) ? (float)M_PI : (float)(3.0*M_PI))
+			:
+			((m_angle < (float)M_PI) ? (float)(-M_PI) : (float)M_PI);
 
 		m_angle += m_anglespeed * dtime;
 
@@ -571,9 +553,7 @@ ObjFrame *SpinnerAnimObject::Draw3D(RECT *prc)
 	{
 	if (!m_fVisible || m_iframe == -1) return NULL;
 
-	ObjFrame * const pobjframe = m_vddsFrame.ElementAt(m_iframe);
-
-	return pobjframe;
+	return m_vddsFrame.ElementAt(m_iframe);
 	}
 
 void SpinnerAnimObject::Reset()
@@ -593,8 +573,6 @@ void HitSpinner::CalcHitRect()
 	m_lineseg[0].CalcHitRect();
 	m_rcHitRect = m_lineseg[0].m_rcHitRect;
 	}
-
-
 
 Hit3DPoly::Hit3DPoly(Vertex3D * const rgv, const int count, const bool keepptr) : m_cvertex(count)
 	{
