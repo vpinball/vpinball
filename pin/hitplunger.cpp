@@ -246,7 +246,7 @@ void PlungerAnimObject::UpdateVelocities(float dtime)//dtime always 1.0f
 	}	
 
 
-float HitPlunger::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
+float HitPlunger::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
 	{
 	float hittime = dtime; //start time
 	bool fHit = false;
@@ -356,7 +356,7 @@ void HitPlunger::Draw(HDC hdc)
 		}
 	}
 
-void HitPlunger::Collide(Ball *pball, Vertex3Ds *phitnormal)
+void HitPlunger::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{
 	float dot = (pball->vx - phitnormal[1].x)* phitnormal->x + (pball->vy - phitnormal[1].y) * phitnormal->y;
 

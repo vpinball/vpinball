@@ -124,7 +124,7 @@ class KickerHitCircle : public TriggerHitCircle
 	{
 public:
 	KickerHitCircle();
-	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 
 	Kicker *m_pkicker;
 	Ball *m_pball;  //The ball inside this kicker

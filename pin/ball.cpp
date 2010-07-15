@@ -257,14 +257,14 @@ void Ball::Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elast
 	}
 
 
-float Ball::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal) //rlc change begin >>>>>>>>>>>>>>>>>>>>>>
+float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) //rlc change begin >>>>>>>>>>>>>>>>>>>>>>
 	{	
-	float dvx = vx - pball->vx;		 // delta velocity 
-	float dvy = vy - pball->vy;
+	const float dvx = vx - pball->vx;		// delta velocity 
+	const float dvy = vy - pball->vy;
 	float dvz = vz - pball->vz;
 
-	float dx = x - pball->x;				// delta position
-	float dy = y - pball->y;
+	const float dx = x - pball->x;			// delta position
+	const float dy = y - pball->y;
 	float dz = z - pball->z;
 
 	float bcddsq = dx*dx + dy*dy + dz*dz;	//square of ball center's delta distance
@@ -346,7 +346,7 @@ float Ball::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal) //rlc chang
 	}
 
 
-void Ball::Collide(Ball *pball, Vertex3Ds *phitnormal)
+void Ball::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{
 	if (pball->fFrozen) 
 		return;
