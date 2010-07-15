@@ -36,10 +36,10 @@ public:
 	virtual void UpdateVelocities(float dtime);
 
 	// From HitObject
-	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);	
+	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);	
 	virtual int GetType() {return eBall;}
 	virtual void Draw(HDC hdc) {} // Dead function
-	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 	virtual void CalcHitRect();
 	virtual AnimObject *GetAnimObject() {return &m_ballanim;}
 

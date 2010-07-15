@@ -83,13 +83,13 @@ public:
 
 	virtual float HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnormal); 
 
-	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
+	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 	
 	virtual int GetType() {return eFlipper;}
 
 	virtual void Draw(HDC hdc);
 
-	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 
 	virtual AnimObject *GetAnimObject() {return &m_flipperanim;}
 

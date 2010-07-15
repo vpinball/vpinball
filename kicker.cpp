@@ -838,7 +838,7 @@ KickerHitCircle::KickerHitCircle()
 	m_pball = NULL;
 	}
 
-void KickerHitCircle::Collide(Ball *pball, Vertex3Ds *phitnormal)
+void KickerHitCircle::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{
 	if (m_pball) return;								// a previous ball already in kicker
 

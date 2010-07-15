@@ -226,7 +226,7 @@ void FlipperAnimObject::UpdateVelocities(float dtime)
 #define LeftFace 1
 #define RightFace 0
 
-float HitFlipper::HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal)
+float HitFlipper::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
 	{
 	if (!m_flipperanim.m_fEnabled) return -1;
 
@@ -575,7 +575,7 @@ float HitFlipper::HitTestFlipperFace(Ball *pball, float dtime, Vertex3Ds *phitno
 	}
 
 
-void HitFlipper::Collide(Ball *pball, Vertex3Ds *phitnormal)
+void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{
 	const float vx = pball->vx;
 	const float vy = pball->vy;

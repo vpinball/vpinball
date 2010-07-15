@@ -116,13 +116,13 @@ public:
 	HitObject();
 	virtual ~HitObject(){}
 
-	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal) = 0;
+	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) = 0;
 
 	virtual int GetType() = 0;
 
 	virtual void Draw(HDC hdc) = 0;
 
-	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal) = 0;
+	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal) = 0;
 
 	virtual void CalcHitRect() = 0;
 	
@@ -185,13 +185,12 @@ public:
 	Vertex2D v1, v2;
 	float length;
 
-	virtual float HitTestBasic(Ball *pball, float dtime, Vertex3Ds *phitnormal,
-							   bool direction, bool lateral, bool rigid);
-	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
+	virtual float HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool lateral, const bool rigid);
+	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 	//float VertHitTest(Ball *pball, float dtime, Vertex2D *phitnormal);
 	virtual int GetType() {return eLineSeg;}
 	virtual void Draw(HDC hdc);
-	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 	void CalcNormal();
 	void CalcLength();
 	virtual void CalcHitRect();
@@ -206,7 +205,7 @@ public:
 	float zlow;
 	float zhigh;
 
-	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
+	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 
 	float HitTestBasicRadius(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal,
 									const bool direction, const bool lateral, const bool rigid);
@@ -217,7 +216,7 @@ public:
 
 	virtual void Draw(HDC hdc);
 
-	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 
 	virtual void CalcHitRect();
 	};
@@ -227,13 +226,13 @@ class Joint : public HitCircle
 public:
 	Joint();
 
-	virtual float HitTest(Ball *pball, float dtime, Vertex3Ds *phitnormal);
+	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 
 	virtual int GetType() {return eJoint;}
 
 	virtual void Draw(HDC hdc);
 
-	virtual void Collide(Ball *pball, Vertex3Ds *phitnormal);
+	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 
 	virtual void CalcHitRect();
 
