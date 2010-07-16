@@ -127,21 +127,13 @@ void Ball::CalcBoundingRect()
 	const float dx = fabsf(vx);
 	const float dy = fabsf(vy);
 
-	brc.left = x - (radius + 0.1f + dx); //rlc make more accurate ????
-	brc.top = y - (radius + 0.1f + dy);
-	brc.right = x + (radius + 0.1f + dx);
-	brc.bottom = y + (radius + 0.1f + dy);
+	m_rcHitRect.left   = brc.left   = x - (radius + 0.1f + dx); //rlc make more accurate ????
+	m_rcHitRect.right  = brc.right  = x + (radius + 0.1f + dx);
+	m_rcHitRect.top    = brc.top    = y - (radius + 0.1f + dy);	
+	m_rcHitRect.bottom = brc.bottom = y + (radius + 0.1f + dy);
 
-	m_rcHitRect.left = brc.left;
-	m_rcHitRect.top = brc.top;
-	m_rcHitRect.right = brc.right;
-	m_rcHitRect.bottom = brc.bottom;
-
-	m_rcHitRect.zlow = min(z, z+vz);
-	m_rcHitRect.zhigh = max(z, z+vz);
-
-	m_rcHitRect.zhigh += radius + 0.1f;
-	m_rcHitRect.zlow -= radius /*+ 0.f*/;
+	m_rcHitRect.zlow  = min(z, z+vz) - radius;
+	m_rcHitRect.zhigh = max(z, z+vz) + (radius + 0.1f);
 	}
 
 void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elasticity, float antifriction, float scatter_angle)
@@ -183,7 +175,7 @@ void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elastic
 
 	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
 		{
-		float scatter = 2.0f* ((float)rand()*(float)(1.0/RAND_MAX) - 0.5f);  // -1.0f..1.0f
+		float scatter = (float)rand()*(float)(2.0/RAND_MAX) - 1.0f;     // -1.0f..1.0f
 		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
 		const float radsin = sinf(scatter);//  Green's transform matrix... rotate angle delta 
 		const float radcos = cosf(scatter);//  rotational transform from current position to position at time t
@@ -235,17 +227,16 @@ void Ball::Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elast
 	vx += dot * phitnormal->x; vx *= antifriction;
 	vy += dot * phitnormal->y; vy *= antifriction;
 	vz += dot * phitnormal->z; vz *= antifriction;
-
 	
 	if (scatter_angle <= 0) scatter_angle = c_hardScatter;						// if <= zero use global value
 	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;	// apply dificulty weighting
 	
 	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
 		{
-		float scatter = 2.0f* ((float)rand()*(float)(1.0/RAND_MAX) - 0.5f);  // -1.0f..1.0f
+		float scatter = (float)rand()*(float)(2.0/RAND_MAX) - 1.0f;     // -1.0f..1.0f
 		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
-		const float radsin = sinf(scatter);//  Green's transform matrix... rotate angle delta 
-		const float radcos = cosf(scatter);//  rotational transform from current position to position at time t
+		const float radsin = sinf(scatter); // Green's transform matrix... rotate angle delta
+		const float radcos = cosf(scatter); // rotational transform from current position to position at time t
 		const float vxt = vx; 
 		const float vyt = vy;
 
@@ -495,7 +486,7 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	cpctrv.z *= (float)(1.0/2.5);
 
 	Vertex3Ds vResult;
-	CrossProduct(&bccpd, &cpctrv, &vResult);//ball center contact point displacement X reverse contact point co-tan vel
+	CrossProduct(&bccpd, &cpctrv, &vResult); //ball center contact point displacement X reverse contact point co-tan vel
 
 	m_angularmomentum.Add(&vResult);	// add delta 
 
@@ -562,18 +553,18 @@ void Ball::UpdateDisplacements(float dtime)
 			x = x_min;									
 			vx *= -0.2f;
 			}
-		else if (vx > 0 && x >= x_max)				//right wall
+		else if (vx > 0 && x >= x_max)					//right wall
 			{
 			x = x_max;							
 			vx *= -0.2f;
 			}
 
-		if (vy < 0 && y <= y_min)					//top wall
+		if (vy < 0 && y <= y_min)						//top wall
 			{
 			y = y_min;									
 			vy *= -0.2f;
 			}
-		else if (vy > 0 && y >= y_max)				//bottom wall
+		else if (vy > 0 && y >= y_max)					//bottom wall
 			{
 			y = y_max;							
 			vy *= -0.2f;
