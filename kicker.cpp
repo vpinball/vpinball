@@ -124,11 +124,6 @@ void Kicker::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	RECT rcBounds;
-	LPDIRECTDRAWSURFACE7 pddsBufferBack;
-	LPDIRECTDRAWSURFACE7 pddsMask;
-	HRESULT hr;
-	
 	// Don't process "invisible" kickers.
 	if ((m_d.m_kickertype == KickerInvisible) || (m_d.m_kickertype == KickerHidden))
 		return;
@@ -137,16 +132,13 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
+	RECT rcBounds;
 	ppin3d->ClearExtents(&rcBounds, NULL, NULL);	
 
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);	
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-
-	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
@@ -178,6 +170,10 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	rgv3D[48].z = height + (0.1f - 30.0f);
 	ppin3d->m_lightproject.CalcCoordinates(&rgv3D[48],inv_width,inv_height);
 
+	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+	
 	D3DMATERIAL7 mtrl;
 	mtrl.diffuse.a = 
 	mtrl.ambient.a =
@@ -208,10 +204,10 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	ppin3d->ExpandExtents(&rcBounds, &rgv3D[16], NULL, NULL, 16, fFalse);
-	pddsBufferBack = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
-	pddsMask = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
+	LPDIRECTDRAWSURFACE7 pddsBufferBack = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
+	LPDIRECTDRAWSURFACE7 pddsMask = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
 
-	hr = pddsBufferBack->Blt(NULL, ppin3d->m_pddsStatic, &rcBounds, DDBLT_WAIT, NULL);
+	HRESULT hr = pddsBufferBack->Blt(NULL, ppin3d->m_pddsStatic, &rcBounds, DDBLT_WAIT, NULL);
 	/*DDBLTFX ddbltfx;
 	ddbltfx.dwSize = sizeof(DDBLTFX);
 	ddbltfx.dwFillDepth = 0xffffffff;
@@ -263,12 +259,12 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			const int pitchMask = ddsdMask.lPitch;
 			const BYTE *pchMask = (BYTE *)ddsdMask.lpSurface;
 
-			for (int y=0;y<leny;y++)
+			for (int y=0;y<leny;++y)
 				{
-				for (int x=0;x<lenx;x++)
+				for (int x=0;x<lenx;++x)
 					{
 					if (*pchMask == 0)
-						for (int l=0;l<zbytes;l++)
+						for (int l=0;l<zbytes;++l)
 							pch[l] = 0xff;
 					pch+=zbytes;
 					pchMask+=colorbytes;
@@ -295,7 +291,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
 			pd3dDevice->SetMaterial(&mtrl);
 
-			for (int l=1;l<15;l++)
+			for (int l=1;l<15;++l)
 					{
 					WORD rgi[3] = {
 						0,
@@ -314,7 +310,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			ppin3d->EnableLightMap(fTrue, height);
 
-			for (int l=0;l<16;l++)
+			for (int l=0;l<16;++l)
 				{
 				WORD rgiNormal[3];
 				rgiNormal[0] = (l - 1 + 16) % 16;
@@ -348,7 +344,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			ppin3d->EnableLightMap(fTrue, height);
 
-			for (int l=0;l<16;l++)
+			for (int l=0;l<16;++l)
 				{
 				WORD rgi[3] = {
 					48,
@@ -601,14 +597,14 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 
 		if (scatterAngle > 1.0e-5f)										// ignore near zero angles
 			{
-			float scatter = 2.0f* ((float)rand()*(float)(1.0/RAND_MAX) - 0.5f);  // -1.0f..1.0f
-			scatter *= (1.0f - scatter*scatter)*2.59808f * scatterAngle;	// shape quadratic distribution and scale
+			float scatter = (float)rand()*(float)(2.0/RAND_MAX) - 1.0f; // -1.0f..1.0f
+			scatter *= (1.0f - scatter*scatter)*2.59808f * scatterAngle;// shape quadratic distribution and scale
 			anglerad += scatter;
 			}
 		
 		const float speedz = sinf(inclination) * speed;
 
-		if (speedz > 0 ) speed = cos(inclination) * speed;
+		if (speedz > 0) speed = cos(inclination) * speed;
 
 		m_phitkickercircle->m_pball->x += x; // brian's suggestion
 		m_phitkickercircle->m_pball->y += y; 
@@ -842,13 +838,13 @@ void KickerHitCircle::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{
 	if (m_pball) return;								// a previous ball already in kicker
 
-	const int i = pball->m_vpVolObjs->IndexOf(m_pObj);		// check if kicker in ball's volume set
+	const int i = pball->m_vpVolObjs->IndexOf(m_pObj);	// check if kicker in ball's volume set
 
 	if (!phitnormal || ((phitnormal && phitnormal[1].x < 1) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
 		{		
 		pball->x += pball->vx * STATICTIME; //move ball slightly forward
-		pball->y += pball->vy * STATICTIME;		
-		pball->z += pball->vz * STATICTIME; 
+		pball->y += pball->vy * STATICTIME;
+		pball->z += pball->vz * STATICTIME;
 
 		if (i < 0)	//entering Kickers volume
 			{ 
