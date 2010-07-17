@@ -94,23 +94,23 @@ HitFlipper::HitFlipper(const float x, const float y, float baser, float endr, fl
 	const float endh = endr*cosf(etheta*0.5f);
 	const float h = flipr + baseh + endh;
 	
-	float Irb_inertia = baser*baser*baser*baser*0.25f*(btheta - sinf(btheta) + (float)(2.0/3.0)*sinf(btheta)*tmp1*tmp1);//base radius
+	float Irb_inertia = (baser*baser)*(baser*baser)*0.25f*(btheta - sinf(btheta) + (float)(2.0/3.0)*sinf(btheta)*tmp1*tmp1);//base radius
 	Irb_inertia /= baser*baser*(btheta - sinf(btheta)); // divide by area to obtain simple Inertia
 	
-	float Ire_inertia = endr*endr*endr*endr*0.25f*(etheta - sinf(etheta) + (float)(2.0/3.0)*sinf(etheta)*(tmp2*tmp2));//end radius
+	float Ire_inertia = (endr*endr)*(endr*endr)*0.25f*(etheta - sinf(etheta) + (float)(2.0/3.0)*sinf(etheta)*(tmp2*tmp2));//end radius
 	Ire_inertia /= endr*endr*(etheta - sinf(etheta)); // divide by area
 
 	// translate to centroidal and then flipper axis.. subtract section radius squared then add (flipper radius + section radius) squared
-	const float tmp3 = (float)(4.0/3.0)*endr*(tmp2*tmp2*tmp2)/(etheta-sinf(etheta));
+	const float tmp3 = (float)(4.0/3.0)*endr*(tmp2*tmp2)*tmp2/(etheta-sinf(etheta));
 	Ire_inertia = Ire_inertia + ((flipr+tmp3)*(flipr+tmp3)
 							    -       tmp3 *       tmp3); // double parallel axis
 	
 	//flipper body trapizoidal section
-	float Ifb_inertia = h/(144.0f*(a+b))*(16.0f*(h*h)*a*b+4.0f*(h*h)*(b*b)+4.0f*(h*h)*(a*a)+3.0f*(a*a)*(a*a)
-							              +6.0f*(a*a)*(b*b)+6.0f*(a*a)*(a*b)+6.0f*(a*b)*(b*b)+3.0f*(b*b)*(b*b));
+	float Ifb_inertia = h/(144.0f*(a+b))*(16.0f*(h*h)*a*b + 4.0f*(h*h)*((b*b)+(a*a)) + 3.0f*(a*a)*(a*a)
+							           + 6.0f*(a*a)*(b*b) + 6.0f*(a*b)*((b*b)+(a*a)) + 3.0f*(b*b)*(b*b));
 	Ifb_inertia /= h*0.5f*(a+b); // divide by area
 
-	const float tmp4 = h*(float)(1.0/3.0)*(a+a+b)/(a+b);
+	const float tmp4 = h*(float)(1.0/3.0)*(a+(a+b))/(a+b);
 	Ifb_inertia = Ifb_inertia + tmp4*tmp4; //flipper body translated to flipper axis ...parallel axis
 
 	const float Iff = Irb_inertia + Ifb_inertia + Ire_inertia; //scalar moment of inertia ... multiply by weight next
@@ -251,7 +251,8 @@ float HitFlipper::HitTest(Ball * const pball, const float dtime, Vertex3Ds * con
 		}
 
 	hittime = HitTestFlipperEnd(pball, dtime, phitnormal); // end radius
-	if (hittime >= 0) return hittime;
+	if (hittime >= 0)
+		return hittime;
 
 	hittime = m_flipperanim.m_hitcircleBase.HitTest(pball, dtime, phitnormal);
 	if (hittime >= 0)
@@ -277,7 +278,7 @@ float HitFlipper::HitTest(Ball * const pball, const float dtime, Vertex3Ds * con
 float HitFlipper::HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnormal) // replacement
 	{ 	 
 	const float angleCur = m_flipperanim.m_angleCur;
-	float anglespeed = m_flipperanim.m_anglespeed;				// rotation rate
+	float anglespeed = m_flipperanim.m_anglespeed;		// rotation rate
 	
 	Vertex2D flipperbase;
 	flipperbase.x =	m_flipperanim.m_hitcircleBase.center.x;
@@ -627,8 +628,7 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		const float tfdr = distance/maxradius; 		
 		const float tfr = powf(tfdr,m_pflipper->m_d.m_powerlaw);				// apply powerlaw weighting
 		const float dvt = dv.x * phitnormal[1].x + dv.y  * phitnormal[1].y;		// velocity transvere to flipper
-		const float j = tfr * impulse/(m_forcemass + tfr);
-		const float anglespeed = m_flipperanim.m_anglespeed + dvt/distance * j;		
+		const float anglespeed = m_flipperanim.m_anglespeed + dvt * tfr * impulse/(distance*(m_forcemass + tfr));		
 
 		if (m_flipperanim.m_fAcc != 0)											// currently in rotation
 			{	

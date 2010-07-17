@@ -206,8 +206,8 @@ void LightSeq::EndPlay()
 }
 
 void LightSeq::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	}
+{
+}
 
 void LightSeq::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 {
@@ -221,10 +221,10 @@ void LightSeq::RenderMoversFromCache(Pin3D *ppin3d)
 void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 {
 	// zero pointers as a safe guard
-	m_pcollection	= NULL;
+	m_pcollection = NULL;
 	m_pgridData	= NULL;
 	// no animation in progress
-	m_playInProgress  = false;
+	m_playInProgress = false;
 	m_pauseInProgress = false;
 	// turn off any tracers
 	m_th1.type = eSeqNull;
@@ -256,9 +256,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	// if the collection wasn't found or there are no collections available then bomb out
 	if (m_pcollection == NULL)
-	{
 		return;
-	}
 
 	// get the grid demensions (from the table size)
 	const float tablewidth = m_ptable->m_right - m_ptable->m_left;
@@ -283,7 +281,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	}
 	else
 	{
-		memset ((void *)m_pgridData, 0x00, (size_t)((m_lightSeqGridHeight*m_lightSeqGridWidth)*sizeof(short)));
+		memset((void *)m_pgridData, 0x00, (size_t)((m_lightSeqGridHeight*m_lightSeqGridWidth)*sizeof(short)));
 	}
 
 	// get the number of elements (objects) in the collection (referenced by m_visel)
@@ -471,12 +469,11 @@ HRESULT LightSeq::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
 	br.Load();
 	return S_OK;
 #else
-	ULONG read = 0;
-	HRESULT hr;
-
 	m_ptable = ptable;
 
 	DWORD dwID;
+	ULONG read = 0;
+	HRESULT hr;
 	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
 		return hr;
 
@@ -735,8 +732,6 @@ STDMETHODIMP LightSeq::StopPlay()
 	}
 	return S_OK;
 }
-
-
 
 void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause)
 {
@@ -1669,7 +1664,7 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 	   		case eSeqCircle:
 				for (float fi=0;fi<360.0f;fi+=0.5f)
 				{
-					const float angle = (float)(M_PI * 2.0/360.0)*(float)fi;
+					const float angle = (float)(M_PI * 2.0/360.0)*fi;
 					const float sn = sinf(angle);
 					const float cs = cosf(angle);
 					const float x = pTracer->x + sn*pTracer->radius;
