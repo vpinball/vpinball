@@ -178,7 +178,7 @@ void Gate::GetHitShapes(Vector<HitObject> *pvho)
 	m_plineseg->m_pfe = NULL;
 
 	m_plineseg->m_rcHitRect.zlow = height;
-	m_plineseg->m_rcHitRect.zhigh = height+ (float)(2.0*PHYS_SKIN);//+50.0f //ball diameter
+	m_plineseg->m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN); //+50.0f //ball diameter
 	
 	m_plineseg->v1.x = rgv[0].x;
 	m_plineseg->v1.y = rgv[0].y;
@@ -541,20 +541,11 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);     //rlc  alpha channel support
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-				if (g_pvp->m_pdd.m_fHardwareAccel)
-					{
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE);
-					}
-				else
-					{
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE);
-					}
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,  D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA); 
 				}
 
 			if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
@@ -602,20 +593,11 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);     //rlc  alpha channel support
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-				if (g_pvp->m_pdd.m_fHardwareAccel)
-					{
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-					}
-				else
-					{
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-					}
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,  D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA); 
 				}
 			if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR)
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
@@ -804,12 +786,11 @@ HRESULT Gate::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, H
 	br.Load();
 	return S_OK;
 #else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
 	m_ptable = ptable;
 
 	DWORD dwID;
+	ULONG read = 0;
+	HRESULT hr;
 	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
 		return hr;
 
@@ -1168,7 +1149,6 @@ STDMETHODIMP Gate::get_Supports(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Gate::put_Supports(VARIANT_BOOL newVal)
 {
-	
 	STARTUNDO
 
 	m_d.m_fSupports = newVal;
@@ -1332,7 +1312,7 @@ STDMETHODIMP Gate::get_Friction(float *pVal)
 STDMETHODIMP Gate::put_Friction(float newVal)
 {	
 	if (newVal < 0) newVal = 0;
-	else if (newVal > 1) newVal = 1.0f;
+	else if (newVal > 1.0f) newVal = 1.0f;
 
 	if (g_pplayer)
 		{
