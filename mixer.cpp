@@ -216,9 +216,11 @@ void mixer_draw()
 	D3DMATRIX			RestoreWorldMatrix;
 	HRESULT				ReturnCode;
 
+
 	if( !volume_stamp ) return;
 
 	m_bUpdate = true;
+
 
 	F32 fade = 1.0f - ( ( (F32) ( msec() - volume_stamp ) ) * 0.001f );
     if( fade > 1.0f ) fade = 1.0f;
@@ -278,7 +280,7 @@ void mixer_draw()
 //        draw_transparent_box( size[0], size[1], volume_adjustment_bar_pos[0], volume_adjustment_bar_pos[1]+y, color );
 
 		// Calculate the scale.
-		const float sX = - (float)g_pplayer->m_pin3d.m_dwRenderHeight*(float)(1.0/600.0);
+		const float sX = - (float)g_pplayer->m_pin3d.m_dwRenderHeight*(float)(1.0/601.0); //changed from 600 to 601 to correct fadeout shadow lines
 		const float sY = - (float)g_pplayer->m_pin3d.m_dwRenderWidth *(float)(1.0/800.0);
 
 		// Set the position.  
