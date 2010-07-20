@@ -496,11 +496,29 @@ extern float curMechPlungerPos;
 STDMETHODIMP Plunger::Position(int *pVal)
 {
 //	*pVal=curMechPlungerPos;
-
+if (uShockType == 1)
+{
 	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
 	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 	*pVal = (int)(tmp*(float)(1.0/0.04));
+}
+if (uShockType == 2)
+{
+	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
+	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
+	*pVal = (int)(tmp*(float)(1.0/0.04));
+}
+
+if (uShockType == 3)
+{
+	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
+	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
+	*pVal = int(tmp);
+}
+
 //	return tmp;
 
 	
