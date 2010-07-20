@@ -153,6 +153,12 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 			uShockType = 2; //set type 2 = UltraCade Pinball
 		}
 	
+	if ((hr == S_OK) && !WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
+		{
+			uShockDevice = e_JoyCnt;	// remember uShock
+			uShockType = 3; //set type 3 = Microsoft SideWinder Freestyle Pro
+		}
+
 	hr = ppinput->m_pJoystick[e_JoyCnt]->SetDataFormat(&c_dfDIJoystick);
 
 	// joystick input foreground or background focus
@@ -984,6 +990,17 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 								g_pplayer->UltraNudgeY(-u.i, joyk); //rotate to match joystick
 								}
 							}
+							if (uShockType == 3) 
+							{
+								if (rotLeftManual)
+								{
+									g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match Microsoft Sidewinder
+								}
+								else
+								{
+									g_pplayer->UltraNudgeX(u.i, joyk); //rotate to match Microsoft Sidewinder
+								}
+							}
 						}
 						break;
 								   
@@ -1009,6 +1026,17 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 								g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match joystick
 								}
 							}
+							if (uShockType == 3) 
+							{
+								if (rotLeftManual)
+								{
+									g_pplayer->UltraNudgeY(-u.i, joyk); //rotate to match Microsoft Sidewinder
+								}
+								else
+								{
+								g_pplayer->UltraNudgeY(u.i, joyk); //rotate to match Microsoft Sidewinder
+								}
+							}
 						}
 						break;
 
@@ -1022,6 +1050,17 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 							if (uShockType == 2) //UltraCade
 							{
 							g_pplayer->mechPlungerIn(u.i);
+							}
+							if (uShockType == 3) //Microsoft Sidewinder - Scroll Wheel?
+							{
+								if (rotLeftManual) //Upside Down mounting
+								{
+									g_pplayer->mechPlungerIn(-u.i); //rotate to match Microsoft Sidewinder
+								}
+								else
+								{
+									g_pplayer->mechPlungerIn(u.i); //rotate to match Microsoft Sidewinder
+								}
 							}
 						}
 						break;
