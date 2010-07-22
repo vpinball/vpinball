@@ -83,7 +83,7 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
         if( FAILED( ppinput->m_pJoystick[e_JoyCnt]->SetProperty( DIPROP_RANGE, &diprg.diph ) ) ) 
 			{return DIENUM_STOP;}   
 
-	// set DEADBAND to Zero
+		// set DEADBAND to Zero
 		DIPROPDWORD dipdw;
 		dipdw.diph.dwSize       = sizeof(DIPROPDWORD);
         dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER); 

@@ -2454,7 +2454,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 {
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 	
-	bw.WriteBool(FID(HRD3), g_pvp->m_pdd.m_fHardwareAccel);
+//	bw.WriteBool(FID(HRD3), g_pvp->m_pdd.m_fHardwareAccel);
 	bw.WriteBool(FID(BLT3), g_pvp->m_pdd.m_fUseD3DBlit);
 
 #ifdef VBA
@@ -3137,17 +3137,16 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 #endif
 }
 
-
 BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	{
-	if (id == FID(HRD3)) 
-		{	
-		int tmp;
-		pbr->GetBool(&tmp);
-		GetRegInt("Player", "HardwareRender", &tmp);
-		g_pvp->m_pdd.m_fHardwareAccel = (tmp != 0);
-		}
-	else if (id == FID(BLT3))
+//	if (id == FID(HRD3)) 
+//		{	
+//		int tmp;
+//		pbr->GetBool(&tmp);
+//		GetRegInt("Player", "HardwareRender", &tmp);
+//		g_pvp->m_pdd.m_fHardwareAccel = (tmp != 0);
+//		}
+	if (id == FID(BLT3))
 		{	
 		int tmp;
 		pbr->GetBool(&tmp);
@@ -7543,9 +7542,9 @@ STDMETHODIMP PinTable::put_AlternateRender(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
-STDMETHODIMP PinTable::get_HardwareRender(VARIANT_BOOL *pVal) //TableCaching
+STDMETHODIMP PinTable::get_HardwareRender(VARIANT_BOOL *pVal)
 {
-	*pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_pdd.m_fHardwareAccel : false);	//VP Editor
+	*pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_pdd.m_fHardwareAccel : false); //VP Editor
 
 	return S_OK;
 }
@@ -7556,15 +7555,18 @@ STDMETHODIMP PinTable::put_HardwareRender(VARIANT_BOOL newVal)
 		{														//VP Editor
 		int tmp;
 		const HRESULT hr = GetRegInt("Player", "HardwareRender", &tmp);
-		if (hr == S_OK) g_pvp->m_pdd.m_fHardwareAccel = (tmp != 0);
+		if ((hr == S_OK) && (tmp == 1))
+			{
+			tmp = 0;
+			g_pvp->m_pdd.m_fHardwareAccel = tmp;
+			}
 		else
 			{
-			STARTUNDO
-			g_pvp->m_pdd.m_fHardwareAccel = VBTOF(newVal);
-			STOPUNDO
+			tmp = 1;
+			g_pvp->m_pdd.m_fHardwareAccel = tmp;
 			}
+		SetRegValue("Player", "HardwareRender", REG_DWORD, &tmp, 4);
 		}
-
 	return S_OK;
 }
 
