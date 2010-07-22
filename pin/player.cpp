@@ -463,6 +463,34 @@ void Player::InitKeys()
 
 	//rlc begin added keys
 
+	hr = GetRegInt("Player","FrameCount", &key);
+	if (hr != S_OK || key > 0xdd)
+		{
+		key = DIK_F11;
+		}
+	m_rgKeys[eFrameCount] = (EnumAssignKeys)key;
+
+	hr = GetRegInt("Player","VolumeUp", &key);
+	if (hr != S_OK || key > 0xdd)
+		{
+		key = DIK_EQUALS;
+		}
+	m_rgKeys[eVolumeUp] = (EnumAssignKeys)key;
+
+	hr = GetRegInt("Player","VolumeDown", &key);
+	if (hr != S_OK || key > 0xdd)
+		{
+		key = DIK_MINUS;
+		}
+	m_rgKeys[eVolumeDown] = (EnumAssignKeys)key;
+
+	hr = GetRegInt("Player","DebugBalls", &key);
+	if (hr != S_OK || key > 0xdd)
+		{
+		key = DIK_O;
+		}
+	m_rgKeys[eDBGBalls] = (EnumAssignKeys)key;
+
 	hr = GetRegInt("Player","MechTilt", &key);
 	if (hr != S_OK || key > 0xdd)
 		{
@@ -486,8 +514,8 @@ void Player::InitKeys()
 		}
 	m_rgKeys[eLeftMagnaSave] = (EnumAssignKeys)key;
 
-	m_rgKeys[eVolumeUp] = (EnumAssignKeys) DIK_ADD; //DIK_ADD
-	m_rgKeys[eVolumeDown] = (EnumAssignKeys) DIK_MINUS;
+//	m_rgKeys[eVolumeUp] = (EnumAssignKeys) DIK_ADD; //DIK_ADD
+//	m_rgKeys[eVolumeDown] = (EnumAssignKeys) DIK_MINUS;
 
 	//rlc end add keys
 	}
