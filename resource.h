@@ -425,8 +425,8 @@
 #define IDI_PLAY                        369
 #define IDC_TREE1                       369
 #define IDI_PAUSE                       370
-#define IDC_TAB1                        370
 #define IDI_STEP                        371
+#define IDC_JOYDEADZONESLIDER           371
 #define IDB_TARGET                      376
 #define IDB_TB_DEBUG                    377
 #define IDD_COMLIST                     378
@@ -499,6 +499,8 @@
 #define ID_TABLE_TABLEINFO              32838
 #define ID_PREFERENCES_SECURITYOPTIONS  32839
 #define IDC_COMCONTROL                  32840
+#define DZVALUE                         65535
+#define DZName                          65535
 
 // Next default values for new objects
 // 
@@ -506,7 +508,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        384
 #define _APS_NEXT_COMMAND_VALUE         32842
-#define _APS_NEXT_CONTROL_VALUE         371
+#define _APS_NEXT_CONTROL_VALUE         372
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

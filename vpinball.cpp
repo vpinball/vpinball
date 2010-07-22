@@ -343,6 +343,12 @@ void VPinball::InitRegValues()
 		g_pvp->m_pdd.m_fHardwareAccel = 0; // default value
 		}
 
+	hr = GetRegInt("Player", "AlternateRender", &m_fAlternateRender);
+	if (hr != S_OK)
+		{
+		g_pvp->m_pdd.m_fAlternateRender=0; // default value
+		}
+
 
 	hr = GetRegInt("Editor", "ShowDragPoints", &m_fAlwaysDrawDragPoints);
 	if (hr != S_OK)
@@ -3516,6 +3522,25 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, antialias ? BST_CHECKED : BST_UNCHECKED, 0);
 
+			hwndCheck = GetDlgItem(hwndDlg, 211); //HardwareRender
+			int hardrend;
+			hr = GetRegInt("Player", "HardwareRender", &hardrend);
+			if (hr != S_OK)
+				{
+				hardrend = fFalse;
+				}
+			SendMessage(hwndCheck, BM_SETCHECK, hardrend ? BST_CHECKED : BST_UNCHECKED, 0);
+
+			hwndCheck = GetDlgItem(hwndDlg, 216); //AlternateRender
+			int altrender;
+			hr = GetRegInt("Player", "AlternateRender", &altrender);
+			if (hr != S_OK)
+				{
+				altrender = fFalse; // The default
+				}
+			SendMessage(hwndCheck, BM_SETCHECK, altrender ? BST_CHECKED : BST_UNCHECKED, 0);
+
+
 			int widthcur = 0;
 			//int indexcur = -1;
 			hr = GetRegInt("Player", "Width", &widthcur);
@@ -3590,17 +3615,28 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							int checkblit = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "CheckBlit", REG_DWORD, &checkblit, 4);
 
-							hwndCheck = GetDlgItem(hwndDlg, IDC_SHADOW);
-							int shadow = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
+							HWND hwndShadows = GetDlgItem(hwndDlg, IDC_SHADOW);
+							int shadow = SendMessage(hwndShadows, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "BallShadows", REG_DWORD, &shadow, 4);
 
-							hwndCheck = GetDlgItem(hwndDlg, IDC_DECAL);
-							int decal = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
+							HWND hwndDecals = GetDlgItem(hwndDlg, IDC_DECAL);
+							int decal = SendMessage(hwndDecals, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "BallDecals", REG_DWORD, &decal, 4);
 							
-							hwndCheck = GetDlgItem(hwndDlg, IDC_ANTIALIAS);
-							int antialias = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
+							HWND hwndAlias = GetDlgItem(hwndDlg, IDC_ANTIALIAS);
+							int antialias = SendMessage(hwndAlias, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "BallAntialias", REG_DWORD, &antialias, 4);
+
+							HWND hwndHWR = GetDlgItem(hwndDlg, 211);
+							int hardrend = SendMessage(hwndHWR, BM_GETCHECK, 0, 0);
+							SetRegValue("Player", "HardwareRender", REG_DWORD, &hardrend, 4);
+							g_pvp->m_pdd.m_fHardwareAccel = (hardrend != 0);
+
+							HWND hwndARend = GetDlgItem(hwndDlg, 216);
+							int altrend = SendMessage(hwndARend, BM_GETCHECK, 0, 0);
+							SetRegValue("Player", "AlternateRender", REG_DWORD, &altrend, 4);
+							g_pvp->m_pdd.m_fAlternateRender = (altrend != 0);
+
 
 							EndDialog(hwndDlg, TRUE);
 							}

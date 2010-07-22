@@ -167,6 +167,8 @@ public:
 	BOOL m_fBackglassView; // Whether viewing the playfield or screen layout
 
 	BOOL m_fAlwaysDrawDragPoints;
+	BOOL m_fHardwareAccel;
+	BOOL m_fAlternateRender;
 	BOOL m_fAlwaysDrawLightCenters;
 
 	int m_securitylevel;
