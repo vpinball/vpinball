@@ -438,19 +438,20 @@ void PinInput::FireKeyEvent( int dispid, int key )
     else if( mkey == g_pplayer->m_rgKeys[eVolumeUp]		  ) val |= PININ_VOL_UP;
     else if( mkey == g_pplayer->m_rgKeys[eVolumeDown]      ) val |= PININ_VOL_DOWN;
     else if( mkey == g_pplayer->m_rgKeys[eExitGame]        ) val |= PININ_EXITGAME;
+
     else if( mkey == DIK_ESCAPE ) val |= PININ_EXITGAME;
 	else if( mkey == DIK_UP     ) val |= PININ_START;
 	else if( mkey == DIK_1      ) val |= PININ_START;
 	else if( mkey == DIK_5      ) val |= PININ_COIN1;
 	else if( mkey == DIK_6      ) val |= PININ_COIN2;
 	else if( mkey == DIK_DOWN   ) val |= PININ_PLUNGE;
-	else if( mkey == DIK_EQUALS ) val |= PININ_VOL_UP;
-	else if( mkey == DIK_MINUS  ) val |= PININ_VOL_DOWN;
+//	else if( mkey == DIK_EQUALS ) val |= PININ_VOL_UP;
+//	else if( mkey == DIK_MINUS  ) val |= PININ_VOL_DOWN;
 	else if( mkey == DIK_7      ) val |= PININ_TEST;
 	else if( mkey == DIK_T      ) val |= PININ_TEST;
 	else if( mkey == DIK_8      ) val |= PININ_SERVICE1;
 	else if( mkey == DIK_3      ) val |= PININ_DBA;
-		
+
 	// Check the the mkey is down.
 	if( dispid == DISPID_GameEvents_KeyDown )
 	{
@@ -748,14 +749,14 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 	{
 		if( input->dwSequence == APP_KEYBOARD )
 		{
-			if( input->dwOfs == DIK_F11 )
+			if( input->dwOfs == g_pplayer->m_rgKeys[eFrameCount])
 			{
 				if (input->dwData & 0x80)
 				{
 					g_pplayer->ToggleFPS();
 				}
 			}
-			else if( input->dwOfs == DIK_O )
+			else if( input->dwOfs == g_pplayer->m_rgKeys[eDBGBalls])
 			{	
 				// Activate on edge only.
 				if (input->dwData & 0x80)
