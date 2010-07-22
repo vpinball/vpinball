@@ -435,8 +435,8 @@ void PinInput::FireKeyEvent( int dispid, int key )
     else if( mkey == g_pplayer->m_rgKeys[eAddCreditKey]    ) val |= PININ_COIN1;
     else if( mkey == g_pplayer->m_rgKeys[eAddCreditKey2]   ) val |= PININ_DBA;
     else if( mkey == g_pplayer->m_rgKeys[eStartGameKey]    ) val |= PININ_START;
-    else if( mkey == g_pplayer->m_rgKeys[eVolumeUp]		  ) val |= PININ_VOL_UP;
-    else if( mkey == g_pplayer->m_rgKeys[eVolumeDown]      ) val |= PININ_VOL_DOWN;
+//    else if( mkey == g_pplayer->m_rgKeys[eVolumeUp]		  ) val |= PININ_VOL_UP;
+//    else if( mkey == g_pplayer->m_rgKeys[eVolumeDown]      ) val |= PININ_VOL_DOWN;
     else if( mkey == g_pplayer->m_rgKeys[eExitGame]        ) val |= PININ_EXITGAME;
     else if( mkey == DIK_ESCAPE ) val |= PININ_EXITGAME;
 	else if( mkey == DIK_UP     ) val |= PININ_START;
@@ -806,22 +806,22 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON4 )	&& (uShockType == 1)) // volume up
-				{
-					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
-				}
-				else if(( input->dwOfs == DIJOFS_BUTTON5 )	&& (uShockType == 2)) // volume up
-				{
-					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
-				}
-				else if(( input->dwOfs == DIJOFS_BUTTON3 )	&& (uShockType == 1)) // volume down
-				{
-					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
-				}
-				else if(( input->dwOfs == DIJOFS_BUTTON6 )	&& (uShockType == 2)) // volume down
-				{
-					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
-				}
+//				else if(( input->dwOfs == DIJOFS_BUTTON4 )	&& (uShockType == 1)) // volume up
+//				{
+//					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+//				}
+//				else if(( input->dwOfs == DIJOFS_BUTTON5 )	&& (uShockType == 2)) // volume up
+//				{
+//					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+//				}
+//				else if(( input->dwOfs == DIJOFS_BUTTON3 )	&& (uShockType == 1)) // volume down
+//				{
+//					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+//				}
+//				else if(( input->dwOfs == DIJOFS_BUTTON6 )	&& (uShockType == 2)) // volume down
+//				{
+//					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+//				}
 				else if(( input->dwOfs == DIJOFS_BUTTON11 )	&& (uShockType == 1)) // coin 1
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
