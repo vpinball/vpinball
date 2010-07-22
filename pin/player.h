@@ -50,6 +50,8 @@ enum EnumAssignKeys
 	eRightTiltKey,
 	eCenterTiltKey,
 	ePlungerKey,
+	eFrameCount,
+	eDBGBalls,
 	eAddCreditKey,
 	eAddCreditKey2,
 	eStartGameKey,
