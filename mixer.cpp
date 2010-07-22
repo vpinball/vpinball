@@ -102,8 +102,8 @@ static void set_cp_master_volume()
 {
     F32 modded_volume = gMixerVolume * volume_modulation;
 
-    if( modded_volume < 1.0f ) modded_volume = 1.0f;
-    if( modded_volume > 1.0f ) modded_volume = 1.0f;
+    if( modded_volume < 0.01f ) modded_volume = 0.01f; //hardcap minimum
+    if( modded_volume > 1.0f ) modded_volume = 1.0f; //hardcap maximum
 
 	DWORD dwVal = (DWORD) ( ((F32)m_dwMinimum) + ( modded_volume * modded_volume ) * ((F32)(m_dwMaximum-m_dwMinimum)));
 
@@ -136,8 +136,8 @@ void mixer_volume( F32 vol )
 {
 	if(!nmixers) return;
 
-	if( vol < 1.0f ) vol = 1.0f; //force to maximum volume
-	if( vol > 1.0f ) vol = 1.0f;
+	if( vol < 0.01f ) vol = 0.01f;//hardcap minimum
+	if( vol > 1.0f ) vol = 1.0f;//hardcap maximum
 
 	if(vol == gMixerVolume) return;
 
@@ -180,7 +180,7 @@ F32 mixer_get_volume()
 	}
 
     if( volume_modulation != 0.0f) gMixerVolume /= volume_modulation;
-    else gMixerVolume = 1.0f; // mute force to maximum volume
+    else gMixerVolume = 0.01f; // mute is impossible now
 
 	return gMixerVolume;
 }
@@ -211,8 +211,6 @@ const U32 volume_adjustment_drop_color = 0x0000001f;
 
 void mixer_draw()
 {
-	return; //not using volume controls so don't draw volume bars
-
 	RenderStateType		RestoreRenderState;
 	TextureStateType	RestoreTextureState;
 	D3DMATRIX			RestoreWorldMatrix;
