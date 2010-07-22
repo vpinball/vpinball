@@ -5010,6 +5010,42 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowText(hwndControl, rgszKeyName[key]);
 			SetWindowLong(hwndControl, GWL_USERDATA, key);
 
+			hr = GetRegInt("Player","FrameCount", &key);
+			if (hr != S_OK || key > 0xdd)
+				{
+				key = DIK_F11;
+				}
+			hwndControl = GetDlgItem(hwndDlg, IDC_FRAMECOUNT);
+			SetWindowText(hwndControl, rgszKeyName[key]);
+			SetWindowLong(hwndControl, GWL_USERDATA, key);
+
+			hr = GetRegInt("Player","VolumeUp", &key);
+			if (hr != S_OK || key > 0xdd)
+				{
+				key = DIK_MINUS;
+				}
+			hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEUP);
+			SetWindowText(hwndControl, rgszKeyName[key]);
+			SetWindowLong(hwndControl, GWL_USERDATA, key);
+
+			hr = GetRegInt("Player","VolumeDown", &key);
+			if (hr != S_OK || key > 0xdd)
+				{
+				key = DIK_EQUALS;
+				}
+			hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEDN);
+			SetWindowText(hwndControl, rgszKeyName[key]);
+			SetWindowLong(hwndControl, GWL_USERDATA, key);
+
+			hr = GetRegInt("Player","DebugBalls", &key);
+			if (hr != S_OK || key > 0xdd)
+				{
+				key = DIK_O;
+				}
+			hwndControl = GetDlgItem(hwndDlg, IDC_DEBUGBALL);
+			SetWindowText(hwndControl, rgszKeyName[key]);
+			SetWindowLong(hwndControl, GWL_USERDATA, key);
+
 			hr = GetRegInt("Player","RMagnaSave", &key);
 			if (hr != S_OK || key > 0xdd)
 				{
@@ -5087,6 +5123,22 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
 				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
 
+				hwndButton = GetDlgItem(hwndDlg, IDC_FRAMECOUNTBUTTON);
+				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
+				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+
+				hwndButton = GetDlgItem(hwndDlg, IDC_VOLUPBUTTON);
+				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
+				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+
+				hwndButton = GetDlgItem(hwndDlg, IDC_VOLDOWNBUTTON);
+				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
+				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+
+				hwndButton = GetDlgItem(hwndDlg, IDC_DEBUGBALLSBUTTON);
+				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
+				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+
 				hwndButton = GetDlgItem(hwndDlg, IDC_RMAGSAVEBUTTON);
 				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
 				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
@@ -5159,6 +5211,10 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						case IDC_ADDCREDITBUTTON2:
 						case IDC_STARTGAMEBUTTON:
 						case IDC_EXITGAMEBUTTON:
+						case IDC_FRAMECOUNTBUTTON:
+						case IDC_DEBUGBALLSBUTTON:
+						case IDC_VOLUPBUTTON:
+						case IDC_VOLDOWNBUTTON:
 						case IDC_RMAGSAVEBUTTON:
 						case IDC_LMAGSAVEBUTTON:
 						case IDC_MECHTILTBUTTON:
@@ -5206,6 +5262,22 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 								case IDC_EXITGAMEBUTTON:
 									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_EXITGAME);
+									break;
+
+								case IDC_FRAMECOUNTBUTTON:
+									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_FRAMECOUNT);
+									break;
+
+								case IDC_VOLUPBUTTON:
+									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_VOLUMEUP);
+									break;
+
+								case IDC_VOLDOWNBUTTON:
+									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_VOLUMEDN);
+									break;
+
+								case IDC_DEBUGBALLSBUTTON:
+									hwndKeyWindow = GetDlgItem(hwndDlg, IDC_DEBUGBALL);
 									break;
 
 								case IDC_RMAGSAVEBUTTON:
@@ -5287,6 +5359,22 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							hwndControl = GetDlgItem(hwndDlg, IDC_EXITGAME);
 							key = GetWindowLong(hwndControl, GWL_USERDATA);
 							SetRegValue("Player", "ExitGameKey", REG_DWORD, &key, 4);
+
+							hwndControl = GetDlgItem(hwndDlg, IDC_FRAMECOUNT);
+							key = GetWindowLong(hwndControl, GWL_USERDATA);
+							SetRegValue("Player", "FrameCount", REG_DWORD, &key, 4);
+
+							hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEUP);
+							key = GetWindowLong(hwndControl, GWL_USERDATA);
+							SetRegValue("Player", "VolumeUp", REG_DWORD, &key, 4);
+
+							hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEDN);
+							key = GetWindowLong(hwndControl, GWL_USERDATA);
+							SetRegValue("Player", "VolumeDown", REG_DWORD, &key, 4);
+
+							hwndControl = GetDlgItem(hwndDlg, IDC_DEBUGBALL);
+							key = GetWindowLong(hwndControl, GWL_USERDATA);
+							SetRegValue("Player", "DebugBalls", REG_DWORD, &key, 4);
 
 							hwndControl = GetDlgItem(hwndDlg, IDC_RMAGSAVE);
 							key = GetWindowLong(hwndControl, GWL_USERDATA);

@@ -425,21 +425,30 @@
 #define IDI_PLAY                        369
 #define IDC_TREE1                       369
 #define IDI_PAUSE                       370
+#define IDC_TAB1                        370
 #define IDI_STEP                        371
 #define IDB_TARGET                      376
 #define IDB_TB_DEBUG                    377
 #define IDD_COMLIST                     378
 #define IDD_PROPKICKER_STATE            379
-#define IDD_RESOLVENAMECONFLICT			380
-#define IDC_CONFLICTINGNAME				380
-#define IDC_RESOLVEDNAME				381
-#define IDC_USEDEFAULTNAMES				382
+#define IDD_RESOLVENAMECONFLICT         380
+#define IDC_CONFLICTINGNAME             380
+#define IDC_RESOLVEDNAME                381
+#define IDC_USEDEFAULTNAMES             382
 #define IDR_TABLE_NEW                   383
 #define IDC_ADDCREDITBUTTON2            400
 #define IDC_ADDCREDIT2                  401
 #define IDC_ADDCREDITKEY2               401
 #define IDC_EXITGAME                    402
 #define IDC_EXITGAMEBUTTON              403
+#define IDC_FRAMECOUNTBUTTON            404
+#define IDC_FRAMECOUNT                  405
+#define IDC_VOLDOWNBUTTON               406
+#define IDC_VOLUMEDN                    407
+#define IDC_VOLUPBUTTON                 408
+#define IDC_VOLUMEUP                    409
+#define IDC_DEBUGBALLSBUTTON            410
+#define IDC_DEBUGBALL                   411
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768
@@ -486,7 +495,7 @@
 #define ID_REPLACE                      32830
 #define ID_EDIT_EDITOROPTIONS           32831
 #define IDC_PASTEAT                     32836
-#define IDC_PASTE_PRESERVINGNAMES		32837
+#define IDC_PASTE_PRESERVINGNAMES       32837
 #define ID_TABLE_TABLEINFO              32838
 #define ID_PREFERENCES_SECURITYOPTIONS  32839
 #define IDC_COMCONTROL                  32840
@@ -497,7 +506,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        384
 #define _APS_NEXT_COMMAND_VALUE         32842
-#define _APS_NEXT_CONTROL_VALUE         370
+#define _APS_NEXT_CONTROL_VALUE         371
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
