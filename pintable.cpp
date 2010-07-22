@@ -3139,13 +3139,6 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 
 BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	{
-//	if (id == FID(HRD3)) 
-//		{	
-//		int tmp;
-//		pbr->GetBool(&tmp);
-//		GetRegInt("Player", "HardwareRender", &tmp);
-//		g_pvp->m_pdd.m_fHardwareAccel = (tmp != 0);
-//		}
 	if (id == FID(BLT3))
 		{	
 		int tmp;
