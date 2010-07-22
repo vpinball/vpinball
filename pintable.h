@@ -451,7 +451,6 @@ END_CONNECTION_POINT_MAP()
 
     static int m_tblNumStartBalls;	// The number of balls that are on the table at startup minus the current player ball.
 	static int NumStartBalls();		// Returns the number of start balls.
-
 	BOOL m_tblAccelerometer;		// true if electronic accelerometer enabled
 	BOOL m_tblAccelNormalMount;		// true is Normal Mounting (Left Hand Coordinates)
     BOOL m_tblAutoStartEnabled;

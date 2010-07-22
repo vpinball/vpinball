@@ -337,6 +337,13 @@ void VPinball::InitRegValues()
 	{
 	HRESULT hr;
 
+	hr = GetRegInt("Player", "HardwareRender", &m_fHardwareAccel);
+	if (hr != S_OK)
+		{
+		g_pvp->m_pdd.m_fHardwareAccel = 0; // default value
+		}
+
+
 	hr = GetRegInt("Editor", "ShowDragPoints", &m_fAlwaysDrawDragPoints);
 	if (hr != S_OK)
 		{
