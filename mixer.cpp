@@ -211,6 +211,8 @@ const U32 volume_adjustment_drop_color = 0x0000001f;
 
 void mixer_draw()
 {
+	return; //not using volume controls so don't draw volume bars
+
 	RenderStateType		RestoreRenderState;
 	TextureStateType	RestoreTextureState;
 	D3DMATRIX			RestoreWorldMatrix;
