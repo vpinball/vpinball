@@ -12,6 +12,7 @@
 
 #define MIN_ZOOM 0.126f // purposely make them offset from powers to 2 to account for roundoff error
 #define MAX_ZOOM 63.9f
+int DeadZ;
 
 #define MAX_TEXTURE_SIZE 4096
 
@@ -171,6 +172,8 @@ public:
 	STDMETHOD(put_UseD3DBlit)(/*[in]*/ VARIANT_BOOL newVal);
 	/////////////////////////////////////////////
 
+	STDMETHOD(get_DeadZone)(/*[out, retval]*/  int *pVal);
+	STDMETHOD(put_DeadZone)(/*[in]*/ int newVal);
 	STDMETHOD(get_JoltAmount)(/*[out, retval]*/  int *pVal);
 	STDMETHOD(put_JoltAmount)(/*[in]*/ int newVal);
 	STDMETHOD(get_TiltAmount)(/*[out, retval]*/ int *pVal);
@@ -484,7 +487,8 @@ END_CONNECTION_POINT_MAP()
     int m_custom_coins;
 	
 	int m_jolt_amount;
-	int m_tilt_amount;	
+	int m_tilt_amount;
+	int DeadZ;
 	int m_jolt_trigger_time;
 	int m_tilt_trigger_time;
 

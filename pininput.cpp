@@ -89,7 +89,7 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
         dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
 		dipdw.diph.dwObj        = pdidoi->dwType; // Specify the enumerated axis
 		dipdw.diph.dwHow        = DIPH_BYID;         
-		dipdw.dwData            = 300; //used to be 0 -- 300 changes deadzone to 3% of total range
+		dipdw.dwData            = g_pplayer->DeadZ*100; //used to be 0 -- 300 changes deadzone to 3% of total range
  
         // Set the deadband to zero
         if( FAILED( ppinput->m_pJoystick[e_JoyCnt]->SetProperty( DIPROP_DEADZONE, &dipdw.diph))) 
