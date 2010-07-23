@@ -154,7 +154,8 @@ public:
 	float m_AccelMAmp;			// manual input gain, generally from joysticks
 
 	U32 m_jolt_amount;
-	U32 m_tilt_amount;	
+	U32 m_tilt_amount;
+	int DeadZ;
 	U32 m_jolt_trigger_time;
 	U32 m_tilt_trigger_time;
 
