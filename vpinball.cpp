@@ -347,7 +347,7 @@ void VPinball::InitRegValues()
 	hr = GetRegInt("Player", "DeadZone", &DeadZ);
 	if (hr != S_OK)
 		{
-		DeadZ = 3; // default value
+		DeadZ = 0; // default value
 		}
 	SetRegValue("Player", "DeadZone", REG_DWORD, &DeadZ, 4);
 

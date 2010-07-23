@@ -1357,7 +1357,7 @@ BEGIN
     LTEXT           "&Global Difficulty Level",-1,7,92,73,8
     LTEXT           "Table &Field Height",-1,7,50,74,8
     LTEXT           "Tbl Slope &Max Difficulty",-1,7,78,74,8
-    CONTROL         "",218,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,4,227,68,15
+    CONTROL         "",IDC_DEADZSLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,4,227,68,15
     EDITTEXT        217,81,231,40,12,ES_AUTOHSCROLL
     LTEXT           "Dead Zone",-1,46,220,40,8
 END

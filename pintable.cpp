@@ -7727,7 +7727,7 @@ STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
 		DeadZ = 0; // The default
 		}
 /*	HWND hwndControl;
-	hwndControl = GetDlgItem(IDD_PROPTABLE_PHYSICS, IDC_DEADZ_SLIDER);
+	hwndControl = GetDlgItem(IDD_PROPTABLE_PHYSICS, IDC_DEADZSLIDER);
 	::SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
 	::SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0);
 	::SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1);
@@ -7741,7 +7741,7 @@ STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
 STDMETHODIMP PinTable::put_DeadSlider(int newVal)
 {
 /*	HWND hwndControl;
-	hwndControl = GetDlgItem(IDD_PROPTABLE_PHYSICS, IDC_DEADZ_SLIDER);
+	hwndControl = GetDlgItem(IDD_PROPTABLE_PHYSICS, IDC_DEADZSLIDER);
 	DeadZ = SendMessage(hwndControl, TBM_GETPOS, 0, 0);
 	SetRegValue("Player", "DeadZone", REG_DWORD, &DeadZ, 4);
 */
