@@ -172,6 +172,8 @@ public:
 	STDMETHOD(put_UseD3DBlit)(/*[in]*/ VARIANT_BOOL newVal);
 	/////////////////////////////////////////////
 
+	STDMETHOD(get_DeadSlider)(/*[out, retval]*/  int *pVal);
+	STDMETHOD(put_DeadSlider)(/*[in]*/ int newVal);
 	STDMETHOD(get_DeadZone)(/*[out, retval]*/  int *pVal);
 	STDMETHOD(put_DeadZone)(/*[in]*/ int newVal);
 	STDMETHOD(get_JoltAmount)(/*[out, retval]*/  int *pVal);

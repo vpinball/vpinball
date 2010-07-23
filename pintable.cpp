@@ -7719,36 +7719,48 @@ STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
 }
 
 ///////////////////////////////////////////////////////////
-
-STDMETHODIMP PinTable::get_DeadZone(int *pVal)
-{
-	if (*pVal>10) *pVal=10;
-	if (*pVal<0) *pVal=0;
-
-	*pVal = (g_pplayer) ? DeadZ : DeadZ; //VB Script or VP Editor
-
-	return S_OK;
-
-/*	const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
+STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
+	{
+	const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
 	if (hr != S_OK)
 		{
-		DeadZ = 30; // The default
+		DeadZ = 0; // The default
 		}
-	HWND hwndControl;
-	hwndControl = GetDlgItem(IDD_PROPTABLE_PHYSICS, IDC_DEADZSLIDER);
+/*	HWND hwndControl;
+	hwndControl = GetDlgItem(IDD_PROPTABLE_PHYSICS, IDC_DEADZ_SLIDER);
 	::SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
 	::SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0);
 	::SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1);
 	::SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 10);
 	::SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 10, 0);
 	::SendMessage(hwndControl, TBM_SETPOS, TRUE, DeadZ);
+*/
+	return S_OK;
+}
 
-	return S_OK;*/
+STDMETHODIMP PinTable::put_DeadSlider(int newVal)
+{
+/*	HWND hwndControl;
+	hwndControl = GetDlgItem(IDD_PROPTABLE_PHYSICS, IDC_DEADZ_SLIDER);
+	DeadZ = SendMessage(hwndControl, TBM_GETPOS, 0, 0);
+	SetRegValue("Player", "DeadZone", REG_DWORD, &DeadZ, 4);
+*/
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_DeadZone(int *pVal)
+{
+	if (*pVal>100) *pVal=100;
+	if (*pVal<0) *pVal=0;
+
+	*pVal = (g_pplayer) ? DeadZ : DeadZ; //VB Script or VP Editor
+
+	return S_OK;
 }
 
 STDMETHODIMP PinTable::put_DeadZone(int newVal)
 {
-	if (newVal>10) newVal=10;
+	if (newVal>100) newVal=100;
 	if (newVal<0) newVal=0;
 
 	SetRegValue("Player", "DeadZone", REG_DWORD, &newVal, 4);
