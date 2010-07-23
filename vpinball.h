@@ -169,6 +169,7 @@ public:
 	BOOL m_fAlwaysDrawDragPoints;
 	BOOL m_fHardwareAccel;
 	BOOL m_fAlternateRender;
+	int DeadZ;
 	BOOL m_fAlwaysDrawLightCenters;
 
 	int m_securitylevel;

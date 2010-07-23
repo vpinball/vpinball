@@ -337,18 +337,25 @@ void VPinball::InitRegValues()
 	{
 	HRESULT hr;
 
+
 	hr = GetRegInt("Player", "HardwareRender", &m_fHardwareAccel);
 	if (hr != S_OK)
 		{
 		g_pvp->m_pdd.m_fHardwareAccel = 0; // default value
 		}
 
+	hr = GetRegInt("Player", "DeadZone", &DeadZ);
+	if (hr != S_OK)
+		{
+		DeadZ = 3; // default value
+		}
+	SetRegValue("Player", "DeadZone", REG_DWORD, &DeadZ, 4);
+
 	hr = GetRegInt("Player", "AlternateRender", &m_fAlternateRender);
 	if (hr != S_OK)
 		{
 		g_pvp->m_pdd.m_fAlternateRender=0; // default value
 		}
-
 
 	hr = GetRegInt("Editor", "ShowDragPoints", &m_fAlwaysDrawDragPoints);
 	if (hr != S_OK)

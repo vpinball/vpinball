@@ -1321,7 +1321,7 @@ BEGIN
     LTEXT           "Grid Si&ze",-1,7,25,32,9
 END
 
-IDD_PROPTABLE_PHYSICS DIALOGEX 0, 0, 125, 226
+IDD_PROPTABLE_PHYSICS DIALOGEX 0, 0, 125, 249
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1340,7 +1340,7 @@ BEGIN
     EDITTEXT        205,81,166,40,12,ES_AUTOHSCROLL
     EDITTEXT        206,81,180,40,12,ES_AUTOHSCROLL
     EDITTEXT        207,81,194,40,12,ES_AUTOHSCROLL
-    EDITTEXT        208,81,208,40,12,ES_AUTOHSCROLL
+    EDITTEXT        208,81,207,40,12,ES_AUTOHSCROLL
     LTEXT           "Top &Glass Height",-1,7,36,74,8
     LTEXT           "Table &Height (Length)",-1,7,22,74,8
     LTEXT           "Table &Width",-1,7,10,74,8
@@ -1357,6 +1357,8 @@ BEGIN
     LTEXT           "&Global Difficulty Level",-1,7,92,73,8
     LTEXT           "Table &Field Height",-1,7,50,74,8
     LTEXT           "Tbl Slope &Max Difficulty",-1,7,78,74,8
+    CONTROL         "",220,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,4,227,68,15
+    EDITTEXT        217,81,231,40,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 81
@@ -1987,7 +1989,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 121
         TOPMARGIN, 7
-        BOTTOMMARGIN, 220
+        BOTTOMMARGIN, 243
     END
 
     IDD_PROPTABLE_BALL, DIALOG
