@@ -604,7 +604,6 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 	m_jolt_amount = (U32)m_ptable->m_jolt_amount;
 	m_tilt_amount = (U32)m_ptable->m_tilt_amount;
-//	DeadZ = (int)m_ptable->DeadZ;
 	m_jolt_trigger_time = (U32)m_ptable->m_jolt_trigger_time;
 	m_tilt_trigger_time = (U32)m_ptable->m_tilt_trigger_time;
 
