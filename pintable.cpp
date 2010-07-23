@@ -1212,6 +1212,12 @@ void PinTable::InitPostLoad(VPinball *pvp)
 	m_pcv->AddItem(m_psgt, fTrue);
 	m_pcv->AddItem(m_pcv->m_pdm, fFalse);
 
+	const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
+	if (hr != S_OK)
+			{
+			g_pplayer->DeadZ = 0;
+			}
+
 	CreateTableWindow();
 
 	SetMyScrollInfo();
@@ -7713,6 +7719,52 @@ STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
 }
 
 ///////////////////////////////////////////////////////////
+
+STDMETHODIMP PinTable::get_DeadZone(int *pVal)
+{
+	if (*pVal>10) *pVal=10;
+	if (*pVal<0) *pVal=0;
+
+	*pVal = (g_pplayer) ? DeadZ : DeadZ; //VB Script or VP Editor
+
+	return S_OK;
+
+/*	const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
+	if (hr != S_OK)
+		{
+		DeadZ = 30; // The default
+		}
+	HWND hwndControl;
+	hwndControl = GetDlgItem(IDD_PROPTABLE_PHYSICS, IDC_DEADZSLIDER);
+	::SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
+	::SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0);
+	::SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1);
+	::SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 10);
+	::SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 10, 0);
+	::SendMessage(hwndControl, TBM_SETPOS, TRUE, DeadZ);
+
+	return S_OK;*/
+}
+
+STDMETHODIMP PinTable::put_DeadZone(int newVal)
+{
+	if (newVal>10) newVal=10;
+	if (newVal<0) newVal=0;
+
+	SetRegValue("Player", "DeadZone", REG_DWORD, &newVal, 4);
+	if (g_pplayer) DeadZ = (int)newVal; //VB Script
+	else
+		{						//VP Editor		
+		const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
+		if (hr != S_OK)
+			{
+			STARTUNDO
+			g_pplayer->DeadZ = newVal;
+			STOPUNDO
+			}
+		}
+	return S_OK;
+}
 
 STDMETHODIMP PinTable::get_JoltAmount(int *pVal)
 {

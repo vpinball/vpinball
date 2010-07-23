@@ -40,7 +40,6 @@ public:
 	//void GetShiftState(BOOL &fLeft, BOOL &fRight);
 
 	void FireKeyEvent( int dispid, int keycode );
-
 	int  QueueFull   ();
 	int  QueueEmpty  ();
 	void AdvanceHead (); // called from sep thread
