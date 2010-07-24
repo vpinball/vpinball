@@ -45,7 +45,7 @@ void Bumper::SetDefaults()
 	m_d.m_tdr.m_TimerInterval = 100;
 
 	m_d.m_state = LightStateOff;
-	strcpy(m_rgblinkpattern, "10");
+	strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
 	m_blinkinterval = 125;
 
 	m_d.m_fFlashWhenHit = fTrue;

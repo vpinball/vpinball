@@ -180,7 +180,7 @@ void PinFont::Register()
 
 	lstrcat(szPath, "VPTemp.ttf");
 
-	strcpy(m_szTempFile, szPath);
+	strcpy_s(m_szTempFile, sizeof(m_szTempFile), szPath);
 
 	WriteToFile(m_szTempFile);
 

@@ -87,7 +87,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 	WCHAR *wzSaveName = L"AutoSave";
 	WCHAR *wzSaveExtension = L".vpt";
 	WCHAR wzSuffix[32];
-	_itow(pasp->tableindex, wzSuffix, 10);
+	_itow_s(pasp->tableindex, wzSuffix, sizeof(wzSuffix)/sizeof(WCHAR), 10);
 
 	WCHAR * const wzT = new WCHAR[MAX_PATH + 32 + lstrlenW(wzSaveName) + lstrlenW(wzSaveExtension)+ 1];
 

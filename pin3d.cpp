@@ -1784,7 +1784,7 @@ BOOL Pin3D::GetCacheFileName(char *szFileName)
 
 	TitleAndPathFromFilename(g_pplayer->m_ptable->m_szFileName, szFileName);
 
-	strcat(szFileName, ".vpcache");
+	strcat_s(szFileName, _MAX_PATH, ".vpcache");
 
 	return fTrue;
 	}

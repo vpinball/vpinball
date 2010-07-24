@@ -504,10 +504,10 @@ void CodeViewer::SetEnabled(BOOL fEnabled)
 void CodeViewer::SetCaption(char *szCaption)
 	{
 	char szT[_MAX_PATH];
-	strcpy(szT, szCaption);
+	strcpy_s(szT, sizeof(szT), szCaption);
 	LocalString ls(IDS_SCRIPT);
-	strcat(szT, " ");
-	strcat(szT, ls.m_szbuffer);
+	strcat_s(szT, sizeof(szT), " ");
+	strcat_s(szT, sizeof(szT), ls.m_szbuffer);
 	SetWindowText(m_hwndMain, szT);
 	}
 
@@ -692,7 +692,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		}
 
 	OLECHAR wszOutput[1024];
-	swprintf(wszOutput, L"Line: %d\n%s",
+	swprintf_s(wszOutput, sizeof(wszOutput)/sizeof(OLECHAR), L"Line: %d\n%s",
 			  nLine, ei.bstrDescription);
 
 	SysFreeString(bstr);
@@ -1775,7 +1775,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 					pcv->m_lastline = line;
 
-					sprintf(szT, "Line %u, Col %u", line, pscn->position-linecharindex);
+					sprintf_s(szT, sizeof(szT), "Line %u, Col %u", line, pscn->position-linecharindex);
 					SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (long)szT);
 					}
 					break;

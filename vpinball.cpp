@@ -407,7 +407,7 @@ void VPinball::InitRegValues()
 		{
 		char szRegName[MAX_PATH];
 
-		sprintf(szRegName, "TableFileName%d", i);
+		sprintf_s(szRegName, "TableFileName%d", i);
 		m_szRecentTableList[i][0] = 0x00;
 		hr = GetRegString("RecentDir",szRegName, m_szRecentTableList[i], MAX_PATH);
 		}
@@ -552,7 +552,7 @@ void VPinball::SetPosCur(float x, float y)
 	char szT[256];
 
 #ifndef PERFTEST
-	sprintf(szT, "%.4f, %.4f", x, y);
+	sprintf_s(szT, "%.4f, %.4f", x, y);
 #endif
 	SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (long)szT);
 	}
@@ -562,7 +562,7 @@ void VPinball::SetObjectPosCur(float x, float y)
 	char szT[256];
 
 #ifndef PERFTEST
-	sprintf(szT, "%.4f, %.4f", x, y);
+	sprintf_s(szT, "%.4f, %.4f", x, y);
 #endif
 	SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (long)szT);
 	}
@@ -1762,7 +1762,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 			// if this entry is empty then all the rest are empty
 			if (m_szRecentTableList[i][0] == 0x00) break;
 			// write entry to the registry
-			sprintf(szRegName, "TableFileName%d", i);
+			sprintf_s(szRegName, sizeof(szRegName), "TableFileName%d", i);
 			SetRegValue("RecentDir", szRegName, REG_SZ, m_szRecentTableList[i], strlen(m_szRecentTableList[i]));
 			}
 		} // (szfilename != NULL)
@@ -2540,7 +2540,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 							if(ret)
 								{
-								strcpy(szInitialDir, szFileName);
+								strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
 
 								int len = lstrlen(szFileName);
 								if (len < ofn.nFileOffset)
@@ -3046,7 +3046,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 							if(ret)
 								{
-								strcpy(szInitialDir, szFileName);
+								strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
 
 								int len = lstrlen(szFileName);
 								if (len < ofn.nFileOffset)
@@ -3259,7 +3259,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
 										PinImage * const ppi = (PinImage *)lvitem.lParam;
 
-										strcpy(szInitialDir, szFileName);
+										strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
 										szInitialDir[ofn.nFileOffset] = 0;
 										hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 
@@ -3308,7 +3308,7 @@ int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //			char szSVNRev[]= SVNREVISION;
 		
 			lstrcpy(szVersion, "Version "); //rlc add time and date to compilation version
-			_itoa(BUILD_NUMBER, szBuild, 10);
+			_itoa_s(BUILD_NUMBER, szBuild, sizeof(szBuild), 10);
 			lstrcat(szVersion, szBuild);
 //			lstrcat(szVersion, "-");
 			
@@ -3455,7 +3455,7 @@ HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpCon
 		const int widthcur = pevms->widthcur;
 		const int heightcur = pevms->heightcur;
 		const int depthcur = pevms->depthcur;
-		sprintf(szT, "%u x %u x %u", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
+		sprintf_s(szT, sizeof(szT), "%u x %u x %u", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
 		const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
 
 		VideoMode * const pvm = new VideoMode();
@@ -3689,7 +3689,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 						{
 						indexcur = i;
 						}
-					sprintf(szT, "%d x %d", xsize, xsize*3/4);
+					sprintf_s(szT, sizeof(szT), "%d x %d", xsize, xsize*3/4);
 					const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)szT);
 					VideoMode * const pvm = new VideoMode();
 					pvm->width = xsize;
@@ -3918,7 +3918,7 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 							const int ret = GetOpenFileName(&ofn);
 							if(ret)
 								{
-								strcpy(szInitialDir, szFileName);
+								strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
 								szInitialDir[ofn.nFileOffset] = 0;
 								hr = SetRegValue("RecentDir","FontDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 								pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ofn.lpstrFile);

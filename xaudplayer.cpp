@@ -178,8 +178,7 @@ int XAudPlayer::Init(char *szFileName, int volume)
 	m_fStarted = false;
 
     /* open the mp3 file (name passed as program argument */
-    file = fopen(szFileName, "rb");
-    if (file == NULL) {
+    if (fopen_s(&file, szFileName, "rb")) {
         fprintf(stderr, "cannot open input file\n");
         return 0;
     }

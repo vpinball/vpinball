@@ -63,7 +63,7 @@ private:
 		}
 		if (sSize > 0 && sSize_ <= sSize) {	// Does not allocate new buffer if the current is big enough
 			if (s && sSize_) {
-				strncpy(s, sOther, sSize_);
+				strncpy_s(s, sSize_, sOther, sSize_);
 			}
 			s[sSize_] = '\0';
 			sLen = sSize_;
@@ -97,13 +97,13 @@ public:
 	}
 	SString(int i) : sizeGrowth(sizeGrowthDefault) {
 		char number[32];
-		sprintf(number, "%0d", i);
+		sprintf_s(number, "%0d", i);
 		s = StringAllocate(number);
 		sSize = sLen = (s) ? strlen(s) : 0;
 	}
 	SString(double d, int precision) : sizeGrowth(sizeGrowthDefault) {
 		char number[32];
-		sprintf(number, "%.*f", precision, d);
+		sprintf_s(number, "%.*f", precision, d);
 		s = StringAllocate(number);
 		sSize = sLen = (s) ? strlen(s) : 0;
 	}
@@ -206,7 +206,7 @@ public:
 				s[sLen] = sep;
 				sLen++;
 			}
-			strncpy(&s[sLen], sOther, sLenOther);
+			strncpy_s(&s[sLen], sLenOther, sOther, sLenOther);
 			sLen += sLenOther;
 			s[sLen] = '\0';
 		}
@@ -325,7 +325,7 @@ public:
 		}
 		char *sNew = new char[len + 1];
 		if (sNew) {
-			strncpy(sNew, s, len);
+			strncpy_s(sNew, len, s, len);
 			sNew[len] = '\0';
 		}
 		return sNew;
