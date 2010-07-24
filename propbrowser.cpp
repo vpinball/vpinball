@@ -925,6 +925,10 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				int nScrollCode = (int) LOWORD(wParam);			// scroll bar value
 
 				if ((nScrollCode == SB_PAGELEFT)	  ||
+					(nScrollCode == SB_LINELEFT)	  ||
+					(nScrollCode == SB_LINERIGHT)	  ||
+					(nScrollCode == SB_LEFT)		  ||
+					(nScrollCode == SB_RIGHT)		  ||
 					(nScrollCode == SB_PAGERIGHT)	  ||
 					(nScrollCode == SB_THUMBTRACK) )			// update as long as button is held down
 				{
