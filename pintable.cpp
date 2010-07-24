@@ -7620,7 +7620,6 @@ STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 			STOPUNDO
 			}
 		}
-
 	return S_OK;
 }
 
