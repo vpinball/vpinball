@@ -838,7 +838,7 @@ PinTable::PinTable()
 	// Write the version of this exe to the registry.  
 	// This will be read later by the front end.
 	char Version[64];
-	sprintf ( Version, "00.85.%04d", BUILD_NUMBER );
+	sprintf_s ( Version, sizeof(Version), "00.85.%04d", BUILD_NUMBER );
 	SetRegValue ( "Version", "VPinball", REG_SZ, Version, strlen(Version) );
 
 	m_jolt_amount = 500;
@@ -1116,7 +1116,7 @@ void PinTable::Init(VPinball *pvp)
 
 	LocalString ls(IDS_TABLE);
 	lstrcpy(m_szTitle, ls.m_szbuffer/*"Table"*/);
-	_itoa(g_pvp->m_NextTableID, szSuffix, 10);
+	_itoa_s(g_pvp->m_NextTableID, szSuffix, sizeof(szSuffix), 10);
 	lstrcat(m_szTitle, szSuffix);
 	g_pvp->m_NextTableID++;
 	m_szFileName[0] = '\0';
@@ -1258,7 +1258,7 @@ void PinTable::GetUniqueName(int type, WCHAR *wzUniqueName)
 	while (!fFound)
 		{
 		WideStrCopy(wzRoot, wzName);
-		_itow(suffix, wzSuffix, 10);
+		_itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(WCHAR), 10);
 		WideStrCat(wzSuffix, wzName);
 
 		if (m_pcv->m_vcvd.GetSortedIndex(wzName) == -1)
@@ -1864,7 +1864,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 		if(ret == 0)
 			return S_FALSE;
 
-		strcpy(szInitialDir, m_szFileName);
+		strcpy_s(szInitialDir, sizeof(szInitialDir), m_szFileName);
 		szInitialDir[ofn.nFileOffset] = 0;
 		hr = SetRegValue("RecentDir","LoadDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 
@@ -2020,9 +2020,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
 				for(int i = 0; i < m_vedit.Size(); i++)
 					{
-					strcpy(szStmName, "GameItem");
-					_itoa(i, szSuffix, 10);
-					strcat(szStmName, szSuffix);
+					strcpy_s(szStmName, sizeof(szStmName), "GameItem");
+					_itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+					strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
 					MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2044,9 +2044,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
 				for (int i=0;i<m_vsound.Size();i++)
 					{
-					strcpy(szStmName, "Sound");
-					_itoa(i, szSuffix, 10);
-					strcat(szStmName, szSuffix);
+					strcpy_s(szStmName, sizeof(szStmName), "Sound");
+					_itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+					strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
 					MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2063,9 +2063,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
 				for (int i=0;i<m_vimage.Size();i++)
 					{
-					strcpy(szStmName, "Image");
-					_itoa(i, szSuffix, 10);
-					strcat(szStmName, szSuffix);
+					strcpy_s(szStmName, sizeof(szStmName), "Image");
+					_itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+					strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
 					MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2083,9 +2083,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
 				for (int i=0;i<m_vfont.Size();i++)
 					{
-					strcpy(szStmName, "Font");
-					_itoa(i, szSuffix, 10);
-					strcat(szStmName, szSuffix);
+					strcpy_s(szStmName, sizeof(szStmName), "Font");
+					_itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+					strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
 					MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2102,9 +2102,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
 				for (int i=0;i<m_vcollection.Size();i++)
 					{
-					strcpy(szStmName, "Collection");
-					_itoa(i, szSuffix, 10);
-					strcat(szStmName, szSuffix);
+					strcpy_s(szStmName, sizeof(szStmName), "Collection");
+					_itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+					strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
 					MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2571,14 +2571,14 @@ HRESULT PinTable::LoadGameFromFilename(char *szFileName)
 
 	//ASSERT(*szFileName, "Empty File Name String!");
 
-	strcpy(m_szFileName, szFileName);
+	strcpy_s(m_szFileName, sizeof(m_szFileName), szFileName);
 		{
 		MAKE_WIDEPTR_FROMANSI(wszCodeFile, szFileName);
 		if(FAILED(hr = StgOpenStorage(wszCodeFile, NULL, STGM_TRANSACTED | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
 			{
 			// TEXT
 				char msg[256];
-				sprintf( msg, "Error loading %s", m_szFileName );
+				sprintf_s( msg, sizeof(msg), "Error loading %s", m_szFileName );
 			MessageBox(g_pvp->m_hwnd, msg , "Load Error", 0);
 			return hr;
 			}
@@ -2701,9 +2701,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 				for(int i = 0; i < csubobj; i++)
 					{
 					char szSuffix[32], szStmName[64];
-					strcpy(szStmName, "GameItem");
-					_itoa(i, szSuffix, 10);
-					strcat(szStmName, szSuffix);
+					strcpy_s(szStmName, sizeof(szStmName), "GameItem");
+					_itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+					strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
 					MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2736,9 +2736,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 				for(int i = 0; i < csounds; i++)
 					{
 					char szSuffix[32], szStmName[64];
-					strcpy(szStmName, "Sound");
-					_itoa(i, szSuffix, 10);
-					strcat(szStmName, szSuffix);
+					strcpy_s(szStmName, sizeof(szStmName), "Sound");
+					_itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+					strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
 					MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2755,9 +2755,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 				for(int i = 0; i < ctextures; i++)
 					{
 					char szSuffix[32], szStmName[64];
-					strcpy(szStmName, "Image");
-					_itoa(i, szSuffix, 10);
-					strcat(szStmName, szSuffix);
+					strcpy_s(szStmName, sizeof(szStmName), "Image");
+					_itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+					strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
 					MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2774,9 +2774,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 				for(int i = 0; i < cfonts; i++)
 					{
 					char szSuffix[32], szStmName[64];
-					strcpy(szStmName, "Font");
-					_itoa(i, szSuffix, 10);
-					strcat(szStmName, szSuffix);
+					strcpy_s(szStmName, sizeof(szStmName), "Font");
+					_itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+					strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
 					MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -2797,9 +2797,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 				for(int i = 0; i < ccollection; i++)
 					{
 					char szSuffix[32], szStmName[64];
-					strcpy(szStmName, "Collection");
-					_itoa(i, szSuffix, 10);
-					strcat(szStmName, szSuffix);
+					strcpy_s(szStmName, sizeof(szStmName), "Collection");
+					_itoa_s(i, szSuffix, sizeof(szSuffix), 10);
+					strcat_s(szStmName, sizeof(szStmName), szSuffix);
 
 					MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName);
 
@@ -3400,7 +3400,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 
 			if (szCacheFileName[0])
 				{
-				strcat(szCacheFileName, ".vpcache");
+				strcat_s(szCacheFileName, sizeof(szCacheFileName), ".vpcache");
 				remove(szCacheFileName); //remove stale cache file
 				}
 			}
@@ -7503,7 +7503,7 @@ STDMETHODIMP PinTable::put_TableCaching(VARIANT_BOOL newVal)
 
 			if (szCacheFileName[0])
 				{
-				strcat(szCacheFileName, ".vpcache");
+				strcat_s(szCacheFileName, sizeof(szCacheFileName), ".vpcache");
 				remove(szCacheFileName); //remove stale cache file
 				}
 			}

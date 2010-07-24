@@ -110,9 +110,9 @@ void slintf_close_console()
 
 int file_exists( const char *filename )
 {
-	FILE *file = fopen( filename, "r" );
+	FILE *file;
 
-	if( !file ) return 0;
+	if( fopen_s(&file, filename, "r" ) ) return 0;
 	else
 	{
 		fclose( file );
@@ -145,7 +145,7 @@ void slintf( const char *str, ... )
 
 	va_start(ap,str);
 
-	/*const int len =*/ vsprintf( buffer, str, ap );
+	/*const int len =*/ vsprintf_s( buffer, sizeof(buffer), str, ap );
 
 	slintf_popup_console();
 

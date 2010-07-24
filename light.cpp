@@ -92,7 +92,7 @@ void Light::SetDefaults()
 
 	m_d.m_fDisplayImage = fFalse;
 
-	strcpy(m_rgblinkpattern, "10");
+	strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
 	m_blinkinterval = 125;
 	m_d.m_borderwidth = 0;
 	m_d.m_bordercolor = RGB(0,0,0);
@@ -1099,7 +1099,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 
 	m_d.m_color = RGB(255,255,0);
 
-	strcpy(m_rgblinkpattern, "10");
+	strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
 	m_blinkinterval = 125;
 	m_d.m_borderwidth = 0;
 	m_d.m_bordercolor = RGB(0,0,0);

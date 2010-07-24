@@ -214,7 +214,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 		//char szNum[64];
 		if (pvsel->Size() > 1)
 			{
-			sprintf(m_szHeader, "%s(%d)", szTemp, pvsel->Size());
+			sprintf_s(m_szHeader, sizeof(m_szHeader), "%s(%d)", szTemp, pvsel->Size());
 			}
 		else
 			{
@@ -484,7 +484,7 @@ void SmartBrowser::DrawHeader(HDC hdc)
 	char szText[256];
 	HFONT hfontOld;
 
-	strcpy(szText, m_szHeader);
+	strcpy_s(szText, sizeof(szText), m_szHeader);
 
 	hfontOld = (HFONT)SelectObject(hdc, m_hfontHeader);
 

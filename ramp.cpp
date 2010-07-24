@@ -1154,7 +1154,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		Pin3D *const ppin3d = &g_pplayer->m_pin3d;
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
-		float maxtu, maxtv;
+		float maxtu = 0, maxtv = 0;
 
 		D3DMATERIAL7 mtrl;
 		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =

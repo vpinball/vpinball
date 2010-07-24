@@ -144,7 +144,7 @@
 				Optimization="1"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="&quot;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include&quot;;&quot;vp-sup\inc&quot;;pin\;media"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -1079,7 +1079,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copiews in  exe production directory."
+				Description="Copies exe to production directory."
 				CommandLine="copy VPinball.exe &quot;C:\UPin\VisualPinball\data\exe&quot;"
 			/>
 		</Configuration>
@@ -1119,7 +1119,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="&quot;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include&quot;;&quot;vp-sup\inc&quot;;pin\;media"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -1132,7 +1132,7 @@
 				AssemblerListingLocation=".\ReleaseMinDependency/"
 				ObjectFile=".\ReleaseMinDependency/"
 				ProgramDataBaseFileName=".\ReleaseMinDependency/"
-				WarningLevel="4"
+				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
 				CompileAs="0"
@@ -1226,7 +1226,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="&quot;C:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include&quot;;&quot;vp-sup\inc&quot;;pin\;media"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"

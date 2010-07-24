@@ -119,28 +119,22 @@ Player::Player()
 	m_fWasteTime = fFalse;
 
 	FILE *foo;
-	foo = fopen("c:\\debug1.txt","r");
-	if (foo)
+	if (!fopen_s(&foo, "c:\\debug1.txt","r"))
 		{
 		fclose(foo);
 		m_fCheckBlt = fFalse;
 		}
-	foo = fopen("c:\\debug2.txt","r");
-	if (foo)
+	if (!fopen_s(&foo, "c:\\debug2.txt","r"))
 		{
 		fclose(foo);
 		m_fCheckBlt = fTrue;
 		}
-
-	foo = fopen("c:\\debug3.txt","r");
-	if (foo)
+	if (!fopen_s(&foo, "c:\\debug3.txt","r"))
 		{
 		fclose(foo);
 		m_fWasteTime = fTrue;
 		}
-
-	foo = fopen("c:\\debug4.txt","r");
-	if (foo)
+	if (!fopen_s(&foo, "c:\\debug4.txt","r"))
 		{
 		fclose(foo);
 		m_fWasteTime2 = fTrue;
@@ -640,7 +634,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	if (hr != S_OK)
 		{
 		char szfoo[64];
-		sprintf(szfoo, "Error code: %x",hr);
+		sprintf_s(szfoo, sizeof(szfoo), "Error code: %x",hr);
 		ShowError(szfoo);
 		return hr;
 		}
@@ -2508,13 +2502,15 @@ void Player::Render()
 		static U32 period;
 		HDC hdcNull = GetDC(NULL);
 		char szFoo[128];
+		unsigned int control_word;
 
 		// Draw the amount of video memory used.
-		int len = sprintf(szFoo, "Total Video Memory = %d", NumVideoBytes);
+		int len = sprintf_s(szFoo, sizeof(szFoo), "Total Video Memory = %d", NumVideoBytes);
 		TextOut(hdcNull, 10, 75, szFoo, len);
 
 		// Draw the framerate.
-		len = sprintf(szFoo, "%d %x %llu", m_fps, _controlfp(_PC_53, 0), m_PhysicsStepTime);
+		_controlfp_s(&control_word, _PC_53, 0);
+		len = sprintf_s(szFoo, sizeof(szFoo), "%d %x %llu", m_fps, control_word, m_PhysicsStepTime);
 		TextOut(hdcNull, 10, 10, szFoo, len);
 		period = msec()-stamp;
 		if( period > m_max ) m_max = period;
@@ -2560,26 +2556,26 @@ void Player::Render()
 	
 #ifdef _DEBUGPHYSICS
 
-		len = sprintf(szFoo, "period: %3d ms (%3d avg %10d max)      ",
+		len = sprintf_s(szFoo, sizeof(szFoo), "period: %3d ms (%3d avg %10d max)      ",
 		period, (U32)( m_total / m_count ), (U32) m_max );
 		stamp = msec();
 		TextOut(hdcNull, 10, 120, szFoo, len);
 
-		len = sprintf(szFoo, "physTimes %10d uS(%12d avg %12d max)    ",
+		len = sprintf_s(szFoo, sizeof(szFoo), "physTimes %10d uS(%12d avg %12d max)    ",
 			   	(U32)phys_period,
 			   	(U32)(m_phys_total / m_count),
 			   	m_phys_max );
 		stamp = msec();
 		TextOut(hdcNull, 10, 140, szFoo, len);
 
-		len = sprintf(szFoo, "phys:%5d iterations(%5d avg %5d max))   ",
+		len = sprintf_s(szFoo, sizeof(szFoo), "phys:%5d iterations(%5d avg %5d max))   ",
 			   	(U32)phys_iterations,
 			   	(U32)( m_phys_total_iterations / m_count ),
 				(U32)m_phys_max_iterations );
 		stamp = msec();
 		TextOut(hdcNull, 10, 160, szFoo, len);
 
-		len = sprintf(szFoo, "Hits:%5d Collide:%5d Ctacs:%5d Static:%5d Embed: %5d    ",
+		len = sprintf_s(szFoo, sizeof(szFoo), "Hits:%5d Collide:%5d Ctacs:%5d Static:%5d Embed: %5d    ",
 		c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts);
 		stamp = msec();
 		TextOut(hdcNull, 10, 180, szFoo, len);
