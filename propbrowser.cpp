@@ -930,6 +930,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					(nScrollCode == SB_LEFT)		  ||
 					(nScrollCode == SB_RIGHT)		  ||
 					(nScrollCode == SB_PAGERIGHT)	  ||
+					(nScrollCode == SB_THUMBPOSITION) ||		// updates for mouse scrollwheel
 					(nScrollCode == SB_THUMBTRACK) )			// update as long as button is held down
 				{
 					SmartBrowser *psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
