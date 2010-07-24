@@ -1,5 +1,9 @@
 #include "StdAfx.h"
 
+#if _MSC_VER <= 1310 // VC 2003 and before
+ #define _itow_s(a,b,c,d) _itow(a,b,d)
+#endif
+
 HANDLE g_hWorkerStarted;
 
 int hangsnooptimerid;

@@ -13,6 +13,18 @@
 #define RECOMPUTEBUTTONCHECK WM_USER+100
 #define RESIZE_FROM_EXPAND WM_USER+101
 
+#if _MSC_VER <= 1310 // VC 2003 and before
+bool fopen_s(FILE** f, const char *fname, const char *attr)
+{
+	*f = fopen(fname, attr);
+	return (*f != NULL);
+}
+void _controlfp_s(unsigned int *cw, const unsigned int i, const unsigned int j)
+{
+	*cw = _controlfp(i,j);
+}
+#endif
+
 float curMechPlungerPos;
 
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
