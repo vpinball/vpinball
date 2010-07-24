@@ -8,6 +8,15 @@
 
 static int sbConsole;
 
+#if _MSC_VER <= 1310 // VC 2003 and before
+bool fopen_s(FILE** f, const char *fname, const char *attr)
+{
+	*f = fopen(fname, attr);
+	return (*f != NULL);
+}
+#define vsprintf_s(a,b,c,d) vsprintf(a,c,d)
+#endif
+
 void slintf_init()
 {
 	sbConsole = 0;

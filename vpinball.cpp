@@ -10,6 +10,10 @@
 
 //#include "Freeimage.h" //ADDED BDS
 
+#if _MSC_VER <= 1310 // VC 2003 and before
+ #define _itoa_s(a,b,c,d) _itoa(a,b,d)
+#endif
+
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
 #elif defined(IMGERMAN)
