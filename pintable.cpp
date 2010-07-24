@@ -7722,11 +7722,9 @@ STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
 STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
 	{
 	const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
-	if (hr != S_OK)
-		{
-		DeadZ = 0; // The default
-		}
-/*	HWND hwndControl;
+	if (hr != S_OK)	DeadZ = 0; // The default
+
+	HWND hwndControl;
 	hwndControl = GetDlgItem(IDD_PROPTABLE_PHYSICS, IDC_DEADZSLIDER);
 	::SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
 	::SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0);
@@ -7734,17 +7732,17 @@ STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
 	::SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 10);
 	::SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 10, 0);
 	::SendMessage(hwndControl, TBM_SETPOS, TRUE, DeadZ);
-*/
+
 	return S_OK;
 }
 
 STDMETHODIMP PinTable::put_DeadSlider(int newVal)
 {
-/*	HWND hwndControl;
+	HWND hwndControl;
 	hwndControl = GetDlgItem(IDD_PROPTABLE_PHYSICS, IDC_DEADZSLIDER);
 	DeadZ = SendMessage(hwndControl, TBM_GETPOS, 0, 0);
 	SetRegValue("Player", "DeadZone", REG_DWORD, &DeadZ, 4);
-*/
+
 	return S_OK;
 }
 
