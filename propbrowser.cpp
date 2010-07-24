@@ -9,7 +9,8 @@ enum
 	eButton,
 	eCombo,
 	eColor,
-	eFont
+	eFont,
+	eSlider
 	};
 
 #define EXPANDO_EXPAND			WM_USER+100
@@ -534,7 +535,10 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 		{
 		type = eFont;
 		}
-
+	else if (!strcmp(szName, "msctls_trackbar32"))
+		{
+		type = eSlider;
+		}
 	if (type == eNotControl)
 		{
 		return;
@@ -720,6 +724,35 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 				} // !fNinch
 			}
 			break;
+
+		case eSlider:
+		{
+			VariantChangeType(&var, &var, 0, VT_I4);
+
+			int data = V_INT(&var);
+			// get the range value
+			int range = (data & 0x0000FF00) >> 8;
+			if (range == 0) range = 100;
+			// mask off the range from the data
+			data &= 0x000000FF;
+
+			// sliders hold a value between 0 and 100 in steps of 1
+			SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100)); //0 - 100 range
+			SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0); //tic mark frequency
+			SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1); //number of positions to move per keypress
+			SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 1); //number of positions to move per click
+			SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 0, 0); //ignored
+			if (!fNinch)
+			{
+				SendMessage(hwndControl, TBM_SETPOS, 1, data);
+			}
+			else
+			{
+				SendMessage(hwndControl, TBM_SETPOS, 0, data);
+			}
+		}
+		break;
+
 		}
 	}
 
@@ -884,6 +917,37 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
+		// a slider has been changed
+		case WM_HSCROLL:
+		{
+			if (lParam != NULL)									// must be scrollbar message
+			{
+				int nScrollCode = (int) LOWORD(wParam);			// scroll bar value
+
+				if ((nScrollCode == SB_PAGELEFT)	  ||
+					(nScrollCode == SB_PAGERIGHT)	  ||
+					(nScrollCode == SB_THUMBTRACK) )			// update as long as button is held down
+				{
+					SmartBrowser *psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
+					if (psb != NULL)
+					{
+						int nPos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
+
+						int dispid = GetDlgCtrlID((HWND)lParam);
+
+						CComVariant var(nPos);
+
+						psb->SetProperty(dispid, &var, FALSE);
+
+						psb->GetControlValue((HWND)lParam);
+
+						psb->RefreshProperties();
+					}
+				}
+			}
+		}
+		break;
+
 		case WM_COMMAND:
 			{
 			const int code = HIWORD(wParam);
@@ -933,6 +997,8 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						psb->SetProperty(dispid, &var, fFalse);
 
 						psb->GetControlValue((HWND)lParam); // If the new value was not valid, re-fill the control with the real value
+
+						psb->RefreshProperties();
 						}
 					}
 					break;
