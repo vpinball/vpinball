@@ -4,7 +4,7 @@
 inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 {
 	*f = fopen(fname, attr);
-	return (*f != NULL);
+	return (*f == NULL);
 }
 #endif
 
