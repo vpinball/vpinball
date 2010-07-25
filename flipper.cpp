@@ -30,49 +30,164 @@ HRESULT Flipper::Init(PinTable *ptable, float x, float y)
 
 void Flipper::SetDefaults()
 	{
-	m_d.m_StartAngle = 120;
-	m_d.m_EndAngle = 60;
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
 
-	m_d.m_BaseRadius = 26.73f;		// 15
-	m_d.m_EndRadius = 10.69f;		// 6
-	m_d.m_FlipperRadiusMax = 142.57f;	// 80
-	m_d.m_FlipperRadiusMin = 0;
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","StartAngle", &fTmp);
+	if (hr == S_OK)
+		m_d.m_StartAngle = fTmp;
+	else
+		m_d.m_StartAngle = 120;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","EndAngle", &fTmp);
+	if (hr == S_OK)
+		m_d.m_EndAngle = fTmp;
+	else
+		m_d.m_EndAngle = 60;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","BaseRadius", &fTmp);
+	if (hr == S_OK)
+		m_d.m_BaseRadius = fTmp;
+	else
+		m_d.m_BaseRadius = 26.73f;		// 15
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","EndRadius", &fTmp);
+	if (hr == S_OK)
+		m_d.m_EndRadius = fTmp;
+	else
+		m_d.m_EndRadius = 10.69f;		// 6
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Length", &fTmp);
+	if (hr == S_OK)
+		m_d.m_FlipperRadiusMax = fTmp;
+	else
+		m_d.m_FlipperRadiusMax = 142.57f;	// 80
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","MaxDifLength", &fTmp);
+	if (hr == S_OK)
+		m_d.m_FlipperRadiusMin = fTmp;
+	else
+		m_d.m_FlipperRadiusMin = 0;
+	
 	m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
-	m_d.m_recoil = 0;		// disabled
+
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","RecoilVelocity", &fTmp);
+	if (hr == S_OK)
+		m_d.m_recoil = fTmp;
+	else
+		m_d.m_recoil = 0;		// disabled
 
 	m_d.m_angleEOS = 0;		//disabled
 
-	m_d.m_return = 1;		// match existing physics, return equals stroke 
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","ReturnStrength", &fTmp);
+	if (hr == S_OK)
+		m_d.m_return = fTmp;
+	else
+		m_d.m_return = 1;		// match existing physics, return equals stroke 
 
-	m_d.m_force = 0.05f;
-	m_d.m_elasticity = 0.3f;
-	m_d.m_friction = 0;	//zero uses global value
-	m_d.m_scatter = 0;	//zero uses global value
 
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Speed", &fTmp);
+	if (hr == S_OK)
+		m_d.m_force = fTmp;
+	else
+		m_d.m_force = 0.05f;
 
-	m_d.m_color = RGB(255,255,255);
-	m_d.m_rubbercolor = RGB(128,128,128);
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Elasticity", &fTmp);
+	if (hr == S_OK)
+		m_d.m_elasticity = fTmp;
+	else
+		m_d.m_elasticity = 0.3f;
+	
+	//hr = GetRegStringAsFloat("DefaultProps\\Flipper","Friction", &fTmp);
+	//if (hr == S_OK)
+	//	m_d.m_friction = fTmp;
+	//else
+		m_d.m_friction = 0;	//zero uses global value
+
+	m_d.m_scatter = 0.0;	//zero uses global value
+
+	hr = GetRegInt("DefaultProps\\Flipper","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\Flipper","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
+
+	hr = GetRegInt("DefaultProps\\Flipper","Color", &iTmp);
+	if (hr == S_OK)
+		m_d.m_color = iTmp;
+	else
+		m_d.m_color = RGB(255,255,255);
+	
+	hr = GetRegInt("DefaultProps\\Flipper","RubberColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_rubbercolor = iTmp;
+	else
+		m_d.m_rubbercolor = RGB(128,128,128);
 
 	m_d.m_szSurface[0] = 0;
 
-	m_d.m_strength = 6.0f;
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Strength", &fTmp);
+	if (hr == S_OK)
+		m_d.m_strength = fTmp;
+	else
+		m_d.m_strength = 6.0f;
 
-	m_d.m_powerlaw = 2.0f;
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","PowerLaw", &fTmp);
+	if (hr == S_OK)
+		m_d.m_powerlaw = fTmp;
+	else
+		m_d.m_powerlaw = 2.0f;
 
-	m_d.m_obliquecorrection = 0.0f; //flipper face correction 
-	m_d.m_scatterangle = 0.0f; //flipper scatter angle
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","ObliqueCorrection", &fTmp);
+	if (hr == S_OK)
+		m_d.m_obliquecorrection = fTmp;
+	else
+		m_d.m_obliquecorrection = 0.0f; //flipper face correction 
 
-	m_d.m_height = 50;
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","ScatterAngle", &fTmp);
+	if (hr == S_OK)
+		m_d.m_scatterangle = ANGTORAD(fTmp);
+	else
+		m_d.m_scatterangle = ANGTORAD(0.1f); //flipper scatter angle
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Height", &fTmp);
+	if (hr == S_OK)
+		m_d.m_height = fTmp;
+	else
+		m_d.m_height = 50;
 
-	m_d.m_rubberthickness = 0;
-	m_d.m_rubberheight = 8;
-	m_d.m_rubberwidth = (int) (m_d.m_height - 16.0f);
+	hr = GetRegInt("DefaultProps\\Flipper","RubberThickness", &iTmp);
+	if (hr == S_OK)
+		m_d.m_rubberthickness = iTmp;
+	else
+		m_d.m_rubberthickness = 0;
+
+	hr = GetRegInt("DefaultProps\\Flipper","RubberHeight", &iTmp);
+	if (hr == S_OK)
+		m_d.m_rubberheight = iTmp;
+	else
+		m_d.m_rubberheight = 8;
+
+	hr = GetRegInt("DefaultProps\\Flipper","RubberWidth", &iTmp);
+	if (hr == S_OK)
+		m_d.m_rubberwidth = iTmp;
+	else
+		m_d.m_rubberwidth = (int) (m_d.m_height - 16.0f);
 
 	m_d.m_mass = 1;
 
-	m_d.m_fVisible = fTrue;
+	hr = GetRegInt("DefaultProps\\Flipper","Visible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fVisible = iTmp == 0? false : true;
+	else
+		m_d.m_fVisible = fTrue;
 	}
 
 void Flipper::GetTimers(Vector<HitTimer> *pvht)

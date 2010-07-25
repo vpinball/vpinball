@@ -31,31 +31,117 @@ HRESULT Spinner::Init(PinTable *ptable, float x, float y)
 
 void Spinner::SetDefaults()
 	{
-	m_d.m_length = 80;
-	m_d.m_rotation = 0;
-	m_d.m_fSupports = fTrue;
-	m_d.m_height = 60;
-	m_d.m_overhang = 10;
-	m_d.m_color = RGB(50,200,50);
-	m_d.m_fCastsShadow = fTrue;			//<<< added by Chris
+	HRESULT hr;
+	int iTmp;
+	float fTmp;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Spinner","Length", &fTmp);
+	if (hr == S_OK)
+		m_d.m_length = fTmp;
+	else
+		m_d.m_length = 80;
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Spinner","Rotation", &fTmp);
+	if (hr == S_OK)
+		m_d.m_rotation = fTmp;
+	else
+		m_d.m_rotation = 0;
+	
+	hr = GetRegInt("DefaultProps\\Spinner","Supports", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fSupports = iTmp == 0? false : true;
+	else
+		m_d.m_fSupports = fTrue;
+	
+	hr = GetRegInt("DefaultProps\\Spinner","Height", &iTmp);
+	if (hr == S_OK)
+		m_d.m_height = (float)iTmp/1000.0f;
+	else
+		m_d.m_height = 60;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Spinner","Overhang", &fTmp);
+	if (hr == S_OK)
+		m_d.m_overhang = fTmp;
+	else
+		m_d.m_overhang = 10;
+
+	hr = GetRegInt("DefaultProps\\Spinner","Color", &iTmp);
+	if (hr == S_OK)
+		m_d.m_color = iTmp;
+	else
+		m_d.m_color = RGB(50,200,50);
+	
+	hr = GetRegInt("DefaultProps\\Spinner","CastsShadow", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fCastsShadow = iTmp == 0? false : true;
+	else
+		m_d.m_fCastsShadow = fTrue;			//<<< added by Chris
 
 	// Anti-friction is 1-friction (throughput)
 	m_d.m_antifriction = 0.99f;
 
-	m_d.m_angleMax = 0;
-	m_d.m_angleMin = 0;
-	m_d.m_elasticity = 0.3f;
-	m_d.m_friction = 0;	//zero uses global value
-	m_d.m_scatter = 0;	//zero uses global value
+	hr = GetRegStringAsFloat("DefaultProps\\Spinner","AngleMax", &fTmp);
+	if (hr == S_OK)
+		m_d.m_angleMax = fTmp;
+	else
+		m_d.m_angleMax = 0;
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Spinner","AngleMin", &fTmp);
+	if (hr == S_OK)
+		m_d.m_angleMin = fTmp;
+	else
+		m_d.m_angleMin = 0;
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Spinner","Elasticity", &fTmp);
+	if (hr == S_OK)
+		m_d.m_elasticity = fTmp;
+	else
+		m_d.m_elasticity = 0.3f;
 
-	m_d.m_animations = 0;	// manual selection of the animations frame count
-	m_d.m_fVisible = fTrue;
+	hr = GetRegStringAsFloat("DefaultProps\\Spinner","Friction", &fTmp);
+	if (hr == S_OK)
+		m_d.m_friction = fTmp;
+	else
+		m_d.m_friction = 0;	//zero uses global value
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Spinner","Scatter", &fTmp);
+	if (hr == S_OK)
+		m_d.m_scatter = fTmp;
+	else
+		m_d.m_scatter = 0;	//zero uses global value
 
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
+	hr = GetRegInt("DefaultProps\\Spinner","Animations", &iTmp);
+	if (hr == S_OK)
+		m_d.m_animations = iTmp;
+	else
+		m_d.m_animations = 0;	// manual selection of the animations frame count
 
-	m_d.m_szImageFront[0] = 0;
-	m_d.m_szImageBack[0] = 0;
+	hr = GetRegInt("DefaultProps\\Spinner","Visible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fVisible = iTmp == 0? false : true;
+	else
+		m_d.m_fVisible = fTrue;
+
+	hr = GetRegInt("DefaultProps\\Spinner","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\Spinner","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
+
+	hr = GetRegString("DefaultProps\\Spinner","ImageFront", m_d.m_szImageFront, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szImageFront[0] = 0;
+
+	hr = GetRegString("DefaultProps\\Spinner","ImageBack", m_d.m_szImageBack, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szImageBack[0] = 0;
+	
 	m_d.m_szSurface[0] = 0;
 	}
 

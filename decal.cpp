@@ -38,32 +38,117 @@ HRESULT Decal::Init(PinTable *ptable, float x, float y)
 
 void Decal::SetDefaults()
 	{
-	m_d.m_width = 100.0f;
-	m_d.m_height = 100.0f;
-	m_d.m_rotation = 0;
 
-	m_d.m_szImage[0] = 0;
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Decal","Width", &fTmp);
+	if (hr == S_OK)
+		m_d.m_width = fTmp;
+	else
+		m_d.m_width = 100.0f;
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Decal","Height", &fTmp);
+	if (hr == S_OK)
+		m_d.m_height = fTmp;
+	else
+		m_d.m_height = 100.0f;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Decal","Rotation", &fTmp);
+	if (hr == S_OK)
+		m_d.m_rotation = fTmp;
+	else
+		m_d.m_rotation = 0;
+
+	hr = GetRegString("DefaultProps\\Decal","Image", m_d.m_szImage, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szImage[0] = 0;
+
 	m_d.m_szSurface[0] = 0;
 
-	m_d.m_decaltype = DecalImage;
-	m_d.m_sztext[0] = '\0';
+	hr = GetRegInt("DefaultProps\\Decal", "DecalType", &iTmp);
+	if (hr == S_OK)
+		m_d.m_decaltype = (enum DecalType)iTmp;
+	else
+		m_d.m_decaltype = DecalImage;
+	
+	hr = GetRegString("DefaultProps\\Decal","Text", m_d.m_sztext, MAXSTRING);
+	if (hr != S_OK)
+		m_d.m_sztext[0] = '\0';
 
-	m_d.m_sizingtype = ManualSize;
-	m_d.m_color = RGB(0,0,0);
+	hr = GetRegInt("DefaultProps\\Decal", "Sizing", &iTmp);
+	if (hr == S_OK)
+		m_d.m_sizingtype = (enum SizingType)iTmp;
+	else
+		m_d.m_sizingtype = ManualSize;
+	
+	hr = GetRegInt("DefaultProps\\Decal", "Color", &iTmp);
+	if (hr == S_OK)
+		m_d.m_color = iTmp;
+	else
+		m_d.m_color = RGB(0,0,0);
 
-	m_d.m_fVerticalText = fFalse;
+	hr = GetRegInt("DefaultProps\\Decal", "VerticalText", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fVerticalText = iTmp == 0? false : true;
+	else
+		m_d.m_fVerticalText = fFalse;
 
 	if (!m_pIFont)
 		{
 		FONTDESC fd;
 		fd.cbSizeofstruct = sizeof(FONTDESC);
-		fd.cySize.int64 = 142500;
-		fd.lpstrName = L"Arial Black";
-		fd.sWeight = FW_NORMAL;
-		fd.sCharset = 0;
-		fd.fItalic = 0;
-		fd.fUnderline = 0;
-		fd.fStrikethrough = 0;
+		
+		hr = GetRegStringAsFloat("DefaultProps\\Decal","FontSize", &fTmp);
+		if (hr == S_OK)
+			fd.cySize.int64 = (LONGLONG)(fTmp * 10000.0);
+		else	
+			fd.cySize.int64 = 142500;
+
+		//fd.lpstrName[0] = 0;
+		char tmp[256];
+		hr = GetRegString("DefaultProps\\Decal","FontName", tmp, 256);
+		if (hr != S_OK)
+			fd.lpstrName = L"Arial Black";
+		else
+		{
+			unsigned int len = strlen(&tmp[0]);
+			fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
+			UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
+			fd.lpstrName[len] = 0;
+		}
+
+		hr = GetRegInt("DefaultProps\\Decal", "FontWeight", &iTmp);
+		if (hr == S_OK)
+			fd.sWeight = iTmp;
+		else
+			fd.sWeight = FW_NORMAL;
+	
+		hr = GetRegInt("DefaultProps\\Decal", "FontCharSet", &iTmp);
+		if (hr == S_OK)
+			fd.sCharset = iTmp;
+		else
+			fd.sCharset = 0;
+		
+		hr = GetRegInt("DefaultProps\\Decal", "FontItalic", &iTmp);
+		if (hr == S_OK)
+			fd.sWeight = iTmp == 0? false : true;
+		else
+			fd.fItalic = 0;
+
+		hr = GetRegInt("DefaultProps\\Decal", "FontUnderline", &iTmp);
+		if (hr == S_OK)
+			fd.fUnderline = iTmp == 0? false : true;
+		else
+			fd.fUnderline = 0;
+		
+		hr = GetRegInt("DefaultProps\\Decal", "FontStrikeThrough", &iTmp);
+		if (hr == S_OK)
+			fd.fStrikethrough = iTmp == 0? false : true;
+		else
+			fd.fStrikethrough = 0;
+		
 		OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
 		}
 	}

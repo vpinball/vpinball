@@ -31,24 +31,83 @@ void Plunger::SetDefaults()
 	m_d.m_width = 25;
 	m_d.m_height = 20;
 
-	m_d.m_stroke = m_d.m_height*4;
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
 
-	m_d.m_speedPull = 5;
-	m_d.m_speedFire = 80;
+	hr = GetRegStringAsFloat("DefaultProps\\Plunger","Stroke", &fTmp);
+	if (hr == S_OK)
+		m_d.m_stroke = fTmp;
+	else
+		m_d.m_stroke = m_d.m_height*4;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Plunger","PullSpeed", &fTmp);
+	if (hr == S_OK)
+		m_d.m_speedPull = fTmp;
+	else
+		m_d.m_speedPull = 5;
 	
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
+	hr = GetRegStringAsFloat("DefaultProps\\Plunger","ReleaseSpeed", &fTmp);
+	if (hr == S_OK)
+		m_d.m_speedFire = fTmp;
+	else
+		m_d.m_speedFire = 80;
+	
+	hr = GetRegInt("DefaultProps\\Plunger","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\Plunger","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
 
 	m_d.m_szSurface[0] = 0;
 
-	m_d.m_mechPlunger = fFalse;		//rlc plungers require selection for mechanical input
-	m_d.m_autoPlunger = fFalse;		
-	m_d.m_mechStrength = 85;		//rlc
-	m_d.m_parkPosition = (float)(0.5/3.0);	// typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
+	hr = GetRegInt("DefaultProps\\Plunger","MechPlunger", &iTmp);
+	if (hr == S_OK)
+		m_d.m_mechPlunger = iTmp == 0? false:true;
+	else
+		m_d.m_mechPlunger = fFalse;		//rlc plungers require selection for mechanical input
+	
+	hr = GetRegInt("DefaultProps\\Plunger","AutoPlunger", &iTmp);
+	if (hr == S_OK)
+		m_d.m_autoPlunger = iTmp == 0? false:true;
+	else
+		m_d.m_autoPlunger = fFalse;		
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Plunger","MechStrength", &fTmp);
+	if (hr == S_OK)
+		m_d.m_mechStrength = fTmp;
+	else
+		m_d.m_mechStrength = 85;		//rlc
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Plunger","ParkPosition", &fTmp);
+	if (hr == S_OK)
+		m_d.m_parkPosition = fTmp;
+	else
+		m_d.m_parkPosition = (float)(0.5/3.0);	// typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
 
-	m_d.m_fVisible = fTrue;
-	m_d.m_scatterVelocity = 0;
-	m_d.m_breakOverVelocity = 18.0f;
+	hr = GetRegInt("DefaultProps\\Plunger","Visible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fVisible = iTmp == 0? false:true;
+	else
+		m_d.m_fVisible = fTrue;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Plunger","ScatterVelocity", &fTmp);
+	if (hr == S_OK)
+		m_d.m_scatterVelocity = fTmp;
+	else
+		m_d.m_scatterVelocity = 0;
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Plunger","BreakOverVelocity", &fTmp);
+	if (hr == S_OK)
+		m_d.m_breakOverVelocity = fTmp;
+	else
+		m_d.m_breakOverVelocity = 18.0f;
 	
 	}
 

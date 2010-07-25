@@ -23,33 +23,43 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y)
 	{
 	m_ptable = ptable;
 
+	float width = 50.0f, length = 50.0f, fTmp;
+
+	HRESULT hr = GetRegStringAsFloat("DefaultProps\\Wall", "Width", &fTmp);
+	if (hr == S_OK)
+		width = fTmp;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Wall", "Length", &fTmp);
+	if (hr == S_OK)
+		length = fTmp;
+
 	CComObject<DragPoint> *pdp;
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x-50.0f, y-50.0f);
+		pdp->Init(this, x-width, y-length);
 		m_vdpoint.AddElement(pdp);
 		}
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x-50.0f, y+50.0f);
+		pdp->Init(this, x-width, y+length);
 		m_vdpoint.AddElement(pdp);
 		}
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x+50.0f, y+50.0f);
+		pdp->Init(this, x+width, y+length);
 		m_vdpoint.AddElement(pdp);
 		}
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x+50.0f, y-50.0f);
+		pdp->Init(this, x+width, y-length);
 		m_vdpoint.AddElement(pdp);
 		}
 
@@ -62,19 +72,29 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	{
 	m_ptable = ptable;
 
+	float width = 30.0f, length=6.0f, fTmp;
+	int iTmp;
+	HRESULT hr = GetRegStringAsFloat("DefaultProps\\Target", "Width", &fTmp);
+	if (hr == S_OK)
+		width = fTmp;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Target", "Length", &fTmp);
+	if (hr == S_OK)
+		length = fTmp;
+
 	CComObject<DragPoint> *pdp;
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x-30.0f, y-6.0f);
+		pdp->Init(this, x-width, y-length);
 		m_vdpoint.AddElement(pdp);
 		}
 	CComObject<DragPoint>::CreateInstance(&pdp);
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x-30.0f, y+6.0f);
+		pdp->Init(this, x-width, y+length);
 		pdp->m_fAutoTexture = fFalse;
 		pdp->m_texturecoord = 0.0f;
 		m_vdpoint.AddElement(pdp);
@@ -83,7 +103,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	if (pdp)
 		{
 		pdp->AddRef();
-		pdp->Init(this, x+30.0f, y+6.0f);
+		pdp->Init(this, x+width, y+length);
 		pdp->m_fAutoTexture = fFalse;
 		pdp->m_texturecoord = 1.0f;
 		m_vdpoint.AddElement(pdp);
@@ -96,56 +116,315 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 		m_vdpoint.AddElement(pdp);
 		}
 
-	SetDefaults();
+	//SetDefaults();
+	//Set seperate defaults for targets (SetDefaults sets the Wall defaults)
+	
+	hr = GetRegInt("DefaultProps\\Target","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = fFalse;
+	
+	hr = GetRegInt("DefaultProps\\Target","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
+	
+	hr = GetRegInt("DefaultProps\\Target","HitEvent", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fHitEvent = iTmp == 0? false:true;
+	else
+		m_d.m_fHitEvent = fTrue;
 
-	m_d.m_fHitEvent = fTrue;
+	hr = GetRegStringAsFloat("DefaultProps\\Target","HitThreshold", &fTmp);
+	if (hr == S_OK)
+		m_d.m_threshold = fTmp;
+	else
+		m_d.m_threshold = 1.0f;
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Target","SlingshotThreshold", &fTmp);
+	if (hr == S_OK)
+		m_d.m_slingshot_threshold = fTmp;
+	else
+		m_d.m_slingshot_threshold = 0.0f;
+	
+	//this property cannot be modified with the GUI
+	m_d.m_fInner = fTrue;
 
-	m_d.m_sidecolor = RGB(127,127,127);
-	m_d.m_topcolor = RGB(127,127,127);
-	m_d.m_slingshotColor = RGB(242,242,242);
+	//this property does not seem to be used
+	m_d.m_ia = ImageAlignCenter;
+
+	hr = GetRegInt("DefaultProps\\Target","SideColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_sidecolor = iTmp ;
+	else
+		m_d.m_sidecolor = RGB(127,127,127);
+
+	hr = GetRegString("DefaultProps\\Target","TopImage", m_d.m_szImage, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szImage[0] = 0;
+
+	hr = GetRegString("DefaultProps\\Target","SideImage", m_d.m_szSideImage, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szSideImage[0] = 0;
+
+	hr = GetRegInt("DefaultProps\\Target","SlingshotColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_slingshotColor = iTmp;
+	else
+		m_d.m_slingshotColor = RGB(242,242,242);
+
+	hr = GetRegInt("DefaultProps\\Target","TopColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_topcolor = iTmp;
+	else
+		m_d.m_topcolor = RGB(127,127,127);
+
+	hr = GetRegInt("DefaultProps\\Target","Droppable", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fDroppable = iTmp == 0? false : true;
+	else
+		m_d.m_fDroppable = fFalse;
+
+	hr = GetRegInt("DefaultProps\\Target","Flipbook", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fFlipbook = iTmp == 0? false : true;
+	else
+		m_d.m_fFlipbook = fFalse;
+
+	//this property cannot be modified with the GUI
+	m_d.m_fFloor = fFalse;
+
+	hr = GetRegInt("DefaultProps\\Target","CastsShadow", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fCastsShadow = iTmp == 0? false : true;
+	else
+		m_d.m_fCastsShadow = fTrue;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Target","HeightBottom", &fTmp);
+	if (hr == S_OK)
+		m_d.m_heightbottom = fTmp;
+	else
+		m_d.m_heightbottom = 0;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Target","HeightTop", &fTmp);
+	if (hr == S_OK)
+		m_d.m_heighttop = fTmp;
+	else
+		m_d.m_heighttop = 50.0f;
+
+	hr = GetRegInt("DefaultProps\\Target","DisplayTexture", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fDisplayTexture = iTmp == 0? false : true;
+	else
+		m_d.m_fDisplayTexture = fFalse;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Target","SlingshotForce", &fTmp);
+	if (hr == S_OK)
+		m_d.m_slingshotforce = fTmp;
+	else
+		m_d.m_slingshotforce = 80.0f;
+	
+	hr = GetRegInt("DefaultProps\\Target","SlingshotAnimation", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fSlingshotAnimation = iTmp == 0? false : true;
+	else
+		m_d.m_fSlingshotAnimation = fTrue;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Target","Elasticity", &fTmp);
+	if (hr == S_OK)
+		m_d.m_elasticity = fTmp;
+	else
+		m_d.m_elasticity = 0.3f;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Target","Friction", &fTmp);
+	if (hr == S_OK)
+		m_d.m_friction = fTmp;
+	else
+		m_d.m_friction = 0;	//zero uses global value
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Target","Scatter", &fTmp);
+	if (hr == S_OK)
+		m_d.m_scatter = fTmp;
+	else
+		m_d.m_scatter = 0;	//zero uses global value
+
+	hr = GetRegInt("DefaultProps\\Target","Visible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fVisible = iTmp == 0? false : true;
+	else
+		m_d.m_fVisible = fTrue;
+
+	hr = GetRegInt("DefaultProps\\Target","SideVisible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fSideVisible = iTmp == 0? false : true;
+	else
+		m_d.m_fSideVisible = fTrue;
+
+	hr = GetRegInt("DefaultProps\\Target","Collidable", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fCollidable = iTmp == 0? false : true;
+	else
+		m_d.m_fCollidable = fTrue;
 
 	return InitVBA(fTrue, 0, NULL);
 	}
 
 void Surface::SetDefaults()
 	{
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
+	HRESULT hr;
+	int iTmp;
+	float fTmp;
 
-	m_d.m_fHitEvent = fFalse;
-	m_d.m_threshold = 1.0f;
-	m_d.m_slingshot_threshold = 0.0f;
+	hr = GetRegInt("DefaultProps\\Wall","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\Wall","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
+	
+	hr = GetRegInt("DefaultProps\\Wall","HitEvent", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fHitEvent = iTmp == 0? false:true;
+	else
+		m_d.m_fHitEvent = fFalse;
 
+	hr = GetRegStringAsFloat("DefaultProps\\Wall","HitThreshold", &fTmp);
+	if (hr == S_OK)
+		m_d.m_threshold = fTmp;
+	else
+		m_d.m_threshold = 1.0f;
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Wall","SlingshotThreshold", &fTmp);
+	if (hr == S_OK)
+		m_d.m_slingshot_threshold = fTmp;
+	else
+		m_d.m_slingshot_threshold = 0.0f;
+	
+	//this property cannot be modified with the GUI
 	m_d.m_fInner = fTrue;
 
+	//this property does not seem to be used
 	m_d.m_ia = ImageAlignCenter;
-	m_d.m_sidecolor = RGB(255,255,255);
-	m_d.m_szImage[0] = 0;
-	m_d.m_slingshotColor = RGB(242,242,242);
 
-	m_d.m_topcolor = RGB(63,63,63);
+	hr = GetRegInt("DefaultProps\\Wall","SideColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_sidecolor = iTmp;
+	else
+		m_d.m_sidecolor = RGB(255,255,255);
 
-	m_d.m_fDroppable = fFalse;
-	m_d.m_fFlipbook = fFalse;
+	hr = GetRegString("DefaultProps\\Wall","TopImage", m_d.m_szImage, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szImage[0] = 0;
+
+	hr = GetRegString("DefaultProps\\Wall","SideImage", m_d.m_szSideImage, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szSideImage[0] = 0;
+
+	hr = GetRegInt("DefaultProps\\Wall","SlingshotColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_slingshotColor = iTmp;
+	else
+		m_d.m_slingshotColor = RGB(242,242,242);
+
+	hr = GetRegInt("DefaultProps\\Wall","TopColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_topcolor = iTmp;
+	else
+		m_d.m_topcolor = RGB(63,63,63);
+
+	hr = GetRegInt("DefaultProps\\Wall","Droppable", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fDroppable = iTmp == 0? false : true;
+	else
+		m_d.m_fDroppable = fFalse;
+
+	hr = GetRegInt("DefaultProps\\Wall","Flipbook", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fFlipbook = iTmp == 0? false : true;
+	else
+		m_d.m_fFlipbook = fFalse;
+
+	//this property cannot be modified with the GUI
 	m_d.m_fFloor = fFalse;
-	m_d.m_fCastsShadow = fTrue;
 
-	m_d.m_heightbottom = 0;
-	m_d.m_heighttop = 50.0f;
+	hr = GetRegInt("DefaultProps\\Wall","CastsShadow", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fCastsShadow = iTmp == 0? false : true;
+	else
+		m_d.m_fCastsShadow = fTrue;
 
-	m_d.m_fDisplayTexture = fFalse;
+	hr = GetRegStringAsFloat("DefaultProps\\Wall","HeightBottom", &fTmp);
+	if (hr == S_OK)
+		m_d.m_heightbottom = fTmp;
+	else
+		m_d.m_heightbottom = 0;
 
-	m_d.m_slingshotforce = 80.0f;
+	hr = GetRegStringAsFloat("DefaultProps\\Wall","HeightTop", &fTmp);
+	if (hr == S_OK)
+		m_d.m_heighttop = fTmp;
+	else
+		m_d.m_heighttop = 50.0f;
+
+	hr = GetRegInt("DefaultProps\\Wall","DisplayTexture", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fDisplayTexture = iTmp == 0? false : true;
+	else
+		m_d.m_fDisplayTexture = fFalse;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Wall","SlingshotForce", &fTmp);
+	if (hr == S_OK)
+		m_d.m_slingshotforce = fTmp;
+	else
+		m_d.m_slingshotforce = 80.0f;
 	
-	m_d.m_fSlingshotAnimation = fTrue;
+	hr = GetRegInt("DefaultProps\\Wall","SlingshotAnimation", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fSlingshotAnimation = iTmp == 0? false : true;
+	else
+		m_d.m_fSlingshotAnimation = fTrue;
 
-	m_d.m_elasticity = 0.3f;
-	m_d.m_friction = 0;	//zero uses global value
-	m_d.m_scatter = 0;	//zero uses global value
+	hr = GetRegStringAsFloat("DefaultProps\\Wall","Elasticity", &fTmp);
+	if (hr == S_OK)
+		m_d.m_elasticity = fTmp;
+	else
+		m_d.m_elasticity = 0.3f;
 
-	m_d.m_fVisible = fTrue;
-	m_d.m_fSideVisible = fTrue;
-	m_d.m_fCollidable = fTrue;
+	hr = GetRegStringAsFloat("DefaultProps\\Wall","Friction", &fTmp);
+	if (hr == S_OK)
+		m_d.m_friction = fTmp;
+	else
+		m_d.m_friction = 0;	//zero uses global value
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Wall","Scatter", &fTmp);
+	if (hr == S_OK)
+		m_d.m_scatter = fTmp;
+	else
+		m_d.m_scatter = 0;	//zero uses global value
+
+	hr = GetRegInt("DefaultProps\\Wall","Visible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fVisible = iTmp == 0? false : true;
+	else
+		m_d.m_fVisible = fTrue;
+
+	hr = GetRegInt("DefaultProps\\Wall","SideVisible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fSideVisible = iTmp == 0? false : true;
+	else
+		m_d.m_fSideVisible = fTrue;
+
+	hr = GetRegInt("DefaultProps\\Wall","Collidable", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fCollidable = iTmp == 0? false : true;
+	else
+		m_d.m_fCollidable = fTrue;
 	}
 
 
