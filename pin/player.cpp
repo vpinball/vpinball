@@ -17,7 +17,7 @@
 inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 {
 	*f = fopen(fname, attr);
-	return (*f != NULL);
+	return (*f == NULL);
 }
 inline void _controlfp_s(unsigned int *cw, const unsigned int i, const unsigned int j)
 {

@@ -12,7 +12,7 @@ static int sbConsole;
 inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 {
 	*f = fopen(fname, attr);
-	return (*f != NULL);
+	return (*f == NULL);
 }
 #define vsprintf_s(a,b,c,d) vsprintf(a,c,d)
 #endif
