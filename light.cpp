@@ -78,24 +78,81 @@ HRESULT Light::Init(PinTable *ptable, float x, float y)
 
 void Light::SetDefaults()
 	{
-	m_d.m_radius = 50;
-	m_d.m_state = LightStateOff;
-	m_d.m_shape = ShapeCircle;
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
 
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
+	hr = GetRegStringAsFloat("DefaultProps\\Light","Radius", &fTmp);
+	if (hr == S_OK)
+		m_d.m_radius = fTmp;
+	else
+		m_d.m_radius = 50;
 
-	m_d.m_color = RGB(255,255,0);
+	hr = GetRegInt("DefaultProps\\Light","LightState", &iTmp);
+	if (hr == S_OK)
+		m_d.m_state = (enum LightState)iTmp;
+	else
+		m_d.m_state = LightStateOff;
 
-	m_d.m_szOffImage[0] = 0;
-	m_d.m_szOnImage[0] = 0;
+	hr = GetRegInt("DefaultProps\\Light","Shape", &iTmp);
+	if (hr == S_OK)
+		m_d.m_shape = (enum Shape)iTmp;
+	else
+		m_d.m_shape = ShapeCircle;
 
-	m_d.m_fDisplayImage = fFalse;
+	hr = GetRegInt("DefaultProps\\Light","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\Light","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
 
-	strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
-	m_blinkinterval = 125;
-	m_d.m_borderwidth = 0;
-	m_d.m_bordercolor = RGB(0,0,0);
+	hr = GetRegInt("DefaultProps\\Light","Color", &iTmp);
+	if (hr == S_OK)
+		m_d.m_color = iTmp;
+	else
+		m_d.m_color = RGB(255,255,0);
+
+	hr = GetRegString("DefaultProps\\Light","OffImage", m_d.m_szOffImage, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szOffImage[0] = 0;
+
+	hr = GetRegString("DefaultProps\\Light","OnImage", m_d.m_szOnImage, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szOnImage[0] = 0;
+
+	hr = GetRegInt("DefaultProps\\Light","DisplayImage", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fDisplayImage = iTmp == 0? false:true;
+	else
+		m_d.m_fDisplayImage = fFalse;
+
+	hr = GetRegString("DefaultProps\\Light","BlinkPattern", m_rgblinkpattern, MAXTOKEN);
+	if (hr != S_OK)
+		strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
+	
+	hr = GetRegInt("DefaultProps\\Light","BlinkInterval", &iTmp);
+	if (hr == S_OK)
+		m_blinkinterval = iTmp;
+	else
+		m_blinkinterval = 125;
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Light","BorderWidth", &fTmp);
+	if (hr == S_OK)
+		m_d.m_borderwidth = fTmp;
+	else
+		m_d.m_borderwidth = 0;
+
+	hr = GetRegInt("DefaultProps\\Light","BorderColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_bordercolor = iTmp;
+	else
+		m_d.m_bordercolor = RGB(0,0,0);
 
 	m_d.m_szSurface[0] = 0;
 	}

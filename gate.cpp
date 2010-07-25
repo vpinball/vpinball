@@ -33,33 +33,107 @@ HRESULT Gate::Init(PinTable *ptable, float x, float y)
 
 void Gate::SetDefaults()
 	{
-	m_d.m_length = 100;
-	m_d.m_height = 50;
-	m_d.m_rotation = -90;
-	m_d.m_fSupports = fTrue;
-	m_d.m_fCollidable = fTrue;
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
 
-	m_d.m_angleMin = 0;
-	m_d.m_angleMax = (float)(M_PI/2.0);
+	hr = GetRegStringAsFloat("DefaultProps\\Gate","Length", &fTmp);
+	if (hr == S_OK)
+		m_d.m_length = fTmp;
+	else
+		m_d.m_length = 100;
 
-	m_d.m_friction = 0.005f; //rlc set a little bit of friction
-	m_d.m_fVisible = fTrue;
+	hr = GetRegStringAsFloat("DefaultProps\\Gate","Height", &fTmp);
+	if (hr == S_OK)
+		m_d.m_height = fTmp;
+	else
+		m_d.m_height = 50;
 
-	m_d.m_animations = 0;	// animations frames, zero will calculate 1 frames per 6 degrees
+	hr = GetRegStringAsFloat("DefaultProps\\Gate","Rotation", &fTmp);
+	if (hr == S_OK)
+		m_d.m_rotation = fTmp;
+	else
+		m_d.m_rotation = -90;
 
-	m_d.m_color = RGB(128,128,128);
+	hr = GetRegInt("DefaultProps\\Gate","Supports", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fSupports = iTmp == 0? false : true;
+	else
+		m_d.m_fSupports = fTrue;
+	
+	hr = GetRegInt("DefaultProps\\Gate","Collidable", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fCollidable = iTmp == 0? false : true;
+	else
+		m_d.m_fCollidable = fTrue;
 
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
+	hr = GetRegStringAsFloat("DefaultProps\\Gate","AngleMin", &fTmp);
+	if (hr == S_OK)
+		m_d.m_angleMin = fTmp;
+	else
+		m_d.m_angleMin = 0;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Gate","AngleMax", &fTmp);
+	if (hr == S_OK)
+		m_d.m_angleMax = fTmp;
+	else
+		m_d.m_angleMax = (float)(M_PI/2.0);
+
+	hr = GetRegInt("DefaultProps\\Gate","Visible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fVisible = iTmp == 0? false : true;
+	else
+		m_d.m_fVisible = fTrue;
+
+	hr = GetRegInt("DefaultProps\\Gate","Animations", &iTmp);
+	if (hr == S_OK)
+		m_d.m_animations = iTmp;
+	else
+		m_d.m_animations = 0;	// animations frames, zero will calculate 1 frames per 6 degrees
+
+	hr = GetRegInt("DefaultProps\\Gate","Color", &iTmp);
+	if (hr == S_OK)
+		m_d.m_color = iTmp;
+	else
+		m_d.m_color = RGB(128,128,128);
+
+	hr = GetRegInt("DefaultProps\\Gate","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\Gate","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
 
 	m_d.m_szSurface[0] = 0;
 
+	hr = GetRegStringAsFloat("DefaultProps\\Gate","Elasticity", &fTmp);
+	if (hr == S_OK)
 	m_d.m_elasticity = 0.3f;
-	m_d.m_friction = 0;	//zero uses global value
-	m_d.m_scatter = 0;	//zero uses global value
 
-	m_d.m_szImageFront[0] = 0;
-	m_d.m_szImageBack[0] = 0;
+	hr = GetRegStringAsFloat("DefaultProps\\Gate","Friction", &fTmp);
+	if (hr == S_OK)
+		m_d.m_friction =  fTmp;
+	else
+		m_d.m_friction = 0;	//zero uses global value
+
+	hr = GetRegStringAsFloat("DefaultProps\\Gate","Scatter", &fTmp);
+	if (hr == S_OK)
+		m_d.m_scatter = fTmp;
+	else
+		m_d.m_scatter = 0;	//zero uses global value
+
+	hr = GetRegString("DefaultProps\\Gate","ImageFront", m_d.m_szImageFront, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szImageFront[0] = 0;
+
+	hr = GetRegString("DefaultProps\\Gate","ImageBack", m_d.m_szImageBack, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szImageBack[0] = 0;
 	}
 
 void Gate::PreRender(Sur *psur)

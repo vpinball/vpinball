@@ -30,13 +30,46 @@ HRESULT LightSeq::Init(PinTable *ptable, float x, float y)
 
 void LightSeq::SetDefaults()
 {
-	m_d.m_updateinterval		= 25;
-	m_d.m_wzCollection[0] 		= 0x00;
-	m_d.m_vCenter.x				= 1000/2;
-	m_d.m_vCenter.y				= 2000/2;
-	m_d.m_tdr.m_fTimerEnabled	= fFalse;
-	m_d.m_tdr.m_TimerInterval	= 100;
-}
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
+
+	hr = GetRegInt("DefaultProps\\LightSequence", "UpdateInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_updateinterval = iTmp;
+	else
+		m_d.m_updateinterval = 25;
+
+	char tmp[MAXTOKEN];
+	hr = GetRegString("DefaultProps\\LightSequence","Collection", tmp, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_wzCollection[0] = 0x00;
+	else
+		UNICODE_FROM_ANSI(m_d.m_wzCollection, tmp, strlen(tmp));
+
+	hr = GetRegStringAsFloat("DefaultProps\\LightSequence","CenterX", &fTmp);
+	if (hr == S_OK)
+		m_d.m_vCenter.x = fTmp;
+	else
+		m_d.m_vCenter.x = 1000/2;
+
+	hr = GetRegStringAsFloat("DefaultProps\\LightSequence","CenterY", &fTmp);
+	if (hr == S_OK)
+		m_d.m_vCenter.y = fTmp;
+	else
+		m_d.m_vCenter.y = 2000/2;
+	
+	hr = GetRegInt("DefaultProps\\LightSequence","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\LightSequence","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;}
 
 void LightSeq::SetObjectPos()
 {

@@ -28,21 +28,60 @@ HRESULT Kicker::Init(PinTable *ptable, float x, float y)
 
 void Kicker::SetDefaults()
 	{
-	m_d.m_radius = 25;
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
 
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
-	m_d.m_fEnabled = fTrue;
+	hr = GetRegStringAsFloat("DefaultProps\\Kicker","Radius", &fTmp);
+	if (hr == S_OK)
+		m_d.m_radius = fTmp;
+	else
+		m_d.m_radius = 25;
 
-	m_d.m_scatter = 0;
+	hr = GetRegInt("DefaultProps\\Kicker","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\Kicker","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
 
-	m_d.m_hit_height = 40;
+	hr = GetRegInt("DefaultProps\\Kicker","Enabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fEnabled = iTmp == 0? false : true;
+	else
+		m_d.m_fEnabled = fTrue;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Kicker","Scatter", &fTmp);
+	if (hr == S_OK)
+		m_d.m_scatter = fTmp;
+	else
+		m_d.m_scatter = 0;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Kicker","HitHeight", &fTmp);
+	if (hr == S_OK)
+		m_d.m_hit_height = fTmp;
+	else
+		m_d.m_hit_height = 40;
 
 	m_d.m_szSurface[0] = 0;
 
-	m_d.m_kickertype = KickerHole;//KickerCup;
+	hr = GetRegInt("DefaultProps\\Kicker","KickerType", &iTmp);
+	if (hr == S_OK)
+		m_d.m_kickertype = (enum KickerType)iTmp;
+	else
+		m_d.m_kickertype = KickerHole;
 
-	m_d.m_color = RGB(100,100,100);
+
+	hr = GetRegInt("DefaultProps\\Kicker","Color", &iTmp);
+	if (hr == S_OK)
+		m_d.m_color = iTmp;
+	else
+		m_d.m_color = RGB(100,100,100);
 	}
 
 void Kicker::PreRender(Sur *psur)

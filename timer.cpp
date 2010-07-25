@@ -29,8 +29,20 @@ HRESULT Timer::Init(PinTable *ptable, float x, float y)
 
 void Timer::SetDefaults()
 	{
-	m_d.m_tdr.m_fTimerEnabled = fTrue;
-	m_d.m_tdr.m_TimerInterval = 100;
+	HRESULT hr;
+	int iTmp;
+
+	hr = GetRegInt("DefaultProps\\Timer","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = true;
+	
+	hr = GetRegInt("DefaultProps\\Timer","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
 	}
 
 void Timer::SetObjectPos()

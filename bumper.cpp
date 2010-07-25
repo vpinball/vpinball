@@ -31,27 +31,103 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y)
 
 void Bumper::SetDefaults()
 	{
-	m_d.m_radius = 45;
-	m_d.m_force = 15;
-	m_d.m_threshold = 1;
-	m_d.m_overhang = 25;
-	m_d.m_color = RGB(255,0,0);
-	m_d.m_sidecolor = RGB(255,255,255);
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
 
-	m_d.m_szImage[0] = 0;
+	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Radius", &fTmp);
+	if (hr == S_OK)
+		m_d.m_radius = fTmp;
+	else
+		m_d.m_radius = 45;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Force", &fTmp);
+	if (hr == S_OK)
+		m_d.m_force = fTmp;
+	else
+		m_d.m_force = 15;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Threshold", &fTmp);
+	if (hr == S_OK)
+		m_d.m_threshold = fTmp;
+	else
+		m_d.m_threshold = 1;
+	
+	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Overhang", &fTmp);
+	if (hr == S_OK)
+		m_d.m_overhang =  fTmp;
+	else
+		m_d.m_overhang = 25;
+
+	hr = GetRegInt("DefaultProps\\Bumper","Color", &iTmp);
+	if (hr == S_OK)
+		m_d.m_color = iTmp;
+	else
+		m_d.m_color = RGB(255,0,0);
+
+	hr = GetRegInt("DefaultProps\\Bumper","SideColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_sidecolor = iTmp;
+	else
+		m_d.m_sidecolor = RGB(255,255,255);
+
+	hr = GetRegString("DefaultProps\\Bumper","Image", m_d.m_szImage, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szImage[0] = 0;
+	
 	m_d.m_szSurface[0] = 0;
 
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
+	hr = GetRegInt("DefaultProps\\Bumper","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\Bumper","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
 
-	m_d.m_state = LightStateOff;
-	strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
-	m_blinkinterval = 125;
+	hr = GetRegInt("DefaultProps\\Bumper","LightState", &iTmp);
+	if (hr == S_OK)
+		m_d.m_state = (enum LightState)iTmp;
+	else
+		m_d.m_state = LightStateOff;
+	
+	hr = GetRegString("DefaultProps\\Bumper","BlinkPattern", m_rgblinkpattern, MAXTOKEN);
+	if (hr != S_OK)
+		strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
+	
+	hr = GetRegInt("DefaultProps\\Bumper","BlinkInterval", &iTmp);
+	if (hr == S_OK)
+		m_blinkinterval = iTmp;
+	else
+		m_blinkinterval = 125;
 
-	m_d.m_fFlashWhenHit = fTrue;
-	m_d.m_fCastsShadow = fTrue;
-	m_d.m_fVisible = fTrue;
-	m_d.m_fSideVisible = fTrue;
+	hr = GetRegInt("DefaultProps\\Bumper","FlashWhenHit", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fFlashWhenHit = iTmp == 0? false : true;
+	else
+		m_d.m_fFlashWhenHit = fTrue;
+	
+	hr = GetRegInt("DefaultProps\\Bumper","CastsShadow", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fCastsShadow = iTmp == 0? false : true;
+	else
+		m_d.m_fCastsShadow = fTrue;
+
+	hr = GetRegInt("DefaultProps\\Bumper","Visible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fVisible = iTmp == 0? false : true;
+	else
+		m_d.m_fVisible = fTrue;
+	
+	hr = GetRegInt("DefaultProps\\Bumper","SideVisible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fSideVisible = iTmp == 0? false : true;
+	else
+		m_d.m_fSideVisible = fTrue;
 	}
 
 STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)

@@ -33,15 +33,51 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y)
 
 void Trigger::SetDefaults()
 	{
-	m_d.m_radius = 25.0f;
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
 
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
-	m_d.m_fEnabled = fTrue;
-	m_d.m_fVisible = fTrue;
-	m_d.m_hit_height = 50.0f;
+	hr = GetRegStringAsFloat("DefaultProps\\Trigger","Radius", &fTmp);
+	if (hr == S_OK)
+		m_d.m_radius = fTmp;
+	else
+		m_d.m_radius = 25.0f;
 
-	m_d.m_shape = ShapeCircle;
+	hr = GetRegInt("DefaultProps\\Trigger","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\Trigger","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
+
+	hr = GetRegInt("DefaultProps\\Trigger","Enabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fEnabled = iTmp == 0? false : true;
+	else
+		m_d.m_fEnabled = fTrue;
+
+	hr = GetRegInt("DefaultProps\\Trigger","Visible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fVisible = iTmp == 0? false : true;
+	else
+		m_d.m_fVisible = fTrue;
+
+	hr = GetRegStringAsFloat("DefaultProps\\Trigger","HitHeight", &fTmp);
+	if (hr == S_OK)
+		m_d.m_hit_height = fTmp;
+	else
+		m_d.m_hit_height = 50.0f;
+
+		hr = GetRegInt("DefaultProps\\Trigger","Shape", &iTmp);
+	if (hr == S_OK)
+		m_d.m_shape = (enum Shape)iTmp;
+	else
+		m_d.m_shape = ShapeCircle;
 
 	m_d.m_szSurface[0] = 0;
 	}
