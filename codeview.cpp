@@ -692,8 +692,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		}
 
 	OLECHAR wszOutput[1024];
-	swprintf_s(wszOutput, sizeof(wszOutput)/sizeof(OLECHAR), L"Line: %d\n%s",
-			  nLine, ei.bstrDescription);
+	swprintf_s(wszOutput, L"Line: %d\n%s",
+			              nLine, ei.bstrDescription);
 
 	SysFreeString(bstr);
 	SysFreeString(ei.bstrSource);
@@ -1775,7 +1775,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 					pcv->m_lastline = line;
 
-					sprintf_s(szT, sizeof(szT), "Line %u, Col %u", line, pscn->position-linecharindex);
+					sprintf_s(szT, "Line %u, Col %u", line, pscn->position-linecharindex);
 					SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (long)szT);
 					}
 					break;

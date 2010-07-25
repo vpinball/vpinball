@@ -12,6 +12,8 @@
  #define strncpy_s(a,b,c,d) strncpy(a,c,d)
  #define strcpy_s(a,b,c) strcpy(a,c)
  #define strcat_s(a,b,c) strcat(a,c)
+ #define sprintf_s sprintf
+ #define swprintf_s swprintf
 #endif
 
 // These functions are implemented because each platform calls them something different.

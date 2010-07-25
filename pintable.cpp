@@ -843,7 +843,7 @@ PinTable::PinTable()
 	// Write the version of this exe to the registry.  
 	// This will be read later by the front end.
 	char Version[64];
-	sprintf_s ( Version, sizeof(Version), "00.85.%04d", BUILD_NUMBER );
+	sprintf_s( Version, "00.85.%04d", BUILD_NUMBER );
 	SetRegValue ( "Version", "VPinball", REG_SZ, Version, strlen(Version) );
 
 	m_jolt_amount = 500;
@@ -2582,8 +2582,8 @@ HRESULT PinTable::LoadGameFromFilename(char *szFileName)
 		if(FAILED(hr = StgOpenStorage(wszCodeFile, NULL, STGM_TRANSACTED | STGM_READ | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
 			{
 			// TEXT
-				char msg[256];
-				sprintf_s( msg, sizeof(msg), "Error loading %s", m_szFileName );
+			char msg[256];
+			sprintf_s( msg, "Error loading %s", m_szFileName );
 			MessageBox(g_pvp->m_hwnd, msg , "Load Error", 0);
 			return hr;
 			}

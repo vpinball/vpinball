@@ -410,7 +410,6 @@ void VPinball::InitRegValues()
 	for (int i=0; i<LAST_OPENED_TABLE_COUNT; i++)
 		{
 		char szRegName[MAX_PATH];
-
 		sprintf_s(szRegName, "TableFileName%d", i);
 		m_szRecentTableList[i][0] = 0x00;
 		hr = GetRegString("RecentDir",szRegName, m_szRecentTableList[i], MAX_PATH);
@@ -1766,7 +1765,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 			// if this entry is empty then all the rest are empty
 			if (m_szRecentTableList[i][0] == 0x00) break;
 			// write entry to the registry
-			sprintf_s(szRegName, sizeof(szRegName), "TableFileName%d", i);
+			sprintf_s(szRegName, "TableFileName%d", i);
 			SetRegValue("RecentDir", szRegName, REG_SZ, m_szRecentTableList[i], strlen(m_szRecentTableList[i]));
 			}
 		} // (szfilename != NULL)
@@ -3459,7 +3458,7 @@ HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpCon
 		const int widthcur = pevms->widthcur;
 		const int heightcur = pevms->heightcur;
 		const int depthcur = pevms->depthcur;
-		sprintf_s(szT, sizeof(szT), "%u x %u x %u", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
+		sprintf_s(szT, "%u x %u x %u", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
 		const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
 
 		VideoMode * const pvm = new VideoMode();
@@ -3693,7 +3692,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 						{
 						indexcur = i;
 						}
-					sprintf_s(szT, sizeof(szT), "%d x %d", xsize, xsize*3/4);
+					sprintf_s(szT, "%d x %d", xsize, xsize*3/4);
 					const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)szT);
 					VideoMode * const pvm = new VideoMode();
 					pvm->width = xsize;

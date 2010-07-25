@@ -215,7 +215,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 		//char szNum[64];
 		if (pvsel->Size() > 1)
 			{
-			sprintf_s(m_szHeader, sizeof(m_szHeader), "%s(%d)", szTemp, pvsel->Size());
+			sprintf_s(m_szHeader, "%s(%d)", szTemp, pvsel->Size());
 			}
 		else
 			{

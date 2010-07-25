@@ -282,7 +282,7 @@ void IEditable::InitScript()
 	if (lstrlenW((WCHAR *)GetScriptable()->m_wzName) == 0)
 		{
 		// Just in case something screws up - not good having a null script name
-		swprintf_s((WCHAR *)GetScriptable()->m_wzName, MAXNAMEBUFFER, L"%d", (long)this);
+		swprintf_s((WCHAR *)GetScriptable()->m_wzName, L"%d", (long)this);
 		}
 
 	GetPTable()->m_pcv->AddItem(GetScriptable(), fFalse);
