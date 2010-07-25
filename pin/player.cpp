@@ -14,12 +14,12 @@
 #define RESIZE_FROM_EXPAND WM_USER+101
 
 #if _MSC_VER <= 1310 // VC 2003 and before
-bool fopen_s(FILE** f, const char *fname, const char *attr)
+inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 {
 	*f = fopen(fname, attr);
 	return (*f != NULL);
 }
-void _controlfp_s(unsigned int *cw, const unsigned int i, const unsigned int j)
+inline void _controlfp_s(unsigned int *cw, const unsigned int i, const unsigned int j)
 {
 	*cw = _controlfp(i,j);
 }
@@ -646,7 +646,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	if (hr != S_OK)
 		{
 		char szfoo[64];
-		sprintf_s(szfoo, sizeof(szfoo), "Error code: %x",hr);
+		sprintf_s(szfoo, "Error code: %x",hr);
 		ShowError(szfoo);
 		return hr;
 		}
@@ -2517,12 +2517,12 @@ void Player::Render()
 		unsigned int control_word;
 
 		// Draw the amount of video memory used.
-		int len = sprintf_s(szFoo, sizeof(szFoo), "Total Video Memory = %d", NumVideoBytes);
+		int len = sprintf_s(szFoo, "Total Video Memory = %d", NumVideoBytes);
 		TextOut(hdcNull, 10, 75, szFoo, len);
 
 		// Draw the framerate.
 		_controlfp_s(&control_word, _PC_53, 0);
-		len = sprintf_s(szFoo, sizeof(szFoo), "%d %x %llu", m_fps, control_word, m_PhysicsStepTime);
+		len = sprintf_s(szFoo, "%d %x %llu", m_fps, control_word, m_PhysicsStepTime);
 		TextOut(hdcNull, 10, 10, szFoo, len);
 		period = msec()-stamp;
 		if( period > m_max ) m_max = period;
@@ -2560,7 +2560,7 @@ void Player::Render()
 
 			for(int i=0; i<TSIZE; i++)
 			{
-				len = sprintf( szFoo, "%d", period[i] );
+				len = sprintf_s( szFoo, "%d", period[i] );
 				TextOut( hdcNull,  20 + i * 20, 10 + period[i], szFoo, len );
 			}
 		}

@@ -16,7 +16,7 @@ void __cdecl MemLeakAlert(void * pUserData, size_t nBytes)
 		{
 		st[i] = pdata[i];
 		}
-	sprintf(szT,"Memory leak at 0x%.8x.\nStack trace:\n0x%.8x\n0x%.8x\n0x%.8x\n0x%.8x\n0x%.8x\n\nWould you like to debug?  (Cancel skips reporting any other leaks)",(int)pUserData+PREEXTRA,st[0],st[1],st[2],st[3],st[4]);
+	sprintf_s(szT,"Memory leak at 0x%.8x.\nStack trace:\n0x%.8x\n0x%.8x\n0x%.8x\n0x%.8x\n0x%.8x\n\nWould you like to debug?  (Cancel skips reporting any other leaks)",(int)pUserData+PREEXTRA,st[0],st[1],st[2],st[3],st[4]);
 	const int ans = MessageBox(NULL, szT, "Memory Leak", MB_YESNOCANCEL | MB_ICONWARNING | MB_DEFBUTTON2);
 	switch (ans)
 		{

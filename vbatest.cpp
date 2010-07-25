@@ -198,7 +198,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 		
 			if( play )
 			{
-				sprintf_s( szTableFileName, sizeof(szTableFileName)/sizeof(TCHAR), "%s", play+6 );
+				sprintf_s( szTableFileName, "%s", play+6 );
 				VPinball::SetOpenMinimized();
 				if(1)
 				{
@@ -212,7 +212,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 
 			if( resolution )
 			{
-				sprintf_s( szTableResolution, sizeof(szTableResolution), "%s", resolution+11 );				
+				sprintf_s( szTableResolution, "%s", resolution+11 );				
 			}
 
 			//fullscreen = StrStrI( lpCmdLine, "Fullscreen") != NULL;

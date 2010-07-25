@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 
 #if _MSC_VER <= 1310 // VC 2003 and before
-bool fopen_s(FILE** f, const char *fname, const char *attr)
+inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 {
 	*f = fopen(fname, attr);
 	return (*f != NULL);
