@@ -25,7 +25,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y)
 
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp", "Length", &fTmp);
 	if (hr == S_OK)
-		length = fTmp/2.0;
+		length = fTmp/2.0f;
 
 	CComObject<DragPoint> *pdp;
 	CComObject<DragPoint>::CreateInstance(&pdp);
