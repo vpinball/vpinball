@@ -279,10 +279,10 @@ void IEditable::Undelete()
 
 void IEditable::InitScript()
 	{
-	if (lstrlenW((WCHAR *)GetScriptable()->m_wzName) == 0)
+	if (lstrlenW(GetScriptable()->m_wzName) == 0)
 		{
 		// Just in case something screws up - not good having a null script name
-		swprintf((WCHAR *)GetScriptable()->m_wzName, L"%d", (long)this);
+		swprintf_s(GetScriptable()->m_wzName, L"%d", (long)this);
 		}
 
 	GetPTable()->m_pcv->AddItem(GetScriptable(), fFalse);
