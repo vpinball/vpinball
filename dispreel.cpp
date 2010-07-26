@@ -122,6 +122,7 @@ DispReel::~DispReel()
 //
 HRESULT DispReel::Init(PinTable *ptable, float x, float y)
 {
+	
 	m_ptable = ptable;
 
 	SetDefaults();
@@ -134,17 +135,60 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y)
 	m_pobjframe = NULL;
     //m_preelframe = NULL;
 
-	FONTDESC fd;
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
 
+	FONTDESC fd;
 	fd.cbSizeofstruct = sizeof(FONTDESC);
-	fd.lpstrName = L"Times New Roman";
-	fd.cySize.int64 = 260000;
-	//fd.cySize.Lo = 0;
-	fd.sWeight = FW_BOLD;
-	fd.sCharset = 0;
-    fd.fItalic = 0;
-	fd.fUnderline = 0;
-	fd.fStrikethrough = 0;
+	
+	char tmp[256];
+	hr = GetRegString("DefaultProps\\EMReel","FontName", tmp, 256);
+	if (hr != S_OK)
+		fd.lpstrName = L"Times New Roman";
+	else
+	{
+		unsigned int len = strlen(&tmp[0]);
+		fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
+		UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
+		fd.lpstrName[len] = 0;
+	}
+	
+	hr = GetRegStringAsFloat("DefaultProps\\EMReel","FontSize", &fTmp);
+	if (hr == S_OK)
+		fd.cySize.int64 = (LONGLONG)(fTmp * 10000.0);
+	else	
+		fd.cySize.int64 = 260000;
+	
+	hr = GetRegInt("DefaultProps\\EMReel", "FontWeight", &iTmp);
+	if (hr == S_OK)
+		fd.sWeight = iTmp;
+	else
+		fd.sWeight = FW_BOLD;
+
+	hr = GetRegInt("DefaultProps\\EMReel", "FontCharSet", &iTmp);
+	if (hr == S_OK)
+		fd.sCharset = iTmp;
+	else
+		fd.sCharset = 0;
+
+    hr = GetRegInt("DefaultProps\\EMReel", "FontItalic", &iTmp);
+	if (hr == S_OK)
+		fd.fItalic = iTmp == 0? false : true;
+	else
+		fd.fItalic = 0;
+
+	hr = GetRegInt("DefaultProps\\EMReel", "FontUnderline", &iTmp);
+	if (hr == S_OK)
+		fd.fUnderline = iTmp == 0? false : true;
+	else
+		fd.fUnderline = 0;
+		
+	hr = GetRegInt("DefaultProps\\EMReel", "FontStrikeThrough", &iTmp);
+	if (hr == S_OK)
+		fd.fStrikethrough = iTmp == 0? false : true;
+	else
+		fd.fStrikethrough = 0;
 
 	OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
 
@@ -153,8 +197,8 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y)
 
 
 
-// set the defaults for the objects persistant data (m_d.*) in case this
-// is a new instance of this object of there is a backwards compatability
+// set the defaults for the objects persistent data (m_d.*) in case this
+// is a new instance of this object or there is a backwards compatability
 // issue (old version of object doesn't contain all the needed fields)
 //
 void DispReel::SetDefaults()
@@ -163,27 +207,119 @@ void DispReel::SetDefaults()
 	m_fBackglass = fTrue;
 
     // set all the Data defaults
-    m_d.m_reeltype = ReelText;
-	m_d.m_szImage[0] = 0;
-    m_d.m_szSound[0] = 0;
-	m_d.m_fUseImageGrid = fFalse;
-    m_d.m_imagesPerGridRow = 1;
-	m_d.m_fTransparent = fFalse;
-    m_d.m_reelcount = 5;
-    m_d.m_width = 30.0f;
-    m_d.m_height = 40.0f;
-    m_d.m_reelspacing = 4.0f;
-    m_d.m_motorsteps = 2.0f;
-	m_d.m_digitrange = 9;
-    m_d.m_fShading = fFalse;
-    m_d.m_updateinterval = 50;
+	HRESULT hr;
+	float fTmp;
+	int iTmp;
 
-    m_d.m_backcolor = RGB(64,64,64);
-    m_d.m_fontcolor = RGB(0,0,0);
-    m_d.m_reelcolor = RGB(255,255,255);
+	hr = GetRegInt("DefaultProps\\EMReel","ReelType", &iTmp);
+	if (hr == S_OK)
+		m_d.m_reeltype = (enum ReelType)iTmp;
+	else
+		m_d.m_reeltype = ReelText;
 
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
+	hr = GetRegString("DefaultProps\\Ramp","Image", m_d.m_szImage, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szImage[0] = 0;
+    
+	hr = GetRegString("DefaultProps\\Ramp","Sound", m_d.m_szSound, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szSound[0] = 0;
+
+	hr = GetRegInt("DefaultProps\\EMReel","UseImageGrid", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fUseImageGrid = iTmp == 0? false : true;
+	else
+		m_d.m_fUseImageGrid = fFalse;
+
+    hr = GetRegInt("DefaultProps\\EMReel","ImagesPerRow", &iTmp);
+	if (hr == S_OK)
+		m_d.m_imagesPerGridRow = iTmp;
+	else
+		m_d.m_imagesPerGridRow = 1;
+
+	hr = GetRegInt("DefaultProps\\EMReel","Transparent", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fTransparent = iTmp == 0? false : true;
+	else
+		m_d.m_fTransparent = fFalse;
+    
+	hr = GetRegInt("DefaultProps\\EMReel","ReelCount", &iTmp);
+	if (hr == S_OK)
+		m_d.m_reelcount = iTmp;
+	else
+		m_d.m_reelcount = 5;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Ramp","Width", &fTmp);
+	if (hr == S_OK)
+		m_d.m_width = fTmp;
+	else
+		m_d.m_width = 30.0f;
+    
+	hr = GetRegStringAsFloat("DefaultProps\\Ramp","Height", &fTmp);
+	if (hr == S_OK)
+		m_d.m_height = fTmp;
+	else
+		m_d.m_height = 40.0f;
+    
+	hr = GetRegStringAsFloat("DefaultProps\\Ramp","ReelSpacing", &fTmp);
+	if (hr == S_OK)
+		m_d.m_reelspacing = fTmp;
+	else
+		m_d.m_reelspacing = 4.0f;
+    
+	hr = GetRegStringAsFloat("DefaultProps\\Ramp","MotorSteps", &fTmp);
+	if (hr == S_OK)
+		m_d.m_motorsteps = fTmp;
+	else
+		m_d.m_motorsteps = 2.0f;
+
+	hr = GetRegInt("DefaultProps\\EMReel","DigitRange", &iTmp);
+	if (hr == S_OK)
+		m_d.m_digitrange = iTmp;
+	else
+		m_d.m_digitrange = 9;
+    
+	hr = GetRegInt("DefaultProps\\EMReel","Shading", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fShading = iTmp == 0? false : true;
+	else
+		m_d.m_fShading = fFalse;
+    
+	hr = GetRegInt("DefaultProps\\EMReel","UpdateInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_updateinterval = iTmp;
+	else
+		m_d.m_updateinterval = 50;
+
+    hr = GetRegInt("DefaultProps\\EMReel","BackColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_backcolor = iTmp;
+	else
+		m_d.m_backcolor = RGB(64,64,64);
+    
+	hr = GetRegInt("DefaultProps\\EMReel","FontColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fontcolor = iTmp;
+	else
+		m_d.m_fontcolor = RGB(0,0,0);
+    
+	hr = GetRegInt("DefaultProps\\EMReel","ReelColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_reelcolor = iTmp;
+	else
+		m_d.m_reelcolor = RGB(255,255,255);
+
+	hr = GetRegInt("DefaultProps\\EMReel","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\EMReel","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
 }
 
 

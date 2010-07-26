@@ -106,7 +106,6 @@ void Decal::SetDefaults()
 		else	
 			fd.cySize.int64 = 142500;
 
-		//fd.lpstrName[0] = 0;
 		char tmp[256];
 		hr = GetRegString("DefaultProps\\Decal","FontName", tmp, 256);
 		if (hr != S_OK)
@@ -133,7 +132,7 @@ void Decal::SetDefaults()
 		
 		hr = GetRegInt("DefaultProps\\Decal", "FontItalic", &iTmp);
 		if (hr == S_OK)
-			fd.sWeight = iTmp == 0? false : true;
+			fd.fItalic = iTmp == 0? false : true;
 		else
 			fd.fItalic = 0;
 

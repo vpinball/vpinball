@@ -21,10 +21,26 @@ HRESULT Textbox::Init(PinTable *ptable, float x, float y)
 	{
 	m_ptable = ptable;
 
+	HRESULT hr;
+	float fTmp, width, height;
+	int iTmp;
+
+	hr = GetRegStringAsFloat("DefaultProps\\TextBox","Width", &fTmp);
+	if (hr == S_OK)
+		width = fTmp;
+	else
+		width = 100.0f;
+
+	hr = GetRegStringAsFloat("DefaultProps\\TextBox","Height", &fTmp);
+	if (hr == S_OK)
+		height = fTmp;
+	else
+		height = 50.0f;
+
 	m_d.m_v1.x = x;
 	m_d.m_v1.y = y;
-	m_d.m_v2.x = x+100;
-	m_d.m_v2.y = y+50;
+	m_d.m_v2.x = x+width;
+	m_d.m_v2.y = y+height;
 
 	SetDefaults();
 
@@ -33,35 +49,107 @@ HRESULT Textbox::Init(PinTable *ptable, float x, float y)
 	FONTDESC fd;
 
 	fd.cbSizeofstruct = sizeof(FONTDESC);
-	fd.lpstrName = L"Arial";
-	fd.cySize.int64 = 142500;
-	//fd.cySize.Lo = 0;
-	fd.sWeight = FW_NORMAL;
-	fd.sCharset = 0;
-    fd.fItalic = 0;
-	fd.fUnderline = 0;
-	fd.fStrikethrough = 0;
+
+	hr = GetRegStringAsFloat("DefaultProps\\TextBox","FontSize", &fTmp);
+	if (hr == S_OK)
+		fd.cySize.int64 = (LONGLONG)(fTmp * 10000.0);
+	else	
+		fd.cySize.int64 = 142500;
+
+	char tmp[256];
+	hr = GetRegString("DefaultProps\\TextBox","FontName", tmp, 256);
+	if (hr != S_OK)
+		fd.lpstrName = L"Arial";
+	else
+	{
+		unsigned int len = strlen(&tmp[0]);
+		fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
+		UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
+		fd.lpstrName[len] = 0;
+	}
+
+	hr = GetRegInt("DefaultProps\\TextBox", "FontWeight", &iTmp);
+	if (hr == S_OK)
+		fd.sWeight = iTmp;
+	else
+		fd.sWeight = FW_NORMAL;
+
+	hr = GetRegInt("DefaultProps\\TextBox", "FontCharSet", &iTmp);
+	if (hr == S_OK)
+		fd.sCharset = iTmp;
+	else
+		fd.sCharset = 0;
+	
+	hr = GetRegInt("DefaultProps\\TextBox", "FontItalic", &iTmp);
+	if (hr == S_OK)
+		fd.fItalic = iTmp == 0? false : true;
+	else
+		fd.fItalic = 0;
+
+	hr = GetRegInt("DefaultProps\\TextBox", "FontUnderline", &iTmp);
+	if (hr == S_OK)
+		fd.fUnderline = iTmp == 0? false : true;
+	else
+		fd.fUnderline = 0;
+	
+	hr = GetRegInt("DefaultProps\\TextBox", "FontStrikeThrough", &iTmp);
+	if (hr == S_OK)
+		fd.fStrikethrough = iTmp == 0? false : true;
+	else
+		fd.fStrikethrough = 0;
 
 	OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
 
-	lstrcpy(m_d.sztext,"0");
+	hr = GetRegString("DefaultProps\\TextBox","Text", m_d.sztext, MAXSTRING);
+	if (hr != S_OK)
+		lstrcpy(m_d.sztext,"0");
 
 	return InitVBA(fTrue, 0, NULL);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Textbox", NULL);
 	}
 
 void Textbox::SetDefaults()
 	{
-	m_d.m_backcolor = RGB(0,0,0);
-	m_d.m_fontcolor = RGB(255,255,255);
-
-	m_d.m_tdr.m_fTimerEnabled = fFalse;
-	m_d.m_tdr.m_TimerInterval = 100;
-
-	m_d.m_talign = TextAlignRight;
-
+	//Textbox is always located on backdrop
 	m_fBackglass = fTrue;
 
-	m_d.m_fTransparent = fFalse;
+	HRESULT hr;
+	int iTmp;
+
+	hr = GetRegInt("DefaultProps\\TextBox","BackColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_backcolor = iTmp;
+	else
+		m_d.m_backcolor = RGB(0,0,0);
+    
+	hr = GetRegInt("DefaultProps\\TextBox","FontColor", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fontcolor = iTmp;
+	else
+		m_d.m_fontcolor = RGB(255,255,255);
+
+	hr = GetRegInt("DefaultProps\\TextBox","TimerEnabled", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+	else
+		m_d.m_tdr.m_fTimerEnabled = false;
+	
+	hr = GetRegInt("DefaultProps\\TextBox","TimerInterval", &iTmp);
+	if (hr == S_OK)
+		m_d.m_tdr.m_TimerInterval = iTmp;
+	else
+		m_d.m_tdr.m_TimerInterval = 100;
+
+	hr = GetRegInt("DefaultProps\\TextBox","TextAlignment", &iTmp);
+	if (hr == S_OK)
+		m_d.m_talign = (enum TextAlignment)iTmp;
+	else	
+		m_d.m_talign = TextAlignRight;
+
+	hr = GetRegInt("DefaultProps\\TextBox","Transparent", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fTransparent = iTmp == 0? false : true;
+	else	
+		m_d.m_fTransparent = fFalse;
 	}
 
 STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
