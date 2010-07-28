@@ -3399,7 +3399,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		{
         case MM_MIXM_CONTROL_CHANGE:
             mixer_get_volume();
-            mixer_display_volume();
+//            mixer_display_volume(); only display volume when volume is changed by the user
             break;
 
 		case WM_CLOSE:
