@@ -4763,6 +4763,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y, bool keepName)
 			
 			if (keepName)
 			{
+				mCancelResolvingNames = false;
 				WCHAR *p_tmpName = peditNew->GetScriptable()->m_wzName;
 				
 				while (!IsNameUnique(p_tmpName))
