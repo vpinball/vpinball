@@ -605,7 +605,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Build Number updating in debug compile"
-				CommandLine="BuildNumber.exe buildnumber.h&#x0D;&#x0A;SVNRevision.cmd SVNRevision.h&#x0D;&#x0A;rem  Version changes during debug compile only&#x0D;&#x0A;&#x0D;&#x0A;"
+				CommandLine="BuildNumber.exe buildnumber.h&#x0D;&#x0A;SVNRevision.cmd svnrevision.h&#x0D;&#x0A;rem  Version changes during debug compile only&#x0D;&#x0A;&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -996,7 +996,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Build Number updating in debug compile"
-				CommandLine="BuildNumber.exe buildnumber.h&#x0D;&#x0A;SVNRevision.cmd SVNRevision.h&#x0D;&#x0A;rem  Version changes during debug compile only&#x0D;&#x0A;&#x0D;&#x0A;"
+				CommandLine="BuildNumber.exe buildnumber.h&#x0D;&#x0A;SVNRevision.cmd svnrevision.h&#x0D;&#x0A;rem  Version changes during debug compile only&#x0D;&#x0A;&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -1307,7 +1307,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="Pin\Ball.cpp"
+				RelativePath="Pin\ball.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -1445,7 +1445,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="BallEx.cpp"
+				RelativePath="ballex.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -1583,7 +1583,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Bumper.cpp"
+				RelativePath="bumper.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -1721,7 +1721,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="CodeView.cpp"
+				RelativePath="codeview.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -2135,7 +2135,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ComControl.cpp"
+				RelativePath="comcontrol.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -2273,7 +2273,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Decal.cpp"
+				RelativePath="decal.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -2837,7 +2837,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="DragPoint.cpp"
+				RelativePath="dragpoint.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -3389,7 +3389,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Media\FileIO.cpp"
+				RelativePath="Media\fileio.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -3527,7 +3527,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Flipper.cpp"
+				RelativePath="flipper.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -3665,7 +3665,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Gate.cpp"
+				RelativePath="gate.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -3953,7 +3953,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin\HitPlunger.cpp"
+				RelativePath="Pin\hitplunger.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -4091,7 +4091,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="HitRectSur.cpp"
+				RelativePath="hitrectsur.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -4229,7 +4229,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="HitSur.cpp"
+				RelativePath="hitsur.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -4367,7 +4367,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="IEditable.cpp"
+				RelativePath="ieditable.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -4505,7 +4505,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ISelect.cpp"
+				RelativePath="iselect.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -4643,7 +4643,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Kicker.cpp"
+				RelativePath="kicker.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -4781,7 +4781,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Light.cpp"
+				RelativePath="light.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -4919,7 +4919,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="LightSeq.cpp"
+				RelativePath="lightseq.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -5471,7 +5471,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Mesh.cpp"
+				RelativePath="mesh.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -5621,7 +5621,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PaintSur.cpp"
+				RelativePath="paintsur.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -5759,7 +5759,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin3D.cpp"
+				RelativePath="pin3d.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -5897,7 +5897,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinBinary.cpp"
+				RelativePath="pinbinary.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -6035,7 +6035,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinImage.cpp"
+				RelativePath="pinimage.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -6173,7 +6173,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinInput.cpp"
+				RelativePath="pininput.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -6311,7 +6311,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinSound.cpp"
+				RelativePath="pinsound.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -6449,7 +6449,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinTable.cpp"
+				RelativePath="pintable.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -6587,7 +6587,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinUndo.cpp"
+				RelativePath="pinundo.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -6725,7 +6725,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin\Player.cpp"
+				RelativePath="Pin\player.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -6875,7 +6875,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Plunger.cpp"
+				RelativePath="plunger.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -7013,7 +7013,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PropBrowser.cpp"
+				RelativePath="propbrowser.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -7151,7 +7151,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ramp.cpp"
+				RelativePath="ramp.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -7289,7 +7289,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="RegUtil.cpp"
+				RelativePath="regutil.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -7427,7 +7427,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ShadowSur.cpp"
+				RelativePath="shadowsur.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -7715,7 +7715,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Spinner.cpp"
+				RelativePath="spinner.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -7853,7 +7853,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="StdAfx.cpp"
+				RelativePath="stdafx.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8004,7 +8004,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Sur.cpp"
+				RelativePath="sur.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8142,7 +8142,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Surface.cpp"
+				RelativePath="surface.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8280,7 +8280,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="TableGlobal.cpp"
+				RelativePath="tableglobal.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8418,7 +8418,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Textbox.cpp"
+				RelativePath="textbox.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8556,7 +8556,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Timer.cpp"
+				RelativePath="timer.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8694,7 +8694,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Trigger.cpp"
+				RelativePath="trigger.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8832,7 +8832,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Variant.cpp"
+				RelativePath="variant.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8970,7 +8970,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="VBATest.cpp"
+				RelativePath="vbatest.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -9108,7 +9108,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="VBATest.idl"
+				RelativePath="vbatest.idl"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -9117,7 +9117,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9128,7 +9128,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9139,7 +9139,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9150,7 +9150,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9161,7 +9161,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9172,7 +9172,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9183,7 +9183,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9194,7 +9194,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9205,7 +9205,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9216,7 +9216,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9227,7 +9227,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9238,7 +9238,7 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
@@ -9249,13 +9249,13 @@
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
 						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="VBATest.h"
+						HeaderFileName="vbatest.h"
 						InterfaceIdentifierFileName="VBATest_i.c"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="VBATest.rc"
+				RelativePath="vbatest.rc"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -9376,7 +9376,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="VPinball.cpp"
+				RelativePath="vpinball.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -9802,7 +9802,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Worker.cpp"
+				RelativePath="worker.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -9940,7 +9940,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="XAudPlayer.cpp"
+				RelativePath="xaudplayer.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -10087,15 +10087,15 @@
 				>
 			</File>
 			<File
-				RelativePath="BallEx.h"
+				RelativePath="ballex.h"
 				>
 			</File>
 			<File
-				RelativePath="Bumper.h"
+				RelativePath="bumper.h"
 				>
 			</File>
 			<File
-				RelativePath="CodeView.h"
+				RelativePath="codeview.h"
 				>
 			</File>
 			<File
@@ -10107,11 +10107,11 @@
 				>
 			</File>
 			<File
-				RelativePath="ComControl.h"
+				RelativePath="comcontrol.h"
 				>
 			</File>
 			<File
-				RelativePath="Decal.h"
+				RelativePath="decal.h"
 				>
 			</File>
 			<File
@@ -10135,7 +10135,7 @@
 				>
 			</File>
 			<File
-				RelativePath="DragPoint.h"
+				RelativePath="dragpoint.h"
 				>
 			</File>
 			<File
@@ -10151,15 +10151,15 @@
 				>
 			</File>
 			<File
-				RelativePath="ExVector.h"
+				RelativePath="exvector.h"
 				>
 			</File>
 			<File
-				RelativePath="Media\FileIO.h"
+				RelativePath="Media\fileio.h"
 				>
 			</File>
 			<File
-				RelativePath="Flipper.h"
+				RelativePath="flipper.h"
 				>
 			</File>
 			<File
@@ -10167,11 +10167,11 @@
 				>
 			</File>
 			<File
-				RelativePath="Gate.h"
+				RelativePath="gate.h"
 				>
 			</File>
 			<File
-				RelativePath="HELPERS.H"
+				RelativePath="helpers.h"
 				>
 			</File>
 			<File
@@ -10187,43 +10187,43 @@
 				>
 			</File>
 			<File
-				RelativePath="Pin\HitPlunger.h"
+				RelativePath="Pin\hitplunger.h"
 				>
 			</File>
 			<File
-				RelativePath="HitRectSur.h"
+				RelativePath="hitrectsur.h"
 				>
 			</File>
 			<File
-				RelativePath="HitSur.h"
+				RelativePath="hitsur.h"
 				>
 			</File>
 			<File
-				RelativePath="Pin\HitTimer.h"
+				RelativePath="Pin\hittimer.h"
 				>
 			</File>
 			<File
-				RelativePath="IDebug.h"
+				RelativePath="idebug.h"
 				>
 			</File>
 			<File
-				RelativePath="IEditable.h"
+				RelativePath="ieditable.h"
 				>
 			</File>
 			<File
-				RelativePath="ISelect.h"
+				RelativePath="iselect.h"
 				>
 			</File>
 			<File
-				RelativePath="Kicker.h"
+				RelativePath="kicker.h"
 				>
 			</File>
 			<File
-				RelativePath="Light.h"
+				RelativePath="light.h"
 				>
 			</File>
 			<File
-				RelativePath="LightSeq.h"
+				RelativePath="lightseq.h"
 				>
 			</File>
 			<File
@@ -10243,7 +10243,7 @@
 				>
 			</File>
 			<File
-				RelativePath="Mesh.h"
+				RelativePath="mesh.h"
 				>
 			</File>
 			<File
@@ -10251,39 +10251,39 @@
 				>
 			</File>
 			<File
-				RelativePath="MSSCRIPT.H"
+				RelativePath="msscript.h"
 				>
 			</File>
 			<File
-				RelativePath="OLEAUTO.H"
+				RelativePath="oleauto.h"
 				>
 			</File>
 			<File
-				RelativePath="PaintSur.h"
+				RelativePath="paintsur.h"
 				>
 			</File>
 			<File
-				RelativePath="Pin3D.h"
+				RelativePath="pin3d.h"
 				>
 			</File>
 			<File
-				RelativePath="PinBinary.h"
+				RelativePath="pinbinary.h"
 				>
 			</File>
 			<File
-				RelativePath="PinImage.h"
+				RelativePath="pinimage.h"
 				>
 			</File>
 			<File
-				RelativePath="PinInput.h"
+				RelativePath="pininput.h"
 				>
 			</File>
 			<File
-				RelativePath="PinSound.h"
+				RelativePath="pinsound.h"
 				>
 			</File>
 			<File
-				RelativePath="PinTable.h"
+				RelativePath="pintable.h"
 				>
 			</File>
 			<File
@@ -10291,11 +10291,11 @@
 				>
 			</File>
 			<File
-				RelativePath="PinUndo.h"
+				RelativePath="pinundo.h"
 				>
 			</File>
 			<File
-				RelativePath="Pin\Player.h"
+				RelativePath="Pin\player.h"
 				>
 			</File>
 			<File
@@ -10303,19 +10303,19 @@
 				>
 			</File>
 			<File
-				RelativePath="Plunger.h"
+				RelativePath="plunger.h"
 				>
 			</File>
 			<File
-				RelativePath="PropBrowser.h"
+				RelativePath="propbrowser.h"
 				>
 			</File>
 			<File
-				RelativePath="Ramp.h"
+				RelativePath="ramp.h"
 				>
 			</File>
 			<File
-				RelativePath="RegUtil.h"
+				RelativePath="regutil.h"
 				>
 			</File>
 			<File
@@ -10338,7 +10338,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ShadowSur.h"
+				RelativePath="shadowsur.h"
 				>
 			</File>
 			<File
@@ -10350,35 +10350,35 @@
 				>
 			</File>
 			<File
-				RelativePath="Spinner.h"
+				RelativePath="spinner.h"
 				>
 			</File>
 			<File
-				RelativePath="StdAfx.h"
+				RelativePath="stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath="Sur.h"
+				RelativePath="sur.h"
 				>
 			</File>
 			<File
-				RelativePath="Surface.h"
+				RelativePath="surface.h"
 				>
 			</File>
 			<File
-				RelativePath="TableGlobal.h"
+				RelativePath="tableglobal.h"
 				>
 			</File>
 			<File
-				RelativePath="Textbox.h"
+				RelativePath="textbox.h"
 				>
 			</File>
 			<File
-				RelativePath="Timer.h"
+				RelativePath="timer.h"
 				>
 			</File>
 			<File
-				RelativePath="Trigger.h"
+				RelativePath="trigger.h"
 				>
 			</File>
 			<File
@@ -10390,11 +10390,11 @@
 				>
 			</File>
 			<File
-				RelativePath="VectorSort.h"
+				RelativePath="vectorsort.h"
 				>
 			</File>
 			<File
-				RelativePath="VPinball.h"
+				RelativePath="vpinball.h"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -10536,11 +10536,11 @@
 				>
 			</File>
 			<File
-				RelativePath="Worker.h"
+				RelativePath="worker.h"
 				>
 			</File>
 			<File
-				RelativePath="XAudPlayer.h"
+				RelativePath="xaudplayer.h"
 				>
 			</File>
 		</Filter>
