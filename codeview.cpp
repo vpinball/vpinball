@@ -1064,7 +1064,10 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
 			{
 				if (szText[i] = 11)
 				{
-					szText[i] = 13; //replace vertical tab with carriage return
+					for(int j=(i+1);j<cchar-1;++j)
+					{
+						szText[i]=szText[j];
+					}
 				}
 				else
 				{
