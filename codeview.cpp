@@ -1062,7 +1062,14 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
 		{
 		if (szText[i] < 9 || (szText[i] > 9 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
 			{
-			szText[i] = ' ';
+				if (szText[i] = 11)
+				{
+					szText[i] = 13; //replace vertical tab with carriage return
+				}
+				else
+				{
+					szText[i] = ' '; //replace any other invalid control characters with a space
+				}
 			}
 		}
 
