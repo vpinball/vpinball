@@ -958,7 +958,7 @@ rem  Version changes during debug compile only
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="Pin\Ball.cpp">
+				RelativePath="pin\ball.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -1069,7 +1069,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="BallEx.cpp">
+				RelativePath="ballex.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -1180,7 +1180,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Bumper.cpp">
+				RelativePath="bumper.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -1291,7 +1291,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="CodeView.cpp">
+				RelativePath="codeview.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -1402,7 +1402,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin\collide.cpp">
+				RelativePath="pin\collide.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -1513,7 +1513,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin\collideex.cpp">
+				RelativePath="pin\collideex.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -1624,7 +1624,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ComControl.cpp">
+				RelativePath="comcontrol.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -1735,7 +1735,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Decal.cpp">
+				RelativePath="decal.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -2188,7 +2188,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="DragPoint.cpp">
+				RelativePath="dragpoint.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -2299,7 +2299,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin\draw.cpp">
+				RelativePath="pin\draw.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -2632,7 +2632,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Media\FileIO.cpp">
+				RelativePath="media\fileio.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -2743,7 +2743,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Flipper.cpp">
+				RelativePath="flipper.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -2854,7 +2854,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Gate.cpp">
+				RelativePath="gate.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -2974,7 +2974,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin\hitflipper.cpp">
+				RelativePath="pin\hitflipper.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -3085,7 +3085,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin\HitPlunger.cpp">
+				RelativePath="pin\hitplunger.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -3196,7 +3196,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="HitRectSur.cpp">
+				RelativePath="hitrectsur.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -3307,7 +3307,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="HitSur.cpp">
+				RelativePath="hitsur.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -3418,7 +3418,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="IEditable.cpp">
+				RelativePath="ieditable.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -3529,7 +3529,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ISelect.cpp">
+				RelativePath="iselect.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -3640,7 +3640,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Kicker.cpp">
+				RelativePath="kicker.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -3751,7 +3751,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Light.cpp">
+				RelativePath="light.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -3862,7 +3862,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="LightSeq.cpp">
+				RelativePath="lightseq.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -3973,7 +3973,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Media\lzwreader.cpp">
+				RelativePath="media\lzwreader.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -4084,7 +4084,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Media\lzwwriter.cpp">
+				RelativePath="media\lzwwriter.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -4306,7 +4306,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Mesh.cpp">
+				RelativePath="mesh.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -4426,7 +4426,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PaintSur.cpp">
+				RelativePath="paintsur.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -4537,7 +4537,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin3D.cpp">
+				RelativePath="pin3d.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -4648,7 +4648,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinBinary.cpp">
+				RelativePath="pinbinary.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -4759,7 +4759,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinImage.cpp">
+				RelativePath="pinimage.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -4870,7 +4870,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinInput.cpp">
+				RelativePath="pininput.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -4981,7 +4981,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinSound.cpp">
+				RelativePath="pinsound.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -5092,7 +5092,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinTable.cpp">
+				RelativePath="pintable.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -5203,7 +5203,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PinUndo.cpp">
+				RelativePath="pinundo.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -5314,7 +5314,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin\Player.cpp">
+				RelativePath="pin\player.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -5434,7 +5434,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Plunger.cpp">
+				RelativePath="plunger.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -5545,7 +5545,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PropBrowser.cpp">
+				RelativePath="propbrowser.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -5656,7 +5656,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ramp.cpp">
+				RelativePath="ramp.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -5767,7 +5767,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="RegUtil.cpp">
+				RelativePath="regutil.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -5878,7 +5878,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ShadowSur.cpp">
+				RelativePath="shadowsur.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -5989,7 +5989,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Media\simpleplayer.cpp">
+				RelativePath="media\simpleplayer.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -6109,7 +6109,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Spinner.cpp">
+				RelativePath="spinner.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -6220,7 +6220,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="StdAfx.cpp">
+				RelativePath="stdafx.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -6344,7 +6344,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Sur.cpp">
+				RelativePath="sur.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -6455,7 +6455,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Surface.cpp">
+				RelativePath="surface.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -6566,7 +6566,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="TableGlobal.cpp">
+				RelativePath="tableglobal.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -6677,7 +6677,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Textbox.cpp">
+				RelativePath="textbox.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -6788,7 +6788,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Timer.cpp">
+				RelativePath="timer.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -6899,7 +6899,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Trigger.cpp">
+				RelativePath="trigger.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -7010,7 +7010,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Variant.cpp">
+				RelativePath="variant.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -7121,7 +7121,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="VBATest.cpp">
+				RelativePath="vbatest.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -7232,7 +7232,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="VBATest.idl">
+				RelativePath="vbatest.idl">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -7352,7 +7352,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="VBATest.rc">
+				RelativePath="vbatest.rc">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -7446,7 +7446,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="VPinball.cpp">
+				RelativePath="vpinball.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -7557,7 +7557,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin\wall.cpp">
+				RelativePath="pin\wall.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -7668,7 +7668,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Media\wavread.cpp">
+				RelativePath="media\wavread.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -7788,7 +7788,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Worker.cpp">
+				RelativePath="worker.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -7899,7 +7899,7 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="XAudPlayer.cpp">
+				RelativePath="xaudplayer.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -8014,28 +8014,28 @@ rem  Version changes during debug compile only
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="Pin\ball.h">
+				RelativePath="pin\ball.h">
 			</File>
 			<File
-				RelativePath="BallEx.h">
+				RelativePath="ballex.h">
 			</File>
 			<File
-				RelativePath="Bumper.h">
+				RelativePath="bumper.h">
 			</File>
 			<File
-				RelativePath="CodeView.h">
+				RelativePath="codeview.h">
 			</File>
 			<File
-				RelativePath="Pin\collide.h">
+				RelativePath="pin\collide.h">
 			</File>
 			<File
-				RelativePath="Pin\collideex.h">
+				RelativePath="pin\collideex.h">
 			</File>
 			<File
-				RelativePath="ComControl.h">
+				RelativePath="comcontrol.h">
 			</File>
 			<File
-				RelativePath="Decal.h">
+				RelativePath="decal.h">
 			</File>
 			<File
 				RelativePath="def.h">
@@ -8053,10 +8053,10 @@ rem  Version changes during debug compile only
 				RelativePath="disputil.h">
 			</File>
 			<File
-				RelativePath="DragPoint.h">
+				RelativePath="dragpoint.h">
 			</File>
 			<File
-				RelativePath="Pin\draw.h">
+				RelativePath="pin\draw.h">
 			</File>
 			<File
 				RelativePath="eventproxy.h">
@@ -8065,67 +8065,67 @@ rem  Version changes during debug compile only
 				RelativePath="extern.h">
 			</File>
 			<File
-				RelativePath="ExVector.h">
+				RelativePath="exvector.h">
 			</File>
 			<File
-				RelativePath="Media\FileIO.h">
+				RelativePath="media\fileio.h">
 			</File>
 			<File
-				RelativePath="Flipper.h">
+				RelativePath="flipper.h">
 			</File>
 			<File
 				RelativePath=".\freeimage.h">
 			</File>
 			<File
-				RelativePath="Gate.h">
+				RelativePath="gate.h">
 			</File>
 			<File
-				RelativePath="HELPERS.H">
+				RelativePath="helpers.h">
 			</File>
 			<File
 				RelativePath=".\hid.h">
 			</File>
 			<File
-				RelativePath="Pin\hitable.h">
+				RelativePath="pin\hitable.h">
 			</File>
 			<File
-				RelativePath="Pin\hitflipper.h">
+				RelativePath="pin\hitflipper.h">
 			</File>
 			<File
-				RelativePath="Pin\HitPlunger.h">
+				RelativePath="pin\hitplunger.h">
 			</File>
 			<File
-				RelativePath="HitRectSur.h">
+				RelativePath="hitrectsur.h">
 			</File>
 			<File
-				RelativePath="HitSur.h">
+				RelativePath="hitsur.h">
 			</File>
 			<File
-				RelativePath="Pin\HitTimer.h">
+				RelativePath="pin\hittimer.h">
 			</File>
 			<File
-				RelativePath="IDebug.h">
+				RelativePath="idebug.h">
 			</File>
 			<File
-				RelativePath="IEditable.h">
+				RelativePath="ieditable.h">
 			</File>
 			<File
-				RelativePath="ISelect.h">
+				RelativePath="iselect.h">
 			</File>
 			<File
-				RelativePath="Kicker.h">
+				RelativePath="kicker.h">
 			</File>
 			<File
-				RelativePath="Light.h">
+				RelativePath="light.h">
 			</File>
 			<File
-				RelativePath="LightSeq.h">
+				RelativePath="lightseq.h">
 			</File>
 			<File
-				RelativePath="Media\lzwreader.h">
+				RelativePath="media\lzwreader.h">
 			</File>
 			<File
-				RelativePath="Media\lzwwriter.h">
+				RelativePath="media\lzwwriter.h">
 			</File>
 			<File
 				RelativePath="main.h">
@@ -8134,61 +8134,61 @@ rem  Version changes during debug compile only
 				RelativePath="memutil.h">
 			</File>
 			<File
-				RelativePath="Mesh.h">
+				RelativePath="mesh.h">
 			</File>
 			<File
 				RelativePath=".\mixer.h">
 			</File>
 			<File
-				RelativePath="MSSCRIPT.H">
+				RelativePath="msscript.h">
 			</File>
 			<File
-				RelativePath="OLEAUTO.H">
+				RelativePath="oleauto.h">
 			</File>
 			<File
-				RelativePath="PaintSur.h">
+				RelativePath="paintsur.h">
 			</File>
 			<File
-				RelativePath="Pin3D.h">
+				RelativePath="pin3d.h">
 			</File>
 			<File
-				RelativePath="PinBinary.h">
+				RelativePath="pinbinary.h">
 			</File>
 			<File
-				RelativePath="PinImage.h">
+				RelativePath="pinimage.h">
 			</File>
 			<File
-				RelativePath="PinInput.h">
+				RelativePath="pininput.h">
 			</File>
 			<File
-				RelativePath="PinSound.h">
+				RelativePath="pinsound.h">
 			</File>
 			<File
-				RelativePath="PinTable.h">
+				RelativePath="pintable.h">
 			</File>
 			<File
 				RelativePath=".\pintypes.h">
 			</File>
 			<File
-				RelativePath="PinUndo.h">
+				RelativePath="pinundo.h">
 			</File>
 			<File
-				RelativePath="Pin\Player.h">
+				RelativePath="pin\player.h">
 			</File>
 			<File
 				RelativePath=".\plumb.h">
 			</File>
 			<File
-				RelativePath="Plunger.h">
+				RelativePath="plunger.h">
 			</File>
 			<File
-				RelativePath="PropBrowser.h">
+				RelativePath="propbrowser.h">
 			</File>
 			<File
-				RelativePath="Ramp.h">
+				RelativePath="ramp.h">
 			</File>
 			<File
-				RelativePath="RegUtil.h">
+				RelativePath="regutil.h">
 			</File>
 			<File
 				RelativePath=".\resource.h">
@@ -8205,37 +8205,37 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ShadowSur.h">
+				RelativePath="shadowsur.h">
 			</File>
 			<File
-				RelativePath="Media\simpleplayer.h">
+				RelativePath="media\simpleplayer.h">
 			</File>
 			<File
 				RelativePath=".\slintf.h">
 			</File>
 			<File
-				RelativePath="Spinner.h">
+				RelativePath="spinner.h">
 			</File>
 			<File
-				RelativePath="StdAfx.h">
+				RelativePath="stdafx.h">
 			</File>
 			<File
-				RelativePath="Sur.h">
+				RelativePath="sur.h">
 			</File>
 			<File
-				RelativePath="Surface.h">
+				RelativePath="surface.h">
 			</File>
 			<File
-				RelativePath="TableGlobal.h">
+				RelativePath="tableglobal.h">
 			</File>
 			<File
-				RelativePath="Textbox.h">
+				RelativePath="textbox.h">
 			</File>
 			<File
-				RelativePath="Timer.h">
+				RelativePath="timer.h">
 			</File>
 			<File
-				RelativePath="Trigger.h">
+				RelativePath="trigger.h">
 			</File>
 			<File
 				RelativePath="variant.h">
@@ -8244,10 +8244,10 @@ rem  Version changes during debug compile only
 				RelativePath="vector.h">
 			</File>
 			<File
-				RelativePath="VectorSort.h">
+				RelativePath="vectorsort.h">
 			</File>
 			<File
-				RelativePath="VPinball.h">
+				RelativePath="vpinball.h">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
 					<Tool
@@ -8354,16 +8354,16 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Pin\wall.h">
+				RelativePath="pin\wall.h">
 			</File>
 			<File
 				RelativePath=".\wintimer.h">
 			</File>
 			<File
-				RelativePath="Worker.h">
+				RelativePath="worker.h">
 			</File>
 			<File
-				RelativePath="XAudPlayer.h">
+				RelativePath="xaudplayer.h">
 			</File>
 		</Filter>
 		<Filter
@@ -8373,19 +8373,19 @@ rem  Version changes during debug compile only
 				RelativePath="arrow.cur">
 			</File>
 			<File
-				RelativePath="Ball.rgs">
+				RelativePath="ball.rgs">
 			</File>
 			<File
 				RelativePath="balltex2.bmp">
 			</File>
 			<File
-				RelativePath="Bumper.rgs">
+				RelativePath="bumper.rgs">
 			</File>
 			<File
 				RelativePath=".\chevron.bmp">
 			</File>
 			<File
-				RelativePath="ComControl.rgs">
+				RelativePath="comcontrol.rgs">
 			</File>
 			<File
 				RelativePath="cur00001.cur">
@@ -8442,16 +8442,16 @@ rem  Version changes during debug compile only
 				RelativePath="cursor1.cur">
 			</File>
 			<File
-				RelativePath="DispReel.rgs">
+				RelativePath="dispreel.rgs">
 			</File>
 			<File
-				RelativePath="DragPoint.rgs">
+				RelativePath="dragpoint.rgs">
 			</File>
 			<File
-				RelativePath="Flipper.rgs">
+				RelativePath="flipper.rgs">
 			</File>
 			<File
-				RelativePath="Gate.rgs">
+				RelativePath="gate.rgs">
 			</File>
 			<File
 				RelativePath="ico00001.ico">
@@ -8460,25 +8460,25 @@ rem  Version changes during debug compile only
 				RelativePath="icon1.ico">
 			</File>
 			<File
-				RelativePath="IconFlipper.bmp">
+				RelativePath="iconflipper.bmp">
 			</File>
 			<File
-				RelativePath="IconLight.bmp">
+				RelativePath="iconlight.bmp">
 			</File>
 			<File
-				RelativePath="IconTimer.bmp">
+				RelativePath="icontimer.bmp">
 			</File>
 			<File
-				RelativePath="IconTrigger.bmp">
+				RelativePath="icontrigger.bmp">
 			</File>
 			<File
-				RelativePath="Kicker.rgs">
+				RelativePath="kicker.rgs">
 			</File>
 			<File
-				RelativePath="Light.rgs">
+				RelativePath="light.rgs">
 			</File>
 			<File
-				RelativePath="LightSeq.rgs">
+				RelativePath="lightseq.rgs">
 			</File>
 			<File
 				RelativePath="logo25.bmp">
@@ -8490,19 +8490,19 @@ rem  Version changes during debug compile only
 				RelativePath=".\pause1.ico">
 			</File>
 			<File
-				RelativePath="PIEventHandler.rgs">
+				RelativePath="pieventhandler.rgs">
 			</File>
 			<File
 				RelativePath=".\play1.ico">
 			</File>
 			<File
-				RelativePath="Plunger.rgs">
+				RelativePath="plunger.rgs">
 			</File>
 			<File
-				RelativePath="Ramp.rgs">
+				RelativePath="ramp.rgs">
 			</File>
 			<File
-				RelativePath="Spinner.rgs">
+				RelativePath="spinner.rgs">
 			</File>
 			<File
 				RelativePath=".\step1.ico">
@@ -8517,19 +8517,19 @@ rem  Version changes during debug compile only
 				RelativePath="sunburst4.bmp">
 			</File>
 			<File
-				RelativePath="Surface.rgs">
+				RelativePath="surface.rgs">
 			</File>
 			<File
-				RelativePath="TableIcon.ico">
+				RelativePath="tableicon.ico">
 			</File>
 			<File
 				RelativePath=".\target.bmp">
 			</File>
 			<File
-				RelativePath="Textbox.rgs">
+				RelativePath="textbox.rgs">
 			</File>
 			<File
-				RelativePath="Timer.rgs">
+				RelativePath="timer.rgs">
 			</File>
 			<File
 				RelativePath="toolbar.bmp">
@@ -8538,10 +8538,10 @@ rem  Version changes during debug compile only
 				RelativePath=".\toolbardebug.bmp">
 			</File>
 			<File
-				RelativePath="Trigger.rgs">
+				RelativePath="trigger.rgs">
 			</File>
 			<File
-				RelativePath="VBATest.rgs">
+				RelativePath="vbatest.rgs">
 			</File>
 			<File
 				RelativePath="wall.cur">
@@ -8879,7 +8879,7 @@ rem  Version changes during debug compile only
 			</Filter>
 		</Filter>
 		<File
-			RelativePath="BaseTable17.vpt">
+			RelativePath="basetable17.vpt">
 		</File>
 	</Files>
 	<Globals>
