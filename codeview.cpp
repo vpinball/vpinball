@@ -1058,24 +1058,13 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
 	szText[cchar] = L'\0';
 
 	// check for bogus control characters
-	for (int i=0; i<cchar; ++i)
+	for (int i=0;i<cchar;i++)
+	{
+		if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
 		{
-		if (szText[i] < 9 || (szText[i] > 9 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
-			{
-				if (szText[i] = 11)
-				{
-					for(int j=(i+1);j<cchar-1;++j)
-					{
-						szText[i]=szText[j];
-					}
-				}
-				else
-				{
-					szText[i] = ' '; //replace any other invalid control characters with a space
-				}
-			}
+			szText[i] = ' ';
 		}
-
+	}
 	SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (long)szText);
 	SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
 
