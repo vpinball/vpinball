@@ -272,7 +272,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBC&#x0D;&#x0A;/NODEFAULTLIB:LIBCMT&#x0D;&#x0A;/NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
+				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
 				OutputFile="VBATest___Win32_ReleaseTestSpanish\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -751,7 +751,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBC&#x0D;&#x0A;/NODEFAULTLIB:LIBCMT&#x0D;&#x0A;/NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
+				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
 				OutputFile="VBATest___Win32_ReleaseTestGerman\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -848,7 +848,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBC&#x0D;&#x0A;/NODEFAULTLIB:LIBCMT&#x0D;&#x0A;/NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
+				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
 				OutputFile="VBATest___Win32_ReleaseTestFrench\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

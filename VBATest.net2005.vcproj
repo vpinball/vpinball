@@ -1094,7 +1094,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copiews in  exe production directory."
+				Description="Copies exe to production directory."
 				CommandLine="copy VPinball.exe &quot;C:\UPin\VisualPinball\data\exe&quot;"
 			/>
 		</Configuration>
