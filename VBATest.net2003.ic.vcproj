@@ -118,7 +118,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBC"
-				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib freeimage.lib dinput8.lib jpeg.lib dbghelp.lib xaudio.lib scinlibr.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib freeimage.lib jpeg.lib dbghelp.lib xaudio.lib scinlibr.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="ReleaseMinDependency/VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -189,7 +189,7 @@
 				AdditionalOptions="/NODEFAULTLIB:LIBC
 /NODEFAULTLIB:LIBCMT
 /NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
+				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
 				OutputFile="VBATest___Win32_ReleaseTestSpanish\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -325,7 +325,7 @@
 				AdditionalOptions="/NODEFAULTLIB:LIBC
 /NODEFAULTLIB:LIBCMT
 /NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib dinput8.lib jpeg.lib dbghelp.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib jpeg.lib dbghelp.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -394,7 +394,7 @@
 				AdditionalOptions="/NODEFAULTLIB:LIBC
 /NODEFAULTLIB:LIBCMT
 /NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib freeimage.lib dinput8.lib jpeg.lib dbghelp.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib freeimage.lib jpeg.lib dbghelp.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="VBATest___Win32_Profile\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -538,7 +538,7 @@ rem  Version changes during debug compile only
 				AdditionalOptions="/NODEFAULTLIB:LIBC
 /NODEFAULTLIB:LIBCMT
 /NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
+				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
 				OutputFile="VBATest___Win32_ReleaseTestGerman\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -608,7 +608,7 @@ rem  Version changes during debug compile only
 				AdditionalOptions="/NODEFAULTLIB:LIBC
 /NODEFAULTLIB:LIBCMT
 /NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib d:\gdk\vbatest\lib\wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
+				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib"
 				OutputFile="VBATest___Win32_ReleaseTestFrench\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -749,7 +749,7 @@ rem  Version changes during debug compile only
 				AdditionalOptions="/NODEFAULTLIB:LIBC
 /NODEFAULTLIB:LIBCMT
 /NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib dinput8.lib jpeg.lib dbghelp.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib jpeg.lib dbghelp.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -766,7 +766,7 @@ rem  Version changes during debug compile only
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copiews in  exe production directory."
+				Description="Copies exe to production directory."
 				CommandLine="copy VPinball.exe &quot;C:\UPin\VisualPinball\data\exe&quot;"/>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -834,7 +834,7 @@ rem  Version changes during debug compile only
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBC"
-				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib freeimage.lib dinput8.lib jpeg.lib dbghelp.lib xaudio.lib scinlibr.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib freeimage.lib jpeg.lib dbghelp.lib xaudio.lib scinlibr.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="ReleaseMinDependency/VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -913,7 +913,7 @@ rem  Version changes during debug compile only
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBC"
-				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib freeimage.lib dinput8.lib jpeg.lib dbghelp.lib xaudio.lib scinlibr.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib ddraw.lib dxguid.lib dsound.lib winmm.lib dinput.lib wmaudsdk.lib odbc32.lib odbccp32.lib freeimage.lib jpeg.lib dbghelp.lib xaudio.lib scinlibr.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="ReleaseMinDependency/VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
