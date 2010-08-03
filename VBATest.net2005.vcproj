@@ -1058,7 +1058,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBC&#x0D;&#x0A;/NODEFAULTLIB:LIBCMT&#x0D;&#x0A;/NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib dinput8.lib jpeg.lib dbghelp.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib jpeg.lib dbghelp.lib odbc32.lib odbccp32.lib xaudio.lib scinlibr.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
