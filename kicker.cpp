@@ -161,14 +161,14 @@ void Kicker::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Kicker::RenderStatic(Pin3D *ppin3d)
 	{
 	// Don't process "invisible" kickers.
 	if ((m_d.m_kickertype == KickerInvisible) || (m_d.m_kickertype == KickerHidden))
 		return;
 
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
+	//Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
+	LPDIRECT3DDEVICE7 const pd3dDevice =ppin3d->m_pd3dDevice;
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	RECT rcBounds;

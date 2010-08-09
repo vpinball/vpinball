@@ -68,6 +68,8 @@ public:
 	HBITMAP m_hbmGDIVersion; // HBitmap at screen depth so GDI draws it fast
 
 	PinBinary *m_ppb;  // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
+	
+	int m_idDD;
 };
 
 typedef int(CALLBACK *DDCreateFunction)(GUID FAR *lpGUID, LPVOID *lplpDD, REFIID iid, IUnknown FAR *pUnkOuter);
@@ -80,12 +82,13 @@ public:
 
 	HRESULT InitDD();
 
-	LPDIRECTDRAW7 m_pDD;
+//	LPDIRECTDRAW7 m_pDD;
+	Vector< LPDIRECTDRAW7 > m_vpDD;
 
-	LPDIRECTDRAWSURFACE7 CreateTextureOffscreen(const int width, const int height);
+	LPDIRECTDRAWSURFACE7 CreateTextureOffscreen(const int idDD, const int width, const int height);
 	LPDIRECTDRAWSURFACE7 CreateFromFile(char *szfile, int * const pwidth, int * const pheight);
-	LPDIRECTDRAWSURFACE7 CreateFromResource(const int id, int * const pwidth, int * const pheight);
-	LPDIRECTDRAWSURFACE7 CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
+	LPDIRECTDRAWSURFACE7 CreateFromResource(const int idDD, const int id, int * const pwidth, int * const pheight);
+	LPDIRECTDRAWSURFACE7 CreateFromHBitmap(const int idDD, HBITMAP hbm, int * const pwidth, int * const pheight);
 
 	LPDIRECTDRAWSURFACE7 DecompressJPEG(PinImage * const ppi/*char *szfile*/, PinBinary * const ppb, int * const pwidth, int * const pheight);
 
@@ -110,3 +113,4 @@ public:
 };
 
 #endif // !defined(AFX_PINIMAGE_H__74A4733B_B66C_4C24_97AE_C7E9792E0635__INCLUDED_)
+BOOL WINAPI DDEnumCallbackEx(GUID *lpGUID,LPSTR strDescripcion,LPSTR strNombre, LPVOID pUsuario, HMONITOR Handle);

@@ -85,6 +85,8 @@
 #define IDC_ANTIALIAS                   137
 #define IDS_GATE_DESC                   138
 #define IDC_CUR_WALL                    138
+#define IDC_DECAL2                      138
+#define IDC_MONITOR2                    138
 #define IDR_Gate                        139
 #define IDS_TB_GATE                     139
 #define IDC_CUR_FLIPPER                 139

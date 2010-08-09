@@ -105,6 +105,7 @@ public:
 	RECT m_rcupdate;
 	Vector<AnimObject> m_vobject;
 	BOOL m_fSeeThrough;
+	int m_idDD;
 	};
 
 HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections);
@@ -168,6 +169,7 @@ public:
 	float m_znear, m_zfar; // To tell which objects are closer and should be blitted last
 
 	BOOL m_fInvalid;
+	int m_idDD;
 	};
 
 class HitNormal : public HitObject

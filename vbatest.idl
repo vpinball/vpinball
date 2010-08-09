@@ -455,6 +455,9 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(13432), helpstring("property RenderEMReels")] HRESULT EnableEMReels([in] VARIANT_BOOL newVal);
 		[propget, id(13433), helpstring("property RenderDecals")] HRESULT EnableDecals([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(13433), helpstring("property RenderDecals")] HRESULT EnableDecals([in] VARIANT_BOOL newVal);
+		[propget, id(13434), helpstring("property ViewPlayfield")] HRESULT ViewPlayfield([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(13434), helpstring("property ViewPlayfield")] HRESULT ViewPlayfield([in] VARIANT_BOOL newVal);
+
 
 		//////////////
 		[propget, id(200), helpstring("property Accelerometer")] HRESULT Accelerometer([out, retval] VARIANT_BOOL *pVal);
@@ -499,6 +502,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(218), helpstring("property DeadSlider")] HRESULT DeadSlider([out, retval] int *pVal);
 		[propput, id(218), helpstring("property DeadSlider")] HRESULT DeadSlider([in] int newVal);
 
+/*
+		[propget, id(219), helpstring("property EnableMonitor2")] HRESULT EnableMonitor2([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(219), helpstring("property EnableMonitor2")] HRESULT EnableMonitor2([in] VARIANT_BOOL newVal);
+*/
 		[id(35), helpstring("method StartShake")] HRESULT StartShake([defaultvalue(1)] void);
 		[id(36), helpstring("method StopShake")] HRESULT StopShake([defaultvalue(1)] void);
 
@@ -1563,6 +1570,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(17), helpstring("property UseImageGrid")] HRESULT UseImageGrid([in] VARIANT_BOOL newVal);
 		[propget, id(18), helpstring("property ImagesPerGridRow")] HRESULT ImagesPerGridRow([out, retval] long *pVal);
 		[propput, id(18), helpstring("property ImagesPerGridRow")] HRESULT ImagesPerGridRow([in] long newVal);
+		[propget, id(19), helpstring("property InBackglass")] HRESULT InBackglass([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(19), helpstring("property InBackglass")] HRESULT InBackglass([in] VARIANT_BOOL newVal);
 
 		[id(30), helpstring("method AddValue")] HRESULT AddValue([in] long Value);
 		[id(31), helpstring("method ResetToZero")] HRESULT ResetToZero();

@@ -1236,7 +1236,7 @@ void Ramp::RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D * const r
 		}
 	}
 
-void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Ramp::RenderStatic(Pin3D *ppin3d)//const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	
 	if (!m_d.m_IsVisible) return;		// return if no Visible
@@ -1244,9 +1244,11 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 #ifdef RAMP_RENDER8BITALPHA
 	// Don't render acrylics.  
 	// They are rendered after the ball.
-	if (m_d.m_fAcrylic) return;
-#endif
 
+	if (m_d.m_fAcrylic) return;
+//
+#endif
+	LPDIRECT3DDEVICE7 const pd3dDevice =ppin3d->m_pd3dDevice;
 	if (m_d.m_type == RampType4Wire 
 		|| m_d.m_type == RampType2Wire 
 		|| m_d.m_type == RampType3WireLeft 
@@ -1256,11 +1258,12 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	else
 		{
-		Pin3D *const ppin3d = &g_pplayer->m_pin3d;
+		//Pin3D *const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 		float maxtu = 0, maxtv = 0;
-
+maxtu=0.78125;
+maxtv=0.78125;
 		D3DMATERIAL7 mtrl;
 		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
@@ -1320,11 +1323,11 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 				pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 
 				// Turn off texture filtering.
-				g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_POINT );
+				g_pplayer->m_vpin3d.ElementAt(0)->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_POINT );
 				}
 			else
 				{
-				g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+				g_pplayer->m_vpin3d.ElementAt(0)->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 				}
 
 			mtrl.diffuse.r = mtrl.ambient.r =
@@ -1340,6 +1343,22 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
+////////////aÑADIDO por pruebas con la transparencia borrar
+/*
+//			mtrl.diffuse.a = mtrl.ambient.a = 0.0f;
+//			mtrl.diffuse.g = mtrl.ambient.g = g * mtrl.ambient.a;
+//			mtrl.diffuse.b = mtrl.ambient.b = b * mtrl.ambient.a;
+
+
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+			//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+			//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD) 127);
+			//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+*/
+////////////////////////////////////////
 			}
 
 		pd3dDevice->SetMaterial(&mtrl);
@@ -1354,11 +1373,11 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		const float tablewidth = m_ptable->m_right - m_ptable->m_left;
 		const float tableheight = m_ptable->m_bottom - m_ptable->m_top;
 
-		const float scalewidth  = (float) g_pplayer->m_pin3d.m_dwRenderWidth  * (float)(1.0/64.055);		// 64.0f is texture width.			
-		const float scaleheight = (float) g_pplayer->m_pin3d.m_dwRenderHeight * (float)(1.0/64.055);		// 64.0f is texture height.
+		const float scalewidth  = (float) g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderWidth  * (float)(1.0/64.055);		// 64.0f is texture width.			
+		const float scaleheight = (float) g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight * (float)(1.0/64.055);		// 64.0f is texture height.
 		
-		const float inv_width = scalewidth / (float)g_pplayer->m_pin3d.m_dwRenderWidth;
-		const float inv_height = scaleheight / (float)g_pplayer->m_pin3d.m_dwRenderHeight;
+		const float inv_width = scalewidth / (float)g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderWidth;
+		const float inv_height = scaleheight / (float)g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight;
 
 		const float inv_width2 = maxtu / tablewidth;
 		const float inv_height2 = maxtv / tableheight;
@@ -1391,7 +1410,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 						{
 							Vertex2D rgvOut[4];
 							// Transform vertecies into screen coordinates.
-							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
+							g_pplayer->m_vpin3d.ElementAt(0)->TransformVertices(rgv3D, NULL, 4, rgvOut);
 
 							// Calculate texture coordinate for each vertex.
 							for (int r=0; r<4; r++)
@@ -1444,7 +1463,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
-			
+
 			pd3dDevice->SetMaterial(&mtrl);
 			}
 
@@ -1476,7 +1495,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 						{
 							Vertex2D rgvOut[4];
 							// Transform vertecies into screen coordinates.
-							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
+							g_pplayer->m_vpin3d.ElementAt(0)->TransformVertices(rgv3D, NULL, 4, rgvOut);
 
 							// Calculate texture coordinate for each vertex.
 							for (int r=0; r<4; r++)
@@ -1523,6 +1542,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
 			// Draw the wall of the ramp.
+
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi, 4, 0);
 
 			rgi[0] = 0;
@@ -1564,7 +1584,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 						{
 							Vertex2D rgvOut[4];
 							// Transform vertecies into screen coordinates.
-							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
+							g_pplayer->m_vpin3d.ElementAt(0)->TransformVertices(rgv3D, NULL, 4, rgvOut);
 
 							// Calculate texture coordinate for each vertex.
 							for (int r=0; r<4; r++)
@@ -1798,6 +1818,7 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(ACRY))
 		{
 		pbr->GetBool(&m_d.m_fAcrylic);
+		m_fAcrylic=m_d.m_fAcrylic;
 		}
 	else if (id == FID(NAME))
 		{
@@ -2425,17 +2446,18 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	else
 		{		
-		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+		Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 		float maxtu, maxtv;
-
+maxtu=0.78125;
+maxtv=0.78125;
 		D3DMATERIAL7 mtrl;
 		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 		mtrl.power = 0;
 		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
+//	g_pplayer->m_vpin3d.ElementAt(0)->SetRenderTarget(g_pplayer->m_vpin3d.ElementAt(0)->m_pddsBackBuffer, g_pplayer->m_vpin3d.ElementAt(0)->m_pddsZBuffer);
 		if (pin)
 			{
 			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
@@ -2475,7 +2497,7 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
-			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			g_pplayer->m_vpin3d.ElementAt(0)->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 			mtrl.diffuse.r = mtrl.ambient.r =
 			mtrl.diffuse.g = mtrl.ambient.g =
@@ -2490,6 +2512,20 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.r = mtrl.ambient.r = r;
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
+/////////////Añadido por pruebas borrar
+/*			mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+			mtrl.diffuse.r = mtrl.ambient.r = r * mtrl.ambient.a;
+			mtrl.diffuse.g = mtrl.ambient.g = g * mtrl.ambient.a;
+			mtrl.diffuse.b = mtrl.ambient.b = b * mtrl.ambient.a;
+
+
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+			//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+			//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD) 127);
+			//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCCOLOR);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCCOLOR); 
+*///////////////////////
 			}
 
 		pd3dDevice->SetMaterial(&mtrl);
@@ -2704,4 +2740,12 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->SetTexture(NULL);
 		}
+	}
+
+void SetDifuse(float r, float g, float b, float a, D3DMATERIAL7 mtrl)
+	{
+
+	mtrl.diffuse.r = r;
+	mtrl.diffuse.g = g;
+	mtrl.diffuse.b = b;	
 	}

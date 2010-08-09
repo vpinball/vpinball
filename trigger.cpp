@@ -424,15 +424,15 @@ void Trigger::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Trigger::RenderStatic(Pin3D *ppin3d)
 	{
 	if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
 		{
 		return;
 		}
 
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
+	//Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
+	LPDIRECT3DDEVICE7 const pd3dDevice =ppin3d->m_pd3dDevice;
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	ppin3d->EnableLightMap(fTrue, height);

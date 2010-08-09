@@ -187,7 +187,7 @@ extern const WCHAR rgwzTypeName[][16];
 	virtual IEditable *GetIEditable() {return (IEditable*)this;} \
 	virtual ISelect *GetISelect() {return (ISelect*)this;} \
 	virtual Hitable *GetIHitable() {return (Hitable *)this;} \
-	virtual void RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice); \
+	virtual void RenderStatic(Pin3D *ppin3d); \
 	virtual void PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice); \
 	virtual void RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice); \
 	virtual void RenderMoversFromCache(Pin3D *ppin3d); \
@@ -196,6 +196,7 @@ extern const WCHAR rgwzTypeName[][16];
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
 	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut) {return GetPTable()->GetPredefinedValue(dispID, dwCookie, pVarOut, this);} \
 	virtual void SetDefaults();
+
 
 class ShadowSur;
 
@@ -263,6 +264,8 @@ public:
 	void EndPlay();
 
 	int m_fBackglass; // if the light is on the table (0) or a backglass view
+	int m_idDD; // ID of display
+	int m_fAcrylic;
 
 	HitTimer *m_phittimer;
 
@@ -280,4 +283,5 @@ public:
 	//  that we have to put back if we undo
 	WCHAR *m_wzVBAName;
 	WCHAR *m_wzVBACode;
+
 	};

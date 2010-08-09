@@ -29,6 +29,7 @@ public:
 	char m_szOnImage[MAXTOKEN];
 	char m_szOffImage[MAXTOKEN];
 	BOOL m_fDisplayImage;
+	int m_idDD;
 	};
 
 class LightCenter : public ISelect

@@ -349,7 +349,7 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 
 		m_pinimage.m_width = rcOut.right;
 		m_pinimage.m_height = rcOut.bottom;
-		m_pinimage.m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(m_pinimage.m_width, m_pinimage.m_height);
+		m_pinimage.m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(0, m_pinimage.m_width, m_pinimage.m_height);
 
 		if (m_d.m_color == RGB(255,255,255))
 			{
@@ -413,10 +413,10 @@ void Decal::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Decal::RenderStatic(Pin3D *ppin3d)
 	{
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
+	//Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
+	LPDIRECT3DDEVICE7 const pd3dDevice =ppin3d->m_pd3dDevice;
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	D3DMATERIAL7 mtrl;
@@ -470,7 +470,7 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+		g_pplayer->m_vpin3d.ElementAt(0)->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
@@ -487,12 +487,12 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		// Render all alpha pixels.
-		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE); 
+		g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+		g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+		g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE); 
 
 		// Turn on anisotopic filtering. 
-		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
+		g_pplayer->m_vpin3d.ElementAt(0)->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
 		}
 
 	Vertex3D rgv3D[4];
@@ -538,7 +538,7 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	else
 		{
-		SetHUDVertices(rgv3D, 4);
+		SetHUDVertices(0, rgv3D, 4);
 		SetDiffuseFromMaterial(rgv3D, 4, &mtrl);
 
 		if( GetPTable()->GetDecalsEnabled() )
@@ -551,7 +551,7 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	// Set the texture state.
 	pd3dDevice->SetTexture(ePictureTexture, NULL);
-	g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+	g_pplayer->m_vpin3d.ElementAt(0)->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 	// Set the rendrer state.
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);

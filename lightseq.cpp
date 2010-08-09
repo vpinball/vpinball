@@ -213,6 +213,7 @@ void LightSeq::GetHitShapes(Vector<HitObject> *pvho)
 
 	// HACK - adding object directly to screen update list.  Someday make hit objects and screenupdaters seperate objects
 	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_lightseqanim);
+	g_pplayer->m_vscreenupdate.ElementAt(g_pplayer->m_vscreenupdate.Size()-1)->m_idDD = m_idDD;
 }
 
 void LightSeq::GetHitShapesDebug(Vector<HitObject> *pvho)
@@ -242,7 +243,7 @@ void LightSeq::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 {
 }
 
-void LightSeq::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void LightSeq::RenderStatic(Pin3D *ppin3d)
 {
 }
 

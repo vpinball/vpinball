@@ -192,6 +192,11 @@ public:
 	DWORD m_workerthreadid;
 
 	int m_autosaveTime;
+////////////////Añadido
+	GUID monitor_guid;
+	HMONITOR Hmon;
+	BOOL m_fEnableMonitor2;
+///////////////////
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

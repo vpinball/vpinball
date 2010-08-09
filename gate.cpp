@@ -343,14 +343,14 @@ void Gate::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Gate::RenderStatic(Pin3D *ppin3d)
 	{
 	if(!m_d.m_fSupports) return; // no support structures are allocated ... therfore render none
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 	
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
+	//Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
+	LPDIRECT3DDEVICE7 const pd3dDevice =ppin3d->m_pd3dDevice;
 	const float halflength = m_d.m_length * 0.5f;// + m_d.m_overhang;
 	const float halfthick = 2.0f;
 	const float h = m_d.m_height;
@@ -449,7 +449,7 @@ void Gate::RenderMoversFromCache(Pin3D *ppin3d)
 
 void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
 	float maxtuback, maxtvback;
@@ -593,7 +593,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			Display_ClearTexture ( ppin3d->m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
 			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
@@ -628,7 +628,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			
 			mtrl.diffuse.r = mtrl.ambient.r =
 			mtrl.diffuse.g = mtrl.ambient.g =
@@ -679,7 +679,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			
 			mtrl.diffuse.r = mtrl.ambient.r =
 			mtrl.diffuse.g = mtrl.ambient.g =
@@ -765,8 +765,8 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
+			Display_CreateTexture ( ppin3d->m_pd3dDevice, ppin3d->m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
+			Display_CopyTexture ( ppin3d->m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
 			}
 
 		ppin3d->ExpandRectByRect(&m_phitgate->m_gateanim.m_rcBounds, &pof->rc);

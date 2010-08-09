@@ -16,6 +16,7 @@ PinImage::PinImage()
 	m_rgbTransparent = RGB(255,255,255);
 	m_hbmGDIVersion = NULL;
 	m_ppb = NULL;
+	m_idDD = 0;
 }
 
 PinImage::~PinImage()
@@ -93,6 +94,32 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(INME))
 		{
 		pbr->GetString(m_szInternalName);
+//////////////////////////////Añadido
+		if (g_pvp->m_fEnableMonitor2)
+			{
+			PinTable * const pt = (PinTable *)pbr->m_pdata;
+			if (!lstrcmpi(m_szName,pt->m_szImageBackdrop))// || !strcmp(m_szInternalName,pt->m_szImageBackdrop))
+				{
+				m_idDD = 1;
+				}
+			else
+				{
+				for (int i=0;i<pt->m_vedit.Size();i++)
+					{
+					if (pt->m_vedit.ElementAt(i)->GetItemType()==eItemDispReel && pt->m_vedit.ElementAt(i)->m_idDD )
+						{
+						DispReel * const pdr = (DispReel *)pt->m_vedit.ElementAt(i);
+						if (!lstrcmpi(m_szName,pdr->m_d.m_szImage))// || !strcmp(m_szInternalName,pdr->m_d.m_szImage) )
+							{
+							m_idDD = pt->m_vedit.ElementAt(i)->m_idDD;
+							break;	
+							}
+						}
+					}
+				}
+
+			}
+///////////////////////////////////////
 		}
 	else if (id == FID(PATH))
 		{
@@ -112,7 +139,8 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(BITS))
 		{
-		m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(m_width, m_height);
+		m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(m_idDD, m_width, m_height);
+//		m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(m_width, m_height);
 
 		if (m_pdsBuffer == NULL)
 			{
@@ -176,7 +204,10 @@ void PinImage::EnsureColorKey()
 		DDSURFACEDESC2 ddsd;
 		ddsd.dwSize = sizeof(ddsd);
 		m_pdsBuffer->GetSurfaceDesc(&ddsd);
-		m_pdsBufferColorKey = g_pvp->m_pdd.CreateTextureOffscreen(ddsd.dwWidth, ddsd.dwHeight);
+
+		m_pdsBufferColorKey = g_pvp->m_pdd.CreateTextureOffscreen(m_idDD, ddsd.dwWidth, ddsd.dwHeight);
+		//m_pdsBufferColorKey = g_pvp->m_pdd.CreateTextureOffscreen( ddsd.dwWidth, ddsd.dwHeight);
+
 		m_pdsBufferColorKey->Blt(NULL,m_pdsBuffer,NULL,DDBLT_WAIT,NULL);
 		m_fTransparent = g_pvp->m_pdd.SetAlpha(m_pdsBufferColorKey, m_rgbTransparent, m_width, m_height);
 		if (!m_fTransparent) m_rgbTransparent = NOTRANSCOLOR; // set to magic color to disable future checking
@@ -193,7 +224,7 @@ void PinImage::EnsureBackdrop(const COLORREF color)
 		m_pdsBuffer->GetSurfaceDesc(&ddsd);
 		if (!m_pdsBufferBackdrop)
 			{
-			m_pdsBufferBackdrop = g_pvp->m_pdd.CreateTextureOffscreen(ddsd.dwWidth, ddsd.dwHeight);
+			m_pdsBufferBackdrop = g_pvp->m_pdd.CreateTextureOffscreen(0, ddsd.dwWidth, ddsd.dwHeight);
 			}
 		m_pdsBufferBackdrop->Blt(NULL,m_pdsBuffer,NULL,DDBLT_WAIT,NULL);
 		g_pvp->m_pdd.SetOpaqueBackdrop(m_pdsBufferBackdrop, m_rgbTransparent, color, ddsd.dwWidth, ddsd.dwHeight);
@@ -263,7 +294,7 @@ void PinImage::CreateGDIVersion()
 
 PinDirectDraw::PinDirectDraw()
 	{
-	m_pDD = NULL;
+//	m_pDD = NULL;
 
 	int tmp = 0;										
 	HRESULT hr = GetRegInt("Player", "HardwareRender", &tmp);
@@ -276,7 +307,13 @@ PinDirectDraw::PinDirectDraw()
 
 PinDirectDraw::~PinDirectDraw()
 	{
-	SAFE_RELEASE(m_pDD);
+	for (int i=0;i<m_vpDD.Size();i++)
+		{
+		SAFE_RELEASE(*m_vpDD.ElementAt(i));
+			delete m_vpDD.ElementAt(i);	
+		}
+		m_vpDD.RemoveAllElements();
+	//SAFE_RELEASE(m_pDD);
 	}
 
 HRESULT PinDirectDraw::InitDD()
@@ -297,27 +334,62 @@ HRESULT PinDirectDraw::InitDD()
 		return E_FAIL;
 		}
 
-	HRESULT hr = (*m_DDCreate)(NULL, (VOID **)&m_pDD, IID_IDirectDraw7, NULL);
+	m_vpDD.AddElement(new LPDIRECTDRAW7);
+	//HRESULT hr = (*m_DDCreate)(NULL, (VOID **)&m_pDD, IID_IDirectDraw7, NULL);
+	HRESULT hr = (*m_DDCreate)(NULL, (VOID **)m_vpDD.ElementAt(0), IID_IDirectDraw7, NULL);
 	if (hr != S_OK)
 		{
 		ShowError("Could not create Direct Draw.");
 		}
 
-	hr = m_pDD->SetCooperativeLevel(NULL, DDSCL_NORMAL | DDSCL_FPUPRESERVE);
+	//hr = m_pDD->SetCooperativeLevel(NULL, DDSCL_NORMAL | DDSCL_FPUPRESERVE);
+	LPDIRECTDRAW7 pDD =*m_vpDD.ElementAt(0);
+	hr = pDD->SetCooperativeLevel(NULL, DDSCL_NORMAL | DDSCL_FPUPRESERVE);
 	if (hr != S_OK)
 		{
 		ShowError("Could not set Direct Draw cooperative level.");
 		}
 
+
+	//  Select monitor for backglass
+	if (g_pvp->m_fEnableMonitor2)
+		{
+		POINT p = {GetSystemMetrics(SM_CXFULLSCREEN)+1,0};
+
+		g_pvp->Hmon = MonitorFromPoint(p,MONITOR_DEFAULTTONEAREST) ;
+
+		LPDIRECTDRAWENUMERATEEX lpDDEnumEx;
+		lpDDEnumEx = (LPDIRECTDRAWENUMERATEEX) GetProcAddress(g_pvp->m_pdd.m_DDraw,"DirectDrawEnumerateExA");
+		if (lpDDEnumEx)
+			{
+			lpDDEnumEx(DDEnumCallbackEx, (VOID **)g_pvp->Hmon,   DDENUM_ATTACHEDSECONDARYDEVICES);
+			}
+	
+		m_vpDD.AddElement(new LPDIRECTDRAW7);
+
+		//hr = (*m_DDCreate)(&g_pvp->monitor_guid, (VOID **)m_vpDD.ElementAt(1), IID_IDirectDraw7, NULL);
+		hr = (*m_DDCreate)(NULL, (VOID **)m_vpDD.ElementAt(1), IID_IDirectDraw7, NULL);
+		if (hr != S_OK)
+			{
+			ShowError("Could not create Direct Draw.");
+			}
+
+		LPDIRECTDRAW7 pDD =*m_vpDD.ElementAt(1);
+		hr = pDD->SetCooperativeLevel(NULL, DDSCL_NORMAL | DDSCL_FPUPRESERVE);
+		if (hr != S_OK)
+			{
+			ShowError("Could not set Direct Draw cooperative level.");
+			}
+		}
+	/////////////////////////
 	return S_OK;
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, const int height)
+LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int idDD, const int width, const int height)
 	{
 	DDSURFACEDESC2 ddsd;
     ZeroMemory( &ddsd, sizeof(ddsd) );
 	ddsd.dwSize = sizeof(ddsd);
-
 	// Texture dimensions must be in powers of 2
 	int texwidth  = 1 << ((int)(logf((float)(width -1))*((float)(1.0/log(2.0))) + 0.001f/*round-off*/)+1);
 	int texheight = 1 << ((int)(logf((float)(height-1))*((float)(1.0/log(2.0))) + 0.001f/*round-off*/)+1);
@@ -377,8 +449,12 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 	ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff000000;
 
 	LPDIRECTDRAWSURFACE7 pdds;
+
 	HRESULT hr;
-    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
+
+	//if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
+	LPDIRECTDRAW7 pDD =*m_vpDD.ElementAt(idDD);
+	if( FAILED( hr = pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
 		{
 		ShowError("Could not create texture offscreen surface.");
 		return NULL;
@@ -392,7 +468,8 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 	return pdds;
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwidth, int * const pheight)
+	
+	LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwidth, int * const pheight)
 	{
 	HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, szfile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 
@@ -401,10 +478,10 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 		return NULL;
 		}
 
-	return CreateFromHBitmap(hbm, pwidth, pheight);
+	return CreateFromHBitmap(0, hbm, pwidth, pheight);
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(const int id, int * const pwidth, int * const pheight)
+LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(const int idDD, const int id, int * const pwidth, int * const pheight)
 	{
 	HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, MAKEINTRESOURCE(id), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 
@@ -413,10 +490,10 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(const int id, int * const
 		return NULL;
 		}
 
-	return CreateFromHBitmap(hbm, pwidth, pheight);
+	return CreateFromHBitmap(idDD, hbm, pwidth, pheight);
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight)
+LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(const int idDD, HBITMAP hbm, int * const pwidth, int * const pheight)
 	{
 	BITMAP bm;
 	GetObject(hbm, sizeof(bm), &bm);
@@ -435,8 +512,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int * const p
 		{
 		return NULL; //rlc MAX_TEXTURE_SIZE is the limit for directx textures
 		}
-
-	LPDIRECTDRAWSURFACE7 pdds = CreateTextureOffscreen(bm.bmWidth, bm.bmHeight);
+	LPDIRECTDRAWSURFACE7 pdds = CreateTextureOffscreen(idDD, bm.bmWidth, bm.bmHeight);
 
 	HDC hdc;
 	pdds->GetDC(&hdc);
@@ -655,8 +731,9 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::DecompressJPEG(PinImage * const ppi, PinBina
 		ShowErrorID(IDS_IMAGETOOLARGE);
 		return NULL; // 4k*4k is the limit for directx textures
 		}
+	LPDIRECTDRAWSURFACE7 pdds = CreateTextureOffscreen(ppi->m_idDD, cinfo.image_width, cinfo.image_height);
+//	LPDIRECTDRAWSURFACE7 pdds = CreateTextureOffscreen(cinfo.image_width, cinfo.image_height);
 
-	LPDIRECTDRAWSURFACE7 pdds = CreateTextureOffscreen(cinfo.image_width, cinfo.image_height);
 	if (pdds == NULL)
 		{
 		return NULL;
@@ -1065,5 +1142,17 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 		pddsNext->Release();
 
 		CreateNextMipMapLevel(pddsNext);
+		}
+	}
+BOOL WINAPI DDEnumCallbackEx(GUID FAR *lpGUID,LPSTR strDescripcion,LPSTR strNombre, LPVOID pUsuario, HMONITOR Handle)
+	{
+	if (Handle==pUsuario)
+	{
+		g_pvp->monitor_guid=*lpGUID;
+		return fFalse;
+		}
+	else
+		{
+		return fTrue;
 		}
 	}

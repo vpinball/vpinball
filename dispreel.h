@@ -42,6 +42,8 @@ public:
     char        szfont[MAXSTRING];
 
     TimerDataRoot m_tdr;                // timer information
+
+	int			m_idDD;
 };
 
 typedef struct {
@@ -141,6 +143,10 @@ public:
     // properties
 	STDMETHOD(get_IsTransparent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_IsTransparent)(/*[in]*/ VARIANT_BOOL newVal);
+
+	STDMETHOD(get_InBackglass)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_InBackglass)(/*[in]*/ VARIANT_BOOL newVal);
+
 	STDMETHOD(get_Type)(/*[out, retval]*/ ReelType *pVal);
 	STDMETHOD(put_Type)(/*[in]*/ ReelType newVal);
 	STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);

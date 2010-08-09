@@ -54,7 +54,7 @@ void BumperHitCircle::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 void BumperAnimObject::Check3D()
 	{
 	if(!m_fVisible) return;
-	
+m_idDD = 0;	
 	if ((m_iframe == 0) && (m_TimeReset != 0))
 		{
 		m_iframe = 1;
@@ -194,6 +194,7 @@ void LineSegLevelEdge::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 void SlingshotAnimObject::Check3D()
 	{
+	m_idDD = 0;	
 	if ((m_iframe == 0) && (m_TimeReset != 0) && m_fAnimations)
 		{
 		m_iframe = 1;
@@ -506,6 +507,7 @@ void SpinnerAnimObject::UpdateVelocities(float dtime)
 
 void SpinnerAnimObject::Check3D()
 	{	
+m_idDD = 0;	
 	if (!m_fVisible)
 		{
 		if (m_iframe != -1)
@@ -923,6 +925,7 @@ Hit3DPolyDrop::Hit3DPolyDrop(Vertex3D * const rgv, const int count, const bool k
 
 void PolyDropAnimObject::Check3D()
 	{
+m_idDD = 0;	
 	if (m_iframe != m_iframedesire)
 		{
 		m_iframe = m_iframedesire;
@@ -944,8 +947,8 @@ void PolyDropAnimObject::Reset()
 
 ObjFrame *TextboxAnimObject::Draw3D(RECT *prc)
 	{
-	g_pplayer->m_pin3d.m_pddsBackBuffer->Blt(&m_ptextbox->m_pobjframe->rc, m_ptextbox->m_pobjframe->pdds, NULL, DDBLTFAST_WAIT, NULL);
-
+	g_pplayer->m_vpin3d.ElementAt(m_ptextbox->m_idDD)->m_pddsBackBuffer->Blt(&m_ptextbox->m_pobjframe->rc, m_ptextbox->m_pobjframe->pdds, NULL, DDBLTFAST_WAIT, NULL);
+		
 	return NULL;
 	}
 
@@ -959,6 +962,7 @@ void DispReelAnimObject::Check3D()
 {
     // update the reels animation (returns saying weither to redraw the frame object or not)
     m_fInvalid = m_pDispReel->RenderAnimation();
+	m_idDD=m_pDispReel->m_idDD;
 }
 
 // this function is called when it is time to be drawn (Z-Ordered)
@@ -972,15 +976,16 @@ ObjFrame *DispReelAnimObject::Draw3D(RECT *prc)
 	RECT	rc;
 	rc.left = 0;		
 	rc.top = 0;	
-	
+
 	rc.right = m_pDispReel->m_pobjframe->rc.right - m_pDispReel->m_pobjframe->rc.left; //rlc uninitialized
 	rc.bottom = m_pDispReel->m_pobjframe->rc.bottom - m_pDispReel->m_pobjframe->rc.top;	
-	
-	g_pplayer->m_pin3d.m_pddsBackBuffer->BltFast(m_pDispReel->m_pobjframe->rc.left,
+
+	g_pplayer->m_vpin3d.ElementAt(m_pDispReel->m_idDD)->m_pddsBackBuffer->BltFast(m_pDispReel->m_pobjframe->rc.left,
 												 m_pDispReel->m_pobjframe->rc.top,
 												 m_pDispReel->m_pobjframe->pdds,
 												 &rc,
 												 DDBLTFAST_SRCCOLORKEY);
+
 	// return with no object
 	return (ObjFrame *)NULL;
 }
