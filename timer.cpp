@@ -141,7 +141,7 @@ void Timer::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Timer::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Timer::RenderStatic(Pin3D *ppin3d)
 	{
 	}
 	

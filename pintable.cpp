@@ -672,7 +672,8 @@ PinTable::PinTable()
 
 	m_fRenderDecals = fTrue;
 	m_fRenderEMReels = fTrue;
-	
+	m_fViewPlayfield = fTrue;
+
 	m_Gravity = GRAVITYCONST;
 	m_hardFriction = RC_FRICTIONCONST;
 	m_hardScatter = 0;
@@ -1338,14 +1339,14 @@ void PinTable::Render(Sur * psur)
 				}
 			}
 
-	if (g_pvp->m_fBackglassView)
+	if (g_pvp->m_fBackglassView && m_fViewPlayfield )
 		{
 		Render3DProjection(psur);
 		}
 
 	for (int i=0;i<m_vedit.Size();i++)
 		{
-		if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
+		if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)// && m_vedit.ElementAt(i)->GetItemType() != eItemDispReel) || (g_pvp->m_fBackglassView && m_vedit.ElementAt(i)->GetItemType() == eItemDispReel) )
 			{
 			m_vedit.ElementAt(i)->PreRender(psur);
 			}
@@ -1385,7 +1386,7 @@ void PinTable::Render(Sur * psur)
 
 	for (int i=0;i<m_vedit.Size();i++)
 		{
-		if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
+		if ((m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView && m_vedit.ElementAt(i)->GetItemType() != eItemDispReel) || (g_pvp->m_fBackglassView && m_vedit.ElementAt(i)->GetItemType() == eItemDispReel) )
 			{
 			m_vedit.ElementAt(i)->Render(psur);
 			}
@@ -4399,7 +4400,7 @@ void PinTable::ExportBlueprint()
 
 	for (int i=0;i<m_vedit.Size();i++)
 		{
-		if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
+		if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)// && m_vedit.ElementAt(i)->GetItemType() != eItemDispReel) || (g_pvp->m_fBackglassView && m_vedit.ElementAt(i)->GetItemType() == eItemDispReel) )
 			{
 			m_vedit.ElementAt(i)->RenderBlueprint(psur);
 			}
@@ -6329,7 +6330,7 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
 
 		ppi->m_width = width;
 		ppi->m_height = height;
-		ppi->m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(width, height);
+		ppi->m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(0, width, height);
 
 		if (ppi->m_pdsBuffer == NULL)
 			{
@@ -7451,6 +7452,22 @@ STDMETHODIMP PinTable::put_EnableEMReels(VARIANT_BOOL newVal)
 
 	return S_OK;
 }
+
+STDMETHODIMP PinTable::get_ViewPlayfield(VARIANT_BOOL *pVal)
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_fViewPlayfield);
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ViewPlayfield(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+	m_fViewPlayfield = VBTOF(newVal);
+	STOPUNDO
+
+	return S_OK;
+}
 //////////////////////// uShock Accelerometer controls ///////////////////
 
 STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)
@@ -7599,6 +7616,35 @@ STDMETHODIMP PinTable::put_UseD3DBlit(VARIANT_BOOL newVal)
 
 	return S_OK;
 }
+/*
+STDMETHODIMP PinTable::get_EnableMonitor2(VARIANT_BOOL *pVal)
+{
+	*pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_fEnableMonitor2 : false); //VP Editor
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_EnableMonitor2(VARIANT_BOOL newVal)
+{
+	if (!g_pplayer && g_pvp) 
+		{														//VP Editor
+		int tmp;
+		const HRESULT hr = GetRegInt("Player", "EnableMonitor2", &tmp);
+		if ((hr == S_OK) && (tmp == 1))
+			{
+			tmp = 0;
+			g_pvp->m_fEnableMonitor2 = tmp;
+			}
+		else
+			{
+			tmp = 1;
+			g_pvp->m_fEnableMonitor2 = tmp;
+			}
+		SetRegValue("Player", "EnableMonitor2", REG_DWORD, &tmp, 4);
+		}
+	return S_OK;
+}
+*/
 
 STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 {

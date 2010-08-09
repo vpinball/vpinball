@@ -92,7 +92,8 @@ public:
 	bool fControlPoint; // Whether this point was a control point on the curve
 	};
 
-void SetHUDVertices(Vertex3D * const rgv, const int count);
+//void SetHUDVertices(Vertex3D * const rgv, const int count);
+void SetHUDVertices(const int IDPin3d, Vertex3D * const rgv, const int count);
 void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri);
 void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv);
 

@@ -155,6 +155,9 @@ void Light::SetDefaults()
 		m_d.m_bordercolor = RGB(0,0,0);
 
 	m_d.m_szSurface[0] = 0;
+
+
+
 	}
 
 void Light::PreRender(Sur *psur)
@@ -538,7 +541,7 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 		if (!m_fBackglass)
 			{
-			Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+			Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
 			for (int l=0;l<3;l++)
 				ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 
@@ -548,7 +551,7 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 		else
 			{
-			SetHUDVertices(rgv3D, 3);
+			SetHUDVertices(m_idDD, rgv3D, 3);
 
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 													  rgv3D, 3,
@@ -563,8 +566,18 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(m_idDD);
+/*	Pin3D * ppin3d;
 
+	if (m_fBackglass && g_pvp->m_fEnableMonitor2)
+		{
+		ppin3d= g_pplayer->m_vpin3d.ElementAt(1);
+		}
+	else
+		{
+		ppin3d= g_pplayer->m_vpin3d.ElementAt(0);
+		}
+*/
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
@@ -607,7 +620,7 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	else
 		{
-		SetHUDVertices(rgv3D, 32);
+		SetHUDVertices(m_idDD, rgv3D, 32);
 		SetDiffuseFromMaterial(rgv3D, 32, &mtrl);
 
 		if( GetPTable()->GetDecalsEnabled() )
@@ -623,11 +636,12 @@ void Light::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Light::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Light::RenderStatic(Pin3D *ppin3d)
 	{
 	if (m_d.m_borderwidth > 0)
 		{
-		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	//	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
+	LPDIRECT3DDEVICE7 const pd3dDevice =ppin3d->m_pd3dDevice;
 
 		const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -658,7 +672,18 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 		delete vvertex.ElementAt(i);
 		}
 
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+//	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
+	Pin3D * ppin3d;
+
+	if (m_fBackglass && g_pvp->m_fEnableMonitor2)
+		{
+		ppin3d= g_pplayer->m_vpin3d.ElementAt(1);
+		}
+	else
+		{
+		ppin3d= g_pplayer->m_vpin3d.ElementAt(0);
+		}
+
 
 	Vector<void> vpoly;
 	float maxdist = 0;
@@ -766,11 +791,12 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			// object we're rendering, clear the whole buffer.
 			Rect.top = 0;
 			Rect.left = 0;
-			Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
-			Rect.right = g_pplayer->m_pin3d.m_dwRenderWidth - 1;
+			Rect.bottom = g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight - 1;
+			Rect.right = g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderWidth - 1;
 
 			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			//Display_ClearTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			Display_ClearTexture ( ppin3d->m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
 			ppin3d->m_pddsZTextureBuffer->BltFast(Rect.left, Rect.top, ppin3d->m_pddsStaticZ, &Rect, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
@@ -842,7 +868,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 			else
 				{
-				SetHUDVertices(rgv3D, 3);
+				SetHUDVertices(m_idDD, rgv3D, 3);
 
 				if( GetPTable()->GetDecalsEnabled() )
 					{
@@ -862,7 +888,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					{
 					if (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc))
 						{
-						pie->GetIHitable()->RenderStatic(pd3dDevice);
+						pie->GetIHitable()->RenderStatic(ppin3d);//pd3dDevice);
 						}
 					}
 				}
@@ -884,8 +910,11 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
+			//Display_CreateTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, g_pplayer->m_vpin3d.ElementAt(0)->m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
+			//Display_CopyTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
+
+			Display_CreateTexture ( ppin3d->m_pd3dDevice, ppin3d->m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
+			Display_CopyTexture ( ppin3d->m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
 			}
 
 		ppin3d->WriteObjFrameToCacheFile(m_pobjframe[i]);
@@ -930,7 +959,18 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+//	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
+	Pin3D * ppin3d;
+
+	if (m_fBackglass && g_pvp->m_fEnableMonitor2)
+		{
+		ppin3d= g_pplayer->m_vpin3d.ElementAt(1);
+		}
+	else
+		{
+		ppin3d= g_pplayer->m_vpin3d.ElementAt(0);
+		}
+
 	ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
 
 	//pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
@@ -938,7 +978,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	//pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	//pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
 
-	g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+	ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
@@ -966,7 +1006,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	else
 		{
-		SetHUDVertices(rgv3D, 32);
+		SetHUDVertices(m_idDD, rgv3D, 32);
 		}
 
 	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
@@ -1015,7 +1055,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			Display_ClearTexture ( ppin3d->m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
 			ppin3d->m_pddsZTextureBuffer->BltFast(m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.top, ppin3d->m_pddsStaticZ, &(m_pobjframe[i]->rc), DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
@@ -1051,7 +1091,7 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					{
 					if (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc))
 						{
-						pie->GetIHitable()->RenderStatic(pd3dDevice);
+						pie->GetIHitable()->RenderStatic(ppin3d);//pd3dDevice);
 						}
 					}
 				}
@@ -1065,8 +1105,11 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
+			Display_CreateTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, g_pplayer->m_vpin3d.ElementAt(0)->m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
+			Display_CopyTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
+
+//			Display_CreateTexture ( g_pplayer->m_vpin3d.ElementAt(1)->m_pd3dDevice, g_pplayer->m_vpin3d.ElementAt(1)->m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
+//			Display_CopyTexture ( g_pplayer->m_vpin3d.ElementAt(1)->m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
 			}
 
 		ppin3d->WriteObjFrameToCacheFile(m_pobjframe[i]);
@@ -1267,6 +1310,15 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(BGLS))
 		{
 		pbr->GetBool(&m_fBackglass);
+
+		if (g_pvp->m_fEnableMonitor2 && m_fBackglass)
+			{
+			m_idDD = 1;
+			}
+		else
+			{
+			m_idDD = 0;
+			}
 		}
 	else
 		{
@@ -1466,8 +1518,18 @@ STDMETHODIMP Light::put_State(LightState newVal)
 
 void Light::DrawFrame(BOOL fOn)
 	{
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(m_idDD);
 
+/*	Pin3D * ppin3d;
+	if (m_fBackglass && g_pvp->m_fEnableMonitor2)
+		{
+		ppin3d= g_pplayer->m_vpin3d.ElementAt(1);
+		}
+	else
+		{
+		ppin3d= g_pplayer->m_vpin3d.ElementAt(0);
+		}
+*/
 	const int frame = fOn;
 
 	// Light might be off the screen and have no image
@@ -1481,10 +1543,10 @@ void Light::DrawFrame(BOOL fOn)
 		if (m_pobjframe[frame]->pTexture)
 		{
 			// Direct all renders to the "static" buffer.
-			g_pplayer->m_pin3d.SetRenderTarget(g_pplayer->m_pin3d.m_pddsStatic);
+			g_pplayer->m_vpin3d.ElementAt(0)->SetRenderTarget(g_pplayer->m_vpin3d.ElementAt(0)->m_pddsStatic);
 
 			// Blit with D3D.
-			Display_DrawSprite(g_pplayer->m_pin3d.m_pd3dDevice, 
+			Display_DrawSprite(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, 
 							(float) m_pobjframe[frame]->rc.left, (float) m_pobjframe[frame]->rc.top, 
 							(float) (m_pobjframe[frame]->rc.right - m_pobjframe[frame]->rc.left), (float) (m_pobjframe[frame]->rc.bottom - m_pobjframe[frame]->rc.top), 
 							1.0f, 1.0f, 1.0f, 1.0f, 
@@ -1492,10 +1554,10 @@ void Light::DrawFrame(BOOL fOn)
 							m_pobjframe[frame]->pTexture, m_pobjframe[frame]->u, m_pobjframe[frame]->v, 
 							DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT);
 
-			g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
+			g_pplayer->InvalidateRect(m_idDD, &m_pobjframe[frame]->rc);
 
 			// Direct all renders to the back buffer.
-			g_pplayer->m_pin3d.SetRenderTarget(g_pplayer->m_pin3d.m_pddsBackBuffer);
+			g_pplayer->m_vpin3d.ElementAt(0)->SetRenderTarget(g_pplayer->m_vpin3d.ElementAt(0)->m_pddsBackBuffer);
 		}
 	}
 	else
@@ -1508,7 +1570,8 @@ void Light::DrawFrame(BOOL fOn)
 			// We can use BltFast here because we are drawing to our own offscreen iamge
 			/*const HRESULT hr =*/ ppin3d->m_pddsStatic->BltFast(m_pobjframe[frame]->rc.left, m_pobjframe[frame]->rc.top, m_pobjframe[frame]->pdds, NULL, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
 
-			g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
+			g_pplayer->InvalidateRect(m_idDD, &m_pobjframe[frame]->rc);
+
 		}
 	}
 }

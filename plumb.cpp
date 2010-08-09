@@ -120,15 +120,15 @@ int plumb_tilted()
 
 void draw_transparent_box( F32 sx, F32 sy, F32 x, F32 y, U32 color )
 {
-    sx *= ((float) g_pplayer->m_pin3d.m_dwRenderHeight)*(float)(1.0/600.0);
-    sy *= ((float) g_pplayer->m_pin3d.m_dwRenderWidth )*(float)(1.0/800.0);
+    sx *= ((float) g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight)*(float)(1.0/600.0);
+    sy *= ((float) g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderWidth )*(float)(1.0/800.0);
 
 	const F32 r = ((float) ((color             ) >> 24)) *(float)(1.0/255.0);
     const F32 g = ((float) ((color & 0x00ff0000) >> 16)) *(float)(1.0/255.0);
     const F32 b = ((float) ((color & 0x0000ff00) >>  8)) *(float)(1.0/255.0);
     const F32 a = ((float) ((color & 0x000000ff)      )) *(float)(1.0/255.0);
 
-    Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
+    Display_DrawSprite( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, 
                         y, x,
                         sy, sx,
                         r, g, b, a,
@@ -147,7 +147,7 @@ void invalidate_box( F32 sx, F32 sy, F32 x, F32 y )
 	Rect.right  = (int)( y + sy * 0.5f );
 	Rect.top    = (int)( x - sx * 0.5f );
 	Rect.bottom = (int)( x + sx * 0.5f );
-	g_pplayer->InvalidateRect(&Rect);
+	g_pplayer->InvalidateRect(0, &Rect);
 }
 #endif
 
@@ -163,11 +163,11 @@ void plumb_draw()
 	HRESULT				ReturnCode;
 
 	// Save the current transformation state.
-	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+	ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 	// Save the current render state.
-	Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
+	Display_GetRenderState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &(RestoreRenderState));
 	// Save the current texture state.
-	Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+	Display_GetTextureState (g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &(RestoreTextureState));
 
     F32 x = sPlumbPos[0];
     F32 y = sPlumbPos[1];
@@ -181,11 +181,11 @@ void plumb_draw()
 	draw_transparent_box( 3, 3, x+gPlumb.y*100.0f, y+ac*(-(gPlumb.x))*100.0f, 0xffffffff );
 
 	// Restore the render states.
-	Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
+	Display_SetRenderState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &(RestoreRenderState));
 	// Restore the texture state.
-	Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+	Display_SetTextureState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &(RestoreTextureState));
 	// Restore the transformation state.
-	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+	ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 
     dirty = 1;
 #endif

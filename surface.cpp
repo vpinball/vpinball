@@ -969,17 +969,17 @@ void Surface::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	}
 
 
-void Surface::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Surface::RenderStatic(Pin3D *ppin3d)
 	{
 	if (!m_d.m_fDroppable || !m_d.m_fInner)
 		{
-		RenderWallsAtHeight(pd3dDevice, fFalse, fFalse);
+		RenderWallsAtHeight(ppin3d->m_pd3dDevice, fFalse, fFalse);
 		}
 	}
 
 void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
 
 	const float slingbottom = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.2f) + m_d.m_heightbottom;
 	const float slingtop = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.8f) + m_d.m_heightbottom;
@@ -1058,7 +1058,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			Display_ClearTexture ( ppin3d->m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
 			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
@@ -1123,8 +1123,8 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
+			Display_CreateTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, g_pplayer->m_vpin3d.ElementAt(0)->m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
+			Display_CopyTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
 			}
 
 		ppin3d->ExpandRectByRect(&plinesling->m_slingshotanim.m_rcBounds, &pof->rc);
@@ -1145,7 +1145,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	{
 	ObjFrame *pof = NULL;
 
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
@@ -1165,11 +1165,11 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			RECT Rect;
 			Rect.top = 0;
 			Rect.left = 0;
-			Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
-			Rect.right = g_pplayer->m_pin3d.m_dwRenderWidth - 1;
+			Rect.bottom = g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight - 1;
+			Rect.right = g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderWidth - 1;
 
 			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			Display_ClearTexture ( ppin3d->m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
 			ppin3d->m_pddsZTextureBuffer->BltFast(Rect.left, Rect.top, ppin3d->m_pddsStaticZ, &Rect, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 		}
@@ -1231,7 +1231,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+		g_pplayer->m_vpin3d.ElementAt(0)->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 		mtrl.diffuse.r = mtrl.ambient.r =
 		mtrl.diffuse.g = mtrl.ambient.g =
@@ -1500,7 +1500,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			g_pplayer->m_vpin3d.ElementAt(0)->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			}
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -1541,7 +1541,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			g_pplayer->m_vpin3d.ElementAt(0)->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 			mtrl.diffuse.r = mtrl.ambient.r =
 			mtrl.diffuse.g = mtrl.ambient.g =
@@ -1646,8 +1646,8 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
+			Display_CreateTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, g_pplayer->m_vpin3d.ElementAt(0)->m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
+			Display_CopyTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
 			}
 
 		ppin3d->ExpandRectByRect(&m_phitdrop->m_polydropanim.m_rcBounds, &pof->rc);
@@ -1702,7 +1702,7 @@ void Surface::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			m_phitdrop->m_polydropanim.m_pobjframe[1] = pof2;
 			}
 
-		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+		Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
 		ppin3d->WriteAnimObjectToCacheFile(&m_phitdrop->m_polydropanim, m_phitdrop->m_polydropanim.m_pobjframe, 2);
 		}
 	}

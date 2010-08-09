@@ -2,6 +2,7 @@
 
 #define FPS 1
 
+//#define RAMP_RENDER8BITALPHA 1
 #define STEPPING 1
 
 #ifdef _DEBUG_
@@ -73,6 +74,7 @@ public:
 	HRESULT Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName, BOOL fCheckForCache);
 	void InitWindow();
 	void InitDMDHackWindow();
+	void InitBackglassWindow();
 	void InitKeys();
 	void InitRegValues();
 
@@ -91,7 +93,7 @@ public:
 
 	void PhysicsSimulateCycle(float dtime, const U64 startTime);
 
-	void InvalidateRect(RECT *prc);
+	void InvalidateRect(int idDD, RECT *prc);
 	void DrawLightHack ();
 
 	void EraseBall(Ball *pball);
@@ -162,6 +164,13 @@ public:
 	int m_width, m_height;
 
 	int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, m_frotate;
+
+//////////////Añadido
+	int m_bgwidth, m_bgheight;
+
+	int m_bgscreenwidth, m_bgscreenheight, m_bgscreendepth, m_bgrefreshrate, m_bgfrotate;
+//////////////////////
+
 	BOOL m_fFullScreen;
 
 	PinTable *m_ptable;
@@ -173,7 +182,10 @@ public:
 
 	int m_timeCur;
 
-	Pin3D m_pin3d;
+	//Pin3D m_pin3d;
+
+	HWND m_backglasshwnd;
+	Vector< Pin3D > m_vpin3d;
 
 private:
 	U64 m_liStartTime;
@@ -192,6 +204,8 @@ public:
 	BOOL m_fNoTimeCorrect; // Used so the frame after debugging does not do normal time correction
 	PinInput m_pininput;
 	Level m_mainlevel; // level object for main table level;
+
+
 
 private:
 	BOOL m_fPlayback;
@@ -254,7 +268,9 @@ public:
 	Vector<CLSID> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
 
 	GPINFLOAT m_pixelaspectratio;
-
+/////////Añadido
+	GPINFLOAT m_bpixelaspectratio;
+///////////////
 	BOOL m_fDebugMode;
 	HWND m_hwndDebugger;
 	HWND m_hwndDebugOutput;

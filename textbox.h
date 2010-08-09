@@ -27,6 +27,7 @@ public:
 	TimerDataRoot m_tdr;
 	TextAlignment m_talign;
 	BOOL m_fTransparent;
+	int m_idDD;
 	};
 
 class ATL_NO_VTABLE Textbox :

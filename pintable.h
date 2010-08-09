@@ -148,6 +148,9 @@ public:
 	STDMETHOD(get_EnableEMReels)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_EnableEMReels)(/*[in]*/ VARIANT_BOOL newVal);
 
+	STDMETHOD(get_ViewPlayfield)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_ViewPlayfield)(/*[in]*/ VARIANT_BOOL newVal);
+
 	/////////////////////////////////////////////
 	STDMETHOD(get_Accelerometer)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Accelerometer)(/*[in]*/ VARIANT_BOOL newVal);	
@@ -170,6 +173,9 @@ public:
 	STDMETHOD(put_AlternateRender)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_UseD3DBlit)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_UseD3DBlit)(/*[in]*/ VARIANT_BOOL newVal);
+//	STDMETHOD(get_EnableMonitor2)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+//	STDMETHOD(put_EnableMonitor2)(/*[in]*/ VARIANT_BOOL newVal);
+
 	/////////////////////////////////////////////
 
 	STDMETHOD(get_DeadSlider)(/*[out, retval]*/  int *pVal);
@@ -435,6 +441,8 @@ END_CONNECTION_POINT_MAP()
 
 	BOOL m_fRenderDecals;
 	BOOL m_fRenderEMReels;
+	BOOL m_fViewPlayfield;
+
 	float m_rotation;
 	float m_inclination;
 	float m_FOV;

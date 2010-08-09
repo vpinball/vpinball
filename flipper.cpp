@@ -549,14 +549,14 @@ void Flipper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Flipper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Flipper::RenderStatic(Pin3D *ppin3d)
 	{
 	}
 
 void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, float angle,  float height, 
 								COLORREF color, float baseradius, float endradius, float flipperheight)
 	{
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
 
 	const float r = (float)(color & 255) * (float)(1.0/255.0);
 	const float g = (float)(color & 65280) * (float)(1.0/65280.0);
@@ -729,7 +729,7 @@ void Flipper::RenderMoversFromCache(Pin3D *ppin3d)
 void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	_ASSERTE(m_phitflipper);
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
 	
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
@@ -743,7 +743,7 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	const int cframes = max(abs(((int)(m_d.m_EndAngle - m_d.m_StartAngle))/2),2);//10),2);
 
 	// Direct all renders to the back buffer.
-	//g_pplayer->m_pin3d.SetRenderTarget(g_pplayer->m_pin3d.m_pddsBackBuffer);
+	//g_pplayer->m_vpin3d.ElementAt(0)->SetRenderTarget(g_pplayer->m_vpin3d.ElementAt(0)->m_pddsBackBuffer);
 
 	const float inv_cframes = (anglerad2 - anglerad)/(float)(cframes-1);
 	// Pre-render each of the frames.
@@ -764,11 +764,11 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			// object we're rendering, clear the whole buffer.
 			Rect.top = 0;
 			Rect.left = 0;
-			Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
-			Rect.right = g_pplayer->m_pin3d.m_dwRenderWidth - 1;
+			Rect.bottom = g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight - 1;
+			Rect.right = g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderWidth - 1;
 
 			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			Display_ClearTexture ( ppin3d->m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
 			ppin3d->m_pddsZTextureBuffer->BltFast(Rect.left, Rect.top, ppin3d->m_pddsStaticZ, &Rect, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);				
 			}
 
@@ -799,8 +799,8 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
+			Display_CreateTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, g_pplayer->m_vpin3d.ElementAt(0)->m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
+			Display_CopyTexture ( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
 			}
 
 		// Reset the portion of the z-buffer that we changed.

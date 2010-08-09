@@ -66,15 +66,18 @@ void LightProjected::CalcCoordinates(Vertex3D * const pv, const float inv_width,
 	//vT.y += m_v.y;
 	//vT.z += 0;
 
-	pv->tu2 = (vOrigin.x /*(vT.x - m_v.x)*/ * inv_width  + 0.5f) * g_pplayer->m_pin3d.m_maxtu;
-	pv->tv2 = (vOrigin.y /*(vT.y - m_v.y)*/ * inv_height + 0.5f) * g_pplayer->m_pin3d.m_maxtv;
+	pv->tu2 = (vOrigin.x /*(vT.x - m_v.x)*/ * inv_width  + 0.5f) * g_pplayer->m_vpin3d.ElementAt(0)->m_maxtu;
+	pv->tv2 = (vOrigin.y /*(vT.y - m_v.y)*/ * inv_height + 0.5f) * g_pplayer->m_vpin3d.ElementAt(0)->m_maxtv;
 	}
 
-void SetHUDVertices(Vertex3D * const rgv, const int count)
+void SetHUDVertices(const int m_idDD, Vertex3D * const rgv, const int count)
 	{
-	const float mult = (float)g_pplayer->m_pin3d.m_dwRenderWidth * (float)(1.0/1000.0);
-	const float ymult = mult / (float)g_pplayer->m_pixelaspectratio;
 
+	const float mult = (float)g_pplayer->m_vpin3d.ElementAt(m_idDD)->m_dwRenderWidth * (float)(1.0/1000.0);
+///////////Añadido
+	const float ymult = mult / (float)g_pplayer->m_vpin3d.ElementAt(m_idDD)->m_aspectratio;
+//	const float ymult = mult / (float)g_pplayer->m_pixelaspectratio;
+//////////////
 	for (int i=0; i<count; ++i)
 		{
 		rgv[i].x *= mult;
@@ -92,7 +95,8 @@ void SetHUDVertices(Vertex3D * const rgv, const int count)
 			{
 			const float ftemp = rgv[i].x;
 			rgv[i].x = rgv[i].y;
-			rgv[i].y = g_pplayer->m_pin3d.m_dwViewPortHeight - ftemp;
+			rgv[i].y = g_pplayer->m_vpin3d.ElementAt(m_idDD)->m_dwViewPortHeight - ftemp;
+
 			}
 		}
 	}
