@@ -267,7 +267,7 @@ void VPinball::Init()
 	InitVBA();
 
 	m_pds.InitDirectSound(m_hwnd);
-	m_fEnableMonitor2=fTrue;
+	m_fEnableMonitor2=fFalse;
 	hr = m_pdd.InitDD();
 
 	if (hr != S_OK)
