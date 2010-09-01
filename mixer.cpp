@@ -231,15 +231,15 @@ void mixer_draw()
 	}
 
 	// Save the current transformation state.
-	ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 	// Save the current render state.
-	Display_GetRenderState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &(RestoreRenderState));
+	Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
 	// Save the current texture state.
-	Display_GetTextureState (g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &(RestoreTextureState));
+	Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 
     const U32 alpha = (U32) ( fade * 222.2f );
 
-    F32 ypos = (F32)( -((S32)g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight/2) );
+    F32 ypos = (F32)( -((S32)g_pplayer->m_pin3d.m_dwRenderHeight/2) );
     F32 yoff = volume_adjustment_bar_big_size[1] * 2.0f;
 
     for(F32 vol = 0, y= - ( volume_adjustment_bar_ysize*0.5f );
@@ -280,12 +280,12 @@ void mixer_draw()
 //        draw_transparent_box( size[0], size[1], volume_adjustment_bar_pos[0], volume_adjustment_bar_pos[1]+y, color );
 
 		// Calculate the scale.
-		const float sX = - (float)g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight*(float)(1.0/601.0); //changed from 600 to 601 to correct fadeout shadow lines
-		const float sY = - (float)g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderWidth *(float)(1.0/800.0);
+		const float sX = - (float)g_pplayer->m_pin3d.m_dwRenderHeight*(float)(1.0/601.0); //changed from 600 to 601 to correct fadeout shadow lines
+		const float sY = - (float)g_pplayer->m_pin3d.m_dwRenderWidth *(float)(1.0/800.0);
 
 		// Set the position.  
-		const float fX = (float)g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight + (volume_adjustment_bar_pos[0] * sX);
-		const float fY = (float)g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderWidth  + (volume_adjustment_bar_pos[1] * sY) + (y * sY);
+		const float fX = (float)g_pplayer->m_pin3d.m_dwRenderHeight + (volume_adjustment_bar_pos[0] * sX);
+		const float fY = (float)g_pplayer->m_pin3d.m_dwRenderWidth  + (volume_adjustment_bar_pos[1] * sY) + (y * sY);
 
 		// Set the width and height.
 		const float Width = size[0] * sX;
@@ -298,7 +298,7 @@ void mixer_draw()
 		float a = ((float) ((drop_color & 0x000000ff)      )) * (float)(1.0/255.0);
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
-		Display_DrawSprite( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, 
+		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
 							(fY + 1.0f), (fX + 1.0f),
 							(Height - 2.0f), (Width - 2.0f), 
 							r, g, b, a,
@@ -313,7 +313,7 @@ void mixer_draw()
 		a = ((float) ((color & 0x000000ff)      )) * (float)(1.0/255.0);
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
-		Display_DrawSprite( g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, 
+		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
 							fY, fX,
 							Height, Width, 
 							r, g, b, a,
@@ -323,11 +323,11 @@ void mixer_draw()
 	}
 
 	// Restore the render states.
-	Display_SetRenderState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &(RestoreRenderState));
+	Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
 	// Restore the texture state.
-	Display_SetTextureState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &(RestoreTextureState));
+	Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 	// Restore the transformation state.
-	ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 }
 
 // Flags that the region behind the mixer volume should be refreshed.
@@ -336,21 +336,21 @@ void mixer_erase()
 	if( !m_bUpdate ) return;
 
 	// Calculate the scale.
-	const float sX = - (float)g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight*(float)(1.0/600.0);
+	const float sX = - (float)g_pplayer->m_pin3d.m_dwRenderHeight*(float)(1.0/600.0);
 
 	// Set the position.  
-	//const float fX = ((float) g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight) + (volume_adjustment_bar_pos[0] * sX);
+	//const float fX = ((float) g_pplayer->m_pin3d.m_dwRenderHeight) + (volume_adjustment_bar_pos[0] * sX);
 
 	// Set the width and height.
 	const float Width = volume_adjustment_bar_big_size[0] * sX;
 
 	// Invalidate the window region to signal an update from the back buffer (after render is complete).
 	RECT	Rect;
-	Rect.top = (LONG) ((g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight) + (volume_adjustment_bar_pos[0] * sX) + (Width));
+	Rect.top = (LONG) ((g_pplayer->m_pin3d.m_dwRenderHeight) + (volume_adjustment_bar_pos[0] * sX) + (Width));
 	Rect.left = 0;			
-	Rect.bottom = g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight - 1;
-	Rect.right = g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderWidth - 1;
-	g_pplayer->InvalidateRect(0, &Rect);
+	Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
+	Rect.right = g_pplayer->m_pin3d.m_dwRenderWidth - 1;
+	g_pplayer->InvalidateRect(&Rect);
 
 	m_bUpdate = false;
 }

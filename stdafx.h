@@ -2,10 +2,6 @@
 //      or project specific include files that are used frequently,
 //      but are changed infrequently
 
-#if _MSC_VER >= 1500 // VC 2008 and later
-#define WINVER 0x0500 // for multimonitor support
-#endif
-
 #define ULTRA_FREE 1
 
 #define NO_X87_FPU 1

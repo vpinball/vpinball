@@ -257,7 +257,7 @@ void Bumper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Bumper::RenderStatic(Pin3D *ppin3d)
+void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fVisible)	return;
 		
@@ -267,8 +267,8 @@ void Bumper::RenderStatic(Pin3D *ppin3d)
 
 	if (pin)
 		{
-		//Pin3D *const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
-		LPDIRECT3DDEVICE7 const pd3dDevice =ppin3d->m_pd3dDevice;
+		Pin3D *const ppin3d = &g_pplayer->m_pin3d;
+
 		float maxtu, maxtv;
 		m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
@@ -404,7 +404,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	
 	const float outerradius = m_d.m_radius + m_d.m_overhang;
 
-	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
@@ -467,7 +467,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{			
 			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( ppin3d->m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
 			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
@@ -793,8 +793,8 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
 			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( ppin3d->m_pd3dDevice, ppin3d->m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
-			Display_CopyTexture ( ppin3d->m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
+			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
+			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
 			}
 
 		ppin3d->ExpandRectByRect(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &pof->rc);

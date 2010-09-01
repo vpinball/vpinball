@@ -150,16 +150,6 @@ void Textbox::SetDefaults()
 		m_d.m_fTransparent = iTmp == 0? false : true;
 	else	
 		m_d.m_fTransparent = fFalse;
-
-	if (g_pvp->m_fEnableMonitor2)
-		{
-		m_idDD = 1;
-		}
-	else
-		{
-		m_idDD = 0;
-		}
-
 	}
 
 STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
@@ -223,7 +213,6 @@ void Textbox::GetHitShapes(Vector<HitObject> *pvho)
 
 	// HACK - adding object directly to screen update list.  Someday make hit objects and screenupdaters seperate objects
 	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_textboxanim);
-	g_pplayer->m_vscreenupdate.ElementAt(g_pplayer->m_vscreenupdate.Size()-1)->m_idDD = m_idDD;
 	}
 
 void Textbox::GetHitShapesDebug(Vector<HitObject> *pvho)
@@ -254,7 +243,7 @@ void Textbox::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Textbox::RenderStatic(Pin3D *ppin3d)
+void Textbox::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 	
@@ -265,7 +254,7 @@ void Textbox::RenderMoversFromCache(Pin3D *ppin3d)
 
 void Textbox::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(m_idDD);
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	m_pobjframe = new ObjFrame();
 
@@ -275,7 +264,7 @@ void Textbox::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	rgv3D[1].x = m_d.m_v2.x;
 	rgv3D[1].y = m_d.m_v2.y;
 
-	SetHUDVertices(m_idDD, rgv3D, 2);
+	SetHUDVertices(rgv3D, 2);
 
 	m_pobjframe->rc.left = (int)min(rgv3D[0].x, rgv3D[1].x);
 	m_pobjframe->rc.top = (int)min(rgv3D[0].y, rgv3D[1].y);
@@ -299,7 +288,7 @@ void Textbox::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 void Textbox::RenderText()
 	{
 	//DDBLTFX ddbfx;
-	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(m_idDD);
+	Pin3D *const ppin3d = &g_pplayer->m_pin3d;
 
 	HDC hdc;
 
@@ -387,7 +376,6 @@ void Textbox::RenderText()
 	UpdateRect *pur = new UpdateRect();
 	pur->m_rcupdate = m_pobjframe->rc;
 	pur->m_fSeeThrough = fFalse;
-	pur->m_idDD = m_idDD;
 	g_pplayer->m_vupdaterect.AddElement(pur);
 	}
 
