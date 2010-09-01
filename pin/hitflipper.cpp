@@ -741,7 +741,7 @@ void HitFlipper::Draw(HDC hdc)
 void FlipperAnimObject::Check3D()
 	{
 	const int frame = (m_fEnabled) ? (int)((m_angleCur-m_frameStart)/(m_frameEnd-m_frameStart) * (m_vddsFrame.Size()-1)) : -1;
-m_idDD = 0;	
+
 	if (frame != m_iframe)
 		{
 		m_iframe = frame;

@@ -7,7 +7,7 @@
 //#define DEBUG_FRATE
 //#define ANTI_TEAR				1					// define if you want to do some hack code to prevent drawing more than one frame per 16ms
 //#define GDIDRAW 1
-//#define RAMP_RENDER8BITALPHA 1
+
 //#define EVENTIME 1
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
@@ -29,7 +29,6 @@ float curMechPlungerPos;
 
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK BackglassWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -111,7 +110,7 @@ Player::Player()
 		antialias = fTrue; // The default
 		}
 	m_fBallAntialias = (antialias == 1);
-
+	
 	int detecthang;
 	hr = GetRegInt("Player", "DetectHang", &detecthang);
 	if (hr != S_OK)
@@ -224,12 +223,6 @@ Player::~Player()
 		delete pball;
 		}
 		m_vball.RemoveAllElements();
-
-	for (int i=0;i<m_vpin3d.Size();i++)
-		{
-		delete m_vpin3d.ElementAt(i);
-		}
-		m_vpin3d.RemoveAllElements();
 
 #ifdef GDIDRAW
 	DeleteObject(m_hbmOffScreen);
@@ -626,10 +619,6 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	// TEXT
 	SetWindowText(hwndProgressName, "Initalizing Visuals...");
 
-	
-	m_vpin3d.AddElement(new Pin3D());
-	m_vpin3d.ElementAt(m_vpin3d.Size()-1)->m_idDD = m_vpin3d.Size()-1;
-
 	InitWindow();
 	InitDMDHackWindow();
 
@@ -638,19 +627,8 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	InitRegValues();
 
 	// width, height, and colordepth are only defined if fullscreen is true.
-	HRESULT hr =  m_vpin3d.ElementAt(0)->InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate);
+	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate);
 
-////////////////Añadido
-	if (g_pvp->m_fEnableMonitor2)
-		{
-		m_vpin3d.AddElement(new Pin3D());
-		m_vpin3d.ElementAt(m_vpin3d.Size()-1)->m_idDD = m_vpin3d.Size()-1;
-		InitBackglassWindow();
-		m_vpin3d.ElementAt(1)->m_aspectratio = ((GPINFLOAT)m_bgscreenwidth / (GPINFLOAT)m_bgscreenheight) / (4.0/3.0);
-		hr = m_vpin3d.ElementAt(1)->InitDD(m_backglasshwnd, m_fFullScreen != 0, m_bgscreenwidth, m_bgscreenheight, m_screendepth, m_refreshrate);
-
-		}
-///////////////////////////
 	if (m_fFullScreen)
 		{
 		SetWindowPos(m_hwnd, NULL, 0, 0, m_screenwidth, m_screenheight, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
@@ -658,17 +636,13 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 			
 	if (m_fFullScreen)
 		{
-		//m_pixelaspectratio = ((GPINFLOAT)m_screenwidth / (GPINFLOAT)m_screenheight) / (4.0/3.0);
-		m_vpin3d.ElementAt(0)->m_aspectratio=((GPINFLOAT)m_screenwidth / (GPINFLOAT)m_screenheight) / (4.0/3.0);
+		m_pixelaspectratio = ((GPINFLOAT)m_screenwidth / (GPINFLOAT)m_screenheight) / (4.0/3.0);
 		}
 	else
 		{
-		//m_pixelaspectratio = ((GPINFLOAT)m_width / (GPINFLOAT)m_height) / (4.0/3.0);
-		m_vpin3d.ElementAt(0)->m_aspectratio= ((GPINFLOAT)m_width / (GPINFLOAT)m_height) / (4.0/3.0);
+		m_pixelaspectratio = ((GPINFLOAT)m_width / (GPINFLOAT)m_height) / (4.0/3.0);
 		}
-
-
-
+	
 	if (hr != S_OK)
 		{
 		char szfoo[64];
@@ -716,11 +690,8 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	Display_InitializeRenderStates();
 	Display_InitializeTextureStates();
 
-	hr = m_vpin3d.ElementAt(0)->m_pd3dDevice->BeginScene();
-	if (g_pvp->m_fEnableMonitor2)
-		{
-		hr = m_vpin3d.ElementAt(1)->m_pd3dDevice->BeginScene();
-		}
+	hr = m_pin3d.m_pd3dDevice->BeginScene();
+
 	float realFOV = ptable->m_FOV;
 
 	if (realFOV < 0.01f)
@@ -728,18 +699,10 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 		realFOV = 0.01f; // Can't have a real zero FOV, but this will look the same
 		}
 
-	m_vpin3d.ElementAt(0)->InitLayout(ptable->m_left, ptable->m_top, ptable->m_right,
+	m_pin3d.InitLayout(ptable->m_left, ptable->m_top, ptable->m_right,
 					   ptable->m_bottom, ptable->m_inclination, realFOV,
 					   ptable->m_rotation, ptable->m_scalex, ptable->m_scaley,
 					   ptable->m_xlatex, ptable->m_xlatey);
-
-	if (g_pvp->m_fEnableMonitor2)
-		{
-		m_vpin3d.ElementAt(1)->InitLayout(ptable->m_left, ptable->m_top, ptable->m_right,
-					   ptable->m_bottom, ptable->m_inclination, realFOV,
-					   ptable->m_rotation, ptable->m_scalex, ptable->m_scaley,
-					   ptable->m_xlatex, ptable->m_xlatey);
-		}
 
 	m_mainlevel.m = 0;
 	m_mainlevel.n = 0;
@@ -848,39 +811,29 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 	m_shadowoctree.CreateNextLevel();
 
-	hr = m_vpin3d.ElementAt(0)->m_pd3dDevice->EndScene();
-	if (g_pvp->m_fEnableMonitor2)
-		{
-		hr = m_vpin3d.ElementAt(1)->m_pd3dDevice->EndScene();
-		}
+	hr = m_pin3d.m_pd3dDevice->EndScene();
+	
 	// Start Cache
-	m_vpin3d.ElementAt(0)->m_fWritingToCache = false;
-	m_vpin3d.ElementAt(0)->m_fReadingFromCache = false;
-	m_vpin3d.ElementAt(0)->m_hFileCache = NULL;
-
-	if (g_pvp->m_fEnableMonitor2)
-		{
-		m_vpin3d.ElementAt(1)->m_fWritingToCache = false;
-		m_vpin3d.ElementAt(1)->m_fReadingFromCache = false;
-		m_vpin3d.ElementAt(1)->m_hFileCache = NULL;
-		}
+	m_pin3d.m_fWritingToCache = false;
+	m_pin3d.m_fReadingFromCache = false;
+	m_pin3d.m_hFileCache = NULL;
 
 	if (fCheckForCache)
 		{
-		const BOOL fGotCache = m_vpin3d.ElementAt(0)->OpenCacheFileForRead();
+		const BOOL fGotCache = m_pin3d.OpenCacheFileForRead();
 
 		if (!fGotCache)
 			{
-			m_vpin3d.ElementAt(0)->OpenCacheFileForWrite();
+			m_pin3d.OpenCacheFileForWrite();
 			}
 		}
 
 	SendMessage(hwndProgress, PBM_SETPOS, 60, 0);
-	if (m_vpin3d.ElementAt(0)->m_fReadingFromCache)
+	if (m_pin3d.m_fReadingFromCache)
 		{
 		SetWindowText(hwndProgressName, "Reading Table From Cache...");
 		}
-	else if (m_vpin3d.ElementAt(0)->m_fWritingToCache)
+	else if (m_pin3d.m_fWritingToCache)
 		{
 		SetWindowText(hwndProgressName, "Writing Table To Cache...");
 		}
@@ -891,7 +844,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 //----------------------------------------------------------------------------------
 //#define IS_ATI(DDDEVICEID) (DDDEVICEID.dwVendorId==0x1002)  //BDS
-/*if (m_vpin3d.ElementAt(0)->m_pd3dDevice->dwVendorID==0x1002)	//ATI
+/*if (m_pin3d.m_pd3dDevice->dwVendorID==0x1002)	//ATI
 		{
 		ReOrder();
 		}*/
@@ -905,11 +858,11 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	InitStatic(hwndProgress);
 
 	SendMessage(hwndProgress, PBM_SETPOS, 80, 0);
-	if (m_vpin3d.ElementAt(0)->m_fReadingFromCache)
+	if (m_pin3d.m_fReadingFromCache)
 		{
 		SetWindowText(hwndProgressName, "Reading Animations From Cache...");
 		}
-	else if (m_vpin3d.ElementAt(0)->m_fWritingToCache)
+	else if (m_pin3d.m_fWritingToCache)
 		{
 		SetWindowText(hwndProgressName, "Writing Animations To Cache...");
 		}
@@ -923,7 +876,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	InitAnimations(hwndProgress);
 	
 	// End Cache
-	m_vpin3d.ElementAt(0)->CloseCacheFile();
+	m_pin3d.CloseCacheFile();
 
 	///////////////// Screen Update Vector
 	///// (List of movers which can be blitted at any time)
@@ -965,12 +918,10 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 			if (l == m_vscreenupdate.Size())
 				{
 				m_vscreenupdate.AddElement(pao);
-				m_vscreenupdate.ElementAt(m_vscreenupdate.Size()-1)->m_idDD = 0;
 				}
 			else
 				{
 				m_vscreenupdate.InsertElementAt(pao, l);
-				m_vscreenupdate.ElementAt(m_vscreenupdate.Size()-1)->m_idDD = 0;
 				}
 
 			//m_vscreenupdate.AddElement(m_vho.ElementAt(i));
@@ -978,11 +929,6 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 			}
 		}
 
-for (int l=0;l<m_vscreenupdate.Size();l++)
-	{
-	m_vscreenupdate.ElementAt(l)->m_idDD=0;
-
-	}
 	// Render inital textbox text
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
@@ -1165,34 +1111,28 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 
 void Player::InitStatic(HWND hwndProgress)
 	{
-	if (m_vpin3d.ElementAt(0)->m_fReadingFromCache)
+	if (m_pin3d.m_fReadingFromCache)
 		{
-		m_vpin3d.ElementAt(0)->ReadSurfaceFromCacheFile(m_vpin3d.ElementAt(0)->m_pddsStatic);
-		m_vpin3d.ElementAt(0)->ReadSurfaceFromCacheFile(m_vpin3d.ElementAt(0)->m_pddsStaticZ);
+		m_pin3d.ReadSurfaceFromCacheFile(m_pin3d.m_pddsStatic);
+		m_pin3d.ReadSurfaceFromCacheFile(m_pin3d.m_pddsStaticZ);
 		return;
 		}
 
 	// Start the frame.
-	HRESULT hr = m_vpin3d.ElementAt(0)->m_pd3dDevice->BeginScene();
+	HRESULT hr = m_pin3d.m_pd3dDevice->BeginScene();
 
 	// Direct all renders to the "static" buffer.
-	m_vpin3d.ElementAt(0)->SetRenderTarget(m_vpin3d.ElementAt(0)->m_pddsStatic, m_vpin3d.ElementAt(0)->m_pddsStaticZ);
-
-	if (g_pvp->m_fEnableMonitor2)
-		{
-		hr = m_vpin3d.ElementAt(1)->m_pd3dDevice->BeginScene();
-		m_vpin3d.ElementAt(1)->SetRenderTarget(m_vpin3d.ElementAt(1)->m_pddsStatic, m_vpin3d.ElementAt(1)->m_pddsStaticZ);
-		}
+	m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
 
 	// Draw stuff
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
-			if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal && m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemKicker )
+		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal && m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemKicker)
 			{
 			Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 			if (ph)
 				{
-				ph->RenderStatic(m_vpin3d.ElementAt(m_ptable->m_vedit.ElementAt(i)->m_idDD));
+				ph->RenderStatic(m_pin3d.m_pd3dDevice);
 				if (hwndProgress)
 					{
 					SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15*i)/m_ptable->m_vedit.Size()), 0);
@@ -1209,7 +1149,7 @@ void Player::InitStatic(HWND hwndProgress)
 			Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 			if (ph)
 				{
-				ph->RenderStatic(m_vpin3d.ElementAt(0));//->m_pd3dDevice);
+				ph->RenderStatic(m_pin3d.m_pd3dDevice);
 				if (hwndProgress)
 					{
 					SendMessage(hwndProgress, PBM_SETPOS, 75 + ((5*i)/m_ptable->m_vedit.Size()), 0);
@@ -1226,46 +1166,29 @@ void Player::InitStatic(HWND hwndProgress)
 			Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 			if (ph)
 				{
-				ph->RenderStatic(m_vpin3d.ElementAt(0));//->m_pd3dDevice);
+				ph->RenderStatic(m_pin3d.m_pd3dDevice);
 				//SendMessage(hwndProgress, PBM_SETPOS, 75 + ((5*i)/m_ptable->m_vedit.Size()), 0);
 				}
 			}
 		}
 
-
-
 	// Finish the frame.
-	hr = m_vpin3d.ElementAt(0)->m_pd3dDevice->EndScene();
-	if (g_pvp->m_fEnableMonitor2)
-		{	
-		hr = m_vpin3d.ElementAt(1)->m_pd3dDevice->EndScene();
-		}
-	m_vpin3d.ElementAt(0)->WriteSurfaceToCacheFile(m_vpin3d.ElementAt(0)->m_pddsStatic);
-	m_vpin3d.ElementAt(0)->WriteSurfaceToCacheFile(m_vpin3d.ElementAt(0)->m_pddsStaticZ);
+	hr = m_pin3d.m_pd3dDevice->EndScene();
 
+	m_pin3d.WriteSurfaceToCacheFile(m_pin3d.m_pddsStatic);
+	m_pin3d.WriteSurfaceToCacheFile(m_pin3d.m_pddsStaticZ);
 	}
 
 void Player::InitAnimations(HWND hwndProgress)
 {
-	HRESULT hr = m_vpin3d.ElementAt(0)->m_pd3dDevice->BeginScene();
-	if (g_pvp->m_fEnableMonitor2)
-		{
-		hr = m_vpin3d.ElementAt(1)->m_pd3dDevice->BeginScene();
-		}
+	HRESULT hr = m_pin3d.m_pd3dDevice->BeginScene();
 
 	// Direct all renders to the back buffer.
-	m_vpin3d.ElementAt(0)->SetRenderTarget(m_vpin3d.ElementAt(0)->m_pddsBackBuffer, m_vpin3d.ElementAt(0)->m_pddsZBuffer);
+	m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
 
 	// Set up z-buffer to the static one, so movers can clip to it
-	m_vpin3d.ElementAt(0)->m_pddsZBuffer->Blt(NULL, m_vpin3d.ElementAt(0)->m_pddsStaticZ, NULL, DDBLTFAST_WAIT, NULL);
-	m_vpin3d.ElementAt(0)->m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0L );
-
-	if (g_pvp->m_fEnableMonitor2)
-		{
-			m_vpin3d.ElementAt(1)->SetRenderTarget(m_vpin3d.ElementAt(1)->m_pddsBackBuffer, m_vpin3d.ElementAt(1)->m_pddsZBuffer);
-			m_vpin3d.ElementAt(1)->m_pddsZBuffer->Blt(NULL, m_vpin3d.ElementAt(1)->m_pddsStaticZ, NULL, DDBLTFAST_WAIT, NULL);
-			m_vpin3d.ElementAt(1)->m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0L );
-		}
+	m_pin3d.m_pddsZBuffer->Blt(NULL, m_pin3d.m_pddsStaticZ, NULL, DDBLTFAST_WAIT, NULL);
+	m_pin3d.m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0L );
 
 	// Draw stuff
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
@@ -1273,13 +1196,13 @@ void Player::InitAnimations(HWND hwndProgress)
 		Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
 		{
-			if (m_vpin3d.ElementAt(0)->m_fReadingFromCache)
+			if (m_pin3d.m_fReadingFromCache)
 			{
-				ph->RenderMoversFromCache(m_vpin3d.ElementAt(0));
+				ph->RenderMoversFromCache(&m_pin3d);
 			}
 			else
 			{
-				ph->RenderMovers(m_vpin3d.ElementAt(m_ptable->m_vedit.ElementAt(i)->m_idDD)->m_pd3dDevice);
+				ph->RenderMovers(m_pin3d.m_pd3dDevice);
 			}
 			if (hwndProgress)
 			{
@@ -1317,20 +1240,13 @@ void Player::InitAnimations(HWND hwndProgress)
 		}
 	}
 
-	m_vpin3d.ElementAt(0)->EnableLightMap(fFalse, -1);
+	m_pin3d.EnableLightMap(fFalse, -1);
 
-	hr = m_vpin3d.ElementAt(0)->m_pd3dDevice->EndScene();
+	hr = m_pin3d.m_pd3dDevice->EndScene();
 
 	// Copy the "static" buffer to the back buffer.
-	m_vpin3d.ElementAt(0)->m_pddsBackBuffer->Blt(NULL, m_vpin3d.ElementAt(0)->m_pddsStatic, NULL, DDBLTFAST_WAIT , NULL);
-	m_vpin3d.ElementAt(0)->m_pddsZBuffer->Blt(NULL, m_vpin3d.ElementAt(0)->m_pddsStaticZ, NULL, DDBLTFAST_WAIT , NULL);
-	if (g_pvp->m_fEnableMonitor2)
-		{
-			m_vpin3d.ElementAt(1)->EnableLightMap(fFalse, -1);
-			hr = m_vpin3d.ElementAt(1)->m_pd3dDevice->EndScene();
-			m_vpin3d.ElementAt(1)->m_pddsBackBuffer->Blt(NULL, m_vpin3d.ElementAt(1)->m_pddsStatic, NULL, DDBLTFAST_WAIT , NULL);
-			m_vpin3d.ElementAt(1)->m_pddsZBuffer->Blt(NULL, m_vpin3d.ElementAt(1)->m_pddsStaticZ, NULL, DDBLTFAST_WAIT , NULL);
-		}
+	m_pin3d.m_pddsBackBuffer->Blt(NULL, m_pin3d.m_pddsStatic, NULL, DDBLTFAST_WAIT , NULL);
+	m_pin3d.m_pddsZBuffer->Blt(NULL, m_pin3d.m_pddsStaticZ, NULL, DDBLTFAST_WAIT , NULL);
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz)
@@ -1376,10 +1292,10 @@ void Player::EraseBall(Ball *pball)
 		{
 			if (!(fIntRectIntersect(pball->m_rcScreen[blur], pball->m_rcScreenShadow[blur])))
 			{
-				InvalidateRect(0, &pball->m_rcScreenShadow[blur]);
+				InvalidateRect(&pball->m_rcScreenShadow[blur]);
 			}
 		}
-		InvalidateRect(0, &pball->m_rcScreen[blur]);
+		InvalidateRect(&pball->m_rcScreen[blur]);
 	}
 }
 
@@ -1440,38 +1356,6 @@ void Player::InitDMDHackWindow()
 	m_dmdhackhwnd = ::CreateWindowEx( (WS_EX_TOPMOST), "VPPlayerDMDHack", "Visual Pinball Player DMD Hack", (WS_POPUP | WS_CLIPCHILDREN), x, y, width, height, NULL, NULL, g_hinst, 0);
 }
 
-void Player::InitBackglassWindow()
-{
-
-	WNDCLASSEX	wcex;
-	// Define the window.
-	memset ( &wcex, 0, sizeof ( WNDCLASSEX ) );
-	wcex.cbSize = sizeof ( WNDCLASSEX );
-	wcex.style = 0;
-	wcex.lpfnWndProc = (WNDPROC) BackglassWndProc;
-	wcex.hInstance = g_hinst;
-	wcex.lpszClassName = "VPBackglass";
-	wcex.hIcon = LoadIcon ( g_hinst, MAKEINTRESOURCE(IDI_TABLEICON) );
-	wcex.hCursor = LoadCursor ( NULL, IDC_ARROW );
-	wcex.lpszMenuName = NULL;
-	RegisterClassEx ( &wcex );
-
-
-	MONITORINFO mi;
-	mi.cbSize = sizeof(mi);
-	GetMonitorInfo(g_pvp->Hmon, &mi);
-
-	// Place window in top-left corner.
-	int x = mi.rcMonitor.left;
-	int y = mi.rcMonitor.top;
-
-	// Set the width and height.
-	m_bgwidth = m_bgscreenwidth = mi.rcMonitor.right-x;
-	m_bgheight = m_bgscreenheight = mi.rcMonitor.bottom-y;
-	// TEXT
-	m_backglasshwnd = ::CreateWindowEx( (WS_EX_TOPMOST), "VPBackglass", "Visual Pinball Backglass", (WS_VISIBLE |WS_POPUP  ), x, y, m_bgwidth, m_bgheight, m_hwnd, NULL, g_hinst, 0);
-
-}
 
 void Player::InitWindow()
 	{
@@ -1996,7 +1880,7 @@ void Player::Render()
 
 	if (m_fCheckBlt)
 		{
-		const HRESULT hrdone = m_vpin3d.ElementAt(0)->m_pddsFrontBuffer->GetBltStatus(DDGBS_ISBLTDONE);
+		const HRESULT hrdone = m_pin3d.m_pddsFrontBuffer->GetBltStatus(DDGBS_ISBLTDONE);
 
 		if (hrdone != DD_OK)
 			{
@@ -2293,11 +2177,10 @@ void Player::Render()
 		// Check if the element is invalid (its frame changed).
 		m_vscreenupdate.ElementAt(i)->m_fInvalid = fFalse;
 		m_vscreenupdate.ElementAt(i)->Check3D();
-
 		if (m_vscreenupdate.ElementAt(i)->m_fInvalid)					
 		{
 			// Flag the element's region as needing a redraw.
-			InvalidateRect(m_vscreenupdate.ElementAt(i)->m_idDD, &m_vscreenupdate.ElementAt(i)->m_rcBounds);
+			InvalidateRect(&m_vscreenupdate.ElementAt(i)->m_rcBounds);
 		}
 	}	
 
@@ -2335,25 +2218,20 @@ void Player::Render()
 	// it with the contents of the static buffer.
 	for (int i=0;i<m_vupdaterect.Size();i++)
 		{
-			UpdateRect * const pur = m_vupdaterect.ElementAt(i);
+		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
 		if (pur->m_fSeeThrough)													
 			{
 			RECT * const prc = &pur->m_rcupdate;
-
+		
 			// Redraw the region from the static buffers to the back and z buffers.
-			m_vpin3d.ElementAt(pur->m_idDD)->m_pddsBackBuffer->Blt(prc, m_vpin3d.ElementAt(pur->m_idDD)->m_pddsStatic, prc, 0, NULL);
-			m_vpin3d.ElementAt(pur->m_idDD)->m_pddsZBuffer->Blt(prc, m_vpin3d.ElementAt(pur->m_idDD)->m_pddsStaticZ, prc, 0, NULL);
-
+			m_pin3d.m_pddsBackBuffer->Blt(prc, m_pin3d.m_pddsStatic, prc, 0, NULL);
+			m_pin3d.m_pddsZBuffer->Blt(prc, m_pin3d.m_pddsStaticZ, prc, 0, NULL);
 			}
 		}
 
 
 	// Start rendering the next frame.
-	hr = m_vpin3d.ElementAt(0)->m_pd3dDevice->BeginScene();
-	if (g_pvp->m_fEnableMonitor2)
-		{
-		hr = m_vpin3d.ElementAt(1)->m_pd3dDevice->BeginScene();
-		}
+	hr = m_pin3d.m_pd3dDevice->BeginScene();
 
 	D3DMATRIX RestoreWorldMatrix;
 	RenderStateType	RestoreRenderState;
@@ -2362,13 +2240,13 @@ void Player::Render()
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
 		{
 		// Save the current transformation state.
-		ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix );
+		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix );
 
 		// Save the current render state.
-		Display_GetRenderState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &RestoreRenderState);
+		Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Save the current texture state.
-		Display_GetTextureState (g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &RestoreTextureState);
+		Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 		}
 
 
@@ -2376,26 +2254,26 @@ void Player::Render()
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
 		{
 		// Restore the render states.
-		Display_SetRenderState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &RestoreRenderState);
+		Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Restore the texture state.
-		Display_SetTextureState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &RestoreTextureState);
+		Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 
 		// Restore the transformation state.
-		ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 		}
 
 	// Check if we are blitting with D3D.								
 	if (g_pvp->m_pdd.m_fUseD3DBlit)				
 		{
 		// Save the current transformation state.
-		ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 
 		// Save the current render state.
-		Display_GetRenderState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &RestoreRenderState);
+		Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Save the current texture state.
-		Display_GetTextureState (g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &RestoreTextureState);
+		Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 		}
 
 
@@ -2414,7 +2292,7 @@ void Player::Render()
 			// Make sure we have a frame.
 			if (pobjframe != NULL)
 			{
-				const LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_vpin3d.ElementAt(0)->m_pddsBackBuffer;
+				const LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
 				RECT * const prc = &pur->m_rcupdate;
 
 				// NOTE: prc is the rectangle of the region needing to be updated.
@@ -2437,7 +2315,7 @@ void Player::Render()
 					{
 						// Blit to the backbuffer with D3D.
 						// NOTE: Rather than drawing just a portion of the sprite... draw the whole thing.
-						Display_DrawSprite(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, 
+						Display_DrawSprite(g_pplayer->m_pin3d.m_pd3dDevice, 
 										(float) (pobjframe->rc.left), (float) (pobjframe->rc.top), 
 										(float) (pobjframe->rc.right - pobjframe->rc.left), (float) (pobjframe->rc.bottom - pobjframe->rc.top), 
 										1.0f, 1.0f, 1.0f, 1.0f, 
@@ -2459,8 +2337,7 @@ void Player::Render()
 					if (pobjframe->pddsZBuffer != NULL)
 					{
 						// Blit to the z buffer.	
-						/*const HRESULT hr =*/g_pplayer->m_vpin3d.ElementAt(pur->m_idDD)->m_pddsZBuffer->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
-
+						/*const HRESULT hr =*/ g_pplayer->m_pin3d.m_pddsZBuffer->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
 					}
 				}
 			}
@@ -2471,13 +2348,13 @@ void Player::Render()
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
 	{
 		// Restore the render states.
-		Display_SetRenderState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &RestoreRenderState);
+		Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Restore the texture state.
-		Display_SetTextureState(g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice, &RestoreTextureState);
+		Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 
 		// Restore the transformation state.
-		ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 	}
 
 	// Check if we are debugging balls
@@ -2487,19 +2364,18 @@ void Player::Render()
 		if (g_pplayer->m_DebugBalls)
 		{
 			// Set the render state to something that will always display.
-			ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_FALSE );
-			ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, FALSE );
+			ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_FALSE );
+			ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, FALSE );
 		}
 		else
 		{
 			// Restore the render state.
-			ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_TRUE );
-			ReturnCode = g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, TRUE );
+			ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_TRUE );
+			ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, TRUE );
 		}
 
 		g_pplayer->m_ToggleDebugBalls = fFalse;
 	}
-
 
 	if (m_fBallAntialias)
 	{
@@ -2536,12 +2412,8 @@ void Player::Render()
     plumb_draw();
 
 	// Finish rendering the next frame.
-	hr = m_vpin3d.ElementAt(0)->m_pd3dDevice->EndScene();
+	hr = m_pin3d.m_pd3dDevice->EndScene();
 
-	if (g_pvp->m_fEnableMonitor2)
-		{
-		hr = m_vpin3d.ElementAt(1)->m_pd3dDevice->EndScene();
-		}
 	// Check if we are mirrored.
 	if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
 	{
@@ -2554,11 +2426,11 @@ void Player::Render()
 		 g_pplayer->m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
 		// Draw with an offset to shake the display.
-		m_vpin3d.ElementAt(0)->Flip((int)m_NudgeBackX, (int)m_NudgeBackY);
+		m_pin3d.Flip((int)m_NudgeBackX, (int)m_NudgeBackY);
 		m_fCleanBlt = fFalse;
 	}
 	else
-	{   
+	{
 		if (m_fCleanBlt)
 		{
 			// Smart Blit - only update the invalidated areas
@@ -2566,25 +2438,21 @@ void Player::Render()
 			{
 				UpdateRect * const pur = m_vupdaterect.ElementAt(i);
 				RECT * const prc = &pur->m_rcupdate;
+
 				RECT rcNew;
-				rcNew.left = prc->left + m_vpin3d.ElementAt(pur->m_idDD)->m_rcUpdate.left;
-				rcNew.right = prc->right + m_vpin3d.ElementAt(pur->m_idDD)->m_rcUpdate.left;
-				rcNew.top = prc->top + m_vpin3d.ElementAt(pur->m_idDD)->m_rcUpdate.top;
-				rcNew.bottom = prc->bottom + m_vpin3d.ElementAt(pur->m_idDD)->m_rcUpdate.top;
+				rcNew.left = prc->left + m_pin3d.m_rcUpdate.left;
+				rcNew.right = prc->right + m_pin3d.m_rcUpdate.left;
+				rcNew.top = prc->top + m_pin3d.m_rcUpdate.top;
+				rcNew.bottom = prc->bottom + m_pin3d.m_rcUpdate.top;
 
 				// Copy the region from the back buffer to the front buffer.
-				hr =m_vpin3d.ElementAt(pur->m_idDD)->m_pddsFrontBuffer->Blt(&rcNew, m_vpin3d.ElementAt(pur->m_idDD)->m_pddsBackBuffer, prc, 0, NULL);
+				m_pin3d.m_pddsFrontBuffer->Blt(&rcNew, m_pin3d.m_pddsBackBuffer, prc, 0, NULL);
 			}
-
 		}
 		else
 		{
 			// Copy the entire back buffer to the front buffer.
-			m_vpin3d.ElementAt(0)->Flip(0, 0);
-			if (g_pvp->m_fEnableMonitor2)
-				{
-				m_vpin3d.ElementAt(1)->Flip(0, 0);
-				}
+			m_pin3d.Flip(0, 0);
 
 			// Flag that we only need to update regions from now on...
 			m_fCleanBlt = fTrue;
@@ -2849,15 +2717,15 @@ void Player::DrawBallShadows()
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 	mtrl.power = 0;	
-	m_vpin3d.ElementAt(0)->m_pd3dDevice->SetMaterial(&mtrl);
+	m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 	}
 
-	m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
+	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
 
-	m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);// WRAP
+	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);// WRAP
 
-	//const float sn = sinf(m_vpin3d.ElementAt(0)->m_inclination);
-	//const float cs = cosf(m_vpin3d.ElementAt(0)->m_inclination);
+	//const float sn = sinf(m_pin3d.m_inclination);
+	//const float cs = cosf(m_pin3d.m_inclination);
 
 	for (int i=0;i<m_vball.Size();i++)
 		{
@@ -2865,12 +2733,12 @@ void Player::DrawBallShadows()
 
 		if (m_fBallShadows)
 			{
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x0000001);
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x0000001);
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
 
 			Ball ballT;
 			ballT.x = pball->x;
@@ -2965,11 +2833,11 @@ void Player::DrawBallShadows()
 					rgv3DShadow[0].tv = m_ptable->m_top;
 					}
 
-				m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTexture(0, m_vpin3d.ElementAt(0)->m_pddsShadowTexture);
+				m_pin3d.m_pd3dDevice->SetTexture(0, m_pin3d.m_pddsShadowTexture);
 
-				m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
+				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 
-				m_vpin3d.ElementAt(0)->m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3DShadow, 4,0);
+				m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3DShadow, 4,0);
 				}
 			}
 		}
@@ -2978,11 +2846,11 @@ void Player::DrawBallShadows()
 
 void Player::DrawBalls()
 	{
-	//m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
+	//m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
 
-	m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
+	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
 
-	m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
+	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
 
 	D3DMATERIAL7 mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -2990,8 +2858,8 @@ void Player::DrawBalls()
 	mtrl.power = 0;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
-	const float sn = sinf(m_vpin3d.ElementAt(0)->m_inclination);
-	const float cs = cosf(m_vpin3d.ElementAt(0)->m_inclination);
+	const float sn = sinf(m_pin3d.m_inclination);
+	const float cs = cosf(m_pin3d.m_inclination);
 
 	for (int i=0;i<m_vball.Size();i++)
 		{
@@ -3003,7 +2871,7 @@ void Player::DrawBalls()
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
 		mtrl.diffuse.b = mtrl.ambient.b = b;
-		m_vpin3d.ElementAt(0)->m_pd3dDevice->SetMaterial(&mtrl);
+		m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
 		const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
@@ -3046,7 +2914,7 @@ void Player::DrawBalls()
 
 		if (!pball->m_pin)
 			{
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTexture(0, m_vpin3d.ElementAt(0)->m_pddsBallTexture);
+			m_pin3d.m_pd3dDevice->SetTexture(0, m_pin3d.m_pddsBallTexture);
 			rgv3D[3].tv = 1.0f;
 			rgv3D[2].tu = 1.0f;
 			rgv3D[2].tv = 1.0f;
@@ -3055,7 +2923,7 @@ void Player::DrawBalls()
 		else
 			{
 			pball->m_pin->EnsureColorKey();
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTexture(0, pball->m_pin->m_pdsBufferColorKey);
+			m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pin->m_pdsBufferColorKey);
 			rgv3D[3].tv = pball->m_pin->m_maxtv;
 			rgv3D[2].tu = pball->m_pin->m_maxtu;
 			rgv3D[2].tv = pball->m_pin->m_maxtv;
@@ -3064,37 +2932,37 @@ void Player::DrawBalls()
 
 		if (m_fBallAntialias)
 			{
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+			m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
 			}
 		else
 			{
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+			m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+			m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_NONE);
 			}
-		m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+		m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
-		m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x0000001);
-		m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-		m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+		m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x0000001);
+		m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+		m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
-		/*m_vpin3d.ElementAt(0)->m_lightproject.CalcCoordinates(&rgv3D[0]);
-		m_vpin3d.ElementAt(0)->m_lightproject.CalcCoordinates(&rgv3D[1]);
-		m_vpin3d.ElementAt(0)->m_lightproject.CalcCoordinates(&rgv3D[2]);
-		m_vpin3d.ElementAt(0)->m_lightproject.CalcCoordinates(&rgv3D[3]);*/
+		/*m_pin3d.m_lightproject.CalcCoordinates(&rgv3D[0]);
+		m_pin3d.m_lightproject.CalcCoordinates(&rgv3D[1]);
+		m_pin3d.m_lightproject.CalcCoordinates(&rgv3D[2]);
+		m_pin3d.m_lightproject.CalcCoordinates(&rgv3D[3]);*/
 
-		m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-		//m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-		m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-		m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+		//m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
 
-		//m_vpin3d.ElementAt(0)->m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+		//m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  //rgv3D, 4,
 												  //rgi, 4, NULL);
 
-		m_vpin3d.ElementAt(0)->m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 4,
 												  NULL);
 
@@ -3106,7 +2974,7 @@ void Player::DrawBalls()
 			mtrl.diffuse.g = mtrl.ambient.g = 0.4f;
 			mtrl.diffuse.b = mtrl.ambient.b = 0.2f;*/
 			mtrl.diffuse.a = mtrl.ambient.a = 0.8f;//0.7f;
-			m_vpin3d.ElementAt(0)->m_pd3dDevice->SetMaterial(&mtrl);
+			m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
 				Vertex3D rgv3DArrow[4];
 				rgv3DArrow[0].tu = 0;
@@ -3133,20 +3001,20 @@ void Player::DrawBalls()
 				rgv3DArrow[3].y = 0.333333333f;
 				rgv3DArrow[3].z = -0.881917103f;
 
-				m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-				m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-				m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-				m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+				m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+				m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+				m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+				m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
 
-				m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-				m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
+				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
-				m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
 				if (pball->m_pinFront)
 					{
 					pball->m_pinFront->EnsureColorKey();
-					m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTexture(0, pball->m_pinFront->m_pdsBufferColorKey);
+					m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinFront->m_pdsBufferColorKey);
 
 					//WORD rgiDecal[4] = {0,1,2,3};
 					Vertex3D rgv3DArrowTransformed[4];
@@ -3163,10 +3031,10 @@ void Player::DrawBalls()
 						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinFront->m_maxtv;
 						}
 
-					//m_vpin3d.ElementAt(0)->m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					//m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  //rgv3DArrowTransformed, 4,
 															  //rgiDecal, DECALPOINTS, NULL);
-					m_vpin3d.ElementAt(0)->m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DArrowTransformed, 4,
 															  NULL);
 					}
@@ -3175,7 +3043,7 @@ void Player::DrawBalls()
 					{
 					// Other side of ball
 					pball->m_pinBack->EnsureColorKey();
-					m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTexture(0, pball->m_pinBack->m_pdsBufferColorKey);
+					m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinBack->m_pdsBufferColorKey);
 
 					//WORD rgiDecal[4] = {0,1,2,3};
 					Vertex3D rgv3DArrowTransformed[4];
@@ -3194,11 +3062,11 @@ void Player::DrawBalls()
 						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinBack->m_maxtv;
 						}
 
-					/*m_vpin3d.ElementAt(0)->m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					/*m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DArrowTransformed, 4,
 															  rgiDecal, DECALPOINTS, NULL);*/
 
-					m_vpin3d.ElementAt(0)->m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DArrowTransformed, 4,
 															  NULL);
 					}
@@ -3207,15 +3075,15 @@ void Player::DrawBalls()
 			pball->m_fErase = true;
 
 			// Mark ball rect as dirty for blitting to the screen
-			m_vpin3d.ElementAt(0)->ClearExtents(&pball->m_rcScreen[0], NULL, NULL);
-			m_vpin3d.ElementAt(0)->ExpandExtents(&pball->m_rcScreen[0], pball->m_rgv3D, NULL, NULL, 4, fFalse);
+			m_pin3d.ClearExtents(&pball->m_rcScreen[0], NULL, NULL);
+			m_pin3d.ExpandExtents(&pball->m_rcScreen[0], pball->m_rgv3D, NULL, NULL, 4, fFalse);
 
-			//m_vpin3d.ElementAt(0)->ExpandExtents(&pball->m_rcScreen, rgv3DArrow, NULL, NULL, 4, fFalse);
+			//m_pin3d.ExpandExtents(&pball->m_rcScreen, rgv3DArrow, NULL, NULL, 4, fFalse);
 
 			if (m_fBallShadows)
 				{
-				m_vpin3d.ElementAt(0)->ClearExtents(&pball->m_rcScreenShadow[0], NULL, NULL);
-				m_vpin3d.ElementAt(0)->ExpandExtents(&pball->m_rcScreenShadow[0], pball->m_rgv3DShadow, NULL, NULL, 4, fFalse);
+				m_pin3d.ClearExtents(&pball->m_rcScreenShadow[0], NULL, NULL);
+				m_pin3d.ExpandExtents(&pball->m_rcScreenShadow[0], pball->m_rgv3DShadow, NULL, NULL, 4, fFalse);
 
 				if (fIntRectIntersect(pball->m_rcScreen[0], pball->m_rcScreenShadow[0]))
 					{
@@ -3226,17 +3094,17 @@ void Player::DrawBalls()
 					}
 				else
 					{
-					InvalidateRect(0, &pball->m_rcScreenShadow[0]);
+					InvalidateRect(&pball->m_rcScreenShadow[0]);
 					}
 				}
-			InvalidateRect(0, &pball->m_rcScreen[0]);
+			InvalidateRect(&pball->m_rcScreen[0]);
 		}
 
-	m_vpin3d.ElementAt(0)->m_pd3dDevice->SetTexture(0, NULL);
-	m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
+	m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
+	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
 }
 
-void Player::InvalidateRect(int m_idDD, RECT *prc)
+void Player::InvalidateRect(RECT *prc)
 	{
 	// This assumes the caller does not need *prc any more!!!
 	// Either that, or we assume it can be permantnently changed,
@@ -3249,7 +3117,6 @@ void Player::InvalidateRect(int m_idDD, RECT *prc)
 	UpdateRect * const pur = new UpdateRect();
 	pur->m_rcupdate = *prc;
 	pur->m_fSeeThrough = fTrue;
-	pur->m_idDD = m_idDD;
 
 	// Check all animated objects.
 	for (int i=0;i<m_vscreenupdate.Size();i++)
@@ -3303,11 +3170,11 @@ void Player::DoDebugObjectMenu(int x, int y)
 		g_pplayer->InitDebugHitStructure();
 		}
 
-	Matrix3D mat3D = g_pplayer->m_vpin3d.ElementAt(0)->m_matrixTotal;
+	Matrix3D mat3D = g_pplayer->m_pin3d.m_matrixTotal;
 	mat3D.Invert();
 
 	D3DVIEWPORT7 vp;
-	g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->GetViewport( &vp );
+	g_pplayer->m_pin3d.m_pd3dDevice->GetViewport( &vp );
 	const float rClipWidth  = (float)vp.dwWidth*0.5f;
 	const float rClipHeight = (float)vp.dwHeight*0.5f;
 
@@ -3315,7 +3182,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 	const float ycoord = (-((float)y-rClipHeight))/rClipHeight;
 
 	Vertex3D vT, vT2;
-	g_pplayer->m_vpin3d.ElementAt(0)->m_matrixTotal.MultiplyVector(798,1465,89,&vT);
+	g_pplayer->m_pin3d.m_matrixTotal.MultiplyVector(798,1465,89,&vT);
 	mat3D.MultiplyVector(vT.x,vT.y,vT.z,&vT2);
 
 	// Use the inverse of our 3D transform to determine where in 3D space the
@@ -3525,63 +3392,7 @@ LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-
-LRESULT CALLBACK BackglassWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-
-	switch ( uMsg )
-	{
-        case MM_MIXM_CONTROL_CHANGE:
-            break;
-
-		case WM_CLOSE:
-			break;
-
-		case WM_DESTROY:
-			break;
-
-		case WM_PAINT:
-			g_pplayer->m_vpin3d.ElementAt(1)->Flip(0,0);
-			break;
-
-		case WM_KEYDOWN:
-			break;
-
-		case WM_MOUSEMOVE:
-			break;
-
-		case WM_MOVE:
-			break;
-
-		case WM_LBUTTONDOWN:
-			break;
-
-		case WM_RBUTTONDOWN:
-			break;
-
-		case WM_RBUTTONUP:
-			break;
-
-		case WM_ACTIVATE:
-			break;
-
-		case WM_ENABLE:
-			break;
-
-		case WM_EXITMENULOOP:
-			break;
-
-		case WM_SETCURSOR:
-			break;
-
-		case WM_USER:
-			break;
-	}
-
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-
-
+	
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	switch (uMsg)
@@ -3624,7 +3435,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_PAINT:
-			g_pplayer->m_vpin3d.ElementAt(0)->Flip(0,0);
+			g_pplayer->m_pin3d.Flip(0,0);
 			break;
 
 		case WM_KEYDOWN:
@@ -3642,7 +3453,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_MOVE:
-			g_pplayer->m_vpin3d.ElementAt(0)->SetUpdatePos(LOWORD(lParam), HIWORD(lParam));
+			g_pplayer->m_pin3d.SetUpdatePos(LOWORD(lParam), HIWORD(lParam));
 			break;
 
 #ifdef STEPPING
@@ -4157,7 +3968,7 @@ void Player::DrawAcrylics ()
 		{
 		// Build a set of clipping planes which tightly bound the ball.
 		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
-		/*const HRESULT ReturnCode =*/ g_pplayer->m_vpin3d.ElementAt(0)->m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
+		/*const HRESULT ReturnCode =*/ g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
 
 		// Draw acrylic ramps (they have transparency, so they have to be drawn last).
 		for (int i=0;i<m_ptable->m_vedit.Size();i++)
@@ -4167,7 +3978,7 @@ void Player::DrawAcrylics ()
 				Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 				if (ph)
 					{
-					ph->PostRenderStatic(m_vpin3d.ElementAt(0)->m_pd3dDevice);
+					ph->PostRenderStatic(m_pin3d.m_pd3dDevice);
 					}
 				}
 			}
