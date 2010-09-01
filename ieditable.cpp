@@ -25,8 +25,7 @@ IEditable::IEditable()
 	m_wzVBACode = NULL;
 
 	m_fBackglass = fFalse;
-	m_idDD = 0;
-
+	
 	VariantInit(&m_uservalue);
 	}
 

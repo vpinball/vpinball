@@ -819,8 +819,8 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 					// Clip the rectangle to the dimensions of the source surface.
 					ClippedRect.top = max ( Rect->top, 0 );
 					ClippedRect.left = max ( Rect->left, 0 );
-					ClippedRect.bottom = min ( Rect->bottom, g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderHeight );
-					ClippedRect.right = min ( Rect->right, g_pplayer->m_vpin3d.ElementAt(0)->m_dwRenderWidth );
+					ClippedRect.bottom = min ( Rect->bottom, g_pplayer->m_pin3d.m_dwRenderHeight );
+					ClippedRect.right = min ( Rect->right, g_pplayer->m_pin3d.m_dwRenderWidth );
 
 					// Calculate the width and height (so we don't extend outside of memory on either surface).
 					const int Width = min ( (int)min ( SourceSurfaceDescription.dwWidth, DestSurfaceDescription.dwWidth ) , (ClippedRect.right - ClippedRect.left) );
@@ -921,8 +921,8 @@ HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIM
 		Direct3DDevice->GetRenderTarget ( &RestoreRenderTarget );	
 		
 		// Direct all renders to the back texture buffer.
-		Direct3DDevice->SetRenderTarget ( g_pplayer->m_vpin3d.ElementAt(0)->m_pddsBackTextureBuffer, 0L );					
-
+		Direct3DDevice->SetRenderTarget ( g_pplayer->m_pin3d.m_pddsBackTextureBuffer, 0L );					
+		
 		// Redraw... this time to back texture buffer.
 		ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
 

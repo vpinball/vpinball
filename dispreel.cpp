@@ -320,13 +320,6 @@ void DispReel::SetDefaults()
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
-
-	hr = GetRegInt("DefaultProps\\EMReel","InBackglass", &iTmp);
-	if (hr == S_OK)
-		m_idDD = iTmp == 0? false : true;
-	else
-		m_idDD = fTrue;
-
 }
 
 
@@ -465,11 +458,12 @@ void DispReel::GetTimers(Vector<HitTimer> *pvht)
 void DispReel::GetHitShapes(Vector<HitObject> *pvho)
 {
     m_ptu = new DispReelUpdater(this);
+
 	m_ptu->m_dispreelanim.m_znear = 0;
 	m_ptu->m_dispreelanim.m_zfar = 0;
+
 	// HACK - adding object directly to screen update list.  Someday make hit objects and screenupdaters seperate objects
 	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_dispreelanim);
-	g_pplayer->m_vscreenupdate.ElementAt(g_pplayer->m_vscreenupdate.Size()-1)->m_idDD = m_idDD;
 }
 
 void DispReel::GetHitShapesDebug(Vector<HitObject> *pvho)
@@ -512,7 +506,7 @@ void DispReel::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 {
 
 }
-void DispReel::RenderStatic(Pin3D *ppin3d)
+void DispReel::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 {
 
 }
@@ -521,7 +515,6 @@ void DispReel::RenderStatic(Pin3D *ppin3d)
 void DispReel::RenderMoversFromCache(Pin3D *ppin3d)
 	{
 	RenderMovers(ppin3d->m_pd3dDevice);
-
 	/*m_pobjframe = new ObjFrame();
 	ppin3d->ReadObjFrameFromCacheFile(m_pobjframe);*/
 	}
@@ -556,7 +549,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
         return;
 
     // get information about the table player (size sizes, resolution, etc..)
-	Pin3D * const ppin3d = g_pplayer->m_vpin3d.ElementAt(m_idDD);
+    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	// get the render sizes of the objects (reels and frame)
     m_renderwidth    = max(0, (int)((m_d.m_width * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth));
@@ -717,9 +710,9 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[3].y = m_d.m_height;//(float)rectSrc.bottom;
 			rgv3D[3].tu = 0;
 			rgv3D[3].tv = pin->m_maxtv;
-
-			SetHUDVertices(m_idDD, rgv3D, 4);
-	
+			
+			SetHUDVertices(rgv3D, 4);
+			
 			{
 			D3DMATERIAL7 mtrl;
 			pd3dDevice->GetMaterial(&mtrl);
@@ -1056,7 +1049,7 @@ bool DispReel::RenderAnimation()
 //
 void DispReel::RenderText()
 {
-	//Pin3D	* const ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
+	//Pin3D	* const ppin3d = &g_pplayer->m_pin3d;
 
     // update the object frame (or in this case, draw it for the first time)
     UpdateObjFrame();
@@ -1143,8 +1136,6 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
     bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
     bw.WriteBool(FID(UGRD), m_d.m_fUseImageGrid);
     bw.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
-
-	bw.WriteInt(FID(BGLS), m_idDD);
 
 	bw.WriteTag(FID(FONT));
 	IPersistStream * ips;
@@ -1297,19 +1288,7 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 		{
    			pbr->GetInt(&m_d.m_imagesPerGridRow);
 		}
-	else if (id == FID(BGLS))
-		{
-		if (g_pvp->m_fEnableMonitor2)
-			{
-			pbr->GetInt(&m_idDD);
-			}
-		else
-			{
-			m_idDD = 0;
-			}
-		}
-	else 
-		if (id == FID(RANG))
+	else if (id == FID(RANG))
 		{
 			float dig;
             pbr->GetFloat(&dig);
@@ -1341,7 +1320,7 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 
 		ips->Load(pbr->m_pistream);
 	}
-	else 
+	else
 		{
 		ISelect::LoadToken(id, pbr);
 		}
@@ -1505,24 +1484,6 @@ STDMETHODIMP DispReel::put_IsTransparent(VARIANT_BOOL newVal)
 {
 	STARTUNDO
 	m_d.m_fTransparent = VBTOF(newVal);
-	STOPUNDO
-
-	return S_OK;
-}
-
-
-
-STDMETHODIMP DispReel::get_InBackglass(VARIANT_BOOL *pVal)
-{
-	*pVal = (VARIANT_BOOL)FTOVB(m_idDD);
-
-	return S_OK;
-}
-
-STDMETHODIMP DispReel::put_InBackglass(VARIANT_BOOL newVal)
-{
-	STARTUNDO
-	m_idDD = VBTOF(newVal);
 	STOPUNDO
 
 	return S_OK;
@@ -1893,9 +1854,9 @@ float DispReel::getBoxHeight() const
 void DispReel::UpdateObjFrame()
 {
     RECT    reelstriprc;
+	Pin3D	* const ppin3d = &g_pplayer->m_pin3d;
 	DDBLTFX	bltFx;
 	DWORD	flags;
-	Pin3D	* const ppin3d = g_pplayer->m_vpin3d.ElementAt(m_idDD);
 
 	if( !GetPTable()->GetEMReelsEnabled() ) return;
 

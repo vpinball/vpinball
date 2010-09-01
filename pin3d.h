@@ -229,14 +229,9 @@ public:
 	int m_dwRenderHeight;
 	int m_dwViewPortWidth;
 	int m_dwViewPortHeight;
-////Añadido
-	double m_aspectratio;
-/////////////
 
 	RECT m_rcUpdate;
 
-	int m_left;
-	int m_top;
 	int m_width;
 	int m_height;
 	HWND m_hwnd;
@@ -255,6 +250,4 @@ public:
 	HANDLE m_hFileCache;
 	bool m_fReadingFromCache;
 	bool m_fWritingToCache;
-	//GUID monitor_guid;
-	int m_idDD;
 	};

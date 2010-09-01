@@ -267,7 +267,6 @@ void VPinball::Init()
 	InitVBA();
 
 	m_pds.InitDirectSound(m_hwnd);
-	m_fEnableMonitor2=fFalse;
 	hr = m_pdd.InitDD();
 
 	if (hr != S_OK)
@@ -347,12 +346,6 @@ void VPinball::InitRegValues()
 	if (hr != S_OK)
 		{
 		g_pvp->m_pdd.m_fHardwareAccel = 0; // default value
-		}
-
-	hr = GetRegInt("Player", "EnableMonitor2", &m_fEnableMonitor2);
-	if (hr != S_OK)
-		{
-		g_pvp->m_fEnableMonitor2 = 0; // default value
 		}
 
 	hr = GetRegInt("Player", "DeadZone", &DeadZ);
@@ -2262,7 +2255,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 						{
 							IEditable * const piedit = pt->m_vedit.ElementAt(i);
 							// check scriptable - decals don't have scripts and therefore don't have names
-							if (piedit->GetScriptable() && ((piedit->m_fBackglass == g_pvp->m_fBackglassView && pt->m_vedit.ElementAt(i)->GetItemType() != eItemDispReel) || (g_pvp->m_fBackglassView && pt->m_vedit.ElementAt(i)->GetItemType() == eItemDispReel)))
+							if (piedit->GetScriptable() && piedit->m_fBackglass == g_pvp->m_fBackglassView)
 							{
 								char szT[64]; // Names can only be 32 characters (plus terminator)
 								WideCharToMultiByte(CP_ACP, 0, pt->m_vedit.ElementAt(i)->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);
@@ -3369,7 +3362,7 @@ int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							HRESULT hr;
 							if (LOWORD(wParam) == IDC_WEBSITE)
 								{
-								hr = OpenURL("http://www.nanotechent.com/vpin.php");
+								hr = OpenURL("http://www.vpforums.org");
 								}
 							else
 								{
@@ -3557,14 +3550,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, altrender ? BST_CHECKED : BST_UNCHECKED, 0);
 
-			hwndCheck = GetDlgItem(hwndDlg, 219); //EnableMonitor2
-			int enabmon2;
-			hr = GetRegInt("Player", "EnableMonitor2", &enabmon2);
-			if (hr != S_OK)
-				{
-				enabmon2 = fFalse;
-				}
-			SendMessage(hwndCheck, BM_SETCHECK, enabmon2 ? BST_CHECKED : BST_UNCHECKED, 0);
 
 			int widthcur = 0;
 			//int indexcur = -1;
@@ -3662,10 +3647,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							SetRegValue("Player", "AlternateRender", REG_DWORD, &altrend, 4);
 							g_pvp->m_pdd.m_fAlternateRender = (altrend != 0);
 
-							HWND hwndEM2 = GetDlgItem(hwndDlg, 219);
-							int enabmon2 = SendMessage(hwndEM2, BM_GETCHECK, 0, 0);
-							SetRegValue("Player", "EnableMonitor2", REG_DWORD, &enabmon2, 4);
-							g_pvp->m_fEnableMonitor2 = (enabmon2 != 0);
 
 							EndDialog(hwndDlg, TRUE);
 							}
@@ -3740,9 +3721,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			evms.heightcur = lParam>>16;
 			evms.depthcur = lParam & 0xffff;
 			evms.hwndList = hwndList;
-			LPDIRECTDRAW7 pDD =*g_pvp->m_pdd.m_vpDD.ElementAt(0);
-			pDD->EnumDisplayModes(0, NULL, &evms, EnumModesCallback2);
-			//g_pvp->m_pdd.m_pDD->EnumDisplayModes(0, NULL, &evms, EnumModesCallback2);
+			g_pvp->m_pdd.m_pDD->EnumDisplayModes(0, NULL, &evms, EnumModesCallback2);
 
 			if (SendMessage(hwndList, LB_GETCURSEL, 0, 0) == -1)
 				{

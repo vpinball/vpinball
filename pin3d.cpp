@@ -23,37 +23,36 @@ Pin3D::Pin3D()
 
 Pin3D::~Pin3D()
 	{
-HRESULT hr;
-	hr = m_pDD->RestoreDisplayMode();
+	m_pDD->RestoreDisplayMode();
 
 	if (m_pddsFrontBuffer)
-	hr = 	m_pddsFrontBuffer->Release();
+		m_pddsFrontBuffer->Release();
 
 	if (m_pddsBackBuffer)
-	hr=	m_pddsBackBuffer->Release();
+		m_pddsBackBuffer->Release();
 
 	if (m_pddsZBuffer)
-	hr = 	m_pddsZBuffer->Release();
+		m_pddsZBuffer->Release();
 
 	if (m_pddsStatic)
-	hr = 	m_pddsStatic->Release();
+		m_pddsStatic->Release();
 
 	if (m_pddsStaticZ)
-	hr = 	m_pddsStaticZ->Release();
+		m_pddsStaticZ->Release();
 
 	if (m_pddsBackTextureBuffer)
-	hr = 	m_pddsBackTextureBuffer->Release();
+		m_pddsBackTextureBuffer->Release();
 
 	if (m_pddsZTextureBuffer)
-	hr = 	m_pddsZTextureBuffer->Release();
+		m_pddsZTextureBuffer->Release();
 
 	if (m_pddsBallTexture)
-	hr = 	m_pddsBallTexture->Release();
+		m_pddsBallTexture->Release();
 
 	SAFE_RELEASE(m_pddsTargetTexture);
 
 	if (m_pddsLightTexture)
-	hr = 	m_pddsLightTexture->Release();
+		m_pddsLightTexture->Release();
 
 	SAFE_RELEASE(m_pddsShadowTexture);
 
@@ -63,10 +62,10 @@ HRESULT hr;
 	SAFE_RELEASE(m_pddsLightWhite);
 
 	if (m_pD3D)
-		hr = m_pD3D->Release();
+		m_pD3D->Release();
 
 	if (m_pd3dDevice)
-	hr = 	m_pd3dDevice->Release();
+		m_pd3dDevice->Release();
 	}
 
 static HRESULT WINAPI EnumZBufferFormatsCallback( DDPIXELFORMAT * pddpf,
@@ -420,8 +419,6 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 		pDeviceGUID = &IID_IDirect3DRGBDevice;
 		}
 
-	m_pDD = *g_pvp->m_pdd.m_vpDD.ElementAt(m_idDD); 
-
     // Get the dimensions of the viewport and screen bounds
     GetClientRect( hwnd, &m_rcScreen );
     ClientToScreen( hwnd, (POINT*)&m_rcScreen.left );
@@ -431,30 +428,22 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 
 	SetUpdatePos(m_rcScreen.left, m_rcScreen.top);
 
-	HRESULT hr = m_pDD->QueryInterface( IID_IDirect3D7, (VOID**)&m_pD3D );
+	// Cache pointer from global direct draw object
+	m_pDD = g_pvp->m_pdd.m_pDD; 
 
+	HRESULT hr = m_pDD->QueryInterface( IID_IDirect3D7, (VOID**)&m_pD3D );
 	if (hr != S_OK)
 		{
-		ShowError("Could not create Direct3D.");
+		ShowError("Could not create Direct 3D.");
 		return hr;
 		}
 
-	if (g_pplayer->m_backglasshwnd!=m_hwnd)
-		{
-		hr = m_pDD->SetCooperativeLevel(hwnd, DDSCL_FPUPRESERVE);
-		}
-	else
-		{
-		hr = m_pDD->SetCooperativeLevel(hwnd, DDSCL_FPUPRESERVE);// DDSCL_NORMAL |DDSCL_FPUPRESERVE);
-		}
+	hr = m_pDD->SetCooperativeLevel(hwnd, DDSCL_FPUPRESERVE);
 
 	if (fFullScreen)
 		{
 		//hr = m_pDD->SetCooperativeLevel(hwnd, DDSCL_ALLOWREBOOT|DDSCL_EXCLUSIVE|DDSCL_FULLSCREEN|DDSCL_FPUPRESERVE);
-		if (m_idDD==0)
-			{
-			hr = m_pDD->SetDisplayMode(screenwidth, screenheight, colordepth, refreshrate, 0);
-			}
+		hr = m_pDD->SetDisplayMode(screenwidth, screenheight, colordepth, refreshrate, 0);
 		}
 
     // Create the primary surface
@@ -689,7 +678,7 @@ void Pin3D::EnsureDebugTextures()
 	if (!m_pddsTargetTexture)
 		{
 		int width, height;
-		m_pddsTargetTexture = g_pvp->m_pdd.CreateFromResource(m_idDD, IDB_TARGET, &width, &height);
+		m_pddsTargetTexture = g_pvp->m_pdd.CreateFromResource(IDB_TARGET, &width, &height);
 		g_pvp->m_pdd.SetAlpha(m_pddsTargetTexture, RGB(0,0,0), width, height);
 		g_pvp->m_pdd.CreateNextMipMapLevel(m_pddsTargetTexture);
 		}
@@ -770,16 +759,16 @@ retry7:
 	CreateBallShadow();
 
 	int width, height;
-
-	m_pddsBallTexture = g_pvp->m_pdd.CreateFromResource(m_idDD, IDB_BALLTEXTURE, &width, &height);
+	m_pddsBallTexture = g_pvp->m_pdd.CreateFromResource(IDB_BALLTEXTURE, &width, &height);
 	g_pvp->m_pdd.SetAlpha(m_pddsBallTexture, RGB(0,0,0), width, height);
 	g_pvp->m_pdd.CreateNextMipMapLevel(m_pddsBallTexture);
 
-	m_pddsLightTexture = g_pvp->m_pdd.CreateFromResource(m_idDD, IDB_SUNBURST3, &width, &height);
+	m_pddsLightTexture = g_pvp->m_pdd.CreateFromResource(IDB_SUNBURST3, &width, &height);
 	g_pvp->m_pdd.SetAlpha(m_pddsLightTexture, RGB(0,0,0), width, height);
+
 	g_pvp->m_pdd.CreateNextMipMapLevel(m_pddsLightTexture);
 
-	m_pddsLightWhite = g_pvp->m_pdd.CreateFromResource(m_idDD, IDB_WHITE, &width, &height);
+	m_pddsLightWhite = g_pvp->m_pdd.CreateFromResource(IDB_WHITE, &width, &height);
 	g_pvp->m_pdd.SetAlpha(m_pddsLightWhite, RGB(0,0,0), width, height);
 	g_pvp->m_pdd.CreateNextMipMapLevel(m_pddsLightWhite);
 
@@ -861,7 +850,6 @@ void Pin3D::SetRenderTarget(const LPDIRECTDRAWSURFACE7 pddsSurface, const LPDIRE
 	HRESULT hr;
 	hr = m_pd3dDevice->SetRenderTarget(pddsSurface, 0L);
 	hr = m_pd3dDevice->SetRenderTarget(pddsZ, 0L);
-
 	}
 
 void Pin3D::InitRenderState() const
@@ -873,7 +861,7 @@ void Pin3D::InitRenderState() const
 
 	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );															
+	g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );															
 	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_TEXCOORDINDEX, 0);
 
 	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_COLOROP, D3DTOP_MODULATE);
@@ -888,14 +876,13 @@ void Pin3D::InitRenderState() const
 void Pin3D::DrawBackground()
 	{
 	PinTable * const ptable = g_pplayer->m_ptable;
-	PinImage *const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)g_pplayer->m_ptable->m_szImageBackdrop) : NULL;
+	PinImage * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)g_pplayer->m_ptable->m_szImageBackdrop) : NULL;
 
 	// Direct all renders to the "static" buffer.
 	SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
 
-	if (pin && ((g_pvp->m_fEnableMonitor2 && m_idDD == 1)||(!g_pvp->m_fEnableMonitor2)))
-	{
-
+	if (pin)
+		{
 		D3DMATERIAL7 mtrl;
 		mtrl.diffuse.a = 
 		mtrl.ambient.a =
@@ -940,17 +927,15 @@ void Pin3D::DrawBackground()
 
 		SetTexture(pin->m_pdsBuffer);
 
-		SetHUDVertices(m_idDD, rgv3D, 4);
+		SetHUDVertices(rgv3D, 4);
 		SetDiffuseFromMaterial(rgv3D, 4, &mtrl);
 
 		m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 												  rgv3D, 4,
 												  rgi, 4, 0);
 
-
 		m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-
-	}
+		}
 	else
 		{
 		const int r = (g_pplayer->m_ptable->m_colorbackdrop & 0xff0000) >> 16;
@@ -965,11 +950,11 @@ void Pin3D::DrawBackground()
 
 void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey)
 	{
-	RECT rc;
+	/*RECT rc;
 	rc.left = 0;
 	rc.top = 0;
 	rc.right = m_width;
-	rc.bottom = m_height;
+	rc.bottom = m_height;*/
 
 	m_scalex = scalex;
 	m_scaley = scaley;
@@ -994,9 +979,6 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	InitRenderState();
 
 	DrawBackground();
-
-	if (g_pplayer->m_backglasshwnd==m_hwnd)
-		{return;}
 
 	D3DLIGHT7 light;
 	ZeroMemory(&light, sizeof(D3DLIGHT7));
@@ -1064,7 +1046,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
     hr = m_pd3dDevice->SetRenderState( D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
     hr = m_pd3dDevice->SetRenderState( D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA);
 
-	SetTextureFilter ( eLightProject1, TEXTURE_MODE_BILINEAR ); 
+	g_pplayer->m_pin3d.SetTextureFilter ( eLightProject1, TEXTURE_MODE_BILINEAR ); 
 	hr = m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLORARG1, D3DTA_TEXTURE );
 	hr = m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLORARG2, D3DTA_CURRENT );
 	hr = m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
@@ -1099,7 +1081,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 
 	const GPINFLOAT m_aspect = 4.0/3.0;//((GPINFLOAT)m_dwRenderWidth)/m_dwRenderHeight;
-	//const GPINFLOAT m_aspect = ((GPINFLOAT)m_dwRenderWidth)/m_dwRenderHeight;
+
 	// Clear the world matrix.
 	Identity();
     
@@ -1132,10 +1114,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	//EnableLightMap(fFalse, -1);
 
-	if (g_pplayer->m_backglasshwnd!=m_hwnd)
-		{
-		InitBackGraphics();
-		}
+	InitBackGraphics();
 	}
 
 void Pin3D::InitBackGraphics()
@@ -1248,7 +1227,7 @@ void Pin3D::CreateBallShadow()
 
 	ddbltfx.dwSize = sizeof(DDBLTFX);
 	ddbltfx.dwFillColor = 0;
-	m_pddsShadowTexture = g_pvp->m_pdd.CreateTextureOffscreen(0,16, 16);
+	m_pddsShadowTexture = g_pvp->m_pdd.CreateTextureOffscreen(16, 16);
 	m_pddsShadowTexture->Blt(NULL, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 
 	//int width, height;
@@ -1361,7 +1340,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 
 	//BitBlt(hdcScreen, 0, 0, 128, 256, hdc2, 0, 0, SRCCOPY);
 
-	LPDIRECTDRAWSURFACE7 pddsProjectTexture = g_pvp->m_pdd.CreateTextureOffscreen(m_idDD, shadwidth, shadheight);
+	LPDIRECTDRAWSURFACE7 pddsProjectTexture = g_pvp->m_pdd.CreateTextureOffscreen(shadwidth, shadheight);
 	m_xvShadowMap.AddElement(pddsProjectTexture, (int)z);
 
 	DDSURFACEDESC2 ddsd;
@@ -1464,14 +1443,6 @@ void Pin3D::Flip(const int offsetx, const int offsety)
 	rcNew.top = m_rcUpdate.top + offsety;
 	rcNew.bottom = m_rcUpdate.bottom + offsety;
 
-/*	if (m_idDD!=0)
-		{
-		rcNew.left = 0 + offsetx;
-		rcNew.right = m_rcUpdate.right - m_rcUpdate.left + offsetx;
-		rcNew.top = 0 + offsety;
-		rcNew.bottom = m_rcUpdate.bottom  + offsety;
-		}
-*/
 	// Set blt effects to minimize tearing.
     DDBLTFX ddbltfx;
 	ZeroMemory(&ddbltfx, sizeof(DDBLTFX));
@@ -1490,9 +1461,7 @@ void Pin3D::Flip(const int offsetx, const int offsety)
 
 	if (hr == DDERR_SURFACELOST)
 		{
-//		hr = g_pvp->m_pdd.m_pDD->RestoreAllSurfaces();
-		hr = this->m_pDD->RestoreAllSurfaces();
-
+		hr = g_pvp->m_pdd.m_pDD->RestoreAllSurfaces();
 		}
 	}
 

@@ -543,7 +543,6 @@ void PinComControl::SetDefaults()
 	m_d.m_tdr.m_TimerInterval = 100;
 
 	m_fBackglass = fTrue;
-	m_idDD = 0;
 
 	WideStrCopy(L"TestVPControl.VPControl.1", m_d.m_progid);
 	}
@@ -959,7 +958,7 @@ void PinComControl::GetTimers(Vector<HitTimer> *pvht)
 	pht->m_nextfire = pht->m_interval;
 	pht->m_pfe = (IFireEvents *)this;
 
-	Pin3D *ppin3d = g_pplayer->m_vpin3d.ElementAt(0);
+	Pin3D *ppin3d = &g_pplayer->m_pin3d;
 
 	m_phittimer = pht;
 
@@ -1003,11 +1002,11 @@ void PinComControl::GetTimers(Vector<HitTimer> *pvht)
 
 	// If in windowed-mode, create a clipper object
     LPDIRECTDRAWCLIPPER pcClipper;
-    hr = g_pplayer->m_vpin3d.ElementAt(0)->m_pDD->CreateClipper( 0, &pcClipper, NULL );
+    hr = g_pplayer->m_pin3d.m_pDD->CreateClipper( 0, &pcClipper, NULL );
 
     // Associate the clipper with the window
     pcClipper->SetHWnd(0, g_pplayer->m_hwnd);
-    g_pplayer->m_vpin3d.ElementAt(0)->m_pddsFrontBuffer->SetClipper(pcClipper);
+    g_pplayer->m_pin3d.m_pddsFrontBuffer->SetClipper(pcClipper);
     if (pcClipper)
 		{
 		pcClipper->Release();
@@ -1031,7 +1030,7 @@ void PinComControl::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void PinComControl::RenderStatic(Pin3D *ppin3d)
+void PinComControl::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 	
