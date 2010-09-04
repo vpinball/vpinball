@@ -489,7 +489,7 @@ BEGIN
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,108,36,115,9
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,184,32,8,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Chris Leathley - additional development",IDC_STATIC,13,89,123,9
-    LTEXT           "",IDC_TRANSNAME2,63,141,83,9
+    LTEXT           "",IDC_TRANSNAME2,140,142,83,9
     LTEXT           "Rolle Cruz - physics",IDC_STATIC,149,102,67,9
     LTEXT           "Open Source Contributors",IDC_STATIC,65,112,88,9
     LTEXT           "Brian Smith",IDC_STATIC,13,120,42,9
@@ -498,6 +498,7 @@ BEGIN
     LTEXT           "Wizard's Hat",IDC_STATIC,82,130,42,9
     LTEXT           "Maddes",IDC_STATIC,13,129,42,9
     LTEXT           "Poiuyterry",IDC_STATIC,150,130,42,9
+    LTEXT           "Noah Fentz - testing",IDC_STATIC,136,76,66,9
 END
 
 IDD_VIDEO_OPTIONS DIALOGEX 0, 0, 126, 217
