@@ -452,15 +452,13 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
-	float maxtuback, maxtvback;
-	float maxtufront, maxtvfront;
-
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);//surface gate is on
 	const float h = m_d.m_height;		//relative height of the gate 
 
 	PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
 	PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
+	float maxtuback, maxtvback;
 	if (pinback)
 		{
 		m_ptable->GetTVTU(pinback, &maxtuback, &maxtvback);
@@ -470,6 +468,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		maxtuback = maxtvback = 1.0f;
 		}
 
+	float maxtufront, maxtvfront;
 	if (pinfront)
 		{
 		m_ptable->GetTVTU(pinfront, &maxtufront, &maxtvfront);
@@ -496,7 +495,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	mtrl.ambient.a =
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
+	mtrl.power = 0.0f;
 
 	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
 	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
@@ -516,11 +515,11 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE); //modified to correct software render of plain gates
 		}
 	// Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
+	pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
 
 	ppin3d->ClearExtents(&m_phitgate->m_gateanim.m_rcBounds, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar);
 
-	const float inv_cframes = (m_d.m_angleMax - m_d.m_angleMin)/(float)(cframes-1);
+	const float inv_cframes = (cframes > 1) ? ((m_d.m_angleMax - m_d.m_angleMin)/(float)(cframes-1)) : 0.0f;
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
