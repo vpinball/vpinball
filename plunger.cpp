@@ -266,7 +266,7 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->ClearExtents(&m_phitplunger->m_plungeranim.m_rcBounds, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar);
 
-	const float inv_cframes = (endy - beginy)/(float)(cframes-1);
+	const float inv_cframes = (cframes > 1) ? ((endy - beginy)/(float)(cframes-1)) : 0.0f;
 	for (int i=0;i<cframes;i++)
 		{
 		const float height = beginy + inv_cframes*(float)i;
