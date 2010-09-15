@@ -3,7 +3,7 @@
  
 #define GRAVITYCONST 0.86543f
 
-#define BALL_NUMBLURS 5				// The number of ball blur images to draw.
+#define BALL_NUMBLURS 1	// The number of ball blur images to draw. //!! note that this only erases multiple balls, as the drawing of them vanished?! -> so keep always at 1!?
 
  
 class HitObject;
