@@ -24,7 +24,7 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
 		m_plungeranim.m_force = 0;
 		m_plungeranim.m_mechTimeOut = 0;	//must be zero at game start, scripts will cock button plungers
 		
-		m_plungeranim.m_mass = 30;
+		m_plungeranim.m_mass = 30.0f;
 		m_plungeranim.m_fAcc = false;
 		m_plungeranim.m_speed = 0;
 		m_plungeranim.m_parkPosition = pPlunger->m_d.m_parkPosition;
@@ -408,9 +408,10 @@ void HitPlunger::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 void PlungerAnimObject::Check3D()
 	{
-	if (m_iframe == -1) return;
-																		//rlc fixed frame jitter by rounding up 0.5
 	const int frame = (int)((m_pos - m_frameStart + 1.0f)/(m_frameEnd-m_frameStart) * (m_vddsFrame.Size()-1)+0.5f);
+
+	if((unsigned int)frame >= (unsigned int)m_vddsFrame.Size())
+		return;
 
 	if (frame != m_iframe)
 		{
