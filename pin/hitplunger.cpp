@@ -408,6 +408,7 @@ void HitPlunger::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 void PlungerAnimObject::Check3D()
 	{
+	if (m_iframe == -1) return;
 																		//rlc fixed frame jitter by rounding up 0.5
 	const int frame = (int)((m_pos - m_frameStart + 1.0f)/(m_frameEnd-m_frameStart) * (m_vddsFrame.Size()-1)+0.5f);
 
