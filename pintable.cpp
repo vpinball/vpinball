@@ -1875,8 +1875,14 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 
 			{
 			MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
-			if(FAILED(hr = StgCreateDocfile(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
-				0, &pstgRoot)))
+
+			STGOPTIONS stg;
+			stg.usVersion = 1;
+			stg.reserved = 0;
+			stg.ulSectorSize = 4096;
+
+			if(FAILED(hr = StgCreateStorageEx(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+				STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgRoot)))
 				{
 				LocalString ls(IDS_SAVEERROR);
 				MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
@@ -1891,9 +1897,15 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 		{
 			{
 			MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
+
+			STGOPTIONS stg;
+			stg.usVersion = 1;
+			stg.reserved = 0;
+			stg.ulSectorSize = 4096;
+
 			HRESULT hr;
-			if(FAILED(hr = StgCreateDocfile(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
-				0, &pstgRoot)))
+			if(FAILED(hr = StgCreateStorageEx(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+				STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgRoot)))
 				{
 				LocalString ls(IDS_SAVEERROR);
 				MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
@@ -2003,7 +2015,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 				pstmItem->Write(&version, sizeof(version), &writ);
 				pstmItem->Release();
 				pstmItem = NULL;
-				}
+			}
 
 			if(SUCCEEDED(hr = pstgRoot->CreateStorage(L"TableInfo",STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstgInfo)))
 				{
@@ -2017,7 +2029,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 					}
 
 				pstgInfo->Release();
-				}
+			}
 
 			if(SUCCEEDED(hr = SaveData(pstmGame, hch, hkey)))
 				{
@@ -2041,7 +2053,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 						pstmItem->Release();
 						pstmItem = NULL;
 						//if(FAILED(hr)) goto Error;
-						}
+			}
 
 					csaveditems++;
 					SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
@@ -2060,7 +2072,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 						SaveSoundToStream(m_vsound.ElementAt(i), pstmItem);
 						pstmItem->Release();
 						pstmItem = NULL;
-						}
+			}
 
 					csaveditems++;
 					SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
@@ -2080,7 +2092,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 						//SaveImageToStream(m_vimage.ElementAt(i), pstmItem);
 						pstmItem->Release();
 						pstmItem = NULL;
-						}
+			}
 
 					csaveditems++;
 					SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
@@ -2099,7 +2111,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 						m_vfont.ElementAt(i)->SaveToStream(pstmItem);
 						pstmItem->Release();
 						pstmItem = NULL;
-						}
+			}
 
 					csaveditems++;
 					SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
@@ -2118,7 +2130,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 						m_vcollection.ElementAt(i)->SaveData(pstmItem, hch, hkey);
 						pstmItem->Release();
 						pstmItem = NULL;
-						}
+			}
 
 					csaveditems++;
 					SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
