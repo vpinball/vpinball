@@ -101,9 +101,15 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 	WideStrCat(wzSaveExtension, wzT);
 	
 	//MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
+
+	STGOPTIONS stg;
+	stg.usVersion = 1;
+	stg.reserved = 0;
+	stg.ulSectorSize = 4096;
+
 	HRESULT hr;
-	if(SUCCEEDED(hr = StgCreateDocfile(wzT/*L"c:\\test.vpt"*/, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
-		0, &pstgDisk)))
+	if(SUCCEEDED(hr = StgCreateStorageEx(wzT/*L"c:\\test.vpt"*/, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+		STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgDisk)))
 		{
 		pstgroot->CopyTo(0, NULL, NULL, pstgDisk);
 		hr = pstgDisk->Commit(STGC_DEFAULT);
