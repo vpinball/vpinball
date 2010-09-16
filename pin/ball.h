@@ -3,9 +3,6 @@
  
 #define GRAVITYCONST 0.86543f
 
-#define BALL_NUMBLURS 1	// The number of ball blur images to draw. //!! note that this only erases multiple balls, as the drawing of them vanished?! -> so keep always at 1!?
-
- 
 class HitObject;
 class Level;
 class Ball;
@@ -59,8 +56,8 @@ public:
 	Vertex3D m_rgv3D[4];						// Last vertices of the ball texture
 	Vertex3D m_rgv3DShadow[4];					// Last vertices of the ball shadow
 
-	RECT m_rcScreen[BALL_NUMBLURS];				// rect where the ball appears on the screen
-	RECT m_rcScreenShadow[BALL_NUMBLURS];
+	RECT m_rcScreen;							// rect where the ball appears on the screen
+	RECT m_rcScreenShadow;
 	
 	COLORREF m_color;
 

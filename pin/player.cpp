@@ -1284,21 +1284,16 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
 
 void Player::EraseBall(Ball *pball)
 {
-	// Erase each ball blur.
-	for ( int blur=0; blur<BALL_NUMBLURS; blur++ )
+	// Flag the region as needing to be updated.
+	if (m_fBallShadows)
 	{
-		// Flag the region as needing to be updated.
-		if (m_fBallShadows)
+		if (!(fIntRectIntersect(pball->m_rcScreen, pball->m_rcScreenShadow)))
 		{
-			if (!(fIntRectIntersect(pball->m_rcScreen[blur], pball->m_rcScreenShadow[blur])))
-			{
-				InvalidateRect(&pball->m_rcScreenShadow[blur]);
-			}
+			InvalidateRect(&pball->m_rcScreenShadow);
 		}
-		InvalidateRect(&pball->m_rcScreen[blur]);
 	}
+	InvalidateRect(&pball->m_rcScreen);
 }
-
 
 void Player::DestroyBall(Ball *pball)
 	{
@@ -3075,29 +3070,29 @@ void Player::DrawBalls()
 			pball->m_fErase = true;
 
 			// Mark ball rect as dirty for blitting to the screen
-			m_pin3d.ClearExtents(&pball->m_rcScreen[0], NULL, NULL);
-			m_pin3d.ExpandExtents(&pball->m_rcScreen[0], pball->m_rgv3D, NULL, NULL, 4, fFalse);
+			m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
+			m_pin3d.ExpandExtents(&pball->m_rcScreen, pball->m_rgv3D, NULL, NULL, 4, fFalse);
 
 			//m_pin3d.ExpandExtents(&pball->m_rcScreen, rgv3DArrow, NULL, NULL, 4, fFalse);
 
 			if (m_fBallShadows)
 				{
-				m_pin3d.ClearExtents(&pball->m_rcScreenShadow[0], NULL, NULL);
-				m_pin3d.ExpandExtents(&pball->m_rcScreenShadow[0], pball->m_rgv3DShadow, NULL, NULL, 4, fFalse);
+				m_pin3d.ClearExtents(&pball->m_rcScreenShadow, NULL, NULL);
+				m_pin3d.ExpandExtents(&pball->m_rcScreenShadow, pball->m_rgv3DShadow, NULL, NULL, 4, fFalse);
 
-				if (fIntRectIntersect(pball->m_rcScreen[0], pball->m_rcScreenShadow[0]))
+				if (fIntRectIntersect(pball->m_rcScreen, pball->m_rcScreenShadow))
 					{
-					pball->m_rcScreen[0].left = min(pball->m_rcScreen[0].left, pball->m_rcScreenShadow[0].left);
-					pball->m_rcScreen[0].top = min(pball->m_rcScreen[0].top, pball->m_rcScreenShadow[0].top);
-					pball->m_rcScreen[0].right = max(pball->m_rcScreen[0].right, pball->m_rcScreenShadow[0].right);
-					pball->m_rcScreen[0].bottom = max(pball->m_rcScreen[0].bottom, pball->m_rcScreenShadow[0].bottom);
+					pball->m_rcScreen.left = min(pball->m_rcScreen.left, pball->m_rcScreenShadow.left);
+					pball->m_rcScreen.top = min(pball->m_rcScreen.top, pball->m_rcScreenShadow.top);
+					pball->m_rcScreen.right = max(pball->m_rcScreen.right, pball->m_rcScreenShadow.right);
+					pball->m_rcScreen.bottom = max(pball->m_rcScreen.bottom, pball->m_rcScreenShadow.bottom);
 					}
 				else
 					{
-					InvalidateRect(&pball->m_rcScreenShadow[0]);
+					InvalidateRect(&pball->m_rcScreenShadow);
 					}
 				}
-			InvalidateRect(&pball->m_rcScreen[0]);
+			InvalidateRect(&pball->m_rcScreen);
 		}
 
 	m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
