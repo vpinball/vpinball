@@ -432,10 +432,6 @@
 #define IDB_TB_DEBUG                    377
 #define IDD_COMLIST                     378
 #define IDD_PROPKICKER_STATE            379
-#define IDD_RESOLVENAMECONFLICT         380
-#define IDC_CONFLICTINGNAME             380
-#define IDC_RESOLVEDNAME                381
-#define IDC_USEDEFAULTNAMES             382
 #define IDR_TABLE_NEW                   383
 #define IDC_ADDCREDITBUTTON2            400
 #define IDC_ADDCREDIT2                  401
@@ -496,7 +492,6 @@
 #define ID_REPLACE                      32830
 #define ID_EDIT_EDITOROPTIONS           32831
 #define IDC_PASTEAT                     32836
-#define IDC_PASTE_PRESERVINGNAMES       32837
 #define ID_TABLE_TABLEINFO              32838
 #define ID_PREFERENCES_SECURITYOPTIONS  32839
 #define IDC_COMCONTROL                  32840

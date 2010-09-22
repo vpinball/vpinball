@@ -213,9 +213,7 @@ public:
 	BOOL GetEMReelsEnabled() const;
 
 	void Copy();
-	void Paste(BOOL fAtLocation, int x, int y, bool keepName);
-	void SetResolvedName(WCHAR *p_resolvedName, bool cancelResolvingNames);
-	bool mCancelResolvingNames;
+	void Paste(BOOL fAtLocation, int x, int y);
 
 	void ExportBlueprint();
 
@@ -373,6 +371,7 @@ public:
 
 	bool IsNameUnique(WCHAR *wzName);
 	void GetUniqueName(int type, WCHAR *wzUniqueName);
+	void GetUniqueName(int type, WCHAR *wzOriginalName, WCHAR *wzUniqueName);
 
 	float GetSurfaceHeight(char *szName, float x, float y);
 
