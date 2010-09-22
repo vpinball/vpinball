@@ -1279,6 +1279,32 @@ void PinTable::GetUniqueName(int type, WCHAR *wzUniqueName)
 	WideStrCopy(wzName, wzUniqueName);
 	}
 
+void PinTable::GetUniqueName(int type, WCHAR *wzOriginalName, WCHAR *wzUniqueName)
+	{
+	int suffix = 1;
+	BOOL fFound = fFalse;
+	WCHAR wzName[128];
+	WCHAR wzSuffix[10];
+
+	while (!fFound)
+		{
+		WideStrCopy(wzOriginalName, wzName);
+		_itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(WCHAR), 10);
+		WideStrCat(wzSuffix, wzName);
+
+		if (m_pcv->m_vcvd.GetSortedIndex(wzName) == -1)
+			{
+			fFound = fTrue;
+			}
+		else
+			{
+			suffix += 1;
+			}
+		}
+
+	WideStrCopy(wzName, wzUniqueName);
+	}
+
 void PinTable::Render(Sur * psur)
 	{
 	RECT rc;
@@ -4095,7 +4121,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 			break;
 
 		case IDC_PASTEAT:
-			Paste(fTrue, x, y, false);
+			Paste(fTrue, x, y);
 			break;
 
 		case ID_WALLMENU_ROTATE:
@@ -4633,94 +4659,7 @@ int rgItemViewAllowed[] =
 	2,
 	};
 
-INT CALLBACK ResolveNameConflictProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-	{
-		HWND hwndControl;
-		HWND hwndParent;
-	switch (uMsg)
-		{
-		case WM_INITDIALOG:
-			{
-			hwndParent = GetParent(hwndDlg);
-			RECT rcDlg;
-			RECT rcMain;
-			GetWindowRect(hwndParent, &rcMain);
-			GetWindowRect(hwndDlg, &rcDlg);
-
-			SetWindowPos(hwndDlg, NULL,
-				(rcMain.right + rcMain.left)/2 - (rcDlg.right - rcDlg.left)/2,
-				(rcMain.bottom + rcMain.top)/2 - (rcDlg.bottom - rcDlg.top)/2,
-				0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
-
-			hwndControl = GetDlgItem(hwndDlg, IDC_CONFLICTINGNAME);
-			SendMessageW(hwndControl, WM_SETTEXT, 0, lParam);
-
-			// limit the name field to MAXNAMEBUFFER characters
-			hwndControl = GetDlgItem(hwndDlg, IDC_RESOLVEDNAME);
-			SendMessage(hwndControl, EM_LIMITTEXT, MAXNAMEBUFFER-2, 0L);
-
-			PinTable * const pt = g_pvp->GetActiveTable();
-			pt->mCancelResolvingNames = false;
-			return TRUE;
-			}
-			break;
-
-		case WM_COMMAND:
-			{
-			switch (HIWORD(wParam))
-				{
-				case BN_CLICKED:
-					switch (LOWORD(wParam))
-						{
-						case IDOK:
-							{
-							// get the resolved name
-							HWND hwndResName = GetDlgItem(hwndDlg, IDC_RESOLVEDNAME);
-							const int textlength = GetWindowTextLength(hwndResName);
-							WCHAR pName[MAXNAMEBUFFER];
-							GetWindowTextW(hwndResName,  (WCHAR *)pName,  textlength);
-							pName[textlength] = 0;
-							// and store it
-							PinTable * const pt = g_pvp->GetActiveTable();
-							pt->SetResolvedName(pName, false);
-							EndDialog(hwndDlg, TRUE);
-							}
-							break;
-						case IDC_USEDEFAULTNAMES:
-							{
-							PinTable * const pt = g_pvp->GetActiveTable();
-							pt->SetResolvedName(NULL, true);
-							EndDialog(hwndDlg, TRUE);
-							}
-							break;
-
-						case IDCANCEL:
-							EndDialog(hwndDlg, NULL);
-							break;
-						}
-					
-				}
-			}
-			break;
-
-		case WM_CLOSE:
-			EndDialog(hwndDlg, FALSE);
-			break;
-		}
-
-	return FALSE;
-	}
-
-void PinTable::SetResolvedName(WCHAR *p_resolvedName, bool cancelResolvingNames)
-{
-	//if cancelResolvingNames==true then the user wants to return to the default naming scheme.
-	mCancelResolvingNames = cancelResolvingNames;
-
-	if (!mCancelResolvingNames)
-		WideStrCopy(p_resolvedName, mp_resolvedName);
-}
-
-void PinTable::Paste(BOOL fAtLocation, int x, int y, bool keepName)
+void PinTable::Paste(BOOL fAtLocation, int x, int y)
 	{
 	IEditable *peditNew;
 	BOOL fError = fFalse;
@@ -4773,39 +4712,16 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y, bool keepName)
 			int id;
 			peditNew->InitLoad(pstm, this, &id, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
 			
-			if (keepName)
+			WCHAR tmpName[MAXNAMEBUFFER];
+			WideStrCopy(peditNew->GetScriptable()->m_wzName, tmpName);
+
+			while (iswdigit(tmpName[wcslen(tmpName)-1]))
 			{
-				mCancelResolvingNames = false;
-				WCHAR *p_tmpName = peditNew->GetScriptable()->m_wzName;
-				
-				while (!IsNameUnique(p_tmpName))
-				{
-					int res = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_RESOLVENAMECONFLICT),
-						  m_hwnd, ResolveNameConflictProc, (LPARAM)peditNew->GetScriptable()->m_wzName);
-					
-					if (res == 0)
-						return;
-
-					if (mCancelResolvingNames)
-						break;
-
-					if (lstrlenW(mp_resolvedName)> 0)
-						p_tmpName = mp_resolvedName;
-				}
-				
-				if (mCancelResolvingNames)
-				{
-					keepName = false;
-					peditNew->InitVBA(fTrue, 0, NULL);
-				}
-				else
-				{
-					WideStrCopy(p_tmpName, peditNew->GetScriptable()->m_wzName);
-					peditNew->InitVBA(fTrue, 0, p_tmpName);
-				}
+				tmpName[wcslen(tmpName)-1] = L'\0';
 			}
-			else
-				peditNew->InitVBA(fTrue, 0, NULL);
+
+			GetUniqueName(type, tmpName,peditNew->GetScriptable()->m_wzName);
+			peditNew->InitVBA(fTrue, 0, peditNew->GetScriptable()->m_wzName);
 			
 			m_vedit.AddElement(peditNew);
 			peditNew->InitPostLoad();

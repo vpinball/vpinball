@@ -142,7 +142,6 @@ BEGIN
         MENUITEM "&Copy\tCtrl+C",               IDC_COPY
         MENUITEM "&Paste\tCtrl+V",              IDC_PASTE
         MENUITEM "Paste &At\tCtrl+Shift+V",     IDC_PASTEAT
-        MENUITEM "Paste Preserving &Names",     IDC_PASTE_PRESERVINGNAMES
         MENUITEM "&Delete\tDel",                ID_DELETE
         MENUITEM SEPARATOR
         MENUITEM "&Options",                    ID_EDIT_PROPERTIES
@@ -670,20 +669,6 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "The current selection contains multiple object types.  Select either a single object or a group of objects of the same type to edit properties.",IDC_STATIC,7,7,109,48
-END
-
-IDD_RESOLVENAMECONFLICT DIALOG  0, 0, 240, 70
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Resolve name conflict"
-FONT 8, "MS Sans Serif"
-BEGIN
-    LTEXT           "Conflicting name:",IDC_STATIC,7,10,99,8
-    CTEXT           "",IDC_CONFLICTINGNAME,82,10,150,8
-    LTEXT           "Enter the new name:",IDC_STATIC,7,32,99,8
-    EDITTEXT        IDC_RESOLVEDNAME,82,29,150,14,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "&Change name..",IDOK,102,51,61,14
-    PUSHBUTTON      "&Cancel",IDCANCEL,172,51,61,14
-    PUSHBUTTON      "&Use default names",IDC_USEDEFAULTNAMES,23,51,69,14
 END
 
 IDD_PROTECT_DIALOG DIALOGEX 0, 0, 286, 220
