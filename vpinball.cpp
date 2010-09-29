@@ -4961,6 +4961,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			HRESULT hr;
 			HWND hwndControl;
 			int key;
+
 			hr = GetRegInt("Player","LFlipKey", &key);
 			if (hr != S_OK || key > 0xdd)
 				{
@@ -5116,6 +5117,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowText(hwndControl, rgszKeyName[key]);
 			SetWindowLong(hwndControl, GWL_USERDATA, key);
 
+
 			KeyWindowStruct * const pksw = new KeyWindowStruct();
 			pksw->pi.Init(hwndDlg);
 			pksw->m_timerid = 0;
@@ -5214,7 +5216,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			const int key = pksw->pi.GetNextKey();
 			if (key != 0)
 				{
-				if(key < 0xdd)			//rlc   Key mapping, add cases for joystick here!!!!!!!!!
+				if(key < 0xDD)	//0xDD		//rlc   Key mapping, add cases for joystick here!!!!!!!!!
 					{
 					if (key == DIK_ESCAPE)
 						{
