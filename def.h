@@ -357,15 +357,6 @@ inline Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, 
 	return result;
 	}
 
-inline Vertex3D CrossProduct(const Vertex3D &pv1, const Vertex3D &pv2)
-	{
-	Vertex3D pvCross;
-	pvCross.x = pv1.y * pv2.z - pv1.z * pv2.y;
-	pvCross.y = pv1.z * pv2.x - pv1.x * pv2.z;
-	pvCross.z = pv1.x * pv2.y - pv1.y * pv2.x;
-	return pvCross;
-	}
-
 inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 	{
 	Vertex3Ds pvCross;
@@ -399,9 +390,9 @@ public:
 			m_d[i][l] *= scalar;
 	}
 
-	inline Vertex3D MultiplyVector(const Vertex3D &pv3D) const
+	inline Vertex3Ds MultiplyVector(const Vertex3D &pv3D) const
 	{
-	Vertex3D pv3DOut;
+	Vertex3Ds pv3DOut;
     pv3DOut.x =  m_d[0][0] * pv3D.x
 			   + m_d[0][1] * pv3D.y
 			   + m_d[0][2] * pv3D.z;

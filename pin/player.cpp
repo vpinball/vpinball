@@ -3015,13 +3015,13 @@ void Player::DrawBalls()
 					Vertex3D rgv3DArrowTransformed[4];
 					for (int iPoint=0;iPoint<4;iPoint++)
 						{
-						rgv3DArrowTransformed[iPoint] = pball->m_orientation.MultiplyVector(rgv3DArrow[iPoint]);
-						rgv3DArrowTransformed[iPoint].nx = rgv3DArrowTransformed[iPoint].x;
-						rgv3DArrowTransformed[iPoint].ny = rgv3DArrowTransformed[iPoint].y;
-						rgv3DArrowTransformed[iPoint].nz = rgv3DArrowTransformed[iPoint].z;
-						rgv3DArrowTransformed[iPoint].x = pball->x - rgv3DArrowTransformed[iPoint].x*pball->radius;
-						rgv3DArrowTransformed[iPoint].y = pball->y - rgv3DArrowTransformed[iPoint].y*pball->radius;
-						rgv3DArrowTransformed[iPoint].z = zheight  - rgv3DArrowTransformed[iPoint].z*pball->radius;
+						const Vertex3Ds tmp = pball->m_orientation.MultiplyVector(rgv3DArrow[iPoint]);
+						rgv3DArrowTransformed[iPoint].nx = tmp.x;
+						rgv3DArrowTransformed[iPoint].ny = tmp.y;
+						rgv3DArrowTransformed[iPoint].nz = tmp.z;
+						rgv3DArrowTransformed[iPoint].x = pball->x - tmp.x*pball->radius;
+						rgv3DArrowTransformed[iPoint].y = pball->y - tmp.y*pball->radius;
+						rgv3DArrowTransformed[iPoint].z = zheight  - tmp.z*pball->radius;
 						rgv3DArrowTransformed[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinFront->m_maxtu;
 						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinFront->m_maxtv;
 						}
@@ -3046,13 +3046,13 @@ void Player::DrawBalls()
 						{
 						rgv3DArrow[iPoint].x = -rgv3DArrow[iPoint].x;
 						rgv3DArrow[iPoint].z = -rgv3DArrow[iPoint].z;
-						rgv3DArrowTransformed[iPoint] = pball->m_orientation.MultiplyVector(rgv3DArrow[iPoint]);
-						rgv3DArrowTransformed[iPoint].nx = rgv3DArrowTransformed[iPoint].x;
-						rgv3DArrowTransformed[iPoint].ny = rgv3DArrowTransformed[iPoint].y;
-						rgv3DArrowTransformed[iPoint].nz = rgv3DArrowTransformed[iPoint].z;
-						rgv3DArrowTransformed[iPoint].x = pball->x - rgv3DArrowTransformed[iPoint].x*pball->radius;
-						rgv3DArrowTransformed[iPoint].y = pball->y - rgv3DArrowTransformed[iPoint].y*pball->radius;
-						rgv3DArrowTransformed[iPoint].z = zheight  - rgv3DArrowTransformed[iPoint].z*pball->radius;
+						const Vertex3Ds tmp = pball->m_orientation.MultiplyVector(rgv3DArrow[iPoint]);
+						rgv3DArrowTransformed[iPoint].nx = tmp.x;
+						rgv3DArrowTransformed[iPoint].ny = tmp.y;
+						rgv3DArrowTransformed[iPoint].nz = tmp.z;
+						rgv3DArrowTransformed[iPoint].x = pball->x - tmp.x*pball->radius;
+						rgv3DArrowTransformed[iPoint].y = pball->y - tmp.y*pball->radius;
+						rgv3DArrowTransformed[iPoint].z = zheight  - tmp.z*pball->radius;
 						rgv3DArrowTransformed[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinBack->m_maxtu;
 						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinBack->m_maxtv;
 						}
