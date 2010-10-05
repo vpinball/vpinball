@@ -6683,7 +6683,7 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 
 						int iSeg;
 						Vertex2D vOut;
-						ClosestPointOnPolygon(rgv, cvertex, &v, &vOut, &iSeg, fFalse);
+						ClosestPointOnPolygon(rgv, cvertex, v, &vOut, &iSeg, fFalse);
 
 						// Go through vertices (including iSeg itself) counting control points until iSeg
 						float totallength = 0;

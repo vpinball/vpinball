@@ -1767,7 +1767,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 
 			Vertex2D vOut;
 			int iSeg;
-			ClosestPointOnPolygon(m_rgvT, m_cvertexT, &v, &vOut, &iSeg, fTrue);
+			ClosestPointOnPolygon(m_rgvT, m_cvertexT, v, &vOut, &iSeg, fTrue);
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
 			int icp = 0;

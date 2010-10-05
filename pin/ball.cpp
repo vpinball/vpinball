@@ -29,27 +29,11 @@ Ball::~Ball()
 
 void Ball::Init()
 	{
-	const float tmp = (float)(5.0/2.0)/(radius*radius);
 	// Only called by real balls, not temporary objects created for physics/rendering
-	for (int i=0;i<3;i++)
-		{
-		for (int l=0;l<3;l++)
-			{
-			if (i==l)
-				{
-				m_orientation.m_d[i][l] = 1.0f;
-				m_inversebodyinertiatensor.m_d[i][l] = tmp;
-				}
-			else
-				{
-				m_orientation.m_d[i][l] = 0;
-				m_inversebodyinertiatensor.m_d[i][l] = 0;
-				}
-			}
-		
-		m_angularvelocity.m_d[i] = 0;
-		m_angularmomentum.m_d[i] = 0;
-		}
+	m_orientation.Identity();
+	m_inversebodyinertiatensor.Identity((float)(5.0/2.0)/(radius*radius));
+	m_angularvelocity.Set(0,0,0);
+	m_angularmomentum.Set(0,0,0);
 
 	m_ballanim.m_pball = this;
 
@@ -425,11 +409,11 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	bvT.Set(bvt.x, bvt.y, bvt.z);						//copy ball tangent velocity
 	bvT.Normalize();	
 
-	Vertex3Ds bstv;										// ball surface tangential velocity
-	CrossProduct(m_angularvelocity, bccpd, &bstv);		// velocity of ball surface at contact point
+	const Vertex3Ds bstv =								// ball surface tangential velocity
+	CrossProduct(m_angularvelocity, bccpd);				// velocity of ball surface at contact point
 
 	Vertex3Ds cpvt;						// contact point velocity tangential to hit face
-	const float dot = bstv.Dot(&bvT);	// speed ball surface contact point tangential to contact surface point
+	const float dot = bstv.Dot(bvT);	// speed ball surface contact point tangential to contact surface point
 	cpvt.x = bvT.x * dot;
 	cpvt.y = bvT.y * dot;
 	cpvt.z = bvT.z * dot;
@@ -483,12 +467,12 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	cpctrv.y *= (float)(1.0/2.5);
 	cpctrv.z *= (float)(1.0/2.5);
 
-	Vertex3Ds vResult;
-	CrossProduct(bccpd, cpctrv, &vResult); //ball center contact point displacement X reverse contact point co-tan vel
+	const Vertex3Ds vResult =
+	CrossProduct(bccpd, cpctrv);	// ball center contact point displacement X reverse contact point co-tan vel
 
-	m_angularmomentum.Add(&vResult);	// add delta 
+	m_angularmomentum.Add(vResult); // add delta 
 
-	m_inverseworldinertiatensor.MultiplyVector(&m_angularmomentum, &m_angularvelocity);
+	m_angularvelocity = m_inverseworldinertiatensor.MultiplyVector(m_angularmomentum);
 	}
 
 void Ball::CalcHitRect()
@@ -571,7 +555,7 @@ void Ball::UpdateDisplacements(float dtime)
 		CalcBoundingRect();
 		
 		Matrix3 mat3;
-		mat3.CreateSkewSymmetric(&m_angularvelocity);
+		mat3.CreateSkewSymmetric(m_angularvelocity);
 		
 		Matrix3 addedorientation;
 		addedorientation.MultiplyMatrix(&mat3, &m_orientation);
@@ -587,7 +571,7 @@ void Ball::UpdateDisplacements(float dtime)
 		m_inverseworldinertiatensor.MultiplyMatrix(&m_orientation,&m_inversebodyinertiatensor);
 		m_inverseworldinertiatensor.MultiplyMatrix(&m_inverseworldinertiatensor,&matTransposeOrientation);
 
-        m_inverseworldinertiatensor.MultiplyVector(&m_angularmomentum, &m_angularvelocity);
+        m_angularvelocity = m_inverseworldinertiatensor.MultiplyVector(m_angularmomentum);
 		}
 	}
 

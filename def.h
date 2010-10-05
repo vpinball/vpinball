@@ -115,15 +115,15 @@ public:
 		ny *= oneoverlength;
 		nz *= oneoverlength;
 	}
-	inline float Dot(const Vertex3D * const pv) const
+	inline float Dot(const Vertex3D &pv) const
 	{
-		return x*pv->x + y*pv->y + z*pv->z;
+		return x*pv.x + y*pv.y + z*pv.z;
 	}
-	inline float DistanceSquared(const Vertex3D * const pv) const
+	inline float DistanceSquared(const Vertex3D &pv) const
 	{
-		const float dx = (pv->x - x);
-		const float dy = (pv->y - y);
-		const float dz = (pv->z - z);
+		const float dx = pv.x - x;
+		const float dy = pv.y - y;
+		const float dz = pv.z - z;
 		return dx*dx + dy*dy + dz*dz;
 	}
 	inline float LengthSquared() const
@@ -136,11 +136,11 @@ public:
 		y *= scalar;
 		z *= scalar;
 	}
-	inline void Add(const Vertex3D * const pv)
+	inline void Add(const Vertex3D &pv)
 	{
-		x += pv->x;
-		y += pv->y;
-		z += pv->z;
+		x += pv.x;
+		y += pv.y;
+		z += pv.z;
 	}
 	};
 
@@ -166,13 +166,13 @@ public:
 		y *= oneoverlength;
 		z *= oneoverlength;
 		}
-	inline float Dot(const Vertex3Ds * const pv) const
+	inline float Dot(const Vertex3Ds &pv) const
 		{
-		return x*pv->x + y*pv->y + z*pv->z;
+		return x*pv.x + y*pv.y + z*pv.z;
 		}
-	inline float Dot(const Vertex3D * const pv) const
+	inline float Dot(const Vertex3D &pv) const
 		{
-		return x*pv->x + y*pv->y + z*pv->z;
+		return x*pv.x + y*pv.y + z*pv.z;
 		}
 	inline float LengthSquared() const
 		{
@@ -184,27 +184,29 @@ public:
 		y *= scalar;
 		z *= scalar;
 		}
-	inline void Add(const Vertex3Ds * const pv)
+	inline void Add(const Vertex3Ds &pv)
 		{
-		x += pv->x;
-		y += pv->y;
-		z += pv->z;
+		x += pv.x;
+		y += pv.y;
+		z += pv.z;
 		}
 	};
 
-inline void Calc2DNormal(const Vertex2D * const pv1, const Vertex2D * const pv2, Vertex2D * const pnormal)
+inline Vertex2D Calc2DNormal(const Vertex2D &pv1, const Vertex2D &pv2)
 	{
 	Vertex2D vT;
-	vT.x = pv1->x - pv2->x;
-	vT.y = pv1->y - pv2->y;
+	vT.x = pv1.x - pv2.x;
+	vT.y = pv1.y - pv2.y;
 
 	// Set up line normal
-	const float inv_length = 1.0f/sqrtf((vT.x * vT.x) + (vT.y * vT.y));
-	pnormal->x =  vT.y * inv_length;
-	pnormal->y = -vT.x * inv_length;
+	const float inv_length = 1.0f/sqrtf(vT.x * vT.x + vT.y * vT.y);
+	Vertex2D pnormal;
+	pnormal.x =  vT.y * inv_length;
+	pnormal.y = -vT.x * inv_length;
+	return pnormal;
 	}
 
-inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, const Vertex2D * const pvin, Vertex2D * const pvout, int * const piseg, const BOOL fClosed)
+inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const BOOL fClosed)
 	{
 	float mindist = FLT_MAX;
 	int seg = -1;
@@ -220,14 +222,13 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 	// then pick the shortest distance
 	for (int i=0; i<cloop; ++i)
 		{
-		const int p1 = i;
 		const int p2 = (i < count-1) ? (i+1) : 0;
 
-		const float A = rgv[p1].y - rgv[p2].y;
-		const float B = rgv[p2].x - rgv[p1].x;
-		const float C = -(A*rgv[p1].x + B*rgv[p1].y);
+		const float A = rgv[i].y - rgv[p2].y;
+		const float B = rgv[p2].x - rgv[i].x;
+		const float C = -(A*rgv[i].x + B*rgv[i].y);
 
-		const float dist = fabsf((A*pvin->x + B*pvin->y + C)) / sqrtf(A*A + B*B);
+		const float dist = fabsf(A*pvin.x + B*pvin.y + C) / sqrtf(A*A + B*B);
 
 		if (dist < mindist)
 			{
@@ -235,7 +236,7 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 			// of the line with the perpenticular line projected from the point,
 			// to find the closest point on the line
 			const float D = -B;
-			const float F = -(D*pvin->x + A*pvin->y);
+			const float F = -(D*pvin.x + A*pvin.y);
 			
 			const float inv_det = 1.0f/(A*A - B*D);
 			const float intersectx = (B*F-A*C)*inv_det;
@@ -243,10 +244,10 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 
 			// If the intersect point lies on the polygon segment
 			// (not out in space), then make this the closest known point
-			if (intersectx >= (min(rgv[p1].x, rgv[p2].x) - 0.1f) &&
-				intersectx <= (max(rgv[p1].x, rgv[p2].x) + 0.1f) &&
-				intersecty >= (min(rgv[p1].y, rgv[p2].y) - 0.1f) &&
-				intersecty <= (max(rgv[p1].y, rgv[p2].y) + 0.1f))
+			if (intersectx >= (min(rgv[i].x, rgv[p2].x) - 0.1f) &&
+				intersectx <= (max(rgv[i].x, rgv[p2].x) + 0.1f) &&
+				intersecty >= (min(rgv[i].y, rgv[p2].y) - 0.1f) &&
+				intersecty <= (max(rgv[i].y, rgv[p2].y) + 0.1f))
 				{
 				mindist = dist;
 				seg = i;
@@ -260,27 +261,23 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 
 inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3D * const pvPoint, const int count, const float angle)
 	{
-	const float x = pvAxis.x;
-	const float y = pvAxis.y;
-	const float z = pvAxis.z;
-
 	const float rsin = sinf(angle);
 	const float rcos = cosf(angle);
 
 	// Matrix for rotating around an arbitrary vector
 
 	float matrix[3][3];
-	matrix[0][0] = x*x + rcos*(1.0f-x*x);
-	matrix[1][0] = x*y*(1.0f-rcos) - z*rsin;
-	matrix[2][0] = z*x*(1.0f-rcos) + y*rsin;
+	matrix[0][0] = pvAxis.x*pvAxis.x + rcos*(1.0f-pvAxis.x*pvAxis.x);
+	matrix[1][0] = pvAxis.x*pvAxis.y*(1.0f-rcos) - pvAxis.z*rsin;
+	matrix[2][0] = pvAxis.z*pvAxis.x*(1.0f-rcos) + pvAxis.y*rsin;
 
-	matrix[0][1] = x*y*(1.0f-rcos) + z*rsin;
-	matrix[1][1] = y*y + rcos*(1.0f-y*y);
-	matrix[2][1] = y*z*(1.0f-rcos) - x*rsin;
+	matrix[0][1] = pvAxis.x*pvAxis.y*(1.0f-rcos) + pvAxis.z*rsin;
+	matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f-pvAxis.y*pvAxis.y);
+	matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f-rcos) - pvAxis.x*rsin;
 
-	matrix[0][2] = z*x*(1.0f-rcos) - y*rsin;
-	matrix[1][2] = y*z*(1.0f-rcos) + x*rsin;
-	matrix[2][2] = z*z + rcos*(1.0f-z*z);
+	matrix[0][2] = pvAxis.z*pvAxis.x*(1.0f-rcos) - pvAxis.y*rsin;
+	matrix[1][2] = pvAxis.y*pvAxis.z*(1.0f-rcos) + pvAxis.x*rsin;
+	matrix[2][2] = pvAxis.z*pvAxis.z + rcos*(1.0f-pvAxis.z*pvAxis.z);
 
 	for (int i=0; i<count; ++i)
 		{
@@ -306,27 +303,23 @@ inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3D * const pvPoint, cons
 
 inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, const int count, const float angle)
 	{
-	const float x = pvAxis.x;
-	const float y = pvAxis.y;
-	const float z = pvAxis.z;
-
 	const float rsin = sinf(angle);
 	const float rcos = cosf(angle);
 
 	// Matrix for rotating around an arbitrary vector
 
 	float matrix[3][3];
-	matrix[0][0] = x*x + rcos*(1.0f-x*x);
-	matrix[1][0] = x*y*(1.0f-rcos) - z*rsin;
-	matrix[2][0] = z*x*(1.0f-rcos) + y*rsin;
+	matrix[0][0] = pvAxis.x*pvAxis.x + rcos*(1.0f-pvAxis.x*pvAxis.x);
+	matrix[1][0] = pvAxis.x*pvAxis.y*(1.0f-rcos) - pvAxis.z*rsin;
+	matrix[2][0] = pvAxis.z*pvAxis.x*(1.0f-rcos) + pvAxis.y*rsin;
 
-	matrix[0][1] = x*y*(1.0f-rcos) + z*rsin;
-	matrix[1][1] = y*y + rcos*(1.0f-y*y);
-	matrix[2][1] = y*z*(1.0f-rcos) - x*rsin;
+	matrix[0][1] = pvAxis.x*pvAxis.y*(1.0f-rcos) + pvAxis.z*rsin;
+	matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f-pvAxis.y*pvAxis.y);
+	matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f-rcos) - pvAxis.x*rsin;
 
-	matrix[0][2] = z*x*(1.0f-rcos) - y*rsin;
-	matrix[1][2] = y*z*(1.0f-rcos) + x*rsin;
-	matrix[2][2] = z*z + rcos*(1.0f-z*z);
+	matrix[0][2] = pvAxis.z*pvAxis.x*(1.0f-rcos) - pvAxis.y*rsin;
+	matrix[1][2] = pvAxis.y*pvAxis.z*(1.0f-rcos) + pvAxis.x*rsin;
+	matrix[2][2] = pvAxis.z*pvAxis.z + rcos*(1.0f-pvAxis.z*pvAxis.z);
 
 	for (int i=0; i<count; ++i)
 		{
@@ -343,23 +336,19 @@ inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, con
 
 inline Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, const float angle)
 	{
-	const float x = pvAxis.x;
-	const float y = pvAxis.y;
-	const float z = pvAxis.z;
-
 	const float rsin = sinf(angle);
 	const float rcos = cosf(angle);
 
 	// Matrix for rotating around an arbitrary vector
 
 	float matrix[3][2];
-	matrix[0][0] = x*x + rcos*(1.0f-x*x);
-	matrix[1][0] = x*y*(1.0f-rcos) - z*rsin;
-	matrix[2][0] = z*x*(1.0f-rcos) + y*rsin;
+	matrix[0][0] = pvAxis.x*pvAxis.x + rcos*(1.0f-pvAxis.x*pvAxis.x);
+	matrix[1][0] = pvAxis.x*pvAxis.y*(1.0f-rcos) - pvAxis.z*rsin;
+	matrix[2][0] = pvAxis.z*pvAxis.x*(1.0f-rcos) + pvAxis.y*rsin;
 
-	matrix[0][1] = x*y*(1.0f-rcos) + z*rsin;
-	matrix[1][1] = y*y + rcos*(1.0f-y*y);
-	matrix[2][1] = y*z*(1.0f-rcos) - x*rsin;
+	matrix[0][1] = pvAxis.x*pvAxis.y*(1.0f-rcos) + pvAxis.z*rsin;
+	matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f-pvAxis.y*pvAxis.y);
+	matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f-rcos) - pvAxis.x*rsin;
 
 	Vertex3Ds result;
 	result.Set(matrix[0][0]*pvPoint.x + matrix[0][1]*pvPoint.y,
@@ -368,35 +357,39 @@ inline Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, 
 	return result;
 	}
 
-inline void CrossProduct(const Vertex3D &pv1, const Vertex3D &pv2, Vertex3D * const pvCross)
+inline Vertex3D CrossProduct(const Vertex3D &pv1, const Vertex3D &pv2)
 	{
-	pvCross->x = pv1.y * pv2.z - pv1.z * pv2.y;
-	pvCross->y = pv1.z * pv2.x - pv1.x * pv2.z;
-	pvCross->z = pv1.x * pv2.y - pv1.y * pv2.x;
+	Vertex3D pvCross;
+	pvCross.x = pv1.y * pv2.z - pv1.z * pv2.y;
+	pvCross.y = pv1.z * pv2.x - pv1.x * pv2.z;
+	pvCross.z = pv1.x * pv2.y - pv1.y * pv2.x;
+	return pvCross;
 	}
 
-inline void CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2, Vertex3Ds * const pvCross)
+inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 	{
-	pvCross->x = pv1.y * pv2.z - pv1.z * pv2.y;
-	pvCross->y = pv1.z * pv2.x - pv1.x * pv2.z;
-	pvCross->z = pv1.x * pv2.y - pv1.y * pv2.x;
+	Vertex3Ds pvCross;
+	pvCross.x = pv1.y * pv2.z - pv1.z * pv2.y;
+	pvCross.y = pv1.z * pv2.x - pv1.x * pv2.z;
+	pvCross.z = pv1.x * pv2.y - pv1.y * pv2.x;
+	return pvCross;
 	}
 
 class Matrix3
 	{
 public:
-	inline void CreateSkewSymmetric(const Vertex3D * const pv3D)
+	inline void CreateSkewSymmetric(const Vertex3D &pv3D)
 	{
-	m_d[0][0] = 0; m_d[0][1] = -pv3D->z; m_d[0][2] = pv3D->y;
-	m_d[1][0] = pv3D->z; m_d[1][1] = 0; m_d[1][2] = -pv3D->x;
-	m_d[2][0] = -pv3D->y; m_d[2][1] = pv3D->x; m_d[2][2] = 0;
+	m_d[0][0] = 0; m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
+	m_d[1][0] = pv3D.z; m_d[1][1] = 0; m_d[1][2] = -pv3D.x;
+	m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x; m_d[2][2] = 0;
 	}
 
-	inline void CreateSkewSymmetric(const Vertex3Ds * const pv3D)
+	inline void CreateSkewSymmetric(const Vertex3Ds &pv3D)
 	{
-	m_d[0][0] = 0; m_d[0][1] = -pv3D->z; m_d[0][2] = pv3D->y;
-	m_d[1][0] = pv3D->z; m_d[1][1] = 0; m_d[1][2] = -pv3D->x;
-	m_d[2][0] = -pv3D->y; m_d[2][1] = pv3D->x; m_d[2][2] = 0;
+	m_d[0][0] = 0; m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
+	m_d[1][0] = pv3D.z; m_d[1][1] = 0; m_d[1][2] = -pv3D.x;
+	m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x; m_d[2][2] = 0;
 	}
 
 	inline void MultiplyScalar(const float scalar)
@@ -406,44 +399,34 @@ public:
 			m_d[i][l] *= scalar;
 	}
 
-	inline void MultiplyVector(const Vertex3D * const pv3D, Vertex3D * const pv3DOut) const
+	inline Vertex3D MultiplyVector(const Vertex3D &pv3D) const
 	{
-	const float ans[3] = {
-				 m_d[0][0] * pv3D->m_d[0]
-			   + m_d[0][1] * pv3D->m_d[1]
-			   + m_d[0][2] * pv3D->m_d[2],
-			     m_d[1][0] * pv3D->m_d[0]
-			   + m_d[1][1] * pv3D->m_d[1]
-			   + m_d[1][2] * pv3D->m_d[2],
-			     m_d[2][0] * pv3D->m_d[0]
-			   + m_d[2][1] * pv3D->m_d[1]
-			   + m_d[2][2] * pv3D->m_d[2]};
-
-	// Copy the final values over later.  This makes it so pv3D and pv3DOut can
-	// point to the same vertex.
-    pv3DOut->x = ans[0];
-	pv3DOut->y = ans[1];
-	pv3DOut->z = ans[2];
+	Vertex3D pv3DOut;
+    pv3DOut.x =  m_d[0][0] * pv3D.x
+			   + m_d[0][1] * pv3D.y
+			   + m_d[0][2] * pv3D.z;
+	pv3DOut.y =  m_d[1][0] * pv3D.x
+			   + m_d[1][1] * pv3D.y
+			   + m_d[1][2] * pv3D.z;
+	pv3DOut.z =  m_d[2][0] * pv3D.x
+			   + m_d[2][1] * pv3D.y
+			   + m_d[2][2] * pv3D.z;
+	return pv3DOut;
 	}
 
-	inline void MultiplyVector(const Vertex3Ds * const pv3D, Vertex3Ds * const pv3DOut) const
+	inline Vertex3Ds MultiplyVector(const Vertex3Ds &pv3D) const
 	{
-    const float ans[3] = {
-				 m_d[0][0] * pv3D->m_d[0]
-			   + m_d[0][1] * pv3D->m_d[1]
-			   + m_d[0][2] * pv3D->m_d[2],
-			     m_d[1][0] * pv3D->m_d[0]
-			   + m_d[1][1] * pv3D->m_d[1]
-			   + m_d[1][2] * pv3D->m_d[2],
-			     m_d[2][0] * pv3D->m_d[0]
-			   + m_d[2][1] * pv3D->m_d[1]
-			   + m_d[2][2] * pv3D->m_d[2]};
-
-	// Copy the final values over later.  This makes it so pv3D and pv3DOut can
-	// point to the same vertex.
-    pv3DOut->x = ans[0];
-	pv3DOut->y = ans[1];
-	pv3DOut->z = ans[2];
+	Vertex3Ds pv3DOut;
+    pv3DOut.x =  m_d[0][0] * pv3D.x
+			   + m_d[0][1] * pv3D.y
+			   + m_d[0][2] * pv3D.z;
+	pv3DOut.y =  m_d[1][0] * pv3D.x
+			   + m_d[1][1] * pv3D.y
+			   + m_d[1][2] * pv3D.z;
+	pv3DOut.z =  m_d[2][0] * pv3D.x
+			   + m_d[2][1] * pv3D.y
+			   + m_d[2][2] * pv3D.z;
+	return pv3DOut;
 	}
 
 	inline void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
@@ -476,15 +459,14 @@ public:
 	Vertex3Ds vY;
 	vY.Set(m_d[0][1], m_d[1][1], m_d[2][1]);
 	vX.Normalize();
-	Vertex3Ds vZ;
-	CrossProduct(vX, vY, &vZ);
+	Vertex3Ds vZ = CrossProduct(vX, vY);
 	vZ.Normalize();
-	CrossProduct(vZ, vX, &vY);
+	vY = CrossProduct(vZ, vX);
 	vY.Normalize();
 
-	m_d[0][0] = vX.m_d[0]; m_d[0][1] = vY.m_d[0]; m_d[0][2] = vZ.m_d[0];
-	m_d[1][0] = vX.m_d[1]; m_d[1][1] = vY.m_d[1]; m_d[1][2] = vZ.m_d[1];
-	m_d[2][0] = vX.m_d[2]; m_d[2][1] = vY.m_d[2]; m_d[2][2] = vZ.m_d[2];
+	m_d[0][0] = vX.x; m_d[0][1] = vY.x; m_d[0][2] = vZ.x;
+	m_d[1][0] = vX.y; m_d[1][1] = vY.y; m_d[1][2] = vZ.y;
+	m_d[2][0] = vX.z; m_d[2][1] = vY.z; m_d[2][2] = vZ.z;
 	}
 
 	inline void Transpose(Matrix3 * const pmatOut) const
@@ -497,6 +479,14 @@ public:
 		}
 	}
 
+	inline void Identity(const float value = 1.0f)
+	{
+		m_d[0][0] = m_d[1][1] = m_d[2][2] = value;
+		m_d[0][1] = m_d[0][2] = 
+		m_d[1][0] = m_d[1][2] = 
+		m_d[2][0] = m_d[2][1] = 0.0f;
+	}
+private:
 	float m_d[3][3];
 	};
 
@@ -515,7 +505,7 @@ public:
 class LocalString
 	{
 public:
-	LocalString(int resid);
+	LocalString(const int resid);
 
 	char m_szbuffer[256];
 	};
