@@ -177,6 +177,7 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 		dvz = pball->vz;										// differential velocity
 		//const float hcap = radius*(float)(1.0/5.0);			// cap height to hit-circle radius ratio
 		//targetRadius = radius*radius/(hcap*2.0f) + hcap*0.5f;	// c = (r^2+h^2)/(2*h)
+		targetRadius = radius*(float)(13.0/5.0);				// optimized version of above code
 		//z = zhigh - (targetRadius - hcap);					// b = c - h
 		z = zhigh - radius*(float)(12.0/5.0);					// optimized version of above code
 		dz = pball->z - z;										// ball rolling point - capsule center height 			
