@@ -426,13 +426,11 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	bvT.Normalize();	
 
 	Vertex3Ds bstv;										// ball surface tangential velocity
-
-	CrossProduct(&m_angularvelocity, &bccpd, &bstv);	// velocity of ball surface at contact point
+	CrossProduct(m_angularvelocity, bccpd, &bstv);		// velocity of ball surface at contact point
 
 	Vertex3Ds cpvt;						// contact point velocity tangential to hit face
-
 	const float dot = bstv.Dot(&bvT);	// speed ball surface contact point tangential to contact surface point
-	cpvt.x = bvT.x * dot;				//contact point velocity tangent to hit face
+	cpvt.x = bvT.x * dot;
 	cpvt.y = bvT.y * dot;
 	cpvt.z = bvT.z * dot;
 
@@ -486,7 +484,7 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	cpctrv.z *= (float)(1.0/2.5);
 
 	Vertex3Ds vResult;
-	CrossProduct(&bccpd, &cpctrv, &vResult); //ball center contact point displacement X reverse contact point co-tan vel
+	CrossProduct(bccpd, cpctrv, &vResult); //ball center contact point displacement X reverse contact point co-tan vel
 
 	m_angularmomentum.Add(&vResult);	// add delta 
 

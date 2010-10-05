@@ -910,8 +910,7 @@ void Ramp::CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph
 		//vjointnormal.x = ph3d1->normal.x + ph3d2->normal.x;
 		//vjointnormal.y = ph3d1->normal.y + ph3d2->normal.y;
 		//vjointnormal.z = ph3d1->normal.z + ph3d2->normal.z;
-
-		CrossProduct(&ph3d1->normal, &ph3d2->normal, &vjointnormal);
+		CrossProduct(ph3d1->normal, ph3d2->normal, &vjointnormal);
 
 		const float length = sqrtf(vjointnormal.x * vjointnormal.x + vjointnormal.y * vjointnormal.y + vjointnormal.z * vjointnormal.z);
 		if (length < 1.0e-4f) return;
@@ -1155,12 +1154,6 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 		// later to match this up
 		vacross.Normalize();
 
-		// vnewup is the beginning up vector of the cross-section
-		Vertex3Ds vnewup;
-		vnewup.x = 0;    //vnewup.nx = 0;  //rlc  initialize .nx, .ny and .nz 
-		vnewup.y = 1.0f; //vnewup.ny = 0;  //rlc
-		vnewup.z = 0;    //vnewup.nz = 0;  //rlc
-
 		Vertex3Ds tangent;
 		tangent.x = rgv[p3].x - rgv[p1].x;
 		tangent.y = rgv[p3].y - rgv[p1].y;
@@ -1169,20 +1162,29 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 		// This is the vector describing the tangent to the ramp at this point
 		tangent.Normalize();
 
+		Vertex3Ds rotationaxis;
+		/*
 		Vertex3Ds up;
 		up.x = 0;
 		up.y = 0;
-		up.z = 1.0f;
-
-		Vertex3Ds rotationaxis;
+		up.z = 1.0f;		
 		// Get axis of rotation to rotate our cross-section into place
-		CrossProduct(&tangent, &up, &rotationaxis);
+		CrossProduct(tangent, up, &rotationaxis);*/
 
-		const float dot = tangent.Dot(&up);
+		rotationaxis.x =  tangent.y;
+		rotationaxis.y = -tangent.x;
+		rotationaxis.z = 0.0f;
+
+		const float dot = tangent.z; //tangent.Dot(&up);
 		const float angle = acosf(dot);
 
-		RotateAround(&rotationaxis, rgv3D, 16, angle);
-		RotateAround(&rotationaxis, &vnewup, 1, angle);
+		RotateAround(rotationaxis, rgv3D, 16, angle);
+		
+		// vnewup is the beginning up vector of the cross-section
+		Vertex2D vnewupdef;
+		vnewupdef.x = 0;
+		vnewupdef.y = 1.0f;
+		const Vertex3Ds vnewup = RotateAround(rotationaxis, vnewupdef, angle);
 
 		// vacross is not out real up vector, but the up vector for the cross-section isn't real either
 		//Vertex3D vrampup;
@@ -1195,7 +1197,7 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 			angleupcorrection = -angleupcorrection;
 			}
 
-		RotateAround(&tangent, rgv3D, 16, -angleupcorrection);
+		RotateAround(tangent, rgv3D, 16, -angleupcorrection);
 
 		for (int l=0;l<16;l++)
 			{
