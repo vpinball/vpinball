@@ -258,11 +258,11 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 		}
 	}
 
-inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoint, const int count, const float angle)
+inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3D * const pvPoint, const int count, const float angle)
 	{
-	const float x = pvAxis->x;
-	const float y = pvAxis->y;
-	const float z = pvAxis->z;
+	const float x = pvAxis.x;
+	const float y = pvAxis.y;
+	const float z = pvAxis.z;
 
 	const float rsin = sinf(angle);
 	const float rcos = cosf(angle);
@@ -304,11 +304,11 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3D * const pvPoin
 		}
 	}
 
-inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3Ds * const pvPoint, const int count, const float angle)
+inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, const int count, const float angle)
 	{
-	const float x = pvAxis->x;
-	const float y = pvAxis->y;
-	const float z = pvAxis->z;
+	const float x = pvAxis.x;
+	const float y = pvAxis.y;
+	const float z = pvAxis.z;
 
 	const float rsin = sinf(angle);
 	const float rcos = cosf(angle);
@@ -341,18 +341,45 @@ inline void RotateAround(const Vertex3Ds * const pvAxis, Vertex3Ds * const pvPoi
 		}
 	}
 
-inline void CrossProduct(const Vertex3D * const pv1, const Vertex3D * const pv2, Vertex3D * const pvCross)
+inline Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, const float angle)
 	{
-	pvCross->x = pv1->y * pv2->z - pv1->z * pv2->y;
-	pvCross->y = pv1->z * pv2->x - pv1->x * pv2->z;
-	pvCross->z = pv1->x * pv2->y - pv1->y * pv2->x;
+	const float x = pvAxis.x;
+	const float y = pvAxis.y;
+	const float z = pvAxis.z;
+
+	const float rsin = sinf(angle);
+	const float rcos = cosf(angle);
+
+	// Matrix for rotating around an arbitrary vector
+
+	float matrix[3][2];
+	matrix[0][0] = x*x + rcos*(1.0f-x*x);
+	matrix[1][0] = x*y*(1.0f-rcos) - z*rsin;
+	matrix[2][0] = z*x*(1.0f-rcos) + y*rsin;
+
+	matrix[0][1] = x*y*(1.0f-rcos) + z*rsin;
+	matrix[1][1] = y*y + rcos*(1.0f-y*y);
+	matrix[2][1] = y*z*(1.0f-rcos) - x*rsin;
+
+	Vertex3Ds result;
+	result.Set(matrix[0][0]*pvPoint.x + matrix[0][1]*pvPoint.y,
+			   matrix[1][0]*pvPoint.x + matrix[1][1]*pvPoint.y,
+			   matrix[2][0]*pvPoint.x + matrix[2][1]*pvPoint.y);
+	return result;
 	}
 
-inline void CrossProduct(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, Vertex3Ds * const pvCross)
+inline void CrossProduct(const Vertex3D &pv1, const Vertex3D &pv2, Vertex3D * const pvCross)
 	{
-	pvCross->x = pv1->y * pv2->z - pv1->z * pv2->y;
-	pvCross->y = pv1->z * pv2->x - pv1->x * pv2->z;
-	pvCross->z = pv1->x * pv2->y - pv1->y * pv2->x;
+	pvCross->x = pv1.y * pv2.z - pv1.z * pv2.y;
+	pvCross->y = pv1.z * pv2.x - pv1.x * pv2.z;
+	pvCross->z = pv1.x * pv2.y - pv1.y * pv2.x;
+	}
+
+inline void CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2, Vertex3Ds * const pvCross)
+	{
+	pvCross->x = pv1.y * pv2.z - pv1.z * pv2.y;
+	pvCross->y = pv1.z * pv2.x - pv1.x * pv2.z;
+	pvCross->z = pv1.x * pv2.y - pv1.y * pv2.x;
 	}
 
 class Matrix3
@@ -450,9 +477,9 @@ public:
 	vY.Set(m_d[0][1], m_d[1][1], m_d[2][1]);
 	vX.Normalize();
 	Vertex3Ds vZ;
-	CrossProduct(&vX, &vY, &vZ);
+	CrossProduct(vX, vY, &vZ);
 	vZ.Normalize();
-	CrossProduct(&vZ, &vX, &vY);
+	CrossProduct(vZ, vX, &vY);
 	vY.Normalize();
 
 	m_d[0][0] = vX.m_d[0]; m_d[0][1] = vY.m_d[0]; m_d[0][2] = vZ.m_d[0];
