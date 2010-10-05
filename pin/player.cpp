@@ -3015,7 +3015,7 @@ void Player::DrawBalls()
 					Vertex3D rgv3DArrowTransformed[4];
 					for (int iPoint=0;iPoint<4;iPoint++)
 						{
-						pball->m_orientation.MultiplyVector(&rgv3DArrow[iPoint], &rgv3DArrowTransformed[iPoint]);
+						rgv3DArrowTransformed[iPoint] = pball->m_orientation.MultiplyVector(rgv3DArrow[iPoint]);
 						rgv3DArrowTransformed[iPoint].nx = rgv3DArrowTransformed[iPoint].x;
 						rgv3DArrowTransformed[iPoint].ny = rgv3DArrowTransformed[iPoint].y;
 						rgv3DArrowTransformed[iPoint].nz = rgv3DArrowTransformed[iPoint].z;
@@ -3046,7 +3046,7 @@ void Player::DrawBalls()
 						{
 						rgv3DArrow[iPoint].x = -rgv3DArrow[iPoint].x;
 						rgv3DArrow[iPoint].z = -rgv3DArrow[iPoint].z;
-						pball->m_orientation.MultiplyVector(&rgv3DArrow[iPoint], &rgv3DArrowTransformed[iPoint]);
+						rgv3DArrowTransformed[iPoint] = pball->m_orientation.MultiplyVector(rgv3DArrow[iPoint]);
 						rgv3DArrowTransformed[iPoint].nx = rgv3DArrowTransformed[iPoint].x;
 						rgv3DArrowTransformed[iPoint].ny = rgv3DArrowTransformed[iPoint].y;
 						rgv3DArrowTransformed[iPoint].nz = rgv3DArrowTransformed[iPoint].z;

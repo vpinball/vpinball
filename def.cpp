@@ -79,7 +79,7 @@ int WzSzStrCmp(WCHAR *wz1, char *sz2)
 	return 0;
 	}
 
-LocalString::LocalString(int resid)
+LocalString::LocalString(const int resid)
 	{
 	int cchar = LoadString(g_hinstres, resid, m_szbuffer, 256);
 	if (cchar == 0 && g_hinstres != g_hinst)

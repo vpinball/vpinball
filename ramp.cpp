@@ -525,7 +525,7 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 				//rgv[i].x = intersectx;
 				//rgv[i].y = intersecty;
 
-				//Calc2DNormal(pv1, pv2, &vnormal);
+				//vnormal = Calc2DNormal(pv1, pv2);
 
 				vnormal.x = pvmiddle->x - intersectx;
 				vnormal.y = pvmiddle->y - intersecty;
@@ -910,7 +910,7 @@ void Ramp::CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph
 		//vjointnormal.x = ph3d1->normal.x + ph3d2->normal.x;
 		//vjointnormal.y = ph3d1->normal.y + ph3d2->normal.y;
 		//vjointnormal.z = ph3d1->normal.z + ph3d2->normal.z;
-		CrossProduct(ph3d1->normal, ph3d2->normal, &vjointnormal);
+		vjointnormal = CrossProduct(ph3d1->normal, ph3d2->normal);
 
 		const float length = sqrtf(vjointnormal.x * vjointnormal.x + vjointnormal.y * vjointnormal.y + vjointnormal.z * vjointnormal.z);
 		if (length < 1.0e-4f) return;
@@ -1189,7 +1189,7 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 		// vacross is not out real up vector, but the up vector for the cross-section isn't real either
 		//Vertex3D vrampup;
 		//CrossProduct(&tangent, &vacross, &vrampup);
-		const float dotupcorrection = vnewup.Dot(&vacross);
+		const float dotupcorrection = vnewup.Dot(vacross);
 		float angleupcorrection = acosf(dotupcorrection);
 
 		if (vacross.x >= 0)
@@ -1914,7 +1914,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
 
 			Vertex2D vOut;
 			int iSeg;
-			ClosestPointOnPolygon(rgv, cvertex, &v, &vOut, &iSeg, fFalse);
+			ClosestPointOnPolygon(rgv, cvertex, v, &vOut, &iSeg, fFalse);
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
 			int icp = 0;

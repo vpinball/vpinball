@@ -1365,7 +1365,7 @@ void Light::DoCommand(int icmd, int x, int y)
 
 			int iSeg;
 			Vertex2D vOut;
-			ClosestPointOnPolygon(rgv, cvertex, &v, &vOut, &iSeg, fTrue);
+			ClosestPointOnPolygon(rgv, cvertex, v, &vOut, &iSeg, fTrue);
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
 			int icp = 0;
