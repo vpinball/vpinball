@@ -243,7 +243,7 @@ public:
 class HitOctree
 	{
 public:
-	HitOctree() : m_fLeaf(true)
+	inline HitOctree() : m_fLeaf(true)
 		{
 		}
 		
