@@ -749,14 +749,14 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 	{
 		if( input->dwSequence == APP_KEYBOARD )
 		{
-			if( input->dwOfs == g_pplayer->m_rgKeys[eFrameCount])
+			if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
 			{
 				if (input->dwData & 0x80)
 				{
 					g_pplayer->ToggleFPS();
 				}
 			}
-			else if( input->dwOfs == g_pplayer->m_rgKeys[eDBGBalls])
+			else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])
 			{	
 				// Activate on edge only.
 				if (input->dwData & 0x80)

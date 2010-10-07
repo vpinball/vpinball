@@ -18,18 +18,15 @@ HRESULT GetRegString(char *szKey, char *szValue, void *szbuffer, DWORD size)
 HRESULT GetRegStringAsFloat(char *szKey, char *szValue, float *pfloat)
 	{
 	DWORD type;
-	HRESULT hr;
-	short len;
 	char szbuffer[8];
-
-	hr = GetRegValue(szKey, szValue, &type, &szbuffer[0], 8);
+	const HRESULT hr = GetRegValue(szKey, szValue, &type, &szbuffer[0], 8);
 
 	if (type != REG_SZ)
 		{
 		return E_FAIL;
 		}
 
-	len = strlen(szbuffer);
+	const size_t len = strlen(szbuffer);
 	if (len == 0)
 		return E_FAIL;
 
@@ -39,7 +36,7 @@ HRESULT GetRegStringAsFloat(char *szKey, char *szValue, float *pfloat)
 		if (len < 2)
 			return E_FAIL;
 		*pfloat = (float)atof(&szbuffer[1]);
-		*pfloat *= -1;
+		*pfloat *= -1.0f;
 	}
 	else
 		*pfloat = (float)atof(&szbuffer[0]);

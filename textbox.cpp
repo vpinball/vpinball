@@ -70,13 +70,13 @@ HRESULT Textbox::Init(PinTable *ptable, float x, float y)
 
 	hr = GetRegInt("DefaultProps\\TextBox", "FontWeight", &iTmp);
 	if (hr == S_OK)
-		fd.sWeight = iTmp;
+		fd.sWeight = (SHORT)iTmp;
 	else
 		fd.sWeight = FW_NORMAL;
 
 	hr = GetRegInt("DefaultProps\\TextBox", "FontCharSet", &iTmp);
 	if (hr == S_OK)
-		fd.sCharset = iTmp;
+		fd.sCharset = (SHORT)iTmp;
 	else
 		fd.sCharset = 0;
 	
