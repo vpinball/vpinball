@@ -586,8 +586,8 @@ void HitOctree::HitTestBall(Ball * const pball)
 #ifdef LOG
 		cTested++;
 #endif
-		if ((pball != m_vho.ElementAt(i)) // ball can not hit it's self
-			       //&& (pball->phoHitLast != m_vho.ElementAt(i)) //rlc error: don't hit test last thing hit again, why not?
+		if ((pball != m_vho.ElementAt(i)) // ball can not hit itself
+			       //&& (pball->phoHitLast != m_vho.ElementAt(i)) //rlc error: don't hit test last thing hit again, why not? -> numerical precison aka self intersection problem maybe?
 			       && fRectIntersect3D(pball->m_rcHitRect, m_vho.ElementAt(i)->m_rcHitRect))
 			{
 #ifdef LOG

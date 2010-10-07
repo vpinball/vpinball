@@ -134,15 +134,15 @@ public:
 
 inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)
 	{
-	return (!(rc1.right < rc2.left || rc1.bottom < rc2.top || rc1.left > rc2.right || rc1.top > rc2.bottom));
+	return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
 	}
 
 inline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
 	{
-	return (!(rc1.right < rc2.left || rc1.bottom < rc2.top || rc1.left > rc2.right || rc1.top > rc2.bottom));
+	return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
 	}
 
 inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 	{
-	return (!(rc1.right < rc2.left || rc1.bottom < rc2.top || rc1.left > rc2.right || rc1.top > rc2.bottom || rc1.zlow > rc2.zhigh || rc1.zhigh < rc2.zlow));
+	return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow);
 	}
