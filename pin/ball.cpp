@@ -170,8 +170,7 @@ void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elastic
 		vy = vyt *radcos + vxt *radsin;  // 
 		}
 
-	Vertex3Ds vnormal;
-	vnormal.Set(phitnormal->x, phitnormal->y, 0); //??? contact point 
+	const Vertex3Ds vnormal(phitnormal->x, phitnormal->y, 0.0f); //??? contact point
 	AngularAcceleration(&vnormal);	//calc new rolling dynamics
 	}
 
@@ -330,10 +329,10 @@ void Ball::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	
 	// correct displacements, mostly from low velocity, alternative to true acceleration processing
 
-	Vertex3Ds vel;
-	vel.x = pball->vx -vx;  //target ball to object ball
-	vel.y = pball->vy -vy;  //delta velocity
-	vel.z = pball->vz -vz;
+	const Vertex3Ds vel(
+		pball->vx -vx,  //target ball to object ball
+		pball->vy -vy,  //delta velocity
+		pball->vz -vz);
 	
 	float dot = vel.x * vnormal.x + vel.y * vnormal.y + vel.z * vnormal.z;
 
@@ -390,38 +389,39 @@ void Ball::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	{
-	Vertex3Ds bccpd; // vector ball center to contact point displacement
-	bccpd.Set(-radius * phitnormal->x, -radius * phitnormal->y, -radius * phitnormal->z); //from ball center to contact point
+	const Vertex3Ds bccpd(
+		-radius * phitnormal->x,
+		-radius * phitnormal->y,
+		-radius * phitnormal->z);				// vector ball center to contact point displacement
 
 	const float bnv = vx * phitnormal->x + vy * phitnormal->y + vz * phitnormal->z; //ball normal velocity to hit face
 
-	Vertex3Ds bvn;
-	bvn.x = bnv * phitnormal->x;						//project the normal velocity along normal
-	bvn.y = bnv * phitnormal->y;
-	bvn.z = bnv * phitnormal->z;
+	const Vertex3Ds bvn(
+		bnv * phitnormal->x,					//project the normal velocity along normal
+		bnv * phitnormal->y,
+		bnv * phitnormal->z);
 
-	Vertex3Ds bvt;
-	bvt.x = vx - bvn.x;									// calc the tangent velocity
-	bvt.y = vy - bvn.y;
-	bvt.z = vz - bvn.z;
+	const Vertex3Ds bvt(
+		vx - bvn.x,								// calc the tangent velocity
+		vy - bvn.y,
+		vz - bvn.z);
 
-	Vertex3Ds bvT;										// ball tangent velocity Unit Tangent
-	bvT.Set(bvt.x, bvt.y, bvt.z);						//copy ball tangent velocity
+	Vertex3Ds bvT(bvt.x, bvt.y, bvt.z);			// ball tangent velocity Unit Tangent
 	bvT.Normalize();	
 
-	const Vertex3Ds bstv =								// ball surface tangential velocity
-	CrossProduct(m_angularvelocity, bccpd);				// velocity of ball surface at contact point
+	const Vertex3Ds bstv =						// ball surface tangential velocity
+	CrossProduct(m_angularvelocity, bccpd);		// velocity of ball surface at contact point
 
-	Vertex3Ds cpvt;						// contact point velocity tangential to hit face
-	const float dot = bstv.Dot(bvT);	// speed ball surface contact point tangential to contact surface point
-	cpvt.x = bvT.x * dot;
-	cpvt.y = bvT.y * dot;
-	cpvt.z = bvT.z * dot;
+	const float dot = bstv.Dot(bvT);			// speed ball surface contact point tangential to contact surface point
+	const Vertex3Ds cpvt(						// contact point velocity tangential to hit face
+		bvT.x * dot,
+		bvT.y * dot,
+		bvT.z * dot);
 
-	Vertex3Ds slideVel;	// contact point slide velocity with ball center velocity
-	slideVel.x = bstv.x - cpvt.x;  // slide velocity
-	slideVel.y = bstv.y - cpvt.y;
-	slideVel.z = bstv.z - cpvt.z;
+	const Vertex3Ds slideVel(					// contact point slide velocity with ball center velocity
+		bstv.x - cpvt.x,						// slide velocity
+		bstv.y - cpvt.y,
+		bstv.z - cpvt.z);
 
 	m_angularmomentum.MultiplyScalar(0.99f);
 
@@ -429,17 +429,17 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	// and the point's velocity is at least the magnitude of the balls,
 	// then we have a natural rool
 	
-	Vertex3Ds cpctrv;
-	cpctrv.x = -slideVel.x;	//contact point co-tangential reverse velocity
-	cpctrv.y = -slideVel.y;
-	cpctrv.z = -slideVel.z;
+	Vertex3Ds cpctrv(
+		-slideVel.x,							//contact point co-tangential reverse velocity
+		-slideVel.y,
+		-slideVel.z);
 
 	// Calculate the maximum amount the point velocity can change this
 	// time segment due to friction
-	Vertex3Ds FrictionForce;
-	FrictionForce.x = cpvt.x + bvt.x;
-	FrictionForce.y = cpvt.y + bvt.y;
-	FrictionForce.z = cpvt.z + bvt.z;
+	Vertex3Ds FrictionForce(
+		cpvt.x + bvt.x,
+		cpvt.y + bvt.y,
+		cpvt.z + bvt.z);
 
 #define ANGULARFORCE 1   
 					// Number I pulled out of my butt - this number indicates the maximum angular change 
@@ -520,8 +520,7 @@ void Ball::UpdateDisplacements(float dtime)
 
 			vx *= c_hardFriction; vy *= c_hardFriction;  //friction other axiz
 			
-			Vertex3Ds vnormal;
-			vnormal.Set(0.0f,0.0f,1.0f);
+			const Vertex3Ds vnormal(0.0f,0.0f,1.0f);
 			AngularAcceleration(&vnormal);
 			}
 		else if (vz > 0 && z >= z_max)						//top glass ...contact and going higher

@@ -701,8 +701,7 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		else m_pflipper->FireVoidEventParm(DISPID_FlipperEvents_Collide,flipperHit); // collision velocity (normal to face)	
 		}
 
-	Vertex3Ds vnormal;
-	vnormal.Set(phitnormal->x, phitnormal->y, 0);
+	const Vertex3Ds vnormal(phitnormal->x, phitnormal->y, 0.0f);
 	pball->AngularAcceleration(&vnormal);
 	}
 

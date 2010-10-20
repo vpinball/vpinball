@@ -150,15 +150,12 @@ public:
 class Vertex3Ds
 	{
 public:
-	union
-		{
-			struct {
-			D3DVALUE x; 
-			D3DVALUE y; 
-			D3DVALUE z;
-			};
-			D3DVALUE m_d[3];
-		};
+	float x; 
+	float y; 
+	float z;
+
+	inline Vertex3Ds() {}
+	inline Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
 
 	inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
 	inline void SetDouble(const double a, const double b, const double c) {x=(float)a; y=(float)b; z=(float)c;}
@@ -347,20 +344,16 @@ inline Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, 
 	matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f-pvAxis.y*pvAxis.y);
 	matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f-rcos) - pvAxis.x*rsin;
 
-	Vertex3Ds result;
-	result.Set(matrix[0][0]*pvPoint.x + matrix[0][1]*pvPoint.y,
-			   matrix[1][0]*pvPoint.x + matrix[1][1]*pvPoint.y,
-			   matrix[2][0]*pvPoint.x + matrix[2][1]*pvPoint.y);
-	return result;
+	return Vertex3Ds(matrix[0][0]*pvPoint.x + matrix[0][1]*pvPoint.y,
+					 matrix[1][0]*pvPoint.x + matrix[1][1]*pvPoint.y,
+					 matrix[2][0]*pvPoint.x + matrix[2][1]*pvPoint.y);
 	}
 
 inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 	{
-	Vertex3Ds pvCross;
-	pvCross.x = pv1.y * pv2.z - pv1.z * pv2.y;
-	pvCross.y = pv1.z * pv2.x - pv1.x * pv2.z;
-	pvCross.z = pv1.x * pv2.y - pv1.y * pv2.x;
-	return pvCross;
+	return Vertex3Ds(pv1.y * pv2.z - pv1.z * pv2.y,
+		             pv1.z * pv2.x - pv1.x * pv2.z,
+					 pv1.x * pv2.y - pv1.y * pv2.x);
 	}
 
 class Matrix3
@@ -389,32 +382,28 @@ public:
 
 	inline Vertex3Ds MultiplyVector(const Vertex3D &pv3D) const
 	{
-	Vertex3Ds pv3DOut;
-    pv3DOut.x =  m_d[0][0] * pv3D.x
-			   + m_d[0][1] * pv3D.y
-			   + m_d[0][2] * pv3D.z;
-	pv3DOut.y =  m_d[1][0] * pv3D.x
-			   + m_d[1][1] * pv3D.y
-			   + m_d[1][2] * pv3D.z;
-	pv3DOut.z =  m_d[2][0] * pv3D.x
-			   + m_d[2][1] * pv3D.y
-			   + m_d[2][2] * pv3D.z;
-	return pv3DOut;
+	return Vertex3Ds(m_d[0][0] * pv3D.x
+				   + m_d[0][1] * pv3D.y
+			       + m_d[0][2] * pv3D.z,
+					 m_d[1][0] * pv3D.x
+				   + m_d[1][1] * pv3D.y
+				   + m_d[1][2] * pv3D.z,
+					 m_d[2][0] * pv3D.x
+				   + m_d[2][1] * pv3D.y
+				   + m_d[2][2] * pv3D.z);
 	}
 
 	inline Vertex3Ds MultiplyVector(const Vertex3Ds &pv3D) const
 	{
-	Vertex3Ds pv3DOut;
-    pv3DOut.x =  m_d[0][0] * pv3D.x
-			   + m_d[0][1] * pv3D.y
-			   + m_d[0][2] * pv3D.z;
-	pv3DOut.y =  m_d[1][0] * pv3D.x
-			   + m_d[1][1] * pv3D.y
-			   + m_d[1][2] * pv3D.z;
-	pv3DOut.z =  m_d[2][0] * pv3D.x
-			   + m_d[2][1] * pv3D.y
-			   + m_d[2][2] * pv3D.z;
-	return pv3DOut;
+	return Vertex3Ds(m_d[0][0] * pv3D.x
+				   + m_d[0][1] * pv3D.y
+			       + m_d[0][2] * pv3D.z,
+					 m_d[1][0] * pv3D.x
+				   + m_d[1][1] * pv3D.y
+				   + m_d[1][2] * pv3D.z,
+					 m_d[2][0] * pv3D.x
+				   + m_d[2][1] * pv3D.y
+				   + m_d[2][2] * pv3D.z);
 	}
 
 	inline void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
@@ -442,10 +431,8 @@ public:
 
 	inline void OrthoNormalize()
 	{
-	Vertex3Ds vX;
-	vX.Set(m_d[0][0], m_d[1][0], m_d[2][0]);
-	Vertex3Ds vY;
-	vY.Set(m_d[0][1], m_d[1][1], m_d[2][1]);
+	Vertex3Ds vX(m_d[0][0], m_d[1][0], m_d[2][0]);
+	Vertex3Ds vY(m_d[0][1], m_d[1][1], m_d[2][1]);
 	vX.Normalize();
 	Vertex3Ds vZ = CrossProduct(vX, vY);
 	vZ.Normalize();
