@@ -811,12 +811,12 @@ void Hit3DPoly::CalcHitRect()
 
 Hit3DCylinder::Hit3DCylinder(const Vertex3D * const pv1, const Vertex3D * const pv2, const Vertex3Ds * const pvnormal)
 	{
-	v1.x = (*pv1).x;
-	v1.y = (*pv1).y;
-	v1.z = (*pv1).z;
-	v2.x = (*pv2).x;
-	v2.y = (*pv2).y;
-	v2.z = (*pv2).z;
+	v1.x = pv1->x;
+	v1.y = pv1->y;
+	v1.z = pv1->z;
+	v2.x = pv2->x;
+	v2.y = pv2->y;
+	v2.z = pv2->z;
 	normal = *pvnormal;
 	radius = 0;
 	CacheHitTransform();
@@ -824,18 +824,11 @@ Hit3DCylinder::Hit3DCylinder(const Vertex3D * const pv1, const Vertex3D * const 
 
 void Hit3DCylinder::CacheHitTransform()
 	{
-	Vertex3Ds vLine;
-	vLine.x = v2.x - v1.x;
-	vLine.y = v2.y - v1.y;
-	vLine.z = v2.z - v1.z;
-
+	Vertex3Ds vLine(v2.x - v1.x,v2.y - v1.y,v2.z - v1.z);
 	vLine.Normalize();
 
 	// Axis of rotation to make 3D cynlinder a cylinder along the z-axis
-	/*Vertex3Ds vup;
-	vup.x = 0;
-	vup.y = 0;
-	vup.z = 1.0f;
+	/*const Vertex3Ds vup(0,0,1.0f);
 	CrossProduct(vLine, vup, &transaxis);*/
 	transaxis.x =  vLine.y;
 	transaxis.y = -vLine.x;
@@ -858,18 +851,10 @@ float Hit3DCylinder::HitTest(Ball * const pball, const float dtime, Vertex3Ds * 
 
 	Ball ballT = *pball;
 
-	Vertex3Ds vball;
-	vball.x = ballT.x;
-	vball.y = ballT.y;
-	vball.z = ballT.z;
-
+	Vertex3Ds vball(ballT.x,ballT.y,ballT.z);
 	RotateAround(transaxis, &vball, 1, transangle);
 
-	Vertex3Ds vvelocity;
-	vvelocity.x = ballT.vx;
-	vvelocity.y = ballT.vy;
-	vvelocity.z = ballT.vz;
-
+	Vertex3Ds vvelocity(ballT.vx,ballT.vy,ballT.vz);
 	RotateAround(transaxis, &vvelocity, 1, transangle);
 
 	ballT.x = vball.x;
@@ -878,7 +863,6 @@ float Hit3DCylinder::HitTest(Ball * const pball, const float dtime, Vertex3Ds * 
 	ballT.vx = vvelocity.x;
 	ballT.vy = vvelocity.y;
 	ballT.vz = vvelocity.z;
-	ballT.radius = pball->radius;
 
 	center.x = vtrans[0].x;
 	center.y = vtrans[0].y;

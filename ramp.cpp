@@ -903,11 +903,10 @@ void Ramp::AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv
 
 void Ramp::CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph3d1, const Hit3DPoly * const ph3d2)
 	{
-		Vertex3Ds vjointnormal;
+		Vertex3Ds vjointnormal = CrossProduct(ph3d1->normal, ph3d2->normal);
 		//vjointnormal.x = ph3d1->normal.x + ph3d2->normal.x;
 		//vjointnormal.y = ph3d1->normal.y + ph3d2->normal.y;
 		//vjointnormal.z = ph3d1->normal.z + ph3d2->normal.z;
-		vjointnormal = CrossProduct(ph3d1->normal, ph3d2->normal);
 
 		const float length = sqrtf(vjointnormal.x * vjointnormal.x + vjointnormal.y * vjointnormal.y + vjointnormal.z * vjointnormal.z);
 		if (length < 1.0e-4f) return;
@@ -1135,35 +1134,22 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 		const int p3 = (i==(cvertex-1)) ? i : (i+1);
 		const int p4 = cvertex*2 - i - 1; //!! ?? *2 valid?
 
-		Vertex3Ds vacross;
-		vacross.x = rgv[p4].x - rgv[p2].x;
-		vacross.y = rgv[p4].y - rgv[p2].y;
-		vacross.z = 0;
+		Vertex3Ds vacross(rgv[p4].x - rgv[p2].x, rgv[p4].y - rgv[p2].y, 0.0f);
 
 		// The vacross vector is our local up vector.  Rotate the cross-section
 		// later to match this up
 		vacross.Normalize();
 
-		Vertex3Ds tangent;
-		tangent.x = rgv[p3].x - rgv[p1].x;
-		tangent.y = rgv[p3].y - rgv[p1].y;
-		tangent.z = rgheight[p3] - rgheight[p1];
+		Vertex3Ds tangent(rgv[p3].x - rgv[p1].x, rgv[p3].y - rgv[p1].y, rgheight[p3] - rgheight[p1]);
 
 		// This is the vector describing the tangent to the ramp at this point
 		tangent.Normalize();
 
-		Vertex3Ds rotationaxis;
+		const Vertex3Ds rotationaxis(tangent.y, -tangent.x, 0.0f);
 		/*
-		Vertex3Ds up;
-		up.x = 0;
-		up.y = 0;
-		up.z = 1.0f;		
+		Vertex3Ds up(0,0,1.0f);
 		// Get axis of rotation to rotate our cross-section into place
 		CrossProduct(tangent, up, &rotationaxis);*/
-
-		rotationaxis.x =  tangent.y;
-		rotationaxis.y = -tangent.x;
-		rotationaxis.z = 0.0f;
 
 		const float dot = tangent.z; //tangent.Dot(&up);
 		const float angle = acosf(dot);

@@ -229,10 +229,7 @@ inline void SetNormal(Vertex3D * const rgv, const WORD * const rgi, const int co
 		applycount = count;
 		}
 
-	Vertex3Ds vnormal;
-	vnormal.x = 0;
-	vnormal.y = 0;
-	vnormal.z = 0;
+	Vertex3Ds vnormal(0.0f,0.0f,0.0f);
 
 	for (int i=0; i<count; ++i)
 		{
