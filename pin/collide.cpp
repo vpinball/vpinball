@@ -347,9 +347,7 @@ void LineSeg::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 void LineSeg::CalcNormal()
 	{
-	Vertex2D vT;
-	vT.x = v1.x - v2.x;
-	vT.y = v1.y - v2.y;
+	const Vertex2D vT(v1.x - v2.x, v1.y - v2.y);
 
 	// Set up line normal
 	length = sqrtf(vT.x*vT.x + vT.y*vT.y);

@@ -147,20 +147,15 @@ void Gate::Render(Sur *psur)
 
 	float halflength = m_d.m_length * 0.5f;	
 	
-	Vertex2D rgv[2];
+	Vertex2D tmp;
 
 	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
 	{
 	const float sn = sinf(radangle);
 	const float cs = cosf(radangle);
 
-	rgv[0].x = m_d.m_vCenter.x + cs*halflength;
-	rgv[0].y = m_d.m_vCenter.y + sn*halflength;
-
-	rgv[1].x = m_d.m_vCenter.x - cs*halflength;
-	rgv[1].y = m_d.m_vCenter.y - sn*halflength;
-
-	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+	psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
+		       m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 
 	// Draw Arrow
 
@@ -168,14 +163,12 @@ void Gate::Render(Sur *psur)
 
 	halflength *= 0.5f;
 
-	rgv[0].x = m_d.m_vCenter.x + sn*halflength;
-	rgv[0].y = m_d.m_vCenter.y - cs*halflength;
+	tmp.x = m_d.m_vCenter.x + sn*halflength;
+	tmp.y = m_d.m_vCenter.y - cs*halflength;
+
+	psur->Line(tmp.x, tmp.y,
+		       m_d.m_vCenter.x, m_d.m_vCenter.y);
 	}
-
-	rgv[1].x = m_d.m_vCenter.x;
-	rgv[1].y = m_d.m_vCenter.y;
-
-	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
 
 	halflength *= 0.5f;
 
@@ -184,20 +177,16 @@ void Gate::Render(Sur *psur)
 	const float sn = sinf(arrowang);
 	const float cs = cosf(arrowang);
 
-	rgv[1].x = m_d.m_vCenter.x + sn*halflength;
-	rgv[1].y = m_d.m_vCenter.y - cs*halflength;
+	psur->Line(tmp.x, tmp.y,
+		       m_d.m_vCenter.x + sn*halflength, m_d.m_vCenter.y - cs*halflength);
 	}
-
-	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
 
 	const float arrowang = radangle-0.6f;
 	const float sn = sinf(arrowang);
 	const float cs = cosf(arrowang);
 
-	rgv[1].x = m_d.m_vCenter.x + sn*halflength;
-	rgv[1].y = m_d.m_vCenter.y - cs*halflength;
-
-	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+	psur->Line(tmp.x, tmp.y,
+		       m_d.m_vCenter.x + sn*halflength, m_d.m_vCenter.y - cs*halflength);
 	}
 
 void Gate::RenderBlueprint(Sur *psur)
@@ -235,17 +224,16 @@ void Gate::GetHitShapes(Vector<HitObject> *pvho)
 	m_d.m_angleMin = angleMin;	
 	m_d.m_angleMax = angleMax;
 
-	Vertex2D rgv[2];
-
 	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
 	const float sn = sinf(radangle);
 	const float cs = cosf(radangle);
 
-	rgv[0].x = m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN);//oversize by the ball's radius
-	rgv[0].y = m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN);// to prevent the ball from clipping through
+	const Vertex2D rgv[2] = {
+		Vertex2D(m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN),//oversize by the ball's radius
+				 m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN)),// to prevent the ball from clipping through
 
-	rgv[1].x = m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN);//the gate's edge
-	rgv[1].y = m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN);
+		Vertex2D(m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN),//the gate's edge
+				 m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN))};
 
 	m_plineseg = new LineSeg();
 
@@ -802,14 +790,12 @@ void Gate::MoveOffset(const float dx, const float dy)
 
 void Gate::GetCenter(Vertex2D *pv)
 	{
-	pv->x = m_d.m_vCenter.x;
-	pv->y = m_d.m_vCenter.y;
+	*pv = m_d.m_vCenter;
 	}
 
 void Gate::PutCenter(Vertex2D *pv)
 	{
-	m_d.m_vCenter.x = pv->x;
-	m_d.m_vCenter.y = pv->y;
+	m_d.m_vCenter = *pv;
 
 	m_ptable->SetDirtyDraw();
 	}

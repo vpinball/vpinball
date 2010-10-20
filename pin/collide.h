@@ -88,11 +88,14 @@ inline bool FQuickLineIntersect(const float x1, const float y1, const float x2, 
 
 	const float d124 = (x2 - x1)*(y4 - y1) - (x4 - x1)*(y2 - y1);
 
+	if(d123 * d124 > 0.0f)
+	    return false;
+
     const float d341 = (x3 - x1)*(y4 - y1) - (x4 - x1)*(y3 - y1);
 
     const float d342 = d123 - d124 + d341;
 
-	return ((d123 * d124 <= 0) && (d341 * d342 <= 0));
+	return (d341 * d342 <= 0.0f);
 	}
 
 class Ball;

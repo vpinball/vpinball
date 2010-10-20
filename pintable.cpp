@@ -3841,10 +3841,10 @@ void PinTable::SetMyScrollInfo()
 
 	RECT rc;
 	GetClientRect(m_hwnd, &rc);
-	Vertex2D rgv[2];
 
 	HitSur * const phs = new HitSur(NULL, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
-
+	
+	Vertex2D rgv[2];
 	phs->ScreenToSurface(rc.left, rc.top, &rgv[0].x, &rgv[0].y);
 	phs->ScreenToSurface(rc.right, rc.bottom, &rgv[1].x, &rgv[1].y);
 
@@ -3914,7 +3914,7 @@ void PinTable::DoLButtonDown(int x,int y)
 			TransformPoint(x,y,&v);
 			m_offsetx = v.x;
 			m_offsety = v.y;
-			SetZoom(m_zoom * 2);
+			SetZoom(m_zoom * 2.0f);
 			SetDirtyDraw();
 			}
 		}
@@ -4227,11 +4227,10 @@ void PinTable::Translate(Vertex2D *pvOffset)
 
 void PinTable::GetCenter(Vertex2D *pv)
 	{
-	float minx, maxx, miny, maxy;
-	minx = FLT_MAX;
-	maxx = -FLT_MAX;
-	miny = FLT_MAX;
-	maxy = -FLT_MAX;
+	float minx = FLT_MAX;
+	float maxx = -FLT_MAX;
+	float miny = FLT_MAX;
+	float maxy = -FLT_MAX;
 
 	for (int i=0;i<m_vmultisel.Size();i++)
 		{
@@ -4745,7 +4744,6 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 		GetCenter(&vcenter);
 
 		Vertex2D vPos;
-
 		TransformPoint(x,y,&vPos);
 
 		Vertex2D vOffset;
@@ -4971,9 +4969,7 @@ void PinTable::UseTool(int x,int y,int tool)
 	{
 	Vertex2D v;
 	TransformPoint(x,y,&v);
-	IEditable *pie;
-
-	pie = NULL;
+	IEditable *pie = NULL;
 
 	switch (tool)
 		{
@@ -6666,9 +6662,6 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 
 					case eItemRamp: {
 						Ramp * const pramp = (Ramp *)piedit;
-						Vertex2D v;
-						v.x = x;
-						v.y = y;
 
 						Vector<RenderVertex> vvertex;
 						pramp->GetRgVertex(&vvertex);
@@ -6683,7 +6676,7 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 
 						int iSeg;
 						Vertex2D vOut;
-						ClosestPointOnPolygon(rgv, cvertex, v, &vOut, &iSeg, fFalse);
+						ClosestPointOnPolygon(rgv, cvertex, Vertex2D(x,y), &vOut, &iSeg, fFalse);
 
 						// Go through vertices (including iSeg itself) counting control points until iSeg
 						float totallength = 0;

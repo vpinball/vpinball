@@ -161,27 +161,16 @@ void Spinner::Render(Sur *psur)
 	const float sn = sinf(radangle);
 	const float cs = cosf(radangle);
 
-	Vertex2D rgv[2];
-	rgv[0].x = m_d.m_vCenter.x + cs*halflength;
-	rgv[0].y = m_d.m_vCenter.y + sn*halflength;
-
-	rgv[1].x = m_d.m_vCenter.x - cs*halflength;
-	rgv[1].y = m_d.m_vCenter.y - sn*halflength;
-
-	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+	psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
+			   m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 
 	psur->SetLineColor(RGB(0,0,0),false,1);
 	psur->SetObject(this);
 
 	halflength += m_d.m_overhang;
 
-	rgv[0].x = m_d.m_vCenter.x + cs*halflength;
-	rgv[0].y = m_d.m_vCenter.y + sn*halflength;
-
-	rgv[1].x = m_d.m_vCenter.x - cs*halflength;
-	rgv[1].y = m_d.m_vCenter.y - sn*halflength;
-
-	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+	psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
+			   m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 	}
 
 void Spinner::RenderShadow(ShadowSur *psur, float height)
@@ -198,27 +187,16 @@ void Spinner::RenderShadow(ShadowSur *psur, float height)
 	const float sn = sinf(radangle);
 	const float cs = cosf(radangle);
 
-	Vertex2D rgv[2];
-	rgv[0].x = m_d.m_vCenter.x + cs*halflength;
-	rgv[0].y = m_d.m_vCenter.y + sn*halflength;
-
-	rgv[1].x = m_d.m_vCenter.x - cs*halflength;
-	rgv[1].y = m_d.m_vCenter.y - sn*halflength;
-
-	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+	psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
+			   m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 
 	psur->SetLineColor(RGB(0,0,0),false,1);
 	psur->SetObject(this);
 
 	halflength += m_d.m_overhang;
 
-	rgv[0].x = m_d.m_vCenter.x + cs*halflength;
-	rgv[0].y = m_d.m_vCenter.y + sn*halflength;
-
-	rgv[1].x = m_d.m_vCenter.x - cs*halflength;
-	rgv[1].y = m_d.m_vCenter.y - sn*halflength;
-
-	psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
+	psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
+			   m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 	}
 
 void Spinner::GetTimers(Vector<HitTimer> *pvht)
@@ -792,14 +770,12 @@ void Spinner::MoveOffset(const float dx, const float dy)
 
 void Spinner::GetCenter(Vertex2D *pv)
 	{
-	pv->x = m_d.m_vCenter.x;
-	pv->y = m_d.m_vCenter.y;
+	*pv = m_d.m_vCenter;
 	}
 
 void Spinner::PutCenter(Vertex2D *pv)
 	{
-	m_d.m_vCenter.x = pv->x;
-	m_d.m_vCenter.y = pv->y;
+	m_d.m_vCenter = *pv;
 
 	m_ptable->SetDirtyDraw();
 	}

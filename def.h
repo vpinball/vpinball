@@ -47,6 +47,9 @@ public:
 	float x;
 	float y;
 
+	inline Vertex2D() {}
+	inline Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
+
 	inline void Normalize()
 		{
 		const float oneoverlength = 1.0f/sqrtf(x*x + y*y);
@@ -194,16 +197,10 @@ public:
 
 inline Vertex2D Calc2DNormal(const Vertex2D &pv1, const Vertex2D &pv2)
 	{
-	Vertex2D vT;
-	vT.x = pv1.x - pv2.x;
-	vT.y = pv1.y - pv2.y;
-
+	const Vertex2D vT(pv1.x - pv2.x, pv1.y - pv2.y);
 	// Set up line normal
 	const float inv_length = 1.0f/sqrtf(vT.x * vT.x + vT.y * vT.y);
-	Vertex2D pnormal;
-	pnormal.x =  vT.y * inv_length;
-	pnormal.y = -vT.x * inv_length;
-	return pnormal;
+	return Vertex2D(vT.y * inv_length, -vT.x * inv_length);
 	}
 
 inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const BOOL fClosed)

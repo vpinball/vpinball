@@ -366,16 +366,8 @@ void DispReel::PreRender(Sur *psur)
 		const float x2 = x+m_d.m_width;
 		const float y2 = y+m_d.m_height;
 
-		Vertex2D rgv[4];
-        // set up points (clockwise)
-        rgv[0].x = x;
-        rgv[0].y = y;
-        rgv[1].x = x2;
-        rgv[1].y = y;
-        rgv[2].x = x2;
-        rgv[2].y = y2;
-        rgv[3].x = x;
-        rgv[3].y = y2;
+		// set up points (clockwise)
+		const Vertex2D rgv[4] = {Vertex2D(x,y),Vertex2D(x2,y),Vertex2D(x2,y2),Vertex2D(x,y2)};			
         psur->Polygon(rgv, 4);
     }
 }
@@ -411,15 +403,7 @@ void DispReel::Render(Sur *psur)
 		const float y2 = y+m_d.m_height;
 
         // set up points (clockwise)
-		Vertex2D rgv[4];
-        rgv[0].x = x;
-        rgv[0].y = y;
-        rgv[1].x = x2;
-        rgv[1].y = y;
-        rgv[2].x = x2;
-        rgv[2].y = y2;
-        rgv[3].x = x;
-        rgv[3].y = y2;
+		const Vertex2D rgv[4] = {Vertex2D(x,y),Vertex2D(x2,y),Vertex2D(x2,y2),Vertex2D(x,y2)};
         psur->Polygon(rgv, 4);
     }
 }
@@ -1086,16 +1070,14 @@ void DispReel::MoveOffset(const float dx, const float dy)
 
 void DispReel::GetCenter(Vertex2D *pv)
 {
-	pv->x = m_d.m_v1.x;
-	pv->y = m_d.m_v1.y;
+	*pv = m_d.m_v1;
 }
 
 
 
 void DispReel::PutCenter(Vertex2D *pv)
 {
-	m_d.m_v1.x = pv->x;
-	m_d.m_v1.y = pv->y;
+	m_d.m_v1 = *pv;
 
 	m_d.m_v2.x = pv->x + getBoxWidth();
 	m_d.m_v2.y = pv->y + getBoxHeight();
