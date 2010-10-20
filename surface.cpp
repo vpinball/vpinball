@@ -851,12 +851,8 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
 	plineseg->CalcNormal();
 
-	Vertex2D vt1, vt2;
-	vt1.x = pv1->x - pv2->x;
-	vt1.y = pv1->y - pv2->y;
-
-	vt2.x = pv1->x - pv3->x;
-	vt2.y = pv1->y - pv3->y;
+	const Vertex2D vt1(pv1->x - pv2->x, pv1->y - pv2->y);
+	const Vertex2D vt2(pv1->x - pv3->x, pv1->y - pv3->y);
 
 	const float dot = vt1.x*vt2.y - vt1.y*vt2.x;
 
@@ -892,21 +888,18 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 		m_vhoCollidable.AddElement(pjoint);
 		pjoint->m_fEnabled = m_d.m_fCollidable;
 
-		Vertex2D normalT;
-
 		// Set up line normal
 		{
 		const float inv_length = 1.0f/sqrtf((vt2.x * vt2.x) + (vt2.y * vt2.y));
-		normalT.x = -vt2.y * inv_length;
-		normalT.y = vt2.x * inv_length;
-		}
-
+		const Vertex2D normalT( -vt2.y * inv_length, vt2.x * inv_length);
+		
 		pjoint->normal.x = normalT.x + plineseg->normal.x;
 		pjoint->normal.y = normalT.y + plineseg->normal.y;
+		}
 
 		// Set up line normal
 		{
-		const float inv_length = 1.0f/sqrtf((pjoint->normal.x * pjoint->normal.x) + (pjoint->normal.y * pjoint->normal.y));
+		const float inv_length = 1.0f/sqrtf(pjoint->normal.x * pjoint->normal.x + pjoint->normal.y * pjoint->normal.y);
 		pjoint->normal.x *= inv_length;
 		pjoint->normal.y *= inv_length;
 		}

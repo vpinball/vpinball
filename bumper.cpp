@@ -829,14 +829,12 @@ void Bumper::MoveOffset(const float dx, const float dy)
 
 void Bumper::GetCenter(Vertex2D *pv)
 	{
-	pv->x = m_d.m_vCenter.x;
-	pv->y = m_d.m_vCenter.y;
+	*pv = m_d.m_vCenter;
 	}
 
 void Bumper::PutCenter(Vertex2D *pv)
 	{
-	m_d.m_vCenter.x = pv->x;
-	m_d.m_vCenter.y = pv->y;
+	m_d.m_vCenter = *pv;
 
 	m_ptable->SetDirtyDraw();
 	}

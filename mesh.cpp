@@ -35,15 +35,15 @@ void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvp
 
 void LightProjected::CalcCoordinates(Vertex3D * const pv, const float inv_width, const float inv_height) const
 	{
-	Vertex2D vOrigin;//, vT;
-
+	const Vertex2D vOrigin(
 	// light is rotated around the light as the origin
 	// z doesn't matter because the texture is projected through z
-	vOrigin.x = pv->x - m_v.x;
-	vOrigin.y = pv->y - m_v.y;
-	//vOrigin.z = pv->z;
+		pv->x - m_v.x,
+		pv->y - m_v.y);
+	//	pv->z);
 
 	// Rotation
+	//Vertex2D vT;
 	{
 	//const float sn = sinf(rotation);
 	//const float cs = cosf(rotation);

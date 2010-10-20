@@ -86,14 +86,12 @@ void LightSeq::MoveOffset(const float dx, const float dy)
 
 void LightSeq::GetCenter(Vertex2D *pv)
 {
-	pv->x = m_d.m_v.x;
-	pv->y = m_d.m_v.y;
+	*pv = m_d.m_v;
 }
 
 void LightSeq::PutCenter(Vertex2D *pv)
 {
-	m_d.m_v.x = pv->x;
-	m_d.m_v.y = pv->y;
+	m_d.m_v = *pv;
 
 	m_ptable->SetDirtyDraw();
 }

@@ -121,26 +121,29 @@ inline bool FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * cons
 
 	const float d124 = (x2 - x1)*(y4 - y1) - (x4 - x1)*(y2 - y1);
 
-	if (d124 == 0) // p4 lies on the same line as p1 and p2
+	if (d124 == 0.0f) // p4 lies on the same line as p1 and p2
 		{
 		return (x4 >= min(x1,x2) && x4 <= max(x2,x1));
 		}
 
+	if(d123 * d124 >= 0.0f)
+		return false;
+
     const float d341 = (x3 - x1)*(y4 - y1) - (x4 - x1)*(y3 - y1);
 
-	if (d341 == 0) // p1 lies on the same line as p3 and p4
+	if (d341 == 0.0f) // p1 lies on the same line as p3 and p4
 		{
 		return (x1 >= min(x3,x4) && x1 <= max(x3,x4));
 		}
 
     const float d342 = d123 - d124 + d341;
 
-	if (d342 == 0) // p1 lies on the same line as p3 and p4
+	if (d342 == 0.0f) // p1 lies on the same line as p3 and p4
 		{
 		return (x2 >= min(x3,x4) && x2 <= max(x3,x4));
 		}
 
-	return ((d123 * d124 < 0) && (d341 * d342 < 0));
+	return (d341 * d342 < 0.0f);
 	}
 
 inline bool AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pvpoly, const int a, const int b, const int c, const int pre, const int post)
@@ -191,16 +194,12 @@ inline bool AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pv
 
 inline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 	{
-	Vertex2D vt1, vt2;
-	vt1.x = pvJoint->x - pvEnd1->x;
-	vt1.y = pvJoint->y - pvEnd1->y;
-
-	vt2.x = pvJoint->x - pvEnd2->x;
-	vt2.y = pvJoint->y - pvEnd2->y;
+	const Vertex2D vt1(pvJoint->x - pvEnd1->x, pvJoint->y - pvEnd1->y);
+	const Vertex2D vt2(pvJoint->x - pvEnd2->x, pvJoint->y - pvEnd2->y);
 
 	const float dot = vt1.x*vt2.y - vt1.y*vt2.x;
 
-	return dot/sqrtf(((vt1.x * vt1.x) + (vt1.y * vt1.y))*((vt2.x * vt2.x) + (vt2.y * vt2.y)));
+	return dot/sqrtf((vt1.x * vt1.x + vt1.y * vt1.y)*(vt2.x * vt2.x + vt2.y * vt2.y));
 	}
 
 /*

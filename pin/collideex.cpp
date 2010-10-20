@@ -130,9 +130,8 @@ void LineSegSlingshot::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 		const float len = (v2.x - v1.x)*TANX + (v2.y - v1.y)*TANY; //rlc length of segment, Unit TAN points from V1 to V2
 
-		Vertex2D vhitpoint;
-		vhitpoint.x = pball->x - phitnormal->x * pball->radius; //project ball radius along norm
-		vhitpoint.y = pball->y - phitnormal->y * pball->radius;
+		const Vertex2D vhitpoint(pball->x - phitnormal->x * pball->radius, //project ball radius along norm
+								 pball->y - phitnormal->y * pball->radius);
 
 		// vhitpoint will now be the point where the ball hits the line
 		// Calculate this distance from the center of the slingshot to get force
@@ -890,11 +889,7 @@ float Hit3DCylinder::HitTest(Ball * const pball, const float dtime, Vertex3Ds * 
 
 	if (hittime >= 0)
 		{
-		Vertex2D mynormal;
-		mynormal.x = phitnormal->x;
-		mynormal.y = phitnormal->y;
-
-		*phitnormal = RotateAround(transaxis, mynormal, -transangle);
+		*phitnormal = RotateAround(transaxis, Vertex2D(phitnormal->x, phitnormal->y), -transangle);
 		}
 
 	return hittime;

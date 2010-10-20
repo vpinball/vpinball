@@ -188,18 +188,18 @@ void Decal::PreRender(Sur *psur)
 		const float sn = sinf(radangle);
 		const float cs = cosf(radangle);
 
-		Vertex2D rgv[4];
-		rgv[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
-		rgv[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
+		const Vertex2D rgv[4] = {
+		Vertex2D(m_d.m_vCenter.x + sn*halfheight - cs*halfwidth,
+		         m_d.m_vCenter.y - cs*halfheight - sn*halfwidth),
 
-		rgv[1].x = m_d.m_vCenter.x + sn*halfheight + cs*halfwidth;
-		rgv[1].y = m_d.m_vCenter.y - cs*halfheight + sn*halfwidth;
+		Vertex2D(m_d.m_vCenter.x + sn*halfheight + cs*halfwidth,
+				 m_d.m_vCenter.y - cs*halfheight + sn*halfwidth),
 
-		rgv[2].x = m_d.m_vCenter.x - sn*halfheight + cs*halfwidth;
-		rgv[2].y = m_d.m_vCenter.y + cs*halfheight + sn*halfwidth;
+		Vertex2D(m_d.m_vCenter.x - sn*halfheight + cs*halfwidth,
+				 m_d.m_vCenter.y + cs*halfheight + sn*halfwidth),
 
-		rgv[3].x = m_d.m_vCenter.x - sn*halfheight - cs*halfwidth;
-		rgv[3].y = m_d.m_vCenter.y + cs*halfheight - sn*halfwidth;
+		Vertex2D(m_d.m_vCenter.x - sn*halfheight - cs*halfwidth,
+				 m_d.m_vCenter.y + cs*halfheight - sn*halfwidth)};
 
 		psur->Polygon(rgv, 4);
 		}
@@ -221,18 +221,18 @@ void Decal::Render(Sur *psur)
 		const float sn = sinf(radangle);
 		const float cs = cosf(radangle);
 
-		Vertex2D rgv[4];
-		rgv[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
-		rgv[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
+		const Vertex2D rgv[4] = {
+		Vertex2D(m_d.m_vCenter.x + sn*halfheight - cs*halfwidth,
+				 m_d.m_vCenter.y - cs*halfheight - sn*halfwidth),
 
-		rgv[1].x = m_d.m_vCenter.x + sn*halfheight + cs*halfwidth;
-		rgv[1].y = m_d.m_vCenter.y - cs*halfheight + sn*halfwidth;
+		Vertex2D(m_d.m_vCenter.x + sn*halfheight + cs*halfwidth,
+			     m_d.m_vCenter.y - cs*halfheight + sn*halfwidth),
 
-		rgv[2].x = m_d.m_vCenter.x - sn*halfheight + cs*halfwidth;
-		rgv[2].y = m_d.m_vCenter.y + cs*halfheight + sn*halfwidth;
+		Vertex2D(m_d.m_vCenter.x - sn*halfheight + cs*halfwidth,
+			     m_d.m_vCenter.y + cs*halfheight + sn*halfwidth),
 
-		rgv[3].x = m_d.m_vCenter.x - sn*halfheight - cs*halfwidth;
-		rgv[3].y = m_d.m_vCenter.y + cs*halfheight - sn*halfwidth;
+		Vertex2D(m_d.m_vCenter.x - sn*halfheight - cs*halfwidth,
+				 m_d.m_vCenter.y + cs*halfheight - sn*halfwidth)};
 
 		psur->Polygon(rgv, 4);
 		}
@@ -582,14 +582,12 @@ void Decal::MoveOffset(const float dx, const float dy)
 
 void Decal::GetCenter(Vertex2D *pv)
 	{
-	pv->x = m_d.m_vCenter.x;
-	pv->y = m_d.m_vCenter.y;
+	*pv = m_d.m_vCenter;
 	}
 
 void Decal::PutCenter(Vertex2D *pv)
 	{
-	m_d.m_vCenter.x = pv->x;
-	m_d.m_vCenter.y = pv->y;
+	m_d.m_vCenter = *pv;
 
 	m_ptable->SetDirtyDraw();
 	}

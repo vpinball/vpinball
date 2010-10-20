@@ -469,14 +469,12 @@ void Flipper::MoveOffset(const float dx, const float dy)
 
 void Flipper::GetCenter(Vertex2D *pv)
 	{
-	pv->x = m_d.m_Center.x;
-	pv->y = m_d.m_Center.y;
+	*pv = m_d.m_Center;
 	}
 
 void Flipper::PutCenter(Vertex2D *pv)
 	{
-	m_d.m_Center.x = pv->x;
-	m_d.m_Center.y = pv->y;
+	m_d.m_Center = *pv;
 
 	m_ptable->SetDirtyDraw();
 	}

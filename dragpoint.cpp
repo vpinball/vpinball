@@ -15,12 +15,10 @@ IHaveDragPoints::~IHaveDragPoints()
 
 void IHaveDragPoints::GetPointCenter(Vertex2D *pv)
 	{
-	float minx, maxx, miny, maxy;
-
-	minx = FLT_MAX;
-	maxx = -FLT_MAX;
-	miny = FLT_MAX;
-	maxy = -FLT_MAX;
+	float minx = FLT_MAX;
+	float maxx = -FLT_MAX;
+	float miny = FLT_MAX;
+	float maxy = -FLT_MAX;
 
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
@@ -41,26 +39,22 @@ void IHaveDragPoints::PutPointCenter(Vertex2D *pv)
 
 void IHaveDragPoints::FlipPointY(Vertex2D *pvCenter)
 	{
-	float deltay;
-
 	GetIEditable()->BeginUndo();
 	GetIEditable()->MarkForUndo();
 
 	Vertex2D newcenter;
-
 	GetPointCenter(&newcenter);
-	float ycenter;
 
-	ycenter = pvCenter->y;
+	const float ycenter = pvCenter->y;
 
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
-		deltay = m_vdpoint.ElementAt(i)->m_v.y - ycenter;
+		const float deltay = m_vdpoint.ElementAt(i)->m_v.y - ycenter;
 
 		m_vdpoint.ElementAt(i)->m_v.y -= deltay*2.0f;
 		}
 
-	deltay = newcenter.y - ycenter;
+	const float deltay = newcenter.y - ycenter;
 	newcenter.y -= deltay*2.0f;
 	PutPointCenter(&newcenter);
 
@@ -73,26 +67,22 @@ void IHaveDragPoints::FlipPointY(Vertex2D *pvCenter)
 
 void IHaveDragPoints::FlipPointX(Vertex2D *pvCenter)
 	{
-	float deltax;
-
 	GetIEditable()->BeginUndo();
 	GetIEditable()->MarkForUndo();
 
 	Vertex2D newcenter;
-
 	GetPointCenter(&newcenter);
-	float xcenter;
-
-	xcenter = pvCenter->x;
+	
+	const float xcenter = pvCenter->x;
 
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
-		deltax = m_vdpoint.ElementAt(i)->m_v.x - xcenter;
+		const float deltax = m_vdpoint.ElementAt(i)->m_v.x - xcenter;
 
 		m_vdpoint.ElementAt(i)->m_v.x -= deltax*2.0f;
 		}
 
-	deltax = newcenter.x - xcenter;
+	const float deltax = newcenter.x - xcenter;
 	newcenter.x -= deltax*2.0f;
 	PutPointCenter(&newcenter);
 
@@ -141,44 +131,38 @@ void IHaveDragPoints::TranslateDialog()
 
 void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter)
 	{
-	float dx,dy;
-	float temp;
-	float centerx, centery;
 	Vertex2D newcenter;
-
 	GetPointCenter(&newcenter);
 
 	GetIEditable()->BeginUndo();
 	GetIEditable()->MarkForUndo();
 
-	centerx = pvCenter->x;
-	centery = pvCenter->y;
+	const float centerx = pvCenter->x;
+	const float centery = pvCenter->y;
 
 	const float sn = sinf(ANGTORAD(ang));
 	const float cs = cosf(ANGTORAD(ang));
 
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
-		DragPoint *pdp1 = m_vdpoint.ElementAt(i);
-		dx = pdp1->m_v.x - centerx;
-		dy = pdp1->m_v.y - centery;
-		temp = dx;
-		dx = cs*dx - sn*dy;
-		dy = cs*dy + sn*temp;
-		pdp1->m_v.x = centerx + dx;
-		pdp1->m_v.y = centery + dy;
+		DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
+		const float dx = pdp1->m_v.x - centerx;
+		const float dy = pdp1->m_v.y - centery;
+		const float dx2 = cs*dx - sn*dy;
+		const float dy2 = cs*dy + sn*dx;
+		pdp1->m_v.x = centerx + dx2;
+		pdp1->m_v.y = centery + dy2;
 		}
 
 		// Move object center as well (if rotating around object center,
 		// this will have no effect)
 		{
-		dx = newcenter.x - centerx;
-		dy = newcenter.y - centery;
-		temp = dx;
-		dx = cs*dx - sn*dy;
-		dy = cs*dy + sn*temp;
-		newcenter.x = centerx + dx;
-		newcenter.y = centery + dy;
+		const float dx = newcenter.x - centerx;
+		const float dy = newcenter.y - centery;
+		const float dx2 = cs*dx - sn*dy;
+		const float dy2 = cs*dy + sn*dx;
+		newcenter.x = centerx + dx2;
+		newcenter.y = centery + dy2;
 		PutPointCenter(&newcenter);
 		}
 
@@ -189,25 +173,20 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter)
 
 void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter)
 	{
-	float dx,dy;
-	float centerx, centery;
 	Vertex2D newcenter;
-
 	GetPointCenter(&newcenter);
 
 	GetIEditable()->BeginUndo();
 	GetIEditable()->MarkForUndo();
 
-	centerx = pvCenter->x;
-	centery = pvCenter->y;
+	const float centerx = pvCenter->x;
+	const float centery = pvCenter->y;
 
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
 		DragPoint *pdp1 = m_vdpoint.ElementAt(i);
-		dx = pdp1->m_v.x - centerx;
-		dy = pdp1->m_v.y - centery;
-		dx*=scalex;
-		dy*=scaley;
+		const float dx = (pdp1->m_v.x - centerx) * scalex;
+		const float dy = (pdp1->m_v.y - centery) * scaley;
 		pdp1->m_v.x = centerx + dx;
 		pdp1->m_v.y = centery + dy;
 		}
@@ -215,10 +194,8 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
 		// Move object center as well (if scaling from object center,
 		// this will have no effect)
 		{
-		dx = newcenter.x - centerx;
-		dy = newcenter.y - centery;
-		dx*=scalex;
-		dy*=scaley;
+		const float dx = (newcenter.x - centerx) * scalex;
+		const float dy = (newcenter.y - centery) * scaley;
 		newcenter.x = centerx + dx;
 		newcenter.y = centery + dy;
 		PutPointCenter(&newcenter);
@@ -231,18 +208,17 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
 
 void IHaveDragPoints::TranslatePoints(Vertex2D *pvOffset)
 	{
-	Vertex2D newcenter;
-
 	GetIEditable()->BeginUndo();
 	GetIEditable()->MarkForUndo();
 
 	for (int i=0;i<m_vdpoint.Size();i++)
 		{
-		DragPoint *pdp1 = m_vdpoint.ElementAt(i);
+		DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
 		pdp1->m_v.x += pvOffset->x;
 		pdp1->m_v.y += pvOffset->y;
 		}
 
+	Vertex2D newcenter;
 	GetPointCenter(&newcenter);
 
 	newcenter.x += pvOffset->x;
@@ -265,18 +241,18 @@ void IHaveDragPoints::ReverseOrder()
 	// Reverse order of points (switches winding, reverses inside/outside)
 	for (int i=0;i<m_vdpoint.Size()/2;i++)
 		{
-		DragPoint *pdp1 = m_vdpoint.ElementAt(i);
-		DragPoint *pdp2 = m_vdpoint.ElementAt(m_vdpoint.Size() - 1 - i);
+		DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
+		DragPoint * const pdp2 = m_vdpoint.ElementAt(m_vdpoint.Size() - 1 - i);
 		m_vdpoint.ReplaceElementAt(pdp2,i);
 		m_vdpoint.ReplaceElementAt(pdp1, m_vdpoint.Size() - 1 - i);
 		}
 
-	BOOL fSlingshotTemp = m_vdpoint.ElementAt(0)->m_fSlingshot;
+	const BOOL fSlingshotTemp = m_vdpoint.ElementAt(0)->m_fSlingshot;
 
 	for (int i=0;i<m_vdpoint.Size()-1;i++)
 		{
-		DragPoint *pdp1 = m_vdpoint.ElementAt(i);
-		DragPoint *pdp2 = m_vdpoint.ElementAt(i+1);
+		      DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
+		const DragPoint * const pdp2 = m_vdpoint.ElementAt(i+1);
 
 		pdp1->m_fSlingshot = pdp2->m_fSlingshot;
 		}
@@ -325,9 +301,7 @@ void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> *pvv)
 
 void IHaveDragPoints::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
 	{
-	PropertyPane *pproppane;
-
-	pproppane = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
+	PropertyPane *pproppane = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
 	pvproppane->AddElement(pproppane);
 
 	pproppane = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
@@ -375,17 +349,15 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 
 	for (int i=0; i<vitexpoints.Size()-1; ++i)
 		{
-		float totallength = 0;
-		float starttexcoord;
-		float endtexcoord;
-
 		const int startrenderpoint = virenderpoints.ElementAt(i) % cpoints;
 		int endrenderpoint = virenderpoints.ElementAt((i < cpoints-1) ? (i+1) : 0) % cpoints;
 
+		float starttexcoord;
+		float endtexcoord;
 		if (m_fNoCoords)
 			{
-			starttexcoord = 0;
-			endtexcoord = 1;
+			starttexcoord = 0.0f;
+			endtexcoord = 1.0f;
 			}
 		else
 			{
@@ -399,6 +371,8 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 			{
 			endrenderpoint += cpoints;
 			}
+
+		float totallength = 0.0f;
 		for (int l=startrenderpoint; l<endrenderpoint; ++l)
 			{
 			const Vertex2D * const pv1 = (Vertex2D *)pvv->ElementAt(l % cpoints);
@@ -411,8 +385,7 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
 			totallength += length;
 			}
 
-		float partiallength = 0;
-
+		float partiallength = 0.0f;
 		for (int l=startrenderpoint; l<endrenderpoint; ++l)
 			{
 			const Vertex2D * const pv1 = (Vertex2D *)pvv->ElementAt(l % cpoints);
@@ -530,14 +503,12 @@ void DragPoint::MoveOffset(const float dx, const float dy)
 
 void DragPoint::GetCenter(Vertex2D *pv)
 	{
-	pv->x = m_v.x;
-	pv->y = m_v.y;
+	*pv = m_v;
 	}
 
 void DragPoint::PutCenter(Vertex2D *pv)
 	{
-	m_v.x = pv->x;
-	m_v.y = pv->y;
+	m_v = *pv;
 
 	m_pihdp->GetIEditable()->SetDirtyDraw();
 	}
@@ -781,10 +752,10 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-			Vertex2D v;
-			char szT[256];
+			Vertex2D v;			
 			psel->GetCenter(&v);
 			SetDlgItemInt(hwndDlg, IDC_ROTATEBY, 0, TRUE);
+			char szT[256];
 			f2sz(v.x, szT);
 			SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
 			f2sz(v.y, szT);
@@ -807,11 +778,10 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						case IDOK:
 							{
 							char szT[256];
-							float f;
-							Vertex2D v;
-							GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);
-							f = sz2f(szT);
+							GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);							
+							const float f = sz2f(szT);
 							GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+							Vertex2D v;
 							v.x = sz2f(szT);
 							GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
 							v.y = sz2f(szT);
@@ -845,11 +815,11 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 			psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-			Vertex2D v;
-			char szT[256];
+			Vertex2D v;			
 			psel->GetCenter(&v);
 			SetDlgItemInt(hwndDlg, IDC_SCALEFACTOR, 1, TRUE);
 			SetDlgItemInt(hwndDlg, IDC_SCALEY, 1, TRUE);
+			char szT[256];
 			f2sz(v.x, szT);
 			SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
 			f2sz(v.y, szT);
@@ -879,11 +849,10 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						case IDOK:
 							{
 							char szT[256];
-							float fx,fy;
-							Vertex2D v;
 							GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
-							fx = sz2f(szT);
-							int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
+							const float fx = sz2f(szT);
+							const int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
+							float fy;
 							if (checked)
 								{
 								fy = fx;
@@ -895,6 +864,7 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 								}
 
 							GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+							Vertex2D v;
 							v.x = sz2f(szT);
 							GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
 							v.y = sz2f(szT);
@@ -964,9 +934,9 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 						{
 						case IDOK:
 							{
-							char szT[256];
-							Vertex2D v;
+							char szT[256];							
 							GetDlgItemText(hwndDlg, IDC_OFFSETX, szT, 255);
+							Vertex2D v;
 							v.x = sz2f(szT);
 							GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
 							v.y = sz2f(szT);

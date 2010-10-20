@@ -280,9 +280,7 @@ float HitFlipper::HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnor
 	const float angleCur = m_flipperanim.m_angleCur;
 	float anglespeed = m_flipperanim.m_anglespeed;		// rotation rate
 	
-	Vertex2D flipperbase;
-	flipperbase.x =	m_flipperanim.m_hitcircleBase.center.x;
-	flipperbase.y =	m_flipperanim.m_hitcircleBase.center.y;
+	const Vertex2D flipperbase = m_flipperanim.m_hitcircleBase.center;
 			
 	const float angleMin = m_flipperanim.m_angleMin;
 	const float angleMax = m_flipperanim.m_angleMax;
@@ -298,9 +296,8 @@ float HitFlipper::HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnor
 	const float ballvx = pball->vx;
 	const float ballvy = pball->vy;
 
-	Vertex2D vp;	
-	vp.x = 0.0;								//m_flipperradius*sin(0));
-	vp.y = -m_flipperanim.m_flipperradius;  //m_flipperradius*(-cos(0));
+	const Vertex2D vp(0.0f,                            //m_flipperradius*sin(0));
+				      -m_flipperanim.m_flipperradius); //m_flipperradius*(-cos(0));
 	
 	float ballvtx, ballvty;	// new ball position at time t in flipper face coordinate
 	float contactAng;
@@ -322,9 +319,9 @@ float HitFlipper::HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnor
 		const float radcos = cosf(contactAng);// rotational transform from zero position to position at time t
 			
 		//rotate angle delta unit vector, rotates system according to flipper face angle
-		Vertex2D vt;
-		vt.x = vp.x *radcos - vp.y *radsin + flipperbase.x ;	//rotate and translate to world position
-		vt.y = vp.y *radcos + vp.x *radsin + flipperbase.y;	
+		const Vertex2D vt(
+			vp.x *radcos - vp.y *radsin + flipperbase.x,		//rotate and translate to world position
+			vp.y *radcos + vp.x *radsin + flipperbase.y);
 			
 		ballvtx = ballx + ballvx*t - vt.x;						// new ball position relative to flipper end radius
 		ballvty = bally + ballvy*t - vt.y;
@@ -383,9 +380,9 @@ float HitFlipper::HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnor
 	phitnormal[0].x = ballvtx*inv_cbcedist;				// normal vector from flipper end to ball
 	phitnormal[0].y = ballvty*inv_cbcedist;
 	
-	Vertex2D dist;
-	dist.x = (pball->x + ballvx*t - ballr*phitnormal[0].x - m_flipperanim.m_hitcircleBase.center.x); // vector from base to flipperEnd plus the projected End radius
-	dist.y = (pball->y + ballvy*t - ballr*phitnormal[0].y - m_flipperanim.m_hitcircleBase.center.y);
+	const Vertex2D dist(
+		(pball->x + ballvx*t - ballr*phitnormal[0].x - m_flipperanim.m_hitcircleBase.center.x), // vector from base to flipperEnd plus the projected End radius
+		(pball->y + ballvy*t - ballr*phitnormal[0].y - m_flipperanim.m_hitcircleBase.center.y));
 
 	const float distance = sqrtf(dist.x*dist.x + dist.y*dist.y);	// distance from base center to contact point
 
@@ -400,9 +397,9 @@ float HitFlipper::HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnor
 	phitnormal[2].y = anglespeed;			//radians/time at collison
 	
 	//recheck using actual contact angle of velocity direction
-	Vertex2D dv;	
-	dv.x = (ballvx - phitnormal[1].x *anglespeed*distance); 
-	dv.y = (ballvy - phitnormal[1].y *anglespeed*distance); //delta velocity ball to face
+	const Vertex2D dv(
+		(ballvx - phitnormal[1].x *anglespeed*distance), 
+		(ballvy - phitnormal[1].y *anglespeed*distance)); //delta velocity ball to face
 
 	const float bnv = dv.x*phitnormal->x + dv.y*phitnormal->y;  //dot Normal to delta v
 
@@ -422,9 +419,7 @@ float HitFlipper::HitTestFlipperFace(Ball *pball, float dtime, Vertex3Ds *phitno
 	const float angleCur = m_flipperanim.m_angleCur;
 	float anglespeed = m_flipperanim.m_anglespeed;				// rotation rate
 	
-	Vertex2D flipperbase;
-	flipperbase.x =	m_flipperanim.m_hitcircleBase.center.x;
-	flipperbase.y =	m_flipperanim.m_hitcircleBase.center.y;
+	const Vertex2D flipperbase = m_flipperanim.m_hitcircleBase.center;
 	const float feRadius = m_flipperanim.m_hitcircleEnd.radius;
 	
 	const float angleMin = m_flipperanim.m_angleMin;
@@ -441,9 +436,9 @@ float HitFlipper::HitTestFlipperFace(Ball *pball, float dtime, Vertex3Ds *phitno
 	if (face == LeftFace) ffnx = -ffnx;		  // negative for face1
 
 	const float ffny = m_flipperanim.zeroAngNorm.y;	  // norm y component same for either face
-	Vertex2D vp;									  // face segment V1 point
-	vp.x = m_flipperanim.m_hitcircleBase.radius*ffnx; // face endpoint of line segment on base radius
-	vp.y = m_flipperanim.m_hitcircleBase.radius*ffny;		
+	const Vertex2D vp(									  // face segment V1 point
+		m_flipperanim.m_hitcircleBase.radius*ffnx, // face endpoint of line segment on base radius
+		m_flipperanim.m_hitcircleBase.radius*ffny);		
 	
 	Vertex2D F;			// flipper face normal
 	
@@ -471,9 +466,9 @@ float HitFlipper::HitTestFlipperFace(Ball *pball, float dtime, Vertex3Ds *phitno
 		F.x = ffnx *radcos - ffny *radsin;  // rotate to time t, norm and face offset point
 		F.y = ffny *radcos + ffnx *radsin;  // 
 		
-		Vertex2D vt;
-		vt.x = vp.x *radcos - vp.y *radsin + flipperbase.x;//rotate and translate to world position
-		vt.y = vp.y *radcos + vp.x *radsin + flipperbase.y;
+		const Vertex2D vt(
+			vp.x *radcos - vp.y *radsin + flipperbase.x, //rotate and translate to world position
+			vp.y *radcos + vp.x *radsin + flipperbase.y);
 			
 		ballvtx = pball->x + ballvx*t - vt.x;	// new ball position relative to rotated line segment endpoint
 		ballvty = pball->y + ballvy*t - vt.y;	
@@ -541,9 +536,9 @@ float HitFlipper::HitTestFlipperFace(Ball *pball, float dtime, Vertex3Ds *phitno
 	phitnormal[0].x = F.x;	// hit normal is same as line segment normal
 	phitnormal[0].y = F.y;
 
-	Vertex2D dist; // calculate moment from flipper base center
-	dist.x = (pball->x + ballvx*t - ballr*F.x - m_flipperanim.m_hitcircleBase.center.x); //center of ball + projected radius to contact point
-	dist.y = (pball->y + ballvy*t - ballr*F.y - m_flipperanim.m_hitcircleBase.center.y); // all at time t
+	const Vertex2D dist( // calculate moment from flipper base center
+		(pball->x + ballvx*t - ballr*F.x - m_flipperanim.m_hitcircleBase.center.x),  //center of ball + projected radius to contact point
+		(pball->y + ballvy*t - ballr*F.y - m_flipperanim.m_hitcircleBase.center.y)); // all at time t
 
 	const float distance = sqrtf(dist.x*dist.x + dist.y*dist.y);	// distance from base center to contact point
 
@@ -557,9 +552,9 @@ float HitFlipper::HitTestFlipperFace(Ball *pball, float dtime, Vertex3Ds *phitno
 	phitnormal[2].x = distance;				//moment arm diameter
 	phitnormal[2].y = anglespeed;			//radians/time at collison
 	
-	Vertex2D dv;	
-	dv.x = (ballvx - phitnormal[1].x *anglespeed*distance); 
-	dv.y = (ballvy - phitnormal[1].y *anglespeed*distance); //delta velocity ball to face
+	const Vertex2D dv(
+		(ballvx - phitnormal[1].x *anglespeed*distance), 
+		(ballvy - phitnormal[1].y *anglespeed*distance)); //delta velocity ball to face
 
 	const float bnv = dv.x*phitnormal->x + dv.y*phitnormal->y;  //dot Normal to delta v
 
@@ -583,9 +578,9 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	float tanspd = distance * angsp;					// distance * anglespeed
 	float flipperHit = 0;
 
-	Vertex2D dv;	
-	dv.x = vx - phitnormal[1].x*tanspd; 
-	dv.y = vy - phitnormal[1].y*tanspd;					 //delta velocity ball to face
+	Vertex2D dv(
+		vx - phitnormal[1].x*tanspd, 
+		vy - phitnormal[1].y*tanspd);					 //delta velocity ball to face
 
 	float dot = dv.x*phitnormal->x + dv.y*phitnormal->y; //dot Normal to delta v
 

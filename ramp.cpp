@@ -467,13 +467,10 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 		Vertex2D vnormal;
 		{
 		// Get normal at this point
-		Vertex2D v1normal, v2normal;
 		// Notice that these values equal the ones in the line
 		// equation and could probably be substituted by them.
-		v1normal.x = pv1->y - pvmiddle->y;
-		v1normal.y = pvmiddle->x - pv1->x;
-		v2normal.x = pvmiddle->y - pv2->y;
-		v2normal.y = pv2->x - pvmiddle->x;
+		Vertex2D v1normal(pv1->y - pvmiddle->y, pvmiddle->x - pv1->x);
+		Vertex2D v2normal(pvmiddle->y - pv2->y, pv2->x - pvmiddle->x);		
 
 		if (i == (cvertex-1))
 			{
@@ -946,10 +943,8 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 	plineseg->m_rcHitRect.zlow = height1;//m_d.m_heightbottom;
 	plineseg->m_rcHitRect.zhigh = height2;//m_d.m_heighttop;
 
-	plineseg->v1.x = pv1->x;
-	plineseg->v1.y = pv1->y;
-	plineseg->v2.x = pv2->x;
-	plineseg->v2.y = pv2->y;
+	plineseg->v1 = *pv1;
+	plineseg->v2 = *pv2;
 
 	pvho->AddElement(plineseg);
 
@@ -958,15 +953,11 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 
 	plineseg->CalcNormal();
 
-	Vertex2D vt1;
-	vt1.x = pv1->x - pv2->x;
-	vt1.y = pv1->y - pv2->y;
+	const Vertex2D vt1(pv1->x - pv2->x, pv1->y - pv2->y);
 
 	if (pv3)
 		{
-		Vertex2D vt2;
-		vt2.x = pv1->x - pv3->x;
-		vt2.y = pv1->y - pv3->y;
+		const Vertex2D vt2(pv1->x - pv3->x, pv1->y - pv3->y);
 
 		const float dot = vt1.x*vt2.y - vt1.y*vt2.x;
 
@@ -982,8 +973,7 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 			pjoint->m_rcHitRect.zlow = height1;//m_d.m_heightbottom;
 			pjoint->m_rcHitRect.zhigh = height2;//m_d.m_heighttop;
 
-			pjoint->center.x = pv1->x;
-			pjoint->center.y = pv1->y;
+			pjoint->center = *pv1;
 			pvho->AddElement(pjoint);
 
 			m_vhoCollidable.AddElement(pjoint);	//remember hit components of ramp
@@ -1181,9 +1171,7 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 		RotateAround(rotationaxis, rgv3D, 16, angle);
 		
 		// vnewup is the beginning up vector of the cross-section
-		Vertex2D vnewupdef;
-		vnewupdef.x = 0;
-		vnewupdef.y = 1.0f;
+		const Vertex2D vnewupdef(0.0f,1.0f);
 		const Vertex3Ds vnewup = RotateAround(rotationaxis, vnewupdef, angle);
 
 		// vacross is not out real up vector, but the up vector for the cross-section isn't real either
