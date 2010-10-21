@@ -383,7 +383,7 @@ void Light::GetHitShapesDebug(Vector<HitObject> *pvho)
 			GetRgVertex(&vvertex);
 
 			const int cvertex = vvertex.Size();
-			Vertex3D * const rgv3d = new Vertex3D[cvertex];
+			Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{

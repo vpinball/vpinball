@@ -121,7 +121,7 @@ public:
 	RECT m_rcviewport;
 
 	GPINFLOAT m_rznear, m_rzfar;
-	Vertex3D m_vertexcamera;
+	Vertex3Ds m_vertexcamera;
 	};
 
 class Pin3D
@@ -243,7 +243,7 @@ public:
 	float m_xlatex, m_xlatey;
 
 	GPINFLOAT m_rznear, m_rzfar;
-	Vertex3D m_vertexcamera;
+	Vertex3Ds m_vertexcamera;
 
 	LightProjected m_lightproject;
 

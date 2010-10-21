@@ -679,7 +679,7 @@ void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
 		GetRgVertex(&vvertex);
 
 		const int cvertex = vvertex.Size();
-		Vertex3D * const rgv3d = new Vertex3D[cvertex + 5];
+		Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex + 5];
 
 		for (int i=0;i<cvertex;i++)
 			{
@@ -722,7 +722,7 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 
 	const int count = vvertex.Size();
 	RenderVertex * const rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
-	Vertex3D * const rgv3D = new Vertex3D[count + 6];
+	Vertex3Ds * const rgv3D = new Vertex3Ds[count + 6];
 
 	if (m_d.m_fInner)
 		{
@@ -1296,7 +1296,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			rgv3D[3].Set(pv2->x,pv2->y,m_d.m_heightbottom);
 
 			const int a = (i == 0) ? (cvertex-1) : (i-1);
-			const int b = i;
 			const int c = (i < cvertex-1) ? (i+1) : 0;
 
 			if (pinSide)
@@ -1322,24 +1321,24 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			Vertex2D vnormal[2];
 			if (pv1->fSmooth)
 				{
-				vnormal[0].x = (rgnormal[a].x + rgnormal[b].x)*0.5f;
-				vnormal[0].y = (rgnormal[a].y + rgnormal[b].y)*0.5f;
+				vnormal[0].x = (rgnormal[a].x + rgnormal[i].x)*0.5f;
+				vnormal[0].y = (rgnormal[a].y + rgnormal[i].y)*0.5f;
 				}
 			else
 				{
-				vnormal[0].x = rgnormal[b].x;
-				vnormal[0].y = rgnormal[b].y;
+				vnormal[0].x = rgnormal[i].x;
+				vnormal[0].y = rgnormal[i].y;
 				}
 
 			if (pv2->fSmooth)
 				{
-				vnormal[1].x = (rgnormal[b].x + rgnormal[c].x)*0.5f;
-				vnormal[1].y = (rgnormal[b].y + rgnormal[c].y)*0.5f;
+				vnormal[1].x = (rgnormal[i].x + rgnormal[c].x)*0.5f;
+				vnormal[1].y = (rgnormal[i].y + rgnormal[c].y)*0.5f;
 				}
 			else
 				{
-				vnormal[1].x = rgnormal[b].x;
-				vnormal[1].y = rgnormal[b].y;
+				vnormal[1].x = rgnormal[i].x;
+				vnormal[1].y = rgnormal[i].y;
 				}
 
 			{

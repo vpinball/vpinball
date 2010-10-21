@@ -371,22 +371,11 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 	plineseg->CalcNormal();
 	pvho->AddElement(plineseg);
 
-	Vertex3D rgv3D[4];
-	rgv3D[0].x = m_ptable->m_left;
-	rgv3D[0].y = m_ptable->m_top;
-	rgv3D[0].z = m_ptable->m_glassheight;
-
-	rgv3D[1].x = m_ptable->m_right;
-	rgv3D[1].y = m_ptable->m_top;
-	rgv3D[1].z = m_ptable->m_glassheight;
-
-	rgv3D[2].x = m_ptable->m_right;
-	rgv3D[2].y = m_ptable->m_bottom;
-	rgv3D[2].z = m_ptable->m_glassheight;
-
-	rgv3D[3].x = m_ptable->m_left;
-	rgv3D[3].y = m_ptable->m_bottom;
-	rgv3D[3].z = m_ptable->m_glassheight;
+	Vertex3Ds rgv3D[4] = {
+		Vertex3Ds(m_ptable->m_left,m_ptable->m_top,m_ptable->m_glassheight),
+		Vertex3Ds(m_ptable->m_right,m_ptable->m_top,m_ptable->m_glassheight),
+		Vertex3Ds(m_ptable->m_right,m_ptable->m_bottom,m_ptable->m_glassheight),
+		Vertex3Ds(m_ptable->m_left,m_ptable->m_bottom,m_ptable->m_glassheight)};
 
 	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4,false);
 

@@ -573,13 +573,13 @@ void HitSpinner::CalcHitRect()
 	m_rcHitRect = m_lineseg[0].m_rcHitRect;
 	}
 
-Hit3DPoly::Hit3DPoly(Vertex3D * const rgv, const int count, const bool keepptr) : m_cvertex(count)
+Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count, const bool keepptr) : m_cvertex(count)
 	{
 	if(keepptr)
 		m_rgv = rgv;
 	else {
-		m_rgv = new Vertex3D[count];
-		memcpy(m_rgv, rgv, count * sizeof(Vertex3D));
+		m_rgv = new Vertex3Ds[count];
+		memcpy(m_rgv, rgv, count * sizeof(Vertex3Ds));
 	}
 
 	CalcNormal();
@@ -779,13 +779,6 @@ void Hit3DPoly::CalcNormal()
 	normal.y *= inv_len;
 	normal.z *= inv_len;
 
-	for (int i=0; i<m_cvertex; ++i)
-		{
-		m_rgv[i].nx = normal.x;
-		m_rgv[i].ny = normal.y;
-		m_rgv[i].nz = normal.z;
-		}
-
 	D = -(normal.x * m_rgv[0].x + normal.y * m_rgv[0].y + normal.z * m_rgv[0].z);
 	}
 
@@ -809,7 +802,7 @@ void Hit3DPoly::CalcHitRect()
 		}
 	}
 
-Hit3DCylinder::Hit3DCylinder(const Vertex3D * const pv1, const Vertex3D * const pv2, const Vertex3Ds * const pvnormal)
+Hit3DCylinder::Hit3DCylinder(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, const Vertex3Ds * const pvnormal)
 	{
 	v1.x = pv1->x;
 	v1.y = pv1->y;
@@ -894,7 +887,7 @@ void Hit3DCylinder::CalcHitRect()
 	m_rcHitRect.zhigh = max(v1.z, v2.z);
 	}
 
-Hit3DPolyDrop::Hit3DPolyDrop(Vertex3D * const rgv, const int count, const bool keepptr) : Hit3DPoly(rgv, count, keepptr)
+Hit3DPolyDrop::Hit3DPolyDrop(Vertex3Ds * const rgv, const int count, const bool keepptr) : Hit3DPoly(rgv, count, keepptr)
 	{
 	m_polydropanim.m_iframe = -1;
 	m_fVisible = fFalse;

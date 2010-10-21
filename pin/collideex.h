@@ -84,7 +84,7 @@ public:
 class Hit3DPoly : public HitObject
 	{
 public:
-	Hit3DPoly(Vertex3D * const rgv, const int count, const bool keepptr);
+	Hit3DPoly(Vertex3Ds * const rgv, const int count, const bool keepptr);
 	virtual ~Hit3DPoly();
 	virtual float HitTestBasicPolygon(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool rigid);
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
@@ -94,7 +94,7 @@ public:
 	void CalcNormal();
 	virtual void CalcHitRect();
 
-	Vertex3D *m_rgv;
+	Vertex3Ds *m_rgv;
 	Vertex3Ds normal;
 	float D; // D for the plane equation.  A,B, and C are the plane normal (A x' + B y' +C z' = D, normal= x',y'+z'
 	int m_cvertex;
@@ -236,7 +236,7 @@ class Hit3DCylinder : public HitCircle
 	{
 public:
 
-	Hit3DCylinder(const Vertex3D * const pv1, const Vertex3D * const pv2, const Vertex3Ds * const pvnormal);
+	Hit3DCylinder(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, const Vertex3Ds * const pvnormal);
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
@@ -275,7 +275,7 @@ public:
 class Hit3DPolyDrop : public Hit3DPoly
 	{
 public:
-	Hit3DPolyDrop(Vertex3D * const rgv, const int count, const bool keepptr);
+	Hit3DPolyDrop(Vertex3Ds * const rgv, const int count, const bool keepptr);
 
 	virtual AnimObject *GetAnimObject() {return &m_polydropanim;}
 
