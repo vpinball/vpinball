@@ -1249,6 +1249,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	pd3dDevice->SetMaterial(&mtrl);
 
 	WORD rgi[4] = {0,1,2,3};
+	WORD rgi2[4] = {0,3,2,1};
 
 	for (int i=0;i<cvertex;i++)
 		{
@@ -1339,9 +1340,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 			if (m_d.m_fInner)
 				{
-				rgi[1] = 1;
-				rgi[3] = 3;
-
 				for (int l=0;l<2;l++)
 					{
 					rgv3D[l].nx = -vnormal[0].x;
@@ -1355,9 +1353,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				}
 			else
 				{
-				rgi[1] = 3;
-				rgi[3] = 1;
-
 				for (int l=0;l<2;l++)
 					{
 					rgv3D[l].nx = vnormal[0].x;
@@ -1373,7 +1368,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped, but we do need to extend the extrema
 				{
 				// Draw side.
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi,4,0);
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, m_d.m_fInner ? rgi : rgi2, 4,0);
 				}
 
 			if (fMover)
@@ -1578,9 +1573,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1],inv_width,inv_height);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2],inv_width,inv_height);
 
-			rgi[0] = 0;
-			rgi[1] = 1;
-			rgi[2] = 2;
 			for (int l=0;l<3;l++)
 				{
 				rgv3D[l].nx = 0;

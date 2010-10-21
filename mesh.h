@@ -45,7 +45,7 @@ public:
 	x1=pv0->x;
 	x2=pv1->x;
 	x3=pv2->x;
-	x4=pv3->x; 
+	x4=pv3->x;
 	y1=pv0->y;
 	y2=pv1->y;
 	y3=pv2->y;
@@ -56,12 +56,12 @@ public:
 	{
 	const float t2 = t*t;
 	const float t3 = t2*t;
-	pv->x = 0.5f * ((3.0f*x2 -x1 -3.0f*x3 + x4)*t3
+	pv->x = 0.5f * ((3.0f*(x2-x3) -x1 + x4)*t3
 		+ (x1+x1 -5.0f*x2 + 4.0f*x3 - x4)*t2
 		+ (x3 - x1)*t
 		+ x2+x2);
 
-	pv->y = 0.5f * ((3.0f*y2 -y1 -3.0f*y3 + y4)*t3
+	pv->y = 0.5f * ((3.0f*(y2-y3) -y1 + y4)*t3
 		+ (y1+y1 -5.0f*y2 + 4.0f*y3 - y4)*t2
 		+ (y3-y1)*t
 		+ y2+y2);
@@ -241,7 +241,7 @@ inline void SetNormal(Vertex3D * const rgv, const WORD * const rgi, const int co
 		vnormal.z += (rgv[l].x - rgv[m].x) * (rgv[l].y + rgv[m].y);		
 		}
 
-	const float inv_len = -1.0f/sqrtf((vnormal.x * vnormal.x) + (vnormal.y * vnormal.y) + (vnormal.z * vnormal.z));
+	const float inv_len = -1.0f/sqrtf(vnormal.x * vnormal.x + vnormal.y * vnormal.y + vnormal.z * vnormal.z);
 	vnormal.x *= inv_len;
 	vnormal.y *= inv_len;
 	vnormal.z *= inv_len;
