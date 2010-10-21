@@ -576,7 +576,7 @@ collisions
 
 */
 
-void HitOctree::HitTestBall(Ball * const pball)
+void HitOctree::HitTestBall(Ball * const pball) const
 	{
 	for (int i=0; i<m_vho.Size(); i++)
 		{		
@@ -627,7 +627,7 @@ void HitOctree::HitTestBall(Ball * const pball)
 		}
 	}
 
-void HitOctree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit)
+void HitOctree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const
 	{
 	for (int i=0; i<m_vho.Size(); i++)
 		{

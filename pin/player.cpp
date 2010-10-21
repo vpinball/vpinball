@@ -2743,18 +2743,17 @@ void Player::DrawBallShadows()
 			float offsety;
 			float shadowz;
 
-			if (ballT.m_hittime < 1) // shadow falls on an object
+			if (ballT.m_hittime < 1.0f) // shadow falls on an object
 				{
-				shadowz = pball->z + 0.1f - ballT.m_hittime * 200.0f;
-
 				offsetx = ballT.m_hittime * 200.0f - 12.5f;
 				offsety = ballT.m_hittime * -200.0f + 12.5f;
+				shadowz = pball->z + 0.1f - ballT.m_hittime * 200.0f;				
 				}
 			else // shadow is on the floor
 				{
 				offsetx = pball->z*0.5f;
 				offsety = pball->z*-0.5f;
-				shadowz = 0.1f;//(float)(pball->z - pball->radius + 0.1f);
+				shadowz = 0.1f; //pball->z - pball->radius + 0.1f;
 				}
 
 			const float shadowradius = pball->radius*1.2f;
@@ -3088,7 +3087,7 @@ void Player::DrawBalls()
 	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
 }
 
-void Player::InvalidateRect(RECT *prc)
+void Player::InvalidateRect(RECT * const prc)
 	{
 	// This assumes the caller does not need *prc any more!!!
 	// Either that, or we assume it can be permantnently changed,
@@ -3103,13 +3102,13 @@ void Player::InvalidateRect(RECT *prc)
 	pur->m_fSeeThrough = fTrue;
 
 	// Check all animated objects.
-	for (int i=0;i<m_vscreenupdate.Size();i++)
+	for (int i=0;i<m_vscreenupdate.Size();++i)
 		{
 		// Get the bounds of this animated object.
 		const RECT * const prc2 = &m_vscreenupdate.ElementAt(i)->m_rcBounds;
 
 		// Check if the bounds of the animated object are within the bounds of our invalid rectangle.
-		if (!((prc->right < prc2->left) || (prc->left > prc2->right) || (prc->bottom < prc2->top) || (prc->top > prc2->bottom)))
+		if ((prc->right >= prc2->left) && (prc->left <= prc2->right) && (prc->bottom >= prc2->top) && (prc->top <= prc2->bottom))
 			{
 			// Add to this rect's list of objects that need to be redrawn.
 			pur->m_vobject.AddElement(m_vscreenupdate.ElementAt(i));

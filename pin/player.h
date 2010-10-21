@@ -91,7 +91,7 @@ public:
 
 	void PhysicsSimulateCycle(float dtime, const U64 startTime);
 
-	void InvalidateRect(RECT *prc);
+	void InvalidateRect(RECT * const prc);
 	void DrawLightHack ();
 
 	void EraseBall(Ball *pball);
