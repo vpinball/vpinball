@@ -1058,57 +1058,42 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
+		{
 		WORD rgi[4] = {0,1,4,3};
-
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-
-		rgi[0] = 1;
-		rgi[1] = 2;
-		rgi[2] = 5;
-		rgi[3] = 4;
-
+		}
+		{
+		WORD rgi[4] = {1,2,5,4};
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-
-		rgi[0] = 0;
-		rgi[3] = 1;
-		rgi[2] = 4;
-		rgi[1] = 3;
-
+		}
+		{
+		WORD rgi[4] = {0,3,4,1};
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-
-		rgi[0] = 1;
-		rgi[3] = 2;
-		rgi[2] = 5;
-		rgi[1] = 4;
-
+		}
+		{
+		WORD rgi[4] = {1,4,5,2};
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-
-		rgi[0] = 3;
-		rgi[1] = 9;
-		rgi[2] = 10;
-		rgi[3] = 4;
-
+		}
+		{
+		WORD rgi[4] = {3,9,10,4};
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-
-		rgi[0] = 4;
-		rgi[1] = 10;
-		rgi[2] = 11;
-		rgi[3] = 5;
-
+		}
+		{
+		WORD rgi[4] = {4,10,11,5};
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
 
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-
+		}
 		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
 		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		

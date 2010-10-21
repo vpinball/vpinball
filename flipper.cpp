@@ -35,69 +35,39 @@ void Flipper::SetDefaults()
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","StartAngle", &fTmp);
-	if (hr == S_OK)
-		m_d.m_StartAngle = fTmp;
-	else
-		m_d.m_StartAngle = 120;
+	m_d.m_StartAngle = (hr == S_OK) ? fTmp : 120;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","EndAngle", &fTmp);
-	if (hr == S_OK)
-		m_d.m_EndAngle = fTmp;
-	else
-		m_d.m_EndAngle = 60;
+	m_d.m_EndAngle = (hr == S_OK) ? fTmp : 60;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","BaseRadius", &fTmp);
-	if (hr == S_OK)
-		m_d.m_BaseRadius = fTmp;
-	else
-		m_d.m_BaseRadius = 26.73f;		// 15
+	m_d.m_BaseRadius = (hr == S_OK) ? fTmp : 26.73f;		// 15
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","EndRadius", &fTmp);
-	if (hr == S_OK)
-		m_d.m_EndRadius = fTmp;
-	else
-		m_d.m_EndRadius = 10.69f;		// 6
+	m_d.m_EndRadius = (hr == S_OK) ? fTmp : 10.69f;		// 6
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Length", &fTmp);
-	if (hr == S_OK)
-		m_d.m_FlipperRadiusMax = fTmp;
-	else
-		m_d.m_FlipperRadiusMax = 142.57f;	// 80
+	m_d.m_FlipperRadiusMax = (hr == S_OK) ? fTmp : 142.57f;	// 80
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","MaxDifLength", &fTmp);
-	if (hr == S_OK)
-		m_d.m_FlipperRadiusMin = fTmp;
-	else
-		m_d.m_FlipperRadiusMin = 0;
+	m_d.m_FlipperRadiusMin = (hr == S_OK) ? fTmp : 0;
 	
 	m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","RecoilVelocity", &fTmp);
-	if (hr == S_OK)
-		m_d.m_recoil = fTmp;
-	else
-		m_d.m_recoil = 0;		// disabled
+	m_d.m_recoil = (hr == S_OK) ? fTmp : 0;		// disabled
 
 	m_d.m_angleEOS = 0;		//disabled
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","ReturnStrength", &fTmp);
-	if (hr == S_OK)
-		m_d.m_return = fTmp;
-	else
-		m_d.m_return = 1;		// match existing physics, return equals stroke 
+	m_d.m_return = (hr == S_OK) ? fTmp : 1;		// match existing physics, return equals stroke 
 
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Speed", &fTmp);
-	if (hr == S_OK)
-		m_d.m_force = fTmp;
-	else
-		m_d.m_force = 0.05f;
+	m_d.m_force = (hr == S_OK) ? fTmp : 0.05f;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Elasticity", &fTmp);
-	if (hr == S_OK)
-		m_d.m_elasticity = fTmp;
-	else
-		m_d.m_elasticity = 0.3f;
+	m_d.m_elasticity = (hr == S_OK) ? fTmp : 0.3f;
 	
 	//hr = GetRegStringAsFloat("DefaultProps\\Flipper","Friction", &fTmp);
 	//if (hr == S_OK)
@@ -109,83 +79,50 @@ void Flipper::SetDefaults()
 
 	hr = GetRegInt("DefaultProps\\Flipper","TimerEnabled", &iTmp);
 	if (hr == S_OK)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\Flipper","TimerInterval", &iTmp);
-	if (hr == S_OK)
-		m_d.m_tdr.m_TimerInterval = iTmp;
-	else
-		m_d.m_tdr.m_TimerInterval = 100;
+	m_d.m_tdr.m_TimerInterval = (hr == S_OK) ? iTmp : 100;
 
 	hr = GetRegInt("DefaultProps\\Flipper","Color", &iTmp);
-	if (hr == S_OK)
-		m_d.m_color = iTmp;
-	else
-		m_d.m_color = RGB(255,255,255);
+	m_d.m_color = (hr == S_OK) ? iTmp : RGB(255,255,255);
 	
 	hr = GetRegInt("DefaultProps\\Flipper","RubberColor", &iTmp);
-	if (hr == S_OK)
-		m_d.m_rubbercolor = iTmp;
-	else
-		m_d.m_rubbercolor = RGB(128,128,128);
+	m_d.m_rubbercolor = (hr == S_OK) ? iTmp : RGB(128,128,128);
 
 	m_d.m_szSurface[0] = 0;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Strength", &fTmp);
-	if (hr == S_OK)
-		m_d.m_strength = fTmp;
-	else
-		m_d.m_strength = 6.0f;
+	m_d.m_strength = (hr == S_OK) ? fTmp : 6.0f;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","PowerLaw", &fTmp);
-	if (hr == S_OK)
-		m_d.m_powerlaw = fTmp;
-	else
-		m_d.m_powerlaw = 2.0f;
+	m_d.m_powerlaw = (hr == S_OK) ? fTmp : 2.0f;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","ObliqueCorrection", &fTmp);
-	if (hr == S_OK)
-		m_d.m_obliquecorrection = fTmp;
-	else
-		m_d.m_obliquecorrection = 0.0f; //flipper face correction 
+	m_d.m_obliquecorrection = (hr == S_OK) ? fTmp : 0.0f; //flipper face correction 
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","ScatterAngle", &fTmp);
-	if (hr == S_OK)
-		m_d.m_scatterangle = ANGTORAD(fTmp);
-	else
-		m_d.m_scatterangle = ANGTORAD(0.1f); //flipper scatter angle
+	m_d.m_scatterangle = ANGTORAD((hr == S_OK) ? fTmp : 0.1f); //flipper scatter angle
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Height", &fTmp);
-	if (hr == S_OK)
-		m_d.m_height = fTmp;
-	else
-		m_d.m_height = 50;
+	m_d.m_height = (hr == S_OK) ? fTmp : 50;
 
 	hr = GetRegInt("DefaultProps\\Flipper","RubberThickness", &iTmp);
-	if (hr == S_OK)
-		m_d.m_rubberthickness = iTmp;
-	else
-		m_d.m_rubberthickness = 0;
+	m_d.m_rubberthickness = (hr == S_OK) ? iTmp : 0;
 
 	hr = GetRegInt("DefaultProps\\Flipper","RubberHeight", &iTmp);
-	if (hr == S_OK)
-		m_d.m_rubberheight = iTmp;
-	else
-		m_d.m_rubberheight = 8;
+	m_d.m_rubberheight = (hr == S_OK) ? iTmp : 8;
 
 	hr = GetRegInt("DefaultProps\\Flipper","RubberWidth", &iTmp);
-	if (hr == S_OK)
-		m_d.m_rubberwidth = iTmp;
-	else
-		m_d.m_rubberwidth = (int) (m_d.m_height - 16.0f);
+	m_d.m_rubberwidth = (hr == S_OK) ? iTmp : (int)(m_d.m_height - 16.0f);
 
 	m_d.m_mass = 1;
 
 	hr = GetRegInt("DefaultProps\\Flipper","Visible", &iTmp);
 	if (hr == S_OK)
-		m_d.m_fVisible = iTmp == 0? false : true;
+		m_d.m_fVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 	}
@@ -286,10 +223,10 @@ void Flipper::SetVertices(const float angle, Vertex2D * const pvEndCenter, Verte
 	const float endy = m_d.m_Center.y - fradius*cosf(angle);	
 	pvEndCenter->y = endy;
 
-	const float faceNormx1 =   sinf(angle - faceNormOffset); // normals to new face positions
-	const float faceNormy1 =  -cosf(angle - faceNormOffset);
-	const float faceNormx2 =   sinf(angle + faceNormOffset); // both faces
-	const float faceNormy2 =  -cosf(angle + faceNormOffset);
+	const float faceNormx1 =  sinf(angle - faceNormOffset); // normals to new face positions
+	const float faceNormy1 = -cosf(angle - faceNormOffset);
+	const float faceNormx2 =  sinf(angle + faceNormOffset); // both faces
+	const float faceNormy2 = -cosf(angle + faceNormOffset);
 
 	rgvTangents[0].x = basex + baseradius*faceNormx1;	// endpoints of faces
 	rgvTangents[0].y = basey + baseradius*faceNormy1;
@@ -591,31 +528,27 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear
 										 , &m_phitflipper->m_flipperanim.m_zfar, 8, fFalse);
 
+	{
 	WORD rgi[4] = {0,1,2,3};
 	SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-	
+
 	// Draw top.
 	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-
-	rgi[0] = 0;
-	rgi[1] = 4;
-	rgi[2] = 5;
-	rgi[3] = 1;
-
+	}
+	{
+	WORD rgi[4] = {0,4,5,1};
 	SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
 	// Draw front side wall of flipper (flipper and rubber).   
 	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-
-	rgi[0] = 2;
-	rgi[1] = 6;
-	rgi[2] = 7;
-	rgi[3] = 3;
-
+	}
+	{
+	WORD rgi[4] = {2,6,7,3};
 	SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
 	// Draw back side wall.
 	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
+	}
 
 	// Base circle
 	for (int l=0;l<16;l++)
@@ -637,25 +570,20 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 
 	for (int l=1;l<15;l++)
 		{
-		rgi[0] = 0;
-		rgi[1] = l;
-		rgi[2] = l+1;
-
+			{
+		WORD rgi[3] = {0,l,l+1};
 		SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
 
 		// Draw end caps of cylinders of large ends.
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 3, 0);
+			}
 
 		WORD rgiNormal[3];
 		rgiNormal[0] = (l+14) % 16;
 		rgiNormal[1] = rgiNormal[0] + 16;
 		rgiNormal[2] = l;
 
-		rgi[0] = l-1;
-		rgi[1] = l-1+16;
-		rgi[3] = l;
-		rgi[2] = l+16;
-
+		WORD rgi[4] = {l-1,l-1+16,l+16,l};
 		SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
 		rgiNormal[0] = l-1;
@@ -687,25 +615,19 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 
 	for (int l=1;l<15;l++)
 		{
-		rgi[0] = 0;
-		rgi[1] = l;
-		rgi[2] = l+1;
-
+			{
+		WORD rgi[3] = {0,l,l+1};
 		SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
 
 		// Draw end caps to vertical cylinder at small end.
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 3, 0);
-
+			}
 		WORD rgiNormal[3];
 		rgiNormal[0] = (l+14) % 16;
 		rgiNormal[1] = rgiNormal[0] + 16;
 		rgiNormal[2] = l;
 
-		rgi[0] = l-1;
-		rgi[1] = l-1+16;		
-		rgi[2] = l+16;
-		rgi[3] = l;
-
+		WORD rgi[4] = {l-1,l-1+16,l+16,l};
 		SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
 		rgiNormal[0] = l-1;

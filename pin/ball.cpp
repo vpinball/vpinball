@@ -258,7 +258,7 @@ float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phi
 	float b = dvx*dx + dvy*dy + dvz*dz;		// inner product
 	const float bnv = b/bcdd;				// normal speed of balls toward each other
 
-	if ( bnv >  C_LOWNORMVEL) return -1.0f;	// dot of delta velocity and delta displacement, postive if receding no collison
+	if ( bnv > C_LOWNORMVEL) return -1.0f;	// dot of delta velocity and delta displacement, postive if receding no collison
 
 	const float totalradius = pball->radius + radius;
 	const float bnd = bcdd - totalradius;
@@ -290,9 +290,9 @@ float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phi
 
 		result = sqrtf(result);
 
-		const float inv_a = 0.5f/a;
-		float time1 = (-b + result)*inv_a;
-		float time2 = (-b - result)*inv_a;
+		const float inv_a = (-0.5f)/a;
+		float time1 = (b - result)*inv_a;
+		float time2 = (b + result)*inv_a;
 
 		if (time1 < 0) time1 = time2;				// if time1 negative, assume time2 postive
 
@@ -450,8 +450,7 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 
 	if (FrictionForce.LengthSquared() > (float)(ANGULARFORCE*ANGULARFORCE))
 		{
-		FrictionForce.Normalize();
-		FrictionForce.MultiplyScalar(ANGULARFORCE);
+		FrictionForce.Normalize(ANGULARFORCE);
 		}
 
 	if (vx*vx + vy*vy + vz*vz > (float)(0.7*0.7))
@@ -612,9 +611,9 @@ void Ball::UpdateVelocities(float dtime)
 		vx += g_pplayer->m_mainlevel.m_gravity.x;// *dtime;	
 		vy += g_pplayer->m_mainlevel.m_gravity.y;// *dtime;	
 
-		if (z > z_min + 0.05f || g > 0)// off the deck??? or gravity postive Z direction	
+		if (z > z_min + 0.05f || g > 0) // off the deck??? or gravity postive Z direction	
 			vz += g;
-		else vz += g *0.001f;			// don't add so much energy if already on the world floor
+		else vz += g * 0.001f;			// don't add so much energy if already on the world floor
 
 		vx += nx;// *dtime;
 		vy += ny;// *dtime;

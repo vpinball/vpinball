@@ -160,6 +160,13 @@ public:
 		y *= oneoverlength;
 		z *= oneoverlength;
 		}
+	inline void Normalize(const float scalar)
+		{
+		const float oneoverlength = scalar/sqrtf(x*x + y*y + z*z);
+		x *= oneoverlength;
+		y *= oneoverlength;
+		z *= oneoverlength;
+		}
 	inline float Dot(const Vertex3Ds &pv) const
 		{
 		return x*pv.x + y*pv.y + z*pv.z;

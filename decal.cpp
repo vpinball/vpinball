@@ -44,22 +44,13 @@ void Decal::SetDefaults()
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Decal","Width", &fTmp);
-	if (hr == S_OK)
-		m_d.m_width = fTmp;
-	else
-		m_d.m_width = 100.0f;
+	m_d.m_width = (hr == S_OK) ? fTmp : 100.0f;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Decal","Height", &fTmp);
-	if (hr == S_OK)
-		m_d.m_height = fTmp;
-	else
-		m_d.m_height = 100.0f;
+	m_d.m_height = (hr == S_OK) ? fTmp : 100.0f;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Decal","Rotation", &fTmp);
-	if (hr == S_OK)
-		m_d.m_rotation = fTmp;
-	else
-		m_d.m_rotation = 0;
+	m_d.m_rotation = (hr == S_OK) ? fTmp : 0;
 
 	hr = GetRegString("DefaultProps\\Decal","Image", m_d.m_szImage, MAXTOKEN);
 	if (hr != S_OK)
@@ -68,30 +59,21 @@ void Decal::SetDefaults()
 	m_d.m_szSurface[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\Decal", "DecalType", &iTmp);
-	if (hr == S_OK)
-		m_d.m_decaltype = (enum DecalType)iTmp;
-	else
-		m_d.m_decaltype = DecalImage;
+	m_d.m_decaltype = (hr == S_OK) ? (enum DecalType)iTmp : DecalImage;
 	
 	hr = GetRegString("DefaultProps\\Decal","Text", m_d.m_sztext, MAXSTRING);
 	if (hr != S_OK)
 		m_d.m_sztext[0] = '\0';
 
 	hr = GetRegInt("DefaultProps\\Decal", "Sizing", &iTmp);
-	if (hr == S_OK)
-		m_d.m_sizingtype = (enum SizingType)iTmp;
-	else
-		m_d.m_sizingtype = ManualSize;
+	m_d.m_sizingtype = (hr == S_OK) ? (enum SizingType)iTmp : ManualSize;
 	
 	hr = GetRegInt("DefaultProps\\Decal", "Color", &iTmp);
-	if (hr == S_OK)
-		m_d.m_color = iTmp;
-	else
-		m_d.m_color = RGB(0,0,0);
+	m_d.m_color = (hr == S_OK) ? iTmp : RGB(0,0,0);
 
 	hr = GetRegInt("DefaultProps\\Decal", "VerticalText", &iTmp);
 	if (hr == S_OK)
-		m_d.m_fVerticalText = iTmp == 0? false : true;
+		m_d.m_fVerticalText = iTmp == 0 ? false : true;
 	else
 		m_d.m_fVerticalText = fFalse;
 
@@ -101,10 +83,7 @@ void Decal::SetDefaults()
 		fd.cbSizeofstruct = sizeof(FONTDESC);
 		
 		hr = GetRegStringAsFloat("DefaultProps\\Decal","FontSize", &fTmp);
-		if (hr == S_OK)
-			fd.cySize.int64 = (LONGLONG)(fTmp * 10000.0);
-		else	
-			fd.cySize.int64 = 142500;
+		fd.cySize.int64 = (hr == S_OK) ? (LONGLONG)(fTmp * 10000.0) : 142500;
 
 		char tmp[256];
 		hr = GetRegString("DefaultProps\\Decal","FontName", tmp, 256);
@@ -119,32 +98,26 @@ void Decal::SetDefaults()
 		}
 
 		hr = GetRegInt("DefaultProps\\Decal", "FontWeight", &iTmp);
-		if (hr == S_OK)
-			fd.sWeight = iTmp;
-		else
-			fd.sWeight = FW_NORMAL;
+		fd.sWeight = (hr == S_OK) ? iTmp : FW_NORMAL;
 	
 		hr = GetRegInt("DefaultProps\\Decal", "FontCharSet", &iTmp);
-		if (hr == S_OK)
-			fd.sCharset = iTmp;
-		else
-			fd.sCharset = 0;
+		fd.sCharset = (hr == S_OK) ? iTmp : 0;
 		
 		hr = GetRegInt("DefaultProps\\Decal", "FontItalic", &iTmp);
 		if (hr == S_OK)
-			fd.fItalic = iTmp == 0? false : true;
+			fd.fItalic = iTmp == 0 ? false : true;
 		else
 			fd.fItalic = 0;
 
 		hr = GetRegInt("DefaultProps\\Decal", "FontUnderline", &iTmp);
 		if (hr == S_OK)
-			fd.fUnderline = iTmp == 0? false : true;
+			fd.fUnderline = iTmp == 0 ? false : true;
 		else
 			fd.fUnderline = 0;
 		
 		hr = GetRegInt("DefaultProps\\Decal", "FontStrikeThrough", &iTmp);
 		if (hr == S_OK)
-			fd.fStrikethrough = iTmp == 0? false : true;
+			fd.fStrikethrough = iTmp == 0 ? false : true;
 		else
 			fd.fStrikethrough = 0;
 		

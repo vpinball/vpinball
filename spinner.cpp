@@ -355,6 +355,7 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	WORD rgiNormal[3] = {0,1,3};
+	{
 	WORD rgi[8] = {0,1,2,3,6,7,4,5};
 
 	SetNormal(rgv3D, rgiNormal, 3, rgv3D, rgi, 8);
@@ -375,15 +376,9 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
 													  rgv3D, 8,
 													  rgi, 8, 0);
-	rgi[0] = 4;
-	rgi[1] = 5;
-	rgi[2] = 6;
-	rgi[3] = 7;
-	rgi[4] = 2;
-	rgi[5] = 3;
-	rgi[6] = 0;
-	rgi[7] = 1;
-
+	}
+	
+	WORD rgi[8] = {4,5,6,7,2,3,0,1};
 	SetNormal(rgv3D, rgiNormal, 3, rgv3D, rgi, 8);
 
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
@@ -599,11 +594,12 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetMaterial(&mtrl);
 
+		{
 		WORD rgi[4] = {0,1,5,4};
-
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
 		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi,4,0);
+		}
 
 		// Draw Frontside
 
@@ -660,14 +656,12 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetMaterial(&mtrl);
 
-		rgi[0] = 2;
-		rgi[1] = 6;
-		rgi[2] = 7;
-		rgi[3] = 3;
-
+		{
+		WORD rgi[4] = {2,6,7,3};
 		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
 		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
+		}
 
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
@@ -678,41 +672,26 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
 			{
 			// Top & Bottom
-
-			rgi[0] = 0;
-			rgi[1] = 2;
-			rgi[2] = 3;
-			rgi[3] = 1;
-
+				{
+			WORD rgi[4] = {0,2,3,1};
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
 			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-
-			rgi[0] = 4;
-			rgi[1] = 5;
-			rgi[2] = 7;
-			rgi[3] = 6;
-
+				}
+				{
+			WORD rgi[4] = {4,5,7,6};
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
 			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-
+				}
 			// Sides
-
-			rgi[0] = 0;
-			rgi[1] = 4;
-			rgi[2] = 6;
-			rgi[3] = 2;
-
+				{
+			WORD rgi[4] = {0,4,6,2};
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
 			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-
-			rgi[0] = 1;
-			rgi[1] = 3;
-			rgi[2] = 7;
-			rgi[3] = 5;
-
+				}
+			WORD rgi[4] = {1,3,7,5};
 			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
 
 			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
