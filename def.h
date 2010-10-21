@@ -66,15 +66,9 @@ class Vertex3D
 	{
 public:
 	// Position
-	union
-		{
-			struct {
-			D3DVALUE x; 
-			D3DVALUE y; 
-			D3DVALUE z;
-			};
-			D3DVALUE m_d[3];
-		};
+	D3DVALUE x; 
+	D3DVALUE y; 
+	D3DVALUE z;
 
 	// Normals
 	union
@@ -285,9 +279,9 @@ inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3D * const pvPoint, cons
 		pvPoint[i].z = result[2];
 
 		const float resultn[3] = {
-				matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz,
-				matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz,
-				matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz};
+			matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz,
+			matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz,
+			matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz};
 
 		pvPoint[i].nx = resultn[0];
 		pvPoint[i].ny = resultn[1];
