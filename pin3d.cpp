@@ -1191,11 +1191,13 @@ void Pin3D::InitBackGraphics()
 
 	m_pd3dDevice->SetMaterial(&mtrl);
 
+	{
 	WORD rgi[4] = {0,1,2,3};
 
 	/*const HRESULT hr =*/ m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv, 4,
 												  rgi, 4, 0);
+	}
 
 	EnableLightMap(fFalse, -1);
 
@@ -1207,11 +1209,7 @@ void Pin3D::InitBackGraphics()
 	//m_pd3dDevice->SetTexture(1, NULL);
 	SetTexture(NULL);
 
-	rgi[0] = 2;
-	rgi[1] = 3;
-	rgi[2] = 5;
-	rgi[3] = 6;
-
+	WORD rgi[4] = {2,3,5,6};
 	SetNormal(rgv, rgi, 4, NULL, NULL, 0);
 
 	m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,

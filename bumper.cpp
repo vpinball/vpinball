@@ -36,40 +36,22 @@ void Bumper::SetDefaults()
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Radius", &fTmp);
-	if (hr == S_OK)
-		m_d.m_radius = fTmp;
-	else
-		m_d.m_radius = 45;
+	m_d.m_radius = (hr == S_OK) ? fTmp : 45;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Force", &fTmp);
-	if (hr == S_OK)
-		m_d.m_force = fTmp;
-	else
-		m_d.m_force = 15;
+	m_d.m_force = (hr == S_OK) ? fTmp : 15;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Threshold", &fTmp);
-	if (hr == S_OK)
-		m_d.m_threshold = fTmp;
-	else
-		m_d.m_threshold = 1;
+	m_d.m_threshold = (hr == S_OK) ? fTmp : 1;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Overhang", &fTmp);
-	if (hr == S_OK)
-		m_d.m_overhang =  fTmp;
-	else
-		m_d.m_overhang = 25;
+	m_d.m_overhang = (hr == S_OK) ? fTmp : 25;
 
 	hr = GetRegInt("DefaultProps\\Bumper","Color", &iTmp);
-	if (hr == S_OK)
-		m_d.m_color = iTmp;
-	else
-		m_d.m_color = RGB(255,0,0);
+	m_d.m_color = (hr == S_OK) ? iTmp : RGB(255,0,0);
 
 	hr = GetRegInt("DefaultProps\\Bumper","SideColor", &iTmp);
-	if (hr == S_OK)
-		m_d.m_sidecolor = iTmp;
-	else
-		m_d.m_sidecolor = RGB(255,255,255);
+	m_d.m_sidecolor = (hr == S_OK) ? iTmp : RGB(255,255,255);
 
 	hr = GetRegString("DefaultProps\\Bumper","Image", m_d.m_szImage, MAXTOKEN);
 	if (hr != S_OK)
@@ -79,53 +61,44 @@ void Bumper::SetDefaults()
 
 	hr = GetRegInt("DefaultProps\\Bumper","TimerEnabled", &iTmp);
 	if (hr == S_OK)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\Bumper","TimerInterval", &iTmp);
-	if (hr == S_OK)
-		m_d.m_tdr.m_TimerInterval = iTmp;
-	else
-		m_d.m_tdr.m_TimerInterval = 100;
+	m_d.m_tdr.m_TimerInterval = (hr == S_OK) ? iTmp : 100;
 
 	hr = GetRegInt("DefaultProps\\Bumper","LightState", &iTmp);
-	if (hr == S_OK)
-		m_d.m_state = (enum LightState)iTmp;
-	else
-		m_d.m_state = LightStateOff;
+	m_d.m_state = (hr == S_OK) ? (enum LightState)iTmp : LightStateOff;
 	
 	hr = GetRegString("DefaultProps\\Bumper","BlinkPattern", m_rgblinkpattern, MAXTOKEN);
 	if (hr != S_OK)
 		strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
 	
 	hr = GetRegInt("DefaultProps\\Bumper","BlinkInterval", &iTmp);
-	if (hr == S_OK)
-		m_blinkinterval = iTmp;
-	else
-		m_blinkinterval = 125;
+	m_blinkinterval = (hr == S_OK) ? iTmp : 125;
 
 	hr = GetRegInt("DefaultProps\\Bumper","FlashWhenHit", &iTmp);
 	if (hr == S_OK)
-		m_d.m_fFlashWhenHit = iTmp == 0? false : true;
+		m_d.m_fFlashWhenHit = iTmp == 0 ? false : true;
 	else
 		m_d.m_fFlashWhenHit = fTrue;
 	
 	hr = GetRegInt("DefaultProps\\Bumper","CastsShadow", &iTmp);
 	if (hr == S_OK)
-		m_d.m_fCastsShadow = iTmp == 0? false : true;
+		m_d.m_fCastsShadow = iTmp == 0 ? false : true;
 	else
 		m_d.m_fCastsShadow = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Bumper","Visible", &iTmp);
 	if (hr == S_OK)
-		m_d.m_fVisible = iTmp == 0? false : true;
+		m_d.m_fVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 	
 	hr = GetRegInt("DefaultProps\\Bumper","SideVisible", &iTmp);
 	if (hr == S_OK)
-		m_d.m_fSideVisible = iTmp == 0? false : true;
+		m_d.m_fSideVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_fSideVisible = fTrue;
 	}
@@ -324,6 +297,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64],inv_width,inv_height);
 			}
 
+		{
 		WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 
 		SetNormal(rgv3D, rgi, 32, NULL, NULL, 0);
@@ -331,6 +305,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 32,
 												  rgi, 32, 0);
+		}
 
 			for (int l=0;l<32;l++)
 				{
@@ -339,10 +314,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					(l == 0) ? 63 : (l+31),
 					(l == 0) ? 33 : (l+1)};
 
-				rgi[0] = l;
-				rgi[1] = l+32;
-				rgi[2] = (l == 31) ? 32 : (l+33);
-				rgi[3] = (l == 31) ? 0 : (l+1);
+				WORD rgi[4] = {l,l+32,(l == 31) ? 32 : (l+33),(l == 31) ? 0 : (l+1)};
 
 				SetNormal(&rgv3D[32], rgiNormal, 3, NULL, rgi, 2);
 
@@ -364,11 +336,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					(l == 0) ? 63 : (l+31),
 					(l == 0) ? 33 : (l+1)};
 
-				rgi[0] = l;
-				rgi[1] = l+32;
-				rgi[2] = (l == 31) ? 32 : (l+33);
-				rgi[3] = (l == 31) ? 0 : (l+1);
-
+				WORD rgi[4] = {l,l+32,(l == 31) ? 32 : (l+33),(l == 31) ? 0 : (l+1)};
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
 				rgiNormal[0] = l;
