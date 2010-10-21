@@ -240,7 +240,7 @@ public:
 	virtual IFireEvents *GetIFireEvents() = 0;
 	virtual ItemTypeEnum GetItemType() = 0;
 
-	virtual void GetBoundingVertices(Vector<Vertex3D> * const pvvertex3D) {}
+	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D) {}
 
 	void BeginUndo();
 	void EndUndo();

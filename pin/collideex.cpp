@@ -82,10 +82,8 @@ void BumperAnimObject::Check3D()
 ObjFrame *BumperAnimObject::Draw3D(RECT *prc)
 	{
 	if(!m_fVisible || m_iframe == -1) return NULL;
-	
-	ObjFrame * const pobjframe = m_pobjframe[m_iframe];
 
-	return pobjframe;
+	return m_pobjframe[m_iframe];
 	}
 
 void BumperAnimObject::Reset()
@@ -774,7 +772,7 @@ void Hit3DPoly::CalcNormal()
 		normal.z += (m_rgv[i].x - m_rgv[m].x) * (m_rgv[i].y + m_rgv[m].y);		
 		}
 
-	const float inv_len = -1.0f/sqrtf((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
+	const float inv_len = -1.0f/sqrtf(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
 	normal.x *= inv_len;
 	normal.y *= inv_len;
 	normal.z *= inv_len;

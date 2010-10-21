@@ -397,7 +397,7 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 	delete rgheight;
 	}
 
-void Ramp::GetBoundingVertices(Vector<Vertex3D> * const pvvertex3D)
+void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 	{
 	float *rgheight;
 	int cvertex;
@@ -406,14 +406,14 @@ void Ramp::GetBoundingVertices(Vector<Vertex3D> * const pvvertex3D)
 	for (int i=0;i<cvertex;i++)
 		{
 			{
-		Vertex3D * const pv = new Vertex3D();
+		Vertex3Ds * const pv = new Vertex3Ds();
 		pv->x = rgv[i].x;
 		pv->y = rgv[i].y;
 		pv->z = rgheight[i]+50.0f; // leave room for ball
 		pvvertex3D->AddElement(pv);
 			}
 
-		Vertex3D * const pv = new Vertex3D();
+		Vertex3Ds * const pv = new Vertex3Ds();
 		pv->x = rgv[cvertex*2-i-1].x;
 		pv->y = rgv[cvertex*2-i-1].y;
 		pv->z = rgheight[i]+50.0f; // leave room for ball
@@ -514,7 +514,7 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 				// Shift line along the normal
 				const float F = -(D*(pv2->x-v2normal.x) + E*(pv2->y-v2normal.y));
 
-				const float inv_det = 1.0f/((A*E) - (B*D));
+				const float inv_det = 1.0f/(A*E - B*D);
 
 				const float intersectx = (B*F-E*C)*inv_det;
 				const float intersecty = (C*D-A*F)*inv_det;
@@ -538,12 +538,12 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 		currentlength += length;
 		}
 
-		const float widthcur = ((currentlength/totallength) * (m_d.m_widthtop - m_d.m_widthbottom)) + m_d.m_widthbottom;
+		const float widthcur = (currentlength/totallength) * (m_d.m_widthtop - m_d.m_widthbottom) + m_d.m_widthbottom;
 
 		if (ppheight)
 			{
 			const float percentage = 1.0f-(currentlength/totallength); //rlc ramps have no ends ... a line joint is needed
-			const float heightcur = ((1.0f - percentage) * (m_d.m_heighttop - m_d.m_heightbottom)) + m_d.m_heightbottom;
+			const float heightcur = (1.0f - percentage) * (m_d.m_heighttop - m_d.m_heightbottom) + m_d.m_heightbottom;
 			(*ppheight)[i] = heightcur;
 			}
 
