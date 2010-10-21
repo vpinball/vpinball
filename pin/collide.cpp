@@ -15,7 +15,7 @@ float c_Gravity = GRAVITYCONST;
 
 HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections)
 	{
-	Vertex3D * const rgv3d = new Vertex3D[sections];
+	Vertex3Ds * const rgv3d = new Vertex3Ds[sections];
 
 	const float inv_sections = (float)(M_PI*2.0)/(float)sections;
 	

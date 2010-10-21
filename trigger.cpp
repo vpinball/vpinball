@@ -289,7 +289,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
 			GetRgVertex(&vvertex);
 
 			const int cvertex = vvertex.Size();
-			Vertex3D * const rgv3d = new Vertex3D[cvertex];
+			Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
 
 			for (int i=0;i<vvertex.Size();i++)
 				{
@@ -323,7 +323,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
 
 	const int count = vvertex.Size();
 	RenderVertex * const rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
-	Vertex3D * const rgv3D = new Vertex3D[count + 6];
+	Vertex3Ds * const rgv3D = new Vertex3Ds[count + 6];
 
 	for (int i=0;i<count;i++)
 		{
