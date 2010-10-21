@@ -761,7 +761,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 		// Check if we are blitting with D3D.
 		if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
-			RECT	Rect;
+			RECT Rect;
 			// Since we don't know the final dimensions of the 
 			// object we're rendering, clear the whole buffer.
 			Rect.top = 0;
