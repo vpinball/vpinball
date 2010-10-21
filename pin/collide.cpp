@@ -131,8 +131,8 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 	const float ballr = pball->radius;
 	const float hitz = pball->z - ballr + pball->vz*hittime;  // check too high or low relative to ball rolling point at hittime
 
-	if (hitz + (ballr * 1.5f) < m_rcHitRect.zlow			  // check limits of object's height and depth  
-		|| hitz + (ballr * 0.5f) > m_rcHitRect.zhigh)
+	if (hitz + ballr * 1.5f < m_rcHitRect.zlow			  // check limits of object's height and depth  
+		|| hitz + ballr * 0.5f > m_rcHitRect.zhigh)
 		return -1.0f;
 
 	phitnormal->x = normal.x;				// hit normal is same as line segment normal
@@ -164,26 +164,26 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 	const float dvx = pball->vx;	// delta velocity from ball's coordinate frame
 	const float dvy = pball->vy;
 
-	float targetRadius = radius;
-	if(lateral)
-		targetRadius += pball->radius; 	
-
-	bool capsule3D = false;
-	float z,dz,dvz;
-
+	float targetRadius,z,dz,dvz;
+	bool capsule3D;
+	
 	if (!lateral && pball->z > zhigh)
 		{
 		capsule3D = true;										// handle ball over target? 
-		dvz = pball->vz;										// differential velocity
 		//const float hcap = radius*(float)(1.0/5.0);			// cap height to hit-circle radius ratio
 		//targetRadius = radius*radius/(hcap*2.0f) + hcap*0.5f;	// c = (r^2+h^2)/(2*h)
 		targetRadius = radius*(float)(13.0/5.0);				// optimized version of above code
 		//z = zhigh - (targetRadius - hcap);					// b = c - h
 		z = zhigh - radius*(float)(12.0/5.0);					// optimized version of above code
 		dz = pball->z - z;										// ball rolling point - capsule center height 			
+		dvz = pball->vz;										// differential velocity
 		}
 	else
 		{
+		capsule3D = false;
+		targetRadius = radius;
+		if(lateral)
+			targetRadius += pball->radius;
 		z = dz = dvz = 0.0f;
 		}
 	
@@ -224,7 +224,7 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 	else if (m_ObjType >= eTrigger && pball->m_vpVolObjs && (bnd < 0 == pball->m_vpVolObjs->IndexOf(m_pObj) < 0))
 		{ // here if ... ball inside and no hit set .... or ... ball outside and hit set
 
-		if (fabsf(bnd -radius) < 0.05f)	 // if ball appears in center of trigger, then assumed it was gen'ed there
+		if (fabsf(bnd-radius) < 0.05f)	 // if ball appears in center of trigger, then assumed it was gen'ed there
 			{
 			if (pball->m_vpVolObjs) pball->m_vpVolObjs->AddElement(m_pObj);	//special case for trigger overlaying a kicker
 			}										// this will add the ball to the trigger space without a Hit
@@ -249,9 +249,9 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 			
 		result = sqrtf(result);
 		
-		const float inv_a = 0.5f/a;
-		const float time1 = (-b + result)* inv_a;
-		const float time2 = (-b - result)* inv_a;
+		const float inv_a = (-0.5f)/a;
+		const float time1 = (b - result)* inv_a;
+		const float time2 = (b + result)* inv_a;
 		
 		fUnhit = (time1*time2 < 0);
 		hittime = fUnhit ? max(time1,time2) : min(time1,time2); // ball is inside the circle

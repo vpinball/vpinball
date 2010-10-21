@@ -79,7 +79,7 @@ public:
 
 	virtual void RenderShadow(ShadowSur *psur, float height);
 
-	virtual void GetBoundingVertices(Vector<Vertex3D> * const pvvertex3D);
+	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
 
 	// IHitable
 	void CurvesToShapes(Vector<HitObject> * const pvho);

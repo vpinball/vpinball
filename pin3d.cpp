@@ -1071,7 +1071,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 //	m_lightproject.rotation = 0;
 //	m_lightproject.spin = 0;
 
-	Vector<Vertex3D> vvertex3D;
+	Vector<Vertex3Ds> vvertex3D;
 
 	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
 		{
@@ -1465,7 +1465,7 @@ void Pin3D::Flip(const int offsetx, const int offsety)
 		}
 	}
 
-void Pin3D::FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D/*Vertex3D *rgv*/, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV)
+void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *rgv*/, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV)
 	{
 	// Determine camera distance
 	
@@ -2142,7 +2142,7 @@ void PinProjection::Translate(const float x, const float y, const float z)
 	//m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
 	}
 
-void PinProjection::FitCameraToVertices(Vector<Vertex3D> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV)
+void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV)
 	{
 	// Determine camera distance
 	const GPINFLOAT rrotsin = sin(-rotation);

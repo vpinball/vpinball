@@ -135,7 +135,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 
 	Vector<Level> m_vlevel;
 
-	virtual void GetBoundingVertices(Vector<Vertex3D> * const pvvertex3D);
+	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
 
 	void CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph3d1, const Hit3DPoly * const ph3d2);
 

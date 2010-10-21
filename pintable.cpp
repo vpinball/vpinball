@@ -1439,7 +1439,7 @@ void PinTable::Render3DProjection(Sur * const psur)
 	const GPINFLOAT rotation = 0;
 	const GPINFLOAT inclination = ANGTORAD(m_inclination);
 
-	Vector<Vertex3D> vvertex3D;
+	Vector<Vertex3Ds> vvertex3D;
 
 	for (int i=0;i<m_vedit.Size();i++)
 		{

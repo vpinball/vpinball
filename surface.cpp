@@ -906,14 +906,14 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 		}
 	}
 
-void Surface::GetBoundingVertices(Vector<Vertex3D> * const pvvertex3D)
+void Surface::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 	{
 	const float top = m_d.m_heighttop;
 	const float bottom = m_d.m_heightbottom;
 
 	for (int i=0;i<8;i++)
 		{
-		Vertex3D * const pv = new Vertex3D();
+		Vertex3Ds * const pv = new Vertex3Ds();
 		pv->x = i&1 ? m_ptable->m_right : m_ptable->m_left;
 		pv->y = i&2 ? m_ptable->m_bottom : m_ptable->m_top;
 		pv->z = i&4 ? top : bottom;
