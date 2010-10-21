@@ -804,12 +804,8 @@ void Hit3DPoly::CalcHitRect()
 
 Hit3DCylinder::Hit3DCylinder(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, const Vertex3Ds * const pvnormal)
 	{
-	v1.x = pv1->x;
-	v1.y = pv1->y;
-	v1.z = pv1->z;
-	v2.x = pv2->x;
-	v2.y = pv2->y;
-	v2.z = pv2->z;
+	v1 = *pv1;
+	v2 = *pv2;
 	normal = *pvnormal;
 	radius = 0;
 	CacheHitTransform();
@@ -941,7 +937,7 @@ ObjFrame *DispReelAnimObject::Draw3D(RECT *prc)
 	if(!m_pDispReel || !m_pDispReel->m_pobjframe)  //rlc-problem6 end bad pointers, fix needed
 		return NULL;
 
-	RECT	rc;
+	RECT rc;
 	rc.left = 0;		
 	rc.top = 0;	
 	

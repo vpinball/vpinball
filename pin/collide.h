@@ -252,9 +252,9 @@ public:
 		
 	~HitOctree();
 
-	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit);
+	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const;
 
-	void HitTestBall(Ball * const pball);
+	void HitTestBall(Ball * const pball) const;
 
 	void CreateNextLevel();
 

@@ -114,7 +114,7 @@ inline bool FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * cons
 
     const float d123 = (x2 - x1)*(y3 - y1) - (x3 - x1)*(y2 - y1);
 
-	if (d123 == 0) // p3 lies on the same line as p1 and p2
+	if (d123 == 0.0f) // p3 lies on the same line as p1 and p2
 		{
 		return (x3 >= min(x1,x2) && x3 <= max(x2,x1));
 		}

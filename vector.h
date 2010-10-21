@@ -167,24 +167,20 @@ public:
 
 	inline int LastIndexOf(const void * const pT) const
 		{
-		if (!m_rg)
-			return -1;
-
-		for (int i = m_cSize-1; i >= 0; --i)
-			if (m_rg[i] == pT)
-				return i;
+		if (m_rg)
+			for (int i = m_cSize-1; i >= 0; --i)
+				if (m_rg[i] == pT)
+					return i;
 
 		return -1;
 		}
 
 	inline int IndexOf(const void * const pvItem) const
 		{
-		if (m_rg == NULL)
-			return -1;
-
-		for (int i=0; i < m_cSize; ++i)
-			if (pvItem == m_rg[i])
-				return i;
+		if (m_rg)
+			for (int i=0; i < m_cSize; ++i)
+				if (pvItem == m_rg[i])
+					return i;
 
 		return -1;
 		}
@@ -285,6 +281,7 @@ public:
 			*ppItem = m_rg[m_cSize-1];
 			return true;
 			}
+
 		return false;
 		}
 	};
@@ -319,12 +316,10 @@ public:
 
 	inline int IndexOf(const int pvItem) const
 		{
-		if (m_rg == NULL)
-			return -1;
-
-		for (int i=0; i<m_cSize; ++i)
-			if ((void *)pvItem == m_rg[i])
-				return i;
+		if (m_rg)
+			for (int i=0; i<m_cSize; ++i)
+				if ((void *)pvItem == m_rg[i])
+					return i;
 
 		return -1;
 		}
