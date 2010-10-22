@@ -348,10 +348,13 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			for (int l=0;l<16;++l)
 				{
-				WORD rgiNormal[3];
-				rgiNormal[0] = (l - 1 + 16) % 16;
-				rgiNormal[1] = rgiNormal[0] + 16;
-				rgiNormal[2] = rgiNormal[0] + 2;
+				const WORD rgiNormal[6] = {
+					(l-1+16) % 16,
+					(l-1+16) % 16 + 16,
+					(l-1+16) % 16 + 2,
+					l,
+					l+16,
+					(l+2) % 16};
 
 				WORD rgi[4] = {
 					l,
@@ -360,12 +363,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					(l+1) % 16};
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
-
-				rgiNormal[0] = l;
-				rgiNormal[1] = l+16;
-				rgiNormal[2] = (l+2) % 16;
-
-				SetNormal(rgv3D, rgiNormal, 3, NULL, &rgi[2], 2);
+				SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 4, 0);
 				}
 			}
