@@ -970,6 +970,13 @@ void Surface::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	}
 
+WORD rgiSlingshot0[4] = {0,1,4,3};
+WORD rgiSlingshot1[4] = {1,2,5,4};
+WORD rgiSlingshot2[4] = {0,3,4,1};
+WORD rgiSlingshot3[4] = {1,4,5,2};
+WORD rgiSlingshot4[4] = {3,9,10,4};
+WORD rgiSlingshot5[4] = {4,10,11,5};
+								
 void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -1058,42 +1065,24 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
-		{
-		WORD rgi[4] = {0,1,4,3};
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
+		SetNormal(rgv3D, rgiSlingshot0, 4, NULL, NULL, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot0, 4, 0);
 
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-		}
-		{
-		WORD rgi[4] = {1,2,5,4};
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
+		SetNormal(rgv3D, rgiSlingshot1, 4, NULL, NULL, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot1, 4, 0);
+		
+		SetNormal(rgv3D, rgiSlingshot2, 4, NULL, NULL, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot2, 4, 0);
+		
+		SetNormal(rgv3D, rgiSlingshot3, 4, NULL, NULL, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot3, 4, 0);
 
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-		}
-		{
-		WORD rgi[4] = {0,3,4,1};
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
+		SetNormal(rgv3D, rgiSlingshot4, 4, NULL, NULL, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot4, 4, 0);
+		
+		SetNormal(rgv3D, rgiSlingshot5, 4, NULL, NULL, NULL);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot5, 4, 0);
 
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-		}
-		{
-		WORD rgi[4] = {1,4,5,2};
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
-
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-		}
-		{
-		WORD rgi[4] = {3,9,10,4};
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
-
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-		}
-		{
-		WORD rgi[4] = {4,10,11,5};
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, NULL);
-
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgi, 4, 0);
-		}
 		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
 		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		
@@ -1118,6 +1107,9 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT,&ddbltfx);
 		}
 	}
+
+WORD rgiWall0[4] = {0,1,2,3};
+WORD rgiWall1[4] = {0,3,2,1};
 
 ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover, BOOL fDrop)
 	{
@@ -1248,9 +1240,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 	pd3dDevice->SetMaterial(&mtrl);
 
-	WORD rgi[4] = {0,1,2,3};
-	WORD rgi2[4] = {0,3,2,1};
-
 	for (int i=0;i<cvertex;i++)
 		{
 		const RenderVertex * const pv1 = &rgv[i];
@@ -1368,7 +1357,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped, but we do need to extend the extrema
 				{
 				// Draw side.
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, m_d.m_fInner ? rgi : rgi2, 4,0);
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, m_d.m_fInner ? rgiWall0 : rgiWall1, 4,0);
 				}
 
 			if (fMover)
@@ -1581,7 +1570,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				}
 
 			// Draw top.
-			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 3,rgi, 3, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 3,rgiWall0, 3, 0);
 			}
 
 		for (int i=0;i<vtri.Size();i++)

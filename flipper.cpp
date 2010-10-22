@@ -488,6 +488,10 @@ void Flipper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
+WORD rgiFlipper0[4] = {0,1,2,3};
+WORD rgiFlipper1[4] = {0,4,5,1};
+WORD rgiFlipper2[4] = {2,6,7,3};
+
 void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, float angle,  float height, 
 								COLORREF color, float baseradius, float endradius, float flipperheight)
 	{
@@ -528,27 +532,17 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear
 										 , &m_phitflipper->m_flipperanim.m_zfar, 8, fFalse);
 
-	{
-	WORD rgi[4] = {0,1,2,3};
-	SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
+	SetNormal(rgv3D, rgiFlipper0, 4, NULL, NULL, 0);
 	// Draw top.
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-	}
-	{
-	WORD rgi[4] = {0,4,5,1};
-	SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
+	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiFlipper0, 4, 0);
+	
+	SetNormal(rgv3D, rgiFlipper1, 4, NULL, NULL, 0);
 	// Draw front side wall of flipper (flipper and rubber).   
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-	}
-	{
-	WORD rgi[4] = {2,6,7,3};
-	SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
+	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiFlipper1, 4, 0);
+	
+	SetNormal(rgv3D, rgiFlipper2, 4, NULL, NULL, 0);
 	// Draw back side wall.
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-	}
+	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiFlipper2, 4, 0);
 
 	// Base circle
 	for (int l=0;l<16;l++)
@@ -573,7 +567,6 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 			{
 		WORD rgi[3] = {0,l,l+1};
 		SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
-
 		// Draw end caps of cylinders of large ends.
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 3, 0);
 			}
@@ -591,7 +584,6 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 		rgiNormal[2] = (l+1) % 16;
 
 		SetNormal(rgv3D, rgiNormal, 3, NULL, &rgi[2], 2);
-
 		// Draw vertical cylinders at large end of flipper.
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 32,rgi, 4, 0);
 		}
@@ -618,7 +610,6 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 			{
 		WORD rgi[3] = {0,l,l+1};
 		SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
-
 		// Draw end caps to vertical cylinder at small end.
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 3, 0);
 			}
@@ -635,7 +626,6 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 		rgiNormal[2] = (l+1) % 16;
 
 		SetNormal(rgv3D, rgiNormal, 3, NULL, &rgi[2], 2);
-
 		// Draw vertical cylinders at small end.
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 4, 0);
 		}

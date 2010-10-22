@@ -496,7 +496,6 @@ void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			const int cpt = (rgtriggerface[l][4] == 65535) ? 4 : 5;
 
 			SetNormal(&rgv3D[offset], rgi, cpt, NULL, NULL, 0);
-
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[offset], 10,
 													  rgi, cpt, 0);

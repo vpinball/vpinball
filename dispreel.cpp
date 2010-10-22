@@ -473,6 +473,9 @@ void DispReel::RenderMoversFromCache(Pin3D *ppin3d)
 // it is designed to generate any 3d animation as the 3D map has been set up
 // to use in the process
 //
+
+WORD rgiDispReel[4] = {0,1,2,3};
+
 void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 {
     // set any defaults for the game rendering
@@ -677,8 +680,6 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			const float ratiox = (float)m_reeldigitwidth  * pin->m_maxtu / (float)pin->m_width;
 			const float ratioy = (float)m_reeldigitheight * pin->m_maxtv / (float)pin->m_height;
 
-			WORD rgi[4] = {0,1,2,3};
-
 			int gr = 0;
 			int gc = 0;
 
@@ -692,7 +693,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 												  rgv3D, 4,
-												  rgi, 4, NULL);
+												  rgiDispReel, 4, NULL);
 
 				RECT rectDst;
 				rectDst.left = 0;

@@ -230,6 +230,8 @@ void Bumper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
+WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+			
 void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fVisible)	return;
@@ -297,15 +299,10 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64],inv_width,inv_height);
 			}
 
-		{
-		WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
-
-		SetNormal(rgv3D, rgi, 32, NULL, NULL, 0);
-
+		SetNormal(rgv3D, rgiBumperStatic, 32, NULL, NULL, 0);
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 32,
-												  rgi, 32, 0);
-		}
+												  rgiBumperStatic, 32, 0);
 
 			for (int l=0;l<32;l++)
 				{
@@ -314,7 +311,10 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					(l == 0) ? 63 : (l+31),
 					(l == 0) ? 33 : (l+1)};
 
-				WORD rgi[4] = {l,l+32,(l == 31) ? 32 : (l+33),(l == 31) ? 0 : (l+1)};
+				WORD rgi[4] = {l,
+					           l+32,
+							  (l == 31) ? 32 : (l+33),
+							  (l == 31) ? 0 : (l+1)};
 
 				SetNormal(&rgv3D[32], rgiNormal, 3, NULL, rgi, 2);
 
@@ -323,7 +323,6 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(&rgv3D[32], rgiNormal, 3, NULL, &rgi[2], 2);
-
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[32], 64,
 														  rgi, 4, 0);
@@ -336,7 +335,10 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					(l == 0) ? 63 : (l+31),
 					(l == 0) ? 33 : (l+1)};
 
-				WORD rgi[4] = {l,l+32,(l == 31) ? 32 : (l+33),(l == 31) ? 0 : (l+1)};
+				WORD rgi[4] = {l,
+					           l+32,
+							  (l == 31) ? 32 : (l+33),
+							  (l == 31) ? 0 : (l+1)};
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 
 				rgiNormal[0] = l;
@@ -344,7 +346,6 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, &rgi[2], 2);
-
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  rgv3D, 64,
 														  rgi, 4, 0);
@@ -475,15 +476,10 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->SetMaterial(&mtrl);
 
-			{
-			WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
-
-			SetNormal(&rgv3D[64], rgi, 32, NULL, NULL, 0);
-			
+			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
 			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[64], 32,
-													  rgi, 32, 0);
-			}
+													  rgiBumperStatic, 32, 0);
 
 			for (int l=0;l<32;l++)
 				{
@@ -505,7 +501,6 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, &rgi[2], 2);
-
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[96], 64,
 														  rgi, 4, 0);
@@ -531,7 +526,6 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(&rgv3D[64], rgiNormal, 3, NULL, &rgi[2], 2);
-
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[64], 64,
 														  rgi, 4, 0);
@@ -588,7 +582,6 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, &rgi[2], 2);
-
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D,64,rgi, 4, 0);
 				}
 			}
@@ -666,13 +659,10 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgv3D[l+128].tv2 = (0.5f+cosangle*0.5f)*lightmaxtv;
 				}
 
-			WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
-
-			SetNormal(&rgv3D[64], rgi, 32, NULL, NULL, 0);
-
+			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
 			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[64], 32,
-													  rgi, 32, 0);
+													  rgiBumperStatic, 32, 0);
 
 			for (int l=0;l<32;l++)
 				{
@@ -694,7 +684,6 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, &rgi[2], 2);
-
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[96], 64,
 														  rgi, 4, 0);
@@ -720,7 +709,6 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					rgiNormal[2] = (l < 30) ? (l+2) : (l-30);
 
 					SetNormal(&rgv3D[64], rgiNormal, 3, NULL, &rgi[2], 2);
-
 					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  &rgv3D[64], 64,
 															  rgi, 4, 0);

@@ -386,6 +386,8 @@ void Decal::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
+WORD rgiDecalStatic[4] = {0,1,2,3};
+
 void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -501,13 +503,10 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	rgv3D[3].tu = 0;
 	rgv3D[3].tv = maxtv;
 
-	WORD rgi[4] = {0,1,2,3};
-
 	if (!m_fBackglass)
 		{
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgi,4,0);
+		SetNormal(rgv3D, rgiDecalStatic, 4, NULL, NULL, 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgiDecalStatic,4,0);
 		}
 	else
 		{
@@ -516,7 +515,7 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		if( GetPTable()->GetDecalsEnabled() )
 			{
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,rgv3D, 4,rgi,4,0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,rgv3D, 4,rgiDecalStatic,4,0);
 			}
 		}
 
