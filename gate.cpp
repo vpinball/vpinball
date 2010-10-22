@@ -331,6 +331,17 @@ void Gate::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
+WORD rgiGate0[8] = {0,1,2,3,6,7,4,5};
+WORD rgiGate1[8] = {4,5,6,7,2,3,0,1};
+WORD rgiGateNormal[3] = {0,1,3};
+
+WORD rgiGate2[4] = {0,1,5,4};
+WORD rgiGate3[4] = {2,6,7,3};
+WORD rgiGate4[4] = {0,2,3,1};
+WORD rgiGate5[4] = {4,5,7,6};
+WORD rgiGate6[4] = {0,4,6,2};
+WORD rgiGate7[4] = {1,3,7,5};
+						
 void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fSupports) return; // no support structures are allocated ... therfore render none
@@ -409,19 +420,11 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 		}
 
-	WORD rgiNormal[3] = {0,1,3};
-	
-	{
-	WORD rgi[8] = {0,1,2,3,6,7,4,5};
-	SetNormal(rgv3D, rgiNormal, 3, rgv3D, rgi, 8);
+	SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate0, 8);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,rgiGate0, 8, 0);
 
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,rgi, 8, 0);
-	}
-
-	WORD rgi[8] = {4,5,6,7,2,3,0,1};
-	SetNormal(rgv3D, rgiNormal, 3, rgv3D, rgi, 8);
-
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,rgi, 8, 0);
+	SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate1, 8);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,rgiGate1, 8, 0);
 	}
 	
 void Gate::RenderMoversFromCache(Pin3D *ppin3d)
@@ -625,12 +628,8 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetMaterial(&mtrl);
 
-		{
-		WORD rgi[4] = {0,1,5,4};
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
-		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-		}
+		SetNormal(rgv3D, rgiGate2, 4, NULL, NULL, 0);
+		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate2, 4, 0);
 
 		// Draw Frontside
 
@@ -677,12 +676,8 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		pd3dDevice->SetMaterial(&mtrl);
 
-		{
-		WORD rgi[4] = {2,6,7,3};
-		SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
-		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-		}
+		SetNormal(rgv3D, rgiGate3, 4, NULL, NULL, 0);
+		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate3, 4, 0);
 
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
@@ -693,29 +688,18 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR) //
 			{
 			// Top & Bottom
-				{
-			WORD rgi[4] = {0,2,3,1};
-			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
+			SetNormal(rgv3D, rgiGate4, 4, NULL, NULL, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate4, 4, 0);
 
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-				}
-				{
-			WORD rgi[4] = {4,5,7,6};
-			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
+			SetNormal(rgv3D, rgiGate5, 4, NULL, NULL, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate5, 4, 0);
 
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-				}
 			// Sides
-				{
-			WORD rgi[4] = {0,4,6,2};
-			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
+			SetNormal(rgv3D, rgiGate6, 4, NULL, NULL, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate6, 4, 0);
 
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
-				}
-			WORD rgi[4] = {1,3,7,5};
-			SetNormal(rgv3D, rgi, 4, NULL, NULL, 0);
-
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgi, 4, 0);
+			SetNormal(rgv3D, rgiGate7, 4, NULL, NULL, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate7, 4, 0);
 			}
 
 		LPDIRECTDRAWSURFACE7 pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);

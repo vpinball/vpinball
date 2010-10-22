@@ -237,7 +237,6 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				l+1};
 
 			SetNormal(rgvBorder, rgi, 3, NULL, NULL, 0);
-
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgvBorder,16,rgi, 3, 0);
 			}
 		}
@@ -270,7 +269,6 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				16+l+1};
 
 			SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
-
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 3, 0);
 			}
 
@@ -338,7 +336,6 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 						l+1};
 
 					SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
-
 					pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 3, 0);
 					}
 
@@ -369,7 +366,6 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				rgiNormal[2] = (l+2) % 16;
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, &rgi[2], 2);
-
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 4, 0);
 				}
 			}

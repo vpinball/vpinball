@@ -420,6 +420,9 @@ void Light::ClearForOverwrite()
 	ClearPointsForOverwrite();
 	}
 
+WORD rgiLightStatic0[3] = {0,1,2};
+WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+		
 void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -501,8 +504,6 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 	pd3dDevice->SetMaterial(&mtrl);
 
-	WORD rgi[3] = {0,1,2};
-
 	Vertex3D rgv3D[3];
 	if (!m_fBackglass)
 		{
@@ -544,7 +545,7 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
-													  rgi, 3, 0);
+													  rgiLightStatic0, 3, 0);
 			}
 		else
 			{
@@ -552,7 +553,7 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 													  rgv3D, 3,
-													  rgi, 3, 0);
+													  rgiLightStatic0, 3, 0);
 			}
 
 		delete vtri.ElementAt(t);
@@ -594,16 +595,13 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 		}
-
-	WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
-
+	
 	if (!m_fBackglass)
 		{
-		SetNormal(rgv3D, rgi, 32, NULL, NULL, 0);
-
+		SetNormal(rgv3D, rgiLightStatic1, 32, NULL, NULL, 0);
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 32,
-												  rgi, 32, 0);
+												  rgiLightStatic1, 32, 0);
 		}
 	else
 		{
@@ -614,7 +612,7 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 													  rgv3D, 32,
-													  rgi, 32, 0);
+													  rgiLightStatic1, 32, 0);
 			}
 		}
 	}
@@ -792,7 +790,6 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			SetDiffuseFromMaterial(rgv3D, 3, &mtrl);
 			}
 
-		WORD rgi[3] = {0,1,2};
 		for (int t=0;t<vtri.Size();t++)
 			{
 			const Triangle * const ptri = vtri.ElementAt(t);
@@ -838,7 +835,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 				{
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
-													  rgi, 3, 0);
+													  rgiLightStatic0, 3, 0);
 				}
 			else
 				{
@@ -848,7 +845,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					{
 					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 3,
-														  rgi, 3, 0);
+														  rgiLightStatic0, 3, 0);
 					}
 				}
 
@@ -959,10 +956,9 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 		}
 
-	WORD rgi[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 	if (!m_fBackglass)
 		{
-		SetNormal(rgv3D, rgi, 32, NULL, NULL, 0);
+		SetNormal(rgv3D, rgiLightStatic1, 32, NULL, NULL, 0);
 		}
 	else
 		{
@@ -1033,14 +1029,14 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  rgv3D, 32,
-														  rgi, 32, 0);
+														  rgiLightStatic1, 32, 0);
 			}
 		else 
 			if( GetPTable()->GetDecalsEnabled() )
 				{
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 32,
-														  rgi, 32, 0);
+														  rgiLightStatic1, 32, 0);
 				}
 
 			{

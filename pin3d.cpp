@@ -872,6 +872,8 @@ void Pin3D::InitRenderState() const
 	hr = m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_CLIPPLANEENABLE, 0 );
 	}
 
+WORD rgiPin3D0[4] = {0,1,2,3};
+WORD rgiPin3D1[4] = {2,3,5,6};	
 
 void Pin3D::DrawBackground()
 	{
@@ -923,8 +925,6 @@ void Pin3D::DrawBackground()
 		rgv3D[3].tu = 0;
 		rgv3D[3].tv = maxtv;
 
-		WORD rgi[4] = {0,1,2,3};
-
 		SetTexture(pin->m_pdsBuffer);
 
 		SetHUDVertices(rgv3D, 4);
@@ -932,7 +932,7 @@ void Pin3D::DrawBackground()
 
 		m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 												  rgv3D, 4,
-												  rgi, 4, 0);
+												  rgiPin3D0, 4, 0);
 
 		m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 		}
@@ -1191,13 +1191,9 @@ void Pin3D::InitBackGraphics()
 
 	m_pd3dDevice->SetMaterial(&mtrl);
 
-	{
-	WORD rgi[4] = {0,1,2,3};
-
 	/*const HRESULT hr =*/ m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv, 4,
-												  rgi, 4, 0);
-	}
+												  rgiPin3D0, 4, 0);
 
 	EnableLightMap(fFalse, -1);
 
@@ -1209,12 +1205,10 @@ void Pin3D::InitBackGraphics()
 	//m_pd3dDevice->SetTexture(1, NULL);
 	SetTexture(NULL);
 
-	WORD rgi[4] = {2,3,5,6};
-	SetNormal(rgv, rgi, 4, NULL, NULL, 0);
-
+	SetNormal(rgv, rgiPin3D1, 4, NULL, NULL, 0);
 	m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv, 8,
-												  rgi, 4, 0);
+												  rgiPin3D1, 4, 0);
 	}
 
 void Pin3D::CreateBallShadow()
