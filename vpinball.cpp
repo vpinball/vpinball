@@ -105,19 +105,28 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-
+///<summary>
+///VPinball Constructor
+///<para>Init</para>
+///</summary>
 VPinball::VPinball()
 	{
 //	DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
 
-	m_cref = 0;
+	m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
+							//implement this and StdMethods QueryInterface, AddRef and Release
 	m_open_minimized = 0;
 
-	NumPlays = 0;
+	NumPlays = 0;			// for Statistics in Registry (?)
 
-	m_pcv = NULL;
+	m_pcv = NULL;			// no currently active code window
 	}
 
+///<summary>
+///VPinball Destructor
+///<para>deletes clipboard</para>
+///<para>Releases Resources for Script editor</para>
+///</summary>
 VPinball::~VPinball()
 	{
 //	DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
@@ -126,6 +135,11 @@ VPinball::~VPinball()
 	Scintilla_ReleaseResources();
 	}
 
+///<summary>
+///Store path of exe (without the exe's filename) in Class Variable
+///<para>Stores path as char[MAX_PATH] in m_sz_MyPath (8 bit ansi)</para>
+///<para>Stores path as WCHAR[MAX_PATH] in m_wzMyPath (16 bit Unicode)</para>
+///</summary>
 void VPinball::GetMyPath()
 	{
 	char szPath[MAX_PATH];
@@ -134,6 +148,7 @@ void VPinball::GetMyPath()
 
 	char *szEnd = szPath + lstrlen(szPath);
 
+	// search for first backslash
 	while (szEnd > szPath)
 		{
 		if (*szEnd == '\\')
@@ -143,10 +158,11 @@ void VPinball::GetMyPath()
 		szEnd--;
 		}
 
+	// truncate the filename
 	*(szEnd+1) = '\0'; // Get rid of exe name
 
+	// store 2x
 	lstrcpy(m_szMyPath, szPath);
-
 	MultiByteToWideChar(CP_ACP, 0, szPath, -1, m_wzMyPath, MAX_PATH);
 	}
 
