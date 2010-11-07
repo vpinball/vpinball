@@ -137,7 +137,7 @@ VPinball::~VPinball()
 
 ///<summary>
 ///Store path of exe (without the exe's filename) in Class Variable
-///<para>Stores path as char[MAX_PATH] in m_sz_MyPath (8 bit ansi)</para>
+///<para>Stores path as char[MAX_PATH] in m_szMyPath (8 bit ansi)</para>
 ///<para>Stores path as WCHAR[MAX_PATH] in m_wzMyPath (16 bit Unicode)</para>
 ///</summary>
 void VPinball::GetMyPath()
@@ -166,48 +166,66 @@ void VPinball::GetMyPath()
 	MultiByteToWideChar(CP_ACP, 0, szPath, -1, m_wzMyPath, MAX_PATH);
 	}
 
+// Class Variables
 bool VPinball::m_open_minimized;
 int VPinball::NumPlays;
 
+///<summary>
+///Sets m_open_minimized to 1
+///Called by CLI Option minimized 
+///</summary>
 void VPinball::SetOpenMinimized()
 {
 	m_open_minimized = 1;
 }
 
+///<summary>
+///Main Init function
+///<para>sets some init-values to variables</para>
+///<para>registers scintilla Editor</para>
+///<para>creates and shows Main Window and all Toolbars</para>
+///<para>creates toolbars and statusbar</para>
+///<para>Sets this class as MDI Callback</para>
+///<para>creates APC VBA Host</para>
+///<para>initializes Direct Sound and Direct Draw</para>
+///<para>Calibrates Timer</para>
+///<para>Inits Debug-Window</para>
+///</summary>
 void VPinball::Init() 
 	{
 
 	HRESULT hr;
 	m_NextTableID = 1;
 
-	m_bWinHelp = false;
-	m_lcidVBA = 1033;
+	m_bWinHelp = false;											//unused or neccessary for VBA?
+	m_lcidVBA = 1033;											//local ID: english - used when creating VBA APC Host
 
 	m_ptableActive = NULL;
-	m_hwndSideBar = NULL;
-	m_hwndWork = NULL;
+	m_hwndSideBar = NULL;										//Handle for left Sidebar
+	m_hwndWork = NULL;											//Handle for Workarea
 
-	m_workerthread = NULL;
+	m_workerthread = NULL;										//Workerthread - only for hanging scripts and autosave - will be created later
 
 	//m_pistgClipboard = NULL;
 
-	GetMyPath();
+	GetMyPath();												//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
 
-	RegisterClasses();
-	Scintilla_RegisterClasses(g_hinst);
+	RegisterClasses();											//TODO - brief description of what happens in the function
+	Scintilla_RegisterClasses(g_hinst);							//registering Scintilla with current Application instance number.
 
 	char szName[256];
 	LoadString(g_hinstres, IDS_PROJNAME, szName, 256);
+																// loading String "Visual Pinball" from Exe properties
 
-	const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
-	const int screenheight = GetSystemMetrics(SM_CYSCREEN);
+	const int screenwidth = GetSystemMetrics(SM_CXSCREEN);		// width of primary monitor
+	const int screenheight = GetSystemMetrics(SM_CYSCREEN);		// height of primary monitor
 
 	const int x = (screenwidth - MAIN_WINDOW_WIDTH)/2;
 	const int y = (screenheight - MAIN_WINDOW_HEIGHT)/2;
 	const int width = MAIN_WINDOW_WIDTH;
 	const int height = MAIN_WINDOW_HEIGHT;
 
-    LPTSTR lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
+    LPTSTR lpCmdLine = GetCommandLine();						//this line necessary for _ATL_MIN_CRT
 
 	if( strstr( lpCmdLine, "minimized" ) )
 	{
@@ -216,7 +234,7 @@ void VPinball::Init()
 
 	m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW,"VPinball",szName,
 			( m_open_minimized ? WS_MINIMIZE : 0 ) | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-			x,y,width,height,NULL,NULL,g_hinst,0);
+			x,y,width,height,NULL,NULL,g_hinst,0);				// get handle to and create main Window
 
 	// See if we have previous window size information
 		{
@@ -257,48 +275,53 @@ void VPinball::Init()
 
 	ShowWindow(m_hwnd, SW_SHOW);
 
-	SetWindowLong(m_hwnd, GWL_USERDATA, (long)this);
+	SetWindowLong(m_hwnd, GWL_USERDATA, (long)this);	// set this class (vpinball) as callback for MDI Child / has to be confirmed
+														// can be a problem for 64 bit compatibility.
+														// maybe use SetWindowLongPtr instead
 
-	CreateSideBar();
+	CreateSideBar();									// Create Sidebar
 
-	CreateMDIClient();
+	CreateMDIClient();									// Create MDI Child
 
 	int foo[4] = {120,240,400,600};
 
     m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
                                        "",
                                        m_hwnd,
-                                       1);
+                                       1);				// Create Status Line at the bottom
 
-	SendMessage(m_hwndStatusBar, SB_SETPARTS, 4, (long)foo);
+	SendMessage(m_hwndStatusBar, SB_SETPARTS, 4, (long)foo);	// Initilise Status bar with 4 empty cells
 
-	m_sb.Init(m_hwnd);
+	m_sb.Init(m_hwnd);									// initilize smartbrowser (Property bar on the right) - see propbrowser.cpp
 
-	SendMessage(m_hwnd, WM_SIZE, 0, 0); // Make our window relay itself out
+	SendMessage(m_hwnd, WM_SIZE, 0, 0);					// Make our window relay itself out
 
-	InitTools();
+	InitTools();										// eventually show smartbrowser
 
-	InitRegValues();
+	InitRegValues();									// get default values from registry
 
-	InitVBA();
+	InitVBA();											//Create APC VBA host
 
-	m_pds.InitDirectSound(m_hwnd);
-	hr = m_pdd.InitDD();
+	m_pds.InitDirectSound(m_hwnd);						// init Direct Sound (in pinsound.cpp)
+	hr = m_pdd.InitDD();								// init direct draw (in pinimage.cpp)
 
+	// check if Direct draw could be initilized
 	if (hr != S_OK)
 		{
 		SendMessage(m_hwnd, WM_CLOSE, 0, 0);
 		}
 
 	//m_music.Foo();
-	m_fBackglassView = fFalse;
+	m_fBackglassView = fFalse;							// we are viewing Pinfield and not the backglass at first
 
 	SetEnableToolbar();
 	SetEnableMenuItems();
-	UpdateRecentFileList(NULL);		// update the recent loaded file list
+	UpdateRecentFileList(NULL);							// update the recent loaded file list
 
-    wintimer_init(); // calibrate the timer routines
-	slintf_init();
+    wintimer_init();									// calibrate the timer routines
+	slintf_init();										// initialize debug console (can be popupped by the following command)
+														// slintf_popup_console();
+														// see slintf.cpp
 	}
 
 void VPinball::EnsureWorkerThread()
