@@ -520,10 +520,10 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 		}
 
 #ifdef IMSPANISH
-	SendMessage(m_hwndToolbar, TB_SETBUTTONWIDTH, 0,
+	SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
 		(LPARAM)(DWORD)MAKELONG(50,48));
 #elif defined(IMGERMAN)
-	SendMessage(m_hwndToolbar, TB_SETBUTTONWIDTH, 0,
+	SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
 		(LPARAM)(DWORD)MAKELONG(50,48));
 #else
 	SendMessage(hwnd, TB_SETBUTTONWIDTH, 0,
