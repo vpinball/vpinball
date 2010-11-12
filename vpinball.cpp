@@ -1,6 +1,6 @@
 // VPinball.cpp: implementation of the VPinball class.
 //
-/////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
 
@@ -43,6 +43,20 @@
 
 //Which column the window menu is, for MDI
 #define WINDOWMENU 5
+
+
+/*
+TBButton:
+typedef struct {
+  int       iBitmap;
+  int       idCommand;
+  BYTE      fsState;
+  BYTE      fsStyle;
+  DWORD_PTR dwData;
+  INT_PTR   iString;
+} TBBUTTON, *PTBBUTTON, *LPTBBUTTON;
+*/
+
 
 TBBUTTON const g_tbbuttonMain[] = {
 	// icon number,
@@ -324,6 +338,10 @@ void VPinball::Init()
 														// see slintf.cpp
 	}
 
+///<summary>
+///Ensure that worker thread exists
+///<para>Starts worker Thread otherwise</para>
+///</summary>
 void VPinball::EnsureWorkerThread()
 	{
 	if (!m_workerthread)
@@ -337,9 +355,17 @@ void VPinball::EnsureWorkerThread()
 		}
 	}
 
+///<summary>
+///Post Work to the worker Thread
+///<para>Creates Worker-Thread if not present</para>
+///<para>See Worker::VPWorkerThreadStart for infos</para>
+///<param name="workid">int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)</param>
+///<param name="lParam">Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise NULL)</param>
+///<returns>Handle to Event that get ack. If event is finished (unsure)</returns>
+///</summary>
 HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
 	{
-	EnsureWorkerThread();
+	EnsureWorkerThread();										// Check if Workerthread was created once, otherwise create
 
 	HANDLE hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
@@ -348,6 +374,10 @@ HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
 	return hEvent;
 	}
 
+///<summary>
+///Sets m_autosavetime
+///<param name="minutes">int Minutes between autosave</param>
+///</summary>
 void VPinball::SetAutoSaveMinutes(int minutes)
 	{
 	if (minutes <= 0)
@@ -360,6 +390,14 @@ void VPinball::SetAutoSaveMinutes(int minutes)
 		}
 	}
 
+///<summary>
+///Post Work to the worker Thread
+///<para>Creates Worker-Thread if not present</para>
+///<para>See Worker::VPWorkerThreadStart for infos</para>
+///<param name="workid">int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)</param>
+///<param name="lparam">Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise NULL)</param>
+///<returns>Handle to Event that get ack. If event is finished (unsure)</returns>
+///</summary>
 void VPinball::InitTools()
 	{
 	// was the properties panel open last time we used VP?
@@ -376,6 +414,13 @@ void VPinball::InitTools()
 	SendMessage(m_hwndToolbarMain,TB_CHECKBUTTON,IDC_SELECT,MAKELONG(TRUE,0));
 	}
 
+///<summary>
+///Initializes Default Values of many variables (from Registry if keys are present). 
+///<para>Registry Values under HKEY-CURRENT-USER/Software/Visual Pinball</para>
+///<para>HardwareAceelleration, Deadzone, AlternateRender, ShowDragPoints, DrawLightCenters,</para>
+///<para>AutoSaveOn, AutoSaveTime, SecurityLevel</para>
+///<para>Gets the last loaded Tables (List under File-Menu)</para>
+///</summary>
 void VPinball::InitRegValues()
 	{
 	HRESULT hr;
@@ -455,6 +500,10 @@ void VPinball::InitRegValues()
 		}
 	}
 
+///<summary>
+///Registers a window classes for subsequent use in calls to the CreateWindow or CreateWindowEx function. 
+///TODO: where are thes used?
+///</summary>
 void VPinball::RegisterClasses()
 	{
 	WNDCLASSEX wcex;
@@ -482,6 +531,12 @@ void VPinball::RegisterClasses()
 	RegisterClassEx(&wcex);
 	}
 
+///<summary>
+///Creates Sidebar (left)
+///<para>Creates handles to upper and lower(scrollable) left Sidebar </para>
+///<para>Creates Buttons in Sidebar (via VPinball::CreateToolbar(...))</para>
+///<para>Sets Scrollposition to 0</para>
+///</summary>
 void VPinball::CreateSideBar()
 	{
 	RECT rc;
@@ -499,6 +554,13 @@ void VPinball::CreateSideBar()
 	palettescroll = 0;
 	}
 
+///<summary>
+///Creates Buttons in Toolbar-Windows (left Toolbar)
+///<param name="*p_tbbutton">Pointer to Buttons as TBBUTTON[]</param>
+///<param name="count">Number of Buttons to create</param>
+///<param name="hwndParent">Parentwindow (left Toolbar (top or bottom))</param>
+///<returns>Handle to Toolbar</returns>
+///</summary>
 HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 	{
 	HWND hwnd = CreateToolbarEx(hwndParent,
