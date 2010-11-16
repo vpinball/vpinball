@@ -96,6 +96,7 @@ public:
 
 	void EraseBall(Ball *pball);
 
+	Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius);	
 	Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz);
 	void DestroyBall(Ball *pball);
 
