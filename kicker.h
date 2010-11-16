@@ -112,6 +112,7 @@ public:
 	//STDMETHOD(DestroyBall)();
 	STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);
     STDMETHOD(CreateBall)(IBall **pBallEx);
+	STDMETHOD(CreateSizedBall)(/*[in]*/float radius, /*out, retval]*/ IBall **pBallEx);
 	STDMETHOD(BallCntOver)(/*[out, retval]*/ int *pVal);
 
 	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);

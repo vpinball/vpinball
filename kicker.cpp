@@ -577,6 +577,26 @@ STDMETHODIMP Kicker::InterfaceSupportsErrorInfo(REFIID riid)
 }
 
 
+STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/float radius, /*out, retval]*/ IBall **pBallEx)
+{
+	if (m_phitkickercircle)
+		{
+		
+		const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+		Ball * const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x,
+				m_phitkickercircle->center.y, height, 0.1f, 0, 0, radius);
+
+		*pBallEx = pball->m_pballex;
+		pball->m_pballex->AddRef();
+
+		pball->m_hitnormal[1].x = 1.0f;			//avoid capture leaving kicker
+		m_phitkickercircle->Collide(pball, NULL); //
+		}
+
+	return S_OK;
+}
+
 STDMETHODIMP Kicker::CreateBall(IBall **pBallEx)
 {
 	if (m_phitkickercircle)
