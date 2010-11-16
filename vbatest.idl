@@ -1152,6 +1152,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
 		[id(1), helpstring("method CreateBall")] HRESULT CreateBall([out, retval] IBall **Ball);
+		[id(11), helpstring("method CreateSizedBall")] HRESULT CreateSizedBall([in] float radius, [out, retval] IBall **Ball);
 		[id(2), helpstring("method DestroyBall")] HRESULT DestroyBall([out, retval] int *pVal);
 		[propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
