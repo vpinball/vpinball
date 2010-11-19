@@ -5917,13 +5917,9 @@ void PinTable::ReImportImage(HWND hwndListView, PinImage *ppi, char *filename)
 		{
 		fBinary = fFalse;
 		}
-	else if (!lstrcmpi(szextension, "jpg") || !lstrcmpi(szextension, "jpeg"))// jpeg
+	else // other format
 		{
 		fBinary = fTrue;
-		}
-	else
-		{
-		ShowError("Unknown image type.");
 		}
 
 	PinBinary *ppb;
@@ -5935,14 +5931,7 @@ void PinTable::ReImportImage(HWND hwndListView, PinImage *ppi, char *filename)
 
 	PinImage piT;
 	// Make sure we can import the new file before blowing away anything we had before
-	if (!fBinary)
-		{
-		piT.m_pdsBuffer = g_pvp->m_pdd.CreateFromFile(filename, &ppi->m_width, &ppi->m_height);
-		}
-	else
-		{
-		piT.m_pdsBuffer = g_pvp->m_pdd.DecompressJPEG(ppi/*filename*/, ppb, &ppi->m_width, &ppi->m_height);
-		}
+	piT.m_pdsBuffer = g_pvp->m_pdd.CreateFromFile(filename, &ppi->m_width, &ppi->m_height);
 
 	if (piT.m_pdsBuffer == NULL)
 		{
