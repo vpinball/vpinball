@@ -2064,8 +2064,8 @@ void Player::Render()
 		}
 #endif
 
-		slintf( "%u %u\n", new_msec, sim_msec );
-		slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
+		//slintf( "%u %u\n", new_msec, sim_msec );
+		//slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
 		
 #ifdef ULTRACADE
 		UltraNudge();		//rlc physics_dtime is the balance of time to move from the graphic frame position to the next

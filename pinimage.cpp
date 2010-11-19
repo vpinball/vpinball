@@ -143,7 +143,7 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		FIMEMORY *hmem = FreeImage_OpenMemory((BYTE *)m_ppb->m_pdata, m_ppb->m_cdata);
 		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
 		FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
-		slintf("BPP(JPEG):%d\n",FreeImage_GetBPP(dib));
+		int bitsPerPixel = FreeImage_GetBPP(dib);
 		
 		HDC hDC = GetDC(NULL);
 
@@ -162,7 +162,7 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 
 		m_pdsBuffer =  g_pvp->m_pdd.CreateFromHBitmap(hbm, &dibWidth, &dibHeight );
 
-		if ((fif == FIF_BMP) || (fif == FIF_JPEG))
+		if (bitsPerPixel == 24)
 			g_pvp->m_pdd.SetOpaque(m_pdsBuffer, dibWidth, dibHeight);
 
 
@@ -184,6 +184,7 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		HDC hDC = GetDC(NULL);
 		HBITMAP hbm = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
 		
+		int bitsPerPixel = FreeImage_GetBPP(dib);
 		int dibWidth = FreeImage_GetWidth(dib);
 		int dibHeight = FreeImage_GetHeight(dib);
 
@@ -191,7 +192,7 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 
 		m_pdsBuffer =  g_pvp->m_pdd.CreateFromHBitmap(hbm, 0, 0);
 
-		if ((fif == FIF_BMP) || (fif == FIF_JPEG))
+		if (bitsPerPixel == 24)
 			g_pvp->m_pdd.SetOpaque(m_pdsBuffer, dibWidth, dibHeight);
 
 		if (m_pdsBuffer == NULL)
@@ -456,17 +457,22 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 
 		HDC hDC = GetDC(NULL);
 		HBITMAP hbm = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
-
-
+		int bitsPerPixel = FreeImage_GetBPP(dib);
+		int dibWidth = FreeImage_GetWidth(dib);
+		int dibHeight = FreeImage_GetHeight(dib);
 		FreeImage_Unload(dib);
 		//HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, szfile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+
+		LPDIRECTDRAWSURFACE7 mySurface = CreateFromHBitmap(hbm, pwidth, pheight);
+		if (bitsPerPixel == 24)
+			g_pvp->m_pdd.SetOpaque(mySurface, dibWidth, dibHeight);
 
 		if (hbm == NULL)
 		{
 			return NULL;
 		}
-
-		return CreateFromHBitmap(hbm, pwidth, pheight);
+		
+		return mySurface;
 	}
 	else
 		return NULL;
@@ -837,7 +843,7 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 	{
 	// Set alpha of each pixel
 
-		// cupid will have a look at this ;-)
+	
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);
 	pdds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
@@ -871,6 +877,25 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 		}
 	else  
 		{
+		// check if image has it's own alpha channel
+		unsigned int aMax = ((*(COLORREF *)pch) & 0xff000000)>>24;
+		unsigned int aMin = ((*(COLORREF *)pch) & 0xff000000)>>24;
+		for (int i=0;i<height;i++)
+		{
+			for (int l=0;l<width;l++)
+			{	
+				if (((*(COLORREF *)pch) & 0xff000000)>>24 > aMax)
+					aMax = ((*(COLORREF *)pch) & 0xff000000)>>24;
+				if (((*(COLORREF *)pch) & 0xff000000)>>24 < aMin)
+					aMin = ((*(COLORREF *)pch) & 0xff000000)>>24;
+				pch += 4;
+			}
+			pch += pitch-(width*4);
+		}
+
+		pch = (BYTE *)ddsd.lpSurface;
+
+
 		for (int i=0;i<height;i++)
 			{
 			for (int l=0;l<width;l++)
@@ -885,12 +910,19 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 					{ 
 					//if (!(tc & MINBLACKMASK)) 
 					//	{tc |= MINBLACK;}	// set minimum black
-					*(COLORREF *)pch = tc; 
+
+						//to enable alpha uncomment these three lines (does not work with HD-Render)
+						//if ((aMin == aMax) && (aMin = 255))    // if there is no alpha-channel info in the image, set to opaque
+							*(COLORREF *)pch = tc; 
+						//else 
+						//	fTransparent = fTrue;   // does not work. - cupid: i need a real PC to test this.
 					}
 				pch += 4;
 				}
 			pch += pitch-(width*4);
 			}	
+
+		
 		}
 	pdds->Unlock(NULL);
 
