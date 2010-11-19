@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "freeimage.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -135,8 +136,37 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		{
 		m_ppb = new PinBinary();
 		m_ppb->LoadFromStream(pbr->m_pistream, pbr->m_version);
-		m_pdsBuffer = g_pvp->m_pdd.DecompressJPEG(this, m_ppb, &m_width, &m_height);
+		
+		// m_ppb->m_szPath has the original filename	
+		// m_ppb->m_pdata() is the buffer
+		// m_ppb->m_cdata() is the filesize
+		FIMEMORY *hmem = FreeImage_OpenMemory((BYTE *)m_ppb->m_pdata, m_ppb->m_cdata);
+		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+		FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
+		slintf("BPP(JPEG):%d\n",FreeImage_GetBPP(dib));
+		
+		HDC hDC = GetDC(NULL);
 
+
+		HBITMAP hbm = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
+
+		//slintf("Pixel format: %s",hbm.PixelFormat.ToString());
+		//g_pvp->m_pdd.get
+
+
+		int dibWidth = FreeImage_GetWidth(dib);
+		int dibHeight = FreeImage_GetHeight(dib);
+
+		FreeImage_Unload(dib);
+
+
+		m_pdsBuffer =  g_pvp->m_pdd.CreateFromHBitmap(hbm, &dibWidth, &dibHeight );
+
+		if ((fif == FIF_BMP) || (fif == FIF_JPEG))
+			g_pvp->m_pdd.SetOpaque(m_pdsBuffer, dibWidth, dibHeight);
+
+
+				//m_pdsBuffer = g_pvp->m_pdd.DecompressJPEG(this, m_ppb, &m_width, &m_height);
 		if (m_pdsBuffer == NULL)
 			{
 			return fFalse;
@@ -148,7 +178,21 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		PinTable * const pt = (PinTable *)pbr->m_pdata;
 		pbr->GetInt(&linkid);
 		m_ppb = pt->GetImageLinkBinary(linkid);
-		m_pdsBuffer = g_pvp->m_pdd.DecompressJPEG(this, m_ppb, &m_width, &m_height);
+		FIMEMORY *hmem = FreeImage_OpenMemory((BYTE *)m_ppb->m_pdata, m_ppb->m_cdata);
+		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+		FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
+		HDC hDC = GetDC(NULL);
+		HBITMAP hbm = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
+		
+		int dibWidth = FreeImage_GetWidth(dib);
+		int dibHeight = FreeImage_GetHeight(dib);
+
+		FreeImage_Unload(dib);
+
+		m_pdsBuffer =  g_pvp->m_pdd.CreateFromHBitmap(hbm, 0, 0);
+
+		if ((fif == FIF_BMP) || (fif == FIF_JPEG))
+			g_pvp->m_pdd.SetOpaque(m_pdsBuffer, dibWidth, dibHeight);
 
 		if (m_pdsBuffer == NULL)
 			{
@@ -394,14 +438,40 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 
 LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwidth, int * const pheight)
 	{
-	HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, szfile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 
-	if (hbm == NULL)
+	// check the file signature and deduce its format
+	// (the second argument is currently not used by FreeImage)
+	fif = FreeImage_GetFileType(szfile, 0);
+	if(fif == FIF_UNKNOWN) {
+		// no signature ?
+		// try to guess the file format from the file extension
+		fif = FreeImage_GetFIFFromFilename(szfile);
+	}
+	// check that the plugin has reading capabilities ...
+	if((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
+		// ok, let's load the file
+		FIBITMAP *dib = FreeImage_Load(fif, szfile, 0);
+		// unless a bad file format, we are done !
+
+		HDC hDC = GetDC(NULL);
+		HBITMAP hbm = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
+
+
+		FreeImage_Unload(dib);
+		//HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, szfile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+
+		if (hbm == NULL)
 		{
-		return NULL;
+			return NULL;
 		}
 
-	return CreateFromHBitmap(hbm, pwidth, pheight);
+		return CreateFromHBitmap(hbm, pwidth, pheight);
+	}
+	else
+		return NULL;
+
+
 	}
 
 LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(const int id, int * const pwidth, int * const pheight)
@@ -766,6 +836,8 @@ void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF 
 BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const int width, const int height)
 	{
 	// Set alpha of each pixel
+
+		// cupid will have a look at this ;-)
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);
 	pdds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
