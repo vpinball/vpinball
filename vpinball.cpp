@@ -3596,6 +3596,24 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, checkblit ? BST_CHECKED : BST_UNCHECKED, 0);
 
+
+			int maxTexDim;
+			hr = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
+			if (hr != S_OK)
+				{
+				maxTexDim = 0; // default: Don't resize textures
+				}
+			switch(maxTexDim)
+			{
+				case 512:	SendMessage(GetDlgItem(hwndDlg, IDC_Tex512),BM_SETCHECK, BST_CHECKED,0);
+							break;
+				case 1024:  SendMessage(GetDlgItem(hwndDlg, IDC_Tex1024),BM_SETCHECK, BST_CHECKED,0);
+							break;
+				case 2048:  SendMessage(GetDlgItem(hwndDlg, IDC_Tex2048),BM_SETCHECK, BST_CHECKED,0);
+							break;
+				default:	SendMessage(GetDlgItem(hwndDlg, IDC_TexUnlimited),BM_SETCHECK, BST_CHECKED,0);
+			}
+		
 			hwndCheck = GetDlgItem(hwndDlg, IDC_SHADOW);
 			int shadow;
 			hr = GetRegInt("Player", "BallShadows", &shadow);
@@ -3715,6 +3733,19 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							HWND hwndCheck = GetDlgItem(hwndDlg, IDC_CHECKBLIT);
 							int checkblit = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "CheckBlit", REG_DWORD, &checkblit, 4);
+
+							HWND maxTexDim512 = GetDlgItem(hwndDlg, IDC_Tex512);
+							HWND maxTexDim1024 = GetDlgItem(hwndDlg, IDC_Tex1024);
+							HWND maxTexDim2048 = GetDlgItem(hwndDlg, IDC_Tex2048);
+							HWND maxTexDimUnlimited = GetDlgItem(hwndDlg, IDC_TexUnlimited);
+							int maxTexDim = 0;
+							if (SendMessage(maxTexDim512, BM_GETCHECK, 0, 0) == BST_CHECKED)
+								maxTexDim = 512;
+							if (SendMessage(maxTexDim1024, BM_GETCHECK, 0, 0) == BST_CHECKED)
+								maxTexDim = 1024;
+							if (SendMessage(maxTexDim2048, BM_GETCHECK, 0, 0) == BST_CHECKED)
+								maxTexDim = 2048;
+							SetRegValue("Player", "MaxTexDimension", REG_DWORD, &maxTexDim,4);
 
 							HWND hwndShadows = GetDlgItem(hwndDlg, IDC_SHADOW);
 							int shadow = SendMessage(hwndShadows, BM_GETCHECK, 0, 0);

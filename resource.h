@@ -428,7 +428,12 @@
 #define IDI_PAUSE                       370
 #define IDI_STEP                        371
 #define IDC_JOYDEADZONESLIDER           371
+#define IDC_Tex512                      373
+#define IDC_Tex1024                     374
+#define IDC_Tex2048                     375
 #define IDB_TARGET                      376
+#define IDC_RADIO4                      376
+#define IDC_TexUnlimited                376
 #define IDB_TB_DEBUG                    377
 #define IDD_COMLIST                     378
 #define IDD_PROPKICKER_STATE            379
@@ -504,7 +509,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        384
 #define _APS_NEXT_COMMAND_VALUE         32842
-#define _APS_NEXT_CONTROL_VALUE         373
+#define _APS_NEXT_CONTROL_VALUE         377
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

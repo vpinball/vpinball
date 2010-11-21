@@ -113,6 +113,7 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(BITS))
 		{
+			
 		m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(m_width, m_height);
 
 		if (m_pdsBuffer == NULL)
@@ -131,6 +132,7 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		lzwreader.Decoder();
 
 		m_pdsBuffer->Unlock(NULL);
+		
 		}
 	else if (id == FID(JPEG))
 		{
@@ -144,9 +146,24 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
 		FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
 		int bitsPerPixel = FreeImage_GetBPP(dib);
-		
-		HDC hDC = GetDC(NULL);
 
+		// check if Textures exeed the maximum texture dimension
+		int maxTexDim;
+		HRESULT hrMaxTex = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
+		if (hrMaxTex != S_OK)
+		{
+			maxTexDim = 0; // default: Don't resize textures
+		}
+		int pictureWidth = FreeImage_GetWidth(dib);
+		int pictureHeight = FreeImage_GetHeight(dib);
+		if (((pictureHeight > maxTexDim) ||  (pictureWidth > maxTexDim)) && (maxTexDim != 0))
+		{
+			dib = FreeImage_Rescale(dib, maxTexDim, maxTexDim, FILTER_BILINEAR);
+			m_width = maxTexDim;
+			m_height = maxTexDim;
+		}
+
+		HDC hDC = GetDC(NULL);
 
 		HBITMAP hbm = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
 
@@ -181,6 +198,24 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		FIMEMORY *hmem = FreeImage_OpenMemory((BYTE *)m_ppb->m_pdata, m_ppb->m_cdata);
 		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
 		FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
+
+
+		// check if Textures exeed the maximum texture dimension
+		int maxTexDim;
+		HRESULT hrMaxTex = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
+		if (hrMaxTex != S_OK)
+		{
+			maxTexDim = 0; // default: Don't resize textures
+		}
+		int pictureWidth = FreeImage_GetWidth(dib);
+		int pictureHeight = FreeImage_GetHeight(dib);
+		if (((pictureHeight > maxTexDim) ||  (pictureWidth > maxTexDim)) && (maxTexDim != 0))
+		{
+			dib = FreeImage_Rescale(dib, maxTexDim, maxTexDim, FILTER_BILINEAR);
+			m_width = maxTexDim;
+			m_height = maxTexDim;
+		}
+
 		HDC hDC = GetDC(NULL);
 		HBITMAP hbm = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
 		
@@ -454,6 +489,20 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 		// ok, let's load the file
 		FIBITMAP *dib = FreeImage_Load(fif, szfile, 0);
 		// unless a bad file format, we are done !
+
+		// check if Textures exeed the maximum texture diemension
+		int maxTexDim;
+		HRESULT hrMaxTex = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
+		if (hrMaxTex != S_OK)
+		{
+			maxTexDim = 0; // default: Don't resize textures
+		}
+		int pictureWidth = FreeImage_GetWidth(dib);
+		int pictureHeight = FreeImage_GetHeight(dib);
+		if (((pictureHeight > maxTexDim) ||  (pictureWidth > maxTexDim)) && (maxTexDim != 0))
+		{
+			dib = FreeImage_Rescale(dib, maxTexDim, maxTexDim, FILTER_BILINEAR);
+		}
 
 		HDC hDC = GetDC(NULL);
 		HBITMAP hbm = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
