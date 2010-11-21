@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="VBATest"
 	ProjectGUID="{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
 	RootNamespace="VBATest"
@@ -965,14 +965,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(DXSDK_DIR)\Include&quot;;&quot;vp-sup\inc&quot;;pin\;media"
+				AdditionalIncludeDirectories="C:\mssdk\include;&quot;$(DXSDK_DIR)\lib&quot;;&quot;$(DXSDK_DIR)\Include&quot;;&quot;vp-sup\inc&quot;;pin\;media"
 				PreprocessorDefinitions="COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
+				GenerateXMLDocumentationFiles="true"
+				XMLDocumentationFileName="$(IntDir)\"
 				BrowseInformation="1"
-				WarningLevel="4"
+				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
@@ -984,6 +986,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
+				AdditionalIncludeDirectories=""
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -994,7 +997,7 @@
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;.\lib"
+				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib&quot;;.\lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBC;LIBCMT;LIBCD"
 				GenerateDebugInformation="true"
@@ -1013,6 +1016,8 @@
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
+				SuppressStartupBanner="false"
+				ValidateIntelliSense="false"
 			/>
 			<Tool
 				Name="VCBscMakeTool"
@@ -1128,7 +1133,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="@echo off&#x0D;&#x0A;if &quot;.%VPIN_DIR%&quot; == &quot;.&quot; set VPIN_DIR=C:\UPin\VisualPinball\data\exe&#x0D;&#x0A;echo VPIN_DIR=&quot;%VPIN_DIR%&quot;&#x0D;&#x0A;if not exist &quot;%VPIN_DIR%&quot; mkdir &quot;%VPIN_DIR%&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;%VPIN_DIR%&quot;"
+				CommandLine="@echo off&#x0D;&#x0A;if &quot;.%VPIN_DIR%&quot; == &quot;.&quot; set VPIN_DIR=C:\UPin\VisualPinball\data\exe&#x0D;&#x0A;echo VPIN_DIR=&quot;%VPIN_DIR%&quot;&#x0D;&#x0A;if not exist &quot;%VPIN_DIR%&quot; mkdir &quot;%VPIN_DIR%&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;%VPIN_DIR%&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -1232,7 +1237,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="@echo off&#x0D;&#x0A;if &quot;.%VPIN_DIR%&quot; == &quot;.&quot; set VPIN_DIR=C:\UPin\VisualPinball\data\exe&#x0D;&#x0A;echo VPIN_DIR=&quot;%VPIN_DIR%&quot;&#x0D;&#x0A;if not exist &quot;%VPIN_DIR%&quot; mkdir &quot;%VPIN_DIR%&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;%VPIN_DIR%&quot;"
+				CommandLine="@echo off&#x0D;&#x0A;if &quot;.%VPIN_DIR%&quot; == &quot;.&quot; set VPIN_DIR=C:\UPin\VisualPinball\data\exe&#x0D;&#x0A;echo VPIN_DIR=&quot;%VPIN_DIR%&quot;&#x0D;&#x0A;if not exist &quot;%VPIN_DIR%&quot; mkdir &quot;%VPIN_DIR%&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;%VPIN_DIR%&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

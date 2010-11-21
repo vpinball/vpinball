@@ -604,8 +604,8 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 	*v = 0.0f;
 
 	// Find the closest width and height that are powers of 2.
-	const int TextureWidth = Display_GetPowerOfTwo ( Width );
-	const int TextureHeight = Display_GetPowerOfTwo ( Height );
+	int TextureWidth = Display_GetPowerOfTwo ( Width );
+	int TextureHeight = Display_GetPowerOfTwo ( Height );
 
 	// The texture's dimensions will probably be larger than the original DDraw surface.
 	// Calculate the texture coordinates so that it leaves out unwanted area.
@@ -686,7 +686,7 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 					{
 						for (int r=0; r<Width*4; r+=4)
 						{
-							// Copy the pixel.
+							// Copy the pixel. Cupid: Alpha channel removed?
 #if 1
 							*((unsigned int*)&(DestLockedSurface[offset0 + r])) = *((unsigned int*)&(SourceLockedSurface[offset1 + r])) | 0xFF000000;
 #else
