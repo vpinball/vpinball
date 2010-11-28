@@ -1021,7 +1021,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 		// Exit the application.
 //		ExitApp();
 //	}
-
+	Render();
 	return S_OK;
 	}
 
