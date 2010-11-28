@@ -138,6 +138,8 @@ public:
 	STDMETHOD(put_FieldOfView)(/*[in]*/ float newVal);
 	STDMETHOD(get_Inclination)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Inclination)(/*[in]*/ float newVal);
+	STDMETHOD(get_Layback)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -436,6 +438,7 @@ END_CONNECTION_POINT_MAP()
 	BOOL m_fRenderEMReels;
 	float m_rotation;
 	float m_inclination;
+	float m_layback;
 	float m_FOV;
 	float m_xlatex;
 	float m_xlatey;

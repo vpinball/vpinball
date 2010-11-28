@@ -948,13 +948,17 @@ void Pin3D::DrawBackground()
 		}
 	}
 
-void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey)
+void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback)
 	{
 	/*RECT rc;
 	rc.left = 0;
 	rc.top = 0;
 	rc.right = m_width;
 	rc.bottom = m_height;*/
+
+	//float layback = 30.0f;
+	m_layback = layback;
+	GPINFLOAT skew = tan(layback/360*M_PI)*-1.0;
 
 	m_scalex = scalex;
 	m_scaley = scaley;
@@ -1085,20 +1089,43 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	// Clear the world matrix.
 	Identity();
     
-	FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), m_aspect, m_rotation, m_inclination, FOV);
+	FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), m_aspect, m_rotation, m_inclination, FOV, skew);
 	SetFieldOfView(FOV, m_aspect, m_rznear, m_rzfar);
+
+	// skew the coordinate system from kartesian to non kartesian.
+	float skewX = (float)(sin(m_rotation)*-skew);
+	float skewY = (float)(cos(m_rotation)*skew);
+	Matrix3D matTemp, matTrans;
+	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
+	// create a normal matrix.
+	matTrans._11 = matTrans._22 = matTrans._33 = matTrans._44 = 1.0f;
+	matTrans._12 = matTrans._13 = matTrans._14 = 0.0f;
+	matTrans._21 = matTrans._23 = matTrans._24 = 0.0f;
+	matTrans._31 = matTrans._32 = matTrans._34 = 0.0f;
+	matTrans._41 = matTrans._42 = matTrans._43 = 0.0f;
+	// Skew for FOV of 0 Deg. is not supported. so change it a little bit.
+	float skewFOV = FOV;
+	if (skewFOV == 0) skewFOV = 0.0001f; 
+	// create skew the z axis to x and y direction.
+	matTrans._42 = tan((180.0f-(float)skewFOV)*(float)M_PI/360.0f)*m_vertexcamera.y*(float)skewY;
+	matTrans._32 = skewY;
+	matTrans._41 = tan((180.0f-(float)skewFOV)*(float)M_PI/360.0f)*m_vertexcamera.y*(float)skewX;
+	matTrans._31 = skewX;
+	matTemp.Multiply(matTrans, matTemp);
+	m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
+
 	if( m_rotation != 0.0f )
 		{
-		Scale( m_scalex, m_scaley, 1.0f );
-		Rotate( 0, 0, m_rotation );
-		Translate(-m_vertexcamera.x,-m_vertexcamera.y,-m_vertexcamera.z);
-		Translate( m_xlatex, m_xlatey, 0.0f );
-		Rotate( m_inclination, 0, 0 );
+			Scale( m_scalex, m_scaley, 1.0f );
+			Rotate( 0, 0, m_rotation );
+			Translate(-m_vertexcamera.x,-m_vertexcamera.y,-m_vertexcamera.z);
+			Translate( m_xlatex, m_xlatey, 0.0f );
+			Rotate( m_inclination, 0, 0 );
 		}
 	else
 		{
-		Translate(-m_vertexcamera.x,-m_vertexcamera.y,-m_vertexcamera.z);
-		Rotate(m_inclination,0,m_rotation);
+			Translate(-m_vertexcamera.x,-m_vertexcamera.y,-m_vertexcamera.z);
+			Rotate(m_inclination,0,m_rotation);
 		}
 	CacheTransform();
 
@@ -1457,7 +1484,7 @@ void Pin3D::Flip(const int offsetx, const int offsety)
 		}
 	}
 
-void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *rgv*/, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV)
+void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *rgv*/, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV, const GPINFLOAT skew)
 	{
 	// Determine camera distance
 	
@@ -1473,6 +1500,7 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 
 	const GPINFLOAT slopex = slopey*aspect;// slopey*m_rcHard.width/m_rcHard.height;
 
+
 	GPINFLOAT maxyintercept = -DBL_MAX;
 	GPINFLOAT minyintercept = DBL_MAX;
 	GPINFLOAT maxxintercept = -DBL_MAX;
@@ -1482,17 +1510,23 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 	m_rzfar = 0;
 
 	for (int i=0; i<cvert; ++i)
-		{
+	{
 		//vertexT = rgv[i];
-		
+
+
+		GPINFLOAT vertexTy = (*pvvertex3D->ElementAt(i)).y; //+ ((*pvvertex3D->ElementAt(i)).z*skew*-1.0f)  ;
+		// calculation of skew does not work, since boundary boxes are too big. Boundary boxes for
+		// Walls are always the full table dimension. The users have to test good values out.
+		// slintf ("skewchange: %f to %f\n",((*pvvertex3D->ElementAt(i)).z*skew*-1.0f),vertexTy);
+	
 		// Rotate vertex about y axis according to incoming rotation
 		const GPINFLOAT temp = (*pvvertex3D->ElementAt(i)).x;
 		const GPINFLOAT vertexTx = rrotcos*temp + rrotsin*(*pvvertex3D->ElementAt(i)).z;
 			  GPINFLOAT vertexTz = rrotcos*(*pvvertex3D->ElementAt(i)).z - rrotsin*temp;
 
 		// Rotate vertex about x axis according to incoming inclination
-		const GPINFLOAT temp2 = (*pvvertex3D->ElementAt(i)).y;
-		const GPINFLOAT vertexTy = rinccos*temp2 + rincsin*vertexTz;
+		const GPINFLOAT temp2 = vertexTy;
+						vertexTy = rinccos*temp2 + rincsin*vertexTz;
 						vertexTz = rinccos*vertexTz - rincsin*temp2;
 
 		// Extend z-range if necessary
@@ -1500,14 +1534,22 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 		m_rzfar =  max(m_rzfar,  -vertexTz);
 
 		// Extend slope lines from point to find camera intersection
-		maxyintercept = max(maxyintercept, vertexTy + slopey*vertexTz);
+		maxyintercept = max(maxyintercept, vertexTy + (slopey)*vertexTz);
 
-		minyintercept = min(minyintercept, vertexTy - slopey*vertexTz);
+		minyintercept = min(minyintercept, vertexTy - (slopey)*vertexTz);
 
 		maxxintercept = max(maxxintercept, vertexTx + slopex*vertexTz);
 
 		minxintercept = min(minxintercept, vertexTx - slopex*vertexTz);
-		}
+	}
+	/*
+	slintf ("maxy: %f\n",maxyintercept);
+	slintf ("miny: %f\n",minyintercept);
+	slintf ("maxx: %f\n",maxxintercept);
+	slintf ("minx: %f\n",minxintercept);
+	slintf ("m_rznear: %f\n",m_rznear);
+	slintf ("m_rzfar : %f\n",m_rzfar);
+	*/
 
 	// Find camera center in xy plane
 	//delta = maxyintercept - minyintercept;// Allow for roundoff error
@@ -1516,7 +1558,9 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 	const GPINFLOAT ydist = (maxyintercept - minyintercept) / (slopey*2.0);
 	const GPINFLOAT xdist = (maxxintercept - minxintercept) / (slopex*2.0);
 	m_vertexcamera.z = (float)(max(ydist,xdist));
-	m_vertexcamera.y = (float)(slopey*ydist + minyintercept);
+	// changed this since it's the same and better understandable.
+	// m_vertexcamera.y = (float)(slopey*ydist + minyintercept);
+	m_vertexcamera.y = (float)((maxyintercept-minyintercept)/2+minyintercept);
 	m_vertexcamera.x = (float)(slopex*xdist + minxintercept);
 
 	m_rznear += m_vertexcamera.z;

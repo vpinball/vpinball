@@ -140,13 +140,13 @@ public:
 
 	void InitBackGraphics();
 
-	void InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey);
+	void InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback);
 	void SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar);
 	void Identity();
 	void Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z);
 	void Scale(const float x, const float y, const float z);
 	void Translate(const float x, const float y, const float z);
-	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV);
+	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV, const GPINFLOAT skew);
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout) const;
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 	void CacheTransform();
@@ -238,7 +238,7 @@ public:
 	float m_maxtu;
 	float m_maxtv;
 
-	float m_rotation, m_inclination;
+	float m_rotation, m_inclination, m_layback;
 	float m_scalex, m_scaley;
 	float m_xlatex, m_xlatey;
 

@@ -691,7 +691,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	m_pin3d.InitLayout(ptable->m_left, ptable->m_top, ptable->m_right,
 					   ptable->m_bottom, ptable->m_inclination, realFOV,
 					   ptable->m_rotation, ptable->m_scalex, ptable->m_scaley,
-					   ptable->m_xlatex, ptable->m_xlatey);
+					   ptable->m_xlatex, ptable->m_xlatey, ptable->m_layback);
 
 	m_mainlevel.m = 0;
 	m_mainlevel.n = 0;
