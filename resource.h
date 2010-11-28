@@ -435,6 +435,8 @@
 #define IDC_RADIO4                      376
 #define IDC_TexUnlimited                376
 #define IDB_TB_DEBUG                    377
+#define IDC_EDIT1                       377
+#define IDC_Layback                     377
 #define IDD_COMLIST                     378
 #define IDD_PROPKICKER_STATE            379
 #define IDR_TABLE_NEW                   383
@@ -509,7 +511,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        384
 #define _APS_NEXT_COMMAND_VALUE         32842
-#define _APS_NEXT_CONTROL_VALUE         377
+#define _APS_NEXT_CONTROL_VALUE         378
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

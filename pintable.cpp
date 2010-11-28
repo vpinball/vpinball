@@ -687,6 +687,7 @@ PinTable::PinTable()
 	m_bottom = 0.0f;
 
 	m_rotation = 0;
+	m_layback = 0;
 
 	m_glassheight = 210;
 	m_tableheight = 0;
@@ -1159,6 +1160,7 @@ void PinTable::Init(VPinball *pvp)
 	m_xlatey = PINTABLE_XLATEY;
 
 	m_inclination = 43;
+	m_layback = 0;
 	m_FOV = 45;
 
 	SetDefaultView();
@@ -2541,6 +2543,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
 	bw.WriteFloat(FID(ROTA), m_rotation);
 	bw.WriteFloat(FID(INCL), m_inclination);
+	bw.WriteFloat(FID(LAYB), m_layback);
 	bw.WriteFloat(FID(FOVX), m_FOV);
 	bw.WriteFloat(FID(SLPX), m_angletiltMax);
 	bw.WriteFloat(FID(SLOP), m_angletiltMin);
@@ -3305,6 +3308,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(ROTA))
 		{
 		pbr->GetFloat(&m_rotation);
+		}
+	else if (id == FID(LAYB))
+		{
+		pbr->GetFloat(&m_layback);
 		}
 	else if (id == FID(INCL))
 		{
@@ -5742,6 +5749,25 @@ STDMETHODIMP PinTable::put_Inclination(float newVal)
 	STARTUNDO
 
 	m_inclination = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+
+STDMETHODIMP PinTable::get_Layback(float *pVal)
+{
+	*pVal = m_layback;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Layback(float newVal)
+{
+	STARTUNDO
+
+	m_layback = newVal;
 
 	STOPUNDO
 

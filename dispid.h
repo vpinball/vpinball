@@ -4,6 +4,7 @@
 #define DISPID_Table_GridSize 109
 #define DISPID_Table_Inclination 104
 #define DISPID_Table_FieldOfView 105
+#define DISPID_Table_Layback 1040
 #define DISPID_Table_DisplayGrid 106
 #define DISPID_Table_DisplayBackdrop 107
 #define DISPID_Table_Nudge 21

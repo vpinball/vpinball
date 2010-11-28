@@ -1379,47 +1379,49 @@ BEGIN
     LTEXT           "Bac&k Decal:",-1,7,54,38,8
 END
 
-IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 304
+IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 314
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,7,40,14
     COMBOBOX        1501,7,33,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        104,80,47,40,12,ES_AUTOHSCROLL
-    EDITTEXT        105,80,61,40,12,ES_AUTOHSCROLL
-    EDITTEXT        99,80,75,40,12,ES_AUTOHSCROLL
-    EDITTEXT        100,80,89,40,12,ES_AUTOHSCROLL
-    EDITTEXT        101,80,102,40,12,ES_AUTOHSCROLL
-    EDITTEXT        102,80,116,40,12,ES_AUTOHSCROLL
-    EDITTEXT        103,80,129,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1100,80,155,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1101,80,169,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1102,80,182,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1103,80,196,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1106,80,210,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1105,80,224,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1104,80,238,40,12,ES_AUTOHSCROLL
-    CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,252,111,9
-    CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,272,113,10
-    CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,285,113,10
-    LTEXT           "I&mage:",-1,7,25,22,8
-    LTEXT           "&Color",-1,7,10,20,9
-    LTEXT           "&Inclination",-1,7,48,70,9
-    LTEXT           "&Field of View",-1,7,63,71,9
-    LTEXT           "X Offset",-1,7,117,67,8
-    LTEXT           "&Y Scale",-1,7,104,67,8
-    LTEXT           "&X Scale",-1,7,90,67,8
-    LTEXT           "Y Offset",-1,7,131,67,8
-    LTEXT           "XY Rotation",-1,7,76,67,8
-    LTEXT           "Gravity Constant",-1,7,158,69,8
-    LTEXT           "Contact Friction",-1,7,171,69,8
-    LTEXT           "Contact Scatter Angle",-1,7,185,69,8
-    LTEXT           "Dampening Speed",-1,7,199,69,8
-    LTEXT           "Physics Max Looptime",-1,7,227,73,8
-    LTEXT           "Physical Constants",-1,7,144,113,8
-    CTEXT           "Graphics  Settings",-1,7,263,113,8
-    LTEXT           "Mech-Plunger Adjust",-1,7,240,74,8
-    LTEXT           "Dampening Friction",-1,7,213,69,8
+    EDITTEXT        105,80,60,40,12,ES_AUTOHSCROLL
+    EDITTEXT        99,80,87,40,12,ES_AUTOHSCROLL
+    EDITTEXT        100,80,101,40,12,ES_AUTOHSCROLL
+    EDITTEXT        101,80,114,40,12,ES_AUTOHSCROLL
+    EDITTEXT        102,80,128,40,12,ES_AUTOHSCROLL
+    EDITTEXT        103,80,141,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1100,80,167,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1101,80,181,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1102,80,194,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1103,80,208,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1106,80,222,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1105,80,236,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1104,80,250,40,12,ES_AUTOHSCROLL
+    CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,264,111,9
+    CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,285,104,10
+    CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,295,105,10
+    LTEXT           "I&mage:",IDC_STATIC,7,25,22,8
+    LTEXT           "&Color",IDC_STATIC,7,10,20,9
+    LTEXT           "&Inclination",IDC_STATIC,7,48,70,9
+    LTEXT           "&Field of View",IDC_STATIC,7,62,71,9
+    LTEXT           "X Offset",IDC_STATIC,7,129,67,8
+    LTEXT           "&Y Scale",IDC_STATIC,7,116,67,8
+    LTEXT           "&X Scale",IDC_STATIC,7,102,67,8
+    LTEXT           "Y Offset",IDC_STATIC,7,143,67,8
+    LTEXT           "XY Rotation",IDC_STATIC,7,88,67,8
+    LTEXT           "Gravity Constant",IDC_STATIC,7,170,69,8
+    LTEXT           "Contact Friction",IDC_STATIC,7,183,69,8
+    LTEXT           "Contact Scatter Angle",IDC_STATIC,7,197,69,8
+    LTEXT           "Dampening Speed",IDC_STATIC,7,211,69,8
+    LTEXT           "Physics Max Looptime",IDC_STATIC,7,239,73,8
+    LTEXT           "Physical Constants",IDC_STATIC,7,156,113,8
+    CTEXT           "Graphics  Settings",IDC_STATIC,7,275,113,8
+    LTEXT           "Mech-Plunger Adjust",IDC_STATIC,7,252,74,8
+    LTEXT           "Dampening Friction",IDC_STATIC,7,225,69,8
+    EDITTEXT        1040,80,73,40,12,ES_AUTOHSCROLL
+    LTEXT           "Layback",IDC_STATIC,7,75,28,8
 END
 
 IDD_PROPPOINT_POSITION DIALOGEX 0, 0, 125, 42
@@ -2011,7 +2013,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 120
         TOPMARGIN, 7
-        BOTTOMMARGIN, 295
+        BOTTOMMARGIN, 305
     END
 
     IDD_PROPPOINT_POSITION, DIALOG
