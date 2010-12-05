@@ -1569,7 +1569,7 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 	const GPINFLOAT delta = m_rzfar - m_rznear;
 
 #if 1 
-	m_rznear -= delta*0.05; // Allow for roundoff error (and tweak the setting too).
+	m_rznear -= delta*0.15; // Allow for roundoff error (and tweak the setting too).
 	m_rzfar += delta*0.01;
 #else
 	m_rznear -= delta*0.01; // Allow for roundoff error
