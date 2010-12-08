@@ -425,8 +425,8 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		pin = m_ptable->GetImage(m_d.m_szImage);
 		leading = 0;
 		descent = 0;
-		maxtu = 1.0f; //rlc was uninitialize, assume one ok
-		maxtv = 1.0f; //rlc was uninitialize, assume one ok
+		maxtu = 1.0f; //rlc was uninitialized, assume one ok
+		maxtv = 1.0f; //rlc was uninitialized, assume one ok
 		}
 
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
@@ -525,7 +525,7 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->SetTexture(ePictureTexture, NULL);
 	g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-	// Set the rendrer state.
+	// Set the render state.
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);

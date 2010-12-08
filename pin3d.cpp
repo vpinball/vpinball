@@ -707,7 +707,7 @@ HRESULT Pin3D::CreateZBuffer(const GUID* const pDeviceGUID )
 		}
 
     // Get an appropiate pixel format from enumeration of the formats. On the
-    // first pass, we look for a zbuffer dpeth which is equal to the frame
+    // first pass, we look for a zbuffer depth which is equal to the frame
     // buffer depth (as some cards unfornately require this).
     m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback,
                                 (VOID*)&ddsd.ddpfPixelFormat );
@@ -958,7 +958,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	//float layback = 30.0f;
 	m_layback = layback;
-	GPINFLOAT skew = tan(layback/360*M_PI)*-1.0;
+	const GPINFLOAT skew = -tan(layback*(M_PI/360));
 
 	m_scalex = scalex;
 	m_scaley = scaley;
@@ -1093,8 +1093,8 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	SetFieldOfView(FOV, m_aspect, m_rznear, m_rzfar);
 
 	// skew the coordinate system from kartesian to non kartesian.
-	float skewX = (float)(sin(m_rotation)*-skew);
-	float skewY = (float)(cos(m_rotation)*skew);
+	const float skewX = -sinf(m_rotation)*(float)skew;
+	const float skewY =  cosf(m_rotation)*(float)skew;
 	Matrix3D matTemp, matTrans;
 	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 	// create a normal matrix.
@@ -1104,12 +1104,11 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	matTrans._31 = matTrans._32 = matTrans._34 = 0.0f;
 	matTrans._41 = matTrans._42 = matTrans._43 = 0.0f;
 	// Skew for FOV of 0 Deg. is not supported. so change it a little bit.
-	float skewFOV = FOV;
-	if (skewFOV == 0) skewFOV = 0.0001f; 
+	const float skewFOV = (FOV < 0.0001f) ? 0.0001f : FOV;
 	// create skew the z axis to x and y direction.
-	matTrans._42 = tan((180.0f-(float)skewFOV)*(float)M_PI/360.0f)*m_vertexcamera.y*(float)skewY;
+	matTrans._42 = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*m_vertexcamera.y*skewY;
 	matTrans._32 = skewY;
-	matTrans._41 = tan((180.0f-(float)skewFOV)*(float)M_PI/360.0f)*m_vertexcamera.y*(float)skewX;
+	matTrans._41 = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*m_vertexcamera.y*skewX;
 	matTrans._31 = skewX;
 	matTemp.Multiply(matTrans, matTemp);
 	m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
@@ -1513,7 +1512,6 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 	{
 		//vertexT = rgv[i];
 
-
 		GPINFLOAT vertexTy = (*pvvertex3D->ElementAt(i)).y; //+ ((*pvvertex3D->ElementAt(i)).z*skew*-1.0f)  ;
 		// calculation of skew does not work, since boundary boxes are too big. Boundary boxes for
 		// Walls are always the full table dimension. The users have to test good values out.
@@ -1534,9 +1532,9 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 		m_rzfar =  max(m_rzfar,  -vertexTz);
 
 		// Extend slope lines from point to find camera intersection
-		maxyintercept = max(maxyintercept, vertexTy + (slopey)*vertexTz);
+		maxyintercept = max(maxyintercept, vertexTy + slopey*vertexTz);
 
-		minyintercept = min(minyintercept, vertexTy - (slopey)*vertexTz);
+		minyintercept = min(minyintercept, vertexTy - slopey*vertexTz);
 
 		maxxintercept = max(maxxintercept, vertexTx + slopex*vertexTz);
 
@@ -1560,7 +1558,7 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 	m_vertexcamera.z = (float)(max(ydist,xdist));
 	// changed this since it's the same and better understandable.
 	// m_vertexcamera.y = (float)(slopey*ydist + minyintercept);
-	m_vertexcamera.y = (float)((maxyintercept-minyintercept)/2+minyintercept);
+	m_vertexcamera.y = (float)((maxyintercept-minyintercept)*0.5 + minyintercept);
 	m_vertexcamera.x = (float)(slopex*xdist + minxintercept);
 
 	m_rznear += m_vertexcamera.z;

@@ -647,7 +647,7 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float anglerad = ANGTORAD(m_d.m_StartAngle);
 	const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
 
-	ppin3d->SetTexture(NULL);		
+	ppin3d->SetTexture(NULL);
 
 	const int cframes = max(abs(((int)(m_d.m_EndAngle - m_d.m_StartAngle))/2),2);//10),2);
 
