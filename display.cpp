@@ -604,8 +604,8 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 	*v = 0.0f;
 
 	// Find the closest width and height that are powers of 2.
-	int TextureWidth = Display_GetPowerOfTwo ( Width );
-	int TextureHeight = Display_GetPowerOfTwo ( Height );
+	const int TextureWidth = Display_GetPowerOfTwo ( Width );
+	const int TextureHeight = Display_GetPowerOfTwo ( Height );
 
 	// The texture's dimensions will probably be larger than the original DDraw surface.
 	// Calculate the texture coordinates so that it leaves out unwanted area.

@@ -1240,7 +1240,7 @@ void Player::InitAnimations(HWND hwndProgress)
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz)
 	{
-	return CreateBall(x,y,z,vx,vy,vz,25.0);
+	return CreateBall(x,y,z,vx,vy,vz,25.0f);
 	}
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius)
