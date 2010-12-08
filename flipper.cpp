@@ -495,6 +495,8 @@ WORD rgiFlipper2[4] = {2,6,7,3};
 void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, float angle,  float height, 
 								COLORREF color, float baseradius, float endradius, float flipperheight)
 	{
+	g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float r = (float)(color & 255) * (float)(1.0/255.0);
