@@ -512,7 +512,9 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 		FreeImage_Unload(dib);
 		//HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, szfile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 
-		LPDIRECTDRAWSURFACE7 mySurface = CreateFromHBitmap(hbm, pwidth, pheight);
+		LPDIRECTDRAWSURFACE7 mySurface = g_pvp->m_pdd.CreateFromHBitmap(hbm, pwidth, pheight);
+		//LPDIRECTDRAWSURFACE7 mySurface = CreateFromHBitmap(hbm, pwidth, pheight);
+
 		if (bitsPerPixel == 24)
 			g_pvp->m_pdd.SetOpaque(mySurface, dibWidth, dibHeight);
 
@@ -583,7 +585,8 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int * const p
 	//bm.bmBitsPixel
 	//SetAlpha(pdds, RGB(0,0,0));
 
-	if (bm.bmBitsPixel != 32) g_pvp->m_pdd.SetOpaque(pdds, bm.bmWidth, bm.bmHeight);
+	if (bm.bmBitsPixel != 32) 
+		g_pvp->m_pdd.SetOpaque(pdds, bm.bmWidth, bm.bmHeight);
 
 	return pdds;
 	}
@@ -933,6 +936,7 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 		{
 			for (int l=0;l<width;l++)
 			{	
+				
 				if (((*(COLORREF *)pch) & 0xff000000)>>24 > aMax)
 					aMax = ((*(COLORREF *)pch) & 0xff000000)>>24;
 				if (((*(COLORREF *)pch) & 0xff000000)>>24 < aMin)
@@ -941,7 +945,7 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 			}
 			pch += pitch-(width*4);
 		}
-
+		//slintf("amax:%d amin:%d\n",aMax,aMin);
 		pch = (BYTE *)ddsd.lpSurface;
 
 
@@ -961,10 +965,10 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 					//	{tc |= MINBLACK;}	// set minimum black
 
 						//to enable alpha uncomment these three lines (does not work with HD-Render)
-						//if ((aMin == aMax) && (aMin = 255))    // if there is no alpha-channel info in the image, set to opaque
+						if ((aMin == aMax) && (aMin == 255))    // if there is no alpha-channel info in the image, set to opaque
 							*(COLORREF *)pch = tc; 
-						//else 
-						//	fTransparent = fTrue;   // does not work. - cupid: i need a real PC to test this.
+						else 
+							fTransparent = fTrue;   // does not work. - cupid: i need a real PC to test this.
 					}
 				pch += 4;
 				}

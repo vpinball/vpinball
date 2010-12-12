@@ -687,11 +687,9 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 						for (int r=0; r<Width*4; r+=4)
 						{
 							// Copy the pixel. Cupid: Alpha channel removed?
-#if 1
-							*((unsigned int*)&(DestLockedSurface[offset0 + r])) = *((unsigned int*)&(SourceLockedSurface[offset1 + r])) | 0xFF000000;
-#else
-							*((unsigned int*)&(DestLockedSurface[offset0 + r])) = *((unsigned int*)&(SourceLockedSurface[offset1 + r]));
-#endif
+
+							*((unsigned int*)&(DestLockedSurface[offset0 + r])) = *((unsigned int*)&(SourceLockedSurface[offset1 + r])); //| 0xFF000000;
+
 						}
 
 						// Increment to the next horizontal line.

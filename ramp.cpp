@@ -136,6 +136,14 @@ void Ramp::SetDefaults()
 	else
 		m_d.m_fAcrylic = fFalse;
 
+	hr = GetRegInt("DefaultProps\\Ramp","Alpha", &iTmp);
+	if (hr == S_OK)
+		m_d.m_fAlpha = iTmp == 0? false : true;
+	else
+		m_d.m_fAlpha = fFalse;
+	if (m_d.m_fAlpha) 
+		m_d.m_fAcrylic = true;   // A alpha Ramp is automatically acrylic.
+
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","LeftWallHeight", &fTmp);
 	if (hr == S_OK)
 		m_d.m_leftwallheight = fTmp;
@@ -1185,14 +1193,10 @@ WORD rgiRampStatic1[4] = {0,3,2,1};
 
 void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	
 	if (!m_d.m_IsVisible) return;		// return if no Visible
 
-#ifdef RAMP_RENDER8BITALPHA
-	// Don't render acrylics.  
-	// They are rendered after the ball.
-	if (m_d.m_fAcrylic) return;
-#endif
+	// dont render alpha shaded ramps into static buffer
+	if (m_d.m_fAlpha && g_pvp->m_pdd.m_fHardwareAccel) return;
 
 	if (m_d.m_type == RampType4Wire 
 		|| m_d.m_type == RampType2Wire 
@@ -1606,6 +1610,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 	bw.WriteBool(FID(IMGW), m_d.m_fImageWalls);
 	bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
 	bw.WriteBool(FID(ACRY), m_d.m_fAcrylic);
+	bw.WriteBool(FID(ALPH), m_d.m_fAlpha);
 	bw.WriteFloat(FID(WLHL), m_d.m_leftwallheight);
 	bw.WriteFloat(FID(WLHR), m_d.m_rightwallheight);
 	bw.WriteFloat(FID(WVHL), m_d.m_leftwallheightvisible);
@@ -1718,6 +1723,11 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(ACRY))
 		{
 		pbr->GetBool(&m_d.m_fAcrylic);
+		m_d.m_fAlpha = false; // Alpha is read after acrylic
+		}
+	else if (id == FID(ALPH))
+		{
+		pbr->GetBool(&m_d.m_fAlpha);
 		}
 	else if (id == FID(NAME))
 		{
@@ -2116,7 +2126,7 @@ STDMETHODIMP Ramp::put_CastsShadow(VARIANT_BOOL newVal)
 
 STDMETHODIMP Ramp::get_Acrylic(VARIANT_BOOL *pVal)
 {
-	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fAcrylic);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fAcrylic) && !(VARIANT_BOOL)FTOVB(m_d.m_fAlpha);
 
 	return S_OK;
 }
@@ -2125,10 +2135,45 @@ STDMETHODIMP Ramp::put_Acrylic(VARIANT_BOOL newVal)
 {
 	STARTUNDO
 	m_d.m_fAcrylic = VBTOF(newVal);
+	m_d.m_fAlpha = false;
 	STOPUNDO
 
 	return S_OK;
 }
+
+STDMETHODIMP Ramp::get_Alpha(VARIANT_BOOL *pVal)
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fAlpha);
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::put_Alpha(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+	m_d.m_fAlpha = VBTOF(newVal);
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::get_Solid(VARIANT_BOOL *pVal)
+{
+	*pVal = !(VARIANT_BOOL)FTOVB(m_d.m_fAlpha) && !(VARIANT_BOOL)FTOVB(m_d.m_fAcrylic);
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::put_Solid(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+	if (VBTOF(newVal)) {
+		m_d.m_fAlpha = false;
+		m_d.m_fAcrylic = false;
+	}
+	STOPUNDO
+
+	return S_OK;
+}
+
 
 STDMETHODIMP Ramp::get_LeftWallHeight(float *pVal)
 {
@@ -2333,8 +2378,8 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	
 	// Don't render if invisible.
 	if((!m_d.m_IsVisible) ||		
-	// Don't render non-acrylics. 
-	   (!m_d.m_fAcrylic)) return;
+	// Don't render non-Alphas. 
+		(!m_d.m_fAlpha)) return;
 
 	if (m_d.m_type == RampType4Wire 
 		|| m_d.m_type == RampType2Wire 
@@ -2348,7 +2393,8 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
-		float maxtu, maxtv;
+		float maxtu = 0;
+		float maxtv = 0;
 
 		D3DMATERIAL7 mtrl;
 		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -2364,33 +2410,19 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 //rlc add transparent texture support ... replaced this line with >>>>	
 			pin->EnsureColorKey();
-			if (pin->m_fTransparent)
-				{				
-				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
-				}
-			else // ppin3d->SetTexture(pin->m_pdsBuffer);
-				{	
+
 				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);     //rlc  alpha channel support
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-				if (g_pvp->m_pdd.m_fHardwareAccel)
-					{
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-					}
-				else
-					{
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-					}
+
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
-				}
+				
 			
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
@@ -2418,10 +2450,11 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		float *rgratio;
 		int cvertex;
 		const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
+		//g_pplayer->m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
 		const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);
 		const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
-
+		
 		for (int i=0;i<(cvertex-1);i++)
 			{
 			Vertex3D rgv3D[4];
@@ -2442,7 +2475,8 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[1].z = rgheight[i];
 
 			if (pin)
-				{
+				{			
+
 				if (m_d.m_imagealignment == ImageModeWorld)
 					{
 					rgv3D[0].tu = rgv3D[0].x * inv_tablewidth;
