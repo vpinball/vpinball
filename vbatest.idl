@@ -1430,8 +1430,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(10), helpstring("property LeftWallHeight")] HRESULT LeftWallHeight([in] float newVal);
 		[propget, id(11), helpstring("property RightWallHeight")] HRESULT RightWallHeight([out, retval] float *pVal);
 		[propput, id(11), helpstring("property RightWallHeight")] HRESULT RightWallHeight([in] float newVal);
-		[propget, id(12), helpstring("property Acrylic")] HRESULT Acrylic([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(12), helpstring("property Acrylic")] HRESULT Acrylic([in] VARIANT_BOOL newVal);
+		[propget, id(378), helpstring("property Solid")] HRESULT Solid([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(378), helpstring("property Solid")] HRESULT Solid([in] VARIANT_BOOL newVal);
+		[propget, id(379), helpstring("property Acrylic")] HRESULT Acrylic([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(379), helpstring("property Acrylic")] HRESULT Acrylic([in] VARIANT_BOOL newVal);
+		[propget, id(380), helpstring("property Alpha")] HRESULT Alpha([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(380), helpstring("property Alpha")] HRESULT Alpha([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);

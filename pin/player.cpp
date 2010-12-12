@@ -2381,10 +2381,9 @@ void Player::Render()
 		DrawBallShadows();
 	}
 
-#ifdef RAMP_RENDER8BITALPHA
-	// Draw the acrylics.
-	DrawAcrylics();
-#endif
+	// Draw the acrylics (now alphas).
+	if (g_pvp->m_pdd.m_fHardwareAccel)
+		DrawAcrylics();
 
 	// Check if we should turn animate the plunger light.
 	if ( (msec() - LastPlungerHit) < 512 )

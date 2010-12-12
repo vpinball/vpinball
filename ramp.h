@@ -13,8 +13,6 @@
 #include "resource.h"       // main symbols
 
 
-//#define		RAMP_RENDER8BITALPHA						// Render acrylic ramps with an 8 bit alpha.
-
 
 class RampData
 	{
@@ -31,6 +29,7 @@ public:
 	BOOL m_fImageWalls;
 	BOOL m_fCastsShadow;
 	BOOL m_fAcrylic;
+	BOOL m_fAlpha;
 	float m_leftwallheight;
 	float m_rightwallheight;
 	float m_leftwallheightvisible;
@@ -179,6 +178,10 @@ public:
 //<<<
 	STDMETHOD(get_Acrylic)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Acrylic)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_Solid)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Solid)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_Alpha)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Alpha)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_IsVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);

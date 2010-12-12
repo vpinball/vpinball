@@ -965,7 +965,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\mssdk\include;&quot;$(DXSDK_DIR)\lib&quot;;&quot;$(DXSDK_DIR)\Include&quot;;&quot;vp-sup\inc&quot;;pin\;media"
+				AdditionalIncludeDirectories="&quot;C:\dxsdk\Lib\x86&quot;;&quot;C:\dxsdk\Include&quot;;&quot;vp-sup\inc&quot;;pin\;media"
 				PreprocessorDefinitions="COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -985,7 +985,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
+				Culture="1031"
 				AdditionalIncludeDirectories=""
 			/>
 			<Tool
@@ -997,7 +997,7 @@
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib&quot;;.\lib"
+				AdditionalLibraryDirectories="&quot;C:\dxsdk\Lib\x86&quot;;.\lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBC;LIBCMT;LIBCD"
 				GenerateDebugInformation="true"
