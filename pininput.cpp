@@ -976,6 +976,16 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 //							{
 //								g_pplayer->UltraNudgeY(-u.i, joyk); //rotate to match joystick
 //							}
+// Check for X-axis joystick saturation deadzone - Added by Scrooby
+							double deadzone;
+							int loc;
+							loc = u.i;
+							deadzone = (double)loc / 1000; //get percentage of location in total range
+							deadzone = fabs(deadzone); //make it positive
+							if (deadzone < .1) //Is the location in the deadzone?
+							{
+								u.i = 0; //deaden it
+							}
 							if (uShockType == 1) 
 							{
 								g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match Pinball Wizard
@@ -1012,6 +1022,16 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 //							{
 //								g_pplayer->UltraNudgeX(u.i, joyk); //rotate to match joystick
 //							}
+// Check for Y-axis joystick saturation deadzone - Added by Scrooby
+							double deadzone;
+							int loc;
+							loc = u.i;
+							deadzone = (double)loc / 1000; //get percentage of location in total range
+							deadzone = fabs(deadzone); //make it positive
+							if (deadzone < .1) //Is the location in the deadzone?
+							{
+								u.i = 0; //deaden it
+							}
 							if (uShockType == 1) 
 							{
 								g_pplayer->UltraNudgeY(u.i, joyk); //rotate to match Pinball Wizard
