@@ -3127,7 +3127,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							ofn.hInstance = g_hinst;
 							ofn.hwndOwner = g_pvp->m_hwnd;
 
- 							ofn.lpstrFilter = "Bitmap files\0*.bmp;*.jpg;*.jpeg;*.png;*.gif;*.ico;*.IFF;*.PCX;*.PICT;*.psd;*.tga;*.tiff;*.tif\0";;
+							ofn.lpstrFilter = "Bitmap, JPEG and PNG Files (.bmp/.jpg/.png)\0*.bmp;*.jpg;*.jpeg;*.png\0";
 							ofn.lpstrFile = szFileName;
 							ofn.nMaxFile = 10240;
 							ofn.lpstrDefExt = "bmp";
@@ -3202,7 +3202,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									ofn.hInstance = g_hinst;
 									ofn.hwndOwner = g_pvp->m_hwnd;
 									//TEXT
-									ofn.lpstrFilter = "Bitmap Files\0*.jpg;*.jpeg;*.png;*.gif;*.ico;*.IFF;*.PCX;*.PICT;*.psd;*.tga;*.tiff;*.tif\0";
+									ofn.lpstrFilter = "*.bmp\0*.bmp\0*.jpg\0*.jpeg;*.png;*.gif;*.ico;*.IFF;*.PCX;*.PICT;*.psd;*.tga;*.tiff;*.tif\0";
 									
 									int begin;		//select only file name from pathfilename
 									const int len = lstrlen(ppi->m_szPath);
@@ -3333,7 +3333,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									ofn.hInstance = g_hinst;
 									ofn.hwndOwner = g_pvp->m_hwnd;
 									// TEXT
-									ofn.lpstrFilter = "Bitmap and JPEG Files (*.bmp, *.jpg, *.png)\0*.bmp;*.jpg;*.jpeg;*.png\0";
+									ofn.lpstrFilter = "Bitmap, JPEG and PNG Files (.bmp/.jpg/.png)\0*.bmp;*.jpg;*.jpeg;*.png\0";
 									ofn.lpstrFile = szFileName;
 									ofn.nMaxFile = _MAX_PATH;
 									ofn.lpstrDefExt = "bmp";
