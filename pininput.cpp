@@ -963,6 +963,16 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 			{
 //#ifdef ULTRACADE
 			
+int DeadZ2;
+const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ2);
+if (hr != S_OK)
+		{
+		DeadZ2=0;
+		}
+//debugging grab value of deadzone from registry
+//char myCharString[8];
+//itoa( DeadZ2, myCharString, 10 );
+//ShowError(myCharString);
 				// Convert to signed int
 				union { int i; unsigned int ui; } u;
 				u.ui = input->dwData;
@@ -972,19 +982,28 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 					case DIJOFS_X: 
 						if( g_pplayer ) //joyk  rotLeftManual
 						{
-//							if (uShockType == 0)
-//							{
-//								g_pplayer->UltraNudgeY(-u.i, joyk); //rotate to match joystick
-//							}
-// Check for X-axis joystick saturation deadzone - Added by Scrooby
 							double deadzone;
 							int loc;
 							loc = u.i;
 							deadzone = (double)loc / 1000; //get percentage of location in total range
+							//u.i is ranged from -1000 to +1000, so this changes it into .000 to 1.000
 							deadzone = fabs(deadzone); //make it positive
-							if (deadzone < .1) //Is the location in the deadzone?
+							//deadZ2 ranges from 0 to 100, so divide by 100 to get .00 to 1.00 
+							if (deadzone <= DeadZ2/100) //Is the location in the deadzone?
 							{
 								u.i = 0; //deaden it
+
+							}
+							else
+							{
+								if(u.i>0)
+								{
+									u.i = u.i - DeadZ2/100; //saturation
+								}
+								else
+								{
+									u.i = u.i + DeadZ2/100; //saturation
+								}
 							}
 							if (uShockType == 1) 
 							{
@@ -1018,19 +1037,27 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 					case DIJOFS_Y: 
 						if( g_pplayer ) 
 						{
-//							if (uShockType == 0)
-//							{
-//								g_pplayer->UltraNudgeX(u.i, joyk); //rotate to match joystick
-//							}
 // Check for Y-axis joystick saturation deadzone - Added by Scrooby
 							double deadzone;
 							int loc;
 							loc = u.i;
 							deadzone = (double)loc / 1000; //get percentage of location in total range
 							deadzone = fabs(deadzone); //make it positive
-							if (deadzone < .1) //Is the location in the deadzone?
+							if (deadzone <= DeadZ2/100) //Is the location in the deadzone?
 							{
 								u.i = 0; //deaden it
+
+							}
+							else
+							{
+								if(u.i>0)
+								{
+									u.i = u.i - DeadZ2/100; //saturation
+								}
+								else
+								{
+									u.i = u.i + DeadZ2/100; //saturation
+								}
 							}
 							if (uShockType == 1) 
 							{
