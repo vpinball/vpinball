@@ -4718,6 +4718,8 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 			int id;
 			peditNew->InitLoad(pstm, this, &id, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
 			
+			if (type != eItemDecal)
+			{
 			WCHAR tmpName[MAXNAMEBUFFER];
 			WideStrCopy(peditNew->GetScriptable()->m_wzName, tmpName);
 
@@ -4728,7 +4730,8 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 
 			GetUniqueName(type, tmpName,peditNew->GetScriptable()->m_wzName);
 			peditNew->InitVBA(fTrue, 0, peditNew->GetScriptable()->m_wzName);
-			
+			}
+
 			m_vedit.AddElement(peditNew);
 			peditNew->InitPostLoad();
 			peditNew->m_fBackglass = g_pvp->m_fBackglassView;
