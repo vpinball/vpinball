@@ -1093,8 +1093,8 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	SetFieldOfView(FOV, m_aspect, m_rznear, m_rzfar);
 
 	// skew the coordinate system from kartesian to non kartesian.
-	const float skewX = -sinf(m_rotation)*(float)skew;
-	const float skewY =  cosf(m_rotation)*(float)skew;
+	skewX = -sinf(m_rotation)*(float)skew;
+	skewY =  cosf(m_rotation)*(float)skew;
 	Matrix3D matTemp, matTrans;
 	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 	// create a normal matrix.
@@ -1111,6 +1111,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	matTrans._41 = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*m_vertexcamera.y*skewX;
 	matTrans._31 = skewX;
 	matTemp.Multiply(matTrans, matTemp);
+
 	m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
 
 	if( m_rotation != 0.0f )
@@ -1126,6 +1127,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 			Translate(-m_vertexcamera.x,-m_vertexcamera.y,-m_vertexcamera.z);
 			Rotate(m_inclination,0,m_rotation);
 		}
+	
 	CacheTransform();
 
 	for (int i=0; i<vvertex3D.Size(); ++i)
@@ -1686,6 +1688,7 @@ void Pin3D::ClearExtents(RECT * const prc, float * const pznear, float * const p
 
 void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed)
 	{
+
 	Vertex3D * const rgvOut = (!fTransformed) ? new Vertex3D[count] : rgv;
 
 	if (!fTransformed)
@@ -1695,10 +1698,13 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const p
 		{
 		const int x = (int)(rgvOut[i].x + 0.5f);
 		const int y = (int)(rgvOut[i].y + 0.5f);
-		prc->left = min(prc->left, x - 1);
-		prc->top = min(prc->top, y - 1);
-		prc->right = max(prc->right, x + 1);
-		prc->bottom = max(prc->bottom, y + 1);
+		const float z = rgv[i].z;
+		// calculate layback in
+		
+		prc->left = min(prc->left, x - 1 + (int)(z * skewX));
+		prc->top = min(prc->top, y - 1 + (int)(z * skewY));
+		prc->right = max(prc->right, x + 1 - (int)(z * skewX));
+		prc->bottom = max(prc->bottom, y + 1  - (int)(z * skewY));
 
 		if (pznear)
 			{
