@@ -232,6 +232,9 @@ public:
 
 	RECT m_rcUpdate;
 
+	float skewX;
+	float skewY;
+
 	int m_width;
 	int m_height;
 	HWND m_hwnd;
