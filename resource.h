@@ -443,6 +443,8 @@
 #define IDC_RADIO2                      379
 #define IDC_RADIO3                      380
 #define IDR_TABLE_NEW                   383
+#define IDC_SLIDER2                     384
+#define IDC_ARASlider                   384
 #define IDC_ADDCREDITBUTTON2            400
 #define IDC_ADDCREDIT2                  401
 #define IDC_ADDCREDITKEY2               401
@@ -514,7 +516,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        384
 #define _APS_NEXT_COMMAND_VALUE         32842
-#define _APS_NEXT_CONTROL_VALUE         381
+#define _APS_NEXT_CONTROL_VALUE         386
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
