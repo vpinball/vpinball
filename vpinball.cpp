@@ -3701,6 +3701,13 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				HWND hwndRadio = GetDlgItem(hwndDlg, IDC_WINDOW);
 				SendMessage(hwndRadio, BM_SETCHECK, BST_CHECKED, 0);
 				}
+			HWND hwndARASlider = GetDlgItem(hwndDlg, IDC_ARASlider);
+			SendMessage(hwndARASlider, TBM_SETRANGE, fTrue, MAKELONG(0, 10));
+			SendMessage(hwndARASlider, TBM_SETTICFREQ, 1, 0);
+			SendMessage(hwndARASlider, TBM_SETLINESIZE, 0, 1);
+			SendMessage(hwndARASlider, TBM_SETPAGESIZE, 0, 10);
+			SendMessage(hwndARASlider, TBM_SETTHUMBLENGTH, 5, 0);
+			SendMessage(hwndARASlider, TBM_SETPOS, TRUE, 7);
 			}
 
 			return TRUE;
