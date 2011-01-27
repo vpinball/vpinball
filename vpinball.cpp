@@ -3701,13 +3701,19 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				HWND hwndRadio = GetDlgItem(hwndDlg, IDC_WINDOW);
 				SendMessage(hwndRadio, BM_SETCHECK, BST_CHECKED, 0);
 				}
+			int alphaRampsAccuracy;
+			hr = GetRegInt("Player", "AlphaRampAccuracy", &alphaRampsAccuracy);
+			if (hr != S_OK)
+			{
+				alphaRampsAccuracy = 10;
+			}
 			HWND hwndARASlider = GetDlgItem(hwndDlg, IDC_ARASlider);
 			SendMessage(hwndARASlider, TBM_SETRANGE, fTrue, MAKELONG(0, 10));
 			SendMessage(hwndARASlider, TBM_SETTICFREQ, 1, 0);
 			SendMessage(hwndARASlider, TBM_SETLINESIZE, 0, 1);
 			SendMessage(hwndARASlider, TBM_SETPAGESIZE, 0, 10);
 			SendMessage(hwndARASlider, TBM_SETTHUMBLENGTH, 5, 0);
-			SendMessage(hwndARASlider, TBM_SETPOS, TRUE, 7);
+			SendMessage(hwndARASlider, TBM_SETPOS, TRUE, alphaRampsAccuracy);
 			}
 
 			return TRUE;
@@ -3776,6 +3782,9 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							SetRegValue("Player", "AlternateRender", REG_DWORD, &altrend, 4);
 							g_pvp->m_pdd.m_fAlternateRender = (altrend != 0);
 
+							HWND hwndAraSlider = GetDlgItem(hwndDlg, IDC_ARASlider);
+							int alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
+							SetRegValue("Player", "AlphaRampAccuracy", REG_DWORD, &alphaRampsAccuracy, 4);
 
 							EndDialog(hwndDlg, TRUE);
 							}
