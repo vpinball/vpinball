@@ -121,3 +121,43 @@ void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const flo
 		RecurseSmoothLine(pcc, tMid, t2, &vmid, pvt2, pvv);
 		} 
 	}
+
+
+void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, float accuracy)
+	{
+	const float tMid = (t1+t2)*0.5f;
+	RenderVertex vmid;
+	pcc->GetPointAt(tMid, &vmid);
+	vmid.fSmooth = true; // Generated points must always be smooth, because they are part of the curve
+	vmid.fSlingshot = false; // Slingshots can't be along curves
+	vmid.fControlPoint = false; // We created this point, so it can't be a control point
+
+	if (FlatWithAccuracy(pvt1, pvt2, &vmid, accuracy))
+		{
+		// Add first segment point to array.
+		// Last point never gets added by this recursive loop,
+		// but that's where it wraps around to the next curve.
+		RenderVertex * const pvT = new RenderVertex;
+		*pvT = *pvt1;
+		pvv->AddElement(pvT);
+		}
+	else
+		{
+		RecurseSmoothLine(pcc, t1, tMid, pvt1, &vmid, pvv);
+		RecurseSmoothLine(pcc, tMid, t2, &vmid, pvt2, pvv);
+		} 
+	}
+
+///
+/// Calculate if two vectors are flat to each other
+/// accuracy is a float > 4 and < 4000000 (tested this out)
+BOOL FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid, float accuracy)
+	{
+	const float det1 = pvt1->x*pvtMid->y - pvt1->y*pvtMid->x;
+	const float det2 = pvtMid->x*pvt2->y - pvtMid->y*pvt2->x;
+	const float det3 = pvt2->x*pvt1->y - pvt2->y*pvt1->x;
+
+	const float dblarea = det1+det2+det3;
+
+	return (dblarea*dblarea < accuracy);
+	}

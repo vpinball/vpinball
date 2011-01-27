@@ -573,6 +573,8 @@ END_CONNECTION_POINT_MAP()
 	Vector<char> m_vCustomInfoContent;
 
 	VectorInt<HANDLE> m_vAsyncHandles;
+
+	int m_alphaRampsAccuracy;
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

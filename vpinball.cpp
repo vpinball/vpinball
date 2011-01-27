@@ -3711,7 +3711,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			SendMessage(hwndARASlider, TBM_SETRANGE, fTrue, MAKELONG(0, 10));
 			SendMessage(hwndARASlider, TBM_SETTICFREQ, 1, 0);
 			SendMessage(hwndARASlider, TBM_SETLINESIZE, 0, 1);
-			SendMessage(hwndARASlider, TBM_SETPAGESIZE, 0, 10);
+			SendMessage(hwndARASlider, TBM_SETPAGESIZE, 0, 1);
 			SendMessage(hwndARASlider, TBM_SETTHUMBLENGTH, 5, 0);
 			SendMessage(hwndARASlider, TBM_SETPOS, TRUE, alphaRampsAccuracy);
 			}

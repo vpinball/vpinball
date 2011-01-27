@@ -597,6 +597,9 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
 		rendv2.y = pdp->m_v.y;
 	}
 
+	// calculate AlphaRampsAccuracyValue
+	float alphaRampsAccuracyValue = 4*pow(10.0f, (10-m_ptable->m_alphaRampsAccuracy)/1.5f); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
+	
 	for (int i=0;i<(cpoint-1);i++)
 		{
 		const CComObject<DragPoint> * const pdp1 = m_vdpoint.ElementAt(i);
@@ -617,7 +620,10 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
 		rendv2.x = pdp2->m_v.x;
 		rendv2.y = pdp2->m_v.y;
 
-		RecurseSmoothLine(&cc, 0, 1, &rendv1, &rendv2, pvv);
+		if (m_d.m_fAlpha)
+			RecurseSmoothLineWithAccuracy(&cc, 0, 1, &rendv1, &rendv2, pvv, alphaRampsAccuracyValue);
+		else
+			RecurseSmoothLine(&cc, 0, 1, &rendv1, &rendv2, pvv);
 		}
 
 	// Add the very last point to the list because nobody else added it
