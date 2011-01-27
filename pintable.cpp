@@ -1574,8 +1574,15 @@ HANDLE hmyfont;
 
 void PinTable::Play()
 	{
-	char szLoadDir[MAX_PATH];
 
+	HRESULT hr = GetRegInt("Player", "AlphaRampAccuracy", &m_alphaRampsAccuracy);
+	if (hr != S_OK)
+	{
+		m_alphaRampsAccuracy = 10;
+	}
+
+	char szLoadDir[MAX_PATH];
+	
 	mixer_volmod( m_tblVolmod );
 
 	if (g_pplayer)
