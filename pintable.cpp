@@ -1635,33 +1635,34 @@ void PinTable::Play()
 		{
 		g_pplayer = new Player();
 		const HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName, fCheckForCache);
+		if (!m_pcv->m_fScriptError) {
+			c_Gravity = m_Gravity;					// set physical constants
+			c_hardFriction = 1.0f - m_hardFriction;	// convert to reciprocal
+			c_hardScatter = m_hardScatter;
+			c_maxBallSpeedSqed = m_maxBallSpeed*m_maxBallSpeed;
+			c_dampingFriction = m_dampingFriction;
+			c_plungerNormalize = m_plungerNormalize*(float)(1.0/1300.0);
+			c_plungerFilter  = m_plungerFilter != 0; 
 
-		c_Gravity = m_Gravity;					// set physical constants
-		c_hardFriction = 1.0f - m_hardFriction;	// convert to reciprocal
-		c_hardScatter = m_hardScatter;
-		c_maxBallSpeedSqed = m_maxBallSpeed*m_maxBallSpeed;
-		c_dampingFriction = m_dampingFriction;
-		c_plungerNormalize = m_plungerNormalize*(float)(1.0/1300.0);
-		c_plungerFilter  = m_plungerFilter != 0; 
+			const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
-		const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
+			g_pplayer->m_mainlevel.m_gravity.x = 0; 
+			g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
+			g_pplayer->m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
 
-		g_pplayer->m_mainlevel.m_gravity.x = 0; 
-		g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
+			m_pcv->SetEnabled(fFalse); // Can't edit script while playing
 
-		m_pcv->SetEnabled(fFalse); // Can't edit script while playing
+			g_pvp->SetEnableToolbar();
+			g_pvp->SetEnableMenuItems();	//>>> added as part of table protection
 
-		g_pvp->SetEnableToolbar();
-		g_pvp->SetEnableMenuItems();	//>>> added as part of table protection
-
-		if (!m_pcv->m_fScriptError && (hr == S_OK))
-			{
-			ShowWindow(g_pvp->m_hwndWork, SW_HIDE);
-			}
-		else
-			{
-			SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
+			if (!m_pcv->m_fScriptError && (hr == S_OK))
+				{
+				ShowWindow(g_pvp->m_hwndWork, SW_HIDE);
+				}
+			else
+				{
+				SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
+				}
 			}
 		}
 	else
