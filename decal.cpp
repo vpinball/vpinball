@@ -365,7 +365,7 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 		ReleaseDC(NULL, hdcNull);
 
 		m_pinimage.m_pdsBuffer->ReleaseDC(hdc);
-
+		g_pvp->m_pdd.SetOpaque(m_pinimage.m_pdsBuffer, m_pinimage.m_width, m_pinimage.m_height);
 		DeleteObject(hFont);
 		}
 	}
@@ -801,7 +801,8 @@ HFONT Decal::GetFont()
 	{
 	LOGFONT lf;
 	ZeroMemory(&lf, sizeof(lf));
-	lf.lfHeight = -32;
+
+	lf.lfHeight = m_d.m_height/4 + m_d.m_width/4;
 	lf.lfCharSet = DEFAULT_CHARSET;
 	lf.lfQuality = NONANTIALIASED_QUALITY;
 
@@ -818,6 +819,8 @@ HFONT Decal::GetFont()
 	hr = m_pIFont->get_Italic(&bl);
 
 	lf.lfItalic = (BYTE)bl;
+
+
 
 	HFONT hFont = CreateFontIndirect(&lf);
 
