@@ -322,8 +322,14 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 
 		m_pinimage.m_width = rcOut.right;
 		m_pinimage.m_height = rcOut.bottom;
+		m_pinimage.m_pdsBuffer = NULL;
 		m_pinimage.m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(m_pinimage.m_width, m_pinimage.m_height);
 
+		if (m_d.m_color == RGB(255,255,255))
+			m_d.m_color = RGB(254,255,255);
+		if (m_d.m_color == RGB(0,0,0))
+			m_d.m_color = RGB(0,0,1);
+	
 		if (m_d.m_color == RGB(255,255,255))
 			{
 			m_pinimage.SetTransparentColor(RGB(0,0,0));
@@ -342,6 +348,7 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 
 		PatBlt(hdc,0,0,m_pinimage.m_width,m_pinimage.m_height,PATCOPY);
 		hFontOld = (HFONT)SelectObject(hdc, hFont);
+		
 		SetTextColor(hdc, m_d.m_color);
 		SetBkMode(hdc, TRANSPARENT);
 		SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
@@ -365,6 +372,7 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 		ReleaseDC(NULL, hdcNull);
 
 		m_pinimage.m_pdsBuffer->ReleaseDC(hdc);
+
 		g_pvp->m_pdd.SetOpaque(m_pinimage.m_pdsBuffer, m_pinimage.m_width, m_pinimage.m_height);
 		DeleteObject(hFont);
 		}
@@ -802,7 +810,7 @@ HFONT Decal::GetFont()
 	LOGFONT lf;
 	ZeroMemory(&lf, sizeof(lf));
 
-	lf.lfHeight = m_d.m_height/4 + m_d.m_width/4;
+	lf.lfHeight = -72;
 	lf.lfCharSet = DEFAULT_CHARSET;
 	lf.lfQuality = NONANTIALIASED_QUALITY;
 
