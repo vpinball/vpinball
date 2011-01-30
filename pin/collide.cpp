@@ -203,7 +203,7 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 	const float a = dvx*dvx + dvy*dvy +dvz*dvz;	// square of the delta velocity (outer product)
 
 	float hittime = 0;
-	bool fUnhit;
+	bool fUnhit = false;
 // Kicker is special.. handle ball stalled on kicker, commonly hit while receding, knocking back into kicker pocket
 	if (m_ObjType == eKicker && bnd <= 0 && bnd >= -radius && a < C_CONTACTVEL*C_CONTACTVEL )	
 		{
