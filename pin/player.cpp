@@ -2210,8 +2210,9 @@ void Player::Render()
 		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
 		if (pur->m_fSeeThrough)													
 			{
+			
 			RECT * const prc = &pur->m_rcupdate;
-		
+			
 			// Redraw the region from the static buffers to the back and z buffers.
 			m_pin3d.m_pddsBackBuffer->Blt(prc, m_pin3d.m_pddsStatic, prc, 0, NULL);
 			m_pin3d.m_pddsZBuffer->Blt(prc, m_pin3d.m_pddsStaticZ, prc, 0, NULL);
@@ -2954,7 +2955,8 @@ void Player::DrawBalls()
 												  NULL);
 
 		// Draw the ball logo
-
+		Vertex3D rgv3DArrowTransformed[4];
+		Vertex3D rgv3DArrowTransformed2[4];
 		if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
 			{
 			/*mtrl.diffuse.r = mtrl.ambient.r = 0.8f;
@@ -2964,6 +2966,7 @@ void Player::DrawBalls()
 			m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
 				Vertex3D rgv3DArrow[4];
+
 				rgv3DArrow[0].tu = 0;
 				rgv3DArrow[0].tv = 0;
 				rgv3DArrow[0].x = -0.333333333f;
@@ -3004,7 +3007,6 @@ void Player::DrawBalls()
 					m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinFront->m_pdsBufferColorKey);
 
 					//WORD rgiDecal[4] = {0,1,2,3};
-					Vertex3D rgv3DArrowTransformed[4];
 					for (int iPoint=0;iPoint<4;iPoint++)
 						{
 						const Vertex3Ds tmp = pball->m_orientation.MultiplyVector(rgv3DArrow[iPoint]);
@@ -3033,20 +3035,20 @@ void Player::DrawBalls()
 					m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinBack->m_pdsBufferColorKey);
 
 					//WORD rgiDecal[4] = {0,1,2,3};
-					Vertex3D rgv3DArrowTransformed[4];
+
 					for (int iPoint=0;iPoint<4;iPoint++)
 						{
 						rgv3DArrow[iPoint].x = -rgv3DArrow[iPoint].x;
 						rgv3DArrow[iPoint].z = -rgv3DArrow[iPoint].z;
 						const Vertex3Ds tmp = pball->m_orientation.MultiplyVector(rgv3DArrow[iPoint]);
-						rgv3DArrowTransformed[iPoint].nx = tmp.x;
-						rgv3DArrowTransformed[iPoint].ny = tmp.y;
-						rgv3DArrowTransformed[iPoint].nz = tmp.z;
-						rgv3DArrowTransformed[iPoint].x = pball->x - tmp.x*pball->radius;
-						rgv3DArrowTransformed[iPoint].y = pball->y - tmp.y*pball->radius;
-						rgv3DArrowTransformed[iPoint].z = zheight  - tmp.z*pball->radius;
-						rgv3DArrowTransformed[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinBack->m_maxtu;
-						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinBack->m_maxtv;
+						rgv3DArrowTransformed2[iPoint].nx = tmp.x;
+						rgv3DArrowTransformed2[iPoint].ny = tmp.y;
+						rgv3DArrowTransformed2[iPoint].nz = tmp.z;
+						rgv3DArrowTransformed2[iPoint].x = pball->x - tmp.x*pball->radius;
+						rgv3DArrowTransformed2[iPoint].y = pball->y - tmp.y*pball->radius;
+						rgv3DArrowTransformed2[iPoint].z = zheight  - tmp.z*pball->radius;
+						rgv3DArrowTransformed2[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinBack->m_maxtu;
+						rgv3DArrowTransformed2[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinBack->m_maxtv;
 						}
 
 					/*m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
@@ -3054,7 +3056,7 @@ void Player::DrawBalls()
 															  rgiDecal, DECALPOINTS, NULL);*/
 
 					m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-															  rgv3DArrowTransformed, 4,
+															  rgv3DArrowTransformed2, 4,
 															  NULL);
 					}
 			}
@@ -3065,7 +3067,10 @@ void Player::DrawBalls()
 			m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
 			m_pin3d.ExpandExtents(&pball->m_rcScreen, pball->m_rgv3D, NULL, NULL, 4, fFalse);
 
-			//m_pin3d.ExpandExtents(&pball->m_rcScreen, rgv3DArrow, NULL, NULL, 4, fFalse);
+			if (m_fBallDecals && pball->m_pinFront && (m_ptable->m_layback > 0))
+				m_pin3d.ExpandExtents(&pball->m_rcScreen, rgv3DArrowTransformed, NULL, NULL, 4, fFalse);
+			if (m_fBallDecals && pball->m_pinBack && (m_ptable->m_layback > 0))
+				m_pin3d.ExpandExtents(&pball->m_rcScreen, rgv3DArrowTransformed2, NULL, NULL, 4, fFalse);
 
 			if (m_fBallShadows)
 				{

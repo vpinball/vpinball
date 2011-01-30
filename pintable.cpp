@@ -6833,7 +6833,7 @@ STDMETHODIMP PinTable::Nudge(float Angle, float Force)
 		g_pplayer->m_nudgetime = 10;
 		}
 #else
-	if (g_pplayer && (g_pplayer->m_nudgetime == 0))
+	if (g_pplayer && (g_pplayer->m_nudgetime == 0) && g_pplayer->m_ptable->m_Shake)
 	{
 		const float sn = sinf(ANGTORAD(Angle));
 		const float cs = cosf(ANGTORAD(Angle));

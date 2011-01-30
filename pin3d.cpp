@@ -1698,13 +1698,11 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const p
 		{
 		const int x = (int)(rgvOut[i].x + 0.5f);
 		const int y = (int)(rgvOut[i].y + 0.5f);
-		const float z = rgv[i].z;
-		// calculate layback in
-		
-		prc->left = min(prc->left, x - 1);// + (int)(z * skewX));
-		prc->top = min(prc->top, y - 1);// + (int)(z * skewY));
-		prc->right = max(prc->right, x + 1);// - (int)(z * skewX));
-		prc->bottom = max(prc->bottom, y + 1);//  - (int)(z * skewY));
+
+		prc->left = min(prc->left, x - 1);
+		prc->top = min(prc->top, y - 1);
+		prc->right = max(prc->right, x + 1);
+		prc->bottom = max(prc->bottom, y + 1);
 
 		if (pznear)
 			{
