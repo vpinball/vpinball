@@ -234,6 +234,8 @@ WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 			
 void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
+	// ensure we are not disabled at game start
+	m_fDisabled = fFalse;
 	if(!m_d.m_fVisible)	return;
 		
 	// All this function does is render the bumper image so the black shows through where it's missing in the animated form
@@ -337,8 +339,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->SetTexture(NULL);
 		}
 
-	// ensure we are not disabled at game start
-	m_fDisabled = fFalse;
+
 	}
 
 void Bumper::RenderMoversFromCache(Pin3D *ppin3d)
