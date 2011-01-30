@@ -133,6 +133,44 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 
 		m_pdsBuffer->Unlock(NULL);
 		
+/*
+		DDSURFACEDESC2 ddsd;
+		ddsd.dwSize = sizeof(ddsd);	
+*/
+		m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+		
+		const int pitch = ddsd.lPitch;
+
+		// Assume our 32 bit color structure
+		BYTE *pch = (BYTE *)ddsd.lpSurface;
+		byte min = 0xff;
+		byte max = 0x00;
+		for (int i=0;i<m_height;i++)
+			{
+			for (int l=0;l<m_width;l++)
+				{				
+					if (min > pch[3])
+						min = pch[3];
+					if (max < pch[3])
+						max = pch[3];					
+					pch += 4;
+				}
+			pch += pitch-(m_width*4);
+			}
+		pch = (BYTE *)ddsd.lpSurface;
+		if ((min == max) && (min == 0x00))
+			for (int i=0;i<m_height;i++)
+				{
+				for (int l=0;l<m_width;l++)
+					{				
+						pch[3] = 0xff;
+						pch += 4;
+					}
+				pch += pitch-(m_width*4);
+				}
+
+		m_pdsBuffer->Unlock(NULL);
+
 		}
 	else if (id == FID(JPEG))
 		{
