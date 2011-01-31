@@ -207,7 +207,11 @@ private:
 	BOOL m_fBallDecals;
 	BOOL m_fBallAntialias;
 
+
 public:
+	float m_BallStretchX;
+	float m_BallStretchY;
+
 	float m_NudgeX;
 	float m_NudgeY;
 	int m_NudgeManual;		//index of joystick that has manual control

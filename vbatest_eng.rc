@@ -509,9 +509,9 @@ BEGIN
     CONTROL         "&Window",IDC_WINDOW,"Button",BS_AUTORADIOBUTTON | WS_GROUP,15,20,42,10
     CONTROL         "Full Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,15,33,56,10
     LISTBOX         IDC_SIZELIST,14,48,129,133,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Stretch the ball",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,191,63,10
+    CONTROL         "Stretch ball with table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,191,83,10
     CONTROL         "Don't stretch the ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,202,81,10
-    CONTROL         "At Full Screen stretch the ball",IDC_StretchMonitor,
+    CONTROL         "At Full Screen anti-stretch the ball",IDC_StretchMonitor,
                     "Button",BS_AUTORADIOBUTTON,16,213,127,10
     COMBOBOX        IDC_MonitorCombo,73,223,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Draw Ball &Shadows",IDC_SHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,19,77,10
@@ -537,8 +537,8 @@ BEGIN
     LTEXT           "Only works for Images",IDC_STATIC,247,168,70,8
     LTEXT           "that are not BMP.",IDC_STATIC,247,177,56,8
     LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,208,156,8
-    GROUPBOX        "When the Table is stretched",IDC_STATIC,12,182,133,57
-    LTEXT           "to my Monitor:",IDC_STATIC,25,225,45,8
+    GROUPBOX        "At a stretched Table (experimental)",IDC_STATIC,12,182,133,57
+    LTEXT           "to my Monitor:",IDC_STATIC,27,225,45,8
 END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
