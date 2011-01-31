@@ -508,7 +508,12 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "&Window",IDC_WINDOW,"Button",BS_AUTORADIOBUTTON | WS_GROUP,15,20,42,10
     CONTROL         "Full Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,15,33,56,10
-    LISTBOX         IDC_SIZELIST,14,48,129,190,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SIZELIST,14,48,129,133,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Stretch the ball",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,191,63,10
+    CONTROL         "Don't stretch the ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,202,81,10
+    CONTROL         "At Full Screen stretch the ball",IDC_StretchMonitor,
+                    "Button",BS_AUTORADIOBUTTON,16,213,127,10
+    COMBOBOX        IDC_MonitorCombo,73,223,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Draw Ball &Shadows",IDC_SHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,19,77,10
     CONTROL         "Draw Ball &Decals",IDC_DECAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,32,70,10
     CONTROL         "&Antialias Ball",IDC_ANTIALIAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,45,55,10
@@ -520,6 +525,7 @@ BEGIN
     CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,168,32,10
     CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,179,32,10
     CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,190,45,10
+    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | WS_TABSTOP,156,217,168,20
     DEFPUSHBUTTON   "OK",IDOK,221,245,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,276,245,50,14
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,237
@@ -531,7 +537,8 @@ BEGIN
     LTEXT           "Only works for Images",IDC_STATIC,247,168,70,8
     LTEXT           "that are not BMP.",IDC_STATIC,247,177,56,8
     LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,208,156,8
-    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | WS_TABSTOP,156,217,168,20
+    GROUPBOX        "When the Table is stretched",IDC_STATIC,12,182,133,57
+    LTEXT           "to my Monitor:",IDC_STATIC,25,225,45,8
 END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
@@ -2134,6 +2141,25 @@ IDC_CUR_LIGHTSEQ        CURSOR                  "cur_lightseq.cur"
 //
 
 IDR_TABLE_NEW           TABLE                   "BaseTable17.vpt"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_VIDEO_OPTIONS DLGINIT
+BEGIN
+    IDC_MonitorCombo, 0x403, 4, 0
+0x3a34, 0x0033, 
+    IDC_MonitorCombo, 0x403, 5, 0
+0x3631, 0x393a, "\000" 
+    IDC_MonitorCombo, 0x403, 6, 0
+0x3631, 0x313a, 0x0030, 
+    IDC_MonitorCombo, 0x403, 5, 0
+0x3132, 0x393a, "\000" 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

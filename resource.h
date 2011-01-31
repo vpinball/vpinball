@@ -363,6 +363,7 @@
 #define IDD_PROPPLUNGER_PHYSICS         340
 #define IDC_SCREENSHOT                  340
 #define IDS_MAKEACTIVEBALL              340
+#define IDC_MonitorCombo                340
 #define IDC_COMBO2                      341
 #define IDD_PROPSPINNER_VISUALS         341
 #define IDS_DEBUGNOCONVERT              341
@@ -445,6 +446,9 @@
 #define IDR_TABLE_NEW                   383
 #define IDC_SLIDER2                     384
 #define IDC_ARASlider                   384
+#define IDC_StretchNo                   386
+#define IDC_StretchYes                  387
+#define IDC_StretchMonitor              388
 #define IDC_ADDCREDITBUTTON2            400
 #define IDC_ADDCREDIT2                  401
 #define IDC_ADDCREDITKEY2               401
@@ -514,9 +518,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        384
+#define _APS_NEXT_RESOURCE_VALUE        385
 #define _APS_NEXT_COMMAND_VALUE         32842
-#define _APS_NEXT_CONTROL_VALUE         386
+#define _APS_NEXT_CONTROL_VALUE         389
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
