@@ -3714,6 +3714,39 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			SendMessage(hwndARASlider, TBM_SETPAGESIZE, 0, 1);
 			SendMessage(hwndARASlider, TBM_SETTHUMBLENGTH, 5, 0);
 			SendMessage(hwndARASlider, TBM_SETPOS, TRUE, alphaRampsAccuracy);
+
+			int ballStretchMode;
+			hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
+			if (hr != S_OK)
+			{
+				ballStretchMode = 0;
+			}
+			switch(ballStretchMode)
+			{
+				case 0:	SendMessage(GetDlgItem(hwndDlg, IDC_StretchNo),BM_SETCHECK, BST_CHECKED,0);
+							break;
+				case 1:  SendMessage(GetDlgItem(hwndDlg, IDC_StretchYes),BM_SETCHECK, BST_CHECKED,0);
+							break;
+				case 2:  SendMessage(GetDlgItem(hwndDlg, IDC_StretchMonitor),BM_SETCHECK, BST_CHECKED,0);
+							break;
+				default:	SendMessage(GetDlgItem(hwndDlg, IDC_StretchNo),BM_SETCHECK, BST_CHECKED,0);
+			}
+			
+			// set selected Monitors
+			// Monitors: 4:3, 16:9, 16:10, 21:10
+			int selected;
+			hr = GetRegInt("Player", "BallStretchMonitor", &selected);
+			if (hr != S_OK)
+			{
+				selected = 1; // assume 16:9 as standard
+			}		
+			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"4:3");
+			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"16:9");
+			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"16:10");
+			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"21:10"); 
+
+			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_SETCURSEL, selected, 0);
+			
 			}
 
 			return TRUE;
@@ -3786,6 +3819,24 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							int alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
 							SetRegValue("Player", "AlphaRampAccuracy", REG_DWORD, &alphaRampsAccuracy, 4);
 
+							HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
+							HWND hwndBallStretchYes = GetDlgItem(hwndDlg, IDC_StretchYes);
+							HWND hwndBallStretchMonitor = GetDlgItem(hwndDlg, IDC_StretchMonitor);
+							int ballStretchMode = 0;
+							if (SendMessage(hwndBallStretchYes, BM_GETCHECK, 0, 0) == BST_CHECKED)
+								ballStretchMode = 1;
+							if (SendMessage(hwndBallStretchMonitor, BM_GETCHECK, 0, 0) == BST_CHECKED)
+								ballStretchMode = 2;
+							SetRegValue("Player", "BallStretchMode", REG_DWORD, &ballStretchMode,4);
+
+							// get selected Monitors
+							// Monitors: 4:3, 16:9, 16:10, 21:10
+							HWND hwndBallStretchCombo = GetDlgItem(hwndDlg, IDC_MonitorCombo);
+							int selected = SendMessage(hwndBallStretchCombo, CB_GETCURSEL, 0, 0);
+							if (selected == LB_ERR)
+								selected = 1; // assume a 16:9 Monitor as standard
+							SetRegValue("Player", "BallStretchMonitor", REG_DWORD, &selected,4);
+							
 							EndDialog(hwndDlg, TRUE);
 							}
 							break;
