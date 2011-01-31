@@ -1380,6 +1380,8 @@ void Player::InitWindow()
 		m_fFullScreen = fFalse;
 		}
 
+
+
 	int screenwidth;
 	int screenheight;
 
@@ -1449,6 +1451,74 @@ void Player::InitWindow()
 			m_height += captionheight;
 		}
 	}
+
+	int ballStretchMode;
+	hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
+	if (hr != S_OK)
+	{
+		ballStretchMode = 0;
+	}
+
+	// Monitors: 4:3, 16:9, 16:10, 21:10
+	int ballStretchMonitor;
+	hr = GetRegInt("Player", "BallStretchMonitor", &ballStretchMonitor);
+	if (hr != S_OK)
+	{
+		ballStretchMonitor = 1; // assume 16:9
+	}
+
+	float scalebackX = ((m_ptable->m_scalex + m_ptable->m_scaley)/2.0f)/m_ptable->m_scalex;
+	float scalebackY = ((m_ptable->m_scalex + m_ptable->m_scaley)/2.0f)/m_ptable->m_scaley;
+	float xMonitor = 16;
+	float yMonitor = 9;
+	switch (ballStretchMonitor)
+	{
+	case 0: 
+		xMonitor = 4.0f * 1000.0f / m_width;
+		yMonitor = 3.0f * 1000.0f / m_height;
+		break;
+	case 1: 
+		xMonitor = 16.0f * 1000.0f / m_width;
+		yMonitor = 9.0f * 1000.0f / m_height;
+		break;
+	case 2: 
+		xMonitor = 16.0f * 1000.0f / m_width;
+		yMonitor = 10.0f * 1000.0f / m_height;
+		break;
+	case 3: 
+		xMonitor = 21.0f * 1000.0f / m_width;
+		yMonitor = 10.0f * 1000.0f / m_height;
+		break;
+	}
+	float scalebackMonitorX = ((xMonitor + yMonitor)/2.0f)/xMonitor;
+	float scalebackMonitorY = ((xMonitor + yMonitor)/2.0f)/yMonitor;
+
+	switch(ballStretchMode)
+	{
+		case 0:	m_BallStretchX = 1;
+				m_BallStretchY = 1;
+				break;
+		case 1: /*
+				m_width
+				m_height
+				m_ptable->m_scalex
+				m_ptable->m_scaley
+				*/
+
+				m_BallStretchX = scalebackX*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackY*sinf(ANGTORAD((int)m_ptable->m_rotation%180));
+				m_BallStretchY = scalebackY*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackX*sinf(ANGTORAD((int)m_ptable->m_rotation%180));
+
+				break;
+		case 2: m_BallStretchX = scalebackX*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackY*sinf(ANGTORAD((int)m_ptable->m_rotation%180));
+				m_BallStretchY = scalebackY*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackX*sinf(ANGTORAD((int)m_ptable->m_rotation%180));
+				if (m_fFullScreen)
+				{
+					m_BallStretchX = m_BallStretchX * (scalebackMonitorX*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackMonitorY*sinf(ANGTORAD((int)m_ptable->m_rotation%180)));
+					m_BallStretchY = m_BallStretchY * (scalebackMonitorY*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackMonitorX*sinf(ANGTORAD((int)m_ptable->m_rotation%180)));
+				}
+				break;
+	}
+
 
 	// TEXT
 	m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
@@ -2762,11 +2832,13 @@ void Player::DrawBallShadows()
 				}
 
 			const float shadowradius = pball->radius*1.2f;
+			const float shadowradiusX = shadowradius * m_BallStretchX;
+			const float shadowradiusY = shadowradius * m_BallStretchY;
 			const float inv_shadowradius = 0.5f/shadowradius;
 
 			Vertex3D * const rgv3DShadow = pball->m_rgv3DShadow;
-			rgv3DShadow[0].x = pball->x - shadowradius + offsetx;
-			rgv3DShadow[0].y = pball->y - shadowradius + offsety;
+			rgv3DShadow[0].x = pball->x - shadowradiusX + offsetx;
+			rgv3DShadow[0].y = pball->y - shadowradiusY + offsety;
 			rgv3DShadow[0].z = shadowz;
 			rgv3DShadow[0].tu = 0;
 			rgv3DShadow[0].tv = 0;
@@ -2774,8 +2846,8 @@ void Player::DrawBallShadows()
 			rgv3DShadow[0].ny = 0;
 			rgv3DShadow[0].nz = -1.0f;
 
-			rgv3DShadow[1].x = pball->x + shadowradius + offsetx;
-			rgv3DShadow[1].y = pball->y - shadowradius + offsety;
+			rgv3DShadow[1].x = pball->x + shadowradiusX + offsetx;
+			rgv3DShadow[1].y = pball->y - shadowradiusY + offsety;
 			rgv3DShadow[1].z = shadowz;
 			rgv3DShadow[1].tu = 1.0f;
 			rgv3DShadow[1].tv = 0;
@@ -2783,8 +2855,8 @@ void Player::DrawBallShadows()
 			rgv3DShadow[1].ny = 0;
 			rgv3DShadow[1].nz = -1.0f;
 
-			rgv3DShadow[2].x = pball->x + shadowradius + offsetx;
-			rgv3DShadow[2].y = pball->y + shadowradius + offsety;
+			rgv3DShadow[2].x = pball->x + shadowradiusX + offsetx;
+			rgv3DShadow[2].y = pball->y + shadowradiusY + offsety;
 			rgv3DShadow[2].z = shadowz;
 			rgv3DShadow[2].tu = 1.0f;
 			rgv3DShadow[2].tv = 1.0f;
@@ -2792,8 +2864,8 @@ void Player::DrawBallShadows()
 			rgv3DShadow[2].ny = 0;
 			rgv3DShadow[2].nz = -1.0f;
 
-			rgv3DShadow[3].x = pball->x - shadowradius + offsetx;
-			rgv3DShadow[3].y = pball->y + shadowradius + offsety;
+			rgv3DShadow[3].x = pball->x - shadowradiusX + offsetx;
+			rgv3DShadow[3].y = pball->y + shadowradiusY + offsety;
 			rgv3DShadow[3].z = shadowz;
 			rgv3DShadow[3].tu = 0;
 			rgv3DShadow[3].tv = 1.0f;
@@ -2836,6 +2908,8 @@ void Player::DrawBalls()
 	{
 	//m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
 
+
+
 	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
 
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
@@ -2849,9 +2923,13 @@ void Player::DrawBalls()
 	const float sn = sinf(m_pin3d.m_inclination);
 	const float cs = cosf(m_pin3d.m_inclination);
 
+	
+
 	for (int i=0;i<m_vball.Size();i++)
 		{
 		Ball * const pball = m_vball.ElementAt(i);
+		float radiusX = pball->radius * m_BallStretchX;
+		float radiusY = pball->radius * m_BallStretchY;
 
 		const float r = (pball->m_color & 255) * (float)(1.0/255.0);
 		const float g = (pball->m_color & 65280) * (float)(1.0/65280.0);
@@ -2864,8 +2942,8 @@ void Player::DrawBalls()
 		const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
 		Vertex3D * const rgv3D = pball->m_rgv3D;
-		rgv3D[0].x = pball->x - pball->radius;
-		rgv3D[0].y = pball->y - (pball->radius * cs);
+		rgv3D[0].x = pball->x - radiusX;
+		rgv3D[0].y = pball->y - (radiusY * cs);
 		rgv3D[0].z = zheight + (pball->radius * sn);
 		rgv3D[0].tu = 0;
 		rgv3D[0].tv = 0;
@@ -2873,8 +2951,8 @@ void Player::DrawBalls()
 		rgv3D[0].ny = 0;
 		rgv3D[0].nz = -1.0f;
 
-		rgv3D[3].x = pball->x - pball->radius;
-		rgv3D[3].y = pball->y + (pball->radius * cs);
+		rgv3D[3].x = pball->x - radiusX;
+		rgv3D[3].y = pball->y + (radiusY * cs);
 		rgv3D[3].z = zheight - (pball->radius * sn);
 		rgv3D[3].tu = 0;
 		//rgv3D[3].tv = 1.0f; // decided by ball picture
@@ -2882,8 +2960,8 @@ void Player::DrawBalls()
 		rgv3D[3].ny = 0;
 		rgv3D[3].nz = -1.0f;
 
-		rgv3D[2].x = pball->x + pball->radius;
-		rgv3D[2].y = pball->y + (pball->radius * cs);
+		rgv3D[2].x = pball->x + radiusX;
+		rgv3D[2].y = pball->y + (radiusY * cs);
 		rgv3D[2].z = zheight - (pball->radius * sn);
 		//rgv3D[2].tu = 1.0f;  // decided by ball picture
 		//rgv3D[2].tv = 1.0f;  // decided by ball picture
@@ -2891,8 +2969,8 @@ void Player::DrawBalls()
 		rgv3D[2].ny = 0;
 		rgv3D[2].nz = -1.0f;
 
-		rgv3D[1].x = pball->x + pball->radius;
-		rgv3D[1].y = pball->y - (pball->radius * cs);
+		rgv3D[1].x = pball->x + radiusX;
+		rgv3D[1].y = pball->y - (radiusY * cs);
 		rgv3D[1].z = zheight + (pball->radius * sn);
 		//rgv3D[1].tu = 1.0f;  // decided by ball picture
 		rgv3D[1].tv = 0;
@@ -3000,7 +3078,13 @@ void Player::DrawBalls()
 				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
 				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
-
+				
+				// Scale the orientation for Ball stretching
+				Matrix3 orientation;
+				orientation.Identity();
+				orientation.scaleX(m_BallStretchX);
+				orientation.scaleY(m_BallStretchY);
+				orientation.MultiplyMatrix(&orientation, &pball->m_orientation);
 				if (pball->m_pinFront)
 					{
 					pball->m_pinFront->EnsureColorKey();
@@ -3009,7 +3093,7 @@ void Player::DrawBalls()
 					//WORD rgiDecal[4] = {0,1,2,3};
 					for (int iPoint=0;iPoint<4;iPoint++)
 						{
-						const Vertex3Ds tmp = pball->m_orientation.MultiplyVector(rgv3DArrow[iPoint]);
+						const Vertex3Ds tmp = orientation.MultiplyVector(rgv3DArrow[iPoint]);
 						rgv3DArrowTransformed[iPoint].nx = tmp.x;
 						rgv3DArrowTransformed[iPoint].ny = tmp.y;
 						rgv3DArrowTransformed[iPoint].nz = tmp.z;
@@ -3027,7 +3111,10 @@ void Player::DrawBalls()
 															  rgv3DArrowTransformed, 4,
 															  NULL);
 					}
-
+				orientation.Identity();
+				orientation.scaleX(m_BallStretchX);
+				orientation.scaleY(m_BallStretchY);
+				orientation.MultiplyMatrix(&orientation, &pball->m_orientation);
 				if (pball->m_pinBack)
 					{
 					// Other side of ball
@@ -3040,7 +3127,7 @@ void Player::DrawBalls()
 						{
 						rgv3DArrow[iPoint].x = -rgv3DArrow[iPoint].x;
 						rgv3DArrow[iPoint].z = -rgv3DArrow[iPoint].z;
-						const Vertex3Ds tmp = pball->m_orientation.MultiplyVector(rgv3DArrow[iPoint]);
+						const Vertex3Ds tmp = orientation.MultiplyVector(rgv3DArrow[iPoint]);
 						rgv3DArrowTransformed2[iPoint].nx = tmp.x;
 						rgv3DArrowTransformed2[iPoint].ny = tmp.y;
 						rgv3DArrowTransformed2[iPoint].nz = tmp.z;

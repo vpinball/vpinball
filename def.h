@@ -360,11 +360,18 @@ inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 class Matrix3
 	{
 public:
-	inline void CreateSkewSymmetric(const Vertex3D &pv3D)
+
+	inline void scaleX(const float factor)
 	{
-	m_d[0][0] = 0; m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
-	m_d[1][0] = pv3D.z; m_d[1][1] = 0; m_d[1][2] = -pv3D.x;
-	m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x; m_d[2][2] = 0;
+		m_d[0][0] *= factor;
+	}
+	inline void scaleY(const float factor)
+	{
+		m_d[1][1] *= factor;
+	}
+	inline void scaleZ(const float factor)
+	{
+		m_d[2][2] *= factor;
 	}
 
 	inline void CreateSkewSymmetric(const Vertex3Ds &pv3D)
