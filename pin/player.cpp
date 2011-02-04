@@ -1467,36 +1467,36 @@ void Player::InitWindow()
 		ballStretchMonitor = 1; // assume 16:9
 	}
 
-	float scalebackX = ((m_ptable->m_scalex + m_ptable->m_scaley)/2.0f)/m_ptable->m_scalex;
-	float scalebackY = ((m_ptable->m_scalex + m_ptable->m_scaley)/2.0f)/m_ptable->m_scaley;
+	float scalebackX = ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scalex;
+	float scalebackY = ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scaley;
 	float xMonitor = 16;
 	float yMonitor = 9;
 	switch (ballStretchMonitor)
 	{
 	case 0: 
-		xMonitor = 4.0f * 1000.0f / m_width;
-		yMonitor = 3.0f * 1000.0f / m_height;
+		xMonitor = (float)(4.0 * 1000.0) / m_width;
+		yMonitor = (float)(3.0 * 1000.0) / m_height;
 		break;
 	case 1: 
-		xMonitor = 16.0f * 1000.0f / m_width;
-		yMonitor = 9.0f * 1000.0f / m_height;
+		xMonitor = (float)(16.0 * 1000.0) / m_width;
+		yMonitor = (float)( 9.0 * 1000.0) / m_height;
 		break;
 	case 2: 
-		xMonitor = 16.0f * 1000.0f / m_width;
-		yMonitor = 10.0f * 1000.0f / m_height;
+		xMonitor = (float)(16.0 * 1000.0) / m_width;
+		yMonitor = (float)(10.0 * 1000.0) / m_height;
 		break;
 	case 3: 
-		xMonitor = 21.0f * 1000.0f / m_width;
-		yMonitor = 10.0f * 1000.0f / m_height;
+		xMonitor = (float)(21.0 * 1000.0) / m_width;
+		yMonitor = (float)(10.0 * 1000.0) / m_height;
 		break;
 	}
-	float scalebackMonitorX = ((xMonitor + yMonitor)/2.0f)/xMonitor;
-	float scalebackMonitorY = ((xMonitor + yMonitor)/2.0f)/yMonitor;
+	float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
+	float scalebackMonitorY = ((xMonitor + yMonitor)*0.5f)/yMonitor;
 
 	switch(ballStretchMode)
 	{
-		case 0:	m_BallStretchX = 1;
-				m_BallStretchY = 1;
+		case 0:	m_BallStretchX = 1.0f;
+				m_BallStretchY = 1.0f;
 				break;
 		case 1: /*
 				m_width
@@ -1505,16 +1505,16 @@ void Player::InitWindow()
 				m_ptable->m_scaley
 				*/
 
-				m_BallStretchX = scalebackX*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackY*sinf(ANGTORAD((int)m_ptable->m_rotation%180));
-				m_BallStretchY = scalebackY*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackX*sinf(ANGTORAD((int)m_ptable->m_rotation%180));
+				m_BallStretchX = scalebackX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f)));
+				m_BallStretchY = scalebackY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f)));
 
 				break;
-		case 2: m_BallStretchX = scalebackX*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackY*sinf(ANGTORAD((int)m_ptable->m_rotation%180));
-				m_BallStretchY = scalebackY*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackX*sinf(ANGTORAD((int)m_ptable->m_rotation%180));
+		case 2: m_BallStretchX = scalebackX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f)));
+				m_BallStretchY = scalebackY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f)));
 				if (m_fFullScreen)
 				{
-					m_BallStretchX = m_BallStretchX * (scalebackMonitorX*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackMonitorY*sinf(ANGTORAD((int)m_ptable->m_rotation%180)));
-					m_BallStretchY = m_BallStretchY * (scalebackMonitorY*sinf(ANGTORAD((int)(m_ptable->m_rotation + 90)%180)) + scalebackMonitorX*sinf(ANGTORAD((int)m_ptable->m_rotation%180)));
+					m_BallStretchX = m_BallStretchX * (scalebackMonitorX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackMonitorY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f))));
+					m_BallStretchY = m_BallStretchY * (scalebackMonitorY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackMonitorX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f))));
 				}
 				break;
 	}

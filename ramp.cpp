@@ -598,7 +598,7 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
 	}
 
 	// calculate AlphaRampsAccuracyValue
-	float alphaRampsAccuracyValue = 4*pow(10.0f, (10-m_ptable->m_alphaRampsAccuracy)/1.5f); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
+	const float alphaRampsAccuracyValue = 4.0f*powf(10.0f, (10.0f-m_ptable->m_alphaRampsAccuracy)*(float)(1.0/1.5)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
 	
 	for (int i=0;i<(cpoint-1);i++)
 		{

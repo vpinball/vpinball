@@ -123,7 +123,7 @@ void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const flo
 	}
 
 
-void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, float accuracy)
+void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy)
 	{
 	const float tMid = (t1+t2)*0.5f;
 	RenderVertex vmid;
@@ -151,7 +151,7 @@ void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t
 ///
 /// Calculate if two vectors are flat to each other
 /// accuracy is a float > 4 and < 4000000 (tested this out)
-BOOL FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid, float accuracy)
+bool FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid, const float accuracy)
 	{
 	const float det1 = pvt1->x*pvtMid->y - pvt1->y*pvtMid->x;
 	const float det2 = pvtMid->x*pvt2->y - pvtMid->y*pvt2->x;
