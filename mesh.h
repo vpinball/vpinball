@@ -95,8 +95,8 @@ public:
 void SetHUDVertices(Vertex3D * const rgv, const int count);
 void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri);
 void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv);
-void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, float accuracy);
-BOOL FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid, float accuracy);
+void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy);
+bool FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid, const float accuracy);
 
 
 inline float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
