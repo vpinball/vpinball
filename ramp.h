@@ -124,6 +124,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	virtual void GetCenter(Vertex2D *pv) {GetPointCenter(pv);}
 	virtual void PutCenter(Vertex2D *pv) {PutPointCenter(pv);}
 
+	void WriteRegDefaults();
+
 	PinTable *m_ptable;
 
 	RampData m_d;

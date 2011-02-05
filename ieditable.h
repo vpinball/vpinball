@@ -241,7 +241,8 @@ public:
 	virtual ItemTypeEnum GetItemType() = 0;
 
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D) {}
-
+	virtual void WriteRegDefaults(){}
+	
 	void BeginUndo();
 	void EndUndo();
 	void MarkForUndo();

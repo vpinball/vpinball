@@ -111,6 +111,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 
 	virtual void DrawFrame(BOOL fOn);
 
+	void WriteRegDefaults();
+
 	PinTable *m_ptable;
 
 	BumperData m_d;

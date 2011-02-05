@@ -81,6 +81,8 @@ END_CONNECTION_POINT_MAP()
 
 	virtual void RenderBlueprint(Sur *psur);
 
+	void WriteRegDefaults();
+
 	STANDARD_DISPATCH_DECLARE
 	STANDARD_EDITABLE_DECLARES(eItemTimer)
 

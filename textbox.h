@@ -85,6 +85,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Textbox)
 
 	void RenderText();
 
+	void WriteRegDefaults();
+
 	PinTable *m_ptable;
 
 	TextboxData m_d;

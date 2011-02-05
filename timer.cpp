@@ -45,6 +45,12 @@ void Timer::SetDefaults()
 		m_d.m_tdr.m_TimerInterval = 100;
 	}
 
+void Timer::WriteRegDefaults()
+	{
+	SetRegValue("DefaultProps\\Timer","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValue("DefaultProps\\Timer","TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
+	}
+
 void Timer::SetObjectPos()
 	{
 	g_pvp->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);

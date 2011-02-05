@@ -90,6 +90,8 @@ STANDARD_EDITABLE_DECLARES(eItemPlunger)
 	virtual void GetCenter(Vertex2D *pv);
 	virtual void PutCenter(Vertex2D *pv);
 
+	void WriteRegDefaults();
+
 DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);

@@ -4036,9 +4036,12 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 		LocalString ls2(IDS_DRAWINBACK);
 		AppendMenu(hmenu, MF_STRING, ID_DRAWINFRONT, ls1.m_szbuffer);
 		AppendMenu(hmenu, MF_STRING, ID_DRAWINBACK, ls2.m_szbuffer);
+		
+		LocalString ls3(IDS_SETASDEFAULT);
+		AppendMenu(hmenu, MF_STRING, ID_SETASDEFAULT, ls3.m_szbuffer);
 
-		LocalString ls3(IDS_LOCK);
-		AppendMenu(hmenu, MF_STRING, ID_LOCK, ls3.m_szbuffer);
+		LocalString ls4(IDS_LOCK);
+		AppendMenu(hmenu, MF_STRING, ID_LOCK, ls4.m_szbuffer);
 
 		BOOL fLocked = psel->m_fLocked;
 		// HACK

@@ -29,6 +29,41 @@ HRESULT Spinner::Init(PinTable *ptable, float x, float y)
 	return S_OK;
 	}
 
+
+void Spinner::WriteRegDefaults()
+	{
+	char strTmp[40];
+
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_length);
+	SetRegValue("DefaultProps\\Spinner","Length", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_rotation);
+	SetRegValue("DefaultProps\\Spinner","Rotation", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Spinner","Supports",REG_DWORD,&m_d.m_fSupports,4);
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_height);
+	SetRegValue("DefaultProps\\Spinner","Height", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_overhang);
+	SetRegValue("DefaultProps\\Spinner","Overhang", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Spinner","Color", REG_DWORD, &m_d.m_color, 4);
+	SetRegValue("DefaultProps\\Spinner","CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_angleMax);
+	SetRegValue("DefaultProps\\Spinner","AngleMax", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_angleMin);
+	SetRegValue("DefaultProps\\Spinner","AngleMin", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_elasticity);
+	SetRegValue("DefaultProps\\Spinner","Elasticity", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_friction);
+	SetRegValue("DefaultProps\\Spinner","Friction", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_scatter);
+	SetRegValue("DefaultProps\\Spinner","Scatter", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Spinner","Animations", REG_DWORD, &m_d.m_animations, 4);
+	SetRegValue("DefaultProps\\Spinner","Visible",REG_DWORD,&m_d.m_fVisible,4);
+	SetRegValue("DefaultProps\\Spinner","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValue("DefaultProps\\Spinner","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+	SetRegValue("DefaultProps\\Spinner","ImageFront", REG_SZ, &m_d.m_szImageFront,strlen(m_d.m_szImageFront));
+	SetRegValue("DefaultProps\\Spinner","ImageBack", REG_SZ, &m_d.m_szImageBack,strlen(m_d.m_szImageBack));
+	SetRegValue("DefaultProps\\Spinner","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
+	}
+
 void Spinner::SetDefaults()
 	{
 	HRESULT hr;
@@ -142,7 +177,9 @@ void Spinner::SetDefaults()
 	if (hr != S_OK)
 		m_d.m_szImageBack[0] = 0;
 	
-	m_d.m_szSurface[0] = 0;
+	hr = GetRegString("DefaultProps\\Spinner","Surface", &m_d.m_szSurface, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szSurface[0] = 0;
 	}
 
 void Spinner::PreRender(Sur *psur)

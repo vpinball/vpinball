@@ -45,8 +45,10 @@ void LightSeq::SetDefaults()
 	if (hr != S_OK)
 		m_d.m_wzCollection[0] = 0x00;
 	else
+	{
 		UNICODE_FROM_ANSI(m_d.m_wzCollection, tmp, strlen(tmp));
-
+		m_d.m_wzCollection[strlen(tmp)] = '\0';
+	}
 	hr = GetRegStringAsFloat("DefaultProps\\LightSequence","CenterX", &fTmp);
 	if (hr == S_OK)
 		m_d.m_vCenter.x = fTmp;
@@ -69,8 +71,21 @@ void LightSeq::SetDefaults()
 	if (hr == S_OK)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
-		m_d.m_tdr.m_TimerInterval = 100;}
-
+		m_d.m_tdr.m_TimerInterval = 100;
+	}
+void LightSeq::WriteRegDefaults()
+	{
+	char strTmp[MAXTOKEN];
+	MAKE_ANSIPTR_FROMWIDE(strTmp2, (WCHAR *)m_d.m_wzCollection);
+	SetRegValue("DefaultProps\\LightSequence","UpdateInterval",REG_DWORD,&m_d.m_updateinterval,4);
+	SetRegValue("DefaultProps\\LightSequence","Collection",REG_SZ,strTmp2,66);
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vCenter.x);
+	SetRegValue("DefaultProps\\LightSequence","CenterX", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vCenter.y);
+	SetRegValue("DefaultProps\\LightSequence","CenterY", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\LightSequence","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValue("DefaultProps\\LightSequence","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+	}
 void LightSeq::SetObjectPos()
 {
 	g_pvp->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);

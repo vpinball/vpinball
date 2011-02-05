@@ -231,16 +231,16 @@ void DispReel::SetDefaults()
 	hr = GetRegInt("DefaultProps\\EMReel","ReelCount", &iTmp);
 	m_d.m_reelcount = (hr == S_OK) ? iTmp : 5;
 
-    hr = GetRegStringAsFloat("DefaultProps\\Ramp","Width", &fTmp);
+    hr = GetRegStringAsFloat("DefaultProps\\EMReel","Width", &fTmp);
 	m_d.m_width = (hr == S_OK) ? fTmp : 30.0f;
     
-	hr = GetRegStringAsFloat("DefaultProps\\Ramp","Height", &fTmp);
+	hr = GetRegStringAsFloat("DefaultProps\\EMReel","Height", &fTmp);
 	m_d.m_height = (hr == S_OK) ? fTmp : 40.0f;
     
-	hr = GetRegStringAsFloat("DefaultProps\\Ramp","ReelSpacing", &fTmp);
+	hr = GetRegStringAsFloat("DefaultProps\\EMReel","ReelSpacing", &fTmp);
 	m_d.m_reelspacing = (hr == S_OK) ? fTmp : 4.0f;
     
-	hr = GetRegStringAsFloat("DefaultProps\\Ramp","MotorSteps", &fTmp);
+	hr = GetRegStringAsFloat("DefaultProps\\EMReel","MotorSteps", &fTmp);
 	m_d.m_motorsteps = (hr == S_OK) ? fTmp : 2.0f;
 
 	hr = GetRegInt("DefaultProps\\EMReel","DigitRange", &iTmp);
@@ -272,8 +272,109 @@ void DispReel::SetDefaults()
 	
 	hr = GetRegInt("DefaultProps\\EMReel","TimerInterval", &iTmp);
 	m_d.m_tdr.m_TimerInterval = (hr == S_OK) ? iTmp : 100;
-}
 
+		if (!m_pIFont)
+		{
+		FONTDESC fd;
+		fd.cbSizeofstruct = sizeof(FONTDESC);
+		
+		hr = GetRegStringAsFloat("DefaultProps\\EMReel","FontSize", &fTmp);
+		fd.cySize.int64 = (hr == S_OK) ? (LONGLONG)(fTmp * 10000.0) : 142500;
+
+		char tmp[256];
+		hr = GetRegString("DefaultProps\\EMReel","FontName", tmp, 256);
+		if (hr != S_OK)
+			fd.lpstrName = L"Arial Black";
+		else
+		{
+			unsigned int len = strlen(&tmp[0]);
+			fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
+			UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
+			fd.lpstrName[len] = 0;
+		}
+
+		hr = GetRegInt("DefaultProps\\EMReel", "FontWeight", &iTmp);
+		fd.sWeight = (hr == S_OK) ? iTmp : FW_NORMAL;
+	
+		hr = GetRegInt("DefaultProps\\EMReel", "FontCharSet", &iTmp);
+		fd.sCharset = (hr == S_OK) ? iTmp : 0;
+		
+		hr = GetRegInt("DefaultProps\\EMReel", "FontItalic", &iTmp);
+		if (hr == S_OK)
+			fd.fItalic = iTmp == 0 ? false : true;
+		else
+			fd.fItalic = 0;
+
+		hr = GetRegInt("DefaultProps\\EMReel", "FontUnderline", &iTmp);
+		if (hr == S_OK)
+			fd.fUnderline = iTmp == 0 ? false : true;
+		else
+			fd.fUnderline = 0;
+		
+		hr = GetRegInt("DefaultProps\\EMReel", "FontStrikeThrough", &iTmp);
+		if (hr == S_OK)
+			fd.fStrikethrough = iTmp == 0 ? false : true;
+		else
+			fd.fStrikethrough = 0;
+		
+		OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+		}
+	}
+
+void DispReel::WriteRegDefaults()
+	{
+	char strTmp[MAXTOKEN];
+	float fTmp;
+
+	SetRegValue("DefaultProps\\EMReel","ReelType",REG_DWORD,&m_d.m_reeltype,4);
+	SetRegValue("DefaultProps\\EMReel","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
+	SetRegValue("DefaultProps\\EMReel","Sound", REG_SZ, &m_d.m_szSound,strlen(m_d.m_szSound));
+	SetRegValue("DefaultProps\\Decal","UseImageGrid",REG_DWORD,&m_d.m_fUseImageGrid,4);
+	SetRegValue("DefaultProps\\Decal","ImagesPerRow",REG_DWORD,&m_d.m_imagesPerGridRow ,4);
+	SetRegValue("DefaultProps\\Decal","Transparent",REG_DWORD,&m_d.m_fTransparent,4);
+	SetRegValue("DefaultProps\\Decal","ReelCount",REG_DWORD,&m_d.m_reelcount ,4);
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_width);
+	SetRegValue("DefaultProps\\EMReel","Width", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_height);
+	SetRegValue("DefaultProps\\EMReel","Height", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_reelspacing);
+	SetRegValue("DefaultProps\\EMReel","ReelSPacing", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_motorsteps);
+	SetRegValue("DefaultProps\\EMReel","MotorSteps", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Decal","DigitRange",REG_DWORD,&m_d.m_digitrange,4);
+	SetRegValue("DefaultProps\\Decal","Shading",REG_DWORD,&m_d.m_fShading,4);
+	SetRegValue("DefaultProps\\Decal","UpdateInterval",REG_DWORD,&m_d.m_updateinterval,4);
+	SetRegValue("DefaultProps\\EMReel","BackColor",REG_DWORD,&m_d.m_backcolor,4);
+	SetRegValue("DefaultProps\\EMReel","FontColor",REG_DWORD,&m_d.m_fontcolor,4);
+	SetRegValue("DefaultProps\\EMReel","ReelColor",REG_DWORD,&m_d.m_reelcolor,4);
+	SetRegValue("DefaultProps\\EMReel","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValue("DefaultProps\\EMReel","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+
+	if (m_pIFont)
+		{
+		FONTDESC fd;
+		fd.cbSizeofstruct = sizeof(FONTDESC);
+		m_pIFont->get_Size(&fd.cySize); 
+		m_pIFont->get_Name(&fd.lpstrName); 
+		m_pIFont->get_Weight(&fd.sWeight); 
+		m_pIFont->get_Charset(&fd.sCharset); 
+		m_pIFont->get_Italic(&fd.fItalic);
+		m_pIFont->get_Underline(&fd.fUnderline); 
+		m_pIFont->get_Strikethrough(&fd.fStrikethrough); 
+		
+		fTmp = (float)(fd.cySize.int64 / 10000.0);
+		sprintf_s(&strTmp[0], 40, "%f", fTmp);
+		SetRegValue("DefaultProps\\EMReel","FontSize", REG_SZ, &strTmp,strlen(strTmp));
+		int charCnt = wcslen(fd.lpstrName) +1;
+		WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
+		SetRegValue("DefaultProps\\EMReel","FontName", REG_SZ, &strTmp,strlen(strTmp));
+		SetRegValue("DefaultProps\\EMReel","FontWeight",REG_DWORD,&fd.sWeight,4);
+		SetRegValue("DefaultProps\\EMReel","FontCharSet",REG_DWORD,&fd.sCharset,4);
+		SetRegValue("DefaultProps\\EMReel","FontItalic",REG_DWORD,&fd.fItalic,4);
+		SetRegValue("DefaultProps\\EMReel","FontUnderline",REG_DWORD,&fd.fUnderline,4);
+		SetRegValue("DefaultProps\\EMReel","FontStrikeThrough",REG_DWORD,&fd.fStrikethrough,4);
+		}
+	}
 
 
 STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
