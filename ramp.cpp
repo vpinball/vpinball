@@ -111,7 +111,6 @@ void Ramp::SetDefaults()
 	if (hr != S_OK)
 		m_d.m_szImage[0] = 0;
 
-
 	hr = GetRegInt("DefaultProps\\Ramp","ImageMode", &iTmp);
 	if (hr == S_OK)
 		m_d.m_imagealignment = (enum RampImageAlignment)iTmp;
@@ -191,7 +190,52 @@ void Ramp::SetDefaults()
 		m_d.m_fCollidable = iTmp == 0? false : true;
 	else
 		m_d.m_fCollidable = fTrue;
+
+	hr = GetRegInt("DefaultProps\\Ramp","Visible", &iTmp);
+	if (hr == S_OK)
+		m_d.m_IsVisible = iTmp == 0? false : true;
+	else
+		m_d.m_IsVisible = fTrue;
 	}
+
+void Ramp::WriteRegDefaults()
+	{
+	char strTmp[40];
+
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_heightbottom);
+	SetRegValue("DefaultProps\\Ramp","HeightBottom", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_heighttop);
+	SetRegValue("DefaultProps\\Ramp","HeightTop", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_widthbottom);
+	SetRegValue("DefaultProps\\Ramp","WidthBottom", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_widthtop);
+	SetRegValue("DefaultProps\\Ramp","WidthTop", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Ramp","Color",REG_DWORD,&m_d.m_color,4);
+	SetRegValue("DefaultProps\\Ramp","RampType",REG_DWORD,&m_d.m_type,4);
+	SetRegValue("DefaultProps\\Ramp","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValue("DefaultProps\\Ramp","TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
+	SetRegValue("DefaultProps\\Ramp","Image", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
+	SetRegValue("DefaultProps\\Ramp","ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
+	SetRegValue("DefaultProps\\Ramp","ImageWalls",REG_DWORD,&m_d.m_fImageWalls,4);
+	SetRegValue("DefaultProps\\Ramp","CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
+	SetRegValue("DefaultProps\\Ramp","Acrylic",REG_DWORD,&m_d.m_fAcrylic,4);
+	SetRegValue("DefaultProps\\Ramp","Alpha",REG_DWORD,&m_d.m_fAlpha,4);
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_leftwallheight);
+	SetRegValue("DefaultProps\\Ramp","LeftWallHeight", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_rightwallheight);
+	SetRegValue("DefaultProps\\Ramp","RightWallHeight", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Ramp","LeftWallHeightVisible",REG_DWORD,&m_d.m_leftwallheightvisible,4);
+	SetRegValue("DefaultProps\\Ramp","RightWallHeightVisible",REG_DWORD,&m_d.m_rightwallheightvisible,4);
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_elasticity);
+	SetRegValue("DefaultProps\\Ramp","Elasticity", REG_SZ, &strTmp,strlen(strTmp));	
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_friction);
+	SetRegValue("DefaultProps\\Ramp","Friction", REG_SZ, &strTmp,strlen(strTmp));	
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_scatter);
+	SetRegValue("DefaultProps\\Ramp","Scatter", REG_SZ, &strTmp,strlen(strTmp));	
+	SetRegValue("DefaultProps\\Ramp","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
+	SetRegValue("DefaultProps\\Ramp","Visible",REG_DWORD,&m_d.m_IsVisible,4);
+	}
+
 
 void Ramp::PreRender(Sur *psur)
 	{

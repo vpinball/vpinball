@@ -18,8 +18,8 @@ HRESULT GetRegString(char *szKey, char *szValue, void *szbuffer, DWORD size)
 HRESULT GetRegStringAsFloat(char *szKey, char *szValue, float *pfloat)
 	{
 	DWORD type;
-	char szbuffer[8];
-	const HRESULT hr = GetRegValue(szKey, szValue, &type, &szbuffer[0], 8);
+	char szbuffer[16];
+	const HRESULT hr = GetRegValue(szKey, szValue, &type, &szbuffer[0], 16);
 
 	if (type != REG_SZ)
 		{

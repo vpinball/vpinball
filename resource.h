@@ -112,6 +112,7 @@
 #define ID_DRAWINBACK                   148
 #define IDC_CUR_DECAL                   148
 #define IDS_NAME                        148
+#define ID_SETASDEFAULT					149
 #define IDC_CUR_SPINNER                 149
 #define IDS_IMPORTPATH                  149
 #define IDC_CUR_RAMP                    150
@@ -132,6 +133,7 @@
 #define IDS_NOPASTEINVIEW               164
 #define IDS_FINDLOOPED                  165
 #define IDS_FINDFAILED                  166
+#define IDS_SETASDEFAULT				167
 #define IDR_BALL                        167
 #define IDS_FINDFAILED2                 168
 #define IDC_DISPREEL                    168

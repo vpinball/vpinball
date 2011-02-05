@@ -86,6 +86,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Kicker)
 	virtual void GetCenter(Vertex2D *pv);
 	virtual void PutCenter(Vertex2D *pv);
 
+	void WriteRegDefaults();
+
 	PinTable *m_ptable;
 
 	KickerData m_d;

@@ -28,6 +28,9 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y)
 
 	SetDefaults();
 
+	if (m_d.m_shape == ShapeCustom)
+		put_Shape(ShapeCustom);
+
 	return InitVBA(fTrue, 0, NULL);
 	}
 
@@ -73,13 +76,14 @@ void Trigger::SetDefaults()
 	else
 		m_d.m_hit_height = 50.0f;
 
-		hr = GetRegInt("DefaultProps\\Trigger","Shape", &iTmp);
+	hr = GetRegInt("DefaultProps\\Trigger","Shape", &iTmp);
 	if (hr == S_OK)
 		m_d.m_shape = (enum Shape)iTmp;
 	else
 		m_d.m_shape = ShapeCircle;
-
-	m_d.m_szSurface[0] = 0;
+	hr = GetRegString("DefaultProps\\Trigger","Surface", &m_d.m_szSurface, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szSurface[0] = 0;
 	}
 
 void Trigger::PreRender(Sur *psur)
@@ -710,6 +714,22 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 void Trigger::ClearForOverwrite()
 	{
 	ClearPointsForOverwrite();
+	}
+
+void Trigger::WriteRegDefaults()
+	{
+	char strTmp[40];
+
+	SetRegValue("DefaultProps\\Trigger","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValue("DefaultProps\\Trigger","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+	SetRegValue("DefaultProps\\Trigger","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
+	SetRegValue("DefaultProps\\Trigger","Visible",REG_DWORD,&m_d.m_fVisible,4);
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_hit_height);
+	SetRegValue("DefaultProps\\Trigger","HitHeight", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_radius);
+	SetRegValue("DefaultProps\\Trigger","Radius", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Trigger","Shape",REG_DWORD,&m_d.m_shape,4);
+	SetRegValue("DefaultProps\\Trigger","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
 	}
 
 HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)

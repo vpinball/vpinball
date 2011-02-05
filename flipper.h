@@ -100,6 +100,8 @@ END_CONNECTION_POINT_MAP()
 
 	void RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, float angle, float height, COLORREF color, float baseradius, float endradius, float flipperheight);
 
+	void WriteRegDefaults();
+
 //DECLARE_NOT_AGGREGATABLE(Flipper) 
 // Remove the comment from the line above if you don't want your object to 
 // support aggregation. 

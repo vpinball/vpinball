@@ -57,7 +57,9 @@ void Bumper::SetDefaults()
 	if (hr != S_OK)
 		m_d.m_szImage[0] = 0;
 	
-	m_d.m_szSurface[0] = 0;
+	hr = GetRegString("DefaultProps\\Bumper","Surface", m_d.m_szSurface, MAXTOKEN);
+	if (hr != S_OK)	
+		m_d.m_szSurface[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\Bumper","TimerEnabled", &iTmp);
 	if (hr == S_OK)
@@ -101,6 +103,33 @@ void Bumper::SetDefaults()
 		m_d.m_fSideVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_fSideVisible = fTrue;
+	}
+
+void Bumper::WriteRegDefaults()
+	{
+	char strTmp[40];
+	
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_radius);
+	SetRegValue("DefaultProps\\Bumper","Radius", REG_SZ, &strTmp,strlen(strTmp));	
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_force);
+	SetRegValue("DefaultProps\\Bumper","Force", REG_SZ, &strTmp,strlen(strTmp));	
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_threshold);
+	SetRegValue("DefaultProps\\Bumper","Threshold", REG_SZ, &strTmp,strlen(strTmp));	
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_overhang);
+	SetRegValue("DefaultProps\\Bumper","Overhang", REG_SZ, &strTmp,strlen(strTmp));	
+	SetRegValue("DefaultProps\\Bumper","Color", REG_DWORD, &m_d.m_color,4);	
+	SetRegValue("DefaultProps\\Bumper","SideColor", REG_DWORD, &m_d.m_sidecolor,4);	
+	SetRegValue("DefaultProps\\Bumper","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));	
+	SetRegValue("DefaultProps\\Bumper","TimerEnabled", REG_DWORD, &m_d.m_tdr.m_fTimerEnabled,4);	
+	SetRegValue("DefaultProps\\Bumper","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval,4);	
+	SetRegValue("DefaultProps\\Bumper","LightState", REG_DWORD, (int *)&m_d.m_state,4);	
+	SetRegValue("DefaultProps\\Bumper","BlinkPattern", REG_SZ, &m_rgblinkpattern,strlen(m_rgblinkpattern));	
+	SetRegValue("DefaultProps\\Bumper","BlinkInterval", REG_DWORD, &m_blinkinterval,4);	
+	SetRegValue("DefaultProps\\Bumper","FlashWhenHit", REG_DWORD, &m_d.m_fFlashWhenHit,4);	
+	SetRegValue("DefaultProps\\Bumper","CastsShadow", REG_DWORD, &m_d.m_fCastsShadow,4);	
+	SetRegValue("DefaultProps\\Bumper","Visible", REG_DWORD, &m_d.m_fVisible,4);	
+	SetRegValue("DefaultProps\\Bumper","SideVisible", REG_DWORD, &m_d.m_fSideVisible,4);	
+	SetRegValue("DefaultProps\\Bumper","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));	
 	}
 
 STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)

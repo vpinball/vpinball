@@ -112,6 +112,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DispReel)
     void        RenderText();
     bool        RenderAnimation();
 
+	void WriteRegDefaults();
+
     PinTable    *m_ptable;
     ObjFrame    *m_pobjframe;      // overall object frame (box) which contains the boarder and reels
 

@@ -68,7 +68,9 @@ void Kicker::SetDefaults()
 	else
 		m_d.m_hit_height = 40;
 
-	m_d.m_szSurface[0] = 0;
+	hr = GetRegString("DefaultProps\\Kicker", "Surface", &m_d.m_szSurface, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szSurface[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\Kicker","KickerType", &iTmp);
 	if (hr == S_OK)
@@ -76,12 +78,29 @@ void Kicker::SetDefaults()
 	else
 		m_d.m_kickertype = KickerHole;
 
-
 	hr = GetRegInt("DefaultProps\\Kicker","Color", &iTmp);
 	if (hr == S_OK)
 		m_d.m_color = iTmp;
 	else
 		m_d.m_color = RGB(100,100,100);
+	}
+
+void Kicker::WriteRegDefaults()
+	{
+	char strTmp[40];
+
+	SetRegValue("DefaultProps\\Kicker","Color",REG_DWORD,&m_d.m_color,4);
+	SetRegValue("DefaultProps\\Kicker","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValue("DefaultProps\\Kicker","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+	SetRegValue("DefaultProps\\Kicker","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_hit_height);
+	SetRegValue("DefaultProps\\Kicker","HitHeight", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_radius);
+	SetRegValue("DefaultProps\\Kicker","Radius", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_scatter);
+	SetRegValue("DefaultProps\\Kicker","Scatter", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Kicker","KickerType",REG_DWORD,&m_d.m_kickertype,4);
+	SetRegValue("DefaultProps\\Kicker","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
 	}
 
 void Kicker::PreRender(Sur *psur)

@@ -99,6 +99,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Gate)
 
 	virtual void RenderBlueprint(Sur *psur);
 
+	void WriteRegDefaults();
 	PinTable *m_ptable;
 
 	GateData m_d;

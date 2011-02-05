@@ -91,8 +91,10 @@ void Flipper::SetDefaults()
 	
 	hr = GetRegInt("DefaultProps\\Flipper","RubberColor", &iTmp);
 	m_d.m_rubbercolor = (hr == S_OK) ? iTmp : RGB(128,128,128);
-
-	m_d.m_szSurface[0] = 0;
+	
+	hr = GetRegString("DefaultProps\\Flipper", "Surface", &m_d.m_szSurface, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szSurface[0] = 0;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Strength", &fTmp);
 	m_d.m_strength = (hr == S_OK) ? fTmp : 6.0f;
@@ -126,6 +128,52 @@ void Flipper::SetDefaults()
 	else
 		m_d.m_fVisible = fTrue;
 	}
+
+void Flipper::WriteRegDefaults()
+	{
+	char strTmp[MAXTOKEN];
+	
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_BaseRadius);
+	SetRegValue("DefaultProps\\Flipper","BaseRadius", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_EndRadius);
+	SetRegValue("DefaultProps\\Flipper","EndRadius", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_StartAngle);
+	SetRegValue("DefaultProps\\Flipper","StartAngle", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_EndAngle);
+	SetRegValue("DefaultProps\\Flipper","EndAngle", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_FlipperRadiusMax);
+	SetRegValue("DefaultProps\\Flipper","Length", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_FlipperRadiusMin);
+	SetRegValue("DefaultProps\\Flipper","MaxDifLength", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_recoil);
+	SetRegValue("DefaultProps\\Flipper","RecoilVelocity", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_return);
+	SetRegValue("DefaultProps\\Flipper","ReturnStrength", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_force);
+	SetRegValue("DefaultProps\\Flipper","Speed", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_elasticity);
+	SetRegValue("DefaultProps\\Flipper","Elasticity", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", RADTOANG(m_d.m_scatterangle));
+	SetRegValue("DefaultProps\\Flipper","ScatterAngle", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Flipper","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValue("DefaultProps\\Flipper","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+	SetRegValue("DefaultProps\\Flipper","Color", REG_DWORD, &m_d.m_color, 4);
+	SetRegValue("DefaultProps\\Flipper","RubberColor", REG_DWORD, &m_d.m_rubbercolor, 4);
+	SetRegValue("DefaultProps\\Flipper","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_strength);
+	SetRegValue("DefaultProps\\Flipper","Strength", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_powerlaw);
+	SetRegValue("DefaultProps\\Flipper","PowerLaw", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_obliquecorrection);
+	SetRegValue("DefaultProps\\Flipper","ObliqueCorrection", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_height);
+	SetRegValue("DefaultProps\\Flipper","Height", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Flipper","RubberThickness", REG_DWORD, &m_d.m_rubberthickness, 4);
+	SetRegValue("DefaultProps\\Flipper","RubberHeight", REG_DWORD, &m_d.m_rubberheight, 4);
+	SetRegValue("DefaultProps\\Flipper","RubberWidth", REG_DWORD, &m_d.m_rubberwidth, 4);
+	SetRegValue("DefaultProps\\Flipper","Visible",REG_DWORD,&m_d.m_fVisible,4);
+	}
+
 
 void Flipper::GetTimers(Vector<HitTimer> *pvht)
 	{

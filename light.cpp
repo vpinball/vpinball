@@ -70,6 +70,9 @@ HRESULT Light::Init(PinTable *ptable, float x, float y)
 
 	SetDefaults();
 
+	if (m_d.m_shape == ShapeCustom)
+		put_Shape(ShapeCustom);
+
 	m_fLockedByLS = false;			//>>> added by chris
 	m_realState	= m_d.m_state;		//>>> added by chris
 
@@ -153,8 +156,31 @@ void Light::SetDefaults()
 		m_d.m_bordercolor = iTmp;
 	else
 		m_d.m_bordercolor = RGB(0,0,0);
+	
+	hr = GetRegString("DefaultProps\\Light", "Surface", &m_d.m_szSurface, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szSurface[0] = 0;
+	}
+void Light::WriteRegDefaults()
+	{
+	char strTmp[MAXTOKEN];
 
-	m_d.m_szSurface[0] = 0;
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_radius);
+	SetRegValue("DefaultProps\\Light","Radius", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Light","LightState",REG_DWORD,&m_d.m_state,4);
+	SetRegValue("DefaultProps\\Light","Shape",REG_DWORD,&m_d.m_shape,4);
+	SetRegValue("DefaultProps\\Light","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValue("DefaultProps\\Light","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+	SetRegValue("DefaultProps\\Light","Color",REG_DWORD,&m_d.m_color,4);
+	SetRegValue("DefaultProps\\Light","OffImage", REG_SZ, &m_d.m_szOffImage,strlen(m_d.m_szOffImage));
+	SetRegValue("DefaultProps\\Light","OnImage", REG_SZ, &m_d.m_szOnImage,strlen(m_d.m_szOnImage));
+	SetRegValue("DefaultProps\\Light","DisplayImage", REG_DWORD, &m_d.m_fDisplayImage,4);
+	SetRegValue("DefaultProps\\Light","BlinkPattern", REG_SZ, &m_rgblinkpattern,strlen(m_rgblinkpattern));
+	SetRegValue("DefaultProps\\Light","BlinkInterval", REG_DWORD, &m_blinkinterval,4);
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_borderwidth);
+	SetRegValue("DefaultProps\\Light","BorderWidth", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
+	SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
 	}
 
 void Light::PreRender(Sur *psur)

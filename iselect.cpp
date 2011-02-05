@@ -124,6 +124,9 @@ void ISelect::DoCommand(int icmd, int x, int y)
 			GetPTable()->m_vedit.InsertElementAt(piedit, 0);
 			GetPTable()->SetDirtyDraw();
 			break;
+		case ID_SETASDEFAULT:
+			piedit->WriteRegDefaults();
+			break;
 		case ID_LOCK:
 			GetIEditable()->BeginUndo();
 			GetIEditable()->MarkForUndo();

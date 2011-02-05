@@ -55,8 +55,9 @@ void Decal::SetDefaults()
 	hr = GetRegString("DefaultProps\\Decal","Image", m_d.m_szImage, MAXTOKEN);
 	if (hr != S_OK)
 		m_d.m_szImage[0] = 0;
-
-	m_d.m_szSurface[0] = 0;
+	hr = GetRegString("DefaultProps\\Decal","Surface", m_d.m_szSurface, MAXTOKEN);
+	if (hr != S_OK)
+		m_d.m_szSurface[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\Decal", "DecalType", &iTmp);
 	m_d.m_decaltype = (hr == S_OK) ? (enum DecalType)iTmp : DecalImage;
@@ -124,6 +125,52 @@ void Decal::SetDefaults()
 		OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
 		}
 	}
+
+void Decal::WriteRegDefaults()
+	{
+	char strTmp[MAXTOKEN];
+	float fTmp;
+
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_width);
+	SetRegValue("DefaultProps\\Decal","Width", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_height);
+	SetRegValue("DefaultProps\\Decal","Height", REG_SZ, &strTmp,strlen(strTmp));
+	sprintf_s(&strTmp[0], 40, "%f", m_d.m_rotation);
+	SetRegValue("DefaultProps\\Decal","Rotation", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Decal","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
+	SetRegValue("DefaultProps\\Decal","DecalType",REG_DWORD,&m_d.m_decaltype,4);
+	SetRegValue("DefaultProps\\Decal","Text", REG_SZ, &m_d.m_sztext,strlen(m_d.m_sztext));
+	SetRegValue("DefaultProps\\Decal","Sizing",REG_DWORD,&m_d.m_sizingtype,4);
+	SetRegValue("DefaultProps\\Decal","Color",REG_DWORD,&m_d.m_color,4);
+	SetRegValue("DefaultProps\\Decal","VerticalText",REG_DWORD,&m_d.m_fVerticalText,4);
+	SetRegValue("DefaultProps\\Decal","Surface", REG_SZ, m_d.m_szSurface, strlen(m_d.m_szSurface)); 
+
+	if (m_pIFont)
+		{
+		FONTDESC fd;
+		fd.cbSizeofstruct = sizeof(FONTDESC);
+		m_pIFont->get_Size(&fd.cySize); 
+		m_pIFont->get_Name(&fd.lpstrName); 
+		m_pIFont->get_Weight(&fd.sWeight); 
+		m_pIFont->get_Charset(&fd.sCharset); 
+		m_pIFont->get_Italic(&fd.fItalic);
+		m_pIFont->get_Underline(&fd.fUnderline); 
+		m_pIFont->get_Strikethrough(&fd.fStrikethrough); 
+		
+		fTmp = (float)(fd.cySize.int64 / 10000.0);
+		sprintf_s(&strTmp[0], 40, "%f", fTmp);
+		SetRegValue("DefaultProps\\Decal","FontSize", REG_SZ, &strTmp,strlen(strTmp));
+		int charCnt = wcslen(fd.lpstrName) +1;
+		WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
+		SetRegValue("DefaultProps\\Decal","FontName", REG_SZ, &strTmp,strlen(strTmp));
+		SetRegValue("DefaultProps\\Decal","FontWeight",REG_DWORD,&fd.sWeight,4);
+		SetRegValue("DefaultProps\\Decal","FontCharSet",REG_DWORD,&fd.sCharset,4);
+		SetRegValue("DefaultProps\\Decal","FontItalic",REG_DWORD,&fd.fItalic,4);
+		SetRegValue("DefaultProps\\Decal","FontUnderline",REG_DWORD,&fd.fUnderline,4);
+		SetRegValue("DefaultProps\\Decal","FontStrikeThrough",REG_DWORD,&fd.fStrikethrough,4);
+		}
+	}
+
 
 HRESULT Decal::InitVBA(BOOL fNew, int id, WCHAR *wzName)
 	{

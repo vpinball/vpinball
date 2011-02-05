@@ -66,7 +66,8 @@ public:
 	virtual ~Surface();
 
 	HRESULT InitTarget(PinTable * const ptable, const float x, const float y);
-
+	void WriteRegDefaults();
+	
 	//int GetPointCount();
 	//Vertex2D *GetRgVertex(int *pcount);
 	//void GetRgVertex(Vector<RenderVertex> *pvv);
@@ -130,7 +131,7 @@ END_CONNECTION_POINT_MAP()
 	//void CheckIntersecting();
 
 	PinTable *m_ptable;
-
+	bool IsWall;
 	BSTR m_bstrName;
 
 	Vertex2D *m_rgvT; // keeps vertices around between PreRender and Render

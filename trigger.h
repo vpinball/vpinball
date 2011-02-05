@@ -101,6 +101,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Trigger)
 
 	virtual void ClearForOverwrite();
 
+	void WriteRegDefaults();
+
 	PinTable *m_ptable;
 
 	TriggerData m_d;

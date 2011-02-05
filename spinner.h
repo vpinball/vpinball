@@ -97,6 +97,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Spinner)
 	virtual void GetCenter(Vertex2D *pv);
 	virtual void PutCenter(Vertex2D *pv);
 
+	void WriteRegDefaults();
+
 	PinTable *m_ptable;
 
 	SpinnerData m_d;
