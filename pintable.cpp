@@ -5971,7 +5971,7 @@ void PinTable::ReImportImage(HWND hwndListView, PinImage *ppi, char *filename)
 
 	PinImage piT;
 	// Make sure we can import the new file before blowing away anything we had before
-	piT.m_pdsBuffer = g_pvp->m_pdd.CreateFromFile(filename, &ppi->m_width, &ppi->m_height);
+	piT.m_pdsBuffer = g_pvp->m_pdd.CreateFromFile(filename, &ppi->m_width, &ppi->m_height, ppi->m_originalWidth, ppi->m_originalHeight);
 
 	if (piT.m_pdsBuffer == NULL)
 		{

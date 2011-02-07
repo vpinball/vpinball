@@ -51,6 +51,7 @@ public:
 	// width and height of texture can be different than width and height
 	// of dd surface, since the surface has to be in powers of 2
 	int m_width, m_height;
+	int m_originalWidth, m_originalHeight;
 
 	// Filled at runtime, accounts for buffer space to meet the power of 2
 	// requirement
@@ -83,7 +84,7 @@ public:
 	LPDIRECTDRAW7 m_pDD;
 
 	LPDIRECTDRAWSURFACE7 CreateTextureOffscreen(const int width, const int height);
-	LPDIRECTDRAWSURFACE7 CreateFromFile(char *szfile, int * const pwidth, int * const pheight);
+	LPDIRECTDRAWSURFACE7 CreateFromFile(char *szfile, int * const pwidth, int * const pheight, int& originalWidth, int& originalHeight);
 	LPDIRECTDRAWSURFACE7 CreateFromResource(const int id, int * const pwidth, int * const pheight);
 	LPDIRECTDRAWSURFACE7 CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
 
