@@ -34,8 +34,8 @@ HRESULT PinImage::SaveToStream(IStream *pstream, PinTable *pt)
 
 	bw.WriteString(FID(PATH), m_szPath);
 
-	bw.WriteInt(FID(WDTH), m_width);
-	bw.WriteInt(FID(HGHT), m_height);
+	bw.WriteInt(FID(WDTH), m_originalWidth);
+	bw.WriteInt(FID(HGHT), m_originalHeight);
 
 	bw.WriteInt(FID(TRNS), m_rgbTransparent);
 	
@@ -106,10 +106,12 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(WDTH))
 		{
 		pbr->GetInt(&m_width);
+		m_originalWidth = m_width;
 		}
 	else if (id == FID(HGHT))
 		{
 		pbr->GetInt(&m_height);
+		m_originalHeight = m_height;
 		}
 	else if (id == FID(BITS))
 		{
@@ -194,6 +196,9 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		}
 		int pictureWidth = FreeImage_GetWidth(dib);
 		int pictureHeight = FreeImage_GetHeight(dib);
+		// save original width and height, if the texture is rescaled
+		m_originalWidth = pictureWidth;
+		m_originalHeight = pictureHeight;
 		if (((pictureHeight > maxTexDim) ||  (pictureWidth > maxTexDim)) && (maxTexDim != 0))
 		{
 			dib = FreeImage_Rescale(dib, maxTexDim, maxTexDim, FILTER_BILINEAR);
@@ -247,6 +252,9 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		}
 		int pictureWidth = FreeImage_GetWidth(dib);
 		int pictureHeight = FreeImage_GetHeight(dib);
+		// save original width and height, if the texture is rescaled
+		m_originalWidth = pictureWidth;
+		m_originalHeight = pictureHeight;
 		if (((pictureHeight > maxTexDim) ||  (pictureWidth > maxTexDim)) && (maxTexDim != 0))
 		{
 			dib = FreeImage_Rescale(dib, maxTexDim, maxTexDim, FILTER_BILINEAR);
@@ -510,7 +518,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 	return pdds;
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwidth, int * const pheight)
+LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwidth, int * const pheight, int& originalWidth, int& originalHeight)
 	{
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 
@@ -537,6 +545,9 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 		}
 		int pictureWidth = FreeImage_GetWidth(dib);
 		int pictureHeight = FreeImage_GetHeight(dib);
+		// save original width and height, if the texture is rescaled
+		originalWidth = pictureWidth;
+		originalHeight = pictureHeight;
 		if (((pictureHeight > maxTexDim) ||  (pictureWidth > maxTexDim)) && (maxTexDim != 0))
 		{
 			dib = FreeImage_Rescale(dib, maxTexDim, maxTexDim, FILTER_BILINEAR);

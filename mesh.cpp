@@ -148,11 +148,16 @@ void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t
 		} 
 	}
 
-///
-/// Calculate if two vectors are flat to each other
-/// accuracy is a float > 4 and < 4000000 (tested this out)
+///<summary>
+///Calculate if two vectors are flat to each other
+///accuracy is a float greater 4 and smaller 4000000 (tested this out)
+///<param name="pvt1">vector1</param>
+///<param name="pvt2">vector2</param>
+///<param name="pvtMid">Vector middle</param>
+///<param name="accuracy">Accuracy value from 4 to 4000000</param>
+///</summary>
 bool FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid, const float accuracy)
-	{
+{
 	const float det1 = pvt1->x*pvtMid->y - pvt1->y*pvtMid->x;
 	const float det2 = pvtMid->x*pvt2->y - pvtMid->y*pvt2->x;
 	const float det3 = pvt2->x*pvt1->y - pvt2->y*pvt1->x;
@@ -160,4 +165,4 @@ bool FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const pvt2, 
 	const float dblarea = det1+det2+det3;
 
 	return (dblarea*dblarea < accuracy);
-	}
+}
