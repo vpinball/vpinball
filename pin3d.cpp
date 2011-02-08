@@ -1699,6 +1699,37 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const p
 		const int x = (int)(rgvOut[i].x + 0.5f);
 		const int y = (int)(rgvOut[i].y + 0.5f);
 
+		prc->left = min(prc->left, x - 1);
+		prc->top = min(prc->top, y - 1);
+		prc->right = max(prc->right, x + 1);
+		prc->bottom = max(prc->bottom, y + 1);
+
+		if (pznear)
+			{
+			*pznear = min(*pznear, rgvOut[i].z);
+			*pzfar = max(*pzfar, rgvOut[i].z);
+			}
+		}
+
+	if (!fTransformed)
+		{
+		delete rgvOut;
+		}
+	}
+
+void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed)
+	{
+
+	Vertex3D * const rgvOut = (!fTransformed) ? new Vertex3D[count] : rgv;
+
+	if (!fTransformed)
+		TransformVertices(rgv, NULL, count, rgvOut);
+
+	for (int i=0; i<count; ++i)
+		{
+		const int x = (int)(rgvOut[i].x + 0.5f);
+		const int y = (int)(rgvOut[i].y + 0.5f);
+
 		prc->left = min(prc->left, x - 2);
 		prc->top = min(prc->top, y - 2);
 		prc->right = max(prc->right, x + 2);
