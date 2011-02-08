@@ -1474,20 +1474,20 @@ void Player::InitWindow()
 	switch (ballStretchMonitor)
 	{
 	case 0: 
-		xMonitor = (float)(4.0 * 1000.0) / m_width;
-		yMonitor = (float)(3.0 * 1000.0) / m_height;
+		xMonitor = 4.0f / 4.0f;
+		yMonitor = 3.0f / 3.0f;
 		break;
 	case 1: 
-		xMonitor = (float)(16.0 * 1000.0) / m_width;
-		yMonitor = (float)( 9.0 * 1000.0) / m_height;
+		xMonitor = 16.0f / 4.0f;
+		yMonitor = 9.0f / 3.0f;
 		break;
 	case 2: 
-		xMonitor = (float)(16.0 * 1000.0) / m_width;
-		yMonitor = (float)(10.0 * 1000.0) / m_height;
+		xMonitor = 16.0f / 4.0f;
+		yMonitor = 10.0f / 3.0f;
 		break;
 	case 3: 
-		xMonitor = (float)(21.0 * 1000.0) / m_width;
-		yMonitor = (float)(10.0 * 1000.0) / m_height;
+		xMonitor = 21.0f / 4.0f;
+		yMonitor = 10.0f / 3.0f;
 		break;
 	}
 	float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
