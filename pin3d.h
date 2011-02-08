@@ -190,6 +190,7 @@ public:
 
 	void ClearExtents(RECT * const prc, float * const pznear, float * const pzfar);
 	void ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed);
+	void ExpandExtentsPlus(RECT * const prc, Vertex3D* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed);
 	void ExpandRectByRect(RECT * const prc, const RECT * const prcNew) const;
 
 	void ClipRectToVisibleArea(RECT * const prc) const;

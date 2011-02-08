@@ -2902,7 +2902,17 @@ void Player::DrawBallShadows()
 
 				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 
-				m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3DShadow, 4,0);
+				//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3DShadow, 4,0);
+
+				WORD rgi[4] = {
+							0,
+							1,
+							2,
+							3};
+
+				m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+															  rgv3DShadow, 4,
+															  rgi, 4, NULL);
 				}
 			}
 		}
@@ -3122,9 +3132,16 @@ void Player::DrawBalls()
 					//m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  //rgv3DArrowTransformed, 4,
 															  //rgiDecal, DECALPOINTS, NULL);
-					m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					WORD rgi[4] = {
+							0,
+							1,
+							2,
+							3};
+
+					m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DArrowTransformed, 4,
-															  NULL);
+															  rgi, 4, NULL);
+
 					}
 				orientation.Identity();
 				orientation.scaleX(m_BallStretchX);
@@ -3157,9 +3174,15 @@ void Player::DrawBalls()
 															  rgv3DArrowTransformed, 4,
 															  rgiDecal, DECALPOINTS, NULL);*/
 
-					m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					WORD rgi[4] = {
+							0,
+							1,
+							2,
+							3};
+
+					m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DArrowTransformed2, 4,
-															  NULL);
+															  rgi, 4, NULL);
 					}
 			}
 
@@ -3167,17 +3190,17 @@ void Player::DrawBalls()
 
 			// Mark ball rect as dirty for blitting to the screen
 			m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
-			m_pin3d.ExpandExtents(&pball->m_rcScreen, pball->m_rgv3D, NULL, NULL, 4, fFalse);
+			m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, pball->m_rgv3D, NULL, NULL, 4, fFalse);
 
 			if (m_fBallDecals && pball->m_pinFront && (m_ptable->m_layback > 0))
-				m_pin3d.ExpandExtents(&pball->m_rcScreen, rgv3DArrowTransformed, NULL, NULL, 4, fFalse);
+				m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3DArrowTransformed, NULL, NULL, 4, fFalse);
 			if (m_fBallDecals && pball->m_pinBack && (m_ptable->m_layback > 0))
-				m_pin3d.ExpandExtents(&pball->m_rcScreen, rgv3DArrowTransformed2, NULL, NULL, 4, fFalse);
+				m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3DArrowTransformed2, NULL, NULL, 4, fFalse);
 
 			if (m_fBallShadows)
 				{
 				m_pin3d.ClearExtents(&pball->m_rcScreenShadow, NULL, NULL);
-				m_pin3d.ExpandExtents(&pball->m_rcScreenShadow, pball->m_rgv3DShadow, NULL, NULL, 4, fFalse);
+				m_pin3d.ExpandExtentsPlus(&pball->m_rcScreenShadow, pball->m_rgv3DShadow, NULL, NULL, 4, fFalse);
 
 				if (fIntRectIntersect(pball->m_rcScreen, pball->m_rcScreenShadow))
 					{
