@@ -3024,13 +3024,23 @@ void Player::DrawBalls()
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
 
-		//m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  //rgv3D, 4,
-												  //rgi, 4, NULL);
+
+		WORD rgi[4] = {
+				0,
+				1,
+				2,
+				3};
+
+		m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+												  rgv3D, 4,
+												  rgi, 4, NULL);
+/*
+		This does not work, i don't know why. - Cupid
 
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 4,
 												  NULL);
+*/
 
 		// Draw the ball logo
 		Vertex3D rgv3DArrowTransformed[4];
