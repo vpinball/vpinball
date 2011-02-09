@@ -3744,6 +3744,10 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"16:9");
 			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"16:10");
 			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"21:10"); 
+			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"3:4 (R)");
+			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"9:16 (R)");
+			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"10:16 (R)");
+			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"10:21 (R)"); 
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_SETCURSEL, selected, 0);
 			
