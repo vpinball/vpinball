@@ -1515,6 +1515,12 @@ void Player::InitWindow()
 	float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
 	float scalebackMonitorY = ((xMonitor + yMonitor)*0.5f)/yMonitor;
 
+	float temprotation = m_ptable->m_rotation;
+	while (temprotation < 0)
+	{
+		temprotation += 360;
+	}
+
 	switch(ballStretchMode)
 	{
 		case 0:	m_BallStretchX = 1.0f;
@@ -1526,17 +1532,16 @@ void Player::InitWindow()
 				m_ptable->m_scalex
 				m_ptable->m_scaley
 				*/
-
-				m_BallStretchX = scalebackX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f)));
-				m_BallStretchY = scalebackY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f)));
+				m_BallStretchX = scalebackX*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackY*sinf(ANGTORAD(fmodf(temprotation,180.0f)));
+				m_BallStretchY = scalebackY*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackX*sinf(ANGTORAD(fmodf(temprotation,180.0f)));
 
 				break;
-		case 2: m_BallStretchX = scalebackX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f)));
-				m_BallStretchY = scalebackY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f)));
+		case 2: m_BallStretchX = scalebackX*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackY*sinf(ANGTORAD(fmodf(temprotation,180.0f)));
+				m_BallStretchY = scalebackY*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackX*sinf(ANGTORAD(fmodf(temprotation,180.0f)));
 				if (m_fFullScreen)
 				{
-					m_BallStretchX = m_BallStretchX * (scalebackMonitorX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackMonitorY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f))));
-					m_BallStretchY = m_BallStretchY * (scalebackMonitorY*sinf(ANGTORAD(fmodf(m_ptable->m_rotation + 90.0f,180.0f))) + scalebackMonitorX*sinf(ANGTORAD(fmodf(m_ptable->m_rotation,180.0f))));
+					m_BallStretchX = m_BallStretchX * (scalebackMonitorX*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackMonitorY*sinf(ANGTORAD(fmodf(temprotation,180.0f))));
+					m_BallStretchY = m_BallStretchY * (scalebackMonitorY*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackMonitorX*sinf(ANGTORAD(fmodf(temprotation,180.0f))));
 				}
 				break;
 	}
