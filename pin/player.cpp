@@ -1494,6 +1494,23 @@ void Player::InitWindow()
 		xMonitor = 21.0f / 4.0f;
 		yMonitor = 10.0f / 3.0f;
 		break;
+	case 4: 
+		xMonitor = 3.0f / 4.0f;
+		yMonitor = 4.0f / 3.0f;
+		break;
+	case 5: 
+		xMonitor = 9.0f / 4.0f;
+		yMonitor = 16.0f / 3.0f;
+		break;
+	case 6: 
+		xMonitor = 10.0f / 4.0f;
+		yMonitor = 16.0f / 3.0f;
+		break;
+	case 7: 
+		xMonitor = 10.0f / 4.0f;
+		yMonitor = 21.0f / 3.0f;
+		break;
+
 	}
 	float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
 	float scalebackMonitorY = ((xMonitor + yMonitor)*0.5f)/yMonitor;
