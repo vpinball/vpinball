@@ -228,7 +228,18 @@ void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const
 
 //	  // Draw the quad.
 //    ReturnCode = Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1), (D3DTLVertexType *) Vertices, 4, 0 );  
-    ReturnCode = Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX, (D3DTLVertexType *) Vertices, 4, 0 );  
+    //ReturnCode = Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX, (D3DTLVertexType *) Vertices, 4, 0 );  
+
+	WORD rgi[4] = {
+				0,
+				1,
+				2,
+				3};
+
+		Direct3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX,
+												  (D3DTLVertexType *) Vertices, 4,
+												  rgi, 4, NULL);
+
 
 //#define MY_D3DFVF_VERTEX (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2)
 //#define MY_D3DTRANSFORMED_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
