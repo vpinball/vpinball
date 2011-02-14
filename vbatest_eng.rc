@@ -387,18 +387,18 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Scale"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Square Scaling",IDC_SQUARE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,43,22,64,10
-    EDITTEXT        IDC_SCALEFACTOR,53,34,52,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_SCALEY,53,49,52,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SCALEFACTOR,53,18,52,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SCALEY,53,33,52,12,ES_AUTOHSCROLL
+    CONTROL         "Square Scaling",IDC_SQUARE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,43,49,64,10
     EDITTEXT        IDC_CENTERX,51,74,52,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_CENTERY,51,88,52,12,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,128,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,128,24,50,14
-    LTEXT           "Scale X",IDC_STATIC,19,36,26,8
+    LTEXT           "Scale X",IDC_STATIC,19,20,26,8
     LTEXT           "Center",IDC_STATIC,7,75,24,11
     LTEXT           "X",IDC_STATIC,37,75,8,10
     LTEXT           "Y",IDC_STATIC,37,89,8,10
-    LTEXT           "Scale Y",IDC_STATIC_SCALEY,19,51,26,8
+    LTEXT           "Scale Y",IDC_STATIC_SCALEY,19,35,26,8
 END
 
 IDD_PROGRESS DIALOG  0, 0, 167, 44
@@ -2267,7 +2267,7 @@ BEGIN
     IDS_NOPASTEINVIEW       "One or more of the objects on the clipboard can not be placed into the current view."
     IDS_FINDLOOPED          "Passed the end of the file"
     IDS_FINDFAILED          "Cannot find the string '"
-    IDS_SETASDEFAULT	    "Set as Default"
+    IDS_SETASDEFAULT        "Set as Default"
     IDS_FINDFAILED2         "'"
     IDS_CONTROLPOINT        "Control Point"
     IDS_BETAEXPIRE          "This beta version of Visual Pinball has expired.  Please visit http://www.visualpinball.com to learn how to get an updated version."
