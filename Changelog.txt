@@ -1,0 +1,179 @@
+VP 9.1.1 Changelog
+------------------------
+Fixed bugs:
+- Copy and Paste Decals
+- Layback causing Graphic glitches with ball decals
+- Radio buttons in Video Options Dialog
+- Tabstops in Backlass Options
+- unhandled exception with script errors
+- Text Decals not showing
+- Kickers and Triggers that are in the same position caused lockups
+- transparency issue with 32bpp bmp Files
+- bumpers and slingshots were disabled at start of the game when not visible
+- Textures were cropped at MaxTexDim at very special conditions
+- Alpha Ramps were not showing with Balls created from script.
+- Textures near screen border were distorted on some tables
+- Scale Dialog default field was checkbox - changed to scaleX-value
+
+New features:
+- Added slider for Alpharamps Accuracy. If Alpharamps are causing performance problems (and they will likely do!), try setting this slider to the left. Ramps are displayed with less surfaces then.
+- New experimental feature: Ball stretching against table and monitor stretching. Three options: 1st: like before, 2nd: don't stretch ball, 3rd: don't stretch ball and take Pixel aspect ratio of monitor into consideration. Choose ( R) Monitors only if you have a rotated Windows desktop.
+- Implemented right click 'Set as Default'. This options sets the current properties of an object as the new defaults for that object type.
+- little optimizations
+
+Important:
+Tables made with 9.1.x may be incompatible with older versions due to the new features, but tables made with 9.0.x can be loaded and played in 9.1.x.
+
+VP 9.0.10 Changelog
+------------------------
+Thanks to Scrooby's help, I think we have an appropriate deadzone interface now.  It is a global setting for all tables and doesn't affect the keyboard for X and Y axis.
+HD Render and Reorder has been moved to video options
+
+You can now set maximum texture dimensions for lower powered graphic hardware without exporting images (BMPs will still need to be exported and resized if they are too big)
+*Added Kicker.CreateSizedBall (float radius) - Returns Ball
+*Added Video Option for Chipset graphics that cannot create big textures (only non BMPs supported). Redesigned dialog.
+*Added Layback feature (Should we rename this feature? I don't know a better name. Does anybody have a better description?).
+Layback is located under the field of view field on the backdrop options for the table.
+Basically it appears to change the vertical orientation of the final rendered table.  It is an alternate version of Field of View rendering, and will only be available from 9.10 and newer.
+Field of View must be greater than 0 for Layback values to be used to render a table.
+
+Items on table are now displayed in a non-kartesian world to give the viewer the imagination to stand more in front of the table instead of flying over it, when using FOV.
+
+*Fixed Near-Plane Bug with inclination set to 0.
+*Added Support for various Picture formats (*.jpg;*.jpeg;*.png;*.gif;*.ico;*.IFF;*.PCX;*.PICT;*.psd;*.tga;*.tiff;*.tif
+*Added Alpha Support for Ramps
+
+More optimizations and testing by Toxie
+
+Cupid added PNG support using FreeImage.  VP 910 will require freeimage.dll to be located in the directory VP is being loaded from - perhaps someday we'll have PNG built into VP to eliminate this dependency
+
+As required by the FreeImage Public License:
+If it is not possible to put such notice in a particular Source Code file due to its structure, then you must include such notice in a location (such as a relevant directory file) where a user would be likely to look for such a notice. (such as this changelog file)
+"The contents of this file are subject to the FreeImage Public License Version 1.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://home.wxs.nl/~flvdberg/freeimage-license.txt
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for the specific language governing rights and limitations under the License."
+No modifications were made to the freeimage.dll file, or internal freeimage source code, so that covers our use of the dll in a free capacity.
+
+
+VP 9.0.8 Changelog
+------------------------
+Corrected keyboard handler for message boxes
+implemented 10% dead zone to motion/slope/analog axis controls
+
+
+VP 9.0.7 Changelog -- 9.0.6 skipped
+------------------------
+emreel lock not loaded after save (noah)
+ball needs to be allowed outside playfield area (scapino)
+removed remaining minimum black masks for ramps, reels, images, lights, kickers, and top and side surfaces
+Corrected volume control
+
+Plunger scatter velocity requires global table difficulty to be >0
+Global table difficulty valid values from 0.0 to 1.0 - affects amount of scatter on walls as well as plunger variance
+
+
+VP 9.0.5 Changelog
+------------------------
+December 27, 2009 - updated VP9 for your playing amusement. Approved by Nanotech Entertainment.
+changelog
+
+1) Finalized PinballWizard and ushock motion controls - should be accurate for X/Y/Z axis and no more changes should need to be made to it again
+
+2) added Plunger.MotionDevice scriptable property - 0=nothing connected, 1=PinballWizard, 2=uShock Board
+
+3) Plunger.Position now returns a value from 0-25.  No scripted math calculations are required.
+
+4) Export Sound now works for all supported sound formats
+
+5) EMReels now have overlapping transparency compatible with Randy's vp8.1 implementation
+
+6) added Plunger.Visible property - this is not scriptable, but allows the plunger to not be rendered
+
+7) Corrected key mapping for Add Credit 2 - you can now remap that key
+
+8) Key Preferences screen is now properly fixed for accepting new keycodes - before if you clicked a bunch of buttons without pressing a key it looked messy with ???? in each clicked button field, now it is neater.
+
+9) corrected crash to desktop error when table name was deleted from properties window - this error had existed since the inception of visual pinball
+
+10) Reordering of table elements added - this will increase compatibility with ATI cards.  This changes the rendering order of all table objects.
+DROPWALLS
+BUMPERS
+GATES
+SPINNERS
+FLIPPERS
+LIGHTS
+/RAMPS - needs more work
+
+Textboxes are drawn first, EMReels are drawn second, Decals, Kickers, Acryllic Ramps are drawn last
+
+11) Corrected issue with control points - left mouse button held down followed by right mouse button was not firing the left button release code routine, causing the undo buffer to skip all subsequent events.
+
+12) Restored 16-bit display modes.  Windowed mode uses your desktop color depth.
+
+13) Translate now works for Textboxes and EmReels - select more than 1 item to get the option.
+
+14) Updated compiler to VS Net 2008
+
+
+
+VP 9.0.4 Changelog
+------------------------
+December 6, 2009 - updated VP9 for your playing amusement. Approved by Nanotech Entertainment.
+changelog
+
+1) worked some more on the pinball wizard plunger "Z" axis
+2) corrected attached joystick/gamepad interference with the player - For those game controllers please use software like Joy2Key
+3) removed ball blurs, as well as frame updates from spinners, gates, and moving objects will be smoother with increased framerate.
+4) restored functionality of RGB 0/0/0 for invisible gates, spinners, flippers, and bumpers
+5) Corrected unitialized/unvalidated info for loaded flipper and textbox settings.
+6) Removed requirement for msvcr71.dll
+
+
+VP 9.0.3 Changelog
+------------------------
+October 12 2009 - updated VP9 for your playing amusement. Approved by Nanotech Entertainment.
+changelog
+
+1) Edit Properties Pane status is now corrected. It has been broken since tech beta 5. It is persistent, meaning if it was visible last time vp was open, it will be visible next time you open vp. Edit/Options now works again.
+2) VP8 Colored slingshots are now available. This is fully compatible with Randy's vp8 implementation
+3) PlungerName.Position is now available to the script. This will provide a raw value of the mechanical plunger for Pinball Wizard and Cabinet users. Divide the returned value by .04 to get a number from 0-25. You can then base an emreel, wall animation, or other graphical representation on that number to custom animate the plunger object. You could also use the mechanical pinball wizard plunger as an entirely separate type of interface, with accurate pull strength - ie pool cues, balloon/rubber band/spring tension, I'm sure you can come up with more.
+4) Nudge has been reversed. A right nudge - moving the machine to the left, moves the ball to the right. A left nudge, moving the machine to the right, pushes the ball to the left.
+5) Ball decals work again.
+
+
+VP 9.0.2 Changelog
+------------------------
+1) Fixed command line options
+2) Fixed windowed mode
+3) Fixed checkboxes
+4) Corrected reversed pinball wizard plunger
+5) fixed crash bug on exiting unsaved tables
+6) corrected version display
+7) remapped ball diagnostic key from "B" to "O"
+
+VP 9.0.1 Changelog
+------------------------
+ updated VP9 for your playing amusement. Approved by Nanotech Entertainment.
+1) Fixed Crash on exit
+2) enabled blinking lights
+3) EMReels & Decals enabled by default
+
+
+VP 9.0.0 Changelog
+------------------------
+December 2 2008 - VP9 for your playing amusement. Brought to you by Nanotech Entertainment.
+FEATURES
+    * Optimized for vpm.
+    * LOTR runs close to full speed with emulated sound.
+    * Ball blurring/stutters/etc have been greatly reduced.
+    * This still has lag/issues with 26 balls in play on Johnny Mnemonic.
+    * Translate locked triggers.
+    * Plunger and all other objects can be locked in the editor.
+    * Sound/graphic exporter/table unlocker.
+    * Dual display span mode support so vp has full control over the backbox display as well as table.
+    * Table rotation - 360 degrees possible.
+    * Full physics options for slope, oblique correction, flipper settings, ball dampening, scatter angle, friction, gravity.
+    * Table scaling support X+Y.
+    * Table bottom height - set the bottom of the table lower than the playfield surface for realistic holes.
+    * Scriptable exit table to desktop method.
+    * Reduced engine crashes.
+    * Support for Pinball Wizard Input Controller.
