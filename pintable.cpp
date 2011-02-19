@@ -1578,7 +1578,7 @@ void PinTable::Play()
 	HRESULT hr = GetRegInt("Player", "AlphaRampAccuracy", &m_alphaRampsAccuracy);
 	if (hr != S_OK)
 	{
-		m_alphaRampsAccuracy = 10;
+		m_alphaRampsAccuracy = 5;
 	}
 
 	char szLoadDir[MAX_PATH];
