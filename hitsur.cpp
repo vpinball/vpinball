@@ -192,6 +192,25 @@ void HitSur::Polygon(const Vertex2D * const rgv, const int count)
 		}
 	}
 
+void HitSur::EllipseImage(const float centerx, const float centery, const float radius, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+	{
+	if (m_pcur == NULL)
+		return;
+
+	const int ix = SCALEXf(centerx);
+	const int iy = SCALEYf(centery);
+	const int ir = SCALEDf(radius);
+
+	const int dx = m_hitx - ix;
+	const int dy = m_hity - iy;
+	const int dist = dx*dx + dy*dy;
+
+	if (dist <= ir*ir)
+		{
+		m_pselected = m_pcur;
+		}
+	}
+
 void HitSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
 	Polygon(rgv, count);

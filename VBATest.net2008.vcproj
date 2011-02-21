@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="VBATest"
 	ProjectGUID="{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
 	RootNamespace="VBATest"
@@ -965,7 +965,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\dxsdk\Lib\x86&quot;;&quot;C:\dxsdk\Include&quot;;&quot;vp-sup\inc&quot;;pin\;media"
+				AdditionalIncludeDirectories="C:\DX7INS\Include;&quot;vp-sup\inc&quot;;pin\;media"
 				PreprocessorDefinitions="COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -997,7 +997,7 @@
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;C:\dxsdk\Lib\x86&quot;;.\lib"
+				AdditionalLibraryDirectories="C:\DX7INS\Lib\x86;.\lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBC;LIBCMT;LIBCD"
 				GenerateDebugInformation="true"
