@@ -97,6 +97,19 @@ void HitRectSur::Ellipse2(const float centerx, const float centery, const int ra
 		}
 	}
 
+void HitRectSur::EllipseImage(const float centerx, const float centery, const float radius, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+	{
+	if (m_fFailedAlready)
+		{
+		return;
+		}
+
+	if (!PTINRECT(centerx - radius,centery - radius) || !PTINRECT(centerx + radius,centery + radius))
+		{
+		FailObject();
+		}
+	}
+
 void HitRectSur::Polygon(const Vertex2D * const rgv, const int count)
 	{
 	if (m_fFailedAlready)

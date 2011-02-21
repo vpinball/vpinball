@@ -203,7 +203,48 @@ void Light::PreRender(Sur *psur)
 			psur->SetBorderColor(m_d.m_color, false, 0); // For off-by-one GDI outline error
 			psur->SetFillColor(m_d.m_color);
 			psur->SetObject(m_d.m_borderwidth > 0 ? NULL :this);
-			psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
+			
+			// Check if we should display the image in the editor.
+			if ((m_d.m_fDisplayImage) && (m_d.m_szOnImage[0]) && (m_d.m_szOffImage[0])) 
+				{
+				PinImage *ppi;
+				// Get the image.
+				switch (m_d.m_state)
+					{
+					case LightStateOff:	
+						ppi = m_ptable->GetImage(m_d.m_szOffImage);
+						break;
+					case LightStateOn:	
+						ppi = m_ptable->GetImage(m_d.m_szOnImage);
+						break;
+					default:
+						ppi = NULL;
+						break;
+					}
+
+				// Make sure we have an image.
+				if (ppi != NULL)
+					{
+					ppi->EnsureHBitmap();
+					if (ppi->m_hbmGDIVersion)
+						{
+						// Draw the elipse with an image applied.
+						psur->EllipseImage(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+						}
+					}
+				else
+					{
+					// Error.  Just draw the ellipse.
+					psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
+					}
+				}
+			else
+				{
+				// Draw the ellipse.
+				psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
+				}
+
+
 			break;
 
 		case ShapeCustom: {
