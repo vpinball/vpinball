@@ -135,7 +135,7 @@ void LineSegSlingshot::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		// Calculate this distance from the center of the slingshot to get force
 
 		const float btd = (vhitpoint.x - v1.x)*TANX + (vhitpoint.y - v1.y)*TANY; //rlc distance to vhit from V1
-		float force = (btd+btd)/len - 1.0f;	// -1..+1
+		float force = (len != 0.0f) ? ((btd+btd)/len - 1.0f) : -1.0f;	// -1..+1
 		force = 0.5f *(1.0f-force*force);	//rlc maximum value 0.5 ...I think this should have been 1.0...oh well
 											// will match the previous physics
 		force *= m_force;//-80;
@@ -772,7 +772,8 @@ void Hit3DPoly::CalcNormal()
 		normal.z += (m_rgv[i].x - m_rgv[m].x) * (m_rgv[i].y + m_rgv[m].y);		
 		}
 
-	const float inv_len = -1.0f/sqrtf(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+	const float sqr_len = normal.x * normal.x + normal.y * normal.y + normal.z * normal.z;
+	const float inv_len = (sqr_len > 0.0f) ? -1.0f/sqrtf(sqr_len) : 0.0f;
 	normal.x *= inv_len;
 	normal.y *= inv_len;
 	normal.z *= inv_len;

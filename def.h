@@ -233,7 +233,8 @@ inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, c
 			const float D = -B;
 			const float F = -(D*pvin.x + A*pvin.y);
 			
-			const float inv_det = 1.0f/(A*A - B*D);
+			const float det = A*A - B*D;
+			const float inv_det = (det != 0.0f) ? 1.0f/det : 0.0f;
 			const float intersectx = (B*F-A*C)*inv_det;
 			const float intersecty = (C*D-A*F)*inv_det;
 

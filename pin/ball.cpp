@@ -306,7 +306,8 @@ float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phi
 	const float hity = pball->y + dvy * hittime;
 	const float hitz = pball->z + dvz * hittime;
 	
-	const float inv_len = 1.0f/sqrtf((hitx - x)*(hitx - x)+(hity - y)*(hity - y)+(hitz - z)*(hitz - z));
+	const float len = (hitx - x)*(hitx - x)+(hity - y)*(hity - y)+(hitz - z)*(hitz - z);
+	const float inv_len = (len > 0.0f) ? 1.0f/sqrtf(len) : 0.0f;
 
 	phitnormal->x = (hitx - x)*inv_len;	//calc unit normal of collision
 	phitnormal->y = (hity - y)*inv_len;
@@ -596,7 +597,7 @@ void Ball::UpdateVelocities(float dtime)
 		const float mag = nx*nx + ny*ny;// + nz*nz;
 		if (mag > (JOY_DEADBAND * JOY_DEADBAND))			//joystick dead band, allows hold and very slow motion
 			{
-			const float inv = JOY_DEADBAND/sqrtf(mag);
+			const float inv = (mag > 0.0f) ? JOY_DEADBAND/sqrtf(mag) : 0.0f;
 			nx -= nx*inv;	// remove deadband offsets
 			ny -= ny*inv; 
 			//nz -= nz*inv;

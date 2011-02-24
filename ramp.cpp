@@ -566,7 +566,8 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 				// Shift line along the normal
 				const float F = -(D*(pv2->x-v2normal.x) + E*(pv2->y-v2normal.y));
 
-				const float inv_det = 1.0f/(A*E - B*D);
+				const float det = A*E - B*D;
+				const float inv_det = (det != 0.0f) ? 1.0f/det : 0.0f;
 
 				const float intersectx = (B*F-E*C)*inv_det;
 				const float intersecty = (C*D-A*F)*inv_det;
