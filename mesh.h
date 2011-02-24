@@ -244,7 +244,8 @@ inline void SetNormal(Vertex3D * const rgv, const WORD * const rgi, const int co
 		vnormal.z += (rgv[l].x - rgv[m].x) * (rgv[l].y + rgv[m].y);		
 		}
 
-	const float inv_len = -1.0f/sqrtf(vnormal.x * vnormal.x + vnormal.y * vnormal.y + vnormal.z * vnormal.z);
+	const float len = vnormal.x * vnormal.x + vnormal.y * vnormal.y + vnormal.z * vnormal.z;
+	const float inv_len = (len > 0.0f) ? -1.0f/sqrtf(len) : 0.0f;
 	vnormal.x *= inv_len;
 	vnormal.y *= inv_len;
 	vnormal.z *= inv_len;

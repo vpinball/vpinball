@@ -739,7 +739,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			maxdist = dist;
 		}
 
-	const float inv_maxdist = 0.5f/sqrtf(maxdist);
+	const float inv_maxdist = (maxdist > 0.0f) ? 0.5f/sqrtf(maxdist) : 0.0f;
 	const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
 	const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 

@@ -1471,11 +1471,11 @@ void Player::InitWindow()
 	float scalebackY = ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scaley;
 	if (abs(m_ptable->m_rotation) <= 0.001f)
 	{
-		scalebackX = 1;
-		scalebackY = 1;
+		scalebackX = 1.0f;
+		scalebackY = 1.0f;
 	}
-	float xMonitor = 16;
-	float yMonitor = 9;
+	float xMonitor = 16.0f;
+	float yMonitor = 9.0f;
 	switch (ballStretchMonitor)
 	{
 	case 0: 
@@ -1518,7 +1518,7 @@ void Player::InitWindow()
 	float temprotation = m_ptable->m_rotation;
 	while (temprotation < 0)
 	{
-		temprotation += 360;
+		temprotation += 360.0f;
 	}
 
 	switch(ballStretchMode)
