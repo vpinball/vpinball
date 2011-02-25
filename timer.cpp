@@ -14,32 +14,32 @@ Timer::~Timer()
 	{
 	}
 
-HRESULT Timer::Init(PinTable *ptable, float x, float y)
+HRESULT Timer::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	m_ptable = ptable;
 
 	m_d.m_v.x = x;
 	m_d.m_v.y = y;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	return InitVBA(fTrue, 0, NULL);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(),
 		//axTypeHostProjectItem/*axTypeHostClass*/, L"Timer", NULL);
 	}
 
-void Timer::SetDefaults()
+void Timer::SetDefaults(bool fromMouseClick)
 	{
 	HRESULT hr;
 	int iTmp;
 
 	hr = GetRegInt("DefaultProps\\Timer","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = true;
 	
 	hr = GetRegInt("DefaultProps\\Timer","TimerInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
@@ -255,7 +255,7 @@ HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 
 HRESULT Timer::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

@@ -16,33 +16,33 @@ LightSeq::~LightSeq()
 {
 }
 
-HRESULT LightSeq::Init(PinTable *ptable, float x, float y)
+HRESULT LightSeq::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
 	m_ptable = ptable;
 
 	m_d.m_v.x = x;
 	m_d.m_v.y = y;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	return InitVBA(fTrue, 0, NULL);
 }
 
-void LightSeq::SetDefaults()
+void LightSeq::SetDefaults(bool fromMouseClick)
 {
 	HRESULT hr;
 	float fTmp;
 	int iTmp;
 
 	hr = GetRegInt("DefaultProps\\LightSequence", "UpdateInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_updateinterval = iTmp;
 	else
 		m_d.m_updateinterval = 25;
 
 	char tmp[MAXTOKEN];
 	hr = GetRegString("DefaultProps\\LightSequence","Collection", tmp, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_wzCollection[0] = 0x00;
 	else
 	{
@@ -50,25 +50,25 @@ void LightSeq::SetDefaults()
 		m_d.m_wzCollection[strlen(tmp)] = '\0';
 	}
 	hr = GetRegStringAsFloat("DefaultProps\\LightSequence","CenterX", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_vCenter.x = fTmp;
 	else
 		m_d.m_vCenter.x = 1000/2;
 
 	hr = GetRegStringAsFloat("DefaultProps\\LightSequence","CenterY", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_vCenter.y = fTmp;
 	else
 		m_d.m_vCenter.y = 2000/2;
 	
 	hr = GetRegInt("DefaultProps\\LightSequence","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\LightSequence","TimerInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
@@ -506,7 +506,7 @@ HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
 HRESULT LightSeq::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

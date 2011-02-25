@@ -19,14 +19,14 @@ Trigger::~Trigger()
 	{
 	}
 
-HRESULT Trigger::Init(PinTable *ptable, float x, float y)
+HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	m_ptable = ptable;
 
 	m_d.m_vCenter.x = x;
 	m_d.m_vCenter.y = y;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	if (m_d.m_shape == ShapeCustom)
 		put_Shape(ShapeCustom);
@@ -34,55 +34,55 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y)
 	return InitVBA(fTrue, 0, NULL);
 	}
 
-void Trigger::SetDefaults()
+void Trigger::SetDefaults(bool fromMouseClick)
 	{
 	HRESULT hr;
 	float fTmp;
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Trigger","Radius", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_radius = fTmp;
 	else
 		m_d.m_radius = 25.0f;
 
 	hr = GetRegInt("DefaultProps\\Trigger","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\Trigger","TimerInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
 
 	hr = GetRegInt("DefaultProps\\Trigger","Enabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fEnabled = iTmp == 0? false : true;
 	else
 		m_d.m_fEnabled = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Trigger","Visible", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fVisible = iTmp == 0? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Trigger","HitHeight", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_hit_height = fTmp;
 	else
 		m_d.m_hit_height = 50.0f;
 
 	hr = GetRegInt("DefaultProps\\Trigger","Shape", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_shape = (enum Shape)iTmp;
 	else
 		m_d.m_shape = ShapeCircle;
 	hr = GetRegString("DefaultProps\\Trigger","Surface", &m_d.m_szSurface, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szSurface[0] = 0;
 	}
 
@@ -734,7 +734,7 @@ void Trigger::WriteRegDefaults()
 
 HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

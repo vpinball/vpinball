@@ -171,7 +171,7 @@ extern const WCHAR rgwzTypeName[][16];
 	//virtual HRESULT InitVBA(BOOL fNew, int id) {return S_OK;}
 
 #define STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(ItemType) \
-	HRESULT Init(PinTable *ptable, float x, float y); \
+	HRESULT Init(PinTable *ptable, float x, float y, bool fromMouseClick); \
 	virtual void PreRender(Sur *psur); \
 	virtual void Render(Sur *psur); \
 	virtual PinTable *GetPTable() {return m_ptable;} \
@@ -195,7 +195,7 @@ extern const WCHAR rgwzTypeName[][16];
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
 	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut) {return GetPTable()->GetPredefinedValue(dispID, dwCookie, pVarOut, this);} \
-	virtual void SetDefaults();
+	virtual void SetDefaults(bool fromMouseClick);
 
 class ShadowSur;
 
@@ -235,7 +235,7 @@ public:
 	virtual HRESULT InitPostLoad()=0;
 	virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName)=0;
 	virtual ISelect *GetISelect()=0;
-	virtual void SetDefaults()=0;
+	virtual void SetDefaults(bool fromMouseClick)=0;
 	virtual IScriptable *GetScriptable() = 0;
 	virtual IFireEvents *GetIFireEvents() = 0;
 	virtual ItemTypeEnum GetItemType() = 0;

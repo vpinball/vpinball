@@ -58,7 +58,7 @@ Light::~Light()
 	{
 	}
 
-HRESULT Light::Init(PinTable *ptable, float x, float y)
+HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	m_ptable = ptable;
 
@@ -68,7 +68,7 @@ HRESULT Light::Init(PinTable *ptable, float x, float y)
 	m_d.m_vCenter.x = x;
 	m_d.m_vCenter.y = y;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	if (m_d.m_shape == ShapeCustom)
 		put_Shape(ShapeCustom);
@@ -79,86 +79,86 @@ HRESULT Light::Init(PinTable *ptable, float x, float y)
 	return InitVBA(fTrue, 0, NULL);
 	}
 
-void Light::SetDefaults()
+void Light::SetDefaults(bool fromMouseClick)
 	{
 	HRESULT hr;
 	float fTmp;
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Light","Radius", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_radius = fTmp;
 	else
 		m_d.m_radius = 50;
 
 	hr = GetRegInt("DefaultProps\\Light","LightState", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_state = (enum LightState)iTmp;
 	else
 		m_d.m_state = LightStateOff;
 
 	hr = GetRegInt("DefaultProps\\Light","Shape", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_shape = (enum Shape)iTmp;
 	else
 		m_d.m_shape = ShapeCircle;
 
 	hr = GetRegInt("DefaultProps\\Light","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\Light","TimerInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
 
 	hr = GetRegInt("DefaultProps\\Light","Color", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_color = iTmp;
 	else
 		m_d.m_color = RGB(255,255,0);
 
 	hr = GetRegString("DefaultProps\\Light","OffImage", m_d.m_szOffImage, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szOffImage[0] = 0;
 
 	hr = GetRegString("DefaultProps\\Light","OnImage", m_d.m_szOnImage, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szOnImage[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\Light","DisplayImage", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fDisplayImage = iTmp == 0? false:true;
 	else
 		m_d.m_fDisplayImage = fFalse;
 
 	hr = GetRegString("DefaultProps\\Light","BlinkPattern", m_rgblinkpattern, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
 	
 	hr = GetRegInt("DefaultProps\\Light","BlinkInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_blinkinterval = iTmp;
 	else
 		m_blinkinterval = 125;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Light","BorderWidth", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_borderwidth = fTmp;
 	else
 		m_d.m_borderwidth = 0;
 
 	hr = GetRegInt("DefaultProps\\Light","BorderColor", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_bordercolor = iTmp;
 	else
 		m_d.m_bordercolor = RGB(0,0,0);
 	
 	hr = GetRegString("DefaultProps\\Light", "Surface", &m_d.m_szSurface, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szSurface[0] = 0;
 	}
 void Light::WriteRegDefaults()
@@ -1207,7 +1207,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 
 HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 
 	m_d.m_radius = 50;

@@ -14,72 +14,72 @@ Kicker::~Kicker()
 	{
 	}
 
-HRESULT Kicker::Init(PinTable *ptable, float x, float y)
+HRESULT Kicker::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	m_ptable = ptable;
 
 	m_d.m_vCenter.x = x;
 	m_d.m_vCenter.y = y;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	return InitVBA(fTrue, 0, NULL);
 	}
 
-void Kicker::SetDefaults()
+void Kicker::SetDefaults(bool fromMouseClick)
 	{
 	HRESULT hr;
 	float fTmp;
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Kicker","Radius", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_radius = fTmp;
 	else
 		m_d.m_radius = 25;
 
 	hr = GetRegInt("DefaultProps\\Kicker","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\Kicker","TimerInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
 
 	hr = GetRegInt("DefaultProps\\Kicker","Enabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fEnabled = iTmp == 0? false : true;
 	else
 		m_d.m_fEnabled = fTrue;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Kicker","Scatter", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_scatter = fTmp;
 	else
 		m_d.m_scatter = 0;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Kicker","HitHeight", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_hit_height = fTmp;
 	else
 		m_d.m_hit_height = 40;
 
 	hr = GetRegString("DefaultProps\\Kicker", "Surface", &m_d.m_szSurface, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szSurface[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\Kicker","KickerType", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_kickertype = (enum KickerType)iTmp;
 	else
 		m_d.m_kickertype = KickerHole;
 
 	hr = GetRegInt("DefaultProps\\Kicker","Color", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_color = iTmp;
 	else
 		m_d.m_color = RGB(100,100,100);
@@ -487,7 +487,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 
 HRESULT Kicker::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

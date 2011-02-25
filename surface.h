@@ -65,7 +65,7 @@ public:
 	Surface();
 	virtual ~Surface();
 
-	HRESULT InitTarget(PinTable * const ptable, const float x, const float y);
+	HRESULT InitTarget(PinTable * const ptable, const float x, const float y, bool fromMouseClick);
 	void WriteRegDefaults();
 	
 	//int GetPointCount();
