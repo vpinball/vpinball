@@ -4791,7 +4791,7 @@ ItemTypeEnum PinTable::GetItemType()
 
 HRESULT PinTable::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 
 	int csubobj, csounds, ctextures, cfonts, ccollection;
 
@@ -4815,7 +4815,7 @@ ISelect *PinTable::GetISelect()
 	return (ISelect *)this;
 	}
 
-void PinTable::SetDefaults()
+void PinTable::SetDefaults(bool fromMouseClick)
 	{
 	}
 
@@ -5001,7 +5001,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (psur)
 				{
 				psur->AddRef();
-				psur->Init(this, v.x, v.y);
+				psur->Init(this, v.x, v.y, true);
 				pie = (IEditable *)psur;
 				}
 			break;
@@ -5013,7 +5013,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (psur)
 				{
 				psur->AddRef();
-				psur->InitTarget(this, v.x, v.y);
+				psur->InitTarget(this, v.x, v.y, true);
 				pie = (IEditable *)psur;
 				}
 			}
@@ -5025,7 +5025,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (pflipper)
 				{
 				pflipper->AddRef();
-				pflipper->Init(this, v.x, v.y);
+				pflipper->Init(this, v.x, v.y, true);
 				pie = (IEditable *)pflipper;
 				}
 			break;
@@ -5037,7 +5037,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (ptimer)
 				{
 				ptimer->AddRef();
-				ptimer->Init(this, v.x, v.y);
+				ptimer->Init(this, v.x, v.y, true);
 				pie = (IEditable *)ptimer;
 				}
 			break;
@@ -5049,7 +5049,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (pplunger)
 				{
 				pplunger->AddRef();
-				pplunger->Init(this, v.x, v.y);
+				pplunger->Init(this, v.x, v.y, true);
 				pie = (IEditable *)pplunger;
 				}
 			break;
@@ -5061,7 +5061,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (ptextbox)
 				{
 				ptextbox->AddRef();
-				ptextbox->Init(this, v.x, v.y);
+				ptextbox->Init(this, v.x, v.y, true);
 				pie = (IEditable *)ptextbox;
 				}
 			break;
@@ -5073,7 +5073,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (pcomcontrol)
 				{
 				pcomcontrol->AddRef();
-				HRESULT hr = pcomcontrol->Init(this, v.x, v.y);
+				HRESULT hr = pcomcontrol->Init(this, v.x, v.y, true);
 				if (hr == E_FAIL)
 					{
 					pie = NULL;
@@ -5093,7 +5093,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (pbumper)
 				{
 				pbumper->AddRef();
-				pbumper->Init(this, v.x, v.y);
+				pbumper->Init(this, v.x, v.y, true);
 				pie = (IEditable *)pbumper;
 				}
 			break;
@@ -5105,7 +5105,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (ptrigger)
 				{
 				ptrigger->AddRef();
-				ptrigger->Init(this, v.x, v.y);
+				ptrigger->Init(this, v.x, v.y, true);
 				pie = (IEditable *)ptrigger;
 				}
 			break;
@@ -5117,7 +5117,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (plight)
 				{
 				plight->AddRef();
-				plight->Init(this, v.x, v.y);
+				plight->Init(this, v.x, v.y, true);
 				pie = (IEditable *)plight;
 				}
 			break;
@@ -5128,7 +5128,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (pkicker)
 				{
 				pkicker->AddRef();
-				pkicker->Init(this, v.x, v.y);
+				pkicker->Init(this, v.x, v.y, true);
 				pie = (IEditable *)pkicker;
 				}
 			break;
@@ -5140,7 +5140,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (pdecal)
 				{
 				pdecal->AddRef();
-				pdecal->Init(this, v.x, v.y);
+				pdecal->Init(this, v.x, v.y, true);
 				pie = (IEditable *)pdecal;
 				}
 			break;
@@ -5152,7 +5152,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (pgate)
 				{
 				pgate->AddRef();
-				pgate->Init(this, v.x, v.y);
+				pgate->Init(this, v.x, v.y, true);
 				pie = (IEditable *)pgate;
 				}
 			break;
@@ -5164,7 +5164,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (pspinner)
 				{
 				pspinner->AddRef();
-				pspinner->Init(this, v.x, v.y);
+				pspinner->Init(this, v.x, v.y, true);
 				pie = (IEditable *)pspinner;
 				}
 			break;
@@ -5176,7 +5176,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (pramp)
 				{
 				pramp->AddRef();
-				pramp->Init(this, v.x, v.y);
+				pramp->Init(this, v.x, v.y, true);
 				pie = (IEditable *)pramp;
 				}
 			break;
@@ -5188,7 +5188,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (pdispreel)
 				{
 				pdispreel->AddRef();
-				pdispreel->Init(this, v.x, v.y);
+				pdispreel->Init(this, v.x, v.y, true);
 				pie = (IEditable *)pdispreel;
 				}
 			break;
@@ -5200,7 +5200,7 @@ void PinTable::UseTool(int x,int y,int tool)
 			if (plightseq)
 				{
 				plightseq->AddRef();
-				plightseq->Init(this, v.x, v.y);
+				plightseq->Init(this, v.x, v.y, true);
 				pie = (IEditable *)plightseq;
 				}
 			break;

@@ -120,12 +120,12 @@ DispReel::~DispReel()
 // This function is called when ever a new instance of this object is created
 // (along with the constructor (above))
 //
-HRESULT DispReel::Init(PinTable *ptable, float x, float y)
+HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
 	
 	m_ptable = ptable;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	m_d.m_v1.x = x;
 	m_d.m_v1.y = y;
@@ -192,7 +192,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y)
 // is a new instance of this object or there is a backwards compatability
 // issue (old version of object doesn't contain all the needed fields)
 //
-void DispReel::SetDefaults()
+void DispReel::SetDefaults(bool fromMouseClick)
 {
     // object is only available on the backglass
 	m_fBackglass = fTrue;
@@ -203,75 +203,75 @@ void DispReel::SetDefaults()
 	int iTmp;
 
 	hr = GetRegInt("DefaultProps\\EMReel","ReelType", &iTmp);
-	m_d.m_reeltype = (hr == S_OK) ? (enum ReelType)iTmp : ReelText;
+	m_d.m_reeltype = (hr == S_OK) && fromMouseClick ? (enum ReelType)iTmp : ReelText;
 
 	hr = GetRegString("DefaultProps\\Ramp","Image", m_d.m_szImage, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szImage[0] = 0;
     
 	hr = GetRegString("DefaultProps\\Ramp","Sound", m_d.m_szSound, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szSound[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\EMReel","UseImageGrid", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK)&& fromMouseClick)
 		m_d.m_fUseImageGrid = iTmp == 0 ? false : true;
 	else
 		m_d.m_fUseImageGrid = fFalse;
 
     hr = GetRegInt("DefaultProps\\EMReel","ImagesPerRow", &iTmp);
-	m_d.m_imagesPerGridRow = (hr == S_OK) ? iTmp : 1;
+	m_d.m_imagesPerGridRow = (hr == S_OK) && fromMouseClick ? iTmp : 1;
 
 	hr = GetRegInt("DefaultProps\\EMReel","Transparent", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fTransparent = iTmp == 0 ? false : true;
 	else
 		m_d.m_fTransparent = fFalse;
     
 	hr = GetRegInt("DefaultProps\\EMReel","ReelCount", &iTmp);
-	m_d.m_reelcount = (hr == S_OK) ? iTmp : 5;
+	m_d.m_reelcount = (hr == S_OK) && fromMouseClick ? iTmp : 5;
 
     hr = GetRegStringAsFloat("DefaultProps\\EMReel","Width", &fTmp);
-	m_d.m_width = (hr == S_OK) ? fTmp : 30.0f;
+	m_d.m_width = (hr == S_OK) && fromMouseClick ? fTmp : 30.0f;
     
 	hr = GetRegStringAsFloat("DefaultProps\\EMReel","Height", &fTmp);
-	m_d.m_height = (hr == S_OK) ? fTmp : 40.0f;
+	m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 40.0f;
     
 	hr = GetRegStringAsFloat("DefaultProps\\EMReel","ReelSpacing", &fTmp);
-	m_d.m_reelspacing = (hr == S_OK) ? fTmp : 4.0f;
+	m_d.m_reelspacing = (hr == S_OK) && fromMouseClick ? fTmp : 4.0f;
     
 	hr = GetRegStringAsFloat("DefaultProps\\EMReel","MotorSteps", &fTmp);
-	m_d.m_motorsteps = (hr == S_OK) ? fTmp : 2.0f;
+	m_d.m_motorsteps = (hr == S_OK) && fromMouseClick ? fTmp : 2.0f;
 
 	hr = GetRegInt("DefaultProps\\EMReel","DigitRange", &iTmp);
-	m_d.m_digitrange = (hr == S_OK) ? iTmp : 9;
+	m_d.m_digitrange = (hr == S_OK) && fromMouseClick ? iTmp : 9;
     
 	hr = GetRegInt("DefaultProps\\EMReel","Shading", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fShading = iTmp == 0 ? false : true;
 	else
 		m_d.m_fShading = fFalse;
     
 	hr = GetRegInt("DefaultProps\\EMReel","UpdateInterval", &iTmp);
-	m_d.m_updateinterval = (hr == S_OK) ? iTmp : 50;
+	m_d.m_updateinterval = (hr == S_OK) && fromMouseClick ? iTmp : 50;
 
     hr = GetRegInt("DefaultProps\\EMReel","BackColor", &iTmp);
-	m_d.m_backcolor = (hr == S_OK) ? iTmp : RGB(64,64,64);
+	m_d.m_backcolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(64,64,64);
     
 	hr = GetRegInt("DefaultProps\\EMReel","FontColor", &iTmp);
-	m_d.m_fontcolor = (hr == S_OK) ? iTmp : RGB(0,0,0);
+	m_d.m_fontcolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(0,0,0);
     
 	hr = GetRegInt("DefaultProps\\EMReel","ReelColor", &iTmp);
-	m_d.m_reelcolor = (hr == S_OK) ? iTmp : RGB(255,255,255);
+	m_d.m_reelcolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(255,255,255);
 
 	hr = GetRegInt("DefaultProps\\EMReel","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\EMReel","TimerInterval", &iTmp);
-	m_d.m_tdr.m_TimerInterval = (hr == S_OK) ? iTmp : 100;
+	m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
 
 		if (!m_pIFont)
 		{
@@ -283,7 +283,7 @@ void DispReel::SetDefaults()
 
 		char tmp[256];
 		hr = GetRegString("DefaultProps\\EMReel","FontName", tmp, 256);
-		if (hr != S_OK)
+		if ((hr != S_OK) || !fromMouseClick)
 			fd.lpstrName = L"Arial Black";
 		else
 		{
@@ -294,25 +294,25 @@ void DispReel::SetDefaults()
 		}
 
 		hr = GetRegInt("DefaultProps\\EMReel", "FontWeight", &iTmp);
-		fd.sWeight = (hr == S_OK) ? iTmp : FW_NORMAL;
+		fd.sWeight = (hr == S_OK) && fromMouseClick ? iTmp : FW_NORMAL;
 	
 		hr = GetRegInt("DefaultProps\\EMReel", "FontCharSet", &iTmp);
-		fd.sCharset = (hr == S_OK) ? iTmp : 0;
+		fd.sCharset = (hr == S_OK) && fromMouseClick ? iTmp : 0;
 		
 		hr = GetRegInt("DefaultProps\\EMReel", "FontItalic", &iTmp);
-		if (hr == S_OK)
+		if ((hr == S_OK) && fromMouseClick)
 			fd.fItalic = iTmp == 0 ? false : true;
 		else
 			fd.fItalic = 0;
 
 		hr = GetRegInt("DefaultProps\\EMReel", "FontUnderline", &iTmp);
-		if (hr == S_OK)
+		if ((hr == S_OK) && fromMouseClick)
 			fd.fUnderline = iTmp == 0 ? false : true;
 		else
 			fd.fUnderline = 0;
 		
 		hr = GetRegInt("DefaultProps\\EMReel", "FontStrikeThrough", &iTmp);
-		if (hr == S_OK)
+		if ((hr == S_OK) && fromMouseClick)
 			fd.fStrikethrough = iTmp == 0 ? false : true;
 		else
 			fd.fStrikethrough = 0;
@@ -1189,7 +1189,7 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
 HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

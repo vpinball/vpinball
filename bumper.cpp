@@ -14,11 +14,11 @@ Bumper::~Bumper()
 	{
 	}
 
-HRESULT Bumper::Init(PinTable *ptable, float x, float y)
+HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	m_ptable = ptable;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	m_d.m_vCenter.x = x;
 	m_d.m_vCenter.y = y;
@@ -29,77 +29,77 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y)
 	return InitVBA(fTrue, 0, NULL);
 	}
 
-void Bumper::SetDefaults()
+void Bumper::SetDefaults(bool fromMouseClick)
 	{
 	HRESULT hr;
 	float fTmp;
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Radius", &fTmp);
-	m_d.m_radius = (hr == S_OK) ? fTmp : 45;
+	m_d.m_radius = (hr == S_OK) && fromMouseClick ? fTmp : 45;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Force", &fTmp);
-	m_d.m_force = (hr == S_OK) ? fTmp : 15;
+	m_d.m_force = (hr == S_OK) && fromMouseClick ? fTmp : 15;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Threshold", &fTmp);
-	m_d.m_threshold = (hr == S_OK) ? fTmp : 1;
+	m_d.m_threshold = (hr == S_OK) && fromMouseClick ? fTmp : 1;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Bumper","Overhang", &fTmp);
-	m_d.m_overhang = (hr == S_OK) ? fTmp : 25;
+	m_d.m_overhang = (hr == S_OK) && fromMouseClick ? fTmp : 25;
 
 	hr = GetRegInt("DefaultProps\\Bumper","Color", &iTmp);
-	m_d.m_color = (hr == S_OK) ? iTmp : RGB(255,0,0);
+	m_d.m_color = (hr == S_OK) && fromMouseClick ? iTmp : RGB(255,0,0);
 
 	hr = GetRegInt("DefaultProps\\Bumper","SideColor", &iTmp);
-	m_d.m_sidecolor = (hr == S_OK) ? iTmp : RGB(255,255,255);
+	m_d.m_sidecolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(255,255,255);
 
 	hr = GetRegString("DefaultProps\\Bumper","Image", m_d.m_szImage, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szImage[0] = 0;
 	
 	hr = GetRegString("DefaultProps\\Bumper","Surface", m_d.m_szSurface, MAXTOKEN);
-	if (hr != S_OK)	
+	if (hr != S_OK || !fromMouseClick )	
 		m_d.m_szSurface[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\Bumper","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\Bumper","TimerInterval", &iTmp);
-	m_d.m_tdr.m_TimerInterval = (hr == S_OK) ? iTmp : 100;
+	m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
 
 	hr = GetRegInt("DefaultProps\\Bumper","LightState", &iTmp);
-	m_d.m_state = (hr == S_OK) ? (enum LightState)iTmp : LightStateOff;
+	m_d.m_state = (hr == S_OK) && fromMouseClick ? (enum LightState)iTmp : LightStateOff;
 	
 	hr = GetRegString("DefaultProps\\Bumper","BlinkPattern", m_rgblinkpattern, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
 	
 	hr = GetRegInt("DefaultProps\\Bumper","BlinkInterval", &iTmp);
-	m_blinkinterval = (hr == S_OK) ? iTmp : 125;
+	m_blinkinterval = (hr == S_OK) && fromMouseClick ? iTmp : 125;
 
 	hr = GetRegInt("DefaultProps\\Bumper","FlashWhenHit", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fFlashWhenHit = iTmp == 0 ? false : true;
 	else
 		m_d.m_fFlashWhenHit = fTrue;
 	
 	hr = GetRegInt("DefaultProps\\Bumper","CastsShadow", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fCastsShadow = iTmp == 0 ? false : true;
 	else
 		m_d.m_fCastsShadow = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Bumper","Visible", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK)&& fromMouseClick)
 		m_d.m_fVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 	
 	hr = GetRegInt("DefaultProps\\Bumper","SideVisible", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fSideVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_fSideVisible = fTrue;
@@ -803,7 +803,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 
 HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

@@ -14,108 +14,108 @@ Plunger::~Plunger()
 	{
 	}
 
-HRESULT Plunger::Init(PinTable *ptable, float x, float y)
+HRESULT Plunger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	m_ptable = ptable;
 
 	m_d.m_v.x = x;
 	m_d.m_v.y = y;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	return InitVBA(fTrue, 0, NULL);
 	}
 
-void Plunger::SetDefaults()
+void Plunger::SetDefaults(bool fromMouseClick)
 	{
 	HRESULT hr;
 	float fTmp;
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger", "Height", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_height = fTmp;
 	else
 		m_d.m_height = 20;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger", "Width", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_width = fTmp;
 	else
 		m_d.m_width = 25;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger","Stroke", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_stroke = fTmp;
 	else
 		m_d.m_stroke = m_d.m_height*4;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger","PullSpeed", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_speedPull = fTmp;
 	else
 		m_d.m_speedPull = 5;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger","ReleaseSpeed", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_speedFire = fTmp;
 	else
 		m_d.m_speedFire = 80;
 	
 	hr = GetRegInt("DefaultProps\\Plunger","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\Plunger","TimerInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
 
 	hr = GetRegString("DefaultProps\\Plunger", "Surface", &m_d.m_szSurface, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szSurface[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\Plunger","MechPlunger", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_mechPlunger = iTmp == 0? false:true;
 	else
 		m_d.m_mechPlunger = fFalse;		//rlc plungers require selection for mechanical input
 	
 	hr = GetRegInt("DefaultProps\\Plunger","AutoPlunger", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_autoPlunger = iTmp == 0? false:true;
 	else
 		m_d.m_autoPlunger = fFalse;		
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger","MechStrength", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_mechStrength = fTmp;
 	else
 		m_d.m_mechStrength = 85;		//rlc
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger","ParkPosition", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_parkPosition = fTmp;
 	else
 		m_d.m_parkPosition = (float)(0.5/3.0);	// typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
 
 	hr = GetRegInt("DefaultProps\\Plunger","Visible", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fVisible = iTmp == 0? false:true;
 	else
 		m_d.m_fVisible = fTrue;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger","ScatterVelocity", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_scatterVelocity = fTmp;
 	else
 		m_d.m_scatterVelocity = 0;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger","BreakOverVelocity", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_breakOverVelocity = fTmp;
 	else
 		m_d.m_breakOverVelocity = 18.0f;
@@ -448,7 +448,7 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 
 HRESULT Plunger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

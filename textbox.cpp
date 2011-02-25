@@ -17,7 +17,7 @@ Textbox::~Textbox()
 	m_pIFont->Release();
 	}
 
-HRESULT Textbox::Init(PinTable *ptable, float x, float y)
+HRESULT Textbox::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	m_ptable = ptable;
 
@@ -43,12 +43,12 @@ HRESULT Textbox::Init(PinTable *ptable, float x, float y)
 
 	m_pobjframe = NULL;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	return InitVBA(fTrue, 0, NULL);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Textbox", NULL);
 	}
 
-void Textbox::SetDefaults()
+void Textbox::SetDefaults(bool fromMouseClick)
 	{
 	float fTmp;
 	//Textbox is always located on backdrop
@@ -58,37 +58,37 @@ void Textbox::SetDefaults()
 	int iTmp;
 
 	hr = GetRegInt("DefaultProps\\TextBox","BackColor", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_backcolor = iTmp;
 	else
 		m_d.m_backcolor = RGB(0,0,0);
     
 	hr = GetRegInt("DefaultProps\\TextBox","FontColor", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fontcolor = iTmp;
 	else
 		m_d.m_fontcolor = RGB(255,255,255);
 
 	hr = GetRegInt("DefaultProps\\TextBox","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\TextBox","TimerInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
 
 	hr = GetRegInt("DefaultProps\\TextBox","TextAlignment", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_talign = (enum TextAlignment)iTmp;
 	else	
 		m_d.m_talign = TextAlignRight;
 
 	hr = GetRegInt("DefaultProps\\TextBox","Transparent", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fTransparent = iTmp == 0? false : true;
 	else	
 		m_d.m_fTransparent = fFalse;
@@ -98,14 +98,14 @@ void Textbox::SetDefaults()
 	fd.cbSizeofstruct = sizeof(FONTDESC);
 
 	hr = GetRegStringAsFloat("DefaultProps\\TextBox","FontSize", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		fd.cySize.int64 = (LONGLONG)(fTmp * 10000.0);
 	else	
 		fd.cySize.int64 = 142500;
 
 	char tmp[256];
 	hr = GetRegString("DefaultProps\\TextBox","FontName", tmp, 256);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		fd.lpstrName = L"Arial";
 	else
 	{
@@ -116,37 +116,37 @@ void Textbox::SetDefaults()
 	}
 
 	hr = GetRegInt("DefaultProps\\TextBox", "FontWeight", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		fd.sWeight = (SHORT)iTmp;
 	else
 		fd.sWeight = FW_NORMAL;
 
 	hr = GetRegInt("DefaultProps\\TextBox", "FontCharSet", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		fd.sCharset = (SHORT)iTmp;
 	else
 		fd.sCharset = 0;
 	
 	hr = GetRegInt("DefaultProps\\TextBox", "FontItalic", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		fd.fItalic = iTmp == 0? false : true;
 	else
 		fd.fItalic = 0;
 
 	hr = GetRegInt("DefaultProps\\TextBox", "FontUnderline", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		fd.fUnderline = iTmp == 0? false : true;
 	else
 		fd.fUnderline = 0;
 	
 	hr = GetRegInt("DefaultProps\\TextBox", "FontStrikeThrough", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		fd.fStrikethrough = iTmp == 0? false : true;
 	else
 		fd.fStrikethrough = 0;
 
 	hr = GetRegString("DefaultProps\\TextBox","Text", m_d.sztext, MAXSTRING);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		lstrcpy(m_d.sztext,"0");
 
 	OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
@@ -543,7 +543,7 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 
 HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

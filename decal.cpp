@@ -20,14 +20,14 @@ Decal::~Decal()
 	m_pIFont->Release();
 	}
 
-HRESULT Decal::Init(PinTable *ptable, float x, float y)
+HRESULT Decal::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	m_ptable = ptable;
 
 	m_d.m_vCenter.x = x;
 	m_d.m_vCenter.y = y;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	InitVBA(fTrue, 0, NULL);
 
@@ -36,7 +36,7 @@ HRESULT Decal::Init(PinTable *ptable, float x, float y)
 	return S_OK;
 	}
 
-void Decal::SetDefaults()
+void Decal::SetDefaults(bool fromMouseClick)
 	{
 
 	HRESULT hr;
@@ -44,36 +44,36 @@ void Decal::SetDefaults()
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Decal","Width", &fTmp);
-	m_d.m_width = (hr == S_OK) ? fTmp : 100.0f;
+	m_d.m_width = (hr == S_OK) && fromMouseClick ? fTmp : 100.0f;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Decal","Height", &fTmp);
-	m_d.m_height = (hr == S_OK) ? fTmp : 100.0f;
+	m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 100.0f;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Decal","Rotation", &fTmp);
-	m_d.m_rotation = (hr == S_OK) ? fTmp : 0;
+	m_d.m_rotation = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 
 	hr = GetRegString("DefaultProps\\Decal","Image", m_d.m_szImage, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szImage[0] = 0;
 	hr = GetRegString("DefaultProps\\Decal","Surface", m_d.m_szSurface, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szSurface[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\Decal", "DecalType", &iTmp);
-	m_d.m_decaltype = (hr == S_OK) ? (enum DecalType)iTmp : DecalImage;
+	m_d.m_decaltype = (hr == S_OK) && fromMouseClick ? (enum DecalType)iTmp : DecalImage;
 	
 	hr = GetRegString("DefaultProps\\Decal","Text", m_d.m_sztext, MAXSTRING);
-	if (hr != S_OK)
+	if  ((hr != S_OK) || !fromMouseClick)
 		m_d.m_sztext[0] = '\0';
 
 	hr = GetRegInt("DefaultProps\\Decal", "Sizing", &iTmp);
-	m_d.m_sizingtype = (hr == S_OK) ? (enum SizingType)iTmp : ManualSize;
+	m_d.m_sizingtype = (hr == S_OK) && fromMouseClick ? (enum SizingType)iTmp : ManualSize;
 	
 	hr = GetRegInt("DefaultProps\\Decal", "Color", &iTmp);
-	m_d.m_color = (hr == S_OK) ? iTmp : RGB(0,0,0);
+	m_d.m_color = (hr == S_OK) && fromMouseClick ? iTmp : RGB(0,0,0);
 
 	hr = GetRegInt("DefaultProps\\Decal", "VerticalText", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fVerticalText = iTmp == 0 ? false : true;
 	else
 		m_d.m_fVerticalText = fFalse;
@@ -84,11 +84,11 @@ void Decal::SetDefaults()
 		fd.cbSizeofstruct = sizeof(FONTDESC);
 		
 		hr = GetRegStringAsFloat("DefaultProps\\Decal","FontSize", &fTmp);
-		fd.cySize.int64 = (hr == S_OK) ? (LONGLONG)(fTmp * 10000.0) : 142500;
+		fd.cySize.int64 = (hr == S_OK) && fromMouseClick ? (LONGLONG)(fTmp * 10000.0) : 142500;
 
 		char tmp[256];
 		hr = GetRegString("DefaultProps\\Decal","FontName", tmp, 256);
-		if (hr != S_OK)
+		if ((hr != S_OK) || !fromMouseClick)
 			fd.lpstrName = L"Arial Black";
 		else
 		{
@@ -99,25 +99,25 @@ void Decal::SetDefaults()
 		}
 
 		hr = GetRegInt("DefaultProps\\Decal", "FontWeight", &iTmp);
-		fd.sWeight = (hr == S_OK) ? iTmp : FW_NORMAL;
+		fd.sWeight = (hr == S_OK) && fromMouseClick ? iTmp : FW_NORMAL;
 	
 		hr = GetRegInt("DefaultProps\\Decal", "FontCharSet", &iTmp);
-		fd.sCharset = (hr == S_OK) ? iTmp : 0;
+		fd.sCharset = (hr == S_OK) && fromMouseClick ? iTmp : 0;
 		
 		hr = GetRegInt("DefaultProps\\Decal", "FontItalic", &iTmp);
-		if (hr == S_OK)
+		if ((hr == S_OK) && fromMouseClick)
 			fd.fItalic = iTmp == 0 ? false : true;
 		else
 			fd.fItalic = 0;
 
 		hr = GetRegInt("DefaultProps\\Decal", "FontUnderline", &iTmp);
-		if (hr == S_OK)
+		if ((hr == S_OK) && fromMouseClick)
 			fd.fUnderline = iTmp == 0 ? false : true;
 		else
 			fd.fUnderline = 0;
 		
 		hr = GetRegInt("DefaultProps\\Decal", "FontStrikeThrough", &iTmp);
-		if (hr == S_OK)
+		if ((hr == S_OK) && fromMouseClick)
 			fd.fStrikethrough = iTmp == 0 ? false : true;
 		else
 			fd.fStrikethrough = 0;
@@ -664,7 +664,7 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 
 HRESULT Decal::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

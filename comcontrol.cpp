@@ -512,7 +512,7 @@ PinComControl::~PinComControl()
 		}
 	}
 
-HRESULT PinComControl::Init(PinTable *ptable, float x, float y)
+HRESULT PinComControl::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	HRESULT hr;
 
@@ -523,7 +523,7 @@ HRESULT PinComControl::Init(PinTable *ptable, float x, float y)
 	m_d.m_v2.x = x+100;
 	m_d.m_v2.y = y+50;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	hr = ChooseComponent();
 
@@ -537,7 +537,7 @@ HRESULT PinComControl::Init(PinTable *ptable, float x, float y)
 	return InitVBA(fTrue, 0, NULL);
 	}
 
-void PinComControl::SetDefaults()
+void PinComControl::SetDefaults(bool fromMouseClick)
 	{
 	m_d.m_tdr.m_fTimerEnabled = fFalse;
 	m_d.m_tdr.m_TimerInterval = 100;
@@ -1104,7 +1104,7 @@ HRESULT PinComControl::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY 
 
 HRESULT PinComControl::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

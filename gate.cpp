@@ -15,7 +15,7 @@ Gate::~Gate()
 	{
 	}
 
-HRESULT Gate::Init(PinTable *ptable, float x, float y)
+HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	HRESULT hr = S_OK;
 
@@ -24,119 +24,119 @@ HRESULT Gate::Init(PinTable *ptable, float x, float y)
 	m_d.m_vCenter.x = x;
 	m_d.m_vCenter.y = y;
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	InitVBA(fTrue, 0, NULL);
 
 	return hr;
 	}
 
-void Gate::SetDefaults()
+void Gate::SetDefaults(bool fromMouseClick)
 	{
 	HRESULT hr;
 	float fTmp;
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Gate","Length", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_length = fTmp;
 	else
 		m_d.m_length = 100;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Gate","Height", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_height = fTmp;
 	else
 		m_d.m_height = 50;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Gate","Rotation", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_rotation = fTmp;
 	else
 		m_d.m_rotation = -90;
 
 	hr = GetRegInt("DefaultProps\\Gate","Supports", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fSupports = iTmp == 0? false : true;
 	else
 		m_d.m_fSupports = fTrue;
 	
 	hr = GetRegInt("DefaultProps\\Gate","Collidable", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fCollidable = iTmp == 0? false : true;
 	else
 		m_d.m_fCollidable = fTrue;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Gate","AngleMin", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_angleMin = fTmp;
 	else
 		m_d.m_angleMin = 0;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Gate","AngleMax", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK)  && fromMouseClick)
 		m_d.m_angleMax = fTmp;
 	else
 		m_d.m_angleMax = (float)(M_PI/2.0);
 
 	hr = GetRegInt("DefaultProps\\Gate","Visible", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK)  && fromMouseClick)
 		m_d.m_fVisible = iTmp == 0? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Gate","Animations", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_animations = iTmp;
 	else
 		m_d.m_animations = 0;	// animations frames, zero will calculate 1 frames per 6 degrees
 
 	hr = GetRegInt("DefaultProps\\Gate","Color", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_color = iTmp;
 	else
 		m_d.m_color = RGB(128,128,128);
 
 	hr = GetRegInt("DefaultProps\\Gate","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\Gate","TimerInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
 
 	hr = GetRegString("DefaultProps\\Gate","Surface", &m_d.m_szSurface, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szSurface[0] = 0;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Gate","Elasticity", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK)  && fromMouseClick)
 		m_d.m_elasticity = fTmp;
 	else
 		m_d.m_elasticity = 0.3f;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Gate","Friction", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_friction =  fTmp;
 	else
 		m_d.m_friction = 0;	//zero uses global value
 
 	hr = GetRegStringAsFloat("DefaultProps\\Gate","Scatter", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_scatter = fTmp;
 	else
 		m_d.m_scatter = 0;	//zero uses global value
 
 	hr = GetRegString("DefaultProps\\Gate","ImageFront", &m_d.m_szImageFront, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szImageFront[0] = 0;
 
 	hr = GetRegString("DefaultProps\\Gate","ImageBack", &m_d.m_szImageBack, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szImageBack[0] = 0;
 	}
 
@@ -837,7 +837,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 
 HRESULT Gate::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

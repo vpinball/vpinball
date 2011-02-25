@@ -15,7 +15,7 @@ Ramp::~Ramp()
 	{
 	}
 
-HRESULT Ramp::Init(PinTable *ptable, float x, float y)
+HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 	m_ptable = ptable;
 	m_d.m_IsVisible = fTrue;
@@ -46,97 +46,97 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y)
 		m_vdpoint.AddElement(pdp);
 		}
 
-	SetDefaults();
+	SetDefaults(fromMouseClick);
 
 	InitVBA(fTrue, 0, NULL);
 
 	return S_OK;
 	}
 
-void Ramp::SetDefaults()
+void Ramp::SetDefaults(bool fromMouseClick)
 	{
 	HRESULT hr;
 	float fTmp;
 	int iTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","HeightBottom", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_heightbottom = fTmp;
 	else
 		m_d.m_heightbottom = 0;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","HeightTop", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_heighttop = fTmp;
 	else
 		m_d.m_heighttop = 100.0f;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","WidthBottom", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_widthbottom = fTmp;
 	else
 		m_d.m_widthbottom = 75.0f;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","WidthTop", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_widthtop = fTmp;
 	else
 		m_d.m_widthtop = 60.0f;
 
 	hr = GetRegInt("DefaultProps\\Ramp","Color", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_color = iTmp;
 	else
 		m_d.m_color = RGB(50,200,50);
 
 	hr = GetRegInt("DefaultProps\\Ramp","RampType", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_type = (enum RampType)iTmp;
 	else
 		m_d.m_type = RampTypeFlat;
 
 	hr = GetRegInt("DefaultProps\\Ramp","TimerEnabled", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\Ramp","TimerInterval", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
 
 	hr = GetRegString("DefaultProps\\Ramp","Image", m_d.m_szImage, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szImage[0] = 0;
 
 	hr = GetRegInt("DefaultProps\\Ramp","ImageMode", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_imagealignment = (enum RampImageAlignment)iTmp;
 	else
 		m_d.m_imagealignment = ImageModeWorld;
 	
 	hr = GetRegInt("DefaultProps\\Ramp","ImageWalls", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fImageWalls = iTmp == 0? false : true;
 	else
 		m_d.m_fImageWalls = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Ramp","CastsShadow", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fCastsShadow = iTmp == 0? false : true;
 	else
 		m_d.m_fCastsShadow = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Ramp","Acrylic", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fAcrylic = iTmp == 0? false : true;
 	else
 		m_d.m_fAcrylic = fFalse;
 
 	hr = GetRegInt("DefaultProps\\Ramp","Alpha", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fAlpha = iTmp == 0? false : true;
 	else
 		m_d.m_fAlpha = fFalse;
@@ -144,55 +144,55 @@ void Ramp::SetDefaults()
 		m_d.m_fAcrylic = true;   // A alpha Ramp is automatically acrylic.
 
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","LeftWallHeight", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_leftwallheight = fTmp;
 	else
 		m_d.m_leftwallheight = 62.0f;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","RightWallHeight", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_rightwallheight = fTmp;
 	else
 		m_d.m_rightwallheight = 62.0f;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","LeftWallHeightVisible", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_leftwallheightvisible = fTmp;
 	else
 		m_d.m_leftwallheightvisible = 30.0f;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","RightWallHeightVisible", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_rightwallheightvisible = fTmp;
 	else
 		m_d.m_rightwallheightvisible = 30.0f;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","Elasticity", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_elasticity = fTmp;
 	else
 		m_d.m_elasticity = 0.3f;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","Friction", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_friction = fTmp;
 	else
 		m_d.m_friction = 0;	//zero uses global value
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp","Scatter", &fTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_scatter = fTmp;
 	else
 		m_d.m_scatter = 0;	//zero uses global value
 
 	hr = GetRegInt("DefaultProps\\Ramp","Collidable", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fCollidable = iTmp == 0? false : true;
 	else
 		m_d.m_fCollidable = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Ramp","Visible", &iTmp);
-	if (hr == S_OK)
+	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_IsVisible = iTmp == 0? false : true;
 	else
 		m_d.m_IsVisible = fTrue;
@@ -1686,7 +1686,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 
 HRESULT Ramp::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
-	SetDefaults();
+	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 

@@ -290,7 +290,7 @@ public:
 	virtual HRESULT InitPostLoad();
 	virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
 	virtual ISelect *GetISelect();
-	virtual void SetDefaults();
+	virtual void SetDefaults(bool fromMouseClick);
 	virtual IScriptable *GetScriptable();
 
 	virtual PinTable *GetPTable() {return this;}
