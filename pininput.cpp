@@ -982,29 +982,11 @@ if (hr != S_OK)
 					case DIJOFS_X: 
 						if( g_pplayer ) //joyk  rotLeftManual
 						{
-							double deadzone;
-							int loc;
-							loc = u.i;
-							deadzone = (double)loc / 1000; //get percentage of location in total range
-							//u.i is ranged from -1000 to +1000, so this changes it into .000 to 1.000
-							deadzone = fabs(deadzone); //make it positive
-							//deadZ2 ranges from 0 to 100, so divide by 100 to get .00 to 1.00 
-							if (deadzone <= DeadZ2/100) //Is the location in the deadzone?
-							{
-								u.i = 0; //deaden it
-
-							}
-							else
-							{
-								if(u.i>0)
-								{
-									u.i = u.i - DeadZ2/100; //saturation
-								}
-								else
-								{
-									u.i = u.i + DeadZ2/100; //saturation
-								}
-							}
+							//Deadzone X Axis
+							if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
+							if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
+							if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
+							if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
 							if (uShockType == 1) 
 							{
 								g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match Pinball Wizard
@@ -1037,28 +1019,11 @@ if (hr != S_OK)
 					case DIJOFS_Y: 
 						if( g_pplayer ) 
 						{
-// Check for Y-axis joystick saturation deadzone - Added by Scrooby
-							double deadzone;
-							int loc;
-							loc = u.i;
-							deadzone = (double)loc / 1000; //get percentage of location in total range
-							deadzone = fabs(deadzone); //make it positive
-							if (deadzone <= DeadZ2/100) //Is the location in the deadzone?
-							{
-								u.i = 0; //deaden it
-
-							}
-							else
-							{
-								if(u.i>0)
-								{
-									u.i = u.i - DeadZ2/100; //saturation
-								}
-								else
-								{
-									u.i = u.i + DeadZ2/100; //saturation
-								}
-							}
+							//Deadzone Y Axis
+							if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
+							if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
+							if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
+							if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
 							if (uShockType == 1) 
 							{
 								g_pplayer->UltraNudgeY(u.i, joyk); //rotate to match Pinball Wizard
