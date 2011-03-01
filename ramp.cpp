@@ -935,10 +935,10 @@ void Ramp::CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph
 		//vjointnormal.y = ph3d1->normal.y + ph3d2->normal.y;
 		//vjointnormal.z = ph3d1->normal.z + ph3d2->normal.z;
 
-		const float length = sqrtf(vjointnormal.x * vjointnormal.x + vjointnormal.y * vjointnormal.y + vjointnormal.z * vjointnormal.z);
-		if (length < 1.0e-4f) return;
+		const float sqrlength = vjointnormal.x * vjointnormal.x + vjointnormal.y * vjointnormal.y + vjointnormal.z * vjointnormal.z;
+		if (sqrlength < 1.0e-8f) return;
 
-		const float inv_length = 1.0f/length;
+		const float inv_length = 1.0f/sqrtf(sqrlength);
 		vjointnormal.x *= inv_length;
 		vjointnormal.y *= inv_length;
 		vjointnormal.z *= inv_length;
