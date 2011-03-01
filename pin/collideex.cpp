@@ -654,7 +654,7 @@ float Hit3DPoly::HitTestBasicPolygon(Ball * const pball, const float dtime, Vert
 			hittime = bnd/(-bnv);	
 		}
 
-	if (hittime < 0 || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
+	if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
 
 	hitx += pball->vx*hittime;	// advance hit point to contact
 	hity += pball->vy*hittime;

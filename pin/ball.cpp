@@ -280,7 +280,7 @@ float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phi
 		{
 		const float a = dvx*dvx + dvy*dvy + dvz*dvz;				//square of differential velocity 
 
-		if (a < 1.0e-12f) return -1.0f;				// ball moving really slow, then wait for contact
+		if (a < 1.0e-8f) return -1.0f;				// ball moving really slow, then wait for contact
 
 		const float c = bcddsq - totalradius*totalradius;	//first contact test: square delta position - square of radii
 		b += b;										// two inner products
@@ -291,15 +291,15 @@ float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phi
 		result = sqrtf(result);
 
 		const float inv_a = (-0.5f)/a;
-		float time1 = (b - result)*inv_a;
-		float time2 = (b + result)*inv_a;
+		      float time1 = (b - result)*inv_a;
+		const float time2 = (b + result)*inv_a;
 
 		if (time1 < 0) time1 = time2;				// if time1 negative, assume time2 postive
 
 		hittime = (time1 < time2) ? time1 : time2;	// select lessor
 													// if time2 is negative ... 
 
-		if (hittime < 0 || hittime > dtime) return -1.0f; // .. was some time previous || beyond the next physics tick
+		if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f; // .. was some time previous || beyond the next physics tick
 		}
 
 	const float hitx = pball->x + dvx * hittime;  // new ball position

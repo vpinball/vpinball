@@ -116,7 +116,7 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 			hittime = bnd/(-bnv);	
 		}
 
-	if (hittime < 0 || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
+	if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
 
 	const float btv = ballvx*TANX + ballvy*TANY;					//ball velocity tangent to segment with respect to direction from V1 to V2
 	const float btd = (ballx - v1.x)*TANX + (bally - v1.y)* TANY 	// ball tangent distance 
@@ -256,7 +256,7 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 		fUnhit = (time1*time2 < 0);
 		hittime = fUnhit ? max(time1,time2) : min(time1,time2); // ball is inside the circle
 
-		if (hittime < 0 || hittime > dtime) return -1.0f;	// contact out of physics frame
+		if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f;	// contact out of physics frame
 		}
 	
 	const float hitz = pball->z - pball->radius + pball->vz * hittime; //rolling point
@@ -268,11 +268,11 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 	const float hitx = pball->x + pball->vx*hittime;
 	const float hity = pball->y + pball->vy*hittime;
 
-	const float len = sqrtf((hitx - x)*(hitx - x)+(hity - y)*(hity - y));
+	const float sqrlen = (hitx - x)*(hitx - x)+(hity - y)*(hity - y);
 
-	 if (len > 1.0e-8f)										// over center???
+	 if (sqrlen > 1.0e-8f)										// over center???
 		{//no
-		const float inv_len = 1.0f/len;
+		const float inv_len = 1.0f/sqrtf(sqrlen);
 		phitnormal->x = (hitx - x)*inv_len;
 		phitnormal->y = (hity - y)*inv_len;
 		}
