@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -109,6 +109,7 @@ IDR_Spinner             REGISTRY                "Spinner.rgs"
 IDR_Ramp                REGISTRY                "Ramp.rgs"
 IDR_DispReel            REGISTRY                "DispReel.rgs"
 IDR_LightSeq            REGISTRY                "LightSeq.rgs"
+IDR_Primitive           REGISTRY                "Primitive.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -166,6 +167,7 @@ BEGIN
         MENUITEM "Te&xtbox\tCtrl+E",            IDC_TEXTBOX
         MENUITEM "EM Reel\tCtrl+Y",             IDC_DISPREEL
         MENUITEM "Light Se&quencer\tCtrl+Q",    IDC_LIGHTSEQ
+        MENUITEM "Pri&mitive\tCTRL+M",          IDC_PRIMITIVE
         MENUITEM "ActiveX Control",             IDC_COMCONTROL
     END
     POPUP "&Table"
@@ -1534,6 +1536,78 @@ BEGIN
     EDITTEXT        314,63,34,55,12,ES_AUTOHSCROLL
 END
 
+IDD_PROPPRIMITIVE_POSITION DIALOGEX 0, 0, 125, 333
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    EDITTEXT        DISPID_POSITION_X,44,16,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_POSITION_Y,44,30,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_POSITION_Z,44,43,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_SIZE_X,44,75,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_SIZE_Y,44,89,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_SIZE_Z,44,102,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_AXISSCALE_XY,44,133,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_AXISSCALE_XZ,44,147,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_AXISSCALE_YX,44,161,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_AXISSCALE_YZ,44,175,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_AXISSCALE_ZX,44,189,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_AXISSCALE_ZY,44,203,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA1,24,235,40,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO1,69,235,42,68,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        DISPID_ROTRA2,24,249,40,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO2,69,249,42,68,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        DISPID_ROTRA3,24,263,40,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO3,69,263,42,68,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        DISPID_ROTRA4,24,277,40,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO4,69,276,42,68,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        DISPID_ROTRA5,24,291,40,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO5,69,291,42,68,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        DISPID_ROTRA6,24,305,40,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO6,69,305,42,68,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&X",IDC_STATIC,14,77,22,8
+    LTEXT           "&Y",IDC_STATIC,14,91,8,8
+    LTEXT           "&Z",IDC_STATIC,14,105,8,8
+    GROUPBOX        "Size",IDC_STATIC,7,66,111,55
+    LTEXT           "&X",IDC_STATIC,14,17,22,8
+    LTEXT           "&Y",IDC_STATIC,14,32,8,8
+    LTEXT           "&Z",IDC_STATIC,14,46,8,8
+    GROUPBOX        "Base Position",IDC_STATIC,7,7,111,55
+    LTEXT           "&X->Y",IDC_STATIC,14,135,22,8
+    LTEXT           "&X->Z",IDC_STATIC,14,149,18,8
+    LTEXT           "&Y->X",IDC_STATIC,14,163,25,8
+    GROUPBOX        "Axis Scale",IDC_STATIC,7,124,111,98
+    LTEXT           "1",IDC_STATIC,14,236,8,8
+    LTEXT           "2",IDC_STATIC,14,251,8,8
+    LTEXT           "3",IDC_STATIC,14,265,8,8
+    GROUPBOX        "Rotation and Transposition",IDC_STATIC,7,225,111,99
+    LTEXT           "4",IDC_STATIC,14,278,9,8
+    LTEXT           "5",IDC_STATIC,14,293,8,8
+    LTEXT           "6",IDC_STATIC,14,307,8,8
+    LTEXT           "&Y->Z",IDC_STATIC,14,177,22,8
+    LTEXT           "&Z->X",IDC_STATIC,14,191,24,8
+    LTEXT           "&Z->Y",IDC_STATIC,14,205,21,8
+END
+
+IDD_PROPPRIMITIVE_VISUALS DIALOGEX 0, 0, 125, 171
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    EDITTEXT        101,31,7,56,14,ES_AUTOHSCROLL
+    COMBOBOX        DISPID_Image,7,31,111,124,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Custom2",102,"ColorControl",WS_TABSTOP,74,85,40,14
+    CONTROL         "Top/Bottom Visible",103,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,100,76,10
+    CONTROL         "Custom2",104,"ColorControl",WS_TABSTOP,74,112,40,14
+    CONTROL         "Side Visible",105,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,127,52,10
+    CONTROL         "Draw Textures inside",106,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,140,82,10
+    CONTROL         "Smooth Side Normals",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,153,83,10
+    LTEXT           "Image",IDC_STATIC,7,21,20,8
+    LTEXT           "Image Mapping",IDC_STATIC,7,49,50,8
+    CONTROL         "",DISPID_IMAGEMAPPING,"Static",SS_ETCHEDFRAME | SS_CENTERIMAGE,61,48,58,33
+    LTEXT           "Top/Bottom &Color",IDC_STATIC,7,87,63,9
+    LTEXT           "Side &Color",IDC_STATIC,7,114,63,9
+    LTEXT           "Sides",IDC_STATIC,7,10,18,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2091,6 +2165,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 46
     END
+
+    IDD_PROPPRIMITIVE_POSITION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 118
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 326
+    END
+
+    IDD_PROPPRIMITIVE_VISUALS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 118
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 164
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2134,6 +2224,7 @@ IDC_CUR_DISPREEL        CURSOR                  "cur_dispreel.cur"
 IDC_CUR_DISPSEGMENT     CURSOR                  "cur_dispseg.cur"
 IDC_CUR_DISPDMD         CURSOR                  "cur_dispdmd.cur"
 IDC_CUR_LIGHTSEQ        CURSOR                  "cur_lightseq.cur"
+IDC_CUR_PRIMITIVE       CURSOR                  "cur_prim.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2157,6 +2248,23 @@ BEGIN
 0x3631, 0x313a, 0x0030, 
     IDC_MonitorCombo, 0x403, 5, 0
 0x3132, 0x393a, "\000" 
+    0
+END
+
+IDD_PROPPRIMITIVE_POSITION DLGINIT
+BEGIN
+    IDC_COMBO1, 0x403, 7, 0
+0x2d58, 0x6f52, 0x2e74, "\000" 
+    IDC_COMBO1, 0x403, 7, 0
+0x2d59, 0x6f52, 0x2e74, "\000" 
+    IDC_COMBO1, 0x403, 7, 0
+0x2d5a, 0x6f52, 0x2e74, "\000" 
+    IDC_COMBO1, 0x403, 7, 0
+0x2d58, 0x7254, 0x2e61, "\000" 
+    IDC_COMBO1, 0x403, 7, 0
+0x2d59, 0x7254, 0x2e61, "\000" 
+    IDC_COMBO1, 0x403, 7, 0
+0x2d5a, 0x7254, 0x2e61, "\000" 
     0
 END
 
@@ -2195,6 +2303,7 @@ BEGIN
     IDS_POSITION            "Position"
     IDS_STATE               "State"
     IDS_PHYSICS             "Physics"
+    IDS_TB_PRIMITIVE        "Primitive"
 END
 
 STRINGTABLE 
@@ -2298,7 +2407,7 @@ BEGIN
     IDS_JPG_FORMAT_ERR      "JPG decoding error,  unknown jpg format."
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

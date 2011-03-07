@@ -20,6 +20,7 @@ enum ItemTypeEnum
 	eItemCollection,
 	eItemDispReel,
 	eItemLightSeq,
+	eItemPrimitive,
 	eItemLightSeqCenter,
 	eItemComControl,
 	eItemTypeCount,

@@ -21,6 +21,7 @@ int rgTypeStringIndex[] = {
 	IDS_COLLECTION, //eItemCollection,
     IDS_TB_DISPREEL, //eItemDispReel,
 	IDS_TB_LIGHTSEQ, //eItemLightSeq,
+	IDS_TB_PRIMITIVE, //eItemPrimitive	
 	IDS_TB_LIGHTSEQ, //light seq center
 	IDS_TB_COMCONTROL, //eItemComControl
     };

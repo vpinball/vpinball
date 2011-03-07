@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 
 // TEXT
-const WCHAR rgwzTypeName[][16] = {L"Wall",
+const WCHAR rgwzTypeName[][17] = {L"Wall",
 								L"Flipper",
 								L"Timer",
 								L"Plunger",
@@ -15,6 +15,7 @@ const WCHAR rgwzTypeName[][16] = {L"Wall",
 								L"Spinner",
 								L"Ramp",
                                 L"DispReel",    //>>> added by Chris
+								L"Primitive",
                             };
 
 IEditable::IEditable()

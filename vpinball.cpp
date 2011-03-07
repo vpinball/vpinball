@@ -85,6 +85,7 @@ TBBUTTON const g_tbbuttonPalette[] = {
 	{6, IDC_TEXTBOX, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TEXTBOX, 13},
     {20, IDC_DISPREEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DISPREEL, 14},
 	{21, IDC_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHTSEQ, 15},
+	{22, IDC_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16},
 	//{22, IDC_COMCONTROL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_COMCONTROL, 16},
 	};
 
@@ -895,6 +896,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 		case IDC_RAMP:
         case IDC_DISPREEL:
 		case IDC_LIGHTSEQ:
+		case IDC_PRIMITIVE:
 		case IDC_COMCONTROL:
 			{
 			switch (code)
@@ -1306,7 +1308,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 		}
 	}
 
-const int rgToolEnable[22][2] = {
+const int rgToolEnable[23][2] = {
 	IDC_WALL, 1,
 	IDC_GATE, 1,
 	IDC_RAMP, 1,
@@ -1323,6 +1325,7 @@ const int rgToolEnable[22][2] = {
 	IDC_TEXTBOX, 2,
 	IDC_DISPREEL, 2,
 	IDC_LIGHTSEQ, 3,
+	IDC_PRIMITIVE, 1,
 	IDC_COMCONTROL, 2,
 	//>>> these five are handled separately (see below code)
 	ID_EDIT_SCRIPT, 0,

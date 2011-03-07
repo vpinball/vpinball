@@ -997,7 +997,7 @@
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(DXSDK_DIR)Lib\x86;.\lib"
+				AdditionalLibraryDirectories="$(DXSDK_DIR)Lib\x86;$(DXSDK_DIR)Lib;.\lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBC;LIBCMT;LIBCD"
 				GenerateDebugInformation="true"
@@ -6955,6 +6955,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\primitive.cpp"
+				>
+			</File>
+			<File
 				RelativePath="propbrowser.cpp"
 				>
 				<FileConfiguration
@@ -10249,6 +10253,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\primitive.h"
+				>
+			</File>
+			<File
 				RelativePath="propbrowser.h"
 				>
 			</File>
@@ -10503,6 +10511,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\bin00001.bin"
+				>
+			</File>
+			<File
 				RelativePath="Bumper.rgs"
 				>
 			</File>
@@ -10551,7 +10563,7 @@
 				>
 			</File>
 			<File
-				RelativePath="cur_ligh.cur"
+				RelativePath=".\cur_ligh.cur"
 				>
 			</File>
 			<File
@@ -10560,6 +10572,10 @@
 			</File>
 			<File
 				RelativePath="cur_plun.cur"
+				>
+			</File>
+			<File
+				RelativePath=".\cur_prim.cur"
 				>
 			</File>
 			<File
@@ -10663,7 +10679,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Primitive.rgs"
+				>
+			</File>
+			<File
 				RelativePath="Ramp.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\registry.bin"
 				>
 			</File>
 			<File

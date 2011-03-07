@@ -1,3 +1,3 @@
-//16:17:46.72 Sat 02/19/2011
+//20:16:05,50 07.03.2011
 #define SVNREVISION "$Revision$"                                                                                                                                                                                                                                                                                                                                                                                                                          
 #define SVNDATE "$Date$"                                                                                                                                                                                                                                                                                                                                                                                                                          

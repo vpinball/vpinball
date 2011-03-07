@@ -40,7 +40,7 @@ public:
 		GetIEditable()->SetDirtyDraw(); \
 		}
 
-extern const WCHAR rgwzTypeName[][16];
+extern const WCHAR rgwzTypeName[][17];
 
 ///////////////////////////
 /////// Begin VBA defines

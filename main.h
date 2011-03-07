@@ -95,6 +95,7 @@ class PinBinary;
 #include "Light.h"
 #include "Kicker.h"
 #include "Decal.h"
+#include "Primitive.h"
 #include "Gate.h"
 #include "Spinner.h"
 #include "Ramp.h"
