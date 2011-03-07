@@ -91,6 +91,40 @@
 #define DISPID_Image4 1508
 #define DISPID_Image5 1509
 
+// Primitive DispIDs
+#define DISPID_SIDES                    378
+#define DISPID_POSITION_X               7
+#define DISPID_POSITION_Y               8
+#define DISPID_POSITION_Z               4
+#define DISPID_SIZE_X                   5
+#define DISPID_SIZE_Y                   6
+#define DISPID_SIZE_Z                   3
+#define DISPID_AXISSCALE_XY             9
+#define DISPID_AXISSCALE_XZ             10
+#define DISPID_AXISSCALE_YX             11
+#define DISPID_AXISSCALE_YZ             18
+#define DISPID_AXISSCALE_ZX             19
+#define DISPID_AXISSCALE_ZY             20
+/*
+#define DISPID_ROTATION_X               12
+#define DISPID_ROTATION_Y               13
+#define DISPID_ROTATION_Z               14
+#define DISPID_TRANSPOSITION_X          15
+#define DISPID_TRANSPOSITION_Y          16
+#define DISPID_TRANSPOSITION_Z          17
+*/
+#define DISPID_ROTRA1					12
+#define DISPID_ROTRA2					13
+#define DISPID_ROTRA3					14
+#define DISPID_ROTRA4					15
+#define DISPID_ROTRA5					16
+#define DISPID_ROTRA6					17
+#define IDC_COMBO1                      340
+#define IDC_COMBO2                      341
+#define IDC_COMBO3                      342
+#define IDC_COMBO4                      343
+#define IDC_COMBO5                      344
+#define IDC_COMBO6                      345
 
 // Must have a carriage return at end of file for correct resource file parsing
 

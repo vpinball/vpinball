@@ -3063,6 +3063,12 @@ HRESULT PinTable::CreateIEditableFromType(int type, IEditable **piedit)
 			*piedit = pramp;
 			break;}
 
+	case eItemPrimitive: {
+			CComObject<Primitive> *pprimitive;
+			CComObject<Primitive>::CreateInstance(&pprimitive);
+			*piedit = pprimitive;
+			break;}
+
 		default:
 			_ASSERTE(fFalse);
 			break;
@@ -5145,6 +5151,18 @@ void PinTable::UseTool(int x,int y,int tool)
 				}
 			break;
 			}
+		case IDC_PRIMITIVE:
+			{
+			CComObject<Primitive> *pprimitive;
+			CComObject<Primitive>::CreateInstance(&pprimitive);
+			if (pprimitive)
+				{
+				pprimitive->AddRef();
+				pprimitive->Init(this, v.x, v.y, true);
+				pie = (IEditable *)pprimitive;
+				}
+			break;
+			}
 		case IDC_GATE:
 			{
 			CComObject<Gate> *pgate;
@@ -5501,8 +5519,12 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 						break;
 
 					case IDC_LIGHTSEQ:
-					cursorid = MAKEINTRESOURCE(IDC_CUR_LIGHTSEQ);
-					break;
+						cursorid = MAKEINTRESOURCE(IDC_CUR_LIGHTSEQ);
+						break;
+
+					case IDC_PRIMITIVE:
+						cursorid = MAKEINTRESOURCE(IDC_CUR_PRIMITIVE);
+						break;
 					}
 				hcursor = LoadCursor(hinst, cursorid);
 				SetCursor(hcursor);

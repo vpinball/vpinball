@@ -9,17 +9,48 @@
 #define DISPID_Spinner_Length           3
 #define DISPID_DispReel_FontColor2      3
 #define IDC_ADD                         3
+#define DISPID_SIZE_Z                   3
 #define DISPID_Gate_Rotation            4
 #define DISPID_Textbox_Font             4
+#define DISPID_POSITION_Z               4
+#define DISPID_SIZE_X                   5
 #define DISPID_Surface_SideColor        6
+#define DISPID_SIZE_Y                   6
 #define DISPID_Surface_SideColor2       7
+#define DISPID_POSITION_X               7
 #define DISPID_Gate_Rotation3           8
+#define DISPID_POSITION_Y               8
 #define DISPID_Decal_SizingType         9
+#define DISPID_AXISSCALE_XY             9
 #define DISPID_Surface_FaceColor        10
 #define DISPID_Light_BlinkInterval      10
+#define DISPID_AXISSCALE_XZ             10
+#define DISPID_AXISSCALE_YX             11
 #define DISPID_Decal_Font               12
+#define DISPID_ROTATION_X               12
+#define DISPID_ROTRA1                   12
+#define DISPID_ROTATION_Y               13
+#define DISPID_ROTRA2                   13
+#define DISPID_ROTATION_Z               14
+#define DISPID_TOPCOLOR                 14
+#define DISPID_ROTRA3                   14
 #define IDC_COLOR                       15
+#define DISPID_TRANSPOSITION_X          15
+#define DISPID_TOPVISIBLE               15
+#define DISPID_ROTRA4                   15
 #define DISPID_Flipper_Speed            16
+#define DISPID_TRANSPOSITION_Y          16
+#define DISPID_ROTRA5                   16
+#define DISPID_TRANSPOSITION_Z          17
+#define DISPID_ROTRA6                   17
+#define DISPID_SIDECOLOR                18
+#define DISPID_AXISSCALE_YZ             18
+#define DISPID_SIDEVISIBLE              19
+#define DISPID_AXISSCALE_ZX             19
+#define DISPID_CASTSSHADOW              20
+#define DISPID_AXISSCALE_ZY             20
+#define DISPID_SMOOTHNORMALS            21
+#define DISPID_DRAWINSIDE               22
 #define IDS_PROJNAME                    100
 #define IDR_VBATest                     100
 #define IDR_SURFACE                     101
@@ -112,7 +143,7 @@
 #define ID_DRAWINBACK                   148
 #define IDC_CUR_DECAL                   148
 #define IDS_NAME                        148
-#define ID_SETASDEFAULT					149
+#define ID_SETASDEFAULT                 149
 #define IDC_CUR_SPINNER                 149
 #define IDS_IMPORTPATH                  149
 #define IDC_CUR_RAMP                    150
@@ -133,7 +164,7 @@
 #define IDS_NOPASTEINVIEW               164
 #define IDS_FINDLOOPED                  165
 #define IDS_FINDFAILED                  166
-#define IDS_SETASDEFAULT				167
+#define IDS_SETASDEFAULT                167
 #define IDR_BALL                        167
 #define IDS_FINDFAILED2                 168
 #define IDC_DISPREEL                    168
@@ -159,6 +190,7 @@
 #define IDS_POSITION                    183
 #define IDS_STATE                       184
 #define IDS_PHYSICS                     185
+#define IDS_TB_PRIMITIVE                186
 #define IDR_COMCONTROL                  187
 #define IDR_APPMENU                     201
 #define IDC_SOUNDLIST                   201
@@ -262,6 +294,8 @@
 #define IDC_CENTERTILT                  277
 #define IDR_DispReel                    277
 #define IDC_ADDCREDITBUTTON             278
+#define IDR_Bumper1                     278
+#define IDR_Primitive                   278
 #define IDC_ADDCREDIT                   279
 #define IDC_BUTTON1                     280
 #define IDC_IN                          280
@@ -372,15 +406,19 @@
 #define IDB_CHEVRON                     342
 #define IDD_PROPSPINNER_POSITION        342
 #define IDS_UNDOPASTSAVE                342
+#define IDC_COMBO3                      342
 #define IDD_PROPSPINNER_PHYSICS         343
 #define IDC_ACTIVEX0                    343
 #define IDS_LOADING                     343
+#define IDC_COMBO4                      343
 #define IDD_PROPRAMP_PHYSICS            344
 #define IDC_ACTIVEX1                    344
 #define IDS_SAVING                      344
+#define IDC_COMBO5                      344
 #define IDD_PROPTRIGGER_VISUALS         345
 #define IDC_ACTIVEX2                    345
 #define IDS_AUTOSAVING                  345
+#define IDC_COMBO6                      345
 #define IDD_PROPTRIGGER_STATE           346
 #define IDC_ACTIVEX3                    346
 #define IDS_HANG                        346
@@ -442,15 +480,22 @@
 #define IDC_Layback                     377
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
+#define DISPID_SIDES                    378
 #define IDD_PROPKICKER_STATE            379
 #define IDC_RADIO2                      379
 #define IDC_RADIO3                      380
+#define IDD_PROPPRIMITIVE_POSITION      380
+#define IDD_PROPPRIMITIVE_VISUALS       381
 #define IDR_TABLE_NEW                   383
 #define IDC_SLIDER2                     384
 #define IDC_ARASlider                   384
+#define IDC_CUR_PRIMITIVE               385
 #define IDC_StretchNo                   386
+#define IDR_REGISTRY1                   386
 #define IDC_StretchYes                  387
+#define IDR_REGISTRY2                   387
 #define IDC_StretchMonitor              388
+#define DISPID_IMAGEMAPPING             389
 #define IDC_ADDCREDITBUTTON2            400
 #define IDC_ADDCREDIT2                  401
 #define IDC_ADDCREDITKEY2               401
@@ -513,6 +558,8 @@
 #define ID_TABLE_TABLEINFO              32838
 #define ID_PREFERENCES_SECURITYOPTIONS  32839
 #define IDC_COMCONTROL                  32840
+#define ID_INSERT_PRIMITIVE             32842
+#define IDC_PRIMITIVE                   32843
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -520,9 +567,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        385
-#define _APS_NEXT_COMMAND_VALUE         32842
-#define _APS_NEXT_CONTROL_VALUE         389
+#define _APS_NEXT_RESOURCE_VALUE        389
+#define _APS_NEXT_COMMAND_VALUE         32844
+#define _APS_NEXT_CONTROL_VALUE         390
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

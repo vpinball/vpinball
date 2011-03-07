@@ -199,6 +199,17 @@ typedef [uuid(A5C333FD-0AD4-490a-BA6B-994CAB23501E)]
 		}
 		SizingType;
 
+typedef [uuid(99405AE9-FBCF-4EDF-9FF7-C0FE901D85F3)] 
+enum RotAndTraTypeEnum
+    {	
+	RotX = 0,
+	RotY = 1,
+	RotZ = 2,
+	TraX = 3,
+	TraY = 4,
+	TraZ = 5,
+    } 	RotAndTraTypeEnum;
+
 typedef [uuid(C0E543A2-50B3-4546-85F8-4D35BFBE09A2)]
 	enum KickerType
 		{
@@ -1240,6 +1251,118 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([in] BSTR newVal);
 	};
+	//////////////////////////////
+	////// Primitive
+	///////////////////////////////
+
+	[
+		object,
+		uuid(5E972141-B842-43C8-BA84-B99DE34B2E73),
+		dual,
+		helpstring("IPrimitive Interface"),
+		pointer_default(unique)
+	]
+	interface IPrimitive : IDispatch
+	{
+		//[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+		//[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+		[propget, id(101), helpstring("property Sides")] HRESULT Sides([out, retval] int *pVal);
+		[propput, id(101), helpstring("property Sides")] HRESULT Sides([in] int newVal);
+		[propget, id(103), helpstring("property Top Visible")] HRESULT TopVisible([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(103), helpstring("property Top Visible")] HRESULT TopVisible([in] VARIANT_BOOL newVal);
+		[propget, id(105), helpstring("property Side Visible")] HRESULT SideVisible([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(105), helpstring("property Side Visible")] HRESULT SideVisible([in] VARIANT_BOOL newVal);
+		[propget, id(102), helpstring("property Top Color")] HRESULT TopColor([out, retval] OLE_COLOR *pVal);
+		[propput, id(102), helpstring("property Top Color")] HRESULT TopColor([in] OLE_COLOR newVal);
+		[propget, id(104), helpstring("property Side Color")] HRESULT SideColor([out, retval] OLE_COLOR *pVal);
+		[propput, id(104), helpstring("property Side Color")] HRESULT SideColor([in] OLE_COLOR newVal);
+		[propget, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([in] VARIANT_BOOL newVal);
+		[propget, id(107), helpstring("property Smooth Side Normals")] HRESULT SmoothSideNormals([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(107), helpstring("property Smooth Side Normals")] HRESULT SmoothSideNormals([in] VARIANT_BOOL newVal);
+		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
+		[propget, id(DISPID_POSITION_X), helpstring("property X")] HRESULT X([out, retval] float *pVal);
+		[propput, id(DISPID_POSITION_X), helpstring("property X")] HRESULT X([in] float newVal);
+		[propget, id(DISPID_POSITION_Y), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
+		[propput, id(DISPID_POSITION_Y), helpstring("property Y")] HRESULT Y([in] float newVal);
+		[propget, id(DISPID_POSITION_Z), helpstring("property Z")] HRESULT Z([out, retval] float *pVal);
+		[propput, id(DISPID_POSITION_Z), helpstring("property Z")] HRESULT Z([in] float newVal);
+		[propget, id(DISPID_SIZE_X), helpstring("property Size X")] HRESULT Size_X([out, retval] float *pVal);
+		[propput, id(DISPID_SIZE_X), helpstring("property Size X")] HRESULT Size_X([in] float newVal);
+		[propget, id(DISPID_SIZE_Y), helpstring("property Size Y")] HRESULT Size_Y([out, retval] float *pVal);
+		[propput, id(DISPID_SIZE_Y), helpstring("property Size Y")] HRESULT Size_Y([in] float newVal);
+		[propget, id(DISPID_SIZE_Z), helpstring("property Size Z")] HRESULT Size_Z([out, retval] float *pVal);
+		[propput, id(DISPID_SIZE_Z), helpstring("property Size Z")] HRESULT Size_Z([in] float newVal);
+		[propget, id(DISPID_AXISSCALE_XY), helpstring("property AxisScale X->Y")] HRESULT AxisScaleX_Y([out, retval] float *pVal);
+		[propput, id(DISPID_AXISSCALE_XY), helpstring("property AxisScale X->Y")] HRESULT AxisScaleX_Y([in] float newVal);
+		[propget, id(DISPID_AXISSCALE_XZ), helpstring("property AxisScale X->Z")] HRESULT AxisScaleX_Z([out, retval] float *pVal);
+		[propput, id(DISPID_AXISSCALE_XZ), helpstring("property AxisScale X->Z")] HRESULT AxisScaleX_Z([in] float newVal);
+		[propget, id(DISPID_AXISSCALE_YX), helpstring("property AxisScale Y->X")] HRESULT AxisScaleY_X([out, retval] float *pVal);
+		[propput, id(DISPID_AXISSCALE_YX), helpstring("property AxisScale Y->X")] HRESULT AxisScaleY_X([in] float newVal);
+		[propget, id(DISPID_AXISSCALE_YZ), helpstring("property AxisScale Y->Z")] HRESULT AxisScaleY_Z([out, retval] float *pVal);
+		[propput, id(DISPID_AXISSCALE_YZ), helpstring("property AxisScale Y->Z")] HRESULT AxisScaleY_Z([in] float newVal);
+		[propget, id(DISPID_AXISSCALE_ZX), helpstring("property AxisScale Z->X")] HRESULT AxisScaleZ_X([out, retval] float *pVal);
+		[propput, id(DISPID_AXISSCALE_ZX), helpstring("property AxisScale Z->X")] HRESULT AxisScaleZ_X([in] float newVal);
+		[propget, id(DISPID_AXISSCALE_ZY), helpstring("property AxisScale Z->Y")] HRESULT AxisScaleZ_Y([out, retval] float *pVal);
+		[propput, id(DISPID_AXISSCALE_ZY), helpstring("property AxisScale Z->Y")] HRESULT AxisScaleZ_Y([in] float newVal);
+
+		[propget, id(DISPID_ROTRA1), helpstring("property Rot and Tra 1")] HRESULT RotAndTra0([out, retval] float *pVal);
+		[propput, id(DISPID_ROTRA1), helpstring("property Rot and Tra 1")] HRESULT RotAndTra0([in] float newVal);
+		[propget, id(DISPID_ROTRA2), helpstring("property Rot and Tra 2")] HRESULT RotAndTra1([out, retval] float *pVal);
+		[propput, id(DISPID_ROTRA2), helpstring("property Rot and Tra 2")] HRESULT RotAndTra1([in] float newVal);
+		[propget, id(DISPID_ROTRA3), helpstring("property Rot and Tra 3")] HRESULT RotAndTra2([out, retval] float *pVal);
+		[propput, id(DISPID_ROTRA3), helpstring("property Rot and Tra 3")] HRESULT RotAndTra2([in] float newVal);
+		[propget, id(DISPID_ROTRA4), helpstring("property Rot and Tra 4")] HRESULT RotAndTra3([out, retval] float *pVal);
+		[propput, id(DISPID_ROTRA4), helpstring("property Rot and Tra 4")] HRESULT RotAndTra3([in] float newVal);
+		[propget, id(DISPID_ROTRA5), helpstring("property Rot and Tra 5")] HRESULT RotAndTra4([out, retval] float *pVal);
+		[propput, id(DISPID_ROTRA5), helpstring("property Rot and Tra 5")] HRESULT RotAndTra4([in] float newVal);
+		[propget, id(DISPID_ROTRA6), helpstring("property Rot and Tra 6")] HRESULT RotAndTra5([out, retval] float *pVal);
+		[propput, id(DISPID_ROTRA6), helpstring("property Rot and Tra 6")] HRESULT RotAndTra5([in] float newVal);
+
+		[propget, id(IDC_COMBO1), helpstring("property Rot and Tra Type 1")] HRESULT RotAndTraType0([out, retval] RotAndTraTypeEnum *pVal);
+		[propput, id(IDC_COMBO1), helpstring("property Rot and Tra Type 1")] HRESULT RotAndTraType0([in] RotAndTraTypeEnum newVal);
+		[propget, id(IDC_COMBO2), helpstring("property Rot and Tra Type 2")] HRESULT RotAndTraType1([out, retval] RotAndTraTypeEnum *pVal);
+		[propput, id(IDC_COMBO2), helpstring("property Rot and Tra Type 2")] HRESULT RotAndTraType1([in] RotAndTraTypeEnum newVal);
+		[propget, id(IDC_COMBO3), helpstring("property Rot and Tra Type 3")] HRESULT RotAndTraType2([out, retval] RotAndTraTypeEnum *pVal);
+		[propput, id(IDC_COMBO3), helpstring("property Rot and Tra Type 3")] HRESULT RotAndTraType2([in] RotAndTraTypeEnum newVal);
+		[propget, id(IDC_COMBO4), helpstring("property Rot and Tra Type 4")] HRESULT RotAndTraType3([out, retval] RotAndTraTypeEnum *pVal);
+		[propput, id(IDC_COMBO4), helpstring("property Rot and Tra Type 4")] HRESULT RotAndTraType3([in] RotAndTraTypeEnum newVal);
+		[propget, id(IDC_COMBO5), helpstring("property Rot and Tra Type 5")] HRESULT RotAndTraType4([out, retval] RotAndTraTypeEnum *pVal);
+		[propput, id(IDC_COMBO5), helpstring("property Rot and Tra Type 5")] HRESULT RotAndTraType4([in] RotAndTraTypeEnum newVal);
+		[propget, id(IDC_COMBO6), helpstring("property Rot and Tra Type 6")] HRESULT RotAndTraType5([out, retval] RotAndTraTypeEnum *pVal);
+		[propput, id(IDC_COMBO6), helpstring("property Rot and Tra Type 6")] HRESULT RotAndTraType5([in] RotAndTraTypeEnum newVal);
+		/*
+		[propget, id(DISPID_ROTATION_X), helpstring("property Rotation X")] HRESULT Rotation_X([out, retval] float *pVal);
+		[propput, id(DISPID_ROTATION_X), helpstring("property Rotation X")] HRESULT Rotation_X([in] float newVal);
+		[propget, id(DISPID_ROTATION_Y), helpstring("property Rotation Y")] HRESULT Rotation_Y([out, retval] float *pVal);
+		[propput, id(DISPID_ROTATION_Y), helpstring("property Rotation Y")] HRESULT Rotation_Y([in] float newVal);
+		[propget, id(DISPID_ROTATION_Z), helpstring("property Rotation Z")] HRESULT Rotation_Z([out, retval] float *pVal);
+		[propput, id(DISPID_ROTATION_Z), helpstring("property Rotation Z")] HRESULT Rotation_Z([in] float newVal);
+		[propget, id(DISPID_TRANSPOSITION_X), helpstring("property Transposition X")] HRESULT Transposition_X([out, retval] float *pVal);
+		[propput, id(DISPID_TRANSPOSITION_X), helpstring("property Transposition X")] HRESULT Transposition_X([in] float newVal);
+		[propget, id(DISPID_TRANSPOSITION_Y), helpstring("property Transposition Y")] HRESULT Transposition_Y([out, retval] float *pVal);
+		[propput, id(DISPID_TRANSPOSITION_Y), helpstring("property Transposition Y")] HRESULT Transposition_Y([in] float newVal);
+		[propget, id(DISPID_TRANSPOSITION_Z), helpstring("property Transposition Z")] HRESULT Transposition_Z([out, retval] float *pVal);
+		[propput, id(DISPID_TRANSPOSITION_Z), helpstring("property Transposition Z")] HRESULT Transposition_Z([in] float newVal);*/
+		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+
+	};
+
+	[
+	uuid(99BDCE95-9BD2-42D6-B1F9-1DF8317932C0),
+	]
+	dispinterface IPrimitiveEvents
+	{
+	properties:
+	methods:
+		[id(DISPID_GameEvents_Init)]  void Init();
+		[id(DISPID_TimerEvents_Timer)]  void Timer();
+		[id(DISPID_HitEvents_Hit)]  void Hit();
+		[id(DISPID_LimitEvents_EOS)]  void LimitEOS( [in] float parm);
+		[id(DISPID_LimitEvents_BOS)]  void LimitBOS( [in] float parm);
+	}
 
 	//////////////////////////////
 	////// Gate
@@ -1870,4 +1993,14 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[default] interface IComControl;
 		[default, source]  dispinterface IComControlEvents;
 	};
+
+	[
+		uuid(FFA76BF2-B558-4EF6-AA81-5FDC5F71CFE8),
+		helpstring("Primitive Class")
+	]
+	coclass Primitive
+	{
+		[default] interface IPrimitive;
+	};
+
 };
