@@ -39,53 +39,53 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
 	// sides
 	hr = GetRegInt("DefaultProps\\Primitive","Sides", &iTmp);
-	m_d.m_Sides = (hr == S_OK) ? iTmp : 4;
+	m_d.m_Sides = (hr == S_OK) && fromMouseClick ? iTmp : 4;
 
 
 	// colors
 	hr = GetRegInt("DefaultProps\\Primitive", "TopColor", &iTmp);
-	m_d.m_TopColor = (hr == S_OK) ? iTmp : RGB(100,100,100);
+	m_d.m_TopColor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(100,100,100);
 	hr = GetRegInt("DefaultProps\\Primitive", "TopColor", &iTmp);
-	m_d.m_TopColor = (hr == S_OK) ? iTmp : RGB(150,150,150);
+	m_d.m_TopColor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(150,150,150);
 
 	// visible
 	hr = GetRegInt("DefaultProps\\Primitive", "TopVisible", &iTmp);
-	m_d.m_TopVisible = (hr == S_OK) ? (iTmp==1) : true;
+	m_d.m_TopVisible = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
 	hr = GetRegInt("DefaultProps\\Primitive", "SideVisible", &iTmp);
-	m_d.m_SideVisible = (hr == S_OK) ? (iTmp==1) : true;
+	m_d.m_SideVisible = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
 
 	// Draw Texztures inside
 	hr = GetRegInt("DefaultProps\\Primitive", "DrawTexturesInside", &iTmp);
-	m_d.m_DrawTexturesInside = (hr == S_OK) ? (iTmp==1) : true;
+	m_d.m_DrawTexturesInside = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
 	// Smooth Side Normals
 	hr = GetRegInt("DefaultProps\\Primitive", "SmoothSideNormals", &iTmp);
-	m_d.m_SmoothSideNormals = (hr == S_OK) ? (iTmp==1) : true;
+	m_d.m_SmoothSideNormals = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
 
 	// Position (X and Y is already set by the click of the user)
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","Position_Z", &fTmp);
-	m_d.m_vPosition.z = (hr == S_OK) ? fTmp : 0;
+	m_d.m_vPosition.z = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 
 	// Size
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","Size_X", &fTmp);
-	m_d.m_vSize.x = (hr == S_OK) ? fTmp : 100;
+	m_d.m_vSize.x = (hr == S_OK) && fromMouseClick ? fTmp : 100;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","Size_Y", &fTmp);
-	m_d.m_vSize.y = (hr == S_OK) ? fTmp : 100;
+	m_d.m_vSize.y = (hr == S_OK) && fromMouseClick ? fTmp : 100;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","Size_Z", &fTmp);
-	m_d.m_vSize.z = (hr == S_OK) ? fTmp : 100;
+	m_d.m_vSize.z = (hr == S_OK) && fromMouseClick ? fTmp : 100;
 
 	// Axis Scale
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_X_Y", &fTmp);
-	m_d.m_vAxisScaleX.y = (hr == S_OK) ? fTmp : 1;
+	m_d.m_vAxisScaleX.y = (hr == S_OK) && fromMouseClick ? fTmp : 1;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_X_Z", &fTmp);
-	m_d.m_vAxisScaleX.z = (hr == S_OK) ? fTmp : 1;
+	m_d.m_vAxisScaleX.z = (hr == S_OK) && fromMouseClick ? fTmp : 1;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_Y_X", &fTmp);
-	m_d.m_vAxisScaleY.x = (hr == S_OK) ? fTmp : 1;
+	m_d.m_vAxisScaleY.x = (hr == S_OK) && fromMouseClick ? fTmp : 1;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_Y_Z", &fTmp);
-	m_d.m_vAxisScaleY.z = (hr == S_OK) ? fTmp : 1;
+	m_d.m_vAxisScaleY.z = (hr == S_OK) && fromMouseClick ? fTmp : 1;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_Z_X", &fTmp);
-	m_d.m_vAxisScaleZ.x = (hr == S_OK) ? fTmp : 1;
+	m_d.m_vAxisScaleZ.x = (hr == S_OK) && fromMouseClick ? fTmp : 1;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_Z_Y", &fTmp);
-	m_d.m_vAxisScaleZ.y = (hr == S_OK) ? fTmp : 1;
+	m_d.m_vAxisScaleZ.y = (hr == S_OK) && fromMouseClick ? fTmp : 1;
 	m_d.m_vAxisScaleX.x = 1.0f;
 	m_d.m_vAxisScaleY.y = 1.0f;
 	m_d.m_vAxisScaleZ.z = 1.0f;
@@ -93,31 +93,31 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
 	// Rotation and Transposistion
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra0", &fTmp);
-	m_d.m_aRotAndTra[0] = (hr == S_OK) ? fTmp : 0;
+	m_d.m_aRotAndTra[0] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra1", &fTmp);
-	m_d.m_aRotAndTra[1] = (hr == S_OK) ? fTmp : 0;
+	m_d.m_aRotAndTra[1] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra2", &fTmp);
-	m_d.m_aRotAndTra[2] = (hr == S_OK) ? fTmp : 0;
+	m_d.m_aRotAndTra[2] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra3", &fTmp);
-	m_d.m_aRotAndTra[3] = (hr == S_OK) ? fTmp : 0;
+	m_d.m_aRotAndTra[3] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra4", &fTmp);
-	m_d.m_aRotAndTra[4] = (hr == S_OK) ? fTmp : 0;
+	m_d.m_aRotAndTra[4] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra5", &fTmp);
-	m_d.m_aRotAndTra[5] = (hr == S_OK) ? fTmp : 0;
+	m_d.m_aRotAndTra[5] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 
 
 	hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType0", &iTmp);
-	m_d.m_aRotAndTraTypes[0] = (hr == S_OK) ? (enum RotAndTraTypeEnum)iTmp : RotX;
+	m_d.m_aRotAndTraTypes[0] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : RotX;
 	hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType1", &iTmp);
-	m_d.m_aRotAndTraTypes[1] = (hr == S_OK) ? (enum RotAndTraTypeEnum)iTmp : RotY;
+	m_d.m_aRotAndTraTypes[1] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : RotY;
 	hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType2", &iTmp);
-	m_d.m_aRotAndTraTypes[2] = (hr == S_OK) ? (enum RotAndTraTypeEnum)iTmp : RotZ;
+	m_d.m_aRotAndTraTypes[2] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : RotZ;
 	hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType3", &iTmp);
-	m_d.m_aRotAndTraTypes[3] = (hr == S_OK) ? (enum RotAndTraTypeEnum)iTmp : TraX;
+	m_d.m_aRotAndTraTypes[3] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : TraX;
 	hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType4", &iTmp);
-	m_d.m_aRotAndTraTypes[4] = (hr == S_OK) ? (enum RotAndTraTypeEnum)iTmp : TraY;
+	m_d.m_aRotAndTraTypes[4] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : TraY;
 	hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType5", &iTmp);
-	m_d.m_aRotAndTraTypes[5] = (hr == S_OK) ? (enum RotAndTraTypeEnum)iTmp : TraZ;
+	m_d.m_aRotAndTraTypes[5] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : TraZ;
 	/*
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","Rotation_X", &fTmp);
 	m_d.m_vRotation.x = (hr == S_OK) ? fTmp : 0;
@@ -136,7 +136,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 	*/
 
 	hr = GetRegString("DefaultProps\\Primitive","Image", m_d.m_szImage, MAXTOKEN);
-	if (hr != S_OK)
+	if ((hr != S_OK) && fromMouseClick)
 		m_d.m_szImage[0] = 0;
 
 
