@@ -15,7 +15,7 @@
 class PrimitiveData
 	{
 public:
-	
+
 	//Vertex2D m_vCenter;
 	
 	//external Variables
@@ -61,6 +61,14 @@ class Primitive :
 	public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
+	static const int Max_Primitive_Sides = 100;
+
+	Vertex3D rgv3DTopOriginal[Max_Primitive_Sides];
+	Vertex3D rgv3DTop[Max_Primitive_Sides];
+	WORD wTopIndices[Max_Primitive_Sides];
+	Vertex3D rgv3DBottomOriginal[Max_Primitive_Sides];
+	Vertex3D rgv3DBottom[Max_Primitive_Sides];
+	WORD wBottomIndices[Max_Primitive_Sides];
 
 	STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Sides)(/*[in]*/ int newVal);
@@ -186,6 +194,11 @@ public:
 	Vector<Vertex3D> verticesTop;
 	Vector<Vertex3D> verticesBottom;
 	void RecalculateVertices();
+	void CalculateRealTimeOriginal();
+	void CalculateRealTime();
+	
+	Matrix3D fullMatrix;
+	void RecalculateMatrices();
 
 	RECT m_rcBounds; // For testing against lights
 

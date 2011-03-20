@@ -138,10 +138,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
 	hr = GetRegString("DefaultProps\\Primitive","Image", m_d.m_szImage, MAXTOKEN);
 	if ((hr != S_OK) && fromMouseClick)
 		m_d.m_szImage[0] = 0;
-
-
-
-
 	}
 
 void Primitive::WriteRegDefaults()
@@ -232,6 +228,10 @@ void Primitive::GetTimers(Vector<HitTimer> *pvht)
 
 void Primitive::GetHitShapes(Vector<HitObject> *pvho)
 	{
+		// Here the hitshapes have to be added... lets look at other implementations.
+		// OK, i need a hitprimitive class and a hitanimobject class.
+		// the hitprimitive class should add itself to the HitObjectVector.
+		// i think i have to look at easy hit objects and then at ramps hitobjects.
 	}
 
 void Primitive::GetHitShapesDebug(Vector<HitObject> *pvho)
@@ -250,42 +250,15 @@ void Primitive::EndPlay()
 // Calculation
 //////////////////////////////
 
-void Primitive::RecalculateVertices() 
+void Primitive::RecalculateMatrices()
 {
-	verticesTop.RemoveAllElements();
-	verticesBottom.RemoveAllElements();
-	const float outherRadius = 0.5f/(cosf((float)M_PI/m_d.m_Sides));
-	float currentAngle = (float)(2*M_PI/(m_d.m_Sides*2));
-	const float addAngle = (float)(2*M_PI/(m_d.m_Sides));
-	for (int i = 0; i < m_d.m_Sides; i++)
-	{
-		Vertex3D *topVert;
-		topVert = new Vertex3D();
-		topVert->z = 0.5f;
-		topVert->x = -sinf(currentAngle)*outherRadius;
-		topVert->y = -cosf(currentAngle)*outherRadius;
-		verticesTop.AddElement(topVert);
-		Vertex3D *bottomVert;
-		bottomVert = new Vertex3D();
-		bottomVert->z = -0.5f;
-		bottomVert->x = -sinf (currentAngle)*outherRadius;
-		bottomVert->y = -cosf(currentAngle)*outherRadius;
-		verticesBottom.AddElement(bottomVert);
-		currentAngle += addAngle;
-	}
 	// scale matrix
 	Matrix3D Smatrix;
 	Smatrix.SetIdentity();
 	Smatrix._11 = m_d.m_vSize.x;
 	Smatrix._22 = m_d.m_vSize.y;
 	Smatrix._33 = m_d.m_vSize.z;
-	/*
-	// rotation Matrices
-	Matrix3D RXmatrix, RYmatrix, RZmatrix;
-	RXmatrix.RotateXMatrix(ANGTORAD(m_d.m_vRotation.x));
-	RYmatrix.RotateYMatrix(ANGTORAD(m_d.m_vRotation.y));
-	RZmatrix.RotateZMatrix(ANGTORAD(m_d.m_vRotation.z));
-	*/
+
 	// transform matrix
 	Matrix3D Tmatrix;
 	Tmatrix.SetIdentity();
@@ -293,19 +266,7 @@ void Primitive::RecalculateVertices()
 	Tmatrix._42 = m_d.m_vPosition.y;
 	Tmatrix._43 = m_d.m_vPosition.z;
 	
-	/*
-	//Transposition matrix
-	Vertex3D *Transposition;
-	Transposition = new Vertex3D();
-	RXmatrix.MultiplyVector(m_d.m_vTransposition.x,m_d.m_vTransposition.y,m_d.m_vTransposition.z, Transposition);
-	RYmatrix.MultiplyVector(Transposition->x,Transposition->y,Transposition->z, Transposition);
-	RZmatrix.MultiplyVector(Transposition->x,Transposition->y,Transposition->z, Transposition);
-	Matrix3D TPmatrix;
-	TPmatrix.SetIdentity();
-	TPmatrix._41 = Transposition->x;
-	TPmatrix._42 = Transposition->y;
-	TPmatrix._43 = Transposition->z;
-	*/
+
 	Matrix3D RTmatrix;
 	RTmatrix.SetIdentity();
 	for (int i = 5; i >= 0; i--)
@@ -338,18 +299,40 @@ void Primitive::RecalculateVertices()
 		tempMatrix.Multiply(RTmatrix, RTmatrix);
 	}
 
-	Matrix3D fullMatrix;
 	fullMatrix = Smatrix;
-	/*
-	RXmatrix.Multiply(fullMatrix, fullMatrix);
-	RYmatrix.Multiply(fullMatrix, fullMatrix);
-	RZmatrix.Multiply(fullMatrix, fullMatrix);
-	*/
+
 	RTmatrix.Multiply(fullMatrix, fullMatrix);
 	Tmatrix.Multiply(fullMatrix, fullMatrix);
-	/*
-	TPmatrix.Multiply(fullMatrix, fullMatrix);
-	*/
+
+
+}
+
+void Primitive::RecalculateVertices() 
+{
+	verticesTop.RemoveAllElements();
+	verticesBottom.RemoveAllElements();
+	const float outherRadius = 0.5f/(cosf((float)M_PI/m_d.m_Sides));
+	float currentAngle = (float)(2*M_PI/(m_d.m_Sides*2));
+	const float addAngle = (float)(2*M_PI/(m_d.m_Sides));
+	for (int i = 0; i < m_d.m_Sides; i++)
+	{
+		Vertex3D *topVert;
+		topVert = new Vertex3D();
+		topVert->z = 0.5f;
+		topVert->x = -sinf(currentAngle)*outherRadius;
+		topVert->y = -cosf(currentAngle)*outherRadius;
+		verticesTop.AddElement(topVert);
+		Vertex3D *bottomVert;
+		bottomVert = new Vertex3D();
+		bottomVert->z = -0.5f;
+		bottomVert->x = -sinf (currentAngle)*outherRadius;
+		bottomVert->y = -cosf(currentAngle)*outherRadius;
+		verticesBottom.AddElement(bottomVert);
+		currentAngle += addAngle;
+	}
+
+	RecalculateMatrices();
+
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
 		Vertex3D *topVert, *bottomVert;
@@ -415,22 +398,204 @@ void Primitive::Render(Sur *psur)
 
 }
 
+WORD rgiPrimStatic0[4] = {0,1,2,3};
+WORD rgiPrimStatic1[4] = {0,3,2,1};
+
+void Primitive::CalculateRealTimeOriginal()
+{
+	const float outherRadius = 0.5f/(cosf((float)M_PI/m_d.m_Sides));
+	float currentAngle = (float)(2*M_PI/(m_d.m_Sides*2));
+	const float addAngle = (float)(2*M_PI/(m_d.m_Sides));
+	for (int i = 0; i < m_d.m_Sides; i++)
+	{
+		Vertex3D *topVert;
+		topVert = &rgv3DTopOriginal[i];
+		topVert->z = 0.5f;
+		topVert->x = -sinf(currentAngle)*outherRadius;
+		topVert->y = -cosf(currentAngle)*outherRadius;
+		topVert->tu = (topVert->x + 1)/2;
+		topVert->tv = (topVert->y + 1)/2;
+		
+		Vertex3D *bottomVert;
+		bottomVert = &rgv3DBottomOriginal[i];
+		bottomVert->z = -0.5f;
+		bottomVert->x = -sinf (currentAngle)*outherRadius;
+		bottomVert->y = -cosf(currentAngle)*outherRadius;
+		bottomVert->tu = (bottomVert->x + 1)/2;
+		bottomVert->tv = (bottomVert->y + 1)/2;
+		
+		currentAngle += addAngle;
+	}
+
+}
+void Primitive::CalculateRealTime()
+{
+	RecalculateMatrices();
+
+	for (int i = 0; i < m_d.m_Sides; i++)
+	{
+		Vertex3D *topVert, *bottomVert;
+		topVert = &rgv3DTop[i];
+		topVert->x = rgv3DTopOriginal[i].x;
+		topVert->y = rgv3DTopOriginal[i].y;
+		topVert->z = rgv3DTopOriginal[i].z;
+		topVert->tu = rgv3DTopOriginal[i].tu;
+		topVert->tv = rgv3DTopOriginal[i].tv;
+		topVert->nx = 0;
+		topVert->ny = 0;
+		topVert->nz = -1;
+		topVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1)*(topVert->x+0.5f);
+		topVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1)*(topVert->x+0.5f);
+		topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1)*(topVert->y+0.5f);
+		topVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1)*(topVert->y+0.5f);
+		topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1)*(topVert->z+0.5f);
+		topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1)*(topVert->z+0.5f);
+		fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
+		bottomVert = &rgv3DBottom[i];
+		bottomVert->x = rgv3DBottomOriginal[i].x;
+		bottomVert->y = rgv3DBottomOriginal[i].y;
+		bottomVert->z = rgv3DBottomOriginal[i].z;
+		bottomVert->tu = rgv3DBottomOriginal[i].tu;
+		bottomVert->tv = rgv3DBottomOriginal[i].tv;
+		bottomVert->nx = 0;
+		bottomVert->ny = 0;
+		bottomVert->nz = -1;
+		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1)*(bottomVert->x+0.5f);
+		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1)*(bottomVert->x+0.5f);
+		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1)*(bottomVert->y+0.5f);
+		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1)*(bottomVert->y+0.5f);
+		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1)*(bottomVert->z+0.5f);
+		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1)*(bottomVert->z+0.5f);
+		fullMatrix.MultiplyVector(bottomVert->x, bottomVert->y, bottomVert->z, bottomVert);
+	}
+}
+
 //3d
 void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+{
+	CalculateRealTimeOriginal();
+	CalculateRealTime();
+
+	// This is the drawing function we need... Realtime drawing.
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	RECT * rect;
+	rect = new RECT();
+	rect->left = 100;
+	rect->right = 1000;
+	rect->top = 100;
+	rect->bottom = 700;
+	g_pplayer->InvalidateRect(rect);
+
+	g_pplayer->m_ptable->SetDirtyDraw();
+
+	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+	float maxtu = 0;
+	float maxtv = 0;
+
+	D3DMATERIAL7 mtrl;
+	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	mtrl.power = 0;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+
+	if (m_d.m_TopVisible)
 	{
+		if (pin)
+		{
+			// OK, Top is visible, and we have a image
+			//lets draw
+			pin->EnsureColorKey();
+
+			pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);     //rlc  alpha channel support
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+			
+			
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+
+			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+
+			mtrl.diffuse.r = mtrl.ambient.r =
+			mtrl.diffuse.g = mtrl.ambient.g =
+			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+		}
+		else
+		{
+			const float r = (m_d.m_TopColor & 255) * (float)(1.0/255.0);
+			const float g = (m_d.m_TopColor & 65280) * (float)(1.0/65280.0);
+			const float b = (m_d.m_TopColor & 16711680) * (float)(1.0/16711680.0);
+
+			mtrl.diffuse.r = mtrl.ambient.r = r;
+			mtrl.diffuse.g = mtrl.ambient.g = g;
+			mtrl.diffuse.b = mtrl.ambient.b = b;
+		}
+		pd3dDevice->SetMaterial(&mtrl);
+
+		Vertex3D rgv3D[4];
+
+		rgv3D[0].x = 300;
+		rgv3D[0].y = 700;
+		rgv3D[0].z = 100;
+		rgv3D[1].x = 300;
+		rgv3D[1].y = 1090;
+		rgv3D[1].z = 100;
+		rgv3D[2].x = 690;
+		rgv3D[2].y = 1090;
+		rgv3D[2].z = 100;
+		rgv3D[3].x = 690;
+		rgv3D[3].y = 700;
+		rgv3D[3].z = 100;
+
+		rgv3D[0].tu = 0;
+		rgv3D[0].tv = 0;
+		rgv3D[1].tu = 0;
+		rgv3D[1].tv = 1;
+		rgv3D[2].tu = 1;
+		rgv3D[2].tv = 1;
+		rgv3D[3].tu = 1;
+		rgv3D[3].tv = 0;
+
+		rgv3D[0].nx = 0;
+		rgv3D[0].ny = 0;
+		rgv3D[0].nz = -1;
+		rgv3D[1].nx = 0;
+		rgv3D[1].ny = 0;
+		rgv3D[1].nz = -1;
+		rgv3D[2].nx = 0;
+		rgv3D[2].ny = 0;
+		rgv3D[2].nz = -1;
+		rgv3D[3].nx = 0;
+		rgv3D[3].ny = 0;
+		rgv3D[3].nz = -1;
+		
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DTop, 4,rgiPrimStatic0, 4, 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DTop, 4,rgiPrimStatic1, 4, 0);
+
 	}
+}
 
 void Primitive::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 	
+//seems to be called to set up the initial backbuffer
+void Primitive::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+	{
+	}
+
 void Primitive::RenderMoversFromCache(Pin3D *ppin3d)
 	{
 	}
 
-void Primitive::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	}
 
 //////////////////////////////
 // Positioning
@@ -720,12 +885,14 @@ STDMETHODIMP Primitive::get_Sides(int *pVal)
 
 STDMETHODIMP Primitive::put_Sides(int newVal)
 {
+	if (newVal <= Max_Primitive_Sides)
+	{
 	STARTUNDO
 
-	m_d.m_Sides = newVal;
-	RecalculateVertices();
-
+		m_d.m_Sides = newVal;
+		RecalculateVertices();
 	STOPUNDO
+	}
 
 	return S_OK;
 }
