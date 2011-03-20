@@ -232,6 +232,10 @@ void Primitive::GetHitShapes(Vector<HitObject> *pvho)
 		// OK, i need a hitprimitive class and a hitanimobject class.
 		// the hitprimitive class should add itself to the HitObjectVector.
 		// i think i have to look at easy hit objects and then at ramps hitobjects.
+		HitPrimitive * pHitPrimitive = new HitPrimitive();
+		pvho->AddElement(pHitPrimitive);
+	
+
 	}
 
 void Primitive::GetHitShapesDebug(Vector<HitObject> *pvho)
@@ -478,6 +482,7 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	// This is the drawing function we need... Realtime drawing.
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	/*
 	RECT * rect;
 	rect = new RECT();
 	rect->left = 100;
@@ -485,6 +490,7 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	rect->top = 100;
 	rect->bottom = 700;
 	g_pplayer->InvalidateRect(rect);
+	*/
 
 	g_pplayer->m_ptable->SetDirtyDraw();
 
