@@ -2508,7 +2508,7 @@ void Player::Render()
 	}
 
 	// Draw the acrylics (now alphas).
-	if (g_pvp->m_pdd.m_fHardwareAccel)
+	//if (g_pvp->m_pdd.m_fHardwareAccel)
 		DrawAcrylics();
 
 	// Check if we should turn animate the plunger light.
