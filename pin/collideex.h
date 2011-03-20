@@ -2,6 +2,34 @@
 class Surface;
 class Level;
 
+class PrimitiveAnimObject : public AnimObject
+{
+	//m_fInvalid, Check3D and m_rcBounds
+public:
+	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
+	virtual BOOL FMover() {return fTrue;}
+	virtual void Check3D();
+
+	BOOL m_fVisible;
+	BOOL m_fDisabled;
+};
+
+class HitPrimitive : public HitObject
+{
+public:
+	HitPrimitive();
+
+	virtual AnimObject *GetAnimObject() {return &m_primitiveAnim;}
+	PrimitiveAnimObject m_primitiveAnim;
+
+	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual int GetType() {return ePrimitive;}
+	virtual void Draw(HDC hdc);
+	virtual void CalcHitRect();
+
+};
+
 class BumperAnimObject : public AnimObject
 	{
 public:

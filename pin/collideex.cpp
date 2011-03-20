@@ -1,5 +1,43 @@
 #include "stdafx.h"
 
+HitPrimitive::HitPrimitive()
+{
+	m_primitiveAnim.m_fVisible = fTrue;
+	m_primitiveAnim.m_fDisabled = fFalse;
+	m_elasticity = 0.3f;
+	m_antifriction = 1.0f;
+	m_scatter = 0;
+}
+
+float HitPrimitive::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
+{
+	return -1.0f;	
+}
+
+void HitPrimitive::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
+{
+
+}
+
+void HitPrimitive::Draw(HDC hdc)
+{
+}
+
+void PrimitiveAnimObject::Check3D()
+	{
+		m_fInvalid = fTrue;
+		
+		m_rcBounds.top = 100;
+		m_rcBounds.left = 100;
+
+		m_rcBounds.right = 1600;
+		m_rcBounds.bottom = 800;
+		
+	}
+
+void HitPrimitive::CalcHitRect()
+{
+}
 
 BumperHitCircle::BumperHitCircle()
 	{
@@ -16,6 +54,8 @@ BumperHitCircle::BumperHitCircle()
 		m_bumperanim.m_pobjframe[i] = NULL;
 		}
 	}
+
+
 
 BumperHitCircle::~BumperHitCircle()
 	{
