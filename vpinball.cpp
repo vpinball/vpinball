@@ -330,14 +330,18 @@ void VPinball::Init()
 
 	SetEnableToolbar();
 	SetEnableMenuItems();
+
 	UpdateRecentFileList(NULL);							// update the recent loaded file list
 
     wintimer_init();									// calibrate the timer routines
+
 	//slintf_init();									// initialize debug console (can be popupped by the following command)
 														// slintf_popup_console();
 														// see slintf.cpp
 	//slintf_popup_console();
 	//slintf("Debug output:\n");
+
+
 	
 	}
 
@@ -1492,6 +1496,8 @@ void VPinball::LoadFile()
 //	hr = SetRegValue("RecentDir","LoadDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 //<<<
 	LoadFileName(szFileName);
+
+
 	}
 
 void VPinball::LoadFileName(char *szFileName)
@@ -1860,9 +1866,9 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 			if (m_szRecentTableList[i][0] == 0x00) break;
 			// write entry to the registry
 			sprintf_s(szRegName, "TableFileName%d", i);
-			SetRegValue("RecentDir", szRegName, REG_SZ, m_szRecentTableList[i], strlen(m_szRecentTableList[i]));
+			SetRegValue("RecentDir", szRegName, REG_SZ, m_szRecentTableList[i], strlen(m_szRecentTableList[i])+1);
 			}
-		} // (szfilename != NULL)
+		} 
 
    	// update the file menu to contain the last n recent loaded files
 	// must be at least 1 recent file in the list

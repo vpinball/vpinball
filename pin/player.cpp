@@ -871,6 +871,14 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	///// (List of movers which can be blitted at any time)
 	/////////////////////////
 
+	// Cupid for Primitives: 
+	// seems to me that this is the place, where Animobjects schould be added to the m_vscreenupdate vector.
+	// But the prioblem is that primitives should have an animobject first.
+	// Primitives should respond to GetAnimObject now.
+	// No, they dont respond to GetAnimObject and all the other elements dont either...
+	// So there must be another place, where m_vho is filled... m_vho seems to be a hitobject... what does
+	// this have to do with animobjects.
+
 	for (int i=0;i<m_vho.Size();i++)
 		{
 		if (m_vho.ElementAt(i)->GetAnimObject() != NULL)
@@ -1116,7 +1124,8 @@ void Player::InitStatic(HWND hwndProgress)
 	// Draw stuff
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
-		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal && m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemKicker)
+		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal && 
+			m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemKicker)
 			{
 			Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 			if (ph)
@@ -2258,6 +2267,7 @@ void Player::Render()
 #else // GDIDRAW
 
 	// Check all elements that could possibly need updating.
+	// cupid for primitives: OK, i need my primitives in here... And they need to understand m_fInvalid, Check3D and m_rcBounds
 	for (int i=0;i<m_vscreenupdate.Size();i++)
 	{
 		// Check if the element is invalid (its frame changed).
@@ -2302,6 +2312,22 @@ void Player::Render()
 
 	// Initialize all invalid regions by resetting the region (basically clear) 
 	// it with the contents of the static buffer.
+
+	// cupid for primitives:
+	// If i call InvalidateRect here, with a big enough rect, all is displayed correctly... 
+	// If I call it from the render process in Primitives, that does not work, since it is 
+	// called via drawacrylics, about 200 Lines down. So i have to get this done before.
+	// that seems to have something to do with m_vscreenupdate ... So lets look where this gets filled.
+	/*
+	RECT * rect;
+	rect = new RECT();
+	rect->left = 100;
+	rect->right = 1700;
+	rect->top = 100;
+	rect->bottom = 700;			
+	InvalidateRect(rect);
+	*/
+
 	for (int i=0;i<m_vupdaterect.Size();i++)
 		{
 		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
@@ -2315,7 +2341,8 @@ void Player::Render()
 			m_pin3d.m_pddsZBuffer->Blt(prc, m_pin3d.m_pddsStaticZ, prc, 0, NULL);
 			}
 		}
-
+	
+	
 
 	// Start rendering the next frame.
 	hr = m_pin3d.m_pd3dDevice->BeginScene();
@@ -2370,6 +2397,7 @@ void Player::Render()
 	{
 		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
 		
+
 		// Process all objects associated with this region.
 		for (int l=0;l<pur->m_vobject.Size();l++)
 		{
@@ -4112,7 +4140,22 @@ void Player::DrawAcrylics ()
 		// Draw acrylic ramps (they have transparency, so they have to be drawn last).
 		for (int i=0;i<m_ptable->m_vedit.Size();i++)
 			{
-			if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp)
+				if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp ||
+					m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
+				{
+				Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+				if (ph)
+					{
+					ph->PostRenderStatic(m_pin3d.m_pd3dDevice);
+					}
+				}
+			}
+		}
+	else
+		{
+		for (int i=0;i<m_ptable->m_vedit.Size();i++)
+			{
+				if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
 				{
 				Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 				if (ph)
