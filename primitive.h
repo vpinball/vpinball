@@ -63,12 +63,6 @@ class Primitive :
 public:
 	static const int Max_Primitive_Sides = 100;
 
-	Vertex3D rgv3DTopOriginal[Max_Primitive_Sides];
-	Vertex3D rgv3DTop[Max_Primitive_Sides];
-	WORD wTopIndices[Max_Primitive_Sides];
-	Vertex3D rgv3DBottomOriginal[Max_Primitive_Sides];
-	Vertex3D rgv3DBottom[Max_Primitive_Sides];
-	WORD wBottomIndices[Max_Primitive_Sides];
 
 	STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Sides)(/*[in]*/ int newVal);
@@ -191,8 +185,24 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 
 	PrimitiveData m_d;
 public:
+
+	// Vertices for 3d Display
+	Vertex3D rgv3DTopOriginal[Max_Primitive_Sides]; // without transformation
+	Vertex3D rgv3DTop[Max_Primitive_Sides]; // with transformation
+	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of aech point could be a triangle (*3) and for both sides because of culling (*2)
+	Vertex3D rgv3DBottomOriginal[Max_Primitive_Sides];
+	Vertex3D rgv3DBottom[Max_Primitive_Sides];
+	WORD wBottomIndices[Max_Primitive_Sides*6];
+
+	// is top behind bottom?
+	bool topBehindBottom;
+	int farthestIndex;
+
+	// Vertices for editor display
 	Vector<Vertex3D> verticesTop;
 	Vector<Vertex3D> verticesBottom;
+
+
 	void RecalculateVertices();
 	void CalculateRealTimeOriginal();
 	void CalculateRealTime();
@@ -204,7 +214,7 @@ public:
 
 	PinImage m_pinimage;
 	float m_leading, m_descent;
-
+	float maxtu, maxtv;
 	float m_realwidth, m_realheight;
 };
 
