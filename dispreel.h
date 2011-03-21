@@ -130,8 +130,8 @@ private:
     IFont       *m_pIFontPlay;     // Our font, scaled to match play window resolution
     Vector<ObjFrame>    m_vreelframe;     // the generated reel frame which contains the individual reel graphics
 
-    int         m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
-    int         m_reeldigitheight;
+    float         m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
+    float         m_reeldigitheight;
     int         m_timenextupdate;
     bool        m_fforceupdate;
 	COLORREF	m_rgbImageTransparent;

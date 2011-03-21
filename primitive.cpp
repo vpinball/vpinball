@@ -244,10 +244,12 @@ void Primitive::GetHitShapesDebug(Vector<HitObject> *pvho)
 
 void Primitive::EndPlay()
 	{
+		/*
 	if (m_pinimage.m_pdsBuffer)
 		{
 		m_pinimage.FreeStuff();
 		}
+		*/
 	}
 
 //////////////////////////////
@@ -402,39 +404,69 @@ void Primitive::Render(Sur *psur)
 
 }
 
-WORD rgiPrimStatic0[4] = {0,1,2,3};
-WORD rgiPrimStatic1[4] = {0,3,2,1};
+WORD rgiPrimStatic0[5] = {0,1,2,3,4};
+WORD rgiPrimStatic1[5] = {4,3,2,1,0};
 
 void Primitive::CalculateRealTimeOriginal()
 {
 	const float outherRadius = 0.5f/(cosf((float)M_PI/m_d.m_Sides));
 	float currentAngle = (float)(2*M_PI/(m_d.m_Sides*2));
 	const float addAngle = (float)(2*M_PI/(m_d.m_Sides));
+	float minX = 10000;
+	float maxX = -10000;
+	float minY = 10000;
+	float maxY = -10000;
+
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
 		Vertex3D *topVert;
 		topVert = &rgv3DTopOriginal[i];
 		topVert->z = 0.5f;
 		topVert->x = -sinf(currentAngle)*outherRadius;
-		topVert->y = -cosf(currentAngle)*outherRadius;
-		topVert->tu = (topVert->x + 1)/2;
-		topVert->tv = (topVert->y + 1)/2;
-		
+		topVert->y = -cosf(currentAngle)*outherRadius;		
 		Vertex3D *bottomVert;
 		bottomVert = &rgv3DBottomOriginal[i];
 		bottomVert->z = -0.5f;
-		bottomVert->x = -sinf (currentAngle)*outherRadius;
-		bottomVert->y = -cosf(currentAngle)*outherRadius;
-		bottomVert->tu = (bottomVert->x + 1)/2;
-		bottomVert->tv = (bottomVert->y + 1)/2;
+		bottomVert->x = topVert->x;
+		bottomVert->y = topVert->y;
+		if (topVert->x < minX)
+			minX = topVert->x;
+		if (topVert->x > maxX)
+			maxX = topVert->x;
+		if (topVert->y < minY)
+			minY = topVert->y;
+		if (topVert->y > maxY)
+			maxY = topVert->y;
 		
 		currentAngle += addAngle;
 	}
 
+	for (int i = 0; i < m_d.m_Sides; i++)
+	{
+		Vertex3D *topVert;
+		topVert = &rgv3DTopOriginal[i];
+		topVert->tu = ((topVert->x - minX)/(maxX-minX))*maxtu;
+		topVert->tv = ((topVert->y - minY)/(maxY-minY))*maxtv;
+
+		Vertex3D *bottomVert;
+		bottomVert = &rgv3DBottomOriginal[i];
+		bottomVert->tu = topVert->tu;
+		bottomVert->tv = topVert->tv;
+	}
 }
 void Primitive::CalculateRealTime()
 {
 	RecalculateMatrices();
+	// y at top is 0
+	// get inclination via m_ptable->m_inclination
+	// get layback via m_ptable->m_layback
+	// if incl = 0, the less Z, the farther away
+	// if incl = 90, the less Y, the farther away
+	// we could add layback here, but i don't think this would really impact much here.
+	const float zMultiplicator = cosf(ANGTORAD(m_ptable->m_inclination));
+	const float yMultiplicator = sinf(ANGTORAD(m_ptable->m_inclination));
+	float farthest = 10000;
+
 
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
@@ -471,12 +503,44 @@ void Primitive::CalculateRealTime()
 		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1)*(bottomVert->z+0.5f);
 		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1)*(bottomVert->z+0.5f);
 		fullMatrix.MultiplyVector(bottomVert->x, bottomVert->y, bottomVert->z, bottomVert);
+
+		// check which is farther away and if it's the farthest.
+		// this is bad... i think i have to calculate the mean value of all, 
+		// and which is farther away wins.
+		// After the farthest, the middle has to be drawn with farthestIndex first, coming up
+		// then i should draw the top. Or should i draw everything in order of mean value?
+		// then i would do it with indices... and i should have a middle point for the top and bottom...
+		if ((topVert->z * zMultiplicator + topVert->y * yMultiplicator) < farthest)
+		{
+			farthest = topVert->z * zMultiplicator + topVert->y * yMultiplicator;
+			farthestIndex = i;
+			topBehindBottom = true;
+		}
+		if ((bottomVert->z * zMultiplicator + bottomVert->y * yMultiplicator) < farthest)
+		{
+			farthest = bottomVert->z * zMultiplicator + bottomVert->y * yMultiplicator;
+			farthestIndex = i;
+			topBehindBottom = false;
+		}
+		
 	}
 }
 
 //3d
 void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 {
+	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+	if (pin) 
+	{
+		DDSURFACEDESC2 ddsd;
+		ddsd.dwSize = sizeof(ddsd);
+
+		pin->m_pdsBuffer->GetSurfaceDesc(&ddsd);
+		maxtu = (float)pin->m_width / (float)ddsd.dwWidth;
+		maxtv = (float)pin->m_height / (float)ddsd.dwHeight;
+	}
+	else
+		maxtu = maxtv = 1;
 	CalculateRealTimeOriginal();
 	CalculateRealTime();
 
@@ -494,9 +558,6 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	g_pplayer->m_ptable->SetDirtyDraw();
 
-	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
-	float maxtu = 0;
-	float maxtv = 0;
 
 	D3DMATERIAL7 mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -526,6 +587,7 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			
 			
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+			// this has to be set to true (this is just for debugging depth sporting.
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
@@ -546,46 +608,16 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 		pd3dDevice->SetMaterial(&mtrl);
 
-		Vertex3D rgv3D[4];
-
-		rgv3D[0].x = 300;
-		rgv3D[0].y = 700;
-		rgv3D[0].z = 100;
-		rgv3D[1].x = 300;
-		rgv3D[1].y = 1090;
-		rgv3D[1].z = 100;
-		rgv3D[2].x = 690;
-		rgv3D[2].y = 1090;
-		rgv3D[2].z = 100;
-		rgv3D[3].x = 690;
-		rgv3D[3].y = 700;
-		rgv3D[3].z = 100;
-
-		rgv3D[0].tu = 0;
-		rgv3D[0].tv = 0;
-		rgv3D[1].tu = 0;
-		rgv3D[1].tv = 1;
-		rgv3D[2].tu = 1;
-		rgv3D[2].tv = 1;
-		rgv3D[3].tu = 1;
-		rgv3D[3].tv = 0;
-
-		rgv3D[0].nx = 0;
-		rgv3D[0].ny = 0;
-		rgv3D[0].nz = -1;
-		rgv3D[1].nx = 0;
-		rgv3D[1].ny = 0;
-		rgv3D[1].nz = -1;
-		rgv3D[2].nx = 0;
-		rgv3D[2].ny = 0;
-		rgv3D[2].nz = -1;
-		rgv3D[3].nx = 0;
-		rgv3D[3].ny = 0;
-		rgv3D[3].nz = -1;
-		
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DTop, 4,rgiPrimStatic0, 4, 0);
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DTop, 4,rgiPrimStatic1, 4, 0);
-
+		if (!topBehindBottom) {
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DBottom, 4,rgiPrimStatic0, 5, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DBottom, 5,rgiPrimStatic1, 5, 0);
+		}
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DTop, 4,rgiPrimStatic0, 5, 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DTop, 5,rgiPrimStatic1, 5, 0);
+		if (topBehindBottom) {
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DBottom, 4,rgiPrimStatic0, 5, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3DBottom, 5,rgiPrimStatic1, 5, 0);
+		}
 	}
 }
 

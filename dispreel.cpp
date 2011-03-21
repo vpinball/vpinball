@@ -667,8 +667,8 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			m_rgbImageTransparent = pin->m_rgbTransparent;
 
             // get the size of the individual reel digits (if m_digitrange is wrong we can forget the rest)
-            m_reeldigitwidth  = pin->m_width / GridCols;
-            m_reeldigitheight = pin->m_height / GridRows;
+            m_reeldigitwidth  = (float)pin->m_width / GridCols;
+            m_reeldigitheight = (float)pin->m_height / GridRows;
 
             // work out the size of the reel image strip (adds room for an extra digit at the end)
             //const int width  = m_reeldigitwidth;
@@ -914,8 +914,8 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
         ReleaseDC(NULL, hdc);
 
         // set the size of the individual reel digits
-        m_reeldigitwidth  = maxwidth;
-        m_reeldigitheight = maxheight;
+        m_reeldigitwidth  = (float)maxwidth;
+        m_reeldigitheight = (float)maxheight;
 
 		for (int i=0; i < length; ++i)
 			{
