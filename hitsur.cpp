@@ -43,7 +43,7 @@ void HitSur::Line(const float x, const float y, const float x2, const float y2)
 			return;
 			}
 		}
-	else
+	else if (abs(x_2-x_1) < abs(y_2-y_1))
 		{
 
 		int lineX = m_hitx+4;
