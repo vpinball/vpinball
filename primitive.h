@@ -197,15 +197,14 @@ public:
 	WORD wBottomIndices[Max_Primitive_Sides*6];
 	
 	
-	
 	// OK here are our vertices that should be drawn:
 		// Index				: Length		: Description
 		// 0					: 1				: Middle Point Top
 		// 1					: m_sides		: Top Vertices (no special order, will be sorted via Indices)
 		// m_sides+1			: 1				: Middle Point Bottom
 		// m_sides+2			: m_sides		: Bottom Vertices
-		// m_sides*2 + 2		: m_sides		: Top Sides (with normals to the side)
-		// m_sides*3 + 2	Max	: m_sides		: bottom Sides (With Normals to the side)
+		// m_sides*2 + 2		: m_sides+1		: Top Sides (with normals to the side) the first/last pioint is doubled, for textures
+		// m_sides*3 + 3		: m_sides+1		: bottom Sides (With Normals to the side)
 	//Example: 4 sides
 		// Index				: Length		: Description
 		// 0					: 1				: Middle Point Top
