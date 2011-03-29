@@ -467,32 +467,32 @@ void Primitive::CalculateRealTimeOriginal()
 
 	// these have to be replaced for image mapping
 	middle = &rgv3DOriginal[0]; // middle point top
-	middle->tu = 0.5f;
-	middle->tv = 0.5f;
+	middle->tu = maxtu/4;
+	middle->tv = maxtv/4;
 	middle = &rgv3DOriginal[m_d.m_Sides+1]; // middle point bottom
-	middle->tu = 0.5f;
-	middle->tv = 0.5f;
+	middle->tu = maxtu/4*3;
+	middle->tv = maxtv/4;
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
 		Vertex3D *topVert;
 		topVert = &rgv3DOriginal[i+1]; // top point at side
-		topVert->tu = ((topVert->x - minX)/(maxX-minX))*maxtu;
-		topVert->tv = ((topVert->y - minY)/(maxY-minY))*maxtv;
+		topVert->tu = ((topVert->x - minX)/(maxX-minX))*maxtu/2;
+		topVert->tv = ((topVert->y - minY)/(maxY-minY))*maxtv/2;
 
 		Vertex3D *bottomVert;
 		bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
-		bottomVert->tu = topVert->tu;
+		bottomVert->tu = topVert->tu+0.5f*maxtu;
 		bottomVert->tv = topVert->tv;
 
 		Vertex3D *sideTopVert;
 		Vertex3D *sideBottomVert;
 		sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
 		sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
-		// these are wrong!
-		sideTopVert->tu = 0.0f;
-		sideBottomVert->tu = 0.5f;
-		sideTopVert->tv = 0.0f;
-		sideBottomVert->tv = 0.5f;
+
+		sideTopVert->tu = (float)i/m_d.m_Sides*maxtu;
+		sideTopVert->tv = 0.5f*maxtv;
+		sideBottomVert->tu = (float)i/m_d.m_Sides*maxtu;
+		sideBottomVert->tv = 1.0f*maxtv;
 	}
 }
 
