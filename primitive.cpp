@@ -32,7 +32,6 @@ HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Primitive::SetDefaults(bool fromMouseClick)
 	{
-
 	HRESULT hr;
 	int iTmp;
 	float fTmp;
@@ -215,8 +214,6 @@ void Primitive::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Primitive","Transposition_Z", REG_SZ, &strTmp,strlen(strTmp));	
 	*/
 	SetRegValue("DefaultProps\\Primitive","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
-
-
 	}
 
 
@@ -234,8 +231,6 @@ void Primitive::GetHitShapes(Vector<HitObject> *pvho)
 		// i think i have to look at easy hit objects and then at ramps hitobjects.
 		HitPrimitive * pHitPrimitive = new HitPrimitive();
 		pvho->AddElement(pHitPrimitive);
-	
-
 	}
 
 void Primitive::GetHitShapesDebug(Vector<HitObject> *pvho)
@@ -309,8 +304,6 @@ void Primitive::RecalculateMatrices()
 
 	RTmatrix.Multiply(fullMatrix, fullMatrix);
 	Tmatrix.Multiply(fullMatrix, fullMatrix);
-
-
 }
 
 void Primitive::RecalculateVertices() 
@@ -318,20 +311,18 @@ void Primitive::RecalculateVertices()
 	verticesTop.RemoveAllElements();
 	verticesBottom.RemoveAllElements();
 	const float outherRadius = 0.5f/(cosf((float)M_PI/m_d.m_Sides));
-	float currentAngle = (float)(2*M_PI/(m_d.m_Sides*2));
-	const float addAngle = (float)(2*M_PI/(m_d.m_Sides));
+	float currentAngle = (float)(2.0*M_PI)/(float)(m_d.m_Sides*2);
+	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		Vertex3D *topVert;
-		topVert = new Vertex3D();
+		Vertex3D * const topVert = new Vertex3D();
 		topVert->z = 0.5f;
 		topVert->x = -sinf(currentAngle)*outherRadius;
 		topVert->y = -cosf(currentAngle)*outherRadius;
 		verticesTop.AddElement(topVert);
-		Vertex3D *bottomVert;
-		bottomVert = new Vertex3D();
+		Vertex3D * const bottomVert = new Vertex3D();
 		bottomVert->z = -0.5f;
-		bottomVert->x = -sinf (currentAngle)*outherRadius;
+		bottomVert->x = -sinf(currentAngle)*outherRadius;
 		bottomVert->y = -cosf(currentAngle)*outherRadius;
 		verticesBottom.AddElement(bottomVert);
 		currentAngle += addAngle;
@@ -341,22 +332,21 @@ void Primitive::RecalculateVertices()
 
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		Vertex3D *topVert, *bottomVert;
-		topVert = (Vertex3D*)verticesTop.ElementAt(i);
-		topVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1)*(topVert->x+0.5f);
-		topVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1)*(topVert->x+0.5f);
-		topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1)*(topVert->y+0.5f);
-		topVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1)*(topVert->y+0.5f);
-		topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1)*(topVert->z+0.5f);
-		topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1)*(topVert->z+0.5f);
+		Vertex3D * const topVert = (Vertex3D*)verticesTop.ElementAt(i);
+		topVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f);
+		topVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f);
+		topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(topVert->y+0.5f);
+		topVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(topVert->y+0.5f);
+		topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f);
+		topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f);
 		fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
-		bottomVert = (Vertex3D*)verticesBottom.ElementAt(i);
-		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1)*(bottomVert->x+0.5f);
-		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1)*(bottomVert->x+0.5f);
-		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1)*(bottomVert->y+0.5f);
-		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1)*(bottomVert->y+0.5f);
-		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1)*(bottomVert->z+0.5f);
-		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1)*(bottomVert->z+0.5f);
+		Vertex3D * const bottomVert = (Vertex3D*)verticesBottom.ElementAt(i);
+		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(bottomVert->x+0.5f);
+		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(bottomVert->x+0.5f);
+		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(bottomVert->y+0.5f);
+		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(bottomVert->y+0.5f);
+		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(bottomVert->z+0.5f);
+		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(bottomVert->z+0.5f);
 		fullMatrix.MultiplyVector(bottomVert->x, bottomVert->y, bottomVert->z, bottomVert);
 	}
 }
@@ -389,13 +379,11 @@ void Primitive::Render(Sur *psur)
 	//psur->SetObject(NULL);
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		Vertex3D *topVert, *nextTopVert;
-		topVert = (Vertex3D*)verticesTop.ElementAt(i);
-		nextTopVert = (Vertex3D*)verticesTop.ElementAt((i+1)%m_d.m_Sides);
+		const Vertex3D * const topVert = (Vertex3D*)verticesTop.ElementAt(i);
+		const Vertex3D * const nextTopVert = (Vertex3D*)verticesTop.ElementAt((i+1)%m_d.m_Sides);
 		psur->Line(topVert->x, topVert->y, nextTopVert->x, nextTopVert->y);
-		Vertex3D *bottomVert, *nextBottomVert;
-		bottomVert = (Vertex3D*)verticesBottom.ElementAt(i);
-		nextBottomVert = (Vertex3D*)verticesBottom.ElementAt((i+1)%m_d.m_Sides);
+		const Vertex3D * const bottomVert = (Vertex3D*)verticesBottom.ElementAt(i);
+		const Vertex3D * const nextBottomVert = (Vertex3D*)verticesBottom.ElementAt((i+1)%m_d.m_Sides);
 		psur->Line(bottomVert->x, bottomVert->y, nextBottomVert->x, nextBottomVert->y);
 		psur->Line(bottomVert->x, bottomVert->y, topVert->x, topVert->y);
 	}
@@ -411,8 +399,8 @@ void Primitive::CalculateRealTimeOriginal()
 {
 	// this recalculates the Original Vertices -> should be only called, when sides are altered.
 	const float outherRadius = 0.5f/(cosf((float)M_PI/m_d.m_Sides));
-	float currentAngle = (float)(2*M_PI/(m_d.m_Sides*2));
-	const float addAngle = (float)(2*M_PI/(m_d.m_Sides));
+	float currentAngle = (float)(2.0*M_PI)/(float)(m_d.m_Sides*2);
+	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
 	float minX = 10000;
 	float maxX = -10000;
 	float minY = 10000;
@@ -430,14 +418,12 @@ void Primitive::CalculateRealTimeOriginal()
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
 		// calculate Top
-		Vertex3D *topVert;
-		topVert = &rgv3DOriginal[i+1]; // top point at side
+		Vertex3D * const topVert = &rgv3DOriginal[i+1]; // top point at side
 		topVert->z = 0.5f;
 		topVert->x = -sinf(currentAngle)*outherRadius;
 		topVert->y = -cosf(currentAngle)*outherRadius;		
 		// calculate bottom
-		Vertex3D *bottomVert;
-		bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
+		Vertex3D * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
 		bottomVert->z = -0.5f;
 		bottomVert->x = topVert->x;
 		bottomVert->y = topVert->y;
@@ -451,10 +437,8 @@ void Primitive::CalculateRealTimeOriginal()
 		if (topVert->y > maxY)
 			maxY = topVert->y;
 		// calculate sides
-		Vertex3D *sideTopVert;
-		Vertex3D *sideBottomVert;
-		sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
-		sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
+		Vertex3D * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
+		Vertex3D * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
 		sideTopVert->z = 0.5f;
 		sideTopVert->x = topVert->x;
 		sideTopVert->y = topVert->y;
@@ -467,32 +451,28 @@ void Primitive::CalculateRealTimeOriginal()
 
 	// these have to be replaced for image mapping
 	middle = &rgv3DOriginal[0]; // middle point top
-	middle->tu = maxtu/4;
-	middle->tv = maxtv/4;
+	middle->tu = maxtu*0.25f;   // /4
+	middle->tv = maxtv*0.25f;   // /4
 	middle = &rgv3DOriginal[m_d.m_Sides+1]; // middle point bottom
-	middle->tu = maxtu/4*3;
-	middle->tv = maxtv/4;
+	middle->tu = maxtu*(float)(0.25*3); // /4*3
+	middle->tv = maxtv*0.25f;   // /4
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		Vertex3D *topVert;
-		topVert = &rgv3DOriginal[i+1]; // top point at side
-		topVert->tu = ((topVert->x - minX)/(maxX-minX))*maxtu/2;
-		topVert->tv = ((topVert->y - minY)/(maxY-minY))*maxtv/2;
+		Vertex3D * const topVert = &rgv3DOriginal[i+1]; // top point at side
+		topVert->tu = ((topVert->x - minX)/(maxX-minX))*(maxtu*0.5f);
+		topVert->tv = ((topVert->y - minY)/(maxY-minY))*(maxtv*0.5f);
 
-		Vertex3D *bottomVert;
-		bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
+		Vertex3D * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
 		bottomVert->tu = topVert->tu+0.5f*maxtu;
 		bottomVert->tv = topVert->tv;
 
-		Vertex3D *sideTopVert;
-		Vertex3D *sideBottomVert;
-		sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
-		sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
+		Vertex3D * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
+		Vertex3D * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
 
 		sideTopVert->tu = (float)i/m_d.m_Sides*maxtu;
 		sideTopVert->tv = 0.5f*maxtv;
-		sideBottomVert->tu = (float)i/m_d.m_Sides*maxtu;
-		sideBottomVert->tv = 1.0f*maxtv;
+		sideBottomVert->tu = sideTopVert->tu;
+		sideBottomVert->tv = /*1.0f**/maxtv;
 	}
 }
 
@@ -502,7 +482,6 @@ void Primitive::CopyOriginalVertices()
 	for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
 	{
 		rgv3DAll[i] = rgv3DOriginal[i];
-			
 	}
 	// restore indices
 	// check if anti culling is enabled:
@@ -512,32 +491,35 @@ void Primitive::CopyOriginalVertices()
 		// restore indices
 		for (int i = 0; i < m_d.m_Sides; i++)
 		{
+			const int tmp = (i == m_d.m_Sides-1) ? 1 : (i+2); // wrapping around
 			// top
 			wIndicesAll[i*6  ] = 0;
 			wIndicesAll[i*6+1] = i + 1;
-			wIndicesAll[i*6+2] = (i + 1)%m_d.m_Sides + 1; // wrapping around (was i + 2)
+			wIndicesAll[i*6+2] = tmp;
 			wIndicesAll[i*6+3] = 0;
-			wIndicesAll[i*6+4] = (i + 1)%m_d.m_Sides + 1;
+			wIndicesAll[i*6+4] = tmp;
 			wIndicesAll[i*6+5] = i + 1;
+			
+			const int tmp2 = tmp+1;
 			// bottom
 			wIndicesAll[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
-			wIndicesAll[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 1 + (i + 1)%m_d.m_Sides + 1;;
-			wIndicesAll[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + 1 + i + 1;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + tmp2;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + 2 + i;
 			wIndicesAll[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides + 1;
-			wIndicesAll[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides + 1 + i + 1;
-			wIndicesAll[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides + 1 + (i + 1)%m_d.m_Sides + 1;;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides + 2 + i;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides + tmp2;
 			// sides
-			wIndicesAll[12 * (i + m_d.m_Sides)    ]  = m_d.m_Sides*2 + 2 + (i + 1)%m_d.m_Sides;
+			wIndicesAll[12 * (i + m_d.m_Sides)    ]  = m_d.m_Sides*2 + tmp2;
 			wIndicesAll[12 * (i + m_d.m_Sides) + 1]  = m_d.m_Sides*2 + 2 + i;
 			wIndicesAll[12 * (i + m_d.m_Sides) + 2]  = m_d.m_Sides*3 + 2 + i;
-			wIndicesAll[12 * (i + m_d.m_Sides) + 3]  = m_d.m_Sides*2 + 2 + (i + 1)%m_d.m_Sides;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 3]  = m_d.m_Sides*2 + tmp2;
 			wIndicesAll[12 * (i + m_d.m_Sides) + 4]  = m_d.m_Sides*3 + 2 + i;
-			wIndicesAll[12 * (i + m_d.m_Sides) + 5]  = m_d.m_Sides*3 + 2 + (i + 1)%m_d.m_Sides;
-			wIndicesAll[12 * (i + m_d.m_Sides) + 6]  = m_d.m_Sides*2 + 2 + (i + 1)%m_d.m_Sides;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 5]  = m_d.m_Sides*3 + tmp2;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 6]  = m_d.m_Sides*2 + tmp2;
 			wIndicesAll[12 * (i + m_d.m_Sides) + 7]  = m_d.m_Sides*3 + 2 + i;
 			wIndicesAll[12 * (i + m_d.m_Sides) + 8]  = m_d.m_Sides*2 + 2 + i;
-			wIndicesAll[12 * (i + m_d.m_Sides) + 9]  = m_d.m_Sides*2 + 2 + (i + 1)%m_d.m_Sides;
-			wIndicesAll[12 * (i + m_d.m_Sides) + 10] = m_d.m_Sides*3 + 2 + (i + 1)%m_d.m_Sides;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 9]  = m_d.m_Sides*2 + tmp2;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 10] = m_d.m_Sides*3 + tmp2;
 			wIndicesAll[12 * (i + m_d.m_Sides) + 11] = m_d.m_Sides*3 + 2 + i;
 		}
 	} else {
@@ -545,23 +527,25 @@ void Primitive::CopyOriginalVertices()
 		// restore indices
 		for (int i = 0; i < m_d.m_Sides; i++)
 		{
+			const int tmp = (i == m_d.m_Sides-1) ? 1 : (i+2); // wrapping around
 			// top
 			wIndicesAll[i*3  ] = 0;
 			wIndicesAll[i*3+2] = i + 1;
-			wIndicesAll[i*3+1] = (i + 1)%m_d.m_Sides + 1;
+			wIndicesAll[i*3+1] = tmp;
 
+			const int tmp2 = tmp+1;
 			// bottom
 			wIndicesAll[3 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
-			wIndicesAll[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + 1 + (i + 1)%m_d.m_Sides + 1;
-			wIndicesAll[3 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 1 + i + 1;
+			wIndicesAll[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + tmp2;
+			wIndicesAll[3 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 2 + i;
 
 			// sides
-			wIndicesAll[6 * (i + m_d.m_Sides)    ]  = m_d.m_Sides*2 + 2 + (i + 1)%m_d.m_Sides;
+			wIndicesAll[6 * (i + m_d.m_Sides)    ]  = m_d.m_Sides*2 + tmp2;
 			wIndicesAll[6 * (i + m_d.m_Sides) + 2]  = m_d.m_Sides*2 + 2 + i;
 			wIndicesAll[6 * (i + m_d.m_Sides) + 1]  = m_d.m_Sides*3 + 2 + i;
-			wIndicesAll[6 * (i + m_d.m_Sides) + 3]  = m_d.m_Sides*2 + 2 + (i + 1)%m_d.m_Sides;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 3]  = m_d.m_Sides*2 + tmp2;
 			wIndicesAll[6 * (i + m_d.m_Sides) + 5]  = m_d.m_Sides*3 + 2 + i;
-			wIndicesAll[6 * (i + m_d.m_Sides) + 4]  = m_d.m_Sides*3 + 2 + (i + 1)%m_d.m_Sides;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 4]  = m_d.m_Sides*3 + tmp2;
 		}
 	}
 }
@@ -571,19 +555,17 @@ void Primitive::ApplyMatrixToVertices()
 	// could be optimized, if not everything is drawn.
 	for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
 	{
-		Vertex3D *tempVert;
-		tempVert = &rgv3DAll[i];
+		Vertex3D * const tempVert = &rgv3DAll[i];
 		tempVert->nx = 0;
 		tempVert->ny = 0;
 		tempVert->nz = -1;
-		tempVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1)*(tempVert->x+0.5f);
-		tempVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1)*(tempVert->x+0.5f);
-		tempVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1)*(tempVert->y+0.5f);
-		tempVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1)*(tempVert->y+0.5f);
-		tempVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1)*(tempVert->z+0.5f);
-		tempVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1)*(tempVert->z+0.5f);
+		tempVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(tempVert->x+0.5f);
+		tempVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(tempVert->x+0.5f);
+		tempVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(tempVert->y+0.5f);
+		tempVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(tempVert->y+0.5f);
+		tempVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(tempVert->z+0.5f);
+		tempVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(tempVert->z+0.5f);
 		fullMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
-
 	}
 }
 
@@ -603,7 +585,6 @@ void Primitive::SortVertices()
 	const float zMultiplicator = cosf(ANGTORAD(m_ptable->m_inclination));
 	const float yMultiplicator = sinf(ANGTORAD(m_ptable->m_inclination));
 
-
 	// get depths
 	if (!m_d.m_DrawTexturesInside)
 	{
@@ -620,37 +601,40 @@ void Primitive::SortVertices()
 				yMultiplicator*rgv3DAll[wIndicesAll[i*3+2]].y;
 		}
 	} else {
+		const float zM13 = (float)(1.0/3.0) * zMultiplicator;
+		const float yM13 = (float)(1.0/3.0) * yMultiplicator;
 		// top and bottom
 		for (int i = 0; i < m_d.m_Sides * 2; i++)
 		{
 			fDepth[i] = 
-				((rgv3DAll[wIndicesAll[i*6  ]].z+
+				 (rgv3DAll[wIndicesAll[i*6  ]].z+
 				  rgv3DAll[wIndicesAll[i*6+1]].z+
 				  rgv3DAll[wIndicesAll[i*6+2]].z) 
-				 / 3.0f * zMultiplicator +
+				 * zM13 +
 				 (rgv3DAll[wIndicesAll[i*6  ]].y+
 				  rgv3DAll[wIndicesAll[i*6+1]].y+
 				  rgv3DAll[wIndicesAll[i*6+2]].y) 
-				 / 3.0f * yMultiplicator);
+				 * yM13;
 		}
+
+		const float zM05 = 0.5f * zMultiplicator;
+		const float yM05 = 0.5f * yMultiplicator;
 		for (int i = m_d.m_Sides; i < m_d.m_Sides * 2; i++)
 		{
 			fDepth[i*2] = 
-				((rgv3DAll[wIndicesAll[i*12  ]].z+
+				 (rgv3DAll[wIndicesAll[i*12  ]].z+
 				  rgv3DAll[wIndicesAll[i*12+1]].z)
-				 / 2.0f * zMultiplicator +
+				 * zM05 +
 				 (rgv3DAll[wIndicesAll[i*12  ]].y+
 				  rgv3DAll[wIndicesAll[i*12+1]].y)
-				 / 2.0f * yMultiplicator);
+				 * yM05;
 			fDepth[i*2+1] = 
-				((rgv3DAll[wIndicesAll[i*12  ]].z+
+				 (rgv3DAll[wIndicesAll[i*12  ]].z+
 				  rgv3DAll[wIndicesAll[i*12+1]].z)
-				 / 2.0f * zMultiplicator +
+				 * zM05 +
 				 (rgv3DAll[wIndicesAll[i*12  ]].y+
 				  rgv3DAll[wIndicesAll[i*12+1]].y)
-				 / 2.0f * yMultiplicator);
-
-
+				 * yM05;
 		}
 	}
 	// now sort
@@ -675,7 +659,7 @@ void Primitive::SortVertices()
 			for (int i = inc; i < m_d.m_Sides*4; i++)
 			{
 				// store temp
-				float tempDepth = fDepth[i];
+				const float tempDepth = fDepth[i];
 				for (int tempI = 0; tempI < 6; tempI++)
 					tempIndices[tempI] = wIndicesAll[i*6 + tempI];
 
@@ -685,7 +669,7 @@ void Primitive::SortVertices()
 					fDepth[j] = fDepth[j-inc];
 					for (int tempI = 0; tempI < 6; tempI++)
 						wIndicesAll[j*6+tempI] = wIndicesAll[(j-inc)*6 + tempI];
-					j = j - inc;
+					j -= inc;
 				}
 
 				fDepth[j] = tempDepth;
@@ -693,7 +677,7 @@ void Primitive::SortVertices()
 					wIndicesAll[j*6+tempI] = tempIndices[tempI];
 
 			}
-			inc = (int)((float)inc/2.2f);
+			inc = (int)((float)inc*(float)(1.0/2.2));
 		}
 	} else {
 	}
@@ -721,9 +705,7 @@ void Primitive::CalculateRealTime()
 
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		
-		Vertex3D *topVert, *bottomVert;
-		topVert = &rgv3DTop[i];
+		Vertex3D * const topVert = &rgv3DTop[i];
 		topVert->x = rgv3DTopOriginal[i].x;
 		topVert->y = rgv3DTopOriginal[i].y;
 		topVert->z = rgv3DTopOriginal[i].z;
@@ -732,14 +714,14 @@ void Primitive::CalculateRealTime()
 		topVert->nx = 0;
 		topVert->ny = 0;
 		topVert->nz = -1;
-		topVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1)*(topVert->x+0.5f);
-		topVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1)*(topVert->x+0.5f);
-		topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1)*(topVert->y+0.5f);
-		topVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1)*(topVert->y+0.5f);
-		topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1)*(topVert->z+0.5f);
-		topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1)*(topVert->z+0.5f);
+		topVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f);
+		topVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f);
+		topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(topVert->y+0.5f);
+		topVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(topVert->y+0.5f);
+		topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f);
+		topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f);
 		fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
-		bottomVert = &rgv3DBottom[i];
+		Vertex3D * const bottomVert = &rgv3DBottom[i];
 		bottomVert->x = rgv3DBottomOriginal[i].x;
 		bottomVert->y = rgv3DBottomOriginal[i].y;
 		bottomVert->z = rgv3DBottomOriginal[i].z;
@@ -748,12 +730,12 @@ void Primitive::CalculateRealTime()
 		bottomVert->nx = 0;
 		bottomVert->ny = 0;
 		bottomVert->nz = -1;
-		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1)*(bottomVert->x+0.5f);
-		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1)*(bottomVert->x+0.5f);
-		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1)*(bottomVert->y+0.5f);
-		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1)*(bottomVert->y+0.5f);
-		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1)*(bottomVert->z+0.5f);
-		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1)*(bottomVert->z+0.5f);
+		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(bottomVert->x+0.5f);
+		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(bottomVert->x+0.5f);
+		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(bottomVert->y+0.5f);
+		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(bottomVert->y+0.5f);
+		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(bottomVert->z+0.5f);
+		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(bottomVert->z+0.5f);
 		fullMatrix.MultiplyVector(bottomVert->x, bottomVert->y, bottomVert->z, bottomVert);
 
 		// check which is farther away and if it's the farthest.
@@ -1751,4 +1733,3 @@ void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	pproppane = new PropertyPane(IDD_PROPPRIMITIVE_POSITION, IDS_POSITION);
 	pvproppane->AddElement(pproppane);
 	}
-
