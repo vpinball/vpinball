@@ -30,6 +30,7 @@ Ball::~Ball()
 void Ball::Init()
 	{
 	// Only called by real balls, not temporary objects created for physics/rendering
+	collisionMass = 1.0f;
 	m_orientation.Identity();
 	m_inversebodyinertiatensor.Identity((float)(5.0/2.0)/(radius*radius));
 	m_angularvelocity.Set(0,0,0);
@@ -331,10 +332,10 @@ void Ball::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	// correct displacements, mostly from low velocity, alternative to true acceleration processing
 
 	const Vertex3Ds vel(
-		pball->vx -vx,  //target ball to object ball
-		pball->vy -vy,  //delta velocity
-		pball->vz -vz);
-	
+		pball->vx * pball->collisionMass - vx * collisionMass,  //target ball to object ball
+		pball->vy * pball->collisionMass -vy * collisionMass,  //delta velocity
+		pball->vz * pball->collisionMass -vz * collisionMass);
+
 	float dot = vel.x * vnormal.x + vel.y * vnormal.y + vel.z * vnormal.z;
 
 	if (dot >= -C_LOWNORMVEL )								// nearly receding ... make sure of conditions
@@ -371,20 +372,21 @@ void Ball::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 			}
 #endif				
 
-	float impulse = (float)(-1.8 * 0.5) * dot;
+	const float impulse1 = (float)(-1.8 * 0.5) * dot / ((collisionMass + pball->collisionMass)/2) / (collisionMass / pball->collisionMass);
+	float impulse2 = (float)(-1.8 * 0.5) * dot / ((collisionMass + pball->collisionMass)/2) * (collisionMass / pball->collisionMass);
 
 	if (!fFrozen)
 		{
-		vx -= impulse * vnormal.x;
-		vy -= impulse * vnormal.y;
-		vz -= impulse * vnormal.z;
+		vx -= impulse1 * vnormal.x;
+		vy -= impulse1 * vnormal.y;
+		vz -= impulse1 * vnormal.z;
 		m_fDynamic = C_DYNAMIC;		
 		}
-	else impulse += impulse;
+	else impulse2 += impulse1;
 		
-	pball->vx += impulse * vnormal.x;
-	pball->vy += impulse * vnormal.y;
-	pball->vz += impulse * vnormal.z;
+	pball->vx += impulse2 * vnormal.x;
+	pball->vy += impulse2 * vnormal.y;
+	pball->vz += impulse2 * vnormal.z;
 	pball->m_fDynamic = C_DYNAMIC;
 	}
 
