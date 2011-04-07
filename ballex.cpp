@@ -243,6 +243,47 @@ STDMETHODIMP BallEx::put_Name(BSTR newVal)
 	return S_OK;
 }
 
+
+
+STDMETHODIMP BallEx::get_CollisionMass(float *pVal)
+{
+	CHECKSTALEBALL
+
+	*pVal = m_pball->collisionMass;
+
+	return S_OK;
+}
+
+STDMETHODIMP BallEx::put_CollisionMass(float newVal)
+{
+	CHECKSTALEBALL
+
+	m_pball->collisionMass = newVal;
+
+	return S_OK;
+}
+STDMETHODIMP BallEx::get_Radius(float *pVal)
+{
+	CHECKSTALEBALL
+
+	*pVal = m_pball->radius;
+
+	return S_OK;
+}
+
+STDMETHODIMP BallEx::put_Radius(float newVal)
+{
+	CHECKSTALEBALL
+
+	m_pball->radius = newVal;
+
+	m_pball->CalcBoundingRect();
+
+	return S_OK;
+}
+
+
+
 STDMETHODIMP BallEx::DestroyBall(int *pVal)
 {
 	int cnt = 0;

@@ -1616,6 +1616,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(10), helpstring("property BackDecal")] HRESULT BackDecal([in] BSTR newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+		[propget, id(11), helpstring("property CollisionMass")] HRESULT CollisionMass([out, retval] float *pVal);
+		[propput, id(11), helpstring("property CollisionMass")] HRESULT CollisionMass([in] float newVal);
+		[propget, id(12), helpstring("property Radius")] HRESULT Radius([out, retval] float *pVal);
+		[propput, id(12), helpstring("property Radius")] HRESULT Radius([in] float newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);	
 		[id(100), helpstring("method DestroyBall")] HRESULT DestroyBall([out, retval] int *pVal);
