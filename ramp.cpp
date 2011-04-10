@@ -2422,9 +2422,10 @@ STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
 	else 
 	{
 		if (invalidationRectCalculated)
+		{
 			g_pplayer->InvalidateRect(&invalidationRect);
-		m_d.m_IsVisible = VBTOF(newVal);
-
+			m_d.m_IsVisible = VBTOF(newVal);
+		}
 	}
 
 	return S_OK;
