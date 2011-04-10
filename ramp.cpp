@@ -9,6 +9,7 @@ Ramp::Ramp()
 	m_menuid = IDR_SURFACEMENU;
 	m_d.m_fCollidable = fTrue;
 	m_d.m_IsVisible = fTrue;
+	invalidationRectCalculated = false;
 	}
 
 Ramp::~Ramp()
@@ -1244,6 +1245,7 @@ WORD rgiRampStatic1[4] = {0,3,2,1};
 
 void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
+	
 	if (!m_d.m_IsVisible) return;		// return if no Visible
 
 	// dont render alpha shaded ramps into static buffer
@@ -2417,6 +2419,13 @@ STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
 		m_d.m_IsVisible = VBTOF(newVal);			// set visibility
 		STOPUNDO
 		}
+	else 
+	{
+		if (invalidationRectCalculated)
+			g_pplayer->InvalidateRect(&invalidationRect);
+		m_d.m_IsVisible = VBTOF(newVal);
+
+	}
 
 	return S_OK;
 }
@@ -2426,11 +2435,13 @@ STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
 // Copied here to order the rendering of transparent and opaque ramps.
 void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
-	
+
 	// Don't render if invisible.
 	if((!m_d.m_IsVisible) ||		
 	// Don't render non-Alphas. 
 		(!m_d.m_fAlpha)) return;
+
+
 
 	if (m_d.m_type == RampType4Wire 
 		|| m_d.m_type == RampType2Wire 
@@ -2442,6 +2453,9 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	else
 		{		
 		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
+		if (!invalidationRectCalculated)
+			ppin3d->ClearExtents(&invalidationRect, NULL, NULL);
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 		float maxtu = 0;
@@ -2555,6 +2569,8 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			SetNormal(rgv3D, rgiRampStatic0, 4, NULL, NULL, NULL);
 			// Draw the floor of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgiRampStatic0, 4, 0);
+			if (!invalidationRectCalculated)
+				ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
 
 		if (pin && !m_d.m_fImageWalls)
@@ -2619,9 +2635,12 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			// Draw the wall of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgiRampStatic0, 4, 0);
 
+
 			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgiRampStatic1, 4, 0);
+			if (!invalidationRectCalculated)
+				ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
 
 		for (int i=0;i<(cvertex-1);i++)
@@ -2674,6 +2693,8 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 4,rgiRampStatic1, 4, 0);
+			if (!invalidationRectCalculated)
+				ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
 
 		delete rgv;
@@ -2682,4 +2703,5 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->SetTexture(NULL);
 		}
+		invalidationRectCalculated = true;
 	}
