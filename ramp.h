@@ -144,6 +144,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	void RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice);
 	void RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D * const rgv3D, WORD * const rgicrosssection, const int start, const int stop);
 
+	RECT invalidationRect;
+	bool invalidationRectCalculated;
+
 // IRamp
 public:
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
