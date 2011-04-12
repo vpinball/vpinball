@@ -372,8 +372,9 @@ void Ball::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 			}
 #endif				
 
-	const float impulse1 = (float)(-1.8 * 0.5) * dot / ((collisionMass + pball->collisionMass)/2) / (collisionMass / pball->collisionMass);
-	float impulse2 = (float)(-1.8 * 0.5) * dot / ((collisionMass + pball->collisionMass)/2) * (collisionMass / pball->collisionMass);
+	const float averageMass = (collisionMass + pball->collisionMass)*0.5f;
+	const float impulse1 = ((float)(-1.8 * 0.5) * dot) * pball->collisionMass / (averageMass * collisionMass);
+	float impulse2 = ((float)(-1.8 * 0.5) * dot) * collisionMass / (averageMass * pball->collisionMass);
 
 	if (!fFrozen)
 		{
