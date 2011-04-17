@@ -62,6 +62,7 @@ typedef [uuid(E15D60BC-7E32-4cc5-BA16-E5C368D5891B)]
 		RampType2Wire = 2,
 		RampType3WireLeft = 3,
 		RampType3WireRight = 4,
+		RampType1Wire = 5,
 		}
 		RampType;
 
