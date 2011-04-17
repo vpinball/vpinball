@@ -394,6 +394,7 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 	if (range > 0)
 		{
 		if (m_d.m_type == RampType4Wire 
+			|| m_d.m_type == RampType1Wire 
 			|| m_d.m_type == RampType2Wire 
 			|| m_d.m_type == RampType3WireLeft 
 			|| m_d.m_type == RampType3WireRight)
@@ -410,8 +411,8 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 
 			for (int i=0;i<cvertex;i++)
 				{
-				rgheight[i]  += 44.0f;
-				rgheight2[i] += 44.0f;
+					rgheight[i]  += 44.0f;
+					rgheight2[i] += 44.0f;
 				}
 
 			if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
@@ -711,6 +712,12 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 		{
 		wallheightright = m_d.m_rightwallheight;
 		wallheightleft = m_d.m_leftwallheight;
+		}
+	else if (m_d.m_type == RampType1Wire) //add check for 1 wire
+		{
+		// backwards compatible physics
+		wallheightright = 31.0f;
+		wallheightleft = 31.0f;
 		}
 	else if (m_d.m_type == RampType2Wire)
 		{
@@ -1222,7 +1229,6 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 				RenderPolygons(pd3dDevice, rgv3D, rgicrosssection, 24, 32);
 				}
 			}
-
 		memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D)*16);
 		}
 
@@ -1234,11 +1240,21 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 void Ramp::RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D * const rgv3D, WORD * const rgicrosssection, const int start, const int stop)
 	{
-	for (int i=start;i<stop;i++)
-		{
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 32, &rgicrosssection[i*3], 3, 0);
-		}
+if (m_d.m_type == RampType1Wire)
+	{
+		for (int i=start;i<8;i++)
+			{
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 32, &rgicrosssection[i*3], 3, 0);
+			}
 	}
+else
+	{
+		for (int i=start;i<stop;i++)
+			{
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 32, &rgicrosssection[i*3], 3, 0);
+			}
+	}
+}
 
 WORD rgiRampStatic0[4] = {0,1,2,3};
 WORD rgiRampStatic1[4] = {0,3,2,1};
@@ -1252,6 +1268,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	if (m_d.m_fAlpha && g_pvp->m_pdd.m_fHardwareAccel) return;
 
 	if (m_d.m_type == RampType4Wire 
+		|| m_d.m_type == RampType1Wire  //add check for 1 wire
 		|| m_d.m_type == RampType2Wire 
 		|| m_d.m_type == RampType3WireLeft 
 		|| m_d.m_type == RampType3WireRight)
@@ -2445,6 +2462,7 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 
 	if (m_d.m_type == RampType4Wire 
+		|| m_d.m_type == RampType1Wire //add check for 1 wire
 		|| m_d.m_type == RampType2Wire 
 		|| m_d.m_type == RampType3WireLeft 
 		|| m_d.m_type == RampType3WireRight)
