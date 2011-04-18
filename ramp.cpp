@@ -239,8 +239,15 @@ void Ramp::WriteRegDefaults()
 
 
 void Ramp::PreRender(Sur *psur)
+{
+	if (m_d.m_type == RampType1Wire) //make 1 wire ramps look unique in editor - uses ramp color
 	{
-	psur->SetFillColor(RGB(192,192,192));
+		psur->SetFillColor(m_d.m_color);
+	}
+	else
+	{
+		psur->SetFillColor(RGB(192,192,192));
+	}
 	psur->SetBorderColor(-1,false,0);
 	psur->SetObject(this);
 
@@ -250,10 +257,10 @@ void Ramp::PreRender(Sur *psur)
 	psur->Polygon(rgv, cvertex*2);
 
 	delete rgv;
-	}
+}
 
 void Ramp::Render(Sur *psur)
-	{
+{
 	psur->SetFillColor(-1);
 	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetLineColor(RGB(0,0,0),false,0);
@@ -265,27 +272,23 @@ void Ramp::Render(Sur *psur)
 	Vertex2D * const rgv = GetRampVertex(&cvertex, NULL, &pfCross, NULL);
 
 	psur->Polygon(rgv, cvertex*2);
-
 	for (int i=0;i<cvertex;i++)
-		{
+	{
 		if (pfCross[i])
-			{
-			psur->Line(rgv[i].x, rgv[i].y, rgv[cvertex*2 - i - 1].x, rgv[cvertex*2 - i - 1].y);
-			}
-		}
-
-	if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
 		{
+			psur->Line(rgv[i].x, rgv[i].y, rgv[cvertex*2 - i - 1].x, rgv[cvertex*2 - i - 1].y);
+		}
+	}
+	if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
+	{
 		psur->SetLineColor(RGB(0,0,0),false,3);
 		psur->Polyline(rgv, cvertex);
-		}
-
+	}
 	if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-		{
+	{
 		psur->SetLineColor(RGB(0,0,0),false,3);
 		psur->Polyline(&rgv[cvertex], cvertex);
-		}
-
+	}
 	delete rgv;
 	delete pfCross;
 
@@ -293,43 +296,43 @@ void Ramp::Render(Sur *psur)
 	bool fDrawDragpoints;
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
 	if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
-		{
+	{
 		fDrawDragpoints = true;
-		}
+	}
 	else
-		{
+	{
 		// if any of the dragpoints of this object are selected then draw all the dragpoints
 		fDrawDragpoints = false;
 		for (int i=0;i<m_vdpoint.Size();i++)
-			{
+		{
 			const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 			if (pdp->m_selectstate != eNotSelected)
-				{
+			{
 				fDrawDragpoints = true;
 				break;
-				}
 			}
 		}
+	}
 //<<<
 
 	if (fDrawDragpoints)
-		{
+	{
 		for (int i=0;i<m_vdpoint.Size();i++)
-			{
+		{
 			CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 			psur->SetFillColor(-1);
 			psur->SetBorderColor(RGB(255,0,0),false,0);
 			psur->SetObject(pdp);
 
 			if (pdp->m_fDragging)
-				{
+			{
 				psur->SetBorderColor(RGB(0,255,0),false,0);
-				}
+			}
 
 			psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
-			}
 		}
 	}
+}
 
 void Ramp::RenderOutline(Sur * const psur)
 	{
@@ -406,15 +409,19 @@ void Ramp::RenderShadow(ShadowSur *psur, float height)
 				rgheight2[i] = rgheight[cvertex - i - 1];
 				}
 
+			if (m_d.m_type != RampType1Wire)
+			{
 			psur->PolylineSkew(rgv, cvertex, rgheight, 0, 0);
+			}
 			psur->PolylineSkew(&rgv[cvertex], cvertex, rgheight2, 0, 0);
+
+
 
 			for (int i=0;i<cvertex;i++)
 				{
 					rgheight[i]  += 44.0f;
 					rgheight2[i] += 44.0f;
 				}
-
 			if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
 				{
 				psur->PolylineSkew(rgv, cvertex, rgheight, 0, 0);
@@ -1135,6 +1142,8 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[3].nz = 0;
 		rgv3D[3].NormalizeNormal();
 
+if (m_d.m_type != RampType1Wire)
+{
 		for (int l=0;l<4;l++)
 			{
 			rgv3D[l+ 4].x = rgv3D[l].x + 44.0f; //44.0f
@@ -1157,13 +1166,37 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[l+12].ny = rgv3D[l].ny;
 			rgv3D[l+12].nz = rgv3D[l].nz;
 			}
-
 		for (int l=0;l<4;l++)
 			{
 			rgv3D[l].x = rgv3D[l].x + 9.5f;
 			rgv3D[l].y = rgv3D[l].y - 19.0f;
 			}
+}
+else
+{
+			for (int l=0;l<4;l++)
+			{
+			rgv3D[l+ 4].x = rgv3D[l].x+44.0f; //44.0f
+			rgv3D[l+12].y = rgv3D[l].y;
+			rgv3D[l+ 4].z = rgv3D[l].z;
+			rgv3D[l+ 8].x = rgv3D[l].x + 9.5f;
+			rgv3D[l+ 8].y = rgv3D[l].y;
+			rgv3D[l+ 8].z = rgv3D[l].z;
+			rgv3D[l+12].x = rgv3D[l].x+44.0f;
+			rgv3D[l+12].y = rgv3D[l].y;
+			rgv3D[l+12].z = rgv3D[l].z;
 
+			rgv3D[l+ 4].nx = rgv3D[l].nx;
+			rgv3D[l+ 4].ny = rgv3D[l].ny;
+			rgv3D[l+ 4].nz = rgv3D[l].nz;
+			rgv3D[l+ 8].nx = rgv3D[l].nx;
+			rgv3D[l+ 8].ny = rgv3D[l].ny;
+			rgv3D[l+ 8].nz = rgv3D[l].nz;
+			rgv3D[l+12].nx = rgv3D[l].nx;
+			rgv3D[l+12].ny = rgv3D[l].ny;
+			rgv3D[l+12].nz = rgv3D[l].nz;
+			}
+}
 		const int p1 = (i==0) ? 0 : (i-1);
 		const int p2 = i;
 		const int p3 = (i==(cvertex-1)) ? i : (i+1);
@@ -1242,7 +1275,7 @@ void Ramp::RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D * const r
 	{
 if (m_d.m_type == RampType1Wire)
 	{
-		for (int i=start;i<8;i++)
+		for (int i=stop/2;i<stop;i++)
 			{
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 32, &rgicrosssection[i*3], 3, 0);
 			}
