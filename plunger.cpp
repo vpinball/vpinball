@@ -636,7 +636,7 @@ STDMETHODIMP Plunger::Fire()
 		{
 			// Use max strength.
 			// I don't understand where the strength for the button plunger is coming from.
-			// The strength is always larger than the mechanical one.  So I scaled by a contstant.
+			// The strength is always larger than the mechanical one.  So I scaled by a constant.
 			m_phitplunger->m_plungeranim.m_posdesired = m_d.m_v.y; 
 			m_phitplunger->m_plungeranim.m_speed = 0;
 			m_phitplunger->m_plungeranim.m_force = -m_d.m_mechStrength * 1.0613f;
