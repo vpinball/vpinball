@@ -1142,8 +1142,8 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 		rgv3D[3].nz = 0;
 		rgv3D[3].NormalizeNormal();
 
-if (m_d.m_type != RampType1Wire)
-{
+		if (m_d.m_type != RampType1Wire)
+		{
 		for (int l=0;l<4;l++)
 			{
 			rgv3D[l+ 4].x = rgv3D[l].x + 44.0f; //44.0f
@@ -1168,16 +1168,16 @@ if (m_d.m_type != RampType1Wire)
 			}
 		for (int l=0;l<4;l++)
 			{
-			rgv3D[l].x = rgv3D[l].x + 9.5f;
-			rgv3D[l].y = rgv3D[l].y - 19.0f;
+			rgv3D[l].x += 9.5f;
+			rgv3D[l].y += -19.0f;
 			}
-}
-else
-{
+		}
+		else
+		{
 			for (int l=0;l<4;l++)
 			{
 			rgv3D[l+ 4].x = rgv3D[l].x+44.0f; //44.0f
-			rgv3D[l+12].y = rgv3D[l].y;
+			rgv3D[l+ 4].y = rgv3D[l].y;
 			rgv3D[l+ 4].z = rgv3D[l].z;
 			rgv3D[l+ 8].x = rgv3D[l].x + 9.5f;
 			rgv3D[l+ 8].y = rgv3D[l].y;
@@ -1196,7 +1196,8 @@ else
 			rgv3D[l+12].ny = rgv3D[l].ny;
 			rgv3D[l+12].nz = rgv3D[l].nz;
 			}
-}
+		}
+
 		const int p1 = (i==0) ? 0 : (i-1);
 		const int p2 = i;
 		const int p3 = (i==(cvertex-1)) ? i : (i+1);
