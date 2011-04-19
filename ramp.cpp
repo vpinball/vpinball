@@ -2470,15 +2470,23 @@ STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
 		m_d.m_IsVisible = VBTOF(newVal);			// set visibility
 		STOPUNDO
 		}
+	/*
+	  // OK this (ramp.isvisible in player) does only work in HS-Device Rendering Mode.
+	  // The problem is (if i'm right), that the ramp is drawed to the fixed backbuffer.
+	  // This did work only with HD-Device rendering and alpha ramps, since alpha ramps are drawn
+	  // in realtime. I think that, to get this working even in SWDR, the ramp had to be written 
+	  // to an own texture and should have to be blit on screen.   Cupid
+
 	else 
 	{
-		if (invalidationRectCalculated)
+		
+		if (invalidationRectCalculated && m_d.m_fAcrylic && m_d.m_fAlpha)
 		{
 			g_pplayer->InvalidateRect(&invalidationRect);
 			m_d.m_IsVisible = VBTOF(newVal);
 		}
 	}
-
+	*/
 	return S_OK;
 }
 
