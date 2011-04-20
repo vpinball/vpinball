@@ -455,12 +455,15 @@ HitOctree::~HitOctree()
 		}
 #endif
 
-  _aligned_free(lefts);
-  _aligned_free(rights);
-  _aligned_free(tops);
-  _aligned_free(bottoms);
-  _aligned_free(zlows);
-  _aligned_free(zhighs);
+	if(lefts != 0)
+	{
+	_aligned_free(lefts);
+	_aligned_free(rights);
+	_aligned_free(tops);
+	_aligned_free(bottoms);
+	_aligned_free(zlows);
+	_aligned_free(zhighs);
+	}
 
 	if (!m_fLeaf)
 		{
@@ -577,12 +580,12 @@ void HitOctree::InitSseArrays()
     zlows = (float*)_aligned_malloc(ssebytes, 16);
     zhighs = (float*)_aligned_malloc(ssebytes, 16);
 
-    memset(lefts, 0, ssebytes);
-    memset(rights, 0, ssebytes);
-    memset(tops, 0, ssebytes);
-    memset(bottoms, 0, ssebytes);
-    memset(zlows, 0, ssebytes);
-    memset(zhighs, 0, ssebytes);
+    //memset(lefts, 0, ssebytes);
+    //memset(rights, 0, ssebytes);
+    //memset(tops, 0, ssebytes);
+    //memset(bottoms, 0, ssebytes);
+    //memset(zlows, 0, ssebytes);
+    //memset(zhighs, 0, ssebytes);
 
     for (int j=0;j<m_vho.Size();j++)
     {
