@@ -744,6 +744,23 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 				m_vho.ElementAt(hitloop)->m_pfedebug = m_ptable->m_vedit.ElementAt(i)->GetIFireEvents();
 				}
 			ph->GetTimers(&m_vht);
+
+    	if (g_pvp->m_pdd.m_fHardwareAccel)
+      {
+  		  if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
+	  		  m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
+        {
+          m_vhitacrylic.AddElement(ph);
+        }
+      }
+      else
+      {
+  		  if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
+        {
+          m_vhitacrylic.AddElement(ph);
+        }
+      }
+
 			}
 		}
 
@@ -2363,7 +2380,8 @@ void Player::Render()
 		Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 		}
 
-
+// why is this done twice? is there some stubborn hardware refusing to take commands?? (SnailGary)
+/*
 	// Check if we are blitting with D3D.
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
 		{
@@ -2389,7 +2407,7 @@ void Player::Render()
 		// Save the current texture state.
 		Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 		}
-
+*/
 
 	// Process all regions that need updating.  
 	// The region will be drawn with the current frame.
@@ -4130,12 +4148,20 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 void Player::DrawAcrylics ()
 	{
 
-	// Check if we are hardware accelerated.
+  // the helper list of m_vhitacrylic only contains objects which evaluated to true in the old code.
+  // it is created once on startup and never changed during play. (SnailGary)
+	for (int i=0;i<m_vhitacrylic.Size();i++)
+  	m_vhitacrylic.ElementAt(i)->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+// AMD profiler shows a lot of activity inside this block at runtime... so I decided to make a new list with
+// hitable-only objects which saves a lot of dereferencing/checks at runtime (SnailGary)
+/*
+  // Check if we are hardware accelerated.
 	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		// Build a set of clipping planes which tightly bound the ball.
 		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
-		/*const HRESULT ReturnCode =*/ g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
+		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
 
 		// Draw acrylic ramps (they have transparency, so they have to be drawn last).
 		for (int i=0;i<m_ptable->m_vedit.Size();i++)
@@ -4165,6 +4191,7 @@ void Player::DrawAcrylics ()
 				}
 			}
 		}
+*/ 
 	}
 
 

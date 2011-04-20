@@ -188,6 +188,9 @@ private:
 	U64 m_liPhysicsCalced;
 	float m_physicsdtime; // Float value to move physics forward every physics tick
 
+  // caching hitable ramps & primitives to speed up DrawAcrylics()
+	Vector< Hitable > m_vhitacrylic;
+
 public:
 	BOOL m_fDetectScriptHang;
 	BOOL m_fNoTimeCorrect; // Used so the frame after debugging does not do normal time correction
