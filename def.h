@@ -141,12 +141,15 @@ public:
 	}
 	};
 
+__declspec(align(16))
 class Vertex3Ds
 	{
 public:
 	float x; 
 	float y; 
 	float z;
+  // dummy value to help with 16-byte alignment of Vertex3Ds objects
+  float _dummy;
 
 	inline Vertex3Ds() {}
 	inline Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
