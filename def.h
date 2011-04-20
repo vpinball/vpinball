@@ -7,6 +7,8 @@
 using namespace MSAPC;
 #endif
 
+#include <xmmintrin.h>
+
 //#define OLDLOAD 1
 
 #define fTrue 1
@@ -145,11 +147,16 @@ __declspec(align(16))
 class Vertex3Ds
 	{
 public:
-	float x; 
-	float y; 
-	float z;
-  // dummy value to help with 16-byte alignment of Vertex3Ds objects
-  float _dummy;
+	union {
+	  struct {
+		float x; 
+		float y; 
+		float z;
+		// dummy value to help with 16-byte alignment of Vertex3Ds objects
+		float _dummy;
+	  };
+	  __m128 xyz;
+	};
 
 	inline Vertex3Ds() {}
 	inline Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
@@ -506,6 +513,30 @@ public:
 #define FTOVB(x) ((x) ? -1 : 0)
 
 #include "HELPERS.H"
+
+inline __m128 rcpps(const __m128 &T) //Newton Raphson
+{
+	const __m128 TRCP = _mm_rcp_ps(T);
+	return _mm_sub_ps(_mm_add_ps(TRCP,TRCP),_mm_mul_ps(_mm_mul_ps(TRCP,T),TRCP));
+}
+
+inline __m128 rsqrtps(const __m128 &T) //Newton Raphson
+{
+	const __m128 TRSQRT = _mm_rsqrt_ps(T);
+	return _mm_mul_ps(_mm_mul_ps(_mm_set1_ps(0.5f),TRSQRT), _mm_sub_ps(_mm_set1_ps(3.0f),_mm_mul_ps(_mm_mul_ps(TRSQRT,T),TRSQRT)));
+}
+
+inline __m128 rsqrtss(const __m128 &T) //Newton Raphson
+{
+	const __m128 TRSQRT = _mm_rsqrt_ss(T);
+	return _mm_mul_ss(_mm_mul_ss(_mm_set_ss(0.5f),TRSQRT), _mm_sub_ss(_mm_set_ss(3.0f),_mm_mul_ss(_mm_mul_ss(TRSQRT,T),TRSQRT)));
+}
+
+inline __m128 sseHorizontalAdd(const __m128 &a)
+{
+	const __m128 ftemp = _mm_add_ps(a, _mm_movehl_ps(a, a));
+	return _mm_add_ss(ftemp,_mm_shuffle_ps(ftemp, ftemp, 1));
+}
 
 float sz2f(char *sz);
 void f2sz(const float f, char *sz);
