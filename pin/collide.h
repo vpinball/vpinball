@@ -262,8 +262,8 @@ public:
 	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const;
 
 	void HitTestBall(Ball * const pball) const;
-  void HitTestBallSse(Ball * const pball) const;
-  void HitTestBallSseInner(Ball * const pball, int i) const;
+	void HitTestBallSse(Ball * const pball) const;
+	void HitTestBallSseInner(Ball * const pball, int i) const;
 
 	void CreateNextLevel();
 
@@ -271,14 +271,14 @@ public:
 
 	Vector<HitObject> m_vho;
 
-  // helper arrays for SSE boundary checks
-  void InitSseArrays();
-  float* lefts;
-  float* rights;
-  float* tops;
-  float* bottoms;
-  float* zlows;
-  float* zhighs;
+	// helper arrays for SSE boundary checks
+	void InitSseArrays();
+	float* lefts;
+	float* rights;
+	float* tops;
+	float* bottoms;
+	float* zlows;
+	float* zhighs;
 
 	FRect3D m_rectbounds;
 	Vertex3Ds m_vcenter;

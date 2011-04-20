@@ -567,7 +567,7 @@ void HitOctree::InitSseArrays()
 {
   // build SSE boundary arrays of the local hit-object list
   // (don't init twice)
-  int ssebytes = sizeof(float) * ((m_vho.Size()+3)/4)*4;
+  const int ssebytes = sizeof(float) * ((m_vho.Size()+3)/4)*4;
   if (ssebytes > 0 && lefts == 0)
   {
     lefts = (float*)_aligned_malloc(ssebytes, 16);
@@ -593,6 +593,16 @@ void HitOctree::InitSseArrays()
       zlows[j] = m_vho.ElementAt(j)->m_rcHitRect.zlow;
       zhighs[j] = m_vho.ElementAt(j)->m_rcHitRect.zhigh;
     }
+
+	for (int j=m_vho.Size();j<((m_vho.Size()+3)/4)*4;j++)
+	{
+	  lefts[j] = FLT_MAX;
+	  rights[j] = -FLT_MAX;
+	  tops[j] = FLT_MAX;
+	  bottoms[j] = -FLT_MAX;
+	  zlows[j] = FLT_MAX;
+	  zhighs[j] = -FLT_MAX;
+	}
   }
 }
 
@@ -628,7 +638,7 @@ void HitOctree::HitTestBall(Ball * const pball) const
 		{		
 
 #ifdef LOG
-		cTested+;+
+		cTested++;
 #endif
 		if ((pball != m_vho.ElementAt(i)) // ball can not hit itself
 			       //&& (pball->phoHitLast != m_vho.ElementAt(i)) //rlc error: don't hit test last thing hit again, why not? -> numerical precison aka self intersection problem maybe?
@@ -680,9 +690,9 @@ void HitOctree::HitTestBallSseInner(Ball * const pball, int i) const
   if (pball == m_vho.ElementAt(i))
     return;
 
-	const float newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal); // test for hit
-	if ((newtime >= 0) && (newtime <= pball->m_hittime))
-  {
+  const float newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal); // test for hit
+  if ((newtime >= 0) && (newtime <= pball->m_hittime))
+	{
   	pball->m_pho = m_vho.ElementAt(i);
   	pball->m_hittime = newtime;
   	pball->m_hitx = pball->x + pball->vx*newtime;
@@ -695,71 +705,56 @@ void HitOctree::HitTestBallSse(Ball * const pball) const
   if (lefts != 0)
   {
     // init SSE registers with ball bbox
-    __m128 bleft = _mm_set1_ps(pball->m_rcHitRect.left);
-    __m128 bright = _mm_set1_ps(pball->m_rcHitRect.right);
-    __m128 btop = _mm_set1_ps(pball->m_rcHitRect.top);
-    __m128 bbottom = _mm_set1_ps(pball->m_rcHitRect.bottom);
-    __m128 bzlow = _mm_set1_ps(pball->m_rcHitRect.zlow);
-    __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);
+    const __m128 bleft = _mm_set1_ps(pball->m_rcHitRect.left);
+    const __m128 bright = _mm_set1_ps(pball->m_rcHitRect.right);
+    const __m128 btop = _mm_set1_ps(pball->m_rcHitRect.top);
+    const __m128 bbottom = _mm_set1_ps(pball->m_rcHitRect.bottom);
+    const __m128 bzlow = _mm_set1_ps(pball->m_rcHitRect.zlow);
+    const __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);
 
-    float* pL = lefts;
-    float* pR = rights;
-    float* pT = tops;
-    float* pB = bottoms;
-    float* pZl = zlows;
-    float* pZh = zhighs;
+    const __m128* const pL = (__m128*)lefts;
+    const __m128* const pR = (__m128*)rights;
+    const __m128* const pT = (__m128*)tops;
+    const __m128* const pB = (__m128*)bottoms;
+    const __m128* const pZl = (__m128*)zlows;
+    const __m128* const pZh = (__m128*)zhighs;
 
     // loop implements 4 collision checks at once
     // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
-    int mask = 0;
-    int size = (m_vho.Size()+3)/4;
+    const int size = (m_vho.Size()+3)/4;
     for (int i=0; i<size; ++i)
     {
       // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
       // bits set, there is a bounding box collision
-      __m128 tst = _mm_load_ps(pL);
-      __m128 cmp = _mm_cmpge_ps(bright, tst);
-      mask = _mm_movemask_ps(cmp);
-      if (mask == 0) goto cont;
+      __m128 cmp = _mm_cmpge_ps(bright, pL[i]);
+      int mask = _mm_movemask_ps(cmp);
+      if (mask == 0) continue;
 
-      tst = _mm_load_ps(pR);
-      cmp = _mm_cmple_ps(bleft, tst);
+	  cmp = _mm_cmple_ps(bleft, pR[i]);
       mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) goto cont;
+      if (mask == 0) continue;
 
-      tst = _mm_load_ps(pT);
-      cmp = _mm_cmpge_ps(bbottom, tst);
+      cmp = _mm_cmpge_ps(bbottom, pT[i]);
       mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) goto cont;
+      if (mask == 0) continue;
 
-      tst = _mm_load_ps(pB);
-      cmp = _mm_cmple_ps(btop, tst);
+      cmp = _mm_cmple_ps(btop, pB[i]);
       mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) goto cont;
+      if (mask == 0) continue;
 
-      tst = _mm_load_ps(pZl);
-      cmp = _mm_cmpge_ps(bzhigh, tst);
+      cmp = _mm_cmpge_ps(bzhigh, pZl[i]);
       mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) goto cont;
+      if (mask == 0) continue;
 
-      tst = _mm_load_ps(pZh);
-      cmp = _mm_cmple_ps(bzlow, tst);
+	  cmp = _mm_cmple_ps(bzlow, pZh[i]);
       mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) goto cont;
+      if (mask == 0) continue;
 
       // now there is at least one bbox collision
       if ((mask & 1) != 0) HitTestBallSseInner(pball, i*4);
-      if ((mask & 2) != 0 && (i*4+1)<m_vho.Size()) HitTestBallSseInner(pball, i*4+1);
-      if ((mask & 4) != 0 && (i*4+2)<m_vho.Size()) HitTestBallSseInner(pball, i*4+2);
-      if ((mask & 8) != 0 && (i*4+3)<m_vho.Size()) HitTestBallSseInner(pball, i*4+3);
-
-cont:
-      pL+=4;
-      pR+=4;
-      pT+=4;
-      pB+=4;
-      pZl+=4;
-      pZh+=4;
+      if ((mask & 2) != 0 /*&& (i*4+1)<m_vho.Size()*/) HitTestBallSseInner(pball, i*4+1); // boundary checks not necessary
+      if ((mask & 4) != 0 /*&& (i*4+2)<m_vho.Size()*/) HitTestBallSseInner(pball, i*4+2); //  anymore as non-valid entries were
+      if ((mask & 8) != 0 /*&& (i*4+3)<m_vho.Size()*/) HitTestBallSseInner(pball, i*4+3); //  initialized to keep these maskbits 0
     }
   }
 
