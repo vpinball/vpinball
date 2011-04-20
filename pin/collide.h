@@ -249,6 +249,12 @@ class HitOctree
 public:
 	inline HitOctree() : m_fLeaf(true)
 		{
+    lefts = 0;
+    rights = 0;
+    tops = 0;
+    bottoms = 0;
+    zlows = 0;
+    zhighs = 0;
 		}
 		
 	~HitOctree();
@@ -256,12 +262,23 @@ public:
 	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const;
 
 	void HitTestBall(Ball * const pball) const;
+  void HitTestBallSse(Ball * const pball) const;
+  void HitTestBallSseInner(Ball * const pball, int i) const;
 
 	void CreateNextLevel();
 
 	HitOctree *m_phitoct[8];
 
 	Vector<HitObject> m_vho;
+
+  // helper arrays for SSE boundary checks
+  void InitSseArrays();
+  float* lefts;
+  float* rights;
+  float* tops;
+  float* bottoms;
+  float* zlows;
+  float* zhighs;
 
 	FRect3D m_rectbounds;
 	Vertex3Ds m_vcenter;

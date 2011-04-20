@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <xmmintrin.h>
 
 //spare
 
@@ -454,6 +455,13 @@ HitOctree::~HitOctree()
 		}
 #endif
 
+  _aligned_free(lefts);
+  _aligned_free(rights);
+  _aligned_free(tops);
+  _aligned_free(bottoms);
+  _aligned_free(zlows);
+  _aligned_free(zhighs);
+
 	if (!m_fLeaf)
 		{
 		for (int i=0;i<8;i++)
@@ -546,9 +554,47 @@ void HitOctree::CreateNextLevel()
 		for (int i=0; i<8; ++i)
 			{
 			m_phitoct[i]->CreateNextLevel();
-			}
+      }
 		}
+
+  InitSseArrays();
+  for (int i=0; i<8; ++i)
+    m_phitoct[i]->InitSseArrays();
+
 	}
+
+void HitOctree::InitSseArrays()
+{
+  // build SSE boundary arrays of the local hit-object list
+  // (don't init twice)
+  int ssebytes = sizeof(float) * ((m_vho.Size()+3)/4)*4;
+  if (ssebytes > 0 && lefts == 0)
+  {
+    lefts = (float*)_aligned_malloc(ssebytes, 16);
+    rights = (float*)_aligned_malloc(ssebytes, 16);
+    tops = (float*)_aligned_malloc(ssebytes, 16);
+    bottoms = (float*)_aligned_malloc(ssebytes, 16);
+    zlows = (float*)_aligned_malloc(ssebytes, 16);
+    zhighs = (float*)_aligned_malloc(ssebytes, 16);
+
+    memset(lefts, 0, ssebytes);
+    memset(rights, 0, ssebytes);
+    memset(tops, 0, ssebytes);
+    memset(bottoms, 0, ssebytes);
+    memset(zlows, 0, ssebytes);
+    memset(zhighs, 0, ssebytes);
+
+    for (int j=0;j<m_vho.Size();j++)
+    {
+      lefts[j] = m_vho.ElementAt(j)->m_rcHitRect.left;
+      rights[j] = m_vho.ElementAt(j)->m_rcHitRect.right;
+      tops[j] = m_vho.ElementAt(j)->m_rcHitRect.top;
+      bottoms[j] = m_vho.ElementAt(j)->m_rcHitRect.bottom;
+      zlows[j] = m_vho.ElementAt(j)->m_rcHitRect.zlow;
+      zhighs[j] = m_vho.ElementAt(j)->m_rcHitRect.zhigh;
+    }
+  }
+}
 
 #ifdef LOG
 extern int cTested;
@@ -582,7 +628,7 @@ void HitOctree::HitTestBall(Ball * const pball) const
 		{		
 
 #ifdef LOG
-		cTested++;
+		cTested+;+
 #endif
 		if ((pball != m_vho.ElementAt(i)) // ball can not hit itself
 			       //&& (pball->phoHitLast != m_vho.ElementAt(i)) //rlc error: don't hit test last thing hit again, why not? -> numerical precison aka self intersection problem maybe?
@@ -613,19 +659,131 @@ void HitOctree::HitTestBall(Ball * const pball) const
 		if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
 		{
 			if (fLeft)
-				m_phitoct[0]->HitTestBall(pball);
+				m_phitoct[0]->HitTestBallSse(pball);
 			if (fRight)
-				m_phitoct[1]->HitTestBall(pball);
+				m_phitoct[1]->HitTestBallSse(pball);
 		}
 		if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
 		{
 			if (fLeft)
-				m_phitoct[2]->HitTestBall(pball);
+				m_phitoct[2]->HitTestBallSse(pball);
 			if (fRight)
-				m_phitoct[3]->HitTestBall(pball);
+				m_phitoct[3]->HitTestBallSse(pball);
 		}
 		}
 	}
+
+
+void HitOctree::HitTestBallSseInner(Ball * const pball, int i) const
+{
+  // ball can not hit itself
+  if (pball == m_vho.ElementAt(i))
+    return;
+
+	const float newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal); // test for hit
+	if ((newtime >= 0) && (newtime <= pball->m_hittime))
+  {
+  	pball->m_pho = m_vho.ElementAt(i);
+  	pball->m_hittime = newtime;
+  	pball->m_hitx = pball->x + pball->vx*newtime;
+  	pball->m_hity = pball->y + pball->vy*newtime;
+	}
+}
+
+void HitOctree::HitTestBallSse(Ball * const pball) const
+{
+  if (lefts != 0)
+  {
+    // init SSE registers with ball bbox
+    __m128 bleft = _mm_set1_ps(pball->m_rcHitRect.left);
+    __m128 bright = _mm_set1_ps(pball->m_rcHitRect.right);
+    __m128 btop = _mm_set1_ps(pball->m_rcHitRect.top);
+    __m128 bbottom = _mm_set1_ps(pball->m_rcHitRect.bottom);
+    __m128 bzlow = _mm_set1_ps(pball->m_rcHitRect.zlow);
+    __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);
+
+    float* pL = lefts;
+    float* pR = rights;
+    float* pT = tops;
+    float* pB = bottoms;
+    float* pZl = zlows;
+    float* pZh = zhighs;
+
+    // loop implements 4 collision checks at once
+    // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
+    int mask = 0;
+    int size = (m_vho.Size()+3)/4;
+    for (int i=0; i<size; ++i)
+    {
+      // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
+      // bits set, there is a bounding box collision
+      __m128 tst = _mm_load_ps(pL);
+      __m128 cmp = _mm_cmpge_ps(bright, tst);
+      mask = _mm_movemask_ps(cmp);
+      if (mask == 0) goto cont;
+
+      tst = _mm_load_ps(pR);
+      cmp = _mm_cmple_ps(bleft, tst);
+      mask &= _mm_movemask_ps(cmp);
+      if (mask == 0) goto cont;
+
+      tst = _mm_load_ps(pT);
+      cmp = _mm_cmpge_ps(bbottom, tst);
+      mask &= _mm_movemask_ps(cmp);
+      if (mask == 0) goto cont;
+
+      tst = _mm_load_ps(pB);
+      cmp = _mm_cmple_ps(btop, tst);
+      mask &= _mm_movemask_ps(cmp);
+      if (mask == 0) goto cont;
+
+      tst = _mm_load_ps(pZl);
+      cmp = _mm_cmpge_ps(bzhigh, tst);
+      mask &= _mm_movemask_ps(cmp);
+      if (mask == 0) goto cont;
+
+      tst = _mm_load_ps(pZh);
+      cmp = _mm_cmple_ps(bzlow, tst);
+      mask &= _mm_movemask_ps(cmp);
+      if (mask == 0) goto cont;
+
+      // now there is at least one bbox collision
+      if ((mask & 1) != 0) HitTestBallSseInner(pball, i*4);
+      if ((mask & 2) != 0 && (i*4+1)<m_vho.Size()) HitTestBallSseInner(pball, i*4+1);
+      if ((mask & 4) != 0 && (i*4+2)<m_vho.Size()) HitTestBallSseInner(pball, i*4+2);
+      if ((mask & 8) != 0 && (i*4+3)<m_vho.Size()) HitTestBallSseInner(pball, i*4+3);
+
+cont:
+      pL+=4;
+      pR+=4;
+      pT+=4;
+      pB+=4;
+      pZl+=4;
+      pZh+=4;
+    }
+  }
+
+	if (!m_fLeaf)
+		{
+		const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
+		const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
+
+		if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
+		{
+			if (fLeft)
+				m_phitoct[0]->HitTestBallSse(pball);
+			if (fRight)
+				m_phitoct[1]->HitTestBallSse(pball);
+		}
+		if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
+		{
+			if (fLeft)
+				m_phitoct[2]->HitTestBallSse(pball);
+			if (fRight)
+				m_phitoct[3]->HitTestBallSse(pball);
+		}
+		}
+}
 
 void HitOctree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const
 	{
