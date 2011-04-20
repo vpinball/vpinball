@@ -1,4 +1,6 @@
 #pragma once
+#include <xmmintrin.h>
+
 class Triangle
 	{
 public:
@@ -232,30 +234,67 @@ inline void SetNormal(Vertex3D * const rgv, const WORD * const rgi, const int co
 		applycount = count;
 		}
 
-	Vertex3Ds vnormal(0.0f,0.0f,0.0f);
+//  Vertex3Ds vnormal(0.0f,0.0f,0.0f);
 
+  __m128 vnorm = _mm_setzero_ps();
+  __m128 tmp;
 	for (int i=0; i<count; ++i)
 		{
+//		vnormal.x += (rgv[l].y - rgv[m].y) * (rgv[l].z + rgv[m].z);
+//		vnormal.y += (rgv[l].z - rgv[m].z) * (rgv[l].x + rgv[m].x);
+//		vnormal.z += (rgv[l].x - rgv[m].x) * (rgv[l].y + rgv[m].y);
+
+    // SSE block to replace normal calculation.
+    // note that rgv members are not properly aligned!
+    // (if they were, we could use the faster _mm_load_ps)
 		const int l = rgi[i];
-		const int m = rgi[(i < count-1) ? (i+1) : 0];
+    __m128 rvl = _mm_loadu_ps(&(rgv[l].x));
+    __m128 rvlOp = _mm_shuffle_ps(rvl, rvl, _MM_SHUFFLE(3, 0, 2, 1));
 
-		vnormal.x += (rgv[l].y - rgv[m].y) * (rgv[l].z + rgv[m].z);
-		vnormal.y += (rgv[l].z - rgv[m].z) * (rgv[l].x + rgv[m].x);
-		vnormal.z += (rgv[l].x - rgv[m].x) * (rgv[l].y + rgv[m].y);		
-		}
+    const int m = rgi[(i < count-1) ? (i+1) : 0];
+    __m128 rvm = _mm_loadu_ps(&(rgv[m].x));
+    __m128 rvmOp = _mm_shuffle_ps(rvm, rvm, _MM_SHUFFLE(3, 0, 2, 1));
+    __m128 diff = _mm_sub_ps(rvlOp, rvmOp);
 
-	const float len = vnormal.x * vnormal.x + vnormal.y * vnormal.y + vnormal.z * vnormal.z;
-	const float inv_len = (len > 0.0f) ? -1.0f/sqrtf(len) : 0.0f;
-	vnormal.x *= inv_len;
-	vnormal.y *= inv_len;
-	vnormal.z *= inv_len;
+    rvlOp = _mm_shuffle_ps(rvl, rvl, _MM_SHUFFLE(3, 1, 0, 2));
+    rvmOp = _mm_shuffle_ps(rvm, rvm, _MM_SHUFFLE(3, 1, 0, 2));
+    tmp = _mm_add_ps(rvlOp, rvmOp);
+    tmp = _mm_mul_ps(diff, tmp);
+    vnorm = _mm_sub_ps(vnorm, tmp);
+    }
 
+//  float len = vnormal.x * vnormal.x + vnormal.y * vnormal.y + vnormal.z * vnormal.z;
+//  const float inv_len = (len > 0.0f) ? -1.0f/sqrtf(len) : 0.0f;
+//	vnormal.x *= inv_len;
+//	vnormal.y *= inv_len;
+//	vnormal.z *= inv_len;
+
+  // SSE block to replace inverse square root and normalization.
+  // note that vector len calculation could be even faster by use of _mm_hadd_ps, but I am trying
+  // to avoid SSE3 to keep support for older machines
+  tmp = _mm_mul_ps(vnorm, vnorm);
+  __m128 shuf = _mm_shuffle_ps(tmp, tmp, _MM_SHUFFLE(3,0,2,1));
+  tmp = _mm_add_ps(tmp, shuf);
+  shuf = _mm_shuffle_ps(shuf, shuf, _MM_SHUFFLE(3,0,2,1));
+  tmp = _mm_add_ps(tmp, shuf);
+
+  __m128 rsqrt = _mm_rsqrt_ps(tmp);
+  vnorm = _mm_mul_ps(vnorm, rsqrt);
+  
 	for (int i=0; i<applycount; ++i)
 		{
-		const int l = rgiApply[i];
-		rgvApply[l].nx = vnormal.x;
-		rgvApply[l].ny = vnormal.y;
-		rgvApply[l].nz = vnormal.z;
+  	const int l = rgiApply[i];
+
+//		rgvApply[l].nx = vnormal.x;
+//		rgvApply[l].ny = vnormal.y;
+//		rgvApply[l].nz = vnormal.z;
+
+    // write back
+    // the inner layout of Vertex3D struct is not ideal.
+    // no 16byte aligmnent and we have to save 'tu' attribute from being overwritten
+    D3DVALUE tu = rgvApply[l].tu;
+    _mm_storeu_ps(&(rgvApply[l].nx), vnorm);
+    rgvApply[l].tu = tu;
 		}
 	}
 
