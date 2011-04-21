@@ -486,6 +486,8 @@
 #define IDC_RADIO3                      380
 #define IDD_PROPPRIMITIVE_POSITION      380
 #define IDD_PROPPRIMITIVE_VISUALS       381
+#define IDD_PROPRAMP_VISUALS1           382
+#define IDD_PROPPLUNGER_VISUALS         382
 #define IDR_TABLE_NEW                   383
 #define IDC_SLIDER2                     384
 #define IDC_ARASlider                   384
@@ -567,7 +569,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        389
+#define _APS_NEXT_RESOURCE_VALUE        390
 #define _APS_NEXT_COMMAND_VALUE         32844
 #define _APS_NEXT_CONTROL_VALUE         390
 #define _APS_NEXT_SYMED_VALUE           188

@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -55,8 +55,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 9,1,1,0
- PRODUCTVERSION 9,1,1,0
+ FILEVERSION 9,1,2,0
+ PRODUCTVERSION 9,1,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -71,13 +71,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "Visual Pinball 9.1.1"
-            VALUE "FileVersion", "9, 1, 1, 0"
+            VALUE "FileDescription", "Visual Pinball 9.1.2"
+            VALUE "FileVersion", "9, 1, 2, 0"
             VALUE "InternalName", "Visual Pinball"
             VALUE "LegalCopyright", "Copyright 2000"
             VALUE "OriginalFilename", "VPinball.EXE"
             VALUE "ProductName", "Visual Pinball"
-            VALUE "ProductVersion", "9, 1, 1, 0"
+            VALUE "ProductVersion", "9, 1, 2, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -1608,6 +1608,18 @@ BEGIN
     LTEXT           "Sides",IDC_STATIC,7,10,18,8
 END
 
+IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 127, 79
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    COMBOBOX        390,34,7,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        15000,7,31,113,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Custom2",391,"ColorControl",WS_TABSTOP,27,49,40,14
+    LTEXT           "&Type",-1,7,9,25,8
+    LTEXT           "&Color",-1,7,52,17,8
+    LTEXT           "&Image:",-1,7,21,22,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2181,6 +2193,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 164
     END
+
+    IDD_PROPPLUNGER_VISUALS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 120
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 71
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2407,7 +2427,7 @@ BEGIN
     IDS_JPG_FORMAT_ERR      "JPG decoding error,  unknown jpg format."
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
