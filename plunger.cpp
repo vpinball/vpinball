@@ -55,7 +55,23 @@ void Plunger::SetDefaults(bool fromMouseClick)
 		m_d.m_speedPull = fTmp;
 	else
 		m_d.m_speedPull = 5;
-	
+
+	hr = GetRegInt("DefaultProps\\Plunger","PlungerType", &iTmp);
+	if ((hr == S_OK) && fromMouseClick)
+		m_d.m_type = (enum PlungerType)iTmp;
+	else
+		m_d.m_type = PlungerTypeOrig;
+
+	hr = GetRegInt("DefaultProps\\Plunger","Color", &iTmp);
+	if ((hr == S_OK) && fromMouseClick)
+		m_d.m_color = iTmp;
+	else
+		m_d.m_color = RGB(76,76,76);
+
+	hr = GetRegString("DefaultProps\\Plunger","Image", m_d.m_szImage, MAXTOKEN);
+	if ((hr != S_OK) || !fromMouseClick)
+		m_d.m_szImage[0] = 0;
+
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger","ReleaseSpeed", &fTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_speedFire = fTmp;
@@ -135,6 +151,9 @@ void Plunger::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Plunger","PullSpeed", REG_SZ, &strTmp,strlen(strTmp));
 	sprintf_s(&strTmp[0], 40, "%f", m_d.m_speedFire);
 	SetRegValue("DefaultProps\\Plunger","ReleaseSpeed", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValue("DefaultProps\\Plunger","PlungerType",REG_DWORD,&m_d.m_type,4);
+	SetRegValue("DefaultProps\\Plunger","Color",REG_DWORD,&m_d.m_color,4);
+	SetRegValue("DefaultProps\\Plunger","Image", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
 	SetRegValue("DefaultProps\\Plunger","TimerEnabled",REG_DWORD, &m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\Plunger","TimerInterval",REG_DWORD, &m_d.m_tdr.m_TimerInterval,4);
 	SetRegValue("DefaultProps\\Plunger","Surface", REG_SZ, &m_d.m_szSurface, strlen(m_d.m_szSurface));
@@ -250,9 +269,12 @@ void Plunger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-#define PLUNGEPOINTS 5
 
-const float rgcrossplunger[][2] = {
+#define PLUNGEPOINTS0 5
+#define PLUNGEPOINTS1 7
+
+const float rgcrossplunger0[][2] =
+	{
 	1.0f, 0.0f,
 	1.0f, 10.0f,
 	0.35f, 20.0f,
@@ -260,14 +282,38 @@ const float rgcrossplunger[][2] = {
 	0.35f, 100.0f
 	};
 
-const float rgcrossplungerNormal[][2] = {
+const float rgcrossplungerNormal0[][2] =
+	{
 	1.0f, 0.0f,
 	0.8f, 0.6f,
 	0.0f, 1.0f,
 	1.0f, 0.0f,
 	1.0f, 0.0f
 	};
-	
+
+const float rgcrossplunger1[][2] =
+	{
+	//new plunger tip - Added by rascal
+	0.20f, 0.0f,
+	0.30f, 3.0f,
+	0.35f, 5.0f,
+	0.35f, 23.0f,
+	0.45f, 23.0f,
+	0.25f, 24.0f,
+	0.25f, 100.0f
+	};
+
+const float rgcrossplungerNormal1[][2] = {
+	//new plunger tip white
+	1.0f, 0.0f,
+	1.0f, 0.0f,
+	1.0f, 0.0f,
+	1.0f, 0.0f,
+	0.8f, 0.0f,
+	0.3f, 0.0f,
+	0.3f, 0.0f
+	};
+
 #define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
 
 void Plunger::RenderMoversFromCache(Pin3D *ppin3d)
@@ -284,18 +330,41 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	
 	const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
-	{
+	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+
 	D3DMATERIAL7 mtrl;
-	mtrl.diffuse.a = 
-	mtrl.ambient.a =
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
-	mtrl.diffuse.r = mtrl.ambient.r =
-	mtrl.diffuse.g = mtrl.ambient.g =
-	mtrl.diffuse.b = mtrl.ambient.b = 0.3f;
-	pd3dDevice->SetMaterial(&mtrl);
+	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a = 0.0f;
+	mtrl.diffuse.r = mtrl.ambient.r = r;
+	mtrl.diffuse.g = mtrl.ambient.g = g;
+	mtrl.diffuse.b = mtrl.ambient.b = b;
+	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+	mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a = 1.0f;
+	mtrl.power = 8.0f;
+
+	if (m_d.m_type == PlungerTypeModern)
+	{
+		mtrl.power = 1.0f;
+		mtrl.specular.r = 1.0f;
+		mtrl.specular.g = 1.0f;
+		mtrl.specular.b = 1.0f;
+		mtrl.specular.a = 1.0f;
+		mtrl.emissive.r = 0;
+		mtrl.emissive.g = 0;
+		mtrl.emissive.b = 0.05f;
+		mtrl.emissive.a = 1.0f;
+		mtrl.diffuse.r = 0.9f;
+		mtrl.diffuse.g = 0.9f;
+		mtrl.diffuse.b = 0.9f;
+		mtrl.diffuse.a = 1.0f;
+		mtrl.ambient.r = 0.9f;
+		mtrl.ambient.g = 0.9f;
+		mtrl.ambient.b = 0.9f;
+		mtrl.ambient.a = 1.0f;
 	}
+
+	pd3dDevice->SetMaterial(&mtrl);
 
 	const int cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke/80.0f)) + 1; // 25 frames per 80 units travel
 
@@ -305,63 +374,112 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	ppin3d->ClearExtents(&m_phitplunger->m_plungeranim.m_rcBounds, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar);
 
 	const float inv_cframes = (cframes > 1) ? ((endy - beginy)/(float)(cframes-1)) : 0.0f;
+
+
 	for (int i=0;i<cframes;i++)
-		{
+	{
 		const float height = beginy + inv_cframes*(float)i;
 
 		ObjFrame *pof = new ObjFrame();
 
-		Vertex3D rgv3D[16*PLUNGEPOINTS];
-		for (int l=0;l<16;l++)
+		if (m_d.m_type == PlungerTypeModern)
+		{
+			Vertex3D rgv3D[16*PLUNGEPOINTS1];
+			for (int l=0;l<16;l++)
 			{
-			const float angle = (float)(M_PI*2.0/16.0)*(float)l;
-			const float sn = sinf(angle);
-			const float cs = cosf(angle);
-
-			const int offset = l*PLUNGEPOINTS;
-
-			for (int m=0;m<PLUNGEPOINTS;m++)
+				const float angle = (float)(M_PI*2.0/16.0)*(float)l;
+				const float sn = sinf(angle);
+				const float cs = cosf(angle);
+				const int offset = l*PLUNGEPOINTS1;
+				for (int m=0;m<PLUNGEPOINTS1;m++)
 				{
-				rgv3D[m + offset].x = rgcrossplunger[m][0] * sn * m_d.m_width + m_d.m_v.x;
-				rgv3D[m + offset].y = height + rgcrossplunger[m][1];
-				rgv3D[m + offset].z = rgcrossplunger[m][0] * cs * m_d.m_width + m_d.m_width + zheight;
-				rgv3D[m + offset].nx = rgcrossplungerNormal[m][0] * sn;
-				rgv3D[m + offset].ny = rgcrossplungerNormal[m][1];
-				rgv3D[m + offset].nz = -rgcrossplungerNormal[m][0] * cs;
+					rgv3D[m + offset].x = rgcrossplunger1[m][0] * sn * m_d.m_width + m_d.m_v.x;
+					rgv3D[m + offset].y = height + rgcrossplunger1[m][1];
+					rgv3D[m + offset].z = rgcrossplunger1[m][0] * cs * m_d.m_width + m_d.m_width + zheight;
+					rgv3D[m + offset].nx = rgcrossplungerNormal1[m][0] * sn;
+					rgv3D[m + offset].ny = rgcrossplungerNormal1[m][1];
+					rgv3D[m + offset].nz = -rgcrossplungerNormal1[m][0] * cs;
 				}
-
-			rgv3D[PLUNGEPOINTS-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
+				rgv3D[PLUNGEPOINTS1-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
+				ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+				ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitplunger->m_plungeranim.m_znear,
+						  &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS1), fFalse);
 			}
-
-		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
-		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitplunger->m_plungeranim.m_znear,
-							  &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS), fFalse);
-
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
+			// Check if we are blitting with D3D.
+			if (g_pvp->m_pdd.m_fUseD3DBlit)
 			{
-			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
-			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ
+				// Clear the texture by copying the color and z values from the "static" buffers.
+				Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+				ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ
 				                                              , &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
-		for (int l=0;l<16;l++)
+			for (int l=0;l<16;l++)
 			{
-			const int offset = l*PLUNGEPOINTS;
+				const int offset = l*PLUNGEPOINTS1;
+				for (int m=0;m<(PLUNGEPOINTS1-1);m++)
+				{
+					WORD rgi[4] = {
+						 m + offset,
+						(m + offset + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1),
+						(m + offset + 1 + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1),
+						m + offset + 1};
 
-			for (int m=0;m<(PLUNGEPOINTS-1);m++)
+						Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
+													     (16*PLUNGEPOINTS1),rgi, 4, 0);
+				}
+			}
+		}
+		if (m_d.m_type == PlungerTypeOrig)
+		{
+			Vertex3D rgv3D[16*PLUNGEPOINTS0];
+			for (int l=0;l<16;l++)
+			{
+				const float angle = (float)(M_PI*2.0/16.0)*(float)l;
+				const float sn = sinf(angle);
+				const float cs = cosf(angle);
+				const int offset = l*PLUNGEPOINTS0;
+				for (int m=0;m<PLUNGEPOINTS0;m++)
+				{
+					rgv3D[m + offset].x = rgcrossplunger0[m][0] * sn * m_d.m_width + m_d.m_v.x;
+					rgv3D[m + offset].y = height + rgcrossplunger0[m][1];
+					rgv3D[m + offset].z = rgcrossplunger0[m][0] * cs * m_d.m_width + m_d.m_width + zheight;
+					rgv3D[m + offset].nx = rgcrossplungerNormal0[m][0] * sn;
+					rgv3D[m + offset].ny = rgcrossplungerNormal0[m][1];
+					rgv3D[m + offset].nz = -rgcrossplungerNormal0[m][0] * cs;
+				}
+				rgv3D[PLUNGEPOINTS0-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
+				ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+				ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitplunger->m_plungeranim.m_znear,
+							  &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS0), fFalse);
+
+			}
+			// Check if we are blitting with D3D.
+			if (g_pvp->m_pdd.m_fUseD3DBlit)
+			{
+				// Clear the texture by copying the color and z values from the "static" buffers.
+				Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
+				ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ
+				                                              , &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+			}
+
+			for (int l=0;l<16;l++)
+			{
+				const int offset = l*PLUNGEPOINTS0;
+				for (int m=0;m<(PLUNGEPOINTS0-1);m++)
 				{
 				WORD rgi[4] = {
 					 m + offset,
-					(m + offset + PLUNGEPOINTS) % (16*PLUNGEPOINTS),
-					(m + offset + 1 + PLUNGEPOINTS) % (16*PLUNGEPOINTS),
-					 m + offset + 1};
+					(m + offset + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0),
+					(m + offset + 1 + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0),
+					m + offset + 1};
 
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
-													     (16*PLUNGEPOINTS),rgi, 4, 0);
+					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
+												     (16*PLUNGEPOINTS0),rgi, 4, 0);
 				}
 			}
+		}
+
 
 		LPDIRECTDRAWSURFACE7 pdds;
 		pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
@@ -394,7 +512,7 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->WriteAnimObjectToCacheFile(&m_phitplunger->m_plungeranim, &m_phitplunger->m_plungeranim.m_vddsFrame);
 	}
-	}
+}
 
 STDMETHODIMP Plunger::InterfaceSupportsErrorInfo(REFIID riid)
 {
@@ -424,6 +542,9 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteFloat(FID(HPSL), m_d.m_stroke);
 	bw.WriteFloat(FID(SPDP), m_d.m_speedPull);
 	bw.WriteFloat(FID(SPDF), m_d.m_speedFire);
+	bw.WriteInt(FID(TYPE), m_d.m_type);
+	bw.WriteInt(FID(COLR), m_d.m_color);
+	bw.WriteString(FID(IMAG), m_d.m_szImage);
 
 	bw.WriteFloat(FID(MESTH), m_d.m_mechStrength);		//rlc
 	bw.WriteBool(FID(MECH), m_d.m_mechPlunger);		//
@@ -448,6 +569,7 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 
 HRESULT Plunger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{
+	m_d.m_color = RGB(76,76,76); //initialize color for new plunger
 	SetDefaults(false);
 #ifndef OLDLOAD
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
@@ -540,6 +662,19 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(NAME))
 		{
 		pbr->GetWideString((WCHAR *)m_wzName);
+		}
+	else if (id == FID(TYPE))
+		{
+		pbr->GetInt(&m_d.m_type);
+		}
+	else if (id == FID(COLR))
+		{
+		pbr->GetInt(&m_d.m_color);
+	//	if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
+		}
+	else if (id == FID(IMAG))
+		{
+		pbr->GetString(m_d.m_szImage);
 		}
 	else if (id == FID(VSBL))
 		{
@@ -696,6 +831,63 @@ STDMETHODIMP Plunger::put_FireSpeed(float newVal)
 	STARTUNDO
 
 	m_d.m_speedFire = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Plunger::get_Type(PlungerType *pVal)
+{
+	*pVal = m_d.m_type;
+
+	return S_OK;
+}
+
+STDMETHODIMP Plunger::put_Type(PlungerType newVal)
+{
+	STARTUNDO
+
+	m_d.m_type = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Plunger::get_Color(OLE_COLOR *pVal)
+{
+	*pVal = m_d.m_color;
+
+	return S_OK;
+}
+
+STDMETHODIMP Plunger::put_Color(OLE_COLOR newVal)
+{
+	STARTUNDO
+
+	m_d.m_color = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Plunger::get_Image(BSTR *pVal)
+{
+	WCHAR wz[512];
+
+	MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
+	*pVal = SysAllocString(wz);
+
+	return S_OK;
+}
+
+STDMETHODIMP Plunger::put_Image(BSTR newVal)
+{
+	STARTUNDO
+
+	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
 
 	STOPUNDO
 
@@ -917,6 +1109,9 @@ void Plunger::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	PropertyPane *pproppane;
 
 	pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
+	pvproppane->AddElement(pproppane);
+
+	pproppane = new PropertyPane(IDD_PROPPLUNGER_VISUALS, IDS_VISUALS);
 	pvproppane->AddElement(pproppane);
 
 	pproppane = new PropertyPane(IDD_PROPLIGHT_POSITION, IDS_POSITION);

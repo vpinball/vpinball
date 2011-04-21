@@ -15,6 +15,7 @@
 class PlungerData
 	{
 public:
+	COLORREF m_color;
 	Vertex2D m_v;
 	float m_width;
 	float m_height;
@@ -22,6 +23,8 @@ public:
 	float m_speedPull;
 	float m_speedFire;
 	float m_mechStrength;
+	PlungerType m_type;
+	char m_szImage[MAXTOKEN];
 	TimerDataRoot m_tdr;
 	BOOL m_mechPlunger;
 	BOOL m_autoPlunger;
@@ -119,6 +122,12 @@ public:
 	STDMETHOD(put_MechStrength)(/*[in]*/ float newVal);
 	STDMETHOD(Fire)();
 	STDMETHOD(PullBack)();
+	STDMETHOD(get_Type)(/*[out, retval]*/ PlungerType *pVal);
+	STDMETHOD(put_Type)(/*[in]*/ PlungerType newVal);
+	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
+	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_MechPlunger)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_MechPlunger)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_AutoPlunger)(/*[out, retval]*/ VARIANT_BOOL *pVal);
