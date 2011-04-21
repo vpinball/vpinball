@@ -272,15 +272,15 @@ inline void SetNormal(Vertex3D * const rgv, const WORD * const rgi, const int co
 	// SSE block to replace inverse square root and normalization.
 	// note that vector len calculation could be even faster by use of _mm_hadd_ps, but I am trying
 	// to avoid SSE3 to keep support for older machines
-  __m128 tmp = _mm_mul_ps(vnorm.xyz, vnorm.xyz);
-  const __m128 shuf1 = _mm_shuffle_ps(tmp, tmp, _MM_SHUFFLE(0,0,0,1));
-  const __m128 shuf2 = _mm_shuffle_ps(tmp, tmp, _MM_SHUFFLE(0,0,0,2));
-  tmp = _mm_add_ss(tmp, shuf1);
-  tmp = _mm_add_ss(tmp, shuf2);
+	__m128 tmp = _mm_mul_ps(vnorm.xyz, vnorm.xyz);
+	const __m128 shuf1 = _mm_shuffle_ps(tmp, tmp, _MM_SHUFFLE(0,0,0,1));
+	const __m128 shuf2 = _mm_shuffle_ps(tmp, tmp, _MM_SHUFFLE(0,0,0,2));
+	tmp = _mm_add_ss(tmp, shuf1);
+	tmp = _mm_add_ss(tmp, shuf2);
 
-  const __m128 rsqrt = rsqrtss(tmp);
-  vnorm.xyz = _mm_mul_ps(vnorm.xyz, _mm_shuffle_ps(rsqrt, rsqrt, 0));
-  
+	const __m128 rsqrt = _mm_rsqrt_ss(tmp); //rsqrtss(tmp); // latter one to increase precision if necessary at some point
+	vnorm.xyz = _mm_mul_ps(vnorm.xyz, _mm_shuffle_ps(rsqrt, rsqrt, 0));
+
 	for (int i=0; i<applycount; ++i)
 		{
   		const int l = rgiApply[i];
