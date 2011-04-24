@@ -2759,6 +2759,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										PinSound *pps = (PinSound *)lvitem.lParam;
 
 										pt->ReImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, ofn.lpstrFile, fTrue);
+										ListView_SetItemText(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, 1, ofn.lpstrFile);
 										pt->SetNonUndoableDirty(eSaveDirty);
 										}
 									}
@@ -3367,6 +3368,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 										hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 
 										pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
+										ListView_SetItemText(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, 1, ppi->m_szPath);
 										pt->SetNonUndoableDirty(eSaveDirty);
 
 										// Display new image
