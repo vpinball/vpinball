@@ -4148,10 +4148,17 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 void Player::DrawAcrylics ()
 	{
 
-  // the helper list of m_vhitacrylic only contains objects which evaluated to true in the old code.
-  // it is created once on startup and never changed during play. (SnailGary)
+	if (g_pvp->m_pdd.m_fHardwareAccel)
+	{
+		// Build a set of clipping planes which tightly bound the ball.
+		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
+		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
+	}
+
+	// the helper list of m_vhitacrylic only contains objects which evaluated to true in the old code.
+	// it is created once on startup and never changed during play. (SnailGary)
 	for (int i=0;i<m_vhitacrylic.Size();i++)
-  	m_vhitacrylic.ElementAt(i)->PostRenderStatic(m_pin3d.m_pd3dDevice);
+		m_vhitacrylic.ElementAt(i)->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
 // AMD profiler shows a lot of activity inside this block at runtime... so I decided to make a new list with
 // hitable-only objects which saves a lot of dereferencing/checks at runtime (SnailGary)
