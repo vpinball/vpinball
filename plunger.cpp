@@ -393,9 +393,9 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				const int offset = l*PLUNGEPOINTS1;
 				for (int m=0;m<PLUNGEPOINTS1;m++)
 				{
-					rgv3D[m + offset].x = rgcrossplunger1[m][0] * sn * m_d.m_width + m_d.m_v.x;
+					rgv3D[m + offset].x = rgcrossplunger1[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
 					rgv3D[m + offset].y = height + rgcrossplunger1[m][1];
-					rgv3D[m + offset].z = rgcrossplunger1[m][0] * cs * m_d.m_width + m_d.m_width + zheight;
+					rgv3D[m + offset].z = rgcrossplunger1[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight;
 					rgv3D[m + offset].nx = rgcrossplungerNormal1[m][0] * sn;
 					rgv3D[m + offset].ny = rgcrossplungerNormal1[m][1];
 					rgv3D[m + offset].nz = -rgcrossplungerNormal1[m][0] * cs;
@@ -441,9 +441,9 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				const int offset = l*PLUNGEPOINTS0;
 				for (int m=0;m<PLUNGEPOINTS0;m++)
 				{
-					rgv3D[m + offset].x = rgcrossplunger0[m][0] * sn * m_d.m_width + m_d.m_v.x;
+					rgv3D[m + offset].x = rgcrossplunger0[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
 					rgv3D[m + offset].y = height + rgcrossplunger0[m][1];
-					rgv3D[m + offset].z = rgcrossplunger0[m][0] * cs * m_d.m_width + m_d.m_width + zheight;
+					rgv3D[m + offset].z = rgcrossplunger0[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight;
 					rgv3D[m + offset].nx = rgcrossplungerNormal0[m][0] * sn;
 					rgv3D[m + offset].ny = rgcrossplungerNormal0[m][1];
 					rgv3D[m + offset].nz = -rgcrossplungerNormal0[m][0] * cs;
