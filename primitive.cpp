@@ -396,10 +396,9 @@ void Primitive::CalculateRealTimeOriginal()
 {
 	// this recalculates the Original Vertices -> should be only called, when sides are altered.
 	const float outherRadius = 0.5f/(cosf((float)M_PI/m_d.m_Sides));
-	float currentAngle;
 	// it would be better, to calculate this everytime again, 
 	// but i'd like to do as less divisions as possible.
-	const float addAngle = (float)(2.0*M_PI+0.0001f)/(float)m_d.m_Sides;
+	const float addAngle = (float)(2.0*M_PI+0.0001)/(float)m_d.m_Sides;
 
 	float minX = 10000;
 	float maxX = -10000;
@@ -417,7 +416,7 @@ void Primitive::CalculateRealTimeOriginal()
 	middle->y = 0.0f;
 	for (int i = 0; i < m_d.m_Sides+1; i++)
 	{
-		currentAngle = 0.5f * addAngle + addAngle*i;
+		const float currentAngle = (0.5f + (float)i) * addAngle;
 		// see .h file for start indexes explained
 		// calculate Top
 		Vertex3D * const topVert = &rgv3DOriginal[i+1]; // top point at side; Start index is 1 for top vertices
