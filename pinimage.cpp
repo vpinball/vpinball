@@ -1084,19 +1084,34 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 			int value = 0;
 			int totalvalue = totalwindow;
 
-			for (int m=0;m<7;m++)
+			for (int n=0;n<7;n++)
 				{
-				for (int n=0;n<7;n++)
+				const int y = i+n-3;
+				if(/*y>=0 &&*/ (unsigned int)y<(unsigned int)shadheight) // unsigned arithmetic trick includes check for >= zero
 					{
-					const int x = l+m-3;
-					const int y = i+n-3;
-					if (x>=0 && x<=(shadwidth-1) && y>=0 && y<=(shadheight-1)) //!! opt.
-						{						
-						value += (int)(*(pbits + x*3 + pitchSharp*y)) * window[m][n];
-						}
-					else
+					const BYTE *const py = pbits + pitchSharp*y;
+					for (int m=0;m<7;m++)
 						{
-						totalvalue -= window[m][n];
+						const int x = l+m-3;					
+						if (/*x>=0 &&*/ (unsigned int)x<(unsigned int)shadwidth) // dto.
+							{						
+							value += (int)(*(py + x*3)) * window[m][n];
+							}
+						else
+							{
+							totalvalue -= window[m][n];
+							}
+						}
+					}
+				else
+					{
+					for (int m=0;m<7;m++)
+						{
+						const int x = l+m-3;
+						if (/*x<0 ||*/ (unsigned int)x>=(unsigned int)shadwidth) // dto.
+							{
+							totalvalue -= window[m][n];
+							}
 						}
 					}
 				}

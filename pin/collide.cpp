@@ -687,7 +687,7 @@ void HitOctree::HitTestBall(Ball * const pball) const
 	}
 
 
-void HitOctree::HitTestBallSseInner(Ball * const pball, int i) const
+void HitOctree::HitTestBallSseInner(Ball * const pball, const int i) const
 {
   // ball can not hit itself
   if (pball == m_vho.ElementAt(i))

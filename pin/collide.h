@@ -263,7 +263,7 @@ public:
 
 	void HitTestBall(Ball * const pball) const;
 	void HitTestBallSse(Ball * const pball) const;
-	void HitTestBallSseInner(Ball * const pball, int i) const;
+	void HitTestBallSseInner(Ball * const pball, const int i) const;
 
 	void CreateNextLevel();
 
