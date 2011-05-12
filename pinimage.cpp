@@ -1032,37 +1032,34 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 	}
 
 const int rgfilterwindow[7][7] = {
-	1, 2, 3, 4, 3, 2, 1,
-	2, 3, 4, 5, 4, 3, 2,
-	3, 4, 5, 6, 5, 4, 3,
-	4, 5, 6, 7, 6, 5, 4,
-	3, 4, 5, 6, 5, 4, 3,
-	2, 3, 4, 5, 4, 3, 2,
-	1, 2, 3, 4, 3, 2, 1};
+	1, 4, 8, 10, 8, 4, 1,
+    4, 12, 25, 29, 25, 12, 4,
+    8, 25, 49, 58, 49, 25, 8,
+    10, 29, 58, 67, 58, 29, 10,
+    8, 25, 49, 58, 49, 25, 8,
+    4, 12, 25, 29, 25, 12, 4,
+    1, 4, 8, 10, 8, 4, 1};
 
 void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, const int shadwidth, const int shadheight)
 	{
 	if (!pbits) return;	//rlc  found this pointer to be NULL after some graphics errors
 
-	// Create Gaussian window (actually its not really Gaussian, but same idea)
-
-	int window[7][7];
+	/*int window[7][7]; // custom filter kernel
 	for (int i=0;i<4;i++)
 		{
 		window[0][i] = i+1;
 		window[0][6-i] = i+1;
 		window[i][0] = i+1;
 		window[6-i][0] = i+1;
-		}
+		}*/
 
 	int totalwindow = 0;
 	for (int i=0;i<7;i++)
 		{
 		for (int l=0;l<7;l++)
 			{
-			window[i][l] = window[0][l] * window[i][0];
-			window[i][l] = rgfilterwindow[i][l];
-			totalwindow += window[i][l];
+			//window[i][l] = window[0][l] * window[i][0];
+			totalwindow += rgfilterwindow[i][l];
 			}
 		}
 
@@ -1095,11 +1092,11 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 						const int x = l+m-3;					
 						if (/*x>=0 &&*/ (unsigned int)x<(unsigned int)shadwidth) // dto.
 							{						
-							value += (int)(*(py + x*3)) * window[m][n];
+							value += (int)(*(py + x*3)) * rgfilterwindow[m][n];
 							}
 						else
 							{
-							totalvalue -= window[m][n];
+							totalvalue -= rgfilterwindow[m][n];
 							}
 						}
 					}
@@ -1110,7 +1107,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 						const int x = l+m-3;
 						if (/*x<0 ||*/ (unsigned int)x>=(unsigned int)shadwidth) // dto.
 							{
-							totalvalue -= window[m][n];
+							totalvalue -= rgfilterwindow[m][n];
 							}
 						}
 					}
