@@ -1272,3 +1272,17 @@ STDMETHODIMP PinComControl::put_Y(float newVal)
 
 	return S_OK;
 }
+
+
+namespace ATL
+{
+	inline void * __stdcall __AllocStdCallThunk()
+	{
+		return ::VirtualAlloc(0, sizeof(_stdcallthunk), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	}
+ 
+	inline void __stdcall __FreeStdCallThunk(void *p)
+	{
+		if (p) ::VirtualFree(p, 0, MEM_RELEASE);
+	}
+};

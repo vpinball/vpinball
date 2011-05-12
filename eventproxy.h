@@ -32,13 +32,14 @@ public:
 		FireDispID(dispid, &dispparams);
 		}
 
-	void FireVoidEventParm(int dispid, unsigned int parm)
+/*	void FireVoidEventParm(int dispid, unsigned int parm)
 		{
 		CComVariant rgvar[1] = {  CComVariant(parm)};
 		DISPPARAMS dispparams  = {rgvar,NULL,1,0};
 
 		FireDispID(dispid, &dispparams);
 		}
+*/
 
 	void FireVoidEventParm(int dispid, char* parm)
 		{
