@@ -1128,25 +1128,22 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 
 void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 	{
-	// Create Gaussian window (actually its not really Gaussian, but same idea)
-
-	int window[7][7];
+	/*int window[7][7];
 	for (int i=0;i<4;++i)
 		{
 		window[0][i] = i+1;
 		window[0][6-i] = i+1;
 		window[i][0] = i+1;
 		window[6-i][0] = i+1;
-		}
+		}*/
 
 	int totalwindow = 0;
 	for (int i=0;i<7;++i)
 		{
 		for (int l=0;l<7;++l)
 			{
-			window[i][l] = window[0][l] * window[i][0];
-			window[i][l] = rgfilterwindow[i][l];
-			totalwindow += window[i][l];
+			//window[i][l] = window[0][l] * window[i][0];
+			totalwindow += rgfilterwindow[i][l];
 			}
 		}
 
@@ -1169,15 +1166,17 @@ void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
 		for (int l=0;l<width;l++)
 			{
 			int value = 0;
-			for (int m=0;m<7;m++)
+			for (int n=0;n<7;n++)
 				{
-				for (int n=0;n<7;n++)
+				const int y = i+n-3;
+				if(/*y>=0 &&*/ (unsigned int)y<=15)
 					{
-					const int x = l+m-3;
-					const int y = i+n-3;
-					if (x>=0 && x<=15 && y>=0 && y<=15) //!! opt.
+					BYTE * const pcy = pc + pitch*y;
+					for (int m=0;m<7;m++)
 						{
-						value += (int)(*(pc + 4*x + pitch*y)) * window[m][n];
+						const int x = l+m-3;
+						if (/*x>=0 &&*/ (unsigned int)x<=15)
+							value += (int)(*(pcy + 4*x)) * rgfilterwindow[m][n];
 						}
 					}
 				}
