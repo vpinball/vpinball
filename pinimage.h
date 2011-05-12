@@ -88,8 +88,6 @@ public:
 	LPDIRECTDRAWSURFACE7 CreateFromResource(const int id, int * const pwidth, int * const pheight);
 	LPDIRECTDRAWSURFACE7 CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
 
-	LPDIRECTDRAWSURFACE7 DecompressJPEG(PinImage * const ppi/*char *szfile*/, PinBinary * const ppb, int * const pwidth, int * const pheight);
-
 	void SetOpaque(LPDIRECTDRAWSURFACE7 pdds, const int width, const int height);
 	void SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop, const int width, const int height);
 

@@ -194,7 +194,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 			lpszToken = FindOneOf(lpszToken, szTokens, szTableFileName);
 
 //#ifdef ULTRACADE
-			char *play = StrStrI( lpCmdLine, "Play");
+			char *play = strstr( lpCmdLine, "Play");
 		
 			if( play )
 			{
@@ -208,7 +208,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 				}
 			}
 
-			char *resolution = StrStrI( lpCmdLine, "Resolution");
+			char *resolution = strstr( lpCmdLine, "Resolution");
 
 			if( resolution )
 			{
