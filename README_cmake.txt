@@ -1,17 +1,23 @@
-Instructions to building VPinball from source with CMake.
+Instructions for building VPinball from source with CMake
+---------------------------------------------------------
 
 This has been tested with Visual Studio (VS) 2008 + 2010, Professional and Express editions.
 
 Prerequisites:
 --------------
+- VPinball source code
+  Seems like you already got that.
 
-- Install CMake latest version.
+- Microsoft Visual Studio
+  The Express edition is free: http://www.microsoft.com/express/Downloads/#2010-Visual-CPP
+
+- CMake, latest version
   Download: http://www.cmake.org/cmake/resources/software.html
   Note:
   - For VS2010, minimum required version is CMake v2.8.4.
   - If you want to call CMake from the command prompt, make sure it is added to the system path during setup.
 
-- Install Microsoft DirectX SDK (August 2007).
+- Microsoft DirectX SDK (August 2007)
   Download: http://www.microsoft.com/downloads/en/details.aspx?FamilyID=529f03be-1339-48c4-bd5a-8506e5acf571
   Notes:
   - You may save some drive space by only installing the "DirectX Headers and Libs" part of the package.
@@ -88,3 +94,11 @@ Random Notes / Troubleshooting:
   You may manually specify the target directory via "-DCMAKE_INSTALL_PREFIX" command line
   option. Example:  
   cmake -G "Visual Studio 9 2008" -DCMAKE_INSTALL_PREFIX=c:\data c:\data\vpinball  
+
+- There are various build configurations to choose from:
+  - Debug = Adds debugging information in the build.
+  - Release = Optimizations enabled. Corresponds to the "Release MinDependency Fast" config in the old project files.
+  - RelWithSSE = Corresponds to the "Release MinDependency Fast+SSE" config in the old project files.
+  - RelWithDebInfo = Adds debug info while keeping optimizations.
+  (You may add more configs or adapt the existing ones to your needs. Just search the CMakeLists.txt file for those
+  strings.)

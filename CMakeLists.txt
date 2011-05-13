@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8.4)
 set(NAME vpinball)
-project(${NAME})
+set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithSSE RelWithDebInfo CACHE STRING "" FORCE)
 
+project(${NAME})
 enable_language(RC)
 
 #
@@ -302,8 +303,6 @@ include_directories(${ATL_BASEPATH} ${MFC_BASEPATH})
 #
 # Custom Build configuration settings
 #
-set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithSSE RelWithDebInfo)
-
 add_definitions(-D_ATL_STATIC_REGISTRY -D_WIN32_WINNT=0x0501 /Yu"stdafx.h")
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
