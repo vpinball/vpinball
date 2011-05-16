@@ -140,10 +140,20 @@ inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)
 
 inline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
 	{
-	return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
+	const __m128 rc1sh = _mm_shuffle_ps(_mm_loadu_ps(&rc1.left),_mm_loadu_ps(&rc1.left),_MM_SHUFFLE(1, 0, 3, 2)); // this shouldn't use loadu, but doesn't work even with __declspec(align(16))?!
+	const __m128 test = _mm_cmpge_ps(rc1sh,_mm_loadu_ps(&rc2.left));
+	const int mask = _mm_movemask_ps(test);
+	return (mask == (1|(1<<1)|(0<<2)|(0<<3)));
+
+	//return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
 	}
 
 inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 	{
-	return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow);
+	const __m128 rc1sh = _mm_shuffle_ps(_mm_loadu_ps(&rc1.left),_mm_loadu_ps(&rc1.left),_MM_SHUFFLE(1, 0, 3, 2)); // this shouldn't use loadu, but doesn't work even with __declspec(align(16))?!
+	const __m128 test = _mm_cmpge_ps(rc1sh,_mm_loadu_ps(&rc2.left));
+	const int mask = _mm_movemask_ps(test);
+	return ((mask == (1|(1<<1)|(0<<2)|(0<<3))) && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow);
+
+	//return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow);
 	}

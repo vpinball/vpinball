@@ -487,13 +487,27 @@ private:
 class FRect
 	{
 public:
+	union {
+	struct {
 	float left, top, right, bottom;
+	};
+	struct {
+	__m128 ltrb;
+	};
+	};
 	};
 
 class FRect3D
 	{
 public:
+	union {
+	struct {
 	float left, top, right, bottom, zlow, zhigh;
+	};
+	struct {
+	__m128 ltrb,zlzh;
+	};
+	};
 	};
 
 class LocalString
