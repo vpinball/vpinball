@@ -1281,30 +1281,40 @@ void PinTable::GetUniqueName(int type, WCHAR *wzUniqueName)
 	WideStrCopy(wzName, wzUniqueName);
 	}
 
-void PinTable::GetUniqueName(int type, WCHAR *wzOriginalName, WCHAR *wzUniqueName)
+void PinTable::GetUniqueNamePasting(int type, WCHAR *wzUniqueName)
 	{
 	int suffix = 1;
 	BOOL fFound = fFalse;
-	WCHAR wzName[128];
+	WCHAR wzName[MAXNAMEBUFFER];
 	WCHAR wzSuffix[10];
-
-	while (!fFound)
+	
+	//if the original name is not yet used, use that one (so there's nothing we have to do) 
+	//otherwise add/increase the suffix untill we find a name that's not used yet
+	if (m_pcv->m_vcvd.GetSortedIndex(wzUniqueName) != -1)
 		{
-		WideStrCopy(wzOriginalName, wzName);
-		_itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(WCHAR), 10);
-		WideStrCat(wzSuffix, wzName);
+		//first remove the existing suffix
+		while (iswdigit(wzUniqueName[wcslen(wzUniqueName)-1]))
+			{
+			wzUniqueName[wcslen(wzUniqueName)-1] = L'\0';
+			}
 
-		if (m_pcv->m_vcvd.GetSortedIndex(wzName) == -1)
+		while (!fFound)
 			{
-			fFound = fTrue;
+			WideStrCopy(wzUniqueName, wzName);
+			_itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(WCHAR), 10);
+			WideStrCat(wzSuffix, wzName);
+
+			if (m_pcv->m_vcvd.GetSortedIndex(wzName) == -1)
+				{
+				fFound = fTrue;
+				}
+			else
+				{
+				suffix += 1;
+				}
 			}
-		else
-			{
-			suffix += 1;
-			}
+		WideStrCopy(wzName, wzUniqueName);
 		}
-
-	WideStrCopy(wzName, wzUniqueName);
 	}
 
 void PinTable::Render(Sur * psur)
@@ -4736,18 +4746,10 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 			peditNew->InitLoad(pstm, this, &id, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
 			
 			if (type != eItemDecal)
-			{
-			WCHAR tmpName[MAXNAMEBUFFER];
-			WideStrCopy(peditNew->GetScriptable()->m_wzName, tmpName);
-
-			while (iswdigit(tmpName[wcslen(tmpName)-1]))
-			{
-				tmpName[wcslen(tmpName)-1] = L'\0';
-			}
-
-			GetUniqueName(type, tmpName,peditNew->GetScriptable()->m_wzName);
-			peditNew->InitVBA(fTrue, 0, peditNew->GetScriptable()->m_wzName);
-			}
+				{
+				GetUniqueNamePasting(type, peditNew->GetScriptable()->m_wzName);
+				peditNew->InitVBA(fTrue, 0, peditNew->GetScriptable()->m_wzName);
+				}
 
 			m_vedit.AddElement(peditNew);
 			peditNew->InitPostLoad();
