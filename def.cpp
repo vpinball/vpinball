@@ -79,6 +79,27 @@ int WzSzStrCmp(WCHAR *wz1, char *sz2)
 	return 0;
 	}
 
+int WzSzStrnCmp(WCHAR *wz1, char *sz2, int count)
+	{
+	int i = 0;
+
+	while (*wz1 != L'\0' && i < count)
+		{
+		if (*wz1++ != *sz2++)
+			{
+			return 1;
+			}
+		i++;
+		}
+	if (*sz2 != L'\0')
+		{
+		return 1;
+		}
+	return 0;
+	}
+
+
+
 LocalString::LocalString(const int resid)
 	{
 	int cchar = LoadString(g_hinstres, resid, m_szbuffer, 256);

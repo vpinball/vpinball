@@ -559,6 +559,7 @@ void WideStrCopy(WCHAR *wzin, WCHAR *wzout);
 int WideStrCmp(WCHAR *wz1, WCHAR *wz2);
 int WzSzStrCmp(WCHAR *wz1, char *sz2);
 void WideStrCat(WCHAR *wzin, WCHAR *wzout);
+int WzSzStrnCmp(WCHAR *wz1, char *sz2, int count);
 
 //void DumpNameTable (char *pszFile, char *pszName);
 
