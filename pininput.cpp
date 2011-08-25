@@ -141,24 +141,32 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 
 	hr =  ppinput->m_pJoystick[e_JoyCnt]->GetProperty( DIPROP_PRODUCTNAME,  &dstr.diph);
 
-	
-	if ((hr == S_OK) && !WzSzStrCmp(dstr.wsz, "PinballWizard"))
-		{
-			uShockDevice = e_JoyCnt;	// remember uShock
-			uShockType = 1; //set type 1 = PinballWizard
-		}
-	if ((hr == S_OK) && !WzSzStrCmp(dstr.wsz, "UltraCade Pinball"))
-		{
-			uShockDevice = e_JoyCnt;	// remember uShock
-			uShockType = 2; //set type 2 = UltraCade Pinball
-		}
-	
-	if ((hr == S_OK) && !WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
-		{
-			uShockDevice = e_JoyCnt;	// remember uShock
-			uShockType = 3; //set type 3 = Microsoft SideWinder Freestyle Pro
-		}
+	if (hr == S_OK)
+		{	
+		if (!WzSzStrCmp(dstr.wsz, "PinballWizard"))
+			{
+				uShockDevice = e_JoyCnt;	// remember uShock
+				uShockType = USHOCKTYPE_PBWIZARD; //set type 1 = PinballWizard
+			}
+		if (!WzSzStrCmp(dstr.wsz, "UltraCade Pinball"))
+			{
+				uShockDevice = e_JoyCnt;	// remember uShock
+				uShockType = USHOCKTYPE_ULTRACADE; //set type 2 = UltraCade Pinball
+			}
+		
+		if (!WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
+			{
+				uShockDevice = e_JoyCnt;	// remember uShock
+				uShockType = USHOCKTYPE_SIDEWINDER; //set type 3 = Microsoft SideWinder Freestyle Pro
+			}
 
+		// Ultimarc's UHID-A works like sidewinder with no other buttons.
+		if (!WzSzStrnCmp(dstr.wsz, "UHID Gamepad Device", 19))
+			{
+				uShockDevice = e_JoyCnt;	// remember uShock
+				uShockType = USHOCKTYPE_UHIDA; // Ultimarc's U-HID-A
+			}
+		}	
 	hr = ppinput->m_pJoystick[e_JoyCnt]->SetDataFormat(&c_dfDIJoystick);
 
 	// joystick input foreground or background focus
@@ -673,7 +681,7 @@ void PinInput::button_exit( F32 secs )
 		(Coins == 0) )										// No coins queued to be entered.
 	{
 #ifndef STUCK_EXIT_BUTTON
-		if (uShockType == 2)
+		if (uShockType == USHOCKTYPE_ULTRACADE)
 		{
 			ExitApp();  //remove pesky exit button
 		}
@@ -783,63 +791,63 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 			{
 				int updown = (input->dwData & 0x80)?DISPID_GameEvents_KeyDown:DISPID_GameEvents_KeyUp;
 
-				if(( input->dwOfs == DIJOFS_BUTTON9 ) && (uShockType == 1))	// left
+				if(( input->dwOfs == DIJOFS_BUTTON9 ) && (uShockType == USHOCKTYPE_PBWIZARD))	// left
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON8 ) && (uShockType == 2))	// left
+				else if(( input->dwOfs == DIJOFS_BUTTON8 ) && (uShockType == USHOCKTYPE_ULTRACADE))	// left
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON1 ) && (uShockType == 1)) // right
+				else if(( input->dwOfs == DIJOFS_BUTTON1 ) && (uShockType == USHOCKTYPE_PBWIZARD)) // right
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON10 ) && (uShockType == 2)) // right
+				else if(( input->dwOfs == DIJOFS_BUTTON10 ) && (uShockType == USHOCKTYPE_ULTRACADE)) // right
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON0 )	&& (uShockType == 1)) // plunge
+				else if(( input->dwOfs == DIJOFS_BUTTON0 )	&& (uShockType == USHOCKTYPE_PBWIZARD)) // plunge
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON13 )	&& (uShockType == 2)) // plunge
+				else if(( input->dwOfs == DIJOFS_BUTTON13 )	&& (uShockType == USHOCKTYPE_ULTRACADE)) // plunge
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON4 )	&& (uShockType == 1)) // volume up
+				else if(( input->dwOfs == DIJOFS_BUTTON4 )	&& (uShockType == USHOCKTYPE_PBWIZARD)) // volume up
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON5 )	&& (uShockType == 2)) // volume up
+				else if(( input->dwOfs == DIJOFS_BUTTON5 )	&& (uShockType == USHOCKTYPE_ULTRACADE)) // volume up
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON3 )	&& (uShockType == 1)) // volume down
+				else if(( input->dwOfs == DIJOFS_BUTTON3 )	&& (uShockType == USHOCKTYPE_PBWIZARD)) // volume down
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON6 )	&& (uShockType == 2)) // volume down
+				else if(( input->dwOfs == DIJOFS_BUTTON6 )	&& (uShockType == USHOCKTYPE_ULTRACADE)) // volume down
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON11 )	&& (uShockType == 1)) // coin 1
+				else if(( input->dwOfs == DIJOFS_BUTTON11 )	&& (uShockType == USHOCKTYPE_PBWIZARD)) // coin 1
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON0 )	&& (uShockType == 2)) // coin 1
+				else if(( input->dwOfs == DIJOFS_BUTTON0 )	&& (uShockType == USHOCKTYPE_ULTRACADE)) // coin 1
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON12 )	&& (uShockType == 1)) // coin 2
+				else if(( input->dwOfs == DIJOFS_BUTTON12 )	&& (uShockType == USHOCKTYPE_PBWIZARD)) // coin 2
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON1 )	&& (uShockType == 2)) // coin 2
+				else if(( input->dwOfs == DIJOFS_BUTTON1 )	&& (uShockType == USHOCKTYPE_ULTRACADE)) // coin 2
 				{
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON8 )	&& (uShockType == 1)) // start
+				else if(( input->dwOfs == DIJOFS_BUTTON8 )	&& (uShockType == USHOCKTYPE_PBWIZARD)) // start
 				{
 					// Check if we can allow the start (table is done initializing).
                     if( ((msec() - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) ||
@@ -857,7 +865,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}
                     }
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON12 )	&& (uShockType == 2)) // start
+				else if(( input->dwOfs == DIJOFS_BUTTON12 )	&& (uShockType == USHOCKTYPE_ULTRACADE)) // start
 				{
 					// Check if we can allow the start (table is done initializing).
                     if( ((msec() - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) ||
@@ -875,7 +883,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}
                     }
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON7 )	&& (uShockType == 1)) // exit
+				else if(( input->dwOfs == DIJOFS_BUTTON7 )	&& (uShockType == USHOCKTYPE_PBWIZARD)) // exit
 				{
 					// Check if we have started a game yet.
 					if ( (started()) ||
@@ -894,7 +902,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}
 					}
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON14 )	&& (uShockType == 2)) // exit
+				else if(( input->dwOfs == DIJOFS_BUTTON14 )	&& (uShockType == USHOCKTYPE_ULTRACADE)) // exit
 				{
 					// Check if we have started a game yet.
 					if ( (started()) ||
@@ -913,7 +921,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}
 					}
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON6 )	&& (uShockType == 1)) // pause menu
+				else if(( input->dwOfs == DIJOFS_BUTTON6 )	&& (uShockType == USHOCKTYPE_PBWIZARD)) // pause menu
 				{
 					if( DISPID_GameEvents_KeyDown == updown ) 
 					{
@@ -932,7 +940,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 				{					
 					FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave ] );
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON6 )	&& (uShockType == 2))	// Manual Joystick control
+				else if(( input->dwOfs == DIJOFS_BUTTON6 )	&& (uShockType == USHOCKTYPE_ULTRACADE))	// Manual Joystick control
 				{
 					if(updown&1 && g_pplayer != NULL) 
 					{					
@@ -942,7 +950,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 					rotLeftManual = g_pplayer->m_NudgeManual >= 0;	// for normal UltraCade Table
 					}
 				}
-				else if(( input->dwOfs == DIJOFS_BUTTON7 )	&& (uShockType == 2))	// Switch to manual joystick control.
+				else if(( input->dwOfs == DIJOFS_BUTTON7 )	&& (uShockType == USHOCKTYPE_ULTRACADE))	// Switch to manual joystick control.
 				{
 					if(updown&1 && g_pplayer != NULL) 
 					{
@@ -987,11 +995,11 @@ if (hr != S_OK)
 							if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
 							if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
 							if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
-							if (uShockType == 1) 
+							if (uShockType == USHOCKTYPE_PBWIZARD) 
 							{
 								g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match Pinball Wizard
 							}
-							if (uShockType == 2)
+							if (uShockType == USHOCKTYPE_ULTRACADE)
 							{
 								if (rotLeftManual)
 								{
@@ -1002,7 +1010,7 @@ if (hr != S_OK)
 								g_pplayer->UltraNudgeY(-u.i, joyk); //rotate to match joystick
 								}
 							}
-							if (uShockType == 3) 
+							if (uShockType == USHOCKTYPE_SIDEWINDER) 
 							{
 								if (rotLeftManual)
 								{
@@ -1024,11 +1032,11 @@ if (hr != S_OK)
 							if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
 							if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
 							if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
-							if (uShockType == 1) 
+							if (uShockType == USHOCKTYPE_PBWIZARD) 
 							{
 								g_pplayer->UltraNudgeY(u.i, joyk); //rotate to match Pinball Wizard
 							}
-							if (uShockType == 2) 
+							if (uShockType == USHOCKTYPE_ULTRACADE) 
 							{
 								if (rotLeftManual)
 								{
@@ -1039,7 +1047,7 @@ if (hr != S_OK)
 								g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match joystick
 								}
 							}
-							if (uShockType == 3) 
+							if (uShockType == USHOCKTYPE_SIDEWINDER) 
 							{
 								if (rotLeftManual)
 								{
@@ -1056,15 +1064,15 @@ if (hr != S_OK)
 					case DIJOFS_Z: 
 						if( g_pplayer )
 						{
-							if (uShockType == 1) //Pinball Wizard
+							if (uShockType == USHOCKTYPE_PBWIZARD) 
 							{
-							g_pplayer->mechPlungerIn(-u.i);
+								g_pplayer->mechPlungerIn(-u.i);
 							}
-							if (uShockType == 2) //UltraCade
+							if (uShockType == USHOCKTYPE_ULTRACADE)
 							{
-							g_pplayer->mechPlungerIn(u.i);
+								g_pplayer->mechPlungerIn(u.i);
 							}
-							if (uShockType == 3) //Microsoft Sidewinder - Scroll Wheel?
+							if (uShockType == USHOCKTYPE_SIDEWINDER)
 							{
 								if (rotLeftManual) //Upside Down mounting
 								{
