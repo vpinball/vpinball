@@ -809,6 +809,16 @@ PinTable::PinTable()
 	hr = GetRegInt("Player", "PBWAccelGain", &tmp);
 	if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);
 
+	// X and Y accelerometer gain implemented as such that if it doesn't exist, use the
+	// PBWAccelGain value as default.
+	m_tblAccelAmpX = m_tblAccelAmp;
+	hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
+	if (hr == S_OK) m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);
+
+	m_tblAccelAmpY = m_tblAccelAmp;
+	hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
+	if (hr == S_OK) m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);
+
     m_tblAutoStart = 0.0f;
     hr = GetRegInt("Player", "Autostart", &tmp);
     if( hr == S_OK ) m_tblAutoStart = (float)tmp*(float)(1.0/100.0);
@@ -2593,6 +2603,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	bw.WriteBool(FID(AORD), m_tblAccelNormalMount);
 	bw.WriteFloat(FID(AANG), m_tblAccelAngle);
 	bw.WriteFloat(FID(AAMP), m_tblAccelAmp);
+	bw.WriteFloat(FID(AAMPX), m_tblAccelAmpX);
+	bw.WriteFloat(FID(AAMPY), m_tblAccelAmpY);
 	bw.WriteFloat(FID(AMAMP), m_tblAccelManualAmp);
 	//////////////////
 	bw.WriteInt(FID(JLTA), m_jolt_amount);
@@ -3504,6 +3516,20 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 		pbr->GetFloat(&m_tblAccelAmp);
 		int tmp;
 		HRESULT hr = GetRegInt("Player", "PBWAccelGain", &tmp);
+		if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);		
+		}
+	else if (id == FID(AAMPX))
+		{
+		pbr->GetFloat(&m_tblAccelAmpX);
+		int tmp;
+		HRESULT hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
+		if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);		
+		}
+	else if (id == FID(AAMPY))
+		{
+		pbr->GetFloat(&m_tblAccelAmpY);
+		int tmp;
+		HRESULT hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
 		if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);		
 		}
 	else if (id == FID(AMAMP))
@@ -7671,6 +7697,57 @@ STDMETHODIMP PinTable::put_AccelerometerAmp(float newVal)
 		}
 	return S_OK;
 }
+
+STDMETHODIMP PinTable::get_AccelerometerAmpX(float *pVal)
+{
+	*pVal = (g_pplayer) ? g_pplayer->m_AccelAmpX : m_tblAccelAmpX; //VB Script or VP Editor
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_AccelerometerAmpX(float newVal)
+{
+	if (g_pplayer) g_pplayer->m_AccelAmpX = newVal; //VB Script
+	else
+		{						//VP Editor
+		int tmp;
+		const HRESULT hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
+		if (hr == S_OK) m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);
+		else 
+			{
+			STARTUNDO
+			m_tblAccelAmpX = newVal;
+			STOPUNDO
+			}
+		}
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_AccelerometerAmpY(float *pVal)
+{
+	*pVal = (g_pplayer) ? g_pplayer->m_AccelAmpY : m_tblAccelAmpY; //VB Script or VP Editor
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_AccelerometerAmpY(float newVal)
+{
+	if (g_pplayer) g_pplayer->m_AccelAmpY = newVal; //VB Script
+	else
+		{						//VP Editor
+		int tmp;
+		const HRESULT hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
+		if (hr == S_OK) m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);
+		else 
+			{
+			STARTUNDO
+			m_tblAccelAmpY = newVal;
+			STOPUNDO
+			}
+		}
+	return S_OK;
+}
+
 
 STDMETHODIMP PinTable::get_AccelerManualAmp(float *pVal)
 {
