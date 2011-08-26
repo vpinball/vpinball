@@ -152,6 +152,8 @@ public:
 	BOOL m_AccelNormalMount;	//true if normal mounting (left hand coordinates)
 	float m_AccelAngle;			// 0 Radians rotated counterclockwise (GUI is lefthand coordinates)
 	float m_AccelAmp;			// Accelerometer gain 
+	float m_AccelAmpX;			// Accelerometer gain X axis 
+	float m_AccelAmpY;			// Accelerometer gain Y axis
 	float m_AccelMAmp;			// manual input gain, generally from joysticks
 
 	U32 m_jolt_amount;

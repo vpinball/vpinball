@@ -59,6 +59,8 @@ Player::Player()
 	m_AccelNormalMount = fTrue;	// fTrue normal mounting (left hand coordinates)
 	m_AccelAngle = 0;			// 0 degrees (GUI is lefthand coordinates)
 	m_AccelAmp = 1.5f;			// Accelerometer gain 
+	m_AccelAmpX = m_AccelAmp;	// Accelerometer gain X axis
+	m_AccelAmpY = m_AccelAmp;   // Accelerometer gain Y axis
 	m_AccelMAmp = 2.5f;			// manual input gain, generally from joysticks
 
 #ifdef PLAYBACK
@@ -595,6 +597,8 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	m_AccelNormalMount = m_ptable->m_tblAccelNormalMount;	// true is normal mounting (left hand coordinates)
 	m_AccelAngle = (m_ptable->m_tblAccelAngle) * (float)(M_PI/180.0); // 0 rotated counterclockwise (GUI is lefthand coordinates)
 	m_AccelAmp = m_ptable->m_tblAccelAmp;					// Accelerometer gain 
+	m_AccelAmpX = m_ptable->m_tblAccelAmpX;
+	m_AccelAmpY = m_ptable->m_tblAccelAmpY;
 	m_AccelMAmp = m_ptable->m_tblAccelManualAmp;			// manual input gain, generally from joysticks
 
 	m_jolt_amount = (U32)m_ptable->m_jolt_amount;
@@ -1694,9 +1698,8 @@ void Player::UltraNudge()	// called on every intergral physics frame
 		const float dy = ((float)curAccel_y[j])*(float)(1.0/JOYRANGE);	
 		if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
 			dx = -dx;
-
-		m_NudgeX += m_AccelAmp*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
-		const float nugY = m_AccelAmp*(dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
+		m_NudgeX += m_AccelAmpX*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
+		const float nugY = m_AccelAmpY*(dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
 		m_NudgeY = m_AccelNormalMount ? (m_NudgeY + nugY): (m_NudgeY - nugY);	// add as left or right hand coordinate system
 	}
 }
