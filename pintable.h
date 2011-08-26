@@ -159,6 +159,10 @@ public:
 	STDMETHOD(put_AccelerometerAngle)(/*[in]*/ float newVal);
 	STDMETHOD(get_AccelerometerAmp)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_AccelerometerAmp)(/*[in]*/ float newVal);
+	STDMETHOD(get_AccelerometerAmpX)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_AccelerometerAmpX)(/*[in]*/ float newVal);
+	STDMETHOD(get_AccelerometerAmpY)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_AccelerometerAmpY)(/*[in]*/ float newVal);
 	STDMETHOD(get_AccelerManualAmp)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_AccelerManualAmp)(/*[in]*/ float newVal);
 	STDMETHOD(get_GlobalDifficulty)(/*[out, retval]*/ float *pVal);
@@ -469,7 +473,8 @@ END_CONNECTION_POINT_MAP()
     float m_tblAutoStartRetry;      // seconds before retrying to autostart.
     float m_tblVolmod;              // volume modulation for doing audio balancing
     float m_tblExitConfirm;         // seconds before trying an autostart if doing once-only method .. 0 is automethod
-
+	float m_tblAccelAmpX;			// Accelerometer gain X axis
+	float m_tblAccelAmpY;			// Accelerometer gain Y axis
 	float m_globalDifficulty;		// Table Difficulty Level
     float m_timeout;                // 0 means no timeout, otherwise in units of seconds when the table timeout should occur
 	BOOL m_TableCaching;			// Table Render Cacheing
