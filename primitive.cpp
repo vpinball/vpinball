@@ -392,14 +392,15 @@ void Primitive::Render(Sur *psur)
 
 }
 
+WORD rgiPrimStatic0[5] = {0,1,2,3,4};
+WORD rgiPrimStatic1[5] = {4,3,2,1,0};
+
 void Primitive::CalculateRealTimeOriginal()
 {
 	// this recalculates the Original Vertices -> should be only called, when sides are altered.
 	const float outherRadius = 0.5f/(cosf((float)M_PI/m_d.m_Sides));
-	// it would be better, to calculate this everytime again, 
-	// but i'd like to do as less divisions as possible.
-	const float addAngle = (float)(2.0*M_PI+0.0001)/(float)m_d.m_Sides;
-
+	float currentAngle = (float)(2.0*M_PI)/(float)(m_d.m_Sides*2);
+	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
 	float minX = 10000;
 	float maxX = -10000;
 	float minY = 10000;
@@ -410,34 +411,19 @@ void Primitive::CalculateRealTimeOriginal()
 	middle->z = 0.5f;
 	middle->x = 0.0f;
 	middle->y = 0.0f;
-	middle = &rgv3DOriginal[m_d.m_Sides+2]; // middle point bottom
+	middle = &rgv3DOriginal[m_d.m_Sides+1]; // middle point bottom
 	middle->z = -0.5f;
 	middle->x = 0.0f;
 	middle->y = 0.0f;
-	for (int i = 0; i < m_d.m_Sides+1; i++)
+	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		const float currentAngle = (0.5f + (float)i) * addAngle;
-		// see .h file for start indexes explained
 		// calculate Top
-		Vertex3D * const topVert = &rgv3DOriginal[i+1]; // top point at side; Start index is 1 for top vertices
+		Vertex3D * const topVert = &rgv3DOriginal[i+1]; // top point at side
 		topVert->z = 0.5f;
-		if (i < m_d.m_Sides)
-		{
-			topVert->x = -sinf(currentAngle)*outherRadius;
-			topVert->y = -cosf(currentAngle)*outherRadius;		
-		}
-		else
-		{
-			// as the optimization to calculate addangle
-			// brings some floating point errors with 
-			// high sides, I'll take the first point as the last point
-			// so that the sides dont have a gap.
-			topVert->x = rgv3DOriginal[1].x;
-			topVert->y = rgv3DOriginal[1].y;
-		}
-
+		topVert->x = -sinf(currentAngle)*outherRadius;
+		topVert->y = -cosf(currentAngle)*outherRadius;		
 		// calculate bottom
-		Vertex3D * const bottomVert = &rgv3DOriginal[i + m_d.m_Sides + 3]; // bottompoint at side; start index is m_sides+3 for bottom vertices
+		Vertex3D * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
 		bottomVert->z = -0.5f;
 		bottomVert->x = topVert->x;
 		bottomVert->y = topVert->y;
@@ -451,8 +437,8 @@ void Primitive::CalculateRealTimeOriginal()
 		if (topVert->y > maxY)
 			maxY = topVert->y;
 		// calculate sides
-		Vertex3D * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 4 + i]; // Side top; Start Index is m_sides*2+4
-		Vertex3D * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 5 + i]; // Side bottom; Start Index is m_sides*3 + 5
+		Vertex3D * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
+		Vertex3D * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
 		sideTopVert->z = 0.5f;
 		sideTopVert->x = topVert->x;
 		sideTopVert->y = topVert->y;
@@ -460,122 +446,106 @@ void Primitive::CalculateRealTimeOriginal()
 		sideBottomVert->x = bottomVert->x;
 		sideBottomVert->y = bottomVert->y;
 
+		currentAngle += addAngle;
 	}
 
 	// these have to be replaced for image mapping
 	middle = &rgv3DOriginal[0]; // middle point top
-	middle->tu = maxtu*0.25f;  
-	middle->tv = maxtv*0.25f;
-	middle = &rgv3DOriginal[m_d.m_Sides+2]; // middle point bottom
-	middle->tu = maxtu*0.75f;
-	middle->tv = maxtv*0.25f;
-	for (int i = 0; i < m_d.m_Sides+1; i++)
+	middle->tu = maxtu*0.25f;   // /4
+	middle->tv = maxtv*0.25f;   // /4
+	middle = &rgv3DOriginal[m_d.m_Sides+1]; // middle point bottom
+	middle->tu = maxtu*(float)(0.25*3); // /4*3
+	middle->tv = maxtv*0.25f;   // /4
+	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		// maybe i have to calculate Subpixels here... lets see how this shows up
 		Vertex3D * const topVert = &rgv3DOriginal[i+1]; // top point at side
 		topVert->tu = ((topVert->x - minX)/(maxX-minX))*(maxtu*0.5f);
 		topVert->tv = ((topVert->y - minY)/(maxY-minY))*(maxtv*0.5f);
 
-		Vertex3D * const bottomVert = &rgv3DOriginal[i + m_d.m_Sides + 3]; // bottompoint at side
+		Vertex3D * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
 		bottomVert->tu = topVert->tu+0.5f*maxtu;
 		bottomVert->tv = topVert->tv;
 
-		Vertex3D * const sideTopVert = &rgv3DOriginal[m_d.m_Sides * 2 + 4 + i];
-		Vertex3D * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides * 3 + 5 + i];
+		Vertex3D * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
+		Vertex3D * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
 
-		if (i != m_d.m_Sides)
-			sideTopVert->tu = (float)i/m_d.m_Sides*maxtu;
-		else
-			sideTopVert->tu = maxtu;
-
+		sideTopVert->tu = (float)i/m_d.m_Sides*maxtu;
 		sideTopVert->tv = 0.5f*maxtv;
 		sideBottomVert->tu = sideTopVert->tu;
-		sideBottomVert->tv = maxtv;
+		sideBottomVert->tv = /*1.0f**/maxtv;
 	}
 }
 
 void Primitive::CopyOriginalVertices()
 {
 	// copy vertices
-	for (int i = 0; i < (m_d.m_Sides*4 + 6); i++)
+	for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
 	{
 		rgv3DAll[i] = rgv3DOriginal[i];
 	}
-
-
 	// restore indices
-
-	// see .h file for explanation of the Bases
-	const int bottomBase = m_d.m_Sides + 2;
-	const int topSideBase = m_d.m_Sides * 2 + 4;
-	const int bottomSideBase = m_d.m_Sides * 3 + 5;
 	// check if anti culling is enabled:
 	if (m_d.m_DrawTexturesInside)
 	{
 		// yes: draw everything twice
+		// restore indices
 		for (int i = 0; i < m_d.m_Sides; i++)
 		{
+			const int tmp = (i == m_d.m_Sides-1) ? 1 : (i+2); // wrapping around
 			// top
-			wIndicesAll[i*6  ] = 0; // center (1st)
-			wIndicesAll[i*6+1] = i + 1; // 2nd
-			wIndicesAll[i*6+2] = i + 2; // 3rd
-										// we have no problem with wrapping around, since we doubled the start and end Vertice
-										// i is always < m_d.m_Sides and we can go to m_d.m_Sides + 1
-			wIndicesAll[i*6+3] = 0; // center (1st)
-			wIndicesAll[i*6+4] = i + 2; // 3nd
-			wIndicesAll[i*6+5] = i + 1; // 2nd
+			wIndicesAll[i*6  ] = 0;
+			wIndicesAll[i*6+1] = i + 1;
+			wIndicesAll[i*6+2] = tmp;
+			wIndicesAll[i*6+3] = 0;
+			wIndicesAll[i*6+4] = tmp;
+			wIndicesAll[i*6+5] = i + 1;
 			
+			const int tmp2 = tmp+1;
 			// bottom
-			wIndicesAll[6 * (i + m_d.m_Sides)    ] = bottomBase;		// center
-			wIndicesAll[6 * (i + m_d.m_Sides) + 1] = bottomBase + i + 1;// 2nd
-			wIndicesAll[6 * (i + m_d.m_Sides) + 2] = bottomBase + i + 2;// 3rd
-			wIndicesAll[6 * (i + m_d.m_Sides) + 3] = bottomBase;		// center 
-			wIndicesAll[6 * (i + m_d.m_Sides) + 4] = bottomBase + i + 2;// 3rd
-			wIndicesAll[6 * (i + m_d.m_Sides) + 5] = bottomBase + i + 1;// 2nd
-
+			wIndicesAll[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + tmp2;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + 2 + i;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides + 1;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides + 2 + i;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides + tmp2;
 			// sides
-				// first triangle
-			wIndicesAll[12 * (i + m_d.m_Sides)    ]  = topSideBase    + i + 1;			// topLeft 
-			wIndicesAll[12 * (i + m_d.m_Sides) + 1]  = topSideBase    + i;				// topRight
-			wIndicesAll[12 * (i + m_d.m_Sides) + 2]  = bottomSideBase + i;				// bottomRight
-			wIndicesAll[12 * (i + m_d.m_Sides) + 3]  = topSideBase    + i + 1;         
-			wIndicesAll[12 * (i + m_d.m_Sides) + 4]  = bottomSideBase + i;
-			wIndicesAll[12 * (i + m_d.m_Sides) + 5]  = topSideBase	  + i;
-				// second triangle
-			wIndicesAll[12 * (i + m_d.m_Sides) + 6]  = topSideBase    + i + 1;			// topLeft
-			wIndicesAll[12 * (i + m_d.m_Sides) + 7]  = bottomSideBase + i;				// bottomRight
-			wIndicesAll[12 * (i + m_d.m_Sides) + 8]  = bottomSideBase + i + 1;			// bottomLeft
-			wIndicesAll[12 * (i + m_d.m_Sides) + 9]  = topSideBase	  + i + 1;
-			wIndicesAll[12 * (i + m_d.m_Sides) + 10] = bottomSideBase + i + 1;
-			wIndicesAll[12 * (i + m_d.m_Sides) + 11] = bottomSideBase + i;
+			wIndicesAll[12 * (i + m_d.m_Sides)    ]  = m_d.m_Sides*2 + tmp2;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 1]  = m_d.m_Sides*2 + 2 + i;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 2]  = m_d.m_Sides*3 + 2 + i;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 3]  = m_d.m_Sides*2 + tmp2;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 4]  = m_d.m_Sides*3 + 2 + i;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 5]  = m_d.m_Sides*3 + tmp2;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 6]  = m_d.m_Sides*2 + tmp2;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 7]  = m_d.m_Sides*3 + 2 + i;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 8]  = m_d.m_Sides*2 + 2 + i;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 9]  = m_d.m_Sides*2 + tmp2;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 10] = m_d.m_Sides*3 + tmp2;
+			wIndicesAll[12 * (i + m_d.m_Sides) + 11] = m_d.m_Sides*3 + 2 + i;
 		}
 	} else {
+		// yes: draw everything twice
+		// restore indices
 		for (int i = 0; i < m_d.m_Sides; i++)
 		{
-			// we have no problem with i + 2 wrapping around, since we doubled the start and end Vertice
-			// i is always < m_d.m_Sides and we can go to m_d.m_Sides + 1
-
+			const int tmp = (i == m_d.m_Sides-1) ? 1 : (i+2); // wrapping around
 			// top
-			wIndicesAll[i*3  ] = 0; // center (1st)
-			wIndicesAll[i*3+1] = i + 2; // 3rd
-			wIndicesAll[i*3+2] = i + 1; // 2nd
-			
+			wIndicesAll[i*3  ] = 0;
+			wIndicesAll[i*3+2] = i + 1;
+			wIndicesAll[i*3+1] = tmp;
+
+			const int tmp2 = tmp+1;
 			// bottom
-			wIndicesAll[3 * (i + m_d.m_Sides)    ] = bottomBase;		// center
-			wIndicesAll[3 * (i + m_d.m_Sides) + 1] = bottomBase + i + 1;// 2nd
-			wIndicesAll[3 * (i + m_d.m_Sides) + 2] = bottomBase + i + 2;// 3rd
+			wIndicesAll[3 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
+			wIndicesAll[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + tmp2;
+			wIndicesAll[3 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 2 + i;
 
 			// sides
-				// first triangle
-			wIndicesAll[6 * (i + m_d.m_Sides)    ]  = topSideBase    + i + 1;			// topLeft 
-			wIndicesAll[6 * (i + m_d.m_Sides) + 1]  = bottomSideBase    + i;			// bottomRight
-			wIndicesAll[6 * (i + m_d.m_Sides) + 2]  = topSideBase + i;					// topRight
-
-				// second triangle
-			wIndicesAll[6 * (i + m_d.m_Sides) + 3]  = topSideBase    + i + 1;			// topLeft
-			wIndicesAll[6 * (i + m_d.m_Sides) + 4]  = bottomSideBase + i + 1;			// bottomLeft
-			wIndicesAll[6 * (i + m_d.m_Sides) + 5]  = bottomSideBase + i;				// bottomRight
-
+			wIndicesAll[6 * (i + m_d.m_Sides)    ]  = m_d.m_Sides*2 + tmp2;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 2]  = m_d.m_Sides*2 + 2 + i;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 1]  = m_d.m_Sides*3 + 2 + i;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 3]  = m_d.m_Sides*2 + tmp2;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 5]  = m_d.m_Sides*3 + 2 + i;
+			wIndicesAll[6 * (i + m_d.m_Sides) + 4]  = m_d.m_Sides*3 + tmp2;
 		}
 	}
 }
@@ -583,7 +553,7 @@ void Primitive::CopyOriginalVertices()
 void Primitive::ApplyMatrixToVertices()
 {
 	// could be optimized, if not everything is drawn.
-	for (int i = 0; i < (m_d.m_Sides*4 + 6); i++)
+	for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
 	{
 		Vertex3D * const tempVert = &rgv3DAll[i];
 		tempVert->nx = 0;
@@ -607,7 +577,7 @@ void Primitive::SortVertices()
 	// I need m_sides values at bottom
 	// I need m_sides values at the side, since i use only one depth value for each side instead of two.
 	// in the implementation i will use shell sort like implemented at wikipedia.
-	// Other algorithms are better at presorted things, but i will have some reverse sorted elements between the presorted here. 
+	// Other algorithms are better at presorted things, but i will habe some reverse sorted elements between the presorted here. 
 	// That's why insertion or bubble sort does not work fast here...
 	// input: an array a of length n with array elements numbered 0 to n ? 1
 
@@ -618,40 +588,17 @@ void Primitive::SortVertices()
 	// get depths
 	if (!m_d.m_DrawTexturesInside)
 	{
-		const float zM13 = (float)(1.0/3.0) * zMultiplicator;
-		const float yM13 = (float)(1.0/3.0) * yMultiplicator;
 		// top and bottom
 		for (int i = 0; i < m_d.m_Sides * 2; i++)
 		{
+			// this is wrong!
 			fDepth[i] = 
-				 (rgv3DAll[wIndicesAll[i*3  ]].z+
-				  rgv3DAll[wIndicesAll[i*3+1]].z+
-				  rgv3DAll[wIndicesAll[i*3+2]].z) 
-				 * zM13 +
-				 (rgv3DAll[wIndicesAll[i*3  ]].y+
-				  rgv3DAll[wIndicesAll[i*3+1]].y+
-				  rgv3DAll[wIndicesAll[i*3+2]].y) 
-				 * yM13;
-		}
-
-		const float zM05 = 0.5f * zMultiplicator;
-		const float yM05 = 0.5f * yMultiplicator;
-		for (int i = m_d.m_Sides; i < m_d.m_Sides * 2; i++)
-		{
-			fDepth[i*2] = 
-				 (rgv3DAll[wIndicesAll[i*6  ]].z+
-				  rgv3DAll[wIndicesAll[i*6+1]].z)
-				 * zM05 +
-				 (rgv3DAll[wIndicesAll[i*6  ]].y+
-				  rgv3DAll[wIndicesAll[i*6+1]].y)
-				 * yM05;
-			fDepth[i*2+1] = 
-				 (rgv3DAll[wIndicesAll[i*6  ]].z+
-				  rgv3DAll[wIndicesAll[i*6+1]].z)
-				 * zM05 +
-				 (rgv3DAll[wIndicesAll[i*6  ]].y+
-				  rgv3DAll[wIndicesAll[i*6+1]].y)
-				 * yM05;
+				zMultiplicator*rgv3DAll[wIndicesAll[i*3  ]].z+
+				zMultiplicator*rgv3DAll[wIndicesAll[i*3+1]].z+
+				zMultiplicator*rgv3DAll[wIndicesAll[i*3+2]].z+
+				yMultiplicator*rgv3DAll[wIndicesAll[i*3  ]].y+
+				yMultiplicator*rgv3DAll[wIndicesAll[i*3+1]].y+
+				yMultiplicator*rgv3DAll[wIndicesAll[i*3+2]].y;
 		}
 	} else {
 		const float zM13 = (float)(1.0/3.0) * zMultiplicator;
@@ -742,6 +689,76 @@ void Primitive::CalculateRealTime()
 	CopyOriginalVertices();
 	ApplyMatrixToVertices();
 	SortVertices();
+
+
+	// y at top is 0
+	// get inclination via m_ptable->m_inclination
+	// get layback via m_ptable->m_layback
+	// if incl = 0, the less Z, the farther away
+	// if incl = 90, the less Y, the farther away
+	// we could add layback here, but i don't think this would really impact much here.
+	/*
+	const float zMultiplicator = cosf(ANGTORAD(m_ptable->m_inclination));
+	const float yMultiplicator = sinf(ANGTORAD(m_ptable->m_inclination));
+	float farthest = 10000;
+
+
+	for (int i = 0; i < m_d.m_Sides; i++)
+	{
+		Vertex3D * const topVert = &rgv3DTop[i];
+		topVert->x = rgv3DTopOriginal[i].x;
+		topVert->y = rgv3DTopOriginal[i].y;
+		topVert->z = rgv3DTopOriginal[i].z;
+		topVert->tu = rgv3DTopOriginal[i].tu;
+		topVert->tv = rgv3DTopOriginal[i].tv;
+		topVert->nx = 0;
+		topVert->ny = 0;
+		topVert->nz = -1;
+		topVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f);
+		topVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f);
+		topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(topVert->y+0.5f);
+		topVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(topVert->y+0.5f);
+		topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f);
+		topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f);
+		fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
+		Vertex3D * const bottomVert = &rgv3DBottom[i];
+		bottomVert->x = rgv3DBottomOriginal[i].x;
+		bottomVert->y = rgv3DBottomOriginal[i].y;
+		bottomVert->z = rgv3DBottomOriginal[i].z;
+		bottomVert->tu = rgv3DBottomOriginal[i].tu;
+		bottomVert->tv = rgv3DBottomOriginal[i].tv;
+		bottomVert->nx = 0;
+		bottomVert->ny = 0;
+		bottomVert->nz = -1;
+		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(bottomVert->x+0.5f);
+		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(bottomVert->x+0.5f);
+		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(bottomVert->y+0.5f);
+		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(bottomVert->y+0.5f);
+		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(bottomVert->z+0.5f);
+		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(bottomVert->z+0.5f);
+		fullMatrix.MultiplyVector(bottomVert->x, bottomVert->y, bottomVert->z, bottomVert);
+
+		// check which is farther away and if it's the farthest.
+		// this is bad... i think i have to calculate the mean value of all, 
+		// and which is farther away wins.
+		// After the farthest, the middle has to be drawn with farthestIndex first, coming up
+		// then i should draw the top. Or should i draw everything in order of mean value?
+		// then i would do it with indices... and i should have a middle point for the top and bottom...
+		if ((topVert->z * zMultiplicator + topVert->y * yMultiplicator) < farthest)
+		{
+			farthest = topVert->z * zMultiplicator + topVert->y * yMultiplicator;
+			farthestIndex = i;
+			topBehindBottom = true;
+		}
+		if ((bottomVert->z * zMultiplicator + bottomVert->y * yMultiplicator) < farthest)
+		{
+			farthest = bottomVert->z * zMultiplicator + bottomVert->y * yMultiplicator;
+			farthestIndex = i;
+			topBehindBottom = false;
+		}
+		
+	}
+	*/
 }
 
 //3d
@@ -840,9 +857,9 @@ HRESULT DrawIndexedPrimitive(
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 
 			MY_D3DFVF_VERTEX,
 			rgv3DAll, 
-			m_d.m_Sides*4 + 6,
+			m_d.m_Sides*4 + 2,
 			wIndicesAll, 
-			12*m_d.m_Sides,
+			24*m_d.m_Sides,
 			0);
 	}
 }

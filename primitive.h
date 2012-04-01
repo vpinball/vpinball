@@ -186,19 +186,37 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 	PrimitiveData m_d;
 public:
 
+	// Vertices for 3d Display
+	Vertex3D rgv3DTopOriginal[Max_Primitive_Sides+1]; // without transformation at index=0 is the middle point
+	Vertex3D rgv3DBottomOriginal[Max_Primitive_Sides+1];
 
+	//these will be deleted:
+	Vertex3D rgv3DTop[Max_Primitive_Sides]; // with transformation
+	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of aech point could be a triangle (*3) and for both sides because of culling (*2)
+	Vertex3D rgv3DBottom[Max_Primitive_Sides];
+	WORD wBottomIndices[Max_Primitive_Sides*6];
+	
+	
 	// OK here are our vertices that should be drawn:
 		// Index				: Length		: Description
 		// 0					: 1				: Middle Point Top
-		// 1					: m_sides+1		: Top Vertices (no special order, will be sorted via Indices) + 1 for the doubled start/end
-		// m_sides+2			: 1				: Middle Point Bottom
-		// m_sides+3			: m_sides+1		: Bottom Vertices
-		// m_sides*2 + 4		: m_sides+1		: Top Sides (with normals to the side) the first/last pioint is doubled, for textures
-		// m_sides*3 + 5		: m_sides+1		: bottom Sides (With Normals to the side)
+		// 1					: m_sides		: Top Vertices (no special order, will be sorted via Indices)
+		// m_sides+1			: 1				: Middle Point Bottom
+		// m_sides+2			: m_sides		: Bottom Vertices
+		// m_sides*2 + 2		: m_sides+1		: Top Sides (with normals to the side) the first/last pioint is doubled, for textures
+		// m_sides*3 + 3		: m_sides+1		: bottom Sides (With Normals to the side)
+	//Example: 4 sides
+		// Index				: Length		: Description
+		// 0					: 1				: Middle Point Top
+		// 1 to 4				: 4				: Top Vertices (no special order, will be sorted via Indices)
+		// 5					: 1				: Middle Point Bottom
+		// 6 to 9				: 4				: Bottom Vertices
+		// 10 to 13		 		: 4				: Top Sides (with normals to the side)
+		// 14 to 17				: 4				: bottom Sides (With Normals to the side)
 	// These Vertices will always be complete. even if the user does not want to draw them (sides disabled or top/bottom disabled).
 	// maybe they are not updated anymore, but they will be there.
-	Vertex3D rgv3DOriginal[Max_Primitive_Sides*4+6];
-	Vertex3D rgv3DAll[Max_Primitive_Sides*4+6];
+	Vertex3D rgv3DOriginal[Max_Primitive_Sides*3+2];
+	Vertex3D rgv3DAll[Max_Primitive_Sides*3+2];
 	
 	// So how many indices are needed?
 		// 3 per Triangle top - we have m_sides triangles -> 0, 1, 2, 0, 2, 3, 0, 3, 4, ...
@@ -211,7 +229,40 @@ public:
 	WORD wIndicesAll[Max_Primitive_Sides*24];
 
 	// depth calculation
+		// Since we are compiling with SSE, I'll use Floating points for comparison.
+		// I need m_sides values at top
+		// I need m_sides values at bottom
+		// I need m_sides * 2 values at the side
+		// in the implementation i will use shell sort like implemented at wikipedia.
+		// Other algorithms are better at presorted things, but i will habe some reverse sorted elements between the presorted here. 
+		// That's why insertion or bubble sort does not work fast here...
+		// input: an array a of length n with array elements numbered 0 to n ? 1
+		// Implementation:
+		//		inc = round(n/2)
+		//		while inc > 0 do:
+		//		    for i = inc .. n ? 1 do:
+		//		        temp = a[i]
+		//		        j = i
+		//		        while j >= inc and a[j ? inc] > temp do:
+		//		            a[j] = a[j ? inc]
+		//		            j = j ? inc
+		//		        a[j] = temp
+		//		    inc = round(inc / 2.2)
 	float fDepth[Max_Primitive_Sides*4];
+
+	// per side i will use the following mem:
+	// 13 * float * sides * 3 (vertices) = 13 * 4 * sides * 3 = 156 * sides bytes
+	// word * 24 (indices) * sides = 4 * 24 * sides = 104 * sides bytes
+	// float * 4 * sides = 16 * sidesm
+	// so we will have: 276 bytes per side.
+	// at 100 sides: 27.6 kb... per primitive That's OK
+	// additional mem:
+	// 13 * float * 2 (additional middle points at top and bottom)
+	// = nothing...
+
+	// is top behind bottom?
+	bool topBehindBottom;
+	int farthestIndex;
 
 	// Vertices for editor display
 	Vector<Vertex3D> verticesTop;
