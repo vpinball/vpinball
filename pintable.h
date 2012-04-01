@@ -468,13 +468,13 @@ END_CONNECTION_POINT_MAP()
     BOOL m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
 	float m_tblAccelAngle;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
 	float m_tblAccelAmp;			// Accelerometer gain 
+	float m_tblAccelAmpX;			// Accelerometer gain X axis
+	float m_tblAccelAmpY;			// Accelerometer gain Y axis
 	float m_tblAccelManualAmp;		// manual input gain, generally from joysticks
     float m_tblAutoStart;           // seconds before trying an autostart if doing once-only method .. 0 is automethod
     float m_tblAutoStartRetry;      // seconds before retrying to autostart.
     float m_tblVolmod;              // volume modulation for doing audio balancing
     float m_tblExitConfirm;         // seconds before trying an autostart if doing once-only method .. 0 is automethod
-	float m_tblAccelAmpX;			// Accelerometer gain X axis
-	float m_tblAccelAmpY;			// Accelerometer gain Y axis
 	float m_globalDifficulty;		// Table Difficulty Level
     float m_timeout;                // 0 means no timeout, otherwise in units of seconds when the table timeout should occur
 	BOOL m_TableCaching;			// Table Render Cacheing
