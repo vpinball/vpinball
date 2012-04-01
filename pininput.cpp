@@ -1061,10 +1061,10 @@ if (hr != S_OK)
 						}
 						break;
 
-					case DIJOFS_Z: 
+					case DIJOFS_Z:
 						if( g_pplayer )
 						{
-							if (uShockType == USHOCKTYPE_PBWIZARD) 
+							if (uShockType == USHOCKTYPE_PBWIZARD)
 							{
 								g_pplayer->mechPlungerIn(-u.i);
 							}
@@ -1072,38 +1072,32 @@ if (hr != S_OK)
 							{
 								g_pplayer->mechPlungerIn(u.i);
 							}
-							if (uShockType == USHOCKTYPE_SIDEWINDER)
-							{
-								if (rotLeftManual) //Upside Down mounting
-								{
-									g_pplayer->mechPlungerIn(-u.i); //rotate to match Microsoft Sidewinder
-								}
-								else
-								{
-									g_pplayer->mechPlungerIn(u.i); //rotate to match Microsoft Sidewinder
-								}
-							}
 						}
 						break;
-
 					case DIJOFS_RX:break;
 					case DIJOFS_RY:break;
 					case DIJOFS_RZ:break;
 					case DIJOFS_SLIDER(0):
-#ifdef _DEBUGx
-						if( g_pplayer )// && uShockDevice == joyk) 
-						{
-							g_pplayer->mechPlungerIn(u.i); //testing
-						}
-#endif
-						break;
-
-					case DIJOFS_POV(0):
+					if( g_pplayer )
+		                        {
+                		            if (uShockType == USHOCKTYPE_SIDEWINDER)
+		                            {
+                		                if (rotLeftManual) //Upside Down mounting
+                                		{
+		                                    g_pplayer->mechPlungerIn(-u.i); //rotate to match Microsoft Sidewinder
+                		                }
+                                		else
+		                                {
+                		                    g_pplayer->mechPlungerIn(u.i); //rotate to match Microsoft Sidewinder
+                                		}
+		                            }
+                		        }
+	                        break;
+				case DIJOFS_POV(0):
 						break;
 						default:
 						break;
 				}
-//#endif
 			}
 		}
 	}
