@@ -805,21 +805,28 @@ PinTable::PinTable()
 	hr = GetRegInt("Player", "PBWRotation", &tmp);
     if (hr == S_OK) m_tblAccelAngle = (float)tmp;
 
+
 	m_tblAccelAmp = 1.5f;								// Accelerometer gain 
 	hr = GetRegInt("Player", "PBWAccelGain", &tmp);
 	if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);
 
 	// X and Y accelerometer gain implemented as such that if it doesn't exist, use the
 	// PBWAccelGain value as default.
-	m_tblAccelAmpX = m_tblAccelAmp;
+	m_tblAccelAmpX = 1.5f; //m_tblAccelAmpX = m_tblAccelAmp;
 	hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
 	if (hr == S_OK) m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);
 
-	m_tblAccelAmpY = m_tblAccelAmp;
+	m_tblAccelAmpY = 1.5f; //m_tblAccelAmpY = m_tblAccelAmp;
 	hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
 	if (hr == S_OK) m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);
 
-    m_tblAutoStart = 0.0f;
+	m_tblAccelManualAmp = 3.5f;							// manual input gain, generally from joysticks
+	hr = GetRegInt("Player", "JoystickGain", &tmp);
+	if (hr == S_OK) m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
+
+
+	
+	m_tblAutoStart = 0.0f;
     hr = GetRegInt("Player", "Autostart", &tmp);
     if( hr == S_OK ) m_tblAutoStart = (float)tmp*(float)(1.0/100.0);
 
@@ -846,10 +853,6 @@ PinTable::PinTable()
     m_tblExitConfirm = 0.0f;
     hr = GetRegInt("Player", "Exitconfirm", &tmp);
     if( hr == S_OK ) m_tblExitConfirm = (float)tmp*(float)(1.0/60.0);
-
-	m_tblAccelManualAmp = 3.5f;							// manual input gain, generally from joysticks
-	hr = GetRegInt("Player", "JoystickGain", &tmp);
-	if (hr == S_OK) m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
 
 	// Write the version of this exe to the registry.  
 	// This will be read later by the front end.
@@ -2603,9 +2606,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	bw.WriteBool(FID(AORD), m_tblAccelNormalMount);
 	bw.WriteFloat(FID(AANG), m_tblAccelAngle);
 	bw.WriteFloat(FID(AAMP), m_tblAccelAmp);
-	bw.WriteFloat(FID(AAMPX), m_tblAccelAmpX);
-	bw.WriteFloat(FID(AAMPY), m_tblAccelAmpY);
-	bw.WriteFloat(FID(AMAMP), m_tblAccelManualAmp);
+	bw.WriteFloat(FID(AAMX), m_tblAccelAmpX);
+	bw.WriteFloat(FID(AAMY), m_tblAccelAmpY);
+	bw.WriteFloat(FID(AMAM), m_tblAccelManualAmp);
 	//////////////////
 	bw.WriteInt(FID(JLTA), m_jolt_amount);
 	bw.WriteInt(FID(TLTA), m_tilt_amount);	
@@ -3518,21 +3521,21 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 		HRESULT hr = GetRegInt("Player", "PBWAccelGain", &tmp);
 		if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);		
 		}
-	else if (id == FID(AAMPX))
+	else if (id == FID(AAMX))
 		{
 		pbr->GetFloat(&m_tblAccelAmpX);
 		int tmp;
 		HRESULT hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
-		if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);		
+		if (hr == S_OK) m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);		
 		}
-	else if (id == FID(AAMPY))
+	else if (id == FID(AAMY))
 		{
 		pbr->GetFloat(&m_tblAccelAmpY);
 		int tmp;
 		HRESULT hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
-		if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);		
+		if (hr == S_OK) m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);		
 		}
-	else if (id == FID(AMAMP))
+	else if (id == FID(AMAM))
 		{
 		pbr->GetFloat(&m_tblAccelManualAmp);
 		int tmp;
