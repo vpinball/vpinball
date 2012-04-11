@@ -8,6 +8,14 @@ U32 PinInput::m_PreviousKeys;
 U32 PinInput::m_ChangedKeys;
 //int InputControlRun;
 
+int m_plunger_reverse;
+int m_plunger_z;
+int m_plunger_rx;
+int m_plunger_ry;
+int m_plunger_rz;
+int m_plunger_slider;
+int m_pbw_default_buttons;
+
 int e_JoyCnt;
 int uShockDevice = -1;	// only one uShock device
 int uShockType = 0;
@@ -37,6 +45,42 @@ PinInput::PinInput()
 	e_JoyCnt = 0;
 	//m_pJoystick = NULL;
 	for (int k = 0; k < PININ_JOYMXCNT; ++k) m_pJoystick[k] = NULL;
+
+// added detection of registry entries to add enabling/disabling of specific axes to use for analog plunger control and ability to turn off the default
+// button layout of the PBW controller if so desired. - Koadic
+	
+	HRESULT hr;
+	int tmp;
+
+	m_plunger_reverse = 0;										// Setting EnableReversePlungerAxis in the registry to 1 will enable reversing the axis
+	hr = GetRegInt("Player", "EnableReversePlungerAxis", &tmp); // for the plunger on Generic Gamepads and Sidewinder Freestyle Pro (USB) incase it is 
+	if (hr == S_OK) m_plunger_reverse = tmp;					// required by the mounting solution. Not used for PBW/Ultracade Plunger 
+
+	m_plunger_z = 1;											// On by default, enables Z-Axis Plunger for Generic Gamepads and allows disabling
+	hr = GetRegInt("Player", "Enable_Z", &tmp);					// of the Z-Axis on the PBW so the rZ-Axis can be used instead; because on my unit,
+	if (hr == S_OK) m_plunger_z = tmp;							// the rZ-Axis has a much larger detected range than the Z-Axis (both operated by plunger)
+
+	m_plunger_rz = 0;											// Setting Enable_rZ in the registry to 1 enables the rZ-Axis Plunger for Generic Gamepads 
+	hr = GetRegInt("Player", "Enable_rZ", &tmp);				// and the PBW. Doing so should also disable usability of the Z axis (which is enabled by
+	if (hr == S_OK) m_plunger_rz = tmp;							// default), but won't effect other Axes.
+
+	m_plunger_rx = 0;											// Setting Enable_rX in the registry to 1 enables the rX-Axis Plunger for Generic Gamepads
+	hr = GetRegInt("Player", "Enable_rX", &tmp);
+	if (hr == S_OK) m_plunger_rx = tmp;
+
+	m_plunger_ry = 0;											// Setting Enable_ry in the registry to 1 enables the rY-Axis Plunger for Generic Gamepads
+	hr = GetRegInt("Player", "Enable_rY", &tmp);
+	if (hr == S_OK) m_plunger_ry = tmp;
+
+	m_plunger_slider = 0;										// Setting Enable_Slider in the registry to 1 enables the Slider Plunger for Generic Gamepads
+	hr = GetRegInt("Player", "Enable_Slider", &tmp);
+	if (hr == S_OK) m_plunger_slider = tmp;
+
+	m_pbw_default_buttons = 1;									// On by default. Setting PBWDefaultButtons in the registry to 0 turns off all hard-coded
+	hr = GetRegInt("Player", "PBWDefaultButtons", &tmp);		// buttons in the PBW profile so they can be set with another utility such as Joy2Key or XPadder
+	if (hr == S_OK) m_pbw_default_buttons = tmp;
+
+// end of additions
 	}
 
 
@@ -148,23 +192,27 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 				uShockDevice = e_JoyCnt;	// remember uShock
 				uShockType = USHOCKTYPE_PBWIZARD; //set type 1 = PinballWizard
 			}
-		if (!WzSzStrCmp(dstr.wsz, "UltraCade Pinball"))
+		else if (!WzSzStrCmp(dstr.wsz, "UltraCade Pinball"))
 			{
 				uShockDevice = e_JoyCnt;	// remember uShock
 				uShockType = USHOCKTYPE_ULTRACADE; //set type 2 = UltraCade Pinball
 			}
 		
-		if (!WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
+		else if (!WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
 			{
 				uShockDevice = e_JoyCnt;	// remember uShock
 				uShockType = USHOCKTYPE_SIDEWINDER; //set type 3 = Microsoft SideWinder Freestyle Pro
 			}
 
 		// Ultimarc's UHID-A works like sidewinder with no other buttons.
-		if (!WzSzStrnCmp(dstr.wsz, "UHID Gamepad Device", 19))
+		else if (!WzSzStrnCmp(dstr.wsz, "UHID Gamepad Device", 19))
 			{
 				uShockDevice = e_JoyCnt;	// remember uShock
 				uShockType = USHOCKTYPE_UHIDA; // Ultimarc's U-HID-A
+			}
+		else 
+			{
+				uShockType = USHOCKTYPE_GENERIC; //Generic Gamepad
 			}
 		}	
 	hr = ppinput->m_pJoystick[e_JoyCnt]->SetDataFormat(&c_dfDIJoystick);
@@ -787,7 +835,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 			int joyk = input->dwSequence - APP_JOYSTICKMN ;	//rlc joystick index
 			static bool rotLeftManual = false;
 
-			if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
+			if ((input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31) && (m_pbw_default_buttons == 1)) //added ability to set registry entry to turn off default button layout
 			{
 				int updown = (input->dwData & 0x80)?DISPID_GameEvents_KeyDown:DISPID_GameEvents_KeyUp;
 
@@ -1012,20 +1060,13 @@ if (hr != S_OK)
 							}
 							if (uShockType == USHOCKTYPE_SIDEWINDER) 
 							{
-								if (rotLeftManual)
-								{
-									g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match Microsoft Sidewinder
-								}
-								else
-								{
-									g_pplayer->UltraNudgeX(u.i, joyk); //rotate to match Microsoft Sidewinder
-								}
+								g_pplayer->UltraNudgeX(u.i, joyk);
 							}
 						}
 						break;
-								   
+
 					case DIJOFS_Y: 
-						if( g_pplayer ) 
+						if( g_pplayer )
 						{
 							//Deadzone Y Axis
 							if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
@@ -1049,14 +1090,7 @@ if (hr != S_OK)
 							}
 							if (uShockType == USHOCKTYPE_SIDEWINDER) 
 							{
-								if (rotLeftManual)
-								{
-									g_pplayer->UltraNudgeY(-u.i, joyk); //rotate to match Microsoft Sidewinder
-								}
-								else
-								{
-								g_pplayer->UltraNudgeY(u.i, joyk); //rotate to match Microsoft Sidewinder
-								}
+								g_pplayer->UltraNudgeY(u.i, joyk);
 							}
 						}
 						break;
@@ -1064,36 +1098,115 @@ if (hr != S_OK)
 					case DIJOFS_Z:
 						if( g_pplayer )
 						{
-							if (uShockType == USHOCKTYPE_PBWIZARD)
-							{
-								g_pplayer->mechPlungerIn(-u.i);
-							}
-							if (uShockType == USHOCKTYPE_ULTRACADE)
-							{
-								g_pplayer->mechPlungerIn(u.i);
+							if ((m_plunger_z == 1) && (m_plunger_rz == 0))		// can disable use of Z Axis for PBW plunger to use the
+							{													// rZ Axis instead, which if enabled disables the Z Axis
+								if (uShockType == USHOCKTYPE_PBWIZARD) 
+								{
+									g_pplayer->mechPlungerIn(-u.i);
+								}
+								if (uShockType == USHOCKTYPE_GENERIC)
+								{
+									if (m_plunger_reverse == 0)
+									{
+										g_pplayer->mechPlungerIn(-u.i);
+									}
+									else
+									{
+										g_pplayer->mechPlungerIn(u.i);
+									}
+								}
+								if (uShockType == USHOCKTYPE_ULTRACADE)
+								{
+									g_pplayer->mechPlungerIn(u.i);
+								}
 							}
 						}
 						break;
-					case DIJOFS_RX:break;
-					case DIJOFS_RY:break;
-					case DIJOFS_RZ:break;
+
+					case DIJOFS_RX:
+						if( g_pplayer )
+						{
+							if ((uShockType == USHOCKTYPE_GENERIC) && (m_plunger_rx == 1))
+							{
+								if (m_plunger_reverse == 0)
+								{
+									g_pplayer->mechPlungerIn(-u.i);
+								}
+								else
+								{
+									g_pplayer->mechPlungerIn(u.i);
+								}
+							}
+						}
+						break;
+
+					case DIJOFS_RY:
+						if ( g_pplayer )
+						{
+							if ((uShockType == USHOCKTYPE_GENERIC) && (m_plunger_ry == 1))
+							{
+								if (m_plunger_reverse == 0)
+								{
+									g_pplayer->mechPlungerIn(-u.i);
+								}
+								else
+								{
+									g_pplayer->mechPlungerIn(u.i);
+								}
+							}
+						}
+						break;
+
+					case DIJOFS_RZ:
+						if( g_pplayer )
+						{
+							if (uShockType == USHOCKTYPE_PBWIZARD) 
+							{
+								g_pplayer->mechPlungerIn(u.i);
+							}
+							if ((uShockType == USHOCKTYPE_GENERIC) && (m_plunger_rz == 1))
+							{
+								if (m_plunger_reverse == 0)
+								{
+									g_pplayer->mechPlungerIn(-u.i);
+								}
+								else
+								{
+									g_pplayer->mechPlungerIn(u.i);
+								}
+							}
+						}
+						break;
+
 					case DIJOFS_SLIDER(0):
-					if( g_pplayer )
-		                        {
-                		            if (uShockType == USHOCKTYPE_SIDEWINDER)
-		                            {
-                		                if (rotLeftManual) //Upside Down mounting
-                                		{
-		                                    g_pplayer->mechPlungerIn(-u.i); //rotate to match Microsoft Sidewinder
-                		                }
-                                		else
-		                                {
-                		                    g_pplayer->mechPlungerIn(u.i); //rotate to match Microsoft Sidewinder
-                                		}
-		                            }
-                		        }
-	                        break;
-				case DIJOFS_POV(0):
+						if( g_pplayer )
+						{
+							if (m_plunger_reverse == 0)
+							{
+								if (uShockType == USHOCKTYPE_SIDEWINDER)
+								{
+									g_pplayer->mechPlungerIn(-u.i);
+								}
+								if ((uShockType == USHOCKTYPE_GENERIC) && (m_plunger_slider == 1))
+								{
+									g_pplayer->mechPlungerIn(-u.i);
+								}
+							}
+							else
+							{
+								if (uShockType == USHOCKTYPE_SIDEWINDER)
+								{
+									g_pplayer->mechPlungerIn(u.i);
+								}
+								if ((uShockType == USHOCKTYPE_GENERIC) && (m_plunger_slider == 1))
+								{
+									g_pplayer->mechPlungerIn(u.i);
+								}
+							}
+						}
+						break;
+
+					case DIJOFS_POV(0):
 						break;
 						default:
 						break;
