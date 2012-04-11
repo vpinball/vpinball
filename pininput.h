@@ -5,7 +5,7 @@
 #define USHOCKTYPE_PBWIZARD		1
 #define USHOCKTYPE_ULTRACADE	2
 #define USHOCKTYPE_SIDEWINDER	3
-#define USHOCKTYPE_UHIDA		3 // Shares the MS Sidewinder type.
+#define USHOCKTYPE_GENERIC		4
 
 #define APP_KEYBOARD 0
 #define APP_JOYSTICKMN 1 
