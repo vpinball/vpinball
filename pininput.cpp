@@ -204,14 +204,9 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 				uShockType = USHOCKTYPE_SIDEWINDER; //set type 3 = Microsoft SideWinder Freestyle Pro
 			}
 
-		// Ultimarc's UHID-A works like sidewinder with no other buttons.
-		else if (!WzSzStrnCmp(dstr.wsz, "UHID Gamepad Device", 19))
-			{
-				uShockDevice = e_JoyCnt;	// remember uShock
-				uShockType = USHOCKTYPE_UHIDA; // Ultimarc's U-HID-A
-			}
 		else 
 			{
+				uShockDevice = e_JoyCnt;	// remember uShock
 				uShockType = USHOCKTYPE_GENERIC; //Generic Gamepad
 			}
 		}	
@@ -1058,6 +1053,10 @@ if (hr != S_OK)
 								g_pplayer->UltraNudgeY(-u.i, joyk); //rotate to match joystick
 								}
 							}
+							if (uShockType == USHOCKTYPE_GENERIC)
+							{
+								g_pplayer->UltraNudgeX(-u.i, joyk);
+							}
 							if (uShockType == USHOCKTYPE_SIDEWINDER) 
 							{
 								g_pplayer->UltraNudgeX(u.i, joyk);
@@ -1087,6 +1086,10 @@ if (hr != S_OK)
 								{
 								g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match joystick
 								}
+							}
+							if (uShockType == USHOCKTYPE_GENERIC)
+							{
+								g_pplayer->UltraNudgeY(u.i, joyk);
 							}
 							if (uShockType == USHOCKTYPE_SIDEWINDER) 
 							{
