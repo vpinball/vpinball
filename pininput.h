@@ -89,23 +89,34 @@ public:
 	HWND m_hwnd;
 };
 
-// - Added by AMH
-#define PININ_LEFT       0x00000001
-#define PININ_RIGHT      0x00000002
-#define PININ_LEFT2      0x00000004
-#define PININ_RIGHT2     0x00000008
-#define PININ_START      0x00000010
-#define PININ_COIN1      0x00000020
-#define PININ_COIN2      0x00000040
-#define PININ_PLUNGE     0x00000080
-#define PININ_VOL_UP     0x00000100
-#define PININ_VOL_DOWN   0x00000200
-#define PININ_TEST       0x00000400
-#define PININ_SERVICE1   0x00000800
-#define PININ_DBA		 0x00001000
-#define PININ_EXITGAME   0x00002000
+// - Added by AMH --modified by Koadic (not sure if necessary, but doesn't hurt anything)
+#define PININ_LEFT           0x00000001
+#define PININ_RIGHT          0x00000002
+#define PININ_LEFT2          0x00000004
+#define PININ_RIGHT2         0x00000008
+#define PININ_PLUNGE         0x00000010
+#define PININ_START          0x00000020
+#define PININ_BUYIN          0x00000040
+#define PININ_COIN1          0x00000080
+#define PININ_COIN2		     0x00000100
+#define PININ_COIN3          0x00000200
+#define PININ_COIN4          0x00000400
+#define PININ_SERVICECANCEL  0x00000800
+#define PININ_SERVICE1       0x00001000
+#define PININ_SERVICE2       0x00002000
+#define PININ_SERVICEENTER   0x00004000
+#define PININ_COINDOOR       0x00008000
+#define PININ_VOL_UP         0x00010000
+#define PININ_VOL_DOWN       0x00020000
+#define PININ_EXITGAME       0x00040000
+#define PININ_LTILT          0x00080000
+#define PININ_CTILT          0x00100000
+#define PININ_RTILT          0x00200000
+#define PININ_MTILT          0x00400000
+#define PININ_FRAMES         0x00800000
 
-#define PININ_ANY        0xffffffff
+
+#define PININ_ANY            0xffffffff
 
 U32 Pressed ( U32 mask );
 U32 Released( U32 mask );
