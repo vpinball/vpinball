@@ -498,6 +498,10 @@
 #define IDR_REGISTRY2                   387
 #define IDC_StretchMonitor              388
 #define DISPID_IMAGEMAPPING             389
+#define IDC_CHECK1                      394
+#define IDC_CHECK3                      396
+#define IDC_EDIT2                       397
+#define IDC_CHECK2                      398
 #define IDC_ADDCREDITBUTTON2            400
 #define IDC_ADDCREDIT2                  401
 #define IDC_ADDCREDITKEY2               401
@@ -511,6 +515,47 @@
 #define IDC_VOLUMEUP                    409
 #define IDC_DEBUGBALLSBUTTON            410
 #define IDC_DEBUGBALL                   411
+#define IDC_JOYLFLIPCOMBO               501
+#define IDC_JOYRFLIPCOMBO               502
+#define IDC_JOYPLUNGERCOMBO             503
+#define IDC_JOYLMAGNACOMBO              504
+#define IDC_JOYRMAGNACOMBO              505
+#define IDC_JOYADDCREDITCOMBO           506
+#define IDC_JOYADDCREDIT2COMBO          507
+#define IDC_JOYSTARTCOMBO               508
+#define IDC_JOYEXITCOMBO                509
+#define IDC_JOYFPSCOMBO                 510
+#define IDC_JOYVOLUPCOMBO               511
+#define IDC_JOYVOLDNCOMBO               512
+#define IDC_PLUNGERAXIS                 513
+#define IDC_DefaultLayout               514
+#define IDC_ReversePlunger              515
+#define IDC_JOYLTILTCOMBO               516
+#define IDC_JOYCTILTCOMBO               517
+#define IDC_JOYRTILTCOMBO               518
+#define IDC_UDAXISCOMBO                 519
+#define IDC_LRAXISCOMBO                 520
+#define IDC_UDAXISGAIN                  521
+#define IDC_LRAXISGAIN                  522
+#define IDC_UDAXISFLIP                  523
+#define IDC_LRAXISFLIP                  524
+#define IDC_GLOBALACCEL                 525
+#define IDC_GLOBALNMOUNT                526
+#define IDC_GLOBALROTATION              527
+#define IDC_GLOBALJOLT                  528
+#define IDC_CBGLOBALROTATION            529
+#define IDC_CBGLOBALJOLT                530
+#define IDC_JOYPMBUYIN                  531
+#define IDC_JOYPMCOIN3                  532
+#define IDC_JOYPMCOIN4                  533
+#define IDC_JOYPMCOINDOOR               534
+#define IDC_JOYPMCANCEL                 535
+#define IDC_JOYPMDOWN                   536
+#define IDC_JOYPMUP                     537
+#define IDC_JOYPMENTER                  538
+#define IDC_DEADZONEAMT                 539
+#define IDC_CBGLOBALTILT                540
+#define IDC_GLOBALTILT                  541
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768
@@ -571,7 +616,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        390
 #define _APS_NEXT_COMMAND_VALUE         32844
-#define _APS_NEXT_CONTROL_VALUE         390
+#define _APS_NEXT_CONTROL_VALUE         399
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
