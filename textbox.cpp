@@ -329,7 +329,7 @@ void Textbox::RenderText()
 
 	if (m_d.m_fTransparent)
 		{
-		m_pobjframe->pdds->Blt(NULL, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLTFAST_WAIT, NULL);
+		m_pobjframe->pdds->Blt(NULL, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLT_WAIT, NULL);
 		m_pobjframe->pdds->GetDC(&hdc);
 		}
 	else
@@ -406,7 +406,7 @@ void Textbox::RenderText()
 
 	m_pobjframe->pdds->ReleaseDC(hdc);
 
-	ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe->rc, m_pobjframe->pdds, NULL, DDBLTFAST_WAIT, NULL);
+	ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe->rc, m_pobjframe->pdds, NULL, DDBLT_WAIT, NULL);
 
 	UpdateRect *pur = new UpdateRect();
 	pur->m_rcupdate = m_pobjframe->rc;
