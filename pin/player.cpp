@@ -1206,7 +1206,7 @@ void Player::InitAnimations(HWND hwndProgress)
 	m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
 
 	// Set up z-buffer to the static one, so movers can clip to it
-	m_pin3d.m_pddsZBuffer->Blt(NULL, m_pin3d.m_pddsStaticZ, NULL, DDBLTFAST_WAIT, NULL);
+	m_pin3d.m_pddsZBuffer->Blt(NULL, m_pin3d.m_pddsStaticZ, NULL, DDBLT_WAIT, NULL);
 	m_pin3d.m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0L );
 
 	// Draw stuff
@@ -1264,8 +1264,8 @@ void Player::InitAnimations(HWND hwndProgress)
 	hr = m_pin3d.m_pd3dDevice->EndScene();
 
 	// Copy the "static" buffer to the back buffer.
-	m_pin3d.m_pddsBackBuffer->Blt(NULL, m_pin3d.m_pddsStatic, NULL, DDBLTFAST_WAIT , NULL);
-	m_pin3d.m_pddsZBuffer->Blt(NULL, m_pin3d.m_pddsStaticZ, NULL, DDBLTFAST_WAIT , NULL);
+	m_pin3d.m_pddsBackBuffer->Blt(NULL, m_pin3d.m_pddsStatic, NULL, DDBLT_WAIT , NULL);
+	m_pin3d.m_pddsZBuffer->Blt(NULL, m_pin3d.m_pddsStaticZ, NULL, DDBLT_WAIT , NULL);
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz)
@@ -2520,7 +2520,7 @@ void Player::Render()
 	}
 	else
 	{
-		// When not antilaiasing, we can get a perf win by
+		// When not antialiasing, we can get a perf win by
 		// drawing the ball first.  That way, the part of the
 		// shadow that gets obscured doesn't need to do
 		// alpha-blending
@@ -2557,7 +2557,7 @@ void Player::Render()
 		m_fCleanBlt = fFalse;
 	}
 
-	if ( m_nudgetime &&							// Table is being nudged.
+	if ( m_nudgetime &&					// Table is being nudged.
 		 g_pplayer->m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
 		// Draw with an offset to shake the display.

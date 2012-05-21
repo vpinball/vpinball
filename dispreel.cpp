@@ -1901,7 +1901,7 @@ void DispReel::UpdateObjFrame()
     if (m_d.m_fTransparent)
     {
         // yes, then copy the current backgrount into the object frame
-        m_pobjframe->pdds->Blt(NULL, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLTFAST_WAIT, NULL);
+        m_pobjframe->pdds->Blt(NULL, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLT_WAIT, NULL);
     }
     else
     {

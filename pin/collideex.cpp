@@ -951,7 +951,7 @@ void PolyDropAnimObject::Reset()
 
 ObjFrame *TextboxAnimObject::Draw3D(RECT *prc)
 	{
-	g_pplayer->m_pin3d.m_pddsBackBuffer->Blt(&m_ptextbox->m_pobjframe->rc, m_ptextbox->m_pobjframe->pdds, NULL, DDBLTFAST_WAIT, NULL);
+	g_pplayer->m_pin3d.m_pddsBackBuffer->Blt(&m_ptextbox->m_pobjframe->rc, m_ptextbox->m_pobjframe->pdds, NULL, DDBLT_WAIT, NULL);
 
 	return NULL;
 	}
