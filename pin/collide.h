@@ -165,7 +165,7 @@ public:
 
 	virtual BOOL FNeedsScreenUpdate() {return fFalse;}
     virtual void Check3D() {}
-	virtual ObjFrame *Draw3D(RECT *prc) {return NULL;}
+	virtual ObjFrame *Draw3D(const RECT * const prc) {return NULL;}
 	virtual void Reset() {}
 
 	RECT m_rcBounds; // bounding box for invalidation

@@ -36,7 +36,7 @@ public:
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
 
 	virtual void Check3D();
-	virtual ObjFrame *Draw3D(RECT *prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
 	int m_iframe;
@@ -71,7 +71,7 @@ public:
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
 
 	virtual void Check3D();
-	virtual ObjFrame *Draw3D(RECT *prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
 	int m_iframe;
@@ -141,7 +141,7 @@ public:
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
 
 	virtual void Check3D();
-	virtual ObjFrame *Draw3D(RECT *prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
 	Vector<ObjFrame> m_vddsFrame;
@@ -195,7 +195,7 @@ public:
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
 
 	virtual void Check3D();
-	virtual ObjFrame *Draw3D(RECT *prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
 	Vector<ObjFrame> m_vddsFrame;
@@ -289,7 +289,7 @@ public:
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
 
 	virtual void Check3D();
-	virtual ObjFrame *Draw3D(RECT *prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
 	int m_iframe;
@@ -316,7 +316,7 @@ public:
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
 
 	virtual void Check3D() {}
-	virtual ObjFrame *Draw3D(RECT *prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
 	Textbox *m_ptextbox;
@@ -348,7 +348,7 @@ public:
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
 
     virtual void Check3D(); //{}
-	virtual ObjFrame *Draw3D(RECT *prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
 	DispReel *m_pDispReel;
@@ -380,7 +380,7 @@ public:
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
 
     virtual void Check3D(); //{}
-	virtual ObjFrame *Draw3D(RECT *prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc);
 
 	LightSeq *m_pLightSeq;
 	};

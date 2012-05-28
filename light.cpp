@@ -1550,7 +1550,7 @@ void Light::DrawFrame(BOOL fOn)
 			Display_DrawSprite(g_pplayer->m_pin3d.m_pd3dDevice, 
 							(float) m_pobjframe[frame]->rc.left, (float) m_pobjframe[frame]->rc.top, 
 							(float) (m_pobjframe[frame]->rc.right - m_pobjframe[frame]->rc.left), (float) (m_pobjframe[frame]->rc.bottom - m_pobjframe[frame]->rc.top), 
-							1.0f, 1.0f, 1.0f, 1.0f, 
+							0xFFFFFFFF,  
 							0.0f, 
 							m_pobjframe[frame]->pTexture, m_pobjframe[frame]->u, m_pobjframe[frame]->v, 
 							DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT);

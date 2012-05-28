@@ -526,6 +526,8 @@ public:
 #define VBTOF(x) ((x) ? fTrue : fFalse)
 #define FTOVB(x) ((x) ? -1 : 0)
 
+const WORD rgi0123[4] = {0,1,2,3};
+
 #include "HELPERS.H"
 
 inline __m128 rcpps(const __m128 &T) //Newton Raphson
@@ -546,7 +548,7 @@ inline __m128 rsqrtss(const __m128 &T) //Newton Raphson
 	return _mm_mul_ss(_mm_mul_ss(_mm_set_ss(0.5f),TRSQRT), _mm_sub_ss(_mm_set_ss(3.0f),_mm_mul_ss(_mm_mul_ss(TRSQRT,T),TRSQRT)));
 }
 
-inline __m128 sseHorizontalAdd(const __m128 &a)
+inline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instruction on SSE4
 {
 	const __m128 ftemp = _mm_add_ps(a, _mm_movehl_ps(a, a));
 	return _mm_add_ss(ftemp,_mm_shuffle_ps(ftemp, ftemp, 1));

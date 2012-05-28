@@ -118,7 +118,7 @@ int plumb_tilted()
     return 0;
 }
 
-void draw_transparent_box( F32 sx, F32 sy, F32 x, F32 y, U32 color )
+void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 color )
 {
     sx *= ((float) g_pplayer->m_pin3d.m_dwRenderHeight)*(float)(1.0/600.0);
     sy *= ((float) g_pplayer->m_pin3d.m_dwRenderWidth )*(float)(1.0/800.0);
@@ -131,7 +131,7 @@ void draw_transparent_box( F32 sx, F32 sy, F32 x, F32 y, U32 color )
     Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
                         y, x,
                         sy, sx,
-                        r, g, b, a,
+                        r, g, b, a, //!! pass as DWORD directly? 
                         0.0f,
                         NULL, 1.0f, 1.0f,
                         DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT );

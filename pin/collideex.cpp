@@ -119,7 +119,7 @@ void BumperAnimObject::Check3D()
 		}
 	}
 
-ObjFrame *BumperAnimObject::Draw3D(RECT *prc)
+ObjFrame *BumperAnimObject::Draw3D(const RECT * const prc)
 	{
 	if(!m_fVisible || m_iframe == -1) return NULL;
 
@@ -244,7 +244,7 @@ void SlingshotAnimObject::Check3D()
 		}
 	}
 
-ObjFrame *SlingshotAnimObject::Draw3D(RECT *prc)
+ObjFrame *SlingshotAnimObject::Draw3D(const RECT * const prc)
 	{
 	return (m_iframe == 1) ? m_pobjframe : NULL;
 	}
@@ -375,7 +375,7 @@ void GateAnimObject::Check3D()
 		}
 	}
 
-ObjFrame *GateAnimObject::Draw3D(RECT *prc)
+ObjFrame *GateAnimObject::Draw3D(const RECT * const prc)
 	{
 	if (!m_fVisible || m_iframe == -1) return NULL;
 
@@ -586,7 +586,7 @@ void SpinnerAnimObject::Check3D()
 		}
 	}
 
-ObjFrame *SpinnerAnimObject::Draw3D(RECT *prc)
+ObjFrame *SpinnerAnimObject::Draw3D(const RECT * const prc)
 	{
 	if (!m_fVisible || m_iframe == -1) return NULL;
 
@@ -937,7 +937,7 @@ void PolyDropAnimObject::Check3D()
 		}
 	}
 
-ObjFrame *PolyDropAnimObject::Draw3D(RECT *prc)
+ObjFrame *PolyDropAnimObject::Draw3D(const RECT * const prc)
 	{
 	if (m_iframe == -1) return NULL;
 
@@ -949,7 +949,7 @@ void PolyDropAnimObject::Reset()
 	m_iframe = -1;
 	}
 
-ObjFrame *TextboxAnimObject::Draw3D(RECT *prc)
+ObjFrame *TextboxAnimObject::Draw3D(const RECT * const prc)
 	{
 	g_pplayer->m_pin3d.m_pddsBackBuffer->Blt(&m_ptextbox->m_pobjframe->rc, m_ptextbox->m_pobjframe->pdds, NULL, DDBLT_WAIT, NULL);
 
@@ -971,7 +971,7 @@ void DispReelAnimObject::Check3D()
 // this function is called when it is time to be drawn (Z-Ordered)
 // and only if Check3D() tells it to. (m_fInvalid == true)
 //
-ObjFrame *DispReelAnimObject::Draw3D(RECT *prc)
+ObjFrame *DispReelAnimObject::Draw3D(const RECT * const prc)
 {
 	if(!m_pDispReel || !m_pDispReel->m_pobjframe)  //rlc-problem6 end bad pointers, fix needed
 		return NULL;
@@ -1007,7 +1007,7 @@ void LightSeqAnimObject::Check3D()
 // this function is called when it is time to be drawn (Z-Ordered)
 // and only if Check3D() tells it to. (m_fInvalid == true)
 //
-ObjFrame *LightSeqAnimObject::Draw3D(RECT *prc)
+ObjFrame *LightSeqAnimObject::Draw3D(const RECT * const prc)
 {
 	// return with no object
 	return NULL;

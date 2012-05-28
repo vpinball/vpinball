@@ -11,7 +11,7 @@ public:
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
 
 	virtual void Check3D();
-	virtual ObjFrame *Draw3D(RECT *prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc);
 
 	void SetObjects(const float len);
 

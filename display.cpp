@@ -126,126 +126,6 @@ void Display_InitializeTextureStates ()
 	TextureStates[DISPLAY_TEXTURESTATE_BALL].ColorOp[1] = D3DTOP_DISABLE;
 }
 
-
-// Draws a sprite.
-// x, y is the screen coordinate of the top-left corner of the sprite.
-// Width, Height is determines the size of the sprite (in pixels).
-// r, g, b, a controls the color of the sprite.  The exact behavior is dependent on the RenderState.
-// Angle is in degrees.  Controls the orientation of the sprite centered about the top-left with clockwise as positive.
-// Texture is the texure to use.  This can be NULL for solid color surfaces.
-// TextureStateIndex controls how the sprite texture is combined with vertex colors and filtered.
-// RenderStateIndex controls how the sprite is drawn.
-void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const float r, const float g, const float b, const float a, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
-{
-    D3DMATRIX       WorldMatrix;
-    HRESULT	        ReturnCode;
-    D3DTLVertexType	Vertices[4];
-
-	// Calculate sin and cos theta.
-	//const float Radians = Angle * (float)(2.0 * M_PI / 360.0);
-	//const float SinTheta = sinf ( Radians );
-	//const float CosTheta = cosf ( Radians );
-
-	// ToDo: Calculate vertices with rotation applied.	
-	//       We can probably get away without implementing a matrix library. -JEP
-
-	// Build a quad.
-	Vertices[0].DiffuseColor = RGBA_TO_D3DARGB ( r, g, b, a );
-	Vertices[0].SpecularColor = RGBA_TO_D3DARGB ( r, g, b, a );
-	Vertices[0].TU1 = 0.0f;
-	Vertices[0].TV1 = v;
-	Vertices[0].TU2 = 0.0f;
-	Vertices[0].TV2 = v;
-	Vertices[0].X = x; 
-	Vertices[0].Y = y + Height; 
-	Vertices[0].Z = 0.0f; 
-	Vertices[0].RHW = 1.0f; 
-
-	Vertices[1].DiffuseColor = RGBA_TO_D3DARGB ( r, g, b, a );
-	Vertices[1].SpecularColor = RGBA_TO_D3DARGB ( r, g, b, a );
-	Vertices[1].TU1 = 0.0f;
-	Vertices[1].TV1 = 0.0f;
-	Vertices[1].TU2 = 0.0f;
-	Vertices[1].TV2 = 0.0f;
-	Vertices[1].X = x; 
-	Vertices[1].Y = y;
-	Vertices[1].Z = 0.0f; 
-	Vertices[1].RHW = 1.0f; 
-
-	Vertices[2].DiffuseColor = RGBA_TO_D3DARGB ( r, g, b, a );
-	Vertices[2].SpecularColor = RGBA_TO_D3DARGB ( r, g, b, a );
-	Vertices[2].TU1 = u;
-	Vertices[2].TV1 = v;
-	Vertices[2].TU2 = u;
-	Vertices[2].TV2 = v;
-	Vertices[2].X = x + Width; 
-	Vertices[2].Y = y + Height;
-	Vertices[2].Z = 0.0f; 
-	Vertices[2].RHW = 1.0f;
-
-	Vertices[3].DiffuseColor = RGBA_TO_D3DARGB ( r, g, b, a );
-	Vertices[3].SpecularColor = RGBA_TO_D3DARGB ( r, g, b, a );
-	Vertices[3].TU1 = u;
-	Vertices[3].TV1 = 0.0f;
-	Vertices[3].TU2 = u;
-	Vertices[3].TV2 = 0.0f;
-	Vertices[3].X = x + Width; 
-	Vertices[3].Y = y; 
-	Vertices[3].Z = 0.0f; 
-	Vertices[3].RHW = 1.0f; 
-
-	// Clear the transform.
-	WorldMatrix._11 = 1.0f;
-	WorldMatrix._12 = 0.0f;
-	WorldMatrix._13 = 0.0f;
-	WorldMatrix._14 = 0.0f;
-	WorldMatrix._21 = 0.0f;
-	WorldMatrix._22 = 1.0f;
-	WorldMatrix._23 = 0.0f;
-	WorldMatrix._24 = 0.0f;
-	WorldMatrix._31 = 0.0f;
-	WorldMatrix._32 = 0.0f;
-	WorldMatrix._33 = 1.0f;
-	WorldMatrix._34 = 0.0f;
-	WorldMatrix._41 = 0.0f;
-	WorldMatrix._42 = 0.0f;
-	WorldMatrix._43 = 0.0f;
-	WorldMatrix._44 = 1.0f;
-
-	// Apply the transformation.
-    ReturnCode = Direct3DDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &WorldMatrix ); 
-
-	// Set the texture state.
-	Display_SetTextureState ( Direct3DDevice, &(TextureStates[TextureStateIndex]) );
-	
-	// Set the render state.
-	Display_SetRenderState ( Direct3DDevice, &(RenderStates[RenderStateIndex]) );
-
-	// Set the texture.
-	ReturnCode = Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
-
-	// WTF?  As soon as I do DrawPrimitive, the ball disappears.  Everything else works (ie saving and restoring states)... it's just the draw!
-
-//	  // Draw the quad.
-//    ReturnCode = Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1), (D3DTLVertexType *) Vertices, 4, 0 );  
-    //ReturnCode = Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX, (D3DTLVertexType *) Vertices, 4, 0 );  
-
-	WORD rgi[4] = {
-				0,
-				1,
-				2,
-				3};
-
-		Direct3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX,
-												  (D3DTLVertexType *) Vertices, 4,
-												  rgi, 4, NULL);
-
-
-//#define MY_D3DFVF_VERTEX (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2)
-//#define MY_D3DTRANSFORMED_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
-}
-
-
 // Gets the current render state from the D3D device.
 // This is costly on performance and should only be used for debugging.
 void Display_GetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState )
@@ -920,7 +800,7 @@ void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRE
 HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIMITIVETYPE d3dptPrimitiveType, DWORD dwVertexTypeDesc, LPVOID lpvVertices, DWORD dwVertexCount, LPWORD lpwIndices, DWORD dwIndexCount, DWORD dwFlags )
 {
 	// Draw the primitive.
-	HRESULT	ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
+	HRESULT ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
 
 	// Check if we are blitting with D3D.
 	if ( g_pvp->m_pdd.m_fUseD3DBlit )

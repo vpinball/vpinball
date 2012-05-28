@@ -249,7 +249,7 @@ public:
 	//HRESULT SaveImageToStream(PinImage *ppi, IStream *pstm);
 	HRESULT LoadImageFromStream(IStream *pstm, int version);
 	PinImage *GetImage(char *szName);
-	void GetTVTU(PinImage *ppi, float *pmaxtu, float *pmaxtv);
+	void GetTVTU(const PinImage * const ppi, float * const pmaxtu, float * const pmaxtv);
 	void CreateGDIBackdrop();
 	int GetImageLink(PinImage *ppi);
 	PinBinary *PinTable::GetImageLinkBinary(int id);

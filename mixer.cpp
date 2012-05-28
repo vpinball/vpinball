@@ -301,7 +301,7 @@ void mixer_draw()
 		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
 							(fY + 1.0f), (fX + 1.0f),
 							(Height - 2.0f), (Width - 2.0f), 
-							r, g, b, a,
+							r, g, b, a, //!! pass as DWORD directly?
 							0.0f,
 							NULL, 1.0f, 1.0f,
 							DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT );
@@ -316,7 +316,7 @@ void mixer_draw()
 		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
 							fY, fX,
 							Height, Width, 
-							r, g, b, a,
+							r, g, b, a, //!! pass as DWORD directly? 
 							0.0f,
 							NULL, 1.0f, 1.0f,
 							DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT );

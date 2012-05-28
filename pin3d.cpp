@@ -872,8 +872,7 @@ void Pin3D::InitRenderState() const
 	hr = m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_CLIPPLANEENABLE, 0 );
 	}
 
-WORD rgiPin3D0[4] = {0,1,2,3};
-WORD rgiPin3D1[4] = {2,3,5,6};	
+const WORD rgiPin3D1[4] = {2,3,5,6};
 
 void Pin3D::DrawBackground()
 	{
@@ -932,7 +931,7 @@ void Pin3D::DrawBackground()
 
 		m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 												  rgv3D, 4,
-												  rgiPin3D0, 4, 0);
+												  (LPWORD)rgi0123, 4, 0);
 
 		m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 		}
@@ -1170,7 +1169,7 @@ void Pin3D::InitBackGraphics()
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 	mtrl.power = 0;
 
-	PinImage * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
+	const PinImage * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
 
 	float maxtu,maxtv;
 
@@ -1221,7 +1220,7 @@ void Pin3D::InitBackGraphics()
 
 	/*const HRESULT hr =*/ m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv, 4,
-												  rgiPin3D0, 4, 0);
+												  (LPWORD)rgi0123, 4, 0);
 
 	EnableLightMap(fFalse, -1);
 
@@ -1236,7 +1235,7 @@ void Pin3D::InitBackGraphics()
 	SetNormal(rgv, rgiPin3D1, 4, NULL, NULL, 0);
 	m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv, 8,
-												  rgiPin3D1, 4, 0);
+												  (LPWORD)rgiPin3D1, 4, 0);
 	}
 
 void Pin3D::CreateBallShadow()
@@ -1315,7 +1314,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 	if (centerx > centery)
 		{
 		shadwidth = 256;
-		m_maxtu = 1;
+		m_maxtu = 1.0f;
 		m_maxtv = centery/centerx;
 		shadheight = (int)(256.0f*m_maxtv);
 		}
@@ -1323,7 +1322,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 		{
 		shadheight = 256;
 		m_maxtu = centerx/centery;
-		m_maxtv = 1;
+		m_maxtv = 1.0f;
 		shadwidth = (int)(256.0f*m_maxtu);
 		}
 
@@ -1347,7 +1346,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 	HBITMAP hdib = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
 
 	HBITMAP hbmOld = (HBITMAP)SelectObject(hdc2, hdib);
-	const float zoom = shadwidth/(centerx*2.0f);
+	const float zoom = (float)shadwidth/(centerx*2.0f);
 	ShadowSur * const psur = new ShadowSur(hdc2, zoom, centerx, centery, shadwidth, shadheight, z, NULL);
 
 	SelectObject(hdc2, GetStockObject(WHITE_BRUSH));
@@ -1473,7 +1472,7 @@ void Pin3D::Flip(const int offsetx, const int offsety)
 	if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
 	{
 		// Mirror the table.
-		ddbltfx.dwDDFX = (ddbltfx.dwDDFX | DDBLTFX_MIRRORUPDOWN);
+		ddbltfx.dwDDFX |= DDBLTFX_MIRRORUPDOWN;
 	}
 
 	// Copy the back buffer to the front buffer.
