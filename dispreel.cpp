@@ -1097,7 +1097,7 @@ void DispReel::RenderText()
 	{
 	    m_ptu->m_dispreelanim.Draw3D(NULL);
 	}
-    //ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe->rc, m_pobjframe->pdds, NULL, DDBLTFAST_SRCCOLORKEY/*DDBLTFAST_WAIT*/, NULL);
+    //ppin3d->m_pddsBackBuffer->BltFast(&m_pobjframe->rc, m_pobjframe->pdds, NULL, DDBLTFAST_SRCCOLORKEY/*DDBLTFAST_WAIT*/, NULL);
 }
 
 

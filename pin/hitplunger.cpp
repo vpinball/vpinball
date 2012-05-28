@@ -419,7 +419,7 @@ void PlungerAnimObject::Check3D()
 		}
 	}
 
-ObjFrame *PlungerAnimObject::Draw3D(RECT *prc)
+ObjFrame *PlungerAnimObject::Draw3D(const RECT * const prc)
 	{
 	if (m_iframe == -1) return NULL;
 

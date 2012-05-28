@@ -5985,7 +5985,7 @@ PinImage *PinTable::GetImage(char *szName)
 	return NULL;
 	}
 
-void PinTable::GetTVTU(PinImage *ppi, float *pmaxtu, float *pmaxtv)
+void PinTable::GetTVTU(const PinImage * const ppi, float * const pmaxtu, float * const pmaxtv)
 	{
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);

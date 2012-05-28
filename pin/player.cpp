@@ -749,22 +749,19 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 				}
 			ph->GetTimers(&m_vht);
 
-    	if (g_pvp->m_pdd.m_fHardwareAccel)
-      {
-  		  if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
-	  		  m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
-        {
-          m_vhitacrylic.AddElement(ph);
-        }
-      }
-      else
-      {
-  		  if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
-        {
-          m_vhitacrylic.AddElement(ph);
-        }
-      }
-
+    		if (g_pvp->m_pdd.m_fHardwareAccel)
+			{
+  				if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
+	  				m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
+				{
+				  m_vhitacrylic.AddElement(ph);
+				}
+			}
+			else
+				if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
+				{
+					m_vhitacrylic.AddElement(ph);
+				}
 			}
 		}
 
@@ -915,16 +912,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 			int l;
 			for (l=0;l<m_vscreenupdate.Size();l++)
 				{
-				bool fInBack = false;
-
-					{
-					const float comparez = (m_vscreenupdate.ElementAt(l)->m_znear + m_vscreenupdate.ElementAt(l)->m_zfar)*0.5f;
-
-					if (myz > comparez)
-						{
-						fInBack = true;
-						}
-					}
+				const bool fInBack = (myz > (m_vscreenupdate.ElementAt(l)->m_znear + m_vscreenupdate.ElementAt(l)->m_zfar)*0.5f);
 
 				if (fInBack)
 					{
@@ -974,8 +962,8 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
 
 #ifdef LOG
-		m_flog = fopen("c:\\log.txt","w");
-		m_timestamp = 0;
+	m_flog = fopen("c:\\log.txt","w");
+	m_timestamp = 0;
 #endif
 
 #ifdef PLAYBACK
@@ -1006,8 +994,8 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	m_physicsdtime = 1;
 
 #ifdef LOG
-		fprintf(m_flog, "Step Time %u %u %u %u\n", m_PhysicsStepTime>>32, m_PhysicsStepTime, m_liStartTime>>32, m_liStartTime);
-		fprintf(m_flog, "End Frame\n");
+	fprintf(m_flog, "Step Time %u %u %u %u\n", m_PhysicsStepTime>>32, m_PhysicsStepTime, m_liStartTime>>32, m_liStartTime);
+	fprintf(m_flog, "End Frame\n");
 #endif
 
 	SendMessage(hwndProgress, PBM_SETPOS, 100, 0);
@@ -1016,7 +1004,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 	// Check if we should show the window.
 	// Show if we don't have a front end, or autostart is not enabled.
-	HWND hFrontEndWnd = FindWindow( NULL, "Ultrapin (plfe)" );
+	const HWND hFrontEndWnd = FindWindow( NULL, "Ultrapin (plfe)" );
 	if ( (hFrontEndWnd == NULL) || 
 		 (m_ptable->m_tblAutoStartEnabled == false) )
 	{
@@ -1349,9 +1337,8 @@ void Player::DestroyBall(Ball *pball)
 
 void Player::InitDMDHackWindow()
 {
-	WNDCLASSEX	wcex;
-
 	// Define the window.
+	WNDCLASSEX wcex;
 	memset ( &wcex, 0, sizeof ( WNDCLASSEX ) );
 	wcex.cbSize = sizeof ( WNDCLASSEX );
 	wcex.style = 0;
@@ -1409,8 +1396,6 @@ void Player::InitWindow()
 		{
 		m_fFullScreen = fFalse;
 		}
-
-
 
 	int screenwidth;
 	int screenheight;
@@ -1575,7 +1560,6 @@ void Player::InitWindow()
 				}
 				break;
 	}
-
 
 	// TEXT
 	m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
@@ -1833,7 +1817,7 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 
 				m_hitoctree.HitTestBall(pball);			// find the hit objects and hit times
 
-				float htz = pball->m_hittime;		// this ball's hit time
+				const float htz = pball->m_hittime;		// this ball's hit time
 
 				if(htz < 0) pball->m_pho = NULL;		// no negative time allowed
 
@@ -2360,9 +2344,7 @@ void Player::Render()
 			m_pin3d.m_pddsBackBuffer->Blt(prc, m_pin3d.m_pddsStatic, prc, 0, NULL);
 			m_pin3d.m_pddsZBuffer->Blt(prc, m_pin3d.m_pddsStaticZ, prc, 0, NULL);
 			}
-		}
-	
-	
+		}	
 
 	// Start rendering the next frame.
 	hr = m_pin3d.m_pd3dDevice->BeginScene();
@@ -2412,52 +2394,67 @@ void Player::Render()
 		}
 */
 
+	// Check if we are blitting with D3D.
+	// And setup everything that will be needed to draw sprites in next loop
+	if (g_pvp->m_pdd.m_fUseD3DBlit)					
+	{
+		const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
+
+		// Apply the transformation.
+		/*const HRESULT ReturnCode =*/ g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix );
+
+		// Set the texture state.
+		Display_SetTextureState ( g_pplayer->m_pin3d.m_pd3dDevice, &(TextureStates[DISPLAY_TEXTURESTATE_NOFILTER]) );
+	
+		// Set the render state.
+		Display_SetRenderState ( g_pplayer->m_pin3d.m_pd3dDevice, &(RenderStates[DISPLAY_RENDERSTATE_TRANSPARENT]) );
+	}
+
 	// Process all regions that need updating.  
 	// The region will be drawn with the current frame.
 	for (int i=0;i<m_vupdaterect.Size();i++)
 	{
-		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
-		
+		const UpdateRect * const pur = m_vupdaterect.ElementAt(i);
 
 		// Process all objects associated with this region.
 		for (int l=0;l<pur->m_vobject.Size();l++)
 		{
 			// Get the object's frame to draw.
-			ObjFrame * const pobjframe = pur->m_vobject.ElementAt(l)->Draw3D(&pur->m_rcupdate);
+			const ObjFrame * const pobjframe = pur->m_vobject.ElementAt(l)->Draw3D(&pur->m_rcupdate);
 
 			// Make sure we have a frame.
 			if (pobjframe != NULL)
 			{
 				const LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
-				RECT * const prc = &pur->m_rcupdate;
+				const RECT * const prc = &pur->m_rcupdate;
 
 				// NOTE: prc is the rectangle of the region needing to be updated.
 				// NOTE: pobjframe->rc is the rectangle of the entire object that intersects the region needing to updated.
 				// I think they are trying to define a rectangle that intersects... but why subtract pobjframe->rc?   -JEP
-				RECT rcUpdate;
-				rcUpdate.left = max(pobjframe->rc.left, prc->left) - pobjframe->rc.left;
-				rcUpdate.top = max(pobjframe->rc.top, prc->top) - pobjframe->rc.top;
-				rcUpdate.right = min(pobjframe->rc.right, prc->right) - pobjframe->rc.left;
-				rcUpdate.bottom = min(pobjframe->rc.bottom, prc->bottom) - pobjframe->rc.top;
 
 				const int bltleft = max(pobjframe->rc.left, prc->left);
 				const int blttop = max(pobjframe->rc.top, prc->top);
+
+				RECT rcUpdate;
+				rcUpdate.left = bltleft - pobjframe->rc.left;
+				rcUpdate.top = blttop - pobjframe->rc.top;
+				rcUpdate.right = min(pobjframe->rc.right, prc->right) - pobjframe->rc.left;
+				rcUpdate.bottom = min(pobjframe->rc.bottom, prc->bottom) - pobjframe->rc.top;
 
 				// Make sure our rectangle dimensions aren't wacky.
 				if ((rcUpdate.right > rcUpdate.left) && (rcUpdate.bottom > rcUpdate.top))
 				{
 					// Check if we are blitting with D3D.
-					if (g_pvp->m_pdd.m_fUseD3DBlit)					
+					if (g_pvp->m_pdd.m_fUseD3DBlit)
 					{
 						// Blit to the backbuffer with D3D.
 						// NOTE: Rather than drawing just a portion of the sprite... draw the whole thing.
-						Display_DrawSprite(g_pplayer->m_pin3d.m_pd3dDevice, 
+						Display_DrawSprite_NoMatrix_NoStates(g_pplayer->m_pin3d.m_pd3dDevice, 
 										(float) (pobjframe->rc.left), (float) (pobjframe->rc.top), 
 										(float) (pobjframe->rc.right - pobjframe->rc.left), (float) (pobjframe->rc.bottom - pobjframe->rc.top), 
-										1.0f, 1.0f, 1.0f, 1.0f, 
+										0xFFFFFFFF, 
 										0.0f, 
-										pobjframe->pTexture, pobjframe->u, pobjframe->v, 
-										DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT);
+										pobjframe->pTexture, pobjframe->u, pobjframe->v);
 					}
 					else
 					{
@@ -2975,15 +2972,9 @@ void Player::DrawBallShadows()
 
 				//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3DShadow, 4,0);
 
-				WORD rgi[4] = {
-							0,
-							1,
-							2,
-							3};
-
 				m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DShadow, 4,
-															  rgi, 4, NULL);
+															  (LPWORD)rgi0123, 4, NULL);
 				}
 			}
 		}
@@ -3110,16 +3101,9 @@ void Player::DrawBalls()
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
 
-
-		WORD rgi[4] = {
-				0,
-				1,
-				2,
-				3};
-
 		m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 4,
-												  rgi, 4, NULL);
+												  (LPWORD)rgi0123, 4, NULL);
 /*
 		This does not work, i don't know why. - Cupid
 
@@ -3186,7 +3170,6 @@ void Player::DrawBalls()
 					pball->m_pinFront->EnsureColorKey();
 					m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinFront->m_pdsBufferColorKey);
 
-					//WORD rgiDecal[4] = {0,1,2,3};
 					for (int iPoint=0;iPoint<4;iPoint++)
 						{
 						const Vertex3Ds tmp = orientation.MultiplyVector(rgv3DArrow[iPoint]);
@@ -3202,16 +3185,11 @@ void Player::DrawBalls()
 
 					//m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  //rgv3DArrowTransformed, 4,
-															  //rgiDecal, DECALPOINTS, NULL);
-					WORD rgi[4] = {
-							0,
-							1,
-							2,
-							3};
+															  //rgi0123, DECALPOINTS, NULL);
 
 					m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DArrowTransformed, 4,
-															  rgi, 4, NULL);
+															  (LPWORD)rgi0123, 4, NULL);
 
 					}
 				orientation.Identity();
@@ -3223,8 +3201,6 @@ void Player::DrawBalls()
 					// Other side of ball
 					pball->m_pinBack->EnsureColorKey();
 					m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinBack->m_pdsBufferColorKey);
-
-					//WORD rgiDecal[4] = {0,1,2,3};
 
 					for (int iPoint=0;iPoint<4;iPoint++)
 						{
@@ -3243,17 +3219,11 @@ void Player::DrawBalls()
 
 					/*m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DArrowTransformed, 4,
-															  rgiDecal, DECALPOINTS, NULL);*/
-
-					WORD rgi[4] = {
-							0,
-							1,
-							2,
-							3};
+															  rgi0123, DECALPOINTS, NULL);*/
 
 					m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DArrowTransformed2, 4,
-															  rgi, 4, NULL);
+															  (LPWORD)rgi0123, 4, NULL);
 					}
 			}
 
@@ -3295,7 +3265,7 @@ void Player::DrawBalls()
 void Player::InvalidateRect(RECT * const prc)
 	{
 	// This assumes the caller does not need *prc any more!!!
-	// Either that, or we assume it can be permantnently changed,
+	// Either that, or we assume it can be permanently changed,
 	// Because we never care about redrawing stuff off the screen.
 	if (prc->top < 0)
 		{
@@ -3322,7 +3292,7 @@ void Player::InvalidateRect(RECT * const prc)
 
 	// Add the rect.
 	m_vupdaterect.AddElement(pur);
-		
+
 	}
 
 #ifdef LOG

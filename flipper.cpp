@@ -536,7 +536,6 @@ void Flipper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-WORD rgiFlipper0[4] = {0,1,2,3};
 WORD rgiFlipper1[4] = {0,4,5,1};
 WORD rgiFlipper2[4] = {2,6,7,3};
 
@@ -582,9 +581,9 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, flo
 	ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear
 										 , &m_phitflipper->m_flipperanim.m_zfar, 8, fFalse);
 
-	SetNormal(rgv3D, rgiFlipper0, 4, NULL, NULL, 0);
+	SetNormal(rgv3D, rgi0123, 4, NULL, NULL, 0);
 	// Draw top.
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiFlipper0, 4, 0);
+	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgi0123, 4, 0);
 	
 	SetNormal(rgv3D, rgiFlipper1, 4, NULL, NULL, 0);
 	// Draw front side wall of flipper (flipper and rubber).   
