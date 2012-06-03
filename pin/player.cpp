@@ -2619,8 +2619,8 @@ const unsigned int nPitchz = ddsdz.lPitch >> 2; //!! hardwired to 32bits z+stenc
 #define ZPD 0.5 //!!
 #define zmask 0xFFFFFFu //!! hardwired to 24bits z
 //#define AA3D //!!
-#define X3D 1 //!!
-//#define Y3D 1 //!!
+//#define X3D 1 //!!
+#define Y3D 1 //!!
 
 #if X3D
 const unsigned int maxSeparationU = (unsigned int)(width*maxSeparation);
@@ -2711,8 +2711,7 @@ const unsigned int offshalf0 = (y>>1)*nPitch;
 const unsigned int offshalf1 = (height>>1)*nPitch + offshalf0;
 
 unsigned int offsz = y*nPitchz;
-unsigned int offs  = y*nPitch;
-for(unsigned int x = 0; x < width; ++x,++offsz,++offs)
+for(unsigned int x = 0; x < width; ++x,++offsz)
 {
 //const UINT z = (float)(bufferzcopy[offsz]&zmask)*(float)(255.0/zmask);
 //bufferfinal[offs] = z|(z<<8)|(z<<16);
@@ -2725,15 +2724,17 @@ const unsigned int parallaxR = ZPDU / minDepthR;
 const unsigned int pL = parallaxL>>4; // /16 = fixed point math
 const unsigned int pR = parallaxR>>4;
 
-const unsigned int left0 = buffercopy[offs + (maxSeparationU - pL)*nPitch];
-const unsigned int left1 = buffercopy[offs + (maxSeparationU - pL + 1 - ((parallaxL>>30)&2))*nPitch];
+const unsigned int separationL = y + maxSeparationU - pL;
+const unsigned int left0 = buffercopy[x +  separationL*nPitch];
+const unsigned int left1 = buffercopy[x + (separationL + 1 - ((parallaxL>>30)&2))*nPitch];
 
 const unsigned int l13  = (parallaxL*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
 const unsigned int l23  = 0xFFu - l13;
 const unsigned int left = ((((left0&0xFF00FFu)*l13+(left1&0xFF00FFu)*l23)&0xFF00FF00u)|(((left0&0x00FF00u)*l13+(left1&0x00FF00u)*l23)&0x00FF0000u))>>8; // linear filtering
 
-const unsigned int right0 = buffercopy[offs - (maxSeparationU - pR)*nPitch];
-const unsigned int right1 = buffercopy[offs - (maxSeparationU - pR + 1 - ((parallaxR>>30)&2))*nPitch];
+const unsigned int separationR = y - maxSeparationU + pR;
+const unsigned int right0 = buffercopy[x +  separationR*nPitch];
+const unsigned int right1 = buffercopy[x + (separationR - 1 + ((parallaxR>>30)&2))*nPitch];
 
 const unsigned int r13   = (parallaxR*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
 const unsigned int r23   = 0xFFu - r13;
