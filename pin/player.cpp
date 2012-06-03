@@ -2619,12 +2619,12 @@ const unsigned int nPitchz = ddsdz.lPitch >> 2; //!! hardwired to 32bits z+stenc
 #define ZPD 0.5 //!!
 #define zmask 0xFFFFFFu //!! hardwired to 24bits z
 //#define AA3D //!!
-//#define X3D 1 //!!
-#define Y3D 1 //!!
+#define X3D 1 //!!
+//#define Y3D 1 //!!
 
 #if X3D
 const unsigned int maxSeparationU = (unsigned int)(width*maxSeparation);
-const unsigned int ZPDU = (unsigned int)(16u * zmask * maxSeparation*ZPD); // 16 = fixed point math for filtering pixels
+const unsigned int ZPDU = (unsigned int)(16u * zmask * (width*maxSeparation)*ZPD); // 16 = fixed point math for filtering pixels
 const unsigned int samples[3] = { (unsigned int)(0.5 * (width*maxSeparation)), (unsigned int)(0.666 * (width*maxSeparation)), maxSeparationU }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
 
 #ifdef AA3D
@@ -2695,14 +2695,14 @@ for(; x < width; ++x) //!! black out border pixels, replicate borders for one ha
 #elif Y3D
 
 const unsigned int maxSeparationU = (unsigned int)(height*maxSeparation);
-const unsigned int ZPDU = (unsigned int)(16u * zmask * maxSeparation*ZPD); // 16 = fixed point math for filtering pixels
-const unsigned int samples[3] = { (unsigned int)(0.5 * (height*maxSeparation))*nPitchz, (unsigned int)(0.666 * (height*maxSeparation))*nPitchz, maxSeparationU*nPitchz }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
+const unsigned int ZPDU = (unsigned int)(16u * zmask * (height*maxSeparation)*ZPD); // 16 = fixed point math for filtering pixels
+const unsigned int samples[3] = { ((unsigned int)(0.5 * (height*maxSeparation)))*nPitchz, ((unsigned int)(0.666 * (height*maxSeparation)))*nPitchz, maxSeparationU*nPitchz }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
 
 memset(                 bufferfinal,                                0,nPitch*maxSeparationU); //!! black out border pixels, replicate borders for one half instead??
 memset(((unsigned char*)bufferfinal)+nPitch*(height-maxSeparationU),0,nPitch*maxSeparationU); //!! black out border pixels, replicate borders for one half instead??
 
 #ifdef AA3D
-for(unsigned int y = maxSeparationU; y < ((height-maxSeparationU)&0xFFFFFFFEu); ++y) //!! killing last bit makes no sense but prevents crash!
+for(unsigned int y = maxSeparationU; y < height-maxSeparationU; ++y)
 #else
 for(unsigned int y = maxSeparationU; y < height-maxSeparationU; y+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
 #endif
@@ -2732,8 +2732,8 @@ const unsigned int l13  = (parallaxL*16) & 0xFFu; // *16 = scale from fixed poin
 const unsigned int l23  = 0xFFu - l13;
 const unsigned int left = ((((left0&0xFF00FFu)*l13+(left1&0xFF00FFu)*l23)&0xFF00FF00u)|(((left0&0x00FF00u)*l13+(left1&0x00FF00u)*l23)&0x00FF0000u))>>8; // linear filtering
 
-const unsigned int right0 = buffercopy[offs - (maxSeparationU + pR)*nPitch];
-const unsigned int right1 = buffercopy[offs - (maxSeparationU + pR - 1 + ((parallaxR>>30)&2))*nPitch];
+const unsigned int right0 = buffercopy[offs - (maxSeparationU - pR)*nPitch];
+const unsigned int right1 = buffercopy[offs - (maxSeparationU - pR + 1 - ((parallaxR>>30)&2))*nPitch];
 
 const unsigned int r13   = (parallaxR*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
 const unsigned int r23   = 0xFFu - r13;
