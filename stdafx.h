@@ -15,6 +15,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#define _SECURE_SCL 0
+#define _HAS_ITERATOR_DEBUGGING 0
+
 #define STRICT
 #ifndef _WIN32_WINNT
 #if _MSC_VER < 1700

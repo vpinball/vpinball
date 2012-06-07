@@ -2589,11 +2589,10 @@ void Player::Render()
 		{
 //!! SSE opt.?
 
-DDSURFACEDESC2 ddsd;
+DDSURFACEDESC2 ddsd,ddsdz;
 ZeroMemory( &ddsd, sizeof(ddsd) );
-ddsd.dwSize = sizeof(ddsd);
-DDSURFACEDESC2 ddsdz; 
 ZeroMemory( &ddsdz, sizeof(ddsdz) );
+ddsd.dwSize = sizeof(ddsd);
 ddsdz.dwSize = sizeof(ddsdz);
 
 m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL);
@@ -2615,12 +2614,16 @@ m_pin3d.m_pddsZBuffer->Unlock(NULL);
 const unsigned int nPitch  = ddsd.lPitch  >> 2; //!! hardwired to 4 byte RGBA
 const unsigned int nPitchz = ddsdz.lPitch >> 2; //!! hardwired to 32bits z+stencil
 
+//#define X3D 1 //!!
+//#define maxSeparation 0.0075 //!!
+//#define ZPD 0.5 //!!
+
+#define Y3D 1 //!!
 #define maxSeparation 0.0075 //!!
-#define ZPD 0.5 //!!
+#define ZPD 0.125 //!!
+
 #define zmask 0xFFFFFFu //!! hardwired to 24bits z
 //#define AA3D //!!
-//#define X3D 1 //!!
-#define Y3D 1 //!!
 
 #if X3D
 const unsigned int maxSeparationU = (unsigned int)(width*maxSeparation);
@@ -2637,39 +2640,39 @@ const unsigned int offshalf0 = (y>>1)*nPitch;
 const unsigned int offshalf1 = (height>>1)*nPitch + offshalf0;
 
 unsigned int x = 0;
-for(; x < maxSeparationU; ++x) //!! black out border pixels, replicate borders for one half instead??
+for(; x < maxSeparationU+1; ++x) //!! black out border pixels, replicate borders for one half instead??
 	bufferfinal[offshalf0 + x] = bufferfinal[offshalf1 + x] = 0;
 
-unsigned int offsz = y*nPitchz + maxSeparationU;
-unsigned int offs  = y*nPitch  + maxSeparationU;
-for(; x < width - maxSeparationU; ++x,++offsz,++offs)
+unsigned int offsz = y*nPitchz + (maxSeparationU+1);
+unsigned int offs  = y*nPitch  + (maxSeparationU+1);
+for(; x < width - (maxSeparationU+1); ++x,++offsz,++offs)
 {
 //const UINT z = (float)(bufferzcopy[offsz]&zmask)*(float)(255.0/zmask);
 //bufferfinal[offs] = z|(z<<8)|(z<<16);
 
-const unsigned int minDepthL = min( min( bufferzcopy[offsz + samples[0]]&zmask, bufferzcopy[offsz + samples[1]]&zmask ), bufferzcopy[offsz + samples[2]]&zmask );
 const unsigned int minDepthR = min( min( bufferzcopy[offsz - samples[0]]&zmask, bufferzcopy[offsz - samples[1]]&zmask ), bufferzcopy[offsz - samples[2]]&zmask );
+const unsigned int minDepthL = min( min( bufferzcopy[offsz + samples[0]]&zmask, bufferzcopy[offsz + samples[1]]&zmask ), bufferzcopy[offsz + samples[2]]&zmask );
 
-const unsigned int parallaxL = ZPDU / minDepthL;
-const unsigned int parallaxR = ZPDU / minDepthR;
-const unsigned int pL = parallaxL>>4; // /16 = fixed point math
-const unsigned int pR = parallaxR>>4;
-
-const unsigned int separationL = offs + maxSeparationU - pL;
-const unsigned int left0 = buffercopy[separationL];
-const unsigned int left1 = buffercopy[separationL + 1 - ((parallaxL>>30)&2)];
-
-const unsigned int l13  = (parallaxL*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
-const unsigned int l23  = 0xFFu - l13;
-const unsigned int left = ((((left0&0xFF00FFu)*l13+(left1&0xFF00FFu)*l23)&0xFF00FF00u)|(((left0&0x00FF00u)*l13+(left1&0x00FF00u)*l23)&0x00FF0000u))>>8; // linear filtering
+const unsigned int parallaxR = min(ZPDU / minDepthR, maxSeparationU<<4); //!! <<5? to allow for pop out, but then modify bilerp filter/pixel offset below, depending on sign of -overall- parallax shift?!
+const unsigned int parallaxL = min(ZPDU / minDepthL, maxSeparationU<<4); //!! <<5? to allow for pop out, but then modify bilerp filter/pixel offset below, depending on sign of -overall- parallax shift?!
+const unsigned int pR = parallaxR>>4; // /16 = fixed point math, also see above
+const unsigned int pL = parallaxL>>4;
 
 const unsigned int separationR = offs - maxSeparationU + pR;
 const unsigned int right0 = buffercopy[separationR];
-const unsigned int right1 = buffercopy[separationR - 1 + ((parallaxR>>30)&2)];
+const unsigned int right1 = buffercopy[separationR - 1 /*+ (((maxSeparationU - pR)>>30)&2)*/];
 
 const unsigned int r13   = (parallaxR*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
 const unsigned int r23   = 0xFFu - r13;
 const unsigned int right = ((((right0&0xFF00FFu)*r13+(right1&0xFF00FFu)*r23)&0xFF00FF00)|(((right0&0x00FF00u)*r13+(right1&0x00FF00u)*r23)&0x00FF0000u))>>8; // linear filtering
+
+const unsigned int separationL = offs + maxSeparationU - pL;
+const unsigned int left0 = buffercopy[separationL];
+const unsigned int left1 = buffercopy[separationL + 1 /*- (((maxSeparationU - pL)>>30)&2)*/];
+
+const unsigned int l13  = (parallaxL*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
+const unsigned int l23  = 0xFFu - l13;
+const unsigned int left = ((((left0&0xFF00FFu)*l13+(left1&0xFF00FFu)*l23)&0xFF00FF00u)|(((left0&0x00FF00u)*l13+(left1&0x00FF00u)*l23)&0x00FF0000u))>>8; // linear filtering
 
 //!! bufferfinal[offs] = (right&0xFF0000u) | (left&0xFFFFFFu);
 
@@ -2698,13 +2701,13 @@ const unsigned int maxSeparationU = (unsigned int)(height*maxSeparation);
 const unsigned int ZPDU = (unsigned int)(16u * zmask * (height*maxSeparation)*ZPD); // 16 = fixed point math for filtering pixels
 const unsigned int samples[3] = { ((unsigned int)(0.5 * (height*maxSeparation)))*nPitchz, ((unsigned int)(0.666 * (height*maxSeparation)))*nPitchz, maxSeparationU*nPitchz }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
 
-memset(                 bufferfinal,                                0,nPitch*maxSeparationU); //!! black out border pixels, replicate borders for one half instead??
-memset(((unsigned char*)bufferfinal)+nPitch*(height-maxSeparationU),0,nPitch*maxSeparationU); //!! black out border pixels, replicate borders for one half instead??
+memset(                 bufferfinal,                                    0,nPitch*(maxSeparationU+1)); //!! black out border pixels, replicate borders for one half instead??
+memset(((unsigned char*)bufferfinal)+nPitch*(height-(maxSeparationU+1)),0,nPitch*(maxSeparationU+1)); //!! black out border pixels, replicate borders for one half instead??
 
 #ifdef AA3D
-for(unsigned int y = maxSeparationU; y < height-maxSeparationU; ++y)
+for(unsigned int y = maxSeparationU+1; y < height-(maxSeparationU+1); ++y)
 #else
-for(unsigned int y = maxSeparationU; y < height-maxSeparationU; y+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
+for(unsigned int y = maxSeparationU+1; y < height-(maxSeparationU+1); y+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
 #endif
 {
 const unsigned int offshalf0 = (y>>1)*nPitch;
@@ -2714,43 +2717,43 @@ unsigned int offsz = y*nPitchz;
 for(unsigned int x = 0; x < width; ++x,++offsz)
 {
 //const UINT z = (float)(bufferzcopy[offsz]&zmask)*(float)(255.0/zmask);
-//bufferfinal[offs] = z|(z<<8)|(z<<16);
+//bufferfinal[x + y*nPitch] = z|(z<<8)|(z<<16);
 
-const unsigned int minDepthL = min( min( bufferzcopy[offsz + samples[0]]&zmask, bufferzcopy[offsz + samples[1]]&zmask ), bufferzcopy[offsz + samples[2]]&zmask );
 const unsigned int minDepthR = min( min( bufferzcopy[offsz - samples[0]]&zmask, bufferzcopy[offsz - samples[1]]&zmask ), bufferzcopy[offsz - samples[2]]&zmask );
+const unsigned int minDepthL = min( min( bufferzcopy[offsz + samples[0]]&zmask, bufferzcopy[offsz + samples[1]]&zmask ), bufferzcopy[offsz + samples[2]]&zmask );
 
-const unsigned int parallaxL = ZPDU / minDepthL;
-const unsigned int parallaxR = ZPDU / minDepthR;
-const unsigned int pL = parallaxL>>4; // /16 = fixed point math
-const unsigned int pR = parallaxR>>4;
+const unsigned int parallaxR = min(ZPDU / minDepthR, maxSeparationU<<4); //!! <<5? to allow for pop out, but then modify bilerp filter/pixel offset below, depending on sign of -overall- parallax shift?!
+const unsigned int parallaxL = min(ZPDU / minDepthL, maxSeparationU<<4); //!! <<5? to allow for pop out, but then modify bilerp filter/pixel offset below, depending on sign of -overall- parallax shift?!
+const unsigned int pR = parallaxR>>4; // /16 = fixed point math, also see above
+const unsigned int pL = parallaxL>>4;
 
-const unsigned int separationL = y + maxSeparationU - pL;
-const unsigned int left0 = buffercopy[x +  separationL*nPitch];
-const unsigned int left1 = buffercopy[x + (separationL + 1 - ((parallaxL>>30)&2))*nPitch];
-
-const unsigned int l13  = (parallaxL*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
-const unsigned int l23  = 0xFFu - l13;
-const unsigned int left = ((((left0&0xFF00FFu)*l13+(left1&0xFF00FFu)*l23)&0xFF00FF00u)|(((left0&0x00FF00u)*l13+(left1&0x00FF00u)*l23)&0x00FF0000u))>>8; // linear filtering
-
-const unsigned int separationR = y - maxSeparationU + pR;
-const unsigned int right0 = buffercopy[x +  separationR*nPitch];
-const unsigned int right1 = buffercopy[x + (separationR - 1 + ((parallaxR>>30)&2))*nPitch];
+const unsigned int separationR = x + (y - maxSeparationU + pR)*nPitch;
+const unsigned int right0 = buffercopy[separationR];
+const unsigned int right1 = buffercopy[separationR - nPitch /*+ (((maxSeparationU - pR)>>30)&2)*nPitch*/];
 
 const unsigned int r13   = (parallaxR*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
 const unsigned int r23   = 0xFFu - r13;
 const unsigned int right = ((((right0&0xFF00FFu)*r13+(right1&0xFF00FFu)*r23)&0xFF00FF00)|(((right0&0x00FF00u)*r13+(right1&0x00FF00u)*r23)&0x00FF0000u))>>8; // linear filtering
+
+const unsigned int separationL = x + (y + maxSeparationU - pL)*nPitch;
+const unsigned int left0 = buffercopy[separationL];
+const unsigned int left1 = buffercopy[separationL + nPitch /*- (((maxSeparationU - pL)>>30)&2)*nPitch*/];
+
+const unsigned int l13  = (parallaxL*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
+const unsigned int l23  = 0xFFu - l13;
+const unsigned int left = ((((left0&0xFF00FFu)*l13+(left1&0xFF00FFu)*l23)&0xFF00FF00u)|(((left0&0x00FF00u)*l13+(left1&0x00FF00u)*l23)&0x00FF0000u))>>8; // linear filtering
 
 //!! bufferfinal[offs] = (right&0xFF0000u) | (left&0xFFFFFFu);
 
 #ifdef AA3D
 if(y&1)
 {
-	bufferfinal[offshalf0 + x] = ((bufferfinal[offshalf0 + x]&0xFEFEFEu) + (left &0xFEFEFEu))>>1; // average with previously computed line
-	bufferfinal[offshalf1 + x] = ((bufferfinal[offshalf1 + x]&0xFEFEFEu) + (right&0xFEFEFEu))>>1; // average with previously computed line
+	bufferfinal[offshalf0 + x] = ((bufferfinal[offshalf0 + x]&0xFEFEFEu) + (right&0xFEFEFEu))>>1; // average with previously computed line
+	bufferfinal[offshalf1 + x] = ((bufferfinal[offshalf1 + x]&0xFEFEFEu) + (left &0xFEFEFEu))>>1; // average with previously computed line
 } else {
 #endif
-	bufferfinal[offshalf0 + x] = left;
-	bufferfinal[offshalf1 + x] = right;
+	bufferfinal[offshalf0 + x] = right;
+	bufferfinal[offshalf1 + x] = left;
 #ifdef AA3D
 }
 #endif
