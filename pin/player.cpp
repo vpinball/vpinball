@@ -1936,6 +1936,74 @@ int fpieee_handler( _FPIEEE_RECORD *pieee )
 #define _EXC_MASK  (_EM_UNDERFLOW | _EM_OVERFLOW | _EM_ZERODIVIDE | _EM_INEXACT | _EM_DENORMAL | _EM_INVALID)
 #endif
 
+inline unsigned int luma(const unsigned int rgb)
+{
+return ((rgb&0xFFu)>>3)+((rgb&0xFF00u)>>9)+((rgb&0xFF0000u)>>18); //!! R,B swapped
+}
+
+inline unsigned int lumas2(const unsigned int rgb)
+{
+return ((rgb&(0xFFu*4))>>5)+((rgb&(0xFF00u*4))>>11)+((rgb&(0xFF0000u*4))>>20); //!! R,B swapped
+}
+
+inline unsigned int bilerpFE(const unsigned int* const __restrict pic, const int xorg, const int yorg, int dx, int dy, const unsigned int nPitch, const unsigned int xres, const unsigned int yres)
+{
+const int dx4 = dx>>4;
+const int dy4 = dy>>4;
+dx &= 0xFu;
+dy &= 0xFu;
+const unsigned int xy  = dx*dy;
+const unsigned int x16 = dx<<4;
+const unsigned int y16 = dy<<4;
+const unsigned int invxy = y16-xy;
+const unsigned int xinvy = x16-xy;
+const unsigned int invxinvy = 256-x16-invxy;
+
+const int xa = xorg+dx4;
+const int ya = yorg+dy4;
+const int xb = xorg-dx4;
+const int yb = yorg-dy4;
+
+/*const unsigned int clampxa   = min((unsigned int) xa   ,xres-1);
+const unsigned int clampxp1a = min((unsigned int)(xa+1),xres-1);
+const unsigned int clampya   = min((unsigned int) ya   ,yres-1)*nPitch;
+const unsigned int clampyp1a = min((unsigned int)(ya+1),yres-1)*nPitch;
+
+const unsigned int clampxb   = min((unsigned int) xb   ,xres-1);
+const unsigned int clampxp1b = min((unsigned int)(xb-1),xres-1);
+const unsigned int clampyb   = min((unsigned int) yb   ,yres-1)*nPitch;
+const unsigned int clampyp1b = min((unsigned int)(yb-1),yres-1)*nPitch;
+
+const unsigned int r00a = pic[clampxa   + clampya];
+const unsigned int r10a = pic[clampxp1a + clampya];
+const unsigned int r01a = pic[clampxa   + clampyp1a];
+const unsigned int r11a = pic[clampxp1a + clampyp1a];
+
+const unsigned int r10b = pic[clampxp1b + clampyb];
+const unsigned int r00b = pic[clampxb   + clampyb];
+const unsigned int r11b = pic[clampxp1b + clampyp1b];
+const unsigned int r01b = pic[clampxb   + clampyp1b];*/
+
+const unsigned int offsa = xa + ya*nPitch;
+const unsigned int r00a = pic[offsa];
+const unsigned int r10a = pic[offsa+1];
+const unsigned int r01a = pic[offsa+nPitch];
+const unsigned int r11a = pic[offsa+1+nPitch];
+
+const unsigned int offsb = xb + yb*nPitch;
+const unsigned int r11b = pic[offsb-1-nPitch];
+const unsigned int r01b = pic[offsb-nPitch];
+const unsigned int r10b = pic[offsb-1];
+const unsigned int r00b = pic[offsb];
+
+return (((((r00a&0xFF00FFu)*invxinvy + (r10a&0xFF00FFu)*xinvy + (r01a&0xFF00FFu)*invxy + (r11a&0xFF00FFu)*xy) &0xFE00FE00u)
+	|
+	 (((r00a&0x00FF00u)*invxinvy + (r10a&0x00FF00u)*xinvy + (r01a&0x00FF00u)*invxy + (r11a&0x00FF00u)*xy) &0x00FE0000u))>>9) +
+       (((((r00b&0xFF00FFu)*invxinvy + (r10b&0xFF00FFu)*xinvy + (r01b&0xFF00FFu)*invxy + (r11b&0xFF00FFu)*xy) &0xFE00FE00u)
+	|
+	 (((r00b&0x00FF00u)*invxinvy + (r10b&0x00FF00u)*xinvy + (r01b&0x00FF00u)*invxy + (r11b&0x00FF00u)*xy) &0x00FE0000u))>>9);
+}
+
 void Player::Render()
 	{
 	HRESULT				ReturnCode;
@@ -2631,11 +2699,12 @@ const unsigned int ZPDU = (unsigned int)(16u * zmask * (width*maxSeparation)*ZPD
 const unsigned int samples[3] = { (unsigned int)(0.5 * (width*maxSeparation)), (unsigned int)(0.666 * (width*maxSeparation)), maxSeparationU }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
 
 #ifdef AA3D
-for(unsigned int y = 0; y < height; ++y)
+for(int yi = 0; yi < height; ++yi)
 #else
-for(unsigned int y = 0; y < height; y+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
+for(int yi = 0; yi < height; yi+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
 #endif
 {
+const unsigned int y = yi;
 const unsigned int offshalf0 = (y>>1)*nPitch;
 const unsigned int offshalf1 = (height>>1)*nPitch + offshalf0;
 
@@ -2705,11 +2774,12 @@ memset(                 bufferfinal,                                    0,nPitch
 memset(((unsigned char*)bufferfinal)+nPitch*(height-(maxSeparationU+1)),0,nPitch*(maxSeparationU+1)); //!! black out border pixels, replicate borders for one half instead??
 
 #ifdef AA3D
-for(unsigned int y = maxSeparationU+1; y < height-(maxSeparationU+1); ++y)
+for(int yi = maxSeparationU+1; yi < height-(maxSeparationU+1); ++yi)
 #else
-for(unsigned int y = maxSeparationU+1; y < height-(maxSeparationU+1); y+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
+for(int yi = maxSeparationU+1; yi < height-(maxSeparationU+1); yi+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
 #endif
 {
+const unsigned int y = yi;
 const unsigned int offshalf0 = (y>>1)*nPitch;
 const unsigned int offshalf1 = (height>>1)*nPitch + offshalf0;
 
@@ -2759,6 +2829,75 @@ if(y&1)
 #endif
 }
 
+}
+#else
+#define FXAA_SPAN_MAX 8
+
+#define OFFS (((FXAA_SPAN_MAX*8)>>4) + 1)
+
+for(int y = OFFS; y < (int)height - (OFFS+1); ++y) //!! border handling
+{
+unsigned int offsm1 = (y-1)*nPitch + (OFFS-1);
+for(int x = OFFS; x < (int)width - (OFFS+1); ++x,++offsm1) //!! border handling
+{
+    //!! sliding window instead? (on y-1,y,y+1), incl. the filtered values already?
+	const unsigned int rNW = buffercopy[offsm1]  &0xFCFCFC;
+    const unsigned int rN  = buffercopy[offsm1+1]&0xFCFCFC;
+	const unsigned int rNE = buffercopy[offsm1+2]&0xFCFCFC;
+    const unsigned int offs = offsm1+nPitch;
+	const unsigned int rW = buffercopy[offs]  &0xFCFCFC;
+	const unsigned int rM = buffercopy[offs+1]&0xFCFCFC;
+	const unsigned int rE = buffercopy[offs+2]&0xFCFCFC;
+	const unsigned int offsp1 = offs+nPitch;
+	const unsigned int rSW = buffercopy[offsp1]  &0xFCFCFC;
+    const unsigned int rS  = buffercopy[offsp1+1]&0xFCFCFC;
+    const unsigned int rSE = buffercopy[offsp1+1]&0xFCFCFC;
+
+	const unsigned int rMrN = rM+rN;
+    const unsigned int lumaNW = lumas2(rMrN+rNW+rW);
+    const unsigned int lumaNE = lumas2(rMrN+rNE+rE);
+	const unsigned int rMrS = rM+rS;
+	const unsigned int lumaSW = lumas2(rMrS+rSW+rW);
+    const unsigned int lumaSE = lumas2(rMrS+rSE+rE);
+    const unsigned int lumaM  = luma(rM);
+
+	unsigned int tempMin,tempMin2,tempMax,tempMax2; //!! use cmovs?
+	if(lumaSW > lumaSE) {
+		tempMax = lumaSW;
+		tempMin = lumaSE;
+	} else {
+		tempMax = lumaSE;
+		tempMin = lumaSW;
+	}
+	if(lumaNW > lumaNE) {
+		tempMax2 = lumaNW;
+		tempMin2 = lumaNE;
+	} else {
+		tempMax2 = lumaNE;
+		tempMin2 = lumaNW;
+	}
+	const unsigned int lumaMin = min(lumaM, min(tempMin, tempMin2));
+    const unsigned int lumaMax = max(lumaM, max(tempMax, tempMax2));
+
+	const unsigned int SWSE = lumaSW + lumaSE;
+	const unsigned int NWNE = lumaNW + lumaNE;
+    int dirx = SWSE - NWNE;
+	int diry = (lumaNW + lumaSW) - (lumaNE + lumaSE);
+
+	const int temp = min(abs(dirx), abs(diry)) + (int)max((NWNE + SWSE)>>5, 2u);
+	dirx = (dirx<<3)/temp;
+	diry = (diry<<3)/temp;
+    dirx = min(FXAA_SPAN_MAX*8, max(-FXAA_SPAN_MAX*8, dirx));
+    diry = min(FXAA_SPAN_MAX*8, max(-FXAA_SPAN_MAX*8, diry));
+
+    unsigned int rgbB = bilerpFE(buffercopy,x,y,dirx,diry,nPitch,width,height);
+	dirx >>= 2;
+	diry >>= 2;
+    const unsigned int rgbA = bilerpFE(buffercopy,x,y,dirx,diry,nPitch,width,height);
+    rgbB = ((rgbA&0xFEFEFE) + (rgbB&0xFEFEFE))>>1;
+    const unsigned int lumaB = luma(rgbB);
+    bufferfinal[offs+1] = ((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB;
+}
 }
 #endif
 
