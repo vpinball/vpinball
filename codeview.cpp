@@ -516,7 +516,7 @@ void CodeViewer::Create(HWND hwndParent)
 	m_haccel = LoadAccelerators(g_hinst,MAKEINTRESOURCE(IDR_CODEVIEWACCEL));// Accelerator keys
 
 	WNDCLASSEX wcex;
-	memset(&wcex, 0, sizeof(WNDCLASSEX));
+	ZeroMemory(&wcex, sizeof(WNDCLASSEX));
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_DBLCLKS;
 	wcex.lpfnWndProc = (WNDPROC) CodeViewWndProc;

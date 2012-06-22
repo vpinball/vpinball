@@ -52,7 +52,7 @@ SmartBrowser::~SmartBrowser()
 void SmartBrowser::Init(HWND hwndParent)
 	{
 	WNDCLASSEX wcex;
-	memset(&wcex, 0, sizeof(WNDCLASSEX));
+	ZeroMemory(&wcex, sizeof(WNDCLASSEX));
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_DBLCLKS;//CS_NOCLOSE | CS_OWNDC;
 	wcex.lpfnWndProc = (WNDPROC) SBFrameProc;
@@ -1349,7 +1349,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 					pif->Release();
 
-					memset(&cf, 0, sizeof(CHOOSEFONT));
+					ZeroMemory(&cf, sizeof(CHOOSEFONT));
 
 					cf.lStructSize = sizeof(CHOOSEFONT);
 					cf.hwndOwner = hwnd;

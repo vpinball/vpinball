@@ -1921,7 +1921,7 @@ void DispReel::UpdateObjFrame()
 
     if (m_pobjframe->pdds && (m_vreelframe.Size() > 0))
     {
-		memset(&bltFx, 0x00, sizeof(bltFx));
+		ZeroMemory(&bltFx, sizeof(bltFx));
 		bltFx.dwSize = sizeof(bltFx);
 		flags = DDBLTFAST_WAIT;
 

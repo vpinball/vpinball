@@ -504,7 +504,7 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 	*v = (float)Height / (float)TextureHeight;
 
     // Describe the type of surface we want to create.
-    memset ( &DestSurfaceDescription, 0, sizeof ( DestSurfaceDescription ) );
+    ZeroMemory ( &DestSurfaceDescription, sizeof ( DestSurfaceDescription ) );
     DestSurfaceDescription.dwSize = sizeof ( DDSURFACEDESC2 );
     DestSurfaceDescription.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT | DDSD_TEXTURESTAGE;
     DestSurfaceDescription.dwWidth = TextureWidth;
@@ -550,7 +550,7 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 		if ( ReturnCode == DD_OK ) 
 		{
 			// Lock the destination texture surface so we can fill it with pixels.
-			memset ( &DestSurfaceDescription, 0, sizeof ( DestSurfaceDescription ) );
+			ZeroMemory ( &DestSurfaceDescription, sizeof ( DestSurfaceDescription ) );
 			DestSurfaceDescription.dwSize = sizeof ( DestSurfaceDescription );
 			ReturnCode = VidSurface->Lock ( NULL, &DestSurfaceDescription, 0, NULL );
 
@@ -558,7 +558,7 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 			if ( ReturnCode == 0 )
 			{
 				// Lock the source DDraw surface so we can read its pixels.
-				memset ( &SourceSurfaceDescription, 0, sizeof ( SourceSurfaceDescription ) );
+				ZeroMemory ( &SourceSurfaceDescription, sizeof ( SourceSurfaceDescription ) );
 				SourceSurfaceDescription.dwSize = sizeof ( SourceSurfaceDescription );
 				ReturnCode = SourceTexture->Lock ( NULL, &SourceSurfaceDescription, 0, NULL );
 
@@ -683,7 +683,7 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 		 (DestTexture != NULL) )
 	{
 		// Lock the destination texture so we can fill it with pixels.
-		memset ( &DestSurfaceDescription, 0, sizeof ( DestSurfaceDescription ) );
+		ZeroMemory ( &DestSurfaceDescription, sizeof ( DestSurfaceDescription ) );
 		DestSurfaceDescription.dwSize = sizeof ( DestSurfaceDescription );
 		ReturnCode = DestTexture->Lock ( NULL, &DestSurfaceDescription, 0, NULL );
 
@@ -691,7 +691,7 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 		if ( ReturnCode == 0 )
 		{
 			// Lock the source texture so we can read its pixels.
-			memset ( &SourceSurfaceDescription, 0, sizeof ( SourceSurfaceDescription ) );
+			ZeroMemory ( &SourceSurfaceDescription, sizeof ( SourceSurfaceDescription ) );
 			SourceSurfaceDescription.dwSize = sizeof ( SourceSurfaceDescription );
 			ReturnCode = SourceTexture->Lock ( NULL, &SourceSurfaceDescription, 0, NULL );
 
@@ -763,7 +763,7 @@ void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRE
 	{
 		// Lock the texture so we can clear the pixels.
 		DDSURFACEDESC2 SurfaceDescription;
-		memset ( &SurfaceDescription, 0, sizeof ( SurfaceDescription ) );
+		ZeroMemory ( &SurfaceDescription, sizeof ( SurfaceDescription ) );
 		SurfaceDescription.dwSize = sizeof ( SurfaceDescription );
 		const HRESULT ReturnCode = Texture->Lock ( NULL, &SurfaceDescription, 0, NULL );
 
