@@ -7,6 +7,11 @@ Pin3D::Pin3D()
 	m_pDD = NULL;
 	m_pddsFrontBuffer = NULL;
 	m_pddsBackBuffer = NULL;
+#ifdef VP3D
+	m_pdds3DBackBuffer = NULL;
+	buffercopy = NULL;
+	bufferzcopy = NULL;
+#endif
 	m_pddsZBuffer = NULL;
 	m_pD3D = NULL;
 	m_pd3dDevice = NULL;
@@ -30,6 +35,17 @@ Pin3D::~Pin3D()
 
 	if (m_pddsBackBuffer)
 		m_pddsBackBuffer->Release();
+
+#ifdef VP3D
+	if (m_pdds3DBackBuffer)
+		m_pdds3DBackBuffer->Release();
+
+	if(buffercopy)
+		_aligned_free((void*)buffercopy);
+
+	if(bufferzcopy)
+		_aligned_free((void*)bufferzcopy);
+#endif
 
 	if (m_pddsZBuffer)
 		m_pddsZBuffer->Release();
@@ -631,6 +647,23 @@ retry5:
 			return hr; 
 		}
 	}
+
+#ifdef VP3D
+	ddsd.dwSize = sizeof(ddsd);
+	m_pddsBackBuffer->GetSurfaceDesc( &ddsd );
+
+	buffercopy  = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,128); //!! or rather match alignment of screenbuffer(s)? -> find largest 2^n that matches?
+	bufferzcopy = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,128); //!! or rather match alignment of screenbuffer(s)? -> find largest 2^n that matches?
+
+    ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_CAPS; //!! ? just to be the exact same as the Backbuffer
+    ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE;
+	ddsd.ddsCaps.dwCaps2 = DDSCAPS2_HINTDYNAMIC;
+	if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pdds3DBackBuffer, NULL ) ) )
+    {
+		ShowError("Could not create 3D stereo buffer.");
+		return hr; 
+	}
+#endif
 
 	// Direct all renders to the "static" buffer.
 	SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
@@ -1328,7 +1361,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 
 	// Create Shadow Picture
 	BITMAPINFO bmi;
-	memset(&bmi, 0, sizeof(bmi));
+	ZeroMemory(&bmi, sizeof(bmi));
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	bmi.bmiHeader.biWidth = 256;//shadwidth;
 	bmi.bmiHeader.biHeight = -256;//-shadheight;
@@ -1476,7 +1509,11 @@ void Pin3D::Flip(const int offsetx, const int offsety)
 	}
 
 	// Copy the back buffer to the front buffer.
+#ifndef VP3D
 	HRESULT hr = m_pddsFrontBuffer->Blt(&rcNew, m_pddsBackBuffer, NULL, DDBLT_DDFX, &ddbltfx);
+#else
+	HRESULT hr = m_pddsFrontBuffer->Blt(&rcNew, m_pdds3DBackBuffer, NULL, DDBLT_DDFX, &ddbltfx);
+#endif
 
 	if (hr == DDERR_SURFACELOST)
 		{
@@ -1637,7 +1674,7 @@ void Pin3D::SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const 
 	const GPINFLOAT xrange = yrange * raspect; //width/height
 
 	D3DMATRIX mat;
-	memset(&mat, 0, sizeof(D3DMATRIX));
+	ZeroMemory(&mat, sizeof(D3DMATRIX));
 
     const float Q = (float)(rzfar / ( rzfar - rznear ));
 
@@ -2289,7 +2326,7 @@ void PinProjection::SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect
 
 	//D3DMATRIX mat;
 
-	memset(&m_matProj, 0, sizeof(D3DMATRIX));
+	ZeroMemory(&m_matProj, sizeof(D3DMATRIX));
 
     const float Q = (float)(rzfar / ( rzfar - rznear ));
 
