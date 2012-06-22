@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#ifdef VP3D
+#include <emmintrin.h>
+#endif
+
 #include "..\DongleAPI.h"
 
 #define DONGLE_SUPPORT								// Remember to run hdd32.exe (HASP dongle driver setup) on host.
@@ -1339,7 +1343,7 @@ void Player::InitDMDHackWindow()
 {
 	// Define the window.
 	WNDCLASSEX wcex;
-	memset ( &wcex, 0, sizeof ( WNDCLASSEX ) );
+	ZeroMemory( &wcex, sizeof ( WNDCLASSEX ) );
 	wcex.cbSize = sizeof ( WNDCLASSEX );
 	wcex.style = 0;
 	wcex.lpfnWndProc = (WNDPROC) PlayerDMDHackWndProc;
@@ -1366,7 +1370,7 @@ void Player::InitDMDHackWindow()
 void Player::InitWindow()
 	{
 	WNDCLASSEX wcex;
-	memset(&wcex, 0, sizeof(WNDCLASSEX));
+	ZeroMemory(&wcex, sizeof(WNDCLASSEX));
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = 0;
 	wcex.lpfnWndProc = (WNDPROC) PlayerWndProc;
@@ -1936,6 +1940,332 @@ int fpieee_handler( _FPIEEE_RECORD *pieee )
 #define _EXC_MASK  (_EM_UNDERFLOW | _EM_OVERFLOW | _EM_ZERODIVIDE | _EM_INEXACT | _EM_DENORMAL | _EM_INVALID)
 #endif
 
+#ifdef VP3D
+static const unsigned int f0 = 0xffffffff; const unsigned int f1 = 0;
+static const __m128 f0128 = _mm_set_ps((float&)f1,(float&)f0,(float&)f1,(float&)f0);
+
+__forceinline __m128i _mm_mul_int(const __m128& a, const __m128i& b)
+{
+  return (__m128i&)_mm_or_ps(
+    _mm_and_ps( (__m128&)_mm_mul_epu32( (__m128i&)a,b), f0128),
+    (__m128&)_mm_slli_si128(
+      (__m128i&)_mm_and_ps( (__m128&)_mm_mul_epu32(_mm_srli_si128((__m128i&)a,4),_mm_srli_si128(b,4)), f0128), 4));
+}
+
+__forceinline __m128i _mm_mul_int_i(const __m128i& a, const __m128i& b)
+{
+  return (__m128i&)_mm_or_ps(
+    _mm_and_ps( (__m128&)_mm_mul_epu32(a,b), f0128),
+    (__m128&)_mm_slli_si128(
+      (__m128i&)_mm_and_ps( (__m128&)_mm_mul_epu32(_mm_srli_si128(a,4),b), f0128), 4));
+}
+
+inline void memcpy_sse2(void * const __restrict dst, const void * const __restrict src, const unsigned int nBytes)
+{
+        __asm
+        {
+                mov         ecx, nBytes
+                mov         edi, dst
+                mov         esi, src
+                add         ecx, edi
+
+                prefetchnta [esi]
+                prefetchnta [esi+32]
+                prefetchnta [esi+64]
+                prefetchnta [esi+96]
+
+                // handle nBytes lower than 128
+                cmp         nBytes, 512
+                jge         fast
+slow:
+                mov         bl, [esi]
+                mov         [edi], bl
+                inc         edi
+                inc         esi
+                cmp         ecx, edi
+                jnz         slow
+                jmp         end
+
+fast:
+                // align dstEnd to 128 bytes
+                and         ecx, 0xFFFFFF80
+
+                // get srcEnd aligned to dstEnd aligned to 128 bytes
+                mov         ebx, esi
+                sub         ebx, edi
+                add         ebx, ecx
+                
+                // skip unaligned copy if dst is aligned
+                mov         eax, edi
+                and         edi, 0xFFFFFF80
+                cmp         eax, edi
+                jne         first
+                jmp         more
+
+first:
+                // copy the first 128 bytes unaligned
+                movdqu      xmm0, [esi]
+                movdqu      xmm1, [esi+16]
+                movdqu      xmm2, [esi+32]
+                movdqu      xmm3, [esi+48]
+                
+                movdqu      xmm4, [esi+64]
+                movdqu      xmm5, [esi+80]
+                movdqu      xmm6, [esi+96]
+                movdqu      xmm7, [esi+112]
+                
+                movdqu      [eax], xmm0
+                movdqu      [eax+16], xmm1
+                movdqu      [eax+32], xmm2
+                movdqu      [eax+48], xmm3
+                
+                movdqu      [eax+64], xmm4
+                movdqu      [eax+80], xmm5
+                movdqu      [eax+96], xmm6
+                movdqu      [eax+112], xmm7
+                
+                // add 128 bytes to edi aligned earlier
+                add         edi, 128
+                
+                // offset esi by the same value
+                sub         eax, edi
+                sub         esi, eax
+                
+                // last bytes if dst at dstEnd
+                cmp         ecx, edi
+                jnz         more
+                jmp         last
+                
+more:
+                // handle equally aligned arrays
+                mov         eax, esi
+                and         eax, 0xFFFFFF80
+                cmp         eax, esi
+                jne         unaligned4k
+                
+aligned4k:
+                mov         eax, esi
+                add         eax, 4096
+                cmp         eax, ebx
+                jle         aligned4kin
+                cmp         ecx, edi
+                jne         alignedlast
+                jmp         last
+                
+aligned4kin:
+                prefetchnta [esi]
+                prefetchnta [esi+32]
+                prefetchnta [esi+64]
+                prefetchnta [esi+96]
+                
+                add         esi, 128
+                
+                cmp         eax, esi
+                jne         aligned4kin
+
+                sub         esi, 4096
+
+alinged4kout:
+                movdqa      xmm0, [esi]
+                movdqa      xmm1, [esi+16]
+                movdqa      xmm2, [esi+32]
+                movdqa      xmm3, [esi+48]
+                
+                movdqa      xmm4, [esi+64]
+                movdqa      xmm5, [esi+80]
+                movdqa      xmm6, [esi+96]
+                movdqa      xmm7, [esi+112]
+                
+                movntdq     [edi], xmm0
+                movntdq     [edi+16], xmm1
+                movntdq     [edi+32], xmm2
+                movntdq     [edi+48], xmm3
+                
+                movntdq     [edi+64], xmm4
+                movntdq     [edi+80], xmm5
+                movntdq     [edi+96], xmm6
+                movntdq     [edi+112], xmm7
+                
+                add         esi, 128
+                add         edi, 128
+                
+                cmp         eax, esi
+                jne         alinged4kout
+                jmp         aligned4k
+
+alignedlast:
+                mov         eax, esi
+
+alignedlastin:
+                prefetchnta [esi]
+                prefetchnta [esi+32]
+                prefetchnta [esi+64]
+                prefetchnta [esi+96]
+                
+                add         esi, 128
+                
+                cmp         ebx, esi
+                jne         alignedlastin
+                
+                mov         esi, eax
+
+alignedlastout:
+                movdqa      xmm0, [esi]
+                movdqa      xmm1, [esi+16]
+                movdqa      xmm2, [esi+32]
+                movdqa      xmm3, [esi+48]
+                
+                movdqa      xmm4, [esi+64]
+                movdqa      xmm5, [esi+80]
+                movdqa      xmm6, [esi+96]
+                movdqa      xmm7, [esi+112]
+                
+                movntdq     [edi], xmm0
+                movntdq     [edi+16], xmm1
+                movntdq     [edi+32], xmm2
+                movntdq     [edi+48], xmm3
+                
+                movntdq     [edi+64], xmm4
+                movntdq     [edi+80], xmm5
+                movntdq     [edi+96], xmm6
+                movntdq     [edi+112], xmm7
+                
+                add         esi, 128
+                add         edi, 128
+                
+                cmp         ecx, edi
+                jne         alignedlastout
+                jmp         last
+
+unaligned4k:
+                mov         eax, esi
+                add         eax, 4096
+                cmp         eax, ebx
+                jle         unaligned4kin
+                cmp         ecx, edi
+                jne         unalignedlast
+                jmp         last
+
+unaligned4kin:
+                prefetchnta [esi]
+                prefetchnta [esi+32]
+                prefetchnta [esi+64]
+                prefetchnta [esi+96]
+                
+                add         esi, 128
+                
+                cmp         eax, esi
+                jne         unaligned4kin
+
+                sub         esi, 4096
+
+unalinged4kout:
+                movdqu      xmm0, [esi]
+                movdqu      xmm1, [esi+16]
+                movdqu      xmm2, [esi+32]
+                movdqu      xmm3, [esi+48]
+                
+                movdqu      xmm4, [esi+64]
+                movdqu      xmm5, [esi+80]
+                movdqu      xmm6, [esi+96]
+                movdqu      xmm7, [esi+112]
+                
+                movntdq     [edi], xmm0
+                movntdq     [edi+16], xmm1
+                movntdq     [edi+32], xmm2
+                movntdq     [edi+48], xmm3
+                
+                movntdq     [edi+64], xmm4
+                movntdq     [edi+80], xmm5
+                movntdq     [edi+96], xmm6
+                movntdq     [edi+112], xmm7
+                
+                add         esi, 128
+                add         edi, 128
+                
+                cmp         eax, esi
+                jne         unalinged4kout
+                jmp         unaligned4k
+
+unalignedlast:
+                mov         eax, esi
+
+unalignedlastin:
+                prefetchnta [esi]
+                prefetchnta [esi+32]
+                prefetchnta [esi+64]
+                prefetchnta [esi+96]
+                
+                add         esi, 128
+                
+                cmp         ebx, esi
+                jne         unalignedlastin
+                
+                mov         esi, eax
+
+unalignedlastout:
+                movdqu      xmm0, [esi]
+                movdqu      xmm1, [esi+16]
+                movdqu      xmm2, [esi+32]
+                movdqu      xmm3, [esi+48]
+                
+                movdqu      xmm4, [esi+64]
+                movdqu      xmm5, [esi+80]
+                movdqu      xmm6, [esi+96]
+                movdqu      xmm7, [esi+112]
+                
+                movntdq     [edi], xmm0
+                movntdq     [edi+16], xmm1
+                movntdq     [edi+32], xmm2
+                movntdq     [edi+48], xmm3
+                
+                movntdq     [edi+64], xmm4
+                movntdq     [edi+80], xmm5
+                movntdq     [edi+96], xmm6
+                movntdq     [edi+112], xmm7
+                
+                add         esi, 128
+                add         edi, 128
+                
+                cmp         ecx, edi
+                jne         unalignedlastout
+                jmp         last
+                
+last:
+                // get the last 128 bytes
+                mov         ecx, nBytes
+                mov         edi, dst
+                mov         esi, src
+                add         edi, ecx
+                add         esi, ecx
+                sub         edi, 128
+                sub         esi, 128
+
+                // copy the last 128 bytes unaligned
+                movdqu      xmm0, [esi]
+                movdqu      xmm1, [esi+16]
+                movdqu      xmm2, [esi+32]
+                movdqu      xmm3, [esi+48]
+                
+                movdqu      xmm4, [esi+64]
+                movdqu      xmm5, [esi+80]
+                movdqu      xmm6, [esi+96]
+                movdqu      xmm7, [esi+112]
+                
+                movdqu      [edi], xmm0
+                movdqu      [edi+16], xmm1
+                movdqu      [edi+32], xmm2
+                movdqu      [edi+48], xmm3
+                
+                movdqu      [edi+64], xmm4
+                movdqu      [edi+80], xmm5
+                movdqu      [edi+96], xmm6
+                movdqu      [edi+112], xmm7
+
+end:
+        }
+}
+
 inline unsigned int luma(const unsigned int rgb)
 {
 return ((rgb&0xFFu)>>3)+((rgb&0xFF00u)>>9)+((rgb&0xFF0000u)>>18); //!! R,B swapped
@@ -2003,6 +2333,7 @@ return (((((r00a&0xFF00FFu)*invxinvy + (r10a&0xFF00FFu)*xinvy + (r01a&0xFF00FFu)
 	|
 	 (((r00b&0x00FF00u)*invxinvy + (r10b&0x00FF00u)*xinvy + (r01b&0x00FF00u)*invxy + (r11b&0x00FF00u)*xy) &0x00FE0000u))>>9);
 }
+#endif
 
 void Player::Render()
 	{
@@ -2598,14 +2929,7 @@ void Player::Render()
 		DrawAcrylics();
 
 	// Check if we should turn animate the plunger light.
-	if ( (msec() - LastPlungerHit) < 512 )
-	{
-		hid_set_output ( HID_OUTPUT_PLUNGER, ( (msec() & 512) > 0 ) );
-	}
-	else
-	{
-		hid_set_output ( HID_OUTPUT_PLUNGER, false );
-	}
+	hid_set_output ( HID_OUTPUT_PLUNGER, ((msec() - LastPlungerHit) < 512) && ((msec() & 512) > 0) );
 
 	// Draw the mixer volume.
 	mixer_draw();
@@ -2622,6 +2946,7 @@ void Player::Render()
 		m_fCleanBlt = fFalse;
 	}
 
+#ifndef VP3D
 	if ( m_nudgetime &&					// Table is being nudged.
 		 g_pplayer->m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
@@ -2631,8 +2956,6 @@ void Player::Render()
 	}
 	else
 	{
-//#define VP3D
-#ifndef VP3D
 		if (m_fCleanBlt)
 		{
 			// Smart Blit - only update the invalidated areas
@@ -2654,34 +2977,8 @@ void Player::Render()
 		else
 		{
 #else
+	{
 		{
-//!! SSE opt.?
-
-DDSURFACEDESC2 ddsd,ddsdz;
-ZeroMemory( &ddsd, sizeof(ddsd) );
-ZeroMemory( &ddsdz, sizeof(ddsdz) );
-ddsd.dwSize = sizeof(ddsd);
-ddsdz.dwSize = sizeof(ddsdz);
-
-m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL);
-m_pin3d.m_pddsZBuffer->Lock(NULL, &ddsdz, DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL); 
-
-const unsigned int width  = min((unsigned int)GetSystemMetrics(SM_CXSCREEN), min(ddsd.dwWidth,ddsdz.dwWidth));   // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
-const unsigned int height = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), min(ddsd.dwHeight,ddsdz.dwHeight)); // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
-
-static unsigned int* const __restrict buffercopy  = (unsigned int*)malloc(ddsd.lPitch*height); //!! meh
-static unsigned int* const __restrict bufferzcopy = (unsigned int*)malloc(ddsdz.lPitch*height); //!! meh
-static unsigned int* const __restrict bufferfinal = (unsigned int*)malloc(ddsd.lPitch*height); //!! meh
-
-memcpy(buffercopy, ddsd.lpSurface, ddsd.lPitch*height);
-memcpy(bufferzcopy,ddsdz.lpSurface,ddsdz.lPitch*height);
-
-m_pin3d.m_pddsBackBuffer->Unlock(NULL);
-m_pin3d.m_pddsZBuffer->Unlock(NULL);
-
-const unsigned int nPitch  = ddsd.lPitch  >> 2; //!! hardwired to 4 byte RGBA
-const unsigned int nPitchz = ddsdz.lPitch >> 2; //!! hardwired to 32bits z+stencil
-
 //#define X3D 1 //!!
 //#define maxSeparation 0.0075 //!!
 //#define ZPD 0.5 //!!
@@ -2691,7 +2988,99 @@ const unsigned int nPitchz = ddsdz.lPitch >> 2; //!! hardwired to 32bits z+stenc
 #define ZPD 0.125 //!!
 
 #define zmask 0xFFFFFFu //!! hardwired to 24bits z
-//#define AA3D //!!
+//#define AA3D 1 //!!
+
+
+static const unsigned int zmasktmp = zmask;
+static const __m128 zmask128 = _mm_set1_ps((float&)zmasktmp);
+static const unsigned int t0 = 0; const unsigned int t1 = 1; const unsigned int t2 = 2; const unsigned int t3 = 3;
+static const __m128i t0123 = (__m128i&)_mm_set_ps((float&)t3,(float&)t2,(float&)t1,(float&)t0);
+static const unsigned int t4 = 4;
+static const __m128i t4444 = (__m128i&)_mm_set1_ps((float&)t4);
+static const unsigned int ff = 0xFF;
+static const __m128i ff128 = (__m128i&)_mm_set1_ps((float&)ff);
+static const unsigned int FF00FF = 0xFF00FFu;
+static const __m128 FF00FF128 = _mm_set1_ps((float&)FF00FF);
+static const unsigned int FF00 = 0xFF00u;
+static const __m128 FF00128 = _mm_set1_ps((float&)FF00);
+static const unsigned int FF00FF00 = 0xFF00FF00u;
+static const __m128 FF00FF00128 = _mm_set1_ps((float&)FF00FF00);
+static const unsigned int FF0000 = 0xFF0000u;
+static const __m128 FF0000128 = _mm_set1_ps((float&)FF0000);
+
+DDSURFACEDESC2 ddsd,ddsdz;
+ZeroMemory( &ddsd, sizeof(ddsd) );
+ZeroMemory( &ddsdz, sizeof(ddsdz) );
+ddsd.dwSize = sizeof(ddsd);
+ddsdz.dwSize = sizeof(ddsdz);
+
+m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL);
+m_pin3d.m_pddsZBuffer->Lock(NULL, &ddsdz,   DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL); 
+
+//!! if((ddsd.ddpfPixelFormat.dwRGBBitCount == 32) && (ddsdz.ddpfPixelFormat.dwZBufferBitDepth == 32)) { // else skip 3D reprojection & unlock
+
+const unsigned int width  = min((unsigned int)GetSystemMetrics(SM_CXSCREEN), min(ddsd.dwWidth,ddsdz.dwWidth));   // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
+const unsigned int height = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), min(ddsd.dwHeight,ddsdz.dwHeight)); // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
+
+#ifdef ONLY3DUPD
+		if (m_fCleanBlt)
+		{
+			// Smart Blit - only update the invalidated areas
+#pragma omp parallel for schedule(dynamic)
+			for (int i=0;i<m_vupdaterect.Size();i++)
+			{
+				const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
+
+				const unsigned int left4  = (prc.left + m_pin3d.m_rcUpdate.left)*4;
+				const unsigned int top    = left4 + (prc.top + m_pin3d.m_rcUpdate.top)*ddsd.lPitch;
+				const unsigned int bottom = left4 + (prc.bottom + m_pin3d.m_rcUpdate.top)*ddsd.lPitch;
+				const unsigned int copywidth = (prc.right - prc.left)*4;
+
+				// Copy the region from the back buffer to the front buffer.
+				unsigned char* __restrict bc  = ((unsigned char*)m_pin3d.buffercopy) +top;
+				unsigned char* __restrict bcz = ((unsigned char*)m_pin3d.bufferzcopy)+top;
+				unsigned char* __restrict sf  = ((unsigned char*)ddsd.lpSurface) +top;
+				unsigned char* __restrict sfz = ((unsigned char*)ddsdz.lpSurface)+top;
+				for(unsigned int offset = top; offset < bottom; offset+=ddsd.lPitch,bc+=ddsd.lPitch,bcz+=ddsd.lPitch,sf+=ddsd.lPitch,sfz+=ddsd.lPitch)
+				{
+					memcpy_sse2(bc,  sf,  copywidth);
+					memcpy_sse2(bcz, sfz, copywidth);
+				}
+			}
+		}
+		else
+		{
+#endif
+#if defined(AA3D) || !defined(X3D)
+memcpy_sse2((void*)m_pin3d.buffercopy, ddsd.lpSurface, ddsd.lPitch*height);
+memcpy_sse2((void*)m_pin3d.bufferzcopy,ddsdz.lpSurface,ddsdz.lPitch*height);
+#else
+for(int y = 0; y < height; y+=2) { //!! opt to copy larger blocks somehow?
+	memcpy_sse2(((unsigned char* const __restrict)m_pin3d.buffercopy) +ddsd.lPitch*y,  ((const unsigned char* const __restrict)ddsd.lpSurface) +ddsd.lPitch*y,  ddsd.lPitch);
+	memcpy_sse2(((unsigned char* const __restrict)m_pin3d.bufferzcopy)+ddsdz.lPitch*y, ((const unsigned char* const __restrict)ddsdz.lpSurface)+ddsdz.lPitch*y, ddsdz.lPitch);
+}
+#endif
+#ifdef ONLY3DUPD
+		}
+#endif
+
+m_pin3d.m_pddsBackBuffer->Unlock(NULL);
+m_pin3d.m_pddsZBuffer->Unlock(NULL);
+
+ZeroMemory( &ddsd, sizeof(ddsd) );
+ddsd.dwSize = sizeof(ddsd);
+#ifdef ONLY3DUPD
+m_pin3d.m_pdds3DBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL);
+#else
+m_pin3d.m_pdds3DBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, NULL);
+#endif
+
+unsigned int* const __restrict bufferfinal = (unsigned int*)ddsd.lpSurface;
+const unsigned int* const __restrict buffercopy = m_pin3d.buffercopy;
+const unsigned int* const __restrict bufferzcopy = m_pin3d.bufferzcopy;
+
+const unsigned int nPitch  = ddsd.lPitch  >> 2; //!! hardwired to 4 byte RGBA
+const unsigned int nPitchz = ddsdz.lPitch >> 2; //!! hardwired to 32bits z+stencil
 
 #if X3D
 const unsigned int maxSeparationU = (unsigned int)(width*maxSeparation);
@@ -2699,8 +3088,10 @@ const unsigned int ZPDU = (unsigned int)(16u * zmask * (width*maxSeparation)*ZPD
 const unsigned int samples[3] = { (unsigned int)(0.5 * (width*maxSeparation)), (unsigned int)(0.666 * (width*maxSeparation)), maxSeparationU }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
 
 #ifdef AA3D
+#pragma omp parallel for schedule(dynamic)
 for(int yi = 0; yi < height; ++yi)
 #else
+#pragma omp parallel for schedule(dynamic)
 for(int yi = 0; yi < height; yi+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
 #endif
 {
@@ -2719,6 +3110,7 @@ for(; x < width - (maxSeparationU+1); ++x,++offsz,++offs)
 //const UINT z = (float)(bufferzcopy[offsz]&zmask)*(float)(255.0/zmask);
 //bufferfinal[offs] = z|(z<<8)|(z<<16);
 
+//!! min via cmov?
 const unsigned int minDepthR = min( min( bufferzcopy[offsz - samples[0]]&zmask, bufferzcopy[offsz - samples[1]]&zmask ), bufferzcopy[offsz - samples[2]]&zmask );
 const unsigned int minDepthL = min( min( bufferzcopy[offsz + samples[0]]&zmask, bufferzcopy[offsz + samples[1]]&zmask ), bufferzcopy[offsz + samples[2]]&zmask );
 
@@ -2770,21 +3162,131 @@ const unsigned int maxSeparationU = (unsigned int)(height*maxSeparation);
 const unsigned int ZPDU = (unsigned int)(16u * zmask * (height*maxSeparation)*ZPD); // 16 = fixed point math for filtering pixels
 const unsigned int samples[3] = { ((unsigned int)(0.5 * (height*maxSeparation)))*nPitchz, ((unsigned int)(0.666 * (height*maxSeparation)))*nPitchz, maxSeparationU*nPitchz }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
 
-memset(                 bufferfinal,                                    0,nPitch*(maxSeparationU+1)); //!! black out border pixels, replicate borders for one half instead??
-memset(((unsigned char*)bufferfinal)+nPitch*(height-(maxSeparationU+1)),0,nPitch*(maxSeparationU+1)); //!! black out border pixels, replicate borders for one half instead??
+const __m128 ZPDU128 = _mm_set1_ps((float)ZPDU);
+const unsigned int maxSepShl4 = maxSeparationU<<4;
+const __m128 maxSepShl4128 = _mm_set1_ps((float&)maxSepShl4);
+const __m128i nPitch128 = (__m128i&)_mm_set1_ps((float&)nPitch);
+
+ZeroMemory(bufferfinal,                                   nPitch*(maxSeparationU+1)*4); //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
+ZeroMemory(bufferfinal+nPitch*(height-(maxSeparationU+1)),nPitch*(maxSeparationU+1)*4); //!! black out border pixels, replicate borders for one half instead??
+
+#ifdef ONLY3DUPD
+		if (m_fCleanBlt)
+		{
+			// Smart Blit - only update the invalidated areas
+#pragma omp parallel for schedule(dynamic)
+			for (int i=0;i<m_vupdaterect.Size();i++)
+			{
+				const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
+
+				const unsigned int left   = prc.left + m_pin3d.m_rcUpdate.left;
+				const unsigned int right  = prc.right + m_pin3d.m_rcUpdate.left;
+				const unsigned int top    = prc.top + m_pin3d.m_rcUpdate.top;
+				const unsigned int bottom = prc.bottom + m_pin3d.m_rcUpdate.top;
+
+				// Copy the region from the back buffer to the front buffer.
+				for(unsigned int y = (unsigned int)(max((int)top-(int)maxSeparationU,(int)maxSeparationU+1)&0xFFFFFFFE); y < min(bottom+maxSeparationU,height-(maxSeparationU+1)); y+=2)
+				{
+const unsigned int offshalf0 = (y>>1)*nPitch;
+const unsigned int offshalf1 = (height>>1)*nPitch + offshalf0;
+
+const unsigned int ymms = y - maxSeparationU;
+const __m128i ymms128 = (__m128i&)_mm_set1_ps((float&)ymms);
+const unsigned int ypms = y + maxSeparationU;
+const __m128i ypms128 = (__m128i&)_mm_set1_ps((float&)ypms);
+
+const float* __restrict z = (float*)bufferzcopy + y*nPitchz + (left&0xFFFFFFFC);
+__m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(left&0xFFFFFFFC));
+					for(unsigned int x = left&0xFFFFFFFC; x < right+3; x+=4,z+=4,x128=_mm_add_epi32(x128,t4444)) //!! +3
+					{
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z-samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z-samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z-samples[2]),zmask128)); // abuse float pipelines for the unsigned integer math
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z+samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z+samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z+samples[2]),zmask128));
+
+const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
+const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
+
+const __m128i pR = _mm_add_epi32(_mm_mul_int_i(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),nPitch128),x128);
+const __m128i pL = _mm_add_epi32(_mm_mul_int_i(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),nPitch128),x128);
+
+const __m128i pRs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxR,4),(__m128&)ff128);
+const __m128i pLs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxL,4),(__m128&)ff128);
+const __m128i pRs4_2 = _mm_sub_epi32(ff128,pRs4_1);
+const __m128i pLs4_2 = _mm_sub_epi32(ff128,pLs4_1);
+
+const unsigned int separationR0 = ((unsigned int*)&pR)[0];
+const unsigned int separationR1 = ((unsigned int*)&pR)[1];
+const unsigned int separationR2 = ((unsigned int*)&pR)[2];
+const unsigned int separationR3 = ((unsigned int*)&pR)[3];
+
+const __m128 right0 = _mm_set_ps((float&)(buffercopy[separationR3])         ,(float&)(buffercopy[separationR2])         ,(float&)(buffercopy[separationR1])         ,(float&)(buffercopy[separationR0]));
+const __m128 right1 = _mm_set_ps((float&)(buffercopy[separationR3 - nPitch]),(float&)(buffercopy[separationR2 - nPitch]),(float&)(buffercopy[separationR1 - nPitch]),(float&)(buffercopy[separationR0 - nPitch]));
+
+const unsigned int separationL0 = ((unsigned int*)&pL)[0];
+const unsigned int separationL1 = ((unsigned int*)&pL)[1];
+const unsigned int separationL2 = ((unsigned int*)&pL)[2];
+const unsigned int separationL3 = ((unsigned int*)&pL)[3];
+
+const __m128 left0 = _mm_set_ps((float&)(buffercopy[separationL3])         ,(float&)(buffercopy[separationL2])         ,(float&)(buffercopy[separationL1])         ,(float&)(buffercopy[separationL0]));
+const __m128 left1 = _mm_set_ps((float&)(buffercopy[separationL3 + nPitch]),(float&)(buffercopy[separationL2 + nPitch]),(float&)(buffercopy[separationL1 + nPitch]),(float&)(buffercopy[separationL0 + nPitch]));
+
+const __m128i right00 = _mm_mul_int(_mm_and_ps(right0,FF00FF128),pRs4_1);
+const __m128i right01 = _mm_mul_int(_mm_and_ps(right0,FF00128),  pRs4_1);
+const __m128i right10 = _mm_mul_int(_mm_and_ps(right1,FF00FF128),pRs4_2);
+const __m128i right11 = _mm_mul_int(_mm_and_ps(right1,FF00128),  pRs4_2);
+
+const __m128i right = _mm_srli_epi32((__m128i&)_mm_or_ps(_mm_and_ps((__m128&)_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_ps((__m128&)_mm_add_epi32(right01,right11),FF0000128)),8);
 
 #ifdef AA3D
+if(y&1)
+	bufferfinal[offshalf0 + x + i] = ((bufferfinal[offshalf0 + x + i]&0xFEFEFEu) + (right&0xFEFEFEu))>>1; // average with previously computed line
+else
+#endif
+	_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x), right);
+
+const __m128i left00 = _mm_mul_int(_mm_and_ps(left0,FF00FF128),pLs4_1);
+const __m128i left01 = _mm_mul_int(_mm_and_ps(left0,FF00128),  pLs4_1);
+const __m128i left10 = _mm_mul_int(_mm_and_ps(left1,FF00FF128),pLs4_2);
+const __m128i left11 = _mm_mul_int(_mm_and_ps(left1,FF00128),  pLs4_2);
+
+const __m128i left = _mm_srli_epi32((__m128i&)_mm_or_ps(_mm_and_ps((__m128&)_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_ps((__m128&)_mm_add_epi32(left01,left11),FF0000128)),8);
+
+#ifdef AA3D
+if(y&1)
+	bufferfinal[offshalf1 + x + i] = ((bufferfinal[offshalf1 + x + i]&0xFEFEFEu) + (left &0xFEFEFEu))>>1; // average with previously computed line
+else
+#endif
+	_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x), left);
+
+					}
+				}
+			}
+		}
+		else
+		{
+#endif
+#ifdef AA3D
+#pragma omp parallel for schedule(dynamic)
 for(int yi = maxSeparationU+1; yi < height-(maxSeparationU+1); ++yi)
 #else
-for(int yi = maxSeparationU+1; yi < height-(maxSeparationU+1); yi+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
+#pragma omp parallel for schedule(dynamic)
+for(int yi = (int)(maxSeparationU+1); yi < (int)(height-(maxSeparationU+1)); yi+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
 #endif
 {
 const unsigned int y = yi;
 const unsigned int offshalf0 = (y>>1)*nPitch;
 const unsigned int offshalf1 = (height>>1)*nPitch + offshalf0;
 
-unsigned int offsz = y*nPitchz;
-for(unsigned int x = 0; x < width; ++x,++offsz)
+const unsigned int ymms = y - maxSeparationU;
+const __m128i ymms128 = (__m128i&)_mm_set1_ps((float&)ymms);
+const unsigned int ypms = y + maxSeparationU;
+const __m128i ypms128 = (__m128i&)_mm_set1_ps((float&)ypms);
+
+const float* __restrict z = (float*)bufferzcopy + y*nPitchz;
+__m128i x128 = t0123;
+for(unsigned int x = 0; x < width; x+=4,z+=4,x128=_mm_add_epi32(x128,t4444))
+{
+#if 0
+for(unsigned int x = 0; x < width; x+=4,offsz+=4)
 {
 //const UINT z = (float)(bufferzcopy[offsz]&zmask)*(float)(255.0/zmask);
 //bufferfinal[x + y*nPitch] = z|(z<<8)|(z<<16);
@@ -2827,14 +3329,79 @@ if(y&1)
 #ifdef AA3D
 }
 #endif
+
+#else
+
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z-samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z-samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z-samples[2]),zmask128)); // abuse float pipelines for the unsigned integer math
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z+samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z+samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z+samples[2]),zmask128));
+
+const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
+const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
+
+const __m128i pR = _mm_add_epi32(_mm_mul_int_i(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),nPitch128),x128);
+const __m128i pL = _mm_add_epi32(_mm_mul_int_i(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),nPitch128),x128);
+
+const __m128i pRs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxR,4),(__m128&)ff128);
+const __m128i pLs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxL,4),(__m128&)ff128);
+const __m128i pRs4_2 = _mm_sub_epi32(ff128,pRs4_1);
+const __m128i pLs4_2 = _mm_sub_epi32(ff128,pLs4_1);
+
+const unsigned int separationR0 = ((unsigned int*)&pR)[0];
+const unsigned int separationR1 = ((unsigned int*)&pR)[1];
+const unsigned int separationR2 = ((unsigned int*)&pR)[2];
+const unsigned int separationR3 = ((unsigned int*)&pR)[3];
+
+const __m128 right0 = _mm_set_ps((float&)(buffercopy[separationR3])         ,(float&)(buffercopy[separationR2])         ,(float&)(buffercopy[separationR1])         ,(float&)(buffercopy[separationR0]));
+const __m128 right1 = _mm_set_ps((float&)(buffercopy[separationR3 - nPitch]),(float&)(buffercopy[separationR2 - nPitch]),(float&)(buffercopy[separationR1 - nPitch]),(float&)(buffercopy[separationR0 - nPitch]));
+
+const unsigned int separationL0 = ((unsigned int*)&pL)[0];
+const unsigned int separationL1 = ((unsigned int*)&pL)[1];
+const unsigned int separationL2 = ((unsigned int*)&pL)[2];
+const unsigned int separationL3 = ((unsigned int*)&pL)[3];
+
+const __m128 left0 = _mm_set_ps((float&)(buffercopy[separationL3])         ,(float&)(buffercopy[separationL2])         ,(float&)(buffercopy[separationL1])         ,(float&)(buffercopy[separationL0]));
+const __m128 left1 = _mm_set_ps((float&)(buffercopy[separationL3 + nPitch]),(float&)(buffercopy[separationL2 + nPitch]),(float&)(buffercopy[separationL1 + nPitch]),(float&)(buffercopy[separationL0 + nPitch]));
+
+const __m128i right00 = _mm_mul_int(_mm_and_ps(right0,FF00FF128),pRs4_1);
+const __m128i right01 = _mm_mul_int(_mm_and_ps(right0,FF00128),  pRs4_1);
+const __m128i right10 = _mm_mul_int(_mm_and_ps(right1,FF00FF128),pRs4_2);
+const __m128i right11 = _mm_mul_int(_mm_and_ps(right1,FF00128),  pRs4_2);
+
+const __m128i right = _mm_srli_epi32((__m128i&)_mm_or_ps(_mm_and_ps((__m128&)_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_ps((__m128&)_mm_add_epi32(right01,right11),FF0000128)),8);
+
+#ifdef AA3D
+if(y&1)
+	bufferfinal[offshalf0 + x + i] = ((bufferfinal[offshalf0 + x + i]&0xFEFEFEu) + (right&0xFEFEFEu))>>1; // average with previously computed line
+else
+#endif
+	_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x), right);
+
+const __m128i left00 = _mm_mul_int(_mm_and_ps(left0,FF00FF128),pLs4_1);
+const __m128i left01 = _mm_mul_int(_mm_and_ps(left0,FF00128),  pLs4_1);
+const __m128i left10 = _mm_mul_int(_mm_and_ps(left1,FF00FF128),pLs4_2);
+const __m128i left11 = _mm_mul_int(_mm_and_ps(left1,FF00128),  pLs4_2);
+
+const __m128i left = _mm_srli_epi32((__m128i&)_mm_or_ps(_mm_and_ps((__m128&)_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_ps((__m128&)_mm_add_epi32(left01,left11),FF0000128)),8);
+
+#ifdef AA3D
+if(y&1)
+	bufferfinal[offshalf1 + x + i] = ((bufferfinal[offshalf1 + x + i]&0xFEFEFEu) + (left &0xFEFEFEu))>>1; // average with previously computed line
+else
+#endif
+	_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x), left);
+
+#endif
 }
 
 }
+#ifdef ONLY3DUPD
+}
+#endif
 #else
 #define FXAA_SPAN_MAX 8
-
 #define OFFS (((FXAA_SPAN_MAX*8)>>4) + 1)
 
+#pragma omp parallel for schedule(dynamic)
 for(int y = OFFS; y < (int)height - (OFFS+1); ++y) //!! border handling
 {
 unsigned int offsm1 = (y-1)*nPitch + (OFFS-1);
@@ -2901,27 +3468,12 @@ for(int x = OFFS; x < (int)width - (OFFS+1); ++x,++offsm1) //!! border handling
 }
 #endif
 
-// copy back new 3D backbuffer mem
-ZeroMemory( &ddsd, sizeof(ddsd) );
-ddsd.dwSize = sizeof(ddsd);
-m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, NULL);
-memcpy(ddsd.lpSurface,bufferfinal,ddsd.lPitch*height);
-m_pin3d.m_pddsBackBuffer->Unlock(NULL);
+m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
 #endif
 
 			// Copy the entire back buffer to the front buffer.
 			m_pin3d.Flip(0, 0);
 
-#ifdef VP3D
-// copy back original backbuffer mem
-ZeroMemory( &ddsd, sizeof(ddsd) );
-ddsd.dwSize = sizeof(ddsd);
-m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, NULL);
-memcpy(ddsd.lpSurface,buffercopy,ddsd.lPitch*height);
-m_pin3d.m_pddsBackBuffer->Unlock(NULL);
-#endif
-
-			// Flag that we only need to update regions from now on...
 			m_fCleanBlt = fTrue;
 		}
 	}

@@ -2,6 +2,9 @@
 //      or project specific include files that are used frequently,
 //      but are changed infrequently
 
+//#define VP3D
+//#define ONLY3DUPD
+
 #define ULTRA_FREE 1
 
 #define NO_X87_FPU 1

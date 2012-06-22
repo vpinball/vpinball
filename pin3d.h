@@ -203,6 +203,11 @@ public:
 	LPDIRECTDRAW7 m_pDD;
 	LPDIRECTDRAWSURFACE7 m_pddsFrontBuffer;
 	LPDIRECTDRAWSURFACE7 m_pddsBackBuffer;
+#ifdef VP3D
+	LPDIRECTDRAWSURFACE7 m_pdds3DBackBuffer;
+	const unsigned int* __restrict buffercopy;
+	const unsigned int* __restrict bufferzcopy;
+#endif
 	LPDIRECTDRAWSURFACE7 m_pddsZBuffer;
 	LPDIRECT3D7 m_pD3D;
 	LPDIRECT3DDEVICE7 m_pd3dDevice;
