@@ -514,7 +514,7 @@ void VPinball::InitRegValues()
 void VPinball::RegisterClasses()
 	{
 	WNDCLASSEX wcex;
-	memset(&wcex, 0, sizeof(WNDCLASSEX));
+	ZeroMemory(&wcex, sizeof(WNDCLASSEX));
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_DBLCLKS;//CS_NOCLOSE | CS_OWNDC;
 	wcex.lpfnWndProc = (WNDPROC) VPWndProc;
@@ -1453,7 +1453,7 @@ void VPinball::LoadFile()
 	szFileName[0] = '\0';
 
 	OPENFILENAME ofn;
-	memset(&ofn, 0, sizeof(OPENFILENAME));
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	ofn.hInstance = g_hinst;
 	ofn.hwndOwner = g_pvp->m_hwnd;
@@ -1902,7 +1902,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
 		count--;
 
 		// set up the menu info block
-		memset(&menuInfo, 0x00, sizeof(menuInfo));
+		ZeroMemory(&menuInfo, sizeof(menuInfo));
 		menuInfo.cbSize = sizeof(menuInfo);
 		menuInfo.fMask = MIIM_ID | MIIM_TYPE;
 		menuInfo.fType = MFT_STRING;
@@ -2618,7 +2618,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							szFileName[0] = '\0';
 
 							OPENFILENAME ofn;
-							memset(&ofn, 0, sizeof(OPENFILENAME));
+							ZeroMemory(&ofn, sizeof(OPENFILENAME));
 							ofn.lStructSize = sizeof(OPENFILENAME);
 							ofn.hInstance = g_hinst;
 							ofn.hwndOwner = g_pvp->m_hwnd;
@@ -2726,7 +2726,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									szFileName[0] = '\0';
 
 									OPENFILENAME ofn;
-									memset(&ofn, 0, sizeof(OPENFILENAME));
+									ZeroMemory(&ofn, sizeof(OPENFILENAME));
 									ofn.lStructSize = sizeof(OPENFILENAME);
 									ofn.hInstance = g_hinst;
 									ofn.hwndOwner = g_pvp->m_hwnd;
@@ -2785,7 +2785,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
 									PinSound *pps = (PinSound *)lvitem.lParam;								
 
-									memset(&ofn, 0, sizeof(OPENFILENAME));
+									ZeroMemory(&ofn, sizeof(OPENFILENAME));
 									ofn.lStructSize = sizeof(OPENFILENAME);
 									ofn.hInstance = g_hinst;
 									ofn.hwndOwner = g_pvp->m_hwnd;
@@ -3132,7 +3132,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							szFileName[0] = '\0';
 
 							OPENFILENAME ofn;
-							memset(&ofn, 0, sizeof(OPENFILENAME));
+							ZeroMemory(&ofn, sizeof(OPENFILENAME));
 							ofn.lStructSize = sizeof(OPENFILENAME);
 							ofn.hInstance = g_hinst;
 							ofn.hwndOwner = g_pvp->m_hwnd;
@@ -3207,7 +3207,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									PinImage * const ppi = (PinImage *)lvitem.lParam;									
 
 									OPENFILENAME ofn;
-									memset(&ofn, 0, sizeof(OPENFILENAME));
+									ZeroMemory(&ofn, sizeof(OPENFILENAME));
 									ofn.lStructSize = sizeof(OPENFILENAME);
 									ofn.hInstance = g_hinst;
 									ofn.hwndOwner = g_pvp->m_hwnd;
@@ -3338,7 +3338,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									szFileName[0] = '\0';
 
 									OPENFILENAME ofn;
-									memset(&ofn, 0, sizeof(OPENFILENAME));
+									ZeroMemory(&ofn, sizeof(OPENFILENAME));
 									ofn.lStructSize = sizeof(OPENFILENAME);
 									ofn.hInstance = g_hinst;
 									ofn.hwndOwner = g_pvp->m_hwnd;
@@ -3798,7 +3798,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							HWND maxTexDim512 = GetDlgItem(hwndDlg, IDC_Tex512);
 							HWND maxTexDim1024 = GetDlgItem(hwndDlg, IDC_Tex1024);
 							HWND maxTexDim2048 = GetDlgItem(hwndDlg, IDC_Tex2048);
-							HWND maxTexDimUnlimited = GetDlgItem(hwndDlg, IDC_TexUnlimited);
+							//HWND maxTexDimUnlimited = GetDlgItem(hwndDlg, IDC_TexUnlimited);
 							int maxTexDim = 0;
 							if (SendMessage(maxTexDim512, BM_GETCHECK, 0, 0) == BST_CHECKED)
 								maxTexDim = 512;
@@ -3834,7 +3834,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							int alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
 							SetRegValue("Player", "AlphaRampAccuracy", REG_DWORD, &alphaRampsAccuracy, 4);
 
-							HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
+							//HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
 							HWND hwndBallStretchYes = GetDlgItem(hwndDlg, IDC_StretchYes);
 							HWND hwndBallStretchMonitor = GetDlgItem(hwndDlg, IDC_StretchMonitor);
 							int ballStretchMode = 0;
@@ -4108,7 +4108,7 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 							szFileName[0] = '\0';
 
 							OPENFILENAME ofn;
-							memset(&ofn, 0, sizeof(OPENFILENAME));
+							ZeroMemory(&ofn, sizeof(OPENFILENAME));
 							ofn.lStructSize = sizeof(OPENFILENAME);
 							ofn.hInstance = g_hinst;
 							ofn.hwndOwner = g_pvp->m_hwnd;
@@ -4203,7 +4203,7 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 									szFileName[0] = '\0';
 
 									OPENFILENAME ofn;
-									memset(&ofn, 0, sizeof(OPENFILENAME));
+									ZeroMemory(&ofn, sizeof(OPENFILENAME));
 									ofn.lStructSize = sizeof(OPENFILENAME);
 									ofn.hInstance = g_hinst;
 									ofn.hwndOwner = g_pvp->m_hwnd;
@@ -7212,12 +7212,12 @@ int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 							// get the passwords
 							char pw[PROT_PASSWORD_LENGTH+1];
-							memset (pw,  0x00, sizeof(pw));
+							ZeroMemory (pw, sizeof(pw));
 							HWND hwndPw = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD);
 							GetWindowText(hwndPw,  pw,  sizeof(pw));
 
 							char pw2[PROT_PASSWORD_LENGTH+2];
-							memset (pw2, 0x00, sizeof(pw2));
+							ZeroMemory (pw2, sizeof(pw2));
 							HWND hwndPw2 = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD2);
 							GetWindowText(hwndPw2, pw2, sizeof(pw2));
 
@@ -7311,7 +7311,7 @@ int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 							{
 							// get the password
 							char pw[PROT_PASSWORD_LENGTH+1];
-							memset (pw,  0x00, sizeof(pw));
+							ZeroMemory (pw, sizeof(pw));
 							HWND hwndPw = GetDlgItem(hwndDlg, IDC_UNLOCK_PASSWORD);
 							GetWindowText(hwndPw,  pw,  sizeof(pw));
 

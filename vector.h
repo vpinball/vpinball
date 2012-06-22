@@ -152,7 +152,7 @@ public:
 			if (!SetSize(cNewSize))
 				return false;
 
-			memset(&m_rg[m_cSize], 0, sizeof(void *) * (cNewSize - m_cSize));
+			ZeroMemory(&m_rg[m_cSize], sizeof(void *) * (cNewSize - m_cSize));
 			m_cSize = cNewSize;
 			}
 		return true;

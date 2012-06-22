@@ -60,7 +60,7 @@ PinInput::PinInput()
 	m_ChangedKeys = 0;
 	m_ptable = NULL;
 
-	memset( m_diq, 0, sizeof( m_diq ) );
+	ZeroMemory( m_diq, sizeof( m_diq ) );
 
 	s_pPinInput = this;
 
@@ -524,7 +524,7 @@ void PinInput::UnInit()
 
 	m_head = m_tail = 0;
 
-	memset( m_diq, 0, sizeof( m_diq ));
+	ZeroMemory( m_diq, sizeof( m_diq ));
 }
 
 void PinInput::FireKeyEvent( int dispid, int key )

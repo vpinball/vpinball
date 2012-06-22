@@ -780,7 +780,7 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	CalculateRealTime();
 
 	// This is the drawing function we need... Realtime drawing.
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	//Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	/*
 	RECT * rect;
 	rect = new RECT();

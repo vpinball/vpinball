@@ -255,7 +255,7 @@ inline void Display_DrawSprite_NoMatrix ( LPDIRECT3DDEVICE7 Direct3DDevice, cons
 	Display_SetRenderState ( Direct3DDevice, &(RenderStates[RenderStateIndex]) );
 
 	// Set the texture.
-	const HRESULT ReturnCode = Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
+	/*const HRESULT ReturnCode =*/ Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
 
 	// WTF?  As soon as I do DrawPrimitive, the ball disappears.  Everything else works (ie saving and restoring states)... it's just the draw!
 
@@ -276,7 +276,7 @@ inline void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x
     const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
 
 	// Apply the transformation.
-    const HRESULT ReturnCode = Direct3DDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
+    /*const HRESULT ReturnCode =*/ Direct3DDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
 
     Display_DrawSprite_NoMatrix ( Direct3DDevice, x, y, Width, Height, r, g, b, a, Angle, Texture, u, v, TextureStateIndex, RenderStateIndex );
 }
@@ -339,7 +339,7 @@ inline void Display_DrawSprite_NoMatrix_NoStates ( LPDIRECT3DDEVICE7 Direct3DDev
 	Vertices[3].RHW = 1.0f; 
 
 	// Set the texture.
-	const HRESULT ReturnCode = Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
+	/*const HRESULT ReturnCode =*/ Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
 
 	// WTF?  As soon as I do DrawPrimitive, the ball disappears.  Everything else works (ie saving and restoring states)... it's just the draw!
 
@@ -360,7 +360,7 @@ inline void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x
     const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
 
 	// Apply the transformation.
-    const HRESULT ReturnCode = Direct3DDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
+    /*const HRESULT ReturnCode =*/ Direct3DDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
 
 	// Set the texture state.
 	Display_SetTextureState ( Direct3DDevice, &(TextureStates[TextureStateIndex]) );

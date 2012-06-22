@@ -327,7 +327,7 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	}
 	else
 	{
-		memset((void *)m_pgridData, 0x00, (size_t)((m_lightSeqGridHeight*m_lightSeqGridWidth)*sizeof(short)));
+		ZeroMemory((void *)m_pgridData, (size_t)((m_lightSeqGridHeight*m_lightSeqGridWidth)*sizeof(short)));
 	}
 
 	// get the number of elements (objects) in the collection (referenced by m_visel)
@@ -364,11 +364,11 @@ void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 
 			// scale down to suit the size of the light sequence grid
-			const int ix = (int)(x * (float)(1.0/LIGHTSEQGRIDSCALE));
-			const int iy = (int)(y * (float)(1.0/LIGHTSEQGRIDSCALE));
+			const unsigned int ix = (int)(x * (float)(1.0/LIGHTSEQGRIDSCALE));
+			const unsigned int iy = (int)(y * (float)(1.0/LIGHTSEQGRIDSCALE));
 			// if on the playfield (1000 by 2000)
-			if ( ((ix >= 0) && (ix < m_lightSeqGridWidth)) &&
-				 ((iy >= 0) && (iy < m_lightSeqGridHeight)) )
+			if ( /*(ix >= 0) &&*/ (ix < (unsigned int)m_lightSeqGridWidth) && //>=0 handled by unsigned int
+				 /*(iy >= 0) &&*/ (iy < (unsigned int)m_lightSeqGridHeight) ) //>=0 handled by unsigned int
 			{
 				const int gridIndex = (iy * m_lightSeqGridWidth) + ix;
 
