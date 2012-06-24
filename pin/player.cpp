@@ -3291,7 +3291,7 @@ const __m128i nPitch128 = (__m128i&)_mm_set1_ps((float&)nPitch);
 				// Update the region (+ area around) from the back buffer to the front buffer.
 #if X3D
 				stereo_repro(top&0xFFFFFFFE, bottom, (max((int)left-(int)maxSeparationU,(int)maxSeparationU+1)+3)&0xFFFFFFFC, min(right+maxSeparationU,width-(maxSeparationU+1)), nPitch,height,maxSeparationU,buffercopy,bufferzcopy,bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false); //!! +3,etc. //!! too short also //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
-#elif
+#elif Y3D
 				stereo_repro(max((int)top-(int)maxSeparationU,(int)maxSeparationU+1)&0xFFFFFFFE, min(bottom+maxSeparationU,height-(maxSeparationU+1)), left&0xFFFFFFFC, right+3, nPitch,height,maxSeparationU,buffercopy,bufferzcopy,bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false); //!! +3,etc. //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
 #endif
 			}
@@ -3300,7 +3300,7 @@ const __m128i nPitch128 = (__m128i&)_mm_set1_ps((float&)nPitch);
 #endif
 #if X3D
             stereo_repro(0, height, ((maxSeparationU+1)+3)&0xFFFFFFFC, width-(maxSeparationU+1), nPitch,height,maxSeparationU,buffercopy,bufferzcopy,bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true); //!! +3, etc //!! too short also
-#else
+#elif Y3D
 			stereo_repro(maxSeparationU+1, height-(maxSeparationU+1), 0, width, nPitch,height,maxSeparationU,buffercopy,bufferzcopy,bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true);
 #endif
 
