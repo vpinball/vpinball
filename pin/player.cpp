@@ -1941,8 +1941,25 @@ int fpieee_handler( _FPIEEE_RECORD *pieee )
 #endif
 
 #ifdef VP3D
-static const unsigned int f0 = 0xffffffff; const unsigned int f1 = 0;
-static const __m128 f0128 = _mm_set_ps((float&)f1,(float&)f0,(float&)f1,(float&)f0);
+static const unsigned int f0 = 0xffffffff;
+static const unsigned int t0 = 0; const unsigned int t1 = 1; const unsigned int t2 = 2; const unsigned int t3 = 3;
+static const unsigned int t4 = 4;
+static const unsigned int ff = 0xFF;
+static const unsigned int FF00FF = 0xFF00FFu;
+static const unsigned int FF00 = 0xFF00u;
+static const unsigned int FF00FF00 = 0xFF00FF00u;
+static const unsigned int FF0000 = 0xFF0000u;
+static const unsigned int FEFEFE = 0xFEFEFEu;
+static const __m128 f0128 = _mm_set_ps((float&)t0,(float&)f0,(float&)t0,(float&)f0);
+static const __m128i t0123 = (__m128i&)_mm_set_ps((float&)t3,(float&)t2,(float&)t1,(float&)t0);
+static const __m128i t4444 = (__m128i&)_mm_set1_ps((float&)t4);
+static const __m128i ff128 = (__m128i&)_mm_set1_ps((float&)ff);
+static const __m128 FF00FF128 = _mm_set1_ps((float&)FF00FF);
+static const __m128 FF00128 = _mm_set1_ps((float&)FF00);
+static const __m128 FF00FF00128 = _mm_set1_ps((float&)FF00FF00);
+static const __m128 FF0000128 = _mm_set1_ps((float&)FF0000);
+static const __m128 FEFEFE128 = _mm_set1_ps((float&)FEFEFE);
+
 
 __forceinline __m128i _mm_mul_int(const __m128& a, const __m128i& b)
 {
@@ -2332,6 +2349,190 @@ return (((((r00a&0xFF00FFu)*invxinvy + (r10a&0xFF00FFu)*xinvy + (r01a&0xFF00FFu)
        (((((r00b&0xFF00FFu)*invxinvy + (r10b&0xFF00FFu)*xinvy + (r01b&0xFF00FFu)*invxy + (r11b&0xFF00FFu)*xy) &0xFE00FE00u)
 	|
 	 (((r00b&0x00FF00u)*invxinvy + (r10b&0x00FF00u)*xinvy + (r01b&0x00FF00u)*invxy + (r11b&0x00FF00u)*xy) &0x00FE0000u))>>9);
+}
+
+inline void stereo_repro(const int ystart, const int yend, const unsigned int xstart, const unsigned int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int * const __restrict buffercopy, const unsigned int * const __restrict bufferzcopy, unsigned int * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders)
+{
+#ifdef Y3D
+if(handle_borders) {
+    ZeroMemory(bufferfinal,                                  width*(maxSeparationU+1)*4); //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
+    ZeroMemory(bufferfinal+width*(height-(maxSeparationU+1)),width*(maxSeparationU+1)*4); //!! black out border pixels, replicate borders for one half instead??
+}
+#endif
+
+const __m128i width128 = (__m128i&)_mm_set1_ps((float&)width);
+
+#ifdef AA3D
+#pragma omp parallel for schedule(dynamic) //!! make configurable for update/non-update version
+for(int yi = ystart; yi < yend; ++yi)
+#else
+#pragma omp parallel for schedule(dynamic) //!! dto.
+for(int yi = ystart; yi < yend; yi+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
+#endif
+{
+const unsigned int y = yi;
+#if X3D
+const unsigned int offshalf1 = (y>>1)*width;
+const unsigned int offshalf0 = (height>>1)*width + offshalf1;
+const unsigned int ymms = y*width - maxSeparationU;
+const unsigned int ypms = y*width + maxSeparationU;
+#elif Y3D
+const unsigned int offshalf0 = (y>>1)*width;
+const unsigned int offshalf1 = (height>>1)*width + offshalf0;
+const unsigned int ymms = y - maxSeparationU;
+const unsigned int ypms = y + maxSeparationU;
+#endif
+
+const __m128i ymms128 = (__m128i&)_mm_set1_ps((float&)ymms);
+const __m128i ypms128 = (__m128i&)_mm_set1_ps((float&)ypms);
+
+const float* __restrict z = (float*)bufferzcopy + y*width + xstart; //!! widthz?
+__m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
+
+#if X3D
+unsigned int x;
+if(handle_borders) {
+    for(x = 0; x < xstart; ++x) //!! black out border pixels, replicate borders for one half instead??
+	    bufferfinal[offshalf0 + x] = bufferfinal[offshalf1 + x] = 0; //!! only when NOT UPDATING
+} else
+    x = xstart;
+#elif Y3D
+unsigned int x = xstart;
+#endif
+
+#if 0
+for(; x < xend; x++,offsz++)
+{
+//const UINT z = (float)(bufferzcopy[offsz]&zmask)*(float)(255.0/zmask);
+//bufferfinal[x + y*nPitch] = z|(z<<8)|(z<<16);
+
+const unsigned int minDepthR = min( min( bufferzcopy[offsz - samples[0]]&zmask, bufferzcopy[offsz - samples[1]]&zmask ), bufferzcopy[offsz - samples[2]]&zmask );
+const unsigned int minDepthL = min( min( bufferzcopy[offsz + samples[0]]&zmask, bufferzcopy[offsz + samples[1]]&zmask ), bufferzcopy[offsz + samples[2]]&zmask );
+
+const unsigned int parallaxR = min(ZPDU / minDepthR, maxSeparationU<<4); //!! <<5? to allow for pop out, but then modify bilerp filter/pixel offset below, depending on sign of -overall- parallax shift?!
+const unsigned int parallaxL = min(ZPDU / minDepthL, maxSeparationU<<4); //!! <<5? to allow for pop out, but then modify bilerp filter/pixel offset below, depending on sign of -overall- parallax shift?!
+const unsigned int pR = parallaxR>>4; // /16 = fixed point math, also see above
+const unsigned int pL = parallaxL>>4;
+
+const unsigned int separationR = x + (y - maxSeparationU + pR)*nPitch; // + y*nPitch - maxSeparationU + pR  for x
+const unsigned int right0 = buffercopy[separationR];
+const unsigned int right1 = buffercopy[separationR - nPitch /*+ (((maxSeparationU - pR)>>30)&2)*nPitch*/]; // -1 instead of nPitch for x
+
+const unsigned int r13   = (parallaxR*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
+const unsigned int r23   = 0xFFu - r13;
+const unsigned int right = ((((right0&0xFF00FFu)*r13+(right1&0xFF00FFu)*r23)&0xFF00FF00)|(((right0&0x00FF00u)*r13+(right1&0x00FF00u)*r23)&0x00FF0000u))>>8; // linear filtering
+
+const unsigned int separationL = x + (y + maxSeparationU - pL)*nPitch; // + y*nPitch + maxSeparationU - pL  for x
+const unsigned int left0 = buffercopy[separationL];
+const unsigned int left1 = buffercopy[separationL + nPitch /*- (((maxSeparationU - pL)>>30)&2)*nPitch*/]; // +1 instead of nPitch for x
+
+const unsigned int l13  = (parallaxL*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
+const unsigned int l23  = 0xFFu - l13;
+const unsigned int left = ((((left0&0xFF00FFu)*l13+(left1&0xFF00FFu)*l23)&0xFF00FF00u)|(((left0&0x00FF00u)*l13+(left1&0x00FF00u)*l23)&0x00FF0000u))>>8; // linear filtering
+
+//!! bufferfinal[offs] = (right&0xFF0000u) | (left&0xFFFFFFu);
+
+#ifdef AA3D
+if(y&1)
+{
+	bufferfinal[offshalf0 + x] = ((bufferfinal[offshalf0 + x]&0xFEFEFEu) + (right&0xFEFEFEu))>>1; // average with previously computed line
+	bufferfinal[offshalf1 + x] = ((bufferfinal[offshalf1 + x]&0xFEFEFEu) + (left &0xFEFEFEu))>>1; // average with previously computed line
+} else {
+#endif
+	bufferfinal[offshalf0 + x] = right;
+	bufferfinal[offshalf1 + x] = left;
+#ifdef AA3D
+}
+#endif
+
+#else
+
+for(; x < xend; x+=4,z+=4,x128=_mm_add_epi32(x128,t4444))
+{
+#if X3D
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_loadu_ps(z-samples[0]),zmask128),_mm_and_ps(_mm_loadu_ps(z-samples[1]),zmask128)),_mm_and_ps(_mm_loadu_ps(z-samples[2]),zmask128)); // abuse float pipelines for the unsigned integer math
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_loadu_ps(z+samples[0]),zmask128),_mm_and_ps(_mm_loadu_ps(z+samples[1]),zmask128)),_mm_and_ps(_mm_loadu_ps(z+samples[2]),zmask128));
+#elif Y3D
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z-samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z-samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z-samples[2]),zmask128)); // abuse float pipelines for the unsigned integer math
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z+samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z+samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z+samples[2]),zmask128));
+#endif
+
+const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
+const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
+
+#if X3D
+const __m128i pR = _mm_add_epi32(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),x128);
+const __m128i pL = _mm_add_epi32(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),x128);
+#elif Y3D
+const __m128i pR = _mm_add_epi32(_mm_mul_int_i(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),width128),x128);
+const __m128i pL = _mm_add_epi32(_mm_mul_int_i(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),width128),x128);
+#endif
+
+const __m128i pRs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxR,4),(__m128&)ff128);
+const __m128i pLs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxL,4),(__m128&)ff128);
+const __m128i pRs4_2 = _mm_sub_epi32(ff128,pRs4_1);
+const __m128i pLs4_2 = _mm_sub_epi32(ff128,pLs4_1);
+
+const unsigned int separationR0 = ((unsigned int*)&pR)[0];
+const unsigned int separationR1 = ((unsigned int*)&pR)[1];
+const unsigned int separationR2 = ((unsigned int*)&pR)[2];
+const unsigned int separationR3 = ((unsigned int*)&pR)[3];
+
+const __m128 right0 = _mm_set_ps((float&)(buffercopy[separationR3])        ,(float&)(buffercopy[separationR2])        ,(float&)(buffercopy[separationR1])        ,(float&)(buffercopy[separationR0]));
+#if X3D
+const __m128 right1 = _mm_set_ps((float&)(buffercopy[separationR3 - 1])    ,(float&)(buffercopy[separationR2 - 1])    ,(float&)(buffercopy[separationR1 - 1])    ,(float&)(buffercopy[separationR0 - 1]));
+#elif Y3D
+const __m128 right1 = _mm_set_ps((float&)(buffercopy[separationR3 - width]),(float&)(buffercopy[separationR2 - width]),(float&)(buffercopy[separationR1 - width]),(float&)(buffercopy[separationR0 - width]));
+#endif
+
+const unsigned int separationL0 = ((unsigned int*)&pL)[0];
+const unsigned int separationL1 = ((unsigned int*)&pL)[1];
+const unsigned int separationL2 = ((unsigned int*)&pL)[2];
+const unsigned int separationL3 = ((unsigned int*)&pL)[3];
+
+const __m128 left0 = _mm_set_ps((float&)(buffercopy[separationL3])        ,(float&)(buffercopy[separationL2])        ,(float&)(buffercopy[separationL1])        ,(float&)(buffercopy[separationL0]));
+#if X3D
+const __m128 left1 = _mm_set_ps((float&)(buffercopy[separationL3 + 1])    ,(float&)(buffercopy[separationL2 + 1])    ,(float&)(buffercopy[separationL1 + 1])    ,(float&)(buffercopy[separationL0 + 1]));
+#elif Y3D
+const __m128 left1 = _mm_set_ps((float&)(buffercopy[separationL3 + width]),(float&)(buffercopy[separationL2 + width]),(float&)(buffercopy[separationL1 + width]),(float&)(buffercopy[separationL0 + width]));
+#endif
+
+const __m128i right00 = _mm_mul_int(_mm_and_ps(right0,FF00FF128),pRs4_1);
+const __m128i right01 = _mm_mul_int(_mm_and_ps(right0,FF00128),  pRs4_1);
+const __m128i right10 = _mm_mul_int(_mm_and_ps(right1,FF00FF128),pRs4_2);
+const __m128i right11 = _mm_mul_int(_mm_and_ps(right1,FF00128),  pRs4_2);
+
+const __m128i right = _mm_srli_epi32((__m128i&)_mm_or_ps(_mm_and_ps((__m128&)_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_ps((__m128&)_mm_add_epi32(right01,right11),FF0000128)),8);
+
+#ifdef AA3D
+if(y&1)
+	_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x),_mm_srli_epi32(_mm_add_epi32((__m128i&)_mm_and_ps(_mm_load_ps((float*)bufferfinal+offshalf0+x),FEFEFE128), (__m128i&)_mm_and_ps((__m128&)right,FEFEFE128)),1));
+else
+#endif
+	_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x), right);
+
+const __m128i left00 = _mm_mul_int(_mm_and_ps(left0,FF00FF128),pLs4_1);
+const __m128i left01 = _mm_mul_int(_mm_and_ps(left0,FF00128),  pLs4_1);
+const __m128i left10 = _mm_mul_int(_mm_and_ps(left1,FF00FF128),pLs4_2);
+const __m128i left11 = _mm_mul_int(_mm_and_ps(left1,FF00128),  pLs4_2);
+
+const __m128i left = _mm_srli_epi32((__m128i&)_mm_or_ps(_mm_and_ps((__m128&)_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_ps((__m128&)_mm_add_epi32(left01,left11),FF0000128)),8);
+
+#ifdef AA3D
+if(y&1)
+	_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x),_mm_srli_epi32(_mm_add_epi32((__m128i&)_mm_and_ps(_mm_load_ps((float*)bufferfinal+offshalf1+x),FEFEFE128), (__m128i&)_mm_and_ps((__m128&)left,FEFEFE128)),1));
+else
+#endif
+	_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x), left);
+}
+#endif
+
+#if X3D
+if(handle_borders)
+    for(; x < width; ++x) //!! black out border pixels, replicate borders for one half instead??
+	    bufferfinal[offshalf0 + x] = bufferfinal[offshalf1 + x] = 0; //!! only when NOT UPDATING
+#endif
+}
 }
 #endif
 
@@ -2979,34 +3180,9 @@ void Player::Render()
 #else
 	{
 		{
-//#define X3D 1 //!!
-//#define maxSeparation 0.0075 //!!
-//#define ZPD 0.5 //!!
-
-#define Y3D 1 //!!
-#define maxSeparation 0.0075 //!!
-#define ZPD 0.125 //!!
-
 #define zmask 0xFFFFFFu //!! hardwired to 24bits z
-//#define AA3D 1 //!!
-
-
 static const unsigned int zmasktmp = zmask;
 static const __m128 zmask128 = _mm_set1_ps((float&)zmasktmp);
-static const unsigned int t0 = 0; const unsigned int t1 = 1; const unsigned int t2 = 2; const unsigned int t3 = 3;
-static const __m128i t0123 = (__m128i&)_mm_set_ps((float&)t3,(float&)t2,(float&)t1,(float&)t0);
-static const unsigned int t4 = 4;
-static const __m128i t4444 = (__m128i&)_mm_set1_ps((float&)t4);
-static const unsigned int ff = 0xFF;
-static const __m128i ff128 = (__m128i&)_mm_set1_ps((float&)ff);
-static const unsigned int FF00FF = 0xFF00FFu;
-static const __m128 FF00FF128 = _mm_set1_ps((float&)FF00FF);
-static const unsigned int FF00 = 0xFF00u;
-static const __m128 FF00128 = _mm_set1_ps((float&)FF00);
-static const unsigned int FF00FF00 = 0xFF00FF00u;
-static const __m128 FF00FF00128 = _mm_set1_ps((float&)FF00FF00);
-static const unsigned int FF0000 = 0xFF0000u;
-static const __m128 FF0000128 = _mm_set1_ps((float&)FF0000);
 
 DDSURFACEDESC2 ddsd,ddsdz;
 ZeroMemory( &ddsd, sizeof(ddsd) );
@@ -3027,7 +3203,7 @@ const unsigned int height = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), min
 		{
 			// Smart Blit - only update the invalidated areas
 #pragma omp parallel for schedule(dynamic)
-			for (int i=0;i<m_vupdaterect.Size();i++)
+			for (int i=0;i<m_vupdaterect.Size();++i)
 			{
 				const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
 
@@ -3055,7 +3231,7 @@ const unsigned int height = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), min
 memcpy_sse2((void*)m_pin3d.buffercopy, ddsd.lpSurface, ddsd.lPitch*height);
 memcpy_sse2((void*)m_pin3d.bufferzcopy,ddsdz.lpSurface,ddsdz.lPitch*height);
 #else
-for(int y = 0; y < height; y+=2) { //!! opt to copy larger blocks somehow?
+for(int y = 0; y < height; y+=2) { //!! opt to copy larger blocks somehow? //!! opt. muls?
 	memcpy_sse2(((unsigned char* const __restrict)m_pin3d.buffercopy) +ddsd.lPitch*y,  ((const unsigned char* const __restrict)ddsd.lpSurface) +ddsd.lPitch*y,  ddsd.lPitch);
 	memcpy_sse2(((unsigned char* const __restrict)m_pin3d.bufferzcopy)+ddsdz.lPitch*y, ((const unsigned char* const __restrict)ddsdz.lpSurface)+ddsdz.lPitch*y, ddsdz.lPitch);
 }
@@ -3079,103 +3255,31 @@ unsigned int* const __restrict bufferfinal = (unsigned int*)ddsd.lpSurface;
 const unsigned int* const __restrict buffercopy = m_pin3d.buffercopy;
 const unsigned int* const __restrict bufferzcopy = m_pin3d.bufferzcopy;
 
-const unsigned int nPitch  = ddsd.lPitch  >> 2; //!! hardwired to 4 byte RGBA
-const unsigned int nPitchz = ddsdz.lPitch >> 2; //!! hardwired to 32bits z+stencil
+const unsigned int nPitch = ddsd.lPitch  >> 2; //!! hardwired to 4 byte RGBA and 32bits z+stencil
+
+#if X3D || Y3D
 
 #if X3D
 const unsigned int maxSeparationU = (unsigned int)(width*maxSeparation);
 const unsigned int ZPDU = (unsigned int)(16u * zmask * (width*maxSeparation)*ZPD); // 16 = fixed point math for filtering pixels
-const unsigned int samples[3] = { (unsigned int)(0.5 * (width*maxSeparation)), (unsigned int)(0.666 * (width*maxSeparation)), maxSeparationU }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
-
-#ifdef AA3D
-#pragma omp parallel for schedule(dynamic)
-for(int yi = 0; yi < height; ++yi)
-#else
-#pragma omp parallel for schedule(dynamic)
-for(int yi = 0; yi < height; yi+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
-#endif
-{
-const unsigned int y = yi;
-const unsigned int offshalf0 = (y>>1)*nPitch;
-const unsigned int offshalf1 = (height>>1)*nPitch + offshalf0;
-
-unsigned int x = 0;
-for(; x < maxSeparationU+1; ++x) //!! black out border pixels, replicate borders for one half instead??
-	bufferfinal[offshalf0 + x] = bufferfinal[offshalf1 + x] = 0;
-
-unsigned int offsz = y*nPitchz + (maxSeparationU+1);
-unsigned int offs  = y*nPitch  + (maxSeparationU+1);
-for(; x < width - (maxSeparationU+1); ++x,++offsz,++offs)
-{
-//const UINT z = (float)(bufferzcopy[offsz]&zmask)*(float)(255.0/zmask);
-//bufferfinal[offs] = z|(z<<8)|(z<<16);
-
-//!! min via cmov?
-const unsigned int minDepthR = min( min( bufferzcopy[offsz - samples[0]]&zmask, bufferzcopy[offsz - samples[1]]&zmask ), bufferzcopy[offsz - samples[2]]&zmask );
-const unsigned int minDepthL = min( min( bufferzcopy[offsz + samples[0]]&zmask, bufferzcopy[offsz + samples[1]]&zmask ), bufferzcopy[offsz + samples[2]]&zmask );
-
-const unsigned int parallaxR = min(ZPDU / minDepthR, maxSeparationU<<4); //!! <<5? to allow for pop out, but then modify bilerp filter/pixel offset below, depending on sign of -overall- parallax shift?!
-const unsigned int parallaxL = min(ZPDU / minDepthL, maxSeparationU<<4); //!! <<5? to allow for pop out, but then modify bilerp filter/pixel offset below, depending on sign of -overall- parallax shift?!
-const unsigned int pR = parallaxR>>4; // /16 = fixed point math, also see above
-const unsigned int pL = parallaxL>>4;
-
-const unsigned int separationR = offs - maxSeparationU + pR;
-const unsigned int right0 = buffercopy[separationR];
-const unsigned int right1 = buffercopy[separationR - 1 /*+ (((maxSeparationU - pR)>>30)&2)*/];
-
-const unsigned int r13   = (parallaxR*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
-const unsigned int r23   = 0xFFu - r13;
-const unsigned int right = ((((right0&0xFF00FFu)*r13+(right1&0xFF00FFu)*r23)&0xFF00FF00)|(((right0&0x00FF00u)*r13+(right1&0x00FF00u)*r23)&0x00FF0000u))>>8; // linear filtering
-
-const unsigned int separationL = offs + maxSeparationU - pL;
-const unsigned int left0 = buffercopy[separationL];
-const unsigned int left1 = buffercopy[separationL + 1 /*- (((maxSeparationU - pL)>>30)&2)*/];
-
-const unsigned int l13  = (parallaxL*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
-const unsigned int l23  = 0xFFu - l13;
-const unsigned int left = ((((left0&0xFF00FFu)*l13+(left1&0xFF00FFu)*l23)&0xFF00FF00u)|(((left0&0x00FF00u)*l13+(left1&0x00FF00u)*l23)&0x00FF0000u))>>8; // linear filtering
-
-//!! bufferfinal[offs] = (right&0xFF0000u) | (left&0xFFFFFFu);
-
-#ifdef AA3D
-if(y&1)
-{
-	bufferfinal[offshalf0 + x] = ((bufferfinal[offshalf0 + x]&0xFEFEFEu) + (left &0xFEFEFEu))>>1; // average with previously computed line
-	bufferfinal[offshalf1 + x] = ((bufferfinal[offshalf1 + x]&0xFEFEFEu) + (right&0xFEFEFEu))>>1; // average with previously computed line
-} else {
-#endif
-	bufferfinal[offshalf0 + x] = left;
-	bufferfinal[offshalf1 + x] = right;
-#ifdef AA3D
-}
-#endif
-}
-
-for(; x < width; ++x) //!! black out border pixels, replicate borders for one half instead??
-	bufferfinal[offshalf0 + x] = bufferfinal[offshalf1 + x] = 0;
-
-}
-
+const unsigned int samples[3] = { (unsigned int)(0.5 * (width*maxSeparation)),            (unsigned int)(0.666 * (width*maxSeparation)),          maxSeparationU }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
 #elif Y3D
-
 const unsigned int maxSeparationU = (unsigned int)(height*maxSeparation);
 const unsigned int ZPDU = (unsigned int)(16u * zmask * (height*maxSeparation)*ZPD); // 16 = fixed point math for filtering pixels
-const unsigned int samples[3] = { ((unsigned int)(0.5 * (height*maxSeparation)))*nPitchz, ((unsigned int)(0.666 * (height*maxSeparation)))*nPitchz, maxSeparationU*nPitchz }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
+const unsigned int samples[3] = { ((unsigned int)(0.5 * (height*maxSeparation)))*nPitch, ((unsigned int)(0.666 * (height*maxSeparation)))*nPitch, maxSeparationU*nPitch }; //!! filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
+#endif
 
 const __m128 ZPDU128 = _mm_set1_ps((float)ZPDU);
 const unsigned int maxSepShl4 = maxSeparationU<<4;
 const __m128 maxSepShl4128 = _mm_set1_ps((float&)maxSepShl4);
 const __m128i nPitch128 = (__m128i&)_mm_set1_ps((float&)nPitch);
 
-ZeroMemory(bufferfinal,                                   nPitch*(maxSeparationU+1)*4); //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
-ZeroMemory(bufferfinal+nPitch*(height-(maxSeparationU+1)),nPitch*(maxSeparationU+1)*4); //!! black out border pixels, replicate borders for one half instead??
-
 #ifdef ONLY3DUPD
 		if (m_fCleanBlt)
 		{
 			// Smart Blit - only update the invalidated areas
 #pragma omp parallel for schedule(dynamic)
-			for (int i=0;i<m_vupdaterect.Size();i++)
+			for (int i=0;i<m_vupdaterect.Size();++i)
 			{
 				const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
 
@@ -3184,220 +3288,24 @@ ZeroMemory(bufferfinal+nPitch*(height-(maxSeparationU+1)),nPitch*(maxSeparationU
 				const unsigned int top    = prc.top + m_pin3d.m_rcUpdate.top;
 				const unsigned int bottom = prc.bottom + m_pin3d.m_rcUpdate.top;
 
-				// Copy the region from the back buffer to the front buffer.
-				for(unsigned int y = (unsigned int)(max((int)top-(int)maxSeparationU,(int)maxSeparationU+1)&0xFFFFFFFE); y < min(bottom+maxSeparationU,height-(maxSeparationU+1)); y+=2)
-				{
-const unsigned int offshalf0 = (y>>1)*nPitch;
-const unsigned int offshalf1 = (height>>1)*nPitch + offshalf0;
-
-const unsigned int ymms = y - maxSeparationU;
-const __m128i ymms128 = (__m128i&)_mm_set1_ps((float&)ymms);
-const unsigned int ypms = y + maxSeparationU;
-const __m128i ypms128 = (__m128i&)_mm_set1_ps((float&)ypms);
-
-const float* __restrict z = (float*)bufferzcopy + y*nPitchz + (left&0xFFFFFFFC);
-__m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(left&0xFFFFFFFC));
-					for(unsigned int x = left&0xFFFFFFFC; x < right+3; x+=4,z+=4,x128=_mm_add_epi32(x128,t4444)) //!! +3
-					{
-const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z-samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z-samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z-samples[2]),zmask128)); // abuse float pipelines for the unsigned integer math
-const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z+samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z+samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z+samples[2]),zmask128));
-
-const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
-const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
-
-const __m128i pR = _mm_add_epi32(_mm_mul_int_i(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),nPitch128),x128);
-const __m128i pL = _mm_add_epi32(_mm_mul_int_i(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),nPitch128),x128);
-
-const __m128i pRs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxR,4),(__m128&)ff128);
-const __m128i pLs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxL,4),(__m128&)ff128);
-const __m128i pRs4_2 = _mm_sub_epi32(ff128,pRs4_1);
-const __m128i pLs4_2 = _mm_sub_epi32(ff128,pLs4_1);
-
-const unsigned int separationR0 = ((unsigned int*)&pR)[0];
-const unsigned int separationR1 = ((unsigned int*)&pR)[1];
-const unsigned int separationR2 = ((unsigned int*)&pR)[2];
-const unsigned int separationR3 = ((unsigned int*)&pR)[3];
-
-const __m128 right0 = _mm_set_ps((float&)(buffercopy[separationR3])         ,(float&)(buffercopy[separationR2])         ,(float&)(buffercopy[separationR1])         ,(float&)(buffercopy[separationR0]));
-const __m128 right1 = _mm_set_ps((float&)(buffercopy[separationR3 - nPitch]),(float&)(buffercopy[separationR2 - nPitch]),(float&)(buffercopy[separationR1 - nPitch]),(float&)(buffercopy[separationR0 - nPitch]));
-
-const unsigned int separationL0 = ((unsigned int*)&pL)[0];
-const unsigned int separationL1 = ((unsigned int*)&pL)[1];
-const unsigned int separationL2 = ((unsigned int*)&pL)[2];
-const unsigned int separationL3 = ((unsigned int*)&pL)[3];
-
-const __m128 left0 = _mm_set_ps((float&)(buffercopy[separationL3])         ,(float&)(buffercopy[separationL2])         ,(float&)(buffercopy[separationL1])         ,(float&)(buffercopy[separationL0]));
-const __m128 left1 = _mm_set_ps((float&)(buffercopy[separationL3 + nPitch]),(float&)(buffercopy[separationL2 + nPitch]),(float&)(buffercopy[separationL1 + nPitch]),(float&)(buffercopy[separationL0 + nPitch]));
-
-const __m128i right00 = _mm_mul_int(_mm_and_ps(right0,FF00FF128),pRs4_1);
-const __m128i right01 = _mm_mul_int(_mm_and_ps(right0,FF00128),  pRs4_1);
-const __m128i right10 = _mm_mul_int(_mm_and_ps(right1,FF00FF128),pRs4_2);
-const __m128i right11 = _mm_mul_int(_mm_and_ps(right1,FF00128),  pRs4_2);
-
-const __m128i right = _mm_srli_epi32((__m128i&)_mm_or_ps(_mm_and_ps((__m128&)_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_ps((__m128&)_mm_add_epi32(right01,right11),FF0000128)),8);
-
-#ifdef AA3D
-if(y&1)
-	bufferfinal[offshalf0 + x + i] = ((bufferfinal[offshalf0 + x + i]&0xFEFEFEu) + (right&0xFEFEFEu))>>1; // average with previously computed line
-else
+				// Update the region (+ area around) from the back buffer to the front buffer.
+#if X3D
+				stereo_repro(top&0xFFFFFFFE, bottom, (max((int)left-(int)maxSeparationU,(int)maxSeparationU+1)+3)&0xFFFFFFFC, min(right+maxSeparationU,width-(maxSeparationU+1)), nPitch,height,maxSeparationU,buffercopy,bufferzcopy,bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false); //!! +3,etc. //!! too short also //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
+#elif
+				stereo_repro(max((int)top-(int)maxSeparationU,(int)maxSeparationU+1)&0xFFFFFFFE, min(bottom+maxSeparationU,height-(maxSeparationU+1)), left&0xFFFFFFFC, right+3, nPitch,height,maxSeparationU,buffercopy,bufferzcopy,bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false); //!! +3,etc. //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
 #endif
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x), right);
-
-const __m128i left00 = _mm_mul_int(_mm_and_ps(left0,FF00FF128),pLs4_1);
-const __m128i left01 = _mm_mul_int(_mm_and_ps(left0,FF00128),  pLs4_1);
-const __m128i left10 = _mm_mul_int(_mm_and_ps(left1,FF00FF128),pLs4_2);
-const __m128i left11 = _mm_mul_int(_mm_and_ps(left1,FF00128),  pLs4_2);
-
-const __m128i left = _mm_srli_epi32((__m128i&)_mm_or_ps(_mm_and_ps((__m128&)_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_ps((__m128&)_mm_add_epi32(left01,left11),FF0000128)),8);
-
-#ifdef AA3D
-if(y&1)
-	bufferfinal[offshalf1 + x + i] = ((bufferfinal[offshalf1 + x + i]&0xFEFEFEu) + (left &0xFEFEFEu))>>1; // average with previously computed line
-else
-#endif
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x), left);
-
-					}
-				}
 			}
 		}
 		else
-		{
 #endif
-#ifdef AA3D
-#pragma omp parallel for schedule(dynamic)
-for(int yi = maxSeparationU+1; yi < height-(maxSeparationU+1); ++yi)
+#if X3D
+            stereo_repro(0, height, ((maxSeparationU+1)+3)&0xFFFFFFFC, width-(maxSeparationU+1), nPitch,height,maxSeparationU,buffercopy,bufferzcopy,bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true); //!! +3, etc //!! too short also
 #else
-#pragma omp parallel for schedule(dynamic)
-for(int yi = (int)(maxSeparationU+1); yi < (int)(height-(maxSeparationU+1)); yi+=2) //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
-#endif
-{
-const unsigned int y = yi;
-const unsigned int offshalf0 = (y>>1)*nPitch;
-const unsigned int offshalf1 = (height>>1)*nPitch + offshalf0;
-
-const unsigned int ymms = y - maxSeparationU;
-const __m128i ymms128 = (__m128i&)_mm_set1_ps((float&)ymms);
-const unsigned int ypms = y + maxSeparationU;
-const __m128i ypms128 = (__m128i&)_mm_set1_ps((float&)ypms);
-
-const float* __restrict z = (float*)bufferzcopy + y*nPitchz;
-__m128i x128 = t0123;
-for(unsigned int x = 0; x < width; x+=4,z+=4,x128=_mm_add_epi32(x128,t4444))
-{
-#if 0
-for(unsigned int x = 0; x < width; x+=4,offsz+=4)
-{
-//const UINT z = (float)(bufferzcopy[offsz]&zmask)*(float)(255.0/zmask);
-//bufferfinal[x + y*nPitch] = z|(z<<8)|(z<<16);
-
-const unsigned int minDepthR = min( min( bufferzcopy[offsz - samples[0]]&zmask, bufferzcopy[offsz - samples[1]]&zmask ), bufferzcopy[offsz - samples[2]]&zmask );
-const unsigned int minDepthL = min( min( bufferzcopy[offsz + samples[0]]&zmask, bufferzcopy[offsz + samples[1]]&zmask ), bufferzcopy[offsz + samples[2]]&zmask );
-
-const unsigned int parallaxR = min(ZPDU / minDepthR, maxSeparationU<<4); //!! <<5? to allow for pop out, but then modify bilerp filter/pixel offset below, depending on sign of -overall- parallax shift?!
-const unsigned int parallaxL = min(ZPDU / minDepthL, maxSeparationU<<4); //!! <<5? to allow for pop out, but then modify bilerp filter/pixel offset below, depending on sign of -overall- parallax shift?!
-const unsigned int pR = parallaxR>>4; // /16 = fixed point math, also see above
-const unsigned int pL = parallaxL>>4;
-
-const unsigned int separationR = x + (y - maxSeparationU + pR)*nPitch;
-const unsigned int right0 = buffercopy[separationR];
-const unsigned int right1 = buffercopy[separationR - nPitch /*+ (((maxSeparationU - pR)>>30)&2)*nPitch*/];
-
-const unsigned int r13   = (parallaxR*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
-const unsigned int r23   = 0xFFu - r13;
-const unsigned int right = ((((right0&0xFF00FFu)*r13+(right1&0xFF00FFu)*r23)&0xFF00FF00)|(((right0&0x00FF00u)*r13+(right1&0x00FF00u)*r23)&0x00FF0000u))>>8; // linear filtering
-
-const unsigned int separationL = x + (y + maxSeparationU - pL)*nPitch;
-const unsigned int left0 = buffercopy[separationL];
-const unsigned int left1 = buffercopy[separationL + nPitch /*- (((maxSeparationU - pL)>>30)&2)*nPitch*/];
-
-const unsigned int l13  = (parallaxL*16) & 0xFFu; // *16 = scale from fixed point math to 256 for linear filtering below
-const unsigned int l23  = 0xFFu - l13;
-const unsigned int left = ((((left0&0xFF00FFu)*l13+(left1&0xFF00FFu)*l23)&0xFF00FF00u)|(((left0&0x00FF00u)*l13+(left1&0x00FF00u)*l23)&0x00FF0000u))>>8; // linear filtering
-
-//!! bufferfinal[offs] = (right&0xFF0000u) | (left&0xFFFFFFu);
-
-#ifdef AA3D
-if(y&1)
-{
-	bufferfinal[offshalf0 + x] = ((bufferfinal[offshalf0 + x]&0xFEFEFEu) + (right&0xFEFEFEu))>>1; // average with previously computed line
-	bufferfinal[offshalf1 + x] = ((bufferfinal[offshalf1 + x]&0xFEFEFEu) + (left &0xFEFEFEu))>>1; // average with previously computed line
-} else {
-#endif
-	bufferfinal[offshalf0 + x] = right;
-	bufferfinal[offshalf1 + x] = left;
-#ifdef AA3D
-}
+			stereo_repro(maxSeparationU+1, height-(maxSeparationU+1), 0, width, nPitch,height,maxSeparationU,buffercopy,bufferzcopy,bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true);
 #endif
 
-#else
+#else // continue with FXAA //!! SSE opt. //!! add update only version
 
-const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z-samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z-samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z-samples[2]),zmask128)); // abuse float pipelines for the unsigned integer math
-const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z+samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z+samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z+samples[2]),zmask128));
-
-const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
-const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
-
-const __m128i pR = _mm_add_epi32(_mm_mul_int_i(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),nPitch128),x128);
-const __m128i pL = _mm_add_epi32(_mm_mul_int_i(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),nPitch128),x128);
-
-const __m128i pRs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxR,4),(__m128&)ff128);
-const __m128i pLs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxL,4),(__m128&)ff128);
-const __m128i pRs4_2 = _mm_sub_epi32(ff128,pRs4_1);
-const __m128i pLs4_2 = _mm_sub_epi32(ff128,pLs4_1);
-
-const unsigned int separationR0 = ((unsigned int*)&pR)[0];
-const unsigned int separationR1 = ((unsigned int*)&pR)[1];
-const unsigned int separationR2 = ((unsigned int*)&pR)[2];
-const unsigned int separationR3 = ((unsigned int*)&pR)[3];
-
-const __m128 right0 = _mm_set_ps((float&)(buffercopy[separationR3])         ,(float&)(buffercopy[separationR2])         ,(float&)(buffercopy[separationR1])         ,(float&)(buffercopy[separationR0]));
-const __m128 right1 = _mm_set_ps((float&)(buffercopy[separationR3 - nPitch]),(float&)(buffercopy[separationR2 - nPitch]),(float&)(buffercopy[separationR1 - nPitch]),(float&)(buffercopy[separationR0 - nPitch]));
-
-const unsigned int separationL0 = ((unsigned int*)&pL)[0];
-const unsigned int separationL1 = ((unsigned int*)&pL)[1];
-const unsigned int separationL2 = ((unsigned int*)&pL)[2];
-const unsigned int separationL3 = ((unsigned int*)&pL)[3];
-
-const __m128 left0 = _mm_set_ps((float&)(buffercopy[separationL3])         ,(float&)(buffercopy[separationL2])         ,(float&)(buffercopy[separationL1])         ,(float&)(buffercopy[separationL0]));
-const __m128 left1 = _mm_set_ps((float&)(buffercopy[separationL3 + nPitch]),(float&)(buffercopy[separationL2 + nPitch]),(float&)(buffercopy[separationL1 + nPitch]),(float&)(buffercopy[separationL0 + nPitch]));
-
-const __m128i right00 = _mm_mul_int(_mm_and_ps(right0,FF00FF128),pRs4_1);
-const __m128i right01 = _mm_mul_int(_mm_and_ps(right0,FF00128),  pRs4_1);
-const __m128i right10 = _mm_mul_int(_mm_and_ps(right1,FF00FF128),pRs4_2);
-const __m128i right11 = _mm_mul_int(_mm_and_ps(right1,FF00128),  pRs4_2);
-
-const __m128i right = _mm_srli_epi32((__m128i&)_mm_or_ps(_mm_and_ps((__m128&)_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_ps((__m128&)_mm_add_epi32(right01,right11),FF0000128)),8);
-
-#ifdef AA3D
-if(y&1)
-	bufferfinal[offshalf0 + x + i] = ((bufferfinal[offshalf0 + x + i]&0xFEFEFEu) + (right&0xFEFEFEu))>>1; // average with previously computed line
-else
-#endif
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x), right);
-
-const __m128i left00 = _mm_mul_int(_mm_and_ps(left0,FF00FF128),pLs4_1);
-const __m128i left01 = _mm_mul_int(_mm_and_ps(left0,FF00128),  pLs4_1);
-const __m128i left10 = _mm_mul_int(_mm_and_ps(left1,FF00FF128),pLs4_2);
-const __m128i left11 = _mm_mul_int(_mm_and_ps(left1,FF00128),  pLs4_2);
-
-const __m128i left = _mm_srli_epi32((__m128i&)_mm_or_ps(_mm_and_ps((__m128&)_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_ps((__m128&)_mm_add_epi32(left01,left11),FF0000128)),8);
-
-#ifdef AA3D
-if(y&1)
-	bufferfinal[offshalf1 + x + i] = ((bufferfinal[offshalf1 + x + i]&0xFEFEFEu) + (left &0xFEFEFEu))>>1; // average with previously computed line
-else
-#endif
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x), left);
-
-#endif
-}
-
-}
-#ifdef ONLY3DUPD
-}
-#endif
-#else
 #define FXAA_SPAN_MAX 8
 #define OFFS (((FXAA_SPAN_MAX*8)>>4) + 1)
 
@@ -3470,10 +3378,10 @@ for(int x = OFFS; x < (int)width - (OFFS+1); ++x,++offsm1) //!! border handling
 
 m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
 #endif
-
 			// Copy the entire back buffer to the front buffer.
 			m_pin3d.Flip(0, 0);
 
+			// Flag that we only need to update regions from now on...
 			m_fCleanBlt = fTrue;
 		}
 	}

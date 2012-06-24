@@ -4,6 +4,16 @@
 
 //#define VP3D
 //#define ONLY3DUPD
+//#define AA3D
+
+//#define X3D 1 //!!
+//#define maxSeparation 0.0075 //!!
+//#define ZPD 0.5 //!!
+
+//#define Y3D 1 //!!
+//#define maxSeparation 0.0075 //!!
+//#define ZPD 0.125 //!!
+
 
 #define ULTRA_FREE 1
 
