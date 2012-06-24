@@ -429,7 +429,7 @@ HRESULT PinDirectDraw::InitDD()
 		ShowError("Could not create Direct Draw.");
 		}
 
-	hr = m_pDD->SetCooperativeLevel(NULL, DDSCL_NORMAL | DDSCL_FPUPRESERVE);
+	hr = m_pDD->SetCooperativeLevel(NULL, DDSCL_NORMAL | DDSCL_FPUSETUP); // was DDSCL_FPUPRESERVE, which in theory adds lots of overhead, but who knows if this is even supported nowadays by the drivers
 	if (hr != S_OK)
 		{
 		ShowError("Could not set Direct Draw cooperative level.");
@@ -931,7 +931,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 	DDSURFACEDESC2 ddsd;//, ddsdSharp;
 	ddsd.dwSize = sizeof(ddsd);
 
-	pdds->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+	pdds->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_NOSYSLOCK | DDLOCK_DISCARDCONTENTS | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 	
 	const int pitch = ddsd.lPitch;
 	const int pitchSharp = 256*3;
