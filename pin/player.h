@@ -188,7 +188,6 @@ private:
 	U64 m_PhysicsStepTime; // ticks to go between each gravity update
 	U64 m_nextPhysicsFrameTime; // time at which the next physics update should be
 	U64 m_liPhysicsCalced;
-	float m_physicsdtime; // Float value to move physics forward every physics tick
 
   // caching hitable ramps & primitives to speed up DrawAcrylics()
 	Vector< Hitable > m_vhitacrylic;

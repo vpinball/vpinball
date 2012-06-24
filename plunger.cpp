@@ -731,7 +731,7 @@ STDMETHODIMP Plunger::Position(int *pVal)
 if (uShockType == USHOCKTYPE_PBWIZARD)
 {
 	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+	float tmp = (curMechPlungerPos < 0.f) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 	*pVal = (int)(tmp*(float)(1.0/0.04));
 }
@@ -739,7 +739,7 @@ if (uShockType == USHOCKTYPE_PBWIZARD)
 if (uShockType == USHOCKTYPE_ULTRACADE)
 {
 	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+	float tmp = (curMechPlungerPos < 0.f) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 	*pVal = (int)(tmp*(float)(1.0/0.04));
 }
@@ -747,7 +747,7 @@ if (uShockType == USHOCKTYPE_ULTRACADE)
 if (uShockType == USHOCKTYPE_SIDEWINDER)
 {
 	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+	float tmp = (curMechPlungerPos < 0.f) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 	*pVal = (int)(tmp*(float)(1.0/0.04));
 }
@@ -755,7 +755,7 @@ if (uShockType == USHOCKTYPE_SIDEWINDER)
 if (uShockType == USHOCKTYPE_GENERIC)
 {
 	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+	float tmp = (curMechPlungerPos < 0.f) ? curMechPlungerPos*m_d.m_parkPosition : (curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 	*pVal = (int)(tmp*(float)(1.0/0.04));
 }

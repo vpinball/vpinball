@@ -23,10 +23,6 @@ inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 	*f = fopen(fname, attr);
 	return (*f == NULL);
 }
-inline void _controlfp_s(unsigned int *cw, const unsigned int i, const unsigned int j)
-{
-	*cw = _controlfp(i,j);
-}
 #endif
 
 float curMechPlungerPos;
@@ -994,9 +990,6 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 	m_curPhysicsFrameTime = m_liStartTime;
 
-	//m_physicsdtime = (float)m_PhysicsStepTime.LowPart / (float)m_liCounterFrequency.LowPart;
-	m_physicsdtime = 1;
-
 #ifdef LOG
 	fprintf(m_flog, "Step Time %u %u %u %u\n", m_PhysicsStepTime>>32, m_PhysicsStepTime, m_liStartTime>>32, m_liStartTime);
 	fprintf(m_flog, "End Frame\n");
@@ -1915,31 +1908,6 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#ifndef NO_X87_FPU
-//int fpieee_handler( _FPIEEE_RECORD * );
-
-int fpieee_handler( _FPIEEE_RECORD *pieee )
-{
-   // user-defined ieee trap handler routine:
-   // there is one handler for all 
-   // IEEE exceptions
-
-   // Assume the user wants all invalid 
-   // operations to return 0.
-
-   if ((pieee->Cause.InvalidOperation) && (pieee->Result.Format == _FpFormatFp32)) 
-   {
-        pieee->Result.Value.Fp32Value = 0.0f;
-
-        return EXCEPTION_CONTINUE_EXECUTION;
-   }
-   else
-      return EXCEPTION_EXECUTE_HANDLER;
-}
-
-#define _EXC_MASK  (_EM_UNDERFLOW | _EM_OVERFLOW | _EM_ZERODIVIDE | _EM_INEXACT | _EM_DENORMAL | _EM_INVALID)
-#endif
-
 #ifdef VP3D
 static const unsigned int f0 = 0xffffffff;
 static const unsigned int t0 = 0; const unsigned int t1 = 1; const unsigned int t2 = 2; const unsigned int t3 = 3;
@@ -2540,27 +2508,6 @@ void Player::Render()
 	{
 	HRESULT				ReturnCode;
 	HRESULT				hr;
-
-#ifndef NO_X87_FPU
-	//_controlfp(_PC_24, MCW_PC);
-
-	 __try {
-      // unmask invalid operation exception
-      _controlfp(_EXC_MASK, _MCW_EM); 
-
-      // code that may generate 
-      // fp exceptions goes here
-   }
-   __except ( _fpieee_flt( GetExceptionCode(),
-                GetExceptionInformation(),
-                fpieee_handler ) ){
-
-      // code that gets control 
-
-      // if fpieee_handler returns
-      // EXCEPTION_EXECUTE_HANDLER goes here
-   }
-#endif
 
 	// Don't calculate the next frame if the last one isn't done blitting yet
 	// On Win95 when there are no balls, frame updates happen so fast the
@@ -3441,15 +3388,13 @@ m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
 		static U32 period;
 		HDC hdcNull = GetDC(NULL);
 		char szFoo[128];
-		unsigned int control_word;
 
 		// Draw the amount of video memory used.
 		int len = sprintf_s(szFoo, "Total Video Memory = %d", NumVideoBytes);
 		TextOut(hdcNull, 10, 75, szFoo, len);
 
 		// Draw the framerate.
-		_controlfp_s(&control_word, _PC_53, 0);
-		len = sprintf_s(szFoo, "%d %x %llu", m_fps, control_word, m_PhysicsStepTime);
+		len = sprintf_s(szFoo, "%d %llu", m_fps, m_PhysicsStepTime);
 		TextOut(hdcNull, 10, 10, szFoo, len);
 		period = msec()-stamp;
 		if( period > m_max ) m_max = period;
