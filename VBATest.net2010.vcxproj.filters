@@ -1,0 +1,689 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{e5d74eea-ea47-4b3f-8d28-45b26478952d}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{d8120404-6c50-4066-b45b-1405d37f7ba4}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{5c02e73a-f08a-406e-9c4e-fa96ca691764}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\Dialogs">
+      <UniqueIdentifier>{6eabc231-a6f3-4819-a9e4-deeae11cdbbd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Pin\ball.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ballex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bumper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="codeview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pin\collide.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pin\collideex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="comcontrol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="decal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="def.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="display.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dispreel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="disputil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dragpoint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pin\draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="eventproxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="extern.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\fileio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="flipper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pin\hitflipper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pin\hitplunger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hitrectsur.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hitsur.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ieditable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="iselect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kicker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="light.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lightseq.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\lzwreader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\lzwwriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="memutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mixer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="paintsur.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pin3d.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pinbinary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pinimage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pininput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pinsound.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pintable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pinundo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pin\player.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="plumb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="plunger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="primitive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="propbrowser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ramp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shadowsur.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\simpleplayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="slintf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="spinner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sur.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="surface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tableglobal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="textbox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="trigger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="variant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vbatest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vpinball.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pin\wall.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\wavread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wintimer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="worker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xaudplayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="vbatest.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="vbatest.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vbatest_eng.rc">
+      <Filter>Resource Files\Dialogs</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vbatest_fre.rc">
+      <Filter>Resource Files\Dialogs</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vbatest_ger.rc">
+      <Filter>Resource Files\Dialogs</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vbatest_spa.rc">
+      <Filter>Resource Files\Dialogs</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Pin\ball.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ballex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bumper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codeview.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pin\collide.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pin\collideex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="comcontrol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="decal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="def.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dispid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="display.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dispreel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="disputil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dragpoint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pin\draw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="eventproxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="extern.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="exvector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\fileio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flipper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="freeimage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pin\hitable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pin\hitflipper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pin\hitplunger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hitrectsur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hitsur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pin\hittimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="idebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ieditable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="iselect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kicker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lightseq.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\lzwreader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\lzwwriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mixer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="msscript.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oleauto.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="paintsur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pin3d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pinbinary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pinimage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pininput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pinsound.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pintable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pintypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pinundo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pin\player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plumb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plunger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="primitive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="propbrowser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ramp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shadowsur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\simpleplayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="slintf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spinner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="surface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tableglobal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textbox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trigger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="variant.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vectorsort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pin\wall.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wintimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="worker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xaudplayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="arrow.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Ball.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="balltex2.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bin00001.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Bumper.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="chevron.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ComControl.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur00001.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_bump.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_deca.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_dispdmd.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_dispreel.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_dispseg.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_flip.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_gate.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_kick.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_ligh.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_lightseq.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_plun.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_prim.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_spin.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_targ.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_text.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_time.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cur_wall.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cursor1.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="DispReel.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="DragPoint.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Flipper.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Gate.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ico00001.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="IconFlipper.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="IconLight.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="IconTimer.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="IconTrigger.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Kicker.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Light.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="LightSeq.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logo25.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logo28.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="pause1.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="PIEventHandler.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="play1.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Plunger.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Primitive.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Ramp.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="registry.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Spinner.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="step1.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="sunburst.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="sunburst3.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="sunburst4.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Surface.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="TableIcon.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="target.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Textbox.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Timer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="toolbardebug.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Trigger.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="VBATest.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="wall.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="white.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="BaseTable17.vpt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="resource.h">
+      <Filter>Header Files</Filter>
+    </CustomBuildStep>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="vpinball.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>
