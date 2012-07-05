@@ -14,6 +14,9 @@
 //#define maxSeparation 0.0075 //!!
 //#define ZPD 0.125 //!!
 
+//#define B163D 1 //!! fix AA3D & X3D
+//#define B323D 1
+
 
 #define ULTRA_FREE 1
 
