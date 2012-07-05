@@ -511,7 +511,7 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 		}
 
 	DDSURFACEDESC2 ddsdPrimary; // descriptor for current screen format
-	// Check for 8-bit color, and create software 16-bit off-screen
+	// Check for 8-bit color
 	ddsdPrimary.dwSize = sizeof(DDSURFACEDESC2);
 	m_pDD->GetDisplayMode( &ddsdPrimary );
 	if( ddsdPrimary.ddpfPixelFormat.dwRGBBitCount <= 8 )
@@ -545,7 +545,7 @@ retry2:
 	NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwRGBBitCount/8);
 
 	// Create the "static" color buffer.  
-	// This is will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
+	// This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
 retry3:
     if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsStatic, NULL ) ) )
     {
