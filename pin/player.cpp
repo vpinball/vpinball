@@ -3193,6 +3193,7 @@ const unsigned int shift = ddsd.ddpfPixelFormat.dwRGBBitCount == 32 ? 2 : 1;
 #ifdef ONLY3DUPD
 		if (m_fCleanBlt)
 		{
+			const unsigned int maxbottom = ddsd.lPitch*height;
 			// Smart Blit - only update the invalidated areas
 #pragma omp parallel for schedule(dynamic)
 			for (int i=0;i<m_vupdaterect.Size();++i)
@@ -3200,8 +3201,8 @@ const unsigned int shift = ddsd.ddpfPixelFormat.dwRGBBitCount == 32 ? 2 : 1;
 				const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
 
 				const unsigned int left4  = (prc.left + m_pin3d.m_rcUpdate.left)<<shift;
-				const unsigned int top    = left4 + (prc.top + m_pin3d.m_rcUpdate.top)*ddsd.lPitch;
-				const unsigned int bottom = left4 + (prc.bottom + m_pin3d.m_rcUpdate.top)*ddsd.lPitch;
+				const unsigned int top    = max((int)(left4 + (prc.top + m_pin3d.m_rcUpdate.top)*ddsd.lPitch),0);
+				const unsigned int bottom = min(      left4 + (prc.bottom + m_pin3d.m_rcUpdate.top)*ddsd.lPitch,maxbottom);
 				const unsigned int copywidth = (prc.right - prc.left)<<shift;
 
 				// Copy the region from the back buffer to the front buffer.
