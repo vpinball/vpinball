@@ -145,6 +145,11 @@ public:
 	STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
 
+	STDMETHOD(get_MaxSeparation)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_MaxSeparation)(/*[in]*/ float newVal);
+	STDMETHOD(get_ZPD)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_ZPD)(/*[in]*/ float newVal);
+
 	STDMETHOD(get_EnableDecals)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_EnableDecals)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_EnableEMReels)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -444,6 +449,8 @@ END_CONNECTION_POINT_MAP()
 	float m_inclination;
 	float m_layback;
 	float m_FOV;
+	float m_maxSeparation;
+	float m_ZPD;
 	float m_xlatex;
 	float m_xlatey;
 	float m_scalex;

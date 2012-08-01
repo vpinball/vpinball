@@ -202,7 +202,6 @@ private:
 	BOOL m_fPlayback;
 	char m_szPlaybackFile;
 
-
 	BOOL m_fCheckBlt;
 	BOOL m_fWasteTime;
 	BOOL m_fWasteTime2;
@@ -211,8 +210,11 @@ private:
 	BOOL m_fBallDecals;
 	BOOL m_fBallAntialias;
 
+	BOOL m_fStereo3DAA;
+	BOOL m_fStereo3DY;
 
 public:
+	BOOL m_fStereo3D;
 	float m_BallStretchX;
 	float m_BallStretchY;
 

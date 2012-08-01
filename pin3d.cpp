@@ -7,11 +7,9 @@ Pin3D::Pin3D()
 	m_pDD = NULL;
 	m_pddsFrontBuffer = NULL;
 	m_pddsBackBuffer = NULL;
-#ifdef VP3D
 	m_pdds3DBackBuffer = NULL;
-	buffercopy = NULL;
-	bufferzcopy = NULL;
-#endif
+	m_pdds3Dbuffercopy = NULL;
+	m_pdds3Dbufferzcopy = NULL;
 	m_pddsZBuffer = NULL;
 	m_pD3D = NULL;
 	m_pd3dDevice = NULL;
@@ -36,16 +34,12 @@ Pin3D::~Pin3D()
 	if (m_pddsBackBuffer)
 		m_pddsBackBuffer->Release();
 
-#ifdef VP3D
 	if (m_pdds3DBackBuffer)
 		m_pdds3DBackBuffer->Release();
-
-	if(buffercopy)
-		_aligned_free((void*)buffercopy);
-
-	if(bufferzcopy)
-		_aligned_free((void*)bufferzcopy);
-#endif
+	if(m_pdds3Dbuffercopy)
+		_aligned_free((void*)m_pdds3Dbuffercopy);
+	if(m_pdds3Dbufferzcopy)
+		_aligned_free((void*)m_pdds3Dbufferzcopy);
 
 	if (m_pddsZBuffer)
 		m_pddsZBuffer->Release();
@@ -648,22 +642,22 @@ retry5:
 		}
 	}
 
-#ifdef VP3D
-	ddsd.dwSize = sizeof(ddsd);
-	m_pddsBackBuffer->GetSurfaceDesc( &ddsd );
+	if(m_Stereo3D) {
+		ddsd.dwSize = sizeof(ddsd);
+		m_pddsBackBuffer->GetSurfaceDesc( &ddsd );
 
-	buffercopy  = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,128); //!! or rather match alignment of screenbuffer(s)? -> find largest 2^n that matches?
-	bufferzcopy = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,128); //!! or rather match alignment of screenbuffer(s)? -> find largest 2^n that matches?
+		m_pdds3Dbuffercopy  = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,128); //!! or rather match alignment of screenbuffer(s)? -> find largest 2^n that matches?
+		m_pdds3Dbufferzcopy = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,128); //!! or rather match alignment of screenbuffer(s)? -> find largest 2^n that matches?
 
-    ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_CAPS; //!! ? just to be the exact same as the Backbuffer
-    ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE;
-	ddsd.ddsCaps.dwCaps2 = DDSCAPS2_HINTDYNAMIC;
-	if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pdds3DBackBuffer, NULL ) ) )
-    {
-		ShowError("Could not create 3D stereo buffer.");
-		return hr; 
+		ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_CAPS; //!! ? just to be the exact same as the Backbuffer
+		ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE;
+		ddsd.ddsCaps.dwCaps2 = DDSCAPS2_HINTDYNAMIC;
+		if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pdds3DBackBuffer, NULL ) ) )
+		{
+			ShowError("Could not create 3D stereo buffer.");
+			return hr; 
+		}
 	}
-#endif
 
 	// Direct all renders to the "static" buffer.
 	SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
@@ -980,7 +974,7 @@ void Pin3D::DrawBackground()
 		}
 	}
 
-void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback)
+void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback, const float maxSeparation, const float ZPD, const bool Stereo3D)
 	{
 	/*RECT rc;
 	rc.left = 0;
@@ -991,6 +985,10 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	//float layback = 30.0f;
 	m_layback = layback;
 	const GPINFLOAT skew = -tan(layback*(M_PI/360));
+
+	m_maxSeparation = maxSeparation;
+	m_ZPD = ZPD;
+	m_Stereo3D = Stereo3D;
 
 	m_scalex = scalex;
 	m_scaley = scaley;
@@ -1509,11 +1507,11 @@ void Pin3D::Flip(const int offsetx, const int offsety)
 	}
 
 	// Copy the back buffer to the front buffer.
-#ifndef VP3D
-	HRESULT hr = m_pddsFrontBuffer->Blt(&rcNew, m_pddsBackBuffer, NULL, DDBLT_DDFX, &ddbltfx);
-#else
-	HRESULT hr = m_pddsFrontBuffer->Blt(&rcNew, m_pdds3DBackBuffer, NULL, DDBLT_DDFX, &ddbltfx);
+	HRESULT hr = m_pddsFrontBuffer->Blt(&rcNew, 
+#ifdef VP3D
+		g_pplayer->m_fStereo3D ? m_pdds3DBackBuffer : 
 #endif
+		m_pddsBackBuffer, NULL, DDBLT_DDFX, &ddbltfx);
 
 	if (hr == DDERR_SURFACELOST)
 		{

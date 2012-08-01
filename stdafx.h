@@ -3,20 +3,7 @@
 //      but are changed infrequently
 
 //#define VP3D
-//#define ONLY3DUPD
-//#define AA3D
-
-//#define X3D 1 //!!
-//#define maxSeparation 0.0075 //!!
-//#define ZPD 0.5 //!!
-
-//#define Y3D 1 //!!
-//#define maxSeparation 0.0075 //!!
-//#define ZPD 0.125 //!!
-
-//#define B163D 1 //!! fix AA3D & X3D
-//#define B323D 1
-
+#define ONLY3DUPD
 
 #define ULTRA_FREE 1
 

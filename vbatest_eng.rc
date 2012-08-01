@@ -519,6 +519,9 @@ BEGIN
     CONTROL         "Draw Ball &Shadows",IDC_SHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,19,77,10
     CONTROL         "Draw Ball &Decals",IDC_DECAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,32,70,10
     CONTROL         "&Antialias Ball",IDC_ANTIALIAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,45,55,10
+    CONTROL         "Enable 3D Stereo",IDC_3D_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,245,19,77,10
+    CONTROL         "Antialias 3D",IDC_3D_STEREO_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,245,32,77,10
+    CONTROL         "Use Y-Axis for 3D",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,245,45,77,10
     CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,81,114,8
     CONTROL         "Check &Blit Status (for Win 98 and 2K)",IDC_CHECKBLIT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,117,133,10
@@ -531,7 +534,8 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,221,245,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,276,245,50,14
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,237
-    GROUPBOX        "Details",IDC_STATIC,154,7,172,55
+    GROUPBOX        "Details",IDC_STATIC,154,7,85,55
+    GROUPBOX        "3D Stereo",IDC_STATIC,241,7,86,55
     GROUPBOX        "Performance",IDC_STATIC,154,68,172,28
     GROUPBOX        "Troubleshooting",IDC_STATIC,154,103,172,140
     GROUPBOX        "Max Texture Dimension (for Chipset Graphics)*",IDC_STATIC,159,146,162,59
@@ -1474,7 +1478,7 @@ BEGIN
     LTEXT           "Bac&k Decal:",-1,7,54,38,8
 END
 
-IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 314
+IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 344
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1495,9 +1499,11 @@ BEGIN
     EDITTEXT        1106,80,222,40,12,ES_AUTOHSCROLL
     EDITTEXT        1105,80,236,40,12,ES_AUTOHSCROLL
     EDITTEXT        1104,80,250,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1041,80,309,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1042,80,323,40,12,ES_AUTOHSCROLL
     CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,264,111,9
-    CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,285,104,10
-    CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,295,105,10
+    CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,287,104,10
+    CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,297,105,10
     LTEXT           "I&mage:",IDC_STATIC,7,25,22,8
     LTEXT           "&Color",IDC_STATIC,7,10,20,9
     LTEXT           "&Inclination",IDC_STATIC,7,48,70,9
@@ -1511,12 +1517,14 @@ BEGIN
     LTEXT           "Contact Friction",IDC_STATIC,7,183,69,8
     LTEXT           "Contact Scatter Angle",IDC_STATIC,7,197,69,8
     LTEXT           "Dampening Speed",IDC_STATIC,7,211,69,8
-    LTEXT           "Physics Max Looptime",IDC_STATIC,7,239,73,8
+    LTEXT           "Physics Max Looptime",IDC_STATIC,7,239,70,8
     LTEXT           "Physical Constants",IDC_STATIC,7,156,113,8
-    CTEXT           "Graphics  Settings",IDC_STATIC,7,275,113,8
-    LTEXT           "Mech-Plunger Adjust",IDC_STATIC,7,252,74,8
+    LTEXT           "Graphics Settings",IDC_STATIC,7,275,113,8
+    LTEXT           "Mech-Plunger Adjust",IDC_STATIC,7,252,70,8
     LTEXT           "Dampening Friction",IDC_STATIC,7,225,69,8
     LTEXT           "Layback",IDC_STATIC,7,75,28,8
+    LTEXT           "3D Stereo Separation",IDC_STATIC,7,311,70,8
+    LTEXT           "3D Stereo ZPD",IDC_STATIC,7,325,70,8
 END
 
 IDD_PROPPOINT_POSITION DIALOGEX 0, 0, 125, 42
