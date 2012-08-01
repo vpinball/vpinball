@@ -273,12 +273,12 @@ public:
 
 	// helper arrays for SSE boundary checks
 	void InitSseArrays();
-	float* lefts;
-	float* rights;
-	float* tops;
-	float* bottoms;
-	float* zlows;
-	float* zhighs;
+	float* __restrict lefts;
+	float* __restrict rights;
+	float* __restrict tops;
+	float* __restrict bottoms;
+	float* __restrict zlows;
+	float* __restrict zhighs;
 
 	FRect3D m_rectbounds;
 	Vertex3Ds m_vcenter;

@@ -556,6 +556,9 @@
 #define IDC_DEADZONEAMT                 539
 #define IDC_CBGLOBALTILT                540
 #define IDC_GLOBALTILT                  541
+#define IDC_3D_STEREO                   542
+#define IDC_3D_STEREO_AA                543
+#define IDC_3D_STEREO_Y                 544
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768

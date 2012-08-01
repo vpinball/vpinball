@@ -140,7 +140,7 @@ public:
 
 	void InitBackGraphics();
 
-	void InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback);
+	void InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback, const float maxSeparation, const float ZPD, const bool Stereo3D);
 	void SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar);
 	void Identity();
 	void Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z);
@@ -203,11 +203,11 @@ public:
 	LPDIRECTDRAW7 m_pDD;
 	LPDIRECTDRAWSURFACE7 m_pddsFrontBuffer;
 	LPDIRECTDRAWSURFACE7 m_pddsBackBuffer;
-#ifdef VP3D
+
 	LPDIRECTDRAWSURFACE7 m_pdds3DBackBuffer;
-	const unsigned int* __restrict buffercopy;
-	const unsigned int* __restrict bufferzcopy;
-#endif
+	const unsigned int* __restrict m_pdds3Dbuffercopy;
+	const unsigned int* __restrict m_pdds3Dbufferzcopy;
+
 	LPDIRECTDRAWSURFACE7 m_pddsZBuffer;
 	LPDIRECT3D7 m_pD3D;
 	LPDIRECT3DDEVICE7 m_pd3dDevice;
@@ -250,6 +250,9 @@ public:
 	float m_rotation, m_inclination, m_layback;
 	float m_scalex, m_scaley;
 	float m_xlatex, m_xlatey;
+
+	float m_maxSeparation, m_ZPD;
+	bool m_Stereo3D;
 
 	GPINFLOAT m_rznear, m_rzfar;
 	Vertex3Ds m_vertexcamera;

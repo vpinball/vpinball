@@ -3652,6 +3652,33 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, antialias ? BST_CHECKED : BST_UNCHECKED, 0);
 
+			hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO);
+			int stereo3D;
+			hr = GetRegInt("Player", "Stereo3D", &stereo3D);
+			if (hr != S_OK)
+				{
+				stereo3D = fFalse; // The default
+				}
+			SendMessage(hwndCheck, BM_SETCHECK, stereo3D ? BST_CHECKED : BST_UNCHECKED, 0);
+
+			hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO_AA);
+			int stereo3DAA;
+			hr = GetRegInt("Player", "Stereo3DAntialias", &stereo3DAA);
+			if (hr != S_OK)
+				{
+				stereo3DAA = fFalse; // The default
+				}
+			SendMessage(hwndCheck, BM_SETCHECK, stereo3DAA ? BST_CHECKED : BST_UNCHECKED, 0);
+
+			hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
+			int stereo3DY;
+			hr = GetRegInt("Player", "Stereo3DYAxis", &stereo3DY);
+			if (hr != S_OK)
+				{
+				stereo3DY = fFalse; // The default
+				}
+			SendMessage(hwndCheck, BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
+
 			hwndCheck = GetDlgItem(hwndDlg, 211); //HardwareRender
 			int hardrend;
 			hr = GetRegInt("Player", "HardwareRender", &hardrend);
@@ -3819,6 +3846,18 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							HWND hwndAlias = GetDlgItem(hwndDlg, IDC_ANTIALIAS);
 							int antialias = SendMessage(hwndAlias, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "BallAntialias", REG_DWORD, &antialias, 4);
+
+							HWND hwndStereo3D = GetDlgItem(hwndDlg, IDC_3D_STEREO);
+							int stereo3D = SendMessage(hwndStereo3D, BM_GETCHECK, 0, 0);
+							SetRegValue("Player", "Stereo3D", REG_DWORD, &stereo3D, 4);
+
+							HWND hwndStereo3DAA = GetDlgItem(hwndDlg, IDC_3D_STEREO_AA);
+							int stereo3DAA = SendMessage(hwndStereo3DAA, BM_GETCHECK, 0, 0);
+							SetRegValue("Player", "Stereo3DAntialias", REG_DWORD, &stereo3DAA, 4);
+
+							HWND hwndStereo3DY = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
+							int stereo3DY = SendMessage(hwndStereo3DY, BM_GETCHECK, 0, 0);
+							SetRegValue("Player", "Stereo3DYAxis", REG_DWORD, &stereo3DY, 4);
 
 							HWND hwndHWR = GetDlgItem(hwndDlg, 211);
 							int hardrend = SendMessage(hwndHWR, BM_GETCHECK, 0, 0);

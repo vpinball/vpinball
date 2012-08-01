@@ -689,6 +689,9 @@ PinTable::PinTable()
 	m_rotation = 0;
 	m_layback = 0;
 
+	m_maxSeparation = 0.0075f;
+	m_ZPD = 0.125f; // 0.5f for X
+
 	m_glassheight = 210;
 	m_tableheight = 0;
 
@@ -967,7 +970,7 @@ BOOL PinTable::IsTableProtected()
 void PinTable::ResetProtectionBlock()
 	{
 	// set up default protection security descripter
-	memset (&m_protectionData, 0x00, sizeof(m_protectionData));
+	ZeroMemory (&m_protectionData, sizeof(m_protectionData));
 	m_protectionData.fileversion = PROT_DATA_VERSION;
 	m_protectionData.size = sizeof(m_protectionData);
 	}
@@ -1175,6 +1178,9 @@ void PinTable::Init(VPinball *pvp)
 	m_inclination = 43;
 	m_layback = 0;
 	m_FOV = 45;
+
+	m_maxSeparation = 0.0075f;
+	m_ZPD = 0.125f; // 0.5f for X
 
 	SetDefaultView();
 
@@ -1743,7 +1749,7 @@ void PinTable::StopPlaying()
 void PinTable::CreateTableWindow()
 	{
 	WNDCLASSEX wcex;
-	memset(&wcex, 0, sizeof(WNDCLASSEX));
+	ZeroMemory(&wcex, sizeof(WNDCLASSEX));
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;//CS_NOCLOSE | CS_OWNDC;
 	wcex.lpfnWndProc = TableWndProc;
@@ -1897,7 +1903,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 		{
 		//need to get a file name
 		OPENFILENAME ofn;
-		memset(&ofn, 0, sizeof(OPENFILENAME));
+		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hInstance = g_hinst;
 		ofn.hwndOwner = g_pvp->m_hwnd;
@@ -2579,6 +2585,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	bw.WriteFloat(FID(SLPX), m_angletiltMax);
 	bw.WriteFloat(FID(SLOP), m_angletiltMin);
 
+	bw.WriteFloat(FID(MAXSEP), m_maxSeparation);
+	bw.WriteFloat(FID(ZPD), m_ZPD);
+
 	bw.WriteString(FID(IMAG), m_szImage);
 	bw.WriteString(FID(BIMG), m_szImageBackdrop);
 	bw.WriteString(FID(BLIM), m_szBallImage);
@@ -3194,6 +3203,12 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 	if(FAILED(hr = pstm->Read(&m_inclination, sizeof m_inclination, &read)))
 		return hr;
 
+	if(FAILED(hr = pstm->Read(&m_maxSeparation, sizeof m_maxSeparation, &read)))
+		return hr;
+
+	if(FAILED(hr = pstm->Read(&m_ZPD, sizeof m_ZPD, &read)))
+		return hr;
+
 	if(FAILED(hr = pstm->Read(&m_FOV, sizeof m_FOV, &read)))
 		return hr;
 
@@ -3359,6 +3374,14 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(FOVX))
 		{
 		pbr->GetFloat(&m_FOV);
+		}
+	else if (id == FID(MAXSEP))
+		{
+		pbr->GetFloat(&m_maxSeparation);
+		}
+	else if (id == FID(ZPD))
+		{
+		pbr->GetFloat(&m_ZPD);
 		}
 	else if (id == FID(SLPX))
 		{
@@ -4403,7 +4426,7 @@ void PinTable::ExportBlueprint()
 		{
 		//need to get a file name
 		OPENFILENAME ofn;
-		memset(&ofn, 0, sizeof(OPENFILENAME));
+		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hInstance = g_hinst;
 		ofn.hwndOwner = g_pvp->m_hwnd;
@@ -4459,7 +4482,7 @@ void PinTable::ExportBlueprint()
 	const int bmlinebuffer = totallinebytes - (bmwidth * 3);
 
 	BITMAPFILEHEADER bmfh;
-	memset(&bmfh, 0, sizeof(bmfh));
+	ZeroMemory(&bmfh, sizeof(bmfh));
 	bmfh.bfType = 'M'<<8 | 'B';
 	bmfh.bfSize = sizeof(bmfh) + sizeof(BITMAPINFOHEADER) + totallinebytes*bmheight;
 	bmfh.bfOffBits = sizeof(bmfh) + sizeof(BITMAPINFOHEADER);	
@@ -4468,7 +4491,7 @@ void PinTable::ExportBlueprint()
 	WriteFile(hfile, &bmfh, sizeof(bmfh), &foo, NULL);
 
 	BITMAPINFO bmi;
-	memset(&bmi, 0, sizeof(bmi));
+	ZeroMemory(&bmi, sizeof(bmi));
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	bmi.bmiHeader.biWidth = bmwidth;
 	bmi.bmiHeader.biHeight = bmheight;
@@ -5822,7 +5845,6 @@ STDMETHODIMP PinTable::put_Inclination(float newVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP PinTable::get_Layback(float *pVal)
 {
 	*pVal = m_layback;
@@ -5835,6 +5857,42 @@ STDMETHODIMP PinTable::put_Layback(float newVal)
 	STARTUNDO
 
 	m_layback = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
+{
+	*pVal = m_maxSeparation;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_MaxSeparation(float newVal)
+{
+	STARTUNDO
+
+	m_maxSeparation = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ZPD(float *pVal)
+{
+	*pVal = m_ZPD;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ZPD(float newVal)
+{
+	STARTUNDO
+
+	m_ZPD = newVal;
 
 	STOPUNDO
 
@@ -5976,7 +6034,7 @@ PinImage *PinTable::GetImage(char *szName)
 
 	for (int i=0;i<m_vimage.Size();i++)
 		{
-		if (!lstrcmp(m_vimage.ElementAt(i)->m_szInternalName, szName))
+		if (!lstrcmp(m_vimage.ElementAt(i)->m_szInternalName, szName)) //!! strcmp calls are actually pretty expensive currently for drawing the acrylics! -> 10-20% overall frame time
 			{
 			return m_vimage.ElementAt(i);
 			}
