@@ -568,6 +568,7 @@ void PinInput::FireKeyEvent( int dispid, int key )
 	else if( mkey == g_pplayer->m_rgKeys[eVolumeUp]			) val |= PININ_VOL_UP;
 	else if( mkey == g_pplayer->m_rgKeys[eVolumeDown]		) val |= PININ_VOL_DOWN;
 	else if( mkey == g_pplayer->m_rgKeys[eExitGame]			) val |= PININ_EXITGAME;
+	else if( mkey == g_pplayer->m_rgKeys[eEnable3D]			) val |= PININ_ENABLE3D;
 
 	else if( mkey == DIK_ESCAPE	) val |= PININ_EXITGAME;
 	else if( mkey == DIK_UP		) val |= PININ_START;

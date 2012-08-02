@@ -61,6 +61,7 @@ enum EnumAssignKeys
 	eExitGame,
 	eVolumeUp,
 	eVolumeDown,
+	eEnable3D,
 	eCKeys
 	};
 
@@ -215,6 +216,8 @@ private:
 
 public:
 	BOOL m_fStereo3D;
+	BOOL m_fStereo3Denabled;
+
 	float m_BallStretchX;
 	float m_BallStretchY;
 
