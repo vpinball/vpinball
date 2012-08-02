@@ -119,7 +119,7 @@ Player::Player()
 		{
 		stereo3D = fFalse; // The default
 		}
-	m_fStereo3D = (stereo3D == 1);
+	m_fStereo3Denabled = m_fStereo3D = (stereo3D == 1);
 
 	int stereo3DAA;
 	hr = GetRegInt("Player", "Stereo3DAntialias", &stereo3DAA);
@@ -535,8 +535,12 @@ void Player::InitKeys()
 		}
 	m_rgKeys[eLeftMagnaSave] = (EnumAssignKeys)key;
 
-//	m_rgKeys[eVolumeUp] = (EnumAssignKeys) DIK_ADD; //DIK_ADD
-//	m_rgKeys[eVolumeDown] = (EnumAssignKeys) DIK_MINUS;
+	hr = GetRegInt("Player","Enable3DKey", &key);
+	if (hr != S_OK || key > 0xdd)
+		{
+		key = DIK_F10;
+		}
+	m_rgKeys[eEnable3D] = (EnumAssignKeys)key;
 
 	//rlc end add keys
 	}
@@ -2131,6 +2135,11 @@ void Player::Render()
         hid_update();
         plumb_update();
 
+		if(Pressed(PININ_ENABLE3D)) {
+			m_fStereo3Denabled = !m_fStereo3Denabled;
+			m_fCleanBlt = fFalse;
+		}
+
 //rlc remove #define if accurate timers break something
 #define  ACCURATETIMERS 1
 
@@ -2525,7 +2534,7 @@ void Player::Render()
 
 
 #ifdef VP3D
-if(!m_fStereo3D)
+if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f))
 {
 #endif
 	if ( m_nudgetime &&					// Table is being nudged.
@@ -2568,13 +2577,12 @@ if(!m_fStereo3D)
 }
 else
 {
-	//!! add key to en/disable 3D at runtime
-	//!! num_threads(max_threads-1 or -2) ? on my AMD omp is not really faster for the update path, a bit faster for full path
-	//!! overall half resolution necessary only (Y3D profits from full res though (implicit filtering))
+	//!!  add key to en/disable 3D at runtime
+	//!!  num_threads(max_threads-1 or -2) ? on my AMD omp is not really faster for the update path, a bit faster for full path
+	//!!  overall half resolution necessary only (Y3D profits from full res though (implicit filtering))
 
-	#define zmask 0xFFFFFFu
-	static const unsigned int zmasktmp = zmask;
-	static const __m128 zmask128 = _mm_set1_ps((float&)zmasktmp);
+	static const unsigned int zmask = 0xFFFFFFu; //!! can this really be hardcoded?
+	static const __m128 zmask128 = _mm_set1_ps((float&)zmask);
 
 	DDSURFACEDESC2 ddsd,ddsdz;
 	ZeroMemory( &ddsd, sizeof(ddsd) );
@@ -2584,8 +2592,6 @@ else
 
 	m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL);
 	m_pin3d.m_pddsZBuffer->Lock(NULL, &ddsdz,   DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL); 
-
-	//!! if((ddsd.ddpfPixelFormat.dwRGBBitCount == xxx) && (ddsdz.ddpfPixelFormat.dwZBufferBitDepth == xxx)) { // else skip 3D reprojection & unlock
 
 	const unsigned int width  = min((unsigned int)GetSystemMetrics(SM_CXSCREEN), min(ddsd.dwWidth,ddsdz.dwWidth));   // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
 	const unsigned int height = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), min(ddsd.dwHeight,ddsdz.dwHeight)); // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work

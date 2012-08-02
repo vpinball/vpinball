@@ -114,6 +114,7 @@ public:
 #define PININ_RTILT          0x00200000
 #define PININ_MTILT          0x00400000
 #define PININ_FRAMES         0x00800000
+#define PININ_ENABLE3D       0x01000000
 
 
 #define PININ_ANY            0xffffffff
