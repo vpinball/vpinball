@@ -2546,7 +2546,18 @@ if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (
 	}
 	else
 	{
-		if (m_fCleanBlt)
+		unsigned int overall_area = 0;
+
+		if (m_fCleanBlt) // detect overall area to blit
+		{
+			for (int i=0;i<m_vupdaterect.Size();++i)
+			{
+				const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
+				overall_area += (prc.right-prc.left)*(prc.bottom-prc.top);
+			}
+		}
+
+		if (m_fCleanBlt && (overall_area < (unsigned int)(g_pplayer->m_pin3d.m_dwRenderWidth*g_pplayer->m_pin3d.m_dwRenderHeight))) //!! other heuristic? // test if its worth to blit every element separately
 		{
 			// Smart Blit - only update the invalidated areas
 			for (int i=0;i<m_vupdaterect.Size();i++)
@@ -2600,7 +2611,7 @@ else
 #ifdef ONLY3DUPD
 			unsigned int overall_area = 0;
 
-			if (m_fCleanBlt)
+			if (m_fCleanBlt) // detect overall area to blit
 			{
 				for (int i=0;i<m_vupdaterect.Size();++i)
 				{
@@ -2615,7 +2626,7 @@ else
 				}
 			}
 
-			if (m_fCleanBlt && (overall_area < width*height)) //!! other heuristic?
+			if (m_fCleanBlt && (overall_area < width*height)) //!! other heuristic? // test if its worth to blit every element separately
 			{
 				// Smart Blit - only update the invalidated areas
 #pragma omp parallel for schedule(dynamic)
