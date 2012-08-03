@@ -2577,11 +2577,11 @@ if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (
 }
 else
 {
-	//!!  add key to en/disable 3D at runtime
-	//!!  num_threads(max_threads-1 or -2) ? on my AMD omp is not really faster for the update path, a bit faster for full path
-	//!!  overall half resolution necessary only (Y3D profits from full res though (implicit filtering))
+	//!! add key to en/disable 3D at runtime
+	//!! num_threads(max_threads-1 or -2) ? on my AMD omp is not really faster for the update path, a bit faster for full path
+	//!! overall half resolution necessary only (Y3D profits from full res though (implicit filtering))
 
-	static const unsigned int zmask = 0xFFFFFFu; //!! can this really be hardcoded?
+	static const unsigned int zmask = 0xFFFFFFu; //!! can this really be hardcoded? only has to be used for 32bit so far
 	static const __m128 zmask128 = _mm_set1_ps((float&)zmask);
 
 	DDSURFACEDESC2 ddsd,ddsdz;
@@ -2598,19 +2598,35 @@ else
 	const unsigned int shift = (ddsd.ddpfPixelFormat.dwRGBBitCount == 32) ? 2 : 1;
 
 #ifdef ONLY3DUPD
+			unsigned int overall_area = 0;
+
 			if (m_fCleanBlt)
 			{
-				const unsigned int maxbottom = ddsd.lPitch*height;
+				for (int i=0;i<m_vupdaterect.Size();++i)
+				{
+					const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
+
+					const int left   = max(prc.left + m_pin3d.m_rcUpdate.left,0);
+					const int right  = min(prc.right + m_pin3d.m_rcUpdate.left,(int)width-1);
+					const int top    = max(prc.top + m_pin3d.m_rcUpdate.top,0);
+					const int bottom = min(prc.bottom + m_pin3d.m_rcUpdate.top,(int)height-1);
+
+					overall_area += (right-left)*(bottom-top);
+				}
+			}
+
+			if (m_fCleanBlt && (overall_area < width*height)) //!! other heuristic?
+			{
 				// Smart Blit - only update the invalidated areas
 #pragma omp parallel for schedule(dynamic)
 				for (int i=0;i<m_vupdaterect.Size();++i)
 				{
 					const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
 
-					const unsigned int left4  = (prc.left + m_pin3d.m_rcUpdate.left)<<shift;
-					const unsigned int top    = max((int)(left4 + (prc.top + m_pin3d.m_rcUpdate.top)*ddsd.lPitch),0);
-					const unsigned int bottom = min(      left4 + (prc.bottom + m_pin3d.m_rcUpdate.top)*ddsd.lPitch,maxbottom);
-					const unsigned int copywidth = (prc.right - prc.left)<<shift;
+					const unsigned int left4  = max(prc.left + m_pin3d.m_rcUpdate.left,0)<<shift;
+					const unsigned int top    = left4 + max(prc.top + m_pin3d.m_rcUpdate.top,0)*ddsd.lPitch;
+					const unsigned int bottom = left4 + min(prc.bottom + m_pin3d.m_rcUpdate.top,(int)height-1)*ddsd.lPitch;
+					const unsigned int copywidth = (min(prc.right,(int)width-1) - max(prc.left,0))<<shift;
 
 					// Copy the region from the back buffer to the front buffer.
 					unsigned char* __restrict bc  = ((unsigned char*)m_pin3d.m_pdds3Dbuffercopy) +top;
@@ -2619,8 +2635,8 @@ else
 					unsigned char* __restrict sfz = ((unsigned char*)ddsdz.lpSurface)+top;
 					for(unsigned int offset = top; offset < bottom; offset+=ddsd.lPitch,bc+=ddsd.lPitch,bcz+=ddsd.lPitch,sf+=ddsd.lPitch,sfz+=ddsd.lPitch)
 					{
-						memcpy_sse2(bc,  sf,  copywidth);
-						memcpy_sse2(bcz, sfz, copywidth);
+						memcpy/*_sse2*/(bc,  sf,  copywidth);
+						memcpy/*_sse2*/(bcz, sfz, copywidth);
 					}
 				}
 			}
@@ -2658,6 +2674,7 @@ else
 	unsigned int* const __restrict bufferfinal = (unsigned int*)ddsd.lpSurface;
 	const unsigned int* const __restrict buffercopy = m_pin3d.m_pdds3Dbuffercopy;
 	const unsigned int* const __restrict bufferzcopy = m_pin3d.m_pdds3Dbufferzcopy;
+	unsigned char* const __restrict mask = m_pin3d.m_pdds3Dbuffermask;
 
 	const unsigned int nPitch = ddsd.lPitch >> shift;
 
@@ -2674,10 +2691,12 @@ else
 									  m_fStereo3DY ? maxSeparationU*nPitch :
 													 maxSeparationU }; // filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
 
-	const __m128 ZPDU128 = _mm_set1_ps((float)ZPDU);
+	const __m128 ZPDU128 = _mm_set1_ps((float)ZPDU * ((shift == 1) ? (float)(1.0/256.0) : 1.0f)); // in 16bit scale z value by 256 (16bit to 24bit, so its the same as when rendering in 32bit)
 	const unsigned int maxSepShl4 = maxSeparationU<<4;
 	const __m128 maxSepShl4128 = _mm_set1_ps((float&)maxSepShl4);
 	const __m128i nPitch128 = (__m128i&)_mm_set1_ps((float&)nPitch);
+
+	ZeroMemory(mask,width*height/4); //!! not necessary when full update
 
 #ifdef ONLY3DUPD
 			if (m_fCleanBlt)
@@ -2696,14 +2715,14 @@ else
 					// Update the region (+ area around) from the back buffer to the front buffer.
 					if(m_fStereo3DY) {
 						if(shift == 1)
-							stereo_repro_16bit_y(max((int)top-(int)maxSeparationU,(int)maxSeparationU+1)&0xFFFFFFFE, min(bottom+maxSeparationU,height-(maxSeparationU+1)), left&0xFFFFFFFC, right+3, nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,false,m_fStereo3DAA); //!! +3,etc. //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
+							stereo_repro_16bit_y(max((int)top-(int)maxSeparationU,(int)maxSeparationU+1)&0xFFFFFFFE, min(bottom+maxSeparationU,height-(maxSeparationU+1)), left&0xFFFFFFFC, right+3, nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,false,m_fStereo3DAA,mask); //!! +3,etc. //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
 						else
-							stereo_repro_32bit_y(max((int)top-(int)maxSeparationU,(int)maxSeparationU+1)&0xFFFFFFFE, min(bottom+maxSeparationU,height-(maxSeparationU+1)), left&0xFFFFFFFC, right+3, nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,false,m_fStereo3DAA); //!! +3,etc. //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
+							stereo_repro_32bit_y(max((int)top-(int)maxSeparationU,(int)maxSeparationU+1)&0xFFFFFFFE, min(bottom+maxSeparationU,height-(maxSeparationU+1)), left&0xFFFFFFFC, right+3, nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,false,m_fStereo3DAA,mask); //!! +3,etc. //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
 					} else {
 						if(shift == 1)
-							stereo_repro_16bit_x(top&0xFFFFFFFE, bottom, (max((int)left-(int)maxSeparationU,(int)maxSeparationU+1)+3)&0xFFFFFFFC, min(right+maxSeparationU,width-(maxSeparationU+1)), nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,false,m_fStereo3DAA); //!! +3,etc. //!! too short also //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
+							stereo_repro_16bit_x(top&0xFFFFFFFE, bottom, (max((int)left-(int)maxSeparationU,(int)maxSeparationU+1)+3)&0xFFFFFFFC, min(right+maxSeparationU,width-(maxSeparationU+1)), nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,false,m_fStereo3DAA,mask); //!! +3,etc. //!! too short also //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
 						else
-							stereo_repro_32bit_x(top&0xFFFFFFFE, bottom, (max((int)left-(int)maxSeparationU,(int)maxSeparationU+1)+3)&0xFFFFFFFC, min(right+maxSeparationU,width-(maxSeparationU+1)), nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,false,m_fStereo3DAA); //!! +3,etc. //!! too short also //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
+							stereo_repro_32bit_x(top&0xFFFFFFFE, bottom, (max((int)left-(int)maxSeparationU,(int)maxSeparationU+1)+3)&0xFFFFFFFC, min(right+maxSeparationU,width-(maxSeparationU+1)), nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,false,m_fStereo3DAA,mask); //!! +3,etc. //!! too short also //!! AA3D only:&0xFFFFFFFE, also misses bottom+1 then
 					}
 				}
 			}
@@ -2711,14 +2730,14 @@ else
 #endif
 				if(m_fStereo3DY) {
 					if(shift == 1)
-	 					stereo_repro_16bit_y(maxSeparationU+1, height-(maxSeparationU+1), 0, width, nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,true,m_fStereo3DAA);
+	 					stereo_repro_16bit_y(maxSeparationU+1, height-(maxSeparationU+1), 0, width, nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,true,m_fStereo3DAA,mask); //!! mask not necessary for full update
 					else
-						stereo_repro_32bit_y(maxSeparationU+1, height-(maxSeparationU+1), 0, width, nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,true,m_fStereo3DAA);
+						stereo_repro_32bit_y(maxSeparationU+1, height-(maxSeparationU+1), 0, width, nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,true,m_fStereo3DAA,mask);
 				} else {
 					if(shift == 1)
-						stereo_repro_16bit_x(0, height, ((maxSeparationU+1)+3)&0xFFFFFFFC, width-(maxSeparationU+1), nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,true,m_fStereo3DAA); //!! +3, etc //!! too short also
+						stereo_repro_16bit_x(0, height, ((maxSeparationU+1)+3)&0xFFFFFFFC, width-(maxSeparationU+1), nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,true,m_fStereo3DAA,mask); //!! +3, etc //!! too short also
 					else
-						stereo_repro_32bit_x(0, height, ((maxSeparationU+1)+3)&0xFFFFFFFC, width-(maxSeparationU+1), nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,true,m_fStereo3DAA); //!! +3, etc //!! too short also
+						stereo_repro_32bit_x(0, height, ((maxSeparationU+1)+3)&0xFFFFFFFC, width-(maxSeparationU+1), nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,shift,true,m_fStereo3DAA,mask); //!! +3, etc //!! too short also
 				}
 
 #else // continue with FXAA //!! misses SSE(2) opt. //!! add update only version

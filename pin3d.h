@@ -207,6 +207,7 @@ public:
 	LPDIRECTDRAWSURFACE7 m_pdds3DBackBuffer;
 	const unsigned int* __restrict m_pdds3Dbuffercopy;
 	const unsigned int* __restrict m_pdds3Dbufferzcopy;
+	unsigned char* __restrict m_pdds3Dbuffermask;
 
 	LPDIRECTDRAWSURFACE7 m_pddsZBuffer;
 	LPDIRECT3D7 m_pD3D;

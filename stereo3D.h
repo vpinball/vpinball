@@ -388,7 +388,7 @@ if(AA & y) // so always triggered if AA and y&1
 // the following/same code is basically copied 4 times to optimize for 16bit yaxis, 32bit yaxis, 16bit xaxis and 32bit xaxis (as the compiler doesn't figure that out automatically and i hate templates for such a scenario ;))
 //
 
-inline void stereo_repro_16bit_y(const int ystart, const int yend, const unsigned int xstart, const unsigned int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA)
+inline void stereo_repro_16bit_y(const int ystart, const int yend, const unsigned int xstart, const unsigned int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
 if(handle_borders) {
     ZeroMemory(bufferfinal,                                  width*(maxSeparationU+1)<<shift); //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
@@ -411,17 +411,20 @@ const unsigned int ypms = y + maxSeparationU;
 const __m128i ymms128 = (__m128i&)_mm_set1_ps((float&)ymms);
 const __m128i ypms128 = (__m128i&)_mm_set1_ps((float&)ypms);
 
-const unsigned short* __restrict z =         bufferzcopy + y*width + xstart; //!! widthz?
+unsigned int xm = (y*width + xstart)/4;
+const unsigned short* __restrict z =         bufferzcopy + (y*width + xstart); //!! widthz?
 __m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
 
 unsigned int x = xstart;
-for(; x < xend; x+=4,z+=4,x128=_mm_add_epi32(x128,t4444))
+for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
-const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[0])),_mm_setzero_si128()),zmask128),_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[1])),_mm_setzero_si128()),zmask128)),_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[2])),_mm_setzero_si128()),zmask128)); // abuse float pipelines for the unsigned integer math
-const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[0])),_mm_setzero_si128()),zmask128),_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[1])),_mm_setzero_si128()),zmask128)),_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[2])),_mm_setzero_si128()),zmask128));
+mask[xm] = 1;
 
-const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps(_mm_slli_epi32((__m128i&)minDepthR,8))))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
-const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps(_mm_slli_epi32((__m128i&)minDepthL,8))))),maxSepShl4128); // dto.
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[0])),_mm_setzero_si128()),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[1])),_mm_setzero_si128())),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[2])),_mm_setzero_si128())); // abuse float pipelines for the unsigned integer math
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[0])),_mm_setzero_si128()),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[1])),_mm_setzero_si128())),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[2])),_mm_setzero_si128()));
+
+const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
+const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
 
 const __m128i pR = _mm_add_epi32(_mm_mul_int_i(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),width128),x128);
 const __m128i pL = _mm_add_epi32(_mm_mul_int_i(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),width128),x128);
@@ -475,7 +478,7 @@ else
 }
 }
 
-inline void stereo_repro_32bit_y(const int ystart, const int yend, const unsigned int xstart, const unsigned int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA)
+inline void stereo_repro_32bit_y(const int ystart, const int yend, const unsigned int xstart, const unsigned int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
 if(handle_borders) {
     ZeroMemory(bufferfinal,                                  width*(maxSeparationU+1)<<shift); //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
@@ -498,17 +501,20 @@ const unsigned int ypms = y + maxSeparationU;
 const __m128i ymms128 = (__m128i&)_mm_set1_ps((float&)ymms);
 const __m128i ypms128 = (__m128i&)_mm_set1_ps((float&)ypms);
 
-const float         * __restrict z = (float*)bufferzcopy + y*width + xstart; //!! widthz?
+unsigned int xm = (y*width + xstart)/4;
+const float         * __restrict z = (float*)bufferzcopy + (y*width + xstart); //!! widthz?
 __m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
 
 unsigned int x = xstart;
-for(; x < xend; x+=4,z+=4,x128=_mm_add_epi32(x128,t4444))
+for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
-const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(                            _mm_load_ps(z-samples[0]),                                     zmask128),_mm_and_ps(                            _mm_load_ps(z-samples[1]),                                     zmask128)),_mm_and_ps(                            _mm_load_ps(z-samples[2]),                                     zmask128)); // abuse float pipelines for the unsigned integer math
-const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(                            _mm_load_ps(z+samples[0]),                                     zmask128),_mm_and_ps(                            _mm_load_ps(z+samples[1]),                                     zmask128)),_mm_and_ps(                            _mm_load_ps(z+samples[2]),                                     zmask128));
+mask[xm] = 1;
 
-const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps(               (__m128i&)minDepthR   )))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
-const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps(               (__m128i&)minDepthL   )))),maxSepShl4128); // dto.
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z-samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z-samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z-samples[2]),zmask128)); // abuse float pipelines for the unsigned integer math
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z+samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z+samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z+samples[2]),zmask128));
+
+const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
+const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
 
 const __m128i pR = _mm_add_epi32(_mm_mul_int_i(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),width128),x128);
 const __m128i pL = _mm_add_epi32(_mm_mul_int_i(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),width128),x128);
@@ -562,7 +568,7 @@ else
 }
 }
 
-inline void stereo_repro_16bit_x(const int ystart, const int yend, const unsigned int xstart, const unsigned int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA)
+inline void stereo_repro_16bit_x(const int ystart, const int yend, const unsigned int xstart, const unsigned int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
 const __m128i width128 = (__m128i&)_mm_set1_ps((float&)width);
 
@@ -580,7 +586,8 @@ const unsigned int ypms = y*width + maxSeparationU;
 const __m128i ymms128 = (__m128i&)_mm_set1_ps((float&)ymms);
 const __m128i ypms128 = (__m128i&)_mm_set1_ps((float&)ypms);
 
-const unsigned short* __restrict z =         bufferzcopy + y*width + xstart; //!! widthz?
+unsigned int xm = (y*width + xstart)/4;
+const unsigned short* __restrict z =         bufferzcopy + (y*width + xstart); //!! widthz?
 __m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
 
 unsigned int x;
@@ -590,13 +597,15 @@ if(handle_borders) {
 } else
     x = xstart;
 
-for(; x < xend; x+=4,z+=4,x128=_mm_add_epi32(x128,t4444))
+for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
-const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[0])),_mm_setzero_si128()),zmask128),_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[1])),_mm_setzero_si128()),zmask128)),_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[2])),_mm_setzero_si128()),zmask128)); // abuse float pipelines for the unsigned integer math
-const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[0])),_mm_setzero_si128()),zmask128),_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[1])),_mm_setzero_si128()),zmask128)),_mm_and_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[2])),_mm_setzero_si128()),zmask128));
+mask[xm] = 1;
 
-const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps(_mm_slli_epi32((__m128i&)minDepthR,8))))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
-const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps(_mm_slli_epi32((__m128i&)minDepthL,8))))),maxSepShl4128); // dto.
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[0])),_mm_setzero_si128()),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[1])),_mm_setzero_si128())),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[2])),_mm_setzero_si128())); // abuse float pipelines for the unsigned integer math
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[0])),_mm_setzero_si128()),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[1])),_mm_setzero_si128())),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[2])),_mm_setzero_si128()));
+
+const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
+const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
 
 const __m128i pR = _mm_add_epi32(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),x128);
 const __m128i pL = _mm_add_epi32(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),x128);
@@ -654,7 +663,7 @@ if(handle_borders)
 }
 }
 
-inline void stereo_repro_32bit_x(const int ystart, const int yend, const unsigned int xstart, const unsigned int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA)
+inline void stereo_repro_32bit_x(const int ystart, const int yend, const unsigned int xstart, const unsigned int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
 const __m128i width128 = (__m128i&)_mm_set1_ps((float&)width);
 
@@ -672,7 +681,8 @@ const unsigned int ypms = y*width + maxSeparationU;
 const __m128i ymms128 = (__m128i&)_mm_set1_ps((float&)ymms);
 const __m128i ypms128 = (__m128i&)_mm_set1_ps((float&)ypms);
 
-const float         * __restrict z = (float*)bufferzcopy + y*width + xstart; //!! widthz?
+unsigned int xm = (y*width + xstart)/4;
+const float         * __restrict z = (float*)bufferzcopy + (y*width + xstart); //!! widthz?
 __m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
 
 unsigned int x;
@@ -682,13 +692,15 @@ if(handle_borders) {
 } else
     x = xstart;
 
-for(; x < xend; x+=4,z+=4,x128=_mm_add_epi32(x128,t4444))
+for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
-const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(                            _mm_loadu_ps(z-samples[0]),                                    zmask128),_mm_and_ps(                            _mm_loadu_ps(z-samples[1]),                                    zmask128)),_mm_and_ps(                            _mm_loadu_ps(z-samples[2]),                                    zmask128)); // abuse float pipelines for the unsigned integer math
-const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(                            _mm_loadu_ps(z+samples[0]),                                    zmask128),_mm_and_ps(                            _mm_loadu_ps(z+samples[1]),                                    zmask128)),_mm_and_ps(                            _mm_loadu_ps(z+samples[2]),                                    zmask128));
+mask[xm] = 1;
 
-const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps(               (__m128i&)minDepthR   )))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
-const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps(               (__m128i&)minDepthL   )))),maxSepShl4128); // dto.
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_loadu_ps(z-samples[0]),zmask128),_mm_and_ps(_mm_loadu_ps(z-samples[1]),zmask128)),_mm_and_ps(_mm_loadu_ps(z-samples[2]),zmask128)); // abuse float pipelines for the unsigned integer math
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_loadu_ps(z+samples[0]),zmask128),_mm_and_ps(_mm_loadu_ps(z+samples[1]),zmask128)),_mm_and_ps(_mm_loadu_ps(z+samples[2]),zmask128));
+
+const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
+const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
 
 const __m128i pR = _mm_add_epi32(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),x128);
 const __m128i pL = _mm_add_epi32(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),x128);
