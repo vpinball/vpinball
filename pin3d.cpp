@@ -10,6 +10,7 @@ Pin3D::Pin3D()
 	m_pdds3DBackBuffer = NULL;
 	m_pdds3Dbuffercopy = NULL;
 	m_pdds3Dbufferzcopy = NULL;
+	m_pdds3Dbuffermask = NULL;
 	m_pddsZBuffer = NULL;
 	m_pD3D = NULL;
 	m_pd3dDevice = NULL;
@@ -40,6 +41,8 @@ Pin3D::~Pin3D()
 		_aligned_free((void*)m_pdds3Dbuffercopy);
 	if(m_pdds3Dbufferzcopy)
 		_aligned_free((void*)m_pdds3Dbufferzcopy);
+	if(m_pdds3Dbuffermask)
+		free((void*)m_pdds3Dbuffermask);
 
 	if (m_pddsZBuffer)
 		m_pddsZBuffer->Release();
@@ -648,6 +651,7 @@ retry5:
 
 		m_pdds3Dbuffercopy  = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,128); //!! or rather match alignment of screenbuffer(s)? -> find largest 2^n that matches?
 		m_pdds3Dbufferzcopy = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,128); //!! or rather match alignment of screenbuffer(s)? -> find largest 2^n that matches?
+		m_pdds3Dbuffermask  = (unsigned char*)malloc(ddsd.lPitch*ddsd.dwHeight/4);
 
 		ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_CAPS; //!! ? just to be the exact same as the Backbuffer
 		ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE;
