@@ -2534,7 +2534,7 @@ void Player::Render()
 
 
 #ifdef VP3D
-if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f))
+if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy)
 {
 #endif
 	if ( m_nudgetime &&					// Table is being nudged.
@@ -2657,14 +2657,14 @@ else
 				if((m_fStereo3DAA) || (m_fStereo3DY))
 				{
 					memcpy_sse2((void*)m_pin3d.m_pdds3Dbuffercopy, ddsd.lpSurface, ddsd.lPitch*height);
-					memcpy_sse2((void*)m_pin3d.m_pdds3Dbufferzcopy,ddsdz.lpSurface,ddsdz.lPitch*height);
+					memcpy_sse2((void*)m_pin3d.m_pdds3Dbufferzcopy,ddsdz.lpSurface,ddsd.lPitch*height);
 				}
 				else
 				{
 #pragma omp parallel for schedule(dynamic)
 					for(int y = 0; y < (int)height; y+=2) { //!! opt to copy larger blocks somehow? //!! opt. muls?
-						memcpy_sse2(((unsigned char* const __restrict)m_pin3d.m_pdds3Dbuffercopy) +ddsd.lPitch*y,  ((const unsigned char* const __restrict)ddsd.lpSurface) +ddsd.lPitch*y,  ddsd.lPitch);
-						memcpy_sse2(((unsigned char* const __restrict)m_pin3d.m_pdds3Dbufferzcopy)+ddsdz.lPitch*y, ((const unsigned char* const __restrict)ddsdz.lpSurface)+ddsdz.lPitch*y, ddsdz.lPitch);
+						memcpy_sse2(((unsigned char* const __restrict)m_pin3d.m_pdds3Dbuffercopy) +ddsd.lPitch*y,  ((const unsigned char* const __restrict)ddsd.lpSurface)+ddsd.lPitch*y, ddsd.lPitch);
+						memcpy_sse2(((unsigned char* const __restrict)m_pin3d.m_pdds3Dbufferzcopy)+ddsd.lPitch*y, ((const unsigned char* const __restrict)ddsdz.lpSurface)+ddsd.lPitch*y, ddsd.lPitch);
 					}
 				}
 #ifdef ONLY3DUPD
