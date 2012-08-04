@@ -37,12 +37,18 @@ Pin3D::~Pin3D()
 
 	if (m_pdds3DBackBuffer)
 		m_pdds3DBackBuffer->Release();
-	if(m_pdds3Dbuffercopy)
+	if(m_pdds3Dbuffercopy) {
 		_aligned_free((void*)m_pdds3Dbuffercopy);
-	if(m_pdds3Dbufferzcopy)
+		m_pdds3Dbuffercopy = NULL;
+	}
+	if(m_pdds3Dbufferzcopy) {
 		_aligned_free((void*)m_pdds3Dbufferzcopy);
-	if(m_pdds3Dbuffermask)
+		m_pdds3Dbufferzcopy = NULL;
+	}
+	if(m_pdds3Dbuffermask) {
 		free((void*)m_pdds3Dbuffermask);
+		m_pdds3Dbuffermask = NULL;
+	}
 
 	if (m_pddsZBuffer)
 		m_pddsZBuffer->Release();
