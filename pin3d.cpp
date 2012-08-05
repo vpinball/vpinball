@@ -655,8 +655,8 @@ retry5:
 		ddsd.dwSize = sizeof(ddsd);
 		m_pddsBackBuffer->GetSurfaceDesc( &ddsd );
 
-		m_pdds3Dbuffercopy  = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,128); //!! or rather match alignment of screenbuffer(s)? -> find largest 2^n that matches?
-		m_pdds3Dbufferzcopy = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,128); //!! or rather match alignment of screenbuffer(s)? -> find largest 2^n that matches?
+		m_pdds3Dbuffercopy  = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,16);
+		m_pdds3Dbufferzcopy = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,16);
 		m_pdds3Dbuffermask  = (unsigned char*)malloc(ddsd.lPitch*ddsd.dwHeight/4);
 
 		ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_CAPS; //!! ? just to be the exact same as the Backbuffer
