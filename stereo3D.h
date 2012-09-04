@@ -388,12 +388,12 @@ if(AA & y) // so always triggered if AA and y&1
 // the following/same code is basically copied 4 times to optimize for 16bit yaxis, 32bit yaxis, 16bit xaxis and 32bit xaxis (as the compiler doesn't figure that out automatically and i hate templates for such low-level code ;))
 //
 
-inline void stereo_repro_16bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
+inline void stereo_repro_16bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
 if(handle_borders) {
-    ZeroMemory(bufferfinal,                (width*(ystart>>1))<<shift);                        //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
-    ZeroMemory(bufferfinal+width*(yend>>1),(width*(((height-yend)>>1) + (ystart>>1)))<<shift); //!! black out border pixels, replicate borders for one half instead??
-    ZeroMemory(bufferfinal+width*yend,     (width*((height-yend)>>1))<<shift);                 //!! black out border pixels, replicate borders for one half instead??
+    ZeroMemory(bufferfinal,                               (width*(ystart>>1))<<1);                        //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
+    ZeroMemory(bufferfinal+             (yend>>1) *width, (width*(((height-yend)>>1) + (ystart>>1)))<<1); //!! black out border pixels, replicate borders for one half instead??
+    ZeroMemory(bufferfinal+((height>>1)+(yend>>1))*width, (width* ((height-yend)>>1))<<1);                //!! black out border pixels, replicate borders for one half instead??
 }
 
 const __m128i width128 = (__m128i&)_mm_set1_ps((float&)width);
@@ -479,12 +479,12 @@ else
 }
 }
 
-inline void stereo_repro_32bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
+inline void stereo_repro_32bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
 if(handle_borders) {
-    ZeroMemory(bufferfinal,                (width*(ystart>>1))<<shift);                        //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
-    ZeroMemory(bufferfinal+width*(yend>>1),(width*(((height-yend)>>1) + (ystart>>1)))<<shift); //!! black out border pixels, replicate borders for one half instead??
-    ZeroMemory(bufferfinal+width*yend,     (width*((height-yend)>>1))<<shift);                 //!! black out border pixels, replicate borders for one half instead??
+    ZeroMemory(bufferfinal,                               (width*(ystart>>1))<<2);                        //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
+    ZeroMemory(bufferfinal+             (yend>>1) *width, (width*(((height-yend)>>1) + (ystart>>1)))<<2); //!! black out border pixels, replicate borders for one half instead??
+    ZeroMemory(bufferfinal+((height>>1)+(yend>>1))*width, (width* ((height-yend)>>1))<<2);                //!! black out border pixels, replicate borders for one half instead??
 }
 
 const __m128i width128 = (__m128i&)_mm_set1_ps((float&)width);
@@ -570,7 +570,7 @@ else
 }
 }
 
-inline void stereo_repro_16bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
+inline void stereo_repro_16bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
 const __m128i width128 = (__m128i&)_mm_set1_ps((float&)width);
 
@@ -665,7 +665,7 @@ if(handle_borders)
 }
 }
 
-inline void stereo_repro_32bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const unsigned int shift, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
+inline void stereo_repro_32bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
 const __m128i width128 = (__m128i&)_mm_set1_ps((float&)width);
 

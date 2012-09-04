@@ -162,7 +162,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	
 	hr = GetRegInt("DefaultProps\\Target","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = (iTmp == 0) ? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = fFalse;
 	
@@ -174,7 +174,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	
 	hr = GetRegInt("DefaultProps\\Target","HitEvent", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fHitEvent = iTmp == 0? false:true;
+		m_d.m_fHitEvent = (iTmp == 0) ? false:true;
 	else
 		m_d.m_fHitEvent = fTrue;
 
@@ -198,7 +198,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 	hr = GetRegInt("DefaultProps\\Target","SideColor", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_sidecolor = iTmp ;
+		m_d.m_sidecolor = iTmp;
 	else
 		m_d.m_sidecolor = RGB(127,127,127);
 
@@ -224,13 +224,13 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 	hr = GetRegInt("DefaultProps\\Target","Droppable", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fDroppable = iTmp == 0? false : true;
+		m_d.m_fDroppable = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fDroppable = fFalse;
 
 	hr = GetRegInt("DefaultProps\\Target","Flipbook", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fFlipbook = iTmp == 0? false : true;
+		m_d.m_fFlipbook = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fFlipbook = fFalse;
 
@@ -239,7 +239,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 	hr = GetRegInt("DefaultProps\\Target","CastsShadow", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fCastsShadow = iTmp == 0? false : true;
+		m_d.m_fCastsShadow = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fCastsShadow = fTrue;
 
@@ -257,7 +257,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 	hr = GetRegInt("DefaultProps\\Target","DisplayTexture", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fDisplayTexture = iTmp == 0? false : true;
+		m_d.m_fDisplayTexture = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fDisplayTexture = fFalse;
 
@@ -269,7 +269,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	
 	hr = GetRegInt("DefaultProps\\Target","SlingshotAnimation", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fSlingshotAnimation = iTmp == 0? false : true;
+		m_d.m_fSlingshotAnimation = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fSlingshotAnimation = fTrue;
 
@@ -293,19 +293,19 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 	hr = GetRegInt("DefaultProps\\Target","Visible", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fVisible = iTmp == 0? false : true;
+		m_d.m_fVisible = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Target","SideVisible", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fSideVisible = iTmp == 0? false : true;
+		m_d.m_fSideVisible = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fSideVisible = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Target","Collidable", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fCollidable = iTmp == 0? false : true;
+		m_d.m_fCollidable = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fCollidable = fTrue;
 
@@ -320,7 +320,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Wall","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = (iTmp == 0) ? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -332,7 +332,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\Wall","HitEvent", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fHitEvent = iTmp == 0? false:true;
+		m_d.m_fHitEvent = (iTmp == 0) ? false:true;
 	else
 		m_d.m_fHitEvent = fFalse;
 
@@ -382,13 +382,13 @@ void Surface::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Wall","Droppable", &iTmp);
 	if ((hr == S_OK)  && fromMouseClick)
-		m_d.m_fDroppable = iTmp == 0? false : true;
+		m_d.m_fDroppable = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fDroppable = fFalse;
 
 	hr = GetRegInt("DefaultProps\\Wall","Flipbook", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fFlipbook = iTmp == 0? false : true;
+		m_d.m_fFlipbook = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fFlipbook = fFalse;
 
@@ -397,7 +397,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Wall","CastsShadow", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fCastsShadow = iTmp == 0? false : true;
+		m_d.m_fCastsShadow = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fCastsShadow = fTrue;
 
@@ -415,7 +415,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Wall","DisplayTexture", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fDisplayTexture = iTmp == 0? false : true;
+		m_d.m_fDisplayTexture = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fDisplayTexture = fFalse;
 
@@ -427,7 +427,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\Wall","SlingshotAnimation", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fSlingshotAnimation = iTmp == 0? false : true;
+		m_d.m_fSlingshotAnimation = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fSlingshotAnimation = fTrue;
 
@@ -451,19 +451,19 @@ void Surface::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Wall","Visible", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fVisible = iTmp == 0? false : true;
+		m_d.m_fVisible = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Wall","SideVisible", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fSideVisible = iTmp == 0? false : true;
+		m_d.m_fSideVisible = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fSideVisible = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Wall","Collidable", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fCollidable = iTmp == 0? false : true;
+		m_d.m_fCollidable = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fCollidable = fTrue;
 	}
@@ -931,11 +931,9 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
 		// Set up line normal
 		{
-		const float inv_length = 1.0f/sqrtf((vt2.x * vt2.x) + (vt2.y * vt2.y));
-		const Vertex2D normalT( -vt2.y * inv_length, vt2.x * inv_length);
-		
-		pjoint->normal.x = normalT.x + plineseg->normal.x;
-		pjoint->normal.y = normalT.y + plineseg->normal.y;
+		const float inv_length = 1.0f/sqrtf(vt2.x * vt2.x + vt2.y * vt2.y);
+		pjoint->normal.x = plineseg->normal.x - vt2.y * inv_length;
+		pjoint->normal.y = plineseg->normal.y + vt2.x * inv_length;
 		}
 
 		// Set up line normal
@@ -1011,12 +1009,12 @@ void Surface::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	}
 
-WORD rgiSlingshot0[4] = {0,1,4,3};
-WORD rgiSlingshot1[4] = {1,2,5,4};
-WORD rgiSlingshot2[4] = {0,3,4,1};
-WORD rgiSlingshot3[4] = {1,4,5,2};
-WORD rgiSlingshot4[4] = {3,9,10,4};
-WORD rgiSlingshot5[4] = {4,10,11,5};
+static const WORD rgiSlingshot0[4] = {0,1,4,3};
+static const WORD rgiSlingshot1[4] = {1,2,5,4};
+static const WORD rgiSlingshot2[4] = {0,3,4,1};
+static const WORD rgiSlingshot3[4] = {1,4,5,2};
+static const WORD rgiSlingshot4[4] = {3,9,10,4};
+static const WORD rgiSlingshot5[4] = {4,10,11,5};
 								
 void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
@@ -1107,22 +1105,22 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		SetNormal(rgv3D, rgiSlingshot0, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot0, 4, 0);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot0, 4, 0);
 
 		SetNormal(rgv3D, rgiSlingshot1, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot1, 4, 0);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot1, 4, 0);
 		
 		SetNormal(rgv3D, rgiSlingshot2, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot2, 4, 0);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot2, 4, 0);
 		
 		SetNormal(rgv3D, rgiSlingshot3, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot3, 4, 0);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot3, 4, 0);
 
 		SetNormal(rgv3D, rgiSlingshot4, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot4, 4, 0);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot4, 4, 0);
 		
 		SetNormal(rgv3D, rgiSlingshot5, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,rgiSlingshot5, 4, 0);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot5, 4, 0);
 
 		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
 		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
@@ -1149,8 +1147,8 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	}
 
-WORD rgiWall0[4] = {0,1,2,3};
-WORD rgiWall1[4] = {0,3,2,1};
+static const WORD rgiWall0[4] = {0,1,2,3};
+static const WORD rgiWall1[4] = {0,3,2,1};
 
 ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover, BOOL fDrop)
 	{
@@ -1400,14 +1398,13 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped, but we do need to extend the extrema
 				{
 				// Draw side.
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, m_d.m_fInner ? rgiWall0 : rgiWall1, 4,0);
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, m_d.m_fInner ? (LPWORD)rgiWall0 : (LPWORD)rgiWall1, 4,0);
 				}
 
 			if (fMover)
 				{
 				// Only do two points - each segment has two new points
-				ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitdrop->m_polydropanim.m_znear
-											, &m_phitdrop->m_polydropanim.m_zfar, 2, fFalse);
+				ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar, 2, fFalse);
 				}
 			}
 	}
@@ -1455,7 +1452,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 			for (int i=0;i<6;i++)
 				{
-				vpoly.InsertElementAt((void *)(cvertex+i), (cvertex-minyindex-1));
+				vpoly.InsertElementAt((void *)(cvertex+i), cvertex-minyindex-1);
 				}
 			}
 		else
@@ -1498,8 +1495,8 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
 					}
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,  D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA); 
 				}
 
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
@@ -1539,8 +1536,8 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
 					}
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,  D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA); 
 				}
 
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
@@ -1613,7 +1610,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				}
 
 			// Draw top.
-			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 3,rgiWall0, 3, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 3,(LPWORD)rgiWall0, 3, 0);
 			}
 
 		for (int i=0;i<vtri.Size();i++)
