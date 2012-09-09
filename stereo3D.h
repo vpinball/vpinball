@@ -421,17 +421,17 @@ for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
 mask[xm] = 1;
 
-const __m128 minDepthR = _mm_min_ps(_mm_min_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[0])),_mm_setzero_si128()),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[1])),_mm_setzero_si128())),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[2])),_mm_setzero_si128())); // abuse float pipelines for the unsigned integer math
-const __m128 minDepthL = _mm_min_ps(_mm_min_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[0])),_mm_setzero_si128()),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[1])),_mm_setzero_si128())),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[2])),_mm_setzero_si128()));
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[0])),_mm_setzero_si128())),_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[1])),_mm_setzero_si128()))),_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[2])),_mm_setzero_si128())));
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[0])),_mm_setzero_si128())),_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[1])),_mm_setzero_si128()))),_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[2])),_mm_setzero_si128())));
 
-const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
-const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
+const __m128i parallaxR = _mm_cvtps_epi32(_mm_min_ps(_mm_mul_ps(ZPDU128,_mm_rcp_ps(minDepthR)),maxSepShl4128)); // doesn't seem to be needing full precision div
+const __m128i parallaxL = _mm_cvtps_epi32(_mm_min_ps(_mm_mul_ps(ZPDU128,_mm_rcp_ps(minDepthL)),maxSepShl4128)); // dto.
 
 const __m128i pR = _mm_add_epi32(_mm_mul_int_i(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),width128),x128);
 const __m128i pL = _mm_add_epi32(_mm_mul_int_i(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),width128),x128);
 
-const __m128i pRs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxR,4),(__m128&)FF128);
-const __m128i pLs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxL,4),(__m128&)FF128);
+const __m128i pRs4_1 = _mm_and_si128(_mm_slli_epi32(parallaxR,4),FF128);
+const __m128i pLs4_1 = _mm_and_si128(_mm_slli_epi32(parallaxL,4),FF128);
 const __m128i pRs4_2 = _mm_sub_epi32(FF128,pRs4_1);
 const __m128i pLs4_2 = _mm_sub_epi32(FF128,pLs4_1);
 
@@ -512,17 +512,17 @@ for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
 mask[xm] = 1;
 
-const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z-samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z-samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z-samples[2]),zmask128)); // abuse float pipelines for the unsigned integer math
-const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_load_ps(z+samples[0]),zmask128),_mm_and_ps(_mm_load_ps(z+samples[1]),zmask128)),_mm_and_ps(_mm_load_ps(z+samples[2]),zmask128));
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_load_ps(z-samples[0]),zmask128)),_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_load_ps(z-samples[1]),zmask128))),_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_load_ps(z-samples[2]),zmask128)));
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_load_ps(z+samples[0]),zmask128)),_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_load_ps(z+samples[1]),zmask128))),_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_load_ps(z+samples[2]),zmask128)));
 
-const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
-const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
+const __m128i parallaxR = _mm_cvtps_epi32(_mm_min_ps(_mm_mul_ps(ZPDU128,_mm_rcp_ps(minDepthR)),maxSepShl4128)); // doesn't seem to be needing full prec. div
+const __m128i parallaxL = _mm_cvtps_epi32(_mm_min_ps(_mm_mul_ps(ZPDU128,_mm_rcp_ps(minDepthL)),maxSepShl4128)); // dto.
 
 const __m128i pR = _mm_add_epi32(_mm_mul_int_i(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),width128),x128);
 const __m128i pL = _mm_add_epi32(_mm_mul_int_i(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),width128),x128);
 
-const __m128i pRs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxR,4),(__m128&)FF128);
-const __m128i pLs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxL,4),(__m128&)FF128);
+const __m128i pRs4_1 = _mm_and_si128(_mm_slli_epi32(parallaxR,4),FF128);
+const __m128i pLs4_1 = _mm_and_si128(_mm_slli_epi32(parallaxL,4),FF128);
 const __m128i pRs4_2 = _mm_sub_epi32(FF128,pRs4_1);
 const __m128i pLs4_2 = _mm_sub_epi32(FF128,pLs4_1);
 
@@ -603,17 +603,17 @@ for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
 mask[xm] = 1;
 
-const __m128 minDepthR = _mm_min_ps(_mm_min_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[0])),_mm_setzero_si128()),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[1])),_mm_setzero_si128())),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[2])),_mm_setzero_si128())); // abuse float pipelines for the unsigned integer math
-const __m128 minDepthL = _mm_min_ps(_mm_min_ps((__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[0])),_mm_setzero_si128()),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[1])),_mm_setzero_si128())),(__m128&)_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[2])),_mm_setzero_si128()));
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[0])),_mm_setzero_si128())),_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[1])),_mm_setzero_si128()))),_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z-samples[2])),_mm_setzero_si128())));
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[0])),_mm_setzero_si128())),_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[1])),_mm_setzero_si128()))),_mm_cvtepi32_ps(_mm_unpacklo_epi16(_mm_loadl_epi64((__m128i*)(z+samples[2])),_mm_setzero_si128())));
 
-const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
-const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
+const __m128i parallaxR = _mm_cvtps_epi32(_mm_min_ps(_mm_mul_ps(ZPDU128,_mm_rcp_ps(minDepthR)),maxSepShl4128)); // doesn't seem to be needing full prec. div
+const __m128i parallaxL = _mm_cvtps_epi32(_mm_min_ps(_mm_mul_ps(ZPDU128,_mm_rcp_ps(minDepthL)),maxSepShl4128)); // dto.
 
 const __m128i pR = _mm_add_epi32(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),x128);
 const __m128i pL = _mm_add_epi32(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),x128);
 
-const __m128i pRs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxR,4),(__m128&)FF128);
-const __m128i pLs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxL,4),(__m128&)FF128);
+const __m128i pRs4_1 = _mm_and_si128(_mm_slli_epi32(parallaxR,4),FF128);
+const __m128i pLs4_1 = _mm_and_si128(_mm_slli_epi32(parallaxL,4),FF128);
 const __m128i pRs4_2 = _mm_sub_epi32(FF128,pRs4_1);
 const __m128i pLs4_2 = _mm_sub_epi32(FF128,pLs4_1);
 
@@ -698,17 +698,17 @@ for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
 mask[xm] = 1;
 
-const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_loadu_ps(z-samples[0]),zmask128),_mm_and_ps(_mm_loadu_ps(z-samples[1]),zmask128)),_mm_and_ps(_mm_loadu_ps(z-samples[2]),zmask128)); // abuse float pipelines for the unsigned integer math
-const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_and_ps(_mm_loadu_ps(z+samples[0]),zmask128),_mm_and_ps(_mm_loadu_ps(z+samples[1]),zmask128)),_mm_and_ps(_mm_loadu_ps(z+samples[2]),zmask128));
+const __m128 minDepthR = _mm_min_ps(_mm_min_ps(_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_loadu_ps(z-samples[0]),zmask128)),_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_loadu_ps(z-samples[1]),zmask128))),_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_loadu_ps(z-samples[2]),zmask128)));
+const __m128 minDepthL = _mm_min_ps(_mm_min_ps(_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_loadu_ps(z+samples[0]),zmask128)),_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_loadu_ps(z+samples[1]),zmask128))),_mm_cvtepi32_ps((__m128i&)_mm_and_ps(_mm_loadu_ps(z+samples[2]),zmask128)));
 
-const __m128i parallaxR = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthR)))),maxSepShl4128); // doesn't seem to be needing div, thus abuse float pipeline again
-const __m128i parallaxL = (__m128i&)_mm_min_ps((__m128&)_mm_cvtps_epi32(_mm_mul_ps(ZPDU128,_mm_rcp_ps(_mm_cvtepi32_ps((__m128i&)minDepthL)))),maxSepShl4128); // dto.
+const __m128i parallaxR = _mm_cvtps_epi32(_mm_min_ps(_mm_mul_ps(ZPDU128,_mm_rcp_ps(minDepthR)),maxSepShl4128)); // doesn't seem to be needing full prec. div
+const __m128i parallaxL = _mm_cvtps_epi32(_mm_min_ps(_mm_mul_ps(ZPDU128,_mm_rcp_ps(minDepthL)),maxSepShl4128)); // dto.
 
 const __m128i pR = _mm_add_epi32(_mm_add_epi32(ymms128,_mm_srli_epi32(parallaxR,4)),x128);
 const __m128i pL = _mm_add_epi32(_mm_sub_epi32(ypms128,_mm_srli_epi32(parallaxL,4)),x128);
 
-const __m128i pRs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxR,4),(__m128&)FF128);
-const __m128i pLs4_1 = (__m128i&)_mm_and_ps((__m128&)_mm_slli_epi32(parallaxL,4),(__m128&)FF128);
+const __m128i pRs4_1 = _mm_and_si128(_mm_slli_epi32(parallaxR,4),FF128);
+const __m128i pLs4_1 = _mm_and_si128(_mm_slli_epi32(parallaxL,4),FF128);
 const __m128i pRs4_2 = _mm_sub_epi32(FF128,pRs4_1);
 const __m128i pLs4_2 = _mm_sub_epi32(FF128,pLs4_1);
 
