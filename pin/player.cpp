@@ -2706,8 +2706,8 @@ else
 													 maxSeparationU }; // filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
 
 	const __m128 ZPDU128 = _mm_set1_ps((float)ZPDU * ((shift == 1) ? (float)(1.0/256.0) : 1.0f)); // in 16bit scale z value by 256 (16bit zbuffer values scaled to 24bit (=32-8stencil), so its the same as when rendering in 32bit)
-	const unsigned int maxSepShl4 = maxSeparationU<<4;
-	const __m128 maxSepShl4128 = _mm_set1_ps((float&)maxSepShl4);
+	const float maxSepShl4 = (float)(maxSeparationU<<4);
+	const __m128 maxSepShl4128 = _mm_set1_ps(maxSepShl4);
 	const __m128i nPitch128 = _mm_set1_epi32(nPitch);
 
 	ZeroMemory(mask,(width*height)>>2); //!! not necessary when full update
