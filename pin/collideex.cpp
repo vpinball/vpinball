@@ -55,8 +55,6 @@ BumperHitCircle::BumperHitCircle()
 		}
 	}
 
-
-
 BumperHitCircle::~BumperHitCircle()
 	{
 	for (int i=0;i<2;i++)
@@ -407,7 +405,7 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
 
 	m_lineseg[0].v2.x = pspinner->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize  by the ball radius
 	m_lineseg[0].v2.y = pspinner->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
-	m_lineseg[0].v1.x = pspinner->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); // throught the edge of the
+	m_lineseg[0].v1.x = pspinner->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); //through the edge of the
 	m_lineseg[0].v1.y = pspinner->m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN); //spinner
 
 	m_lineseg[1].v1.x = m_lineseg[0].v2.x;

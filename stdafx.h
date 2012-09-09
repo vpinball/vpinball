@@ -2,8 +2,8 @@
 //      or project specific include files that are used frequently,
 //      but are changed infrequently
 
-//#define VP3D
-#define ONLY3DUPD
+#define VP3D // enable 3D stereo code //!! remove define(s) after first succesful release
+#define ONLY3DUPD // faster 3D stereo code (same trick as VP2D does: only update regions each frame)
 
 #define ULTRA_FREE 1
 
