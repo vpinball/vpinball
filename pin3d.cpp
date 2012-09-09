@@ -658,9 +658,14 @@ retry5:
 		m_pdds3Dbuffercopy  = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,16);
 		m_pdds3Dbufferzcopy = (unsigned int*)_aligned_malloc(ddsd.lPitch*ddsd.dwHeight,16);
 		m_pdds3Dbuffermask  = (unsigned char*)malloc(ddsd.lPitch*ddsd.dwHeight/4);
+		if(m_pdds3Dbuffercopy == NULL || m_pdds3Dbufferzcopy == NULL || m_pdds3Dbuffermask == NULL)
+		{
+			ShowError("Could not allocate 3D stereo buffers.");
+			return E_FAIL; 
+		}
 
-		ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_CAPS; //!! ? just to be the exact same as the Backbuffer
-		ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE;
+		ddsd.dwFlags         = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_CAPS; //!! ? just to be the exact same as the Backbuffer
+		ddsd.ddsCaps.dwCaps  = DDSCAPS_TEXTURE;
 		ddsd.ddsCaps.dwCaps2 = DDSCAPS2_HINTDYNAMIC;
 		if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pdds3DBackBuffer, NULL ) ) )
 		{
@@ -692,11 +697,11 @@ HRESULT Pin3D::Create3DDevice(const GUID * const pDeviceGUID)
 
 	const DWORD caps = ddfoo.dpcLineCaps.dwRasterCaps;
 
-	if (caps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT)
-		{
-			//!! hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ANTIALIAS, D3DANTIALIAS_SORTINDEPENDENT);
+	//if (caps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT) //!! doesn't seem to do anything
+		//{
+			//hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ANTIALIAS, D3DANTIALIAS_SORTINDEPENDENT);
 			//   and/or set ddsCaps.dwCaps2 = DDSCAPS2_HINTANTIALIASING (if DDSCAPS_3DDEVICE also enabled)
-		}
+		//}
 
 	// Finally, set the viewport for the newly created device
 	D3DVIEWPORT7 vp = { 0, 0, m_dwRenderWidth, m_dwRenderHeight, 0.0f, 1.0f };
