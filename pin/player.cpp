@@ -623,7 +623,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	//accelerometer normal mounting is 90 degrees in left-hand coordinates (1/4 turn counterclockwise)
 	m_fAccelerometer = m_ptable->m_tblAccelerometer;		// true if electronic Accelerometer enabled m_ptable->
 	m_AccelNormalMount = m_ptable->m_tblAccelNormalMount;	// true is normal mounting (left hand coordinates)
-	m_AccelAngle = (m_ptable->m_tblAccelAngle) * (float)(M_PI/180.0); // 0 rotated counterclockwise (GUI is lefthand coordinates)
+	m_AccelAngle = m_ptable->m_tblAccelAngle * (float)(M_PI/180.0); // 0 rotated counterclockwise (GUI is lefthand coordinates)
 	m_AccelAmp = m_ptable->m_tblAccelAmp;					// Accelerometer gain 
 	m_AccelAmpX = m_ptable->m_tblAccelAmpX;
 	m_AccelAmpY = m_ptable->m_tblAccelAmpY;
@@ -648,7 +648,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	InitRegValues();
 
 	// width, height, and colordepth are only defined if fullscreen is true.
-	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate);
+	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, !!m_fStereo3D);
 
 	if (m_fFullScreen)
 		{
@@ -724,7 +724,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 					   ptable->m_bottom, ptable->m_inclination, realFOV,
 					   ptable->m_rotation, ptable->m_scalex, ptable->m_scaley,
 					   ptable->m_xlatex, ptable->m_xlatey, ptable->m_layback,
-					   ptable->m_maxSeparation, ptable->m_ZPD, !!m_fStereo3D);
+					   ptable->m_maxSeparation, ptable->m_ZPD);
 
 	m_mainlevel.m = 0;
 	m_mainlevel.n = 0;
