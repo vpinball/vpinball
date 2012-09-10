@@ -130,7 +130,7 @@ public:
 	Pin3D();
 	~Pin3D();
 
-	HRESULT InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, const int refreshrate);
+	HRESULT InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, const int refreshrate, const bool stereo3D);
 	HRESULT Create3DDevice(const GUID * const pDeviceGUID);
 	HRESULT CreateZBuffer(const GUID * const pDeviceGUID);
 
@@ -140,7 +140,7 @@ public:
 
 	void InitBackGraphics();
 
-	void InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback, const float maxSeparation, const float ZPD, const bool Stereo3D);
+	void InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback, const float maxSeparation, const float ZPD);
 	void SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar);
 	void Identity();
 	void Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z);

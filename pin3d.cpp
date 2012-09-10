@@ -422,8 +422,9 @@ retryall:
     return pdds;// S_OK;
 }
 
-HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, const int refreshrate)
+HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, const int refreshrate, const bool stereo3D)
 {
+	m_Stereo3D = stereo3D;
     m_hwnd = hwnd;
 
 	const GUID* pDeviceGUID;
@@ -652,6 +653,7 @@ retry5:
 	}
 
 	if(m_Stereo3D) {
+		ZeroMemory(&ddsd,sizeof(ddsd));
 		ddsd.dwSize = sizeof(ddsd);
 		m_pddsBackBuffer->GetSurfaceDesc( &ddsd );
 
@@ -989,7 +991,7 @@ void Pin3D::DrawBackground()
 		}
 	}
 
-void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback, const float maxSeparation, const float ZPD, const bool Stereo3D)
+void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback, const float maxSeparation, const float ZPD)
 	{
 	/*RECT rc;
 	rc.left = 0;
@@ -1003,7 +1005,6 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	m_maxSeparation = maxSeparation;
 	m_ZPD = ZPD;
-	m_Stereo3D = Stereo3D;
 
 	m_scalex = scalex;
 	m_scaley = scaley;
