@@ -4,6 +4,11 @@
 // This file will be processed by the MIDL tool to
 // produce the type library (VBATest.tlb) and marshalling code.
 
+//http://support.microsoft.com/kb/241849 - too many methods in interface warning
+#if (__midl >= 501)
+	midl_pragma warning( disable: 2362 )
+#endif
+
 #include "dispid.h"
 
 #define DISPID_Name                     (0x80010000)
@@ -395,6 +400,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	object, uuid(AE85BCAC-1734-4e5c-81DA-075AD47A136E),
 	dual
 	]
+
 	interface ITable : IDispatch
 		{
 		//[propget, id(1)]
