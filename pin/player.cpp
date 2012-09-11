@@ -2680,12 +2680,13 @@ else
 	ZeroMemory( &ddsd, sizeof(ddsd) );
 	ddsd.dwSize = sizeof(ddsd);
 #ifdef ONLY3DUPD
-	m_pin3d.m_pdds3DBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL);
+	hr = m_pin3d.m_pdds3DBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL);
 #else
-	m_pin3d.m_pdds3DBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, NULL);
+	hr = m_pin3d.m_pdds3DBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, NULL);
 #endif
 
 	      unsigned int* const __restrict bufferfinal = (unsigned int*)ddsd.lpSurface;
+    if(!FAILED(hr) && (bufferfinal != NULL)) {
 	const unsigned int* const __restrict buffercopy = m_pin3d.m_pdds3Dbuffercopy;
 	const unsigned int* const __restrict bufferzcopy = m_pin3d.m_pdds3Dbufferzcopy;
 	     unsigned char* const __restrict mask = m_pin3d.m_pdds3Dbuffermask;
@@ -2827,7 +2828,7 @@ else
 	}
 	}
 #endif
-
+    }
 	m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
 
 	// Copy the entire back buffer to the front buffer.
