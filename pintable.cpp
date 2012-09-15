@@ -681,7 +681,7 @@ PinTable::PinTable()
 
 	m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
 	m_plungerFilter = fFalse;
-	m_PhysicsLoopTime = 0;		//Physics 10 millisecond loop max calculation time
+	m_PhysicsLoopTime = 0;	   //Physics 10 millisecond loop max calculation time
 
 	m_right = 0.0f;
 	m_bottom = 0.0f;
@@ -689,7 +689,7 @@ PinTable::PinTable()
 	m_rotation = 0;
 	m_layback = 0;
 
-	m_maxSeparation = 0.0075f;
+	m_maxSeparation = 0.01f;
 	m_ZPD = 0.125f; // 0.5f for X
 
 	m_glassheight = 210;
@@ -1179,7 +1179,7 @@ void PinTable::Init(VPinball *pvp)
 	m_layback = 0;
 	m_FOV = 45;
 
-	m_maxSeparation = 0.0075f;
+	m_maxSeparation = 0.01f;
 	m_ZPD = 0.125f; // 0.5f for X
 
 	SetDefaultView();
