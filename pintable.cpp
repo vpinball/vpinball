@@ -689,8 +689,8 @@ PinTable::PinTable()
 	m_rotation = 0;
 	m_layback = 0;
 
-	m_maxSeparation = 0.01f;
-	m_ZPD = 0.125f; // 0.5f for X
+	m_maxSeparation = 0.015f;
+	m_ZPD = 0.1f; // 0.5f for X?
 
 	m_glassheight = 210;
 	m_tableheight = 0;
@@ -1179,8 +1179,8 @@ void PinTable::Init(VPinball *pvp)
 	m_layback = 0;
 	m_FOV = 45;
 
-	m_maxSeparation = 0.01f;
-	m_ZPD = 0.125f; // 0.5f for X
+	m_maxSeparation = 0.015f;
+	m_ZPD = 0.1f; // 0.5f for X?
 
 	SetDefaultView();
 
