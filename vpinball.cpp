@@ -304,9 +304,9 @@ void VPinball::Init()
                                        m_hwnd,
                                        1);				// Create Status Line at the bottom
 
-	SendMessage(m_hwndStatusBar, SB_SETPARTS, 4, (long)foo);	// Initilise Status bar with 4 empty cells
+	SendMessage(m_hwndStatusBar, SB_SETPARTS, 4, (long)foo);	// Initialise Status bar with 4 empty cells
 
-	m_sb.Init(m_hwnd);									// initilize smartbrowser (Property bar on the right) - see propbrowser.cpp
+	m_sb.Init(m_hwnd);									// initialize smartbrowser (Property bar on the right) - see propbrowser.cpp
 
 	SendMessage(m_hwnd, WM_SIZE, 0, 0);					// Make our window relay itself out
 
@@ -314,7 +314,7 @@ void VPinball::Init()
 
 	InitRegValues();									// get default values from registry
 
-	InitVBA();											//Create APC VBA host
+	InitVBA();											// Create APC VBA host
 
 	m_pds.InitDirectSound(m_hwnd);						// init Direct Sound (in pinsound.cpp)
 	hr = m_pdd.InitDD();								// init direct draw (in pinimage.cpp)
@@ -339,10 +339,7 @@ void VPinball::Init()
 														// slintf_popup_console();
 														// see slintf.cpp
 	//slintf_popup_console();
-	//slintf("Debug output:\n");
-
-
-	
+	//slintf("Debug output:\n");	
 	}
 
 ///<summary>
@@ -1496,8 +1493,6 @@ void VPinball::LoadFile()
 //	hr = SetRegValue("RecentDir","LoadDir", REG_SZ, szInitialDir, strlen(szInitialDir));
 //<<<
 	LoadFileName(szFileName);
-
-
 	}
 
 void VPinball::LoadFileName(char *szFileName)
@@ -1576,7 +1571,6 @@ BOOL VPinball::FCanClose()
 		}
 
 	return fTrue;
-
 }
 
 
