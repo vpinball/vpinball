@@ -383,15 +383,15 @@ if(AA & y) // so always triggered if AA and y&1
 // the following/same code is basically copied 4 times to optimize for 16bit yaxis, 32bit yaxis, 16bit xaxis and 32bit xaxis (as the compiler doesn't figure that out automatically and i hate templates for such low-level code ;))
 //
 
-__forceinline void stereo_repro_16bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
+__forceinline void stereo_repro_16bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
 if(handle_borders) {
-    ZeroMemory(bufferfinal,                               (width*(ystart>>1))<<1);                        //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
-    ZeroMemory(bufferfinal+             (yend>>1) *width, (width*(((height-yend)>>1) + (ystart>>1)))<<1); //!! black out border pixels, replicate borders for one half instead??
-    ZeroMemory(bufferfinal+((height>>1)+(yend>>1))*width, (width* ((height-yend)>>1))<<1);                //!! black out border pixels, replicate borders for one half instead??
+    ZeroMemory(bufferfinal,                                (nwidth*(ystart>>1))<<1);                        //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
+    ZeroMemory(bufferfinal+             (yend>>1) *nwidth, (nwidth*(((height-yend)>>1) + (ystart>>1)))<<1); //!! black out border pixels, replicate borders for one half instead??
+    ZeroMemory(bufferfinal+((height>>1)+(yend>>1))*nwidth, (nwidth* ((height-yend)>>1))<<1);                //!! black out border pixels, replicate borders for one half instead??
 }
 
-const __m128i width128 = _mm_set1_epi32(width);
+const __m128i width128 = _mm_set1_epi32(owidth);
 
 const int incr = (AA^1)+1;
 
@@ -399,18 +399,18 @@ const int incr = (AA^1)+1;
 for(int yi = ystart; yi < yend; yi+=incr)  //!! interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
 {
 const unsigned int y = yi;
-const unsigned int offshalf0 = (y>>1)*width;
-const unsigned int offshalf1 = (height>>1)*width + offshalf0;
+const unsigned int offshalf0 = (y>>1)*nwidth;
+const unsigned int offshalf1 = (height>>1)*nwidth + offshalf0;
 const unsigned int ymms = y - maxSeparationU;
 const unsigned int ypms = y + maxSeparationU;
 
 const __m128i ymms128 = _mm_set1_epi32(ymms);
 const __m128i ypms128 = _mm_set1_epi32(ypms);
 
-const unsigned short* __restrict z = bufferzcopy + (y*width + xstart);
+const unsigned short* __restrict z = bufferzcopy + (y*owidth + xstart);
 __m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
 
-unsigned int xm = y*(width>>2) + (xstart>>2);
+unsigned int xm = y*(owidth>>2) + (xstart>>2);
 int x = xstart;
 for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
@@ -436,16 +436,16 @@ const unsigned int separationR2 = ((unsigned int*)&pR)[2];
 const unsigned int separationR3 = ((unsigned int*)&pR)[3];
 
 //!! opt. the set_epi32's here?!
-const __m128i right0 = unpack_565(_mm_set_epi32(buffercopy[separationR3]        ,buffercopy[separationR2]        ,buffercopy[separationR1]        ,buffercopy[separationR0]));
-const __m128i right1 = unpack_565(_mm_set_epi32(buffercopy[separationR3 - width],buffercopy[separationR2 - width],buffercopy[separationR1 - width],buffercopy[separationR0 - width]));
+const __m128i right0 = unpack_565(_mm_set_epi32(buffercopy[separationR3]         ,buffercopy[separationR2]         ,buffercopy[separationR1]         ,buffercopy[separationR0]));
+const __m128i right1 = unpack_565(_mm_set_epi32(buffercopy[separationR3 - owidth],buffercopy[separationR2 - owidth],buffercopy[separationR1 - owidth],buffercopy[separationR0 - owidth]));
 
 const unsigned int separationL0 = ((unsigned int*)&pL)[0];
 const unsigned int separationL1 = ((unsigned int*)&pL)[1];
 const unsigned int separationL2 = ((unsigned int*)&pL)[2];
 const unsigned int separationL3 = ((unsigned int*)&pL)[3];
 
-const __m128i left0 = unpack_565(_mm_set_epi32(buffercopy[separationL3]        ,buffercopy[separationL2]        ,buffercopy[separationL1]        ,buffercopy[separationL0]));
-const __m128i left1 = unpack_565(_mm_set_epi32(buffercopy[separationL3 + width],buffercopy[separationL2 + width],buffercopy[separationL1 + width],buffercopy[separationL0 + width]));
+const __m128i left0 = unpack_565(_mm_set_epi32(buffercopy[separationL3]         ,buffercopy[separationL2]         ,buffercopy[separationL1]         ,buffercopy[separationL0]));
+const __m128i left1 = unpack_565(_mm_set_epi32(buffercopy[separationL3 + owidth],buffercopy[separationL2 + owidth],buffercopy[separationL1 + owidth],buffercopy[separationL0 + owidth]));
 
 const __m128i right00 = _mm_mul_int(_mm_and_si128(right0,FF00FF128),pRs4_1);
 const __m128i right01 = _mm_mul_int(_mm_and_si128(right0,FF00128),  pRs4_1);
@@ -474,15 +474,15 @@ else
 }
 }
 
-__forceinline void stereo_repro_32bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128i& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
+__forceinline void stereo_repro_32bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128i& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
 if(handle_borders) {
-    ZeroMemory(bufferfinal,                               (width*(ystart>>1))<<2);                        //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
-    ZeroMemory(bufferfinal+             (yend>>1) *width, (width*(((height-yend)>>1) + (ystart>>1)))<<2); //!! black out border pixels, replicate borders for one half instead??
-    ZeroMemory(bufferfinal+((height>>1)+(yend>>1))*width, (width* ((height-yend)>>1))<<2);                //!! black out border pixels, replicate borders for one half instead??
+    ZeroMemory(bufferfinal,                                (nwidth*(ystart>>1))<<2);                        //!! black out border pixels, replicate borders for one half instead?? //!! opt. with SSE2?
+    ZeroMemory(bufferfinal+             (yend>>1) *nwidth, (nwidth*(((height-yend)>>1) + (ystart>>1)))<<2); //!! black out border pixels, replicate borders for one half instead??
+    ZeroMemory(bufferfinal+((height>>1)+(yend>>1))*nwidth, (nwidth* ((height-yend)>>1))<<2);                //!! black out border pixels, replicate borders for one half instead??
 }
 
-const __m128i width128 = _mm_set1_epi32(width);
+const __m128i width128 = _mm_set1_epi32(owidth);
 
 const int incr = (AA^1)+1;
 
@@ -490,18 +490,18 @@ const int incr = (AA^1)+1;
 for(int yi = ystart; yi < yend; yi+=incr)  //!! interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
 {
 const unsigned int y = yi;
-const unsigned int offshalf0 = (y>>1)*width;
-const unsigned int offshalf1 = (height>>1)*width + offshalf0;
+const unsigned int offshalf0 = (y>>1)*nwidth;
+const unsigned int offshalf1 = (height>>1)*nwidth + offshalf0;
 const unsigned int ymms = y - maxSeparationU;
 const unsigned int ypms = y + maxSeparationU;
 
 const __m128i ymms128 = _mm_set1_epi32(ymms);
 const __m128i ypms128 = _mm_set1_epi32(ypms);
 
-const unsigned int * __restrict z = bufferzcopy + (y*width + xstart);
+const unsigned int * __restrict z = bufferzcopy + (y*owidth + xstart);
 __m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
 
-unsigned int xm = y*(width>>2) + (xstart>>2);
+unsigned int xm = y*(owidth>>2) + (xstart>>2);
 int x = xstart;
 for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
@@ -527,16 +527,16 @@ const unsigned int separationR2 = ((unsigned int*)&pR)[2];
 const unsigned int separationR3 = ((unsigned int*)&pR)[3];
 
 //!! opt. the set_epi32's here?!
-const __m128i right0 =   _mm_set_epi32(buffercopy[separationR3]        ,buffercopy[separationR2]        ,buffercopy[separationR1]        ,buffercopy[separationR0]);
-const __m128i right1 =   _mm_set_epi32(buffercopy[separationR3 - width],buffercopy[separationR2 - width],buffercopy[separationR1 - width],buffercopy[separationR0 - width]);
+const __m128i right0 =   _mm_set_epi32(buffercopy[separationR3]         ,buffercopy[separationR2]         ,buffercopy[separationR1]         ,buffercopy[separationR0]);
+const __m128i right1 =   _mm_set_epi32(buffercopy[separationR3 - owidth],buffercopy[separationR2 - owidth],buffercopy[separationR1 - owidth],buffercopy[separationR0 - owidth]);
 
 const unsigned int separationL0 = ((unsigned int*)&pL)[0];
 const unsigned int separationL1 = ((unsigned int*)&pL)[1];
 const unsigned int separationL2 = ((unsigned int*)&pL)[2];
 const unsigned int separationL3 = ((unsigned int*)&pL)[3];
 
-const __m128i left0 =   _mm_set_epi32(buffercopy[separationL3]        ,buffercopy[separationL2]        ,buffercopy[separationL1]        ,buffercopy[separationL0]);
-const __m128i left1 =   _mm_set_epi32(buffercopy[separationL3 + width],buffercopy[separationL2 + width],buffercopy[separationL1 + width],buffercopy[separationL0 + width]);
+const __m128i left0 =   _mm_set_epi32(buffercopy[separationL3]         ,buffercopy[separationL2]         ,buffercopy[separationL1]         ,buffercopy[separationL0]);
+const __m128i left1 =   _mm_set_epi32(buffercopy[separationL3 + owidth],buffercopy[separationL2 + owidth],buffercopy[separationL1 + owidth],buffercopy[separationL0 + owidth]);
 
 const __m128i right00 = _mm_mul_int(_mm_and_si128(right0,FF00FF128),pRs4_1);
 const __m128i right01 = _mm_mul_int(_mm_and_si128(right0,FF00128),  pRs4_1);
@@ -565,25 +565,21 @@ else
 }
 }
 
-__forceinline void stereo_repro_16bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
+__forceinline void stereo_repro_16bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
-const __m128i width128 = _mm_set1_epi32(width);
-
 const int incr = (AA^1)+1;
 
 #pragma omp parallel for schedule(dynamic) //!! make configurable for update/non-update version
 for(int yi = ystart; yi < yend; yi+=incr)  //!! or interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
 {
 const unsigned int y = yi;
-const unsigned int offshalf1 = (y>>1)*width;
-const unsigned int offshalf0 = (height>>1)*width + offshalf1;
-const unsigned int ymms = y*width - maxSeparationU;
-const unsigned int ypms = y*width + maxSeparationU;
+const unsigned int offshalf1 = (y>>1)*nwidth;
+const unsigned int offshalf0 = (height>>1)*nwidth + offshalf1;
 
-const __m128i ymms128 = _mm_set1_epi32(ymms);
-const __m128i ypms128 = _mm_set1_epi32(ypms);
+const __m128i ymms128 = _mm_set1_epi32(y*owidth - maxSeparationU);
+const __m128i ypms128 = _mm_set1_epi32(y*owidth + maxSeparationU);
 
-const unsigned short* __restrict z = bufferzcopy + (y*width + xstart);
+const unsigned short* __restrict z = bufferzcopy + (y*owidth + xstart);
 __m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
 
 int x;
@@ -593,7 +589,7 @@ if(handle_borders) {
 } else
     x = xstart;
 
-unsigned int xm = y*(width>>2) + (xstart>>2);
+unsigned int xm = y*(owidth>>2) + (xstart>>2);
 for(; x < xend; x+=4,z+=4,++xm,x128=_mm_add_epi32(x128,t4444)) if(mask[xm] == 0)
 {
 mask[xm] = 1;
@@ -655,33 +651,29 @@ else
 }
 
 if(handle_borders)
-    for(; x < (int)width; ++x) //!! black out border pixels, replicate borders for one half instead??
+    for(; x < (int)nwidth; ++x) //!! black out border pixels, replicate borders for one half instead??
 	    bufferfinal[offshalf0 + x] = bufferfinal[offshalf1 + x] = 0;
 }
 }
 
-__forceinline void stereo_repro_32bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128i& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
+__forceinline void stereo_repro_32bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128i& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const unsigned int AA, unsigned char* __restrict const mask)
 {
-const __m128i width128 = _mm_set1_epi32(width);
-
 const int incr = (AA^1)+1;
 
 #pragma omp parallel for schedule(dynamic) //!! make configurable for update/non-update version
 for(int yi = ystart; yi < yend; yi+=incr)  //!! interleave left/right and calcs instead? (might be faster, too, due to smaller register usage?)
 {
 const unsigned int y = yi;
-const unsigned int offshalf1 = (y>>1)*width;
-const unsigned int offshalf0 = (height>>1)*width + offshalf1;
-const unsigned int ymms = y*width - maxSeparationU;
-const unsigned int ypms = y*width + maxSeparationU;
+const unsigned int offshalf1 = (y>>1)*nwidth;
+const unsigned int offshalf0 = (height>>1)*nwidth + offshalf1;
 
-const __m128i ymms128 = _mm_set1_epi32(ymms);
-const __m128i ypms128 = _mm_set1_epi32(ypms);
+const __m128i ymms128 = _mm_set1_epi32(y*owidth - maxSeparationU);
+const __m128i ypms128 = _mm_set1_epi32(y*owidth + maxSeparationU);
 
-const unsigned int * __restrict z = bufferzcopy + (y*width + xstart);
+const unsigned int * __restrict z = bufferzcopy + (y*owidth + xstart);
 __m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
 
-unsigned int xm = y*(width>>2) + (xstart>>2);
+unsigned int xm = y*(owidth>>2) + (xstart>>2);
 int x;
 if(handle_borders) {
     for(x = 0; x < xstart; ++x) //!! black out border pixels, replicate borders for one half instead??
@@ -750,7 +742,7 @@ else
 }
 
 if(handle_borders)
-    for(; x < (int)width; ++x) //!! black out border pixels, replicate borders for one half instead??
+    for(; x < (int)nwidth; ++x) //!! black out border pixels, replicate borders for one half instead??
 	    bufferfinal[offshalf0 + x] = bufferfinal[offshalf1 + x] = 0;
 }
 }
