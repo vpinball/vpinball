@@ -5,10 +5,6 @@
 |      (c) 1996-1998 MpegTV, LLC
 |      Author: Gilles Boccon-Gibod (gilles@mpegtv.com)
 |
-|      CVS Information:
-|      $Id$
-|      $Name:  $
-|
  ****************************************************************/
 
 #ifndef _WAVE_CODEC_H_

@@ -5,10 +5,6 @@
 |      (c) 1996-2001 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
 |
-|      CVS Information:
-|      $Id$
-|      $Name:  $
-|
  ****************************************************************/
 
 #ifndef _FEEDBACK_H_
