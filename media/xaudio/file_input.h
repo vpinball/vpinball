@@ -5,10 +5,14 @@
 |      (c) 1996-2000 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
 |
- ****************************************************************/
+|      CVS Information:
+|      $Id$
+|      $Name:  $
+|
+****************************************************************/
 
-#ifndef __FILE_INPUT_H__
-#define __FILE_INPUT_H__
+#ifndef _FILE_INPUT_H_
+#define _FILE_INPUT_H_
 
 /*----------------------------------------------------------------------
 |       includes
@@ -28,4 +32,4 @@ int XA_EXPORT file_input_module_register(XA_InputModule *module);
 }
 #endif
  
-#endif /* __FILE_INPUT_H__ */
+#endif /* _FILE_INPUT_H_ */

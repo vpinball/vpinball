@@ -6,6 +6,10 @@
 |      (c) 1996-2000 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
 |
+|      CVS Information:
+|      $Id$
+|      $Name:  $
+|
  ****************************************************************/
 
 #ifndef _CONTROL_H_
@@ -23,7 +27,7 @@
 +---------------------------------------------------------------------*/
 #define XA_ASYNC_API_MAJOR    3
 #define XA_ASYNC_API_MINOR    8
-#define XA_ASYNC_API_REVISION 0
+#define XA_ASYNC_API_REVISION 1
 #define XA_ASYNC_API_VERSION          \
  XA_VERSION_ID(XA_ASYNC_API_MAJOR,    \
                XA_ASYNC_API_MINOR,    \
@@ -210,7 +214,7 @@ typedef enum {
     XA_MSG_NOTIFY_FEEDBACK_TAG_EVENT,                        /* 159 */
 
     /* sentinel */
-    XA_MSG_LAST,                                             /* 160 */
+    XA_MSG_LAST                                              /* 160 */
 } XA_MessageCode;
 
 typedef enum { 
@@ -241,6 +245,12 @@ typedef enum {
     XA_OUTPUT_CHANNELS_MONO_RIGHT,
     XA_OUTPUT_CHANNELS_MONO_MIX 
 } XA_OutputChannels;
+
+typedef enum {
+    XA_OUTPUT_PORT_LINE      = 0x01,
+    XA_OUTPUT_PORT_SPEAKER   = 0x02,
+    XA_OUTPUT_PORT_HEADPHONE = 0x04
+} XA_OutputPorts;
 
 typedef struct {
     const char *name;
@@ -401,9 +411,7 @@ typedef struct {
 } XA_Message;
 
 typedef struct XA_Control XA_Control;
-
-typedef void (*XA_ControlProcedure)(XA_Control *control, void *args);
-typedef void (*XA_ControlMessageHandler)(void *client, const XA_Message *message);
+typedef struct XA_ControlArguments XA_ControlArguments;
 
 /*----------------------------------------------------------------------
 |       constants
@@ -423,24 +431,6 @@ typedef void (*XA_ControlMessageHandler)(void *client, const XA_Message *message
 extern "C" {
 #endif
 
-int  XA_EXPORT control_procedure_new(XA_Control **control, 
-                                     void *control_driver_args,
-                                     XA_ControlProcedure decoder_handler,
-                                     void *decoder_args,
-                                     XA_ControlProcedure feedback_handler,
-                                     void *feedback_handler_args);
-int  XA_EXPORT control_procedure_delete(XA_Control *control);
-int  XA_EXPORT control_procedure_set_priority(XA_Control *control, 
-                                              int priority);
-int  XA_EXPORT control_procedure_get_priority(XA_Control *control);
-int  XA_EXPORT control_set_message_handler(XA_Control *control,
-                                           XA_ControlMessageHandler handler,
-                                           void *client);
-int  XA_EXPORT control_message_to_bytes(const XA_Message *message, 
-                                        unsigned char *buffer,
-                                        unsigned long max_size);
-int  XA_EXPORT control_message_from_bytes(XA_Message *message, 
-                                          const unsigned char *buffer);
 int            control_message_send(XA_Control *control, int code, ...);
 int            control_feedback_send(XA_Control *control, int code, ...);
 int  XA_EXPORT control_message_send_N(XA_Control *control, int code);

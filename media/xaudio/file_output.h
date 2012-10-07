@@ -5,10 +5,14 @@
 |      (c) 1996-2000 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
 |
+|      CVS Information:
+|      $Id$
+|      $Name:  $
+|
  ****************************************************************/
 
-#ifndef __FILE_OUTPUT_H__
-#define __FILE_OUTPUT_H__
+#ifndef _FILE_OUTPUT_H_
+#define _FILE_OUTPUT_H_
 
 /*----------------------------------------------------------------------
 |       includes
@@ -28,4 +32,4 @@ int XA_EXPORT file_output_module_register(XA_OutputModule *module);
 }
 #endif
  
-#endif /* __FILE_OUTPUT_H__ */
+#endif /* _FILE_OUTPUT_H_ */

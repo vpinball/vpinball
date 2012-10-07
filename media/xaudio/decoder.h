@@ -5,6 +5,10 @@
 |      (c) 1996-2000 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
 |
+|      CVS Information:
+|      $Id$
+|      $Name:  $
+|
  ****************************************************************/
 
 #ifndef _DECODER_H_
@@ -85,6 +89,8 @@
 #define XA_DECODER_INPUT_QUERY_NAME_IS_GENERIC     0x01
 #define XA_DECODER_INPUT_QUERY_DEVICE_IS_DEFAULT   0x02
 
+#define XA_DECODER_INPUT_FILTER_QUERY_MODULE_NAME  0x01
+
 #define XA_DECODER_OUTPUT_QUERY_MODULE_NAME        0x01
 #define XA_DECODER_OUTPUT_QUERY_NB_DEVICES         0x02
 #define XA_DECODER_OUTPUT_QUERY_DEVICE_NAME        0x04
@@ -92,6 +98,8 @@
 #define XA_DECODER_OUTPUT_QUERY_NAME_IS_GENERIC    0x01
 #define XA_DECODER_OUTPUT_QUERY_DEVICE_IS_DEFAULT  0x02
 #define XA_DECODER_OUTPUT_QUERY_DEVICE_IS_SHAREABLE 0x04
+
+#define XA_DECODER_OUTPUT_FILTER_QUERY_MODULE_NAME 0x01
 
 #define XA_DECODER_CODEC_QUERY_MODULE_NAME         0x01
 #define XA_DECODER_CODEC_QUERY_NB_DEVICES          0x02
@@ -128,14 +136,6 @@
 #define XA_DECODER_EQUALIZER_NB_BANDS               32
 #define XA_DECODER_FEEDBACK_NB_BANDS                32
 
-#define XA_DECODER_STREAM_INFO_BITSTREAM_TYPE   "bitstream/type"
-#define XA_DECODER_STREAM_INFO_TRACK_TITLE      "track/title"
-#define XA_DECODER_STREAM_INFO_TRACK_ARTIST     "track/artist"
-#define XA_DECODER_STREAM_INFO_TRACK_ALBUM      "track/album"
-#define XA_DECODER_STREAM_INFO_TRACK_YEAR       "track/year"
-#define XA_DECODER_STREAM_INFO_TRACK_COMMENT    "track/comment"
-#define XA_DECODER_STREAM_INFO_GENRE            "track/genre"
-
 #define XA_DECODER_STREAM_PROPERTIES_CHANGED        0x01
 #define XA_DECODER_STREAM_PARAMETERS_CHANGED        0x02
 #define XA_DECODER_STREAM_MIME_TYPE_CHANGED         0x04
@@ -144,7 +144,7 @@
 |       version constants
 +---------------------------------------------------------------------*/
 #define XA_SYNC_API_MAJOR     4
-#define XA_SYNC_API_MINOR     3  
+#define XA_SYNC_API_MINOR     4  
 #define XA_SYNC_API_REVISION  0
 #define XA_SYNC_API_VERSION          \
  XA_VERSION_ID(XA_SYNC_API_MAJOR,    \
@@ -206,13 +206,20 @@ typedef struct {
                                const void *data, unsigned long size);
 } XA_InputModule;
 
+typedef struct {
+    unsigned long flags;
+    char          name[XA_DECODER_MAX_NAME_LENGTH];
+    char          description[XA_DECODER_MAX_DESCRIPTION_LENGTH];
+} XA_InputFilterModuleQuery;
+
 typedef struct XA_InputFilterNode XA_InputFilterNode;
 
 typedef struct XA_InputFilterInstance XA_InputFilterInstance;
 
 typedef struct {
     unsigned long api_version_id;
-    const char *(*filter_module_get_name)(void);
+    int  (*filter_module_query)(XA_InputFilterModuleQuery *query,
+		                        unsigned long query_mask);
     int  (*filter_new)(XA_InputFilterInstance **filter, int id,
                        XA_DecoderInfo *decoder);
     int  (*filter_delete)(XA_InputFilterInstance *filter);
@@ -320,13 +327,20 @@ typedef struct {
                                  const void *data, unsigned long size);
 } XA_OutputModule;
 
+typedef struct {
+    unsigned long flags;
+    char          name[XA_DECODER_MAX_NAME_LENGTH];
+    char          description[XA_DECODER_MAX_DESCRIPTION_LENGTH];
+} XA_OutputFilterModuleQuery;
+
 typedef struct XA_OutputFilterNode XA_OutputFilterNode;
 
 typedef struct XA_OutputFilterInstance XA_OutputFilterInstance;
 
 typedef struct {
     unsigned long api_version_id;
-    const char *(*filter_module_get_name)(void);
+    int  (*filter_module_query)(XA_OutputFilterModuleQuery *query,
+		                        unsigned long query_mask);
     int  (*filter_new)(XA_OutputFilterInstance **filter, int id,
                        XA_DecoderInfo *decoder);
     int  (*filter_delete)(XA_OutputFilterInstance *filter);

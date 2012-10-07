@@ -8,8 +8,8 @@
 |
  ****************************************************************/
 
-#ifndef __AAC_CODEC_H__
-#define __AAC_CODEC_H__
+#ifndef _AAC_CODEC_H_
+#define _AAC_CODEC_H_
 
 /*----------------------------------------------------------------------
 |       prototypes
@@ -25,4 +25,4 @@ int XA_EXPORT aac_codec_module_register(XA_CodecModule *module);
 #endif
 
 
-#endif /* __AAC_CODEC_H__ */
+#endif /* _AAC_CODEC_H_ */

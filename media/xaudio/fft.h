@@ -6,10 +6,14 @@
 |      (c) 1996-2000 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
 |
+|      CVS Information:
+|      $Id$
+|      $Name:  $
+|
  ****************************************************************/
 
-#ifndef __FFT_H__
-#define __FFT_H__
+#ifndef _FFT_H_
+#define _FFT_H_
 
 /*----------------------------------------------------------------------
 |       includes
@@ -50,4 +54,4 @@ int XA_EXPORT fft_analyzer_interpolate_samples_unsigned(const unsigned char *src
 #endif
 
 
-#endif /* __FFT_H__ */
+#endif /* _FFT_H_ */
