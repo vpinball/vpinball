@@ -2,15 +2,19 @@
 |
 |      XAudio Player. Feddback API
 |
-|      (c) 1996-2000 Xaudio Corporation
+|      (c) 1996-2001 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
+|
+|      CVS Information:
+|      $Id$
+|      $Name:  $
 |
  ****************************************************************/
 
-#ifndef __FEEDBACK_H__
-#define __FEEDBACK_H__
+#ifndef _FEEDBACK_H_
+#define _FEEDBACK_H_
 
-/*----------------------------------------------------------------------
+ /*----------------------------------------------------------------------
 |       includes
 +---------------------------------------------------------------------*/
 #include "xaudio.h"
@@ -94,4 +98,4 @@ typedef struct {
     int  (*feedback_handler_event)(XA_FeedbackHandlerInstance *feedback_handler, XA_AudioEvent *event);
 } XA_FeedbackHandlerModule;
 
-#endif /* __FEEDBACK_H__ */
+#endif /* _FEEDBACK_H_ */

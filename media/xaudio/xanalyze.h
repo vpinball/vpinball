@@ -7,8 +7,8 @@
 |
  ****************************************************************/
 
-#ifndef __XANALYSE_H__
-#define __XANALYZE_H__
+#ifndef _XANALYSE_H_
+#define _XANALYZE_H_
 
 /*----------------------------------------------------------------------
 |       macros
@@ -142,5 +142,5 @@ int XA_EXPORT xanalyzer_process_file(XA_Analyzer *analyzer,
 }
 #endif           
 
-#endif /* __XANALYZE_H__ */
+#endif /* _XANALYZE_H_ */
 

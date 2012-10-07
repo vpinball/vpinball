@@ -5,10 +5,14 @@
 |      (c) 1996-1998 MpegTV, LLC
 |      Author: Gilles Boccon-Gibod (gilles@mpegtv.com)
 |
+|      CVS Information:
+|      $Id$
+|      $Name:  $
+|
  ****************************************************************/
 
-#ifndef __WAVE_CODEC_H__
-#define __WAVE_CODEC_H__
+#ifndef _WAVE_CODEC_H_
+#define _WAVE_CODEC_H_
 
 /*----------------------------------------------------------------------
 |       prototypes
@@ -24,4 +28,4 @@ int XA_EXPORT wave_codec_module_register(XA_CodecModule *module);
 #endif
 
 
-#endif /* __WAVE_CODEC_H__ */
+#endif /* _WAVE_CODEC_H_ */

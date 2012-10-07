@@ -5,10 +5,14 @@
 |      (c) 1996-2000 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
 |
+|      CVS Information:
+|      $Id$
+|      $Name:  $
+|
  ****************************************************************/
 
-#ifndef __MPEG_CODEC_H__
-#define __MPEG_CODEC_H__
+#ifndef _MPEG_CODEC_H_
+#define _MPEG_CODEC_H_
 
 /*----------------------------------------------------------------------
 |       constants
@@ -31,4 +35,4 @@ int XA_EXPORT mpeg_codec_module_register(XA_CodecModule *module);
 #endif
 
 
-#endif /* __MPEG_CODEC_H__ */
+#endif /* _MPEG_CODEC_H_ */

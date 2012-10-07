@@ -6,16 +6,21 @@
 |      (c) 1996-2000 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
 |
- ****************************************************************/
+|      CVS Information:
+|      $Id$
+|      $Name:  $
+|
+****************************************************************/
 
-#ifndef __PLAYER_H__
-#define __PLAYER_H__
+#ifndef _PLAYER_H_
+#define _PLAYER_H_
 
 /*----------------------------------------------------------------------
 |       includes
 +---------------------------------------------------------------------*/
 #include "xaudio.h"
 #include "control.h"
+#include "decoder.h"
 
 /*----------------------------------------------------------------------
 |       constants
@@ -55,6 +60,66 @@
 
 #define XA_OUTPUT_VOLUME_IGNORE_FIELD                   255
 
+#define XA_PLAYER_ARGUMENT_NAME__MODULE_LOADER_HOOK \
+        "module-loader-hook"
+#define XA_PLAYER_MODULE_LOADER_HOOK_CONTINUE           0
+#define XA_PLAYER_MODULE_LOADER_HOOK_SYMBOL_FOUND       1
+
+#define XA_PLAYER_ARGUMENT_NAME__INIT_HOOK \
+	    "init-hook"
+
+/*----------------------------------------------------------------------
+|       types
++---------------------------------------------------------------------*/
+typedef struct {
+    const char   *name;
+    const void   *data;
+    unsigned long size;
+} XA_PlayerArgument;
+
+typedef struct {
+    unsigned int             nb_arguments;
+    const XA_PlayerArgument *arguments;
+} XA_PlayerArguments;
+
+typedef enum {
+    XA_PLAYER_MODULE_LOADER_HOOK_ACTION_LOAD_INPUT_MODULE,
+    XA_PLAYER_MODULE_LOADER_HOOK_ACTION_LOAD_INPUT_FILTER_MODULE,
+    XA_PLAYER_MODULE_LOADER_HOOK_ACTION_LOAD_OUTPUT_MODULE,
+    XA_PLAYER_MODULE_LOADER_HOOK_ACTION_LOAD_OUTPUT_FILTER_MODULE,
+    XA_PLAYER_MODULE_LOADER_HOOK_ACTION_LOAD_CODEC_MODULE
+} XA_PlayerModuleLoaderHookAction;
+
+typedef enum {
+	XA_PLAYER_MODULE_LOADER_HOOK_CONTEXT_PRE_LOAD,
+	XA_PLAYER_MODULE_LOADER_HOOK_CONTEXT_POST_LOAD
+} XA_PlayerModuleLoaderHookContext;
+
+typedef struct XA_PlayerModuleLoaderHookInstance XA_PlayerModuleLoaderHookInstance;
+typedef int XA_PlayerModuleLoaderHookFunction(
+									XA_PlayerModuleLoaderHookInstance *instance,
+                                    XA_PlayerModuleLoaderHookAction action,
+									XA_PlayerModuleLoaderHookContext context,
+                                    XA_Control *control, 
+                                    XA_DecoderInfo *decoder,
+                                    void **symbol, 
+                                    const char *library_name, 
+                                    const char *symbol_name);
+typedef struct {
+    XA_PlayerModuleLoaderHookInstance *instance;
+    XA_PlayerModuleLoaderHookFunction *function;
+} XA_PlayerModuleLoaderHook;
+
+typedef struct XA_PlayerInitHookInstance XA_PlayerInitHookInstance;
+typedef int XA_PlayerInitHookFunction(XA_PlayerInitHookInstance *instance,
+									  XA_Control *control,
+									  XA_DecoderInfo *decoder);
+												                
+typedef struct {
+	XA_PlayerInitHookInstance *instance;
+	XA_PlayerInitHookFunction *function;
+} XA_PlayerInitHook;
+
 /*----------------------------------------------------------------------
 |       prototypes
 +---------------------------------------------------------------------*/
@@ -62,8 +127,11 @@
 extern "C" {
 #endif
 
-extern void player_procedure(XA_Control *control, void *args);
-extern int XA_EXPORT player_new(XA_Control **control, void *args);
+extern int XA_EXPORT player_new(XA_Control **control, 
+								const XA_ControlArguments *control_args);
+extern int XA_EXPORT player_new_ext(XA_Control **control, 
+									const XA_ControlArguments *control_args, 
+									const XA_PlayerArguments *player_args);
 extern int XA_EXPORT player_delete(XA_Control *control);
 extern int XA_EXPORT player_set_priority(XA_Control *control, int priority);
 extern int XA_EXPORT player_get_priority(XA_Control *control);
@@ -203,7 +271,8 @@ public:
         return XA_CMSEND(control, XA_MSG_COMMAND_FEEDBACK_HANDLER_STOP);
     }
     int FeedbackHandlerSendMessage(unsigned short type, void *data, unsigned long size) {
-        return XA_CMSEND(control, XA_MSG_COMMAND_FEEDBACK_HANDLER_PAUSE);
+        return XA_CMSEND(control, XA_MSG_COMMAND_FEEDBACK_HANDLER_SEND_MESSAGE,
+                         type, data, size);
     }
     int CodecSendMessage(unsigned short type, void *data, unsigned long size) {
         return XA_CMSEND(control, XA_MSG_COMMAND_CODEC_SEND_MESSAGE,
@@ -362,9 +431,15 @@ public:
     int GetDebugLevel() {
         return XA_CMSEND(control, XA_MSG_GET_DEBUG_LEVEL);
     }
-    virtual int Run(void *args) {
+    virtual int Run(XA_ControlArguments *control_args) {
         int status;
-        status = player_new(&control, args);
+        status = player_new(&control, control_args);
+        if (status) control = (XA_Control *)0;
+        return status;
+    }
+    virtual int Run(XA_ControlArguments *control_args, XA_PlayerArguments *player_args) {
+        int status;
+        status = player_new_ext(&control, control_args, player_args);
         if (status) control = (XA_Control *)0;
         return status;
     }
@@ -688,4 +763,4 @@ protected:
 
 #endif /* __cplusplus */
 
-#endif /* __PLAYER_H__ */
+#endif /* _PLAYER_H_ */

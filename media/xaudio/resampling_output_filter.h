@@ -1,20 +1,15 @@
 /*****************************************************************
 |
-|      MPEG audio decoder. Audio Driver Output Module
+|      resampling_output_filter 
 |
-|      (c) 1996-2000 Xaudio Corporation
-|      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
-|
-|      CVS Information:
-|      $Id$
-|      $Name:  $
+|      (c) 2000 Xaudio Corporation
 |
  ****************************************************************/
 
-#ifndef _AUDIO_OUTPUT_H_
-#define _AUDIO_OUTPUT_H_
+#ifndef _RESAMPLING_OUTPUT_FILTER_H_
+#define _RESAMPLING_OUTPUT_FILTER_H_
 
-/*----------------------------------------------------------------------
+ /*----------------------------------------------------------------------
 |       includes
 +---------------------------------------------------------------------*/
 #include "decoder.h"
@@ -22,7 +17,10 @@
 /*----------------------------------------------------------------------
 |       constants
 +---------------------------------------------------------------------*/
-#define XA_DSOUND_PITCH_ENVIRONMENT "OUTPUT.DIRECTSOUND.PITCH"
+#define XA_RESAMPLING_OUTPUT_FILTER_RATE_ENVIRONMENT "OUTPUT.RESAMPLER.RATE"
+#define XA_RESAMPLING_OUTPUT_FILTER_MODE_ENVIRONMENT "OUTPUT.RESAMPLER.MODE"
+#define XA_RESAMPLING_FILTER_MODE_CHANGE_OUTPUT_RATE  0
+#define XA_RESAMPLING_FILTER_MODE_KEEP_OUTPUT_RATE    1
 
 /*----------------------------------------------------------------------
 |       prototypes
@@ -32,14 +30,11 @@ extern "C"
 {
 #endif
 
-int XA_EXPORT audio_output_module_register(XA_OutputModule *module);
-#ifdef WIN32
-int XA_EXPORT dsound_output_module_register(XA_OutputModule *module);
-#endif /* WIN32 */
+int XA_EXPORT resampling_output_filter_module_register(XA_OutputFilterModule *module);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _AUDIO_OUTPUT_H_ */
+#endif /* _RESAMPLING_OUTPUT_FILTER_H_ */
 

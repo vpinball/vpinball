@@ -5,10 +5,14 @@
 |      (c) 1996-2000 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
 |
+|      CVS Information:
+|      $Id$
+|      $Name:  $
+|
  ****************************************************************/
 
-#ifndef __PROPERTIES_H__
-#define __PROPERTIES_H__
+#ifndef _PROPERTIES_H_
+#define _PROPERTIES_H_
 
 /*----------------------------------------------------------------------
 |       includes
@@ -86,7 +90,7 @@ int XA_EXPORT property_list_unmarshal(XA_PropertyList *list,
 }
 #endif
 
-#endif /* __PROPERTIES_H__ */
+#endif /* _PROPERTIES_H_ */
 
 
 

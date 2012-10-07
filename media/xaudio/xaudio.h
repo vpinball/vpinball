@@ -5,10 +5,14 @@
 |      (c) 1996-2000 Xaudio Corporation
 |      Author: Gilles Boccon-Gibod (gilles@xaudio.com)
 |
+|      CVS Information:
+|      $Id$
+|      $Name:  $
+|
  ****************************************************************/
 
-#ifndef __XAUDIO_H__
-#define __XAUDIO_H__
+#ifndef _XAUDIO_H_
+#define _XAUDIO_H_
 
 /*----------------------------------------------------------------------
 |       types
@@ -69,7 +73,7 @@ if ((_client) && (_client)->notify_private_data)                              \
 |       macros
 +---------------------------------------------------------------------*/
 #if defined(WIN32) || defined(_WIN32) || defined(_WIN32_WCE)
-#if defined(UNDER_CE)
+#if UNDER_CE
 #define XA_EXPORT __cdecl
 #define XA_IMPORT __cdecl
 #else
@@ -93,7 +97,7 @@ if ((_client) && (_client)->notify_private_data)                              \
 +---------------------------------------------------------------------*/
 #define XA_IMPLEMENTATION_MAJOR     3
 #define XA_IMPLEMENTATION_MINOR     2  
-#define XA_IMPLEMENTATION_REVISION  8
+#define XA_IMPLEMENTATION_REVISION  9
 #define XA_IMPLEMENTATION_VERSION          \
  XA_VERSION_ID(XA_IMPLEMENTATION_MAJOR,    \
                XA_IMPLEMENTATION_MINOR,    \
@@ -229,6 +233,6 @@ private:
 
 #endif /* __cplusplus */
 
-#endif /* __XAUDIO_H__ */
+#endif /* _XAUDIO_H_ */
 
 
