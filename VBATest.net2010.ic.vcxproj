@@ -853,7 +853,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <Optimization>MaxSpeedHighLevel</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -879,10 +879,10 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <InterproceduralOptimization>SingleFile</InterproceduralOptimization>
-      <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
+      <OptimizeForWindowsApplication>false</OptimizeForWindowsApplication>
       <FlushDenormalResultsToZero>true</FlushDenormalResultsToZero>
       <UnmaskFloatingPointExceptions>NoTraps</UnmaskFloatingPointExceptions>
-      <UseProcessorExtensions>SSE3</UseProcessorExtensions>
+      <UseProcessorExtensions>None</UseProcessorExtensions>
       <RecognizeRestrictKeyword>true</RecognizeRestrictKeyword>
     </ClCompile>
     <ResourceCompile>
