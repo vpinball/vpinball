@@ -192,7 +192,7 @@ public:
 
 	//these will be deleted:
 	Vertex3D rgv3DTop[Max_Primitive_Sides]; // with transformation
-	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of aech point could be a triangle (*3) and for both sides because of culling (*2)
+	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of each point could be a triangle (*3) and for both sides because of culling (*2)
 	Vertex3D rgv3DBottom[Max_Primitive_Sides];
 	WORD wBottomIndices[Max_Primitive_Sides*6];
 	
@@ -215,8 +215,8 @@ public:
 		// 14 to 17				: 4				: bottom Sides (With Normals to the side)
 	// These Vertices will always be complete. even if the user does not want to draw them (sides disabled or top/bottom disabled).
 	// maybe they are not updated anymore, but they will be there.
-	Vertex3D rgv3DOriginal[Max_Primitive_Sides*3+2];
-	Vertex3D rgv3DAll[Max_Primitive_Sides*3+2];
+	Vertex3D rgv3DOriginal[Max_Primitive_Sides*4+2];
+	Vertex3D rgv3DAll[Max_Primitive_Sides*4+2];
 	
 	// So how many indices are needed?
 		// 3 per Triangle top - we have m_sides triangles -> 0, 1, 2, 0, 2, 3, 0, 3, 4, ...

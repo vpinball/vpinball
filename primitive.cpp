@@ -53,7 +53,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 	hr = GetRegInt("DefaultProps\\Primitive", "SideVisible", &iTmp);
 	m_d.m_SideVisible = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
 
-	// Draw Texztures inside
+	// Draw Textures inside
 	hr = GetRegInt("DefaultProps\\Primitive", "DrawTexturesInside", &iTmp);
 	m_d.m_DrawTexturesInside = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
 	// Smooth Side Normals
@@ -90,7 +90,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 	m_d.m_vAxisScaleZ.z = 1.0f;
 
 
-	// Rotation and Transposistion
+	// Rotation and Transposition
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra0", &fTmp);
 	m_d.m_aRotAndTra[0] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra1", &fTmp);
@@ -558,7 +558,7 @@ void Primitive::ApplyMatrixToVertices()
 		Vertex3D * const tempVert = &rgv3DAll[i];
 		tempVert->nx = 0;
 		tempVert->ny = 0;
-		tempVert->nz = -1;
+		tempVert->nz = -1.f;
 		tempVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(tempVert->x+0.5f);
 		tempVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(tempVert->x+0.5f);
 		tempVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(tempVert->y+0.5f);
@@ -580,7 +580,6 @@ void Primitive::SortVertices()
 	// Other algorithms are better at presorted things, but i will habe some reverse sorted elements between the presorted here. 
 	// That's why insertion or bubble sort does not work fast here...
 	// input: an array a of length n with array elements numbered 0 to n ? 1
-
 	
 	const float zMultiplicator = cosf(ANGTORAD(m_ptable->m_inclination));
 	const float yMultiplicator = sinf(ANGTORAD(m_ptable->m_inclination));
@@ -775,7 +774,8 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		maxtv = (float)pin->m_height / (float)ddsd.dwHeight;
 	}
 	else
-		maxtu = maxtv = 1;
+		maxtu = maxtv = 1.f;
+
 	CalculateRealTimeOriginal();
 	CalculateRealTime();
 
