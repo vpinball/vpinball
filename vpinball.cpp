@@ -3844,6 +3844,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							HWND hwndStereo3D = GetDlgItem(hwndDlg, IDC_3D_STEREO);
 							int stereo3D = SendMessage(hwndStereo3D, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "Stereo3D", REG_DWORD, &stereo3D, 4);
+							SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &stereo3D, 4);
 
 							HWND hwndStereo3DAA = GetDlgItem(hwndDlg, IDC_3D_STEREO_AA);
 							int stereo3DAA = SendMessage(hwndStereo3DAA, BM_GETCHECK, 0, 0);
