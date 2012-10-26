@@ -119,7 +119,15 @@ Player::Player()
 		{
 		stereo3D = fFalse; // The default
 		}
-	m_fStereo3Denabled = m_fStereo3D = (stereo3D == 1);
+	m_fStereo3D = (stereo3D == 1);
+
+	int stereo3Denabled;
+	hr = GetRegInt("Player", "Stereo3DEnabled", &stereo3Denabled);
+	if (hr != S_OK)
+		{
+		stereo3Denabled = m_fStereo3D; // The default
+		}
+	m_fStereo3Denabled = (stereo3Denabled == 1);
 
 	int stereo3DAA;
 	hr = GetRegInt("Player", "Stereo3DAntialias", &stereo3DAA);
@@ -2137,6 +2145,7 @@ void Player::Render()
 
 		if(Pressed(PININ_ENABLE3D)) {
 			m_fStereo3Denabled = !m_fStereo3Denabled;
+			SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
 			m_fCleanBlt = fFalse;
 		}
 
