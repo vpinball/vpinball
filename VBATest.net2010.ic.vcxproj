@@ -72,7 +72,7 @@
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
-    <InterproceduralOptimization>false</InterproceduralOptimization>
+    <InterproceduralOptimization>true</InterproceduralOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -853,7 +853,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>MaxSpeedHighLevel</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -884,6 +884,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <UnmaskFloatingPointExceptions>NoTraps</UnmaskFloatingPointExceptions>
       <UseProcessorExtensions>None</UseProcessorExtensions>
       <RecognizeRestrictKeyword>true</RecognizeRestrictKeyword>
+      <CheckUndimensionedArrays>true</CheckUndimensionedArrays>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
