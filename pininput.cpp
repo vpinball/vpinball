@@ -485,7 +485,7 @@ void PinInput::UnInit()
 							//1==run,  0 < shutting down, 2==terminated
 	//InputControlRun = -100;	// terminate control thread, force after 500mS
 	
-	//while (++InputControlRun < 0) SLEEP(5);		// set to exit AND WAIT
+	//while (++InputControlRun < 0) Sleep(5);		// set to exit AND WAIT
 
 	//if (!InputControlRun)	//0 == stalled, 1==run,  0 < shutting down, 2==terminated
 		//{exit (-1500);}
