@@ -113,6 +113,14 @@ Player::Player()
 		}
 	m_fBallAntialias = (antialias == 1);
 
+	int vsync;
+	hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
+	if (hr != S_OK)
+		{
+		vsync = fFalse; // The default
+		}
+	m_fVSync = (vsync == 1);
+
 	int stereo3D;
 	hr = GetRegInt("Player", "Stereo3D", &stereo3D);
 	if (hr != S_OK)
@@ -1984,7 +1992,7 @@ void Player::Render()
 
 	if( sync ) // Spin the CPU to prevent from running graphics faster than necessary
 	{
-		while( usec() - sync < 16666 ) { ; }
+		while( usec() - sync < 16666 ) { ; } // ~60 fps
 	}
 	sync = usec();
 #endif
@@ -2038,7 +2046,7 @@ void Player::Render()
 	m_timeCur = (int)((m_RealTimeClock - m_liStartTime)/1000);
 
 #ifdef FPS
-	if (m_fShowFPS)
+	//if (m_fShowFPS)
 		{
 		m_cframes++;
 		if ((m_timeCur - m_lastfpstime) > 1000)
@@ -2550,7 +2558,7 @@ if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (
 		 g_pplayer->m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
 		// Draw with an offset to shake the display.
-		m_pin3d.Flip((int)m_NudgeBackX, (int)m_NudgeBackY);
+		m_pin3d.Flip((int)m_NudgeBackX, (int)m_NudgeBackY, (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR));
 		m_fCleanBlt = fFalse;
 	}
 	else
@@ -2587,7 +2595,7 @@ if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (
 		else
 		{
 			// Copy the entire back buffer to the front buffer.
-			m_pin3d.Flip(0, 0);
+			m_pin3d.Flip(0, 0, (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR));
 
 			// Flag that we only need to update regions from now on...
 			m_fCleanBlt = fTrue;
@@ -2844,7 +2852,7 @@ else
 	} else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; // 'handle' fails to lock buffers
 
 	// Copy the entire back buffer to the front buffer.
-	m_pin3d.Flip(0, 0);
+	m_pin3d.Flip(0, 0, (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR));
 
 	// Flag that we only need to update regions from now on...
 	m_fCleanBlt = fTrue;
@@ -3851,7 +3859,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_PAINT:
-			g_pplayer->m_pin3d.Flip(0,0);
+			g_pplayer->m_pin3d.Flip(0,0,0);
 			break;
 
 		case WM_KEYDOWN:

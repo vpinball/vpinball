@@ -422,7 +422,7 @@ retryall:
     return pdds;// S_OK;
 }
 
-HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, const int refreshrate, const bool stereo3D)
+HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const bool stereo3D)
 {
 	m_Stereo3D = stereo3D;
     m_hwnd = hwnd;
@@ -464,6 +464,12 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 		{
 		//hr = m_pDD->SetCooperativeLevel(hwnd, DDSCL_ALLOWREBOOT|DDSCL_EXCLUSIVE|DDSCL_FULLSCREEN|DDSCL_FPUSETUP/*DDSCL_FPUPRESERVE*/);
 		hr = m_pDD->SetDisplayMode(screenwidth, screenheight, colordepth, refreshrate, 0);
+		DDSURFACEDESC2 ddsd;
+		ddsd.dwSize = sizeof(ddsd);
+		hr = m_pDD->GetDisplayMode(&ddsd);
+		refreshrate = ddsd.dwRefreshRate;
+		if(refreshrate <= 0)
+			refreshrate = 60; // meh, hardcode to 60Hz if fail
 		}
 
     // Create the primary surface
@@ -1496,13 +1502,13 @@ void Pin3D::SetUpdatePos(const int left, const int top)
 	{
 	m_rcUpdate.left = left;
 	m_rcUpdate.top = top;
-	m_rcUpdate.right = left+m_dwRenderWidth;
-	m_rcUpdate.bottom = top+m_dwRenderHeight;
+	m_rcUpdate.right = left + m_dwRenderWidth;
+	m_rcUpdate.bottom = top + m_dwRenderHeight;
 	}
 
-void Pin3D::Flip(const int offsetx, const int offsety)
+void Pin3D::Flip(const int offsetx, const int offsety, const BOOL vsync)
 	{
-	RECT	rcNew;
+	RECT rcNew;
 	// Set the region to the entire screen dimensions.
 	rcNew.left = m_rcUpdate.left + offsetx;
 	rcNew.right = m_rcUpdate.right + offsetx;
@@ -1513,7 +1519,8 @@ void Pin3D::Flip(const int offsetx, const int offsety)
     DDBLTFX ddbltfx;
 	ZeroMemory(&ddbltfx, sizeof(DDBLTFX));
 	ddbltfx.dwSize = sizeof(DDBLTFX);
-	//ddbltfx.dwDDFX = DDBLTFX_NOTEARING;
+	//if(g_pplayer->m_fVSync && vsync)
+	//    ddbltfx.dwDDFX = DDBLTFX_NOTEARING; // deprecated for win2000 and above?!
 
 	// Check if we are mirrored.
 	if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
@@ -1522,12 +1529,15 @@ void Pin3D::Flip(const int offsetx, const int offsety)
 		ddbltfx.dwDDFX |= DDBLTFX_MIRRORUPDOWN;
 	}
 
+	if(g_pplayer->m_fVSync && vsync)
+	    g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0); // deprecated for win vista and above?!
+
 	// Copy the back buffer to the front buffer.
 	HRESULT hr = m_pddsFrontBuffer->Blt(&rcNew, 
 #ifdef VP3D
 		(g_pplayer->m_fStereo3D && g_pplayer->m_fStereo3Denabled && (m_maxSeparation > 0.0f) && (m_maxSeparation < 1.0f) && (m_ZPD > 0.0f) && (m_ZPD < 1.0f) && m_pdds3Dbuffercopy && m_pdds3DBackBuffer) ? m_pdds3DBackBuffer : 
 #endif
-		m_pddsBackBuffer, NULL, DDBLT_DDFX, &ddbltfx);
+		m_pddsBackBuffer, NULL, ddbltfx.dwDDFX ? DDBLT_DDFX : 0, &ddbltfx);
 
 	if (hr == DDERR_SURFACELOST)
 		{

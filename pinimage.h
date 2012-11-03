@@ -104,7 +104,7 @@ public:
 	BOOL m_fUseD3DBlit;
 
 	// variables needed to initialize ddraw.dll
-	HINSTANCE m_DDraw; 
+	HINSTANCE m_DDraw;
 	DDCreateFunction m_DDCreate;
 };
 

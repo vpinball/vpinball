@@ -559,6 +559,7 @@
 #define IDC_3D_STEREO                   542
 #define IDC_3D_STEREO_AA                543
 #define IDC_3D_STEREO_Y                 544
+#define IDC_ADAPTIVE_VSYNC              545
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768

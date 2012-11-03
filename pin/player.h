@@ -215,6 +215,8 @@ private:
 	BOOL m_fStereo3DY;
 
 public:
+	BOOL m_fVSync;
+
 	BOOL m_fStereo3D;
 	BOOL m_fStereo3Denabled;
 

@@ -522,10 +522,11 @@ BEGIN
     CONTROL         "Enable 3D Stereo",IDC_3D_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,249,19,77,10
     CONTROL         "Antialias 3D",IDC_3D_STEREO_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,249,32,77,10
     CONTROL         "Use Y-Axis for 3D",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,249,45,77,10
-    CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,81,114,8
-    CONTROL         "Check &Blit Status (for Win 98 and 2K)",IDC_CHECKBLIT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,117,133,10
-    CONTROL         "Reorder Playfield Objects (for ATI)",216,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,131,145,8
+    CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,76,114,8
+    CONTROL         "Adaptive VSync (for WinXP and below only?)",IDC_ADAPTIVE_VSYNC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,105,155,8
+    CONTROL         "Check &Blit Status (for Win98 and 2K)",IDC_CHECKBLIT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,118,133,10
+    CONTROL         "Reorder Playfield Objects (for ATI/AMD gfx)",216,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,132,155,8
     CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,157,28,10
     CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,168,32,10
     CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,179,32,10
@@ -536,8 +537,8 @@ BEGIN
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,237
     GROUPBOX        "Details",IDC_STATIC,154,7,85,55
     GROUPBOX        "3D Stereo",IDC_STATIC,242,7,84,55
-    GROUPBOX        "Performance",IDC_STATIC,154,68,172,28
-    GROUPBOX        "Troubleshooting",IDC_STATIC,154,103,172,141
+    GROUPBOX        "Performance",IDC_STATIC,154,63,172,28
+    GROUPBOX        "Troubleshooting",IDC_STATIC,154,93,172,141
     GROUPBOX        "Max Texture Dimension (for Chipset Graphics)*",IDC_STATIC,159,146,162,59
     LTEXT           "*Restart Visual Pinball.",IDC_STATIC,244,159,72,8
     LTEXT           "Only works for Images",IDC_STATIC,247,168,70,8
