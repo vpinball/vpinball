@@ -2327,7 +2327,6 @@ STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 {
-
 	if (!g_pplayer || !m_d.m_fDroppable || !m_d.m_fInner)
 		{
 		return E_FAIL;
@@ -2344,24 +2343,6 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 		for (int i=0;i<m_vhoDrop.Size();i++)
 		{
 			m_vhoDrop.ElementAt(i)->m_fEnabled = !m_fIsDropped && m_d.m_fCollidable; //disable hit on enities composing the object 
-		}
-
-		// Check if this surface has a user value.
-		const int index = ((int) ((m_d.m_heighttop * 100.0f) - 111.0f + 0.25f));
-		if ( (index >= 0) && (index < LIGHTHACK_MAX) )
-		{
-			// The same light is getting multiple updates per frame.
-			// In the case of player lights, the light is on... then immediately turned off.
-			// I don't know why this behavior happens; but it's causing problems.
-			
-			if ( (m_fIsDropped) &&
-				 (!g_pplayer->m_LightHackReadyForDrawLightHackFn[index]) )
-			{
-				// Set the value.
-				g_pplayer->m_LightHackCurrentState[index] = m_fIsDropped;
-				g_pplayer->m_LightHackReadyForDrawLightHackFn[index] = TRUE;
-				g_pplayer->m_LastUpdateTime[index] = msec();
-			}
 		}
 	}
 
