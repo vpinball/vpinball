@@ -9,7 +9,7 @@
 #define DONGLE_SUPPORT								// Remember to run hdd32.exe (HASP dongle driver setup) on host.
 //#define _DEBUGPHYSICSx
 //#define DEBUG_FRATE
-//#define ANTI_TEAR				1					// define if you want to do some hack code to prevent drawing more than one frame per 16ms
+//#define ANTI_TEAR				1					// define if you want to do some hack code to prevent drawing more than one frame per 16ms = ~60fps
 //#define GDIDRAW 1
 
 //#define EVENTIME 1
@@ -657,7 +657,6 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	SetWindowText(hwndProgressName, "Initalizing Visuals...");
 
 	InitWindow();
-	InitDMDHackWindow();
 
 	InitKeys();
 
@@ -689,39 +688,6 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 		}
 
 	m_pininput.Init(m_hwnd);
-
-	// Initialize light hack states.
-	for (int i=0; i<LIGHTHACK_MAX; i++)
-	{
-		m_LastUpdateTime[i] = 0;
-		m_LightHackReadyForDrawLightHackFn[i] = FALSE;
-
-		m_LightHackCurrentState[i] = FALSE;
-		m_LightHackPreviousState[i] = FALSE;
-
-		m_LightHackCurrentAnimState[i] = FALSE;
-		m_LightHackPreviousAnimState[i] = FALSE;
-	}
-
-	m_LightHackX[LIGHTHACK_FIREPOWER_P1] = 2372;
-	m_LightHackY[LIGHTHACK_FIREPOWER_P1] = 512;
-	m_LightHackWidth[LIGHTHACK_FIREPOWER_P1] = 86;
-	m_LightHackHeight[LIGHTHACK_FIREPOWER_P1] = 512;
-
-	m_LightHackX[LIGHTHACK_FIREPOWER_P2] = 2372;
-	m_LightHackY[LIGHTHACK_FIREPOWER_P2] = 0;
-	m_LightHackWidth[LIGHTHACK_FIREPOWER_P2] = 86;
-	m_LightHackHeight[LIGHTHACK_FIREPOWER_P2] = 512;
-
-	m_LightHackX[LIGHTHACK_FIREPOWER_P3] = 2458;
-	m_LightHackY[LIGHTHACK_FIREPOWER_P3] = 512;
-	m_LightHackWidth[LIGHTHACK_FIREPOWER_P3] = 86;
-	m_LightHackHeight[LIGHTHACK_FIREPOWER_P3] = 512;
-
-	m_LightHackX[LIGHTHACK_FIREPOWER_P4] = 2458;
-	m_LightHackY[LIGHTHACK_FIREPOWER_P4] = 0;
-	m_LightHackWidth[LIGHTHACK_FIREPOWER_P4] = 86;
-	m_LightHackHeight[LIGHTHACK_FIREPOWER_P4] = 512;
 
 	// Initialize render and texture states for D3D blit support.
 	Display_InitializeRenderStates();
@@ -1376,34 +1342,6 @@ void Player::DestroyBall(Ball *pball)
 		m_pactiveballDebug = (m_vball.Size() > 0) ? m_vball.ElementAt(0) : NULL;
 		}
 	}
-
-void Player::InitDMDHackWindow()
-{
-	// Define the window.
-	WNDCLASSEX wcex;
-	ZeroMemory( &wcex, sizeof ( WNDCLASSEX ) );
-	wcex.cbSize = sizeof ( WNDCLASSEX );
-	wcex.style = 0;
-	wcex.lpfnWndProc = (WNDPROC) PlayerDMDHackWndProc;
-	wcex.hInstance = g_hinst;
-	wcex.lpszClassName = "VPPlayerDMDHack";
-	wcex.hIcon = LoadIcon ( g_hinst, MAKEINTRESOURCE(IDI_TABLEICON) );
-	wcex.hCursor = LoadCursor ( NULL, IDC_ARROW );
-	wcex.lpszMenuName = NULL;
-	RegisterClassEx ( &wcex );
-
-	// Place window in top-left corner.
-	const int x = 0;
-	const int y = 0;
-
-	// Set the width and height.
-	const int width = 200;
-	const int height = 100;
-
-	// TEXT
-	m_dmdhackhwnd = ::CreateWindowEx( (WS_EX_TOPMOST), "VPPlayerDMDHack", "Visual Pinball Player DMD Hack", (WS_POPUP | WS_CLIPCHILDREN), x, y, width, height, NULL, NULL, g_hinst, 0);
-}
-
 
 void Player::InitWindow()
 	{
@@ -2885,9 +2823,6 @@ else
 	}
 #endif
 	
-	// Draw hack lights.
-	DrawLightHack();
-
 	if (m_pxap)
 	{
 		if (!m_pxap->Tick())
@@ -3827,8 +3762,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
             break;
 
 		case WM_CLOSE:
-			// Close the DMD hack window.
-			SendMessage(g_pplayer->m_dmdhackhwnd, WM_CLOSE, 0, 0);
 			break;
 
 		case WM_DESTROY:
@@ -4495,102 +4428,4 @@ int get_dongle_status()
 	
 	Status = DONGLE_STATUS_OK;
 	return ( Status );
-}
-
-
-// Performs special draws... ok, hacks!
-// These are to address shortcomings in not having
-// a proper backglass display that can be animated.
-void Player::DrawLightHack ()
-{
-	// Check the state of all lights.
-	for ( int i=0; i<LIGHTHACK_MAX; i++ )
-	{
-		if ( g_pplayer->m_LightHackReadyForDrawLightHackFn[i] )
-		{
-			// Process based on the type of light.
-			switch ( i )
-			{
-				case LIGHTHACK_FIREPOWER_P1:
-				case LIGHTHACK_FIREPOWER_P2:
-				case LIGHTHACK_FIREPOWER_P3:
-				case LIGHTHACK_FIREPOWER_P4:
-					// Check if the light is on.
-					if ( m_LightHackCurrentState[i] )
-					{
-						// Update the blink animation.
-						m_LightHackCurrentAnimState[i] = ( (msec() & 256) > 0 );
-
-//						// Check if the state changed.
-//						if ( m_LightHackPreviousState[i] != m_LightHackCurrentState[i] )
-//						{
-//							// Initialize the animation.
-//							m_LightHackPreviousAnimState[i] = FALSE;
-//							m_LightHackCurrentAnimState[i] = TRUE;
-//						}
-
-						// Check if the animation state changed.
-						if ( m_LightHackPreviousAnimState[i] != m_LightHackCurrentAnimState[i] )
-						{
-							// Check if we are on.
-							if ( m_LightHackCurrentAnimState[i] )
-							{
-								// Show the window.
-								SetWindowPos ( m_dmdhackhwnd, HWND_TOPMOST, m_LightHackX[i], m_LightHackY[i], m_LightHackWidth[i], m_LightHackHeight[i], (SWP_SHOWWINDOW | SWP_NOACTIVATE) );
- 							}
-							else
-							{
-								// Hide the window.
-								ShowWindow ( m_dmdhackhwnd, SW_HIDE );
-							}
-						}
-						m_LightHackPreviousAnimState[i] = m_LightHackCurrentAnimState[i];
-					}
-					else
-					{
-						// Check if the state changed.
-						if ( m_LightHackPreviousState[i] != m_LightHackCurrentState[i] )
-						{
-							// Hide the window.
-							ShowWindow ( m_dmdhackhwnd, SW_HIDE );
-						}
-						
-						// Check if the state changed.
-						if ( (m_LightHackCurrentAnimState[i]) ||
-							 (m_LightHackPreviousAnimState[i]) )
-						{
-							// Hide the window.
-							ShowWindow ( m_dmdhackhwnd, SW_HIDE );
-							m_LightHackCurrentAnimState[i] = FALSE;
-							m_LightHackPreviousAnimState[i] = FALSE;
-						}
-					}
-					m_LightHackPreviousState[i] = m_LightHackCurrentState[i];
-					break;
-
-				case LIGHTHACK_BK2K_R:
-				case LIGHTHACK_BK2K_A:
-				case LIGHTHACK_BK2K_N:
-				case LIGHTHACK_BK2K_S:
-				case LIGHTHACK_BK2K_O:
-				case LIGHTHACK_BK2K_M:
-					break;
-			}
-
-			// Clear the light state.  If it's really on, it will be refreshed by Surface::put_IsDropped().
-			m_LightHackCurrentState[i] = FALSE;
-			m_LightHackReadyForDrawLightHackFn[i] = FALSE;
-		}
-		else
-		{
-			// Check if we got an update from IsDropped a while ago, but never updated the visual.
-			// This happens when the light changes state from on to off.
-			if ( (m_LightHackPreviousState[i]) &&
-				 ((msec() - m_LastUpdateTime[i]) > 500) )
-			{
-				// Flag that it's safe to update.  We'll update on the next frame.
-				m_LightHackReadyForDrawLightHackFn[i] = TRUE;
-			}
-		}
-	}
 }

@@ -11,8 +11,8 @@ class BallAnimObject : public AnimObject
 	{
 public:
 	virtual BOOL FMover() {return fFalse;} // We add ourselves to the mover list.  
-											// If we allow the table to do that, we might get added twice, 
-											// if we get created in Init code
+										   // If we allow the table to do that, we might get added twice, 
+										   // if we get created in Init code
 	virtual void UpdateDisplacements(float dtime);
 	virtual void UpdateVelocities(float dtime);
 
