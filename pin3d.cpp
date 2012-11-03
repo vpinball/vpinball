@@ -468,7 +468,7 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 		ddsd.dwSize = sizeof(ddsd);
 		hr = m_pDD->GetDisplayMode(&ddsd);
 		refreshrate = ddsd.dwRefreshRate;
-		if(refreshrate <= 0)
+		if(FAILED(hr) || (refreshrate <= 0))
 			refreshrate = 60; // meh, hardcode to 60Hz if fail
 		}
 
