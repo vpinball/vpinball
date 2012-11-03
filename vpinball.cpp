@@ -3646,6 +3646,15 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, antialias ? BST_CHECKED : BST_UNCHECKED, 0);
 
+			hwndCheck = GetDlgItem(hwndDlg, IDC_ADAPTIVE_VSYNC);
+			int vsync;
+			hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
+			if (hr != S_OK)
+				{
+				vsync = fFalse; // The default
+				}
+			SendMessage(hwndCheck, BM_SETCHECK, vsync ? BST_CHECKED : BST_UNCHECKED, 0);
+
 			hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO);
 			int stereo3D;
 			hr = GetRegInt("Player", "Stereo3D", &stereo3D);
@@ -3840,6 +3849,10 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							HWND hwndAlias = GetDlgItem(hwndDlg, IDC_ANTIALIAS);
 							int antialias = SendMessage(hwndAlias, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "BallAntialias", REG_DWORD, &antialias, 4);
+
+							HWND hwndVSync = GetDlgItem(hwndDlg, IDC_ADAPTIVE_VSYNC);
+							int vsync = SendMessage(hwndVSync, BM_GETCHECK, 0, 0);
+							SetRegValue("Player", "AdaptiveVSync", REG_DWORD, &vsync, 4);
 
 							HWND hwndStereo3D = GetDlgItem(hwndDlg, IDC_3D_STEREO);
 							int stereo3D = SendMessage(hwndStereo3D, BM_GETCHECK, 0, 0);

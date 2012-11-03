@@ -130,7 +130,7 @@ public:
 	Pin3D();
 	~Pin3D();
 
-	HRESULT InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, const int refreshrate, const bool stereo3D);
+	HRESULT InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const bool stereo3D);
 	HRESULT Create3DDevice(const GUID * const pDeviceGUID);
 	HRESULT CreateZBuffer(const GUID * const pDeviceGUID);
 
@@ -155,7 +155,7 @@ public:
 	void CreateBallShadow();
 
 	void SetUpdatePos(const int left, const int top);
-	void Flip(const int offsetx, const int offsety);
+	void Flip(const int offsetx, const int offsety, const BOOL vsync);
 
 	void SetRenderTarget(const LPDIRECTDRAWSURFACE7 pddsSurface, const LPDIRECTDRAWSURFACE7 pddsZ) const;
 	void SetTextureFilter(const int TextureNum, const int Mode) const;

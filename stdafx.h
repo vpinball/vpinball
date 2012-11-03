@@ -5,6 +5,8 @@
 #define VP3D // enable 3D stereo code //!! remove define(s) after first succesful release
 #define ONLY3DUPD // faster 3D stereo code (same trick as VP2D does: only update regions each frame)
 
+#define ADAPT_VSYNC_FACTOR 1.05 // safety factor where adaptive vsync kicks in (f.e. 60fps * 1.05 = 63fps)
+
 #define ULTRA_FREE 1
 
 #define GPINFLOAT double 
