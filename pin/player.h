@@ -226,7 +226,6 @@ public:
 
 	EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments;
 
-	CSimplePlayer *m_pcsimpleplayer;
 	HANDLE m_hSongCompletionEvent;
 
 	XAudPlayer *m_pxap;

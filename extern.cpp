@@ -6,7 +6,6 @@ ITypeLib *g_ptlMain;
 VPinball *g_pvp;
 Player *g_pplayer;
 HACCEL g_haccel;
-WMAudioCreateReaderFunc g_AudioCreateReaderFunc;
 BOOL g_fKeepUndoRecords = fTrue;
 
 #ifdef GLOBALLOG
