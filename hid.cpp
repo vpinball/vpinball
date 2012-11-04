@@ -194,7 +194,7 @@ static U32 sMask = 0;
 // This is the main interface to turn output on and off.
 // Once set, the value will remain set until another set call is made.
 // The output parameter uses any combination of HID_OUTPUT enum.
-void hid_set_output( U08 output, bool On )
+void hid_set_output( const U08 output, const bool On )
 {
 	// Check if the outputs are being turned on.
 	if ( On )
@@ -216,7 +216,7 @@ static int sKnockState;
 static U32 sKnockStamp;
 
 
-void hid_knock( int count )
+void hid_knock( const int count )
 {
     if( count )
     {
@@ -227,13 +227,13 @@ void hid_knock( int count )
 }
 
 
-void hid_update()
+void hid_update(const U32 cur_time_msec)
 {
     U08 mask = (U08)( sMask & 0xff );
 
     if( sKnockStamp )
     {
-        if( msec() - sKnockStamp < (U32) ( sKnockState ? KNOCK_PERIOD_ON : KNOCK_PERIOD_OFF ) )
+        if( cur_time_msec - sKnockStamp < (U32) ( sKnockState ? KNOCK_PERIOD_ON : KNOCK_PERIOD_OFF ) )
         {
             mask |= sKnockState ? (U08)HID_OUTPUT_KNOCKER : (U08)0x00;
         }
@@ -247,12 +247,12 @@ void hid_update()
                 {
                     sKnockStamp = 0;
                 }
-                else sKnockStamp = msec();
+                else sKnockStamp = cur_time_msec;
             }
             else
             {
                 sKnockState = 1;
-                sKnockStamp = msec();
+                sKnockStamp = cur_time_msec;
             }
         }
     }
