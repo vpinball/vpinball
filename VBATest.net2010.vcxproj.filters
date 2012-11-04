@@ -168,9 +168,6 @@
     <ClCompile Include="shadowsur.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Media\simpleplayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="slintf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -429,9 +426,6 @@
     <ClInclude Include="shadowsur.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Media\simpleplayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="slintf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -478,6 +472,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xaudplayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stereo3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

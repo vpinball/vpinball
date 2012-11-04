@@ -824,10 +824,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;vp-sup\inc;pin\;media;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling />
+      <ExceptionHandling>false</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -838,6 +838,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <DebugInformationFormat />
       <CompileAs>Default</CompileAs>
       <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -857,6 +859,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalOptions>/SAFESEH:NO
  %(AdditionalOptions)</AdditionalOptions>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
     <PostBuildEvent>
       <Command>%40echo off
@@ -1871,28 +1874,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">MinSpace</Optimization>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="Media\simpleplayer.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinSize|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTestFrench|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTestGerman|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTestSpanish|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">MinSpace</Optimization>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">Disabled</Optimization>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_UNICODE</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|Win32'">MinSpace</Optimization>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_STATIC_REGISTRY;_ATL_MIN_CRT</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">MinSpace</Optimization>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="slintf.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">MinSpace</Optimization>
     </ClCompile>
@@ -2444,10 +2425,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
     <ClInclude Include="shadowsur.h" />
-    <ClInclude Include="Media\simpleplayer.h" />
     <ClInclude Include="slintf.h" />
     <ClInclude Include="spinner.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="stereo3D.h" />
     <ClInclude Include="sur.h" />
     <ClInclude Include="surface.h" />
     <ClInclude Include="tableglobal.h" />
