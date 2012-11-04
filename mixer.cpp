@@ -187,7 +187,6 @@ F32 mixer_get_volume()
 
 void mixer_update()
 {
-
     const F32 delta = (F32)(1.0 / 500.0);
 
     if( Down( PININ_VOL_DOWN ) )
@@ -198,7 +197,6 @@ void mixer_update()
     {
         mixer_volume( gMixerVolume + delta );
     }
-
 }
 
 

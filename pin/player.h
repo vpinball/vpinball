@@ -167,7 +167,7 @@ private:
 	U64 m_nextPhysicsFrameTime; // time at which the next physics update should be
 	U64 m_liPhysicsCalced;
 
-  // caching hitable ramps & primitives to speed up DrawAcrylics()
+    // caching hitable ramps & primitives to speed up DrawAcrylics()
 	Vector< Hitable > m_vhitacrylic;
 
 public:

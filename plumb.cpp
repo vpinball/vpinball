@@ -43,26 +43,26 @@ F32 nudge_get_sensitivity()
 // force of the hook, and the dampening force of the air.  Here, force is exerted only by the table tilting 
 // (the string) and dampening and friction forces are lumped together with a constant, and gravity is not 
 // present.
-void plumb_update()
+void plumb_update(const U32 curr_time_msec)
 {
+    static U32 stamp = 0;
+	// Get the time since the last frame.
+    const F32 dt = (F32)((double)( curr_time_msec - stamp ) * 0.001);
+    stamp = curr_time_msec;
+
+	// Ignore large time slices... forces will get crazy!
+	// Besides, we're probably loading/unloading.
+    if( dt > 0.1f || dt <= 0.0f) 
+	{
+		return;
+	}
+
     F32 &x = gPlumb.x;
     F32 &y = gPlumb.y;
     F32 &vx = gPlumb.vx;
     F32 &vy = gPlumb.vy;
     const F32 ax = sinf( ( GetX() - x ) * (float)( M_PI / 5.0 ) );
     const F32 ay = sinf( ( GetY() - y ) * (float)( M_PI / 5.0 ) );
-    static U32 stamp = 0;
-    
-	// Get the time since the last frame.
-    const F32 dt = (F32)(((double)( msec() - stamp ) ) * 0.001 );
-    stamp = msec();
-
-	// Ignore large time slices... forces will get crazy!
-	// Besides, we're probably loading/unloading.
-    if( dt > 0.1f ) 
-	{
-		return;
-	}
 
 	// Add force to the plumb.
     vx += (float)(825.0*0.25) * ax * dt;

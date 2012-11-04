@@ -6,10 +6,10 @@
 
 #include "..\DongleAPI.h"
 
-#define DONGLE_SUPPORT								// Remember to run hdd32.exe (HASP dongle driver setup) on host.
+#define DONGLE_SUPPORT			// Remember to run hdd32.exe (HASP dongle driver setup) on host.
 //#define _DEBUGPHYSICSx
 //#define DEBUG_FRATE
-//#define ANTI_TEAR				1					// define if you want to do some hack code to prevent drawing more than one frame per 16ms = ~60fps
+//#define ANTI_TEAR	1			// define if you want to do some hack code to prevent drawing more than one frame per 16ms = ~60fps
 //#define GDIDRAW 1
 
 //#define EVENTIME 1
@@ -860,17 +860,17 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 		SetWindowText(hwndProgressName, "Rendering Table...");
 		}
 
-//----------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------
 //#define IS_ATI(DDDEVICEID) (DDDEVICEID.dwVendorId==0x1002)  //BDS
-/*if (m_pin3d.m_pd3dDevice->dwVendorID==0x1002)	//ATI
+    /*if (m_pin3d.m_pd3dDevice->dwVendorID==0x1002)	//ATI
 		{
 		ReOrder();
 		}*/
-		if (g_pvp->m_pdd.m_fAlternateRender)
-			{
-			ReOrder();
-			}
-//----------------------------------------------------------------------------------
+	if (g_pvp->m_pdd.m_fAlternateRender)
+		{
+		ReOrder();
+		}
+    //----------------------------------------------------------------------------------
 	// Pre-render all non-changing elements such as 
 	// static walls, rails, backdrops, etc.
 	InitStatic(hwndProgress);
@@ -1778,7 +1778,7 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 			if (time_elasped > halfLimitTime)		//time in microseconds
 				{
 				staticTime += staticTime*0.5f;		//increase minimum time step by 50%
-				halfLimitTime += halfLimitTime/2;	// set next half limit time step (logrithmic)			
+				halfLimitTime += halfLimitTime/2;	// set next half limit time step (logarithmic)			
 				}
 			}
 
@@ -1893,13 +1893,8 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 
 void Player::Render()
 	{
-	HRESULT				ReturnCode;
-	HRESULT				hr;
-
-	// Don't calculate the next frame if the last one isn't done blitting yet
 	// On Win95 when there are no balls, frame updates happen so fast the
 	// blitter gets stuck
-
 	const int cball = m_vball.Size();
 	if ((cball == 0) && m_fWasteTime2)
 		{
@@ -1911,7 +1906,7 @@ void Player::Render()
 		Sleep(m_sleeptime - 1);
 		}
 
-	if (m_fCheckBlt)
+	if (m_fCheckBlt) // Don't calculate the next frame if the last one isn't done blitting yet
 		{
 		const HRESULT hrdone = m_pin3d.m_pddsFrontBuffer->GetBltStatus(DDGBS_ISBLTDONE);
 
@@ -1925,7 +1920,7 @@ void Player::Render()
 			}
 		}
 
-#if defined(ANTI_TEAR)
+#ifdef ANTI_TEAR
 	static U64 sync;
 
 	if( sync ) // Spin the CPU to prevent from running graphics faster than necessary
@@ -1935,8 +1930,30 @@ void Player::Render()
 	sync = usec();
 #endif
 
+	//
+
+	for (int iball=0;iball<cball;iball++)
+		{
+		Ball * const pball = m_vball.ElementAt(iball);
+
+		if (pball->m_fErase) // Need to clear the ball off the playfield
+			{
+			EraseBall(pball);
+			}
+		}
+
+	// Erase the mixer volume.
+	mixer_erase();
+    plumb_erase();
+
+	c_collisioncnt = 0; 
+	c_hitcnts = 0;
+	c_contactcnt = 0;
+	c_staticcnt = 0;
+
+	//
+
 	const U64 m_RealTimeClock = usec();
-	const U32 new_msec = (U32)(m_RealTimeClock/1000);
 
 	if (m_fNoTimeCorrect) // After debugging script
 		{
@@ -2021,37 +2038,21 @@ void Player::Render()
 
 #endif //PLACKBACK
 
-		fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, m_RealTimeClock>>32, m_RealTimeClock, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
-		fprintf(m_flog, "End Frame\n");
+	fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, m_RealTimeClock>>32, m_RealTimeClock, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
+	fprintf(m_flog, "End Frame\n");
 #endif
 
-	for (int iball=0;iball<cball;iball++)
-		{
-		Ball * const pball = m_vball.ElementAt(iball);
-
-		if (pball->m_fErase) // Need to clear the ball off the playfield
-			{
-			EraseBall(pball);
-			}
-		}
-
-	// Erase the mixer volume.
-	mixer_erase();
-    plumb_erase();
-
-	c_collisioncnt = 0; 
-	c_hitcnts = 0;
-	c_contactcnt = 0;
-	c_staticcnt = 0;
-
+#ifdef FPS
 	U32 phys_iterations = 0;
-	U64 phys_period = usec(); // NOTE: variable is mis-named until the end of this while loop	
+	U64 phys_period = m_RealTimeClock;	
+#endif
 
 	///+++++++++++++++++++++++++++++++++++++++++++++++++++++
 	while (m_curPhysicsFrameTime < m_RealTimeClock)		//loop here until next frame time
-		{
-
+	{
+#ifdef FPS
 		phys_iterations++;
+#endif
 		// Get the time until the next physics tick is done, and get the time
 		// Until the next frame is done (newtime)
 		// If the frame is the next thing to happen, update physics to that
@@ -2060,53 +2061,48 @@ void Player::Render()
 		const float physics_dtime = (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/10000.0));
 		const float physics_to_graphic_dtime  = (float)((double)(m_RealTimeClock - m_curPhysicsFrameTime)*(1.0/10000.0));
 
-		if (physics_to_graphic_dtime < physics_dtime )				// is graphic frame time next???
+		const U64 cur_time = usec();
+
+		if (physics_to_graphic_dtime < physics_dtime )				 // is graphic frame time next???
 			{		
-			PhysicsSimulateCycle(physics_to_graphic_dtime, usec());	// advance physics to this time
-			m_curPhysicsFrameTime = m_RealTimeClock;				// now current to the wall clock
-			break;	//this is the common exit from the loop			// exit skipping accelerate
+			PhysicsSimulateCycle(physics_to_graphic_dtime, cur_time);// advance physics to this time
+			m_curPhysicsFrameTime = m_RealTimeClock;				 // now current to the wall clock
+			break;	//this is the common exit from the loop			 // exit skipping accelerate
 			}		// some rare cases will exit from while()
 
-		if (usec()- m_RealTimeClock > 200000)						// hung in the physics loop over 200 milliseconds
-			{														// can not keep up to real time
-			m_curPhysicsFrameTime = m_RealTimeClock;				// skip physics forward ... slip-cycles
+		if (cur_time - m_RealTimeClock > 200000)					 // hung in the physics loop over 200 milliseconds
+			{														 // can not keep up to real time
+			m_curPhysicsFrameTime = m_RealTimeClock;				 // skip physics forward ... slip-cycles
 			m_nextPhysicsFrameTime = m_RealTimeClock + m_PhysicsStepTime;
-			break;	//this is the common exit from the loop			// go draw frame
+			break;	//this is the common exit from the loop			 // go draw frame
 			}
 		
 		//primary physics loop
-		PhysicsSimulateCycle(physics_dtime, usec());				// main simulator call physics_dtime
+		PhysicsSimulateCycle(physics_dtime, cur_time); 				 // main simulator call physics_dtime
 
- 		m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				// new cycle, on physics frame boundary
-		m_nextPhysicsFrameTime += m_PhysicsStepTime;				// advance physics position
+ 		m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				 // new cycle, on physics frame boundary
+		m_nextPhysicsFrameTime += m_PhysicsStepTime;				 // advance physics position
 
 		// now get and/or calculate integral cycle physics events, digital filters, external acceleration inputs, etc.
 
-		const U32 sim_msec = new_msec - (U32)((m_RealTimeClock - m_curPhysicsFrameTime) / 1000);
+		const U32 sim_msec = m_curPhysicsFrameTime/1000;
 		m_pininput.ProcessKeys(m_ptable, sim_msec);
         mixer_update();
 
-        hid_update();
-        plumb_update();
-
-		if(Pressed(PININ_ENABLE3D)) {
-			m_fStereo3Denabled = !m_fStereo3Denabled;
-			SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
-			m_fCleanBlt = fFalse;
-		}
+        hid_update(sim_msec);
+        plumb_update(sim_msec);
 
 //rlc remove #define if accurate timers break something
-#define  ACCURATETIMERS 1
-
+#define ACCURATETIMERS 1
 #ifdef ACCURATETIMERS
-	m_pactiveball = NULL;  // No ball is the active ball for timers/key events
+		m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 
-	const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); //rlc 10 milli-seconds
+		const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); //rlc 10 milli-seconds
 
-	for (int i=0;i<m_vht.Size();i++)
+		for (int i=0;i<m_vht.Size();i++)
 		{
-		HitTimer * const pht = m_vht.ElementAt(i);
-		if (pht->m_nextfire <= p_timeCur)
+			HitTimer * const pht = m_vht.ElementAt(i);
+			if (pht->m_nextfire <= p_timeCur)
 			{
 			pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
 			pht->m_nextfire += pht->m_interval;
@@ -2114,66 +2110,55 @@ void Player::Render()
 		}
 #endif
 
-		//slintf( "%u %u\n", new_msec, sim_msec );
+		//slintf( "%u %u\n", m_RealTimeClock/1000, sim_msec );
 		//slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
 		
 #ifdef ULTRACADE
 		UltraNudge();		//rlc physics_dtime is the balance of time to move from the graphic frame position to the next
 		UltraPlunger();		// integral physics frame.  So the previous graphics frame was (1.0 - physics_dtime) before 
 							// this integral physics frame. Accelerations and inputs are always physics frame aligned
-#else
+#endif
+		
 		if (m_nudgetime)
-			{
+		{
 			m_nudgetime--;	                                                                                                                                                    
 
 			if (m_nudgetime == 5)
-				{
+			{
 				m_NudgeX = -m_NudgeBackX * 2.0f;
 				m_NudgeY = m_NudgeBackY * 2.0f;
-				}
+			}
 			else if (m_nudgetime == 0)
-				{
+			{
 				m_NudgeX = m_NudgeBackX;
 				m_NudgeY = -m_NudgeBackY;
-				}
 			}
-#endif
-		
-	if (m_nudgetime)
-	{
-		m_nudgetime--;	                                                                                                                                                    
-
-		if (m_nudgetime == 5)
-		{
-			m_NudgeX = -m_NudgeBackX * 2.0f;
-			m_NudgeY = m_NudgeBackY * 2.0f;
 		}
-		else if (m_nudgetime == 0)
-		{
-			m_NudgeX = m_NudgeBackX;
-			m_NudgeY = -m_NudgeBackY;
-		}
-	}
 
-	for (int i=0;i<m_vmover.Size();i++)
-	{
-		m_vmover.ElementAt(i)->UpdateVelocities(1.0f);	// always on integral physics frame boundary
-	}			
+		for (int i=0;i<m_vmover.Size();i++)
+		{
+			m_vmover.ElementAt(i)->UpdateVelocities(1.0f);	// always on integral physics frame boundary
+		}			
 
 #ifndef ULTRACADE
 		m_NudgeX = 0;
 		m_NudgeY = 0;
-#endif
-			
-		}	// end while (m_curPhysicsFrameTime < m_RealTimeClock)
-	//end marker <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif			
+	} // end while (m_curPhysicsFrameTime < m_RealTimeClock)
 
+#ifdef FPS
 	phys_period = usec() - phys_period;
+#endif
 
 	m_LastKnownGoodCounter++;
 
-#ifdef GDIDRAW
+	if(Pressed(PININ_ENABLE3D)) {
+		m_fStereo3Denabled = !m_fStereo3Denabled;
+		SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
+		m_fCleanBlt = fFalse;
+	}
 
+#ifdef GDIDRAW
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(m_hwnd, &ps);
 
@@ -2287,11 +2272,12 @@ void Player::Render()
 		}	
 
 	// Start rendering the next frame.
-	hr = m_pin3d.m_pd3dDevice->BeginScene();
+	HRESULT hr = m_pin3d.m_pd3dDevice->BeginScene();
 
 	D3DMATRIX RestoreWorldMatrix;
 	RenderStateType	RestoreRenderState;
 	TextureStateType RestoreTextureState;
+	HRESULT ReturnCode;
 	// Check if we are blitting with D3D.
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
 		{
@@ -2470,7 +2456,8 @@ void Player::Render()
 		DrawAcrylics();
 
 	// Check if we should turn animate the plunger light.
-	hid_set_output ( HID_OUTPUT_PLUNGER, ((msec() - LastPlungerHit) < 512) && ((msec() & 512) > 0) );
+	const U32 cur_time_msec = msec();
+	hid_set_output ( HID_OUTPUT_PLUNGER, ((cur_time_msec - LastPlungerHit) < 512) && ((cur_time_msec & 512) > 0) );
 
 	// Draw the mixer volume.
 	mixer_draw();
@@ -2857,6 +2844,7 @@ else
 		// Draw the framerate.
 		len = sprintf_s(szFoo, "%d %llu", m_fps, m_PhysicsStepTime);
 		TextOut(hdcNull, 10, 10, szFoo, len);
+		
 		period = msec()-stamp;
 		if( period > m_max ) m_max = period;
 		if( phys_period > m_phys_max ) m_phys_max = phys_period;
@@ -2882,14 +2870,10 @@ else
 			static int period[TSIZE];
 			static int speriod[TSIZE];
 			static int idx;
-			static U32 stamp;
 			
-			const U32 tmp = msec() - stamp;
-			period[idx] = tmp;
+			period[idx] = period;
 			idx++;
 			if( idx >= TSIZE ) idx = 0;
-
-			stamp = msec();
 
 			for(int i=0; i<TSIZE; i++)
 			{
@@ -2900,32 +2884,28 @@ else
 #endif
 	
 #ifdef _DEBUGPHYSICS
-
 		len = sprintf_s(szFoo, sizeof(szFoo), "period: %3d ms (%3d avg %10d max)      ",
-		period, (U32)( m_total / m_count ), (U32) m_max );
-		stamp = msec();
+				period, (U32)( m_total / m_count ), (U32) m_max );
 		TextOut(hdcNull, 10, 120, szFoo, len);
 
 		len = sprintf_s(szFoo, sizeof(szFoo), "physTimes %10d uS(%12d avg %12d max)    ",
 			   	(U32)phys_period,
 			   	(U32)(m_phys_total / m_count),
 			   	m_phys_max );
-		stamp = msec();
 		TextOut(hdcNull, 10, 140, szFoo, len);
 
 		len = sprintf_s(szFoo, sizeof(szFoo), "phys:%5d iterations(%5d avg %5d max))   ",
 			   	(U32)phys_iterations,
 			   	(U32)( m_phys_total_iterations / m_count ),
 				(U32)m_phys_max_iterations );
-		stamp = msec();
 		TextOut(hdcNull, 10, 160, szFoo, len);
 
 		len = sprintf_s(szFoo, sizeof(szFoo), "Hits:%5d Collide:%5d Ctacs:%5d Static:%5d Embed: %5d    ",
 		c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts);
-		stamp = msec();
 		TextOut(hdcNull, 10, 180, szFoo, len);
-
 #endif
+
+		stamp = msec();
 		ReleaseDC(NULL, hdcNull);
 		}
 #endif
@@ -2988,10 +2968,9 @@ else
 			}
 		}
 	}
-}
 	///// Don't put anything here - the ID_QUIT check must be the last thing done
 	///// in this function
-
+}
 
 void Player::PauseMusic()
 	{
@@ -3186,8 +3165,6 @@ void Player::DrawBalls()
 	{
 	//m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
 
-
-
 	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
 
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
@@ -3200,8 +3177,6 @@ void Player::DrawBalls()
 
 	const float sn = sinf(m_pin3d.m_inclination);
 	const float cs = cosf(m_pin3d.m_inclination);
-
-	
 
 	for (int i=0;i<m_vball.Size();i++)
 		{

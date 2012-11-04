@@ -14,10 +14,10 @@
 
 void hid_init();
 void hid_shutdown();
-void hid_set_output( U08 mask, bool on );
+void hid_set_output( const U08 mask, const bool on );
 
-void hid_update();
+void hid_update( const U32 cur_time_msec );
 
-void hid_knock( int count=1 ); // Do a single knock
+void hid_knock( const int count=1 ); // Do a single knock
 
 #endif/* !__HID_H__ */
