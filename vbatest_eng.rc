@@ -538,7 +538,7 @@ BEGIN
     GROUPBOX        "Details",IDC_STATIC,154,7,85,55
     GROUPBOX        "3D Stereo",IDC_STATIC,242,7,84,55
     GROUPBOX        "Performance",IDC_STATIC,154,63,172,28
-    GROUPBOX        "Troubleshooting",IDC_STATIC,154,93,172,141
+    GROUPBOX        "Troubleshooting",IDC_STATIC,154,93,172,151
     GROUPBOX        "Max Texture Dimension (for Chipset Graphics)*",IDC_STATIC,159,146,162,59
     LTEXT           "*Restart Visual Pinball.",IDC_STATIC,244,159,72,8
     LTEXT           "Only works for Images",IDC_STATIC,247,168,70,8
