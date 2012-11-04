@@ -236,7 +236,7 @@ HRESULT XAudPlayer::CreateBuffer(int volume)
 	WAVEFORMATEX wfex;
 	wfex.wFormatTag = WAVE_FORMAT_PCM;
 	wfex.nChannels = 2;//m_decoder->output_buffer->nb_channels;
-	wfex.nSamplesPerSec = 22050;//44100; Bogus frequency value - the real value gets set as data is decompressed - look for SetFrequency
+	wfex.nSamplesPerSec = 44100; //Bogus frequency value - the real value gets set as data is decompressed - look for SetFrequency
 	wfex.wBitsPerSample = 16;//m_decoder->output_buffer->bytes_per_sample;
 	wfex.cbSize = 0;
 	wfex.nBlockAlign = (wfex.nChannels * wfex.wBitsPerSample) / (WORD)8;

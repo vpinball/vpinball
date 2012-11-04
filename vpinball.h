@@ -154,7 +154,6 @@ public:
 
 	PinDirectSound m_pds;
 	PinDirectDraw m_pdd;
-	PinMusic m_music;
 
 	bool m_fDebugging; // Whether VBA is currently in debugging mode
 

@@ -77,7 +77,6 @@ Player::Player()
 
 	m_sleeptime = 0;
 
-	m_pcsimpleplayer = NULL;
 	m_pxap = NULL;
 	m_pactiveball = NULL;
 
@@ -283,12 +282,6 @@ Player::~Player()
 		fclose(m_fplaylog);
 		}
 #endif
-
-	if (m_pcsimpleplayer)
-		{
-		m_pcsimpleplayer->Stop();
-		m_pcsimpleplayer->Release();
-		}
 
 	CloseHandle(m_hSongCompletionEvent);
 
@@ -2976,10 +2969,6 @@ void Player::PauseMusic()
 	{
 	if (m_pauseRefCount == 0)
 		{
-		if (m_pcsimpleplayer)
-			{
-			m_pcsimpleplayer->Pause();
-			}
 		if (m_pxap)
 			{
 			m_pxap->Pause();
@@ -2996,10 +2985,6 @@ void Player::UnpauseMusic()
 	m_pauseRefCount--;
 	if (m_pauseRefCount == 0)
 		{
-		if (m_pcsimpleplayer)
-			{
-			m_pcsimpleplayer->Unpause();
-			}
 		if (m_pxap)
 			{
 			m_pxap->Unpause();
@@ -3740,10 +3725,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_DESTROY:
-			if (g_pplayer->m_pcsimpleplayer)
-				{
-				g_pplayer->m_pcsimpleplayer->Pause();
-				}
 			if (g_pplayer->m_pxap)
 				{
 				g_pplayer->m_pxap->Pause();

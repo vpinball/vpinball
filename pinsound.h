@@ -36,7 +36,6 @@ public:
 class PinDirectSound
 {
 public:
-
 	PinDirectSound();
 	~PinDirectSound();
 
@@ -51,24 +50,6 @@ public:
 	//LPDIRECTSOUNDBUFFER m_pDSBuffer;
 	CWaveSoundRead*     m_pWaveSoundRead;
 	DWORD               m_dwBufferBytes;
-};
-
-typedef int(CALLBACK *WMAudioCreateReaderFunc)(LPCWSTR pszFilename, IWMAudioReadCallback *pIWMReadCallback, IWMAudioReader **ppIWMAudioReader, void *pvReserved);
-
-class PinMusic
-{
-public:
-	PinMusic();
-
-	~PinMusic();
-
-	void Foo();
-
-	HMODULE m_hmodWMA;
-
-	//CSimplePlayer *m_pcsimpleplayer;
-
-	HRESULT CreateStreamingBuffer();
 };
 
 #endif // !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)

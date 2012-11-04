@@ -325,7 +325,6 @@ void VPinball::Init()
 		SendMessage(m_hwnd, WM_CLOSE, 0, 0);
 		}
 
-	//m_music.Foo();
 	m_fBackglassView = fFalse;							// we are viewing Pinfield and not the backglass at first
 
 	SetEnableToolbar();

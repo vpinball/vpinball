@@ -146,7 +146,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str)
 {
 	if (g_pplayer && g_pplayer->m_fPlayMusic)
 		{
-		if (g_pplayer->m_pxap || g_pplayer->m_pcsimpleplayer)
+		if (g_pplayer->m_pxap)
 			{
 			EndMusic();
 			}
@@ -160,50 +160,21 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str)
 		char szextension[MAX_PATH];
 		ExtensionFromFilename(szT, szextension);
 
-	//ppi->m_ppb;// = new PinBinary();
+		//ppi->m_ppb;// = new PinBinary();
 
-		if (!lstrcmpi(szextension, "wma"))
+		lstrcat(szPath, "Music\\");
+
+		//WideCharToMultiByte(CP_ACP, 0, str, -1, szT, 512, NULL, NULL);
+
+		// We know that szT can't be more than 512 characters as this point, and that szPath can't be more than MAX_PATH
+		lstrcat(szPath, szT);
+
+		g_pplayer->m_pxap = new XAudPlayer();
+
+		if (!g_pplayer->m_pxap->Init(szPath, g_pplayer->m_MusicVolume))
 			{
-			WCHAR * const wz = new WCHAR[MAX_PATH + lstrlenW(str) + 1];
-			//WCHAR wz[MAX_PATH];
-
-			//MultiByteToWideChar(CP_ACP, 0, szPath, -1, wz, MAX_PATH);
-
-			//lstrcpyW(wz, g_pvp->m_wzMyPath);
-			WideStrCopy(g_pvp->m_wzMyPath, wz);
-
-			WideStrCat(L"Music\\", wz);
-			WideStrCat(str, wz);
-			//lstrcatW(wz, L"Music\\");
-			//lstrcatW(wz, str);
-
-			g_pplayer->m_pcsimpleplayer = new CSimplePlayer();
-			HRESULT phr;
-			const HRESULT hr = g_pplayer->m_pcsimpleplayer->Play(wz, g_pplayer->m_hSongCompletionEvent, &phr, g_pplayer->m_MusicVolume);
-			if (hr != S_OK)
-				{
-				g_pplayer->m_pcsimpleplayer->Release();
-				g_pplayer->m_pcsimpleplayer = NULL;
-				}
-
-			delete wz;
-			}
-		else // mp3
-			{
-			lstrcat(szPath, "Music\\");
-
-			//WideCharToMultiByte(CP_ACP, 0, str, -1, szT, 512, NULL, NULL);
-
-			// We know that szT can't be more than 512 characters as this point, and that szPath can't be more than MAX_PATH
-			lstrcat(szPath, szT);
-
-			g_pplayer->m_pxap = new XAudPlayer();
-
-			if (!g_pplayer->m_pxap->Init(szPath, g_pplayer->m_MusicVolume))
-				{
-				delete g_pplayer->m_pxap;
-				g_pplayer->m_pxap = NULL;
-				}
+			delete g_pplayer->m_pxap;
+			g_pplayer->m_pxap = NULL;
 			}
 		}
 
@@ -215,12 +186,6 @@ STDMETHODIMP ScriptGlobalTable::EndMusic()
 {
 	if (g_pplayer && g_pplayer->m_fPlayMusic)
 		{
-		if (g_pplayer->m_pcsimpleplayer)
-			{
-			g_pplayer->m_pcsimpleplayer->Stop();
-			g_pplayer->m_pcsimpleplayer->Release();
-			g_pplayer->m_pcsimpleplayer = NULL;
-			}
 		if (g_pplayer->m_pxap)
 			{
 			g_pplayer->m_pxap->End();

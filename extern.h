@@ -6,7 +6,6 @@ extern ITypeLib *g_ptlMain;
 extern VPinball *g_pvp;
 extern Player *g_pplayer; // Game currently being played
 extern HACCEL g_haccel; // Accelerator keys
-extern WMAudioCreateReaderFunc g_AudioCreateReaderFunc;
 extern BOOL g_fKeepUndoRecords;
 
 #ifdef GLOBALLOG

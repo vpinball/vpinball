@@ -45,7 +45,7 @@ void PinDirectSound::InitDirectSound(HWND hwnd)
     //if( hr = CoInitialize( NULL ) )
         //return hr;
 
-    // Create IDirectSound using the primary sound device
+    // Create IDirectSound using the primary sound device //!! make this selectable to enable separate sound for VPM and VP
     if( FAILED( hr = DirectSoundCreate( NULL, &m_pDS, NULL ) ) )
 		{
 		ShowError("Could not create Direct Sound.");
@@ -73,12 +73,12 @@ void PinDirectSound::InitDirectSound(HWND hwnd)
         return;// hr;
 		}
 
-    // Set primary buffer format to 22kHz and 16-bit output.
+    // Set primary buffer format to 44kHz and 16-bit output.
     WAVEFORMATEX wfx;
     ZeroMemory( &wfx, sizeof(WAVEFORMATEX) ); 
     wfx.wFormatTag      = WAVE_FORMAT_PCM; 
     wfx.nChannels       = 2; 
-    wfx.nSamplesPerSec  = 22050; 
+    wfx.nSamplesPerSec  = 44100; 
     wfx.wBitsPerSample  = 16; 
     wfx.nBlockAlign     = wfx.wBitsPerSample / (WORD)8 * wfx.nChannels;
     wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
@@ -128,16 +128,12 @@ PinSound *PinDirectSound::LoadWaveFile(TCHAR* strFileName )
 }
 
 
-
-
 //-----------------------------------------------------------------------------
 // Name: CreateStaticBuffer()
 // Desc: Creates a wave file, sound buffer and notification events 
 //-----------------------------------------------------------------------------
 HRESULT PinDirectSound::CreateStaticBuffer(TCHAR* strFileName, PinSound *pps)
 {
-    HRESULT hr; 
-
     // Free any previous globals 
     SAFE_DELETE( m_pWaveSoundRead );
     //SAFE_RELEASE( m_pDSBuffer );
@@ -163,6 +159,7 @@ HRESULT PinDirectSound::CreateStaticBuffer(TCHAR* strFileName, PinSound *pps)
     dsbd.lpwfxFormat   = m_pWaveSoundRead->m_pwfx;
 
     // Create the static DirectSound buffer 
+    HRESULT hr; 
     if( FAILED( hr = m_pDS->CreateSoundBuffer( &dsbd, &pps->m_pDSBuffer, NULL ) ) )
 		{
 		ShowError("Could not create sound buffer.");
@@ -176,15 +173,12 @@ HRESULT PinDirectSound::CreateStaticBuffer(TCHAR* strFileName, PinSound *pps)
 }
 
 
-
-
 //-----------------------------------------------------------------------------
 // Name: FillBuffer()
 // Desc: Fill the DirectSound buffer with data from the wav file
 //-----------------------------------------------------------------------------
 HRESULT PinDirectSound::FillBuffer(PinSound *pps)
 {
-    HRESULT hr; 
     BYTE*   pbWavData; // Pointer to actual wav data 
     UINT    cbWavSize; // Size of data
     VOID*   pbData  = NULL;
@@ -200,6 +194,7 @@ HRESULT PinDirectSound::FillBuffer(PinSound *pps)
     if( NULL == pbWavData )
         return E_OUTOFMEMORY;
 
+    HRESULT hr; 
     if( FAILED( hr = m_pWaveSoundRead->Read( nWaveFileSize, 
                                            pbWavData, 
                                            &cbWavSize ) ) )
@@ -246,7 +241,6 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound *pps, WAVEFORMATEX *pwfx
     dsbd.dwFlags       = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME;
     dsbd.dwBufferBytes = pps->m_cdata;
     dsbd.lpwfxFormat   = pwfx;
-	HRESULT hr;
 
 	if (m_pDS == NULL)
 		{
@@ -255,6 +249,7 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound *pps, WAVEFORMATEX *pwfx
 		}
 
     // Create the static DirectSound buffer 
+	HRESULT hr;
     if( FAILED( hr = m_pDS->CreateSoundBuffer( &dsbd, &pps->m_pDSBuffer, NULL ) ) )
 		{
 		ShowError("Could not create sound buffer for load.");
@@ -282,31 +277,4 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound *pps, WAVEFORMATEX *pwfx
     pbData = NULL;
 
     return S_OK;
-	}
-
-PinMusic::PinMusic()
-	{
-	m_hmodWMA = LoadLibrary("wmaudsdk.dll");
-	
-	if (m_hmodWMA)
-		{
-		g_AudioCreateReaderFunc = (WMAudioCreateReaderFunc)GetProcAddress(m_hmodWMA,"WMAudioCreateReader");
-		}
-	else
-		{
-		g_AudioCreateReaderFunc = NULL;
-		}
-	}
-
-void PinMusic::Foo()
-	{
-	}
-
-PinMusic::~PinMusic()
-	{
-
-	if (m_hmodWMA)
-		{
-		FreeLibrary(m_hmodWMA);
-		}
 	}
