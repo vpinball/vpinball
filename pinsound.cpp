@@ -3,6 +3,9 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <vector>
+#include <string>
+using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -36,6 +39,39 @@ PinDirectSound::~PinDirectSound()
 	SAFE_RELEASE(m_pDS);
 	}
 
+
+struct DSAudioDevice
+{
+    LPGUID guid;
+    string description;
+    string module;
+    DSAudioDevice () {
+        guid = NULL;
+    }
+    ~DSAudioDevice () {
+	    if(guid)
+            delete guid;
+    }
+};
+
+typedef vector<DSAudioDevice*> DSAudioDevices;
+
+BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
+{
+    DSAudioDevice *ad = new DSAudioDevice;
+    if (guid == NULL)
+        ad->guid = NULL;
+    else {
+        ad->guid = new GUID;
+        memcpy (ad->guid, guid, sizeof (GUID));
+    }
+    ad->description = desc;
+    ad->module = mod;
+    (static_cast<DSAudioDevices*>(list))->push_back(ad);
+    return true;
+}
+
+
 void PinDirectSound::InitDirectSound(HWND hwnd)
 {
     HRESULT hr;
@@ -45,8 +81,19 @@ void PinDirectSound::InitDirectSound(HWND hwnd)
     //if( hr = CoInitialize( NULL ) )
         //return hr;
 
-    // Create IDirectSound using the primary sound device //!! make this selectable to enable separate sound for VPM and VP
-    if( FAILED( hr = DirectSoundCreate( NULL, &m_pDS, NULL ) ) )
+	DSAudioDevices DSads;
+	int DSidx = 0;
+	if (!FAILED (DirectSoundEnumerate (DSEnumCallBack, &DSads)))
+	{
+		hr = GetRegInt("Player", "SoundDevice", &DSidx);
+		if ((hr != S_OK) || (DSidx >= DSads.size()))
+		{
+			DSidx = 0; // The default primary sound device
+		}
+	}
+
+    // Create IDirectSound using the selected sound device
+	if( FAILED( hr = DirectSoundCreate( (DSidx!=0) ? DSads[DSidx]->guid : NULL, &m_pDS, NULL ) ) )
 		{
 		ShowError("Could not create Direct Sound.");
         return;// hr;
