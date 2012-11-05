@@ -2,19 +2,10 @@
 #include "def.h"
 #include "resource.h"
 
-//#include <atlimpl.cpp>
-
 class HitTimer;
 class PinBinary;
 
-// if defined, we are compiling in changes which should only be active
-// for ultracade products and are changes never intended to be released
-// to the public either because they have no value to the public in general
-//
-// EG: bugfixes and so on should not be in #ifdef ULTRACADE blocks...
-#define ULTRACADE
-
-#define INCLUDE_DEPRECATED_FEATURES 1
+#define INCLUDE_DEPRECATED_FEATURES 1 // Scintilla
 #include "ScinAll.h"
 
 #include "pintypes.h"
@@ -108,4 +99,3 @@ class PinBinary;
 #include "slintf.h"
 
 #include "extern.h"
-//

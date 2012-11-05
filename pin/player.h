@@ -1,9 +1,5 @@
 #pragma once
 
-#define FPS 1
-
-#define STEPPING 1
-
 #ifdef _DEBUG_
 #define MOUSEPAUSE 1
 #endif
@@ -234,7 +230,6 @@ public:
 	int m_NudgeManual;		//index of joystick that has manual control
 	int m_nudgetime;
 
-//#ifndef ULTRACADE
 	float m_NudgePosX;
 	float m_NudgePosY;
 
@@ -246,10 +241,6 @@ public:
 
 	float m_NudgeBackX;
 	float m_NudgeBackY;
-//#else
-//	float m_NudgeBackX;
-//	float m_NudgeBackY;
-//#endif
 
 	BOOL m_fCleanBlt; // We can do smart blitting next frame;
 

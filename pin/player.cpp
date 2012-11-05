@@ -6,14 +6,6 @@
 
 #include "..\DongleAPI.h"
 
-#define DONGLE_SUPPORT			// Remember to run hdd32.exe (HASP dongle driver setup) on host.
-//#define _DEBUGPHYSICSx
-//#define DEBUG_FRATE
-//#define ANTI_TEAR	1			// define if you want to do some hack code to prevent drawing more than one frame per 16ms = ~60fps
-//#define GDIDRAW 1
-
-//#define EVENTIME 1
-
 #define RECOMPUTEBUTTONCHECK WM_USER+100
 #define RESIZE_FROM_EXPAND WM_USER+101
 
@@ -1811,7 +1803,6 @@ void Player::mechPlungerIn(int z)
 
 //++++++++++++++++++++++++++++++++++++++++
 
-#define EMBEDED_LIMIT  0.0875f
 #define STATICCNTS 10
 
 void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move physics forward to this time
@@ -1866,7 +1857,7 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 #ifdef _DEBUG
 					++c_hitcnts;						// stats for display
 
-					if (pball->m_HitRigid && pball->m_HitDist < -EMBEDED_LIMIT) //rigid and embedded
+					if (pball->m_HitRigid && pball->m_HitDist < -0.0875f) //rigid and embedded
 						++c_embedcnts;
 #endif
 					///////////////////////////////////////////////////////////////////////////
@@ -2152,8 +2143,6 @@ void Player::Render()
         hid_update(sim_msec);
         plumb_update(sim_msec);
 
-//rlc remove #define if accurate timers break something
-#define ACCURATETIMERS 1
 #ifdef ACCURATETIMERS
 	m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 

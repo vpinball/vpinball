@@ -1,8 +1,4 @@
 #pragma once
-#define MAXBALLS 256
- 
-#define GRAVITYCONST 0.86543f
-
 class HitObject;
 class Level;
 class Ball;

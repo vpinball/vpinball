@@ -1,15 +1,27 @@
-// stdafx.h : include file for standard system include files,
-//      or project specific include files that are used frequently,
-//      but are changed infrequently
+#define ULTRACADE
+#define ULTRA_FREE 1
+#ifndef ULTRA_FREE
+ #define DONGLE_SUPPORT			// UltraPin Dongle: Remember to run hdd32.exe (HASP dongle driver setup) on host
+#endif
+//#define ULTRAPIN              // define to enable deprecated UltraPin functionality
 
-#define VP3D // enable 3D stereo code //!! remove define(s) after first succesful release
-#define ONLY3DUPD // faster 3D stereo code (same trick as VP2D does: only update regions each frame)
+#define GRAVITYCONST 0.86543f
+
+#define VP3D                    // enable 3D stereo code //!! remove define(s) after first succesful release
+#define ONLY3DUPD               // faster 3D stereo code (same trick as VP2D does: only update regions each frame)
 
 #define ADAPT_VSYNC_FACTOR 1.05 // safety factor where adaptive vsync kicks in (f.e. 60fps * 1.05 = 63fps)
 
-#define ULTRA_FREE 1
+#define ACCURATETIMERS 1
 
-//#define ULTRAPIN // define to enable UltraPin compatible mode
+#define FPS 1                   // Enable FPS computation (default 'F10')
+#define STEPPING 1              // Enable Physics stepping
+
+//#define _DEBUGPHYSICSx
+//#define DEBUG_FRATE
+//#define ANTI_TEAR	1			// define if you want to have some hacky code to prevent drawing more than one frame per 16ms = ~60fps
+//#define GDIDRAW 1
+//#define EVENTIME 1
 
 #define GPINFLOAT double 
 
@@ -68,8 +80,6 @@ extern CExeModule _Module;
 using namespace MSAPC;
 #endif
 
-//#include "evalkey.h"
-
 #include "math.h"
 
 #include "commctrl.h"
@@ -85,6 +95,7 @@ using namespace MSAPC;
 #include "ddraw.h"
 #include "d3d.h"
 #include "dsound.h"
+
 #include <ocidl.h>	// Added by ClassView
 
 #include "stdio.h"
