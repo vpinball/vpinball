@@ -22,6 +22,28 @@ enum
 	DONGLE_STATUS_OK
 };
 
+
+#ifdef ULTRAPIN
+enum 
+{
+	// Firepower
+    LIGHTHACK_FIREPOWER_P1			= 0,
+    LIGHTHACK_FIREPOWER_P2,
+    LIGHTHACK_FIREPOWER_P3,
+    LIGHTHACK_FIREPOWER_P4,
+
+	// Black Knight 2000
+    LIGHTHACK_BK2K_R,
+    LIGHTHACK_BK2K_A,
+    LIGHTHACK_BK2K_N,
+    LIGHTHACK_BK2K_S,
+    LIGHTHACK_BK2K_O,
+    LIGHTHACK_BK2K_M,
+
+	LIGHTHACK_MAX
+};
+#endif
+
 enum EnumAssignKeys
 	{
 	eLeftFlipperKey,
@@ -53,6 +75,9 @@ public:
 
 	HRESULT Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName, BOOL fCheckForCache);
 	void InitWindow();
+#ifdef ULTRAPIN
+	void InitDMDHackWindow();
+#endif
 	void InitKeys();
 	void InitRegValues();
 
@@ -72,7 +97,9 @@ public:
 	void PhysicsSimulateCycle(float dtime, const U64 startTime);
 
 	void InvalidateRect(RECT * const prc);
-
+#ifdef ULTRAPIN
+	void DrawLightHack ();
+#endif
 	void EraseBall(Ball *pball);
 
 	Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius);	
@@ -148,7 +175,9 @@ public:
 
 	PinTable *m_ptable;
 	HWND m_hwnd;
-
+#ifdef ULTRAPIN
+	HWND m_dmdhackhwnd;
+#endif
 	int m_timerid;
 	HBITMAP m_hbmOffScreen;
 
@@ -250,6 +279,19 @@ public:
 	BOOL m_fDebugMode;
 	HWND m_hwndDebugger;
 	HWND m_hwndDebugOutput;
+
+#ifdef ULTRAPIN
+	U32 m_LastUpdateTime[LIGHTHACK_MAX];
+	BOOL m_LightHackReadyForDrawLightHackFn[LIGHTHACK_MAX];
+	BOOL m_LightHackCurrentState[LIGHTHACK_MAX];
+	BOOL m_LightHackPreviousState[LIGHTHACK_MAX];
+	BOOL m_LightHackCurrentAnimState[LIGHTHACK_MAX];
+	BOOL m_LightHackPreviousAnimState[LIGHTHACK_MAX];
+	int m_LightHackX[LIGHTHACK_MAX];
+	int m_LightHackY[LIGHTHACK_MAX];
+	int m_LightHackWidth[LIGHTHACK_MAX];
+	int m_LightHackHeight[LIGHTHACK_MAX];
+#endif
 
 #ifdef FPS
 private:

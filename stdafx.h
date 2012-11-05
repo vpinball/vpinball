@@ -9,6 +9,8 @@
 
 #define ULTRA_FREE 1
 
+//#define ULTRAPIN // define to enable UltraPin compatible mode
+
 #define GPINFLOAT double 
 
 #if !defined(AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_)
