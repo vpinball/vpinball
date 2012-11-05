@@ -69,7 +69,6 @@ void ExitApp()
 	} 
 	else exit(0);
 #else
-
 	// Check if we have a dongle.
 	if ( get_dongle_status() == DONGLE_STATUS_OK )
 	{

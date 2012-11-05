@@ -1966,8 +1966,6 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 			}
 			else //end joy buttons
 			{
-			//#ifdef ULTRACADE
-			
 			int DeadZ2;
 			const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ2);
 			if (hr != S_OK)

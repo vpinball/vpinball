@@ -114,7 +114,7 @@ static HANDLE hid_connect (U32 vendorID, U32 productID, U32 *versionNumber=NULL)
         index++;
     }
 #ifndef ULTRA_FREE
-		exit(0);  //rlc no ushock 
+	exit(0);  //rlc no ushock 
 #endif
 
     return INVALID_HANDLE_VALUE;

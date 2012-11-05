@@ -10,7 +10,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-
 #define CURRENT_FILE_FORMAT_VERSION 601
 #define BEYOND_FILE_FORMAT_VERSION 701
 
@@ -20,7 +19,7 @@
 
 #define DEFAULT_SECURITY_LEVEL 0
 
-#define LAST_OPENED_TABLE_COUNT		8
+#define LAST_OPENED_TABLE_COUNT	8
 
 class MiniBitmapID
 	{

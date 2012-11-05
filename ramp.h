@@ -12,8 +12,6 @@
 
 #include "resource.h"       // main symbols
 
-
-
 class RampData
 	{
 public:

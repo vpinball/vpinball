@@ -49,9 +49,6 @@ void LineSeg::CalcHitRect()
 	}
 //rlc begin change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-#define TANX  normal.y
-#define TANY -normal.x
-
 float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool lateral, const bool rigid)
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
@@ -117,11 +114,11 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 			hittime = bnd/(-bnv);	
 		}
 
-	if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f;	// time is outside this frame ... no collision
+	if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f; // time is outside this frame ... no collision
 
-	const float btv = ballvx*TANX + ballvy*TANY;					//ball velocity tangent to segment with respect to direction from V1 to V2
-	const float btd = (ballx - v1.x)*TANX + (bally - v1.y)* TANY 	// ball tangent distance 
-					+ btv * hittime;								// ball tangent distance (projection) (initial position + velocity * hitime)
+	const float btv = ballvx*normal.y - ballvy*normal.x;				 //ball velocity tangent to segment with respect to direction from V1 to V2
+	const float btd = (ballx - v1.x)*normal.y - (bally - v1.y)*normal.x  // ball tangent distance 
+					+ btv * hittime;								     // ball tangent distance (projection) (initial position + velocity * hitime)
 
 	if (btd < -C_TOL_ENDPNTS || btd > length + C_TOL_ENDPNTS) // is the contact off the line segment??? 
 		return -1.0f;

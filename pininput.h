@@ -41,8 +41,6 @@ public:
 	void Init(HWND hwnd);
 	void UnInit();
 
-	//void GetShiftState(BOOL &fLeft, BOOL &fRight);
-
 	void FireKeyEvent( int dispid, int keycode );
 	int  QueueFull   ();
 	int  QueueEmpty  ();
@@ -79,8 +77,6 @@ private:
 	int m_tail; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
 
 	PinTable *m_ptable;
-
-	
 
 public:
 	static U32 m_PreviousKeys;		// Masks of PININ_* inputs used by ultracade - AMH

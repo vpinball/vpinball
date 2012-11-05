@@ -160,11 +160,7 @@ void LineSegSlingshot::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 	if (!m_psurface->m_fDisabled && threshold) // enabled and if velocity greater than threshold level		
 		{
-
-#define TANX  phitnormal->y
-#define TANY -phitnormal->x
-
-		const float len = (v2.x - v1.x)*TANX + (v2.y - v1.y)*TANY; //rlc length of segment, Unit TAN points from V1 to V2
+		const float len = (v2.x - v1.x)*phitnormal->y - (v2.y - v1.y)*phitnormal->x; //rlc length of segment, Unit TAN points from V1 to V2
 
 		const Vertex2D vhitpoint(pball->x - phitnormal->x * pball->radius, //project ball radius along norm
 								 pball->y - phitnormal->y * pball->radius);
@@ -172,7 +168,7 @@ void LineSegSlingshot::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		// vhitpoint will now be the point where the ball hits the line
 		// Calculate this distance from the center of the slingshot to get force
 
-		const float btd = (vhitpoint.x - v1.x)*TANX + (vhitpoint.y - v1.y)*TANY; //rlc distance to vhit from V1
+		const float btd = (vhitpoint.x - v1.x)*phitnormal->y - (vhitpoint.y - v1.y)*phitnormal->x; //rlc distance to vhit from V1
 		float force = (len != 0.0f) ? ((btd+btd)/len - 1.0f) : -1.0f;	// -1..+1
 		force = 0.5f *(1.0f-force*force);	//rlc maximum value 0.5 ...I think this should have been 1.0...oh well
 											// will match the previous physics

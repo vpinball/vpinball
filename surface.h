@@ -4,7 +4,6 @@
 #ifndef __SURFACE_H_
 #define __SURFACE_H_
 
-
 #include "resource.h"       // main symbols
 
 class SurfaceData

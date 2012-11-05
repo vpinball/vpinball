@@ -3539,13 +3539,8 @@ struct EnumVideoModeStruct
 
 HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpContext)
 	{
-//#ifdef ULTRACADE
-	// Only allow 32-bit color depths on minimum 640 size monitors.
-//	if (lpDDSurfaceDesc->dwWidth >= 640 && lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount >= 32)
-//#else
 	// Throw away displays we won't do (ModeX and 8-bit)
-	if (lpDDSurfaceDesc->dwWidth >= 640 && lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount >= 16)
-//#endif		
+	if (lpDDSurfaceDesc->dwWidth >= 640 && lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount >= 16) // ULTRACADE is 32bit only
 	{
 		char szT[128];
 		EnumVideoModeStruct *pevms = (EnumVideoModeStruct *)lpContext;

@@ -12,9 +12,8 @@
 
 #define MIN_ZOOM 0.126f // purposely make them offset from powers to 2 to account for roundoff error
 #define MAX_ZOOM 63.9f
-int DeadZ;
 
-#define MAX_TEXTURE_SIZE 4096
+#define MAX_TEXTURE_SIZE 4096 // D3D7 resolution limit
 
 // define table protection flags
 #define DISABLE_TABLE_SAVE		0x00000001      // cannot save table (or export)
