@@ -86,7 +86,7 @@ void PinDirectSound::InitDirectSound(HWND hwnd)
 	if (!FAILED (DirectSoundEnumerate (DSEnumCallBack, &DSads)))
 	{
 		hr = GetRegInt("Player", "SoundDevice", &DSidx);
-		if ((hr != S_OK) || (DSidx >= DSads.size()))
+		if ((hr != S_OK) || ((unsigned int)DSidx >= DSads.size()))
 		{
 			DSidx = 0; // The default primary sound device
 		}

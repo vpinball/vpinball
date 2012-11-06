@@ -1616,34 +1616,27 @@ extern int e_JoyCnt;
 static int curAccel_x[PININ_JOYMXCNT]= {0,0,0,0};
 static int curAccel_y[PININ_JOYMXCNT]= {0,0,0,0};
 
-//static float curMechPlungerPos;
-
 int curPlunger = JOYRANGEMN-1;	// assume
-
 
 void Player::UltraNudgeX(int x, int j )
 {
 	curAccel_x[j] = x;
 }
 
-
 void Player::UltraNudgeY(int y, int j )
 {
 	curAccel_y[j] = y;
 }
-
 
 F32 GetX()
 {
 	return ((F32)curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN));
 }
 
-
 F32 GetY()
 {
     return ((F32)curAccel_y[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN));
 }
-
 
 int Player::UltraNudgeGetTilt()
 {
@@ -1677,7 +1670,6 @@ int Player::UltraNudgeGetTilt()
 
 	return 0;
 }
-
 
 void Player::UltraNudge()	// called on every intergral physics frame
 {	
@@ -1774,7 +1766,6 @@ void Player::UltraPlunger()	// called on every intergral physics frame
 
 	curMechPlungerPos = y[0];
 	}
-
 
 // mechPlunger NOTE: Normalized position is from 0.0 to +1.0f
 // +1.0 is fully retracted, 0.0 is fully compressed
@@ -2136,7 +2127,7 @@ void Player::Render()
 
 		// now get and/or calculate integral cycle physics events, digital filters, external acceleration inputs, etc.
 
-		const U32 sim_msec = m_curPhysicsFrameTime/1000;
+		const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
 		m_pininput.ProcessKeys(m_ptable, sim_msec);
         mixer_update();
 

@@ -204,9 +204,6 @@
     <ClCompile Include="vpinball.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Pin\wall.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Media\wavread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -372,9 +369,6 @@
     <ClInclude Include="msscript.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="oleauto.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="paintsur.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -460,9 +454,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vectorsort.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pin\wall.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wintimer.h">

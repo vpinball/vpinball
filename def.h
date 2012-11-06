@@ -16,6 +16,7 @@ using namespace MSAPC;
 
 #define BOOL int
 
+#define MAXNAMEBUFFER 33
 #define MAXSTRING 1024
 #define MAXTOKEN 32*4
 
@@ -61,7 +62,6 @@ public:
 	};
 
 #define MY_D3DFVF_VERTEX (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2)
-
 #define MY_D3DTRANSFORMED_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
 
 class Vertex3D

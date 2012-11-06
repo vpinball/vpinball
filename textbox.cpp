@@ -1,7 +1,6 @@
 // Textbox.cpp : Implementation of CVBATestApp and DLL registration.
 
 #include "StdAfx.h"
-//#include "VBATest.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //

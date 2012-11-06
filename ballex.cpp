@@ -1,9 +1,5 @@
-// Ball.cpp : Implementation of CBall
 #include "stdafx.h"
 #include "VBATest.h"
-
-/////////////////////////////////////////////////////////////////////////////
-// CBall
 
 BallEx::BallEx()
 	{
@@ -29,6 +25,8 @@ void BallEx::RunDebugCommand(int id)
 			break;
 		}
 	}
+
+#define CHECKSTALEBALL if (!m_pball) {return E_POINTER;}
 
 STDMETHODIMP BallEx::get_X(float *pVal)
 {
@@ -243,8 +241,6 @@ STDMETHODIMP BallEx::put_Name(BSTR newVal)
 	return S_OK;
 }
 
-
-
 STDMETHODIMP BallEx::get_CollisionMass(float *pVal)
 {
 	CHECKSTALEBALL
@@ -262,6 +258,7 @@ STDMETHODIMP BallEx::put_CollisionMass(float newVal)
 
 	return S_OK;
 }
+
 STDMETHODIMP BallEx::get_Radius(float *pVal)
 {
 	CHECKSTALEBALL
@@ -281,8 +278,6 @@ STDMETHODIMP BallEx::put_Radius(float newVal)
 
 	return S_OK;
 }
-
-
 
 STDMETHODIMP BallEx::DestroyBall(int *pVal)
 {

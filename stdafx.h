@@ -7,6 +7,66 @@
 
 #define GRAVITYCONST 0.86543f
 
+// Collisions (also some more defaults are in collide.cpp):
+//
+// test near zero conditions in linear, well behaved, conditions
+#define C_PRECISION 0.01f
+// tolerance for line segment endpoint and point radii collisions
+#define C_TOL_ENDPNTS 0.0f
+#define C_TOL_RADIUS 0.005f
+// Physical Skin ... postive contact layer. Any contact (collision) in this layer reports zero time.
+// layer is used to calculate contact effects ... beyond this and objects pass through each other
+// Default 25.0
+#define PHYS_SKIN 25.0
+// Layer outside object which increases it's size for contact measurements. Used to determine clearances.
+// Setting this value during testing to 0.1 will insure clearance. After testing set the value to 0.005
+// Default 0.01
+#define PHYS_TOUCH 0.05
+// Low Normal speed collison is handled as contact process rather than impulse collision
+#define C_LOWNORMVEL 0.0001f
+#define C_CONTACTVEL 0.099f
+// limit ball speed to C_SPEEDLIMIT
+#define C_SPEEDLIMIT 60.0f
+// low velocity stabilization ... if embedding occurs add some velocity 
+#define C_EMBEDDED 0.0f
+#define C_EMBEDSHOT 0.05f
+// Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
+#define C_DISP_GAIN 0.9875f
+#define C_DISP_LIMIT 5.0f
+#define RC_FRICTIONCONST 2.5e-3f
+#define C_DYNAMIC 2
+//trigger/kicker boundary crossing hysterisis
+#define STATICTIME 0.005f
+
+//Flippers:
+#define C_FLIPPERACCEL   1.25f
+#define C_FLIPPERIMPULSE 1.0f
+#define C_INTERATIONS 20 // Precision level and cycles for interative calculations // acceptable contact time ... near zero time
+
+//Ball:
+#define ANGULARFORCE 1   // Number I pulled out of my butt - this number indicates the maximum angular change 
+					     //per time unit, or the speed at which angluar momentum changes over time, 
+					     //depending on how you interpret it.
+//Ramp:
+#define WALLTILT 0.5f
+
+//Plumb:
+#define	VELOCITY_EPSILON 0.05f	// The threshold for zero velocity.
+
+#define PLUNGERHEIGHT 50.0f
+
+//
+
+#define MAX_REELS 32
+
+#define LIGHTSEQGRIDSCALE	20
+#define	LIGHTSEQGRIDWIDTH	1000/LIGHTSEQGRIDSCALE
+#define	LIGHTSEQGRIDHEIGHT	2000/LIGHTSEQGRIDSCALE
+
+#define LIGHTSEQQUEUESIZE	100
+
+//
+
 #define VP3D                    // enable 3D stereo code //!! remove define(s) after first succesful release
 #define ONLY3DUPD               // faster 3D stereo code (same trick as VP2D does: only update regions each frame)
 
@@ -23,7 +83,9 @@
 //#define GDIDRAW 1
 //#define EVENTIME 1
 
-#define GPINFLOAT double 
+#define GPINFLOAT double
+
+//
 
 #if !defined(AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_)
 #define AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_

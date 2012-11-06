@@ -49,7 +49,6 @@ extern int curPlunger;
 
 PinInput::PinInput()
 	{
-
 	//InputControlRun = 0;
 
 	m_pDI = NULL;

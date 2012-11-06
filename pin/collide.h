@@ -21,22 +21,7 @@ enum
 	ePrimitive
 	};
 
-// test near zero conditions in linear, well behaved, conditions
-#define C_PRECISION 0.01f
-
-// tolerance for line segment endpoint and point radii collisions
-
-#define C_TOL_ENDPNTS 0
-
-#define C_TOL_RADIUS 0.005f
-
 #define SHOWNORMAL 1
-
-// Physical Skin ... postive contact layer. Any contact (collision) in this layer reports zero time.
-// layer is used to calculate contact effects ... beyond this and objects pass through each other
-// Default 25.0
-
-#define PHYS_SKIN 25.0
 
 extern float c_Gravity;
 extern float c_hardFriction; 
@@ -46,41 +31,6 @@ extern float c_dampingFriction;
 
 extern float c_plungerNormalize;  //Adjust Mech-Plunger, useful for component change or weak spring etc.
 extern bool c_plungerFilter;
-
-//extern U32 c_PostCheck;
-
-// Layer outside object which increases it's size for contact measurements. Used to determine clearances.
-// Setting this value during testing to 0.1 will insure clearance. After testing set the value to 0.005
-// Default 0.01
-
-#define PHYS_TOUCH  0.05
-
-// Low Normal speed collison is handled as contact process rather than impulse collision
-#define C_LOWNORMVEL 0.0001f
-
-#define C_CONTACTVEL 0.099f
-
-// limit  ball speed to C_SPEEDLIMIT
-#define C_SPEEDLIMIT 60.0f
-
-// low velocity stabalization ... if embedding occurs add some velocity 
-#define C_EMBEDDED 0.0f
-#define C_EMBEDSHOT 0.05f
-
-// Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
-#define C_DISP_GAIN 0.9875f
-#define C_DISP_LIMIT 5.0f
-
-#define RC_FRICTIONCONST 2.5e-3f
-
-#define C_DYNAMIC 2
-
-//trigger/kicker boundary crossing hysterisis
-#define STATICTIME 0.005f
-
-//#define INFOARRAY vertex[2];
-//#define INFONORMAL 0
-//#define INFOMOVE 1
 
 inline bool FQuickLineIntersect(const float x1, const float y1, const float x2, const float y2,
 								const float x3, const float y3, const float x4, const float y4)
@@ -178,9 +128,6 @@ class HitNormal : public HitObject
 	{
 public:
 	Vertex2D normal;
-#ifdef SHOWNORMAL
-	int check1;
-#endif
 	};
 
 class LineSeg : public HitNormal
@@ -188,6 +135,9 @@ class LineSeg : public HitNormal
 public:
 	Vertex2D v1, v2;
 	float length;
+#ifdef SHOWNORMAL
+	int check1;
+#endif
 
 	virtual float HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool lateral, const bool rigid);
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);

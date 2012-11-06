@@ -1,8 +1,5 @@
 #include "stdafx.h"
 
-#define C_FLIPPERACCEL   1.25f
-#define C_FLIPPERIMPULSE 1.0f
-
 HitFlipper::HitFlipper(const float x, const float y, float baser, float endr, float flipr, const float angle,
 					   const float zlow, const float zhigh, float strength, const float mass)
 	{	
@@ -268,12 +265,6 @@ float HitFlipper::HitTest(Ball * const pball, const float dtime, Vertex3Ds * con
 
 	return -1.0f;	// no hits
 	}
-
-// Precision level and cycles for interative calculations 
-
-#define C_INTERATIONS 20
-// acceptable contact time ... near zero time
-
 
 float HitFlipper::HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnormal) // replacement
 	{ 	 
@@ -593,7 +584,7 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		else return;
 #endif		
 		}
-		
+
 #ifdef C_DISP_GAIN 
 		// correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing
 		float hdist = -C_DISP_GAIN * pball->m_HitDist;				// distance found in hit detection
@@ -658,7 +649,7 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	
 
 	float scatter_angle = m_pflipper->m_d.m_scatterangle;				//
-	if (scatter_angle <= 0) scatter_angle = c_hardScatter;				// object specific roughness
+	if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;				// object specific roughness
 	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply dificulty weighting
 
 	if (dot > -1.0f) scatter_angle = 0;									// not for low velocities
@@ -691,7 +682,6 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		dot *= -1.2f;						// small bounce
 		pball->vx += dot * phitnormal->x;	// new velocity for ball after corrected impact
 		pball->vy += dot * phitnormal->y;	//
-		//++c_PostCheck; // don't count this one
 		}
 
 	// move hit event to end of collision routine, pinball may be deleted

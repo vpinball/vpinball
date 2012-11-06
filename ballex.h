@@ -5,8 +5,6 @@
 
 #include "resource.h"       // main symbols
 
-#define CHECKSTALEBALL if (!m_pball) {return E_POINTER;}
-
 class Ball;
 
 /////////////////////////////////////////////////////////////////////////////

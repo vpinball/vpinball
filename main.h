@@ -66,7 +66,6 @@ class PinBinary;
 #include "pin/ball.h"
 #include "pin/hittimer.h"
 #include "pin/hitable.h"
-#include "pin/wall.h"
 #include "pin/hitflipper.h"
 #include "pin/hitplunger.h"
 #include "pin/player.h"

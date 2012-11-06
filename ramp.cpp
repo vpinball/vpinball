@@ -4,6 +4,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 //
+
 Ramp::Ramp()
 	{
 	m_menuid = IDR_SURFACEMENU;
@@ -920,16 +921,14 @@ void Ramp::GetHitShapesDebug(Vector<HitObject> *pvho)
 	{
 	}
 
-#define walltilt 0.5f
-
 void Ramp::AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight)
 	{
 	Vertex3Ds rgv3D[4] = {
 		Vertex3Ds(pv1->x,pv1->y,height1 - (float)PHYS_SKIN),
 		Vertex3Ds(pv2->x,pv2->y,height2 - (float)PHYS_SKIN),
 
-		Vertex3Ds(pv2->x + walltilt,pv2->y + walltilt,height2 + wallheight),
-		Vertex3Ds(pv1->x + walltilt,pv1->y + walltilt,height1 + wallheight)};
+		Vertex3Ds(pv2->x + WALLTILT,pv2->y + WALLTILT,height2 + wallheight),
+		Vertex3Ds(pv1->x + WALLTILT,pv1->y + WALLTILT,height1 + wallheight)};
 
 	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4,false);	
 	ph3dpoly->m_elasticity = m_d.m_elasticity;

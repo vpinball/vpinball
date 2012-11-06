@@ -2,17 +2,14 @@
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
-
 #include <stdio.h>
 #include <ddraw.h>
 #include <d3d.h>
-
 
 #define     RGBA_TO_D3DARGB(r,g,b,a)	((((long)((a) * 255.0f)) << 24) | (((long)((r) * 255.0f)) << 16) | (((long)((g) * 255.0f)) << 8) | (long)((b) * 255.0f))
 #define     RGBA_TO_D3DRGBA(r,g,b,a)	((((long)((r) * 255.0f)) << 24) | (((long)((g) * 255.0f)) << 16) | (((long)((b) * 255.0f)) << 8) | (long)((a) * 255.0f))
 
 #define		DISPLAY_MAXTEXTURES			1
-
 
 typedef struct _D3DTLVertexType			D3DTLVertexType;
 struct _D3DTLVertexType
@@ -266,9 +263,6 @@ inline void Display_DrawSprite_NoMatrix ( LPDIRECT3DDEVICE7 Direct3DDevice, cons
 	Direct3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX,
 										  (D3DTLVertexType *) Vertices, 4,
 										  (LPWORD)rgi0123, 4, NULL);
-
-//#define MY_D3DFVF_VERTEX (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2)
-//#define MY_D3DTRANSFORMED_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
 }
 
 inline void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const float r, const float g, const float b, const float a, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
@@ -350,9 +344,6 @@ inline void Display_DrawSprite_NoMatrix_NoStates ( LPDIRECT3DDEVICE7 Direct3DDev
 	Direct3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX,
 										  (D3DTLVertexType *) Vertices, 4,
 										  (LPWORD)rgi0123, 4, NULL);
-
-//#define MY_D3DFVF_VERTEX (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2)
-//#define MY_D3DTRANSFORMED_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
 }
 
 inline void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )

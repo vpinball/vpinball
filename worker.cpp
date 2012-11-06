@@ -9,8 +9,6 @@ HANDLE g_hWorkerStarted;
 int hangsnooptimerid;
 int lasthangsnoopvalue;
 
-//VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-
 VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 	{
 	const int newvalue = g_pplayer->m_LastKnownGoodCounter;

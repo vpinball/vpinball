@@ -1,10 +1,6 @@
 #include "stdafx.h"
 
-#define PLUNGERHEIGHT 50
-
-
 extern U32 LastPlungerHit;
-
 
 HitPlunger::HitPlunger(const float x, const float y, const float x2, const float pos, const float zheight, Plunger * const pPlunger)
 		{
