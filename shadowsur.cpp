@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 
-
 ShadowSur::ShadowSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const float z, ISelect *psel) : Sur(hdc, zoom, offx, offy, width, height)
 	{
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));

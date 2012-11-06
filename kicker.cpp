@@ -1,7 +1,6 @@
 // Kicker.cpp : Implementation of CVBATestApp and DLL registration.
 
 #include "StdAfx.h"
-//#include "VBATest.h"
 
 ////////////////////////////////////////////////////////////////////
 
@@ -664,7 +663,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 		if (fabsf(inclination) > (float)(M_PI/2.0))		// radians or degrees?  if greater PI/2 assume degrees
 			inclination *= (float)(M_PI/180.0);			// convert to radians
 		
-		float scatterAngle = (m_d.m_scatter <= 0) ? c_hardScatter : ANGTORAD(m_d.m_scatter); // if <= 0 use global value
+		float scatterAngle = (m_d.m_scatter <= 0.0f) ? c_hardScatter : ANGTORAD(m_d.m_scatter); // if <= 0 use global value
 		scatterAngle *= g_pplayer->m_ptable->m_globalDifficulty;		// apply dificulty weighting
 
 		if (scatterAngle > 1.0e-5f)										// ignore near zero angles

@@ -8,7 +8,6 @@
 #define CONTEXTCOOKIE_NORMAL 1000
 #define CONTEXTCOOKIE_DEBUG 1001
 
-
 static bool IsVBComment(Accessor &styler, int pos, int len) {
 	return len>0 && styler[pos]=='\'';
 }

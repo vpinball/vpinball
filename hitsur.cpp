@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 
-
 HitSur::HitSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, ISelect * const pbackground) : Sur(hdc, zoom, offx, offy, width, height)
 	{
 	m_pselected = pbackground;

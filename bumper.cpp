@@ -1,9 +1,4 @@
-// Bumper.cpp : Implementation of CVBATestApp and DLL registration.
-
 #include "stdafx.h"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 
 Bumper::Bumper()
 	{

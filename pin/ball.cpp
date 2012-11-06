@@ -1,19 +1,15 @@
 #include "stdafx.h"
 
-#ifndef ALTSTARTUPBALLCNT
 static int _balls_created;
 
 int Ball::NumInitted()  //
 {
     return ( _balls_created );
 }
-#endif
 
 Ball::Ball()
 	{
-#ifndef ALTSTARTUPBALLCNT
-	_balls_created++; //
-#endif
+	_balls_created++;
 	m_pho = NULL;
 	m_pballex = NULL;
 	m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
@@ -22,9 +18,7 @@ Ball::Ball()
 
 Ball::~Ball()	
 {
-#ifndef ALTSTARTUPBALLCNT
 	_balls_created--; //Added by JEP.  Need to keep track of number of balls on table for autostart to work.
-#endif
 }
 
 void Ball::Init()
@@ -150,12 +144,12 @@ void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elastic
 	vx += dot * phitnormal->x;	
 	vy += dot * phitnormal->y;
 
-	if (antifriction >= 1.0f || antifriction <= 0) 
+	if (antifriction >= 1.0f || antifriction <= 0.0f) 
 		antifriction = c_hardFriction; // use global
 
 	vx *= antifriction; vy *= antifriction; vz *= antifriction; //friction all axiz
 
-	if (scatter_angle <= 0) scatter_angle = c_hardScatter;				// if <= 0 use global value
+	if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;				// if <= 0 use global value
 	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply dificulty weighting
 
 	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
@@ -204,7 +198,7 @@ void Ball::Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elast
 		}	
 #endif					
 
-	if (antifriction >= 1.0f || antifriction <= 0) 
+	if (antifriction >= 1.0f || antifriction <= 0.0f) 
 		antifriction = c_hardFriction; // use global
 
 	dot *= -1.005f - m_elasticity;	
@@ -212,7 +206,7 @@ void Ball::Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elast
 	vy += dot * phitnormal->y; vy *= antifriction;
 	vz += dot * phitnormal->z; vz *= antifriction;
 	
-	if (scatter_angle <= 0) scatter_angle = c_hardScatter;						// if <= zero use global value
+	if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;						// if <= zero use global value
 	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;	// apply dificulty weighting
 	
 	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
@@ -444,11 +438,6 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 		cpvt.x + bvt.x,
 		cpvt.y + bvt.y,
 		cpvt.z + bvt.z);
-
-#define ANGULARFORCE 1   
-					// Number I pulled out of my butt - this number indicates the maximum angular change 
-					//per time unit, or the speed at which angluar momentum changes over time, 
-					//depending on how you interpret it.
 
 	// If the point can change fast enough to go directly to a natural roll, then do it.
 

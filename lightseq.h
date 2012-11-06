@@ -14,12 +14,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // LightSeq
 
-#define LIGHTSEQGRIDSCALE	20
-#define	LIGHTSEQGRIDWIDTH	1000/LIGHTSEQGRIDSCALE
-#define	LIGHTSEQGRIDHEIGHT	2000/LIGHTSEQGRIDSCALE
-
-#define LIGHTSEQQUEUESIZE	100
-
 class LightSeqData
 	{
 public:

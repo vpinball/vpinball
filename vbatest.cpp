@@ -1,6 +1,5 @@
 // VBATest.cpp : Implementation of WinMain
 
-
 // Note: Proxy/Stub Information
 //      To build a separate proxy/stub DLL,
 //      run nmake -f VBATestps.mk in the project directory.

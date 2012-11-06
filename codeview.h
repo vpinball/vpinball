@@ -3,8 +3,6 @@
 
 #include "atlcom.h"
 
-#define MAXNAMEBUFFER 33
-
 enum SecurityLevelEnum
 	{
 	eSecurityNone = 0,

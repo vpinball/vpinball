@@ -1,11 +1,6 @@
 #include "StdAfx.h"
 
-// This comment is just plumb stupid
-// What's your prob plumb? 
-#undef  DEBUG_PLUMB
-
-#define	VELOCITY_EPSILON 0.050f			// The threshold for zero velocity.
-
+//#define DEBUG_PLUMB
 
 const F32 ac = 0.75f; // aspect ratio correction
 static int tilted;
@@ -21,12 +16,12 @@ static Plumb gPlumb;
 static F32 tiltsens;
 static F32 nudgesens;
 
-void plumb_set_sensitivity( F32 sens )
+void plumb_set_sensitivity( const F32 sens )
 {
     tiltsens = sens;
 }
 
-void nudge_set_sensitivity( F32 sens )
+void nudge_set_sensitivity( const F32 sens )
 {
     nudgesens = sens;
 }
@@ -138,7 +133,7 @@ void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 c
 }
 
 #ifdef DEBUG_PLUMB
-void invalidate_box( F32 sx, F32 sy, F32 x, F32 y )
+void invalidate_box( const F32 sx, const F32 sy, const F32 x, const F32 y )
 {
 	RECT	Rect;
 

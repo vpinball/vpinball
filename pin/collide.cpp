@@ -8,11 +8,9 @@ float c_dampingFriction = 0.95f;
 float c_plungerNormalize = (float)(1.0/13.0);  //match button plunger physics
 bool c_plungerFilter = false;
 
-float c_hardScatter = 0;
+float c_hardScatter = 0.0f;
 float c_hardFriction = 1.0f - RC_FRICTIONCONST;
 float c_Gravity = GRAVITYCONST;
-
-//U32 c_PostCheck = 0;
 
 HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections)
 	{
