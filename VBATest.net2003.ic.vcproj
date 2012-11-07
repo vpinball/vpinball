@@ -7447,117 +7447,6 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="pin\wall.cpp">
-				<FileConfiguration
-					Name="Unicode Release MinSize|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestSpanish|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Release MinDependency|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_STATIC_REGISTRY;_ATL_MIN_CRT;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinSize|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_UNICODE;$(NoInherit)"
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestGerman|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestFrench|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTest|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency Fast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency Fast+SSE|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="media\wavread.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">
@@ -8033,9 +7922,6 @@ rem  Version changes during debug compile only
 				RelativePath="msscript.h">
 			</File>
 			<File
-				RelativePath="oleauto.h">
-			</File>
-			<File
 				RelativePath="paintsur.h">
 			</File>
 			<File
@@ -8239,9 +8125,6 @@ rem  Version changes during debug compile only
 						CommandLine=""
 						Outputs=""/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="pin\wall.h">
 			</File>
 			<File
 				RelativePath=".\wintimer.h">
