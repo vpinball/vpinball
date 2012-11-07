@@ -2132,28 +2132,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">MinSpace</Optimization>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="Pin\wall.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinSize|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTestFrench|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTestGerman|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTestSpanish|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">MinSpace</Optimization>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">Disabled</Optimization>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_UNICODE</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|Win32'">MinSpace</Optimization>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_STATIC_REGISTRY;_ATL_MIN_CRT</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">MinSpace</Optimization>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="Media\wavread.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -2404,7 +2382,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="mesh.h" />
     <ClInclude Include="mixer.h" />
     <ClInclude Include="msscript.h" />
-    <ClInclude Include="oleauto.h" />
     <ClInclude Include="paintsur.h" />
     <ClInclude Include="pin3d.h" />
     <ClInclude Include="pinbinary.h" />
@@ -2466,7 +2443,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">
       </Outputs>
     </CustomBuild>
-    <ClInclude Include="Pin\wall.h" />
     <ClInclude Include="wintimer.h" />
     <ClInclude Include="worker.h" />
     <ClInclude Include="xaudplayer.h" />
