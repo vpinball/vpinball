@@ -788,7 +788,7 @@ void HitOctree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHi
 		if ((pball != m_vho.ElementAt(i)) && fRectIntersect3D(pball->m_rcHitRect, m_vho.ElementAt(i)->m_rcHitRect))
 			{
 #ifdef LOG
-		cDeepTested++;
+			cDeepTested++;
 #endif
 			const float newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal);
 			if (newtime >= 0)

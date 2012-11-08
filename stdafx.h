@@ -1,9 +1,5 @@
-#define ULTRACADE
-#define ULTRA_FREE 1
-#ifndef ULTRA_FREE
- #define DONGLE_SUPPORT			// UltraPin Dongle: Remember to run hdd32.exe (HASP dongle driver setup) on host
-#endif
-//#define ULTRAPIN              // define to enable deprecated UltraPin functionality
+//#define ULTRAPIN       // define to enable deprecated UltraPin functionality
+//#define DONGLE_SUPPORT // define to enable deprecated UltraPin dongle (Remember to run hdd32.exe (HASP dongle driver setup) on host)
 
 #define GRAVITYCONST 0.86543f
 
@@ -67,7 +63,6 @@
 
 //
 
-#define VP3D                    // enable 3D stereo code //!! remove define(s) after first succesful release
 #define ONLY3DUPD               // faster 3D stereo code (same trick as VP2D does: only update regions each frame)
 
 #define ADAPT_VSYNC_FACTOR 1.05 // safety factor where adaptive vsync kicks in (f.e. 60fps * 1.05 = 63fps)
@@ -77,7 +72,7 @@
 #define FPS 1                   // Enable FPS computation (default 'F10')
 #define STEPPING 1              // Enable Physics stepping
 
-//#define _DEBUGPHYSICSx
+//#define _DEBUGPHYSICS
 //#define DEBUG_FRATE
 //#define ANTI_TEAR	1			// define if you want to have some hacky code to prevent drawing more than one frame per 16ms = ~60fps
 //#define GDIDRAW 1

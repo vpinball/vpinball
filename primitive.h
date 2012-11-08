@@ -179,13 +179,11 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 	virtual IApcControl *GetIApcControl() {return ApcControl.GetApcControl();}
 #endif
 
-
-
 	PinTable *m_ptable;
 
 	PrimitiveData m_d;
-public:
 
+public:
 	// Vertices for 3d Display
 	Vertex3D rgv3DTopOriginal[Max_Primitive_Sides+1]; // without transformation at index=0 is the middle point
 	Vertex3D rgv3DBottomOriginal[Max_Primitive_Sides+1];
@@ -195,7 +193,6 @@ public:
 	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of each point could be a triangle (*3) and for both sides because of culling (*2)
 	Vertex3D rgv3DBottom[Max_Primitive_Sides];
 	WORD wBottomIndices[Max_Primitive_Sides*6];
-	
 	
 	// OK here are our vertices that should be drawn:
 		// Index				: Length		: Description

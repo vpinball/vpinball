@@ -481,21 +481,6 @@ void Ball::UpdateDisplacements(float dtime)
     	
 	if (!fFrozen)
 		{
-#ifdef _DEBUGXXX
-		if (_isnan(x) || _isnan(y) || _isnan(z)|| _isnan(vx) || _isnan(vy) || _isnan(vz))
-			{
-				static int devx = -3;
-				static int devy = -3;
-
-				if (++devx > 3) devx = -3;
-				if (++devy > 3) devy = -3;
-
-				x = x_max/2 + devx*50; vx = 0; 
-				y = y_max/2 + devy*50; vy = 0;
-
-				z = z_max/2; vz = 0;
-			}
-#endif
 		const float dsx = vx * dtime;
 		const float dsy = vy * dtime;
 		const float dsz = vz * dtime;

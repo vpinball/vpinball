@@ -3540,7 +3540,7 @@ struct EnumVideoModeStruct
 HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpContext)
 	{
 	// Throw away displays we won't do (ModeX and 8-bit)
-	if (lpDDSurfaceDesc->dwWidth >= 640 && lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount >= 16) // ULTRACADE is 32bit only
+	if (lpDDSurfaceDesc->dwWidth >= 640 && lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount >= 16) // UltraPin is 32bit only
 	{
 		char szT[128];
 		EnumVideoModeStruct *pevms = (EnumVideoModeStruct *)lpContext;

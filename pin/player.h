@@ -118,10 +118,8 @@ public:
 	void UltraNudgeY( int y, int j );
 	int  UltraNudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
 
-#ifdef ULTRACADE
 	void UltraPlunger();
-	void mechPlungerIn( int z);		
-#endif
+	void mechPlungerIn( int z );		
 
 #ifdef PLAYBACK
 	float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);

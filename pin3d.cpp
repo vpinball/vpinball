@@ -1534,9 +1534,7 @@ void Pin3D::Flip(const int offsetx, const int offsety, const BOOL vsync)
 
 	// Copy the back buffer to the front buffer.
 	HRESULT hr = m_pddsFrontBuffer->Blt(&rcNew, 
-#ifdef VP3D
 		(g_pplayer->m_fStereo3D && g_pplayer->m_fStereo3Denabled && (m_maxSeparation > 0.0f) && (m_maxSeparation < 1.0f) && (m_ZPD > 0.0f) && (m_ZPD < 1.0f) && m_pdds3Dbuffercopy && m_pdds3DBackBuffer) ? m_pdds3DBackBuffer : 
-#endif
 		m_pddsBackBuffer, NULL, ddbltfx.dwDDFX ? DDBLT_DDFX : 0, &ddbltfx);
 
 	if (hr == DDERR_SURFACELOST)

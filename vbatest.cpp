@@ -162,7 +162,6 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
     BOOL bRun = TRUE;
     LPCTSTR lpszToken = FindOneOf(lpCmdLine, szTokens, szOption);
 
-
     while (lpszToken != NULL)
     {
         if (lstrcmpi(szOption, _T("UnregServer"))==0)
@@ -192,7 +191,6 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 			fPlay = fTrue;
 			lpszToken = FindOneOf(lpszToken, szTokens, szTableFileName);
 
-//#ifdef ULTRACADE
 			char *play = strstr( lpCmdLine, "Play");
 		
 			if( play )
@@ -216,7 +214,6 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 
 			//fullscreen = StrStrI( lpCmdLine, "Fullscreen") != NULL;
 
-//#endif
             break;
         }
         lpszToken = FindOneOf(lpszToken, szTokens, szOption);
@@ -301,7 +298,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 
     _Module.Term();
     CoUninitialize();
-#ifdef DEBUGxxx  //disable this in perference to DevPartner
+#ifdef DEBUG_XXX  //disable this in perference to DevPartner
 	_CrtSetDumpClient(MemLeakAlert);
 	_CrtDumpMemoryLeaks( );
 #endif
