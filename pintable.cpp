@@ -56,21 +56,6 @@ int PinTable::NumStartBalls()
 
 STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 {
-#ifndef ULTRACADE
-	if (g_pplayer && (g_pplayer->m_nudgetime == 0))
-	{
-		const float sn = sinf(ANGTORAD(Angle));
-		const float cs = cosf(ANGTORAD(Angle));
-		
-		g_pplayer->m_NudgeX = -sn*Force;
-		g_pplayer->m_NudgeY =  cs*Force;
-		
-		g_pplayer->m_NudgeBackX = -g_pplayer->m_NudgeX;
-		g_pplayer->m_NudgeBackY = -g_pplayer->m_NudgeY;
-		
-		g_pplayer->m_nudgetime = 10;
-	}
-#else
 	if (g_pplayer && (g_pplayer->m_nudgetime == 0))
 	{
 		const float sn = sinf(ANGTORAD(Angle));
@@ -84,7 +69,6 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 		
 		g_pplayer->m_nudgetime = 10;
 	}
-#endif
 
 	return S_OK;
 }
@@ -1005,14 +989,12 @@ BOOL PinTable::UnlockProtectionBlock(unsigned char *pPassword)
 	unsigned char	paraphrase[PROT_CIPHER_LENGTH];
 	_protectionData *pProtectionData = &m_protectionData;
 
-#ifdef ULTRACADE
-	char	secret1[]= "Could not create";
+	char secret1[]= "Could not create";
 	if ((memcmp(pPassword, &secret1, sizeof(secret1)) == 0))
 		{
 		ResetProtectionBlock();
 		return(fTrue);
 		}
-#endif 
 
 	// acquire a crypto context
 	foo = CryptAcquireContext(&hcp, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET/* | CRYPT_SILENT*/);
@@ -1636,7 +1618,7 @@ void PinTable::Play()
 			c_maxBallSpeedSqed = m_maxBallSpeed*m_maxBallSpeed;
 			c_dampingFriction = m_dampingFriction;
 			c_plungerNormalize = m_plungerNormalize*(float)(1.0/1300.0);
-			c_plungerFilter  = m_plungerFilter != 0; 
+			c_plungerFilter = (m_plungerFilter != 0); 
 
 			const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
@@ -5999,7 +5981,7 @@ PinImage *PinTable::GetImage(char *szName)
 
 	for (int i=0;i<m_vimage.Size();i++)
 		{
-		if (!lstrcmp(m_vimage.ElementAt(i)->m_szInternalName, szName)) //!! strcmp calls are actually pretty expensive currently for drawing the acrylics! -> 10-20% overall frame time
+		if (!lstrcmp(m_vimage.ElementAt(i)->m_szInternalName, szName)) //!!  strcmp calls are actually pretty expensive currently for drawing the acrylics! -> 10-20% overall frame time
 			{
 			return m_vimage.ElementAt(i);
 			}
@@ -6897,21 +6879,6 @@ int CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 STDMETHODIMP PinTable::Nudge(float Angle, float Force)
 {
-#ifndef ULTRACADE
-	if (g_pplayer && (g_pplayer->m_nudgetime == 0))
-		{
-		const float sn = sinf(ANGTORAD(Angle));
-		const float cs = cosf(ANGTORAD(Angle));
-
-		g_pplayer->m_NudgeX = -sn * Force;
-		g_pplayer->m_NudgeY =  cs * Force;
-
-		g_pplayer->m_NudgeBackX = -g_pplayer->m_NudgeX;
-		g_pplayer->m_NudgeBackY = -g_pplayer->m_NudgeY;
-
-		g_pplayer->m_nudgetime = 10;
-		}
-#else
 	if (g_pplayer && (g_pplayer->m_nudgetime == 0) && g_pplayer->m_ptable->m_Shake)
 	{
 		const float sn = sinf(ANGTORAD(Angle));
@@ -6925,7 +6892,6 @@ STDMETHODIMP PinTable::Nudge(float Angle, float Force)
 		
 		g_pplayer->m_nudgetime = 10;
 	}
-#endif
 
 	return S_OK;
 }

@@ -62,22 +62,18 @@ void ExitApp()
 
 		retries++;
 	}
-#ifdef ULTRA_FREE
-	if( g_pvp )
-	{
-		g_pvp->Quit();
-	} 
-	else exit(0);
-#else
+#ifdef DONGLE_SUPPORT
 	// Check if we have a dongle.
 	if ( get_dongle_status() == DONGLE_STATUS_OK )
 	{
+#endif
 		// Quit nicely.
 		if( g_pvp )
 		{
 			g_pvp->Quit();
 		} 
 		else exit(0);
+#ifdef DONGLE_SUPPORT
 	}
 	else
 	{

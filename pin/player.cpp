@@ -1,9 +1,6 @@
 #include "stdafx.h"
 
-#ifdef VP3D
- #include "..\stereo3D.h"
-#endif
-
+#include "..\stereo3D.h"
 #include "..\DongleAPI.h"
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
@@ -185,7 +182,7 @@ Player::Player()
 		m_fWasteTime2 = fTrue;
 		}
 
-#if defined( _DEBUGPHYSICSx ) || defined( DEBUG_FRATE )
+#if defined( DEBUG_FRATE )
 	m_fShowFPS = fTrue;
 #else
 	m_fShowFPS = fFalse;
@@ -255,7 +252,7 @@ Player::~Player()
 		delete pball->m_vpVolObjs;
 		delete pball;
 		}
-		m_vball.RemoveAllElements();
+	m_vball.RemoveAllElements();
 
 #ifdef GDIDRAW
 	DeleteObject(m_hbmOffScreen);
@@ -1610,8 +1607,6 @@ void Player::InitWindow()
 #endif
 	}
 
-#ifdef ULTRACADE
-
 extern int e_JoyCnt;
 static int curAccel_x[PININ_JOYMXCNT]= {0,0,0,0};
 static int curAccel_y[PININ_JOYMXCNT]= {0,0,0,0};
@@ -1733,9 +1728,9 @@ void Player::UltraPlunger()	// called on every intergral physics frame
 											-1.0546654f,
 											 0.1873795f};
 
-//http://www.dsptutor.freeuk.com/IIRFilterDesign/IIRFilterDesign.html  
-// (this applet is set to 8000Hz sample rate, therefore, multiply ...
-// our values by 80 to shift sample clock of 100hz to 8000hz)
+	//http://www.dsptutor.freeuk.com/IIRFilterDesign/IIRFilterDesign.html  
+	// (this applet is set to 8000Hz sample rate, therefore, multiply ...
+	// our values by 80 to shift sample clock of 100hz to 8000hz)
 
 	if (movedPlunger < 3) 
 		{
@@ -1765,7 +1760,7 @@ void Player::UltraPlunger()	// called on every intergral physics frame
 	init = 0;
 
 	curMechPlungerPos = y[0];
-	}
+}
 
 // mechPlunger NOTE: Normalized position is from 0.0 to +1.0f
 // +1.0 is fully retracted, 0.0 is fully compressed
@@ -1782,15 +1777,12 @@ float PlungerAnimObject::mechPlunger() const
 	return tmp;
 }
 
-
 void Player::mechPlungerIn(int z)
-	{
+{
 	curPlunger = -z; //axis reversal
 
 	if (++movedPlunger == 0x7ffffff) movedPlunger = 3; //restart at 3
-	}
-
-#endif
+}
 
 //++++++++++++++++++++++++++++++++++++++++
 
@@ -2135,17 +2127,17 @@ void Player::Render()
         plumb_update(sim_msec);
 
 #ifdef ACCURATETIMERS
-	m_pactiveball = NULL;  // No ball is the active ball for timers/key events
+		m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 
-	const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); //rlc 10 milli-seconds
+		const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); //rlc 10 milli-seconds
 
-	for (int i=0;i<m_vht.Size();i++)
+		for (int i=0;i<m_vht.Size();i++)
 		{
-		HitTimer * const pht = m_vht.ElementAt(i);
-		if (pht->m_nextfire <= p_timeCur)
+			HitTimer * const pht = m_vht.ElementAt(i);
+			if (pht->m_nextfire <= p_timeCur)
 			{
-			pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-			pht->m_nextfire += pht->m_interval;
+				pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+				pht->m_nextfire += pht->m_interval;
 			}
 		}
 #endif
@@ -2153,37 +2145,30 @@ void Player::Render()
 		//slintf( "%u %u\n", m_RealTimeClock/1000, sim_msec );
 		//slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
 		
-#ifdef ULTRACADE
 		UltraNudge();		//rlc physics_dtime is the balance of time to move from the graphic frame position to the next
 		UltraPlunger();		// integral physics frame.  So the previous graphics frame was (1.0 - physics_dtime) before 
 							// this integral physics frame. Accelerations and inputs are always physics frame aligned
-#endif
 		
-	if (m_nudgetime)
-	{
-		m_nudgetime--;	                                                                                                                                                    
-
-		if (m_nudgetime == 5)
+		if (m_nudgetime)
 		{
-			m_NudgeX = -m_NudgeBackX * 2.0f;
-			m_NudgeY = m_NudgeBackY * 2.0f;
+			m_nudgetime--;	                                                                                                                                                    
+
+			if (m_nudgetime == 5)
+			{
+				m_NudgeX = -m_NudgeBackX * 2.0f;
+				m_NudgeY = m_NudgeBackY * 2.0f;
+			}
+			else if (m_nudgetime == 0)
+			{
+				m_NudgeX = m_NudgeBackX;
+				m_NudgeY = -m_NudgeBackY;
+			}
 		}
-		else if (m_nudgetime == 0)
+
+		for (int i=0;i<m_vmover.Size();i++)
 		{
-			m_NudgeX = m_NudgeBackX;
-			m_NudgeY = -m_NudgeBackY;
+			m_vmover.ElementAt(i)->UpdateVelocities(1.0f);	// always on integral physics frame boundary
 		}
-	}
-
-	for (int i=0;i<m_vmover.Size();i++)
-	{
-		m_vmover.ElementAt(i)->UpdateVelocities(1.0f);	// always on integral physics frame boundary
-	}			
-
-#ifndef ULTRACADE
-		m_NudgeX = 0;
-		m_NudgeY = 0;
-#endif			
 	} // end while (m_curPhysicsFrameTime < m_RealTimeClock)
 
 #ifdef FPS
@@ -2515,10 +2500,8 @@ void Player::Render()
 	}
 
 
-#ifdef VP3D
 if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
 {
-#endif
 	if ( m_nudgetime &&					// Table is being nudged.
 		 g_pplayer->m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
@@ -2566,7 +2549,6 @@ if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (
 			m_fCleanBlt = fTrue;
 		}
 	}
-#ifdef VP3D
 }
 else
 {
@@ -2822,7 +2804,6 @@ else
 	// Flag that we only need to update regions from now on...
 	m_fCleanBlt = fTrue;
 	}
-#endif
 
 	// Remove the list of update regions.
 	// Note:  The ball and the mixer update rects are removed here as well...
@@ -3855,7 +3836,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 #endif
 #endif
-
 		case WM_RBUTTONUP:
 			{
 			if (g_pplayer->m_fDebugMode)
@@ -3868,17 +3848,14 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			}
 			break;
 
-			case WM_ACTIVATE:
+		case WM_ACTIVATE:
 #ifdef VBA
-		
 			g_pvp->ApcHost.WmActivate(wParam);
 			break;
 
 		case WM_ENABLE:
 			g_pvp->ApcHost.WmEnable(wParam);
-			
 #else	
-#ifdef  ULTRACADE
 			if (wParam != WA_INACTIVE)
 				{
 				g_pplayer->m_fGameWindowActive = fTrue;
@@ -3893,11 +3870,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				g_pplayer->m_fPause = fTrue;
 				}
 			g_pplayer->RecomputePauseState();
-			
-#else
-			g_pplayer->m_fGameWindowActive = (wParam != WA_INACTIVE);
-			g_pplayer->RecomputePauseState();			
-#endif
 #endif
 			break;
 
@@ -4388,11 +4360,9 @@ void Player::DrawAcrylics ()
 
 int get_dongle_status()
 {
-	int		Status;
-#ifndef ULTRA_FREE
 #ifdef DONGLE_SUPPORT
 	//Initialize.
-	Status = DONGLE_STATUS_NOTFOUND;
+	int Status = DONGLE_STATUS_NOTFOUND;
 
 	// Check for HASP dongle.
 	if ( DongleAPI_IsValid() )
@@ -4436,10 +4406,8 @@ int get_dongle_status()
 	}
 	return ( Status );
 #endif
-#endif
-	
-	Status = DONGLE_STATUS_OK;
-	return ( Status );
+
+	return ( DONGLE_STATUS_OK );
 }
 
 
