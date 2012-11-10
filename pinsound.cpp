@@ -3,9 +3,6 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <vector>
-#include <string>
-using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -40,22 +37,6 @@ PinDirectSound::~PinDirectSound()
 	}
 
 
-struct DSAudioDevice
-{
-    LPGUID guid;
-    string description;
-    string module;
-    DSAudioDevice () {
-        guid = NULL;
-    }
-    ~DSAudioDevice () {
-	    if(guid)
-            delete guid;
-    }
-};
-
-typedef vector<DSAudioDevice*> DSAudioDevices;
-
 BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
 {
     DSAudioDevice *ad = new DSAudioDevice;
@@ -70,7 +51,6 @@ BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
     (static_cast<DSAudioDevices*>(list))->push_back(ad);
     return true;
 }
-
 
 void PinDirectSound::InitDirectSound(HWND hwnd)
 {

@@ -30,6 +30,9 @@
 #define GET_FULLSCREENMODES		WM_USER+101
 #define RESET_SIZELIST_CONTENT	WM_USER+102
 
+#define GET_SOUNDDEVICES		WM_USER+103
+#define RESET_SoundList_CONTENT	WM_USER+104
+
 #define	RECENT_FIRST_MENU_IDM	5000	// ID of the first recent file list filename
 #define	RECENT_LAST_MENU_IDM	RECENT_FIRST_MENU_IDM+LAST_OPENED_TABLE_COUNT
 
@@ -3736,6 +3739,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				HWND hwndRadio = GetDlgItem(hwndDlg, IDC_WINDOW);
 				SendMessage(hwndRadio, BM_SETCHECK, BST_CHECKED, 0);
 				}
+
 			int alphaRampsAccuracy;
 			hr = GetRegInt("Player", "AlphaRampAccuracy", &alphaRampsAccuracy);
 			if (hr != S_OK)
@@ -6950,8 +6954,17 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			::SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 10);
 			::SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 10, 0);
 			::SendMessage(hwndControl, TBM_SETPOS, TRUE, fmusic);
-			}
+
+			int sd;
+			hr = GetRegInt("Player", "SoundDevice", &sd);
+			if (hr != S_OK)
+				{
+				sd = 0; // The default
+				}
+			SendMessage(hwndDlg, GET_SOUNDDEVICES, sd, 0);
+
 			return TRUE;
+			}
 			break;
 
 		case WM_COMMAND:
@@ -6985,6 +6998,11 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							hwndControl = GetDlgItem(hwndDlg, IDC_SOUND_SLIDER);
 							volume = SendMessage(hwndControl, TBM_GETPOS, 0, 0);
 							SetRegValue("Player", "SoundVolume", REG_DWORD, &volume, 4);
+
+							HWND hwndSoundList = GetDlgItem(hwndDlg, IDC_SoundList);
+							int soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
+							int* sd = (int*)SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
+							SetRegValue("Player", "SoundDevice", REG_DWORD, sd, 4);
 
 							EndDialog(hwndDlg, TRUE);
 							}
@@ -7020,8 +7038,46 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
+		case GET_SOUNDDEVICES:
+			{
+			SendMessage(hwndDlg, RESET_SoundList_CONTENT, 0, 0);
+			HWND hwndList = GetDlgItem(hwndDlg, IDC_SoundList);
+
+			DSAudioDevices DSads;
+			if (!FAILED (DirectSoundEnumerate (DSEnumCallBack, &DSads)))
+			{
+				for (size_t i=0;i<DSads.size();i++)
+				{
+					const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)DSads[i]->description.c_str());
+					int * const sd = new int;
+					*sd = i;
+					SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
+				}
+			}
+
+			SendMessage(hwndList, LB_SETCURSEL, (wParam < DSads.size()) ? wParam : 0, 0);
+			}
+			break;
+
+		case RESET_SoundList_CONTENT:
+			{
+			HWND hwndList = GetDlgItem(hwndDlg, IDC_SoundList);
+			const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+			for (int i=0;i<size;i++)
+				{
+				int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
+				delete sd;
+				}
+			SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+			}
+			break;
+
 		case WM_CLOSE:
 			EndDialog(hwndDlg, FALSE);
+			break;
+
+		case WM_DESTROY:
+			SendMessage(hwndDlg, RESET_SoundList_CONTENT, 0, 0);
 			break;
 		}
 

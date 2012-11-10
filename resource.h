@@ -266,6 +266,7 @@
 #define IDC_FULLSCREEN                  256
 #define IDD_FONTDIALOG                  256
 #define IDC_SIZELIST                    257
+#define IDC_SoundList                   258
 #define IDB_SUNBURST3                   260
 #define IDD_KEYS                        261
 #define IDC_LEFTFLIPPERBUTTON           262
@@ -560,6 +561,7 @@
 #define IDC_3D_STEREO_AA                543
 #define IDC_3D_STEREO_Y                 544
 #define IDC_ADAPTIVE_VSYNC              545
+#define IDC_STATIC_SOUNDDEVICE          546
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768

@@ -3,12 +3,36 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+#include <vector>
+#include <string>
+using namespace std;
+
 #if !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)
 #define AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+
+struct DSAudioDevice
+{
+    LPGUID guid;
+    string description;
+    string module;
+    DSAudioDevice () {
+        guid = NULL;
+    }
+    ~DSAudioDevice () {
+	    if(guid)
+            delete guid;
+    }
+};
+
+typedef vector<DSAudioDevice*> DSAudioDevices;
+
+BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list);
+
 
 class PinSound
 {
