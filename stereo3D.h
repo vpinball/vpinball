@@ -71,7 +71,7 @@ slow:
         inc         esi
         cmp         ecx, edi
         jnz         slow
-        jmp         end
+        jmp         endc
 fast:
         // align dstEnd to 128 bytes
         and         ecx, 0xFFFFFF80
@@ -332,7 +332,7 @@ last:
         movdqu      [edi+80], xmm5
         movdqu      [edi+96], xmm6
         movdqu      [edi+112], xmm7
-end:
+endc:
     }
 }
 
