@@ -483,22 +483,22 @@ BEGIN
     LTEXT           "A Randy Davis Production",IDC_STATIC,13,36,94,23
     LTEXT           "Version (9.1.3)",IDC_VERSION,13,47,121,16
     LTEXT           "Randy Davis - designer, developer",IDC_STATIC,13,77,115,9
-    LTEXT           "Mark Parris - testing",IDC_STATIC,13,102,67,9
+    LTEXT           "Mark Parris - testing",IDC_STATIC,13,101,67,9
     GROUPBOX        "Credits",IDC_STATIC,7,62,216,93
-    LTEXT           "Jerry Rice - music",IDC_STATIC,86,102,66,9
+    LTEXT           "Jerry Rice - music",IDC_STATIC,86,101,66,9
     CTEXT           "Copyright (C) 2000-2012 Randy Davis. All rights reserved",IDC_STATIC,7,164,118,19
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,108,36,115,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,184,32,8,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Chris Leathley - additional development",IDC_STATIC,13,89,123,9
     LTEXT           "",IDC_TRANSNAME2,140,142,83,9,NOT WS_VISIBLE | WS_DISABLED
-    LTEXT           "Rolle Cruz - physics",IDC_STATIC,150,102,67,9
-    LTEXT           "Open Source Contributors",IDC_STATIC,65,112,88,9
-    LTEXT           "Brian Smith",IDC_STATIC,13,120,42,9
-    LTEXT           "Shagendo",IDC_STATIC,150,120,42,9
-    LTEXT           "Toxie^ainc",IDC_STATIC,85,120,42,9
-    LTEXT           "Wizard's Hat",IDC_STATIC,83,130,42,9
-    LTEXT           "Maddes",IDC_STATIC,13,129,42,9
-    LTEXT           "Poiuyterry",IDC_STATIC,150,130,42,9
+    LTEXT           "Rolle Cruz - physics",IDC_STATIC,150,101,67,9
+    LTEXT           "Open Source Contributors",IDC_STATIC,65,111,88,9
+    LTEXT           "Brian Smith",IDC_STATIC,13,121,42,9
+    LTEXT           "Shagendo",IDC_STATIC,150,121,42,9
+    LTEXT           "Toxie^ainc",IDC_STATIC,85,121,42,9
+    LTEXT           "Wizard's Hat",IDC_STATIC,83,131,42,9
+    LTEXT           "Maddes",IDC_STATIC,13,131,42,9
+    LTEXT           "Poiuyterry",IDC_STATIC,150,131,42,9
     LTEXT           "Noah Fentz - testing",IDC_STATIC,150,77,66,9
     CTEXT           "Cupid",IDC_STATIC,82,141,42,9
 END
