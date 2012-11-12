@@ -35,6 +35,9 @@ int Coins = 0;										// The number of coins queued to be inserted.  These wer
 
 Player::Player()
 	{
+	_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+	//_mm_setcsr(_mm_getcsr() | 0x8040);
+
 	c_embedcnts = 0;
 	m_fLShiftDown = fFalse;
 	m_fRShiftDown = fFalse;
