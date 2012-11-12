@@ -1596,7 +1596,7 @@ void Player::InitWindow()
     mixer_init( m_hwnd );
     hid_init();
 
-	SetCursorPos( 400,999999); //rlc ... move to hide in lower left corner, one pixel shows
+	SetCursorPos( 400,999999 ); //rlc ... move to hide in lower left corner, one pixel shows
 
 #ifdef GDIDRAW
 	HDC hdc = GetDC(NULL);
@@ -1613,12 +1613,12 @@ static int curAccel_y[PININ_JOYMXCNT]= {0,0,0,0};
 
 int curPlunger = JOYRANGEMN-1;	// assume
 
-void Player::UltraNudgeX(int x, int j )
+void Player::UltraNudgeX(const int x, const int j )
 {
 	curAccel_x[j] = x;
 }
 
-void Player::UltraNudgeY(int y, int j )
+void Player::UltraNudgeY(const int y, const int j )
 {
 	curAccel_y[j] = y;
 }
@@ -1777,7 +1777,7 @@ float PlungerAnimObject::mechPlunger() const
 	return tmp;
 }
 
-void Player::mechPlungerIn(int z)
+void Player::mechPlungerIn(const int z)
 {
 	curPlunger = -z; //axis reversal
 
@@ -2524,6 +2524,9 @@ if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (
 
 		if (m_fCleanBlt && (overall_area < (unsigned int)(g_pplayer->m_pin3d.m_dwRenderWidth*g_pplayer->m_pin3d.m_dwRenderHeight))) //!! other heuristic? // test if its worth to blit every element separately
 		{
+			if(g_pplayer->m_fVSync && (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR))
+				g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0); // deprecated for win vista and above?!
+
 			// Smart Blit - only update the invalidated areas
 			for (int i=0;i<m_vupdaterect.Size();i++)
 			{
