@@ -114,12 +114,12 @@ public:
 	void RecomputePseudoPauseState();
 
 	void UltraNudge();
-	void UltraNudgeX( int x, int j );
-	void UltraNudgeY( int y, int j );
+	void UltraNudgeX( const int x, const int j );
+	void UltraNudgeY( const int y, const int j );
 	int  UltraNudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
 
 	void UltraPlunger();
-	void mechPlungerIn( int z );		
+	void mechPlungerIn( const int z );		
 
 #ifdef PLAYBACK
 	float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
