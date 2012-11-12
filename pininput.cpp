@@ -844,8 +844,6 @@ void PinInput::tilt_update()
 
 void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 {
-	DIDEVICEOBJECTDATA *input;
-
 	m_ptable = ptable;
 
 	m_ChangedKeys = 0;
@@ -889,6 +887,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 
 	GetInputDeviceData();
 
+	const DIDEVICEOBJECTDATA * __restrict input;
 	while( ( input = GetTail( cur_sim_msec ) ) )
 	{
 		if( input->dwSequence == APP_KEYBOARD )
@@ -920,12 +919,12 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 		}
 		else if( input->dwSequence >= APP_JOYSTICKMN && input->dwSequence <= APP_JOYSTICKMX )
 		{
-			int joyk = input->dwSequence - APP_JOYSTICKMN ;	//rlc joystick index
+			const int joyk = input->dwSequence - APP_JOYSTICKMN ;	//rlc joystick index
 			static bool rotLeftManual = false;
 
 			if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
 			{
-				int updown = (input->dwData & 0x80)?DISPID_GameEvents_KeyDown:DISPID_GameEvents_KeyUp;
+				const int updown = (input->dwData & 0x80)?DISPID_GameEvents_KeyDown:DISPID_GameEvents_KeyUp;
 				if (input->dwOfs == DIJOFS_BUTTON0)
 				{
 					 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // plunge
@@ -953,7 +952,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}
 					else if (m_joyframecount == 1)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -993,11 +992,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 2)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 2)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1035,11 +1034,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 3)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 3)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1077,11 +1076,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 4)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 4)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1119,11 +1118,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 5)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 5)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1161,11 +1160,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 6)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 6)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1205,11 +1204,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 7)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 7)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1257,11 +1256,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 8)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 8)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1307,11 +1306,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 9)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 9)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1349,11 +1348,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 10)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 10)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1393,11 +1392,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 11)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 11)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1435,11 +1434,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 12)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 12)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1487,11 +1486,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 13)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 13)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1529,11 +1528,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 14)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 14)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1580,11 +1579,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 15)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 15)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1620,11 +1619,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 16)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 16)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1660,11 +1659,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 17)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 17)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1700,7 +1699,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 18)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 18)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
@@ -1740,11 +1739,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 19)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 19)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1780,11 +1779,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 20)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 20)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1820,11 +1819,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 21)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 21)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1860,11 +1859,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 22)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 22)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1900,11 +1899,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 23)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 23)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1940,11 +1939,11 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 						}	}	}
 					else if (m_joyexitgamekey == 24)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->m_fCloseDown = fTrue;}
+								{g_pplayer->m_fCloseDown = fTrue;}
 						}
 					else if (m_joyframecount == 24)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
-							{g_pplayer->ToggleFPS();}
+								{g_pplayer->ToggleFPS();}
 						}
 					else if (m_joyvolumeup == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else if (m_joyvolumedown == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
