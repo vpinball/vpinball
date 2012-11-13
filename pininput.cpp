@@ -1015,7 +1015,7 @@ void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON2)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0))
+						 if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_ULTRACADE)) && (m_override_default_buttons == 0))
 							{FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave ] );} // right2
 					else if (m_joylflipkey == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
 					else if (m_joyrflipkey == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
