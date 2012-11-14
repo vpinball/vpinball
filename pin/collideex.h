@@ -132,10 +132,10 @@ public:
 class SpinnerAnimObject : public AnimObject
 	{
 public:
-	virtual void UpdateDisplacements(float dtime);
+	virtual void UpdateDisplacements(const float dtime);
 	//virtual void ResetFrameTime();
 	//virtual void UpdateTimePermanent();
-	virtual void UpdateVelocities(float dtime);
+	virtual void UpdateVelocities(const float dtime);
 
 	virtual BOOL FMover() {return fTrue;}
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
@@ -186,10 +186,10 @@ public:
 class GateAnimObject : public AnimObject
 	{
 public:
-	virtual void UpdateDisplacements(float dtime);
+	virtual void UpdateDisplacements(const float dtime);
 	//virtual void ResetFrameTime();
 	//virtual void UpdateTimePermanent();
-	virtual void UpdateVelocities(float dtime);
+	virtual void UpdateVelocities(const float dtime);
 
 	virtual BOOL FMover() {return fTrue;}
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}

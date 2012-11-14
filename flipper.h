@@ -93,12 +93,12 @@ END_CONNECTION_POINT_MAP()
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex2D *pv);
-	virtual void PutCenter(Vertex2D *pv);
+	virtual void GetCenter(Vertex2D * const pv) const;
+	virtual void PutCenter(const Vertex2D * const pv);
 
-	virtual void RenderShadow(ShadowSur *psur, float height);
+	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
-	void RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame *pof, float angle, float height, COLORREF color, float baseradius, float endradius, float flipperheight);
+	void RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const pof, const float angle, const float height, const COLORREF color, const float baseradius, const float endradius, const float flipperheight);
 
 	void WriteRegDefaults();
 

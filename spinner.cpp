@@ -210,7 +210,7 @@ void Spinner::Render(Sur *psur)
 			   m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 	}
 
-void Spinner::RenderShadow(ShadowSur *psur, float height)
+void Spinner::RenderShadow(ShadowSur * const psur, const float height)
 	{
 	if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
 		return;
@@ -767,12 +767,12 @@ void Spinner::MoveOffset(const float dx, const float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Spinner::GetCenter(Vertex2D *pv)
+void Spinner::GetCenter(Vertex2D * const pv) const
 	{
 	*pv = m_d.m_vCenter;
 	}
 
-void Spinner::PutCenter(Vertex2D *pv)
+void Spinner::PutCenter(const Vertex2D * const pv)
 	{
 	m_d.m_vCenter = *pv;
 

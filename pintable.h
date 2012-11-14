@@ -283,8 +283,8 @@ public:
 	//virtual void UnsetDirtyScript();
 
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex2D *pv);
-	virtual void PutCenter(Vertex2D *pv);
+	virtual void GetCenter(Vertex2D * const pv) const;
+	virtual void PutCenter(const Vertex2D * const pv);
 	virtual void FlipY(Vertex2D * const pvCenter);
 	virtual void FlipX(Vertex2D * const pvCenter);
 	virtual void Rotate(float ang, Vertex2D *pvCenter);

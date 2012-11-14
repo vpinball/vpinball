@@ -77,7 +77,7 @@ public:
 
 	virtual void MoveOffset(const float dx, const float dy);
 
-	virtual void RenderShadow(ShadowSur *psur, float height);
+	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
 
@@ -124,8 +124,8 @@ END_CONNECTION_POINT_MAP()
 	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
 	virtual void Translate(Vertex2D *pvOffset);
 
-	virtual void GetCenter(Vertex2D *pv) {GetPointCenter(pv);}
-	virtual void PutCenter(Vertex2D *pv) {PutPointCenter(pv);}
+	virtual void GetCenter(Vertex2D * const pv) const {GetPointCenter(pv);}
+	virtual void PutCenter(const Vertex2D * const pv) {PutPointCenter(pv);}
 
 	//void CheckIntersecting();
 

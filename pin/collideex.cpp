@@ -312,7 +312,7 @@ void HitGate::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		}
 	}
 
-void GateAnimObject::UpdateDisplacements(float dtime)
+void GateAnimObject::UpdateDisplacements(const float dtime)
 	{
 	m_angle += m_anglespeed * dtime;
 
@@ -330,7 +330,7 @@ void GateAnimObject::UpdateDisplacements(float dtime)
 		}
 	}
 
-void GateAnimObject::UpdateVelocities(float dtime)
+void GateAnimObject::UpdateVelocities(const float dtime)
 	{
 	if (!m_fOpen)
 		{
@@ -480,7 +480,7 @@ void HitSpinner::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		}
 	}
 
-void SpinnerAnimObject::UpdateDisplacements(float dtime)
+void SpinnerAnimObject::UpdateDisplacements(const float dtime)
 	{
 
 	if (m_pspinner->m_d.m_angleMin != m_pspinner->m_d.m_angleMax)	//blocked spinner, limited motion spinner
@@ -528,7 +528,7 @@ void SpinnerAnimObject::UpdateDisplacements(float dtime)
 		}
 	}
 
-void SpinnerAnimObject::UpdateVelocities(float dtime)
+void SpinnerAnimObject::UpdateVelocities(const float dtime)
 	{
 	m_anglespeed -= sinf(m_angle) *dtime *0.0025f; // Center of gravity towards bottom of object, makes it stop vertical
 

@@ -95,8 +95,8 @@ public:
 	virtual void Translate(Vertex2D *pvOffset);
 
 	// So objects don't have to implement all the transformation functions themselves
-	virtual void GetCenter(Vertex2D *pv) = 0;
-	virtual void PutCenter(Vertex2D *pv) = 0;
+	virtual void GetCenter(Vertex2D * const pv) const = 0;
+	virtual void PutCenter(const Vertex2D * const pv) = 0;
 
 	virtual IEditable *GetIEditable()=0;
 

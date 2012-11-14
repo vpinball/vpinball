@@ -29,8 +29,8 @@ public:
 
 	virtual void ClearPointsForOverwrite();
 
-	virtual void GetPointCenter(Vertex2D *pv);
-	virtual void PutPointCenter(Vertex2D *pv);
+	virtual void GetPointCenter(Vertex2D * const pv) const;
+	virtual void PutPointCenter(const Vertex2D * const pv);
 
 	void FlipPointY(Vertex2D *pvCenter);
 	void FlipPointX(Vertex2D *pvCenter);
@@ -72,8 +72,8 @@ public:
 	virtual ItemTypeEnum GetItemType() {return eItemDragPoint;}
 
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex2D *pv);
-	virtual void PutCenter(Vertex2D *pv);
+	virtual void GetCenter(Vertex2D * const pv) const;
+	virtual void PutCenter(const Vertex2D * const pv);
 
 	virtual void EditMenu(HMENU hmenu);
 	virtual void DoCommand(int icmd, int x, int y);

@@ -9,8 +9,8 @@ public:
 	virtual BOOL FMover() {return fFalse;} // We add ourselves to the mover list.  
 										   // If we allow the table to do that, we might get added twice, 
 										   // if we get created in Init code
-	virtual void UpdateDisplacements(float dtime);
-	virtual void UpdateVelocities(float dtime);
+	virtual void UpdateDisplacements(const float dtime);
+	virtual void UpdateVelocities(const float dtime);
 
 	Ball *m_pball;
 	};
@@ -25,8 +25,8 @@ public:
 
     static int NumInitted();
 
-	virtual void UpdateDisplacements(float dtime);
-	virtual void UpdateVelocities(float dtime);
+	virtual void UpdateDisplacements(const float dtime);
+	virtual void UpdateVelocities(const float dtime);
 
 	// From HitObject
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);	

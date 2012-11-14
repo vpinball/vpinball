@@ -639,7 +639,7 @@ void Surface::RenderBlueprint(Sur *psur)
 	m_rgvT = NULL;
 	}
 
-void Surface::RenderShadow(ShadowSur *psur, float height)
+void Surface::RenderShadow(ShadowSur * const psur, const float height)
 	{	
 	if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
 		return;

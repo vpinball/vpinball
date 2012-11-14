@@ -13,7 +13,7 @@ IHaveDragPoints::~IHaveDragPoints()
 		}
 	}
 
-void IHaveDragPoints::GetPointCenter(Vertex2D *pv)
+void IHaveDragPoints::GetPointCenter(Vertex2D * const pv) const
 	{
 	float minx = FLT_MAX;
 	float maxx = -FLT_MAX;
@@ -33,7 +33,7 @@ void IHaveDragPoints::GetPointCenter(Vertex2D *pv)
 	pv->y = (maxy+miny)*0.5f;
 	}
 
-void IHaveDragPoints::PutPointCenter(Vertex2D *pv)
+void IHaveDragPoints::PutPointCenter(const Vertex2D * const pv)
 	{
 	}
 
@@ -501,12 +501,12 @@ void DragPoint::MoveOffset(const float dx, const float dy)
 	m_pihdp->GetIEditable()->SetDirtyDraw();
 	}
 
-void DragPoint::GetCenter(Vertex2D *pv)
+void DragPoint::GetCenter(Vertex2D * const pv) const
 	{
 	*pv = m_v;
 	}
 
-void DragPoint::PutCenter(Vertex2D *pv)
+void DragPoint::PutCenter(const Vertex2D * const pv)
 	{
 	m_v = *pv;
 

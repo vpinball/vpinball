@@ -91,10 +91,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Trigger)
 	virtual void Rotate(float ang, Vertex2D *pvCenter);
 	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
 	virtual void Translate(Vertex2D *pvOffset);
-	virtual void GetCenter(Vertex2D *pv) {GetPointCenter(pv);}
-	virtual void PutCenter(Vertex2D *pv) {PutPointCenter(pv);}
-	virtual void GetPointCenter(Vertex2D *pv);
-	virtual void PutPointCenter(Vertex2D *pv);
+	virtual void GetCenter(Vertex2D * const pv) const {GetPointCenter(pv);}
+	virtual void PutCenter(const Vertex2D * const pv) {PutPointCenter(pv);}
+	virtual void GetPointCenter(Vertex2D * const pv) const ;
+	virtual void PutPointCenter(const Vertex2D * const pv);
 	
 	void CurvesToShapes(Vector<HitObject> * const pvho);
 	void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const float height);

@@ -38,25 +38,25 @@ public:
 	~PinInput();
 
 
-	void Init(HWND hwnd);
+	void Init(const HWND hwnd);
 	void UnInit();
 
-	void FireKeyEvent( int dispid, int keycode );
+	void FireKeyEvent( const int dispid, const int keycode );
 	int  QueueFull   ();
 	int  QueueEmpty  ();
 	void AdvanceHead (); // called from sep thread
 	void AdvanceTail (); // called from thread sync'd with visuals as each keystroke is applied to the sim
 
-	void                PushQueue( DIDEVICEOBJECTDATA *data, unsigned int app_data ); // called from sep thread
-	DIDEVICEOBJECTDATA *GetTail  ( U32 cur_sim_msec=0xffffffff ); // called from visually sync'd main thread
+	void                PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data ); // called from sep thread
+	DIDEVICEOBJECTDATA *GetTail  ( const U32 cur_sim_msec=0xffffffff ); // called from visually sync'd main thread
 
 	// Process keys up until msec_age ago .. don't consider keys that are too new for the current simulation step!
-    void autostart( F32 secs, F32 retrysecs );
-    void autoexit( F32 secs );
-    void autocoin( F32 secs );
-    void button_exit( F32 secs );
+    void autostart( const F32 secs, const F32 retrysecs );
+    void autoexit( const F32 secs );
+    void autocoin( const F32 secs );
+    void button_exit( const F32 secs );
     void tilt_update();
-	void ProcessKeys(PinTable *ptable, U32 cur_sim_msec );
+	void ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec );
 
 	int GetNextKey();
 
@@ -115,9 +115,9 @@ public:
 
 #define PININ_ANY            0xffffffff
 
-U32 Pressed ( U32 mask );
-U32 Released( U32 mask );
-U32 Held    ( U32 mask );
-U32 Down    ( U32 mask );
-U32 Changed ( U32 mask );
+U32 Pressed ( const U32 mask );
+U32 Released( const U32 mask );
+U32 Held    ( const U32 mask );
+U32 Down    ( const U32 mask );
+U32 Changed ( const U32 mask );
 // - end input routines added by AMH

@@ -169,7 +169,7 @@ void Bumper::Render(Sur *psur)
 	}
 	}
 
-void Bumper::RenderShadow(ShadowSur *psur, float z)
+void Bumper::RenderShadow(ShadowSur * const psur, const float z)
 	{
 	if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
 		return;
@@ -745,12 +745,12 @@ void Bumper::MoveOffset(const float dx, const float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Bumper::GetCenter(Vertex2D *pv)
+void Bumper::GetCenter(Vertex2D * const pv) const
 	{
 	*pv = m_d.m_vCenter;
 	}
 
-void Bumper::PutCenter(Vertex2D *pv)
+void Bumper::PutCenter(const Vertex2D * const pv)
 	{
 	m_d.m_vCenter = *pv;
 

@@ -152,17 +152,17 @@ static int dirty;
 void plumb_draw()
 {
 #ifdef DEBUG_PLUMB
-	RenderStateType		RestoreRenderState;
-	TextureStateType	RestoreTextureState;
+	//RenderStateType		RestoreRenderState;
+	//TextureStateType	RestoreTextureState;
 	D3DMATRIX			RestoreWorldMatrix;
 	HRESULT				ReturnCode;
 
 	// Save the current transformation state.
 	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 	// Save the current render state.
-	Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
+	//Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
 	// Save the current texture state.
-	Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+	//Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 
     F32 x = sPlumbPos[0];
     F32 y = sPlumbPos[1];
@@ -176,9 +176,9 @@ void plumb_draw()
 	draw_transparent_box( 3, 3, x+gPlumb.y*100.0f, y+ac*(-(gPlumb.x))*100.0f, 0xffffffff );
 
 	// Restore the render states.
-	Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
+	//Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
 	// Restore the texture state.
-	Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+	//Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 	// Restore the transformation state.
 	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 

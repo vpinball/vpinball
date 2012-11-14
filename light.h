@@ -51,8 +51,8 @@ public:
 
 	virtual BOOL LoadToken(int id, BiffReader *pbr) {return fTrue;}
 
-	virtual void GetCenter(Vertex2D *pv);
-	virtual void PutCenter(Vertex2D *pv);
+	virtual void GetCenter(Vertex2D * const pv) const;
+	virtual void PutCenter(const Vertex2D * const pv);
 
 	virtual void MoveOffset(const float dx, const float dy);
 
@@ -138,10 +138,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 	virtual void Translate(Vertex2D *pvOffset);
 
 	// DragPoints
-	virtual void GetCenter(Vertex2D *pv) {GetPointCenter(pv);}
-	virtual void PutCenter(Vertex2D *pv) {PutPointCenter(pv);}
-	virtual void GetPointCenter(Vertex2D *pv);
-	virtual void PutPointCenter(Vertex2D *pv);
+	virtual void GetCenter(Vertex2D * const pv) const {GetPointCenter(pv);}
+	virtual void PutCenter(const Vertex2D * const pv) {PutPointCenter(pv);}
+	virtual void GetPointCenter(Vertex2D * const pv) const;
+	virtual void PutPointCenter(const Vertex2D * const pv);
 
 	virtual void DrawFrame(BOOL fOn);
 

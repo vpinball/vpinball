@@ -4,10 +4,10 @@ class FlipperAnimObject : public AnimObject
 public:
 	void SetObjects(const float angle);
 	//BOOL FIsInside(Ball *pball);
-	virtual void UpdateDisplacements(float dtime);
+	virtual void UpdateDisplacements(const float dtime);
 	//virtual void ResetFrameTime();
 	//virtual void UpdateTimePermanent();
-	virtual void UpdateVelocities(float dtime);
+	virtual void UpdateVelocities(const float dtime);
 
 	virtual BOOL FMover() {return fTrue;}
 	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
@@ -79,9 +79,9 @@ public:
 
 	//void GetHitShapes(Vector<HitObject> *pvho);
 
-	virtual float HitTestFlipperFace(Ball *pball, float dtime, Vertex3Ds *phitnormal, bool face1);
+	virtual float HitTestFlipperFace(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool face1);
 
-	virtual float HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnormal); 
+	virtual float HitTestFlipperEnd(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 	

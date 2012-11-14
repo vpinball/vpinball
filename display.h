@@ -154,29 +154,29 @@ struct _TextureStateType
 int Display_GetPowerOfTwo ( const int Value );
 extern int NumVideoBytes;
 
-extern RenderStateType RenderStates[DISPLAY_RENDERSTATE_MAX];
-extern TextureStateType TextureStates[DISPLAY_TEXTURESTATE_MAX];
+//extern RenderStateType RenderStates[DISPLAY_RENDERSTATE_MAX];
+//extern TextureStateType TextureStates[DISPLAY_TEXTURESTATE_MAX];
 
 // Function headers.
 
-void Display_InitializeRenderStates ();
-void Display_GetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState );
-void Display_SetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState );
-void Display_ClearRenderState ( RenderStateType *RenderState );
+//void Display_InitializeRenderStates ();
+//void Display_GetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState );
+//void Display_SetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState );
+//void Display_ClearRenderState ( RenderStateType *RenderState );
 
-void Display_InitializeTextureStates ();
-void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState );
-void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState );
-void Display_ClearTextureState ( TextureStateType *TextureState );
+//void Display_InitializeTextureStates ();
+//void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState );
+//void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState );
+//void Display_ClearTextureState ( TextureStateType *TextureState );
 
 void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAW7 DirectDrawObject, const LPDIRECTDRAWSURFACE7 DDrawSurface, const int Width, const int Height, LPDIRECTDRAWSURFACE7 * const DestD3DTexture, float * const u, float * const v );
-void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 DestTexture, RECT *Rect, LPDIRECTDRAWSURFACE7 SourceTexture );
+void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 DestTexture, const RECT * const Rect, LPDIRECTDRAWSURFACE7 SourceTexture );
 void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAWSURFACE7 Texture, const char Value );
 void Display_DestroyTexture ( LPDIRECTDRAWSURFACE7 Texture );
 
 HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT *pddpf, VOID *param );
 
-HRESULT Display_DrawIndexedPrimitive( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIMITIVETYPE d3dptPrimitiveType, DWORD dwVertexTypeDesc, LPVOID lpvVertices, DWORD dwVertexCount, LPWORD lpwIndices, DWORD dwIndexCount, DWORD dwFlags );
+HRESULT Display_DrawIndexedPrimitive( LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, LPVOID lpvVertices, const DWORD dwVertexCount, LPWORD lpwIndices, const DWORD dwIndexCount, const DWORD dwFlags );
 
 // Draws a sprite.
 // x, y is the screen coordinate of the top-left corner of the sprite.
@@ -188,8 +188,6 @@ HRESULT Display_DrawIndexedPrimitive( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIMI
 // RenderStateIndex controls how the sprite is drawn.
 inline void Display_DrawSprite_NoMatrix ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const float r, const float g, const float b, const float a, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
 {
-    D3DTLVertexType	Vertices[4];
-
 	// Calculate sin and cos theta.
 	//const float Radians = Angle * (float)(2.0 * M_PI / 360.0);
 	//const float SinTheta = sinf ( Radians );
@@ -201,6 +199,7 @@ inline void Display_DrawSprite_NoMatrix ( LPDIRECT3DDEVICE7 Direct3DDevice, cons
 	const DWORD col = RGBA_TO_D3DARGB ( r, g, b, a );
 
 	// Build a quad.
+    D3DTLVertexType	Vertices[4];
 	Vertices[0].DiffuseColor = 
 	Vertices[0].SpecularColor = col;
 	Vertices[0].TU1 = 0.0f;
@@ -246,10 +245,10 @@ inline void Display_DrawSprite_NoMatrix ( LPDIRECT3DDEVICE7 Direct3DDevice, cons
 	Vertices[3].RHW = 1.0f; 
 
 	// Set the texture state.
-	Display_SetTextureState ( Direct3DDevice, &(TextureStates[TextureStateIndex]) );
+	//Display_SetTextureState ( Direct3DDevice, &(TextureStates[TextureStateIndex]) );
 	
 	// Set the render state.
-	Display_SetRenderState ( Direct3DDevice, &(RenderStates[RenderStateIndex]) );
+	//Display_SetRenderState ( Direct3DDevice, &(RenderStates[RenderStateIndex]) );
 
 	// Set the texture.
 	/*const HRESULT ReturnCode =*/ Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
@@ -277,8 +276,6 @@ inline void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x
 
 inline void Display_DrawSprite_NoMatrix_NoStates ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v )
 {
-    D3DTLVertexType	Vertices[4];
-
 	// Calculate sin and cos theta.
 	//const float Radians = Angle * (float)(2.0 * M_PI / 360.0);
 	//const float SinTheta = sinf ( Radians );
@@ -288,6 +285,7 @@ inline void Display_DrawSprite_NoMatrix_NoStates ( LPDIRECT3DDEVICE7 Direct3DDev
 	//       We can probably get away without implementing a matrix library. -JEP
 
 	// Build a quad.
+    D3DTLVertexType	Vertices[4];
 	Vertices[0].DiffuseColor = 
 	Vertices[0].SpecularColor = col;
 	Vertices[0].TU1 = 0.0f;
@@ -354,10 +352,10 @@ inline void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x
     /*const HRESULT ReturnCode =*/ Direct3DDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
 
 	// Set the texture state.
-	Display_SetTextureState ( Direct3DDevice, &(TextureStates[TextureStateIndex]) );
+	//Display_SetTextureState ( Direct3DDevice, &(TextureStates[TextureStateIndex]) );
 	
 	// Set the render state.
-	Display_SetRenderState ( Direct3DDevice, &(RenderStates[RenderStateIndex]) );
+	//Display_SetRenderState ( Direct3DDevice, &(RenderStates[RenderStateIndex]) );
 
     Display_DrawSprite_NoMatrix_NoStates ( Direct3DDevice, x, y, Width, Height, col, Angle, Texture, u, v );
 }

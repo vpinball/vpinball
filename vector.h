@@ -5,7 +5,15 @@
 #define START_SIZE 32
 #define GROW_SIZE  32
 
-#define uintCast(x)  ((unsigned int&)x)
+inline unsigned int uintCast(const float x)
+{
+	union {
+		float f;
+		unsigned int u;
+	} uc;
+	uc.f = x;
+	return uc.u;
+}
 
 inline bool infNaN(const float a)
 {
@@ -296,7 +304,7 @@ public:
         return false;
 		}
 
-	inline bool Top(void ** const ppItem)
+	inline bool Top(void ** const ppItem) const
 		{
 		if(m_cSize)
 			{

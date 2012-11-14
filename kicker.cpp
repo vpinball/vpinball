@@ -445,12 +445,12 @@ void Kicker::MoveOffset(const float dx, const float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Kicker::GetCenter(Vertex2D *pv)
+void Kicker::GetCenter(Vertex2D * const pv) const
 	{
 	*pv = m_d.m_vCenter;
 	}
 
-void Kicker::PutCenter(Vertex2D *pv)
+void Kicker::PutCenter(const Vertex2D * const pv)
 	{
 	m_d.m_vCenter = *pv;
 

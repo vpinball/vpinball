@@ -917,11 +917,11 @@ void PinComControl::Render(Sur *psur)
 	}
 
 
-void PinComControl::GetCenter(Vertex2D *pv)
+void PinComControl::GetCenter(Vertex2D * const pv) const
 	{
 	}
 
-void PinComControl::PutCenter(Vertex2D *pv)
+void PinComControl::PutCenter(const Vertex2D * const pv)
 	{
 	}
 

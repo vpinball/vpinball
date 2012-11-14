@@ -1122,14 +1122,14 @@ void DispReel::MoveOffset(const float dx, const float dy)
 
 
 
-void DispReel::GetCenter(Vertex2D *pv)
+void DispReel::GetCenter(Vertex2D * const pv) const
 {
 	*pv = m_d.m_v1;
 }
 
 
 
-void DispReel::PutCenter(Vertex2D *pv)
+void DispReel::PutCenter(const Vertex2D * const pv)
 {
 	m_d.m_v1 = *pv;
 

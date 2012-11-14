@@ -2,7 +2,7 @@
 
 static int _balls_created;
 
-int Ball::NumInitted()  //
+int Ball::NumInitted()
 {
     return ( _balls_created );
 }
@@ -147,9 +147,9 @@ void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elastic
 	if (antifriction >= 1.0f || antifriction <= 0.0f) 
 		antifriction = c_hardFriction; // use global
 
-	vx *= antifriction; vy *= antifriction; vz *= antifriction; //friction all axiz
+	vx *= antifriction; vy *= antifriction; vz *= antifriction;			//friction all axiz
 
-	if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;				// if <= 0 use global value
+	if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;			// if <= 0 use global value
 	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply dificulty weighting
 
 	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
@@ -471,14 +471,13 @@ void Ball::CalcHitRect()
 	{
 	}
 
-void BallAnimObject::UpdateDisplacements(float dtime)
+void BallAnimObject::UpdateDisplacements(const float dtime)
 	{
 	m_pball->UpdateDisplacements(dtime);
 	}
 
-void Ball::UpdateDisplacements(float dtime)
-	{
-    	
+void Ball::UpdateDisplacements(const float dtime)
+	{    	
 	if (!fFrozen)
 		{
 		const float dsx = vx * dtime;
@@ -551,12 +550,12 @@ void Ball::UpdateDisplacements(float dtime)
 		}
 	}
 
-void BallAnimObject::UpdateVelocities(float dtime)
+void BallAnimObject::UpdateVelocities(const float dtime)
 	{
 	m_pball->UpdateVelocities(dtime);
 	}
 
-void Ball::UpdateVelocities(float dtime)
+void Ball::UpdateVelocities(const float dtime)
 	{
 	///  dtime is always 1.0	
 	const float g = g_pplayer->m_mainlevel.m_gravity.z;

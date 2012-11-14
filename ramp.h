@@ -119,8 +119,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
 	virtual void Translate(Vertex2D *pvOffset);
 
-	virtual void GetCenter(Vertex2D *pv) {GetPointCenter(pv);}
-	virtual void PutCenter(Vertex2D *pv) {PutPointCenter(pv);}
+	virtual void GetCenter(Vertex2D * const pv) const {GetPointCenter(pv);}
+	virtual void PutCenter(const Vertex2D * const pv) {PutPointCenter(pv);}
 
 	void WriteRegDefaults();
 
@@ -130,7 +130,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 		
 	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
-	virtual void RenderShadow(ShadowSur *psur, float height);
+	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
 	Vector<Level> m_vlevel;
 

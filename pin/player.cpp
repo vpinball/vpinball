@@ -713,8 +713,8 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 #endif
 
 	// Initialize render and texture states for D3D blit support.
-	Display_InitializeRenderStates();
-	Display_InitializeTextureStates();
+	//Display_InitializeRenderStates();
+	//Display_InitializeTextureStates();
 
 	hr = m_pin3d.m_pd3dDevice->BeginScene();
 
@@ -2303,8 +2303,8 @@ void Player::Render()
 	HRESULT hr = m_pin3d.m_pd3dDevice->BeginScene();
 
 	D3DMATRIX RestoreWorldMatrix;
-	RenderStateType	RestoreRenderState;
-	TextureStateType RestoreTextureState;
+	//RenderStateType  RestoreRenderState;
+	//TextureStateType RestoreTextureState;
 	HRESULT ReturnCode;
 	// Check if we are blitting with D3D.
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
@@ -2313,55 +2313,22 @@ void Player::Render()
 		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix );
 
 		// Save the current render state.
-		Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
+		//Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Save the current texture state.
-		Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
-		}
+		//Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 
-// why is this done twice? is there some stubborn hardware refusing to take commands?? (SnailGary)
-/*
-	// Check if we are blitting with D3D.
-	if (g_pvp->m_pdd.m_fUseD3DBlit)
-		{
-		// Restore the render states.
-		Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
-
-		// Restore the texture state.
-		Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
-
-		// Restore the transformation state.
-		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
-		}
-
-	// Check if we are blitting with D3D.								
-	if (g_pvp->m_pdd.m_fUseD3DBlit)				
-		{
-		// Save the current transformation state.
-		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
-
-		// Save the current render state.
-		Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
-
-		// Save the current texture state.
-		Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
-		}
-*/
-
-	// Check if we are blitting with D3D.
-	// And setup everything that will be needed to draw sprites in next loop
-	if (g_pvp->m_pdd.m_fUseD3DBlit)					
-	{
+		// And setup everything that will be needed to draw sprites in next loop
 		const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
 
 		// Apply the transformation.
 		/*const HRESULT ReturnCode =*/ g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix );
 
 		// Set the texture state.
-		Display_SetTextureState ( g_pplayer->m_pin3d.m_pd3dDevice, &(TextureStates[DISPLAY_TEXTURESTATE_NOFILTER]) );
+		//Display_SetTextureState ( g_pplayer->m_pin3d.m_pd3dDevice, &(TextureStates[DISPLAY_TEXTURESTATE_NOFILTER]) );
 	
 		// Set the render state.
-		Display_SetRenderState ( g_pplayer->m_pin3d.m_pd3dDevice, &(RenderStates[DISPLAY_RENDERSTATE_TRANSPARENT]) );
+		//Display_SetRenderState ( g_pplayer->m_pin3d.m_pd3dDevice, &(RenderStates[DISPLAY_RENDERSTATE_TRANSPARENT]) );
 	}
 
 	// Process all regions that need updating.  
@@ -2435,10 +2402,10 @@ void Player::Render()
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
 	{
 		// Restore the render states.
-		Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
+		//Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Restore the texture state.
-		Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
+		//Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
 
 		// Restore the transformation state.
 		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
@@ -2558,7 +2525,6 @@ if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (
 }
 else
 {
-	//!! add key to en/disable 3D at runtime
 	//!! num_threads(max_threads-1 or -2) ? on my AMD omp is not really faster for the update path, a bit faster for full path
 	//!! overall half resolution necessary only (Y3D profits from full res though (implicit filtering))
 
