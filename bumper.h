@@ -99,15 +99,15 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
-	virtual void RenderShadow(ShadowSur *psur, float height);
+	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
 	//virtual HRESULT GetTypeName(BSTR *pVal);
 	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex2D *pv);
-	virtual void PutCenter(Vertex2D *pv);
+	virtual void GetCenter(Vertex2D * const pv) const;
+	virtual void PutCenter(const Vertex2D * const pv);
 
 	virtual void DrawFrame(BOOL fOn);
 

@@ -76,7 +76,7 @@ public:
 		return fFound;
 		}
 
-	inline int GetSortedIndex(void * const pvoid)
+	inline int GetSortedIndex(void * const pvoid) const
 		{
 		int currentnode = m_searchstart-1;  // Zero based
 		int jumpnode = m_searchstart >> 1;
@@ -116,7 +116,7 @@ public:
 		return -1;
 		}
 
-	inline T *GetSortedElement(void * const pvoid)
+	inline T *GetSortedElement(void * const pvoid) const
 		{			
 		const int i = GetSortedIndex(pvoid);
 		if (i != -1)

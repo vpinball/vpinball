@@ -895,13 +895,13 @@ void Primitive::MoveOffset(const float dx, const float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Primitive::GetCenter(Vertex2D *pv)
+void Primitive::GetCenter(Vertex2D * const pv) const
 	{
 		pv->x = m_d.m_vPosition.x;
 		pv->y = m_d.m_vPosition.y;
 	}
 
-void Primitive::PutCenter(Vertex2D *pv)
+void Primitive::PutCenter(const Vertex2D * const pv)
 	{
 		m_d.m_vPosition.x = pv->x;
 		m_d.m_vPosition.y = pv->y;

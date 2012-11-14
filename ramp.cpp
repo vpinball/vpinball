@@ -366,7 +366,7 @@ void Ramp::RenderBlueprint(Sur *psur)
 	RenderOutline(psur);
 	}
 
-void Ramp::RenderShadow(ShadowSur *psur, float height)
+void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 	{
 	if (!m_d.m_fCastsShadow || !m_ptable->m_fRenderShadows || !m_d.m_IsVisible) 
 		return; //skip render if not visible

@@ -133,7 +133,7 @@ void PlungerAnimObject::SetObjects(const float len)
 	m_jointEnd[1].normal.y = -deg45;
 	}
 
-void PlungerAnimObject::UpdateDisplacements(float dtime)
+void PlungerAnimObject::UpdateDisplacements(const float dtime)
 {
 	m_pos += dtime*m_speed;
 
@@ -164,7 +164,7 @@ void PlungerAnimObject::UpdateDisplacements(float dtime)
 		}
 }
 
-void PlungerAnimObject::UpdateVelocities(float dtime) //dtime always 1.0f
+void PlungerAnimObject::UpdateVelocities(const float dtime) //dtime always 1.0f
 	{	
 	if (m_fAcc)
 		{

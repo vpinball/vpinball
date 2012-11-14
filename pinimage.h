@@ -18,8 +18,8 @@
 
 #define NOTRANSCOLOR  RGB(123,123,123)
 
-#define MINBLACK 0x00070707
-#define MINBLACKMASK 0x00f8f8f8
+//#define MINBLACK 0x00070707
+//#define MINBLACKMASK 0x00f8f8f8
 
 class PinImage : public ILoadable 
 {

@@ -4258,7 +4258,7 @@ void PinTable::Translate(Vertex2D *pvOffset)
 	EndUndo();
 	}
 
-void PinTable::GetCenter(Vertex2D *pv)
+void PinTable::GetCenter(Vertex2D * const pv) const
 	{
 	float minx = FLT_MAX;
 	float maxx = -FLT_MAX;
@@ -4283,7 +4283,7 @@ void PinTable::GetCenter(Vertex2D *pv)
 	pv->y = (maxy+miny)*0.5f;
 	}
 
-void PinTable::PutCenter(Vertex2D *pv)
+void PinTable::PutCenter(const Vertex2D * const pv)
 	{
 	}
 
@@ -5981,7 +5981,7 @@ PinImage *PinTable::GetImage(char *szName)
 
 	for (int i=0;i<m_vimage.Size();i++)
 		{
-		if (!lstrcmp(m_vimage.ElementAt(i)->m_szInternalName, szName)) //!!  strcmp calls are actually pretty expensive currently for drawing the acrylics! -> 10-20% overall frame time
+		if (!lstrcmp(m_vimage.ElementAt(i)->m_szInternalName, szName)) //!! strcmp calls are actually pretty expensive currently for drawing the acrylics! -> 10-20% overall frame time
 			{
 			return m_vimage.ElementAt(i);
 			}

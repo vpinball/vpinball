@@ -161,7 +161,7 @@ void FlipperAnimObject::SetObjects(const float angle)
 	}
 
 
-void FlipperAnimObject::UpdateDisplacements(float dtime)
+void FlipperAnimObject::UpdateDisplacements(const float dtime)
 	{
 	 m_angleCur += m_anglespeed*dtime;	// move flipper angle
 	
@@ -199,7 +199,7 @@ void FlipperAnimObject::UpdateDisplacements(float dtime)
 		}
 	}
 
-void FlipperAnimObject::UpdateVelocities(float dtime)
+void FlipperAnimObject::UpdateVelocities(const float dtime)
 	{
 
 	if (m_fAcc == 0) ;//m_anglespeed = 0; //idle
@@ -266,7 +266,7 @@ float HitFlipper::HitTest(Ball * const pball, const float dtime, Vertex3Ds * con
 	return -1.0f;	// no hits
 	}
 
-float HitFlipper::HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnormal) // replacement
+float HitFlipper::HitTestFlipperEnd(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) // replacement
 	{ 	 
 	const float angleCur = m_flipperanim.m_angleCur;
 	float anglespeed = m_flipperanim.m_anglespeed;		// rotation rate
@@ -405,7 +405,7 @@ float HitFlipper::HitTestFlipperEnd(Ball *pball, float dtime, Vertex3Ds *phitnor
 	}
 
 
-float HitFlipper::HitTestFlipperFace(Ball *pball, float dtime, Vertex3Ds *phitnormal, bool face) // replacement
+float HitFlipper::HitTestFlipperFace(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool face) // replacement
 	{ 
 	const float angleCur = m_flipperanim.m_angleCur;
 	float anglespeed = m_flipperanim.m_anglespeed;				// rotation rate

@@ -249,12 +249,12 @@ void Plunger::MoveOffset(const float dx, const float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Plunger::GetCenter(Vertex2D *pv)
+void Plunger::GetCenter(Vertex2D * const pv) const
 	{
 	*pv = m_d.m_v;
 	}
 
-void Plunger::PutCenter(Vertex2D *pv)
+void Plunger::PutCenter(const Vertex2D * const pv)
 	{
 	m_d.m_v = *pv;
 

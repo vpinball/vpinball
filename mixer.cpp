@@ -209,16 +209,9 @@ const U32 volume_adjustment_drop_color = 0x0000001f;
 
 void mixer_draw()
 {
-	RenderStateType		RestoreRenderState;
-	TextureStateType	RestoreTextureState;
-	D3DMATRIX			RestoreWorldMatrix;
-	HRESULT				ReturnCode;
-
-
 	if( !volume_stamp ) return;
 
 	m_bUpdate = true;
-
 
 	F32 fade = 1.0f - ( ( (F32) ( msec() - volume_stamp ) ) * 0.001f );
     if( fade > 1.0f ) fade = 1.0f;
@@ -228,12 +221,17 @@ void mixer_draw()
 		return;
 	}
 
+	//RenderStateType	RestoreRenderState;
+	//TextureStateType	RestoreTextureState;
+	D3DMATRIX			RestoreWorldMatrix;
+	HRESULT				ReturnCode;
+
 	// Save the current transformation state.
 	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 	// Save the current render state.
-	Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
+	//Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
 	// Save the current texture state.
-	Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+	//Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 
     const U32 alpha = (U32) ( fade * 222.2f );
 
@@ -321,9 +319,9 @@ void mixer_draw()
 	}
 
 	// Restore the render states.
-	Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
+	//Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
 	// Restore the texture state.
-	Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+	//Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 	// Restore the transformation state.
 	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 }

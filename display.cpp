@@ -1,23 +1,18 @@
 #include "StdAfx.h"
-
 #include "display.h"
-
 #include <math.h>
 
-
 // Global render and texture states for calls to DrawSprite.
-RenderStateType		RenderStates[DISPLAY_RENDERSTATE_MAX];
-TextureStateType	TextureStates[DISPLAY_TEXTURESTATE_MAX];
+//RenderStateType	RenderStates[DISPLAY_RENDERSTATE_MAX];
+//TextureStateType	TextureStates[DISPLAY_TEXTURESTATE_MAX];
 
 int NumVideoBytes = 0;
-
 
 // Initializes the array of render states.
 // The render states are hard-coded.  
 // If time permits, we should parse these states from a text file.
-void Display_InitializeRenderStates ()
+/*void Display_InitializeRenderStates ()
 {
-
 	// Define DISPLAY_RENDERSTATE_GENERIC.
 	// This render state is good for debugging.
 	Display_ClearRenderState ( &(RenderStates[DISPLAY_RENDERSTATE_GENERIC]) );
@@ -82,14 +77,12 @@ void Display_InitializeRenderStates ()
 	RenderStates[DISPLAY_RENDERSTATE_BALL].SpecularMaterialSource = D3DMCS_COLOR2;
 	RenderStates[DISPLAY_RENDERSTATE_BALL].AmbientMaterialSource = D3DMCS_MATERIAL;
 	RenderStates[DISPLAY_RENDERSTATE_BALL].EmissiveMaterialSource = D3DMCS_MATERIAL;
-
-}
-
+}*/
 
 // Initializes the array of texture states.
 // The texture states are hard-coded.  
 // If time permits, we should parse these states from a text file.
-void Display_InitializeTextureStates ()
+/*void Display_InitializeTextureStates ()
 {
 	// Define DISPLAY_TEXTURESTATE_GENERIC.
 	// This texture state is good for debugging.
@@ -124,11 +117,11 @@ void Display_InitializeTextureStates ()
 	TextureStates[DISPLAY_TEXTURESTATE_BALL].MinFilter[0] = D3DTFN_LINEAR;
 	TextureStates[DISPLAY_TEXTURESTATE_BALL].MipFilter[0] = D3DTFP_LINEAR;
 	TextureStates[DISPLAY_TEXTURESTATE_BALL].ColorOp[1] = D3DTOP_DISABLE;
-}
+}*/
 
 // Gets the current render state from the D3D device.
 // This is costly on performance and should only be used for debugging.
-void Display_GetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState )
+/*void Display_GetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState )
 {
     HRESULT     ReturnCode;
 
@@ -194,14 +187,12 @@ void Display_GetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType 
     ReturnCode = Direct3DDevice->GetRenderState ( D3DRENDERSTATE_VERTEXBLEND, &(RenderState->VertexBlend) );
     ReturnCode = Direct3DDevice->GetRenderState ( D3DRENDERSTATE_CLIPPLANEENABLE, &(RenderState->ClipPlaneEnable) );
 }
-
+*/
 
 // Sets the current render state of the D3D device.
-void Display_SetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState )
+/*void Display_SetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState )
 {
-    return;
-
-	HRESULT     ReturnCode;
+    HRESULT     ReturnCode;
 
     // Set the render state.
     ReturnCode = Direct3DDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, RenderState->ZEnable );
@@ -264,13 +255,12 @@ void Display_SetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType 
 //    ReturnCode = Direct3DDevice->SetRenderState ( D3DRENDERSTATE_EMISSIVEMATERIALSOURCE, RenderState->EmissiveMaterialSource ); 
 //    ReturnCode = Direct3DDevice->SetRenderState ( D3DRENDERSTATE_VERTEXBLEND, RenderState->VertexBlend );
 //    ReturnCode = Direct3DDevice->SetRenderState ( D3DRENDERSTATE_CLIPPLANEENABLE, RenderState->ClipPlaneEnable );
-
 }
-
+*/
 
 // Sets the render state to a generic state.
 // Here mainly for debugging purposes.
-void Display_ClearRenderState ( RenderStateType *RenderState )
+/*void Display_ClearRenderState ( RenderStateType *RenderState )
 {
     RenderState->ZEnable = D3DZB_TRUE;
     RenderState->FillMode = D3DFILL_SOLID;
@@ -331,12 +321,11 @@ void Display_ClearRenderState ( RenderStateType *RenderState )
 //    RenderState->VertexBlend = D3DVBF_DISABLE;
     RenderState->ClipPlaneEnable = FALSE;
     RenderState->PerspectiveCorrection = FALSE;
-}
-
+}*/
 
 // Gets the current texture state.
 // Here for debugging purposes.
-void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState )
+/*void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState )
 {
 	for (int i=0; i<DISPLAY_MAXTEXTURES; ++i)
 	{
@@ -364,13 +353,11 @@ void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 		ReturnCode = Direct3DDevice->GetTextureStageState ( i, D3DTSS_TEXTURETRANSFORMFLAGS, &(TextureState->TextureCoordinateTransformFlags[i]) );
 	}
 }
-    
-    
-// Sets the texture state.
-void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState )
-{
-	return;
+*/
 
+// Sets the texture state.
+/*void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState )
+{
 	for (int i=0; i<DISPLAY_MAXTEXTURES; ++i)
 	{
 		HRESULT         ReturnCode;
@@ -428,11 +415,11 @@ void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateTyp
 	}
 #endif
 }
-
+*/
     
 // Clears the texture state for the display device.
 // Here for debugging purposes.
-void Display_ClearTextureState ( TextureStateType *TextureState )
+/*void Display_ClearTextureState ( TextureStateType *TextureState )
 {
 	// Set the texture.
 	TextureState->Texture[0] = NULL;
@@ -481,18 +468,13 @@ void Display_ClearTextureState ( TextureStateType *TextureState )
 		TextureState->TextureCoordinateIndex[i] = 0;
 		TextureState->TextureCoordinateTransformFlags[i] = D3DTTFF_DISABLE;
 	}
-}
-
+}*/
 
 // Creates a D3D texture surface from an existing DDraw surface. 
 void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAW7 DirectDrawObject, const LPDIRECTDRAWSURFACE7 SourceTexture, const int Width, const int Height, LPDIRECTDRAWSURFACE7 * const DestD3DTexture, float * const u, float * const v )
 {
-    DDSURFACEDESC2 SourceSurfaceDescription, DestSurfaceDescription;
-   
 	// Initialize.
 	*DestD3DTexture = NULL;
-	*u = 0.0f;
-	*v = 0.0f;
 
 	// Find the closest width and height that are powers of 2.
 	const int TextureWidth = Display_GetPowerOfTwo ( Width );
@@ -503,6 +485,7 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 	*u = (float)Width  / (float)TextureWidth;
 	*v = (float)Height / (float)TextureHeight;
 
+    DDSURFACEDESC2 SourceSurfaceDescription, DestSurfaceDescription;
     // Describe the type of surface we want to create.
     ZeroMemory ( &DestSurfaceDescription, sizeof ( DestSurfaceDescription ) );
     DestSurfaceDescription.dwSize = sizeof ( DDSURFACEDESC2 );
@@ -552,7 +535,7 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 			// Lock the destination texture surface so we can fill it with pixels.
 			ZeroMemory ( &DestSurfaceDescription, sizeof ( DestSurfaceDescription ) );
 			DestSurfaceDescription.dwSize = sizeof ( DestSurfaceDescription );
-			ReturnCode = VidSurface->Lock ( NULL, &DestSurfaceDescription, 0, NULL );
+			ReturnCode = VidSurface->Lock ( NULL, &DestSurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL );
 
 			// Make sure we locked destination the surface.
 			if ( ReturnCode == 0 )
@@ -560,7 +543,7 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 				// Lock the source DDraw surface so we can read its pixels.
 				ZeroMemory ( &SourceSurfaceDescription, sizeof ( SourceSurfaceDescription ) );
 				SourceSurfaceDescription.dwSize = sizeof ( SourceSurfaceDescription );
-				ReturnCode = SourceTexture->Lock ( NULL, &SourceSurfaceDescription, 0, NULL );
+				ReturnCode = SourceTexture->Lock ( NULL, &SourceSurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL );
 
 				// Make sure we locked the source surface.
 				if ( ReturnCode == 0 )
@@ -578,9 +561,7 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 						for (int r=0; r<Width*4; r+=4)
 						{
 							// Copy the pixel. Cupid: Alpha channel removed?
-
 							*((unsigned int*)&(DestLockedSurface[offset0 + r])) = *((unsigned int*)&(SourceLockedSurface[offset1 + r])); //| 0xFF000000;
-
 						}
 
 						// Increment to the next horizontal line.
@@ -672,7 +653,7 @@ int Display_GetPowerOfTwo ( const int Value )
 
 // Copies a texture from the source to the destination.  
 // Only the region inside Rect is copied.
-void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 DestTexture, RECT *Rect, LPDIRECTDRAWSURFACE7 SourceTexture )
+void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 DestTexture, const RECT * const Rect, LPDIRECTDRAWSURFACE7 SourceTexture )
 {
     HRESULT					ReturnCode;
     DDSURFACEDESC2			SourceSurfaceDescription, DestSurfaceDescription;
@@ -685,7 +666,7 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 		// Lock the destination texture so we can fill it with pixels.
 		ZeroMemory ( &DestSurfaceDescription, sizeof ( DestSurfaceDescription ) );
 		DestSurfaceDescription.dwSize = sizeof ( DestSurfaceDescription );
-		ReturnCode = DestTexture->Lock ( NULL, &DestSurfaceDescription, 0, NULL );
+		ReturnCode = DestTexture->Lock ( NULL, &DestSurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL );
 
 		// Make sure we locked the destination texture.
 		if ( ReturnCode == 0 )
@@ -693,7 +674,7 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 			// Lock the source texture so we can read its pixels.
 			ZeroMemory ( &SourceSurfaceDescription, sizeof ( SourceSurfaceDescription ) );
 			SourceSurfaceDescription.dwSize = sizeof ( SourceSurfaceDescription );
-			ReturnCode = SourceTexture->Lock ( NULL, &SourceSurfaceDescription, 0, NULL );
+			ReturnCode = SourceTexture->Lock ( NULL, &SourceSurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL );
 
 			// Make sure we locked the source texture.
 			if ( ReturnCode == 0 )
@@ -765,7 +746,7 @@ void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRE
 		DDSURFACEDESC2 SurfaceDescription;
 		ZeroMemory ( &SurfaceDescription, sizeof ( SurfaceDescription ) );
 		SurfaceDescription.dwSize = sizeof ( SurfaceDescription );
-		const HRESULT ReturnCode = Texture->Lock ( NULL, &SurfaceDescription, 0, NULL );
+		const HRESULT ReturnCode = Texture->Lock ( NULL, &SurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL );
 
 		// Make sure we locked the texture.
 		if ( ReturnCode == 0 )
@@ -797,7 +778,7 @@ void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRE
 
 // Draws the primitive to the current render target.
 // If D3D blitting is enabled, the primitive is also drawn to the texture buffer.
-HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIMITIVETYPE d3dptPrimitiveType, DWORD dwVertexTypeDesc, LPVOID lpvVertices, DWORD dwVertexCount, LPWORD lpwIndices, DWORD dwIndexCount, DWORD dwFlags )
+HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, LPVOID lpvVertices, const DWORD dwVertexCount, LPWORD lpwIndices, const DWORD dwIndexCount, const DWORD dwFlags )
 {
 	// Draw the primitive.
 	HRESULT ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
@@ -805,7 +786,7 @@ HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, D3DPRIM
 	// Check if we are blitting with D3D.
 	if ( g_pvp->m_pdd.m_fUseD3DBlit )
 	{
-		LPDIRECTDRAWSURFACE7	RestoreRenderTarget;
+		LPDIRECTDRAWSURFACE7 RestoreRenderTarget;
 		// Save the render target.
 		Direct3DDevice->GetRenderTarget ( &RestoreRenderTarget );	
 		

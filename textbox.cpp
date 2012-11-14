@@ -429,12 +429,12 @@ void Textbox::MoveOffset(const float dx, const float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Textbox::GetCenter(Vertex2D *pv)
+void Textbox::GetCenter(Vertex2D * const pv) const
 {
 	*pv = m_d.m_v1;
 }
 
-void Textbox::PutCenter(Vertex2D *pv)
+void Textbox::PutCenter(const Vertex2D * const pv)
 {
 	m_d.m_v2.x = pv->x + m_d.m_v2.x - m_d.m_v1.x;
 	m_d.m_v2.y = pv->y + m_d.m_v2.y - m_d.m_v1.y;

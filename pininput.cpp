@@ -339,7 +339,7 @@ void PinInput::AdvanceTail()
 }
 
 
-void PinInput::PushQueue( DIDEVICEOBJECTDATA *data, unsigned int app_data )
+void PinInput::PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data )
 {
 	if(( !data ) || QueueFull()) return;
 
@@ -350,7 +350,7 @@ void PinInput::PushQueue( DIDEVICEOBJECTDATA *data, unsigned int app_data )
 }
 
 
-DIDEVICEOBJECTDATA *PinInput::GetTail( U32 cur_sim_msec )
+DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 cur_sim_msec )
 {
 	if( QueueEmpty() ) return NULL;
 
@@ -358,7 +358,7 @@ DIDEVICEOBJECTDATA *PinInput::GetTail( U32 cur_sim_msec )
 
 	DIDEVICEOBJECTDATA *ptr = &m_diq[tmp];
 
-	const int diff = (int) ((U32)( cur_sim_msec - ptr->dwTimeStamp ));
+	const int diff = (int)( cur_sim_msec - ptr->dwTimeStamp );
 
 	// If we've simulated to or beyond the timestamp of when this control was received then process the control into the system
 	if( diff > 0 || cur_sim_msec == 0xffffffff )
@@ -378,12 +378,12 @@ void GetInputDeviceData()
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
 	DWORD dwElements;
 	HRESULT hr;		
-	HWND hwnd = s_pPinInput->m_hwnd;
+	const HWND hwnd = s_pPinInput->m_hwnd;
 
 	if(!s_pPinInput) return;	// bad pointer exit
 
 	{
-	LPDIRECTINPUTDEVICE pkyb = s_pPinInput->m_pKeyboard;
+	const LPDIRECTINPUTDEVICE pkyb = s_pPinInput->m_pKeyboard;
 	if (pkyb) //keyboard
 		{	
 		hr = pkyb->Acquire();				// try to Acquire keyboard input
@@ -406,7 +406,7 @@ void GetInputDeviceData()
 
 	for (int k = 0; k < e_JoyCnt; ++k)
 		{
-		LPDIRECTINPUTDEVICE pjoy = s_pPinInput->m_pJoystick[k];
+		const LPDIRECTINPUTDEVICE pjoy = s_pPinInput->m_pJoystick[k];
 		if (pjoy)
 			{				
 			hr = pjoy->Acquire();							// try to Acquire joustick input
@@ -428,7 +428,7 @@ void GetInputDeviceData()
 	}
 	}
 
-void PinInput::Init(HWND hwnd)
+void PinInput::Init(const HWND hwnd)
 	{
 	HRESULT hr;
 
@@ -452,7 +452,6 @@ void PinInput::Init(HWND hwnd)
 		dipdw.dwData = INPUT_BUFFER_SIZE;
 
 		hr = m_pKeyboard->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
-
 
 		/*  Disable Sticky Keys */
 
@@ -526,7 +525,7 @@ void PinInput::UnInit()
 	ZeroMemory( m_diq, sizeof( m_diq ));
 }
 
-void PinInput::FireKeyEvent( int dispid, int key )
+void PinInput::FireKeyEvent( const int dispid, const int key )
 {
 	U32 val = 0;
 	U32 tmp = m_PreviousKeys;
@@ -675,7 +674,7 @@ static U32 LastAttempt;
 
 // Adds coins that were passed in from the 
 // credit manager via a window message. 
-void PinInput::autocoin( F32 secs )
+void PinInput::autocoin( const F32 secs )
 {
 	// Make sure we have a player.
 	if( !g_pplayer ) 
@@ -721,7 +720,7 @@ void PinInput::autocoin( F32 secs )
 }
 
 
-void PinInput::autostart( F32 secs, F32 retrysecs )
+void PinInput::autostart( const F32 secs, const F32 retrysecs )
 {
 
 //	if( !VPinball::m_open_minimized ) 
@@ -779,7 +778,7 @@ void PinInput::autostart( F32 secs, F32 retrysecs )
 
 
 
-void PinInput::autoexit( F32 secs )
+void PinInput::autoexit( const F32 secs )
 {
 	if (( !VPinball::m_open_minimized ) ||
 		( !g_pplayer ) ||
@@ -798,7 +797,7 @@ static U32 exit_stamp;
 static U32 fastexit_stamp;
 static U32 first_stamp;
 
-void PinInput::button_exit( F32 secs )
+void PinInput::button_exit( const F32 secs )
 {
 	const U32 curr_time_msec = msec();
 
@@ -842,7 +841,7 @@ void PinInput::tilt_update()
 	if( updown != tmp ) FireKeyEvent( updown, g_pplayer->m_rgKeys[eCenterTiltKey] );
 }
 
-void PinInput::ProcessKeys(PinTable *ptable, U32 cur_sim_msec )
+void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 {
 	m_ptable = ptable;
 
@@ -2492,32 +2491,33 @@ int PinInput::GetNextKey() // return last valid keyboard key
 	}
 	return 0;
 }
+
 // Returns non-zero if the key was pressed.
-U32 Pressed( U32 val )
+U32 Pressed( const U32 val )
 {
 	return PinInput::m_ChangedKeys & ( PinInput::m_PreviousKeys & val );
 }
 
 // Returns non-zero if the key was released.
-U32 Released( U32 val )
+U32 Released( const U32 val )
 {
 	return PinInput::m_ChangedKeys & (~PinInput::m_PreviousKeys);
 }
 
 // Returns non-zero if the key is held down.
-U32 Held( U32 val )
+U32 Held( const U32 val )
 {
 	return PinInput::m_PreviousKeys & val;
 }
 
 // Returns non-zero if the key is held down.
-U32 Down( U32 val )
+U32 Down( const U32 val )
 {
 	return Held( val );
 }
 
 // Returns non-zero if the key was changed.
-U32 Changed( U32 val )
+U32 Changed( const U32 val )
 {
 	return PinInput::m_ChangedKeys & val;
 }

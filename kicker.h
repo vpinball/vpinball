@@ -83,8 +83,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Kicker)
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex2D *pv);
-	virtual void PutCenter(Vertex2D *pv);
+	virtual void GetCenter(Vertex2D * const pv) const;
+	virtual void PutCenter(const Vertex2D * const pv);
 
 	void WriteRegDefaults();
 

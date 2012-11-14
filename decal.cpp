@@ -607,12 +607,12 @@ void Decal::MoveOffset(const float dx, const float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Decal::GetCenter(Vertex2D *pv)
+void Decal::GetCenter(Vertex2D * const pv) const
 	{
 	*pv = m_d.m_vCenter;
 	}
 
-void Decal::PutCenter(Vertex2D *pv)
+void Decal::PutCenter(const Vertex2D * const pv)
 	{
 	m_d.m_vCenter = *pv;
 

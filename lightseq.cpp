@@ -99,12 +99,12 @@ void LightSeq::MoveOffset(const float dx, const float dy)
 	m_ptable->SetDirtyDraw();
 }
 
-void LightSeq::GetCenter(Vertex2D *pv)
+void LightSeq::GetCenter(Vertex2D * const pv) const
 {
 	*pv = m_d.m_v;
 }
 
-void LightSeq::PutCenter(Vertex2D *pv)
+void LightSeq::PutCenter(const Vertex2D * const pv)
 {
 	m_d.m_v = *pv;
 
@@ -1937,12 +1937,12 @@ PinTable *LightSeqCenter::GetPTable()
 	return m_pLightSeq->GetPTable();
 }
 
-void LightSeqCenter::GetCenter(Vertex2D *pv)
+void LightSeqCenter::GetCenter(Vertex2D * const pv) const
 {
 	*pv = m_pLightSeq->m_d.m_vCenter;
 }
 
-void LightSeqCenter::PutCenter(Vertex2D *pv)
+void LightSeqCenter::PutCenter(const Vertex2D * const pv)
 {
 	m_pLightSeq->m_d.m_vCenter = *pv;
 }

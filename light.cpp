@@ -18,12 +18,12 @@ void LightCenter::Uncreate() {m_plight->Uncreate();}
 IEditable *LightCenter::GetIEditable() {return (IEditable *)m_plight;}
 PinTable *LightCenter::GetPTable() {return m_plight->GetPTable();}
 
-void LightCenter::GetCenter(Vertex2D *pv)
+void LightCenter::GetCenter(Vertex2D * const pv) const
 	{
 	*pv = m_plight->m_d.m_vCenter;
 	}
 
-void LightCenter::PutCenter(Vertex2D *pv)
+void LightCenter::PutCenter(const Vertex2D * const pv)
 	{
 	m_plight->m_d.m_vCenter = *pv;
 	}
@@ -1347,12 +1347,12 @@ HRESULT Light::InitPostLoad()
 	return S_OK;
 	}
 
-void Light::GetPointCenter(Vertex2D *pv)
+void Light::GetPointCenter(Vertex2D * const pv) const
 	{
 	*pv = m_d.m_vCenter;
 	}
 
-void Light::PutPointCenter(Vertex2D *pv)
+void Light::PutPointCenter(const Vertex2D * const pv)
 	{
 	m_d.m_vCenter = *pv;
 

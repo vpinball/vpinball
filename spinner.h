@@ -94,8 +94,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Spinner)
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 	// Multi-object manipulation
-	virtual void GetCenter(Vertex2D *pv);
-	virtual void PutCenter(Vertex2D *pv);
+	virtual void GetCenter(Vertex2D * const pv) const;
+	virtual void PutCenter(const Vertex2D * const pv);
 
 	void WriteRegDefaults();
 
@@ -105,7 +105,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Spinner)
 
 	HitSpinner *m_phitspinner;
 
-	virtual void RenderShadow(ShadowSur *psur, float height);
+	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
 // ISpinner
 public:

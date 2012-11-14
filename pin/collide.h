@@ -108,10 +108,10 @@ class AnimObject
 	{
 public:
 	virtual BOOL FMover() {return fFalse;}
-	virtual void UpdateDisplacements(float dtime) {}
+	virtual void UpdateDisplacements(const float dtime) {}
 	//virtual void ResetFrameTime() {}
 	//virtual void UpdateTimePermanent() {}
-	virtual void UpdateVelocities(float dtime) {}
+	virtual void UpdateVelocities(const float dtime) {}
 
 	virtual BOOL FNeedsScreenUpdate() {return fFalse;}
     virtual void Check3D() {}
