@@ -126,21 +126,13 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		DDSURFACEDESC2 ddsd;
 		ddsd.dwSize = sizeof(ddsd);
 
-		/*const HRESULT hr =*/ m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+		/*const HRESULT hr =*/ m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
 		// 32-bit picture
 		LZWReader lzwreader(pbr->m_pistream, (int *)ddsd.lpSurface, m_width*4, m_height, ddsd.lPitch);
 
 		lzwreader.Decoder();
 
-		m_pdsBuffer->Unlock(NULL);
-		
-/*
-		DDSURFACEDESC2 ddsd;
-		ddsd.dwSize = sizeof(ddsd);	
-*/
-		m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-		
 		const int pitch = ddsd.lPitch;
 
 		// Assume our 32 bit color structure
@@ -157,8 +149,9 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 						max = pch[3];					
 					pch += 4;
 				}
-			pch += pitch-(m_width*4);
+			pch += pitch - m_width*4;
 			}
+
 		pch = (BYTE *)ddsd.lpSurface;
 		if ((min == max) && (min == 0x00))
 			for (int i=0;i<m_height;i++)
@@ -213,20 +206,17 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		//slintf("Pixel format: %s",hbm.PixelFormat.ToString());
 		//g_pvp->m_pdd.get
 
-
 		int dibWidth = FreeImage_GetWidth(dib);
 		int dibHeight = FreeImage_GetHeight(dib);
 
 		FreeImage_Unload(dib);
-
 
 		m_pdsBuffer =  g_pvp->m_pdd.CreateFromHBitmap(hbm, &dibWidth, &dibHeight );
 
 		if (bitsPerPixel == 24)
 			g_pvp->m_pdd.SetOpaque(m_pdsBuffer, dibWidth, dibHeight);
 
-
-				//m_pdsBuffer = g_pvp->m_pdd.DecompressJPEG(this, m_ppb, &m_width, &m_height);
+		//m_pdsBuffer = g_pvp->m_pdd.DecompressJPEG(this, m_ppb, &m_width, &m_height);
 		if (m_pdsBuffer == NULL)
 			{
 			return fFalse;
@@ -241,7 +231,6 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		FIMEMORY *hmem = FreeImage_OpenMemory((BYTE *)m_ppb->m_pdata, m_ppb->m_cdata);
 		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
 		FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
-
 
 		// check if Textures exeed the maximum texture dimension
 		int maxTexDim;
@@ -444,11 +433,15 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
     ZeroMemory( &ddsd, sizeof(ddsd) );
 	ddsd.dwSize = sizeof(ddsd);
 
-	// Texture dimensions must be in powers of 2
-	int texwidth  = 1 << ((int)(logf((float)(width -1))*((float)(1.0/log(2.0))) + 0.001f/*round-off*/)+1);
-	int texheight = 1 << ((int)(logf((float)(height-1))*((float)(1.0/log(2.0))) + 0.001f/*round-off*/)+1);
+	int texwidth = 8; // Minimum size 8
+	while(texwidth < width)
+		texwidth <<= 1;
 
-	// D3D does not support textures greater than 4096 in either dimension
+	int texheight = 8;
+	while(texheight < height)
+		texheight <<= 1;
+
+	// D3D7 does not support textures greater than 4096 in either dimension
 	if (texwidth > MAX_TEXTURE_SIZE)
 		{
 		texwidth = MAX_TEXTURE_SIZE;
@@ -457,17 +450,6 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 	if (texheight > MAX_TEXTURE_SIZE)
 		{
 		texheight = MAX_TEXTURE_SIZE;
-		}
-
-	// Or smaller than 8
-	if (texwidth < 8)
-		{
-		texwidth = 8;
-		}
-		
-	if (texheight < 8)
-		{
-		texheight = 8;
 		}
 
 	ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | /*DDSD_CKSRCBLT |*/ DDSD_PIXELFORMAT | DDSD_MIPMAPCOUNT;
@@ -504,8 +486,17 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 
 	LPDIRECTDRAWSURFACE7 pdds;
 	HRESULT hr;
+	bool retryflag = (m_fHardwareAccel != 0);
+retryimage:
     if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
 		{
+		if(retryflag)
+			{
+			ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_COMPLEX | DDSCAPS_MIPMAP | DDSCAPS_VIDEOMEMORY | DDSCAPS_NONLOCALVIDMEM;
+			ddsd.ddsCaps.dwCaps2 = 0;
+			retryflag = false;
+			goto retryimage;
+			}
 		ShowError("Could not create texture offscreen surface.");
 		return NULL;
 		}
@@ -548,7 +539,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 		// save original width and height, if the texture is rescaled
 		originalWidth = pictureWidth;
 		originalHeight = pictureHeight;
-		if (((pictureHeight > maxTexDim) ||  (pictureWidth > maxTexDim)) && (maxTexDim != 0))
+		if (((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim)) && (maxTexDim != 0))
 		{
 			dib = FreeImage_Rescale(dib, maxTexDim, maxTexDim, FILTER_BILINEAR);
 		}
@@ -576,8 +567,6 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 	}
 	else
 		return NULL;
-
-
 	}
 
 LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(const int id, int * const pwidth, int * const pheight)
@@ -609,7 +598,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int * const p
 
 	if (bm.bmWidth > MAX_TEXTURE_SIZE || bm.bmHeight > MAX_TEXTURE_SIZE)
 		{
-		return NULL; //rlc MAX_TEXTURE_SIZE is the limit for directx textures
+		return NULL; // MAX_TEXTURE_SIZE is the limit for directx7 textures
 		}
 
 	LPDIRECTDRAWSURFACE7 pdds = CreateTextureOffscreen(bm.bmWidth, bm.bmHeight);
@@ -689,10 +678,12 @@ METHODDEF(void) put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo, JD
   while (--pad >= 0)
     *outptr++ = 0;
 }
+
 METHODDEF(void) start_output_bmp (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   /* no work here */
 }
+
 METHODDEF(void) finish_output_bmp (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   
@@ -860,7 +851,6 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 		//slintf("amax:%d amin:%d\n",aMax,aMin);
 		pch = (BYTE *)ddsd.lpSurface;
 
-
 		for (int i=0;i<height;i++)
 			{
 			for (int l=0;l<width;l++)
@@ -928,7 +918,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 
 	// Gaussian Blur the sharp shadows
 
-	DDSURFACEDESC2 ddsd;//, ddsdSharp;
+	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);
 
 	pdds->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_NOSYSLOCK | DDLOCK_DISCARDCONTENTS | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);

@@ -511,6 +511,8 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 		DestSurfaceDescription.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_3DDEVICE;  
 	}
 
+	bool retryflag = (g_pvp->m_pdd.m_fHardwareAccel != 0);
+retrytex:
 	// Find a transparent pixel format with 8 bit alpha.
     Direct3DDevice->EnumTextureFormats ( Display_EnumurateTransparentTextureFormats, &(DestSurfaceDescription.ddpfPixelFormat) );
 
@@ -519,6 +521,13 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 	HRESULT					ReturnCode;
     if( FAILED( ReturnCode = DirectDrawObject->CreateSurface ( &DestSurfaceDescription, &VidSurface, NULL ) ) )
 		{
+		if(retryflag)
+			{
+			DestSurfaceDescription.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_3DDEVICE | DDSCAPS_VIDEOMEMORY | DDSCAPS_NONLOCALVIDMEM;
+			DestSurfaceDescription.ddsCaps.dwCaps2 = 0;
+			retryflag = false;
+			goto retrytex;
+			}
 		ShowError("Could not create texture surface.");
 		}
 
@@ -535,7 +544,7 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 			// Lock the destination texture surface so we can fill it with pixels.
 			ZeroMemory ( &DestSurfaceDescription, sizeof ( DestSurfaceDescription ) );
 			DestSurfaceDescription.dwSize = sizeof ( DestSurfaceDescription );
-			ReturnCode = VidSurface->Lock ( NULL, &DestSurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL );
+			ReturnCode = VidSurface->Lock ( NULL, &DestSurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_DISCARDCONTENTS | DDLOCK_WRITEONLY, NULL );
 
 			// Make sure we locked destination the surface.
 			if ( ReturnCode == 0 )
@@ -746,7 +755,7 @@ void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRE
 		DDSURFACEDESC2 SurfaceDescription;
 		ZeroMemory ( &SurfaceDescription, sizeof ( SurfaceDescription ) );
 		SurfaceDescription.dwSize = sizeof ( SurfaceDescription );
-		const HRESULT ReturnCode = Texture->Lock ( NULL, &SurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL );
+		const HRESULT ReturnCode = Texture->Lock ( NULL, &SurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_DISCARDCONTENTS | DDLOCK_WRITEONLY, NULL );
 
 		// Make sure we locked the texture.
 		if ( ReturnCode == 0 )
@@ -788,16 +797,16 @@ HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, const D
 	{
 		LPDIRECTDRAWSURFACE7 RestoreRenderTarget;
 		// Save the render target.
-		Direct3DDevice->GetRenderTarget ( &RestoreRenderTarget );	
+		Direct3DDevice->GetRenderTarget ( &RestoreRenderTarget );
 		
 		// Direct all renders to the back texture buffer.
-		Direct3DDevice->SetRenderTarget ( g_pplayer->m_pin3d.m_pddsBackTextureBuffer, 0L );					
+		Direct3DDevice->SetRenderTarget ( g_pplayer->m_pin3d.m_pddsBackTextureBuffer, 0L );
 		
 		// Redraw... this time to back texture buffer.
 		ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
 
 		// Restore the render target.
-		Direct3DDevice->SetRenderTarget ( RestoreRenderTarget, 0L );	
+		Direct3DDevice->SetRenderTarget ( RestoreRenderTarget, 0L );
 	}
 
 	return ReturnCode;
