@@ -11,19 +11,20 @@ static const __m128i FF00128 = _mm_set1_epi32(0xFF00u);
 static const __m128i FF00FF00128 = _mm_set1_epi32(0xFF00FF00);
 static const __m128i FF0000128 = _mm_set1_epi32(0xFF0000u);
 static const __m128i FEFEFE128 = _mm_set1_epi32(0xFEFEFEu);
+static const __m128i FEFEFE128_16 = _mm_set1_epi32((0x1Eu | 0x3Eu<<5 | 0x1Eu<<11) | ((0x1Eu | 0x3Eu<<5 | 0x1Eu<<11)<<16));
 static const __m128i mask_565_rb = _mm_set1_epi32(0x00F800F8);
 static const __m128i mask_565_pack_multiplier = _mm_set1_epi32(0x20000004);
 static const __m128i mask_red = _mm_set1_epi32(0x000000F8);
 static const __m128i mask_green = _mm_set1_epi32(0x0000FC00);
 static const __m128i mask_blue = _mm_set1_epi32(0x00F80000);
 
-__forceinline __m128 pack_565(const __m128i &lo)
+__forceinline __m128i pack_565(const __m128i &lo)
 {
     __m128i t0 = _mm_or_si128(_mm_madd_epi16(_mm_and_si128(lo, mask_565_rb), mask_565_pack_multiplier), _mm_and_si128(lo, mask_green));
 
     //!! could use _mm_packus_epi32 on sse4
     t0 = _mm_srai_epi32(_mm_slli_epi32(t0, 16 - 5), 16);
-    return (__m128&)_mm_packs_epi32(t0, t0);
+    return _mm_packs_epi32(t0, t0);
 }
 
 __forceinline __m128i unpack_565(const __m128i& lo)
@@ -47,7 +48,7 @@ __forceinline __m128i _mm_mul_int_i(const __m128i& a, const __m128i& b)
             _mm_and_si128( _mm_mul_epu32(_mm_srli_si128(a,4),b), f0128), 4));
 }
 
-inline void memcpy_sse2(void * const __restrict dst, const void * const __restrict src, const unsigned int nBytes)
+inline void memcpy_sse2(void * const __restrict dst, const void * const __restrict src, const unsigned int nBytes) //!! seems to be even faster than intel c builtin version?!
 {
     __asm
     {
@@ -336,7 +337,7 @@ endc:
     }
 }
 
-// initial implementation of stereo3D
+// initial non-intrinsic implementation of stereo3D
 #if 0
 for(; x < xend; x++,offsz++)
 {
@@ -452,24 +453,24 @@ const __m128i right01 = _mm_mul_int(_mm_and_si128(right0,FF00128),  pRs4_1);
 const __m128i right10 = _mm_mul_int(_mm_and_si128(right1,FF00FF128),pRs4_2);
 const __m128i right11 = _mm_mul_int(_mm_and_si128(right1,FF00128),  pRs4_2);
 
-const __m128i right = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_si128(_mm_add_epi32(right01,right11),FF0000128)),8);
+__m128i right = pack_565(_mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_si128(_mm_add_epi32(right01,right11),FF0000128)),8));
 
 if(AA & y) // so always triggered if AA and y&1
-	_mm_storel_pi((__m64*)(bufferfinal+offshalf0+x), pack_565(_mm_srli_epi32(_mm_add_epi32(_mm_and_si128(unpack_565(_mm_set_epi32(bufferfinal[offshalf0+x+3],bufferfinal[offshalf0+x+2],bufferfinal[offshalf0+x+1],bufferfinal[offshalf0+x])),FEFEFE128), _mm_and_si128(right,FEFEFE128)),1))); //!! opt.: this is very very crude code
-else
-	_mm_storel_pi((__m64*)(bufferfinal+offshalf0+x), pack_565(right));
+	right = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf0+x)),FEFEFE128_16), _mm_and_si128(right,FEFEFE128_16)),1);
+
+_mm_storel_pi((__m64*)(bufferfinal+offshalf0+x), (__m128&)right);
 
 const __m128i left00 = _mm_mul_int(_mm_and_si128(left0,FF00FF128),pLs4_1);
 const __m128i left01 = _mm_mul_int(_mm_and_si128(left0,FF00128),  pLs4_1);
 const __m128i left10 = _mm_mul_int(_mm_and_si128(left1,FF00FF128),pLs4_2);
 const __m128i left11 = _mm_mul_int(_mm_and_si128(left1,FF00128),  pLs4_2);
 
-const __m128i left = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_si128(_mm_add_epi32(left01,left11),FF0000128)),8);
+__m128i left = pack_565(_mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_si128(_mm_add_epi32(left01,left11),FF0000128)),8));
 
 if(AA & y) // so always triggered if AA and y&1
-	_mm_storel_pi((__m64*)(bufferfinal+offshalf1+x), pack_565(_mm_srli_epi32(_mm_add_epi32(_mm_and_si128(unpack_565(_mm_set_epi32(bufferfinal[offshalf1+x+3],bufferfinal[offshalf1+x+2],bufferfinal[offshalf1+x+1],bufferfinal[offshalf1+x])),FEFEFE128), _mm_and_si128(left,FEFEFE128)),1))); //!! opt.: this is very very crude code
-else
-	_mm_storel_pi((__m64*)(bufferfinal+offshalf1+x), pack_565(left));
+	left = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf1+x)),FEFEFE128_16), _mm_and_si128(left,FEFEFE128_16)),1);
+
+_mm_storel_pi((__m64*)(bufferfinal+offshalf1+x), (__m128&)left);
 }
 }
 }
@@ -543,24 +544,24 @@ const __m128i right01 = _mm_mul_int(_mm_and_si128(right0,FF00128),  pRs4_1);
 const __m128i right10 = _mm_mul_int(_mm_and_si128(right1,FF00FF128),pRs4_2);
 const __m128i right11 = _mm_mul_int(_mm_and_si128(right1,FF00128),  pRs4_2);
 
-const __m128i right = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_si128(_mm_add_epi32(right01,right11),FF0000128)),8);
+__m128i right = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_si128(_mm_add_epi32(right01,right11),FF0000128)),8);
 
 if(AA & y) // so always triggered if AA and y&1
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x),_mm_srli_epi32(_mm_add_epi32(_mm_and_si128(_mm_load_si128((__m128i*)(bufferfinal+offshalf0+x)),FEFEFE128), _mm_and_si128(right,FEFEFE128)),1));
-else
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x), right);
+	right = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128(_mm_load_si128((__m128i*)(bufferfinal+offshalf0+x)),FEFEFE128), _mm_and_si128(right,FEFEFE128)),1);
+
+_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x), right);
 
 const __m128i left00 = _mm_mul_int(_mm_and_si128(left0,FF00FF128),pLs4_1);
 const __m128i left01 = _mm_mul_int(_mm_and_si128(left0,FF00128),  pLs4_1);
 const __m128i left10 = _mm_mul_int(_mm_and_si128(left1,FF00FF128),pLs4_2);
 const __m128i left11 = _mm_mul_int(_mm_and_si128(left1,FF00128),  pLs4_2);
 
-const __m128i left = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_si128(_mm_add_epi32(left01,left11),FF0000128)),8);
+__m128i left = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_si128(_mm_add_epi32(left01,left11),FF0000128)),8);
 
 if(AA & y) // so always triggered if AA and y&1
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x),_mm_srli_epi32(_mm_add_epi32(_mm_and_si128(_mm_load_si128((__m128i*)(bufferfinal+offshalf1+x)),FEFEFE128), _mm_and_si128(left,FEFEFE128)),1));
-else
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x), left);
+	left = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128(_mm_load_si128((__m128i*)(bufferfinal+offshalf1+x)),FEFEFE128), _mm_and_si128(left,FEFEFE128)),1);
+
+_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x), left);
 }
 }
 }
@@ -630,24 +631,24 @@ const __m128i right01 = _mm_mul_int(_mm_and_si128(right0,FF00128),  pRs4_1);
 const __m128i right10 = _mm_mul_int(_mm_and_si128(right1,FF00FF128),pRs4_2);
 const __m128i right11 = _mm_mul_int(_mm_and_si128(right1,FF00128),  pRs4_2);
 
-const __m128i right = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_si128(_mm_add_epi32(right01,right11),FF0000128)),8);
+__m128i right = pack_565(_mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_si128(_mm_add_epi32(right01,right11),FF0000128)),8));
 
 if(AA & y) // so always triggered if AA and y&1
-	_mm_storel_pi((__m64*)(bufferfinal+offshalf0+x), pack_565(_mm_srli_epi32(_mm_add_epi32(_mm_and_si128(unpack_565(_mm_set_epi32(bufferfinal[offshalf0+x+3],bufferfinal[offshalf0+x+2],bufferfinal[offshalf0+x+1],bufferfinal[offshalf0+x])),FEFEFE128), _mm_and_si128(right,FEFEFE128)),1))); //!! opt.: this is very very crude code
-else
-	_mm_storel_pi((__m64*)(bufferfinal+offshalf0+x), pack_565(right));
+	right = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf0+x)),FEFEFE128_16), _mm_and_si128(right,FEFEFE128_16)),1);
+
+_mm_storel_pi((__m64*)(bufferfinal+offshalf0+x), (__m128&)right);
 
 const __m128i left00 = _mm_mul_int(_mm_and_si128(left0,FF00FF128),pLs4_1);
 const __m128i left01 = _mm_mul_int(_mm_and_si128(left0,FF00128),  pLs4_1);
 const __m128i left10 = _mm_mul_int(_mm_and_si128(left1,FF00FF128),pLs4_2);
 const __m128i left11 = _mm_mul_int(_mm_and_si128(left1,FF00128),  pLs4_2);
 
-const __m128i left = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_si128(_mm_add_epi32(left01,left11),FF0000128)),8);
+__m128i left = pack_565(_mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_si128(_mm_add_epi32(left01,left11),FF0000128)),8));
 
 if(AA & y) // so always triggered if AA and y&1
-	_mm_storel_pi((__m64*)(bufferfinal+offshalf1+x), pack_565(_mm_srli_epi32(_mm_add_epi32(_mm_and_si128(unpack_565(_mm_set_epi32(bufferfinal[offshalf1+x+3],bufferfinal[offshalf1+x+2],bufferfinal[offshalf1+x+1],bufferfinal[offshalf1+x])),FEFEFE128), _mm_and_si128(left,FEFEFE128)),1))); //!! opt.: this is very very crude code
-else
-	_mm_storel_pi((__m64*)(bufferfinal+offshalf1+x), pack_565(left));
+	left = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf1+x)),FEFEFE128_16), _mm_and_si128(left,FEFEFE128_16)),1);
+
+_mm_storel_pi((__m64*)(bufferfinal+offshalf1+x), (__m128&)left);
 }
 
 if(handle_borders)
@@ -721,24 +722,24 @@ const __m128i right01 = _mm_mul_int(_mm_and_si128(right0,FF00128),  pRs4_1);
 const __m128i right10 = _mm_mul_int(_mm_and_si128(right1,FF00FF128),pRs4_2);
 const __m128i right11 = _mm_mul_int(_mm_and_si128(right1,FF00128),  pRs4_2);
 
-const __m128i right = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_si128(_mm_add_epi32(right01,right11),FF0000128)),8);
+__m128i right = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_si128(_mm_add_epi32(right01,right11),FF0000128)),8);
 
 if(AA & y) // so always triggered if AA and y&1
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x),_mm_srli_epi32(_mm_add_epi32(_mm_and_si128(_mm_load_si128((__m128i*)(bufferfinal+offshalf0+x)),FEFEFE128), _mm_and_si128(right,FEFEFE128)),1));
-else
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x), right);
+	right = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128(_mm_load_si128((__m128i*)(bufferfinal+offshalf0+x)),FEFEFE128), _mm_and_si128(right,FEFEFE128)),1);
+
+_mm_stream_si128((__m128i*)(bufferfinal+offshalf0+x), right);
 
 const __m128i left00 = _mm_mul_int(_mm_and_si128(left0,FF00FF128),pLs4_1);
 const __m128i left01 = _mm_mul_int(_mm_and_si128(left0,FF00128),  pLs4_1);
 const __m128i left10 = _mm_mul_int(_mm_and_si128(left1,FF00FF128),pLs4_2);
 const __m128i left11 = _mm_mul_int(_mm_and_si128(left1,FF00128),  pLs4_2);
 
-const __m128i left = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_si128(_mm_add_epi32(left01,left11),FF0000128)),8);
+__m128i left = _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_si128(_mm_add_epi32(left01,left11),FF0000128)),8);
 
 if(AA & y) // so always triggered if AA and y&1
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x),_mm_srli_epi32(_mm_add_epi32(_mm_and_si128(_mm_load_si128((__m128i*)(bufferfinal+offshalf1+x)),FEFEFE128), _mm_and_si128(left,FEFEFE128)),1));
-else
-	_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x), left);
+	left = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128(_mm_load_si128((__m128i*)(bufferfinal+offshalf1+x)),FEFEFE128), _mm_and_si128(left,FEFEFE128)),1);
+
+_mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x), left);
 }
 
 if(handle_borders)
