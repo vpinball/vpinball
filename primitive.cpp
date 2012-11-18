@@ -843,17 +843,6 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 		pd3dDevice->SetMaterial(&mtrl);
 
-/*
-HRESULT DrawIndexedPrimitive(
-  D3DPRIMITIVETYPE d3dptPrimitiveType,  
-  DWORD  dwVertexTypeDesc,              
-  LPVOID lpvVertices,                   
-  DWORD  dwVertexCount,                 
-  LPWORD lpwIndices,                    
-  DWORD  dwIndexCount,                  
-  DWORD  dwFlags                        
-);
-*/
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 
 			MY_D3DFVF_VERTEX,
 			rgv3DAll, 

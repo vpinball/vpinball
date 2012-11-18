@@ -168,10 +168,6 @@ public:
 	void SetAlphaEnabled(const BOOL fAlpha) const;
 	void SetFiltersLinear() const;
 
-	HRESULT DrawIndexedPrimitive(D3DPRIMITIVETYPE d3dptPrimitiveType, DWORD  dwVertexTypeDesc,
-												  LPVOID lpvVertices, DWORD dwVertexCount,
-												  LPWORD lpwIndices, DWORD dwIndexCount);                     
-
 	BOOL GetCacheFileName(char *szFileName);
 	BOOL OpenCacheFileForRead();
 	void OpenCacheFileForWrite();

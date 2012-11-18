@@ -425,7 +425,7 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 						(m + offset + 1 + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1),
 						m + offset + 1};
 
-						Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
+					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
 													     (16*PLUNGEPOINTS1),rgi, 4, 0);
 				}
 			}
@@ -474,12 +474,11 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					(m + offset + 1 + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0),
 					m + offset + 1};
 
-					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
 												     (16*PLUNGEPOINTS0),rgi, 4, 0);
 				}
 			}
 		}
-
 
 		LPDIRECTDRAWSURFACE7 pdds;
 		pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
