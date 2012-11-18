@@ -1272,20 +1272,14 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 	}
 
 void Ramp::RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D * const rgv3D, WORD * const rgicrosssection, const int start, const int stop)
+{
+	if (m_d.m_type == RampType1Wire)
 	{
-if (m_d.m_type == RampType1Wire)
-	{
-		for (int i=stop/2;i<stop;i++)
-			{
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 32, &rgicrosssection[i*3], 3, 0);
-			}
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 32, rgicrosssection+stop/2*3, 3*(stop-stop/2), 0);
 	}
-else
+	else
 	{
-		for (int i=start;i<stop;i++)
-			{
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 32, &rgicrosssection[i*3], 3, 0);
-			}
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 32, rgicrosssection+start*3, 3*(stop-start), 0);
 	}
 }
 
@@ -1526,7 +1520,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 					if (m_d.m_fAcrylic)
 						{
 							Vertex2D rgvOut[4];
-							// Transform vertecies into screen coordinates.
+							// Transform vertices into screen coordinates.
 							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
 							// Calculate texture coordinate for each vertex.
@@ -1602,7 +1596,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 					if (m_d.m_fAcrylic)
 						{
 							Vertex2D rgvOut[4];
-							// Transform vertecies into screen coordinates.
+							// Transform vertices into screen coordinates.
 							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
 							// Calculate texture coordinate for each vertex.

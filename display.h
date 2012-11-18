@@ -176,7 +176,7 @@ void Display_DestroyTexture ( LPDIRECTDRAWSURFACE7 Texture );
 
 HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT *pddpf, VOID *param );
 
-HRESULT Display_DrawIndexedPrimitive( LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, LPVOID lpvVertices, const DWORD dwVertexCount, LPWORD lpwIndices, const DWORD dwIndexCount, const DWORD dwFlags );
+HRESULT Display_DrawIndexedPrimitive( LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount, const LPWORD lpwIndices, const DWORD dwIndexCount, const DWORD dwFlags );
 
 // Draws a sprite.
 // x, y is the screen coordinate of the top-left corner of the sprite.

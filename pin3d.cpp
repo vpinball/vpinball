@@ -1488,16 +1488,6 @@ void Pin3D::SetFiltersLinear() const
 	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
 	}
 
-HRESULT Pin3D::DrawIndexedPrimitive(D3DPRIMITIVETYPE d3dptPrimitiveType, DWORD dwVertexTypeDesc,
-												  LPVOID lpvVertices, DWORD dwVertexCount,
-												  LPWORD lpwIndices, DWORD dwIndexCount)
-	{
-	const HRESULT hr = m_pd3dDevice->DrawIndexedPrimitive(d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices,
-														  dwVertexCount, lpwIndices, dwIndexCount, 0);
-
-	return hr;
-	}
-
 void Pin3D::SetUpdatePos(const int left, const int top)
 	{
 	m_rcUpdate.left = left;

@@ -486,8 +486,8 @@ void Light::ClearForOverwrite()
 	ClearPointsForOverwrite();
 	}
 
-WORD rgiLightStatic0[3] = {0,1,2};
-WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+const WORD rgiLightStatic0[3] = {0,1,2};
+const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 		
 void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
@@ -609,17 +609,17 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			for (int l=0;l<3;l++)
 				ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
-													  rgiLightStatic0, 3, 0);
+													  (LPWORD)rgiLightStatic0, 3, 0);
 			}
 		else
 			{
 			SetHUDVertices(rgv3D, 3);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
 													  rgv3D, 3,
-													  rgiLightStatic0, 3, 0);
+													  (LPWORD)rgiLightStatic0, 3, 0);
 			}
 
 		delete vtri.ElementAt(t);
@@ -667,7 +667,7 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 		SetNormal(rgv3D, rgiLightStatic1, 32, NULL, NULL, 0);
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 32,
-												  rgiLightStatic1, 32, 0);
+												  (LPWORD)rgiLightStatic1, 32, 0);
 		}
 	else
 		{
@@ -678,7 +678,7 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 													  rgv3D, 32,
-													  rgiLightStatic1, 32, 0);
+													  (LPWORD)rgiLightStatic1, 32, 0);
 			}
 		}
 	}
@@ -899,9 +899,9 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 			if (!m_fBackglass)
 				{
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
-													  rgiLightStatic0, 3, 0);
+													  (LPWORD)rgiLightStatic0, 3, 0);
 				}
 			else
 				{
@@ -909,9 +909,9 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 				if( GetPTable()->GetDecalsEnabled() )
 					{
-					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 3,
-														  rgiLightStatic0, 3, 0);
+														  (LPWORD)rgiLightStatic0, 3, 0);
 					}
 				}
 
@@ -1095,31 +1095,29 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  rgv3D, 32,
-														  rgiLightStatic1, 32, 0);
+														  (LPWORD)rgiLightStatic1, 32, 0);
 			}
 		else 
 			if( GetPTable()->GetDecalsEnabled() )
 				{
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 32,
-														  rgiLightStatic1, 32, 0);
+														  (LPWORD)rgiLightStatic1, 32, 0);
 				}
 
+		for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
 			{
-			for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
+			IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
+			if (pie->GetItemType() == eItemDecal)
 				{
-				IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
-				if (pie->GetItemType() == eItemDecal)
+				if (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc))
 					{
-					if (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc))
-						{
-						pie->GetIHitable()->RenderStatic(pd3dDevice);
-						}
+					pie->GetIHitable()->RenderStatic(pd3dDevice);
 					}
 				}
-			ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 			}
+		ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+		pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
 		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
 

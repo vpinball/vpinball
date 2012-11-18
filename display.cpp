@@ -787,7 +787,7 @@ void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRE
 
 // Draws the primitive to the current render target.
 // If D3D blitting is enabled, the primitive is also drawn to the texture buffer.
-HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, LPVOID lpvVertices, const DWORD dwVertexCount, LPWORD lpwIndices, const DWORD dwIndexCount, const DWORD dwFlags )
+HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount, const LPWORD lpwIndices, const DWORD dwIndexCount, const DWORD dwFlags )
 {
 	// Draw the primitive.
 	HRESULT ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
@@ -798,10 +798,10 @@ HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, const D
 		LPDIRECTDRAWSURFACE7 RestoreRenderTarget;
 		// Save the render target.
 		Direct3DDevice->GetRenderTarget ( &RestoreRenderTarget );
-		
+
 		// Direct all renders to the back texture buffer.
 		Direct3DDevice->SetRenderTarget ( g_pplayer->m_pin3d.m_pddsBackTextureBuffer, 0L );
-		
+
 		// Redraw... this time to back texture buffer.
 		ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
 

@@ -247,16 +247,16 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	if (m_d.m_kickertype == KickerCup)
 		{
 		// Draw outer ring
-		for (int l=1;l<15;l++)
+		WORD rgi[3*14];
+		for (int l=0;l<14;l++)
 			{
-			WORD rgi[3] = {
-				0,
-				l,
-				l+1};
+			rgi[l*3  ] = 0;
+			rgi[l*3+1] = l+1;
+			rgi[l*3+2] = l+2;
 
-			SetNormal(rgvBorder, rgi, 3, NULL, NULL, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgvBorder,16,rgi, 3, 0);
+			SetNormal(rgvBorder, rgi+l*3, 3, NULL, NULL, 0);
 			}
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgvBorder,16,rgi, 3*14, 0);
 		}
 
 	ppin3d->ExpandExtents(&rcBounds, &rgv3D[16], NULL, NULL, 16, fFalse);
@@ -279,16 +279,16 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	ppin3d->EnableLightMap(fFalse, height);
 
 	// Draw mask
-	for (int l=1;l<15;l++)
-			{
-			WORD rgi[3] = {
-				16,
-				16+l,
-				16+l+1};
+	WORD rgi[3*14];
+	for (int l=0;l<14;l++)
+		{
+		rgi[l*3  ] = 0;
+		rgi[l*3+1] = l+1;
+		rgi[l*3+2] = l+2;
 
-			SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 3, 0);
-			}
+		SetNormal(rgv3D+16, rgi+l*3, 3, NULL, NULL, 0);
+		}
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D+16, 16,rgi, 3*14, 0);
 
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);
@@ -346,16 +346,16 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
 			pd3dDevice->SetMaterial(&mtrl);
 
-			for (int l=1;l<15;++l)
-					{
-					WORD rgi[3] = {
-						0,
-						l,
-						l+1};
+			WORD rgi[3*14];
+			for (int l=0;l<14;++l)
+				{
+				rgi[l*3  ] = 0;
+				rgi[l*3+1] = l+1;
+				rgi[l*3+2] = l+2;
 
-					SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
-					pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 3, 0);
-					}
+				SetNormal(rgv3D, rgi+l*3, 3, NULL, NULL, 0);
+				}
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 16,rgi, 3*14, 0);
 
 			mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
 			mtrl.diffuse.g = mtrl.ambient.g = g;//0.7f;
@@ -374,7 +374,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					l+16,
 					(l+2) % 16};
 
-				WORD rgi[4] = {
+				const WORD rgi[4] = {
 					l,
 					l+16,
 					(l+1) % 16 + 16,
@@ -382,7 +382,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 				SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,rgi, 4, 0);
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,(LPWORD)rgi, 4, 0);
 				}
 			}
 			break;
@@ -395,21 +395,20 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 			ppin3d->EnableLightMap(fTrue, height);
 
+			WORD rgi[3*16];
 			for (int l=0;l<16;++l)
 				{
-				WORD rgi[3] = {
-					48,
-					l + 16,
-					((l + 1)&15) + 16};
+				rgi[l*3  ] = 32;
+				rgi[l*3+1] = l;
+				rgi[l*3+2] = (l + 1)%16;
 
-				SetNormal(rgv3D, rgi, 3, NULL, NULL, 0);
+				SetNormal(rgv3D+16, rgi+l*3, 3, NULL, NULL, 0);
 				
 				rgv3D[48].nx = 0;
 				rgv3D[48].ny = 0;
-				rgv3D[48].nz = -1;
-
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 49,rgi, 3, 0);
+				rgv3D[48].nz = -1.0f;
 				}
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D+16, 49-16,rgi, 3*16, 0);
 			}
 			break;
 

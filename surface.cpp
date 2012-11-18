@@ -1610,7 +1610,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				}
 
 			// Draw top.
-			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 3,(LPWORD)rgiWall0, 3, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 3,(LPWORD)rgiWall0, 3, 0);
 			}
 
 		for (int i=0;i<vtri.Size();i++)
