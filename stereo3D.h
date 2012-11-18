@@ -456,7 +456,7 @@ const __m128i right11 = _mm_mul_int(_mm_and_si128(right1,FF00128),  pRs4_2);
 __m128i right = pack_565(_mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_si128(_mm_add_epi32(right01,right11),FF0000128)),8));
 
 if(AA & y) // so always triggered if AA and y&1
-	right = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf0+x)),FEFEFE128_16), _mm_and_si128(right,FEFEFE128_16)),1);
+	right = _mm_add_epi32(_mm_srli_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf0+x)),FEFEFE128_16),1), _mm_srli_epi32(_mm_and_si128(right,FEFEFE128_16),1));
 
 _mm_storel_pi((__m64*)(bufferfinal+offshalf0+x), (__m128&)right);
 
@@ -468,7 +468,7 @@ const __m128i left11 = _mm_mul_int(_mm_and_si128(left1,FF00128),  pLs4_2);
 __m128i left = pack_565(_mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_si128(_mm_add_epi32(left01,left11),FF0000128)),8));
 
 if(AA & y) // so always triggered if AA and y&1
-	left = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf1+x)),FEFEFE128_16), _mm_and_si128(left,FEFEFE128_16)),1);
+	left = _mm_add_epi32(_mm_srli_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf1+x)),FEFEFE128_16),1), _mm_srli_epi32(_mm_and_si128(left,FEFEFE128_16),1));
 
 _mm_storel_pi((__m64*)(bufferfinal+offshalf1+x), (__m128&)left);
 }
@@ -634,7 +634,7 @@ const __m128i right11 = _mm_mul_int(_mm_and_si128(right1,FF00128),  pRs4_2);
 __m128i right = pack_565(_mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(right00,right10),FF00FF00128),_mm_and_si128(_mm_add_epi32(right01,right11),FF0000128)),8));
 
 if(AA & y) // so always triggered if AA and y&1
-	right = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf0+x)),FEFEFE128_16), _mm_and_si128(right,FEFEFE128_16)),1);
+	right = _mm_add_epi32(_mm_srli_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf0+x)),FEFEFE128_16),1), _mm_srli_epi32(_mm_and_si128(right,FEFEFE128_16),1));
 
 _mm_storel_pi((__m64*)(bufferfinal+offshalf0+x), (__m128&)right);
 
@@ -646,7 +646,7 @@ const __m128i left11 = _mm_mul_int(_mm_and_si128(left1,FF00128),  pLs4_2);
 __m128i left = pack_565(_mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(left00,left10),FF00FF00128),_mm_and_si128(_mm_add_epi32(left01,left11),FF0000128)),8));
 
 if(AA & y) // so always triggered if AA and y&1
-	left = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf1+x)),FEFEFE128_16), _mm_and_si128(left,FEFEFE128_16)),1);
+	left = _mm_add_epi32(_mm_srli_epi32(_mm_and_si128((__m128i&)_mm_loadl_pi(_mm_setzero_ps(),(__m64*)(bufferfinal+offshalf1+x)),FEFEFE128_16),1), _mm_srli_epi32(_mm_and_si128(left,FEFEFE128_16),1));
 
 _mm_storel_pi((__m64*)(bufferfinal+offshalf1+x), (__m128&)left);
 }
