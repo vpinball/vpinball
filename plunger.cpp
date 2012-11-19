@@ -419,14 +419,14 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				const int offset = l*PLUNGEPOINTS1;
 				for (int m=0;m<(PLUNGEPOINTS1-1);m++)
 				{
-					WORD rgi[4] = {
+					const WORD rgi[4] = {
 						 m + offset,
 						(m + offset + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1),
 						(m + offset + 1 + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1),
 						m + offset + 1};
 
 					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
-													     (16*PLUNGEPOINTS1),rgi, 4, 0);
+													     (16*PLUNGEPOINTS1),(LPWORD)rgi, 4);
 				}
 			}
 		}
@@ -468,14 +468,14 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				const int offset = l*PLUNGEPOINTS0;
 				for (int m=0;m<(PLUNGEPOINTS0-1);m++)
 				{
-				WORD rgi[4] = {
-					 m + offset,
-					(m + offset + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0),
-					(m + offset + 1 + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0),
-					m + offset + 1};
+					const WORD rgi[4] = {
+						 m + offset,
+						(m + offset + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0),
+						(m + offset + 1 + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0),
+						 m + offset + 1};
 
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
-												     (16*PLUNGEPOINTS0),rgi, 4, 0);
+					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
+												     16*PLUNGEPOINTS0,(LPWORD)rgi, 4);
 				}
 			}
 		}

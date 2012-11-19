@@ -635,7 +635,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiSpinner2, 4, NULL, NULL, 0);
-		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner2,4,0);
+		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner2,4);
 
 		// Draw Frontside
 
@@ -693,7 +693,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiSpinner3, 4, NULL, NULL, 0);
-		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner3, 4, 0);
+		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner3, 4);
 
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
@@ -705,16 +705,16 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			// Top & Bottom
 			SetNormal(rgv3D, rgiSpinner4, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner4, 4, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner4, 4);
 
 			SetNormal(rgv3D, rgiSpinner5, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner5, 4, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner5, 4);
 			// Sides
 			SetNormal(rgv3D, rgiSpinner6, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner6, 4, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner6, 4);
 
 			SetNormal(rgv3D, rgiSpinner7, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner7, 4, 0);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner7, 4);
 			}
 
 		// Create offscreen surfaces for color and depth buffers.

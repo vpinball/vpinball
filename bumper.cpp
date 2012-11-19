@@ -485,7 +485,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
 			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[64], 32,
-													  (LPWORD)rgiBumperStatic, 32, 0);
+													  (LPWORD)rgiBumperStatic, 32);
 
 			for (int l=0;l<32;l++)
 				{
@@ -510,10 +510,10 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[64], 64,
-														  (LPWORD)rgi, 4, 0);
+														  (LPWORD)rgi, 4);
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[96], 64,
-														  (LPWORD)rgi, 4, 0);
+														  (LPWORD)rgi, 4);
 				}
 			}
 
@@ -565,7 +565,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 				SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D,64,rgi, 4, 0);
+				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D,64,rgi, 4);
 				}
 			}
 
@@ -645,7 +645,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
 			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[64], 32,
-													  (LPWORD)rgiBumperStatic, 32, 0);
+													  (LPWORD)rgiBumperStatic, 32);
 
 			for (int l=0;l<32;l++)
 				{
@@ -670,10 +670,10 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[64], 64,
-														  rgi, 4, 0);
+														  rgi, 4);
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[96], 64,
-														  rgi, 4, 0);
+														  rgi, 4);
 				}
 
 			// Reset all the texture coordinates

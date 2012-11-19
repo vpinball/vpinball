@@ -2270,27 +2270,60 @@ void Player::Render()
 	// Initialize all invalid regions by resetting the region (basically clear) 
 	// it with the contents of the static buffer.
 
+
 	// cupid for primitives:
 	// If i call InvalidateRect here, with a big enough rect, all is displayed correctly... 
 	// If I call it from the render process in Primitives, that does not work, since it is 
 	// called via drawacrylics, about 200 Lines down. So i have to get this done before.
 	// that seems to have something to do with m_vscreenupdate ... So lets look where this gets filled.
 	/*
-	RECT * rect;
-	rect = new RECT();
-	rect->left = 100;
-	rect->right = 1700;
-	rect->top = 100;
-	rect->bottom = 700;			
-	InvalidateRect(rect);
+	RECT rect;
+	rect.left = 100;
+	rect.right = 1700;
+	rect.top = 100;
+	rect.bottom = 700;
+	InvalidateRect(&rect);
 	*/
 
-	for (int i=0;i<m_vupdaterect.Size();i++)
+
+	// Check if more stuff is updated than area of whole screen
+#define FULLBLTAREA (unsigned int)(m_pin3d.m_dwRenderWidth*m_pin3d.m_dwRenderHeight) //!! other heuristic? seems like 1/8th would be good enough already??
+
+	unsigned int overall_area = 0;
+	if(m_fCleanBlt)
+		for (int i=0;i<m_vupdaterect.Size();++i)
+		{
+			const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
+			overall_area += (prc.right-prc.left)*(prc.bottom-prc.top);
+		}
+
+	if(!m_fCleanBlt || (overall_area >= FULLBLTAREA)) {
+		RECT rect;
+		rect.left = 0;
+		rect.right = min((unsigned int)GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
+		rect.top = 0;
+		rect.bottom = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), m_pin3d.m_dwRenderHeight);
+		m_pin3d.m_pddsBackBuffer->Blt(&rect, m_pin3d.m_pddsStatic, &rect, 0, NULL);
+		m_pin3d.m_pddsZBuffer->Blt(&rect, m_pin3d.m_pddsStaticZ, &rect, 0, NULL);
+		
+		// kill all update regions and create one screen sized one
+		for (int i=0;i<m_vupdaterect.Size();i++)
+		{
+			UpdateRect * const pur = m_vupdaterect.ElementAt(i);
+			delete pur;
+		}
+		m_vupdaterect.RemoveAllElements();
+
+		InvalidateRect(&rect);
+
+		overall_area = rect.right*rect.bottom;
+	}
+	else
+		for (int i=0;i<m_vupdaterect.Size();i++)
 		{
 		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
 		if (pur->m_fSeeThrough)													
-			{
-			
+			{			
 			RECT * const prc = &pur->m_rcupdate;
 			
 			// Redraw the region from the static buffers to the back and z buffers.
@@ -2481,18 +2514,7 @@ if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (
 	}
 	else
 	{
-		unsigned int overall_area = 0;
-
-		if (m_fCleanBlt) // detect overall area to blit
-		{
-			for (int i=0;i<m_vupdaterect.Size();++i)
-			{
-				const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
-				overall_area += (prc.right-prc.left)*(prc.bottom-prc.top);
-			}
-		}
-
-		if (m_fCleanBlt && (overall_area < (unsigned int)(g_pplayer->m_pin3d.m_dwRenderWidth*g_pplayer->m_pin3d.m_dwRenderHeight))) //!! other heuristic? // test if its worth to blit every element separately
+		if (m_fCleanBlt && (overall_area < FULLBLTAREA))
 		{
 			if(g_pplayer->m_fVSync && (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR))
 				g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0); // deprecated for win vista and above?!
@@ -3458,7 +3480,6 @@ void Player::InvalidateRect(RECT * const prc)
 
 	// Add the rect.
 	m_vupdaterect.AddElement(pur);
-
 	}
 
 #ifdef LOG
@@ -3467,7 +3488,6 @@ int cDeepTested;
 int cTotalTested = 0;
 int cNumUpdates = 0;
 #endif
-
 
 struct DebugMenuItem
 	{
