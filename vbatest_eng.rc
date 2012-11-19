@@ -523,7 +523,7 @@ BEGIN
     CONTROL         "Antialias 3D",IDC_3D_STEREO_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,249,32,70,10
     CONTROL         "Use Y-Axis for 3D",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,249,45,70,10
     CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,76,114,8
-    CONTROL         "Adaptive VSync (for WinXP and below only?)",IDC_ADAPTIVE_VSYNC,
+    CONTROL         "Adaptive VSync (to avoid tearing)",IDC_ADAPTIVE_VSYNC,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,105,155,8
     CONTROL         "Check &Blit Status (for Win98 and 2K)",IDC_CHECKBLIT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,118,133,10
