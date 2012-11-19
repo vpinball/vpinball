@@ -2,7 +2,6 @@
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
-#include <stdio.h>
 #include <ddraw.h>
 #include <d3d.h>
 
@@ -151,7 +150,22 @@ struct _TextureStateType
     DWORD           TextureCoordinateTransformFlags[DISPLAY_MAXTEXTURES];
 };
 
-int Display_GetPowerOfTwo ( const int Value );
+// Returns the current Value if it is a already a power of 2...
+// or the next power of two that is larger than Value.
+inline int Display_GetPowerOfTwo ( const int Value )
+{
+    // Find a power of two which is 
+    // greater than or equal to value. 
+	int PowerOfTwo = 1;
+    do
+    {
+        PowerOfTwo <<= 1;
+	}
+	while ( PowerOfTwo < Value );
+
+    return PowerOfTwo;
+}
+
 extern int NumVideoBytes;
 
 //extern RenderStateType RenderStates[DISPLAY_RENDERSTATE_MAX];
@@ -170,13 +184,13 @@ extern int NumVideoBytes;
 //void Display_ClearTextureState ( TextureStateType *TextureState );
 
 void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAW7 DirectDrawObject, const LPDIRECTDRAWSURFACE7 DDrawSurface, const int Width, const int Height, LPDIRECTDRAWSURFACE7 * const DestD3DTexture, float * const u, float * const v );
-void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 DestTexture, const RECT * const Rect, LPDIRECTDRAWSURFACE7 SourceTexture );
+void Display_CopyTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 DestTexture, const RECT * const Rect, const LPDIRECTDRAWSURFACE7 SourceTexture );
 void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAWSURFACE7 Texture, const char Value );
-void Display_DestroyTexture ( LPDIRECTDRAWSURFACE7 Texture );
+void Display_DestroyTexture ( const LPDIRECTDRAWSURFACE7 Texture );
 
-HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT *pddpf, VOID *param );
+HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT * const pddpf, VOID * const param );
 
-HRESULT Display_DrawIndexedPrimitive( LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount, const LPWORD lpwIndices, const DWORD dwIndexCount, const DWORD dwFlags );
+HRESULT Display_DrawIndexedPrimitive( const LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount, const LPWORD lpwIndices, const DWORD dwIndexCount );
 
 // Draws a sprite.
 // x, y is the screen coordinate of the top-left corner of the sprite.
@@ -186,7 +200,7 @@ HRESULT Display_DrawIndexedPrimitive( LPDIRECT3DDEVICE7 Direct3DDevice, const D3
 // Texture is the texure to use.  This can be NULL for solid color surfaces.
 // TextureStateIndex controls how the sprite texture is combined with vertex colors and filtered.
 // RenderStateIndex controls how the sprite is drawn.
-inline void Display_DrawSprite_NoMatrix ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const float r, const float g, const float b, const float a, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
+inline void Display_DrawSprite_NoMatrix ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const float r, const float g, const float b, const float a, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
 {
 	// Calculate sin and cos theta.
 	//const float Radians = Angle * (float)(2.0 * M_PI / 360.0);
@@ -264,7 +278,7 @@ inline void Display_DrawSprite_NoMatrix ( LPDIRECT3DDEVICE7 Direct3DDevice, cons
 										  (LPWORD)rgi0123, 4, NULL);
 }
 
-inline void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const float r, const float g, const float b, const float a, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
+inline void Display_DrawSprite ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const float r, const float g, const float b, const float a, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
 {
     const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
 
@@ -274,7 +288,7 @@ inline void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x
     Display_DrawSprite_NoMatrix ( Direct3DDevice, x, y, Width, Height, r, g, b, a, Angle, Texture, u, v, TextureStateIndex, RenderStateIndex );
 }
 
-inline void Display_DrawSprite_NoMatrix_NoStates ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v )
+inline void Display_DrawSprite_NoMatrix_NoStates ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v )
 {
 	// Calculate sin and cos theta.
 	//const float Radians = Angle * (float)(2.0 * M_PI / 360.0);
@@ -344,7 +358,7 @@ inline void Display_DrawSprite_NoMatrix_NoStates ( LPDIRECT3DDEVICE7 Direct3DDev
 										  (LPWORD)rgi0123, 4, NULL);
 }
 
-inline void Display_DrawSprite ( LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
+inline void Display_DrawSprite ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
 {
     const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
 

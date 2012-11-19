@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "display.h"
-#include <math.h>
 
 // Global render and texture states for calls to DrawSprite.
 //RenderStateType	RenderStates[DISPLAY_RENDERSTATE_MAX];
@@ -485,7 +484,7 @@ void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIR
 	*u = (float)Width  / (float)TextureWidth;
 	*v = (float)Height / (float)TextureHeight;
 
-    DDSURFACEDESC2 SourceSurfaceDescription, DestSurfaceDescription;
+    DDSURFACEDESC2 DestSurfaceDescription;
     // Describe the type of surface we want to create.
     ZeroMemory ( &DestSurfaceDescription, sizeof ( DestSurfaceDescription ) );
     DestSurfaceDescription.dwSize = sizeof ( DDSURFACEDESC2 );
@@ -550,6 +549,7 @@ retrytex:
 			if ( ReturnCode == 0 )
 			{
 				// Lock the source DDraw surface so we can read its pixels.
+				DDSURFACEDESC2 SourceSurfaceDescription;
 				ZeroMemory ( &SourceSurfaceDescription, sizeof ( SourceSurfaceDescription ) );
 				SourceSurfaceDescription.dwSize = sizeof ( SourceSurfaceDescription );
 				ReturnCode = SourceTexture->Lock ( NULL, &SourceSurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL );
@@ -594,7 +594,7 @@ retrytex:
 
 
 // Destroys a texture that was created with Display_CreateTexture.
-void Display_DestroyTexture ( LPDIRECTDRAWSURFACE7 Texture )
+void Display_DestroyTexture ( const LPDIRECTDRAWSURFACE7 Texture )
 {
     // Destroy the texture.
 	/*const HRESULT ReturnCode =*/ Texture->Release ( ); 
@@ -603,7 +603,7 @@ void Display_DestroyTexture ( LPDIRECTDRAWSURFACE7 Texture )
 
 // Enumeration callback routine to find a texture format.
 // Finds the best suited texture format for multi bit transparent textures.
-HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT *pddpf, VOID *param )
+HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT * const pddpf, VOID * const param )
 {
     // Skip any funky modes.
     if ( pddpf->dwFlags & (DDPF_LUMINANCE | DDPF_BUMPLUMINANCE | DDPF_BUMPDUDV) )
@@ -642,45 +642,25 @@ HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT *pdd
     }
 }
 
-
-// Returns the current Value if it is a already a power of 2...
-// or the next power of two that is larger than Value.
-int Display_GetPowerOfTwo ( const int Value )
-{
-    // Find a power of two which is 
-    // greater than or equal to value. 
-	int PowerOfTwo = 1;
-    do
-    {
-        PowerOfTwo <<= 1;
-	}
-	while ( PowerOfTwo < Value );
-
-    return PowerOfTwo;
-}
-
-
 // Copies a texture from the source to the destination.  
 // Only the region inside Rect is copied.
-void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 DestTexture, const RECT * const Rect, LPDIRECTDRAWSURFACE7 SourceTexture )
+void Display_CopyTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAWSURFACE7 DestTexture, const RECT * const Rect, const LPDIRECTDRAWSURFACE7 SourceTexture )
 {
-    HRESULT					ReturnCode;
-    DDSURFACEDESC2			SourceSurfaceDescription, DestSurfaceDescription;
-    RECT					ClippedRect;
-
 	// Check if we have a source and destination texture.
 	if ( (SourceTexture != NULL) &&
 		 (DestTexture != NULL) )
 	{
+	    DDSURFACEDESC2 DestSurfaceDescription;
 		// Lock the destination texture so we can fill it with pixels.
 		ZeroMemory ( &DestSurfaceDescription, sizeof ( DestSurfaceDescription ) );
 		DestSurfaceDescription.dwSize = sizeof ( DestSurfaceDescription );
-		ReturnCode = DestTexture->Lock ( NULL, &DestSurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL );
+		HRESULT ReturnCode = DestTexture->Lock ( NULL, &DestSurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL );
 
 		// Make sure we locked the destination texture.
 		if ( ReturnCode == 0 )
 		{
 			// Lock the source texture so we can read its pixels.
+			DDSURFACEDESC2 SourceSurfaceDescription;
 			ZeroMemory ( &SourceSurfaceDescription, sizeof ( SourceSurfaceDescription ) );
 			SourceSurfaceDescription.dwSize = sizeof ( SourceSurfaceDescription );
 			ReturnCode = SourceTexture->Lock ( NULL, &SourceSurfaceDescription, DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL );
@@ -696,6 +676,7 @@ void Display_CopyTexture ( LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE
 				if ( (SourceLockedSurface != NULL) && (DestLockedSurface != NULL) )
 				{
 					// Clip the rectangle to the dimensions of the source surface.
+					RECT ClippedRect;
 					ClippedRect.top = max ( Rect->top, 0 );
 					ClippedRect.left = max ( Rect->left, 0 );
 					ClippedRect.bottom = min ( Rect->bottom, g_pplayer->m_pin3d.m_dwRenderHeight );
@@ -787,10 +768,10 @@ void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRE
 
 // Draws the primitive to the current render target.
 // If D3D blitting is enabled, the primitive is also drawn to the texture buffer.
-HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount, const LPWORD lpwIndices, const DWORD dwIndexCount, const DWORD dwFlags )
+HRESULT Display_DrawIndexedPrimitive ( const LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount, const LPWORD lpwIndices, const DWORD dwIndexCount )
 {
 	// Draw the primitive.
-	HRESULT ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
+	HRESULT ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, 0 );
 
 	// Check if we are blitting with D3D.
 	if ( g_pvp->m_pdd.m_fUseD3DBlit )
@@ -803,7 +784,7 @@ HRESULT Display_DrawIndexedPrimitive ( LPDIRECT3DDEVICE7 Direct3DDevice, const D
 		Direct3DDevice->SetRenderTarget ( g_pplayer->m_pin3d.m_pddsBackTextureBuffer, 0L );
 
 		// Redraw... this time to back texture buffer.
-		ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, dwFlags );
+		ReturnCode = Direct3DDevice->DrawIndexedPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, lpwIndices, dwIndexCount, 0 );
 
 		// Restore the render target.
 		Direct3DDevice->SetRenderTarget ( RestoreRenderTarget, 0L );

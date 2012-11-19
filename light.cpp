@@ -901,7 +901,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 				{
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
-													  (LPWORD)rgiLightStatic0, 3, 0);
+													  (LPWORD)rgiLightStatic0, 3);
 				}
 			else
 				{
@@ -911,7 +911,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					{
 					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 3,
-														  (LPWORD)rgiLightStatic0, 3, 0);
+														  (LPWORD)rgiLightStatic0, 3);
 					}
 				}
 
@@ -1095,14 +1095,14 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  rgv3D, 32,
-														  (LPWORD)rgiLightStatic1, 32, 0);
+														  (LPWORD)rgiLightStatic1, 32);
 			}
 		else 
 			if( GetPTable()->GetDecalsEnabled() )
 				{
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 32,
-														  (LPWORD)rgiLightStatic1, 32, 0);
+														  (LPWORD)rgiLightStatic1, 32);
 				}
 
 		for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
