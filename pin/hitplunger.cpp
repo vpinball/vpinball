@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-extern U32 LastPlungerHit;
-
 HitPlunger::HitPlunger(const float x, const float y, const float x2, const float pos, const float zheight, Plunger * const pPlunger)
 		{
 		m_plungeranim.m_plunger = pPlunger;
@@ -251,7 +249,7 @@ float HitPlunger::HitTest(Ball * const pball, const float dtime, Vertex3Ds * con
 	// If we got here, then the ball is close enough to the plunger
 	// to where we should animate the button's light.
 	// Save the time so we can tell the button when to turn on/off.  
-	LastPlungerHit = msec();
+	g_pplayer->LastPlungerHit = msec();
 
 	// We are close enable the plunger light.
 	Vertex3Ds hitnormal;

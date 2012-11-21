@@ -88,7 +88,7 @@ void SmartBrowser::Init(HWND hwndParent)
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wcex.lpszMenuName = NULL;
 	wcex.hbrBackground = NULL;
-	atom = RegisterClassEx(&wcex);
+	RegisterClassEx(&wcex);
 
 	// Register custom controls
 	wcex.lpfnWndProc = (WNDPROC) FontProc;

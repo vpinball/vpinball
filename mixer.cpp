@@ -125,7 +125,7 @@ static void set_cp_master_volume()
 	}
 }
 
-void mixer_volmod( F32 volmod )
+void mixer_volmod( const F32 volmod )
 {
     volume_modulation = volmod;
 
@@ -185,15 +185,15 @@ F32 mixer_get_volume()
 	return gMixerVolume;
 }
 
-void mixer_update()
+void mixer_update(const PinInput &pininput)
 {
     const F32 delta = (F32)(1.0 / 500.0);
 
-    if( Down( PININ_VOL_DOWN ) )
+    if( pininput.Down( PININ_VOL_DOWN ) )
     {
         mixer_volume( gMixerVolume - delta );
     }
-    else if( Down( PININ_VOL_UP ) )
+    else if( pininput.Down( PININ_VOL_UP ) )
     {
         mixer_volume( gMixerVolume + delta );
     }

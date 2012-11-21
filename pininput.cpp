@@ -4,49 +4,6 @@
 
 static PinInput *s_pPinInput;
 
-U32 PinInput::m_PreviousKeys;
-U32 PinInput::m_ChangedKeys;
-//int InputControlRun;
-
-int e_JoyCnt;
-int uShockDevice = -1;	// only one uShock device
-int uShockType = 0;
-bool fe_message_sent = false;
-
-int m_plunger_axis = 0;
-int m_lr_axis = 0;
-int m_ud_axis = 0;
-int m_plunger_reverse = 0;
-int m_lr_axis_reverse = 0;
-int m_ud_axis_reverse = 0;
-int m_override_default_buttons = 0;
-int m_joylflipkey = 0;
-int m_joyrflipkey = 0;
-int m_joylmagnasave = 0;
-int m_joyrmagnasave = 0;
-int m_joyplungerkey = 0;
-int m_joystartgamekey = 0;
-int m_joyexitgamekey = 0;
-int m_joyaddcreditkey = 0;
-int m_joyaddcreditkey2 = 0;
-int m_joyframecount = 0;
-int m_joyvolumeup = 0;
-int m_joyvolumedown = 0;
-int m_joylefttilt = 0;
-int m_joycentertilt = 0;
-int m_joyrighttilt = 0;
-int m_joypmbuyin = 0;
-int m_joypmcoin3 = 0;
-int m_joypmcoin4 = 0;
-int m_joypmcoindoor = 0;
-int m_joypmcancel = 0;
-int m_joypmdown = 0;
-int m_joypmup = 0;
-int m_joypmenter = 0;
-
-extern int Coins;
-extern int curPlunger;
-
 PinInput::PinInput()
 	{
 	//InputControlRun = 0;
@@ -66,6 +23,41 @@ PinInput::PinInput()
 	e_JoyCnt = 0;
 	//m_pJoystick = NULL;
 	for (int k = 0; k < PININ_JOYMXCNT; ++k) m_pJoystick[k] = NULL;
+
+	uShockDevice = -1;	// only one uShock device
+	uShockType = 0;
+	fe_message_sent = false;
+
+	m_plunger_axis = 0;
+	m_lr_axis = 0;
+	m_ud_axis = 0;
+	m_plunger_reverse = 0;
+	m_lr_axis_reverse = 0;
+	m_ud_axis_reverse = 0;
+	m_override_default_buttons = 0;
+	m_joylflipkey = 0;
+	m_joyrflipkey = 0;
+	m_joylmagnasave = 0;
+	m_joyrmagnasave = 0;
+	m_joyplungerkey = 0;
+	m_joystartgamekey = 0;
+	m_joyexitgamekey = 0;
+	m_joyaddcreditkey = 0;
+	m_joyaddcreditkey2 = 0;
+	m_joyframecount = 0;
+	m_joyvolumeup = 0;
+	m_joyvolumedown = 0;
+	m_joylefttilt = 0;
+	m_joycentertilt = 0;
+	m_joyrighttilt = 0;
+	m_joypmbuyin = 0;
+	m_joypmcoin3 = 0;
+	m_joypmcoin4 = 0;
+	m_joypmcoindoor = 0;
+	m_joypmcancel = 0;
+	m_joypmdown = 0;
+	m_joypmup = 0;
+	m_joypmenter = 0;
 
 	HRESULT hr;
 	int tmp;
@@ -202,7 +194,7 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
 		diprg.lMax				= JOYRANGEMX; 
 
 		// Set the range for the axis
-		if( FAILED( ppinput->m_pJoystick[e_JoyCnt]->SetProperty( DIPROP_RANGE, &diprg.diph ) ) ) 
+		if( FAILED( ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetProperty( DIPROP_RANGE, &diprg.diph ) ) ) 
 			{return DIENUM_STOP;}   
 
 		// set DEADBAND to Zero
@@ -214,7 +206,7 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
 		dipdw.dwData			= 30;//g_pplayer->DeadZ; //allows for 0-100% deadzone in 1% increments
  
 		// Set the deadzone
-		if(FAILED(ppinput->m_pJoystick[e_JoyCnt]->SetProperty(DIPROP_DEADZONE, &dipdw.diph)))
+		if(FAILED(ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetProperty(DIPROP_DEADZONE, &dipdw.diph)))
 			{return DIENUM_STOP;}
 	}
 
@@ -254,66 +246,61 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	HRESULT hr;
 	
 	hr = ppinput->m_pDI->CreateDeviceEx(lpddi->guidInstance, IID_IDirectInputDevice7
-										,(void **)&ppinput->m_pJoystick[e_JoyCnt], NULL);
+										,(void **)&ppinput->m_pJoystick[ppinput->e_JoyCnt], NULL);
 	if (FAILED(hr))
 		{
-		ppinput->m_pJoystick[e_JoyCnt] = NULL; //make sure no garbage
+		ppinput->m_pJoystick[ppinput->e_JoyCnt] = NULL; //make sure no garbage
 		return DIENUM_CONTINUE; //rlc try for another joystick
 		}
 
-	hr =  ppinput->m_pJoystick[e_JoyCnt]->GetProperty( DIPROP_PRODUCTNAME,  &dstr.diph);
+	hr =  ppinput->m_pJoystick[ppinput->e_JoyCnt]->GetProperty( DIPROP_PRODUCTNAME,  &dstr.diph);
 
 	if (hr == S_OK)
 		{	
 		if (!WzSzStrCmp(dstr.wsz, "PinballWizard"))
 			{
-				uShockDevice = e_JoyCnt;	// remember uShock
-				uShockType = USHOCKTYPE_PBWIZARD; //set type 1 = PinballWizard
+				ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
+				ppinput->uShockType = USHOCKTYPE_PBWIZARD; //set type 1 = PinballWizard
 			}
 		else if (!WzSzStrCmp(dstr.wsz, "UltraCade Pinball"))
 			{
-				uShockDevice = e_JoyCnt;	// remember uShock
-				uShockType = USHOCKTYPE_ULTRACADE; //set type 2 = UltraCade Pinball
-			}
-		
+				ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
+				ppinput->uShockType = USHOCKTYPE_ULTRACADE; //set type 2 = UltraCade Pinball
+			}		
 		else if (!WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
 			{
-				uShockDevice = e_JoyCnt;	// remember uShock
-				uShockType = USHOCKTYPE_SIDEWINDER; //set type 3 = Microsoft SideWinder Freestyle Pro
+				ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
+				ppinput->uShockType = USHOCKTYPE_SIDEWINDER; //set type 3 = Microsoft SideWinder Freestyle Pro
 			}
-
 		else 
 			{
-				uShockDevice = e_JoyCnt;	// remember uShock
-				uShockType = USHOCKTYPE_GENERIC; //Generic Gamepad
+				ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
+				ppinput->uShockType = USHOCKTYPE_GENERIC; //Generic Gamepad
 			}
 		}	
-	hr = ppinput->m_pJoystick[e_JoyCnt]->SetDataFormat(&c_dfDIJoystick);
+	hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetDataFormat(&c_dfDIJoystick);
 
 	// joystick input foreground or background focus
-	hr = ppinput->m_pJoystick[e_JoyCnt]->SetCooperativeLevel(ppinput->m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
+	hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetCooperativeLevel(ppinput->m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
 
 	DIPROPDWORD dipdw;
-
 	dipdw.diph.dwSize = sizeof(DIPROPDWORD);
 	dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
 	dipdw.diph.dwObj = 0;
 	dipdw.diph.dwHow = DIPH_DEVICE;
 	dipdw.dwData = INPUT_BUFFER_SIZE;
 
-	hr = ppinput->m_pJoystick[e_JoyCnt]->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
+	hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
 
 	// Enumerate the joystick objects. The callback function enabled user
 	// interface elements for objects that are found, and sets the min/max
 	// values property for discovered axes.
-	hr = ppinput->m_pJoystick[e_JoyCnt]->EnumObjects( EnumObjectsCallback,(VOID*)pvRef, DIDFT_ALL);
+	hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->EnumObjects( EnumObjectsCallback,(VOID*)pvRef, DIDFT_ALL);
 
-	if(++e_JoyCnt < PININ_JOYMXCNT) return DIENUM_CONTINUE;
+	if(++(ppinput->e_JoyCnt) < PININ_JOYMXCNT) return DIENUM_CONTINUE;
 
 	return DIENUM_STOP;			//allocation for only PININ_JOYMXCNT joysticks, ignore any others
-	
 	}
-
 
 int PinInput::QueueFull()
 {
@@ -373,7 +360,7 @@ DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 cur_sim_msec )
 
 //RLC combine these threads if the Xenon problem is smashed
 
-void GetInputDeviceData() 
+void PinInput::GetInputDeviceData() 
 	{
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
 	DWORD dwElements;
@@ -684,7 +671,7 @@ void PinInput::autocoin( const F32 secs )
 	static int didonce = 0;
 
 	// Check if we have coins.
-	if ( Coins > 0 )
+	if ( g_pplayer->Coins > 0 )
 	{
 		const U32 curr_time_msec = msec();
 		if( (firedautocoin > 0) &&														// Initialized.
@@ -697,7 +684,7 @@ void PinInput::autocoin( const F32 secs )
 			FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eAddCreditKey] );
 
 			// Update the counter.
-			Coins--;
+			g_pplayer->Coins--;
 
 			OutputDebugString( "**Autocoin: Release.\n" );
 		}
@@ -811,9 +798,9 @@ void PinInput::button_exit( const F32 secs )
 		return; 
 
 	// Check if we can exit.
-	if( (exit_stamp) &&										// Initialized.
-		((curr_time_msec - exit_stamp) > (secs * 1000.0f)) &&		// Held exit button for number of seconds.
-		(Coins == 0) )										// No coins queued to be entered.
+	if( (exit_stamp) &&											// Initialized.
+		((curr_time_msec - exit_stamp) > (secs * 1000.0f)) &&	// Held exit button for number of seconds.
+		(g_pplayer->Coins == 0) )								// No coins queued to be entered.
 	{
 #ifndef STUCK_EXIT_BUTTON
 		if (uShockType == USHOCKTYPE_ULTRACADE)
@@ -2493,31 +2480,31 @@ int PinInput::GetNextKey() // return last valid keyboard key
 }
 
 // Returns non-zero if the key was pressed.
-U32 Pressed( const U32 val )
+U32 PinInput::Pressed( const U32 val ) const
 {
-	return PinInput::m_ChangedKeys & ( PinInput::m_PreviousKeys & val );
+	return m_ChangedKeys & ( m_PreviousKeys & val );
 }
 
 // Returns non-zero if the key was released.
-U32 Released( const U32 val )
+U32 PinInput::Released( const U32 val ) const
 {
-	return PinInput::m_ChangedKeys & (~PinInput::m_PreviousKeys);
+	return m_ChangedKeys & (~m_PreviousKeys);
 }
 
 // Returns non-zero if the key is held down.
-U32 Held( const U32 val )
+U32 PinInput::Held( const U32 val ) const
 {
-	return PinInput::m_PreviousKeys & val;
+	return m_PreviousKeys & val;
 }
 
 // Returns non-zero if the key is held down.
-U32 Down( const U32 val )
+U32 PinInput::Down( const U32 val ) const
 {
 	return Held( val );
 }
 
 // Returns non-zero if the key was changed.
-U32 Changed( const U32 val )
+U32 PinInput::Changed( const U32 val ) const
 {
-	return PinInput::m_ChangedKeys & val;
+	return m_ChangedKeys & val;
 }

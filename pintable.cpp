@@ -8,11 +8,6 @@
 
 #define HASHLENGTH 16
 
-#define PINTABLE_SCALEX 1.0f
-#define PINTABLE_SCALEY 1.0f
-#define PINTABLE_XLATEX 0.0f
-#define PINTABLE_XLATEY 0.0f
-
 #if _MSC_VER <= 1310 // VC 2003 and before
  #define _itoa_s(a,b,c,d) _itoa(a,b,d)
  #define _itow_s(a,b,c,d) _itow(a,b,d)
@@ -21,9 +16,7 @@
 const unsigned char TABLE_KEY[] = "Visual Pinball";
 const unsigned char PARAPHRASE_KEY[] = { 0xB4, 0x0B, 0xBE, 0x37, 0xC3, 0x0C, 0x8E, 0xA1, 0x5A, 0x05, 0xDF, 0x1B, 0x2D, 0x02, 0xEF, 0x8D };
 
-
 int PinTable::m_tblNumStartBalls = 0;
-
 
 int CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -644,11 +637,11 @@ PinTable::PinTable()
 	m_glassheight = 210;
 	m_tableheight = 0;
 
-	m_scalex = PINTABLE_SCALEX;
-	m_scaley = PINTABLE_SCALEY;
+	m_scalex = 1.0f;
+	m_scaley = 1.0f;
 
-	m_xlatex = PINTABLE_XLATEX;
-	m_xlatey = PINTABLE_XLATEY;
+	m_xlatex = 0.0f;
+	m_xlatey = 0.0f;
 
 	CComObject<CodeViewer>::CreateInstance(&m_pcv);
 	m_pcv->AddRef();
@@ -1116,11 +1109,11 @@ void PinTable::Init(VPinball *pvp)
 	m_right = 1000;
 	m_bottom = 2000;
 
-	m_scalex = PINTABLE_SCALEX;
-	m_scaley = PINTABLE_SCALEY;
+	m_scalex = 1.0f;
+	m_scaley = 1.0f;
 
-	m_xlatex = PINTABLE_XLATEX;
-	m_xlatey = PINTABLE_XLATEY;
+	m_xlatex = 0.0f;
+	m_xlatey = 0.0f;
 
 	m_inclination = 43;
 	m_layback = 0;
@@ -1538,19 +1531,14 @@ ISelect *PinTable::HitTest(const int x, const int y)
 	return pisel;
 	}
 
-
 void PinTable::SetDirtyDraw()
 	{
 	m_fDirtyDraw = fTrue;
 	InvalidateRect(m_hwnd, NULL, fFalse);
 	}
 
-HANDLE hmyfont;
-
-
 void PinTable::Play()
 	{
-
 	HRESULT hr = GetRegInt("Player", "AlphaRampAccuracy", &m_alphaRampsAccuracy);
 	if (hr != S_OK)
 	{

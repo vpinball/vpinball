@@ -37,7 +37,6 @@ public:
 	PinInput();
 	~PinInput();
 
-
 	void Init(const HWND hwnd);
 	void UnInit();
 
@@ -60,9 +59,60 @@ public:
 
 	int GetNextKey();
 
+	void GetInputDeviceData();
+
+	U32 Pressed ( const U32 mask ) const;
+	U32 Released( const U32 mask ) const;
+	U32 Held    ( const U32 mask ) const;
+	U32 Down    ( const U32 mask ) const;
+	U32 Changed ( const U32 mask ) const;
+
 	LPDIRECTINPUT7       m_pDI;         
 	LPDIRECTINPUTDEVICE  m_pKeyboard;
 	LPDIRECTINPUTDEVICE7 m_pJoystick[PININ_JOYMXCNT];
+
+	U32 m_PreviousKeys;		// Masks of PININ_* inputs used by ultracade - AMH
+	U32 m_ChangedKeys;		// Masks of PININ_* inputs used by ultracade - AMH
+
+	HWND m_hwnd;
+
+	//int InputControlRun;
+
+	int e_JoyCnt;
+	int uShockDevice;	// only one uShock device
+	int uShockType;
+	bool fe_message_sent;
+
+	int m_plunger_axis;
+	int m_lr_axis;
+	int m_ud_axis;
+	int m_plunger_reverse;
+	int m_lr_axis_reverse;
+	int m_ud_axis_reverse;
+	int m_override_default_buttons;
+	int m_joylflipkey;
+	int m_joyrflipkey;
+	int m_joylmagnasave;
+	int m_joyrmagnasave;
+	int m_joyplungerkey;
+	int m_joystartgamekey;
+	int m_joyexitgamekey;
+	int m_joyaddcreditkey;
+	int m_joyaddcreditkey2;
+	int m_joyframecount;
+	int m_joyvolumeup;
+	int m_joyvolumedown;
+	int m_joylefttilt;
+	int m_joycentertilt;
+	int m_joyrighttilt;
+	int m_joypmbuyin;
+	int m_joypmcoin3;
+	int m_joypmcoin4;
+	int m_joypmcoindoor;
+	int m_joypmcancel;
+	int m_joypmdown;
+	int m_joypmup;
+	int m_joypmenter;
 
 private:
 	// Writable by real-time thread only, read-only from dispatch thread
@@ -77,12 +127,6 @@ private:
 	int m_tail; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
 
 	PinTable *m_ptable;
-
-public:
-	static U32 m_PreviousKeys;		// Masks of PININ_* inputs used by ultracade - AMH
-	static U32 m_ChangedKeys;		// Masks of PININ_* inputs used by ultracade - AMH
-
-	HWND m_hwnd;
 };
 
 // - Added by AMH --modified by Koadic (not sure if necessary, but doesn't hurt anything)
@@ -112,12 +156,5 @@ public:
 #define PININ_FRAMES         0x00800000
 #define PININ_ENABLE3D       0x01000000
 
-
 #define PININ_ANY            0xffffffff
-
-U32 Pressed ( const U32 mask );
-U32 Released( const U32 mask );
-U32 Held    ( const U32 mask );
-U32 Down    ( const U32 mask );
-U32 Changed ( const U32 mask );
 // - end input routines added by AMH
