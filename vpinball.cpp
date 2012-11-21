@@ -37,7 +37,6 @@
 #define	RECENT_LAST_MENU_IDM	RECENT_FIRST_MENU_IDM+LAST_OPENED_TABLE_COUNT
 
 #define AUTOSAVE_DEFAULT_TIME 10
-//extern int uShockType;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -45,7 +44,6 @@
 
 //Which column the window menu is, for MDI
 #define WINDOWMENU 5
-
 
 /*
 TBButton:
@@ -58,7 +56,6 @@ typedef struct {
   INT_PTR   iString;
 } TBBUTTON, *PTBBUTTON, *LPTBBUTTON;
 */
-
 
 TBBUTTON const g_tbbuttonMain[] = {
 	// icon number,

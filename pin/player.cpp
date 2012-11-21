@@ -14,24 +14,12 @@ inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 }
 #endif
 
-float curMechPlungerPos;
-
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-U32 c_hitcnts = 0;
-U32 c_collisioncnt = 0;
-U32 c_contactcnt = 0;
-U32 c_staticcnt = 0;
-U32 c_embedcnts = 0;
-static int movedPlunger = 0;						// has plunger moved, must have moved at least three times
-U32 LastPlungerHit = 0;								// The last time the plunger was in contact (at least the vicinity) of the ball.
-int Coins = 0;										// The number of coins queued to be inserted.  These were sent from the shell after the load.
-
 
 Player::Player()
 	{
@@ -67,10 +55,17 @@ Player::Player()
 	m_flog = NULL;
 #endif
 
+	for(int i = 0; i < PININ_JOYMXCNT; ++i) {
+		curAccel_x[i] = 0;
+		curAccel_y[i] = 0;
+	}
+
 	m_sleeptime = 0;
 
 	m_pxap = NULL;
 	m_pactiveball = NULL;
+
+	curPlunger = JOYRANGEMN-1;
 
 	int checkblit;
 	HRESULT hr = GetRegInt("Player", "CheckBlit", &checkblit);
@@ -216,6 +211,15 @@ Player::Player()
 	m_lastcursorx = 0xfffffff;
 	m_lastcursory = 0xfffffff;
 	m_NudgeManual = -1;
+
+	c_hitcnts = 0;
+	c_collisioncnt = 0;
+	c_contactcnt = 0;
+	c_staticcnt = 0;
+	c_embedcnts = 0;
+	movedPlunger = 0;
+	LastPlungerHit = 0;
+	Coins = 0;			
 	}
 
 Player::~Player()
@@ -325,9 +329,9 @@ void Player::RecomputePauseState()
 	
 	if (fOldPause && fNewPause)
 		{
-		g_pplayer->m_LastKnownGoodCounter++; // So our catcher doesn't catch on the last value
-		g_pplayer->m_fNoTimeCorrect = fTrue;
-		g_pplayer->m_fCleanBlt = fFalse;
+		m_LastKnownGoodCounter++; // So our catcher doesn't catch on the last value
+		m_fNoTimeCorrect = fTrue;
+		m_fCleanBlt = fFalse;
 		}
 
 	m_fPause = fNewPause;
@@ -1063,12 +1067,14 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 		g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
 		}
 
-	// Check if we have a valid dongle.
-//	if ( get_dongle_status() != DONGLE_STATUS_OK )
-//	{
+#ifdef DONGLE_SUPPORT
+	if ( get_dongle_status() != DONGLE_STATUS_OK )
+	{
 		// Exit the application.
-//		ExitApp();
-//	}
+		ExitApp();
+	}
+#endif
+
 	Render();
 	return S_OK;
 	}
@@ -1286,11 +1292,6 @@ void Player::InitAnimations(HWND hwndProgress)
 	m_pin3d.m_pddsBackBuffer->Blt(NULL, m_pin3d.m_pddsStatic, NULL, DDBLT_WAIT , NULL);
 	m_pin3d.m_pddsZBuffer->Blt(NULL, m_pin3d.m_pddsStaticZ, NULL, DDBLT_WAIT , NULL);
 }
-
-Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz)
-	{
-	return CreateBall(x,y,z,vx,vy,vz,25.0f);
-	}
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius)
 	{
@@ -1610,12 +1611,6 @@ void Player::InitWindow()
 #endif
 	}
 
-extern int e_JoyCnt;
-static int curAccel_x[PININ_JOYMXCNT]= {0,0,0,0};
-static int curAccel_y[PININ_JOYMXCNT]= {0,0,0,0};
-
-int curPlunger = JOYRANGEMN-1;	// assume
-
 void Player::UltraNudgeX(const int x, const int j )
 {
 	curAccel_x[j] = x;
@@ -1626,15 +1621,8 @@ void Player::UltraNudgeY(const int y, const int j )
 	curAccel_y[j] = y;
 }
 
-F32 GetX()
-{
-	return ((F32)curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN));
-}
-
-F32 GetY()
-{
-    return ((F32)curAccel_y[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN));
-}
+#define GetX() (((F32)curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN))) // Get the -1.0f to +1.0f values from joystick input tilt sensor / ushock
+#define GetY() (((F32)curAccel_y[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN)))
 
 int Player::UltraNudgeGetTilt()
 {
@@ -1647,7 +1635,7 @@ int Player::UltraNudgeGetTilt()
 	const U32 ms = msec();
 
 	U32 tilt_2 = 0;
-	for(int j = 0; j < e_JoyCnt; ++j)	//find largest value
+	for(int j = 0; j < m_pininput.e_JoyCnt; ++j)	//find largest value
 		{
 		tilt_2 = max(tilt_2,(U32)(curAccel_x[j] * curAccel_x[j] + curAccel_y[j] * curAccel_y[j])); //always postive numbers
 		}
@@ -1678,7 +1666,7 @@ void Player::UltraNudge()	// called on every intergral physics frame
 		m_NudgeX = m_AccelMAmp * ((float)curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE); // * Manual Gain
 		m_NudgeY = m_AccelMAmp * ((float)curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
 
-		if (g_pplayer->m_ptable->m_tblMirrorEnabled)
+		if (m_ptable->m_tblMirrorEnabled)
 			m_NudgeX = -m_NudgeX;
 
 		return;
@@ -1698,11 +1686,11 @@ void Player::UltraNudge()	// called on every intergral physics frame
 		sna = sinf(na);
 	}
 
-	for(int j = 0; j < e_JoyCnt; ++j)
+	for(int j = 0; j < m_pininput.e_JoyCnt; ++j)
 	{		
 		float dx = ((float)curAccel_x[j])*(float)(1.0/JOYRANGE);		// norm range -1 .. 1	
 		const float dy = ((float)curAccel_y[j])*(float)(1.0/JOYRANGE);	
-		if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
+		if ( m_ptable->m_tblMirrorEnabled )
 			dx = -dx;
 		m_NudgeX += m_AccelAmpX*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
 		const float nugY = m_AccelAmpY*(dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
@@ -1775,7 +1763,7 @@ void Player::UltraPlunger()	// called on every intergral physics frame
 float PlungerAnimObject::mechPlunger() const
 {
 	const float range = (float)JOYRANGEMX * (1.0f - m_parkPosition) - (float)JOYRANGEMN *m_parkPosition; // final range limit
-	float tmp = (curMechPlungerPos < 0) ? curMechPlungerPos*m_parkPosition : curMechPlungerPos*(1.0f - m_parkPosition);
+	float tmp = (g_pplayer->curMechPlungerPos < 0) ? g_pplayer->curMechPlungerPos*m_parkPosition : g_pplayer->curMechPlungerPos*(1.0f - m_parkPosition);
 	tmp = tmp/range + m_parkPosition;		//scale and offset
 	return tmp;
 }
@@ -1802,9 +1790,8 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 
 	int StaticCnts = STATICCNTS;	// maximum number of static counts
 
-	while (dtime > 0)
+	while (dtime > 0.f)
 		{
-
 		if (limitTime)//time in microseconds
 			{
 			const int time_elasped = (int)(usec()- startTime);
@@ -2124,10 +2111,10 @@ void Player::Render()
 
 		const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
 		m_pininput.ProcessKeys(m_ptable, sim_msec);
-        mixer_update();
+        mixer_update(m_pininput);
 
         hid_update(sim_msec);
-        plumb_update(sim_msec);
+        plumb_update(sim_msec, GetX(), GetY());
 
 #ifdef ACCURATETIMERS
 		m_pactiveball = NULL;  // No ball is the active ball for timers/key events
@@ -2180,7 +2167,7 @@ void Player::Render()
 
 	m_LastKnownGoodCounter++;
 
-	if(Pressed(PININ_ENABLE3D)) {
+	if(m_pininput.Pressed(PININ_ENABLE3D)) {
 		m_fStereo3Denabled = !m_fStereo3Denabled;
 		SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
 		m_fCleanBlt = fFalse;
@@ -2287,7 +2274,7 @@ void Player::Render()
 
 
 	// Check if more stuff is updated than area of whole screen
-#define FULLBLTAREA (unsigned int)(m_pin3d.m_dwRenderWidth*m_pin3d.m_dwRenderHeight) //!! other heuristic? seems like 1/8th would be good enough already??
+#define FULLBLTAREA (unsigned int)(m_pin3d.m_dwRenderWidth*m_pin3d.m_dwRenderHeight) //!! other heuristic? seems like 1/8th would be good enough already?
 
 	unsigned int overall_area = 0;
 	if(m_fCleanBlt)
@@ -2343,25 +2330,25 @@ void Player::Render()
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
 		{
 		// Save the current transformation state.
-		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix );
+		ReturnCode = m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix );
 
 		// Save the current render state.
-		//Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
+		//Display_GetRenderState(m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Save the current texture state.
-		//Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
+		//Display_GetTextureState (m_pin3d.m_pd3dDevice, &RestoreTextureState);
 
 		// And setup everything that will be needed to draw sprites in next loop
 		const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
 
 		// Apply the transformation.
-		/*const HRESULT ReturnCode =*/ g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix );
+		/*const HRESULT ReturnCode =*/ m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix );
 
 		// Set the texture state.
-		//Display_SetTextureState ( g_pplayer->m_pin3d.m_pd3dDevice, &(TextureStates[DISPLAY_TEXTURESTATE_NOFILTER]) );
+		//Display_SetTextureState ( m_pin3d.m_pd3dDevice, &(TextureStates[DISPLAY_TEXTURESTATE_NOFILTER]) );
 	
 		// Set the render state.
-		//Display_SetRenderState ( g_pplayer->m_pin3d.m_pd3dDevice, &(RenderStates[DISPLAY_RENDERSTATE_TRANSPARENT]) );
+		//Display_SetRenderState ( m_pin3d.m_pd3dDevice, &(RenderStates[DISPLAY_RENDERSTATE_TRANSPARENT]) );
 	}
 
 	// Process all regions that need updating.  
@@ -2379,7 +2366,7 @@ void Player::Render()
 			// Make sure we have a frame.
 			if (pobjframe != NULL)
 			{
-				const LPDIRECTDRAWSURFACE7 pdds = g_pplayer->m_pin3d.m_pddsBackBuffer;
+				const LPDIRECTDRAWSURFACE7 pdds = m_pin3d.m_pddsBackBuffer;
 				const RECT * const prc = &pur->m_rcupdate;
 
 				// NOTE: prc is the rectangle of the region needing to be updated.
@@ -2403,7 +2390,7 @@ void Player::Render()
 					{
 						// Blit to the backbuffer with D3D.
 						// NOTE: Rather than drawing just a portion of the sprite... draw the whole thing.
-						Display_DrawSprite_NoMatrix_NoStates(g_pplayer->m_pin3d.m_pd3dDevice, 
+						Display_DrawSprite_NoMatrix_NoStates(m_pin3d.m_pd3dDevice, 
 										(float) (pobjframe->rc.left), (float) (pobjframe->rc.top), 
 										(float) (pobjframe->rc.right - pobjframe->rc.left), (float) (pobjframe->rc.bottom - pobjframe->rc.top), 
 										0xFFFFFFFF, 
@@ -2424,7 +2411,7 @@ void Player::Render()
 					if (pobjframe->pddsZBuffer != NULL)
 					{
 						// Blit to the z buffer.	
-						/*const HRESULT hr =*/ g_pplayer->m_pin3d.m_pddsZBuffer->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
+						/*const HRESULT hr =*/ m_pin3d.m_pddsZBuffer->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
 					}
 				}
 			}
@@ -2435,33 +2422,33 @@ void Player::Render()
 	if (g_pvp->m_pdd.m_fUseD3DBlit)
 	{
 		// Restore the render states.
-		//Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreRenderState);
+		//Display_SetRenderState(m_pin3d.m_pd3dDevice, &RestoreRenderState);
 
 		// Restore the texture state.
-		//Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &RestoreTextureState);
+		//Display_SetTextureState(m_pin3d.m_pd3dDevice, &RestoreTextureState);
 
 		// Restore the transformation state.
-		ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+		ReturnCode = m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 	}
 
 	// Check if we are debugging balls
-	if (g_pplayer->m_ToggleDebugBalls)
+	if (m_ToggleDebugBalls)
 	{
 		// Check if we are debugging balls
-		if (g_pplayer->m_DebugBalls)
+		if (m_DebugBalls)
 		{
 			// Set the render state to something that will always display.
-			ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_FALSE );
-			ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, FALSE );
+			ReturnCode = m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_FALSE );
+			ReturnCode = m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, FALSE );
 		}
 		else
 		{
 			// Restore the render state.
-			ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_TRUE );
-			ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, TRUE );
+			ReturnCode = m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_TRUE );
+			ReturnCode = m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, TRUE );
 		}
 
-		g_pplayer->m_ToggleDebugBalls = fFalse;
+		m_ToggleDebugBalls = fFalse;
 	}
 
 	if (m_fBallAntialias)
@@ -2495,7 +2482,7 @@ void Player::Render()
 	hr = m_pin3d.m_pd3dDevice->EndScene();
 
 	// Check if we are mirrored.
-	if ( g_pplayer->m_ptable->m_tblMirrorEnabled )
+	if ( m_ptable->m_tblMirrorEnabled )
 	{
 		// Mirroring only works if we mirror the entire backbuffer.
 		// Flag to draw the entire backbuffer.
@@ -2506,7 +2493,7 @@ void Player::Render()
 if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
 {
 	if ( m_nudgetime &&					// Table is being nudged.
-		 g_pplayer->m_ptable->m_Shake )	// The "EarthShaker" effect is active.
+		 m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
 		// Draw with an offset to shake the display.
 		m_pin3d.Flip((int)m_NudgeBackX, (int)m_NudgeBackY, (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR));
@@ -2516,7 +2503,7 @@ if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (
 	{
 		if (m_fCleanBlt && (overall_area < FULLBLTAREA))
 		{
-			if(g_pplayer->m_fVSync && (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR))
+			if(m_fVSync && (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR))
 				g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0); // deprecated for win vista and above?!
 
 			// Smart Blit - only update the invalidated areas
@@ -2966,7 +2953,7 @@ else
 			}
 		
 			m_fCloseDown = fFalse;
-			g_pplayer->m_fNoTimeCorrect = fTrue; // Skip the time we were in the dialog
+			m_fNoTimeCorrect = fTrue; // Skip the time we were in the dialog
 			UnpauseMusic();
 			if (option == ID_QUIT)
 			{
@@ -3508,17 +3495,17 @@ void AddEventToDebugMenu(char *sz, int index, int dispid, LPARAM lparam)
 
 void Player::DoDebugObjectMenu(int x, int y)
 	{
-	if (g_pplayer->m_vdebugho.Size() == 0)
+	if (m_vdebugho.Size() == 0)
 		{
 		// First time the debug hit-testing has been used
-		g_pplayer->InitDebugHitStructure();
+		InitDebugHitStructure();
 		}
 
-	Matrix3D mat3D = g_pplayer->m_pin3d.m_matrixTotal;
+	Matrix3D mat3D = m_pin3d.m_matrixTotal;
 	mat3D.Invert();
 
 	D3DVIEWPORT7 vp;
-	g_pplayer->m_pin3d.m_pd3dDevice->GetViewport( &vp );
+	m_pin3d.m_pd3dDevice->GetViewport( &vp );
 	const float rClipWidth  = (float)vp.dwWidth*0.5f;
 	const float rClipHeight = (float)vp.dwHeight*0.5f;
 
@@ -3526,7 +3513,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 	const float ycoord = (-((float)y-rClipHeight))/rClipHeight;
 
 	Vertex3D vT, vT2;
-	g_pplayer->m_pin3d.m_matrixTotal.MultiplyVector(798,1465,89,&vT);
+	m_pin3d.m_matrixTotal.MultiplyVector(798,1465,89,&vT);
 	mat3D.MultiplyVector(vT.x,vT.y,vT.z,&vT2);
 
 	// Use the inverse of our 3D transform to determine where in 3D space the
@@ -3560,8 +3547,8 @@ void Player::DoDebugObjectMenu(int x, int y)
 	Vector<HitObject> vhoHit;
 	Vector<IFireEvents> vpfe;
 
-	g_pplayer->m_hitoctree.HitTestXRay(&ballT, &vhoHit);
-	g_pplayer->m_debugoctree.HitTestXRay(&ballT, &vhoHit);
+	m_hitoctree.HitTestXRay(&ballT, &vhoHit);
+	m_debugoctree.HitTestXRay(&ballT, &vhoHit);
 
 	VectorInt<HMENU> vsubmenu;
 	HMENU hmenu = CreatePopupMenu();
@@ -3654,9 +3641,9 @@ void Player::DoDebugObjectMenu(int x, int y)
 		else
 			{
 			const int dispid = vvdispid.ElementAt(highword)->ElementAt(lowword);
-			g_pplayer->m_pactiveball = m_pactiveballDebug;
+			m_pactiveball = m_pactiveballDebug;
 			pfe->FireGroupEvent(dispid);
-			g_pplayer->m_pactiveball = NULL;
+			m_pactiveball = NULL;
 			}
 		}
 
@@ -3898,7 +3885,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 							if ( (lParam > 0) && (lParam < 10) )
 							{
 								// Add the coins.
-								Coins += lParam;
+								g_pplayer->Coins += lParam;
 								ReturnCode = TRUE;
 							}
 							else
@@ -4300,7 +4287,7 @@ void Player::DrawAcrylics ()
 	{
 		// Build a set of clipping planes which tightly bound the ball.
 		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
-		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
+		m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
 	}
 
 	// the helper list of m_vhitacrylic only contains objects which evaluated to true in the old code.
@@ -4316,7 +4303,7 @@ void Player::DrawAcrylics ()
 		{
 		// Build a set of clipping planes which tightly bound the ball.
 		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
-		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
+		m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
 
 		// Draw acrylic ramps (they have transparency, so they have to be drawn last).
 		for (int i=0;i<m_ptable->m_vedit.Size();i++)
@@ -4349,10 +4336,9 @@ void Player::DrawAcrylics ()
 */ 
 	}
 
-
+#ifdef DONGLE_SUPPORT
 int get_dongle_status()
 {
-#ifdef DONGLE_SUPPORT
 	//Initialize.
 	int Status = DONGLE_STATUS_NOTFOUND;
 
@@ -4397,11 +4383,8 @@ int get_dongle_status()
 		Status = DONGLE_STATUS_NOTFOUND;
 	}
 	return ( Status );
-#endif
-
-	return ( DONGLE_STATUS_OK );
 }
-
+#endif
 
 #ifdef ULTRAPIN
 // Performs special draws... ok, hacks!
@@ -4412,7 +4395,7 @@ void Player::DrawLightHack ()
 	// Check the state of all lights.
 	for ( int i=0; i<LIGHTHACK_MAX; i++ )
 	{
-		if ( g_pplayer->m_LightHackReadyForDrawLightHackFn[i] )
+		if ( m_LightHackReadyForDrawLightHackFn[i] )
 		{
 			// Process based on the type of light.
 			switch ( i )

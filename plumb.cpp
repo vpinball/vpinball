@@ -2,9 +2,6 @@
 
 //#define DEBUG_PLUMB
 
-const F32 ac = 0.75f; // aspect ratio correction
-static int tilted;
-
 typedef struct
 {
     F32 x,y;
@@ -12,6 +9,7 @@ typedef struct
 }
 Plumb;
 
+static int tilted;
 static Plumb gPlumb;
 static F32 tiltsens;
 static F32 nudgesens;
@@ -38,7 +36,7 @@ F32 nudge_get_sensitivity()
 // force of the hook, and the dampening force of the air.  Here, force is exerted only by the table tilting 
 // (the string) and dampening and friction forces are lumped together with a constant, and gravity is not 
 // present.
-void plumb_update(const U32 curr_time_msec)
+void plumb_update(const U32 curr_time_msec, const float getx, const float gety)
 {
     static U32 stamp = 0;
 	// Get the time since the last frame.
@@ -56,8 +54,8 @@ void plumb_update(const U32 curr_time_msec)
     F32 &y = gPlumb.y;
     F32 &vx = gPlumb.vx;
     F32 &vy = gPlumb.vy;
-    const F32 ax = sinf( ( GetX() - x ) * (float)( M_PI / 5.0 ) );
-    const F32 ay = sinf( ( GetY() - y ) * (float)( M_PI / 5.0 ) );
+    const F32 ax = sinf( ( getx - x ) * (float)( M_PI / 5.0 ) );
+    const F32 ay = sinf( ( gety - y ) * (float)( M_PI / 5.0 ) );
 
 	// Add force to the plumb.
     vx += (float)(825.0*0.25) * ax * dt;
@@ -152,6 +150,8 @@ static int dirty;
 void plumb_draw()
 {
 #ifdef DEBUG_PLUMB
+	const F32 ac = 0.75f; // aspect ratio correction
+
 	//RenderStateType		RestoreRenderState;
 	//TextureStateType	RestoreTextureState;
 	D3DMATRIX			RestoreWorldMatrix;

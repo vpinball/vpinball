@@ -16,8 +16,6 @@ FILE *logfile;
 BOOL g_fWriteHitDeleteLog = fTrue;
 #endif
 
-ATOM atom;
-
 void ShowError(char *sz)
 {
 	MessageBox(g_pvp->m_hwnd, sz, "Error", MB_OK | MB_ICONEXCLAMATION);
