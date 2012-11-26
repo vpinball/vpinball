@@ -183,8 +183,8 @@ void PlungerAnimObject::UpdateVelocities(const float dtime) //dtime always 1.0f
 				m_speed = -err_fil*(m_frameEnd - m_frameStart);// /dtime ;				//new velocity based on filtered position error
 				m_speed *= m_plunger->m_d.m_mechStrength/m_mass *c_plungerNormalize;	// match button physics
 
-				if (m_speed <= -m_breakOverVelocity)						//mechinical speed is too fast, windows will
-					{														// will alias at high speed and EOS 
+				if (m_speed <= -m_breakOverVelocity)						//mechanical speed is too fast, windows will
+					{														// alias at high speed and EOS 
 					m_force = -m_plunger->m_d.m_mechStrength;				// set to mechnical plunger force
 					m_posdesired = m_frameEnd;								// set to button controller 
 					m_fAcc = true;											// enable animation

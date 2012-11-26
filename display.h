@@ -8,7 +8,7 @@
 #define     RGBA_TO_D3DARGB(r,g,b,a)	((((long)((a) * 255.0f)) << 24) | (((long)((r) * 255.0f)) << 16) | (((long)((g) * 255.0f)) << 8) | (long)((b) * 255.0f))
 #define     RGBA_TO_D3DRGBA(r,g,b,a)	((((long)((r) * 255.0f)) << 24) | (((long)((g) * 255.0f)) << 16) | (((long)((b) * 255.0f)) << 8) | (long)((a) * 255.0f))
 
-#define		DISPLAY_MAXTEXTURES			1
+//#define		DISPLAY_MAXTEXTURES			1
 
 typedef struct _D3DTLVertexType			D3DTLVertexType;
 struct _D3DTLVertexType
@@ -27,7 +27,7 @@ struct _D3DTLVertexType
     float                   TU2, TV2;						// Vertex2D texture coordinate.                                      
 };
 
-
+/*
 typedef enum _DISPLAY_RENDERSTATE		DISPLAY_RENDERSTATE;
 enum _DISPLAY_RENDERSTATE 
 {
@@ -149,6 +149,7 @@ struct _TextureStateType
     DWORD           TextureCoordinateIndex[DISPLAY_MAXTEXTURES];
     DWORD           TextureCoordinateTransformFlags[DISPLAY_MAXTEXTURES];
 };
+*/
 
 // Returns the current Value if it is a already a power of 2...
 // or the next power of two that is larger than Value.
@@ -191,102 +192,6 @@ void Display_DestroyTexture ( const LPDIRECTDRAWSURFACE7 Texture );
 HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT * const pddpf, VOID * const param );
 
 HRESULT Display_DrawIndexedPrimitive( const LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount, const LPWORD lpwIndices, const DWORD dwIndexCount );
-
-// Draws a sprite.
-// x, y is the screen coordinate of the top-left corner of the sprite.
-// Width, Height is determines the size of the sprite (in pixels).
-// r, g, b, a controls the color of the sprite.  The exact behavior is dependent on the RenderState.
-// Angle is in degrees.  Controls the orientation of the sprite centered about the top-left with clockwise as positive.
-// Texture is the texure to use.  This can be NULL for solid color surfaces.
-// TextureStateIndex controls how the sprite texture is combined with vertex colors and filtered.
-// RenderStateIndex controls how the sprite is drawn.
-inline void Display_DrawSprite_NoMatrix ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const float r, const float g, const float b, const float a, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
-{
-	// Calculate sin and cos theta.
-	//const float Radians = Angle * (float)(2.0 * M_PI / 360.0);
-	//const float SinTheta = sinf ( Radians );
-	//const float CosTheta = cosf ( Radians );
-
-	// ToDo: Calculate vertices with rotation applied.	
-	//       We can probably get away without implementing a matrix library. -JEP
-
-	const DWORD col = RGBA_TO_D3DARGB ( r, g, b, a );
-
-	// Build a quad.
-    D3DTLVertexType	Vertices[4];
-	Vertices[0].DiffuseColor = 
-	Vertices[0].SpecularColor = col;
-	Vertices[0].TU1 = 0.0f;
-	Vertices[0].TV1 = v;
-	Vertices[0].TU2 = 0.0f;
-	Vertices[0].TV2 = v;
-	Vertices[0].X = x; 
-	Vertices[0].Y = y + Height; 
-	Vertices[0].Z = 0.0f; 
-	Vertices[0].RHW = 1.0f; 
-
-	Vertices[1].DiffuseColor = 
-	Vertices[1].SpecularColor = col;
-	Vertices[1].TU1 = 0.0f;
-	Vertices[1].TV1 = 0.0f;
-	Vertices[1].TU2 = 0.0f;
-	Vertices[1].TV2 = 0.0f;
-	Vertices[1].X = x; 
-	Vertices[1].Y = y;
-	Vertices[1].Z = 0.0f; 
-	Vertices[1].RHW = 1.0f; 
-
-	Vertices[2].DiffuseColor = 
-	Vertices[2].SpecularColor = col;
-	Vertices[2].TU1 = u;
-	Vertices[2].TV1 = v;
-	Vertices[2].TU2 = u;
-	Vertices[2].TV2 = v;
-	Vertices[2].X = x + Width; 
-	Vertices[2].Y = y + Height;
-	Vertices[2].Z = 0.0f; 
-	Vertices[2].RHW = 1.0f;
-
-	Vertices[3].DiffuseColor = 
-	Vertices[3].SpecularColor = col;
-	Vertices[3].TU1 = u;
-	Vertices[3].TV1 = 0.0f;
-	Vertices[3].TU2 = u;
-	Vertices[3].TV2 = 0.0f;
-	Vertices[3].X = x + Width; 
-	Vertices[3].Y = y; 
-	Vertices[3].Z = 0.0f; 
-	Vertices[3].RHW = 1.0f; 
-
-	// Set the texture state.
-	//Display_SetTextureState ( Direct3DDevice, &(TextureStates[TextureStateIndex]) );
-	
-	// Set the render state.
-	//Display_SetRenderState ( Direct3DDevice, &(RenderStates[RenderStateIndex]) );
-
-	// Set the texture.
-	/*const HRESULT ReturnCode =*/ Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
-
-	// WTF?  As soon as I do DrawPrimitive, the ball disappears.  Everything else works (ie saving and restoring states)... it's just the draw!
-
-//	  // Draw the quad.
-//    ReturnCode = Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1), (D3DTLVertexType *) Vertices, 4, 0 );  
-    //ReturnCode = Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX, (D3DTLVertexType *) Vertices, 4, 0 );  
-
-	Direct3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX,
-										  (D3DTLVertexType *) Vertices, 4,
-										  (LPWORD)rgi0123, 4, NULL);
-}
-
-inline void Display_DrawSprite ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const float r, const float g, const float b, const float a, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
-{
-    const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
-
-	// Apply the transformation.
-    /*const HRESULT ReturnCode =*/ Direct3DDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
-
-    Display_DrawSprite_NoMatrix ( Direct3DDevice, x, y, Width, Height, r, g, b, a, Angle, Texture, u, v, TextureStateIndex, RenderStateIndex );
-}
 
 inline void Display_DrawSprite_NoMatrix_NoStates ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v )
 {
@@ -358,7 +263,7 @@ inline void Display_DrawSprite_NoMatrix_NoStates ( const LPDIRECT3DDEVICE7 Direc
 										  (LPWORD)rgi0123, 4, NULL);
 }
 
-inline void Display_DrawSprite ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v, const int TextureStateIndex, const int RenderStateIndex )
+inline void Display_DrawSprite ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v)
 {
     const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
 

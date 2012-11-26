@@ -40,7 +40,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
 	hr = GetRegInt("DefaultProps\\Primitive","Sides", &iTmp);
 	m_d.m_Sides = (hr == S_OK) && fromMouseClick ? iTmp : 4;
 
-
 	// colors
 	hr = GetRegInt("DefaultProps\\Primitive", "TopColor", &iTmp);
 	m_d.m_TopColor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(100,100,100);
@@ -310,20 +309,18 @@ void Primitive::RecalculateVertices()
 {
 	verticesTop.RemoveAllElements();
 	verticesBottom.RemoveAllElements();
-	const float outherRadius = 0.5f/(cosf((float)M_PI/m_d.m_Sides));
+	const float outherRadius = 0.5f/(cosf((float)M_PI/(float)m_d.m_Sides));
 	float currentAngle = (float)(2.0*M_PI)/(float)(m_d.m_Sides*2);
 	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
 		Vertex3D * const topVert = new Vertex3D();
-		topVert->z = 0.5f;
-		topVert->x = -sinf(currentAngle)*outherRadius;
-		topVert->y = -cosf(currentAngle)*outherRadius;
-		verticesTop.AddElement(topVert);
 		Vertex3D * const bottomVert = new Vertex3D();
+		topVert->z = 0.5f;
 		bottomVert->z = -0.5f;
-		bottomVert->x = -sinf(currentAngle)*outherRadius;
-		bottomVert->y = -cosf(currentAngle)*outherRadius;
+		topVert->x = bottomVert->x = -sinf(currentAngle)*outherRadius;
+		topVert->y = bottomVert->y = -cosf(currentAngle)*outherRadius;
+		verticesTop.AddElement(topVert);
 		verticesBottom.AddElement(bottomVert);
 		currentAngle += addAngle;
 	}
@@ -392,19 +389,19 @@ void Primitive::Render(Sur *psur)
 
 }
 
-WORD rgiPrimStatic0[5] = {0,1,2,3,4};
-WORD rgiPrimStatic1[5] = {4,3,2,1,0};
+const WORD rgiPrimStatic0[5] = {0,1,2,3,4};
+const WORD rgiPrimStatic1[5] = {4,3,2,1,0};
 
 void Primitive::CalculateRealTimeOriginal()
 {
 	// this recalculates the Original Vertices -> should be only called, when sides are altered.
-	const float outherRadius = 0.5f/(cosf((float)M_PI/m_d.m_Sides));
+	const float outherRadius = 0.5f/(cosf((float)M_PI/(float)m_d.m_Sides));
 	float currentAngle = (float)(2.0*M_PI)/(float)(m_d.m_Sides*2);
 	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
-	float minX = 10000;
-	float maxX = -10000;
-	float minY = 10000;
-	float maxY = -10000;
+	float minX = 10000.f;
+	float maxX = -10000.f;
+	float minY = 10000.f;
+	float maxY = -10000.f;
 
 	Vertex3D *middle;
 	middle = &rgv3DOriginal[0]; // middle point top
@@ -456,11 +453,14 @@ void Primitive::CalculateRealTimeOriginal()
 	middle = &rgv3DOriginal[m_d.m_Sides+1]; // middle point bottom
 	middle->tu = maxtu*(float)(0.25*3); // /4*3
 	middle->tv = maxtv*0.25f;   // /4
+	const float invx = (maxtu*0.5f)/(maxX-minX);
+	const float invy = (maxtv*0.5f)/(maxY-minY);
+	const float invs = maxtu/(float)m_d.m_Sides;
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
 		Vertex3D * const topVert = &rgv3DOriginal[i+1]; // top point at side
-		topVert->tu = ((topVert->x - minX)/(maxX-minX))*(maxtu*0.5f);
-		topVert->tv = ((topVert->y - minY)/(maxY-minY))*(maxtv*0.5f);
+		topVert->tu = (topVert->x - minX)*invx;
+		topVert->tv = (topVert->y - minY)*invy;
 
 		Vertex3D * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
 		bottomVert->tu = topVert->tu+0.5f*maxtu;
@@ -469,7 +469,7 @@ void Primitive::CalculateRealTimeOriginal()
 		Vertex3D * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
 		Vertex3D * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
 
-		sideTopVert->tu = (float)i/m_d.m_Sides*maxtu;
+		sideTopVert->tu = (float)i*invs;
 		sideTopVert->tv = 0.5f*maxtv;
 		sideBottomVert->tu = sideTopVert->tu;
 		sideBottomVert->tv = /*1.0f**/maxtv;
@@ -678,8 +678,8 @@ void Primitive::SortVertices()
 			}
 			inc = (int)((float)inc*(float)(1.0/2.2));
 		}
-	} else {
-	}
+	} //else {
+	//}
 }
 
 void Primitive::CalculateRealTime()
@@ -688,7 +688,6 @@ void Primitive::CalculateRealTime()
 	CopyOriginalVertices();
 	ApplyMatrixToVertices();
 	SortVertices();
-
 
 	// y at top is 0
 	// get inclination via m_ptable->m_inclination
@@ -700,7 +699,6 @@ void Primitive::CalculateRealTime()
 	const float zMultiplicator = cosf(ANGTORAD(m_ptable->m_inclination));
 	const float yMultiplicator = sinf(ANGTORAD(m_ptable->m_inclination));
 	float farthest = 10000;
-
 
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
@@ -791,8 +789,7 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	g_pplayer->InvalidateRect(rect);
 	*/
 
-	g_pplayer->m_ptable->SetDirtyDraw();
-
+	g_pplayer->m_ptable->SetDirtyDraw(); //!!
 
 	D3DMATERIAL7 mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -820,9 +817,8 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
 			
-			
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-			// this has to be set to true (this is just for debugging depth sporting.
+			// this has to be set to true (this is just for debugging depth sorting).
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
@@ -897,6 +893,7 @@ void Primitive::PutCenter(const Vertex2D * const pv)
 
 		m_ptable->SetDirtyDraw();
 	}
+
 //////////////////////////////
 // Save and Load
 //////////////////////////////
@@ -1117,7 +1114,6 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Primitive::InitPostLoad()
 	{
-
 	return S_OK;
 	}
 

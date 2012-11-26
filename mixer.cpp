@@ -292,30 +292,30 @@ void mixer_draw()
 		float g = ((float) ((drop_color & 0x00ff0000) >> 16)) * (float)(1.0/255.0);
 		float b = ((float) ((drop_color & 0x0000ff00) >>  8)) * (float)(1.0/255.0);
 		float a = ((float) ((drop_color & 0x000000ff)      )) * (float)(1.0/255.0);
+		DWORD col = RGBA_TO_D3DARGB ( r, g, b, a ); //!! meh
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
 		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
 							(fY + 1.0f), (fX + 1.0f),
 							(Height - 2.0f), (Width - 2.0f), 
-							r, g, b, a, //!! pass as DWORD directly?
+							col,
 							0.0f,
-							NULL, 1.0f, 1.0f,
-							DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT );
+							NULL, 1.0f, 1.0f );
 
 		// Set the color.
 		r = ((float) ((color             ) >> 24)) * (float)(1.0/255.0);
 		g = ((float) ((color & 0x00ff0000) >> 16)) * (float)(1.0/255.0);
 		b = ((float) ((color & 0x0000ff00) >>  8)) * (float)(1.0/255.0);
 		a = ((float) ((color & 0x000000ff)      )) * (float)(1.0/255.0);
+		col = RGBA_TO_D3DARGB ( r, g, b, a ); //!! meh
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
 		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
 							fY, fX,
 							Height, Width, 
-							r, g, b, a, //!! pass as DWORD directly? 
+							col,
 							0.0f,
-							NULL, 1.0f, 1.0f,
-							DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT );
+							NULL, 1.0f, 1.0f );
 	}
 
 	// Restore the render states.

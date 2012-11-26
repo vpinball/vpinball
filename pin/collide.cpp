@@ -10,7 +10,7 @@ bool c_plungerFilter = false;
 
 float c_hardScatter = 0.0f;
 float c_hardFriction = 1.0f - RC_FRICTIONCONST;
-float c_Gravity = GRAVITYCONST;
+//float c_Gravity = GRAVITYCONST;
 
 HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections)
 	{

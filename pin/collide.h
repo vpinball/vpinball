@@ -23,7 +23,7 @@ enum
 
 #define SHOWNORMAL 1
 
-extern float c_Gravity;
+//extern float c_Gravity;
 extern float c_hardFriction; 
 extern float c_hardScatter; 
 extern float c_maxBallSpeedSqed; 
@@ -217,7 +217,7 @@ public:
 
 	void CreateNextLevel();
 
-	HitOctree *m_phitoct[8];
+	HitOctree * __restrict m_phitoct[8];
 
 	Vector<HitObject> m_vho;
 

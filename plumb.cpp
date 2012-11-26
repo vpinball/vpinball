@@ -6,27 +6,28 @@ typedef struct
 {
     F32 x,y;
     F32 vx,vy;
+	
+	int tilted;
+	F32 tiltsens;
+	F32 nudgesens;
 }
 Plumb;
 
-static int tilted;
 static Plumb gPlumb;
-static F32 tiltsens;
-static F32 nudgesens;
 
 void plumb_set_sensitivity( const F32 sens )
 {
-    tiltsens = sens;
+    gPlumb.tiltsens = sens;
 }
 
 void nudge_set_sensitivity( const F32 sens )
 {
-    nudgesens = sens;
+    gPlumb.nudgesens = sens;
 }
 
 F32 nudge_get_sensitivity()
 {
-	return( nudgesens );
+	return( gPlumb.nudgesens );
 }
 
 // If you modify this function... make sure you update the same function in the front-end!
@@ -63,20 +64,20 @@ void plumb_update(const U32 curr_time_msec, const float getx, const float gety)
 
 	// Check if we hit the edge.
     const F32 len2 = x * x + y * y;
-    if( len2 > ( 1.0f - tiltsens ) * ( 1.0f - tiltsens ) )
+    if( len2 > ( 1.0f - gPlumb.tiltsens ) * ( 1.0f - gPlumb.tiltsens ) )
     {
 		// Bounce the plumb and scrub velocity.
-        const F32 oolen = (( 1.0f - tiltsens ) / sqrtf( len2 )) * 0.90f;
+        const F32 oolen = (( 1.0f - gPlumb.tiltsens ) / sqrtf( len2 )) * 0.90f;
         x *= oolen;
         y *= oolen;
         vx *= -0.025f;
         vy *= -0.025f;
 
 		// Check if tilt is enabled.
-		if ( tiltsens > 0.0f )
+		if ( gPlumb.tiltsens > 0.0f )
 		{
 			// Flag that we tilted.
-			tilted = 1;
+			gPlumb.tilted = 1;
 		}
     }
 
@@ -102,9 +103,9 @@ void plumb_update(const U32 curr_time_msec, const float getx, const float gety)
 
 int plumb_tilted()
 {
-    if( tilted )
+    if( gPlumb.tilted )
     {
-        tilted = 0;
+        gPlumb.tilted = 0;
         return 1;
     }
 
@@ -120,14 +121,14 @@ void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 c
     const F32 g = ((float) ((color & 0x00ff0000) >> 16)) *(float)(1.0/255.0);
     const F32 b = ((float) ((color & 0x0000ff00) >>  8)) *(float)(1.0/255.0);
     const F32 a = ((float) ((color & 0x000000ff)      )) *(float)(1.0/255.0);
+	const DWORD col = RGBA_TO_D3DARGB ( r, g, b, a ); //!! meh
 
     Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
                         y, x,
                         sy, sx,
-                        r, g, b, a, //!! pass as DWORD directly? 
+                        col,
                         0.0f,
-                        NULL, 1.0f, 1.0f,
-                        DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT );
+                        NULL, 1.0f, 1.0f );
 }
 
 #ifdef DEBUG_PLUMB
@@ -142,17 +143,17 @@ void invalidate_box( const F32 sx, const F32 sy, const F32 x, const F32 y )
 	Rect.bottom = (int)( x + sx * 0.5f );
 	g_pplayer->InvalidateRect(&Rect);
 }
-#endif
 
 F32 sPlumbPos[2] = { 300, 100 };
 static int dirty;
+#endif
 
 void plumb_draw()
 {
 #ifdef DEBUG_PLUMB
 	const F32 ac = 0.75f; // aspect ratio correction
 
-	//RenderStateType		RestoreRenderState;
+	//RenderStateType	RestoreRenderState;
 	//TextureStateType	RestoreTextureState;
 	D3DMATRIX			RestoreWorldMatrix;
 	HRESULT				ReturnCode;

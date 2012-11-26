@@ -135,9 +135,6 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 		g_hinstres = g_hinst;
 //		}
 
-	SYSTEMTIME systime; // time bomb
-	GetSystemTime(&systime);
-
     lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
 
 	BOOL fFile = fFalse;
@@ -197,12 +194,9 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 			{
 				sprintf_s( szTableFileName, "%s", play+6 );
 				VPinball::SetOpenMinimized();
-				if(1)
-				{
-					char szLoadDir[MAX_PATH];
-					PathFromFilename(szTableFileName, szLoadDir);
-					/*const DWORD err =*/ SetCurrentDirectory(szLoadDir);
-				}
+				char szLoadDir[MAX_PATH];
+				PathFromFilename(szTableFileName, szLoadDir);
+				/*const DWORD err =*/ SetCurrentDirectory(szLoadDir);
 			}
 
 			char *resolution = strstr( lpCmdLine, "Resolution");
