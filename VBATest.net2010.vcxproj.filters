@@ -57,9 +57,6 @@
     <ClCompile Include="dragpoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Pin\draw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="eventproxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
