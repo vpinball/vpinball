@@ -489,44 +489,45 @@ void Ball::UpdateDisplacements(const float dtime)
 
 		drsq = dsx*dsx + dsy*dsy + dsz*dsz;				// used to determine if static ball
 
-		if (vz < 0 && z <= z_min)						//rolling point below the table and velocity driving deeper
+		if (vz < 0.f && z <= z_min)						//rolling point below the table and velocity driving deeper
 			{
 			z = z_min;									// set rolling point to table surface
 			vz *= -0.2f;							    // reflect velocity  ...  dull bounce
 
-			vx *= c_hardFriction; vy *= c_hardFriction;  //friction other axiz
+			vx *= c_hardFriction;
+			vy *= c_hardFriction;						//friction other axiz
 			
 			const Vertex3Ds vnormal(0.0f,0.0f,1.0f);
 			AngularAcceleration(&vnormal);
 			}
-		else if (vz > 0 && z >= z_max)						//top glass ...contact and going higher
+		else if (vz > 0.f && z >= z_max)				//top glass ...contact and going higher
 			{
 			z = z_max;									// set diametric rolling point to top glass
 			vz *= -0.2f;								// reflect velocity  ...  dull bounce
 			}
 
-/*		if (vx < 0 && x <= x_min)						//left wall
+/*		if (vx < 0.f && x <= x_min)						//left wall
 			{
 			x = x_min;									
 			vx *= -0.2f;
 			}
-		else if (vx > 0 && x >= x_max)					//right wall
+		else if (vx > 0.f && x >= x_max)					//right wall
 			{
 			x = x_max;							
 			vx *= -0.2f;
 			}
 
-		if (vy < 0 && y <= y_min)						//top wall
+		if (vy < 0.f && y <= y_min)						//top wall
 			{
 			y = y_min;									
 			vy *= -0.2f;
 			}
-		else if (vy > 0 && y >= y_max)					//bottom wall
+		else if (vy > 0.f && y >= y_max)					//bottom wall
 			{
 			y = y_max;							
 			vy *= -0.2f;
 			}
-*/	
+*/
 		CalcBoundingRect();
 		
 		Matrix3 mat3;

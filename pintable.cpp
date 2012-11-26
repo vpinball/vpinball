@@ -1600,7 +1600,7 @@ void PinTable::Play()
 		g_pplayer = new Player();
 		const HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName, fCheckForCache);
 		if (!m_pcv->m_fScriptError) {
-			c_Gravity = m_Gravity;					// set physical constants
+			//c_Gravity = m_Gravity;				// set physical constants
 			c_hardFriction = 1.0f - m_hardFriction;	// convert to reciprocal
 			c_hardScatter = m_hardScatter;
 			c_maxBallSpeedSqed = m_maxBallSpeed*m_maxBallSpeed;

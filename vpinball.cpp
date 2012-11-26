@@ -319,7 +319,7 @@ void VPinball::Init()
 	m_pds.InitDirectSound(m_hwnd);						// init Direct Sound (in pinsound.cpp)
 	hr = m_pdd.InitDD();								// init direct draw (in pinimage.cpp)
 
-	// check if Direct draw could be initilized
+	// check if Direct draw could be initalized
 	if (hr != S_OK)
 		{
 		SendMessage(m_hwnd, WM_CLOSE, 0, 0);
@@ -427,7 +427,6 @@ void VPinball::InitTools()
 void VPinball::InitRegValues()
 	{
 	HRESULT hr;
-
 
 	hr = GetRegInt("Player", "HardwareRender", &m_fHardwareAccel);
 	if (hr != S_OK)
