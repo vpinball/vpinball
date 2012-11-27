@@ -2,13 +2,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 #pragma once
-
 #if !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
 #define AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #define MIN_ZOOM 0.126f // purposely make them offset from powers to 2 to account for roundoff error
 #define MAX_ZOOM 63.9f
@@ -432,8 +427,6 @@ END_CONNECTION_POINT_MAP()
 	//ISelect *m_pselcur;
 	Vector<ISelect> m_vmultisel;
 	
-	bool  m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
-
 	float m_left; // always zero for now
 	float m_top; // always zero for now
 	float m_right;
@@ -468,6 +461,7 @@ END_CONNECTION_POINT_MAP()
 
     static int m_tblNumStartBalls;	// The number of balls that are on the table at startup minus the current player ball.
 	static int NumStartBalls();		// Returns the number of start balls.
+
 	BOOL m_tblAccelerometer;		// true if electronic accelerometer enabled
 	BOOL m_tblAccelNormalMount;		// true is Normal Mounting (Left Hand Coordinates)
     BOOL m_tblAutoStartEnabled;
@@ -586,6 +580,8 @@ END_CONNECTION_POINT_MAP()
 	VectorInt<HANDLE> m_vAsyncHandles;
 
 	int m_alphaRampsAccuracy;
+
+	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

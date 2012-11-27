@@ -1,3 +1,5 @@
+#pragma once
+
 //#define ULTRAPIN       // define to enable deprecated UltraPin functionality
 //#define DONGLE_SUPPORT // define to enable deprecated UltraPin dongle (Remember to run hdd32.exe (HASP dongle driver setup) on host)
 
@@ -83,10 +85,6 @@
 
 #if !defined(AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_)
 #define AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0

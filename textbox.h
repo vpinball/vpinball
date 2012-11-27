@@ -1,14 +1,9 @@
-#pragma once
 // Textbox.h: Definition of the Textbox class
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_TEXTBOX_H__ED083DAA_135F_4420_8701_F99205C725DA__INCLUDED_)
 #define AFX_TEXTBOX_H__ED083DAA_135F_4420_8701_F99205C725DA__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "resource.h"       // main symbols
 

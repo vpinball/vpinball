@@ -4,10 +4,6 @@
  
 #include "stdafx.h" 
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
 Primitive::Primitive()
 	{
 	} 
@@ -39,6 +35,8 @@ void Primitive::SetDefaults(bool fromMouseClick)
 	// sides
 	hr = GetRegInt("DefaultProps\\Primitive","Sides", &iTmp);
 	m_d.m_Sides = (hr == S_OK) && fromMouseClick ? iTmp : 4;
+	if(m_d.m_Sides > Max_Primitive_Sides)
+		m_d.m_Sides = Max_Primitive_Sides;
 
 	// colors
 	hr = GetRegInt("DefaultProps\\Primitive", "TopColor", &iTmp);
@@ -88,7 +86,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
 	m_d.m_vAxisScaleY.y = 1.0f;
 	m_d.m_vAxisScaleZ.z = 1.0f;
 
-
 	// Rotation and Transposition
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra0", &fTmp);
 	m_d.m_aRotAndTra[0] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
@@ -102,7 +99,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
 	m_d.m_aRotAndTra[4] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 	hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra5", &fTmp);
 	m_d.m_aRotAndTra[5] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
-
 
 	hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType0", &iTmp);
 	m_d.m_aRotAndTraTypes[0] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : RotX;
@@ -224,7 +220,7 @@ void Primitive::GetTimers(Vector<HitTimer> *pvht)
 
 void Primitive::GetHitShapes(Vector<HitObject> *pvho)
 	{
-		// Here the hitshapes have to be added... lets look at other implementations.
+		//!! Here the hitshapes have to be added... lets look at other implementations.
 		// OK, i need a hitprimitive class and a hitanimobject class.
 		// the hitprimitive class should add itself to the HitObjectVector.
 		// i think i have to look at easy hit objects and then at ramps hitobjects.
@@ -238,12 +234,6 @@ void Primitive::GetHitShapesDebug(Vector<HitObject> *pvho)
 
 void Primitive::EndPlay()
 	{
-		/*
-	if (m_pinimage.m_pdsBuffer)
-		{
-		m_pinimage.FreeStuff();
-		}
-		*/
 	}
 
 //////////////////////////////
@@ -265,7 +255,6 @@ void Primitive::RecalculateMatrices()
 	Tmatrix._41 = m_d.m_vPosition.x;
 	Tmatrix._42 = m_d.m_vPosition.y;
 	Tmatrix._43 = m_d.m_vPosition.z;
-	
 
 	Matrix3D RTmatrix;
 	RTmatrix.SetIdentity();
@@ -309,17 +298,17 @@ void Primitive::RecalculateVertices()
 {
 	verticesTop.RemoveAllElements();
 	verticesBottom.RemoveAllElements();
-	const float outherRadius = 0.5f/(cosf((float)M_PI/(float)m_d.m_Sides));
-	float currentAngle = (float)(2.0*M_PI)/(float)(m_d.m_Sides*2);
+	const float outerRadius = 0.5f/cosf((float)M_PI/(float)m_d.m_Sides);
+	float currentAngle = (float)M_PI/(float)m_d.m_Sides;
 	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		Vertex3D * const topVert = new Vertex3D();
-		Vertex3D * const bottomVert = new Vertex3D();
+		Vertex3Ds * const topVert = new Vertex3Ds();
+		Vertex3Ds * const bottomVert = new Vertex3Ds();
 		topVert->z = 0.5f;
 		bottomVert->z = -0.5f;
-		topVert->x = bottomVert->x = -sinf(currentAngle)*outherRadius;
-		topVert->y = bottomVert->y = -cosf(currentAngle)*outherRadius;
+		topVert->x = bottomVert->x = -sinf(currentAngle)*outerRadius;
+		topVert->y = bottomVert->y = -cosf(currentAngle)*outerRadius;
 		verticesTop.AddElement(topVert);
 		verticesBottom.AddElement(bottomVert);
 		currentAngle += addAngle;
@@ -329,7 +318,7 @@ void Primitive::RecalculateVertices()
 
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		Vertex3D * const topVert = (Vertex3D*)verticesTop.ElementAt(i);
+		Vertex3Ds * const topVert = verticesTop.ElementAt(i);
 		topVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f);
 		topVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f);
 		topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(topVert->y+0.5f);
@@ -337,7 +326,7 @@ void Primitive::RecalculateVertices()
 		topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f);
 		topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f);
 		fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
-		Vertex3D * const bottomVert = (Vertex3D*)verticesBottom.ElementAt(i);
+		Vertex3Ds * const bottomVert = verticesBottom.ElementAt(i);
 		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(bottomVert->x+0.5f);
 		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(bottomVert->x+0.5f);
 		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(bottomVert->y+0.5f);
@@ -362,7 +351,6 @@ void Primitive::PreRender(Sur *psur)
 
 	psur->Line(m_d.m_vPosition.x -10.0f, m_d.m_vPosition.y,m_d.m_vPosition.x +10.0f, m_d.m_vPosition.y);
 	psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y -10.0f,m_d.m_vPosition.x, m_d.m_vPosition.y +10.0f);
-
 	*/
 }
 
@@ -376,17 +364,17 @@ void Primitive::Render(Sur *psur)
 	//psur->SetObject(NULL);
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		const Vertex3D * const topVert = (Vertex3D*)verticesTop.ElementAt(i);
-		const Vertex3D * const nextTopVert = (Vertex3D*)verticesTop.ElementAt((i+1)%m_d.m_Sides);
+		const int inext = ((i+1) == m_d.m_Sides) ? 0 : i+1;
+		const Vertex3Ds * const topVert = (Vertex3Ds*)verticesTop.ElementAt(i);
+		const Vertex3Ds * const nextTopVert = (Vertex3Ds*)verticesTop.ElementAt(inext);
 		psur->Line(topVert->x, topVert->y, nextTopVert->x, nextTopVert->y);
-		const Vertex3D * const bottomVert = (Vertex3D*)verticesBottom.ElementAt(i);
-		const Vertex3D * const nextBottomVert = (Vertex3D*)verticesBottom.ElementAt((i+1)%m_d.m_Sides);
+		const Vertex3Ds * const bottomVert = (Vertex3Ds*)verticesBottom.ElementAt(i);
+		const Vertex3Ds * const nextBottomVert = (Vertex3Ds*)verticesBottom.ElementAt(inext);
 		psur->Line(bottomVert->x, bottomVert->y, nextBottomVert->x, nextBottomVert->y);
 		psur->Line(bottomVert->x, bottomVert->y, topVert->x, topVert->y);
 	}
 	psur->Line(m_d.m_vPosition.x -20.0f, m_d.m_vPosition.y,m_d.m_vPosition.x +20.0f, m_d.m_vPosition.y);
 	psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y -20.0f,m_d.m_vPosition.x, m_d.m_vPosition.y +20.0f);
-
 }
 
 const WORD rgiPrimStatic0[5] = {0,1,2,3,4};
@@ -395,12 +383,12 @@ const WORD rgiPrimStatic1[5] = {4,3,2,1,0};
 void Primitive::CalculateRealTimeOriginal()
 {
 	// this recalculates the Original Vertices -> should be only called, when sides are altered.
-	const float outherRadius = 0.5f/(cosf((float)M_PI/(float)m_d.m_Sides));
-	float currentAngle = (float)(2.0*M_PI)/(float)(m_d.m_Sides*2);
+	const float outerRadius = 0.5f/(cosf((float)M_PI/(float)m_d.m_Sides));
+	float currentAngle = (float)M_PI/(float)m_d.m_Sides;
 	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
 	float minX = 10000.f;
-	float maxX = -10000.f;
 	float minY = 10000.f;
+	float maxX = -10000.f;
 	float maxY = -10000.f;
 
 	Vertex3D *middle;
@@ -417,8 +405,8 @@ void Primitive::CalculateRealTimeOriginal()
 		// calculate Top
 		Vertex3D * const topVert = &rgv3DOriginal[i+1]; // top point at side
 		topVert->z = 0.5f;
-		topVert->x = -sinf(currentAngle)*outherRadius;
-		topVert->y = -cosf(currentAngle)*outherRadius;		
+		topVert->x = -sinf(currentAngle)*outerRadius;
+		topVert->y = -cosf(currentAngle)*outerRadius;		
 		// calculate bottom
 		Vertex3D * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
 		bottomVert->z = -0.5f;
@@ -451,7 +439,7 @@ void Primitive::CalculateRealTimeOriginal()
 	middle->tu = maxtu*0.25f;   // /4
 	middle->tv = maxtv*0.25f;   // /4
 	middle = &rgv3DOriginal[m_d.m_Sides+1]; // middle point bottom
-	middle->tu = maxtu*(float)(0.25*3); // /4*3
+	middle->tu = maxtu*(float)(0.25*3.); // /4*3
 	middle->tv = maxtv*0.25f;   // /4
 	const float invx = (maxtu*0.5f)/(maxX-minX);
 	const float invy = (maxtv*0.5f)/(maxY-minY);
@@ -462,7 +450,7 @@ void Primitive::CalculateRealTimeOriginal()
 		topVert->tu = (topVert->x - minX)*invx;
 		topVert->tv = (topVert->y - minY)*invy;
 
-		Vertex3D * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
+		Vertex3D* const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
 		bottomVert->tu = topVert->tu+0.5f*maxtu;
 		bottomVert->tv = topVert->tv;
 
@@ -479,10 +467,8 @@ void Primitive::CalculateRealTimeOriginal()
 void Primitive::CopyOriginalVertices()
 {
 	// copy vertices
-	for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
-	{
-		rgv3DAll[i] = rgv3DOriginal[i];
-	}
+	memcpy(rgv3DAll,rgv3DOriginal,(m_d.m_Sides*4 + 2)*sizeof(Vertex3D));
+
 	// restore indices
 	// check if anti culling is enabled:
 	if (m_d.m_DrawTexturesInside)
@@ -577,7 +563,7 @@ void Primitive::SortVertices()
 	// I need m_sides values at bottom
 	// I need m_sides values at the side, since i use only one depth value for each side instead of two.
 	// in the implementation i will use shell sort like implemented at wikipedia.
-	// Other algorithms are better at presorted things, but i will habe some reverse sorted elements between the presorted here. 
+	// Other algorithms are better at presorted things, but i will have some reverse sorted elements between the presorted here. 
 	// That's why insertion or bubble sort does not work fast here...
 	// input: an array a of length n with array elements numbered 0 to n ? 1
 	
@@ -636,29 +622,18 @@ void Primitive::SortVertices()
 				 * yM05;
 		}
 	}
-	// now sort
-	// Implementation:
-	//		inc = round(n/2)
-	//		while inc > 0 do:
-	//		    for i = inc .. n ? 1 do:
-	//		        temp = a[i]
-	//		        j = i
-	//		        while j >= inc and a[j ? inc] > temp do:
-	//		            a[j] = a[j ? inc]
-	//		            j = j ? inc
-	//		        a[j] = temp
-	//		    inc = round(inc / 2.2)
 
-	int tempIndices[6];
+	// now shell sort using 2.2 gaps
 	if (m_d.m_DrawTexturesInside)
 	{
-		int inc = m_d.m_Sides*4/2;
+		int inc = (m_d.m_Sides*4)/2;
 		while (inc > 0)
 		{
 			for (int i = inc; i < m_d.m_Sides*4; i++)
 			{
 				// store temp
 				const float tempDepth = fDepth[i];
+				int tempIndices[6];
 				for (int tempI = 0; tempI < 6; tempI++)
 					tempIndices[tempI] = wIndicesAll[i*6 + tempI];
 
@@ -674,9 +649,12 @@ void Primitive::SortVertices()
 				fDepth[j] = tempDepth;
 				for (int tempI = 0; tempI < 6; tempI++)
 					wIndicesAll[j*6+tempI] = tempIndices[tempI];
-
 			}
-			inc = (int)((float)inc*(float)(1.0/2.2));
+
+			if(inc == 2)
+				inc = 1;
+			else
+				inc = (int)((float)inc*(float)(1.0/2.2));
 		}
 	} //else {
 	//}
@@ -698,11 +676,11 @@ void Primitive::CalculateRealTime()
 	/*
 	const float zMultiplicator = cosf(ANGTORAD(m_ptable->m_inclination));
 	const float yMultiplicator = sinf(ANGTORAD(m_ptable->m_inclination));
-	float farthest = 10000;
+	float farthest = 10000.f;
 
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		Vertex3D * const topVert = &rgv3DTop[i];
+		Vertex3Ds * const topVert = &rgv3DTop[i];
 		topVert->x = rgv3DTopOriginal[i].x;
 		topVert->y = rgv3DTopOriginal[i].y;
 		topVert->z = rgv3DTopOriginal[i].z;
@@ -710,7 +688,7 @@ void Primitive::CalculateRealTime()
 		topVert->tv = rgv3DTopOriginal[i].tv;
 		topVert->nx = 0;
 		topVert->ny = 0;
-		topVert->nz = -1;
+		topVert->nz = -1.f;
 		topVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f);
 		topVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f);
 		topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(topVert->y+0.5f);
@@ -718,7 +696,7 @@ void Primitive::CalculateRealTime()
 		topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f);
 		topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f);
 		fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
-		Vertex3D * const bottomVert = &rgv3DBottom[i];
+		Vertex3Ds * const bottomVert = &rgv3DBottom[i];
 		bottomVert->x = rgv3DBottomOriginal[i].x;
 		bottomVert->y = rgv3DBottomOriginal[i].y;
 		bottomVert->z = rgv3DBottomOriginal[i].z;
@@ -726,7 +704,7 @@ void Primitive::CalculateRealTime()
 		bottomVert->tv = rgv3DBottomOriginal[i].tv;
 		bottomVert->nx = 0;
 		bottomVert->ny = 0;
-		bottomVert->nz = -1;
+		bottomVert->nz = -1.f;
 		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(bottomVert->x+0.5f);
 		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(bottomVert->x+0.5f);
 		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(bottomVert->y+0.5f);
@@ -752,8 +730,7 @@ void Primitive::CalculateRealTime()
 			farthest = bottomVert->z * zMultiplicator + bottomVert->y * yMultiplicator;
 			farthestIndex = i;
 			topBehindBottom = false;
-		}
-		
+		}		
 	}
 	*/
 }
@@ -905,11 +882,11 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcControl.ID());
 #endif
-	bw.WriteStruct(FID(VPOS), &m_d.m_vPosition, sizeof(Vertex3D));
-	bw.WriteStruct(FID(VSIZ), &m_d.m_vSize, sizeof(Vertex3D));
-	bw.WriteStruct(FID(AXSX), &m_d.m_vAxisScaleX, sizeof(Vertex3D));
-	bw.WriteStruct(FID(AXSY), &m_d.m_vAxisScaleY, sizeof(Vertex3D));
-	bw.WriteStruct(FID(AXSZ), &m_d.m_vAxisScaleZ, sizeof(Vertex3D));
+	bw.WriteStruct(FID(VPOS), &m_d.m_vPosition, sizeof(Vertex3Ds));
+	bw.WriteStruct(FID(VSIZ), &m_d.m_vSize, sizeof(Vertex3Ds));
+	bw.WriteStruct(FID(AXSX), &m_d.m_vAxisScaleX, sizeof(Vertex3Ds));
+	bw.WriteStruct(FID(AXSY), &m_d.m_vAxisScaleY, sizeof(Vertex3Ds));
+	bw.WriteStruct(FID(AXSZ), &m_d.m_vAxisScaleZ, sizeof(Vertex3Ds));
 	bw.WriteFloat(FID(RTV0), m_d.m_aRotAndTra[0]);
 	bw.WriteFloat(FID(RTV1), m_d.m_aRotAndTra[1]);
 	bw.WriteFloat(FID(RTV2), m_d.m_aRotAndTra[2]);
@@ -982,23 +959,23 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(VPOS))
 		{
-		pbr->GetStruct(&m_d.m_vPosition, sizeof(Vertex3D));
+		pbr->GetStruct(&m_d.m_vPosition, sizeof(Vertex3Ds));
 		}
 	else if (id == FID(VSIZ))
 		{
-		pbr->GetStruct(&m_d.m_vSize, sizeof(Vertex3D));
+		pbr->GetStruct(&m_d.m_vSize, sizeof(Vertex3Ds));
 		}
 	else if (id == FID(AXSX))
 		{
-		pbr->GetStruct(&m_d.m_vAxisScaleX, sizeof(Vertex3D));
+		pbr->GetStruct(&m_d.m_vAxisScaleX, sizeof(Vertex3Ds));
 		}
 	else if (id == FID(AXSY))
 		{
-		pbr->GetStruct(&m_d.m_vAxisScaleY, sizeof(Vertex3D));
+		pbr->GetStruct(&m_d.m_vAxisScaleY, sizeof(Vertex3Ds));
 		}
 	else if (id == FID(AXSZ))
 		{
-		pbr->GetStruct(&m_d.m_vAxisScaleZ, sizeof(Vertex3D));
+		pbr->GetStruct(&m_d.m_vAxisScaleZ, sizeof(Vertex3Ds));
 		}
 	else if (id == FID(RTV0))
 		{

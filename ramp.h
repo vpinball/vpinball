@@ -1,14 +1,9 @@
-#pragma once
 // Ramp.h: Definition of the Ramp class
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)
 #define AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "resource.h"       // main symbols
 

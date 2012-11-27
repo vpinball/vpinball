@@ -1,14 +1,9 @@
-#pragma once
 // Plunger.h: Definition of the Plunger class
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_PLUNGER_H__A729D2E2_D68F_4DD6_BE4B_D8AD1B8C7B66__INCLUDED_)
 #define AFX_PLUNGER_H__A729D2E2_D68F_4DD6_BE4B_D8AD1B8C7B66__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "resource.h"       // main symbols
 

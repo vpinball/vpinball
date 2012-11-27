@@ -200,13 +200,9 @@ END_COM_MAP()
 	IScriptableHost *m_psh;
 
 // Edit Class
-	//void BeginEditUndo();
-	//void EndEditUndo();
 	void ColorLine(int line);
-	//void DoColorLine(int charstartindex, char *szText, int cchar);
 	void UncolorError();
 	void ColorError(int line, int nchar);
-	//void AddTabs(int line);
 	void ShowFindDialog();
 	void ShowFindReplaceDialog();
 	void Find(FINDREPLACE *pfr);
@@ -232,15 +228,12 @@ END_COM_MAP()
 	//ULONG m_cref;
 
 	HWND m_hwndMain;
-	//HWND m_hwndRE;
 	HWND m_hwndScintilla;
 	HWND m_hwndStatus;
 	HWND m_hwndFind;
 
 	HWND m_hwndItemList;
 	HWND m_hwndEventList;
-
-	//HMODULE m_hmodRichEdit;
 
 	SaveDirtyState m_sdsDirty;
 	BOOL m_fIgnoreDirty;
@@ -253,9 +246,8 @@ END_COM_MAP()
 	FINDREPLACE m_findreplaceold; //the last thing found/replaced
 
 	int m_errorLineNumber;
-
-	//HFONT m_hfontDialog;
 	};
+
 class Collection:
 	public IDispatchImpl<ICollection, &IID_ICollection, &LIBID_VBATESTLib>,
 	public CComObjectRoot,
@@ -267,7 +259,6 @@ class Collection:
 	public ILoadable
 	{
 public:
-
 	Collection();
 
 	// IScriptable

@@ -1,14 +1,9 @@
-#pragma once
 // VPinball.h: interface for the VPinball class.
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
 #define AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #define CURRENT_FILE_FORMAT_VERSION 601
 #define BEYOND_FILE_FORMAT_VERSION 701
@@ -132,9 +127,7 @@ public:
 	CComObject<PinTable> *m_ptableActive;
 
 	// From VBA APC
-	static bool m_open_minimized;
 	static int NumPlays;
-	bool m_bWinHelp;
 	int m_lcidVBA;
 
 	HWND m_hwndSideBar;
@@ -153,8 +146,6 @@ public:
 
 	PinDirectSound m_pds;
 	PinDirectDraw m_pdd;
-
-	bool m_fDebugging; // Whether VBA is currently in debugging mode
 
 	int m_ToolCur; // Palette button currently pressed
 
@@ -190,6 +181,10 @@ public:
 	DWORD m_workerthreadid;
 
 	int m_autosaveTime;
+
+	bool m_fDebugging; // Whether VBA is currently in debugging mode
+	bool m_bWinHelp;
+	static bool m_open_minimized;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

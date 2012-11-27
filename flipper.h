@@ -5,10 +5,6 @@
 #if !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)
 #define AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSCVER > 1000
-
 #include "resource.h"  
 /////////////////////////////////////////////////////////////////////////////
 // Flipper     // main symbols

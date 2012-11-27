@@ -211,7 +211,7 @@ inline Vertex2D Calc2DNormal(const Vertex2D &pv1, const Vertex2D &pv2)
 	return Vertex2D(vT.y * inv_length, -vT.x * inv_length);
 	}
 
-inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const BOOL fClosed)
+inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
 	{
 	float mindist = FLT_MAX;
 	int seg = -1;

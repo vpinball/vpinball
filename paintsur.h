@@ -28,7 +28,7 @@ public:
 	HPEN m_hpnOutline;
 	HPEN m_hpnLine;
 
-	bool m_fNullBorder;
-
 	ISelect *m_psel;
+
+	bool m_fNullBorder;
 	};

@@ -1,14 +1,9 @@
-#pragma once
 // PinImage.h: interface for the PinImage class.
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_PINIMAGE_H__74A4733B_B66C_4C24_97AE_C7E9792E0635__INCLUDED_)
 #define AFX_PINIMAGE_H__74A4733B_B66C_4C24_97AE_C7E9792E0635__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #ifdef RGB
 #undef RGB

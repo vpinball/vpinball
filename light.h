@@ -2,13 +2,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 #pragma once
-
 #if !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)
 #define AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "resource.h"       // main symbols
 
@@ -159,12 +154,12 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 	LightCenter m_lightcenter;
 
 //>>> Added By Chris
-	bool		m_fLockedByLS;
 	LightState 	m_realState;
 	void		lockLight();
 	void		unLockLight();
 	void		setLightStateBypass(const LightState newVal);
 	void		setLightState(const LightState newVal);
+	bool		m_fLockedByLS;
 //<<<
 
 // ILight

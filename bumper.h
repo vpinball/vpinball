@@ -5,10 +5,6 @@
 #if !defined(AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_)
 #define AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
 #include "resource.h"       // main symbols
 
 class IBlink
@@ -124,12 +120,12 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 
 //>>> Added By Chris
 	BOOL		m_fDisabled;
-	bool		m_fLockedByLS;
 	LightState 	m_realState;
 	void		lockLight();
 	void		unLockLight();
 	void		setLightStateBypass(const LightState newVal);
 	void		setLightState(const LightState newVal);
+	bool		m_fLockedByLS;
 //<<<
 
 // IBumper

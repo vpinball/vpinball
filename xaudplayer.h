@@ -25,13 +25,13 @@ public:
 
 	XA_DecoderInfo *m_decoder;
 
-	FILE           *file;
+	FILE *file;
 
-	bool m_fStarted;
-
-	bool m_fEndData; // all data has been decoded - wait for buffer to play
 	int m_cDataLeft;
 	int m_lastplaypos;
+
+	bool m_fStarted;
+	bool m_fEndData; // all data has been decoded - wait for buffer to play
 
 	HRESULT CreateBuffer(int volume); 
 	HRESULT CreateStreamingBuffer(WAVEFORMATEX *pwfx);

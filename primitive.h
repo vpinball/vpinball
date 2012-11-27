@@ -2,43 +2,37 @@
 //
 //////////////////////////////////////////////////////////////////////
 #pragma once
-//#if !defined(AFX_PRIMITIVE_H__31CD2D6B-9BDD-4B1B-BC62-B9DE588A0CAA__INCLUDED_)
 #if !defined(AFX_PRIMITIVE_H__31CD2D6B_9BDD_4B1B_BC62_B9DE588A0CAA__INCLUDED_)
 #define AFX_PRIMITIVE_H__31CD2D6B_9BDD_4B1B_BC62_B9DE588A0CAA__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "resource.h"
 
 class PrimitiveData
 	{
 public:
-
 	//Vertex2D m_vCenter;
 	
 	//external Variables
 	int m_Sides;
-	Vertex3D m_vPosition;
-	Vertex3D m_vSize;
-	Vertex3D m_vAxisScaleX;
-	Vertex3D m_vAxisScaleY;
-	Vertex3D m_vAxisScaleZ;
+	Vertex3Ds m_vPosition;
+	Vertex3Ds m_vSize;
+	Vertex3Ds m_vAxisScaleX;
+	Vertex3Ds m_vAxisScaleY;
+	Vertex3Ds m_vAxisScaleZ;
 	float m_aRotAndTra[6];
 	RotAndTraTypeEnum m_aRotAndTraTypes[6];
-	//Vertex3D m_vRotation;
-	//Vertex3D m_vTransposition;
+	//Vertex3Ds m_vRotation;
+	//Vertex3Ds m_vTransposition;
 	char m_szImage[MAXTOKEN];
 	COLORREF m_TopColor;
 	COLORREF m_SideColor;
+
+	TimerDataRoot m_tdr;
+
 	bool m_TopVisible;
 	bool m_SideVisible;
 	bool m_DrawTexturesInside;
 	bool m_SmoothSideNormals;
-
-	TimerDataRoot m_tdr;
-
 	};
 
 class Primitive :
@@ -61,7 +55,7 @@ class Primitive :
 	public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
-	static const int Max_Primitive_Sides = 100;
+	static const int Max_Primitive_Sides = 100; //!! 100 works for sleepy, 99 doesn't
 
 	STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Sides)(/*[in]*/ int newVal);
@@ -183,14 +177,14 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 
 public:
 	// Vertices for 3d Display
-	Vertex3D rgv3DTopOriginal[Max_Primitive_Sides+1]; // without transformation at index=0 is the middle point
-	Vertex3D rgv3DBottomOriginal[Max_Primitive_Sides+1];
+//	Vertex3D rgv3DTopOriginal[Max_Primitive_Sides+1]; // without transformation at index=0 is the middle point
+//	Vertex3D rgv3DBottomOriginal[Max_Primitive_Sides+1];
 
 	//these will be deleted:
-	Vertex3D rgv3DTop[Max_Primitive_Sides]; // with transformation
-	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of each point could be a triangle (*3) and for both sides because of culling (*2)
-	Vertex3D rgv3DBottom[Max_Primitive_Sides];
-	WORD wBottomIndices[Max_Primitive_Sides*6];
+//	Vertex3D rgv3DTop[Max_Primitive_Sides]; // with transformation
+//	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of each point could be a triangle (*3) and for both sides because of culling (*2)
+//	Vertex3D rgv3DBottom[Max_Primitive_Sides];
+//	WORD wBottomIndices[Max_Primitive_Sides*6];
 	
 	// OK here are our vertices that should be drawn:
 		// Index				: Length		: Description
@@ -212,7 +206,7 @@ public:
 	// maybe they are not updated anymore, but they will be there.
 	Vertex3D rgv3DOriginal[Max_Primitive_Sides*4+2];
 	Vertex3D rgv3DAll[Max_Primitive_Sides*4+2];
-	
+
 	// So how many indices are needed?
 		// 3 per Triangle top - we have m_sides triangles -> 0, 1, 2, 0, 2, 3, 0, 3, 4, ...
 		// 3 per Triangle bottom - we have m_sides triangles
@@ -229,20 +223,8 @@ public:
 		// I need m_sides values at bottom
 		// I need m_sides * 2 values at the side
 		// in the implementation i will use shell sort like implemented at wikipedia.
-		// Other algorithms are better at presorted things, but i will habe some reverse sorted elements between the presorted here. 
+		// Other algorithms are better at presorted things, but i will have some reverse sorted elements between the presorted here. 
 		// That's why insertion or bubble sort does not work fast here...
-		// input: an array a of length n with array elements numbered 0 to n ? 1
-		// Implementation:
-		//		inc = round(n/2)
-		//		while inc > 0 do:
-		//		    for i = inc .. n ? 1 do:
-		//		        temp = a[i]
-		//		        j = i
-		//		        while j >= inc and a[j ? inc] > temp do:
-		//		            a[j] = a[j ? inc]
-		//		            j = j ? inc
-		//		        a[j] = temp
-		//		    inc = round(inc / 2.2)
 	float fDepth[Max_Primitive_Sides*4];
 
 	// per side i will use the following mem:
@@ -255,14 +237,9 @@ public:
 	// 13 * float * 2 (additional middle points at top and bottom)
 	// = nothing...
 
-	// is top behind bottom?
-	bool topBehindBottom;
-	int farthestIndex;
-
 	// Vertices for editor display
-	Vector<Vertex3D> verticesTop;
-	Vector<Vertex3D> verticesBottom;
-
+	Vector<Vertex3Ds> verticesTop;
+	Vector<Vertex3Ds> verticesBottom;
 
 	void RecalculateVertices();
 	void CalculateRealTimeOriginal();
@@ -276,10 +253,13 @@ public:
 
 	RECT m_rcBounds; // For testing against lights
 
-	PinImage m_pinimage;
 	float m_leading, m_descent;
 	float maxtu, maxtv;
 	float m_realwidth, m_realheight;
+
+	// is top behind bottom?
+	int farthestIndex;
+	bool topBehindBottom;
 };
 
 #endif // !defined(AFX_PRIMITIVE_H__31CD2D6B-9BDD-4B1B-BC62-B9DE588A0CAA__INCLUDED_)

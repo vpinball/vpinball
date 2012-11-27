@@ -596,8 +596,7 @@ collisions
 void HitOctree::HitTestBall(Ball * const pball) const
 	{
 	for (int i=0; i<m_vho.Size(); i++)
-		{		
-
+		{
 #ifdef LOG
 		cTested++;
 #endif
