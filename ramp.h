@@ -132,8 +132,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
-	Vector<Level> m_vlevel;
-
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
 
 	void CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph3d1, const Hit3DPoly * const ph3d2);

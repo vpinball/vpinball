@@ -8,7 +8,7 @@
 #define USHOCKTYPE_GENERIC		4
 
 #define APP_KEYBOARD 0
-#define APP_JOYSTICKMN 1 
+#define APP_JOYSTICKMN 1
 
 //rlc handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
 #define PININ_JOYMXCNT 4
@@ -67,12 +67,8 @@ public:
 	U32 Down    ( const U32 mask ) const;
 	U32 Changed ( const U32 mask ) const;
 
-	LPDIRECTINPUT7       m_pDI;         
-	LPDIRECTINPUTDEVICE  m_pKeyboard;
+	LPDIRECTINPUT7       m_pDI;
 	LPDIRECTINPUTDEVICE7 m_pJoystick[PININ_JOYMXCNT];
-
-	U32 m_PreviousKeys;		// Masks of PININ_* inputs used by ultracade - AMH
-	U32 m_ChangedKeys;		// Masks of PININ_* inputs used by ultracade - AMH
 
 	HWND m_hwnd;
 
@@ -82,6 +78,11 @@ public:
 	int uShockDevice;	// only one uShock device
 	int uShockType;
 	bool fe_message_sent;
+
+private:
+	int started();
+
+	LPDIRECTINPUTDEVICE  m_pKeyboard;
 
 	int m_plunger_axis;
 	int m_lr_axis;
@@ -114,7 +115,16 @@ public:
 	int m_joypmup;
 	int m_joypmenter;
 
-private:
+	U32 m_PreviousKeys;		// Masks of PININ_* inputs used by ultracade - AMH
+	U32 m_ChangedKeys;		// Masks of PININ_* inputs used by ultracade - AMH
+
+	U32 firedautostart;
+	U32 firedautocoin;
+	U32 LastAttempt;
+
+	U32 started_stamp;
+	int pressed_start;
+
 	// Writable by real-time thread only, read-only from dispatch thread
 	DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events assembled in real time every couple milliseconds
 

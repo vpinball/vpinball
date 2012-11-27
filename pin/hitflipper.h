@@ -5,12 +5,9 @@ public:
 	void SetObjects(const float angle);
 	//BOOL FIsInside(Ball *pball);
 	virtual void UpdateDisplacements(const float dtime);
-	//virtual void ResetFrameTime();
-	//virtual void UpdateTimePermanent();
-	virtual void UpdateVelocities(const float dtime);
+	virtual void UpdateVelocities();
 
-	virtual BOOL FMover() {return fTrue;}
-	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
+	virtual BOOL FMover() const {return fTrue;}
 
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
@@ -85,9 +82,7 @@ public:
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 	
-	virtual int GetType() {return eFlipper;}
-
-	virtual void Draw(HDC hdc);
+	virtual int GetType() const {return eFlipper;}
 
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 

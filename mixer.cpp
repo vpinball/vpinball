@@ -9,6 +9,7 @@ static F32 gMixerVolume;
 static int nmixers;
 static U32 volume_stamp = 0;
 static bool m_bUpdate = false;
+static F32 volume_modulation = 1.0f;
 
 int mixer_init( HWND wnd )
 {
@@ -95,8 +96,6 @@ void mixer_shutdown()
 	::mixerClose(m_hMixer);
 	nmixers = 0;
 }
-
-static F32 volume_modulation = 1.0f;
 
 static void set_cp_master_volume()
 {

@@ -19,10 +19,6 @@ void HitPrimitive::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 }
 
-void HitPrimitive::Draw(HDC hdc)
-{
-}
-
 void PrimitiveAnimObject::Check3D()
 	{
 		m_fInvalid = fTrue;
@@ -211,18 +207,6 @@ void LineSegSlingshot::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		}
 	}
 
-float LineSegLevelEdge::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
-	{
-	if (!m_fEnabled) return -1.0f;
-
-	// approach from either face, lateral contact, not rigid
-	return this->HitTestBasic(pball, dtime, phitnormal, false, true, false);
-	}
-
-void LineSegLevelEdge::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
-	{
-	}
-
 void SlingshotAnimObject::Check3D()
 	{
 	if ((m_iframe == 0) && (m_TimeReset != 0) && m_fAnimations)
@@ -330,13 +314,13 @@ void GateAnimObject::UpdateDisplacements(const float dtime)
 		}
 	}
 
-void GateAnimObject::UpdateVelocities(const float dtime)
+void GateAnimObject::UpdateVelocities()
 	{
 	if (!m_fOpen)
 		{
 		if (m_angle == m_angleMin) m_anglespeed = 0.0f;
-		else m_anglespeed = (m_anglespeed-sinf(m_angle)*dtime * 0.0025f)*(1.0f - m_friction*dtime); // Center of gravity towards bottom of object, makes it stop vertical
-		//else m_anglespeed = (m_anglespeed-sinf((m_angle - m_angleMin)*0.5f)*dtime * 0.02f)*(1.0f - m_friction*dtime); // Center of gravity towards bottom of object, makes it stop vertical
+		else m_anglespeed = (m_anglespeed-sinf(m_angle) * 0.0025f)*(1.0f - m_friction); // Center of gravity towards bottom of object, makes it stop vertical
+		//else m_anglespeed = (m_anglespeed-sinf((m_angle - m_angleMin)*0.5f) * 0.02f)*(1.0f - m_friction); // Center of gravity towards bottom of object, makes it stop vertical
 		}	
 	}
 
@@ -482,7 +466,6 @@ void HitSpinner::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 void SpinnerAnimObject::UpdateDisplacements(const float dtime)
 	{
-
 	if (m_pspinner->m_d.m_angleMin != m_pspinner->m_d.m_angleMax)	//blocked spinner, limited motion spinner
 		{
 		m_angle += m_anglespeed * dtime;
@@ -528,11 +511,11 @@ void SpinnerAnimObject::UpdateDisplacements(const float dtime)
 		}
 	}
 
-void SpinnerAnimObject::UpdateVelocities(const float dtime)
+void SpinnerAnimObject::UpdateVelocities()
 	{
-	m_anglespeed -= sinf(m_angle) *dtime *0.0025f; // Center of gravity towards bottom of object, makes it stop vertical
+	m_anglespeed -= sinf(m_angle) *0.0025f; // Center of gravity towards bottom of object, makes it stop vertical
 
-	m_anglespeed *= 1.0f - (1.0f - m_pspinner->m_d.m_antifriction)*dtime;
+	m_anglespeed *= m_pspinner->m_d.m_antifriction;
 	}
 
 void SpinnerAnimObject::Check3D()
@@ -590,12 +573,6 @@ ObjFrame *SpinnerAnimObject::Draw3D(const RECT * const prc)
 void SpinnerAnimObject::Reset()
 	{
 	m_iframe = -1;
-	}
-
-void HitSpinner::Draw(HDC hdc)
-	{
-	m_lineseg[0].Draw(hdc);
-	m_lineseg[1].Draw(hdc);
 	}
 
 void HitSpinner::CalcHitRect()
@@ -755,11 +732,6 @@ float Hit3DPoly::HitTestBasicPolygon(Ball * const pball, const float dtime, Vert
 		}
 
 	return -1.0f;
-	}
-
-
-void Hit3DPoly::Draw(HDC hdc)
-	{
 	}
 
 void Hit3DPoly::Collide(Ball * const pball, Vertex3Ds * const phitnormal)

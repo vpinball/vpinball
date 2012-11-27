@@ -59,9 +59,6 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 
 	if (direction && bUnHit)						//direction true and clearly receding from normal face
 		{
-#ifndef SHOWNORMAL
-		check1 = (bnv < 0.0f);						// true is approaching to normal face: !UnHit signal
-#endif
 		return -1.0f;
 		}
 
@@ -296,25 +293,6 @@ float HitCircle::HitTestRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 
 //rlc end  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-void LineSeg::Draw(HDC hdc)
-	{
-	SelectObject(hdc, GetStockObject(BLACK_PEN));
-
-	DrawLine(hdc, v1.x, v1.y, v2.x, v2.y);
-	//MoveToEx(hdc, (int)(plineseg->v1.x*zoom), (int)(plineseg->v1.y*zoom), NULL);
-	//LineTo(hdc, (int)(plineseg->v2.x*zoom), (int)(plineseg->v2.y*zoom));
-
-#ifdef SHOWNORMAL
-	const float x = (v1.x + v2.x) *0.5f;
-	const float y = (v1.y + v2.y) *0.5f;
-
-	SelectObject(hdc, GetStockObject(!check1 ? BLACK_PEN : WHITE_PEN));
-	SelectObject(hdc, GetStockObject(BLACK_PEN));
-
-	DrawLine(hdc, x, y, x+normal.x*20.0f, y+normal.y*20.0f);
-#endif
-	}
-
 void LineSeg::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{
 	const float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
@@ -377,13 +355,6 @@ float Joint::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const ph
 	return HitTestRadius(pball, dtime, phitnormal);	
 	}
 
-void Joint::Draw(HDC hdc)
-	{
-	SelectObject(hdc, GetStockObject(BLACK_BRUSH));
-	SelectObject(hdc, GetStockObject(BLACK_PEN));
-	DrawCircleAbsolute(hdc, center.x, center.y, 3.0f);
-	}
-
 void Joint::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{
 	const float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
@@ -424,14 +395,6 @@ void HitCircle::CalcHitRect()
 float HitCircle::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
 	{
 	return HitTestRadius(pball, dtime, phitnormal);
-	}
-
-
-void HitCircle::Draw(HDC hdc)
-	{
-	SelectObject(hdc, GetStockObject(NULL_BRUSH));
-	SelectObject(hdc, GetStockObject(BLACK_PEN));
-	DrawCircle(hdc, center.x, center.y, radius);
 	}
 
 void HitCircle::Collide(Ball * const pball, Vertex3Ds * const phitnormal)

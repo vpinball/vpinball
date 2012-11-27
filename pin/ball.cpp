@@ -2,9 +2,9 @@
 
 static int _balls_created;
 
-int Ball::NumInitted()
+int NumBallsInitted()
 {
-    return ( _balls_created );
+    return _balls_created;
 }
 
 Ball::Ball()
@@ -511,7 +511,7 @@ void Ball::UpdateDisplacements(const float dtime)
 			x = x_min;									
 			vx *= -0.2f;
 			}
-		else if (vx > 0.f && x >= x_max)					//right wall
+		else if (vx > 0.f && x >= x_max)				//right wall
 			{
 			x = x_max;							
 			vx *= -0.2f;
@@ -522,7 +522,7 @@ void Ball::UpdateDisplacements(const float dtime)
 			y = y_min;									
 			vy *= -0.2f;
 			}
-		else if (vy > 0.f && y >= y_max)					//bottom wall
+		else if (vy > 0.f && y >= y_max)				//bottom wall
 			{
 			y = y_max;							
 			vy *= -0.2f;
@@ -551,23 +551,22 @@ void Ball::UpdateDisplacements(const float dtime)
 		}
 	}
 
-void BallAnimObject::UpdateVelocities(const float dtime)
+void BallAnimObject::UpdateVelocities()
 	{
-	m_pball->UpdateVelocities(dtime);
+	m_pball->UpdateVelocities();
 	}
 
-void Ball::UpdateVelocities(const float dtime)
+void Ball::UpdateVelocities()
 	{
-	///  dtime is always 1.0	
-	const float g = g_pplayer->m_mainlevel.m_gravity.z;
+	const float g = g_pplayer->m_gravity.z;
 	float nx = g_pplayer->m_NudgeX;
 	float ny = g_pplayer->m_NudgeY;
 	
 	if( g_pplayer && g_pplayer->m_NudgeManual >= 0) //joystick control of ball roll
 		{
-		vx *= 0.92f;//*dtime;	//rolling losses high for easy manual control
-		vy *= 0.92f;//*dtime;
-		vz *= 0.92f;//*dtime;	
+		vx *= 0.92f;	//rolling losses high for easy manual control
+		vy *= 0.92f;
+		vz *= 0.92f;	
 
 #define JOY_DEADBAND  5.0e-2f
 
@@ -579,30 +578,30 @@ void Ball::UpdateVelocities(const float dtime)
 			ny -= ny*inv; 
 			//nz -= nz*inv;
 
-			vx += nx;// *dtime;
-			vy += ny;// *dtime;
-			vz += g;// *dtime;//-c_Gravity;
+			vx += nx;
+			vy += ny;
+			vz += g;//-c_Gravity;
 			}
 		}//manual joystick control
 	else if (!fFrozen)  // Gravity	
 		{
-		vx += g_pplayer->m_mainlevel.m_gravity.x;// *dtime;	
-		vy += g_pplayer->m_mainlevel.m_gravity.y;// *dtime;	
+		vx += g_pplayer->m_gravity.x;	
+		vy += g_pplayer->m_gravity.y;	
 
 		if (z > z_min + 0.05f || g > 0) // off the deck??? or gravity postive Z direction	
 			vz += g;
 		else vz += g * 0.001f;			// don't add so much energy if already on the world floor
 
-		vx += nx;// *dtime;
-		vy += ny;// *dtime;
+		vx += nx;
+		vy += ny;
 		}
 
 		const float mag = vx*vx + vy*vy + vz*vz; //speed check 
 		const float antifrict = (mag > c_maxBallSpeedSqed) ? c_dampingFriction : 0.99875f;
 		
-		vx *= antifrict;//*dtime;	// speed damping
-		vy *= antifrict;//*dtime;
-		vz *= antifrict;//*dtime;	
+		vx *= antifrict;	// speed damping
+		vy *= antifrict;
+		vz *= antifrict;	
 				
 	m_fDynamic = C_DYNAMIC;		// always set .. after adding velocity
 

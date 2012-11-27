@@ -1,13 +1,11 @@
 #pragma once
 class Surface;
-class Level;
 
 class PrimitiveAnimObject : public AnimObject
 {
 	//m_fInvalid, Check3D and m_rcBounds
 public:
-	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
-	virtual BOOL FMover() {return fTrue;}
+	virtual BOOL FMover() const {return fTrue;}
 	virtual void Check3D();
 
 	BOOL m_fVisible;
@@ -24,17 +22,13 @@ public:
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
-	virtual int GetType() {return ePrimitive;}
-	virtual void Draw(HDC hdc);
+	virtual int GetType() const {return ePrimitive;}
 	virtual void CalcHitRect();
-
 };
 
 class BumperAnimObject : public AnimObject
 	{
 public:
-	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
-
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
@@ -68,8 +62,6 @@ public:
 class SlingshotAnimObject : public AnimObject
 	{
 public:
-	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
-
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
@@ -100,15 +92,6 @@ public:
 	Surface *m_psurface;
 	};
 
-class LineSegLevelEdge : public LineSeg
-	{
-public:
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
-
-	Level *m_plevel1, *m_plevel2;
-	};
-
 class Hit3DPoly : public HitObject
 	{
 public:
@@ -116,8 +99,7 @@ public:
 	virtual ~Hit3DPoly();
 	virtual float HitTestBasicPolygon(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool rigid);
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
-	virtual int GetType() {return e3DPoly;}
-	virtual void Draw(HDC hdc);
+	virtual int GetType() const {return e3DPoly;}
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 	void CalcNormal();
 	virtual void CalcHitRect();
@@ -133,12 +115,9 @@ class SpinnerAnimObject : public AnimObject
 	{
 public:
 	virtual void UpdateDisplacements(const float dtime);
-	//virtual void ResetFrameTime();
-	//virtual void UpdateTimePermanent();
-	virtual void UpdateVelocities(const float dtime);
+	virtual void UpdateVelocities();
 
-	virtual BOOL FMover() {return fTrue;}
-	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
+	virtual BOOL FMover() const {return fTrue;}
 
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
@@ -166,9 +145,7 @@ public:
 
 	HitSpinner(Spinner * const pspinner, const float height);
 
-	virtual void Draw(HDC hdc);
-
-	virtual int GetType() {return eSpinner;}
+	virtual int GetType() const {return eSpinner;}
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 
@@ -187,12 +164,9 @@ class GateAnimObject : public AnimObject
 	{
 public:
 	virtual void UpdateDisplacements(const float dtime);
-	//virtual void ResetFrameTime();
-	//virtual void UpdateTimePermanent();
-	virtual void UpdateVelocities(const float dtime);
+	virtual void UpdateVelocities();
 
-	virtual BOOL FMover() {return fTrue;}
-	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
+	virtual BOOL FMover() const {return fTrue;}
 
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
@@ -219,7 +193,7 @@ public:
 
 	HitGate(Gate * const pgate);
 
-	virtual int GetType() {return eGate;}
+	virtual int GetType() const {return eGate;}
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 
@@ -241,7 +215,7 @@ public:
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 
-	virtual int GetType() {return eTrigger;}
+	virtual int GetType() const {return eTrigger;}
 
 	Trigger *m_ptrigger;
 	};
@@ -255,7 +229,7 @@ public:
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 
-	virtual int GetType() {return eTrigger;}
+	virtual int GetType() const {return eTrigger;}
 
 	Trigger *m_ptrigger;
 	};
@@ -271,7 +245,7 @@ public:
 
 	virtual void CalcHitRect();
 
-	virtual int GetType() {return e3DLine;}
+	virtual int GetType() const {return e3DLine;}
 
 	void CacheHitTransform();
 
@@ -286,8 +260,6 @@ public:
 class PolyDropAnimObject : public AnimObject
 	{
 public:
-	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
-
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
@@ -313,8 +285,6 @@ public:
 class TextboxAnimObject : public AnimObject
 	{
 public:
-	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
-
 	virtual void Check3D() {}
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
@@ -329,10 +299,9 @@ public:
 	TextboxUpdater(Textbox * const ptb) {m_textboxanim.m_ptextbox = ptb;}
 	virtual ~TextboxUpdater() {}
 
-	virtual int GetType() {return eTextbox;}
+	virtual int GetType() const {return eTextbox;}
 
 	// Bogus methods
-	virtual void Draw(HDC hdc) {}
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal) {}
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) {return -1;}
 	virtual void CalcHitRect() {}
@@ -345,8 +314,6 @@ public:
 class DispReelAnimObject : public AnimObject
 	{
 public:
-	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
-
     virtual void Check3D(); //{}
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
@@ -361,10 +328,9 @@ public:
 	DispReelUpdater(DispReel * const ptb) {m_dispreelanim.m_pDispReel = ptb;}
 	virtual ~DispReelUpdater() {}
 
-	virtual int GetType() {return eDispReel;}
+	virtual int GetType() const {return eDispReel;}
 
 	// Bogus methods
-	virtual void Draw(HDC hdc) {}
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal) {}
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) {return -1;}
 	virtual void CalcHitRect() {}
@@ -377,8 +343,6 @@ public:
 class LightSeqAnimObject : public AnimObject
 	{
 public:
-	virtual BOOL FNeedsScreenUpdate() {return fTrue;}
-
     virtual void Check3D(); //{}
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 
@@ -392,10 +356,9 @@ public:
 	LightSeqUpdater(LightSeq * const ptb) {m_lightseqanim.m_pLightSeq = ptb;}
 	virtual ~LightSeqUpdater() {}
 
-	virtual int GetType() {return eLightSeq;}
+	virtual int GetType() const {return eLightSeq;}
 
 	// Bogus methods
-	virtual void Draw(HDC hdc) {}
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal) {}
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) {return -1;}
 	virtual void CalcHitRect() {}

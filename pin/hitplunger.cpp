@@ -162,11 +162,11 @@ void PlungerAnimObject::UpdateDisplacements(const float dtime)
 		}
 }
 
-void PlungerAnimObject::UpdateVelocities(const float dtime) //dtime always 1.0f
+void PlungerAnimObject::UpdateVelocities()
 	{	
 	if (m_fAcc)
 		{
-		m_speed += (m_force/m_mass);//*(float)dtime;
+		m_speed += (m_force/m_mass);
 		}
 	else if (!m_plunger->m_d.m_mechPlunger)	m_mechTimeOut = 0;// disallow mechanical plunger control
 	else {	
@@ -180,7 +180,7 @@ void PlungerAnimObject::UpdateVelocities(const float dtime) //dtime always 1.0f
 
 			if (!recock && m_mechTimeOut <= 0)
 				{
-				m_speed = -err_fil*(m_frameEnd - m_frameStart);// /dtime ;				//new velocity based on filtered position error
+				m_speed = -err_fil*(m_frameEnd - m_frameStart);				//new velocity based on filtered position error
 				m_speed *= m_plunger->m_d.m_mechStrength/m_mass *c_plungerNormalize;	// match button physics
 
 				if (m_speed <= -m_breakOverVelocity)						//mechanical speed is too fast, windows will
@@ -335,19 +335,6 @@ float HitPlunger::HitTest(Ball * const pball, const float dtime, Vertex3Ds * con
 		}
 
 	return fHit ? hittime : -1.0f;
-	}
-
-void HitPlunger::Draw(HDC hdc)
-	{
-	m_plungeranim.m_linesegBase.Draw(hdc);
-	m_plungeranim.m_linesegEnd.Draw(hdc);
-	
-	for (int i=0;i<2;i++)
-		{
-		m_plungeranim.m_linesegSide[i].Draw(hdc);
-		m_plungeranim.m_jointBase[i].Draw(hdc);
-		m_plungeranim.m_jointEnd[i].Draw(hdc);
-		}
 	}
 
 void HitPlunger::Collide(Ball * const pball, Vertex3Ds * const phitnormal)

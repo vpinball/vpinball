@@ -199,23 +199,22 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
 		}
 	}
 
-void FlipperAnimObject::UpdateVelocities(const float dtime)
+void FlipperAnimObject::UpdateVelocities()
 	{
-
 	if (m_fAcc == 0) ;//m_anglespeed = 0; //idle
 	else if (m_fAcc > 0) // postive ... increasing angle
 		{			
-		m_anglespeed += (m_force/m_mass)*dtime * C_FLIPPERACCEL; //new angular rate
+		m_anglespeed += (m_force/m_mass) * C_FLIPPERACCEL; //new angular rate
 
 		if (m_anglespeed > m_maxvelocity) 
-			{m_anglespeed = m_maxvelocity;} //limit			
+			m_anglespeed = m_maxvelocity; //limit			
 		}
 	else // negative ... decreasing angle
 		{		
-		m_anglespeed -= (m_force/m_mass)*dtime * C_FLIPPERACCEL;	//new angular rate
+		m_anglespeed -= (m_force/m_mass) * C_FLIPPERACCEL;	//new angular rate
 
 		if (m_anglespeed < -m_maxvelocity) 
-			{m_anglespeed = -m_maxvelocity;} //limit			
+			m_anglespeed = -m_maxvelocity; //limit			
 		}
 	}
 
@@ -696,31 +695,6 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	}
 
 //rlc end change  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-void HitFlipper::Draw(HDC hdc)
-	{
-	m_flipperanim.m_lineseg1.Draw(hdc);
-	m_flipperanim.m_lineseg2.Draw(hdc);
-
-	SelectObject(hdc, GetStockObject(BLACK_PEN));
-
-	DrawArc(hdc, m_flipperanim.m_hitcircleBase.center.x
-				, m_flipperanim.m_hitcircleBase.center.y
-				, m_flipperanim.m_hitcircleBase.radius
-				, m_flipperanim.m_lineseg1.v2.x
-				, m_flipperanim.m_lineseg1.v2.y
-				, m_flipperanim.m_lineseg2.v1.x
-				, m_flipperanim.m_lineseg2.v1.y);
-
-	DrawArc(hdc, m_flipperanim.m_hitcircleEnd.center.x
-				, m_flipperanim.m_hitcircleEnd.center.y
-				, m_flipperanim.m_hitcircleEnd.radius
-				, m_flipperanim.m_lineseg2.v2.x
-				, m_flipperanim.m_lineseg2.v2.y
-				, m_flipperanim.m_lineseg1.v1.x
-				, m_flipperanim.m_lineseg1.v1.y);
-	}
-
 
 void FlipperAnimObject::Check3D()
 	{

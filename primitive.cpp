@@ -1157,6 +1157,7 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
 
 		m_d.m_Sides = newVal;
 		RecalculateVertices();
+
 	STOPUNDO
 	}
 

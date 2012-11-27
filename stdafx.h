@@ -41,8 +41,8 @@
 
 //Ball:
 #define ANGULARFORCE 1   // Number I pulled out of my butt - this number indicates the maximum angular change 
-					     //per time unit, or the speed at which angluar momentum changes over time, 
-					     //depending on how you interpret it.
+					     // per time unit, or the speed at which angluar momentum changes over time, 
+					     // depending on how you interpret it.
 //Ramp:
 #define WALLTILT 0.5f
 
@@ -75,7 +75,6 @@
 //#define _DEBUGPHYSICS
 //#define DEBUG_FRATE
 //#define ANTI_TEAR	1			// define if you want to have some hacky code to prevent drawing more than one frame per 16ms = ~60fps
-//#define GDIDRAW 1
 //#define EVENTIME 1
 
 #define GPINFLOAT double
