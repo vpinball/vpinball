@@ -63,7 +63,6 @@ class Primitive :
 public:
 	static const int Max_Primitive_Sides = 100;
 
-
 	STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Sides)(/*[in]*/ int newVal);
 	STDMETHOD(get_TopColor)(/*[out, retval]*/ OLE_COLOR *pVal);
@@ -79,7 +78,6 @@ public:
 	STDMETHOD(put_TopVisible)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_SideVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_SideVisible)(/*[in]*/ VARIANT_BOOL newVal);
-
 
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_X)(/*[in]*/ float newVal);

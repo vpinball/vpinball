@@ -1,19 +1,20 @@
 #pragma once
 class HitObject;
-class Level;
 class Ball;
 
 class BallAnimObject : public AnimObject
 	{
 public:
-	virtual BOOL FMover() {return fFalse;} // We add ourselves to the mover list.  
-										   // If we allow the table to do that, we might get added twice, 
-										   // if we get created in Init code
+	virtual BOOL FMover() const {return fFalse;} // We add ourselves to the mover list.  
+											     // If we allow the table to do that, we might get added twice, 
+											     // if we get created in Init code
 	virtual void UpdateDisplacements(const float dtime);
-	virtual void UpdateVelocities(const float dtime);
+	virtual void UpdateVelocities();
 
 	Ball *m_pball;
 	};
+
+int NumBallsInitted();
 
 class Ball : public HitObject 
 	{
@@ -21,17 +22,14 @@ public:
 	Ball();
 	~Ball();
 
-	void Init();
-
-    static int NumInitted();
+	void Init();    
 
 	virtual void UpdateDisplacements(const float dtime);
-	virtual void UpdateVelocities(const float dtime);
+	virtual void UpdateVelocities();
 
 	// From HitObject
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);	
-	virtual int GetType() {return eBall;}
-	virtual void Draw(HDC hdc) {} // Dead function
+	virtual int GetType() const {return eBall;}
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 	virtual void CalcHitRect();
 	virtual AnimObject *GetAnimObject() {return &m_ballanim;}
@@ -45,9 +43,6 @@ public:
 	void CalcBoundingRect();
 
 	void EnsureOMObject();
-
-	//~Ball();
-	//Ball(Ball &pball);
 
 	Vertex3D m_rgv3D[4];						// Last vertices of the ball texture
 	Vertex3D m_rgv3DShadow[4];					// Last vertices of the ball shadow
@@ -73,13 +68,11 @@ public:
 	HitObject *m_pho;		//pointer to hit object trial, may not be a actual hit if something else happens first
 	VectorVoid* m_vpVolObjs;// vector of triggers we are now inside
 	float m_hittime;		// time at which this ball will hit something
-	float m_hitx, m_hity;// position of the ball at hit time (saved to avoid floating point errors with multiple time slices)
+	float m_hitx, m_hity;	// position of the ball at hit time (saved to avoid floating point errors with multiple time slices)
 	float m_HitDist;		// hit distance 
-	float m_HitNormVel;	// hit normal Velocity
+	float m_HitNormVel;		// hit normal Velocity
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
 	Vertex3Ds m_hitnormal[5];//rlc 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
-
-	//Level *m_plevel; // Level this ball is rolling on
 
 	BallAnimObject m_ballanim;
 
@@ -87,9 +80,6 @@ public:
 	float y;
 	float z;
 	
-	//float GetZ() const {return z - radius;}
-	//void PutZ(const float newz) {z = newz + radius;}
-
 	float vx;
 	float vy;
 	float vz;
@@ -116,17 +106,6 @@ public:
 	bool m_fErase;		// set after the ball has been drawn for the first time
 
 	bool fFrozen;
-	//bool fTempFrozen; //if the ball is stuck and we are avoiding hittesting
-	//unsigned int  fFrozenCount; // number of sequential zero hit times
-	};
-
-class Level
-	{
-public:
-	float m,n,b; // Plane equation z = mx + ny + b
-	Vertex3Ds m_gravity; // Gravity vector (2-D - cheating)
-
-	Vector<HitObject> m_vho;
 	};
 
 inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)

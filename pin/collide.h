@@ -21,8 +21,6 @@ enum
 	ePrimitive
 	};
 
-#define SHOWNORMAL 1
-
 //extern float c_Gravity;
 extern float c_hardFriction; 
 extern float c_hardScatter; 
@@ -36,14 +34,12 @@ inline bool FQuickLineIntersect(const float x1, const float y1, const float x2, 
 								const float x3, const float y3, const float x4, const float y4)
 	{
 	const float d123 = (x2 - x1)*(y3 - y1) - (x3 - x1)*(y2 - y1);
-
 	const float d124 = (x2 - x1)*(y4 - y1) - (x4 - x1)*(y2 - y1);
 
 	if(d123 * d124 > 0.0f)
 	    return false;
 
     const float d341 = (x3 - x1)*(y4 - y1) - (x4 - x1)*(y3 - y1);
-
     const float d342 = d123 - d124 + d341;
 
 	return (d341 * d342 <= 0.0f);
@@ -68,13 +64,11 @@ class HitObject
 public:
 
 	HitObject();
-	virtual ~HitObject(){}
+	virtual ~HitObject() {}
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) = 0;
 
-	virtual int GetType() = 0;
-
-	virtual void Draw(HDC hdc) = 0;
+	virtual int GetType() const = 0;
 
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal) = 0;
 
@@ -82,9 +76,6 @@ public:
 	
 	virtual AnimObject *GetAnimObject() {return NULL;}
 
-	//void SetZBounds(char *szSurfaceName);
-
-	//EventProxyBase *m_pep;
 	IFireEvents *m_pfe;
 	float m_threshold;
 	
@@ -92,8 +83,6 @@ public:
 	IFireEvents *m_pfedebug;
 
 	//RECT m_rcUpdate;
-	//Vector<RECT> m_vrcupdate;
-
 	FRect3D m_rcHitRect;
 
 	BOOL  m_fEnabled;
@@ -107,13 +96,10 @@ public:
 class AnimObject
 	{
 public:
-	virtual BOOL FMover() {return fFalse;}
+	virtual BOOL FMover() const {return fFalse;}
 	virtual void UpdateDisplacements(const float dtime) {}
-	//virtual void ResetFrameTime() {}
-	//virtual void UpdateTimePermanent() {}
-	virtual void UpdateVelocities(const float dtime) {}
+	virtual void UpdateVelocities() {}
 
-	virtual BOOL FNeedsScreenUpdate() {return fFalse;}
     virtual void Check3D() {}
 	virtual ObjFrame *Draw3D(const RECT * const prc) {return NULL;}
 	virtual void Reset() {}
@@ -135,15 +121,10 @@ class LineSeg : public HitNormal
 public:
 	Vertex2D v1, v2;
 	float length;
-#ifdef SHOWNORMAL
-	int check1;
-#endif
 
 	virtual float HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool lateral, const bool rigid);
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
-	//float VertHitTest(Ball *pball, float dtime, Vertex2D *phitnormal);
-	virtual int GetType() {return eLineSeg;}
-	virtual void Draw(HDC hdc);
+	virtual int GetType() const {return eLineSeg;}
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 	void CalcNormal();
 	void CalcLength();
@@ -153,12 +134,6 @@ public:
 class HitCircle : public HitObject
 	{
 public:
-
-	Vertex2D center;
-	float radius;
-	float zlow;
-	float zhigh;
-
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 
 	float HitTestBasicRadius(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal,
@@ -166,13 +141,16 @@ public:
 
 	float HitTestRadius(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 
-	virtual int GetType() {return eCircle;}
-
-	virtual void Draw(HDC hdc);
+	virtual int GetType() const {return eCircle;}
 
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 
 	virtual void CalcHitRect();
+
+	Vertex2D center;
+	float radius;
+	float zlow;
+	float zhigh;
 	};
 
 class Joint : public HitCircle
@@ -182,9 +160,7 @@ public:
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
 
-	virtual int GetType() {return eJoint;}
-
-	virtual void Draw(HDC hdc);
+	virtual int GetType() const {return eJoint;}
 
 	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
 

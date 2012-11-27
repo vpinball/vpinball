@@ -59,6 +59,13 @@ PinInput::PinInput()
 	m_joypmup = 0;
 	m_joypmenter = 0;
 
+	firedautostart = 0;
+	firedautocoin = 0;
+	LastAttempt = 0;
+
+	started_stamp = 0;
+	pressed_start = 0;
+
 	HRESULT hr;
 	int tmp;
 
@@ -597,51 +604,17 @@ void PinInput::FireKeyEvent( const int dispid, const int key )
 	m_ptable->FireKeyEvent( dispid, mkey );
 }
 
-static U32 started_stamp;
-static int pressed_start;
-
-
 // Returns true if the table has started at least 1 player.
-static int started()
+int PinInput::started()
 {
-
 	// Was the start button pressed?
 	if( pressed_start ) 
 	{
-#if 0	//rlc remove check for old UP game
-		// Check if we need to send a message to the front end.
-		if ( fe_message_sent == false )
-		{
-			// Find the front end window.
-			HWND	hFrontEndWnd;
-
-			// Find the window.
-			hFrontEndWnd = FindWindow( NULL, "Ultrapin (plfe)" );
-			if ( hFrontEndWnd != NULL )
-			{
-				// Make sure we have a player.
-				if ( g_pplayer )
-				{
-					// Show the window.
-					ShowWindow(g_pplayer->m_hwnd, SW_SHOW);
-					SetForegroundWindow(g_pplayer->m_hwnd);
-					SetFocus(g_pplayer->m_hwnd);
-				}
-
-				// Send the ball eject message to the front end.
-				if ( SendMessage( hFrontEndWnd, WM_USER, WINDOWMESSAGE_FIRSTBALLEJECTED, 0 ) )
-				{
-					fe_message_sent = true;
-				}
-			}
-		}
-#endif
-
 		return 1;
 	}
 
 	// Are there more balls on the table than what was loaded?
-	if ( (Ball::NumInitted() - PinTable::NumStartBalls()) > 0 )
+	if ( (NumBallsInitted() - PinTable::NumStartBalls()) > 0 )
 	{
 		pressed_start = 1;
 		return 1;
@@ -650,14 +623,7 @@ static int started()
 	{
 		return 0;
 	}
-
 }
-
-
-static U32 firedautostart = 0; 
-static U32 firedautocoin = 0; 
-static U32 LastAttempt; 
-
 
 // Adds coins that were passed in from the 
 // credit manager via a window message. 

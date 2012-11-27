@@ -261,10 +261,6 @@ Player::~Player()
 		}
 	m_vball.RemoveAllElements();
 
-#ifdef GDIDRAW
-	DeleteObject(m_hbmOffScreen);
-#endif
-
 #ifdef LOG
 	if (m_flog)
 		{
@@ -735,17 +731,13 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 					   ptable->m_xlatex, ptable->m_xlatey, ptable->m_layback,
 					   ptable->m_maxSeparation, ptable->m_ZPD);
 
-	m_mainlevel.m = 0;
-	m_mainlevel.n = 0;
-	m_mainlevel.b = 0;
-
 	const float slope = ptable->m_angletiltMin 
 					  + (ptable->m_angletiltMax - ptable->m_angletiltMin) 
 					  * ptable->m_globalDifficulty;
 	
-	m_mainlevel.m_gravity.x = 0;
-	m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*ptable->m_Gravity;
-	m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*ptable->m_Gravity;
+	m_gravity.x = 0;
+	m_gravity.y =  sinf(ANGTORAD(slope))*ptable->m_Gravity;
+	m_gravity.z = -cosf(ANGTORAD(slope))*ptable->m_Gravity;
 
 	m_NudgeX = 0;
 	m_NudgeY = 0;
@@ -1601,14 +1593,6 @@ void Player::InitWindow()
     hid_init();
 
 	SetCursorPos( 400,999999 ); //rlc ... move to hide in lower left corner, one pixel shows
-
-#ifdef GDIDRAW
-	HDC hdc = GetDC(NULL);
-
-	m_hbmOffScreen = CreateCompatibleBitmap(hdc, m_width, m_height);
-
-	ReleaseDC(NULL, hdc);
-#endif
 	}
 
 void Player::UltraNudgeX(const int x, const int j )
@@ -1814,7 +1798,7 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 			{
 			Ball * const pball = m_vball.ElementAt(i);
 
-			if (!pball->fFrozen && pball->m_fDynamic > 0)// && !pball->fTempFrozen )	// don't play with frozen balls
+			if (!pball->fFrozen && pball->m_fDynamic > 0) // don't play with frozen balls
 				{
 				pball->m_hittime = hittime;				// search upto current hittime
 				pball->m_pho = NULL;
@@ -2157,7 +2141,7 @@ void Player::Render()
 
 		for (int i=0;i<m_vmover.Size();i++)
 		{
-			m_vmover.ElementAt(i)->UpdateVelocities(1.0f);	// always on integral physics frame boundary
+			m_vmover.ElementAt(i)->UpdateVelocities();	// always on integral physics frame boundary
 		}
 	} // end while (m_curPhysicsFrameTime < m_RealTimeClock)
 
@@ -2172,43 +2156,6 @@ void Player::Render()
 		SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
 		m_fCleanBlt = fFalse;
 	}
-
-#ifdef GDIDRAW
-	PAINTSTRUCT ps;
-	HDC hdc = BeginPaint(m_hwnd, &ps);
-
-	HBITMAP hbmOld;
-
-	HDC hdcT = CreateCompatibleDC(hdc);
-
-	hbmOld = (HBITMAP)SelectObject(hdcT, m_hbmOffScreen);
-
-	SelectObject(hdcT, GetStockObject(WHITE_BRUSH));
-
-	PatBlt(hdcT, 0, 0, m_width, m_height, PATCOPY);
-
-	for (int i=0;i<m_vho.Size();i++)
-		{
-		m_vho.ElementAt(i)->Draw(hdcT);
-		}
-
-	for (int i=0;i<m_vball.Size();i++)
-		{
-		SelectObject(hdcT, GetStockObject(NULL_BRUSH));
-		SelectObject(hdcT, GetStockObject(BLACK_PEN));
-		Ball *pball = m_vball.ElementAt(i);
-		DrawCircle(hdcT, pball->x, pball->y, pball->radius);
-		}
-
-	BitBlt(hdc, 0, 0, m_width, m_height, hdcT, 0, 0, SRCCOPY);
-
-	SelectObject(hdcT, hbmOld);
-
-	DeleteDC(hdcT);
-
-	EndPaint(m_hwnd, &ps);
-
-#else // GDIDRAW
 
 	// Check all elements that could possibly need updating.
 	// cupid for primitives: OK, i need my primitives in here... And they need to understand m_fInvalid, Check3D and m_rcBounds
@@ -2795,8 +2742,6 @@ else
 		delete pur;
 	}
 	m_vupdaterect.RemoveAllElements();
-
-#endif //GDIDRAW
 
 #ifndef ACCURATETIMERS
 	m_pactiveball = NULL;  // No ball is the active ball for timers/key events

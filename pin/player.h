@@ -129,7 +129,7 @@ public:
 	U32 m_jolt_trigger_time;
 	U32 m_tilt_trigger_time;
 
-	Level m_mainlevel;			// level object for main table level
+	Vertex3Ds m_gravity;
 
 	BOOL m_fDetectScriptHang;
 	BOOL m_fNoTimeCorrect;		// Used so the frame after debugging does not do normal time correction

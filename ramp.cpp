@@ -787,7 +787,6 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 			}
 		}
 
-	//Level *plevel;
 #ifndef RAMPTEST
 	{
 	Hit3DPoly *ph3dpolyOld = NULL;
@@ -1035,12 +1034,6 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 void Ramp::EndPlay()
 	{
 	IEditable::EndPlay();
-
-	for (int i=0;i<m_vlevel.Size();i++)
-		{
-		delete m_vlevel.ElementAt(i);
-		}
-	m_vlevel.RemoveAllElements();
 	m_vhoCollidable.RemoveAllElements();
 	}
 

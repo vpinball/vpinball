@@ -1610,9 +1610,9 @@ void PinTable::Play()
 
 			const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
-			g_pplayer->m_mainlevel.m_gravity.x = 0; 
-			g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
-			g_pplayer->m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
+			g_pplayer->m_gravity.x = 0; 
+			g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
+			g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
 
 			m_pcv->SetEnabled(fFalse); // Can't edit script while playing
 
@@ -7042,9 +7042,9 @@ STDMETHODIMP PinTable::put_Gravity(float newVal )
 		m_Gravity = newVal*GRAVITYCONST;
 		const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
-		g_pplayer->m_mainlevel.m_gravity.x = 0; 
-		g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
+		g_pplayer->m_gravity.x = 0; 
+		g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
+		g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
 		}
 	else
 		{
@@ -7289,9 +7289,9 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
 		m_angletiltMax = newVal;
 		const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
-		g_pplayer->m_mainlevel.m_gravity.x = 0; 
-		g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
+		g_pplayer->m_gravity.x = 0; 
+		g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
+		g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
 		}
 	else
 		{
@@ -7317,9 +7317,9 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
 		m_angletiltMin = newVal;
 		const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
-		g_pplayer->m_mainlevel.m_gravity.x = 0;
-		g_pplayer->m_mainlevel.m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
-		g_pplayer->m_mainlevel.m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
+		g_pplayer->m_gravity.x = 0;
+		g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
+		g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
 		}
 	else
 		{
