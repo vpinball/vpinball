@@ -1932,7 +1932,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
 
 			Vertex2D vOut;
 			int iSeg;
-			ClosestPointOnPolygon(rgv, cvertex, v, &vOut, &iSeg, fFalse);
+			ClosestPointOnPolygon(rgv, cvertex, v, &vOut, &iSeg, false);
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
 			int icp = 0;

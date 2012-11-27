@@ -1,14 +1,9 @@
-#pragma once
 // Trigger.h: Definition of the Trigger class
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)
 #define AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "resource.h"       // main symbols
 

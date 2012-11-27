@@ -130,7 +130,6 @@ END_CONNECTION_POINT_MAP()
 	//void CheckIntersecting();
 
 	PinTable *m_ptable;
-	bool IsWall;
 	BSTR m_bstrName;
 
 	Vertex2D *m_rgvT; // keeps vertices around between PreRender and Render
@@ -146,6 +145,8 @@ END_CONNECTION_POINT_MAP()
 	Hit3DPolyDrop *m_phitdrop;
 	Vector<HitObject> m_vhoDrop; // Objects to disable when dropped
 	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
+
+	bool IsWall;
 
 // ISurface
 public:

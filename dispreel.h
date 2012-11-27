@@ -1,13 +1,9 @@
 // DispReel.h: Definition of the DispReel class
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_)
 #define AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "resource.h"       // main symbols
 
@@ -128,13 +124,14 @@ private:
     IFont       *m_pIFontPlay;     // Our font, scaled to match play window resolution
     Vector<ObjFrame>    m_vreelframe;     // the generated reel frame which contains the individual reel graphics
 
-    float       m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
-    float       m_reeldigitheight;
-    int         m_timenextupdate;
-    bool        m_fforceupdate;
 	COLORREF	m_rgbImageTransparent;
 
     _reelInfo   ReelInfo[MAX_REELS];
+
+	float       m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
+    float       m_reeldigitheight;
+    int         m_timenextupdate;
+    bool        m_fforceupdate;
 
 // IDispReel
 public:

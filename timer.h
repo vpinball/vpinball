@@ -1,14 +1,9 @@
-#pragma once
 // Timer.h: Definition of the Timer class
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_TIMER_H__932D477C_A594_4941_906D_8BF11A68C838__INCLUDED_)
 #define AFX_TIMER_H__932D477C_A594_4941_906D_8BF11A68C838__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "resource.h"       // main symbols
 

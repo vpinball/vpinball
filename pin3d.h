@@ -248,15 +248,16 @@ public:
 	float m_scalex, m_scaley;
 	float m_xlatex, m_xlatey;
 
-	float m_maxSeparation, m_ZPD;
-	bool m_Stereo3D;
-
 	GPINFLOAT m_rznear, m_rzfar;
 	Vertex3Ds m_vertexcamera;
 
 	LightProjected m_lightproject;
 
 	HANDLE m_hFileCache;
+
+	float m_maxSeparation, m_ZPD;
+	bool m_Stereo3D;
+
 	bool m_fReadingFromCache;
 	bool m_fWritingToCache;
 	};

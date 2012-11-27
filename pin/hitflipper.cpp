@@ -704,7 +704,7 @@ void FlipperAnimObject::Check3D()
 		{
 		m_iframe = frame;
 
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		}
 	}
 

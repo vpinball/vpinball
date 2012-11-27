@@ -3,9 +3,8 @@ class Surface;
 
 class PrimitiveAnimObject : public AnimObject
 {
-	//m_fInvalid, Check3D and m_rcBounds
 public:
-	virtual BOOL FMover() const {return fTrue;}
+	virtual bool FMover() const {return true;}
 	virtual void Check3D();
 
 	BOOL m_fVisible;
@@ -46,7 +45,6 @@ public:
 class BumperHitCircle : public HitCircle
 	{
 public:
-
 	BumperHitCircle();
 	virtual ~BumperHitCircle();
 
@@ -66,17 +64,16 @@ public:
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
+	ObjFrame *m_pobjframe;
+
 	int m_iframe;
 	int m_TimeReset; // Time at which to pull in slingshot
 	bool m_fAnimations;
-
-	ObjFrame *m_pobjframe;
 	};
 
 class LineSegSlingshot : public LineSeg
 	{
 public:
-
 	LineSegSlingshot();
 	virtual ~LineSegSlingshot();
 
@@ -117,7 +114,7 @@ public:
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
 
-	virtual BOOL FMover() const {return fTrue;}
+	virtual bool FMover() const {return true;}
 
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
@@ -142,7 +139,6 @@ public:
 class HitSpinner : public HitObject
 	{
 public:
-
 	HitSpinner(Spinner * const pspinner, const float height);
 
 	virtual int GetType() const {return eSpinner;}
@@ -166,7 +162,7 @@ public:
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
 
-	virtual BOOL FMover() const {return fTrue;}
+	virtual bool FMover() const {return true;}
 
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
@@ -190,7 +186,6 @@ public:
 class HitGate : public LineSeg
 	{
 public:
-
 	HitGate(Gate * const pgate);
 
 	virtual int GetType() const {return eGate;}
@@ -209,7 +204,6 @@ public:
 class TriggerLineSeg : public LineSeg
 	{
 public:
-
 	TriggerLineSeg();
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
@@ -223,7 +217,6 @@ public:
 class TriggerHitCircle : public HitCircle
 	{
 public:
-
 	TriggerHitCircle();
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
@@ -237,7 +230,6 @@ public:
 class Hit3DCylinder : public HitCircle
 	{
 public:
-
 	Hit3DCylinder(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, const Vertex3Ds * const pvnormal);
 
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
@@ -295,7 +287,6 @@ public:
 class TextboxUpdater : public HitObject
 	{
 public:
-
 	TextboxUpdater(Textbox * const ptb) {m_textboxanim.m_ptextbox = ptb;}
 	virtual ~TextboxUpdater() {}
 
@@ -324,7 +315,6 @@ public:
 class DispReelUpdater : public HitObject
 	{
 public:
-
 	DispReelUpdater(DispReel * const ptb) {m_dispreelanim.m_pDispReel = ptb;}
 	virtual ~DispReelUpdater() {}
 
@@ -352,7 +342,6 @@ public:
 class LightSeqUpdater : public HitObject
 	{
 public:
-
 	LightSeqUpdater(LightSeq * const ptb) {m_lightseqanim.m_pLightSeq = ptb;}
 	virtual ~LightSeqUpdater() {}
 

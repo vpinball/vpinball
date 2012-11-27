@@ -396,7 +396,7 @@ void PlungerAnimObject::Check3D()
 	if (frame != m_iframe)
 		{
 		m_iframe = frame;
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		}
 	}
 

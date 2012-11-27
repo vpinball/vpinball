@@ -5,10 +5,6 @@
 #if !defined(AFX_LIGHTSEQ_H__5EC2D0B7_3868_4CCC_81EC_A4653460DF7E__INCLUDED_)
 #define AFX_LIGHTSEQ_H__5EC2D0B7_3868_4CCC_81EC_A4653460DF7E__INCLUDED_
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
 #include "resource.h"       // main symbols
 
 /////////////////////////////////////////////////////////////////////////////
@@ -164,8 +160,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LightSeq)
 
 private:
     int				m_timeNextUpdate;
-	bool			m_playInProgress;
-	bool			m_pauseInProgress;
 	int				m_blinkSequence;
 	float			m_GridXCenter;
 	float			m_GridYCenter;
@@ -182,6 +176,8 @@ private:
    	long			m_pauseValue;
 	long			m_replayCount;
 	long			m_updateRate;
+	bool			m_playInProgress;
+	bool			m_pauseInProgress;
 
 // ILightSeq
 public:
@@ -202,7 +198,7 @@ public:
     LightSeqUpdater *m_ptu;
 	LightSeqCenter	m_LightSeqCenter;
 
-    bool	RenderAnimation();
+    bool		RenderAnimation();
 
 private:
     void		SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause);

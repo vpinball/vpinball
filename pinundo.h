@@ -1,14 +1,9 @@
-#pragma once
 // PinUndo.h: interface for the PinUndo class.
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_PINUNDO_H__F1136F22_51FB_4AC8_B7FC_89A5E148DD7B__INCLUDED_)
 #define AFX_PINUNDO_H__F1136F22_51FB_4AC8_B7FC_89A5E148DD7B__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #define MAXUNDO 16
 

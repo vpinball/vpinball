@@ -8,7 +8,6 @@
 #include "SVNRevision.h"
 #include "resource.h"
 
-
 #if _MSC_VER <= 1310 // VC 2003 and before
  #define _itoa_s(a,b,c,d) _itoa(a,b,d)
 #endif

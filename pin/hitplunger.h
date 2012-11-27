@@ -5,7 +5,7 @@ public:
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
 
-	virtual BOOL FMover() const {return fTrue;}
+	virtual bool FMover() const {return true;}
 
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
@@ -29,7 +29,6 @@ public:
 	float m_pos;
 	float m_posdesired;
 	float m_posFrame; // Location of plunger at beginning of frame
-	bool  m_fAcc;
 	float m_mass;
 
 	float m_x,m_x2,m_y;
@@ -40,14 +39,16 @@ public:
 	float m_frameEnd;
 	int m_mechTimeOut;
 
-	bool recock;
 	float err_fil;	// integrate error over multiple update periods 
 
 	float m_parkPosition;
 	float m_scatterVelocity;
 	float m_breakOverVelocity;
 	Plunger* m_plunger;
-	};
+
+	bool recock;
+	bool m_fAcc;
+};
 
 class HitPlunger :
 	public HitObject

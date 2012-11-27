@@ -96,7 +96,7 @@ public:
 class AnimObject
 	{
 public:
-	virtual BOOL FMover() const {return fFalse;}
+	virtual bool FMover() const {return false;}
 	virtual void UpdateDisplacements(const float dtime) {}
 	virtual void UpdateVelocities() {}
 
@@ -107,18 +107,13 @@ public:
 	RECT m_rcBounds; // bounding box for invalidation
 	float m_znear, m_zfar; // To tell which objects are closer and should be blitted last
 
-	BOOL m_fInvalid;
+	bool m_fInvalid;
 	};
 
-class HitNormal : public HitObject
+class LineSeg : public HitObject
 	{
 public:
 	Vertex2D normal;
-	};
-
-class LineSeg : public HitNormal
-	{
-public:
 	Vertex2D v1, v2;
 	float length;
 

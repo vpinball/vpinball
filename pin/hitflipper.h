@@ -7,7 +7,7 @@ public:
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
 
-	virtual BOOL FMover() const {return fTrue;}
+	virtual bool FMover() const {return true;}
 
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
@@ -22,7 +22,6 @@ public:
 	float faceNormOffset; 
 
 	// rlc New Flipper motion basis, uses Green's transform to rotate these valuse to curAngle
-	bool m_lastHitFace;
 	Vertex2D m_leftFaceNormal, m_rightFaceNormal, m_leftFaceBase, m_rightFaceBase;
 	Vertex2D m_endRadiusCenter;
 	float m_lengthFace;
@@ -56,11 +55,12 @@ public:
 
 	int m_iframe; //Frame index that this flipper is currently displaying
 
-	bool m_fEnabled;
-
 	int m_EnableRotateEvent;
 
 	Vertex2D zeroAngNorm; // base norms at zero degrees	
+
+	bool m_fEnabled;
+	bool m_lastHitFace;
 	};
 
 class HitFlipper :

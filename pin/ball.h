@@ -5,9 +5,9 @@ class Ball;
 class BallAnimObject : public AnimObject
 	{
 public:
-	virtual BOOL FMover() const {return fFalse;} // We add ourselves to the mover list.  
-											     // If we allow the table to do that, we might get added twice, 
-											     // if we get created in Init code
+	virtual bool FMover() const {return false;} // We add ourselves to the mover list.  
+											    // If we allow the table to do that, we might get added twice, 
+											    // if we get created in Init code
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
 

@@ -1,14 +1,9 @@
-#pragma once
 // PinBinary.h: interface for the PinBinary class.
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma once
 #if !defined(AFX_PINBINARY_H__080F5CB3_4174_4B1D_A81E_DCC4CBFE5954__INCLUDED_)
 #define AFX_PINBINARY_H__080F5CB3_4174_4B1D_A81E_DCC4CBFE5954__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 class PinBinary : public ILoadable 
 {

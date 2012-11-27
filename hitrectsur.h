@@ -28,10 +28,11 @@ public:
 
 	ISelect *m_pcur;
 
-	bool m_fFailedAlready; // Object has already been discounted from selection
 	int m_indexcur;
 
 	FRect m_rcRect;
 	Vector<ISelect> *m_pvsel;
 	Vector<ISelect> m_vselFailed;	
+
+	bool m_fFailedAlready; // Object has already been discounted from selection
 	};

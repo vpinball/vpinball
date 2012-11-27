@@ -21,7 +21,7 @@ void HitPrimitive::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 void PrimitiveAnimObject::Check3D()
 	{
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		
 		m_rcBounds.top = 100;
 		m_rcBounds.left = 100;
@@ -92,24 +92,24 @@ void BumperAnimObject::Check3D()
 	if ((m_iframe == 0) && (m_TimeReset != 0))
 		{
 		m_iframe = 1;
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		}
 	else if (m_fAutoTurnedOff && (m_iframe == 1) && (m_TimeReset < g_pplayer->m_timeCur) && (m_iframe != m_iframedesired))
 		{
 		m_iframe = m_iframedesired;
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		m_TimeReset = 0;
 		m_fAutoTurnedOff = fFalse;
 		}
 	else if (m_iframe == -1)
 		{
 		m_iframe = 0;
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		}
 	else if (!m_fAutoTurnedOff && (m_iframe != m_iframedesired))
 		{
 		m_iframe = m_iframedesired;
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		}
 	}
 
@@ -212,12 +212,12 @@ void SlingshotAnimObject::Check3D()
 	if ((m_iframe == 0) && (m_TimeReset != 0) && m_fAnimations)
 		{
 		m_iframe = 1;
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		}
 	else if ((m_iframe == 1) && (m_TimeReset < g_pplayer->m_timeCur))
 		{
 		m_iframe = 0;
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		m_TimeReset = 0;
 		}
 	}
@@ -330,7 +330,7 @@ void GateAnimObject::Check3D()
 		{
 		if (m_iframe != -1)
 			{
-			m_fInvalid = fTrue;
+			m_fInvalid = true;
 			m_iframe = -1;
 			}
 		return;
@@ -349,7 +349,7 @@ void GateAnimObject::Check3D()
 	if (frame != m_iframe)
 		{
 		m_iframe = frame;
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		}
 	}
 
@@ -524,7 +524,7 @@ void SpinnerAnimObject::Check3D()
 		{
 		if (m_iframe != -1)
 			{
-			m_fInvalid = fTrue;
+			m_fInvalid = true;
 			m_iframe = -1;
 			}
 		return;
@@ -559,7 +559,7 @@ void SpinnerAnimObject::Check3D()
 	if (frame != m_iframe)
 		{
 		m_iframe = frame;
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		}
 	}
 
@@ -899,7 +899,7 @@ void PolyDropAnimObject::Check3D()
 	if (m_iframe != m_iframedesire)
 		{
 		m_iframe = m_iframedesire;
-		m_fInvalid = fTrue;
+		m_fInvalid = true;
 		}
 	}
 
