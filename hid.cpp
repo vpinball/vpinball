@@ -114,7 +114,7 @@ static HANDLE hid_connect (U32 vendorID, U32 productID, U32 *versionNumber=NULL)
         index++;
     }
 #ifdef DONGLE_SUPPORT
-	exit(0);  //rlc no ushock 
+	exit(0);  // no ushock 
 #endif
 
     return INVALID_HANDLE_VALUE;
@@ -138,7 +138,7 @@ void hid_init()
 
 		HidD_GetPreparsedData( hnd, &HidParsedData );
 
-		if (!HidParsedData) //rlc ... if uShock is unplugged the HidD_FreePreparsedData() crashes
+		if (!HidParsedData) // if uShock is unplugged the HidD_FreePreparsedData() crashes
 			{
 			printf( "hid_init: Could not connect or find the PBW controller\n" );
 			return;

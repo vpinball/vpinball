@@ -765,6 +765,32 @@ void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRE
 	}
 }
 
+// Draws the primitive to the current render target.
+// If D3D blitting is enabled, the primitive is also drawn to the texture buffer.
+HRESULT Display_DrawPrimitive ( const LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount)
+{
+	// Draw the primitive.
+	HRESULT ReturnCode = Direct3DDevice->DrawPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, 0 );
+
+	// Check if we are blitting with D3D.
+	if ( g_pvp->m_pdd.m_fUseD3DBlit )
+	{
+		LPDIRECTDRAWSURFACE7 RestoreRenderTarget;
+		// Save the render target.
+		Direct3DDevice->GetRenderTarget ( &RestoreRenderTarget );
+
+		// Direct all renders to the back texture buffer.
+		Direct3DDevice->SetRenderTarget ( g_pplayer->m_pin3d.m_pddsBackTextureBuffer, 0L );
+
+		// Redraw... this time to back texture buffer.
+		ReturnCode = Direct3DDevice->DrawPrimitive( d3dptPrimitiveType, dwVertexTypeDesc, lpvVertices, dwVertexCount, 0 );
+
+		// Restore the render target.
+		Direct3DDevice->SetRenderTarget ( RestoreRenderTarget, 0L );
+	}
+
+	return ReturnCode;
+}
 
 // Draws the primitive to the current render target.
 // If D3D blitting is enabled, the primitive is also drawn to the texture buffer.

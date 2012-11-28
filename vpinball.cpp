@@ -754,14 +754,13 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 			if(!g_pplayer) fShow = m_sb.GetVisible(); // Get the current display state 
 
-			switch(notify)//rlc set, redisplay, toggle
+			switch(notify)
 			{
 			case 0: 
-			case 1: fShow = !fShow; //set
+			case 1: fShow = !fShow;  //set
 				break;
-			case 2:  //re-display 
-				break;
-			
+			case 2:					 //re-display 
+				break;			
 			default: fShow = !fShow; //toggle
 				break;
 			}
@@ -1452,8 +1451,7 @@ void VPinball::LoadFile()
 	ofn.hInstance = g_hinst;
 	ofn.hwndOwner = g_pvp->m_hwnd;
 	// TEXT
-	//ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt\0";
-	ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt\0"; //test.rlc
+	ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt\0";
 	ofn.lpstrFile = szFileName;
 	ofn.nMaxFile = _MAX_PATH;
 	ofn.lpstrDefExt = "vpt";
@@ -2758,8 +2756,6 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							}
 							break;
 
-//++++++++++++++++++++++++++++++++++++++++++++++++//rlc
-
 						case IDC_SNDEXPORT:
 							{								
 							if(ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST)))
@@ -2823,8 +2819,6 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								}
 							}
 							break;
-
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//rlc
 
 						case IDC_PLAY:
 							{
@@ -3181,7 +3175,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								}
 							}
 							break;
-/////////////////////////////rlc  begin
+
 						case IDC_EXPORT:
 							{
 							if(ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST)))	// if some items are selected???
@@ -3244,9 +3238,8 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								EndDialog(hwndDlg, TRUE);
 								}							
 							}	
-
 							break;
-///////////////////////////rlc end
+
 						case IDC_DELETE:
 							{
 							const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
@@ -3403,7 +3396,7 @@ int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //			char szSVNDate[]= SVNDATE;
 //			char szSVNRev[]= SVNREVISION;
 		
-			lstrcpy(szVersion, "Version "); //rlc add time and date to compilation version
+			lstrcpy(szVersion, "Version "); // add time and date to compilation version
 			_itoa_s(BUILD_NUMBER, szBuild, sizeof(szBuild), 10);
 			lstrcat(szVersion, szBuild);
 //			lstrcat(szVersion, "-");
@@ -3412,7 +3405,7 @@ int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //			lstrcat(szVersion, "-");
 //			lstrcat(szVersion, szDate);
 
-//			lstrcat(szVersion, ")\n\nSVN");		//rlc place Subversion revision and date in About Dialog
+//			lstrcat(szVersion, ")\n\nSVN");		// place Subversion revision and date in About Dialog
 
 //			szSVNRev[0]= ' '; szSVNRev[strlen(szSVNRev)-1] = 0; 
 //			lstrcat(szVersion, szSVNRev);
@@ -3565,7 +3558,7 @@ HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpCon
 	}
 
 
-const int rgwindowsize[] = {640, 720, 800, 912, 1024, 1152, 1280, 1600};  //rlc  What is this?
+const int rgwindowsize[] = {640, 720, 800, 912, 1024, 1152, 1280, 1600};  // windowed resolutions for selection list
 
 int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
@@ -6376,7 +6369,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			const int key = pksw->pi.GetNextKey();
 			if (key != 0)
 				{
-				if(key < 0xDD)	//0xDD		//rlc   Key mapping, add cases for joystick here!!!!!!!!!
+				if(key < 0xDD)	//0xDD		// Key mapping
 					{
 					if (key == DIK_ESCAPE)
 						{

@@ -605,7 +605,7 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 
 		if (ppheight)
 			{
-			const float percentage = 1.0f-(currentlength/totallength); //rlc ramps have no ends ... a line joint is needed
+			const float percentage = 1.0f-(currentlength/totallength); // ramps have no ends ... a line joint is needed
 			const float heightcur = (1.0f - percentage) * (m_d.m_heighttop - m_d.m_heightbottom) + m_d.m_heightbottom;
 			(*ppheight)[i] = heightcur;
 			}
@@ -684,7 +684,7 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
 	// Add the very last point to the list because nobody else added it
 	rendv2.fSmooth = true;
 	rendv2.fSlingshot = false;
-	rendv2.fControlPoint = false;	//rlc --- trapped on uninitialized varible (DevPartner)
+	rendv2.fControlPoint = false;
 	RenderVertex * const pvT = new RenderVertex;
 	*pvT = rendv2;
 	pvv->AddElement(pvT);
@@ -1037,7 +1037,7 @@ void Ramp::EndPlay()
 	m_vhoCollidable.RemoveAllElements();
 	}
 
-WORD rgicrosssection[] = {
+static const WORD rgicrosssection[] = {
 	0,1,16,
 	1,17,16,
 	1,2,17,
@@ -1243,16 +1243,16 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 		if (i != 0)
 			{
-			RenderPolygons(pd3dDevice, rgv3D, rgicrosssection, 0, 16);
+			RenderPolygons(pd3dDevice, rgv3D, (WORD*)rgicrosssection, 0, 16);
 
 			if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
 				{
-				RenderPolygons(pd3dDevice, rgv3D, rgicrosssection, 16, 24);
+				RenderPolygons(pd3dDevice, rgv3D, (WORD*)rgicrosssection, 16, 24);
 				}
 
 			if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
 				{
-				RenderPolygons(pd3dDevice, rgv3D, rgicrosssection, 24, 32);
+				RenderPolygons(pd3dDevice, rgv3D, (WORD*)rgicrosssection, 24, 32);
 				}
 			}
 		memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D)*16);
@@ -1276,8 +1276,8 @@ void Ramp::RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D * const r
 	}
 }
 
-WORD rgiRampStatic0[4] = {0,1,2,3};
-WORD rgiRampStatic1[4] = {0,3,2,1};
+//static const WORD rgiRampStatic0[4] = {0,1,2,3};
+static const WORD rgiRampStatic1[4] = {0,3,2,1};
 
 void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
@@ -1312,9 +1312,6 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
-			//ppin3d->SetTexture(pin->m_pdsBuffer);					//rlc replace with .....	
-
-//rlc add transparent texture support ... replaced this line with >>>>	
 			pin->EnsureColorKey();
 			if (pin->m_fTransparent)
 				{				
@@ -1324,7 +1321,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 			else // ppin3d->SetTexture(pin->m_pdsBuffer);
 				{	
-				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
@@ -1466,9 +1463,10 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 					}
 				}
 
-			SetNormal(rgv3D, rgiRampStatic0, 4, NULL, NULL, NULL);
+			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the floor of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgiRampStatic0, 4, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4, 0);
+			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, 0);
 			}
 
 		if (pin && !m_d.m_fImageWalls)
@@ -1553,13 +1551,14 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 
 			// 2-Sided polygon
-			SetNormal(rgv3D, rgiRampStatic0, 4, NULL, NULL, NULL);
+			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgiRampStatic0, 4, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4, 0);
+			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, 0);
 
 			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgiRampStatic1, 4, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgiRampStatic1, 4, 0);
 			}
 
 		for (int i=0;i<(cvertex-1);i++)
@@ -1629,13 +1628,14 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 
 			// 2-Sided polygon
-			SetNormal(rgv3D, rgiRampStatic0, 4, NULL, NULL, NULL);
+			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, rgiRampStatic0, 4, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, (LPWORD)rgi0123, 4, 0);
+			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, 0);
 			
 			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 4,rgiRampStatic1, 4, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 4,(LPWORD)rgiRampStatic1, 4, 0);
 			}
 
 		delete rgv;
@@ -2518,24 +2518,20 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
-			//ppin3d->SetTexture(pin->m_pdsBuffer);					//rlc replace with .....	
-
-//rlc add transparent texture support ... replaced this line with >>>>	
 			pin->EnsureColorKey();
 
-				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);     //rlc  alpha channel support
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+			pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
-				
-			
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
+			pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
@@ -2613,9 +2609,10 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					}
 				}
 
-			SetNormal(rgv3D, rgiRampStatic0, 4, NULL, NULL, NULL);
+			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the floor of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgiRampStatic0, 4, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4, 0);
+			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,0);
 			if (!invalidationRectCalculated)
 				ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
@@ -2678,14 +2675,14 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 
 			// 2-Sided polygon
-			SetNormal(rgv3D, rgiRampStatic0, 4, NULL, NULL, NULL);
+			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgiRampStatic0, 4, 0);
-
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4, 0);
+			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,0);
 
 			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,rgiRampStatic1, 4, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgiRampStatic1, 4, 0);
 			if (!invalidationRectCalculated)
 				ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
@@ -2733,13 +2730,14 @@ void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 
 			// 2-Sided polygon
-			SetNormal(rgv3D, rgiRampStatic0, 4, NULL, NULL, NULL);
+			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, rgiRampStatic0, 4, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, (LPWORD)rgi0123, 4, 0);
+			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, 0);
 
 			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 4,rgiRampStatic1, 4, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 4,(LPWORD)rgiRampStatic1, 4, 0);
 			if (!invalidationRectCalculated)
 				ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}

@@ -1051,12 +1051,12 @@ void PinTable::Init(VPinball *pvp)
 	GlobalUnlock(hcopiedmem);
 		
 	ILockBytes *pilb;
-	HRESULT hr = CreateILockBytesOnHGlobal(hcopiedmem, TRUE, &pilb); //rlc "TRUE" parm gives ownership of hcopiedmem to Global Object
+	HRESULT hr = CreateILockBytesOnHGlobal(hcopiedmem, TRUE, &pilb); // "TRUE" parm gives ownership of hcopiedmem to Global Object
 
 	IStorage *pis;
 
 	hr = StgOpenStorageOnILockBytes(pilb,NULL,STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE,NULL,0,&pis);
-	pilb->Release();	//rlc free pilb and hcopyiedmem
+	pilb->Release();	// free pilb and hcopyiedmem
 
 	m_glassheight = 210;
 	m_tableheight = 0;
@@ -1843,7 +1843,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 		ofn.hInstance = g_hinst;
 		ofn.hwndOwner = g_pvp->m_hwnd;
 		// TEXT
-		ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt"; //test.rlc
+		ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt";
 		ofn.lpstrFile = m_szFileName;
 		ofn.nMaxFile = _MAX_PATH;
 		ofn.lpstrDefExt = "vpt";
@@ -3533,9 +3533,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	return fTrue;
 	}
 
-
-//////////////////////////////////////////////////////////////////////////////rlc
-
 bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
 	{
 	MMIOINFO mmio;
@@ -3580,7 +3577,6 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
 
 	return false;
 	}
-///////////////////////////////////////////////////////////////////////////////rlc
 
 void PinTable::ReImportSound(HWND hwndListView, PinSound *pps, char *filename, BOOL fPlay)
 	{
@@ -6039,9 +6035,6 @@ void PinTable::ReImportImage(HWND hwndListView, PinImage *ppi, char *filename)
 
 	lstrcpy(ppi->m_szPath, filename);
 
-	//rlc  this alpha data is set during the file/stream load now ... delete later after full testing
-	//if (!ppi->m_Alpha_Channel) g_pvp->m_pdd.SetOpaque(ppi->m_pdsBuffer, ppi->m_width, ppi->m_height);
-
 	g_pvp->m_pdd.CreateNextMipMapLevel(ppi->m_pdsBuffer);
 
 	ppi->EnsureMaxTextureCoordinates();
@@ -6353,9 +6346,6 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
 			ppi->m_rgbTransparent = NOTRANSCOLOR;
 			}
 
-		//rlc  delete later after full testing
-		//if (!ppi->m_Alpha_Channel) g_pvp->m_pdd.SetOpaque(ppi->m_pdsBuffer, width, height);
-
 		g_pvp->m_pdd.CreateNextMipMapLevel(ppi->m_pdsBuffer);
 
 		m_vimage.AddElement(ppi);
@@ -6366,9 +6356,6 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
 
 		if (ppi->LoadFromStream(pstm, version, this) == S_OK)
 			{
-			//rlc  delete later after full testing
-			//if (!ppi->m_Alpha_Channel) g_pvp->m_pdd.SetOpaque(ppi->m_pdsBuffer, ppi->m_width, ppi->m_height);
-
 			g_pvp->m_pdd.CreateNextMipMapLevel(ppi->m_pdsBuffer);
 
 			m_vimage.AddElement(ppi);

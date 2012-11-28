@@ -98,7 +98,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_mechPlunger = iTmp == 0? false:true;
 	else
-		m_d.m_mechPlunger = fFalse;		//rlc plungers require selection for mechanical input
+		m_d.m_mechPlunger = fFalse;		// plungers require selection for mechanical input
 	
 	hr = GetRegInt("DefaultProps\\Plunger","AutoPlunger", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -110,7 +110,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_mechStrength = fTmp;
 	else
-		m_d.m_mechStrength = 85;		//rlc
+		m_d.m_mechStrength = 85;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger","ParkPosition", &fTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -545,13 +545,13 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteInt(FID(COLR), m_d.m_color);
 	bw.WriteString(FID(IMAG), m_d.m_szImage);
 
-	bw.WriteFloat(FID(MESTH), m_d.m_mechStrength);		//rlc
-	bw.WriteBool(FID(MECH), m_d.m_mechPlunger);		//
-	bw.WriteBool(FID(APLG), m_d.m_autoPlunger);		//
+	bw.WriteFloat(FID(MESTH), m_d.m_mechStrength);
+	bw.WriteBool(FID(MECH), m_d.m_mechPlunger);
+	bw.WriteBool(FID(APLG), m_d.m_autoPlunger);
 	
-	bw.WriteFloat(FID(MPRK), m_d.m_parkPosition);		//
-	bw.WriteFloat(FID(PSCV), m_d.m_scatterVelocity);	//
-	bw.WriteFloat(FID(PBOV), m_d.m_breakOverVelocity);	//
+	bw.WriteFloat(FID(MPRK), m_d.m_parkPosition);
+	bw.WriteFloat(FID(PSCV), m_d.m_scatterVelocity);
+	bw.WriteFloat(FID(PBOV), m_d.m_breakOverVelocity);
 
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -790,7 +790,7 @@ STDMETHODIMP Plunger::Fire()
 			if (m_phitplunger->m_plungeranim.m_mechTimeOut <= 0)
 			{			
 				m_phitplunger->m_plungeranim.m_fAcc = true;			
-				m_phitplunger->m_plungeranim.m_mechTimeOut = 20;	//rlc disable for 200 millisconds
+				m_phitplunger->m_plungeranim.m_mechTimeOut = 20;	// disable for 200 millisconds
 			}
 		}
 	}

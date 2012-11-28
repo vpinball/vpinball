@@ -154,7 +154,7 @@ void Kicker::GetHitShapes(Vector<HitObject> *pvho)
 
 	phitcircle->m_fEnabled = m_d.m_fEnabled;
 
-	phitcircle->m_ObjType = eKicker;  //rlc Q&D
+	phitcircle->m_ObjType = eKicker;
 	phitcircle->m_pObj = (void*) this;
 
 	phitcircle->m_pkicker = this;

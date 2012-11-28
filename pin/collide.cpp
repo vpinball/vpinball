@@ -45,7 +45,6 @@ void LineSeg::CalcHitRect()
 	//m_rcHitRect.zlow = 0;
 	//m_rcHitRect.zhigh = 50;
 	}
-//rlc begin change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool lateral, const bool rigid)
 	{
@@ -290,8 +289,6 @@ float HitCircle::HitTestRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal)
 													//normal face, lateral, rigid
 	return HitTestBasicRadius(pball, dtime, phitnormal, true, true, true);		
 	}	
-
-//rlc end  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 void LineSeg::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{
@@ -601,8 +598,7 @@ void HitOctree::HitTestBall(Ball * const pball) const
 		cTested++;
 #endif
 		if ((pball != m_vho.ElementAt(i)) // ball can not hit itself
-			       //&& (pball->phoHitLast != m_vho.ElementAt(i)) //rlc error: don't hit test last thing hit again, why not? -> numerical precison aka self intersection problem maybe?
-			       && fRectIntersect3D(pball->m_rcHitRect, m_vho.ElementAt(i)->m_rcHitRect))
+		       && fRectIntersect3D(pball->m_rcHitRect, m_vho.ElementAt(i)->m_rcHitRect))
 			{
 #ifdef LOG
 			cDeepTested++;

@@ -115,11 +115,6 @@ LPCTSTR FindOneOf(LPCTSTR p1, LPCTSTR p2, LPTSTR pOut)
 }
 
 
-/////////////////////////////////////////////////////////////////////////////
-//
-//rlc the beginning of it all  <<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>
-//
-//
 extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpCmdLine, int /*nShowCmd*/)
 {
 #ifdef GLOBALLOG

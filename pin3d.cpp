@@ -275,7 +275,7 @@ retry1:
 			goto retry1;
 		}
 		ShowError("Could not create offscreen surface.");
-		exit(-1400); //rlc exit after show error
+		exit(-1400);
 		return NULL;
 		}
 
@@ -958,21 +958,29 @@ void Pin3D::DrawBackground()
 		rgv3D[0].y = 0;
 		rgv3D[0].tu = 0;
 		rgv3D[0].tv = 0;
+		rgv3D[0].tu2 = 0;
+		rgv3D[0].tv2 = 0;
 
 		rgv3D[1].x = 1000.0f;
 		rgv3D[1].y = 0;
 		rgv3D[1].tu = maxtu;
 		rgv3D[1].tv = 0;
+		rgv3D[1].tu2 = 0;
+		rgv3D[1].tv2 = 0;
 
 		rgv3D[2].x = 1000.0f;
 		rgv3D[2].y = 750.0f;
 		rgv3D[2].tu = maxtu;
 		rgv3D[2].tv = maxtv;
+		rgv3D[2].tu2 = 0;
+		rgv3D[2].tv2 = 0;
 
 		rgv3D[3].x = 0;
 		rgv3D[3].y = 750.0f;
 		rgv3D[3].tu = 0;
 		rgv3D[3].tv = maxtv;
+		rgv3D[3].tu2 = 0;
+		rgv3D[3].tv2 = 0;
 
 		SetTexture(pin->m_pdsBuffer);
 
@@ -982,6 +990,8 @@ void Pin3D::DrawBackground()
 		m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 												  rgv3D, 4,
 												  (LPWORD)rgi0123, 4, 0);
+		//m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+		//										  rgv3D, 4, 0);
 
 		m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 		}
@@ -1274,7 +1284,8 @@ void Pin3D::InitBackGraphics()
 	/*const HRESULT hr =*/ m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv, 4,
 												  (LPWORD)rgi0123, 4, 0);
-
+	///*const HRESULT hr =*/ m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+	//											  rgv, 4, 0);
 	EnableLightMap(fFalse, -1);
 
 	//m_pd3dDevice->SetTextureStageState(eLightProject1, D3DTSS_COLOROP, D3DTOP_DISABLE);
@@ -1287,7 +1298,7 @@ void Pin3D::InitBackGraphics()
 
 	SetNormal(rgv, rgiPin3D1, 4, NULL, NULL, 0);
 	m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv, 8,
+												  rgv, 7,
 												  (LPWORD)rgiPin3D1, 4, 0);
 	}
 
@@ -1505,7 +1516,7 @@ void Pin3D::Flip(const int offsetx, const int offsety, const BOOL vsync)
 	rcNew.top = m_rcUpdate.top + offsety;
 	rcNew.bottom = m_rcUpdate.bottom + offsety;
 
-	// Set blt effects to minimize tearing.
+	// Set blt effects
     DDBLTFX ddbltfx;
 	ZeroMemory(&ddbltfx, sizeof(DDBLTFX));
 	ddbltfx.dwSize = sizeof(DDBLTFX);
@@ -1520,7 +1531,7 @@ void Pin3D::Flip(const int offsetx, const int offsety, const BOOL vsync)
 	}
 
 	if(g_pplayer->m_fVSync && vsync)
-	    g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0); // deprecated for win vista and above?!
+	    g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
 
 	// Copy the back buffer to the front buffer.
 	HRESULT hr = m_pddsFrontBuffer->Blt(&rcNew, 
@@ -1650,7 +1661,7 @@ void Pin3D::Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z)
 	matTemp.Multiply(matRotateY, matTemp);
 	matTemp.Multiply(matRotateZ, matTemp);
 
-	m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
+	m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 	}
 
 void Pin3D::Scale(const float x, const float y, const float z)
@@ -1658,7 +1669,7 @@ void Pin3D::Scale(const float x, const float y, const float z)
 	Matrix3D matTemp;
 	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 	matTemp.Scale( x, y, z );
-	m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
+	m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 }
 
 void Pin3D::Translate(const float x, const float y, const float z)
@@ -1676,7 +1687,7 @@ void Pin3D::Translate(const float x, const float y, const float z)
 	matTrans._43 = z;
 	matTemp.Multiply(matTrans, matTemp);
 
-	m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
+	m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 	}
 
 void Pin3D::SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar)
@@ -1718,7 +1729,7 @@ void Pin3D::CacheTransform()
 	matView.Multiply(matWorld, m_matrixTotal);
 	}
 
-#define MAX_INT 0x0fffffff
+#define MAX_INT 0x0fffffff //!!?
 
 void Pin3D::ClearExtents(RECT * const prc, float * const pznear, float * const pzfar)
 	{
@@ -2000,7 +2011,7 @@ void Pin3D::ReadObjFrameFromCacheFile(ObjFrame *pobjframe)
 	if (!pobjframe) return; // can't return value to null struct
 	pobjframe->pdds = NULL;	// set to NULL in case of error
 
-	if (!m_fReadingFromCache) return;	//rlc cache is disabled 
+	if (!m_fReadingFromCache) return;	// cache is disabled 
 	
 	DWORD bytesRead;
 	int ret = ReadFile(m_hFileCache, &pobjframe->rc, sizeof(RECT), &bytesRead, NULL);

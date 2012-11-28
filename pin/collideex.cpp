@@ -140,7 +140,7 @@ LineSegSlingshot::~LineSegSlingshot()
 	}
 
 
-float LineSegSlingshot::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) //rlc begin change >>>>>>>>>>>>>>>>
+float LineSegSlingshot::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
 	{
 	if (!m_fEnabled) return -1.0f;	
 
@@ -156,7 +156,7 @@ void LineSegSlingshot::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 	if (!m_psurface->m_fDisabled && threshold) // enabled and if velocity greater than threshold level		
 		{
-		const float len = (v2.x - v1.x)*phitnormal->y - (v2.y - v1.y)*phitnormal->x; //rlc length of segment, Unit TAN points from V1 to V2
+		const float len = (v2.x - v1.x)*phitnormal->y - (v2.y - v1.y)*phitnormal->x; // length of segment, Unit TAN points from V1 to V2
 
 		const Vertex2D vhitpoint(pball->x - phitnormal->x * pball->radius, //project ball radius along norm
 								 pball->y - phitnormal->y * pball->radius);
@@ -164,9 +164,9 @@ void LineSegSlingshot::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		// vhitpoint will now be the point where the ball hits the line
 		// Calculate this distance from the center of the slingshot to get force
 
-		const float btd = (vhitpoint.x - v1.x)*phitnormal->y - (vhitpoint.y - v1.y)*phitnormal->x; //rlc distance to vhit from V1
+		const float btd = (vhitpoint.x - v1.x)*phitnormal->y - (vhitpoint.y - v1.y)*phitnormal->x; // distance to vhit from V1
 		float force = (len != 0.0f) ? ((btd+btd)/len - 1.0f) : -1.0f;	// -1..+1
-		force = 0.5f *(1.0f-force*force);	//rlc maximum value 0.5 ...I think this should have been 1.0...oh well
+		force = 0.5f *(1.0f-force*force);	//!! maximum value 0.5 ...I think this should have been 1.0...oh well
 											// will match the previous physics
 		force *= m_force;//-80;
 
@@ -251,17 +251,12 @@ HitGate::HitGate(Gate * const pgate)
 	m_gateanim.m_fOpen = fFalse;
 	}
 
-//rlc begin Change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 float HitGate::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
 	{	
 	if (!m_fEnabled) return -1.0f;		
 
-	//return LineSeg::HitTest(pball, dtime, phitnormal);			 //rlc test ok
-
-	return HitTestBasic(pball, dtime, phitnormal, true, true, false);// normal face, lateral, non-rigid
-
+	return HitTestBasic(pball, dtime, phitnormal, true, true, false); // normal face, lateral, non-rigid
 	}
-//rlc end Change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 void HitGate::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{
@@ -615,12 +610,12 @@ float Hit3DPoly::HitTestBasicPolygon(Ball * const pball, const float dtime, Vert
 
 	const float bnv = (normal.x*pball->vx) + (normal.y*pball->vy) + (normal.z*pball->vz);  //speed in Normal-vector direction
 
-	if (direction && bnv >= 0)								//rlc ... return if clearly ball is receding from object
+	if (direction && bnv >= 0)								// return if clearly ball is receding from object
 		return -1.0f;
 
 	// Point on the ball that will hit the polygon, if it hits at all
 	const float bRadius = pball->radius;
-	float hitx = pball->x - normal.x * bRadius; //rlc nearest point on ball ... projected radius along norm
+	float hitx = pball->x - normal.x * bRadius; // nearest point on ball ... projected radius along norm
 	float hity = pball->y - normal.y * bRadius;
 	float hitz = pball->z - normal.z * bRadius;
 
@@ -724,7 +719,7 @@ float Hit3DPoly::HitTestBasicPolygon(Ball * const pball, const float dtime, Vert
 		if (!rigid)								// non rigid body collision? return direction
 			phitnormal[1].x = bUnHit ? 1.0f : 0.0f;	// UnHit signal	is receding from outside target
 			
-		pball->m_HitDist = bnd;					//rlc-3dhit actual contact distance ... 
+		pball->m_HitDist = bnd;					// 3dhit actual contact distance ... 
 		pball->m_HitNormVel = bnv;
 		pball->m_HitRigid = rigid;				// collision type
 
@@ -946,7 +941,7 @@ ObjFrame *DispReelAnimObject::Draw3D(const RECT * const prc)
 	rc.left = 0;		
 	rc.top = 0;	
 	
-	rc.right = m_pDispReel->m_pobjframe->rc.right - m_pDispReel->m_pobjframe->rc.left; //rlc uninitialized
+	rc.right = m_pDispReel->m_pobjframe->rc.right - m_pDispReel->m_pobjframe->rc.left;
 	rc.bottom = m_pDispReel->m_pobjframe->rc.bottom - m_pDispReel->m_pobjframe->rc.top;	
 	
 	g_pplayer->m_pin3d.m_pddsBackBuffer->BltFast(m_pDispReel->m_pobjframe->rc.left,
@@ -984,18 +979,13 @@ TriggerLineSeg::TriggerLineSeg()
 	m_fEnabled = fTrue;
 	}
 
-//rlc change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 float TriggerLineSeg::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) //rlc problem-5
 	{
 	if (!m_ptrigger->m_hitEnabled) return -1.0f;				//rlc custom shape trigger
 	
-    // approach either face, not lateral-rolling point (assume center),  not a rigid body contact
+    // approach either face, not lateral-rolling point (assume center), not a rigid body contact
 	return this->HitTestBasic(pball, dtime, phitnormal, false,false, false); 	
 	}
-
-
-	//rlc  end change <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 void TriggerLineSeg::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{

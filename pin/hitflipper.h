@@ -21,11 +21,10 @@ public:
 	float m_endradius;
 	float faceNormOffset; 
 
-	// rlc New Flipper motion basis, uses Green's transform to rotate these valuse to curAngle
+	// New Flipper motion basis, uses Green's transform to rotate these valuse to curAngle
 	Vertex2D m_leftFaceNormal, m_rightFaceNormal, m_leftFaceBase, m_rightFaceBase;
 	Vertex2D m_endRadiusCenter;
 	float m_lengthFace;
-	//rlc end
 
 	float m_anglespeed;
 	float m_angleCur;

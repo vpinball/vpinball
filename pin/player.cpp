@@ -320,8 +320,8 @@ void Player::DisableFPS()
 
 void Player::RecomputePauseState()
 	{
-	const BOOL fOldPause = m_fPause;
-	const BOOL fNewPause = !(m_fGameWindowActive || m_fDebugWindowActive);// || m_fUserDebugPaused;
+	const bool fOldPause = m_fPause;
+	const bool fNewPause = !(m_fGameWindowActive || m_fDebugWindowActive);// || m_fUserDebugPaused;
 	
 	if (fOldPause && fNewPause)
 		{
@@ -335,7 +335,7 @@ void Player::RecomputePauseState()
 
 void Player::RecomputePseudoPauseState()
 	{
-	const BOOL fOldPseudoPause = m_fPseudoPause;
+	const bool fOldPseudoPause = m_fPseudoPause;
 	m_fPseudoPause = m_fUserDebugPaused || m_fDebugWindowActive;
 	if (fOldPseudoPause != m_fPseudoPause)
 		{
@@ -483,8 +483,6 @@ void Player::InitKeys()
 		}
 	m_rgKeys[eExitGame] = (EnumAssignKeys)key;
 
-	//rlc begin added keys
-
 	hr = GetRegInt("Player","FrameCount", &key);
 	if (hr != S_OK || key > 0xdd)
 		{
@@ -516,14 +514,13 @@ void Player::InitKeys()
 	hr = GetRegInt("Player","MechTilt", &key);
 	if (hr != S_OK || key > 0xdd)
 		{
-		key = DIK_T;			//assigned by Aaron
+		key = DIK_T;
 		}
 	m_rgKeys[eMechanicalTilt] = (EnumAssignKeys)key;
 
 	hr = GetRegInt("Player","RMagnaSave", &key);
 	if (hr != S_OK || key > 0xdd)
 		{
-		//key = DIK_BACKSPACE;	//14 (0x0E) taken from Black Knight  DIK_RCONTROL        0x9D
 		key = DIK_RCONTROL;		//157 (0x9D) DIK_RCONTROL        0x9D
 		}
 	m_rgKeys[eRightMagnaSave] = (EnumAssignKeys)key;
@@ -531,7 +528,6 @@ void Player::InitKeys()
 	hr = GetRegInt("Player","LMagnaSave", &key);
 	if (hr != S_OK || key > 0xdd)
 		{
-		//key = DIK_APOSTROPHE; //40 (0x28) taken from Black Knight
 		key = DIK_LCONTROL; //29 (0x1D)
 		}
 	m_rgKeys[eLeftMagnaSave] = (EnumAssignKeys)key;
@@ -542,8 +538,6 @@ void Player::InitKeys()
 		key = DIK_F10;
 		}
 	m_rgKeys[eEnable3D] = (EnumAssignKeys)key;
-
-	//rlc end add keys
 	}
 
 void Player::InitRegValues()
@@ -617,12 +611,12 @@ void Player::InitDebugHitStructure()
 	m_debugoctree.CreateNextLevel();
 	}
 
-HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName, BOOL fCheckForCache)
+HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName, const BOOL fCheckForCache)
 	{
 	m_ptable = ptable;
 
 	//accelerometer normal mounting is 90 degrees in left-hand coordinates (1/4 turn counterclockwise)
-	m_fAccelerometer = m_ptable->m_tblAccelerometer;		// true if electronic Accelerometer enabled m_ptable->
+	m_fAccelerometer = m_ptable->m_tblAccelerometer;		// true if electronic Accelerometer enabled
 	m_AccelNormalMount = m_ptable->m_tblAccelNormalMount;	// true is normal mounting (left hand coordinates)
 	m_AccelAngle = m_ptable->m_tblAccelAngle * (float)(M_PI/180.0); // 0 rotated counterclockwise (GUI is lefthand coordinates)
 	m_AccelAmp = m_ptable->m_tblAccelAmp;					// Accelerometer gain 
@@ -653,26 +647,22 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	// width, height, and colordepth are only defined if fullscreen is true.
 	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, !!m_fStereo3D);
 
-	if (m_fFullScreen)
-		{
-		SetWindowPos(m_hwnd, NULL, 0, 0, m_screenwidth, m_screenheight, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
-		}
-			
-	if (m_fFullScreen)
-		{
-		m_pixelaspectratio = ((GPINFLOAT)m_screenwidth / (GPINFLOAT)m_screenheight) / (4.0/3.0);
-		}
-	else
-		{
-		m_pixelaspectratio = ((GPINFLOAT)m_width / (GPINFLOAT)m_height) / (4.0/3.0);
-		}
-	
 	if (hr != S_OK)
 		{
 		char szfoo[64];
 		sprintf_s(szfoo, "Error code: %x",hr);
 		ShowError(szfoo);
 		return hr;
+		}
+
+	if (m_fFullScreen)
+		{
+		SetWindowPos(m_hwnd, NULL, 0, 0, m_screenwidth, m_screenheight, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+		m_pixelaspectratio = ((GPINFLOAT)m_screenwidth / (GPINFLOAT)m_screenheight) / (4.0/3.0);
+		}
+	else
+		{
+		m_pixelaspectratio = ((GPINFLOAT)m_width / (GPINFLOAT)m_height) / (4.0/3.0);
 		}
 
 	m_pininput.Init(m_hwnd);
@@ -718,12 +708,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 	hr = m_pin3d.m_pd3dDevice->BeginScene();
 
-	float realFOV = ptable->m_FOV;
-
-	if (realFOV < 0.01f)
-		{
-		realFOV = 0.01f; // Can't have a real zero FOV, but this will look the same
-		}
+	const float realFOV = (ptable->m_FOV < 0.01f) ? 0.01f : ptable->m_FOV; // Can't have a real zero FOV, but this will look the same
 
 	m_pin3d.InitLayout(ptable->m_left, ptable->m_top, ptable->m_right,
 					   ptable->m_bottom, ptable->m_inclination, realFOV,
@@ -745,7 +730,6 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 	movedPlunger = 0;	// has plunger moved, must have moved at least three times
 
 	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
-	// TEXT
 	SetWindowText(hwndProgressName, "Initalizing Physics...");
 
 	// Need to set timecur here, for init functions that set timers
@@ -773,7 +757,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 			ph->GetHitShapes(&m_vho);
 			const int newsize = m_vho.Size();
 			// Save the objects the trouble of having the set the idispatch pointer themselves
-			for (int hitloop = currentsize;hitloop < newsize;hitloop++)
+			for (int hitloop = currentsize; hitloop < newsize; hitloop++)
 				{
 				m_vho.ElementAt(hitloop)->m_pfedebug = m_ptable->m_vedit.ElementAt(i)->GetIFireEvents();
 				}
@@ -784,7 +768,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
   				if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
 	  				m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
 				{
-				  m_vhitacrylic.AddElement(ph);
+					m_vhitacrylic.AddElement(ph);
 				}
 			}
 			else
@@ -881,15 +865,13 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
     //----------------------------------------------------------------------------------
 //#define IS_ATI(DDDEVICEID) (DDDEVICEID.dwVendorId==0x1002)  //BDS
-    /*if (m_pin3d.m_pd3dDevice->dwVendorID==0x1002)	//ATI
+    //if (m_pin3d.m_pd3dDevice->dwVendorID==0x1002)	//ATI
+	if (g_pvp->m_pdd.m_fAlternateRender)
 		{
 		ReOrder();
-		}*/
-		if (g_pvp->m_pdd.m_fAlternateRender)
-			{
-			ReOrder();
-			}
-    //----------------------------------------------------------------------------------
+		}
+
+	//----------------------------------------------------------------------------------
 	// Pre-render all non-changing elements such as 
 	// static walls, rails, backdrops, etc.
 	InitStatic(hwndProgress);
@@ -921,7 +903,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 	// Cupid for Primitives: 
 	// seems to me that this is the place, where Animobjects schould be added to the m_vscreenupdate vector.
-	// But the prioblem is that primitives should have an animobject first.
+	// But the problem is that primitives should have an animobject first.
 	// Primitives should respond to GetAnimObject now.
 	// No, they dont respond to GetAnimObject and all the other elements dont either...
 	// So there must be another place, where m_vho is filled... m_vho seems to be a hitobject... what does
@@ -937,12 +919,12 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 
 			AnimObject * const pao = m_vho.ElementAt(i)->GetAnimObject();
 
-			const float myz = (pao->m_znear + pao->m_zfar)*0.5f;
+			const float myz = (pao->m_znear + pao->m_zfar)/*0.5f*/; //!! other heuristic?
 
 			int l;
 			for (l=0;l<m_vscreenupdate.Size();l++)
 				{
-				const bool fInBack = (myz > (m_vscreenupdate.ElementAt(l)->m_znear + m_vscreenupdate.ElementAt(l)->m_zfar)*0.5f);
+				const bool fInBack = (myz > (m_vscreenupdate.ElementAt(l)->m_znear + m_vscreenupdate.ElementAt(l)->m_zfar)/*0.5f*/);
 
 				if (fInBack)
 					{
@@ -961,7 +943,7 @@ HRESULT Player::Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName,
 				}
 
 			//m_vscreenupdate.AddElement(m_vho.ElementAt(i));
-			pao->m_fInvalid = fFalse;
+			pao->m_fInvalid = false;
 			}
 		}
 
@@ -1586,13 +1568,12 @@ void Player::InitWindow()
 				break;
 	}
 
-	// TEXT
 	m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
     mixer_init( m_hwnd );
     hid_init();
 
-	SetCursorPos( 400,999999 ); //rlc ... move to hide in lower left corner, one pixel shows
+	SetCursorPos( 400, 999999 ); // ShowCursor(false)?
 	}
 
 void Player::UltraNudgeX(const int x, const int j )
@@ -1643,7 +1624,7 @@ int Player::UltraNudgeGetTilt()
 
 void Player::UltraNudge()	// called on every intergral physics frame
 {	
-	static F32 cna=1,sna=0,na=0;	//rlc initialize for angle 0
+	static F32 cna=1,sna=0,na=0;	// initialize for angle 0
 	
 	if (m_NudgeManual >= 0)			// Only one joystick controls in manual mode
 	{		
@@ -2103,7 +2084,7 @@ void Player::Render()
 #ifdef ACCURATETIMERS
 		m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 
-		const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); //rlc 10 milli-seconds
+		const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); // 10 milli-seconds
 
 		for (int i=0;i<m_vht.Size();i++)
 		{
@@ -2119,7 +2100,7 @@ void Player::Render()
 		//slintf( "%u %u\n", m_RealTimeClock/1000, sim_msec );
 		//slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
 		
-		UltraNudge();		//rlc physics_dtime is the balance of time to move from the graphic frame position to the next
+		UltraNudge();		// physics_dtime is the balance of time to move from the graphic frame position to the next
 		UltraPlunger();		// integral physics frame.  So the previous graphics frame was (1.0 - physics_dtime) before 
 							// this integral physics frame. Accelerations and inputs are always physics frame aligned
 		
@@ -2151,7 +2132,7 @@ void Player::Render()
 
 	m_LastKnownGoodCounter++;
 
-	if(m_pininput.Pressed(PININ_ENABLE3D)) {
+	if(m_pininput.Pressed(PININ_ENABLE3D)) { //!!
 		m_fStereo3Denabled = !m_fStereo3Denabled;
 		SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
 		m_fCleanBlt = fFalse;
@@ -2162,7 +2143,7 @@ void Player::Render()
 	for (int i=0;i<m_vscreenupdate.Size();i++)
 	{
 		// Check if the element is invalid (its frame changed).
-		m_vscreenupdate.ElementAt(i)->m_fInvalid = fFalse;
+		m_vscreenupdate.ElementAt(i)->m_fInvalid = false;
 		m_vscreenupdate.ElementAt(i)->Check3D();
 		if (m_vscreenupdate.ElementAt(i)->m_fInvalid)					
 		{
@@ -2451,7 +2432,7 @@ if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (
 		if (m_fCleanBlt && (overall_area < FULLBLTAREA))
 		{
 			if(m_fVSync && (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR))
-				g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0); // deprecated for win vista and above?!
+				g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
 
 			// Smart Blit - only update the invalidated areas
 			for (int i=0;i<m_vupdaterect.Size();i++)
@@ -2627,14 +2608,14 @@ else
 					// Update the region (+ area around) from the back buffer to the front buffer.
 					if(m_fStereo3DY) {
 						if(shift == 1)
-							stereo_repro_16bit_y(max(top-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min((unsigned int)bottom+maxSeparationU+1,height-(maxSeparationU+1))&0xFFFFFFFE, max(left,0)&0xFFFFFFFE, min((unsigned int)right+1,width)&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,false,m_fStereo3DAA,mask); //!! x: +1,&0xFFFFFFFE due to SSE //!! y: opt. for AA3D only(?):&0xFFFFFFFE, also bottom+1 then
+							stereo_repro_16bit_y(max(top-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min((unsigned int)bottom+maxSeparationU+1,height-(maxSeparationU+1))&0xFFFFFFFE, max(left,0)&0xFFFFFFFE, min((unsigned int)right+1,width)&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,false,true,m_fStereo3DAA,mask); //!! x: +1,&0xFFFFFFFE due to SSE //!! y: opt. for AA3D only(?):&0xFFFFFFFE, also bottom+1 then
 						else
-							stereo_repro_32bit_y(max(top-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min((unsigned int)bottom+maxSeparationU+1,height-(maxSeparationU+1))&0xFFFFFFFE, max(left,0)&0xFFFFFFFC, min((unsigned int)right+3,width)&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false,m_fStereo3DAA,mask); //!! x: +3,&0xFFFFFFFC due to SSE //!! y: opt. for AA3D only(?):&0xFFFFFFFE, also bottom+1 then
+							stereo_repro_32bit_y(max(top-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min((unsigned int)bottom+maxSeparationU+1,height-(maxSeparationU+1))&0xFFFFFFFE, max(left,0)&0xFFFFFFFC, min((unsigned int)right+3,width)&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false,true,m_fStereo3DAA,mask); //!! x: +3,&0xFFFFFFFC due to SSE //!! y: opt. for AA3D only(?):&0xFFFFFFFE, also bottom+1 then
 					} else {
 						if(shift == 1)
-							stereo_repro_16bit_x(max(top,0)&0xFFFFFFFE, min((unsigned int)bottom+1,height)&0xFFFFFFFE, max(left-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min(right+maxSeparationU+1,width-(maxSeparationU+1))&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,false,m_fStereo3DAA,mask); //!! x: +1,&0xFFFFFFFE due to SSE //!! y: opt. for AA3D only:&0xFFFFFFFE, also bottom+1 then
+							stereo_repro_16bit_x(max(top,0)&0xFFFFFFFE, min((unsigned int)bottom+1,height)&0xFFFFFFFE, max(left-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min(right+maxSeparationU+1,width-(maxSeparationU+1))&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,false,true,m_fStereo3DAA,mask); //!! x: +1,&0xFFFFFFFE due to SSE //!! y: opt. for AA3D only:&0xFFFFFFFE, also bottom+1 then
 						else
-							stereo_repro_32bit_x(max(top,0)&0xFFFFFFFE, min((unsigned int)bottom+1,height)&0xFFFFFFFE, max(left-(int)maxSeparationU,(int)maxSeparationU+1+3)&0xFFFFFFFC, min(right+maxSeparationU+3,width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false,m_fStereo3DAA,mask); //!! x: +3,&0xFFFFFFFC due to SSE //!! y: opt. for AA3D only:&0xFFFFFFFE, also bottom+1 then
+							stereo_repro_32bit_x(max(top,0)&0xFFFFFFFE, min((unsigned int)bottom+1,height)&0xFFFFFFFE, max(left-(int)maxSeparationU,(int)maxSeparationU+1+3)&0xFFFFFFFC, min(right+maxSeparationU+3,width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false,true,m_fStereo3DAA,mask); //!! x: +3,&0xFFFFFFFC due to SSE //!! y: opt. for AA3D only:&0xFFFFFFFE, also bottom+1 then
 					}
 				}
 			}
@@ -2642,14 +2623,14 @@ else
 #endif
 				if(m_fStereo3DY) {
 					if(shift == 1)
-	 					stereo_repro_16bit_y((maxSeparationU+1+1)&0xFFFFFFFE, (height-(maxSeparationU+1))&0xFFFFFFFE, 0, width&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,true,m_fStereo3DAA,mask); //!! mask not necessary for full update
+	 					stereo_repro_16bit_y((maxSeparationU+1+1)&0xFFFFFFFE, (height-(maxSeparationU+1))&0xFFFFFFFE, 0, width&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,true,true,m_fStereo3DAA,mask); //!! mask not necessary for full update
 					else
-						stereo_repro_32bit_y((maxSeparationU+1+1)&0xFFFFFFFE, (height-(maxSeparationU+1))&0xFFFFFFFE, 0, width&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,m_fStereo3DAA,mask);
+						stereo_repro_32bit_y((maxSeparationU+1+1)&0xFFFFFFFE, (height-(maxSeparationU+1))&0xFFFFFFFE, 0, width&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,true,m_fStereo3DAA,mask);
 				} else {
 					if(shift == 1)
-						stereo_repro_16bit_x(0, height, (maxSeparationU+1+3)&0xFFFFFFFE, (width-(maxSeparationU+1))&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,true,m_fStereo3DAA,mask);
+						stereo_repro_16bit_x(0, height, (maxSeparationU+1+3)&0xFFFFFFFE, (width-(maxSeparationU+1))&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,true,true,m_fStereo3DAA,mask);
 					else
-						stereo_repro_32bit_x(0, height, (maxSeparationU+1+3)&0xFFFFFFFC, (width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,m_fStereo3DAA,mask);
+						stereo_repro_32bit_x(0, height, (maxSeparationU+1+3)&0xFFFFFFFC, (width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,true,m_fStereo3DAA,mask);
 				}
 
 #else // continue with FXAA //!! misses SSE(2) opt. //!! add update only version
@@ -3094,11 +3075,10 @@ void Player::DrawBallShadows()
 
 				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 
-				//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3DShadow, 4,0);
-
 				m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DShadow, 4,
 															  (LPWORD)rgi0123, 4, NULL);
+				//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3DShadow, 4,0);
 				}
 			}
 		}
@@ -3224,13 +3204,9 @@ void Player::DrawBalls()
 		m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 4,
 												  (LPWORD)rgi0123, 4, NULL);
-/*
-		This does not work, i don't know why. - Cupid
-
-		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 4,
-												  NULL);
-*/
+		//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+		//										  rgv3D, 4,
+		//										  NULL);
 
 		// Draw the ball logo
 		Vertex3D rgv3DArrowTransformed[4];
@@ -3303,14 +3279,11 @@ void Player::DrawBalls()
 						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinFront->m_maxtv;
 						}
 
-					//m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-															  //rgv3DArrowTransformed, 4,
-															  //rgi0123, DECALPOINTS, NULL);
-
 					m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DArrowTransformed, 4,
 															  (LPWORD)rgi0123, 4, NULL);
-
+					//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					//									  rgv3DArrowTransformed, 4, NULL);
 					}
 				orientation.Identity();
 				orientation.scaleX(m_BallStretchX);
@@ -3337,13 +3310,11 @@ void Player::DrawBalls()
 						rgv3DArrowTransformed2[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinBack->m_maxtv;
 						}
 
-					/*m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-															  rgv3DArrowTransformed, 4,
-															  rgi0123, DECALPOINTS, NULL);*/
-
 					m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 															  rgv3DArrowTransformed2, 4,
 															  (LPWORD)rgi0123, 4, NULL);
+					//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					//										  rgv3DArrowTransformed2, 4, NULL);
 					}
 			}
 
@@ -3744,18 +3715,18 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				{
 				g_pplayer->m_fPause = fTrue;
 					
-				g_pplayer->m_fGameWindowActive = fFalse;	//rlc  added
-				g_pplayer->RecomputePauseState();			//rlc added
-				g_pplayer->RecomputePseudoPauseState();		//rlc added
+				g_pplayer->m_fGameWindowActive = fFalse;
+				g_pplayer->RecomputePauseState();
+				g_pplayer->RecomputePseudoPauseState();
 				}
 			else
 				{
 				g_pplayer->m_fPause = fFalse;
 			
-				g_pplayer->m_fGameWindowActive = fTrue;	//rlc  added
-				SetCursor(NULL);						//rlc  added
-				g_pplayer->m_fNoTimeCorrect = fTrue;	//rlc  added
-				g_pplayer->m_fCleanBlt = fFalse;		//rlc  added
+				g_pplayer->m_fGameWindowActive = fTrue;
+				SetCursor(NULL);
+				g_pplayer->m_fNoTimeCorrect = fTrue;
+				g_pplayer->m_fCleanBlt = fFalse;
 				}
 			break;
 #endif

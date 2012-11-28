@@ -257,7 +257,7 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	if (FAILED(hr))
 		{
 		ppinput->m_pJoystick[ppinput->e_JoyCnt] = NULL; //make sure no garbage
-		return DIENUM_CONTINUE; //rlc try for another joystick
+		return DIENUM_CONTINUE; // try for another joystick
 		}
 
 	hr =  ppinput->m_pJoystick[ppinput->e_JoyCnt]->GetProperty( DIPROP_PRODUCTNAME,  &dstr.diph);
@@ -496,7 +496,7 @@ void PinInput::UnInit()
 
 	for (int k = 0; k < e_JoyCnt; ++k)
 		{
-		if (m_pJoystick[k])// = NULL) //rlc fixed 
+		if (m_pJoystick[k]) 
 			{
 			// Unacquire the device one last time just in case 
 			// the app tried to exit while the device is still acquired.
@@ -871,7 +871,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 		}
 		else if( input->dwSequence >= APP_JOYSTICKMN && input->dwSequence <= APP_JOYSTICKMX )
 		{
-			const int joyk = input->dwSequence - APP_JOYSTICKMN ;	//rlc joystick index
+			const int joyk = input->dwSequence - APP_JOYSTICKMN; // joystick index
 			static bool rotLeftManual = false;
 
 			if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
