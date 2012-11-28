@@ -423,10 +423,6 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	ppin3d->EnableLightMap(fFalse, height);
 	}
 	
-void Kicker::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	}
-
 void Kicker::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}

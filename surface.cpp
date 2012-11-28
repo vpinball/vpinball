@@ -1135,12 +1135,11 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->ExpandRectByRect(&plinesling->m_slingshotanim.m_rcBounds, &pof->rc);
 
-		ppin3d->WriteAnimObjectToCacheFile(&plinesling->m_slingshotanim, &plinesling->m_slingshotanim.m_pobjframe, 1);
-
 		// reset the portion of the z-buffer that we changed
 		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
+		ZeroMemory(&ddbltfx,sizeof(DDBLTFX));
 		ddbltfx.dwSize = sizeof(DDBLTFX);
 		ddbltfx.dwFillColor = 0;
 		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT,&ddbltfx);
@@ -1661,20 +1660,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	return pof;
 	}
 	
-void Surface::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	for (int i=0;i<m_vlinesling.Size();i++)
-		{
-		LineSegSlingshot * const plinesling = m_vlinesling.ElementAt(i);
-		ppin3d->ReadAnimObjectFromCacheFile(&plinesling->m_slingshotanim, &plinesling->m_slingshotanim.m_pobjframe, 1);
-		}
-	
-	if (m_d.m_fDroppable && m_d.m_fInner)
-		{
-		ppin3d->ReadAnimObjectFromCacheFile(&m_phitdrop->m_polydropanim, m_phitdrop->m_polydropanim.m_pobjframe, 2);
-		}
-	}
-
 void Surface::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	RenderSlingshots(pd3dDevice);
@@ -1698,9 +1683,6 @@ void Surface::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			ObjFrame * const pof2 = RenderWallsAtHeight(pd3dDevice, fTrue, fTrue); 
 			m_phitdrop->m_polydropanim.m_pobjframe[1] = pof2;
 			}
-
-		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-		ppin3d->WriteAnimObjectToCacheFile(&m_phitdrop->m_polydropanim, m_phitdrop->m_polydropanim.m_pobjframe, 2);
 		}
 	}
 

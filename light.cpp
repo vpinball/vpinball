@@ -949,7 +949,6 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 		if (m_pobjframe[i]->pdds == NULL)
 			{
-			ppin3d->WriteObjFrameToCacheFile(NULL);
 			continue;
 			}
 			
@@ -962,8 +961,6 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
 			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
 			}
-
-		ppin3d->WriteObjFrameToCacheFile(m_pobjframe[i]);
 
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
@@ -982,15 +979,6 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->SetTexture(NULL);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-	}
-
-void Light::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	for (int i=0;i<2;i++)
-		{
-		m_pobjframe[i] = new ObjFrame();
-		ppin3d->ReadObjFrameFromCacheFile(m_pobjframe[i]);
-		}
 	}
 
 void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
@@ -1099,7 +1087,6 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		if (m_pobjframe[i]->pdds == NULL)
 			{
-			ppin3d->WriteObjFrameToCacheFile(NULL);
 			continue;
 			}
 
@@ -1144,8 +1131,6 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
 			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
 			}
-
-		ppin3d->WriteObjFrameToCacheFile(m_pobjframe[i]);
 
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;

@@ -1646,15 +1646,9 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	}
 	
-void Ramp::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	}
-
-
 void Ramp::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
-
 
 void Ramp::SetObjectPos()
 	{

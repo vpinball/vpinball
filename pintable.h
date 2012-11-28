@@ -126,7 +126,6 @@ public:
 	STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 	STDMETHOD(StartShake)(/*[in]*/ void);
 	STDMETHOD(StopShake)(/*[in]*/ void);
-	
 
 	STDMETHOD(get_FieldOfView)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_FieldOfView)(/*[in]*/ float newVal);
@@ -166,8 +165,6 @@ public:
 	STDMETHOD(put_AccelerManualAmp)(/*[in]*/ float newVal);
 	STDMETHOD(get_GlobalDifficulty)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_GlobalDifficulty)(/*[in]*/ float newVal);
-	STDMETHOD(get_TableCaching)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_TableCaching)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD(get_HardwareRender)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_HardwareRender)(/*[in]*/ VARIANT_BOOL newVal);
@@ -477,8 +474,6 @@ END_CONNECTION_POINT_MAP()
     float m_tblExitConfirm;         // seconds before trying an autostart if doing once-only method .. 0 is automethod
 	float m_globalDifficulty;		// Table Difficulty Level
     float m_timeout;                // 0 means no timeout, otherwise in units of seconds when the table timeout should occur
-	BOOL m_TableCaching;			// Table Render Cacheing
-	BOOL m_CacheEnabled;			// Table Render Cacheing
 
     // 1.0f means constantly tilting (an invalid/degenerative state)
     // 0.0f means will never tilt
@@ -501,7 +496,7 @@ END_CONNECTION_POINT_MAP()
 	int m_jolt_trigger_time;
 	int m_tilt_trigger_time;
 
-	BOOL	m_fRenderShadows;
+	BOOL m_fRenderShadows;
 	_protectionData	m_protectionData;
 
 	char m_szImage[MAXTOKEN];

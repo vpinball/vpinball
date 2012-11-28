@@ -611,7 +611,7 @@ void Player::InitDebugHitStructure()
 	m_debugoctree.CreateNextLevel();
 	}
 
-HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName, const BOOL fCheckForCache)
+HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName)
 	{
 	m_ptable = ptable;
 
@@ -834,34 +834,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	hr = m_pin3d.m_pd3dDevice->EndScene();
 	
-	// Start Cache
-	m_pin3d.m_fWritingToCache = false;
-	m_pin3d.m_fReadingFromCache = false;
-	m_pin3d.m_hFileCache = NULL;
-
-	if (fCheckForCache)
-		{
-		const BOOL fGotCache = m_pin3d.OpenCacheFileForRead();
-
-		if (!fGotCache)
-			{
-			m_pin3d.OpenCacheFileForWrite();
-			}
-		}
-
 	SendMessage(hwndProgress, PBM_SETPOS, 60, 0);
-	if (m_pin3d.m_fReadingFromCache)
-		{
-		SetWindowText(hwndProgressName, "Reading Table From Cache...");
-		}
-	else if (m_pin3d.m_fWritingToCache)
-		{
-		SetWindowText(hwndProgressName, "Writing Table To Cache...");
-		}
-	else
-		{
-		SetWindowText(hwndProgressName, "Rendering Table...");
-		}
+	SetWindowText(hwndProgressName, "Rendering Table...");
 
     //----------------------------------------------------------------------------------
 //#define IS_ATI(DDDEVICEID) (DDDEVICEID.dwVendorId==0x1002)  //BDS
@@ -877,26 +851,12 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	InitStatic(hwndProgress);
 
 	SendMessage(hwndProgress, PBM_SETPOS, 80, 0);
-	if (m_pin3d.m_fReadingFromCache)
-		{
-		SetWindowText(hwndProgressName, "Reading Animations From Cache...");
-		}
-	else if (m_pin3d.m_fWritingToCache)
-		{
-		SetWindowText(hwndProgressName, "Writing Animations To Cache...");
-		}
-	else
-		{
-		SetWindowText(hwndProgressName, "Rendering Animations...");
-		}
+	SetWindowText(hwndProgressName, "Rendering Animations...");
 
 	// Pre-render all elements which have animations.
 	// Add the pre-rendered animations to the display list. 
 	InitAnimations(hwndProgress);
 	
-	// End Cache
-	m_pin3d.CloseCacheFile();
-
 	///////////////// Screen Update Vector
 	///// (List of movers which can be blitted at any time)
 	/////////////////////////
@@ -1128,13 +1088,6 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 
 void Player::InitStatic(HWND hwndProgress)
 	{
-	if (m_pin3d.m_fReadingFromCache)
-		{
-		m_pin3d.ReadSurfaceFromCacheFile(m_pin3d.m_pddsStatic);
-		m_pin3d.ReadSurfaceFromCacheFile(m_pin3d.m_pddsStaticZ);
-		return;
-		}
-
 	// Start the frame.
 	HRESULT hr = m_pin3d.m_pd3dDevice->BeginScene();
 
@@ -1192,9 +1145,6 @@ void Player::InitStatic(HWND hwndProgress)
 
 	// Finish the frame.
 	hr = m_pin3d.m_pd3dDevice->EndScene();
-
-	m_pin3d.WriteSurfaceToCacheFile(m_pin3d.m_pddsStatic);
-	m_pin3d.WriteSurfaceToCacheFile(m_pin3d.m_pddsStaticZ);
 	}
 
 void Player::InitAnimations(HWND hwndProgress)
@@ -1214,14 +1164,8 @@ void Player::InitAnimations(HWND hwndProgress)
 		Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
 		{
-			if (m_pin3d.m_fReadingFromCache)
-			{
-				ph->RenderMoversFromCache(&m_pin3d);
-			}
-			else
-			{
-				ph->RenderMovers(m_pin3d.m_pd3dDevice);
-			}
+			ph->RenderMovers(m_pin3d.m_pd3dDevice);
+
 			if (hwndProgress)
 			{
 				SendMessage(hwndProgress, PBM_SETPOS, 80 + ((20*i)/m_ptable->m_vedit.Size()), 0);

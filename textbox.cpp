@@ -281,11 +281,6 @@ void Textbox::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 	
-void Textbox::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	RenderMovers(ppin3d->m_pd3dDevice);
-	}
-
 void Textbox::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;

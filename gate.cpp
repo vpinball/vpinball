@@ -464,11 +464,6 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,(LPWORD)rgiGate1, 8, 0);
 	}
 	
-void Gate::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	ppin3d->ReadAnimObjectFromCacheFile(&m_phitgate->m_gateanim, &m_phitgate->m_gateanim.m_vddsFrame);
-	}
-
 void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -769,8 +764,6 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
 			
-	ppin3d->WriteAnimObjectToCacheFile(&m_phitgate->m_gateanim, &m_phitgate->m_gateanim.m_vddsFrame);
-
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
