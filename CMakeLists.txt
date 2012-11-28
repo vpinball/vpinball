@@ -156,15 +156,12 @@ set(SOURCES
   pin/ball.cpp
   pin/collide.cpp
   pin/collideex.cpp
-  pin/draw.cpp
   pin/hitflipper.cpp
   pin/hitplunger.cpp
   pin/player.cpp
-  pin/wall.cpp
   media/fileio.cpp
   media/lzwreader.cpp
   media/lzwwriter.cpp
-  media/simpleplayer.cpp
   media/wavread.cpp
   )
 
@@ -250,13 +247,11 @@ set(HEADERS
   pin/hitplunger.h
   pin/hittimer.h
   pin/player.h
-  pin/wall.h
   media/asferr.h
   media/fileio.h
   media/lzwreader.h
   media/lzwwriter.h
   media/nserror.h
-  media/simpleplayer.h
   media/wavread.h
   media/wmaudiosdk.h
   )
