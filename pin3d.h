@@ -168,20 +168,6 @@ public:
 	void SetAlphaEnabled(const BOOL fAlpha) const;
 	void SetFiltersLinear() const;
 
-	BOOL GetCacheFileName(char *szFileName);
-	BOOL OpenCacheFileForRead();
-	void OpenCacheFileForWrite();
-	void WriteSurfaceToCacheFile(LPDIRECTDRAWSURFACE7 pdds);
-	void WriteObjFrameToCacheFile(ObjFrame *pobjframe);
-	void WriteAnimObjectToCacheFile(AnimObject *panimobj, Vector<ObjFrame> *pvobjframe);
-	void WriteAnimObjectToCacheFile(AnimObject *panimobj, ObjFrame **rgobjframe, int count);
-	void ReadSurfaceFromCacheFile(LPDIRECTDRAWSURFACE7 pdds);
-	void ReadObjFrameFromCacheFile(ObjFrame *pobjframe);
-	void ReadAnimObjectFromCacheFile(AnimObject *panimobj, Vector<ObjFrame> *pvobjframe);
-	void ReadAnimObjectFromCacheFile(AnimObject *panimobj, ObjFrame **rgpobjframe, int count);
-	void CloseCacheFile();
-	void DeleteCacheFileName();
-	
 	// Handy functions for creating obj frames
 
 	void ClearExtents(RECT * const prc, float * const pznear, float * const pzfar);
@@ -253,11 +239,6 @@ public:
 
 	LightProjected m_lightproject;
 
-	HANDLE m_hFileCache;
-
 	float m_maxSeparation, m_ZPD;
 	bool m_Stereo3D;
-
-	bool m_fReadingFromCache;
-	bool m_fWritingToCache;
 	};

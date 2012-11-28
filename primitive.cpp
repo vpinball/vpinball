@@ -835,11 +835,6 @@ void Primitive::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Primitive::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	}
-
-
 //////////////////////////////
 // Positioning
 //////////////////////////////

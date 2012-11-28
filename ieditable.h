@@ -190,7 +190,6 @@ extern const WCHAR rgwzTypeName[][17];
 	virtual void RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice); \
 	virtual void PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice); \
 	virtual void RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice); \
-	virtual void RenderMoversFromCache(Pin3D *ppin3d); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}\
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \

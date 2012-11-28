@@ -1034,10 +1034,6 @@ void PinComControl::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 	
-void PinComControl::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	}
-
 void PinComControl::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}

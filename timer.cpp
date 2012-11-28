@@ -149,10 +149,6 @@ void Timer::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 	
-void Timer::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	}
-
 void Timer::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}

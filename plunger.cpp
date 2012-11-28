@@ -316,11 +316,6 @@ const float rgcrossplungerNormal1[][2] = {
 
 #define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
 
-void Plunger::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	ppin3d->ReadAnimObjectFromCacheFile(&m_phitplunger->m_plungeranim, &m_phitplunger->m_plungeranim.m_vddsFrame);
-	}
-
 void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(m_d.m_fVisible)
@@ -508,8 +503,6 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ddbltfx.dwFillColor = 0;
 		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
-
-	ppin3d->WriteAnimObjectToCacheFile(&m_phitplunger->m_plungeranim, &m_phitplunger->m_plungeranim.m_vddsFrame);
 	}
 }
 

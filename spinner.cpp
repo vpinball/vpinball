@@ -426,11 +426,6 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 													  (LPWORD)rgiSpinner1, 8, 0);
 	}
 	
-void Spinner::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	ppin3d->ReadAnimObjectFromCacheFile(&m_phitspinner->m_spinneranim, &m_phitspinner->m_spinneranim.m_vddsFrame);
-	}
-
 void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -747,8 +742,6 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
 		
-	ppin3d->WriteAnimObjectToCacheFile(&m_phitspinner->m_spinneranim, &m_phitspinner->m_spinneranim.m_vddsFrame);
-
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);

@@ -259,11 +259,6 @@ void LightSeq::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 {
 }
 
-void LightSeq::RenderMoversFromCache(Pin3D *ppin3d)
-{
-	RenderMovers(ppin3d->m_pd3dDevice);
-}
-
 void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 {
 	// zero pointers as a safe guard

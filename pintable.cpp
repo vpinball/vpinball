@@ -730,14 +730,6 @@ PinTable::PinTable()
 	hr = GetRegInt("Player", "UseD3DBlit", &tmp);
 	g_pvp->m_pdd.m_fUseD3DBlit = (tmp != 0);
 
-	tmp = 0;							
-	hr = GetRegInt("Player", "TableRenderCaching", &tmp);
-	m_TableCaching = (tmp != fFalse);
-
-	tmp = 1; // enabled by default .. but allow front-end to disable the use of any cache files present
-	hr = GetRegInt("Player", "CacheEnabled", &tmp);
-	m_CacheEnabled = (tmp != fFalse);
-
 	m_tblAccelerometer = fTrue;							// true if electronic accelerometer enabled
 	hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
 	m_tblAccelerometer = m_tblAccelerometer != fFalse;
@@ -749,7 +741,6 @@ PinTable::PinTable()
 	m_tblAccelAngle = 0.0f;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
 	hr = GetRegInt("Player", "PBWRotation", &tmp);
     if (hr == S_OK) m_tblAccelAngle = (float)tmp;
-
 
 	m_tblAccelAmp = 1.5f;								// Accelerometer gain 
 	hr = GetRegInt("Player", "PBWAccelGain", &tmp);
@@ -1583,11 +1574,6 @@ void PinTable::Play()
 
 	SendMessage(hwndProgressBar, PBM_SETPOS, 20, 0);
 	SetWindowText(hwndStatusName, "Backing Up Table State...");
-	// Need to check dirty state for cache before allowing running
-	// table to make the table look dirty.
-	// Only cache disk versions of tables so invalidation
-	// can work off of time stamps.
-	const BOOL fCheckForCache = !FDirty();
 	BackupForPlay();
 
 	g_fKeepUndoRecords = fFalse;
@@ -1598,7 +1584,7 @@ void PinTable::Play()
 	if (!m_pcv->m_fScriptError)
 		{
 		g_pplayer = new Player();
-		const HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName, fCheckForCache);
+		const HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
 		if (!m_pcv->m_fScriptError) {
 			//c_Gravity = m_Gravity;				// set physical constants
 			c_hardFriction = 1.0f - m_hardFriction;	// convert to reciprocal
@@ -2545,7 +2531,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
 	//////////////////
 	bw.WriteFloat(FID(TDFT), m_globalDifficulty);
-	bw.WriteBool(FID(TCAC), m_TableCaching);
 	bw.WriteBool(FID(ACEL), m_tblAccelerometer);
 	bw.WriteBool(FID(AORD), m_tblAccelNormalMount);
 	bw.WriteFloat(FID(AANG), m_tblAccelAngle);
@@ -3432,25 +3417,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 		pbr->GetBool(&m_tblAccelerometer);
 		GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
 		m_tblAccelerometer = m_tblAccelerometer != fFalse;
-		}
-	else if (id == FID(TCAC)) 
-		{		
-		pbr->GetBool(&m_TableCaching);
-		GetRegInt("Player", "TableRenderCaching", &m_TableCaching);
-		m_TableCaching = m_TableCaching != fFalse;
-
-		if(!m_TableCaching)
-			{
-			char szCacheFileName[_MAX_PATH]= "";
-		
-			TitleAndPathFromFilename(m_szFileName, szCacheFileName);
-
-			if (szCacheFileName[0])
-				{
-				strcat_s(szCacheFileName, sizeof(szCacheFileName), ".vpcache");
-				remove(szCacheFileName); //remove stale cache file
-				}
-			}
 		}
 	else if (id == FID(TDFT))
 		{
@@ -7447,45 +7413,7 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
 	return S_OK;
 }
 
-STDMETHODIMP PinTable::get_TableCaching(VARIANT_BOOL *pVal)//TableCaching
-{
-	*pVal = (VARIANT_BOOL)FTOVB(m_TableCaching);				//VP Editor
-
-	return S_OK;
-}
-
-STDMETHODIMP PinTable::put_TableCaching(VARIANT_BOOL newVal)
-{
-	if (!g_pplayer) 
-		{														//VP Editor
-		int tmp;
-		const HRESULT hr = GetRegInt("Player", "TableRenderCaching", &tmp);
-		if (hr == S_OK) m_TableCaching = (tmp != 0);
-		else
-			{
-			STARTUNDO
-			m_TableCaching = VBTOF(newVal);
-			STOPUNDO
-			}
-
-		if(!m_TableCaching)
-			{
-			char szCacheFileName[_MAX_PATH]= "";
-		
-			TitleAndPathFromFilename(m_szFileName, szCacheFileName);
-
-			if (szCacheFileName[0])
-				{
-				strcat_s(szCacheFileName, sizeof(szCacheFileName), ".vpcache");
-				remove(szCacheFileName); //remove stale cache file
-				}
-			}
-		}
-
-	return S_OK;
-}
-
-STDMETHODIMP PinTable::get_AlternateRender(VARIANT_BOOL *pVal) //TableCaching
+STDMETHODIMP PinTable::get_AlternateRender(VARIANT_BOOL *pVal)
 {
 	*pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_pdd.m_fAlternateRender : false); //VP Editor
 
@@ -7542,7 +7470,7 @@ STDMETHODIMP PinTable::put_HardwareRender(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
-STDMETHODIMP PinTable::get_UseD3DBlit(VARIANT_BOOL *pVal) //TableCaching
+STDMETHODIMP PinTable::get_UseD3DBlit(VARIANT_BOOL *pVal)
 {
 	*pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_pdd.m_fUseD3DBlit : false); //VP Editor
 

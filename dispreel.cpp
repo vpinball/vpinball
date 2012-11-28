@@ -548,14 +548,6 @@ void DispReel::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 }
 
-
-void DispReel::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	RenderMovers(ppin3d->m_pd3dDevice);
-	/*m_pobjframe = new ObjFrame();
-	ppin3d->ReadObjFrameFromCacheFile(m_pobjframe);*/
-	}
-	
 // This function is called during the redering process // Old comments from RenderStatic
 // (before the game starts, but after play has been pressed)
 //
@@ -976,11 +968,7 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	
 	// allocate the memory for this object (returns with a LPDIRECTDRAWSURFACE7)
 	m_pobjframe->pdds = ppin3d->CreateOffscreenWithCustomTransparency(m_pobjframe->rc.right - m_pobjframe->rc.left, m_pobjframe->rc.bottom - m_pobjframe->rc.top, m_rgbImageTransparent);
-	
-	//ppin3d->WriteObjFrameToCacheFile(m_pobjframe);
 }
-
-
 
 // This function is called during Check3D.  It basically check to see if the update
 // interval has expired and if so handles the rolling of the reels according to the

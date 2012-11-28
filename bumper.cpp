@@ -368,11 +368,6 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	}
 
-void Bumper::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	ppin3d->ReadAnimObjectFromCacheFile(&m_pbumperhitcircle->m_bumperanim, m_pbumperhitcircle->m_bumperanim.m_pobjframe, 2);
-	}
-
 void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fVisible)	return;
@@ -728,8 +723,6 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,
 				&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
-		
-	ppin3d->WriteAnimObjectToCacheFile(&m_pbumperhitcircle->m_bumperanim, m_pbumperhitcircle->m_bumperanim.m_pobjframe, 2);
 
 	ppin3d->SetTexture(NULL);
 	}

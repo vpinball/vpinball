@@ -556,6 +556,8 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	rgv3D[3].tu = 0;
 	rgv3D[3].tv = maxtv;
 
+	//!! tu2 tv2 ?
+
 	if (!m_fBackglass)
 		{
 		SetNormal(rgv3D, rgi0123, 4, NULL, NULL, 0);
@@ -586,10 +588,6 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 	}
 	
-void Decal::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	}
-
 void Decal::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}

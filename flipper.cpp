@@ -583,11 +583,12 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 
 	SetNormal(rgv3D, rgi0123, 4, NULL, NULL, 0);
 	// Draw top.
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgi0123, 4);
-	
+	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4);
+	//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4);
+
 	SetNormal(rgv3D, rgiFlipper1, 4, NULL, NULL, 0);
-	// Draw front side wall of flipper (flipper and rubber).   
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiFlipper1, 4);
+	// Draw front side wall of flipper (flipper and rubber).
+	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiFlipper1, 4);
 	
 	SetNormal(rgv3D, rgiFlipper2, 4, NULL, NULL, 0);
 	// Draw back side wall.
@@ -691,11 +692,6 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 		}
 	}
 	
-void Flipper::RenderMoversFromCache(Pin3D *ppin3d)
-	{
-	ppin3d->ReadAnimObjectFromCacheFile(&m_phitflipper->m_flipperanim, &m_phitflipper->m_flipperanim.m_vddsFrame);
-	}
-
 void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	_ASSERTE(m_phitflipper);
@@ -782,8 +778,6 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		// Reset the portion of the back buffer that we changed.
 		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
-
-	ppin3d->WriteAnimObjectToCacheFile(&m_phitflipper->m_flipperanim, &m_phitflipper->m_flipperanim.m_vddsFrame);
 	}
 
 
@@ -1363,7 +1357,7 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 	if (m_phitflipper)
 		{
 		//m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible; //rlc error 
-		m_phitflipper->m_flipperanim.m_fEnabled = VBTOF(newVal);//rlc transfer boolean to flipper object
+		m_phitflipper->m_flipperanim.m_fEnabled = VBTOF(newVal);
 		}
 	else
 		{
