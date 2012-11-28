@@ -486,8 +486,8 @@ void Light::ClearForOverwrite()
 	ClearPointsForOverwrite();
 	}
 
-const WORD rgiLightStatic0[3] = {0,1,2};
-const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+//static const WORD rgiLightStatic0[3] = {0,1,2};
+static const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 		
 void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
@@ -611,7 +611,9 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
-													  (LPWORD)rgiLightStatic0, 3, 0);
+													  (LPWORD)rgi0123, 3, 0);
+			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
+			//										  rgv3D, 3, 0);
 			}
 		else
 			{
@@ -619,7 +621,9 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
 													  rgv3D, 3,
-													  (LPWORD)rgiLightStatic0, 3, 0);
+													  (LPWORD)rgi0123, 3, 0);
+			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
+			//										  rgv3D, 3, 0);
 			}
 
 		delete vtri.ElementAt(t);
@@ -668,7 +672,9 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 32,
 												  (LPWORD)rgiLightStatic1, 32, 0);
-		}
+		//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+		//										  rgv3D, 32, 0);
+	}
 	else
 		{
 		SetHUDVertices(rgv3D, 32);
@@ -679,6 +685,8 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 													  rgv3D, 32,
 													  (LPWORD)rgiLightStatic1, 32, 0);
+			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+			//										  rgv3D, 32, 0);
 			}
 		}
 	}
@@ -901,7 +909,9 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 				{
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
-													  (LPWORD)rgiLightStatic0, 3);
+													  (LPWORD)rgi0123, 3);
+				//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
+				//									  rgv3D, 3);
 				}
 			else
 				{
@@ -911,7 +921,9 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					{
 					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 3,
-														  (LPWORD)rgiLightStatic0, 3);
+														  (LPWORD)rgi0123, 3);
+					//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
+					//									  rgv3D, 3);
 					}
 				}
 
@@ -1096,6 +1108,8 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  rgv3D, 32,
 														  (LPWORD)rgiLightStatic1, 32);
+			//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			//											  rgv3D, 32);
 			}
 		else 
 			if( GetPTable()->GetDecalsEnabled() )
@@ -1103,6 +1117,8 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 32,
 														  (LPWORD)rgiLightStatic1, 32);
+				//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+				//										  rgv3D, 32);
 				}
 
 		for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
@@ -1929,9 +1945,9 @@ void Light::setLightStateBypass(const LightState newVal)
 
 void Light::setLightState(const LightState newVal)
 	{
-   	if (newVal != m_realState)//state changed???
+   	if (newVal != m_realState) //state changed???
    		{
-   		const LightState lastState = m_realState;		//rlc make a bit more obvious
+   		const LightState lastState = m_realState;
 		m_realState = newVal;
 
    		if (g_pplayer)

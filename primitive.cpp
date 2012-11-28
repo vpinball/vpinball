@@ -377,8 +377,8 @@ void Primitive::Render(Sur *psur)
 	psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y -20.0f,m_d.m_vPosition.x, m_d.m_vPosition.y +20.0f);
 }
 
-const WORD rgiPrimStatic0[5] = {0,1,2,3,4};
-const WORD rgiPrimStatic1[5] = {4,3,2,1,0};
+//static const WORD rgiPrimStatic0[5] = {0,1,2,3,4};
+static const WORD rgiPrimStatic1[5] = {4,3,2,1,0};
 
 void Primitive::CalculateRealTimeOriginal()
 {
@@ -782,7 +782,7 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 			//lets draw
 			pin->EnsureColorKey();
 
-			pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);     //rlc  alpha channel support
+			pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);

@@ -368,16 +368,16 @@ void Gate::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-WORD rgiGate0[8] = {0,1,2,3,6,7,4,5};
-WORD rgiGate1[8] = {4,5,6,7,2,3,0,1};
-WORD rgiGateNormal[3] = {0,1,3};
+static const WORD rgiGate0[8] = {0,1,2,3,6,7,4,5};
+static const WORD rgiGate1[8] = {4,5,6,7,2,3,0,1};
+static const WORD rgiGateNormal[3] = {0,1,3};
 
-WORD rgiGate2[4] = {0,1,5,4};
-WORD rgiGate3[4] = {2,6,7,3};
-WORD rgiGate4[4] = {0,2,3,1};
-WORD rgiGate5[4] = {4,5,7,6};
-WORD rgiGate6[4] = {0,4,6,2};
-WORD rgiGate7[4] = {1,3,7,5};
+static const WORD rgiGate2[4] = {0,1,5,4};
+static const WORD rgiGate3[4] = {2,6,7,3};
+static const WORD rgiGate4[4] = {0,2,3,1};
+static const WORD rgiGate5[4] = {4,5,7,6};
+static const WORD rgiGate6[4] = {0,4,6,2};
+static const WORD rgiGate7[4] = {1,3,7,5};
 						
 void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
@@ -458,10 +458,10 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate0, 8);
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,rgiGate0, 8, 0);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,(LPWORD)rgiGate0, 8, 0);
 
 	SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate1, 8);
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,rgiGate1, 8, 0);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,(LPWORD)rgiGate1, 8, 0);
 	}
 	
 void Gate::RenderMoversFromCache(Pin3D *ppin3d)
@@ -633,7 +633,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 			else 
 				{	
-				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
@@ -666,7 +666,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiGate2, 4, NULL, NULL, 0);
-		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate2, 4);
+		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiGate2, 4);
 
 		// Draw Frontside
 
@@ -682,7 +682,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 			else 
 				{	
-				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
@@ -714,7 +714,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiGate3, 4, NULL, NULL, 0);
-		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate3, 4);
+		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate3, 4);
 
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
@@ -722,21 +722,21 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetMaterial(&mtrl);
 		ppin3d->SetTexture(NULL);
 
-		if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR) //
+		if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
 			{
 			// Top & Bottom
 			SetNormal(rgv3D, rgiGate4, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate4, 4);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgiGate4, 4);
 
 			SetNormal(rgv3D, rgiGate5, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate5, 4);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate5, 4);
 
 			// Sides
 			SetNormal(rgv3D, rgiGate6, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate6, 4);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 7,(LPWORD)rgiGate6, 4);
 
 			SetNormal(rgv3D, rgiGate7, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiGate7, 4);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate7, 4);
 			}
 
 		LPDIRECTDRAWSURFACE7 pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);

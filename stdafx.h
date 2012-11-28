@@ -74,6 +74,10 @@
 #define FPS 1                   // Enable FPS computation (default 'F10')
 #define STEPPING 1              // Enable Physics stepping
 
+//#define LOG
+//#define HITLOG
+//#define GLOBALLOG
+
 //#define _DEBUGPHYSICS
 //#define DEBUG_FRATE
 //#define ANTI_TEAR	1			// define if you want to have some hacky code to prevent drawing more than one frame per 16ms = ~60fps

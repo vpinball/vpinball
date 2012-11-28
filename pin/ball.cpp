@@ -45,7 +45,7 @@ void Ball::Init()
 	m_fErase = false;
 
 	m_pho = NULL;
-	m_fDynamic = C_DYNAMIC; //rlc assume dynamic
+	m_fDynamic = C_DYNAMIC; // assume dynamic
 
 	m_pballex = NULL;
 
@@ -106,7 +106,7 @@ void Ball::CalcBoundingRect()
 	const float dx = fabsf(vx);
 	const float dy = fabsf(vy);
 
-	m_rcHitRect.left   = brc.left   = x - (radius + 0.1f + dx); //rlc make more accurate ????
+	m_rcHitRect.left   = brc.left   = x - (radius + 0.1f + dx); //!! make more accurate ????
 	m_rcHitRect.right  = brc.right  = x + (radius + 0.1f + dx);
 	m_rcHitRect.top    = brc.top    = y - (radius + 0.1f + dy);	
 	m_rcHitRect.bottom = brc.bottom = y + (radius + 0.1f + dy);
@@ -140,7 +140,7 @@ void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elastic
 			}
 #endif		
 
-	dot *= -1.005f - m_elasticity; //rlc some small minimum
+	dot *= -1.005f - m_elasticity; //!! some small minimum
 	vx += dot * phitnormal->x;	
 	vy += dot * phitnormal->y;
 
@@ -226,7 +226,7 @@ void Ball::Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elast
 	}
 
 
-float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) //rlc change begin >>>>>>>>>>>>>>>>>>>>>>
+float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
 	{	
 	const float dvx = vx - pball->vx;		// delta velocity 
 	const float dvy = vy - pball->vy;

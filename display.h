@@ -10,15 +10,15 @@
 
 //#define		DISPLAY_MAXTEXTURES			1
 
-typedef struct _D3DTLVertexType			D3DTLVertexType;
+typedef struct _D3DTLVertexType	D3DTLVertexType;
 struct _D3DTLVertexType
 {
     // This structure is compatibile with DX7 flexible vertex formats.
     // These members must be in this order as defined by the SDK.
     // The flags to use this vertex type are... 
-    // (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1).
-
-    float                   X, Y;                           // Vertex2D screen position.                                         
+	// (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
+    
+	float                   X, Y;                           // Vertex2D screen position.                                         
     float                   Z;                              // Vertex2D z buffer depth.                                          
     float                   RHW;                            // Vertex2D rhw.                                                     
     DWORD                   DiffuseColor;                   // Vertex2D diffuse color.                                           
@@ -191,6 +191,7 @@ void Display_DestroyTexture ( const LPDIRECTDRAWSURFACE7 Texture );
 
 HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT * const pddpf, VOID * const param );
 
+HRESULT Display_DrawPrimitive( const LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount );
 HRESULT Display_DrawIndexedPrimitive( const LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount, const LPWORD lpwIndices, const DWORD dwIndexCount );
 
 inline void Display_DrawSprite_NoMatrix_NoStates ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v )
@@ -252,15 +253,12 @@ inline void Display_DrawSprite_NoMatrix_NoStates ( const LPDIRECT3DDEVICE7 Direc
 	// Set the texture.
 	/*const HRESULT ReturnCode =*/ Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
 
-	// WTF?  As soon as I do DrawPrimitive, the ball disappears.  Everything else works (ie saving and restoring states)... it's just the draw!
-
-//	  // Draw the quad.
-//    ReturnCode = Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1), (D3DTLVertexType *) Vertices, 4, 0 );  
-    //ReturnCode = Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX, (D3DTLVertexType *) Vertices, 4, 0 );  
+    // Draw the quad.
+    //Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX, (D3DTLVertexType *) Vertices, 4, 0 );  
 
 	Direct3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX,
-										  (D3DTLVertexType *) Vertices, 4,
-										  (LPWORD)rgi0123, 4, NULL);
+											  (D3DTLVertexType *) Vertices, 4,
+											  (LPWORD)rgi0123, 4, NULL);
 }
 
 inline void Display_DrawSprite ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v)

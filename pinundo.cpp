@@ -120,7 +120,7 @@ void PinUndo::Undo()
 
 	if (m_cUndoLayer > 0)
 		{
-		_ASSERTE(fFalse); //rlc-probelm-10 undo assert fixed during exit 
+		_ASSERTE(fFalse);
 		m_cUndoLayer = 0;
 		}
 

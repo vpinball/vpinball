@@ -37,7 +37,7 @@ public:
 	Player();
 	~Player();
 
-	HRESULT Init(PinTable *ptable, HWND hwndProgress, HWND hwndProgressName, BOOL fCheckForCache);
+	HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName, const BOOL fCheckForCache);
 	void InitWindow();
 #ifdef ULTRAPIN
 	void InitDMDHackWindow();

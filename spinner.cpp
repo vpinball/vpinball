@@ -322,16 +322,16 @@ void Spinner::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-WORD rgiSpinner0[8] = {0,1,2,3,6,7,4,5};
-WORD rgiSpinner1[8] = {4,5,6,7,2,3,0,1};
-WORD rgiSpinnerNormal[3] = {0,1,3};
+static const WORD rgiSpinner0[8] = {0,1,2,3,6,7,4,5};
+static const WORD rgiSpinner1[8] = {4,5,6,7,2,3,0,1};
+static const WORD rgiSpinnerNormal[3] = {0,1,3};
 
-WORD rgiSpinner2[4] = {0,1,5,4};
-WORD rgiSpinner3[4] = {2,6,7,3};
-WORD rgiSpinner4[4] = {0,2,3,1};
-WORD rgiSpinner5[4] = {4,5,7,6};
-WORD rgiSpinner6[4] = {0,4,6,2};
-WORD rgiSpinner7[4] = {1,3,7,5};
+static const WORD rgiSpinner2[4] = {0,1,5,4};
+static const WORD rgiSpinner3[4] = {2,6,7,3};
+static const WORD rgiSpinner4[4] = {0,2,3,1};
+static const WORD rgiSpinner5[4] = {4,5,7,6};
+static const WORD rgiSpinner6[4] = {0,4,6,2};
+static const WORD rgiSpinner7[4] = {1,3,7,5};
 
 void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
@@ -418,12 +418,12 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner0, 8);
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
 													  rgv3D, 8,
-													  rgiSpinner0, 8, 0);
+													  (LPWORD)rgiSpinner0, 8, 0);
 
 	SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner1, 8);
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
 													  rgv3D, 8,
-													  rgiSpinner1, 8, 0);
+													  (LPWORD)rgiSpinner1, 8, 0);
 	}
 	
 void Spinner::RenderMoversFromCache(Pin3D *ppin3d)
@@ -593,7 +593,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 			else 
 				{	
-				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);	
 				if (g_pvp->m_pdd.m_fHardwareAccel)
@@ -635,7 +635,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiSpinner2, 4, NULL, NULL, 0);
-		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner2,4);
+		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSpinner2,4);
 
 		// Draw Frontside
 
@@ -651,7 +651,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 			else 
 				{	
-				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);	
 				if (g_pvp->m_pdd.m_fHardwareAccel)
@@ -693,7 +693,7 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiSpinner3, 4, NULL, NULL, 0);
-		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner3, 4);
+		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner3, 4);
 
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
@@ -705,16 +705,16 @@ void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			// Top & Bottom
 			SetNormal(rgv3D, rgiSpinner4, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner4, 4);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgiSpinner4, 4);
 
 			SetNormal(rgv3D, rgiSpinner5, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner5, 4);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner5, 4);
 			// Sides
 			SetNormal(rgv3D, rgiSpinner6, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner6, 4);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 7,(LPWORD)rgiSpinner6, 4);
 
 			SetNormal(rgv3D, rgiSpinner7, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,rgiSpinner7, 4);
+			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner7, 4);
 			}
 
 		// Create offscreen surfaces for color and depth buffers.

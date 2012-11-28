@@ -1144,7 +1144,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (hr != S_OK) colorkey = (int)NOTRANSCOLOR; //not set assign no transparent color 	
 
 			/*const HWND hwndButton =*/ CreateWindow("BUTTON","Color",WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
-			SetWindowLong(hwnd, GWL_USERDATA, colorkey); //0);//rlc  get cached colorkey
+			SetWindowLong(hwnd, GWL_USERDATA, colorkey); // get cached colorkey
 			}
 			break;
 

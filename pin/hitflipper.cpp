@@ -57,7 +57,7 @@ HitFlipper::HitFlipper(const float x, const float y, float baser, float endr, fl
 
 	m_flipperanim.m_maxvelocity = m_flipperanim.m_force * 4.5f;
 
-    m_flipperanim.m_lastHitFace = false; //rlc used to optimize hit face search order
+    m_flipperanim.m_lastHitFace = false; // used to optimize hit face search order
 
 	const float fa = asinf((baser-endr)/flipr); //face to centerline angle (center to center)
 
@@ -71,7 +71,7 @@ HitFlipper::HitFlipper(const float x, const float y, float baser, float endr, fl
 	m_flipperanim.zeroAngNorm.x =  sinf(m_flipperanim.faceNormOffset);// F2 Norm, used in Green's transform, in FPM time search
 	m_flipperanim.zeroAngNorm.y = -cosf(m_flipperanim.faceNormOffset);// F1 norm, change sign of x component, i.e -zeroAngNorm.x
 
-#if 0  //rlc removed until next major physics revision
+#if 0  //!! //rlc removed until next major physics revision
 	// now calculate moment of inertia using isoceles trapizoid and two circular sections
 	// ISOSCELES TRAPEZOID, Area Moment of Inertia
 	// I(area)FF = h/(144*(a+b)*(16*h^2*a*b+4*h^2*b^2+4*h^2*a^2+3*a^4+6*a^2*b^2+6*a^3*b+6*a*b^3+3*b^4)) (centroidial axis)
@@ -218,7 +218,6 @@ void FlipperAnimObject::UpdateVelocities()
 		}
 	}
 
-//rlc  new hitflipper ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #define LeftFace 1
 #define RightFace 0
 
@@ -693,8 +692,6 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	const Vertex3Ds vnormal(phitnormal->x, phitnormal->y, 0.0f);
 	pball->AngularAcceleration(&vnormal);
 	}
-
-//rlc end change  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void FlipperAnimObject::Check3D()
 	{

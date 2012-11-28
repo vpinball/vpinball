@@ -10,7 +10,7 @@
 #define APP_KEYBOARD 0
 #define APP_JOYSTICKMN 1
 
-//rlc handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
+// handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
 #define PININ_JOYMXCNT 4
 
 #define JOYRANGEMN (-1000)

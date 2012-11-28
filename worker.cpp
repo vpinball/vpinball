@@ -106,7 +106,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 	stg.ulSectorSize = 4096;
 
 	HRESULT hr;
-	if(SUCCEEDED(hr = StgCreateStorageEx(wzT/*L"c:\\test.vpt"*/, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+	if(SUCCEEDED(hr = StgCreateStorageEx(wzT, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
 		STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgDisk)))
 		{
 		pstgroot->CopyTo(0, NULL, NULL, pstgDisk);

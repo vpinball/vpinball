@@ -104,7 +104,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Trigger)
 
 	TriggerHitCircle *m_ptriggerhitcircle;
 
-	BOOL m_hitEnabled;		//rlc for custom shape triggers
+	BOOL m_hitEnabled;		// for custom shape triggers
 
 // ITrigger
 public:

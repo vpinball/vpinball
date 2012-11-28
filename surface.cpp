@@ -1036,7 +1036,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		{
 		LineSegSlingshot * const plinesling = m_vlinesling.ElementAt(i);
 		
-		plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation != 0); //rlc
+		plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation != 0);
 
 		pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET,0x00000000, 1.0f, 0L );
 
@@ -1105,19 +1105,19 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		SetNormal(rgv3D, rgiSlingshot0, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot0, 4);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 5,(LPWORD)rgiSlingshot0, 4);
 
 		SetNormal(rgv3D, rgiSlingshot1, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot1, 4);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSlingshot1, 4);
 		
 		SetNormal(rgv3D, rgiSlingshot2, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot2, 4);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 5,(LPWORD)rgiSlingshot2, 4);
 		
 		SetNormal(rgv3D, rgiSlingshot3, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot3, 4);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSlingshot3, 4);
 
 		SetNormal(rgv3D, rgiSlingshot4, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot4, 4);
+		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 11,(LPWORD)rgiSlingshot4, 4);
 		
 		SetNormal(rgv3D, rgiSlingshot5, 4, NULL, NULL, NULL);
 		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot5, 4);
@@ -1197,7 +1197,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 		{
 		m_ptable->GetTVTU(pinSide, &maxtuSide, &maxtvSide);		
 
-		//rlc add transparent texture support ... replaced this line with >>>>	
 		pinSide->EnsureColorKey();
 		if (pinSide->m_fTransparent)
 			{				
@@ -1220,7 +1219,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			}
 		else 
 			{	
-			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);     //rlc  alpha channel support		
+			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);		
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
@@ -1469,7 +1468,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			{
 			ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 
-			//rlc add transparent texture support ... replaced this line with >>>>	
 			pinSide->EnsureColorKey();
 			if (pinSide->m_fTransparent)
 				{				
@@ -1479,7 +1477,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				}
 			else // ppin3d->SetTexture(pin->m_pdsBuffer);
 				{
-				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
@@ -1520,7 +1518,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				}
 			else 
 				{
-				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);     //rlc  alpha channel support
+				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
@@ -1610,7 +1608,8 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				}
 
 			// Draw top.
-			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 3,(LPWORD)rgiWall0, 3);
+			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 3,(LPWORD)rgi0123, 3);
+			//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 3);
 			}
 
 		for (int i=0;i<vtri.Size();i++)

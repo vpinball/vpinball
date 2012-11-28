@@ -575,7 +575,7 @@ void DispReel::RenderMoversFromCache(Pin3D *ppin3d)
 // to use in the process
 //
 
-WORD rgiDispReel[4] = {0,1,2,3};
+//static const WORD rgiDispReel[4] = {0,1,2,3};
 
 void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 {
@@ -794,7 +794,9 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 												  rgv3D, 4,
-												  rgiDispReel, 4, NULL);
+												  (LPWORD)rgi0123, 4, NULL);
+				//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+				//								  rgv3D, 4, NULL);
 
 				RECT rectDst;
 				rectDst.left = 0;

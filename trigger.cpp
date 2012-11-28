@@ -307,7 +307,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
 			ph3dp->m_pObj = (void*) this;
 
 			pvho->AddElement(ph3dp);
-			//ph3dp->m_fEnabled = fFalse;	//rlc ... error: disable hit process on polygon body, only trigger edges 
+			//ph3dp->m_fEnabled = fFalse;	//rlc error: disable hit process on polygon body, only trigger edges 
 			break;
 			}
 		}
@@ -332,7 +332,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
 		{
 		rgv3D[i].x = vvertex.ElementAt(i)->x;
 		rgv3D[i].y = vvertex.ElementAt(i)->y;
-		rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);// + 50.0f; //rlc fix 
+		rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);// + 50.0f; 
 		}
 
 	for (int i=0;i<count;i++)
@@ -414,7 +414,7 @@ const float rgtriggervertex[][3] = {
 	0.08f,  1.0f,  0
 	};
 
-const WORD rgtriggerface[][5] = {
+static const WORD rgtriggerface[][5] = {
 	0,2,4,6,8,
 	9,7,5,3,1,
 	0,1,3,2,0xFFFF,
@@ -489,19 +489,19 @@ void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		for (int l=0;l<6;l++)
 			{
-			WORD rgi[5] = {
+			const WORD rgi[5] = {
 				rgtriggerface[l][0],
 				rgtriggerface[l][1],
 				rgtriggerface[l][2],
 				rgtriggerface[l][3],
 				rgtriggerface[l][4]};
 
-			const int cpt = (rgtriggerface[l][4] == 65535) ? 4 : 5;
+			const int cpt = (rgtriggerface[l][4] == 0xFFFF) ? 4 : 5;
 
 			SetNormal(&rgv3D[offset], rgi, cpt, NULL, NULL, 0);
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[offset], 10,
-													  rgi, cpt, 0);
+													  (LPWORD)rgi, cpt, 0);
 			}
 		}
 

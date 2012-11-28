@@ -254,7 +254,7 @@ void Bumper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-const WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+static const WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 			
 void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
@@ -329,10 +329,12 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 												  rgv3D, 32,
 												  (LPWORD)rgiBumperStatic, 32, 0);
+		//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+		//							  rgv3D, 32, 0);
 
-			for (int l=0;l<32;l++)
-				{
-				const WORD rgiNormal[6] = {
+		for (int l=0;l<32;l++)
+			{
+			const WORD rgiNormal[6] = {
 					(l == 0) ? 31 : (l-1),
 					(l == 0) ? 63 : (l+31),
 					(l == 0) ? 33 : (l+1),
@@ -340,23 +342,23 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 					l+32,
 					(l < 30) ? (l+2) : (l-30)};
 
-				const WORD rgi[4] = {l,
+			const WORD rgi[4] = {l,
 					           l+32,
 							  (l == 31) ? 32 : (l+33),
 							  (l == 31) ? 0 : (l+1)};
 
-				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
-				SetNormal(&rgv3D[32], rgiNormal, 3, NULL, rgi, 2);
-				SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-				SetNormal(&rgv3D[32], &rgiNormal[3], 3, NULL, &rgi[2], 2);
+			SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
+			SetNormal(&rgv3D[32], rgiNormal, 3, NULL, rgi, 2);
+			SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
+			SetNormal(&rgv3D[32], &rgiNormal[3], 3, NULL, &rgi[2], 2);
 
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  rgv3D, 64,
 														  (LPWORD)rgi, 4, 0);
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[32], 64,
 														  (LPWORD)rgi, 4, 0);
-				}
+			}
 
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 
@@ -1330,7 +1332,7 @@ void Bumper::setLightState(const LightState newVal)
 	{
 	if (newVal != m_realState)
 		{
-		const LightState lastState = m_realState;		//rlc make a bit more obvious
+		const LightState lastState = m_realState;
 		m_realState = newVal;
 
 		if (m_pbumperhitcircle)
