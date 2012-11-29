@@ -435,14 +435,6 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar, 160, fFalse);
 
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{			
-			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
-			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-			}
-
 		D3DMATERIAL7 mtrl;
 		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 		mtrl.emissive.a = mtrl.power = 0;
@@ -480,9 +472,9 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->SetMaterial(&mtrl);
 
 			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[64], 32,
-													  (LPWORD)rgiBumperStatic, 32);
+													  (LPWORD)rgiBumperStatic, 32, 0);
 
 			for (int l=0;l<32;l++)
 				{
@@ -505,12 +497,12 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				SetNormal(&rgv3D[64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
 				SetNormal(&rgv3D[96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
 
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[64], 64,
-														  (LPWORD)rgi, 4);
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+														  (LPWORD)rgi, 4, 0);
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[96], 64,
-														  (LPWORD)rgi, 4);
+														  (LPWORD)rgi, 4, 0);
 				}
 			}
 
@@ -554,7 +546,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 					l+32,
 					(l < 30) ? (l+2) : (l-30)};
 
-				WORD rgi[4] = {
+				const WORD rgi[4] = {
 					l,
 					l+32,
 					(l == 31) ? 32 : (l+33),
@@ -562,7 +554,7 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 				SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D,64,rgi, 4);
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D,64,(LPWORD)rgi, 4, 0);
 				}
 			}
 
@@ -640,9 +632,9 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				}
 
 			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 													  &rgv3D[64], 32,
-													  (LPWORD)rgiBumperStatic, 32);
+													  (LPWORD)rgiBumperStatic, 32, 0);
 
 			for (int l=0;l<32;l++)
 				{
@@ -665,12 +657,12 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 				SetNormal(&rgv3D[64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
 				SetNormal(&rgv3D[96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
 
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[64], 64,
-														  rgi, 4);
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+														  rgi, 4, 0);
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  &rgv3D[96], 64,
-														  rgi, 4);
+														  rgi, 4, 0);
 				}
 
 			// Reset all the texture coordinates
@@ -703,14 +695,6 @@ void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		/*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
 		m_pbumperhitcircle->m_bumperanim.m_pobjframe[i] = pof;
-
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{
-			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
-			}
 
 		ppin3d->ExpandRectByRect(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &pof->rc);
 

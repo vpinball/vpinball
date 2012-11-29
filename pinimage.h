@@ -96,7 +96,6 @@ public:
 
 	BOOL m_fHardwareAccel;
 	BOOL m_fAlternateRender;
-	BOOL m_fUseD3DBlit;
 
 	// variables needed to initialize ddraw.dll
 	HINSTANCE m_DDraw;

@@ -2193,35 +2193,7 @@ void Player::Render()
 
 	// Start rendering the next frame.
 	HRESULT hr = m_pin3d.m_pd3dDevice->BeginScene();
-
-	D3DMATRIX RestoreWorldMatrix;
-	//RenderStateType  RestoreRenderState;
-	//TextureStateType RestoreTextureState;
 	HRESULT ReturnCode;
-	// Check if we are blitting with D3D.
-	if (g_pvp->m_pdd.m_fUseD3DBlit)
-		{
-		// Save the current transformation state.
-		ReturnCode = m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix );
-
-		// Save the current render state.
-		//Display_GetRenderState(m_pin3d.m_pd3dDevice, &RestoreRenderState);
-
-		// Save the current texture state.
-		//Display_GetTextureState (m_pin3d.m_pd3dDevice, &RestoreTextureState);
-
-		// And setup everything that will be needed to draw sprites in next loop
-		const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
-
-		// Apply the transformation.
-		/*const HRESULT ReturnCode =*/ m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix );
-
-		// Set the texture state.
-		//Display_SetTextureState ( m_pin3d.m_pd3dDevice, &(TextureStates[DISPLAY_TEXTURESTATE_NOFILTER]) );
-	
-		// Set the render state.
-		//Display_SetRenderState ( m_pin3d.m_pd3dDevice, &(RenderStates[DISPLAY_RENDERSTATE_TRANSPARENT]) );
-	}
 
 	// Process all regions that need updating.  
 	// The region will be drawn with the current frame.
@@ -2257,26 +2229,11 @@ void Player::Render()
 				// Make sure our rectangle dimensions aren't wacky.
 				if ((rcUpdate.right > rcUpdate.left) && (rcUpdate.bottom > rcUpdate.top))
 				{
-					// Check if we are blitting with D3D.
-					if (g_pvp->m_pdd.m_fUseD3DBlit)
+					// Make sure we have a source color surface.
+					if (pobjframe->pdds != NULL)
 					{
-						// Blit to the backbuffer with D3D.
-						// NOTE: Rather than drawing just a portion of the sprite... draw the whole thing.
-						Display_DrawSprite_NoMatrix_NoStates(m_pin3d.m_pd3dDevice, 
-										(float) (pobjframe->rc.left), (float) (pobjframe->rc.top), 
-										(float) (pobjframe->rc.right - pobjframe->rc.left), (float) (pobjframe->rc.bottom - pobjframe->rc.top), 
-										0xFFFFFFFF, 
-										0.0f, 
-										pobjframe->pTexture, pobjframe->u, pobjframe->v);
-					}
-					else
-					{
-						// Make sure we have a source color surface.
-						if (pobjframe->pdds != NULL)
-						{
-							// Blit to the backbuffer with DDraw.   
-							/*const HRESULT hr =*/ pdds->BltFast(bltleft, blttop, pobjframe->pdds, &rcUpdate, DDBLTFAST_SRCCOLORKEY);
-						}
+						// Blit to the backbuffer with DDraw.   
+						/*const HRESULT hr =*/ pdds->BltFast(bltleft, blttop, pobjframe->pdds, &rcUpdate, DDBLTFAST_SRCCOLORKEY);
 					}
 					
 					// Make sure we have a source z surface.
@@ -2288,19 +2245,6 @@ void Player::Render()
 				}
 			}
 		}
-	}
-
-	// Check if we are blitting with D3D.
-	if (g_pvp->m_pdd.m_fUseD3DBlit)
-	{
-		// Restore the render states.
-		//Display_SetRenderState(m_pin3d.m_pd3dDevice, &RestoreRenderState);
-
-		// Restore the texture state.
-		//Display_SetTextureState(m_pin3d.m_pd3dDevice, &RestoreTextureState);
-
-		// Restore the transformation state.
-		ReturnCode = m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 	}
 
 	// Check if we are debugging balls

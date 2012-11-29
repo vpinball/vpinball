@@ -605,16 +605,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar, 8, fFalse);
 
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{			
-			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
-			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-			}
-
 		// Draw Backside
-
 		if (pinback) //(pinback)
 			{			
 			pinback->EnsureColorKey();
@@ -661,7 +652,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiGate2, 4, NULL, NULL, 0);
-		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiGate2, 4);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiGate2, 4, 0);
 
 		// Draw Frontside
 
@@ -709,7 +700,7 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiGate3, 4, NULL, NULL, 0);
-		Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate3, 4);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate3, 4, 0);
 
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
@@ -721,17 +712,17 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			{
 			// Top & Bottom
 			SetNormal(rgv3D, rgiGate4, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgiGate4, 4);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgiGate4, 4, 0);
 
 			SetNormal(rgv3D, rgiGate5, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate5, 4);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate5, 4, 0);
 
 			// Sides
 			SetNormal(rgv3D, rgiGate6, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 7,(LPWORD)rgiGate6, 4);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 7,(LPWORD)rgiGate6, 4, 0);
 
 			SetNormal(rgv3D, rgiGate7, 4, NULL, NULL, 0);
-			Display_DrawIndexedPrimitive(pd3dDevice,D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate7, 4);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate7, 4, 0);
 			}
 
 		LPDIRECTDRAWSURFACE7 pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
@@ -743,14 +734,6 @@ void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 			
 		m_phitgate->m_gateanim.m_vddsFrame.AddElement(pof);
 		pof->pdds = pdds;
-
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{
-			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
-			}
 
 		ppin3d->ExpandRectByRect(&m_phitgate->m_gateanim.m_rcBounds, &pof->rc);
 

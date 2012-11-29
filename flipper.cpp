@@ -583,16 +583,16 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 
 	SetNormal(rgv3D, rgi0123, 4, NULL, NULL, 0);
 	// Draw top.
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4, 0);
 	//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4);
 
 	SetNormal(rgv3D, rgiFlipper1, 4, NULL, NULL, 0);
 	// Draw front side wall of flipper (flipper and rubber).
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiFlipper1, 4);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiFlipper1, 4, 0);
 	
 	SetNormal(rgv3D, rgiFlipper2, 4, NULL, NULL, 0);
 	// Draw back side wall.
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiFlipper2, 4);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiFlipper2, 4, 0);
 
 	// Base circle
 	for (int l=0;l<16;l++)
@@ -622,7 +622,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 		rgi[l*3+2] = l+2;
 		SetNormal(rgv3D, rgi+l*3, 3, NULL, NULL, 0);
 		}	
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D,16, rgi,3*14);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D,16, rgi,3*14, 0);
 	}
 
 	for (int l=0;l<14;l++)
@@ -640,7 +640,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 		SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 		SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
 		// Draw vertical cylinders at large end of flipper.
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 32,(LPWORD)rgi, 4);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 32,(LPWORD)rgi, 4, 0);
 		}
 
 	// End circle.
@@ -670,7 +670,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 		rgi[l*3+2] = l+2;
 		SetNormal(rgv3D, rgi+l*3, 3, NULL, NULL, 0);
 		}
-	Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D,16, rgi,3*14);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D,16, rgi,3*14, 0);
 	}
 
 	for (int l=0;l<14;l++)
@@ -688,7 +688,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 		SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
 		SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
 		// Draw vertical cylinders at small end.
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,(LPWORD)rgi, 4);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,(LPWORD)rgi, 4, 0);
 		}
 	}
 	
@@ -721,23 +721,6 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{
-			RECT	Rect;
-
-			// Since we don't know the final dimensions of the 
-			// object we're rendering, clear the whole buffer.
-			Rect.top = 0;
-			Rect.left = 0;
-			Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
-			Rect.right = g_pplayer->m_pin3d.m_dwRenderWidth - 1;
-
-			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
-			ppin3d->m_pddsZTextureBuffer->BltFast(Rect.left, Rect.top, ppin3d->m_pddsStaticZ, &Rect, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-			}
-
 		// Render just the flipper.
 		RenderAtThickness(pd3dDevice, pof, angle,  height, m_d.m_color, m_d.m_BaseRadius - (float)m_d.m_rubberthickness, m_d.m_EndRadius - (float)m_d.m_rubberthickness, m_d.m_height);
 
@@ -760,14 +743,6 @@ void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pof->pdds = pdds;
 
 		ppin3d->ExpandRectByRect(&m_phitflipper->m_flipperanim.m_rcBounds, &pof->rc);
-
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{
-			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
-			}
 
 		// Reset the portion of the z-buffer that we changed.
 		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);

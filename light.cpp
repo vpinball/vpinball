@@ -830,22 +830,6 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
 
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{
-			RECT Rect;
-			// Since we don't know the final dimensions of the 
-			// object we're rendering, clear the whole buffer.
-			Rect.top = 0;
-			Rect.left = 0;
-			Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
-			Rect.right = g_pplayer->m_pin3d.m_dwRenderWidth - 1;
-
-			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
-			ppin3d->m_pddsZTextureBuffer->BltFast(Rect.left, Rect.top, ppin3d->m_pddsStaticZ, &Rect, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-			}
-
 		Vertex3D rgv3D[3];
 		if (!m_fBackglass)
 			{
@@ -907,9 +891,9 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 			if (!m_fBackglass)
 				{
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
-													  (LPWORD)rgi0123, 3);
+													  (LPWORD)rgi0123, 3, 0);
 				//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
 				//									  rgv3D, 3);
 				}
@@ -919,9 +903,9 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 				if( GetPTable()->GetDecalsEnabled() )
 					{
-					Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
+					pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 3,
-														  (LPWORD)rgi0123, 3);
+														  (LPWORD)rgi0123, 3, 0);
 					//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
 					//									  rgv3D, 3);
 					}
@@ -953,14 +937,6 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 			
 		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
-
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{
-			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
-			}
 
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
@@ -1073,14 +1049,6 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
 		ppin3d->ExpandExtents(&m_pobjframe[i]->rc, rgv3D, NULL, NULL, 32, m_fBackglass);
 
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{			
-			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
-			ppin3d->m_pddsZTextureBuffer->BltFast(m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.top, ppin3d->m_pddsStaticZ, &(m_pobjframe[i]->rc), DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-			}
-
 		ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
 
 		m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
@@ -1092,18 +1060,18 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 
 		if (!m_fBackglass)
 			{
-			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 														  rgv3D, 32,
-														  (LPWORD)rgiLightStatic1, 32);
+														  (LPWORD)rgiLightStatic1, 32, 0);
 			//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 			//											  rgv3D, 32);
 			}
 		else 
 			if( GetPTable()->GetDecalsEnabled() )
 				{
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 32,
-														  (LPWORD)rgiLightStatic1, 32);
+														  (LPWORD)rgiLightStatic1, 32, 0);
 				//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 				//										  rgv3D, 32);
 				}
@@ -1123,14 +1091,6 @@ void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
 		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
-
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{
-			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left), (m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top), &(m_pobjframe[i]->pTexture), &(m_pobjframe[i]->u), &(m_pobjframe[i]->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, m_pobjframe[i]->pTexture, &(m_pobjframe[i]->rc), ppin3d->m_pddsBackTextureBuffer );
-			}
 
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
@@ -1532,45 +1492,15 @@ void Light::DrawFrame(BOOL fOn)
 	const int frame = fOn;
 
 	// Light might be off the screen and have no image
-	// Check if we are blitting with D3D.
 
-#if 0 // Switching render targets mid-frame kills performance.   - JEP
-
-	if (g_pvp->m_pdd.m_fUseD3DBlit)		
+	// Make sure we have a DDraw surface. 
+	if (m_pobjframe[frame]->pdds != NULL)
 	{
-		// Make sure we have a D3D texture.
-		if (m_pobjframe[frame]->pTexture)
-		{
-			// Direct all renders to the "static" buffer.
-			g_pplayer->m_pin3d.SetRenderTarget(g_pplayer->m_pin3d.m_pddsStatic);
+		// NOTE: They are drawing to their own static buffer below in the BltFast... NOT the back buffer!
+		// We can use BltFast here because we are drawing to our own offscreen iamge
+		/*const HRESULT hr =*/ ppin3d->m_pddsStatic->BltFast(m_pobjframe[frame]->rc.left, m_pobjframe[frame]->rc.top, m_pobjframe[frame]->pdds, NULL, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
 
-			// Blit with D3D.
-			Display_DrawSprite(g_pplayer->m_pin3d.m_pd3dDevice, 
-							(float) m_pobjframe[frame]->rc.left, (float) m_pobjframe[frame]->rc.top, 
-							(float) (m_pobjframe[frame]->rc.right - m_pobjframe[frame]->rc.left), (float) (m_pobjframe[frame]->rc.bottom - m_pobjframe[frame]->rc.top), 
-							0xFFFFFFFF,  
-							0.0f, 
-							m_pobjframe[frame]->pTexture, m_pobjframe[frame]->u, m_pobjframe[frame]->v, 
-							DISPLAY_TEXTURESTATE_NOFILTER, DISPLAY_RENDERSTATE_TRANSPARENT);
-
-			g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
-
-			// Direct all renders to the back buffer.
-			g_pplayer->m_pin3d.SetRenderTarget(g_pplayer->m_pin3d.m_pddsBackBuffer);
-		}
-	}
-	else
-#endif
-	{
-		// Make sure we have a DDraw surface. 
-		if (m_pobjframe[frame]->pdds != NULL)
-		{
-			// NOTE: They are drawing to their own static buffer below in the BltFast... NOT the back buffer!
-			// We can use BltFast here because we are drawing to our own offscreen iamge
-			/*const HRESULT hr =*/ ppin3d->m_pddsStatic->BltFast(m_pobjframe[frame]->rc.left, m_pobjframe[frame]->rc.top, m_pobjframe[frame]->pdds, NULL, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
-
-			g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
-		}
+		g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
 	}
 }
 

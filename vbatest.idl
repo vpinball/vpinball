@@ -517,8 +517,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(211), helpstring("property HardwareRender")] HRESULT HardwareRender([in] VARIANT_BOOL newVal);
 		[propget, id(216), helpstring("property AlternateRender")] HRESULT AlternateRender([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(216), helpstring("property AlternateRender")] HRESULT AlternateRender([in] VARIANT_BOOL newVal);
-		[propget, id(212), helpstring("property UseD3DBlit")] HRESULT UseD3DBlit([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(212), helpstring("property UseD3DBlit")] HRESULT UseD3DBlit([in] VARIANT_BOOL newVal);
 		[propget, id(214), helpstring("property TableHeight")] HRESULT TableHeight([out, retval] float *pVal);
 		[propput, id(214), helpstring("property TableHeight")] HRESULT TableHeight([in] float newVal);
 

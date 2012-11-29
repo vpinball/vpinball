@@ -8,11 +8,12 @@
 #define     RGBA_TO_D3DARGB(r,g,b,a)	((((long)((a) * 255.0f)) << 24) | (((long)((r) * 255.0f)) << 16) | (((long)((g) * 255.0f)) << 8) | (long)((b) * 255.0f))
 #define     RGBA_TO_D3DRGBA(r,g,b,a)	((((long)((r) * 255.0f)) << 24) | (((long)((g) * 255.0f)) << 16) | (((long)((b) * 255.0f)) << 8) | (long)((a) * 255.0f))
 
-//#define		DISPLAY_MAXTEXTURES			1
-
-typedef struct _D3DTLVertexType	D3DTLVertexType;
-struct _D3DTLVertexType
+//!! this is only used for the mixer and debugging the plumb, so delete:
+inline void Display_DrawSprite( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, void * const Texture, const float u, const float v )
 {
+	// Build a quad.
+    struct _D3DTLVertexType
+	{
     // This structure is compatibile with DX7 flexible vertex formats.
     // These members must be in this order as defined by the SDK.
     // The flags to use this vertex type are... 
@@ -25,187 +26,7 @@ struct _D3DTLVertexType
     DWORD                   SpecularColor;					// Vertex2D specular color.                                           
     float                   TU1, TV1;						// Vertex2D texture coordinate.                                      
     float                   TU2, TV2;						// Vertex2D texture coordinate.                                      
-};
-
-/*
-typedef enum _DISPLAY_RENDERSTATE		DISPLAY_RENDERSTATE;
-enum _DISPLAY_RENDERSTATE 
-{
-	// Generic render state.
-    DISPLAY_RENDERSTATE_GENERIC		= 0,
-
-	// Custom render state indexes for DrawSprite.
-  	DISPLAY_RENDERSTATE_OPAQUE,
-  	DISPLAY_RENDERSTATE_TRANSPARENT,
-
-	DISPLAY_RENDERSTATE_BALL,
-
-	DISPLAY_RENDERSTATE_MAX
-};
-
-
-typedef enum _DISPLAY_TEXTURESTATE	DISPLAY_TEXTURESTATE;
-enum _DISPLAY_TEXTURESTATE 
-{
-	// Generic texture state.
-    DISPLAY_TEXTURESTATE_GENERIC	= 0,
-
-	// Custom texture state indexes for DrawSprite.
-  	DISPLAY_TEXTURESTATE_NOFILTER,
-
-  	DISPLAY_TEXTURESTATE_BALL,
-
-	DISPLAY_TEXTURESTATE_MAX
-};
-
-
-typedef struct _RenderStateType     RenderStateType;
-struct _RenderStateType
-{
-    DWORD           ZEnable;
-    DWORD           ZWriteEnable;
-    DWORD           AlphaTestEnable;
-    DWORD           AlphaRef;
-    DWORD           AlphaFunc;
-    DWORD           DitherEnable;
-    DWORD           AlphaBlendEnable;
-    DWORD           SpecularEnable;
-    DWORD           SrcBlend;
-    DWORD           DestBlend;
-    DWORD           CullMode;
-    DWORD           Lighting;
-    DWORD           PerspectiveCorrection;
-	DWORD			ColorKeyEnable;
-	DWORD			ColorKeyBlendEnable;
-
-    DWORD           Antialias;
-    DWORD           FillMode;
-    DWORD           ShadeMode;
-    DWORD           LinePattern;
-    DWORD           LastPixel;
-    DWORD           ZFunction;
-    DWORD           FogEnable;
-    DWORD           ZVisible;
-    DWORD           FogColor;
-    DWORD           FogTableMode;
-    DWORD           FogStart;
-    DWORD           FogEnd;
-    DWORD           FogDensity;
-    DWORD           EdgeAntiAlias;
-    DWORD           ZBias;
-    DWORD           RangeFogEnable;
-    DWORD           StencilEnable;
-    DWORD           StencilFail;
-    DWORD           StencilZFail;
-    DWORD           StencilPass;
-    DWORD           StencilFunc;
-    DWORD           StencilRef;
-    DWORD           StencilMask;
-    DWORD           StencilWriteMask;
-    DWORD           TextureFactor;
-    DWORD           Wrap0;
-    DWORD           Wrap1;
-    DWORD           Wrap2;
-    DWORD           Wrap3;
-    DWORD           Wrap4;
-    DWORD           Wrap5;
-    DWORD           Wrap6;
-    DWORD           Wrap7;
-    DWORD           Clipping;
-    DWORD           AmbientLightColor;
-    DWORD           FogVertexMode;
-    DWORD           ColorVertex;
-    DWORD           LocalViewer;
-    DWORD           NormalizeNormals;
-    DWORD           DiffuseMaterialSource;
-    DWORD           SpecularMaterialSource;
-    DWORD           AmbientMaterialSource;
-    DWORD           EmissiveMaterialSource;
-    DWORD           VertexBlend;
-    DWORD           ClipPlaneEnable;
-};
-
-
-typedef struct _TextureStateType     TextureStateType;
-struct _TextureStateType
-{
-    void            *Texture[DISPLAY_MAXTEXTURES];
-
-    DWORD           AddressU[DISPLAY_MAXTEXTURES];
-    DWORD           AddressV[DISPLAY_MAXTEXTURES];
-
-    DWORD           ColorArg1[DISPLAY_MAXTEXTURES];
-    DWORD           ColorArg2[DISPLAY_MAXTEXTURES];
-    DWORD           ColorOp[DISPLAY_MAXTEXTURES];
-
-    DWORD           AlphaArg1[DISPLAY_MAXTEXTURES];
-    DWORD           AlphaArg2[DISPLAY_MAXTEXTURES];
-    DWORD           AlphaOp[DISPLAY_MAXTEXTURES];
-
-    DWORD           MagFilter[DISPLAY_MAXTEXTURES];
-    DWORD           MinFilter[DISPLAY_MAXTEXTURES];
-    DWORD           MipFilter[DISPLAY_MAXTEXTURES];
-
-    DWORD           TextureCoordinateIndex[DISPLAY_MAXTEXTURES];
-    DWORD           TextureCoordinateTransformFlags[DISPLAY_MAXTEXTURES];
-};
-*/
-
-// Returns the current Value if it is a already a power of 2...
-// or the next power of two that is larger than Value.
-inline int Display_GetPowerOfTwo ( const int Value )
-{
-    // Find a power of two which is 
-    // greater than or equal to value. 
-	int PowerOfTwo = 1;
-    do
-    {
-        PowerOfTwo <<= 1;
-	}
-	while ( PowerOfTwo < Value );
-
-    return PowerOfTwo;
-}
-
-extern int NumVideoBytes;
-
-//extern RenderStateType RenderStates[DISPLAY_RENDERSTATE_MAX];
-//extern TextureStateType TextureStates[DISPLAY_TEXTURESTATE_MAX];
-
-// Function headers.
-
-//void Display_InitializeRenderStates ();
-//void Display_GetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState );
-//void Display_SetRenderState ( LPDIRECT3DDEVICE7 Direct3DDevice, RenderStateType *RenderState );
-//void Display_ClearRenderState ( RenderStateType *RenderState );
-
-//void Display_InitializeTextureStates ();
-//void Display_GetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState );
-//void Display_SetTextureState ( LPDIRECT3DDEVICE7 Direct3DDevice, TextureStateType *TextureState );
-//void Display_ClearTextureState ( TextureStateType *TextureState );
-
-void Display_CreateTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAW7 DirectDrawObject, const LPDIRECTDRAWSURFACE7 DDrawSurface, const int Width, const int Height, LPDIRECTDRAWSURFACE7 * const DestD3DTexture, float * const u, float * const v );
-void Display_CopyTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, LPDIRECTDRAWSURFACE7 DestTexture, const RECT * const Rect, const LPDIRECTDRAWSURFACE7 SourceTexture );
-void Display_ClearTexture ( const LPDIRECT3DDEVICE7 Direct3DDevice, const LPDIRECTDRAWSURFACE7 Texture, const char Value );
-void Display_DestroyTexture ( const LPDIRECTDRAWSURFACE7 Texture );
-
-HRESULT CALLBACK Display_EnumurateTransparentTextureFormats ( DDPIXELFORMAT * const pddpf, VOID * const param );
-
-HRESULT Display_DrawPrimitive( const LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount );
-HRESULT Display_DrawIndexedPrimitive( const LPDIRECT3DDEVICE7 Direct3DDevice, const D3DPRIMITIVETYPE d3dptPrimitiveType, const DWORD dwVertexTypeDesc, const LPVOID lpvVertices, const DWORD dwVertexCount, const LPWORD lpwIndices, const DWORD dwIndexCount );
-
-inline void Display_DrawSprite_NoMatrix_NoStates ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v )
-{
-	// Calculate sin and cos theta.
-	//const float Radians = Angle * (float)(2.0 * M_PI / 360.0);
-	//const float SinTheta = sinf ( Radians );
-	//const float CosTheta = cosf ( Radians );
-
-	// ToDo: Calculate vertices with rotation applied.	
-	//       We can probably get away without implementing a matrix library. -JEP
-
-	// Build a quad.
-    D3DTLVertexType	Vertices[4];
+	} Vertices[4];
 	Vertices[0].DiffuseColor = 
 	Vertices[0].SpecularColor = col;
 	Vertices[0].TU1 = 0.0f;
@@ -250,31 +71,14 @@ inline void Display_DrawSprite_NoMatrix_NoStates ( const LPDIRECT3DDEVICE7 Direc
 	Vertices[3].Z = 0.0f; 
 	Vertices[3].RHW = 1.0f; 
 
-	// Set the texture.
-	/*const HRESULT ReturnCode =*/ Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
+	Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
 
     // Draw the quad.
-    //Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX, (D3DTLVertexType *) Vertices, 4, 0 );  
+    //Direct3DDevice->DrawPrimitive ( D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX, Vertices, 4, 0 ); //!!!! retest
 
 	Direct3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DTRANSFORMED_VERTEX,
-											  (D3DTLVertexType *) Vertices, 4,
+											  Vertices, 4,
 											  (LPWORD)rgi0123, 4, NULL);
-}
-
-inline void Display_DrawSprite ( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, const float Angle, void * const Texture, const float u, const float v)
-{
-    const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
-
-	// Apply the transformation.
-    /*const HRESULT ReturnCode =*/ Direct3DDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
-
-	// Set the texture state.
-	//Display_SetTextureState ( Direct3DDevice, &(TextureStates[TextureStateIndex]) );
-	
-	// Set the render state.
-	//Display_SetRenderState ( Direct3DDevice, &(RenderStates[RenderStateIndex]) );
-
-    Display_DrawSprite_NoMatrix_NoStates ( Direct3DDevice, x, y, Width, Height, col, Angle, Texture, u, v );
 }
 
 #endif

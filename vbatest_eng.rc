@@ -1413,7 +1413,6 @@ BEGIN
     CONTROL         "Custom2",4,"ColorControl",WS_TABSTOP,27,7,40,14
     COMBOBOX        DISPID_Image,7,34,110,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Render Shadows",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,71,10
-    CONTROL         "Use Direct3D BLIT",212,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,85,49,32,8
     LTEXT           "I&mage:",-1,7,24,22,8
     LTEXT           "&Color",-1,7,10,20,9
 END

@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 
+int NumVideoBytes = 0;
+
 Pin3D::Pin3D()
 	{
 	m_scalex = m_scaley = 1.0f;
@@ -15,8 +17,6 @@ Pin3D::Pin3D()
 	m_pD3D = NULL;
 	m_pd3dDevice = NULL;
 	m_pddsStatic = NULL;
-	m_pddsBackTextureBuffer = NULL;
-	m_pddsZTextureBuffer = NULL;
 	m_pddsStaticZ = NULL;
 	m_pddsBallTexture = NULL;
 	m_pddsTargetTexture = NULL;
@@ -58,12 +58,6 @@ Pin3D::~Pin3D()
 
 	if (m_pddsStaticZ)
 		m_pddsStaticZ->Release();
-
-	if (m_pddsBackTextureBuffer)
-		m_pddsBackTextureBuffer->Release();
-
-	if (m_pddsZTextureBuffer)
-		m_pddsZTextureBuffer->Release();
 
 	if (m_pddsBallTexture)
 		m_pddsBallTexture->Release();
@@ -585,78 +579,6 @@ retry3:
 		{
 		return hr;
 		}
-
-	// Check if we are blitting with D3D.
-	if (g_pvp->m_pdd.m_fUseD3DBlit)
-	{
-		// Define the back texture buffer.
-		ddsd.dwSize		= sizeof ( DDSURFACEDESC2 );
-		ddsd.dwFlags	= DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT | DDSD_TEXTURESTAGE;
-		ddsd.dwWidth	= m_dwRenderWidth; 
-		ddsd.dwHeight	= m_dwRenderHeight; 
-		ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_3DDEVICE | DDSCAPS_VIDEOMEMORY;
-
-		// Find a transparent pixel format with 8 bit alpha.
-		m_pd3dDevice->EnumTextureFormats ( Display_EnumurateTransparentTextureFormats, &(ddsd.ddpfPixelFormat) );
-
-		// Create the back texture buffer.
-retry4:
-		if( FAILED( hr = m_pDD->CreateSurface ( &ddsd, &m_pddsBackTextureBuffer, NULL ) ) )
-		{
-			if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
-				ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
-				goto retry4;
-			}
-			ShowError("Could not create back texture buffer.");
-			return hr;
-		}
-
-		// Update the count.
-		NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwRGBBitCount/8);
-
-		// Create the z texture buffer.
-
-		// Get z texture buffer dimensions from the render target.
-		ddsd.dwSize = sizeof(ddsd);
-		m_pddsBackTextureBuffer->GetSurfaceDesc( &ddsd );
-
-		// Setup the surface desc for the z-buffer.
-		ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
-		ddsd.ddsCaps.dwCaps = DDSCAPS_ZBUFFER | DDSCAPS_VIDEOMEMORY; 
-		ddsd.ddsCaps.dwCaps2 = 0;
-		ddsd.ddpfPixelFormat.dwSize = 0;  
-
-		// Find a suitable z buffer format. 
-		m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback, (VOID*)&ddsd.ddpfPixelFormat );
-
-		// Check if we failed to find an appropriate z texture buffer 
-/*		if( 32 != ddsd.ddpfPixelFormat.dwZBufferBitDepth )
-		{
-			// We couldn't find a 32-bit z texture buffer.  Print an error.
-			ShowError("Could not find 32 bit Z-texture buffer format.");
-		}
-*/
-		// Create the z texture buffer.
-retry5:
-		if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsZTextureBuffer, NULL ) ) )
-		{
-			if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
-				ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
-				goto retry5;
-			}
-			ShowError("Could not create Z-Buffer.");
-			return hr; 
-		}
-
-		// Update the count.
-		NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwRGBBitCount/8);
-
-		if( FAILED( hr = m_pddsBackTextureBuffer->AddAttachedSurface( m_pddsZTextureBuffer ) ) )
-		{
-			ShowError("Could not attach Z-texture buffer to texture buffer.");
-			return hr; 
-		}
-	}
 
 	if(m_Stereo3D) {
 		ZeroMemory(&ddsd,sizeof(ddsd));

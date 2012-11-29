@@ -137,8 +137,8 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 
 		// Assume our 32 bit color structure
 		BYTE *pch = (BYTE *)ddsd.lpSurface;
-		byte min = 0xff;
-		byte max = 0x00;
+		unsigned char min = 0xff;
+		unsigned char max = 0;
 		for (int i=0;i<m_height;i++)
 			{
 			for (int l=0;l<m_width;l++)
@@ -153,7 +153,7 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 			}
 
 		pch = (BYTE *)ddsd.lpSurface;
-		if ((min == max) && (min == 0x00))
+		if ((min == max) && (min == 0))
 			for (int i=0;i<m_height;i++)
 				{
 				for (int l=0;l<m_width;l++)
@@ -204,7 +204,6 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		HBITMAP hbm = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
 
 		//slintf("Pixel format: %s",hbm.PixelFormat.ToString());
-		//g_pvp->m_pdd.get
 
 		int dibWidth = FreeImage_GetWidth(dib);
 		int dibHeight = FreeImage_GetHeight(dib);
@@ -383,10 +382,6 @@ PinDirectDraw::PinDirectDraw()
 	int tmp = 0;										
 	HRESULT hr = GetRegInt("Player", "HardwareRender", &tmp);
 	m_fHardwareAccel = (tmp != 0);
-
-	tmp = 0;										
-	hr = GetRegInt("Player", "UseD3DBlit", &tmp);
-	m_fUseD3DBlit = (tmp != 0);
 	}
 
 PinDirectDraw::~PinDirectDraw()
@@ -502,7 +497,7 @@ retryimage:
 		}
 
 	// Update the count (including mipmaps).
-//	NumVideoBytes += (ddsd.dwWidth * ddsd.dwHeight * 4) * (4.0/3.0);
+	NumVideoBytes += (unsigned int)((float)(ddsd.dwWidth * ddsd.dwHeight * 4) * (float)(4.0/3.0));
 
 	pdds->SetLOD(0);
 
@@ -783,7 +778,7 @@ void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF 
 				}
 			else
 				{
-				*(unsigned int *)pch = rgbBd;  //rlc optimized
+				*(unsigned int *)pch = rgbBd;
 				}
 			pch += 4;
 			}
@@ -807,11 +802,11 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 
 	const int pitch = ddsd.lPitch;
 
-	const COLORREF rtrans = (rgbTransparent & 0x000000ff);			//rlc fixed directx texture red-blue color reversal
+	const COLORREF rtrans = (rgbTransparent & 0x000000ff);
 	const COLORREF gtrans = (rgbTransparent & 0x0000ff00) >> 8;
 	const COLORREF btrans = (rgbTransparent & 0x00ff0000) >> 16;
 
-	const COLORREF bgrTransparent = btrans | (gtrans << 8) | (rtrans << 16) | 0xff000000;  //rlc color order different in DirectX texture buffer
+	const COLORREF bgrTransparent = btrans | (gtrans << 8) | (rtrans << 16) | 0xff000000;  // color order different in DirectX texture buffer
 	// Assume our 32 bit color structure
 
 	BYTE *pch = (BYTE *)ddsd.lpSurface;
@@ -856,10 +851,10 @@ BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransp
 			for (int l=0;l<width;l++)
 				{	
 				const COLORREF tc = (*(COLORREF *)pch) | 0xff000000; //set to opaque
-				if (tc == bgrTransparent )					//rlc reg-blue order reversed
+				if (tc == bgrTransparent )					// reg-blue order reversed
 					{
-					*(unsigned int *)pch = 0x00000000;		//rlc set transparent colorkey to black	and alpha transparent	
-					fTransparent = fTrue;					//colorkey is true
+					*(unsigned int *)pch = 0x00000000;		// set transparent colorkey to black	and alpha transparent	
+					fTransparent = fTrue;					// colorkey is true
 					}
 				else 
 					{ 
@@ -895,7 +890,7 @@ const int rgfilterwindow[7][7] = {
 
 void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, const int shadwidth, const int shadheight)
 	{
-	if (!pbits) return;	//rlc  found this pointer to be NULL after some graphics errors
+	if (!pbits) return;	// found this pointer to be NULL after some graphics errors
 
 	/*int window[7][7]; // custom filter kernel
 	for (int i=0;i<4;i++)

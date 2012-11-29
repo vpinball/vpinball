@@ -164,7 +164,7 @@ HRESULT LZWWriter::Output( int code)
 
 	while ( m_cur_bits >= 8 )
 	    {
-	    CharOut( (byte) ( m_cur_accum & 0xff ));
+	    CharOut( (unsigned char) ( m_cur_accum & 0xff ));
 	    m_cur_accum >>= 8;
 	    m_cur_bits -= 8;
 	    }
@@ -193,7 +193,7 @@ HRESULT LZWWriter::Output( int code)
 	    // At EOF, write the rest of the buffer.
 	    while ( m_cur_bits > 0 )
 			{
-			CharOut( (byte) ( m_cur_accum & 0xff ));
+			CharOut( (unsigned char) ( m_cur_accum & 0xff ));
 			m_cur_accum >>= 8;
 			m_cur_bits -= 8;
 			}
