@@ -232,6 +232,9 @@ void mixer_draw()
 	// Save the current texture state.
 	//Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 
+    static const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
+	g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
+
     const U32 alpha = (U32) ( fade * 222.2f );
 
     F32 ypos = (F32)( -((S32)g_pplayer->m_pin3d.m_dwRenderHeight/2) );
@@ -271,9 +274,6 @@ void mixer_draw()
 
 		const U32 drop_color = ( volume_adjustment_drop_color & 0xffffff00 ) | alpha;
 
-//        draw_transparent_box( size[0]+2, size[1]+2, volume_adjustment_bar_pos[0], volume_adjustment_bar_pos[1]+y, drop_color );
-//        draw_transparent_box( size[0], size[1], volume_adjustment_bar_pos[0], volume_adjustment_bar_pos[1]+y, color );
-
 		// Calculate the scale.
 		const float sX = - (float)g_pplayer->m_pin3d.m_dwRenderHeight*(float)(1.0/601.0); //changed from 600 to 601 to correct fadeout shadow lines
 		const float sY = - (float)g_pplayer->m_pin3d.m_dwRenderWidth *(float)(1.0/800.0);
@@ -298,7 +298,6 @@ void mixer_draw()
 							(fY + 1.0f), (fX + 1.0f),
 							(Height - 2.0f), (Width - 2.0f), 
 							col,
-							0.0f,
 							NULL, 1.0f, 1.0f );
 
 		// Set the color.
@@ -313,7 +312,6 @@ void mixer_draw()
 							fY, fX,
 							Height, Width, 
 							col,
-							0.0f,
 							NULL, 1.0f, 1.0f );
 	}
 

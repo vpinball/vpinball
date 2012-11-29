@@ -1,4 +1,7 @@
 #pragma once
+
+extern int NumVideoBytes;
+
 enum
 {
 	eLightProject1 = 1,
@@ -12,7 +15,6 @@ enum
 	TEXTURE_MODE_TRILINEAR,			// Trilinar texture filtering. 
 	TEXTURE_MODE_ANISOTROPIC		// Anisotropic texture filtering. 
 };
-
 
 class Matrix3D : public D3DMATRIX
 	{
@@ -194,9 +196,6 @@ public:
 	LPDIRECTDRAWSURFACE7 m_pddsZBuffer;
 	LPDIRECT3D7 m_pD3D;
 	LPDIRECT3DDEVICE7 m_pd3dDevice;
-
-	LPDIRECTDRAWSURFACE7 m_pddsBackTextureBuffer;		
-	LPDIRECTDRAWSURFACE7 m_pddsZTextureBuffer;
 
 	LPDIRECTDRAWSURFACE7 m_pddsStatic;
 	LPDIRECTDRAWSURFACE7 m_pddsStaticZ;

@@ -1093,46 +1093,30 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &plinesling->m_slingshotanim.m_znear, &plinesling->m_slingshotanim.m_zfar, 6, fFalse);
 
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{			
-			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
-			ppin3d->m_pddsZTextureBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-			}
-
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		SetNormal(rgv3D, rgiSlingshot0, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 5,(LPWORD)rgiSlingshot0, 4);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 5,(LPWORD)rgiSlingshot0, 4, 0);
 
 		SetNormal(rgv3D, rgiSlingshot1, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSlingshot1, 4);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSlingshot1, 4, 0);
 		
 		SetNormal(rgv3D, rgiSlingshot2, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 5,(LPWORD)rgiSlingshot2, 4);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 5,(LPWORD)rgiSlingshot2, 4, 0);
 		
 		SetNormal(rgv3D, rgiSlingshot3, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSlingshot3, 4);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSlingshot3, 4, 0);
 
 		SetNormal(rgv3D, rgiSlingshot4, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 11,(LPWORD)rgiSlingshot4, 4);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 11,(LPWORD)rgiSlingshot4, 4, 0);
 		
 		SetNormal(rgv3D, rgiSlingshot5, 4, NULL, NULL, NULL);
-		Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot5, 4);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot5, 4, 0);
 
 		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
 		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{
-			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
-			}
-
 		ppin3d->ExpandRectByRect(&plinesling->m_slingshotanim.m_rcBounds, &pof->rc);
 
 		// reset the portion of the z-buffer that we changed
@@ -1166,22 +1150,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 
 		ppin3d->ClearExtents(&m_phitdrop->m_polydropanim.m_rcBounds, &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar);
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
-
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{			
-			// Since we don't know the final dimensions of the 
-			// object we're rendering, clear the whole buffer.
-			RECT Rect;
-			Rect.top = 0;
-			Rect.left = 0;
-			Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
-			Rect.right = g_pplayer->m_pin3d.m_dwRenderWidth - 1;
-
-			// Clear the texture by copying the color and z values from the "static" buffers.
-			Display_ClearTexture ( g_pplayer->m_pin3d.m_pd3dDevice, ppin3d->m_pddsBackTextureBuffer, (char) 0x00 );
-			ppin3d->m_pddsZTextureBuffer->BltFast(Rect.left, Rect.top, ppin3d->m_pddsStaticZ, &Rect, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-			}
 		}
 
 	D3DMATERIAL7 mtrl;
@@ -1396,7 +1364,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped, but we do need to extend the extrema
 				{
 				// Draw side.
-				Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, m_d.m_fInner ? (LPWORD)rgiWall0 : (LPWORD)rgiWall1, 4);
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, m_d.m_fInner ? (LPWORD)rgiWall0 : (LPWORD)rgiWall1, 4, 0);
 				}
 
 			if (fMover)
@@ -1607,7 +1575,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 				}
 
 			// Draw top.
-			Display_DrawIndexedPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 3,(LPWORD)rgi0123, 3);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 3,(LPWORD)rgi0123, 3, 0);
 			//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 3);
 			}
 
@@ -1636,14 +1604,6 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			// Create the z surface.
 			pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 			/*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-			}
-
-		// Check if we are blitting with D3D.
-		if (g_pvp->m_pdd.m_fUseD3DBlit)
-			{
-			// Create the D3D texture that we will blit.
-			Display_CreateTexture ( g_pplayer->m_pin3d.m_pd3dDevice, g_pplayer->m_pin3d.m_pDD, NULL, (pof->rc.right - pof->rc.left), (pof->rc.bottom - pof->rc.top), &(pof->pTexture), &(pof->u), &(pof->v) );
-			Display_CopyTexture ( g_pplayer->m_pin3d.m_pd3dDevice, pof->pTexture, &(pof->rc), ppin3d->m_pddsBackTextureBuffer );
 			}
 
 		ppin3d->ExpandRectByRect(&m_phitdrop->m_polydropanim.m_rcBounds, &pof->rc);

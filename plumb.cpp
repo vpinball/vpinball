@@ -112,6 +112,7 @@ int plumb_tilted()
     return 0;
 }
 
+#ifdef DEBUG_PLUMB
 void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 color )
 {
     sx *= ((float) g_pplayer->m_pin3d.m_dwRenderHeight)*(float)(1.0/600.0);
@@ -127,11 +128,9 @@ void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 c
                         y, x,
                         sy, sx,
                         col,
-                        0.0f,
                         NULL, 1.0f, 1.0f );
 }
 
-#ifdef DEBUG_PLUMB
 void invalidate_box( const F32 sx, const F32 sy, const F32 x, const F32 y )
 {
 	RECT	Rect;
@@ -164,6 +163,9 @@ void plumb_draw()
 	//Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
 	// Save the current texture state.
 	//Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+
+    static const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
+	g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
 
     F32 x = sPlumbPos[0];
     F32 y = sPlumbPos[1];

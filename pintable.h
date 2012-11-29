@@ -170,8 +170,6 @@ public:
 	STDMETHOD(put_HardwareRender)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_AlternateRender)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_AlternateRender)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_UseD3DBlit)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_UseD3DBlit)(/*[in]*/ VARIANT_BOOL newVal);
 	/////////////////////////////////////////////
 
 	STDMETHOD(get_DeadSlider)(/*[out, retval]*/  int *pVal);

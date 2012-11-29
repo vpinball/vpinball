@@ -726,10 +726,6 @@ PinTable::PinTable()
 	hr = GetRegInt("Player", "AlternateRender", &tmp);
 	g_pvp->m_pdd.m_fAlternateRender = (tmp != 0);
 		
-	tmp = 0;								
-	hr = GetRegInt("Player", "UseD3DBlit", &tmp);
-	g_pvp->m_pdd.m_fUseD3DBlit = (tmp != 0);
-
 	m_tblAccelerometer = fTrue;							// true if electronic accelerometer enabled
 	hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
 	m_tblAccelerometer = m_tblAccelerometer != fFalse;
@@ -2464,7 +2460,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 	
 //	bw.WriteBool(FID(HRD3), g_pvp->m_pdd.m_fHardwareAccel);
-	bw.WriteBool(FID(BLT3), g_pvp->m_pdd.m_fUseD3DBlit);
 
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
@@ -3165,14 +3160,7 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 
 BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	{
-	if (id == FID(BLT3))
-		{	
-		int tmp;
-		pbr->GetBool(&tmp);
-		GetRegInt("Player", "UseD3DBlit", &tmp);
-		g_pvp->m_pdd.m_fUseD3DBlit = (tmp != 0);
-		}
-	else if (id == FID(PIID))
+	if (id == FID(PIID))
 		{
 		pbr->GetInt(&((int *)pbr->m_pdata)[0]);
 		}
@@ -7467,31 +7455,6 @@ STDMETHODIMP PinTable::put_HardwareRender(VARIANT_BOOL newVal)
 			}
 		SetRegValue("Player", "HardwareRender", REG_DWORD, &tmp, 4);
 		}
-	return S_OK;
-}
-
-STDMETHODIMP PinTable::get_UseD3DBlit(VARIANT_BOOL *pVal)
-{
-	*pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_pdd.m_fUseD3DBlit : false); //VP Editor
-
-	return S_OK;
-}
-
-STDMETHODIMP PinTable::put_UseD3DBlit(VARIANT_BOOL newVal)
-{
-	if (!g_pplayer && g_pvp) 
-		{														//VP Editor
-		int tmp;
-		const HRESULT hr = GetRegInt("Player", "UseD3DBlit", &tmp);
-		if (hr == S_OK) g_pvp->m_pdd.m_fUseD3DBlit = (tmp != 0);
-		else
-			{
-			STARTUNDO
-			g_pvp->m_pdd.m_fUseD3DBlit = VBTOF(newVal);
-			STOPUNDO
-			}
-		}
-
 	return S_OK;
 }
 

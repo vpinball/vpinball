@@ -16,25 +16,16 @@ public:
 
 		pdds = NULL;
 		pddsZBuffer = NULL;
-
-		pTexture = NULL;
-		u = 0.0f;
-		v = 0.0f;
 	}
 	
 	inline ~ObjFrame() {
 		SAFE_RELEASE(pdds);
 		SAFE_RELEASE(pddsZBuffer);
-
-		SAFE_RELEASE(pTexture);
 	}
 
 	RECT rc;
 	LPDIRECTDRAWSURFACE7 pdds;
 	LPDIRECTDRAWSURFACE7 pddsZBuffer;
-
-	LPDIRECTDRAWSURFACE7 pTexture;
-	float				 u, v;
 	};
 
 class CatmullCurve
