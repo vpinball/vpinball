@@ -1897,15 +1897,6 @@
 			</FileConfiguration>
 		</File>
 		<File 
-			RelativePath=".\display.cpp">
-			<FileConfiguration 
-				Name="ReleaseTest|Win32">
-				<Tool 
-					Name="CppCmplrTool"
-					Optimization="1"/>
-			</FileConfiguration>
-		</File>
-		<File 
 			RelativePath=".\dispreel.cpp">
 			<FileConfiguration 
 				Name="Unicode Release MinSize|Win32">

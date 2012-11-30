@@ -1071,9 +1071,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">MinSpace</Optimization>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="display.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">MinSpace</Optimization>
-    </ClCompile>
     <ClCompile Include="dispreel.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>

@@ -1958,15 +1958,6 @@ rem  Version changes during debug compile only
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\display.cpp">
-				<FileConfiguration
-					Name="ReleaseTest|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="dispreel.cpp">
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32">

@@ -45,9 +45,6 @@
     <ClCompile Include="def.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="display.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dispreel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
