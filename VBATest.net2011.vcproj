@@ -2492,18 +2492,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\display.cpp"
-				>
-				<FileConfiguration
-					Name="ReleaseTest|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="dispreel.cpp"
 				>
 				<FileConfiguration
