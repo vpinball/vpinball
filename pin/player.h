@@ -175,12 +175,7 @@ public:
 	int m_MusicVolume;
 	int m_SoundVolume;
 
-	BOOL m_fDrawCursor;
 	int m_lastcursorx, m_lastcursory; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
-
-	BOOL m_fGameWindowActive;
-	BOOL m_fUserDebugPaused;
-	BOOL m_fDebugWindowActive;
 
 	int m_LastKnownGoodCounter;
 	int m_ModalRefCount;
@@ -195,6 +190,11 @@ public:
 	int Coins;					// The number of coins queued to be inserted.  These were sent from the shell after the load.
 	float curMechPlungerPos;
 
+	bool m_fDrawCursor;
+	bool m_fGameWindowActive;
+	bool m_fUserDebugPaused;
+	bool m_fDebugWindowActive;
+	
 private:
 	Vector<HitObject> m_vho;
 	Vector<AnimObject> m_vmover;
@@ -261,9 +261,9 @@ private:
 
 	HANDLE m_hSongCompletionEvent;
 
-	BOOL m_fPseudoPause;		// Nothing is moving, but we're still redrawing
-
 	int m_pauseRefCount;
+
+	bool m_fPseudoPause;		// Nothing is moving, but we're still redrawing
 
 #ifdef ULTRAPIN
 	U32 m_LastUpdateTime[LIGHTHACK_MAX];
@@ -308,9 +308,9 @@ public:
 
 #ifdef STEPPING
 public:
-	BOOL m_fPause;
 	int m_PauseTimeTarget;
-	BOOL m_fStep;
+	bool m_fPause;
+	bool m_fStep;
 #endif
 	};
 
