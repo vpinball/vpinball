@@ -69,17 +69,21 @@
 
 #define ADAPT_VSYNC_FACTOR 0.95 // safety factor where vsync is turned off (f.e. drops below 60fps * 0.95 = 57fps)
 
+#define PHYSICS_STEPTIME 10000	// usecs to go between each physics update
+
 #define ACCURATETIMERS 1
 
 #define FPS 1                   // Enable FPS computation (default 'F10')
 #define STEPPING 1              // Enable Physics stepping
+
+//#define PLAYBACK
 
 //#define LOG
 //#define HITLOG
 //#define GLOBALLOG
 
 //#define _DEBUGPHYSICS
-//#define DEBUG_FRATE
+//#define DEBUG_FPS
 //#define ANTI_TEAR	1			// define if you want to have some hacky code to prevent drawing more than one frame per 16ms = ~60fps
 //#define EVENTIME 1
 

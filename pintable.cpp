@@ -718,7 +718,7 @@ PinTable::PinTable()
 	hr = GetRegInt("Player", "Timeout", &tmp);
 	if (hr == S_OK) m_timeout = (float)tmp*(float)(1.0/60.0);
 
-	tmp = 0;										
+	tmp = 1;
 	hr = GetRegInt("Player", "HardwareRender", &tmp);
 	g_pvp->m_pdd.m_fHardwareAccel = (tmp != 0);
 		
@@ -2459,8 +2459,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 {
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 	
-//	bw.WriteBool(FID(HRD3), g_pvp->m_pdd.m_fHardwareAccel);
-
 #ifdef VBA
 	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
