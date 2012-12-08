@@ -29,9 +29,9 @@ Player::Player()
 	c_embedcnts = 0;
 	m_fLShiftDown = fFalse;
 	m_fRShiftDown = fFalse;
-	m_fPause = fFalse;
-	m_fStep = fFalse;
-	m_fPseudoPause = fFalse;
+	m_fPause = false;
+	m_fStep = false;
+	m_fPseudoPause = false;
 	m_pauseRefCount = 0;
 	m_fNoTimeCorrect = fFalse;
 
@@ -199,15 +199,15 @@ Player::Player()
 	m_PauseTimeTarget = 0;
 	m_pactiveballDebug = NULL;
 
-	m_fGameWindowActive = fFalse;
-	m_fDebugWindowActive = fFalse;
-	m_fUserDebugPaused = fFalse;
+	m_fGameWindowActive = false;
+	m_fDebugWindowActive = false;
+	m_fUserDebugPaused = false;
 	m_hwndDebugOutput = NULL;
 
 	m_LastKnownGoodCounter = 0;
 	m_ModalRefCount = 0;
 
-	m_fDrawCursor = fFalse;
+	m_fDrawCursor = false;
 	m_lastcursorx = 0xfffffff;
 	m_lastcursory = 0xfffffff;
 	m_NudgeManual = -1;
@@ -1908,7 +1908,7 @@ void Player::Render()
 			{
 			// Walk one physics step foward
 			m_curPhysicsFrameTime = m_RealTimeClock - m_PhysicsStepTime;
-			m_fStep = fFalse;
+			m_fStep = false;
 			}
 		else
 			{
@@ -1922,7 +1922,7 @@ void Player::Render()
 	if (!m_fPause || m_fStep)
 		{
 		m_RealTimeClock = m_curPhysicsFrameTime - 3547811060 + 3547825450;//(m_PhysicsStepTime*3/4);
-		m_fStep = fFalse;
+		m_fStep = false;
 		}
 	else
 		{
@@ -2076,7 +2076,7 @@ void Player::Render()
 
 	m_LastKnownGoodCounter++;
 
-	if(m_pininput.Pressed(PININ_ENABLE3D)) { //!!
+	if(m_pininput.Pressed(PININ_ENABLE3D)) {
 		m_fStereo3Denabled = !m_fStereo3Denabled;
 		SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
 		m_fCleanBlt = fFalse;
@@ -2159,9 +2159,9 @@ void Player::Render()
 	if(!m_fCleanBlt || (overall_area >= FULLBLTAREA)) {
 		RECT rect;
 		rect.left = 0;
-		rect.right = min((unsigned int)GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
+		rect.right = min(GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
 		rect.top = 0;
-		rect.bottom = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), m_pin3d.m_dwRenderHeight);
+		rect.bottom = min(GetSystemMetrics(SM_CYSCREEN), m_pin3d.m_dwRenderHeight);
 		m_pin3d.m_pddsBackBuffer->Blt(&rect, m_pin3d.m_pddsStatic, &rect, 0, NULL);
 		m_pin3d.m_pddsZBuffer->Blt(&rect, m_pin3d.m_pddsStaticZ, &rect, 0, NULL);
 		
@@ -2734,7 +2734,7 @@ else
 	if ((m_PauseTimeTarget > 0) && (m_PauseTimeTarget <= m_timeCur))
 	{
 		m_PauseTimeTarget = 0;
-		m_fUserDebugPaused = fTrue;
+		m_fUserDebugPaused = true;
 		RecomputePseudoPauseState();
 		SendMessage(m_hwndDebugger, RECOMPUTEBUTTONCHECK, 0, 0);
 	}
@@ -3572,14 +3572,14 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_KEYDOWN:
-			g_pplayer->m_fDrawCursor = fFalse;
+			g_pplayer->m_fDrawCursor = false;
 			SetCursor(NULL);
 			break;
 
 		case WM_MOUSEMOVE:
 			if (g_pplayer->m_lastcursorx != LOWORD(lParam) || g_pplayer->m_lastcursory != HIWORD(lParam))
 				{
-				g_pplayer->m_fDrawCursor = fTrue;
+				g_pplayer->m_fDrawCursor = true;
 				g_pplayer->m_lastcursorx = LOWORD(lParam);
 				g_pplayer->m_lastcursory = HIWORD(lParam);
 				}
@@ -3594,24 +3594,24 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		case WM_LBUTTONDOWN:
 			if (g_pplayer->m_fPause)
 				{
-				g_pplayer->m_fStep = fTrue;
+				g_pplayer->m_fStep = true;
 				}
 			break;
 
 		case WM_RBUTTONDOWN:
 			if (!g_pplayer->m_fPause)
 				{
-				g_pplayer->m_fPause = fTrue;
+				g_pplayer->m_fPause = true;
 					
-				g_pplayer->m_fGameWindowActive = fFalse;
+				g_pplayer->m_fGameWindowActive = false;
 				g_pplayer->RecomputePauseState();
 				g_pplayer->RecomputePseudoPauseState();
 				}
 			else
 				{
-				g_pplayer->m_fPause = fFalse;
+				g_pplayer->m_fPause = false;
 			
-				g_pplayer->m_fGameWindowActive = fTrue;
+				g_pplayer->m_fGameWindowActive = true;
 				SetCursor(NULL);
 				g_pplayer->m_fNoTimeCorrect = fTrue;
 				g_pplayer->m_fCleanBlt = fFalse;
@@ -3641,16 +3641,16 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 #else	
 			if (wParam != WA_INACTIVE)
 				{
-				g_pplayer->m_fGameWindowActive = fTrue;
+				g_pplayer->m_fGameWindowActive = true;
 				SetCursor(NULL);
 				g_pplayer->m_fNoTimeCorrect = fTrue;
-				g_pplayer->m_fPause = fFalse;
+				g_pplayer->m_fPause = false;
 				g_pplayer->m_fCleanBlt = fFalse;
 				}
 			else
 				{
-				g_pplayer->m_fGameWindowActive = fFalse;
-				g_pplayer->m_fPause = fTrue;
+				g_pplayer->m_fGameWindowActive = false;
+				g_pplayer->m_fPause = true;
 				}
 			g_pplayer->RecomputePauseState();
 #endif
@@ -3857,7 +3857,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case WM_CLOSE:
 				g_pplayer->m_PauseTimeTarget = 0;
-				g_pplayer->m_fUserDebugPaused = fFalse;
+				g_pplayer->m_fUserDebugPaused = false;
 				g_pplayer->RecomputePseudoPauseState();
 				g_pplayer->m_fDebugMode = fFalse;
 				ShowWindow(hwndDlg, SW_HIDE);
@@ -3913,14 +3913,14 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							{
 							case IDC_PLAY:
 								g_pplayer->m_PauseTimeTarget = 0;
-								g_pplayer->m_fUserDebugPaused = fFalse;
+								g_pplayer->m_fUserDebugPaused = false;
 								g_pplayer->RecomputePseudoPauseState();
 								SendMessage(hwndDlg, RECOMPUTEBUTTONCHECK, 0, 0);
 								break;
 
 							case IDC_PAUSE:
 								g_pplayer->m_PauseTimeTarget = 0;
-								g_pplayer->m_fUserDebugPaused = fTrue;
+								g_pplayer->m_fUserDebugPaused = true;
 								g_pplayer->RecomputePseudoPauseState();
 								SendMessage(hwndDlg, RECOMPUTEBUTTONCHECK, 0, 0);
 								break;
@@ -3929,7 +3929,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 								{
 								int ms = GetDlgItemInt(hwndDlg, IDC_STEPAMOUNT, NULL, FALSE);
 								g_pplayer->m_PauseTimeTarget = g_pplayer->m_timeCur + ms;
-								g_pplayer->m_fUserDebugPaused = fFalse;
+								g_pplayer->m_fUserDebugPaused = false;
 								g_pplayer->RecomputePseudoPauseState();
 								SendMessage(hwndDlg, RECOMPUTEBUTTONCHECK, 0, 0);
 								}
