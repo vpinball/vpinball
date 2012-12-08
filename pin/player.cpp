@@ -2654,13 +2654,15 @@ else
 		char szFoo[128];
 
 		// Draw the amount of video memory used.
-		int len = sprintf_s(szFoo, "Total Video Memory: %d MB", NumVideoBytes/(1024*1024));
-		TextOut(hdcNull, 10, 75, szFoo, len);
+		int len = sprintf_s(szFoo, " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes/(float)(1024*1024));
+		TextOut(hdcNull, 10, 30, szFoo, len);
 
 		// Draw the framerate.
-		len = sprintf_s(szFoo, "FPS: %d", m_fps);
+		int len2 = sprintf_s(szFoo, " FPS: %d ", m_fps);
+		for(int l = len2; l < len+1; ++l)
+			szFoo[l] = ' ';
 		TextOut(hdcNull, 10, 10, szFoo, len);
-		
+
 		period = msec()-stamp;
 		if( period > m_max ) m_max = period;
 		if( phys_period > m_phys_max ) m_phys_max = phys_period;
@@ -2693,7 +2695,7 @@ else
 
 			for(int i=0; i<TSIZE; i++)
 			{
-				len = sprintf_s( szFoo, "%d", period[i] );
+				len = sprintf_s( szFoo, " %d ", period[i] );
 				TextOut( hdcNull,  20 + i * 20, 10 + period[i], szFoo, len );
 			}
 		}
