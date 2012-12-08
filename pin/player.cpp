@@ -27,8 +27,6 @@ Player::Player()
 	//_mm_setcsr(_mm_getcsr() | 0x8040);
 
 	c_embedcnts = 0;
-	m_fLShiftDown = fFalse;
-	m_fRShiftDown = fFalse;
 	m_fPause = false;
 	m_fStep = false;
 	m_fPseudoPause = false;
@@ -180,7 +178,7 @@ Player::Player()
 		m_fWasteTime2 = fTrue;
 		}
 
-#if defined( DEBUG_FRATE )
+#if defined( DEBUG_FPS )
 	m_fShowFPS = fTrue;
 #else
 	m_fShowFPS = fFalse;
@@ -949,9 +947,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	m_liStartTime = usec();
 
-	m_PhysicsStepTime = 10000;
-	m_nextPhysicsFrameTime = m_liStartTime + m_PhysicsStepTime;
-	m_liPhysicsCalced = m_liStartTime; // haven't calced any physics yet
+	m_curPhysicsFrameTime = m_liStartTime;
+	m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
 
 #ifdef PLAYBACK
 	if (m_fPlayback)
@@ -960,10 +957,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		}
 #endif
 
-	m_curPhysicsFrameTime = m_liStartTime;
-
 #ifdef LOG
-	fprintf(m_flog, "Step Time %u %u %u %u\n", m_PhysicsStepTime>>32, m_PhysicsStepTime, m_liStartTime>>32, m_liStartTime);
+	fprintf(m_flog, "Step Time %llu\n", m_liStartTime);
 	fprintf(m_flog, "End Frame\n");
 #endif
 
@@ -1390,6 +1385,7 @@ void Player::InitWindow()
 	int x = (screenwidth - m_width) / 2;
 	int y = (screenheight - m_height) / 2;
 
+	// No window border, title, or control boxes.
 	int windowflags = WS_POPUP | WS_CLIPCHILDREN;
 	int windowflagsex = 0;
 
@@ -1400,8 +1396,6 @@ void Player::InitWindow()
 		// Check if we have a front end.
 		if ( FindWindow( NULL, "Ultrapin (plfe)" ) != NULL )
 		{
-			// No window border, title, or control boxes.
-			windowflags = WS_POPUP | WS_CLIPCHILDREN;
 			windowflagsex = WS_EX_TOPMOST;
 
 			// Place window in top-left corner.
@@ -1413,6 +1407,7 @@ void Player::InitWindow()
 			// Add a pretty window border and standard control boxes.
 			windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
 			windowflagsex = WS_EX_OVERLAPPEDWINDOW;
+			
 			y -= captionheight;
 			m_height += captionheight;
 		}
@@ -1566,7 +1561,7 @@ int Player::UltraNudgeGetTilt()
 	return 0;
 }
 
-void Player::UltraNudge()	// called on every intergral physics frame
+void Player::UltraNudge()	// called on every integral physics frame
 {	
 	static F32 cna=1,sna=0,na=0;	// initialize for angle 0
 	
@@ -1907,7 +1902,7 @@ void Player::Render()
 		if (m_fStep)
 			{
 			// Walk one physics step foward
-			m_curPhysicsFrameTime = m_RealTimeClock - m_PhysicsStepTime;
+			m_curPhysicsFrameTime = m_RealTimeClock - PHYSICS_STEPTIME;
 			m_fStep = false;
 			}
 		else
@@ -1921,7 +1916,7 @@ void Player::Render()
 #ifdef EVENTIME
 	if (!m_fPause || m_fStep)
 		{
-		m_RealTimeClock = m_curPhysicsFrameTime - 3547811060 + 3547825450;//(m_PhysicsStepTime*3/4);
+		m_RealTimeClock = m_curPhysicsFrameTime - 3547811060 + 3547825450;
 		m_fStep = false;
 		}
 	else
@@ -1959,7 +1954,7 @@ void Player::Render()
 		{
 		frametime = ParseLog((LARGE_INTEGER*)&m_RealTimeClock, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
 		}
-#else // PLAYBACK
+#else
 
 #define TIMECORRECT 1
 #ifdef TIMECORRECT
@@ -1991,12 +1986,12 @@ void Player::Render()
 		// If the frame is the next thing to happen, update physics to that
 		// point next update acceleration, and continue loop
 
-		const float physics_dtime = (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/10000.0));
-		const float physics_to_graphic_dtime  = (float)((double)(m_RealTimeClock - m_curPhysicsFrameTime)*(1.0/10000.0));
+		const float physics_dtime = (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
+		const float physics_to_graphic_dtime = (float)((double)(m_RealTimeClock - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
 
 		const U64 cur_time = usec();
 
-		if (physics_to_graphic_dtime < physics_dtime )				 // is graphic frame time next???
+		if (physics_to_graphic_dtime < physics_dtime)				 // is graphic frame time next???
 			{		
 			PhysicsSimulateCycle(physics_to_graphic_dtime, cur_time);// advance physics to this time
 			m_curPhysicsFrameTime = m_RealTimeClock;				 // now current to the wall clock
@@ -2006,7 +2001,7 @@ void Player::Render()
 		if (cur_time - m_RealTimeClock > 200000)					 // hung in the physics loop over 200 milliseconds
 			{														 // can not keep up to real time
 			m_curPhysicsFrameTime = m_RealTimeClock;				 // skip physics forward ... slip-cycles
-			m_nextPhysicsFrameTime = m_RealTimeClock + m_PhysicsStepTime;
+			m_nextPhysicsFrameTime = m_RealTimeClock + PHYSICS_STEPTIME;
 			break;	//this is the common exit from the loop			 // go draw frame
 			}
 		
@@ -2014,7 +2009,7 @@ void Player::Render()
 		PhysicsSimulateCycle(physics_dtime, cur_time); 				 // main simulator call physics_dtime
 
  		m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				 // new cycle, on physics frame boundary
-		m_nextPhysicsFrameTime += m_PhysicsStepTime;				 // advance physics position
+		m_nextPhysicsFrameTime += PHYSICS_STEPTIME;					 // advance physics position
 
 		// now get and/or calculate integral cycle physics events, digital filters, external acceleration inputs, etc.
 
@@ -2028,7 +2023,7 @@ void Player::Render()
 #ifdef ACCURATETIMERS
 		m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 
-		const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); // 10 milli-seconds
+		const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); // milliseconds
 
 		for (int i=0;i<m_vht.Size();i++)
 		{
@@ -2050,7 +2045,7 @@ void Player::Render()
 		
 		if (m_nudgetime)
 		{
-			m_nudgetime--;	                                                                                                                                                    
+			m_nudgetime--;
 
 			if (m_nudgetime == 5)
 			{
@@ -2308,7 +2303,7 @@ void Player::Render()
 
 if(!m_fStereo3D || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
 {
-	if ( m_nudgetime &&					// Table is being nudged.
+	if ( m_nudgetime &&			// Table is being nudged.
 		 m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
 		// Draw with an offset to shake the display.
@@ -2659,11 +2654,11 @@ else
 		char szFoo[128];
 
 		// Draw the amount of video memory used.
-		int len = sprintf_s(szFoo, "Total Video Memory = %d", NumVideoBytes);
+		int len = sprintf_s(szFoo, "Total Video Memory: %d MB", NumVideoBytes/(1024*1024));
 		TextOut(hdcNull, 10, 75, szFoo, len);
 
 		// Draw the framerate.
-		len = sprintf_s(szFoo, "%d %llu", m_fps, m_PhysicsStepTime);
+		len = sprintf_s(szFoo, "FPS: %d", m_fps);
 		TextOut(hdcNull, 10, 10, szFoo, len);
 		
 		period = msec()-stamp;
@@ -2685,7 +2680,7 @@ else
 			m_count++;
 		}
 
-#ifdef DEBUG_FRATE
+#ifdef DEBUG_FPS
 		{
 #define TSIZE 20
 			static int period[TSIZE];

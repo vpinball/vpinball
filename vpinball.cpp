@@ -430,7 +430,7 @@ void VPinball::InitRegValues()
 	hr = GetRegInt("Player", "HardwareRender", &m_fHardwareAccel);
 	if (hr != S_OK)
 		{
-		g_pvp->m_pdd.m_fHardwareAccel = 0; // default value
+		g_pvp->m_pdd.m_fHardwareAccel = 1; // default value
 		}
 
 	hr = GetRegInt("Player", "DeadZone", &DeadZ);
@@ -3672,7 +3672,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			hr = GetRegInt("Player", "HardwareRender", &hardrend);
 			if (hr != S_OK)
 				{
-				hardrend = fFalse;
+				hardrend = fTrue;
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, hardrend ? BST_CHECKED : BST_UNCHECKED, 0);
 

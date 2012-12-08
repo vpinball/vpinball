@@ -217,13 +217,7 @@ private:
 
 	U64 m_liStartTime;
 	U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn
-
-	BOOL m_fLShiftDown;			// For our internal bookkeeping since windows won't do it for us
-	BOOL m_fRShiftDown;
-
-	U64 m_PhysicsStepTime;		// ticks to go between each gravity update
 	U64 m_nextPhysicsFrameTime;	// time at which the next physics update should be
-	U64 m_liPhysicsCalced;
 
     // caching hitable ramps & primitives to speed up DrawAcrylics()
 	Vector< Hitable > m_vhitacrylic;
