@@ -3586,7 +3586,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, checkblit ? BST_CHECKED : BST_UNCHECKED, 0);
 
-
 			int maxTexDim;
 			hr = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
 			if (hr != S_OK)

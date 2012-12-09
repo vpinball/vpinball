@@ -180,23 +180,27 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
 		int bitsPerPixel = FreeImage_GetBPP(dib);
 
-		// check if Textures exeed the maximum texture dimension
+		// check if Textures exceed the maximum texture dimension
 		int maxTexDim;
 		HRESULT hrMaxTex = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
 		if (hrMaxTex != S_OK)
 		{
 			maxTexDim = 0; // default: Don't resize textures
 		}
+		if((maxTexDim <= 0) || (maxTexDim > MAX_TEXTURE_SIZE))
+		{
+			maxTexDim = MAX_TEXTURE_SIZE;
+		}
 		int pictureWidth = FreeImage_GetWidth(dib);
 		int pictureHeight = FreeImage_GetHeight(dib);
 		// save original width and height, if the texture is rescaled
 		m_originalWidth = pictureWidth;
 		m_originalHeight = pictureHeight;
-		if (((pictureHeight > maxTexDim) ||  (pictureWidth > maxTexDim)) && (maxTexDim != 0))
+		if ((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim))
 		{
-			dib = FreeImage_Rescale(dib, maxTexDim, maxTexDim, FILTER_BILINEAR);
-			m_width = maxTexDim;
-			m_height = maxTexDim;
+			dib = FreeImage_Rescale(dib, min(pictureWidth,maxTexDim), min(pictureHeight,maxTexDim), FILTER_BILINEAR);
+			m_width = min(pictureWidth,maxTexDim);
+			m_height = min(pictureHeight,maxTexDim);
 		}
 
 		HDC hDC = GetDC(NULL);
@@ -231,23 +235,27 @@ BOOL PinImage::LoadToken(int id, BiffReader *pbr)
 		FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
 		FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
 
-		// check if Textures exeed the maximum texture dimension
+		// check if Textures exceed the maximum texture dimension
 		int maxTexDim;
 		HRESULT hrMaxTex = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
 		if (hrMaxTex != S_OK)
 		{
 			maxTexDim = 0; // default: Don't resize textures
 		}
+		if((maxTexDim <= 0) || (maxTexDim > MAX_TEXTURE_SIZE))
+		{
+			maxTexDim = MAX_TEXTURE_SIZE;
+		}
 		int pictureWidth = FreeImage_GetWidth(dib);
 		int pictureHeight = FreeImage_GetHeight(dib);
 		// save original width and height, if the texture is rescaled
 		m_originalWidth = pictureWidth;
 		m_originalHeight = pictureHeight;
-		if (((pictureHeight > maxTexDim) ||  (pictureWidth > maxTexDim)) && (maxTexDim != 0))
+		if ((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim))
 		{
-			dib = FreeImage_Rescale(dib, maxTexDim, maxTexDim, FILTER_BILINEAR);
-			m_width = maxTexDim;
-			m_height = maxTexDim;
+			dib = FreeImage_Rescale(dib, min(pictureWidth,maxTexDim), min(pictureHeight,maxTexDim), FILTER_BILINEAR);
+			m_width = min(pictureWidth,maxTexDim);
+			m_height = min(pictureHeight,maxTexDim);
 		}
 
 		HDC hDC = GetDC(NULL);
@@ -379,7 +387,7 @@ PinDirectDraw::PinDirectDraw()
 	{
 	m_pDD = NULL;
 
-	int tmp = 0;										
+	int tmp = 1;
 	HRESULT hr = GetRegInt("Player", "HardwareRender", &tmp);
 	m_fHardwareAccel = (tmp != 0);
 	}
@@ -522,21 +530,25 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 		FIBITMAP *dib = FreeImage_Load(fif, szfile, 0);
 		// unless a bad file format, we are done !
 
-		// check if Textures exeed the maximum texture diemension
+		// check if Textures exceed the maximum texture diemension
 		int maxTexDim;
 		HRESULT hrMaxTex = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
 		if (hrMaxTex != S_OK)
 		{
 			maxTexDim = 0; // default: Don't resize textures
 		}
+		if((maxTexDim <= 0) || (maxTexDim > MAX_TEXTURE_SIZE))
+		{
+			maxTexDim = MAX_TEXTURE_SIZE;
+		}
 		int pictureWidth = FreeImage_GetWidth(dib);
 		int pictureHeight = FreeImage_GetHeight(dib);
 		// save original width and height, if the texture is rescaled
 		originalWidth = pictureWidth;
 		originalHeight = pictureHeight;
-		if (((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim)) && (maxTexDim != 0))
+		if ((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim))
 		{
-			dib = FreeImage_Rescale(dib, maxTexDim, maxTexDim, FILTER_BILINEAR);
+			dib = FreeImage_Rescale(dib, min(pictureWidth,maxTexDim), min(pictureHeight,maxTexDim), FILTER_BILINEAR);
 		}
 
 		HDC hDC = GetDC(NULL);
@@ -553,12 +565,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 		if (bitsPerPixel == 24)
 			g_pvp->m_pdd.SetOpaque(mySurface, dibWidth, dibHeight);
 
-		if (hbm == NULL)
-		{
-			return NULL;
-		}
-		
-		return mySurface;
+		return (hbm == NULL) ? NULL : mySurface;
 	}
 	else
 		return NULL;
@@ -1082,7 +1089,7 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 				unsigned int btotal = 0;
 				unsigned int count = 0;
 				const unsigned int a0 = pbytes1[3];
-				if (a0) { count++; rtotal+=pbytes1[2]; gtotal+=pbytes1[1]; btotal+=pbytes1[0]; } //rlc faster code
+				if (a0) { count++; rtotal+=pbytes1[2]; gtotal+=pbytes1[1]; btotal+=pbytes1[0]; }
 				const unsigned int a1 = pbytes1[7];
 				if (a1) { count++; rtotal+=pbytes1[6]; gtotal+=pbytes1[5]; btotal+=pbytes1[4]; }
 				const unsigned int a2 = pbytes2[3];
