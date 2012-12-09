@@ -1263,7 +1263,7 @@ void PinTable::GetUniqueNamePasting(int type, WCHAR *wzUniqueName)
 		}
 	}
 
-void PinTable::Render(Sur * psur)
+void PinTable::Render(Sur * const psur)
 	{
 	RECT rc;
 	GetClientRect(m_hwnd, &rc);
@@ -4723,7 +4723,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 		}
 	}
 
-void PinTable::PreRender(Sur *psur)
+void PinTable::PreRender(Sur * const psur)
 	{
 	}
 

@@ -173,11 +173,11 @@ void Gate::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,strlen(m_d.m_szImageBack));
 	}
 
-void Gate::PreRender(Sur *psur)
+void Gate::PreRender(Sur * const psur)
 	{
 	}
 
-void Gate::Render(Sur *psur)
+void Gate::Render(Sur * const psur)
 	{
 	psur->SetLineColor(RGB(0,0,0),false,2);
 	psur->SetObject(this);
@@ -230,7 +230,7 @@ void Gate::RenderBlueprint(Sur *psur)
 	{
 	}
 
-void Gate::GetTimers(Vector<HitTimer> *pvht)
+void Gate::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -247,9 +247,8 @@ void Gate::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Gate::GetHitShapes(Vector<HitObject> *pvho)
+void Gate::GetHitShapes(Vector<HitObject> * const pvho)
 	{
-
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 	const float h = m_d.m_height;		//relative height of the gate 
 
@@ -343,7 +342,7 @@ void Gate::GetHitShapes(Vector<HitObject> *pvho)
 		}
 	}
 
-void Gate::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Gate::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
@@ -364,7 +363,7 @@ void Gate::EndPlay()
 	m_plineseg = NULL;
 	}
 
-void Gate::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Gate::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
@@ -381,7 +380,7 @@ static const WORD rgiGate7[4] = {1,3,7,5};
 
 static const D3DMATERIAL7 gatemtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
-void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Gate::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fSupports) return; // no support structures are allocated ... therfore render none
 
@@ -455,7 +454,7 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,(LPWORD)rgiGate1, 8, 0);
 	}
 	
-void Gate::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Gate::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);

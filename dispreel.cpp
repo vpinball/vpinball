@@ -399,7 +399,7 @@ STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
 //
 // this is called before the grid lines are drawn on the map
 //
-void DispReel::PreRender(Sur *psur)
+void DispReel::PreRender(Sur * const psur)
 {
     psur->SetBorderColor(-1,false,0);
 	psur->SetFillColor(m_d.m_backcolor);
@@ -433,7 +433,7 @@ void DispReel::PreRender(Sur *psur)
 // this is called after the grid lines have been drawn on the map.  draws a solid
 // outline over the grid lines
 //
-void DispReel::Render(Sur *psur)
+void DispReel::Render(Sur * const psur)
 {
 	if( !GetPTable()->GetEMReelsEnabled() ) return;
 
@@ -469,7 +469,7 @@ void DispReel::Render(Sur *psur)
 // for this sort of object (reel driver) it is basically not really required but hey, somebody
 // might use it..
 //
-void DispReel::GetTimers(Vector<HitTimer> *pvht)
+void DispReel::GetTimers(Vector<HitTimer> * const pvht)
 {
 	IEditable::BeginPlay();
 
@@ -492,7 +492,7 @@ void DispReel::GetTimers(Vector<HitTimer> *pvht)
 // off screen we use it to register the screen updater in the game engine.. this means
 // that Check3d (and Draw3d) are called in the updater class.
 //
-void DispReel::GetHitShapes(Vector<HitObject> *pvho)
+void DispReel::GetHitShapes(Vector<HitObject> * const pvho)
 {
     m_ptu = new DispReelUpdater(this);
 
@@ -503,10 +503,9 @@ void DispReel::GetHitShapes(Vector<HitObject> *pvho)
 	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_dispreelanim);
 }
 
-void DispReel::GetHitShapesDebug(Vector<HitObject> *pvho)
+void DispReel::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
-
 
 // This method is called as the game exits..
 // it cleans up any allocated memory used by the instance of the object
@@ -539,13 +538,12 @@ void DispReel::EndPlay()
 	IEditable::EndPlay();
 }
 
-void DispReel::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void DispReel::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 {
-
 }
-void DispReel::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
-{
 
+void DispReel::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+{
 }
 
 // This function is called during the redering process // Old comments from RenderStatic
@@ -569,7 +567,7 @@ void DispReel::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 //static const WORD rgiDispReel[4] = {0,1,2,3};
 
-void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void DispReel::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 {
     // set any defaults for the game rendering
     m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
@@ -584,17 +582,19 @@ void DispReel::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	// get the render sizes of the objects (reels and frame)
-    m_renderwidth  = max(0, (int)((m_d.m_width * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth));
-    m_renderheight = max(0, (int)((m_d.m_height * (float)(1.0/750.0)) * ppin3d->m_dwRenderHeight));
-    const int m_renderspacingx = max(0, (int)((m_d.m_reelspacing * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth));
-    const int m_renderspacingy = max(0, (int)((m_d.m_reelspacing * (float)(1.0/750.0))  * ppin3d->m_dwRenderHeight));
+	const float w = (float)(1.0/1000.0) * (float)ppin3d->m_dwRenderWidth;
+	const float h = (float)(1.0/750.0) * (float)ppin3d->m_dwRenderHeight;
+    m_renderwidth  = max(0, (int)(m_d.m_width * w));
+    m_renderheight = max(0, (int)(m_d.m_height * h));
+    const int m_renderspacingx = max(0, (int)(m_d.m_reelspacing * w));
+    const int m_renderspacingy = max(0, (int)(m_d.m_reelspacing * h));
 
     // get the size of the object frame (size of entire reel set and border)
-	m_pobjframe->rc.left = (int)((m_d.m_v1.x * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth);
-	m_pobjframe->rc.top = (int)((m_d.m_v1.y * (float)(1.0/750.0)) * ppin3d->m_dwRenderHeight);
+	m_pobjframe->rc.left = (int)(m_d.m_v1.x * w);
+	m_pobjframe->rc.top = (int)(m_d.m_v1.y * h);
 	// i cant use v2 as it really doesn't scale properly.
 	m_pobjframe->rc.right = m_pobjframe->rc.left + m_d.m_reelcount * (m_renderwidth+m_renderspacingx) + m_renderspacingx;
-	m_pobjframe->rc.bottom = m_pobjframe->rc.top + m_renderheight + (2 * m_renderspacingy);
+	m_pobjframe->rc.bottom = m_pobjframe->rc.top + m_renderheight + 2 * m_renderspacingy;
 
     // set the boundarys of the object frame (used for clipping I assume)
 	m_ptu->m_dispreelanim.m_rcBounds = m_pobjframe->rc;

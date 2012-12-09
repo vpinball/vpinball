@@ -169,11 +169,11 @@ void Plunger::WriteRegDefaults()
 	sprintf_s(&strTmp[0], 40, "%f", m_d.m_breakOverVelocity);
 	SetRegValue("DefaultProps\\Plunger","BreakOverVelocity", REG_SZ, &strTmp,strlen(strTmp));
 	}
-void Plunger::PreRender(Sur *psur)
+void Plunger::PreRender(Sur * const psur)
 	{
 	}
 
-void Plunger::Render(Sur *psur)
+void Plunger::Render(Sur * const psur)
 	{
 	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
@@ -183,7 +183,7 @@ void Plunger::Render(Sur *psur)
 			        m_d.m_v.x + m_d.m_width, m_d.m_v.y + m_d.m_height);
 	}
 
-void Plunger::GetHitShapes(Vector<HitObject> *pvho)
+void Plunger::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
@@ -201,11 +201,11 @@ void Plunger::GetHitShapes(Vector<HitObject> *pvho)
 	m_phitplunger = php;
 	}
 
-void Plunger::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Plunger::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
-void Plunger::GetTimers(Vector<HitTimer> *pvht)
+void Plunger::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -261,11 +261,11 @@ void Plunger::PutCenter(const Vertex2D * const pv)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Plunger::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Plunger::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Plunger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Plunger::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
@@ -316,7 +316,7 @@ const float rgcrossplungerNormal1[][2] = {
 
 #define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
 
-void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Plunger::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(m_d.m_fVisible)
 	{

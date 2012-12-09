@@ -44,7 +44,6 @@ public:
 
 	void EnsureOMObject();
 
-	Vertex3D m_rgv3D[4];						// Last vertices of the ball texture
 	Vertex3D m_rgv3DShadow[4];					// Last vertices of the ball shadow
 
 	RECT m_rcScreen;							// rect where the ball appears on the screen
@@ -53,8 +52,6 @@ public:
 	COLORREF m_color;
 
 	// Per frame info
-	FRect brc; // bounding rectangle
-
 	CCO(BallEx) *m_pballex; // Object model version of the ball
 
 	char m_szImage[MAXTOKEN];

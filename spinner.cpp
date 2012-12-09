@@ -182,12 +182,11 @@ void Spinner::SetDefaults(bool fromMouseClick)
 		m_d.m_szSurface[0] = 0;
 	}
 
-void Spinner::PreRender(Sur *psur)
-	{
-	
+void Spinner::PreRender(Sur * const psur)
+	{	
 	}
 
-void Spinner::Render(Sur *psur)
+void Spinner::Render(Sur * const psur)
 	{
 	psur->SetLineColor(RGB(0,0,0),false,3);
 	psur->SetObject(this);
@@ -236,7 +235,7 @@ void Spinner::RenderShadow(ShadowSur * const psur, const float height)
 			   m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 	}
 
-void Spinner::GetTimers(Vector<HitTimer> *pvht)
+void Spinner::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -253,7 +252,7 @@ void Spinner::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Spinner::GetHitShapes(Vector<HitObject> *pvho)
+void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 	const float h = m_d.m_height*0.5f + 30.0f;
@@ -299,7 +298,7 @@ void Spinner::GetHitShapes(Vector<HitObject> *pvho)
 		}
 	}
 
-void Spinner::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Spinner::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
@@ -318,7 +317,7 @@ void Spinner::EndPlay()
 		}
 	}
 
-void Spinner::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Spinner::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
@@ -335,7 +334,7 @@ static const WORD rgiSpinner7[4] = {1,3,7,5};
 
 static const D3DMATERIAL7 spinnermtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
-void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Spinner::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fSupports) return;
 
@@ -417,7 +416,7 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 													  (LPWORD)rgiSpinner1, 8, 0);
 	}
 	
-void Spinner::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Spinner::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
