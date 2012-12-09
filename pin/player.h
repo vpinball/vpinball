@@ -229,8 +229,6 @@ private:
 	char m_szPlaybackFile;
 
 	BOOL m_fCheckBlt;
-	BOOL m_fWasteTime;
-	BOOL m_fWasteTime2;
 
 	BOOL m_fBallShadows;
 	BOOL m_fBallDecals;

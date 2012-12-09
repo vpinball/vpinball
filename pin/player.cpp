@@ -15,10 +15,11 @@ inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 #endif
 
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#ifdef ULTRAPIN
 LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#endif
 
 int CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 Player::Player()
@@ -145,39 +146,6 @@ Player::Player()
 		}
 	m_fDetectScriptHang = (detecthang == 1);
 
-	int wastetime;
-	hr = GetRegInt("Player", "WasteTime", &wastetime);
-	if (hr != S_OK)
-		{
-		wastetime = fTrue; // The default
-		}
-
-	m_fWasteTime2 = fTrue;//(wastetime == 1);
-
-	m_fWasteTime = fFalse;
-
-	FILE *foo;
-	if (!fopen_s(&foo, "c:\\debug1.txt","r"))
-		{
-		fclose(foo);
-		m_fCheckBlt = fFalse;
-		}
-	if (!fopen_s(&foo, "c:\\debug2.txt","r"))
-		{
-		fclose(foo);
-		m_fCheckBlt = fTrue;
-		}
-	if (!fopen_s(&foo, "c:\\debug3.txt","r"))
-		{
-		fclose(foo);
-		m_fWasteTime = fTrue;
-		}
-	if (!fopen_s(&foo, "c:\\debug4.txt","r"))
-		{
-		fclose(foo);
-		m_fWasteTime2 = fTrue;
-		}
-
 #if defined( DEBUG_FPS )
 	m_fShowFPS = fTrue;
 #else
@@ -217,7 +185,7 @@ Player::Player()
 	c_embedcnts = 0;
 	movedPlunger = 0;
 	LastPlungerHit = 0;
-	Coins = 0;			
+	Coins = 0;
 	}
 
 Player::~Player()
@@ -540,22 +508,19 @@ void Player::InitKeys()
 
 void Player::InitRegValues()
 	{
-	int fmusic = 0;
 	HRESULT hr;
 
-	hr = GetRegInt("Player", "PlayMusic", &fmusic);
+	hr = GetRegInt("Player", "PlayMusic", &m_fPlayMusic);
 	if (hr != S_OK)
 		{
-		fmusic = 1; // default value
+		m_fPlayMusic = 1; // default value
 		}
-	m_fPlayMusic = fmusic;
 
-	hr = GetRegInt("Player", "PlaySound", &fmusic);
+	hr = GetRegInt("Player", "PlaySound", &m_fPlaySound);
 	if (hr != S_OK)
 		{
-		fmusic = 1; // default value
+		m_fPlaySound = 1; // default value
 		}
-	m_fPlaySound = fmusic;
 
 	hr = GetRegInt("Player", "MusicVolume", &m_MusicVolume);
 	if (hr != S_OK)
@@ -1824,7 +1789,7 @@ void Player::Render()
 	// On Win95 when there are no balls, frame updates happen so fast the
 	// blitter gets stuck
 	const int cball = m_vball.Size();
-	if ((cball == 0) && m_fWasteTime2)
+	if (cball == 0)
 		{
 		Sleep(1);
 		}
@@ -1840,10 +1805,7 @@ void Player::Render()
 
 		if (hrdone != DD_OK)
 			{
-			if (m_fWasteTime)
-				{
-				Sleep(1);
-				}
+			//Sleep(1);
 			return;
 			}
 		}
@@ -1960,14 +1922,14 @@ void Player::Render()
 #ifdef TIMECORRECT
 	frametime = (float)(timepassed * 100.0);
 	//frametime = 1.456927f;
-#else // TIMECORRECT
+#else
 	frametime = 0.45f;
-#endif // TIMECORRECT
+#endif
 
-#endif //PLACKBACK
+#endif //PLAYBACK
 
-		fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, m_RealTimeClock>>32, m_RealTimeClock, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
-		fprintf(m_flog, "End Frame\n");
+	fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, m_RealTimeClock>>32, m_RealTimeClock, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
+	fprintf(m_flog, "End Frame\n");
 #endif
 
 #ifdef FPS
@@ -3465,6 +3427,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 	UnpauseMusic();
 	}
 
+#ifdef ULTRAPIN
 LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( uMsg )
@@ -3523,7 +3486,7 @@ LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
-
+#endif
 	
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
@@ -4009,7 +3972,6 @@ int CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 
 #ifdef PLAYBACK
-
 float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 	{
 	char szLine[1024];
@@ -4078,7 +4040,6 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 	}
 
 #endif
-
 
 // Draws all transparent ramps that are in the vicinity of the ball.
 void Player::DrawAcrylics ()
@@ -4285,4 +4246,3 @@ void Player::DrawLightHack ()
 	}
 }
 #endif
-
