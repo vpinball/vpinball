@@ -710,13 +710,15 @@ PinTable::PinTable()
 	hr = GetRegInt("Player", "CustomCoins", &tmp);
 	if (hr == S_OK) m_custom_coins = tmp;
 
-	m_globalDifficulty = 0;								// easy by default
+	m_globalDifficulty = 0;						// easy by default
 	hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
 	if (hr == S_OK) m_globalDifficulty = (float)tmp*(float)(1.0/100.0);
 
+#ifdef ULTRAPIN
 	m_timeout = 0;								// easy by default
 	hr = GetRegInt("Player", "Timeout", &tmp);
 	if (hr == S_OK) m_timeout = (float)tmp*(float)(1.0/60.0);
+#endif
 
 	tmp = 1;
 	hr = GetRegInt("Player", "HardwareRender", &tmp);
@@ -755,8 +757,6 @@ PinTable::PinTable()
 	m_tblAccelManualAmp = 3.5f;							// manual input gain, generally from joysticks
 	hr = GetRegInt("Player", "JoystickGain", &tmp);
 	if (hr == S_OK) m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
-
-
 	
 	m_tblAutoStart = 0.0f;
     hr = GetRegInt("Player", "Autostart", &tmp);
@@ -793,7 +793,7 @@ PinTable::PinTable()
 	SetRegValue ( "Version", "VPinball", REG_SZ, Version, strlen(Version) );
 
 	m_jolt_amount = 500;
-	m_tilt_amount = 950;	
+	m_tilt_amount = 950;
 	m_jolt_trigger_time = 1000;
 	m_tilt_trigger_time = 10000;
 	}
@@ -3238,7 +3238,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 		}
 	else if( id == FID(PLTMX))
 		{
-		pbr->GetInt(&m_PhysicsLoopTime);	
+		pbr->GetInt(&m_PhysicsLoopTime);
 		/*const HRESULT hr =*/ GetRegInt("Player", "PhysicsLoopTime", &m_PhysicsLoopTime);
 		}
 	else if (id == FID(DECL))

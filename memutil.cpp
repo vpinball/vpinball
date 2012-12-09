@@ -1,11 +1,11 @@
 #include "StdAfx.h"
-//#include "memutil.h"
-#include "dbghelp.h"
-
-#define STACKLEVEL (5)
-#define PREEXTRA (STACKLEVEL*sizeof(int))
 
 #ifdef DEBUG_XXX  //rlc remove these method in perference to DevPartner
+
+#include "dbghelp.h"
+
+#define STACKLEVEL 5
+#define PREEXTRA (STACKLEVEL*sizeof(int))
 
 void __cdecl MemLeakAlert(void * pUserData, size_t nBytes)
 {

@@ -16,21 +16,16 @@ Abstract:
 Revision History:
 
 --*/
+#pragma once
 
 #ifndef _DBGHELP_
 #define _DBGHELP_
-
-#if _MSC_VER > 1020
-#pragma once
-#endif
-
 
 #ifdef _WIN64
 #ifndef _IMAGEHLP64
 #define _IMAGEHLP64
 #endif
 #endif
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,8 +57,6 @@ typedef struct _LOADED_IMAGE {
     LIST_ENTRY            Links;
     ULONG                 SizeOfImage;
 } LOADED_IMAGE, *PLOADED_IMAGE;
-
-
 
 HANDLE
 IMAGEAPI
@@ -1513,6 +1506,5 @@ SymGetSymbolInfo(
     IN  OUT PBYTE       DataOut
     );
 #endif
-   
 
 #endif // _DGGHELP_

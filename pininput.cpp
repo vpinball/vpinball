@@ -729,8 +729,7 @@ void PinInput::autostart( const F32 secs, const F32 retrysecs )
 
 }
 
-
-
+#ifdef ULTRAPIN
 void PinInput::autoexit( const F32 secs )
 {
 	if (( !VPinball::m_open_minimized ) ||
@@ -741,10 +740,10 @@ void PinInput::autoexit( const F32 secs )
 		return;
 
 	// Check if we can exit.
-	if (started())													// No coins queued for entry.
+	if (started())	// No coins queued for entry.
 		ExitApp();
 }
-
+#endif
 
 static U32 exit_stamp;
 static U32 fastexit_stamp;
@@ -814,8 +813,10 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 		// Update autocoin (use autostart seconds to define when nvram is ready).
 		autocoin( ptable->m_tblAutoStart );
 
+#ifdef ULTRAPIN
 		// Update autoexit.
 		autoexit( ptable->m_timeout );
+#endif
 
 		button_exit( ptable->m_tblExitConfirm );
 

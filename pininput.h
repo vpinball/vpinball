@@ -51,8 +51,10 @@ public:
 
 	// Process keys up until msec_age ago .. don't consider keys that are too new for the current simulation step!
     void autostart( const F32 secs, const F32 retrysecs );
+#ifdef ULTRAPIN
     void autoexit( const F32 secs );
-    void autocoin( const F32 secs );
+#endif
+	void autocoin( const F32 secs );
     void button_exit( const F32 secs );
     void tilt_update();
 	void ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec );
