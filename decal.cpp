@@ -441,21 +441,15 @@ void Decal::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
+static const D3DMATERIAL7 decalmtrl = {1.f,1.f,1.f,.5f, 1.f,1.f,1.f,.5f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+
 void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	D3DMATERIAL7 mtrl;
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
-	mtrl.diffuse.r = mtrl.ambient.r =
-	mtrl.diffuse.g = mtrl.ambient.g =
-	mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-	mtrl.diffuse.a = mtrl.ambient.a = 0.5f;
-	pd3dDevice->SetMaterial(&mtrl);
+	pd3dDevice->SetMaterial((LPD3DMATERIAL7)&decalmtrl);
 
 	float leading, descent; // For fonts
 	float maxtu, maxtv;
@@ -567,7 +561,7 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	else
 		{
 		SetHUDVertices(rgv3D, 4);
-		SetDiffuseFromMaterial(rgv3D, 4, &mtrl);
+		SetDiffuse(rgv3D, 4, 0xFFFFFF);
 
 		if( GetPTable()->GetDecalsEnabled() )
 			{

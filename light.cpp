@@ -585,7 +585,7 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	else
 		{
-		SetDiffuseFromMaterial(rgv3D, 3, &mtrl);
+		SetDiffuse(rgv3D, 3, RGB_TO_BGR(m_d.m_bordercolor));
 		}
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
@@ -678,7 +678,7 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 	else
 		{
 		SetHUDVertices(rgv3D, 32);
-		SetDiffuseFromMaterial(rgv3D, 32, &mtrl);
+		SetDiffuse(rgv3D, 32, RGB_TO_BGR(m_d.m_bordercolor));
 
 		if( GetPTable()->GetDecalsEnabled() )
 			{

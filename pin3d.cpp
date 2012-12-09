@@ -856,17 +856,6 @@ void Pin3D::DrawBackground()
 
 	if (pin)
 		{
-		D3DMATERIAL7 mtrl;
-		mtrl.diffuse.a = 
-		mtrl.ambient.a =
-		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-		mtrl.power = 0;
-
-		mtrl.diffuse.r = mtrl.ambient.r =
-		mtrl.diffuse.g = mtrl.ambient.g =
-		mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-
 		m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER,
 						   0, 1.0f, 0L );
 
@@ -907,7 +896,7 @@ void Pin3D::DrawBackground()
 		SetTexture(pin->m_pdsBuffer);
 
 		SetHUDVertices(rgv3D, 4);
-		SetDiffuseFromMaterial(rgv3D, 4, &mtrl);
+		SetDiffuse(rgv3D, 4, 0xFFFFFF);
 
 		m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
 												  rgv3D, 4,

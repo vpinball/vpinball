@@ -2786,23 +2786,14 @@ void Player::UnpauseMusic()
 		}
 	}
 
+static const D3DMATERIAL7 shadowmtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
 void Player::DrawBallShadows()
 	{
 	// Nobody likes the ball shadows.		- JEP
 	//return;
 
-	{
-	D3DMATERIAL7 mtrl;
-	mtrl.diffuse.r = mtrl.ambient.r =
-	mtrl.diffuse.g = mtrl.ambient.g =
-	mtrl.diffuse.b = mtrl.ambient.b =
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;	
-	m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
-	}
+	m_pin3d.m_pd3dDevice->SetMaterial((LPD3DMATERIAL7)&shadowmtrl);
 
 	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
 

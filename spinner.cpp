@@ -333,6 +333,8 @@ static const WORD rgiSpinner5[4] = {4,5,7,6};
 static const WORD rgiSpinner6[4] = {0,4,6,2};
 static const WORD rgiSpinner7[4] = {1,3,7,5};
 
+static const D3DMATERIAL7 spinnermtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+
 void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fSupports) return;
@@ -402,18 +404,7 @@ void Spinner::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 		}
 
-	{
-	D3DMATERIAL7 mtrl;
-	mtrl.diffuse.a = 
-	mtrl.ambient.a =
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
-	mtrl.diffuse.r = mtrl.ambient.r =
-	mtrl.diffuse.g = mtrl.ambient.g =
-	mtrl.diffuse.b = mtrl.ambient.b = 0.6f;
-	pd3dDevice->SetMaterial(&mtrl);
-	}
+	pd3dDevice->SetMaterial((LPD3DMATERIAL7)&spinnermtrl);
 
 	SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner0, 8);
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,

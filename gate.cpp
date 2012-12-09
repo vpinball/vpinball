@@ -378,7 +378,9 @@ static const WORD rgiGate4[4] = {0,2,3,1};
 static const WORD rgiGate5[4] = {4,5,7,6};
 static const WORD rgiGate6[4] = {0,4,6,2};
 static const WORD rgiGate7[4] = {1,3,7,5};
-						
+
+static const D3DMATERIAL7 gatemtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+
 void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fSupports) return; // no support structures are allocated ... therfore render none
@@ -395,18 +397,7 @@ void Gate::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	const float snY = sinf(radangle);
 	const float csY = cosf(radangle);
 
-	{
-	D3DMATERIAL7 mtrl;
-	mtrl.diffuse.a = 
-	mtrl.ambient.a =
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
-	mtrl.diffuse.r = mtrl.ambient.r =
-	mtrl.diffuse.g = mtrl.ambient.g =
-	mtrl.diffuse.b = mtrl.ambient.b = 0.6f;
-	pd3dDevice->SetMaterial(&mtrl);
-	}
+	pd3dDevice->SetMaterial((LPD3DMATERIAL7)&gatemtrl);
 
 	Vertex3D rgv3D[8];
 	rgv3D[0].x = -halflength + halfthick;
