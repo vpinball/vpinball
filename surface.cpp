@@ -1015,7 +1015,7 @@ static const WORD rgiSlingshot2[4] = {0,3,4,1};
 static const WORD rgiSlingshot3[4] = {1,4,5,2};
 static const WORD rgiSlingshot4[4] = {3,9,10,4};
 static const WORD rgiSlingshot5[4] = {4,10,11,5};
-								
+
 void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;

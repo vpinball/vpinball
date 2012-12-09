@@ -255,7 +255,9 @@ void Bumper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	}
 
 static const WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
-			
+
+static const D3DMATERIAL7 bumpermtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+
 void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	// ensure we are not disabled at game start
@@ -277,15 +279,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
-		{
-		D3DMATERIAL7 mtrl;
-		mtrl.diffuse.r = mtrl.diffuse.g = mtrl.diffuse.b = mtrl.diffuse.a = 
-		mtrl.ambient.r = mtrl.ambient.g = mtrl.ambient.b = mtrl.ambient.a = 1.0f;
-		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-		mtrl.power = 0;
-		pd3dDevice->SetMaterial(&mtrl);
-		}
+		pd3dDevice->SetMaterial((LPD3DMATERIAL7)&bumpermtrl);
 
 		const float outerradius = m_d.m_radius + m_d.m_overhang;
 

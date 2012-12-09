@@ -236,7 +236,7 @@ inline void SetNormal(Vertex3D * const rgv, const WORD * const rgi, const int co
 		}
 
 	const float len = vnormal.x * vnormal.x + vnormal.y * vnormal.y + vnormal.z * vnormal.z;
-	const float inv_len = (len > 0.0f) ? -1.0f/sqrtf(len) : 0.0f;
+	const float inv_len = (len > 0.0f) ? -1.0f/sqrtf(len) : 0.0f; //!! opt.
 	vnormal.x *= inv_len;
 	vnormal.y *= inv_len;
 	vnormal.z *= inv_len;
@@ -250,7 +250,7 @@ inline void SetNormal(Vertex3D * const rgv, const WORD * const rgi, const int co
 		}
 	}
 
-inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const D3DMATERIAL7 * const pmtrl)
+inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const D3DMATERIAL7 * const pmtrl) // get rid of this?
 	{
 	const unsigned int r = (int)(((pmtrl->diffuse.r + pmtrl->emissive.r) * 255.0f) + 0.5f);
 	const unsigned int g = (int)(((pmtrl->diffuse.g + pmtrl->emissive.g) * 255.0f) + 0.5f);
@@ -264,7 +264,15 @@ inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const 
 		}
 	}
 
-inline BOOL Flat(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid)
+inline void SetDiffuse(Vertex3D * const rgv, const int count, const unsigned int color) // get rid of this?
+	{
+	for (int i=0; i<count; ++i)
+		{
+		rgv[i].color = color;
+		}
+	}
+
+inline bool Flat(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid)
 	{
 	const float det1 = pvt1->x*pvtMid->y - pvt1->y*pvtMid->x;
 	const float det2 = pvtMid->x*pvt2->y - pvtMid->y*pvt2->x;

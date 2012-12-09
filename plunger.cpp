@@ -325,19 +325,7 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 	
 	const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
-	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
 	D3DMATERIAL7 mtrl;
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a = 0.0f;
-	mtrl.diffuse.r = mtrl.ambient.r = r;
-	mtrl.diffuse.g = mtrl.ambient.g = g;
-	mtrl.diffuse.b = mtrl.ambient.b = b;
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-	mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a = 1.0f;
-	mtrl.power = 8.0f;
-
 	if (m_d.m_type == PlungerTypeModern)
 	{
 		mtrl.power = 1.0f;
@@ -357,6 +345,17 @@ void Plunger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
 		mtrl.ambient.g = 0.9f;
 		mtrl.ambient.b = 0.9f;
 		mtrl.ambient.a = 1.0f;
+	} else {
+		const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+		const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+		const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a = 0.0f;
+		mtrl.diffuse.r = mtrl.ambient.r = r;
+		mtrl.diffuse.g = mtrl.ambient.g = g;
+		mtrl.diffuse.b = mtrl.ambient.b = b;
+		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+		mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a = 1.0f;
+		mtrl.power = 8.0f;
 	}
 
 	pd3dDevice->SetMaterial(&mtrl);

@@ -423,6 +423,8 @@ static const WORD rgtriggerface[][5] = {
 	6,7,9,8,0xFFFF
 	};
 
+static const D3DMATERIAL7 triggermtrl = {0.5f,0.5f,0.5f,0.0f, 0.5f,0.5f,0.5f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+
 void Trigger::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
@@ -440,18 +442,7 @@ void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	ppin3d->EnableLightMap(fTrue, height);
 
-	{
-	D3DMATERIAL7 mtrl;
-	mtrl.diffuse.a = 
-	mtrl.ambient.a =
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
-	mtrl.diffuse.r = mtrl.ambient.r =
-	mtrl.diffuse.g = mtrl.ambient.g =
-	mtrl.diffuse.b = mtrl.ambient.b = 0.5f;
-	pd3dDevice->SetMaterial(&mtrl);
-	}
+	pd3dDevice->SetMaterial((LPD3DMATERIAL7)&triggermtrl);
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
