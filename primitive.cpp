@@ -41,8 +41,8 @@ void Primitive::SetDefaults(bool fromMouseClick)
 	// colors
 	hr = GetRegInt("DefaultProps\\Primitive", "TopColor", &iTmp);
 	m_d.m_TopColor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(100,100,100);
-	hr = GetRegInt("DefaultProps\\Primitive", "TopColor", &iTmp);
-	m_d.m_TopColor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(150,150,150);
+	hr = GetRegInt("DefaultProps\\Primitive", "SideColor", &iTmp);
+	m_d.m_SideColor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(150,150,150);
 
 	// visible
 	hr = GetRegInt("DefaultProps\\Primitive", "TopVisible", &iTmp);
