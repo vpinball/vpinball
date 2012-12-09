@@ -66,12 +66,11 @@ HitFlipper::HitFlipper(const float x, const float y, float baser, float endr, fl
 	const float len = m_flipperanim.m_flipperradius*cosf(fa); //Cosine of face angle X hypotenuse
 	m_flipperanim.m_lineseg1.length = len;
 	m_flipperanim.m_lineseg2.length = len;
-
 	
 	m_flipperanim.zeroAngNorm.x =  sinf(m_flipperanim.faceNormOffset);// F2 Norm, used in Green's transform, in FPM time search
 	m_flipperanim.zeroAngNorm.y = -cosf(m_flipperanim.faceNormOffset);// F1 norm, change sign of x component, i.e -zeroAngNorm.x
 
-#if 0  //!! //rlc removed until next major physics revision
+#if 0 // needs wiring of moment of inertia
 	// now calculate moment of inertia using isoceles trapizoid and two circular sections
 	// ISOSCELES TRAPEZOID, Area Moment of Inertia
 	// I(area)FF = h/(144*(a+b)*(16*h^2*a*b+4*h^2*b^2+4*h^2*a^2+3*a^4+6*a^2*b^2+6*a^3*b+6*a*b^3+3*b^4)) (centroidial axis)
@@ -113,8 +112,8 @@ HitFlipper::HitFlipper(const float x, const float y, float baser, float endr, fl
 	const float Iff = Irb_inertia + Ifb_inertia + Ire_inertia; //scalar moment of inertia ... multiply by weight next
 
 	m_flipperanim.m_inertia = Iff * mass;  //mass of flipper body
-#else
-	m_flipperanim.m_inertia = mass;  //stubbed to mass of flipper body
+
+	//m_flipperanim.m_inertia = mass;  //stubbed to mass of flipper body
 #endif
 	}
 

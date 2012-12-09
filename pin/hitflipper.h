@@ -3,7 +3,6 @@ class FlipperAnimObject : public AnimObject
 	{
 public:
 	void SetObjects(const float angle);
-	//BOOL FIsInside(Ball *pball);
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
 
@@ -31,7 +30,7 @@ public:
 	float m_angleEnd;
 
 	float m_lastAngspd;
-		
+
 	float m_flipperradius;
 	float m_force;
 	float m_mass;
@@ -50,9 +49,11 @@ public:
 
 	float m_angleFrame; // angle at the beginning of this frame
 
+#if 0
 	float m_inertia;	//moment of inertia
+#endif
 
-	int m_iframe; //Frame index that this flipper is currently displaying
+	int m_iframe;		//Frame index that this flipper is currently displaying
 
 	int m_EnableRotateEvent;
 
@@ -95,7 +96,6 @@ public:
 
 	Flipper *m_pflipper;
 
-	//float m_forcemass; // Force of the flipper, treated as the mass of the moving object;
 	float m_forcemass; // Force of the flipper, treated as the mass of the moving object;
 
 	FlipperAnimObject m_flipperanim;

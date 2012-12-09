@@ -471,7 +471,10 @@ END_CONNECTION_POINT_MAP()
     float m_tblVolmod;              // volume modulation for doing audio balancing
     float m_tblExitConfirm;         // seconds before trying an autostart if doing once-only method .. 0 is automethod
 	float m_globalDifficulty;		// Table Difficulty Level
+
+#ifdef ULTRAPIN
     float m_timeout;                // 0 means no timeout, otherwise in units of seconds when the table timeout should occur
+#endif
 
     // 1.0f means constantly tilting (an invalid/degenerative state)
     // 0.0f means will never tilt
