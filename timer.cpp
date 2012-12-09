@@ -76,11 +76,11 @@ void Timer::PutCenter(const Vertex2D * const pv)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Timer::PreRender(Sur *psur)
+void Timer::PreRender(Sur * const psur)
 	{
 	}
 
-void Timer::Render(Sur *psur)
+void Timer::Render(Sur * const psur)
 	{
 	psur->SetFillColor(-1);//RGB(192,192,192));
 	psur->SetBorderColor(RGB(0,0,0),false,0);
@@ -109,7 +109,7 @@ void Timer::RenderBlueprint(Sur *psur)
 	{
 	}
 
-void Timer::GetTimers(Vector<HitTimer> *pvht)
+void Timer::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -127,12 +127,12 @@ void Timer::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Timer::GetHitShapes(Vector<HitObject> *pvho)
+void Timer::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	m_phittimer = NULL;
 	}
 
-void Timer::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Timer::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
@@ -141,15 +141,15 @@ void Timer::EndPlay()
 	IEditable::EndPlay();
 	}
 
-void Timer::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Timer::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Timer::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Timer::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 	
-void Timer::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Timer::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 

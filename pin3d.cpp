@@ -830,7 +830,6 @@ void Pin3D::InitRenderState() const
 	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
 	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 
-
 	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 	g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );															
@@ -1470,7 +1469,6 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 	// So the slope of x simply equals slopey*width/height
 
 	const GPINFLOAT slopex = slopey*aspect;// slopey*m_rcHard.width/m_rcHard.height;
-
 
 	GPINFLOAT maxyintercept = -DBL_MAX;
 	GPINFLOAT minyintercept = DBL_MAX;

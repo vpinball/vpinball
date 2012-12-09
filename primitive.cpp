@@ -212,13 +212,13 @@ void Primitive::WriteRegDefaults()
 	}
 
 
-void Primitive::GetTimers(Vector<HitTimer> *pvht)
+void Primitive::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 	}
 
 
-void Primitive::GetHitShapes(Vector<HitObject> *pvho)
+void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 		//!! Here the hitshapes have to be added... lets look at other implementations.
 		// OK, i need a hitprimitive class and a hitanimobject class.
@@ -228,7 +228,7 @@ void Primitive::GetHitShapes(Vector<HitObject> *pvho)
 		pvho->AddElement(pHitPrimitive);
 	}
 
-void Primitive::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Primitive::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
@@ -342,7 +342,7 @@ void Primitive::RecalculateVertices()
 //////////////////////////////
 
 //2d
-void Primitive::PreRender(Sur *psur)
+void Primitive::PreRender(Sur * const psur)
 {
 	/*
 	psur->SetBorderColor(-1,false,0);
@@ -354,7 +354,7 @@ void Primitive::PreRender(Sur *psur)
 	*/
 }
 
-void Primitive::Render(Sur *psur)
+void Primitive::Render(Sur * const psur)
 {
 	RecalculateVertices();
 	//psur->SetBorderColor(RGB(0,0,0),false,2);
@@ -736,7 +736,7 @@ void Primitive::CalculateRealTime()
 }
 
 //3d
-void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Primitive::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 {
 	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 	if (pin) 
@@ -826,12 +826,12 @@ void Primitive::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	}
 }
 
-void Primitive::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Primitive::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 	
 //seems to be called to set up the initial backbuffer
-void Primitive::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Primitive::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 

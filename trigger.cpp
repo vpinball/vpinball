@@ -85,7 +85,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
 		m_d.m_szSurface[0] = 0;
 	}
 
-void Trigger::PreRender(Sur *psur)
+void Trigger::PreRender(Sur * const psur)
 	{
 	psur->SetBorderColor(-1,false,0);
 	psur->SetObject(this);
@@ -123,7 +123,7 @@ void Trigger::PreRender(Sur *psur)
 		}
 	}
 
-void Trigger::Render(Sur *psur)
+void Trigger::Render(Sur * const psur)
 	{
 	psur->SetLineColor(RGB(0,0,0), false, 0);
 	psur->SetObject(this);
@@ -220,7 +220,7 @@ void Trigger::RenderBlueprint(Sur *psur)
 	psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 	}
 
-void Trigger::GetTimers(Vector<HitTimer> *pvht)
+void Trigger::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -237,7 +237,7 @@ void Trigger::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Trigger::GetHitShapes(Vector<HitObject> *pvho)
+void Trigger::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	m_hitEnabled = m_d.m_fEnabled;
 
@@ -269,7 +269,7 @@ void Trigger::GetHitShapes(Vector<HitObject> *pvho)
 		}
 	}
 
-void Trigger::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 	m_hitEnabled = m_d.m_fEnabled;
@@ -425,11 +425,11 @@ static const WORD rgtriggerface[][5] = {
 
 static const D3DMATERIAL7 triggermtrl = {0.5f,0.5f,0.5f,0.0f, 0.5f,0.5f,0.5f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
-void Trigger::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Trigger::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Trigger::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
 		{
@@ -499,7 +499,7 @@ void Trigger::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	ppin3d->EnableLightMap(fFalse, -1);
 	}
 	
-void Trigger::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Trigger::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 

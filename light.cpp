@@ -182,7 +182,7 @@ void Light::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
 	}
 
-void Light::PreRender(Sur *psur)
+void Light::PreRender(Sur * const psur)
 	{
 	psur->SetBorderColor(-1,false,0);
 	psur->SetFillColor(m_d.m_color);
@@ -305,7 +305,7 @@ void Light::PreRender(Sur *psur)
 		}
 	}
 
-void Light::Render(Sur *psur)
+void Light::Render(Sur * const psur)
 	{
 	BOOL	fDrawDragpoints;		//>>> added by chris
 
@@ -400,7 +400,7 @@ void Light::RenderBlueprint(Sur *psur)
 	RenderOutline(psur);
 	}
 
-void Light::GetTimers(Vector<HitTimer> *pvht)
+void Light::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -417,7 +417,7 @@ void Light::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Light::GetHitShapes(Vector<HitObject> *pvho)
+void Light::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	// HACK - should pass pointer to vector in
 	if (m_d.m_state == LightStateBlinking)
@@ -429,7 +429,7 @@ void Light::GetHitShapes(Vector<HitObject> *pvho)
 	m_iblinkframe = 0;
 	}
 
-void Light::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -691,11 +691,11 @@ void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	}
 
-void Light::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Light::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Light::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Light::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if (m_d.m_borderwidth > 0)
 		{
@@ -957,7 +957,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 	}
 
-void Light::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Light::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if (m_d.m_shape == ShapeCustom)
 		{

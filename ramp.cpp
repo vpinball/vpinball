@@ -239,7 +239,7 @@ void Ramp::WriteRegDefaults()
 	}
 
 
-void Ramp::PreRender(Sur *psur)
+void Ramp::PreRender(Sur * const psur)
 {
 	if (m_d.m_type == RampType1Wire) //make 1 wire ramps look unique in editor - uses ramp color
 	{
@@ -260,7 +260,7 @@ void Ramp::PreRender(Sur *psur)
 	delete rgv;
 }
 
-void Ramp::Render(Sur *psur)
+void Ramp::Render(Sur * const psur)
 {
 	psur->SetFillColor(-1);
 	psur->SetBorderColor(RGB(0,0,0),false,0);
@@ -690,7 +690,7 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
 	pvv->AddElement(pvT);
 	}
 
-void Ramp::GetTimers(Vector<HitTimer> *pvht)
+void Ramp::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -707,7 +707,7 @@ void Ramp::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Ramp::GetHitShapes(Vector<HitObject> *pvho)
+void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	int cvertex;
 	float *rgheight;
@@ -916,7 +916,7 @@ void Ramp::GetHitShapes(Vector<HitObject> *pvho)
 	delete rgv;
 	}
 
-void Ramp::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Ramp::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
@@ -1637,7 +1637,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 	}
 	
-void Ramp::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Ramp::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
@@ -2464,15 +2464,13 @@ STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
 
 // Same code as RenderStatic (with the exception of the acrylic test).
 // Copied here to order the rendering of transparent and opaque ramps.
-void Ramp::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Ramp::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 
 	// Don't render if invisible.
 	if((!m_d.m_IsVisible) ||		
 	// Don't render non-Alphas. 
 		(!m_d.m_fAlpha)) return;
-
-
 
 	if (m_d.m_type == RampType4Wire 
 		|| m_d.m_type == RampType1Wire //add check for 1 wire

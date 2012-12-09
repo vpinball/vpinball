@@ -212,9 +212,6 @@ private:
 	int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
 	BOOL m_fFullScreen;
 
-	int m_timerid;
-	HBITMAP m_hbmOffScreen;
-
 	U64 m_liStartTime;
 	U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn
 	U64 m_nextPhysicsFrameTime;	// time at which the next physics update should be

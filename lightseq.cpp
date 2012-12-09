@@ -116,7 +116,7 @@ void LightSeq::PutCenter(const Vertex2D * const pv)
 //
 // this is called before the grid lines are drawn on the map
 //
-void LightSeq::PreRender(Sur *psur)
+void LightSeq::PreRender(Sur * const psur)
 {
 	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetObject(this);
@@ -140,7 +140,7 @@ void LightSeq::PreRender(Sur *psur)
 // this is called after the grid lines have been drawn on the map.  draws a solid
 // outline over the grid lines
 //
-void LightSeq::Render(Sur *psur)
+void LightSeq::Render(Sur * const psur)
 {
 	psur->SetFillColor(-1);
 	psur->SetBorderColor(RGB(0,0,0),false,0);
@@ -198,7 +198,7 @@ void LightSeq::RenderBlueprint(Sur *psur)
 //
 // for this sort of object it is basically not really required but hey, somebody might use it..
 //
-void LightSeq::GetTimers(Vector<HitTimer> *pvht)
+void LightSeq::GetTimers(Vector<HitTimer> * const pvht)
 {
 	HitTimer * const pht = new HitTimer();
 	pht->m_interval = m_d.m_tdr.m_TimerInterval;
@@ -217,7 +217,7 @@ void LightSeq::GetTimers(Vector<HitTimer> *pvht)
 // off screen we use it to register the screen updater in the game engine.. this means
 // that Check3d (and Draw3d) are called in the updater class.
 //
-void LightSeq::GetHitShapes(Vector<HitObject> *pvho)
+void LightSeq::GetHitShapes(Vector<HitObject> * const pvho)
 {
     m_ptu = new LightSeqUpdater(this);
 
@@ -228,7 +228,7 @@ void LightSeq::GetHitShapes(Vector<HitObject> *pvho)
 	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_lightseqanim);
 }
 
-void LightSeq::GetHitShapesDebug(Vector<HitObject> *pvho)
+void LightSeq::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
@@ -251,15 +251,15 @@ void LightSeq::EndPlay()
 	IEditable::EndPlay();
 }
 
-void LightSeq::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void LightSeq::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 {
 }
 
-void LightSeq::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void LightSeq::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 {
 }
 
-void LightSeq::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void LightSeq::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 {
 	// zero pointers as a safe guard
 	m_pcollection = NULL;

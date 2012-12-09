@@ -201,7 +201,7 @@ STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
 	return S_FALSE;
 }
 
-void Textbox::PreRender(Sur *psur)
+void Textbox::PreRender(Sur * const psur)
 	{
 	psur->SetBorderColor(-1,false,0);
 	psur->SetFillColor(m_d.m_backcolor);
@@ -210,7 +210,7 @@ void Textbox::PreRender(Sur *psur)
 	psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 	}
 
-void Textbox::Render(Sur *psur)
+void Textbox::Render(Sur * const psur)
 	{
 	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
@@ -220,7 +220,7 @@ void Textbox::Render(Sur *psur)
 	psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 	}
 
-void Textbox::GetTimers(Vector<HitTimer> *pvht)
+void Textbox::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -238,7 +238,7 @@ void Textbox::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Textbox::GetHitShapes(Vector<HitObject> *pvho)
+void Textbox::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	m_ptu = new TextboxUpdater(this);
 
@@ -249,7 +249,7 @@ void Textbox::GetHitShapes(Vector<HitObject> *pvho)
 	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_textboxanim);
 	}
 
-void Textbox::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Textbox::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
@@ -273,15 +273,15 @@ void Textbox::EndPlay()
 	IEditable::EndPlay();
 	}
 
-void Textbox::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Textbox::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Textbox::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Textbox::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 	
-void Textbox::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Textbox::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 

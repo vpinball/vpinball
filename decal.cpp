@@ -193,7 +193,7 @@ HRESULT Decal::InitVBA(BOOL fNew, int id, WCHAR *wzName)
 #endif
 	}
 
-void Decal::PreRender(Sur *psur)
+void Decal::PreRender(Sur * const psur)
 	{
 	if( !m_fBackglass || GetPTable()->GetDecalsEnabled() )
 		{
@@ -225,7 +225,7 @@ void Decal::PreRender(Sur *psur)
 		}
 	}
 
-void Decal::Render(Sur *psur)
+void Decal::Render(Sur * const psur)
 	{
 	if( !m_fBackglass || GetPTable()->GetDecalsEnabled() )
 		{
@@ -258,7 +258,7 @@ void Decal::Render(Sur *psur)
 		}
 	}
 
-void Decal::GetTimers(Vector<HitTimer> *pvht)
+void Decal::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 	}
@@ -312,7 +312,7 @@ void Decal::GetTextSize(int * const px, int * const py)
 	DeleteObject(hFont);
 	}
 
-void Decal::GetHitShapes(Vector<HitObject> *pvho)
+void Decal::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	if (m_d.m_decaltype != DecalImage)
 		{
@@ -425,7 +425,7 @@ void Decal::GetHitShapes(Vector<HitObject> *pvho)
 		}
 	}
 
-void Decal::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Decal::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
@@ -437,13 +437,13 @@ void Decal::EndPlay()
 		}
 	}
 
-void Decal::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Decal::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
 static const D3DMATERIAL7 decalmtrl = {1.f,1.f,1.f,.5f, 1.f,1.f,1.f,.5f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
-void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Decal::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -582,7 +582,7 @@ void Decal::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 	}
 	
-void Decal::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Decal::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 

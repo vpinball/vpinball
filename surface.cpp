@@ -469,7 +469,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 	}
 
 
-void Surface::PreRender(Sur *psur)
+void Surface::PreRender(Sur * const psur)
 	{
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
@@ -532,7 +532,7 @@ void Surface::PreRender(Sur *psur)
 		}
 	}
 
-void Surface::Render(Sur *psur)
+void Surface::Render(Sur * const psur)
 	{
 	psur->SetFillColor(-1);
 	psur->SetBorderColor(RGB(0,0,0),false,0);
@@ -687,7 +687,7 @@ void Surface::RenderShadow(ShadowSur * const psur, const float height)
 	m_rgvT = NULL;
 	}
 
-void Surface::GetTimers(Vector<HitTimer> *pvht)
+void Surface::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -704,7 +704,7 @@ void Surface::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Surface::GetHitShapes(Vector<HitObject> *pvho)
+void Surface::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	CurvesToShapes(pvho);
 
@@ -712,7 +712,7 @@ void Surface::GetHitShapes(Vector<HitObject> *pvho)
 	m_fDisabled = fFalse;
 	}
 
-void Surface::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Surface::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	if (!m_d.m_fInner)
 		{
@@ -996,12 +996,12 @@ void Surface::MoveOffset(const float dx, const float dy)
 	}
 
 
-void Surface::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Surface::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
 
-void Surface::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Surface::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if (!m_d.m_fDroppable || !m_d.m_fInner)
 		{
@@ -1612,7 +1612,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	return pof;
 	}
 	
-void Surface::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Surface::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	RenderSlingshots(pd3dDevice);
 

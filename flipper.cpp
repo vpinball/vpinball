@@ -175,7 +175,7 @@ void Flipper::WriteRegDefaults()
 	}
 
 
-void Flipper::GetTimers(Vector<HitTimer> *pvht)
+void Flipper::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -192,7 +192,7 @@ void Flipper::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Flipper::GetHitShapes(Vector<HitObject> *pvho)
+void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
@@ -227,7 +227,7 @@ void Flipper::GetHitShapes(Vector<HitObject> *pvho)
 	m_phitflipper = phf;	
 	}
 
-void Flipper::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Flipper::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
@@ -289,7 +289,7 @@ void Flipper::SetVertices(const float angle, Vertex2D * const pvEndCenter, Verte
 	rgvTangents[2].y = endy + endradius*faceNormy2;
 	}
 
-void Flipper::PreRender(Sur *psur)
+void Flipper::PreRender(Sur * const psur)
 	{
 	const float anglerad = ANGTORAD(m_d.m_StartAngle);
 	//const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
@@ -311,7 +311,7 @@ void Flipper::PreRender(Sur *psur)
 	psur->Ellipse(vendcenter.x, vendcenter.y, m_d.m_EndRadius);
 	}
 
-void Flipper::Render(Sur *psur)
+void Flipper::Render(Sur * const psur)
 	{
 	const float anglerad = ANGTORAD(m_d.m_StartAngle);
 	const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
@@ -497,7 +497,6 @@ STDMETHODIMP Flipper::RotateToEnd() //power stroke to hit ball
 		m_phitflipper->m_flipperanim.m_maxvelocity = m_d.m_force * 4.5f;
 		m_phitflipper->m_flipperanim.m_force = m_d.m_force;
 		m_phitflipper->m_forcemass = m_d.m_strength;
-
 		}
 	return S_OK;
 }
@@ -528,20 +527,24 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
 	return S_OK;
 }
 
-void Flipper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Flipper::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Flipper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Flipper::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
 static const WORD rgiFlipper1[4] = {0,4,5,1};
 static const WORD rgiFlipper2[4] = {2,6,7,3};
 
+//!! flippers are NOT drawn to zbuffer?? (on SOME tables only! and on intel only!)
+
 void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const pof, const float angle, const float height, 
 								const COLORREF color, const float baseradius, const float endradius, const float flipperheight)
 	{
+	//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
+	//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -690,9 +693,11 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 		// Draw vertical cylinders at small end.
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,(LPWORD)rgi, 4, 0);
 		}
+
+	//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
 	}
 	
-void Flipper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Flipper::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	_ASSERTE(m_phitflipper);
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;

@@ -2149,8 +2149,7 @@ void Player::Render()
 		}	
 
 	// Start rendering the next frame.
-	HRESULT hr = m_pin3d.m_pd3dDevice->BeginScene();
-	HRESULT ReturnCode;
+	/*HRESULT hr =*/ m_pin3d.m_pd3dDevice->BeginScene();
 
 	// Process all regions that need updating.  
 	// The region will be drawn with the current frame.
@@ -2210,15 +2209,17 @@ void Player::Render()
 		// Check if we are debugging balls
 		if (m_DebugBalls)
 		{
+			//HRESULT ReturnCode;
 			// Set the render state to something that will always display.
-			ReturnCode = m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_FALSE );
-			ReturnCode = m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, FALSE );
+			/*ReturnCode =*/ m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_FALSE );
+			/*ReturnCode =*/ m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, FALSE );
 		}
 		else
 		{
+			//HRESULT ReturnCode;
 			// Restore the render state.
-			ReturnCode = m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_TRUE );
-			ReturnCode = m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, TRUE );
+			/*ReturnCode =*/ m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ZENABLE, D3DZB_TRUE );
+			/*ReturnCode =*/ m_pin3d.m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_ALPHABLENDENABLE, TRUE );
 		}
 
 		m_ToggleDebugBalls = fFalse;
@@ -2252,7 +2253,7 @@ void Player::Render()
     plumb_draw();
 
 	// Finish rendering the next frame.
-	hr = m_pin3d.m_pd3dDevice->EndScene();
+	/*HRESULT hr =*/ m_pin3d.m_pd3dDevice->EndScene();
 
 	// Check if we are mirrored.
 	if ( m_ptable->m_tblMirrorEnabled )
@@ -2319,7 +2320,7 @@ else
 	ddsd.dwSize = sizeof(ddsd);
 	ddsdz.dwSize = sizeof(ddsdz);
 
-	hr = m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL);
+	HRESULT hr = m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL);
     if(!FAILED(hr) && (ddsd.lpSurface != NULL)) {
 	hr = m_pin3d.m_pddsZBuffer->Lock(NULL, &ddsdz,   DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL); 
     if(!FAILED(hr) && (ddsdz.lpSurface != NULL)) {
@@ -2956,7 +2957,7 @@ void Player::DrawBalls()
 
 		const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
-		Vertex3D * const rgv3D = pball->m_rgv3D;
+		Vertex3D rgv3D[4];
 		rgv3D[0].x = pball->x - radiusX;
 		rgv3D[0].y = pball->y - (radiusY * cs);
 		rgv3D[0].z = zheight + (pball->radius * sn);
@@ -3160,7 +3161,7 @@ void Player::DrawBalls()
 
 			// Mark ball rect as dirty for blitting to the screen
 			m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
-			m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, pball->m_rgv3D, NULL, NULL, 4, fFalse);
+			m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3D, NULL, NULL, 4, fFalse);
 
 			if (m_fBallDecals && pball->m_pinFront && (m_ptable->m_layback > 0))
 				m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3DArrowTransformed, NULL, NULL, 4, fFalse);

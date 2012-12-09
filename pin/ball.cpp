@@ -106,10 +106,10 @@ void Ball::CalcBoundingRect()
 	const float dx = fabsf(vx);
 	const float dy = fabsf(vy);
 
-	m_rcHitRect.left   = brc.left   = x - (radius + 0.1f + dx); //!! make more accurate ????
-	m_rcHitRect.right  = brc.right  = x + (radius + 0.1f + dx);
-	m_rcHitRect.top    = brc.top    = y - (radius + 0.1f + dy);	
-	m_rcHitRect.bottom = brc.bottom = y + (radius + 0.1f + dy);
+	m_rcHitRect.left   = x - (radius + 0.1f + dx); //!! make more accurate ????
+	m_rcHitRect.right  = x + (radius + 0.1f + dx);
+	m_rcHitRect.top    = y - (radius + 0.1f + dy);	
+	m_rcHitRect.bottom = y + (radius + 0.1f + dy);
 
 	m_rcHitRect.zlow  = min(z, z+vz) - radius;
 	m_rcHitRect.zhigh = max(z, z+vz) + (radius + 0.1f);

@@ -869,7 +869,7 @@ void PinComControl::CreateControlDialogTemplate()
 	}
 
 
-void PinComControl::PreRender(Sur *psur)
+void PinComControl::PreRender(Sur * const psur)
 	{
 	// Draw an invisible box to give us something to hittest
 	psur->SetBorderColor(-1,false,0);
@@ -906,7 +906,7 @@ void PinComControl::PreRender(Sur *psur)
 	}
 
 
-void PinComControl::Render(Sur *psur)
+void PinComControl::Render(Sur * const psur)
 	{
 	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
@@ -941,15 +941,15 @@ void PinComControl::MoveOffset(const float dx, const float dy)
 	m_ptable->SetDirtyDraw();
 	}
 
-void PinComControl::GetHitShapes(Vector<HitObject> *pvho)
+void PinComControl::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	}
 
-void PinComControl::GetHitShapesDebug(Vector<HitObject> *pvho)
+void PinComControl::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
-void PinComControl::GetTimers(Vector<HitTimer> *pvht)
+void PinComControl::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -1026,15 +1026,15 @@ void PinComControl::EndPlay()
 	IEditable::EndPlay();
 	}
 
-void PinComControl::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void PinComControl::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void PinComControl::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void PinComControl::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 	
-void PinComControl::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void PinComControl::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 

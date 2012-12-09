@@ -102,11 +102,11 @@ void Kicker::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Kicker","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
 	}
 
-void Kicker::PreRender(Sur *psur)
+void Kicker::PreRender(Sur * const psur)
 	{
 	}
 
-void Kicker::Render(Sur *psur)
+void Kicker::Render(Sur * const psur)
 	{
 	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
@@ -118,7 +118,7 @@ void Kicker::Render(Sur *psur)
 	psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*0.25f);
 	}
 
-void Kicker::GetTimers(Vector<HitTimer> *pvht)
+void Kicker::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -135,7 +135,7 @@ void Kicker::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Kicker::GetHitShapes(Vector<HitObject> *pvho)
+void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -164,7 +164,7 @@ void Kicker::GetHitShapes(Vector<HitObject> *pvho)
 	m_phitkickercircle = phitcircle;
 	}
 
-void Kicker::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Kicker::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	}
 
@@ -175,11 +175,11 @@ void Kicker::EndPlay()
 	IEditable::EndPlay();
 	}
 
-void Kicker::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Kicker::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
-void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Kicker::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	// Don't process "invisible" kickers.
 	if ((m_d.m_kickertype == KickerInvisible) || (m_d.m_kickertype == KickerHidden))
@@ -423,7 +423,7 @@ void Kicker::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 	ppin3d->EnableLightMap(fFalse, height);
 	}
 	
-void Kicker::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Kicker::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 

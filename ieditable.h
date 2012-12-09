@@ -172,12 +172,12 @@ extern const WCHAR rgwzTypeName[][17];
 
 #define STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(ItemType) \
 	HRESULT Init(PinTable *ptable, float x, float y, bool fromMouseClick); \
-	virtual void PreRender(Sur *psur); \
-	virtual void Render(Sur *psur); \
+	virtual void PreRender(Sur * const psur); \
+	virtual void Render(Sur * const psur); \
 	virtual PinTable *GetPTable() {return m_ptable;} \
-	virtual void GetHitShapes(Vector<HitObject> *pvho); \
-	virtual void GetHitShapesDebug(Vector<HitObject> *pvho); \
-	virtual void GetTimers(Vector<HitTimer> *pvht); \
+	virtual void GetHitShapes(Vector<HitObject> * const pvho); \
+	virtual void GetHitShapesDebug(Vector<HitObject> * const pvho); \
+	virtual void GetTimers(Vector<HitTimer> * const pvht); \
 	virtual void EndPlay(); \
 	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey); \
 	virtual ItemTypeEnum GetItemType() {return ItemType;} \
@@ -187,9 +187,9 @@ extern const WCHAR rgwzTypeName[][17];
 	virtual IEditable *GetIEditable() {return (IEditable*)this;} \
 	virtual ISelect *GetISelect() {return (ISelect*)this;} \
 	virtual Hitable *GetIHitable() {return (Hitable *)this;} \
-	virtual void RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice); \
-	virtual void PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice); \
-	virtual void RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice); \
+	virtual void RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice); \
+	virtual void PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice); \
+	virtual void RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}\
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
@@ -211,8 +211,8 @@ public:
 	IEditable();
 	virtual ~IEditable();
 
-	virtual void PreRender(Sur *psur) = 0;
-	virtual void Render(Sur *psur) = 0;
+	virtual void PreRender(Sur * const psur) = 0;
+	virtual void Render(Sur * const psur) = 0;
 	virtual void RenderBlueprint(Sur *psur);
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 	virtual ULONG STDMETHODCALLTYPE AddRef() = 0;

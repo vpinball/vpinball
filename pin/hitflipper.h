@@ -74,8 +74,6 @@ public:
 		       const float zlow, const float zhigh, float strength, const float mass);
 	~HitFlipper();
 
-	//void GetHitShapes(Vector<HitObject> *pvho);
-
 	virtual float HitTestFlipperFace(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool face1);
 
 	virtual float HitTestFlipperEnd(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);

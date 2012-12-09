@@ -142,7 +142,7 @@ STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)
 	return S_FALSE;
 }
 
-void Bumper::PreRender(Sur *psur)
+void Bumper::PreRender(Sur * const psur)
 	{
 	psur->SetBorderColor(-1,false,0);
 	psur->SetFillColor(m_d.m_color);
@@ -151,7 +151,7 @@ void Bumper::PreRender(Sur *psur)
 	psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 	}
 
-void Bumper::Render(Sur *psur)
+void Bumper::Render(Sur * const psur)
 	{
 	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetFillColor(-1);
@@ -184,7 +184,7 @@ void Bumper::RenderShadow(ShadowSur * const psur, const float z)
 	psur->EllipseSkew(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_overhang, height+40.0f, height+65.0f);
 	}
 
-void Bumper::GetTimers(Vector<HitTimer> *pvht)
+void Bumper::GetTimers(Vector<HitTimer> * const pvht)
 	{
 	IEditable::BeginPlay();
 
@@ -201,7 +201,7 @@ void Bumper::GetTimers(Vector<HitTimer> *pvht)
 		}
 	}
 
-void Bumper::GetHitShapes(Vector<HitObject> *pvho)
+void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -232,7 +232,7 @@ void Bumper::GetHitShapes(Vector<HitObject> *pvho)
 	m_iblinkframe = 0;
 	}
 
-void Bumper::GetHitShapesDebug(Vector<HitObject> *pvho)
+void Bumper::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -250,7 +250,7 @@ void Bumper::EndPlay()
 	m_pbumperhitcircle = NULL;
 	}
 
-void Bumper::PostRenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Bumper::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	}
 
@@ -258,7 +258,7 @@ static const WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1
 
 static const D3DMATERIAL7 bumpermtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
-void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
+void Bumper::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	// ensure we are not disabled at game start
 	m_fDisabled = fFalse;
@@ -362,7 +362,7 @@ void Bumper::RenderStatic(LPDIRECT3DDEVICE7 pd3dDevice)
 
 	}
 
-void Bumper::RenderMovers(LPDIRECT3DDEVICE7 pd3dDevice)
+void Bumper::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	if(!m_d.m_fVisible)	return;
 
