@@ -3644,9 +3644,9 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			hr = GetRegInt("Player", "Stereo3D", &stereo3D);
 			if (hr != S_OK)
 				{
-				stereo3D = fFalse; // The default
+				stereo3D = 0; // The default = off
 				}
-			SendMessage(hwndCheck, BM_SETCHECK, stereo3D ? BST_CHECKED : BST_UNCHECKED, 0);
+			SendMessage(hwndCheck, BM_SETCHECK, (stereo3D != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
 			hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO_AA);
 			int stereo3DAA;

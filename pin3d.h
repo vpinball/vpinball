@@ -239,5 +239,4 @@ public:
 	LightProjected m_lightproject;
 
 	float m_maxSeparation, m_ZPD;
-	bool m_Stereo3D;
 	};
