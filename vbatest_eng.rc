@@ -1404,7 +1404,7 @@ BEGIN
     LTEXT           "&Sound:",IDC_STATIC,6,35,22,8
 END
 
-IDD_PROPTABLE_VISUALS DIALOGEX 0, 0, 125, 77
+IDD_PROPTABLE_VISUALS DIALOGEX 0, 0, 125, 60
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1415,7 +1415,7 @@ BEGIN
     LTEXT           "&Color",-1,7,10,20,9
 END
 
-IDD_PROPTABLE_EDITOR DIALOGEX 0, 0, 125, 60
+IDD_PROPTABLE_EDITOR DIALOGEX 0, 0, 125, 53
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1425,7 +1425,7 @@ BEGIN
     LTEXT           "Grid Si&ze",-1,7,25,32,9
 END
 
-IDD_PROPTABLE_PHYSICS DIALOGEX 0, 0, 125, 258
+IDD_PROPTABLE_PHYSICS DIALOGEX 0, 0, 125, 105
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1436,34 +1436,40 @@ BEGIN
     EDITTEXT        6,81,62,40,12,ES_AUTOHSCROLL
     EDITTEXT        215,81,76,40,12,ES_AUTOHSCROLL
     EDITTEXT        209,81,90,40,12,ES_AUTOHSCROLL
-    CONTROL         "",200,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,81,105,8,8
-    CONTROL         "",201,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,81,115,8,8
-    EDITTEXT        202,81,125,40,12,ES_AUTOHSCROLL
-    EDITTEXT        203,81,138,40,12,ES_AUTOHSCROLL
-    EDITTEXT        204,81,152,40,12,ES_AUTOHSCROLL
-    EDITTEXT        205,81,166,40,12,ES_AUTOHSCROLL
-    EDITTEXT        206,81,180,40,12,ES_AUTOHSCROLL
-    EDITTEXT        207,81,194,40,12,ES_AUTOHSCROLL
-    EDITTEXT        208,81,207,40,12,ES_AUTOHSCROLL
-    CONTROL         "",IDC_DEADZSLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,4,234,68,15
-    EDITTEXT        217,81,237,40,12,ES_CENTER | ES_NUMBER
-    LTEXT           "Top &Glass Height",-1,7,36,74,8
-    LTEXT           "Table &Height (Length)",-1,7,22,74,8
     LTEXT           "Table &Width",-1,7,10,74,8
-    LTEXT           "Tbl &Slope Min Difficulty",-1,7,64,74,8
-    LTEXT           "&PBW Accelerometer",-1,7,105,71,8
-    LTEXT           "&Normal Mounting (LHC)",-1,7,116,71,8
-    LTEXT           "PBW &Mount Rotation",-1,7,128,74,8
-    LTEXT           "&Accelerometer Gain",-1,7,141,74,8
-    LTEXT           "&Joystick Manual Gain",-1,7,155,74,8
-    LTEXT           "&Tilt Amount",-1,7,183,74,8
-    LTEXT           "&Jolt Amount",-1,7,169,74,8
-    LTEXT           "Jolt &Trigger Time",-1,7,196,74,8
-    LTEXT           "Tilt &Trigger Time",-1,7,210,74,8
-    LTEXT           "&Global Difficulty Level",-1,7,92,73,8
+    LTEXT           "Table &Height/Length",-1,7,22,74,8
+    LTEXT           "Top &Glass Height",-1,7,36,74,8
     LTEXT           "Table &Field Height",-1,7,50,74,8
-    LTEXT           "Tbl Slope &Max Difficulty",-1,7,78,74,8
-    LTEXT           "Dead Zone (0-100%)",-1,32,225,68,8
+    LTEXT           "&Slope Min. Difficulty",-1,7,64,74,8
+    LTEXT           "Slope &Max. Difficulty",-1,7,78,74,8
+    LTEXT           "&Global Difficulty Level",-1,7,92,73,8
+END
+
+IDD_PROPTABLE_INPUT DIALOGEX 0, 0, 125, 160
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    CONTROL         "",200,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,81,5,8,8
+    CONTROL         "",201,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,81,15,8,8
+    EDITTEXT        202,81,25,40,12,ES_AUTOHSCROLL
+    EDITTEXT        203,81,38,40,12,ES_AUTOHSCROLL
+    EDITTEXT        204,81,52,40,12,ES_AUTOHSCROLL
+    EDITTEXT        205,81,66,40,12,ES_AUTOHSCROLL
+    EDITTEXT        206,81,80,40,12,ES_AUTOHSCROLL
+    EDITTEXT        207,81,94,40,12,ES_AUTOHSCROLL
+    EDITTEXT        208,81,107,40,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_DEADZSLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,4,134,68,15
+    EDITTEXT        217,81,137,40,12,ES_CENTER | ES_NUMBER
+    LTEXT           "&PBW Accelerometer",-1,7,5,71,8
+    LTEXT           "&Normal Mounting (LHC)",-1,7,16,71,8
+    LTEXT           "PBW &Mount Rotation",-1,7,28,74,8
+    LTEXT           "&Accelerometer Gain",-1,7,41,74,8
+    LTEXT           "&Joystick Manual Gain",-1,7,55,74,8
+    LTEXT           "&Jolt Amount",-1,7,69,74,8
+    LTEXT           "&Tilt Amount",-1,7,83,74,8
+    LTEXT           "Jolt Trigger Time",-1,7,96,74,8
+    LTEXT           "Tilt Trigger Time",-1,7,110,74,8
+    LTEXT           "Dead Zone (0-100%)",-1,32,125,68,8
 END
 
 IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 81
@@ -1478,12 +1484,12 @@ BEGIN
     LTEXT           "Bac&k Decal:",-1,7,54,38,8
 END
 
-IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 344
+IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 160
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,7,40,14
-    COMBOBOX        1501,7,33,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        1501,7,32,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        104,80,47,40,12,ES_AUTOHSCROLL
     EDITTEXT        105,80,60,40,12,ES_AUTOHSCROLL
     EDITTEXT        1040,80,73,40,12,ES_AUTOHSCROLL
@@ -1492,39 +1498,44 @@ BEGIN
     EDITTEXT        101,80,114,40,12,ES_AUTOHSCROLL
     EDITTEXT        102,80,128,40,12,ES_AUTOHSCROLL
     EDITTEXT        103,80,141,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1100,80,167,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1101,80,181,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1102,80,194,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1103,80,208,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1106,80,222,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1105,80,236,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1104,80,250,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1041,80,309,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1042,80,323,40,12,ES_AUTOHSCROLL
-    CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,264,111,9
-    CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,287,104,10
-    CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,297,105,10
-    LTEXT           "I&mage:",IDC_STATIC,7,25,22,8
     LTEXT           "&Color",IDC_STATIC,7,10,20,9
+    LTEXT           "I&mage:",IDC_STATIC,7,22,20,8
     LTEXT           "&Inclination",IDC_STATIC,7,48,70,9
     LTEXT           "&Field of View",IDC_STATIC,7,62,71,9
-    LTEXT           "X Offset",IDC_STATIC,7,129,67,8
-    LTEXT           "&Y Scale",IDC_STATIC,7,116,67,8
-    LTEXT           "&X Scale",IDC_STATIC,7,102,67,8
-    LTEXT           "Y Offset",IDC_STATIC,7,143,67,8
-    LTEXT           "XY Rotation",IDC_STATIC,7,88,67,8
-    LTEXT           "Gravity Constant",IDC_STATIC,7,170,69,8
-    LTEXT           "Contact Friction",IDC_STATIC,7,183,69,8
-    LTEXT           "Contact Scatter Angle",IDC_STATIC,7,197,69,8
-    LTEXT           "Dampening Speed",IDC_STATIC,7,211,69,8
-    LTEXT           "Physics Max Looptime",IDC_STATIC,7,239,70,8
-    LTEXT           "Physical Constants",IDC_STATIC,7,156,113,8
-    LTEXT           "Graphics Settings",IDC_STATIC,7,275,113,8
-    LTEXT           "Mech-Plunger Adjust",IDC_STATIC,7,252,70,8
-    LTEXT           "Dampening Friction",IDC_STATIC,7,225,69,8
     LTEXT           "Layback",IDC_STATIC,7,75,28,8
-    LTEXT           "3D Stereo Separation",IDC_STATIC,7,311,70,8
-    LTEXT           "3D Stereo ZPD",IDC_STATIC,7,325,70,8
+    LTEXT           "XY Rotation",IDC_STATIC,7,88,67,8
+    LTEXT           "&X Scale",IDC_STATIC,7,102,67,8
+    LTEXT           "&Y Scale",IDC_STATIC,7,116,67,8
+    LTEXT           "X Offset",IDC_STATIC,7,129,67,8
+    LTEXT           "Y Offset",IDC_STATIC,7,143,67,8
+END
+
+IDD_PROPBACKGLASS_PHYSICS DIALOGEX 0, 0, 125, 180
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    EDITTEXT        1100,80,7,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1101,80,21,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1102,80,34,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1103,80,48,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1106,80,62,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1105,80,76,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1104,80,90,40,12,ES_AUTOHSCROLL
+    CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,111,9
+    CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,125,104,10
+    CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,137,105,10
+    EDITTEXT        1041,80,149,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1042,80,163,40,12,ES_AUTOHSCROLL
+    LTEXT           "Gravity Constant",IDC_STATIC,7,9,69,8
+    LTEXT           "Contact Friction",IDC_STATIC,7,23,69,8
+    LTEXT           "Contact Scatter Angle",IDC_STATIC,7,37,69,8
+    LTEXT           "Dampening Speed",IDC_STATIC,7,51,69,8
+    LTEXT           "Dampening Friction",IDC_STATIC,7,65,69,8
+    LTEXT           "Physics Max.Looptime",IDC_STATIC,7,79,70,8
+    LTEXT           "Mech-Plunger Adjust",IDC_STATIC,7,92,70,8
+    LTEXT           "- - -",IDC_STATIC,7,115,113,8
+    LTEXT           "3D Stereo Separation",IDC_STATIC,7,151,70,8
+    LTEXT           "3D Stereo ZPD",IDC_STATIC,7,165,70,8
 END
 
 IDD_PROPPOINT_POSITION DIALOGEX 0, 0, 125, 42
@@ -2168,7 +2179,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 117
         TOPMARGIN, 7
-        BOTTOMMARGIN, 70
+        BOTTOMMARGIN, 60
     END
 
     IDD_PROPTABLE_EDITOR, DIALOG
@@ -2184,10 +2195,18 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 121
         TOPMARGIN, 7
-        BOTTOMMARGIN, 252
+        BOTTOMMARGIN, 105
     END
 
-    IDD_PROPTABLE_BALL, DIALOG
+    IDD_PROPTABLE_INPUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 121
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 160
+    END
+
+	IDD_PROPTABLE_BALL, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 120
@@ -2200,7 +2219,15 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 120
         TOPMARGIN, 7
-        BOTTOMMARGIN, 305
+        BOTTOMMARGIN, 160
+    END
+
+	IDD_PROPBACKGLASS_PHYSICS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 120
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 180
     END
 
     IDD_PROPPOINT_POSITION, DIALOG
@@ -2412,6 +2439,9 @@ BEGIN
     IDS_POSITION            "Position"
     IDS_STATE               "State"
     IDS_PHYSICS             "Physics"
+    IDS_PHYSICSGFX          "Physics & Graphics"
+	IDS_DIMENSIONSSLOPE		"Dimensions & Slope"
+	IDS_INPUT				"Input"
     IDS_TB_PRIMITIVE        "Primitive"
 END
 
