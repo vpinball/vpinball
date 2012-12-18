@@ -273,14 +273,11 @@ IDB_ICON_TRIGGER        BITMAP                  "IconTrigger.bmp"
 IDB_ICON_TIMER          BITMAP                  "IconTimer.bmp"
 IDB_ICON_FLIPPER        BITMAP                  "IconFlipper.bmp"
 IDB_ICON_LIGHT          BITMAP                  "IconLight.bmp"
-IDB_SUNBURST            BITMAP                  "sunburst.bmp"
 IDB_BALLTEXTURE         BITMAP                  "balltex2.bmp"
 IDB_WHITE               BITMAP                  "white.bmp"
-IDB_SUNBURST3           BITMAP                  "sunburst4.bmp"
-IDB_LOGO                BITMAP                  "logo25.bmp"
+IDB_SUNBURST3           BITMAP                  "sunburst.bmp"
 IDB_CHEVRON             BITMAP                  "chevron.bmp"
 IDB_TARGET              BITMAP                  "target.bmp"
-IDB_TB_DEBUG            BITMAP                  "toolbardebug.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
