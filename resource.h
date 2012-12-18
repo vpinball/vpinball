@@ -222,7 +222,6 @@
 #define IDC_STEP                        218
 #define IDC_STATUSNAME                  218
 #define IDC_DEADZSLIDER                 218
-#define IDB_SUNBURST                    219
 #define IDB_BALLTEXTURE                 220
 #define IDR_SURFACEMENU                 221
 #define IDD_ROTATE                      222
@@ -269,7 +268,6 @@
 #define IDC_LEFTFLIPPERBUTTON           262
 #define IDD_TRANSLATE                   262
 #define IDC_RIGHTFLIPPERBUTTON          264
-#define IDB_LOGO                        264
 #define IDC_LEFTTILTBUTTON              266
 #define IDI_TABLEICON                   266
 #define IDR_SCRIPTMENU                  267
@@ -472,7 +470,6 @@
 #define IDB_TARGET                      376
 #define IDC_RADIO4                      376
 #define IDC_TexUnlimited                376
-#define IDB_TB_DEBUG                    377
 #define IDC_EDIT1                       377
 #define IDC_Layback                     377
 #define IDD_COMLIST                     378
