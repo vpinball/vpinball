@@ -14,13 +14,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -116,7 +114,7 @@ IDR_Primitive           REGISTRY                "Primitive.rgs"
 // Menu
 //
 
-IDR_APPMENU MENU 
+IDR_APPMENU MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -202,7 +200,7 @@ BEGIN
     END
 END
 
-IDR_POINTMENU MENU 
+IDR_POINTMENU MENU
 BEGIN
     POPUP "PointMenu"
     BEGIN
@@ -211,7 +209,7 @@ BEGIN
     END
 END
 
-IDR_SURFACEMENU MENU 
+IDR_SURFACEMENU MENU
 BEGIN
     POPUP "WallMenu"
     BEGIN
@@ -224,7 +222,7 @@ BEGIN
     END
 END
 
-IDR_MULTIMENU MENU 
+IDR_MULTIMENU MENU
 BEGIN
     POPUP "WallMenu"
     BEGIN
@@ -236,7 +234,7 @@ BEGIN
     END
 END
 
-IDR_SCRIPTMENU MENU 
+IDR_SCRIPTMENU MENU
 BEGIN
     POPUP "&Script"
     BEGIN
@@ -256,7 +254,7 @@ BEGIN
     END
 END
 
-IDR_TABLEMENU MENU 
+IDR_TABLEMENU MENU
 BEGIN
     POPUP "Table Menu"
     BEGIN
@@ -289,7 +287,7 @@ IDB_TB_DEBUG            BITMAP                  "toolbardebug.bmp"
 // Accelerator
 //
 
-IDR_VPACCEL ACCELERATORS 
+IDR_VPACCEL ACCELERATORS
 BEGIN
     "A",            IDC_TARGET,             VIRTKEY, CONTROL, NOINVERT
     "B",            IDC_BUMPER,             VIRTKEY, CONTROL, NOINVERT
@@ -319,7 +317,7 @@ BEGIN
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_CODEVIEWACCEL ACCELERATORS 
+IDR_CODEVIEWACCEL ACCELERATORS
 BEGIN
     "F",            ID_FIND,                VIRTKEY, CONTROL, NOINVERT
     "S",            ID_SAVE,                VIRTKEY, CONTROL, NOINVERT
@@ -368,7 +366,7 @@ BEGIN
     LTEXT           "&Transparency",IDC_STATIC,462,116,45,10
 END
 
-IDD_ROTATE DIALOG  0, 0, 186, 95
+IDD_ROTATE DIALOG 0, 0, 186, 95
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Rotate"
 FONT 8, "MS Sans Serif"
@@ -403,7 +401,7 @@ BEGIN
     LTEXT           "Scale Y",IDC_STATIC_SCALEY,19,35,26,8
 END
 
-IDD_PROGRESS DIALOG  0, 0, 167, 44
+IDD_PROGRESS DIALOG 0, 0, 167, 44
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Preparing Table"
 FONT 8, "MS Sans Serif"
@@ -459,7 +457,7 @@ BEGIN
     LTEXT           "Si&de Color",IDC_STATIC,7,30,35,9
 END
 
-IDD_CODEVIEW DIALOG  0, 0, 332, 214
+IDD_CODEVIEW DIALOG 0, 0, 332, 214
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Script"
 FONT 8, "MS Sans Serif"
@@ -549,7 +547,7 @@ BEGIN
     LTEXT           "to my Monitor:",IDC_STATIC,27,225,45,8
 END
 
-IDD_FONTDIALOG DIALOG  0, 0, 316, 167
+IDD_FONTDIALOG DIALOG 0, 0, 316, 167
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Font Manager"
 FONT 8, "MS Sans Serif"
@@ -687,7 +685,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,261,199,40,14
 END
 
-IDD_TRANSLATE DIALOG  0, 0, 186, 52
+IDD_TRANSLATE DIALOG 0, 0, 186, 52
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Translate"
 FONT 8, "MS Sans Serif"
@@ -742,7 +740,7 @@ BEGIN
     LTEXT           "minutes",IDC_STATIC,132,33,25,8
 END
 
-IDD_COLLECTDIALOG DIALOG  0, 0, 316, 167
+IDD_COLLECTDIALOG DIALOG 0, 0, 316, 167
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Collection Manager"
 FONT 8, "MS Sans Serif"
@@ -756,7 +754,7 @@ BEGIN
     PUSHBUTTON      "&Edit",IDC_EDIT,259,60,50,14
 END
 
-IDD_COLLECTION DIALOG  0, 0, 232, 231
+IDD_COLLECTION DIALOG 0, 0, 232, 231
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Collection"
 FONT 8, "MS Sans Serif"
@@ -817,7 +815,7 @@ BEGIN
     LTEXT           "Please reenter your Password",IDC_STATIC,7,182,99,8
 END
 
-IDD_UNLOCK_DIALOG DIALOG  0, 0, 164, 53
+IDD_UNLOCK_DIALOG DIALOG 0, 0, 164, 53
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Unlock Protected Table"
 FONT 8, "MS Sans Serif"
@@ -1090,24 +1088,24 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        13,17,7,40,12,ES_AUTOHSCROLL
     EDITTEXT        14,76,7,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1,76,24,40,12,ES_AUTOHSCROLL
-    EDITTEXT        2,76,39,40,12,ES_AUTOHSCROLL
-    EDITTEXT        3,76,54,40,12,ES_AUTOHSCROLL
-    EDITTEXT        4,76,69,40,12,ES_AUTOHSCROLL
-    EDITTEXT        7,76,84,40,12,ES_AUTOHSCROLL
-    EDITTEXT        107,76,99,40,12,ES_AUTOHSCROLL
-    EDITTEXT        111,76,113,40,12,ES_AUTOHSCROLL
-    COMBOBOX        1502,7,132,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        1,76,22,40,12,ES_AUTOHSCROLL
+    EDITTEXT        2,76,37,40,12,ES_AUTOHSCROLL
+    EDITTEXT        3,76,52,40,12,ES_AUTOHSCROLL
+    EDITTEXT        4,76,67,40,12,ES_AUTOHSCROLL
+    EDITTEXT        7,76,82,40,12,ES_AUTOHSCROLL
+    EDITTEXT        107,76,97,40,12,ES_AUTOHSCROLL
+    EDITTEXT        111,76,112,40,12,ES_AUTOHSCROLL
+    COMBOBOX        1502,7,136,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&X",-1,7,9,8,8
-    LTEXT           "&Y",-1,66,10,8,8
-    LTEXT           "&Surface:",-1,7,124,36,9
-    LTEXT           "&Base Radius",-1,7,26,53,8
-    LTEXT           "&End Radius",-1,7,41,51,8
-    LTEXT           "&Length",-1,7,56,35,8
-    LTEXT           "&Start Angle",-1,7,71,48,8
-    LTEXT           "End &Angle",-1,7,86,42,8
-    LTEXT           "Height",-1,7,100,45,8
-    LTEXT           "Max. Difficulty Length",-1,7,115,68,8
+    LTEXT           "&Y",-1,66,9,8,8
+    LTEXT           "&Surface:",-1,7,125,36,9
+    LTEXT           "&Base Radius",-1,7,24,53,8
+    LTEXT           "&End Radius",-1,7,39,51,8
+    LTEXT           "&Length",-1,7,54,35,8
+    LTEXT           "&Start Angle",-1,7,69,48,8
+    LTEXT           "End &Angle",-1,7,84,42,8
+    LTEXT           "Height",-1,7,99,45,8
+    LTEXT           "Max.Difficulty Length",-1,7,113,68,8
 END
 
 IDD_PROPFLIPPER_PHYSICS DIALOGEX 0, 0, 125, 128
@@ -1606,7 +1604,7 @@ BEGIN
     LTEXT           "",IDC_TOOLBARSIZE,155,16,54,24
 END
 
-IDD_COMLIST DIALOG  0, 0, 287, 190
+IDD_COMLIST DIALOG 0, 0, 287, 190
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Component List"
 FONT 8, "MS Sans Serif"
@@ -1718,7 +1716,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_SOUNDDIALOG, DIALOG
     BEGIN
@@ -2385,7 +2383,7 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PROJNAME            "Visual Pinball"
     IDS_TB_TIMER            "Timer"
@@ -2397,14 +2395,14 @@ BEGIN
     IDS_FLIPPER_DESC        "Flipper Class"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_TB_LIGHTSEQ         "LightSeq"
     IDS_REPLACEALL          "Replaced"
     IDS_REPLACEALL2         "occurances in script."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_NEED_DD9            "Visual Pinball requires DirectX 9.0 or higher from Microsoft."
     IDS_LOCK                "Lock"
@@ -2417,7 +2415,7 @@ BEGIN
     IDS_TB_PRIMITIVE        "Primitive"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_TIMER_DESC          "Timer Class"
     IDS_PLUNGER_DESC        "Plunger Class"
@@ -2433,7 +2431,7 @@ BEGIN
     IDS_TB_TRIGGER          "Trigger"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_LIGHT_DESC          "Light Class"
     IDS_TB_LIGHT            "Light"
@@ -2449,7 +2447,7 @@ BEGIN
     IDS_TB_SPINNER          "Spinner"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_RAMP_DESC           "Ramp Class"
     IDS_TB_RAMP             "Ramp"
@@ -2468,7 +2466,7 @@ BEGIN
     IDS_DRAWINFRONT         "Draw In &Front"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PERMISSION_ERROR    "This table is protected.\n\nThe table author has requested that this option be restricted. "
     IDS_PROTECT_ONETICKED   "You must tick at least one protection option. "
@@ -2478,7 +2476,7 @@ BEGIN
     IDS_UNLOCK_SUCCESS      "This table has been successfully unlocked. "
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_DRAWINBACK          "Draw In &Back"
     IDS_SAVEERROR           "There was an error saving the file."
@@ -2498,7 +2496,7 @@ BEGIN
     IDS_IMAGETOOLARGE       "The maximum resolution for imported images is 4096x4096."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_EDITOR              "Editor"
     IDS_DEFAULTBALL         "Ball"
@@ -2518,7 +2516,7 @@ BEGIN
     IDS_JPG_FORMAT_ERR      "JPG decoding error,  unknown jpg format."
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
