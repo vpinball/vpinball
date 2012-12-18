@@ -44,7 +44,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
 	m_d.m_BaseRadius = (hr == S_OK) && fromMouseClick ? fTmp : 21.5f;		// 15
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","EndRadius", &fTmp);
-	m_d.m_EndRadius = (hr == S_OK) && fromMouseClick ? fTmp : 11.f;		// 6
+	m_d.m_EndRadius = (hr == S_OK) && fromMouseClick ? fTmp : 13.f;		// 6
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","Length", &fTmp);
 	m_d.m_FlipperRadiusMax = (hr == S_OK) && fromMouseClick ? fTmp : 125.f;	// 80
@@ -102,7 +102,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
 	m_d.m_powerlaw = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","ObliqueCorrection", &fTmp);
-	m_d.m_obliquecorrection = (hr == S_OK) && fromMouseClick ? fTmp : 3.0f; //flipper face correction 
+	m_d.m_obliquecorrection = (hr == S_OK) && fromMouseClick ? fTmp : ANGTORAD(3.0f); //flipper face correction 
 
 	hr = GetRegStringAsFloat("DefaultProps\\Flipper","ScatterAngle", &fTmp);
 	m_d.m_scatterangle = ANGTORAD((hr == S_OK) && fromMouseClick ? fTmp : -11.0f); //flipper scatter angle
@@ -1064,7 +1064,7 @@ STDMETHODIMP Flipper::get_CurrentAngle(float *pVal)
 {
 	if (m_phitflipper)
 		{
-		*pVal = m_phitflipper->m_flipperanim.m_angleCur * (float)(180.0/M_PI);
+		*pVal = RADTOANG(m_phitflipper->m_flipperanim.m_angleCur);
 		return S_OK;
 		}
 	else
@@ -1450,7 +1450,7 @@ STDMETHODIMP Flipper::put_PowerLaw(float newVal)
 
 STDMETHODIMP Flipper::get_ObliqueCorrection(float *pVal)
 {
-	*pVal = m_d.m_obliquecorrection*(float)(180.0/M_PI);
+	*pVal = RADTOANG(m_d.m_obliquecorrection);
 
 	return S_OK;
 }
@@ -1477,7 +1477,7 @@ STDMETHODIMP Flipper::put_ObliqueCorrection(float newVal)
 {
 	STARTUNDO
 
-	m_d.m_obliquecorrection = newVal*(float)(M_PI/180.0);
+	m_d.m_obliquecorrection = ANGTORAD(newVal);
 
 	STOPUNDO
 

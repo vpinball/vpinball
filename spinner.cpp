@@ -193,7 +193,7 @@ void Spinner::Render(Sur * const psur)
 
 	float halflength = m_d.m_length * 0.5f;
 
-	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float radangle = ANGTORAD(m_d.m_rotation);
 	const float sn = sinf(radangle);
 	const float cs = cosf(radangle);
 
@@ -271,7 +271,7 @@ void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
 	if(m_d.m_fSupports)
 		{
 		float halflength = m_d.m_length * 0.5f;
-		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+		const float radangle = ANGTORAD(m_d.m_rotation);
 		const float sn = sinf(radangle);
 		const float cs = cosf(radangle);
 
@@ -383,7 +383,7 @@ void Spinner::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	//rgv3D[7].z = 60.0f + halfthick;
 	rgv3D[7].z = h + halfthick;
 
-	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float radangle = ANGTORAD(m_d.m_rotation);
 	const float snY = sinf(radangle);
 	const float csY = cosf(radangle);
 
@@ -497,7 +497,7 @@ void Spinner::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			angle = ANGTORAD(m_d.m_angleMin + (m_d.m_angleMax - m_d.m_angleMin)*inv_cframes*(float)i);
 		else angle = (float)(2.0*M_PI)*inv_cframes*(float)i;
 
-		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+		const float radangle = ANGTORAD(m_d.m_rotation);
 		const float snY = sinf(radangle);
 		const float csY = cosf(radangle);
 

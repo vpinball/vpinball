@@ -653,7 +653,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 {
 	if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pball)
 		{
-		float anglerad = angle*(float)(M_PI/180.0);		// yaw angle, zero is along -Y axis		
+		float anglerad = ANGTORAD(angle);				// yaw angle, zero is along -Y axis		
 
 		if (fabsf(inclination) > (float)(M_PI/2.0))		// radians or degrees?  if greater PI/2 assume degrees
 			inclination *= (float)(M_PI/180.0);			// convert to radians

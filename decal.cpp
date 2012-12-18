@@ -204,7 +204,7 @@ void Decal::PreRender(Sur * const psur)
 		const float halfwidth = m_realwidth/*m_d.m_width*/ * 0.5f;
 		const float halfheight = m_realheight/*m_d.m_height*/ * 0.5f;
 
-		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+		const float radangle = ANGTORAD(m_d.m_rotation);
 		const float sn = sinf(radangle);
 		const float cs = cosf(radangle);
 
@@ -237,7 +237,7 @@ void Decal::Render(Sur * const psur)
 		const float halfwidth = m_realwidth * 0.5f;
 		const float halfheight = m_realheight * 0.5f;
 
-		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+		const float radangle = ANGTORAD(m_d.m_rotation);
 		const float sn = sinf(radangle);
 		const float cs = cosf(radangle);
 
@@ -526,7 +526,7 @@ void Decal::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	const float halfwidth = m_realwidth * 0.5f;
 	const float halfheight = m_realheight * 0.5f;
 
-	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float radangle = ANGTORAD(m_d.m_rotation);
 	const float sn = sinf(radangle);
 	const float cs = cosf(radangle);
 
