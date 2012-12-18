@@ -1527,12 +1527,10 @@ BEGIN
     IDS_FINDFAILED          "Kann Suchbegriff nicht finden: '"
     IDS_FINDFAILED2         "'"
     IDS_CONTROLPOINT        "Kontrollpunkt"
-    IDS_BETAEXPIRE          "Diese Beta-Version von Visual-Pinball ist abgelaufen. Bitte auf der Web-Site www.visualpinball.com für ein Update nachschauen."
     IDS_CORRUPTFILE         "Diese Datei ist defekt und kann nicht geladen werden!"
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object is not marked as being safe, and may represent a security threat.  Do you want to allow this object to be created?  Only answer Yes if you completely trust the source of this table."
     IDS_COLLECTION          "Collection"
-    IDS_IMAGETOOLARGE       "The maximum resolution for imported images is 4096x4096."
 END
 
 STRINGTABLE 

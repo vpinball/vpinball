@@ -169,7 +169,6 @@
 #define IDS_FINDFAILED2                 168
 #define IDC_DISPREEL                    168
 #define IDS_CONTROLPOINT                169
-#define IDS_BETAEXPIRE                  170
 #define IDS_CORRUPTFILE                 171
 #define IDC_CUR_DISPREEL                171
 #define IDS_UNSECURECONTROL1            172
@@ -178,8 +177,6 @@
 #define IDS_UNSECURECONTROL2            173
 #define IDC_CUR_DISPDMD                 173
 #define IDS_COLLECTION                  174
-#define IDS_IMAGETOOLARGE               175
-#define IDS_NEED_DD7                    176
 #define IDS_NEED_DD9                    176
 #define IDS_LOCK                        177
 #define IDS_MISC                        178
@@ -437,7 +434,6 @@
 #define IDS_TB_COMCONTROL               350
 #define IDD_PROPLIGHTSEQ_STATE          351
 #define IDC_STEPAMOUNT                  351
-#define IDS_JPG_FORMAT_ERR              351
 #define IDD_PROPTEXTBOX_VISUALS         352
 #define IDD_PROPTEXTBOX_POSITION        353
 #define IDD_PROPTEXTBOX_STATE           354
