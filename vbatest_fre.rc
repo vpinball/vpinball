@@ -1502,12 +1502,10 @@ BEGIN
     IDS_FINDFAILED          "Impossible de trouver la chaîne de caractères '"
     IDS_FINDFAILED2         "'"
     IDS_CONTROLPOINT        "Point de Contrôle"
-    IDS_BETAEXPIRE          "Cette version de Visual Pinball a expiré. Veuillez visiter http://www.visualpinball.com pour voir comment mettre à jour votre version."
     IDS_CORRUPTFILE         "Ce fichier a un défaut et ne peut pas être chargé."
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object is not marked as being safe, and may represent a security threat.  Do you want to allow this object to be created?  Only answer Yes if you completely trust the source of this table."
     IDS_COLLECTION          "Collection"
-    IDS_IMAGETOOLARGE       "The maximum resolution for imported images is 4096x4096."
 END
 
 STRINGTABLE 

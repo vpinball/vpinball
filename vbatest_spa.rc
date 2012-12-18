@@ -1500,12 +1500,10 @@ BEGIN
     IDS_FINDFAILED          "No se puede encontrar la cadena '"
     IDS_FINDFAILED2         "'"
     IDS_CONTROLPOINT        "Punto de Control"
-    IDS_BETAEXPIRE          "Esta versión beta de Visual Pinball ha caducado.  Por favor visita http://www.visualpinball.com para conseguir una versión actualizada."
     IDS_CORRUPTFILE         "Este archivo está corrompido y no puede cargarse."
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object is not marked as being safe, and may represent a security threat.  Do you want to allow this object to be created?  Only answer Yes if you completely trust the source of this table."
     IDS_COLLECTION          "Collection"
-    IDS_IMAGETOOLARGE       "The maximum resolution for imported images is 4096x4096."
 END
 
 STRINGTABLE 
