@@ -7512,14 +7512,14 @@ STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_AccelerometerAngle(float *pVal)
 {
-	*pVal = (g_pplayer) ? g_pplayer->m_AccelAngle * (float)(180.0/M_PI) : m_tblAccelAngle; //VB Script convert to radians or VP Editor in degrees
+	*pVal = (g_pplayer) ? RADTOANG(g_pplayer->m_AccelAngle) : m_tblAccelAngle; //VB Script convert to radians or VP Editor in degrees
 	
 	return S_OK;
 }
 
 STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 {
-	if (g_pplayer) g_pplayer->m_AccelAngle = newVal * (float)(M_PI/180.0); //VB Script conert to radians
+	if (g_pplayer) g_pplayer->m_AccelAngle = ANGTORAD(newVal); //VB Script conert to radians
 	else
 		{	//VP Editor in degrees
 		int tmp;

@@ -172,7 +172,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
 			{
 			if(m_fAcc > 0) m_fAcc = 0;
 
-			const float anglespd = fabsf(m_anglespeed*(float)(180.0/M_PI));
+			const float anglespd = fabsf(RADTOANG(m_anglespeed));
 			m_anglespeed = 0; 
 			
 			if (m_EnableRotateEvent > 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS,anglespd); // send EOS event
@@ -188,7 +188,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
 			{
 			if(m_fAcc < 0) m_fAcc = 0;
 
-			const float anglespd = fabsf(m_anglespeed*(float)(180.0/M_PI));
+			const float anglespd = fabsf(RADTOANG(m_anglespeed));
 			m_anglespeed = 0;			
 
 			if (m_EnableRotateEvent > 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS,anglespd); // send EOS event

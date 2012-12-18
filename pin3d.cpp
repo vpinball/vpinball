@@ -937,8 +937,8 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	m_xlatex = xlatex;
 	m_xlatey = xlatey;
 
-	m_rotation = rotation*(float)(M_PI/180.0);
-	m_inclination = inclination*(float)(M_PI/180.0);
+	m_rotation = ANGTORAD(rotation);
+	m_inclination = ANGTORAD(inclination);
 
 	HRESULT hr;
 	hr = m_pd3dDevice->SetTexture(ePictureTexture, NULL);

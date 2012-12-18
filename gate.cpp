@@ -186,7 +186,7 @@ void Gate::Render(Sur * const psur)
 	
 	Vertex2D tmp;
 
-	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float radangle = ANGTORAD(m_d.m_rotation);
 	{
 	const float sn = sinf(radangle);
 	const float cs = cosf(radangle);
@@ -260,7 +260,7 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
 	m_d.m_angleMin = angleMin;	
 	m_d.m_angleMax = angleMax;
 
-	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float radangle = ANGTORAD(m_d.m_rotation);
 	const float sn = sinf(radangle);
 	const float cs = cosf(radangle);
 
@@ -392,7 +392,7 @@ void Gate::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	const float halfthick = 2.0f;
 	const float h = m_d.m_height;
 
-	const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+	const float radangle = ANGTORAD(m_d.m_rotation);
 	const float snY = sinf(radangle);
 	const float csY = cosf(radangle);
 
@@ -537,7 +537,7 @@ void Gate::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 		const float angle = m_d.m_angleMin + inv_cframes*(float)i;
 
-		const float radangle = m_d.m_rotation * (float)(M_PI/180.0);
+		const float radangle = ANGTORAD(m_d.m_rotation);
 		const float snY = sinf(radangle);
 		const float csY = cosf(radangle);
 

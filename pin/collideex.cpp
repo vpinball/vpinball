@@ -468,7 +468,7 @@ void SpinnerAnimObject::UpdateDisplacements(const float dtime)
 		if (m_angle > m_angleMax)
 			{
 			m_angle = m_angleMax;
-			m_pspinner->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(m_anglespeed*(float)(180.0/M_PI)));	// send EOS event
+			m_pspinner->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
 
 			if (m_anglespeed > 0) m_anglespeed *= -0.005f - m_elasticity;
 			}
@@ -476,7 +476,7 @@ void SpinnerAnimObject::UpdateDisplacements(const float dtime)
 			{
 			m_angle = m_angleMin;
 
-			m_pspinner->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(m_anglespeed*(float)(180.0/M_PI)));	// send Park event
+			m_pspinner->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed)));	// send Park event
 
 			if (m_anglespeed < 0) m_anglespeed *= -0.005f - m_elasticity;
 			}
