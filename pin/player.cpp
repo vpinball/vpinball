@@ -1975,6 +1975,13 @@ void Player::Render()
 
 		const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
 		m_pininput.ProcessKeys(m_ptable, sim_msec);
+
+		if(m_pininput.Pressed(PININ_ENABLE3D)) {
+			m_fStereo3Denabled = !m_fStereo3Denabled;
+			SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
+			m_fCleanBlt = fFalse;
+		}
+
         mixer_update(m_pininput);
 
         hid_update(sim_msec);
@@ -2030,12 +2037,6 @@ void Player::Render()
 #endif
 
 	m_LastKnownGoodCounter++;
-
-	if(m_pininput.Pressed(PININ_ENABLE3D)) {
-		m_fStereo3Denabled = !m_fStereo3Denabled;
-		SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
-		m_fCleanBlt = fFalse;
-	}
 
 	// Check all elements that could possibly need updating.
 	// cupid for primitives: OK, i need my primitives in here... And they need to understand m_fInvalid, Check3D and m_rcBounds
