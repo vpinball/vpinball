@@ -19,7 +19,7 @@ enum
 #define EXPANDO_X_OFFSET 0 /*3*/
 #define EXPANDO_Y_OFFSET 30
 
-#define EXPANDOHEIGHT 18
+#define EXPANDOHEIGHT 30
 
 LRESULT CALLBACK SBFrameProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
