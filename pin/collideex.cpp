@@ -9,17 +9,16 @@ HitPrimitive::HitPrimitive()
 	m_scatter = 0;
 }
 
-float HitPrimitive::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
+float HitPrimitive::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) //!!
 {
-	return -1.0f;	
+	return -1.0f;
 }
 
-void HitPrimitive::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
+void HitPrimitive::Collide(Ball * const pball, Vertex3Ds * const phitnormal) //!!
 {
-
 }
 
-void PrimitiveAnimObject::Check3D()
+void PrimitiveAnimObject::Check3D() //!!
 	{
 		m_fInvalid = true;
 		
@@ -28,10 +27,9 @@ void PrimitiveAnimObject::Check3D()
 
 		m_rcBounds.right = 1600;
 		m_rcBounds.bottom = 800;
-		
 	}
 
-void HitPrimitive::CalcHitRect()
+void HitPrimitive::CalcHitRect() //!!
 {
 }
 
@@ -70,9 +68,9 @@ void BumperHitCircle::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	if (m_pbumper->m_fDisabled)
 		return;
 
-	if (dot <= -m_pbumper->m_d.m_threshold)// if velocity greater than threshold level
+	if (dot <= -m_pbumper->m_d.m_threshold) // if velocity greater than threshold level
 		{
-		pball->vx += phitnormal[0].x * m_pbumper->m_d.m_force;	// add a chunk of velocity to drive ball away 
+		pball->vx += phitnormal[0].x * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away 
 		pball->vy += phitnormal[0].y * m_pbumper->m_d.m_force;
 
 		if (m_pbumper->m_d.m_fFlashWhenHit)
@@ -184,7 +182,7 @@ void LineSegSlingshot::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 			const float dy = pball->m_Event_Pos.y - pball->y; // if same then ignore it
 			const float dz = pball->m_Event_Pos.z - pball->z;
 
-			if ((dx*dx + dy*dy + dz*dz) > 0.25f)// must be a new place if only by a little
+			if (dx*dx + dy*dy + dz*dz > 0.25f) // must be a new place if only by a little
 				{
 				if (m_psurface->m_d.m_slingshot_threshold != 0.0f)// if new slingshot threshold is set use it
 					{
@@ -314,9 +312,9 @@ void GateAnimObject::UpdateVelocities()
 	if (!m_fOpen)
 		{
 		if (m_angle == m_angleMin) m_anglespeed = 0.0f;
-		else m_anglespeed = (m_anglespeed-sinf(m_angle) * 0.0025f)*(1.0f - m_friction); // Center of gravity towards bottom of object, makes it stop vertical
+		else m_anglespeed = (m_anglespeed - sinf(m_angle) * 0.0025f) * (1.0f - m_friction); // Center of gravity towards bottom of object, makes it stop vertical
 		//else m_anglespeed = (m_anglespeed-sinf((m_angle - m_angleMin)*0.5f) * 0.02f)*(1.0f - m_friction); // Center of gravity towards bottom of object, makes it stop vertical
-		}	
+		}
 	}
 
 void GateAnimObject::Check3D()
@@ -508,7 +506,7 @@ void SpinnerAnimObject::UpdateDisplacements(const float dtime)
 
 void SpinnerAnimObject::UpdateVelocities()
 	{
-	m_anglespeed -= sinf(m_angle) *0.0025f; // Center of gravity towards bottom of object, makes it stop vertical
+	m_anglespeed -= sinf(m_angle) * 0.0025f; // Center of gravity towards bottom of object, makes it stop vertical
 
 	m_anglespeed *= m_pspinner->m_d.m_antifriction;
 	}
@@ -1032,21 +1030,21 @@ void TriggerHitCircle::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 	const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-	if ((phitnormal[1].x < 1.0f) == (i < 0))	// Hit == NotAlreadyHit
-		{			
-		pball->x += pball->vx * STATICTIME; //move ball slightly forward
-		pball->y += pball->vy * STATICTIME;		
-		pball->z += pball->vz * STATICTIME; 		
+	if ((phitnormal[1].x < 1.0f) == (i < 0))		   // Hit == NotAlreadyHit
+		{
+		pball->x += pball->vx * STATICTIME;			   //move ball slightly forward
+		pball->y += pball->vy * STATICTIME;
+		pball->z += pball->vz * STATICTIME;
 
 		if (i < 0)
-			{	
+			{
 			pball->m_vpVolObjs->AddElement(m_pObj);
 			((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Hit);
-			}		
-		else			
+			}
+		else
 			{
 			pball->m_vpVolObjs->RemoveElementAt(i);
 			((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Unhit);
 			}
-		}	
-	}	
+		}
+	}

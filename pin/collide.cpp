@@ -196,7 +196,7 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 
 	float hittime = 0;
 	bool fUnhit = false;
-// Kicker is special.. handle ball stalled on kicker, commonly hit while receding, knocking back into kicker pocket
+	// Kicker is special.. handle ball stalled on kicker, commonly hit while receding, knocking back into kicker pocket
 	if (m_ObjType == eKicker && bnd <= 0 && bnd >= -radius && a < C_CONTACTVEL*C_CONTACTVEL )	
 		{
 		if (pball->m_vpVolObjs) pball->m_vpVolObjs->RemoveElement(m_pObj);	// cause capture
@@ -249,7 +249,7 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 		fUnhit = (time1*time2 < 0);
 		hittime = fUnhit ? max(time1,time2) : min(time1,time2); // ball is inside the circle
 
-		if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f;	// contact out of physics frame
+		if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f; // contact out of physics frame
 		}
 	
 	const float hitz = pball->z - pball->radius + pball->vz * hittime; //rolling point
@@ -263,7 +263,7 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 
 	const float sqrlen = (hitx - x)*(hitx - x)+(hity - y)*(hity - y);
 
-	 if (sqrlen > 1.0e-8f)										// over center???
+	 if (sqrlen > 1.0e-8f) // over center???
 		{//no
 		const float inv_len = 1.0f/sqrtf(sqrlen);
 		phitnormal->x = (hitx - x)*inv_len;
@@ -271,8 +271,8 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 		}
 	 else 
 		{//yes over center
-		phitnormal->x = 0;	// make up a value, any direction is ok
-		phitnormal->y = 1.0f;	
+		phitnormal->x = 0; // make up a value, any direction is ok
+		phitnormal->y = 1.0f;
 		}
 	
 	if (!rigid)											// non rigid body collision? return direction
@@ -513,13 +513,12 @@ void HitOctree::CreateNextLevel()
 		for (int i=0; i<8; ++i)
 			{
 			m_phitoct[i]->CreateNextLevel();
-      }
+		    }
 		}
 
-  InitSseArrays();
-  for (int i=0; i<8; ++i)
-    m_phitoct[i]->InitSseArrays();
-
+	InitSseArrays();
+	for (int i=0; i<8; ++i)
+		m_phitoct[i]->InitSseArrays();
 	}
 
 void HitOctree::InitSseArrays()

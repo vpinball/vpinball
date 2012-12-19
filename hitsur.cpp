@@ -19,10 +19,10 @@ void HitSur::Line(const float x, const float y, const float x2, const float y2)
 	if (m_pcur == NULL)
 		return;
 
-	int x_1 = SCALEXf(x);
-	int y_1 = SCALEYf(y);
-	int x_2 = SCALEXf(x2);
-	int y_2 = SCALEYf(y2);
+	const int x_1 = SCALEXf(x);
+	const int y_1 = SCALEYf(y);
+	const int x_2 = SCALEXf(x2);
+	const int y_2 = SCALEYf(y2);
 
 	if (abs(x_2-x_1) > abs(y_2-y_1))
 		{		
