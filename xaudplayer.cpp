@@ -90,10 +90,9 @@ int XAudPlayer::Tick()
 		return 1;
 		}
 
-	char buf[10000];
-    unsigned char mp3_buffer[4096];
+	unsigned char mp3_buffer[4096];
 
-	int status = decoder_decode(m_decoder, buf);
+	int status = decoder_decode(m_decoder, NULL);
 
 	if (status == XA_ERROR_TIMEOUT) // Need more input
 		{
@@ -103,12 +102,12 @@ int XAudPlayer::Tick()
 			{
 			if (feof(file))
 				{
-				fprintf(stderr, "end of file\n");
+				//fprintf(stderr, "end of file\n");
 				status = 0xffff;
 				}
 			else
 				{
-				fprintf(stderr, "cannot read bytes from input\n");
+				//fprintf(stderr, "cannot read bytes from input\n");
 				status = 0xffff;
 				}
 			}
@@ -119,8 +118,7 @@ int XAudPlayer::Tick()
 			decoder_input_send_message(m_decoder, XA_MEMORY_INPUT_MESSAGE_FEED, 
 									   mp3_buffer, nb_read);
 
-			
-			status = decoder_decode(m_decoder, buf);
+			status = decoder_decode(m_decoder, NULL);
 			}
 		}
 
@@ -133,7 +131,7 @@ int XAudPlayer::Tick()
 		VOID* pbBuffer  = NULL;
 		DWORD dwBufferLength;
 
-		VOID* pbBuffer2  = NULL;
+		VOID* pbBuffer2 = NULL;
 		DWORD dwBufferLength2;
 
 		HRESULT hr;
@@ -141,11 +139,11 @@ int XAudPlayer::Tick()
 											&pbBuffer, &dwBufferLength, &pbBuffer2, &dwBufferLength2, 0L) ) )
 			return 0;
 
-		memcpy(pbBuffer, buf, dwBufferLength);
+		memcpy(pbBuffer, m_decoder->output_buffer->pcm_samples, dwBufferLength);
 
 		if (dwBufferLength < cbData)
 			{
-			memcpy(pbBuffer2, &buf[dwBufferLength], dwBufferLength2);
+			memcpy(pbBuffer2, ((char*)(m_decoder->output_buffer->pcm_samples))+dwBufferLength, dwBufferLength2);
 			}
 
 		m_pDSBuffer->Unlock(pbBuffer,dwBufferLength, pbBuffer2, dwBufferLength2);
@@ -170,7 +168,6 @@ int XAudPlayer::Tick()
 			}
 		m_lastplaypos = playpos;
 		//End();
-		return 1;
 		}
 
 	return 1;
@@ -187,13 +184,13 @@ int XAudPlayer::Init(char *szFileName, int volume)
 
     /* open the mp3 file (name passed as program argument */
     if (fopen_s(&file, szFileName, "rb")) {
-        fprintf(stderr, "cannot open input file\n");
+        //fprintf(stderr, "cannot open input file\n");
         return 0;
     }
     
     /* create a decoder */
     if (decoder_new(&m_decoder) != XA_SUCCESS) {
-        fprintf(stderr, "cannot create decoder");
+        //fprintf(stderr, "cannot create decoder");
         return 0;
     }
     

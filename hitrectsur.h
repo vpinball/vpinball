@@ -26,6 +26,7 @@ public:
 	virtual void SetBorderColor(const int rgb, const bool fDashed, const int width);
 	virtual void SetLineColor(const int rgb, const bool fDashed, const int width);
 
+private:
 	ISelect *m_pcur;
 
 	int m_indexcur;
