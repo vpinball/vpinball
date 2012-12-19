@@ -16,9 +16,9 @@ enum
 	eTextbox,
     eDispReel,
 	eLightSeq,
+	ePrimitive,
 	eTrigger,	// this value and greater are volume set tested, add rigid or non-volume set above
-	eKicker,		// this is done to limit to one test
-	ePrimitive
+	eKicker		// this is done to limit to one test
 	};
 
 //extern float c_Gravity;
