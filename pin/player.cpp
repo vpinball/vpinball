@@ -24,6 +24,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 Player::Player()
 	{
+	bool SSE2_supported;
 	{
 	int EAX,EBX,ECX,EDX;
 	cpuid(1,&EAX,&EBX,&ECX,&EDX);
@@ -33,7 +34,8 @@ Player::Player()
 		exit(0);
 	}
 	// disable denormalized floating point numbers, can be faster on some CPUs (and VP doesn't need to rely on denormals)
-	if(EDX & 0x004000000) // SSE2?
+	SSE2_supported = ((EDX & 0x004000000) != 0);
+	if(SSE2_supported) // SSE2?
 		_mm_setcsr(_mm_getcsr() | 0x8040); // flush denorms to zero and also treat incoming denorms as zeros
 	else
 		_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // only flush denorms to zero
@@ -122,6 +124,11 @@ Player::Player()
 	if (hr != S_OK)
 		{
 		m_fStereo3D = 0; // The default = off
+		}
+	if ((m_fStereo3D != 0) && (!SSE2_supported)) // SSE2 necessary for the 3D stereo code
+		{
+		ShowError("SSE2 is not supported on this processor (necessary for 3D Stereo)");
+		m_fStereo3D = 0;
 		}
 
 	int stereo3Denabled;
