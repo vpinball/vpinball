@@ -24,7 +24,7 @@ enum
 //extern float c_Gravity;
 extern float c_hardFriction; 
 extern float c_hardScatter; 
-extern float c_maxBallSpeedSqed; 
+extern float c_maxBallSpeedSqr; 
 extern float c_dampingFriction;
 
 extern float c_plungerNormalize;  //Adjust Mech-Plunger, useful for component change or weak spring etc.

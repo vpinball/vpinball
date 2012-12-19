@@ -1641,12 +1641,12 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 	   		// process the random type of effect
 			case eSeqRandom: {
 				// get the number of elements in this
-				const float size = (float)m_pcollection->m_visel.Size() * (float)(1.0/(RAND_MAX+1));
+				const float size = (float)m_pcollection->m_visel.Size();
 				// randomly pick n elements and invert their state
 				for (int i=0; i<pTracer->length; ++i)
 				{
 					// Generates integer random number 0..(size-1)
-					const int randomLight = (int)(size * (float)rand());
+					const int randomLight = (int)(size * rand_mt());
 					// get the state of this light
 					LightState state = GetElementState(randomLight);
 					// invert the state

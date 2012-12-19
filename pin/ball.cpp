@@ -154,15 +154,14 @@ void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elastic
 
 	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
 		{
-		float scatter = (float)rand()*(float)(2.0/RAND_MAX) - 1.0f;     // -1.0f..1.0f
+		float scatter = rand_mt()*2.0f - 1.0f;						    // -1.0f..1.0f
 		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
-		const float radsin = sinf(scatter);//  Green's transform matrix... rotate angle delta 
-		const float radcos = cosf(scatter);//  rotational transform from current position to position at time t
+		const float radsin = sinf(scatter); // Green's transform matrix... rotate angle delta 
+		const float radcos = cosf(scatter); // rotational transform from current position to position at time t
 		const float vxt = vx; 
 		const float vyt = vy;
-
 		vx = vxt *radcos - vyt *radsin;  // rotate to random scatter angle
-		vy = vyt *radcos + vxt *radsin;  // 
+		vy = vyt *radcos + vxt *radsin; 
 		}
 
 	const Vertex3Ds vnormal(phitnormal->x, phitnormal->y, 0.0f); //??? contact point
@@ -202,27 +201,29 @@ void Ball::Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elast
 		antifriction = c_hardFriction; // use global
 
 	dot *= -1.005f - m_elasticity;	
-	vx += dot * phitnormal->x; vx *= antifriction;
-	vy += dot * phitnormal->y; vy *= antifriction;
-	vz += dot * phitnormal->z; vz *= antifriction;
+	vx += dot * phitnormal->x;
+	vx *= antifriction;
+	vy += dot * phitnormal->y;
+	vy *= antifriction;
+	vz += dot * phitnormal->z;
+	vz *= antifriction;
 	
 	if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;						// if <= zero use global value
 	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;	// apply dificulty weighting
 	
 	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity 
 		{
-		float scatter = (float)rand()*(float)(2.0/RAND_MAX) - 1.0f;     // -1.0f..1.0f
+		float scatter = rand_mt()*2.0f - 1.0f;						    // -1.0f..1.0f
 		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
 		const float radsin = sinf(scatter); // Green's transform matrix... rotate angle delta
 		const float radcos = cosf(scatter); // rotational transform from current position to position at time t
 		const float vxt = vx; 
 		const float vyt = vy;
-
 		vx = vxt *radcos - vyt *radsin;  // rotate to random scatter angle
-		vy = vyt *radcos + vxt *radsin;  //
+		vy = vyt *radcos + vxt *radsin;
 		}
 
-	AngularAcceleration(phitnormal);	// calc new rolling dynmaics
+	AngularAcceleration(phitnormal);	 // calc new rolling dynmaics
 	}
 
 
@@ -597,7 +598,7 @@ void Ball::UpdateVelocities()
 		}
 
 		const float mag = vx*vx + vy*vy + vz*vz; //speed check 
-		const float antifrict = (mag > c_maxBallSpeedSqed) ? c_dampingFriction : 0.99875f;
+		const float antifrict = (mag > c_maxBallSpeedSqr) ? c_dampingFriction : 0.99875f;
 		
 		vx *= antifrict;	// speed damping
 		vy *= antifrict;

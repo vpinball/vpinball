@@ -597,14 +597,14 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	float impulse = 1.005f + m_elasticity;		// hit on static, immovable flipper ... i.e on the stops
 	float obliquecorr = 0.0f;
 
-	if ((dot < -0.25f) && (g_pplayer->m_timeCur - m_last_hittime) > 250) //limit rate to 333 milliseconds per event 
+	if ((dot < -0.25f) && (g_pplayer->m_timeCur - m_last_hittime) > 250) // limit rate to 333 milliseconds per event 
 		{
 			flipperHit = (distance == 0.0f) ? -1.0f : -dot; // move event processing to end of collision handler...
 		}
 
 	m_last_hittime = g_pplayer->m_timeCur; // keep resetting until idle for 250 milliseconds
 
-	if (distance > 0)	// recoil possible 
+	if (distance > 0.f)	// recoil possible 
 		{			
 		const float maxradius = m_pflipper->m_d.m_FlipperRadius + m_pflipper->m_d.m_EndRadius; 		
 		const float recoil = m_pflipper->m_d.m_recoil/maxradius;				// convert to Radians/time
@@ -615,45 +615,45 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 		if (m_flipperanim.m_fAcc != 0)											// currently in rotation
 			{	
-			obliquecorr = m_flipperanim.m_fAcc * m_pflipper->m_d.m_obliquecorrection;	//flipper trajectory correction
-			impulse = (1.005f + m_elasticity)/(1.0f + (tfr/m_forcemass));		// impulse for pinball
+			obliquecorr = m_flipperanim.m_fAcc * m_pflipper->m_d.m_obliquecorrection; //flipper trajectory correction
+			impulse = (1.005f + m_elasticity)*m_forcemass/(m_forcemass + tfr);	// impulse for pinball
 			m_flipperanim.m_anglespeed = anglespeed;							// new angle speed for flipper	
 			}
-		else if (recoil > 0 && fabsf(anglespeed) > recoil)						// discard small static impact motions
+		else if (recoil > 0.f && fabsf(anglespeed) > recoil)					// discard small static impact motions
 			{ // these effects are for the flipper at EOS (End of Stroke)
-			if (anglespeed < 0 && m_flipperanim.m_angleCur >= m_flipperanim.m_angleMax)	// at max angle now?
+			if (anglespeed < 0.f && m_flipperanim.m_angleCur >= m_flipperanim.m_angleMax) // at max angle now?
 				{ // rotation toward minimum angle					
-				m_flipperanim.m_force = max(fabsf(anglespeed+anglespeed),0.005f); // restoring force
-				impulse = (1.005f + m_elasticity)/(1.0f + (tfr/m_forcemass));	// impulse for pinball
+				m_flipperanim.m_force = max(-(anglespeed+anglespeed),0.005f);	// restoring force
+				impulse = (1.005f + m_elasticity)*m_forcemass/(m_forcemass + tfr); // impulse for pinball
 				m_flipperanim.m_anglespeed = anglespeed;						// angle speed, less linkage losses, etc.
-				m_flipperanim.m_fAcc = 1;	//set acceleration to opposite direction
-				if (fabsf(anglespeed) > 0.05f) 
+				m_flipperanim.m_fAcc = 1;										// set acceleration to opposite direction
+				if (anglespeed < -0.05f)
 					m_flipperanim.m_EnableRotateEvent = 1; //make EOS event
 				}
-			else if (anglespeed > 0 && m_flipperanim.m_angleCur <= m_flipperanim.m_angleMin)// at min angle now?
+			else if (anglespeed > 0.f && m_flipperanim.m_angleCur <= m_flipperanim.m_angleMin) // at min angle now?
 				{// rotation toward maximum angle
-				m_flipperanim.m_force = max(fabsf(anglespeed * 2.0f),0.005f);	// restoreing force
-				impulse = (1.005f + m_elasticity)/(1.0f + (tfr/m_forcemass));		// impulse for pinball
-				m_flipperanim.m_anglespeed = anglespeed;					// angle speed, less linkage losses, etc.
-				m_flipperanim.m_fAcc = -1;//set acceleration to opposite direction
-				if (fabsf(anglespeed) > 0.05f) 
+				m_flipperanim.m_force = max(anglespeed+anglespeed,0.005f);		// restoreing force
+				impulse = (1.005f + m_elasticity)*m_forcemass/(m_forcemass + tfr); // impulse for pinball
+				m_flipperanim.m_anglespeed = anglespeed;						// angle speed, less linkage losses, etc.
+				m_flipperanim.m_fAcc = -1;										// set acceleration to opposite direction
+				if (anglespeed > 0.05f) 
 					m_flipperanim.m_EnableRotateEvent = 1; //make EOS event
 				}
 			}	
 		}
-	pball->vx -= impulse*dot * phitnormal->x; 						// new velocity for ball after impact
-	pball->vy -= impulse*dot * phitnormal->y; 						// 
-	
+	pball->vx -= impulse*dot * phitnormal->x; 							// new velocity for ball after impact
+	pball->vy -= impulse*dot * phitnormal->y;	
 
-	float scatter_angle = m_pflipper->m_d.m_scatterangle;				//
-	if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;				// object specific roughness
-	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply dificulty weighting
+	float scatter_angle = m_pflipper->m_d.m_scatterangle;				// object specific roughness
+	if (scatter_angle <= 0.0f)
+		scatter_angle = c_hardScatter;
+	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply difficulty weighting
 
 	if (dot > -1.0f) scatter_angle = 0;									// not for low velocities
 
 	if (obliquecorr != 0 || scatter_angle > 1.0e-5f)					// trajectory correction to reduce the obliqueness 
 		{
-		float scatter = (float)rand()*(float)(2.0/RAND_MAX) - 1.0f;     // -1.0f..1.0f
+		float scatter = rand_mt()*2.0f - 1.0f;      // -1.0f..1.0f
 		scatter *= (1.0f - scatter*scatter)* 2.59808f * scatter_angle;	// shape quadratic distribution and scale
 		scatter_angle = obliquecorr + scatter;
 		const float radsin = sinf(scatter_angle);	//  Green's transform matrix... rotate angle delta 

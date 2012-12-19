@@ -369,13 +369,15 @@ void HitPlunger::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	pball->vx += impulse *phitnormal->x;  
 	pball->vy += impulse *phitnormal->y; 
 
-	pball->vx *= c_hardFriction; pball->vy *= c_hardFriction; pball->vz *= c_hardFriction; //friction all axiz
+	pball->vx *= c_hardFriction;
+	pball->vy *= c_hardFriction;
+	pball->vz *= c_hardFriction; //friction all axiz
 		
 	const float scatter_vel = m_plungeranim.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;// apply dificulty weighting
 
 	if (scatter_vel > 0 && fabsf(pball->vy) > scatter_vel) //skip if low velocity 
 		{
-		float scatter = (float)rand()*(float)(2.0/RAND_MAX) - 1.0f; // -1.0f..1.0f
+		float scatter = rand_mt()*2.0f - 1.0f;						// -1.0f..1.0f
 		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_vel;	// shape quadratic distribution and scale
 		pball->vy += scatter;
 		}

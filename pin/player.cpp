@@ -24,8 +24,20 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 Player::Player()
 	{
-	_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-	//_mm_setcsr(_mm_getcsr() | 0x8040);
+	{
+	int EAX,EBX,ECX,EDX;
+	cpuid(1,&EAX,&EBX,&ECX,&EDX);
+	// check for SSE and exit if not available, as some code relies on it by now
+	if((EDX & 0x002000000) == 0) { // NO SSE?
+		ShowError("SSE is not supported on this processor");
+		exit(0);
+	}
+	// disable denormalized floating point numbers, can be faster on some CPUs (and VP doesn't need to rely on denormals)
+	if(EDX & 0x004000000) // SSE2?
+		_mm_setcsr(_mm_getcsr() | 0x8040); // flush denorms to zero and also treat incoming denorms as zeros
+	else
+		_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // only flush denorms to zero
+	}
 
 	c_embedcnts = 0;
 	m_fPause = false;
@@ -35,7 +47,7 @@ Player::Player()
 	m_fNoTimeCorrect = fFalse;
 
 	m_fAccelerometer = fTrue;	// true if electronic Accelerometer enabled 
-	m_AccelNormalMount = fTrue;	// fTrue normal mounting (left hand coordinates)
+	m_AccelNormalMount = fTrue;	// normal mounting (left hand coordinates)
 	m_AccelAngle = 0;			// 0 degrees (GUI is lefthand coordinates)
 	m_AccelAmp = 1.5f;			// Accelerometer gain 
 	m_AccelAmpX = m_AccelAmp;	// Accelerometer gain X axis
@@ -579,7 +591,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	//accelerometer normal mounting is 90 degrees in left-hand coordinates (1/4 turn counterclockwise)
 	m_fAccelerometer = m_ptable->m_tblAccelerometer;		// true if electronic Accelerometer enabled
 	m_AccelNormalMount = m_ptable->m_tblAccelNormalMount;	// true is normal mounting (left hand coordinates)
-	m_AccelAngle = m_ptable->m_tblAccelAngle * (float)(M_PI/180.0); // 0 rotated counterclockwise (GUI is lefthand coordinates)
+	m_AccelAngle = ANGTORAD(m_ptable->m_tblAccelAngle);     // 0 rotated counterclockwise (GUI is lefthand coordinates)
 	m_AccelAmp = m_ptable->m_tblAccelAmp;					// Accelerometer gain 
 	m_AccelAmpX = m_ptable->m_tblAccelAmpX;
 	m_AccelAmpY = m_ptable->m_tblAccelAmpY;
