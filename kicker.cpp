@@ -663,7 +663,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 
 		if (scatterAngle > 1.0e-5f)										// ignore near zero angles
 			{
-			float scatter = rand_mt()*2.0f - 1.0f;						// -1.0f..1.0f
+			float scatter = rand_mt_m11();								// -1.0f..1.0f
 			scatter *= (1.0f - scatter*scatter)*2.59808f * scatterAngle;// shape quadratic distribution and scale
 			anglerad += scatter;
 			}

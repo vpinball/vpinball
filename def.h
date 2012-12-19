@@ -618,13 +618,10 @@ __forceinline float int_as_float(const int i)
 	return iaf.f;
 }
 
-__forceinline float tinymt64(unsigned long long state[2]) {
-    return int_as_float(0x3F800000 | (((unsigned int)tinymtu(state)) >> 9)) - 1.0f; //!! only takes middle bits, maybe use >>41 instead to use upper bits?
-}
-
 extern unsigned long long tinymt64state[2];
 
-#define rand_mt() tinymt64(tinymt64state)
+inline float rand_mt_01()  { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41)) - 1.0f; }
+inline float rand_mt_m11() { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41))*2.0f - 3.0f; }
 
 //
 

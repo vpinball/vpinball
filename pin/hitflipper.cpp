@@ -653,7 +653,7 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 	if (obliquecorr != 0 || scatter_angle > 1.0e-5f)					// trajectory correction to reduce the obliqueness 
 		{
-		float scatter = rand_mt()*2.0f - 1.0f;      // -1.0f..1.0f
+		float scatter = rand_mt_m11();			    // -1.0f..1.0f
 		scatter *= (1.0f - scatter*scatter)* 2.59808f * scatter_angle;	// shape quadratic distribution and scale
 		scatter_angle = obliquecorr + scatter;
 		const float radsin = sinf(scatter_angle);	//  Green's transform matrix... rotate angle delta 
