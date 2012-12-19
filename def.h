@@ -554,6 +554,80 @@ inline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instruction on S
 	return _mm_add_ss(ftemp,_mm_shuffle_ps(ftemp, ftemp, 1));
 }
 
+inline void cpuid(
+   const int op,	// cpuid opcode
+   int* const EAX,
+   int* const EBX,
+   int* const ECX,
+   int* const EDX)
+{
+   int Regax, Regbx, Regcx, Regdx;
+   __asm
+   {
+       mov eax,op
+       cpuid
+       mov Regax, eax
+       mov Regbx, ebx
+       mov Regcx, ecx
+       mov Regdx, edx
+   }
+  *EAX = Regax;
+  *EBX = Regbx;
+  *ECX = Regcx;
+  *EDX = Regdx;
+}
+
+//
+// TinyMT64 for random numbers (much better than rand())
+//
+
+#define TINYMT64_SH0 12
+#define TINYMT64_SH1 11
+#define TINYMT64_SH8 8
+#define TINYMT64_MASK 0x7fffffffffffffffull
+//#define TINYMT64_LINEARITY_CHECK
+#define TINYMT64_MAT1 0xfa051f40ull         // can be configured (lower 32bit only, upper=0)
+#define TINYMT64_MAT2 0xffd0fff4ull			// can be configured (lower 32bit only, upper=0)
+#define TINYMT64_TMAT 0x58d02ffeffbfffbcull // can be configured (64bit)
+
+inline unsigned long long tinymtu(unsigned long long state[2]) {
+    unsigned long long x = (state[0] & TINYMT64_MASK) ^ state[1];
+    x ^= x << TINYMT64_SH0;
+    x ^= x >> 32;
+    x ^= x << 32;
+    x ^= x << TINYMT64_SH1;
+    const unsigned long long mask = -((long long)x & 1);
+    state[0] = state[1] ^ (mask & TINYMT64_MAT1);
+    state[1] = x ^ (mask & (TINYMT64_MAT2 << 32));
+#if defined(TINYMT64_LINEARITY_CHECK)
+    x = state[0] ^ state[1];
+#else
+    x = state[0] + state[1];
+#endif
+    x ^= state[0] >> TINYMT64_SH8;
+    return x ^ (-((long long)x & 1) & TINYMT64_TMAT);
+}
+
+__forceinline float int_as_float(const int i)
+{
+	union {
+		int i;
+		float f;
+	} iaf;
+	iaf.i = i;
+	return iaf.f;
+}
+
+__forceinline float tinymt64(unsigned long long state[2]) {
+    return int_as_float(0x3F800000 | (((unsigned int)tinymtu(state)) >> 9)) - 1.0f; //!! only takes middle bits, maybe use >>41 instead to use upper bits?
+}
+
+extern unsigned long long tinymt64state[2];
+
+#define rand_mt() tinymt64(tinymt64state)
+
+//
+
 float sz2f(char *sz);
 void f2sz(const float f, char *sz);
 

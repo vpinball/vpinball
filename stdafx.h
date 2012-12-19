@@ -25,13 +25,14 @@
 #define C_CONTACTVEL 0.099f
 // limit ball speed to C_SPEEDLIMIT
 #define C_SPEEDLIMIT 60.0f
+#define C_DAMPFRICTION 0.95f
 // low velocity stabilization ... if embedding occurs add some velocity 
 #define C_EMBEDDED 0.0f
 #define C_EMBEDSHOT 0.05f
 // Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
 #define C_DISP_GAIN 0.9875f
 #define C_DISP_LIMIT 5.0f
-#define RC_FRICTIONCONST 2.5e-3f
+#define C_FRICTIONCONST 2.5e-3f
 #define C_DYNAMIC 2
 //trigger/kicker boundary crossing hysterisis
 #define STATICTIME 0.005f

@@ -3,13 +3,13 @@
 
 //spare
 
-float c_maxBallSpeedSqed = C_SPEEDLIMIT*C_SPEEDLIMIT; 
-float c_dampingFriction = 0.95f;
+float c_maxBallSpeedSqr = C_SPEEDLIMIT*C_SPEEDLIMIT; 
+float c_dampingFriction = C_DAMPFRICTION;
 float c_plungerNormalize = (float)(1.0/13.0);  //match button plunger physics
 bool c_plungerFilter = false;
 
 float c_hardScatter = 0.0f;
-float c_hardFriction = 1.0f - RC_FRICTIONCONST;
+float c_hardFriction = 1.0f - C_FRICTIONCONST;
 //float c_Gravity = GRAVITYCONST;
 
 HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections)
@@ -30,8 +30,8 @@ HitObject *CreateCircularHitPoly(const float x, const float y, const float z, co
 	return new Hit3DPoly(rgv3d, sections, true);
 	}
 
-HitObject::HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL)
-						, m_elasticity(0.3f), m_pfedebug(NULL)
+HitObject::HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),
+						 m_elasticity(0.3f), m_pfedebug(NULL)
 	{
 	}
 
@@ -50,27 +50,27 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
 
-	float ballvx = pball->vx;						// ball velocity
-	float ballvy = pball->vy;
+	const float ballvx = pball->vx;							// ball velocity
+	const float ballvy = pball->vy;
 
-	const float bnv = ballvx*normal.x + ballvy*normal.y;	//ball velocity normal to segment, positive if receding, zero=parallel
+	const float bnv = ballvx*normal.x + ballvy*normal.y;	// ball velocity normal to segment, positive if receding, zero=parallel
 	bool bUnHit = (bnv > C_LOWNORMVEL);
 
-	if (direction && bUnHit)						//direction true and clearly receding from normal face
+	if (direction && bUnHit)								// direction true and clearly receding from normal face
 		{
 		return -1.0f;
 		}
 
-	const float ballx = pball->x;	//ball position
+	const float ballx = pball->x;							// ball position
 	const float bally = pball->y;
 
 	// ball normal distance: contact distance normal to segment. lateral contact subtract the ball radius 
 
-	const float rollingRadius = lateral ? pball->radius : C_TOL_RADIUS;	//lateral or rolling point
-	const float bcpd = (ballx - v1.x)*normal.x + (bally - v1.y)*normal.y ;	// ball center to plane distance
+	const float rollingRadius = lateral ? pball->radius : C_TOL_RADIUS;	  //lateral or rolling point
+	const float bcpd = (ballx - v1.x)*normal.x + (bally - v1.y)*normal.y; // ball center to plane distance
 	const float bnd = bcpd - rollingRadius;
 
-	const bool inside = (bnd <= 0);							// in ball inside object volume
+	const bool inside = (bnd <= 0.f);									  // in ball inside object volume
 	
 	//HitTestBasic
 	float hittime;
@@ -123,7 +123,7 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 	const float ballr = pball->radius;
 	const float hitz = pball->z - ballr + pball->vz*hittime;  // check too high or low relative to ball rolling point at hittime
 
-	if (hitz + ballr * 1.5f < m_rcHitRect.zlow			  // check limits of object's height and depth  
+	if (hitz + ballr * 1.5f < m_rcHitRect.zlow				  // check limits of object's height and depth  
 		|| hitz + ballr * 0.5f > m_rcHitRect.zhigh)
 		return -1.0f;
 
@@ -213,7 +213,8 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 		else
 			hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
 		}
-	else if (m_ObjType >= eTrigger && pball->m_vpVolObjs && (bnd < 0 == pball->m_vpVolObjs->IndexOf(m_pObj) < 0))
+	else if (m_ObjType >= eTrigger // triggers & kickers
+		     && pball->m_vpVolObjs && (bnd < 0 == pball->m_vpVolObjs->IndexOf(m_pObj) < 0))
 		{ // here if ... ball inside and no hit set .... or ... ball outside and hit set
 
 		if (fabsf(bnd-radius) < 0.05f)	 // if ball appears in center of trigger, then assumed it was gen'ed there

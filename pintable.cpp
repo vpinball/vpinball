@@ -616,7 +616,7 @@ PinTable::PinTable()
 	m_fRenderEMReels = fTrue;
 	
 	m_Gravity = GRAVITYCONST;
-	m_hardFriction = RC_FRICTIONCONST;
+	m_hardFriction = C_FRICTIONCONST;
 	m_hardScatter = 0;
 	m_maxBallSpeed = C_SPEEDLIMIT;
 	m_dampingFriction = 0.95f;
@@ -1585,7 +1585,7 @@ void PinTable::Play()
 			//c_Gravity = m_Gravity;				// set physical constants
 			c_hardFriction = 1.0f - m_hardFriction;	// convert to reciprocal
 			c_hardScatter = m_hardScatter;
-			c_maxBallSpeedSqed = m_maxBallSpeed*m_maxBallSpeed;
+			c_maxBallSpeedSqr = m_maxBallSpeed*m_maxBallSpeed;
 			c_dampingFriction = m_dampingFriction;
 			c_plungerNormalize = m_plungerNormalize*(float)(1.0/1300.0);
 			c_plungerFilter = (m_plungerFilter != 0); 
