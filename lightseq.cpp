@@ -63,7 +63,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\LightSequence","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false:true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -73,6 +73,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
 	}
+
 void LightSeq::WriteRegDefaults()
 	{
 	char strTmp[MAXTOKEN];
@@ -86,6 +87,7 @@ void LightSeq::WriteRegDefaults()
 	SetRegValue("DefaultProps\\LightSequence","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\LightSequence","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	}
+
 void LightSeq::SetObjectPos()
 {
 	g_pvp->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
@@ -417,12 +419,11 @@ bool LightSeq::RenderAnimation()
 				else
 				{
 					// move the tail to the next position
-					int Tail = m_queue.Tail + 1;
-					if (Tail >= LIGHTSEQQUEUESIZE)
+					++m_queue.Tail;
+					if (m_queue.Tail >= LIGHTSEQQUEUESIZE)
 	   	   			{
-	   	   				Tail = 0;
+	   	   				m_queue.Tail = 0;
 	   	   			}
-					m_queue.Tail = Tail;
 					// not playing at the moment
 					m_playInProgress = false;
 					// if the queue is empty then reset the lights to their real state
@@ -457,7 +458,6 @@ bool LightSeq::RenderAnimation()
 
 	return false;
 }
-
 
 
 STDMETHODIMP LightSeq::InterfaceSupportsErrorInfo(REFIID riid)
@@ -597,7 +597,7 @@ void LightSeq::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)
 {
-	WCHAR wz[512];
+	WCHAR wz[sizeof(m_d.m_wzCollection)];
 
 	memcpy (wz, m_d.m_wzCollection, sizeof(m_d.m_wzCollection));
 	*pVal = SysAllocString(wz);

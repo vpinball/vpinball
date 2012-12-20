@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Intshcut.h"
 
 unsigned long long tinymt64state[2] = {'T','M'};
 
@@ -100,8 +101,6 @@ int WzSzStrnCmp(WCHAR *wz1, char *sz2, int count)
 	return 0;
 	}
 
-
-
 LocalString::LocalString(const int resid)
 	{
 	int cchar = LoadString(g_hinstres, resid, m_szbuffer, 256);
@@ -130,7 +129,6 @@ char *MakeChar(WCHAR *wz)
 	return szT;
 	}
 
-#include "Intshcut.h"
 HRESULT OpenURL(char *szURL)
 	{
 	IUniformResourceLocator* pURL;

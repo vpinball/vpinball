@@ -719,7 +719,7 @@ void DispReel::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			
 			//
 
-			Vertex3D rgv3D[4];
+			Vertex3D_NoTex2 rgv3D[4];
 			for (int l=0; l<4; ++l)
 				rgv3D[l].z = 1.0f;//height + 0.2f;
 
@@ -784,10 +784,10 @@ void DispReel::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 				rgv3D[1].tu = rgv3D[2].tu = rgv3D[0].tu + ratiox;
 				rgv3D[2].tv = rgv3D[3].tv = rgv3D[0].tv + ratioy;
 			
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
 												  rgv3D, 4,
 												  (LPWORD)rgi0123, 4, NULL);
-				//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+				//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
 				//								  rgv3D, 4, NULL);
 
 				RECT rectDst;

@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "Mmsystem.h"
 
 #if _MSC_VER <= 1310 // VC 2003 and before
 inline bool fopen_s(FILE** f, const char *fname, const char *attr)
@@ -90,29 +91,27 @@ int XAudPlayer::Tick()
 		return 1;
 		}
 
-	unsigned char mp3_buffer[4096];
-
 	int status = decoder_decode(m_decoder, NULL);
 
 	if (status == XA_ERROR_TIMEOUT) // Need more input
 		{
+		unsigned char mp3_buffer[4096];
 		const int nb_read = fread(mp3_buffer, 1, 4096, file);
 
 		if (nb_read == 0)
 			{
-			if (feof(file))
-				{
+			//if (feof(file))
+			//	{
 				//fprintf(stderr, "end of file\n");
 				status = 0xffff;
-				}
-			else
-				{
+			//	}
+			//else
+			//	{
 				//fprintf(stderr, "cannot read bytes from input\n");
-				status = 0xffff;
-				}
+				//status = 0xffff;
+			//	}
 			}
-
-		if (status != 0xffff)
+		else
 			{
 			/* feed the input buffer */
 			decoder_input_send_message(m_decoder, XA_MEMORY_INPUT_MESSAGE_FEED, 
@@ -178,7 +177,7 @@ void XAudPlayer::End()
 	m_pDSBuffer->Stop();
 	}
 
-int XAudPlayer::Init(char *szFileName, int volume)
+int XAudPlayer::Init(char * const szFileName, const int volume)
 	{
 	m_fStarted = false;
 
@@ -221,12 +220,12 @@ int XAudPlayer::Init(char *szFileName, int volume)
         return 0;
     }
 
-	CreateBuffer(volume);//
+	CreateBuffer(volume);
 
     return 1;
 	}
 
-HRESULT XAudPlayer::CreateBuffer(int volume)
+HRESULT XAudPlayer::CreateBuffer(const int volume)
 	{
 	/*const int status =*/ decoder_decode(m_decoder, NULL);
 	
@@ -247,8 +246,6 @@ HRESULT XAudPlayer::CreateBuffer(int volume)
 
 	return S_OK;
 	}
-
-#include "Mmsystem.h"
 
 HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 {

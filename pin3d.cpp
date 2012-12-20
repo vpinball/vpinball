@@ -146,7 +146,93 @@ void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi
 		}
 	}
 
+//copy pasted from above
+void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex3D_NoTex2 * const rgvout) const
+	{
+	// Get the width and height of the viewport. This is needed to scale the
+	// transformed vertices to fit the render window.
+	D3DVIEWPORT7 vp;
+	m_pd3dDevice->GetViewport( &vp );
+	const float rClipWidth  = vp.dwWidth*0.5f;
+	const float rClipHeight = vp.dwHeight*0.5f;
+	const int xoffset = vp.dwX;
+	const int yoffset = vp.dwY;
+
+	// Transform each vertex through the current matrix set
+	for(int i=0; i<count; ++i)
+		{
+		const int l = rgi ? rgi[i] : i;
+
+		// Get the untransformed vertex position
+		const float x = rgv[l].x;
+		const float y = rgv[l].y;
+		const float z = rgv[l].z;
+
+		// Transform it through the current matrix set
+		const float xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
+		const float yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
+		const float wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
+
+		// Finally, scale the vertices to screen coords. This step first
+		// "flattens" the coordinates from 3D space to 2D device coordinates,
+		// by dividing each coordinate by the wp value. Then, the x- and
+		// y-components are transformed from device coords to screen coords.
+		// Note 1: device coords range from -1 to +1 in the viewport.
+		const float inv_wp = 1.0f/wp;
+		const float vTx  = ( 1.0f + xp*inv_wp ) * rClipWidth  + xoffset;
+		const float vTy  = ( 1.0f - yp*inv_wp ) * rClipHeight + yoffset;
+
+		const float zp = m_matrixTotal._13*x + m_matrixTotal._23*y + m_matrixTotal._33*z + m_matrixTotal._43;
+		rgvout[l].x = vTx;
+		rgvout[l].y	= vTy;
+		rgvout[l].z = zp * inv_wp;
+		rgvout[l].nx = wp;
+		}
+	}
+
+//copy pasted from above
 void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
+	{
+	// Get the width and height of the viewport. This is needed to scale the
+	// transformed vertices to fit the render window.
+	D3DVIEWPORT7 vp;
+	m_pd3dDevice->GetViewport( &vp );
+	const float rClipWidth  = vp.dwWidth*0.5f;
+	const float rClipHeight = vp.dwHeight*0.5f;
+	const int xoffset = vp.dwX;
+	const int yoffset = vp.dwY;
+
+	// Transform each vertex through the current matrix set
+	for(int i=0; i<count; ++i)
+		{
+		const int l = rgi ? rgi[i] : i;
+
+		// Get the untransformed vertex position
+		const float x = rgv[l].x;
+		const float y = rgv[l].y;
+		const float z = rgv[l].z;
+
+		// Transform it through the current matrix set
+		const float xp = m_matrixTotal._11*x + m_matrixTotal._21*y + m_matrixTotal._31*z + m_matrixTotal._41;
+		const float yp = m_matrixTotal._12*x + m_matrixTotal._22*y + m_matrixTotal._32*z + m_matrixTotal._42;
+		const float wp = m_matrixTotal._14*x + m_matrixTotal._24*y + m_matrixTotal._34*z + m_matrixTotal._44;
+
+		// Finally, scale the vertices to screen coords. This step first
+		// "flattens" the coordinates from 3D space to 2D device coordinates,
+		// by dividing each coordinate by the wp value. Then, the x- and
+		// y-components are transformed from device coords to screen coords.
+		// Note 1: device coords range from -1 to +1 in the viewport.
+		const float inv_wp = 1.0f/wp;
+		const float vTx  = ( 1.0f + xp*inv_wp ) * rClipWidth  + xoffset;
+		const float vTy  = ( 1.0f - yp*inv_wp ) * rClipHeight + yoffset;
+
+		rgvout[l].x = vTx;
+		rgvout[l].y	= vTy;
+		}
+	}
+
+//copy pasted from above
+void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
 	{
 	// Get the width and height of the viewport. This is needed to scale the
 	// transformed vertices to fit the render window.
@@ -862,44 +948,36 @@ void Pin3D::DrawBackground()
 		float maxtu,maxtv;
 		g_pplayer->m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
-		Vertex3D rgv3D[4];
+		Vertex3D_NoTex2 rgv3D[4];
 		rgv3D[0].x = 0;
 		rgv3D[0].y = 0;
 		rgv3D[0].tu = 0;
 		rgv3D[0].tv = 0;
-		rgv3D[0].tu2 = 0;
-		rgv3D[0].tv2 = 0;
 
 		rgv3D[1].x = 1000.0f;
 		rgv3D[1].y = 0;
 		rgv3D[1].tu = maxtu;
 		rgv3D[1].tv = 0;
-		rgv3D[1].tu2 = 0;
-		rgv3D[1].tv2 = 0;
 
 		rgv3D[2].x = 1000.0f;
 		rgv3D[2].y = 750.0f;
 		rgv3D[2].tu = maxtu;
 		rgv3D[2].tv = maxtv;
-		rgv3D[2].tu2 = 0;
-		rgv3D[2].tv2 = 0;
 
 		rgv3D[3].x = 0;
 		rgv3D[3].y = 750.0f;
 		rgv3D[3].tu = 0;
 		rgv3D[3].tv = maxtv;
-		rgv3D[3].tu2 = 0;
-		rgv3D[3].tv2 = 0;
 
 		SetTexture(pin->m_pdsBuffer);
 
 		SetHUDVertices(rgv3D, 4);
 		SetDiffuse(rgv3D, 4, 0xFFFFFF);
 
-		m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+		m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
 												  rgv3D, 4,
 												  (LPWORD)rgi0123, 4, 0);
-		//m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+		//m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
 		//										  rgv3D, 4, 0);
 
 		m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
@@ -1655,8 +1733,38 @@ void Pin3D::ClearExtents(RECT * const prc, float * const pznear, float * const p
 
 void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed)
 	{
-
 	Vertex3D * const rgvOut = (!fTransformed) ? new Vertex3D[count] : rgv;
+
+	if (!fTransformed)
+		TransformVertices(rgv, NULL, count, rgvOut);
+
+	for (int i=0; i<count; ++i)
+		{
+		const int x = (int)(rgvOut[i].x + 0.5f);
+		const int y = (int)(rgvOut[i].y + 0.5f);
+
+		prc->left = min(prc->left, x - 1);
+		prc->top = min(prc->top, y - 1);
+		prc->right = max(prc->right, x + 1);
+		prc->bottom = max(prc->bottom, y + 1);
+
+		if (pznear)
+			{
+			*pznear = min(*pznear, rgvOut[i].z);
+			*pzfar = max(*pzfar, rgvOut[i].z);
+			}
+		}
+
+	if (!fTransformed)
+		{
+		delete rgvOut;
+		}
+	}
+
+//copy pasted from above
+void Pin3D::ExpandExtents(RECT * const prc, Vertex3D_NoTex2* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed)
+	{
+	Vertex3D_NoTex2 * const rgvOut = (!fTransformed) ? new Vertex3D_NoTex2[count] : rgv;
 
 	if (!fTransformed)
 		TransformVertices(rgv, NULL, count, rgvOut);
@@ -1686,8 +1794,38 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const p
 
 void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed)
 	{
-
 	Vertex3D * const rgvOut = (!fTransformed) ? new Vertex3D[count] : rgv;
+
+	if (!fTransformed)
+		TransformVertices(rgv, NULL, count, rgvOut);
+
+	for (int i=0; i<count; ++i)
+		{
+		const int x = (int)(rgvOut[i].x + 0.5f);
+		const int y = (int)(rgvOut[i].y + 0.5f);
+
+		prc->left = min(prc->left, x - 2);
+		prc->top = min(prc->top, y - 2);
+		prc->right = max(prc->right, x + 2);
+		prc->bottom = max(prc->bottom, y + 2);
+
+		if (pznear)
+			{
+			*pznear = min(*pznear, rgvOut[i].z);
+			*pzfar = max(*pzfar, rgvOut[i].z);
+			}
+		}
+
+	if (!fTransformed)
+		{
+		delete rgvOut;
+		}
+	}
+
+//copy pasted from above
+void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D_NoTex2* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed)
+	{
+	Vertex3D_NoTex2 * const rgvOut = (!fTransformed) ? new Vertex3D_NoTex2[count] : rgv;
 
 	if (!fTransformed)
 		TransformVertices(rgv, NULL, count, rgvOut);
@@ -1913,6 +2051,7 @@ void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * c
 		}
 	}
 
+//copy pasted from above
 void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
 	{
 	// Get the width and height of the viewport. This is needed to scale the

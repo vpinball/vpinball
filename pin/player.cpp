@@ -1,7 +1,9 @@
 #include "stdafx.h"
 
 #include "..\stereo3D.h"
-#include "..\DongleAPI.h"
+#ifdef DONGLE_SUPPORT
+ #include "..\DongleAPI.h"
+#endif
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
 #define RESIZE_FROM_EXPAND WM_USER+101
@@ -2608,6 +2610,7 @@ else
 	DrawLightHack();
 #endif
 
+	// Update music stream
 	if (m_pxap)
 	{
 		if (!m_pxap->Tick())
@@ -2872,7 +2875,7 @@ void Player::DrawBallShadows()
 			const float shadowradiusY = shadowradius * m_BallStretchY;
 			const float inv_shadowradius = 0.5f/shadowradius;
 
-			Vertex3D * const rgv3DShadow = pball->m_rgv3DShadow;
+			Vertex3D_NoTex2 * const rgv3DShadow = pball->m_rgv3DShadow;
 			rgv3DShadow[0].x = pball->x - shadowradiusX + offsetx;
 			rgv3DShadow[0].y = pball->y - shadowradiusY + offsety;
 			rgv3DShadow[0].z = shadowz;
@@ -2933,10 +2936,10 @@ void Player::DrawBallShadows()
 
 				m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 
-				m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+				m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,
 															  rgv3DShadow, 4,
 															  (LPWORD)rgi0123, 4, NULL);
-				//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3DShadow, 4,0);
+				//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DShadow, 4,0);
 				}
 			}
 		}
@@ -2976,7 +2979,7 @@ void Player::DrawBalls()
 
 		const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
-		Vertex3D rgv3D[4];
+		Vertex3D_NoTex2 rgv3D[4];
 		rgv3D[0].x = pball->x - radiusX;
 		rgv3D[0].y = pball->y - (radiusY * cs);
 		rgv3D[0].z = zheight + (pball->radius * sn);
@@ -3049,26 +3052,21 @@ void Player::DrawBalls()
 		m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
 		m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
-		/*m_pin3d.m_lightproject.CalcCoordinates(&rgv3D[0]);
-		m_pin3d.m_lightproject.CalcCoordinates(&rgv3D[1]);
-		m_pin3d.m_lightproject.CalcCoordinates(&rgv3D[2]);
-		m_pin3d.m_lightproject.CalcCoordinates(&rgv3D[3]);*/
-
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 		//m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
 
-		m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+		m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,
 												  rgv3D, 4,
 												  (LPWORD)rgi0123, 4, NULL);
-		//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+		//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,
 		//										  rgv3D, 4,
 		//										  NULL);
 
 		// Draw the ball logo
-		Vertex3D rgv3DArrowTransformed[4];
-		Vertex3D rgv3DArrowTransformed2[4];
+		Vertex3D_NoTex2 rgv3DArrowTransformed[4];
+		Vertex3D_NoTex2 rgv3DArrowTransformed2[4];
 		if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
 			{
 			/*mtrl.diffuse.r = mtrl.ambient.r = 0.8f;
@@ -3077,7 +3075,7 @@ void Player::DrawBalls()
 			mtrl.diffuse.a = mtrl.ambient.a = 0.8f;//0.7f;
 			m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
-				Vertex3D rgv3DArrow[4];
+				Vertex3D_NoTex2 rgv3DArrow[4];
 
 				rgv3DArrow[0].tu = 0;
 				rgv3DArrow[0].tv = 0;
@@ -3137,10 +3135,10 @@ void Player::DrawBalls()
 						rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinFront->m_maxtv;
 						}
 
-					m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,
 															  rgv3DArrowTransformed, 4,
 															  (LPWORD)rgi0123, 4, NULL);
-					//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,
 					//									  rgv3DArrowTransformed, 4, NULL);
 					}
 				orientation.Identity();
@@ -3168,10 +3166,10 @@ void Player::DrawBalls()
 						rgv3DArrowTransformed2[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinBack->m_maxtv;
 						}
 
-					m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,
 															  rgv3DArrowTransformed2, 4,
 															  (LPWORD)rgi0123, 4, NULL);
-					//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+					//m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,
 					//										  rgv3DArrowTransformed2, 4, NULL);
 					}
 			}

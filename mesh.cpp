@@ -97,6 +97,34 @@ void SetHUDVertices(Vertex3D * const rgv, const int count)
 		}
 	}
 
+//copy pasted from above
+void SetHUDVertices(Vertex3D_NoTex2 * const rgv, const int count)
+	{
+	const float mult = (float)g_pplayer->m_pin3d.m_dwRenderWidth * (float)(1.0/1000.0);
+	const float ymult = mult / (float)g_pplayer->m_pixelaspectratio;
+
+	for (int i=0; i<count; ++i)
+		{
+		rgv[i].x *= mult;
+		rgv[i].y *= ymult;
+		rgv[i].x -= 0.5f;
+		rgv[i].y -= 0.5f;
+		rgv[i].z = 0;//1.0f;
+		rgv[i].rhw = 0.1f;
+		rgv[i].specular = 0;
+		}
+
+	if (g_pplayer->m_frotate)
+		{
+		for (int i=0; i<count; ++i)
+			{
+			const float ftemp = rgv[i].x;
+			rgv[i].x = rgv[i].y;
+			rgv[i].y = g_pplayer->m_pin3d.m_dwViewPortHeight - ftemp;
+			}
+		}
+	}
+
 void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv)
 	{
 	const float tMid = (t1+t2)*0.5f;

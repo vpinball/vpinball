@@ -84,6 +84,7 @@ public:
 	};
 
 void SetHUDVertices(Vertex3D * const rgv, const int count);
+void SetHUDVertices(Vertex3D_NoTex2 * const rgv, const int count);
 void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri);
 void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv);
 void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy);
@@ -250,6 +251,52 @@ inline void SetNormal(Vertex3D * const rgv, const WORD * const rgi, const int co
 		}
 	}
 
+//copy pasted from above
+inline void SetNormal(Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex3D_NoTex2 * rgvApply, const WORD * rgiApply, int applycount)
+	{
+	// If apply-to array is null, just apply the resulting normal to incoming array
+	if (rgvApply == NULL)
+		{
+		rgvApply = rgv;
+		}
+
+	if (rgiApply == NULL)
+		{
+		rgiApply = rgi;
+		}
+
+	if (applycount == 0)
+		{
+		applycount = count;
+		}
+
+	Vertex3Ds vnormal(0.0f,0.0f,0.0f);
+
+	for (int i=0; i<count; ++i)
+		{
+		const int l = rgi[i];
+		const int m = rgi[(i < count-1) ? (i+1) : 0];
+
+		vnormal.x += (rgv[l].y - rgv[m].y) * (rgv[l].z + rgv[m].z);
+		vnormal.y += (rgv[l].z - rgv[m].z) * (rgv[l].x + rgv[m].x);
+		vnormal.z += (rgv[l].x - rgv[m].x) * (rgv[l].y + rgv[m].y);		
+		}
+
+	const float len = vnormal.x * vnormal.x + vnormal.y * vnormal.y + vnormal.z * vnormal.z;
+	const float inv_len = (len > 0.0f) ? -1.0f/sqrtf(len) : 0.0f; //!! opt.
+	vnormal.x *= inv_len;
+	vnormal.y *= inv_len;
+	vnormal.z *= inv_len;
+
+	for (int i=0; i<applycount; ++i)
+		{
+		const int l = rgiApply[i];
+		rgvApply[l].nx = vnormal.x;
+		rgvApply[l].ny = vnormal.y;
+		rgvApply[l].nz = vnormal.z;
+		}
+	}
+
 inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const D3DMATERIAL7 * const pmtrl) // get rid of this?
 	{
 	const unsigned int r = (int)(((pmtrl->diffuse.r + pmtrl->emissive.r) * 255.0f) + 0.5f);
@@ -264,7 +311,31 @@ inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const 
 		}
 	}
 
+//copy pasted from above
+inline void SetDiffuseFromMaterial(Vertex3D_NoTex2 * const rgv, const int count, const D3DMATERIAL7 * const pmtrl) // get rid of this?
+	{
+	const unsigned int r = (int)(((pmtrl->diffuse.r + pmtrl->emissive.r) * 255.0f) + 0.5f);
+	const unsigned int g = (int)(((pmtrl->diffuse.g + pmtrl->emissive.g) * 255.0f) + 0.5f);
+	const unsigned int b = (int)(((pmtrl->diffuse.b + pmtrl->emissive.b) * 255.0f) + 0.5f);
+
+	const unsigned int color = (r<<16) | (g<<8) | b;
+
+	for (int i=0; i<count; ++i)
+		{
+		rgv[i].color = color;
+		}
+	}
+
 inline void SetDiffuse(Vertex3D * const rgv, const int count, const unsigned int color) // get rid of this?
+	{
+	for (int i=0; i<count; ++i)
+		{
+		rgv[i].color = color;
+		}
+	}
+
+//copy pasted from above
+inline void SetDiffuse(Vertex3D_NoTex2 * const rgv, const int count, const unsigned int color) // get rid of this?
 	{
 	for (int i=0; i<count; ++i)
 		{
