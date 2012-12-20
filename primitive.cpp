@@ -391,7 +391,7 @@ void Primitive::CalculateRealTimeOriginal()
 	float maxX = -10000.f;
 	float maxY = -10000.f;
 
-	Vertex3D *middle;
+	Vertex3D_NoTex2 *middle;
 	middle = &rgv3DOriginal[0]; // middle point top
 	middle->z = 0.5f;
 	middle->x = 0.0f;
@@ -403,12 +403,12 @@ void Primitive::CalculateRealTimeOriginal()
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
 		// calculate Top
-		Vertex3D * const topVert = &rgv3DOriginal[i+1]; // top point at side
+		Vertex3D_NoTex2 * const topVert = &rgv3DOriginal[i+1]; // top point at side
 		topVert->z = 0.5f;
 		topVert->x = -sinf(currentAngle)*outerRadius;
 		topVert->y = -cosf(currentAngle)*outerRadius;		
 		// calculate bottom
-		Vertex3D * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
+		Vertex3D_NoTex2 * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
 		bottomVert->z = -0.5f;
 		bottomVert->x = topVert->x;
 		bottomVert->y = topVert->y;
@@ -422,8 +422,8 @@ void Primitive::CalculateRealTimeOriginal()
 		if (topVert->y > maxY)
 			maxY = topVert->y;
 		// calculate sides
-		Vertex3D * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
-		Vertex3D * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
+		Vertex3D_NoTex2 * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
+		Vertex3D_NoTex2 * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
 		sideTopVert->z = 0.5f;
 		sideTopVert->x = topVert->x;
 		sideTopVert->y = topVert->y;
@@ -446,16 +446,16 @@ void Primitive::CalculateRealTimeOriginal()
 	const float invs = maxtu/(float)m_d.m_Sides;
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		Vertex3D * const topVert = &rgv3DOriginal[i+1]; // top point at side
+		Vertex3D_NoTex2 * const topVert = &rgv3DOriginal[i+1]; // top point at side
 		topVert->tu = (topVert->x - minX)*invx;
 		topVert->tv = (topVert->y - minY)*invy;
 
-		Vertex3D* const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
+		Vertex3D_NoTex2 * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
 		bottomVert->tu = topVert->tu+0.5f*maxtu;
 		bottomVert->tv = topVert->tv;
 
-		Vertex3D * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
-		Vertex3D * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
+		Vertex3D_NoTex2 * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
+		Vertex3D_NoTex2 * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
 
 		sideTopVert->tu = (float)i*invs;
 		sideTopVert->tv = 0.5f*maxtv;
@@ -467,7 +467,7 @@ void Primitive::CalculateRealTimeOriginal()
 void Primitive::CopyOriginalVertices()
 {
 	// copy vertices
-	memcpy(rgv3DAll,rgv3DOriginal,(m_d.m_Sides*4 + 2)*sizeof(Vertex3D));
+	memcpy(rgv3DAll,rgv3DOriginal,(m_d.m_Sides*4 + 2)*sizeof(Vertex3D_NoTex2));
 
 	// restore indices
 	// check if anti culling is enabled:
@@ -541,7 +541,7 @@ void Primitive::ApplyMatrixToVertices()
 	// could be optimized, if not everything is drawn.
 	for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
 	{
-		Vertex3D * const tempVert = &rgv3DAll[i];
+		Vertex3D_NoTex2 * const tempVert = &rgv3DAll[i];
 		tempVert->nx = 0;
 		tempVert->ny = 0;
 		tempVert->nz = -1.f;
@@ -680,7 +680,7 @@ void Primitive::CalculateRealTime()
 
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
-		Vertex3Ds * const topVert = &rgv3DTop[i];
+		Vertex3D_NoTex2 * const topVert = &rgv3DTop[i];
 		topVert->x = rgv3DTopOriginal[i].x;
 		topVert->y = rgv3DTopOriginal[i].y;
 		topVert->z = rgv3DTopOriginal[i].z;
@@ -696,7 +696,7 @@ void Primitive::CalculateRealTime()
 		topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f);
 		topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f);
 		fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
-		Vertex3Ds * const bottomVert = &rgv3DBottom[i];
+		Vertex3D_NoTex2 * const bottomVert = &rgv3DBottom[i];
 		bottomVert->x = rgv3DBottomOriginal[i].x;
 		bottomVert->y = rgv3DBottomOriginal[i].y;
 		bottomVert->z = rgv3DBottomOriginal[i].z;
@@ -817,7 +817,7 @@ void Primitive::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetMaterial(&mtrl);
 
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 
-			MY_D3DFVF_VERTEX,
+			MY_D3DFVF_NOTEX2_VERTEX,
 			rgv3DAll, 
 			m_d.m_Sides*4 + 2,
 			wIndicesAll, 

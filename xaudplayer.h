@@ -14,7 +14,7 @@ public:
 	XAudPlayer();
 	~XAudPlayer();
 
-	int Init(char *szFileName, int volume);
+	int Init(char * const szFileName, const int volume);
 
 	int Tick();
 
@@ -23,6 +23,7 @@ public:
 	void Pause();
 	void Unpause();
 
+private:
 	XA_DecoderInfo *m_decoder;
 
 	FILE *file;
@@ -33,7 +34,7 @@ public:
 	bool m_fStarted;
 	bool m_fEndData; // all data has been decoded - wait for buffer to play
 
-	HRESULT CreateBuffer(int volume); 
+	HRESULT CreateBuffer(const int volume);
 	HRESULT CreateStreamingBuffer(WAVEFORMATEX *pwfx);
 
 //#define NUM_PLAY_NOTIFICATIONS  16

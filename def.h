@@ -61,10 +61,18 @@ public:
 		}
 	};
 
-#define MY_D3DFVF_VERTEX (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2)
-#define MY_D3DTRANSFORMED_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
 
-class Vertex3D
+#define MY_D3DFVF_NOTEX_VERTEX          (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX0)
+#define MY_D3DTRANSFORMED_NOTEX_VERTEX  (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX0)
+
+#define MY_D3DFVF_NOTEX2_VERTEX         (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX1)
+#define MY_D3DTRANSFORMED_NOTEX2_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1)
+
+#define MY_D3DFVF_VERTEX                (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX2)
+#define MY_D3DTRANSFORMED_VERTEX        (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
+
+
+class Vertex3D // for rendering, uses MY_D3DFVF_VERTEX or MY_D3DTRANSFORMED_VERTEX
 	{
 public:
 	// Position
@@ -144,7 +152,83 @@ public:
 	};
 
 __declspec(align(16))
-class Vertex3Ds
+class Vertex3D_NoTex2 // for rendering, uses MY_D3DFVF_NOTEX2_VERTEX or MY_D3DTRANSFORMED_NOTEX2_VERTEX
+	{
+public:
+	union {
+	struct{
+	// Position
+	D3DVALUE x; 
+	D3DVALUE y; 
+	D3DVALUE z;
+
+	// Normals
+	union
+		{
+		D3DVALUE nx;
+		D3DVALUE rhw;
+		};
+	
+	union
+		{
+		D3DVALUE ny;
+		D3DCOLOR color;
+		};
+	
+	union
+		{
+		D3DVALUE nz;
+		D3DCOLOR specular;
+		};
+	
+	// Texture coordinates
+	D3DVALUE tu;
+	D3DVALUE tv;
+	};
+	struct{
+	__m128 v0,v1;
+	};
+	};
+};
+
+class Vertex3D_NoTex // for rendering, uses MY_D3DFVF_NOTEX_VERTEX or MY_D3DTRANSFORMED_NOTEX_VERTEX
+	{
+public:
+	// Position
+	D3DVALUE x; 
+	D3DVALUE y; 
+	D3DVALUE z;
+
+	// Normals
+	union
+		{
+		D3DVALUE nx;
+		D3DVALUE rhw;
+		};
+	
+	union
+		{
+		D3DVALUE ny;
+		D3DCOLOR color;
+		};
+	
+	union
+		{
+		D3DVALUE nz;
+		D3DCOLOR specular;
+		};
+	
+	inline void NormalizeNormal()
+	{
+		const float oneoverlength = 1.0f/sqrtf(nx*nx + ny*ny + nz*nz);
+		nx *= oneoverlength;
+		ny *= oneoverlength;
+		nz *= oneoverlength;
+	}
+};
+
+__declspec(align(16))
+class Vertex3Ds // for internal calculations that only need xyz
 	{
 public:
 	union {
@@ -307,6 +391,48 @@ inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3D * const pvPoint, cons
 		}
 	}
 
+inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex * const pvPoint, const int count, const float angle)
+	{
+	const float rsin = sinf(angle);
+	const float rcos = cosf(angle);
+
+	// Matrix for rotating around an arbitrary vector
+
+	float matrix[3][3];
+	matrix[0][0] = pvAxis.x*pvAxis.x + rcos*(1.0f-pvAxis.x*pvAxis.x);
+	matrix[1][0] = pvAxis.x*pvAxis.y*(1.0f-rcos) - pvAxis.z*rsin;
+	matrix[2][0] = pvAxis.z*pvAxis.x*(1.0f-rcos) + pvAxis.y*rsin;
+
+	matrix[0][1] = pvAxis.x*pvAxis.y*(1.0f-rcos) + pvAxis.z*rsin;
+	matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f-pvAxis.y*pvAxis.y);
+	matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f-rcos) - pvAxis.x*rsin;
+
+	matrix[0][2] = pvAxis.z*pvAxis.x*(1.0f-rcos) - pvAxis.y*rsin;
+	matrix[1][2] = pvAxis.y*pvAxis.z*(1.0f-rcos) + pvAxis.x*rsin;
+	matrix[2][2] = pvAxis.z*pvAxis.z + rcos*(1.0f-pvAxis.z*pvAxis.z);
+
+	for (int i=0; i<count; ++i)
+		{
+		const float result[3] = {
+			matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z,
+			matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z,
+			matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z};
+
+		pvPoint[i].x = result[0];
+		pvPoint[i].y = result[1];
+		pvPoint[i].z = result[2];
+
+		const float resultn[3] = {
+			matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz,
+			matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz,
+			matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz};
+
+		pvPoint[i].nx = resultn[0];
+		pvPoint[i].ny = resultn[1];
+		pvPoint[i].nz = resultn[2];
+		}
+	}
+
 inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, const int count, const float angle)
 	{
 	const float rsin = sinf(angle);
@@ -400,6 +526,19 @@ public:
 	}
 
 	inline Vertex3Ds MultiplyVector(const Vertex3D &pv3D) const
+	{
+	return Vertex3Ds(m_d[0][0] * pv3D.x
+				   + m_d[0][1] * pv3D.y
+			       + m_d[0][2] * pv3D.z,
+					 m_d[1][0] * pv3D.x
+				   + m_d[1][1] * pv3D.y
+				   + m_d[1][2] * pv3D.z,
+					 m_d[2][0] * pv3D.x
+				   + m_d[2][1] * pv3D.y
+				   + m_d[2][2] * pv3D.z);
+	}
+
+	inline Vertex3Ds MultiplyVector(const Vertex3D_NoTex2 &pv3D) const
 	{
 	return Vertex3Ds(m_d[0][0] * pv3D.x
 				   + m_d[0][1] * pv3D.y

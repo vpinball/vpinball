@@ -675,8 +675,8 @@ void Bumper::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					rgv3D[l+128].tv = 0.5f+cosangle*0.5f;
 					}
 				}
-
-			ppin3d->EnableLightMap(fFalse, -1);
+			else
+				ppin3d->EnableLightMap(fFalse, -1);
 
 			//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
 			//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);

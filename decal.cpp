@@ -4,7 +4,7 @@
  
 #include "stdafx.h" 
 
-#define AUTOLEADING (tm.tmAscent - (tm.tmInternalLeading*1/4))
+#define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -347,7 +347,7 @@ void Decal::GetHitShapes(Vector<HitObject> * const pvho)
 			rcOut.bottom += AUTOLEADING * (len-1);
 			rcOut.right = maxwidth;
 
-			charheight = m_realheight/len;
+			charheight = m_realheight/(float)len;
 			}
 		else
 			{
@@ -364,8 +364,9 @@ void Decal::GetHitShapes(Vector<HitObject> * const pvho)
 		ReleaseDC(NULL, hdcNull);
 
 		// Calculate the percentage of the texture which is for oomlats and commas.
-		m_leading = ((float)tm.tmInternalLeading / (float)tm.tmAscent) * charheight/*m_d.m_height*/;
-		m_descent = ((float)tm.tmDescent / (float)tm.tmAscent) * charheight;
+		const float invascent = charheight/(float)tm.tmAscent;
+		m_leading = (float)tm.tmInternalLeading * invascent /*m_d.m_height*/;
+		m_descent = (float)tm.tmDescent * invascent;
 
 		m_pinimage.m_width = rcOut.right;
 		m_pinimage.m_height = rcOut.bottom;
@@ -373,22 +374,17 @@ void Decal::GetHitShapes(Vector<HitObject> * const pvho)
 		m_pinimage.m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(m_pinimage.m_width, m_pinimage.m_height);
 
 		if (m_d.m_color == RGB(255,255,255))
-			m_d.m_color = RGB(254,255,255);
-		if (m_d.m_color == RGB(0,0,0))
+			m_d.m_color = RGB(254,255,255); //m_pinimage.SetTransparentColor(RGB(0,0,0));
+		else if (m_d.m_color == RGB(0,0,0))
 			m_d.m_color = RGB(0,0,1);
-	
-		if (m_d.m_color == RGB(255,255,255))
-			{
-			m_pinimage.SetTransparentColor(RGB(0,0,0));
-			}
 
 		HDC hdc;
 		m_pinimage.m_pdsBuffer->GetDC(&hdc);
-		if (m_d.m_color == RGB(255,255,255))
+		/*if (m_d.m_color == RGB(255,255,255))
 			{
 			SelectObject(hdc, GetStockObject(BLACK_BRUSH));
 			}
-		else
+		else*/
 			{
 			SelectObject(hdc, GetStockObject(WHITE_BRUSH));
 			}
@@ -517,7 +513,7 @@ void Decal::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
 		}
 
-	Vertex3D rgv3D[4];
+	Vertex3D_NoTex2 rgv3D[4];
 	for (int l=0;l<4;l++)
 		rgv3D[l].z = height + 0.2f;
 
@@ -550,13 +546,11 @@ void Decal::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	rgv3D[3].tu = 0;
 	rgv3D[3].tv = maxtv;
 
-	//!! tu2 tv2 ?
-
 	if (!m_fBackglass)
 		{
 		SetNormal(rgv3D, rgi0123, 4, NULL, NULL, 0);
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgi0123,4,0);
-		//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,(LPWORD)rgi0123,4,0);
+		//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,0);
 		}
 	else
 		{
@@ -565,8 +559,8 @@ void Decal::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 		if( GetPTable()->GetDecalsEnabled() )
 			{
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,rgv3D, 4,(LPWORD)rgi0123,4,0);
-			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,rgv3D, 4,0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,rgv3D, 4,(LPWORD)rgi0123,4,0);
+			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,rgv3D, 4,0);
 			}
 		}
 

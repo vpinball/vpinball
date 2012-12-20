@@ -177,13 +177,13 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 
 public:
 	// Vertices for 3d Display
-//	Vertex3D rgv3DTopOriginal[Max_Primitive_Sides+1]; // without transformation at index=0 is the middle point
-//	Vertex3D rgv3DBottomOriginal[Max_Primitive_Sides+1];
+//	Vertex3D_NoTex2 rgv3DTopOriginal[Max_Primitive_Sides+1]; // without transformation at index=0 is the middle point
+//	Vertex3D_NoTex2 rgv3DBottomOriginal[Max_Primitive_Sides+1];
 
 	//these will be deleted:
-//	Vertex3D rgv3DTop[Max_Primitive_Sides]; // with transformation
+//	Vertex3D_NoTex2 rgv3DTop[Max_Primitive_Sides]; // with transformation
 //	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of each point could be a triangle (*3) and for both sides because of culling (*2)
-//	Vertex3D rgv3DBottom[Max_Primitive_Sides];
+//	Vertex3D_NoTex2 rgv3DBottom[Max_Primitive_Sides];
 //	WORD wBottomIndices[Max_Primitive_Sides*6];
 	
 	// OK here are our vertices that should be drawn:
@@ -204,8 +204,8 @@ public:
 		// 14 to 17				: 4				: bottom Sides (With Normals to the side)
 	// These Vertices will always be complete. even if the user does not want to draw them (sides disabled or top/bottom disabled).
 	// maybe they are not updated anymore, but they will be there.
-	Vertex3D rgv3DOriginal[Max_Primitive_Sides*4+2];
-	Vertex3D rgv3DAll[Max_Primitive_Sides*4+2];
+	Vertex3D_NoTex2 rgv3DOriginal[Max_Primitive_Sides*4+2];
+	Vertex3D_NoTex2 rgv3DAll[Max_Primitive_Sides*4+2];
 
 	// So how many indices are needed?
 		// 3 per Triangle top - we have m_sides triangles -> 0, 1, 2, 0, 2, 3, 0, 3, 4, ...
