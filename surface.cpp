@@ -558,7 +558,7 @@ void Surface::Render(Sur * const psur)
 
 	psur->Polygon(m_rgvT, m_cvertexT);
 
-	delete m_rgvT;
+	delete [] m_rgvT;
 	m_rgvT = NULL;
 
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
@@ -635,7 +635,7 @@ void Surface::RenderBlueprint(Sur *psur)
 
 	psur->Polygon(m_rgvT, m_cvertexT);
 
-	delete m_rgvT;
+	delete [] m_rgvT;
 	m_rgvT = NULL;
 	}
 
@@ -683,7 +683,7 @@ void Surface::RenderShadow(ShadowSur * const psur, const float height)
 		psur->PolygonSkew(m_rgvT, m_cvertexT  , NULL, m_d.m_heightbottom, m_d.m_heighttop, false);
 		}
 
-	delete m_rgvT;
+	delete [] m_rgvT;
 	m_rgvT = NULL;
 	}
 
@@ -831,9 +831,9 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 			}
 		}
 	else
-		delete rgv3D;
+		delete [] rgv3D;
 
-	delete rgv;
+	delete [] rgv;
 	}
 
 void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const bool fSlingshot)
@@ -1371,7 +1371,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 			}
 	}
 
-	SAFE_DELETE(rgtexcoord);
+	SAFE_VECTOR_DELETE(rgtexcoord);
 
 	if (m_d.m_fVisible)
 		{
@@ -1725,7 +1725,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 				delete vvertex.ElementAt(i);
 				}
 
-			delete m_rgvT;
+			delete [] m_rgvT;
 			m_rgvT = NULL;
 
 			SetDirtyDraw();

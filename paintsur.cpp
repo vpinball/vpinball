@@ -130,7 +130,7 @@ void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
 
 	::Polygon(m_hdc, rgpt, count);
 	
-	delete rgpt;
+	delete [] rgpt;
 	}
 
 void PaintSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
@@ -163,7 +163,7 @@ void PaintSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP
 	SelectObject(hdcNew, hbmOld);
 	DeleteDC(hdcNew);
 	
-	delete rgpt;
+	delete [] rgpt;
 	}
 
 void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
@@ -180,7 +180,7 @@ void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
 
 	::Polyline(m_hdc, rgpt, count);
 	
-	delete rgpt;
+	delete [] rgpt;
 	}
 
 void PaintSur::Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y)

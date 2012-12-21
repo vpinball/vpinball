@@ -257,7 +257,7 @@ void Ramp::PreRender(Sur * const psur)
 
 	psur->Polygon(rgv, cvertex*2);
 
-	delete rgv;
+	delete [] rgv;
 }
 
 void Ramp::Render(Sur * const psur)
@@ -290,8 +290,8 @@ void Ramp::Render(Sur * const psur)
 		psur->SetLineColor(RGB(0,0,0),false,3);
 		psur->Polyline(&rgv[cvertex], cvertex);
 	}
-	delete rgv;
-	delete pfCross;
+	delete [] rgv;
+	delete [] pfCross;
 
 //>>> added by chris
 	bool fDrawDragpoints;
@@ -357,8 +357,8 @@ void Ramp::RenderOutline(Sur * const psur)
 			}
 		}
 
-	delete rgv;
-	delete pfCross;
+	delete [] rgv;
+	delete [] pfCross;
 	}
 
 void Ramp::RenderBlueprint(Sur *psur)
@@ -416,8 +416,6 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 			}
 			psur->PolylineSkew(&rgv[cvertex], cvertex, rgheight2, 0, 0);
 
-
-
 			for (int i=0;i<cvertex;i++)
 				{
 					rgheight[i]  += 44.0f;
@@ -433,7 +431,7 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 				psur->PolylineSkew(&rgv[cvertex], cvertex, rgheight2, 0, 0);
 				}
 
-			delete rgheight2;
+			delete [] rgheight2;
 			}
 		else
 			{
@@ -450,13 +448,13 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 
 			psur->PolygonSkew(rgv2, range*2, rgheight2, 0, 0, true);
 
-			delete rgv2;
-			delete rgheight2;
+			delete [] rgv2;
+			delete [] rgheight2;
 			}
 		}
 
-	delete rgv;
-	delete rgheight;
+	delete [] rgv;
+	delete [] rgheight;
 	}
 
 void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
@@ -482,8 +480,8 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 		pvvertex3D->AddElement(pv);
 		}
 
-	delete rgv;
-	delete rgheight;
+	delete [] rgv;
+	delete [] rgheight;
 	}
 
 Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio)
@@ -912,8 +910,8 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 		ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 		}
 #endif
-	delete rgheight;
-	delete rgv;
+	delete [] rgheight;
+	delete [] rgv;
 	}
 
 void Ramp::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -1077,6 +1075,10 @@ static const WORD rgicrosssection[] = {
 
 void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
+	float *rgheight;
+	int cvertex;
+	const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
+
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, TRUE);
 
 	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
@@ -1094,10 +1096,6 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 	mtrl.power = 8.0f;
 	pd3dDevice->SetMaterial(&mtrl);
 	}
-
-	float *rgheight;
-	int cvertex;
-	const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
 
 	Vertex3D_NoTex rgv3D[32];
 	for (int i=0;i<cvertex;i++)
@@ -1255,11 +1253,11 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 				RenderPolygons(pd3dDevice, rgv3D, (WORD*)rgicrosssection, 24, 32);
 				}
 			}
-		memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D)*16);
+		memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D_NoTex)*16);
 		}
 
-	delete rgv;
-	delete rgheight;
+	delete [] rgv;
+	delete [] rgheight;
 
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, FALSE);
 	}
@@ -1628,9 +1626,9 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgiRampStatic1, 4, 0);
 			}
 
-		delete rgv;
-		delete rgheight;
-		delete rgratio;
+		delete [] rgv;
+		delete [] rgheight;
+		delete [] rgratio;
 
 		ppin3d->SetTexture(NULL);
 		}
@@ -1946,7 +1944,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
 				delete vvertex.ElementAt(i);
 				}
 
-			delete rgv;
+			delete [] rgv;
 
 			SetDirtyDraw();
 
@@ -2723,9 +2721,9 @@ void Ramp::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 				ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
 
-		delete rgv;
-		delete rgheight;
-		delete rgratio;
+		delete [] rgv;
+		delete [] rgheight;
+		delete [] rgratio;
 
 		ppin3d->SetTexture(NULL);
 		}

@@ -121,8 +121,7 @@ DispReel::~DispReel()
 // (along with the constructor (above))
 //
 HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
-{
-	
+{	
 	m_ptable = ptable;
 
 	SetDefaults(fromMouseClick);

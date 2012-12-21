@@ -255,7 +255,7 @@ HRESULT PinDirectSound::FillBuffer(PinSound *pps)
 	pps->m_cdata = m_dwBufferBytes;
 
     // We dont need the wav file data buffer anymore, so delete it 
-    SAFE_DELETE( pbWavData );
+    SAFE_VECTOR_DELETE( pbWavData );
 
     return S_OK;
 }

@@ -34,12 +34,12 @@ IEditable::~IEditable()
 	{
 	if (m_wzVBAName)
 		{
-		delete m_wzVBAName;
+		delete [] m_wzVBAName;
 		}
 
 	if (m_wzVBACode)
 		{
-		delete m_wzVBACode;
+		delete [] m_wzVBACode;
 		}
 	}
 
@@ -256,7 +256,7 @@ void IEditable::Undelete()
 		return;
 		}
 
-	delete m_wzVBAName;
+	delete [] m_wzVBAName;
 	m_wzVBAName = NULL;
 
 #ifdef VBA
@@ -272,7 +272,7 @@ void IEditable::Undelete()
 		CComBSTR bstrCode = m_wzVBACode;
 		HRESULT hr = pCodeModule->InsertLines(1, bstrCode);
 
-		delete m_wzVBACode;
+		delete [] m_wzVBACode;
 		m_wzVBACode = NULL;
 		}
 #endif

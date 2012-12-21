@@ -26,8 +26,9 @@ using namespace MSAPC;
 
 #define CCO(x) CComObject<x>
 
-#define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
-#define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
+#define SAFE_VECTOR_DELETE(p)   { if(p) { delete [] (p);  (p)=NULL; } }
+#define SAFE_DELETE(p)			{ if(p) { delete (p);     (p)=NULL; } }
+#define SAFE_RELEASE(p)			{ if(p) { (p)->Release(); (p)=NULL; } }
 
 #define hrNotImplemented      ResultFromScode(E_NOTIMPL)
 
@@ -107,7 +108,6 @@ public:
 	D3DVALUE tv2;
 
 	inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
-	inline void SetDouble(const double a, const double b, const double c) {x=(float)a; y=(float)b; z=(float)c;}
 	inline void Normalize()
 	{
 		const float oneoverlength = 1.0f/sqrtf(x*x + y*y + z*z);
@@ -246,7 +246,6 @@ public:
 	inline Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
 
 	inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
-	inline void SetDouble(const double a, const double b, const double c) {x=(float)a; y=(float)b; z=(float)c;}
 	inline void Normalize()
 		{
 		const float oneoverlength = 1.0f/sqrtf(x*x + y*y + z*z);

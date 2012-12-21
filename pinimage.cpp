@@ -344,11 +344,8 @@ void PinImage::FreeStuff()
 	if (m_hbmGDIVersion)
 		{
 		DeleteObject(m_hbmGDIVersion);
+		m_hbmGDIVersion = NULL;
 		}
-	m_pdsBuffer = NULL;
-	m_pdsBufferColorKey = NULL;
-	m_pdsBufferBackdrop = NULL;
-	m_hbmGDIVersion = NULL;
 	if (m_ppb)
 		{
 		delete m_ppb;

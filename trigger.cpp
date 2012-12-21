@@ -117,7 +117,7 @@ void Trigger::PreRender(Sur * const psur)
 
 			psur->Polygon(rgv, cvertex);
 
-			delete rgv;
+			delete [] rgv;
 			}
 			break;
 		}
@@ -161,7 +161,7 @@ void Trigger::Render(Sur * const psur)
 
 			psur->Polygon(rgv, cvertex);
 
-			delete rgv;
+			delete [] rgv;
 			break;
 						  }
 		}
@@ -360,10 +360,10 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
 
 	pvho->AddElement(ph3dpoly);
 #else
-	delete rgv3D;
+	delete [] rgv3D;
 #endif
 
-	delete rgv;
+	delete [] rgv;
 	}
 
 void Trigger::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const float height)
@@ -633,7 +633,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
 				delete vvertex.ElementAt(i);
 				}
 
-			delete rgv;
+			delete [] rgv;
 
 			SetDirtyDraw();
 

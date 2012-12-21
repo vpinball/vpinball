@@ -116,9 +116,9 @@ static void ColouriseVBDoc(UINT startPos, int length, int initStyle,
 		oldpos = pos;
 		}
 
-	delete szText;
-	delete wzText;
-	delete wzFormat;
+	delete [] szText;
+	delete [] wzText;
+	delete [] wzFormat;
 	}
 
 static void FoldVBDoc(unsigned int startPos, int length, int,
@@ -676,7 +676,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		{
 		char *szT = MakeChar(ei.bstrDescription);
 		AddToDebugOutput(szT);
-		delete szT;
+		delete [] szT;
 		return S_OK;
 		}
 
@@ -775,7 +775,7 @@ void CodeViewer::EvaluateScriptStatement(char *szScript)
 
 	m_pScriptParse->ParseScriptText(wzScript, L"Debug", 0, 0, CONTEXTCOOKIE_DEBUG, 0, 0, NULL, &exception);
 
-	delete wzScript;
+	delete [] wzScript;
 	}
 
 void CodeViewer::AddToDebugOutput(char *szText)
@@ -1530,8 +1530,8 @@ BOOL CodeViewer::FUserManuallyOkaysControl(CONFIRMSAFETY *pcs)
 		fSafe = fTrue;
 		}
 
-	delete szName;
-	delete szT;
+	delete [] szName;
+	delete [] szT;
 
 	return fSafe;
 	}
@@ -2076,7 +2076,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 
 	m_pcv->AddToDebugOutput(szT);
 
-	delete szT;
+	delete [] szT;
 
 	return S_OK;
 	}

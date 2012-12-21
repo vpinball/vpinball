@@ -1757,7 +1757,7 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const p
 
 	if (!fTransformed)
 		{
-		delete rgvOut;
+		delete [] rgvOut;
 		}
 	}
 
@@ -1788,7 +1788,7 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D_NoTex2* const rgv, float * 
 
 	if (!fTransformed)
 		{
-		delete rgvOut;
+		delete [] rgvOut;
 		}
 	}
 
@@ -1818,7 +1818,7 @@ void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D* const rgv, float * con
 
 	if (!fTransformed)
 		{
-		delete rgvOut;
+		delete [] rgvOut;
 		}
 	}
 
@@ -1849,7 +1849,7 @@ void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D_NoTex2* const rgv, floa
 
 	if (!fTransformed)
 		{
-		delete rgvOut;
+		delete [] rgvOut;
 		}
 	}
 

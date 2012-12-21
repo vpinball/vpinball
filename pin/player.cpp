@@ -749,15 +749,15 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 			{
   				if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
 	  				m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
-				{
+					{
 					m_vhitacrylic.AddElement(ph);
-				}
+					}
 			}
 			else
 				if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
-				{
+					{
 					m_vhitacrylic.AddElement(ph);
-				}
+					}
 			}
 		}
 
@@ -992,8 +992,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	return S_OK;
 	}
 
-void Player::ReOrder() // Reorder playfield objects for ATI configurations
+void Player::ReOrder() // Reorder playfield objects (for AMD/ATI configurations)
 {
+	bool dirtydraw = false;
+
 	for (int i=0;i<m_ptable->m_vedit.Size();i++) //fix render walls
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemSurface)
@@ -1004,7 +1006,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 				IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 				m_ptable->m_vedit.RemoveElement(piedit);
 				m_ptable->m_vedit.InsertElementAt(piedit,0);
-				m_ptable->SetDirtyDraw();
+				dirtydraw = true;
 				}
 			}
 		}
@@ -1016,7 +1018,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 			m_ptable->m_vedit.RemoveElement(piedit);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
-			m_ptable->SetDirtyDraw();
+			dirtydraw = true;
 			}
 		}
 
@@ -1027,7 +1029,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 			m_ptable->m_vedit.RemoveElement(piedit);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
-			m_ptable->SetDirtyDraw();
+			dirtydraw = true;
 			}
 		}
 
@@ -1038,7 +1040,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 			m_ptable->m_vedit.RemoveElement(piedit);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
-			m_ptable->SetDirtyDraw();
+			dirtydraw = true;
 			}
 		}
 
@@ -1049,7 +1051,7 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 			m_ptable->m_vedit.RemoveElement(piedit);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
-			m_ptable->SetDirtyDraw();
+			dirtydraw = true;
 			}
 		}
 
@@ -1060,9 +1062,12 @@ void Player::ReOrder() // Reorder playfield objects for ATI configurations
 			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
 			m_ptable->m_vedit.RemoveElement(piedit);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
-			m_ptable->SetDirtyDraw();
+			dirtydraw = true;
 			}
 		}
+
+	if(dirtydraw)
+		m_ptable->SetDirtyDraw();
 }
 
 void Player::InitStatic(HWND hwndProgress)
@@ -1117,7 +1122,10 @@ void Player::InitStatic(HWND hwndProgress)
 			if (ph)
 				{
 				ph->RenderStatic(m_pin3d.m_pd3dDevice);
-				//SendMessage(hwndProgress, PBM_SETPOS, 75 + ((5*i)/m_ptable->m_vedit.Size()), 0);
+				if (hwndProgress)
+					{
+					SendMessage(hwndProgress, PBM_SETPOS, 80 + ((5*i)/m_ptable->m_vedit.Size()), 0);
+					}
 				}
 			}
 		}
@@ -1147,7 +1155,7 @@ void Player::InitAnimations(HWND hwndProgress)
 
 			if (hwndProgress)
 			{
-				SendMessage(hwndProgress, PBM_SETPOS, 80 + ((20*i)/m_ptable->m_vedit.Size()), 0);
+				SendMessage(hwndProgress, PBM_SETPOS, 85 + ((15*i)/m_ptable->m_vedit.Size()), 0);
 			}
 		}
 	}
@@ -1158,26 +1166,12 @@ void Player::InitAnimations(HWND hwndProgress)
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemLight)
 		{
 			Light * const plight = ((Light *)m_ptable->m_vedit.ElementAt(i));
-			if (plight->m_d.m_state == LightStateBlinking)
-			{
-				plight->DrawFrame(plight->m_rgblinkpattern[0] == '1');
-			}
-			else
-			{
-				plight->DrawFrame(plight->m_d.m_state != LightStateOff);
-			}
+			plight->DrawFrame(plight->m_d.m_state == LightStateBlinking ? (plight->m_rgblinkpattern[0] == '1') : (plight->m_d.m_state != LightStateOff));
 		}
 		else if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemBumper)
 		{
 			Bumper * const pbumper = ((Bumper *)m_ptable->m_vedit.ElementAt(i));
-			if (pbumper->m_d.m_state == LightStateBlinking)
-			{
-				pbumper->DrawFrame(pbumper->m_rgblinkpattern[0] == '1');
-			}
-			else
-			{
-				pbumper->DrawFrame(pbumper->m_d.m_state != LightStateOff);
-			}
+			pbumper->DrawFrame(pbumper->m_d.m_state == LightStateBlinking ? (pbumper->m_rgblinkpattern[0] == '1') : (pbumper->m_d.m_state != LightStateOff));
 		}
 	}
 
@@ -1228,7 +1222,7 @@ void Player::EraseBall(Ball *pball)
 	// Flag the region as needing to be updated.
 	if (m_fBallShadows)
 	{
-		if (!(fIntRectIntersect(pball->m_rcScreen, pball->m_rcScreenShadow)))
+		if (!fIntRectIntersect(pball->m_rcScreen, pball->m_rcScreenShadow))
 		{
 			InvalidateRect(&pball->m_rcScreenShadow);
 		}
@@ -1424,41 +1418,41 @@ void Player::InitWindow()
 	switch (ballStretchMonitor)
 	{
 	case 0: 
-		xMonitor = 4.0f / 4.0f;
-		yMonitor = 3.0f / 3.0f;
+		xMonitor = (float)(4.0 / 4.0);
+		yMonitor = (float)(3.0 / 3.0);
 		break;
 	case 1: 
-		xMonitor = 16.0f / 4.0f;
-		yMonitor = 9.0f / 3.0f;
+		xMonitor = (float)(16.0 / 4.0);
+		yMonitor = (float)(9.0 / 3.0);
 		break;
 	case 2: 
-		xMonitor = 16.0f / 4.0f;
-		yMonitor = 10.0f / 3.0f;
+		xMonitor = (float)(16.0 / 4.0);
+		yMonitor = (float)(10.0 / 3.0);
 		break;
 	case 3: 
-		xMonitor = 21.0f / 4.0f;
-		yMonitor = 10.0f / 3.0f;
+		xMonitor = (float)(21.0 / 4.0);
+		yMonitor = (float)(10.0 / 3.0);
 		break;
 	case 4: 
-		xMonitor = 3.0f / 4.0f;
-		yMonitor = 4.0f / 3.0f;
+		xMonitor = (float)(3.0 / 4.0);
+		yMonitor = (float)(4.0 / 3.0);
 		break;
 	case 5: 
-		xMonitor = 9.0f / 4.0f;
-		yMonitor = 16.0f / 3.0f;
+		xMonitor = (float)(9.0 / 4.0);
+		yMonitor = (float)(16.0 / 3.0);
 		break;
 	case 6: 
-		xMonitor = 10.0f / 4.0f;
-		yMonitor = 16.0f / 3.0f;
+		xMonitor = (float)(10.0 / 4.0);
+		yMonitor = (float)(16.0 / 3.0);
 		break;
 	case 7: 
-		xMonitor = 10.0f / 4.0f;
-		yMonitor = 21.0f / 3.0f;
+		xMonitor = (float)(10.0 / 4.0);
+		yMonitor = (float)(21.0 / 3.0);
 		break;
 
 	}
-	float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
-	float scalebackMonitorY = ((xMonitor + yMonitor)*0.5f)/yMonitor;
+	const float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
+	const float scalebackMonitorY = ((xMonitor + yMonitor)*0.5f)/yMonitor;
 
 	float temprotation = m_ptable->m_rotation;
 	while (temprotation < 0.f)
@@ -1466,6 +1460,8 @@ void Player::InitWindow()
 		temprotation += 360.0f;
 	}
 
+	const float c = sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f)));
+	const float s = sinf(ANGTORAD(fmodf(temprotation,180.0f)));
 	switch(ballStretchMode)
 	{
 		case 0:	m_BallStretchX = 1.0f;
@@ -1477,16 +1473,16 @@ void Player::InitWindow()
 				m_ptable->m_scalex
 				m_ptable->m_scaley
 				*/
-				m_BallStretchX = scalebackX*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackY*sinf(ANGTORAD(fmodf(temprotation,180.0f)));
-				m_BallStretchY = scalebackY*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackX*sinf(ANGTORAD(fmodf(temprotation,180.0f)));
+				m_BallStretchX = scalebackX*c + scalebackY*s;
+				m_BallStretchY = scalebackY*c + scalebackX*s;
 
 				break;
-		case 2: m_BallStretchX = scalebackX*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackY*sinf(ANGTORAD(fmodf(temprotation,180.0f)));
-				m_BallStretchY = scalebackY*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackX*sinf(ANGTORAD(fmodf(temprotation,180.0f)));
+		case 2: m_BallStretchX = scalebackX*c + scalebackY*s;
+				m_BallStretchY = scalebackY*c + scalebackX*s;
 				if (m_fFullScreen)
 				{
-					m_BallStretchX = m_BallStretchX * (scalebackMonitorX*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackMonitorY*sinf(ANGTORAD(fmodf(temprotation,180.0f))));
-					m_BallStretchY = m_BallStretchY * (scalebackMonitorY*sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f))) + scalebackMonitorX*sinf(ANGTORAD(fmodf(temprotation,180.0f))));
+					m_BallStretchX *= scalebackMonitorX*c + scalebackMonitorY*s;
+					m_BallStretchY *= scalebackMonitorY*c + scalebackMonitorX*s;
 				}
 				break;
 	}
@@ -1547,9 +1543,9 @@ int Player::UltraNudgeGetTilt()
 
 void Player::UltraNudge()	// called on every integral physics frame
 {	
-	static F32 cna=1,sna=0,na=0;	// initialize for angle 0
+	static F32 cna=1.f,sna=0.f,na=0.f;	// initialize for angle 0
 	
-	if (m_NudgeManual >= 0)			// Only one joystick controls in manual mode
+	if (m_NudgeManual >= 0)			    // Only one joystick controls in manual mode
 	{		
 		m_NudgeX = m_AccelMAmp * ((float)curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE); // * Manual Gain
 		m_NudgeY = m_AccelMAmp * ((float)curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
@@ -1626,7 +1622,7 @@ void Player::UltraPlunger()	// called on every intergral physics frame
 	
 	x[0] = (float)curPlunger; //initialize filter
 	do	{
-		y[0] = a[0]*x[0];		  // initial
+		y[0] = a[0]*x[0];	  // initial
 
 		for (int i = IIR_Order; i > 0 ;--i) // all terms but the zero-th 
 			{ 
@@ -1772,7 +1768,10 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 				// Collide may have changed the velocity of the ball, 
 				// and therefore the bounding box for the next hit cycle
 				if ( m_vball.ElementAt(i) != pball) // Ball still exists? may have been deleted from list
-					{ if(i) --i;}  // collision script deleted the ball, back up one count, if not zero
+					{
+					if(i) // collision script deleted the ball, back up one count, if not zero
+						--i;
+					}
 				else
 					{
 					pball->CalcBoundingRect();		// do new boundings 
@@ -3526,14 +3525,14 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				}
 			g_pplayer->m_ptable->StopPlaying();
 			g_pplayer->m_pininput.UnInit();
-			delete g_pplayer;
-			g_pplayer = NULL;
 
 			g_pvp->SetEnableToolbar();
 			g_pvp->SetEnableMenuItems();
             mixer_shutdown();
             hid_shutdown();
-			
+
+			delete g_pplayer;
+			g_pplayer = NULL;
 			break;
 
 		case WM_PAINT:
@@ -3786,7 +3785,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 								}
 
 							g_pplayer->m_ptable->m_pcv->EvaluateScriptStatement(szText);
-							delete szText;
+							delete [] szText;
 							}
 						break;
 					}

@@ -342,15 +342,15 @@ BOOL ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname
 			wzContents[len] = L'\0';
 
 			*pContents = SysAllocString(wzContents);
-			delete wzContents;
+			delete [] wzContents;
 			}
 
-		delete szContents;
+		delete [] szContents;
 
 		fSuccess = fTrue;
 		}
 
-	delete szPath;
+	delete [] szPath;
 
 	return fSuccess;
 	}
@@ -553,7 +553,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 
 	SetVarBstr(Value, SysAllocString(wzT));
 
-	delete wzT;
+	delete [] wzT;
 
 	return S_OK;
 }
@@ -851,15 +851,15 @@ PinTable::~PinTable()
 		DeleteObject(m_hbmOffScreen);
 		}
 
-	SAFE_DELETE(m_szTableName);
-	SAFE_DELETE(m_szAuthor);
-	SAFE_DELETE(m_szVersion);
-	SAFE_DELETE(m_szReleaseDate);
-	SAFE_DELETE(m_szAuthorEMail);
-	SAFE_DELETE(m_szWebSite);
-	SAFE_DELETE(m_szBlurb);
-	SAFE_DELETE(m_szDescription);
-	SAFE_DELETE(m_szRules);
+	SAFE_VECTOR_DELETE(m_szTableName);
+	SAFE_VECTOR_DELETE(m_szAuthor);
+	SAFE_VECTOR_DELETE(m_szVersion);
+	SAFE_VECTOR_DELETE(m_szReleaseDate);
+	SAFE_VECTOR_DELETE(m_szAuthorEMail);
+	SAFE_VECTOR_DELETE(m_szWebSite);
+	SAFE_VECTOR_DELETE(m_szBlurb);
+	SAFE_VECTOR_DELETE(m_szDescription);
+	SAFE_VECTOR_DELETE(m_szRules);
 	}
 
 
@@ -1526,24 +1526,23 @@ void PinTable::SetDirtyDraw()
 
 void PinTable::Play()
 	{
-	HRESULT hr = GetRegInt("Player", "AlphaRampAccuracy", &m_alphaRampsAccuracy);
-	if (hr != S_OK)
-	{
-		m_alphaRampsAccuracy = 5;
-	}
-
-	char szLoadDir[MAX_PATH];
-	
-	mixer_volmod( m_tblVolmod );
-
 	if (g_pplayer)
 		{
 		return; // Can't play twice
 		}
+
+	HRESULT hr = GetRegInt("Player", "AlphaRampAccuracy", &m_alphaRampsAccuracy);
+	if (hr != S_OK)
+		{
+		m_alphaRampsAccuracy = 5;
+		}
+	
+	mixer_volmod( m_tblVolmod );
 		
 	EndAutoSaveCounter();
 
 	// get the load path from the table filename
+	char szLoadDir[MAX_PATH];
 	PathFromFilename(m_szFileName, szLoadDir);
 	// make sure the load directory is the active directory
 	DWORD err = SetCurrentDirectory(szLoadDir);
@@ -2282,7 +2281,7 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, H
 		MultiByteToWideChar(CP_ACP, 0, szValue, -1, wzT, len+1);
 
 		bw.WriteBytes(wzT, len*sizeof(WCHAR), &writ);
-		delete wzT;
+		delete [] wzT;
 		pstm->Release();
 		pstm = NULL;
 		}
@@ -2346,7 +2345,7 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
 		WriteInfoValue(pstg, wzName, m_vCustomInfoContent.ElementAt(i), hcrypthash);
 
-		delete wzName;
+		delete [] wzName;
 		}
 
 	pstg->Commit(STGC_DEFAULT);
@@ -2379,7 +2378,7 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, 
 		//delete br;
 		//pstm->Read(*pszValue, ss.cbSize.LowPart, &read);
 		
-		delete wzT;
+		delete [] wzT;
 		pstm->Release();
 		}
 
@@ -2449,7 +2448,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 		ReadInfoValue(pstg, wzName, &szValue, hcrypthash);
 		m_vCustomInfoContent.AddElement(szValue);
 
-		delete wzName;
+		delete [] wzName;
 		}
 
 	return S_OK;
@@ -6736,7 +6735,7 @@ HeightError:
 							delete vvertex.ElementAt(i2);
 							}
 
-						delete rgv;
+						delete [] rgv;
 						return zheight;
 									}
 					}

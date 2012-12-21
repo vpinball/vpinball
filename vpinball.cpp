@@ -1581,7 +1581,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 		lstrcat(szText, ls2.m_szbuffer);
 		// TEXT
 		const int result = MessageBox(m_hwnd, szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
-		delete szText;
+		delete [] szText;
 		if (result == IDCANCEL)
 			{
 			return fFalse;
@@ -4553,7 +4553,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 								SendMessage(hwndList, LB_SETSEL, TRUE, index);
 								// Delete the old value
 								SendMessage(hwndList, LB_DELETESTRING, oldindex, 0);
-								delete szT;
+								delete [] szT;
 								}
 							}
 							break;
@@ -4587,7 +4587,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 								const int index = SendMessage(hwndIn, LB_ADDSTRING, 0, (LPARAM)szT);
 								SendMessage(hwndIn, LB_SETITEMDATA, index, data);
-								delete szT;
+								delete [] szT;
 								}
 
 							// Remove the old strings after everything else, to avoid messing up indices
@@ -4597,7 +4597,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 								SendMessage(hwndOut, LB_DELETESTRING, rgsel[count-i-1], 0);
 								}
 
-							delete rgsel;
+							delete [] rgsel;
 							}
 							break;
 
@@ -4804,9 +4804,9 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 								char *szCustomValue;
 								VPGetDialogItemText(hwndDlg, IDC_CUSTOMVALUE, &szCustomValue);
 								pt->AddListItem(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), szCustomName, szCustomValue, NULL);
-								delete szCustomValue;
+								delete [] szCustomValue;
 								}
-							delete szCustomName;
+							delete [] szCustomName;
 							}
 							break;
 
@@ -4819,15 +4819,15 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 						case IDOK:
 							{
-							SAFE_DELETE(pt->m_szTableName);
-							SAFE_DELETE(pt->m_szAuthor);
-							SAFE_DELETE(pt->m_szVersion);
-							SAFE_DELETE(pt->m_szReleaseDate);
-							SAFE_DELETE(pt->m_szAuthorEMail);
-							SAFE_DELETE(pt->m_szWebSite);
-							SAFE_DELETE(pt->m_szBlurb);
-							SAFE_DELETE(pt->m_szDescription);
-							SAFE_DELETE(pt->m_szRules);
+							SAFE_VECTOR_DELETE(pt->m_szTableName);
+							SAFE_VECTOR_DELETE(pt->m_szAuthor);
+							SAFE_VECTOR_DELETE(pt->m_szVersion);
+							SAFE_VECTOR_DELETE(pt->m_szReleaseDate);
+							SAFE_VECTOR_DELETE(pt->m_szAuthorEMail);
+							SAFE_VECTOR_DELETE(pt->m_szWebSite);
+							SAFE_VECTOR_DELETE(pt->m_szBlurb);
+							SAFE_VECTOR_DELETE(pt->m_szDescription);
+							SAFE_VECTOR_DELETE(pt->m_szRules);
 
 							VPGetDialogItemText(hwndDlg, IDC_TABLENAME, &pt->m_szTableName);
 							VPGetDialogItemText(hwndDlg, IDC_TABLEAUTHOR, &pt->m_szAuthor);
@@ -4890,7 +4890,7 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							char *szT;
 							VPGetDialogItemText(hwndDlg, IDC_WEBSITE, &szT);
 							OpenURL(szT);
-							delete szT;
+							delete [] szT;
 							}
 							break;
 
@@ -4908,9 +4908,9 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							lstrcat(szLong, szHeaders);
 							lstrcat(szLong, szTableName);
 							OpenURL(szLong);
-							delete szLong;
-							delete szEMail;
-							delete szTableName;
+							delete [] szLong;
+							delete [] szEMail;
+							delete [] szTableName;
 							}
 							break;
 						}
