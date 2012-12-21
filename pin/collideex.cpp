@@ -134,7 +134,7 @@ LineSegSlingshot::LineSegSlingshot()
 
 LineSegSlingshot::~LineSegSlingshot()
 	{
-	delete m_slingshotanim.m_pobjframe;
+	delete [] m_slingshotanim.m_pobjframe;
 	}
 
 
@@ -594,7 +594,7 @@ Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count, const bool keepptr)
 
 Hit3DPoly::~Hit3DPoly()
 	{
-	delete m_rgv;
+	delete [] m_rgv;
 	}
 
 float Hit3DPoly::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)

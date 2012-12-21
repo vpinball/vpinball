@@ -407,7 +407,7 @@ HRESULT BiffReader::Load()
 				{
 				BYTE * const szT = new BYTE[m_bytesinrecordremaining];
 				GetStruct(szT, m_bytesinrecordremaining);
-				delete szT;
+				delete [] szT;
 				}
 			}
 		}
@@ -433,7 +433,7 @@ FastIStorage::~FastIStorage()
 		m_vstm.ElementAt(i)->Release();
 		}
 
-	SAFE_DELETE(m_wzName);
+	SAFE_VECTOR_DELETE(m_wzName);
 	}
 
 long __stdcall FastIStorage::QueryInterface(const struct _GUID &,void ** )
@@ -596,7 +596,7 @@ FastIStream::FastIStream()
 FastIStream::~FastIStream()
 	{
 	free(m_rg);
-	SAFE_DELETE(m_wzName);
+	SAFE_VECTOR_DELETE(m_wzName);
 	}
 
 void FastIStream::SetSize(unsigned int i)

@@ -117,7 +117,7 @@ void ShadowSur::Polygon(const Vertex2D * const rgv, const int count)
 
 	::Polygon(m_hdc, rgpt, count);
 	
-	delete rgpt;
+	delete [] rgpt;
 	}
 
 void ShadowSur::EllipseImage(const float centerx, const float centery, const float radius, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
@@ -191,7 +191,7 @@ void ShadowSur::PolygonSkew(const Vertex2D * const rgv, const int count, const f
 
 	SetViewportOrgEx(m_hdc, 0, 0, NULL);
 	
-	delete rgpt;
+	delete [] rgpt;
 	}
 
 void ShadowSur::PolylineSkew(const Vertex2D * const rgv, const int count, const float * const rgz, const float z1, const float z2) const
@@ -227,7 +227,7 @@ void ShadowSur::PolylineSkew(const Vertex2D * const rgv, const int count, const 
 
 	SetViewportOrgEx(m_hdc, 0, 0, NULL);
 	
-	delete rgpt;
+	delete [] rgpt;
 	}
 
 void ShadowSur::Polyline(const Vertex2D * const rgv, const int count)
@@ -244,7 +244,7 @@ void ShadowSur::Polyline(const Vertex2D * const rgv, const int count)
 
 	::Polyline(m_hdc, rgpt, count);
 	
-	delete rgpt;
+	delete [] rgpt;
 	}
 
 void ShadowSur::Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y)

@@ -299,7 +299,7 @@ void Light::PreRender(Sur * const psur)
 				psur->Polygon(rgv, cvertex);
 				}
 
-			delete rgv;
+			delete [] rgv;
 			break;
 						  }
 		}
@@ -381,7 +381,7 @@ void Light::RenderOutline(Sur * const psur)
 
 			psur->Polygon(rgv, cvertex);
 
-			delete rgv;
+			delete [] rgv;
 
 			psur->SetObject((ISelect *)&m_lightcenter);
 			break;
@@ -629,7 +629,7 @@ void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		delete vtri.ElementAt(t);
 		}
 
-	delete rgv;
+	delete [] rgv;
 	}
 
 void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
@@ -951,7 +951,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 		delete vtri.ElementAt(i);
 		}
 
-	delete rgv;
+	delete [] rgv;
 
 	ppin3d->SetTexture(NULL);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
@@ -1415,7 +1415,7 @@ void Light::DoCommand(int icmd, int x, int y)
 				delete vvertex.ElementAt(i);
 				}
 
-			delete rgv;
+			delete [] rgv;
 
 			SetDirtyDraw();
 

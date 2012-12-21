@@ -241,7 +241,8 @@ void LightSeq::EndPlay()
 {
 	if (m_pgridData != NULL)
 	{
-		delete m_pgridData;
+		delete [] m_pgridData;
+		m_pgridData = NULL;
 	}
 
 	if (m_ptu != NULL)

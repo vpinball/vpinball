@@ -17,55 +17,43 @@ inline unsigned int RGB_TO_BGR(const unsigned int c)
 inline void Display_DrawSprite( const LPDIRECT3DDEVICE7 Direct3DDevice, const float x, const float y, const float Width, const float Height, const DWORD col, void * const Texture, const float u, const float v )
 {
 	// Build a quad.
-    struct _D3DTLVertexType
-	{
-    // This structure is compatibile with DX7 flexible vertex formats.
-    // These members must be in this order as defined by the SDK.
-    // The flags to use this vertex type are...
-	// (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR)
+    Vertex3D_NoTex2 Vertices[4];
 
-	float                   X, Y;                           // Vertex2D screen position.
-    float                   Z;                              // Vertex2D z buffer depth.
-    float                   RHW;                            // Vertex2D rhw.
-    DWORD                   DiffuseColor;                   // Vertex2D diffuse color.
-    DWORD                   SpecularColor;					// Vertex2D specular color.
-    float                   TU1, TV1;						// Vertex2D texture coordinate.
-	} Vertices[4];
-	Vertices[0].DiffuseColor = 
-	Vertices[0].SpecularColor = col;
-	Vertices[0].TU1 = 0.0f;
-	Vertices[0].TV1 = v;
-	Vertices[0].X = x; 
-	Vertices[0].Y = y + Height; 
-	Vertices[0].Z = 0.0f; 
-	Vertices[0].RHW = 1.0f; 
+	Vertices[0].color =
+	Vertices[0].specular = col;
+	Vertices[0].tu = 0.0f;
+	Vertices[0].tv = v;
+	Vertices[0].x = x;
+	Vertices[0].y = y + Height;
+	Vertices[0].z = 0.0f;
+	Vertices[0].rhw = 1.0f;
 
-	Vertices[1].DiffuseColor = 
-	Vertices[1].SpecularColor = col;
-	Vertices[1].TU1 = 0.0f;
-	Vertices[1].TV1 = 0.0f;
-	Vertices[1].X = x; 
-	Vertices[1].Y = y;
-	Vertices[1].Z = 0.0f; 
-	Vertices[1].RHW = 1.0f; 
+	Vertices[1].color =
+	Vertices[1].specular = col;
+	Vertices[1].tu = 0.0f;
+	Vertices[1].tv = 0.0f;
+	Vertices[1].x = x;
+	Vertices[1].y = y;
+	Vertices[1].z = 0.0f;
+	Vertices[1].rhw = 1.0f;
 
-	Vertices[2].DiffuseColor = 
-	Vertices[2].SpecularColor = col;
-	Vertices[2].TU1 = u;
-	Vertices[2].TV1 = v;
-	Vertices[2].X = x + Width; 
-	Vertices[2].Y = y + Height;
-	Vertices[2].Z = 0.0f; 
-	Vertices[2].RHW = 1.0f;
+	Vertices[2].color =
+	Vertices[2].specular = col;
+	Vertices[2].tu = u;
+	Vertices[2].tv = v;
+	Vertices[2].x = x + Width;
+	Vertices[2].y = y + Height;
+	Vertices[2].z = 0.0f;
+	Vertices[2].rhw = 1.0f;
 
-	Vertices[3].DiffuseColor = 
-	Vertices[3].SpecularColor = col;
-	Vertices[3].TU1 = u;
-	Vertices[3].TV1 = 0.0f;
-	Vertices[3].X = x + Width; 
-	Vertices[3].Y = y; 
-	Vertices[3].Z = 0.0f; 
-	Vertices[3].RHW = 1.0f; 
+	Vertices[3].color =
+	Vertices[3].specular = col;
+	Vertices[3].tu = u;
+	Vertices[3].tv = 0.0f;
+	Vertices[3].x = x + Width;
+	Vertices[3].y = y;
+	Vertices[3].z = 0.0f;
+	Vertices[3].rhw = 1.0f;
 
 	Direct3DDevice->SetTexture ( 0, (LPDIRECTDRAWSURFACE7) Texture );
 

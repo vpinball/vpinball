@@ -120,6 +120,6 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
 	PostMessage(pasp->HwndTable, DONE_AUTOSAVE, (WPARAM)hEvent, hr);
 
-	delete wzT;
+	delete [] wzT;
 	delete pasp;
 	}
