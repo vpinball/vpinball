@@ -27,7 +27,7 @@ HitObject *CreateCircularHitPoly(const float x, const float y, const float z, co
 		rgv3d[i].z = z;
 		}
 
-	return new Hit3DPoly(rgv3d, sections, true);
+	return new Hit3DPoly(rgv3d, sections);
 	}
 
 HitObject::HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),

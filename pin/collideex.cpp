@@ -575,15 +575,8 @@ void HitSpinner::CalcHitRect()
 	m_rcHitRect = m_lineseg[0].m_rcHitRect;
 	}
 
-Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count, const bool keepptr) : m_cvertex(count)
+Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count) : m_rgv(rgv),m_cvertex(count)
 	{
-	if(keepptr)
-		m_rgv = rgv;
-	else {
-		m_rgv = new Vertex3Ds[count];
-		memcpy(m_rgv, rgv, count * sizeof(Vertex3Ds));
-	}
-
 	CalcNormal();
 
 	m_fVisible = fFalse;
@@ -881,7 +874,7 @@ void Hit3DCylinder::CalcHitRect()
 	m_rcHitRect.zhigh = max(v1.z, v2.z);
 	}
 
-Hit3DPolyDrop::Hit3DPolyDrop(Vertex3Ds * const rgv, const int count, const bool keepptr) : Hit3DPoly(rgv, count, keepptr)
+Hit3DPolyDrop::Hit3DPolyDrop(Vertex3Ds * const rgv, const int count) : Hit3DPoly(rgv, count)
 	{
 	m_polydropanim.m_iframe = -1;
 	m_fVisible = fFalse;

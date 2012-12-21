@@ -22,7 +22,7 @@ public:
 	Ball();
 	~Ball();
 
-	void Init();    
+	void Init();
 
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();

@@ -253,7 +253,7 @@ void Light::PreRender(Sur * const psur)
 			const int cvertex = vvertex.Size();
 			Vertex2D * const rgv = new Vertex2D[cvertex];
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
@@ -373,7 +373,7 @@ void Light::RenderOutline(Sur * const psur)
 			const int cvertex = vvertex.Size();
 			Vertex2D * const rgv = new Vertex2D[cvertex];
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
@@ -451,7 +451,7 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
 			const int cvertex = vvertex.Size();
 			Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				rgv3d[i].x = vvertex.ElementAt(i)->x;
 				rgv3d[i].y = vvertex.ElementAt(i)->y;
@@ -459,7 +459,7 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
 				delete vvertex.ElementAt(i);
 				}
 
-			Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex, true);
+			Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
 			pvho->AddElement(ph3dp);
 			}
 			break;
@@ -724,7 +724,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	const int cvertex = vvertex.Size();
 	RenderVertex* const rgv = new RenderVertex[cvertex];
 
-	for (int i=0;i<vvertex.Size();i++)
+	for (int i=0;i<cvertex;i++)
 		{
 		rgv[i] = *vvertex.ElementAt(i);
 		delete vvertex.ElementAt(i);
@@ -1379,7 +1379,7 @@ void Light::DoCommand(int icmd, int x, int y)
 			const int cvertex = vvertex.Size();
 			Vertex2D * const rgv = new Vertex2D[cvertex];
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				}
@@ -1410,7 +1410,7 @@ void Light::DoCommand(int icmd, int x, int y)
 				m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 				}
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				delete vvertex.ElementAt(i);
 				}

@@ -6688,7 +6688,7 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 						const int cvertex = vvertex.Size();
 						Vertex2D * const rgv = new Vertex2D[cvertex];
 						
-						for (int i2=0;i2<vvertex.Size();i2++)
+						for (int i2=0;i2<cvertex;i2++)
 							{
 							rgv[i2] = *((Vertex2D *)vvertex.ElementAt(i2));
 							}
@@ -6730,7 +6730,7 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 						zheight = ((startlength/totallength) * (pramp->m_d.m_heighttop - pramp->m_d.m_heightbottom)) + pramp->m_d.m_heightbottom;
 						}
 HeightError:
-						for (int i2=0;i2<vvertex.Size();i2++)
+						for (int i2=0;i2<cvertex;i2++)
 							{
 							delete vvertex.ElementAt(i2);
 							}

@@ -253,7 +253,7 @@ void Ramp::PreRender(Sur * const psur)
 	psur->SetObject(this);
 
 	int cvertex;
-	Vertex2D * const rgv = GetRampVertex(&cvertex, NULL, NULL, NULL);
+	Vertex2D * const rgv = GetRampVertex(cvertex, NULL, NULL, NULL);
 
 	psur->Polygon(rgv, cvertex*2);
 
@@ -270,7 +270,7 @@ void Ramp::Render(Sur * const psur)
 
 	int cvertex;
 	bool *pfCross;
-	Vertex2D * const rgv = GetRampVertex(&cvertex, NULL, &pfCross, NULL);
+	Vertex2D * const rgv = GetRampVertex(cvertex, NULL, &pfCross, NULL);
 
 	psur->Polygon(rgv, cvertex*2);
 	for (int i=0;i<cvertex;i++)
@@ -345,7 +345,7 @@ void Ramp::RenderOutline(Sur * const psur)
 
 	int cvertex;
 	bool *pfCross;
-	Vertex2D * const rgv = GetRampVertex(&cvertex, NULL, &pfCross, NULL);
+	Vertex2D * const rgv = GetRampVertex(cvertex, NULL, &pfCross, NULL);
 
 	psur->Polygon(rgv, cvertex*2);
 
@@ -378,7 +378,7 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 
 	float *rgheight;
 	int cvertex;
-	Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
+	Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, NULL);
 
 	// Find the range of vertices to draw a shadow for
 	int startvertex = cvertex;
@@ -461,7 +461,7 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 	{
 	float *rgheight;
 	int cvertex;
-	const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
+	const Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, NULL);
 
 	for (int i=0;i<cvertex;i++)
 		{
@@ -484,7 +484,7 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 	delete [] rgheight;
 	}
 
-Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio)
+Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio)
 	{
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
@@ -631,12 +631,12 @@ Vertex2D *Ramp::GetRampVertex(int * const pcvertex, float ** const ppheight, boo
 	//rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 	//delete vvertex.ElementAt(i);
 
-	for (int i=0;i<vvertex.Size();i++)
+	for (int i=0;i<cvertex;i++)
 		{
 		delete vvertex.ElementAt(i);
 		}
 
-	*pcvertex = cvertex;
+	pcvertex = cvertex;
 	return rgv;
 	}
 
@@ -709,7 +709,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	int cvertex;
 	float *rgheight;
-	Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
+	Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, NULL);
 
 	float wallheightright;
 	float wallheightleft;
@@ -802,12 +802,12 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 		pv4 = &rgv[i+1];
 
 		{
-		Vertex3Ds rgv3D[3] = {
-			Vertex3Ds(pv2->x,pv2->y,rgheight[i]),
-			Vertex3Ds(pv1->x,pv1->y,rgheight[i]),
-			Vertex3Ds(pv3->x,pv3->y,rgheight[i+1])};
+		Vertex3Ds * const rgv3D = new Vertex3Ds[3];
+		rgv3D[0] = Vertex3Ds(pv2->x,pv2->y,rgheight[i]);
+		rgv3D[1] = Vertex3Ds(pv1->x,pv1->y,rgheight[i]);
+		rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,rgheight[i+1]);
 
-		Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3,false);
+		Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3);
 		ph3dpoly->m_elasticity = m_d.m_elasticity;
 		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -830,12 +830,12 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 		ph3dpolyOld = ph3dpoly;
 		}
 
-		Vertex3Ds rgv3D[3] = {
-			Vertex3Ds(pv3->x,pv3->y,rgheight[i+1]),
-			Vertex3Ds(pv1->x,pv1->y,rgheight[i]),
-			Vertex3Ds(pv4->x,pv4->y,rgheight[i+1])};
+		Vertex3Ds * const rgv3D = new Vertex3Ds[3];
+		rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,rgheight[i+1]);
+		rgv3D[1] = Vertex3Ds(pv1->x,pv1->y,rgheight[i]);
+		rgv3D[2] = Vertex3Ds(pv4->x,pv4->y,rgheight[i+1]);
 
-		Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3,false);
+		Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3);
 		ph3dpoly->m_elasticity = m_d.m_elasticity;
 		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -854,11 +854,11 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 		ph3dpolyOld = ph3dpoly;
 		}
 
-	Vertex3Ds rgv3D[3] = {
-		Vertex3Ds(pv4->x,pv4->y,rgheight[cvertex-1]),
-		Vertex3Ds(pv3->x,pv3->y,rgheight[cvertex-1]),
-		Vertex3Ds(pv1->x,pv1->y,rgheight[cvertex-1])};
-	ph3dpolyOld = new Hit3DPoly(rgv3D,3,false);
+	Vertex3Ds * const rgv3D = new Vertex3Ds[3];
+	rgv3D[0] = Vertex3Ds(pv4->x,pv4->y,rgheight[cvertex-1]);
+	rgv3D[1] = Vertex3Ds(pv3->x,pv3->y,rgheight[cvertex-1]);
+	rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,rgheight[cvertex-1]);
+	ph3dpolyOld = new Hit3DPoly(rgv3D,3);
 	
 	CheckJoint(pvho, ph3dpolyOld, ph3dpolyOld);
 	delete ph3dpolyOld;
@@ -878,12 +878,12 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 		const Vertex2D * const pv4 = &rgv[i+1];
 
 		{
-		Vertex3Ds rgv3D[3] = {
-			Vertex3Ds(pv1->x,pv1->y,rgheight[i]),
-			Vertex3Ds(pv2->x,pv2->y,rgheight[i]),
-			Vertex3Ds(pv3->x,pv3->y,rgheight[i+1])};
+		Vertex3Ds * const rgv3D = new Vertex3Ds[3];
+		rgv3D[0] = Vertex3Ds(pv1->x,pv1->y,rgheight[i]);
+		rgv3D[1] = Vertex3Ds(pv2->x,pv2->y,rgheight[i]);
+		rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,rgheight[i+1]);
 
-		Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3,false);
+		Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3);
 		ph3dpoly->m_elasticity = m_d.m_elasticity;
 		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -894,12 +894,12 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 		ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 		}
 
-		Vertex3Ds rgv3D[3] = {
-			Vertex3Ds(pv3->x,pv3->y,rgheight[i+1]),
-			Vertex3Ds(pv4->x,pv4->y,rgheight[i+1]),
-			Vertex3Ds(pv1->x,pv1->y,rgheight[i])};
+		Vertex3Ds * const rgv3D = new Vertex3Ds[3];
+		rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,rgheight[i+1]);
+		rgv3D[1] = Vertex3Ds(pv4->x,pv4->y,rgheight[i+1]);
+		rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,rgheight[i]);
 
-		Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3,false);
+		Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3);
 		ph3dpoly->m_elasticity = m_d.m_elasticity;
 		ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 		ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -920,14 +920,13 @@ void Ramp::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
 void Ramp::AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight)
 	{
-	Vertex3Ds rgv3D[4] = {
-		Vertex3Ds(pv1->x,pv1->y,height1 - (float)PHYS_SKIN),
-		Vertex3Ds(pv2->x,pv2->y,height2 - (float)PHYS_SKIN),
+	Vertex3Ds * const rgv3D = new Vertex3Ds[4];
+	rgv3D[0] = Vertex3Ds(pv1->x,pv1->y,height1 - (float)PHYS_SKIN);
+	rgv3D[1] = Vertex3Ds(pv2->x,pv2->y,height2 - (float)PHYS_SKIN);
+	rgv3D[2] = Vertex3Ds(pv2->x + WALLTILT,pv2->y + WALLTILT,height2 + wallheight);
+	rgv3D[3] = Vertex3Ds(pv1->x + WALLTILT,pv1->y + WALLTILT,height1 + wallheight);
 
-		Vertex3Ds(pv2->x + WALLTILT,pv2->y + WALLTILT,height2 + wallheight),
-		Vertex3Ds(pv1->x + WALLTILT,pv1->y + WALLTILT,height1 + wallheight)};
-
-	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4,false);	
+	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4);
 	ph3dpoly->m_elasticity = m_d.m_elasticity;
 	ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
 	ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
@@ -1077,7 +1076,7 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 	{
 	float *rgheight;
 	int cvertex;
-	const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, NULL);
+	const Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, NULL);
 
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, TRUE);
 
@@ -1373,7 +1372,7 @@ void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		float *rgheight;
 		float *rgratio;
 		int cvertex;
-		const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
+		const Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, &rgratio);
 
 		const float tablewidth = m_ptable->m_right - m_ptable->m_left;
 		const float tableheight = m_ptable->m_bottom - m_ptable->m_top;
@@ -1939,7 +1938,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
 				m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 				}
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				delete vvertex.ElementAt(i);
 				}
@@ -2536,7 +2535,7 @@ void Ramp::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		float *rgheight;
 		float *rgratio;
 		int cvertex;
-		const Vertex2D * const rgv = GetRampVertex(&cvertex, &rgheight, NULL, &rgratio);
+		const Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, &rgratio);
 		//g_pplayer->m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
 		const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);

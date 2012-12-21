@@ -39,7 +39,7 @@ public:
 	void ReverseOrder();
 	virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
 
-	void GetRgVertex(Vector<RenderVertex> *pvv);
+	void GetRgVertex(Vector<RenderVertex> * const pvv);
 	void GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoords);
 
 	Vector< CComObject<DragPoint> > m_vdpoint;
