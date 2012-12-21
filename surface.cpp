@@ -475,9 +475,9 @@ void Surface::PreRender(Sur * const psur)
 	GetRgVertex(&vvertex);
 
 	m_cvertexT = vvertex.Size();
-	m_rgvT = new Vertex2D[m_cvertexT + 6]; // Add points so inverted polygons can be drawn
+	m_rgvT = new Vertex2D[!m_d.m_fInner ? m_cvertexT + 6 : m_cvertexT]; // Add points so inverted polygons can be drawn
 
-	for (int i=0;i<vvertex.Size();i++)
+	for (int i=0;i<m_cvertexT;i++)
 		{
 		m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 		delete vvertex.ElementAt(i);
@@ -548,7 +548,7 @@ void Surface::Render(Sur * const psur)
 		m_cvertexT = vvertex.Size();
 		m_rgvT = new Vertex2D[m_cvertexT];
 
-		for (int i=0;i<vvertex.Size();i++)
+		for (int i=0;i<m_cvertexT;i++)
 			{
 			m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 			delete vvertex.ElementAt(i);
@@ -627,7 +627,7 @@ void Surface::RenderBlueprint(Sur *psur)
 	m_cvertexT = vvertex.Size();
 	m_rgvT = new Vertex2D[m_cvertexT];
 
-	for (int i=0;i<vvertex.Size();i++)
+	for (int i=0;i<m_cvertexT;i++)
 		{
 		m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 		delete vvertex.ElementAt(i);
@@ -655,7 +655,7 @@ void Surface::RenderShadow(ShadowSur * const psur, const float height)
 	m_cvertexT = vvertex.Size();
 	m_rgvT = new Vertex2D[m_cvertexT+6];
 
-	for (int i=0;i<vvertex.Size();i++)
+	for (int i=0;i<m_cvertexT;i++)
 		{
 		m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 		delete vvertex.ElementAt(i);
@@ -746,7 +746,7 @@ void Surface::GetHitShapesDebug(Vector<HitObject> * const pvho)
 		rgv3d[cvertex+4].y = m_ptable->m_top;
 		rgv3d[cvertex+4].z = m_d.m_heighttop;
 
-		Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex+5, true);
+		Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex+5);
 		pvho->AddElement(ph3dp);
 
 		m_vhoCollidable.AddElement(ph3dp);
@@ -762,8 +762,8 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 	GetRgVertex(&vvertex);
 
 	const int count = vvertex.Size();
-	RenderVertex * const rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
-	Vertex3Ds * const rgv3D = new Vertex3Ds[count + 6];
+	RenderVertex * const rgv = new RenderVertex[count];
+	Vertex3Ds * const rgv3D = new Vertex3Ds[count];
 
 	if (m_d.m_fInner)
 		{
@@ -803,7 +803,7 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 		if (m_d.m_fDroppable)
 			{
 			// Special hit object that will allow us to animate the surface
-			m_phitdrop = new Hit3DPolyDrop(rgv3D,count,true);
+			m_phitdrop = new Hit3DPolyDrop(rgv3D,count);
 			m_phitdrop->m_pfe = (IFireEvents *)this;
 
 			m_phitdrop->m_fVisible = fTrue;
@@ -819,7 +819,7 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 			}
 		else
 			{
-			Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count,true);
+			Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
 			ph3dpoly->m_pfe = (IFireEvents *)this;
 
 			ph3dpoly->m_fVisible = fTrue;
@@ -1233,7 +1233,7 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	const int cvertex = vvertex.Size();
 	RenderVertex * const rgv = new RenderVertex[cvertex + 6]; // Add points so inverted polygons can be drawn
 
-	for (int i=0;i<vvertex.Size();i++)
+	for (int i=0;i<cvertex;i++)
 		{
 		rgv[i] = *vvertex.ElementAt(i);
 		delete vvertex.ElementAt(i);
@@ -1691,7 +1691,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 			m_cvertexT = vvertex.Size();
 			m_rgvT = new Vertex2D[m_cvertexT];
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<m_cvertexT;i++)
 				{
 				m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				}
@@ -1720,7 +1720,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 				m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 				}
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<m_cvertexT;i++)
 				{
 				delete vvertex.ElementAt(i);
 				}

@@ -95,7 +95,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	virtual void ClearForOverwrite();
 
 	void GetRgVertex(Vector<RenderVertex> * const pvv);
-	Vertex2D *GetRampVertex(int * const pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio);
+	Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio);
 
 	void AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight);
 

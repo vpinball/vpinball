@@ -92,7 +92,7 @@ public:
 class Hit3DPoly : public HitObject
 	{
 public:
-	Hit3DPoly(Vertex3Ds * const rgv, const int count, const bool keepptr);
+	Hit3DPoly(Vertex3Ds * const rgv, const int count);
 	virtual ~Hit3DPoly();
 	virtual float HitTestBasicPolygon(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool rigid);
 	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
@@ -267,7 +267,7 @@ public:
 class Hit3DPolyDrop : public Hit3DPoly
 	{
 public:
-	Hit3DPolyDrop(Vertex3Ds * const rgv, const int count, const bool keepptr);
+	Hit3DPolyDrop(Vertex3Ds * const rgv, const int count);
 
 	virtual AnimObject *GetAnimObject() {return &m_polydropanim;}
 

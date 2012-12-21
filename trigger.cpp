@@ -109,7 +109,7 @@ void Trigger::PreRender(Sur * const psur)
 			const int cvertex = vvertex.Size();
 			Vertex2D * const rgv = new Vertex2D[cvertex];
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
@@ -153,7 +153,7 @@ void Trigger::Render(Sur * const psur)
 			const int cvertex = vvertex.Size();
 			Vertex2D * const rgv = new Vertex2D[cvertex];
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
@@ -294,7 +294,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
 			const int cvertex = vvertex.Size();
 			Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				rgv3d[i].x = vvertex.ElementAt(i)->x;
 				rgv3d[i].y = vvertex.ElementAt(i)->y;
@@ -302,7 +302,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
 				delete vvertex.ElementAt(i);
 				}
 
-			Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex, true);
+			Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
 			ph3dp->m_ObjType = eTrigger;
 			ph3dp->m_pObj = (void*) this;
 
@@ -325,20 +325,16 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
 	GetRgVertex(&vvertex);
 
 	const int count = vvertex.Size();
-	RenderVertex * const rgv = new RenderVertex[count + 6]; // Add points so inverted polygons can be drawn
-	Vertex3Ds * const rgv3D = new Vertex3Ds[count + 6];
-
-	for (int i=0;i<count;i++)
-		{
-		rgv3D[i].x = vvertex.ElementAt(i)->x;
-		rgv3D[i].y = vvertex.ElementAt(i)->y;
-		rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);// + 50.0f; 
-		}
+	RenderVertex * const rgv = new RenderVertex[count];
+	Vertex3Ds * const rgv3D = new Vertex3Ds[count];
 
 	for (int i=0;i<count;i++)
 		{
 		rgv[i] = *vvertex.ElementAt(i);
 		delete vvertex.ElementAt(i);
+		rgv3D[i].x = rgv[i].x;
+		rgv3D[i].y = rgv[i].y;
+		rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);// + 50.0f; 
 		}
 #if 1	
 	for (int i=0;i<count;i++)	
@@ -352,7 +348,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
 #endif
 
 #if 1	
-	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count,true);
+	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
 
 	ph3dpoly->m_fVisible = fTrue;
 	ph3dpoly->m_ObjType = eTrigger;
@@ -597,7 +593,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
 			const int cvertex = vvertex.Size();
 			Vertex2D * const rgv = new Vertex2D[cvertex];
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				}
@@ -628,7 +624,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
 				m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 				}
 
-			for (int i=0;i<vvertex.Size();i++)
+			for (int i=0;i<cvertex;i++)
 				{
 				delete vvertex.ElementAt(i);
 				}

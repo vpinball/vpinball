@@ -383,13 +383,13 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 	plineseg->CalcNormal();
 	pvho->AddElement(plineseg);
 
-	Vertex3Ds rgv3D[4] = {
-		Vertex3Ds(m_ptable->m_left,m_ptable->m_top,m_ptable->m_glassheight),
-		Vertex3Ds(m_ptable->m_right,m_ptable->m_top,m_ptable->m_glassheight),
-		Vertex3Ds(m_ptable->m_right,m_ptable->m_bottom,m_ptable->m_glassheight),
-		Vertex3Ds(m_ptable->m_left,m_ptable->m_bottom,m_ptable->m_glassheight)};
+	Vertex3Ds * const rgv3D = new Vertex3Ds[4];
+	rgv3D[0] = Vertex3Ds(m_ptable->m_left,m_ptable->m_top,m_ptable->m_glassheight);
+	rgv3D[1] = Vertex3Ds(m_ptable->m_right,m_ptable->m_top,m_ptable->m_glassheight);
+	rgv3D[2] = Vertex3Ds(m_ptable->m_right,m_ptable->m_bottom,m_ptable->m_glassheight);
+	rgv3D[3] = Vertex3Ds(m_ptable->m_left,m_ptable->m_bottom,m_ptable->m_glassheight);
 
-	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4,false);
+	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4);
 
 	pvho->AddElement(ph3dpoly);
 	}
@@ -1004,7 +1004,7 @@ void Player::ReOrder() // Reorder playfield objects (for AMD/ATI configurations)
 			if (psurface->m_d.m_fDroppable)
 				{
 				IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
-				m_ptable->m_vedit.RemoveElement(piedit);
+				m_ptable->m_vedit.RemoveElementAt(i);
 				m_ptable->m_vedit.InsertElementAt(piedit,0);
 				dirtydraw = true;
 				}
@@ -1016,7 +1016,7 @@ void Player::ReOrder() // Reorder playfield objects (for AMD/ATI configurations)
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemBumper)
 			{
 			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
-			m_ptable->m_vedit.RemoveElement(piedit);
+			m_ptable->m_vedit.RemoveElementAt(i);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
 			dirtydraw = true;
 			}
@@ -1027,7 +1027,7 @@ void Player::ReOrder() // Reorder playfield objects (for AMD/ATI configurations)
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemGate)
 			{
 			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
-			m_ptable->m_vedit.RemoveElement(piedit);
+			m_ptable->m_vedit.RemoveElementAt(i);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
 			dirtydraw = true;
 			}
@@ -1038,7 +1038,7 @@ void Player::ReOrder() // Reorder playfield objects (for AMD/ATI configurations)
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemSpinner)
 			{
 			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
-			m_ptable->m_vedit.RemoveElement(piedit);
+			m_ptable->m_vedit.RemoveElementAt(i);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
 			dirtydraw = true;
 			}
@@ -1049,7 +1049,7 @@ void Player::ReOrder() // Reorder playfield objects (for AMD/ATI configurations)
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
 			{
 			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
-			m_ptable->m_vedit.RemoveElement(piedit);
+			m_ptable->m_vedit.RemoveElementAt(i);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
 			dirtydraw = true;
 			}
@@ -1060,7 +1060,7 @@ void Player::ReOrder() // Reorder playfield objects (for AMD/ATI configurations)
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemLight)
 			{
 			IEditable * const piedit = m_ptable->m_vedit.ElementAt(i);
-			m_ptable->m_vedit.RemoveElement(piedit);
+			m_ptable->m_vedit.RemoveElementAt(i);
 			m_ptable->m_vedit.InsertElementAt(piedit,0);
 			dirtydraw = true;
 			}

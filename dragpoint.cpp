@@ -260,7 +260,7 @@ void IHaveDragPoints::ReverseOrder()
 	m_vdpoint.ElementAt(m_vdpoint.Size()-1)->m_fSlingshot = fSlingshotTemp;
 	}
 
-void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> *pvv)
+void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> * const pvv)
 	{
 	const int cpoint = m_vdpoint.Size();
 
