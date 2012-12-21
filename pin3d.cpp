@@ -29,14 +29,10 @@ Pin3D::~Pin3D()
 	{
 	m_pDD->RestoreDisplayMode();
 
-	if (m_pddsFrontBuffer)
-		m_pddsFrontBuffer->Release();
+	SAFE_RELEASE(m_pddsFrontBuffer);
+	SAFE_RELEASE(m_pddsBackBuffer);
 
-	if (m_pddsBackBuffer)
-		m_pddsBackBuffer->Release();
-
-	if (m_pdds3DBackBuffer)
-		m_pdds3DBackBuffer->Release();
+	SAFE_RELEASE(m_pdds3DBackBuffer);
 	if(m_pdds3Dbuffercopy) {
 		_aligned_free((void*)m_pdds3Dbuffercopy);
 		m_pdds3Dbuffercopy = NULL;
@@ -50,22 +46,17 @@ Pin3D::~Pin3D()
 		m_pdds3Dbuffermask = NULL;
 	}
 
-	if (m_pddsZBuffer)
-		m_pddsZBuffer->Release();
+	SAFE_RELEASE(m_pddsZBuffer);
 
-	if (m_pddsStatic)
-		m_pddsStatic->Release();
+	SAFE_RELEASE(m_pddsStatic);
 
-	if (m_pddsStaticZ)
-		m_pddsStaticZ->Release();
+	SAFE_RELEASE(m_pddsStaticZ);
 
-	if (m_pddsBallTexture)
-		m_pddsBallTexture->Release();
+	SAFE_RELEASE(m_pddsBallTexture);
 
 	SAFE_RELEASE(m_pddsTargetTexture);
 
-	if (m_pddsLightTexture)
-		m_pddsLightTexture->Release();
+	SAFE_RELEASE(m_pddsLightTexture);
 
 	SAFE_RELEASE(m_pddsShadowTexture);
 
@@ -74,11 +65,9 @@ Pin3D::~Pin3D()
 
 	SAFE_RELEASE(m_pddsLightWhite);
 
-	if (m_pD3D)
-		m_pD3D->Release();
+	SAFE_RELEASE(m_pD3D);
 
-	if (m_pd3dDevice)
-		m_pd3dDevice->Release();
+	SAFE_RELEASE(m_pd3dDevice);
 	}
 
 static HRESULT WINAPI EnumZBufferFormatsCallback( DDPIXELFORMAT * pddpf,
