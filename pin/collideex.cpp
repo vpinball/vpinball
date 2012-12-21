@@ -134,7 +134,7 @@ LineSegSlingshot::LineSegSlingshot()
 
 LineSegSlingshot::~LineSegSlingshot()
 	{
-	delete [] m_slingshotanim.m_pobjframe;
+	delete m_slingshotanim.m_pobjframe;
 	}
 
 
