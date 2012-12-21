@@ -1278,33 +1278,39 @@ void Pin3D::InitBackGraphics()
 												  (LPWORD)rgiPin3D1, 4, 0);
 	}
 
+const int rgfilterwindow[7][7] = {
+	1, 4, 8, 10, 8, 4, 1,
+    4, 12, 25, 29, 25, 12, 4,
+    8, 25, 49, 58, 49, 25, 8,
+    10, 29, 58, 67, 58, 29, 10,
+    8, 25, 49, 58, 49, 25, 8,
+    4, 12, 25, 29, 25, 12, 4,
+    1, 4, 8, 10, 8, 4, 1};
+
 void Pin3D::CreateBallShadow()
 	{
-	DDBLTFX ddbltfx;
-	DDSURFACEDESC2 ddsd;
-	ddsd.dwSize = sizeof(ddsd);
-
-	ddbltfx.dwSize = sizeof(DDBLTFX);
-	ddbltfx.dwFillColor = 0;
+	//DDBLTFX ddbltfx;
+	//ddbltfx.dwSize = sizeof(DDBLTFX);
+	//ddbltfx.dwFillColor = 0;
 	m_pddsShadowTexture = g_pvp->m_pdd.CreateTextureOffscreen(16, 16);
-	m_pddsShadowTexture->Blt(NULL, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
+	//m_pddsShadowTexture->Blt(NULL, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 
 	//int width, height;
-
 	//m_pddsShadowTexture = g_pvp->m_pdd.CreateFromResource(IDB_BALLTEXTURE, &width, &height);
-
 	//g_pvp->m_pdd.SetAlpha(m_pddsShadowTexture, RGB(0,0,0), 64, 64);
-
 	//g_pvp->m_pdd.SetOpaque(m_pddsShadowTexture, 64, 64);
 
-	m_pddsShadowTexture->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-	{
+	DDSURFACEDESC2 ddsd;
+	ddsd.dwSize = sizeof(ddsd);
+	m_pddsShadowTexture->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+
 	const int pitch = ddsd.lPitch;
 	const int width = ddsd.dwWidth;
 	const int height = ddsd.dwHeight;
-	BYTE * const pch = (BYTE *)ddsd.lpSurface;
-	int offset = 0;
+	BYTE * const pc = (BYTE *)ddsd.lpSurface;
 
+	// Sharp Shadow
+	int offset = 0;
 	for (int y=0; y<height; ++y)
 		{
 		for (int x=0; x<width; ++x)
@@ -1312,31 +1318,68 @@ void Pin3D::CreateBallShadow()
 			const int dx = 8-x;
 			const int dy = 8-y;
 			const int dist = dx*dx + dy*dy;
-			pch[offset+x*4] = (dist < 25) ? (BYTE)255 : (BYTE)0;
+			pc[offset+x*4] = (dist <= 32) ? (BYTE)255 : (BYTE)0;
 			}
 		offset += pitch;
 		}
-	}
 
-	m_pddsShadowTexture->Unlock(NULL);
+	// Gaussian Blur the Sharp Shadow
+	/*int window[7][7];
+	for (int i=0;i<4;++i)
+		{
+		window[0][i] = i+1;
+		window[0][6-i] = i+1;
+		window[i][0] = i+1;
+		window[6-i][0] = i+1;
+		}*/
 
-	g_pvp->m_pdd.BlurAlpha(m_pddsShadowTexture);
+	int totalwindow = 0;
+	for (int i=0;i<7;++i)
+		{
+		for (int l=0;l<7;++l)
+			{
+			//window[i][l] = window[0][l] * window[i][0];
+			totalwindow += rgfilterwindow[i][l];
+			}
+		}
 
-	m_pddsShadowTexture->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-	
-	const int pitch = ddsd.lPitch;
-	const int width = ddsd.dwWidth;
-	const int height = ddsd.dwHeight;
-	BYTE * const pch = (BYTE *)ddsd.lpSurface;
-	int offset = 0;
+	for (int i=0;i<height;i++)
+		{
+		for (int l=0;l<width;l++)
+			{
+			int value = 0;
+			for (int n=0;n<7;n++)
+				{
+				const int y = i+n-3;
+				if(/*y>=0 &&*/ (unsigned int)y<=15)
+					{
+					BYTE * const pcy = pc + pitch*y;
+					for (int m=0;m<7;m++)
+						{
+						const int x = l+m-3;
+						if (/*x>=0 &&*/ (unsigned int)x<=15)
+							value += (int)(*(pcy + 4*x)) * rgfilterwindow[m][n];
+						}
+					}
+				}
 
+			value /= totalwindow;
+
+			value = /*127 + */(value*5)>>3;
+
+			*(pc + pitch*i + l*4 + 3) = (BYTE)value;
+			}
+		}
+
+	// Black out color channel
+	offset = 0;
 	for (int y=0; y<height; ++y)
 		{
 		for (int x=0; x<width*4; x+=4)
 			{
-			pch[offset+x  ] = 0;
-			pch[offset+x+1] = 0;
-			pch[offset+x+2] = 0;
+			pc[offset+x  ] = 0;
+			pc[offset+x+1] = 0;
+			pc[offset+x+2] = 0;
 			}
 		offset += pitch;
 		}
@@ -1349,8 +1392,8 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 	const float centerx = (g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right)*0.5f;
 	const float centery = (g_pplayer->m_ptable->m_top + g_pplayer->m_ptable->m_bottom)*0.5f;
 
-	int shadwidth;// = 128;
-	int shadheight;// = 256;
+	int shadwidth;
+	int shadheight;
 	if (centerx > centery)
 		{
 		shadwidth = 256;
@@ -1397,7 +1440,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->RenderShadow(psur, z);
 		}
 
-	//BitBlt(hdcScreen, 0, 0, 128, 256, hdc2, 0, 0, SRCCOPY);
+	delete psur;
 
 	LPDIRECTDRAWSURFACE7 pddsProjectTexture = g_pvp->m_pdd.CreateTextureOffscreen(shadwidth, shadheight);
 	m_xvShadowMap.AddElement(pddsProjectTexture, (int)z);
@@ -1407,12 +1450,8 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
     pddsProjectTexture->GetSurfaceDesc(&ddsd);
 	m_maxtu = (float)shadwidth/(float)ddsd.dwWidth;
 	m_maxtv = (float)shadheight/(float)ddsd.dwHeight;
-	//m_pddsLightProjectTexture = g_pvp->m_pdd.CreateTextureOffscreen(128, 256);
-
-	delete psur;
 
 	SelectObject(hdc2, hbmOld);
-
 	DeleteDC(hdc2);
 	ReleaseDC(NULL, hdcScreen);
 

@@ -17,11 +17,11 @@ PinUndo::PinUndo()
 
 PinUndo::~PinUndo()
 {
-	while (m_vur.Size() > 0)
+	for(int i = 0; i < m_vur.Size(); ++i)
 		{
-		delete m_vur.ElementAt(0);
-		m_vur.RemoveElementAt(0);
+		delete m_vur.ElementAt(i);
 		}
+	m_vur.RemoveAllElements();
 }
 
 void PinUndo::SetCleanPoint(SaveDirtyState sds)

@@ -141,7 +141,7 @@ inline bool FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * cons
 	return (d341 * d342 < 0.0f);
 	}
 
-inline bool AdvancePoint(const RenderVertex * const rgv, Vector<void> * const pvpoly, const int a, const int b, const int c, const int pre, const int post)
+inline bool AdvancePoint(const RenderVertex * const rgv, const Vector<void> * const pvpoly, const int a, const int b, const int c, const int pre, const int post)
 	{
 	const RenderVertex * const pv1 = &rgv[a];
 	const RenderVertex * const pv2 = &rgv[b];
