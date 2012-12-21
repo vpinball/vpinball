@@ -224,12 +224,13 @@ public:
 				return -1;
 			}
 
+		const int oldsize = m_cSize;
 		m_rg[m_cSize++] = pItem;
 
-		return (m_cSize - 1);
+		return oldsize;
 		}
 
-	// fTrue for success, fFalse if failure (OOM)
+	// true for success, false if failure (OOM)
 	inline bool InsertElementAt(void * const pItem, const int iPos)
 		{					
 		if(m_cSize == m_cMax)

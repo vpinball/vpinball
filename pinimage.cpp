@@ -942,7 +942,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 					for (int m=0;m<7;m++)
 						{
 						const int x = l+m-3;					
-						if (/*x>=0 &&*/ (unsigned int)x<(unsigned int)shadwidth) // dto.
+						if (/*x>=0 &&*/ (unsigned int)x<(unsigned int)shadwidth) // dto. //!! opt.
 							{						
 							value += (int)(*(py + x*3)) * rgfilterwindow[m][n];
 							}
@@ -977,74 +977,6 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 
 	pdds->Unlock(NULL);
 	}
-
-void PinDirectDraw::BlurAlpha(LPDIRECTDRAWSURFACE7 pdds)
-	{
-	/*int window[7][7];
-	for (int i=0;i<4;++i)
-		{
-		window[0][i] = i+1;
-		window[0][6-i] = i+1;
-		window[i][0] = i+1;
-		window[6-i][0] = i+1;
-		}*/
-
-	int totalwindow = 0;
-	for (int i=0;i<7;++i)
-		{
-		for (int l=0;l<7;++l)
-			{
-			//window[i][l] = window[0][l] * window[i][0];
-			totalwindow += rgfilterwindow[i][l];
-			}
-		}
-
-	// Gaussian Blur the sharp shadows
-
-	DDSURFACEDESC2 ddsd;//, ddsdSharp;
-	ddsd.dwSize = sizeof(ddsd);
-
-	pdds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-	
-	const int pitch = ddsd.lPitch;
-	
-	BYTE * const pc = (BYTE *)ddsd.lpSurface;
-
-	const int width = (int)ddsd.dwWidth;
-	const int height = (int)ddsd.dwHeight;
-
-	for (int i=0;i<height;i++)
-		{
-		for (int l=0;l<width;l++)
-			{
-			int value = 0;
-			for (int n=0;n<7;n++)
-				{
-				const int y = i+n-3;
-				if(/*y>=0 &&*/ (unsigned int)y<=15)
-					{
-					BYTE * const pcy = pc + pitch*y;
-					for (int m=0;m<7;m++)
-						{
-						const int x = l+m-3;
-						if (/*x>=0 &&*/ (unsigned int)x<=15)
-							value += (int)(*(pcy + 4*x)) * rgfilterwindow[m][n];
-						}
-					}
-				}
-
-			value /= totalwindow;
-
-			value = /*127 + */(value*5)>>3;
-
-			*(pc + pitch*i + l*4 + 3) = (BYTE)value; //!! potential bug: blurring within the same buffer leads to artifacts
-			}
-		}
-
-	pdds->Unlock(NULL);
-	}
-
-//#pragma optimize("atg", on)
 
 void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 	{
@@ -1086,7 +1018,7 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 				unsigned int btotal = 0;
 				unsigned int count = 0;
 				const unsigned int a0 = pbytes1[3];
-				if (a0) { count++; rtotal+=pbytes1[2]; gtotal+=pbytes1[1]; btotal+=pbytes1[0]; }
+				if (a0) { count++; rtotal+=pbytes1[2]; gtotal+=pbytes1[1]; btotal+=pbytes1[0]; } //!! opt.
 				const unsigned int a1 = pbytes1[7];
 				if (a1) { count++; rtotal+=pbytes1[6]; gtotal+=pbytes1[5]; btotal+=pbytes1[4]; }
 				const unsigned int a2 = pbytes2[3];

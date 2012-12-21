@@ -519,14 +519,10 @@ void DispReel::EndPlay()
 	}
 
     // free up reel buffer
-    if (m_vreelframe.Size() != 0)   // Failed Player case
-	{
-		while (m_vreelframe.Size() != 0)
-			{
-			delete m_vreelframe.ElementAt(0);
-			m_vreelframe.RemoveElementAt(0);
-			}
-	}
+    // Failed Player case
+	for (int i=0; i<m_vreelframe.Size(); i++)
+		delete m_vreelframe.ElementAt(i);
+	m_vreelframe.RemoveAllElements();
 
 	if (m_ptu)
 	{

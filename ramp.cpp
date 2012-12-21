@@ -507,8 +507,8 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 	float totallength = 0;
 	for (int i=0;i<(cvertex-1);i++)
 		{
-		const Vertex2D * const pv1 = (Vertex2D *)vvertex.ElementAt(i);
-		const Vertex2D * const pv2 = (Vertex2D *)vvertex.ElementAt(i+1);
+		const RenderVertex * const pv1 = vvertex.ElementAt(i);
+		const RenderVertex * const pv2 = vvertex.ElementAt(i+1);
 
 		const float dx = pv1->x - pv2->x;
 		const float dy = pv1->y - pv2->y;
@@ -520,9 +520,9 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 	float currentlength = 0;
 	for (int i=0;i<cvertex;i++)
 		{
-		const Vertex2D * const pv1 = (Vertex2D *)vvertex.ElementAt((i>0) ? i-1 : i);
-		const Vertex2D * const pv2 = (Vertex2D *)vvertex.ElementAt((i < (cvertex-1)) ? i+1 : i);
-		const Vertex2D * const pvmiddle = (Vertex2D *)vvertex.ElementAt(i);
+		const RenderVertex * const pv1 = vvertex.ElementAt((i>0) ? i-1 : i);
+		const RenderVertex * const pv2 = vvertex.ElementAt((i < (cvertex-1)) ? i+1 : i);
+		const RenderVertex * const pvmiddle = vvertex.ElementAt(i);
 
 		Vertex2D vnormal;
 		{
@@ -627,9 +627,6 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 			(*ppfCross)[i] = vvertex.ElementAt(i)->fControlPoint;
 			}
 		}
-
-	//rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
-	//delete vvertex.ElementAt(i);
 
 	for (int i=0;i<cvertex;i++)
 		{

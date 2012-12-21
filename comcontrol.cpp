@@ -81,16 +81,12 @@ int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case FREE_MEMORY:
 			{
-			HWND hwndList;
-			hwndList = GetDlgItem(hwndDlg, IDC_LIST);
-			int count;
-			CLSID *pclsid;
-
-			count = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+			const HWND hwndList = GetDlgItem(hwndDlg, IDC_LIST);
+			const int count = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
 
 			for (int i=0;i<count;i++)
 				{
-				pclsid = (CLSID *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
+				CLSID * const pclsid = (CLSID *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
 				delete pclsid;
 				}
 			}

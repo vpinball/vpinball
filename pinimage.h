@@ -92,8 +92,6 @@ public:
 
 	void Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, const int shadwidth, const int shadheight);
 
-	void BlurAlpha(LPDIRECTDRAWSURFACE7 pdds);
-
 	BOOL m_fHardwareAccel;
 	BOOL m_fAlternateRender;
 
