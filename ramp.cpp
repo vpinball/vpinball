@@ -23,11 +23,12 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	m_d.m_IsVisible = fTrue;
 	
 	HRESULT hr;
-	float length = 200.0f, fTmp;
+	float fTmp;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Ramp", "Length", &fTmp);
+	float length = 200.0f;
 	if (hr == S_OK)
-		length = fTmp/2.0f;
+		length = fTmp*0.5f;
 
 	CComObject<DragPoint> *pdp;
 	CComObject<DragPoint>::CreateInstance(&pdp);
@@ -99,7 +100,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Ramp","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -121,25 +122,25 @@ void Ramp::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\Ramp","ImageWalls", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fImageWalls = iTmp == 0? false : true;
+		m_d.m_fImageWalls = iTmp == 0 ? false : true;
 	else
 		m_d.m_fImageWalls = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Ramp","CastsShadow", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fCastsShadow = iTmp == 0? false : true;
+		m_d.m_fCastsShadow = iTmp == 0 ? false : true;
 	else
 		m_d.m_fCastsShadow = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Ramp","Acrylic", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fAcrylic = iTmp == 0? false : true;
+		m_d.m_fAcrylic = iTmp == 0 ? false : true;
 	else
 		m_d.m_fAcrylic = fFalse;
 
 	hr = GetRegInt("DefaultProps\\Ramp","Alpha", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fAlpha = iTmp == 0? false : true;
+		m_d.m_fAlpha = iTmp == 0 ? false : true;
 	else
 		m_d.m_fAlpha = fFalse;
 	if (m_d.m_fAlpha) 
@@ -189,13 +190,13 @@ void Ramp::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Ramp","Collidable", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fCollidable = iTmp == 0? false : true;
+		m_d.m_fCollidable = iTmp == 0 ? false : true;
 	else
 		m_d.m_fCollidable = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Ramp","Visible", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_IsVisible = iTmp == 0? false : true;
+		m_d.m_IsVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_IsVisible = fTrue;
 	}
@@ -204,13 +205,13 @@ void Ramp::WriteRegDefaults()
 	{
 	char strTmp[40];
 
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_heightbottom);
+	sprintf_s(strTmp, 40, "%f", m_d.m_heightbottom);
 	SetRegValue("DefaultProps\\Ramp","HeightBottom", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_heighttop);
+	sprintf_s(strTmp, 40, "%f", m_d.m_heighttop);
 	SetRegValue("DefaultProps\\Ramp","HeightTop", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_widthbottom);
+	sprintf_s(strTmp, 40, "%f", m_d.m_widthbottom);
 	SetRegValue("DefaultProps\\Ramp","WidthBottom", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_widthtop);
+	sprintf_s(strTmp, 40, "%f", m_d.m_widthtop);
 	SetRegValue("DefaultProps\\Ramp","WidthTop", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Ramp","Color",REG_DWORD,&m_d.m_color,4);
 	SetRegValue("DefaultProps\\Ramp","RampType",REG_DWORD,&m_d.m_type,4);
@@ -222,17 +223,17 @@ void Ramp::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Ramp","CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
 	SetRegValue("DefaultProps\\Ramp","Acrylic",REG_DWORD,&m_d.m_fAcrylic,4);
 	SetRegValue("DefaultProps\\Ramp","Alpha",REG_DWORD,&m_d.m_fAlpha,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_leftwallheight);
+	sprintf_s(strTmp, 40, "%f", m_d.m_leftwallheight);
 	SetRegValue("DefaultProps\\Ramp","LeftWallHeight", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_rightwallheight);
+	sprintf_s(strTmp, 40, "%f", m_d.m_rightwallheight);
 	SetRegValue("DefaultProps\\Ramp","RightWallHeight", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Ramp","LeftWallHeightVisible",REG_DWORD,&m_d.m_leftwallheightvisible,4);
 	SetRegValue("DefaultProps\\Ramp","RightWallHeightVisible",REG_DWORD,&m_d.m_rightwallheightvisible,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_elasticity);
+	sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
 	SetRegValue("DefaultProps\\Ramp","Elasticity", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_friction);
+	sprintf_s(strTmp, 40, "%f", m_d.m_friction);
 	SetRegValue("DefaultProps\\Ramp","Friction", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_scatter);
+	sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
 	SetRegValue("DefaultProps\\Ramp","Scatter", REG_SZ, &strTmp,strlen(strTmp));	
 	SetRegValue("DefaultProps\\Ramp","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
 	SetRegValue("DefaultProps\\Ramp","Visible",REG_DWORD,&m_d.m_IsVisible,4);

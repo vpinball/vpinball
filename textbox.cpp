@@ -70,7 +70,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\TextBox","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -88,7 +88,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\TextBox","Transparent", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fTransparent = iTmp == 0? false : true;
+		m_d.m_fTransparent = iTmp == 0 ? false : true;
 	else	
 		m_d.m_fTransparent = fFalse;
 
@@ -128,19 +128,19 @@ void Textbox::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\TextBox", "FontItalic", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		fd.fItalic = iTmp == 0? false : true;
+		fd.fItalic = iTmp == 0 ? false : true;
 	else
 		fd.fItalic = 0;
 
 	hr = GetRegInt("DefaultProps\\TextBox", "FontUnderline", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		fd.fUnderline = iTmp == 0? false : true;
+		fd.fUnderline = iTmp == 0 ? false : true;
 	else
 		fd.fUnderline = 0;
 	
 	hr = GetRegInt("DefaultProps\\TextBox", "FontStrikeThrough", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		fd.fStrikethrough = iTmp == 0? false : true;
+		fd.fStrikethrough = iTmp == 0 ? false : true;
 	else
 		fd.fStrikethrough = 0;
 
@@ -174,7 +174,7 @@ void Textbox::WriteRegDefaults()
 	m_pIFont->get_Strikethrough(&fd.fStrikethrough); 
 	
 	fTmp = (float)(fd.cySize.int64 / 10000.0);
-	sprintf_s(&strTmp[0], 40, "%f", fTmp);
+	sprintf_s(strTmp, 40, "%f", fTmp);
 	SetRegValue("DefaultProps\\TextBox","FontSize", REG_SZ, &strTmp,strlen(strTmp));
 	int charCnt = wcslen(fd.lpstrName) +1;
 	WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);

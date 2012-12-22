@@ -77,9 +77,9 @@ void Surface::WriteRegDefaults()
 	SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue(strKeyName,"TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	SetRegValue(strKeyName,"HitEvent",REG_DWORD,&m_d.m_fHitEvent,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_threshold);
+	sprintf_s(strTmp, 40, "%f", m_d.m_threshold);
 	SetRegValue(strKeyName,"HitThreshold", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_slingshot_threshold);
+	sprintf_s(strTmp, 40, "%f", m_d.m_slingshot_threshold);
 	SetRegValue(strKeyName,"SlingshotThreshold", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue(strKeyName,"SideColor",REG_DWORD,&m_d.m_sidecolor, 4);
 	SetRegValue(strKeyName,"TopImage",REG_SZ,&m_d.m_szImage, strlen(m_d.m_szImage));
@@ -89,19 +89,19 @@ void Surface::WriteRegDefaults()
 	SetRegValue(strKeyName,"Droppable",REG_DWORD,&m_d.m_fDroppable,4);
 	SetRegValue(strKeyName,"Flipbook",REG_DWORD,&m_d.m_fFlipbook,4);
 	SetRegValue(strKeyName,"CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_heightbottom);
+	sprintf_s(strTmp, 40, "%f", m_d.m_heightbottom);
 	SetRegValue(strKeyName,"HeightBottom", REG_SZ, &strTmp, strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_heighttop);
+	sprintf_s(strTmp, 40, "%f", m_d.m_heighttop);
 	SetRegValue(strKeyName,"HeightTop", REG_SZ, &strTmp, strlen(strTmp));
 	SetRegValue(strKeyName,"DisplayTexture",REG_DWORD,&m_d.m_fDisplayTexture,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_slingshotforce);
+	sprintf_s(strTmp, 40, "%f", m_d.m_slingshotforce);
 	SetRegValue(strKeyName,"SlingshotForce", REG_SZ, &strTmp, strlen(strTmp));
 	SetRegValue(strKeyName,"SlingshotAnimation",REG_DWORD,&m_d.m_fSlingshotAnimation,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_elasticity);
+	sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
 	SetRegValue(strKeyName,"Elasticity", REG_SZ, &strTmp, strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_friction);
+	sprintf_s(strTmp, 40, "%f", m_d.m_friction);
 	SetRegValue(strKeyName,"Friction", REG_SZ, &strTmp, strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_scatter);
+	sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
 	SetRegValue(strKeyName,"Scatter", REG_SZ, &strTmp, strlen(strTmp));
 	SetRegValue(strKeyName,"Visible",REG_DWORD,&m_d.m_fVisible,4);
 	SetRegValue(strKeyName,"SideVisible",REG_DWORD,&m_d.m_fSideVisible,4);
@@ -162,7 +162,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	
 	hr = GetRegInt("DefaultProps\\Target","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = (iTmp == 0) ? false:true;
+		m_d.m_tdr.m_fTimerEnabled = (iTmp == 0) ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = fFalse;
 	
@@ -174,7 +174,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	
 	hr = GetRegInt("DefaultProps\\Target","HitEvent", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fHitEvent = (iTmp == 0) ? false:true;
+		m_d.m_fHitEvent = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fHitEvent = fTrue;
 
@@ -320,7 +320,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Wall","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = (iTmp == 0) ? false:true;
+		m_d.m_tdr.m_fTimerEnabled = (iTmp == 0) ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -332,7 +332,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\Wall","HitEvent", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fHitEvent = (iTmp == 0) ? false:true;
+		m_d.m_fHitEvent = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fHitEvent = fFalse;
 

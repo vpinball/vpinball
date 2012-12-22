@@ -47,7 +47,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Trigger","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -59,13 +59,13 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Trigger","Enabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fEnabled = iTmp == 0? false : true;
+		m_d.m_fEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_fEnabled = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Trigger","Visible", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fVisible = iTmp == 0? false : true;
+		m_d.m_fVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 
@@ -706,9 +706,9 @@ void Trigger::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Trigger","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	SetRegValue("DefaultProps\\Trigger","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
 	SetRegValue("DefaultProps\\Trigger","Visible",REG_DWORD,&m_d.m_fVisible,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_hit_height);
+	sprintf_s(strTmp, 40, "%f", m_d.m_hit_height);
 	SetRegValue("DefaultProps\\Trigger","HitHeight", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_radius);
+	sprintf_s(strTmp, 40, "%f", m_d.m_radius);
 	SetRegValue("DefaultProps\\Trigger","Radius", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Trigger","Shape",REG_DWORD,&m_d.m_shape,4);
 	SetRegValue("DefaultProps\\Trigger","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));

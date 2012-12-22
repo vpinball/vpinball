@@ -34,26 +34,26 @@ void Spinner::WriteRegDefaults()
 	{
 	char strTmp[40];
 
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_length);
+	sprintf_s(strTmp, 40, "%f", m_d.m_length);
 	SetRegValue("DefaultProps\\Spinner","Length", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_rotation);
+	sprintf_s(strTmp, 40, "%f", m_d.m_rotation);
 	SetRegValue("DefaultProps\\Spinner","Rotation", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Spinner","Supports",REG_DWORD,&m_d.m_fSupports,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_height);
+	sprintf_s(strTmp, 40, "%f", m_d.m_height);
 	SetRegValue("DefaultProps\\Spinner","Height", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_overhang);
+	sprintf_s(strTmp, 40, "%f", m_d.m_overhang);
 	SetRegValue("DefaultProps\\Spinner","Overhang", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Spinner","Color", REG_DWORD, &m_d.m_color, 4);
 	SetRegValue("DefaultProps\\Spinner","CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_angleMax);
+	sprintf_s(strTmp, 40, "%f", m_d.m_angleMax);
 	SetRegValue("DefaultProps\\Spinner","AngleMax", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_angleMin);
+	sprintf_s(strTmp, 40, "%f", m_d.m_angleMin);
 	SetRegValue("DefaultProps\\Spinner","AngleMin", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_elasticity);
+	sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
 	SetRegValue("DefaultProps\\Spinner","Elasticity", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_friction);
+	sprintf_s(strTmp, 40, "%f", m_d.m_friction);
 	SetRegValue("DefaultProps\\Spinner","Friction", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_scatter);
+	sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
 	SetRegValue("DefaultProps\\Spinner","Scatter", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Spinner","Animations", REG_DWORD, &m_d.m_animations, 4);
 	SetRegValue("DefaultProps\\Spinner","Visible",REG_DWORD,&m_d.m_fVisible,4);
@@ -84,7 +84,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\Spinner","Supports", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fSupports = iTmp == 0? false : true;
+		m_d.m_fSupports = iTmp == 0 ? false : true;
 	else
 		m_d.m_fSupports = fTrue;
 	
@@ -108,7 +108,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\Spinner","CastsShadow", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fCastsShadow = iTmp == 0? false : true;
+		m_d.m_fCastsShadow = iTmp == 0 ? false : true;
 	else
 		m_d.m_fCastsShadow = fTrue;			//<<< added by Chris
 
@@ -153,13 +153,13 @@ void Spinner::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Spinner","Visible", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fVisible = iTmp == 0? false : true;
+		m_d.m_fVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Spinner","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	

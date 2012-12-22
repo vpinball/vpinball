@@ -327,7 +327,7 @@ void Ball::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	// correct displacements, mostly from low velocity, alternative to true acceleration processing
 
 	const Vertex3Ds vel(
-		pball->vx * pball->collisionMass - vx * collisionMass,  //target ball to object ball
+		pball->vx * pball->collisionMass -vx * collisionMass,  //target ball to object ball
 		pball->vy * pball->collisionMass -vy * collisionMass,  //delta velocity
 		pball->vz * pball->collisionMass -vz * collisionMass);
 
@@ -460,8 +460,7 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	cpctrv.y *= (float)(1.0/2.5);
 	cpctrv.z *= (float)(1.0/2.5);
 
-	const Vertex3Ds vResult =
-	CrossProduct(bccpd, cpctrv);	// ball center contact point displacement X reverse contact point co-tan vel
+	const Vertex3Ds vResult = CrossProduct(bccpd, cpctrv); // ball center contact point displacement X reverse contact point co-tan vel
 
 	m_angularmomentum.Add(vResult); // add delta 
 

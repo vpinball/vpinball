@@ -151,40 +151,40 @@ void Primitive::WriteRegDefaults()
 	iTmp = (m_d.m_SmoothSideNormals) ? 1 : 0;
 	SetRegValue("DefaultProps\\Primitive","SmoothSideNormals",REG_DWORD,&iTmp,4);
 
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vPosition.z);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vPosition.z);
 	SetRegValue("DefaultProps\\Primitive","Position_Z", REG_SZ, &strTmp,strlen(strTmp));	
 
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vSize.x);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vSize.x);
 	SetRegValue("DefaultProps\\Primitive","Size_X", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vSize.y);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vSize.y);
 	SetRegValue("DefaultProps\\Primitive","Size_Y", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vSize.z);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vSize.z);
 	SetRegValue("DefaultProps\\Primitive","Size_Z", REG_SZ, &strTmp,strlen(strTmp));	
 
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vAxisScaleX.y);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleX.y);
 	SetRegValue("DefaultProps\\Primitive","AxisScaleXY", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vAxisScaleX.z);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleX.z);
 	SetRegValue("DefaultProps\\Primitive","AxisScaleXZ", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vAxisScaleY.x);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleY.x);
 	SetRegValue("DefaultProps\\Primitive","AxisScaleYX", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vAxisScaleY.z);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleY.z);
 	SetRegValue("DefaultProps\\Primitive","AxisScaleYZ", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vAxisScaleZ.x);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleZ.x);
 	SetRegValue("DefaultProps\\Primitive","AxisScaleZX", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vAxisScaleZ.y);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleZ.y);
 	SetRegValue("DefaultProps\\Primitive","AxisScaleZY", REG_SZ, &strTmp,strlen(strTmp));	
 
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_aRotAndTra[0]);
+	sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[0]);
 	SetRegValue("DefaultProps\\Primitive","RotAndTra0", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_aRotAndTra[1]);
+	sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[1]);
 	SetRegValue("DefaultProps\\Primitive","RotAndTra1", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_aRotAndTra[2]);
+	sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[2]);
 	SetRegValue("DefaultProps\\Primitive","RotAndTra2", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_aRotAndTra[3]);
+	sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[3]);
 	SetRegValue("DefaultProps\\Primitive","RotAndTra3", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_aRotAndTra[4]);
+	sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[4]);
 	SetRegValue("DefaultProps\\Primitive","RotAndTra4", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_aRotAndTra[5]);
+	sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[5]);
 	SetRegValue("DefaultProps\\Primitive","RotAndTra5", REG_SZ, &strTmp,strlen(strTmp));	
 
 	SetRegValue("DefaultProps\\Primitive","RotAndTraType0",REG_DWORD,&m_d.m_aRotAndTraTypes[0],4);
@@ -194,18 +194,18 @@ void Primitive::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Primitive","RotAndTraType4",REG_DWORD,&m_d.m_aRotAndTraTypes[4],4);
 	SetRegValue("DefaultProps\\Primitive","RotAndTraType5",REG_DWORD,&m_d.m_aRotAndTraTypes[5],4);
 	/*
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vRotation.x);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vRotation.x);
 	SetRegValue("DefaultProps\\Primitive","Rotation_X", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vRotation.y);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vRotation.y);
 	SetRegValue("DefaultProps\\Primitive","Rotation_Y", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vRotation.z);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vRotation.z);
 	SetRegValue("DefaultProps\\Primitive","Rotation_Z", REG_SZ, &strTmp,strlen(strTmp));	
 
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vTransposition.x);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vTransposition.x);
 	SetRegValue("DefaultProps\\Primitive","Transposition_X", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vTransposition.y);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vTransposition.y);
 	SetRegValue("DefaultProps\\Primitive","Transposition_Y", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vTransposition.z);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vTransposition.z);
 	SetRegValue("DefaultProps\\Primitive","Transposition_Z", REG_SZ, &strTmp,strlen(strTmp));	
 	*/
 	SetRegValue("DefaultProps\\Primitive","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
@@ -386,10 +386,10 @@ void Primitive::CalculateRealTimeOriginal()
 	const float outerRadius = 0.5f/(cosf((float)M_PI/(float)m_d.m_Sides));
 	float currentAngle = (float)M_PI/(float)m_d.m_Sides;
 	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
-	float minX = 10000.f;
-	float minY = 10000.f;
-	float maxX = -10000.f;
-	float maxY = -10000.f;
+	float minX = FLT_MAX;
+	float minY = FLT_MAX;
+	float maxX = -FLT_MAX;
+	float maxY = -FLT_MAX;
 
 	Vertex3D_NoTex2 *middle;
 	middle = &rgv3DOriginal[0]; // middle point top
@@ -405,8 +405,8 @@ void Primitive::CalculateRealTimeOriginal()
 		// calculate Top
 		Vertex3D_NoTex2 * const topVert = &rgv3DOriginal[i+1]; // top point at side
 		topVert->z = 0.5f;
-		topVert->x = -sinf(currentAngle)*outerRadius;
-		topVert->y = -cosf(currentAngle)*outerRadius;		
+		topVert->x = sinf(currentAngle)*-outerRadius;
+		topVert->y = cosf(currentAngle)*-outerRadius;		
 		// calculate bottom
 		Vertex3D_NoTex2 * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
 		bottomVert->z = -0.5f;

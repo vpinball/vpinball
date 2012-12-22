@@ -63,7 +63,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\LightSequence","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -80,9 +80,9 @@ void LightSeq::WriteRegDefaults()
 	MAKE_ANSIPTR_FROMWIDE(strTmp2, (WCHAR *)m_d.m_wzCollection);
 	SetRegValue("DefaultProps\\LightSequence","UpdateInterval",REG_DWORD,&m_d.m_updateinterval,4);
 	SetRegValue("DefaultProps\\LightSequence","Collection",REG_SZ,strTmp2,66);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vCenter.x);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vCenter.x);
 	SetRegValue("DefaultProps\\LightSequence","CenterX", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_vCenter.y);
+	sprintf_s(strTmp, 40, "%f", m_d.m_vCenter.y);
 	SetRegValue("DefaultProps\\LightSequence","CenterY", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\LightSequence","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\LightSequence","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
