@@ -196,7 +196,6 @@ public:
 	void ExpandRectByRect(RECT * const prc, const RECT * const prcNew) const;
 
 	void ClipRectToVisibleArea(RECT * const prc) const;
-	void EnsureDebugTextures();
 
 	LPDIRECTDRAWSURFACE7 CreateOffscreen(const int width, const int height) const;
 	LPDIRECTDRAWSURFACE7 CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const;
@@ -221,7 +220,6 @@ public:
 	LPDIRECTDRAWSURFACE7 m_pddsBallTexture;
 	LPDIRECTDRAWSURFACE7 m_pddsShadowTexture;
 	LPDIRECTDRAWSURFACE7 m_pddsLightTexture;
-	LPDIRECTDRAWSURFACE7 m_pddsTargetTexture;
 	//LPDIRECTDRAWSURFACE7 m_pddsPlayfieldTexture;
 	//LPDIRECTDRAWSURFACE7 m_pddsLightProjectTexture;
 	LPDIRECTDRAWSURFACE7 m_pddsLightWhite;

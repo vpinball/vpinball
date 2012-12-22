@@ -57,13 +57,13 @@ void Gate::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Gate","Supports", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fSupports = iTmp == 0? false : true;
+		m_d.m_fSupports = iTmp == 0 ? false : true;
 	else
 		m_d.m_fSupports = fTrue;
 	
 	hr = GetRegInt("DefaultProps\\Gate","Collidable", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fCollidable = iTmp == 0? false : true;
+		m_d.m_fCollidable = iTmp == 0 ? false : true;
 	else
 		m_d.m_fCollidable = fTrue;
 
@@ -81,7 +81,7 @@ void Gate::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Gate","Visible", &iTmp);
 	if ((hr == S_OK)  && fromMouseClick)
-		m_d.m_fVisible = iTmp == 0? false : true;
+		m_d.m_fVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 
@@ -99,7 +99,7 @@ void Gate::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Gate","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -145,17 +145,17 @@ void Gate::WriteRegDefaults()
 	{
 	char strTmp[MAXTOKEN];
 
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_length);
+	sprintf_s(strTmp, 40, "%f", m_d.m_length);
 	SetRegValue("DefaultProps\\Gate","Length", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_height);
+	sprintf_s(strTmp, 40, "%f", m_d.m_height);
 	SetRegValue("DefaultProps\\Gate","Height", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_rotation);
+	sprintf_s(strTmp, 40, "%f", m_d.m_rotation);
 	SetRegValue("DefaultProps\\Gate","Rotation", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Gate","Supports",REG_DWORD,&m_d.m_fSupports,4);
 	SetRegValue("DefaultProps\\Gate","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_angleMin);
+	sprintf_s(strTmp, 40, "%f", m_d.m_angleMin);
 	SetRegValue("DefaultProps\\Gate","AngleMin", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_angleMax);
+	sprintf_s(strTmp, 40, "%f", m_d.m_angleMax);
 	SetRegValue("DefaultProps\\Gate","AngleMax", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Gate","Visible",REG_DWORD,&m_d.m_fVisible,4);
 	SetRegValue("DefaultProps\\Gate","Animations",REG_DWORD,&m_d.m_animations,4);
@@ -163,11 +163,11 @@ void Gate::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Gate","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\Gate","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	SetRegValue("DefaultProps\\Gate","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_elasticity);
+	sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
 	SetRegValue("DefaultProps\\Gate","Elasticity", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_friction);
+	sprintf_s(strTmp, 40, "%f", m_d.m_friction);
 	SetRegValue("DefaultProps\\Gate","Friction", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_scatter);
+	sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
 	SetRegValue("DefaultProps\\Gate","Scatter", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Gate","ImageFront", REG_SZ, &m_d.m_szImageFront,strlen(m_d.m_szImageFront));
 	SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,strlen(m_d.m_szImageBack));

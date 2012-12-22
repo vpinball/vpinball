@@ -58,7 +58,7 @@ void Bumper::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Bumper","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -104,13 +104,13 @@ void Bumper::WriteRegDefaults()
 	{
 	char strTmp[40];
 	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_radius);
+	sprintf_s(strTmp, 40, "%f", m_d.m_radius);
 	SetRegValue("DefaultProps\\Bumper","Radius", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_force);
+	sprintf_s(strTmp, 40, "%f", m_d.m_force);
 	SetRegValue("DefaultProps\\Bumper","Force", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_threshold);
+	sprintf_s(strTmp, 40, "%f", m_d.m_threshold);
 	SetRegValue("DefaultProps\\Bumper","Threshold", REG_SZ, &strTmp,strlen(strTmp));	
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_overhang);
+	sprintf_s(strTmp, 40, "%f", m_d.m_overhang);
 	SetRegValue("DefaultProps\\Bumper","Overhang", REG_SZ, &strTmp,strlen(strTmp));	
 	SetRegValue("DefaultProps\\Bumper","Color", REG_DWORD, &m_d.m_color,4);	
 	SetRegValue("DefaultProps\\Bumper","SideColor", REG_DWORD, &m_d.m_sidecolor,4);	

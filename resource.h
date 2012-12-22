@@ -268,6 +268,7 @@
 #define IDC_LEFTFLIPPERBUTTON           262
 #define IDD_TRANSLATE                   262
 #define IDC_RIGHTFLIPPERBUTTON          264
+#define IDB_LOGO                        264
 #define IDC_LEFTTILTBUTTON              266
 #define IDI_TABLEICON                   266
 #define IDR_SCRIPTMENU                  267
@@ -467,7 +468,6 @@
 #define IDC_Tex512                      373
 #define IDC_Tex1024                     374
 #define IDC_Tex2048                     375
-#define IDB_TARGET                      376
 #define IDC_RADIO4                      376
 #define IDC_TexUnlimited                376
 #define IDC_EDIT1                       377

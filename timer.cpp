@@ -34,7 +34,7 @@ void Timer::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Timer","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = true;
 	

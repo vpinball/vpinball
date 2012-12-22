@@ -265,14 +265,14 @@ void DispReel::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\EMReel","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\EMReel","TimerInterval", &iTmp);
 	m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
 
-		if (!m_pIFont)
+	if (!m_pIFont)
 		{
 		FONTDESC fd;
 		fd.cbSizeofstruct = sizeof(FONTDESC);
@@ -332,13 +332,13 @@ void DispReel::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Decal","ImagesPerRow",REG_DWORD,&m_d.m_imagesPerGridRow ,4);
 	SetRegValue("DefaultProps\\Decal","Transparent",REG_DWORD,&m_d.m_fTransparent,4);
 	SetRegValue("DefaultProps\\Decal","ReelCount",REG_DWORD,&m_d.m_reelcount ,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_width);
+	sprintf_s(strTmp, 40, "%f", m_d.m_width);
 	SetRegValue("DefaultProps\\EMReel","Width", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_height);
+	sprintf_s(strTmp, 40, "%f", m_d.m_height);
 	SetRegValue("DefaultProps\\EMReel","Height", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_reelspacing);
+	sprintf_s(strTmp, 40, "%f", m_d.m_reelspacing);
 	SetRegValue("DefaultProps\\EMReel","ReelSPacing", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_motorsteps);
+	sprintf_s(strTmp, 40, "%f", m_d.m_motorsteps);
 	SetRegValue("DefaultProps\\EMReel","MotorSteps", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Decal","DigitRange",REG_DWORD,&m_d.m_digitrange,4);
 	SetRegValue("DefaultProps\\Decal","Shading",REG_DWORD,&m_d.m_fShading,4);
@@ -362,7 +362,7 @@ void DispReel::WriteRegDefaults()
 		m_pIFont->get_Strikethrough(&fd.fStrikethrough); 
 		
 		fTmp = (float)(fd.cySize.int64 / 10000.0);
-		sprintf_s(&strTmp[0], 40, "%f", fTmp);
+		sprintf_s(strTmp, 40, "%f", fTmp);
 		SetRegValue("DefaultProps\\EMReel","FontSize", REG_SZ, &strTmp,strlen(strTmp));
 		int charCnt = wcslen(fd.lpstrName) +1;
 		WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
@@ -413,7 +413,7 @@ void DispReel::PreRender(Sur * const psur)
     {
         // set up top corner point
 		const float fi = (float)i;
-        const float x = m_d.m_v1.x + fi*m_d.m_width + fi*m_d.m_reelspacing + m_d.m_reelspacing;
+        const float x = m_d.m_v1.x + fi*(m_d.m_width + m_d.m_reelspacing) + m_d.m_reelspacing;
         const float y = m_d.m_v1.y + m_d.m_reelspacing;
 		const float x2 = x+m_d.m_width;
 		const float y2 = y+m_d.m_height;
@@ -423,7 +423,6 @@ void DispReel::PreRender(Sur * const psur)
         psur->Polygon(rgv, 4);
     }
 }
-
 
 
 // this function draws the shape of the object with a black outline (no solid fill)
@@ -449,7 +448,7 @@ void DispReel::Render(Sur * const psur)
     {
         // set up top corner point
 		const float fi = (float)i;
-        const float x = m_d.m_v1.x + fi*m_d.m_width + fi*m_d.m_reelspacing + m_d.m_reelspacing;
+        const float x = m_d.m_v1.x + fi*(m_d.m_width + m_d.m_reelspacing) + m_d.m_reelspacing;
         const float y = m_d.m_v1.y + m_d.m_reelspacing;
 		const float x2 = x+m_d.m_width;
 		const float y2 = y+m_d.m_height;
@@ -459,7 +458,6 @@ void DispReel::Render(Sur * const psur)
         psur->Polygon(rgv, 4);
     }
 }
-
 
 
 // Registers the timer with the game call which then makes a call back when the interval
@@ -484,7 +482,6 @@ void DispReel::GetTimers(Vector<HitTimer> * const pvht)
         pvht->AddElement(pht);
     }
 }
-
 
 
 // This function is supposed to return the hit shapes for the object but since it is
@@ -654,8 +651,8 @@ void DispReel::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			m_rgbImageTransparent = pin->m_rgbTransparent;
 
             // get the size of the individual reel digits (if m_digitrange is wrong we can forget the rest)
-            m_reeldigitwidth  = (float)pin->m_width / GridCols;
-            m_reeldigitheight = (float)pin->m_height / GridRows;
+            m_reeldigitwidth  = (float)pin->m_width / (float)GridCols;
+            m_reeldigitheight = (float)pin->m_height / (float)GridRows;
 
             // work out the size of the reel image strip (adds room for an extra digit at the end)
             //const int width  = m_reeldigitwidth;
@@ -867,9 +864,6 @@ void DispReel::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
     }
     else    /* generate a strip of numbers using font rendering */
 	{
-        RECT	rcOut;
-        HFONT   hFont;
-
         // text reels are purely 0-9 and nothing else
         m_d.m_digitrange = 9;
 
@@ -881,6 +875,7 @@ void DispReel::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
         size.int64 = size.int64 / 1000 * ppin3d->m_dwRenderWidth;
         m_pIFontPlay->put_Size(size);
 
+        HFONT   hFont;
         m_pIFontPlay->get_hFont(&hFont);
 	    HDC hdc = GetDC(NULL);
         SelectObject(hdc, hFont);
@@ -892,6 +887,7 @@ void DispReel::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
         const int length = lstrlen(REEL_NUMBER_TEXT);
         for (int i=0; i<length; ++i)
         {
+	        RECT rcOut;
             rcOut.left = 0;
             rcOut.top = 0;
             rcOut.right = maxwidth;
@@ -933,7 +929,8 @@ void DispReel::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			// set the font plotting parameters
 			SelectObject(hdc, hFont);
 			SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
-        
+
+	        RECT rcOut;
             rcOut.left = 0;
             rcOut.top = 0;//i * maxheight;
             rcOut.right = maxwidth;
@@ -1065,7 +1062,6 @@ bool DispReel::RenderAnimation()
 }
 
 
-
 // This function gets calls just before the game starts to draw the first instance of
 // the object on the screen.  it is not called after that.  Check3D and Draw3D handle
 // any dynamic updates.
@@ -1086,12 +1082,10 @@ void DispReel::RenderText()
 }
 
 
-
 void DispReel::SetObjectPos()
 {
 	g_pvp->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
 }
-
 
 
 void DispReel::MoveOffset(const float dx, const float dy)
@@ -1106,12 +1100,10 @@ void DispReel::MoveOffset(const float dx, const float dy)
 }
 
 
-
 void DispReel::GetCenter(Vertex2D * const pv) const
 {
 	*pv = m_d.m_v1;
 }
-
 
 
 void DispReel::PutCenter(const Vertex2D * const pv)
@@ -1123,7 +1115,6 @@ void DispReel::PutCenter(const Vertex2D * const pv)
 
 	m_ptable->SetDirtyDraw();
 }
-
 
 
 HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -1169,7 +1160,6 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
 	return S_OK;
 }
-
 
 
 HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -1218,7 +1208,6 @@ HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versio
 	return hr;
 #endif
 }
-
 
 
 BOOL DispReel::LoadToken(int id, BiffReader *pbr)
@@ -1347,7 +1336,6 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 		}
 	return fTrue;
 }
-
 
 
 HRESULT DispReel::InitPostLoad()
@@ -1723,6 +1711,7 @@ STDMETHODIMP DispReel::put_UseImageGrid(VARIANT_BOOL newVal)
 
 	return S_OK;
 }
+
 STDMETHODIMP DispReel::get_ImagesPerGridRow(long *pVal)
 {
     *pVal = m_d.m_imagesPerGridRow;

@@ -80,7 +80,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\Plunger","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -96,13 +96,13 @@ void Plunger::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Plunger","MechPlunger", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_mechPlunger = iTmp == 0? false:true;
+		m_d.m_mechPlunger = iTmp == 0 ? false : true;
 	else
 		m_d.m_mechPlunger = fFalse;		// plungers require selection for mechanical input
 	
 	hr = GetRegInt("DefaultProps\\Plunger","AutoPlunger", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_autoPlunger = iTmp == 0? false:true;
+		m_d.m_autoPlunger = iTmp == 0 ? false : true;
 	else
 		m_d.m_autoPlunger = fFalse;		
 	
@@ -120,7 +120,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Plunger","Visible", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fVisible = iTmp == 0? false:true;
+		m_d.m_fVisible = iTmp == 0 ? false : true;
 	else
 		m_d.m_fVisible = fTrue;
 
@@ -141,15 +141,15 @@ void Plunger::WriteRegDefaults()
 	{
 	char strTmp[40];
 
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_height);
+	sprintf_s(strTmp, 40, "%f", m_d.m_height);
 	SetRegValue("DefaultProps\\Plunger","Height", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_width);
+	sprintf_s(strTmp, 40, "%f", m_d.m_width);
 	SetRegValue("DefaultProps\\Plunger","Width", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_stroke);
+	sprintf_s(strTmp, 40, "%f", m_d.m_stroke);
 	SetRegValue("DefaultProps\\Plunger","Stroke", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_speedPull);
+	sprintf_s(strTmp, 40, "%f", m_d.m_speedPull);
 	SetRegValue("DefaultProps\\Plunger","PullSpeed", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_speedFire);
+	sprintf_s(strTmp, 40, "%f", m_d.m_speedFire);
 	SetRegValue("DefaultProps\\Plunger","ReleaseSpeed", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Plunger","PlungerType",REG_DWORD,&m_d.m_type,4);
 	SetRegValue("DefaultProps\\Plunger","Color",REG_DWORD,&m_d.m_color,4);
@@ -159,16 +159,17 @@ void Plunger::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Plunger","Surface", REG_SZ, &m_d.m_szSurface, strlen(m_d.m_szSurface));
 	SetRegValue("DefaultProps\\Plunger","MechPlunger",REG_DWORD, &m_d.m_mechPlunger,4);
 	SetRegValue("DefaultProps\\Plunger","AutoPlunger",REG_DWORD, &m_d.m_autoPlunger,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_mechStrength);
+	sprintf_s(strTmp, 40, "%f", m_d.m_mechStrength);
 	SetRegValue("DefaultProps\\Plunger","MechStrength", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_parkPosition);
+	sprintf_s(strTmp, 40, "%f", m_d.m_parkPosition);
 	SetRegValue("DefaultProps\\Plunger","ParkPosition", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Plunger","Visible",REG_DWORD, &m_d.m_fVisible,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_scatterVelocity);
+	sprintf_s(strTmp, 40, "%f", m_d.m_scatterVelocity);
 	SetRegValue("DefaultProps\\Plunger","ScatterVelocity", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_breakOverVelocity);
+	sprintf_s(strTmp, 40, "%f", m_d.m_breakOverVelocity);
 	SetRegValue("DefaultProps\\Plunger","BreakOverVelocity", REG_SZ, &strTmp,strlen(strTmp));
 	}
+
 void Plunger::PreRender(Sur * const psur)
 	{
 	}
@@ -369,12 +370,11 @@ void Plunger::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 	const float inv_cframes = (cframes > 1) ? ((endy - beginy)/(float)(cframes-1)) : 0.0f;
 
-
 	for (int i=0;i<cframes;i++)
 	{
 		const float height = beginy + inv_cframes*(float)i;
 
-		ObjFrame *pof = new ObjFrame();
+		ObjFrame * const pof = new ObjFrame();
 
 		if (m_d.m_type == PlungerTypeModern)
 		{
@@ -409,14 +409,14 @@ void Plunger::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 						 m + offset,
 						(m + offset + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1),
 						(m + offset + 1 + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1),
-						m + offset + 1};
+						 m + offset + 1};
 
 					pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
 													     (16*PLUNGEPOINTS1),(LPWORD)rgi, 4, 0);
 				}
 			}
 		}
-		if (m_d.m_type == PlungerTypeOrig)
+		else if (m_d.m_type == PlungerTypeOrig)
 		{
 			Vertex3D rgv3D[16*PLUNGEPOINTS0];
 			for (int l=0;l<16;l++)
@@ -458,8 +458,7 @@ void Plunger::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 		}
 
-		LPDIRECTDRAWSURFACE7 pdds;
-		pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		LPDIRECTDRAWSURFACE7 pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
@@ -690,37 +689,37 @@ STDMETHODIMP Plunger::MotionDevice(int *pVal)
 STDMETHODIMP Plunger::Position(int *pVal)
 {
 //	*pVal=curMechPlungerPos;
-if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_PBWIZARD)
-{
-	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-	float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
-	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
-	*pVal = (int)(tmp*(float)(1.0/0.04));
-}
+	if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_PBWIZARD)
+	{
+		const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
+		float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+		tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
+		*pVal = (int)(tmp*(float)(1.0/0.04));
+	}
 
-if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_ULTRACADE)
-{
-	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-	float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
-	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
-	*pVal = (int)(tmp*(float)(1.0/0.04));
-}
+	if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_ULTRACADE)
+	{
+		const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
+		float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+		tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
+		*pVal = (int)(tmp*(float)(1.0/0.04));
+	}
 
-if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_SIDEWINDER)
-{
-	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-	float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
-	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
-	*pVal = (int)(tmp*(float)(1.0/0.04));
-}
+	if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_SIDEWINDER)
+	{
+		const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
+		float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+		tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
+		*pVal = (int)(tmp*(float)(1.0/0.04));
+	}
 
-if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_GENERIC)
-{
-	const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-	float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
-	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
-	*pVal = (int)(tmp*(float)(1.0/0.04));
-}
+	if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_GENERIC)
+	{
+		const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
+		float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+		tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
+		*pVal = (int)(tmp*(float)(1.0/0.04));
+	}
 
 //	return tmp;
 
@@ -744,7 +743,7 @@ STDMETHODIMP Plunger::Fire()
 			// The strength is always larger than the mechanical one.  So I scaled by a constant.
 			m_phitplunger->m_plungeranim.m_posdesired = m_d.m_v.y; 
 			m_phitplunger->m_plungeranim.m_speed = 0;
-			m_phitplunger->m_plungeranim.m_force = -m_d.m_mechStrength * 1.0613f;
+			m_phitplunger->m_plungeranim.m_force = m_d.m_mechStrength * -1.0613f;
 
 			m_phitplunger->m_plungeranim.m_fAcc = true;			
 			m_phitplunger->m_plungeranim.m_mechTimeOut = 100;	
@@ -868,9 +867,8 @@ STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
 {
 	if (m_phitplunger)
 		{
-		const float radius = 25.0f;
 		const float x = (m_phitplunger->m_plungeranim.m_x + m_phitplunger->m_plungeranim.m_x2) * 0.5f;
-		const float y = m_phitplunger->m_plungeranim.m_pos - radius - 0.01f;
+		const float y = m_phitplunger->m_plungeranim.m_pos - (25.0f + 0.01f); // radius 25
 
 		const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, x, y);
 
@@ -971,7 +969,6 @@ STDMETHODIMP Plunger::put_MechPlunger(VARIANT_BOOL newVal)
 
 	return S_OK;
 }
-
 
 STDMETHODIMP Plunger::get_AutoPlunger(VARIANT_BOOL *pVal)
 {

@@ -276,8 +276,8 @@ IDB_ICON_LIGHT          BITMAP                  "IconLight.bmp"
 IDB_BALLTEXTURE         BITMAP                  "balltex2.bmp"
 IDB_WHITE               BITMAP                  "white.bmp"
 IDB_SUNBURST3           BITMAP                  "sunburst.bmp"
+IDB_LOGO                BITMAP                  "logo25.bmp"
 IDB_CHEVRON             BITMAP                  "chevron.bmp"
-IDB_TARGET              BITMAP                  "target.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -474,7 +474,7 @@ BEGIN
     PUSHBUTTON      "Web Site",IDC_WEBSITE,156,164,67,14
     PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,130,179,93,14,NOT WS_VISIBLE | WS_DISABLED
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,7,198,150,17
-    CONTROL         264,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
+    CONTROL         IDB_LOGO,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
     LTEXT           "A Randy Davis Production",IDC_STATIC,13,36,94,23
     LTEXT           "Version (9.1.4)",IDC_VERSION,13,47,121,16
     LTEXT           "Randy Davis - designer, developer",IDC_STATIC,13,77,115,9

@@ -39,7 +39,7 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Kicker","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0? false:true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_tdr.m_fTimerEnabled = false;
 	
@@ -51,7 +51,7 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Kicker","Enabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fEnabled = iTmp == 0? false : true;
+		m_d.m_fEnabled = iTmp == 0 ? false : true;
 	else
 		m_d.m_fEnabled = fTrue;
 
@@ -92,11 +92,11 @@ void Kicker::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Kicker","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\Kicker","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	SetRegValue("DefaultProps\\Kicker","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_hit_height);
+	sprintf_s(strTmp, 40, "%f", m_d.m_hit_height);
 	SetRegValue("DefaultProps\\Kicker","HitHeight", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_radius);
+	sprintf_s(strTmp, 40, "%f", m_d.m_radius);
 	SetRegValue("DefaultProps\\Kicker","Radius", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_scatter);
+	sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
 	SetRegValue("DefaultProps\\Kicker","Scatter", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Kicker","KickerType",REG_DWORD,&m_d.m_kickertype,4);
 	SetRegValue("DefaultProps\\Kicker","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));

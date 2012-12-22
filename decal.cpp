@@ -131,11 +131,11 @@ void Decal::WriteRegDefaults()
 	char strTmp[MAXTOKEN];
 	float fTmp;
 
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_width);
+	sprintf_s(strTmp, 40, "%f", m_d.m_width);
 	SetRegValue("DefaultProps\\Decal","Width", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_height);
+	sprintf_s(strTmp, 40, "%f", m_d.m_height);
 	SetRegValue("DefaultProps\\Decal","Height", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(&strTmp[0], 40, "%f", m_d.m_rotation);
+	sprintf_s(strTmp, 40, "%f", m_d.m_rotation);
 	SetRegValue("DefaultProps\\Decal","Rotation", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Decal","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
 	SetRegValue("DefaultProps\\Decal","DecalType",REG_DWORD,&m_d.m_decaltype,4);
@@ -158,7 +158,7 @@ void Decal::WriteRegDefaults()
 		m_pIFont->get_Strikethrough(&fd.fStrikethrough); 
 		
 		fTmp = (float)(fd.cySize.int64 / 10000.0);
-		sprintf_s(&strTmp[0], 40, "%f", fTmp);
+		sprintf_s(strTmp, 40, "%f", fTmp);
 		SetRegValue("DefaultProps\\Decal","FontSize", REG_SZ, &strTmp,strlen(strTmp));
 		int charCnt = wcslen(fd.lpstrName) +1;
 		WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);

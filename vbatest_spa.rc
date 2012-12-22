@@ -845,7 +845,7 @@ BEGIN
     CTEXT           "Esta aplicación usa Microsoft Visual Basic Scripting Edition",
                     IDC_STATIC,7,151,76,25
     PUSHBUTTON      "Página Web",IDC_WEBSITE,165,121,50,14
-    CONTROL         264,IDC_STATIC,"Static",SS_BITMAP,7,7,125,27
+    CONTROL         IDB_LOGO,IDC_STATIC,"Static",SS_BITMAP,7,7,125,27
     CTEXT           "A Randy Davis Production",IDC_STATIC,7,39,98,12
     CTEXT           "Versión (0.3.1314)",IDC_VERSION,147,7,68,8
     LTEXT           "Randy Davis - diseño, desarrollo",IDC_STATIC,13,77,115,

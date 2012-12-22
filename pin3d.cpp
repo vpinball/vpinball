@@ -19,7 +19,6 @@ Pin3D::Pin3D()
 	m_pddsStatic = NULL;
 	m_pddsStaticZ = NULL;
 	m_pddsBallTexture = NULL;
-	m_pddsTargetTexture = NULL;
 	m_pddsLightTexture = NULL;
 	m_pddsLightWhite = NULL;
 	m_pddsShadowTexture = NULL;
@@ -53,8 +52,6 @@ Pin3D::~Pin3D()
 	SAFE_RELEASE(m_pddsStaticZ);
 
 	SAFE_RELEASE(m_pddsBallTexture);
-
-	SAFE_RELEASE(m_pddsTargetTexture);
 
 	SAFE_RELEASE(m_pddsLightTexture);
 
@@ -719,17 +716,6 @@ HRESULT Pin3D::Create3DDevice(const GUID * const pDeviceGUID)
 	return S_OK;
 	}
 
-void Pin3D::EnsureDebugTextures()
-	{
-	if (!m_pddsTargetTexture)
-		{
-		int width, height;
-		m_pddsTargetTexture = g_pvp->m_pdd.CreateFromResource(IDB_TARGET, &width, &height);
-		g_pvp->m_pdd.SetAlpha(m_pddsTargetTexture, RGB(0,0,0), width, height);
-		g_pvp->m_pdd.CreateNextMipMapLevel(m_pddsTargetTexture);
-		}
-	}
-
 HRESULT Pin3D::CreateZBuffer(const GUID* const pDeviceGUID )
 {
     // Get z-buffer dimensions from the render target
@@ -811,7 +797,6 @@ retry7:
 
 	m_pddsLightTexture = g_pvp->m_pdd.CreateFromResource(IDB_SUNBURST3, &width, &height);
 	g_pvp->m_pdd.SetAlpha(m_pddsLightTexture, RGB(0,0,0), width, height);
-
 	g_pvp->m_pdd.CreateNextMipMapLevel(m_pddsLightTexture);
 
 	m_pddsLightWhite = g_pvp->m_pdd.CreateFromResource(IDB_WHITE, &width, &height);
