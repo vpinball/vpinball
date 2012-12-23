@@ -1259,15 +1259,15 @@ void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, FALSE);
 	}
 
-void Ramp::RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D_NoTex * const rgv3D, WORD * const rgicrosssection, const int start, const int stop)
+void Ramp::RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D_NoTex * const rgv3D, WORD * const rgi, const int start, const int stop)
 {
 	if (m_d.m_type == RampType1Wire)
 	{
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX_VERTEX, rgv3D, 32, rgicrosssection+stop/2*3, 3*(stop-stop/2), 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX_VERTEX, rgv3D, 32, rgi+stop/2*3, 3*(stop-stop/2), 0);
 	}
 	else
 	{
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX_VERTEX, rgv3D, 32, rgicrosssection+start*3, 3*(stop-start), 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX_VERTEX, rgv3D, 32, rgi+start*3, 3*(stop-start), 0);
 	}
 }
 

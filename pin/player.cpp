@@ -1348,13 +1348,13 @@ void Player::InitWindow()
 		}
 
 	// constrain window to screen
-	if (!m_fFullScreen & (m_width > screenwidth))
+	if (!m_fFullScreen && (m_width > screenwidth))
 		{
 		m_width = screenwidth;
 		m_height = m_width * 3 / 4;
 		}
 
-	if (!m_fFullScreen & (m_height > screenheight))
+	if (!m_fFullScreen && (m_height > screenheight))
 		{
 		m_height = screenheight;
 		m_width = m_height * 4 / 3;
@@ -2350,7 +2350,7 @@ else
 	const unsigned int shift = (ddsd.ddpfPixelFormat.dwRGBBitCount == 32) ? 2 : 1;
 
 #ifdef ONLY3DUPD
-			unsigned int overall_area = 0;
+			overall_area = 0;
 
 			if (m_fCleanBlt) // detect overall area to blit
 			{

@@ -56,8 +56,8 @@ int WideStrCmp(WCHAR *wz1, WCHAR *wz2)
 				return -1;
 				}
 			}
-		*wz1++;
-		*wz2++;
+		wz1++;
+		wz2++;
 		}
 	if (*wz2 != L'\0')
 		{

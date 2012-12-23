@@ -171,6 +171,7 @@ public:
 		if (m_rg)
 			{
 			pvector->Reset();
+
 			if ((pvector->m_rg = (void **)malloc(sizeof(void *) * m_cMax)) == NULL)
 				{
 				pvector->m_cMax = 0;
@@ -178,20 +179,23 @@ public:
 
 				return false;  // OOM
 				}
+
+			pvector->m_cMax = m_cMax;
+			pvector->m_cSize = m_cSize;
+			
+			for (int i=0; i<m_cSize; ++i)	// We need this for smart pointers - they need to be ref counted
+				{
+				pvector->m_rg[i] = m_rg[i];
+				}
 			}
 		else
 			{
 			pvector->m_rg = NULL;
+
+			pvector->m_cMax = 0;
+			pvector->m_cSize = 0;
 			}
-		
-		pvector->m_cMax = m_cMax;
-		pvector->m_cSize = m_cSize;
-			
-		for (int i=0; i<m_cSize; ++i)	// We need this for smart pointers - they need to be ref counted
-			{
-			pvector->m_rg[i] = m_rg[i];
-			}
-			
+
 		return true;
 		}
 

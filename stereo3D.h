@@ -1,8 +1,8 @@
 #include <emmintrin.h>
 
 static const unsigned int f0 = 0xFFFFFFFFu;
-static const unsigned int t0 = 0;
-static const __m128i f0128 = (__m128i&)_mm_set_ps((float&)t0,(float&)f0,(float&)t0,(float&)f0);
+static const unsigned int z0 = 0;
+static const __m128i f0128 = (__m128i&)_mm_set_ps((float&)z0,(float&)f0,(float&)z0,(float&)f0);
 static const __m128i t0123 = _mm_set_epi32(3,2,1,0);
 static const __m128i t4444 = _mm_set1_epi32(4);
 static const __m128i FF128 = _mm_set1_epi32(0xFF);

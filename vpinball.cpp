@@ -486,7 +486,7 @@ void VPinball::InitRegValues()
 		m_securitylevel = DEFAULT_SECURITY_LEVEL; // The default
 		}
 
-	if (m_securitylevel < eSecurityNone || eSecurityNoControls > 4)
+	if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
 		{
 		m_securitylevel = eSecurityNoControls;
 		}
@@ -2311,7 +2311,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #endif
 		}
 
-	return DefFrameProc(hwnd, g_pvp->m_hwndWork, uMsg, wParam, lParam);
+	return g_pvp ? DefFrameProc(hwnd, g_pvp->m_hwndWork, uMsg, wParam, lParam) : 0;
 }
 
 
@@ -2602,7 +2602,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							{
 							char szFileName[10240];
 							char szInitialDir[10240];
-							char szT[MAX_PATH];
+							char szT[10240];
 
 							szFileName[0] = '\0';
 
@@ -3113,7 +3113,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							{
 							char szFileName[10240];
 							char szInitialDir[10240];
-							char szT[MAX_PATH];
+							char szT[10240];
 							szFileName[0] = '\0';
 
 							OPENFILENAME ofn;

@@ -371,13 +371,13 @@ void Textbox::RenderText()
 		//ExtTextOut(hdc, m_pobjframe->rc.right - m_pobjframe->rc.left - 4, 4, 0, NULL, m_d.sztext, lstrlen(m_d.sztext), NULL);
 
 		int alignment;
-
 		switch (m_d.m_talign)
 			{
 			case TextAlignLeft:
 				alignment = DT_LEFT;
 				break;
 
+			default:
 			case TextAlignCenter:
 				alignment = DT_CENTER;
 				break;

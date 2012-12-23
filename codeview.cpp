@@ -856,8 +856,8 @@ void CodeViewer::Find(FINDREPLACE *pfr)
 		}
 
 	const int scinfindflags = ((pfr->Flags & FR_WHOLEWORD) ? SCFIND_WHOLEWORD : 0) |
-	            ((pfr->Flags & FR_MATCHCASE) ? SCFIND_MATCHCASE : 0) |
-	            ((pfr->Flags & 0) ? SCFIND_REGEXP : 0);
+	            ((pfr->Flags & FR_MATCHCASE) ? SCFIND_MATCHCASE : 0) /*|
+	            ((pfr->Flags & 0) ? SCFIND_REGEXP : 0)*/;
 
 	SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
 	SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
@@ -1255,7 +1255,7 @@ void CodeViewer::FindCodeFromEvent()
 				break;
 				}
 
-			if (!FIsWhitespace(szLine[i]) && (wzFormat[i] != 0 || wzFormat[i] != SOURCETEXT_ATTR_COMMENT))
+			if (!FIsWhitespace(szLine[i]) /*&& (wzFormat[i] != 0 || wzFormat[i] != SOURCETEXT_ATTR_COMMENT)*/) //!!?
 				{
 				fGoodMatch = false;
 				}

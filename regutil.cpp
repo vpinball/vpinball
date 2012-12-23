@@ -94,8 +94,7 @@ HRESULT SetRegValue(char *szKey, char *szValue, DWORD type, void *pvalue, DWORD 
 
 	char szPath[1024];
 
-	lstrcpy(szPath, "Software\\Visual Pinball\\"); 
-
+	lstrcpy(szPath, "Software\\Visual Pinball\\");
 	lstrcat(szPath, szKey);
 
 	//RetVal = RegOpenKeyEx(HKEY_CURRENT_USER, szPath, 0, KEY_ALL_ACCESS, &hk);

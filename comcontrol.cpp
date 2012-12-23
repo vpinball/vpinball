@@ -237,7 +237,6 @@ HRESULT MyCaxWindow::ActivateAx(IUnknown* pUnkControl, bool bInited, IStream* pS
 		}
 
 		m_dwViewObjectType = 0;
-		HRESULT hr;
 		hr = m_spOleObject->QueryInterface(IID_IViewObjectEx, (void**) &m_spViewObject);
 		if (FAILED(hr))
 		{
