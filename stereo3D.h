@@ -826,4 +826,79 @@ return (((((r00a&0xFF00FFu)*invxinvy + (r10a&0xFF00FFu)*xinvy + (r01a&0xFF00FFu)
 	|
 	 (((r00b&0x00FF00u)*invxinvy + (r10b&0x00FF00u)*xinvy + (r01b&0x00FF00u)*invxy + (r11b&0x00FF00u)*xy) &0x00FE0000u))>>9);
 }
+
+__forceinline void fxaa_32bit(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const __m128i& zmask128, unsigned char* __restrict const mask)
+{
+#define FXAA_SPAN_MAX 8
+#define FXAA_OFFS (((FXAA_SPAN_MAX*8)>>4) + 1)
+
+#pragma omp parallel for schedule(dynamic)
+	for(int y = ystart; y < yend; ++y)
+	{
+	unsigned int offsm1 = (y-1)*owidth - 1 + xstart;
+	unsigned int offsn  = y*nwidth + xstart;
+	for(int x = xstart; x < xend; ++x,++offsm1,++offsn) //if(mask[offsn] == 0) //!! misses SSE(2) opt.
+	{
+		//mask[offsn] = 1;
+
+		//!! sliding window instead? (on y-1,y,y+1), incl. the filtered values already?
+		const unsigned int rNW = buffercopy[offsm1]  &0xFCFCFC;
+		const unsigned int rN  = buffercopy[offsm1+1]&0xFCFCFC;
+		const unsigned int rNE = buffercopy[offsm1+2]&0xFCFCFC;
+		const unsigned int offs = offsm1+owidth;
+		const unsigned int rW = buffercopy[offs]  &0xFCFCFC;
+		const unsigned int rM = buffercopy[offs+1]&0xFCFCFC;
+		const unsigned int rE = buffercopy[offs+2]&0xFCFCFC;
+		const unsigned int offsp1 = offs+owidth;
+		const unsigned int rSW = buffercopy[offsp1]  &0xFCFCFC;
+		const unsigned int rS  = buffercopy[offsp1+1]&0xFCFCFC;
+		const unsigned int rSE = buffercopy[offsp1+1]&0xFCFCFC;
+
+		const unsigned int rMrN = rM+rN;
+		const unsigned int lumaNW = lumas2(rMrN+rNW+rW);
+		const unsigned int lumaNE = lumas2(rMrN+rNE+rE);
+		const unsigned int rMrS = rM+rS;
+		const unsigned int lumaSW = lumas2(rMrS+rSW+rW);
+		const unsigned int lumaSE = lumas2(rMrS+rSE+rE);
+		const unsigned int lumaM  = luma(rM);
+
+		unsigned int tempMin,tempMin2,tempMax,tempMax2; //!! use cmovs?
+		if(lumaSW > lumaSE) {
+			tempMax = lumaSW;
+			tempMin = lumaSE;
+		} else {
+			tempMax = lumaSE;
+			tempMin = lumaSW;
+		}
+		if(lumaNW > lumaNE) {
+			tempMax2 = lumaNW;
+			tempMin2 = lumaNE;
+		} else {
+			tempMax2 = lumaNE;
+			tempMin2 = lumaNW;
+		}
+		const unsigned int lumaMin = min(lumaM, min(tempMin, tempMin2));
+		const unsigned int lumaMax = max(lumaM, max(tempMax, tempMax2));
+
+		const unsigned int SWSE = lumaSW + lumaSE;
+		const unsigned int NWNE = lumaNW + lumaNE;
+		int dirx = SWSE - NWNE;
+		int diry = (lumaNW + lumaSW) - (lumaNE + lumaSE);
+
+		const int temp = min(abs(dirx), abs(diry)) + (int)max((NWNE + SWSE)>>5, 2u);
+		dirx = (dirx<<3)/temp;
+		diry = (diry<<3)/temp;
+		dirx = min(FXAA_SPAN_MAX*8, max(-FXAA_SPAN_MAX*8, dirx));
+		diry = min(FXAA_SPAN_MAX*8, max(-FXAA_SPAN_MAX*8, diry));
+
+		unsigned int rgbB = bilerpFE(buffercopy,x,y,dirx,diry,owidth,width,height);
+		dirx >>= 2;
+		diry >>= 2;
+		const unsigned int rgbA = bilerpFE(buffercopy,x,y,dirx,diry,owidth,width,height);
+		rgbB = ((rgbA&0xFEFEFE) + (rgbB&0xFEFEFE))>>1;
+		const unsigned int lumaB = luma(rgbB);
+		bufferfinal[offsn] = ((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB;
+	}
+	}
+}
 #endif
