@@ -2398,7 +2398,11 @@ else
 			else
 			{
 #endif
+#ifndef FXAA
 				if((m_fStereo3DAA) || (m_fStereo3DY))
+#else
+				if(true)
+#endif
 				{
 					memcpy_sse2((void*)m_pin3d.m_pdds3Dbuffercopy, ddsd.lpSurface, ddsd.lPitch*height);
 					memcpy_sse2((void*)m_pin3d.m_pdds3Dbufferzcopy,ddsdz.lpSurface,ddsd.lPitch*height);
@@ -2499,76 +2503,40 @@ else
 						stereo_repro_32bit_x(0, height, (maxSeparationU+1+3)&0xFFFFFFFC, (width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask);
 				}
 
-#else // continue with FXAA //!! misses SSE(2) opt. //!! add update only version
+#else // continue with FXAA
 
-#define FXAA_SPAN_MAX 8
-#define OFFS (((FXAA_SPAN_MAX*8)>>4) + 1)
+		ZeroMemory(mask,(width*height)>>2); //!! not necessary when full update
 
+#ifdef ONLY3DUPD
+			if (m_fCleanBlt)
+			{
+				// Smart Blit - only update the invalidated areas
 #pragma omp parallel for schedule(dynamic)
-	for(int y = OFFS; y < (int)height - (OFFS+1); ++y) //!! border handling
-	{
-	unsigned int offsm1 = (y-1)*nPitch + (OFFS-1);
-	for(int x = OFFS; x < (int)width - (OFFS+1); ++x,++offsm1) //!! border handling
-	{
-		//!! sliding window instead? (on y-1,y,y+1), incl. the filtered values already?
-		const unsigned int rNW = buffercopy[offsm1]  &0xFCFCFC;
-		const unsigned int rN  = buffercopy[offsm1+1]&0xFCFCFC;
-		const unsigned int rNE = buffercopy[offsm1+2]&0xFCFCFC;
-		const unsigned int offs = offsm1+nPitch;
-		const unsigned int rW = buffercopy[offs]  &0xFCFCFC;
-		const unsigned int rM = buffercopy[offs+1]&0xFCFCFC;
-		const unsigned int rE = buffercopy[offs+2]&0xFCFCFC;
-		const unsigned int offsp1 = offs+nPitch;
-		const unsigned int rSW = buffercopy[offsp1]  &0xFCFCFC;
-		const unsigned int rS  = buffercopy[offsp1+1]&0xFCFCFC;
-		const unsigned int rSE = buffercopy[offsp1+1]&0xFCFCFC;
+				for (int i=0;i<m_vupdaterect.Size();++i)
+				{
+					const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
 
-		const unsigned int rMrN = rM+rN;
-		const unsigned int lumaNW = lumas2(rMrN+rNW+rW);
-		const unsigned int lumaNE = lumas2(rMrN+rNE+rE);
-		const unsigned int rMrS = rM+rS;
-		const unsigned int lumaSW = lumas2(rMrS+rSW+rW);
-		const unsigned int lumaSE = lumas2(rMrS+rSE+rE);
-		const unsigned int lumaM  = luma(rM);
+					const int left   = prc.left + m_pin3d.m_rcUpdate.left;
+					const int right  = prc.right + m_pin3d.m_rcUpdate.left;
+					const int top    = prc.top + m_pin3d.m_rcUpdate.top;
+					const int bottom = prc.bottom + m_pin3d.m_rcUpdate.top;
+					if((left >= right) || (top >= bottom))
+						continue;
 
-		unsigned int tempMin,tempMin2,tempMax,tempMax2; //!! use cmovs?
-		if(lumaSW > lumaSE) {
-			tempMax = lumaSW;
-			tempMin = lumaSE;
-		} else {
-			tempMax = lumaSE;
-			tempMin = lumaSW;
-		}
-		if(lumaNW > lumaNE) {
-			tempMax2 = lumaNW;
-			tempMin2 = lumaNE;
-		} else {
-			tempMax2 = lumaNE;
-			tempMin2 = lumaNW;
-		}
-		const unsigned int lumaMin = min(lumaM, min(tempMin, tempMin2));
-		const unsigned int lumaMax = max(lumaM, max(tempMax, tempMax2));
+					// Update the region (+ area around) from the back buffer to the front buffer.
+						//if(shift == 1)
+							//stereo_repro_16bit_y(max(top-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1), min((unsigned int)bottom+FXAA_OFFS+1,height-(FXAA_OFFS+1)), max(left,0)/*&0xFFFFFFFE*/, min((unsigned int)right+1,width)/*&0xFFFFFFFE*/, width,oPitch,nPitch,height,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,         mask);
+						//else
+							fxaa_32bit(max(top-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1), min((unsigned int)bottom+FXAA_OFFS+1,height-(FXAA_OFFS+1)), max(left,0)/*&0xFFFFFFFC*/, min((unsigned int)right+3,width)/*&0xFFFFFFFC*/, width,oPitch,nPitch,height,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,zmask128,mask);
+				}
+			}
+			else
+#endif
+					//if(shift == 1)
+	 					//fxaa_16bit((FXAA_OFFS+1+1), (height-(FXAA_OFFS+1)), 0, width/*&0xFFFFFFFE*/, width,oPitch,nPitch,height,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,         mask); //!! mask not necessary for full update
+					//else
+						fxaa_32bit((FXAA_OFFS+1+1), (height-(FXAA_OFFS+1)), 0, width/*&0xFFFFFFFC*/, width,oPitch,nPitch,height,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,zmask128,mask);
 
-		const unsigned int SWSE = lumaSW + lumaSE;
-		const unsigned int NWNE = lumaNW + lumaNE;
-		int dirx = SWSE - NWNE;
-		int diry = (lumaNW + lumaSW) - (lumaNE + lumaSE);
-
-		const int temp = min(abs(dirx), abs(diry)) + (int)max((NWNE + SWSE)>>5, 2u);
-		dirx = (dirx<<3)/temp;
-		diry = (diry<<3)/temp;
-		dirx = min(FXAA_SPAN_MAX*8, max(-FXAA_SPAN_MAX*8, dirx));
-		diry = min(FXAA_SPAN_MAX*8, max(-FXAA_SPAN_MAX*8, diry));
-
-		unsigned int rgbB = bilerpFE(buffercopy,x,y,dirx,diry,nPitch,width,height);
-		dirx >>= 2;
-		diry >>= 2;
-		const unsigned int rgbA = bilerpFE(buffercopy,x,y,dirx,diry,nPitch,width,height);
-		rgbB = ((rgbA&0xFEFEFE) + (rgbB&0xFEFEFE))>>1;
-		const unsigned int lumaB = luma(rgbB);
-		bufferfinal[offs+1] = ((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB;
-	}
-	}
 #endif
 	m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
 	} else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; // 'handle' fails to lock buffers
