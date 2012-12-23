@@ -279,6 +279,7 @@ void Kicker::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	ppin3d->EnableLightMap(fFalse, height);
 
 	// Draw mask
+	{
 	WORD rgi[3*14];
 	for (int l=0;l<14;l++)
 		{
@@ -289,6 +290,7 @@ void Kicker::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		SetNormal(rgv3D+16, rgi+l*3, 3, NULL, NULL, 0);
 		}
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D+16, 16,rgi, 3*14, 0);
+	}
 
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);

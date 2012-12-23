@@ -1531,11 +1531,13 @@ void PinTable::Play()
 		return; // Can't play twice
 		}
 
-	HRESULT hr = GetRegInt("Player", "AlphaRampAccuracy", &m_alphaRampsAccuracy);
+	{
+	const HRESULT hr = GetRegInt("Player", "AlphaRampAccuracy", &m_alphaRampsAccuracy);
 	if (hr != S_OK)
 		{
 		m_alphaRampsAccuracy = 5;
 		}
+	}
 	
 	mixer_volmod( m_tblVolmod );
 		
@@ -3503,7 +3505,7 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
 			pck.fccType = mmioStringToFOURCC("WAVE", MMIO_TOUPPER);
 
 			MMRESULT result = mmioCreateChunk(hmmio, &pck, MMIO_CREATERIFF); //RIFF header
-					mmioWrite(hmmio, "fmt ", 4);			//fmt
+			mmioWrite(hmmio, "fmt ", 4);			//fmt
 
 			pps->m_pDSBuffer->GetFormat(&wfx, sizeof(wfx), NULL); //CORRECTED for support of all savable VP WAV FORMATS - BDS
 			// Create the format chunk.
@@ -4492,7 +4494,7 @@ void PinTable::CheckDirty()
 		{
 		if (sdsNewDirtyState > eSaveClean)
 			{
-			char szWindowName[_MAX_PATH];
+			char szWindowName[1024+1];
 			lstrcpy(szWindowName, m_szTitle);
 			lstrcat(szWindowName, "*");
 
@@ -6463,7 +6465,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 				{
 				DWORD cwch = sizeof(m_vcollection.ElementAt(ivar)->m_wzName)+sizeof(DWORD);
 				wzDst = (WCHAR *) CoTaskMemAlloc(cwch);
-				if (wzDst == NULL)
+				if ((wzDst == NULL) || (cwch > MAXNAMEBUFFER*sizeof(WCHAR)))
 					{
 					ShowError("DOH!");
 					}
@@ -6609,7 +6611,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 				{
    				DWORD cwch = sizeof(m_vcollection.ElementAt(dwCookie)->m_wzName)+sizeof(DWORD);
 				wzDst = (WCHAR *) CoTaskMemAlloc(cwch);
-				if (wzDst == NULL)
+				if ((wzDst == NULL) || (cwch > MAXNAMEBUFFER*sizeof(WCHAR)))
 					{
 					ShowError("DOH!");
 					}
@@ -7659,7 +7661,7 @@ STDMETHODIMP PinTable::put_DeadSlider(int newVal)
 		if (hr != S_OK)
 			{
 			STARTUNDO
-			g_pplayer->DeadZ = newVal;
+			DeadZ = newVal;
 			STOPUNDO
 			}
 		}
@@ -7692,7 +7694,7 @@ STDMETHODIMP PinTable::put_DeadZone(int newVal)
 		if (hr != S_OK)
 			{
 			STARTUNDO
-			g_pplayer->DeadZ = newVal;
+			DeadZ = newVal;
 			STOPUNDO
 			}
 		}
