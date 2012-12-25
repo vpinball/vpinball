@@ -348,6 +348,7 @@ void Kicker::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
 			pd3dDevice->SetMaterial(&mtrl);
 
+			{
 			WORD rgi[3*14];
 			for (int l=0;l<14;++l)
 				{
@@ -358,6 +359,7 @@ void Kicker::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 				SetNormal(rgv3D, rgi+l*3, 3, NULL, NULL, 0);
 				}
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 16,rgi, 3*14, 0);
+			}
 
 			mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
 			mtrl.diffuse.g = mtrl.ambient.g = g;//0.7f;

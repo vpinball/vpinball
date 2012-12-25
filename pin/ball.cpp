@@ -562,7 +562,7 @@ void Ball::UpdateVelocities()
 	float nx = g_pplayer->m_NudgeX;
 	float ny = g_pplayer->m_NudgeY;
 	
-	if( g_pplayer && g_pplayer->m_NudgeManual >= 0) //joystick control of ball roll
+	if(g_pplayer->m_NudgeManual >= 0) //joystick control of ball roll
 		{
 		vx *= 0.92f;	//rolling losses high for easy manual control
 		vy *= 0.92f;

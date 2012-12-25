@@ -2830,42 +2830,41 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
 			// Authentication block
 
-			BYTE hashvalOld[256];
-			//DWORD hashlenOld = 256;
-
 			if (version > 40)
 				{
 				if(SUCCEEDED(hr = pstgData->OpenStream(L"MAC", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
 					{
+					BYTE hashvalOld[256];
+					//DWORD hashlenOld = 256;
 					ULONG read;
 					hr = pstmVersion->Read(&hashvalOld, HASHLENGTH, &read);
+
+					foo = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
+
+					hashlen = 256;
+					foo = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
+
+					foo = CryptDestroyHash(hch);
+
+					foo = CryptDestroyHash(hchkey);
+
+					foo = CryptDestroyKey(hkey);
+
+					foo = CryptReleaseContext(hcp, 0);
+
+					for (int i=0;i<HASHLENGTH;i++)
+						{
+						if (hashval[i] != hashvalOld[i])
+							{
+							hr = E_ACCESSDENIED;
+							}
+						}
 					}
 				else
 					{
 					// Error
 					hr = E_ACCESSDENIED;
-					}
-
-				foo = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
-
-				hashlen = 256;
-				foo = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
-
-				foo = CryptDestroyHash(hch);
-
-				foo = CryptDestroyHash(hchkey);
-
-				foo = CryptDestroyKey(hkey);
-
-				foo = CryptReleaseContext(hcp, 0);
-
-				for (int i=0;i<HASHLENGTH;i++)
-					{
-					if (hashval[i] != hashvalOld[i])
-						{
-						hr = E_ACCESSDENIED;
-						}
-					}
+					}				
 				}
 			//////// End Authentication block
 			}
