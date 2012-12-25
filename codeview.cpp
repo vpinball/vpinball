@@ -691,7 +691,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		}
 
 	OLECHAR wszOutput[1024];
-	swprintf_s(wszOutput, L"Line: %d\n%s",
+	swprintf_s(wszOutput, L"Line: %u\n%s",
 			              nLine, ei.bstrDescription);
 
 	SysFreeString(bstr);
