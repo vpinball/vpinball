@@ -759,72 +759,90 @@ if(handle_borders)
 }
 
 #ifdef FXAA
-__forceinline unsigned int luma(const unsigned int rgb)
+__forceinline __m128i luma(const __m128i &rgb)
 {
-return ((rgb&0xFFu)>>3)+((rgb&0xFF00u)>>9)+((rgb&0xFF0000u)>>18); //!! R,B swapped
+	return
+	_mm_add_epi32(
+	 _mm_add_epi32(_mm_srli_epi32(_mm_and_si128(rgb,FF128),3),
+	 			   _mm_srli_epi32(_mm_and_si128(rgb,FF00128),9)),
+	 _mm_srli_epi32(_mm_and_si128(rgb,FF0000128),18)); //!! R,B swapped
 }
 
-__forceinline unsigned int lumas2(const unsigned int rgb)
+__forceinline __m128i lumas2(const __m128i &rgb)
 {
-return ((rgb&(0xFFu*4))>>5)+((rgb&(0xFF00u*4))>>11)+((rgb&(0xFF0000u*4))>>20); //!! R,B swapped
+	return
+	_mm_add_epi32(
+	 _mm_add_epi32(_mm_srli_epi32(_mm_and_si128(rgb,_mm_set1_epi32(0xFFu*4)),5),
+	 			   _mm_srli_epi32(_mm_and_si128(rgb,_mm_set1_epi32(0xFF00u*4)),11)),
+	 _mm_srli_epi32(_mm_and_si128(rgb,_mm_set1_epi32(0xFF0000u*4)),20)); //!! R,B swapped
 }
 
-inline unsigned int bilerpFE(const unsigned int* const __restrict pic, const int xorg, const int yorg, int dx, int dy, const unsigned int nPitch, const unsigned int xres, const unsigned int yres)
+inline __m128i bilerpFE(const unsigned int* const __restrict pic, const __m128i &x, const __m128i &y, __m128i dx, __m128i dy, const __m128i &nPitch128, const unsigned int nPitch)
 {
-const int dx4 = dx>>4;
-const int dy4 = dy>>4;
-dx &= 0xFu;
-dy &= 0xFu;
-const unsigned int xy  = dx*dy;
-const unsigned int x16 = dx<<4;
-const unsigned int y16 = dy<<4;
-const unsigned int invxy = y16-xy;
-const unsigned int xinvy = x16-xy;
-const unsigned int invxinvy = 256-x16-invxy;
+const __m128i dx4 = _mm_srai_epi32(dx,4);
+const __m128i dy4 = _mm_srai_epi32(dy,4);
+dx = _mm_and_si128(dx,_mm_set1_epi32(0xFu)); //!! negative numbers??
+dy = _mm_and_si128(dy,_mm_set1_epi32(0xFu));
+const __m128i xy  = _mm_mul_int(dx,dy); //!! _i?
+const __m128i x16 = _mm_slli_epi32(dx,4);
+const __m128i y16 = _mm_slli_epi32(dy,4);
+const __m128i invxy = _mm_sub_epi32(y16,xy);
+const __m128i xinvy = _mm_sub_epi32(x16,xy);
+const __m128i invxinvy = _mm_sub_epi32(_mm_sub_epi32(_mm_set1_epi32(256),x16),invxy);
 
-const int xa = xorg+dx4;
-const int ya = yorg+dy4;
-const int xb = xorg-dx4;
-const int yb = yorg-dy4;
+const __m128i xa = _mm_add_epi32(x,dx4);
+const __m128i ya = _mm_mul_int(_mm_add_epi32(y,dy4),nPitch128);
+const __m128i offsa = _mm_add_epi32(xa,ya);
+const __m128i xb = _mm_sub_epi32(x,dx4);
+const __m128i yb = _mm_mul_int(_mm_sub_epi32(y,dy4),nPitch128);
+const __m128i offsb = _mm_add_epi32(xb,yb);
 
-/*const unsigned int clampxa   = min((unsigned int) xa   ,xres-1);
-const unsigned int clampxp1a = min((unsigned int)(xa+1),xres-1);
-const unsigned int clampya   = min((unsigned int) ya   ,yres-1)*nPitch;
-const unsigned int clampyp1a = min((unsigned int)(ya+1),yres-1)*nPitch;
+const unsigned int offsa0 = ((int*)&offsa)[0];
+const unsigned int offsa1 = ((int*)&offsa)[1];
+const unsigned int offsa2 = ((int*)&offsa)[2];
+const unsigned int offsa3 = ((int*)&offsa)[3];
 
-const unsigned int clampxb   = min((unsigned int) xb   ,xres-1);
-const unsigned int clampxp1b = min((unsigned int)(xb-1),xres-1);
-const unsigned int clampyb   = min((unsigned int) yb   ,yres-1)*nPitch;
-const unsigned int clampyp1b = min((unsigned int)(yb-1),yres-1)*nPitch;
+const __m128i r00a = _mm_set_epi32(pic[offsa3],pic[offsa2],pic[offsa1],pic[offsa0]);
+const __m128i r10a = _mm_set_epi32(pic[offsa3+1],pic[offsa2+1],pic[offsa1+1],pic[offsa0+1]);
+const __m128i r01a = _mm_set_epi32(pic[offsa3+nPitch],pic[offsa2+nPitch],pic[offsa1+nPitch],pic[offsa0+nPitch]);
+const __m128i r11a = _mm_set_epi32(pic[offsa3+1+nPitch],pic[offsa2+1+nPitch],pic[offsa1+1+nPitch],pic[offsa0+1+nPitch]);
 
-const unsigned int r00a = pic[clampxa   + clampya];
-const unsigned int r10a = pic[clampxp1a + clampya];
-const unsigned int r01a = pic[clampxa   + clampyp1a];
-const unsigned int r11a = pic[clampxp1a + clampyp1a];
+const unsigned int offsb0 = ((int*)&offsb)[0];
+const unsigned int offsb1 = ((int*)&offsb)[1];
+const unsigned int offsb2 = ((int*)&offsb)[2];
+const unsigned int offsb3 = ((int*)&offsb)[3];
 
-const unsigned int r10b = pic[clampxp1b + clampyb];
-const unsigned int r00b = pic[clampxb   + clampyb];
-const unsigned int r11b = pic[clampxp1b + clampyp1b];
-const unsigned int r01b = pic[clampxb   + clampyp1b];*/
+const __m128i r11b = _mm_set_epi32(pic[offsb3-1-nPitch],pic[offsb2-1-nPitch],pic[offsb1-1-nPitch],pic[offsb0-1-nPitch]);
+const __m128i r01b = _mm_set_epi32(pic[offsb3-nPitch],pic[offsb2-nPitch],pic[offsb1-nPitch],pic[offsb0-nPitch]);
+const __m128i r10b = _mm_set_epi32(pic[offsb3-1],pic[offsb2-1],pic[offsb1-1],pic[offsb0-1]);
+const __m128i r00b = _mm_set_epi32(pic[offsb3],pic[offsb2],pic[offsb1],pic[offsb0]);
 
-const unsigned int offsa = xa + ya*nPitch;
-const unsigned int r00a = pic[offsa];
-const unsigned int r10a = pic[offsa+1];
-const unsigned int r01a = pic[offsa+nPitch];
-const unsigned int r11a = pic[offsa+1+nPitch];
+return _mm_add_epi32(
+	_mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(
+	_mm_add_epi32(_mm_mul_int(_mm_and_si128(r00a,FF00FF128),invxinvy),
+				  _mm_mul_int(_mm_and_si128(r10a,FF00FF128),xinvy)),
+	_mm_add_epi32(_mm_mul_int(_mm_and_si128(r01a,FF00FF128),invxy),
+				  _mm_mul_int(_mm_and_si128(r11a,FF00FF128),xy))),
+	 _mm_set1_epi32(0xFE00FE00u)),
+	 _mm_and_si128(_mm_add_epi32(
+	 _mm_add_epi32(_mm_mul_int(_mm_and_si128(r00a,FF00128),invxinvy),
+				   _mm_mul_int(_mm_and_si128(r10a,FF00128),xinvy)),
+	 _mm_add_epi32(_mm_mul_int(_mm_and_si128(r01a,FF00128),invxy),
+				   _mm_mul_int(_mm_and_si128(r11a,FF00128),xy))),
+	 _mm_set1_epi32(0x00FE0000u))),9),
 
-const unsigned int offsb = xb + yb*nPitch;
-const unsigned int r11b = pic[offsb-1-nPitch];
-const unsigned int r01b = pic[offsb-nPitch];
-const unsigned int r10b = pic[offsb-1];
-const unsigned int r00b = pic[offsb];
-
-return (((((r00a&0xFF00FFu)*invxinvy + (r10a&0xFF00FFu)*xinvy + (r01a&0xFF00FFu)*invxy + (r11a&0xFF00FFu)*xy) &0xFE00FE00u)
-	|
-	 (((r00a&0x00FF00u)*invxinvy + (r10a&0x00FF00u)*xinvy + (r01a&0x00FF00u)*invxy + (r11a&0x00FF00u)*xy) &0x00FE0000u))>>9) +
-       (((((r00b&0xFF00FFu)*invxinvy + (r10b&0xFF00FFu)*xinvy + (r01b&0xFF00FFu)*invxy + (r11b&0xFF00FFu)*xy) &0xFE00FE00u)
-	|
-	 (((r00b&0x00FF00u)*invxinvy + (r10b&0x00FF00u)*xinvy + (r01b&0x00FF00u)*invxy + (r11b&0x00FF00u)*xy) &0x00FE0000u))>>9);
+       _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(
+	   _mm_add_epi32(_mm_mul_int(_mm_and_si128(r00b,FF00FF128),invxinvy),
+				     _mm_mul_int(_mm_and_si128(r10b,FF00FF128),xinvy)),
+	   _mm_add_epi32(_mm_mul_int(_mm_and_si128(r01b,FF00FF128),invxy),
+					 _mm_mul_int(_mm_and_si128(r11b,FF00FF128),xy))),
+	_mm_set1_epi32(0xFE00FE00u)),
+	 _mm_and_si128(_mm_add_epi32(
+	 _mm_add_epi32(_mm_mul_int(_mm_and_si128(r00b,FF00128),invxinvy),
+				   _mm_mul_int(_mm_and_si128(r10b,FF00128),xinvy)),
+	 _mm_add_epi32(_mm_mul_int(_mm_and_si128(r01b,FF00128),invxy),
+				   _mm_mul_int(_mm_and_si128(r11b,FF00128),xy))),
+	 _mm_set1_epi32(0x00FE0000u))),9));
 }
 
 __forceinline void fxaa_32bit(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const __m128i& zmask128, unsigned char* __restrict const mask)
@@ -832,72 +850,92 @@ __forceinline void fxaa_32bit(const int ystart, const int yend, const int xstart
 #define FXAA_SPAN_MAX 8
 #define FXAA_OFFS (((FXAA_SPAN_MAX*8)>>4) + 1)
 
+	const __m128i owidth128 = _mm_set1_epi32(owidth);
+
 #pragma omp parallel for schedule(dynamic)
 	for(int y = ystart; y < yend; ++y)
 	{
-	unsigned int offsm1 = (y-1)*owidth - 1 + xstart;
-	unsigned int offsn  = y*nwidth + xstart;
-	for(int x = xstart; x < xend; ++x,++offsm1,++offsn) //if(mask[offsn] == 0) //!! misses SSE(2) opt.
+	unsigned int offsm1   = (y-1)*owidth - 1 + xstart;
+	unsigned int offsn    = y*nwidth + xstart;
+	unsigned int offsmask = (y*width + xstart)>>2;
+	const __m128i y128 = _mm_set1_epi32(y);
+	__m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
+	for(int x = xstart; x < xend; x+=4,offsm1+=4,offsn+=4,++offsmask,x128=_mm_add_epi32(x128,t4444)) if(mask[offsmask] == 0)
 	{
-		//mask[offsn] = 1;
+		mask[offsmask] = 1;
 
 		//!! sliding window instead? (on y-1,y,y+1), incl. the filtered values already?
-		const unsigned int rNW = buffercopy[offsm1]  &0xFCFCFC;
-		const unsigned int rN  = buffercopy[offsm1+1]&0xFCFCFC;
-		const unsigned int rNE = buffercopy[offsm1+2]&0xFCFCFC;
+		const unsigned int NW = buffercopy[offsm1]&0xFCFCFC;
+		const __m128i rN = _mm_and_si128(_mm_load_si128((__m128i*)(buffercopy+offsm1+1)),_mm_set1_epi32(0xFCFCFC));;
+		const unsigned int NE = buffercopy[offsm1+5]&0xFCFCFC;
+		__m128i rNW = _mm_shuffle_epi32(rN,_MM_SHUFFLE(2,1,0,0));
+		*((unsigned int*)&rNW) = NW; //!! opt.?
+		__m128i rNE = _mm_shuffle_epi32(rN,_MM_SHUFFLE(0,3,2,1));
+		((unsigned int*)&rNE)[3] = NE;
+
 		const unsigned int offs = offsm1+owidth;
-		const unsigned int rW = buffercopy[offs]  &0xFCFCFC;
-		const unsigned int rM = buffercopy[offs+1]&0xFCFCFC;
-		const unsigned int rE = buffercopy[offs+2]&0xFCFCFC;
+		const unsigned int W = buffercopy[offs]&0xFCFCFC;
+		const __m128i rM = _mm_and_si128(_mm_load_si128((__m128i*)(buffercopy+offs+1)),_mm_set1_epi32(0xFCFCFC));;
+		const unsigned int E = buffercopy[offs+5]&0xFCFCFC;
+		__m128i rW = _mm_shuffle_epi32(rM,_MM_SHUFFLE(2,1,0,0));
+		*((unsigned int*)&rW) = W;
+		__m128i rE = _mm_shuffle_epi32(rM,_MM_SHUFFLE(0,3,2,1));
+		((unsigned int*)&rE)[3] = E;
+
 		const unsigned int offsp1 = offs+owidth;
-		const unsigned int rSW = buffercopy[offsp1]  &0xFCFCFC;
-		const unsigned int rS  = buffercopy[offsp1+1]&0xFCFCFC;
-		const unsigned int rSE = buffercopy[offsp1+1]&0xFCFCFC;
+		const unsigned int SW = buffercopy[offsp1]&0xFCFCFC;
+		const __m128i rS = _mm_and_si128(_mm_load_si128((__m128i*)(buffercopy+offsp1+1)),_mm_set1_epi32(0xFCFCFC));;
+		const unsigned int SE = buffercopy[offsp1+5]&0xFCFCFC;
+		__m128i rSW = _mm_shuffle_epi32(rS,_MM_SHUFFLE(2,1,0,0));
+		*((unsigned int*)&rSW) = SW;
+		__m128i rSE = _mm_shuffle_epi32(rS,_MM_SHUFFLE(0,3,2,1));
+		((unsigned int*)&rSE)[3] = SE;
 
-		const unsigned int rMrN = rM+rN;
-		const unsigned int lumaNW = lumas2(rMrN+rNW+rW);
-		const unsigned int lumaNE = lumas2(rMrN+rNE+rE);
-		const unsigned int rMrS = rM+rS;
-		const unsigned int lumaSW = lumas2(rMrS+rSW+rW);
-		const unsigned int lumaSE = lumas2(rMrS+rSE+rE);
-		const unsigned int lumaM  = luma(rM);
+		const __m128i rMrN = _mm_add_epi32(rM,rN);
+		const __m128i lumaNW = lumas2(_mm_add_epi32(_mm_add_epi32(rMrN,rNW),rW));
+		const __m128i lumaNE = lumas2(_mm_add_epi32(_mm_add_epi32(rMrN,rNE),rE));
+		const __m128i rMrS = _mm_add_epi32(rM,rS);
+		const __m128i lumaSW = lumas2(_mm_add_epi32(_mm_add_epi32(rMrS,rSW),rW));
+		const __m128i lumaSE = lumas2(_mm_add_epi32(_mm_add_epi32(rMrS,rSE),rE));
+		const __m128i lumaM  = luma(rM);
 
-		unsigned int tempMin,tempMin2,tempMax,tempMax2; //!! use cmovs?
-		if(lumaSW > lumaSE) {
-			tempMax = lumaSW;
-			tempMin = lumaSE;
-		} else {
-			tempMax = lumaSE;
-			tempMin = lumaSW;
-		}
-		if(lumaNW > lumaNE) {
-			tempMax2 = lumaNW;
-			tempMin2 = lumaNE;
-		} else {
-			tempMax2 = lumaNE;
-			tempMin2 = lumaNW;
-		}
-		const unsigned int lumaMin = min(lumaM, min(tempMin, tempMin2));
-		const unsigned int lumaMax = max(lumaM, max(tempMax, tempMax2));
+		const __m128i maskS = _mm_cmpgt_epi32(lumaSW,lumaSE);
+		const __m128i maskN = _mm_cmpgt_epi32(lumaNW,lumaNE);
 
-		const unsigned int SWSE = lumaSW + lumaSE;
-		const unsigned int NWNE = lumaNW + lumaNE;
-		int dirx = SWSE - NWNE;
-		int diry = (lumaNW + lumaSW) - (lumaNE + lumaSE);
+		const __m128i tempMax = _mm_or_si128(_mm_and_si128(maskS,lumaSW),_mm_andnot_si128(maskS,lumaSE));
+		const __m128i tempMin = _mm_or_si128(_mm_and_si128(maskS,lumaSE),_mm_andnot_si128(maskS,lumaSW));
 
-		const int temp = min(abs(dirx), abs(diry)) + (int)max((NWNE + SWSE)>>5, 2u);
-		dirx = (dirx<<3)/temp;
-		diry = (diry<<3)/temp;
-		dirx = min(FXAA_SPAN_MAX*8, max(-FXAA_SPAN_MAX*8, dirx));
-		diry = min(FXAA_SPAN_MAX*8, max(-FXAA_SPAN_MAX*8, diry));
+		const __m128i tempMax2 = _mm_or_si128(_mm_and_si128(maskN,lumaNW),_mm_andnot_si128(maskN,lumaNE));
+		const __m128i tempMin2 = _mm_or_si128(_mm_and_si128(maskN,lumaNE),_mm_andnot_si128(maskN,lumaNW));
 
-		unsigned int rgbB = bilerpFE(buffercopy,x,y,dirx,diry,owidth,width,height);
-		dirx >>= 2;
-		diry >>= 2;
-		const unsigned int rgbA = bilerpFE(buffercopy,x,y,dirx,diry,owidth,width,height);
-		rgbB = ((rgbA&0xFEFEFE) + (rgbB&0xFEFEFE))>>1;
-		const unsigned int lumaB = luma(rgbB);
-		bufferfinal[offsn] = ((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB;
+		const __m128i SWSE = _mm_add_epi32(lumaSW,lumaSE);
+		const __m128i NWNE = _mm_add_epi32(lumaNW,lumaNE);
+
+		const __m128 fdirx = _mm_cvtepi32_ps(_mm_sub_epi32(SWSE,NWNE));
+		const __m128 fdiry = _mm_cvtepi32_ps(_mm_sub_epi32(_mm_add_epi32(lumaNW,lumaSW),_mm_add_epi32(lumaNE,lumaSE)));
+
+		const __m128 temp = _mm_rcp_ps(_mm_add_ps(_mm_min_ps(_mm_and_ps(fdirx,(__m128&)_mm_set1_epi32(0x7FFFFFFF)),
+			                                                 _mm_and_ps(fdiry,(__m128&)_mm_set1_epi32(0x7FFFFFFF))),
+									   _mm_max_ps(_mm_mul_ps(_mm_cvtepi32_ps(_mm_add_epi32(NWNE,SWSE)),_mm_set1_ps((float)(1.0/32.0))), _mm_set1_ps(2.0f))));
+
+		__m128i dirx = _mm_slli_epi32(_mm_cvtps_epi32(_mm_min_ps(_mm_set1_ps((float)FXAA_SPAN_MAX), _mm_max_ps(_mm_set1_ps((float)-FXAA_SPAN_MAX), _mm_mul_ps(fdirx, temp)))), 3);
+		__m128i diry = _mm_slli_epi32(_mm_cvtps_epi32(_mm_min_ps(_mm_set1_ps((float)FXAA_SPAN_MAX), _mm_max_ps(_mm_set1_ps((float)-FXAA_SPAN_MAX), _mm_mul_ps(fdiry, temp)))), 3);
+
+		__m128i rgbB = bilerpFE(buffercopy,x128,y128,dirx,diry,owidth128,owidth);
+
+		dirx = _mm_srai_epi32(dirx,2);
+		diry = _mm_srai_epi32(diry,2);
+
+		const __m128i rgbA = bilerpFE(buffercopy,x128,y128,dirx,diry,owidth128,owidth);
+
+		rgbB = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128(rgbA,FEFEFE128) , _mm_and_si128(rgbB,FEFEFE128)) , 1);
+		const __m128i lumaB = luma(rgbB);
+
+		const __m128i maskL = _mm_or_si128(
+								_mm_and_si128(_mm_and_si128(_mm_cmplt_epi32(lumaB,lumaM),_mm_cmplt_epi32(lumaB,tempMin)),_mm_cmplt_epi32(lumaB,tempMin2)),
+								_mm_and_si128(_mm_and_si128(_mm_cmpgt_epi32(lumaB,lumaM),_mm_cmpgt_epi32(lumaB,tempMax)),_mm_cmpgt_epi32(lumaB,tempMax2))
+							  );
+		_mm_store_si128((__m128i*)(bufferfinal+offsn) , _mm_or_si128(_mm_and_si128(maskL,rgbA),_mm_andnot_si128(maskL,rgbB)));
 	}
 	}
 }
