@@ -34,18 +34,17 @@ __forceinline __m128i unpack_565(const __m128i& lo)
 
 __forceinline __m128i _mm_mul_int(const __m128i& a, const __m128i& b)
 {
-    return _mm_or_si128(
-        _mm_and_si128( _mm_mul_epu32(a,b), f0128),
-        _mm_slli_si128(
-            _mm_and_si128( _mm_mul_epu32(_mm_srli_si128(a,4),_mm_srli_si128(b,4)), f0128), 4));
+	//!! could use _mm_mullo_epi32 on sse4.1
+	const __m128i tmpa = _mm_shuffle_epi32(a,_MM_SHUFFLE(3,3,1,1)); //!! _mm_movehdup_ps on sse3
+	const __m128i tmpb = _mm_shuffle_epi32(b,_MM_SHUFFLE(3,3,1,1)); //!! _mm_movehdup_ps on sse3
+	return _mm_shuffle_epi32((__m128i&)_mm_shuffle_ps((__m128&)_mm_mul_epu32(a,b),(__m128&)_mm_mul_epu32(tmpa,tmpb),136),216);
 }
 
-__forceinline __m128i _mm_mul_int_i(const __m128i& a, const __m128i& b)
+__forceinline __m128i _mm_mul_int_i(const __m128i& a, const __m128i& b) // b needs same values in all 4x32bits
 {
-    return _mm_or_si128(
-        _mm_and_si128( _mm_mul_epu32(a,b), f0128),
-        _mm_slli_si128(
-            _mm_and_si128( _mm_mul_epu32(_mm_srli_si128(a,4),b), f0128), 4));
+	//!! could use _mm_mullo_epi32 on sse4.1
+    const __m128i tmp = _mm_shuffle_epi32(a,_MM_SHUFFLE(3,3,1,1)); //!! _mm_movehdup_ps on sse3
+	return _mm_shuffle_epi32((__m128i&)_mm_shuffle_ps((__m128&)_mm_mul_epu32(a,b),(__m128&)_mm_mul_epu32(tmp,b),136),216);
 }
 
 inline void memcpy_sse2(void * const __restrict dst, const void * const __restrict src, const unsigned int nBytes) //!! seems to be even faster than intel c builtin version?!
@@ -799,8 +798,8 @@ const __m128i invxinvy = _mm_sub_epi32(_mm_sub_epi32(_mm_set1_epi32(256),x16),in
 
 const __m128i xa = _mm_add_epi32(x,dx4);
 const __m128i xb = _mm_sub_epi32(x,dx4);
-const __m128i ya = _mm_mul_int(_mm_add_epi32(y,dy4),nPitch128);
-const __m128i yb = _mm_mul_int(_mm_sub_epi32(y,dy4),nPitch128);
+const __m128i ya = _mm_mul_int_i(_mm_add_epi32(y,dy4),nPitch128);
+const __m128i yb = _mm_mul_int_i(_mm_sub_epi32(y,dy4),nPitch128);
 const __m128i offsa = _mm_add_epi32(xa,ya);
 const __m128i offsb = _mm_add_epi32(xb,yb);
 
