@@ -1919,7 +1919,7 @@ BOOL Collection::LoadToken(int id, BiffReader *pbr)
 			}
 		}
 
-	return fTrue;;
+	return fTrue;
 	}
 
 STDMETHODIMP Collection::get_Count(long __RPC_FAR *plCount)

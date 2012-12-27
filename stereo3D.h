@@ -759,10 +759,19 @@ if(handle_borders)
 }
 
 #ifdef FXAA
+static const __m128i FF4128 = _mm_set1_epi32(0xFFu*4);
+static const __m128i FF004128 = _mm_set1_epi32(0xFF00u*4);
+static const __m128i FF00004128 = _mm_set1_epi32(0xFF0000u*4);
+static const __m128i F128 = _mm_set1_epi32(0xFu);
+static const __m128i FE00FE00128 = _mm_set1_epi32(0xFE00FE00u);
+static const __m128i FE0000128 = _mm_set1_epi32(0x00FE0000u);
+static const __m128  x7FFFFFFF128 = (__m128&)_mm_set1_epi32(0x7FFFFFFF);
+static const __m128i FCFCFC128 = _mm_set1_epi32(0xFCFCFC);
+static const __m128i ZEROFIRST = _mm_set_epi32(0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0);
+
 __forceinline __m128i luma(const __m128i &rgb)
 {
-	return
-	_mm_add_epi32(
+	return _mm_add_epi32(
 	 _mm_add_epi32(_mm_srli_epi32(_mm_and_si128(rgb,FF128),3),
 	 			   _mm_srli_epi32(_mm_and_si128(rgb,FF00128),9)),
 	 _mm_srli_epi32(_mm_and_si128(rgb,FF0000128),18)); //!! R,B swapped
@@ -770,31 +779,29 @@ __forceinline __m128i luma(const __m128i &rgb)
 
 __forceinline __m128i lumas2(const __m128i &rgb)
 {
-	return
-	_mm_add_epi32(
-	 _mm_add_epi32(_mm_srli_epi32(_mm_and_si128(rgb,_mm_set1_epi32(0xFFu*4)),5),
-	 			   _mm_srli_epi32(_mm_and_si128(rgb,_mm_set1_epi32(0xFF00u*4)),11)),
-	 _mm_srli_epi32(_mm_and_si128(rgb,_mm_set1_epi32(0xFF0000u*4)),20)); //!! R,B swapped
+	return _mm_add_epi32(
+	 _mm_add_epi32(_mm_srli_epi32(_mm_and_si128(rgb,FF4128),5),
+	 			   _mm_srli_epi32(_mm_and_si128(rgb,FF004128),11)),
+	 _mm_srli_epi32(_mm_and_si128(rgb,FF00004128),20)); //!! R,B swapped
 }
 
-inline __m128i bilerpFE(const unsigned int* const __restrict pic, const __m128i &x, const __m128i &y, __m128i dx, __m128i dy, const __m128i &nPitch128, const unsigned int nPitch)
+__forceinline __m128i bilerpFE(const unsigned int* const __restrict pic, const __m128i &x, const __m128i &y, __m128i dx, __m128i dy, const __m128i &nPitch128, const unsigned int nPitch)
 {
 const __m128i dx4 = _mm_srai_epi32(dx,4);
 const __m128i dy4 = _mm_srai_epi32(dy,4);
-dx = _mm_and_si128(dx,_mm_set1_epi32(0xFu)); //!! negative numbers??
-dy = _mm_and_si128(dy,_mm_set1_epi32(0xFu));
-const __m128i xy  = _mm_mul_int(dx,dy); //!! _i?
+dx = _mm_and_si128(dx,F128);
+dy = _mm_and_si128(dy,F128);
+const __m128i xy  = _mm_mul_int(dx,dy);
 const __m128i x16 = _mm_slli_epi32(dx,4);
-const __m128i y16 = _mm_slli_epi32(dy,4);
-const __m128i invxy = _mm_sub_epi32(y16,xy);
+const __m128i invxy = _mm_sub_epi32(_mm_slli_epi32(dy,4),xy);
 const __m128i xinvy = _mm_sub_epi32(x16,xy);
 const __m128i invxinvy = _mm_sub_epi32(_mm_sub_epi32(_mm_set1_epi32(256),x16),invxy);
 
 const __m128i xa = _mm_add_epi32(x,dx4);
-const __m128i ya = _mm_mul_int(_mm_add_epi32(y,dy4),nPitch128);
-const __m128i offsa = _mm_add_epi32(xa,ya);
 const __m128i xb = _mm_sub_epi32(x,dx4);
+const __m128i ya = _mm_mul_int(_mm_add_epi32(y,dy4),nPitch128);
 const __m128i yb = _mm_mul_int(_mm_sub_epi32(y,dy4),nPitch128);
+const __m128i offsa = _mm_add_epi32(xa,ya);
 const __m128i offsb = _mm_add_epi32(xb,yb);
 
 const unsigned int offsa0 = ((int*)&offsa)[0];
@@ -807,6 +814,21 @@ const __m128i r10a = _mm_set_epi32(pic[offsa3+1],pic[offsa2+1],pic[offsa1+1],pic
 const __m128i r01a = _mm_set_epi32(pic[offsa3+nPitch],pic[offsa2+nPitch],pic[offsa1+nPitch],pic[offsa0+nPitch]);
 const __m128i r11a = _mm_set_epi32(pic[offsa3+1+nPitch],pic[offsa2+1+nPitch],pic[offsa1+1+nPitch],pic[offsa0+1+nPitch]);
 
+const __m128i lerp0 = _mm_srli_epi32(_mm_or_si128(
+	 _mm_and_si128(_mm_add_epi32(
+	  _mm_add_epi32(_mm_mul_int(_mm_and_si128(r00a,FF00FF128),invxinvy),
+				    _mm_mul_int(_mm_and_si128(r10a,FF00FF128),xinvy)),
+	  _mm_add_epi32(_mm_mul_int(_mm_and_si128(r01a,FF00FF128),invxy),
+				    _mm_mul_int(_mm_and_si128(r11a,FF00FF128),xy))),
+	 FE00FE00128),
+	 _mm_and_si128(_mm_add_epi32(
+	  _mm_add_epi32(_mm_mul_int(_mm_and_si128(r00a,FF00128),invxinvy),
+				    _mm_mul_int(_mm_and_si128(r10a,FF00128),xinvy)),
+	  _mm_add_epi32(_mm_mul_int(_mm_and_si128(r01a,FF00128),invxy),
+				    _mm_mul_int(_mm_and_si128(r11a,FF00128),xy))),
+	 FE0000128)
+    ),9);
+
 const unsigned int offsb0 = ((int*)&offsb)[0];
 const unsigned int offsb1 = ((int*)&offsb)[1];
 const unsigned int offsb2 = ((int*)&offsb)[2];
@@ -817,38 +839,32 @@ const __m128i r01b = _mm_set_epi32(pic[offsb3-nPitch],pic[offsb2-nPitch],pic[off
 const __m128i r10b = _mm_set_epi32(pic[offsb3-1],pic[offsb2-1],pic[offsb1-1],pic[offsb0-1]);
 const __m128i r00b = _mm_set_epi32(pic[offsb3],pic[offsb2],pic[offsb1],pic[offsb0]);
 
-return _mm_add_epi32(
-	_mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(
-	_mm_add_epi32(_mm_mul_int(_mm_and_si128(r00a,FF00FF128),invxinvy),
-				  _mm_mul_int(_mm_and_si128(r10a,FF00FF128),xinvy)),
-	_mm_add_epi32(_mm_mul_int(_mm_and_si128(r01a,FF00FF128),invxy),
-				  _mm_mul_int(_mm_and_si128(r11a,FF00FF128),xy))),
-	 _mm_set1_epi32(0xFE00FE00u)),
+return _mm_add_epi32(lerp0,
+    _mm_srli_epi32(_mm_or_si128(
 	 _mm_and_si128(_mm_add_epi32(
-	 _mm_add_epi32(_mm_mul_int(_mm_and_si128(r00a,FF00128),invxinvy),
-				   _mm_mul_int(_mm_and_si128(r10a,FF00128),xinvy)),
-	 _mm_add_epi32(_mm_mul_int(_mm_and_si128(r01a,FF00128),invxy),
-				   _mm_mul_int(_mm_and_si128(r11a,FF00128),xy))),
-	 _mm_set1_epi32(0x00FE0000u))),9),
-
-       _mm_srli_epi32(_mm_or_si128(_mm_and_si128(_mm_add_epi32(
 	   _mm_add_epi32(_mm_mul_int(_mm_and_si128(r00b,FF00FF128),invxinvy),
 				     _mm_mul_int(_mm_and_si128(r10b,FF00FF128),xinvy)),
 	   _mm_add_epi32(_mm_mul_int(_mm_and_si128(r01b,FF00FF128),invxy),
 					 _mm_mul_int(_mm_and_si128(r11b,FF00FF128),xy))),
-	_mm_set1_epi32(0xFE00FE00u)),
+	 FE00FE00128),
 	 _mm_and_si128(_mm_add_epi32(
-	 _mm_add_epi32(_mm_mul_int(_mm_and_si128(r00b,FF00128),invxinvy),
-				   _mm_mul_int(_mm_and_si128(r10b,FF00128),xinvy)),
-	 _mm_add_epi32(_mm_mul_int(_mm_and_si128(r01b,FF00128),invxy),
-				   _mm_mul_int(_mm_and_si128(r11b,FF00128),xy))),
-	 _mm_set1_epi32(0x00FE0000u))),9));
+	   _mm_add_epi32(_mm_mul_int(_mm_and_si128(r00b,FF00128),invxinvy),
+		 		     _mm_mul_int(_mm_and_si128(r10b,FF00128),xinvy)),
+	   _mm_add_epi32(_mm_mul_int(_mm_and_si128(r01b,FF00128),invxy),
+				     _mm_mul_int(_mm_and_si128(r11b,FF00128),xy))),
+	 FE0000128)
+	),9));
 }
 
-__forceinline void fxaa_32bit(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const __m128i& zmask128, unsigned char* __restrict const mask)
+__forceinline void fxaa_32bit(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int   * const __restrict buffercopy, unsigned int   * const __restrict bufferfinal, unsigned char* __restrict const mask)
 {
+	//!! copy border pixels from pic if fullscreen blit
+
 #define FXAA_SPAN_MAX 8
 #define FXAA_OFFS (((FXAA_SPAN_MAX*8)>>4) + 1)
+
+static const __m128 fFXAA_SPAN_MAX = _mm_set1_ps((float)FXAA_SPAN_MAX);
+static const __m128 mfFXAA_SPAN_MAX = _mm_set1_ps(-(float)FXAA_SPAN_MAX);
 
 	const __m128i owidth128 = _mm_set1_epi32(owidth);
 
@@ -860,36 +876,31 @@ __forceinline void fxaa_32bit(const int ystart, const int yend, const int xstart
 	unsigned int offsmask = (y*width + xstart)>>2;
 	const __m128i y128 = _mm_set1_epi32(y);
 	__m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
+
 	for(int x = xstart; x < xend; x+=4,offsm1+=4,offsn+=4,++offsmask,x128=_mm_add_epi32(x128,t4444)) if(mask[offsmask] == 0)
 	{
 		mask[offsmask] = 1;
 
 		//!! sliding window instead? (on y-1,y,y+1), incl. the filtered values already?
-		const unsigned int NW = buffercopy[offsm1]&0xFCFCFC;
-		const __m128i rN = _mm_and_si128(_mm_load_si128((__m128i*)(buffercopy+offsm1+1)),_mm_set1_epi32(0xFCFCFC));;
-		const unsigned int NE = buffercopy[offsm1+5]&0xFCFCFC;
-		__m128i rNW = _mm_shuffle_epi32(rN,_MM_SHUFFLE(2,1,0,0));
-		*((unsigned int*)&rNW) = NW; //!! opt.?
-		__m128i rNE = _mm_shuffle_epi32(rN,_MM_SHUFFLE(0,3,2,1));
-		((unsigned int*)&rNE)[3] = NE;
+		const __m128i NW  = _mm_and_si128((__m128i&)_mm_load_ss((float*)(buffercopy+offsm1)),FCFCFC128);
+		const __m128i rN  = _mm_and_si128(_mm_load_si128((__m128i*)(buffercopy+offsm1+1)),FCFCFC128);
+		const __m128i NE  = _mm_and_si128((__m128i&)_mm_load_ss((float*)(buffercopy+offsm1+5)),FCFCFC128);
+		const __m128i rNW = _mm_or_si128(NW,_mm_and_si128(_mm_shuffle_epi32(rN,_MM_SHUFFLE(2,1,0,0)),ZEROFIRST));
+		const __m128i rNE = _mm_shuffle_epi32(_mm_or_si128(NE,_mm_and_si128(rN,ZEROFIRST)),_MM_SHUFFLE(0,3,2,1));
 
 		const unsigned int offs = offsm1+owidth;
-		const unsigned int W = buffercopy[offs]&0xFCFCFC;
-		const __m128i rM = _mm_and_si128(_mm_load_si128((__m128i*)(buffercopy+offs+1)),_mm_set1_epi32(0xFCFCFC));;
-		const unsigned int E = buffercopy[offs+5]&0xFCFCFC;
-		__m128i rW = _mm_shuffle_epi32(rM,_MM_SHUFFLE(2,1,0,0));
-		*((unsigned int*)&rW) = W;
-		__m128i rE = _mm_shuffle_epi32(rM,_MM_SHUFFLE(0,3,2,1));
-		((unsigned int*)&rE)[3] = E;
+		const __m128i W   = _mm_and_si128((__m128i&)_mm_load_ss((float*)(buffercopy+offs)),FCFCFC128);
+		const __m128i rM  = _mm_and_si128(_mm_load_si128((__m128i*)(buffercopy+offs+1)),FCFCFC128);
+		const __m128i E   = _mm_and_si128((__m128i&)_mm_load_ss((float*)(buffercopy+offs+5)),FCFCFC128);
+		const __m128i rW  = _mm_or_si128(W,_mm_and_si128(_mm_shuffle_epi32(rM,_MM_SHUFFLE(2,1,0,0)),ZEROFIRST));
+		const __m128i rE  = _mm_shuffle_epi32(_mm_or_si128(E,_mm_and_si128(rM,ZEROFIRST)),_MM_SHUFFLE(0,3,2,1));
 
 		const unsigned int offsp1 = offs+owidth;
-		const unsigned int SW = buffercopy[offsp1]&0xFCFCFC;
-		const __m128i rS = _mm_and_si128(_mm_load_si128((__m128i*)(buffercopy+offsp1+1)),_mm_set1_epi32(0xFCFCFC));;
-		const unsigned int SE = buffercopy[offsp1+5]&0xFCFCFC;
-		__m128i rSW = _mm_shuffle_epi32(rS,_MM_SHUFFLE(2,1,0,0));
-		*((unsigned int*)&rSW) = SW;
-		__m128i rSE = _mm_shuffle_epi32(rS,_MM_SHUFFLE(0,3,2,1));
-		((unsigned int*)&rSE)[3] = SE;
+		const __m128i SW  = _mm_and_si128((__m128i&)_mm_load_ss((float*)(buffercopy+offsp1)),FCFCFC128);
+		const __m128i rS  = _mm_and_si128(_mm_load_si128((__m128i*)(buffercopy+offsp1+1)),FCFCFC128);
+		const __m128i SE  = _mm_and_si128((__m128i&)_mm_load_ss((float*)(buffercopy+offsp1+5)),FCFCFC128);
+		const __m128i rSW = _mm_or_si128(SW,_mm_and_si128(_mm_shuffle_epi32(rS,_MM_SHUFFLE(2,1,0,0)),ZEROFIRST));
+		const __m128i rSE = _mm_shuffle_epi32(_mm_or_si128(SE,_mm_and_si128(rS,ZEROFIRST)),_MM_SHUFFLE(0,3,2,1));
 
 		const __m128i rMrN = _mm_add_epi32(rM,rN);
 		const __m128i lumaNW = lumas2(_mm_add_epi32(_mm_add_epi32(rMrN,rNW),rW));
@@ -914,19 +925,15 @@ __forceinline void fxaa_32bit(const int ystart, const int yend, const int xstart
 		const __m128 fdirx = _mm_cvtepi32_ps(_mm_sub_epi32(SWSE,NWNE));
 		const __m128 fdiry = _mm_cvtepi32_ps(_mm_sub_epi32(_mm_add_epi32(lumaNW,lumaSW),_mm_add_epi32(lumaNE,lumaSE)));
 
-		const __m128 temp = _mm_rcp_ps(_mm_add_ps(_mm_min_ps(_mm_and_ps(fdirx,(__m128&)_mm_set1_epi32(0x7FFFFFFF)),
-			                                                 _mm_and_ps(fdiry,(__m128&)_mm_set1_epi32(0x7FFFFFFF))),
+		const __m128 temp = _mm_rcp_ps(_mm_add_ps(_mm_min_ps(_mm_and_ps(fdirx,x7FFFFFFF128),
+			                                                 _mm_and_ps(fdiry,x7FFFFFFF128)),
 									   _mm_max_ps(_mm_mul_ps(_mm_cvtepi32_ps(_mm_add_epi32(NWNE,SWSE)),_mm_set1_ps((float)(1.0/32.0))), _mm_set1_ps(2.0f))));
 
-		__m128i dirx = _mm_slli_epi32(_mm_cvtps_epi32(_mm_min_ps(_mm_set1_ps((float)FXAA_SPAN_MAX), _mm_max_ps(_mm_set1_ps((float)-FXAA_SPAN_MAX), _mm_mul_ps(fdirx, temp)))), 3);
-		__m128i diry = _mm_slli_epi32(_mm_cvtps_epi32(_mm_min_ps(_mm_set1_ps((float)FXAA_SPAN_MAX), _mm_max_ps(_mm_set1_ps((float)-FXAA_SPAN_MAX), _mm_mul_ps(fdiry, temp)))), 3);
+		const __m128i dirx = _mm_slli_epi32(_mm_cvtps_epi32(_mm_min_ps(fFXAA_SPAN_MAX, _mm_max_ps(mfFXAA_SPAN_MAX, _mm_mul_ps(fdirx, temp)))), 3);
+		const __m128i diry = _mm_slli_epi32(_mm_cvtps_epi32(_mm_min_ps(fFXAA_SPAN_MAX, _mm_max_ps(mfFXAA_SPAN_MAX, _mm_mul_ps(fdiry, temp)))), 3);
 
-		__m128i rgbB = bilerpFE(buffercopy,x128,y128,dirx,diry,owidth128,owidth);
-
-		dirx = _mm_srai_epi32(dirx,2);
-		diry = _mm_srai_epi32(diry,2);
-
-		const __m128i rgbA = bilerpFE(buffercopy,x128,y128,dirx,diry,owidth128,owidth);
+		      __m128i rgbB = bilerpFE(buffercopy,x128,y128,               dirx,                  diry,   owidth128,owidth);
+		const __m128i rgbA = bilerpFE(buffercopy,x128,y128,_mm_srai_epi32(dirx,2),_mm_srai_epi32(diry,2),owidth128,owidth);
 
 		rgbB = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128(rgbA,FEFEFE128) , _mm_and_si128(rgbB,FEFEFE128)) , 1);
 		const __m128i lumaB = luma(rgbB);
