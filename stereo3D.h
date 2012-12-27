@@ -1,8 +1,5 @@
 #include <emmintrin.h>
 
-static const unsigned int f0 = 0xFFFFFFFFu;
-static const unsigned int z0 = 0;
-static const __m128i f0128 = (__m128i&)_mm_set_ps((float&)z0,(float&)f0,(float&)z0,(float&)f0);
 static const __m128i t0123 = _mm_set_epi32(3,2,1,0);
 static const __m128i t4444 = _mm_set1_epi32(4);
 static const __m128i FF128 = _mm_set1_epi32(0xFF);
@@ -22,9 +19,13 @@ __forceinline __m128i pack_565(const __m128i &lo)
 {
     __m128i t0 = _mm_or_si128(_mm_madd_epi16(_mm_and_si128(lo, mask_565_rb), mask_565_pack_multiplier), _mm_and_si128(lo, mask_green));
 
-    //!! could use _mm_packus_epi32 on sse4
+#if defined(__SSE4__) || defined(__SSE4_1__) || defined(__SSE4_2__)
+#warning uses SSE4
+    return _mm_packus_epi32(t0, t0);
+#else
     t0 = _mm_srai_epi32(_mm_slli_epi32(t0, 16 - 5), 16);
     return _mm_packs_epi32(t0, t0);
+#endif
 }
 
 __forceinline __m128i unpack_565(const __m128i& lo)
@@ -34,17 +35,36 @@ __forceinline __m128i unpack_565(const __m128i& lo)
 
 __forceinline __m128i _mm_mul_int(const __m128i& a, const __m128i& b)
 {
-	//!! could use _mm_mullo_epi32 on sse4.1
-	const __m128i tmpa = _mm_shuffle_epi32(a,_MM_SHUFFLE(3,3,1,1)); //!! _mm_movehdup_ps on sse3
-	const __m128i tmpb = _mm_shuffle_epi32(b,_MM_SHUFFLE(3,3,1,1)); //!! _mm_movehdup_ps on sse3
-	return _mm_shuffle_epi32((__m128i&)_mm_shuffle_ps((__m128&)_mm_mul_epu32(a,b),(__m128&)_mm_mul_epu32(tmpa,tmpb),136),216);
+#if defined(__SSE4_1__) || defined(__SSE4_2__)
+#warning uses SSE4.1
+	return _mm_mullo_epi32(a,b);
+#else
+#if defined(__SSE4__) || defined(__SSE3__)
+#warning uses SSE3
+	const __m128i tmpa = (__m128i&)_mm_movehdup_ps((__m128&)a);
+	const __m128i tmpb = (__m128i&)_mm_movehdup_ps((__m128&)b);
+#else
+	const __m128i tmpa = _mm_shuffle_epi32(a,_MM_SHUFFLE(3,3,1,1));
+	const __m128i tmpb = _mm_shuffle_epi32(b,_MM_SHUFFLE(3,3,1,1));
+#endif
+	return _mm_shuffle_epi32((__m128i&)_mm_shuffle_ps((__m128&)_mm_mul_epu32(a,b),(__m128&)_mm_mul_epu32(tmpa,tmpb),_MM_SHUFFLE(2,0,2,0)),_MM_SHUFFLE(3,1,2,0));
+#endif
 }
 
 __forceinline __m128i _mm_mul_int_i(const __m128i& a, const __m128i& b) // b needs same values in all 4x32bits
 {
-	//!! could use _mm_mullo_epi32 on sse4.1
-    const __m128i tmp = _mm_shuffle_epi32(a,_MM_SHUFFLE(3,3,1,1)); //!! _mm_movehdup_ps on sse3
-	return _mm_shuffle_epi32((__m128i&)_mm_shuffle_ps((__m128&)_mm_mul_epu32(a,b),(__m128&)_mm_mul_epu32(tmp,b),136),216);
+#if defined(__SSE4_1__) || defined(__SSE4_2__)
+#warning uses SSE4.1
+	return _mm_mullo_epi32(a,b);
+#else
+#if defined(__SSE4__) || defined(__SSE3__)
+#warning uses SSE3
+	const __m128i tmp = (__m128i&)_mm_movehdup_ps((__m128&)a);
+#else
+	const __m128i tmp = _mm_shuffle_epi32(a,_MM_SHUFFLE(3,3,1,1));
+#endif
+	return _mm_shuffle_epi32((__m128i&)_mm_shuffle_ps((__m128&)_mm_mul_epu32(a,b),(__m128&)_mm_mul_epu32(tmp,b),_MM_SHUFFLE(2,0,2,0)),_MM_SHUFFLE(3,1,2,0));
+#endif
 }
 
 inline void memcpy_sse2(void * const __restrict dst, const void * const __restrict src, const unsigned int nBytes) //!! seems to be even faster than intel c builtin version?!
@@ -912,12 +932,20 @@ static const __m128 mfFXAA_SPAN_MAX = _mm_set1_ps(-(float)FXAA_SPAN_MAX);
 		const __m128i maskS = _mm_cmpgt_epi32(lumaSW,lumaSE);
 		const __m128i maskN = _mm_cmpgt_epi32(lumaNW,lumaNE);
 
+#if defined(__SSE4__) || defined(__SSE4_1__) || defined(__SSE4_2__)
+#warning uses SSE4
+		const __m128i tempMax = (__m128i&)_mm_blendv_ps((__m128&)lumaSE,(__m128&)lumaSW,(__m128&)maskS);
+		const __m128i tempMin = (__m128i&)_mm_blendv_ps((__m128&)lumaSW,(__m128&)lumaSE,(__m128&)maskS);
+
+		const __m128i tempMax2 = (__m128i&)_mm_blendv_ps((__m128&)lumaNE,(__m128&)lumaNW,(__m128&)maskN);
+		const __m128i tempMin2 = (__m128i&)_mm_blendv_ps((__m128&)lumaNW,(__m128&)lumaNE,(__m128&)maskN);
+#else
 		const __m128i tempMax = _mm_or_si128(_mm_and_si128(maskS,lumaSW),_mm_andnot_si128(maskS,lumaSE));
 		const __m128i tempMin = _mm_or_si128(_mm_and_si128(maskS,lumaSE),_mm_andnot_si128(maskS,lumaSW));
 
 		const __m128i tempMax2 = _mm_or_si128(_mm_and_si128(maskN,lumaNW),_mm_andnot_si128(maskN,lumaNE));
 		const __m128i tempMin2 = _mm_or_si128(_mm_and_si128(maskN,lumaNE),_mm_andnot_si128(maskN,lumaNW));
-
+#endif
 		const __m128i SWSE = _mm_add_epi32(lumaSW,lumaSE);
 		const __m128i NWNE = _mm_add_epi32(lumaNW,lumaNE);
 
@@ -941,7 +969,13 @@ static const __m128 mfFXAA_SPAN_MAX = _mm_set1_ps(-(float)FXAA_SPAN_MAX);
 								_mm_and_si128(_mm_and_si128(_mm_cmplt_epi32(lumaB,lumaM),_mm_cmplt_epi32(lumaB,tempMin)),_mm_cmplt_epi32(lumaB,tempMin2)),
 								_mm_and_si128(_mm_and_si128(_mm_cmpgt_epi32(lumaB,lumaM),_mm_cmpgt_epi32(lumaB,tempMax)),_mm_cmpgt_epi32(lumaB,tempMax2))
 							  );
-		_mm_store_si128((__m128i*)(bufferfinal+offsn) , _mm_or_si128(_mm_and_si128(maskL,rgbA),_mm_andnot_si128(maskL,rgbB)));
+		_mm_store_si128((__m128i*)(bufferfinal+offsn) ,
+#if defined(__SSE4__) || defined(__SSE4_1__) || defined(__SSE4_2__)
+#warning uses SSE4
+			(__m128i&)_mm_blendv_ps((__m128&)rgbB,(__m128&)rgbA,(__m128&)maskL));
+#else
+			_mm_or_si128(_mm_and_si128(maskL,rgbA),_mm_andnot_si128(maskL,rgbB)));
+#endif
 	}
 	}
 }
