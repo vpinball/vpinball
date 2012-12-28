@@ -403,7 +403,7 @@ if(AA & y) // so always triggered if AA and y&1
 // the following/same code is basically copied 4 times to optimize for 16bit yaxis, 32bit yaxis, 16bit xaxis and 32bit xaxis (as the compiler doesn't figure that out automatically and i hate templates for such low-level code ;))
 //
 
-__forceinline void stereo_repro_16bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const bool topdown, const unsigned int AA, unsigned char* __restrict const mask)
+__forceinline void stereo_repro_16bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const bool topdown, const unsigned int AA, unsigned char* const __restrict mask)
 {
 if(handle_borders) {
 	if(topdown) {
@@ -499,7 +499,7 @@ _mm_storel_pi((__m64*)(bufferfinal+offshalf1+x), (__m128&)left);
 }
 }
 
-__forceinline void stereo_repro_32bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128i& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const bool topdown, const unsigned int AA, unsigned char* __restrict const mask)
+__forceinline void stereo_repro_32bit_y(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned int* const __restrict buffercopy, const unsigned int* const __restrict bufferzcopy, unsigned int* const __restrict bufferfinal, const unsigned int samples[3], const __m128i& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const bool topdown, const unsigned int AA, unsigned char* const __restrict mask)
 {
 if(handle_borders) {
 	if(topdown) {
@@ -595,7 +595,7 @@ _mm_stream_si128((__m128i*)(bufferfinal+offshalf1+x), left);
 }
 }
 
-__forceinline void stereo_repro_16bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const bool topdown, const unsigned int AA, unsigned char* __restrict const mask)
+__forceinline void stereo_repro_16bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned short * const __restrict buffercopy, const unsigned short * const __restrict bufferzcopy, unsigned short * const __restrict bufferfinal, const unsigned int samples[3], const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const bool topdown, const unsigned int AA, unsigned char* const __restrict mask)
 {
 const int incr = (AA^1)+1;
 
@@ -686,7 +686,7 @@ if(handle_borders)
 }
 }
 
-__forceinline void stereo_repro_32bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned int   * const __restrict buffercopy, const unsigned int   * const __restrict bufferzcopy, unsigned int   * const __restrict bufferfinal, const unsigned int samples[3], const __m128i& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const bool topdown, const unsigned int AA, unsigned char* __restrict const mask)
+__forceinline void stereo_repro_32bit_x(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int maxSeparationU, const unsigned int* const __restrict buffercopy, const unsigned int* const __restrict bufferzcopy, unsigned int* const __restrict bufferfinal, const unsigned int samples[3], const __m128i& zmask128, const __m128& ZPDU128, const __m128& maxSepShl4128, const bool handle_borders, const bool topdown, const unsigned int AA, unsigned char* const __restrict mask)
 {
 const int incr = (AA^1)+1;
 
@@ -804,10 +804,11 @@ __forceinline __m128i lumas2(const __m128i &rgb)
 	 _mm_srli_epi32(_mm_and_si128(rgb,FF00004128),20)); //!! R,B swapped
 }
 
-__forceinline __m128i bilerpFE(const unsigned int* const __restrict pic, const __m128i &x, const __m128i &y, __m128i dx, __m128i dy, const __m128i &nPitch128, const unsigned int nPitch)
+__forceinline __m128i bilerpFE(const unsigned int* const __restrict pic, const __m128i &offs, __m128i dx, __m128i dy, const __m128i &nPitch128, const unsigned int nPitch)
 {
-const __m128i dx4 = _mm_srai_epi32(dx,4);
-const __m128i dy4 = _mm_srai_epi32(dy,4);
+const __m128i dy4n  = _mm_add_epi32(_mm_srai_epi32(dx,4),_mm_mul_int_i(_mm_srai_epi32(dy,4),nPitch128));
+const __m128i offsa = _mm_add_epi32(offs,dy4n);
+const __m128i offsb = _mm_sub_epi32(offs,dy4n);
 dx = _mm_and_si128(dx,F128);
 dy = _mm_and_si128(dy,F128);
 const __m128i xy  = _mm_mul_int(dx,dy);
@@ -816,22 +817,15 @@ const __m128i invxy = _mm_sub_epi32(_mm_slli_epi32(dy,4),xy);
 const __m128i xinvy = _mm_sub_epi32(x16,xy);
 const __m128i invxinvy = _mm_sub_epi32(_mm_sub_epi32(_mm_set1_epi32(256),x16),invxy);
 
-const __m128i xa = _mm_add_epi32(x,dx4);
-const __m128i xb = _mm_sub_epi32(x,dx4);
-const __m128i ya = _mm_mul_int_i(_mm_add_epi32(y,dy4),nPitch128);
-const __m128i yb = _mm_mul_int_i(_mm_sub_epi32(y,dy4),nPitch128);
-const __m128i offsa = _mm_add_epi32(xa,ya);
-const __m128i offsb = _mm_add_epi32(xb,yb);
-
 const unsigned int offsa0 = ((int*)&offsa)[0];
 const unsigned int offsa1 = ((int*)&offsa)[1];
 const unsigned int offsa2 = ((int*)&offsa)[2];
 const unsigned int offsa3 = ((int*)&offsa)[3];
 
-const __m128i r00a = _mm_set_epi32(pic[offsa3],pic[offsa2],pic[offsa1],pic[offsa0]);
-const __m128i r10a = _mm_set_epi32(pic[offsa3+1],pic[offsa2+1],pic[offsa1+1],pic[offsa0+1]);
-const __m128i r01a = _mm_set_epi32(pic[offsa3+nPitch],pic[offsa2+nPitch],pic[offsa1+nPitch],pic[offsa0+nPitch]);
-const __m128i r11a = _mm_set_epi32(pic[offsa3+1+nPitch],pic[offsa2+1+nPitch],pic[offsa1+1+nPitch],pic[offsa0+1+nPitch]);
+const __m128i r00a = _mm_set_epi32(pic[offsa3],         pic[offsa2],         pic[offsa1],         pic[offsa0]); //!! opt.?
+const __m128i r10a = _mm_set_epi32(pic[offsa3+1],       pic[offsa2+1],       pic[offsa1+1],       pic[offsa0+1]);
+const __m128i r01a = _mm_set_epi32(pic[offsa3+nPitch],  pic[offsa2+nPitch],  pic[offsa1+nPitch],  pic[offsa0+nPitch]);
+const __m128i r11a = _mm_set_epi32(pic[offsa3+nPitch+1],pic[offsa2+nPitch+1],pic[offsa1+nPitch+1],pic[offsa0+nPitch+1]);
 
 const __m128i lerp0 = _mm_srli_epi32(_mm_or_si128(
 	 _mm_and_si128(_mm_add_epi32(
@@ -854,9 +848,9 @@ const unsigned int offsb2 = ((int*)&offsb)[2];
 const unsigned int offsb3 = ((int*)&offsb)[3];
 
 const __m128i r11b = _mm_set_epi32(pic[offsb3-1-nPitch],pic[offsb2-1-nPitch],pic[offsb1-1-nPitch],pic[offsb0-1-nPitch]);
-const __m128i r01b = _mm_set_epi32(pic[offsb3-nPitch],pic[offsb2-nPitch],pic[offsb1-nPitch],pic[offsb0-nPitch]);
-const __m128i r10b = _mm_set_epi32(pic[offsb3-1],pic[offsb2-1],pic[offsb1-1],pic[offsb0-1]);
-const __m128i r00b = _mm_set_epi32(pic[offsb3],pic[offsb2],pic[offsb1],pic[offsb0]);
+const __m128i r01b = _mm_set_epi32(pic[offsb3-nPitch],  pic[offsb2-nPitch],  pic[offsb1-nPitch],  pic[offsb0-nPitch]);
+const __m128i r10b = _mm_set_epi32(pic[offsb3-1],       pic[offsb2-1],       pic[offsb1-1],       pic[offsb0-1]);
+const __m128i r00b = _mm_set_epi32(pic[offsb3],         pic[offsb2],         pic[offsb1],         pic[offsb0]);
 
 return _mm_add_epi32(lerp0,
     _mm_srli_epi32(_mm_or_si128(
@@ -875,15 +869,21 @@ return _mm_add_epi32(lerp0,
 	),9));
 }
 
-__forceinline void fxaa_32bit(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int   * const __restrict buffercopy, unsigned int   * const __restrict bufferfinal, unsigned char* __restrict const mask)
+__forceinline void fxaa_32bit(const int ystart, const int yend, const int xstart, const int xend, const unsigned int width, const unsigned int owidth, const unsigned int nwidth, const unsigned int height, const unsigned int* const __restrict buffercopy, unsigned int* const __restrict bufferfinal, unsigned char* const __restrict mask, const bool handle_borders)
 {
-	//!! copy border pixels from pic if fullscreen blit
+	if(handle_borders)
+	{
+		for(int y = 0; y < ystart; ++y)
+			memcpy(bufferfinal+y*nwidth,buffercopy+y*owidth,width*4);
+		for(int y = yend; y < (int)height; ++y)
+			memcpy(bufferfinal+y*nwidth,buffercopy+y*owidth,width*4);
+	}
 
 #define FXAA_SPAN_MAX 8
 #define FXAA_OFFS (((FXAA_SPAN_MAX*8)>>4) + 1)
 
-static const __m128 fFXAA_SPAN_MAX = _mm_set1_ps((float)FXAA_SPAN_MAX);
-static const __m128 mfFXAA_SPAN_MAX = _mm_set1_ps(-(float)FXAA_SPAN_MAX);
+static const __m128 fFXAA_SPAN_MAX = _mm_set1_ps((float)(FXAA_SPAN_MAX*8));
+static const __m128 mfFXAA_SPAN_MAX = _mm_set1_ps(-(float)(FXAA_SPAN_MAX*8));
 
 	const __m128i owidth128 = _mm_set1_epi32(owidth);
 
@@ -893,10 +893,17 @@ static const __m128 mfFXAA_SPAN_MAX = _mm_set1_ps(-(float)FXAA_SPAN_MAX);
 	unsigned int offsm1   = (y-1)*owidth - 1 + xstart;
 	unsigned int offsn    = y*nwidth + xstart;
 	unsigned int offsmask = (y*width + xstart)>>2;
-	const __m128i y128 = _mm_set1_epi32(y);
-	__m128i x128 = _mm_add_epi32(t0123,_mm_set1_epi32(xstart));
+	__m128i x128ynPitch128 = _mm_add_epi32(t0123,_mm_set1_epi32(y*owidth + xstart));
 
-	for(int x = xstart; x < xend; x+=4,offsm1+=4,offsn+=4,++offsmask,x128=_mm_add_epi32(x128,t4444)) if(mask[offsmask] == 0)
+	if(handle_borders)
+	{
+		for(int x = 0; x < xstart; ++x)
+			bufferfinal[offsn-xstart+x] = buffercopy[offsm1-xstart+owidth+1+x];
+		for(int x = xend; x < (int)width; ++x)
+			bufferfinal[offsn-xstart+x] = buffercopy[offsm1-xstart+owidth+1+x];
+	}
+
+	for(int x = xstart; x < xend; x+=4,offsm1+=4,offsn+=4,++offsmask,x128ynPitch128=_mm_add_epi32(x128ynPitch128,t4444)) if(mask[offsmask] == 0)
 	{
 		mask[offsmask] = 1;
 
@@ -921,10 +928,10 @@ static const __m128 mfFXAA_SPAN_MAX = _mm_set1_ps(-(float)FXAA_SPAN_MAX);
 		const __m128i rSW = _mm_or_si128(SW,_mm_and_si128(_mm_shuffle_epi32(rS,_MM_SHUFFLE(2,1,0,0)),ZEROFIRST));
 		const __m128i rSE = _mm_shuffle_epi32(_mm_or_si128(SE,_mm_and_si128(rS,ZEROFIRST)),_MM_SHUFFLE(0,3,2,1));
 
-		const __m128i rMrN = _mm_add_epi32(rM,rN);
+		const __m128i rMrN   = _mm_add_epi32(rM,rN);
 		const __m128i lumaNW = lumas2(_mm_add_epi32(_mm_add_epi32(rMrN,rNW),rW));
 		const __m128i lumaNE = lumas2(_mm_add_epi32(_mm_add_epi32(rMrN,rNE),rE));
-		const __m128i rMrS = _mm_add_epi32(rM,rS);
+		const __m128i rMrS   = _mm_add_epi32(rM,rS);
 		const __m128i lumaSW = lumas2(_mm_add_epi32(_mm_add_epi32(rMrS,rSW),rW));
 		const __m128i lumaSE = lumas2(_mm_add_epi32(_mm_add_epi32(rMrS,rSE),rE));
 		const __m128i lumaM  = luma(rM);
@@ -934,14 +941,14 @@ static const __m128 mfFXAA_SPAN_MAX = _mm_set1_ps(-(float)FXAA_SPAN_MAX);
 
 #if defined(__SSE4__) || defined(__SSE4_1__) || defined(__SSE4_2__)
 #warning uses SSE4
-		const __m128i tempMax = (__m128i&)_mm_blendv_ps((__m128&)lumaSE,(__m128&)lumaSW,(__m128&)maskS);
-		const __m128i tempMin = (__m128i&)_mm_blendv_ps((__m128&)lumaSW,(__m128&)lumaSE,(__m128&)maskS);
+		const __m128i tempMax  = (__m128i&)_mm_blendv_ps((__m128&)lumaSE,(__m128&)lumaSW,(__m128&)maskS);
+		const __m128i tempMin  = (__m128i&)_mm_blendv_ps((__m128&)lumaSW,(__m128&)lumaSE,(__m128&)maskS);
 
 		const __m128i tempMax2 = (__m128i&)_mm_blendv_ps((__m128&)lumaNE,(__m128&)lumaNW,(__m128&)maskN);
 		const __m128i tempMin2 = (__m128i&)_mm_blendv_ps((__m128&)lumaNW,(__m128&)lumaNE,(__m128&)maskN);
 #else
-		const __m128i tempMax = _mm_or_si128(_mm_and_si128(maskS,lumaSW),_mm_andnot_si128(maskS,lumaSE));
-		const __m128i tempMin = _mm_or_si128(_mm_and_si128(maskS,lumaSE),_mm_andnot_si128(maskS,lumaSW));
+		const __m128i tempMax  = _mm_or_si128(_mm_and_si128(maskS,lumaSW),_mm_andnot_si128(maskS,lumaSE));
+		const __m128i tempMin  = _mm_or_si128(_mm_and_si128(maskS,lumaSE),_mm_andnot_si128(maskS,lumaSW));
 
 		const __m128i tempMax2 = _mm_or_si128(_mm_and_si128(maskN,lumaNW),_mm_andnot_si128(maskN,lumaNE));
 		const __m128i tempMin2 = _mm_or_si128(_mm_and_si128(maskN,lumaNE),_mm_andnot_si128(maskN,lumaNW));
@@ -952,15 +959,16 @@ static const __m128 mfFXAA_SPAN_MAX = _mm_set1_ps(-(float)FXAA_SPAN_MAX);
 		const __m128 fdirx = _mm_cvtepi32_ps(_mm_sub_epi32(SWSE,NWNE));
 		const __m128 fdiry = _mm_cvtepi32_ps(_mm_sub_epi32(_mm_add_epi32(lumaNW,lumaSW),_mm_add_epi32(lumaNE,lumaSE)));
 
-		const __m128 temp = _mm_rcp_ps(_mm_add_ps(_mm_min_ps(_mm_and_ps(fdirx,x7FFFFFFF128),
-			                                                 _mm_and_ps(fdiry,x7FFFFFFF128)),
-									   _mm_max_ps(_mm_mul_ps(_mm_cvtepi32_ps(_mm_add_epi32(NWNE,SWSE)),_mm_set1_ps((float)(1.0/32.0))), _mm_set1_ps(2.0f))));
+		const __m128 temp = _mm_rcp_ps(_mm_add_ps(_mm_mul_ps(_mm_min_ps(_mm_and_ps(fdirx,x7FFFFFFF128),
+			                                                            _mm_and_ps(fdiry,x7FFFFFFF128)),
+															 _mm_set1_ps((float)(1.0/8.0))),
+									              _mm_max_ps(_mm_mul_ps(_mm_cvtepi32_ps(_mm_add_epi32(NWNE,SWSE)),_mm_set1_ps((float)(1.0/256.0))), _mm_set1_ps((float)(1.0/4.0)))));
 
-		const __m128i dirx = _mm_slli_epi32(_mm_cvtps_epi32(_mm_min_ps(fFXAA_SPAN_MAX, _mm_max_ps(mfFXAA_SPAN_MAX, _mm_mul_ps(fdirx, temp)))), 3);
-		const __m128i diry = _mm_slli_epi32(_mm_cvtps_epi32(_mm_min_ps(fFXAA_SPAN_MAX, _mm_max_ps(mfFXAA_SPAN_MAX, _mm_mul_ps(fdiry, temp)))), 3);
+		const __m128i dirx = _mm_cvtps_epi32(_mm_min_ps(fFXAA_SPAN_MAX, _mm_max_ps(mfFXAA_SPAN_MAX, _mm_mul_ps(fdirx, temp))));
+		const __m128i diry = _mm_cvtps_epi32(_mm_min_ps(fFXAA_SPAN_MAX, _mm_max_ps(mfFXAA_SPAN_MAX, _mm_mul_ps(fdiry, temp))));
 
-		      __m128i rgbB = bilerpFE(buffercopy,x128,y128,               dirx,                  diry,   owidth128,owidth);
-		const __m128i rgbA = bilerpFE(buffercopy,x128,y128,_mm_srai_epi32(dirx,2),_mm_srai_epi32(diry,2),owidth128,owidth);
+		      __m128i rgbB = bilerpFE(buffercopy,x128ynPitch128,               dirx,                  diry,   owidth128,owidth);
+		const __m128i rgbA = bilerpFE(buffercopy,x128ynPitch128,_mm_srai_epi32(dirx,2),_mm_srai_epi32(diry,2),owidth128,owidth);
 
 		rgbB = _mm_srli_epi32(_mm_add_epi32(_mm_and_si128(rgbA,FEFEFE128) , _mm_and_si128(rgbB,FEFEFE128)) , 1);
 		const __m128i lumaB = luma(rgbB);
