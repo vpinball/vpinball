@@ -2,6 +2,12 @@ VP 9.1.5 Changelog
 ------------------------
 - correct issue with adaptive vsync
 - fix some micro stuttering on multi-CPU systems
+- add purely software/CPU-based FXAA workaround (please do -not- enable FXAA in the NVIDIA driver then if you need to use this!)
+- cleanup some of the UI
+- add correct UAC setting (no more 'Run as Administrator' necessary)
+- add large address handling (no more '4GB patching' necessary)
+- replace default ball/lamp images and some of the default table settings (mainly physics related)
+- optimizations/fixes
 
 VP 9.1.4 Changelog
 ------------------------
