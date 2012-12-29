@@ -146,7 +146,7 @@ public:
 	Pin3D();
 	~Pin3D();
 
-	HRESULT InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const bool stereo3D);
+	HRESULT InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const bool stereo3DFXAA);
 	HRESULT Create3DDevice(const GUID * const pDeviceGUID);
 	HRESULT CreateZBuffer(const GUID * const pDeviceGUID);
 

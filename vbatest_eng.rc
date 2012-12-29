@@ -504,8 +504,9 @@ CAPTION "Video Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "&Window",IDC_WINDOW,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,20,42,10
-    CONTROL         "Full Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,16,33,56,10
-    LISTBOX         IDC_SIZELIST,14,48,129,133,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Full Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,16,31,56,10
+    LISTBOX         IDC_SIZELIST,14,42,129,125,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable Software FXAA",IDC_FXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,168,90,10
     CONTROL         "Stretch ball with table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,191,83,10
     CONTROL         "Don't stretch the ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,202,81,10
     CONTROL         "At Full Screen anti-stretch the ball",IDC_StretchMonitor,
@@ -540,7 +541,7 @@ BEGIN
     LTEXT           "Only works for Images",IDC_STATIC,247,168,70,8
     LTEXT           "that are not BMP.",IDC_STATIC,247,177,56,8
     LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,208,156,8
-    GROUPBOX        "At a stretched Table (experimental)",IDC_STATIC,12,182,133,57
+    GROUPBOX        "At a stretched Table (experimental)",IDC_STATIC,12,180,133,59
     LTEXT           "to my Monitor:",IDC_STATIC,27,225,45,8
 END
 

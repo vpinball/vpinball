@@ -560,6 +560,7 @@
 #define IDS_DIMENSIONSSLOPE				549
 #define IDD_PROPTABLE_INPUT				550
 #define IDS_INPUT						551
+#define IDC_FXAA		                552
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768
