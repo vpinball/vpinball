@@ -777,7 +777,6 @@ if(handle_borders)
 }
 }
 
-#ifdef FXAA
 static const __m128i FF4128 = _mm_set1_epi32(0xFFu*4);
 static const __m128i FF004128 = _mm_set1_epi32(0xFF00u*4);
 static const __m128i FF00004128 = _mm_set1_epi32(0xFF0000u*4);
@@ -791,7 +790,7 @@ static const __m128i ZEROFIRST = _mm_set_epi32(0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,
 #define FXAA_SPAN_MAX 8
 #define FXAA_OFFS (((FXAA_SPAN_MAX*8)>>4) + 1)
 
-static const __m128 fFXAA_SPAN_MAX = _mm_set1_ps((float)(FXAA_SPAN_MAX*8));
+static const __m128 fFXAA_SPAN_MAX  = _mm_set1_ps( (float)(FXAA_SPAN_MAX*8));
 static const __m128 mfFXAA_SPAN_MAX = _mm_set1_ps(-(float)(FXAA_SPAN_MAX*8));
 
 __forceinline __m128i luma(const __m128i &rgb)
@@ -1171,4 +1170,3 @@ __forceinline void fxaa_16bit(const int ystart, const int yend, const int xstart
 	}
 	}
 }
-#endif

@@ -122,6 +122,17 @@ Player::Player()
 		}
 	m_fVSync = (vsync == 1);
 
+	hr = GetRegInt("Player", "FXAA", &m_fFXAA);
+	if (hr != S_OK)
+		{
+		m_fFXAA = fFalse; // The default = off
+		}
+	if ((m_fFXAA != fFalse) && (!SSE2_supported)) // SSE2 necessary for the FXAA code
+		{
+		ShowError("SSE2 is not supported on this processor (necessary for FXAA)");
+		m_fFXAA = fFalse;
+		}
+
 	hr = GetRegInt("Player", "Stereo3D", &m_fStereo3D);
 	if (hr != S_OK)
 		{
@@ -627,7 +638,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	InitRegValues();
 
 	// width, height, and colordepth are only defined if fullscreen is true.
-	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, !!m_fStereo3D);
+	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, (!!m_fStereo3D) || (!!m_fFXAA));
 
 	if (hr != S_OK)
 		{
@@ -2284,7 +2295,7 @@ void Player::Render()
 	}
 
 
-if((m_fStereo3D == 0) || !m_fStereo3Denabled || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
+if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (m_fFXAA == 0)) || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
 {
 	if ( m_nudgetime &&			// Table is being nudged.
 		 m_ptable->m_Shake )	// The "EarthShaker" effect is active.
@@ -2342,14 +2353,22 @@ else
 
 	HRESULT hr = m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL);
     if(!FAILED(hr) && (ddsd.lpSurface != NULL)) {
-#ifndef FXAA
-	hr = m_pin3d.m_pddsZBuffer->Lock(NULL, &ddsdz,   DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL); 
-    if(!FAILED(hr) && (ddsdz.lpSurface != NULL)) {
-#else
-	ddsdz.dwWidth = ddsd.dwWidth;
-	ddsdz.dwHeight = ddsd.dwHeight;
-	if(true) {
-#endif
+
+	const bool stereopath = ((m_fStereo3D != 0) && m_fStereo3Denabled);
+	bool cont;
+	if(stereopath)
+	{
+		hr = m_pin3d.m_pddsZBuffer->Lock(NULL, &ddsdz,   DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL); 
+    	cont = (!FAILED(hr) && (ddsdz.lpSurface != NULL));
+	}
+	else
+	{
+		ddsdz.dwWidth = ddsd.dwWidth;
+		ddsdz.dwHeight = ddsd.dwHeight;
+		cont = true;
+	}
+
+	if(cont) {
 
 	const unsigned int width  = min((unsigned int)GetSystemMetrics(SM_CXSCREEN), min(ddsd.dwWidth,ddsdz.dwWidth));   // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
 	const unsigned int height = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), min(ddsd.dwHeight,ddsdz.dwHeight)); // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
@@ -2397,25 +2416,19 @@ else
 					for(int offset = top; offset < bottom; offset+=ddsd.lPitch,bc+=ddsd.lPitch,bcz+=ddsd.lPitch,sf+=ddsd.lPitch,sfz+=ddsd.lPitch)
 					{
 						memcpy/*_sse2*/(bc,  sf,  copywidth); //!! sse2 version slower here (vc10)?! or is this some other bug comin into play?
-#ifndef FXAA
-						memcpy/*_sse2*/(bcz, sfz, copywidth);
-#endif
+						if(stereopath)
+							memcpy/*_sse2*/(bcz, sfz, copywidth);
 					}
 				}
 			}
 			else
 			{
 #endif
-#ifndef FXAA
-				if((m_fStereo3DAA) || (m_fStereo3DY))
-#else
-				if(true)
-#endif
+				if(!stereopath || (m_fStereo3DAA) || (m_fStereo3DY))
 				{
 					memcpy_sse2((void*)m_pin3d.m_pdds3Dbuffercopy, ddsd.lpSurface, ddsd.lPitch*height);
-#ifndef FXAA
-					memcpy_sse2((void*)m_pin3d.m_pdds3Dbufferzcopy,ddsdz.lpSurface,ddsd.lPitch*height);
-#endif
+					if(stereopath)
+						memcpy_sse2((void*)m_pin3d.m_pdds3Dbufferzcopy,ddsdz.lpSurface,ddsd.lPitch*height);
 				}
 				else
 				{
@@ -2431,9 +2444,8 @@ else
 	const unsigned int oPitch = ddsd.lPitch >> shift;
 
 	m_pin3d.m_pddsBackBuffer->Unlock(NULL);
-#ifndef FXAA
-	m_pin3d.m_pddsZBuffer->Unlock(NULL);
-#endif
+	if(stereopath)
+		m_pin3d.m_pddsZBuffer->Unlock(NULL);
 
 	ZeroMemory( &ddsd, sizeof(ddsd) );
 	ddsd.dwSize = sizeof(ddsd);
@@ -2449,10 +2461,11 @@ else
 	const unsigned int* const __restrict bufferzcopy = m_pin3d.m_pdds3Dbufferzcopy;
 	     unsigned char* const __restrict mask = m_pin3d.m_pdds3Dbuffermask;
 
+	ZeroMemory(mask,(width*height)>>2); //!! not necessary when full update
+
 	const unsigned int nPitch = ddsd.lPitch >> shift;
 
-#ifndef FXAA
-
+if(stereopath) {
 	const unsigned int maxSeparationU = m_fStereo3DY ? (unsigned int)(height*m_pin3d.m_maxSeparation) :
 													   (unsigned int)(width*m_pin3d.m_maxSeparation);
 	const unsigned int ZPDU = m_fStereo3DY ? (unsigned int)(16u * zmask * (height*m_pin3d.m_maxSeparation)*m_pin3d.m_ZPD) :
@@ -2468,8 +2481,6 @@ else
 	const float maxSepShl4 = (float)(maxSeparationU<<4);
 	const __m128 maxSepShl4128 = _mm_set1_ps(maxSepShl4);
 	const __m128i nPitch128 = _mm_set1_epi32(nPitch);
-
-	ZeroMemory(mask,(width*height)>>2); //!! not necessary when full update
 
 #ifdef ONLY3DUPD
 			if (m_fCleanBlt)
@@ -2515,9 +2526,7 @@ else
 						stereo_repro_32bit_x(0, height, (maxSeparationU+1+3)&0xFFFFFFFC, (width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask);
 				}
 
-#else // continue with FXAA
-
-		ZeroMemory(mask,(width*height)>>2); //!! not necessary when full update
+} else { // continue with FXAA path
 
 #ifdef ONLY3DUPD
 			if (m_fCleanBlt)
@@ -2537,7 +2546,7 @@ else
 
 					// Update the region (+ area around) from the back buffer to the front buffer.
 					if(shift == 1)
-						fxaa_16bit(max(top-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1), min((unsigned int)bottom+FXAA_OFFS+1,height-(FXAA_OFFS+1)), max(left-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1)&0xFFFFFFFE, min((unsigned int)right+1+FXAA_OFFS+1,width-1-(FXAA_OFFS+1))&0xFFFFFFFE, width,oPitch,nPitch,height,(unsigned short *)buffercopy,(unsigned short *)bufferfinal,mask,false);
+						fxaa_16bit(max(top-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1), min((unsigned int)bottom+FXAA_OFFS+1,height-(FXAA_OFFS+1)), max(left-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1)&0xFFFFFFFE, min((unsigned int)right+1+FXAA_OFFS+1,width-1-(FXAA_OFFS+1))&0xFFFFFFFE, width,oPitch,nPitch,height,(unsigned short *)buffercopy,(unsigned short *)bufferfinal,mask,false); //!! borders okay like this?
 					else
 						fxaa_32bit(max(top-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1), min((unsigned int)bottom+FXAA_OFFS+1,height-(FXAA_OFFS+1)), max(left-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1)&0xFFFFFFFC, min((unsigned int)right+3+FXAA_OFFS+1,width-3-(FXAA_OFFS+1))&0xFFFFFFFC, width,oPitch,nPitch,height,(unsigned int   *)buffercopy,(unsigned int   *)bufferfinal,mask,false);
 				}
@@ -2545,11 +2554,11 @@ else
 			else
 #endif
 				if(shift == 1)
-					fxaa_16bit((FXAA_OFFS+1+1), (height-(FXAA_OFFS+1)), (FXAA_OFFS+1+1)&0xFFFFFFFE, (width-1-(FXAA_OFFS+1))&0xFFFFFFFE, width,oPitch,nPitch,height,(unsigned short *)buffercopy,(unsigned short *)bufferfinal,mask,true); //!! mask not necessary here
+					fxaa_16bit((FXAA_OFFS+1+1), (height-(FXAA_OFFS+1)), (FXAA_OFFS+1+1)&0xFFFFFFFE, (width-1-(FXAA_OFFS+1))&0xFFFFFFFE, width,oPitch,nPitch,height,(unsigned short *)buffercopy,(unsigned short *)bufferfinal,mask,true); //!! mask not necessary here //!! borders okay like this?
 				else
 					fxaa_32bit((FXAA_OFFS+1+1), (height-(FXAA_OFFS+1)), (FXAA_OFFS+1+1)&0xFFFFFFFC, (width-3-(FXAA_OFFS+1))&0xFFFFFFFC, width,oPitch,nPitch,height,(unsigned int   *)buffercopy,(unsigned int   *)bufferfinal,mask,true);
 
-#endif
+}
 	m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
 	} else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; // 'handle' fails to lock buffers
 

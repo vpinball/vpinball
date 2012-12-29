@@ -488,7 +488,7 @@ retryall:
     return pdds;// S_OK;
 }
 
-HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const bool stereo3D)
+HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const bool stereo3DFXAA)
 {
 	m_hwnd = hwnd;
 
@@ -651,7 +651,7 @@ retry3:
 		return hr;
 		}
 
-	if(stereo3D) {
+	if(stereo3DFXAA) {
 		ZeroMemory(&ddsd,sizeof(ddsd));
 		ddsd.dwSize = sizeof(ddsd);
 		m_pddsBackBuffer->GetSurfaceDesc( &ddsd );
@@ -1535,7 +1535,7 @@ void Pin3D::Flip(const int offsetx, const int offsety, const BOOL vsync)
 
 	// Copy the back buffer to the front buffer.
 	HRESULT hr = m_pddsFrontBuffer->Blt(&rcNew, 
-		((g_pplayer->m_fStereo3D != 0) && g_pplayer->m_fStereo3Denabled && (m_maxSeparation > 0.0f) && (m_maxSeparation < 1.0f) && (m_ZPD > 0.0f) && (m_ZPD < 1.0f) && m_pdds3Dbuffercopy && m_pdds3DBackBuffer) ? m_pdds3DBackBuffer : 
+		((((g_pplayer->m_fStereo3D != 0) && g_pplayer->m_fStereo3Denabled) || (g_pplayer->m_fFXAA)) && (m_maxSeparation > 0.0f) && (m_maxSeparation < 1.0f) && (m_ZPD > 0.0f) && (m_ZPD < 1.0f) && m_pdds3Dbuffercopy && m_pdds3DBackBuffer) ? m_pdds3DBackBuffer : 
 		m_pddsBackBuffer, NULL, ddbltfx.dwDDFX ? DDBLT_DDFX : 0, &ddbltfx);
 
 	if (hr == DDERR_SURFACELOST)
