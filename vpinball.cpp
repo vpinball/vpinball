@@ -403,7 +403,7 @@ void VPinball::SetAutoSaveMinutes(int minutes)
 void VPinball::InitTools()
 	{
 	// was the properties panel open last time we used VP?
-	int		state;
+	int state;
 	const HRESULT hr = GetRegInt("Editor", "PropertiesVisible", (int *)&state);
 	if ((hr == S_OK) && (state == 1))
 		{
@@ -584,10 +584,10 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 
 #ifdef IMSPANISH
 	SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
-		(LPARAM)(DWORD)MAKELONG(50,48));
+		(LPARAM)(DWORD)MAKELONG(50,50));
 #elif defined(IMGERMAN)
 	SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
-		(LPARAM)(DWORD)MAKELONG(50,48));
+		(LPARAM)(DWORD)MAKELONG(50,50));
 #else
 	SendMessage(hwnd, TB_SETBUTTONWIDTH, 0,
 		(LPARAM)(DWORD)MAKELONG(50,50));
@@ -596,7 +596,8 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 	for (int i=0;i<count;i++)
 		{
 		TBBUTTONINFO tbbi;
-		tbbi.cbSize = sizeof(tbbi);
+		ZeroMemory(&tbbi,sizeof(TBBUTTONINFO));
+		tbbi.cbSize = sizeof(TBBUTTONINFO);
 		tbbi.dwMask = TBIF_SIZE | TBIF_COMMAND | TBIF_STATE | TBIF_STYLE;
 		/*int foo =*/ SendMessage(hwnd, TB_GETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
 		if (tbbi.fsStyle & TBSTYLE_DROPDOWN)
@@ -756,8 +757,9 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
 			switch(notify)
 			{
-			case 0: 
-			case 1: fShow = !fShow;  //set
+			case 0: fShow = !fShow;  //!!?
+				break;
+			case 1: fShow = fTrue;   //set
 				break;
 			case 2:					 //re-display 
 				break;			
@@ -767,24 +769,25 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			
 			SetRegValue("Editor", "PropertiesVisible", REG_DWORD, &fShow, 4);
 
-			// Set toolbar button to the correct state
-			TBBUTTONINFO tbinfo;
-			tbinfo.cbSize = sizeof(TBBUTTONINFO);
-			tbinfo.dwMask  = TBIF_STATE;
-			//+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
-			SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,ID_EDIT_PROPERTIES,(long)&tbinfo);
-
 			if(!g_pplayer)
 			{
+				// Set toolbar button to the correct state
+				TBBUTTONINFO tbinfo;
+				ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
+				tbinfo.cbSize = sizeof(TBBUTTONINFO);
+				tbinfo.dwMask = TBIF_STATE;
+				//+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
+				SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,ID_EDIT_PROPERTIES,(long)&tbinfo);
+
 				if(notify == 2) fShow = (tbinfo.fsState & TBSTATE_CHECKED) != 0;
 
 				if (fShow ^ ((tbinfo.fsState & TBSTATE_CHECKED) != 0))
 				{
 					tbinfo.fsState ^= TBSTATE_CHECKED;
 				}
+
 				SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,ID_EDIT_PROPERTIES,(long)&tbinfo);
 			}
-			
 
 			// Set menu item to the correct state
 			HMENU hmenu = GetMenu(m_hwnd);
@@ -823,8 +826,9 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 			const BOOL fShow = !m_fBackglassView;
 
 			TBBUTTONINFO tbinfo;
+			ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
 			tbinfo.cbSize = sizeof(TBBUTTONINFO);
-			tbinfo.dwMask  = TBIF_STATE;
+			tbinfo.dwMask = TBIF_STATE;
 			//+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
 			SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,ID_EDIT_BACKGLASSVIEW,(long)&tbinfo);
 
@@ -1329,7 +1333,7 @@ const int rgToolEnable[23][2] = {
 	ID_TABLE_PLAY, 0,
 	ID_EDIT_BACKGLASSVIEW, 0,
 	IDC_MAGNIFY, 0,
-	IDC_SELECT, 0,
+	IDC_SELECT, 0
 	};
 
 void VPinball::SetEnablePalette()
@@ -1359,8 +1363,9 @@ void VPinball::SetEnablePalette()
 
 		// Set toolbar state
 		TBBUTTONINFO tbinfo;
+		ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
 		tbinfo.cbSize = sizeof(TBBUTTONINFO);
-		tbinfo.dwMask  = TBIF_STATE;
+		tbinfo.dwMask = TBIF_STATE;
 		SendMessage(m_hwndToolbarPalette,TB_GETBUTTONINFO,id,(long)&tbinfo);
 
 		if (fEnable ^ ((tbinfo.fsState & TBSTATE_ENABLED) != 0))
@@ -1412,8 +1417,9 @@ void VPinball::SetEnableToolbar()
 
 		// Set toolbar state
 		TBBUTTONINFO tbinfo;
+		ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
 		tbinfo.cbSize = sizeof(TBBUTTONINFO);
-		tbinfo.dwMask  = TBIF_STATE;
+		tbinfo.dwMask = TBIF_STATE;
 		SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,id,(long)&tbinfo);
 
 		if (fEnable ^ ((tbinfo.fsState & TBSTATE_ENABLED) != 0))
@@ -2256,7 +2262,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				const long buttonsize = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETBUTTONSIZE, 0, 0);
 				const int vertpadding = HIWORD(padding);
 				const int vertbutsize = HIWORD(buttonsize);
-
+				ZeroMemory(&si,sizeof(SCROLLINFO));
 				si.cbSize = sizeof(si);
 				si.fMask = SIF_ALL;
 				si.nMin = 0;
@@ -2424,6 +2430,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		case WM_VSCROLL:
 			{
 			SCROLLINFO si;
+			ZeroMemory(&si,sizeof(SCROLLINFO));
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_ALL;
 			GetScrollInfo(hwnd, SB_VERT, &si);

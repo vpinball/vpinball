@@ -3515,13 +3515,14 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			g_pplayer->m_ptable->StopPlaying();
 			g_pplayer->m_pininput.UnInit();
 
+			delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
+			g_pplayer = NULL;
+
 			g_pvp->SetEnableToolbar();
 			g_pvp->SetEnableMenuItems();
             mixer_shutdown();
             hid_shutdown();
 
-			delete g_pplayer;
-			g_pplayer = NULL;
 			break;
 
 		case WM_PAINT:
