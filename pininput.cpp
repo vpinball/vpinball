@@ -455,6 +455,7 @@ void PinInput::Init(const HWND hwnd)
 
 		// turn it all OFF
 		STICKYKEYS newStickyKeys;
+		ZeroMemory(&newStickyKeys,sizeof(STICKYKEYS));
 		newStickyKeys.cbSize = sizeof(STICKYKEYS);
 		newStickyKeys.dwFlags = 0;
 		SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &newStickyKeys, SPIF_SENDCHANGE);

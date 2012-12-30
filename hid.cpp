@@ -301,7 +301,6 @@ void hid_update(const U32 cur_time_msec)
 
 void hid_shutdown()
 {
-
 	if( hnd != INVALID_HANDLE_VALUE )
 	{
 		hnd = INVALID_HANDLE_VALUE;

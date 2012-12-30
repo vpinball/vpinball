@@ -3817,6 +3817,7 @@ void PinTable::SetMyScrollInfo()
 	delete phs;
 
 	SCROLLINFO si;
+	ZeroMemory(&si,sizeof(SCROLLINFO));
 	si.cbSize = sizeof(SCROLLINFO);
 	si.fMask = SIF_PAGE | SIF_POS | SIF_RANGE;
 	si.nMin = (int)min(frect.left, rgv[0].x);
@@ -5569,6 +5570,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			{
 			pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
 			SCROLLINFO si;
+			ZeroMemory(&si,sizeof(SCROLLINFO));
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_ALL;
 			GetScrollInfo(hwnd, SB_HORZ, &si);
@@ -5603,6 +5605,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			{
 			pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
 			SCROLLINFO si;
+			ZeroMemory(&si,sizeof(SCROLLINFO));
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_ALL;
 			GetScrollInfo(hwnd, SB_VERT, &si);
