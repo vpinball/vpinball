@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="VBATest"
 	ProjectGUID="{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
 	RootNamespace="VBATest"
@@ -84,6 +84,7 @@
 				IgnoreDefaultLibraryNames="libc.lib;libcd.lib"
 				ProgramDatabaseFile=".\ReleaseUMinSize/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -182,6 +183,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\ReleaseMinDependency/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -281,6 +283,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\VBATest___Win32_ReleaseTestSpanish/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -377,6 +380,7 @@
 				IgnoreDefaultLibraryNames="libc.lib;libcd.lib"
 				ProgramDatabaseFile=".\ReleaseUMinDependency/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -473,6 +477,7 @@
 				IgnoreDefaultLibraryNames="libc.lib;libcd.lib"
 				ProgramDatabaseFile=".\ReleaseMinSize/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -571,6 +576,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\VBATest___Win32_Profile/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -668,6 +674,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\DebugU/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				EntryPointSymbol="wWinMainCRTStartup"
 				TargetMachine="1"
 			/>
@@ -767,6 +774,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\VBATest___Win32_ReleaseTestGerman/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -865,6 +873,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\VBATest___Win32_ReleaseTestFrench/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -967,6 +976,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\VBATest___Win32_ReleaseTest/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -1069,6 +1079,7 @@
 				SubSystem="2"
 				StackReserveSize="0"
 				StackCommitSize="0"
+				LargeAddressAware="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -1176,6 +1187,7 @@
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile=".\ReleaseMinDependency/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
@@ -1286,6 +1298,7 @@
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile=".\ReleaseMinDependency/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"

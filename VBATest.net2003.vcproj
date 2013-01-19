@@ -57,6 +57,7 @@
 				AdditionalLibraryDirectories="&quot;.\lib\&quot;"
 				ProgramDatabaseFile=".\ReleaseUMinSize/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -126,6 +127,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\ReleaseMinDependency/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -197,6 +199,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\VBATest___Win32_ReleaseTestSpanish/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -265,6 +268,7 @@
 				AdditionalLibraryDirectories=".\lib\"
 				ProgramDatabaseFile=".\ReleaseUMinDependency/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -332,6 +336,7 @@
 				AdditionalLibraryDirectories=".\lib\"
 				ProgramDatabaseFile=".\ReleaseMinSize/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -402,6 +407,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\VBATest___Win32_Profile/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -469,6 +475,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\DebugU/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				EntryPointSymbol="wWinMainCRTStartup"
 				TargetMachine="1"/>
 			<Tool
@@ -546,6 +553,7 @@ rem  Version changes during debug compile only
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\VBATest___Win32_ReleaseTestGerman/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -616,6 +624,7 @@ rem  Version changes during debug compile only
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\VBATest___Win32_ReleaseTestFrench/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -687,6 +696,7 @@ rem  Version changes during debug compile only
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\VBATest___Win32_ReleaseTest/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -759,6 +769,7 @@ rem  Version changes during debug compile only
 				SubSystem="2"
 				StackReserveSize="0"
 				StackCommitSize="0"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -840,6 +851,7 @@ rem  Version changes during debug compile only
 				GenerateDebugInformation="FALSE"
 				ProgramDatabaseFile=".\ReleaseMinDependency/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"/>
@@ -918,6 +930,7 @@ rem  Version changes during debug compile only
 				GenerateDebugInformation="FALSE"
 				ProgramDatabaseFile=".\ReleaseMinDependency/VPinball.pdb"
 				SubSystem="2"
+				LargeAddressAware="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"/>
