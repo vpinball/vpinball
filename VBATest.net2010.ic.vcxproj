@@ -779,6 +779,7 @@ rem  Version changes during debug compile only
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Xdcmake>
       <SuppressStartupBanner>false</SuppressStartupBanner>
