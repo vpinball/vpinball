@@ -759,6 +759,7 @@ rem  Version changes during debug compile only
 				SubSystem="2"
 				StackReserveSize="0"
 				StackCommitSize="0"
+				LargeAddressAware="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
