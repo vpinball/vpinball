@@ -8,6 +8,7 @@ VP 9.1.5 Changelog
 - add large address handling (no more '4GB patching' necessary)
 - replace default ball/lamp images and some of the default table settings (mainly physics related)
 - optimizations/fixes
+- updated to latest FreeImage.dll (3.15.4)
 
 VP 9.1.4 Changelog
 ------------------------
