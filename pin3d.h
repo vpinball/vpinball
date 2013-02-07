@@ -121,6 +121,8 @@ public:
 class PinProjection
 	{
 public:
+	void Scale(const float x, const float y, const float z);
+	void Multiply(const Matrix3D& mat);
 	void Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z);
 	void Translate(const float x, const float y, const float z);
 	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV);

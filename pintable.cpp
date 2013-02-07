@@ -1394,7 +1394,7 @@ void PinTable::Render(Sur * const psur)
 
 void PinTable::Render3DProjection(Sur * const psur)
 	{
-	const GPINFLOAT rotation = 0;
+	const GPINFLOAT rotation = ANGTORAD(m_rotation);
 	const GPINFLOAT inclination = ANGTORAD(m_inclination);
 
 	Vector<Vertex3Ds> vvertex3D;
@@ -1411,18 +1411,50 @@ void PinTable::Render3DProjection(Sur * const psur)
 	pinproj.m_rcviewport.right = 1000;
 	pinproj.m_rcviewport.bottom = 750;
 
-	const GPINFLOAT aspect = (GPINFLOAT)1000/(GPINFLOAT)750;
+	const GPINFLOAT aspect = 4.0/3.0;
 
 	GPINFLOAT realFOV = m_FOV;
-	if (realFOV < 0.001)
+	if (realFOV < 0.01)
 		{
-		realFOV = 0.001; // Can't have a real zero FOV, but this will look the same
+		realFOV = 0.01; // Can't have a real zero FOV, but this will look the same
 		}
 
 	pinproj.FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), aspect, rotation, inclination, realFOV);
 	pinproj.SetFieldOfView(realFOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
-	pinproj.Translate(-pinproj.m_vertexcamera.x,-pinproj.m_vertexcamera.y,-pinproj.m_vertexcamera.z);
-	pinproj.Rotate(inclination,0,rotation);
+
+	const GPINFLOAT skew = -tan(m_layback*(M_PI/360));
+	const float skewX = -sinf(rotation)*(float)skew;
+	const float skewY =  cosf(rotation)*(float)skew;
+	Matrix3D matTrans;
+	// create a normal matrix.
+	matTrans._11 = matTrans._22 = matTrans._33 = matTrans._44 = 1.0f;
+	matTrans._12 = matTrans._13 = matTrans._14 = 0.0f;
+	matTrans._21 = matTrans._23 = matTrans._24 = 0.0f;
+	matTrans._31 = matTrans._32 = matTrans._34 = 0.0f;
+	matTrans._41 = matTrans._42 = matTrans._43 = 0.0f;
+	// Skew for FOV of 0 Deg. is not supported. so change it a little bit.
+	const float skewFOV = (realFOV < 0.01f) ? 0.01f : realFOV;
+	// create skew the z axis to x and y direction.
+	matTrans._42 = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*pinproj.m_vertexcamera.y*skewY;
+	matTrans._32 = skewY;
+	matTrans._41 = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*pinproj.m_vertexcamera.y*skewX;
+	matTrans._31 = skewX;
+	pinproj.Multiply(matTrans);
+
+	if( rotation != 0.0f )
+		{
+			pinproj.Scale(m_scalex, m_scaley, 1.0f );
+			pinproj.Rotate(0,0,rotation);
+			pinproj.Translate(-pinproj.m_vertexcamera.x,-pinproj.m_vertexcamera.y,-pinproj.m_vertexcamera.z);
+			pinproj.Translate( m_xlatex, m_xlatey, 0.0f );
+			pinproj.Rotate( inclination, 0, 0 );
+		}
+	else
+		{
+			pinproj.Translate(-pinproj.m_vertexcamera.x,-pinproj.m_vertexcamera.y,-pinproj.m_vertexcamera.z);
+			pinproj.Rotate(inclination,0,rotation);
+		}
+
 	pinproj.CacheTransform();
 
 	for (int i=0;i<vvertex3D.Size();i++)
