@@ -1127,7 +1127,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	matTrans._31 = matTrans._32 = matTrans._34 = 0.0f;
 	matTrans._41 = matTrans._42 = matTrans._43 = 0.0f;
 	// Skew for FOV of 0 Deg. is not supported. so change it a little bit.
-	const float skewFOV = (FOV < 0.0001f) ? 0.0001f : FOV;
+	const float skewFOV = (FOV < 0.01f) ? 0.01f : FOV;
 	// create skew the z axis to x and y direction.
 	matTrans._42 = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*m_vertexcamera.y*skewY;
 	matTrans._32 = skewY;
@@ -1909,6 +1909,16 @@ void PinProjection::Translate(const float x, const float y, const float z)
 	//m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
 	}
 
+void PinProjection::Scale(const float x, const float y, const float z)
+	{
+	m_matWorld.Scale( x, y, z );
+	}
+
+void PinProjection::Multiply(const Matrix3D& mat)
+	{
+	m_matWorld.Multiply(mat, m_matWorld);
+	}
+
 void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV)
 	{
 	// Determine camera distance
@@ -1968,7 +1978,9 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, co
 	const GPINFLOAT ydist = (maxyintercept - minyintercept) / (slopey*2.0);
 	const GPINFLOAT xdist = (maxxintercept - minxintercept) / (slopex*2.0);
 	m_vertexcamera.z = (float)(max(ydist,xdist));
-	m_vertexcamera.y = (float)(slopey*ydist + minyintercept);
+	// changed this since it's the same and better understandable.
+	// m_vertexcamera.y = (float)(slopey*ydist + minyintercept);
+	m_vertexcamera.y = (float)((maxyintercept-minyintercept)*0.5 + minyintercept);
 	m_vertexcamera.x = (float)(slopex*xdist + minxintercept);
 
 	m_rznear += m_vertexcamera.z;
@@ -1976,8 +1988,13 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, co
 
 	const GPINFLOAT delta = m_rzfar - m_rznear;
 
+#if 1 
+	m_rznear -= delta*0.15; // Allow for roundoff error (and tweak the setting too).
+	m_rzfar += delta*0.01;
+#else
 	m_rznear -= delta*0.01; // Allow for roundoff error
 	m_rzfar += delta*0.01;
+#endif
 	}
 
 void PinProjection::SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar)
