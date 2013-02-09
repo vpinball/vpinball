@@ -78,44 +78,85 @@ BEGIN_OBJECT_MAP(ObjectMap)
 END_OBJECT_MAP()
 
 
-LPCTSTR FindOneOf(LPCTSTR p1, LPCTSTR p2, LPTSTR pOut)
+PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 {
-	bool fQuoteOn = false;
+	PCHAR*  argv;
+	PCHAR   _argv;
+	ULONG   len;
+	ULONG   argc;
+	CHAR    a;
+	ULONG   i, j;
 
-    while (p1 != NULL && *p1 != NULL)
-    {
-        LPCTSTR p = p2;
-        while (p != NULL && *p != NULL)
-        {
-            if (*p1 == *p)
-				{
-				p1 = CharNext(p1);
+	BOOLEAN  in_QM;
+	BOOLEAN  in_TEXT;
+	BOOLEAN  in_SPACE;
 
-				// Allow spaces contained within quotes
-				if (*p1 == '"')
-					{
-					fQuoteOn = !fQuoteOn;
-					}
+	len = strlen(CmdLine);
+	i = ((len+2)/2)*sizeof(PVOID) + sizeof(PVOID);
 
-				while (p1 != NULL && *p1 != NULL && (fQuoteOn || *p1 != ' '))
-					{
-					*pOut = *p1;
-					pOut = CharNext(pOut);
-					p1 = CharNext(p1);
-					}
-				*pOut = 0;
-                return p1;
+	argv = (PCHAR*)malloc(i + (len+2)*sizeof(CHAR));
+	_argv = (PCHAR)(((PUCHAR)argv)+i);
+
+	argc = 0;
+	argv[argc] = _argv;
+	in_QM = FALSE;
+	in_TEXT = FALSE;
+	in_SPACE = TRUE;
+	i = 0;
+	j = 0;
+
+	while( a = CmdLine[i] ) {
+		if(in_QM) {
+			if(a == '\"') {
+				in_QM = FALSE;
+			} else {
+				_argv[j] = a;
+				j++;
+			}
+		} else {
+			switch(a) {
+			case '\"':
+				in_QM = TRUE;
+				in_TEXT = TRUE;
+				if(in_SPACE) {
+					argv[argc] = _argv+j;
+					argc++;
 				}
-			p = CharNext(p);
-        }
-        p1 = CharNext(p1);
-    }
-    return NULL;
+				in_SPACE = FALSE;
+				break;
+			case ' ':
+			case '\t':
+			case '\n':
+			case '\r':
+				if(in_TEXT) {
+					_argv[j] = '\0';
+					j++;
+				}
+				in_TEXT = FALSE;
+				in_SPACE = TRUE;
+				break;
+			default:
+				in_TEXT = TRUE;
+				if(in_SPACE) {
+					argv[argc] = _argv+j;
+					argc++;
+				}
+				_argv[j] = a;
+				j++;
+				in_SPACE = FALSE;
+				break;
+			}
+		}
+		i++;
+	}
+	_argv[j] = '\0';
+	argv[argc] = NULL;
 
+	(*_argc) = argc;
+	return argv;
 }
 
-
-extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpCmdLine, int /*nShowCmd*/)
+extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
 #ifdef GLOBALLOG
 	logfile = fopen("c:\\vpgloballog.txt","w");
@@ -130,16 +171,6 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 		g_hinstres = g_hinst;
 //		}
 
-    lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
-
-	BOOL fFile = fFalse;
-	BOOL fPlay = fFalse;
-	TCHAR szTableFileName[_MAX_PATH] = {0};
-	char  szTableResolution[64] = {0};
-	//BOOL  fullscreen = fFalse;
-
-	TCHAR szOption[256]= {0};
-
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
     HRESULT hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 #else
@@ -148,66 +179,55 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
     _ASSERTE(SUCCEEDED(hRes));
     _Module.Init(ObjectMap, hInstance, &LIBID_VBATESTLib);
     _Module.dwThreadID = GetCurrentThreadId();
-    TCHAR szTokens[] = _T("-/");
 
+	BOOL fFile = fFalse;
+	BOOL fPlay = fFalse;
+	TCHAR szTableFileName[_MAX_PATH] = {0};
     int nRet = 0;
     BOOL bRun = TRUE;
-    LPCTSTR lpszToken = FindOneOf(lpCmdLine, szTokens, szOption);
 
-    while (lpszToken != NULL)
+    int nArgs;
+	LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
+
+	for(int i=0; i < nArgs; ++i)
     {
-        if (lstrcmpi(szOption, _T("UnregServer"))==0)
+        if (lstrcmpi(szArglist[i], _T("-UnregServer"))==0 || lstrcmpi(szArglist[i], _T("/UnregServer"))==0)
         {
             _Module.UpdateRegistryFromResource(IDR_VBATest, FALSE);
             nRet = _Module.UnregisterServer(TRUE);
             bRun = FALSE;
-            break;
+			break;
         }
-        if (lstrcmpi(szOption, _T("RegServer"))==0)
+        if (lstrcmpi(szArglist[i], _T("-RegServer"))==0 || lstrcmpi(szArglist[i], _T("/RegServer"))==0)
         {
             _Module.UpdateRegistryFromResource(IDR_VBATest, TRUE);
             nRet = _Module.RegisterServer(TRUE);
             bRun = FALSE;
-            break;
+			break;
         }
-        if (lstrcmpi(szOption, _T("Edit"))==0)
+        if ((lstrcmpi(szArglist[i], _T("-Edit"))==0 || lstrcmpi(szArglist[i], _T("/Edit"))==0) && (i+1 < nArgs))
         {
 			fFile = fTrue;
-			lpszToken = FindOneOf(lpszToken, szTokens, szTableFileName);
-			//MessageBox(NULL, szTableFileName, "File", 0);
-            break;
+			strcpy(szTableFileName,szArglist[i+1]);
+			break;
         }
-        if (lstrcmpi(szOption, _T("Play"))==0)
+        if ((lstrcmpi(szArglist[i], _T("-Play"))==0 || lstrcmpi(szArglist[i], _T("/Play"))==0) && (i+1 < nArgs))
         {
 			fFile = fTrue;
 			fPlay = fTrue;
-			lpszToken = FindOneOf(lpszToken, szTokens, szTableFileName);
+			strcpy(szTableFileName,szArglist[i+1]);
 
-			char *play = strstr( lpCmdLine, "Play");
-		
-			if( play )
-			{
-				sprintf_s( szTableFileName, "%s", play+6 );
-				VPinball::SetOpenMinimized();
-				char szLoadDir[MAX_PATH];
-				PathFromFilename(szTableFileName, szLoadDir);
-				/*const DWORD err =*/ SetCurrentDirectory(szLoadDir);
-			}
-
-			char *resolution = strstr( lpCmdLine, "Resolution");
-
-			if( resolution )
-			{
-				sprintf_s( szTableResolution, "%s", resolution+11 );				
-			}
-
-			//fullscreen = StrStrI( lpCmdLine, "Fullscreen") != NULL;
-
-            break;
+			VPinball::SetOpenMinimized();
+			char szLoadDir[MAX_PATH];
+			PathFromFilename(szTableFileName, szLoadDir);
+			/*const DWORD err =*/ SetCurrentDirectory(szLoadDir);
+			break;
         }
-        lpszToken = FindOneOf(lpszToken, szTokens, szOption);
     }
 
+	free(szArglist);
+
+	{
 	char szFileName[_MAX_PATH];
 	if (GetModuleFileName(hInstance, szFileName, _MAX_PATH))
 		{
@@ -219,6 +239,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 			ptl->Release();
 			}
 		}
+	}
 
     if (bRun)
     {
@@ -235,7 +256,6 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
         _ASSERTE(SUCCEEDED(hRes));
 
 		INITCOMMONCONTROLSEX iccex;
-
 		iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
 		iccex.dwICC = ICC_COOL_CLASSES;
 		InitCommonControlsEx(&iccex);
@@ -247,24 +267,18 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
 
 		if (fFile)
 			{
-			int len;
 			// Strip header and trailer quotes (but only if they exist - AMH)
-			len = lstrlen(szTableFileName);
-
 			if( szTableFileName[0] == '"' )
 			{
+				const int len = lstrlen(szTableFileName);
 				szTableFileName[len-1] = 0;
 				g_pvp->LoadFileName(&szTableFileName[1]);
 			}
 			else
-			{
 				g_pvp->LoadFileName(&szTableFileName[0]);
-			}
 
 			if (fPlay)
-				{
 				g_pvp->DoPlay();
-				}
 			}
 
 		// VBA APC handles message loop (bastards)
@@ -280,7 +294,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/
         _Module.RevokeClassObjects();
         Sleep(dwPause); //wait for any threads to finish
     }
-    
+
 #ifdef GLOBALLOG
 	fclose(logfile);
 #endif
