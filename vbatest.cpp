@@ -209,18 +209,18 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
         {
 			fFile = fTrue;
 			if(szArglist[i+1][0] == '"') {
-				strcpy(szTableFileName,szArglist[i+1]+1);
+				strcpy_s(szTableFileName,szArglist[i+1]+1);
 				szTableFileName[strlen(szTableFileName)] = 0;
 			}
 			else
-				strcpy(szTableFileName,szArglist[i+1]);
+				strcpy_s(szTableFileName,szArglist[i+1]);
 			
 			if(szTableFileName[1] != ':') {
 				char szLoadDir[MAX_PATH];
 				GetCurrentDirectory(MAX_PATH,szLoadDir);
-				strcat(szLoadDir,"\\");
-				strcat(szLoadDir,szTableFileName);
-				strcpy(szTableFileName,szLoadDir);
+				strcat_s(szLoadDir,"\\");
+				strcat_s(szLoadDir,szTableFileName);
+				strcpy_s(szTableFileName,szLoadDir);
 			}
 			break;
         }
@@ -229,18 +229,18 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 			fFile = fTrue;
 			fPlay = fTrue;
 			if(szArglist[i+1][0] == '"') {
-				strcpy(szTableFileName,szArglist[i+1]+1);
+				strcpy_s(szTableFileName,szArglist[i+1]+1);
 				szTableFileName[strlen(szTableFileName)] = 0;
 			}
 			else
-				strcpy(szTableFileName,szArglist[i+1]);
+				strcpy_s(szTableFileName,szArglist[i+1]);
 
 			char szLoadDir[MAX_PATH];
 			if(szTableFileName[1] != ':') {
 				GetCurrentDirectory(MAX_PATH,szLoadDir);
-				strcat(szLoadDir,"\\");
-				strcat(szLoadDir,szTableFileName);
-				strcpy(szTableFileName,szLoadDir);
+				strcat_s(szLoadDir,"\\");
+				strcat_s(szLoadDir,szTableFileName);
+				strcpy_s(szTableFileName,szLoadDir);
 			} else {
 				PathFromFilename(szTableFileName, szLoadDir);
 				/*const DWORD err =*/ SetCurrentDirectory(szLoadDir);
