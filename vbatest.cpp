@@ -208,19 +208,45 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
         if ((lstrcmpi(szArglist[i], _T("-Edit"))==0 || lstrcmpi(szArglist[i], _T("/Edit"))==0) && (i+1 < nArgs))
         {
 			fFile = fTrue;
-			strcpy(szTableFileName,szArglist[i+1]);
+			if(szArglist[i+1][0] == '"') {
+				strcpy(szTableFileName,szArglist[i+1]+1);
+				szTableFileName[strlen(szTableFileName)] = 0;
+			}
+			else
+				strcpy(szTableFileName,szArglist[i+1]);
+			
+			if(szTableFileName[1] != ':') {
+				char szLoadDir[MAX_PATH];
+				GetCurrentDirectory(MAX_PATH,szLoadDir);
+				strcat(szLoadDir,"\\");
+				strcat(szLoadDir,szTableFileName);
+				strcpy(szTableFileName,szLoadDir);
+			}
 			break;
         }
         if ((lstrcmpi(szArglist[i], _T("-Play"))==0 || lstrcmpi(szArglist[i], _T("/Play"))==0) && (i+1 < nArgs))
         {
 			fFile = fTrue;
 			fPlay = fTrue;
-			strcpy(szTableFileName,szArglist[i+1]);
+			if(szArglist[i+1][0] == '"') {
+				strcpy(szTableFileName,szArglist[i+1]+1);
+				szTableFileName[strlen(szTableFileName)] = 0;
+			}
+			else
+				strcpy(szTableFileName,szArglist[i+1]);
+
+			char szLoadDir[MAX_PATH];
+			if(szTableFileName[1] != ':') {
+				GetCurrentDirectory(MAX_PATH,szLoadDir);
+				strcat(szLoadDir,"\\");
+				strcat(szLoadDir,szTableFileName);
+				strcpy(szTableFileName,szLoadDir);
+			} else {
+				PathFromFilename(szTableFileName, szLoadDir);
+				/*const DWORD err =*/ SetCurrentDirectory(szLoadDir);
+			}
 
 			VPinball::SetOpenMinimized();
-			char szLoadDir[MAX_PATH];
-			PathFromFilename(szTableFileName, szLoadDir);
-			/*const DWORD err =*/ SetCurrentDirectory(szLoadDir);
 			break;
         }
     }
@@ -267,15 +293,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
 		if (fFile)
 			{
-			// Strip header and trailer quotes (but only if they exist - AMH)
-			if( szTableFileName[0] == '"' )
-			{
-				const int len = lstrlen(szTableFileName);
-				szTableFileName[len-1] = 0;
-				g_pvp->LoadFileName(&szTableFileName[1]);
-			}
-			else
-				g_pvp->LoadFileName(&szTableFileName[0]);
+			g_pvp->LoadFileName(szTableFileName);
 
 			if (fPlay)
 				g_pvp->DoPlay();
