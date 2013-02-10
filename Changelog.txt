@@ -7,7 +7,9 @@ VP 9.1.5 Changelog
 - add correct UAC setting (no more 'Run as Administrator' necessary)
 - add large address handling (no more '4GB patching' necessary)
 - replace default ball/lamp images and some of the default table settings (mainly physics related)
-- optimizations/fixes
+- correct stylized table rendering in backdrop editor view
+- fix command line parser (problems with running tables like playboy from hyperpin, etc)
+- optimizations/small fixes
 - updated to latest FreeImage.dll (3.15.4)
 
 VP 9.1.4 Changelog
