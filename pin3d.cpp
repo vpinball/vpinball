@@ -1017,9 +1017,9 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	light.dcvDiffuse.r   = 0.4f;
 	light.dcvDiffuse.g   = 0.4f;
 	light.dcvDiffuse.b   = 0.4f;
-	light.dcvSpecular.r   = 0;
-	light.dcvSpecular.g   = 0;
-	light.dcvSpecular.b   = 0;
+	light.dcvSpecular.r  = 0;
+	light.dcvSpecular.g  = 0;
+	light.dcvSpecular.b  = 0;
 	//light.dvDirection = D3DVECTOR( 5.0f, -20.0f, (float)cos(0.5) );
 	//light.dvDirection = D3DVECTOR( -5.0f, 20.0f, -(float)cos(0.5) );
 	//light.dvDirection = D3DVECTOR(-5.0f, 20.0f, -5.0f);
@@ -1027,7 +1027,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	const float sn = sinf(m_inclination + (float)(M_PI - (M_PI*3.0/16.0)));
 	const float cs = cosf(m_inclination + (float)(M_PI - (M_PI*3.0/16.0)));
 
-	light.dvDirection = D3DVECTOR(5.0f, sn * 21.0f, cs * -21.0f);
+	light.dvDirection    = D3DVECTOR(5.0f, sn * 21.0f, cs * -21.0f);
 	light.dvRange        = D3DLIGHT_RANGE_MAX;
     light.dvAttenuation0 = 0.0f;
 	light.dvAttenuation1 = 0.0f;
@@ -1042,12 +1042,12 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	//sn = sinf(m_inclination + (float)(M_PI*2.0/16.0));
 	//cs = cosf(m_inclination + (float)(M_PI*2.0/16.0));
 
-    light.dcvDiffuse.r   = 0.6f;
-    light.dcvDiffuse.g   = 0.6f;
-    light.dcvDiffuse.b   = 0.6f;
-	light.dcvSpecular.r  = 1.0f;
-    light.dcvSpecular.g  = 1.0f;
-    light.dcvSpecular.b  = 1.0f;
+    light.dcvDiffuse.r  = 0.6f;
+    light.dcvDiffuse.g  = 0.6f;
+    light.dcvDiffuse.b  = 0.6f;
+	light.dcvSpecular.r = 1.0f;
+    light.dcvSpecular.g = 1.0f;
+    light.dcvSpecular.b = 1.0f;
 
 	light.dvDirection = D3DVECTOR(-8.0f, sn * 11.0f, cs * -11.0f);
 
@@ -1122,16 +1122,17 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 	// create a normal matrix.
 	matTrans._11 = matTrans._22 = matTrans._33 = matTrans._44 = 1.0f;
-	matTrans._12 = matTrans._13 = matTrans._14 = 0.0f;
-	matTrans._21 = matTrans._23 = matTrans._24 = 0.0f;
-	matTrans._31 = matTrans._32 = matTrans._34 = 0.0f;
-	matTrans._41 = matTrans._42 = matTrans._43 = 0.0f;
+	matTrans._12 = matTrans._13 = matTrans._14 = 
+	matTrans._21 = matTrans._23 = matTrans._24 = 
+	matTrans._34 = 
+	matTrans._43 = 0.0f;
 	// Skew for FOV of 0 Deg. is not supported. so change it a little bit.
 	const float skewFOV = (FOV < 0.01f) ? 0.01f : FOV;
 	// create skew the z axis to x and y direction.
-	matTrans._42 = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*m_vertexcamera.y*skewY;
+	const float skewtan = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*m_vertexcamera.y;
+	matTrans._42 = skewtan*skewY;
 	matTrans._32 = skewY;
-	matTrans._41 = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*m_vertexcamera.y*skewX;
+	matTrans._41 = skewtan*skewX;
 	matTrans._31 = skewX;
 	matTemp.Multiply(matTrans, matTemp);
 
@@ -1618,8 +1619,9 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 	m_vertexcamera.z = (float)(max(ydist,xdist));
 	// changed this since it's the same and better understandable.
 	// m_vertexcamera.y = (float)(slopey*ydist + minyintercept);
-	m_vertexcamera.y = (float)((maxyintercept-minyintercept)*0.5 + minyintercept);
-	m_vertexcamera.x = (float)(slopex*xdist + minxintercept);
+	m_vertexcamera.y = (float)((maxyintercept - minyintercept)*0.5 + minyintercept);
+	//m_vertexcamera.x = (float)(slopex*xdist + minxintercept);
+	m_vertexcamera.x = (float)((maxxintercept - minxintercept)*0.5 + minxintercept);
 
 	m_rznear += m_vertexcamera.z;
 	m_rzfar += m_vertexcamera.z;
@@ -1698,13 +1700,13 @@ void Pin3D::SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const 
 	D3DMATRIX mat;
 	ZeroMemory(&mat, sizeof(D3DMATRIX));
 
-    const float Q = (float)(rzfar / ( rzfar - rznear ));
+    const GPINFLOAT Q = rzfar / ( rzfar - rznear );
 
 	mat._11 = (float)(rznear / xrange);
 	mat._22 = -(float)(rznear / yrange);
-	mat._33 = Q;
+	mat._33 = (float)Q;
 	mat._34 = 1.0f;
-	mat._43 = -Q*(float)rznear;
+	mat._43 = -(float)(Q*rznear);
 
 	//mat._41 = 200;
 
@@ -1980,15 +1982,16 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, co
 	m_vertexcamera.z = (float)(max(ydist,xdist));
 	// changed this since it's the same and better understandable.
 	// m_vertexcamera.y = (float)(slopey*ydist + minyintercept);
-	m_vertexcamera.y = (float)((maxyintercept-minyintercept)*0.5 + minyintercept);
-	m_vertexcamera.x = (float)(slopex*xdist + minxintercept);
+	m_vertexcamera.y = (float)((maxyintercept - minyintercept)*0.5 + minyintercept);
+	//m_vertexcamera.x = (float)(slopex*xdist + minxintercept);
+	m_vertexcamera.x = (float)((maxxintercept - minxintercept)*0.5 + minxintercept);
 
 	m_rznear += m_vertexcamera.z;
 	m_rzfar += m_vertexcamera.z;
 
 	const GPINFLOAT delta = m_rzfar - m_rznear;
 
-#if 1 
+#if 1
 	m_rznear -= delta*0.15; // Allow for roundoff error (and tweak the setting too).
 	m_rzfar += delta*0.01;
 #else

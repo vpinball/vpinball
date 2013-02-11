@@ -1428,16 +1428,17 @@ void PinTable::Render3DProjection(Sur * const psur)
 	Matrix3D matTrans;
 	// create a normal matrix.
 	matTrans._11 = matTrans._22 = matTrans._33 = matTrans._44 = 1.0f;
-	matTrans._12 = matTrans._13 = matTrans._14 = 0.0f;
-	matTrans._21 = matTrans._23 = matTrans._24 = 0.0f;
-	matTrans._31 = matTrans._32 = matTrans._34 = 0.0f;
-	matTrans._41 = matTrans._42 = matTrans._43 = 0.0f;
+	matTrans._12 = matTrans._13 = matTrans._14 = 
+	matTrans._21 = matTrans._23 = matTrans._24 = 
+	matTrans._34 = 
+	matTrans._43 = 0.0f;
 	// Skew for FOV of 0 Deg. is not supported. so change it a little bit.
 	const float skewFOV = (realFOV < 0.01f) ? 0.01f : realFOV;
 	// create skew the z axis to x and y direction.
-	matTrans._42 = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*pinproj.m_vertexcamera.y*skewY;
+	const float skewtan = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*pinproj.m_vertexcamera.y;
+	matTrans._42 = skewtan*skewY;
 	matTrans._32 = skewY;
-	matTrans._41 = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*pinproj.m_vertexcamera.y*skewX;
+	matTrans._41 = skewtan*skewX;
 	matTrans._31 = skewX;
 	pinproj.Multiply(matTrans);
 
