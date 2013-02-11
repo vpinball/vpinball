@@ -9,6 +9,38 @@ using namespace MSAPC;
 
 #include <xmmintrin.h>
 
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
+__forceinline float min(const float x, const float y)
+{
+	return x < y ? x : y;
+}
+__forceinline float max(const float x, const float y)
+{
+	return x < y ? y : x;
+}
+__forceinline int min(const int x, const int y)
+{
+	return x < y ? x : y;
+}
+__forceinline int max(const int x, const int y)
+{
+	return x < y ? y : x;
+}
+__forceinline unsigned int min(const unsigned int x, const unsigned int y)
+{
+	return x < y ? x : y;
+}
+__forceinline unsigned int max(const unsigned int x, const unsigned int y)
+{
+	return x < y ? y : x;
+}
+
 //#define OLDLOAD 1
 
 #define fTrue 1

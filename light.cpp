@@ -1731,7 +1731,7 @@ STDMETHODIMP Light::put_BorderWidth(float newVal)
 {
 	STARTUNDO
 
-	m_d.m_borderwidth = max(0, newVal);
+	m_d.m_borderwidth = max(0.f, newVal);
 
 	STOPUNDO
 
