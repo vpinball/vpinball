@@ -180,11 +180,11 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
     _Module.Init(ObjectMap, hInstance, &LIBID_VBATESTLib);
     _Module.dwThreadID = GetCurrentThreadId();
 
-	BOOL fFile = fFalse;
-	BOOL fPlay = fFalse;
+	bool fFile = false;
+	bool fPlay = false;
+    bool bRun = true;
 	TCHAR szTableFileName[_MAX_PATH] = {0};
     int nRet = 0;
-    BOOL bRun = TRUE;
 
     int nArgs;
 	LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
@@ -195,58 +195,56 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
         {
             _Module.UpdateRegistryFromResource(IDR_VBATest, FALSE);
             nRet = _Module.UnregisterServer(TRUE);
-            bRun = FALSE;
+            bRun = false;
 			break;
         }
         if (lstrcmpi(szArglist[i], _T("-RegServer"))==0 || lstrcmpi(szArglist[i], _T("/RegServer"))==0)
         {
             _Module.UpdateRegistryFromResource(IDR_VBATest, TRUE);
             nRet = _Module.RegisterServer(TRUE);
-            bRun = FALSE;
+            bRun = false;
 			break;
         }
-        if ((lstrcmpi(szArglist[i], _T("-Edit"))==0 || lstrcmpi(szArglist[i], _T("/Edit"))==0) && (i+1 < nArgs))
-        {
-			fFile = fTrue;
-			if(szArglist[i+1][0] == '"') {
-				strcpy_s(szTableFileName,szArglist[i+1]+1);
-				szTableFileName[strlen(szTableFileName)] = 0;
-			}
-			else
-				strcpy_s(szTableFileName,szArglist[i+1]);
-			
-			if(szTableFileName[1] != ':') {
-				char szLoadDir[MAX_PATH];
-				GetCurrentDirectory(MAX_PATH,szLoadDir);
-				strcat_s(szLoadDir,"\\");
-				strcat_s(szLoadDir,szTableFileName);
-				strcpy_s(szTableFileName,szLoadDir);
-			}
-			break;
-        }
-        if ((lstrcmpi(szArglist[i], _T("-Play"))==0 || lstrcmpi(szArglist[i], _T("/Play"))==0) && (i+1 < nArgs))
-        {
-			fFile = fTrue;
-			fPlay = fTrue;
-			if(szArglist[i+1][0] == '"') {
-				strcpy_s(szTableFileName,szArglist[i+1]+1);
-				szTableFileName[strlen(szTableFileName)] = 0;
-			}
-			else
-				strcpy_s(szTableFileName,szArglist[i+1]);
 
+		const bool editfile = (lstrcmpi(szArglist[i], _T("-Edit"))==0 || lstrcmpi(szArglist[i], _T("/Edit"))==0);
+		const bool playfile = (lstrcmpi(szArglist[i], _T("-Play"))==0 || lstrcmpi(szArglist[i], _T("/Play"))==0);
+        if ((editfile || playfile) && (i+1 < nArgs))
+        {
+			fFile = true;
+			fPlay = playfile;
+
+			// Remove leading - or /
+			char* filename;
+			if((szArglist[i+1][0] == '-') || (szArglist[i+1][0] == '/'))
+				filename = szArglist[i+1]+1;
+			else
+				filename = szArglist[i+1];
+
+			// Remove " "
+			if(filename[0] == '"') {
+				strcpy_s(szTableFileName,filename+1);
+				szTableFileName[strlen(szTableFileName)] = 0;
+			}
+			else
+				strcpy_s(szTableFileName,filename);
+
+			// Add current path
 			char szLoadDir[MAX_PATH];
 			if(szTableFileName[1] != ':') {
 				GetCurrentDirectory(MAX_PATH,szLoadDir);
 				strcat_s(szLoadDir,"\\");
 				strcat_s(szLoadDir,szTableFileName);
 				strcpy_s(szTableFileName,szLoadDir);
-			} else {
-				PathFromFilename(szTableFileName, szLoadDir);
-				/*const DWORD err =*/ SetCurrentDirectory(szLoadDir);
-			}
+			} else
+				// Or set from table path
+				if(playfile) {
+					PathFromFilename(szTableFileName, szLoadDir);
+					SetCurrentDirectory(szLoadDir);
+				}
 
-			VPinball::SetOpenMinimized();
+			if(playfile)
+				VPinball::SetOpenMinimized();
+
 			break;
         }
     }
