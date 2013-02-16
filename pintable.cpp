@@ -1442,19 +1442,10 @@ void PinTable::Render3DProjection(Sur * const psur)
 	matTrans._31 = skewX;
 	pinproj.Multiply(matTrans);
 
-	if( rotation != 0.0f )
-		{
-			pinproj.Scale(m_scalex, m_scaley, 1.0f );
-			pinproj.Rotate(0,0,rotation);
-			pinproj.Translate(-pinproj.m_vertexcamera.x,-pinproj.m_vertexcamera.y,-pinproj.m_vertexcamera.z);
-			pinproj.Translate( m_xlatex, m_xlatey, 0.0f );
-			pinproj.Rotate( inclination, 0, 0 );
-		}
-	else
-		{
-			pinproj.Translate(-pinproj.m_vertexcamera.x,-pinproj.m_vertexcamera.y,-pinproj.m_vertexcamera.z);
-			pinproj.Rotate(inclination,0,rotation);
-		}
+	pinproj.Scale(m_scalex != 0.0f ? m_scalex : 1.0f, m_scaley != 0.0f ? m_scaley : 1.0f, 1.0f);
+	pinproj.Rotate(0,0,rotation);
+	pinproj.Translate(m_xlatex-pinproj.m_vertexcamera.x,m_xlatey-pinproj.m_vertexcamera.y,-pinproj.m_vertexcamera.z);
+	pinproj.Rotate(inclination, 0, 0);
 
 	pinproj.CacheTransform();
 

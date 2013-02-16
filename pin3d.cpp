@@ -1138,19 +1138,10 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
 
-	if( m_rotation != 0.0f )
-		{
-			Scale( m_scalex, m_scaley, 1.0f );
-			Rotate( 0, 0, m_rotation );
-			Translate(-m_vertexcamera.x,-m_vertexcamera.y,-m_vertexcamera.z);
-			Translate( m_xlatex, m_xlatey, 0.0f );
-			Rotate( m_inclination, 0, 0 );
-		}
-	else
-		{
-			Translate(-m_vertexcamera.x,-m_vertexcamera.y,-m_vertexcamera.z);
-			Rotate(m_inclination,0,m_rotation);
-		}
+	Scale( m_scalex != 0.0f ? m_scalex : 1.0f, m_scaley != 0.0f ? m_scaley : 1.0f, 1.0f );
+	Rotate( 0, 0, m_rotation );
+	Translate(m_xlatex-m_vertexcamera.x,m_xlatey-m_vertexcamera.y,-m_vertexcamera.z);
+	Rotate( m_inclination, 0, 0 );
 	
 	CacheTransform();
 
