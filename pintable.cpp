@@ -5345,9 +5345,6 @@ void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 		pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS, IDS_DIMENSIONSSLOPE);
 		pvproppane->AddElement(pproppane);
-
-		pproppane = new PropertyPane(IDD_PROPTABLE_INPUT, IDS_INPUT);
-		pvproppane->AddElement(pproppane);
 		}
 	else
 		{

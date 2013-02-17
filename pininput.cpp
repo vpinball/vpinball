@@ -35,6 +35,7 @@ PinInput::PinInput()
 	m_lr_axis_reverse = 0;
 	m_ud_axis_reverse = 0;
 	m_override_default_buttons = 0;
+	m_disable_esc = 0;
 	m_joylflipkey = 0;
 	m_joyrflipkey = 0;
 	m_joylmagnasave = 0;
@@ -89,6 +90,9 @@ PinInput::PinInput()
 
 	hr = GetRegInt("Player", "PBWDefaultLayout", &tmp);
 	if (hr == S_OK) m_override_default_buttons = tmp;
+
+	hr = GetRegInt("Player", "DisableESC", &tmp);
+	if (hr == S_OK) m_disable_esc = tmp;
 
 	hr = GetRegInt("Player", "JoyLFlipKey", &tmp);
 	if (hr == S_OK) m_joylflipkey = tmp;
@@ -862,7 +866,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 					g_pplayer->m_ToggleDebugBalls = fTrue;
 				}
 			}
-			else if( input->dwOfs == DIK_ESCAPE )
+			else if( ((input->dwOfs == DIK_ESCAPE) && (m_disable_esc == 0)) || ( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]) )
 			{
 				if (input->dwData & 0x80) g_pplayer->m_fCloseDown = fTrue; //on key down only
 			}
