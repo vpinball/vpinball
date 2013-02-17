@@ -93,6 +93,7 @@ private:
 	int m_lr_axis_reverse;
 	int m_ud_axis_reverse;
 	int m_override_default_buttons;
+	int m_disable_esc;
 	int m_joylflipkey;
 	int m_joyrflipkey;
 	int m_joylmagnasave;

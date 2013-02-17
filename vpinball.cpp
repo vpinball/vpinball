@@ -5240,16 +5240,16 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
-			hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALROTATION);
-			hr = GetRegInt("Player", "PBWRotationCB", &key);
+			hwndCheck = GetDlgItem(hwndDlg, IDC_DisableESC_CB);
+			hr = GetRegInt("Player", "DisableESC", &key);
 			if (hr != S_OK)
 				{
-				key = 0; // The default
+				key = fFalse; // The default
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
-			hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALJOLT);
-			hr = GetRegInt("Player", "JoltAmountCB", &key);
+			hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALROTATION);
+			hr = GetRegInt("Player", "PBWRotationCB", &key);
 			if (hr != S_OK)
 				{
 				key = 0; // The default
@@ -5262,13 +5262,6 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				key = 0; // The default
 				}
 			SetDlgItemInt(hwndDlg, IDC_GLOBALROTATION, key, FALSE);
-
-			hr = GetRegInt("Player", "JoltAmountValue", &key);
-			if (hr != S_OK)
-				{
-				key = 1500; // The default
-				}
-			SetDlgItemInt(hwndDlg, IDC_GLOBALJOLT, key, FALSE);
 
 			hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALTILT);
 			hr = GetRegInt("Player", "TiltSensCB", &key);
@@ -5296,21 +5289,17 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			hr = GetRegInt("Player", "PBWEnabled", &key);
 			if (hr != S_OK)
 				{
-				key = 2; // The default
+				key = 0; // The default
 				}
-			if (key == 0) {SendMessage(hwndCheck, BM_SETCHECK, BST_UNCHECKED, 0);}
-			if (key == 1) {SendMessage(hwndCheck, BM_SETCHECK, BST_CHECKED, 0);}
-			if (key == 2) {SendMessage(hwndCheck, BM_SETCHECK, BST_INDETERMINATE, 0);}
+			SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
 			hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBALNMOUNT);
 			hr = GetRegInt("Player", "PBWNormalMount", &key);
 			if (hr != S_OK)
 				{
-				key = 2; // The default
+				key = 0; // The default
 				}
-			if (key == 0) {SendMessage(hwndCheck, BM_SETCHECK, BST_UNCHECKED, 0);}
-			if (key == 1) {SendMessage(hwndCheck, BM_SETCHECK, BST_CHECKED, 0);}
-			if (key == 2) {SendMessage(hwndCheck, BM_SETCHECK, BST_INDETERMINATE, 0);}
+			SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
 			hwndCheck = GetDlgItem(hwndDlg, IDC_ReversePlunger);
 			hr = GetRegInt("Player", "ReversePlungerAxis", &key);
@@ -6708,6 +6697,10 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							HWND hwndDLayout = GetDlgItem(hwndDlg, IDC_DefaultLayout);
 							int DLayout = SendMessage(hwndDLayout, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "PBWDefaultLayout", REG_DWORD, &DLayout, 4);
+
+							HWND hwndDEsc = GetDlgItem(hwndDlg, IDC_DisableESC_CB);
+							int DEsc = SendMessage(hwndDEsc, BM_GETCHECK, 0, 0);
+							SetRegValue("Player", "DisableESC", REG_DWORD, &DEsc, 4);
 
 							HWND hwndLRFlip = GetDlgItem(hwndDlg, IDC_LRAXISFLIP);
 							int reverse = SendMessage(hwndLRFlip, BM_GETCHECK, 0, 0);
