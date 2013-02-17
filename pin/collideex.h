@@ -7,6 +7,8 @@ public:
 	virtual bool FMover() const {return true;}
 	virtual void Check3D();
 
+	Primitive *m_pprimitive; //!! temporary to update rect directly from original data
+
 	BOOL m_fVisible;
 	BOOL m_fDisabled;
 };

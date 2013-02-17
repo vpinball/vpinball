@@ -225,6 +225,9 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
 		// the hitprimitive class should add itself to the HitObjectVector.
 		// i think i have to look at easy hit objects and then at ramps hitobjects.
 		HitPrimitive * pHitPrimitive = new HitPrimitive();
+
+		pHitPrimitive->m_primitiveAnim.m_pprimitive = this; //!! as a temporary(?) workaround use this to recalculate
+
 		pvho->AddElement(pHitPrimitive);
 	}
 
@@ -298,42 +301,37 @@ void Primitive::RecalculateVertices()
 {
 	verticesTop.RemoveAllElements();
 	verticesBottom.RemoveAllElements();
-	const float outerRadius = 0.5f/cosf((float)M_PI/(float)m_d.m_Sides);
-	float currentAngle = (float)M_PI/(float)m_d.m_Sides;
-	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
-	for (int i = 0; i < m_d.m_Sides; i++)
-	{
-		Vertex3Ds * const topVert = new Vertex3Ds();
-		Vertex3Ds * const bottomVert = new Vertex3Ds();
-		topVert->z = 0.5f;
-		bottomVert->z = -0.5f;
-		topVert->x = bottomVert->x = -sinf(currentAngle)*outerRadius;
-		topVert->y = bottomVert->y = -cosf(currentAngle)*outerRadius;
-		verticesTop.AddElement(topVert);
-		verticesBottom.AddElement(bottomVert);
-		currentAngle += addAngle;
-	}
 
 	RecalculateMatrices();
 
-	for (int i = 0; i < m_d.m_Sides; i++)
+	const float outerRadius = -0.5f/cosf((float)M_PI/(float)m_d.m_Sides);
+	float currentAngle = (float)M_PI/(float)m_d.m_Sides;
+	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
+	for (int i = 0; i < m_d.m_Sides; ++i,currentAngle += addAngle)
 	{
-		Vertex3Ds * const topVert = verticesTop.ElementAt(i);
-		topVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f);
-		topVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f);
+		Vertex3Ds * const topVert = new Vertex3Ds();
+		Vertex3Ds * const bottomVert = new Vertex3Ds();
+
+		topVert->x = sinf(currentAngle)*outerRadius;
+		topVert->y = cosf(currentAngle)*outerRadius * (1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f));
+		topVert->z =                           0.5f * (1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f));
+
 		topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(topVert->y+0.5f);
 		topVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(topVert->y+0.5f);
-		topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f);
-		topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f);
+		bottomVert->z = -topVert->z;
+
+		const float tmp = topVert->x;
+		topVert->x    = tmp * (1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f));
+		bottomVert->x = tmp * (1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(0.5f-topVert->z));
+
+		const float tmp2 = topVert->y;
+		topVert->y    = tmp2 * (1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f));
+		bottomVert->y = tmp2 * (1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(0.5f-topVert->z));
+
 		fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
-		Vertex3Ds * const bottomVert = verticesBottom.ElementAt(i);
-		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(bottomVert->x+0.5f);
-		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(bottomVert->x+0.5f);
-		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(bottomVert->y+0.5f);
-		bottomVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(bottomVert->y+0.5f);
-		bottomVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(bottomVert->z+0.5f);
-		bottomVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(bottomVert->z+0.5f);
 		fullMatrix.MultiplyVector(bottomVert->x, bottomVert->y, bottomVert->z, bottomVert);
+		verticesTop.AddElement(topVert);
+		verticesBottom.AddElement(bottomVert);
 	}
 }
 
@@ -365,11 +363,11 @@ void Primitive::Render(Sur * const psur)
 	for (int i = 0; i < m_d.m_Sides; i++)
 	{
 		const int inext = ((i+1) == m_d.m_Sides) ? 0 : i+1;
-		const Vertex3Ds * const topVert = (Vertex3Ds*)verticesTop.ElementAt(i);
-		const Vertex3Ds * const nextTopVert = (Vertex3Ds*)verticesTop.ElementAt(inext);
+		const Vertex3Ds * const topVert = verticesTop.ElementAt(i);
+		const Vertex3Ds * const nextTopVert = verticesTop.ElementAt(inext);
 		psur->Line(topVert->x, topVert->y, nextTopVert->x, nextTopVert->y);
-		const Vertex3Ds * const bottomVert = (Vertex3Ds*)verticesBottom.ElementAt(i);
-		const Vertex3Ds * const nextBottomVert = (Vertex3Ds*)verticesBottom.ElementAt(inext);
+		const Vertex3Ds * const bottomVert = verticesBottom.ElementAt(i);
+		const Vertex3Ds * const nextBottomVert = verticesBottom.ElementAt(inext);
 		psur->Line(bottomVert->x, bottomVert->y, nextBottomVert->x, nextBottomVert->y);
 		psur->Line(bottomVert->x, bottomVert->y, topVert->x, topVert->y);
 	}
@@ -383,7 +381,7 @@ static const WORD rgiPrimStatic1[5] = {4,3,2,1,0};
 void Primitive::CalculateRealTimeOriginal()
 {
 	// this recalculates the Original Vertices -> should be only called, when sides are altered.
-	const float outerRadius = 0.5f/(cosf((float)M_PI/(float)m_d.m_Sides));
+	const float outerRadius = -0.5f/(cosf((float)M_PI/(float)m_d.m_Sides));
 	float currentAngle = (float)M_PI/(float)m_d.m_Sides;
 	const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
 	float minX = FLT_MAX;
@@ -393,25 +391,29 @@ void Primitive::CalculateRealTimeOriginal()
 
 	Vertex3D_NoTex2 *middle;
 	middle = &rgv3DOriginal[0]; // middle point top
+	middle->x = 0.0f;
+	middle->y = 0.0f;
 	middle->z = 0.5f;
-	middle->x = 0.0f;
-	middle->y = 0.0f;
 	middle = &rgv3DOriginal[m_d.m_Sides+1]; // middle point bottom
-	middle->z = -0.5f;
 	middle->x = 0.0f;
 	middle->y = 0.0f;
-	for (int i = 0; i < m_d.m_Sides; i++)
+	middle->z = -0.5f;
+	for (int i = 0; i < m_d.m_Sides; ++i,currentAngle += addAngle)
 	{
 		// calculate Top
 		Vertex3D_NoTex2 * const topVert = &rgv3DOriginal[i+1]; // top point at side
+		topVert->x = sinf(currentAngle)*outerRadius;
+		topVert->y = cosf(currentAngle)*outerRadius;		
 		topVert->z = 0.5f;
-		topVert->x = sinf(currentAngle)*-outerRadius;
-		topVert->y = cosf(currentAngle)*-outerRadius;		
 		// calculate bottom
 		Vertex3D_NoTex2 * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
-		bottomVert->z = -0.5f;
 		bottomVert->x = topVert->x;
 		bottomVert->y = topVert->y;
+		bottomVert->z = -0.5f;
+		// calculate sides
+		rgv3DOriginal[m_d.m_Sides*2 + 2 + i] = *topVert; // sideTopVert
+		rgv3DOriginal[m_d.m_Sides*3 + 2 + i] = *bottomVert; // sideBottomVert
+
 		// calculate bounds for X and Y
 		if (topVert->x < minX)
 			minX = topVert->x;
@@ -421,17 +423,6 @@ void Primitive::CalculateRealTimeOriginal()
 			minY = topVert->y;
 		if (topVert->y > maxY)
 			maxY = topVert->y;
-		// calculate sides
-		Vertex3D_NoTex2 * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
-		Vertex3D_NoTex2 * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
-		sideTopVert->z = 0.5f;
-		sideTopVert->x = topVert->x;
-		sideTopVert->y = topVert->y;
-		sideBottomVert->z = -0.5f;
-		sideBottomVert->x = bottomVert->x;
-		sideBottomVert->y = bottomVert->y;
-
-		currentAngle += addAngle;
 	}
 
 	// these have to be replaced for image mapping
@@ -766,7 +757,7 @@ void Primitive::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	g_pplayer->InvalidateRect(rect);
 	*/
 
-	g_pplayer->m_ptable->SetDirtyDraw(); //!!
+	//g_pplayer->m_ptable->SetDirtyDraw(); //!! does not do anything good anymore
 
 	D3DMATERIAL7 mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
