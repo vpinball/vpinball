@@ -251,15 +251,15 @@ public:
 	Matrix3D fullMatrix;
 	void RecalculateMatrices();
 
-	RECT m_rcBounds; // For testing against lights
+	//RECT m_rcBounds; // For testing against lights
 
-	float m_leading, m_descent;
+	//float m_leading, m_descent;
 	float maxtu, maxtv;
-	float m_realwidth, m_realheight;
+	//float m_realwidth, m_realheight;
 
 	// is top behind bottom?
-	int farthestIndex;
-	bool topBehindBottom;
+	//int farthestIndex;
+	//bool topBehindBottom;
 };
 
 #endif // !defined(AFX_PRIMITIVE_H__31CD2D6B-9BDD-4B1B-BC62-B9DE588A0CAA__INCLUDED_)
