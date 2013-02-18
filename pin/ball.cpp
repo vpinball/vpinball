@@ -754,25 +754,25 @@ void Ball::Draw()
    rgv3D[1].y = y - (radiusY * cs);
    rgv3D[1].z = zheight + (radius * sn);
 
-   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x0000001);
-   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x0000001);
+   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
 
    if ( useAntiAliasing )
    {
-      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
+      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
       if( useShadows )
       {
-         g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+         g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
          DrawShadow();
       }
       g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
    }
    else
    {
-      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
       g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_NONE);
    }
 
@@ -795,7 +795,8 @@ void Ball::Draw()
    }
 
    g_pplayer->m_pin3d.m_pd3dDevice->setMaterial(&mtrl);
-   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+//   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
    //m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
    g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
@@ -817,10 +818,10 @@ void Ball::Draw()
       g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
       g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
 
-      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
+      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 
-      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
       // Scale the orientation for Ball stretching
       Matrix3 orientation;

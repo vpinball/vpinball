@@ -545,7 +545,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
 	//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 

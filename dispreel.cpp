@@ -690,7 +690,7 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 				
 			pin->EnsureMaxTextureCoordinates();
 				
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
 			// Set texture to mirror, so the alpha state of the texture blends correctly to the outside
 			pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
@@ -704,9 +704,9 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 			ppin3d->SetFiltersLinear();
 			ppin3d->SetAlphaEnabled(fTrue);
 				
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0xe0);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0xe0);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
 
 			ppin3d->EnableLightMap(fFalse, -1);
 			
@@ -849,7 +849,7 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 			//m_preelframe->pdds->ReleaseDC(hdcReelFrame);
 			//pin->m_pdsBuffer->ReleaseDC(hdcImage);
 			
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
         
         // reset device 
         
@@ -858,8 +858,8 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 		pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MINFILTER, D3DTFN_LINEAR);
 		pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
 
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 		pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
         }
     }

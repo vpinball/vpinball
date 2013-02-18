@@ -775,20 +775,20 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			pin->EnsureColorKey();
 
 			pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+         pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 
 			
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
 			// this has to be set to true (this is just for debugging depth sorting).
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 

@@ -193,10 +193,10 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    RECT rcBounds;
    ppin3d->ClearExtents(&rcBounds, NULL, NULL);	
 
-   pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);	
-   pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
-   pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-   pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);	
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);

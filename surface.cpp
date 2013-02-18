@@ -1169,41 +1169,41 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			{				
 			if (g_pvp->m_pdd.m_fHardwareAccel)
 				{
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 128);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+               pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
+               pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+               pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
 
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+               pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 				}
 			else
 				{
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+               pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
 				}
 			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 			}
 		else 
 			{	
 			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);		
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 			if (g_pvp->m_pdd.m_fHardwareAccel)
 				{
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 128);
+               pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
 				}
 			else
 				{
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+               pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
 				}
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 			
+         pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 			
 			}
 
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+		pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 		mtrl.diffuse.r = mtrl.ambient.r =
@@ -1425,7 +1425,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 				}
 			}
 
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
 
 		if (pinSide)
 			{
@@ -1435,31 +1435,31 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			if (pinSide->m_fTransparent)
 				{				
 				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 				}
 			else // ppin3d->SetTexture(pin->m_pdsBuffer);
 				{
 				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 				if (g_pvp->m_pdd.m_fHardwareAccel)
 					{
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 128);
+                  pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
 					}
 				else
 					{
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+                  pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
 					}
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,  D3DBLEND_SRCALPHA);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA); 
+            pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
 				}
 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			}
 
@@ -1474,31 +1474,31 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			if (pin->m_fTransparent)
 				{				
 				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 				}
 			else 
 				{
 				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 				if (g_pvp->m_pdd.m_fHardwareAccel)
 					{
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 128);
+                  pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
 					}
 				else
 					{
-					pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+                  pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
 					}
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,  D3DBLEND_SRCALPHA);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA); 
+            pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
 				}
 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 			mtrl.diffuse.r = mtrl.ambient.r =

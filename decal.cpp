@@ -473,7 +473,7 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
 		maxtv = 1.0f;
 		}
 
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+	pd3dDevice->SetRenderState( RenderDevice::ZWRITEENABLE, FALSE);
 
 	// Set texture to mirror, so the alpha state of the texture blends correctly to the outside
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
@@ -488,10 +488,10 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
 		pin->EnsureColorKey();
 		pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
+		pd3dDevice->SetRenderState( RenderDevice::COLORKEYENABLE, FALSE);
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+		pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
 
 		ppin3d->EnableLightMap(fFalse, -1);
 		}
@@ -499,16 +499,16 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
 		{
 		pd3dDevice->SetTexture(ePictureTexture, NULL);
 
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
+		pd3dDevice->SetRenderState( RenderDevice::COLORKEYENABLE, FALSE);
 		}
 
 	// Check if we are in hardware.
 	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
 		// Render all alpha pixels.
-		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE); 
+         g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
+         g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+         g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 
 
 		// Turn on anisotopic filtering. 
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
@@ -572,8 +572,8 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
 	g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 	// Set the render state.
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 	}
 	
