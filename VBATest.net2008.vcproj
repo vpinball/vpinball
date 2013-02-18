@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="VBATest"
 	ProjectGUID="{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
 	RootNamespace="VBATest"
@@ -5141,6 +5141,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Material.cpp"
+				>
+			</File>
+			<File
 				RelativePath="memutil.cpp"
 				>
 				<FileConfiguration
@@ -7239,6 +7243,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\RenderDevice.cpp"
+				>
+			</File>
+			<File
 				RelativePath="shadowsur.cpp"
 				>
 				<FileConfiguration
@@ -8228,6 +8236,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Texture.cpp"
+				>
 			</File>
 			<File
 				RelativePath="timer.cpp"
@@ -9775,6 +9787,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Material.h"
+				>
+			</File>
+			<File
 				RelativePath="memutil.h"
 				>
 			</File>
@@ -9855,6 +9871,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\RenderDevice.h"
+				>
+			</File>
+			<File
 				RelativePath=".\resource.h"
 				>
 				<FileConfiguration
@@ -9907,6 +9927,10 @@
 			</File>
 			<File
 				RelativePath="textbox.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Texture.h"
 				>
 			</File>
 			<File
