@@ -996,18 +996,18 @@ void Surface::MoveOffset(const float dx, const float dy)
 	}
 
 
-void Surface::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Surface::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
 
-void Surface::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	if (!m_d.m_fDroppable || !m_d.m_fInner)
-		{
-		RenderWallsAtHeight(pd3dDevice, fFalse, fFalse);
-		}
-	}
+void Surface::RenderStatic(const RenderDevice* pd3dDevice)
+{
+   if (!m_d.m_fDroppable || !m_d.m_fInner)
+   {
+      RenderWallsAtHeight( (RenderDevice*)pd3dDevice, fFalse, fFalse);
+   }
+}
 
 static const WORD rgiSlingshot0[4] = {0,1,4,3};
 static const WORD rgiSlingshot1[4] = {1,2,5,4};
@@ -1016,7 +1016,7 @@ static const WORD rgiSlingshot3[4] = {1,4,5,2};
 static const WORD rgiSlingshot4[4] = {3,9,10,4};
 static const WORD rgiSlingshot5[4] = {4,10,11,5};
 
-void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
+void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -1133,7 +1133,7 @@ void Surface::RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice)
 static const WORD rgiWall0[4] = {0,1,2,3};
 static const WORD rgiWall1[4] = {0,3,2,1};
 
-ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover, BOOL fDrop)
+ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, BOOL fDrop)
 	{
 	ObjFrame *pof = NULL;
 
@@ -1612,134 +1612,134 @@ ObjFrame *Surface::RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover
 	return pof;
 	}
 	
-void Surface::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	RenderSlingshots(pd3dDevice);
+void Surface::RenderMovers(const RenderDevice* pd3dDevice)
+{
+   RenderSlingshots((RenderDevice*)pd3dDevice);
 
-	if (m_d.m_fDroppable && m_d.m_fInner)
-		{
-		// Render wall raised.
-		ObjFrame * const pof = RenderWallsAtHeight(pd3dDevice, fTrue, fFalse);
-		m_phitdrop->m_polydropanim.m_pobjframe[0] = pof;
+   if (m_d.m_fDroppable && m_d.m_fInner)
+   {
+      // Render wall raised.
+      ObjFrame * const pof = RenderWallsAtHeight((RenderDevice*)pd3dDevice, fTrue, fFalse);
+      m_phitdrop->m_polydropanim.m_pobjframe[0] = pof;
 
-		// Check if this wall is being 
-		// used as a flipbook animation.
-		if (m_d.m_fFlipbook)
-			{
-			// Don't render a dropped wall. 
-			m_phitdrop->m_polydropanim.m_pobjframe[1] = NULL;
-			}
-		else
-			{
-			// Render wall dropped (smashed to a pancake at bottom height).
-			ObjFrame * const pof2 = RenderWallsAtHeight(pd3dDevice, fTrue, fTrue); 
-			m_phitdrop->m_polydropanim.m_pobjframe[1] = pof2;
-			}
-		}
-	}
+      // Check if this wall is being 
+      // used as a flipbook animation.
+      if (m_d.m_fFlipbook)
+      {
+         // Don't render a dropped wall. 
+         m_phitdrop->m_polydropanim.m_pobjframe[1] = NULL;
+      }
+      else
+      {
+         // Render wall dropped (smashed to a pancake at bottom height).
+         ObjFrame * const pof2 = RenderWallsAtHeight((RenderDevice*)pd3dDevice, fTrue, fTrue); 
+         m_phitdrop->m_polydropanim.m_pobjframe[1] = pof2;
+      }
+   }
+}
 
 void Surface::DoCommand(int icmd, int x, int y)
-	{
-	ISelect::DoCommand(icmd, x, y);
+{
+   ISelect::DoCommand(icmd, x, y);
 
-	switch (icmd)
-		{
-		case ID_WALLMENU_FLIP:
-			{
-			Vertex2D vCenter;
-			GetPointCenter(&vCenter);
-			FlipPointY(&vCenter);
-			}
-			break;
+   switch (icmd)
+   {
+   case ID_WALLMENU_FLIP:
+      {
+         Vertex2D vCenter;
+         GetPointCenter(&vCenter);
+         FlipPointY(&vCenter);
+      }
+      break;
 
-		case ID_WALLMENU_MIRROR:
-			{
-			Vertex2D vCenter;
-			GetPointCenter(&vCenter);
-			FlipPointX(&vCenter);
-			}
-			break;
+   case ID_WALLMENU_MIRROR:
+      {
+         Vertex2D vCenter;
+         GetPointCenter(&vCenter);
+         FlipPointX(&vCenter);
+      }
+      break;
 
-		case ID_WALLMENU_ROTATE:
-			RotateDialog();
-			break;
+   case ID_WALLMENU_ROTATE:
+      RotateDialog();
+      break;
 
-		case ID_WALLMENU_SCALE:
-			ScaleDialog();
-			break;
+   case ID_WALLMENU_SCALE:
+      ScaleDialog();
+      break;
 
-		case ID_WALLMENU_TRANSLATE:
-			TranslateDialog();
-			break;
+   case ID_WALLMENU_TRANSLATE:
+      TranslateDialog();
+      break;
 
-		case ID_WALLMENU_ADDPOINT:
-			{
-			STARTUNDO
+   case ID_WALLMENU_ADDPOINT:
+      {
+         STARTUNDO
 
-			RECT rc;
-			GetClientRect(m_ptable->m_hwnd, &rc);
+            RECT rc;
+         GetClientRect(m_ptable->m_hwnd, &rc);
 
-			HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+         HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
-			Vertex2D v;
-			phs->ScreenToSurface(x, y, &v.x, &v.y);
-			delete phs;
+         Vertex2D v;
+         phs->ScreenToSurface(x, y, &v.x, &v.y);
+         delete phs;
 
-			Vector<RenderVertex> vvertex;
-			GetRgVertex(&vvertex);
+         Vector<RenderVertex> vvertex;
+         GetRgVertex(&vvertex);
 
-			m_cvertexT = vvertex.Size();
-			m_rgvT = new Vertex2D[m_cvertexT];
+         m_cvertexT = vvertex.Size();
+         m_rgvT = new Vertex2D[m_cvertexT];
 
-			for (int i=0;i<m_cvertexT;i++)
-				{
-				m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
-				}
+         for (int i=0;i<m_cvertexT;i++)
+         {
+            m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
+         }
 
-			Vertex2D vOut;
-			int iSeg;
-			ClosestPointOnPolygon(m_rgvT, m_cvertexT, v, &vOut, &iSeg, true);
+         Vertex2D vOut;
+         int iSeg;
+         ClosestPointOnPolygon(m_rgvT, m_cvertexT, v, &vOut, &iSeg, true);
 
-			// Go through vertices (including iSeg itself) counting control points until iSeg
-			int icp = 0;
-			for (int i=0;i<(iSeg+1);i++)
-				{
-				if (vvertex.ElementAt(i)->fControlPoint)
-					{
-					icp++;
-					}
-				}
+         // Go through vertices (including iSeg itself) counting control points until iSeg
+         int icp = 0;
+         for (int i=0;i<(iSeg+1);i++)
+         {
+            if (vvertex.ElementAt(i)->fControlPoint)
+            {
+               icp++;
+            }
+         }
 
-			CComObject<DragPoint> *pdp;
+         CComObject<DragPoint> *pdp;
 
-			CComObject<DragPoint>::CreateInstance(&pdp);
-			if (pdp)
-				{
-				pdp->AddRef();
-				pdp->Init(this, vOut.x, vOut.y);
-				m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-				}
+         CComObject<DragPoint>::CreateInstance(&pdp);
+         if (pdp)
+         {
+            pdp->AddRef();
+            pdp->Init(this, vOut.x, vOut.y);
+            m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+         }
 
-			for (int i=0;i<m_cvertexT;i++)
-				{
-				delete vvertex.ElementAt(i);
-				}
+         for (int i=0;i<m_cvertexT;i++)
+         {
+            delete vvertex.ElementAt(i);
+         }
 
-			delete [] m_rgvT;
-			m_rgvT = NULL;
+         delete [] m_rgvT;
+         m_rgvT = NULL;
 
-			SetDirtyDraw();
+         SetDirtyDraw();
 
-			STOPUNDO
-			}
-			break;
-		}
-	}
+         STOPUNDO
+      }
+      break;
+   }
+}
 
 void Surface::FlipY(Vertex2D * const pvCenter)
-	{
-	IHaveDragPoints::FlipPointY(pvCenter);
-	}
+{
+   IHaveDragPoints::FlipPointY(pvCenter);
+}
 
 void Surface::FlipX(Vertex2D * const pvCenter)
 	{

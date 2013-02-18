@@ -111,8 +111,8 @@ END_CONNECTION_POINT_MAP()
 	// From IHaveDragPoints
 	virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
 
-	virtual void RenderSlingshots(LPDIRECT3DDEVICE7 pd3dDevice);
-	virtual ObjFrame *RenderWallsAtHeight(LPDIRECT3DDEVICE7 pd3dDevice, BOOL fMover, BOOL fDrop);
+	virtual void RenderSlingshots(RenderDevice* pd3dDevice);
+	virtual ObjFrame *RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, BOOL fDrop);
 
 	virtual void RenderBlueprint(Sur *psur);
 

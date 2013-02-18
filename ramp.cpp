@@ -1274,364 +1274,365 @@ void Ramp::RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D_NoTex * c
 //static const WORD rgiRampStatic0[4] = {0,1,2,3};
 static const WORD rgiRampStatic1[4] = {0,3,2,1};
 
-void Ramp::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{	
-	if (!m_d.m_IsVisible) return;		// return if no Visible
+void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
+{	
+   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
+   if (!m_d.m_IsVisible) return;		// return if no Visible
 
-	// dont render alpha shaded ramps into static buffer
-	if (m_d.m_fAlpha && g_pvp->m_pdd.m_fHardwareAccel) return;
+   // dont render alpha shaded ramps into static buffer
+   if (m_d.m_fAlpha && g_pvp->m_pdd.m_fHardwareAccel) return;
 
-	if (m_d.m_type == RampType4Wire 
-		|| m_d.m_type == RampType1Wire  //add check for 1 wire
-		|| m_d.m_type == RampType2Wire 
-		|| m_d.m_type == RampType3WireLeft 
-		|| m_d.m_type == RampType3WireRight)
-		{
-		RenderStaticHabitrail(pd3dDevice);
-		}
-	else
-		{
-		Pin3D *const ppin3d = &g_pplayer->m_pin3d;
+   if (m_d.m_type == RampType4Wire 
+      || m_d.m_type == RampType1Wire  //add check for 1 wire
+      || m_d.m_type == RampType2Wire 
+      || m_d.m_type == RampType3WireLeft 
+      || m_d.m_type == RampType3WireRight)
+   {
+      RenderStaticHabitrail(pd3dDevice);
+   }
+   else
+   {
+      Pin3D *const ppin3d = &g_pplayer->m_pin3d;
 
-		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
-		float maxtu = 0, maxtv = 0;
+      PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+      float maxtu = 0, maxtv = 0;
 
-		D3DMATERIAL7 mtrl;
-		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-		mtrl.power = 0;
-		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+      D3DMATERIAL7 mtrl;
+      mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+         mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+         mtrl.power = 0;
+      mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
-		if (pin)
-			{
-			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
+      if (pin)
+      {
+         m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
-			pin->EnsureColorKey();
-			if (pin->m_fTransparent)
-				{				
-				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
-				}
-			else // ppin3d->SetTexture(pin->m_pdsBuffer);
-				{	
-				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,  D3DBLEND_SRCALPHA);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA); 
-				}
-			
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+         pin->EnsureColorKey();
+         if (pin->m_fTransparent)
+         {				
+            pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+         }
+         else // ppin3d->SetTexture(pin->m_pdsBuffer);
+         {	
+            pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,  D3DBLEND_SRCALPHA);
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA); 
+         }
 
-			// Check if this is an acrylic.
-			if  (m_d.m_fAcrylic)
-				{
-				// Set a high threshold for writing transparent pixels to the z buffer.  
-				// This allows some of the ball's pixels to write when under the ramp... 
-				// giving the illusion of transparency (screen door). 
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD) 127);
-				pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+         pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+         pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
-				// Make sure our textures tile.
-				pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+         // Check if this is an acrylic.
+         if  (m_d.m_fAcrylic)
+         {
+            // Set a high threshold for writing transparent pixels to the z buffer.  
+            // This allows some of the ball's pixels to write when under the ramp... 
+            // giving the illusion of transparency (screen door). 
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD) 127);
+            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
-				// Turn off texture filtering.
-				g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_POINT );
-				}
-			else
-				{
-				g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-				}
+            // Make sure our textures tile.
+            pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 
-			mtrl.diffuse.r = mtrl.ambient.r =
-			mtrl.diffuse.g = mtrl.ambient.g =
-			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;			
-			}
-		else
-			{
-			const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-			const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-			const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+            // Turn off texture filtering.
+            g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_POINT );
+         }
+         else
+         {
+            g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         }
 
-			mtrl.diffuse.r = mtrl.ambient.r = r;
-			mtrl.diffuse.g = mtrl.ambient.g = g;
-			mtrl.diffuse.b = mtrl.ambient.b = b;
-			}
+         mtrl.diffuse.r = mtrl.ambient.r =
+            mtrl.diffuse.g = mtrl.ambient.g =
+            mtrl.diffuse.b = mtrl.ambient.b = 1.0f;			
+      }
+      else
+      {
+         const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+         const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+         const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
-		pd3dDevice->SetMaterial(&mtrl);
+         mtrl.diffuse.r = mtrl.ambient.r = r;
+         mtrl.diffuse.g = mtrl.ambient.g = g;
+         mtrl.diffuse.b = mtrl.ambient.b = b;
+      }
 
-		float *rgheight;
-		float *rgratio;
-		int cvertex;
-		const Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, &rgratio);
+      pd3dDevice->SetMaterial(&mtrl);
 
-		const float tablewidth = m_ptable->m_right - m_ptable->m_left;
-		const float tableheight = m_ptable->m_bottom - m_ptable->m_top;
+      float *rgheight;
+      float *rgratio;
+      int cvertex;
+      const Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, &rgratio);
 
-		const float scalewidth  = (float) g_pplayer->m_pin3d.m_dwRenderWidth  * (float)(1.0/64.055);		// 64.0f is texture width.			
-		const float scaleheight = (float) g_pplayer->m_pin3d.m_dwRenderHeight * (float)(1.0/64.055);		// 64.0f is texture height.
-		
-		const float inv_width = scalewidth / (float)g_pplayer->m_pin3d.m_dwRenderWidth;
-		const float inv_height = scaleheight / (float)g_pplayer->m_pin3d.m_dwRenderHeight;
+      const float tablewidth = m_ptable->m_right - m_ptable->m_left;
+      const float tableheight = m_ptable->m_bottom - m_ptable->m_top;
 
-		const float inv_width2 = maxtu / tablewidth;
-		const float inv_height2 = maxtv / tableheight;
+      const float scalewidth  = (float) g_pplayer->m_pin3d.m_dwRenderWidth  * (float)(1.0/64.055);		// 64.0f is texture width.			
+      const float scaleheight = (float) g_pplayer->m_pin3d.m_dwRenderHeight * (float)(1.0/64.055);		// 64.0f is texture height.
 
-		for (int i=0;i<(cvertex-1);i++)
-			{
-			Vertex3D_NoTex2 rgv3D[4];
-			rgv3D[0].x = rgv[i].x;
-			rgv3D[0].y = rgv[i].y;
-			rgv3D[0].z = rgheight[i];
+      const float inv_width = scalewidth / (float)g_pplayer->m_pin3d.m_dwRenderWidth;
+      const float inv_height = scaleheight / (float)g_pplayer->m_pin3d.m_dwRenderHeight;
 
-			rgv3D[3].x = rgv[i+1].x;
-			rgv3D[3].y = rgv[i+1].y;
-			rgv3D[3].z = rgheight[i+1];
+      const float inv_width2 = maxtu / tablewidth;
+      const float inv_height2 = maxtv / tableheight;
 
-			rgv3D[2].x = rgv[cvertex*2-i-2].x;
-			rgv3D[2].y = rgv[cvertex*2-i-2].y;
-			rgv3D[2].z = rgheight[i+1];
+      for (int i=0;i<(cvertex-1);i++)
+      {
+         Vertex3D_NoTex2 rgv3D[4];
+         rgv3D[0].x = rgv[i].x;
+         rgv3D[0].y = rgv[i].y;
+         rgv3D[0].z = rgheight[i];
 
-			rgv3D[1].x = rgv[cvertex*2-i-1].x;
-			rgv3D[1].y = rgv[cvertex*2-i-1].y;
-			rgv3D[1].z = rgheight[i];
+         rgv3D[3].x = rgv[i+1].x;
+         rgv3D[3].y = rgv[i+1].y;
+         rgv3D[3].z = rgheight[i+1];
 
-			if (pin)
-				{
-				if (m_d.m_imagealignment == ImageModeWorld)
-					{
-					// Check if this is an acrylic.
-					if (m_d.m_fAcrylic)
-						{
-							Vertex2D rgvOut[4];
-							// Transform vertecies into screen coordinates.
-							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
+         rgv3D[2].x = rgv[cvertex*2-i-2].x;
+         rgv3D[2].y = rgv[cvertex*2-i-2].y;
+         rgv3D[2].z = rgheight[i+1];
 
-							// Calculate texture coordinate for each vertex.
-							for (int r=0; r<4; r++)
-								{
-								// Set texture coordinates so that there is a 1 to 1 correspondence
-								// between texels and pixels.  This is the best case for screen door transparency.
-								rgv3D[r].tu = rgvOut[r].x * inv_width; 
-								rgv3D[r].tv = rgvOut[r].y * inv_height; 
-								}
-						}
-					else
-						{
-						rgv3D[0].tu = rgv3D[0].x * inv_width2;
-						rgv3D[0].tv = rgv3D[0].y * inv_height2;
-						rgv3D[1].tu = rgv3D[1].x * inv_width2;
-						rgv3D[1].tv = rgv3D[1].y * inv_height2;
-						rgv3D[2].tu = rgv3D[2].x * inv_width2;
-						rgv3D[2].tv = rgv3D[2].y * inv_height2;
-						rgv3D[3].tu = rgv3D[3].x * inv_width2;
-						rgv3D[3].tv = rgv3D[3].y * inv_height2;
-						}
-					}
-				else
-					{
-					rgv3D[0].tu = maxtu;
-					rgv3D[0].tv = rgratio[i] * maxtv;
-					rgv3D[1].tu = 0;
-					rgv3D[1].tv = rgratio[i] * maxtv;
-					rgv3D[2].tu = 0;
-					rgv3D[2].tv = rgratio[i+1] * maxtv;
-					rgv3D[3].tu = maxtu;
-					rgv3D[3].tv = rgratio[i+1] * maxtv;
-					}
-				}
+         rgv3D[1].x = rgv[cvertex*2-i-1].x;
+         rgv3D[1].y = rgv[cvertex*2-i-1].y;
+         rgv3D[1].z = rgheight[i];
 
-			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
-			// Draw the floor of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
-			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4, 0);
-			}
+         if (pin)
+         {
+            if (m_d.m_imagealignment == ImageModeWorld)
+            {
+               // Check if this is an acrylic.
+               if (m_d.m_fAcrylic)
+               {
+                  Vertex2D rgvOut[4];
+                  // Transform vertecies into screen coordinates.
+                  g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
-		if (pin && !m_d.m_fImageWalls)
-			{
-			ppin3d->SetTexture(NULL);
+                  // Calculate texture coordinate for each vertex.
+                  for (int r=0; r<4; r++)
+                  {
+                     // Set texture coordinates so that there is a 1 to 1 correspondence
+                     // between texels and pixels.  This is the best case for screen door transparency.
+                     rgv3D[r].tu = rgvOut[r].x * inv_width; 
+                     rgv3D[r].tv = rgvOut[r].y * inv_height; 
+                  }
+               }
+               else
+               {
+                  rgv3D[0].tu = rgv3D[0].x * inv_width2;
+                  rgv3D[0].tv = rgv3D[0].y * inv_height2;
+                  rgv3D[1].tu = rgv3D[1].x * inv_width2;
+                  rgv3D[1].tv = rgv3D[1].y * inv_height2;
+                  rgv3D[2].tu = rgv3D[2].x * inv_width2;
+                  rgv3D[2].tv = rgv3D[2].y * inv_height2;
+                  rgv3D[3].tu = rgv3D[3].x * inv_width2;
+                  rgv3D[3].tv = rgv3D[3].y * inv_height2;
+               }
+            }
+            else
+            {
+               rgv3D[0].tu = maxtu;
+               rgv3D[0].tv = rgratio[i] * maxtv;
+               rgv3D[1].tu = 0;
+               rgv3D[1].tv = rgratio[i] * maxtv;
+               rgv3D[2].tu = 0;
+               rgv3D[2].tv = rgratio[i+1] * maxtv;
+               rgv3D[3].tu = maxtu;
+               rgv3D[3].tv = rgratio[i+1] * maxtv;
+            }
+         }
 
-			const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-			const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-			const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+         SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
+         // Draw the floor of the ramp.
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
+         //pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4, 0);
+      }
 
-			mtrl.diffuse.r = mtrl.ambient.r = r;
-			mtrl.diffuse.g = mtrl.ambient.g = g;
-			mtrl.diffuse.b = mtrl.ambient.b = b;
-			
-			pd3dDevice->SetMaterial(&mtrl);
-			}
+      if (pin && !m_d.m_fImageWalls)
+      {
+         ppin3d->SetTexture(NULL);
 
-		for (int i=0;i<(cvertex-1);i++)
-			{
-			Vertex3D_NoTex2 rgv3D[4];
-			rgv3D[0].x = rgv[i].x;
-			rgv3D[0].y = rgv[i].y;
-			rgv3D[0].z = rgheight[i];
+         const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+         const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+         const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
-			rgv3D[3].x = rgv[i+1].x;
-			rgv3D[3].y = rgv[i+1].y;
-			rgv3D[3].z = rgheight[i+1];
+         mtrl.diffuse.r = mtrl.ambient.r = r;
+         mtrl.diffuse.g = mtrl.ambient.g = g;
+         mtrl.diffuse.b = mtrl.ambient.b = b;
 
-			rgv3D[2].x = rgv[i+1].x;
-			rgv3D[2].y = rgv[i+1].y;
-			rgv3D[2].z = rgheight[i+1] + m_d.m_rightwallheightvisible;
+         pd3dDevice->SetMaterial(&mtrl);
+      }
 
-			rgv3D[1].x = rgv[i].x;
-			rgv3D[1].y = rgv[i].y;
-			rgv3D[1].z = rgheight[i] + m_d.m_rightwallheightvisible;
+      for (int i=0;i<(cvertex-1);i++)
+      {
+         Vertex3D_NoTex2 rgv3D[4];
+         rgv3D[0].x = rgv[i].x;
+         rgv3D[0].y = rgv[i].y;
+         rgv3D[0].z = rgheight[i];
 
-			if (pin && m_d.m_fImageWalls)
-				{
-				if (m_d.m_imagealignment == ImageModeWorld)
-					{
-					// Check if this is an acrylic.
-					if (m_d.m_fAcrylic)
-						{
-							Vertex2D rgvOut[4];
-							// Transform vertices into screen coordinates.
-							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
+         rgv3D[3].x = rgv[i+1].x;
+         rgv3D[3].y = rgv[i+1].y;
+         rgv3D[3].z = rgheight[i+1];
 
-							// Calculate texture coordinate for each vertex.
-							for (int r=0; r<4; r++)
-								{
-								// Set texture coordinates so that there is a 1 to 1 correspondence
-								// between texels and pixels.  This is the best case for screen door transparency.
-								rgv3D[r].tu = rgvOut[r].x * inv_width; 
-								rgv3D[r].tv = rgvOut[r].y * inv_height; 
-								}
-						}
-					else
-						{
-						rgv3D[0].tu = rgv3D[0].x * inv_width2;
-						rgv3D[0].tv = rgv3D[0].y * inv_height2;
-						rgv3D[2].tu = rgv3D[2].x * inv_width2;
-						rgv3D[2].tv = rgv3D[2].y * inv_height2;
+         rgv3D[2].x = rgv[i+1].x;
+         rgv3D[2].y = rgv[i+1].y;
+         rgv3D[2].z = rgheight[i+1] + m_d.m_rightwallheightvisible;
 
-						rgv3D[1].tu = rgv3D[0].tu;
-						rgv3D[1].tv = rgv3D[0].tv;
-						rgv3D[3].tu = rgv3D[2].tu;
-						rgv3D[3].tv = rgv3D[2].tv;
-						}
-					}
-				else
-					{
-					rgv3D[0].tu = maxtu;
-					rgv3D[0].tv = rgratio[i] * maxtv;
-					rgv3D[2].tu = maxtu;
-					rgv3D[2].tv = rgratio[i+1] * maxtv;
+         rgv3D[1].x = rgv[i].x;
+         rgv3D[1].y = rgv[i].y;
+         rgv3D[1].z = rgheight[i] + m_d.m_rightwallheightvisible;
 
-					rgv3D[1].tu = rgv3D[0].tu;
-					rgv3D[1].tv = rgv3D[0].tv;
-					rgv3D[3].tu = rgv3D[2].tu;
-					rgv3D[3].tv = rgv3D[2].tv;
-					}
-				}
+         if (pin && m_d.m_fImageWalls)
+         {
+            if (m_d.m_imagealignment == ImageModeWorld)
+            {
+               // Check if this is an acrylic.
+               if (m_d.m_fAcrylic)
+               {
+                  Vertex2D rgvOut[4];
+                  // Transform vertices into screen coordinates.
+                  g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
-			// 2-Sided polygon
-			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
-			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
-			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4, 0);
+                  // Calculate texture coordinate for each vertex.
+                  for (int r=0; r<4; r++)
+                  {
+                     // Set texture coordinates so that there is a 1 to 1 correspondence
+                     // between texels and pixels.  This is the best case for screen door transparency.
+                     rgv3D[r].tu = rgvOut[r].x * inv_width; 
+                     rgv3D[r].tv = rgvOut[r].y * inv_height; 
+                  }
+               }
+               else
+               {
+                  rgv3D[0].tu = rgv3D[0].x * inv_width2;
+                  rgv3D[0].tv = rgv3D[0].y * inv_height2;
+                  rgv3D[2].tu = rgv3D[2].x * inv_width2;
+                  rgv3D[2].tv = rgv3D[2].y * inv_height2;
 
-			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
-			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgiRampStatic1, 4, 0);
-			}
+                  rgv3D[1].tu = rgv3D[0].tu;
+                  rgv3D[1].tv = rgv3D[0].tv;
+                  rgv3D[3].tu = rgv3D[2].tu;
+                  rgv3D[3].tv = rgv3D[2].tv;
+               }
+            }
+            else
+            {
+               rgv3D[0].tu = maxtu;
+               rgv3D[0].tv = rgratio[i] * maxtv;
+               rgv3D[2].tu = maxtu;
+               rgv3D[2].tv = rgratio[i+1] * maxtv;
 
-		for (int i=0;i<(cvertex-1);i++)
-			{
-			Vertex3D_NoTex2 rgv3D[4];
-			rgv3D[0].x = rgv[cvertex*2-i-2].x;
-			rgv3D[0].y = rgv[cvertex*2-i-2].y;
-			rgv3D[0].z = rgheight[i+1];
+               rgv3D[1].tu = rgv3D[0].tu;
+               rgv3D[1].tv = rgv3D[0].tv;
+               rgv3D[3].tu = rgv3D[2].tu;
+               rgv3D[3].tv = rgv3D[2].tv;
+            }
+         }
 
-			rgv3D[3].x = rgv[cvertex*2-i-1].x;
-			rgv3D[3].y = rgv[cvertex*2-i-1].y;
-			rgv3D[3].z = rgheight[i];
+         // 2-Sided polygon
+         SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
+         // Draw the wall of the ramp.
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
+         //pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4, 0);
 
-			rgv3D[2].x = rgv[cvertex*2-i-1].x;
-			rgv3D[2].y = rgv[cvertex*2-i-1].y;
-			rgv3D[2].z = rgheight[i] + m_d.m_leftwallheightvisible;
+         SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
+         // Draw the wall of the ramp.
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgiRampStatic1, 4, 0);
+      }
 
-			rgv3D[1].x = rgv[cvertex*2-i-2].x;
-			rgv3D[1].y = rgv[cvertex*2-i-2].y;
-			rgv3D[1].z = rgheight[i+1] + m_d.m_leftwallheightvisible;
+      for (int i=0;i<(cvertex-1);i++)
+      {
+         Vertex3D_NoTex2 rgv3D[4];
+         rgv3D[0].x = rgv[cvertex*2-i-2].x;
+         rgv3D[0].y = rgv[cvertex*2-i-2].y;
+         rgv3D[0].z = rgheight[i+1];
 
-			if (pin && m_d.m_fImageWalls)
-				{
-				if (m_d.m_imagealignment == ImageModeWorld)
-					{
-					// Check if this is an acrylic.
-					if (m_d.m_fAcrylic)
-						{
-							Vertex2D rgvOut[4];
-							// Transform vertices into screen coordinates.
-							g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
+         rgv3D[3].x = rgv[cvertex*2-i-1].x;
+         rgv3D[3].y = rgv[cvertex*2-i-1].y;
+         rgv3D[3].z = rgheight[i];
 
-							// Calculate texture coordinate for each vertex.
-							for (int r=0; r<4; r++)
-								{
-								// Set texture coordinates so that there is a 1 to 1 correspondence
-								// between texels and pixels.  This is the best case for screen door transparency.
-								rgv3D[r].tu = rgvOut[r].x * inv_width; 
-								rgv3D[r].tv = rgvOut[r].y * inv_height; 
-								}
-						}
-					else
-						{
-						rgv3D[0].tu = rgv3D[0].x * inv_width2;
-						rgv3D[0].tv = rgv3D[0].y * inv_height2;
-						rgv3D[2].tu = rgv3D[2].x * inv_width2;
-						rgv3D[2].tv = rgv3D[2].y * inv_height2;
+         rgv3D[2].x = rgv[cvertex*2-i-1].x;
+         rgv3D[2].y = rgv[cvertex*2-i-1].y;
+         rgv3D[2].z = rgheight[i] + m_d.m_leftwallheightvisible;
 
-						rgv3D[1].tu = rgv3D[0].tu;
-						rgv3D[1].tv = rgv3D[0].tv;
-						rgv3D[3].tu = rgv3D[2].tu;
-						rgv3D[3].tv = rgv3D[2].tv;
-						}
-					}
-				else
-					{
-					rgv3D[0].tu = 0;
-					rgv3D[0].tv = rgratio[i] * maxtv;
-					rgv3D[2].tu = 0;
-					rgv3D[2].tv = rgratio[i+1] * maxtv;
+         rgv3D[1].x = rgv[cvertex*2-i-2].x;
+         rgv3D[1].y = rgv[cvertex*2-i-2].y;
+         rgv3D[1].z = rgheight[i+1] + m_d.m_leftwallheightvisible;
 
-					rgv3D[1].tu = rgv3D[0].tu;
-					rgv3D[1].tv = rgv3D[0].tv;
-					rgv3D[3].tu = rgv3D[2].tu;
-					rgv3D[3].tv = rgv3D[2].tv;
-					}
-				}
+         if (pin && m_d.m_fImageWalls)
+         {
+            if (m_d.m_imagealignment == ImageModeWorld)
+            {
+               // Check if this is an acrylic.
+               if (m_d.m_fAcrylic)
+               {
+                  Vertex2D rgvOut[4];
+                  // Transform vertices into screen coordinates.
+                  g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
 
-			// 2-Sided polygon
-			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
-			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgi0123, 4, 0);
-			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4, 0);
-			
-			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
-			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgiRampStatic1, 4, 0);
-			}
+                  // Calculate texture coordinate for each vertex.
+                  for (int r=0; r<4; r++)
+                  {
+                     // Set texture coordinates so that there is a 1 to 1 correspondence
+                     // between texels and pixels.  This is the best case for screen door transparency.
+                     rgv3D[r].tu = rgvOut[r].x * inv_width; 
+                     rgv3D[r].tv = rgvOut[r].y * inv_height; 
+                  }
+               }
+               else
+               {
+                  rgv3D[0].tu = rgv3D[0].x * inv_width2;
+                  rgv3D[0].tv = rgv3D[0].y * inv_height2;
+                  rgv3D[2].tu = rgv3D[2].x * inv_width2;
+                  rgv3D[2].tv = rgv3D[2].y * inv_height2;
 
-		delete [] rgv;
-		delete [] rgheight;
-		delete [] rgratio;
+                  rgv3D[1].tu = rgv3D[0].tu;
+                  rgv3D[1].tv = rgv3D[0].tv;
+                  rgv3D[3].tu = rgv3D[2].tu;
+                  rgv3D[3].tv = rgv3D[2].tv;
+               }
+            }
+            else
+            {
+               rgv3D[0].tu = 0;
+               rgv3D[0].tv = rgratio[i] * maxtv;
+               rgv3D[2].tu = 0;
+               rgv3D[2].tv = rgratio[i+1] * maxtv;
 
-		ppin3d->SetTexture(NULL);
-		}
-	}
+               rgv3D[1].tu = rgv3D[0].tu;
+               rgv3D[1].tv = rgv3D[0].tv;
+               rgv3D[3].tu = rgv3D[2].tu;
+               rgv3D[3].tv = rgv3D[2].tv;
+            }
+         }
+
+         // 2-Sided polygon
+         SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
+         // Draw the wall of the ramp.
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgi0123, 4, 0);
+         //pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4, 0);
+
+         SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
+         // Draw the wall of the ramp.
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgiRampStatic1, 4, 0);
+      }
+
+      delete [] rgv;
+      delete [] rgheight;
+      delete [] rgratio;
+
+      ppin3d->SetTexture(NULL);
+   }
+}
 	
-void Ramp::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Ramp::RenderMovers(const RenderDevice* pd3dDevice)
 	{
 	}
 
@@ -2458,8 +2459,9 @@ STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
 
 // Same code as RenderStatic (with the exception of the acrylic test).
 // Copied here to order the rendering of transparent and opaque ramps.
-void Ramp::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
+void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	// Don't render if invisible.
 	if((!m_d.m_IsVisible) ||		
 	// Don't render non-Alphas. 

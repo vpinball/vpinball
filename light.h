@@ -6,6 +6,7 @@
 #define AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_
 
 #include "resource.h"       // main symbols
+#include "RenderDevice.h"
 
 class LightData
 	{
@@ -20,6 +21,10 @@ public:
 	//int m_blinkinterval;
 	float m_borderwidth;
 	COLORREF m_bordercolor;
+   Material normalMatr;
+   Material borderMatr;
+   float normalR,normalG,normalB;
+   float borderR,borderG,borderB;
 	char m_szSurface[MAXTOKEN];
 	char m_szOnImage[MAXTOKEN];
 	char m_szOffImage[MAXTOKEN];
@@ -118,10 +123,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 
 	virtual void ClearForOverwrite();
 
-	void RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice);
-	void RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice);
+	void RenderStaticCircle(const RenderDevice* pd3dDevice);
+	void RenderCustomStatic(const RenderDevice* pd3dDevice);
 
-	void RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice);
+	void RenderCustomMovers(const RenderDevice* pd3dDevice);
 
 	virtual void EditMenu(HMENU hmenu);
 	virtual void DoCommand(int icmd, int x, int y);

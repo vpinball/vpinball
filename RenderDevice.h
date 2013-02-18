@@ -1,0 +1,119 @@
+#include "stdafx.h"
+#include "Texture.h"
+
+#pragma once
+
+class RenderDevice : public IDirect3DDevice7
+{
+public:
+
+   static bool createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7, Texture *_backBuffer );
+
+   RenderDevice( void );
+
+   static RenderDevice* instance( void );
+   
+   virtual STDMETHODIMP QueryInterface( THIS_ REFIID riid, LPVOID * ppvObj );
+
+   virtual STDOVERRIDEMETHODIMP_(ULONG) AddRef( void );
+   virtual STDOVERRIDEMETHODIMP_(ULONG) Release( void );
+
+   virtual STDMETHODIMP GetCaps( THIS_ LPD3DDEVICEDESC7 );
+
+   virtual STDMETHODIMP EnumTextureFormats( THIS_ LPD3DENUMPIXELFORMATSCALLBACK,LPVOID );
+
+   virtual STDMETHODIMP BeginScene( THIS );
+
+   virtual STDMETHODIMP EndScene( THIS );
+
+   virtual STDMETHODIMP GetDirect3D( THIS_ LPDIRECT3D7* );
+
+   virtual STDMETHODIMP SetRenderTarget( THIS_ LPDIRECTDRAWSURFACE7,DWORD );
+
+   virtual STDMETHODIMP GetRenderTarget( THIS_ LPDIRECTDRAWSURFACE7 * );
+
+   virtual STDMETHODIMP Clear( THIS_ DWORD,LPD3DRECT,DWORD,D3DCOLOR,D3DVALUE,DWORD );
+
+   virtual STDMETHODIMP SetTransform( THIS_ D3DTRANSFORMSTATETYPE,LPD3DMATRIX );
+
+   virtual STDMETHODIMP GetTransform( THIS_ D3DTRANSFORMSTATETYPE,LPD3DMATRIX );
+
+   virtual STDMETHODIMP SetViewport( THIS_ LPD3DVIEWPORT7 );
+
+   virtual STDMETHODIMP MultiplyTransform( THIS_ D3DTRANSFORMSTATETYPE,LPD3DMATRIX );
+
+   virtual STDMETHODIMP GetViewport( THIS_ LPD3DVIEWPORT7 );
+
+   virtual STDMETHODIMP SetMaterial( THIS_ LPD3DMATERIAL7 );
+
+   virtual void setMaterial( THIS_ Material *_material );
+
+   virtual STDMETHODIMP GetMaterial( THIS_ LPD3DMATERIAL7 );
+
+   virtual void getMaterial( THIS_ Material *_material );
+
+   virtual STDMETHODIMP SetLight( THIS_ DWORD,LPD3DLIGHT7 );
+
+   virtual STDMETHODIMP GetLight( THIS_ DWORD,LPD3DLIGHT7 );
+
+   virtual STDMETHODIMP SetRenderState( THIS_ D3DRENDERSTATETYPE,DWORD );
+
+   virtual STDMETHODIMP GetRenderState( THIS_ D3DRENDERSTATETYPE,LPDWORD );
+
+   virtual STDMETHODIMP BeginStateBlock( THIS );
+
+   virtual STDMETHODIMP EndStateBlock( THIS_ LPDWORD );
+
+   virtual STDMETHODIMP PreLoad( THIS_ LPDIRECTDRAWSURFACE7 );
+
+   virtual STDMETHODIMP DrawPrimitive( THIS_ D3DPRIMITIVETYPE,DWORD,LPVOID,DWORD,DWORD );
+
+   virtual STDMETHODIMP DrawIndexedPrimitive( THIS_ D3DPRIMITIVETYPE,DWORD,LPVOID,DWORD,LPWORD,DWORD,DWORD );
+
+   virtual STDMETHODIMP SetClipStatus( THIS_ LPD3DCLIPSTATUS );
+
+   virtual STDMETHODIMP GetClipStatus( THIS_ LPD3DCLIPSTATUS );
+
+   virtual STDMETHODIMP DrawPrimitiveStrided( THIS_ D3DPRIMITIVETYPE,DWORD,LPD3DDRAWPRIMITIVESTRIDEDDATA,DWORD,DWORD );
+
+   virtual STDMETHODIMP DrawIndexedPrimitiveStrided( THIS_ D3DPRIMITIVETYPE,DWORD,LPD3DDRAWPRIMITIVESTRIDEDDATA,DWORD,LPWORD,DWORD,DWORD );
+
+   virtual STDMETHODIMP DrawPrimitiveVB( THIS_ D3DPRIMITIVETYPE,LPDIRECT3DVERTEXBUFFER7,DWORD,DWORD,DWORD );
+
+   virtual STDMETHODIMP DrawIndexedPrimitiveVB( THIS_ D3DPRIMITIVETYPE,LPDIRECT3DVERTEXBUFFER7,DWORD,DWORD,LPWORD,DWORD,DWORD );
+
+   virtual STDMETHODIMP ComputeSphereVisibility( THIS_ LPD3DVECTOR,LPD3DVALUE,DWORD,DWORD,LPDWORD );
+
+   virtual STDMETHODIMP GetTexture( THIS_ DWORD,LPDIRECTDRAWSURFACE7 * );
+
+   virtual STDMETHODIMP SetTexture( THIS_ DWORD,LPDIRECTDRAWSURFACE7 );
+
+   virtual STDMETHODIMP GetTextureStageState( THIS_ DWORD,D3DTEXTURESTAGESTATETYPE,LPDWORD );
+
+   virtual STDMETHODIMP SetTextureStageState( THIS_ DWORD,D3DTEXTURESTAGESTATETYPE,DWORD );
+
+   virtual STDMETHODIMP ValidateDevice( THIS_ LPDWORD );
+
+   virtual STDMETHODIMP ApplyStateBlock( THIS_ DWORD );
+
+   virtual STDMETHODIMP CaptureStateBlock( THIS_ DWORD );
+
+   virtual STDMETHODIMP DeleteStateBlock( THIS_ DWORD );
+
+   virtual STDMETHODIMP CreateStateBlock( THIS_ D3DSTATEBLOCKTYPE,LPDWORD );
+
+   virtual STDMETHODIMP Load( THIS_ LPDIRECTDRAWSURFACE7,LPPOINT,LPDIRECTDRAWSURFACE7,LPRECT,DWORD );
+
+   virtual STDMETHODIMP LightEnable( THIS_ DWORD,BOOL );
+
+   virtual STDMETHODIMP GetLightEnable( THIS_ DWORD,BOOL* );
+
+   virtual STDMETHODIMP SetClipPlane( THIS_ DWORD,D3DVALUE* );
+
+   virtual STDMETHODIMP GetClipPlane( THIS_ DWORD,D3DVALUE* );
+
+   virtual STDMETHODIMP GetInfo( THIS_ DWORD,LPVOID,DWORD );
+
+private:
+   static RenderDevice *theDevice;
+};

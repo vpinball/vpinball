@@ -419,26 +419,27 @@ static const WORD rgtriggerface[][5] = {
 	6,7,9,8,0xFFFF
 	};
 
-static const D3DMATERIAL7 triggermtrl = {0.5f,0.5f,0.5f,0.0f, 0.5f,0.5f,0.5f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+static const Material triggermtrl = {0.5f,0.5f,0.5f,0.0f, 0.5f,0.5f,0.5f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
-void Trigger::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Trigger::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
-void Trigger::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
 	{
 	if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
 		{
 		return;
 		}
 
+   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
 	ppin3d->EnableLightMap(fTrue, height);
 
-	pd3dDevice->SetMaterial((LPD3DMATERIAL7)&triggermtrl);
+	pd3dDevice->setMaterial((Material*)&triggermtrl);
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
@@ -495,7 +496,7 @@ void Trigger::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	ppin3d->EnableLightMap(fFalse, -1);
 	}
 	
-void Trigger::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Trigger::RenderMovers(const RenderDevice* pd3dDevice)
 	{
 	}
 

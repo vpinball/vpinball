@@ -58,7 +58,7 @@ Light::~Light()
 	}
 
 HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
-	{
+{
 	m_ptable = ptable;
 
 	m_pobjframe[0] = NULL;
@@ -75,8 +75,35 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	m_fLockedByLS = false;			//>>> added by chris
 	m_realState	= m_d.m_state;		//>>> added by chris
 
+   m_d.normalR = (m_d.m_color & 255) * (float)(1.0/255.0);
+   m_d.normalG = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+   m_d.normalB = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+
+   m_d.normalMatr.specular.r = m_d.normalMatr.specular.g =	m_d.normalMatr.specular.b = m_d.normalMatr.specular.a =
+   m_d.normalMatr.emissive.a =
+   m_d.normalMatr.power = 0;
+   m_d.normalMatr.diffuse.a = m_d.normalMatr.ambient.a = 1.0f;
+   m_d.normalMatr.diffuse.r = m_d.normalMatr.ambient.r = 0;//r;
+   m_d.normalMatr.diffuse.g = m_d.normalMatr.ambient.g = 0;//g;
+   m_d.normalMatr.diffuse.b = m_d.normalMatr.ambient.b = 0;//b;
+   m_d.normalMatr.emissive.r = m_d.normalR;
+   m_d.normalMatr.emissive.g = m_d.normalG;
+   m_d.normalMatr.emissive.b = m_d.normalB;
+   
+   m_d.borderR = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
+   m_d.borderG = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
+   m_d.borderB = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
+
+   m_d.borderMatr.specular.r = m_d.borderMatr.specular.g =	m_d.borderMatr.specular.b = m_d.borderMatr.specular.a =
+   m_d.borderMatr.emissive.r = m_d.borderMatr.emissive.g =	m_d.borderMatr.emissive.b = m_d.borderMatr.emissive.a =
+   m_d.borderMatr.power = 0;
+   m_d.borderMatr.diffuse.r = m_d.borderMatr.ambient.r = m_d.borderR;
+   m_d.borderMatr.diffuse.g = m_d.borderMatr.ambient.g = m_d.borderG;
+   m_d.borderMatr.diffuse.b = m_d.borderMatr.ambient.b = m_d.borderB;
+   m_d.borderMatr.diffuse.a = m_d.borderMatr.ambient.a = 1.0f;
+
 	return InitVBA(fTrue, 0, NULL);
-	}
+}
 
 void Light::SetDefaults(bool fromMouseClick)
 	{
@@ -193,23 +220,23 @@ void Light::PreRender(Sur * const psur)
 		case ShapeCircle:
 		default:
 			if (m_d.m_borderwidth > 0)
-				{
+			{
 				psur->SetBorderColor(m_d.m_bordercolor, false, 0); // For off-by-one GDI outline error
 				psur->SetFillColor(m_d.m_bordercolor);
 				psur->SetObject(this);
 				psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_borderwidth);
-				}
+			}
 			psur->SetBorderColor(m_d.m_color, false, 0); // For off-by-one GDI outline error
 			psur->SetFillColor(m_d.m_color);
 			psur->SetObject(m_d.m_borderwidth > 0 ? NULL :this);
 			
 			// Check if we should display the image in the editor.
 			if ((m_d.m_fDisplayImage) && (m_d.m_szOnImage[0]) && (m_d.m_szOffImage[0])) 
-				{
+			{
 				PinImage *ppi;
 				// Get the image.
 				switch (m_d.m_state)
-					{
+				{
 					case LightStateOff:	
 						ppi = m_ptable->GetImage(m_d.m_szOffImage);
 						break;
@@ -219,7 +246,7 @@ void Light::PreRender(Sur * const psur)
 					default:
 						ppi = NULL;
 						break;
-					}
+				}
 
 				// Make sure we have an image.
 				if (ppi != NULL)
@@ -254,10 +281,10 @@ void Light::PreRender(Sur * const psur)
 			Vertex2D * const rgv = new Vertex2D[cvertex];
 
 			for (int i=0;i<cvertex;i++)
-				{
+			{
 				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
 				delete vvertex.ElementAt(i);
-				}
+			}
 
 			// Check if we should display the image in the editor.
 			if ((m_d.m_fDisplayImage) && (m_d.m_szOnImage[0]) && (m_d.m_szOffImage[0])) 
@@ -489,231 +516,222 @@ void Light::ClearForOverwrite()
 //static const WORD rgiLightStatic0[3] = {0,1,2};
 static const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 		
-void Light::RenderCustomStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+void Light::RenderCustomStatic(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	Vector<RenderVertex> vvertex;
-	GetRgVertex(&vvertex);
+   Vector<RenderVertex> vvertex;
+   GetRgVertex(&vvertex);
 
-	const int cvertex = vvertex.Size();
-	RenderVertex *const rgv = new RenderVertex[cvertex];
+   const int cvertex = vvertex.Size();
+   RenderVertex *const rgv = new RenderVertex[cvertex];
 
-	for (int i=0; i<cvertex; ++i)
-		{
-		const int p1 = (i == 0) ? (cvertex-1) : (i-1);
-		const int p2 = (i < cvertex-1) ? (i+1) : 0;
+   for (int i=0; i<cvertex; ++i)
+   {
+      const int p1 = (i == 0) ? (cvertex-1) : (i-1);
+      const int p2 = (i < cvertex-1) ? (i+1) : 0;
 
-		const Vertex2D v1 = *vvertex.ElementAt(p1);
-		const Vertex2D v2 = *vvertex.ElementAt(p2);
-		const Vertex2D vmiddle = *vvertex.ElementAt(i);
+      const Vertex2D v1 = *vvertex.ElementAt(p1);
+      const Vertex2D v2 = *vvertex.ElementAt(p2);
+      const Vertex2D vmiddle = *vvertex.ElementAt(i);
 
-		Vertex2D v1normal, v2normal;
-		// Notice that these values equal the ones in the line
-		// equation and could probably be substituted by them.
-		v1normal.x = vmiddle.y - v1.y;
-		v1normal.y = v1.x - vmiddle.x;
-		v2normal.x = v2.y - vmiddle.y;
-		v2normal.y = vmiddle.x - v2.x;
+      Vertex2D v1normal, v2normal;
+      // Notice that these values equal the ones in the line
+      // equation and could probably be substituted by them.
+      v1normal.x = vmiddle.y - v1.y;
+      v1normal.y = v1.x - vmiddle.x;
+      v2normal.x = v2.y - vmiddle.y;
+      v2normal.y = vmiddle.x - v2.x;
 
-		v1normal.Normalize();
-		v2normal.Normalize();
+      v1normal.Normalize();
+      v2normal.Normalize();
 
-		// Find intersection of the two edges meeting this points, but
-		// shift those lines outwards along their normals
+      // Find intersection of the two edges meeting this points, but
+      // shift those lines outwards along their normals
 
-		// First line
-		const float A = v1.y - vmiddle.y;
-		const float B = vmiddle.x - v1.x;
+      // First line
+      const float A = v1.y - vmiddle.y;
+      const float B = vmiddle.x - v1.x;
 
-		// Shift line along the normal
-		const float C = -(A*(v1.x-v1normal.x*m_d.m_borderwidth) + B*(v1.y-v1normal.y*m_d.m_borderwidth));
+      // Shift line along the normal
+      const float C = -(A*(v1.x-v1normal.x*m_d.m_borderwidth) + B*(v1.y-v1normal.y*m_d.m_borderwidth));
 
-		// Second line
-		const float D = v2.y - vmiddle.y;
-		const float E = vmiddle.x - v2.x;
+      // Second line
+      const float D = v2.y - vmiddle.y;
+      const float E = vmiddle.x - v2.x;
 
-		// Shift line along the normal
-		const float F = -(D*(v2.x-v2normal.x*m_d.m_borderwidth) + E*(v2.y-v2normal.y*m_d.m_borderwidth));
+      // Shift line along the normal
+      const float F = -(D*(v2.x-v2normal.x*m_d.m_borderwidth) + E*(v2.y-v2normal.y*m_d.m_borderwidth));
 
-		const float inv_det = 1.0f/((A*E) - (B*D));
+      const float inv_det = 1.0f/((A*E) - (B*D));
 
-		rgv[i].x = (B*F-E*C)*inv_det;
-		rgv[i].y = (C*D-A*F)*inv_det;
-		}
+      rgv[i].x = (B*F-E*C)*inv_det;
+      rgv[i].y = (C*D-A*F)*inv_det;
+   }
 
-	for (int i=0;i<cvertex;i++)
-		{
-		delete vvertex.ElementAt(i);
-		}
+   for (int i=0;i<cvertex;i++)
+   {
+      delete vvertex.ElementAt(i);
+   }
+   Vector<void> vpoly;
+   for (int i=0;i<cvertex;i++)
+   {
+      vpoly.AddElement((void *)i);
+   }
 
-	const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
-	const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
-	const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
+   Vector<Triangle> vtri;
+   PolygonToTriangles(rgv, &vpoly, &vtri);
 
-	Vector<void> vpoly;
-	for (int i=0;i<cvertex;i++)
-		{
-		vpoly.AddElement((void *)i);
-		}
+   pd3dDevice->setMaterial(&m_d.borderMatr);
 
-	Vector<Triangle> vtri;
-	PolygonToTriangles(rgv, &vpoly, &vtri);
+   Vertex3D rgv3D[3];
+   if (!m_fBackglass)
+   {
+      rgv3D[0].nx = 0;
+      rgv3D[0].ny = 0;
+      rgv3D[0].nz = -1.0f;
+      rgv3D[1].nx = 0;
+      rgv3D[1].ny = 0;
+      rgv3D[1].nz = -1.0f;
+      rgv3D[2].nx = 0;
+      rgv3D[2].ny = 0;
+      rgv3D[2].nz = -1.0f;
+   }
+   else
+   {
+      SetDiffuse(rgv3D, 3, RGB_TO_BGR(m_d.m_bordercolor));
+   }
 
-	D3DMATERIAL7 mtrl;
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;	
-	mtrl.diffuse.r = mtrl.ambient.r = r;///4;
-	mtrl.diffuse.g = mtrl.ambient.g = g;///4;
-	mtrl.diffuse.b = mtrl.ambient.b = b;///4;
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-	pd3dDevice->SetMaterial(&mtrl);
+   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-	Vertex3D rgv3D[3];
-	if (!m_fBackglass)
-		{
-		rgv3D[0].nx = 0;
-		rgv3D[0].ny = 0;
-		rgv3D[0].nz = -1.0f;
-		rgv3D[1].nx = 0;
-		rgv3D[1].ny = 0;
-		rgv3D[1].nz = -1.0f;
-		rgv3D[2].nx = 0;
-		rgv3D[2].ny = 0;
-		rgv3D[2].nz = -1.0f;
-		}
-	else
-		{
-		SetDiffuse(rgv3D, 3, RGB_TO_BGR(m_d.m_bordercolor));
-		}
+   for (int t=0;t<vtri.Size();t++)
+   {
+      const Triangle * const ptri = vtri.ElementAt(t);
 
-	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+      const RenderVertex * const pv0 = &rgv[ptri->a];
+      const RenderVertex * const pv1 = &rgv[ptri->c];
+      const RenderVertex * const pv2 = &rgv[ptri->b];
 
-	for (int t=0;t<vtri.Size();t++)
-		{
-		const Triangle * const ptri = vtri.ElementAt(t);
+      rgv3D[0].Set(pv0->x,pv0->y,height + 0.05f);
+      rgv3D[1].Set(pv1->x,pv1->y,height + 0.05f);
+      rgv3D[2].Set(pv2->x,pv2->y,height + 0.05f);
 
-		const RenderVertex * const pv0 = &rgv[ptri->a];
-		const RenderVertex * const pv1 = &rgv[ptri->c];
-		const RenderVertex * const pv2 = &rgv[ptri->b];
+      if (!m_fBackglass)
+      {
+         Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+         for (int l=0;l<3;l++)
+            ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 
-		rgv3D[0].Set(pv0->x,pv0->y,height + 0.05f);
-		rgv3D[1].Set(pv1->x,pv1->y,height + 0.05f);
-		rgv3D[2].Set(pv2->x,pv2->y,height + 0.05f);
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
+            rgv3D, 3,
+            (LPWORD)rgi0123, 3, 0);
+         //pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
+         //										  rgv3D, 3, 0);
+      }
+      else
+      {
+         SetHUDVertices(rgv3D, 3);
 
-		if (!m_fBackglass)
-			{
-			Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-			for (int l=0;l<3;l++)
-				ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
+            rgv3D, 3,
+            (LPWORD)rgi0123, 3, 0);
+         //pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
+         //										  rgv3D, 3, 0);
+      }
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
-													  rgv3D, 3,
-													  (LPWORD)rgi0123, 3, 0);
-			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
-			//										  rgv3D, 3, 0);
-			}
-		else
-			{
-			SetHUDVertices(rgv3D, 3);
+      delete vtri.ElementAt(t);
+   }
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
-													  rgv3D, 3,
-													  (LPWORD)rgi0123, 3, 0);
-			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
-			//										  rgv3D, 3, 0);
-			}
+   delete [] rgv;
+}
 
-		delete vtri.ElementAt(t);
-		}
+void Light::RenderStaticCircle(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice *pd3dDevice =(RenderDevice*)_pd3dDevice;
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	delete [] rgv;
-	}
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   /*
+   const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
+   const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
+   const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
 
-void Light::RenderStaticCircle(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   D3DMATERIAL7 mtrl;
+   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+   mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+   mtrl.power = 0;
+   mtrl.diffuse.r = mtrl.ambient.r = r;
+   mtrl.diffuse.g = mtrl.ambient.g = g;
+   mtrl.diffuse.b = mtrl.ambient.b = b;
+   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+   */
+   pd3dDevice->setMaterial(&m_d.borderMatr);
 
-	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-	const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
-	const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
-	const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
+   Vertex3D rgv3D[32];
+   for (int l=0;l<32;l++)
+   {
+      const float angle = (float)(M_PI*2.0/32.0)*(float)l;
+      rgv3D[l].x = m_d.m_vCenter.x + sinf(angle)*(m_d.m_radius + m_d.m_borderwidth);
+      rgv3D[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius + m_d.m_borderwidth);
+      rgv3D[l].z = height + 0.05f;
 
-	D3DMATERIAL7 mtrl;
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
-	mtrl.diffuse.r = mtrl.ambient.r = r;
-	mtrl.diffuse.g = mtrl.ambient.g = g;
-	mtrl.diffuse.b = mtrl.ambient.b = b;
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-	pd3dDevice->SetMaterial(&mtrl);
+      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+   }
 
-	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+   if (!m_fBackglass)
+   {
+      SetNormal(rgv3D, rgiLightStatic1, 32, NULL, NULL, 0);
+      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+         rgv3D, 32,
+         (LPWORD)rgiLightStatic1, 32, 0);
+      //pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+      //										  rgv3D, 32, 0);
+   }
+   else
+   {
+      SetHUDVertices(rgv3D, 32);
+      SetDiffuse(rgv3D, 32, RGB_TO_BGR(m_d.m_bordercolor));
 
-	Vertex3D rgv3D[32];
-	for (int l=0;l<32;l++)
-		{
-		const float angle = (float)(M_PI*2.0/32.0)*(float)l;
-		rgv3D[l].x = m_d.m_vCenter.x + sinf(angle)*(m_d.m_radius + m_d.m_borderwidth);
-		rgv3D[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius + m_d.m_borderwidth);
-		rgv3D[l].z = height + 0.05f;
+      if( GetPTable()->GetDecalsEnabled() )
+      {
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+            rgv3D, 32,
+            (LPWORD)rgiLightStatic1, 32, 0);
+         //pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
+         //										  rgv3D, 32, 0);
+      }
+   }
+}
 
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
-		}
-	
-	if (!m_fBackglass)
-		{
-		SetNormal(rgv3D, rgiLightStatic1, 32, NULL, NULL, 0);
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 32,
-												  (LPWORD)rgiLightStatic1, 32, 0);
-		//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-		//										  rgv3D, 32, 0);
-	}
-	else
-		{
-		SetHUDVertices(rgv3D, 32);
-		SetDiffuse(rgv3D, 32, RGB_TO_BGR(m_d.m_bordercolor));
+void Light::PostRenderStatic(const RenderDevice* pd3dDevice)
+{
+}
 
-		if( GetPTable()->GetDecalsEnabled() )
-			{
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
-													  rgv3D, 32,
-													  (LPWORD)rgiLightStatic1, 32, 0);
-			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
-			//										  rgv3D, 32, 0);
-			}
-		}
-	}
+void Light::RenderStatic(const RenderDevice* pd3dDevice)
+{
+   if (m_d.m_borderwidth > 0)
+   {
+      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-void Light::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	}
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-void Light::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	if (m_d.m_borderwidth > 0)
-		{
-		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+      ppin3d->EnableLightMap(!m_fBackglass, height);
+      if (m_d.m_shape == ShapeCustom)
+         RenderCustomStatic(pd3dDevice);
+      else
+         RenderStaticCircle(pd3dDevice);
+      ppin3d->EnableLightMap(fFalse, -1);
+   }
+}
 
-		const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-		ppin3d->EnableLightMap(!m_fBackglass, height);
-		if (m_d.m_shape == ShapeCustom)
-			RenderCustomStatic(pd3dDevice);
-		else
-			RenderStaticCircle(pd3dDevice);
-		ppin3d->EnableLightMap(fFalse, -1);
-		}
-	}
-
-void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
+void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -752,7 +770,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 	Vector<Triangle> vtri;
 	PolygonToTriangles(rgv, &vpoly, &vtri);
-
+/*
 	D3DMATERIAL7 mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.a =
@@ -762,7 +780,7 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
 	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
 	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
+*/
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
@@ -777,54 +795,54 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 					ppin3d->SetTexture(pin->m_pdsBuffer);
 					ppin3d->EnableLightMap(fFalse, -1);
-					mtrl.diffuse.r = mtrl.ambient.r = 
-					mtrl.diffuse.g = mtrl.ambient.g = 
-					mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-					mtrl.emissive.r = 
-					mtrl.emissive.g = 
-					mtrl.emissive.b = 0.0f;
+					m_d.normalMatr.diffuse.r = m_d.normalMatr.ambient.r = 
+					m_d.normalMatr.diffuse.g = m_d.normalMatr.ambient.g = 
+					m_d.normalMatr.diffuse.b = m_d.normalMatr.ambient.b = 1.0f;
+					m_d.normalMatr.emissive.r = 
+					m_d.normalMatr.emissive.g = 
+					m_d.normalMatr.emissive.b = 0.0f;
 					}
 				else
 					{
 					// Set the texture to a default.
 					ppin3d->SetTexture(ppin3d->m_pddsLightTexture);					
 					ppin3d->EnableLightMap(!m_fBackglass, height);
-					mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0);
-					mtrl.diffuse.g = mtrl.ambient.g = g*(float)(1.0/3.0);
-					mtrl.diffuse.b = mtrl.ambient.b = b*(float)(1.0/3.0);
-					mtrl.emissive.r = 
-					mtrl.emissive.g = 
-					mtrl.emissive.b = 0.0f;
+					m_d.normalMatr.diffuse.r = m_d.normalMatr.ambient.r = m_d.normalR*(float)(1.0/3.0);
+					m_d.normalMatr.diffuse.g = m_d.normalMatr.ambient.g = m_d.normalG*(float)(1.0/3.0);
+					m_d.normalMatr.diffuse.b = m_d.normalMatr.ambient.b = m_d.normalB*(float)(1.0/3.0);
+					m_d.normalMatr.emissive.r = 
+					m_d.normalMatr.emissive.g = 
+					m_d.normalMatr.emissive.b = 0.0f;
 					}
 			} else { //LightStateOn
 				// Check if the light has an "on" texture.
 				if ((m_d.m_szOnImage[0] != 0) && (pin = m_ptable->GetImage(m_d.m_szOnImage)) != NULL)
-					{
+				{
 					// Set the texture to the one defined in the editor.
 					ppin3d->SetTexture(pin->m_pdsBuffer);
 					ppin3d->EnableLightMap(fFalse, -1);
-					mtrl.diffuse.r = mtrl.ambient.r = 
-					mtrl.diffuse.g = mtrl.ambient.g = 
-					mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-					mtrl.emissive.r = 
-					mtrl.emissive.g = 
-					mtrl.emissive.b = 0.0f;
-					}
+					m_d.normalMatr.diffuse.r = m_d.normalMatr.ambient.r = 
+					m_d.normalMatr.diffuse.g = m_d.normalMatr.ambient.g = 
+					m_d.normalMatr.diffuse.b = m_d.normalMatr.ambient.b = 1.0f;
+					m_d.normalMatr.emissive.r = 
+					m_d.normalMatr.emissive.g = 
+					m_d.normalMatr.emissive.b = 0.0f;
+				}
 				else
-					{
+				{
 					// Set the texture to a default.
 					ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
 					ppin3d->EnableLightMap(fFalse, -1);
-					mtrl.diffuse.r = mtrl.ambient.r = 0;//r;
-					mtrl.diffuse.g = mtrl.ambient.g = 0;//g;
-					mtrl.diffuse.b = mtrl.ambient.b = 0;//b;
-					mtrl.emissive.r = r;
-					mtrl.emissive.g = g;
-					mtrl.emissive.b = b;
-					}
+					m_d.normalMatr.diffuse.r = m_d.normalMatr.ambient.r = 0;//r;
+					m_d.normalMatr.diffuse.g = m_d.normalMatr.ambient.g = 0;//g;
+					m_d.normalMatr.diffuse.b = m_d.normalMatr.ambient.b = 0;//b;
+					m_d.normalMatr.emissive.r = m_d.normalR;
+					m_d.normalMatr.emissive.g = m_d.normalG;
+					m_d.normalMatr.emissive.b = m_d.normalB;
+				}
 			}
 
-		pd3dDevice->SetMaterial(&mtrl);
+		pd3dDevice->setMaterial(&m_d.normalMatr);
 
 		m_pobjframe[i] = new ObjFrame();
 
@@ -844,9 +862,9 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[2].nz = -1.0f;
 			}
 		else
-			{
-			SetDiffuseFromMaterial(rgv3D, 3, &mtrl);
-			}
+		{
+			SetDiffuseFromMaterial(rgv3D, 3, &m_d.normalMatr);
+		}
 
 		for (int t=0;t<vtri.Size();t++)
 			{
@@ -861,24 +879,24 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			rgv3D[2].Set(pv2->x,pv2->y,height + 0.1f);
 
 			for (int l=0;l<3;l++)
-				{
+			{
 				if (!m_fBackglass)
-					{
+				{
 					ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
-					}
+				}
 
 				// Check if we are using a custom texture.
 				if (pin != NULL)
-					{
+				{
 					float maxtu, maxtv;
 					m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
 					// Set texture coordinates for custom texture (world mode).
 					rgv3D[l].tu = rgv3D[l].x * inv_tablewidth * maxtu;
 					rgv3D[l].tv = rgv3D[l].y * inv_tableheight * maxtv;
-					}
+				}
 				else
-					{
+				{
 					// Set texture coordinates for default light.
 					const float dx = rgv3D[l].x - m_d.m_vCenter.x;
 					const float dy = rgv3D[l].y - m_d.m_vCenter.y;
@@ -886,30 +904,30 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					const float dist = sqrtf(dx*dx + dy*dy);
 					rgv3D[l].tu = 0.5f + sinf(ang) * (dist*inv_maxdist);
 					rgv3D[l].tv = 0.5f + cosf(ang) * (dist*inv_maxdist);
-					}
 				}
+			}
 
 			if (!m_fBackglass)
-				{
+			{
 				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
 													  rgv3D, 3,
 													  (LPWORD)rgi0123, 3, 0);
 				//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
 				//									  rgv3D, 3);
-				}
+			}
 			else
 				{
 				SetHUDVertices(rgv3D, 3);
 
 				if( GetPTable()->GetDecalsEnabled() )
-					{
+				{
 					pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
 														  rgv3D, 3,
 														  (LPWORD)rgi0123, 3, 0);
 					//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX,
 					//									  rgv3D, 3);
-					}
 				}
+			}
 
 			ppin3d->ExpandExtents(&m_pobjframe[i]->rc, rgv3D, NULL, NULL, 3, m_fBackglass);
 			}
@@ -932,9 +950,9 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 		m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 
 		if (m_pobjframe[i]->pdds == NULL)
-			{
+		{
 			continue;
-			}
+		}
 			
 		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
 
@@ -947,18 +965,19 @@ void Light::RenderCustomMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 		}
 
 	for (int i=0;i<vtri.Size();i++)
-		{
+	{
 		delete vtri.ElementAt(i);
-		}
+	}
 
 	delete [] rgv;
 
 	ppin3d->SetTexture(NULL);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-	}
+}
 
-void Light::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
+void Light::RenderMovers(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	if (m_d.m_shape == ShapeCustom)
 		{
 		RenderCustomMovers(pd3dDevice);
@@ -1006,43 +1025,35 @@ void Light::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 		{
 		SetHUDVertices(rgv3D, 32);
 		}
-
-	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
-	D3DMATERIAL7 mtrl;
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.a =
-	mtrl.power = 0;
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
 	for (int i=0;i<2;i++)
-		{
-			if(i == 0) {
+	{
+			if(i == 0) 
+         {
 				ppin3d->EnableLightMap(!m_fBackglass, height);
-				mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0);
-				mtrl.diffuse.g = mtrl.ambient.g = g*(float)(1.0/3.0);
-				mtrl.diffuse.b = mtrl.ambient.b = b*(float)(1.0/3.0);
-				mtrl.emissive.r =
-				mtrl.emissive.g =
-				mtrl.emissive.b = 0;
-			} else {
+            m_d.normalMatr.diffuse.r = m_d.normalMatr.ambient.r = m_d.normalR*(float)(1.0/3.0);
+            m_d.normalMatr.diffuse.g = m_d.normalMatr.ambient.g = m_d.normalG*(float)(1.0/3.0);
+            m_d.normalMatr.diffuse.b = m_d.normalMatr.ambient.b = m_d.normalB*(float)(1.0/3.0);
+            m_d.normalMatr.emissive.r = 
+            m_d.normalMatr.emissive.g = 
+            m_d.normalMatr.emissive.b = 0.0f;
+			}
+         else
+         {
 				ppin3d->EnableLightMap(fFalse, -1);
-				mtrl.diffuse.r = mtrl.ambient.r = 0;//r;
-				mtrl.diffuse.g = mtrl.ambient.g = 0;//g;
-				mtrl.diffuse.b = mtrl.ambient.b = 0;//b;
-				mtrl.emissive.r = r;
-				mtrl.emissive.g = g;
-				mtrl.emissive.b = b;
+            m_d.normalMatr.diffuse.r = m_d.normalMatr.ambient.r = 0;//r;
+            m_d.normalMatr.diffuse.g = m_d.normalMatr.ambient.g = 0;//g;
+            m_d.normalMatr.diffuse.b = m_d.normalMatr.ambient.b = 0;//b;
+            m_d.normalMatr.emissive.r = m_d.normalR;
+            m_d.normalMatr.emissive.g = m_d.normalG;
+            m_d.normalMatr.emissive.b = m_d.normalB;
 			}
 
 		if (m_fBackglass)
-			{
-			SetDiffuseFromMaterial(rgv3D, 32, &mtrl);
-			}
+		{
+			SetDiffuseFromMaterial(rgv3D, 32, &m_d.normalMatr);
+		}
 
-		pd3dDevice->SetMaterial(&mtrl);
+		pd3dDevice->setMaterial(&m_d.normalMatr);
 
 		m_pobjframe[i] = new ObjFrame();
 
@@ -1541,6 +1552,9 @@ STDMETHODIMP Light::put_Color(OLE_COLOR newVal)
 	STARTUNDO
 
 	m_d.m_color = newVal;
+   m_d.normalR = (m_d.m_color & 255) * (float)(1.0/255.0);
+   m_d.normalG = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+   m_d.normalB = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
 	STOPUNDO
 
@@ -1714,6 +1728,9 @@ STDMETHODIMP Light::put_BorderColor(OLE_COLOR newVal)
 	STARTUNDO
 
 	m_d.m_bordercolor = newVal;
+   m_d.borderR = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
+   m_d.borderG = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
+   m_d.borderB = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
 
 	STOPUNDO
 

@@ -141,15 +141,15 @@ void Timer::EndPlay()
 	IEditable::EndPlay();
 	}
 
-void Timer::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Timer::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
-void Timer::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Timer::RenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 	
-void Timer::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Timer::RenderMovers(const RenderDevice* pd3dDevice)
 	{
 	}
 

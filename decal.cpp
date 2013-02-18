@@ -433,14 +433,15 @@ void Decal::EndPlay()
 		}
 	}
 
-void Decal::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Decal::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
-static const D3DMATERIAL7 decalmtrl = {1.f,1.f,1.f,.5f, 1.f,1.f,1.f,.5f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+static const Material decalmtrl = {1.f,1.f,1.f,.5f, 1.f,1.f,1.f,.5f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
-void Decal::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
+void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -576,7 +577,7 @@ void Decal::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 	}
 	
-void Decal::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Decal::RenderMovers(const RenderDevice* pd3dDevice)
 	{
 	}
 

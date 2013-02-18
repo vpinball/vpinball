@@ -187,9 +187,9 @@ extern const WCHAR rgwzTypeName[][17];
 	virtual IEditable *GetIEditable() {return (IEditable*)this;} \
 	virtual ISelect *GetISelect() {return (ISelect*)this;} \
 	virtual Hitable *GetIHitable() {return (Hitable *)this;} \
-	virtual void RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice); \
-	virtual void PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice); \
-	virtual void RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice); \
+	virtual void RenderStatic(const RenderDevice* pd3dDevice); \
+	virtual void PostRenderStatic(const RenderDevice* pd3dDevice); \
+	virtual void RenderMovers(const RenderDevice* pd3dDevice); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}\
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \

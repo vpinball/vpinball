@@ -317,7 +317,7 @@ void Spinner::EndPlay()
 		}
 	}
 
-void Spinner::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Spinner::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
@@ -332,11 +332,13 @@ static const WORD rgiSpinner5[4] = {4,5,7,6};
 static const WORD rgiSpinner6[4] = {0,4,6,2};
 static const WORD rgiSpinner7[4] = {1,3,7,5};
 
-static const D3DMATERIAL7 spinnermtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+static const Material spinnermtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
-void Spinner::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Spinner::RenderStatic(const RenderDevice* _pd3dDevice)
 	{
 	if(!m_d.m_fSupports) return;
+
+   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -403,7 +405,7 @@ void Spinner::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 		}
 
-	pd3dDevice->SetMaterial((LPD3DMATERIAL7)&spinnermtrl);
+	pd3dDevice->setMaterial((Material*)&spinnermtrl);
 
 	SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner0, 8);
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
@@ -416,9 +418,11 @@ void Spinner::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 													  (LPWORD)rgiSpinner1, 8, 0);
 	}
 	
-void Spinner::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   RenderDevice *pd3dDevice = (RenderDevice*)_pd3dDevice;
+
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -676,7 +680,7 @@ void Spinner::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 
 		// Create offscreen surfaces for color and depth buffers.
-		LPDIRECTDRAWSURFACE7 pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		// Copy from the back color and depth buffers to the new surfaces.
