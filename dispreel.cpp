@@ -530,11 +530,11 @@ void DispReel::EndPlay()
 	IEditable::EndPlay();
 }
 
-void DispReel::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void DispReel::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
 }
 
-void DispReel::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void DispReel::RenderStatic(const RenderDevice* pd3dDevice)
 {
 }
 
@@ -559,8 +559,9 @@ void DispReel::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 //static const WORD rgiDispReel[4] = {0,1,2,3};
 
-void DispReel::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
+void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 {
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
     // set any defaults for the game rendering
     m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
     m_fforceupdate = false;
@@ -738,8 +739,8 @@ void DispReel::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			SetHUDVertices(rgv3D, 4);
 			
 			{
-			D3DMATERIAL7 mtrl;
-			pd3dDevice->GetMaterial(&mtrl);
+			Material mtrl;
+			pd3dDevice->getMaterial(&mtrl);
 			SetDiffuseFromMaterial(rgv3D, 4, &mtrl);
 			}
 			

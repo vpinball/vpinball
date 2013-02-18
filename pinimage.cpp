@@ -427,7 +427,7 @@ HRESULT PinDirectDraw::InitDD()
 	return S_OK;
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, const int height)
+Texture* PinDirectDraw::CreateTextureOffscreen(const int width, const int height)
 	{
 	DDSURFACEDESC2 ddsd;
     ZeroMemory( &ddsd, sizeof(ddsd) );
@@ -484,11 +484,11 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateTextureOffscreen(const int width, cons
 	ddsd.ddpfPixelFormat.dwBBitMask        = 0x000000ff;
 	ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = 0xff000000;
 
-	LPDIRECTDRAWSURFACE7 pdds;
+	Texture* pdds;
 	HRESULT hr;
 	bool retryflag = (m_fHardwareAccel != 0);
 retryimage:
-    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
+    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&pdds, NULL ) ) )
 		{
 		if(retryflag)
 			{
@@ -509,7 +509,7 @@ retryimage:
 	return pdds;
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwidth, int * const pheight, int& originalWidth, int& originalHeight)
+Texture* PinDirectDraw::CreateFromFile(char *szfile, int * const pwidth, int * const pheight, int& originalWidth, int& originalHeight)
 	{
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 
@@ -556,7 +556,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 		FreeImage_Unload(dib);
 		//HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, szfile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 
-		LPDIRECTDRAWSURFACE7 mySurface = g_pvp->m_pdd.CreateFromHBitmap(hbm, pwidth, pheight);
+		Texture* mySurface = g_pvp->m_pdd.CreateFromHBitmap(hbm, pwidth, pheight);
 		//LPDIRECTDRAWSURFACE7 mySurface = CreateFromHBitmap(hbm, pwidth, pheight);
 
 		if (bitsPerPixel == 24)
@@ -568,7 +568,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromFile(char *szfile, int * const pwi
 		return NULL;
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(const int id, int * const pwidth, int * const pheight)
+Texture* PinDirectDraw::CreateFromResource(const int id, int * const pwidth, int * const pheight)
 	{
 	HBITMAP hbm = (HBITMAP)LoadImage(g_hinst, MAKEINTRESOURCE(id), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 
@@ -580,7 +580,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromResource(const int id, int * const
 	return CreateFromHBitmap(hbm, pwidth, pheight);
 	}
 
-LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight)
+Texture* PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight)
 	{
 	BITMAP bm;
 	GetObject(hbm, sizeof(bm), &bm);
@@ -600,7 +600,7 @@ LPDIRECTDRAWSURFACE7 PinDirectDraw::CreateFromHBitmap(HBITMAP hbm, int * const p
 		return NULL; // MAX_TEXTURE_SIZE is the limit for directx7 textures
 		}
 
-	LPDIRECTDRAWSURFACE7 pdds = CreateTextureOffscreen(bm.bmWidth, bm.bmHeight);
+	Texture* pdds = CreateTextureOffscreen(bm.bmWidth, bm.bmHeight);
 
 	HDC hdc;
 	pdds->GetDC(&hdc);
@@ -730,7 +730,7 @@ METHODDEF(void) term_source (j_decompress_ptr cinfo)
   /* no work necessary here */
 }
 
-void PinDirectDraw::SetOpaque(LPDIRECTDRAWSURFACE7 pdds, const int width, const int height)
+void PinDirectDraw::SetOpaque(Texture* pdds, const int width, const int height)
 	{
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);	
@@ -755,7 +755,7 @@ void PinDirectDraw::SetOpaque(LPDIRECTDRAWSURFACE7 pdds, const int width, const 
 	pdds->Unlock(NULL);
 	}
 
-void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop, const int width, const int height)
+void PinDirectDraw::SetOpaqueBackdrop(Texture* pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop, const int width, const int height)
 	{
 	DDSURFACEDESC2 ddsd;
 	ddsd.dwSize = sizeof(ddsd);
@@ -793,7 +793,7 @@ void PinDirectDraw::SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF 
 	}
 
 
-BOOL PinDirectDraw::SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const int width, const int height)
+BOOL PinDirectDraw::SetAlpha(Texture* pdds, const COLORREF rgbTransparent, const int width, const int height)
 	{
 	// Set alpha of each pixel
 
@@ -892,7 +892,7 @@ const int rgfilterwindow[7][7] = {
     4, 12, 25, 29, 25, 12, 4,
     1, 4, 8, 10, 8, 4, 1};
 
-void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, const int shadwidth, const int shadheight)
+void PinDirectDraw::Blur(Texture* pdds, const BYTE * const pbits, const int shadwidth, const int shadheight)
 	{
 	if (!pbits) return;	// found this pointer to be NULL after some graphics errors
 
@@ -978,7 +978,7 @@ void PinDirectDraw::Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, co
 	pdds->Unlock(NULL);
 	}
 
-void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
+void PinDirectDraw::CreateNextMipMapLevel(Texture* pdds)
 	{
 	DDSURFACEDESC2 ddsd, ddsdNext;
 	ddsd.dwSize = sizeof(ddsd);
@@ -989,8 +989,8 @@ void PinDirectDraw::CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds)
 	ddsCaps.dwCaps4 = 0;
 	ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;	
 
-	LPDIRECTDRAWSURFACE7 pddsNext;
-	HRESULT hr = pdds->GetAttachedSurface(&ddsCaps, &pddsNext);
+	Texture* pddsNext;
+	HRESULT hr = pdds->GetAttachedSurface(&ddsCaps, (LPDIRECTDRAWSURFACE7*)&pddsNext);
 
 	if (hr == S_OK)
 		{

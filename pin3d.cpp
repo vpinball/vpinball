@@ -1,6 +1,8 @@
 #include "StdAfx.h"
+#include "RenderDevice.h"
 
 int NumVideoBytes = 0;
+RenderDevice renderDevice;
 
 Pin3D::Pin3D()
 	{
@@ -258,7 +260,7 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * co
 		}
 	}
 
-LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const
+Texture* Pin3D::CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const
 	{
 	//const GUID* pDeviceGUID = &IID_IDirect3DRGBDevice;
 	DDSURFACEDESC2 ddsd;
@@ -288,9 +290,9 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreenWithCustomTransparency(const int widt
 		}
 
 retry0:
-	LPDIRECTDRAWSURFACE7 pdds;
+	Texture* pdds;
 	HRESULT hr;
-    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
+    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&pdds, NULL ) ) )
 		{
 		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
 			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
@@ -303,7 +305,7 @@ retry0:
 	return pdds;
 	}
 	
-LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreen(const int width, const int height) const
+Texture* Pin3D::CreateOffscreen(const int width, const int height) const
 	{
 	DDSURFACEDESC2 ddsd;
     ZeroMemory( &ddsd, sizeof(ddsd) );
@@ -333,8 +335,8 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateOffscreen(const int width, const int height) c
 
 retry1:
 	HRESULT hr;
-	LPDIRECTDRAWSURFACE7 pdds;
-	if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) )
+	Texture* pdds;
+	if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&pdds, NULL ) ) )
 		{
 		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
 			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
@@ -351,7 +353,7 @@ retry1:
 	return pdds;
 	}
 
-LPDIRECTDRAWSURFACE7 Pin3D::CreateZBufferOffscreen(const int width, const int height) const
+Texture* Pin3D::CreateZBufferOffscreen(const int width, const int height) const
 {
     const GUID* pDeviceGUID;
 
@@ -395,8 +397,8 @@ retryall:
 	// Create the z buffer, loop over possible other modes until one found
 	HRESULT hr;
 	int count = 0;
-	LPDIRECTDRAWSURFACE7 pdds;
-	while(( FAILED( hr = m_pDD->CreateSurface( &ddsd, &pdds, NULL ) ) ) && (count <= 6))
+	Texture* pdds;
+	while(( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&pdds, NULL ) ) ) && (count <= 6))
     {
 		switch(count) {
 		case 0: {
@@ -544,7 +546,7 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
     ddsd.dwFlags        = DDSD_CAPS;
     ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
 
-    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsFrontBuffer, NULL ) ) )
+    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&m_pddsFrontBuffer, NULL ) ) )
     {
 		ShowError("Could not create front buffer.");
         return hr;
@@ -606,7 +608,7 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 
 	// Create the back buffer.
 retry2:
-    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsBackBuffer, NULL ) ) )
+    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&m_pddsBackBuffer, NULL ) ) )
     {
 		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
 			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
@@ -622,7 +624,7 @@ retry2:
 	// Create the "static" color buffer.  
 	// This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
 retry3:
-    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsStatic, NULL ) ) )
+    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&m_pddsStatic, NULL ) ) )
     {
 		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
 			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
@@ -668,7 +670,7 @@ retry3:
 		ddsd.dwFlags         = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_CAPS; //!! ? just to be the exact same as the Backbuffer
 		ddsd.ddsCaps.dwCaps  = DDSCAPS_TEXTURE;
 		ddsd.ddsCaps.dwCaps2 = DDSCAPS2_HINTDYNAMIC;
-		if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pdds3DBackBuffer, NULL ) ) )
+		if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&m_pdds3DBackBuffer, NULL ) ) )
 		{
 			ShowError("Could not create 3D stereo buffer.");
 			return hr; 
@@ -682,39 +684,46 @@ retry3:
 }
 
 HRESULT Pin3D::Create3DDevice(const GUID * const pDeviceGUID)
-	{
-	HRESULT hr;
+{
+   HRESULT hr;
+/*
+   if( FAILED( hr = m_pD3D->CreateDevice( *pDeviceGUID, m_pddsBackBuffer, (RenderDevice)&m_pd3dDevice) ) )
+   {
+      ShowError("Could not create Direct 3D device.");
+      //DEBUG_MSG( _T("Couldn't create the D3DDevice") );
+      return hr;// D3DFWERR_NO3DDEVICE;
+   }
+*/
+   if( !renderDevice.createDevice(pDeviceGUID, m_pD3D, m_pddsBackBuffer) )
+   {
+      ShowError("Could not create Direct 3D device.");
+      return S_FALSE;
+   }
 
-	if( FAILED( hr = m_pD3D->CreateDevice( *pDeviceGUID, m_pddsBackBuffer,
-										  &m_pd3dDevice) ) )
-		{
-			ShowError("Could not create Direct 3D device.");
-			//DEBUG_MSG( _T("Couldn't create the D3DDevice") );
-			return hr;// D3DFWERR_NO3DDEVICE;
-		}
+   m_pd3dDevice = renderDevice.instance();
 
-	D3DDEVICEDESC7 ddfoo;
-	m_pd3dDevice->GetCaps(&ddfoo);
+/*   D3DDEVICEDESC7 ddfoo;
+   m_pd3dDevice->GetCaps(&ddfoo);
 
-	const DWORD caps = ddfoo.dpcLineCaps.dwRasterCaps;
+   const DWORD caps = ddfoo.dpcLineCaps.dwRasterCaps;
 
-	//if (caps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT) //!! doesn't seem to do anything
-		//{
-			//hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ANTIALIAS, D3DANTIALIAS_SORTINDEPENDENT);
-			//   and/or set ddsCaps.dwCaps2 = DDSCAPS2_HINTANTIALIASING (if DDSCAPS_3DDEVICE also enabled)
-		//}
+   //if (caps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT) //!! doesn't seem to do anything
+   //{
+   //hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ANTIALIAS, D3DANTIALIAS_SORTINDEPENDENT);
+   //   and/or set ddsCaps.dwCaps2 = DDSCAPS2_HINTANTIALIASING (if DDSCAPS_3DDEVICE also enabled)
+   //}
+*/
+   // Finally, set the viewport for the newly created device
+   D3DVIEWPORT7 vp = { 0, 0, m_dwRenderWidth, m_dwRenderHeight, 0.0f, 1.0f };
 
-	// Finally, set the viewport for the newly created device
-	D3DVIEWPORT7 vp = { 0, 0, m_dwRenderWidth, m_dwRenderHeight, 0.0f, 1.0f };
+   if( FAILED(hr = m_pd3dDevice->SetViewport( &vp ) ) )
+   {
+      ShowError("Could not set viewport.");
+      return hr; 
+   }
 
-	if( FAILED(hr = m_pd3dDevice->SetViewport( &vp ) ) )
-		{
-			ShowError("Could not set viewport.");
-			return hr; 
-		}
-
-	return S_OK;
-	}
+   return S_OK;
+}
 
 HRESULT Pin3D::CreateZBuffer(const GUID* const pDeviceGUID )
 {
@@ -760,7 +769,7 @@ HRESULT Pin3D::CreateZBuffer(const GUID* const pDeviceGUID )
     // Create the z buffer.
 retry6:
     HRESULT hr;
-    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsZBuffer, NULL ) ) )
+    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&m_pddsZBuffer, NULL ) ) )
     {
 		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
 			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
@@ -775,7 +784,7 @@ retry6:
 
 	// Create the "static" z buffer.
 retry7:
-    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, &m_pddsStaticZ, NULL ) ) )
+    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&m_pddsStaticZ, NULL ) ) )
     {
 		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
 			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
@@ -876,11 +885,11 @@ void Pin3D::SetTextureFilter(const int TextureNum, const int Mode) const
 }
 
 
-void Pin3D::SetRenderTarget(const LPDIRECTDRAWSURFACE7 pddsSurface, const LPDIRECTDRAWSURFACE7 pddsZ) const
+void Pin3D::SetRenderTarget(const Texture* pddsSurface, const Texture* pddsZ) const
 	{
 	HRESULT hr;
-	hr = m_pd3dDevice->SetRenderTarget(pddsSurface, 0L);
-	hr = m_pd3dDevice->SetRenderTarget(pddsZ, 0L);
+	hr = m_pd3dDevice->SetRenderTarget((LPDIRECTDRAWSURFACE7)pddsSurface, 0L);
+	hr = m_pd3dDevice->SetRenderTarget((LPDIRECTDRAWSURFACE7)pddsZ, 0L);
 	}
 
 void Pin3D::InitRenderState() const
@@ -1364,7 +1373,7 @@ void Pin3D::CreateBallShadow()
 	m_pddsShadowTexture->Unlock(NULL);
 	}
 
-LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
+Texture* Pin3D::CreateShadow(const float z)
 	{
 	const float centerx = (g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right)*0.5f;
 	const float centery = (g_pplayer->m_ptable->m_top + g_pplayer->m_ptable->m_bottom)*0.5f;
@@ -1419,7 +1428,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 
 	delete psur;
 
-	LPDIRECTDRAWSURFACE7 pddsProjectTexture = g_pvp->m_pdd.CreateTextureOffscreen(shadwidth, shadheight);
+	Texture* pddsProjectTexture = g_pvp->m_pdd.CreateTextureOffscreen(shadwidth, shadheight);
 	m_xvShadowMap.AddElement(pddsProjectTexture, (int)z);
 
 	DDSURFACEDESC2 ddsd;
@@ -1439,7 +1448,7 @@ LPDIRECTDRAWSURFACE7 Pin3D::CreateShadow(const float z)
 	return pddsProjectTexture;
 	}
 
-void Pin3D::SetTexture(LPDIRECTDRAWSURFACE7 pddsTexture)
+void Pin3D::SetTexture(Texture* pddsTexture)
 	{
 	/*const HRESULT hr =*/ m_pd3dDevice->SetTexture(ePictureTexture, (pddsTexture == NULL) ? m_pddsLightWhite : pddsTexture);
 	}
@@ -1448,7 +1457,7 @@ void Pin3D::EnableLightMap(const BOOL fEnable, const float z)
 	{
 	if (fEnable)
 		{
-		LPDIRECTDRAWSURFACE7 pdds = (LPDIRECTDRAWSURFACE7)m_xvShadowMap.ElementAt((int)z);
+		Texture* pdds = (Texture*)m_xvShadowMap.ElementAt((int)z);
 		if (!pdds)
 			{
 			pdds = CreateShadow(z);

@@ -1009,29 +1009,29 @@ void PinComControl::GetTimers(Vector<HitTimer> * const pvht)
 	}
 
 void PinComControl::EndPlay()
-	{
-	m_pdispextender->m_pdispControl = m_pdispextender->m_pdispEdit;
-	m_pdispextender->m_pdispPlayer->Release();
+{
+   m_pdispextender->m_pdispControl = m_pdispextender->m_pdispEdit;
+   m_pdispextender->m_pdispPlayer->Release();
 
-	if (m_pmcwPlayer)
-		{
-		m_pmcwPlayer->FinalRelease();
-		}
+   if (m_pmcwPlayer)
+   {
+      m_pmcwPlayer->FinalRelease();
+   }
 
-	IEditable::EndPlay();
-	}
+   IEditable::EndPlay();
+}
 
-void PinComControl::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	}
+void PinComControl::PostRenderStatic(const RenderDevice* pd3dDevice)
+{
+}
 
-void PinComControl::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	}
-	
-void PinComControl::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	}
+void PinComControl::RenderStatic(const RenderDevice* pd3dDevice)
+{
+}
+
+void PinComControl::RenderMovers(const RenderDevice* pd3dDevice)
+{
+}
 
 HRESULT PinComControl::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 	{

@@ -273,15 +273,15 @@ void Textbox::EndPlay()
 	IEditable::EndPlay();
 	}
 
-void Textbox::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Textbox::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
-void Textbox::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Textbox::RenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 	
-void Textbox::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Textbox::RenderMovers(const RenderDevice* pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 

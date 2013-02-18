@@ -1,6 +1,4 @@
-// PinImage.h: interface for the PinImage class.
-//
-//////////////////////////////////////////////////////////////////////
+#include "Texture.h"
 #pragma once
 #if !defined(AFX_PINIMAGE_H__74A4733B_B66C_4C24_97AE_C7E9792E0635__INCLUDED_)
 #define AFX_PINIMAGE_H__74A4733B_B66C_4C24_97AE_C7E9792E0635__INCLUDED_
@@ -22,11 +20,11 @@ public:
 	PinImage();
 	virtual ~PinImage();
 
-	LPDIRECTDRAWSURFACE7 m_pdsBuffer;
+	Texture* m_pdsBuffer;
 
-	LPDIRECTDRAWSURFACE7 m_pdsBufferColorKey;
+	Texture* m_pdsBufferColorKey;
 
-	LPDIRECTDRAWSURFACE7 m_pdsBufferBackdrop;
+	Texture* m_pdsBufferBackdrop;
 
 	HRESULT SaveToStream(IStream *pstream, PinTable *pt);
 	HRESULT LoadFromStream(IStream *pstream, int version, PinTable *pt);
@@ -78,19 +76,19 @@ public:
 
 	LPDIRECTDRAW7 m_pDD;
 
-	LPDIRECTDRAWSURFACE7 CreateTextureOffscreen(const int width, const int height);
-	LPDIRECTDRAWSURFACE7 CreateFromFile(char *szfile, int * const pwidth, int * const pheight, int& originalWidth, int& originalHeight);
-	LPDIRECTDRAWSURFACE7 CreateFromResource(const int id, int * const pwidth, int * const pheight);
-	LPDIRECTDRAWSURFACE7 CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
+	Texture* CreateTextureOffscreen(const int width, const int height);
+	Texture* CreateFromFile(char *szfile, int * const pwidth, int * const pheight, int& originalWidth, int& originalHeight);
+	Texture* CreateFromResource(const int id, int * const pwidth, int * const pheight);
+	Texture* CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
 
-	void SetOpaque(LPDIRECTDRAWSURFACE7 pdds, const int width, const int height);
-	void SetOpaqueBackdrop(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop, const int width, const int height);
+	void SetOpaque(Texture* pdds, const int width, const int height);
+	void SetOpaqueBackdrop(Texture* pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop, const int width, const int height);
 
-	BOOL SetAlpha(LPDIRECTDRAWSURFACE7 pdds, const COLORREF rgbTransparent, const int width, const int height);
+	BOOL SetAlpha(Texture* pdds, const COLORREF rgbTransparent, const int width, const int height);
 
-	void CreateNextMipMapLevel(LPDIRECTDRAWSURFACE7 pdds);
+	void CreateNextMipMapLevel(Texture* pdds);
 
-	void Blur(LPDIRECTDRAWSURFACE7 pdds, const BYTE * const pbits, const int shadwidth, const int shadheight);
+	void Blur(Texture* pdds, const BYTE * const pbits, const int shadwidth, const int shadheight);
 
 	BOOL m_fHardwareAccel;
 	BOOL m_fAlternateRender;

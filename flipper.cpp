@@ -526,11 +526,11 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
 	return S_OK;
 }
 
-void Flipper::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Flipper::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
-void Flipper::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Flipper::RenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
@@ -539,9 +539,10 @@ static const WORD rgiFlipper2[4] = {2,6,7,3};
 
 //!! flippers are NOT drawn to zbuffer?? (on SOME tables only! and on intel only!)
 
-void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const pof, const float angle, const float height, 
+void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof, const float angle, const float height, 
 								const COLORREF color, const float baseradius, const float endradius, const float flipperheight)
-	{
+{
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
 	//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
 	pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
@@ -553,7 +554,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 	const float b = (float)(color & 16711680) * (float)(1.0/16711680.0);
 
 	{
-	D3DMATERIAL7 mtrl;
+	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 	mtrl.power = 0;
@@ -561,7 +562,7 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 	mtrl.diffuse.g = mtrl.ambient.g = g;
 	mtrl.diffuse.b = mtrl.ambient.b = b;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-	pd3dDevice->SetMaterial(&mtrl);
+	pd3dDevice->setMaterial(&mtrl);
 	}
 
 	Vertex2D vendcenter;
@@ -696,8 +697,9 @@ void Flipper::RenderAtThickness(LPDIRECT3DDEVICE7 pd3dDevice, ObjFrame * const p
 	//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
 	}
 	
-void Flipper::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
+void Flipper::RenderMovers(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	_ASSERTE(m_phitflipper);
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	
@@ -735,7 +737,7 @@ void Flipper::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			}
 
 		// Create offscreen surfaces for color and depth buffers.
-		LPDIRECTDRAWSURFACE7 pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		// Copy the back buffer to the new offscreen surfaces.

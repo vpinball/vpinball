@@ -1,4 +1,6 @@
 #pragma once
+#include "Material.h"
+
 class Triangle
 	{
 public:
@@ -24,8 +26,8 @@ public:
 	}
 
 	RECT rc;
-	LPDIRECTDRAWSURFACE7 pdds;
-	LPDIRECTDRAWSURFACE7 pddsZBuffer;
+	Texture* pdds;
+	Texture* pddsZBuffer;
 	};
 
 class CatmullCurve
@@ -297,7 +299,7 @@ inline void SetNormal(Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const
 		}
 	}
 
-inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const D3DMATERIAL7 * const pmtrl) // get rid of this?
+inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const Material * const pmtrl) // get rid of this?
 	{
 	const unsigned int r = (int)(((pmtrl->diffuse.r + pmtrl->emissive.r) * 255.0f) + 0.5f);
 	const unsigned int g = (int)(((pmtrl->diffuse.g + pmtrl->emissive.g) * 255.0f) + 0.5f);
@@ -312,7 +314,7 @@ inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const 
 	}
 
 //copy pasted from above
-inline void SetDiffuseFromMaterial(Vertex3D_NoTex2 * const rgv, const int count, const D3DMATERIAL7 * const pmtrl) // get rid of this?
+inline void SetDiffuseFromMaterial(Vertex3D_NoTex2 * const rgv, const int count, const Material * const pmtrl) // get rid of this?
 	{
 	const unsigned int r = (int)(((pmtrl->diffuse.r + pmtrl->emissive.r) * 255.0f) + 0.5f);
 	const unsigned int g = (int)(((pmtrl->diffuse.g + pmtrl->emissive.g) * 255.0f) + 0.5f);

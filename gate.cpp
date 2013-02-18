@@ -1,6 +1,7 @@
 // Gate.cpp : Implementation of CVBATestApp and DLL registration.
 
 #include "StdAfx.h"
+#include "Material.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -363,7 +364,7 @@ void Gate::EndPlay()
 	m_plineseg = NULL;
 	}
 
-void Gate::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Gate::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
@@ -378,10 +379,11 @@ static const WORD rgiGate5[4] = {4,5,7,6};
 static const WORD rgiGate6[4] = {0,4,6,2};
 static const WORD rgiGate7[4] = {1,3,7,5};
 
-static const D3DMATERIAL7 gatemtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+static const Material gatemtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
-void Gate::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
+void Gate::RenderStatic(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	if(!m_d.m_fSupports) return; // no support structures are allocated ... therfore render none
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -396,7 +398,7 @@ void Gate::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	const float snY = sinf(radangle);
 	const float csY = cosf(radangle);
 
-	pd3dDevice->SetMaterial((LPD3DMATERIAL7)&gatemtrl);
+	pd3dDevice->setMaterial((Material*)&gatemtrl);
 
 	Vertex3D rgv3D[8];
 	rgv3D[0].x = -halflength + halfthick;
@@ -454,8 +456,9 @@ void Gate::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,(LPWORD)rgiGate1, 8, 0);
 	}
 	
-void Gate::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
+void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
@@ -497,7 +500,7 @@ void Gate::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 	const float halflength = m_d.m_length * 0.5f;
 	const float halfwidth =  m_d.m_height; //50;
 
-	D3DMATERIAL7 mtrl;
+	Material mtrl;
 	mtrl.diffuse.a = 
 	mtrl.ambient.a =
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -639,7 +642,7 @@ void Gate::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.b = mtrl.ambient.b = b;
 			}
 
-		pd3dDevice->SetMaterial(&mtrl);
+		pd3dDevice->setMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiGate2, 4, NULL, NULL, 0);
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiGate2, 4, 0);
@@ -687,7 +690,7 @@ void Gate::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.b = mtrl.ambient.b = b;
 			}
 
-		pd3dDevice->SetMaterial(&mtrl);
+		pd3dDevice->setMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiGate3, 4, NULL, NULL, 0);
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate3, 4, 0);
@@ -695,7 +698,7 @@ void Gate::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
 		mtrl.diffuse.b = mtrl.ambient.b = b;
-		pd3dDevice->SetMaterial(&mtrl);
+		pd3dDevice->setMaterial(&mtrl);
 		ppin3d->SetTexture(NULL);
 
 		if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
@@ -715,7 +718,7 @@ void Gate::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate7, 4, 0);
 			}
 
-		LPDIRECTDRAWSURFACE7 pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);

@@ -727,8 +727,9 @@ void Primitive::CalculateRealTime()
 }
 
 //3d
-void Primitive::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 	if (pin) 
 	{
@@ -759,7 +760,7 @@ void Primitive::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 	//g_pplayer->m_ptable->SetDirtyDraw(); //!! does not do anything good anymore
 
-	D3DMATERIAL7 mtrl;
+	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 	mtrl.power = 0;
@@ -805,7 +806,7 @@ void Primitive::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
 		}
-		pd3dDevice->SetMaterial(&mtrl);
+		pd3dDevice->setMaterial(&mtrl);
 
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 
 			MY_D3DFVF_NOTEX2_VERTEX,
@@ -817,12 +818,12 @@ void Primitive::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 	}
 }
 
-void Primitive::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Primitive::RenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 	
 //seems to be called to set up the initial backbuffer
-void Primitive::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Primitive::RenderMovers(const RenderDevice* pd3dDevice)
 	{
 	}
 

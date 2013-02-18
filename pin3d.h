@@ -1,4 +1,6 @@
 #pragma once
+#include "RenderDevice.h"
+#include "Texture.h"
 
 extern int NumVideoBytes;
 
@@ -170,17 +172,17 @@ public:
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 	void TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 	void CacheTransform();
-	LPDIRECTDRAWSURFACE7 CreateShadow(const float height);
+	Texture* CreateShadow(const float height);
 
 	void CreateBallShadow();
 
 	void SetUpdatePos(const int left, const int top);
 	void Flip(const int offsetx, const int offsety, const BOOL vsync);
 
-	void SetRenderTarget(const LPDIRECTDRAWSURFACE7 pddsSurface, const LPDIRECTDRAWSURFACE7 pddsZ) const;
+	void SetRenderTarget(const Texture* pddsSurface, const Texture* pddsZ) const;
 	void SetTextureFilter(const int TextureNum, const int Mode) const;
 	
-	void SetTexture(LPDIRECTDRAWSURFACE7 pddsTexture);
+	void SetTexture(Texture* pddsTexture);
 	void EnableLightMap(const BOOL fEnable, const float z);
 
 	void SetMaterial(const float r, const float g, const float b, const float a);
@@ -199,32 +201,32 @@ public:
 
 	void ClipRectToVisibleArea(RECT * const prc) const;
 
-	LPDIRECTDRAWSURFACE7 CreateOffscreen(const int width, const int height) const;
-	LPDIRECTDRAWSURFACE7 CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const;
-	LPDIRECTDRAWSURFACE7 CreateZBufferOffscreen(const int width, const int height) const;
+	Texture* CreateOffscreen(const int width, const int height) const;
+	Texture* CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const;
+	Texture* CreateZBufferOffscreen(const int width, const int height) const;
 
 	LPDIRECTDRAW7 m_pDD;
-	LPDIRECTDRAWSURFACE7 m_pddsFrontBuffer;
-	LPDIRECTDRAWSURFACE7 m_pddsBackBuffer;
+	Texture* m_pddsFrontBuffer;
+	Texture* m_pddsBackBuffer;
 
-	LPDIRECTDRAWSURFACE7 m_pdds3DBackBuffer;
+	Texture* m_pdds3DBackBuffer;
 	const unsigned int* __restrict m_pdds3Dbuffercopy;
 	const unsigned int* __restrict m_pdds3Dbufferzcopy;
 	unsigned char* __restrict m_pdds3Dbuffermask;
 
-	LPDIRECTDRAWSURFACE7 m_pddsZBuffer;
+	Texture* m_pddsZBuffer;
 	LPDIRECT3D7 m_pD3D;
-	LPDIRECT3DDEVICE7 m_pd3dDevice;
+	RenderDevice* m_pd3dDevice;
 
-	LPDIRECTDRAWSURFACE7 m_pddsStatic;
-	LPDIRECTDRAWSURFACE7 m_pddsStaticZ;
+	Texture* m_pddsStatic;
+	Texture* m_pddsStaticZ;
 
-	LPDIRECTDRAWSURFACE7 m_pddsBallTexture;
-	LPDIRECTDRAWSURFACE7 m_pddsShadowTexture;
-	LPDIRECTDRAWSURFACE7 m_pddsLightTexture;
+	Texture* m_pddsBallTexture;
+	Texture* m_pddsShadowTexture;
+	Texture* m_pddsLightTexture;
 	//LPDIRECTDRAWSURFACE7 m_pddsPlayfieldTexture;
 	//LPDIRECTDRAWSURFACE7 m_pddsLightProjectTexture;
-	LPDIRECTDRAWSURFACE7 m_pddsLightWhite;
+	Texture* m_pddsLightWhite;
 
 	ExVector<void> m_xvShadowMap;
 

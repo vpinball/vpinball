@@ -7,7 +7,7 @@ public:
 	virtual void GetTimers(Vector<HitTimer> * const pvht) = 0;
 	virtual EventProxyBase *GetEventProxyBase() = 0;
 	virtual void EndPlay() = 0;
-	virtual void RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice) = 0;
-	virtual void PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice) = 0;
-	virtual void RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice) = 0;
+	virtual void RenderStatic( const RenderDevice* pd3dDevice) = 0;
+	virtual void PostRenderStatic( const RenderDevice* pd3dDevice) = 0;
+	virtual void RenderMovers( const RenderDevice* pd3dDevice) = 0;
 	};

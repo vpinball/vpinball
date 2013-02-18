@@ -250,16 +250,18 @@ void Bumper::EndPlay()
 	m_pbumperhitcircle = NULL;
 	}
 
-void Bumper::PostRenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
+void Bumper::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
 static const WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 
-static const D3DMATERIAL7 bumpermtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+static const Material bumpermtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
-void Bumper::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
+void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+      
 	// ensure we are not disabled at game start
 	m_fDisabled = fFalse;
 	if(!m_d.m_fVisible)	return;
@@ -279,7 +281,7 @@ void Bumper::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 		pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
-		pd3dDevice->SetMaterial((LPD3DMATERIAL7)&bumpermtrl);
+		pd3dDevice->setMaterial((Material*)&bumpermtrl);
 
 		const float outerradius = m_d.m_radius + m_d.m_overhang;
 
@@ -362,8 +364,9 @@ void Bumper::RenderStatic(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 	}
 
-void Bumper::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
+void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
+{
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	if(!m_d.m_fVisible)	return;
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -429,7 +432,7 @@ void Bumper::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar, 160, fFalse);
 
-		D3DMATERIAL7 mtrl;
+		Material mtrl;
 		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 		mtrl.emissive.a = mtrl.power = 0;
 		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
@@ -463,7 +466,7 @@ void Bumper::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					break;
 				}
 
-			pd3dDevice->SetMaterial(&mtrl);
+			pd3dDevice->setMaterial(&mtrl);
 
 			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
@@ -528,7 +531,7 @@ void Bumper::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					mtrl.emissive.b = bside;
 					break;
 				}
-			pd3dDevice->SetMaterial(&mtrl);
+			pd3dDevice->setMaterial(&mtrl);
 
 			for (int l=0;l<32;l++)
 				{
@@ -594,7 +597,7 @@ void Bumper::RenderMovers(const LPDIRECT3DDEVICE7 pd3dDevice)
 					mtrl.emissive.b = 1.0f;
 					break;
 				}
-			pd3dDevice->SetMaterial(&mtrl);
+			pd3dDevice->setMaterial(&mtrl);
 
 			// Set all the texture coordinates to match maxtu/tv
 			for (int l=0;l<32;l++)
