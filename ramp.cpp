@@ -1070,197 +1070,199 @@ static const WORD rgicrosssection[] = {
 	12,28,31
 	};
 
-void Ramp::RenderStaticHabitrail(const LPDIRECT3DDEVICE7 pd3dDevice)
-	{
-	float *rgheight;
-	int cvertex;
-	const Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, NULL);
-
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, TRUE);
-
-	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
-	{
-	D3DMATERIAL7 mtrl;
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a = 0.0f;
-	mtrl.diffuse.r = mtrl.ambient.r = r;
-	mtrl.diffuse.g = mtrl.ambient.g = g;
-	mtrl.diffuse.b = mtrl.ambient.b = b;
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-	mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a = 1.0f;
-	mtrl.power = 8.0f;
-	pd3dDevice->SetMaterial(&mtrl);
-	}
-
-	Vertex3D_NoTex rgv3D[32];
-	for (int i=0;i<cvertex;i++)
-		{
-		rgv3D[0].x = -3.0f;
-		rgv3D[0].y = -3.0f;
-		rgv3D[0].z = 0;
-		rgv3D[0].nx = -1.0f;
-		rgv3D[0].ny = -1.0f;
-		rgv3D[0].nz = 0;
-		rgv3D[0].NormalizeNormal();
-
-		rgv3D[1].x = 3.0f;
-		rgv3D[1].y = -3.0f;
-		rgv3D[1].z = 0;
-		rgv3D[1].nx = 1.0f;
-		rgv3D[1].ny = -1.0f;
-		rgv3D[1].nz = 0;
-		rgv3D[1].NormalizeNormal();
-
-		rgv3D[2].x = 3.0f;
-		rgv3D[2].y = 3.0f;
-		rgv3D[2].z = 0;
-		rgv3D[2].nx = 1.0f;
-		rgv3D[2].ny = 1.0f;
-		rgv3D[2].nz = 0;
-		rgv3D[2].NormalizeNormal();
-
-		rgv3D[3].x = -3.0f;
-		rgv3D[3].y = 3.0f;
-		rgv3D[3].z = 0;
-		rgv3D[3].nx = -1.0f;
-		rgv3D[3].ny = 1.0f;
-		rgv3D[3].nz = 0;
-		rgv3D[3].NormalizeNormal();
-
-		if (m_d.m_type != RampType1Wire)
-		{
-		for (int l=0;l<4;l++)
-			{
-			rgv3D[l+ 4].x = rgv3D[l].x + 44.0f; //44.0f
-			rgv3D[l+ 4].y = rgv3D[l].y - 19.0f; //22.0f
-			rgv3D[l+ 4].z = rgv3D[l].z;
-			rgv3D[l+ 8].x = rgv3D[l].x + 9.5f;
-			rgv3D[l+ 8].y = rgv3D[l].y + 19.0f;
-			rgv3D[l+ 8].z = rgv3D[l].z;
-			rgv3D[l+12].x = rgv3D[l].x + 44.0f;
-			rgv3D[l+12].y = rgv3D[l].y + 19.0f;
-			rgv3D[l+12].z = rgv3D[l].z;
-
-			rgv3D[l+ 4].nx = rgv3D[l].nx;
-			rgv3D[l+ 4].ny = rgv3D[l].ny;
-			rgv3D[l+ 4].nz = rgv3D[l].nz;
-			rgv3D[l+ 8].nx = rgv3D[l].nx;
-			rgv3D[l+ 8].ny = rgv3D[l].ny;
-			rgv3D[l+ 8].nz = rgv3D[l].nz;
-			rgv3D[l+12].nx = rgv3D[l].nx;
-			rgv3D[l+12].ny = rgv3D[l].ny;
-			rgv3D[l+12].nz = rgv3D[l].nz;
-			}
-		for (int l=0;l<4;l++)
-			{
-			rgv3D[l].x += 9.5f;
-			rgv3D[l].y += -19.0f;
-			}
-		}
-		else
-		{
-			for (int l=0;l<4;l++)
-			{
-			rgv3D[l+ 4].x = rgv3D[l].x+44.0f; //44.0f
-			rgv3D[l+ 4].y = rgv3D[l].y;
-			rgv3D[l+ 4].z = rgv3D[l].z;
-			rgv3D[l+ 8].x = rgv3D[l].x + 9.5f;
-			rgv3D[l+ 8].y = rgv3D[l].y;
-			rgv3D[l+ 8].z = rgv3D[l].z;
-			rgv3D[l+12].x = rgv3D[l].x+44.0f;
-			rgv3D[l+12].y = rgv3D[l].y;
-			rgv3D[l+12].z = rgv3D[l].z;
-
-			rgv3D[l+ 4].nx = rgv3D[l].nx;
-			rgv3D[l+ 4].ny = rgv3D[l].ny;
-			rgv3D[l+ 4].nz = rgv3D[l].nz;
-			rgv3D[l+ 8].nx = rgv3D[l].nx;
-			rgv3D[l+ 8].ny = rgv3D[l].ny;
-			rgv3D[l+ 8].nz = rgv3D[l].nz;
-			rgv3D[l+12].nx = rgv3D[l].nx;
-			rgv3D[l+12].ny = rgv3D[l].ny;
-			rgv3D[l+12].nz = rgv3D[l].nz;
-			}
-		}
-
-		const int p1 = (i==0) ? 0 : (i-1);
-		const int p2 = i;
-		const int p3 = (i==(cvertex-1)) ? i : (i+1);
-		const int p4 = cvertex*2 - i - 1; //!! ?? *2 valid?
-
-		Vertex3Ds vacross(rgv[p4].x - rgv[p2].x, rgv[p4].y - rgv[p2].y, 0.0f);
-
-		// The vacross vector is our local up vector.  Rotate the cross-section
-		// later to match this up
-		vacross.Normalize();
-
-		Vertex3Ds tangent(rgv[p3].x - rgv[p1].x, rgv[p3].y - rgv[p1].y, rgheight[p3] - rgheight[p1]);
-
-		// This is the vector describing the tangent to the ramp at this point
-		tangent.Normalize();
-
-		const Vertex3Ds rotationaxis(tangent.y, -tangent.x, 0.0f);
-		/*
-		Vertex3Ds up(0,0,1.0f);
-		// Get axis of rotation to rotate our cross-section into place
-		CrossProduct(tangent, up, &rotationaxis);*/
-
-		const float dot = tangent.z; //tangent.Dot(&up);
-		const float angle = acosf(dot);
-
-		RotateAround(rotationaxis, rgv3D, 16, angle);
-		
-		// vnewup is the beginning up vector of the cross-section
-		const Vertex2D vnewupdef(0.0f,1.0f);
-		const Vertex3Ds vnewup = RotateAround(rotationaxis, vnewupdef, angle);
-
-		// vacross is not out real up vector, but the up vector for the cross-section isn't real either
-		//Vertex3D vrampup;
-		//CrossProduct(&tangent, &vacross, &vrampup);
-		const float dotupcorrection = vnewup.Dot(vacross);
-		float angleupcorrection = acosf(dotupcorrection);
-
-		if (vacross.x >= 0)
-			{
-			angleupcorrection = -angleupcorrection;
-			}
-
-		RotateAround(tangent, rgv3D, 16, -angleupcorrection);
-
-		for (int l=0;l<16;l++)
-			{
-			rgv3D[l].x += (rgv[p2].x + rgv[p4].x)*0.5f;
-			rgv3D[l].y += (rgv[p2].y + rgv[p4].y)*0.5f;
-			rgv3D[l].z += rgheight[p2];
-			}
-
-		if (i != 0)
-			{
-			RenderPolygons(pd3dDevice, rgv3D, (WORD*)rgicrosssection, 0, 16);
-
-			if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-				{
-				RenderPolygons(pd3dDevice, rgv3D, (WORD*)rgicrosssection, 16, 24);
-				}
-
-			if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-				{
-				RenderPolygons(pd3dDevice, rgv3D, (WORD*)rgicrosssection, 24, 32);
-				}
-			}
-		memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D_NoTex)*16);
-		}
-
-	delete [] rgv;
-	delete [] rgheight;
-
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, FALSE);
-	}
-
-void Ramp::RenderPolygons(const LPDIRECT3DDEVICE7 pd3dDevice, Vertex3D_NoTex * const rgv3D, WORD * const rgi, const int start, const int stop)
+void Ramp::RenderStaticHabitrail(const RenderDevice* _pd3dDevice)
 {
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+   float *rgheight;
+   int cvertex;
+   const Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, NULL);
+
+   pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, TRUE);
+
+   const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+   const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+   const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+
+   {
+      Material mtrl;
+      mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a = 0.0f;
+      mtrl.diffuse.r = mtrl.ambient.r = r;
+      mtrl.diffuse.g = mtrl.ambient.g = g;
+      mtrl.diffuse.b = mtrl.ambient.b = b;
+      mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+      mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a = 1.0f;
+      mtrl.power = 8.0f;
+      pd3dDevice->setMaterial(&mtrl);
+   }
+
+   Vertex3D_NoTex rgv3D[32];
+   for (int i=0;i<cvertex;i++)
+   {
+      rgv3D[0].x = -3.0f;
+      rgv3D[0].y = -3.0f;
+      rgv3D[0].z = 0;
+      rgv3D[0].nx = -1.0f;
+      rgv3D[0].ny = -1.0f;
+      rgv3D[0].nz = 0;
+      rgv3D[0].NormalizeNormal();
+
+      rgv3D[1].x = 3.0f;
+      rgv3D[1].y = -3.0f;
+      rgv3D[1].z = 0;
+      rgv3D[1].nx = 1.0f;
+      rgv3D[1].ny = -1.0f;
+      rgv3D[1].nz = 0;
+      rgv3D[1].NormalizeNormal();
+
+      rgv3D[2].x = 3.0f;
+      rgv3D[2].y = 3.0f;
+      rgv3D[2].z = 0;
+      rgv3D[2].nx = 1.0f;
+      rgv3D[2].ny = 1.0f;
+      rgv3D[2].nz = 0;
+      rgv3D[2].NormalizeNormal();
+
+      rgv3D[3].x = -3.0f;
+      rgv3D[3].y = 3.0f;
+      rgv3D[3].z = 0;
+      rgv3D[3].nx = -1.0f;
+      rgv3D[3].ny = 1.0f;
+      rgv3D[3].nz = 0;
+      rgv3D[3].NormalizeNormal();
+
+      if (m_d.m_type != RampType1Wire)
+      {
+         for (int l=0;l<4;l++)
+         {
+            rgv3D[l+ 4].x = rgv3D[l].x + 44.0f; //44.0f
+            rgv3D[l+ 4].y = rgv3D[l].y - 19.0f; //22.0f
+            rgv3D[l+ 4].z = rgv3D[l].z;
+            rgv3D[l+ 8].x = rgv3D[l].x + 9.5f;
+            rgv3D[l+ 8].y = rgv3D[l].y + 19.0f;
+            rgv3D[l+ 8].z = rgv3D[l].z;
+            rgv3D[l+12].x = rgv3D[l].x + 44.0f;
+            rgv3D[l+12].y = rgv3D[l].y + 19.0f;
+            rgv3D[l+12].z = rgv3D[l].z;
+
+            rgv3D[l+ 4].nx = rgv3D[l].nx;
+            rgv3D[l+ 4].ny = rgv3D[l].ny;
+            rgv3D[l+ 4].nz = rgv3D[l].nz;
+            rgv3D[l+ 8].nx = rgv3D[l].nx;
+            rgv3D[l+ 8].ny = rgv3D[l].ny;
+            rgv3D[l+ 8].nz = rgv3D[l].nz;
+            rgv3D[l+12].nx = rgv3D[l].nx;
+            rgv3D[l+12].ny = rgv3D[l].ny;
+            rgv3D[l+12].nz = rgv3D[l].nz;
+         }
+         for (int l=0;l<4;l++)
+         {
+            rgv3D[l].x += 9.5f;
+            rgv3D[l].y += -19.0f;
+         }
+      }
+      else
+      {
+         for (int l=0;l<4;l++)
+         {
+            rgv3D[l+ 4].x = rgv3D[l].x+44.0f; //44.0f
+            rgv3D[l+ 4].y = rgv3D[l].y;
+            rgv3D[l+ 4].z = rgv3D[l].z;
+            rgv3D[l+ 8].x = rgv3D[l].x + 9.5f;
+            rgv3D[l+ 8].y = rgv3D[l].y;
+            rgv3D[l+ 8].z = rgv3D[l].z;
+            rgv3D[l+12].x = rgv3D[l].x+44.0f;
+            rgv3D[l+12].y = rgv3D[l].y;
+            rgv3D[l+12].z = rgv3D[l].z;
+
+            rgv3D[l+ 4].nx = rgv3D[l].nx;
+            rgv3D[l+ 4].ny = rgv3D[l].ny;
+            rgv3D[l+ 4].nz = rgv3D[l].nz;
+            rgv3D[l+ 8].nx = rgv3D[l].nx;
+            rgv3D[l+ 8].ny = rgv3D[l].ny;
+            rgv3D[l+ 8].nz = rgv3D[l].nz;
+            rgv3D[l+12].nx = rgv3D[l].nx;
+            rgv3D[l+12].ny = rgv3D[l].ny;
+            rgv3D[l+12].nz = rgv3D[l].nz;
+         }
+      }
+
+      const int p1 = (i==0) ? 0 : (i-1);
+      const int p2 = i;
+      const int p3 = (i==(cvertex-1)) ? i : (i+1);
+      const int p4 = cvertex*2 - i - 1; //!! ?? *2 valid?
+
+      Vertex3Ds vacross(rgv[p4].x - rgv[p2].x, rgv[p4].y - rgv[p2].y, 0.0f);
+
+      // The vacross vector is our local up vector.  Rotate the cross-section
+      // later to match this up
+      vacross.Normalize();
+
+      Vertex3Ds tangent(rgv[p3].x - rgv[p1].x, rgv[p3].y - rgv[p1].y, rgheight[p3] - rgheight[p1]);
+
+      // This is the vector describing the tangent to the ramp at this point
+      tangent.Normalize();
+
+      const Vertex3Ds rotationaxis(tangent.y, -tangent.x, 0.0f);
+      /*
+      Vertex3Ds up(0,0,1.0f);
+      // Get axis of rotation to rotate our cross-section into place
+      CrossProduct(tangent, up, &rotationaxis);*/
+
+      const float dot = tangent.z; //tangent.Dot(&up);
+      const float angle = acosf(dot);
+
+      RotateAround(rotationaxis, rgv3D, 16, angle);
+
+      // vnewup is the beginning up vector of the cross-section
+      const Vertex2D vnewupdef(0.0f,1.0f);
+      const Vertex3Ds vnewup = RotateAround(rotationaxis, vnewupdef, angle);
+
+      // vacross is not out real up vector, but the up vector for the cross-section isn't real either
+      //Vertex3D vrampup;
+      //CrossProduct(&tangent, &vacross, &vrampup);
+      const float dotupcorrection = vnewup.Dot(vacross);
+      float angleupcorrection = acosf(dotupcorrection);
+
+      if (vacross.x >= 0)
+      {
+         angleupcorrection = -angleupcorrection;
+      }
+
+      RotateAround(tangent, rgv3D, 16, -angleupcorrection);
+
+      for (int l=0;l<16;l++)
+      {
+         rgv3D[l].x += (rgv[p2].x + rgv[p4].x)*0.5f;
+         rgv3D[l].y += (rgv[p2].y + rgv[p4].y)*0.5f;
+         rgv3D[l].z += rgheight[p2];
+      }
+
+      if (i != 0)
+      {
+         RenderPolygons(pd3dDevice, rgv3D, (WORD*)rgicrosssection, 0, 16);
+
+         if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
+         {
+            RenderPolygons(pd3dDevice, rgv3D, (WORD*)rgicrosssection, 16, 24);
+         }
+
+         if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
+         {
+            RenderPolygons(pd3dDevice, rgv3D, (WORD*)rgicrosssection, 24, 32);
+         }
+      }
+      memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D_NoTex)*16);
+   }
+
+   delete [] rgv;
+   delete [] rgheight;
+
+   pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, FALSE);
+}
+
+void Ramp::RenderPolygons(const RenderDevice* _pd3dDevice, Vertex3D_NoTex * const rgv3D, WORD * const rgi, const int start, const int stop)
+{
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;  
 	if (m_d.m_type == RampType1Wire)
 	{
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX_VERTEX, rgv3D, 32, rgi+stop/2*3, 3*(stop-stop/2), 0);
@@ -1311,24 +1313,24 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
          if (pin->m_fTransparent)
          {				
             pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
          }
          else // ppin3d->SetTexture(pin->m_pdsBuffer);
          {	
             pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,  D3DBLEND_SRCALPHA);
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA); 
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+            pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
          }
 
-         pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-         pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
          // Check if this is an acrylic.
          if  (m_d.m_fAcrylic)
@@ -1336,9 +1338,9 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
             // Set a high threshold for writing transparent pixels to the z buffer.  
             // This allows some of the ball's pixels to write when under the ramp... 
             // giving the illusion of transparency (screen door). 
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD) 127);
-            pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+            pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD) 127);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
             // Make sure our textures tile.
             pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
@@ -2499,19 +2501,19 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			pin->EnsureColorKey();
 
 			pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE); 	
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, TRUE); 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (DWORD)0x00000001);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+         pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
+         pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+			pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 
 
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 

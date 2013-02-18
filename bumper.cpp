@@ -279,7 +279,7 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
 
 		pin->EnsureColorKey();
 		pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+		pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
 
 		pd3dDevice->setMaterial((Material*)&bumpermtrl);
 
@@ -356,7 +356,7 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
 														  (LPWORD)rgi, 4, 0);
 			}
 
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+		pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, FALSE);
 
 		ppin3d->SetTexture(NULL);
 		}

@@ -24,6 +24,18 @@ RenderDevice* RenderDevice::instance()
    return theDevice;
 }
 
+void RenderDevice::setMaterial( THIS_ Material *_material )
+{
+   dx7Device->SetMaterial( (LPD3DMATERIAL7)_material);
+}
+
+void RenderDevice::SetRenderState( RenderStates p1,DWORD p2)
+{
+   dx7Device->SetRenderState((D3DRENDERSTATETYPE)p1,p2);
+}
+
+//########################## simple wrapper functions (interface for DX7)##################################
+
 STDMETHODIMP RenderDevice::QueryInterface( THIS_ REFIID riid, LPVOID * ppvObj )
 {
    return dx7Device->QueryInterface(riid,ppvObj);
@@ -99,10 +111,6 @@ STDMETHODIMP RenderDevice::SetMaterial( THIS_ LPD3DMATERIAL7 p1)
    return dx7Device->SetMaterial(p1);
 }
 
-void RenderDevice::setMaterial( THIS_ Material *_material )
-{
-   dx7Device->SetMaterial( (LPD3DMATERIAL7)_material);
-}
 
 STDMETHODIMP RenderDevice::GetMaterial( THIS_ LPD3DMATERIAL7 p1)
 {

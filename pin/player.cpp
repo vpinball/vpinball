@@ -2803,7 +2803,7 @@ void Player::DrawBalls()
 	{
 	//m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, FALSE);
 
-	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, FALSE );
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE );
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
 
 	for (int i=0;i<m_vball.Size();i++)
@@ -2813,7 +2813,7 @@ void Player::DrawBalls()
 	}
 
 	m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
-	m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, FALSE);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 }
 
 void Player::InvalidateRect(RECT * const prc)
@@ -3666,7 +3666,7 @@ void Player::DrawAcrylics ()
 	{
 		// Build a set of clipping planes which tightly bound the ball.
 		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
-		m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZFUNC,D3DCMP_LESS);
 	}
 
 	// the helper list of m_vhitacrylic only contains objects which evaluated to true in the old code.

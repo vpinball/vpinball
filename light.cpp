@@ -732,7 +732,7 @@ void Light::RenderStatic(const RenderDevice* pd3dDevice)
 void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -944,7 +944,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 					}
 				}
 			ppin3d->SetTexture(ppin3d->m_pddsLightTexture);	
-			pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+			pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
 		ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
 		m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
@@ -972,7 +972,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 	delete [] rgv;
 
 	ppin3d->SetTexture(NULL);
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 }
 
 void Light::RenderMovers(const RenderDevice* _pd3dDevice)
@@ -984,7 +984,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 		return;
 		}
 
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -1099,7 +1099,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 				}
 			}
 		ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
-		pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+		pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
 		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
 
@@ -1112,7 +1112,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 		}
 
 	ppin3d->SetTexture(NULL);
-	pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	}
 
 void Light::SetObjectPos()

@@ -893,89 +893,88 @@ void Pin3D::SetRenderTarget(const Texture* pddsSurface, const Texture* pddsZ) co
 	}
 
 void Pin3D::InitRenderState() const
-	{
-	HRESULT hr;
-	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
-	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+{
+   m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
+   m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
 
-	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );															
-	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_TEXCOORDINDEX, 0);
+   m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+   m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+   g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );															
+   m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_TEXCOORDINDEX, 0);
 
-	hr = m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_COLOROP, D3DTOP_MODULATE);
-	hr = m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	hr = m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+   m_pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_COLOROP, D3DTOP_MODULATE);
+   m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+   m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
-	hr = m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_CLIPPING, FALSE );
-	hr = m_pd3dDevice->SetRenderState ( D3DRENDERSTATE_CLIPPLANEENABLE, 0 );
-	}
+   m_pd3dDevice->SetRenderState ( RenderDevice::CLIPPING, FALSE );
+   m_pd3dDevice->SetRenderState ( RenderDevice::CLIPPLANEENABLE, 0 );
+}
 
 const WORD rgiPin3D1[4] = {2,3,5,6};
 
 void Pin3D::DrawBackground()
-	{
-	PinTable * const ptable = g_pplayer->m_ptable;
-	PinImage * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)g_pplayer->m_ptable->m_szImageBackdrop) : NULL;
+{
+   PinTable * const ptable = g_pplayer->m_ptable;
+   PinImage * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)g_pplayer->m_ptable->m_szImageBackdrop) : NULL;
 
-	// Direct all renders to the "static" buffer.
-	SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
+   // Direct all renders to the "static" buffer.
+   SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
 
-	if (pin)
-		{
-		m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER,
-						   0, 1.0f, 0L );
+   if (pin)
+   {
+      m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER,
+         0, 1.0f, 0L );
 
-		m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+      m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
-		float maxtu,maxtv;
-		g_pplayer->m_ptable->GetTVTU(pin, &maxtu, &maxtv);
+      float maxtu,maxtv;
+      g_pplayer->m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
-		Vertex3D_NoTex2 rgv3D[4];
-		rgv3D[0].x = 0;
-		rgv3D[0].y = 0;
-		rgv3D[0].tu = 0;
-		rgv3D[0].tv = 0;
+      Vertex3D_NoTex2 rgv3D[4];
+      rgv3D[0].x = 0;
+      rgv3D[0].y = 0;
+      rgv3D[0].tu = 0;
+      rgv3D[0].tv = 0;
 
-		rgv3D[1].x = 1000.0f;
-		rgv3D[1].y = 0;
-		rgv3D[1].tu = maxtu;
-		rgv3D[1].tv = 0;
+      rgv3D[1].x = 1000.0f;
+      rgv3D[1].y = 0;
+      rgv3D[1].tu = maxtu;
+      rgv3D[1].tv = 0;
 
-		rgv3D[2].x = 1000.0f;
-		rgv3D[2].y = 750.0f;
-		rgv3D[2].tu = maxtu;
-		rgv3D[2].tv = maxtv;
+      rgv3D[2].x = 1000.0f;
+      rgv3D[2].y = 750.0f;
+      rgv3D[2].tu = maxtu;
+      rgv3D[2].tv = maxtv;
 
-		rgv3D[3].x = 0;
-		rgv3D[3].y = 750.0f;
-		rgv3D[3].tu = 0;
-		rgv3D[3].tv = maxtv;
+      rgv3D[3].x = 0;
+      rgv3D[3].y = 750.0f;
+      rgv3D[3].tu = 0;
+      rgv3D[3].tv = maxtv;
 
-		SetTexture(pin->m_pdsBuffer);
+      SetTexture(pin->m_pdsBuffer);
 
-		SetHUDVertices(rgv3D, 4);
-		SetDiffuse(rgv3D, 4, 0xFFFFFF);
+      SetHUDVertices(rgv3D, 4);
+      SetDiffuse(rgv3D, 4, 0xFFFFFF);
 
-		m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
-												  rgv3D, 4,
-												  (LPWORD)rgi0123, 4, 0);
-		//m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
-		//										  rgv3D, 4, 0);
+      m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
+         rgv3D, 4,
+         (LPWORD)rgi0123, 4, 0);
+      //m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
+      //										  rgv3D, 4, 0);
 
-		m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-		}
-	else
-		{
-		const int r = (g_pplayer->m_ptable->m_colorbackdrop & 0xff0000) >> 16;
-		const int g = (g_pplayer->m_ptable->m_colorbackdrop & 0xff00) >> 8;
-		const int b = (g_pplayer->m_ptable->m_colorbackdrop & 0xff);
-		const int d3dcolor = b<<16 | g<<8 | r;
+      m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   }
+   else
+   {
+      const int r = (g_pplayer->m_ptable->m_colorbackdrop & 0xff0000) >> 16;
+      const int g = (g_pplayer->m_ptable->m_colorbackdrop & 0xff00) >> 8;
+      const int b = (g_pplayer->m_ptable->m_colorbackdrop & 0xff);
+      const int d3dcolor = b<<16 | g<<8 | r;
 
-		m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-						   d3dcolor, 1.0f, 0L );
-		}
-	}
+      m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+         d3dcolor, 1.0f, 0L );
+   }
+}
 
 void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback, const float maxSeparation, const float ZPD)
 	{
@@ -1001,16 +1000,15 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	m_rotation = ANGTORAD(rotation);
 	m_inclination = ANGTORAD(inclination);
 
-	HRESULT hr;
-	hr = m_pd3dDevice->SetTexture(ePictureTexture, NULL);
+	m_pd3dDevice->SetTexture(ePictureTexture, NULL);
 
 	//hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_SPECULARENABLE, FALSE);
-	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE);
+   m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+   m_pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, FALSE);
+   m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE);
 
-	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
-	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+   m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+   m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
 	InitRenderState();
 
@@ -1043,7 +1041,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	light.dvAttenuation2 = 0.0f;
 
     // Set the light
-    hr = m_pd3dDevice->SetLight( 0, &light );
+    m_pd3dDevice->SetLight( 0, &light );
 
 	//light.dvDirection = D3DVECTOR( -(float)sin(-0.9), 0, -(float)cos(-0.9) );
 	//light.dvDirection = D3DVECTOR(8.0f, 10.0f, -4.0f);
@@ -1060,7 +1058,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	light.dvDirection = D3DVECTOR(-8.0f, sn * 11.0f, cs * -11.0f);
 
-	hr = m_pd3dDevice->SetLight( 1, &light );
+	m_pd3dDevice->SetLight( 1, &light );
 
 	Vertex3D rgv[8];
 	rgv[0].Set(left,top,0);
@@ -1079,18 +1077,18 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	EnableLightMap(g_pplayer->m_ptable->m_fRenderShadows, 0);
 
 	//m_pd3dDevice->SetTexture(eLightProject1, m_pddsLightProjectTexture);
-    hr = m_pd3dDevice->SetRenderState( D3DRENDERSTATE_SRCBLEND,   D3DBLEND_SRCALPHA);
-    hr = m_pd3dDevice->SetRenderState( D3DRENDERSTATE_DESTBLEND,  D3DBLEND_INVSRCALPHA);
+   m_pd3dDevice->SetRenderState( RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+   m_pd3dDevice->SetRenderState( RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
 
 	g_pplayer->m_pin3d.SetTextureFilter ( eLightProject1, TEXTURE_MODE_BILINEAR ); 
-	hr = m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-	hr = m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLORARG2, D3DTA_CURRENT );
-	hr = m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+	m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+	m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLORARG2, D3DTA_CURRENT );
+	m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
 	//m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 	//m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_ALPHAARG1, D3DTA_CURRENT );
 	//m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_ALPHAARG2, D3DTA_CURRENT );
-	hr = m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_TEXCOORDINDEX, 1 );
-	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_TEXTUREPERSPECTIVE, TRUE );
+	m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_TEXCOORDINDEX, 1 );
+   m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, TRUE );
 
 	//m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLOROP,   D3DTOP_DISABLE);
 
@@ -1114,7 +1112,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
 		}
 
-	hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
+   m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
 
 	const GPINFLOAT m_aspect = 4.0/3.0;//((GPINFLOAT)m_dwRenderWidth)/m_dwRenderHeight;
 
@@ -1160,9 +1158,9 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 		}
 
 	//hr = m_pd3dDevice->SetLight(0, &light);
-    hr = m_pd3dDevice->LightEnable(0, TRUE);
-	hr = m_pd3dDevice->LightEnable(1, TRUE);
-    hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, TRUE);
+   m_pd3dDevice->LightEnable(0, TRUE);
+	m_pd3dDevice->LightEnable(1, TRUE);
+   m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 
 	//EnableLightMap(fFalse, -1);
 
@@ -1485,12 +1483,12 @@ void Pin3D::SetMaterial(const float r, const float g, const float b, const float
 	
 void Pin3D::SetColorKeyEnabled(const BOOL fColorKey) const
 	{
-	m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, fColorKey);
+      m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, fColorKey);
 	}
 
 void Pin3D::SetAlphaEnabled(const BOOL fAlpha) const
 	{
-	m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, fAlpha);
+      m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, fAlpha);
 	}
 
 void Pin3D::SetFiltersLinear() const

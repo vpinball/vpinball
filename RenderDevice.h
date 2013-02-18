@@ -7,12 +7,38 @@ class RenderDevice : public IDirect3DDevice7
 {
 public:
 
+   typedef enum RenderStates
+   {
+      ALPHABLENDENABLE   = D3DRENDERSTATE_ALPHABLENDENABLE,
+      ALPHATESTENABLE    = D3DRENDERSTATE_ALPHATESTENABLE,
+      ALPHAREF           = D3DRENDERSTATE_ALPHAREF,
+      ALPHAFUNC          = D3DRENDERSTATE_ALPHAFUNC,
+      CLIPPING           = D3DRENDERSTATE_CLIPPING,
+      CLIPPLANEENABLE    = D3DRENDERSTATE_CLIPPLANEENABLE,
+      COLORKEYENABLE     = D3DRENDERSTATE_COLORKEYENABLE,
+      CULLMODE           = D3DRENDERSTATE_CULLMODE,
+      DITHERENABLE       = D3DRENDERSTATE_DITHERENABLE,
+      DESTBLEND          = D3DRENDERSTATE_DESTBLEND,
+      LIGHTING           = D3DRENDERSTATE_LIGHTING,
+      SPECULARENABLE     = D3DRENDERSTATE_SPECULARENABLE,
+      SRCBLEND           = D3DRENDERSTATE_SRCBLEND,
+      TEXTUREPERSPECTIVE = D3DRENDERSTATE_TEXTUREPERSPECTIVE,
+      ZENABLE            = D3DRENDERSTATE_ZENABLE,
+      ZFUNC              = D3DRENDERSTATE_ZFUNC,
+      ZWRITEENABLE       = D3DRENDERSTATE_ZWRITEENABLE
+   };
    static bool createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7, Texture *_backBuffer );
 
    RenderDevice( void );
 
    static RenderDevice* instance( void );
-   
+
+   virtual void setMaterial( THIS_ Material *_material );
+   virtual void SetRenderState( RenderStates,DWORD );
+
+
+   //########################## simple wrapper functions (interface for DX7)##################################
+
    virtual STDMETHODIMP QueryInterface( THIS_ REFIID riid, LPVOID * ppvObj );
 
    virtual STDOVERRIDEMETHODIMP_(ULONG) AddRef( void );
@@ -45,8 +71,6 @@ public:
    virtual STDMETHODIMP GetViewport( THIS_ LPD3DVIEWPORT7 );
 
    virtual STDMETHODIMP SetMaterial( THIS_ LPD3DMATERIAL7 );
-
-   virtual void setMaterial( THIS_ Material *_material );
 
    virtual STDMETHODIMP GetMaterial( THIS_ LPD3DMATERIAL7 );
 
