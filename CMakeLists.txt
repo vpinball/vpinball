@@ -105,7 +105,6 @@ set(SOURCES
   comcontrol.cpp
   decal.cpp
   def.cpp
-  display.cpp
   dispreel.cpp
   disputil.cpp
   dragpoint.cpp
@@ -121,6 +120,7 @@ set(SOURCES
   kicker.cpp
   light.cpp
   lightseq.cpp
+  Material.cpp
   memutil.cpp
   mesh.cpp
   mixer.cpp
@@ -138,6 +138,7 @@ set(SOURCES
   propbrowser.cpp
   ramp.cpp
   regutil.cpp
+  RenderDevice.cpp
   shadowsur.cpp
   slintf.cpp
   spinner.cpp
@@ -145,6 +146,7 @@ set(SOURCES
   surface.cpp
   tableglobal.cpp
   textbox.cpp
+  Texture.cpp
   timer.cpp
   trigger.cpp
   variant.cpp
@@ -152,7 +154,7 @@ set(SOURCES
   vpinball.cpp
   wintimer.cpp
   worker.cpp
-  xaudplayer.cpp
+  xaudplayer.cpp  
   pin/ball.cpp
   pin/collide.cpp
   pin/collideex.cpp
