@@ -53,6 +53,7 @@ public:
 
 	void Render();
 
+	void DrawBallShadows();
 	void DrawBalls();
 
 	void DrawAcrylics();
@@ -86,9 +87,6 @@ public:
 
 	void UltraPlunger();
 	void mechPlungerIn( const int z );		
-   inline HitOctree GetShadowOctree(){ return m_shadowoctree; };
-   inline float GetBallStretchX(){ return m_BallStretchX; }
-   inline float GetBallStretchY(){ return m_BallStretchY; }
 
 #ifdef PLAYBACK
 	float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
