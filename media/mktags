@@ -1,0 +1,109 @@
+#!/usr/bin/perl
+#
+#
+@dirs = qw( . .. ../vp-sup ../vpinres ../pin ../media/xaudio );
+
+chdir "$ENV{'DEVEL'}/pin/vp/pin";
+
+mkdir "./tagdir" if( ! -d "./tagdir" );
+
+foreach( @dirs )
+{
+	local( @sourcecode ) = &dodir( $_ );
+
+	for( $i=0; $i<$#sourcecode; $i++ )
+	{
+#		print "doing tags for sourcecode[i] == $sourcecode[$i]\n";
+
+		$basename = $sourcecode[$i];
+		$basename =~ s/^.*\///;
+		$tagfilename = "tagdir/$basename.tg";
+
+		if( (stat( $sourcecode[$i] ))[9] > (stat( $tagfilename ))[9] )
+		{
+			$fn = $sourcecode[$i];
+
+			$cmd = "ctags -o - $fn | grep -v ^._TAG > $tagfilename";
+#			printf( "mtimes %d %d\n", (stat( $sourcecode[$i] ))[9], (stat( $tagfilename ))[9] );
+			print "$cmd\n";
+			system "$cmd";
+		}
+	}
+}
+
+&append_tags();
+
+sub append_tags
+{
+	unlink "./tags";
+
+	opendir( TAGDIR, "tagdir" );
+	@entries = readdir( TAGDIR );
+	closedir( TAGDIR );
+
+	foreach( @entries )
+	{
+		next if( ! /\.tg$/ );
+
+		undef $/;
+		open( TAGFILE, "< tagdir/$_" );
+		$contents .= <TAGFILE>;
+		close( TAGFILE );
+	}
+
+	open( TAGS, "> tags" );
+	print TAGS <<EOF;
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert\@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.5	//
+EOF
+	@contents = split( '\n', $contents );
+	@sorted = sort @contents;
+	$contents = join( "\n", @sorted );
+	print TAGS $contents;
+	close( TAGS );
+}
+
+sub dodir
+{
+	local( $dir ) = @_;
+	local( @rval );
+	local( @entries );
+#	printf( "Looking in $dir\n" );
+
+	opendir( DIR, $dir );
+	@entries = readdir( DIR );
+	closedir( DIR );
+
+	foreach( @entries )
+	{
+#		print "looking at $_\n";
+
+		next if( /^\.\.?/ );
+
+		if( -d "$dir/$_" )
+		{
+			next if( $dir =~ /\.$/ );
+			next if( /^CVS/ );
+			next if( /^data/ );
+			next if( /^Release/ );
+			next if( /^Debug/ );
+
+#			print "$_\n";
+			push @rval, &dodir( "$dir/$_" );
+		}
+		else
+		{
+			if( /\.[Cch][cp]?p?$/ )
+			{
+#				print "$dir/$_\n";
+				push @rval, "$dir/$_";
+			}
+		}
+	}
+
+	@rval;
+}

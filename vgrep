@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+
+foreach( qw( . pin ) )
+{
+	push( @cfiles, &dodir( $_ ) );
+}
+
+if( 0 )
+{
+	foreach ( @cfiles )
+	{
+		print "$_\n";
+	}
+
+	exit 0;
+}
+
+$cmd = "grep -l @ARGV @cfiles";
+#print $cmd;
+$results = `$cmd`;
+
+$results =~ s/\n/ /g;
+#print "\n\nresults: $results";
+
+if( $results =~ /[^ ]/ )
+{
+	$cmd = "vi -c /$ARGV[$#ARGV] $results";
+	#print $cmd;
+	system $cmd;
+}
+
+exit 0;
+
+sub dodir
+{
+	local( $dir ) = @_;
+	local( @rval );
+	local( @entries );
+#	printf( "Looking in $dir\n" );
+
+	opendir( DIR, $dir );
+	@entries = readdir( DIR );
+	closedir( DIR );
+
+	foreach( @entries )
+	{
+#		print "looking at $_\n";
+
+		next if( /^\.\.?/ );
+
+		if( -d "$dir/$_" )
+		{
+			next if( $dir =~ /\.$/ );
+			next if( /^CVS/ );
+			next if( /^data/ );
+			next if( /^Release/ );
+			next if( /^Debug/ );
+
+#			print "$_\n";
+			push @rval, &dodir( "$dir/$_" );
+		}
+		else
+		{
+			if( /\.[Cch][cp]?p?$/ )
+			{
+#				print "$dir/$_\n";
+				push @rval, "$dir/$_";
+			}
+		}
+	}
+
+	@rval;
+}
+
