@@ -20,7 +20,7 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 	m_fLockedByLS = false;			//>>> added by chris
 	m_realState	= m_d.m_state;		//>>> added by chris
-	
+
 	return InitVBA(fTrue, 0, NULL);
 	}
 
@@ -320,11 +320,9 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+32],inv_width,inv_height);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64],inv_width,inv_height);
 			}
-
+      
 		SetNormal(rgv3D, rgiBumperStatic, 32, NULL, NULL, 0);
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-												  rgv3D, 32,
-												  (LPWORD)rgiBumperStatic, 32, 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 32, (LPWORD)rgiBumperStatic, 32, 0);
 		//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 		//							  rgv3D, 32, 0);
 
@@ -348,10 +346,10 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
 			SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
 			SetNormal(&rgv3D[32], &rgiNormal[3], 3, NULL, &rgi[2], 2);
 
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
 														  rgv3D, 64,
 														  (LPWORD)rgi, 4, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
 														  &rgv3D[32], 64,
 														  (LPWORD)rgi, 4, 0);
 			}
@@ -361,19 +359,73 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
 		ppin3d->SetTexture(NULL);
 		}
 
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	}
+   const float outerradius = m_d.m_radius + m_d.m_overhang;
+
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
+   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
+   //	Vertex3D rgv3D[160];
+   for (int l=0;l<32;l++)
+   {
+      const float angle = (float)(M_PI*2.0/32.0)*(float)l;
+      const float sinangle =  sinf(angle);
+      const float cosangle = -cosf(angle);
+
+      m_rgb3D[l].x = sinangle*m_d.m_radius + m_d.m_vCenter.x;
+      m_rgb3D[l].y = cosangle*m_d.m_radius + m_d.m_vCenter.y;
+      m_rgb3D[l].z = height+40.0f;
+      m_rgb3D[l+32].x = m_rgb3D[l].x;
+      m_rgb3D[l+32].y = m_rgb3D[l].y;
+      m_rgb3D[l+32].z = height;
+
+      m_rgb3D[l+64].x = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
+      m_rgb3D[l+64].y = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
+      m_rgb3D[l+64].z = height+60.0f;
+
+      m_rgb3D[l+96].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
+      m_rgb3D[l+96].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
+      m_rgb3D[l+96].z = height+50.0f;
+
+      m_rgb3D[l+128].x = sinangle*outerradius + m_d.m_vCenter.x;
+      m_rgb3D[l+128].y = cosangle*outerradius + m_d.m_vCenter.y;
+      m_rgb3D[l+128].z = height+40.0f;
+
+      m_rgb3D[l].tu = 0.5f+sinangle*0.5f;
+      m_rgb3D[l].tv = 0.5f-cosangle*0.5f;
+      m_rgb3D[l+32].tu = 0.5f+sinangle*0.5f;
+      m_rgb3D[l+32].tv = 0.5f-cosangle*0.5f;
+      m_rgb3D[l+64].tu = 0.5f+sinangle*0.25f;
+      m_rgb3D[l+64].tv = 0.5f-cosangle*0.25f;
+      m_rgb3D[l+96].tu = 0.5f+sinangle*(float)(0.5*0.9);
+      m_rgb3D[l+96].tv = 0.5f-cosangle*(float)(0.5*0.9);
+      m_rgb3D[l+128].tu = 0.5f+sinangle*0.5f;
+      m_rgb3D[l+128].tv = 0.5f-cosangle*0.5f;
+
+      ppin3d->m_lightproject.CalcCoordinates(&m_rgb3D[l],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&m_rgb3D[l+32],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&m_rgb3D[l+64],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&m_rgb3D[l+96],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&m_rgb3D[l+128],inv_width,inv_height);
+   }
+
+
+}
+
 
 void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	if(!m_d.m_fVisible)	return;
 
-	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+/*	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 	
 	const float outerradius = m_d.m_radius + m_d.m_overhang;
 
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
@@ -421,6 +473,10 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+96],inv_width,inv_height);
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+128],inv_width,inv_height);
 		}
+*/
+
+   Vertex3D *rgv3D=m_rgb3D;
+   //memcpy( rgv3D, m_rgb3D, sizeof(m_rgb3D));
 
 	ppin3d->ClearExtents(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar);
 
@@ -469,40 +525,42 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 			pd3dDevice->setMaterial(&mtrl);
 
 			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  &rgv3D[64], 32,
-													  (LPWORD)rgiBumperStatic, 32, 0);
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &rgv3D[64], 32, (LPWORD)rgiBumperStatic, 32, 0);
+/*
+         for (int l=0;l<32;l++)
+         {
+            const WORD rgiNormal[6] = 
+            {
+               (l == 0) ? 31 : (l-1),
+               (l == 0) ? 63 : (l+31),
+               (l == 0) ? 33 : (l+1),
+               l,
+               l+32,
+               (l < 30) ? (l+2) : (l-30)
+            };
 
-			for (int l=0;l<32;l++)
-				{
-				const WORD rgiNormal[6] = {
-					(l == 0) ? 31 : (l-1),
-					(l == 0) ? 63 : (l+31),
-					(l == 0) ? 33 : (l+1),
-					l,
-					l+32,
-					(l < 30) ? (l+2) : (l-30)};
+               const WORD rgi[4] = 
+               {
+                  l,
+                  l+32,
+                  (l == 31) ? 32 : (l+33),
+                  (l == 31) ? 0 : (l+1)
+               };
 
-				const WORD rgi[4] = {
-					l,
-					l+32,
-					(l == 31) ? 32 : (l+33),
-					(l == 31) ? 0 : (l+1)};
+                  SetNormal(&rgv3D[64], rgiNormal, 3, NULL, rgi, 2);
+                  SetNormal(&rgv3D[96], rgiNormal, 3, NULL, rgi, 2);
+                  SetNormal(&rgv3D[64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
+                  SetNormal(&rgv3D[96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
 
-				SetNormal(&rgv3D[64], rgiNormal, 3, NULL, rgi, 2);
-				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, rgi, 2);
-				SetNormal(&rgv3D[64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-				SetNormal(&rgv3D[96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  &rgv3D[64], 64,
-														  (LPWORD)rgi, 4, 0);
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  &rgv3D[96], 64,
-														  (LPWORD)rgi, 4, 0);
-				}
-			}
-
+                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+                     &rgv3D[64], 64,
+                     (LPWORD)rgi, 4, 0);
+                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+                     &rgv3D[96], 64,
+                     (LPWORD)rgi, 4, 0);
+         }
+*/
+      }
 		if (m_d.m_fSideVisible)
 			{
 			const float rside = (m_d.m_sidecolor & 255) * (float) (1.0/255.0);
@@ -635,19 +693,23 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 
 			for (int l=0;l<32;l++)
 				{
-				const WORD rgiNormal[6] = {
+				const WORD rgiNormal[6] = 
+            {
 					(l == 0) ? 31 : (l-1),
 					(l == 0) ? 63 : (l+31),
 					(l == 0) ? 33 : (l+1),
 					l,
 					l+32,
-					(l < 30) ? (l+2) : (l-30)};
+					(l < 30) ? (l+2) : (l-30)
+            };
 
-				WORD rgi[4] = {
-					l,
-					l+32,
-					(l == 31) ? 32 : (l+33),
-					(l == 31) ? 0 : (l+1)};
+				WORD rgi[4] = 
+            {
+               l,
+               l+32,
+               (l == 31) ? 32 : (l+33),
+               (l == 31) ? 0 : (l+1)
+            };
 
 				SetNormal(&rgv3D[64], rgiNormal, 3, NULL, rgi, 2);
 				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, rgi, 2);

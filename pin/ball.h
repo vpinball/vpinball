@@ -116,6 +116,11 @@ public:
 	bool fFrozen;
 
    Material mtrl;
+   float sx,sy,sz;
+   float shadowradius;
+   float shadowradiusX;
+   float shadowradiusY;
+   float inv_shadowradius;
    Vertex3D_NoTex2 rgv3D[4];
    Vertex3D_NoTex2 rgv3DArrow[4];
    BOOL useShadows;

@@ -24,6 +24,7 @@ Ball::~Ball()
    _balls_created--; //Added by JEP.  Need to keep track of number of balls on table for autostart to work.
 }
 
+
 void Ball::Init()
 {
    // Only called by real balls, not temporary objects created for physics/rendering
@@ -92,22 +93,44 @@ void Ball::Init()
       mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
       mtrl.power = 0;
    mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+
+   const float r = (m_color & 255) * (float)(1.0/255.0);
+   const float g = (m_color & 65280) * (float)(1.0/65280.0);
+   const float b = (m_color & 16711680) * (float)(1.0/16711680.0);
+   mtrl.diffuse.r = mtrl.ambient.r = r;
+   mtrl.diffuse.g = mtrl.ambient.g = g;
+   mtrl.diffuse.b = mtrl.ambient.b = b;
+
+   float radiusX = radius * g_pplayer->GetBallStretchX();
+   float radiusY = radius * g_pplayer->GetBallStretchY();
+
+   const float sn = sinf(g_pplayer->m_pin3d.m_inclination);
+   const float cs = cosf(g_pplayer->m_pin3d.m_inclination);
+
+   sx=radiusX;
+   sy=radiusY*cs;
+   sz=radius*sn;
+
    rgv3D[0].tu = 0;
    rgv3D[0].tv = 0;
    rgv3D[0].nx = 0;
    rgv3D[0].ny = 0;
    rgv3D[0].nz = -1.0f;
 
-   rgv3D[3].tu = 0;
+   rgv3D[3].tu = 0.0f;
+   rgv3D[3].tv = 1.0f;
    rgv3D[3].nx = 0;
    rgv3D[3].ny = 0;
    rgv3D[3].nz = -1.0f;
 
+   rgv3D[2].tu = 1.0f;
+   rgv3D[2].tv = 1.0f;
    rgv3D[2].nx = 0;
    rgv3D[2].ny = 0;
    rgv3D[2].nz = -1.0f;
 
-   rgv3D[1].tv = 0;
+   rgv3D[1].tu = 1.0f;
+   rgv3D[1].tv = 0.0f;
    rgv3D[1].nx = 0;
    rgv3D[1].ny = 0;
    rgv3D[1].nz = -1.0f;
@@ -136,6 +159,11 @@ void Ball::Init()
    rgv3DArrow[3].y = 0.333333333f;
    rgv3DArrow[3].z = -0.881917103f;
 
+   shadowradius = radius*1.2f;
+   shadowradiusX = shadowradius * g_pplayer->GetBallStretchX();
+   shadowradiusY = shadowradius * g_pplayer->GetBallStretchY();
+   inv_shadowradius = 0.5f/shadowradius;
+
    m_rgv3DShadow[0].tu = 0;
    m_rgv3DShadow[0].tv = 0;
    m_rgv3DShadow[0].nx = 0;
@@ -159,7 +187,6 @@ void Ball::Init()
    m_rgv3DShadow[3].nx = 0;
    m_rgv3DShadow[3].ny = 0;
    m_rgv3DShadow[3].nz = -1.0f;
-
 
 }
 
@@ -718,45 +745,34 @@ void Ball::InvalidateRect(RECT * const prc)
 
 void Ball::Draw()
 {
-   float radiusX = radius * g_pplayer->GetBallStretchX();
-   float radiusY = radius * g_pplayer->GetBallStretchY();
-
-   const float sn = sinf(g_pplayer->m_pin3d.m_inclination);
-   const float cs = cosf(g_pplayer->m_pin3d.m_inclination);
-
-   const float r = (m_color & 255) * (float)(1.0/255.0);
-   const float g = (m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (m_color & 16711680) * (float)(1.0/16711680.0);
-   mtrl.diffuse.r = mtrl.ambient.r = r;
-   mtrl.diffuse.g = mtrl.ambient.g = g;
-   mtrl.diffuse.b = mtrl.ambient.b = b;
-
+   WORD triangleStripIndex[4]={0,3,1,2};
+   useShadows=true;
+   useDecals=false;
    const float zheight = (!fFrozen) ? z : (z - radius);
 
-   rgv3D[0].x = x - radiusX;
-   rgv3D[0].y = y - (radiusY * cs);
-   rgv3D[0].z = zheight + (radius * sn);
-   rgv3D[0].tu = 0;
-   rgv3D[0].tv = 0;
-   rgv3D[0].nx = 0;
-   rgv3D[0].ny = 0;
-   rgv3D[0].nz = -1.0f;
+   rgv3D[3].x = x-sx;
+   rgv3D[3].y = y-sy;
+   rgv3D[3].z = zheight + sz;
 
-   rgv3D[3].x = x - radiusX;
-   rgv3D[3].y = y + (radiusY * cs);
-   rgv3D[3].z = zheight - (radius * sn);
+   rgv3D[2].x = x+sx;
+   rgv3D[2].y = y-sy;
+   rgv3D[2].z = zheight + sz;
 
-   rgv3D[2].x = x + radiusX;
-   rgv3D[2].y = y + (radiusY * cs);
-   rgv3D[2].z = zheight - (radius * sn);
+   rgv3D[0].x = x-sx;
+   rgv3D[0].y = y+sy;
+   rgv3D[0].z = zheight - sz;
 
-   rgv3D[1].x = x + radiusX;
-   rgv3D[1].y = y - (radiusY * cs);
-   rgv3D[1].z = zheight + (radius * sn);
+   rgv3D[1].x = x+sx;
+   rgv3D[1].y = y+sy;
+   rgv3D[1].z = zheight - sz;
 
    g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x0000001);
    g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
    g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+
+   g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+   g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+   g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
 
    if ( useAntiAliasing )
    {
@@ -776,13 +792,12 @@ void Ball::Draw()
       g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_NONE);
    }
 
+   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+   g_pplayer->m_pin3d.m_pd3dDevice->setMaterial(&mtrl);
+   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    if (!m_pin)
    {
       g_pplayer->m_pin3d.m_pd3dDevice->SetTexture(0, g_pplayer->m_pin3d.m_pddsBallTexture);
-      rgv3D[3].tv = 1.0f;
-      rgv3D[2].tu = 1.0f;
-      rgv3D[2].tv = 1.0f;
-      rgv3D[1].tu = 1.0f;
    }
    else
    {
@@ -793,16 +808,7 @@ void Ball::Draw()
       rgv3D[2].tv = m_pin->m_maxtv;
       rgv3D[1].tu = m_pin->m_maxtu;
    }
-
-   g_pplayer->m_pin3d.m_pd3dDevice->setMaterial(&mtrl);
-//   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-   g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-   //m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-   g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-   g_pplayer->m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-
-   g_pplayer->m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,  (LPWORD)rgi0123, 4, NULL);
+   g_pplayer->m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)triangleStripIndex, 4, NULL);
 
    Vertex3D_NoTex2 rgv3DArrowTransformed[4];
    Vertex3D_NoTex2 rgv3DArrowTransformed2[4];
@@ -846,7 +852,7 @@ void Ball::Draw()
             rgv3DArrowTransformed[iPoint].tu = rgv3DArrow[iPoint].tu * m_pinFront->m_maxtu;
             rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * m_pinFront->m_maxtv;
          }
-         g_pplayer->m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed, 4, (LPWORD)rgi0123, 4, NULL);
+         g_pplayer->m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed, 4, (LPWORD)triangleStripIndex, 4, NULL);
       }
       orientation.Identity();
       orientation.scaleX(g_pplayer->GetBallStretchX());
@@ -872,8 +878,7 @@ void Ball::Draw()
             rgv3DArrowTransformed2[iPoint].tu = rgv3DArrow[iPoint].tu * m_pinBack->m_maxtu;
             rgv3DArrowTransformed2[iPoint].tv = rgv3DArrow[iPoint].tv * m_pinBack->m_maxtv;
          }
-
-         g_pplayer->m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed2, 4, (LPWORD)rgi0123, 4, NULL);
+         g_pplayer->m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed2, 4, (LPWORD)triangleStripIndex, 4, NULL);
       }
    }
 
@@ -914,6 +919,7 @@ void Ball::Draw()
 static const Material shadowmtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 void Ball::DrawShadow()
 {
+   WORD triangleStripIndex[4]={3,0,2,1};
    g_pplayer->m_pin3d.m_pd3dDevice->SetMaterial( (LPD3DMATERIAL7)&shadowmtrl);
 
    // special check if shadow falls on an object temp. removed due to strange crashs
@@ -953,12 +959,6 @@ void Ball::DrawShadow()
       offsety = z*-0.5f;
       shadowz = 0.1f; //pball->z - pball->radius + 0.1f;
    }
-
-   const float shadowradius = radius*1.2f;
-   const float shadowradiusX = shadowradius * g_pplayer->GetBallStretchX();
-   const float shadowradiusY = shadowradius * g_pplayer->GetBallStretchY();
-   const float inv_shadowradius = 0.5f/shadowradius;
-
    m_rgv3DShadow[0].x = x - shadowradiusX + offsetx;
    m_rgv3DShadow[0].y = y - shadowradiusY + offsety;
    m_rgv3DShadow[0].z = shadowz;
@@ -998,6 +998,6 @@ void Ball::DrawShadow()
       g_pplayer->m_pin3d.m_pd3dDevice->SetTexture(0, g_pplayer->m_pin3d.m_pddsShadowTexture);
 
       //g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-      g_pplayer->m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, m_rgv3DShadow, 4, (LPWORD)rgi0123, 4, NULL);
+      g_pplayer->m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, m_rgv3DShadow, 4, (LPWORD)triangleStripIndex, 4, NULL);
    }
 }
