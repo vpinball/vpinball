@@ -112,6 +112,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flipper)
 
 	HitFlipper *m_phitflipper;
 
+   LPDIRECT3DVERTEXBUFFER7 vertexBuffer;
 // IFlipper
 public:
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);

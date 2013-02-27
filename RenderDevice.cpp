@@ -2,6 +2,7 @@
 #include "RenderDevice.h"
 
 static LPDIRECT3DDEVICE7 dx7Device;
+static LPDIRECT3D7 dx7;
 RenderDevice* RenderDevice::theDevice=0;
 
 bool RenderDevice::createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7, Texture *_backBuffer )
@@ -11,6 +12,7 @@ bool RenderDevice::createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7
    {
       return false;
    }
+   dx7=_dx7;
    return true;
 }
 
@@ -32,6 +34,22 @@ void RenderDevice::setMaterial( THIS_ Material *_material )
 void RenderDevice::SetRenderState( RenderStates p1,DWORD p2)
 {
    dx7Device->SetRenderState((D3DRENDERSTATETYPE)p1,p2);
+}
+
+bool RenderDevice::createVertexBuffer( unsigned int _length, DWORD _usage, DWORD _fvf, VertexBuffer **_vBuffer )
+{
+   D3DVERTEXBUFFERDESC vbd;
+   vbd.dwSize=sizeof(vbd);
+   vbd.dwCaps=D3DVBCAPS_WRITEONLY;
+   vbd.dwFVF=_fvf;
+   vbd.dwNumVertices=_length;
+   dx7->CreateVertexBuffer(&vbd, (LPDIRECT3DVERTEXBUFFER7*)_vBuffer,0);
+   return true;
+}
+
+void RenderDevice::renderPrimitive(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, LPWORD _indices, DWORD _numIndices, DWORD _flags)
+{
+   dx7Device->DrawIndexedPrimitiveVB( _primType, (LPDIRECT3DVERTEXBUFFER7)_vbuffer, _startVertex, _numVertices, _indices, _numIndices, _flags );
 }
 
 //########################## simple wrapper functions (interface for DX7)##################################

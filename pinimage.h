@@ -89,6 +89,9 @@ public:
 	void CreateNextMipMapLevel(Texture* pdds);
 
 	void Blur(Texture* pdds, const BYTE * const pbits, const int shadwidth, const int shadheight);
+   Texture* CreateOffscreen(const int width, const int height) const;
+   Texture* CreateZBufferOffscreen(const int width, const int height) const;
+   Texture* CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const;
 
 	BOOL m_fHardwareAccel;
 	BOOL m_fAlternateRender;

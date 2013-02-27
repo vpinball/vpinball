@@ -600,9 +600,9 @@ void Light::RenderCustomStatic(const RenderDevice* _pd3dDevice)
 		const RenderVertex * const pv1 = &rgv[ptri->c];
 		const RenderVertex * const pv2 = &rgv[ptri->b];
 
-		rgv3D[0].Set(pv0->x,pv0->y,height + 0.05f);
-		rgv3D[1].Set(pv1->x,pv1->y,height + 0.05f);
-		rgv3D[2].Set(pv2->x,pv2->y,height + 0.05f);
+      rgv3D[0].x=pv0->x; rgv3D[0].y=pv0->y; rgv3D[0].z=height+0.05f;
+      rgv3D[1].x=pv1->x; rgv3D[1].y=pv1->y; rgv3D[1].z=height+0.05f;
+      rgv3D[2].x=pv2->x; rgv3D[2].y=pv2->y; rgv3D[2].z=height+0.05f;
 
 		if (!m_fBackglass)
 			{
@@ -859,9 +859,9 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 			const RenderVertex * const pv1 = &rgv[ptri->c];
 			const RenderVertex * const pv2 = &rgv[ptri->b];
 
-			rgv3D[0].Set(pv0->x,pv0->y,height + 0.1f);
-			rgv3D[1].Set(pv1->x,pv1->y,height + 0.1f);
-			rgv3D[2].Set(pv2->x,pv2->y,height + 0.1f);
+         rgv3D[0].x=pv0->x; rgv3D[0].y=pv0->y; rgv3D[0].z=height+0.1f;
+         rgv3D[1].x=pv1->x; rgv3D[1].y=pv1->y; rgv3D[1].z=height+0.1f;
+         rgv3D[2].x=pv2->x; rgv3D[2].y=pv2->y; rgv3D[2].z=height+0.1f;
 
 			for (int l=0;l<3;l++)
 				{
@@ -932,7 +932,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 			pd3dDevice->SetRenderState( RenderDevice::ZWRITEENABLE, FALSE);
 
 		ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
-		m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
+		m_pobjframe[i]->pdds = g_pvp->m_pdd.CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 
 		if (m_pobjframe[i]->pdds == NULL)
 			{
@@ -1055,7 +1055,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 
 		ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
 
-		m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
+		m_pobjframe[i]->pdds = g_pvp->m_pdd.CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 
 		if (m_pobjframe[i]->pdds == NULL)
 			{

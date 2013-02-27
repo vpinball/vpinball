@@ -65,6 +65,10 @@ class Bumper :
 	public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 	//public EditableImpl<Bumper>
 {
+   WORD rgiNormal[32*6];
+   WORD indices[32*4];
+   VertexBuffer *vertexBuffer;
+
 public:
 	Bumper();
 	~Bumper();

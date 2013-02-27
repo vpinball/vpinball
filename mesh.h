@@ -209,49 +209,49 @@ inline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJo
 */
 
 inline void SetNormal(Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * rgvApply, const WORD * rgiApply, int applycount)
-	{
-	// If apply-to array is null, just apply the resulting normal to incoming array
-	if (rgvApply == NULL)
-		{
-		rgvApply = rgv;
-		}
+{
+   // If apply-to array is null, just apply the resulting normal to incoming array
+   if (rgvApply == NULL)
+   {
+      rgvApply = rgv;
+   }
 
-	if (rgiApply == NULL)
-		{
-		rgiApply = rgi;
-		}
+   if (rgiApply == NULL)
+   {
+      rgiApply = rgi;
+   }
 
-	if (applycount == 0)
-		{
-		applycount = count;
-		}
+   if (applycount == 0)
+   {
+      applycount = count;
+   }
 
-	Vertex3Ds vnormal(0.0f,0.0f,0.0f);
+   Vertex3Ds vnormal(0.0f,0.0f,0.0f);
 
-	for (int i=0; i<count; ++i)
-		{
-		const int l = rgi[i];
-		const int m = rgi[(i < count-1) ? (i+1) : 0];
+   for (int i=0; i<count; ++i)
+   {
+      const int l = rgi[i];
+      const int m = rgi[(i < count-1) ? (i+1) : 0];
 
-		vnormal.x += (rgv[l].y - rgv[m].y) * (rgv[l].z + rgv[m].z);
-		vnormal.y += (rgv[l].z - rgv[m].z) * (rgv[l].x + rgv[m].x);
-		vnormal.z += (rgv[l].x - rgv[m].x) * (rgv[l].y + rgv[m].y);		
-		}
+      vnormal.x += (rgv[l].y - rgv[m].y) * (rgv[l].z + rgv[m].z);
+      vnormal.y += (rgv[l].z - rgv[m].z) * (rgv[l].x + rgv[m].x);
+      vnormal.z += (rgv[l].x - rgv[m].x) * (rgv[l].y + rgv[m].y);		
+   }
 
-	const float len = vnormal.x * vnormal.x + vnormal.y * vnormal.y + vnormal.z * vnormal.z;
-	const float inv_len = (len > 0.0f) ? -1.0f/sqrtf(len) : 0.0f; //!! opt.
-	vnormal.x *= inv_len;
-	vnormal.y *= inv_len;
-	vnormal.z *= inv_len;
+   const float len = vnormal.x * vnormal.x + vnormal.y * vnormal.y + vnormal.z * vnormal.z;
+   const float inv_len = (len > 0.0f) ? -1.0f/sqrtf(len) : 0.0f; //!! opt.
+   vnormal.x *= inv_len;
+   vnormal.y *= inv_len;
+   vnormal.z *= inv_len;
 
-	for (int i=0; i<applycount; ++i)
-		{
-		const int l = rgiApply[i];
-		rgvApply[l].nx = vnormal.x;
-		rgvApply[l].ny = vnormal.y;
-		rgvApply[l].nz = vnormal.z;
-		}
-	}
+   for (int i=0; i<applycount; ++i)
+   {
+      const int l = rgiApply[i];
+      rgvApply[l].nx = vnormal.x;
+      rgvApply[l].ny = vnormal.y;
+      rgvApply[l].nz = vnormal.z;
+   }
+}
 
 //copy pasted from above
 inline void SetNormal(Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex3D_NoTex2 * rgvApply, const WORD * rgiApply, int applycount)

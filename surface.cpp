@@ -1093,8 +1093,10 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 		ppin3d->ExpandExtents(&pof->rc, rgv3D, &plinesling->m_slingshotanim.m_znear, &plinesling->m_slingshotanim.m_zfar, 6, fFalse);
 
-		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		//pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+      //pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+      pof->pdds = g_pvp->m_pdd.CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+      pof->pddsZBuffer = g_pvp->m_pdd.CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		SetNormal(rgv3D, rgiSlingshot0, 4, NULL, NULL, NULL);
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 5,(LPWORD)rgiSlingshot0, 4, 0);
@@ -1152,7 +1154,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 		}
 
-	D3DMATERIAL7 mtrl;
+	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 	mtrl.power = 0;
@@ -1241,7 +1243,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 	Vertex2D * const rgnormal = new Vertex2D[cvertex];
 
-	pd3dDevice->SetMaterial(&mtrl);
+	pd3dDevice->setMaterial(&mtrl);
 
 	for (int i=0;i<cvertex;i++)
 		{
@@ -1268,10 +1270,10 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			//RenderVertex *pv3 = &rgv[(i+2) % cvertex];
 
 			Vertex3D rgv3D[4];
-			rgv3D[0].Set(pv1->x,pv1->y,m_d.m_heightbottom);
-			rgv3D[1].Set(pv1->x,pv1->y,m_d.m_heighttop);
-			rgv3D[2].Set(pv2->x,pv2->y,m_d.m_heighttop);
-			rgv3D[3].Set(pv2->x,pv2->y,m_d.m_heightbottom);
+         rgv3D[0].x=pv1->x; rgv3D[0].y=pv1->y; rgv3D[0].z=m_d.m_heightbottom;
+         rgv3D[1].x=pv1->x; rgv3D[1].y=pv1->y; rgv3D[1].z=m_d.m_heighttop;
+         rgv3D[2].x=pv2->x; rgv3D[2].y=pv2->y; rgv3D[2].z=m_d.m_heighttop;
+         rgv3D[3].x=pv2->x; rgv3D[3].y=pv2->y; rgv3D[3].z=m_d.m_heightbottom;
 
 			const int a = (i == 0) ? (cvertex-1) : (i-1);
 			const int c = (i < cvertex-1) ? (i+1) : 0;
@@ -1528,7 +1530,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			rgv[cvertex+5].y += 1.0f;
 			}
 
-		pd3dDevice->SetMaterial(&mtrl);
+		pd3dDevice->setMaterial(&mtrl);
 
 		const float height = (!fDrop) ? m_d.m_heighttop : (m_d.m_heightbottom + 0.1f);
 
@@ -1544,9 +1546,9 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			const RenderVertex * const pv2 = &rgv[ptri->c];
 
 			Vertex3D rgv3D[3];
-			rgv3D[0].Set(pv0->x,pv0->y,height);
-			rgv3D[2].Set(pv1->x,pv1->y,height);
-			rgv3D[1].Set(pv2->x,pv2->y,height);
+         rgv3D[0].x=pv0->x; rgv3D[0].y=pv0->y; rgv3D[0].z=height;
+         rgv3D[2].x=pv1->x; rgv3D[2].y=pv1->y; rgv3D[2].z=height;
+         rgv3D[1].x=pv2->x; rgv3D[1].y=pv2->y; rgv3D[1].z=height;
 
 			rgv3D[0].tu = rgv3D[0].x *inv_tablewidth;
 			rgv3D[0].tv = rgv3D[0].y *inv_tableheight;
@@ -1587,15 +1589,17 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 	if (fMover)
 		{
 		// Create the color surface.
-		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+//		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+      pof->pdds = g_pvp->m_pdd.CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
 		
 		// Check if we are a floor... in which case we don't want to affect z.
 		if (!m_d.m_fFloor)
 			{
 			// Create the z surface.
-			pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-			/*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+         //pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+         pof->pddsZBuffer = g_pvp->m_pdd.CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+			pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 			}
 
 		ppin3d->ExpandRectByRect(&m_phitdrop->m_polydropanim.m_rcBounds, &pof->rc);

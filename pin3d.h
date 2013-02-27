@@ -201,10 +201,6 @@ public:
 
 	void ClipRectToVisibleArea(RECT * const prc) const;
 
-	Texture* CreateOffscreen(const int width, const int height) const;
-	Texture* CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const;
-	Texture* CreateZBufferOffscreen(const int width, const int height) const;
-
 	LPDIRECTDRAW7 m_pDD;
 	Texture* m_pddsFrontBuffer;
 	Texture* m_pddsBackBuffer;

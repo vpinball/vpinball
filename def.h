@@ -138,7 +138,7 @@ public:
 
 	D3DVALUE tu2;
 	D3DVALUE tv2;
-
+/*
 	inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
 	inline void Normalize()
 	{
@@ -181,7 +181,8 @@ public:
 		y += pv.y;
 		z += pv.z;
 	}
-	};
+   */
+};
 
 __declspec(align(16))
 class Vertex3D_NoTex2 // for rendering, uses MY_D3DFVF_NOTEX2_VERTEX or MY_D3DTRANSFORMED_NOTEX2_VERTEX

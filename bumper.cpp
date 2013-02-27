@@ -1,13 +1,29 @@
 #include "stdafx.h"
 
 Bumper::Bumper()
-	{
-	m_pbumperhitcircle = NULL;
-	}
+{
+   m_pbumperhitcircle = NULL;
+   vertexBuffer=0;
+   int t,l,i;
+   for (l=0,i=0,t=0;l<32;l++,i+=4,t+=6)
+   {
+      rgiNormal[t]=(l == 0) ? 31 : (l-1);
+      rgiNormal[t+1]=(l == 0) ? 63 : (l+31);
+      rgiNormal[t+2]=(l == 0) ? 33 : (l+1);
+      rgiNormal[t+3]=l;
+      rgiNormal[t+4]=l+32;
+      rgiNormal[t+5]=(l < 30) ? (l+2) : (l-30);
+
+      indices[i]=l;
+      indices[i+1]=l+32;
+      indices[i+2]=(l == 31) ? 32 : (l+33);
+      indices[i+3]=(l == 31) ? 0 : (l+1);
+   }
+}
 
 Bumper::~Bumper()
-	{
-	}
+{
+}
 
 HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
@@ -261,13 +277,16 @@ static const Material bumpermtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.
 void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-      
+
 	// ensure we are not disabled at game start
 	m_fDisabled = fFalse;
 	if(!m_d.m_fVisible)	return;
-		
-	// All this function does is render the bumper image so the black shows through where it's missing in the animated form
 
+   if( !vertexBuffer )
+   {
+      pd3dDevice->createVertexBuffer( 32+32*64, 0, MY_D3DFVF_VERTEX, &vertexBuffer );
+   }
+	// All this function does is render the bumper image so the black shows through where it's missing in the animated form
 	PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);	
 
 	if (pin)
@@ -291,69 +310,71 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
 		const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 		Vertex3D rgv3D[96];
+      Vertex3D *buf;
 		for (int l=0;l<32;l++)
-			{
-			const float angle = (float)(M_PI*2.0/32.0)*(float)l;
-			const float sinangle =  sinf(angle);
-			const float cosangle = -cosf(angle);
+      {
+         const float angle = (float)(M_PI*2.0/32.0)*(float)l;
+         const float sinangle =  sinf(angle);
+         const float cosangle = -cosf(angle);
 
-			rgv3D[l].x    = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
-			rgv3D[l].y    = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
-			rgv3D[l].z    = height+60.0f;
+         rgv3D[l].x    = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
+         rgv3D[l].y    = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
+         rgv3D[l].z    = height+60.0f;
 
-			rgv3D[l+32].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
-			rgv3D[l+32].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
-			rgv3D[l+32].z = height+50.0f;
+         rgv3D[l+32].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
+         rgv3D[l+32].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
+         rgv3D[l+32].z = height+50.0f;
 
-			rgv3D[l+64].x = sinangle*outerradius + m_d.m_vCenter.x;
-			rgv3D[l+64].y = cosangle*outerradius + m_d.m_vCenter.y;
-			rgv3D[l+64].z = height+40.0f;
+         rgv3D[l+64].x = sinangle*outerradius + m_d.m_vCenter.x;
+         rgv3D[l+64].y = cosangle*outerradius + m_d.m_vCenter.y;
+         rgv3D[l+64].z = height+40.0f;
 
-			rgv3D[l].tu    = (0.5f+sinangle*0.25f)*maxtu;
-			rgv3D[l].tv    = (0.5f+cosangle*0.25f)*maxtv;
-			rgv3D[l+32].tu = (0.5f+sinangle*(float)(0.5*0.9))*maxtu;
-			rgv3D[l+32].tv = (0.5f+cosangle*(float)(0.5*0.9))*maxtv;
-			rgv3D[l+64].tu = (0.5f+sinangle*0.5f)*maxtu;
-			rgv3D[l+64].tv = (0.5f+cosangle*0.5f)*maxtv;
+         rgv3D[l].tu    = (0.5f+sinangle*0.25f)*maxtu;
+         rgv3D[l].tv    = (0.5f+cosangle*0.25f)*maxtv;
+         rgv3D[l+32].tu = (0.5f+sinangle*(float)(0.5*0.9))*maxtu;
+         rgv3D[l+32].tv = (0.5f+cosangle*(float)(0.5*0.9))*maxtv;
+         rgv3D[l+64].tu = (0.5f+sinangle*0.5f)*maxtu;
+         rgv3D[l+64].tv = (0.5f+cosangle*0.5f)*maxtv;
 
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+32],inv_width,inv_height);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64],inv_width,inv_height);
-			}
-      
+         ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+         ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+32],inv_width,inv_height);
+         ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64],inv_width,inv_height);
+      }     
 		SetNormal(rgv3D, rgiBumperStatic, 32, NULL, NULL, 0);
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 32, (LPWORD)rgiBumperStatic, 32, 0);
-		//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-		//							  rgv3D, 32, 0);
+      vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+      memcpy( buf, rgv3D, sizeof(Vertex3D)*32 );
+		//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 32, (LPWORD)rgiBumperStatic, 32, 0);
 
-		for (int l=0;l<32;l++)
-			{
-			const WORD rgiNormal[6] = {
-					(l == 0) ? 31 : (l-1),
-					(l == 0) ? 63 : (l+31),
-					(l == 0) ? 33 : (l+1),
-					l,
-					l+32,
-					(l < 30) ? (l+2) : (l-30)};
+      int l,t,i;
+      for (l=0,i=0,t=0;l<32;l++,i+=4,t+=6)
+		{
+			SetNormal(rgv3D, &rgiNormal[t], 3, NULL, &indices[i], 2);
+			SetNormal(&rgv3D[32], &rgiNormal[t], 3, NULL, &indices[i], 2);
+			SetNormal(rgv3D, &rgiNormal[t+3], 3, NULL, &indices[i+2], 2);
+			SetNormal(&rgv3D[32], &rgiNormal[t+3], 3, NULL, &indices[i+2], 2);
+      }
+      for( i=0;i<32*4;i+=4 )
+      {
+         memcpy( &buf[32+i], &rgv3D[indices[i]], sizeof(Vertex3D));
+         memcpy( &buf[32+i+1], &rgv3D[indices[i+1]], sizeof(Vertex3D));
+         memcpy( &buf[32+i+2], &rgv3D[indices[i+2]], sizeof(Vertex3D));
+         memcpy( &buf[32+i+3], &rgv3D[indices[i+3]], sizeof(Vertex3D));
 
-			const WORD rgi[4] = {l,
-					           l+32,
-							  (l == 31) ? 32 : (l+33),
-							  (l == 31) ? 0 : (l+1)};
+         memcpy( &buf[128+i  ], &rgv3D[32+indices[i]  ], sizeof(Vertex3D));
+         memcpy( &buf[128+i+1], &rgv3D[32+indices[i+1]], sizeof(Vertex3D));
+         memcpy( &buf[128+i+2], &rgv3D[32+indices[i+2]], sizeof(Vertex3D));
+         memcpy( &buf[128+i+3], &rgv3D[32+indices[i+3]], sizeof(Vertex3D));
+			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 64, (LPWORD)&indices[i], 4, 0);
+			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &rgv3D[32], 64, (LPWORD)&indices[i], 4, 0);
+		}
+      vertexBuffer->unlock();
 
-			SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
-			SetNormal(&rgv3D[32], rgiNormal, 3, NULL, rgi, 2);
-			SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-			SetNormal(&rgv3D[32], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
-														  rgv3D, 64,
-														  (LPWORD)rgi, 4, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
-														  &rgv3D[32], 64,
-														  (LPWORD)rgi, 4, 0);
-			}
-
+      pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 32,(LPWORD)rgiBumperStatic,32,0);
+      for( t=32,l=0;l<32;l++,t+=4 )
+      {
+         pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, t, 4,(LPWORD)rgi0123,4,0 );
+         pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 128+t, 4,(LPWORD)rgi0123,4,0 );
+      }
 		pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, FALSE);
 
 		ppin3d->SetTexture(NULL);
@@ -411,7 +432,17 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
       ppin3d->m_lightproject.CalcCoordinates(&m_rgb3D[l+96],inv_width,inv_height);
       ppin3d->m_lightproject.CalcCoordinates(&m_rgb3D[l+128],inv_width,inv_height);
    }
-
+   SetNormal(&m_rgb3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
+   int l,t,i;
+   for (l=0,i=0,t=0;l<32;l++,i+=4,t+=6)
+   {
+      SetNormal(m_rgb3D, &rgiNormal[t], 3, NULL, &indices[i], 2);
+      SetNormal(m_rgb3D, &rgiNormal[t+3], 3, NULL, &indices[i+2], 2);
+      SetNormal(&m_rgb3D[64], &rgiNormal[t], 3, NULL, &indices[i], 2);
+      SetNormal(&m_rgb3D[96], &rgiNormal[t], 3, NULL, &indices[i], 2);
+      SetNormal(&m_rgb3D[64], &rgiNormal[t+3], 3, NULL, &indices[i+2], 2);
+      SetNormal(&m_rgb3D[96], &rgiNormal[t+3], 3, NULL, &indices[i+2], 2);
+   }
 
 }
 
@@ -422,66 +453,15 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 	if(!m_d.m_fVisible)	return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-/*	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-	
-	const float outerradius = m_d.m_radius + m_d.m_overhang;
 
-
-	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-	
-	Vertex3D rgv3D[160];
-	for (int l=0;l<32;l++)
-		{
-		const float angle = (float)(M_PI*2.0/32.0)*(float)l;
-		const float sinangle =  sinf(angle);
-		const float cosangle = -cosf(angle);
-
-		rgv3D[l].x = sinangle*m_d.m_radius + m_d.m_vCenter.x;
-		rgv3D[l].y = cosangle*m_d.m_radius + m_d.m_vCenter.y;
-		rgv3D[l].z = height+40.0f;
-		rgv3D[l+32].x = rgv3D[l].x;
-		rgv3D[l+32].y = rgv3D[l].y;
-		rgv3D[l+32].z = height;
-
-		rgv3D[l+64].x = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
-		rgv3D[l+64].y = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
-		rgv3D[l+64].z = height+60.0f;
-
-		rgv3D[l+96].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
-		rgv3D[l+96].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
-		rgv3D[l+96].z = height+50.0f;
-
-		rgv3D[l+128].x = sinangle*outerradius + m_d.m_vCenter.x;
-		rgv3D[l+128].y = cosangle*outerradius + m_d.m_vCenter.y;
-		rgv3D[l+128].z = height+40.0f;
-
-		rgv3D[l].tu = 0.5f+sinangle*0.5f;
-		rgv3D[l].tv = 0.5f-cosangle*0.5f;
-		rgv3D[l+32].tu = 0.5f+sinangle*0.5f;
-		rgv3D[l+32].tv = 0.5f-cosangle*0.5f;
-		rgv3D[l+64].tu = 0.5f+sinangle*0.25f;
-		rgv3D[l+64].tv = 0.5f-cosangle*0.25f;
-		rgv3D[l+96].tu = 0.5f+sinangle*(float)(0.5*0.9);
-		rgv3D[l+96].tv = 0.5f-cosangle*(float)(0.5*0.9);
-		rgv3D[l+128].tu = 0.5f+sinangle*0.5f;
-		rgv3D[l+128].tv = 0.5f-cosangle*0.5f;
-
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+32],inv_width,inv_height);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+64],inv_width,inv_height);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+96],inv_width,inv_height);
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+128],inv_width,inv_height);
-		}
-*/
-
-   Vertex3D *rgv3D=m_rgb3D;
-   //memcpy( rgv3D, m_rgb3D, sizeof(m_rgb3D));
+   //Vertex3D *rgv3D=m_rgb3D;
+   Vertex3D rgv3D[160];
+   memcpy( rgv3D, m_rgb3D, sizeof(m_rgb3D));
 
 	ppin3d->ClearExtents(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar);
 
 	for (int i=0;i<2;i++)	//0 is unlite, while 1 is lite
-		{
+	{
 		ObjFrame * const pof = new ObjFrame();
 
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
@@ -495,12 +475,12 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 		if (!pin) // Top solid color
-			{
+		{
 			const float r = (m_d.m_color & 255) * (float) (1.0/255.0);
 			const float g = (m_d.m_color & 65280) * (float) (1.0/65280.0);
 			const float b = (m_d.m_color & 16711680) * (float) (1.0/16711680.0);
 			switch (i)
-				{
+			{
 				case 0:
 					ppin3d->SetTexture(NULL);
 					mtrl.diffuse.r = mtrl.ambient.r = r * 0.5f;
@@ -520,55 +500,44 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 					mtrl.emissive.g = g;
 					mtrl.emissive.b = b;
 					break;
-				}
+			}
 
 			pd3dDevice->setMaterial(&mtrl);
-
-			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &rgv3D[64], 32, (LPWORD)rgiBumperStatic, 32, 0);
-/*
-         for (int l=0;l<32;l++)
+         Vertex3D *buf;
+         vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
+         memcpy( buf, &rgv3D[64], sizeof(Vertex3D)*32 );
+			//SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
+			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &rgv3D[64], 32, (LPWORD)rgiBumperStatic, 32, 0);
+         int i,t,l;
+         for( i=0;i<32*4;i+=4 )
          {
-            const WORD rgiNormal[6] = 
-            {
-               (l == 0) ? 31 : (l-1),
-               (l == 0) ? 63 : (l+31),
-               (l == 0) ? 33 : (l+1),
-               l,
-               l+32,
-               (l < 30) ? (l+2) : (l-30)
-            };
+            memcpy( &buf[32+i  ], &rgv3D[64+indices[i]  ], sizeof(Vertex3D));
+            memcpy( &buf[32+i+1], &rgv3D[64+indices[i+1]], sizeof(Vertex3D));
+            memcpy( &buf[32+i+2], &rgv3D[64+indices[i+2]], sizeof(Vertex3D));
+            memcpy( &buf[32+i+3], &rgv3D[64+indices[i+3]], sizeof(Vertex3D));
 
-               const WORD rgi[4] = 
-               {
-                  l,
-                  l+32,
-                  (l == 31) ? 32 : (l+33),
-                  (l == 31) ? 0 : (l+1)
-               };
-
-                  SetNormal(&rgv3D[64], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(&rgv3D[96], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(&rgv3D[64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-                  SetNormal(&rgv3D[96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-                     &rgv3D[64], 64,
-                     (LPWORD)rgi, 4, 0);
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-                     &rgv3D[96], 64,
-                     (LPWORD)rgi, 4, 0);
+            memcpy( &buf[128+i  ], &rgv3D[96+indices[i]  ], sizeof(Vertex3D));
+            memcpy( &buf[128+i+1], &rgv3D[96+indices[i+1]], sizeof(Vertex3D));
+            memcpy( &buf[128+i+2], &rgv3D[96+indices[i+2]], sizeof(Vertex3D));
+            memcpy( &buf[128+i+3], &rgv3D[96+indices[i+3]], sizeof(Vertex3D));
          }
-*/
+         vertexBuffer->unlock();
+
+         pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 32,(LPWORD)rgiBumperStatic,32,0);
+         for( t=32,l=0;l<32;l++,t+=4 )
+         {
+            pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, t, 4,(LPWORD)rgi0123,4,0 );
+            pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 128+t, 4,(LPWORD)rgi0123,4,0 );
+         }
       }
 		if (m_d.m_fSideVisible)
-			{
+		{
 			const float rside = (m_d.m_sidecolor & 255) * (float) (1.0/255.0);
 			const float gside = (m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
 			const float bside = (m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
 			// Side color
 			switch (i)
-				{
+			{
 				case 0:
 					ppin3d->SetTexture(NULL);
 					mtrl.diffuse.r = mtrl.ambient.r = rside * 0.5f;
@@ -588,33 +557,27 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 					mtrl.emissive.g = gside;
 					mtrl.emissive.b = bside;
 					break;
-				}
-			pd3dDevice->setMaterial(&mtrl);
-
-			for (int l=0;l<32;l++)
-				{
-				const WORD rgiNormal[6] = {
-					(l == 0) ? 31 : (l-1),
-					(l == 0) ? 63 : (l+31),
-					(l == 0) ? 33 : (l+1),
-					l,
-					l+32,
-					(l < 30) ? (l+2) : (l-30)};
-
-				const WORD rgi[4] = {
-					l,
-					l+32,
-					(l == 31) ? 32 : (l+33),
-					(l == 31) ? 0 : (l+1)};
-
-				SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
-				SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D,64,(LPWORD)rgi, 4, 0);
-				}
 			}
+			pd3dDevice->setMaterial(&mtrl);
+         Vertex3D *buf;
+         vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
+         int i,t,l;
+         for( i=0;i<32*4;i+=4 )
+         {
+            memcpy( &buf[i  ], &rgv3D[64+indices[i]  ], sizeof(Vertex3D));
+            memcpy( &buf[i+1], &rgv3D[64+indices[i+1]], sizeof(Vertex3D));
+            memcpy( &buf[i+2], &rgv3D[64+indices[i+2]], sizeof(Vertex3D));
+            memcpy( &buf[i+3], &rgv3D[64+indices[i+3]], sizeof(Vertex3D));
+         }
+         vertexBuffer->unlock();
+         for( t=0,l=0;l<32;l++,t+=4 )
+         {
+            pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, t, 4,(LPWORD)rgi0123,4,0 );
+         }
+		}
 
 		if (pin)
-			{
+		{
 			float maxtu, maxtv;
 			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
@@ -634,7 +597,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 			// with the background color swapped out in a pre-processing step.*/
 
 			switch (i)
-				{
+			{
 				case 0:
 					ppin3d->EnableLightMap(fFalse, -1);
 					mtrl.diffuse.r = mtrl.ambient.r = 
@@ -654,12 +617,12 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 					mtrl.emissive.g =
 					mtrl.emissive.b = 1.0f;
 					break;
-				}
+			}
 			pd3dDevice->setMaterial(&mtrl);
 
 			// Set all the texture coordinates to match maxtu/tv
 			for (int l=0;l<32;l++)
-				{
+			{
 				const float angle = (float)(M_PI*2.0/32.0)*(float)l;
 				const float sinangle =  sinf(angle);
 				const float cosangle = -cosf(angle);
@@ -684,46 +647,33 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 				rgv3D[l+96].tv2 = (0.5f+cosangle*(float)(0.5*0.9))*lightmaxtv;
 				rgv3D[l+128].tu2 = (0.5f+sinangle*0.5f)*lightmaxtu;
 				rgv3D[l+128].tv2 = (0.5f+cosangle*0.5f)*lightmaxtv;
-				}
+			}
 
-			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  &rgv3D[64], 32,
-													  (LPWORD)rgiBumperStatic, 32, 0);
+			//SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
+         Vertex3D *buf;
+         vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
+         memcpy( buf, &rgv3D[64], sizeof(Vertex3D)*32 );
+         pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, vertexBuffer, 0, 32, (LPWORD)rgiBumperStatic, 32, 0);
+			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &rgv3D[64], 32, (LPWORD)rgiBumperStatic, 32, 0);
 
-			for (int l=0;l<32;l++)
-				{
-				const WORD rgiNormal[6] = 
-            {
-					(l == 0) ? 31 : (l-1),
-					(l == 0) ? 63 : (l+31),
-					(l == 0) ? 33 : (l+1),
-					l,
-					l+32,
-					(l < 30) ? (l+2) : (l-30)
-            };
+         int i,t,l;
+         for( i=0;i<32*4;i+=4 )
+         {
+            memcpy( &buf[32+i  ], &rgv3D[64+indices[i]  ], sizeof(Vertex3D));
+            memcpy( &buf[32+i+1], &rgv3D[64+indices[i+1]], sizeof(Vertex3D));
+            memcpy( &buf[32+i+2], &rgv3D[64+indices[i+2]], sizeof(Vertex3D));
+            memcpy( &buf[32+i+3], &rgv3D[64+indices[i+3]], sizeof(Vertex3D));
 
-				WORD rgi[4] = 
-            {
-               l,
-               l+32,
-               (l == 31) ? 32 : (l+33),
-               (l == 31) ? 0 : (l+1)
-            };
-
-				SetNormal(&rgv3D[64], rgiNormal, 3, NULL, rgi, 2);
-				SetNormal(&rgv3D[96], rgiNormal, 3, NULL, rgi, 2);
-				SetNormal(&rgv3D[64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-				SetNormal(&rgv3D[96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  &rgv3D[64], 64,
-														  rgi, 4, 0);
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-														  &rgv3D[96], 64,
-														  rgi, 4, 0);
-				}
-
+            memcpy( &buf[128+i  ], &rgv3D[96+indices[i]  ], sizeof(Vertex3D));
+            memcpy( &buf[128+i+1], &rgv3D[96+indices[i+1]], sizeof(Vertex3D));
+            memcpy( &buf[128+i+2], &rgv3D[96+indices[i+2]], sizeof(Vertex3D));
+            memcpy( &buf[128+i+3], &rgv3D[96+indices[i+3]], sizeof(Vertex3D));
+         }
+         for( t=32,l=0;l<32;l++,t+=4 )
+         {
+            pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, t, 4,(LPWORD)rgi0123,4,0 );
+            pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 128+t, 4,(LPWORD)rgi0123,4,0 );
+         }
 			// Reset all the texture coordinates
 			if (i == 0)
 				{
@@ -731,15 +681,15 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 				const float sinangle = sinf(angle);
 				const float cosangle = cosf(angle);
 				for (int l=0;l<32;l++)
-					{
+				{
 					rgv3D[l+64].tu = 0.5f+sinangle*0.25f;
 					rgv3D[l+64].tv = 0.5f+cosangle*0.25f;
 					rgv3D[l+96].tu = 0.5f+sinangle*(float)(0.5*0.9);
 					rgv3D[l+96].tv = 0.5f+cosangle*(float)(0.5*0.9);
 					rgv3D[l+128].tu = 0.5f+sinangle*0.5f;
 					rgv3D[l+128].tv = 0.5f+cosangle*0.5f;
-					}
 				}
+			}
 			else
 				ppin3d->EnableLightMap(fFalse, -1);
 
@@ -747,11 +697,11 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 			//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
 			}
 
-		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		pof->pdds = g_pvp->m_pdd.CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		pof->pddsZBuffer = g_pvp->m_pdd.CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
-		/*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
 		m_pbumperhitcircle->m_bumperanim.m_pobjframe[i] = pof;
 

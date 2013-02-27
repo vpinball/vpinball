@@ -3,6 +3,28 @@
 
 #pragma once
 
+class VertexBuffer : public IDirect3DVertexBuffer7
+{
+public:
+
+   enum LockFlags
+   {
+      WRITEONLY = DDLOCK_WRITEONLY,
+      NOOVERWRITE = DDLOCK_NOOVERWRITE,
+      DISCARDCONTENTS   =DDLOCK_DISCARDCONTENTS
+   };
+   bool lock( unsigned int _offsetToLock, unsigned int _sizeToLock, void **_dataBuffer, DWORD _flags )
+   {
+      this->Lock( (DWORD)_flags, _dataBuffer, 0 );
+      return true;
+   }
+   bool unlock(void)
+   {
+      this->Unlock();
+      return true;
+   }
+};
+
 class RenderDevice : public IDirect3DDevice7
 {
 public:
@@ -35,8 +57,8 @@ public:
 
    virtual void setMaterial( THIS_ Material *_material );
    virtual void SetRenderState( RenderStates,DWORD );
-
-
+   virtual bool createVertexBuffer( unsigned int _length, DWORD _usage, DWORD _fvf, VertexBuffer **_vBuffer );
+   virtual void renderPrimitive( D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, LPWORD _indices, DWORD _numIndices, DWORD _flags);
    //########################## simple wrapper functions (interface for DX7)##################################
 
    virtual STDMETHODIMP QueryInterface( THIS_ REFIID riid, LPVOID * ppvObj );

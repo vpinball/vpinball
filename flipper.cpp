@@ -585,6 +585,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
 										 , &m_phitflipper->m_flipperanim.m_zfar, 8, fFalse);
 
 	SetNormal(rgv3D, rgi0123, 4, NULL, NULL, 0);
+
 	// Draw top.
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4, 0);
 	//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4);
@@ -737,8 +738,8 @@ void Flipper::RenderMovers(const RenderDevice* _pd3dDevice)
 			}
 
 		// Create offscreen surfaces for color and depth buffers.
-		Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		Texture* pdds = g_pvp->m_pdd.CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		pof->pddsZBuffer = g_pvp->m_pdd.CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		// Copy the back buffer to the new offscreen surfaces.
 		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);

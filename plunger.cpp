@@ -327,7 +327,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
 
       const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
-      D3DMATERIAL7 mtrl;
+      Material mtrl;
       if (m_d.m_type == PlungerTypeModern)
       {
          mtrl.power = 1.0f;
@@ -360,7 +360,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
          mtrl.power = 8.0f;
       }
 
-      pd3dDevice->SetMaterial(&mtrl);
+      pd3dDevice->setMaterial(&mtrl);
 
       const int cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke/80.0f)) + 1; // 25 frames per 80 units travel
 
@@ -459,8 +459,10 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
             }
          }
 
-         Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-         pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+//         Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+//         pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+         Texture* pdds = g_pvp->m_pdd.CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+         pof->pddsZBuffer = g_pvp->m_pdd.CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
          pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
          pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);

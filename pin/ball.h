@@ -1,6 +1,4 @@
 #pragma once
-#include "Material.h"
-
 class HitObject;
 class Ball;
 
@@ -45,15 +43,6 @@ public:
 	void CalcBoundingRect();
 
 	void EnsureOMObject();
-   void Draw();
-   void DrawShadow();
-
-
-   void InvalidateRect(RECT * const prc);
-
-   inline void SetUseShadows( BOOL enable ){ useShadows=enable; }
-   inline void SetUseDecals( BOOL enable ){ useDecals=enable; }
-   inline void SetUseAntiAliasing( BOOL enable ){ useAntiAliasing=enable; }
 
 	Vertex3D_NoTex2 m_rgv3DShadow[4];			// Last vertices of the ball shadow
 
@@ -83,6 +72,8 @@ public:
 	Vertex3Ds m_hitnormal[5];// 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
 
 	BallAnimObject m_ballanim;
+
+   VertexBuffer *vertexBuffer;
 
 	float x;
 	float y;
@@ -114,18 +105,6 @@ public:
 	bool m_fErase;		// set after the ball has been drawn for the first time
 
 	bool fFrozen;
-
-   Material mtrl;
-   float sx,sy,sz;
-   float shadowradius;
-   float shadowradiusX;
-   float shadowradiusY;
-   float inv_shadowradius;
-   Vertex3D_NoTex2 rgv3D[4];
-   Vertex3D_NoTex2 rgv3DArrow[4];
-   BOOL useShadows;
-   BOOL useDecals;
-   BOOL useAntiAliasing;
 	};
 
 inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)

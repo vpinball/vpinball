@@ -258,236 +258,6 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * co
 		rgvout[l].x = vTx;
 		rgvout[l].y	= vTy;
 		}
-	}
-
-Texture* Pin3D::CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const
-	{
-	//const GUID* pDeviceGUID = &IID_IDirect3DRGBDevice;
-	DDSURFACEDESC2 ddsd;
-    ZeroMemory( &ddsd, sizeof(ddsd) );
-	ddsd.dwSize = sizeof(ddsd);
-	
-	/*if (width < 1 || height < 1)
-	{
-		return NULL;
-	}*/
-
-	ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_CKSRCBLT;
-	ddsd.ddckCKSrcBlt.dwColorSpaceLowValue = color;//0xffffff;
-	ddsd.ddckCKSrcBlt.dwColorSpaceHighValue = color;//0xffffff;
-	ddsd.dwWidth        = width < 1 ? 1 : width;   // This can happen if an object is completely off screen.  Since that's
-	ddsd.dwHeight       = height < 1 ? 1 : height; // rare, it's easier just to create a tiny surface to handle it.
-    ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;// | DDSCAPS_3DDEVICE;
-
-	// Check if we are rendering in hardware.
-	if (g_pvp->m_pdd.m_fHardwareAccel)
-		{
-		ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
-		}
-	else
-		{
-		ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
-		}
-
-retry0:
-	Texture* pdds;
-	HRESULT hr;
-    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&pdds, NULL ) ) )
-		{
-		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
-			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
-			goto retry0;
-		}
-		ShowError("Could not create offscreen surface.");
-		return NULL;
-		}
-
-	return pdds;
-	}
-	
-Texture* Pin3D::CreateOffscreen(const int width, const int height) const
-	{
-	DDSURFACEDESC2 ddsd;
-    ZeroMemory( &ddsd, sizeof(ddsd) );
-	ddsd.dwSize = sizeof(ddsd);
-
-	if (width < 1 || height < 1)
-	{
-		return NULL;
-	}
-
-	ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_CKSRCBLT;
-	ddsd.ddckCKSrcBlt.dwColorSpaceLowValue = 0;//0xffffff;
-	ddsd.ddckCKSrcBlt.dwColorSpaceHighValue = 0;//0xffffff;
-    ddsd.dwWidth        = width;
-    ddsd.dwHeight       = height;
-    ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
-
-	// Check if we are rendering in hardware.
-	if (g_pvp->m_pdd.m_fHardwareAccel)
-		{
-		ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
-		}
-	else
-		{
-		ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
-		}
-
-retry1:
-	HRESULT hr;
-	Texture* pdds;
-	if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&pdds, NULL ) ) )
-		{
-		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
-			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
-			goto retry1;
-		}
-		ShowError("Could not create offscreen surface.");
-		exit(-1400);
-		return NULL;
-		}
-
-	// Update the count.
-	NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwRGBBitCount/8);
-
-	return pdds;
-	}
-
-Texture* Pin3D::CreateZBufferOffscreen(const int width, const int height) const
-{
-    const GUID* pDeviceGUID;
-
-	if (g_pvp->m_pdd.m_fHardwareAccel)
-		{
-		pDeviceGUID = &IID_IDirect3DHALDevice;
-		}
-	else
-		{
-		pDeviceGUID = &IID_IDirect3DRGBDevice;
-		}
-
-	// Get z-buffer dimensions from the render target
-    DDSURFACEDESC2 ddsd;
-    ddsd.dwSize = sizeof(ddsd);
-    m_pddsBackBuffer->GetSurfaceDesc( &ddsd ); // read description out of backbuffer so we get the current pixelformat depth to look for
-
-    // Setup the surface desc for the z-buffer.
-    ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
-    ddsd.ddsCaps.dwCaps = DDSCAPS_ZBUFFER; 
-	ddsd.dwWidth        = width < 1 ? 1 : width;
-    ddsd.dwHeight       = height < 1 ? 1 : height;
-    ddsd.ddpfPixelFormat.dwSize = 0;  // Tag the pixel format as unitialized
-
-	// Check if we are rendering in hardware.
-	if (g_pvp->m_pdd.m_fHardwareAccel)
-		{
-		ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
-		}
-	else
-		{
-		ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
-		}
-
-	bool retry = true;
-retryall:
-
-    // Find a suitable z buffer format.
-    m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback, (VOID*)&ddsd.ddpfPixelFormat );
-
-	// Create the z buffer, loop over possible other modes until one found
-	HRESULT hr;
-	int count = 0;
-	Texture* pdds;
-	while(( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&pdds, NULL ) ) ) && (count <= 6))
-    {
-		switch(count) {
-		case 0: {
-			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 32;
-			ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
-			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFFFF;
-			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
-			ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
-			break;
-				}
-		case 1: {
-			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 16;
-			ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
-			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFF;
-			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
-			ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
-			break;
-				}
-		case 2: {
-			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 24;
-			ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
-			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFF;
-			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
-			ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
-			break;
-				}
-		case 3: {
-			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 8;
-			ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
-			ddsd.ddpfPixelFormat.dwZBitMask = 0xFF;
-			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
-			ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
-			break;
-				}
-
-		case 4: {
-			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 32;
-			ddsd.ddpfPixelFormat.dwStencilBitDepth = 8;
-			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFFFF;
-			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER | DDPF_STENCILBUFFER;
-			ddsd.ddpfPixelFormat.dwStencilBitMask = 0xFF;
-			break;
-				}
-		case 5: {
-			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 24;
-			ddsd.ddpfPixelFormat.dwStencilBitDepth = 8;
-			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFF;
-			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER | DDPF_STENCILBUFFER;
-			ddsd.ddpfPixelFormat.dwStencilBitMask = 0xFF;
-			break;
-				}
-		case 6: {
-			ddsd.ddpfPixelFormat.dwZBufferBitDepth = 16;
-			ddsd.ddpfPixelFormat.dwStencilBitDepth = 8;
-			ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFF;
-			ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER | DDPF_STENCILBUFFER;
-			ddsd.ddpfPixelFormat.dwStencilBitMask = 0xFF;
-			break;
-				}
-		}
-
-        m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback, (VOID*)&ddsd.ddpfPixelFormat );
-
-		++count;
-	}
-
-	if(FAILED(hr)) {
-		// if all failed try with additional flag
-		if(retry) {
-			retry = false;
-			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM; //added BDS - corrects "Could not create offscreen Z-surface.", however renders slower on lower end hardware
-			goto retryall;
-		}
-
-		if( hr != DDERR_OUTOFVIDEOMEMORY )
-		{
-			ShowError("Could not create offscreen Z-surface.");
-		}
-		else
-		{
-			ShowError("Out of Video Memory for offscreen Z-surface.");
-		}
-		return NULL;
-    }
-
-	// Update the count.
-	NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwZBufferBitDepth/8);
-
-    return pdds;// S_OK;
 }
 
 HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const bool stereo3DFXAA)
@@ -1061,16 +831,16 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	m_pd3dDevice->SetLight( 1, &light );
 
 	Vertex3D rgv[8];
-	rgv[0].Set(left,top,0);
-	rgv[3].Set(left,bottom,0);
-	rgv[2].Set(right,bottom,0);
-	rgv[1].Set(right,top,0);
+   rgv[0].x=left; rgv[0].y=top; rgv[0].z=0;
+   rgv[3].x=left; rgv[3].y=bottom; rgv[3].z=0;
+   rgv[2].x=right; rgv[2].y=bottom; rgv[2].z=0;
+   rgv[1].x=right; rgv[1].y=top; rgv[1].z=0;
 
 	// These next 4 vertices are used just to set the extents
-	rgv[4].Set(left,top,50);
-	rgv[5].Set(left,bottom,50);
-	rgv[6].Set(right,bottom,50);
-	rgv[7].Set(right,top,50);
+   rgv[4].x=left; rgv[4].y=top; rgv[4].z=50;
+   rgv[5].x=left; rgv[5].y=bottom; rgv[5].z=50;
+   rgv[6].x=right; rgv[6].y=bottom; rgv[6].z=50;
+   rgv[7].x=right; rgv[7].y=top; rgv[7].z=50;
 
 	//hr = m_pddsPlayfieldTexture->IsLost();
 
@@ -1175,16 +945,16 @@ void Pin3D::InitBackGraphics()
 	EnableLightMap(fTrue, 0);
 
 	Vertex3D rgv[8];
-	rgv[0].Set(g_pplayer->m_ptable->m_left,g_pplayer->m_ptable->m_top,0);
-	rgv[3].Set(g_pplayer->m_ptable->m_left,g_pplayer->m_ptable->m_bottom,0);
-	rgv[2].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_bottom,0);
-	rgv[1].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_top,0);
+   rgv[0].x=g_pplayer->m_ptable->m_left; rgv[0].y=g_pplayer->m_ptable->m_top; rgv[0].z=0;
+   rgv[3].x=g_pplayer->m_ptable->m_left; rgv[3].y=g_pplayer->m_ptable->m_bottom; rgv[3].z=0;
+   rgv[2].x=g_pplayer->m_ptable->m_right; rgv[2].y=g_pplayer->m_ptable->m_bottom; rgv[2].z=0;
+   rgv[1].x=g_pplayer->m_ptable->m_right; rgv[1].y=g_pplayer->m_ptable->m_top; rgv[1].z=0;
 
 	// These next 4 vertices are used just to set the extents
-	rgv[4].Set(g_pplayer->m_ptable->m_left,g_pplayer->m_ptable->m_top,50.0f);
-	rgv[5].Set(g_pplayer->m_ptable->m_left,g_pplayer->m_ptable->m_bottom,50.0f);
-	rgv[6].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_bottom,50.0f);
-	rgv[7].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_top,50.0f);
+   rgv[4].x=g_pplayer->m_ptable->m_left; rgv[4].y=g_pplayer->m_ptable->m_top; rgv[4].z=50.0f;
+   rgv[5].x=g_pplayer->m_ptable->m_left; rgv[5].y=g_pplayer->m_ptable->m_bottom; rgv[5].z=50.0f;
+   rgv[6].x=g_pplayer->m_ptable->m_right; rgv[6].y=g_pplayer->m_ptable->m_bottom; rgv[6].z=50.0f;
+   rgv[7].x=g_pplayer->m_ptable->m_right; rgv[7].y=g_pplayer->m_ptable->m_top; rgv[6].z=50.0f;
 
 	D3DMATERIAL7 mtrl;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
@@ -1447,44 +1217,44 @@ Texture* Pin3D::CreateShadow(const float z)
 	}
 
 void Pin3D::SetTexture(Texture* pddsTexture)
-	{
-	/*const HRESULT hr =*/ m_pd3dDevice->SetTexture(ePictureTexture, (pddsTexture == NULL) ? m_pddsLightWhite : pddsTexture);
-	}
+{
+   m_pd3dDevice->SetTexture(ePictureTexture, (pddsTexture == NULL) ? m_pddsLightWhite : pddsTexture);
+}
 
 void Pin3D::EnableLightMap(const BOOL fEnable, const float z)
-	{
-	if (fEnable)
-		{
-		Texture* pdds = (Texture*)m_xvShadowMap.ElementAt((int)z);
-		if (!pdds)
-			{
-			pdds = CreateShadow(z);
-			}
-		m_pd3dDevice->SetTexture(eLightProject1, pdds);
-		}
-	else
-		{
-		m_pd3dDevice->SetTexture(eLightProject1, NULL);
-		}
-	}
+{
+   if (fEnable)
+   {
+      Texture* pdds = (Texture*)m_xvShadowMap.ElementAt((int)z);
+      if (!pdds)
+      {
+         pdds = CreateShadow(z);
+      }
+      m_pd3dDevice->SetTexture(eLightProject1, pdds);
+   }
+   else
+   {
+      m_pd3dDevice->SetTexture(eLightProject1, NULL);
+   }
+}
 
 void Pin3D::SetMaterial(const float r, const float g, const float b, const float a)
-	{
-	D3DMATERIAL7 mtrl;
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
-	mtrl.diffuse.r = mtrl.ambient.r = r;
-	mtrl.diffuse.g = mtrl.ambient.g = g;
-	mtrl.diffuse.b = mtrl.ambient.b = b;
-	mtrl.diffuse.a = mtrl.ambient.a = a;
-	m_pd3dDevice->SetMaterial(&mtrl);
-	}
-	
+{
+   D3DMATERIAL7 mtrl;
+   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+      mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+      mtrl.power = 0;
+   mtrl.diffuse.r = mtrl.ambient.r = r;
+   mtrl.diffuse.g = mtrl.ambient.g = g;
+   mtrl.diffuse.b = mtrl.ambient.b = b;
+   mtrl.diffuse.a = mtrl.ambient.a = a;
+   m_pd3dDevice->SetMaterial(&mtrl);
+}
+
 void Pin3D::SetColorKeyEnabled(const BOOL fColorKey) const
-	{
-      m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, fColorKey);
-	}
+{
+   m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, fColorKey);
+}
 
 void Pin3D::SetAlphaEnabled(const BOOL fAlpha) const
 	{

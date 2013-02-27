@@ -261,8 +261,10 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    }
 
    ppin3d->ExpandExtents(&rcBounds, &rgv3D[16], NULL, NULL, 16, fFalse);
-   Texture* pddsBufferBack = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
-   Texture* pddsMask = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
+//   Texture* pddsBufferBack = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
+//   Texture* pddsMask = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
+   Texture* pddsBufferBack = g_pvp->m_pdd.CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
+   Texture* pddsMask = g_pvp->m_pdd.CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
 
    HRESULT hr = pddsBufferBack->Blt(NULL, ppin3d->m_pddsStatic, &rcBounds, DDBLT_WAIT, NULL);
    /*DDBLTFX ddbltfx;

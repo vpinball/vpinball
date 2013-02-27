@@ -509,6 +509,251 @@ retryimage:
 	return pdds;
 	}
 
+Texture* PinDirectDraw::CreateOffscreen(const int width, const int height) const
+{
+   DDSURFACEDESC2 ddsd;
+   ZeroMemory( &ddsd, sizeof(ddsd) );
+   ddsd.dwSize = sizeof(ddsd);
+
+   if (width < 1 || height < 1)
+   {
+      return NULL;
+   }
+
+   ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_CKSRCBLT;
+   ddsd.ddckCKSrcBlt.dwColorSpaceLowValue = 0;//0xffffff;
+   ddsd.ddckCKSrcBlt.dwColorSpaceHighValue = 0;//0xffffff;
+   ddsd.dwWidth        = width;
+   ddsd.dwHeight       = height;
+   ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
+
+   // Check if we are rendering in hardware.
+   if (m_fHardwareAccel)
+   {
+      ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
+   }
+   else
+   {
+      ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
+   }
+
+retry1:
+   HRESULT hr;
+   Texture* pdds;
+   if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&pdds, NULL ) ) )
+   {
+      if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+         ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+         goto retry1;
+      }
+      ShowError("Could not create offscreen surface.");
+      exit(-1400);
+      return NULL;
+   }
+
+   // Update the count.
+   NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwRGBBitCount/8);
+
+   return pdds;
+}
+
+static HRESULT WINAPI EnumZBufferFormatsCallback( DDPIXELFORMAT * pddpf,
+                                                 VOID * pContext )
+{
+   DDPIXELFORMAT * const pddpfOut = (DDPIXELFORMAT*)pContext;
+
+   if((pddpf->dwRGBBitCount > 0) && (pddpfOut->dwRGBBitCount == pddpf->dwRGBBitCount))
+   {
+      (*pddpfOut) = (*pddpf);
+      return D3DENUMRET_CANCEL;
+   }
+
+   return D3DENUMRET_OK;
+}
+
+Texture* PinDirectDraw::CreateZBufferOffscreen( const int width, const int height) const
+{
+   const GUID* pDeviceGUID;
+
+   if (g_pvp->m_pdd.m_fHardwareAccel)
+   {
+      pDeviceGUID = &IID_IDirect3DHALDevice;
+   }
+   else
+   {
+      pDeviceGUID = &IID_IDirect3DRGBDevice;
+   }
+
+   // Get z-buffer dimensions from the render target
+   DDSURFACEDESC2 ddsd;
+   ddsd.dwSize = sizeof(ddsd);
+   g_pplayer->m_pin3d.m_pddsBackBuffer->GetSurfaceDesc( &ddsd ); // read description out of backbuffer so we get the current pixelformat depth to look for
+
+   // Setup the surface desc for the z-buffer.
+   ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
+   ddsd.ddsCaps.dwCaps = DDSCAPS_ZBUFFER; 
+   ddsd.dwWidth        = width < 1 ? 1 : width;
+   ddsd.dwHeight       = height < 1 ? 1 : height;
+   ddsd.ddpfPixelFormat.dwSize = 0;  // Tag the pixel format as unitialized
+
+   // Check if we are rendering in hardware.
+   if (m_fHardwareAccel)
+   {
+      ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
+   }
+   else
+   {
+      ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
+   }
+
+   bool retry = true;
+retryall:   
+
+   // Find a suitable z buffer format.
+   g_pplayer->m_pin3d.m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback, (VOID*)&ddsd.ddpfPixelFormat );
+
+   // Create the z buffer, loop over possible other modes until one found
+   HRESULT hr;
+   int count = 0;
+   Texture* pdds;
+   while(( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&pdds, NULL ) ) ) && (count <= 6))
+   {
+      switch(count) {
+      case 0: {
+         ddsd.ddpfPixelFormat.dwZBufferBitDepth = 32;
+         ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
+         ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFFFF;
+         ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
+         ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
+         break;
+              }
+      case 1: {
+         ddsd.ddpfPixelFormat.dwZBufferBitDepth = 16;
+         ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
+         ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFF;
+         ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
+         ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
+         break;
+              }
+      case 2: {
+         ddsd.ddpfPixelFormat.dwZBufferBitDepth = 24;
+         ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
+         ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFF;
+         ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
+         ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
+         break;
+              }
+      case 3: {
+         ddsd.ddpfPixelFormat.dwZBufferBitDepth = 8;
+         ddsd.ddpfPixelFormat.dwStencilBitDepth = 0;
+         ddsd.ddpfPixelFormat.dwZBitMask = 0xFF;
+         ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER;
+         ddsd.ddpfPixelFormat.dwStencilBitMask = 0;
+         break;
+              }
+
+      case 4: {
+         ddsd.ddpfPixelFormat.dwZBufferBitDepth = 32;
+         ddsd.ddpfPixelFormat.dwStencilBitDepth = 8;
+         ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFFFF;
+         ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER | DDPF_STENCILBUFFER;
+         ddsd.ddpfPixelFormat.dwStencilBitMask = 0xFF;
+         break;
+              }
+      case 5: {
+         ddsd.ddpfPixelFormat.dwZBufferBitDepth = 24;
+         ddsd.ddpfPixelFormat.dwStencilBitDepth = 8;
+         ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFFFF;
+         ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER | DDPF_STENCILBUFFER;
+         ddsd.ddpfPixelFormat.dwStencilBitMask = 0xFF;
+         break;
+              }
+      case 6: {
+         ddsd.ddpfPixelFormat.dwZBufferBitDepth = 16;
+         ddsd.ddpfPixelFormat.dwStencilBitDepth = 8;
+         ddsd.ddpfPixelFormat.dwZBitMask = 0xFFFF;
+         ddsd.ddpfPixelFormat.dwFlags = DDPF_ZBUFFER | DDPF_STENCILBUFFER;
+         ddsd.ddpfPixelFormat.dwStencilBitMask = 0xFF;
+         break;
+              }
+      }
+
+      g_pplayer->m_pin3d.m_pD3D->EnumZBufferFormats( *pDeviceGUID, EnumZBufferFormatsCallback, (VOID*)&ddsd.ddpfPixelFormat );
+
+      ++count;
+   }
+
+   if(FAILED(hr)) {
+      // if all failed try with additional flag
+      if(retry) {
+         retry = false;
+         ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM; //added BDS - corrects "Could not create offscreen Z-surface.", however renders slower on lower end hardware
+         goto retryall;
+      }
+
+      if( hr != DDERR_OUTOFVIDEOMEMORY )
+      {
+         ShowError("Could not create offscreen Z-surface.");
+      }
+      else
+      {
+         ShowError("Out of Video Memory for offscreen Z-surface.");
+      }
+      return NULL;
+   }
+
+   // Update the count.
+   NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwZBufferBitDepth/8);
+
+   return pdds;// S_OK;
+}
+
+Texture* PinDirectDraw::CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const
+	{
+	//const GUID* pDeviceGUID = &IID_IDirect3DRGBDevice;
+	DDSURFACEDESC2 ddsd;
+    ZeroMemory( &ddsd, sizeof(ddsd) );
+	ddsd.dwSize = sizeof(ddsd);
+	
+	/*if (width < 1 || height < 1)
+	{
+		return NULL;
+	}*/
+
+	ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_CKSRCBLT;
+	ddsd.ddckCKSrcBlt.dwColorSpaceLowValue = color;//0xffffff;
+	ddsd.ddckCKSrcBlt.dwColorSpaceHighValue = color;//0xffffff;
+	ddsd.dwWidth        = width < 1 ? 1 : width;   // This can happen if an object is completely off screen.  Since that's
+	ddsd.dwHeight       = height < 1 ? 1 : height; // rare, it's easier just to create a tiny surface to handle it.
+    ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;// | DDSCAPS_3DDEVICE;
+
+	// Check if we are rendering in hardware.
+	if (m_fHardwareAccel)
+		{
+		ddsd.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
+		}
+	else
+		{
+		ddsd.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
+		}
+
+retry0:
+	Texture* pdds;
+	HRESULT hr;
+    if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&pdds, NULL ) ) )
+		{
+		if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+			ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+			goto retry0;
+		}
+		ShowError("Could not create offscreen surface.");
+		return NULL;
+		}
+
+	return pdds;
+	}
+
+
 Texture* PinDirectDraw::CreateFromFile(char *szfile, int * const pwidth, int * const pheight, int& originalWidth, int& originalHeight)
 	{
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;

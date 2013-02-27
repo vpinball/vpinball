@@ -597,6 +597,7 @@ void HitOctree::HitTestBall(Ball * const pball) const
 #ifdef LOG
 		cTested++;
 #endif
+      HitObject *tmp = m_vho.ElementAt(i);
 		if ((pball != m_vho.ElementAt(i)) // ball can not hit itself
 		       && fRectIntersect3D(pball->m_rcHitRect, m_vho.ElementAt(i)->m_rcHitRect))
 			{

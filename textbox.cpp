@@ -302,7 +302,8 @@ void Textbox::RenderMovers(const RenderDevice* pd3dDevice)
 
 	m_ptu->m_textboxanim.m_rcBounds = m_pobjframe->rc;
 
-	m_pobjframe->pdds = ppin3d->CreateOffscreen(m_pobjframe->rc.right - m_pobjframe->rc.left, m_pobjframe->rc.bottom - m_pobjframe->rc.top);
+//   m_pobjframe->pdds = ppin3d->CreateOffscreen(m_pobjframe->rc.right - m_pobjframe->rc.left, m_pobjframe->rc.bottom - m_pobjframe->rc.top);
+   m_pobjframe->pdds = g_pvp->m_pdd.CreateOffscreen(m_pobjframe->rc.right - m_pobjframe->rc.left, m_pobjframe->rc.bottom - m_pobjframe->rc.top);
 
 	m_pIFont->Clone(&m_pIFontPlay);
 

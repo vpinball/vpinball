@@ -54,6 +54,7 @@ public:
 	void Render();
 
 	void DrawBalls();
+   void DrawBallShadows();
 
 	void DrawAcrylics();
 
@@ -86,7 +87,7 @@ public:
 
 	void UltraPlunger();
 	void mechPlungerIn( const int z );		
-   inline HitOctree GetShadowOctree(){ return m_shadowoctree; };
+   //inline HitOctree GetShadowOctree(){ return m_shadowoctree; };
    inline float GetBallStretchX(){ return m_BallStretchX; }
    inline float GetBallStretchY(){ return m_BallStretchY; }
 
@@ -199,6 +200,8 @@ public:
 	bool m_fGameWindowActive;
 	bool m_fUserDebugPaused;
 	bool m_fDebugWindowActive;
+
+   HitOctree m_shadowoctree;
 	
 private:
 	Vector<HitObject> m_vho;
@@ -207,7 +210,6 @@ private:
 	Vector<Ball> m_vballDelete;	// Balls to free at the end of the frame
 
 	HitOctree m_hitoctree;
-	HitOctree m_shadowoctree;
 
 	Vector<HitObject> m_vdebugho;
 	HitOctree m_debugoctree;
@@ -239,8 +241,8 @@ private:
 	BOOL m_fStereo3DAA;
 	BOOL m_fStereo3DY;
 
-	float m_BallStretchX;
-	float m_BallStretchY;
+   float m_BallStretchX;
+   float m_BallStretchY;
 
 	float m_NudgePosX;
 	float m_NudgePosY;
