@@ -2994,8 +2994,7 @@ void Player::DrawBalls()
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
 
-      //m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0);
-		//m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgi0123, 4, NULL);
+      m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0);
 
       // Draw the ball logo
       if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
@@ -3022,8 +3021,7 @@ void Player::DrawBalls()
             pball->m_pinFront->EnsureColorKey();
             m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinFront->m_pdsBufferColorKey);
 
-            //m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 4, 4, (LPWORD)rgi0123, 4, 0);
-            //m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed, 4, (LPWORD)rgi0123, 4, NULL);
+            m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 4, 4, (LPWORD)rgi0123, 4, 0);
          }
          if (pball->m_pinBack)
          {
@@ -3031,8 +3029,7 @@ void Player::DrawBalls()
             pball->m_pinBack->EnsureColorKey();
             m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinBack->m_pdsBufferColorKey);
 
-            //m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 8, 4, (LPWORD)rgi0123, 4, 0);
-            //m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed2, 4, (LPWORD)rgi0123, 4, NULL);
+            m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 8, 4, (LPWORD)rgi0123, 4, 0);
          }
       }
 
