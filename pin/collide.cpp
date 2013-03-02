@@ -384,7 +384,7 @@ void HitCircle::CalcHitRect()
 	// Allow roundoff
 	m_rcHitRect.left = center.x - radius;
 	m_rcHitRect.right = center.x + radius;
-	m_rcHitRect.top = center.y  - radius;
+	m_rcHitRect.top = center.y - radius;
 	m_rcHitRect.bottom = center.y + radius;
 	m_rcHitRect.zlow = zlow;
 	m_rcHitRect.zhigh = zhigh;
