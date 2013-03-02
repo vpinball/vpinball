@@ -18,7 +18,7 @@ void HitPrimitive::Collide(Ball * const pball, Vertex3Ds * const phitnormal) //!
 {
 }
 
-void PrimitiveAnimObject::Check3D() //!!!!
+void PrimitiveAnimObject::Check3D()
 	{
 	m_fInvalid = true;
 
@@ -28,7 +28,7 @@ void PrimitiveAnimObject::Check3D() //!!!!
 
 	Primitive * const p = m_pprimitive;
 
-	p->RecalculateMatrices(); //!! most likely not necessary
+/*	p->RecalculateMatrices(); //!! most likely not necessary
 
 	const float outerRadius = -0.5f/cosf((float)M_PI/(float)p->m_d.m_Sides);
 	float currentAngle = (float)M_PI/(float)p->m_d.m_Sides;
@@ -67,11 +67,17 @@ void PrimitiveAnimObject::Check3D() //!!!!
 	}
 
 	delete topVert;
-	delete bottomVert;
-	}
+	delete bottomVert;*/
 
-void HitPrimitive::CalcHitRect() //!!!!
+	// Seems like for now we can simply abuse the already calculated coordinates
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
+	ppin3d->ExpandExtents(&m_rcBounds, p->rgv3DAll, NULL, NULL, p->m_d.m_Sides*4 + 2, false);
+}
+
+void HitPrimitive::CalcHitRect()
 {
+	//!! m_rcHitRect = min/max(m_pprimitive->rgv3DAll)
 }
 
 BumperHitCircle::BumperHitCircle()
