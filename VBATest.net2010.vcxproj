@@ -911,6 +911,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="Pin\ball.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -2856,6 +2857,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="RenderDevice.cpp" />
     <ClCompile Include="shadowsur.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -3187,6 +3189,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="timer.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -3698,6 +3701,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Pin\ball.h" />
     <ClInclude Include="ballex.h" />
     <ClInclude Include="bumper.h" />
@@ -3760,6 +3764,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <CustomBuildStep Include="resource.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">true</ExcludedFromBuild>
     </CustomBuildStep>
+    <ClInclude Include="RenderDevice.h" />
     <ClInclude Include="shadowsur.h" />
     <ClInclude Include="slintf.h" />
     <ClInclude Include="spinner.h" />
@@ -3769,6 +3774,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="surface.h" />
     <ClInclude Include="tableglobal.h" />
     <ClInclude Include="textbox.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="trigger.h" />
     <ClInclude Include="variant.h" />
