@@ -746,18 +746,6 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 	CalculateRealTimeOriginal();
 	CalculateRealTime();
 
-	// This is the drawing function we need... Realtime drawing.
-	//Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-	/*
-	RECT * rect;
-	rect = new RECT();
-	rect->left = 100;
-	rect->right = 1000;
-	rect->top = 100;
-	rect->bottom = 700;
-	g_pplayer->InvalidateRect(rect);
-	*/
-
 	//g_pplayer->m_ptable->SetDirtyDraw(); //!! does not do anything good anymore
 
 	Material mtrl;
