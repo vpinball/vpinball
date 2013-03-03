@@ -134,8 +134,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	void RenderStaticHabitrail(const RenderDevice* _pd3dDevice);
 	void RenderPolygons(const RenderDevice* _pd3dDevice, Vertex3D_NoTex * const rgv3D, WORD * const rgicrosssection, const int start, const int stop);
 
-	RECT invalidationRect;
-	bool invalidationRectCalculated;
+	//RECT invalidationRect;
+	//bool invalidationRectCalculated;
 
 // IRamp
 public:

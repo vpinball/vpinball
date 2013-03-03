@@ -10,7 +10,7 @@ Ramp::Ramp()
 	m_menuid = IDR_SURFACEMENU;
 	m_d.m_fCollidable = fTrue;
 	m_d.m_IsVisible = fTrue;
-	invalidationRectCalculated = false;
+	//invalidationRectCalculated = false;
 	}
 
 Ramp::~Ramp()
@@ -705,12 +705,13 @@ void Ramp::GetTimers(Vector<HitTimer> * const pvht)
 
 void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 	{
+	//!! Somehow reduce number of update elements that originate from this?
+
 	int cvertex;
 	float *rgheight;
 	Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight, NULL, NULL);
 
-	float wallheightright;
-	float wallheightleft;
+	float wallheightright, wallheightleft;
 
 	if (m_d.m_type == RampTypeFlat)
 		{
@@ -2481,8 +2482,8 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		{		
 		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-		if (!invalidationRectCalculated)
-			ppin3d->ClearExtents(&invalidationRect, NULL, NULL);
+		//if (!invalidationRectCalculated)
+			//ppin3d->ClearExtents(&invalidationRect, NULL, NULL);
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 		float maxtu = 0;
@@ -2593,8 +2594,8 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			// Draw the floor of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
 			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,0);
-			if (!invalidationRectCalculated)
-				ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
+			//if (!invalidationRectCalculated)
+				//ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
 
 		if (pin && !m_d.m_fImageWalls)
@@ -2663,8 +2664,8 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgiRampStatic1, 4, 0);
-			if (!invalidationRectCalculated)
-				ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
+			//if (!invalidationRectCalculated)
+				//ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
 
 		for (int i=0;i<(cvertex-1);i++)
@@ -2718,8 +2719,8 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgiRampStatic1, 4, 0);
-			if (!invalidationRectCalculated)
-				ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
+			//if (!invalidationRectCalculated)
+				//ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
 
 		delete [] rgv;
@@ -2728,5 +2729,5 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
 		ppin3d->SetTexture(NULL);
 		}
-		invalidationRectCalculated = true;
+		//invalidationRectCalculated = true;
 	}
