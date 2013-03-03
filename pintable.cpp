@@ -1394,8 +1394,8 @@ void PinTable::Render(Sur * const psur)
 
 void PinTable::Render3DProjection(Sur * const psur)
 	{
-	const GPINFLOAT rotation = ANGTORAD(m_rotation);
-	const GPINFLOAT inclination = ANGTORAD(m_inclination);
+	const float rotation = ANGTORAD(m_rotation);
+	const float inclination = ANGTORAD(m_inclination);
 
 	Vector<Vertex3Ds> vvertex3D;
 
@@ -1413,18 +1413,15 @@ void PinTable::Render3DProjection(Sur * const psur)
 
 	const GPINFLOAT aspect = 4.0/3.0;
 
-	GPINFLOAT realFOV = m_FOV;
-	if (realFOV < 0.01)
-		{
-		realFOV = 0.01; // Can't have a real zero FOV, but this will look the same
-		}
+	const float realFOV = (m_FOV < 0.01f) ? 0.01f : m_FOV; // Can't have a real zero FOV, but this will look almost the same
 
 	pinproj.FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), aspect, rotation, inclination, realFOV);
 	pinproj.SetFieldOfView(realFOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
 
-	const GPINFLOAT skew = -tan(m_layback*(M_PI/360));
-	const float skewX = -sinf(rotation)*(float)skew;
-	const float skewY =  cosf(rotation)*(float)skew;
+
+	const float skew = -tanf(m_layback*(float)(M_PI/360));
+	const float skewX = -sinf(rotation)*skew;
+	const float skewY =  cosf(rotation)*skew;
 	Matrix3D matTrans;
 	// create a normal matrix.
 	matTrans._11 = matTrans._22 = matTrans._33 = matTrans._44 = 1.0f;
@@ -1577,8 +1574,7 @@ void PinTable::Play()
 		err = GetLastError();
 		}
 
-	HWND hwndProgressDialog;
-	hwndProgressDialog = CreateDialog(g_hinstres, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->m_hwnd, ProgressProc);
+	HWND hwndProgressDialog = CreateDialog(g_hinstres, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->m_hwnd, ProgressProc);
 	// TEXT
 	ShowWindow(hwndProgressDialog, SW_SHOW);
 
