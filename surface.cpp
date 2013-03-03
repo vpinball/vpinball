@@ -73,7 +73,7 @@ void Surface::WriteRegDefaults()
 	char strTmp[40];
 	char strKeyName[20];
 	strcpy_s(strKeyName, 20, IsWall? "DefaultProps\\Wall":"DefaultProps\\Target");
-		
+
 	SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue(strKeyName,"TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	SetRegValue(strKeyName,"HitEvent",REG_DWORD,&m_d.m_fHitEvent,4);
@@ -182,7 +182,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_threshold = fTmp;
 	else
-		m_d.m_threshold = 1.0f;
+		m_d.m_threshold = 2.0f;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Target","SlingshotThreshold", &fTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -340,7 +340,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_threshold = fTmp;
 	else
-		m_d.m_threshold = 1.0f;
+		m_d.m_threshold = 2.0f;
 	
 	hr = GetRegStringAsFloat("DefaultProps\\Wall","SlingshotThreshold", &fTmp);
 	if ((hr == S_OK) && fromMouseClick)
