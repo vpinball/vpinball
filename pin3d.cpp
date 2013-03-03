@@ -986,7 +986,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	//float layback = 30.0f;
 	m_layback = layback;
-	const GPINFLOAT skew = -tan(layback*(M_PI/360));
+	const float skew = -tanf(layback*(float)(M_PI/360));
 
 	m_maxSeparation = maxSeparation;
 	m_ZPD = ZPD;
@@ -1123,10 +1123,9 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	SetFieldOfView(FOV, m_aspect, m_rznear, m_rzfar);
 
 	// skew the coordinate system from kartesian to non kartesian.
-	skewX = -sinf(m_rotation)*(float)skew;
-	skewY =  cosf(m_rotation)*(float)skew;
-	Matrix3D matTemp, matTrans;
-	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
+	skewX = -sinf(m_rotation)*skew;
+	skewY =  cosf(m_rotation)*skew;
+	Matrix3D matTrans;
 	// create a normal matrix.
 	matTrans._11 = matTrans._22 = matTrans._33 = matTrans._44 = 1.0f;
 	matTrans._12 = matTrans._13 = matTrans._14 = 
@@ -1141,9 +1140,10 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	matTrans._32 = skewY;
 	matTrans._41 = skewtan*skewX;
 	matTrans._31 = skewX;
+	Matrix3D matTemp;
+	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 	matTemp.Multiply(matTrans, matTemp);
-
-	m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
+	m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 
 	Scale( m_scalex != 0.0f ? m_scalex : 1.0f, m_scaley != 0.0f ? m_scaley : 1.0f, 1.0f );
 	Rotate( 0, 0, m_rotation );
@@ -1653,11 +1653,11 @@ void Pin3D::Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z)
 
 	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 
-	matRotateY.RotateYMatrix(y);
 	matRotateX.RotateXMatrix(x);
-	matRotateZ.RotateZMatrix(z);
 	matTemp.Multiply(matRotateX, matTemp);
+	matRotateY.RotateYMatrix(y);
 	matTemp.Multiply(matRotateY, matTemp);
+	matRotateZ.RotateZMatrix(z);
 	matTemp.Multiply(matRotateZ, matTemp);
 
 	m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
@@ -1674,9 +1674,6 @@ void Pin3D::Scale(const float x, const float y, const float z)
 void Pin3D::Translate(const float x, const float y, const float z)
 	{
 	Matrix3D matTemp, matTrans;
-
-	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
-
 	matTrans._11 = matTrans._22 = matTrans._33 = matTrans._44 = 1.0f;
 	matTrans._12 = matTrans._13 = matTrans._14 = 0.0f;
 	matTrans._21 = matTrans._23 = matTrans._24 = 0.0f;
@@ -1684,8 +1681,8 @@ void Pin3D::Translate(const float x, const float y, const float z)
 	matTrans._41 = x;
 	matTrans._42 = y;
 	matTrans._43 = z;
+	m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 	matTemp.Multiply(matTrans, matTemp);
-
 	m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 	}
 
@@ -1805,37 +1802,7 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D_NoTex2* const rgv, float * 
 		}
 	}
 
-void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed)
-	{
-	Vertex3D * const rgvOut = (!fTransformed) ? new Vertex3D[count] : rgv;
-
-	if (!fTransformed)
-		TransformVertices(rgv, NULL, count, rgvOut);
-
-	for (int i=0; i<count; ++i)
-		{
-		const int x = (int)(rgvOut[i].x + 0.5f);
-		const int y = (int)(rgvOut[i].y + 0.5f);
-
-		prc->left = min(prc->left, x - 2);
-		prc->top = min(prc->top, y - 2);
-		prc->right = max(prc->right, x + 2);
-		prc->bottom = max(prc->bottom, y + 2);
-
-		if (pznear)
-			{
-			*pznear = min(*pznear, rgvOut[i].z);
-			*pzfar = max(*pzfar, rgvOut[i].z);
-			}
-		}
-
-	if (!fTransformed)
-		{
-		delete [] rgvOut;
-		}
-	}
-
-//copy pasted from above
+//copy pasted from above , +/- 2 instead
 void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D_NoTex2* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed)
 	{
 	Vertex3D_NoTex2 * const rgvOut = (!fTransformed) ? new Vertex3D_NoTex2[count] : rgv;
@@ -1880,11 +1847,11 @@ void PinProjection::Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT
 
 	//m_pd3dDevice->GetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 
-	matRotateY.RotateYMatrix(y);
 	matRotateX.RotateXMatrix(x);
-	matRotateZ.RotateZMatrix(z);
 	m_matWorld.Multiply(matRotateX, m_matWorld);
+	matRotateY.RotateYMatrix(y);
 	m_matWorld.Multiply(matRotateY, m_matWorld);
+	matRotateZ.RotateZMatrix(z);
 	m_matWorld.Multiply(matRotateZ, m_matWorld);
 
 	//m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
