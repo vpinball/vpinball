@@ -2,7 +2,6 @@
 #include "Texture.h"
 
 #pragma once
-
 class RenderDevice : public IDirect3DDevice7
 {
 public:
@@ -35,8 +34,6 @@ public:
 
    virtual void setMaterial( THIS_ Material *_material );
    virtual void SetRenderState( RenderStates,DWORD );
-
-
    //########################## simple wrapper functions (interface for DX7)##################################
 
    virtual STDMETHODIMP QueryInterface( THIS_ REFIID riid, LPVOID * ppvObj );
@@ -139,5 +136,11 @@ public:
    virtual STDMETHODIMP GetInfo( THIS_ DWORD,LPVOID,DWORD );
 
 private:
+   static const DWORD RENDER_STATE_CACHE_SIZE=256;
+   static const DWORD TEXTURE_STATE_CACHE_SIZE=256;
+
    static RenderDevice *theDevice;
+   DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];
+   DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];
+
 };
