@@ -17,6 +17,11 @@ bool RenderDevice::createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7
 RenderDevice::RenderDevice( void )
 {
    theDevice=this;
+   memset( renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
+   for( int i=0;i<8;i++ )
+      for( int j=0;j<TEXTURE_STATE_CACHE_SIZE;j++ )
+         textureStateCache[i][j]=0xFFFFFFFF;
+
 }
 
 RenderDevice* RenderDevice::instance()
@@ -31,6 +36,15 @@ void RenderDevice::setMaterial( THIS_ Material *_material )
 
 void RenderDevice::SetRenderState( RenderStates p1,DWORD p2)
 {
+   if ( p1<RENDER_STATE_CACHE_SIZE) 
+   {
+      if( renderStateCache[p1]==p2 )
+      {
+         // this render state is already set -> don't do anything then
+         return;
+      }
+      renderStateCache[p1]=p2;
+   }
    dx7Device->SetRenderState((D3DRENDERSTATETYPE)p1,p2);
 }
 
@@ -58,6 +72,7 @@ STDMETHODIMP RenderDevice::BeginScene( THIS )
 
 STDMETHODIMP RenderDevice::EndScene( THIS )
 {
+   memset( renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
    return dx7Device->EndScene();
 }
 
@@ -219,6 +234,15 @@ STDMETHODIMP RenderDevice::GetTextureStageState( THIS_ DWORD p1,D3DTEXTURESTAGES
 
 STDMETHODIMP RenderDevice::SetTextureStageState( THIS_ DWORD p1,D3DTEXTURESTAGESTATETYPE p2,DWORD p3)
 {
+   if( p2<TEXTURE_STATE_CACHE_SIZE && p1<8) 
+   {
+      if( textureStateCache[p1][p2]==p3 )
+      {
+         // texture stage state hasn't changed since last call of this function -> do nothing here
+         return D3D_OK;
+      }
+   }
+   textureStateCache[p1][p2]=p3;
    return dx7Device->SetTextureStageState(p1,p2,p3);
 }
 
