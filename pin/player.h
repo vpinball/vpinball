@@ -60,7 +60,7 @@ public:
 
 	void PhysicsSimulateCycle(float dtime, const U64 startTime);
 
-	void InvalidateRect(RECT * const prc);
+	void InvalidateRect(const RECT * const prc);
 #ifdef ULTRAPIN
 	void DrawLightHack ();
 #endif
