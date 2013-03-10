@@ -21,10 +21,10 @@ public:
 	//int m_blinkinterval;
 	float m_borderwidth;
 	COLORREF m_bordercolor;
-   Material normalMatr;
-   Material borderMatr;
-   float normalR,normalG,normalB;
-   float borderR,borderG,borderB;
+   //Material normalMatr;
+   //Material borderMatr;
+   //float normalR,normalG,normalB;
+   //float borderR,borderG,borderB;
 	char m_szSurface[MAXTOKEN];
 	char m_szOnImage[MAXTOKEN];
 	char m_szOffImage[MAXTOKEN];
