@@ -2076,15 +2076,15 @@ void Player::Render()
 		m_vscreenupdate.ElementAt(i)->m_fInvalid = false;
 		m_vscreenupdate.ElementAt(i)->Check3D();
 
-		// Clamp all bounds to screen
+		// Clamp all bounds to screen (if not completely offscreen)
 		RECT * const prc = &m_vscreenupdate.ElementAt(i)->m_rcBounds;
-		if (prc->top < 0)
+		if ((prc->top < 0) && (prc->bottom >= 0))
 			prc->top = 0;
-		if (prc->left < 0)
+		if ((prc->left < 0) && (prc->right >= 0))
 			prc->left = 0;
-		if (prc->bottom > m_pin3d.m_dwRenderHeight-1)
+		if ((prc->bottom > m_pin3d.m_dwRenderHeight-1) && (prc->top <= m_pin3d.m_dwRenderHeight-1))
 			prc->bottom = m_pin3d.m_dwRenderHeight-1;
-		if (prc->right > m_pin3d.m_dwRenderWidth-1)
+		if ((prc->right > m_pin3d.m_dwRenderWidth-1) && (prc->left <= m_pin3d.m_dwRenderWidth-1))
 			prc->right = m_pin3d.m_dwRenderWidth-1;
 	}
 
