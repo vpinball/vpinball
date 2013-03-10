@@ -2069,14 +2069,29 @@ void Player::Render()
 
 	m_LastKnownGoodCounter++;
 
-	// Check all elements that could possibly need updating.
 	// cupid for primitives: OK, i need my primitives in here... And they need to understand m_fInvalid, Check3D and m_rcBounds
 	for (int i=0;i<m_vscreenupdate.Size();i++)
 	{
 		// Check if the element is invalid (its frame changed).
 		m_vscreenupdate.ElementAt(i)->m_fInvalid = false;
 		m_vscreenupdate.ElementAt(i)->Check3D();
-		if (m_vscreenupdate.ElementAt(i)->m_fInvalid)					
+
+		// Clamp all bounds to screen
+		RECT * const prc = &m_vscreenupdate.ElementAt(i)->m_rcBounds;
+		if (prc->top < 0)
+			prc->top = 0;
+		if (prc->left < 0)
+			prc->left = 0;
+		if (prc->bottom > m_pin3d.m_dwRenderHeight-1)
+			prc->bottom = m_pin3d.m_dwRenderHeight-1;
+		if (prc->right > m_pin3d.m_dwRenderWidth-1)
+			prc->right = m_pin3d.m_dwRenderWidth-1;
+	}
+
+	// Check all elements that could possibly need updating.
+	for (int i=0;i<m_vscreenupdate.Size();i++)
+	{
+		if (m_vscreenupdate.ElementAt(i)->m_fInvalid)
 		{
 			// Flag the element's region as needing a redraw.
 			InvalidateRect(&m_vscreenupdate.ElementAt(i)->m_rcBounds);
@@ -2117,19 +2132,6 @@ void Player::Render()
 	// it with the contents of the static buffer.
 
 
-	// cupid for primitives:
-	// If i call InvalidateRect here, with a big enough rect, all is displayed correctly... 
-	// If I call it from the render process in Primitives, that does not work, since it is 
-	// called via drawacrylics, about 200 Lines down. So i have to get this done before.
-	// that seems to have something to do with m_vscreenupdate ... So lets look where this gets filled.
-	/*
-	RECT rect;
-	rect.left = 100;
-	rect.right = 1700;
-	rect.top = 100;
-	rect.bottom = 700;
-	InvalidateRect(&rect);
-	*/
 
 
 	// Check if more stuff is updated than area of whole screen
@@ -3197,16 +3199,8 @@ void Player::DrawBalls()
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 }
 
-void Player::InvalidateRect(RECT * const prc)
+void Player::InvalidateRect(const RECT * const prc)
 	{
-	// This assumes the caller does not need *prc any more!!!
-	// Either that, or we assume it can be permanently changed,
-	// Because we never care about redrawing stuff off the screen.
-	if (prc->top < 0)
-		{
-		prc->top = 0;
-		}
-
 	UpdateRect * const pur = new UpdateRect();
 	pur->m_rcupdate = *prc;
 	pur->m_fSeeThrough = fTrue;
