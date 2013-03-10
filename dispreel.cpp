@@ -575,19 +575,17 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	// get the render sizes of the objects (reels and frame)
-	const float w = (float)(1.0/1000.0) * (float)ppin3d->m_dwRenderWidth;
-	const float h = (float)(1.0/750.0) * (float)ppin3d->m_dwRenderHeight;
-    m_renderwidth  = max(0, (int)(m_d.m_width * w));
-    m_renderheight = max(0, (int)(m_d.m_height * h));
-    const int m_renderspacingx = max(0, (int)(m_d.m_reelspacing * w));
-    const int m_renderspacingy = max(0, (int)(m_d.m_reelspacing * h));
+    m_renderwidth  = max(0, (int)((m_d.m_width * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth));
+    m_renderheight = max(0, (int)((m_d.m_height * (float)(1.0/750.0)) * ppin3d->m_dwRenderHeight));
+    const int m_renderspacingx = max(0, (int)((m_d.m_reelspacing * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth));
+    const int m_renderspacingy = max(0, (int)((m_d.m_reelspacing * (float)(1.0/750.0))  * ppin3d->m_dwRenderHeight));
 
     // get the size of the object frame (size of entire reel set and border)
-	m_pobjframe->rc.left = (int)(m_d.m_v1.x * w);
-	m_pobjframe->rc.top = (int)(m_d.m_v1.y * h);
+	m_pobjframe->rc.left = (int)((m_d.m_v1.x * (float)(1.0/1000.0)) * ppin3d->m_dwRenderWidth);
+	m_pobjframe->rc.top = (int)((m_d.m_v1.y * (float)(1.0/750.0)) * ppin3d->m_dwRenderHeight);
 	// i cant use v2 as it really doesn't scale properly.
 	m_pobjframe->rc.right = m_pobjframe->rc.left + m_d.m_reelcount * (m_renderwidth+m_renderspacingx) + m_renderspacingx;
-	m_pobjframe->rc.bottom = m_pobjframe->rc.top + m_renderheight + 2 * m_renderspacingy;
+	m_pobjframe->rc.bottom = m_pobjframe->rc.top + m_renderheight + (2 * m_renderspacingy);
 
     // set the boundarys of the object frame (used for clipping I assume)
 	m_ptu->m_dispreelanim.m_rcBounds = m_pobjframe->rc;
