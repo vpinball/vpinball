@@ -23,8 +23,6 @@
 #include <float.h>
 #include "ddraw.h"
 
-#include <xmmintrin.h>
-
 #pragma warning(disable:4201) // anonymous unions warning
 #if defined(_X86_) || defined(_IA64_)
 #pragma pack(4)
