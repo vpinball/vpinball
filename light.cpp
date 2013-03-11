@@ -569,7 +569,7 @@ void Light::RenderCustomStatic(const RenderDevice* _pd3dDevice)
 	mtrl.diffuse.g = mtrl.ambient.g = g;///4;
 	mtrl.diffuse.b = mtrl.ambient.b = b;///4;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-	pd3dDevice->setMaterial(&mtrl);
+	pd3dDevice->SetMaterial(&mtrl);
 
 	Vertex3D rgv3D[3];
 	if (!m_fBackglass)
@@ -652,7 +652,7 @@ void Light::RenderStaticCircle(const RenderDevice* _pd3dDevice)
 	mtrl.diffuse.g = mtrl.ambient.g = g;
 	mtrl.diffuse.b = mtrl.ambient.b = b;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-	pd3dDevice->setMaterial(&mtrl);
+	pd3dDevice->SetMaterial(&mtrl);
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
@@ -827,7 +827,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 					}
 			}
 
-		pd3dDevice->setMaterial(&mtrl);
+		pd3dDevice->SetMaterial(&mtrl);
 
 		m_pobjframe[i] = new ObjFrame();
 
@@ -1046,7 +1046,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 			SetDiffuseFromMaterial(rgv3D, 32, &mtrl);
 			}
 
-		pd3dDevice->setMaterial(&mtrl);
+		pd3dDevice->SetMaterial(&mtrl);
 
 		m_pobjframe[i] = new ObjFrame();
 

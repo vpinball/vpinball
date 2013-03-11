@@ -32,7 +32,7 @@ public:
 
    static RenderDevice* instance( void );
 
-   virtual void setMaterial( THIS_ Material *_material );
+   virtual void SetMaterial( THIS_ Material *_material );
    virtual void SetRenderState( RenderStates,DWORD );
    //########################## simple wrapper functions (interface for DX7)##################################
 

@@ -241,7 +241,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
    mtrl.diffuse.g = mtrl.ambient.g = g;//0.2f;
    mtrl.diffuse.b = mtrl.ambient.b = b;//0.2f;
-   pd3dDevice->setMaterial(&mtrl);
+   pd3dDevice->SetMaterial(&mtrl);
 
    ppin3d->EnableLightMap(fTrue, height);
 
@@ -275,7 +275,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    mtrl.diffuse.r = mtrl.ambient.r = 
       mtrl.diffuse.g = mtrl.ambient.g = 
       mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
-   pd3dDevice->setMaterial(&mtrl);
+   pd3dDevice->SetMaterial(&mtrl);
 
    ppin3d->EnableLightMap(fFalse, height);
 
@@ -347,7 +347,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
       mtrl.diffuse.r = mtrl.ambient.r =
          mtrl.diffuse.g = mtrl.ambient.g =
          mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
-      pd3dDevice->setMaterial(&mtrl);
+      pd3dDevice->SetMaterial(&mtrl);
 
       {
          WORD rgi[3*14];
@@ -365,7 +365,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
       mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
       mtrl.diffuse.g = mtrl.ambient.g = g;//0.7f;
       mtrl.diffuse.b = mtrl.ambient.b = b;//0.7f;
-      pd3dDevice->setMaterial(&mtrl);
+      pd3dDevice->SetMaterial(&mtrl);
 
       ppin3d->EnableLightMap(fTrue, height);
 
@@ -396,7 +396,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
       mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
       mtrl.diffuse.g = mtrl.ambient.g = g;//0.2f;
       mtrl.diffuse.b = mtrl.ambient.b = b;//0.2f;
-      pd3dDevice->setMaterial(&mtrl);
+      pd3dDevice->SetMaterial(&mtrl);
 
       ppin3d->EnableLightMap(fTrue, height);
 

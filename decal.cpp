@@ -446,7 +446,7 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-	pd3dDevice->SetMaterial((LPD3DMATERIAL7)&decalmtrl);
+	pd3dDevice->SetMaterial((Material*)&decalmtrl);
 
 	float leading, descent; // For fonts
 	float maxtu, maxtv;

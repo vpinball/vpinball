@@ -281,7 +281,7 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
 		pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 		pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
 
-		pd3dDevice->setMaterial((Material*)&bumpermtrl);
+		pd3dDevice->SetMaterial((Material*)&bumpermtrl);
 
 		const float outerradius = m_d.m_radius + m_d.m_overhang;
 
@@ -466,7 +466,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 					break;
 				}
 
-			pd3dDevice->setMaterial(&mtrl);
+			pd3dDevice->SetMaterial(&mtrl);
 
 			SetNormal(&rgv3D[64], rgiBumperStatic, 32, NULL, NULL, 0);
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
@@ -531,7 +531,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 					mtrl.emissive.b = bside;
 					break;
 				}
-			pd3dDevice->setMaterial(&mtrl);
+			pd3dDevice->SetMaterial(&mtrl);
 
 			for (int l=0;l<32;l++)
 				{
@@ -597,7 +597,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 					mtrl.emissive.b = 1.0f;
 					break;
 				}
-			pd3dDevice->setMaterial(&mtrl);
+			pd3dDevice->SetMaterial(&mtrl);
 
 			// Set all the texture coordinates to match maxtu/tv
 			for (int l=0;l<32;l++)

@@ -36,7 +36,7 @@ RenderDevice* RenderDevice::instance()
    return theDevice;
 }
 
-void RenderDevice::setMaterial( THIS_ Material *_material )
+void RenderDevice::SetMaterial( THIS_ Material *_material )
 {
    if(_mm_movemask_ps(_mm_and_ps(
 	  _mm_and_ps(_mm_cmpeq_ps(_material->d,materialStateCache.d),_mm_cmpeq_ps(_material->a,materialStateCache.a)),
@@ -142,17 +142,6 @@ STDMETHODIMP RenderDevice::GetViewport( THIS_ LPD3DVIEWPORT7 p1)
 
 STDMETHODIMP RenderDevice::SetMaterial( THIS_ LPD3DMATERIAL7 p1)
 {
-   if(_mm_movemask_ps(_mm_and_ps(
-	  _mm_and_ps(_mm_cmpeq_ps(p1->d,materialStateCache.d),_mm_cmpeq_ps(p1->a,materialStateCache.a)),
-	  _mm_and_ps(_mm_cmpeq_ps(p1->s,materialStateCache.s),_mm_cmpeq_ps(p1->e,materialStateCache.e)))) == 15
-	  &&
-	  p1->power == materialStateCache.power)
-	  return 0;
-   materialStateCache.d = p1->d;
-   materialStateCache.a = p1->a;
-   materialStateCache.e = p1->e;
-   materialStateCache.s = p1->s;
-   materialStateCache.power = p1->power;
    return dx7Device->SetMaterial(p1);
 }
 
