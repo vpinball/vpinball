@@ -1186,7 +1186,7 @@ void Pin3D::InitBackGraphics()
 	rgv[6].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_bottom,50.0f);
 	rgv[7].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_top,50.0f);
 
-	D3DMATERIAL7 mtrl;
+	Material mtrl;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
@@ -1470,7 +1470,7 @@ void Pin3D::EnableLightMap(const BOOL fEnable, const float z)
 
 void Pin3D::SetMaterial(const float l, const float a)
 	{
-	D3DMATERIAL7 mtrl;
+	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 	mtrl.power = 0;

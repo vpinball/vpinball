@@ -1093,7 +1093,7 @@ void Ramp::RenderStaticHabitrail(const RenderDevice* _pd3dDevice)
       mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
       mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a = 1.0f;
       mtrl.power = 8.0f;
-      pd3dDevice->setMaterial(&mtrl);
+      pd3dDevice->SetMaterial(&mtrl);
    }
 
    Vertex3D_NoTex rgv3D[32];
@@ -1300,7 +1300,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
       PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
       float maxtu = 0, maxtv = 0;
 
-      D3DMATERIAL7 mtrl;
+      Material mtrl;
       mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
          mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
          mtrl.power = 0;
@@ -2489,7 +2489,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		float maxtu = 0;
 		float maxtv = 0;
 
-		D3DMATERIAL7 mtrl;
+		Material mtrl;
 		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 		mtrl.power = 0;

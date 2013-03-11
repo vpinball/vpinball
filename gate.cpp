@@ -398,7 +398,7 @@ void Gate::RenderStatic(const RenderDevice* _pd3dDevice)
 	const float snY = sinf(radangle);
 	const float csY = cosf(radangle);
 
-	pd3dDevice->setMaterial((Material*)&gatemtrl);
+	pd3dDevice->SetMaterial((Material*)&gatemtrl);
 
 	Vertex3D rgv3D[8];
 	rgv3D[0].x = -halflength + halfthick;
@@ -642,7 +642,7 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 			mtrl.diffuse.b = mtrl.ambient.b = b;
 			}
 
-		pd3dDevice->setMaterial(&mtrl);
+		pd3dDevice->SetMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiGate2, 4, NULL, NULL, 0);
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiGate2, 4, 0);
@@ -690,7 +690,7 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 			mtrl.diffuse.b = mtrl.ambient.b = b;
 			}
 
-		pd3dDevice->setMaterial(&mtrl);
+		pd3dDevice->SetMaterial(&mtrl);
 
 		SetNormal(rgv3D, rgiGate3, 4, NULL, NULL, 0);
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate3, 4, 0);
@@ -698,7 +698,7 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
 		mtrl.diffuse.b = mtrl.ambient.b = b;
-		pd3dDevice->setMaterial(&mtrl);
+		pd3dDevice->SetMaterial(&mtrl);
 		ppin3d->SetTexture(NULL);
 
 		if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)

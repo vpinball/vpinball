@@ -2183,6 +2183,8 @@ void Player::Render()
 	// Start rendering the next frame.
 	/*HRESULT hr =*/ m_pin3d.m_pd3dDevice->BeginScene();
 
+	Texture * const pdds = m_pin3d.m_pddsBackBuffer;
+
 	// Process all regions that need updating.  
 	// The region will be drawn with the current frame.
 	for (int i=0;i<m_vupdaterect.Size();i++)
@@ -2198,7 +2200,6 @@ void Player::Render()
 			// Make sure we have a frame.
 			if (pobjframe != NULL)
 			{
-				Texture* pdds = m_pin3d.m_pddsBackBuffer;
 				const RECT * const prc = &pur->m_rcupdate;
 
 				// NOTE: prc is the rectangle of the region needing to be updated.
@@ -2806,7 +2807,7 @@ void Player::DrawBallShadows()
 	// Nobody likes the ball shadows.		- JEP
 	//return;
 
-	m_pin3d.m_pd3dDevice->setMaterial((Material*)&shadowmtrl);
+	m_pin3d.m_pd3dDevice->SetMaterial((Material*)&shadowmtrl);
 
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE );
 
@@ -2965,7 +2966,7 @@ void Player::DrawBalls()
 		mtrl.diffuse.r = mtrl.ambient.r = r;
 		mtrl.diffuse.g = mtrl.ambient.g = g;
 		mtrl.diffuse.b = mtrl.ambient.b = b;
-		m_pin3d.m_pd3dDevice->setMaterial(&mtrl);
+		m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
 		const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
@@ -3063,7 +3064,7 @@ void Player::DrawBalls()
 			mtrl.diffuse.g = mtrl.ambient.g = 0.4f;
 			mtrl.diffuse.b = mtrl.ambient.b = 0.2f;*/
 			mtrl.diffuse.a = mtrl.ambient.a = 0.8f;//0.7f;
-			m_pin3d.m_pd3dDevice->setMaterial(&mtrl);
+			m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
 
 				Vertex3D_NoTex2 rgv3DArrow[4];
 

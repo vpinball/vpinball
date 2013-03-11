@@ -405,7 +405,7 @@ void Spinner::RenderStatic(const RenderDevice* _pd3dDevice)
 		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
 		}
 
-	pd3dDevice->setMaterial((Material*)&spinnermtrl);
+	pd3dDevice->SetMaterial((Material*)&spinnermtrl);
 
 	SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner0, 8);
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
@@ -474,7 +474,7 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
 
 	ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
 
-	D3DMATERIAL7 mtrl;
+	Material mtrl;
 	mtrl.diffuse.a = 
 	mtrl.ambient.a =
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =

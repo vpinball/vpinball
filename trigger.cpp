@@ -439,7 +439,7 @@ void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
 
 	ppin3d->EnableLightMap(fTrue, height);
 
-	pd3dDevice->setMaterial((Material*)&triggermtrl);
+	pd3dDevice->SetMaterial((Material*)&triggermtrl);
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);

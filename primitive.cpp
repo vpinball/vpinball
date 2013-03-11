@@ -794,7 +794,7 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			mtrl.diffuse.g = mtrl.ambient.g = g;
 			mtrl.diffuse.b = mtrl.ambient.b = b;
 		}
-		pd3dDevice->setMaterial(&mtrl);
+		pd3dDevice->SetMaterial(&mtrl);
 
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 
 			MY_D3DFVF_NOTEX2_VERTEX,

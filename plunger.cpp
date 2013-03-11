@@ -327,7 +327,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
 
       const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
-      D3DMATERIAL7 mtrl;
+      Material mtrl;
       if (m_d.m_type == PlungerTypeModern)
       {
          mtrl.power = 1.0f;

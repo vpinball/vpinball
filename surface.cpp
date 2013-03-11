@@ -1023,7 +1023,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 	const float slingbottom = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.2f) + m_d.m_heightbottom;
 	const float slingtop = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.8f) + m_d.m_heightbottom;
 
-	D3DMATERIAL7 mtrl;
+	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 	mtrl.power = 0;
@@ -1152,7 +1152,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 		}
 
-	D3DMATERIAL7 mtrl;
+	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 	mtrl.power = 0;

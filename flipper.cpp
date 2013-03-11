@@ -562,7 +562,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
 	mtrl.diffuse.g = mtrl.ambient.g = g;
 	mtrl.diffuse.b = mtrl.ambient.b = b;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-	pd3dDevice->setMaterial(&mtrl);
+	pd3dDevice->SetMaterial(&mtrl);
 	}
 
 	Vertex2D vendcenter;
