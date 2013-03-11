@@ -351,7 +351,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
          const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
          const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
          const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-         mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a = 0.0f;
+         mtrl.emissive.r = mtrl.emissive.g = mtrl.emissive.b = mtrl.emissive.a = 0.0f;
          mtrl.diffuse.r = mtrl.ambient.r = r;
          mtrl.diffuse.g = mtrl.ambient.g = g;
          mtrl.diffuse.b = mtrl.ambient.b = b;
@@ -362,7 +362,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
 
       pd3dDevice->SetMaterial(&mtrl);
 
-      const int cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke/80.0f)) + 1; // 25 frames per 80 units travel
+      const int cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke*(float)(1.0/80.0))) + 1; // 25 frames per 80 units travel
 
       const float beginy = m_d.m_v.y;
       const float endy = m_d.m_v.y - m_d.m_stroke;
@@ -439,7 +439,6 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
                ppin3d->ClearExtents(&pof->rc, NULL, NULL);
                ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitplunger->m_plungeranim.m_znear,
                   &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS0), fFalse);
-
             }
 
             for (int l=0;l<16;l++)
@@ -1038,7 +1037,6 @@ STDMETHODIMP Plunger::put_Stroke(float newVal)
 
 	return S_OK;
 }
-
 
 STDMETHODIMP Plunger::get_ScatterVelocity(float *pVal)
 {

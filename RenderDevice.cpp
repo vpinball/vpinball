@@ -6,12 +6,13 @@ RenderDevice* RenderDevice::theDevice=0;
 
 bool RenderDevice::createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7, Texture *_backBuffer )
 {
-   memset( renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
+   memset( theDevice->renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
    for( int i=0;i<8;i++ )
       for( int j=0;j<TEXTURE_STATE_CACHE_SIZE;j++ )
-         textureStateCache[i][j]=0xFFFFFFFF;
+         theDevice->textureStateCache[i][j]=0xFFFFFFFF;
+   memset(&theDevice->materialStateCache, 0xFFFFFFFF, sizeof(Material));
 
-   HRESULT hr;   
+   HRESULT hr;
    if( FAILED( hr = _dx7->CreateDevice( *_deviceGUID, (LPDIRECTDRAWSURFACE7)_backBuffer, &dx7Device ) ) )
    {
       return false;
@@ -27,6 +28,7 @@ RenderDevice::RenderDevice( void )
    for( int i=0;i<8;i++ )
       for( int j=0;j<TEXTURE_STATE_CACHE_SIZE;j++ )
          textureStateCache[i][j]=0xFFFFFFFF;
+   memset(&materialStateCache, 0xFFFFFFFF, sizeof(Material));
 }
 
 RenderDevice* RenderDevice::instance()
@@ -36,6 +38,17 @@ RenderDevice* RenderDevice::instance()
 
 void RenderDevice::setMaterial( THIS_ Material *_material )
 {
+   if(_mm_movemask_ps(_mm_and_ps(
+	  _mm_and_ps(_mm_cmpeq_ps(_material->d,materialStateCache.d),_mm_cmpeq_ps(_material->a,materialStateCache.a)),
+	  _mm_and_ps(_mm_cmpeq_ps(_material->s,materialStateCache.s),_mm_cmpeq_ps(_material->e,materialStateCache.e)))) == 15
+	  &&
+	  _material->power == materialStateCache.power)
+	  return;
+   materialStateCache.d = _material->d;
+   materialStateCache.a = _material->a;
+   materialStateCache.e = _material->e;
+   materialStateCache.s = _material->s;
+   materialStateCache.power = _material->power;
    dx7Device->SetMaterial( (LPD3DMATERIAL7)_material);
 }
 
@@ -78,6 +91,7 @@ STDMETHODIMP RenderDevice::BeginScene( THIS )
 STDMETHODIMP RenderDevice::EndScene( THIS )
 {
    memset( renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
+   memset(&materialStateCache, 0xFFFFFFFF, sizeof(Material));
    return dx7Device->EndScene();
 }
 
@@ -128,6 +142,17 @@ STDMETHODIMP RenderDevice::GetViewport( THIS_ LPD3DVIEWPORT7 p1)
 
 STDMETHODIMP RenderDevice::SetMaterial( THIS_ LPD3DMATERIAL7 p1)
 {
+   if(_mm_movemask_ps(_mm_and_ps(
+	  _mm_and_ps(_mm_cmpeq_ps(p1->d,materialStateCache.d),_mm_cmpeq_ps(p1->a,materialStateCache.a)),
+	  _mm_and_ps(_mm_cmpeq_ps(p1->s,materialStateCache.s),_mm_cmpeq_ps(p1->e,materialStateCache.e)))) == 15
+	  &&
+	  p1->power == materialStateCache.power)
+	  return 0;
+   materialStateCache.d = p1->d;
+   materialStateCache.a = p1->a;
+   materialStateCache.e = p1->e;
+   materialStateCache.s = p1->s;
+   materialStateCache.power = p1->power;
    return dx7Device->SetMaterial(p1);
 }
 

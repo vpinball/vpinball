@@ -185,7 +185,7 @@ public:
 	void SetTexture(Texture* pddsTexture);
 	void EnableLightMap(const BOOL fEnable, const float z);
 
-	void SetMaterial(const float r, const float g, const float b, const float a);
+	void SetMaterial(const float l, const float a);
 	void SetColorKeyEnabled(const BOOL fColorKey) const;
 	void SetAlphaEnabled(const BOOL fAlpha) const;
 	void SetFiltersLinear() const;
