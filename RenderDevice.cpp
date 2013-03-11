@@ -6,6 +6,11 @@ RenderDevice* RenderDevice::theDevice=0;
 
 bool RenderDevice::createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7, Texture *_backBuffer )
 {
+   memset( renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
+   for( int i=0;i<8;i++ )
+      for( int j=0;j<TEXTURE_STATE_CACHE_SIZE;j++ )
+         textureStateCache[i][j]=0xFFFFFFFF;
+
    HRESULT hr;   
    if( FAILED( hr = _dx7->CreateDevice( *_deviceGUID, (LPDIRECTDRAWSURFACE7)_backBuffer, &dx7Device ) ) )
    {
@@ -17,11 +22,11 @@ bool RenderDevice::createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7
 RenderDevice::RenderDevice( void )
 {
    theDevice=this;
+
    memset( renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
    for( int i=0;i<8;i++ )
       for( int j=0;j<TEXTURE_STATE_CACHE_SIZE;j++ )
          textureStateCache[i][j]=0xFFFFFFFF;
-
 }
 
 RenderDevice* RenderDevice::instance()
@@ -125,7 +130,6 @@ STDMETHODIMP RenderDevice::SetMaterial( THIS_ LPD3DMATERIAL7 p1)
 {
    return dx7Device->SetMaterial(p1);
 }
-
 
 STDMETHODIMP RenderDevice::GetMaterial( THIS_ LPD3DMATERIAL7 p1)
 {
