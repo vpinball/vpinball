@@ -1468,15 +1468,15 @@ void Pin3D::EnableLightMap(const BOOL fEnable, const float z)
 		}
 	}
 
-void Pin3D::SetMaterial(const float r, const float g, const float b, const float a)
+void Pin3D::SetMaterial(const float l, const float a)
 	{
 	D3DMATERIAL7 mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
 	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
 	mtrl.power = 0;
-	mtrl.diffuse.r = mtrl.ambient.r = r;
-	mtrl.diffuse.g = mtrl.ambient.g = g;
-	mtrl.diffuse.b = mtrl.ambient.b = b;
+	mtrl.diffuse.r = mtrl.ambient.r = 
+	mtrl.diffuse.g = mtrl.ambient.g = 
+	mtrl.diffuse.b = mtrl.ambient.b = l;
 	mtrl.diffuse.a = mtrl.ambient.a = a;
 	m_pd3dDevice->SetMaterial(&mtrl);
 	}

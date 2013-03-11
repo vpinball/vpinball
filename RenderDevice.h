@@ -142,5 +142,5 @@ private:
    static RenderDevice *theDevice;
    DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];
-
+   Material materialStateCache;
 };

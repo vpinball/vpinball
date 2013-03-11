@@ -684,7 +684,7 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 			// Render images and collect them
 			
 			// New rendering stuff
-			ppin3d->SetMaterial(1.0f, 1.0f, 1.0f, 0.5f);
+			ppin3d->SetMaterial(1.0f, 0.5f);
 				
 			pin->EnsureMaxTextureCoordinates();
 				
