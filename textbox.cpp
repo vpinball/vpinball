@@ -108,7 +108,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
 		fd.lpstrName = L"Arial";
 	else
 	{
-		unsigned int len = strlen(&tmp[0]);
+		unsigned int len = strlen(&tmp[0])+1;
 		fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
 		UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
 		fd.lpstrName[len] = 0;
@@ -149,6 +149,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
 		lstrcpy(m_d.sztext,"0");
 
 	OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+   free( fd.lpstrName );
 	}
 
 void Textbox::WriteRegDefaults()
@@ -650,9 +651,7 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
 		IPersistStream * ips;
 		m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
 
-		HRESULT hr;
-		hr = ips->Load(pbr->m_pistream);
-		hr = 9;
+		ips->Load(pbr->m_pistream);
 		}
 	else
 		{

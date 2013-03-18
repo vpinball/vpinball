@@ -65,7 +65,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
-		m_d.m_tdr.m_fTimerEnabled = false;
+		m_d.m_tdr.m_fTimerEnabled = fFalse;
 	
 	hr = GetRegInt("DefaultProps\\LightSequence","TimerInterval", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)

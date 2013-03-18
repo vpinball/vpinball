@@ -223,10 +223,9 @@ void mixer_draw()
 	//RenderStateType	RestoreRenderState;
 	//TextureStateType	RestoreTextureState;
 	D3DMATRIX			RestoreWorldMatrix;
-	HRESULT				ReturnCode;
 
 	// Save the current transformation state.
-	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+	g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 	// Save the current render state.
 	//Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
 	// Save the current texture state.
@@ -320,7 +319,7 @@ void mixer_draw()
 	// Restore the texture state.
 	//Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 	// Restore the transformation state.
-	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+	g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 }
 
 // Flags that the region behind the mixer volume should be refreshed.

@@ -147,7 +147,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 		fd.lpstrName = L"Times New Roman";
 	else
 	{
-		unsigned int len = strlen(&tmp[0]);
+		unsigned int len = strlen(&tmp[0])+1;
 		fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
 		UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
 		fd.lpstrName[len] = 0;
@@ -181,8 +181,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 		fd.fStrikethrough = 0;
 
 	OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-
-    return InitVBA(fTrue, 0, NULL);
+   return InitVBA(fTrue, 0, NULL);
 }
 
 
@@ -267,7 +266,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
-		m_d.m_tdr.m_fTimerEnabled = false;
+		m_d.m_tdr.m_fTimerEnabled = 0;
 	
 	hr = GetRegInt("DefaultProps\\EMReel","TimerInterval", &iTmp);
 	m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
@@ -286,7 +285,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
 			fd.lpstrName = L"Arial Black";
 		else
 		{
-			unsigned int len = strlen(&tmp[0]);
+			unsigned int len = strlen(&tmp[0])+1;
 			fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
 			UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
 			fd.lpstrName[len] = 0;
@@ -316,7 +315,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
 		else
 			fd.fStrikethrough = 0;
 		
-		OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+		OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);    
 		}
 	}
 
@@ -648,11 +647,16 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 
 			// save the color to use in any transparent blitting
 			m_rgbImageTransparent = pin->m_rgbTransparent;
-
+         if ( GridCols!=0 && GridRows!=0 )
+         {
             // get the size of the individual reel digits (if m_digitrange is wrong we can forget the rest)
             m_reeldigitwidth  = (float)pin->m_width / (float)GridCols;
             m_reeldigitheight = (float)pin->m_height / (float)GridRows;
-
+         }
+         else
+         {
+            ShowError("DispReel: GridCols/GridRows are zero!");
+         }
             // work out the size of the reel image strip (adds room for an extra digit at the end)
             //const int width  = m_reeldigitwidth;
             //const int height = (m_reeldigitheight * (m_d.m_digitrange+1)) + m_reeldigitheight;
@@ -914,11 +918,12 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 		SetTextColor(hdc, m_d.m_fontcolor);		// set the font colour
 		SetBkMode(hdc, TRANSPARENT);
 		for (int i=0; i < length; ++i)
-        {
+      {
 			// allocate some memory for this strip
-			m_vreelframe.ElementAt(i)->pdds = ppin3d->CreateOffscreen(maxwidth, maxheight);
+         Texture *texel= m_vreelframe.ElementAt(i)->pdds;
+			texel = ppin3d->CreateOffscreen(maxwidth, maxheight);
 			// fill the strip with the reel colour
-			m_vreelframe.ElementAt(i)->pdds->GetDC(&hdc);
+			texel->GetDC(&hdc);
 			HBRUSH hbrush = CreateSolidBrush(m_d.m_reelcolor);
 			HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
 			PatBlt(hdc, 0, 0, maxwidth, maxheight, PATCOPY);
@@ -935,7 +940,7 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
             rcOut.right = maxwidth;
             rcOut.bottom = rcOut.top + maxheight;
             DrawText(hdc, &REEL_NUMBER_TEXT[i], 1, &rcOut, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOCLIP | DT_NOPREFIX);
-            m_vreelframe.ElementAt(i)->pdds->ReleaseDC(hdc);
+            texel->ReleaseDC(hdc);
 		}
 		m_pIFontPlay->Release();
 		

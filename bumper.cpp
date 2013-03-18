@@ -619,7 +619,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 				rgv3D[l].tu2 = rgv3D[l].tu;
 				rgv3D[l+32].tu2 = rgv3D[l+32].tu;
 				rgv3D[l].tv2 = rgv3D[l].tv;
-				rgv3D[l+32].tv = rgv3D[l+32].tv;
+				rgv3D[l+32].tv2 = rgv3D[l+32].tv;
 				rgv3D[l+64].tu2 = (0.5f+sinangle*0.25f)*lightmaxtu;
 				rgv3D[l+64].tv2 = (0.5f+cosangle*0.25f)*lightmaxtv;
 				rgv3D[l+96].tu2 = (0.5f+sinangle*(float)(0.5*0.9))*lightmaxtu;

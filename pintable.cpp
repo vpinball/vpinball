@@ -1038,11 +1038,11 @@ void PinTable::Init(VPinball *pvp)
 	GlobalUnlock(hcopiedmem);
 		
 	ILockBytes *pilb;
-	HRESULT hr = CreateILockBytesOnHGlobal(hcopiedmem, TRUE, &pilb); // "TRUE" parm gives ownership of hcopiedmem to Global Object
+	CreateILockBytesOnHGlobal(hcopiedmem, TRUE, &pilb); // "TRUE" parm gives ownership of hcopiedmem to Global Object
 
 	IStorage *pis;
 
-	hr = StgOpenStorageOnILockBytes(pilb,NULL,STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE,NULL,0,&pis);
+	StgOpenStorageOnILockBytes(pilb,NULL,STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE,NULL,0,&pis);
 	pilb->Release();	// free pilb and hcopyiedmem
 
 	m_glassheight = 210;
@@ -1328,12 +1328,13 @@ void PinTable::Render(Sur * const psur)
 		}
 
 	for (int i=0;i<m_vedit.Size();i++)
+	{
+      IEditable *ptr = m_vedit.ElementAt(i);
+		if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
 		{
-		if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
-			{
-			m_vedit.ElementAt(i)->PreRender(psur);
-			}
+			ptr->PreRender(psur);
 		}
+	}
 
 	if (m_fGrid)
 		{
@@ -1814,19 +1815,19 @@ void PinTable::AutoSave()
 	pasp->HwndTable = m_hwnd;
 	
 	if (hr == S_OK)
-		{
-		HANDLE hEvent = g_pvp->PostWorkToWorkerThread(COMPLETE_AUTOSAVE, (LPARAM)pasp);
-		m_vAsyncHandles.AddElement(hEvent);
+	{
+	   HANDLE hEvent = g_pvp->PostWorkToWorkerThread(COMPLETE_AUTOSAVE, (LPARAM)pasp);
+	   m_vAsyncHandles.AddElement(hEvent);
 
-		g_pvp->SetActionCur("Completing AutoSave");
-		}
-	else
-		{
-		g_pvp->SetActionCur("");
-		}
+	   g_pvp->SetActionCur("Completing AutoSave");
+	}
+   else
+	{
+   	g_pvp->SetActionCur("");
+	}
 
 	g_pvp->SetCursorCur(NULL, IDC_ARROW);
-	}
+}
 
 HRESULT PinTable::Save(BOOL fSaveAs)
 	{
@@ -2277,7 +2278,10 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
 	//lzwreader.Decoder();
 
 	if(FAILED(hr = pstm->Read(pps->m_pdata, pps->m_cdata, &read)))
+   {
+      delete pps;
 		return hr;
+   }
 
 	if (g_pvp->m_pds.CreateDirectFromNative(pps, &wfx) == S_OK)
 		{
@@ -3273,10 +3277,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetFloat(&m_offsetx);
 		}
-	else if (id == FID(OFFX))
-		{
-		pbr->GetFloat(&m_offsetx);
-		}
 	else if (id == FID(OFFY))
 		{
 		pbr->GetFloat(&m_offsety);
@@ -3701,16 +3701,19 @@ void PinTable::NewCollection(HWND hwndListView, BOOL fFromSelection)
 			{
 			ISelect *pisel = m_vmultisel.ElementAt(i);
 			IEditable *piedit = pisel->GetIEditable();
-			if (piedit->GetISelect() == pisel) // Do this check so we don't put walls in a collection when we only have the control point selected
-				{
-				if (piedit && piedit->GetScriptable()) // check for scriptable because can't add decals to a collection - they have no name
-					{
-					piedit->m_vCollection.AddElement(pcol);
-					piedit->m_viCollection.AddElement((void *)pcol->m_visel.Size());
-					pcol->m_visel.AddElement(m_vmultisel.ElementAt(i));
-					}
-				}
-			}
+         if ( piedit )
+         {
+            if (piedit->GetISelect() == pisel) // Do this check so we don't put walls in a collection when we only have the control point selected
+            {
+               if (piedit->GetScriptable()) // check for scriptable because can't add decals to a collection - they have no name
+               {
+                  piedit->m_vCollection.AddElement(pcol);
+                  piedit->m_viCollection.AddElement((void *)pcol->m_visel.Size());
+                  pcol->m_visel.AddElement(m_vmultisel.ElementAt(i));
+               }
+            }
+         }
+         }
 		}
 
 	const int index = AddListCollection(hwndListView, pcol);
@@ -5984,20 +5987,20 @@ void PinTable::ReImportImage(HWND hwndListView, PinImage *ppi, char *filename)
 
 	PinBinary *ppb;
 	if (fBinary)
-		{
+	{
 		ppb = new PinBinary();
 		ppb->ReadFromFile(filename);
-		}
+	}
 
 	PinImage piT;
 	// Make sure we can import the new file before blowing away anything we had before
 	piT.m_pdsBuffer = g_pvp->m_pdd.CreateFromFile(filename, &ppi->m_width, &ppi->m_height, ppi->m_originalWidth, ppi->m_originalHeight);
 
 	if (piT.m_pdsBuffer == NULL)
-		{
-		//delete ppi;
+	{
+		delete ppb;
 		return;
-		}
+	}
 
 	ppi->FreeStuff();
 
@@ -6680,20 +6683,21 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 	}
 
 float PinTable::GetSurfaceHeight(char *szName, float x, float y)
-	{
+{
 	for (int i=0;i<m_vedit.Size();i++)
+	{
+      IEditable *item=m_vedit.ElementAt(i);
+		if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
 		{
-		if (m_vedit.ElementAt(i)->GetItemType() == eItemSurface || m_vedit.ElementAt(i)->GetItemType() == eItemRamp)
-			{
 			CComBSTR bstr;
 #ifdef VBA
-			m_vedit.ElementAt(i)->GetIApcProjectItem()->get_Name(&bstr);
+			item->GetIApcProjectItem()->get_Name(&bstr);
 #else
-			m_vedit.ElementAt(i)->GetScriptable()->get_Name(&bstr);
+			item->GetScriptable()->get_Name(&bstr);
 #endif
 			if (!WzSzStrCmp(bstr, szName))
 				{
-				IEditable * const piedit = m_vedit.ElementAt(i);
+				IEditable * const piedit = item;
 				switch (piedit->GetItemType())
 					{
 					case eItemSurface:

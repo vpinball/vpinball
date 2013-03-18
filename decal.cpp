@@ -92,7 +92,7 @@ void Decal::SetDefaults(bool fromMouseClick)
 			fd.lpstrName = L"Arial Black";
 		else
 		{
-			unsigned int len = strlen(&tmp[0]);
+			unsigned int len = strlen(&tmp[0])+1;
 			fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
 			UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
 			fd.lpstrName[len] = 0;

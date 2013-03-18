@@ -65,6 +65,7 @@ int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 								SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)pclsid);
 
 								CoTaskMemFree(ppwz);
+                        delete pclsid;
 								}
 							}
 						} while (hr == S_OK);
@@ -130,6 +131,7 @@ int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							EndDialog(hwndDlg, FALSE);
 							break;
 						}
+               break;
 					}
 				case LBN_SELCHANGE:
 					{
@@ -984,11 +986,11 @@ void PinComControl::GetTimers(Vector<HitTimer> * const pvht)
 	if (SUCCEEDED(hr))
 	{
 		m_pmcwPlayer->QueryInterface(IID_IAxWinHostWindow, (void**)&m_pAxWindowPlayer);
-		hr = m_pmcwPlayer->ActivateAx(punk, false, NULL);
+		m_pmcwPlayer->ActivateAx(punk, false, NULL);
 	}
 
 	CComQIPtr<IOleClientSite> spClientSite(m_pmcwPlayer->GetControllingUnknown());
-	hr = m_pmcwPlayer->m_spOleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, spClientSite, 0, g_pplayer->m_hwnd, &rcWnd);
+	m_pmcwPlayer->m_spOleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, spClientSite, 0, g_pplayer->m_hwnd, &rcWnd);
 
 	m_pAxWindowPlayer->QueryControl(IID_IDispatch, (void **)&m_pdispextender->m_pdispPlayer);
 	m_pdispextender->m_pdispControl = m_pdispextender->m_pdispPlayer;
@@ -997,16 +999,16 @@ void PinComControl::GetTimers(Vector<HitTimer> * const pvht)
 
 	// If in windowed-mode, create a clipper object
     LPDIRECTDRAWCLIPPER pcClipper;
-    hr = g_pplayer->m_pin3d.m_pDD->CreateClipper( 0, &pcClipper, NULL );
+    g_pplayer->m_pin3d.m_pDD->CreateClipper( 0, &pcClipper, NULL );
 
     // Associate the clipper with the window
-    pcClipper->SetHWnd(0, g_pplayer->m_hwnd);
-    g_pplayer->m_pin3d.m_pddsFrontBuffer->SetClipper(pcClipper);
     if (pcClipper)
-		{
-		pcClipper->Release();
-		}
-	}
+    {
+       pcClipper->SetHWnd(0, g_pplayer->m_hwnd);
+       g_pplayer->m_pin3d.m_pddsFrontBuffer->SetClipper(pcClipper);
+       pcClipper->Release();
+    }
+}
 
 void PinComControl::EndPlay()
 {

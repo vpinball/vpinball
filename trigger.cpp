@@ -47,9 +47,9 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Trigger","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
 	else
-		m_d.m_tdr.m_fTimerEnabled = false;
+		m_d.m_tdr.m_fTimerEnabled = fFalse;
 	
 	hr = GetRegInt("DefaultProps\\Trigger","TimerInterval", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -59,13 +59,13 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Trigger","Enabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fEnabled = iTmp == 0 ? false : true;
+		m_d.m_fEnabled = iTmp == 0 ? fFalse : fTrue;
 	else
 		m_d.m_fEnabled = fTrue;
 
 	hr = GetRegInt("DefaultProps\\Trigger","Visible", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fVisible = iTmp == 0 ? false : true;
+		m_d.m_fVisible = iTmp == 0 ? fFalse : fTrue;
 	else
 		m_d.m_fVisible = fTrue;
 

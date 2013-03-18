@@ -3557,9 +3557,10 @@ HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpCon
 		SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)pvm);
 
 		if (pvm->width == widthcur && pvm->height == heightcur && pvm->depth == depthcur)
-			{
-			SendMessage(hwndList, LB_SETCURSEL, index, 0);
-			}
+		{
+   		SendMessage(hwndList, LB_SETCURSEL, index, 0);
+		}
+      delete pvm;
 		}
 	return DDENUMRET_OK;
 	}
@@ -3954,6 +3955,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					pvm->width = xsize;
 					pvm->height = xsize*3/4;
 					SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)pvm);
+               delete pvm;
 					}
 				}
 
@@ -4575,6 +4577,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 								SendMessage(hwndList, LB_DELETESTRING, oldindex, 0);
 								delete [] szT;
 								}
+                        delete [] rgsel;
 							}
 							break;
 
@@ -6354,7 +6357,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				hwndButton = GetDlgItem(hwndDlg, IDC_MECHTILTBUTTON);
 				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
 				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
-
+            delete pksw;
 			return TRUE;
 			}
 			break;
@@ -7052,6 +7055,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					int * const sd = new int;
 					*sd = i;
 					SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
+               delete sd;
 				}
 			}
 
@@ -7397,53 +7401,56 @@ int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			return TRUE;
 			break;
 
-		case WM_COMMAND:
-			{
-			switch (HIWORD(wParam))
-				{
-				case BN_CLICKED:
-					switch (LOWORD(wParam))
-						{
-						case IDOK:
-							{
-							// get the password
-							char pw[PROT_PASSWORD_LENGTH+1];
-							ZeroMemory (pw, sizeof(pw));
-							HWND hwndPw = GetDlgItem(hwndDlg, IDC_UNLOCK_PASSWORD);
-							GetWindowText(hwndPw,  pw,  sizeof(pw));
+      case WM_COMMAND:
+         {
+            switch (HIWORD(wParam))
+            {
+            case BN_CLICKED:
+               switch (LOWORD(wParam))
+               {
+               case IDOK:
+                  {
+                     // get the password
+                     char pw[PROT_PASSWORD_LENGTH+1];
+                     ZeroMemory (pw, sizeof(pw));
+                     HWND hwndPw = GetDlgItem(hwndDlg, IDC_UNLOCK_PASSWORD);
+                     GetWindowText(hwndPw,  pw,  sizeof(pw));
 
-							// if both password is empty bring up a message box
-							if (strlen(pw) == 0)
-								{
-								LocalString ls(IDS_PROTECT_PW_ZEROLEN);
-								MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
-								}
-							else
-								{
-								PinTable * const pt = g_pvp->GetActiveTable();
-								const BOOL rc = pt->UnlockProtectionBlock((unsigned char *)pw);
-								if (rc)
-									{
-										LocalString ls(IDS_UNLOCK_SUCCESS);
-										MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONINFORMATION);
-										EndDialog(hwndDlg, TRUE);
-									}
-									else
-									{
-										LocalString ls(IDS_UNLOCK_FAILED);
-										MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
-									}
-								}
-							}
-							break;
+                     // if both password is empty bring up a message box
+                     if (strlen(pw) == 0)
+                     {
+                        LocalString ls(IDS_PROTECT_PW_ZEROLEN);
+                        MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
+                     }
+                     else
+                     {
+                        PinTable * const pt = g_pvp->GetActiveTable();
+                        if (pt)
+                        {
+                           const BOOL rc = pt->UnlockProtectionBlock((unsigned char *)pw);
+                           if (rc)
+                           {
+                              LocalString ls(IDS_UNLOCK_SUCCESS);
+                              MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONINFORMATION);
+                              EndDialog(hwndDlg, TRUE);
+                           }
+                           else
+                           {
+                              LocalString ls(IDS_UNLOCK_FAILED);
+                              MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
+                           }
+                        }
+                     }
+                  }
+                  break;
 
-						case IDCANCEL:
-							EndDialog(hwndDlg, FALSE);
-							break;
-						}
-				}
-			}
-			break;
+               case IDCANCEL:
+                  EndDialog(hwndDlg, FALSE);
+                  break;
+               }
+            }
+         }
+         break;
 
 		case WM_CLOSE:
 			EndDialog(hwndDlg, FALSE);
