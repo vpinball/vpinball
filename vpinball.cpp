@@ -3560,8 +3560,7 @@ HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpCon
 		{
    		SendMessage(hwndList, LB_SETCURSEL, index, 0);
 		}
-      delete pvm;
-		}
+	}
 	return DDENUMRET_OK;
 	}
 
@@ -3955,7 +3954,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					pvm->width = xsize;
 					pvm->height = xsize*3/4;
 					SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)pvm);
-               delete pvm;
 					}
 				}
 
@@ -6357,7 +6355,6 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				hwndButton = GetDlgItem(hwndDlg, IDC_MECHTILTBUTTON);
 				SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
 				SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
-            delete pksw;
 			return TRUE;
 			}
 			break;
@@ -7055,7 +7052,6 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					int * const sd = new int;
 					*sd = i;
 					SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
-               delete sd;
 				}
 			}
 
