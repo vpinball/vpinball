@@ -1008,8 +1008,8 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
 		}
 
 	ULONG writ = 0;
-	HRESULT hr = pistream->Write(&cchar, sizeof(int), &writ);
-	hr = pistream->Write(szText, (cchar)*sizeof(char), &writ);
+	pistream->Write(&cchar, sizeof(int), &writ);
+	pistream->Write(szText, (cchar)*sizeof(char), &writ);
 
 	CryptHashData(hcrypthash, (BYTE *)szText, cchar, 0);
 
@@ -1023,11 +1023,11 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
 
 	ULONG read = 0;
 	int cchar;
-	HRESULT hr = pistream->Read(&cchar, sizeof(int), &read);
+	pistream->Read(&cchar, sizeof(int), &read);
 
 	BYTE * const szText = new BYTE[cchar+1];
 
-	hr = pistream->Read(szText, (cchar)*sizeof(char), &read);
+	pistream->Read(szText, (cchar)*sizeof(char), &read);
 
 	CryptHashData(hcrypthash, (BYTE *)szText, cchar, 0);
 

@@ -305,7 +305,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 	hr = GetRegInt("DefaultProps\\Target","Collidable", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fCollidable = (iTmp == 0) ? false : true;
+		m_d.m_fCollidable = (iTmp == 0) ? fFalse : fTrue;
 	else
 		m_d.m_fCollidable = fTrue;
 
@@ -322,7 +322,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = (iTmp == 0) ? false : true;
 	else
-		m_d.m_tdr.m_fTimerEnabled = false;
+		m_d.m_tdr.m_fTimerEnabled = fFalse;
 	
 	hr = GetRegInt("DefaultProps\\Wall","TimerInterval", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)

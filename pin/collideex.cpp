@@ -72,7 +72,7 @@ void PrimitiveAnimObject::Check3D()
 	// Seems like for now we can simply abuse the already calculated coordinates
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
-	ppin3d->ExpandExtents(&m_rcBounds, p->rgv3DAll, NULL, NULL, p->m_d.m_Sides*4 + 2, false);
+	ppin3d->ExpandExtents(&m_rcBounds, p->rgv3DAll, NULL, NULL, p->m_d.m_Sides*4 + 2, fFalse);
 }
 
 void HitPrimitive::CalcHitRect()

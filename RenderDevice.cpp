@@ -259,8 +259,8 @@ STDMETHODIMP RenderDevice::SetTextureStageState( THIS_ DWORD p1,D3DTEXTURESTAGES
          // texture stage state hasn't changed since last call of this function -> do nothing here
          return D3D_OK;
       }
+      textureStateCache[p1][p2]=p3;
    }
-   textureStateCache[p1][p2]=p3;
    return dx7Device->SetTextureStageState(p1,p2,p3);
 }
 

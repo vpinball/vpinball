@@ -91,9 +91,8 @@ static HANDLE hid_connect (U32 vendorID, U32 productID, U32 *versionNumber=NULL)
     HANDLE deviceHandle = INVALID_HANDLE_VALUE;
     DWORD index = 0;
     HIDD_ATTRIBUTES deviceAttributes;
-    BOOL matched = 0;
 
-    while (!matched && index < 10)
+    while (index < 10)
     {
 		if( (deviceHandle = connectToIthUSBHIDDevice (index)) == INVALID_HANDLE_VALUE )
 		{
@@ -102,12 +101,16 @@ static HANDLE hid_connect (U32 vendorID, U32 productID, U32 *versionNumber=NULL)
 		}
 
         if (!HidD_GetAttributes (deviceHandle, &deviceAttributes))
-            return INVALID_HANDLE_VALUE;
-
+        {
+           CloseHandle( deviceHandle );
+           return INVALID_HANDLE_VALUE;
+        }
         if ((vendorID == 0 || deviceAttributes.VendorID == vendorID) &&
             (productID == 0 || deviceAttributes.ProductID == productID) &&
             (versionNumber == 0 || deviceAttributes.VersionNumber == *versionNumber))
+        {
             return deviceHandle; /* matched */
+        }
         
         CloseHandle (deviceHandle); /* not a match - close and try again */
 

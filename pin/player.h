@@ -35,7 +35,7 @@ class Player
 	{
 public:
 	Player();
-	~Player();
+	virtual ~Player();
 
 	HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
 	void InitWindow();

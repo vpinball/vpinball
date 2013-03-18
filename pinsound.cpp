@@ -226,7 +226,8 @@ HRESULT PinDirectSound::FillBuffer(PinSound *pps)
                                            pbWavData, 
                                            &cbWavSize ) ) )
 		{
-		ShowError("Could not read wav file.");         
+        delete[] pbWavData;
+		  ShowError("Could not read wav file.");         
         return hr;
 		}
 
@@ -236,10 +237,11 @@ HRESULT PinDirectSound::FillBuffer(PinSound *pps)
     // Lock the buffer down
     if( FAILED( hr = pps->m_pDSBuffer->Lock( 0, m_dwBufferBytes, &pbData, &dwLength, 
                                    &pbData2, &dwLength2, 0L ) ) )
-		{
-		ShowError("Could not lock sound buffer.");
-        return hr;
-		}
+    {
+      delete[] pbWavData;
+	   ShowError("Could not lock sound buffer.");
+      return hr;
+	 }
 
     // Copy the memory to it.
     memcpy( pbData, pbWavData, m_dwBufferBytes );

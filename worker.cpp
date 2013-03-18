@@ -22,7 +22,7 @@ VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
 		eiInterrupt.bstrDescription = SysAllocString(wzError);
 		//eiInterrupt.scode = E_NOTIMPL;
 		eiInterrupt.wCode = 2345;
-		delete wzError;
+		delete[] wzError;
 		/*const HRESULT hr =*/ g_pplayer->m_ptable->m_pcv->m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE/*SCRIPTTHREADID_ALL*/,
 																							&eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
 		}

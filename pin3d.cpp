@@ -563,13 +563,13 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
         return hr;
     }
 
-    // Associate the clipper with the window.
-    pcClipper->SetHWnd( 0, m_hwnd );
-    m_pddsFrontBuffer->SetClipper( pcClipper );
     if (pcClipper)
-		{
-		pcClipper->Release();
-		}
+    {
+       // Associate the clipper with the window.
+       pcClipper->SetHWnd( 0, m_hwnd );
+       m_pddsFrontBuffer->SetClipper( pcClipper );
+       pcClipper->Release();
+    }
 
     // Define a backbuffer.
     ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;

@@ -886,7 +886,7 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(TMIN))
 		{
 		pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-		m_d.m_tdr.m_TimerInterval = INT(m_d.m_tdr.m_TimerInterval);
+		//m_d.m_tdr.m_TimerInterval = INT(m_d.m_tdr.m_TimerInterval);
 		if (m_d.m_tdr.m_TimerInterval<1) {m_d.m_tdr.m_TimerInterval = 100;}
 		}
 	else if (id == FID(SURF))

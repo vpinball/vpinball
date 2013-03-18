@@ -390,7 +390,7 @@ HRESULT BiffReader::Load()
 
 		const HRESULT hr = GetInt(&tag);
 
-		BOOL fContinue = false;
+		BOOL fContinue = fFalse;
 		if (hr == S_OK)
 			{
 			fContinue = m_piloadable->LoadToken(tag, this);

@@ -376,10 +376,11 @@ void PinInput::GetInputDeviceData()
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
 	DWORD dwElements;
 	HRESULT hr;		
-	const HWND hwnd = s_pPinInput->m_hwnd;
+	HWND hwnd;// = s_pPinInput->m_hwnd;
 
 	if(!s_pPinInput) return;	// bad pointer exit
 
+   hwnd = s_pPinInput->m_hwnd;
 	{
 	const LPDIRECTINPUTDEVICE pkyb = s_pPinInput->m_pKeyboard;
 	if (pkyb) //keyboard
@@ -478,7 +479,6 @@ void PinInput::Init(const HWND hwnd)
 void PinInput::UnInit()
 {
 	// Unacquire and release any DirectInputDevice objects.
-	HRESULT hr;
 							//1==run,  0 < shutting down, 2==terminated
 	//InputControlRun = -100;	// terminate control thread, force after 500mS
 	
@@ -491,8 +491,8 @@ void PinInput::UnInit()
 		{
 		// Unacquire the device one last time just in case 
 		// the app tried to exit while the device is still acquired.
-		hr = m_pKeyboard->Unacquire();
-		hr = m_pKeyboard->Release();
+		m_pKeyboard->Unacquire();
+		m_pKeyboard->Release();
 		m_pKeyboard = NULL;
 		}
 
@@ -505,8 +505,8 @@ void PinInput::UnInit()
 			{
 			// Unacquire the device one last time just in case 
 			// the app tried to exit while the device is still acquired.
-			hr = m_pJoystick[k]->Unacquire();
-			hr = m_pJoystick[k]->Release();
+			m_pJoystick[k]->Unacquire();
+			m_pJoystick[k]->Release();
 			m_pJoystick[k] = NULL;
 			}
 		}
@@ -515,7 +515,7 @@ void PinInput::UnInit()
 	// Release any DirectInput objects.
 	if( m_pDI ) 
 		{
-		hr = m_pDI->Release();
+		m_pDI->Release();
 		m_pDI = NULL;
 		}
 

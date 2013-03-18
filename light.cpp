@@ -104,9 +104,9 @@ void Light::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Light","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
 	else
-		m_d.m_tdr.m_fTimerEnabled = false;
+		m_d.m_tdr.m_fTimerEnabled = fFalse;
 	
 	hr = GetRegInt("DefaultProps\\Light","TimerInterval", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)

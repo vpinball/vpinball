@@ -397,14 +397,15 @@ PinDirectDraw::~PinDirectDraw()
 HRESULT PinDirectDraw::InitDD()
 	{
 	m_DDraw=LoadLibrary("ddraw.dll");
+   if ( m_DDraw==NULL )
+   {
+      return E_FAIL;
+   }
 	m_DDCreate=(DDCreateFunction)GetProcAddress(m_DDraw,"DirectDrawCreateEx");
 
 	if (m_DDCreate == NULL)
 		{
-		if (m_DDraw != NULL)
-			{
 			FreeLibrary(m_DDraw);
-			}
 
 		LocalString ls(IDS_NEED_DD9);
 		MessageBox(g_pvp->m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
@@ -994,8 +995,8 @@ void PinDirectDraw::CreateNextMipMapLevel(Texture* pdds)
 
 	if (hr == S_OK)
 		{
-		hr = pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-		hr = pddsNext->Lock(NULL, &ddsdNext, DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+		pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
+		pddsNext->Lock(NULL, &ddsdNext, DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
 		const int pitch = ddsd.lPitch;
 		const int pitchNext = ddsdNext.lPitch;
