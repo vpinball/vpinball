@@ -1863,21 +1863,17 @@ float DispReel::getBoxHeight() const
 
 // This function renders the in-game object which is then drawn onto the screen (in Draw3D)
 //
-// It firsts draws the object box (either solid or transparent) and draws the reels within it
+// It first draws the object box (either solid or transparent) and draws the reels within it
 //
 void DispReel::UpdateObjFrame()
 {
-    RECT    reelstriprc;
-	Pin3D	* const ppin3d = &g_pplayer->m_pin3d;
-	DDBLTFX	bltFx;
-	DWORD	flags;
-
 	if( !GetPTable()->GetEMReelsEnabled() ) return;
 
 	// is the background box transparent?
 #if 1
     if (m_d.m_fTransparent)
     {
+		Pin3D	* const ppin3d = &g_pplayer->m_pin3d;
         // yes, then copy the current backgrount into the object frame
         m_pobjframe->pdds->Blt(NULL, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLT_WAIT, NULL);
     }
@@ -1896,12 +1892,12 @@ void DispReel::UpdateObjFrame()
 #endif
 
     // render the reels onto the screen (providing the reel generation worked)
-
-    if (m_pobjframe->pdds && (m_vreelframe.Size() > 0))
+	if (m_pobjframe->pdds && (m_vreelframe.Size() > 0))
     {
+		DDBLTFX	bltFx;
 		ZeroMemory(&bltFx, sizeof(bltFx));
 		bltFx.dwSize = sizeof(bltFx);
-		flags = DDBLTFAST_WAIT;
+		DWORD flags = DDBLTFAST_WAIT;
 
 		if (m_d.m_reeltype == ReelImage)
 		{
@@ -1910,9 +1906,10 @@ void DispReel::UpdateObjFrame()
 			flags |= DDBLT_KEYSRCOVERRIDE;
 		}
 
+	    RECT reelstriprc;
         reelstriprc.left  = 0;
 	    reelstriprc.right = m_renderwidth;//m_reeldigitwidth;
-        for (int i=0; i<m_d.m_reelcount; ++i)
+        for (int i=0; i<m_d.m_reelcount; ++i) if(m_vreelframe.ElementAt(ReelInfo[i].currentValue)->pdds)
         {
             reelstriprc.top = /*(ReelInfo[i].currentValue * m_renderheight) +*/ (int)(ReelInfo[i].motorOffset);
 			if (reelstriprc.top < 0)
@@ -1922,7 +1919,6 @@ void DispReel::UpdateObjFrame()
 			reelstriprc.bottom = /*reelstriprc.top +*/ m_renderheight/*m_reeldigitheight*/;
 
     		// Set the color key for this bitmap (black)
-
 #if 0
             m_pobjframe->pdds->Blt(&ReelInfo[i].position,   // destination rectangle
                                    m_preelframe->pdds,      // source image (LPDIRECTDRAWSURFACE7)
@@ -1933,7 +1929,6 @@ void DispReel::UpdateObjFrame()
 			m_pobjframe->pdds->BltFast(ReelInfo[i].position.left, ReelInfo[i].position.top, m_vreelframe.ElementAt(ReelInfo[i].currentValue)->pdds,
 						&reelstriprc, DDBLTFAST_NOCOLORKEY/*DDBLTFAST_SRCCOLORKEY*/);
 #endif
-
 			if (ReelInfo[i].motorOffset != 0.0f)
 				{
 				const int nextval = (ReelInfo[i].currentValue + 1) % m_vreelframe.Size();
