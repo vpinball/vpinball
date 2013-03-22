@@ -103,6 +103,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
 		fd.cySize.int64 = 142500;
 
 	char tmp[256];
+	bool free_lpstrName = false;
 	hr = GetRegString("DefaultProps\\TextBox","FontName", tmp, 256);
 	if ((hr != S_OK) || !fromMouseClick)
 		fd.lpstrName = L"Arial";
@@ -112,6 +113,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
 		fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
 		UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
 		fd.lpstrName[len] = 0;
+		free_lpstrName = true;
 	}
 
 	hr = GetRegInt("DefaultProps\\TextBox", "FontWeight", &iTmp);
@@ -149,7 +151,8 @@ void Textbox::SetDefaults(bool fromMouseClick)
 		lstrcpy(m_d.sztext,"0");
 
 	OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-   free( fd.lpstrName );
+	if(free_lpstrName)
+		free( fd.lpstrName );
 	}
 
 void Textbox::WriteRegDefaults()
