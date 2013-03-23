@@ -996,18 +996,6 @@ void PinComControl::GetTimers(Vector<HitTimer> * const pvht)
 	m_pdispextender->m_pdispControl = m_pdispextender->m_pdispPlayer;
 
 	punk->Release(); // Don't need to keep the IUnknown pointer around anymore
-
-	// If in windowed-mode, create a clipper object
-    LPDIRECTDRAWCLIPPER pcClipper;
-    g_pplayer->m_pin3d.m_pDD->CreateClipper( 0, &pcClipper, NULL );
-
-    // Associate the clipper with the window
-    if (pcClipper)
-    {
-       pcClipper->SetHWnd(0, g_pplayer->m_hwnd);
-       g_pplayer->m_pin3d.m_pddsFrontBuffer->SetClipper(pcClipper);
-       pcClipper->Release();
-    }
 }
 
 void PinComControl::EndPlay()
