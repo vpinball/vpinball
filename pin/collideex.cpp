@@ -950,9 +950,10 @@ void PolyDropAnimObject::Reset()
 
 ObjFrame *TextboxAnimObject::Draw3D(const RECT * const prc)
 	{
-	g_pplayer->m_pin3d.m_pddsBackBuffer->Blt(&m_ptextbox->m_pobjframe->rc, m_ptextbox->m_pobjframe->pdds, NULL, DDBLT_WAIT, NULL);
+	//g_pplayer->m_pin3d.m_pddsBackBuffer->Blt(&m_ptextbox->m_pobjframe->rc, m_ptextbox->m_pobjframe->pdds, NULL, DDBLT_WAIT, NULL);
+	//return NULL;
 
-	return NULL;
+	return m_ptextbox->m_pobjframe;
 	}
 
 void TextboxAnimObject::Reset()
@@ -975,7 +976,7 @@ ObjFrame *DispReelAnimObject::Draw3D(const RECT * const prc)
 	if(!m_pDispReel || !m_pDispReel->m_pobjframe)  //rlc-problem6 end bad pointers, fix needed
 		return NULL;
 
-	RECT rc;
+/*	RECT rc;
 	rc.left = 0;		
 	rc.top = 0;	
 	
@@ -988,7 +989,8 @@ ObjFrame *DispReelAnimObject::Draw3D(const RECT * const prc)
 												 &rc,
 												 DDBLTFAST_SRCCOLORKEY);
 	// return with no object
-	return (ObjFrame *)NULL;
+	return NULL; */
+	return m_pDispReel->m_pobjframe;
 }
 
 void DispReelAnimObject::Reset()
