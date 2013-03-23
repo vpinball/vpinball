@@ -11,10 +11,10 @@ class ObjFrame
 	{
 public:
 	inline ObjFrame() {
-		rc.left = 0;
-		rc.top = 0;
-		rc.right = 1000;
-		rc.bottom = 750;
+		rc.left = -42; // init with nonsense offscreen values
+		rc.top = -42;
+		rc.right = -23;
+		rc.bottom = -23;
 
 		pdds = NULL;
 		pddsZBuffer = NULL;
