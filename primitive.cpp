@@ -726,7 +726,7 @@ void Primitive::CalculateRealTime()
 	*/
 }
 
-//3d
+// Always called each frame to render over everything else (along with alpha ramps)
 void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
@@ -745,8 +745,6 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
 	CalculateRealTimeOriginal();
 	CalculateRealTime();
-
-	//g_pplayer->m_ptable->SetDirtyDraw(); //!! does not do anything good anymore
 
 	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -775,7 +773,7 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 
 			
          pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
-			// this has to be set to true (this is just for debugging depth sorting).
+			// this has to be set to true (this is just for debugging depth sorting, but also for stereo 3D).
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
@@ -806,11 +804,11 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 	}
 }
 
+//seems to be called to set up the initial backbuffer
 void Primitive::RenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 	
-//seems to be called to set up the initial backbuffer
 void Primitive::RenderMovers(const RenderDevice* pd3dDevice)
 	{
 	}

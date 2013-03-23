@@ -56,7 +56,7 @@ public:
 	void DrawBallShadows();
 	void DrawBalls();
 
-	void DrawAcrylics();
+	void DrawAlphas();
 
 	void PhysicsSimulateCycle(float dtime, const U64 startTime);
 
@@ -219,8 +219,8 @@ private:
 	U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn
 	U64 m_nextPhysicsFrameTime;	// time at which the next physics update should be
 
-    // caching hitable ramps & primitives to speed up DrawAcrylics()
-	Vector< Hitable > m_vhitacrylic;
+    // caching hitable alpha ramps & primitives to speed up DrawAlphas()
+	Vector< Hitable > m_vhitalpha;
 
 	int curAccel_x[PININ_JOYMXCNT];
 	int curAccel_y[PININ_JOYMXCNT];

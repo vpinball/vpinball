@@ -2459,9 +2459,8 @@ STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
-
-// Same code as RenderStatic (with the exception of the acrylic test).
-// Copied here to order the rendering of transparent and opaque ramps.
+// Always called each frame to render over everything else (along with primitives)
+// Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
 void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
