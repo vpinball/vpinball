@@ -900,7 +900,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 			}
 		}
 
-	// Render inital textbox text
+	// Render inital textbox text & dispreel(s)
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemTextbox)
@@ -908,11 +908,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 			Textbox * const ptb = (Textbox *)m_ptable->m_vedit.ElementAt(i);
 			ptb->RenderText();
 			}
-		}
-
-    // Render inital dispreel(s)
-	for (int i=0;i<m_ptable->m_vedit.Size();i++)
-		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDispReel)
 			{
 			DispReel * const pdr = (DispReel *)m_ptable->m_vedit.ElementAt(i);
@@ -2151,8 +2146,8 @@ void Player::Render()
 		rect.right = min(GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
 		rect.top = 0;
 		rect.bottom = min(GetSystemMetrics(SM_CYSCREEN), m_pin3d.m_dwRenderHeight);
-		m_pin3d.m_pddsBackBuffer->Blt(&rect, m_pin3d.m_pddsStatic, &rect, 0, NULL);
-		m_pin3d.m_pddsZBuffer->Blt(&rect, m_pin3d.m_pddsStaticZ, &rect, 0, NULL);
+		m_pin3d.m_pddsBackBuffer->BltFast(rect.left, rect.top, m_pin3d.m_pddsStatic, &rect, 0);
+		m_pin3d.m_pddsZBuffer->BltFast(rect.left, rect.top, m_pin3d.m_pddsStaticZ, &rect, 0);
 		
 		// kill all update regions and create one screen sized one
 		for (int i=0;i<m_vupdaterect.Size();i++)
@@ -2175,13 +2170,10 @@ void Player::Render()
 			RECT * const prc = &pur->m_rcupdate;
 			
 			// Redraw the region from the static buffers to the back and z buffers.
-			m_pin3d.m_pddsBackBuffer->Blt(prc, m_pin3d.m_pddsStatic, prc, 0, NULL);
-			m_pin3d.m_pddsZBuffer->Blt(prc, m_pin3d.m_pddsStaticZ, prc, 0, NULL);
+			m_pin3d.m_pddsBackBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStatic, prc, 0);
+			m_pin3d.m_pddsZBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStaticZ, prc, 0);
 			}
 		}	
-
-	// Start rendering the next frame.
-	/*HRESULT hr =*/ m_pin3d.m_pd3dDevice->BeginScene();
 
 	Texture * const pdds = m_pin3d.m_pddsBackBuffer;
 
@@ -2235,6 +2227,9 @@ void Player::Render()
 			}
 		}
 	}
+
+	// Start rendering the next frame.
+	/*HRESULT hr =*/ m_pin3d.m_pd3dDevice->BeginScene();
 
 	// Check if we are debugging balls
 	if (m_ToggleDebugBalls)
@@ -2327,7 +2322,7 @@ if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (m_fFXAA == 0)) || (m_pin3d.m
 				rcNew.bottom = prc->bottom + m_pin3d.m_rcUpdate.top;
 
 				// Copy the region from the back buffer to the front buffer.
-				m_pin3d.m_pddsFrontBuffer->Blt(&rcNew, m_pin3d.m_pddsBackBuffer, prc, 0, NULL);
+				m_pin3d.m_pddsFrontBuffer->BltFast(rcNew.left, rcNew.top, m_pin3d.m_pddsBackBuffer, prc, 0);
 			}
 		}
 		else
