@@ -2462,6 +2462,7 @@ STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
 
 // Same code as RenderStatic (with the exception of the acrylic test).
 // Copied here to order the rendering of transparent and opaque ramps.
+// Also has less drawing calls by bundling seperate calls.
 void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
@@ -2544,6 +2545,8 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);
 		const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
 		
+		Vertex3D_NoTex2 * const rgvbuf = new Vertex3D_NoTex2[(cvertex-1)*6];
+
 		for (int i=0;i<(cvertex-1);i++)
 			{
 			Vertex3D_NoTex2 rgv3D[4];
@@ -2592,11 +2595,20 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
 			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the floor of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
+			rgvbuf[i*6]   = rgv3D[0];
+			rgvbuf[i*6+1] = rgv3D[1];
+			rgvbuf[i*6+2] = rgv3D[2];
+			rgvbuf[i*6+3] = rgv3D[0];
+			rgvbuf[i*6+4] = rgv3D[2];
+			rgvbuf[i*6+5] = rgv3D[3];
+
+			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
 			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,0);
 			//if (!invalidationRectCalculated)
 				//ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
+
+		pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*6, 0);
 
 		if (pin && !m_d.m_fImageWalls)
 			{
@@ -2658,15 +2670,39 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			// 2-Sided polygon
 			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
+			rgvbuf[i*6]   = rgv3D[0];
+			rgvbuf[i*6+1] = rgv3D[1];
+			rgvbuf[i*6+2] = rgv3D[2];
+			rgvbuf[i*6+3] = rgv3D[0];
+			rgvbuf[i*6+4] = rgv3D[2];
+			rgvbuf[i*6+5] = rgv3D[3];
+
+			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
 			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,0);
 
-			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
+			//SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgiRampStatic1, 4, 0);
+			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgiRampStatic1, 4, 0);
 			//if (!invalidationRectCalculated)
 				//ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
+
+		pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*6, 0);
+
+		// Flip Normals and redraw
+		for (int i=0;i<(cvertex-1);i++)
+		{
+			const Vertex3D_NoTex2 tmp = rgvbuf[i*6+1];
+			rgvbuf[i*6+1] = rgvbuf[i*6+5];
+			rgvbuf[i*6+5] = tmp;
+			for(int j = 0; j < 6; ++j) {
+				rgvbuf[i*6+j].nx = -rgvbuf[i*6+j].nx;
+				rgvbuf[i*6+j].ny = -rgvbuf[i*6+j].ny;
+				rgvbuf[i*6+j].nz = -rgvbuf[i*6+j].nz;
+			}
+		}
+
+		pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*6, 0);
 
 		for (int i=0;i<(cvertex-1);i++)
 			{
@@ -2713,15 +2749,41 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			// 2-Sided polygon
 			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgi0123, 4, 0);
+			rgvbuf[i*6]   = rgv3D[0];
+			rgvbuf[i*6+1] = rgv3D[1];
+			rgvbuf[i*6+2] = rgv3D[2];
+			rgvbuf[i*6+3] = rgv3D[0];
+			rgvbuf[i*6+4] = rgv3D[2];
+			rgvbuf[i*6+5] = rgv3D[3];
+
+			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgi0123, 4, 0);
 			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4, 0);
 
-			SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
+			//SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgiRampStatic1, 4, 0);
+			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgiRampStatic1, 4, 0);
 			//if (!invalidationRectCalculated)
 				//ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
+
+		pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*6, 0);
+
+		// Flip Normals and redraw
+		for (int i=0;i<(cvertex-1);i++)
+		{
+			const Vertex3D_NoTex2 tmp = rgvbuf[i*6+1];
+			rgvbuf[i*6+1] = rgvbuf[i*6+5];
+			rgvbuf[i*6+5] = tmp;
+			for(int j = 0; j < 6; ++j) {
+				rgvbuf[i*6+j].nx = -rgvbuf[i*6+j].nx;
+				rgvbuf[i*6+j].ny = -rgvbuf[i*6+j].ny;
+				rgvbuf[i*6+j].nz = -rgvbuf[i*6+j].nz;
+			}
+		}
+
+		pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*6, 0);
+
+		delete [] rgvbuf;
 
 		delete [] rgv;
 		delete [] rgheight;
