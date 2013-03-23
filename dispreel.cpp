@@ -1072,17 +1072,28 @@ bool DispReel::RenderAnimation()
 //
 void DispReel::RenderText()
 {
-	//Pin3D	* const ppin3d = &g_pplayer->m_pin3d;
-
     // update the object frame (or in this case, draw it for the first time)
     UpdateObjFrame();
 
     // copy the object frame onto the back buffer
 	if( GetPTable()->GetEMReelsEnabled() )
 	{
-	    m_ptu->m_dispreelanim.Draw3D(NULL);
+		if(m_ptu->m_dispreelanim.m_pDispReel && m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe)  //rlc-problem6 end bad pointers, fix needed
+		{
+			RECT rc;
+			rc.left = 0;		
+			rc.top = 0;	
+	
+			rc.right = m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.right - m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.left;
+			rc.bottom = m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.bottom - m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.top;	
+	
+			g_pplayer->m_pin3d.m_pddsBackBuffer->BltFast(m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.left,
+														 m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->rc.top,
+														 m_ptu->m_dispreelanim.m_pDispReel->m_pobjframe->pdds,
+														 &rc,
+														 DDBLTFAST_SRCCOLORKEY);
+		}
 	}
-    //ppin3d->m_pddsBackBuffer->BltFast(&m_pobjframe->rc, m_pobjframe->pdds, NULL, DDBLTFAST_SRCCOLORKEY/*DDBLTFAST_WAIT*/, NULL);
 }
 
 
