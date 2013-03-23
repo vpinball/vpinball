@@ -761,13 +761,13 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
   				if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
 	  				m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
 					{
-					m_vhitacrylic.AddElement(ph);
+					m_vhitalpha.AddElement(ph);
 					}
 			}
 			else
 				if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
 					{
-					m_vhitacrylic.AddElement(ph);
+					m_vhitalpha.AddElement(ph);
 					}
 			}
 		}
@@ -2268,9 +2268,9 @@ void Player::Render()
 		DrawBallShadows();
 	}
 
-	// Draw the acrylics (now alphas).
+	// Draw the alpha-ramps and primitives.
 	//if (g_pvp->m_pdd.m_fHardwareAccel)
-		DrawAcrylics();
+		DrawAlphas();
 
 	// Check if we should turn animate the plunger light.
 	const U32 cur_time_msec = msec();
@@ -4029,31 +4029,29 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 
 #endif
 
-// Draws all transparent ramps that are in the vicinity of the ball.
-void Player::DrawAcrylics ()
+// Draws all transparent ramps and primitives.
+void Player::DrawAlphas()
 	{
 
 	if (g_pvp->m_pdd.m_fHardwareAccel)
 	{
-		// Build a set of clipping planes which tightly bound the ball.
-		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
-      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZFUNC,D3DCMP_LESS);
+		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. //!! really still needed?
+        m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZFUNC,D3DCMP_LESS);
 	}
 
-	// the helper list of m_vhitacrylic only contains objects which evaluated to true in the old code.
+	// the helper list of m_vhitalpha only contains objects which evaluated to true in the old code.
 	// it is created once on startup and never changed during play. (SnailGary)
-	for (int i=0;i<m_vhitacrylic.Size();i++)
-		m_vhitacrylic.ElementAt(i)->PostRenderStatic(m_pin3d.m_pd3dDevice);
+	for (int i=0;i<m_vhitalpha.Size();i++)
+		m_vhitalpha.ElementAt(i)->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
-// AMD profiler shows a lot of activity inside this block at runtime... so I decided to make a new list with
-// hitable-only objects which saves a lot of dereferencing/checks at runtime (SnailGary)
-/*
-  // Check if we are hardware accelerated.
+	// AMD profiler shows a lot of activity inside this block at runtime... so I decided to make a new list with
+	// hitable-only objects which saves a lot of dereferencing/checks at runtime (SnailGary)
+	/*
+	// Check if we are hardware accelerated.
 	if (g_pvp->m_pdd.m_fHardwareAccel)
 		{
-		// Build a set of clipping planes which tightly bound the ball.
 		// Turn off z writes for same values.  It fixes the problem of ramps rendering twice. 
-		m_pin3d.m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC,D3DCMP_LESS);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZFUNC,D3DCMP_LESS);
 
 		// Draw acrylic ramps (they have transparency, so they have to be drawn last).
 		for (int i=0;i<m_ptable->m_vedit.Size();i++)
@@ -4083,7 +4081,7 @@ void Player::DrawAcrylics ()
 				}
 			}
 		}
-*/ 
+	*/ 
 	}
 
 #ifdef DONGLE_SUPPORT
