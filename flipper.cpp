@@ -530,7 +530,7 @@ void Flipper::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
-void Flipper::RenderSetup(const const RenderDevice* _pd3dDevice)
+void Flipper::RenderSetup(const RenderDevice* _pd3dDevice)
 {
 
 }
