@@ -461,7 +461,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
          Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
          pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
-         pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
+         pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
          pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
          m_phitplunger->m_plungeranim.m_vddsFrame.AddElement(pof);

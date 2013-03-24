@@ -741,7 +741,7 @@ void Flipper::RenderMovers(const RenderDevice* _pd3dDevice)
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
 		// Copy the back buffer to the new offscreen surfaces.
-		pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
+		pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
 		/*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
 		// Add the frame to the list.

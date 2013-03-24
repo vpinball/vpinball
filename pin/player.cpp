@@ -1148,7 +1148,7 @@ void Player::InitAnimations(HWND hwndProgress)
 	m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
 
 	// Set up z-buffer to the static one, so movers can clip to it
-	m_pin3d.m_pddsZBuffer->Blt(NULL, m_pin3d.m_pddsStaticZ, NULL, DDBLT_WAIT, NULL);
+	m_pin3d.m_pddsZBuffer->BltFast(0, 0, m_pin3d.m_pddsStaticZ, NULL, DDBLTFAST_WAIT);
 	m_pin3d.m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0L );
 
 	// Draw stuff
@@ -1186,8 +1186,8 @@ void Player::InitAnimations(HWND hwndProgress)
 	hr = m_pin3d.m_pd3dDevice->EndScene();
 
 	// Copy the "static" buffer to the back buffer.
-	m_pin3d.m_pddsBackBuffer->Blt(NULL, m_pin3d.m_pddsStatic, NULL, DDBLT_WAIT , NULL);
-	m_pin3d.m_pddsZBuffer->Blt(NULL, m_pin3d.m_pddsStaticZ, NULL, DDBLT_WAIT , NULL);
+	m_pin3d.m_pddsBackBuffer->BltFast(0, 0, m_pin3d.m_pddsStatic, NULL, DDBLTFAST_WAIT);
+	m_pin3d.m_pddsZBuffer->BltFast(0, 0, m_pin3d.m_pddsStaticZ, NULL, DDBLTFAST_WAIT);
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius)

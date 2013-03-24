@@ -327,7 +327,7 @@ void Textbox::RenderText()
 
 	if (m_d.m_fTransparent)
 		{
-		m_pobjframe->pdds->Blt(NULL, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLT_WAIT, NULL);
+		m_pobjframe->pdds->BltFast(0, 0, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLTFAST_WAIT);
 		m_pobjframe->pdds->GetDC(&hdc);
 		}
 	else

@@ -1114,7 +1114,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 		SetNormal(rgv3D, rgiSlingshot5, 4, NULL, NULL, NULL);
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 12,(LPWORD)rgiSlingshot5, 4, 0);
 
-		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
+		pof->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
 		pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 		
 		ppin3d->ExpandRectByRect(&plinesling->m_slingshotanim.m_rcBounds, &pof->rc);
@@ -1588,7 +1588,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		{
 		// Create the color surface.
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-		pof->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLT_WAIT, NULL);
+		pof->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
 		
 		// Check if we are a floor... in which case we don't want to affect z.
 		if (!m_d.m_fFloor)
