@@ -168,10 +168,11 @@ public:
 
 	BOOL m_fDebugMode;
 
-	BOOL m_DebugBalls;			// Draw balls in the foreground.
+	BOOL m_DebugBalls;			 // Draw balls in the foreground.
 	BOOL m_ToggleDebugBalls;
 
-	BOOL m_fCleanBlt;			// We can do smart blitting next frame
+	BOOL m_fEnableRegionUpdates; // Use the CleanBlt flag below or not, nowadays some setups are slower when using it (especially NVIDIA Optimus setups)
+	BOOL m_fCleanBlt;			 // We can do smart blitting next frame
 
 	BOOL m_fPlayMusic;
 	BOOL m_fPlaySound;
