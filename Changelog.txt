@@ -1,5 +1,9 @@
 VP 9.1.5 Changelog
 ------------------------
+- expose new 'Region Updates' in Video Options (disabling this can be faster on some graphicsboards, especially NVIDIA Optimus Laptops)
+- optimize alpha ramps a bit
+- enable some caching for DirectX functions to help performance
+- fix more problems with primitive rendering
 - correct issue with adaptive vsync
 - fix some micro stuttering on multi-CPU systems
 - add purely software/CPU-based FXAA workaround (please do -not- enable FXAA in the NVIDIA driver then if you need to use this!)
