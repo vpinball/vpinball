@@ -3682,6 +3682,15 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
 
+			hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATES);
+			int enableRegionUpdates;
+			hr = GetRegInt("Player", "EnableRegionUpdates", &enableRegionUpdates);
+			if (hr != S_OK)
+				{
+				enableRegionUpdates = fTrue; // The default
+				}
+			SendMessage(hwndCheck, BM_SETCHECK, enableRegionUpdates ? BST_CHECKED : BST_UNCHECKED, 0);
+
 			hwndCheck = GetDlgItem(hwndDlg, 211); //HardwareRender
 			int hardrend;
 			hr = GetRegInt("Player", "HardwareRender", &hardrend);
@@ -3871,6 +3880,10 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							HWND hwndStereo3DY = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
 							int stereo3DY = SendMessage(hwndStereo3DY, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "Stereo3DYAxis", REG_DWORD, &stereo3DY, 4);
+
+							HWND hwndEnableRegionUpdates = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATES);
+							int enableRegionUpdates = SendMessage(hwndEnableRegionUpdates, BM_GETCHECK, 0, 0);
+							SetRegValue("Player", "EnableRegionUpdates", REG_DWORD, &enableRegionUpdates, 4);
 
 							HWND hwndHWR = GetDlgItem(hwndDlg, 211);
 							int hardrend = SendMessage(hwndHWR, BM_GETCHECK, 0, 0);

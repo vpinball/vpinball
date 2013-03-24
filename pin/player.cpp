@@ -167,7 +167,15 @@ Player::Player()
 		stereo3DY = fFalse; // The default
 		}
 	m_fStereo3DY = (stereo3DY == 1);
-	
+
+	int enableRegionUpdates;
+	hr = GetRegInt("Player", "EnableRegionUpdates", &enableRegionUpdates);
+	if (hr != S_OK)
+		{
+		enableRegionUpdates = fTrue; // The default
+		}
+	m_fEnableRegionUpdates = (enableRegionUpdates == 1);
+
 	int detecthang;
 	hr = GetRegInt("Player", "DetectHang", &detecthang);
 	if (hr != S_OK)
@@ -2333,7 +2341,8 @@ if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (m_fFXAA == 0)) || (m_pin3d.m
 			m_pin3d.Flip(0, 0, (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR));
 
 			// Flag that we only need to update regions from now on...
-			m_fCleanBlt = fTrue;
+			if(m_fEnableRegionUpdates)
+				m_fCleanBlt = fTrue;
 		}
 	}
 }
@@ -2566,7 +2575,8 @@ if(stereopath) {
 	m_pin3d.Flip(0, 0, (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR));
 
 	// Flag that we only need to update regions from now on...
-	m_fCleanBlt = fTrue;
+	//if(m_fEnableRegionUpdates)
+		m_fCleanBlt = fTrue;
 	}
 
 	// Remove the list of update regions.
