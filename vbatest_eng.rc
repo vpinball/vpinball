@@ -1054,7 +1054,11 @@ BEGIN
     CONTROL         "Apply Ima&ge to Walls",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,82,10
     CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,76,40,14
     CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,94,61,10
-    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,61,10
+    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,40,10
+    CONTROL         "Normal 3D Stereo",IDC_MODIFY3DSTEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,106,70,10
+    LTEXT           "(only disable for",-1,68,116,70,10
+    LTEXT           " 2D-hacks like",-1,68,126,70,10
+    LTEXT           " Halo/Flasher/GI)",-1,68,136,70,10
     LTEXT           "&Type",-1,7,9,25,8
     LTEXT           "&Color",-1,7,79,17,8
     LTEXT           "&Image:",-1,7,21,22,8
