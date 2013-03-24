@@ -533,6 +533,10 @@ void DispReel::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
 }
 
+void DispReel::RenderSetup(const RenderDevice* _pd3dDevice)
+{
+
+}
 void DispReel::RenderStatic(const RenderDevice* pd3dDevice)
 {
 }

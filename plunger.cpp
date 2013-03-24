@@ -266,6 +266,11 @@ void Plunger::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
+void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
+{
+
+}
+
 void Plunger::RenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}

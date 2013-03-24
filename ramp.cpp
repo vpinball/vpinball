@@ -1276,6 +1276,10 @@ void Ramp::RenderPolygons(const RenderDevice* _pd3dDevice, Vertex3D_NoTex * cons
 
 //static const WORD rgiRampStatic0[4] = {0,1,2,3};
 static const WORD rgiRampStatic1[4] = {0,3,2,1};
+void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
+{
+
+}
 
 void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
 {	

@@ -1000,7 +1000,10 @@ void Surface::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
+void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
+{
 
+}
 void Surface::RenderStatic(const RenderDevice* pd3dDevice)
 {
    if (!m_d.m_fDroppable || !m_d.m_fInner)

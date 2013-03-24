@@ -284,6 +284,8 @@ private:
 	int m_lastfpstime;
 	int m_cframes;
 	int m_fps;
+   int m_fpsAvg;
+   int m_fpsCount;
 	U64 m_count;
 	U64 m_total;
 	U32 m_max;

@@ -1015,6 +1015,11 @@ void PinComControl::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
 }
 
+void PinComControl::RenderSetup(const RenderDevice* _pd3dDevice)
+{
+
+}
+
 void PinComControl::RenderStatic(const RenderDevice* pd3dDevice)
 {
 }
