@@ -264,7 +264,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    Texture* pddsBufferBack = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
    Texture* pddsMask = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
 
-   HRESULT hr = pddsBufferBack->Blt(NULL, ppin3d->m_pddsStatic, &rcBounds, DDBLT_WAIT, NULL);
+   HRESULT hr = pddsBufferBack->BltFast(0, 0, ppin3d->m_pddsStatic, &rcBounds, DDBLTFAST_WAIT);
    /*DDBLTFX ddbltfx;
    ddbltfx.dwSize = sizeof(DDBLTFX);
    ddbltfx.dwFillDepth = 0xffffffff;

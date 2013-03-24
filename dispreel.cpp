@@ -785,14 +785,8 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 				//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
 				//								  rgv3D, 4, NULL);
 
-				RECT rectDst;
-				rectDst.left = 0;
-				rectDst.top = 0;//m_renderheight*i;
-				rectDst.right = m_renderwidth;
-				rectDst.bottom = rectDst.top + m_renderheight;
-
 				m_vreelframe.ElementAt(i)->pdds = ppin3d->CreateOffscreenWithCustomTransparency(/*m_reeldigitwidth*/m_renderwidth, /*m_reeldigitheight*/m_renderheight, m_rgbImageTransparent);
-				m_vreelframe.ElementAt(i)->pdds->Blt(&rectDst, ppin3d->m_pddsBackBuffer, &rectSrc, 0, NULL);
+				m_vreelframe.ElementAt(i)->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &rectSrc, 0);
 
 				// Reset color key in back buffer
 				ppin3d->m_pddsBackBuffer->Blt(&rectSrc, NULL,
@@ -1886,7 +1880,7 @@ void DispReel::UpdateObjFrame()
     {
 		Pin3D	* const ppin3d = &g_pplayer->m_pin3d;
         // yes, then copy the current backgrount into the object frame
-        m_pobjframe->pdds->Blt(NULL, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLT_WAIT, NULL);
+        m_pobjframe->pdds->BltFast(0, 0, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLTFAST_WAIT);
     }
     else
     {

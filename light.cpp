@@ -939,7 +939,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 			continue;
 			}
 			
-		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
+		m_pobjframe[i]->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLTFAST_WAIT);
 
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
@@ -1094,7 +1094,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 		ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
-		m_pobjframe[i]->pdds->Blt(NULL, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLT_WAIT, NULL);
+		m_pobjframe[i]->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLTFAST_WAIT);
 
 		// Reset color key in back buffer
 		DDBLTFX ddbltfx;
