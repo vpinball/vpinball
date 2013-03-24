@@ -94,12 +94,23 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
+   enum
+   {
+      PLUNGEPOINTS0 = 5,
+      PLUNGEPOINTS1 = 7
+   };
+   struct Vertices
+   {
+      Vertex3D moverVertices[16*PLUNGEPOINTS1];
+   };
+
 	PinTable *m_ptable;
 
 	PlungerData m_d;
+   Vertices *verts;
+   int cframes;
 
 	HitPlunger *m_phitplunger;
-
 // IPlunger
 public:
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
