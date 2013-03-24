@@ -265,62 +265,110 @@ void Plunger::PutCenter(const Vertex2D * const pv)
 void Plunger::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
+const float rgcrossplunger0[][2] =
+{
+   1.0f, 0.0f,
+   1.0f, 10.0f,
+   0.35f, 20.0f,
+   0.35f, 24.0f,
+   0.35f, 100.0f
+};
+
+const float rgcrossplungerNormal0[][2] =
+{
+   1.0f, 0.0f,
+   0.8f, 0.6f,
+   0.0f, 1.0f,
+   1.0f, 0.0f,
+   1.0f, 0.0f
+};
+
+const float rgcrossplunger1[][2] =
+{
+   //new plunger tip - Added by rascal
+   0.20f, 0.0f,
+   0.30f, 3.0f,
+   0.35f, 5.0f,
+   0.35f, 23.0f,
+   0.45f, 23.0f,
+   0.25f, 24.0f,
+   0.25f, 100.0f
+};
+
+const float rgcrossplungerNormal1[][2] = {
+   //new plunger tip white
+   1.0f, 0.0f,
+   1.0f, 0.0f,
+   1.0f, 0.0f,
+   1.0f, 0.0f,
+   0.8f, 0.0f,
+   0.3f, 0.0f,
+   0.3f, 0.0f
+};
+
+#define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
 
 void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
 {
+   const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
+   const float beginy = m_d.m_v.y;
+   const float endy = m_d.m_v.y - m_d.m_stroke;
+   cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke*(float)(1.0/80.0))) + 1; // 25 frames per 80 units travel
+   const float inv_cframes = (cframes > 1) ? ((endy - beginy)/(float)(cframes-1)) : 0.0f;
+   
+   verts = new Vertices[cframes];
+   for ( int i=0;i<cframes; i++ )
+   {
+      const float height = beginy + inv_cframes*(float)i;
+      Vertex3D *ptr = verts[i].moverVertices;
 
+      if (m_d.m_type == PlungerTypeModern)
+      {
+         for (int l=0;l<16;l++)
+         {
+            const float angle = (float)(M_PI*2.0/16.0)*(float)l;
+            const float sn = sinf(angle);
+            const float cs = cosf(angle);
+            const int offset = l*PLUNGEPOINTS1;
+            for (int m=0;m<PLUNGEPOINTS1;m++)
+            {
+               ptr[m + offset].x = rgcrossplunger1[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
+               ptr[m + offset].y = height + rgcrossplunger1[m][1];
+               ptr[m + offset].z = rgcrossplunger1[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight;
+               ptr[m + offset].nx = rgcrossplungerNormal1[m][0] * sn;
+               ptr[m + offset].ny = rgcrossplungerNormal1[m][1];
+               ptr[m + offset].nz = -rgcrossplungerNormal1[m][0] * cs;
+            }
+            ptr[PLUNGEPOINTS1-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
+         }
+      }
+      else if (m_d.m_type == PlungerTypeOrig)
+      {
+         for (int l=0;l<16;l++)
+         {
+            const float angle = (float)(M_PI*2.0/16.0)*(float)l;
+            const float sn = sinf(angle);
+            const float cs = cosf(angle);
+            const int offset = l*PLUNGEPOINTS0;
+            for (int m=0;m<PLUNGEPOINTS0;m++)
+            {
+               ptr[m + offset].x = rgcrossplunger0[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
+               ptr[m + offset].y = height + rgcrossplunger0[m][1];
+               ptr[m + offset].z = rgcrossplunger0[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight;
+               ptr[m + offset].nx = rgcrossplungerNormal0[m][0] * sn;
+               ptr[m + offset].ny = rgcrossplungerNormal0[m][1];
+               ptr[m + offset].nz = -rgcrossplungerNormal0[m][0] * cs;
+            }
+            ptr[PLUNGEPOINTS0-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
+         }
+      }
+
+   }
 }
 
 void Plunger::RenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
-
-
-#define PLUNGEPOINTS0 5
-#define PLUNGEPOINTS1 7
-
-const float rgcrossplunger0[][2] =
-	{
-	1.0f, 0.0f,
-	1.0f, 10.0f,
-	0.35f, 20.0f,
-	0.35f, 24.0f,
-	0.35f, 100.0f
-	};
-
-const float rgcrossplungerNormal0[][2] =
-	{
-	1.0f, 0.0f,
-	0.8f, 0.6f,
-	0.0f, 1.0f,
-	1.0f, 0.0f,
-	1.0f, 0.0f
-	};
-
-const float rgcrossplunger1[][2] =
-	{
-	//new plunger tip - Added by rascal
-	0.20f, 0.0f,
-	0.30f, 3.0f,
-	0.35f, 5.0f,
-	0.35f, 23.0f,
-	0.45f, 23.0f,
-	0.25f, 24.0f,
-	0.25f, 100.0f
-	};
-
-const float rgcrossplungerNormal1[][2] = {
-	//new plunger tip white
-	1.0f, 0.0f,
-	1.0f, 0.0f,
-	1.0f, 0.0f,
-	1.0f, 0.0f,
-	0.8f, 0.0f,
-	0.3f, 0.0f,
-	0.3f, 0.0f
-	};
-
-#define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
 
 void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
 {
@@ -367,43 +415,21 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
 
       pd3dDevice->SetMaterial(&mtrl);
 
-      const int cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke*(float)(1.0/80.0))) + 1; // 25 frames per 80 units travel
-
-      const float beginy = m_d.m_v.y;
-      const float endy = m_d.m_v.y - m_d.m_stroke;
-
       ppin3d->ClearExtents(&m_phitplunger->m_plungeranim.m_rcBounds, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar);
-
-      const float inv_cframes = (cframes > 1) ? ((endy - beginy)/(float)(cframes-1)) : 0.0f;
 
       for (int i=0;i<cframes;i++)
       {
-         const float height = beginy + inv_cframes*(float)i;
+         Vertex3D *ptr = verts[i].moverVertices;
 
          ObjFrame * const pof = new ObjFrame();
 
          if (m_d.m_type == PlungerTypeModern)
          {
-            Vertex3D rgv3D[16*PLUNGEPOINTS1];
             for (int l=0;l<16;l++)
             {
-               const float angle = (float)(M_PI*2.0/16.0)*(float)l;
-               const float sn = sinf(angle);
-               const float cs = cosf(angle);
                const int offset = l*PLUNGEPOINTS1;
-               for (int m=0;m<PLUNGEPOINTS1;m++)
-               {
-                  rgv3D[m + offset].x = rgcrossplunger1[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
-                  rgv3D[m + offset].y = height + rgcrossplunger1[m][1];
-                  rgv3D[m + offset].z = rgcrossplunger1[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight;
-                  rgv3D[m + offset].nx = rgcrossplungerNormal1[m][0] * sn;
-                  rgv3D[m + offset].ny = rgcrossplungerNormal1[m][1];
-                  rgv3D[m + offset].nz = -rgcrossplungerNormal1[m][0] * cs;
-               }
-               rgv3D[PLUNGEPOINTS1-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
                ppin3d->ClearExtents(&pof->rc, NULL, NULL);
-               ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitplunger->m_plungeranim.m_znear,
-                  &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS1), fFalse);
+               ppin3d->ExpandExtents(&pof->rc, ptr, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS1), fFalse);
             }
 
             for (int l=0;l<16;l++)
@@ -411,39 +437,25 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
                const int offset = l*PLUNGEPOINTS1;
                for (int m=0;m<(PLUNGEPOINTS1-1);m++)
                {
-                  const WORD rgi[4] = {
+                  const WORD rgi[4] = 
+                  {
                      m + offset,
                      (m + offset + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1),
                      (m + offset + 1 + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1),
-                     m + offset + 1};
+                     m + offset + 1
+                  };
 
-                     pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
-                        (16*PLUNGEPOINTS1),(LPWORD)rgi, 4, 0);
+                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, ptr, (16*PLUNGEPOINTS1),(LPWORD)rgi, 4, 0);
                }
             }
          }
          else if (m_d.m_type == PlungerTypeOrig)
          {
-            Vertex3D rgv3D[16*PLUNGEPOINTS0];
             for (int l=0;l<16;l++)
             {
-               const float angle = (float)(M_PI*2.0/16.0)*(float)l;
-               const float sn = sinf(angle);
-               const float cs = cosf(angle);
                const int offset = l*PLUNGEPOINTS0;
-               for (int m=0;m<PLUNGEPOINTS0;m++)
-               {
-                  rgv3D[m + offset].x = rgcrossplunger0[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
-                  rgv3D[m + offset].y = height + rgcrossplunger0[m][1];
-                  rgv3D[m + offset].z = rgcrossplunger0[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight;
-                  rgv3D[m + offset].nx = rgcrossplungerNormal0[m][0] * sn;
-                  rgv3D[m + offset].ny = rgcrossplungerNormal0[m][1];
-                  rgv3D[m + offset].nz = -rgcrossplungerNormal0[m][0] * cs;
-               }
-               rgv3D[PLUNGEPOINTS0-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
                ppin3d->ClearExtents(&pof->rc, NULL, NULL);
-               ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitplunger->m_plungeranim.m_znear,
-                  &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS0), fFalse);
+               ppin3d->ExpandExtents(&pof->rc, ptr, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS0), fFalse);
             }
 
             for (int l=0;l<16;l++)
@@ -451,14 +463,15 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
                const int offset = l*PLUNGEPOINTS0;
                for (int m=0;m<(PLUNGEPOINTS0-1);m++)
                {
-                  const WORD rgi[4] = {
+                  const WORD rgi[4] = 
+                  {
                      m + offset,
                      (m + offset + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0),
                      (m + offset + 1 + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0),
-                     m + offset + 1};
+                     m + offset + 1
+                  };
 
-                     pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,
-                        16*PLUNGEPOINTS0,(LPWORD)rgi, 4, 0);
+                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, ptr, 16*PLUNGEPOINTS0,(LPWORD)rgi, 4, 0);
                }
             }
          }

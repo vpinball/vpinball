@@ -127,6 +127,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 	void		setLightState(const LightState newVal);
 	bool		m_fLockedByLS;
 //<<<
+   Vertex3D staticVertices[96];
+   Vertex3D moverVertices[160];
 
 // IBumper
 public:
