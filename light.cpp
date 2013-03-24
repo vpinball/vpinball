@@ -696,7 +696,10 @@ void Light::RenderStaticCircle(const RenderDevice* _pd3dDevice)
 void Light::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
+void Light::RenderSetup(const RenderDevice* _pd3dDevice)
+{
 
+}
 void Light::RenderStatic(const RenderDevice* pd3dDevice)
 	{
 	if (m_d.m_borderwidth > 0)

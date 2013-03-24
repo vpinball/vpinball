@@ -425,6 +425,11 @@ void Trigger::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
+void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
+{
+
+}
+
 void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
 	{
 	if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)

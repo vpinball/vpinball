@@ -300,6 +300,8 @@ void Player::ToggleFPS()
 	m_lastfpstime = m_timeCur;
 	m_cframes = 0;
 	m_fps = 0;
+   m_fpsAvg=0;
+   m_fpsCount=1;
 	m_total = 0;
 	m_count = 0;
 	m_max = 0;
@@ -1001,7 +1003,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		ExitApp();
 	}
 #endif
-
 	Render();
 	return S_OK;
 	}
@@ -1091,6 +1092,16 @@ void Player::InitStatic(HWND hwndProgress)
 
 	// Direct all renders to the "static" buffer.
 	m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
+
+   // basic setup for all render objects
+   for (int i=0;i<m_ptable->m_vedit.Size();i++)
+   {
+      Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+      if (ph)
+      {
+         ph->RenderSetup(m_pin3d.m_pd3dDevice);
+      }
+   }
 
 	// Draw stuff
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
@@ -1929,6 +1940,8 @@ void Player::Render()
 		if ((m_timeCur - m_lastfpstime) > 1000)
 			{
 			m_fps = m_cframes * 1000 / (m_timeCur - m_lastfpstime);
+         m_fpsAvg += m_fps;
+         m_fpsCount++;
 			m_lastfpstime = m_timeCur;
 			m_cframes = 0;
 			}
@@ -2641,7 +2654,7 @@ if(stereopath) {
 		TextOut(hdcNull, 10, 30, szFoo, len);
 
 		// Draw the framerate.
-		int len2 = sprintf_s(szFoo, " FPS: %d ", m_fps);
+      int len2 = sprintf_s(szFoo, " FPS: %d FPS(avg): %d", m_fps,m_fpsAvg/m_fpsCount);
 		for(int l = len2; l < len+1; ++l)
 			szFoo[l] = ' ';
 		TextOut(hdcNull, 10, 10, szFoo, len);

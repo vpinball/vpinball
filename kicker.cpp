@@ -179,6 +179,11 @@ void Kicker::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
 }
 
+void Kicker::RenderSetup(const RenderDevice* _pd3dDevice)
+{
+
+}
+
 void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;

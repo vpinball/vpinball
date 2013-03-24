@@ -380,6 +380,10 @@ static const WORD rgiGate6[4] = {0,4,6,2};
 static const WORD rgiGate7[4] = {1,3,7,5};
 
 static const Material gatemtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+void Gate::RenderSetup(const RenderDevice* _pd3dDevice)
+{
+
+}
 
 void Gate::RenderStatic(const RenderDevice* _pd3dDevice)
 {

@@ -257,7 +257,10 @@ void LightSeq::EndPlay()
 void LightSeq::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
 }
+void LightSeq::RenderSetup(const RenderDevice* _pd3dDevice)
+{
 
+}
 void LightSeq::RenderStatic(const RenderDevice* pd3dDevice)
 {
 }

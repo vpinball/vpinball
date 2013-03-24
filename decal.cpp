@@ -438,6 +438,10 @@ void Decal::PostRenderStatic(const RenderDevice* pd3dDevice)
 	}
 
 static const Material decalmtrl = {1.f,1.f,1.f,.5f, 1.f,1.f,1.f,.5f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
+{
+
+}
 
 void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
 {

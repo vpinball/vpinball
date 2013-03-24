@@ -280,6 +280,10 @@ void Textbox::EndPlay()
 void Textbox::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
+void Textbox::RenderSetup(const RenderDevice* _pd3dDevice)
+{
+
+}
 
 void Textbox::RenderStatic(const RenderDevice* pd3dDevice)
 	{

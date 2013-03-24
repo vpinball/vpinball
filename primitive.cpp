@@ -803,7 +803,10 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			0);
 	}
 }
+void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
+{
 
+}
 //seems to be called to set up the initial backbuffer
 void Primitive::RenderStatic(const RenderDevice* pd3dDevice)
 	{

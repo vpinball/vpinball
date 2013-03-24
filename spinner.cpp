@@ -333,7 +333,10 @@ static const WORD rgiSpinner6[4] = {0,4,6,2};
 static const WORD rgiSpinner7[4] = {1,3,7,5};
 
 static const Material spinnermtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+void Spinner::RenderSetup(const RenderDevice* _pd3dDevice)
+{
 
+}
 void Spinner::RenderStatic(const RenderDevice* _pd3dDevice)
 	{
 	if(!m_d.m_fSupports) return;

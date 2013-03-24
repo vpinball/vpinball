@@ -255,8 +255,12 @@ void Bumper::PostRenderStatic(const RenderDevice* pd3dDevice)
 	}
 
 static const WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
-
 static const Material bumpermtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+
+void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
+{
+
+}
 
 void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
 {
