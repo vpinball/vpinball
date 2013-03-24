@@ -2176,6 +2176,7 @@ void Player::Render()
 		}	
 
 	Texture * const pdds = m_pin3d.m_pddsBackBuffer;
+	Texture * const pddsz= m_pin3d.m_pddsZBuffer;
 
 	// Process all regions that need updating.  
 	// The region will be drawn with the current frame.
@@ -2221,7 +2222,7 @@ void Player::Render()
 					if (pobjframe->pddsZBuffer != NULL)
 					{
 						// Blit to the z buffer.	
-						/*const HRESULT hr =*/ m_pin3d.m_pddsZBuffer->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
+						/*const HRESULT hr =*/ pddsz->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
 					}
 				}
 			}
@@ -2322,7 +2323,8 @@ if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (m_fFXAA == 0)) || (m_pin3d.m
 				rcNew.bottom = prc->bottom + m_pin3d.m_rcUpdate.top;
 
 				// Copy the region from the back buffer to the front buffer.
-				m_pin3d.m_pddsFrontBuffer->BltFast(rcNew.left, rcNew.top, m_pin3d.m_pddsBackBuffer, prc, 0);
+				//m_pin3d.m_pddsFrontBuffer->BltFast(rcNew.left, rcNew.top, m_pin3d.m_pddsBackBuffer, prc, 0);
+				m_pin3d.m_pddsFrontBuffer->Blt(&rcNew, m_pin3d.m_pddsBackBuffer, prc, 0, NULL);
 			}
 		}
 		else

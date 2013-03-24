@@ -555,6 +555,22 @@ HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenw
 	// Update the count.
 	NumVideoBytes += m_dwRenderWidth * m_dwRenderHeight * 4;
 
+	// If in windowed-mode, create a clipper object //!! but it's always needed for whatever reason to get rid of initial rendering artifacts on some systems
+    LPDIRECTDRAWCLIPPER pcClipper;
+    if( FAILED( hr = m_pDD->CreateClipper( 0, &pcClipper, NULL ) ) )
+    {
+		ShowError("Could not create clipper.");
+        return hr;
+    }
+
+    if (pcClipper)
+    {
+       // Associate the clipper with the window.
+       pcClipper->SetHWnd( 0, m_hwnd );
+       m_pddsFrontBuffer->SetClipper( pcClipper );
+       pcClipper->Release();
+    }
+
     // Define a backbuffer.
     ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
     ddsd.dwWidth        = m_dwRenderWidth;
@@ -1518,14 +1534,14 @@ void Pin3D::Flip(const int offsetx, const int offsety, const BOOL vsync)
 
 	// Copy the back buffer to the front buffer.
 	HRESULT hr;
-	if(ddbltfx.dwDDFX)
+	//if(ddbltfx.dwDDFX)
 		hr = m_pddsFrontBuffer->Blt(&rcNew, 
 		((((g_pplayer->m_fStereo3D != 0) && g_pplayer->m_fStereo3Denabled) || (g_pplayer->m_fFXAA)) && (m_maxSeparation > 0.0f) && (m_maxSeparation < 1.0f) && (m_ZPD > 0.0f) && (m_ZPD < 1.0f) && m_pdds3Dbuffercopy && m_pdds3DBackBuffer) ? m_pdds3DBackBuffer : 
-		m_pddsBackBuffer, NULL, DDBLT_DDFX, &ddbltfx);
-	else
+		m_pddsBackBuffer, NULL, ddbltfx.dwDDFX ? DDBLT_DDFX : 0, &ddbltfx);
+	/*else
 		hr = m_pddsFrontBuffer->BltFast(rcNew.left, rcNew.top, 
 		((((g_pplayer->m_fStereo3D != 0) && g_pplayer->m_fStereo3Denabled) || (g_pplayer->m_fFXAA)) && (m_maxSeparation > 0.0f) && (m_maxSeparation < 1.0f) && (m_ZPD > 0.0f) && (m_ZPD < 1.0f) && m_pdds3Dbuffercopy && m_pdds3DBackBuffer) ? m_pdds3DBackBuffer : 
-		m_pddsBackBuffer, NULL, 0);
+		m_pddsBackBuffer, NULL, 0);*/
 
 	if (hr == DDERR_SURFACELOST)
 		{
