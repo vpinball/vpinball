@@ -509,9 +509,9 @@ BEGIN
     CONTROL         "Full Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,16,31,56,10
     LISTBOX         IDC_SIZELIST,14,42,129,125,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Enable Software FXAA",IDC_FXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,168,90,10
-    CONTROL         "Stretch ball with table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,191,83,10
-    CONTROL         "Don't stretch the ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,202,81,10
-    CONTROL         "At Full Screen anti-stretch the ball",IDC_StretchMonitor,
+    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,191,83,10
+    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,202,81,10
+    CONTROL         "At Full Screen anti-stretch the Ball",IDC_StretchMonitor,
                     "Button",BS_AUTORADIOBUTTON,16,213,127,10
     COMBOBOX        IDC_MonitorCombo,73,223,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Draw Ball &Shadows",IDC_SHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,19,77,10
@@ -535,15 +535,15 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,221,247,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,276,247,50,14
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,237
-    GROUPBOX        "Details",IDC_STATIC,154,7,85,55
-    GROUPBOX        "3D Stereo",IDC_STATIC,242,7,84,55
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,63,172,179
+    GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,85,55
+    GROUPBOX        "3D Stereo Output",IDC_STATIC,242,7,84,55
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,63,172,181
     GROUPBOX        "Max Texture Dimension (for Chipset Graphics)*",IDC_STATIC,159,146,162,59
     LTEXT           "*Restart Visual Pinball.",IDC_STATIC,244,159,72,8
     LTEXT           "Only works for Images",IDC_STATIC,247,168,70,8
     LTEXT           "that are not BMP.",IDC_STATIC,247,177,56,8
     LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,208,156,8
-    GROUPBOX        "At a stretched Table (experimental)",IDC_STATIC,12,180,133,59
+    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,180,133,59
     LTEXT           "to my Monitor:",IDC_STATIC,27,225,45,8
 END
 
