@@ -2576,11 +2576,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);
 		const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
 		
-		Vertex3D_NoTex2 * const rgvbuf = new Vertex3D_NoTex2[(cvertex-1)*6];
+		Vertex3D_NoTex2 * const rgvbuf = new Vertex3D_NoTex2[(cvertex-1)*4];
+		WORD * const rgibuf = new WORD[(cvertex-1)*6];
 
 		for (int i=0;i<(cvertex-1);i++)
 			{
-			Vertex3D_NoTex2 rgv3D[4];
+			Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
 			rgv3D[0].x = rgv[i].x;
 			rgv3D[0].y = rgv[i].y;
 			rgv3D[0].z = rgheight[i];
@@ -2626,12 +2627,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
 			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the floor of the ramp.
-			rgvbuf[i*6]   = rgv3D[0];
-			rgvbuf[i*6+1] = rgv3D[1];
-			rgvbuf[i*6+2] = rgv3D[2];
-			rgvbuf[i*6+3] = rgv3D[0];
-			rgvbuf[i*6+4] = rgv3D[2];
-			rgvbuf[i*6+5] = rgv3D[3];
+			rgibuf[i*6]   = i*4;
+			rgibuf[i*6+1] = i*4+1;
+			rgibuf[i*6+2] = i*4+2;
+			rgibuf[i*6+3] = i*4;
+			rgibuf[i*6+4] = i*4+2;
+			rgibuf[i*6+5] = i*4+3;
 
 			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
 			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,0);
@@ -2639,7 +2640,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 				//ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
 
-		pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*6, 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*4, (LPWORD)rgibuf, (cvertex-1)*6, 0);
 
 		if (pin && !m_d.m_fImageWalls)
 			{
@@ -2658,7 +2659,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
 		for (int i=0;i<(cvertex-1);i++)
 			{
-			Vertex3D_NoTex2 rgv3D[4];
+			Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
 			rgv3D[0].x = rgv[i].x;
 			rgv3D[0].y = rgv[i].y;
 			rgv3D[0].z = rgheight[i];
@@ -2701,12 +2702,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			// 2-Sided polygon
 			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			rgvbuf[i*6]   = rgv3D[0];
-			rgvbuf[i*6+1] = rgv3D[1];
-			rgvbuf[i*6+2] = rgv3D[2];
-			rgvbuf[i*6+3] = rgv3D[0];
-			rgvbuf[i*6+4] = rgv3D[2];
-			rgvbuf[i*6+5] = rgv3D[3];
+			rgibuf[i*6]   = i*4;
+			rgibuf[i*6+1] = i*4+1;
+			rgibuf[i*6+2] = i*4+2;
+			rgibuf[i*6+3] = i*4;
+			rgibuf[i*6+4] = i*4+2;
+			rgibuf[i*6+5] = i*4+3;
 
 			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
 			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,0);
@@ -2718,26 +2719,26 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 				//ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
 
-		pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*6, 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*4, (LPWORD)rgibuf, (cvertex-1)*6, 0);
 
 		// Flip Normals and redraw
 		for (int i=0;i<(cvertex-1);i++)
 		{
-			const Vertex3D_NoTex2 tmp = rgvbuf[i*6+1];
-			rgvbuf[i*6+1] = rgvbuf[i*6+5];
-			rgvbuf[i*6+5] = tmp;
-			for(int j = 0; j < 6; ++j) {
-				rgvbuf[i*6+j].nx = -rgvbuf[i*6+j].nx;
-				rgvbuf[i*6+j].ny = -rgvbuf[i*6+j].ny;
-				rgvbuf[i*6+j].nz = -rgvbuf[i*6+j].nz;
+			const WORD tmp = rgibuf[i*6+1];
+			rgibuf[i*6+1] = rgibuf[i*6+5];
+			rgibuf[i*6+5] = tmp;
+			for(int j = 0; j < 4; ++j) {
+				rgvbuf[i*4+j].nx = -rgvbuf[i*4+j].nx;
+				rgvbuf[i*4+j].ny = -rgvbuf[i*4+j].ny;
+				rgvbuf[i*4+j].nz = -rgvbuf[i*4+j].nz;
 			}
 		}
 
-		pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*6, 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*4, (LPWORD)rgibuf, (cvertex-1)*6, 0);
 
 		for (int i=0;i<(cvertex-1);i++)
 			{
-			Vertex3D_NoTex2 rgv3D[4];
+			Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
 			rgv3D[0].x = rgv[cvertex*2-i-2].x;
 			rgv3D[0].y = rgv[cvertex*2-i-2].y;
 			rgv3D[0].z = rgheight[i+1];
@@ -2780,12 +2781,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			// 2-Sided polygon
 			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			rgvbuf[i*6]   = rgv3D[0];
-			rgvbuf[i*6+1] = rgv3D[1];
-			rgvbuf[i*6+2] = rgv3D[2];
-			rgvbuf[i*6+3] = rgv3D[0];
-			rgvbuf[i*6+4] = rgv3D[2];
-			rgvbuf[i*6+5] = rgv3D[3];
+			rgibuf[i*6]   = i*4;
+			rgibuf[i*6+1] = i*4+1;
+			rgibuf[i*6+2] = i*4+2;
+			rgibuf[i*6+3] = i*4;
+			rgibuf[i*6+4] = i*4+2;
+			rgibuf[i*6+5] = i*4+3;
 
 			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgi0123, 4, 0);
 			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4, 0);
@@ -2797,24 +2798,25 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 				//ppin3d->ExpandExtents(&invalidationRect, rgv3D, NULL , NULL, 4, fFalse);
 			}
 
-		pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*6, 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*4, (LPWORD)rgibuf, (cvertex-1)*6, 0);
 
 		// Flip Normals and redraw
 		for (int i=0;i<(cvertex-1);i++)
 		{
-			const Vertex3D_NoTex2 tmp = rgvbuf[i*6+1];
-			rgvbuf[i*6+1] = rgvbuf[i*6+5];
-			rgvbuf[i*6+5] = tmp;
-			for(int j = 0; j < 6; ++j) {
-				rgvbuf[i*6+j].nx = -rgvbuf[i*6+j].nx;
-				rgvbuf[i*6+j].ny = -rgvbuf[i*6+j].ny;
-				rgvbuf[i*6+j].nz = -rgvbuf[i*6+j].nz;
+			const WORD tmp = rgibuf[i*6+1];
+			rgibuf[i*6+1] = rgibuf[i*6+5];
+			rgibuf[i*6+5] = tmp;
+			for(int j = 0; j < 4; ++j) {
+				rgvbuf[i*4+j].nx = -rgvbuf[i*4+j].nx;
+				rgvbuf[i*4+j].ny = -rgvbuf[i*4+j].ny;
+				rgvbuf[i*4+j].nz = -rgvbuf[i*4+j].nz;
 			}
 		}
 
-		pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*6, 0);
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, rgvbuf, (cvertex-1)*4, (LPWORD)rgibuf, (cvertex-1)*6, 0);
 
 		delete [] rgvbuf;
+		delete [] rgibuf;
 
 		delete [] rgv;
 		delete [] rgheight;
