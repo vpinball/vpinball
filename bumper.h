@@ -128,7 +128,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 	bool		m_fLockedByLS;
 //<<<
    Vertex3D staticVertices[96];
-   Vertex3D moverVertices[160];
+   Vertex3D moverVertices[2][160];
 
 // IBumper
 public:
