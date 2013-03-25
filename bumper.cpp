@@ -301,65 +301,73 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
          staticVertices[l+64].tv = (0.5f+cosangle*0.5f)*maxtv;
       }
 
-      moverVertices[l].x = sinangle*m_d.m_radius + m_d.m_vCenter.x;
-      moverVertices[l].y = cosangle*m_d.m_radius + m_d.m_vCenter.y;
-      moverVertices[l].z = height+40.0f;
-      moverVertices[l+32].x = moverVertices[l].x;
-      moverVertices[l+32].y = moverVertices[l].y;
-      moverVertices[l+32].z = height;
+      moverVertices[0][l].x = sinangle*m_d.m_radius + m_d.m_vCenter.x;
+      moverVertices[0][l].y = cosangle*m_d.m_radius + m_d.m_vCenter.y;
+      moverVertices[0][l].z = height+40.0f;
+      moverVertices[0][l+32].x = moverVertices[0][l].x;
+      moverVertices[0][l+32].y = moverVertices[0][l].y;
+      moverVertices[0][l+32].z = height;
 
-      moverVertices[l+64].x = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
-      moverVertices[l+64].y = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
-      moverVertices[l+64].z = height+60.0f;
+      moverVertices[0][l+64].x = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
+      moverVertices[0][l+64].y = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
+      moverVertices[0][l+64].z = height+60.0f;
 
-      moverVertices[l+96].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
-      moverVertices[l+96].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
-      moverVertices[l+96].z = height+50.0f;
+      moverVertices[0][l+96].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
+      moverVertices[0][l+96].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
+      moverVertices[0][l+96].z = height+50.0f;
 
-      moverVertices[l+128].x = sinangle*outerradius + m_d.m_vCenter.x;
-      moverVertices[l+128].y = cosangle*outerradius + m_d.m_vCenter.y;
-      moverVertices[l+128].z = height+40.0f;
+      moverVertices[0][l+128].x = sinangle*outerradius + m_d.m_vCenter.x;
+      moverVertices[0][l+128].y = cosangle*outerradius + m_d.m_vCenter.y;
+      moverVertices[0][l+128].z = height+40.0f;
 
-      moverVertices[l].tu = 0.5f+sinangle*0.5f;
-      moverVertices[l].tv = 0.5f-cosangle*0.5f;
-      moverVertices[l+32].tu = 0.5f+sinangle*0.5f;
-      moverVertices[l+32].tv = 0.5f-cosangle*0.5f;
-      moverVertices[l+64].tu = 0.5f+sinangle*0.25f;
-      moverVertices[l+64].tv = 0.5f-cosangle*0.25f;
-      moverVertices[l+96].tu = 0.5f+sinangle*(float)(0.5*0.9);
-      moverVertices[l+96].tv = 0.5f-cosangle*(float)(0.5*0.9);
-      moverVertices[l+128].tu = 0.5f+sinangle*0.5f;
-      moverVertices[l+128].tv = 0.5f-cosangle*0.5f;
+      moverVertices[0][l].tu = 0.5f+sinangle*0.5f;
+      moverVertices[0][l].tv = 0.5f-cosangle*0.5f;
+      moverVertices[0][l+32].tu = 0.5f+sinangle*0.5f;
+      moverVertices[0][l+32].tv = 0.5f-cosangle*0.5f;
+      moverVertices[0][l+64].tu = 0.5f+sinangle*0.25f;
+      moverVertices[0][l+64].tv = 0.5f-cosangle*0.25f;
+      moverVertices[0][l+96].tu = 0.5f+sinangle*(float)(0.5*0.9);
+      moverVertices[0][l+96].tv = 0.5f-cosangle*(float)(0.5*0.9);
+      moverVertices[0][l+128].tu = 0.5f+sinangle*0.5f;
+      moverVertices[0][l+128].tv = 0.5f-cosangle*0.5f;
 
       if ( pin )
       {
-         moverVertices[l+64].tu = (0.5f+sinangle*0.25f)*maxtu;
-         moverVertices[l+64].tv = (0.5f+cosangle*0.25f)*maxtv;
-         moverVertices[l+96].tu = (0.5f+sinangle*(float)(0.5*0.9))*maxtu;
-         moverVertices[l+96].tv = (0.5f+cosangle*(float)(0.5*0.9))*maxtv;
-         moverVertices[l+128].tu = (0.5f+sinangle*0.5f)*maxtu;
-         moverVertices[l+128].tv = (0.5f+cosangle*0.5f)*maxtv;
+         moverVertices[0][l+64].tu = (0.5f+sinangle*0.25f)*maxtu;
+         moverVertices[0][l+64].tv = (0.5f+cosangle*0.25f)*maxtv;
+         moverVertices[0][l+96].tu = (0.5f+sinangle*(float)(0.5*0.9))*maxtu;
+         moverVertices[0][l+96].tv = (0.5f+cosangle*(float)(0.5*0.9))*maxtv;
+         moverVertices[0][l+128].tu = (0.5f+sinangle*0.5f)*maxtu;
+         moverVertices[0][l+128].tv = (0.5f+cosangle*0.5f)*maxtv;
 
          const float lightmaxtu = 0.8f;
          const float lightmaxtv = 0.8f;
 
-         moverVertices[l].tu2 = moverVertices[l].tu;
-         moverVertices[l+32].tu2 = moverVertices[l+32].tu;
-         moverVertices[l].tv2 = moverVertices[l].tv;
-         moverVertices[l+32].tv2 = moverVertices[l+32].tv;
-         moverVertices[l+64].tu2 = (0.5f+sinangle*0.25f)*lightmaxtu;
-         moverVertices[l+64].tv2 = (0.5f+cosangle*0.25f)*lightmaxtv;
-         moverVertices[l+96].tu2 = (0.5f+sinangle*(float)(0.5*0.9))*lightmaxtu;
-         moverVertices[l+96].tv2 = (0.5f+cosangle*(float)(0.5*0.9))*lightmaxtv;
-         moverVertices[l+128].tu2 = (0.5f+sinangle*0.5f)*lightmaxtu;
-         moverVertices[l+128].tv2 = (0.5f+cosangle*0.5f)*lightmaxtv;
+         moverVertices[0][l].tu2 = moverVertices[0][l].tu;
+         moverVertices[0][l+32].tu2 = moverVertices[0][l+32].tu;
+         moverVertices[0][l].tv2 = moverVertices[0][l].tv;
+         moverVertices[0][l+32].tv2 = moverVertices[0][l+32].tv;
+         moverVertices[0][l+64].tu2 = (0.5f+sinangle*0.25f)*lightmaxtu;
+         moverVertices[0][l+64].tv2 = (0.5f+cosangle*0.25f)*lightmaxtv;
+         moverVertices[0][l+96].tu2 = (0.5f+sinangle*(float)(0.5*0.9))*lightmaxtu;
+         moverVertices[0][l+96].tv2 = (0.5f+cosangle*(float)(0.5*0.9))*lightmaxtv;
+         moverVertices[0][l+128].tu2 = (0.5f+sinangle*0.5f)*lightmaxtu;
+         moverVertices[0][l+128].tv2 = (0.5f+cosangle*0.5f)*lightmaxtv;
       }
 
-      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[l],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[l+32],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[l+64],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[l+96],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[l+128],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+32],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+64],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+96],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+128],inv_width,inv_height);
+      memcpy( moverVertices[1], moverVertices[0], sizeof(Vertex3D)*160 );
+
+      moverVertices[1][l+64].tu = 0.5f+sinangle*0.25f;
+      moverVertices[1][l+64].tv = 0.5f+cosangle*0.25f;
+      moverVertices[1][l+96].tu = 0.5f+sinangle*(float)(0.5*0.9);
+      moverVertices[1][l+96].tv = 0.5f+cosangle*(float)(0.5*0.9);
+      moverVertices[1][l+128].tu = 0.5f+sinangle*0.5f;
+      moverVertices[1][l+128].tv = 0.5f+cosangle*0.5f;
    }
    SetNormal(staticVertices, rgiBumperStatic, 32, NULL, NULL, 0);
 
@@ -432,7 +440,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 
       ppin3d->ClearExtents(&pof->rc, NULL, NULL);
 
-      ppin3d->ExpandExtents(&pof->rc, moverVertices, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar, 160, fFalse);
+      ppin3d->ExpandExtents(&pof->rc, moverVertices[i], &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar, 160, fFalse);
 
       Material mtrl;
       mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -470,8 +478,8 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 
          pd3dDevice->SetMaterial(&mtrl);
 
-         SetNormal(&moverVertices[64], rgiBumperStatic, 32, NULL, NULL, 0);
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[64], 32, (LPWORD)rgiBumperStatic, 32, 0);
+         SetNormal(&moverVertices[i][64], rgiBumperStatic, 32, NULL, NULL, 0);
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 32, (LPWORD)rgiBumperStatic, 32, 0);
 
          for (int l=0;l<32;l++)
          {
@@ -489,13 +497,13 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
                   (l == 31) ? 32 : (l+33),
                   (l == 31) ? 0 : (l+1)};
 
-                  SetNormal(&moverVertices[64], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(&moverVertices[96], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(&moverVertices[64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-                  SetNormal(&moverVertices[96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
+                  SetNormal(&moverVertices[i][64], rgiNormal, 3, NULL, rgi, 2);
+                  SetNormal(&moverVertices[i][96], rgiNormal, 3, NULL, rgi, 2);
+                  SetNormal(&moverVertices[i][64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
+                  SetNormal(&moverVertices[i][96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
 
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[64], 64, (LPWORD)rgi, 4, 0);
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[96], 64, (LPWORD)rgi, 4, 0);
+                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 64, (LPWORD)rgi, 4, 0);
+                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][96], 64, (LPWORD)rgi, 4, 0);
          }
       }
 
@@ -545,9 +553,9 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
                   (l == 31) ? 32 : (l+33),
                   (l == 31) ? 0 : (l+1)};
 
-                  SetNormal(moverVertices, rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(moverVertices, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,moverVertices,64,(LPWORD)rgi, 4, 0);
+                  SetNormal(moverVertices[i], rgiNormal, 3, NULL, rgi, 2);
+                  SetNormal(moverVertices[i], &rgiNormal[3], 3, NULL, &rgi[2], 2);
+                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,moverVertices[i],64,(LPWORD)rgi, 4, 0);
          }
       }
 
@@ -595,8 +603,8 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
          }
          pd3dDevice->SetMaterial(&mtrl);
 
-         SetNormal(&moverVertices[64], rgiBumperStatic, 32, NULL, NULL, 0);
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[64], 32, (LPWORD)rgiBumperStatic, 32, 0);
+         SetNormal(&moverVertices[i][64], rgiBumperStatic, 32, NULL, NULL, 0);
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 32, (LPWORD)rgiBumperStatic, 32, 0);
 
          for (int l=0;l<32;l++)
          {
@@ -618,18 +626,21 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
                   (l == 31) ? 0 : (l+1)
                };
 
-                  SetNormal(&moverVertices[64], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(&moverVertices[96], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(&moverVertices[64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-                  SetNormal(&moverVertices[96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
+                  SetNormal(&moverVertices[i][64], rgiNormal, 3, NULL, rgi, 2);
+                  SetNormal(&moverVertices[i][96], rgiNormal, 3, NULL, rgi, 2);
+                  SetNormal(&moverVertices[i][64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
+                  SetNormal(&moverVertices[i][96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
 
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[64], 64, rgi, 4, 0);
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[96], 64, rgi, 4, 0);
+                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 64, rgi, 4, 0);
+                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][96], 64, rgi, 4, 0);
          }
 
          // Reset all the texture coordinates
-         if (i == 0)
+         if (i == 1)
          {
+            ppin3d->EnableLightMap(fFalse, -1);
+         }
+/*         {
             const float angle = (float)(M_PI*2.0/32.0)*(float)32.0; //!! potential bug?! (last 32.0 was l)
             const float sinangle = sinf(angle);
             const float cosangle = cosf(angle);
@@ -645,7 +656,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
          }
          else
             ppin3d->EnableLightMap(fFalse, -1);
-
+*/
          //pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
          //pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
       }
