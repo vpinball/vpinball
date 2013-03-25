@@ -2660,13 +2660,13 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		for (int i=0;i<(cvertex-1);i++)
 			{
 			Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
-			rgv3D[0].x = rgv[i].x;
-			rgv3D[0].y = rgv[i].y;
-			rgv3D[0].z = rgheight[i];
+			//rgv3D[0].x = rgv[i].x;
+			//rgv3D[0].y = rgv[i].y;
+			//rgv3D[0].z = rgheight[i];
 
-			rgv3D[3].x = rgv[i+1].x;
-			rgv3D[3].y = rgv[i+1].y;
-			rgv3D[3].z = rgheight[i+1];
+			//rgv3D[3].x = rgv[i+1].x;
+			//rgv3D[3].y = rgv[i+1].y;
+			//rgv3D[3].z = rgheight[i+1];
 
 			rgv3D[2].x = rgv[i+1].x;
 			rgv3D[2].y = rgv[i+1].y;
@@ -2702,12 +2702,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			// 2-Sided polygon
 			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			rgibuf[i*6]   = i*4;
-			rgibuf[i*6+1] = i*4+1;
-			rgibuf[i*6+2] = i*4+2;
-			rgibuf[i*6+3] = i*4;
-			rgibuf[i*6+4] = i*4+2;
-			rgibuf[i*6+5] = i*4+3;
+			//rgibuf[i*6]   = i*4;
+			//rgibuf[i*6+1] = i*4+1;
+			//rgibuf[i*6+2] = i*4+2;
+			//rgibuf[i*6+3] = i*4;
+			//rgibuf[i*6+4] = i*4+2;
+			//rgibuf[i*6+5] = i*4+3;
 
 			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4,(LPWORD)rgi0123, 4, 0);
 			//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,0);
@@ -2724,9 +2724,8 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		// Flip Normals and redraw
 		for (int i=0;i<(cvertex-1);i++)
 		{
-			const WORD tmp = rgibuf[i*6+1];
-			rgibuf[i*6+1] = rgibuf[i*6+5];
-			rgibuf[i*6+5] = tmp;
+			rgibuf[i*6+1] = i*4+3;
+			rgibuf[i*6+5] = i*4+1;
 			for(int j = 0; j < 4; ++j) {
 				rgvbuf[i*4+j].nx = -rgvbuf[i*4+j].nx;
 				rgvbuf[i*4+j].ny = -rgvbuf[i*4+j].ny;
@@ -2747,12 +2746,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			rgv3D[3].y = rgv[cvertex*2-i-1].y;
 			rgv3D[3].z = rgheight[i];
 
-			rgv3D[2].x = rgv[cvertex*2-i-1].x;
-			rgv3D[2].y = rgv[cvertex*2-i-1].y;
+			rgv3D[2].x = rgv3D[3].x;
+			rgv3D[2].y = rgv3D[3].y;
 			rgv3D[2].z = rgheight[i] + m_d.m_leftwallheightvisible;
 
-			rgv3D[1].x = rgv[cvertex*2-i-2].x;
-			rgv3D[1].y = rgv[cvertex*2-i-2].y;
+			rgv3D[1].x = rgv3D[0].x;
+			rgv3D[1].y = rgv3D[0].y;
 			rgv3D[1].z = rgheight[i+1] + m_d.m_leftwallheightvisible;
 
 			if (pin && m_d.m_fImageWalls)
@@ -2781,11 +2780,11 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			// 2-Sided polygon
 			SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
 			// Draw the wall of the ramp.
-			rgibuf[i*6]   = i*4;
+			//rgibuf[i*6]   = i*4;
 			rgibuf[i*6+1] = i*4+1;
-			rgibuf[i*6+2] = i*4+2;
-			rgibuf[i*6+3] = i*4;
-			rgibuf[i*6+4] = i*4+2;
+			//rgibuf[i*6+2] = i*4+2;
+			//rgibuf[i*6+3] = i*4;
+			//rgibuf[i*6+4] = i*4+2;
 			rgibuf[i*6+5] = i*4+3;
 
 			//pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3D, 4, (LPWORD)rgi0123, 4, 0);
@@ -2803,9 +2802,8 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		// Flip Normals and redraw
 		for (int i=0;i<(cvertex-1);i++)
 		{
-			const WORD tmp = rgibuf[i*6+1];
-			rgibuf[i*6+1] = rgibuf[i*6+5];
-			rgibuf[i*6+5] = tmp;
+			rgibuf[i*6+1] = i*4+3;
+			rgibuf[i*6+5] = i*4+1;
 			for(int j = 0; j < 4; ++j) {
 				rgvbuf[i*4+j].nx = -rgvbuf[i*4+j].nx;
 				rgvbuf[i*4+j].ny = -rgvbuf[i*4+j].ny;
