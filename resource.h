@@ -309,16 +309,20 @@
 #define IDC_DOWN                        283
 #define IDC_MECHTILTBUTTON              283
 #define IDC_UP                          284
+#define IDC_JOYCUSTOM1                  284
 #define IDC_PLAY_MUSIC                  285
 #define IDC_OUT2                        285
 #define IDR_TABLEMENU                   285
 #define IDC_MUSIC_SLIDER                286
 #define IDD_TABLEINFO                   286
+#define IDC_JOYCUSTOM2                  286
 #define IDC_PLAY_SOUND                  287
 #define IDC_SQUARE                      287
 #define IDD_PROP_NAME                   287
+#define IDC_JOYCUSTOM3                  287
 #define IDC_SOUND_SLIDER                288
 #define IDD_PROP_TIMER                  288
+#define IDC_JOYCUSTOM4                  288
 #define IDC_STATIC_MUSIC                289
 #define IDD_PROPLIGHT_VISUALS           289
 #define IDC_STATIC_SOUND                290
@@ -495,6 +499,7 @@
 #define IDC_CHECK3                      396
 #define IDC_EDIT2                       397
 #define IDC_CHECK2                      398
+#define IDC_JOYMECHTILTCOMBO            399
 #define IDC_ADDCREDITBUTTON2            400
 #define IDC_ADDCREDIT2                  401
 #define IDC_ADDCREDITKEY2               401
@@ -508,6 +513,17 @@
 #define IDC_VOLUMEUP                    409
 #define IDC_DEBUGBALLSBUTTON            410
 #define IDC_DEBUGBALL                   411
+#define IDC_JOYCUSTOM1BUTTON            412
+#define IDC_JOYCUSTOM2BUTTON            413
+#define IDC_JOYCUSTOM3BUTTON            414
+#define IDC_JOYCUSTOM3BUTTON2           415
+#define IDC_JOYCUSTOM4BUTTON            415
+#define IDC_JOYCUSTOM1COMBO             416
+#define IDC_JOYCUSTOM2COMBO             417
+#define IDC_JOYCUSTOM3COMBO             418
+#define IDC_JOYCUSTOM4COMBO             419
+#define IDC_JOYCUSTOM1COMBO2            420
+#define IDC_JOYDEBUGCOMBO               420
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -561,7 +577,7 @@
 #define IDS_INPUT                       551
 #define IDC_FXAA                        552
 #define IDC_ENABLE_REGION_UPDATES       553
-#define IDC_MODIFY3DSTEREO				554
+#define IDC_MODIFY3DSTEREO              554
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768
@@ -622,7 +638,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        390
 #define _APS_NEXT_COMMAND_VALUE         32844
-#define _APS_NEXT_CONTROL_VALUE         399
+#define _APS_NEXT_CONTROL_VALUE         417
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

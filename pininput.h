@@ -86,37 +86,11 @@ private:
 
 	LPDIRECTINPUTDEVICE  m_pKeyboard;
 
-	int m_plunger_axis;
-	int m_lr_axis;
-	int m_ud_axis;
-	int m_plunger_reverse;
-	int m_lr_axis_reverse;
-	int m_ud_axis_reverse;
-	int m_override_default_buttons;
-	int m_disable_esc;
-	int m_joylflipkey;
-	int m_joyrflipkey;
-	int m_joylmagnasave;
-	int m_joyrmagnasave;
-	int m_joyplungerkey;
-	int m_joystartgamekey;
-	int m_joyexitgamekey;
-	int m_joyaddcreditkey;
-	int m_joyaddcreditkey2;
-	int m_joyframecount;
-	int m_joyvolumeup;
-	int m_joyvolumedown;
-	int m_joylefttilt;
-	int m_joycentertilt;
-	int m_joyrighttilt;
-	int m_joypmbuyin;
-	int m_joypmcoin3;
-	int m_joypmcoin4;
-	int m_joypmcoindoor;
-	int m_joypmcancel;
-	int m_joypmdown;
-	int m_joypmup;
-	int m_joypmenter;
+	int m_plunger_axis, m_lr_axis, m_ud_axis, m_plunger_reverse, m_lr_axis_reverse, m_ud_axis_reverse, m_override_default_buttons, m_disable_esc;
+	int m_joylflipkey, m_joyrflipkey, m_joylmagnasave, m_joyrmagnasave, m_joyplungerkey, m_joystartgamekey, m_joyexitgamekey, m_joyaddcreditkey;
+	int m_joyaddcreditkey2, m_joyframecount, m_joyvolumeup, m_joyvolumedown, m_joylefttilt, m_joycentertilt, m_joyrighttilt, m_joypmbuyin;
+	int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebug, m_joymechtilt;
+	int m_joycustom1, m_joycustom1key, m_joycustom2, m_joycustom2key, m_joycustom3, m_joycustom3key, m_joycustom4, m_joycustom4key;
 
 	U32 m_PreviousKeys;		// Masks of PININ_* inputs used by ultracade - AMH
 	U32 m_ChangedKeys;		// Masks of PININ_* inputs used by ultracade - AMH
