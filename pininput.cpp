@@ -28,38 +28,6 @@ PinInput::PinInput()
 	uShockType = 0;
 	fe_message_sent = false;
 
-	m_plunger_axis = 0;
-	m_lr_axis = 0;
-	m_ud_axis = 0;
-	m_plunger_reverse = 0;
-	m_lr_axis_reverse = 0;
-	m_ud_axis_reverse = 0;
-	m_override_default_buttons = 0;
-	m_disable_esc = 0;
-	m_joylflipkey = 0;
-	m_joyrflipkey = 0;
-	m_joylmagnasave = 0;
-	m_joyrmagnasave = 0;
-	m_joyplungerkey = 0;
-	m_joystartgamekey = 0;
-	m_joyexitgamekey = 0;
-	m_joyaddcreditkey = 0;
-	m_joyaddcreditkey2 = 0;
-	m_joyframecount = 0;
-	m_joyvolumeup = 0;
-	m_joyvolumedown = 0;
-	m_joylefttilt = 0;
-	m_joycentertilt = 0;
-	m_joyrighttilt = 0;
-	m_joypmbuyin = 0;
-	m_joypmcoin3 = 0;
-	m_joypmcoin4 = 0;
-	m_joypmcoindoor = 0;
-	m_joypmcancel = 0;
-	m_joypmdown = 0;
-	m_joypmup = 0;
-	m_joypmenter = 0;
-
 	firedautostart = 0;
 	firedautocoin = 0;
 	LastAttempt = 0;
@@ -162,6 +130,32 @@ PinInput::PinInput()
 
 	hr = GetRegInt("Player", "JoyPMEnter", &tmp);
 	if (hr == S_OK) m_joypmenter = tmp;
+
+	hr = GetRegInt("Player", "JoyCustom1", &tmp);
+	if (hr == S_OK) m_joycustom1 = tmp;
+
+	hr = GetRegInt("Player", "JoyCustom1Key", &tmp);
+	if (hr == S_OK) m_joycustom1key = tmp;
+
+	hr = GetRegInt("Player", "JoyCustom2", &tmp);
+	if (hr == S_OK) m_joycustom2 = tmp;
+
+	hr = GetRegInt("Player", "JoyCustom2Key", &tmp);
+	if (hr == S_OK) m_joycustom2key = tmp;
+
+	hr = GetRegInt("Player", "JoyCustom3", &tmp);
+	if (hr == S_OK) m_joycustom3 = tmp;
+
+	hr = GetRegInt("Player", "JoyCustom3Key", &tmp);
+	if (hr == S_OK) m_joycustom3key = tmp;
+
+	hr = GetRegInt("Player", "JoyCustom4", &tmp);
+	if (hr == S_OK) m_joycustom4 = tmp;
+
+	hr = GetRegInt("Player", "JoyCustom4Key", &tmp);
+	if (hr == S_OK) m_joycustom4key = tmp;
+
+
 }
 
 
@@ -885,376 +879,423 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 				const int updown = (input->dwData & 0x80)?DISPID_GameEvents_KeyDown:DISPID_GameEvents_KeyUp;
 				if (input->dwOfs == DIJOFS_BUTTON0)
 				{
-					 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // plunge
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // plunge
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
 					else if((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // coin 1
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joylflipkey == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 1)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 1)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					else
+						{	if (m_joylflipkey == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 1)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 1)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 1)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 1) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 1) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 1) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 1) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 1) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 1) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 1) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 1) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 1) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 1) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 1) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 1) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 1)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 1){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 1) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 1) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 1) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 1) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 1) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 1) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 1) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 1) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON1)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // right
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // right
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // coin 2
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylflipkey == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 2)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 2)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
+					else
+						{	if (m_joylflipkey == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 2)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 2)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 2)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 2) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 2) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 2) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 2) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 2) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 2) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 2) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 2) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 2) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 2) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 2) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 2) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 2)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 2){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 2) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 2) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 2) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 2) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 2) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 2) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 2) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 2) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON2)
 				{
-						 if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_ULTRACADE)) && (m_override_default_buttons == 0))
-							{FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave ] );} // right2
-					else if (m_joylflipkey == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 3)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 3)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_ULTRACADE)) && (m_override_default_buttons == 0))
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave ] );} // right2
+					else
+						{	if (m_joylflipkey == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 3)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 3)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 3)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 3) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 3) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 3) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 3) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 3) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 3) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 3) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 3) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 3) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 3) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 3) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 3) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 3)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 3){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 3) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 3) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 3) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 3) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 3) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 3) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 3) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 3) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON3)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // volume down
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylflipkey == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 4)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 4)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // volume down
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
+					else
+						{	if (m_joylflipkey == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 4)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 4)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 4)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 4) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 4) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 4) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 4) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 4) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 4) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 4) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 4) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 4) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 4) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 4) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 4) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 4)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 4){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 4) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 4) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 4) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 4) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 4) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 4) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 4) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 4) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON4)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // volume up
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joylflipkey == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 5)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 5)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // volume up
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
+					else
+						{	if (m_joylflipkey == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 5)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 5)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 5)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 5) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 5) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 5) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 5) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 5) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 5) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 5) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 5) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 5) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 5) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 5) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 5) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 5)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 5){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 5) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 5) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 5) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 5) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 5) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 5) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 5) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 5) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON5)
 				{
-						 if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // volume up
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joylflipkey == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 6)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 6)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // volume up
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
+					else
+						{	if (m_joylflipkey == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 6)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 6)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 6)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 6) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 6) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 6) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 6) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 6) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 6) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 6) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 6) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 6) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 6) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 6) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 6) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 6)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 6){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 6) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 6) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 6) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 6) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 6) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 6) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 6) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 6) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON6)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // pause menu
-							{	if( DISPID_GameEvents_KeyDown == updown ) g_pplayer->m_fCloseDown = fTrue;}
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // pause menu
+						{	if( DISPID_GameEvents_KeyDown == updown ) g_pplayer->m_fCloseDown = fTrue;}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // volume down
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylflipkey == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 7)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 7)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
+					else
+						{	if (m_joylflipkey == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 7)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 7)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 7)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 7) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 7) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 7) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 7) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 7) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 7) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 7) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 7) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 7) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 7) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 7) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 7) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 7)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 7){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 7) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 7) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 7) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 7) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 7) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 7) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 7) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 7) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON7)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // exit
-							{	// Check if we have started a game yet.
-								if ((started()) || (ptable->m_tblAutoStartEnabled == false))
-								{	if( DISPID_GameEvents_KeyDown == updown ) 
-									{	first_stamp = curr_time_msec;
-										exit_stamp = curr_time_msec;
-										FireKeyEvent( DISPID_GameEvents_KeyDown,g_pplayer->m_rgKeys[eExitGame ] );  
-									}
-									else 
-									{	FireKeyEvent( DISPID_GameEvents_KeyUp,g_pplayer->m_rgKeys[eExitGame ] );  
-										exit_stamp = 0;
-							}	}	}
-					else if (m_joylflipkey == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 8)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // exit
+						{	// Check if we have started a game yet.
+							if ((started()) || (ptable->m_tblAutoStartEnabled == false))
+							{	if( DISPID_GameEvents_KeyDown == updown ) 
+								{	first_stamp = curr_time_msec;
+									exit_stamp = curr_time_msec;
+									FireKeyEvent( DISPID_GameEvents_KeyDown,g_pplayer->m_rgKeys[eExitGame ] );  
+								}
+								else 
+								{	FireKeyEvent( DISPID_GameEvents_KeyUp,g_pplayer->m_rgKeys[eExitGame ] );  
+									exit_stamp = 0;
 						}	}	}
-					else if (m_joyexitgamekey == 8)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					else
+						{	if (m_joylflipkey == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 8)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 8)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 8)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 8) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 8) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 8) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 8) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 8) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 8) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 8) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 8) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 8) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 8) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 8) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 8) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 8)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 8){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 8) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 8) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 8) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 8) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 8) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 8) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 8) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 8) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON8)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0))
-							{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-								{	pressed_start = 1;
-									FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-									if ( updown == DISPID_GameEvents_KeyDown )
-									{	VPinball::NumPlays++;
-										SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-							}	}	}
-					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0))	// left
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joylflipkey == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 9)
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0))
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1262,312 +1303,385 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	VPinball::NumPlays++;
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 9)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0))	// left
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
+					else
+						{	if (m_joylflipkey == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 9)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 9)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 9)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 9) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 9) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 9) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 9) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 9) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 9) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 9) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 9) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 9) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 9) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 9) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 9) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 9)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 9){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 9) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 9) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 9) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 9) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 9) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 9) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 9) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 9) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON9)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0))	// left
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joylflipkey == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 10)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 10)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0))	// left
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
+					else
+						{	if (m_joylflipkey == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 10)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 10)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 10)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 10) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 10) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 10) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 10) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 10) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 10) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 10) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 10) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 10) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 10) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 10) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 10) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 10)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 10){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 10) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 10) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 10) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 10) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 10) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 10) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 10) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 10) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON10)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0))	// left 2
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave ] );}
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0))	// left 2
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave ] );}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // right
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joylflipkey == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 11)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 11)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
+					else
+						{	if (m_joylflipkey == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 11)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 11)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 11)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 11) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 11) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 11) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 11) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 11) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 11) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 11) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 11) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 11) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 11) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 11) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 11) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 11)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 11){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 11) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 11) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 11) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 11) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 11) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 11) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 11) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 11) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON11)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // coin 1
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joylflipkey == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 12)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 12)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // coin 1
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
+					else
+						{	if (m_joylflipkey == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 12)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 12)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 12)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 12) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 12) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 12) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 12) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 12) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 12) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 12) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 12) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 12) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 12) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 12) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 12) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 12)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 12){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 12) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 12) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 12) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 12) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 12) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 12) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 12) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 12) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON12)
 				{
-						 if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // coin 2
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // coin 2
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // start
-							{ // Check if we can allow the start (table is done initializing).
-								if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) ||
-								(pressed_start) || started() ) 
-								{	pressed_start = 1;
-									FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-									if ( updown == DISPID_GameEvents_KeyDown ) // Check if this was a press.
-									{	VPinball::NumPlays++; // Update the number of plays.
-										SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-							}	}	}
-					else if (m_joylflipkey == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 13)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{ // Check if we can allow the start (table is done initializing).
+							if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) ||
+							(pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
+								if ( updown == DISPID_GameEvents_KeyDown ) // Check if this was a press.
+								{	VPinball::NumPlays++; // Update the number of plays.
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 13)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					else
+						{	if (m_joylflipkey == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 13)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 13)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 13)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 13) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 13) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 13) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 13) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 13) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 13) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 13) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 13) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 13) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 13) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 13) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 13) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 13)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 13){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 13) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 13) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 13) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 13) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 13) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 13) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 13) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 13) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON13)
 				{
-						 if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // plunge
-							{	FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joylflipkey == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 14)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
-					else if (m_joyexitgamekey == 14)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // plunge
+						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
+					else
+						{	if (m_joylflipkey == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 14)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 14)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 14)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 14) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 14) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 14) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 14) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 14) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 14) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 14) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 14) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 14) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 14) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 14) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 14) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 14)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 14){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 14) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 14) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 14) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 14) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 14) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 14) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 14) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 14) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON14)
 				{
-						 if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // exit
-							{	if ((started()) || (ptable->m_tblAutoStartEnabled == false)) // Check if we have started a game yet.
-								{	if( DISPID_GameEvents_KeyDown == updown ) 
-									{	first_stamp = curr_time_msec;
-										exit_stamp = curr_time_msec;
-										FireKeyEvent( DISPID_GameEvents_KeyDown,g_pplayer->m_rgKeys[eExitGame ] );  
-									}
-									else 
-									{	FireKeyEvent( DISPID_GameEvents_KeyUp,g_pplayer->m_rgKeys[eExitGame ] );  
-										exit_stamp = 0;
-							}	}	}
-					else if (m_joylflipkey == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 15)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
-							{	pressed_start = 1;
-								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+					if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // exit
+						{	if ((started()) || (ptable->m_tblAutoStartEnabled == false)) // Check if we have started a game yet.
+							{	if( DISPID_GameEvents_KeyDown == updown ) 
+								{	first_stamp = curr_time_msec;
+									exit_stamp = curr_time_msec;
+									FireKeyEvent( DISPID_GameEvents_KeyDown,g_pplayer->m_rgKeys[eExitGame ] );  
+								}
+								else 
+								{	FireKeyEvent( DISPID_GameEvents_KeyUp,g_pplayer->m_rgKeys[eExitGame ] );  
+									exit_stamp = 0;
 						}	}	}
-					else if (m_joyexitgamekey == 15)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->m_fCloseDown = fTrue;}
+					else
+						{	if (m_joylflipkey == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+							if (m_joyrflipkey == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+							if (m_joyplungerkey == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+							if (m_joyaddcreditkey == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+							if (m_joyaddcreditkey2 == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+							if (m_joylmagnasave == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+							if (m_joyrmagnasave == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+							if (m_joystartgamekey == 15)
+								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+									{	pressed_start = 1;
+										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
+										if ( updown == DISPID_GameEvents_KeyDown )
+										{	VPinball::NumPlays++;
+											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
+								}	}	}
+							if (m_joyexitgamekey == 15)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+								}
+							if (m_joyframecount == 15)
+								{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->ToggleFPS();}
+								}
+							if (m_joyvolumeup == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+							if (m_joyvolumedown == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+							if (m_joylefttilt == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+							if (m_joycentertilt == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+							if (m_joyrighttilt == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+							if (m_joymechtilt == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+							if (m_joydebug == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+							if (m_joycustom1 == 15) FireKeyEvent (updown, m_joycustom1key);
+							if (m_joycustom2 == 15) FireKeyEvent (updown, m_joycustom2key);
+							if (m_joycustom3 == 15) FireKeyEvent (updown, m_joycustom3key);
+							if (m_joycustom4 == 15) FireKeyEvent (updown, m_joycustom4key);
+							if (m_joypmbuyin == 15) FireKeyEvent (updown, DIK_2);
+							if (m_joypmcoin3 == 15) FireKeyEvent (updown, DIK_5);
+							if (m_joypmcoin4 == 15) FireKeyEvent (updown, DIK_6);
+							if (m_joypmcoindoor == 15) FireKeyEvent (updown, DIK_END);
+							if (m_joypmcancel == 15) FireKeyEvent (updown, DIK_7);
+							if (m_joypmdown == 15) FireKeyEvent (updown, DIK_8);
+							if (m_joypmup == 15) FireKeyEvent (updown, DIK_9);
+							if (m_joypmenter == 15) FireKeyEvent (updown, DIK_0);
 						}
-					else if (m_joyframecount == 15)
-						{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{g_pplayer->ToggleFPS();}
-						}
-					else if (m_joyvolumeup == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 15){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 15) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 15) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 15) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 15) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 15) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 15) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 15) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 15) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON15)
 				{
-						 if (m_joylflipkey == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 16)
+					if (m_joylflipkey == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+					if (m_joyrflipkey == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+					if (m_joyplungerkey == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+					if (m_joyaddcreditkey == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+					if (m_joyaddcreditkey2 == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+					if (m_joylmagnasave == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+					if (m_joyrmagnasave == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+					if (m_joystartgamekey == 16)
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1575,39 +1689,45 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	VPinball::NumPlays++;
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 16)
+					if (m_joyexitgamekey == 16)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
 						}
-					else if (m_joyframecount == 16)
+					if (m_joyframecount == 16)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->ToggleFPS();}
 						}
-					else if (m_joyvolumeup == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 16){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 16) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 16) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 16) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 16) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 16) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 16) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 16) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 16) FireKeyEvent (updown, DIK_0);
+					if (m_joyvolumeup == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+					if (m_joyvolumedown == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+					if (m_joylefttilt == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+					if (m_joycentertilt == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+					if (m_joyrighttilt == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+					if (m_joymechtilt == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+					if (m_joydebug == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+					if (m_joycustom1 == 16) FireKeyEvent (updown, m_joycustom1key);
+					if (m_joycustom2 == 16) FireKeyEvent (updown, m_joycustom2key);
+					if (m_joycustom3 == 16) FireKeyEvent (updown, m_joycustom3key);
+					if (m_joycustom4 == 16) FireKeyEvent (updown, m_joycustom4key);
+					if (m_joypmbuyin == 16) FireKeyEvent (updown, DIK_2);
+					if (m_joypmcoin3 == 16) FireKeyEvent (updown, DIK_5);
+					if (m_joypmcoin4 == 16) FireKeyEvent (updown, DIK_6);
+					if (m_joypmcoindoor == 16) FireKeyEvent (updown, DIK_END);
+					if (m_joypmcancel == 16) FireKeyEvent (updown, DIK_7);
+					if (m_joypmdown == 16) FireKeyEvent (updown, DIK_8);
+					if (m_joypmup == 16) FireKeyEvent (updown, DIK_9);
+					if (m_joypmenter == 16) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON16)
 				{
-						 if (m_joylflipkey == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 17)
+					if (m_joylflipkey == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+					if (m_joyrflipkey == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+					if (m_joyplungerkey == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+					if (m_joyaddcreditkey == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+					if (m_joyaddcreditkey2 == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+					if (m_joylmagnasave == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+					if (m_joyrmagnasave == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+					if (m_joystartgamekey == 17)
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1615,39 +1735,45 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	VPinball::NumPlays++;
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 17)
+					if (m_joyexitgamekey == 17)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
 						}
-					else if (m_joyframecount == 17)
+					if (m_joyframecount == 17)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->ToggleFPS();}
 						}
-					else if (m_joyvolumeup == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 17){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 17) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 17) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 17) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 17) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 17) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 17) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 17) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 17) FireKeyEvent (updown, DIK_0);
+					if (m_joyvolumeup == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+					if (m_joyvolumedown == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+					if (m_joylefttilt == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+					if (m_joycentertilt == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+					if (m_joyrighttilt == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+					if (m_joymechtilt == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+					if (m_joydebug == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+					if (m_joycustom1 == 17) FireKeyEvent (updown, m_joycustom1key);
+					if (m_joycustom2 == 17) FireKeyEvent (updown, m_joycustom2key);
+					if (m_joycustom3 == 17) FireKeyEvent (updown, m_joycustom3key);
+					if (m_joycustom4 == 17) FireKeyEvent (updown, m_joycustom4key);
+					if (m_joypmbuyin == 17) FireKeyEvent (updown, DIK_2);
+					if (m_joypmcoin3 == 17) FireKeyEvent (updown, DIK_5);
+					if (m_joypmcoin4 == 17) FireKeyEvent (updown, DIK_6);
+					if (m_joypmcoindoor == 17) FireKeyEvent (updown, DIK_END);
+					if (m_joypmcancel == 17) FireKeyEvent (updown, DIK_7);
+					if (m_joypmdown == 17) FireKeyEvent (updown, DIK_8);
+					if (m_joypmup == 17) FireKeyEvent (updown, DIK_9);
+					if (m_joypmenter == 17) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON17)
 				{
-						 if (m_joylflipkey == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 18)
+					if (m_joylflipkey == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+					if (m_joyrflipkey == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+					if (m_joyplungerkey == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+					if (m_joyaddcreditkey == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+					if (m_joyaddcreditkey2 == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+					if (m_joylmagnasave == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+					if (m_joyrmagnasave == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+					if (m_joystartgamekey == 18)
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1655,39 +1781,45 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	VPinball::NumPlays++;
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 18)
+					if (m_joyexitgamekey == 18)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
 						}
-					else if (m_joyframecount == 18)
+					if (m_joyframecount == 18)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->ToggleFPS();}
 						}
-					else if (m_joyvolumeup == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 18){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 18) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 18) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 18) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 18) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 18) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 18) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 18) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 18) FireKeyEvent (updown, DIK_0);
+					if (m_joyvolumeup == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+					if (m_joyvolumedown == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+					if (m_joylefttilt == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+					if (m_joycentertilt == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+					if (m_joyrighttilt == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+					if (m_joymechtilt == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+					if (m_joydebug == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+					if (m_joycustom1 == 18) FireKeyEvent (updown, m_joycustom1key);
+					if (m_joycustom2 == 18) FireKeyEvent (updown, m_joycustom2key);
+					if (m_joycustom3 == 18) FireKeyEvent (updown, m_joycustom3key);
+					if (m_joycustom4 == 18) FireKeyEvent (updown, m_joycustom4key);
+					if (m_joypmbuyin == 18) FireKeyEvent (updown, DIK_2);
+					if (m_joypmcoin3 == 18) FireKeyEvent (updown, DIK_5);
+					if (m_joypmcoin4 == 18) FireKeyEvent (updown, DIK_6);
+					if (m_joypmcoindoor == 18) FireKeyEvent (updown, DIK_END);
+					if (m_joypmcancel == 18) FireKeyEvent (updown, DIK_7);
+					if (m_joypmdown == 18) FireKeyEvent (updown, DIK_8);
+					if (m_joypmup == 18) FireKeyEvent (updown, DIK_9);
+					if (m_joypmenter == 18) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON18)
 				{
-						 if (m_joylflipkey == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 19)
+					if (m_joylflipkey == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+					if (m_joyrflipkey == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+					if (m_joyplungerkey == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+					if (m_joyaddcreditkey == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+					if (m_joyaddcreditkey2 == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+					if (m_joylmagnasave == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+					if (m_joyrmagnasave == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+					if (m_joystartgamekey == 19)
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1695,39 +1827,45 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	VPinball::NumPlays++;
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 19)
+					if (m_joyexitgamekey == 19)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
 						}
-					else if (m_joyframecount == 19)
+					if (m_joyframecount == 19)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->ToggleFPS();}
 						}
-					else if (m_joyvolumeup == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 19){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 19) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 19) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 19) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 19) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 19) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 19) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 19) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 19) FireKeyEvent (updown, DIK_0);
+					if (m_joyvolumeup == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+					if (m_joyvolumedown == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+					if (m_joylefttilt == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+					if (m_joycentertilt == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+					if (m_joyrighttilt == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+					if (m_joymechtilt == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+					if (m_joydebug == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+					if (m_joycustom1 == 19) FireKeyEvent (updown, m_joycustom1key);
+					if (m_joycustom2 == 19) FireKeyEvent (updown, m_joycustom2key);
+					if (m_joycustom3 == 19) FireKeyEvent (updown, m_joycustom3key);
+					if (m_joycustom4 == 19) FireKeyEvent (updown, m_joycustom4key);
+					if (m_joypmbuyin == 19) FireKeyEvent (updown, DIK_2);
+					if (m_joypmcoin3 == 19) FireKeyEvent (updown, DIK_5);
+					if (m_joypmcoin4 == 19) FireKeyEvent (updown, DIK_6);
+					if (m_joypmcoindoor == 19) FireKeyEvent (updown, DIK_END);
+					if (m_joypmcancel == 19) FireKeyEvent (updown, DIK_7);
+					if (m_joypmdown == 19) FireKeyEvent (updown, DIK_8);
+					if (m_joypmup == 19) FireKeyEvent (updown, DIK_9);
+					if (m_joypmenter == 19) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON19)
 				{
-						 if (m_joylflipkey == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 20)
+					if (m_joylflipkey == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+					if (m_joyrflipkey == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+					if (m_joyplungerkey == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+					if (m_joyaddcreditkey == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+					if (m_joyaddcreditkey2 == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+					if (m_joylmagnasave == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+					if (m_joyrmagnasave == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+					if (m_joystartgamekey == 20)
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1735,39 +1873,45 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	VPinball::NumPlays++;
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 20)
+					if (m_joyexitgamekey == 20)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
 						}
-					else if (m_joyframecount == 20)
+					if (m_joyframecount == 20)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->ToggleFPS();}
 						}
-					else if (m_joyvolumeup == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 20){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 20) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 20) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 20) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 20) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 20) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 20) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 20) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 20) FireKeyEvent (updown, DIK_0);
+					if (m_joyvolumeup == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+					if (m_joyvolumedown == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+					if (m_joylefttilt == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+					if (m_joycentertilt == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+					if (m_joyrighttilt == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+					if (m_joymechtilt == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+					if (m_joydebug == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+					if (m_joycustom1 == 20) FireKeyEvent (updown, m_joycustom1key);
+					if (m_joycustom2 == 20) FireKeyEvent (updown, m_joycustom2key);
+					if (m_joycustom3 == 20) FireKeyEvent (updown, m_joycustom3key);
+					if (m_joycustom4 == 20) FireKeyEvent (updown, m_joycustom4key);
+					if (m_joypmbuyin == 20) FireKeyEvent (updown, DIK_2);
+					if (m_joypmcoin3 == 20) FireKeyEvent (updown, DIK_5);
+					if (m_joypmcoin4 == 20) FireKeyEvent (updown, DIK_6);
+					if (m_joypmcoindoor == 20) FireKeyEvent (updown, DIK_END);
+					if (m_joypmcancel == 20) FireKeyEvent (updown, DIK_7);
+					if (m_joypmdown == 20) FireKeyEvent (updown, DIK_8);
+					if (m_joypmup == 20) FireKeyEvent (updown, DIK_9);
+					if (m_joypmenter == 20) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON20)
 				{
-						 if (m_joylflipkey == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 21)
+					if (m_joylflipkey == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+					if (m_joyrflipkey == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+					if (m_joyplungerkey == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+					if (m_joyaddcreditkey == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+					if (m_joyaddcreditkey2 == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+					if (m_joylmagnasave == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+					if (m_joyrmagnasave == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+					if (m_joystartgamekey == 21)
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1775,39 +1919,45 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	VPinball::NumPlays++;
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 21)
+					if (m_joyexitgamekey == 21)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
 						}
-					else if (m_joyframecount == 21)
+					if (m_joyframecount == 21)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->ToggleFPS();}
 						}
-					else if (m_joyvolumeup == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 21){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 21) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 21) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 21) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 21) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 21) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 21) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 21) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 21) FireKeyEvent (updown, DIK_0);
+					if (m_joyvolumeup == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+					if (m_joyvolumedown == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+					if (m_joylefttilt == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+					if (m_joycentertilt == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+					if (m_joyrighttilt == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+					if (m_joymechtilt == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+					if (m_joydebug == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+					if (m_joycustom1 == 21) FireKeyEvent (updown, m_joycustom1key);
+					if (m_joycustom2 == 21) FireKeyEvent (updown, m_joycustom2key);
+					if (m_joycustom3 == 21) FireKeyEvent (updown, m_joycustom3key);
+					if (m_joycustom4 == 21) FireKeyEvent (updown, m_joycustom4key);
+					if (m_joypmbuyin == 21) FireKeyEvent (updown, DIK_2);
+					if (m_joypmcoin3 == 21) FireKeyEvent (updown, DIK_5);
+					if (m_joypmcoin4 == 21) FireKeyEvent (updown, DIK_6);
+					if (m_joypmcoindoor == 21) FireKeyEvent (updown, DIK_END);
+					if (m_joypmcancel == 21) FireKeyEvent (updown, DIK_7);
+					if (m_joypmdown == 21) FireKeyEvent (updown, DIK_8);
+					if (m_joypmup == 21) FireKeyEvent (updown, DIK_9);
+					if (m_joypmenter == 21) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON21)
 				{
-						 if (m_joylflipkey == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 22)
+					if (m_joylflipkey == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+					if (m_joyrflipkey == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+					if (m_joyplungerkey == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+					if (m_joyaddcreditkey == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+					if (m_joyaddcreditkey2 == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+					if (m_joylmagnasave == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+					if (m_joyrmagnasave == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+					if (m_joystartgamekey == 22)
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1815,39 +1965,45 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	VPinball::NumPlays++;
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 22)
+					if (m_joyexitgamekey == 22)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
 						}
-					else if (m_joyframecount == 22)
+					if (m_joyframecount == 22)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->ToggleFPS();}
 						}
-					else if (m_joyvolumeup == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 22){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 22) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 22) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 22) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 22) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 22) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 22) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 22) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 22) FireKeyEvent (updown, DIK_0);
+					if (m_joyvolumeup == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+					if (m_joyvolumedown == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+					if (m_joylefttilt == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+					if (m_joycentertilt == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+					if (m_joyrighttilt == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+					if (m_joymechtilt == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+					if (m_joydebug == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+					if (m_joycustom1 == 22) FireKeyEvent (updown, m_joycustom1key);
+					if (m_joycustom2 == 22) FireKeyEvent (updown, m_joycustom2key);
+					if (m_joycustom3 == 22) FireKeyEvent (updown, m_joycustom3key);
+					if (m_joycustom4 == 22) FireKeyEvent (updown, m_joycustom4key);
+					if (m_joypmbuyin == 22) FireKeyEvent (updown, DIK_2);
+					if (m_joypmcoin3 == 22) FireKeyEvent (updown, DIK_5);
+					if (m_joypmcoin4 == 22) FireKeyEvent (updown, DIK_6);
+					if (m_joypmcoindoor == 22) FireKeyEvent (updown, DIK_END);
+					if (m_joypmcancel == 22) FireKeyEvent (updown, DIK_7);
+					if (m_joypmdown == 22) FireKeyEvent (updown, DIK_8);
+					if (m_joypmup == 22) FireKeyEvent (updown, DIK_9);
+					if (m_joypmenter == 22) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON22)
 				{
-						 if (m_joylflipkey == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 23)
+					if (m_joylflipkey == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+					if (m_joyrflipkey == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+					if (m_joyplungerkey == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+					if (m_joyaddcreditkey == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+					if (m_joyaddcreditkey2 == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+					if (m_joylmagnasave == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+					if (m_joyrmagnasave == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+					if (m_joystartgamekey == 23)
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1855,39 +2011,45 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	VPinball::NumPlays++;
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 23)
+					if (m_joyexitgamekey == 23)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
 						}
-					else if (m_joyframecount == 23)
+					if (m_joyframecount == 23)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->ToggleFPS();}
 						}
-					else if (m_joyvolumeup == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 23){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 23) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 23) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 23) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 23) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 23) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 23) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 23) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 23) FireKeyEvent (updown, DIK_0);
+					if (m_joyvolumeup == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+					if (m_joyvolumedown == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+					if (m_joylefttilt == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+					if (m_joycentertilt == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+					if (m_joyrighttilt == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+					if (m_joymechtilt == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+					if (m_joydebug == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+					if (m_joycustom1 == 23) FireKeyEvent (updown, m_joycustom1key);
+					if (m_joycustom2 == 23) FireKeyEvent (updown, m_joycustom2key);
+					if (m_joycustom3 == 23) FireKeyEvent (updown, m_joycustom3key);
+					if (m_joycustom4 == 23) FireKeyEvent (updown, m_joycustom4key);
+					if (m_joypmbuyin == 23) FireKeyEvent (updown, DIK_2);
+					if (m_joypmcoin3 == 23) FireKeyEvent (updown, DIK_5);
+					if (m_joypmcoin4 == 23) FireKeyEvent (updown, DIK_6);
+					if (m_joypmcoindoor == 23) FireKeyEvent (updown, DIK_END);
+					if (m_joypmcancel == 23) FireKeyEvent (updown, DIK_7);
+					if (m_joypmdown == 23) FireKeyEvent (updown, DIK_8);
+					if (m_joypmup == 23) FireKeyEvent (updown, DIK_9);
+					if (m_joypmenter == 23) FireKeyEvent (updown, DIK_0);
 				}
 
 			else if (input->dwOfs == DIJOFS_BUTTON23)
 				{
-						 if (m_joylflipkey == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
-					else if (m_joyrflipkey == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
-					else if (m_joyplungerkey == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
-					else if (m_joyaddcreditkey == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
-					else if (m_joyaddcreditkey2 == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
-					else if (m_joylmagnasave == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );}
-					else if (m_joyrmagnasave == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );}
-					else if (m_joystartgamekey == 24)
+					if (m_joylflipkey == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
+					if (m_joyrflipkey == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
+					if (m_joyplungerkey == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );
+					if (m_joyaddcreditkey == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );
+					if (m_joyaddcreditkey2 == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );
+					if (m_joylmagnasave == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
+					if (m_joyrmagnasave == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
+					if (m_joystartgamekey == 24)
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1895,27 +2057,33 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	VPinball::NumPlays++;
 									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
 						}	}	}
-					else if (m_joyexitgamekey == 24)
+					if (m_joyexitgamekey == 24)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
 						}
-					else if (m_joyframecount == 24)
+					if (m_joyframecount == 24)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->ToggleFPS();}
 						}
-					else if (m_joyvolumeup == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
-					else if (m_joyvolumedown == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
-					else if (m_joylefttilt == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );}
-					else if (m_joycentertilt == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );}
-					else if (m_joyrighttilt == 24){FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );}
-					else if (m_joypmbuyin == 24) FireKeyEvent (updown, DIK_2);
-					else if (m_joypmcoin3 == 24) FireKeyEvent (updown, DIK_5);
-					else if (m_joypmcoin4 == 24) FireKeyEvent (updown, DIK_6);
-					else if (m_joypmcoindoor == 24) FireKeyEvent (updown, DIK_END);
-					else if (m_joypmcancel == 24) FireKeyEvent (updown, DIK_7);
-					else if (m_joypmdown == 24) FireKeyEvent (updown, DIK_8);
-					else if (m_joypmup == 24) FireKeyEvent (updown, DIK_9);
-					else if (m_joypmenter == 24) FireKeyEvent (updown, DIK_0);
+					if (m_joyvolumeup == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );
+					if (m_joyvolumedown == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
+					if (m_joylefttilt == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftTiltKey] );
+					if (m_joycentertilt == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eCenterTiltKey] );
+					if (m_joyrighttilt == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightTiltKey] );
+					if (m_joymechtilt == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eMechanicalTilt] );
+					if (m_joydebug == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eDBGBalls] );
+					if (m_joycustom1 == 24) FireKeyEvent (updown, m_joycustom1key);
+					if (m_joycustom2 == 24) FireKeyEvent (updown, m_joycustom2key);
+					if (m_joycustom3 == 24) FireKeyEvent (updown, m_joycustom3key);
+					if (m_joycustom4 == 24) FireKeyEvent (updown, m_joycustom4key);
+					if (m_joypmbuyin == 24) FireKeyEvent (updown, DIK_2);
+					if (m_joypmcoin3 == 24) FireKeyEvent (updown, DIK_5);
+					if (m_joypmcoin4 == 24) FireKeyEvent (updown, DIK_6);
+					if (m_joypmcoindoor == 24) FireKeyEvent (updown, DIK_END);
+					if (m_joypmcancel == 24) FireKeyEvent (updown, DIK_7);
+					if (m_joypmdown == 24) FireKeyEvent (updown, DIK_8);
+					if (m_joypmup == 24) FireKeyEvent (updown, DIK_9);
+					if (m_joypmenter == 24) FireKeyEvent (updown, DIK_0);
 				}
 
 			FireKeyEvent(updown,input->dwOfs|0x01000000);		// unknown button events
