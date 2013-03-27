@@ -28,6 +28,42 @@ PinInput::PinInput()
 	uShockType = 0;
 	fe_message_sent = false;
 
+	m_plunger_axis = 0;
+	m_lr_axis = 0;
+	m_ud_axis = 0;
+	m_plunger_reverse = 0;
+	m_lr_axis_reverse = 0;
+	m_ud_axis_reverse = 0;
+	m_override_default_buttons = 0;
+	m_disable_esc = 0;
+	m_joylflipkey = 0;
+	m_joyrflipkey = 0;
+	m_joylmagnasave = 0;
+	m_joyrmagnasave = 0;
+	m_joyplungerkey = 0;
+	m_joystartgamekey = 0;
+	m_joyexitgamekey = 0;
+	m_joyaddcreditkey = 0;
+	m_joyaddcreditkey2 = 0;
+	m_joyframecount = 0;
+	m_joyvolumeup = 0;
+	m_joyvolumedown = 0;
+	m_joylefttilt = 0;
+	m_joycentertilt = 0;
+	m_joyrighttilt = 0;
+	m_joypmbuyin = 0;
+	m_joypmcoin3 = 0;
+	m_joypmcoin4 = 0;
+	m_joypmcoindoor = 0;
+	m_joypmcancel = 0;
+	m_joypmdown = 0;
+	m_joypmup = 0;
+	m_joypmenter = 0;
+	m_joycustom1 = 0;
+	m_joycustom2 = 0;
+	m_joycustom3 = 0;
+	m_joycustom4 = 0;
+
 	firedautostart = 0;
 	firedautocoin = 0;
 	LastAttempt = 0;
@@ -35,6 +71,8 @@ PinInput::PinInput()
 	started_stamp = 0;
 	pressed_start = 0;
 
+
+	
 	HRESULT hr;
 	int tmp;
 
