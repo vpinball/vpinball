@@ -22,7 +22,6 @@ public:
 	COLORREF m_topcolor;
 	BOOL m_fDroppable;
 	BOOL m_fFlipbook;
-	BOOL m_fFloor;
 	BOOL m_fDisplayTexture; //In editor
 	float m_slingshotforce;
 	float m_elasticity;
@@ -35,6 +34,8 @@ public:
 	BOOL m_fCollidable; //wall must be droppable too!
 	BOOL m_fSlingshotAnimation;
 	COLORREF m_slingshotColor;
+
+	BOOL m_fInner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
 	};
 
 /////////////////////////////////////////////////////////////////////////////

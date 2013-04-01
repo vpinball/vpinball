@@ -190,6 +190,9 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	else
 		m_d.m_slingshot_threshold = 0.0f;
 	
+	//!! Deprecated, do not use anymore
+	m_d.m_fInner = fTrue;
+
 	hr = GetRegInt("DefaultProps\\Target","SideColor", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_sidecolor = iTmp;
@@ -339,6 +342,9 @@ void Surface::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_slingshot_threshold = 0.0f;
 	
+	//!! Deprecated, do not use anymore
+	m_d.m_fInner = fTrue;
+
 	hr = GetRegInt("DefaultProps\\Wall","SideColor", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_sidecolor = iTmp;
@@ -472,15 +478,13 @@ void Surface::PreRender(Sur * const psur)
 	// Don't want border color to be over-ridden when selected - that will be drawn later
 	psur->SetBorderColor(-1,false,0);
 
-	const int cvertex = m_cvertexT;
-
 	PinImage *ppi;
 	if (m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
 		{
 		ppi->EnsureHBitmap();
 		if (ppi->m_hbmGDIVersion)
 			{
-			psur->PolygonImage(m_rgvT, cvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+			psur->PolygonImage(m_rgvT, m_cvertexT, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
 			}
 		else
 			{
@@ -489,7 +493,7 @@ void Surface::PreRender(Sur * const psur)
 		}
 	else
 		{
-		psur->Polygon(m_rgvT, cvertex);
+		psur->Polygon(m_rgvT, m_cvertexT);
 		}
 	}
 
@@ -614,7 +618,7 @@ void Surface::RenderShadow(ShadowSur * const psur, const float height)
 	GetRgVertex(&vvertex);
 
 	m_cvertexT = vvertex.Size();
-	m_rgvT = new Vertex2D[m_cvertexT+6];
+	m_rgvT = new Vertex2D[m_cvertexT];
 
 	for (int i=0;i<m_cvertexT;i++)
 		{
@@ -622,7 +626,7 @@ void Surface::RenderShadow(ShadowSur * const psur, const float height)
 		delete vvertex.ElementAt(i);
 		}
 
-	psur->PolygonSkew(m_rgvT, m_cvertexT  , NULL, m_d.m_heightbottom, m_d.m_heighttop, false);
+	psur->PolygonSkew(m_rgvT, m_cvertexT, NULL, m_d.m_heightbottom, m_d.m_heighttop, false);
 
 	delete [] m_rgvT;
 	m_rgvT = NULL;
@@ -1114,7 +1118,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		}
 
 	const int cvertex = vvertex.Size();
-	RenderVertex * const rgv = new RenderVertex[cvertex + 6]; // Add points so inverted polygons can be drawn
+	RenderVertex * const rgv = new RenderVertex[cvertex];
 
 	for (int i=0;i<cvertex;i++)
 		{
@@ -1254,7 +1258,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 
 			pinSide->EnsureColorKey();
-			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
+				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
 
 			if (pinSide->m_fTransparent)
 			{
@@ -1597,6 +1601,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteInt(FID(SCLR), m_d.m_slingshotColor);
 	bw.WriteFloat(FID(HTBT), m_d.m_heightbottom);
 	bw.WriteFloat(FID(HTTP), m_d.m_heighttop);
+	//bw.WriteBool(FID(INNR), m_d.m_fInner);
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 	bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
 	bw.WriteFloat(FID(SLGF), m_d.m_slingshotforce);
@@ -1635,6 +1640,101 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 	m_ptable = ptable;
 
 	br.Load();
+
+	// Pure backwards-compatibility code:
+	// On some tables, the outer wall is still modelled/copy-pasted 'inside-out',
+	// this tries to compensate for that
+	if(!m_d.m_fInner) {
+		float miny = FLT_MAX;
+		int minyindex;
+		int cvertex = m_vdpoint.Size();
+
+		// Find smallest y point - use it to connect with surrounding border
+		for (int i=0;i<cvertex;i++)
+		{
+			float y;
+			m_vdpoint.ElementAt(i)->get_Y(&y);
+			if (y < miny)
+			{
+				miny = y;
+				minyindex = i;
+			}
+		}
+
+		float tmpx;
+		m_vdpoint.ElementAt(minyindex)->get_X(&tmpx);
+		float tmpy = miny - 1.0f; // put tiny gap in to avoid errors
+
+		for (int i=0;i<m_vdpoint.Size()/2;i++) {
+			CComObject<DragPoint> *pdp = m_vdpoint.ElementAt(i);
+			m_vdpoint.ReplaceElementAt(m_vdpoint.ElementAt(m_vdpoint.Size()-1-i),i);
+			m_vdpoint.ReplaceElementAt(pdp,m_vdpoint.Size()-1-i);
+		}
+
+		{
+			CComObject<DragPoint> *pdp;
+			CComObject<DragPoint>::CreateInstance(&pdp);
+			if (pdp)
+			{
+				pdp->AddRef();
+				pdp->Init(this, m_ptable->m_left, m_ptable->m_top);
+				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
+			}
+		}
+		{
+			CComObject<DragPoint> *pdp;
+			CComObject<DragPoint>::CreateInstance(&pdp);
+			if (pdp)
+			{
+				pdp->AddRef();
+				pdp->Init(this, m_ptable->m_right, m_ptable->m_top);
+				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
+			}
+		}
+		{
+			CComObject<DragPoint> *pdp;
+			CComObject<DragPoint>::CreateInstance(&pdp);
+			if (pdp)
+			{
+				pdp->AddRef();
+				pdp->Init(this, m_ptable->m_right, m_ptable->m_bottom);
+				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
+			}
+		}
+		{
+			CComObject<DragPoint> *pdp;
+			CComObject<DragPoint>::CreateInstance(&pdp);
+			if (pdp)
+			{
+				pdp->AddRef();
+				pdp->Init(this, m_ptable->m_left, m_ptable->m_bottom);
+				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
+			}
+		}
+		{
+			CComObject<DragPoint> *pdp;
+			CComObject<DragPoint>::CreateInstance(&pdp);
+			if (pdp)
+			{
+				pdp->AddRef();
+				pdp->Init(this, m_ptable->m_left-1.0f, m_ptable->m_top);
+				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
+			}
+		}
+		{
+			CComObject<DragPoint> *pdp;
+			CComObject<DragPoint>::CreateInstance(&pdp);
+			if (pdp)
+			{
+				pdp->AddRef();
+				pdp->Init(this, tmpx, tmpy);
+				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
+			}
+		}
+
+		m_d.m_fInner = fTrue;
+	}
+
 	return S_OK;
 #else
 	m_ptable = ptable;
@@ -1746,6 +1846,11 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(HTTP))
 		{
 		pbr->GetFloat(&m_d.m_heighttop);
+		}
+	else if (id == FID(INNR))
+		{
+		//!! Deprecated, do not use anymore
+		pbr->GetBool(&m_d.m_fInner);
 		}
 	else if (id == FID(NAME))
 		{
