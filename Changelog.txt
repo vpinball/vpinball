@@ -2,6 +2,7 @@ VP 9.1.5 Changelog
 ------------------------
 - add flag for ramps to optionally make them not influence the 3D stereo rendering (to cope with 2D-hacks like halos/flashers/GI)
 - expose new 'Region Updates' in Video Options (disabling this can be faster on some graphicsboards, especially NVIDIA Optimus Laptops)
+- expose new 'Region Optimization' in Video Options (disabling this can help issues with NVIDIA AA, enabling this can help performance and fixes issues with NVIDIA FXAA)
 - optimize alpha ramps a bit
 - enable some caching for DirectX functions to help performance
 - fix more problems with primitive rendering
