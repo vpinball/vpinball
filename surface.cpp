@@ -1900,6 +1900,7 @@ STDMETHODIMP Surface::put_SlingshotColor(OLE_COLOR newVal)
 STDMETHODIMP Surface::get_ImageAlignment(ImageAlignment *pVal)
 {
 	// not used (anymore?)
+	*pVal = ImageAlignCenter;
 	return S_OK;
 }
 
