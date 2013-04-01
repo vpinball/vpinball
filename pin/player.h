@@ -173,6 +173,7 @@ public:
 
 	BOOL m_fEnableRegionUpdates; // Use the CleanBlt flag below or not, nowadays some setups are slower when using it (especially NVIDIA Optimus setups)
 	BOOL m_fCleanBlt;			 // We can do smart blitting next frame
+	BOOL m_fEnableRegionUpdateOptimization; // Check if area of updated regions is larger than screen and/or if everything should be redrawn (helps mainly NVIDIA FXAA, but also can be more speedy)
 
 	BOOL m_fPlayMusic;
 	BOOL m_fPlaySound;

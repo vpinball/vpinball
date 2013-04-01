@@ -3691,6 +3691,15 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 			SendMessage(hwndCheck, BM_SETCHECK, enableRegionUpdates ? BST_CHECKED : BST_UNCHECKED, 0);
 
+			hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATE_OPTIMIZATION);
+			int enableRegionUpdateOptimization;
+			hr = GetRegInt("Player", "EnableRegionUpdateOptimization", &enableRegionUpdateOptimization);
+			if (hr != S_OK)
+				{
+				enableRegionUpdateOptimization = fTrue; // The default
+				}
+			SendMessage(hwndCheck, BM_SETCHECK, enableRegionUpdateOptimization ? BST_CHECKED : BST_UNCHECKED, 0);
+			
 			hwndCheck = GetDlgItem(hwndDlg, 211); //HardwareRender
 			int hardrend;
 			hr = GetRegInt("Player", "HardwareRender", &hardrend);
@@ -3885,6 +3894,10 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							int enableRegionUpdates = SendMessage(hwndEnableRegionUpdates, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "EnableRegionUpdates", REG_DWORD, &enableRegionUpdates, 4);
 
+							HWND hwndEnableRegionUpdateOptimization = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATE_OPTIMIZATION);
+							int enableRegionUpdateOptimization = SendMessage(hwndEnableRegionUpdateOptimization, BM_GETCHECK, 0, 0);
+							SetRegValue("Player", "EnableRegionUpdateOptimization", REG_DWORD, &enableRegionUpdateOptimization, 4);
+							
 							HWND hwndHWR = GetDlgItem(hwndDlg, 211);
 							int hardrend = SendMessage(hwndHWR, BM_GETCHECK, 0, 0);
 							SetRegValue("Player", "HardwareRender", REG_DWORD, &hardrend, 4);

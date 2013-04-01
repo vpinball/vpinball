@@ -560,8 +560,6 @@ void DispReel::RenderStatic(const RenderDevice* pd3dDevice)
 // to use in the process
 //
 
-//static const WORD rgiDispReel[4] = {0,1,2,3};
-
 void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;

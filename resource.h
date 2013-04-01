@@ -578,6 +578,7 @@
 #define IDC_FXAA                        552
 #define IDC_ENABLE_REGION_UPDATES       553
 #define IDC_MODIFY3DSTEREO              554
+#define IDC_ENABLE_REGION_UPDATE_OPTIMIZATION 555
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768
