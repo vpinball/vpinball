@@ -190,12 +190,6 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	else
 		m_d.m_slingshot_threshold = 0.0f;
 	
-	//this property cannot be modified with the GUI
-	m_d.m_fInner = fTrue;
-
-	//this property does not seem to be used
-	m_d.m_ia = ImageAlignCenter;
-
 	hr = GetRegInt("DefaultProps\\Target","SideColor", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_sidecolor = iTmp;
@@ -233,9 +227,6 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 		m_d.m_fFlipbook = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fFlipbook = fFalse;
-
-	//this property cannot be modified with the GUI
-	m_d.m_fFloor = fFalse;
 
 	hr = GetRegInt("DefaultProps\\Target","CastsShadow", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -348,12 +339,6 @@ void Surface::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_slingshot_threshold = 0.0f;
 	
-	//this property cannot be modified with the GUI
-	m_d.m_fInner = fTrue;
-
-	//this property does not seem to be used
-	m_d.m_ia = ImageAlignCenter;
-
 	hr = GetRegInt("DefaultProps\\Wall","SideColor", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_sidecolor = iTmp;
@@ -391,9 +376,6 @@ void Surface::SetDefaults(bool fromMouseClick)
 		m_d.m_fFlipbook = (iTmp == 0) ? false : true;
 	else
 		m_d.m_fFlipbook = fFalse;
-
-	//this property cannot be modified with the GUI
-	m_d.m_fFloor = fFalse;
 
 	hr = GetRegInt("DefaultProps\\Wall","CastsShadow", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -475,7 +457,7 @@ void Surface::PreRender(Sur * const psur)
 	GetRgVertex(&vvertex);
 
 	m_cvertexT = vvertex.Size();
-	m_rgvT = new Vertex2D[!m_d.m_fInner ? m_cvertexT + 6 : m_cvertexT]; // Add points so inverted polygons can be drawn
+	m_rgvT = new Vertex2D[m_cvertexT];
 
 	for (int i=0;i<m_cvertexT;i++)
 		{
@@ -490,28 +472,7 @@ void Surface::PreRender(Sur * const psur)
 	// Don't want border color to be over-ridden when selected - that will be drawn later
 	psur->SetBorderColor(-1,false,0);
 
-	int cvertex;
-	if (!m_d.m_fInner)
-		{
-		m_rgvT[m_cvertexT].x = m_ptable->m_left;
-		m_rgvT[m_cvertexT].y = m_ptable->m_top;
-		m_rgvT[m_cvertexT+1].x = m_ptable->m_left;
-		m_rgvT[m_cvertexT+1].y = m_ptable->m_bottom;
-		m_rgvT[m_cvertexT+2].x = m_ptable->m_right;
-		m_rgvT[m_cvertexT+2].y = m_ptable->m_bottom;
-		m_rgvT[m_cvertexT+3].x = m_ptable->m_right;
-		m_rgvT[m_cvertexT+3].y = m_ptable->m_top;
-		m_rgvT[m_cvertexT+4].x = m_ptable->m_left;
-		m_rgvT[m_cvertexT+4].y = m_ptable->m_top;
-		m_rgvT[m_cvertexT+5].x = m_rgvT[m_cvertexT-1].x;
-		m_rgvT[m_cvertexT+5].y = m_rgvT[m_cvertexT-1].y;
-
-		cvertex = m_cvertexT + 6;
-		}
-	else
-		{
-		cvertex = m_cvertexT;
-		}
+	const int cvertex = m_cvertexT;
 
 	PinImage *ppi;
 	if (m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
@@ -661,27 +622,7 @@ void Surface::RenderShadow(ShadowSur * const psur, const float height)
 		delete vvertex.ElementAt(i);
 		}
 
-	if (!m_d.m_fInner)
-		{
-		m_rgvT[m_cvertexT].x = m_ptable->m_left;
-		m_rgvT[m_cvertexT].y = m_ptable->m_top;
-		m_rgvT[m_cvertexT+1].x = m_ptable->m_left;
-		m_rgvT[m_cvertexT+1].y = m_ptable->m_bottom;
-		m_rgvT[m_cvertexT+2].x = m_ptable->m_right;
-		m_rgvT[m_cvertexT+2].y = m_ptable->m_bottom;
-		m_rgvT[m_cvertexT+3].x = m_ptable->m_right;
-		m_rgvT[m_cvertexT+3].y = m_ptable->m_top;
-		m_rgvT[m_cvertexT+4].x = m_ptable->m_left;
-		m_rgvT[m_cvertexT+4].y = m_ptable->m_top;
-		m_rgvT[m_cvertexT+5].x = m_rgvT[m_cvertexT-1].x;
-		m_rgvT[m_cvertexT+5].y = m_rgvT[m_cvertexT-1].y;
-
-		psur->PolygonSkew(m_rgvT, m_cvertexT+6, NULL, m_d.m_heightbottom, m_d.m_heighttop, false);
-		}
-	else
-		{
-		psur->PolygonSkew(m_rgvT, m_cvertexT  , NULL, m_d.m_heightbottom, m_d.m_heighttop, false);
-		}
+	psur->PolygonSkew(m_rgvT, m_cvertexT  , NULL, m_d.m_heightbottom, m_d.m_heighttop, false);
 
 	delete [] m_rgvT;
 	m_rgvT = NULL;
@@ -714,44 +655,6 @@ void Surface::GetHitShapes(Vector<HitObject> * const pvho)
 
 void Surface::GetHitShapesDebug(Vector<HitObject> * const pvho)
 	{
-	if (!m_d.m_fInner)
-		{
-		Vector<RenderVertex> vvertex;
-		GetRgVertex(&vvertex);
-
-		const int cvertex = vvertex.Size();
-		Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex + 5];
-
-		for (int i=0;i<cvertex;i++)
-			{
-			rgv3d[i].x = vvertex.ElementAt(i)->x;
-			rgv3d[i].y = vvertex.ElementAt(i)->y;
-			rgv3d[i].z = m_d.m_heighttop;
-			delete vvertex.ElementAt(i);
-			}
-
-		rgv3d[cvertex].x = m_ptable->m_left;
-		rgv3d[cvertex].y = m_ptable->m_top;
-		rgv3d[cvertex].z = m_d.m_heighttop;
-		rgv3d[cvertex+1].x = m_ptable->m_left;
-		rgv3d[cvertex+1].y = m_ptable->m_bottom;
-		rgv3d[cvertex+1].z = m_d.m_heighttop;
-		rgv3d[cvertex+2].x = m_ptable->m_right;
-		rgv3d[cvertex+2].y = m_ptable->m_bottom;
-		rgv3d[cvertex+2].z = m_d.m_heighttop;
-		rgv3d[cvertex+3].x = m_ptable->m_right;
-		rgv3d[cvertex+3].y = m_ptable->m_top;
-		rgv3d[cvertex+3].z = m_d.m_heighttop;
-		rgv3d[cvertex+4].x = m_ptable->m_left;
-		rgv3d[cvertex+4].y = m_ptable->m_top;
-		rgv3d[cvertex+4].z = m_d.m_heighttop;
-
-		Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex+5);
-		pvho->AddElement(ph3dp);
-
-		m_vhoCollidable.AddElement(ph3dp);
-		ph3dp->m_fEnabled = m_d.m_fCollidable;
-		}
 	}
 
 void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
@@ -765,21 +668,15 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 	RenderVertex * const rgv = new RenderVertex[count];
 	Vertex3Ds * const rgv3D = new Vertex3Ds[count];
 
-	if (m_d.m_fInner)
-		{
-		for (int i=0;i<count;i++)
-			{
-			rgv3D[i].x = vvertex.ElementAt(i)->x;
-			rgv3D[i].y = vvertex.ElementAt(i)->y;
-			rgv3D[i].z = m_d.m_heighttop;
-			}
-		}
-
 	for (int i=0;i<count;i++)
-		{
+	{
+		rgv3D[i].x = vvertex.ElementAt(i)->x;
+		rgv3D[i].y = vvertex.ElementAt(i)->y;
+		rgv3D[i].z = m_d.m_heighttop;
+
 		rgv[i] = *vvertex.ElementAt(i);
 		delete vvertex.ElementAt(i);
-		}
+	}
 
 	for (int i=0;i<count;i++)
 		{
@@ -788,50 +685,38 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 		const RenderVertex * const pv3 = &rgv[(i < count-2) ? (i+2) : (i+2-count)];
 		const RenderVertex * const pv4 = &rgv[(i < count-3) ? (i+3) : (i+3-count)];
 
-		if (m_d.m_fInner)
-			{
-			AddLine(pvho, pv2, pv3, pv1, pv2->fSlingshot);
-			}
-		else
-			{
-			AddLine(pvho, pv3, pv2, pv4, pv2->fSlingshot);
-			}
+		AddLine(pvho, pv2, pv3, pv1, pv2->fSlingshot);
 		}
 
-	if (m_d.m_fInner)
-		{
-		if (m_d.m_fDroppable)
-			{
-			// Special hit object that will allow us to animate the surface
-			m_phitdrop = new Hit3DPolyDrop(rgv3D,count);
-			m_phitdrop->m_pfe = (IFireEvents *)this;
+	if (m_d.m_fDroppable)
+	{
+		// Special hit object that will allow us to animate the surface
+		m_phitdrop = new Hit3DPolyDrop(rgv3D,count);
+		m_phitdrop->m_pfe = (IFireEvents *)this;
 
-			m_phitdrop->m_fVisible = fTrue;
+		m_phitdrop->m_fVisible = fTrue;
 
-			m_phitdrop->m_polydropanim.m_iframedesire = 0;
+		m_phitdrop->m_polydropanim.m_iframedesire = 0;
 
-			pvho->AddElement(m_phitdrop);			
+		pvho->AddElement(m_phitdrop);			
 
-			m_vhoDrop.AddElement(m_phitdrop);	
+		m_vhoDrop.AddElement(m_phitdrop);	
 
-			m_vhoCollidable.AddElement(m_phitdrop);
-			m_phitdrop->m_fEnabled = m_d.m_fCollidable;
-			}
-		else
-			{
-			Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
-			ph3dpoly->m_pfe = (IFireEvents *)this;
-
-			ph3dpoly->m_fVisible = fTrue;
-
-			pvho->AddElement(ph3dpoly);
-
-			m_vhoCollidable.AddElement(ph3dpoly);
-			ph3dpoly->m_fEnabled = m_d.m_fCollidable;
-			}
-		}
+		m_vhoCollidable.AddElement(m_phitdrop);
+		m_phitdrop->m_fEnabled = m_d.m_fCollidable;
+	}
 	else
-		delete [] rgv3D;
+	{
+		Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
+		ph3dpoly->m_pfe = (IFireEvents *)this;
+
+		ph3dpoly->m_fVisible = fTrue;
+
+		pvho->AddElement(ph3dpoly);
+
+		m_vhoCollidable.AddElement(ph3dpoly);
+		ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+	}
 
 	delete [] rgv;
 	}
@@ -1006,7 +891,7 @@ void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
 }
 void Surface::RenderStatic(const RenderDevice* pd3dDevice)
 {
-   if (!m_d.m_fDroppable || !m_d.m_fInner)
+   if (!m_d.m_fDroppable)
    {
       RenderWallsAtHeight( (RenderDevice*)pd3dDevice, fFalse, fFalse);
    }
@@ -1133,13 +1018,8 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 		}
 	}
 
-static const WORD rgiWall0[4] = {0,1,2,3};
-static const WORD rgiWall1[4] = {0,3,2,1};
-
 ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, BOOL fDrop)
 	{
-	ObjFrame *pof = NULL;
-
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
@@ -1147,6 +1027,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 	ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, DDBLT_WAIT, NULL);
 
+	ObjFrame *pof = NULL;
 	if (fMover)
 		{
 		pof = new ObjFrame();
@@ -1168,44 +1049,43 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		m_ptable->GetTVTU(pinSide, &maxtuSide, &maxtvSide);		
 
 		pinSide->EnsureColorKey();
+		pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);		
+		
 		if (pinSide->m_fTransparent)
-			{				
+		{				
 			if (g_pvp->m_pdd.m_fHardwareAccel)
-				{
-               pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
-               pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-               pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-
-               pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-				}
-			else
-				{
-               pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-				}
-			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+			{
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 			}
+			else
+			{
+				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+			}
+			pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+		}
 		else 
-			{	
-			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);		
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-         pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+		{	
+			pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+			pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+			pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 			if (g_pvp->m_pdd.m_fHardwareAccel)
-				{
-               pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
-				}
-			else
-				{
-               pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-				}
-         pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 			
+			{
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
 			}
+			else
+			{
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
+			}
+			pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+			pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+			pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+			pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 			
+		}
 
-      pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+		pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
 		pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
@@ -1261,7 +1141,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 	ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 	
-		// Render side
+	// Render side
 	{
 		for (int i=0;i<cvertex;i++)
 			{
@@ -1333,37 +1213,21 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			vnormal[1].y *= inv_len;
 			}
 
-			if (m_d.m_fInner)
-				{
-				for (int l=0;l<2;l++)
-					{
-					rgv3D[l].nx = -vnormal[0].x;
-					rgv3D[l].ny = vnormal[0].y;
-					rgv3D[l].nz = 0;
-
-					rgv3D[l+2].nx = -vnormal[1].x;
-					rgv3D[l+2].ny = vnormal[1].y;
-					rgv3D[l+2].nz = 0;
-					}
-				}
-			else
-				{
-				for (int l=0;l<2;l++)
-					{
-					rgv3D[l].nx = vnormal[0].x;
-					rgv3D[l].ny = -vnormal[0].y;
-					rgv3D[l].nz = 0;
-
-					rgv3D[l+2].nx = vnormal[1].x;
-					rgv3D[l+2].ny = -vnormal[1].y;
-					rgv3D[l+2].nz = 0;
-					}
-				}
+			for (int l=0;l<2;l++)
+			{
+				rgv3D[l].nx = -vnormal[0].x;
+				rgv3D[l].ny = vnormal[0].y;
+				rgv3D[l].nz = 0;
+	
+				rgv3D[l+2].nx = -vnormal[1].x;
+				rgv3D[l+2].ny = vnormal[1].y;
+				rgv3D[l+2].nz = 0;
+			}
 
 			if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped, but we do need to extend the extrema
 				{
 				// Draw side.
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, m_d.m_fInner ? (LPWORD)rgiWall0 : (LPWORD)rgiWall1, 4, 0);
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, (LPWORD)rgi0123, 4, 0);
 				}
 
 			if (fMover)
@@ -1379,92 +1243,49 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 	if (m_d.m_fVisible)
 		{
 		Vector<void> vpoly;
-		Vector<Triangle> vtri;
 
-		if (!m_d.m_fInner)
-			{
-			float miny = FLT_MAX;
-			int minyindex;
-
-			// Find smallest y point - use it to connect with surrounding border
-
-			for (int i=0;i<cvertex;i++)
-				{
-				if (rgv[i].y < miny)
-					{
-					miny = rgv[i].y;
-					minyindex = i;
-					}
-				}
-
-			rgv[cvertex].x = m_ptable->m_left;
-			rgv[cvertex].y = m_ptable->m_top;
-			rgv[cvertex+3].x = m_ptable->m_left;
-			rgv[cvertex+3].y = m_ptable->m_bottom;
-			rgv[cvertex+2].x = m_ptable->m_right;
-			rgv[cvertex+2].y = m_ptable->m_bottom;
-			rgv[cvertex+1].x = m_ptable->m_right;
-			rgv[cvertex+1].y = m_ptable->m_top;
-			rgv[cvertex+4].x = m_ptable->m_left - 1.0f; // put tiny gap in to avoid errors
-			rgv[cvertex+4].y = m_ptable->m_top;
-			rgv[cvertex+5].x = rgv[minyindex].x;
-			rgv[cvertex+5].y = rgv[minyindex].y - 1.0f; // put tiny gap in to avoid errors
-
-			for (int i=0;i<cvertex;i++)
-				{
-				vpoly.AddElement((void *)(cvertex-i-1));
-				}
-
-			for (int i=0;i<6;i++)
-				{
-				vpoly.InsertElementAt((void *)(cvertex+i), cvertex-minyindex-1);
-				}
-			}
-		else
-			{
-			for (int i=0;i<cvertex;i++)
-				{
-				vpoly.AddElement((void *)i);
-				}
-			}
-
-      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+		for (int i=0;i<cvertex;i++)
+		{
+			vpoly.AddElement((void *)i);
+		}
 
 		if (pinSide)
-			{
+		{
 			ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 
 			pinSide->EnsureColorKey();
-			if (pinSide->m_fTransparent)
-				{				
-				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-				}
-			else // ppin3d->SetTexture(pin->m_pdsBuffer);
-				{
-				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-				if (g_pvp->m_pdd.m_fHardwareAccel)
-					{
-                  pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
-					}
-				else
-					{
-                  pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-					}
-            pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
-				}
+			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
 
-         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			if (pinSide->m_fTransparent)
+			{
+				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+				pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 			}
+			else // ppin3d->SetTexture(pin->m_pdsBuffer);
+			{
+				pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+				pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+				if (g_pvp->m_pdd.m_fHardwareAccel)
+				{
+					pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
+				}
+				else
+				{
+					pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
+				}
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+			}
+
+			pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+		}
+		else
+			pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 		float maxtu, maxtv;
@@ -1474,34 +1295,34 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 			
 			pin->EnsureColorKey();
-			if (pin->m_fTransparent)
-				{				
-				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-				}
-			else 
-				{
-				pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-				if (g_pvp->m_pdd.m_fHardwareAccel)
-					{
-                  pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
-					}
-				else
-					{
-                  pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-					}
-            pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
-				}
+			pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 
-         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+			if (pin->m_fTransparent)
+			{				
+				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+				pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+			}
+			else 
+			{
+				pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+				pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+				if (g_pvp->m_pdd.m_fHardwareAccel)
+				{
+					pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
+				}
+				else
+				{
+					pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
+				}
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+			}
+
+			pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 			mtrl.diffuse.r = mtrl.ambient.r =
@@ -1522,14 +1343,8 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			maxtv = maxtu = 1.0f;
 			}
 
+		Vector<Triangle> vtri;
 		PolygonToTriangles(rgv, &vpoly, &vtri);
-
-		if (!m_d.m_fInner)
-			{
-			// Remove tiny gap
-			rgv[cvertex+4].x += 1.0f;
-			rgv[cvertex+5].y += 1.0f;
-			}
 
 		pd3dDevice->SetMaterial(&mtrl);
 
@@ -1593,13 +1408,9 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
 		
-		// Check if we are a floor... in which case we don't want to affect z.
-		if (!m_d.m_fFloor)
-			{
-			// Create the z surface.
-			pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-			/*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-			}
+		// Create the z surface.
+		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+		/*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
 		ppin3d->ExpandRectByRect(&m_phitdrop->m_polydropanim.m_rcBounds, &pof->rc);
 
@@ -1619,7 +1430,7 @@ void Surface::RenderMovers(const RenderDevice* pd3dDevice)
 {
    RenderSlingshots((RenderDevice*)pd3dDevice);
 
-   if (m_d.m_fDroppable && m_d.m_fInner)
+   if (m_d.m_fDroppable)
    {
       // Render wall raised.
       ObjFrame * const pof = RenderWallsAtHeight((RenderDevice*)pd3dDevice, fTrue, fFalse);
@@ -1775,7 +1586,6 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
 	bw.WriteBool(FID(DROP), m_d.m_fDroppable);
 	bw.WriteBool(FID(FLIP), m_d.m_fFlipbook);
-	bw.WriteBool(FID(FLOR), m_d.m_fFloor);
 	bw.WriteBool(FID(CLDW), m_d.m_fCollidable);
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -1785,10 +1595,8 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteInt(FID(COLR), m_d.m_sidecolor);
 	bw.WriteInt(FID(TCLR), m_d.m_topcolor);
 	bw.WriteInt(FID(SCLR), m_d.m_slingshotColor);
-	bw.WriteInt(FID(ALGN), m_d.m_ia);
 	bw.WriteFloat(FID(HTBT), m_d.m_heightbottom);
 	bw.WriteFloat(FID(HTTP), m_d.m_heighttop);
-	bw.WriteBool(FID(INNR), m_d.m_fInner);
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 	bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
 	bw.WriteFloat(FID(SLGF), m_d.m_slingshotforce);
@@ -1893,10 +1701,6 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetBool(&m_d.m_fFlipbook);
 		}
-	else if (id == FID(FLOR))
-		{
-		pbr->GetBool(&m_d.m_fFloor);
-		}
 	else if (id == FID(CLDW))
 		{
 		pbr->GetBool(&m_d.m_fCollidable); 
@@ -1935,10 +1739,6 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetInt(&m_d.m_slingshotColor);
 		}
-	else if (id == FID(ALGN))
-		{
-		pbr->GetInt(&m_d.m_ia);
-		}
 	else if (id == FID(HTBT))
 		{
 		pbr->GetFloat(&m_d.m_heightbottom);
@@ -1946,10 +1746,6 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(HTTP))
 		{
 		pbr->GetFloat(&m_d.m_heighttop);
-		}
-	else if (id == FID(INNR))
-		{
-		pbr->GetBool(&m_d.m_fInner);
 		}
 	else if (id == FID(NAME))
 		{
@@ -2100,21 +1896,16 @@ STDMETHODIMP Surface::put_SlingshotColor(OLE_COLOR newVal)
 
 	return S_OK;
 }
+
 STDMETHODIMP Surface::get_ImageAlignment(ImageAlignment *pVal)
 {
-	*pVal = m_d.m_ia;
-
+	// not used (anymore?)
 	return S_OK;
 }
 
 STDMETHODIMP Surface::put_ImageAlignment(ImageAlignment newVal)
 {
-	STARTUNDO
-
-	m_d.m_ia = newVal;
-
-	STOPUNDO
-
+	// not used (anymore?)
 	return S_OK;
 }
 
@@ -2212,16 +2003,6 @@ STDMETHODIMP Surface::get_CanDrop(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_CanDrop(VARIANT_BOOL newVal)
 {
-	if(!m_d.m_fInner)
-		{
-		if(!m_d.m_fDroppable) return S_OK;		//can not drop outer wall
-		else 
-			{
-			newVal = fFalse;						 // always force to false and cause update pending
-			return S_FAIL;
-			}
-		}
-
 	STARTUNDO
 
 	m_d.m_fDroppable = VBTOF(newVal);
@@ -2263,7 +2044,7 @@ STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 {
-	if (!g_pplayer || !m_d.m_fDroppable || !m_d.m_fInner)
+	if (!g_pplayer || !m_d.m_fDroppable)
 		{
 		return E_FAIL;
 		}
@@ -2506,11 +2287,6 @@ STDMETHODIMP Surface::get_Collidable(VARIANT_BOOL *pVal)
 STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 {
 	const BOOL fNewVal = VBTOF(newVal);	
-
-	if(!m_d.m_fInner)	//outer wall must always be colliable
-		{
-		if(!newVal) return E_FAIL;		//outer wall must be collidable
-		}
 
 	STARTUNDO
 

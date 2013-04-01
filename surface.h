@@ -9,7 +9,6 @@
 class SurfaceData
 	{
 public:
-	BOOL m_fInner; // Inside or outside wall;
 	Vertex2D m_Center;
 	TimerDataRoot m_tdr;
 	BOOL m_fHitEvent;
@@ -17,7 +16,6 @@ public:
 	float m_slingshot_threshold;	// speed at which ball needs to trigger slingshot 
 	char m_szImage[MAXTOKEN];
 	char m_szSideImage[MAXTOKEN];
-	ImageAlignment m_ia;
 	COLORREF m_sidecolor;
 	float m_heightbottom;
 	float m_heighttop;
