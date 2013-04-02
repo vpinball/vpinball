@@ -119,6 +119,24 @@ void ShadowSur::Polygon(const Vertex2D * const rgv, const int count)
 	
 	delete [] rgpt;
 	}
+// copy-pasted from above
+void ShadowSur::Polygon(const Vector<RenderVertex> &rgv)
+	{
+	POINT * const rgpt = new POINT[rgv.Size()];
+
+	for (int i=0;i<rgv.Size();i++)
+		{
+		rgpt[i].x = SCALEXf(rgv.ElementAt(i)->x);
+		rgpt[i].y = SCALEYf(rgv.ElementAt(i)->y);
+		}
+
+	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
+	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
+
+	::Polygon(m_hdc, rgpt, rgv.Size());
+	
+	delete [] rgpt;
+	}
 
 void ShadowSur::EllipseImage(const float centerx, const float centery, const float radius, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
@@ -132,9 +150,9 @@ void ShadowSur::EllipseImage(const float centerx, const float centery, const flo
 	::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir, iy + ir);
 	}
 
-void ShadowSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+void ShadowSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
-	Polygon(rgv, count);
+	Polygon(rgv);
 	}
 
 void ShadowSur::PolygonSkew(const Vertex2D * const rgv, const int count, const float * const rgz) const

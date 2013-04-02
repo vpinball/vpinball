@@ -250,15 +250,6 @@ void Light::PreRender(Sur * const psur)
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
-			const int cvertex = vvertex.Size();
-			Vertex2D * const rgv = new Vertex2D[cvertex];
-
-			for (int i=0;i<cvertex;i++)
-				{
-				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
-				delete vvertex.ElementAt(i);
-				}
-
 			// Check if we should display the image in the editor.
 			if ((m_d.m_fDisplayImage) && (m_d.m_szOnImage[0]) && (m_d.m_szOffImage[0])) 
 				{
@@ -284,24 +275,26 @@ void Light::PreRender(Sur * const psur)
 					if (ppi->m_hbmGDIVersion)
 						{
 						// Draw the polygon with an image applied.
-						psur->PolygonImage(rgv, cvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+						psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
 						}
 					}
 				else
 					{
 					// Error.  Just draw the polygon.
-					psur->Polygon(rgv, cvertex);
+					psur->Polygon(vvertex);
 					}
 				}
 			else
 				{
 				// Draw the polygon.
-				psur->Polygon(rgv, cvertex);
+				psur->Polygon(vvertex);
 				}
 
-			delete [] rgv;
+			for (int i=0;i<vvertex.Size();i++)
+				delete vvertex.ElementAt(i);
+
 			break;
-						  }
+			}
 		}
 	}
 
@@ -370,22 +363,14 @@ void Light::RenderOutline(Sur * const psur)
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
-			const int cvertex = vvertex.Size();
-			Vertex2D * const rgv = new Vertex2D[cvertex];
+			psur->Polygon(vvertex);
 
-			for (int i=0;i<cvertex;i++)
-				{
-				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
+			for (int i=0;i<vvertex.Size();i++)
 				delete vvertex.ElementAt(i);
-				}
-
-			psur->Polygon(rgv, cvertex);
-
-			delete [] rgv;
 
 			psur->SetObject((ISelect *)&m_lightcenter);
 			break;
-						  }
+			}
 		}
 
 	if (m_d.m_shape == ShapeCustom || g_pvp->m_fAlwaysDrawLightCenters)

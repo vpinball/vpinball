@@ -131,9 +131,6 @@ END_CONNECTION_POINT_MAP()
 	PinTable *m_ptable;
 	BSTR m_bstrName;
 
-	Vertex2D *m_rgvT; // keeps vertices around between PreRender and Render
-	int m_cvertexT;
-
 	SurfaceData m_d;
 
 	Vector<LineSegSlingshot> m_vlinesling;
