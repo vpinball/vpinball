@@ -13,6 +13,7 @@ Surface::Surface()
 	m_phitdrop = NULL;
 	m_d.m_fCollidable = fTrue;
 	m_d.m_fSlingshotAnimation = fTrue;
+	m_d.m_fInner = fTrue;
 	}
 
 Surface::~Surface()
@@ -1671,65 +1672,49 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 			m_vdpoint.ReplaceElementAt(pdp,m_vdpoint.Size()-1-i);
 		}
 
+		CComObject<DragPoint> *pdp;
+		
+		CComObject<DragPoint>::CreateInstance(&pdp);
+		if (pdp)
 		{
-			CComObject<DragPoint> *pdp;
-			CComObject<DragPoint>::CreateInstance(&pdp);
-			if (pdp)
-			{
-				pdp->AddRef();
-				pdp->Init(this, m_ptable->m_left, m_ptable->m_top);
-				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
-			}
+			pdp->AddRef();
+			pdp->Init(this, m_ptable->m_left, m_ptable->m_top);
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
+		CComObject<DragPoint>::CreateInstance(&pdp);
+		if (pdp)
 		{
-			CComObject<DragPoint> *pdp;
-			CComObject<DragPoint>::CreateInstance(&pdp);
-			if (pdp)
-			{
-				pdp->AddRef();
-				pdp->Init(this, m_ptable->m_right, m_ptable->m_top);
-				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
-			}
+			pdp->AddRef();
+			pdp->Init(this, m_ptable->m_right, m_ptable->m_top);
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
+		CComObject<DragPoint>::CreateInstance(&pdp);
+		if (pdp)
 		{
-			CComObject<DragPoint> *pdp;
-			CComObject<DragPoint>::CreateInstance(&pdp);
-			if (pdp)
-			{
-				pdp->AddRef();
-				pdp->Init(this, m_ptable->m_right, m_ptable->m_bottom);
-				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
-			}
+			pdp->AddRef();
+			pdp->Init(this, m_ptable->m_right, m_ptable->m_bottom);
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
+		CComObject<DragPoint>::CreateInstance(&pdp);
+		if (pdp)
 		{
-			CComObject<DragPoint> *pdp;
-			CComObject<DragPoint>::CreateInstance(&pdp);
-			if (pdp)
-			{
-				pdp->AddRef();
-				pdp->Init(this, m_ptable->m_left, m_ptable->m_bottom);
-				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
-			}
+			pdp->AddRef();
+			pdp->Init(this, m_ptable->m_left, m_ptable->m_bottom);
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
+		CComObject<DragPoint>::CreateInstance(&pdp);
+		if (pdp)
 		{
-			CComObject<DragPoint> *pdp;
-			CComObject<DragPoint>::CreateInstance(&pdp);
-			if (pdp)
-			{
-				pdp->AddRef();
-				pdp->Init(this, m_ptable->m_left-1.0f, m_ptable->m_top);
-				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
-			}
+			pdp->AddRef();
+			pdp->Init(this, m_ptable->m_left-1.0f, m_ptable->m_top);
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
+		CComObject<DragPoint>::CreateInstance(&pdp);
+		if (pdp)
 		{
-			CComObject<DragPoint> *pdp;
-			CComObject<DragPoint>::CreateInstance(&pdp);
-			if (pdp)
-			{
-				pdp->AddRef();
-				pdp->Init(this, tmpx, tmpy);
-				m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
-			}
+			pdp->AddRef();
+			pdp->Init(this, tmpx, tmpy);
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
 
 		m_d.m_fInner = fTrue;
