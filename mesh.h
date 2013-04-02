@@ -89,7 +89,7 @@ public:
 void SetHUDVertices(Vertex3D * const rgv, const int count);
 void SetHUDVertices(Vertex3D_NoTex2 * const rgv, const int count);
 void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri);
-void PolygonToTriangles(const Vector<RenderVertex> rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri);
+void PolygonToTriangles(const Vector<RenderVertex> &rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri);
 void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv);
 void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy);
 
@@ -191,7 +191,7 @@ inline bool AdvancePoint(const RenderVertex * const rgv, const Vector<void> * co
 	}
 
 //!! copypasted from above
-inline bool AdvancePoint(const Vector<RenderVertex> rgv, const Vector<void> * const pvpoly, const int a, const int b, const int c, const int pre, const int post)
+inline bool AdvancePoint(const Vector<RenderVertex> &rgv, const Vector<void> * const pvpoly, const int a, const int b, const int c, const int pre, const int post)
 	{
 	const RenderVertex * const pv1 = rgv.ElementAt(a);
 	const RenderVertex * const pv2 = rgv.ElementAt(b);
@@ -423,7 +423,7 @@ inline bool FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const
 	return (dblarea*dblarea < accuracy);
 }
 
-inline void ClosestPointOnPolygon(const Vector<RenderVertex> rgv, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
+inline void ClosestPointOnPolygon(const Vector<RenderVertex> &rgv, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
 	{
 	const int count = rgv.Size();
 

@@ -158,7 +158,7 @@ void ShadowSur::PolygonSkew(const Vertex2D * const rgv, const int count, const f
 	SetViewportOrgEx(m_hdc, 0, 0, NULL);
 	}
 
-void ShadowSur::PolygonSkew(const Vector<RenderVertex> rgv, const float z1, const float z2) const
+void ShadowSur::PolygonSkew(const Vector<RenderVertex> &rgv, const float z1, const float z2) const
 	{
 	const int basepixel = SCALEXf(m_z);
 	const int top = SCALEXf(z2) - basepixel;
@@ -175,8 +175,8 @@ void ShadowSur::PolygonSkew(const Vector<RenderVertex> rgv, const float z1, cons
 
 	for (int i=0;i<count;i++)
 	{
-		rgpt[i].x = SCALEXf(((Vertex2D *)rgv.ElementAt(i))->x);
-		rgpt[i].y = SCALEYf(((Vertex2D *)rgv.ElementAt(i))->y);
+		rgpt[i].x = SCALEXf(rgv.ElementAt(i)->x);
+		rgpt[i].y = SCALEYf(rgv.ElementAt(i)->y);
 	}
 
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));

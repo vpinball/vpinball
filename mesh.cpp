@@ -34,7 +34,7 @@ void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvp
 	}
 
 //!! copypasted from above
-void PolygonToTriangles(const Vector<RenderVertex> rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri)
+void PolygonToTriangles(const Vector<RenderVertex> &rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri)
 	{
 	// There should be this many convex triangles.
 	// If not, the polygon is self-intersecting
