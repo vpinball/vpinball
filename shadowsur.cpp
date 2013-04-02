@@ -137,48 +137,47 @@ void ShadowSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMA
 	Polygon(rgv, count);
 	}
 
-void ShadowSur::PolygonSkew(const Vertex2D * const rgv, const int count, const float * const rgz, const float z1, const float z2, const bool fPreClip) const
+void ShadowSur::PolygonSkew(const Vertex2D * const rgv, const int count, const float * const rgz) const
 	{
-	const int basepixel = SCALEXf(m_z);
-	int bottom = SCALEXf(z1) - basepixel;
-	int top = SCALEXf(z2) - basepixel;
-
-	if (!fPreClip)
-		{
-		if (top <= 0)
-			{
-			return; //This entire polygon is underneath this shadow level
-			}
-
-		if (bottom < 0)
-			{
-			bottom = 0; // Polygon crosses shadow level
-			}
-		}
-	else
-		{
-		top = 1;
-		bottom = 0;
-		}
-
 	POINT * const rgpt = new POINT[count];
 
-	if (rgz)
-		{
-		for (int i=0;i<count;i++)
-			{
-			rgpt[i].x = SCALEXf(rgv[i].x + rgz[i]);
-			rgpt[i].y = SCALEYf(rgv[i].y - rgz[i]);
-			}
-		}
-	else
-		{
-		for (int i=0;i<count;i++)
-			{
-			rgpt[i].x = SCALEXf(rgv[i].x);
-			rgpt[i].y = SCALEYf(rgv[i].y);
-			}
-		}
+	for (int i=0;i<count;i++)
+	{
+		rgpt[i].x = SCALEXf(rgv[i].x + rgz[i]);
+		rgpt[i].y = SCALEYf(rgv[i].y - rgz[i]);
+	}
+
+	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
+	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
+
+	SetViewportOrgEx(m_hdc, 0, 0, NULL);
+	::Polygon(m_hdc, rgpt, count);
+
+	delete [] rgpt;
+
+	SetViewportOrgEx(m_hdc, 0, 0, NULL);
+	}
+
+void ShadowSur::PolygonSkew(const Vector<RenderVertex> rgv, const float z1, const float z2) const
+	{
+	const int basepixel = SCALEXf(m_z);
+	const int top = SCALEXf(z2) - basepixel;
+
+	if (top <= 0)
+		return; //This entire polygon is underneath this shadow level
+	
+	int bottom = SCALEXf(z1) - basepixel;
+	if (bottom < 0)
+		bottom = 0; // Polygon crosses shadow level
+	
+	const int count = rgv.Size();
+	POINT * const rgpt = new POINT[count];
+
+	for (int i=0;i<count;i++)
+	{
+		rgpt[i].x = SCALEXf(((Vertex2D *)rgv.ElementAt(i))->x);
+		rgpt[i].y = SCALEYf(((Vertex2D *)rgv.ElementAt(i))->y);
+	}
 
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
@@ -189,9 +188,9 @@ void ShadowSur::PolygonSkew(const Vertex2D * const rgv, const int count, const f
 		::Polygon(m_hdc, rgpt, count);
 		}
 
-	SetViewportOrgEx(m_hdc, 0, 0, NULL);
-	
 	delete [] rgpt;
+
+	SetViewportOrgEx(m_hdc, 0, 0, NULL);
 	}
 
 void ShadowSur::PolylineSkew(const Vertex2D * const rgv, const int count, const float * const rgz, const float z1, const float z2) const

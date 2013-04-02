@@ -89,6 +89,7 @@ public:
 void SetHUDVertices(Vertex3D * const rgv, const int count);
 void SetHUDVertices(Vertex3D_NoTex2 * const rgv, const int count);
 void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri);
+void PolygonToTriangles(const Vector<RenderVertex> rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri);
 void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv);
 void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy);
 
@@ -174,6 +175,53 @@ inline bool AdvancePoint(const RenderVertex * const rgv, const Vector<void> * co
 		{		
 		const RenderVertex * const pvCross1 = &rgv[(int)pvpoly->ElementAt(i)];
 		const RenderVertex * const pvCross2 = &rgv[(int)pvpoly->ElementAt((i < pvpoly->Size()-1) ? (i+1) : 0)];
+	
+		if ( pvCross1 != pv1 && pvCross2 != pv1 && pvCross1 != pv3 && pvCross2 != pv3 &&
+		    (pvCross1->y >= miny || pvCross2->y >= miny) &&
+			(pvCross1->y <= maxy || pvCross2->y <= maxy) &&
+			(pvCross1->x >= minx || pvCross2->x >= minx) &&
+            (pvCross1->x <= maxx || pvCross2->y <= maxx) &&
+			FLinesIntersect(pv1, pv3, pvCross1, pvCross2))
+			{
+			return false;
+			}
+		}
+
+	return true;
+	}
+
+//!! copypasted from above
+inline bool AdvancePoint(const Vector<RenderVertex> rgv, const Vector<void> * const pvpoly, const int a, const int b, const int c, const int pre, const int post)
+	{
+	const RenderVertex * const pv1 = rgv.ElementAt(a);
+	const RenderVertex * const pv2 = rgv.ElementAt(b);
+	const RenderVertex * const pv3 = rgv.ElementAt(c);
+
+	const RenderVertex * const pvPre = rgv.ElementAt(pre);
+	const RenderVertex * const pvPost = rgv.ElementAt(post);
+
+	if ((GetDot(pv1,pv2,pv3) < 0) ||
+		// Make sure angle created by new triangle line falls inside existing angles
+		// If the existing angle is a concave angle, then new angle must be smaller,
+		// because our triangle can't have angles greater than 180
+	   ((GetDot(pvPre, pv1, pv2)  > 0) && (GetDot(pvPre, pv1, pv3)  < 0)) || // convex angle, make sure new angle is smaller than it
+	   ((GetDot(pv2, pv3, pvPost) > 0) && (GetDot(pv1, pv3, pvPost) < 0)))
+	   return false;
+	
+	// Now make sure the interior segment of this triangle (line ac) does not
+	// intersect the polygon anywhere
+
+	// sort our static line segment
+
+	const float minx = min(pv1->x, pv3->x);
+	const float maxx = max(pv1->x, pv3->x);
+	const float miny = min(pv1->y, pv3->y);
+	const float maxy = max(pv1->y, pv3->y);
+
+	for (int i=0; i<pvpoly->Size(); ++i)
+		{		
+		const RenderVertex * const pvCross1 = rgv.ElementAt((int)pvpoly->ElementAt(i));
+		const RenderVertex * const pvCross2 = rgv.ElementAt((int)pvpoly->ElementAt((i < pvpoly->Size()-1) ? (i+1) : 0));
 	
 		if ( pvCross1 != pv1 && pvCross2 != pv1 && pvCross1 != pv3 && pvCross2 != pv3 &&
 		    (pvCross1->y >= miny || pvCross2->y >= miny) &&
@@ -374,3 +422,59 @@ inline bool FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const
 
 	return (dblarea*dblarea < accuracy);
 }
+
+inline void ClosestPointOnPolygon(const Vector<RenderVertex> rgv, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
+	{
+	const int count = rgv.Size();
+
+	float mindist = FLT_MAX;
+	int seg = -1;
+	*piseg = -1; // in case we are not next to the line
+
+	int cloop = count;
+	if (!fClosed)
+		{
+		--cloop; // Don't check segment running from the end point to the beginning point
+		}
+
+	// Go through line segment, calculate distance from point to the line
+	// then pick the shortest distance
+	for (int i=0; i<cloop; ++i)
+		{
+		const int p2 = (i < count-1) ? (i+1) : 0;
+
+		const float A = rgv.ElementAt(i)->y - rgv.ElementAt(p2)->y;
+		const float B = rgv.ElementAt(p2)->x - rgv.ElementAt(i)->x;
+		const float C = -(A*rgv.ElementAt(i)->x + B*rgv.ElementAt(i)->y);
+
+		const float dist = fabsf(A*pvin.x + B*pvin.y + C) / sqrtf(A*A + B*B);
+
+		if (dist < mindist)
+			{
+			// Assuming we got a segment that we are closet to, calculate the intersection
+			// of the line with the perpenticular line projected from the point,
+			// to find the closest point on the line
+			const float D = -B;
+			const float F = -(D*pvin.x + A*pvin.y);
+			
+			const float det = A*A - B*D;
+			const float inv_det = (det != 0.0f) ? 1.0f/det : 0.0f;
+			const float intersectx = (B*F-A*C)*inv_det;
+			const float intersecty = (C*D-A*F)*inv_det;
+
+			// If the intersect point lies on the polygon segment
+			// (not out in space), then make this the closest known point
+			if (intersectx >= (min(rgv.ElementAt(i)->x, rgv.ElementAt(p2)->x) - 0.1f) &&
+				intersectx <= (max(rgv.ElementAt(i)->x, rgv.ElementAt(p2)->x) + 0.1f) &&
+				intersecty >= (min(rgv.ElementAt(i)->y, rgv.ElementAt(p2)->y) - 0.1f) &&
+				intersecty <= (max(rgv.ElementAt(i)->y, rgv.ElementAt(p2)->y) + 0.1f))
+				{
+				mindist = dist;
+				seg = i;
+				pvout->x = intersectx;
+				pvout->y = intersecty;
+				*piseg = seg;
+				}
+			}
+		}
+	}

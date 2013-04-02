@@ -43,7 +43,6 @@ protected:
 	void 	**m_rg;		// Data buffer
 
 public:
-
 	inline VectorVoid()
 		{
 		m_cSize = 0;

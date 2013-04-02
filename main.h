@@ -37,12 +37,6 @@ class PinBinary;
 #include "PropBrowser.h"
 #include "CodeView.h"
 
-#include "sur.h"
-#include "paintsur.h"
-#include "hitsur.h"
-#include "hitrectsur.h"
-#include "shadowsur.h"
-
 #include "media/lzwreader.h"
 #include "media/lzwwriter.h"
 #include "media/wavread.h"
@@ -58,6 +52,12 @@ class PinBinary;
 #include "Mesh.h"
 #include "pin/collide.h"
 #include "Pin3D.h"
+
+#include "sur.h"
+#include "paintsur.h"
+#include "hitsur.h"
+#include "hitrectsur.h"
+#include "shadowsur.h"
 
 #include "BallEx.h"
 

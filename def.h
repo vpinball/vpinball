@@ -316,6 +316,12 @@ public:
 		y += pv.y;
 		z += pv.z;
 		}
+	inline void Sub(const Vertex3Ds &pv)
+		{
+		x -= pv.x;
+		y -= pv.y;
+		z -= pv.z;
+		}
 	};
 
 inline Vertex2D Calc2DNormal(const Vertex2D &pv1, const Vertex2D &pv2)
@@ -324,60 +330,6 @@ inline Vertex2D Calc2DNormal(const Vertex2D &pv1, const Vertex2D &pv2)
 	// Set up line normal
 	const float inv_length = 1.0f/sqrtf(vT.x * vT.x + vT.y * vT.y);
 	return Vertex2D(vT.y * inv_length, -vT.x * inv_length);
-	}
-
-inline void ClosestPointOnPolygon(const Vertex2D * const rgv, const int count, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
-	{
-	float mindist = FLT_MAX;
-	int seg = -1;
-	*piseg = -1; // in case we are not next to the line
-
-	int cloop = count;
-	if (!fClosed)
-		{
-		--cloop; // Don't check segment running from the end point to the beginning point
-		}
-
-	// Go through line segment, calculate distance from point to the line
-	// then pick the shortest distance
-	for (int i=0; i<cloop; ++i)
-		{
-		const int p2 = (i < count-1) ? (i+1) : 0;
-
-		const float A = rgv[i].y - rgv[p2].y;
-		const float B = rgv[p2].x - rgv[i].x;
-		const float C = -(A*rgv[i].x + B*rgv[i].y);
-
-		const float dist = fabsf(A*pvin.x + B*pvin.y + C) / sqrtf(A*A + B*B);
-
-		if (dist < mindist)
-			{
-			// Assuming we got a segment that we are closet to, calculate the intersection
-			// of the line with the perpenticular line projected from the point,
-			// to find the closest point on the line
-			const float D = -B;
-			const float F = -(D*pvin.x + A*pvin.y);
-			
-			const float det = A*A - B*D;
-			const float inv_det = (det != 0.0f) ? 1.0f/det : 0.0f;
-			const float intersectx = (B*F-A*C)*inv_det;
-			const float intersecty = (C*D-A*F)*inv_det;
-
-			// If the intersect point lies on the polygon segment
-			// (not out in space), then make this the closest known point
-			if (intersectx >= (min(rgv[i].x, rgv[p2].x) - 0.1f) &&
-				intersectx <= (max(rgv[i].x, rgv[p2].x) + 0.1f) &&
-				intersecty >= (min(rgv[i].y, rgv[p2].y) - 0.1f) &&
-				intersecty <= (max(rgv[i].y, rgv[p2].y) + 0.1f))
-				{
-				mindist = dist;
-				seg = i;
-				pvout->x = intersectx;
-				pvout->y = intersecty;
-				*piseg = seg;
-				}
-			}
-		}
 	}
 
 inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3D * const pvPoint, const int count, const float angle)

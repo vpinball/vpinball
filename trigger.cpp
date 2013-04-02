@@ -597,26 +597,19 @@ void Trigger::DoCommand(int icmd, int x, int y)
 			GetRgVertex(&vvertex);
 
 			const int cvertex = vvertex.Size();
-			Vertex2D * const rgv = new Vertex2D[cvertex];
-
-			for (int i=0;i<cvertex;i++)
-				{
-				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
-				}
 
 			int iSeg;
 			Vertex2D vOut;
-			ClosestPointOnPolygon(rgv, cvertex, v, &vOut, &iSeg, true);
+			ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
 			int icp = 0;
 			for (int i=0;i<(iSeg+1);i++)
-				{
 				if (vvertex.ElementAt(i)->fControlPoint)
-					{
 					icp++;
-					}
-				}
+
+			for (int i=0;i<cvertex;i++)
+				delete vvertex.ElementAt(i);
 
 			//if (icp == 0) // need to add point after the last point
 				//icp = m_vdpoint.Size();
@@ -629,13 +622,6 @@ void Trigger::DoCommand(int icmd, int x, int y)
 				pdp->Init(this, vOut.x, vOut.y);
 				m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 				}
-
-			for (int i=0;i<cvertex;i++)
-				{
-				delete vvertex.ElementAt(i);
-				}
-
-			delete [] rgv;
 
 			SetDirtyDraw();
 

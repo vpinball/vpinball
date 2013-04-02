@@ -1643,7 +1643,7 @@ void PinTable::Play()
 		}
 
 	DestroyWindow(hwndProgressDialog);
-	
+
 	//EnableWindow(g_pvp->m_hwndWork, fFalse); // Go modal in our main app window
 	}
 
@@ -1680,7 +1680,7 @@ void PinTable::StopPlaying()
 	RestoreBackup();
 
 	g_fKeepUndoRecords = fTrue;
-	
+
 	BeginAutoSaveCounter();
 	}
 
@@ -1775,7 +1775,7 @@ void PinTable::BeginAutoSaveCounter()
 		SetTimer(m_hwnd, TIMER_ID_AUTOSAVE, g_pvp->m_autosaveTime, NULL);
 		}
 	}
-	
+
 
 void PinTable::EndAutoSaveCounter()
 	{
@@ -1792,8 +1792,6 @@ void PinTable::AutoSave()
 
 	KillTimer(m_hwnd, TIMER_ID_AUTOSAVE);
 
-	HRESULT hr;
-
 	{
 		LocalString ls(IDS_AUTOSAVING);
 		g_pvp->SetActionCur(ls.m_szbuffer);
@@ -1803,7 +1801,7 @@ void PinTable::AutoSave()
 	FastIStorage * const pstgroot = new FastIStorage();
 	pstgroot->AddRef();
 	
-	hr = SaveToStorage(pstgroot);
+	const HRESULT hr = SaveToStorage(pstgroot);
 
 	m_undo.SetCleanPoint(min(m_sdsDirtyProp, eSaveAutosaved));
 	m_pcv->SetClean(min(m_sdsDirtyScript, eSaveAutosaved));
@@ -1823,7 +1821,7 @@ void PinTable::AutoSave()
 	}
    else
 	{
-   	g_pvp->SetActionCur("");
+	   	g_pvp->SetActionCur("");
 	}
 
 	g_pvp->SetCursorCur(NULL, IDC_ARROW);
@@ -6711,16 +6709,10 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 						pramp->GetRgVertex(&vvertex);
 
 						const int cvertex = vvertex.Size();
-						Vertex2D * const rgv = new Vertex2D[cvertex];
-						
-						for (int i2=0;i2<cvertex;i2++)
-							{
-							rgv[i2] = *((Vertex2D *)vvertex.ElementAt(i2));
-							}
 
 						int iSeg;
 						Vertex2D vOut;
-						ClosestPointOnPolygon(rgv, cvertex, Vertex2D(x,y), &vOut, &iSeg, false);
+						ClosestPointOnPolygon(vvertex, Vertex2D(x,y), &vOut, &iSeg, false);
 
 						// Go through vertices (including iSeg itself) counting control points until iSeg
 						float totallength = 0;
@@ -6736,8 +6728,8 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 
 						for (int i2=1;i2<cvertex;i2++)
 							{
-							const float dx = rgv[i2].x - rgv[i2-1].x;
-							const float dy = rgv[i2].y - rgv[i2-1].y;
+							const float dx = vvertex.ElementAt(i2)->x - vvertex.ElementAt(i2-1)->x;
+							const float dy = vvertex.ElementAt(i2)->y - vvertex.ElementAt(i2-1)->y;
 							const float len = sqrtf(dx*dx + dy*dy);
 							if (i2 <= iSeg)
 								{
@@ -6747,22 +6739,19 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 							}
 
 						{
-						const float dx = vOut.x - rgv[iSeg].x;
-						const float dy = vOut.y - rgv[iSeg].y;
+						const float dx = vOut.x - vvertex.ElementAt(iSeg)->x;
+						const float dy = vOut.y - vvertex.ElementAt(iSeg)->y;
 						const float len = sqrtf(dx*dx + dy*dy);
 						startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
 
-						zheight = ((startlength/totallength) * (pramp->m_d.m_heighttop - pramp->m_d.m_heightbottom)) + pramp->m_d.m_heightbottom;
+						zheight = (startlength/totallength) * (pramp->m_d.m_heighttop - pramp->m_d.m_heightbottom) + pramp->m_d.m_heightbottom;
 						}
 HeightError:
 						for (int i2=0;i2<cvertex;i2++)
-							{
 							delete vvertex.ElementAt(i2);
-							}
 
-						delete [] rgv;
 						return zheight;
-									}
+						}
 					}
 				}
 			}
