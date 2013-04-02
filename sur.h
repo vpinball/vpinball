@@ -16,7 +16,7 @@ public:
 		m_offx = offx - (float)width*inv_zoom;
 		m_offy = offy - (float)height*inv_zoom;
 	}
-	virtual ~Sur();
+	virtual ~Sur() {}
 
 	virtual void Line(const float x, const float y, const float x2, const float y2) = 0;
 	virtual void Rectangle(const float x, const float y, const float x2, float y2) = 0;
@@ -37,11 +37,13 @@ public:
 	virtual void SetBorderColor(const int rgb, const bool fDashed, const int width) = 0;
 	virtual void SetLineColor(const int rgb, const bool fDashed, const int width) = 0;
 
-	inline void ScreenToSurface(const int screenx, const int screeny, float * const fx, float * const fy) const
+	inline Vertex2D ScreenToSurface(const int screenx, const int screeny) const
 	{
 		const float inv_zoom = 1.0f/m_zoom;
-		*fx = (float)screenx*inv_zoom + m_offx;
-		*fy = (float)screeny*inv_zoom + m_offy;
+		Vertex2D result;
+		result.x = (float)screenx*inv_zoom + m_offx;
+		result.y = (float)screeny*inv_zoom + m_offy;
+		return result;
 	}
 
 	inline void SurfaceToScreen(const float fx, const float fy, int * const screenx, int * const screeny) const

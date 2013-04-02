@@ -1279,23 +1279,21 @@ void PinTable::Render(Sur * const psur)
 	// got to give the punters at least something to know that the table has loaded
 	if (CheckPermissions(DISABLE_TABLEVIEW))
 		{
-		float rleft, rtop, rright, rbottom;
-
-		psur->ScreenToSurface(rc.left, rc.top, &rleft, &rtop);
-		psur->ScreenToSurface(rc.right, rc.bottom, &rright, &rbottom);
-		rleft = max(rleft, frect.left);
-		rtop = max(rtop, frect.top);
-		rright = min(rright, frect.right);
-		rbottom = min(rbottom, frect.bottom);
+		Vertex2D rlt = psur->ScreenToSurface(rc.left, rc.top);
+		Vertex2D rrb = psur->ScreenToSurface(rc.right, rc.bottom);
+		rlt.x = max(rlt.x, frect.left);
+		rlt.y = max(rlt.y, frect.top);
+		rrb.x = min(rrb.x, frect.right);
+		rrb.y = min(rrb.y, frect.bottom);
 
 		psur->SetObject(NULL); 							// Don't hit test edgelines
 
 		psur->SetLineColor(RGB(0,0,0), false, 0);		// black outline
 
-		psur->Line(rleft, rtop, rright, rtop);
-		psur->Line(rright, rtop, rright, rbottom);
-		psur->Line(rleft, rbottom, rright, rbottom);
-		psur->Line(rleft, rtop, rleft, rbottom);
+		psur->Line(rlt.x, rlt.y, rrb.x, rlt.y);
+		psur->Line(rrb.x, rlt.y, rrb.x, rrb.y);
+		psur->Line(rlt.x, rrb.y, rrb.x, rrb.y);
+		psur->Line(rlt.x, rlt.y, rlt.x, rrb.y);
 
 		return;
 		}
@@ -1338,19 +1336,17 @@ void PinTable::Render(Sur * const psur)
 
 	if (m_fGrid)
 		{
-		float rleft, rtop, rright, rbottom;
+		Vertex2D rlt = psur->ScreenToSurface(rc.left, rc.top);
+		Vertex2D rrb = psur->ScreenToSurface(rc.right, rc.bottom);
+		rlt.x = max(rlt.x, frect.left);
+		rlt.y = max(rlt.y, frect.top);
+		rrb.x = min(rrb.x, frect.right);
+		rrb.y = min(rrb.y, frect.bottom);
 
-		psur->ScreenToSurface(rc.left, rc.top, &rleft, &rtop);
-		psur->ScreenToSurface(rc.right, rc.bottom, &rright, &rbottom);
-		rleft = max(rleft, frect.left);
-		rtop = max(rtop, frect.top);
-		rright = min(rright, frect.right);
-		rbottom = min(rbottom, frect.bottom);
-
-		const int beginx = (int)((rleft / m_gridsize));
-		const float lenx = (rright - rleft) / m_gridsize;//(((rc.right - rc.left)/m_zoom));
-		const int beginy = (int)((rtop / m_gridsize));
-		const float leny = (rbottom - rtop) / m_gridsize;//(((rc.bottom - rc.top)/m_zoom));
+		const int beginx = (int)(rlt.x / m_gridsize);
+		const float lenx = (rrb.x - rlt.x) / m_gridsize;//(((rc.right - rc.left)/m_zoom));
+		const int beginy = (int)(rlt.y / m_gridsize);
+		const float leny = (rrb.y - rlt.y) / m_gridsize;//(((rc.bottom - rc.top)/m_zoom));
 
 		psur->SetObject(NULL); // Don't hit test gridlines
 
@@ -1358,13 +1354,13 @@ void PinTable::Render(Sur * const psur)
 		for (int i=0;i<(lenx+1);i++)
 			{
 			const float x = (beginx+i)*m_gridsize;
-			psur->Line(x, rtop, x, rbottom);
+			psur->Line(x, rlt.y, x, rrb.y);
 			}
 
 		for (int i=0;i<(leny+1);i++)
 			{
 			const float y = (beginy+i)*m_gridsize;
-			psur->Line(rleft, y, rright, y);
+			psur->Line(rlt.x, y, rrb.x, y);
 			}
 		}
 
@@ -3832,8 +3828,8 @@ void PinTable::SetMyScrollInfo()
 	HitSur * const phs = new HitSur(NULL, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 	
 	Vertex2D rgv[2];
-	phs->ScreenToSurface(rc.left, rc.top, &rgv[0].x, &rgv[0].y);
-	phs->ScreenToSurface(rc.right, rc.bottom, &rgv[1].x, &rgv[1].y);
+	rgv[0] = phs->ScreenToSurface(rc.left, rc.top);
+	rgv[1] = phs->ScreenToSurface(rc.right, rc.bottom);
 
 	delete phs;
 
@@ -5204,7 +5200,7 @@ void PinTable::TransformPoint(int x, int y, Vertex2D *pv)
 
 	HitSur * const phs = new HitSur(NULL, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
-	phs->ScreenToSurface(x, y, &pv->x, &pv->y);
+	*pv = phs->ScreenToSurface(x, y);
 
 	delete phs;
 	}
