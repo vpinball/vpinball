@@ -6,8 +6,6 @@
 
 Surface::Surface()
 	{
-	m_rgvT = NULL;
-
 	m_menuid = IDR_SURFACEMENU;
 
 	m_phitdrop = NULL;
@@ -463,19 +461,8 @@ void Surface::PreRender(Sur * const psur)
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
 
-	m_cvertexT = vvertex.Size();
-	m_rgvT = new Vertex2D[m_cvertexT];
-
-	for (int i=0;i<m_cvertexT;i++)
-		{
-		m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
-		delete vvertex.ElementAt(i);
-		}
-
 	psur->SetFillColor(RGB(192,192,192));
-
 	psur->SetObject(this);
-
 	// Don't want border color to be over-ridden when selected - that will be drawn later
 	psur->SetBorderColor(-1,false,0);
 
@@ -484,18 +471,17 @@ void Surface::PreRender(Sur * const psur)
 		{
 		ppi->EnsureHBitmap();
 		if (ppi->m_hbmGDIVersion)
-			{
-			psur->PolygonImage(m_rgvT, m_cvertexT, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
-			}
+			psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
 		else
 			{
 			// Do nothing for now to indicate to user that there is a problem
 			}
 		}
 	else
-		{
-		psur->Polygon(m_rgvT, m_cvertexT);
-		}
+		psur->Polygon(vvertex);
+
+	for (int i=0;i<vvertex.Size();i++) //!! keep for render()
+		delete vvertex.ElementAt(i);
 	}
 
 void Surface::Render(Sur * const psur)
@@ -505,27 +491,13 @@ void Surface::Render(Sur * const psur)
 	psur->SetObject(this); // For selected formatting
 	psur->SetObject(NULL);
 
-	// PreRender may not have been called - for export
-	if (!m_rgvT)
-		{
-		Vector<RenderVertex> vvertex;
-		GetRgVertex(&vvertex);
+	Vector<RenderVertex> vvertex; //!! check/reuse from prerender
+	GetRgVertex(&vvertex);
 
-		m_cvertexT = vvertex.Size();
-		m_rgvT = new Vertex2D[m_cvertexT];
+	psur->Polygon(vvertex);
 
-		for (int i=0;i<m_cvertexT;i++)
-			{
-			m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
-			delete vvertex.ElementAt(i);
-			}
-		//m_rgvT = GetRgVertex(&m_cvertexT);
-		}
-
-	psur->Polygon(m_rgvT, m_cvertexT);
-
-	delete [] m_rgvT;
-	m_rgvT = NULL;
+	for (int i=0;i<vvertex.Size();i++)
+		delete vvertex.ElementAt(i);
 
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
 	bool fDrawDragpoints;		//>>> added by chris
@@ -590,19 +562,10 @@ void Surface::RenderBlueprint(Sur *psur)
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
 
-	m_cvertexT = vvertex.Size();
-	m_rgvT = new Vertex2D[m_cvertexT];
+	psur->Polygon(vvertex);
 
-	for (int i=0;i<m_cvertexT;i++)
-		{
-		m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
+	for (int i=0;i<vvertex.Size();i++)
 		delete vvertex.ElementAt(i);
-		}
-
-	psur->Polygon(m_rgvT, m_cvertexT);
-
-	delete [] m_rgvT;
-	m_rgvT = NULL;
 	}
 
 void Surface::RenderShadow(ShadowSur * const psur, const float height)
@@ -618,12 +581,9 @@ void Surface::RenderShadow(ShadowSur * const psur, const float height)
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
 
-	m_cvertexT = vvertex.Size();
-	m_rgvT = NULL;
-
 	psur->PolygonSkew(vvertex, m_d.m_heightbottom, m_d.m_heighttop);
 
-	for (int i=0;i<m_cvertexT;i++)
+	for (int i=0;i<vvertex.Size();i++)
 		delete vvertex.ElementAt(i);
 }
 
@@ -1460,9 +1420,6 @@ void Surface::DoCommand(int icmd, int x, int y)
          Vector<RenderVertex> vvertex;
          GetRgVertex(&vvertex);
 
-         m_cvertexT = vvertex.Size();
-         m_rgvT = NULL;
-
          Vertex2D vOut;
          int iSeg;
          ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
@@ -1473,7 +1430,7 @@ void Surface::DoCommand(int icmd, int x, int y)
             if (vvertex.ElementAt(i)->fControlPoint)
                icp++;
 
-         for (int i=0;i<m_cvertexT;i++)
+         for (int i=0;i<vvertex.Size();i++)
             delete vvertex.ElementAt(i);
 
          CComObject<DragPoint> *pdp;

@@ -190,6 +190,57 @@ void HitSur::Polygon(const Vertex2D * const rgv, const int count)
 		m_pselected = m_pcur;
 		}
 	}
+// copy-pasted from above
+void HitSur::Polygon(const Vector<RenderVertex> &rgv)
+	{
+	if (m_pcur == NULL)
+		return;
+
+	int x1 = SCALEXf(rgv.ElementAt(rgv.Size()-1)->x);
+	int y1 = SCALEYf(rgv.ElementAt(rgv.Size()-1)->y);
+	bool hx1 = (m_hitx >= x1);
+	bool hy1 = (m_hity > y1);
+	int crosscount=0;	// count of lines which the hit point is to the left of
+	for (int i=0;i<rgv.Size();++i)
+		{
+		const int x2 = x1;
+		const int y2 = y1;
+		const bool hx2 = hx1;
+		const bool hy2 = hy1;
+		
+		x1 = SCALEXf(rgv.ElementAt(i)->x);
+		y1 = SCALEYf(rgv.ElementAt(i)->y);
+		hx1 = (m_hitx >= x1);
+		hy1 = (m_hity > y1);
+
+		if ((y1==y2) ||
+		    (!hy1 && !hy2) || (hy1 && hy2) || // if out of y range, forget about this segment
+			(hx1 && hx2)) // Hit point is on the right of the line
+			continue;
+		
+		if (!hx1 && !hx2)
+			{
+			crosscount^=1;
+			continue;
+			}
+
+		if (x2 == x1)
+			{
+			if (!hx2)
+				crosscount^=1;
+			continue;
+			}
+			
+		// Now the hard part - the hit point is in the line bounding box
+		if (x2 - (y2 - m_hity)*(x1 - x2)/(y1 - y2) > m_hitx)
+			crosscount^=1;
+		}
+		
+	if (crosscount & 1)
+		{
+		m_pselected = m_pcur;
+		}
+	}
 
 void HitSur::EllipseImage(const float centerx, const float centery, const float radius, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
@@ -210,9 +261,9 @@ void HitSur::EllipseImage(const float centerx, const float centery, const float 
 		}
 	}
 
-void HitSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+void HitSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
-	Polygon(rgv, count);
+	Polygon(rgv);
 	}
 
 void HitSur::Polyline(const Vertex2D * const rgv, const int count)

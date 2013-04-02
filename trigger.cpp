@@ -106,18 +106,10 @@ void Trigger::PreRender(Sur * const psur)
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
 
-			const int cvertex = vvertex.Size();
-			Vertex2D * const rgv = new Vertex2D[cvertex];
+			psur->Polygon(vvertex);
 
-			for (int i=0;i<cvertex;i++)
-				{
-				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
+			for (int i=0;i<vvertex.Size();i++)
 				delete vvertex.ElementAt(i);
-				}
-
-			psur->Polygon(rgv, cvertex);
-
-			delete [] rgv;
 			}
 			break;
 		}
@@ -146,24 +138,17 @@ void Trigger::Render(Sur * const psur)
 		case ShapeCustom: {
 			Vector<RenderVertex> vvertex;
 			GetRgVertex(&vvertex);
-			psur->SetObject(NULL);
 
+			psur->SetObject(NULL);
 			psur->SetBorderColor(RGB(0,180,0),false,1);
 
-			const int cvertex = vvertex.Size();
-			Vertex2D * const rgv = new Vertex2D[cvertex];
+			psur->Polygon(vvertex);
 
-			for (int i=0;i<cvertex;i++)
-				{
-				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
+			for (int i=0;i<vvertex.Size();i++)
 				delete vvertex.ElementAt(i);
-				}
 
-			psur->Polygon(rgv, cvertex);
-
-			delete [] rgv;
 			break;
-						  }
+			}
 		}
 
 	if (m_d.m_shape == ShapeCustom)

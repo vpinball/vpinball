@@ -14,7 +14,8 @@ public:
 	virtual void Ellipse2(const float centerx, const float centery, const int radius);
 	virtual void EllipseImage(const float centerx, const float centery, const float radius, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight);
 	virtual void Polygon(const Vertex2D * const rgv, const int count);
-	virtual void PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight);
+	virtual void Polygon(const Vector<RenderVertex> &rgv);
+	virtual void PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight);
 	virtual void Polyline(const Vertex2D * const rgv, const int count);
 	virtual void Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y);
 	virtual void Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height);

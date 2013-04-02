@@ -126,10 +126,27 @@ void HitRectSur::Polygon(const Vertex2D * const rgv, const int count)
 			}
 		}
 	}
-
-void HitRectSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+// copy-pasted from above
+void HitRectSur::Polygon(const Vector<RenderVertex> &rgv)
 	{
-	Polygon(rgv, count);
+	if (m_fFailedAlready)
+		{
+		return;
+		}
+
+	for (int i=0; i<rgv.Size(); ++i)
+		{
+		if (!PTINRECT(rgv.ElementAt(i)->x,rgv.ElementAt(i)->y))
+			{
+			FailObject();
+			return;
+			}
+		}
+	}
+
+void HitRectSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+	{
+	Polygon(rgv);
 	}
 
 void HitRectSur::Polyline(const Vertex2D * const rgv, const int count)

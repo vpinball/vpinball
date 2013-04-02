@@ -132,8 +132,26 @@ void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
 	
 	delete [] rgpt;
 	}
+// copy-pasted from above
+void PaintSur::Polygon(const Vector<RenderVertex> &rgv)
+	{
+	POINT * const rgpt = new POINT[rgv.Size()];
 
-void PaintSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+	for (int i=0;i<rgv.Size();i++)
+		{
+		rgpt[i].x = SCALEXf(rgv.ElementAt(i)->x);
+		rgpt[i].y = SCALEYf(rgv.ElementAt(i)->y);
+		}
+
+	SelectObject(m_hdc, m_hbr);
+	SelectObject(m_hdc, m_hpnOutline);
+
+	::Polygon(m_hdc, rgpt, rgv.Size());
+	
+	delete [] rgpt;
+	}
+
+void PaintSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
 	const int ix = SCALEXf(left);
 	const int iy = SCALEYf(top);
@@ -148,15 +166,15 @@ void PaintSur::PolygonImage(const Vertex2D * const rgv, const int count, HBITMAP
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
 	SelectObject(m_hdc, GetStockObject(NULL_PEN));
 
-	POINT * const rgpt = new POINT[count];
+	POINT * const rgpt = new POINT[rgv.Size()];
 
-	for (int i=0;i<count;i++)
-		{
-		rgpt[i].x = SCALEXf(rgv[i].x);
-		rgpt[i].y = SCALEYf(rgv[i].y);
-		}
+	for (int i=0;i<rgv.Size();i++)
+	{
+		rgpt[i].x = SCALEXf(rgv.ElementAt(i)->x);
+		rgpt[i].y = SCALEYf(rgv.ElementAt(i)->y);
+	}
 
-	::Polygon(m_hdc, rgpt, count);
+	::Polygon(m_hdc, rgpt, rgv.Size());
 			
 	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
 	
