@@ -1,4 +1,5 @@
 #pragma once
+
 class ShadowSur : public Sur
 	{
 public:
@@ -19,7 +20,8 @@ public:
 	virtual void Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height);
 	
 	void EllipseSkew(const float centerx, const float centery, const float radius, const float z1, const float z2) const;
-	void PolygonSkew(const Vertex2D * const rgv, const int count, const float * const rgz, const float z1, const float z2, const bool fPreClip) const;
+	void PolygonSkew(const Vertex2D * const rgv, const int count, const float * const rgz) const;
+	void PolygonSkew(const Vector<RenderVertex> rgv, const float z1, const float z2) const;
 	void PolylineSkew(const Vertex2D * const rgv, const int count, const float * const rgz, const float z1, const float z2) const;
 
 	virtual void SetObject(ISelect *psel);

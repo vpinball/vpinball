@@ -73,40 +73,40 @@ void Surface::WriteRegDefaults()
 	{
 	char strTmp[40];
 	char strKeyName[20];
-	strcpy_s(strKeyName, 20, IsWall? "DefaultProps\\Wall":"DefaultProps\\Target");
+	strcpy_s(strKeyName, 20, IsWall ? "DefaultProps\\Wall" : "DefaultProps\\Target");
 
-	SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValue(strKeyName,"TimerEnabled", REG_DWORD, &m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue(strKeyName,"TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-	SetRegValue(strKeyName,"HitEvent",REG_DWORD,&m_d.m_fHitEvent,4);
+	SetRegValue(strKeyName,"HitEvent", REG_DWORD, &m_d.m_fHitEvent,4);
 	sprintf_s(strTmp, 40, "%f", m_d.m_threshold);
 	SetRegValue(strKeyName,"HitThreshold", REG_SZ, &strTmp,strlen(strTmp));
 	sprintf_s(strTmp, 40, "%f", m_d.m_slingshot_threshold);
 	SetRegValue(strKeyName,"SlingshotThreshold", REG_SZ, &strTmp,strlen(strTmp));
-	SetRegValue(strKeyName,"SideColor",REG_DWORD,&m_d.m_sidecolor, 4);
-	SetRegValue(strKeyName,"TopImage",REG_SZ,&m_d.m_szImage, strlen(m_d.m_szImage));
-	SetRegValue(strKeyName,"SideImage",REG_SZ,&m_d.m_szSideImage, strlen(m_d.m_szImage));
-	SetRegValue(strKeyName,"SlingshotColor",REG_DWORD,&m_d.m_slingshotColor, 4);
-	SetRegValue(strKeyName,"TopColor",REG_DWORD,&m_d.m_topcolor, 4);
-	SetRegValue(strKeyName,"Droppable",REG_DWORD,&m_d.m_fDroppable,4);
-	SetRegValue(strKeyName,"Flipbook",REG_DWORD,&m_d.m_fFlipbook,4);
-	SetRegValue(strKeyName,"CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
+	SetRegValue(strKeyName,"SideColor", REG_DWORD, &m_d.m_sidecolor, 4);
+	SetRegValue(strKeyName,"TopImage", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
+	SetRegValue(strKeyName,"SideImage", REG_SZ, &m_d.m_szSideImage, strlen(m_d.m_szImage));
+	SetRegValue(strKeyName,"SlingshotColor", REG_DWORD, &m_d.m_slingshotColor, 4);
+	SetRegValue(strKeyName,"TopColor", REG_DWORD, &m_d.m_topcolor, 4);
+	SetRegValue(strKeyName,"Droppable", REG_DWORD, &m_d.m_fDroppable,4);
+	SetRegValue(strKeyName,"Flipbook", REG_DWORD, &m_d.m_fFlipbook,4);
+	SetRegValue(strKeyName,"CastsShadow", REG_DWORD, &m_d.m_fCastsShadow,4);
 	sprintf_s(strTmp, 40, "%f", m_d.m_heightbottom);
 	SetRegValue(strKeyName,"HeightBottom", REG_SZ, &strTmp, strlen(strTmp));
 	sprintf_s(strTmp, 40, "%f", m_d.m_heighttop);
 	SetRegValue(strKeyName,"HeightTop", REG_SZ, &strTmp, strlen(strTmp));
-	SetRegValue(strKeyName,"DisplayTexture",REG_DWORD,&m_d.m_fDisplayTexture,4);
+	SetRegValue(strKeyName,"DisplayTexture", REG_DWORD, &m_d.m_fDisplayTexture,4);
 	sprintf_s(strTmp, 40, "%f", m_d.m_slingshotforce);
 	SetRegValue(strKeyName,"SlingshotForce", REG_SZ, &strTmp, strlen(strTmp));
-	SetRegValue(strKeyName,"SlingshotAnimation",REG_DWORD,&m_d.m_fSlingshotAnimation,4);
+	SetRegValue(strKeyName,"SlingshotAnimation", REG_DWORD, &m_d.m_fSlingshotAnimation,4);
 	sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
 	SetRegValue(strKeyName,"Elasticity", REG_SZ, &strTmp, strlen(strTmp));
 	sprintf_s(strTmp, 40, "%f", m_d.m_friction);
 	SetRegValue(strKeyName,"Friction", REG_SZ, &strTmp, strlen(strTmp));
 	sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
 	SetRegValue(strKeyName,"Scatter", REG_SZ, &strTmp, strlen(strTmp));
-	SetRegValue(strKeyName,"Visible",REG_DWORD,&m_d.m_fVisible,4);
-	SetRegValue(strKeyName,"SideVisible",REG_DWORD,&m_d.m_fSideVisible,4);
-	SetRegValue(strKeyName,"Collidable",REG_DWORD,&m_d.m_fCollidable,4);
+	SetRegValue(strKeyName,"Visible", REG_DWORD, &m_d.m_fVisible,4);
+	SetRegValue(strKeyName,"SideVisible", REG_DWORD, &m_d.m_fSideVisible,4);
+	SetRegValue(strKeyName,"Collidable", REG_DWORD, &m_d.m_fCollidable,4);
 	}
 
 
@@ -116,6 +116,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	IsWall = false;
 	float width = 30.0f, length=6.0f, fTmp;
 	int iTmp;
+
 	HRESULT hr = GetRegStringAsFloat("DefaultProps\\Target", "Width", &fTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		width = fTmp;
@@ -309,11 +310,10 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
 void Surface::SetDefaults(bool fromMouseClick)
 	{
-	HRESULT hr;
 	int iTmp;
 	float fTmp;
 
-	hr = GetRegInt("DefaultProps\\Wall","TimerEnabled", &iTmp);
+	HRESULT hr = GetRegInt("DefaultProps\\Wall","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = (iTmp == 0) ? false : true;
 	else
@@ -530,7 +530,7 @@ void Surface::Render(Sur * const psur)
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
 	bool fDrawDragpoints;		//>>> added by chris
 
-	if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
+	if ( (m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints )
 		{
 		fDrawDragpoints = true;
 		}
@@ -619,19 +619,13 @@ void Surface::RenderShadow(ShadowSur * const psur, const float height)
 	GetRgVertex(&vvertex);
 
 	m_cvertexT = vvertex.Size();
-	m_rgvT = new Vertex2D[m_cvertexT];
+	m_rgvT = NULL;
+
+	psur->PolygonSkew(vvertex, m_d.m_heightbottom, m_d.m_heighttop);
 
 	for (int i=0;i<m_cvertexT;i++)
-		{
-		m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
 		delete vvertex.ElementAt(i);
-		}
-
-	psur->PolygonSkew(m_rgvT, m_cvertexT, NULL, m_d.m_heightbottom, m_d.m_heighttop, false);
-
-	delete [] m_rgvT;
-	m_rgvT = NULL;
-	}
+}
 
 void Surface::GetTimers(Vector<HitTimer> * const pvht)
 	{
@@ -664,34 +658,28 @@ void Surface::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
 void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 	{
-	//rgv = GetRgRenderVertex(&count);
-
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
 
 	const int count = vvertex.Size();
-	RenderVertex * const rgv = new RenderVertex[count];
 	Vertex3Ds * const rgv3D = new Vertex3Ds[count];
 
 	for (int i=0;i<count;i++)
-	{
-		rgv3D[i].x = vvertex.ElementAt(i)->x;
-		rgv3D[i].y = vvertex.ElementAt(i)->y;
+		{
+		const RenderVertex * const pv1 = vvertex.ElementAt(i);
+
+		rgv3D[i].x = pv1->x;
+		rgv3D[i].y = pv1->y;
 		rgv3D[i].z = m_d.m_heighttop;
 
-		rgv[i] = *vvertex.ElementAt(i);
-		delete vvertex.ElementAt(i);
-	}
-
-	for (int i=0;i<count;i++)
-		{
-		const RenderVertex * const pv1 = &rgv[i];
-		const RenderVertex * const pv2 = &rgv[(i < count-1) ? (i+1) : 0];
-		const RenderVertex * const pv3 = &rgv[(i < count-2) ? (i+2) : (i+2-count)];
-		const RenderVertex * const pv4 = &rgv[(i < count-3) ? (i+3) : (i+3-count)];
+		const RenderVertex * const pv2 = vvertex.ElementAt((i < count-1) ? (i+1) : 0);
+		const RenderVertex * const pv3 = vvertex.ElementAt((i < count-2) ? (i+2) : (i+2-count));
 
 		AddLine(pvho, pv2, pv3, pv1, pv2->fSlingshot);
 		}
+
+	for (int i=0;i<count;i++)
+		delete vvertex.ElementAt(i);
 
 	if (m_d.m_fDroppable)
 	{
@@ -722,8 +710,6 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 		m_vhoCollidable.AddElement(ph3dpoly);
 		ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 	}
-
-	delete [] rgv;
 	}
 
 void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const bool fSlingshot)
@@ -787,7 +773,7 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
 	const float dot = vt1.x*vt2.y - vt1.y*vt2.x;
 
-	if (dot < 0) // Inside edges don't need joint hit-testing (dot == 0 continuous segments should mathematically never hit)
+	if (dot < 0.f) // Inside edges don't need joint hit-testing (dot == 0 continuous segments should mathematically never hit)
 		{
 		Joint * const pjoint = new Joint();
 
@@ -887,13 +873,13 @@ void Surface::MoveOffset(const float dx, const float dy)
 
 
 void Surface::PostRenderStatic(const RenderDevice* pd3dDevice)
-	{
-	}
+{
+}
 
 void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
 {
-
 }
+
 void Surface::RenderStatic(const RenderDevice* pd3dDevice)
 {
    if (!m_d.m_fDroppable)
@@ -913,8 +899,8 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	const float slingbottom = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.2f) + m_d.m_heightbottom;
-	const float slingtop = ((m_d.m_heighttop - m_d.m_heightbottom) * 0.8f) + m_d.m_heightbottom;
+	const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
+	const float slingtop = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
 
 	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -931,7 +917,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 		
 		plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation != 0);
 
-		pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET,0x00000000, 1.0f, 0L );
+		pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0L );
 
 		ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, DDBLT_WAIT, NULL);
 
@@ -1066,9 +1052,8 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 			}
 			else
-			{
 				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-			}
+
 			pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 		}
 		else 
@@ -1076,14 +1061,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 			pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
 			pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-			if (g_pvp->m_pdd.m_fHardwareAccel)
-			{
-				pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
-			}
-			else
-			{
-				pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-			}
+			pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, g_pvp->m_pdd.m_fHardwareAccel ? 128 : 1);
 			pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 			pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
 			pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
@@ -1092,7 +1070,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 		pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
 		pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+		g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 		mtrl.diffuse.r = mtrl.ambient.r =
 		mtrl.diffuse.g = mtrl.ambient.g =
@@ -1109,6 +1087,8 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		mtrl.diffuse.b = mtrl.ambient.b = b;
 		}
 
+	pd3dDevice->SetMaterial(&mtrl);
+
 	Vector<RenderVertex> vvertex;
 	GetRgVertex(&vvertex);
 
@@ -1119,22 +1099,12 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		}
 
 	const int cvertex = vvertex.Size();
-	RenderVertex * const rgv = new RenderVertex[cvertex];
-
-	for (int i=0;i<cvertex;i++)
-		{
-		rgv[i] = *vvertex.ElementAt(i);
-		delete vvertex.ElementAt(i);
-		}
-
 	Vertex2D * const rgnormal = new Vertex2D[cvertex];
 
-	pd3dDevice->SetMaterial(&mtrl);
-
 	for (int i=0;i<cvertex;i++)
 		{
-		const RenderVertex * const pv1 = &rgv[i];
-		const RenderVertex * const pv2 = &rgv[(i < cvertex-1) ? (i+1) : 0];
+		const RenderVertex * const pv1 = vvertex.ElementAt(i);
+		const RenderVertex * const pv2 = vvertex.ElementAt((i < cvertex-1) ? (i+1) : 0);
 		const float dx = pv1->x - pv2->x;
 		const float dy = pv1->y - pv2->y;
 
@@ -1150,10 +1120,10 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 	{
 		for (int i=0;i<cvertex;i++)
 			{
-			//RenderVertex *pv0 = &rgv[(i-1+cvertex) % cvertex];
-			const RenderVertex * const pv1 = &rgv[i];
-			const RenderVertex * const pv2 = &rgv[(i < cvertex-1) ? (i+1) : 0];
-			//RenderVertex *pv3 = &rgv[(i+2) % cvertex];
+			//RenderVertex *pv0 = vvertex.ElementAt((i-1+cvertex) % cvertex);
+			const RenderVertex * const pv1 = vvertex.ElementAt(i);
+			const RenderVertex * const pv2 = vvertex.ElementAt((i < cvertex-1) ? (i+1) : 0);
+			//RenderVertex *pv3 = vvertex.ElementAt((i+2) % cvertex);
 
 			Vertex3D rgv3D[4];
 			rgv3D[0].Set(pv1->x,pv1->y,m_d.m_heightbottom);
@@ -1243,6 +1213,8 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			}
 	}
 
+	delete [] rgnormal;
+
 	SAFE_VECTOR_DELETE(rgtexcoord);
 
 	if (m_d.m_fVisible)
@@ -1271,14 +1243,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 				pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 				pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-				if (g_pvp->m_pdd.m_fHardwareAccel)
-				{
-					pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
-				}
-				else
-				{
-					pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-				}
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, g_pvp->m_pdd.m_fHardwareAccel ? 128 : 1);
 				pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 				pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
 				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
@@ -1287,14 +1252,13 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 			pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 		}
 		else
 			pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
 
 		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 		float maxtu, maxtv;
-
 		if (pin)
 			{
 			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
@@ -1312,14 +1276,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 				pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 				pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
 				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-				if (g_pvp->m_pdd.m_fHardwareAccel)
-				{
-					pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 128);
-				}
-				else
-				{
-					pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-				}
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, g_pvp->m_pdd.m_fHardwareAccel ? 128 : 1);
 				pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 				pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
 				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
@@ -1328,7 +1285,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 			pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 			mtrl.diffuse.r = mtrl.ambient.r =
 			mtrl.diffuse.g = mtrl.ambient.g =
@@ -1348,10 +1305,10 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			maxtv = maxtu = 1.0f;
 			}
 
-		Vector<Triangle> vtri;
-		PolygonToTriangles(rgv, &vpoly, &vtri);
-
 		pd3dDevice->SetMaterial(&mtrl);
+
+		Vector<Triangle> vtri;
+		PolygonToTriangles(vvertex, &vpoly, &vtri);
 
 		const float height = (!fDrop) ? m_d.m_heighttop : (m_d.m_heightbottom + 0.1f);
 
@@ -1362,9 +1319,9 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			{
 			const Triangle * const ptri = vtri.ElementAt(i);
 
-			const RenderVertex * const pv0 = &rgv[ptri->a];
-			const RenderVertex * const pv1 = &rgv[ptri->b];
-			const RenderVertex * const pv2 = &rgv[ptri->c];
+			const RenderVertex * const pv0 = vvertex.ElementAt(ptri->a);
+			const RenderVertex * const pv1 = vvertex.ElementAt(ptri->b);
+			const RenderVertex * const pv2 = vvertex.ElementAt(ptri->c);
 
 			Vertex3D rgv3D[3];
 			rgv3D[0].Set(pv0->x,pv0->y,height);
@@ -1390,22 +1347,18 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 				}
 
 			// Draw top.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 3,(LPWORD)rgi0123, 3, 0);
-			//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 3);
-			}
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 3,(LPWORD)rgi0123, 3, 0);
+			//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 3);
 
-		for (int i=0;i<vtri.Size();i++)
-			{
 			delete vtri.ElementAt(i);
 			}
 		}
 
+	for (int i=0;i<cvertex;i++)
+		delete vvertex.ElementAt(i);
+
 	ppin3d->SetTexture(NULL);
-
 	ppin3d->EnableLightMap(fFalse, -1);
-
-	delete [] rgv;
-	delete [] rgnormal;
 
 	if (fMover)
 		{
@@ -1495,7 +1448,7 @@ void Surface::DoCommand(int icmd, int x, int y)
       {
          STARTUNDO
 
-            RECT rc;
+         RECT rc;
          GetClientRect(m_ptable->m_hwnd, &rc);
 
          HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
@@ -1508,29 +1461,22 @@ void Surface::DoCommand(int icmd, int x, int y)
          GetRgVertex(&vvertex);
 
          m_cvertexT = vvertex.Size();
-         m_rgvT = new Vertex2D[m_cvertexT];
-
-         for (int i=0;i<m_cvertexT;i++)
-         {
-            m_rgvT[i] = *((Vertex2D *)vvertex.ElementAt(i));
-         }
+         m_rgvT = NULL;
 
          Vertex2D vOut;
          int iSeg;
-         ClosestPointOnPolygon(m_rgvT, m_cvertexT, v, &vOut, &iSeg, true);
+         ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
 
-         // Go through vertices (including iSeg itself) counting control points until iSeg
+		 // Go through vertices (including iSeg itself) counting control points until iSeg
          int icp = 0;
          for (int i=0;i<(iSeg+1);i++)
-         {
             if (vvertex.ElementAt(i)->fControlPoint)
-            {
                icp++;
-            }
-         }
+
+         for (int i=0;i<m_cvertexT;i++)
+            delete vvertex.ElementAt(i);
 
          CComObject<DragPoint> *pdp;
-
          CComObject<DragPoint>::CreateInstance(&pdp);
          if (pdp)
          {
@@ -1538,14 +1484,6 @@ void Surface::DoCommand(int icmd, int x, int y)
             pdp->Init(this, vOut.x, vOut.y);
             m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
          }
-
-         for (int i=0;i<m_cvertexT;i++)
-         {
-            delete vvertex.ElementAt(i);
-         }
-
-         delete [] m_rgvT;
-         m_rgvT = NULL;
 
          SetDirtyDraw();
 
@@ -1561,27 +1499,27 @@ void Surface::FlipY(Vertex2D * const pvCenter)
 }
 
 void Surface::FlipX(Vertex2D * const pvCenter)
-	{
+{
 	IHaveDragPoints::FlipPointX(pvCenter);
-	}
+}
 
 void Surface::Rotate(float ang, Vertex2D *pvCenter)
-	{
+{
 	IHaveDragPoints::RotatePoints(ang, pvCenter);
-	}
+}
 
 void Surface::Scale(float scalex, float scaley, Vertex2D *pvCenter)
-	{
+{
 	IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter);
-	}
+}
 
 void Surface::Translate(Vertex2D *pvOffset)
-	{
+{
 	IHaveDragPoints::TranslatePoints(pvOffset);
-	}
+}
 
 HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
+{
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
 #ifdef VBA
@@ -1602,7 +1540,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteInt(FID(SCLR), m_d.m_slingshotColor);
 	bw.WriteFloat(FID(HTBT), m_d.m_heightbottom);
 	bw.WriteFloat(FID(HTTP), m_d.m_heighttop);
-	//bw.WriteBool(FID(INNR), m_d.m_fInner);
+	//bw.WriteBool(FID(INNR), m_d.m_fInner); //!! Deprecated
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 	bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
 	bw.WriteFloat(FID(SLGF), m_d.m_slingshotforce);
@@ -1646,9 +1584,10 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 	// On some tables, the outer wall is still modelled/copy-pasted 'inside-out',
 	// this tries to compensate for that
 	if(!m_d.m_fInner) {
+		const int cvertex = m_vdpoint.Size();
+
 		float miny = FLT_MAX;
 		int minyindex;
-		int cvertex = m_vdpoint.Size();
 
 		// Find smallest y point - use it to connect with surrounding border
 		for (int i=0;i<cvertex;i++)
@@ -1664,12 +1603,13 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 
 		float tmpx;
 		m_vdpoint.ElementAt(minyindex)->get_X(&tmpx);
-		float tmpy = miny - 1.0f; // put tiny gap in to avoid errors
+		const float tmpy = miny - 1.0f; //!! put tiny gap in to avoid errors
 
-		for (int i=0;i<m_vdpoint.Size()/2;i++) {
-			CComObject<DragPoint> *pdp = m_vdpoint.ElementAt(i);
-			m_vdpoint.ReplaceElementAt(m_vdpoint.ElementAt(m_vdpoint.Size()-1-i),i);
-			m_vdpoint.ReplaceElementAt(pdp,m_vdpoint.Size()-1-i);
+		// swap list around
+		for (int i=0;i<cvertex/2;i++) {
+			CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+			m_vdpoint.ReplaceElementAt(m_vdpoint.ElementAt(cvertex-1-i), i);
+			m_vdpoint.ReplaceElementAt(pdp, cvertex-1-i);
 		}
 
 		CComObject<DragPoint> *pdp;
@@ -1890,9 +1830,9 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
 	}
 
 HRESULT Surface::InitPostLoad()
-	{
+{
 	return S_OK;
-	}
+}
 
 STDMETHODIMP Surface::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
@@ -2254,7 +2194,6 @@ STDMETHODIMP Surface::put_Friction(float newVal)
 
 	return S_OK;
 }
-
 
 STDMETHODIMP Surface::get_Scatter(float *pVal)
 {

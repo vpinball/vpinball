@@ -728,13 +728,6 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 	GetRgVertex(&vvertex);
 
 	const int cvertex = vvertex.Size();
-	RenderVertex* const rgv = new RenderVertex[cvertex];
-
-	for (int i=0;i<cvertex;i++)
-		{
-		rgv[i] = *vvertex.ElementAt(i);
-		delete vvertex.ElementAt(i);
-		}
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -745,8 +738,8 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 		{
 		vpoly.AddElement((void *)i);
 
-		const float dx = rgv[i].x - m_d.m_vCenter.x;
-		const float dy = rgv[i].y - m_d.m_vCenter.y;
+		const float dx = vvertex.ElementAt(i)->x - m_d.m_vCenter.x;
+		const float dy = vvertex.ElementAt(i)->y - m_d.m_vCenter.y;
 		const float dist = dx*dx + dy*dy;
 		if (dist > maxdist)
 			maxdist = dist;
@@ -757,7 +750,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 	const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 
 	Vector<Triangle> vtri;
-	PolygonToTriangles(rgv, &vpoly, &vtri);
+	PolygonToTriangles(vvertex, &vpoly, &vtri);
 
 	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -858,9 +851,9 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 			{
 			const Triangle * const ptri = vtri.ElementAt(t);
 
-			const RenderVertex * const pv0 = &rgv[ptri->a];
-			const RenderVertex * const pv1 = &rgv[ptri->c];
-			const RenderVertex * const pv2 = &rgv[ptri->b];
+			const RenderVertex * const pv0 = vvertex.ElementAt(ptri->a);
+			const RenderVertex * const pv1 = vvertex.ElementAt(ptri->c);
+			const RenderVertex * const pv2 = vvertex.ElementAt(ptri->b);
 
 			rgv3D[0].Set(pv0->x,pv0->y,height + 0.1f);
 			rgv3D[1].Set(pv1->x,pv1->y,height + 0.1f);
@@ -952,12 +945,11 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 				&m_pobjframe[i]->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
 
-	for (int i=0;i<vtri.Size();i++)
-		{
-		delete vtri.ElementAt(i);
-		}
+	for (int i=0;i<cvertex;i++)
+		delete vvertex.ElementAt(i);
 
-	delete [] rgv;
+	for (int i=0;i<vtri.Size();i++)
+		delete vtri.ElementAt(i);
 
 	ppin3d->SetTexture(NULL);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -1384,26 +1376,19 @@ void Light::DoCommand(int icmd, int x, int y)
 			GetRgVertex(&vvertex);
 
 			const int cvertex = vvertex.Size();
-			Vertex2D * const rgv = new Vertex2D[cvertex];
-
-			for (int i=0;i<cvertex;i++)
-				{
-				rgv[i] = *((Vertex2D *)vvertex.ElementAt(i));
-				}
 
 			int iSeg;
 			Vertex2D vOut;
-			ClosestPointOnPolygon(rgv, cvertex, v, &vOut, &iSeg, true);
+			ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
 
 			// Go through vertices (including iSeg itself) counting control points until iSeg
 			int icp = 0;
 			for (int i=0;i<(iSeg+1);i++)
-				{
 				if (vvertex.ElementAt(i)->fControlPoint)
-					{
 					icp++;
-					}
-				}
+
+			for (int i=0;i<cvertex;i++)
+				delete vvertex.ElementAt(i);
 
 			//if (icp == 0) // need to add point after the last point
 				//icp = m_vdpoint.Size();
@@ -1416,13 +1401,6 @@ void Light::DoCommand(int icmd, int x, int y)
 				pdp->Init(this, vOut.x, vOut.y);
 				m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
 				}
-
-			for (int i=0;i<cvertex;i++)
-				{
-				delete vvertex.ElementAt(i);
-				}
-
-			delete [] rgv;
 
 			SetDirtyDraw();
 
