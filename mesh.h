@@ -83,6 +83,7 @@ public:
 	bool fSmooth;
 	bool fSlingshot;
 	bool fControlPoint; // Whether this point was a control point on the curve
+	bool padd; // Useless padding to align to 4bytes, should enhance access speeds
 	};
 
 
