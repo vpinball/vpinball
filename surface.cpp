@@ -458,13 +458,13 @@ void Surface::SetDefaults(bool fromMouseClick)
 
 void Surface::PreRender(Sur * const psur)
 	{
-	Vector<RenderVertex> vvertex;
-	GetRgVertex(&vvertex);
-
 	psur->SetFillColor(RGB(192,192,192));
 	psur->SetObject(this);
 	// Don't want border color to be over-ridden when selected - that will be drawn later
 	psur->SetBorderColor(-1,false,0);
+
+	Vector<RenderVertex> vvertex;
+	GetRgVertex(&vvertex);
 
 	PinImage *ppi;
 	if (m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
@@ -500,16 +500,11 @@ void Surface::Render(Sur * const psur)
 		delete vvertex.ElementAt(i);
 
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-	bool fDrawDragpoints;		//>>> added by chris
+	bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints );
 
-	if ( (m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints )
-		{
-		fDrawDragpoints = true;
-		}
-	else
+	if (!fDrawDragpoints)
 		{
 		// if any of the dragpoints of this object are selected then draw all the dragpoints
-		fDrawDragpoints = false;
 		for (int i=0;i<m_vdpoint.Size();i++)
 			{
 			const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
@@ -553,7 +548,6 @@ void Surface::Render(Sur * const psur)
 void Surface::RenderBlueprint(Sur *psur)
 	{
 	// Don't render dragpoints for blueprint
-
 	psur->SetFillColor(-1);
 	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetObject(this); // For selected formatting
@@ -860,7 +854,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
-	const float slingtop = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
+	const float slingtop    = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
 
 	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -1191,7 +1185,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 
 			pinSide->EnsureColorKey();
-				pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
+			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
 
 			if (pinSide->m_fTransparent)
 			{
@@ -1413,8 +1407,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 
          HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
-         Vertex2D v;
-         phs->ScreenToSurface(x, y, &v.x, &v.y);
+         const Vertex2D v = phs->ScreenToSurface(x, y);
          delete phs;
 
          Vector<RenderVertex> vvertex;
@@ -2143,7 +2136,7 @@ STDMETHODIMP Surface::put_Friction(float newVal)
 	STARTUNDO
 
 	if (newVal > 1.0f) newVal = 1.0f;
-	else if (newVal < 0) newVal = 0;
+	else if (newVal < 0.f) newVal = 0.f;
 
 	m_d.m_friction = newVal;
 
