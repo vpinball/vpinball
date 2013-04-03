@@ -1081,7 +1081,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 			Vertex3D rgv3D[4];
          rgv3D[0].x=pv1->x;   rgv3D[0].y=pv1->y;   rgv3D[0].z=m_d.m_heightbottom;
-         rgv3D[1].x=pv2->x;   rgv3D[1].y=pv2->y;   rgv3D[1].z=m_d.m_heighttop;
+         rgv3D[1].x=pv1->x;   rgv3D[1].y=pv1->y;   rgv3D[1].z=m_d.m_heighttop;
          rgv3D[2].x=pv2->x;   rgv3D[2].y=pv2->y;   rgv3D[2].z=m_d.m_heighttop;
          rgv3D[3].x=pv2->x;   rgv3D[3].y=pv2->y;   rgv3D[3].z=m_d.m_heightbottom;
 
