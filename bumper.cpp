@@ -259,7 +259,7 @@ static const Material bumpermtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.
 
 void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
 {
-   int l;
+   int l,t,i;
    const float outerradius = m_d.m_radius + m_d.m_overhang;
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
@@ -273,8 +273,22 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
    {
       m_ptable->GetTVTU(pin, &maxtu, &maxtv);
    }
-   for (l=0;l<32;l++)
+   t=0;
+   i=0;
+   for (l=0;l<32;l++,t+=6,i+=4)
    {
+      normalIndices[t  ] = (l==0) ? 31 : (l-1);
+      normalIndices[t+1] = (l==0) ? 63 : (l+31);
+      normalIndices[t+2] = (l==0) ? 33 : (l+1);
+      normalIndices[t+3] = l;
+      normalIndices[t+4] = l+32;
+      normalIndices[t+5] = (l<30) ? (l+2) : (l-30);
+
+      indices[i  ] = l;
+      indices[i+1] = l+32;
+      indices[i+2] = (l==31) ? 32 : (l+33);
+      indices[i+3] = (l==31) ? 0  : (l+1);
+
       const float angle = (float)(M_PI*2.0/32.0)*(float)l;
       const float sinangle =  sinf(angle);
       const float cosangle = -cosf(angle);
@@ -370,7 +384,6 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
       moverVertices[1][l+128].tv = 0.5f+cosangle*0.5f;
    }
    SetNormal(staticVertices, rgiBumperStatic, 32, NULL, NULL, 0);
-
 }
 
 void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
@@ -380,7 +393,8 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
    // ensure we are not disabled at game start
    m_fDisabled = fFalse;
    if(!m_d.m_fVisible)	return;
-
+   
+   int t,k;
    // All this function does is render the bumper image so the black shows through where it's missing in the animated form
    PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);	
    if (pin)
@@ -394,29 +408,17 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
       pd3dDevice->SetMaterial((Material*)&bumpermtrl);
 
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, staticVertices, 32, (LPWORD)rgiBumperStatic, 32, 0);
-
-      for (int l=0;l<32;l++)
+      t=0;
+      k=0;
+      for (int l=0;l<32;l++,t+=6,k+=4)
       {
-         const WORD rgiNormal[6] = {
-            (l == 0) ? 31 : (l-1),
-            (l == 0) ? 63 : (l+31),
-            (l == 0) ? 33 : (l+1),
-            l,
-            l+32,
-            (l < 30) ? (l+2) : (l-30)};
+         SetNormal(staticVertices, &normalIndices[t], 3, NULL, &indices[k], 2);
+         SetNormal(&staticVertices[32], &normalIndices[t], 3, NULL, &indices[k], 2);
+         SetNormal(staticVertices, &normalIndices[t+3], 3, NULL, &indices[k+2], 2);
+         SetNormal(&staticVertices[32], &normalIndices[t+3], 3, NULL, &indices[k+2], 2);
 
-            const WORD rgi[4] = {l,
-               l+32,
-               (l == 31) ? 32 : (l+33),
-               (l == 31) ? 0 : (l+1)};
-
-            SetNormal(staticVertices, rgiNormal, 3, NULL, rgi, 2);
-            SetNormal(&staticVertices[32], rgiNormal, 3, NULL, rgi, 2);
-            SetNormal(staticVertices, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-            SetNormal(&staticVertices[32], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-
-            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, staticVertices, 64, (LPWORD)rgi, 4, 0);
-            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &staticVertices[32], 64, (LPWORD)rgi, 4, 0);
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, staticVertices, 64, (LPWORD)&indices[k], 4, 0);
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &staticVertices[32], 64, (LPWORD)&indices[k], 4, 0);
       }
 
       pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, FALSE);
@@ -430,6 +432,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    if(!m_d.m_fVisible)	return;
 
+   int k,t;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    ppin3d->ClearExtents(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar);
@@ -444,7 +447,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 
       Material mtrl;
       mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-         mtrl.emissive.a = mtrl.power = 0;
+      mtrl.emissive.a = mtrl.power = 0;
       mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
       PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -455,24 +458,28 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
          const float b = (m_d.m_color & 16711680) * (float) (1.0/16711680.0);
          switch (i)
          {
-         case 0:
-            ppin3d->SetTexture(NULL);
-            mtrl.diffuse.r = mtrl.ambient.r = r * 0.5f;
-            mtrl.diffuse.g = mtrl.ambient.g = g * 0.5f;
-            mtrl.diffuse.b = mtrl.ambient.b = b * 0.5f;
-            mtrl.emissive.r =
+            case 0:
+            {
+               ppin3d->SetTexture(NULL);
+               mtrl.diffuse.r = mtrl.ambient.r = r * 0.5f;
+               mtrl.diffuse.g = mtrl.ambient.g = g * 0.5f;
+               mtrl.diffuse.b = mtrl.ambient.b = b * 0.5f;
+               mtrl.emissive.r =
                mtrl.emissive.g =
                mtrl.emissive.b = 0;
-            break;
-         case 1:
-            ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
-            ppin3d->EnableLightMap(fFalse, -1);
-            mtrl.diffuse.r = mtrl.ambient.r = 0;//r/2;//r;
-            mtrl.diffuse.g = mtrl.ambient.g = 0;//g/2;//g;
-            mtrl.diffuse.b = mtrl.ambient.b = 0;//b/2;//b;
-            mtrl.emissive.r = r;
-            mtrl.emissive.g = g;
-            mtrl.emissive.b = b;
+               break;
+            }
+            case 1:
+            {
+               ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+               ppin3d->EnableLightMap(fFalse, -1);
+               mtrl.diffuse.r = mtrl.ambient.r = 0;//r/2;//r;
+               mtrl.diffuse.g = mtrl.ambient.g = 0;//g/2;//g;
+               mtrl.diffuse.b = mtrl.ambient.b = 0;//b/2;//b;
+               mtrl.emissive.r = r;
+               mtrl.emissive.g = g;
+               mtrl.emissive.b = b;
+            }
             break;
          }
 
@@ -481,29 +488,17 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
          SetNormal(&moverVertices[i][64], rgiBumperStatic, 32, NULL, NULL, 0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 32, (LPWORD)rgiBumperStatic, 32, 0);
 
-         for (int l=0;l<32;l++)
+         t=0;
+         k=0;
+         for (int l=0;l<32;l++,t+=6,k+=4)
          {
-            const WORD rgiNormal[6] = {
-               (l == 0) ? 31 : (l-1),
-               (l == 0) ? 63 : (l+31),
-               (l == 0) ? 33 : (l+1),
-               l,
-               l+32,
-               (l < 30) ? (l+2) : (l-30)};
+            SetNormal(&moverVertices[i][64], &normalIndices[t], 3, NULL, &indices[k], 2);
+            SetNormal(&moverVertices[i][96], &normalIndices[t], 3, NULL, &indices[k], 2);
+            SetNormal(&moverVertices[i][64], &normalIndices[t+3], 3, NULL, &indices[k+2], 2);
+            SetNormal(&moverVertices[i][96], &normalIndices[t+3], 3, NULL, &indices[k+2], 2);
 
-               const WORD rgi[4] = {
-                  l,
-                  l+32,
-                  (l == 31) ? 32 : (l+33),
-                  (l == 31) ? 0 : (l+1)};
-
-                  SetNormal(&moverVertices[i][64], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(&moverVertices[i][96], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(&moverVertices[i][64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-                  SetNormal(&moverVertices[i][96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 64, (LPWORD)rgi, 4, 0);
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][96], 64, (LPWORD)rgi, 4, 0);
+            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 64, (LPWORD)&indices[k], 4, 0);
+            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][96], 64, (LPWORD)&indices[k], 4, 0);
          }
       }
 
@@ -515,47 +510,39 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
          // Side color
          switch (i)
          {
-         case 0:
-            ppin3d->SetTexture(NULL);
-            mtrl.diffuse.r = mtrl.ambient.r = rside * 0.5f;
-            mtrl.diffuse.g = mtrl.ambient.g = gside * 0.5f;
-            mtrl.diffuse.b = mtrl.ambient.b = bside * 0.5f;
-            mtrl.emissive.r =
-               mtrl.emissive.g =
-               mtrl.emissive.b = 0;
-            break;
-         case 1:
-            ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
-            ppin3d->EnableLightMap(fFalse, -1);
-            mtrl.diffuse.r = mtrl.ambient.r = 0;//r/2;//r;
-            mtrl.diffuse.g = mtrl.ambient.g = 0;//g/2;//g;
-            mtrl.diffuse.b = mtrl.ambient.b = 0;//b/2;//b;
-            mtrl.emissive.r = rside;
-            mtrl.emissive.g = gside;
-            mtrl.emissive.b = bside;
-            break;
+            case 0:
+            {
+               ppin3d->SetTexture(NULL);
+               mtrl.diffuse.r = mtrl.ambient.r = rside * 0.5f;
+               mtrl.diffuse.g = mtrl.ambient.g = gside * 0.5f;
+               mtrl.diffuse.b = mtrl.ambient.b = bside * 0.5f;
+               mtrl.emissive.r =
+                  mtrl.emissive.g =
+                  mtrl.emissive.b = 0;
+               break;
+            }
+            case 1:
+            {
+               ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+               ppin3d->EnableLightMap(fFalse, -1);
+               mtrl.diffuse.r = mtrl.ambient.r = 0;//r/2;//r;
+               mtrl.diffuse.g = mtrl.ambient.g = 0;//g/2;//g;
+               mtrl.diffuse.b = mtrl.ambient.b = 0;//b/2;//b;
+               mtrl.emissive.r = rside;
+               mtrl.emissive.g = gside;
+               mtrl.emissive.b = bside;
+               break;
+            }
          }
          pd3dDevice->SetMaterial(&mtrl);
 
-         for (int l=0;l<32;l++)
+         t=0;
+         k=0;
+         for (int l=0;l<32;l++,t+=6,k+=4)
          {
-            const WORD rgiNormal[6] = {
-               (l == 0) ? 31 : (l-1),
-               (l == 0) ? 63 : (l+31),
-               (l == 0) ? 33 : (l+1),
-               l,
-               l+32,
-               (l < 30) ? (l+2) : (l-30)};
-
-               const WORD rgi[4] = {
-                  l,
-                  l+32,
-                  (l == 31) ? 32 : (l+33),
-                  (l == 31) ? 0 : (l+1)};
-
-                  SetNormal(moverVertices[i], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(moverVertices[i], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,moverVertices[i],64,(LPWORD)rgi, 4, 0);
+            SetNormal(moverVertices[i], &normalIndices[t], 3, NULL, &indices[k], 2);
+            SetNormal(moverVertices[i], &normalIndices[t+3], 3, NULL, &indices[k+2], 2);
+            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,moverVertices[i],64,(LPWORD)&indices[k], 4, 0);
          }
       }
 
@@ -581,58 +568,46 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 
          switch (i)
          {
-         case 0:
-            ppin3d->EnableLightMap(fFalse, -1);
-            mtrl.diffuse.r = mtrl.ambient.r = 
+            case 0:
+            {
+               ppin3d->EnableLightMap(fFalse, -1);
+               mtrl.diffuse.r = mtrl.ambient.r = 
                mtrl.diffuse.g = mtrl.ambient.g = 
                mtrl.diffuse.b = mtrl.ambient.b = 0.5f;
-            mtrl.emissive.r = 
+               mtrl.emissive.r = 
                mtrl.emissive.g = 
                mtrl.emissive.b = 0;
-            break;
+               break;
+            }
 
-         case 1:
-            ppin3d->m_pd3dDevice->SetTexture(eLightProject1, ppin3d->m_pddsLightTexture);
-            mtrl.diffuse.r = mtrl.ambient.r =
+            case 1:
+            {
+               ppin3d->m_pd3dDevice->SetTexture(eLightProject1, ppin3d->m_pddsLightTexture);
+               mtrl.diffuse.r = mtrl.ambient.r =
                mtrl.diffuse.g = mtrl.ambient.g =
                mtrl.diffuse.b = mtrl.ambient.b = 0;
-            mtrl.emissive.r =
+               mtrl.emissive.r =
                mtrl.emissive.g =
                mtrl.emissive.b = 1.0f;
-            break;
+               break;           
+            }
          }
          pd3dDevice->SetMaterial(&mtrl);
 
          SetNormal(&moverVertices[i][64], rgiBumperStatic, 32, NULL, NULL, 0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 32, (LPWORD)rgiBumperStatic, 32, 0);
 
-         for (int l=0;l<32;l++)
+         t=0;
+         k=0;
+         for (int l=0;l<32;l++,t+=6,k+=4)
          {
-            const WORD rgiNormal[6] = 
-            {
-               (l == 0) ? 31 : (l-1),
-               (l == 0) ? 63 : (l+31),
-               (l == 0) ? 33 : (l+1),
-               l,
-               l+32,
-               (l < 30) ? (l+2) : (l-30)
-            };
+            SetNormal(&moverVertices[i][64], &normalIndices[t], 3, NULL, &indices[k], 2);
+            SetNormal(&moverVertices[i][96], &normalIndices[t], 3, NULL, &indices[k], 2);
+            SetNormal(&moverVertices[i][64], &normalIndices[t+3], 3, NULL, &indices[k+2], 2);
+            SetNormal(&moverVertices[i][96], &normalIndices[t+3], 3, NULL, &indices[k+2], 2);
 
-               WORD rgi[4] = 
-               {
-                  l,
-                  l+32,
-                  (l == 31) ? 32 : (l+33),
-                  (l == 31) ? 0 : (l+1)
-               };
-
-                  SetNormal(&moverVertices[i][64], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(&moverVertices[i][96], rgiNormal, 3, NULL, rgi, 2);
-                  SetNormal(&moverVertices[i][64], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-                  SetNormal(&moverVertices[i][96], &rgiNormal[3], 3, NULL, &rgi[2], 2);
-
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 64, rgi, 4, 0);
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][96], 64, rgi, 4, 0);
+            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 64, &indices[k], 4, 0);
+            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][96], 64, &indices[k], 4, 0);
          }
 
          // Reset all the texture coordinates
@@ -640,25 +615,6 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
          {
             ppin3d->EnableLightMap(fFalse, -1);
          }
-/*         {
-            const float angle = (float)(M_PI*2.0/32.0)*(float)32.0; //!! potential bug?! (last 32.0 was l)
-            const float sinangle = sinf(angle);
-            const float cosangle = cosf(angle);
-            for (int l=0;l<32;l++)
-            {
-               moverVertices[l+64].tu = 0.5f+sinangle*0.25f;
-               moverVertices[l+64].tv = 0.5f+cosangle*0.25f;
-               moverVertices[l+96].tu = 0.5f+sinangle*(float)(0.5*0.9);
-               moverVertices[l+96].tv = 0.5f+cosangle*(float)(0.5*0.9);
-               moverVertices[l+128].tu = 0.5f+sinangle*0.5f;
-               moverVertices[l+128].tv = 0.5f+cosangle*0.5f;
-            }
-         }
-         else
-            ppin3d->EnableLightMap(fFalse, -1);
-*/
-         //pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
-         //pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
       }
 
       pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);

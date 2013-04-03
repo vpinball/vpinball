@@ -125,6 +125,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 
 	void RenderStaticCircle(const RenderDevice* pd3dDevice);
 	void RenderCustomStatic(const RenderDevice* pd3dDevice);
+   void PrepareStaticCustom();
+   void PrepareMoversCustom();
 
 	void RenderCustomMovers(const RenderDevice* pd3dDevice);
 
@@ -166,7 +168,12 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 	void		setLightState(const LightState newVal);
 	bool		m_fLockedByLS;
 //<<<
-
+   Vertex3D circleVertex[32];
+   Vertex3D *customMoverVertex[2];
+   Vertex3D *staticCustomVertex;
+   int staticCutomVertexNum;
+   int customMoverVertexNum;
+   
 // ILight
 public:
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
