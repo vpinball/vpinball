@@ -3,34 +3,7 @@
 
 #pragma once
 
-class VertexBuffer : public IDirect3DVertexBuffer7
-{
-public:
-
-   enum LockFlags
-   {
-      WRITEONLY = DDLOCK_WRITEONLY,
-      NOOVERWRITE = DDLOCK_NOOVERWRITE,
-      DISCARDCONTENTS   =DDLOCK_DISCARDCONTENTS
-   };
-   bool lock( unsigned int _offsetToLock, unsigned int _sizeToLock, void **_dataBuffer, DWORD _flags )
-   {
-      if ( FAILED(this->Lock( (DWORD)_flags, _dataBuffer, 0 )) )
-      {
-         return false;
-      }
-      return true;
-   }
-   bool unlock(void)
-   {
-      if ( FAILED(this->Unlock() ) )
-      {
-         return false;
-      }
-      return true;
-   }
-};
-
+class VertexBuffer;
 class RenderDevice : public IDirect3DDevice7
 {
 public:
@@ -175,4 +148,40 @@ private:
    DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];
    Material materialStateCache;
+};
+
+class VertexBuffer : public IDirect3DVertexBuffer7
+{
+public:
+
+   enum LockFlags
+   {
+      WRITEONLY = DDLOCK_WRITEONLY,
+      NOOVERWRITE = DDLOCK_NOOVERWRITE,
+      DISCARDCONTENTS   =DDLOCK_DISCARDCONTENTS
+   };
+   bool lock( unsigned int _offsetToLock, unsigned int _sizeToLock, void **_dataBuffer, DWORD _flags )
+   {
+      if ( FAILED(this->Lock( (DWORD)_flags, _dataBuffer, 0 )) )
+      {
+         return false;
+      }
+      return true;
+   }
+   bool unlock(void)
+   {
+      if ( FAILED(this->Unlock() ) )
+      {
+         return false;
+      }
+      return true;
+   }
+   bool optimize( RenderDevice *device)
+   {
+      if( FAILED(this->Optimize((LPDIRECT3DDEVICE7)device,0)))
+      {
+         return false;
+      }
+      return true;
+   }
 };

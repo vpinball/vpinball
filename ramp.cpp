@@ -1326,7 +1326,7 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
    int offset=0;
    int dataSize=sizeof(Vertex3D_NoTex2)*((cvertex-1)*4);
 
-   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
+   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 
    indices[0] = new WORD[(cvertex-1)*6];
    indices[1] = new WORD[(cvertex-1)*6];
