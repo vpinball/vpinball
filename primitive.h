@@ -174,6 +174,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 	PinTable *m_ptable;
 
 	PrimitiveData m_d;
+   int numVertices;
+   VertexBuffer *vertexBuffer;
 
 public:
 	// Vertices for 3d Display
