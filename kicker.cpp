@@ -181,8 +181,48 @@ void Kicker::PostRenderStatic(const RenderDevice* pd3dDevice)
 
 void Kicker::RenderSetup(const RenderDevice* _pd3dDevice)
 {
+   if ((m_d.m_kickertype == KickerInvisible) || (m_d.m_kickertype == KickerHidden))
+      return;
 
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+   ppin3d->ClearExtents(&recBounds, NULL, NULL);	
+
+   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
+   for (int l=0;l<16;l++)
+   {
+      const float angle = (float)(M_PI*2.0/16.0)*(float)l;
+      vertices[l].x = m_d.m_vCenter.x + sinf(angle)*m_d.m_radius;
+      vertices[l].y = m_d.m_vCenter.y - cosf(angle)*m_d.m_radius;
+      vertices[l].z = height + (0.1f - 30.0f);
+
+      vertices[l+16].x = vertices[l].x;
+      vertices[l+16].y = vertices[l].y;
+      vertices[l+16].z = height + 0.1f;
+
+      borderVerices[l].x = m_d.m_vCenter.x + sinf(angle)*(m_d.m_radius+6.0f);
+      borderVerices[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius+6.0f);
+      borderVerices[l].z = height + 0.05f;
+
+      ppin3d->m_lightproject.CalcCoordinates(&vertices[l],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&vertices[l+16],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&borderVerices[l],inv_width,inv_height);
+   }
+
+   vertices[48].x = m_d.m_vCenter.x;
+   vertices[48].y = m_d.m_vCenter.y;
+   vertices[48].z = height + (0.1f - 30.0f);
+   ppin3d->m_lightproject.CalcCoordinates(&vertices[48],inv_width,inv_height);
+
+   ppin3d->EnableLightMap(fTrue, height);
+
+   ppin3d->ExpandExtents(&recBounds, &vertices[16], NULL, NULL, 16, fFalse);
 }
+
 
 void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
 {
@@ -195,9 +235,6 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-   RECT rcBounds;
-   ppin3d->ClearExtents(&rcBounds, NULL, NULL);	
-
    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);	
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
@@ -206,32 +243,6 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-   Vertex3D rgv3D[49];
-   Vertex3D rgvBorder[16];
-   for (int l=0;l<16;l++)
-   {
-      const float angle = (float)(M_PI*2.0/16.0)*(float)l;
-      rgv3D[l].x = m_d.m_vCenter.x + sinf(angle)*m_d.m_radius;
-      rgv3D[l].y = m_d.m_vCenter.y - cosf(angle)*m_d.m_radius;
-      rgv3D[l].z = height + (0.1f - 30.0f);
-
-      rgv3D[l+16].x = rgv3D[l].x;
-      rgv3D[l+16].y = rgv3D[l].y;
-      rgv3D[l+16].z = height + 0.1f;
-
-      rgvBorder[l].x = m_d.m_vCenter.x + sinf(angle)*(m_d.m_radius+6.0f);
-      rgvBorder[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius+6.0f);
-      rgvBorder[l].z = height + 0.05f;
-
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&rgvBorder[l],inv_width,inv_height);
-   }
-
-   rgv3D[48].x = m_d.m_vCenter.x;
-   rgv3D[48].y = m_d.m_vCenter.y;
-   rgv3D[48].z = height + (0.1f - 30.0f);
-   ppin3d->m_lightproject.CalcCoordinates(&rgv3D[48],inv_width,inv_height);
 
    const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
    const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
@@ -239,10 +250,10 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
 
    Material mtrl;
    mtrl.diffuse.a = 
-      mtrl.ambient.a =
-      mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-      mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-      mtrl.power = 0;
+   mtrl.ambient.a =
+   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+   mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+   mtrl.power = 0;
    mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
    mtrl.diffuse.g = mtrl.ambient.g = g;//0.2f;
    mtrl.diffuse.b = mtrl.ambient.b = b;//0.2f;
@@ -260,26 +271,20 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
          rgi[l*3+1] = l+1;
          rgi[l*3+2] = l+2;
 
-         SetNormal(rgvBorder, rgi+l*3, 3, NULL, NULL, 0);
+         SetNormal(borderVerices, rgi+l*3, 3, NULL, NULL, 0);
       }
-      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgvBorder,16,rgi, 3*14, 0);
+      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,borderVerices,16,rgi, 3*14, 0);
    }
 
-   ppin3d->ExpandExtents(&rcBounds, &rgv3D[16], NULL, NULL, 16, fFalse);
-   Texture* pddsBufferBack = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
-   Texture* pddsMask = ppin3d->CreateOffscreen(rcBounds.right - rcBounds.left, rcBounds.bottom - rcBounds.top);
+   Texture* pddsBufferBack = ppin3d->CreateOffscreen(recBounds.right - recBounds.left, recBounds.bottom - recBounds.top);
+   Texture* pddsMask = ppin3d->CreateOffscreen(recBounds.right - recBounds.left, recBounds.bottom - recBounds.top);
 
-   HRESULT hr = pddsBufferBack->BltFast(0, 0, ppin3d->m_pddsStatic, &rcBounds, DDBLTFAST_WAIT);
-   /*DDBLTFX ddbltfx;
-   ddbltfx.dwSize = sizeof(DDBLTFX);
-   ddbltfx.dwFillDepth = 0xffffffff;
-   ddbltfx.ddckSrcColorkey.dwColorSpaceLowValue = 0;
-   ddbltfx.ddckSrcColorkey.dwColorSpaceHighValue = 0;*/
-   pd3dDevice->Clear( 1, (D3DRECT *)&rcBounds, D3DCLEAR_TARGET, 0x00ffffff, 1.0f, 0L );
+   HRESULT hr = pddsBufferBack->BltFast(0, 0, ppin3d->m_pddsStatic, &recBounds, DDBLTFAST_WAIT);
+   pd3dDevice->Clear( 1, (D3DRECT *)&recBounds, D3DCLEAR_TARGET, 0x00ffffff, 1.0f, 0L );
 
    mtrl.diffuse.r = mtrl.ambient.r = 
-      mtrl.diffuse.g = mtrl.ambient.g = 
-      mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
+   mtrl.diffuse.g = mtrl.ambient.g = 
+   mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
    pd3dDevice->SetMaterial(&mtrl);
 
    ppin3d->EnableLightMap(fFalse, height);
@@ -293,9 +298,9 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
          rgi[l*3+1] = l+1;
          rgi[l*3+2] = l+2;
 
-         SetNormal(rgv3D+16, rgi+l*3, 3, NULL, NULL, 0);
+         SetNormal(vertices+16, rgi+l*3, 3, NULL, NULL, 0);
       }
-      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D+16, 16,rgi, 3*14, 0);
+      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,vertices+16, 16,rgi, 3*14, 0);
    }
 
    DDSURFACEDESC2 ddsd;
@@ -304,18 +309,18 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    ddsdMask.dwSize = sizeof(ddsdMask);
 
    // Use mask to reset z-values underneath kicker
-   hr = ppin3d->m_pddsStatic->Lock(&rcBounds, &ddsdMask, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR 
+   hr = ppin3d->m_pddsStatic->Lock(&recBounds, &ddsdMask, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR 
       | DDLOCK_WAIT, NULL);
    if (hr == S_OK)
    {
-      hr = ppin3d->m_pddsStaticZ->Lock(&rcBounds, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR 
+      hr = ppin3d->m_pddsStaticZ->Lock(&recBounds, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR 
          | DDLOCK_WAIT, NULL);
       if (hr == S_OK)
       {
          const int colorbytes = ddsdMask.ddpfPixelFormat.dwRGBBitCount/8;
          const int zbytes = ddsd.ddpfPixelFormat.dwZBufferBitDepth/8;
-         const int lenx = rcBounds.right - rcBounds.left;
-         const int leny = rcBounds.bottom - rcBounds.top;
+         const int lenx = recBounds.right - recBounds.left;
+         const int leny = recBounds.bottom - recBounds.top;
          const int pitch = ddsd.lPitch;
          BYTE *pch = (BYTE *)ddsd.lpSurface;
 
@@ -336,95 +341,97 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
             pchMask += pitchMask - lenx*colorbytes;
          }
 
-         ppin3d->m_pddsStaticZ->Unlock(&rcBounds);
+         ppin3d->m_pddsStaticZ->Unlock(&recBounds);
       }
-      ppin3d->m_pddsStatic->Unlock(&rcBounds);
+      ppin3d->m_pddsStatic->Unlock(&recBounds);
    }
 
    // Reset graphics around kicker
-   hr = ppin3d->m_pddsStatic->Blt(&rcBounds, pddsBufferBack, NULL, DDBLT_WAIT, NULL);
+   hr = ppin3d->m_pddsStatic->Blt(&recBounds, pddsBufferBack, NULL, DDBLT_WAIT, NULL);
 
    // Draw the inside of the kicker based on its type.
    switch (m_d.m_kickertype)
    {
-   case KickerHole: {
-      // Draw the kicker itself
-      mtrl.diffuse.r = mtrl.ambient.r =
+      case KickerHole: 
+      {
+         // Draw the kicker itself
+         mtrl.diffuse.r = mtrl.ambient.r =
          mtrl.diffuse.g = mtrl.ambient.g =
          mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
-      pd3dDevice->SetMaterial(&mtrl);
+         pd3dDevice->SetMaterial(&mtrl);
 
-      {
-         WORD rgi[3*14];
-         for (int l=0;l<14;++l)
          {
-            rgi[l*3  ] = 0;
-            rgi[l*3+1] = l+1;
-            rgi[l*3+2] = l+2;
+            WORD rgi[3*14];
+            for (int l=0;l<14;++l)
+            {
+               rgi[l*3  ] = 0;
+               rgi[l*3+1] = l+1;
+               rgi[l*3+2] = l+2;
 
-            SetNormal(rgv3D, rgi+l*3, 3, NULL, NULL, 0);
+               SetNormal(vertices, rgi+l*3, 3, NULL, NULL, 0);
+            }
+            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,vertices, 16,rgi, 3*14, 0);
          }
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D, 16,rgi, 3*14, 0);
-      }
 
-      mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
-      mtrl.diffuse.g = mtrl.ambient.g = g;//0.7f;
-      mtrl.diffuse.b = mtrl.ambient.b = b;//0.7f;
-      pd3dDevice->SetMaterial(&mtrl);
+         mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
+         mtrl.diffuse.g = mtrl.ambient.g = g;//0.7f;
+         mtrl.diffuse.b = mtrl.ambient.b = b;//0.7f;
+         pd3dDevice->SetMaterial(&mtrl);
 
-      ppin3d->EnableLightMap(fTrue, height);
+         ppin3d->EnableLightMap(fTrue, height);
 
-      for (int l=0;l<16;++l)
-      {
-         const WORD rgiNormal[6] = {
-            (l-1+16) % 16,
-            (l-1+16) % 16 + 16,
-            (l-1+16) % 16 + 2,
-            l,
-            l+16,
-            (l+2) % 16};
-
-            const WORD rgi[4] = {
+         for (int l=0;l<16;++l)
+         {
+            const WORD rgiNormal[6] = {
+               (l-1+16) % 16,
+               (l-1+16) % 16 + 16,
+               (l-1+16) % 16 + 2,
                l,
                l+16,
-               (l+1) % 16 + 16,
-               (l+1) % 16};
+               (l+2) % 16};
 
-               SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
-               SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-               pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 32,(LPWORD)rgi, 4, 0);
+               const WORD rgi[4] = {
+                  l,
+                  l+16,
+                  (l+1) % 16 + 16,
+                  (l+1) % 16};
+
+                  SetNormal(vertices, rgiNormal, 3, NULL, rgi, 2);
+                  SetNormal(vertices, &rgiNormal[3], 3, NULL, &rgi[2], 2);
+                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,vertices, 32,(LPWORD)rgi, 4, 0);
+         }
+         break;
       }
-                    }
-                    break;
 
-   case KickerCup: {
-      mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
-      mtrl.diffuse.g = mtrl.ambient.g = g;//0.2f;
-      mtrl.diffuse.b = mtrl.ambient.b = b;//0.2f;
-      pd3dDevice->SetMaterial(&mtrl);
-
-      ppin3d->EnableLightMap(fTrue, height);
-
-      WORD rgi[3*16];
-      for (int l=0;l<16;++l)
+      case KickerCup: 
       {
-         rgi[l*3  ] = 32;
-         rgi[l*3+1] = l;
-         rgi[l*3+2] = (l + 1)%16;
+         mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
+         mtrl.diffuse.g = mtrl.ambient.g = g;//0.2f;
+         mtrl.diffuse.b = mtrl.ambient.b = b;//0.2f;
+         pd3dDevice->SetMaterial(&mtrl);
 
-         SetNormal(rgv3D+16, rgi+l*3, 3, NULL, NULL, 0);
+         ppin3d->EnableLightMap(fTrue, height);
 
-         rgv3D[48].nx = 0;
-         rgv3D[48].ny = 0;
-         rgv3D[48].nz = -1.0f;
+         WORD rgi[3*16];
+         for (int l=0;l<16;++l)
+         {
+            rgi[l*3  ] = 32;
+            rgi[l*3+1] = l;
+            rgi[l*3+2] = (l + 1)%16;
+
+            SetNormal(vertices+16, rgi+l*3, 3, NULL, NULL, 0);
+
+            vertices[48].nx = 0;
+            vertices[48].ny = 0;
+            vertices[48].nz = -1.0f;
+         }
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,vertices+16, 49-16,rgi, 3*16, 0);
+         break;
       }
-      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,rgv3D+16, 49-16,rgi, 3*16, 0);
-                   }
-                   break;
 
-   case KickerHidden:
-   case KickerInvisible:
-      break;
+      case KickerHidden:
+      case KickerInvisible:
+         break;
    }
 
    pddsBufferBack->Release();
