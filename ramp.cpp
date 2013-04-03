@@ -205,6 +205,12 @@ void Ramp::SetDefaults(bool fromMouseClick)
 		m_d.m_fModify3DStereo = iTmp == 0 ? false : true;
 	else
 		m_d.m_fModify3DStereo = fTrue;
+
+	hr = GetRegInt("DefaultProps\\Ramp","AddBlend", &iTmp);
+	if ((hr == S_OK) && fromMouseClick)
+		m_d.m_fAddBlend = iTmp == 0 ? false : true;
+	else
+		m_d.m_fAddBlend = fFalse;
 	}
 
 void Ramp::WriteRegDefaults()
@@ -244,6 +250,7 @@ void Ramp::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Ramp","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
 	SetRegValue("DefaultProps\\Ramp","Visible",REG_DWORD,&m_d.m_IsVisible,4);
 	SetRegValue("DefaultProps\\Ramp","Modify3DStereo",REG_DWORD,&m_d.m_fModify3DStereo,4);
+	SetRegValue("DefaultProps\\Ramp","AddBlend",REG_DWORD,&m_d.m_fAddBlend,4);
 	}
 
 
@@ -1326,7 +1333,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
             pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
             pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-			pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  /*m_d.m_fAddBlend ? D3DBLEND_ONE :*/ D3DBLEND_INVSRCALPHA);
+			pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
          }
 
          pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
@@ -1695,6 +1702,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 	bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
 	bw.WriteBool(FID(RVIS), m_d.m_IsVisible);	
 	bw.WriteBool(FID(MSTE), m_d.m_fModify3DStereo);
+	bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
 
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1847,6 +1855,10 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(MSTE))
 		{
 		pbr->GetBool(&m_d.m_fModify3DStereo);
+		}
+	else if (id == FID(ADDB))
+		{
+		pbr->GetBool(&m_d.m_fAddBlend);
 		}
 	else
 		{
@@ -2465,6 +2477,22 @@ STDMETHODIMP Ramp::put_Modify3DStereo(VARIANT_BOOL newVal)
 	return S_OK;
 }
 
+STDMETHODIMP Ramp::get_AddBlend(VARIANT_BOOL *pVal)
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fAddBlend);
+
+	return S_OK;
+}
+
+STDMETHODIMP Ramp::put_AddBlend(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+	m_d.m_fAddBlend = VBTOF(newVal);
+	STOPUNDO
+
+	return S_OK;
+}
+
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
@@ -2516,8 +2544,8 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
 			pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
-			pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-			pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  /*m_d.m_fAddBlend ? D3DBLEND_ONE :*/ D3DBLEND_INVSRCALPHA);
+			pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+			pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
 
 			pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
