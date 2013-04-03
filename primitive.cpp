@@ -6,6 +6,7 @@
 
 Primitive::Primitive()
 {
+   vertexBuffer=0;
 } 
 
 Primitive::~Primitive() 
