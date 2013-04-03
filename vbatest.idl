@@ -1603,6 +1603,9 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
 		[propget, id(554), helpstring("property Modify3DStereo")] HRESULT Modify3DStereo([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(554), helpstring("property Modify3DStereo")] HRESULT Modify3DStereo([in] VARIANT_BOOL newVal);
+
+		[propget, id(556), helpstring("property AddBlend")] HRESULT AddBlend([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(556), helpstring("property AddBlend")] HRESULT AddBlend([in] VARIANT_BOOL newVal);
 	};
 
 	/////////////////////////////////////////////
