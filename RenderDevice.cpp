@@ -72,7 +72,7 @@ bool RenderDevice::createVertexBuffer( unsigned int _length, DWORD _usage, DWORD
 {
    D3DVERTEXBUFFERDESC vbd;
    vbd.dwSize=sizeof(vbd);
-   vbd.dwCaps=D3DVBCAPS_WRITEONLY;
+   vbd.dwCaps=0;//don't use D3DVBCAPS_WRITEONLY as it will make things sloooow ;)
    vbd.dwFVF=_fvf;
    vbd.dwNumVertices=_length;
    dx7->CreateVertexBuffer(&vbd, (LPDIRECT3DVERTEXBUFFER7*)_vBuffer,0);
