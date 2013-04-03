@@ -2836,13 +2836,13 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, rightWallIndex0, (cvertex-1)*4, (LPWORD)indices[0], (cvertex-1)*6,0 );
 
       //right wall back side
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, rightWallIndex1, (cvertex-1)*4, (LPWORD)indices[0], (cvertex-1)*6,0 );
+      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, rightWallIndex1, (cvertex-1)*4, (LPWORD)indices[1], (cvertex-1)*6,0 );
 
       // left wall front side
       pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, leftWallIndex0, (cvertex-1)*4, (LPWORD)indices[0], (cvertex-1)*6,0 );
 
       // left wall back side
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, leftWallIndex1, (cvertex-1)*4, (LPWORD)indices[0], (cvertex-1)*6,0 );
+      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, leftWallIndex1, (cvertex-1)*4, (LPWORD)indices[1], (cvertex-1)*6,0 );
 
       ppin3d->SetTexture(NULL);
    }
