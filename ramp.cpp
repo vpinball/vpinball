@@ -249,14 +249,8 @@ void Ramp::WriteRegDefaults()
 
 void Ramp::PreRender(Sur * const psur)
 {
-	if (m_d.m_type == RampType1Wire) //make 1 wire ramps look unique in editor - uses ramp color
-	{
-		psur->SetFillColor(m_d.m_color);
-	}
-	else
-	{
-		psur->SetFillColor(RGB(192,192,192));
-	}
+	//make 1 wire ramps look unique in editor - uses ramp color
+	psur->SetFillColor((m_d.m_type == RampType1Wire) ? m_d.m_color : RGB(192,192,192));
 	psur->SetBorderColor(-1,false,0);
 	psur->SetObject(this);
 
@@ -288,6 +282,7 @@ void Ramp::Render(Sur * const psur)
 			psur->Line(rgv[i].x, rgv[i].y, rgv[cvertex*2 - i - 1].x, rgv[cvertex*2 - i - 1].y);
 		}
 	}
+	
 	if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
 	{
 		psur->SetLineColor(RGB(0,0,0),false,3);
@@ -301,17 +296,11 @@ void Ramp::Render(Sur * const psur)
 	delete [] rgv;
 	delete [] pfCross;
 
-//>>> added by chris
-	bool fDrawDragpoints;
+	bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) );
 	// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-	if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
-	{
-		fDrawDragpoints = true;
-	}
-	else
+	if (!fDrawDragpoints)
 	{
 		// if any of the dragpoints of this object are selected then draw all the dragpoints
-		fDrawDragpoints = false;
 		for (int i=0;i<m_vdpoint.Size();i++)
 		{
 			const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
@@ -322,7 +311,6 @@ void Ramp::Render(Sur * const psur)
 			}
 		}
 	}
-//<<<
 
 	if (fDrawDragpoints)
 	{
@@ -419,9 +407,8 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 				}
 
 			if (m_d.m_type != RampType1Wire)
-			{
-			psur->PolylineSkew(rgv, cvertex, rgheight, 0, 0);
-			}
+				psur->PolylineSkew(rgv, cvertex, rgheight, 0, 0);
+			
 			psur->PolylineSkew(&rgv[cvertex], cvertex, rgheight2, 0, 0);
 
 			for (int i=0;i<cvertex;i++)
@@ -429,6 +416,7 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 					rgheight[i]  += 44.0f;
 					rgheight2[i] += 44.0f;
 				}
+			
 			if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
 				{
 				psur->PolylineSkew(rgv, cvertex, rgheight, 0, 0);
@@ -473,13 +461,13 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 
 	for (int i=0;i<cvertex;i++)
 		{
-			{
+		{
 		Vertex3Ds * const pv = new Vertex3Ds();
 		pv->x = rgv[i].x;
 		pv->y = rgv[i].y;
 		pv->z = rgheight[i]+50.0f; // leave room for ball
 		pvvertex3D->AddElement(pv);
-			}
+		}
 
 		Vertex3Ds * const pv = new Vertex3Ds();
 		pv->x = rgv[cvertex*2-i-1].x;
@@ -1338,7 +1326,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
             pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
             pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+			pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  /*m_d.m_fAddBlend ? D3DBLEND_ONE :*/ D3DBLEND_INVSRCALPHA);
          }
 
          pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
@@ -1644,6 +1632,8 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
 
       ppin3d->SetTexture(NULL);
    }
+
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 }
 	
 void Ramp::RenderMovers(const RenderDevice* pd3dDevice)
@@ -2516,21 +2506,21 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 			m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
 			pin->EnsureColorKey();
-
 			pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-         pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 
-         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-         pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-         pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+			pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+			pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+			pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+
+			pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+			pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
+			pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
 			pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+			pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  /*m_d.m_fAddBlend ? D3DBLEND_ONE :*/ D3DBLEND_INVSRCALPHA);
 
-         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
-		 pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
+			pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
@@ -2807,4 +2797,6 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		ppin3d->SetTexture(NULL);
 		}
 		//invalidationRectCalculated = true;
+
+	    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	}
