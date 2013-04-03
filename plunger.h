@@ -109,6 +109,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
 	PlungerData m_d;
    Vertices *verts;
    int cframes;
+   WORD indices[16*PLUNGEPOINTS1*4];
 
 	HitPlunger *m_phitplunger;
 // IPlunger
