@@ -1291,7 +1291,8 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
    numVertices = ((cvertex-1)*4)*10;
    if( !vertexBuffer )
    {
-      pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );     
+      pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+	  NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
    }
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;

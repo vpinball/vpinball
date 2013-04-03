@@ -804,6 +804,7 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
    if( !vertexBuffer )
    {
       pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+	  NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
    }
    PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin) 
@@ -819,7 +820,6 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
       maxtu = maxtv = 1.f;
 
    CalculateRealTimeOriginal();
-
 }
 
 //seems to be called to set up the initial backbuffer
