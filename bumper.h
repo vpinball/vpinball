@@ -129,6 +129,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 //<<<
    Vertex3D staticVertices[96];
    Vertex3D moverVertices[2][160];
+   WORD     normalIndices[6*32];
+   WORD     indices[4*32];
 
 // IBumper
 public:
