@@ -1061,16 +1061,16 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	m_pd3dDevice->SetLight( 1, &light );
 
 	Vertex3D rgv[8];
-	rgv[0].Set(left,top,0);
-	rgv[3].Set(left,bottom,0);
-	rgv[2].Set(right,bottom,0);
-	rgv[1].Set(right,top,0);
+   rgv[0].x=left;    rgv[0].y=top;     rgv[0].z=0;
+   rgv[3].x=left;    rgv[3].y=bottom;  rgv[3].z=0;
+   rgv[2].x=right;   rgv[2].y=bottom;  rgv[2].z=0;
+   rgv[1].x=right;   rgv[1].y=top;     rgv[1].z=0;
 
 	// These next 4 vertices are used just to set the extents
-	rgv[4].Set(left,top,50);
-	rgv[5].Set(left,bottom,50);
-	rgv[6].Set(right,bottom,50);
-	rgv[7].Set(right,top,50);
+   rgv[4].x=left;    rgv[4].y=top;     rgv[4].z=50;
+   rgv[5].x=left;    rgv[5].y=bottom;  rgv[5].z=50;
+   rgv[6].x=right;   rgv[6].y=bottom;  rgv[6].z=50;
+   rgv[7].x=right;   rgv[7].y=top;     rgv[7].z=50;
 
 	//hr = m_pddsPlayfieldTexture->IsLost();
 
@@ -1175,16 +1175,16 @@ void Pin3D::InitBackGraphics()
 	EnableLightMap(fTrue, 0);
 
 	Vertex3D rgv[8];
-	rgv[0].Set(g_pplayer->m_ptable->m_left,g_pplayer->m_ptable->m_top,0);
-	rgv[3].Set(g_pplayer->m_ptable->m_left,g_pplayer->m_ptable->m_bottom,0);
-	rgv[2].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_bottom,0);
-	rgv[1].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_top,0);
+   rgv[0].x=g_pplayer->m_ptable->m_left;     rgv[0].y=g_pplayer->m_ptable->m_top;      rgv[0].z=0;
+   rgv[3].x=g_pplayer->m_ptable->m_left;     rgv[3].y=g_pplayer->m_ptable->m_bottom;   rgv[3].z=0;
+   rgv[2].x=g_pplayer->m_ptable->m_right;    rgv[2].y=g_pplayer->m_ptable->m_bottom;   rgv[2].z=0;
+   rgv[1].x=g_pplayer->m_ptable->m_right;    rgv[1].y=g_pplayer->m_ptable->m_top;      rgv[1].z=0;
 
 	// These next 4 vertices are used just to set the extents
-	rgv[4].Set(g_pplayer->m_ptable->m_left,g_pplayer->m_ptable->m_top,50.0f);
-	rgv[5].Set(g_pplayer->m_ptable->m_left,g_pplayer->m_ptable->m_bottom,50.0f);
-	rgv[6].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_bottom,50.0f);
-	rgv[7].Set(g_pplayer->m_ptable->m_right,g_pplayer->m_ptable->m_top,50.0f);
+   rgv[4].x=g_pplayer->m_ptable->m_left;     rgv[4].y=g_pplayer->m_ptable->m_top;      rgv[4].z=50.0f;
+   rgv[5].x=g_pplayer->m_ptable->m_left;     rgv[5].y=g_pplayer->m_ptable->m_bottom;   rgv[5].z=50.0f;
+   rgv[6].x=g_pplayer->m_ptable->m_right;    rgv[6].y=g_pplayer->m_ptable->m_bottom;   rgv[6].z=50.0f;
+   rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
 
 	Material mtrl;
 	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;

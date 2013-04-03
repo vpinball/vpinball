@@ -1080,10 +1080,10 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			//RenderVertex *pv3 = vvertex.ElementAt((i+2) % cvertex);
 
 			Vertex3D rgv3D[4];
-			rgv3D[0].Set(pv1->x,pv1->y,m_d.m_heightbottom);
-			rgv3D[1].Set(pv1->x,pv1->y,m_d.m_heighttop);
-			rgv3D[2].Set(pv2->x,pv2->y,m_d.m_heighttop);
-			rgv3D[3].Set(pv2->x,pv2->y,m_d.m_heightbottom);
+         rgv3D[0].x=pv1->x;   rgv3D[0].y=pv1->y;   rgv3D[0].z=m_d.m_heightbottom;
+         rgv3D[1].x=pv2->x;   rgv3D[1].y=pv2->y;   rgv3D[1].z=m_d.m_heighttop;
+         rgv3D[2].x=pv2->x;   rgv3D[2].y=pv2->y;   rgv3D[2].z=m_d.m_heighttop;
+         rgv3D[3].x=pv2->x;   rgv3D[3].y=pv2->y;   rgv3D[3].z=m_d.m_heightbottom;
 
 			const int a = (i == 0) ? (cvertex-1) : (i-1);
 			const int c = (i < cvertex-1) ? (i+1) : 0;
@@ -1278,9 +1278,9 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			const RenderVertex * const pv2 = vvertex.ElementAt(ptri->c);
 
 			Vertex3D rgv3D[3];
-			rgv3D[0].Set(pv0->x,pv0->y,height);
-			rgv3D[2].Set(pv1->x,pv1->y,height);
-			rgv3D[1].Set(pv2->x,pv2->y,height);
+         rgv3D[0].x=pv0->x;   rgv3D[0].y=pv0->y;   rgv3D[0].z=height;
+         rgv3D[2].x=pv1->x;   rgv3D[2].y=pv1->y;   rgv3D[2].z=height;
+         rgv3D[1].x=pv2->x;   rgv3D[1].y=pv2->y;   rgv3D[1].z=height;
 
 			rgv3D[0].tu = rgv3D[0].x *inv_tablewidth;
 			rgv3D[0].tv = rgv3D[0].y *inv_tableheight;
