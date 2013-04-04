@@ -1534,7 +1534,7 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 	// On some tables, the outer wall is still modelled/copy-pasted 'inside-out',
 	// this tries to compensate for that
 	if(!m_d.m_fInner) {
-		int cvertex = m_vdpoint.Size();
+		const int cvertex = m_vdpoint.Size();
 
 		float miny = FLT_MAX;
 		int minyindex;
@@ -1553,8 +1553,14 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 
 		float tmpx;
 		m_vdpoint.ElementAt(minyindex)->get_X(&tmpx);
-		const float tmpy = miny/* - 1.0f*/; // put tiny gap in to avoid errors?
-		m_vdpoint.ElementAt(minyindex)->m_fSmooth = fFalse; // disable smoothing at new connection to avoid strangeness
+		const float tmpy = miny /*- 1.0f*/; // put tiny gap in to avoid errors
+
+		// swap list around
+		for (int i=0;i<cvertex/2;i++) {
+			CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+			m_vdpoint.ReplaceElementAt(m_vdpoint.ElementAt(cvertex-1-i), i);
+			m_vdpoint.ReplaceElementAt(pdp, cvertex-1-i);
+		}
 
 		CComObject<DragPoint> *pdp;
 		
@@ -1563,50 +1569,42 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 		{
 			pdp->AddRef();
 			pdp->Init(this, m_ptable->m_left, m_ptable->m_top);
-			m_vdpoint.InsertElementAt(pdp, minyindex);
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
 		CComObject<DragPoint>::CreateInstance(&pdp);
 		if (pdp)
 		{
 			pdp->AddRef();
 			pdp->Init(this, m_ptable->m_right, m_ptable->m_top);
-			m_vdpoint.InsertElementAt(pdp, minyindex);
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
 		CComObject<DragPoint>::CreateInstance(&pdp);
 		if (pdp)
 		{
 			pdp->AddRef();
-			pdp->Init(this, m_ptable->m_right, m_ptable->m_bottom);
-			m_vdpoint.InsertElementAt(pdp, minyindex);
+			pdp->Init(this, m_ptable->m_right+1.0f, m_ptable->m_bottom); //!! +1 needed for whatever reason (triangulation screwed up)
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
 		CComObject<DragPoint>::CreateInstance(&pdp);
 		if (pdp)
 		{
 			pdp->AddRef();
 			pdp->Init(this, m_ptable->m_left, m_ptable->m_bottom);
-			m_vdpoint.InsertElementAt(pdp, minyindex);
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
 		CComObject<DragPoint>::CreateInstance(&pdp);
 		if (pdp)
 		{
 			pdp->AddRef();
-			pdp->Init(this, m_ptable->m_left-1.0f, m_ptable->m_top);
-			m_vdpoint.InsertElementAt(pdp, minyindex);
+			pdp->Init(this, m_ptable->m_left-1.0f, m_ptable->m_top); //!! -1 needed for whatever reason (triangulation screwed up)
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
 		CComObject<DragPoint>::CreateInstance(&pdp);
 		if (pdp)
 		{
 			pdp->AddRef();
 			pdp->Init(this, tmpx, tmpy);
-			m_vdpoint.InsertElementAt(pdp, minyindex);
-		}
-
-		cvertex = m_vdpoint.Size();
-		// swap list around
-		for (int i=0;i<cvertex/2;i++) {
-			CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
-			m_vdpoint.ReplaceElementAt(m_vdpoint.ElementAt(cvertex-1-i), i);
-			m_vdpoint.ReplaceElementAt(pdp, cvertex-1-i);
+			m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
 		}
 
 		m_d.m_fInner = fTrue;
