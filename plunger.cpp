@@ -331,7 +331,7 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
             const float sn = sinf(angle);
             const float cs = cosf(angle);
             const int offset = l*PLUNGEPOINTS1;
-            for (int m=0;m<PLUNGEPOINTS1;m++,k+=4)
+            for (int m=0;m<PLUNGEPOINTS1;m++)
             {
                ptr[m + offset].x = rgcrossplunger1[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
                ptr[m + offset].y = height + rgcrossplunger1[m][1];
@@ -339,10 +339,14 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
                ptr[m + offset].nx = rgcrossplungerNormal1[m][0] * sn;
                ptr[m + offset].ny = rgcrossplungerNormal1[m][1];
                ptr[m + offset].nz = -rgcrossplungerNormal1[m][0] * cs;
-               indices[k  ] = m+offset;
-               indices[k+1] = (m + offset + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1);
-               indices[k+2] = (m + offset + 1 + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1);
-               indices[k+3] = m + offset +1;
+               if( m<PLUNGEPOINTS1-1 )
+               {
+                  indices[k  ] = m+offset;
+                  indices[k+1] = (m + offset + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1);
+                  indices[k+2] = (m + offset + 1 + PLUNGEPOINTS1) % (16*PLUNGEPOINTS1);
+                  indices[k+3] = m + offset +1;
+                  k+=4;
+               }
             }
             ptr[PLUNGEPOINTS1-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
          }
@@ -357,7 +361,7 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
             const float sn = sinf(angle);
             const float cs = cosf(angle);
             const int offset = l*PLUNGEPOINTS0;
-            for (int m=0;m<PLUNGEPOINTS0;m++,k+=4)
+            for (int m=0;m<PLUNGEPOINTS0;m++)
             {
                ptr[m + offset].x = rgcrossplunger0[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
                ptr[m + offset].y = height + rgcrossplunger0[m][1];
@@ -365,10 +369,14 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
                ptr[m + offset].nx = rgcrossplungerNormal0[m][0] * sn;
                ptr[m + offset].ny = rgcrossplungerNormal0[m][1];
                ptr[m + offset].nz = -rgcrossplungerNormal0[m][0] * cs;
-               indices[k  ] = m+offset;
-               indices[k+1] = (m + offset + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0);
-               indices[k+2] = (m + offset + 1 + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0);
-               indices[k+3] = m + offset +1;
+               if( m<PLUNGEPOINTS0-1 )
+               {
+                  indices[k  ] = m+offset;
+                  indices[k+1] = (m + offset + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0);
+                  indices[k+2] = (m + offset + 1 + PLUNGEPOINTS0) % (16*PLUNGEPOINTS0);
+                  indices[k+3] = m + offset +1;
+                  k+=4;
+               }
 
             }
             ptr[PLUNGEPOINTS0-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
