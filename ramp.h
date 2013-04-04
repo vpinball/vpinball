@@ -125,11 +125,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 
 	RampData m_d;
 		
-   int cvertex;
-   WORD *indices[2];
-
-   VertexBuffer *vertexBuffer;
-
 	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
