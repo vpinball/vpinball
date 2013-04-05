@@ -124,9 +124,18 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	PinTable *m_ptable;
 
 	RampData m_d;
+   int rampVertex;
+   Vertex3D_NoTex2 *rgvbuf;
+   WORD *rgibuf;
+   WORD *invrgibuf;
+
+   VertexBuffer *staticVertexBuffer;
+   VertexBuffer *dynamicVertexBuffer;
 		
 	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
+   void prepareHabitrail(RenderDevice* pd3dDevice );
+   void prepareStatic(RenderDevice* _pd3dDevice);
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
@@ -134,7 +143,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	void CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph3d1, const Hit3DPoly * const ph3d2);
 
 	void RenderStaticHabitrail(const RenderDevice* _pd3dDevice);
-	void RenderPolygons(const RenderDevice* _pd3dDevice, Vertex3D_NoTex * const rgv3D, WORD * const rgicrosssection, const int start, const int stop);
+	void RenderPolygons(const RenderDevice* _pd3dDevice, int offset, WORD * const rgicrosssection, const int start, const int stop);
 
 	//RECT invalidationRect;
 	//bool invalidationRectCalculated;
