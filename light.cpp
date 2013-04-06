@@ -786,27 +786,32 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-   PrepareStaticCustom();
-   PrepareMoversCustom();
-
-// prepare static circle object
-   for (int l=0;l<32;l++)
+   if (m_d.m_shape == ShapeCustom)
    {
-      const float angle = (float)(M_PI*2.0/32.0)*(float)l;
-      circleVertex[l].x = m_d.m_vCenter.x + sinf(angle)*(m_d.m_radius + m_d.m_borderwidth);
-      circleVertex[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius + m_d.m_borderwidth);
-      circleVertex[l].z = height + 0.05f;
-
-      ppin3d->m_lightproject.CalcCoordinates(&circleVertex[l],inv_width,inv_height);
-   }
-   if( !m_fBackglass )
-   {
-      SetNormal(circleVertex, rgiLightStatic1, 32, NULL, NULL, 0);
+      PrepareStaticCustom();
+      PrepareMoversCustom();
    }
    else
    {
-      SetHUDVertices(circleVertex, 32);
-      SetDiffuse(circleVertex, 32, RGB_TO_BGR(m_d.m_bordercolor));
+      // prepare static circle object
+      for (int l=0;l<32;l++)
+      {
+         const float angle = (float)(M_PI*2.0/32.0)*(float)l;
+         circleVertex[l].x = m_d.m_vCenter.x + sinf(angle)*(m_d.m_radius + m_d.m_borderwidth);
+         circleVertex[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius + m_d.m_borderwidth);
+         circleVertex[l].z = height + 0.05f;
+
+         ppin3d->m_lightproject.CalcCoordinates(&circleVertex[l],inv_width,inv_height);
+      }
+      if( !m_fBackglass )
+      {
+         SetNormal(circleVertex, rgiLightStatic1, 32, NULL, NULL, 0);
+      }
+      else
+      {
+         SetHUDVertices(circleVertex, 32);
+         SetDiffuse(circleVertex, 32, RGB_TO_BGR(m_d.m_bordercolor));
+      }
    }
 }
 
