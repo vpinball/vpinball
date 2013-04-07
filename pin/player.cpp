@@ -1404,6 +1404,7 @@ void Player::InitWindow()
 
 	if (!m_fFullScreen && (screenheight - m_height >= (captionheight*2))) // We have enough room for a frame
 	{
+#ifdef ULTRAPIN
 		// Check if we have a front end.
 		if ( FindWindow( NULL, "Ultrapin (plfe)" ) != NULL )
 		{
@@ -1414,6 +1415,7 @@ void Player::InitWindow()
 			y = 0;
 		}
 		else
+#endif
 		{
 			// Add a pretty window border and standard control boxes.
 			windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
@@ -1439,13 +1441,9 @@ void Player::InitWindow()
 		ballStretchMonitor = 1; // assume 16:9
 	}
 
-	float scalebackX = ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scalex;
-	float scalebackY = ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scaley;
-	if (abs(m_ptable->m_rotation) <= 0.001f)
-	{
-		scalebackX = 1.0f;
-		scalebackY = 1.0f;
-	}
+	const float scalebackX = ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scalex;
+	const float scalebackY = ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scaley;
+	
 	float xMonitor = 16.0f;
 	float yMonitor = 9.0f;
 	switch (ballStretchMonitor)
