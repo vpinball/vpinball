@@ -580,6 +580,7 @@
 #define IDC_MODIFY3DSTEREO              554
 #define IDC_ENABLE_REGION_UPDATE_OPTIMIZATION 555
 #define IDC_ADDBLEND					556
+#define IDC_ENABLELIGHTING				557
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768
