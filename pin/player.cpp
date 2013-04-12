@@ -1441,8 +1441,8 @@ void Player::InitWindow()
 		ballStretchMonitor = 1; // assume 16:9
 	}
 
-	const float scalebackX = ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scalex;
-	const float scalebackY = ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scaley;
+	const float scalebackX = (m_ptable->m_scalex != 0.0f) ? ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scalex : 1.0f;
+	const float scalebackY = (m_ptable->m_scaley != 0.0f) ? ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scaley : 1.0f;
 	
 	float xMonitor = 16.0f;
 	float yMonitor = 9.0f;
