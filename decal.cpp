@@ -38,7 +38,6 @@ HRESULT Decal::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Decal::SetDefaults(bool fromMouseClick)
 	{
-
 	HRESULT hr;
 	float fTmp;
 	int iTmp;

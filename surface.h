@@ -28,6 +28,7 @@ public:
 	float m_friction;
 	float m_scatter;
 	BOOL m_fCastsShadow;
+	BOOL m_fEnableLighting;
 	BOOL m_fVisible;
 	BOOL m_fSideVisible;
 	BOOL m_fEnabled;
@@ -200,6 +201,8 @@ public:
 	STDMETHOD(get_SlingshotColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_SlingshotColor)(/*[in]*/ OLE_COLOR newVal);
 
+	STDMETHOD(get_EnableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_EnableLighting)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif //__SURFACE_H_

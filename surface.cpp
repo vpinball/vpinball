@@ -12,6 +12,7 @@ Surface::Surface()
 	m_d.m_fCollidable = fTrue;
 	m_d.m_fSlingshotAnimation = fTrue;
 	m_d.m_fInner = fTrue;
+	m_d.m_fEnableLighting = fTrue;
 	}
 
 Surface::~Surface()
@@ -31,6 +32,13 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	hr = GetRegStringAsFloat("DefaultProps\\Wall", "Length", &fTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		length = fTmp;
+
+	int iTmp;
+	hr = GetRegInt("DefaultProps\\Wall", "EnableLighting", &iTmp);
+	if ((hr == S_OK) && fromMouseClick)
+		m_d.m_fEnableLighting = (iTmp == 0) ? false : true;
+	else
+		m_d.m_fEnableLighting = fTrue;
 
 	CComObject<DragPoint> *pdp;
 	CComObject<DragPoint>::CreateInstance(&pdp);
@@ -105,6 +113,7 @@ void Surface::WriteRegDefaults()
 	SetRegValue(strKeyName,"Visible", REG_DWORD, &m_d.m_fVisible,4);
 	SetRegValue(strKeyName,"SideVisible", REG_DWORD, &m_d.m_fSideVisible,4);
 	SetRegValue(strKeyName,"Collidable", REG_DWORD, &m_d.m_fCollidable,4);
+	SetRegValue(strKeyName,"EnableLighting", REG_DWORD, &m_d.m_fEnableLighting,4);
 	}
 
 
@@ -122,6 +131,12 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 	hr = GetRegStringAsFloat("DefaultProps\\Target", "Length", &fTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		length = fTmp;
+
+	hr = GetRegInt("DefaultProps\\Target", "EnableLighting", &iTmp);
+	if ((hr == S_OK) && fromMouseClick)
+		m_d.m_fEnableLighting = (iTmp == 0) ? false : true;
+	else
+		m_d.m_fEnableLighting = fTrue;
 
 	CComObject<DragPoint> *pdp;
 	CComObject<DragPoint>::CreateInstance(&pdp);
@@ -972,6 +987,9 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 	ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, DDBLT_WAIT, NULL);
 
+	if(!m_d.m_fEnableLighting)
+		pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+
 	ObjFrame *pof = NULL;
 	if (fMover)
 		{
@@ -1068,7 +1086,10 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		rgnormal[i].y = dx*inv_len;
 		}
 
-	ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
+	if(!m_d.m_fEnableLighting)
+		ppin3d->EnableLightMap(fFalse, -1);
+	else
+		ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 	
 	// Render side
 	{
@@ -1182,7 +1203,10 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 		if (pinSide)
 		{
-			ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
+			if(!m_d.m_fEnableLighting)
+				ppin3d->EnableLightMap(fFalse, -1);
+			else
+				ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 
 			pinSide->EnsureColorKey();
 			pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
@@ -1334,6 +1358,9 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		ddbltfx.dwFillColor = 0;
 		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
+
+	if(!m_d.m_fEnableLighting)
+		pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 
 	return pof;
 	}
@@ -1502,6 +1529,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteBool(FID(VSBL), m_d.m_fVisible);
 	bw.WriteBool(FID(SLGA), m_d.m_fSlingshotAnimation);
 	bw.WriteBool(FID(SVBL), m_d.m_fSideVisible);
+	bw.WriteBool(FID(ELIT), m_d.m_fEnableLighting);
 
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1758,6 +1786,10 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(CSHD))
 		{
 		pbr->GetBool(&m_d.m_fCastsShadow);
+		}
+	else if (id == FID(ELIT))
+		{
+		pbr->GetBool(&m_d.m_fEnableLighting);
 		}
 	else if (id == FID(VSBL))
 		{
@@ -2176,6 +2208,24 @@ STDMETHODIMP Surface::put_CastsShadow(VARIANT_BOOL newVal)
 	STARTUNDO
 
 	m_d.m_fCastsShadow = VBTOF(newVal);
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Surface::get_EnableLighting(VARIANT_BOOL *pVal)
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fEnableLighting);
+
+	return S_OK;
+}
+
+STDMETHODIMP Surface::put_EnableLighting(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+
+	m_d.m_fEnableLighting = VBTOF(newVal);
 
 	STOPUNDO
 
