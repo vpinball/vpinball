@@ -101,6 +101,8 @@ public:
 #define MY_D3DFVF_NOTEX2_VERTEX         (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX1)
 #define MY_D3DTRANSFORMED_NOTEX2_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1)
 
+#define MY_D3DFVF_NOLIGHTING_VERTEX     (D3DFVF_XYZ    | D3DFVF_DIFFUSE | D3DFVF_TEX1)
+
 #define MY_D3DFVF_VERTEX                (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX2)
 #define MY_D3DTRANSFORMED_VERTEX        (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
 
@@ -138,6 +140,21 @@ public:
 
    D3DVALUE tu2;
    D3DVALUE tv2;
+};
+
+class Vertex3D_NoLighting // for rendering, uses MY_D3DFVF_NOLIGHTING_VERTEX
+{
+public:
+   // Position
+   D3DVALUE x; 
+   D3DVALUE y; 
+   D3DVALUE z;
+
+   D3DCOLOR color;
+
+   // Texture coordinates
+   D3DVALUE tu;
+   D3DVALUE tv;
 };
 
 __declspec(align(16))

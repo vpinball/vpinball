@@ -1092,25 +1092,60 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 	
 	// Render side
+	for (int i=0;i<cvertex;i++)
 	{
-		for (int i=0;i<cvertex;i++)
-			{
-			//RenderVertex *pv0 = vvertex.ElementAt((i-1+cvertex) % cvertex);
-			const RenderVertex * const pv1 = vvertex.ElementAt(i);
-			const RenderVertex * const pv2 = vvertex.ElementAt((i < cvertex-1) ? (i+1) : 0);
-			//RenderVertex *pv3 = vvertex.ElementAt((i+2) % cvertex);
+		//RenderVertex *pv0 = vvertex.ElementAt((i-1+cvertex) % cvertex);
+		const RenderVertex * const pv1 = vvertex.ElementAt(i);
+		const RenderVertex * const pv2 = vvertex.ElementAt((i < cvertex-1) ? (i+1) : 0);
+		//RenderVertex *pv3 = vvertex.ElementAt((i+2) % cvertex);
 
-			Vertex3D rgv3D[4];
-         rgv3D[0].x=pv1->x;   rgv3D[0].y=pv1->y;   rgv3D[0].z=m_d.m_heightbottom;
-         rgv3D[1].x=pv1->x;   rgv3D[1].y=pv1->y;   rgv3D[1].z=m_d.m_heighttop;
-         rgv3D[2].x=pv2->x;   rgv3D[2].y=pv2->y;   rgv3D[2].z=m_d.m_heighttop;
-         rgv3D[3].x=pv2->x;   rgv3D[3].y=pv2->y;   rgv3D[3].z=m_d.m_heightbottom;
+		const int a = (i == 0) ? (cvertex-1) : (i-1);
+		const int c = (i < cvertex-1) ? (i+1) : 0;
 
-			const int a = (i == 0) ? (cvertex-1) : (i-1);
-			const int c = (i < cvertex-1) ? (i+1) : 0;
+		Vertex2D vnormal[2];
+		if (pv1->fSmooth)
+		{
+			vnormal[0].x = (rgnormal[a].x + rgnormal[i].x)*0.5f;
+			vnormal[0].y = (rgnormal[a].y + rgnormal[i].y)*0.5f;
+		}
+		else
+		{
+			vnormal[0].x = rgnormal[i].x;
+			vnormal[0].y = rgnormal[i].y;
+		}
+
+		if (pv2->fSmooth)
+		{
+			vnormal[1].x = (rgnormal[i].x + rgnormal[c].x)*0.5f;
+			vnormal[1].y = (rgnormal[i].y + rgnormal[c].y)*0.5f;
+		}
+		else
+		{
+			vnormal[1].x = rgnormal[i].x;
+			vnormal[1].y = rgnormal[i].y;
+		}
+
+		{
+			const float inv_len = 1.0f/sqrtf(vnormal[0].x * vnormal[0].x + vnormal[0].y * vnormal[0].y);
+			vnormal[0].x *= inv_len;
+			vnormal[0].y *= inv_len;
+		}
+		{
+			const float inv_len = 1.0f/sqrtf(vnormal[1].x * vnormal[1].x + vnormal[1].y * vnormal[1].y);
+			vnormal[1].x *= inv_len;
+			vnormal[1].y *= inv_len;
+		}
+
+		if(!m_d.m_fEnableLighting)
+		{
+			Vertex3D_NoLighting rgv3D[4];
+			rgv3D[0].x=pv1->x;   rgv3D[0].y=pv1->y;   rgv3D[0].z=m_d.m_heightbottom;
+			rgv3D[1].x=pv1->x;   rgv3D[1].y=pv1->y;   rgv3D[1].z=m_d.m_heighttop;
+			rgv3D[2].x=pv2->x;   rgv3D[2].y=pv2->y;   rgv3D[2].z=m_d.m_heighttop;
+			rgv3D[3].x=pv2->x;   rgv3D[3].y=pv2->y;   rgv3D[3].z=m_d.m_heightbottom;
 
 			if (pinSide)
-				{
+			{
 				rgv3D[0].tu = rgtexcoord[i] * maxtuSide;
 				rgv3D[0].tv = maxtvSide;
 
@@ -1122,70 +1157,77 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 				rgv3D[3].tu = rgtexcoord[c] * maxtuSide;
 				rgv3D[3].tv = maxtvSide;
-				}
+			}
+
+			for (int l=0;l<2;l++)
+			{
+				rgv3D[l].color = m_d.m_sidecolor;
+				rgv3D[l+2].color = m_d.m_sidecolor;
+			}
+
+			if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped, but we do need to extend the extrema
+			{
+				// Draw side.
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D, 4, (LPWORD)rgi0123, 4, 0);
+			}
+
+			if (fMover)
+			{
+				// Only do two points - each segment has two new points
+				ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar, 2, fFalse);
+			}
+		}
+		else
+		{
+			Vertex3D rgv3D[4];
+			rgv3D[0].x=pv1->x;   rgv3D[0].y=pv1->y;   rgv3D[0].z=m_d.m_heightbottom;
+			rgv3D[1].x=pv1->x;   rgv3D[1].y=pv1->y;   rgv3D[1].z=m_d.m_heighttop;
+			rgv3D[2].x=pv2->x;   rgv3D[2].y=pv2->y;   rgv3D[2].z=m_d.m_heighttop;
+			rgv3D[3].x=pv2->x;   rgv3D[3].y=pv2->y;   rgv3D[3].z=m_d.m_heightbottom;
+
+			if (pinSide)
+			{
+				rgv3D[0].tu = rgtexcoord[i] * maxtuSide;
+				rgv3D[0].tv = maxtvSide;
+
+				rgv3D[1].tu = rgtexcoord[i] * maxtuSide;
+				rgv3D[1].tv = 0;
+
+				rgv3D[2].tu = rgtexcoord[c] * maxtuSide;
+				rgv3D[2].tv = 0;
+
+				rgv3D[3].tu = rgtexcoord[c] * maxtuSide;
+				rgv3D[3].tv = maxtvSide;
+			}
 
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[0],inv_width,inv_height);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1],inv_width,inv_height);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2],inv_width,inv_height);
 			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[3],inv_width,inv_height);
 
-			Vertex2D vnormal[2];
-			if (pv1->fSmooth)
-				{
-				vnormal[0].x = (rgnormal[a].x + rgnormal[i].x)*0.5f;
-				vnormal[0].y = (rgnormal[a].y + rgnormal[i].y)*0.5f;
-				}
-			else
-				{
-				vnormal[0].x = rgnormal[i].x;
-				vnormal[0].y = rgnormal[i].y;
-				}
-
-			if (pv2->fSmooth)
-				{
-				vnormal[1].x = (rgnormal[i].x + rgnormal[c].x)*0.5f;
-				vnormal[1].y = (rgnormal[i].y + rgnormal[c].y)*0.5f;
-				}
-			else
-				{
-				vnormal[1].x = rgnormal[i].x;
-				vnormal[1].y = rgnormal[i].y;
-				}
-
-			{
-			const float inv_len = 1.0f/sqrtf(vnormal[0].x * vnormal[0].x + vnormal[0].y * vnormal[0].y);
-			vnormal[0].x *= inv_len;
-			vnormal[0].y *= inv_len;
-			}
-			{
-			const float inv_len = 1.0f/sqrtf(vnormal[1].x * vnormal[1].x + vnormal[1].y * vnormal[1].y);
-			vnormal[1].x *= inv_len;
-			vnormal[1].y *= inv_len;
-			}
-
 			for (int l=0;l<2;l++)
 			{
 				rgv3D[l].nx = -vnormal[0].x;
 				rgv3D[l].ny = vnormal[0].y;
 				rgv3D[l].nz = 0;
-	
+
 				rgv3D[l+2].nx = -vnormal[1].x;
 				rgv3D[l+2].ny = vnormal[1].y;
 				rgv3D[l+2].nz = 0;
 			}
 
 			if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped, but we do need to extend the extrema
-				{
+			{
 				// Draw side.
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, (LPWORD)rgi0123, 4, 0);
-				}
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D, 4, (LPWORD)rgi0123, 4, 0);
+			}
 
 			if (fMover)
-				{
+			{
 				// Only do two points - each segment has two new points
 				ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar, 2, fFalse);
-				}
 			}
+		}
 	}
 
 	delete [] rgnormal;
@@ -1301,32 +1343,56 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 			const RenderVertex * const pv1 = vvertex.ElementAt(ptri->b);
 			const RenderVertex * const pv2 = vvertex.ElementAt(ptri->c);
 
-			Vertex3D rgv3D[3];
-         rgv3D[0].x=pv0->x;   rgv3D[0].y=pv0->y;   rgv3D[0].z=height;
-         rgv3D[2].x=pv1->x;   rgv3D[2].y=pv1->y;   rgv3D[2].z=height;
-         rgv3D[1].x=pv2->x;   rgv3D[1].y=pv2->y;   rgv3D[1].z=height;
+			if(!m_d.m_fEnableLighting)
+			{
+				Vertex3D_NoLighting rgv3D[3];
+				rgv3D[0].x=pv0->x;   rgv3D[0].y=pv0->y;   rgv3D[0].z=height;
+				rgv3D[2].x=pv1->x;   rgv3D[2].y=pv1->y;   rgv3D[2].z=height;
+				rgv3D[1].x=pv2->x;   rgv3D[1].y=pv2->y;   rgv3D[1].z=height;
 
-			rgv3D[0].tu = rgv3D[0].x *inv_tablewidth;
-			rgv3D[0].tv = rgv3D[0].y *inv_tableheight;
-			rgv3D[1].tu = rgv3D[1].x *inv_tablewidth;
-			rgv3D[1].tv = rgv3D[1].y *inv_tableheight;
-			rgv3D[2].tu = rgv3D[2].x *inv_tablewidth;
-			rgv3D[2].tv = rgv3D[2].y *inv_tableheight;
+				rgv3D[0].tu = rgv3D[0].x *inv_tablewidth;
+				rgv3D[0].tv = rgv3D[0].y *inv_tableheight;
+				rgv3D[1].tu = rgv3D[1].x *inv_tablewidth;
+				rgv3D[1].tv = rgv3D[1].y *inv_tableheight;
+				rgv3D[2].tu = rgv3D[2].x *inv_tablewidth;
+				rgv3D[2].tv = rgv3D[2].y *inv_tableheight;
 
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[0],inv_width,inv_height);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1],inv_width,inv_height);
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2],inv_width,inv_height);
+				for (int l=0;l<3;l++)
+					rgv3D[l].color = m_d.m_topcolor;
 
-			for (int l=0;l<3;l++)
+				// Draw top.
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D, 3,(LPWORD)rgi0123, 3, 0);
+				//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D, 3);
+			}
+			else
+			{
+				Vertex3D rgv3D[3];
+				rgv3D[0].x=pv0->x;   rgv3D[0].y=pv0->y;   rgv3D[0].z=height;
+				rgv3D[2].x=pv1->x;   rgv3D[2].y=pv1->y;   rgv3D[2].z=height;
+				rgv3D[1].x=pv2->x;   rgv3D[1].y=pv2->y;   rgv3D[1].z=height;
+
+				rgv3D[0].tu = rgv3D[0].x *inv_tablewidth;
+				rgv3D[0].tv = rgv3D[0].y *inv_tableheight;
+				rgv3D[1].tu = rgv3D[1].x *inv_tablewidth;
+				rgv3D[1].tv = rgv3D[1].y *inv_tableheight;
+				rgv3D[2].tu = rgv3D[2].x *inv_tablewidth;
+				rgv3D[2].tv = rgv3D[2].y *inv_tableheight;
+
+				ppin3d->m_lightproject.CalcCoordinates(&rgv3D[0],inv_width,inv_height);
+				ppin3d->m_lightproject.CalcCoordinates(&rgv3D[1],inv_width,inv_height);
+				ppin3d->m_lightproject.CalcCoordinates(&rgv3D[2],inv_width,inv_height);
+
+				for (int l=0;l<3;l++)
 				{
-				rgv3D[l].nx = 0;
-				rgv3D[l].ny = 0;
-				rgv3D[l].nz = -1.0f;
+					rgv3D[l].nx = 0;
+					rgv3D[l].ny = 0;
+					rgv3D[l].nz = -1.0f;
 				}
 
-			// Draw top.
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 3,(LPWORD)rgi0123, 3, 0);
-			//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 3);
+				// Draw top.
+				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 3,(LPWORD)rgi0123, 3, 0);
+				//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 3);
+			}
 
 			delete vtri.ElementAt(i);
 			}
