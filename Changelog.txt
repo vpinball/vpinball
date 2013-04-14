@@ -1,6 +1,6 @@
 VP 9.1.6 Changelog
 ------------------------
-- add flag to walls to disable lighting and shadows (to assist in using fully artist driven lighting)
+- add flag to walls and gates to disable lighting and shadows (to assist in using fully artist driven lighting)
 - add flag for alpha ramps to optionally use additive blending (to cope with 2D-lighting-hacks like halos/flashers)
 
 VP 9.1.5 Changelog
