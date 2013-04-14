@@ -31,6 +31,7 @@ public:
 	float m_angleMax;
 	int m_animations; //animation frames
 	BOOL m_fVisible;
+	BOOL m_fEnableLighting;
 	};
 
 class Gate :
@@ -149,6 +150,8 @@ public:
 	STDMETHOD(put_Animations)(/*[in]*/ int newVal);
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_EnableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_EnableLighting)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_GATE_H__EDC63CB2_226F_4606_99A9_0C2DB8FE1E3B__INCLUDED_)
