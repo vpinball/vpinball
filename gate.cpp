@@ -10,6 +10,7 @@ Gate::Gate()
 	{
 	m_phitgate = NULL;
 	m_plineseg = NULL;
+	m_d.m_fEnableLighting = fTrue;
 	}
 
 Gate::~Gate()
@@ -139,6 +140,12 @@ void Gate::SetDefaults(bool fromMouseClick)
 	hr = GetRegString("DefaultProps\\Gate","ImageBack", &m_d.m_szImageBack, MAXTOKEN);
 	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_szImageBack[0] = 0;
+
+	hr = GetRegInt("DefaultProps\\Gate","EnableLighting", &iTmp);
+	if ((hr == S_OK) && fromMouseClick)
+		m_d.m_fEnableLighting = iTmp == 0 ? false : true;
+	else
+		m_d.m_fEnableLighting = true;
 	}
 
 
@@ -172,6 +179,7 @@ void Gate::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Gate","Scatter", REG_SZ, &strTmp,strlen(strTmp));
 	SetRegValue("DefaultProps\\Gate","ImageFront", REG_SZ, &m_d.m_szImageFront,strlen(m_d.m_szImageFront));
 	SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,strlen(m_d.m_szImageBack));
+	SetRegValue("DefaultProps\\Gate","EnableLighting",REG_DWORD,&m_d.m_fEnableLighting,4);
 	}
 
 void Gate::PreRender(Sur * const psur)
@@ -365,8 +373,8 @@ void Gate::EndPlay()
 	}
 
 void Gate::PostRenderStatic(const RenderDevice* pd3dDevice)
-	{
-	}
+{
+}
 
 static const WORD rgiGate0[8] = {0,1,2,3,6,7,4,5};
 static const WORD rgiGate1[8] = {4,5,6,7,2,3,0,1};
@@ -380,15 +388,15 @@ static const WORD rgiGate6[4] = {0,4,6,2};
 static const WORD rgiGate7[4] = {1,3,7,5};
 
 static const Material gatemtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
+
 void Gate::RenderSetup(const RenderDevice* _pd3dDevice)
 {
-
 }
 
-void Gate::RenderStatic(const RenderDevice* _pd3dDevice)
+void Gate::RenderStatic(const RenderDevice* _pd3dDevice) // only the support structures are rendered here
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-	if(!m_d.m_fSupports) return; // no support structures are allocated ... therfore render none
+	if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 	
@@ -462,7 +470,7 @@ void Gate::RenderStatic(const RenderDevice* _pd3dDevice)
 	
 void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 {
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+	RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
@@ -470,8 +478,6 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 	const float h = m_d.m_height;		//relative height of the gate 
 
 	PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-	PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
-
 	float maxtuback, maxtvback;
 	if (pinback)
 		{
@@ -482,6 +488,7 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 		maxtuback = maxtvback = 1.0f;
 		}
 
+	PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 	float maxtufront, maxtvfront;
 	if (pinfront)
 		{
@@ -493,7 +500,6 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 		}
 
 	int cframes;
-
 	if (m_d.m_animations > 0)
 		cframes = m_d.m_animations;
 	else if (m_d.m_angleMax != 0.0f || m_d.m_angleMin != 0.0f)
@@ -503,6 +509,16 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 
 	const float halflength = m_d.m_length * 0.5f;
 	const float halfwidth =  m_d.m_height; //50;
+	const float minx = -halflength;
+	const float maxx = halflength;
+	const float miny = -1.0f;
+	const float maxy = 1.0f;
+	const float minz = -halfwidth;
+	const float maxz = 0;
+
+	const float radangle = ANGTORAD(m_d.m_rotation);
+	const float snY = sinf(radangle);
+	const float csY = cosf(radangle);
 
 	Material mtrl;
 	mtrl.diffuse.a = 
@@ -533,6 +549,9 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 
 	ppin3d->ClearExtents(&m_phitgate->m_gateanim.m_rcBounds, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar);
 
+	if(!m_d.m_fEnableLighting)
+		pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+
 	const float inv_cframes = (cframes > 1) ? ((m_d.m_angleMax - m_d.m_angleMin)/(float)(cframes-1)) : 0.0f;
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
@@ -544,20 +563,11 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 
 		const float angle = m_d.m_angleMin + inv_cframes*(float)i;
 
-		const float radangle = ANGTORAD(m_d.m_rotation);
-		const float snY = sinf(radangle);
-		const float csY = cosf(radangle);
-
 		const float snTurn = sinf(angle);
 		const float csTurn = cosf(angle);
 
-		const float minx = -halflength;
-		const float maxx = halflength;
-		const float miny = -1.0f;
-		const float maxy = 1.0f;
-		const float minz = -halfwidth;
-		const float maxz = 0;
-
+		if(m_d.m_fEnableLighting)
+		{
 		Vertex3D rgv3D[8];
 		for (int l=0;l<8;l++)
 			{
@@ -575,10 +585,6 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 				rgv3D[l].tu = (l & 1) ? maxtuback : 0;
 				rgv3D[l].tv = (l & 4) ? maxtvback : 0;
 				}
-			}
-
-		for (int l=0;l<8;l++)
-			{
 			{
 			const float temp = rgv3D[l].y;
 			rgv3D[l].y = csTurn*temp + snTurn*rgv3D[l].z;
@@ -611,25 +617,23 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 			if (pinback->m_fTransparent)
 				{				
 				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);				
-				if (m_d.m_color != rgbTransparent)rgbTransparent = pinback->m_rgbTransparent;
+	            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);				
+				if (m_d.m_color != rgbTransparent)
+					rgbTransparent = pinback->m_rgbTransparent;
 				}
 			else 
 				{	
 				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+		        pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+			    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
+				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
 				pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
 				}
 
-			if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
-				pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-			else pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-
+			pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
 			pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
 			pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
@@ -652,7 +656,6 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiGate2, 4, 0);
 
 		// Draw Frontside
-
 		if (pinfront) 
 			{			
 			pinfront->EnsureColorKey();
@@ -661,25 +664,24 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 				{				
 				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
 				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-				if (m_d.m_color != rgbTransparent) rgbTransparent = pinfront->m_rgbTransparent;
+				if (m_d.m_color != rgbTransparent)
+					rgbTransparent = pinfront->m_rgbTransparent;
 				}
 			else 
 				{	
 				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+	            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+		        pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+			    pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
 				}
-			if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR)
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-			else pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
-         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
+	        pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+		    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 			
 			mtrl.diffuse.r = mtrl.ambient.r =
@@ -721,6 +723,159 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 			SetNormal(rgv3D, rgiGate7, 4, NULL, NULL, 0);
 			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate7, 4, 0);
 			}
+		}
+		else // copy pasted from above, just without lighting
+		{
+		Vertex3D_NoLighting rgv3D[8];
+		for (int l=0;l<8;l++)
+			{
+			rgv3D[l].x = (l & 1) ? maxx : minx;
+			rgv3D[l].y = (l & 2) ? maxy : miny;
+			rgv3D[l].z = (l & 4) ? maxz : minz;
+
+			if (l & 2)
+				{
+				rgv3D[l].tu = (l & 1) ? maxtufront : 0;
+				rgv3D[l].tv = (l & 4) ? 0 : maxtvfront;
+				}
+			else
+				{
+				rgv3D[l].tu = (l & 1) ? maxtuback : 0;
+				rgv3D[l].tv = (l & 4) ? maxtvback : 0;
+				}
+			{
+			const float temp = rgv3D[l].y;
+			rgv3D[l].y = csTurn*temp + snTurn*rgv3D[l].z;
+			rgv3D[l].z = csTurn*rgv3D[l].z - snTurn*temp;
+			}
+
+			{
+			const float temp = rgv3D[l].x;
+			rgv3D[l].x = csY*temp - snY*rgv3D[l].y;
+			rgv3D[l].y = csY*rgv3D[l].y + snY*temp;
+			}
+
+			rgv3D[l].x += m_d.m_vCenter.x;
+			rgv3D[l].y += m_d.m_vCenter.y;
+			//rgv3D[l].z += height + 50.0f;
+			rgv3D[l].z += height + h;
+
+			rgv3D[l].color = m_d.m_color;
+			}
+
+		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar, 8, fFalse);
+
+		// Draw Backside
+		if (pinback) //(pinback)
+			{			
+			pinback->EnsureColorKey();
+			//pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
+
+			if (pinback->m_fTransparent)
+				{				
+				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
+	            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);				
+				if (m_d.m_color != rgbTransparent)
+					rgbTransparent = pinback->m_rgbTransparent;
+				}
+			else 
+				{	
+				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
+		        pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+			    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
+				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+				}
+
+			pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
+			pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+			pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			
+			mtrl.diffuse.r = mtrl.ambient.r =
+			mtrl.diffuse.g = mtrl.ambient.g =
+			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+			}
+		else // No image by that name  
+			{
+			ppin3d->SetTexture(NULL);
+			mtrl.diffuse.r = mtrl.ambient.r = r;
+			mtrl.diffuse.g = mtrl.ambient.g = g;
+			mtrl.diffuse.b = mtrl.ambient.b = b;
+			}
+
+		pd3dDevice->SetMaterial(&mtrl);
+
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX,rgv3D, 6,(LPWORD)rgiGate2, 4, 0);
+
+		// Draw Frontside
+		if (pinfront) 
+			{			
+			pinfront->EnsureColorKey();
+			//pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
+			if (pinfront->m_fTransparent)
+				{				
+				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+				if (m_d.m_color != rgbTransparent)
+					rgbTransparent = pinfront->m_rgbTransparent;
+				}
+			else 
+				{	
+				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
+	            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+		        pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+			    pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+				pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+				pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+				}
+
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
+	        pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+		    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+			
+			mtrl.diffuse.r = mtrl.ambient.r =
+			mtrl.diffuse.g = mtrl.ambient.g =
+			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+			}
+		else // No image by that name  
+			{
+			ppin3d->SetTexture(NULL);
+			mtrl.diffuse.r = mtrl.ambient.r = r;
+			mtrl.diffuse.g = mtrl.ambient.g = g;
+			mtrl.diffuse.b = mtrl.ambient.b = b;
+			}
+
+		pd3dDevice->SetMaterial(&mtrl);
+
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX,rgv3D, 8,(LPWORD)rgiGate3, 4, 0);
+
+		mtrl.diffuse.r = mtrl.ambient.r = r;
+		mtrl.diffuse.g = mtrl.ambient.g = g;
+		mtrl.diffuse.b = mtrl.ambient.b = b;
+		pd3dDevice->SetMaterial(&mtrl);
+		ppin3d->SetTexture(NULL);
+
+		if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
+			{
+			// Top & Bottom
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX,rgv3D, 4,(LPWORD)rgiGate4, 4, 0);
+
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX,rgv3D, 8,(LPWORD)rgiGate5, 4, 0);
+
+			// Sides
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX,rgv3D, 7,(LPWORD)rgiGate6, 4, 0);
+
+			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX,rgv3D, 8,(LPWORD)rgiGate7, 4, 0);
+			}
+		}
 
 		Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
@@ -740,14 +895,16 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 		DDBLTFX ddbltfx;
 		ddbltfx.dwSize = sizeof(DDBLTFX);
 		ddbltfx.dwFillColor = 0;
-		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,
-				&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
+		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 		}
 			
-      pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
-      pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+    pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
+    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
-	}
+
+	if(!m_d.m_fEnableLighting)
+		pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+}
 
 void Gate::SetObjectPos()
 	{
@@ -800,6 +957,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 	bw.WriteFloat(FID(GFRCT), m_d.m_friction);
 	bw.WriteBool(FID(GVSBL), m_d.m_fVisible);
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+	bw.WriteBool(FID(ELIT), m_d.m_fEnableLighting);
 
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -878,6 +1036,10 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(GCOLD))
 		{
 		pbr->GetBool(&m_d.m_fCollidable); 
+		}
+	else if (id == FID(ELIT))
+		{
+		pbr->GetBool(&m_d.m_fEnableLighting); 
 		}
 	else if (id == FID(GVSBL))
 		{
@@ -1394,7 +1556,6 @@ STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
 {	
 	if (g_pplayer)
@@ -1409,6 +1570,24 @@ STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
 
 		STOPUNDO
 		}
+
+	return S_OK;
+}
+
+STDMETHODIMP Gate::get_EnableLighting(VARIANT_BOOL *pVal)
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fEnableLighting);
+
+	return S_OK;
+}
+
+STDMETHODIMP Gate::put_EnableLighting(VARIANT_BOOL newVal)
+{	
+	STARTUNDO
+
+	m_d.m_fEnableLighting = newVal;
+
+	STOPUNDO
 
 	return S_OK;
 }
