@@ -92,6 +92,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Spinner)
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
 
+   void PrepareStatic( RenderDevice* pd3dDevice );
+   void PrepareMovers( RenderDevice* pd3dDevice );
+
 	void WriteRegDefaults();
 
 	PinTable *m_ptable;
@@ -100,6 +103,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Spinner)
 
 	HitSpinner *m_phitspinner;
 
+   Vertex3D staticVertices[8];
+   Vertex3D *moverVertices;
+   int frameCount;
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
 // ISpinner

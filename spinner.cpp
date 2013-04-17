@@ -333,93 +333,231 @@ static const WORD rgiSpinner6[4] = {0,4,6,2};
 static const WORD rgiSpinner7[4] = {1,3,7,5};
 
 static const Material spinnermtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
-void Spinner::RenderSetup(const RenderDevice* _pd3dDevice)
+void Spinner::PrepareStatic( RenderDevice* pd3dDevice )
 {
+   if(!m_d.m_fSupports) return;
+
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
+   const float halflength = m_d.m_length * 0.5f + m_d.m_overhang;
+   const float halfthick = 2.0f;
+   const float h = m_d.m_height*0.5f + 30.0f;
+
+   staticVertices[0].x = -halflength + halfthick;
+   staticVertices[0].y = 0;
+   staticVertices[0].z = 0;
+
+   staticVertices[1].x = -halflength - halfthick;
+   staticVertices[1].y = 0;
+   staticVertices[1].z = 0;
+
+   staticVertices[2].x = -halflength + halfthick;
+   staticVertices[2].y = 0;
+   //rgv3D[2].z = 60.0f - halfthick;
+   staticVertices[2].z = h - halfthick;
+
+   staticVertices[3].x = -halflength - halfthick;
+   staticVertices[3].y = 0;
+   //rgv3D[3].z = 60.0f + halfthick;
+   staticVertices[3].z = h + halfthick;
+
+   staticVertices[4].x = halflength - halfthick;
+   staticVertices[4].y = 0;
+   staticVertices[4].z = 0;
+
+   staticVertices[5].x = halflength + halfthick;
+   staticVertices[5].y = 0;
+   staticVertices[5].z = 0;
+
+   staticVertices[6].x = halflength - halfthick;
+   staticVertices[6].y = 0;
+   //rgv3D[6].z = 60.0f - halfthick;
+   staticVertices[6].z = h - halfthick;
+
+   staticVertices[7].x = halflength + halfthick;
+   staticVertices[7].y = 0;
+   //rgv3D[7].z = 60.0f + halfthick;
+   staticVertices[7].z = h + halfthick;
+
+   const float radangle = ANGTORAD(m_d.m_rotation);
+   const float snY = sinf(radangle);
+   const float csY = cosf(radangle);
+
+   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
+   for (int l=0;l<8;l++)
+   {
+      const float temp = staticVertices[l].x;
+      staticVertices[l].x = csY*temp - snY*staticVertices[l].y;
+      staticVertices[l].y = csY*staticVertices[l].y + snY*temp;
+
+      staticVertices[l].x += m_d.m_vCenter.x;
+      staticVertices[l].y += m_d.m_vCenter.y;
+      staticVertices[l].z += height;
+
+      ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l],inv_width,inv_height);
+   }
 
 }
+
+void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
+{
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
+   COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
+
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   const float h = m_d.m_height*0.5f + 30.0f;
+
+   PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
+   PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+
+   float maxtuback, maxtvback;
+   float maxtufront, maxtvfront;
+   if (pinback)
+   {
+      m_ptable->GetTVTU(pinback, &maxtuback, &maxtvback);
+   }
+   else
+   {
+      maxtuback = maxtvback = 1.0f;
+   }
+
+   if (pinfront)
+   {
+      m_ptable->GetTVTU(pinfront, &maxtufront, &maxtvfront);
+   }
+   else
+   {
+      maxtufront = maxtvfront = 1.0f;
+   }
+
+   int cframes;
+   if (m_d.m_animations > 0) cframes = m_d.m_animations;
+   else if (m_d.m_angleMax != m_d.m_angleMin)
+   {
+      cframes = (int)((m_d.m_angleMax - m_d.m_angleMin)*(float)((20-1)/90.0) + 1.5f); // 15 frames per 90 degrees
+   }
+   else cframes = 80;
+
+   const float halflength = m_d.m_length * 0.5f;
+   const float halfwidth = m_d.m_height * 0.5f;
+
+   ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
+
+   const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+   const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+   const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+
+   const float inv_cframes = 1.0f/(float)cframes;
+
+   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+   frameCount=cframes;
+   moverVertices = new Vertex3D[8*frameCount];
+   int ofs=0;
+   for ( int i=0;i<cframes;i++,ofs+=8 )
+   {
+      float angle;
+      if (m_d.m_angleMax != m_d.m_angleMin)
+         angle = ANGTORAD(m_d.m_angleMin + (m_d.m_angleMax - m_d.m_angleMin)*inv_cframes*(float)i);
+      else angle = (float)(2.0*M_PI)*inv_cframes*(float)i;
+
+      const float radangle = ANGTORAD(m_d.m_rotation);
+      const float snY = sinf(radangle);
+      const float csY = cosf(radangle);
+
+      const float snTurn = sinf(angle);
+      const float csTurn = cosf(angle);
+
+      const float minx = -halflength;
+      const float maxx = halflength;
+      const float miny = -3.0f;
+      const float maxy = 3.0f;
+      const float minz = -halfwidth;
+      const float maxz = halfwidth;
+
+      Vertex3D *rgv3D=&moverVertices[ofs];
+      for (int l=0;l<8;l++)
+      {
+         rgv3D[l].x = (l & 1) ? maxx : minx;
+         rgv3D[l].y = (l & 2) ? maxy : miny;
+         rgv3D[l].z = (l & 4) ? maxz : minz;
+
+         if (l & 2)
+         {
+            rgv3D[l].tu = (l & 1) ? maxtufront : 0;
+            rgv3D[l].tv = (l & 4) ? 0 : maxtvfront;
+         }
+         else
+         {
+            rgv3D[l].tu = (l & 1) ? maxtuback : 0;
+            rgv3D[l].tv = (l & 4) ? maxtvback : 0;
+         }
+      }
+
+      for (int l=0;l<8;l++)
+      {
+         {
+            const float temp = rgv3D[l].y;
+            rgv3D[l].y = csTurn*temp + snTurn*rgv3D[l].z;
+            rgv3D[l].z = csTurn*rgv3D[l].z - snTurn*temp;
+         }
+
+         {
+            const float temp = rgv3D[l].x;
+            rgv3D[l].x = csY*temp - snY*rgv3D[l].y;
+            rgv3D[l].y = csY*rgv3D[l].y + snY*temp;
+         }
+
+         rgv3D[l].x += m_d.m_vCenter.x;
+         rgv3D[l].y += m_d.m_vCenter.y;
+         //rgv3D[l].z += 60.0f + height;
+         rgv3D[l].z += h + height;
+
+         ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+      }
+
+      if (pinback)
+      {			
+         pinback->EnsureColorKey();
+      }
+
+      if (pinfront)
+      {
+         pinfront->EnsureColorKey();
+      }
+   }
+
+}
+void Spinner::RenderSetup(const RenderDevice* _pd3dDevice)
+{
+   PrepareStatic( (RenderDevice*)_pd3dDevice );
+   PrepareMovers( (RenderDevice*)_pd3dDevice );
+}
+
 void Spinner::RenderStatic(const RenderDevice* _pd3dDevice)
-	{
+{
 	if(!m_d.m_fSupports) return;
 
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 
-	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-	const float halflength = m_d.m_length * 0.5f + m_d.m_overhang;
-	const float halfthick = 2.0f;
-	const float h = m_d.m_height*0.5f + 30.0f;
-
-	Vertex3D rgv3D[12];
-	rgv3D[0].x = -halflength + halfthick;
-	rgv3D[0].y = 0;
-	rgv3D[0].z = 0;
-
-	rgv3D[1].x = -halflength - halfthick;
-	rgv3D[1].y = 0;
-	rgv3D[1].z = 0;
-
-	rgv3D[2].x = -halflength + halfthick;
-	rgv3D[2].y = 0;
-	//rgv3D[2].z = 60.0f - halfthick;
-	rgv3D[2].z = h - halfthick;
-
-	rgv3D[3].x = -halflength - halfthick;
-	rgv3D[3].y = 0;
-	//rgv3D[3].z = 60.0f + halfthick;
-	rgv3D[3].z = h + halfthick;
-
-	rgv3D[4].x = halflength - halfthick;
-	rgv3D[4].y = 0;
-	rgv3D[4].z = 0;
-
-	rgv3D[5].x = halflength + halfthick;
-	rgv3D[5].y = 0;
-	rgv3D[5].z = 0;
-
-	rgv3D[6].x = halflength - halfthick;
-	rgv3D[6].y = 0;
-	//rgv3D[6].z = 60.0f - halfthick;
-	rgv3D[6].z = h - halfthick;
-
-	rgv3D[7].x = halflength + halfthick;
-	rgv3D[7].y = 0;
-	//rgv3D[7].z = 60.0f + halfthick;
-	rgv3D[7].z = h + halfthick;
-
-	const float radangle = ANGTORAD(m_d.m_rotation);
-	const float snY = sinf(radangle);
-	const float csY = cosf(radangle);
-
-	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-
-	for (int l=0;l<8;l++)
-		{
-		const float temp = rgv3D[l].x;
-		rgv3D[l].x = csY*temp - snY*rgv3D[l].y;
-		rgv3D[l].y = csY*rgv3D[l].y + snY*temp;
-
-		rgv3D[l].x += m_d.m_vCenter.x;
-		rgv3D[l].y += m_d.m_vCenter.y;
-		rgv3D[l].z += height;
-
-		ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
-		}
 
 	pd3dDevice->SetMaterial((Material*)&spinnermtrl);
 
+   Vertex3D rgv3D[8];
+   memcpy( rgv3D, staticVertices, sizeof(Vertex3D)*8);
+
 	SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner0, 8);
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
-													  rgv3D, 8,
-													  (LPWORD)rgiSpinner0, 8, 0);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, (LPWORD)rgiSpinner0, 8, 0);
 
 	SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner1, 8);
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,
-													  rgv3D, 8,
-													  (LPWORD)rgiSpinner1, 8, 0);
-	}
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, (LPWORD)rgiSpinner1, 8, 0);
+}
 	
 void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
 	{
@@ -428,155 +566,56 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
 
 	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
-	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-	const float h = m_d.m_height*0.5f + 30.0f;
-
 	PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
 	PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
-	float maxtuback, maxtvback;
-	float maxtufront, maxtvfront;
-	if (pinback)
-		{
-		m_ptable->GetTVTU(pinback, &maxtuback, &maxtvback);
-		}
-	else
-		{
-		maxtuback = maxtvback = 1.0f;
-		}
-
-	if (pinfront)
-		{
-		m_ptable->GetTVTU(pinfront, &maxtufront, &maxtvfront);
-		}
-	else
-		{
-		maxtufront = maxtvfront = 1.0f;
-		}
-
-	int cframes;
-	if (m_d.m_animations > 0) cframes = m_d.m_animations;
-	else if (m_d.m_angleMax != m_d.m_angleMin)
-		{
-		cframes = (int)((m_d.m_angleMax - m_d.m_angleMin)*(float)((20-1)/90.0) + 1.5f); // 15 frames per 90 degrees
-		}
-	else cframes = 80;
-
-	const float halflength = m_d.m_length * 0.5f;
-	const float halfwidth = m_d.m_height * 0.5f;
-
 	if (g_pvp->m_pdd.m_fHardwareAccel)
-		{
-         pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
-         pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
-         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-		}
+	{
+      pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
+      pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
+      pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
+	}
 
-	// Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
+   // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+   pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
 
-	ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
+   ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
 
-	Material mtrl;
-	mtrl.diffuse.a = 
-	mtrl.ambient.a =
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
+   Material mtrl;
+   mtrl.diffuse.a = 
+      mtrl.ambient.a =
+      mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+      mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+      mtrl.power = 0;
 
-	const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-	const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-	const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+   const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+   const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+   const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
-	const float inv_cframes = 1.0f/(float)cframes;
+   int ofs=0;
+   for (int i=0;i<frameCount;i++,ofs+=8)
+   {
+      ObjFrame * const pof = new ObjFrame();
 
-	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+      Vertex3D rgv3D[8];
+      memcpy( rgv3D, &moverVertices[ofs], sizeof(Vertex3D)*8);
 
-	for (int i=0;i<cframes;i++)
-		{
-		ObjFrame * const pof = new ObjFrame();
+      ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+      ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar, 8, fFalse);
 
-		//angle = (float)*(2.0*M_PI)*inv_cframes*(float)i;
-
-		float angle;
-		if (m_d.m_angleMax != m_d.m_angleMin)
-			angle = ANGTORAD(m_d.m_angleMin + (m_d.m_angleMax - m_d.m_angleMin)*inv_cframes*(float)i);
-		else angle = (float)(2.0*M_PI)*inv_cframes*(float)i;
-
-		const float radangle = ANGTORAD(m_d.m_rotation);
-		const float snY = sinf(radangle);
-		const float csY = cosf(radangle);
-
-		const float snTurn = sinf(angle);
-		const float csTurn = cosf(angle);
-
-		const float minx = -halflength;
-		const float maxx = halflength;
-		const float miny = -3.0f;
-		const float maxy = 3.0f;
-		const float minz = -halfwidth;
-		const float maxz = halfwidth;
-
-		Vertex3D rgv3D[8];
-		for (int l=0;l<8;l++)
-			{
-			rgv3D[l].x = (l & 1) ? maxx : minx;
-			rgv3D[l].y = (l & 2) ? maxy : miny;
-			rgv3D[l].z = (l & 4) ? maxz : minz;
-
-			if (l & 2)
-				{
-				rgv3D[l].tu = (l & 1) ? maxtufront : 0;
-				rgv3D[l].tv = (l & 4) ? 0 : maxtvfront;
-				}
-			else
-				{
-				rgv3D[l].tu = (l & 1) ? maxtuback : 0;
-				rgv3D[l].tv = (l & 4) ? maxtvback : 0;
-				}
-			}
-
-		for (int l=0;l<8;l++)
-			{
-				{
-			const float temp = rgv3D[l].y;
-			rgv3D[l].y = csTurn*temp + snTurn*rgv3D[l].z;
-			rgv3D[l].z = csTurn*rgv3D[l].z - snTurn*temp;
-				}
-
-				{
-			const float temp = rgv3D[l].x;
-			rgv3D[l].x = csY*temp - snY*rgv3D[l].y;
-			rgv3D[l].y = csY*rgv3D[l].y + snY*temp;
-				}
-
-			rgv3D[l].x += m_d.m_vCenter.x;
-			rgv3D[l].y += m_d.m_vCenter.y;
-			//rgv3D[l].z += 60.0f + height;
-			rgv3D[l].z += h + height;
-
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
-			}
-
-		ppin3d->ClearExtents(&pof->rc, NULL, NULL);
-		ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar, 8, fFalse);
-
-		// Draw Backside
-		if (pinback)
-			{			
-			pinback->EnsureColorKey();
-			//pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
-
-			if (pinback->m_fTransparent)
-				{				
-				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
+      // Draw Backside
+      if (pinback)
+      {			
+         pinback->EnsureColorKey();
+         if (pinback->m_fTransparent)
+         {				
+            pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-				if (m_d.m_color != rgbTransparent) rgbTransparent = pinback->m_rgbTransparent;
-				}
-			else 
-				{	
-				pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
+            if (m_d.m_color != rgbTransparent) rgbTransparent = pinback->m_rgbTransparent;
+         }
+         else 
+         {	
+            pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
             pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);	
             pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
@@ -584,48 +623,46 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
             pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
             pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 
-				} 
+         } 
 
-			if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
+         if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
          else pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
          pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-			
-			mtrl.diffuse.r = mtrl.ambient.r =
-			mtrl.diffuse.g = mtrl.ambient.g =
-			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-			}
-		else // No image by that name
-			{
-			ppin3d->SetTexture(NULL);
-			mtrl.diffuse.r = mtrl.ambient.r = r;
-			mtrl.diffuse.g = mtrl.ambient.g = g;
-			mtrl.diffuse.b = mtrl.ambient.b = b;
-			}
+         g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-		pd3dDevice->SetMaterial(&mtrl);
+         mtrl.diffuse.r = mtrl.ambient.r =
+            mtrl.diffuse.g = mtrl.ambient.g =
+            mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+      }
+      else // No image by that name
+      {
+         ppin3d->SetTexture(NULL);
+         mtrl.diffuse.r = mtrl.ambient.r = r;
+         mtrl.diffuse.g = mtrl.ambient.g = g;
+         mtrl.diffuse.b = mtrl.ambient.b = b;
+      }
 
-		SetNormal(rgv3D, rgiSpinner2, 4, NULL, NULL, 0);
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSpinner2,4, 0);
+      pd3dDevice->SetMaterial(&mtrl);
 
-		// Draw Frontside
+      SetNormal(rgv3D, rgiSpinner2, 4, NULL, NULL, 0);
+      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSpinner2,4, 0);
 
-		if (pinfront)
-			{
-			pinfront->EnsureColorKey();
-			//pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
-			if (pinfront->m_fTransparent)
-				{				
-				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
-				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);	
-				if (m_d.m_color != rgbTransparent)rgbTransparent = pinfront->m_rgbTransparent;
-				}
-			else 
-				{	
-				pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
+      // Draw Frontside
+      if (pinfront)
+      {
+         pinfront->EnsureColorKey();
+         if (pinfront->m_fTransparent)
+         {				
+            pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);	
+            if (m_d.m_color != rgbTransparent)rgbTransparent = pinfront->m_rgbTransparent;
+         }
+         else 
+         {	
+            pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
             pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);	
             pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
@@ -633,81 +670,81 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
             pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
             pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 
-				}
+         }
 
-			if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
-				pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-			else pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+         if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         else pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
-			pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-			g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-			mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-			mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
-			mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-			}
-		else // No image by that name
-			{
-			ppin3d->SetTexture(NULL);
-			mtrl.diffuse.r = mtrl.ambient.r = r;
-			mtrl.diffuse.g = mtrl.ambient.g = g;
-			mtrl.diffuse.b = mtrl.ambient.b = b;
-			}
+         mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
+         mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
+         mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+      }
+      else // No image by that name
+      {
+         ppin3d->SetTexture(NULL);
+         mtrl.diffuse.r = mtrl.ambient.r = r;
+         mtrl.diffuse.g = mtrl.ambient.g = g;
+         mtrl.diffuse.b = mtrl.ambient.b = b;
+      }
 
-		pd3dDevice->SetMaterial(&mtrl);
+      pd3dDevice->SetMaterial(&mtrl);
 
-		SetNormal(rgv3D, rgiSpinner3, 4, NULL, NULL, 0);
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner3, 4, 0);
+      SetNormal(rgv3D, rgiSpinner3, 4, NULL, NULL, 0);
+      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner3, 4, 0);
 
-		mtrl.diffuse.r = mtrl.ambient.r = r;
-		mtrl.diffuse.g = mtrl.ambient.g = g;
-		mtrl.diffuse.b = mtrl.ambient.b = b;
-		pd3dDevice->SetMaterial(&mtrl);
-		ppin3d->SetTexture(NULL);
+      mtrl.diffuse.r = mtrl.ambient.r = r;
+      mtrl.diffuse.g = mtrl.ambient.g = g;
+      mtrl.diffuse.b = mtrl.ambient.b = b;
+      pd3dDevice->SetMaterial(&mtrl);
+      ppin3d->SetTexture(NULL);
 
-		if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
-			{
-			// Top & Bottom
-			SetNormal(rgv3D, rgiSpinner4, 4, NULL, NULL, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgiSpinner4, 4, 0);
+      if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
+      {
+         // Top & Bottom
+         SetNormal(rgv3D, rgiSpinner4, 4, NULL, NULL, 0);
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgiSpinner4, 4, 0);
 
-			SetNormal(rgv3D, rgiSpinner5, 4, NULL, NULL, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner5, 4, 0);
-			// Sides
-			SetNormal(rgv3D, rgiSpinner6, 4, NULL, NULL, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 7,(LPWORD)rgiSpinner6, 4, 0);
+         SetNormal(rgv3D, rgiSpinner5, 4, NULL, NULL, 0);
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner5, 4, 0);
+         // Sides
+         SetNormal(rgv3D, rgiSpinner6, 4, NULL, NULL, 0);
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 7,(LPWORD)rgiSpinner6, 4, 0);
 
-			SetNormal(rgv3D, rgiSpinner7, 4, NULL, NULL, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner7, 4, 0);
-			}
+         SetNormal(rgv3D, rgiSpinner7, 4, NULL, NULL, 0);
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner7, 4, 0);
+      }
 
-		// Create offscreen surfaces for color and depth buffers.
-		Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-		pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+      // Create offscreen surfaces for color and depth buffers.
+      Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
+      pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
-		// Copy from the back color and depth buffers to the new surfaces.
-		pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
-		/*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-				
-		m_phitspinner->m_spinneranim.m_vddsFrame.AddElement(pof);
-		pof->pdds = pdds;
+      // Copy from the back color and depth buffers to the new surfaces.
+      pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
+      /*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
-		ppin3d->ExpandRectByRect(&m_phitspinner->m_spinneranim.m_rcBounds, &pof->rc);
+      m_phitspinner->m_spinneranim.m_vddsFrame.AddElement(pof);
+      pof->pdds = pdds;
 
-		// reset the portion of the z-buffer that we changed
-		ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-		// Reset color key in back buffer
-		DDBLTFX ddbltfx;
-		ddbltfx.dwSize = sizeof(DDBLTFX);
-		ddbltfx.dwFillColor = 0;
-		ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
-		}
-		
-      pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
-      pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
-	pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
-	}
+      ppin3d->ExpandRectByRect(&m_phitspinner->m_spinneranim.m_rcBounds, &pof->rc);
+
+      // reset the portion of the z-buffer that we changed
+      ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+      // Reset color key in back buffer
+      DDBLTFX ddbltfx;
+      ddbltfx.dwSize = sizeof(DDBLTFX);
+      ddbltfx.dwFillColor = 0;
+      ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
+   }
+
+   pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
+   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+   pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+}
 
 void Spinner::SetObjectPos()
 	{
