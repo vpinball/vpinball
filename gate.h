@@ -93,6 +93,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Gate)
 	// Multi-object manipulation
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
+   void PrepareStatic(RenderDevice* pd3dDevice);
+   void PrepareMovers(RenderDevice* pd3dDevice );
 
 	virtual void RenderBlueprint(Sur *psur);
 
@@ -103,6 +105,11 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Gate)
 
 	LineSeg *m_plineseg;
 	HitGate *m_phitgate;
+   Vertex3D staticVertices[8];
+
+   Vertex3D *litVertices;
+   Vertex3D_NoLighting *nolitVertices;
+   int frameCount;
 
 // IGate
 public:
