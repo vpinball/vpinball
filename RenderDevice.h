@@ -158,7 +158,7 @@ public:
    {
       WRITEONLY = DDLOCK_WRITEONLY,
       NOOVERWRITE = DDLOCK_NOOVERWRITE,
-      DISCARDCONTENTS   =DDLOCK_DISCARDCONTENTS
+      DISCARDCONTENTS = DDLOCK_DISCARDCONTENTS
    };
    bool lock( unsigned int _offsetToLock, unsigned int _sizeToLock, void **_dataBuffer, DWORD _flags )
    {
