@@ -68,10 +68,6 @@ private:
 class LightProjected
 	{
 public:
-	//float inclination;
-	//float rotation;
-	//float spin;
-
 	Vertex3Ds m_v;
 
 	void CalcCoordinates(Vertex3D * const pv, const float inv_width, const float inv_height) const;
