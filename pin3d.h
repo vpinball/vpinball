@@ -116,6 +116,35 @@ public:
 	pv3DOut->y = yp*inv_wp;
 	pv3DOut->z = zp*inv_wp;
 	}
+	inline Vertex3Ds MultiplyVector(const Vertex3Ds &v) const
+	{
+	// Transform it through the current matrix set
+	const float xp = _11*v.x + _21*v.y + _31*v.z + _41;
+	const float yp = _12*v.x + _22*v.y + _32*v.z + _42;
+	const float wp = _14*v.x + _24*v.y + _34*v.z + _44;
+
+	const float zp = _13*v.x + _23*v.y + _33*v.z + _43;
+
+	const float inv_wp = 1.0f/wp;
+	Vertex3Ds pv3DOut;
+	pv3DOut.x = xp*inv_wp;
+	pv3DOut.y = yp*inv_wp;
+	pv3DOut.z = zp*inv_wp;
+	return pv3DOut;
+	}
+	inline Vertex3Ds MultiplyVectorNoTranslate(const Vertex3Ds &v) const
+	{
+	// Transform it through the current matrix set
+	const float xp = _11*v.x + _21*v.y + _31*v.z;
+	const float yp = _12*v.x + _22*v.y + _32*v.z;
+	const float zp = _13*v.x + _23*v.y + _33*v.z;
+
+	Vertex3Ds pv3DOut;
+	pv3DOut.x = xp;
+	pv3DOut.y = yp;
+	pv3DOut.z = zp;
+	return pv3DOut;
+	}
 
 	void Invert();
 	};

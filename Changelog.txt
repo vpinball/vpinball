@@ -1,5 +1,7 @@
 VP 9.1.6 Changelog
 ------------------------
+- add configurable lightsources: point, directional, spot; these share the same coordinate system as the table geometry (angle/rotation/scale independent! setting the direction of a directional light to 0,0,0 restores the old behavior though)
+  (note that DX7 is still vertex lighting based, thus all lit objects MUST feature reasonable triangulation, like f.e. huge walls (the playfield itself is triangulated 100x100))
 - add flag to walls and gates to disable lighting and shadows (to assist in using fully artist driven lighting)
 - add flag for alpha ramps to optionally use additive blending (to cope with 2D-lighting-hacks like halos/flashers)
 
@@ -86,7 +88,7 @@ Field of View must be greater than 0 for Layback values to be used to render a t
 Items on table are now displayed in a non-kartesian world to give the viewer the imagination to stand more in front of the table instead of flying over it, when using FOV.
 
 *Fixed Near-Plane Bug with inclination set to 0.
-*Added Support for various Picture formats (*.jpg;*.jpeg;*.png;*.gif;*.ico;*.IFF;*.PCX;*.PICT;*.psd;*.tga;*.tiff;*.tif
+*Added Support for various Picture formats (*.jpg;*.jpeg;*.png;*.gif;*.ico;*.IFF;*.PCX;*.PICT;*.psd;*.tga;*.tiff;*.tif)
 *Added Alpha Support for Ramps
 
 More optimizations and testing by Toxie

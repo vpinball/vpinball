@@ -31,12 +31,12 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 //////////////////////////////////////////////////////////////////////
 
 void ScriptGlobalTable::Init(PinTable *pt)
-	{
+{
 	m_pt = pt;
 
 	// initialise the sound sequencer
 	SeqSoundInit();
-	}
+}
 
 
 // Returns the number of balls that are expected to be on the table
@@ -45,7 +45,6 @@ int PinTable::NumStartBalls()
 {
 	return ( PinTable::m_tblNumStartBalls );
 }
-
 
 STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 {
@@ -66,14 +65,12 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume)
 {
 	if (g_pplayer && g_pplayer->m_fPlaySound) m_pt->PlaySound(bstr, LoopCount, volume);
 
 	return S_OK;
 }
-
 
 STDMETHODIMP ScriptGlobalTable::FireKnocker(int Count)
 {
@@ -89,7 +86,6 @@ STDMETHODIMP ScriptGlobalTable::QuitPlayer(int CloseType)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::StartShake()
 {
 	m_pt->StartShake();
@@ -97,14 +93,12 @@ STDMETHODIMP ScriptGlobalTable::StartShake()
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::StopShake()
 {
 	m_pt->StopShake();
 
 	return S_OK;
 }
-
 
 STDMETHODIMP ScriptGlobalTable::StopSound(BSTR Sound)
 {
@@ -117,7 +111,6 @@ STDMETHODIMP ScriptGlobalTable::StopSound(BSTR Sound)
 
 	return S_OK;
 }
-
 
 STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str)
 {
@@ -158,7 +151,6 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::EndMusic()
 {
 	if (g_pplayer && g_pplayer->m_fPlayMusic)
@@ -174,7 +166,6 @@ STDMETHODIMP ScriptGlobalTable::EndMusic()
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
 {
 	*pVal = SysAllocString(L"Global");
@@ -182,12 +173,10 @@ STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
 	return S_OK;
 }
 
-
 IDispatch *ScriptGlobalTable::GetDispatch()
-	{
+{
 	return (IDispatch *)this;
-	}
-
+}
 
 STDMETHODIMP ScriptGlobalTable::get_LeftFlipperKey(long *pVal)
 {
@@ -196,14 +185,12 @@ STDMETHODIMP ScriptGlobalTable::get_LeftFlipperKey(long *pVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_RightFlipperKey(long *pVal)
 {
 	*pVal = g_pplayer->m_rgKeys[eRightFlipperKey];
 
 	return S_OK;
 }
-
 
 STDMETHODIMP ScriptGlobalTable::get_LeftTiltKey(long *pVal)
 {
@@ -212,14 +199,12 @@ STDMETHODIMP ScriptGlobalTable::get_LeftTiltKey(long *pVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_RightTiltKey(long *pVal)
 {
 	*pVal = g_pplayer->m_rgKeys[eRightTiltKey];
 
 	return S_OK;
 }
-
 
 STDMETHODIMP ScriptGlobalTable::get_CenterTiltKey(long *pVal)
 {
@@ -228,14 +213,12 @@ STDMETHODIMP ScriptGlobalTable::get_CenterTiltKey(long *pVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_PlungerKey(long *pVal)
 {
 	*pVal = g_pplayer->m_rgKeys[ePlungerKey];
 
 	return S_OK;
 }
-
 
 STDMETHODIMP ScriptGlobalTable::get_StartGameKey(long *pVal)
 {
@@ -244,14 +227,12 @@ STDMETHODIMP ScriptGlobalTable::get_StartGameKey(long *pVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey(long *pVal)
 {
 	*pVal = g_pplayer->m_rgKeys[eAddCreditKey];
 
 	return S_OK;
 }
-
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey2(long *pVal)
 {
@@ -260,14 +241,12 @@ STDMETHODIMP ScriptGlobalTable::get_AddCreditKey2(long *pVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_MechanicalTilt(long *pVal)
 {
 	*pVal = g_pplayer->m_rgKeys[eMechanicalTilt];
 
 	return S_OK;
 }
-
 
 STDMETHODIMP ScriptGlobalTable::get_LeftMagnaSave(long *pVal)
 {
@@ -276,7 +255,6 @@ STDMETHODIMP ScriptGlobalTable::get_LeftMagnaSave(long *pVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_RightMagnaSave(long *pVal)
 {
 	*pVal = g_pplayer->m_rgKeys[eRightMagnaSave];
@@ -284,14 +262,12 @@ STDMETHODIMP ScriptGlobalTable::get_RightMagnaSave(long *pVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_ExitGame(long *pVal)
 {
 	*pVal = g_pplayer->m_rgKeys[eExitGame];
 
 	return S_OK;
 }
-
 
 BOOL ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents)
 	{
@@ -355,7 +331,6 @@ BOOL ScriptGlobalTable::GetTextFileFromDirectory(char *szfilename, char *dirname
 	return fSuccess;
 	}
 
-
 STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 {
 	BOOL fSuccess;
@@ -385,7 +360,6 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 	return (fSuccess) ? S_OK : E_FAIL;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 {
 	WCHAR wzPath[MAX_PATH];
@@ -395,7 +369,6 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 
 	return S_OK;
 }
-
 
 STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
 {
@@ -412,7 +385,6 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::AddObject(BSTR Name, IDispatch *pdisp)
 {
 	if (!g_pplayer)
@@ -424,7 +396,6 @@ STDMETHODIMP ScriptGlobalTable::AddObject(BSTR Name, IDispatch *pdisp)
 
 	return S_OK;
 }
-
 
 STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIANT Value)
 {
@@ -494,7 +465,6 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIANT *Value)
 {
 	IStorage* pstgRoot;
@@ -558,7 +528,6 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_ActiveBall(IBall **pVal)
 {
 	if (!pVal || !g_pplayer)
@@ -592,7 +561,6 @@ STDMETHODIMP ScriptGlobalTable::get_GameTime(long *pVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(long *pVal)
 {
 	if (!g_pplayer)
@@ -602,7 +570,6 @@ STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(long *pVal)
 	*pVal = BUILD_NUMBER;
 	return S_OK;
 }
-
 
 PinTable::PinTable()
 	{
@@ -798,13 +765,10 @@ PinTable::PinTable()
 	m_tilt_trigger_time = 10000;
 	}
 
-
 PinTable::~PinTable()
 	{
 	for (int i=0;i<m_vedit.Size();i++)
-		{
 		m_vedit.ElementAt(i)->Release();
-		}
 
 	ClearOldSounds();
 
@@ -815,9 +779,7 @@ PinTable::~PinTable()
 		}
 
 	for (int i=0;i<m_vimage.Size();i++)
-		{
 		delete m_vimage.ElementAt(i);
-		}
 
 	for (int i=0;i<m_vfont.Size();i++)
 		{
@@ -826,9 +788,7 @@ PinTable::~PinTable()
 		}
 
 	for (int i=0;i<m_vcollection.Size();i++)
-		{
 		m_vcollection.ElementAt(i)->Release();
-		}
 
 	for (int i=0;i<m_vCustomInfoTag.Size();i++)
 		{
@@ -847,9 +807,7 @@ PinTable::~PinTable()
 		}
 
 	if (m_hbmOffScreen)
-		{
 		DeleteObject(m_hbmOffScreen);
-		}
 
 	SAFE_VECTOR_DELETE(m_szTableName);
 	SAFE_VECTOR_DELETE(m_szAuthor);
@@ -861,7 +819,6 @@ PinTable::~PinTable()
 	SAFE_VECTOR_DELETE(m_szDescription);
 	SAFE_VECTOR_DELETE(m_szRules);
 	}
-
 
 BOOL PinTable::FVerifySaveToClose()
 	{
@@ -882,19 +839,16 @@ BOOL PinTable::FVerifySaveToClose()
 	return fTrue;
 	}
 
-
 BOOL PinTable::CheckPermissions(unsigned long flag)
 	{
 	return ( ((m_protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) ||
 		     ((m_protectionData.flags & flag) 				== flag) 				);
 	}
 
-
 BOOL PinTable::IsTableProtected()
 	{
 	return (m_protectionData.flags != 0);
 	}
-
 
 void PinTable::ResetProtectionBlock()
 	{
@@ -903,7 +857,6 @@ void PinTable::ResetProtectionBlock()
 	m_protectionData.fileversion = PROT_DATA_VERSION;
 	m_protectionData.size = sizeof(m_protectionData);
 	}
-
 
 BOOL PinTable::SetupProtectionBlock(unsigned char *pPassword, unsigned long flags)
 	{
@@ -957,7 +910,6 @@ BOOL PinTable::SetupProtectionBlock(unsigned char *pPassword, unsigned long flag
 
 	return(rc);
 	}
-
 
 BOOL PinTable::UnlockProtectionBlock(unsigned char *pPassword)
 	{
@@ -1125,7 +1077,6 @@ void PinTable::Init(VPinball *pvp)
 #endif
 	}
 
-
 void PinTable::SetDefaultView()
 	{
 	FRect frect;
@@ -1135,7 +1086,6 @@ void PinTable::SetDefaultView()
 	m_offsety = (frect.top+frect.bottom) * 0.5f;
 	m_zoom = 0.5f;
 	}
-
 
 void PinTable::SetCaption(char *szCaption)
 	{
@@ -2491,7 +2441,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	bw.WriteFloat(FID(SCLX), m_scalex);
 	bw.WriteFloat(FID(SCLY), m_scaley);
 
-
 	bw.WriteFloat(FID(GAVT), m_Gravity);
 	bw.WriteFloat(FID(FRCT), m_hardFriction);
 	bw.WriteFloat(FID(SCAT), m_hardScatter);
@@ -2555,6 +2504,27 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	bw.WriteInt(FID(TLTA), m_tilt_amount);	
 	bw.WriteInt(FID(JLTT), m_jolt_trigger_time);
 	bw.WriteInt(FID(TLTT), m_tilt_trigger_time);
+
+	bw.WriteInt(FID(LZAM), m_Light[0].ambient);
+	bw.WriteInt(FID(LZDI), m_Light[0].diffuse);
+	bw.WriteInt(FID(LZSP), m_Light[0].specular);
+	bw.WriteFloat(FID(LZPX), m_Light[0].pos.x);
+	bw.WriteFloat(FID(LZPY), m_Light[0].pos.y);
+	bw.WriteFloat(FID(LZPZ), m_Light[0].pos.z);
+	bw.WriteFloat(FID(LZDX), m_Light[0].dir.x);
+	bw.WriteFloat(FID(LZDY), m_Light[0].dir.y);
+	bw.WriteFloat(FID(LZDZ), m_Light[0].dir.z);
+	bw.WriteInt(FID(LZTY), m_Light[0].type);
+	bw.WriteInt(FID(LOAM), m_Light[1].ambient);
+	bw.WriteInt(FID(LODI), m_Light[1].diffuse);
+	bw.WriteInt(FID(LOSP), m_Light[1].specular);
+	bw.WriteFloat(FID(LOPX), m_Light[1].pos.x);
+	bw.WriteFloat(FID(LOPY), m_Light[1].pos.y);
+	bw.WriteFloat(FID(LOPZ), m_Light[1].pos.z);
+	bw.WriteFloat(FID(LODX), m_Light[1].dir.x);
+	bw.WriteFloat(FID(LODY), m_Light[1].dir.y);
+	bw.WriteFloat(FID(LODZ), m_Light[1].dir.z);
+	bw.WriteInt(FID(LOTY), m_Light[1].type);
 
 	// HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
 	// Someday save these values into there own stream, used only when saving to file.
@@ -3054,6 +3024,24 @@ void PinTable::SetLoadDefaults()
 	m_colorplayfield = RGB(128,128,128);
 	m_colorbackdrop = RGB(0x62,0x6E,0x8E);
 
+	m_Light[0].ambient = RGB((int)(0.1*255),(int)(0.1*255),(int)(0.1*255));
+	m_Light[0].diffuse = RGB((int)(0.4*255),(int)(0.4*255),(int)(0.4*255));
+	m_Light[0].specular = RGB((int)(0.0*255),(int)(0.0*255),(int)(0.0*255));
+	m_Light[0].pos = Vertex3Ds(0,0,0);
+	m_Light[0].dir = Vertex3Ds(0,0,0); // 0,0,0 = backwards compatible mode
+	m_Light[0].type = LIGHT_DIRECTIONAL;
+	m_Light[0].enabled = true;
+	m_Light[1].ambient = RGB((int)(0.1*255),(int)(0.1*255),(int)(0.1*255));
+	m_Light[1].diffuse = RGB((int)(0.6*255),(int)(0.6*255),(int)(0.6*255));
+	m_Light[1].specular = RGB((int)(1.0*255),(int)(1.0*255),(int)(1.0*255));
+	m_Light[1].pos = Vertex3Ds(0,0,0);
+	m_Light[1].dir = Vertex3Ds(0,0,0); // 0,0,0 = backwards compatible mode
+	m_Light[1].type = LIGHT_DIRECTIONAL;
+	m_Light[1].enabled = true;
+
+	for(int i = 2; i < MAX_LIGHT_SOURCES; ++i)
+		m_Light[i].enabled = false; //!! expose, too, in UI?! //!! use remaining 6 lightsources for objects? (detect nearest lightsources for each!) //!! enable these lightsources via/for VP 'lights' via optional flag -> problem that animated stuff won't react to these changes (yet)
+
 	m_angletiltMax = 726.0f;
 	m_angletiltMin = 4.5f;
 	}
@@ -3379,6 +3367,86 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(COLR))
 		{
 		pbr->GetInt(&m_colorplayfield);
+		}
+	else if (id == FID(LZAM))
+		{
+		pbr->GetInt(&m_Light[0].ambient);
+		}
+	else if (id == FID(LZDI))
+		{
+		pbr->GetInt(&m_Light[0].diffuse);
+		}
+	else if (id == FID(LZSP))
+		{
+		pbr->GetInt(&m_Light[0].specular);
+		}
+	else if (id == FID(LZPX))
+		{
+		pbr->GetFloat(&m_Light[0].pos.x);
+		}
+	else if (id == FID(LZPY))
+		{
+		pbr->GetFloat(&m_Light[0].pos.y);
+		}
+	else if (id == FID(LZPZ))
+		{
+		pbr->GetFloat(&m_Light[0].pos.z);
+		}
+	else if (id == FID(LZDX))
+		{
+		pbr->GetFloat(&m_Light[0].dir.x);
+		}
+	else if (id == FID(LZDY))
+		{
+		pbr->GetFloat(&m_Light[0].dir.y);
+		}
+	else if (id == FID(LZDZ))
+		{
+		pbr->GetFloat(&m_Light[0].dir.z);
+		}
+	else if (id == FID(LZTY))
+		{
+		pbr->GetInt(&m_Light[0].type);
+		}
+	else if (id == FID(LOAM))
+		{
+		pbr->GetInt(&m_Light[1].ambient);
+		}
+	else if (id == FID(LODI))
+		{
+		pbr->GetInt(&m_Light[1].diffuse);
+		}
+	else if (id == FID(LOSP))
+		{
+		pbr->GetInt(&m_Light[1].specular);
+		}
+	else if (id == FID(LOPX))
+		{
+		pbr->GetFloat(&m_Light[1].pos.x);
+		}
+	else if (id == FID(LOPY))
+		{
+		pbr->GetFloat(&m_Light[1].pos.y);
+		}
+	else if (id == FID(LOPZ))
+		{
+		pbr->GetFloat(&m_Light[1].pos.z);
+		}
+	else if (id == FID(LODX))
+		{
+		pbr->GetFloat(&m_Light[1].dir.x);
+		}
+	else if (id == FID(LODY))
+		{
+		pbr->GetFloat(&m_Light[1].dir.y);
+		}
+	else if (id == FID(LODZ))
+		{
+		pbr->GetFloat(&m_Light[1].dir.z);
+		}
+	else if (id == FID(LOTY))
+		{
+		pbr->GetInt(&m_Light[1].type);
 		}
 	else if (id == FID(BCLR))
 		{
@@ -5338,6 +5406,9 @@ void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 		pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS, IDS_DIMENSIONSSLOPE);
 		pvproppane->AddElement(pproppane);
+
+		pproppane = new PropertyPane(IDD_PROPTABLE_LIGHTSOURCES, IDS_LIGHTSOURCES);
+		pvproppane->AddElement(pproppane);
 		}
 	else
 		{
@@ -6929,6 +7000,366 @@ STDMETHODIMP PinTable::put_PlayfieldColor(OLE_COLOR newVal)
 	STARTUNDO
 
 	m_colorplayfield = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light0Ambient(OLE_COLOR *pVal)
+{
+	*pVal = m_Light[0].ambient;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light0Ambient(OLE_COLOR newVal)
+{
+	STARTUNDO
+
+	m_Light[0].ambient = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light0Diffuse(OLE_COLOR *pVal)
+{
+	*pVal = m_Light[0].diffuse;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light0Diffuse(OLE_COLOR newVal)
+{
+	STARTUNDO
+
+	m_Light[0].diffuse = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light0Specular(OLE_COLOR *pVal)
+{
+	*pVal = m_Light[0].specular;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light0Specular(OLE_COLOR newVal)
+{
+	STARTUNDO
+
+	m_Light[0].specular = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light0PX(float *pVal)
+{
+	*pVal = m_Light[0].pos.x;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light0PX(float newVal)
+{
+	STARTUNDO
+
+	m_Light[0].pos.x = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light0PY(float *pVal)
+{
+	*pVal = m_Light[0].pos.y;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light0PY(float newVal)
+{
+	STARTUNDO
+
+	m_Light[0].pos.y = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light0PZ(float *pVal)
+{
+	*pVal = -m_Light[0].pos.z; // transform from local
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light0PZ(float newVal)
+{
+	STARTUNDO
+
+	m_Light[0].pos.z = -newVal; // transform to local
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light0DX(float *pVal)
+{
+	*pVal = m_Light[0].dir.x;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light0DX(float newVal)
+{
+	STARTUNDO
+
+	m_Light[0].dir.x = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light0DY(float *pVal)
+{
+	*pVal = m_Light[0].dir.y;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light0DY(float newVal)
+{
+	STARTUNDO
+
+	m_Light[0].dir.y = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light0DZ(float *pVal)
+{
+	*pVal = -m_Light[0].dir.z; // transform from local
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light0DZ(float newVal)
+{
+	STARTUNDO
+
+	m_Light[0].dir.z = -newVal; // transform to local
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light0Type(int *pVal)
+{
+	*pVal = m_Light[0].type;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light0Type(int newVal)
+{
+	STARTUNDO
+
+	m_Light[0].type = (LightType)newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light1Ambient(OLE_COLOR *pVal)
+{
+	*pVal = m_Light[1].ambient;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light1Ambient(OLE_COLOR newVal)
+{
+	STARTUNDO
+
+	m_Light[1].ambient = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light1Diffuse(OLE_COLOR *pVal)
+{
+	*pVal = m_Light[1].diffuse;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light1Diffuse(OLE_COLOR newVal)
+{
+	STARTUNDO
+
+	m_Light[1].diffuse = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light1Specular(OLE_COLOR *pVal)
+{
+	*pVal = m_Light[1].specular;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light1Specular(OLE_COLOR newVal)
+{
+	STARTUNDO
+
+	m_Light[1].specular = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light1PX(float *pVal)
+{
+	*pVal = m_Light[1].pos.x;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light1PX(float newVal)
+{
+	STARTUNDO
+
+	m_Light[1].pos.x = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light1PY(float *pVal)
+{
+	*pVal = m_Light[1].pos.y;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light1PY(float newVal)
+{
+	STARTUNDO
+
+	m_Light[1].pos.y = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light1PZ(float *pVal)
+{
+	*pVal = -m_Light[1].pos.z; // transform from local
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light1PZ(float newVal)
+{
+	STARTUNDO
+
+	m_Light[1].pos.z = -newVal; // transform to local
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light1DX(float *pVal)
+{
+	*pVal = m_Light[1].dir.x;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light1DX(float newVal)
+{
+	STARTUNDO
+
+	m_Light[1].dir.x = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light1DY(float *pVal)
+{
+	*pVal = m_Light[1].dir.y;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light1DY(float newVal)
+{
+	STARTUNDO
+
+	m_Light[1].dir.y = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light1DZ(float *pVal)
+{
+	*pVal = -m_Light[1].dir.z; // transform from local
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light1DZ(float newVal)
+{
+	STARTUNDO
+
+	m_Light[1].dir.z = -newVal; // transform to local
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Light1Type(int *pVal)
+{
+	*pVal = m_Light[1].type;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Light1Type(int newVal)
+{
+	STARTUNDO
+
+	m_Light[1].type = (LightType)newVal;
 
 	STOPUNDO
 
