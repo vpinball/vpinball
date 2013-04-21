@@ -504,7 +504,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(205), helpstring("property JoltAmount")] HRESULT JoltAmount([out, retval] int *pVal);
 		[propput, id(205), helpstring("property JoltAmount")] HRESULT JoltAmount([in] int newVal);
 		[propget, id(206), helpstring("property TiltAmount")] HRESULT TiltAmount([out, retval] int *pVal);
-		[propput, id(206), helpstring("property TiltAmount")] HRESULT TiltAmount([in] int newVal);		
+		[propput, id(206), helpstring("property TiltAmount")] HRESULT TiltAmount([in] int newVal);
 		[propget, id(207), helpstring("property JoltTriggerTime")] HRESULT JoltTriggerTime([out, retval] int *pVal);
 		[propput, id(207), helpstring("property JoltTriggerTime")] HRESULT JoltTriggerTime([in] int newVal);
 		[propget, id(208), helpstring("property TiltTriggerTime")] HRESULT TiltTriggerTime([out, retval] int *pVal);
@@ -529,6 +529,47 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[id(35), helpstring("method StartShake")] HRESULT StartShake([defaultvalue(1)] void);
 		[id(36), helpstring("method StopShake")] HRESULT StopShake([defaultvalue(1)] void);
 
+		[propget, id(558), helpstring("property Light0Ambient")] HRESULT Light0Ambient([out, retval] OLE_COLOR *pVal);
+		[propput, id(558), helpstring("property Light0Ambient")] HRESULT Light0Ambient([in] OLE_COLOR newVal);
+		[propget, id(559), helpstring("property Light0Diffuse")] HRESULT Light0Diffuse([out, retval] OLE_COLOR *pVal);
+		[propput, id(559), helpstring("property Light0Diffuse")] HRESULT Light0Diffuse([in] OLE_COLOR newVal);
+		[propget, id(560), helpstring("property Light0Specular")] HRESULT Light0Specular([out, retval] OLE_COLOR *pVal);
+		[propput, id(560), helpstring("property Light0Specular")] HRESULT Light0Specular([in] OLE_COLOR newVal);
+		[propget, id(564), helpstring("property Light0PX")] HRESULT Light0PX([out, retval] float *pVal);
+		[propput, id(564), helpstring("property Light0PX")] HRESULT Light0PX([in] float newVal);
+		[propget, id(565), helpstring("property Light0PY")] HRESULT Light0PY([out, retval] float *pVal);
+		[propput, id(565), helpstring("property Light0PY")] HRESULT Light0PY([in] float newVal);
+		[propget, id(566), helpstring("property Light0PZ")] HRESULT Light0PZ([out, retval] float *pVal);
+		[propput, id(566), helpstring("property Light0PZ")] HRESULT Light0PZ([in] float newVal);
+		[propget, id(567), helpstring("property Light0DX")] HRESULT Light0DX([out, retval] float *pVal);
+		[propput, id(567), helpstring("property Light0DX")] HRESULT Light0DX([in] float newVal);
+		[propget, id(568), helpstring("property Light0DY")] HRESULT Light0DY([out, retval] float *pVal);
+		[propput, id(568), helpstring("property Light0DY")] HRESULT Light0DY([in] float newVal);
+		[propget, id(569), helpstring("property Light0DZ")] HRESULT Light0DZ([out, retval] float *pVal);
+		[propput, id(569), helpstring("property Light0DZ")] HRESULT Light0DZ([in] float newVal);
+		[propget, id(570), helpstring("property Light0Type")] HRESULT Light0Type([out, retval] int *pVal);
+		[propput, id(570), helpstring("property Light0Type")] HRESULT Light0Type([in] int newVal);
+
+		[propget, id(561), helpstring("property Light1Ambient")] HRESULT Light1Ambient([out, retval] OLE_COLOR *pVal);
+		[propput, id(561), helpstring("property Light1Ambient")] HRESULT Light1Ambient([in] OLE_COLOR newVal);
+		[propget, id(562), helpstring("property Light1Diffuse")] HRESULT Light1Diffuse([out, retval] OLE_COLOR *pVal);
+		[propput, id(562), helpstring("property Light1Diffuse")] HRESULT Light1Diffuse([in] OLE_COLOR newVal);
+		[propget, id(563), helpstring("property Light1Specular")] HRESULT Light1Specular([out, retval] OLE_COLOR *pVal);
+		[propput, id(563), helpstring("property Light1Specular")] HRESULT Light1Specular([in] OLE_COLOR newVal);
+		[propget, id(571), helpstring("property Light1PX")] HRESULT Light1PX([out, retval] float *pVal);
+		[propput, id(571), helpstring("property Light1PX")] HRESULT Light1PX([in] float newVal);
+		[propget, id(572), helpstring("property Light1PY")] HRESULT Light1PY([out, retval] float *pVal);
+		[propput, id(572), helpstring("property Light1PY")] HRESULT Light1PY([in] float newVal);
+		[propget, id(573), helpstring("property Light1PZ")] HRESULT Light1PZ([out, retval] float *pVal);
+		[propput, id(573), helpstring("property Light1PZ")] HRESULT Light1PZ([in] float newVal);
+		[propget, id(574), helpstring("property Light1DX")] HRESULT Light1DX([out, retval] float *pVal);
+		[propput, id(574), helpstring("property Light1DX")] HRESULT Light1DX([in] float newVal);
+		[propget, id(575), helpstring("property Light1DY")] HRESULT Light1DY([out, retval] float *pVal);
+		[propput, id(575), helpstring("property Light1DY")] HRESULT Light1DY([in] float newVal);
+		[propget, id(576), helpstring("property Light1DZ")] HRESULT Light1DZ([out, retval] float *pVal);
+		[propput, id(576), helpstring("property Light1DZ")] HRESULT Light1DZ([in] float newVal);
+		[propget, id(577), helpstring("property Light1Type")] HRESULT Light1Type([out, retval] int *pVal);
+		[propput, id(577), helpstring("property Light1Type")] HRESULT Light1Type([in] int newVal);
 		}
 
 	// Interface exposed globally to script

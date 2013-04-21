@@ -26,6 +26,22 @@
 #define	PROT_CIPHER_LENGTH		PROT_PASSWORD_LENGTH+8
 #define	PROT_KEYVERSION			0
 
+enum LightType {
+	LIGHT_DIRECTIONAL = 0,
+	LIGHT_SPOT = 1,
+	LIGHT_POINT = 2
+};
+
+struct LightSource {
+	COLORREF ambient;
+	COLORREF diffuse;
+	COLORREF specular;
+	Vertex3Ds pos;
+	Vertex3Ds dir;
+	LightType type;
+	bool enabled;
+};
+
 typedef struct {
 	long			fileversion;
 	long			size;
@@ -105,6 +121,48 @@ public:
 	STDMETHOD(put_BackdropColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_PlayfieldColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_PlayfieldColor)(/*[in]*/ OLE_COLOR newVal);
+
+	STDMETHOD(get_Light0Ambient)(/*[out, retval]*/ OLE_COLOR *pVal);
+	STDMETHOD(put_Light0Ambient)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Light0Diffuse)(/*[out, retval]*/ OLE_COLOR *pVal);
+	STDMETHOD(put_Light0Diffuse)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Light0Specular)(/*[out, retval]*/ OLE_COLOR *pVal);
+	STDMETHOD(put_Light0Specular)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Light0PX)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light0PX)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light0PY)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light0PY)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light0PZ)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light0PZ)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light0DX)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light0DX)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light0DY)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light0DY)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light0DZ)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light0DZ)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light0Type)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_Light0Type)(/*[in]*/ int newVal);
+	STDMETHOD(get_Light1Ambient)(/*[out, retval]*/ OLE_COLOR *pVal);
+	STDMETHOD(put_Light1Ambient)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Light1Diffuse)(/*[out, retval]*/ OLE_COLOR *pVal);
+	STDMETHOD(put_Light1Diffuse)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Light1Specular)(/*[out, retval]*/ OLE_COLOR *pVal);
+	STDMETHOD(put_Light1Specular)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Light1PX)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light1PX)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light1PY)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light1PY)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light1PZ)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light1PZ)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light1DX)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light1DX)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light1DY)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light1DY)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light1DZ)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Light1DZ)(/*[in]*/ float newVal);
+	STDMETHOD(get_Light1Type)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_Light1Type)(/*[in]*/ int newVal);
+
 	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
 	STDMETHOD(get_Width)(/*[out, retval]*/ float *pVal);
@@ -576,6 +634,8 @@ END_CONNECTION_POINT_MAP()
 	VectorInt<HANDLE> m_vAsyncHandles;
 
 	int m_alphaRampsAccuracy;
+
+	LightSource m_Light[MAX_LIGHT_SOURCES];
 
 	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 };

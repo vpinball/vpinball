@@ -959,6 +959,8 @@ void Pin3D::InitRenderState() const
 
    m_pd3dDevice->SetRenderState( RenderDevice::CLIPPING, FALSE );
    m_pd3dDevice->SetRenderState( RenderDevice::CLIPPLANEENABLE, 0 );
+
+   m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
 }
 
 const WORD rgiPin3D1[4] = {2,3,5,6};
@@ -1033,56 +1035,52 @@ void Pin3D::InitLights()
 	const float sn = sinf(m_inclination + (float)(M_PI - (M_PI*3.0/16.0)));
 	const float cs = cosf(m_inclination + (float)(M_PI - (M_PI*3.0/16.0)));
 
-	D3DLIGHT7 light;
-	ZeroMemory(&light, sizeof(D3DLIGHT7));
-	light.dltType        = D3DLIGHT_DIRECTIONAL; //D3DLIGHT_POINT,D3DLIGHT_SPOT
-	light.dcvAmbient.r   = 0.1f;
-	light.dcvAmbient.g   = 0.1f;
-	light.dcvAmbient.b   = 0.1f;
-	light.dcvDiffuse.r   = 0.4f;
-	light.dcvDiffuse.g   = 0.4f;
-	light.dcvDiffuse.b   = 0.4f;
-	light.dcvSpecular.r  = 0;
-	light.dcvSpecular.g  = 0;
-	light.dcvSpecular.b  = 0;
-	light.dvRange        = D3DLIGHT_RANGE_MAX;
-    light.dvAttenuation0 = 0.0f;
-	light.dvAttenuation1 = 0.0f;
-	light.dvAttenuation2 = 0.0f;
+	Matrix3D matWorld;
+	m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD, &matWorld );
 
-	light.dvDirection    = D3DVECTOR(5.0f, sn * 21.0f, cs * -21.0f);
+	for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i) if(g_pplayer->m_ptable->m_Light[i].enabled)
+	{
+		D3DLIGHT7 light;
+		ZeroMemory(&light, sizeof(D3DLIGHT7));
+		light.dltType       = (g_pplayer->m_ptable->m_Light[i].type == LIGHT_DIRECTIONAL) ? D3DLIGHT_DIRECTIONAL : ((g_pplayer->m_ptable->m_Light[i].type == LIGHT_POINT) ? D3DLIGHT_POINT : D3DLIGHT_SPOT);
+		light.dcvAmbient.r  = (g_pplayer->m_ptable->m_Light[i].ambient & 255) * (float)(1.0/255.0);
+		light.dcvAmbient.g  = (g_pplayer->m_ptable->m_Light[i].ambient & 65280) * (float)(1.0/65280.0);
+		light.dcvAmbient.b  = (g_pplayer->m_ptable->m_Light[i].ambient & 16711680) * (float)(1.0/16711680.0);
+		light.dcvDiffuse.r  = (g_pplayer->m_ptable->m_Light[i].diffuse & 255) * (float)(1.0/255.0);
+		light.dcvDiffuse.g  = (g_pplayer->m_ptable->m_Light[i].diffuse & 65280) * (float)(1.0/65280.0);
+		light.dcvDiffuse.b  = (g_pplayer->m_ptable->m_Light[i].diffuse & 16711680) * (float)(1.0/16711680.0);
+		light.dcvSpecular.r = (g_pplayer->m_ptable->m_Light[i].specular & 255) * (float)(1.0/255.0);
+		light.dcvSpecular.g = (g_pplayer->m_ptable->m_Light[i].specular & 65280) * (float)(1.0/65280.0);
+		light.dcvSpecular.b = (g_pplayer->m_ptable->m_Light[i].specular & 16711680) * (float)(1.0/16711680.0);
+		light.dvRange       = /*(light.dltType == D3DLIGHT_POINT) ? g_pplayer->m_ptable->m_Light[i].pointRange :*/ D3DLIGHT_RANGE_MAX; //!! expose?
 
-    // Set the light
-    m_pd3dDevice->SetLight( 0, &light );
+		if((light.dltType == D3DLIGHT_POINT) || (light.dltType == D3DLIGHT_SPOT))
+			light.dvAttenuation2 = 0.0000025f; //!! expose? //!! real world: light.dvAttenuation2 = 1.0f; but due to low dynamic 255-level-RGB lighting, we have to stick with the old crap
 
-	//light.dvDirection = D3DVECTOR( -(float)sin(-0.9), 0, -(float)cos(-0.9) );
-	//light.dvDirection = D3DVECTOR(8.0f, 10.0f, -4.0f);
+		if(light.dltType == D3DLIGHT_SPOT)
+		{
+			light.dvFalloff = /*g_pplayer->m_ptable->m_Light[i].spotExponent;*/ 1.0f; //!! expose?
+		    light.dvPhi     = /*g_pplayer->m_ptable->m_Light[i].spotMin*/ (float)(60*M_PI/180.0); //!! expose?
+			light.dvTheta   = /*g_pplayer->m_ptable->m_Light[i].spotMax*/ (float)(20*M_PI/180.0); //!! expose?
+		}
 
-	//sn = sinf(m_inclination + (float)(M_PI*2.0/16.0));
-	//cs = cosf(m_inclination + (float)(M_PI*2.0/16.0));
+		// transform dir & pos with world trafo to be always aligned with table (so that user trafos don't change the lighting!)
+		if((g_pplayer->m_ptable->m_Light[i].dir.x == 0.0f) && (g_pplayer->m_ptable->m_Light[i].dir.y == 0.0f) && (g_pplayer->m_ptable->m_Light[i].dir.z == 0.0f) && (i < 2) && (light.dltType == D3DLIGHT_DIRECTIONAL))
+			light.dvDirection = (i == 0) ? D3DVECTOR(5.0f, sn * 21.0f, cs * -21.0f) : D3DVECTOR(-8.0f, sn * 11.0f, cs * -11.0f); // backwards compatibilty
+		else {
+			const Vertex3Ds tmp = matWorld.MultiplyVectorNoTranslate(g_pplayer->m_ptable->m_Light[i].dir);
+			light.dvDirection = D3DVECTOR(tmp.x,tmp.y,tmp.z);
+		}
 
-	ZeroMemory(&light, sizeof(D3DLIGHT7));
-	light.dltType        = D3DLIGHT_DIRECTIONAL; //D3DLIGHT_POINT,D3DLIGHT_SPOT
-	light.dcvAmbient.r   = 0.1f;
-	light.dcvAmbient.g   = 0.1f;
-	light.dcvAmbient.b   = 0.1f;
-    light.dcvDiffuse.r   = 0.6f;
-    light.dcvDiffuse.g   = 0.6f;
-    light.dcvDiffuse.b   = 0.6f;
-	light.dcvSpecular.r  = 1.0f;
-    light.dcvSpecular.g  = 1.0f;
-    light.dcvSpecular.b  = 1.0f;
-	light.dvRange        = D3DLIGHT_RANGE_MAX;
-    light.dvAttenuation0 = 0.0f;
-	light.dvAttenuation1 = 0.0f;
-	light.dvAttenuation2 = 0.0f;
+		const Vertex3Ds tmp = matWorld.MultiplyVector(g_pplayer->m_ptable->m_Light[i].pos);
+		light.dvPosition = D3DVECTOR(tmp.x,tmp.y,tmp.z);
 
-	light.dvDirection = D3DVECTOR(-8.0f, sn * 11.0f, cs * -11.0f);
+		m_pd3dDevice->SetLight(i, &light);
+		m_pd3dDevice->LightEnable(i, TRUE);
+	}
+	else
+		m_pd3dDevice->LightEnable(i, FALSE);
 
-	m_pd3dDevice->SetLight( 1, &light ); //!! make all/2 lightsources configurable (point lights, too?) //!! use remaining 6 lightsources for objects? (detect nearest lightsources for each!) //!! enable these lightsources via/for VP 'lights' via optional flag -> problem that animated stuff won't react to these changes (yet)
-
-	m_pd3dDevice->LightEnable(0, TRUE);
-	m_pd3dDevice->LightEnable(1, TRUE);
 	m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 }
 
@@ -1107,8 +1105,6 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	InitRenderState();
 
 	DrawBackground();
-
-	InitLights();
 
 	/*
 	Vertex3D rgv[8];
@@ -1192,6 +1188,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 		delete vvertex3D.ElementAt(i);
 
 	//EnableLightMap(fFalse, -1);
+	InitLights();
 
 	InitBackGraphics();
 }
@@ -1270,11 +1267,53 @@ void Pin3D::InitBackGraphics()
 
 	m_pd3dDevice->SetMaterial(&mtrl);
 
+	// triangulate for better vertex based lighting //!! disable/set to 0 as soon as pixel shaders do the lighting
+#define TRIANGULATE_BACK 100
+
+#if (TRIANGULATE_BACK > 0)
+	Vertex3D buffer[(TRIANGULATE_BACK+1)*(TRIANGULATE_BACK+1)];
+
+	const float inv_tb = (float)(1.0/TRIANGULATE_BACK);
+	unsigned int offs = 0;
+	for(unsigned int y = 0; y <= TRIANGULATE_BACK; ++y)
+	for(unsigned int x = 0; x <= TRIANGULATE_BACK; ++x,++offs) //!! triangulate more in y then in x?
+	{
+		Vertex3D &tmp = buffer[offs];
+		tmp.x = rgv[0].x + (rgv[1].x-rgv[0].x) * ((float)x*inv_tb);
+		tmp.y = rgv[0].y + (rgv[2].y-rgv[0].y) * ((float)y*inv_tb);
+		tmp.z = rgv[0].z;
+
+		tmp.tu = rgv[0].tu + (rgv[1].tu-rgv[0].tu) * ((float)x*inv_tb);
+		tmp.tv = rgv[0].tv + (rgv[2].tv-rgv[0].tv) * ((float)y*inv_tb);
+
+		tmp.nx = rgv[0].nx;
+		tmp.ny = rgv[0].ny;
+		tmp.nz = rgv[0].nz;
+		m_lightproject.CalcCoordinates(&tmp,inv_width,inv_height);
+	}
+
+	WORD bufferi[TRIANGULATE_BACK*TRIANGULATE_BACK*6];
+	offs = 0;
+	unsigned int offs2 = 0;
+	for(int y = 0; y < TRIANGULATE_BACK; ++y)
+	for(int x = 0; x < TRIANGULATE_BACK; ++x,offs+=6,++offs2)
+	{
+		WORD *tmp = bufferi + offs;
+		tmp[3] = tmp[0] = offs2;
+		tmp[1] = offs2+1;
+		tmp[4] = tmp[2] = offs2+1+TRIANGULATE_BACK;
+		tmp[5] = offs2+TRIANGULATE_BACK;
+	}
+	m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
+									  buffer, (TRIANGULATE_BACK+1)*(TRIANGULATE_BACK+1),
+									  bufferi, TRIANGULATE_BACK*TRIANGULATE_BACK*6, 0);
+#else
 	m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 									  rgv, 4,
 									  (LPWORD)rgi0123, 4, 0);
 	//m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
 	//								  rgv, 4, 0);
+#endif
 	EnableLightMap(fFalse, -1);
 
 	//m_pd3dDevice->SetTextureStageState(eLightProject1, D3DTSS_COLOROP, D3DTOP_DISABLE);
