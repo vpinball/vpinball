@@ -1,5 +1,3 @@
-// Light.cpp : Implementation of CVBATestApp and DLL registration.
-
 #include "StdAfx.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -10,13 +8,40 @@ LightCenter::LightCenter(Light *plight)
    m_plight = plight;
 }
 
-HRESULT LightCenter::GetTypeName(BSTR *pVal) {return m_plight->GetTypeName(pVal);}
-IDispatch *LightCenter::GetDispatch() {return m_plight->GetDispatch();}
-void LightCenter::GetDialogPanes(Vector<PropertyPane> *pvproppane) {m_plight->GetDialogPanes(pvproppane);}
-void LightCenter::Delete() {m_plight->Delete();}
-void LightCenter::Uncreate() {m_plight->Uncreate();}
-IEditable *LightCenter::GetIEditable() {return (IEditable *)m_plight;}
-PinTable *LightCenter::GetPTable() {return m_plight->GetPTable();}
+HRESULT LightCenter::GetTypeName(BSTR *pVal)
+{
+	return m_plight->GetTypeName(pVal);
+}
+
+IDispatch *LightCenter::GetDispatch() 
+{
+	return m_plight->GetDispatch();
+}
+
+void LightCenter::GetDialogPanes(Vector<PropertyPane> *pvproppane)
+{
+	m_plight->GetDialogPanes(pvproppane);
+}
+
+void LightCenter::Delete()
+{
+	m_plight->Delete();
+}
+
+void LightCenter::Uncreate()
+{
+	m_plight->Uncreate();
+}
+
+IEditable *LightCenter::GetIEditable()
+{
+	return (IEditable *)m_plight;
+}
+
+PinTable *LightCenter::GetPTable()
+{
+	return m_plight->GetPTable();
+}
 
 void LightCenter::GetCenter(Vertex2D * const pv) const
 {
@@ -38,14 +63,7 @@ void LightCenter::MoveOffset(const float dx, const float dy)
 
 int LightCenter::GetSelectLevel()
 {
-   if (m_plight->m_d.m_shape == ShapeCircle)
-   {
-      return 1;
-   }
-   else
-   {
-      return 2; // Don't select light bulb twice if we have drag points
-   }
+   return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; // Don't select light bulb twice if we have drag points
 }
 
 Light::Light() : m_lightcenter(this)
@@ -160,6 +178,7 @@ void Light::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 }
+
 void Light::WriteRegDefaults()
 {
    char strTmp[MAXTOKEN];
@@ -191,7 +210,7 @@ void Light::PreRender(Sur * const psur)
    switch (m_d.m_shape)
    {
    case ShapeCircle:
-   default:
+   default: {
       if (m_d.m_borderwidth > 0)
       {
          psur->SetBorderColor(m_d.m_bordercolor, false, 0); // For off-by-one GDI outline error
@@ -201,20 +220,20 @@ void Light::PreRender(Sur * const psur)
       }
       psur->SetBorderColor(m_d.m_color, false, 0); // For off-by-one GDI outline error
       psur->SetFillColor(m_d.m_color);
-      psur->SetObject(m_d.m_borderwidth > 0 ? NULL :this);
+      psur->SetObject(m_d.m_borderwidth > 0 ? NULL : this);
 
       // Check if we should display the image in the editor.
-      if ((m_d.m_fDisplayImage) && (m_d.m_szOnImage[0]) && (m_d.m_szOffImage[0])) 
+      if (m_d.m_fDisplayImage)
       {
          PinImage *ppi;
          // Get the image.
          switch (m_d.m_state)
          {
          case LightStateOff:	
-            ppi = m_ptable->GetImage(m_d.m_szOffImage);
+            ppi = (m_d.m_szOffImage[0]) ? m_ptable->GetImage(m_d.m_szOffImage) : NULL;
             break;
          case LightStateOn:	
-            ppi = m_ptable->GetImage(m_d.m_szOnImage);
+            ppi = (m_d.m_szOnImage[0]) ? m_ptable->GetImage(m_d.m_szOnImage) : NULL;
             break;
          default:
             ppi = NULL;
@@ -226,42 +245,36 @@ void Light::PreRender(Sur * const psur)
          {
             ppi->EnsureHBitmap();
             if (ppi->m_hbmGDIVersion)
-            {
                // Draw the elipse with an image applied.
                psur->EllipseImage(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
-            }
          }
          else
-         {
             // Error.  Just draw the ellipse.
             psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
-         }
       }
       else
-      {
          // Draw the ellipse.
          psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
-      }
 
-
-      break;
+	  break;
+   }
 
    case ShapeCustom: {
       Vector<RenderVertex> vvertex;
       GetRgVertex(&vvertex);
 
       // Check if we should display the image in the editor.
-      if ((m_d.m_fDisplayImage) && (m_d.m_szOnImage[0]) && (m_d.m_szOffImage[0])) 
+      if (m_d.m_fDisplayImage)
       {
          PinImage *ppi;
          // Get the image.
          switch (m_d.m_state)
          {
          case LightStateOff:	
-            ppi = m_ptable->GetImage(m_d.m_szOffImage);
+            ppi = (m_d.m_szOffImage[0]) ? m_ptable->GetImage(m_d.m_szOffImage) : NULL;
             break;
          case LightStateOn:	
-            ppi = m_ptable->GetImage(m_d.m_szOnImage);
+            ppi = (m_d.m_szOnImage[0]) ? m_ptable->GetImage(m_d.m_szOnImage) : NULL;
             break;
          default:
             ppi = NULL;
@@ -273,50 +286,39 @@ void Light::PreRender(Sur * const psur)
          {
             ppi->EnsureHBitmap();
             if (ppi->m_hbmGDIVersion)
-            {
                // Draw the polygon with an image applied.
                psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
-            }
          }
          else
-         {
             // Error.  Just draw the polygon.
             psur->Polygon(vvertex);
-         }
       }
       else
-      {
          // Draw the polygon.
          psur->Polygon(vvertex);
-      }
 
       for (int i=0;i<vvertex.Size();i++)
          delete vvertex.ElementAt(i);
 
       break;
-                     }
+   }
    }
 }
 
 void Light::Render(Sur * const psur)
 {
-   BOOL	fDrawDragpoints;		//>>> added by chris
-
+   bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) );		//>>> added by chris
+   
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
-   {
-      fDrawDragpoints = fTrue;
-   }
-   else
+   if (!fDrawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      fDrawDragpoints = fFalse;
-      for (int i=0;i<m_vdpoint.Size();i++)
+      for (int i=0; i<m_vdpoint.Size(); i++)
       {
          const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
          if (pdp->m_selectstate != eNotSelected)
          {
-            fDrawDragpoints = fTrue;
+            fDrawDragpoints = true;
             break;
          }
       }
@@ -324,9 +326,9 @@ void Light::Render(Sur * const psur)
 
    RenderOutline(psur);
 
-   if ( (m_d.m_shape == ShapeCustom) && (fDrawDragpoints) )	//<<< modified by chris
+   if ( (m_d.m_shape == ShapeCustom) && fDrawDragpoints )	//<<< modified by chris
    {
-      for (int i=0;i<m_vdpoint.Size();i++)
+      for (int i=0; i<m_vdpoint.Size(); i++)
       {
          CComObject<DragPoint> *pdp;
          pdp = m_vdpoint.ElementAt(i);
@@ -335,9 +337,7 @@ void Light::Render(Sur * const psur)
          psur->SetObject(pdp);
 
          if (pdp->m_fDragging)
-         {
             psur->SetBorderColor(RGB(0,255,0),false,0);
-         }
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
@@ -355,9 +355,10 @@ void Light::RenderOutline(Sur * const psur)
    switch (m_d.m_shape)
    {
    case ShapeCircle:
-   default:
+   default: {
       psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_borderwidth);
       break;
+   }
 
    case ShapeCustom: {
       Vector<RenderVertex> vvertex;
@@ -370,7 +371,7 @@ void Light::RenderOutline(Sur * const psur)
 
       psur->SetObject((ISelect *)&m_lightcenter);
       break;
-                     }
+   }
    }
 
    if (m_d.m_shape == ShapeCustom || g_pvp->m_fAlwaysDrawLightCenters)
@@ -397,9 +398,7 @@ void Light::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
       pvht->AddElement(pht);
-   }
 }
 
 void Light::GetHitShapes(Vector<HitObject> * const pvho)
@@ -421,33 +420,33 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
    switch (m_d.m_shape)
    {
    case ShapeCircle:
-   default:
+   default: {
+      HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_radius, 32);
+      pvho->AddElement(pho);
+
+	  break;
+   }
+
+   case ShapeCustom: {
+      Vector<RenderVertex> vvertex;
+      GetRgVertex(&vvertex);
+
+      const int cvertex = vvertex.Size();
+      Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
+
+      for (int i=0; i<cvertex; i++)
       {
-         HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_radius, 32);
-         pvho->AddElement(pho);
+         rgv3d[i].x = vvertex.ElementAt(i)->x;
+         rgv3d[i].y = vvertex.ElementAt(i)->y;
+         rgv3d[i].z = height;
+         delete vvertex.ElementAt(i);
       }
-      break;
 
-   case ShapeCustom:
-      {
-         Vector<RenderVertex> vvertex;
-         GetRgVertex(&vvertex);
-
-         const int cvertex = vvertex.Size();
-         Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
-
-         for (int i=0;i<cvertex;i++)
-         {
-            rgv3d[i].x = vvertex.ElementAt(i)->x;
-            rgv3d[i].y = vvertex.ElementAt(i)->y;
-            rgv3d[i].z = height;
-            delete vvertex.ElementAt(i);
-         }
-
-         Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
-         pvho->AddElement(ph3dp);
-      }
-      break;
+      Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
+      pvho->AddElement(ph3dp);
+      
+	  break;
+   }
    }
 }
 
@@ -460,7 +459,7 @@ void Light::EndPlay()
       m_pobjframe[i] = NULL;
    }
 
-   // ensure not locked just incase the player exits during a LS sequence
+   // ensure not locked just in case the player exits during a LS sequence
    m_fLockedByLS = false;			//>>> added by chris
 
    IEditable::EndPlay();
@@ -487,23 +486,14 @@ void Light::RenderCustomStatic(const RenderDevice* _pd3dDevice)
    mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
    mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
    mtrl.power = 0;	
-   mtrl.diffuse.r = mtrl.ambient.r = r;///4;
-   mtrl.diffuse.g = mtrl.ambient.g = g;///4;
-   mtrl.diffuse.b = mtrl.ambient.b = b;///4;
+   mtrl.diffuse.r = mtrl.ambient.r = r;
+   mtrl.diffuse.g = mtrl.ambient.g = g;
+   mtrl.diffuse.b = mtrl.ambient.b = b;
    mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
    pd3dDevice->SetMaterial(&mtrl);
 
-   for (int t=0;t<staticCutomVertexNum;t+=3)
-   {
-      if (!m_fBackglass)
-      {
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, &staticCustomVertex[t], 3, (LPWORD)rgi0123, 3, 0);
-      }
-      else
-      {
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX, &staticCustomVertex[t], 3, (LPWORD)rgi0123, 3, 0);
-      }
-   }
+   for (int t=0; t<staticCutomVertexNum; t+=3) if((!m_fBackglass) || GetPTable()->GetDecalsEnabled())
+       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, &staticCustomVertex[t], 3, (LPWORD)rgi0123, 3, 0);
 }
 
 void Light::RenderStaticCircle(const RenderDevice* _pd3dDevice)
@@ -524,17 +514,8 @@ void Light::RenderStaticCircle(const RenderDevice* _pd3dDevice)
    mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
    pd3dDevice->SetMaterial(&mtrl);
 
-   if (!m_fBackglass)
-   {
-      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, circleVertex, 32, (LPWORD)rgiLightStatic1, 32, 0);
-   }
-   else
-   {
-      if( GetPTable()->GetDecalsEnabled() )
-      {
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX, circleVertex, 32, (LPWORD)rgiLightStatic1, 32, 0);
-      }
-   }
+   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled())
+      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, circleVertex, 32, (LPWORD)rgiLightStatic1, 32, 0);
 }
 
 void Light::PostRenderStatic(const RenderDevice* pd3dDevice)
@@ -583,35 +564,31 @@ void Light::PrepareStaticCustom()
       const float B = vmiddle.x - v1.x;
 
       // Shift line along the normal
-      const float C = -(A*(v1.x-v1normal.x*m_d.m_borderwidth) + B*(v1.y-v1normal.y*m_d.m_borderwidth));
+      const float C = A*(v1normal.x*m_d.m_borderwidth-v1.x) + B*(v1normal.y*m_d.m_borderwidth-v1.y);
 
       // Second line
       const float D = v2.y - vmiddle.y;
       const float E = vmiddle.x - v2.x;
 
       // Shift line along the normal
-      const float F = -(D*(v2.x-v2normal.x*m_d.m_borderwidth) + E*(v2.y-v2normal.y*m_d.m_borderwidth));
+      const float F = D*(v2normal.x*m_d.m_borderwidth-v2.x) + E*(v2normal.y*m_d.m_borderwidth-v2.y);
 
-      const float inv_det = 1.0f/((A*E) - (B*D));
+      const float inv_det = 1.0f/(A*E - B*D);
 
       rgv[i].x = (B*F-E*C)*inv_det;
       rgv[i].y = (C*D-A*F)*inv_det;
    }
 
-   for (int i=0;i<cvertex;i++)
-   {
+   for (int i=0; i<cvertex; i++)
       delete vvertex.ElementAt(i);
-   }
 
    const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
    const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
    const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
 
    Vector<void> vpoly;
-   for (int i=0;i<cvertex;i++)
-   {
+   for (int i=0; i<cvertex; i++)
       vpoly.AddElement((void *)i);
-   }
 
    Vector<Triangle> vtri;
    PolygonToTriangles(rgv, &vpoly, &vtri);
@@ -619,7 +596,7 @@ void Light::PrepareStaticCustom()
    staticCustomVertex = new Vertex3D[staticCutomVertexNum];
 
    int k=0;
-   for (int t=0;t<vtri.Size();t++,k+=3)
+   for (int t=0; t<vtri.Size(); t++,k+=3)
    {
       const Triangle * const ptri = vtri.ElementAt(t);
 
@@ -627,27 +604,27 @@ void Light::PrepareStaticCustom()
       const RenderVertex * const pv1 = &rgv[ptri->c];
       const RenderVertex * const pv2 = &rgv[ptri->b];
 
-      staticCustomVertex[k  ].x=pv0->x;   staticCustomVertex[k  ].y=pv0->y;   staticCustomVertex[k  ].z=height+0.05f;
-      staticCustomVertex[k+1].x=pv1->x;   staticCustomVertex[k+1].y=pv1->y;   staticCustomVertex[k+1].z=height+0.05f;
-      staticCustomVertex[k+2].x=pv2->x;   staticCustomVertex[k+2].y=pv2->y;   staticCustomVertex[k+2].z=height+0.05f;
+      staticCustomVertex[k  ].x = pv0->x;   staticCustomVertex[k  ].y = pv0->y;   staticCustomVertex[k  ].z = height+0.05f;
+      staticCustomVertex[k+1].x = pv1->x;   staticCustomVertex[k+1].y = pv1->y;   staticCustomVertex[k+1].z = height+0.05f;
+      staticCustomVertex[k+2].x = pv2->x;   staticCustomVertex[k+2].y = pv2->y;   staticCustomVertex[k+2].z = height+0.05f;
 
       if (!m_fBackglass)
       {
-         staticCustomVertex[k  ].nx=0;    staticCustomVertex[k  ].ny=0;    staticCustomVertex[k  ].nz = -1.0f;
-         staticCustomVertex[k+1].nx=0;    staticCustomVertex[k+1].ny=0;    staticCustomVertex[k+1].nz = -1.0f;
-         staticCustomVertex[k+2].nx=0;    staticCustomVertex[k+2].ny=0;    staticCustomVertex[k+2].nz = -1.0f;
-         Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-         for (int l=0;l<3;l++)
-         {
+         staticCustomVertex[k  ].nx = 0;    staticCustomVertex[k  ].ny = 0;    staticCustomVertex[k  ].nz = -1.0f;
+         staticCustomVertex[k+1].nx = 0;    staticCustomVertex[k+1].ny = 0;    staticCustomVertex[k+1].nz = -1.0f;
+         staticCustomVertex[k+2].nx = 0;    staticCustomVertex[k+2].ny = 0;    staticCustomVertex[k+2].nz = -1.0f;
+
+		 Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+         for (int l=0; l<3; l++)
             ppin3d->m_lightproject.CalcCoordinates(&staticCustomVertex[k+l],inv_width,inv_height);
-         }
       }
       else
       {
          SetDiffuse(&staticCustomVertex[k], 3, RGB_TO_BGR(m_d.m_bordercolor));
          SetHUDVertices(&staticCustomVertex[k], 3);
       }
-      delete vtri.ElementAt(t);
+
+	  delete vtri.ElementAt(t);
    }
 }
 
@@ -665,7 +642,7 @@ void Light::PrepareMoversCustom()
    Vector<void> vpoly;
    float maxdist = 0;
 
-   for (int i=0;i<cvertex;i++)
+   for (int i=0; i<cvertex; i++)
    {
       vpoly.AddElement((void *)i);
 
@@ -673,9 +650,7 @@ void Light::PrepareMoversCustom()
       const float dy = vvertex.ElementAt(i)->y - m_d.m_vCenter.y;
       const float dist = dx*dx + dy*dy;
       if (dist > maxdist)
-      {
          maxdist = dist;
-      }
    }
 
    const float inv_maxdist = (maxdist > 0.0f) ? 0.5f/sqrtf(maxdist) : 0.0f;
@@ -698,22 +673,18 @@ void Light::PrepareMoversCustom()
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-   customMoverVertexNum=vtri.Size()*3;
+   customMoverVertexNum = vtri.Size()*3;
    customMoverVertex[0] = new Vertex3D[customMoverVertexNum];
    customMoverVertex[1] = new Vertex3D[customMoverVertexNum];
 
-   for( int i=0;i<2; i++)
+   for(int i=0; i<2; i++)
    {
       PinImage* pin = NULL;
-      if(i == LightStateOff && m_d.m_szOffImage[0]!=0 ) 
-      {
+      if(i == LightStateOff && m_d.m_szOffImage[0] != 0) 
          pin = m_ptable->GetImage(m_d.m_szOffImage);
-      }
 
-      if(i == LightStateOn && m_d.m_szOffImage[0]!=0 ) 
-      {
+      if(i == LightStateOn && m_d.m_szOnImage[0] != 0) 
          pin = m_ptable->GetImage(m_d.m_szOnImage);
-      }
 
       int k=0;
       for (int t=0;t<vtri.Size();t++,k+=3)
@@ -724,23 +695,21 @@ void Light::PrepareMoversCustom()
          const RenderVertex * const pv1 = vvertex.ElementAt(ptri->c);
          const RenderVertex * const pv2 = vvertex.ElementAt(ptri->b);
 
-         customMoverVertex[i][k  ].x=pv0->x;   customMoverVertex[i][k  ].y=pv0->y;   customMoverVertex[i][k  ].z=height+0.1f;
-         customMoverVertex[i][k+1].x=pv1->x;   customMoverVertex[i][k+1].y=pv1->y;   customMoverVertex[i][k+1].z=height+0.1f;
-         customMoverVertex[i][k+2].x=pv2->x;   customMoverVertex[i][k+2].y=pv2->y;   customMoverVertex[i][k+2].z=height+0.1f;
+         customMoverVertex[i][k  ].x = pv0->x;   customMoverVertex[i][k  ].y = pv0->y;   customMoverVertex[i][k  ].z = height+0.1f;
+         customMoverVertex[i][k+1].x = pv1->x;   customMoverVertex[i][k+1].y = pv1->y;   customMoverVertex[i][k+1].z = height+0.1f;
+         customMoverVertex[i][k+2].x = pv2->x;   customMoverVertex[i][k+2].y = pv2->y;   customMoverVertex[i][k+2].z = height+0.1f;
 
          if( !m_fBackglass )
          {
-            customMoverVertex[i][k  ].nx=0; customMoverVertex[i][k  ].ny=0; customMoverVertex[i][k  ].nz=-1.0f;
-            customMoverVertex[i][k+1].nx=0; customMoverVertex[i][k+1].ny=0; customMoverVertex[i][k+1].nz=-1.0f;
-            customMoverVertex[i][k+2].nx=0; customMoverVertex[i][k+2].ny=0; customMoverVertex[i][k+2].nz=-1.0f;
+            customMoverVertex[i][k  ].nx = 0; customMoverVertex[i][k  ].ny = 0; customMoverVertex[i][k  ].nz = -1.0f;
+            customMoverVertex[i][k+1].nx = 0; customMoverVertex[i][k+1].ny = 0; customMoverVertex[i][k+1].nz = -1.0f;
+            customMoverVertex[i][k+2].nx = 0; customMoverVertex[i][k+2].ny = 0; customMoverVertex[i][k+2].nz = -1.0f;
          }
 
          for (int l=0;l<3;l++)
          {
             if (!m_fBackglass)
-            {
                ppin3d->m_lightproject.CalcCoordinates(&customMoverVertex[i][k+l],inv_width,inv_height);
-            }
 
             // Check if we are using a custom texture.
             if (pin != NULL)
@@ -749,8 +718,8 @@ void Light::PrepareMoversCustom()
                m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
                // Set texture coordinates for custom texture (world mode).
-               customMoverVertex[i][k+l].tu = customMoverVertex[i][k+l].x * inv_tablewidth * maxtu;
-               customMoverVertex[i][k+l].tv = customMoverVertex[i][k+l].y * inv_tableheight * maxtv;
+               customMoverVertex[i][k+l].tu = customMoverVertex[i][k+l].x * (inv_tablewidth * maxtu);
+               customMoverVertex[i][k+l].tv = customMoverVertex[i][k+l].y * (inv_tableheight * maxtv);
             }
             else
             {
@@ -765,18 +734,15 @@ void Light::PrepareMoversCustom()
          }
 
          if (m_fBackglass)
-         {
             SetHUDVertices(&customMoverVertex[i][k], 3);
-
-         }
       }
    }//for(i=0;i<2...)
+
    for (int i=0;i<cvertex;i++)
       delete vvertex.ElementAt(i);
 
    for (int i=0;i<vtri.Size();i++)
       delete vtri.ElementAt(i);
-
 }
 
 void Light::RenderSetup(const RenderDevice* _pd3dDevice)
@@ -794,7 +760,7 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
    else
    {
       // prepare static circle object
-      for (int l=0;l<32;l++)
+      for (int l=0; l<32; l++)
       {
          const float angle = (float)(M_PI*2.0/32.0)*(float)l;
          circleVertex[l].x = m_d.m_vCenter.x + sinf(angle)*(m_d.m_radius + m_d.m_borderwidth);
@@ -803,10 +769,9 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
 
          ppin3d->m_lightproject.CalcCoordinates(&circleVertex[l],inv_width,inv_height);
       }
+
       if( !m_fBackglass )
-      {
          SetNormal(circleVertex, rgiLightStatic1, 32, NULL, NULL, 0);
-      }
       else
       {
          SetHUDVertices(circleVertex, 32);
@@ -828,14 +793,15 @@ void Light::RenderStatic(const RenderDevice* pd3dDevice)
          RenderCustomStatic(pd3dDevice);
       else
          RenderStaticCircle(pd3dDevice);
-      ppin3d->EnableLightMap(fFalse, -1);
+
+	  ppin3d->EnableLightMap(fFalse, -1);
    }
 }
 
 void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 {
    RenderDevice *pd3dDevice=(RenderDevice*)_pd3dDevice;
-   pd3dDevice->SetRenderState( RenderDevice::ZWRITEENABLE, FALSE);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -851,7 +817,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
    const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
    const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
-   for (int i=0;i<2;i++)
+   for (int i=0; i<2; i++)
    {
       PinImage* pin = NULL;
       if(i == LightStateOff) 
@@ -860,7 +826,6 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
          if ((m_d.m_szOffImage[0] != 0) && (pin = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
          {
             // Set the texture to the one defined in the editor.
-
             ppin3d->SetTexture(pin->m_pdsBuffer);
             ppin3d->EnableLightMap(fFalse, -1);
             mtrl.diffuse.r = mtrl.ambient.r = 
@@ -875,7 +840,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
             // Set the texture to a default.
             ppin3d->SetTexture(ppin3d->m_pddsLightTexture);					
             ppin3d->EnableLightMap(!m_fBackglass, height);
-            mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0);
+            mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0); //!! whacky, why 1/3?
             mtrl.diffuse.g = mtrl.ambient.g = g*(float)(1.0/3.0);
             mtrl.diffuse.b = mtrl.ambient.b = b*(float)(1.0/3.0);
             mtrl.emissive.r = 
@@ -883,9 +848,9 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
             mtrl.emissive.b = 0.0f;
          }
       } 
-      else 
-      { //LightStateOn
-         // Check if the light has an "on" texture.
+      else //LightStateOn 
+      {
+		 // Check if the light has an "on" texture.
          if ((m_d.m_szOnImage[0] != 0) && (pin = m_ptable->GetImage(m_d.m_szOnImage)) != NULL)
          {
             // Set the texture to the one defined in the editor.
@@ -903,10 +868,10 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
             // Set the texture to a default.
             ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
             ppin3d->EnableLightMap(fFalse, -1);
-            mtrl.diffuse.r = mtrl.ambient.r = 0;//r;
-            mtrl.diffuse.g = mtrl.ambient.g = 0;//g;
-            mtrl.diffuse.b = mtrl.ambient.b = 0;//b;
-            mtrl.emissive.r = r;
+            mtrl.diffuse.r = mtrl.ambient.r = 0;
+            mtrl.diffuse.g = mtrl.ambient.g = 0;
+            mtrl.diffuse.b = mtrl.ambient.b = 0;
+            mtrl.emissive.r = r; //!! whacky, as not done for texture!
             mtrl.emissive.g = g;
             mtrl.emissive.b = b;
          }
@@ -918,38 +883,29 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 
       ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
 
-
-      for( int t=0;t<customMoverVertexNum;t+=3 )
+      for( int t=0; t<customMoverVertexNum; t+=3 )
       {
          if (m_fBackglass)
          {
             SetDiffuseFromMaterial(&customMoverVertex[i][t], 3, &mtrl);
             if( GetPTable()->GetDecalsEnabled() )
-            {
                pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX, &customMoverVertex[i][t], 3, (LPWORD)rgi0123, 3, 0);
-            }
          }
          else
-         {
             pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, &customMoverVertex[i][t], 3, (LPWORD)rgi0123, 3, 0);
 
-         }
-         ppin3d->ExpandExtents(&m_pobjframe[i]->rc, &customMoverVertex[i][t], NULL, NULL, 3, m_fBackglass);
+		 ppin3d->ExpandExtents(&m_pobjframe[i]->rc, &customMoverVertex[i][t], NULL, NULL, 3, m_fBackglass);
       }
 
-      for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
+      for (int iedit=0; iedit<m_ptable->m_vedit.Size(); iedit++)
       {
          IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
-         if (pie->GetItemType() == eItemDecal)
-         {
-            if (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc))
-            {
-               pie->GetIHitable()->RenderStatic(pd3dDevice);
-            }
-         }
+         if ((pie->GetItemType() == eItemDecal) && (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc)))
+            pie->GetIHitable()->RenderStatic(pd3dDevice);
       }
+
       ppin3d->SetTexture(ppin3d->m_pddsLightTexture);	
-      pd3dDevice->SetRenderState( RenderDevice::ZWRITEENABLE, FALSE);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
       ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
       m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
@@ -968,7 +924,6 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
       ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe[i]->rc, NULL,
          &m_pobjframe[i]->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
    }
-
 
    ppin3d->SetTexture(NULL);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -1001,7 +956,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
    Vertex3D rgv3D[32];
-   for (int l=0;l<32;l++)
+   for (int l=0; l<32; l++)
    {
       const float angle = (float)(M_PI*2.0/32.0)*(float)l;
       const float sinangle = sinf(angle);
@@ -1031,34 +986,32 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 
    Material mtrl;
    mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-      mtrl.emissive.a =
-      mtrl.power = 0;
+   mtrl.emissive.a =
+   mtrl.power = 0;
    mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
-   for (int i=0;i<2;i++)
+   for (int i=0; i<2; i++)
    {
       if(i == 0) {
          ppin3d->EnableLightMap(!m_fBackglass, height);
-         mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0);
+         mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0); //!! whacky, why 1/3?
          mtrl.diffuse.g = mtrl.ambient.g = g*(float)(1.0/3.0);
          mtrl.diffuse.b = mtrl.ambient.b = b*(float)(1.0/3.0);
          mtrl.emissive.r =
-            mtrl.emissive.g =
-            mtrl.emissive.b = 0;
+         mtrl.emissive.g =
+         mtrl.emissive.b = 0;
       } else {
          ppin3d->EnableLightMap(fFalse, -1);
-         mtrl.diffuse.r = mtrl.ambient.r = 0;//r;
-         mtrl.diffuse.g = mtrl.ambient.g = 0;//g;
-         mtrl.diffuse.b = mtrl.ambient.b = 0;//b;
+         mtrl.diffuse.r = mtrl.ambient.r = 0;
+         mtrl.diffuse.g = mtrl.ambient.g = 0;
+         mtrl.diffuse.b = mtrl.ambient.b = 0;
          mtrl.emissive.r = r;
          mtrl.emissive.g = g;
          mtrl.emissive.b = b;
       }
 
       if (m_fBackglass)
-      {
          SetDiffuseFromMaterial(rgv3D, 32, &mtrl);
-      }
 
       pd3dDevice->SetMaterial(&mtrl);
 
@@ -1097,15 +1050,11 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
          for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
          {
             IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
-            if (pie->GetItemType() == eItemDecal)
-            {
-               if (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc))
-               {
-                  pie->GetIHitable()->RenderStatic(pd3dDevice);
-               }
-            }
+            if ((pie->GetItemType() == eItemDecal) && (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc)))
+                pie->GetIHitable()->RenderStatic(pd3dDevice);
          }
-         ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+
+		 ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
          m_pobjframe[i]->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLTFAST_WAIT);
@@ -1383,7 +1332,7 @@ void Light::DoCommand(int icmd, int x, int y)
       {
          STARTUNDO
 
-            RECT rc;
+         RECT rc;
          GetClientRect(m_ptable->m_hwnd, &rc);
          HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
@@ -1597,7 +1546,7 @@ STDMETHODIMP Light::put_Shape(Shape newVal)
 {
    STARTUNDO
 
-      m_d.m_shape = newVal;
+   m_d.m_shape = newVal;
 
    if (m_d.m_shape == ShapeCustom && m_vdpoint.Size() == 0)
    {
@@ -1638,7 +1587,7 @@ STDMETHODIMP Light::put_Shape(Shape newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
@@ -1655,7 +1604,7 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, 32, NULL, NULL);
 
    if (m_rgblinkpattern[0] == '\0')
    {
@@ -1679,7 +1628,7 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_BlinkInterval(long *pVal)
@@ -1693,7 +1642,7 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 {
    STARTUNDO
 
-      m_blinkinterval = newVal;
+   m_blinkinterval = newVal;
 
    if (g_pplayer)
    {
@@ -1702,7 +1651,7 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_BorderColor(OLE_COLOR *pVal)
@@ -1716,11 +1665,11 @@ STDMETHODIMP Light::put_BorderColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_bordercolor = newVal;
+   m_d.m_bordercolor = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_BorderWidth(float *pVal)
@@ -1734,11 +1683,11 @@ STDMETHODIMP Light::put_BorderWidth(float newVal)
 {
    STARTUNDO
 
-      m_d.m_borderwidth = max(0.f, newVal);
+   m_d.m_borderwidth = max(0.f, newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_Surface(BSTR *pVal)
@@ -1755,11 +1704,11 @@ STDMETHODIMP Light::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -1777,11 +1726,11 @@ STDMETHODIMP Light::put_OffImage(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -1799,11 +1748,11 @@ STDMETHODIMP Light::put_OnImage(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOnImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOnImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -1818,11 +1767,11 @@ STDMETHODIMP Light::put_DisplayImage(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fDisplayImage = VBTOF(newVal);
+   m_d.m_fDisplayImage = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
