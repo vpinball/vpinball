@@ -496,33 +496,19 @@ void Light::PrepareStaticCustom()
       const Vertex2D v2 = *vvertex.ElementAt(p2);
       const Vertex2D vmiddle = *vvertex.ElementAt(i);
 
-      Vertex2D v1normal, v2normal;
-      // Notice that these values equal the ones in the line
-      // equation and could probably be substituted by them.
-      v1normal.x = vmiddle.y - v1.y;
-      v1normal.y = v1.x - vmiddle.x;
-      v2normal.x = v2.y - vmiddle.y;
-      v2normal.y = vmiddle.x - v2.x;
-
-      v1normal.Normalize();
-      v2normal.Normalize();
-
-      // Find intersection of the two edges meeting this points, but
-      // shift those lines outwards along their normals
-
-      // First line
       const float A = v1.y - vmiddle.y;
       const float B = vmiddle.x - v1.x;
-
-      // Shift line along the normal
-      const float C = A*(v1normal.x*m_d.m_borderwidth-v1.x) + B*(v1normal.y*m_d.m_borderwidth-v1.y);
-
-      // Second line
       const float D = v2.y - vmiddle.y;
       const float E = vmiddle.x - v2.x;
 
+	  // Find intersection of the two edges meeting this points, but
+      // shift those lines outwards along their normals
+
       // Shift line along the normal
-      const float F = D*(v2normal.x*m_d.m_borderwidth-v2.x) + E*(v2normal.y*m_d.m_borderwidth-v2.y);
+      const float C = vmiddle.y*v1.x - vmiddle.x*v1.y - sqrtf(A*A + B*B)*m_d.m_borderwidth;
+
+      // Shift line along the normal
+      const float F = vmiddle.y*v2.x - vmiddle.x*v2.y + sqrtf(D*D + E*E)*m_d.m_borderwidth;
 
       const float inv_det = 1.0f/(A*E - B*D);
 
@@ -539,8 +525,8 @@ void Light::PrepareStaticCustom()
 
    Vector<Triangle> vtri;
    PolygonToTriangles(rgv, &vpoly, &vtri);
-   staticCutomVertexNum = vtri.Size()*3;
-   staticCustomVertex = new Vertex3D[staticCutomVertexNum];
+   staticCustomVertexNum = vtri.Size()*3;
+   staticCustomVertex = new Vertex3D[staticCustomVertexNum];
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    int k=0;
@@ -740,12 +726,13 @@ void Light::RenderStatic(const RenderDevice* _pd3dDevice)
 	   mtrl.diffuse.g = mtrl.ambient.g = g;
 	   mtrl.diffuse.b = mtrl.ambient.b = b;
 	   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-       RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+       
+	   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	   pd3dDevice->SetMaterial(&mtrl);
 
 	   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled()) {
 		   if(m_d.m_shape == ShapeCustom)
-		       for (int t=0; t<staticCutomVertexNum; t+=3)
+		       for (int t=0; t<staticCustomVertexNum; t+=3)
 		           pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, &staticCustomVertex[t], 3, (LPWORD)rgi0123, 3, 0);
 	       else
 	           pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, circleVertex, 32, (LPWORD)rgiLightStatic1, 32, 0);
@@ -868,9 +855,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
       m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 
       if (m_pobjframe[i]->pdds == NULL)
-      {
          continue;
-      }
 
       m_pobjframe[i]->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLTFAST_WAIT);
 
@@ -888,13 +873,13 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 
 void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 {
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
    if (m_d.m_shape == ShapeCustom)
    {
-      RenderCustomMovers(pd3dDevice);
+      RenderCustomMovers(_pd3dDevice);
       return;
    }
 
+   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -929,13 +914,9 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
    }
 
    if (!m_fBackglass)
-   {
       SetNormal(rgv3D, rgiLightStatic1, 32, NULL, NULL, 0);
-   }
    else
-   {
       SetHUDVertices(rgv3D, 32);
-   }
 
    const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
    const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
@@ -982,9 +963,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
       m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 
       if (m_pobjframe[i]->pdds == NULL)
-      {
          continue;
-      }
 
       if (!m_fBackglass)
       {
@@ -1038,7 +1017,7 @@ void Light::MoveOffset(const float dx, const float dy)
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
 
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i=0; i<m_vdpoint.Size(); i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 

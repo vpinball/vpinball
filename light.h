@@ -169,7 +169,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
    Vertex3D circleVertex[32];
    Vertex3D *customMoverVertex[2];
    Vertex3D *staticCustomVertex;
-   int staticCutomVertexNum;
+   int staticCustomVertexNum;
    int customMoverVertexNum;
    
 // ILight
