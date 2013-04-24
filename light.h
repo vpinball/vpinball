@@ -123,10 +123,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 
 	virtual void ClearForOverwrite();
 
-	void RenderStaticCircle(const RenderDevice* pd3dDevice);
-	void RenderCustomStatic(const RenderDevice* pd3dDevice);
-   void PrepareStaticCustom();
-   void PrepareMoversCustom();
+	void PrepareStaticCustom();
+    void PrepareMoversCustom();
 
 	void RenderCustomMovers(const RenderDevice* pd3dDevice);
 

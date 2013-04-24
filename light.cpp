@@ -470,61 +470,12 @@ void Light::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-//static const WORD rgiLightStatic0[3] = {0,1,2};
-static const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
-
-void Light::RenderCustomStatic(const RenderDevice* _pd3dDevice)
-{
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-   const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
-   const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
-   const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
-
-   Material mtrl;
-   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-   mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-   mtrl.power = 0;	
-   mtrl.diffuse.r = mtrl.ambient.r = r;
-   mtrl.diffuse.g = mtrl.ambient.g = g;
-   mtrl.diffuse.b = mtrl.ambient.b = b;
-   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-   pd3dDevice->SetMaterial(&mtrl);
-
-   for (int t=0; t<staticCutomVertexNum; t+=3) if((!m_fBackglass) || GetPTable()->GetDecalsEnabled())
-       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, &staticCustomVertex[t], 3, (LPWORD)rgi0123, 3, 0);
-}
-
-void Light::RenderStaticCircle(const RenderDevice* _pd3dDevice)
-{
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-
-   const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
-   const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
-   const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
-
-   Material mtrl;
-   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-   mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-   mtrl.power = 0;
-   mtrl.diffuse.r = mtrl.ambient.r = r;
-   mtrl.diffuse.g = mtrl.ambient.g = g;
-   mtrl.diffuse.b = mtrl.ambient.b = b;
-   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-   pd3dDevice->SetMaterial(&mtrl);
-
-   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled())
-      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, circleVertex, 32, (LPWORD)rgiLightStatic1, 32, 0);
-}
-
 void Light::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
 }
 
 void Light::PrepareStaticCustom()
 {
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
@@ -582,10 +533,6 @@ void Light::PrepareStaticCustom()
    for (int i=0; i<cvertex; i++)
       delete vvertex.ElementAt(i);
 
-   const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
-   const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
-   const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
-
    Vector<void> vpoly;
    for (int i=0; i<cvertex; i++)
       vpoly.AddElement((void *)i);
@@ -595,6 +542,7 @@ void Light::PrepareStaticCustom()
    staticCutomVertexNum = vtri.Size()*3;
    staticCustomVertex = new Vertex3D[staticCutomVertexNum];
 
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    int k=0;
    for (int t=0; t<vtri.Size(); t++,k+=3)
    {
@@ -614,7 +562,6 @@ void Light::PrepareStaticCustom()
          staticCustomVertex[k+1].nx = 0;    staticCustomVertex[k+1].ny = 0;    staticCustomVertex[k+1].nz = -1.0f;
          staticCustomVertex[k+2].nx = 0;    staticCustomVertex[k+2].ny = 0;    staticCustomVertex[k+2].nz = -1.0f;
 
-		 Pin3D * const ppin3d = &g_pplayer->m_pin3d;
          for (int l=0; l<3; l++)
             ppin3d->m_lightproject.CalcCoordinates(&staticCustomVertex[k+l],inv_width,inv_height);
       }
@@ -630,14 +577,9 @@ void Light::PrepareStaticCustom()
 
 void Light::PrepareMoversCustom()
 {
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
    Vector<RenderVertex> vvertex;
    GetRgVertex(&vvertex);
-
    const int cvertex = vvertex.Size();
-
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    Vector<void> vpoly;
    float maxdist = 0;
@@ -660,23 +602,16 @@ void Light::PrepareMoversCustom()
    Vector<Triangle> vtri;
    PolygonToTriangles(vvertex, &vpoly, &vtri);
 
-   Material mtrl;
-   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-   mtrl.emissive.a =
-   mtrl.power = 0;
-   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
-   const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    customMoverVertexNum = vtri.Size()*3;
    customMoverVertex[0] = new Vertex3D[customMoverVertexNum];
    customMoverVertex[1] = new Vertex3D[customMoverVertexNum];
 
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    for(int i=0; i<2; i++)
    {
       PinImage* pin = NULL;
@@ -699,7 +634,7 @@ void Light::PrepareMoversCustom()
          customMoverVertex[i][k+1].x = pv1->x;   customMoverVertex[i][k+1].y = pv1->y;   customMoverVertex[i][k+1].z = height+0.1f;
          customMoverVertex[i][k+2].x = pv2->x;   customMoverVertex[i][k+2].y = pv2->y;   customMoverVertex[i][k+2].z = height+0.1f;
 
-         if( !m_fBackglass )
+         if(!m_fBackglass)
          {
             customMoverVertex[i][k  ].nx = 0; customMoverVertex[i][k  ].ny = 0; customMoverVertex[i][k  ].nz = -1.0f;
             customMoverVertex[i][k+1].nx = 0; customMoverVertex[i][k+1].ny = 0; customMoverVertex[i][k+1].nz = -1.0f;
@@ -728,6 +663,7 @@ void Light::PrepareMoversCustom()
                const float dy = customMoverVertex[i][k+l].y - m_d.m_vCenter.y;
                const float ang = atan2f(dy,dx);
                const float dist = sqrtf(dx*dx + dy*dy);
+
                customMoverVertex[i][k+l].tu = 0.5f + sinf(ang) * (dist*inv_maxdist);
                customMoverVertex[i][k+l].tv = 0.5f + cosf(ang) * (dist*inv_maxdist);
             }
@@ -745,13 +681,11 @@ void Light::PrepareMoversCustom()
       delete vtri.ElementAt(i);
 }
 
+//static const WORD rgiLightStatic0[3] = {0,1,2};
+static const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+
 void Light::RenderSetup(const RenderDevice* _pd3dDevice)
 {
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-
    if (m_d.m_shape == ShapeCustom)
    {
       PrepareStaticCustom();
@@ -759,7 +693,12 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
    }
    else
    {
-      // prepare static circle object
+      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+      const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+      const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
+	  // prepare static circle object
       for (int l=0; l<32; l++)
       {
          const float angle = (float)(M_PI*2.0/32.0)*(float)l;
@@ -780,21 +719,39 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
    }
 }
 
-void Light::RenderStatic(const RenderDevice* pd3dDevice)
+void Light::RenderStatic(const RenderDevice* _pd3dDevice)
 {
    if (m_d.m_borderwidth > 0)
    {
-      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+       ppin3d->EnableLightMap(!m_fBackglass, height);
 
-      ppin3d->EnableLightMap(!m_fBackglass, height);
-      if (m_d.m_shape == ShapeCustom)
-         RenderCustomStatic(pd3dDevice);
-      else
-         RenderStaticCircle(pd3dDevice);
+	   const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
+	   const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
+	   const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
 
-	  ppin3d->EnableLightMap(fFalse, -1);
+	   Material mtrl;
+	   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+	   mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+	   mtrl.power = 0;
+	   mtrl.diffuse.r = mtrl.ambient.r = r;
+	   mtrl.diffuse.g = mtrl.ambient.g = g;
+	   mtrl.diffuse.b = mtrl.ambient.b = b;
+	   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+       RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+	   pd3dDevice->SetMaterial(&mtrl);
+
+	   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled()) {
+		   if(m_d.m_shape == ShapeCustom)
+		       for (int t=0; t<staticCutomVertexNum; t+=3)
+		           pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, &staticCustomVertex[t], 3, (LPWORD)rgi0123, 3, 0);
+	       else
+	           pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, circleVertex, 32, (LPWORD)rgiLightStatic1, 32, 0);
+	   }
+
+	   ppin3d->EnableLightMap(fFalse, -1);
    }
 }
 
@@ -931,7 +888,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 
 void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 {
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
    if (m_d.m_shape == ShapeCustom)
    {
       RenderCustomMovers(pd3dDevice);
