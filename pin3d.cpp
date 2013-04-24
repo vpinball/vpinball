@@ -1076,7 +1076,12 @@ void Pin3D::InitLights()
 		light.dvPosition = D3DVECTOR(tmp.x,tmp.y,tmp.z);
 
 		m_pd3dDevice->SetLight(i, &light);
-		m_pd3dDevice->LightEnable(i, TRUE);
+		if(light.dcvAmbient.r  > 0.0f || light.dcvAmbient.g  > 0.0f || light.dcvAmbient.b  > 0.0f ||
+		   light.dcvDiffuse.r  > 0.0f || light.dcvDiffuse.g  > 0.0f || light.dcvDiffuse.b  > 0.0f ||
+		   light.dcvSpecular.r > 0.0f || light.dcvSpecular.g > 0.0f || light.dcvSpecular.b > 0.0f)
+			m_pd3dDevice->LightEnable(i, TRUE);
+		else
+			m_pd3dDevice->LightEnable(i, FALSE);
 	}
 	else
 		m_pd3dDevice->LightEnable(i, FALSE);

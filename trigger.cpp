@@ -1,5 +1,3 @@
-// Trigger.cpp : Implementation of CVBATestApp and DLL registration.
-
 #include "StdAfx.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -154,16 +152,11 @@ void Trigger::Render(Sur * const psur)
 	if (m_d.m_shape == ShapeCustom)
 		{
 //>>> added by chris
-		bool fDrawDragpoints;		//>>> added by chris
+		bool fDrawDragpoints = (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints);		//>>> added by chris
 		// if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
- 		if ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) )
-			{
-			fDrawDragpoints = true;
-			}
-		else
+ 		if ( !fDrawDragpoints )
 			{
 			// if any of the dragpoints of this object are selected then draw all the dragpoints
-			fDrawDragpoints = false;
 			for (int i=0;i<m_vdpoint.Size();i++)
 				{
 				CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
@@ -217,9 +210,7 @@ void Trigger::GetTimers(Vector<HitTimer> * const pvht)
 	m_phittimer = pht;
 
 	if (m_d.m_tdr.m_fTimerEnabled)
-		{
 		pvht->AddElement(pht);
-		}
 	}
 
 void Trigger::GetHitShapes(Vector<HitObject> * const pvho)
@@ -407,15 +398,13 @@ static const WORD rgtriggerface[][5] = {
 static const Material triggermtrl = {0.5f,0.5f,0.5f,0.0f, 0.5f,0.5f,0.5f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 
 void Trigger::PostRenderStatic(const RenderDevice* pd3dDevice)
-	{
-	}
+{
+}
 
 void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
 {
 	if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
-		{
 		return;
-		}
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -468,9 +457,8 @@ void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
 void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
 {
    if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
-   {
       return;
-   }
+
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -807,7 +795,6 @@ STDMETHODIMP Trigger::InterfaceSupportsErrorInfo(REFIID riid)
 	return S_FALSE;
 }
 
-
 STDMETHODIMP Trigger::get_Radius(float *pVal)
 {
 	*pVal = m_d.m_radius;
@@ -909,7 +896,6 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
 		}
 
 	return S_OK;
-
 }
 
 STDMETHODIMP Trigger::get_Visible(VARIANT_BOOL *pVal)
@@ -978,8 +964,6 @@ STDMETHODIMP Trigger::DestroyBall(int *pVal)
 
 	return S_OK;
 }
-
-
 
 STDMETHODIMP Trigger::get_HitHeight(float *pVal)
 {
