@@ -412,31 +412,19 @@ void Trigger::PostRenderStatic(const RenderDevice* pd3dDevice)
 
 void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
 {
-
-}
-
-void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
-	{
 	if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
 		{
 		return;
 		}
 
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-	ppin3d->EnableLightMap(fTrue, height);
-
-	pd3dDevice->SetMaterial((Material*)&triggermtrl);
 
 	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
 	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-	Vertex3D rgv3D[40];
 	for (int i=0;i<4;i++)
-		{
+	{
 		const float angle = (float)(M_PI*2.0/8.0)*(float)i;
 
 		const float sn = sinf(angle);
@@ -445,46 +433,72 @@ void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
 		const int offset = i*10;
 
 		for (int l=0;l<10;l++)
-			{
-			/*rgv3D[l].x = sn*m_d.m_radius + m_d.m_vCenter.x + cs*10;
-			rgv3D[l].y = -cs*m_d.m_radius + m_d.m_vCenter.y - sn*10;
-			rgv3D[l].z = height + 0.1f;*/
-
+		{
 			const float x = rgtriggervertex[l][0]*m_d.m_radius;
 			const float y = rgtriggervertex[l][1]*m_d.m_radius;
-			rgv3D[l+offset].z = rgtriggervertex[l][2] + height + 0.1f;
+			staticVertices[l+offset].z = rgtriggervertex[l][2] + height + 0.1f;
 
-			rgv3D[l+offset].x =  cs*x + sn*y + m_d.m_vCenter.x;
-			rgv3D[l+offset].y = -sn*x + cs*y + m_d.m_vCenter.y;
+			staticVertices[l+offset].x =  cs*x + sn*y + m_d.m_vCenter.x;
+			staticVertices[l+offset].y = -sn*x + cs*y + m_d.m_vCenter.y;
 
-			ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+offset],inv_width,inv_height);
-			}
+			ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l+offset],inv_width,inv_height);
 		}
-
-	for (int i=0;i<4;i++)
-		{
-		const int offset = i*10;
-
-		for (int l=0;l<6;l++)
-			{
-			const WORD rgi[5] = {
-				rgtriggerface[l][0],
-				rgtriggerface[l][1],
-				rgtriggerface[l][2],
-				rgtriggerface[l][3],
-				rgtriggerface[l][4]};
-
-			const int cpt = (rgtriggerface[l][4] == 0xFFFF) ? 4 : 5;
-
-			SetNormal(&rgv3D[offset], rgi, cpt, NULL, NULL, 0);
-			pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-													  &rgv3D[offset], 10,
-													  (LPWORD)rgi, cpt, 0);
-			}
-		}
-
-	ppin3d->EnableLightMap(fFalse, -1);
 	}
+
+   for (int i=0;i<4;i++)
+   {
+      const int offset = i*10;
+
+      for (int l=0;l<6;l++)
+      {
+         const WORD rgi[5] = 
+         {
+            rgtriggerface[l][0],
+            rgtriggerface[l][1],
+            rgtriggerface[l][2],
+            rgtriggerface[l][3],
+            rgtriggerface[l][4]
+         };
+         const int cpt = (rgtriggerface[l][4] == 0xFFFF) ? 4 : 5;
+         SetNormal(&staticVertices[offset], rgi, cpt, NULL, NULL, 0);
+      }
+   }
+}
+
+void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
+{
+   if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
+   {
+      return;
+   }
+   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   ppin3d->EnableLightMap(fTrue, height);
+
+   pd3dDevice->SetMaterial((Material*)&triggermtrl);
+
+   for (int i=0;i<4;i++)
+   {
+      const int offset = i*10;
+
+      for (int l=0;l<6;l++)
+      {
+         const WORD rgi[5] = 
+         {
+            rgtriggerface[l][0],
+            rgtriggerface[l][1],
+            rgtriggerface[l][2],
+            rgtriggerface[l][3],
+            rgtriggerface[l][4]
+         };
+         const int cpt = (rgtriggerface[l][4] == 0xFFFF) ? 4 : 5;
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &staticVertices[offset], 10, (LPWORD)rgi, cpt, 0);
+      }
+   }
+
+   ppin3d->EnableLightMap(fFalse, -1);
+}
 	
 void Trigger::RenderMovers(const RenderDevice* pd3dDevice)
 	{
