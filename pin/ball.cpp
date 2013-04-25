@@ -21,6 +21,69 @@ Ball::~Ball()
 	_balls_created--; //Added by JEP.  Need to keep track of number of balls on table for autostart to work.
 }
 
+void Ball::RenderSetup()
+{
+   vertices[0].tu = 0;
+   vertices[0].tv = 0;
+   vertices[0].nx = 0;
+   vertices[0].ny = 0;
+   vertices[0].nz = -1.0f;
+
+   vertices[3].tu = 0;
+   vertices[3].nx = 0;
+   vertices[3].ny = 0;
+   vertices[3].nz = -1.0f;
+
+   vertices[2].nx = 0;
+   vertices[2].ny = 0;
+   vertices[2].nz = -1.0f;
+
+   vertices[1].tv = 0;
+   vertices[1].nx = 0;
+   vertices[1].ny = 0;
+   vertices[1].nz = -1.0f;
+
+   if (!m_pin)
+   {
+      vertices[3].tv = 1.0f;
+      vertices[2].tu = 1.0f;
+      vertices[2].tv = 1.0f;
+      vertices[1].tu = 1.0f;
+   }
+   else
+   {
+      m_pin->EnsureColorKey();
+      vertices[3].tv = m_pin->m_maxtv;
+      vertices[2].tu = m_pin->m_maxtu;
+      vertices[2].tv = m_pin->m_maxtv;
+      vertices[1].tu = m_pin->m_maxtu;
+   }
+
+   m_rgv3DShadow[0].tu = 0;
+   m_rgv3DShadow[0].tv = 0;
+   m_rgv3DShadow[0].nx = 0;
+   m_rgv3DShadow[0].ny = 0;
+   m_rgv3DShadow[0].nz = -1.0f;
+
+   m_rgv3DShadow[1].tu = 1.0f;
+   m_rgv3DShadow[1].tv = 0;
+   m_rgv3DShadow[1].nx = 0;
+   m_rgv3DShadow[1].ny = 0;
+   m_rgv3DShadow[1].nz = -1.0f;
+
+   m_rgv3DShadow[2].tu = 1.0f;
+   m_rgv3DShadow[2].tv = 1.0f;
+   m_rgv3DShadow[2].nx = 0;
+   m_rgv3DShadow[2].ny = 0;
+   m_rgv3DShadow[2].nz = -1.0f;
+
+   m_rgv3DShadow[3].tu = 0;
+   m_rgv3DShadow[3].tv = 1.0f;
+   m_rgv3DShadow[3].nx = 0;
+   m_rgv3DShadow[3].ny = 0;
+   m_rgv3DShadow[3].nz = -1.0f;
+
+}
 
 void Ball::Init()
 	{
@@ -86,6 +149,7 @@ void Ball::Init()
 		lstrcpy(m_szImageBack, g_pplayer->m_ptable->m_szBallImageBack);
 		m_pinBack = g_pplayer->m_ptable->GetImage(m_szImageBack);
 		}
+   RenderSetup();
 	}
 
 

@@ -51,10 +51,13 @@ public:
 	void InitStatic(HWND hwndProgress);
 	void InitAnimations(HWND hwndProgress);
 
+   void UpdatePhysics();
 	void Render();
+   void RenderDynamics();
 
 	void DrawBallShadows();
 	void DrawBalls();
+   void DrawBallLogo(Ball * const pball, Material *mtrl);
 
 	void DrawAlphas();
 
