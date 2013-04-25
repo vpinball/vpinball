@@ -527,22 +527,21 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
 }
 
 void Flipper::PostRenderStatic(const RenderDevice* pd3dDevice)
-	{
-	}
+{
+}
 
 void Flipper::RenderSetup(const RenderDevice* _pd3dDevice)
 {
-
 }
 
 void Flipper::RenderStatic(const RenderDevice* pd3dDevice)
-	{
-	}
+{
+}
 
 static const WORD rgiFlipper1[4] = {0,4,5,1};
 static const WORD rgiFlipper2[4] = {2,6,7,3};
 
-//!! flippers are NOT drawn to zbuffer?? (on SOME tables only! and on intel only!)
+//!! flippers are NOT drawn to zbuffer?? (on SOME tables only! and on intel only!?)
 
 void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof, const float angle, const float height, 
 								const COLORREF color, const float baseradius, const float endradius, const float flipperheight)
@@ -550,8 +549,8 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x80);
 	//pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATER);
-   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); 
+	pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+	pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); 
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -592,8 +591,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
 
 	SetNormal(rgv3D, rgi0123, 4, NULL, NULL, 0);
 	// Draw top.
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4, 0);
-	//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4);
+	pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4, 0);
 
 	SetNormal(rgv3D, rgiFlipper1, 4, NULL, NULL, 0);
 	// Draw front side wall of flipper (flipper and rubber).
@@ -622,16 +620,13 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
 										  &m_phitflipper->m_flipperanim.m_zfar, 32, fFalse);
 
 	{
-	WORD rgi[3*14];
 	// Draw end caps of cylinders of large ends.
 	for (int l=0;l<14;l++)
 		{
-		rgi[l*3  ] = 0;
-		rgi[l*3+1] = l+1;
-		rgi[l*3+2] = l+2;
-		SetNormal(rgv3D, rgi+l*3, 3, NULL, NULL, 0);
-		}	
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D,16, rgi,3*14, 0);
+		const WORD tmp[3] = {0,l+1,l+2};
+		SetNormal(rgv3D, tmp, 3, NULL, NULL, 0); //!! meh
+		}
+	pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,16, 0);
 	}
 
 	for (int l=0;l<14;l++)
@@ -671,15 +666,12 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
 
 	// Draw end caps to vertical cylinder at small end.
 	{
-	WORD rgi[3*14];
 	for (int l=0;l<14;l++)
 		{
-		rgi[l*3  ] = 0;
-		rgi[l*3+1] = l+1;
-		rgi[l*3+2] = l+2;
-		SetNormal(rgv3D, rgi+l*3, 3, NULL, NULL, 0);
+		const WORD tmp[3] = {0,l+1,l+2};
+		SetNormal(rgv3D, tmp, 3, NULL, NULL, 0); //!! meh
 		}
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D,16, rgi,3*14, 0);
+	pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, rgv3D,16, 0);
 	}
 
 	for (int l=0;l<14;l++)
@@ -705,7 +697,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
 	
 void Flipper::RenderMovers(const RenderDevice* _pd3dDevice)
 {
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+	RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	_ASSERTE(m_phitflipper);
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	

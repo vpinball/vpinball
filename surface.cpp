@@ -1335,6 +1335,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 		const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);
 		const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
 
+		//!! combine drawcalls into one
 		for (int i=0;i<vtri.Size();i++)
 			{
 			const Triangle * const ptri = vtri.ElementAt(i);
@@ -1361,8 +1362,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 					rgv3D[l].color = m_d.m_topcolor;
 
 				// Draw top.
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D, 3,(LPWORD)rgi0123, 3, 0);
-				//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D, 3);
+				pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D, 3, 0);
 			}
 			else
 			{
@@ -1390,8 +1390,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 				}
 
 				// Draw top.
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 3,(LPWORD)rgi0123, 3, 0);
-				//Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 3);
+				pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D, 3, 0);
 			}
 
 			delete vtri.ElementAt(i);
