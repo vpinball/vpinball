@@ -174,7 +174,8 @@ STDMETHODIMP BallEx::put_Image(BSTR newVal)
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImage, 32, NULL, NULL);
 
 	m_pball->m_pin = (lstrlen(m_pball->m_szImage) > 0) ? g_pplayer->m_ptable->GetImage(m_pball->m_szImage) : NULL;
-
+   // recalcultate texture coords for new texture
+   m_pball->RenderSetup();
 	return S_OK;
 }
 

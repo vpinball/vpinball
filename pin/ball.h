@@ -23,6 +23,7 @@ public:
 	~Ball();
 
 	void Init();
+   void RenderSetup();
 
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
@@ -70,6 +71,8 @@ public:
 	float m_HitNormVel;		// hit normal Velocity
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
 	Vertex3Ds m_hitnormal[5];// 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
+
+   Vertex3D_NoTex2 vertices[4];
 
 	BallAnimObject m_ballanim;
 
