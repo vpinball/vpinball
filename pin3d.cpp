@@ -960,7 +960,7 @@ void Pin3D::InitRenderState() const
    m_pd3dDevice->SetRenderState( RenderDevice::CLIPPING, FALSE );
    m_pd3dDevice->SetRenderState( RenderDevice::CLIPPLANEENABLE, 0 );
 
-   m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
+   m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, FALSE );
 }
 
 const WORD rgiPin3D1[4] = {2,3,5,6};
