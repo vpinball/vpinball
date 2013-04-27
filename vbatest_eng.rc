@@ -2462,7 +2462,7 @@ STRINGTABLE
 BEGIN
     IDS_TB_LIGHTSEQ         "LightSeq"
     IDS_REPLACEALL          "Replaced"
-    IDS_REPLACEALL2         "occurances in script."
+    IDS_REPLACEALL2         "occurrences in script."
 END
 
 STRINGTABLE 
