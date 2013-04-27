@@ -7,6 +7,7 @@
 Primitive::Primitive()
 {
    vertexBuffer=0;
+   vertexBufferRegenerate = true;
 } 
 
 Primitive::~Primitive() 
@@ -48,15 +49,10 @@ void Primitive::SetDefaults(bool fromMouseClick)
    // visible
    hr = GetRegInt("DefaultProps\\Primitive", "TopVisible", &iTmp);
    m_d.m_TopVisible = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
-   hr = GetRegInt("DefaultProps\\Primitive", "SideVisible", &iTmp);
-   m_d.m_SideVisible = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
 
    // Draw Textures inside
    hr = GetRegInt("DefaultProps\\Primitive", "DrawTexturesInside", &iTmp);
    m_d.m_DrawTexturesInside = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
-   // Smooth Side Normals
-   hr = GetRegInt("DefaultProps\\Primitive", "SmoothSideNormals", &iTmp);
-   m_d.m_SmoothSideNormals = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
 
    // Position (X and Y is already set by the click of the user)
    hr = GetRegStringAsFloat("DefaultProps\\Primitive","Position_Z", &fTmp);
@@ -144,13 +140,9 @@ void Primitive::WriteRegDefaults()
    SetRegValue("DefaultProps\\Primitive","SideColor",REG_DWORD,&m_d.m_SideColor,4);
    iTmp = (m_d.m_TopVisible) ? 1 : 0;
    SetRegValue("DefaultProps\\Primitive","TopVisible",REG_DWORD,&iTmp,4);
-   iTmp = (m_d.m_SideVisible) ? 1 : 0;
-   SetRegValue("DefaultProps\\Primitive","SideVisible",REG_DWORD,&iTmp,4);
 
    iTmp = (m_d.m_DrawTexturesInside) ? 1 : 0;
    SetRegValue("DefaultProps\\Primitive","DrawTexturesInside",REG_DWORD,&iTmp,4);
-   iTmp = (m_d.m_SmoothSideNormals) ? 1 : 0;
-   SetRegValue("DefaultProps\\Primitive","SmoothSideNormals",REG_DWORD,&iTmp,4);
 
    sprintf_s(strTmp, 40, "%f", m_d.m_vPosition.z);
    SetRegValue("DefaultProps\\Primitive","Position_Z", REG_SZ, &strTmp,strlen(strTmp));	
@@ -212,12 +204,10 @@ void Primitive::WriteRegDefaults()
    SetRegValue("DefaultProps\\Primitive","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
 }
 
-
 void Primitive::GetTimers(Vector<HitTimer> * const pvht)
 {
    IEditable::BeginPlay();
 }
-
 
 void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
 {
@@ -730,23 +720,17 @@ void Primitive::CalculateRealTime()
 // Always called each frame to render over everything else (along with alpha ramps)
 void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-   PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
-
-   CalculateRealTime();
-   Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
-   memcpy( buf, rgv3DAll, sizeof(Vertex3D_NoTex2)*numVertices );
-   vertexBuffer->unlock();
-
-   Material mtrl;
-   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-   mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-   mtrl.power = 0;
-   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
    if (m_d.m_TopVisible)
    {
+	  RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+      PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+
+      Material mtrl;
+      mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a =
+      mtrl.emissive.r = mtrl.emissive.g = mtrl.emissive.b = mtrl.emissive.a =
+      mtrl.power = 0;
+	  mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+
       if (pin)
       {
          // OK, Top is visible, and we have a image
@@ -768,11 +752,11 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
-         g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
 
          mtrl.diffuse.r = mtrl.ambient.r =
-            mtrl.diffuse.g = mtrl.ambient.g =
-            mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+         mtrl.diffuse.g = mtrl.ambient.g =
+         mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
       }
       else
       {
@@ -784,7 +768,21 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
          mtrl.diffuse.g = mtrl.ambient.g = g;
          mtrl.diffuse.b = mtrl.ambient.b = b;
       }
+   
       pd3dDevice->SetMaterial(&mtrl);
+
+	  if(vertexBufferRegenerate)
+	  {
+		  vertexBufferRegenerate = false;
+
+		  CalculateRealTime();
+
+		  Vertex3D_NoTex2 *buf;
+		  vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
+		  memcpy( buf, rgv3DAll, sizeof(Vertex3D_NoTex2)*numVertices );
+		  vertexBuffer->unlock();
+	  }
+
       pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, wIndicesAll, 24*m_d.m_Sides,0 );
 /*      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 
          MY_D3DFVF_NOTEX2_VERTEX,
@@ -792,8 +790,7 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
          m_d.m_Sides*4 + 2,
          wIndicesAll, 
          24*m_d.m_Sides,
-         0);
-*/
+         0);*/
    }
 }
 
@@ -806,6 +803,7 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
       pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
 	  NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
    }
+
    PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin) 
    {
@@ -902,9 +900,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(TCOL), m_d.m_TopColor);
    bw.WriteInt(FID(SCOL), m_d.m_SideColor);
    bw.WriteInt(FID(TVIS), (m_d.m_TopVisible) ? 1 : 0);
-   bw.WriteInt(FID(SVIS), (m_d.m_SideVisible) ? 1 : 0);
    bw.WriteInt(FID(DTXI), (m_d.m_DrawTexturesInside) ? 1 : 0);
-   bw.WriteInt(FID(SSNO), (m_d.m_SmoothSideNormals) ? 1 : 0);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1054,23 +1050,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       pbr->GetInt(&iTmp);
       m_d.m_TopVisible = (iTmp==1);
    }
-   else if (id == FID(SVIS))
-   {
-      int iTmp;
-      pbr->GetInt(&iTmp);
-      m_d.m_SideVisible = (iTmp==1);
-   }
    else if (id == FID(DTXI))
    {
       int iTmp;
       pbr->GetInt(&iTmp);
       m_d.m_DrawTexturesInside = (iTmp==1);
-   }
-   else if (id == FID(SSNO))
-   {
-      int iTmp;
-      pbr->GetInt(&iTmp);
-      m_d.m_SmoothSideNormals = (iTmp==1);
    }
    else
    {
@@ -1103,11 +1087,12 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
-
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+   vertexBufferRegenerate = true;
+   
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Sides(int *pVal)
@@ -1123,8 +1108,9 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
    {
       STARTUNDO
 
-         m_d.m_Sides = newVal;
-      RecalculateVertices();
+      m_d.m_Sides = newVal;
+      vertexBufferRegenerate = true;
+	  RecalculateVertices();
 
       STOPUNDO
    }
@@ -1143,11 +1129,11 @@ STDMETHODIMP Primitive::put_TopColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_TopColor = newVal;
+   m_d.m_TopColor = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_SideColor(OLE_COLOR *pVal)
@@ -1161,11 +1147,11 @@ STDMETHODIMP Primitive::put_SideColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_SideColor = newVal;
+   m_d.m_SideColor = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_TopVisible(VARIANT_BOOL *pVal)
@@ -1179,29 +1165,11 @@ STDMETHODIMP Primitive::put_TopVisible(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_TopVisible = VBTOF(newVal);
+   m_d.m_TopVisible = VBTOF(newVal);
 
    STOPUNDO
-
-      return S_OK;
-}
-
-STDMETHODIMP Primitive::get_SideVisible(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_SideVisible);
 
    return S_OK;
-}
-
-STDMETHODIMP Primitive::put_SideVisible(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-      m_d.m_SideVisible = VBTOF(newVal);
-
-   STOPUNDO
-
-      return S_OK;
 }
 
 STDMETHODIMP Primitive::get_DrawTexturesInside(VARIANT_BOOL *pVal)
@@ -1215,29 +1183,12 @@ STDMETHODIMP Primitive::put_DrawTexturesInside(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_DrawTexturesInside = VBTOF(newVal);
+   m_d.m_DrawTexturesInside = VBTOF(newVal);
+   vertexBufferRegenerate = true;
 
    STOPUNDO
-
-      return S_OK;
-}
-
-STDMETHODIMP Primitive::get_SmoothSideNormals(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_SmoothSideNormals);
 
    return S_OK;
-}
-
-STDMETHODIMP Primitive::put_SmoothSideNormals(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-      m_d.m_SmoothSideNormals = VBTOF(newVal);
-
-   STOPUNDO
-
-      return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Z(float *pVal)
@@ -1251,11 +1202,12 @@ STDMETHODIMP Primitive::put_Z(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vPosition.z = newVal;
+   m_d.m_vPosition.z = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_X(float *pVal)
@@ -1269,11 +1221,12 @@ STDMETHODIMP Primitive::put_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vPosition.x = newVal;
+   m_d.m_vPosition.x = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Y(float *pVal)
@@ -1287,11 +1240,12 @@ STDMETHODIMP Primitive::put_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vPosition.y = newVal;
+   m_d.m_vPosition.y = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Size_X(float *pVal)
@@ -1305,11 +1259,12 @@ STDMETHODIMP Primitive::put_Size_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vSize.x = newVal;
+   m_d.m_vSize.x = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Size_Y(float *pVal)
@@ -1323,11 +1278,12 @@ STDMETHODIMP Primitive::put_Size_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vSize.y = newVal;
+   m_d.m_vSize.y = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Size_Z(float *pVal)
@@ -1341,11 +1297,12 @@ STDMETHODIMP Primitive::put_Size_Z(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vSize.z = newVal;
+   m_d.m_vSize.z = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_AxisScaleX_Y(float *pVal)
@@ -1359,11 +1316,12 @@ STDMETHODIMP Primitive::put_AxisScaleX_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vAxisScaleX.y = newVal;
+   m_d.m_vAxisScaleX.y = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_AxisScaleX_Z(float *pVal)
@@ -1377,11 +1335,12 @@ STDMETHODIMP Primitive::put_AxisScaleX_Z(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vAxisScaleX.z = newVal;
+   m_d.m_vAxisScaleX.z = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_AxisScaleY_X(float *pVal)
@@ -1395,11 +1354,12 @@ STDMETHODIMP Primitive::put_AxisScaleY_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vAxisScaleY.x = newVal;
+   m_d.m_vAxisScaleY.x = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_AxisScaleY_Z(float *pVal)
@@ -1413,11 +1373,12 @@ STDMETHODIMP Primitive::put_AxisScaleY_Z(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vAxisScaleY.z = newVal;
+   m_d.m_vAxisScaleY.z = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_AxisScaleZ_X(float *pVal)
@@ -1431,11 +1392,12 @@ STDMETHODIMP Primitive::put_AxisScaleZ_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vAxisScaleZ.x = newVal;
+   m_d.m_vAxisScaleZ.x = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_AxisScaleZ_Y(float *pVal)
@@ -1449,11 +1411,12 @@ STDMETHODIMP Primitive::put_AxisScaleZ_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vAxisScaleZ.y = newVal;
+   m_d.m_vAxisScaleZ.y = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTra0(float *pVal)
@@ -1467,11 +1430,12 @@ STDMETHODIMP Primitive::put_RotAndTra0(float newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTra[0] = newVal;
+   m_d.m_aRotAndTra[0] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTra1(float *pVal)
@@ -1485,11 +1449,12 @@ STDMETHODIMP Primitive::put_RotAndTra1(float newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTra[1] = newVal;
+   m_d.m_aRotAndTra[1] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTra2(float *pVal)
@@ -1503,11 +1468,12 @@ STDMETHODIMP Primitive::put_RotAndTra2(float newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTra[2] = newVal;
+   m_d.m_aRotAndTra[2] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTra3(float *pVal)
@@ -1521,11 +1487,12 @@ STDMETHODIMP Primitive::put_RotAndTra3(float newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTra[3] = newVal;
+   m_d.m_aRotAndTra[3] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTra4(float *pVal)
@@ -1539,11 +1506,12 @@ STDMETHODIMP Primitive::put_RotAndTra4(float newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTra[4] = newVal;
+   m_d.m_aRotAndTra[4] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTra5(float *pVal)
@@ -1557,11 +1525,12 @@ STDMETHODIMP Primitive::put_RotAndTra5(float newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTra[5] = newVal;
+   m_d.m_aRotAndTra[5] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -1576,11 +1545,12 @@ STDMETHODIMP Primitive::put_RotAndTraType0(RotAndTraTypeEnum newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTraTypes[0] = newVal;
+   m_d.m_aRotAndTraTypes[0] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTraType1(RotAndTraTypeEnum *pVal)
@@ -1594,11 +1564,12 @@ STDMETHODIMP Primitive::put_RotAndTraType1(RotAndTraTypeEnum newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTraTypes[1] = newVal;
+   m_d.m_aRotAndTraTypes[1] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTraType2(RotAndTraTypeEnum *pVal)
@@ -1612,18 +1583,19 @@ STDMETHODIMP Primitive::put_RotAndTraType2(RotAndTraTypeEnum newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTraTypes[2] = newVal;
+   m_d.m_aRotAndTraTypes[2] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTraType3(RotAndTraTypeEnum *pVal)
 {
    *pVal = m_d.m_aRotAndTraTypes[3];
-
    // slintf("get: %d \n", m_d.m_aRotAndTraTypes[3]);
+
    return S_OK;
 }
 
@@ -1631,11 +1603,13 @@ STDMETHODIMP Primitive::put_RotAndTraType3(RotAndTraTypeEnum newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTraTypes[3] = newVal;
+   m_d.m_aRotAndTraTypes[3] = newVal;
    // slintf("put: %d \n", m_d.m_aRotAndTraTypes[3]);
+   vertexBufferRegenerate = true;
+
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTraType4(RotAndTraTypeEnum *pVal)
@@ -1649,11 +1623,12 @@ STDMETHODIMP Primitive::put_RotAndTraType4(RotAndTraTypeEnum newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTraTypes[4] = newVal;
+   m_d.m_aRotAndTraTypes[4] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_RotAndTraType5(RotAndTraTypeEnum *pVal)
@@ -1667,11 +1642,12 @@ STDMETHODIMP Primitive::put_RotAndTraType5(RotAndTraTypeEnum newVal)
 {
    STARTUNDO
 
-      m_d.m_aRotAndTraTypes[5] = newVal;
+   m_d.m_aRotAndTraTypes[5] = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)

@@ -1336,16 +1336,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(101), helpstring("property Sides")] HRESULT Sides([in] int newVal);
 		[propget, id(103), helpstring("property Top Visible")] HRESULT TopVisible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(103), helpstring("property Top Visible")] HRESULT TopVisible([in] VARIANT_BOOL newVal);
-		[propget, id(105), helpstring("property Side Visible")] HRESULT SideVisible([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(105), helpstring("property Side Visible")] HRESULT SideVisible([in] VARIANT_BOOL newVal);
 		[propget, id(102), helpstring("property Top Color")] HRESULT TopColor([out, retval] OLE_COLOR *pVal);
 		[propput, id(102), helpstring("property Top Color")] HRESULT TopColor([in] OLE_COLOR newVal);
 		[propget, id(104), helpstring("property Side Color")] HRESULT SideColor([out, retval] OLE_COLOR *pVal);
 		[propput, id(104), helpstring("property Side Color")] HRESULT SideColor([in] OLE_COLOR newVal);
 		[propget, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([in] VARIANT_BOOL newVal);
-		[propget, id(107), helpstring("property Smooth Side Normals")] HRESULT SmoothSideNormals([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(107), helpstring("property Smooth Side Normals")] HRESULT SmoothSideNormals([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 		[propget, id(DISPID_POSITION_X), helpstring("property X")] HRESULT X([out, retval] float *pVal);
