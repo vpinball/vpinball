@@ -30,9 +30,7 @@ public:
 	TimerDataRoot m_tdr;
 
 	bool m_TopVisible;
-	bool m_SideVisible;
 	bool m_DrawTexturesInside;
-	bool m_SmoothSideNormals;
 	};
 
 class Primitive :
@@ -65,13 +63,9 @@ public:
 	STDMETHOD(put_SideColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_DrawTexturesInside)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_DrawTexturesInside)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_SmoothSideNormals)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_SmoothSideNormals)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD(get_TopVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_TopVisible)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_SideVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_SideVisible)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
@@ -174,8 +168,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 	PinTable *m_ptable;
 
 	PrimitiveData m_d;
-   int numVertices;
-   VertexBuffer *vertexBuffer;
+    int numVertices;
+    VertexBuffer *vertexBuffer;
+    BOOL vertexBufferRegenerate;
 
 public:
 	// Vertices for 3d Display
