@@ -177,6 +177,12 @@ void Light::SetDefaults(bool fromMouseClick)
    hr = GetRegString("DefaultProps\\Light", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
+
+   hr = GetRegInt("DefaultProps\\Light","EnableLighting", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_EnableLighting = iTmp;
+   else
+      m_d.m_EnableLighting = true;
 }
 
 void Light::WriteRegDefaults()
@@ -199,6 +205,7 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","BorderWidth", REG_SZ, &strTmp,strlen(strTmp));
    SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
    SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
+   SetRegValue("DefaultProps\\Light","EnableLighting", REG_DWORD, &m_d.m_EnableLighting,4);
 }
 
 void Light::PreRender(Sur * const psur)
@@ -793,12 +800,15 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
       } 
       else //LightStateOn 
       {
+	     if(!m_d.m_EnableLighting)
+	         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
+		 ppin3d->EnableLightMap(fFalse, -1);
+         
 		 // Check if the light has an "on" texture.
          if ((m_d.m_szOnImage[0] != 0) && (pin = m_ptable->GetImage(m_d.m_szOnImage)) != NULL)
          {
             // Set the texture to the one defined in the editor.
             ppin3d->SetTexture(pin->m_pdsBuffer);
-            ppin3d->EnableLightMap(fFalse, -1);
             mtrl.diffuse.r = mtrl.ambient.r = 
             mtrl.diffuse.g = mtrl.ambient.g = 
             mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
@@ -810,11 +820,10 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
          {
             // Set the texture to a default.
             ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
-            ppin3d->EnableLightMap(fFalse, -1);
             mtrl.diffuse.r = mtrl.ambient.r = 0;
             mtrl.diffuse.g = mtrl.ambient.g = 0;
             mtrl.diffuse.b = mtrl.ambient.b = 0;
-            mtrl.emissive.r = r; //!! whacky, as not done for texture!
+            mtrl.emissive.r = r;
             mtrl.emissive.g = g;
             mtrl.emissive.b = b;
          }
@@ -833,6 +842,9 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 		  pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, m_fBackglass ? MY_D3DTRANSFORMED_VERTEX : MY_D3DFVF_VERTEX, customMoverVertex[i], customMoverVertexNum, 0);
 	  }
 
+      if((i != LightStateOff) && (!m_d.m_EnableLighting))
+	      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	  
 	  ppin3d->ExpandExtents(&m_pobjframe[i]->rc, customMoverVertex[i], NULL, NULL, customMoverVertexNum, m_fBackglass);
 
 	  for (int iedit=0; iedit<m_ptable->m_vedit.Size(); iedit++)
@@ -924,7 +936,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 
    for (int i=0; i<2; i++)
    {
-      if(i == 0) {
+      if(i == LightStateOff) {
          ppin3d->EnableLightMap(!m_fBackglass, height);
          mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0); //!! whacky, why 1/3?
          mtrl.diffuse.g = mtrl.ambient.g = g*(float)(1.0/3.0);
@@ -933,6 +945,8 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
          mtrl.emissive.g =
          mtrl.emissive.b = 0;
       } else {
+	     if(!m_d.m_EnableLighting)
+ 	         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
          ppin3d->EnableLightMap(fFalse, -1);
          mtrl.diffuse.r = mtrl.ambient.r = 0;
          mtrl.diffuse.g = mtrl.ambient.g = 0;
@@ -959,42 +973,36 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
       if (m_pobjframe[i]->pdds == NULL)
          continue;
 
-      if (!m_fBackglass)
+      if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
       {
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, !m_fBackglass ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX,
             rgv3D, 32,
             (LPWORD)rgiLightStatic1, 32, 0);
          //Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
          //											  rgv3D, 32);
       }
-      else 
-         if( GetPTable()->GetDecalsEnabled() )
-         {
-            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
-               rgv3D, 32,
-               (LPWORD)rgiLightStatic1, 32, 0);
-            //Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_VERTEX,
-            //										  rgv3D, 32);
-         }
 
-         for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
-         {
-            IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
-            if ((pie->GetItemType() == eItemDecal) && (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc)))
-                pie->GetIHitable()->RenderStatic(pd3dDevice);
-         }
+	  if((i != LightStateOff) && (!m_d.m_EnableLighting))
+	      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
-		 ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+	  for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
+	  {
+		 IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
+		 if ((pie->GetItemType() == eItemDecal) && (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc)))
+			 pie->GetIHitable()->RenderStatic(pd3dDevice);
+	  }
 
-         m_pobjframe[i]->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLTFAST_WAIT);
+	  ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+	  pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
-         // Reset color key in back buffer
-         DDBLTFX ddbltfx;
-         ddbltfx.dwSize = sizeof(DDBLTFX);
-         ddbltfx.dwFillColor = 0;//0xffff;
-         ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe[i]->rc, NULL,
-            &m_pobjframe[i]->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
+	  m_pobjframe[i]->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLTFAST_WAIT);
+
+	  // Reset color key in back buffer
+	  DDBLTFX ddbltfx;
+	  ddbltfx.dwSize = sizeof(DDBLTFX);
+	  ddbltfx.dwFillColor = 0;//0xffff;
+	  ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe[i]->rc, NULL,
+		 &m_pobjframe[i]->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
    }
 
    ppin3d->SetTexture(NULL);
@@ -1045,8 +1053,8 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteFloat(FID(BWTH), m_d.m_borderwidth);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
-
    bw.WriteBool(FID(BGLS), m_fBackglass);
+   bw.WriteBool(FID(ENLI), m_d.m_EnableLighting);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1085,6 +1093,8 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 
    m_fLockedByLS = false;			//>>> added by chris
    m_realState	= m_d.m_state;		//>>> added by chris
+
+   m_d.m_EnableLighting = true;
 
    br.Load();
    return S_OK;
@@ -1185,6 +1195,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BGLS))
    {
       pbr->GetBool(&m_fBackglass);
+   }
+    if (id == FID(ENLI))
+   {
+      pbr->GetBool(&m_d.m_EnableLighting);
    }
    else
    {
@@ -1663,7 +1677,6 @@ STDMETHODIMP Light::put_OffImage(BSTR newVal)
    return S_OK;
 }
 
-
 STDMETHODIMP Light::get_OnImage(BSTR *pVal)
 {
    WCHAR wz[512];
@@ -1685,7 +1698,6 @@ STDMETHODIMP Light::put_OnImage(BSTR newVal)
    return S_OK;
 }
 
-
 STDMETHODIMP Light::get_DisplayImage(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisplayImage);
@@ -1698,6 +1710,24 @@ STDMETHODIMP Light::put_DisplayImage(VARIANT_BOOL newVal)
    STARTUNDO
 
    m_d.m_fDisplayImage = VBTOF(newVal);
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::get_EnableLighting(int *pVal)
+{
+   *pVal = m_d.m_EnableLighting;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_EnableLighting(int newVal)
+{
+   STARTUNDO
+
+   m_d.m_EnableLighting = newVal;
 
    STOPUNDO
 

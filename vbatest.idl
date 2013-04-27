@@ -1201,6 +1201,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Image2), helpstring("property OnImage")] HRESULT OnImage([in] BSTR newVal);
 		[propget, id(13), helpstring("property DisplayImage")] HRESULT DisplayImage([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(13), helpstring("property DisplayImage")] HRESULT DisplayImage([in] VARIANT_BOOL newVal);
+		[propget, id(557), helpstring("property EnableLighting")] HRESULT EnableLighting([out, retval] int *pVal);
+		[propput, id(557), helpstring("property EnableLighting")] HRESULT EnableLighting([in] int newVal);
 	};
 
 	[
