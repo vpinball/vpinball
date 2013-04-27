@@ -603,6 +603,7 @@
 #define IDC_LIGHT1DY					575
 #define IDC_LIGHT1DZ					576
 #define IDC_LIGHT1TYPE					577
+#define IDC_NORMALIZENORMALS			578
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDM_NEW                         32768

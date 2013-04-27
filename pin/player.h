@@ -51,13 +51,13 @@ public:
 	void InitStatic(HWND hwndProgress);
 	void InitAnimations(HWND hwndProgress);
 
-   void UpdatePhysics();
+    void UpdatePhysics();
 	void Render();
-   void RenderDynamics();
+    void RenderDynamics();
 
 	void DrawBallShadows();
 	void DrawBalls();
-   void DrawBallLogo(Ball * const pball, Material *mtrl);
+    void DrawBallLogo(Ball * const pball, Material *mtrl);
 
 	void DrawAlphas();
 
@@ -288,8 +288,8 @@ private:
 	int m_lastfpstime;
 	int m_cframes;
 	int m_fps;
-   int m_fpsAvg;
-   int m_fpsCount;
+    int m_fpsAvg;
+    int m_fpsCount;
 	U64 m_count;
 	U64 m_total;
 	U32 m_max;

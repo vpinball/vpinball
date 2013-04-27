@@ -162,6 +162,8 @@ public:
 	STDMETHOD(put_Light1DZ)(/*[in]*/ float newVal);
 	STDMETHOD(get_Light1Type)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Light1Type)(/*[in]*/ int newVal);
+	STDMETHOD(get_NormalizeNormals)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_NormalizeNormals)(/*[in]*/ int newVal);
 
 	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
@@ -636,6 +638,7 @@ END_CONNECTION_POINT_MAP()
 	int m_alphaRampsAccuracy;
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
+	BOOL m_NormalizeNormals;
 
 	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 };

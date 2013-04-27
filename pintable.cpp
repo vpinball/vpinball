@@ -2526,6 +2526,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	bw.WriteFloat(FID(LODZ), m_Light[1].dir.z);
 	bw.WriteInt(FID(LOTY), m_Light[1].type);
 
+	bw.WriteInt(FID(NONO), m_NormalizeNormals);
+
 	// HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
 	// Someday save these values into there own stream, used only when saving to file.
 
@@ -3044,6 +3046,8 @@ void PinTable::SetLoadDefaults()
 
 	m_angletiltMax = 726.0f;
 	m_angletiltMin = 4.5f;
+
+	m_NormalizeNormals = false;
 	}
 
 HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -3447,6 +3451,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(LOTY))
 		{
 		pbr->GetInt(&m_Light[1].type);
+		}
+	else if (id == FID(NONO))
+		{
+		pbr->GetInt(&m_NormalizeNormals);
 		}
 	else if (id == FID(BCLR))
 		{
@@ -7360,6 +7368,24 @@ STDMETHODIMP PinTable::put_Light1Type(int newVal)
 	STARTUNDO
 
 	m_Light[1].type = (LightType)newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_NormalizeNormals(int *pVal)
+{
+	*pVal = m_NormalizeNormals;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_NormalizeNormals(int newVal )
+{
+	STARTUNDO
+
+	m_NormalizeNormals = newVal;
 
 	STOPUNDO
 
