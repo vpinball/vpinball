@@ -1111,7 +1111,7 @@ void Player::InitStatic(HWND hwndProgress)
       }
    }
   
-   // Draw stuff
+	// Draw stuff
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 		{
 		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal && 
@@ -1837,95 +1837,95 @@ U64 phys_period = 0;
 
 void Player::UpdatePhysics()
 {
-   const U64 m_RealTimeClock = usec();
+	const U64 m_RealTimeClock = usec();
 
-   if (m_fNoTimeCorrect) // After debugging script
-   {
-      // Shift whole game foward in time
-      m_liStartTime += m_RealTimeClock - m_curPhysicsFrameTime;
-      m_nextPhysicsFrameTime += m_RealTimeClock - m_curPhysicsFrameTime;
-      m_curPhysicsFrameTime = m_RealTimeClock; // 0 time frame
-      m_fNoTimeCorrect = fFalse;
-   }
+	if (m_fNoTimeCorrect) // After debugging script
+		{
+		// Shift whole game foward in time
+		m_liStartTime += m_RealTimeClock - m_curPhysicsFrameTime;
+		m_nextPhysicsFrameTime += m_RealTimeClock - m_curPhysicsFrameTime;
+		m_curPhysicsFrameTime = m_RealTimeClock; // 0 time frame
+		m_fNoTimeCorrect = fFalse;
+		}
 
 #ifdef STEPPING
 #ifndef EVENTIME
-   if (m_fDebugWindowActive || m_fUserDebugPaused)
-   {
-      // Shift whole game foward in time
-      m_liStartTime += m_RealTimeClock - m_curPhysicsFrameTime;
-      m_nextPhysicsFrameTime += m_RealTimeClock - m_curPhysicsFrameTime;
-      if (m_fStep)
-      {
-         // Walk one physics step foward
-         m_curPhysicsFrameTime = m_RealTimeClock - PHYSICS_STEPTIME;
-         m_fStep = false;
-      }
-      else
-      {
-         m_curPhysicsFrameTime = m_RealTimeClock; // 0 time frame
-      }
-   }
+	if (m_fDebugWindowActive || m_fUserDebugPaused)
+		{
+		// Shift whole game foward in time
+		m_liStartTime += m_RealTimeClock - m_curPhysicsFrameTime;
+		m_nextPhysicsFrameTime += m_RealTimeClock - m_curPhysicsFrameTime;
+		if (m_fStep)
+			{
+			// Walk one physics step foward
+			m_curPhysicsFrameTime = m_RealTimeClock - PHYSICS_STEPTIME;
+			m_fStep = false;
+			}
+		else
+			{
+			m_curPhysicsFrameTime = m_RealTimeClock; // 0 time frame
+			}
+		}
 #endif
 #endif
 
 #ifdef EVENTIME
-   if (!m_fPause || m_fStep)
-   {
-      m_RealTimeClock = m_curPhysicsFrameTime - 3547811060 + 3547825450;
-      m_fStep = false;
-   }
-   else
-   {
-      m_RealTimeClock = m_curPhysicsFrameTime;
-   }
+	if (!m_fPause || m_fStep)
+		{
+		m_RealTimeClock = m_curPhysicsFrameTime - 3547811060 + 3547825450;
+		m_fStep = false;
+		}
+	else
+		{
+		m_RealTimeClock = m_curPhysicsFrameTime;
+		}
 #endif
 
-   // Get time in milliseconds for timers
-   m_timeCur = (int)((m_RealTimeClock - m_liStartTime)/1000);
+	// Get time in milliseconds for timers
+	m_timeCur = (int)((m_RealTimeClock - m_liStartTime)/1000);
 
 #ifdef FPS
-   //if (m_fShowFPS)
-   {
-      m_cframes++;
-      if ((m_timeCur - m_lastfpstime) > 1000)
-      {
-         m_fps = m_cframes * 1000 / (m_timeCur - m_lastfpstime);
+	//if (m_fShowFPS)
+		{
+		m_cframes++;
+		if ((m_timeCur - m_lastfpstime) > 1000)
+			{
+			m_fps = m_cframes * 1000 / (m_timeCur - m_lastfpstime);
          m_fpsAvg += m_fps;
          m_fpsCount++;
-         m_lastfpstime = m_timeCur;
-         m_cframes = 0;
-      }
-   }
+			m_lastfpstime = m_timeCur;
+			m_cframes = 0;
+			}
+		}
 #endif
 
 #ifdef LOG
-   const double timepassed = (double)(m_RealTimeClock - m_curPhysicsFrameTime) * (1.0/1000000.0);
-   float frametime;
+	const double timepassed = (double)(m_RealTimeClock - m_curPhysicsFrameTime) * (1.0/1000000.0);
+	float frametime;
 
 #ifdef PLAYBACK
-   if (!m_fPlayback)
-   {
-      frametime = (float)(timepassed * 100.0);
-   }
-   else
-   {
-      frametime = ParseLog((LARGE_INTEGER*)&m_RealTimeClock, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
-   }
+	if (!m_fPlayback)
+		{
+		frametime = (float)(timepassed * 100.0);
+		}
+	else
+		{
+		frametime = ParseLog((LARGE_INTEGER*)&m_RealTimeClock, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
+		}
 #else
 
 #define TIMECORRECT 1
 #ifdef TIMECORRECT
-   frametime = (float)(timepassed * 100.0);
-   //frametime = 1.456927f;
+	frametime = (float)(timepassed * 100.0);
+	//frametime = 1.456927f;
 #else
-   frametime = 0.45f;
+	frametime = 0.45f;
 #endif
 
 #endif //PLAYBACK
 
-   fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, m_RealTimeClock>>32, m_RealTimeClock, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
-   fprintf(m_flog, "End Frame\n");
+	fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, m_RealTimeClock>>32, m_RealTimeClock, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
+	fprintf(m_flog, "End Frame\n");
 #endif
 
 #ifdef FPS
@@ -1933,103 +1933,103 @@ void Player::UpdatePhysics()
    phys_period = m_RealTimeClock;	
 #endif
 
-   while (m_curPhysicsFrameTime < m_RealTimeClock)		//loop here until next frame time
-   {
+	while (m_curPhysicsFrameTime < m_RealTimeClock)		//loop here until next frame time
+		{
 #ifdef FPS
-      phys_iterations++;
+		phys_iterations++;
 #endif
-      // Get the time until the next physics tick is done, and get the time
-      // Until the next frame is done (newtime)
-      // If the frame is the next thing to happen, update physics to that
-      // point next update acceleration, and continue loop
+		// Get the time until the next physics tick is done, and get the time
+		// Until the next frame is done (newtime)
+		// If the frame is the next thing to happen, update physics to that
+		// point next update acceleration, and continue loop
 
-      const float physics_dtime = (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
-      const float physics_to_graphic_dtime = (float)((double)(m_RealTimeClock - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
+		const float physics_dtime = (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
+		const float physics_to_graphic_dtime = (float)((double)(m_RealTimeClock - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
 
-      const U64 cur_time = usec();
+		const U64 cur_time = usec();
 
-      if (physics_to_graphic_dtime < physics_dtime)				 // is graphic frame time next???
-      {		
-         PhysicsSimulateCycle(physics_to_graphic_dtime, cur_time);// advance physics to this time
-         m_curPhysicsFrameTime = m_RealTimeClock;				 // now current to the wall clock
-         break;	//this is the common exit from the loop			 // exit skipping accelerate
-      }		// some rare cases will exit from while()
+		if (physics_to_graphic_dtime < physics_dtime)				 // is graphic frame time next???
+			{		
+			PhysicsSimulateCycle(physics_to_graphic_dtime, cur_time);// advance physics to this time
+			m_curPhysicsFrameTime = m_RealTimeClock;				 // now current to the wall clock
+			break;	//this is the common exit from the loop			 // exit skipping accelerate
+			}		// some rare cases will exit from while()
 
-      if (cur_time - m_RealTimeClock > 200000)					 // hung in the physics loop over 200 milliseconds
-      {														 // can not keep up to real time
-         m_curPhysicsFrameTime = m_RealTimeClock;				 // skip physics forward ... slip-cycles
-         m_nextPhysicsFrameTime = m_RealTimeClock + PHYSICS_STEPTIME;
-         break;	//this is the common exit from the loop			 // go draw frame
-      }
+		if (cur_time - m_RealTimeClock > 200000)					 // hung in the physics loop over 200 milliseconds
+			{														 // can not keep up to real time
+			m_curPhysicsFrameTime = m_RealTimeClock;				 // skip physics forward ... slip-cycles
+			m_nextPhysicsFrameTime = m_RealTimeClock + PHYSICS_STEPTIME;
+			break;	//this is the common exit from the loop			 // go draw frame
+			}
 
-      //primary physics loop
-      PhysicsSimulateCycle(physics_dtime, cur_time); 				 // main simulator call physics_dtime
+		//primary physics loop
+		PhysicsSimulateCycle(physics_dtime, cur_time); 				 // main simulator call physics_dtime
 
-      m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				 // new cycle, on physics frame boundary
-      m_nextPhysicsFrameTime += PHYSICS_STEPTIME;					 // advance physics position
+ 		m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				 // new cycle, on physics frame boundary
+		m_nextPhysicsFrameTime += PHYSICS_STEPTIME;					 // advance physics position
 
-      // now get and/or calculate integral cycle physics events, digital filters, external acceleration inputs, etc.
+		// now get and/or calculate integral cycle physics events, digital filters, external acceleration inputs, etc.
 
-      const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
-      m_pininput.ProcessKeys(m_ptable, sim_msec);
+		const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
+		m_pininput.ProcessKeys(m_ptable, sim_msec);
 
-      if(m_pininput.Pressed(PININ_ENABLE3D)) {
-         m_fStereo3Denabled = !m_fStereo3Denabled;
-         SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
-         m_fCleanBlt = fFalse;
-      }
+		if(m_pininput.Pressed(PININ_ENABLE3D)) {
+			m_fStereo3Denabled = !m_fStereo3Denabled;
+			SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
+			m_fCleanBlt = fFalse;
+		}
 
-      mixer_update(m_pininput);
+        mixer_update(m_pininput);
 
-      hid_update(sim_msec);
-      plumb_update(sim_msec, GetX(), GetY());
+        hid_update(sim_msec);
+        plumb_update(sim_msec, GetX(), GetY());
 
 #ifdef ACCURATETIMERS
-      m_pactiveball = NULL;  // No ball is the active ball for timers/key events
+		m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 
-      const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); // milliseconds
+		const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); // milliseconds
 
-      for (int i=0;i<m_vht.Size();i++)
-      {
-         HitTimer * const pht = m_vht.ElementAt(i);
-         if (pht->m_nextfire <= p_timeCur)
-         {
-            pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-            pht->m_nextfire += pht->m_interval;
-         }
-      }
+		for (int i=0;i<m_vht.Size();i++)
+		{
+			HitTimer * const pht = m_vht.ElementAt(i);
+			if (pht->m_nextfire <= p_timeCur)
+			{
+				pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+				pht->m_nextfire += pht->m_interval;
+			}
+		}
 #endif
 
-      //slintf( "%u %u\n", m_RealTimeClock/1000, sim_msec );
-      //slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
+		//slintf( "%u %u\n", m_RealTimeClock/1000, sim_msec );
+		//slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
 
-      UltraNudge();		// physics_dtime is the balance of time to move from the graphic frame position to the next
-      UltraPlunger();		// integral physics frame.  So the previous graphics frame was (1.0 - physics_dtime) before 
-      // this integral physics frame. Accelerations and inputs are always physics frame aligned
+		UltraNudge();		// physics_dtime is the balance of time to move from the graphic frame position to the next
+		UltraPlunger();		// integral physics frame.  So the previous graphics frame was (1.0 - physics_dtime) before 
+							// this integral physics frame. Accelerations and inputs are always physics frame aligned
 
-      if (m_nudgetime)
-      {
-         m_nudgetime--;
+		if (m_nudgetime)
+		{
+			m_nudgetime--;
 
-         if (m_nudgetime == 5)
-         {
-            m_NudgeX = -m_NudgeBackX * 2.0f;
-            m_NudgeY = m_NudgeBackY * 2.0f;
-         }
-         else if (m_nudgetime == 0)
-         {
-            m_NudgeX = m_NudgeBackX;
-            m_NudgeY = -m_NudgeBackY;
-         }
-      }
+			if (m_nudgetime == 5)
+			{
+				m_NudgeX = -m_NudgeBackX * 2.0f;
+				m_NudgeY = m_NudgeBackY * 2.0f;
+			}
+			else if (m_nudgetime == 0)
+			{
+				m_NudgeX = m_NudgeBackX;
+				m_NudgeY = -m_NudgeBackY;
+			}
+		}
 
-      for (int i=0;i<m_vmover.Size();i++)
-      {
-         m_vmover.ElementAt(i)->UpdateVelocities();	// always on integral physics frame boundary
-      }
-   } // end while (m_curPhysicsFrameTime < m_RealTimeClock)
+		for (int i=0;i<m_vmover.Size();i++)
+		{
+			m_vmover.ElementAt(i)->UpdateVelocities();	// always on integral physics frame boundary
+		}
+	} // end while (m_curPhysicsFrameTime < m_RealTimeClock)
 #ifdef FPS
-   phys_period = usec() - phys_period;
+	phys_period = usec() - phys_period;
 #endif
 }
 
@@ -2037,6 +2037,8 @@ void Player::RenderDynamics()
 {
    // Start rendering the next frame.
    m_pin3d.m_pd3dDevice->BeginScene();
+
+   m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, m_ptable->m_NormalizeNormals );
 
    // Check if we are debugging balls
    if (m_ToggleDebugBalls)
@@ -2086,9 +2088,10 @@ void Player::RenderDynamics()
    mixer_draw();
    plumb_draw();
 
+   m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
+
    // Finish rendering the next frame.
    m_pin3d.m_pd3dDevice->EndScene();
-
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2948,123 +2951,123 @@ void Player::DrawBallShadows()
 				rgv3DShadow[1].tu = m_ptable->m_top;
 				rgv3DShadow[0].tu = m_ptable->m_top;
 			}
-         else
-         {
+		else
+		{
             rgv3DShadow[0].tv = 0;
             rgv3DShadow[1].tv = 0;
             rgv3DShadow[1].tu = 1.0f;
             rgv3DShadow[0].tu = 0;
-         }
+		}
 
 			m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DShadow, 4, (LPWORD)rgi0123, 4, NULL);
 		}
-	}
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+		}
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 }
 
 // gets called from DrawBalls, all render states are handled there
 void Player::DrawBallLogo(Ball * const pball, Material *mtrl)
 {
-	// Draw the ball logo
-	Vertex3D_NoTex2 rgv3DArrowTransformed[4];
-	Vertex3D_NoTex2 rgv3DArrowTransformed2[4];
+		// Draw the ball logo
+		Vertex3D_NoTex2 rgv3DArrowTransformed[4];
+		Vertex3D_NoTex2 rgv3DArrowTransformed2[4];
    const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
-	/*mtrl.diffuse.r = mtrl.ambient.r = 0.8f;
-	mtrl.diffuse.g = mtrl.ambient.g = 0.4f;
-	mtrl.diffuse.b = mtrl.ambient.b = 0.2f;*/
+			/*mtrl.diffuse.r = mtrl.ambient.r = 0.8f;
+			mtrl.diffuse.g = mtrl.ambient.g = 0.4f;
+			mtrl.diffuse.b = mtrl.ambient.b = 0.2f;*/
 	mtrl->diffuse.a = mtrl->ambient.a = 0.8f;//0.7f;
 	m_pin3d.m_pd3dDevice->SetMaterial(mtrl);
 
-	Vertex3D_NoTex2 rgv3DArrow[4];
+			Vertex3D_NoTex2 rgv3DArrow[4];
 
-	rgv3DArrow[0].tu = 0;
-	rgv3DArrow[0].tv = 0;
-	rgv3DArrow[0].x = -0.333333333f;
-	rgv3DArrow[0].y = -0.333333333f;
-	rgv3DArrow[0].z = -0.881917103f;
+			rgv3DArrow[0].tu = 0;
+			rgv3DArrow[0].tv = 0;
+			rgv3DArrow[0].x = -0.333333333f;
+			rgv3DArrow[0].y = -0.333333333f;
+			rgv3DArrow[0].z = -0.881917103f;
 
-	rgv3DArrow[1].tu = 1.0f;
-	rgv3DArrow[1].tv = 0;
-	rgv3DArrow[1].x = 0.333333333f;
-	rgv3DArrow[1].y = -0.333333333f;
-	rgv3DArrow[1].z = -0.881917103f;
+			rgv3DArrow[1].tu = 1.0f;
+			rgv3DArrow[1].tv = 0;
+			rgv3DArrow[1].x = 0.333333333f;
+			rgv3DArrow[1].y = -0.333333333f;
+			rgv3DArrow[1].z = -0.881917103f;
 
-	rgv3DArrow[2].tu = 1.0f;
-	rgv3DArrow[2].tv = 1.0f;
-	rgv3DArrow[2].x = 0.333333333f;
-	rgv3DArrow[2].y = 0.333333333f;
-	rgv3DArrow[2].z = -0.881917103f;
+			rgv3DArrow[2].tu = 1.0f;
+			rgv3DArrow[2].tv = 1.0f;
+			rgv3DArrow[2].x = 0.333333333f;
+			rgv3DArrow[2].y = 0.333333333f;
+			rgv3DArrow[2].z = -0.881917103f;
 
-	rgv3DArrow[3].tu = 0;
-	rgv3DArrow[3].tv = 1.0f;
-	rgv3DArrow[3].x = -0.333333333f;
-	rgv3DArrow[3].y = 0.333333333f;
-	rgv3DArrow[3].z = -0.881917103f;
+			rgv3DArrow[3].tu = 0;
+			rgv3DArrow[3].tv = 1.0f;
+			rgv3DArrow[3].x = -0.333333333f;
+			rgv3DArrow[3].y = 0.333333333f;
+			rgv3DArrow[3].z = -0.881917103f;
 
-	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+			m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
 
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
+			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
+			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
 
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
-	// Scale the orientation for Ball stretching
-	Matrix3 orientation;
-	orientation.Identity();
-	orientation.scaleX(m_BallStretchX);
-	orientation.scaleY(m_BallStretchY);
-	orientation.MultiplyMatrix(&orientation, &pball->m_orientation);
+			// Scale the orientation for Ball stretching
+			Matrix3 orientation;
+			orientation.Identity();
+			orientation.scaleX(m_BallStretchX);
+			orientation.scaleY(m_BallStretchY);
+			orientation.MultiplyMatrix(&orientation, &pball->m_orientation);
 
-	if (pball->m_pinFront)
-	{
-		pball->m_pinFront->EnsureColorKey();
-		m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinFront->m_pdsBufferColorKey);
+			if (pball->m_pinFront)
+			{
+				pball->m_pinFront->EnsureColorKey();
+				m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinFront->m_pdsBufferColorKey);
 
-		for (int iPoint=0;iPoint<4;iPoint++)
-		{
-			const Vertex3Ds tmp = orientation.MultiplyVector(rgv3DArrow[iPoint]);
-			rgv3DArrowTransformed[iPoint].nx = tmp.x;
-			rgv3DArrowTransformed[iPoint].ny = tmp.y;
-			rgv3DArrowTransformed[iPoint].nz = tmp.z;
-			rgv3DArrowTransformed[iPoint].x = pball->x - tmp.x*pball->radius;
-			rgv3DArrowTransformed[iPoint].y = pball->y - tmp.y*pball->radius;
-			rgv3DArrowTransformed[iPoint].z = zheight  - tmp.z*pball->radius;
-			rgv3DArrowTransformed[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinFront->m_maxtu;
-			rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinFront->m_maxtv;
-		}
+				for (int iPoint=0;iPoint<4;iPoint++)
+				{
+					const Vertex3Ds tmp = orientation.MultiplyVector(rgv3DArrow[iPoint]);
+					rgv3DArrowTransformed[iPoint].nx = tmp.x;
+					rgv3DArrowTransformed[iPoint].ny = tmp.y;
+					rgv3DArrowTransformed[iPoint].nz = tmp.z;
+					rgv3DArrowTransformed[iPoint].x = pball->x - tmp.x*pball->radius;
+					rgv3DArrowTransformed[iPoint].y = pball->y - tmp.y*pball->radius;
+					rgv3DArrowTransformed[iPoint].z = zheight  - tmp.z*pball->radius;
+					rgv3DArrowTransformed[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinFront->m_maxtu;
+					rgv3DArrowTransformed[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinFront->m_maxtv;
+				}
 		m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed, 4, (LPWORD)rgi0123, 4, NULL);
-	}
+			}
 
-	orientation.Identity();
-	orientation.scaleX(m_BallStretchX);
-	orientation.scaleY(m_BallStretchY);
-	orientation.MultiplyMatrix(&orientation, &pball->m_orientation);
-	if (pball->m_pinBack)
-	{
-		// Other side of ball
-		pball->m_pinBack->EnsureColorKey();
-		m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinBack->m_pdsBufferColorKey);
+			orientation.Identity();
+			orientation.scaleX(m_BallStretchX);
+			orientation.scaleY(m_BallStretchY);
+			orientation.MultiplyMatrix(&orientation, &pball->m_orientation);
+			if (pball->m_pinBack)
+			{
+				// Other side of ball
+				pball->m_pinBack->EnsureColorKey();
+				m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinBack->m_pdsBufferColorKey);
 
-		for (int iPoint=0;iPoint<4;iPoint++)
-		{
-			rgv3DArrow[iPoint].x = -rgv3DArrow[iPoint].x;
-			rgv3DArrow[iPoint].z = -rgv3DArrow[iPoint].z;
-			const Vertex3Ds tmp = orientation.MultiplyVector(rgv3DArrow[iPoint]);
-			rgv3DArrowTransformed2[iPoint].nx = tmp.x;
-			rgv3DArrowTransformed2[iPoint].ny = tmp.y;
-			rgv3DArrowTransformed2[iPoint].nz = tmp.z;
-			rgv3DArrowTransformed2[iPoint].x = pball->x - tmp.x*pball->radius;
-			rgv3DArrowTransformed2[iPoint].y = pball->y - tmp.y*pball->radius;
-			rgv3DArrowTransformed2[iPoint].z = zheight  - tmp.z*pball->radius;
-			rgv3DArrowTransformed2[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinBack->m_maxtu;
-			rgv3DArrowTransformed2[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinBack->m_maxtv;
-		}
+				for (int iPoint=0;iPoint<4;iPoint++)
+				{
+					rgv3DArrow[iPoint].x = -rgv3DArrow[iPoint].x;
+					rgv3DArrow[iPoint].z = -rgv3DArrow[iPoint].z;
+					const Vertex3Ds tmp = orientation.MultiplyVector(rgv3DArrow[iPoint]);
+					rgv3DArrowTransformed2[iPoint].nx = tmp.x;
+					rgv3DArrowTransformed2[iPoint].ny = tmp.y;
+					rgv3DArrowTransformed2[iPoint].nz = tmp.z;
+					rgv3DArrowTransformed2[iPoint].x = pball->x - tmp.x*pball->radius;
+					rgv3DArrowTransformed2[iPoint].y = pball->y - tmp.y*pball->radius;
+					rgv3DArrowTransformed2[iPoint].z = zheight  - tmp.z*pball->radius;
+					rgv3DArrowTransformed2[iPoint].tu = rgv3DArrow[iPoint].tu * pball->m_pinBack->m_maxtu;
+					rgv3DArrowTransformed2[iPoint].tv = rgv3DArrow[iPoint].tv * pball->m_pinBack->m_maxtv;
+				}
 
 		m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed2, 4, (LPWORD)rgi0123, 4, NULL);
-	}
+			}
    if (pball->m_pinFront && (m_ptable->m_layback > 0))
       m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3DArrowTransformed, NULL, NULL, 4, fFalse);
    if (pball->m_pinBack && (m_ptable->m_layback > 0))
