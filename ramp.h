@@ -124,18 +124,19 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	PinTable *m_ptable;
 
 	RampData m_d;
-   int rampVertex;
-   Vertex3D_NoTex2 *rgvbuf;
-   WORD *rgibuf;
-   WORD *invrgibuf;
+	int rampVertex;
+	Vertex3D_NoTex2 *rgvbuf;
+	WORD *rgibuf;
+	WORD *invrgibuf;
 
-   VertexBuffer *staticVertexBuffer;
-   VertexBuffer *dynamicVertexBuffer;
-		
+	VertexBuffer *staticVertexBuffer;
+	VertexBuffer *dynamicVertexBuffer;
+	BOOL dynamicVertexBufferRegenerate;
+
 	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
-   void prepareHabitrail(RenderDevice* pd3dDevice );
-   void prepareStatic(RenderDevice* _pd3dDevice);
+	void prepareHabitrail(RenderDevice* pd3dDevice );
+	void prepareStatic(RenderDevice* _pd3dDevice);
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
