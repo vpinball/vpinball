@@ -1665,15 +1665,12 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
             pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-            pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+            g_pplayer->m_pin3d.EnableAlphaTestReference(0x00000001);
             pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
             pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
          }
 
-         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+         g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
          // Check if this is an acrylic.
@@ -1682,10 +1679,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
             // Set a high threshold for writing transparent pixels to the z buffer.  
             // This allows some of the ball's pixels to write when under the ramp... 
             // giving the illusion of transparency (screen door). 
-            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-            pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD) 127);
-            pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-
+            g_pplayer->m_pin3d.EnableAlphaTestReference(127);
             // Make sure our textures tile.
             pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 
@@ -2654,16 +2648,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
          pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 
-         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-         pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-         pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-
+         g_pplayer->m_pin3d.EnableAlphaTestReference(0x00000001);
          pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
          pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
 
-         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+         g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
          g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );

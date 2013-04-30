@@ -221,8 +221,7 @@ public:
 
 	void SetMaterial(const float l, const float a);
 	void SetColorKeyEnabled(const BOOL fColorKey) const;
-	void SetAlphaEnabled(const BOOL fAlpha) const;
-	void SetFiltersLinear() const;
+	void EnableAlphaTestReference(DWORD alphaRefValue) const;
 
 	// Handy functions for creating obj frames
 
@@ -293,4 +292,5 @@ public:
 	LightProjected m_lightproject;
 
 	float m_maxSeparation, m_ZPD;
+   D3DVIEWPORT7 vp;
 	};

@@ -2850,18 +2850,13 @@ void Player::DrawBallShadows()
 	m_pin3d.m_pd3dDevice->SetMaterial((Material*)&shadowmtrl);
 
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE );
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x0000001);
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-
+   m_pin3d.EnableAlphaTestReference(0x0000001);
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
 
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
+   m_pin3d.SetColorKeyEnabled(FALSE);
 
 	m_pin3d.m_pd3dDevice->SetTexture(0, m_pin3d.m_pddsShadowTexture);
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);// WRAP
@@ -3007,7 +3002,7 @@ void Player::DrawBallLogo(Ball * const pball, Material *mtrl)
 
 			m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
 
-			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
+         g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
@@ -3082,10 +3077,7 @@ void Player::DrawBalls()
 
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
 
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x0000001);
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-
+   m_pin3d.EnableAlphaTestReference( 0x0000001 );
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	//m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
@@ -3145,7 +3137,7 @@ void Player::DrawBalls()
 
 		if (m_fBallAntialias)
 		{
-			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, FALSE);
+         m_pin3d.SetColorKeyEnabled(FALSE);
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
@@ -3153,7 +3145,7 @@ void Player::DrawBalls()
 		}
 		else
 		{
-			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+			m_pin3d.SetColorKeyEnabled(TRUE);
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
 			m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_NONE);
 		}

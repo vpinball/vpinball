@@ -740,16 +740,11 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
          pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
          pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-
-         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
-         pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-         pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-
+         g_pplayer->m_pin3d.EnableAlphaTestReference(0x00000001);
          pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
          pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 
 
-         pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+         g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
          g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
