@@ -705,8 +705,7 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 			//pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 			//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
 			ppin3d->SetColorKeyEnabled(fFalse);
-			ppin3d->SetFiltersLinear();
-			ppin3d->SetAlphaEnabled(fTrue);
+         ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
 				
          pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0xe0);
@@ -851,11 +850,8 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
         
         // reset device 
         
-        pd3dDevice->SetTexture(ePictureTexture, NULL);
-		pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-		pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-		pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
-
+      pd3dDevice->SetTexture(ePictureTexture, NULL);
+      ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
       pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 		pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);

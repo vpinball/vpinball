@@ -554,7 +554,7 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
 		pin->EnsureColorKey();
 		pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
 
-		pd3dDevice->SetRenderState( RenderDevice::COLORKEYENABLE, FALSE);
+      g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);
 		g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
 		pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
@@ -564,7 +564,7 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
 	else // No image by that name
 	{
 		pd3dDevice->SetTexture(ePictureTexture, NULL);
-		pd3dDevice->SetRenderState( RenderDevice::COLORKEYENABLE, FALSE);
+      g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);
 	}
 
 	// Check if we are in hardware.

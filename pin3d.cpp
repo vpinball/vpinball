@@ -95,8 +95,6 @@ void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi
 	{
 	// Get the width and height of the viewport. This is needed to scale the
 	// transformed vertices to fit the render window.
-	D3DVIEWPORT7 vp;
-	m_pd3dDevice->GetViewport( &vp );
 	const float rClipWidth  = vp.dwWidth*0.5f;
 	const float rClipHeight = vp.dwHeight*0.5f;
 	const int xoffset = vp.dwX;
@@ -139,8 +137,6 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * co
 	{
 	// Get the width and height of the viewport. This is needed to scale the
 	// transformed vertices to fit the render window.
-	D3DVIEWPORT7 vp;
-	m_pd3dDevice->GetViewport( &vp );
 	const float rClipWidth  = vp.dwWidth*0.5f;
 	const float rClipHeight = vp.dwHeight*0.5f;
 	const int xoffset = vp.dwX;
@@ -183,8 +179,6 @@ void Pin3D::TransformVertices(const Vertex3D_NoLighting * const rgv, const WORD 
 	{
 	// Get the width and height of the viewport. This is needed to scale the
 	// transformed vertices to fit the render window.
-	D3DVIEWPORT7 vp;
-	m_pd3dDevice->GetViewport( &vp );
 	const float rClipWidth  = vp.dwWidth*0.5f;
 	const float rClipHeight = vp.dwHeight*0.5f;
 	const int xoffset = vp.dwX;
@@ -226,8 +220,6 @@ void Pin3D::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi
 	{
 	// Get the width and height of the viewport. This is needed to scale the
 	// transformed vertices to fit the render window.
-	D3DVIEWPORT7 vp;
-	m_pd3dDevice->GetViewport( &vp );
 	const float rClipWidth  = vp.dwWidth*0.5f;
 	const float rClipHeight = vp.dwHeight*0.5f;
 	const int xoffset = vp.dwX;
@@ -757,8 +749,12 @@ HRESULT Pin3D::Create3DDevice(const GUID * const pDeviceGUID)
    //}
 */
    // Finally, set the viewport for the newly created device
-   D3DVIEWPORT7 vp = { 0, 0, m_dwRenderWidth, m_dwRenderHeight, 0.0f, 1.0f };
-
+   vp.dwX=0;
+   vp.dwY=0;
+   vp.dwWidth=m_dwRenderWidth;
+   vp.dwHeight=m_dwRenderHeight;
+   vp.dvMinZ=0.0f;
+   vp.dvMaxZ=1.0f;
    if( FAILED(hr = m_pd3dDevice->SetViewport( &vp ) ) )
    {
       ShowError("Could not set viewport.");
@@ -946,7 +942,7 @@ void Pin3D::InitRenderState() const
 	m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
    m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP/*WRAP*/);
-   m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, TRUE);
+   g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
 
    m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
    m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
@@ -1139,7 +1135,7 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	//m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_ALPHAARG2, D3DTA_CURRENT );
 	m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_TEXCOORDINDEX, 1 );
 	m_pd3dDevice->SetRenderState( RenderDevice::TEXTUREPERSPECTIVE, TRUE );
-	m_pd3dDevice->SetRenderState( RenderDevice::COLORKEYENABLE, FALSE );
+   g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);
 
 	//m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLOROP,   D3DTOP_DISABLE);
 
@@ -1520,7 +1516,7 @@ Texture* Pin3D::CreateShadow(const float z)
 
 void Pin3D::SetTexture(Texture* pddsTexture)
 	{
-	/*const HRESULT hr =*/ m_pd3dDevice->SetTexture(ePictureTexture, (pddsTexture == NULL) ? m_pddsLightWhite : pddsTexture);
+	   m_pd3dDevice->SetTexture(ePictureTexture, (pddsTexture == NULL) ? m_pddsLightWhite : pddsTexture);
 	}
 
 void Pin3D::EnableLightMap(const BOOL fEnable, const float z)
@@ -1558,16 +1554,12 @@ void Pin3D::SetColorKeyEnabled(const BOOL fColorKey) const
       m_pd3dDevice->SetRenderState(RenderDevice::COLORKEYENABLE, fColorKey);
 	}
 
-void Pin3D::SetAlphaEnabled(const BOOL fAlpha) const
+void Pin3D::EnableAlphaTestReference(DWORD alphaRefValue) const
 	{
-      m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, fAlpha);
-	}
-
-void Pin3D::SetFiltersLinear() const
-	{
-	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+      m_pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, alphaRefValue);
+      m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+      m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+      m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 	}
 
 void Pin3D::SetUpdatePos(const int left, const int top)
