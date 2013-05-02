@@ -739,8 +739,10 @@ void Light::RenderStatic(const RenderDevice* _pd3dDevice)
 
 	   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled()) {
 		   if(m_d.m_shape == ShapeCustom)
-		       pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, staticCustomVertex, staticCustomVertexNum, 0);
-	       else
+         {
+            pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, staticCustomVertex, staticCustomVertexNum, 0);
+         }
+         else
 	           pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, circleVertex, 32, (LPWORD)rgiLightStatic1, 32, 0);
 	   }
 
@@ -834,25 +836,26 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
       m_pobjframe[i] = new ObjFrame();
 
       ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
+      for( int t=0; t<customMoverVertexNum; t+=3 )
+      {
+         if (m_fBackglass)
+         {
+            SetDiffuseFromMaterial(&customMoverVertex[i][t], 3, &mtrl);
+            if( GetPTable()->GetDecalsEnabled() )
+               pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DTRANSFORMED_VERTEX, &customMoverVertex[i][t], 3, (LPWORD)rgi0123, 3, 0);
+         }
+         else
+            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, &customMoverVertex[i][t], 3, (LPWORD)rgi0123, 3, 0);
 
-	  if ( (!m_fBackglass) || GetPTable()->GetDecalsEnabled() )
-	  {
-		  if (m_fBackglass)
-		      SetDiffuseFromMaterial(customMoverVertex[i], customMoverVertexNum, &mtrl);
-		  pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, m_fBackglass ? MY_D3DTRANSFORMED_VERTEX : MY_D3DFVF_VERTEX, customMoverVertex[i], customMoverVertexNum, 0);
-	  }
+         ppin3d->ExpandExtents(&m_pobjframe[i]->rc, &customMoverVertex[i][t], NULL, NULL, 3, m_fBackglass);
+      }
 
-      if((i != LightStateOff) && (!m_d.m_EnableLighting))
-	      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-	  
-	  ppin3d->ExpandExtents(&m_pobjframe[i]->rc, customMoverVertex[i], NULL, NULL, customMoverVertexNum, m_fBackglass);
-
-	  for (int iedit=0; iedit<m_ptable->m_vedit.Size(); iedit++)
-	  {
-		  IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
-		  if ((pie->GetItemType() == eItemDecal) && (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc)))
-			  pie->GetIHitable()->RenderStatic(pd3dDevice);
-	  }
+      for (int iedit=0; iedit<m_ptable->m_vedit.Size(); iedit++)
+      {
+         IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
+         if ((pie->GetItemType() == eItemDecal) && (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc)))
+            pie->GetIHitable()->RenderStatic(pd3dDevice);
+      }
 
       ppin3d->SetTexture(ppin3d->m_pddsLightTexture);	
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
