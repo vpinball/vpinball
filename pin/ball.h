@@ -73,6 +73,9 @@ public:
 	Vertex3Ds m_hitnormal[5];// 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
 
    Vertex3D_NoTex2 vertices[4];
+   Vertex3D_NoTex2 logoVertices[4];
+
+   VertexBuffer *vertexBuffer;
 
 	BallAnimObject m_ballanim;
 
