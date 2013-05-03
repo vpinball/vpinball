@@ -55,9 +55,11 @@ public:
 	void Render();
     void RenderDynamics();
 
-	void DrawBallShadows();
+   void DrawBallShadow(Ball * const pball);
+   void CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
 	void DrawBalls();
-    void DrawBallLogo(Ball * const pball, Material *mtrl);
+   void DrawBallLogo(Ball * const pball, Material *mtrl);
+   void CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
 
 	void DrawAlphas();
 

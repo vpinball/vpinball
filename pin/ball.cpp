@@ -14,6 +14,7 @@ Ball::Ball()
 	m_pballex = NULL;
 	m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
 	m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
+   vertexBuffer=0;
 	}
 
 Ball::~Ball()	
@@ -23,6 +24,11 @@ Ball::~Ball()
 
 void Ball::RenderSetup()
 {
+   if( vertexBuffer==0 )
+   {
+      // VB for normal ball and logo(front+back) and shadow
+      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+   }
    vertices[0].tu = 0;
    vertices[0].tv = 0;
    vertices[0].nx = 0;
@@ -58,6 +64,31 @@ void Ball::RenderSetup()
       vertices[2].tv = m_pin->m_maxtv;
       vertices[1].tu = m_pin->m_maxtu;
    }
+
+   logoVertices[0].tu = 0;
+   logoVertices[0].tv = 0;
+   logoVertices[0].x = -0.333333333f;
+   logoVertices[0].y = -0.333333333f;
+   logoVertices[0].z = -0.881917103f;
+
+   logoVertices[1].tu = 1.0f;
+   logoVertices[1].tv = 0;
+   logoVertices[1].x = 0.333333333f;
+   logoVertices[1].y = -0.333333333f;
+   logoVertices[1].z = -0.881917103f;
+
+   logoVertices[2].tu = 1.0f;
+   logoVertices[2].tv = 1.0f;
+   logoVertices[2].x = 0.333333333f;
+   logoVertices[2].y = 0.333333333f;
+   logoVertices[2].z = -0.881917103f;
+
+   logoVertices[3].tu = 0;
+   logoVertices[3].tv = 1.0f;
+   logoVertices[3].x = -0.333333333f;
+   logoVertices[3].y = 0.333333333f;
+   logoVertices[3].z = -0.881917103f;
+
 
    m_rgv3DShadow[0].tu = 0;
    m_rgv3DShadow[0].tv = 0;
