@@ -28,9 +28,9 @@ PinInput::PinInput()
 	uShockType = 0;
 	fe_message_sent = false;
 
-	m_plunger_axis = 0;
-	m_lr_axis = 0;
-	m_ud_axis = 0;
+	m_plunger_axis = 3;
+	m_lr_axis = 1;
+	m_ud_axis = 2;
 	m_plunger_reverse = 0;
 	m_lr_axis_reverse = 0;
 	m_ud_axis_reverse = 0;
@@ -314,6 +314,11 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 			{
 				ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
 				ppinput->uShockType = USHOCKTYPE_SIDEWINDER; //set type 3 = Microsoft SideWinder Freestyle Pro
+			}
+		else if (!WzSzStrCmp(dstr.wsz, "VirtuaPin Controller"))
+			{
+				ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
+				ppinput->uShockType = USHOCKTYPE_VIRTUAPIN; //set type 4 = VirtuaPin Controller
 			}
 		else 
 			{
@@ -917,7 +922,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 				const int updown = (input->dwData & 0x80)?DISPID_GameEvents_KeyDown:DISPID_GameEvents_KeyUp;
 				if (input->dwOfs == DIJOFS_BUTTON0)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // plunge
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // plunge
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
 					else if((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // coin 1
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
@@ -969,7 +974,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON1)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // right
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // right
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // coin 2
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
@@ -1021,7 +1026,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON2)
 				{
-					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_ULTRACADE)) && (m_override_default_buttons == 0))
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_ULTRACADE) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0))
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave ] );} // right2
 					else
 						{	if (m_joylflipkey == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
@@ -1071,7 +1076,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON3)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // volume down
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // volume down
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
 					else
 						{	if (m_joylflipkey == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
@@ -1121,7 +1126,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON4)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // volume up
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // volume up
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeUp] );}
 					else
 						{	if (m_joylflipkey == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
@@ -1221,7 +1226,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON6)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // pause menu
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // pause menu
 						{	if( DISPID_GameEvents_KeyDown == updown ) g_pplayer->m_fCloseDown = fTrue;}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // volume down
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );}
@@ -1285,6 +1290,10 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{	FireKeyEvent( DISPID_GameEvents_KeyUp,g_pplayer->m_rgKeys[eExitGame ] );  
 									exit_stamp = 0;
 						}	}	}
+					else if	((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_override_default_buttons == 0)) // exit
+						{	if( DISPID_GameEvents_KeyDown == updown ) 
+										{g_pplayer->m_fCloseDown = fTrue;}
+						}
 					else
 						{	if (m_joylflipkey == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
 							if (m_joyrflipkey == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
@@ -1333,7 +1342,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON8)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0))
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0))
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1391,7 +1400,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON9)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0))	// left
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0))	// left
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
 					else
 						{	if (m_joylflipkey == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
@@ -1441,7 +1450,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON10)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0))	// left 2
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0))	// left 2
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave ] );}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // right
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );}
@@ -1493,7 +1502,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON11)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // coin 1
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // coin 1
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey] );}
 					else
 						{	if (m_joylflipkey == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
@@ -1543,7 +1552,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 
 			else if (input->dwOfs == DIJOFS_BUTTON12)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0)) // coin 2
+					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // coin 2
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // start
 						{ // Check if we can allow the start (table is done initializing).
@@ -2155,7 +2164,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
 								if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
 								if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
-								if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_lr_axis != 0))
+								if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_lr_axis != 0))
 								{
 									g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match Pinball Wizard
 								}
@@ -2232,7 +2241,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
 								if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
 								if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
-								if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_ud_axis != 0))
+								if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_ud_axis != 0))
 								{
 									g_pplayer->UltraNudgeY(u.i, joyk); //rotate to match Pinball Wizard
 								}
@@ -2311,6 +2320,10 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 								{															// disabled. If override isn't used, uses default assignment
 									g_pplayer->mechPlungerIn(-u.i);							// of the Z axis.
 								}
+							}
+							if ((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_plunger_axis != 0))
+							{
+								g_pplayer->mechPlungerIn(-u.i);
 							}
 							if (((m_lr_axis == 3) || (m_ud_axis == 3)) && (uShockType == USHOCKTYPE_GENERIC))
 							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
