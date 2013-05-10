@@ -6,12 +6,18 @@
 
 Primitive::Primitive()
 {
-   vertexBuffer=0;
+   vertexBuffer = 0;
    vertexBufferRegenerate = true;
 } 
 
 Primitive::~Primitive() 
 {
+	if(vertexBuffer)
+	{
+		vertexBuffer->release();
+		vertexBuffer = 0;
+		//vertexBufferRegenerate = true;
+	}
 }
 
 HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -228,6 +234,12 @@ void Primitive::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
 void Primitive::EndPlay()
 {
+	if(vertexBuffer)
+	{
+		vertexBuffer->release();
+		vertexBuffer = 0;
+		vertexBufferRegenerate = true;
+	}
 }
 
 //////////////////////////////
@@ -1589,7 +1601,6 @@ STDMETHODIMP Primitive::put_RotAndTraType2(RotAndTraTypeEnum newVal)
 STDMETHODIMP Primitive::get_RotAndTraType3(RotAndTraTypeEnum *pVal)
 {
    *pVal = m_d.m_aRotAndTraTypes[3];
-   // slintf("get: %d \n", m_d.m_aRotAndTraTypes[3]);
 
    return S_OK;
 }
@@ -1599,7 +1610,6 @@ STDMETHODIMP Primitive::put_RotAndTraType3(RotAndTraTypeEnum newVal)
    STARTUNDO
 
    m_d.m_aRotAndTraTypes[3] = newVal;
-   // slintf("put: %d \n", m_d.m_aRotAndTraTypes[3]);
    vertexBufferRegenerate = true;
 
    STOPUNDO
