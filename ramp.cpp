@@ -26,6 +26,7 @@ Ramp::~Ramp()
 	if(dynamicVertexBuffer) {
 		dynamicVertexBuffer->release();
 		dynamicVertexBuffer = 0;
+		//dynamicVertexBufferRegenerate = true;
 
 		delete [] rgvbuf;
         delete [] rgibuf;
@@ -1041,6 +1042,7 @@ void Ramp::EndPlay()
 	if(dynamicVertexBuffer) {
 		dynamicVertexBuffer->release();
 		dynamicVertexBuffer = 0;
+		dynamicVertexBufferRegenerate = true;
 
 		delete [] rgvbuf;
         delete [] rgibuf;
