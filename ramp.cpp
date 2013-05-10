@@ -1615,7 +1615,7 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
       Vertex2D *rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
       const int numVertices = (rampVertex-1)*4;
       pd3dDevice->createVertexBuffer(numVertices*5, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
-      NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex);     
+      NumVideoBytes += numVertices*5*sizeof(Vertex3D_NoTex);     
 
       delete[] rgv;
       delete[] rgheight;
