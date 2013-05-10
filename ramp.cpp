@@ -11,13 +11,26 @@ Ramp::Ramp()
    m_d.m_fCollidable = fTrue;
    m_d.m_IsVisible = fTrue;
    //invalidationRectCalculated = false;
-   staticVertexBuffer=0;
-   dynamicVertexBuffer=0;
+   staticVertexBuffer = 0;
+   dynamicVertexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
 }
 
 Ramp::~Ramp()
 {
+	if(staticVertexBuffer) {
+		staticVertexBuffer->release();
+		staticVertexBuffer = 0;
+	}
+
+	if(dynamicVertexBuffer) {
+		dynamicVertexBuffer->release();
+		dynamicVertexBuffer = 0;
+
+		delete [] rgvbuf;
+        delete [] rgibuf;
+        delete [] invrgibuf;
+	}
 }
 
 HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -285,12 +298,8 @@ void Ramp::Render(Sur * const psur)
 
    psur->Polygon(rgv, cvertex*2);
    for (int i=0;i<cvertex;i++)
-   {
       if (pfCross[i])
-      {
          psur->Line(rgv[i].x, rgv[i].y, rgv[cvertex*2 - i - 1].x, rgv[cvertex*2 - i - 1].y);
-      }
-   }
 
    if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
    {
@@ -412,9 +421,7 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
          float * const rgheight2 = new float[cvertex];
 
          for (int i=0;i<cvertex;i++)
-         {
             rgheight2[i] = rgheight1[cvertex - i - 1];
-         }
 
          if (m_d.m_type != RampType1Wire)
             psur->PolylineSkew(rgv, cvertex, rgheight1, 0, 0);
@@ -423,19 +430,15 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 
          for (int i=0;i<cvertex;i++)
          {
-            rgheight1[i]  += 44.0f;
+            rgheight1[i] += 44.0f;
             rgheight2[i] += 44.0f;
          }
 
          if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-         {
             psur->PolylineSkew(rgv, cvertex, rgheight1, 0, 0);
-         }
 
          if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-         {
             psur->PolylineSkew(&rgv[cvertex], cvertex, rgheight2, 0, 0);
-         }
 
          delete [] rgheight2;
       }
@@ -817,9 +820,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
             ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
             if (m_d.m_type == RampTypeFlat)
-            {
                ph3dpoly->m_fVisible = fTrue;
-            }
 
             pvho->AddElement(ph3dpoly);
 
@@ -827,9 +828,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
             ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 
             if (ph3dpolyOld)
-            {
                CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
-            }
 
             ph3dpolyOld = ph3dpoly;
          }
@@ -845,9 +844,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
          if (m_d.m_type == RampTypeFlat)
-         {
             ph3dpoly->m_fVisible = fTrue;
-         }
 
          pvho->AddElement(ph3dpoly);
 
@@ -1033,8 +1030,22 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 
 void Ramp::EndPlay()
 {
-   IEditable::EndPlay();
-   m_vhoCollidable.RemoveAllElements();
+    IEditable::EndPlay();
+    m_vhoCollidable.RemoveAllElements();
+
+   	if(staticVertexBuffer) {
+		staticVertexBuffer->release();
+		staticVertexBuffer = 0;
+	}
+
+	if(dynamicVertexBuffer) {
+		dynamicVertexBuffer->release();
+		dynamicVertexBuffer = 0;
+
+		delete [] rgvbuf;
+        delete [] rgibuf;
+        delete [] invrgibuf;
+	}
 }
 
 static const WORD rgicrosssection[] = {
@@ -1144,10 +1155,10 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
 
    rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
    const int numVertices = rampVertex*32;
-   pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX_VERTEX, &staticVertexBuffer);
+   pd3dDevice->createVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX_VERTEX, &staticVertexBuffer);
    NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex);
    Vertex3D_NoTex *buf;
-   staticVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS );
+   staticVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
 
    Vertex3D_NoTex rgv3D[32];
    offset=0;
@@ -1581,9 +1592,6 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
 void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
-   Vertex2D *rgv=0;
-   float *rgheight,*rgratio;
-   int offset=0;
 
    if( !staticVertexBuffer && m_d.m_IsVisible && !m_d.m_fAlpha )
    {
@@ -1592,31 +1600,28 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
          || m_d.m_type == RampType2Wire 
          || m_d.m_type == RampType3WireLeft 
          || m_d.m_type == RampType3WireRight)
-      {
          prepareHabitrail( pd3dDevice );
-      }
       else
-      {
          prepareStatic( pd3dDevice );
-      }
-      return;
+
+	  return;
    }
 
    if( !dynamicVertexBuffer && m_d.m_IsVisible && m_d.m_fAlpha )
    {
-      rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
-      int numVertices=(rampVertex-1)*4*5;
-      pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+      float *rgheight,*rgratio;
+      Vertex2D *rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
+      const int numVertices = (rampVertex-1)*4;
+      pd3dDevice->createVertexBuffer(numVertices*5, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
       NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex);     
-
-      numVertices=(rampVertex-1)*4;
-      rgvbuf = new Vertex3D_NoTex2[numVertices];
-      rgibuf = new WORD[(rampVertex-1)*6];
-      invrgibuf = new WORD[(rampVertex-1)*6];
 
       delete[] rgv;
       delete[] rgheight;
       delete[] rgratio;
+
+	  rgvbuf = new Vertex3D_NoTex2[numVertices];
+      rgibuf = new WORD[(rampVertex-1)*6];
+      invrgibuf = new WORD[(rampVertex-1)*6];
    }
 }
 
@@ -1644,9 +1649,9 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
       float maxtu = 0, maxtv = 0;
 
       Material mtrl;
-      mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-         mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-         mtrl.power = 0;
+      mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a =
+      mtrl.emissive.r = mtrl.emissive.g = mtrl.emissive.b = mtrl.emissive.a =
+      mtrl.power = 0;
       mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
       if (pin)
@@ -1674,7 +1679,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
          // Check if this is an acrylic.
-         if  (m_d.m_fAcrylic)
+         if (m_d.m_fAcrylic)
          {
             // Set a high threshold for writing transparent pixels to the z buffer.  
             // This allows some of the ball's pixels to write when under the ramp... 
@@ -1692,8 +1697,8 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
          }
 
          mtrl.diffuse.r = mtrl.ambient.r =
-            mtrl.diffuse.g = mtrl.ambient.g =
-            mtrl.diffuse.b = mtrl.ambient.b = 1.0f;			
+         mtrl.diffuse.g = mtrl.ambient.g =
+         mtrl.diffuse.b = mtrl.ambient.b = 1.0f;			
       }
       else
       {
@@ -1708,10 +1713,8 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
 
       pd3dDevice->SetMaterial(&mtrl);
       int offset=0;
-      for (int i=0;i<(rampVertex-1);i++,offset+=4)
-      {
+      for (int i=0; i<(rampVertex-1); i++,offset+=4)
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, staticVertexBuffer, offset, 4, (LPWORD)rgi0123, 4, 0 );
-      }
 
       if (pin && !m_d.m_fImageWalls)
       {
@@ -1957,7 +1960,7 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(RVIS))
    {
-      pbr->GetBool(&m_d.m_IsVisible);///////////////////////////
+      pbr->GetBool(&m_d.m_IsVisible);
    }
    else if (id == FID(MSTE))
    {
@@ -2676,7 +2679,6 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       pd3dDevice->SetMaterial(&mtrl);
 
 	  int numVertices;
-      int offset=0;
 
 	  if(dynamicVertexBufferRegenerate)
 	  {
@@ -2693,7 +2695,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		  const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
 
 		  numVertices=(rampVertex-1)*4;
-		  offset=0;
+		  int offset=0;
 		  for (int i=0;i<(rampVertex-1);i++)
 		  {
 			  Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
@@ -2879,7 +2881,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 	  else
 		  numVertices=(rampVertex-1)*4;
 
-      offset=0;
+      int offset=0;
       pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
       offset+=numVertices;
 

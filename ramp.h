@@ -135,7 +135,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 
 	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
-	void prepareHabitrail(RenderDevice* pd3dDevice );
+	void prepareHabitrail(RenderDevice* pd3dDevice);
 	void prepareStatic(RenderDevice* _pd3dDevice);
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 

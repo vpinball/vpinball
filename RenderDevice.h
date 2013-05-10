@@ -185,4 +185,8 @@ public:
       }
       return true;
    }
+   bool release(void)
+   {
+	   this->Release();
+   }
 };
