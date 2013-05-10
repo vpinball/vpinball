@@ -8,18 +8,24 @@ int NumBallsInitted()
 }
 
 Ball::Ball()
-	{
+{
 	_balls_created++;
 	m_pho = NULL;
 	m_pballex = NULL;
 	m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
 	m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
-   vertexBuffer=0;
-	}
+    vertexBuffer = 0;
+}
 
 Ball::~Ball()	
 {
 	_balls_created--; //Added by JEP.  Need to keep track of number of balls on table for autostart to work.
+
+	if(vertexBuffer)
+	{
+		vertexBuffer->release();
+		vertexBuffer = 0;
+	}
 }
 
 void Ball::RenderSetup()
@@ -89,7 +95,6 @@ void Ball::RenderSetup()
    logoVertices[3].y = 0.333333333f;
    logoVertices[3].z = -0.881917103f;
 
-
    m_rgv3DShadow[0].tu = 0;
    m_rgv3DShadow[0].tv = 0;
    m_rgv3DShadow[0].nx = 0;
@@ -113,11 +118,10 @@ void Ball::RenderSetup()
    m_rgv3DShadow[3].nx = 0;
    m_rgv3DShadow[3].ny = 0;
    m_rgv3DShadow[3].nz = -1.0f;
-
 }
 
 void Ball::Init()
-	{
+{
 	// Only called by real balls, not temporary objects created for physics/rendering
 	collisionMass = 1.0f;
 	m_orientation.Identity();
@@ -180,25 +184,24 @@ void Ball::Init()
 		lstrcpy(m_szImageBack, g_pplayer->m_ptable->m_szBallImageBack);
 		m_pinBack = g_pplayer->m_ptable->GetImage(m_szImageBack);
 		}
-   RenderSetup();
-	}
+
+	RenderSetup();
+}
 
 
 void Ball::EnsureOMObject()
-	{
+{
 	if (m_pballex)
-		{
 		return;
-		}
 
 	CComObject<BallEx>::CreateInstance(&m_pballex);
 	m_pballex->AddRef();
 
 	m_pballex->m_pball = this;
-	}
+}
  
 void Ball::CalcBoundingRect()
-	{
+{
 	const float dx = fabsf(vx);
 	const float dy = fabsf(vy);
 
@@ -262,11 +265,10 @@ void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elastic
 
 	const Vertex3Ds vnormal(phitnormal->x, phitnormal->y, 0.0f); //??? contact point
 	AngularAcceleration(&vnormal);	//calc new rolling dynamics
-	}
-
+}
 
 void Ball::Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elasticity, float antifriction, float scatter_angle)
-	{
+{
 	float dot = vx * phitnormal->x + vy * phitnormal->y + vz * phitnormal->z; //speed normal to wall
 
 	if (dot >= -C_LOWNORMVEL )								// nearly receding ... make sure of conditions
@@ -320,11 +322,10 @@ void Ball::Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elast
 		}
 
 	AngularAcceleration(phitnormal);	 // calc new rolling dynmaics
-	}
-
+}
 
 float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
-	{	
+{	
 	const float dvx = vx - pball->vx;		// delta velocity 
 	const float dvy = vy - pball->vy;
 	float dvz = vz - pball->vz;
@@ -410,11 +411,11 @@ float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phi
 	m_HitRigid = true;					//rigid collision type
 
 	return hittime;	
-	}
+}
 
 
 void Ball::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
-	{
+{
 	if (pball->fFrozen) 
 		return;
 
@@ -480,10 +481,10 @@ void Ball::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	pball->vy += impulse2 * vnormal.y;
 	pball->vz += impulse2 * vnormal.z;
 	pball->m_fDynamic = C_DYNAMIC;
-	}
+}
 
 void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
-	{
+{
 	const Vertex3Ds bccpd(
 		-radius * phitnormal->x,
 		-radius * phitnormal->y,
@@ -561,19 +562,19 @@ void Ball::AngularAcceleration(const Vertex3Ds * const phitnormal)
 	m_angularmomentum.Add(vResult); // add delta 
 
 	m_angularvelocity = m_inverseworldinertiatensor.MultiplyVector(m_angularmomentum);
-	}
+}
 
 void Ball::CalcHitRect()
-	{
-	}
+{
+}
 
 void BallAnimObject::UpdateDisplacements(const float dtime)
-	{
+{
 	m_pball->UpdateDisplacements(dtime);
-	}
+}
 
 void Ball::UpdateDisplacements(const float dtime)
-	{    	
+{    	
 	if (!fFrozen)
 		{
 		const float dsx = vx * dtime;
@@ -645,15 +646,15 @@ void Ball::UpdateDisplacements(const float dtime)
 
         m_angularvelocity = m_inverseworldinertiatensor.MultiplyVector(m_angularmomentum);
 		}
-	}
+}
 
 void BallAnimObject::UpdateVelocities()
-	{
+{
 	m_pball->UpdateVelocities();
-	}
+}
 
 void Ball::UpdateVelocities()
-	{
+{
 	const float g = g_pplayer->m_gravity.z;
 	float nx = g_pplayer->m_NudgeX;
 	float ny = g_pplayer->m_NudgeY;
@@ -702,4 +703,4 @@ void Ball::UpdateVelocities()
 	m_fDynamic = C_DYNAMIC;		// always set .. after adding velocity
 
 	CalcBoundingRect();
-	}
+}
