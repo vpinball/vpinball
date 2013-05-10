@@ -23,7 +23,7 @@ public:
 	~Ball();
 
 	void Init();
-   void RenderSetup();
+    void RenderSetup();
 
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
@@ -72,10 +72,10 @@ public:
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
 	Vertex3Ds m_hitnormal[5];// 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
 
-   Vertex3D_NoTex2 vertices[4];
-   Vertex3D_NoTex2 logoVertices[4];
+    Vertex3D_NoTex2 vertices[4];
+    Vertex3D_NoTex2 logoVertices[4];
 
-   VertexBuffer *vertexBuffer;
+    VertexBuffer *vertexBuffer;
 
 	BallAnimObject m_ballanim;
 
