@@ -489,18 +489,18 @@ void Primitive::CopyOriginalVertices()
          wIndicesAll[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides + 2 + i;
          wIndicesAll[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides + tmp2;
          // sides
-         wIndicesAll[12 * (i + m_d.m_Sides)    ]  = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 1]  = m_d.m_Sides*2 + 2 + i;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 2]  = m_d.m_Sides*3 + 2 + i;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 3]  = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 4]  = m_d.m_Sides*3 + 2 + i;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 5]  = m_d.m_Sides*3 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 6]  = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 7]  = m_d.m_Sides*3 + 2 + i;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 8]  = m_d.m_Sides*2 + 2 + i;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 9]  = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 10] = m_d.m_Sides*3 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 11] = m_d.m_Sides*3 + 2 + i;
+         wIndicesAll[12 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 1] = m_d.m_Sides*2 + 2 + i;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 2] = m_d.m_Sides*3 + 2 + i;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 3] = m_d.m_Sides*2 + tmp2;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 4] = m_d.m_Sides*3 + 2 + i;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 5] = m_d.m_Sides*3 + tmp2;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 6] = m_d.m_Sides*2 + tmp2;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 7] = m_d.m_Sides*3 + 2 + i;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 8] = m_d.m_Sides*2 + 2 + i;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 9] = m_d.m_Sides*2 + tmp2;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 10]= m_d.m_Sides*3 + tmp2;
+         wIndicesAll[12 * (i + m_d.m_Sides) + 11]= m_d.m_Sides*3 + 2 + i;
       }
    } else {
       // yes: draw everything twice
@@ -516,16 +516,16 @@ void Primitive::CopyOriginalVertices()
          const int tmp2 = tmp+1;
          // bottom
          wIndicesAll[3 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
-         wIndicesAll[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + tmp2;
          wIndicesAll[3 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 2 + i;
+         wIndicesAll[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + tmp2;
 
          // sides
-         wIndicesAll[6 * (i + m_d.m_Sides)    ]  = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 2]  = m_d.m_Sides*2 + 2 + i;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 1]  = m_d.m_Sides*3 + 2 + i;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 3]  = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 5]  = m_d.m_Sides*3 + 2 + i;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 4]  = m_d.m_Sides*3 + tmp2;
+         wIndicesAll[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
+         wIndicesAll[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides*3 + 2 + i;
+         wIndicesAll[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides*2 + 2 + i;
+         wIndicesAll[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides*2 + tmp2;
+         wIndicesAll[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides*3 + tmp2;
+         wIndicesAll[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides*3 + 2 + i;
       }
    }
 }
@@ -570,7 +570,7 @@ void Primitive::SortVertices()
       // top and bottom
       for (int i = 0; i < m_d.m_Sides * 2; i++)
       {
-         // this is wrong!
+         //!! this is wrong!
          fDepth[i] = 
             zMultiplicator*rgv3DAll[wIndicesAll[i*3  ]].z+
             zMultiplicator*rgv3DAll[wIndicesAll[i*3+1]].z+
@@ -587,12 +587,12 @@ void Primitive::SortVertices()
       {
          fDepth[i] = 
             (rgv3DAll[wIndicesAll[i*6  ]].z+
-            rgv3DAll[wIndicesAll[i*6+1]].z+
-            rgv3DAll[wIndicesAll[i*6+2]].z) 
+             rgv3DAll[wIndicesAll[i*6+1]].z+
+             rgv3DAll[wIndicesAll[i*6+2]].z) 
             * zM13 +
             (rgv3DAll[wIndicesAll[i*6  ]].y+
-            rgv3DAll[wIndicesAll[i*6+1]].y+
-            rgv3DAll[wIndicesAll[i*6+2]].y) 
+             rgv3DAll[wIndicesAll[i*6+1]].y+
+             rgv3DAll[wIndicesAll[i*6+2]].y) 
             * yM13;
       }
 
@@ -602,17 +602,17 @@ void Primitive::SortVertices()
       {
          fDepth[i*2] = 
             (rgv3DAll[wIndicesAll[i*12  ]].z+
-            rgv3DAll[wIndicesAll[i*12+1]].z)
+             rgv3DAll[wIndicesAll[i*12+1]].z)
             * zM05 +
             (rgv3DAll[wIndicesAll[i*12  ]].y+
-            rgv3DAll[wIndicesAll[i*12+1]].y)
+             rgv3DAll[wIndicesAll[i*12+1]].y)
             * yM05;
          fDepth[i*2+1] = 
             (rgv3DAll[wIndicesAll[i*12  ]].z+
-            rgv3DAll[wIndicesAll[i*12+1]].z)
+             rgv3DAll[wIndicesAll[i*12+1]].z)
             * zM05 +
             (rgv3DAll[wIndicesAll[i*12  ]].y+
-            rgv3DAll[wIndicesAll[i*12+1]].y)
+             rgv3DAll[wIndicesAll[i*12+1]].y)
             * yM05;
       }
    }
@@ -650,7 +650,7 @@ void Primitive::SortVertices()
          else
             inc = (int)((float)inc*(float)(1.0/2.2));
       }
-   } //else {
+   } //else { //!! this is missing completely!!???
    //}
 }
 
@@ -790,13 +790,13 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		  vertexBuffer->unlock();
 	  }
 
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, wIndicesAll, 24*m_d.m_Sides,0 );
+      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, wIndicesAll, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
 /*      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 
          MY_D3DFVF_NOTEX2_VERTEX,
          rgv3DAll, 
          m_d.m_Sides*4 + 2,
          wIndicesAll, 
-         24*m_d.m_Sides,
+         m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides,
          0);*/
    }
 }
@@ -827,7 +827,7 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
    CalculateRealTimeOriginal();
 }
 
-//seems to be called to set up the initial backbuffer
+// called to set up the initial backbuffer
 void Primitive::RenderStatic(const RenderDevice* pd3dDevice)
 {
 }
