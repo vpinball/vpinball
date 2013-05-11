@@ -25,6 +25,8 @@ Ball::~Ball()
 	{
 		vertexBuffer->release();
 		vertexBuffer = 0;
+
+		NumVideoBytes -= 4*4*sizeof(Vertex3D_NoTex2);
 	}
 }
 
@@ -34,7 +36,9 @@ void Ball::RenderSetup()
    {
       // VB for normal ball and logo(front+back) and shadow
       g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+	  NumVideoBytes += 4*4*sizeof(Vertex3D_NoTex2);
    }
+
    vertices[0].tu = 0;
    vertices[0].tv = 0;
    vertices[0].nx = 0;
