@@ -10,6 +10,7 @@ int NumBallsInitted()
 Ball::Ball()
 {
 	_balls_created++;
+
 	m_pho = NULL;
 	m_pballex = NULL;
 	m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
@@ -21,13 +22,13 @@ Ball::~Ball()
 {
 	_balls_created--; //Added by JEP.  Need to keep track of number of balls on table for autostart to work.
 
-	if(vertexBuffer)
+	/*if(vertexBuffer) //!! this crashes sometimes, might be due to getting the data copied from somewhere else that still needs it afterwards
 	{
 		vertexBuffer->release();
 		vertexBuffer = 0;
 
 		NumVideoBytes -= 4*4*sizeof(Vertex3D_NoTex2);
-	}
+	}*/
 }
 
 void Ball::RenderSetup()
