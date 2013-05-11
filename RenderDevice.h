@@ -187,7 +187,7 @@ public:
    }
    bool release(void)
    {
-	   if ( FAILED(this->Release()) )
+	  if ( FAILED(this->Release()) )
       {
          return false;
       }

@@ -1151,22 +1151,20 @@ static const WORD rgiRampStatic1[4] = {0,3,2,1};
 
 void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
 {
-   Vertex2D *rgv=0;
    float *rgheight,*rgratio;
-   int offset=0;
+   Vertex2D *rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
 
-   rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
    const int numVertices = rampVertex*32;
    pd3dDevice->createVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX_VERTEX, &staticVertexBuffer);
    NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex);
+
    Vertex3D_NoTex *buf;
    staticVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
 
-   Vertex3D_NoTex rgv3D[32];
-   offset=0;
-
+   int offset=0;
    for (int i=0;i<rampVertex;i++)
    {
+      Vertex3D_NoTex rgv3D[32];
       rgv3D[0].x = -3.0f;
       rgv3D[0].y = -3.0f;
       rgv3D[0].z = 0;
@@ -1632,7 +1630,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
    if (!m_d.m_IsVisible) return;		// return if no Visible
 
-   // dont render alpha shaded ramps into static buffer
+   // dont render alpha shaded ramps into static buffer, these are done per frame later-on
    if (m_d.m_fAlpha && g_pvp->m_pdd.m_fHardwareAccel) return;
 
    if (m_d.m_type == RampType4Wire 
@@ -1675,6 +1673,8 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
             g_pplayer->m_pin3d.EnableAlphaTestReference(0x00000001);
             pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
             pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
+		    if(m_d.m_fAddBlend)
+		        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
          }
 
          g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
@@ -1750,9 +1750,10 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
       }
 
       ppin3d->SetTexture(NULL);
-   }
 
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+   }
 }
 
 void Ramp::RenderMovers(const RenderDevice* pd3dDevice)
@@ -2656,7 +2657,9 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
          g_pplayer->m_pin3d.EnableAlphaTestReference(0x00000001);
          pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
+		 pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
+		 if(m_d.m_fAddBlend)
+		     pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
 
          g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
@@ -2811,7 +2814,6 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 				  rgvbuf[i*4+j].nz = -rgvbuf[i*4+j].nz;
 			  }
 		  }
-
 		  memcpy( &buf[offset], rgvbuf, sizeof(Vertex3D_NoTex2)*numVertices );
 		  offset+=numVertices;
 
@@ -2913,7 +2915,8 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       offset+=numVertices;
 
       ppin3d->SetTexture(NULL);
-   }
 
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+   }
 }
