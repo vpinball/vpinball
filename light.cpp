@@ -566,6 +566,7 @@ void Light::PrepareStaticCustom()
 
 	  delete vtri.ElementAt(t);
    }
+   delete[] rgv;
 }
 
 void Light::PrepareMoversCustom()
