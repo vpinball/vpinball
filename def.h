@@ -454,6 +454,10 @@ inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 class Matrix3
 {
 public:
+   Matrix3()
+   {
+      Identity();
+   }
 
    inline void scaleX(const float factor)
    {
