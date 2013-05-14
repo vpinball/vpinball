@@ -656,7 +656,7 @@ int PinInput::started()
 	}
 
 	// Are there more balls on the table than what was loaded?
-	if ( (NumBallsInitted() - PinTable::NumStartBalls()) > 0 )
+   if ( (Ball::GetBallsInUse() - PinTable::NumStartBalls()) > 0 )
 	{
 		pressed_start = 1;
 		return 1;

@@ -272,6 +272,10 @@ Player::~Player()
 		delete pball;
 		}
 	m_vball.RemoveAllElements();
+   if ( Ball::vertexBuffer!=0 )
+   {
+      Ball::vertexBuffer->release();
+   }
 
 #ifdef LOG
 	if (m_flog)
@@ -2658,9 +2662,12 @@ void Player::Render()
 
 		// Draw the framerate.
       int len2 = sprintf_s(szFoo, " FPS: %d FPS(avg): %d", m_fps,m_fpsAvg/m_fpsCount);
-		for(int l = len2; l < len+1; ++l)
-			szFoo[l] = ' ';
-		TextOut(hdcNull, 10, 10, szFoo, len);
+      if( len2>=0 )
+      {
+         for(int l = len2; l < len+1; ++l)
+            szFoo[l] = ' ';
+         TextOut(hdcNull, 10, 10, szFoo, len);
+      }
 
 		period = msec()-stamp;
 		if( period > m_max ) m_max = period;
@@ -3057,7 +3064,6 @@ void Player::DrawBalls()
 	for (int i=0;i<m_vball.Size();i++)
 	{
 		Ball * const pball = m_vball.ElementAt(i);
-
 		float radiusX = pball->radius * m_BallStretchX;
 		float radiusY = pball->radius * m_BallStretchY;
 

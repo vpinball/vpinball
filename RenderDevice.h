@@ -185,12 +185,8 @@ public:
       }
       return true;
    }
-   bool release(void)
+   ULONG release(void)
    {
-	  if ( FAILED(this->Release()) )
-      {
-         return false;
-      }
-      return true;
+      return this->Release();
    }
 };
