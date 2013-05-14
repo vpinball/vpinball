@@ -126,6 +126,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	RampData m_d;
 	int rampVertex;
 	Vertex3D_NoTex2 *rgvbuf;
+   Vertex2D *rgv;    // just for setup/static drawing
+   float *rgheight,*rgratio;
+
 	WORD *rgibuf;
 	WORD *invrgibuf;
 
