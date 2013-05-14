@@ -22,6 +22,7 @@ public:
 	Ball();
 	~Ball();
 
+   static int GetBallsInUse();
 	void Init();
     void RenderSetup();
 
@@ -72,10 +73,10 @@ public:
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
 	Vertex3Ds m_hitnormal[5];// 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
 
-    Vertex3D_NoTex2 vertices[4];
-    Vertex3D_NoTex2 logoVertices[4];
+   Vertex3D_NoTex2 vertices[4];
+   Vertex3D_NoTex2 logoVertices[4];
 
-    VertexBuffer *vertexBuffer;
+   static VertexBuffer *vertexBuffer;
 
 	BallAnimObject m_ballanim;
 
@@ -109,6 +110,9 @@ public:
 	bool m_fErase;		// set after the ball has been drawn for the first time
 
 	bool fFrozen;
+   
+   static int ballsInUse;
+
 	};
 
 inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)

@@ -1,45 +1,39 @@
 #include "stdafx.h"
 
-static int _balls_created;
+int Ball::ballsInUse=0;
+VertexBuffer *Ball::vertexBuffer=0;
 
-int NumBallsInitted()
+int Ball::GetBallsInUse()
 {
-    return _balls_created;
+    return ballsInUse;
 }
 
 Ball::Ball()
 {
-	_balls_created++;
+	ballsInUse++;
+
+   // only use one vertex buffer for all balls
+   if( vertexBuffer==0 )
+   {
+      // VB for normal ball and logo(front+back) and shadow
+      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+      NumVideoBytes += 4*4*sizeof(Vertex3D_NoTex2);
+   }
 
 	m_pho = NULL;
 	m_pballex = NULL;
 	m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
 	m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
-    vertexBuffer = 0;
+   fFrozen=false;
 }
 
 Ball::~Ball()	
 {
-	_balls_created--; //Added by JEP.  Need to keep track of number of balls on table for autostart to work.
-
-	/*if(vertexBuffer) //!! this crashes sometimes, might be due to getting the data copied from somewhere else that still needs it afterwards
-	{
-		vertexBuffer->release();
-		vertexBuffer = 0;
-
-		NumVideoBytes -= 4*4*sizeof(Vertex3D_NoTex2);
-	}*/
+	ballsInUse--; //Added by JEP.  Need to keep track of number of balls on table for autostart to work.
 }
 
 void Ball::RenderSetup()
 {
-   if( vertexBuffer==0 )
-   {
-      // VB for normal ball and logo(front+back) and shadow
-      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
-	  NumVideoBytes += 4*4*sizeof(Vertex3D_NoTex2);
-   }
-
    vertices[0].tu = 0;
    vertices[0].tv = 0;
    vertices[0].nx = 0;
