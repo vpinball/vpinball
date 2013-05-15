@@ -278,11 +278,11 @@ void Ramp::PreRender(Sur * const psur)
    psur->SetObject(this);
 
    int cvertex;
-   Vertex2D * const rgv = GetRampVertex(cvertex, NULL, NULL, NULL);
+   Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL);
 
-   psur->Polygon(rgv, cvertex*2);
+   psur->Polygon(rgvLocal, cvertex*2);
 
-   delete [] rgv;
+   delete [] rgvLocal;
 }
 
 void Ramp::Render(Sur * const psur)
@@ -295,25 +295,25 @@ void Ramp::Render(Sur * const psur)
 
    int cvertex;
    bool *pfCross;
-   Vertex2D * const rgv = GetRampVertex(cvertex, NULL, &pfCross, NULL);
+   Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL);
 
-   psur->Polygon(rgv, cvertex*2);
+   psur->Polygon(rgvLocal, cvertex*2);
    for (int i=0;i<cvertex;i++)
       if (pfCross[i])
-         psur->Line(rgv[i].x, rgv[i].y, rgv[cvertex*2 - i - 1].x, rgv[cvertex*2 - i - 1].y);
+         psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex*2 - i - 1].x, rgvLocal[cvertex*2 - i - 1].y);
 
    if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
    {
       psur->SetLineColor(RGB(0,0,0),false,3);
-      psur->Polyline(rgv, cvertex);
+      psur->Polyline(rgvLocal, cvertex);
    }
    if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
    {
       psur->SetLineColor(RGB(0,0,0),false,3);
-      psur->Polyline(&rgv[cvertex], cvertex);
+      psur->Polyline(&rgvLocal[cvertex], cvertex);
    }
 
-   delete [] rgv;
+   delete [] rgvLocal;
    delete [] pfCross;
 
    bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) );
@@ -361,19 +361,19 @@ void Ramp::RenderOutline(Sur * const psur)
 
    int cvertex;
    bool *pfCross;
-   Vertex2D * const rgv = GetRampVertex(cvertex, NULL, &pfCross, NULL);
+   Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL);
 
-   psur->Polygon(rgv, cvertex*2);
+   psur->Polygon(rgvLocal, cvertex*2);
 
    for (int i=0;i<cvertex;i++)
    {
       if (pfCross[i])
       {
-         psur->Line(rgv[i].x, rgv[i].y, rgv[cvertex*2 - i - 1].x, rgv[cvertex*2 - i - 1].y);
+         psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex*2 - i - 1].x, rgvLocal[cvertex*2 - i - 1].y);
       }
    }
 
-   delete [] rgv;
+   delete [] rgvLocal;
    delete [] pfCross;
 }
 
@@ -394,7 +394,7 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 
    float *rgheight1;
    int cvertex;
-   Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight1, NULL, NULL);
+   Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL);
 
    // Find the range of vertices to draw a shadow for
    int startvertex = cvertex;
@@ -425,9 +425,9 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
             rgheight2[i] = rgheight1[cvertex - i - 1];
 
          if (m_d.m_type != RampType1Wire)
-            psur->PolylineSkew(rgv, cvertex, rgheight1, 0, 0);
+            psur->PolylineSkew(rgvLocal, cvertex, rgheight1, 0, 0);
 
-         psur->PolylineSkew(&rgv[cvertex], cvertex, rgheight2, 0, 0);
+         psur->PolylineSkew(&rgvLocal[cvertex], cvertex, rgheight2, 0, 0);
 
          for (int i=0;i<cvertex;i++)
          {
@@ -436,10 +436,10 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
          }
 
          if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-            psur->PolylineSkew(rgv, cvertex, rgheight1, 0, 0);
+            psur->PolylineSkew(rgvLocal, cvertex, rgheight1, 0, 0);
 
          if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-            psur->PolylineSkew(&rgv[cvertex], cvertex, rgheight2, 0, 0);
+            psur->PolylineSkew(&rgvLocal[cvertex], cvertex, rgheight2, 0, 0);
 
          delete [] rgheight2;
       }
@@ -450,8 +450,8 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 
          for (int i=0;i<range;i++)
          {
-            rgv2[i] = rgv[i + startvertex];
-            rgv2[range*2 - i - 1] = rgv[cvertex*2 - i - 1 - startvertex];
+            rgv2[i] = rgvLocal[i + startvertex];
+            rgv2[range*2 - i - 1] = rgvLocal[cvertex*2 - i - 1 - startvertex];
             rgheight2[i] = rgheight1[i + startvertex];
             rgheight2[range*2 - i - 1] = rgheight1[i + startvertex];
          }
@@ -463,7 +463,7 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
       }
    }
 
-   delete [] rgv;
+   delete [] rgvLocal;
    delete [] rgheight1;
 }
 
@@ -471,26 +471,26 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 {
    float *rgheight1;
    int cvertex;
-   const Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight1, NULL, NULL);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL);
 
    for (int i=0;i<cvertex;i++)
    {
       {
          Vertex3Ds * const pv = new Vertex3Ds();
-         pv->x = rgv[i].x;
-         pv->y = rgv[i].y;
+         pv->x = rgvLocal[i].x;
+         pv->y = rgvLocal[i].y;
          pv->z = rgheight1[i]+50.0f; // leave room for ball
          pvvertex3D->AddElement(pv);
       }
 
       Vertex3Ds * const pv = new Vertex3Ds();
-      pv->x = rgv[cvertex*2-i-1].x;
-      pv->y = rgv[cvertex*2-i-1].y;
+      pv->x = rgvLocal[cvertex*2-i-1].x;
+      pv->y = rgvLocal[cvertex*2-i-1].y;
       pv->z = rgheight1[i]+50.0f; // leave room for ball
       pvvertex3D->AddElement(pv);
    }
 
-   delete [] rgv;
+   delete [] rgvLocal;
    delete [] rgheight1;
 }
 
@@ -500,7 +500,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    GetRgVertex(&vvertex);
 
    const int cvertex = vvertex.Size();
-   Vertex2D * const rgv = new Vertex2D[cvertex * 2];
+   Vertex2D * const rgvLocal = new Vertex2D[cvertex * 2];
    if (ppheight)
    {
       *ppheight = new float[cvertex];
@@ -590,8 +590,8 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
                const float intersectx = (B*F-E*C)*inv_det;
                const float intersecty = (C*D-A*F)*inv_det;
 
-               //rgv[i].x = intersectx;
-               //rgv[i].y = intersecty;
+               //rgvLocal[i].x = intersectx;
+               //rgvLocal[i].y = intersecty;
 
                //vnormal = Calc2DNormal(pv1, pv2);
 
@@ -624,10 +624,10 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
          (*ppratio)[i] = percentage;
       }
 
-      rgv[i].x = pvmiddle->x + vnormal.x * (widthcur*0.5f);
-      rgv[i].y = pvmiddle->y + vnormal.y * (widthcur*0.5f);
-      rgv[cvertex*2 - i - 1].x = pvmiddle->x - vnormal.x * (widthcur*0.5f);
-      rgv[cvertex*2 - i - 1].y = pvmiddle->y - vnormal.y * (widthcur*0.5f);
+      rgvLocal[i].x = pvmiddle->x + vnormal.x * (widthcur*0.5f);
+      rgvLocal[i].y = pvmiddle->y + vnormal.y * (widthcur*0.5f);
+      rgvLocal[cvertex*2 - i - 1].x = pvmiddle->x - vnormal.x * (widthcur*0.5f);
+      rgvLocal[cvertex*2 - i - 1].y = pvmiddle->y - vnormal.y * (widthcur*0.5f);
    }
 
    if (ppfCross)
@@ -644,7 +644,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    }
 
    pcvertex = cvertex;
-   return rgv;
+   return rgvLocal;
 }
 
 void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
@@ -718,7 +718,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 
    int cvertex;
    float *rgheight1;
-   Vertex2D * const rgv = GetRampVertex(cvertex, &rgheight1, NULL, NULL);
+   Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL);
 
    float wallheightright, wallheightleft;
 
@@ -759,10 +759,10 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    {
       for (int i=0;i<(cvertex-1);i++)
       {
-         const Vertex2D * const pv1 = (i>0) ? &rgv[i-1] : NULL;
-         const Vertex2D * const pv2 = &rgv[i];
-         const Vertex2D * const pv3 = &rgv[i+1];
-         const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgv[i+2] : NULL;
+         const Vertex2D * const pv1 = (i>0) ? &rgvLocal[i-1] : NULL;
+         const Vertex2D * const pv2 = &rgvLocal[i];
+         const Vertex2D * const pv3 = &rgvLocal[i+1];
+         const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[i+2] : NULL;
 
 #ifndef RAMPTEST
          AddLine(pvho, pv2, pv3, pv1, rgheight1[i], rgheight1[i+1]+wallheightright);
@@ -778,10 +778,10 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    {
       for (int i=0;i<(cvertex-1);i++)
       {
-         const Vertex2D * const pv1 = (i>0) ? &rgv[cvertex + i - 1] : NULL;
-         const Vertex2D * const pv2 = &rgv[cvertex + i];
-         const Vertex2D * const pv3 = &rgv[cvertex + i + 1];
-         const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgv[cvertex + i + 2] : NULL;
+         const Vertex2D * const pv1 = (i>0) ? &rgvLocal[cvertex + i - 1] : NULL;
+         const Vertex2D * const pv2 = &rgvLocal[cvertex + i];
+         const Vertex2D * const pv3 = &rgvLocal[cvertex + i + 1];
+         const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[cvertex + i + 2] : NULL;
 
 #ifndef RAMPTEST
          AddLine(pvho, pv2, pv3, pv1, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
@@ -804,10 +804,10 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 
       for (int i=0;i<(cvertex-1);i++)
       {
-         pv1 = &rgv[i];
-         pv2 = &rgv[cvertex*2 - i - 1];
-         pv3 = &rgv[cvertex*2 - i - 2];
-         pv4 = &rgv[i+1];
+         pv1 = &rgvLocal[i];
+         pv2 = &rgvLocal[cvertex*2 - i - 1];
+         pv3 = &rgvLocal[cvertex*2 - i - 2];
+         pv4 = &rgvLocal[i+1];
 
          {
             Vertex3Ds * const rgv3D = new Vertex3Ds[3];
@@ -874,10 +874,10 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 
    for (int i=0; i<(cvertex-1); i++)
    {
-      const Vertex2D * const pv1 = &rgv[i];
-      const Vertex2D * const pv2 = &rgv[cvertex*2 - i - 1];
-      const Vertex2D * const pv3 = &rgv[cvertex*2 - i - 2];
-      const Vertex2D * const pv4 = &rgv[i+1];
+      const Vertex2D * const pv1 = &rgvLocal[i];
+      const Vertex2D * const pv2 = &rgvLocal[cvertex*2 - i - 1];
+      const Vertex2D * const pv3 = &rgvLocal[cvertex*2 - i - 2];
+      const Vertex2D * const pv4 = &rgvLocal[i+1];
 
       {
          Vertex3Ds * const rgv3D = new Vertex3Ds[3];
@@ -913,7 +913,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    }
 #endif
    delete [] rgheight1;
-   delete [] rgv;
+   delete [] rgvLocal;
 }
 
 void Ramp::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -1249,13 +1249,13 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       const int p3 = (i==(rampVertex-1)) ? i : (i+1);
       const int p4 = rampVertex*2 - i - 1; //!! ?? *2 valid?
 
-      Vertex3Ds vacross(rgv[p4].x - rgv[p2].x, rgv[p4].y - rgv[p2].y, 0.0f);
+      Vertex3Ds vacross(rgvInit[p4].x - rgvInit[p2].x, rgvInit[p4].y - rgvInit[p2].y, 0.0f);
 
       // The vacross vector is our local up vector.  Rotate the cross-section
       // later to match this up
       vacross.Normalize();
 
-      Vertex3Ds tangent(rgv[p3].x - rgv[p1].x, rgv[p3].y - rgv[p1].y, rgheight[p3] - rgheight[p1]);
+      Vertex3Ds tangent(rgvInit[p3].x - rgvInit[p1].x, rgvInit[p3].y - rgvInit[p1].y, rgheightInit[p3] - rgheightInit[p1]);
 
       // This is the vector describing the tangent to the ramp at this point
       tangent.Normalize();
@@ -1290,9 +1290,9 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
 
       for (int l=0;l<16;l++)
       {
-         rgv3D[l].x += (rgv[p2].x + rgv[p4].x)*0.5f;
-         rgv3D[l].y += (rgv[p2].y + rgv[p4].y)*0.5f;
-         rgv3D[l].z += rgheight[p2];
+         rgv3D[l].x += (rgvInit[p2].x + rgvInit[p4].x)*0.5f;
+         rgv3D[l].y += (rgvInit[p2].y + rgvInit[p4].y)*0.5f;
+         rgv3D[l].z += rgheightInit[p2];
       }
 
       if (i != 0)
@@ -1345,21 +1345,21 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
    for (int i=0;i<(rampVertex-1);i++)
    {
       Vertex3D_NoTex2 rgv3D[4];
-      rgv3D[0].x = rgv[i].x;
-      rgv3D[0].y = rgv[i].y;
-      rgv3D[0].z = rgheight[i];
+      rgv3D[0].x = rgvInit[i].x;
+      rgv3D[0].y = rgvInit[i].y;
+      rgv3D[0].z = rgheightInit[i];
 
-      rgv3D[3].x = rgv[i+1].x;
-      rgv3D[3].y = rgv[i+1].y;
-      rgv3D[3].z = rgheight[i+1];
+      rgv3D[3].x = rgvInit[i+1].x;
+      rgv3D[3].y = rgvInit[i+1].y;
+      rgv3D[3].z = rgheightInit[i+1];
 
-      rgv3D[2].x = rgv[rampVertex*2-i-2].x;
-      rgv3D[2].y = rgv[rampVertex*2-i-2].y;
-      rgv3D[2].z = rgheight[i+1];
+      rgv3D[2].x = rgvInit[rampVertex*2-i-2].x;
+      rgv3D[2].y = rgvInit[rampVertex*2-i-2].y;
+      rgv3D[2].z = rgheightInit[i+1];
 
-      rgv3D[1].x = rgv[rampVertex*2-i-1].x;
-      rgv3D[1].y = rgv[rampVertex*2-i-1].y;
-      rgv3D[1].z = rgheight[i];
+      rgv3D[1].x = rgvInit[rampVertex*2-i-1].x;
+      rgv3D[1].y = rgvInit[rampVertex*2-i-1].y;
+      rgv3D[1].z = rgheightInit[i];
 
       if (pin)
       {
@@ -1396,13 +1396,13 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
          else
          {
             rgv3D[0].tu = maxtu;
-            rgv3D[0].tv = rgratio[i] * maxtv;
+            rgv3D[0].tv = rgratioInit[i] * maxtv;
             rgv3D[1].tu = 0;
-            rgv3D[1].tv = rgratio[i] * maxtv;
+            rgv3D[1].tv = rgratioInit[i] * maxtv;
             rgv3D[2].tu = 0;
-            rgv3D[2].tv = rgratio[i+1] * maxtv;
+            rgv3D[2].tv = rgratioInit[i+1] * maxtv;
             rgv3D[3].tu = maxtu;
-            rgv3D[3].tv = rgratio[i+1] * maxtv;
+            rgv3D[3].tv = rgratioInit[i+1] * maxtv;
          }
       }
 
@@ -1415,21 +1415,21 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
    for (int i=0;i<(rampVertex-1);i++)
    {
       Vertex3D_NoTex2 rgv3D[4];
-      rgv3D[0].x = rgv[i].x;
-      rgv3D[0].y = rgv[i].y;
-      rgv3D[0].z = rgheight[i];
+      rgv3D[0].x = rgvInit[i].x;
+      rgv3D[0].y = rgvInit[i].y;
+      rgv3D[0].z = rgheightInit[i];
 
-      rgv3D[3].x = rgv[i+1].x;
-      rgv3D[3].y = rgv[i+1].y;
-      rgv3D[3].z = rgheight[i+1];
+      rgv3D[3].x = rgvInit[i+1].x;
+      rgv3D[3].y = rgvInit[i+1].y;
+      rgv3D[3].z = rgheightInit[i+1];
 
-      rgv3D[2].x = rgv[i+1].x;
-      rgv3D[2].y = rgv[i+1].y;
-      rgv3D[2].z = rgheight[i+1] + m_d.m_rightwallheightvisible;
+      rgv3D[2].x = rgvInit[i+1].x;
+      rgv3D[2].y = rgvInit[i+1].y;
+      rgv3D[2].z = rgheightInit[i+1] + m_d.m_rightwallheightvisible;
 
-      rgv3D[1].x = rgv[i].x;
-      rgv3D[1].y = rgv[i].y;
-      rgv3D[1].z = rgheight[i] + m_d.m_rightwallheightvisible;
+      rgv3D[1].x = rgvInit[i].x;
+      rgv3D[1].y = rgvInit[i].y;
+      rgv3D[1].z = rgheightInit[i] + m_d.m_rightwallheightvisible;
 
       if (pin && m_d.m_fImageWalls)
       {
@@ -1467,9 +1467,9 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
          else
          {
             rgv3D[0].tu = maxtu;
-            rgv3D[0].tv = rgratio[i] * maxtv;
+            rgv3D[0].tv = rgratioInit[i] * maxtv;
             rgv3D[2].tu = maxtu;
-            rgv3D[2].tv = rgratio[i+1] * maxtv;
+            rgv3D[2].tv = rgratioInit[i+1] * maxtv;
 
             rgv3D[1].tu = rgv3D[0].tu;
             rgv3D[1].tv = rgv3D[0].tv;
@@ -1493,21 +1493,21 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
    for (int i=0;i<(rampVertex-1);i++)
    {
       Vertex3D_NoTex2 rgv3D[4];
-      rgv3D[0].x = rgv[rampVertex*2-i-2].x;
-      rgv3D[0].y = rgv[rampVertex*2-i-2].y;
-      rgv3D[0].z = rgheight[i+1];
+      rgv3D[0].x = rgvInit[rampVertex*2-i-2].x;
+      rgv3D[0].y = rgvInit[rampVertex*2-i-2].y;
+      rgv3D[0].z = rgheightInit[i+1];
 
-      rgv3D[3].x = rgv[rampVertex*2-i-1].x;
-      rgv3D[3].y = rgv[rampVertex*2-i-1].y;
-      rgv3D[3].z = rgheight[i];
+      rgv3D[3].x = rgvInit[rampVertex*2-i-1].x;
+      rgv3D[3].y = rgvInit[rampVertex*2-i-1].y;
+      rgv3D[3].z = rgheightInit[i];
 
-      rgv3D[2].x = rgv[rampVertex*2-i-1].x;
-      rgv3D[2].y = rgv[rampVertex*2-i-1].y;
-      rgv3D[2].z = rgheight[i] + m_d.m_leftwallheightvisible;
+      rgv3D[2].x = rgvInit[rampVertex*2-i-1].x;
+      rgv3D[2].y = rgvInit[rampVertex*2-i-1].y;
+      rgv3D[2].z = rgheightInit[i] + m_d.m_leftwallheightvisible;
 
-      rgv3D[1].x = rgv[rampVertex*2-i-2].x;
-      rgv3D[1].y = rgv[rampVertex*2-i-2].y;
-      rgv3D[1].z = rgheight[i+1] + m_d.m_leftwallheightvisible;
+      rgv3D[1].x = rgvInit[rampVertex*2-i-2].x;
+      rgv3D[1].y = rgvInit[rampVertex*2-i-2].y;
+      rgv3D[1].z = rgheightInit[i+1] + m_d.m_leftwallheightvisible;
 
       if (pin && m_d.m_fImageWalls)
       {
@@ -1545,9 +1545,9 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
          else
          {
             rgv3D[0].tu = 0;
-            rgv3D[0].tv = rgratio[i] * maxtv;
+            rgv3D[0].tv = rgratioInit[i] * maxtv;
             rgv3D[2].tu = 0;
-            rgv3D[2].tv = rgratio[i+1] * maxtv;
+            rgv3D[2].tv = rgratioInit[i+1] * maxtv;
 
             rgv3D[1].tu = rgv3D[0].tu;
             rgv3D[1].tv = rgv3D[0].tv;
@@ -1577,7 +1577,7 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 
 //   float *rgheight,*rgratio;
-   rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
+   rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit);
 
    if( !staticVertexBuffer && m_d.m_IsVisible && !m_d.m_fAlpha )
    {
@@ -1612,9 +1612,9 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
 
       }
    }
-   delete[] rgv;
-   delete[] rgheight;
-   delete[] rgratio;
+   delete[] rgvInit;
+   delete[] rgheightInit;
+   delete[] rgratioInit;
 }
 
 void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
@@ -2682,7 +2682,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
 
          float *rgheight, *rgratio;
-         const Vertex2D * const rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
+         const Vertex2D * const rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
 
          const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);
          const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
@@ -2692,20 +2692,20 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          for (int i=0;i<(rampVertex-1);i++)
          {
             Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
-            rgv3D[0].x = rgv[i].x;
-            rgv3D[0].y = rgv[i].y;
+            rgv3D[0].x = rgvLocal[i].x;
+            rgv3D[0].y = rgvLocal[i].y;
             rgv3D[0].z = rgheight[i];
 
-            rgv3D[3].x = rgv[i+1].x;
-            rgv3D[3].y = rgv[i+1].y;
+            rgv3D[3].x = rgvLocal[i+1].x;
+            rgv3D[3].y = rgvLocal[i+1].y;
             rgv3D[3].z = rgheight[i+1];
 
-            rgv3D[2].x = rgv[rampVertex*2-i-2].x;
-            rgv3D[2].y = rgv[rampVertex*2-i-2].y;
+            rgv3D[2].x = rgvLocal[rampVertex*2-i-2].x;
+            rgv3D[2].y = rgvLocal[rampVertex*2-i-2].y;
             rgv3D[2].z = rgheight[i+1];
 
-            rgv3D[1].x = rgv[rampVertex*2-i-1].x;
-            rgv3D[1].y = rgv[rampVertex*2-i-1].y;
+            rgv3D[1].x = rgvLocal[rampVertex*2-i-1].x;
+            rgv3D[1].y = rgvLocal[rampVertex*2-i-1].y;
             rgv3D[1].z = rgheight[i];
 
             if (pin)
@@ -2756,12 +2756,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          for (int i=0;i<(rampVertex-1);i++)
          {
             Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
-            rgv3D[2].x = rgv[i+1].x;
-            rgv3D[2].y = rgv[i+1].y;
+            rgv3D[2].x = rgvLocal[i+1].x;
+            rgv3D[2].y = rgvLocal[i+1].y;
             rgv3D[2].z = rgheight[i+1] + m_d.m_rightwallheightvisible;
 
-            rgv3D[1].x = rgv[i].x;
-            rgv3D[1].y = rgv[i].y;
+            rgv3D[1].x = rgvLocal[i].x;
+            rgv3D[1].y = rgvLocal[i].y;
             rgv3D[1].z = rgheight[i] + m_d.m_rightwallheightvisible;
 
             if (pin && m_d.m_fImageWalls)
@@ -2808,12 +2808,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          for (int i=0;i<(rampVertex-1);i++)
          {
             Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
-            rgv3D[0].x = rgv[rampVertex*2-i-2].x;
-            rgv3D[0].y = rgv[rampVertex*2-i-2].y;
+            rgv3D[0].x = rgvLocal[rampVertex*2-i-2].x;
+            rgv3D[0].y = rgvLocal[rampVertex*2-i-2].y;
             rgv3D[0].z = rgheight[i+1];
 
-            rgv3D[3].x = rgv[rampVertex*2-i-1].x;
-            rgv3D[3].y = rgv[rampVertex*2-i-1].y;
+            rgv3D[3].x = rgvLocal[rampVertex*2-i-1].x;
+            rgv3D[3].y = rgvLocal[rampVertex*2-i-1].y;
             rgv3D[3].z = rgheight[i];
 
             rgv3D[2].x = rgv3D[3].x;
@@ -2866,7 +2866,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
          dynamicVertexBuffer->unlock();
 
-         delete [] rgv;
+         delete [] rgvLocal;
          delete [] rgheight;
          delete [] rgratio;
       }
