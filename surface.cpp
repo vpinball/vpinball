@@ -1618,7 +1618,7 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 		const int cvertex = m_vdpoint.Size();
 
 		float miny = FLT_MAX;
-		int minyindex;
+		int minyindex=0;
 
 		// Find smallest y point - use it to connect with surrounding border
 		for (int i=0;i<cvertex;i++)

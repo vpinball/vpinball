@@ -275,6 +275,7 @@ Player::~Player()
    if ( Ball::vertexBuffer!=0 )
    {
       Ball::vertexBuffer->release();
+      Ball::vertexBuffer=0;
    }
 
 #ifdef LOG
@@ -861,6 +862,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		}
 
 	//----------------------------------------------------------------------------------
+   Ball::ballsInUse=0;
 	// Pre-render all non-changing elements such as 
 	// static walls, rails, backdrops, etc.
 	InitStatic(hwndProgress);
@@ -3097,19 +3099,24 @@ void Player::DrawBalls()
 
       // prepare the vertex buffer for all possible options (ball,logo,shadow)
       Vertex3D_NoTex2 *buf;
-      pball->vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
+      Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
       
       memcpy( buf, rgv3D, sizeof(Vertex3D_NoTex2)*4 );
+
       if( m_fBallShadows )
       {
          CalcBallShadow(pball, &buf[12]);
       }
 
+      // Mark ball rect as dirty for blitting to the screen
+      m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
+      m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3D, NULL, NULL, 4, fFalse);
+
       if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
       {
          CalcBallLogo(pball, &buf[4]);
       }
-      pball->vertexBuffer->unlock();
+      Ball::vertexBuffer->unlock();
 
       // now render the ball with the vertex buffer data
       if( m_fBallShadows && m_fBallAntialias )
@@ -3142,18 +3149,13 @@ void Player::DrawBalls()
 		}
 
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-
-
       m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
 
-		// Mark ball rect as dirty for blitting to the screen
-		m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
-		m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3D, NULL, NULL, 4, fFalse);
-      pball->m_fErase = true;
       if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
       {
          DrawBallLogo(pball, &mtrl);
       }
+      pball->m_fErase = true;
 
 		if (m_fBallShadows)
 		{
