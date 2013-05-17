@@ -6058,7 +6058,7 @@ void PinTable::ReImportImage(HWND hwndListView, PinImage *ppi, char *filename)
 		fBinary = fTrue;
 		}
 
-	PinBinary *ppb;
+	PinBinary *ppb=0;
 	if (fBinary)
 	{
 		ppb = new PinBinary();
@@ -6071,7 +6071,7 @@ void PinTable::ReImportImage(HWND hwndListView, PinImage *ppi, char *filename)
 
 	if (piT.m_pdsBuffer == NULL)
 	{
-		delete ppb;
+      if( ppb ) delete ppb;
 		return;
 	}
 

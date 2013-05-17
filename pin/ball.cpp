@@ -23,6 +23,9 @@ Ball::Ball()
 	m_pho = NULL;
 	m_pballex = NULL;
 	m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
+   m_pin=NULL;
+   m_pinBack=NULL;
+   m_pinFront=NULL;
 	m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    fFrozen=false;
 }
@@ -121,68 +124,68 @@ void Ball::RenderSetup()
 
 void Ball::Init()
 {
-	// Only called by real balls, not temporary objects created for physics/rendering
-	collisionMass = 1.0f;
-	m_orientation.Identity();
-	m_inversebodyinertiatensor.Identity((float)(5.0/2.0)/(radius*radius));
-	m_angularvelocity.Set(0,0,0);
-	m_angularmomentum.Set(0,0,0);
+   // Only called by real balls, not temporary objects created for physics/rendering
+   collisionMass = 1.0f;
+   m_orientation.Identity();
+   m_inversebodyinertiatensor.Identity((float)(5.0/2.0)/(radius*radius));
+   m_angularvelocity.Set(0,0,0);
+   m_angularmomentum.Set(0,0,0);
 
-	m_ballanim.m_pball = this;
+   m_ballanim.m_pball = this;
 
-	fFrozen = false;
+   fFrozen = false;
 
-	// world limits on ball displacements
-//	x_min = g_pplayer->m_ptable->m_left + radius;
-//	x_max = g_pplayer->m_ptable->m_right - radius;
-//	y_min = g_pplayer->m_ptable->m_top + radius;
-//	y_max = g_pplayer->m_ptable->m_bottom - radius;
-	z_min = g_pplayer->m_ptable->m_tableheight + radius;
-	z_max = g_pplayer->m_ptable->m_glassheight - radius;
+   // world limits on ball displacements
+   //	x_min = g_pplayer->m_ptable->m_left + radius;
+   //	x_max = g_pplayer->m_ptable->m_right - radius;
+   //	y_min = g_pplayer->m_ptable->m_top + radius;
+   //	y_max = g_pplayer->m_ptable->m_bottom - radius;
+   z_min = g_pplayer->m_ptable->m_tableheight + radius;
+   z_max = g_pplayer->m_ptable->m_glassheight - radius;
 
-	m_fErase = false;
+   m_fErase = false;
 
-	m_pho = NULL;
-	m_fDynamic = C_DYNAMIC; // assume dynamic
+   m_pho = NULL;
+   m_fDynamic = C_DYNAMIC; // assume dynamic
 
-	m_pballex = NULL;
+   m_pballex = NULL;
 
-	m_vpVolObjs = new VectorVoid;
+   m_vpVolObjs = new VectorVoid;
 
-	m_color = RGB(255,255,255);
-	
-	if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
-		{
-		m_szImage[0] = '\0';
-		m_pin = NULL;
-		}
-	else
-		{
-		lstrcpy(m_szImage, g_pplayer->m_ptable->m_szBallImage);
-		m_pin = g_pplayer->m_ptable->GetImage(m_szImage);
-		}
+   m_color = RGB(255,255,255);
 
-	if (g_pplayer->m_ptable->m_szBallImageFront[0] == '\0')
-		{
-		m_szImageFront[0] = '\0';
-		m_pinFront = NULL;
-		}
-	else
-		{
-		lstrcpy(m_szImageFront, g_pplayer->m_ptable->m_szBallImageFront);
-		m_pinFront = g_pplayer->m_ptable->GetImage(m_szImageFront);
-		}
+   if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
+   {
+      m_szImage[0] = '\0';
+      m_pin = NULL;
+   }
+   else
+   {
+      lstrcpy(m_szImage, g_pplayer->m_ptable->m_szBallImage);
+      m_pin = g_pplayer->m_ptable->GetImage(m_szImage);
+   }
 
-	if (g_pplayer->m_ptable->m_szBallImageBack[0] == '\0')
-		{
-		m_szImageBack[0] = '\0';
-		m_pinBack = NULL;
-		}
-	else
-		{
-		lstrcpy(m_szImageBack, g_pplayer->m_ptable->m_szBallImageBack);
-		m_pinBack = g_pplayer->m_ptable->GetImage(m_szImageBack);
-		}
+   if (g_pplayer->m_ptable->m_szBallImageFront[0] == '\0')
+   {
+      m_szImageFront[0] = '\0';
+      m_pinFront = NULL;
+   }
+   else
+   {
+      lstrcpy(m_szImageFront, g_pplayer->m_ptable->m_szBallImageFront);
+      m_pinFront = g_pplayer->m_ptable->GetImage(m_szImageFront);
+   }
+
+   if (g_pplayer->m_ptable->m_szBallImageBack[0] == '\0')
+   {
+      m_szImageBack[0] = '\0';
+      m_pinBack = NULL;
+   }
+   else
+   {
+      lstrcpy(m_szImageBack, g_pplayer->m_ptable->m_szBallImageBack);
+      m_pinBack = g_pplayer->m_ptable->GetImage(m_szImageBack);
+   }
 
 	RenderSetup();
 }

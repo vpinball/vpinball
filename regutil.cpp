@@ -2,7 +2,7 @@
 
 HRESULT GetRegString(char *szKey, char *szValue, void *szbuffer, DWORD size)
 	{
-	DWORD type;
+	DWORD type=REG_NONE;
 	HRESULT hr;
 
 	hr = GetRegValue(szKey, szValue, &type, szbuffer, size);
@@ -17,7 +17,7 @@ HRESULT GetRegString(char *szKey, char *szValue, void *szbuffer, DWORD size)
 
 HRESULT GetRegStringAsFloat(char *szKey, char *szValue, float *pfloat)
 	{
-	DWORD type;
+	DWORD type=REG_NONE;
 	char szbuffer[16];
 	const HRESULT hr = GetRegValue(szKey, szValue, &type, &szbuffer[0], 16);
 
@@ -46,7 +46,7 @@ HRESULT GetRegStringAsFloat(char *szKey, char *szValue, float *pfloat)
 
 HRESULT GetRegInt(char *szKey, char *szValue, int *pint)
 	{
-	DWORD type;
+	DWORD type=REG_NONE;
 	HRESULT hr;
 
 	hr = GetRegValue(szKey, szValue, &type, (void *)pint, 4);
@@ -74,7 +74,7 @@ HRESULT GetRegValue(char *szKey, char *szValue, DWORD *ptype, void *pvalue, DWOR
 	
 	if(RetVal == ERROR_SUCCESS)
 			{
-			DWORD type;
+			DWORD type=REG_NONE;
 
 			RetVal = RegQueryValueEx(hk, szValue, NULL, &type, (BYTE *)pvalue, &size);
 			
