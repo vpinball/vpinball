@@ -1,9 +1,6 @@
-// Ramp.cpp : Implementation of CVBATestApp and DLL registration.
-
 #include "StdAfx.h"
 
 /////////////////////////////////////////////////////////////////////////////
-//
 
 Ramp::Ramp()
 {
@@ -841,7 +838,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 
          Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3);
          ph3dpoly->m_elasticity = m_d.m_elasticity;
-         ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+         ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
          ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
          if (m_d.m_type == RampTypeFlat)
@@ -903,7 +900,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 
       Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3);
       ph3dpoly->m_elasticity = m_d.m_elasticity;
-      ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+      ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
       ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
       pvho->AddElement(ph3dpoly);
@@ -912,6 +909,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       ph3dpoly->m_fEnabled = m_d.m_fCollidable;
    }
 #endif
+
    delete [] rgheight1;
    delete [] rgvLocal;
 }
@@ -930,7 +928,7 @@ void Ramp::AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv
 
    Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4);
    ph3dpoly->m_elasticity = m_d.m_elasticity;
-   ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+   ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
    ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
    pvho->AddElement(ph3dpoly);
@@ -972,7 +970,7 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 {
    LineSeg * const plineseg = new LineSeg();
    plineseg->m_elasticity = m_d.m_elasticity;
-   plineseg->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+   plineseg->m_antifriction = 1.0f - m_d.m_friction;
    plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
 
    plineseg->m_pfe = NULL;
@@ -1002,7 +1000,7 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
       {
          Joint * const pjoint = new Joint();
          pjoint->m_elasticity = m_d.m_elasticity;
-         pjoint->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+         pjoint->m_antifriction = 1.0f - m_d.m_friction;
          pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
 
          pjoint->m_pfe = NULL;
@@ -1091,7 +1089,6 @@ static const WORD rgicrosssection[] = {
 void Ramp::RenderStaticHabitrail(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-   int offset=0;
 
    pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, TRUE);
 
@@ -1111,7 +1108,7 @@ void Ramp::RenderStaticHabitrail(const RenderDevice* _pd3dDevice)
       pd3dDevice->SetMaterial(&mtrl);
    }
 
-   offset=0;
+   int offset=0;
    for (int i=0;i<rampVertex;i++,offset+=32)
    {
       RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 0, 16);
@@ -1308,11 +1305,9 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
 
 void Ramp::prepareStatic(RenderDevice* pd3dDevice)
 {
-//   Vertex2D *rgv=0;
 //   float *rgheight,*rgratio;
-   int offset=0;
+//   Vertex2D *rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
 
-//   rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
    int numVertices=rampVertex*4*5;
    pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &staticVertexBuffer);
    NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
@@ -1341,7 +1336,7 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
    Vertex3D_NoTex2 *buf;
    staticVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
 
-   offset=0;
+   int offset=0;
    for (int i=0;i<(rampVertex-1);i++)
    {
       Vertex3D_NoTex2 rgv3D[4];
@@ -1576,7 +1571,6 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 
-//   float *rgheight,*rgratio;
    rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit);
 
    if( !staticVertexBuffer && m_d.m_IsVisible && !m_d.m_fAlpha )
@@ -1612,6 +1606,7 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
 
       }
    }
+
    delete[] rgvInit;
    delete[] rgheightInit;
    delete[] rgratioInit;
@@ -2651,9 +2646,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
 
          g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
-         // this seems to make problems with ramp flashers e.g. NBA-Fastbreak
-         //pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
          g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 

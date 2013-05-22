@@ -12,13 +12,13 @@ Ball::Ball()
 {
 	ballsInUse++;
 
-   // only use one vertex buffer for all balls
-   if( vertexBuffer==0 )
-   {
-      // VB for normal ball and logo(front+back) and shadow
-      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
-      NumVideoBytes += 4*4*sizeof(Vertex3D_NoTex2);
-   }
+    // only use one vertex buffer for all balls
+    if( vertexBuffer==0 )
+    {
+        // VB for normal ball and logo(front+back) and shadow
+        g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+        NumVideoBytes += 4*4*sizeof(Vertex3D_NoTex2);
+    }
 
 	m_pho = NULL;
 	m_pballex = NULL;
@@ -27,7 +27,7 @@ Ball::Ball()
    m_pinBack=NULL;
    m_pinFront=NULL;
 	m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
-   fFrozen=false;
+    fFrozen=false;
 }
 
 Ball::~Ball()	
@@ -214,10 +214,10 @@ void Ball::CalcBoundingRect()
 
 	m_rcHitRect.zlow  = min(z, z+vz) - radius;
 	m_rcHitRect.zhigh = max(z, z+vz) + (radius + 0.1f);
-	}
+}
 
 void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elasticity, float antifriction, float scatter_angle)
-	{
+{
 	float dot = vx * phitnormal->x + vy * phitnormal->y; //speed normal to wall
 
 	if (dot >= -C_LOWNORMVEL )							// nearly receding ... make sure of conditions
@@ -414,7 +414,6 @@ float Ball::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phi
 
 	return hittime;	
 }
-
 
 void Ball::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 {
@@ -670,7 +669,7 @@ void Ball::UpdateVelocities()
 #define JOY_DEADBAND  5.0e-2f
 
 		const float mag = nx*nx + ny*ny;// + nz*nz;
-		if (mag > (JOY_DEADBAND * JOY_DEADBAND))			//joystick dead band, allows hold and very slow motion
+		if (mag > (JOY_DEADBAND * JOY_DEADBAND)) // joystick dead band, allows hold and very slow motion
 			{
 			const float inv = (mag > 0.0f) ? JOY_DEADBAND/sqrtf(mag) : 0.0f;
 			nx -= nx*inv;	// remove deadband offsets
@@ -679,30 +678,31 @@ void Ball::UpdateVelocities()
 
 			vx += nx;
 			vy += ny;
-			vz += g;//-c_Gravity;
+			vz += g; //-c_Gravity;
 			}
-		}//manual joystick control
+		} // manual joystick control
 	else if (!fFrozen)  // Gravity	
 		{
 		vx += g_pplayer->m_gravity.x;	
 		vy += g_pplayer->m_gravity.y;	
 
-		if (z > z_min + 0.05f || g > 0) // off the deck??? or gravity postive Z direction	
+		if (z > z_min + 0.05f || g > 0.f) // off the deck??? or gravity postive Z direction	
 			vz += g;
-		else vz += g * 0.001f;			// don't add so much energy if already on the world floor
+		else
+			vz += g * 0.001f;			  // don't add so much energy if already on the world floor
 
 		vx += nx;
 		vy += ny;
 		}
 
-		const float mag = vx*vx + vy*vy + vz*vz; //speed check 
-		const float antifrict = (mag > c_maxBallSpeedSqr) ? c_dampingFriction : 0.99875f;
+	const float mag = vx*vx + vy*vy + vz*vz; //speed check 
+	const float antifrict = (mag > c_maxBallSpeedSqr) ? c_dampingFriction : 0.99875f;
 		
-		vx *= antifrict;	// speed damping
-		vy *= antifrict;
-		vz *= antifrict;	
+	vx *= antifrict;	// speed damping
+	vy *= antifrict;
+	vz *= antifrict;	
 				
-	m_fDynamic = C_DYNAMIC;		// always set .. after adding velocity
+	m_fDynamic = C_DYNAMIC; // always set .. after adding velocity
 
 	CalcBoundingRect();
 }

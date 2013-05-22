@@ -2383,7 +2383,7 @@ void Player::Render()
 	ddsdz.dwSize = sizeof(ddsdz);
 
 	HRESULT hr = m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL);
-    if(!FAILED(hr) && (ddsd.lpSurface != NULL)) {
+	if(!FAILED(hr) && (ddsd.lpSurface != NULL)) {
 
 	const bool stereopath = ((m_fStereo3D != 0) && m_fStereo3Denabled);
 	bool cont;
@@ -2810,6 +2810,7 @@ void Player::PauseMusic()
 		// signal the script that the game is now paused
 		m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
 		}
+
 	m_pauseRefCount++;
 }
 
@@ -2920,6 +2921,7 @@ void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
          rgv3DShadow[1].tu = 1.0f;
          rgv3DShadow[0].tu = 0;
       }
+
       memcpy( vBuffer, rgv3DShadow, sizeof(Vertex3D_NoTex2)*4);
    }
 }
@@ -2944,6 +2946,7 @@ void Player::DrawBallShadow(Ball * const pball)
       m_pin3d.m_pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, pball->vertexBuffer, 12, 4, (LPWORD)rgi0123, 4, 0 );
       //m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DShadow, 4, (LPWORD)rgi0123, 4, NULL);
    }
+
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 }
 
@@ -3002,7 +3005,8 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
          pball->logoVertices[iPoint].x = -pball->logoVertices[iPoint].x;
          pball->logoVertices[iPoint].z = -pball->logoVertices[iPoint].z;
       }
-      memcpy( &vBuffer[4], rgv3DArrowTransformed2, sizeof(Vertex3D_NoTex2)*4);
+
+	  memcpy( &vBuffer[4], rgv3DArrowTransformed2, sizeof(Vertex3D_NoTex2)*4);
    }
    if (pball->m_pinFront && (m_ptable->m_layback > 0))
       m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3DArrowTransformed, NULL, NULL, 4, fFalse);
@@ -3048,11 +3052,10 @@ void Player::DrawBalls()
 
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
 
-   m_pin3d.EnableAlphaTestReference( 0x0000001 );
+    m_pin3d.EnableAlphaTestReference( 0x0000001 );
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
 	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-
 
 	Material mtrl;
 	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
@@ -3063,7 +3066,7 @@ void Player::DrawBalls()
 	const float sn = sinf(m_pin3d.m_inclination);
 	const float cs = cosf(m_pin3d.m_inclination);
 
-	for (int i=0;i<m_vball.Size();i++)
+	for (int i=0; i<m_vball.Size(); i++)
 	{
 		Ball * const pball = m_vball.ElementAt(i);
 		float radiusX = pball->radius * m_BallStretchX;
@@ -3079,63 +3082,50 @@ void Player::DrawBalls()
 
 		const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
-      Vertex3D_NoTex2 * const rgv3D = pball->vertices;
+        Vertex3D_NoTex2 * const rgv3D = pball->vertices;
 
 		rgv3D[0].x = pball->x - radiusX;
 		rgv3D[0].y = pball->y - (radiusY * cs);
 		rgv3D[0].z = zheight + (pball->radius * sn);
 
-		rgv3D[3].x = pball->x - radiusX;
-		rgv3D[3].y = pball->y + (radiusY * cs);
-		rgv3D[3].z = zheight - (pball->radius * sn);
+		rgv3D[1].x = pball->x + radiusX;
+		rgv3D[1].y = pball->y - (radiusY * cs);
+		rgv3D[1].z = zheight + (pball->radius * sn);
 
 		rgv3D[2].x = pball->x + radiusX;
 		rgv3D[2].y = pball->y + (radiusY * cs);
 		rgv3D[2].z = zheight - (pball->radius * sn);
 
-		rgv3D[1].x = pball->x + radiusX;
-		rgv3D[1].y = pball->y - (radiusY * cs);
-		rgv3D[1].z = zheight + (pball->radius * sn);
+		rgv3D[3].x = pball->x - radiusX;
+		rgv3D[3].y = pball->y + (radiusY * cs);
+		rgv3D[3].z = zheight - (pball->radius * sn);
 
-      // prepare the vertex buffer for all possible options (ball,logo,shadow)
-      Vertex3D_NoTex2 *buf;
-      Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
-      
-      memcpy( buf, rgv3D, sizeof(Vertex3D_NoTex2)*4 );
+        // Mark ball rect as dirty for blitting to the screen
+        m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
+        m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3D, NULL, NULL, 4, fFalse);
 
-      if( m_fBallShadows )
-      {
-         CalcBallShadow(pball, &buf[12]);
-      }
+		// prepare the vertex buffer for all possible options (ball,logo,shadow)
+        Vertex3D_NoTex2 *buf;
+        Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
+        memcpy( buf, rgv3D, sizeof(Vertex3D_NoTex2)*4 );
 
-      // Mark ball rect as dirty for blitting to the screen
-      m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
-      m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3D, NULL, NULL, 4, fFalse);
+		if (m_fBallShadows)
+            CalcBallShadow(pball, &buf[12]);
 
-      if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
-      {
-         CalcBallLogo(pball, &buf[4]);
-      }
-      Ball::vertexBuffer->unlock();
+        if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
+            CalcBallLogo(pball, &buf[4]);
 
-      // now render the ball with the vertex buffer data
-      if( m_fBallShadows && m_fBallAntialias )
-      {
-         DrawBallShadow(pball);
-      }
+		Ball::vertexBuffer->unlock();
 
-		if (!pball->m_pin)
-		{
-			m_pin3d.m_pd3dDevice->SetTexture(0, m_pin3d.m_pddsBallTexture);
-		}
-		else
-		{
-			m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pin->m_pdsBufferColorKey);
-		}
+        // now render the ball with the vertex buffer data
+        if (m_fBallShadows && m_fBallAntialias)
+            DrawBallShadow(pball);
+
+		m_pin3d.m_pd3dDevice->SetTexture(0, (!pball->m_pin) ? m_pin3d.m_pddsBallTexture : pball->m_pin->m_pdsBufferColorKey);
 
 		if (m_fBallAntialias)
 		{
-         m_pin3d.SetColorKeyEnabled(FALSE);
+            m_pin3d.SetColorKeyEnabled(FALSE);
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
@@ -3149,13 +3139,12 @@ void Player::DrawBalls()
 		}
 
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
+        m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
 
-      if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
-      {
-         DrawBallLogo(pball, &mtrl);
-      }
-      pball->m_fErase = true;
+		if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
+            DrawBallLogo(pball, &mtrl);
+
+        pball->m_fErase = true;
 
 		if (m_fBallShadows)
 		{
@@ -3169,20 +3158,14 @@ void Player::DrawBalls()
 				pball->m_rcScreen.right = max(pball->m_rcScreen.right, pball->m_rcScreenShadow.right);
 				pball->m_rcScreen.bottom = max(pball->m_rcScreen.bottom, pball->m_rcScreenShadow.bottom);
 			}
-			else
-			{
-				InvalidateRect(&pball->m_rcScreenShadow);
-			}
-         if( !m_fBallAntialias )
-         {
-            // When not antialiasing, we can get a perf win by
-            // drawing the ball first.  That way, the part of the
-            // shadow that gets obscured doesn't need to do
-            // alpha-blending
-            DrawBallShadow(pball);
-         }
+
+		    if (!m_fBallAntialias)
+				// When not antialiasing, we can get a perf win by
+				// drawing the ball first.  That way, the part of the
+				// shadow that gets obscured doesn't need to do
+				// alpha-blending
+				DrawBallShadow(pball);
 		}
-		InvalidateRect(&pball->m_rcScreen);
 	}
 
 	m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
@@ -3192,15 +3175,15 @@ void Player::DrawBalls()
 
 void Player::InvalidateRect(RECT * const prc)
 {
-   // fuzzel: if the if-statement below is missing the ball drawing/updating 
-   //         has problems on some tables (like CFTBL,MonsterBash,Genie,T2Chrome...)
-   // This assumes the caller does not need *prc any more!!!
-   // Either that, or we assume it can be permanently changed,
-   // Because we never care about redrawing stuff off the screen.
-   if( prc->top<0 )
+    // fuzzel: if the if-statement below is missing the ball drawing/updating 
+    //         has problems on some tables (like CFTBL,MonsterBash,Genie,T2Chrome...)
+    // This assumes the caller does not need *prc any more!!!
+    // Either that, or we assume it can be permanently changed,
+    // Because we never care about redrawing stuff off the screen.
+    if( prc->top<0 )
 	{
-      prc->top =0;
-   }
+        prc->top = 0;
+    }
 	UpdateRect * const pur = new UpdateRect();
 	pur->m_rcupdate = *prc;
 	pur->m_fSeeThrough = fTrue;
