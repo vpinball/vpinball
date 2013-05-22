@@ -111,8 +111,7 @@ public:
 
 	bool fFrozen;
    
-   static int ballsInUse;
-
+    static int ballsInUse;
 	};
 
 inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)
