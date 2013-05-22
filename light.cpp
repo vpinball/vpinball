@@ -833,21 +833,17 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
       }
 
       pd3dDevice->SetMaterial(&mtrl);
+	  if (m_fBackglass && GetPTable()->GetDecalsEnabled())
+         SetDiffuseFromMaterial(customMoverVertex[i], customMoverVertexNum, &mtrl);
 
       m_pobjframe[i] = new ObjFrame();
-
       ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
-      for( int t=0; t<customMoverVertexNum; t+=3 )
-      {
+      
+	  for( int t=0; t<customMoverVertexNum; t+=3 ) //!! optimize into single call!
          if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
-         {
-			if(m_fBackglass)
-                SetDiffuseFromMaterial(&customMoverVertex[i][t], 3, &mtrl);
-            pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, &customMoverVertex[i][t], 3, (LPWORD)rgi0123, 3, 0);
-         }
+             pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, &customMoverVertex[i][t], 3, (LPWORD)rgi0123, 3, 0);
 
-         ppin3d->ExpandExtents(&m_pobjframe[i]->rc, &customMoverVertex[i][t], NULL, NULL, 3, m_fBackglass);
-      }
+	  ppin3d->ExpandExtents(&m_pobjframe[i]->rc, customMoverVertex[i], NULL, NULL, customMoverVertexNum, m_fBackglass);
 
 	  if((i != LightStateOff) && (!m_d.m_EnableLighting))
 	      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
