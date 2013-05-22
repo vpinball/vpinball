@@ -2651,7 +2651,9 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
 
          g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
+         // this seems to make problems with ramp flashers e.g. NBA-Fastbreak
+         //pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
          g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
