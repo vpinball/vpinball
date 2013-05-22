@@ -3100,10 +3100,6 @@ void Player::DrawBalls()
 		rgv3D[3].y = pball->y + (radiusY * cs);
 		rgv3D[3].z = zheight - (pball->radius * sn);
 
-        // Mark ball rect as dirty for blitting to the screen
-        m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
-        m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3D, NULL, NULL, 4, fFalse);
-
 		// prepare the vertex buffer for all possible options (ball,logo,shadow)
         Vertex3D_NoTex2 *buf;
         Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
@@ -3112,7 +3108,11 @@ void Player::DrawBalls()
 		if (m_fBallShadows)
             CalcBallShadow(pball, &buf[12]);
 
-        if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
+        // Mark ball rect as dirty for blitting to the screen
+        m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
+        m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3D, NULL, NULL, 4, fFalse);
+
+		if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
             CalcBallLogo(pball, &buf[4]);
 
 		Ball::vertexBuffer->unlock();
