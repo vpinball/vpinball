@@ -55,11 +55,11 @@ public:
 	void Render();
     void RenderDynamics();
 
-   void DrawBallShadow(Ball * const pball);
-   void CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
-	void DrawBalls();
-   void DrawBallLogo(Ball * const pball, Material *mtrl);
-   void CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
+    void DrawBallShadow(Ball * const pball);
+    void CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
+	void DrawBalls(const bool only_invalidate_regions);
+    void DrawBallLogo(Ball * const pball, Material *mtrl);
+    void CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
 
 	void DrawAlphas();
 
@@ -67,7 +67,7 @@ public:
 
 	void InvalidateRect(RECT * const prc);
 #ifdef ULTRAPIN
-	void DrawLightHack ();
+	void DrawLightHack();
 #endif
 	void EraseBall(Ball *pball);
 

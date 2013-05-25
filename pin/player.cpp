@@ -2067,7 +2067,7 @@ void Player::RenderDynamics()
       m_ToggleDebugBalls = fFalse;
    }
 
-   DrawBalls();
+   DrawBalls(false);
    // Draw the alpha-ramps and primitives.
    //if (g_pvp->m_pdd.m_fHardwareAccel)
    DrawAlphas();
@@ -2138,6 +2138,7 @@ void Player::Render()
 
 	// Erase the mixer volume.
 	mixer_erase();
+	// Plumb only (broken?) debug code
     plumb_erase();
 
 	c_collisioncnt = 0; 
@@ -2147,7 +2148,10 @@ void Player::Render()
 
 	///+++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   UpdatePhysics();
+    UpdatePhysics();
+
+	// This only invalidates all of the new Ball regions upfront, which is needed due to the double buffering of DX7 to properly invalidate -all- regions (i.e. reblit the static buffer beforehand!). This can be removed as soon as region updates of the back/frontbuffer are deprecated and always the full static/backbuffer are blitted each frame!
+	DrawBalls(true);
 
 	m_LastKnownGoodCounter++;
 
@@ -2249,8 +2253,8 @@ void Player::Render()
 		for (int i=0;i<m_vupdaterect.Size();i++)
 		{
 		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
-		if (pur->m_fSeeThrough)													
-			{			
+		if (pur->m_fSeeThrough)
+			{
 			RECT * const prc = &pur->m_rcupdate;
 
 			// Redraw the region from the static buffers to the back and z buffers.
@@ -2313,7 +2317,7 @@ void Player::Render()
 		}
 	}
 
-   RenderDynamics();
+    RenderDynamics();
 
 	// Check if we are mirrored.
 	if ( m_ptable->m_tblMirrorEnabled )
@@ -2324,8 +2328,8 @@ void Player::Render()
 	}
 
 
-         if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (m_fFXAA == 0)) || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
-         {
+  if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (m_fFXAA == 0)) || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
+  {
 	if ( m_nudgetime &&			// Table is being nudged.
 		 m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
@@ -2367,9 +2371,9 @@ void Player::Render()
 				m_fCleanBlt = fTrue;
 		}
 	}
-         }
-         else
-         {
+  }
+  else
+  {
 	//!! num_threads(max_threads-1 or -2) ? on my AMD omp is not really faster for the update path, a bit faster for full path
 	//!! overall half resolution necessary only (Y3D profits from full res though (implicit filtering))
 
@@ -2602,8 +2606,8 @@ void Player::Render()
 	}
 
 	// Remove the list of update regions.
-	// Note:  The ball and the mixer update rects are removed here as well...
-	//        so if we need a clear, we need to do it somewhere else.
+	// Note:  The balls, mixer, etc. update rects are removed here as well...
+	//        so for the clear, this is regenerated on the beginning of the next frame.
 	for (int i=0;i<m_vupdaterect.Size();i++)
 	{
 		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
@@ -2922,7 +2926,8 @@ void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
          rgv3DShadow[0].tu = 0;
       }
 
-      memcpy( vBuffer, rgv3DShadow, sizeof(Vertex3D_NoTex2)*4);
+	  if(vBuffer)
+          memcpy( vBuffer, rgv3DShadow, sizeof(Vertex3D_NoTex2)*4);
    }
 }
 
@@ -2930,7 +2935,7 @@ void Player::DrawBallShadow(Ball * const pball)
 {
    m_pin3d.m_pd3dDevice->SetMaterial((Material*)&shadowmtrl);
 
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE); //!! actually fails then for shadows on alpha ramps/primitives
 
    m_pin3d.EnableAlphaTestReference( 0x0000001 );
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
@@ -2979,8 +2984,10 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
          rgv3DArrowTransformed[iPoint].tu = pball->logoVertices[iPoint].tu * pball->m_pinFront->m_maxtu;
          rgv3DArrowTransformed[iPoint].tv = pball->logoVertices[iPoint].tv * pball->m_pinFront->m_maxtv;
       }
-      memcpy( vBuffer, rgv3DArrowTransformed, sizeof(Vertex3D_NoTex2)*4);
-      //m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed, 4, (LPWORD)rgi0123, 4, NULL);
+	  
+	  if(vBuffer)
+          memcpy( vBuffer, rgv3DArrowTransformed, sizeof(Vertex3D_NoTex2)*4);
+          //m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed, 4, (LPWORD)rgi0123, 4, NULL);
    }
 
    orientation.Identity();
@@ -3006,7 +3013,8 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
          pball->logoVertices[iPoint].z = -pball->logoVertices[iPoint].z;
       }
 
-	  memcpy( &vBuffer[4], rgv3DArrowTransformed2, sizeof(Vertex3D_NoTex2)*4);
+	  if(vBuffer)
+	      memcpy( &vBuffer[4], rgv3DArrowTransformed2, sizeof(Vertex3D_NoTex2)*4);
    }
    if (pball->m_pinFront && (m_ptable->m_layback > 0))
       m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3DArrowTransformed, NULL, NULL, 4, fFalse);
@@ -3029,6 +3037,7 @@ void Player::DrawBallLogo(Ball * const pball, Material *mtrl)
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+   
    if (pball->m_pinFront)
    {
       pball->m_pinFront->EnsureColorKey();
@@ -3044,24 +3053,29 @@ void Player::DrawBallLogo(Ball * const pball, Material *mtrl)
 
       m_pin3d.m_pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, pball->vertexBuffer, 8, 4, (LPWORD)rgi0123, 4, 0);
    }
+
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 }
 
-void Player::DrawBalls()
+void Player::DrawBalls(const bool only_invalidate_regions)
 {
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE );
-
-	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
-
-    m_pin3d.EnableAlphaTestReference( 0x0000001 );
-	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-	m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-
 	Material mtrl;
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+	if(!only_invalidate_regions)
+	{
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE );
+
+		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
+
+		m_pin3d.EnableAlphaTestReference( 0x0000001 );
+		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+
+		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
+		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
+		mtrl.power = 0;
+		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
+	}
 
 	const float sn = sinf(m_pin3d.m_inclination);
 	const float cs = cosf(m_pin3d.m_inclination);
@@ -3069,16 +3083,19 @@ void Player::DrawBalls()
 	for (int i=0; i<m_vball.Size(); i++)
 	{
 		Ball * const pball = m_vball.ElementAt(i);
-		float radiusX = pball->radius * m_BallStretchX;
-		float radiusY = pball->radius * m_BallStretchY;
+		const float radiusX = pball->radius * m_BallStretchX;
+		const float radiusY = pball->radius * m_BallStretchY;
 
-		const float r = (pball->m_color & 255) * (float)(1.0/255.0);
-		const float g = (pball->m_color & 65280) * (float)(1.0/65280.0);
-		const float b = (pball->m_color & 16711680) * (float)(1.0/16711680.0);
-		mtrl.diffuse.r = mtrl.ambient.r = r;
-		mtrl.diffuse.g = mtrl.ambient.g = g;
-		mtrl.diffuse.b = mtrl.ambient.b = b;
-		m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
+		if(!only_invalidate_regions)
+		{
+			const float r = (pball->m_color & 255) * (float)(1.0/255.0);
+			const float g = (pball->m_color & 65280) * (float)(1.0/65280.0);
+			const float b = (pball->m_color & 16711680) * (float)(1.0/16711680.0);
+			mtrl.diffuse.r = mtrl.ambient.r = r;
+			mtrl.diffuse.g = mtrl.ambient.g = g;
+			mtrl.diffuse.b = mtrl.ambient.b = b;
+			m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
+		}
 
 		const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
@@ -3102,61 +3119,74 @@ void Player::DrawBalls()
 
 		// prepare the vertex buffer for all possible options (ball,logo,shadow)
         Vertex3D_NoTex2 *buf;
-        Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
-        memcpy( buf, rgv3D, sizeof(Vertex3D_NoTex2)*4 );
+		if(!only_invalidate_regions)
+		{
+			Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
+			memcpy( buf, rgv3D, sizeof(Vertex3D_NoTex2)*4 );
+		}
 
 		if (m_fBallShadows)
-            CalcBallShadow(pball, &buf[12]);
+            CalcBallShadow(pball, only_invalidate_regions ? NULL : &buf[12]);
 
-        // Mark ball rect as dirty for blitting to the screen
-        m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
-        m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3D, NULL, NULL, 4, fFalse);
-
-		if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
-            CalcBallLogo(pball, &buf[4]);
-
-		Ball::vertexBuffer->unlock();
-
-        // now render the ball with the vertex buffer data
-        if (m_fBallShadows && m_fBallAntialias)
-            DrawBallShadow(pball);
-
-		m_pin3d.m_pd3dDevice->SetTexture(0, (!pball->m_pin) ? m_pin3d.m_pddsBallTexture : pball->m_pin->m_pdsBufferColorKey);
-
-		if (m_fBallAntialias)
+		if(only_invalidate_regions)
 		{
-            m_pin3d.SetColorKeyEnabled(FALSE);
-			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
-			m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
-		}
-		else
-		{
-			m_pin3d.SetColorKeyEnabled(TRUE);
-			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-			m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+	        // Mark ball rect as dirty for blitting to the screen
+		    m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
+			m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, rgv3D, NULL, NULL, 4, fFalse);
 		}
 
-		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-        m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
-
 		if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
-            DrawBallLogo(pball, &mtrl);
+            CalcBallLogo(pball, only_invalidate_regions ? NULL : &buf[4]);
+
+		if(!only_invalidate_regions)
+		{
+			Ball::vertexBuffer->unlock();
+
+			// now render the ball with the vertex buffer data
+			if (m_fBallShadows && m_fBallAntialias)
+				DrawBallShadow(pball);
+
+			m_pin3d.m_pd3dDevice->SetTexture(0, (!pball->m_pin) ? m_pin3d.m_pddsBallTexture : pball->m_pin->m_pdsBufferColorKey);
+
+			if (m_fBallAntialias)
+			{
+			    m_pin3d.SetColorKeyEnabled(FALSE);
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
+				m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+			}
+			else
+			{
+				m_pin3d.SetColorKeyEnabled(TRUE);
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+				m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+			}
+
+			m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
+
+			if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
+		        DrawBallLogo(pball, &mtrl);
+		}
 
         pball->m_fErase = true;
 
 		if (m_fBallShadows)
 		{
-			m_pin3d.ClearExtents(&pball->m_rcScreenShadow, NULL, NULL);
-			m_pin3d.ExpandExtentsPlus(&pball->m_rcScreenShadow, pball->m_rgv3DShadow, NULL, NULL, 4, fFalse);
-
-			if (fIntRectIntersect(pball->m_rcScreen, pball->m_rcScreenShadow))
+			if(only_invalidate_regions)
 			{
-				pball->m_rcScreen.left = min(pball->m_rcScreen.left, pball->m_rcScreenShadow.left);
-				pball->m_rcScreen.top = min(pball->m_rcScreen.top, pball->m_rcScreenShadow.top);
-				pball->m_rcScreen.right = max(pball->m_rcScreen.right, pball->m_rcScreenShadow.right);
-				pball->m_rcScreen.bottom = max(pball->m_rcScreen.bottom, pball->m_rcScreenShadow.bottom);
+				m_pin3d.ClearExtents(&pball->m_rcScreenShadow, NULL, NULL);
+				m_pin3d.ExpandExtentsPlus(&pball->m_rcScreenShadow, pball->m_rgv3DShadow, NULL, NULL, 4, fFalse);
+
+				if (fIntRectIntersect(pball->m_rcScreen, pball->m_rcScreenShadow))
+				{
+					pball->m_rcScreen.left = min(pball->m_rcScreen.left, pball->m_rcScreenShadow.left);
+					pball->m_rcScreen.top = min(pball->m_rcScreen.top, pball->m_rcScreenShadow.top);
+					pball->m_rcScreen.right = max(pball->m_rcScreen.right, pball->m_rcScreenShadow.right);
+					pball->m_rcScreen.bottom = max(pball->m_rcScreen.bottom, pball->m_rcScreenShadow.bottom);
+				}
+				else
+					InvalidateRect(&pball->m_rcScreenShadow);
 			}
 
 		    if (!m_fBallAntialias)
@@ -3166,11 +3196,16 @@ void Player::DrawBalls()
 				// alpha-blending
 				DrawBallShadow(pball);
 		}
+
+		if(only_invalidate_regions)
+			InvalidateRect(&pball->m_rcScreen);
 	}
 
-	m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+	if(!only_invalidate_regions)
+	{
+		m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+	}
 }
 
 void Player::InvalidateRect(RECT * const prc)

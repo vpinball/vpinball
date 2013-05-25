@@ -2897,9 +2897,9 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
       offset+=numVertices;
 
-      ppin3d->SetTexture(NULL);
-
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+
+      ppin3d->SetTexture(NULL);
    }
 }
