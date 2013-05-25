@@ -23,9 +23,9 @@ Ball::Ball()
 	m_pho = NULL;
 	m_pballex = NULL;
 	m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
-   m_pin=NULL;
-   m_pinBack=NULL;
-   m_pinFront=NULL;
+    m_pin=NULL;
+    m_pinBack=NULL;
+    m_pinFront=NULL;
 	m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
     fFrozen=false;
 }
