@@ -6,6 +6,7 @@ VP 9.1.6 Changelog
 - add flag to walls and gates to disable lighting and shadows (to assist in using fully artist driven lighting)
 - add flag to light objects to disable the lighting calculations when the 'On Image' is set (so that behavior is the same as when only using a color)
 - add flag for alpha ramps to optionally use additive blending (to cope with 2D-lighting-hacks like halos/flashers)
+- add hide/unhide all option: 'hide' hides the selected element only inside the editor, 'unhide all' shows all hidden elements again
 
 VP 9.1.5 Changelog
 ------------------------

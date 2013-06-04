@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -216,11 +216,13 @@ BEGIN
     POPUP "WallMenu"
     BEGIN
         MENUITEM "Flip &X",                     ID_WALLMENU_MIRROR
-        MENUITEM "Flip &Y",                     ID_WALLMENU_FLIP
+        MENUITEM "Flip &Y",                     ID_WALLMENU_HIDE
         MENUITEM "&Rotate",                     ID_WALLMENU_ROTATE
         MENUITEM "&Scale",                      ID_WALLMENU_SCALE
         MENUITEM "&Translate",                  ID_WALLMENU_TRANSLATE
         MENUITEM "Add &Point",                  ID_WALLMENU_ADDPOINT
+        MENUITEM "&Hide",                       ID_WALLMENU_HIDE
+        MENUITEM "&Unhide all",                 ID_WALLMENU_UNHIDEALL
     END
 END
 
@@ -233,6 +235,7 @@ BEGIN
         MENUITEM "&Rotate",                     ID_WALLMENU_ROTATE
         MENUITEM "&Scale",                      ID_WALLMENU_SCALE
         MENUITEM "&Translate",                  ID_WALLMENU_TRANSLATE
+        MENUITEM "&Hide",                       ID_WALLMENU_MULTIHIDE
     END
 END
 
@@ -261,6 +264,7 @@ BEGIN
     POPUP "Table Menu"
     BEGIN
         MENUITEM "Paste &At\tShift+Ctrl+V",     IDC_PASTEAT
+        MENUITEM "&Unhide all",                 ID_TABLEMENU_UNHIDEALL
     END
 END
 
@@ -927,7 +931,8 @@ BEGIN
     LTEXT           "S&hape",-1,7,9,22,8
     LTEXT           "O&n Image:",-1,7,109,37,8
     LTEXT           "O&ff Image:",-1,7,83,37,8
-    CONTROL         "Old/darken 'On Image' lighting",IDC_ENABLELIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,148,161,10
+    CONTROL         "Old/darken 'On Image' lighting",IDC_ENABLELIGHTING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,148,161,10
 END
 
 IDD_PROPLIGHT_POSITION DIALOGEX 0, 0, 125, 65
@@ -1515,7 +1520,8 @@ BEGIN
     EDITTEXT        IDC_LIGHT1TYPE,47,172,24,12,ES_AUTOHSCROLL
     LTEXT           "L1 Type",-1,7,175,40,9
     LTEXT           "(Type 0: Directional, 1: Spot, 2: Point)",-1,7,190,120,9
-    CONTROL         "Exact Lighting on Dynamic Objs",IDC_NORMALIZENORMALS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,205,115,10
+    CONTROL         "Exact Lighting on Dynamic Objs",IDC_NORMALIZENORMALS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,205,115,10
 END
 
 IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 81
@@ -2245,7 +2251,7 @@ BEGIN
         TOPMARGIN, 7
     END
 
-	IDD_PROPTABLE_BALL, DIALOG
+    IDD_PROPTABLE_BALL, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 120
@@ -2344,7 +2350,6 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 118
         TOPMARGIN, 7
-        BOTTOMMARGIN, 164
     END
 
     IDD_PROPPLUNGER_VISUALS, DIALOG
@@ -2585,7 +2590,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

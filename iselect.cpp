@@ -135,6 +135,20 @@ void ISelect::DoCommand(int icmd, int x, int y)
 			GetIEditable()->EndUndo();
 			GetPTable()->SetDirtyDraw();
 			break;
+      case ID_WALLMENU_HIDE:
+         GetPTable()->m_vedit.RemoveElement(piedit);
+         GetPTable()->hiddenObjects.AddElement(piedit);
+         GetPTable()->SetDirtyDraw();
+         break;
+      case ID_WALLMENU_UNHIDEALL:
+         for( int i=0;i<GetPTable()->hiddenObjects.Size();i++ )
+         {
+            piedit = GetPTable()->hiddenObjects.ElementAt(i);
+            GetPTable()->m_vedit.AddElement(piedit);
+         }
+         GetPTable()->hiddenObjects.RemoveAllElements();
+         GetPTable()->SetDirtyDraw();
+         break;
 		/*default:
 			psel->DoCommand(command, x, y);
 			break;*/
