@@ -572,6 +572,7 @@ END_CONNECTION_POINT_MAP()
 	//CComObject<Surface> *m_psur;
 
 	Vector< IEditable > m_vedit;
+   Vector< IEditable > hiddenObjects;
 
 	Vector< PinImage > m_vimage;
 
