@@ -1796,6 +1796,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
    pstgRoot = m_pStg;
 #endif
 
+
    // Get file name if needed
    if(fSaveAs)
    {
@@ -1882,6 +1883,12 @@ HRESULT PinTable::Save(BOOL fSaveAs)
       g_pvp->SetActionCur(ls.m_szbuffer);
       g_pvp->SetCursorCur(NULL, IDC_WAIT);
    }
+   // add all elements again otherwise hidden objects won't be saved ;)
+   for( int i=0;i<hiddenObjects.Size();i++ )
+   {
+      IEditable *piedit = hiddenObjects.ElementAt(i);
+      m_vedit.AddElement(piedit);
+   }
 
    HRESULT hr = SaveToStorage(pstgRoot);
 
@@ -1897,6 +1904,14 @@ HRESULT PinTable::Save(BOOL fSaveAs)
       m_pcv->SetClean(eSaveClean);
       SetNonUndoableDirty(eSaveClean);
    }
+
+   // restore hidden objects in the editor
+   for( int i=0;i<hiddenObjects.Size();i++ )
+   {
+      IEditable *piedit = hiddenObjects.ElementAt(i);
+      m_vedit.RemoveElement(piedit);
+   }
+
    return S_OK;
 }
 
