@@ -1548,7 +1548,7 @@ void PinTable::Play()
    if (!m_pcv->m_fScriptError)
    {
       // add all elements again otherwise hidden objects won't react/animate
-      for( int i=0;i<hiddenObjects.Size();i++ )
+      for( int i=hiddenObjects.Size()-1;i>=0;i-- )
       {
          IEditable *piedit = hiddenObjects.ElementAt(i);
          m_vedit.AddElement(piedit);
@@ -1884,7 +1884,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
       g_pvp->SetCursorCur(NULL, IDC_WAIT);
    }
    // add all elements again otherwise hidden objects won't be saved ;)
-   for( int i=0;i<hiddenObjects.Size();i++ )
+   for( int i=hiddenObjects.Size()-1;i>=0;i-- )
    {
       IEditable *piedit = hiddenObjects.ElementAt(i);
       m_vedit.AddElement(piedit);
@@ -4237,7 +4237,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
    case ID_TABLEMENU_UNHIDEALL:
       {
-         for( int i=0;i<hiddenObjects.Size();i++ )
+         for( int i=hiddenObjects.Size()-1;i>=0;i-- )
          {
             IEditable *piedit = hiddenObjects.ElementAt(i);
             m_vedit.AddElement(piedit);

@@ -141,7 +141,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
          GetPTable()->SetDirtyDraw();
          break;
       case ID_WALLMENU_UNHIDEALL:
-         for( int i=0;i<GetPTable()->hiddenObjects.Size();i++ )
+         for( int i=GetPTable()->hiddenObjects.Size()-1;i>=0;i-- )
          {
             piedit = GetPTable()->hiddenObjects.ElementAt(i);
             GetPTable()->m_vedit.AddElement(piedit);
