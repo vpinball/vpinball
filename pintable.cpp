@@ -4115,8 +4115,12 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       LocalString ls3(IDS_SETASDEFAULT);
       AppendMenu(hmenu, MF_STRING, ID_SETASDEFAULT, ls3.m_szbuffer);
 
-      LocalString ls4(IDS_LOCK);
-      AppendMenu(hmenu, MF_STRING, ID_LOCK, ls4.m_szbuffer);
+      LocalString ls4(IDS_HIDE);
+      AppendMenu(hmenu, MF_STRING, ID_WALLMENU_HIDE, ls4.m_szbuffer);
+      LocalString ls5(IDS_UNHIDEALL);
+      AppendMenu(hmenu, MF_STRING, ID_WALLMENU_UNHIDEALL, ls5.m_szbuffer);
+      LocalString ls6(IDS_LOCK);
+      AppendMenu(hmenu, MF_STRING, ID_LOCK, ls6.m_szbuffer);
 
       BOOL fLocked = psel->m_fLocked;
       // HACK
@@ -4219,7 +4223,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
          break;
       }
 
-   case ID_WALLMENU_MULTIHIDE:
+   case ID_WALLMENU_HIDE:
       {
          for( int i=0;i<m_vmultisel.Size();i++ )
          {

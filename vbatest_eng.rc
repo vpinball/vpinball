@@ -221,8 +221,6 @@ BEGIN
         MENUITEM "&Scale",                      ID_WALLMENU_SCALE
         MENUITEM "&Translate",                  ID_WALLMENU_TRANSLATE
         MENUITEM "Add &Point",                  ID_WALLMENU_ADDPOINT
-        MENUITEM "&Hide",                       ID_WALLMENU_HIDE
-        MENUITEM "&Unhide all",                 ID_WALLMENU_UNHIDEALL
     END
 END
 
@@ -2490,6 +2488,8 @@ BEGIN
     IDS_DIMENSIONSSLOPE     "Dimensions & Slope"
     IDS_LIGHTSOURCES        "Lightsources"
     IDS_INPUT               "Input"
+    IDS_UNHIDEALL           "Unhide all"
+    IDS_HIDE                "Hide"
 END
 
 STRINGTABLE 

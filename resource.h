@@ -578,7 +578,9 @@
 #define IDS_LIGHTSOURCES                550
 #define IDS_INPUT                       551
 #define IDC_FXAA                        552
+#define IDS_UNHIDEALL                   552
 #define IDC_ENABLE_REGION_UPDATES       553
+#define IDS_HIDE                        553
 #define IDC_MODIFY3DSTEREO              554
 #define IDC_ENABLE_REGION_UPDATE_OPTIMIZATION 555
 #define IDC_ADDBLEND                    556
