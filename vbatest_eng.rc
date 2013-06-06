@@ -216,7 +216,7 @@ BEGIN
     POPUP "WallMenu"
     BEGIN
         MENUITEM "Flip &X",                     ID_WALLMENU_MIRROR
-        MENUITEM "Flip &Y",                     ID_WALLMENU_HIDE
+        MENUITEM "Flip &Y",                     ID_WALLMENU_FLIP
         MENUITEM "&Rotate",                     ID_WALLMENU_ROTATE
         MENUITEM "&Scale",                      ID_WALLMENU_SCALE
         MENUITEM "&Translate",                  ID_WALLMENU_TRANSLATE
