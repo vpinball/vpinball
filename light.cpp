@@ -741,8 +741,9 @@ void Light::RenderStatic(const RenderDevice* _pd3dDevice)
 	   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled()) {
 		   if(m_d.m_shape == ShapeCustom)
          {
-            pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, staticCustomVertex, staticCustomVertexNum, 0);
-         }
+			   for (int t=0; t<staticCustomVertexNum; t+=3)
+				   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, &staticCustomVertex[t], 3, (LPWORD)rgi0123, 3, 0); //!! optimize into single call
+		 }
          else
 	           pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, circleVertex, 32, (LPWORD)rgiLightStatic1, 32, 0);
 	   }
