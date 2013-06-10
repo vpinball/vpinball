@@ -2078,7 +2078,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       HMENU hmenu = GetMenu(m_hwnd);
       int count = GetMenuItemCount(hmenu);
       HMENU hmenuFile;
-      if (count > 7)
+      if (count > 8)
       {
          // MDI has added it's stuff (table icon for first menu item)
          hmenuFile = GetSubMenu(hmenu, 1);
@@ -2108,13 +2108,20 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       // add in the list of recently accessed files
       for (int i=0; i<LAST_OPENED_TABLE_COUNT; i++)
       {
+         char number[8];
+         char menuname[MAX_PATH];
+
          // if this entry is empty then all the rest are empty
          if (m_szRecentTableList[i][0] == 0x00) break;
-
+         _itoa_s(i+1,number,10);
+         strcpy_s(menuname,"&");
+         strcat_s(menuname,number);
+         strcat_s(menuname," ");
+         strcat_s(menuname,m_szRecentTableList[i]);
          // set the IDM of this menu item
          menuInfo.wID = RECENT_FIRST_MENU_IDM + i;
-         menuInfo.dwTypeData = m_szRecentTableList[i];
-         menuInfo.cch = strlen(m_szRecentTableList[i]);
+         menuInfo.dwTypeData = menuname;
+         menuInfo.cch = strlen(menuname);
 
          InsertMenuItem(hmenuFile, count, TRUE, &menuInfo);
          count++;
