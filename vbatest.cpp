@@ -163,7 +163,8 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 #endif
 	
 	g_hinst = hInstance;
-
+   
+   //_CrtSetDbgFlag( _CrtSetDbgFlag(0)|_CRTDBG_CHECK_CRT_DF );
 //	g_hinstres = LoadLibrary("vpinres.dll");
 
 //	if (g_hinstres == NULL)

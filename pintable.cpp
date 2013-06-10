@@ -1786,7 +1786,6 @@ void PinTable::StopPlaying()
 
    m_pcv->EndSession();
 
-   SetDirtyDraw();
    ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
    //	EnableWindow(g_pvp->m_hwndWork, fTrue); // Disable modal state after game ends
 
