@@ -135,20 +135,46 @@ void ISelect::DoCommand(int icmd, int x, int y)
 			GetIEditable()->EndUndo();
 			GetPTable()->SetDirtyDraw();
 			break;
-      case ID_WALLMENU_HIDE:
-         GetPTable()->m_vedit.RemoveElement(piedit);
-         GetPTable()->hiddenObjects.AddElement(piedit);
-         GetPTable()->SetDirtyDraw();
-         break;
-      case ID_WALLMENU_UNHIDEALL:
-         for( int i=GetPTable()->hiddenObjects.Size()-1;i>=0;i-- )
+      case ID_ASSIGNTO_LAYER1:
          {
-            piedit = GetPTable()->hiddenObjects.ElementAt(i);
-            GetPTable()->m_vedit.AddElement(piedit);
+            GetPTable()->AssignToLayer(piedit, 0);
+            break;
          }
-         GetPTable()->hiddenObjects.RemoveAllElements();
-         GetPTable()->SetDirtyDraw();
-         break;
+      case ID_ASSIGNTO_LAYER2:
+         {
+            GetPTable()->AssignToLayer(piedit, 1);
+            break;
+         }
+      case ID_ASSIGNTO_LAYER3:
+         {
+            GetPTable()->AssignToLayer(piedit, 2);
+            break;
+         }
+      case ID_ASSIGNTO_LAYER4:
+         {
+            GetPTable()->AssignToLayer(piedit, 3);
+            break;
+         }
+      case ID_ASSIGNTO_LAYER5:
+         {
+            GetPTable()->AssignToLayer(piedit, 4);
+            break;
+         }
+      case ID_ASSIGNTO_LAYER6:
+         {
+            GetPTable()->AssignToLayer(piedit, 5);
+            break;
+         }
+      case ID_ASSIGNTO_LAYER7:
+         {
+            GetPTable()->AssignToLayer(piedit, 6);
+            break;
+         }
+      case ID_ASSIGNTO_LAYER8:
+         {
+            GetPTable()->AssignToLayer(piedit, 7);
+            break;
+         }
 		/*default:
 			psel->DoCommand(command, x, y);
 			break;*/

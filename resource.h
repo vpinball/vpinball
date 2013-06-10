@@ -64,18 +64,25 @@
 #define IDS_TB_PLAY                     106
 #define IDS_FLIPPER_DESC                107
 #define IDR_Flipper                     108
+#define IDS_LAYER1                      108
 #define IDC_SELECT                      109
 #define DISPID_Table_GridSize           109
+#define IDS_ASSIGNTO                    109
 #define IDC_WALL                        110
 #define IDC_CUR_LIGHT                   110
+#define IDS_LAYER2                      110
 #define IDC_FLIPPER                     111
+#define IDS_LAYER3                      111
 #define IDS_TIMER_DESC                  112
 #define IDR_Timer                       113
+#define IDS_LAYER4                      113
 #define IDC_TIMER                       114
+#define IDS_LAYER5                      114
 #define IDS_PLUNGER_DESC                115
 #define IDR_Plunger                     116
 #define IDS_TB_PLUNGER                  116
 #define IDC_PLUNGER                     117
+#define IDS_LAYER6                      117
 #define IDS_TEXTBOX_DESC                118
 #define IDC_STARTGAME                   118
 #define IDR_Textbox                     119
@@ -93,10 +100,13 @@
 #define IDS_TB_DISPREEL                 123
 #define IDS_PIEVENTHANDLER_DESC         124
 #define IDR_PIEventHandler              125
+#define IDS_LAYER7                      125
 #define IDS_TRIGGER_DESC                126
 #define IDR_Trigger                     127
 #define IDS_TB_TRIGGER                  127
 #define IDC_TRIGGER                     128
+#define IDS_STRING128                   128
+#define IDS_LAYER8                      128
 #define IDS_LIGHT_DESC                  129
 #define IDR_Light                       130
 #define IDS_TB_LIGHT                    130
@@ -662,6 +672,31 @@
 #define ID_TABLEMENU_UNHIDEALL          32846
 #define ID_WALLMENU_HIDE32847           32847
 #define ID_WALLMENU_MULTIHIDE           32848
+#define ID_LAYER_LAYER1                 32849
+#define ID_LAYER_LAYER2                 32850
+#define ID_LAYER_LAYER3                 32851
+#define ID_LAYER_LAYER4                 32852
+#define ID_WALLMENU_ASSIGNTO            32853
+#define ID_ASSIGNTO_LAYER1              32854
+#define ID_ASSIGNTO_LAYER2              32855
+#define ID_ASSIGNTO_LAYER3              32856
+#define ID_ASSIGNTO_LAYER4              32857
+#define ID_ASSIGNTO_LAYER5              32858
+#define ID_ASSIGNTO_LAYER6              32859
+#define ID_ASSIGNTO_LAYER7              32860
+#define ID_ASSIGNTO_LAYER8              32861
+#define ID_LAYER_LAYER5                 32862
+#define ID_LAYER_LAYER6                 32863
+#define ID_LAYER_LAYER7                 32864
+#define ID_LAYER_LAYER8                 32865
+#define ID_ASSIGNTO_MERGETOLAYER1       32866
+#define ID_LAYER_MERGEALL               32867
+#define ID_WALLMENU_SELECTALL           32868
+#define ID_WALLMENU_SELECTNONE          32869
+#define ID_LAYER_SELECTALL              32870
+#define ID_LAYER_SELECTNONE             32871
+#define ID_LAYER_SELECTALL32872         32872
+#define ID_LAYER_SELECTNONE32873        32873
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -670,7 +705,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        390
-#define _APS_NEXT_COMMAND_VALUE         32849
+#define _APS_NEXT_COMMAND_VALUE         32874
 #define _APS_NEXT_CONTROL_VALUE         417
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
