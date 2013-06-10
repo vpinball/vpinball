@@ -114,4 +114,5 @@ public:
 	int m_menuid;  // context menu to use
 
 	BOOL m_fLocked; // Can not be dragged in the editor
+   int layerIndex;
 	};

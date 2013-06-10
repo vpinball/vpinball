@@ -35,6 +35,7 @@ ISelect::ISelect()
 	m_fLocked = fFalse;
 
 	m_menuid = -1;
+   layerIndex=0;
 	}
 
 void ISelect::SetObjectPos()
@@ -118,11 +119,15 @@ void ISelect::DoCommand(int icmd, int x, int y)
 		case ID_DRAWINFRONT:
 			GetPTable()->m_vedit.RemoveElement(piedit);
 			GetPTable()->m_vedit.AddElement(piedit);
+         GetPTable()->layer[ layerIndex ].RemoveElement(piedit);
+         GetPTable()->layer[ layerIndex ].AddElement(piedit);
 			GetPTable()->SetDirtyDraw();
 			break;
 		case ID_DRAWINBACK:
 			GetPTable()->m_vedit.RemoveElement(piedit);
 			GetPTable()->m_vedit.InsertElementAt(piedit, 0);
+         GetPTable()->layer[ layerIndex ].RemoveElement(piedit);
+         GetPTable()->layer[ layerIndex ].InsertElementAt(piedit,0);
 			GetPTable()->SetDirtyDraw();
 			break;
 		case ID_SETASDEFAULT:
