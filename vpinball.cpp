@@ -1451,14 +1451,15 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          HMENU hmenu = GetMenu(m_hwnd);
          ptCur->MergeAllLayers();
          CheckMenuItem(hmenu, ID_LAYER_LAYER1, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER2, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER3, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER4, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER5, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER6, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER7, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER8, MF_UNCHECKED);
-         ptCur->SwitchToLayer(0);
+         CheckMenuItem(hmenu, ID_LAYER_LAYER2, MF_CHECKED);
+         CheckMenuItem(hmenu, ID_LAYER_LAYER3, MF_CHECKED);
+         CheckMenuItem(hmenu, ID_LAYER_LAYER4, MF_CHECKED);
+         CheckMenuItem(hmenu, ID_LAYER_LAYER5, MF_CHECKED);
+         CheckMenuItem(hmenu, ID_LAYER_LAYER6, MF_CHECKED);
+         CheckMenuItem(hmenu, ID_LAYER_LAYER7, MF_CHECKED);
+         CheckMenuItem(hmenu, ID_LAYER_LAYER8, MF_CHECKED);
+         for( int i=0;i<8;i++ ) ptCur->activeLayers[i]=false;
+         for( int i=0;i<8;i++ ) ptCur->SwitchToLayer(i);
          break;
       }
    case ID_LAYER_SELECTALL:

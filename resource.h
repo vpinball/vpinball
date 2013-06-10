@@ -307,6 +307,9 @@
 #define IDC_IN                          280
 #define IDC_STARTGAMEBUTTON             280
 #define IDC_GOWEBSITE                   280
+#define IDC_ROTATE_APPLY_BUTTON         280
+#define IDC_SCALE_APPLY_BUTTON          280
+#define IDC_TRANSLATE_APPLY_BUTTON      280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -531,6 +534,11 @@
 #define IDC_JOYCUSTOM4BUTTON            415
 #define IDC_JOYCUSTOM1COMBO             416
 #define IDC_JOYCUSTOM2COMBO             417
+#define IDC_BUTTON2                     417
+#define IDC_ROTATE_UNDO_BUTTON          417
+#define IDC_SCALE_UNDO_BUTTON           417
+#define IDC_TRANSLATE_UNDO_BUTTON2      417
+#define IDC_TRANSLATE_UNDO_BUTTON       417
 #define IDC_JOYCUSTOM3COMBO             418
 #define IDC_JOYCUSTOM4COMBO             419
 #define IDC_JOYCUSTOM1COMBO2            420
@@ -706,7 +714,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        390
 #define _APS_NEXT_COMMAND_VALUE         32874
-#define _APS_NEXT_CONTROL_VALUE         417
+#define _APS_NEXT_CONTROL_VALUE         418
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
