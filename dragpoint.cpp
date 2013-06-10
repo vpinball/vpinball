@@ -740,6 +740,7 @@ STDMETHODIMP DragPoint::put_TextureCoordinateU(float newVal)
 	return S_OK;
 }
 
+int rotateApplyCount=0;
 int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	ISelect *psel;
@@ -748,6 +749,7 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 		case WM_INITDIALOG:
 			{
+         rotateApplyCount=0;
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 
 			psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -779,11 +781,24 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							{
 							char szT[256];
 							GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);							
+                     for( unsigned int i=0;i<strlen(szT);i++)
+                     {
+                        if( szT[i]=='.') szT[i]=',';
+                     }
+
 							const float f = sz2f(szT);
+                     for( unsigned int i=0;i<strlen(szT);i++)
+                     {
+                        if( szT[i]=='.') szT[i]=',';
+                     }
 							GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
 							Vertex2D v;
 							v.x = sz2f(szT);
 							GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
+                     for( unsigned int i=0;i<strlen(szT);i++)
+                     {
+                        if( szT[i]=='.') szT[i]=',';
+                     }
 							v.y = sz2f(szT);
 
 							psel->Rotate(f, &v);
@@ -791,8 +806,44 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							EndDialog(hwndDlg, TRUE);
 
 							break;
+                  case IDC_ROTATE_APPLY_BUTTON:
+                     {
+                        rotateApplyCount++;
+                        char szT[256];
+                        GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);							
+                        for( unsigned int i=0;i<strlen(szT);i++)
+                        {
+                           if( szT[i]=='.') szT[i]=',';
+                        }
+                        const float f = sz2f(szT);
+                        GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+                        for( unsigned int i=0;i<strlen(szT);i++)
+                        {
+                           if( szT[i]=='.') szT[i]=',';
+                        }
+                        Vertex2D v;
+                        v.x = sz2f(szT);
+                        GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
+                        for( unsigned int i=0;i<strlen(szT);i++)
+                        {
+                           if( szT[i]=='.') szT[i]=',';
+                        }
+                        v.y = sz2f(szT);
 
+                        psel->Rotate(f, &v);
+                        break;
+                     }
+                  case IDC_ROTATE_UNDO_BUTTON:
+                     {
+                        if( rotateApplyCount>0 ) 
+                        {
+                           rotateApplyCount--;
+                           psel->GetPTable()->Undo();
+                        }
+                        break;
+                     }
 						case IDCANCEL:
+                     for( int i=0;i<rotateApplyCount;i++ ) psel->GetPTable()->Undo();
 							EndDialog(hwndDlg, FALSE);
 							break;
 						}
@@ -804,6 +855,7 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 	}
 
+int scaleApplyCount=0;
 int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	ISelect *psel;
@@ -812,6 +864,7 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 		case WM_INITDIALOG:
 			{
+         scaleApplyCount=0;
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 			psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
@@ -850,6 +903,11 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							{
 							char szT[256];
 							GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
+                     for( unsigned int i=0;i<strlen(szT);i++)
+                     {
+                        if( szT[i]=='.') szT[i]=',';
+                     }
+
 							const float fx = sz2f(szT);
 							const int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
 							float fy;
@@ -860,13 +918,25 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							else
 								{
 								GetDlgItemText(hwndDlg, IDC_SCALEY, szT, 255);
+                        for( unsigned int i=0;i<strlen(szT);i++)
+                        {
+                           if( szT[i]=='.') szT[i]=',';
+                        }
 								fy = sz2f(szT);
 								}
 
 							GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+                     for( unsigned int i=0;i<strlen(szT);i++)
+                     {
+                        if( szT[i]=='.') szT[i]=',';
+                     }
 							Vertex2D v;
 							v.x = sz2f(szT);
 							GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
+                     for( unsigned int i=0;i<strlen(szT);i++)
+                     {
+                        if( szT[i]=='.') szT[i]=',';
+                     }
 							v.y = sz2f(szT);
 
 							//pihdp->ScalePoints(fx, fy, &v);
@@ -875,8 +945,61 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							EndDialog(hwndDlg, TRUE);
 
 							break;
+                  case IDC_SCALE_APPLY_BUTTON:
+                     {
+                        scaleApplyCount++;
+                        char szT[256];
+                        GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
+                        for( unsigned int i=0;i<strlen(szT);i++)
+                        {
+                           if( szT[i]=='.') szT[i]=',';
+                        }
+                        const float fx = sz2f(szT);
+                        const int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
+                        float fy;
+                        if (checked)
+                        {
+                           fy = fx;
+                        }
+                        else
+                        {
+                           GetDlgItemText(hwndDlg, IDC_SCALEY, szT, 255);
+                           for( unsigned int i=0;i<strlen(szT);i++)
+                           {
+                              if( szT[i]=='.') szT[i]=',';
+                           }
+                           fy = sz2f(szT);
+                        }
 
+                        GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+                        for( unsigned int i=0;i<strlen(szT);i++)
+                        {
+                           if( szT[i]=='.') szT[i]=',';
+                        }
+                        Vertex2D v;
+                        v.x = sz2f(szT);
+                        GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
+                        for( unsigned int i=0;i<strlen(szT);i++)
+                        {
+                           if( szT[i]=='.') szT[i]=',';
+                        }
+                        v.y = sz2f(szT);
+
+                        //pihdp->ScalePoints(fx, fy, &v);
+                        psel->Scale(fx, fy, &v);
+                        break;
+                     }
+            case IDC_SCALE_UNDO_BUTTON:
+               {
+                  if( scaleApplyCount>0 )
+                  {
+                     scaleApplyCount--;
+                     psel->GetPTable()->Undo();
+                  }
+                  break;
+               }
 						case IDCANCEL:
+                     for( int i=0;i<scaleApplyCount;i++) psel->GetPTable()->Undo();
 							EndDialog(hwndDlg, FALSE);
 							break;
 
@@ -899,6 +1022,7 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 	}
 
+int translateApplyCount=0;
 int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	ISelect *psel;
@@ -907,6 +1031,7 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 		{
 		case WM_INITDIALOG:
 			{
+         translateApplyCount=0;
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
@@ -936,9 +1061,17 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							{
 							char szT[256];							
 							GetDlgItemText(hwndDlg, IDC_OFFSETX, szT, 255);
+                     for( unsigned int i=0;i<strlen(szT);i++)
+                     {
+                        if( szT[i]=='.') szT[i]=',';
+                     }
 							Vertex2D v;
 							v.x = sz2f(szT);
 							GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
+                     for( unsigned int i=0;i<strlen(szT);i++)
+                     {
+                        if( szT[i]=='.') szT[i]=',';
+                     }
 							v.y = sz2f(szT);
 
 							psel->Translate(&v);
@@ -946,8 +1079,38 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							EndDialog(hwndDlg, TRUE);
 
 							break;
+                  case IDC_TRANSLATE_APPLY_BUTTON:
+                     {
+                        translateApplyCount++;
+                        char szT[256];							
+                        GetDlgItemText(hwndDlg, IDC_OFFSETX, szT, 255);
+                        for( unsigned int i=0;i<strlen(szT);i++)
+                        {
+                           if( szT[i]=='.') szT[i]=',';
+                        }
+                        Vertex2D v;
+                        v.x = sz2f(szT);
+                        GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
+                        for( unsigned int i=0;i<strlen(szT);i++)
+                        {
+                           if( szT[i]=='.') szT[i]=',';
+                        }
+                        v.y = sz2f(szT);
 
+                        psel->Translate(&v);
+                        break;
+                     }
+                  case IDC_TRANSLATE_UNDO_BUTTON:
+                     {
+                        if( translateApplyCount>0 )
+                        {
+                           translateApplyCount--;
+                           psel->GetPTable()->Undo();
+                        }
+                        break;
+                     }
 						case IDCANCEL:
+                     for( int i=0;i<translateApplyCount;i++ ) psel->GetPTable()->Undo();
 							EndDialog(hwndDlg, FALSE);
 							break;
 						}
