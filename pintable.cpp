@@ -994,6 +994,7 @@ void PinTable::SwitchToLayer(int layerNumber )
       }
       if( !alreadyIn )
       {
+         piedit->GetISelect()->layerIndex=0;
          layer[0].AddElement(piedit);
       }
    }
@@ -1021,16 +1022,8 @@ void PinTable::AssignToLayer(IEditable *obj, int layerNumber )
    {
       m_vedit.RemoveElement(obj);
    }
-   int currentLayerUsed=0;
-   for( int i=0;i<8;i++ )
-   {
-      if( layer[i].IndexOf(obj)!=-1 )
-      {
-         currentLayerUsed=i;
-         break;
-      }
-   }
-   layer[currentLayerUsed].RemoveElement(obj);
+   layer[obj->GetISelect()->layerIndex].RemoveElement(obj);
+   obj->GetISelect()->layerIndex=layerNumber;
    layer[layerNumber].InsertElementAt(obj,0);
    SetDirtyDraw();
 }
@@ -1042,6 +1035,7 @@ void PinTable::MergeAllLayers()
       for( int i=layer[t].Size()-1;i>=0;i-- )
       {
          IEditable *piedit = layer[t].ElementAt(i);
+         piedit->GetISelect()->layerIndex=0;
          layer[0].AddElement(piedit);
       }
       layer[t].RemoveAllElements();
@@ -1068,6 +1062,7 @@ void PinTable::BackupLayers()
       }
       if( !alreadyIn )
       {
+         piedit->GetISelect()->layerIndex=0;
          layer[0].AddElement(piedit);
       }
    }
