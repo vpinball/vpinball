@@ -452,6 +452,15 @@ public:
 	BOOL SetupProtectionBlock(unsigned char *pPassword, unsigned long flags);
 	BOOL UnlockProtectionBlock(unsigned char *pPassword);
 
+   void SwitchToLayer(int layerNumber );
+   void AssignToLayer(IEditable *obj, int layerNumber );
+   void AssignMultiToLayer( int layerNumber, int x, int y );
+   void MergeAllLayers();
+   void RestoreLayers();
+   void BackupLayers();
+   void DeleteFromLayer( IEditable *obj );
+
+
 BEGIN_COM_MAP(PinTable)
 	COM_INTERFACE_ENTRY(ITable)
 	COM_INTERFACE_ENTRY(IDispatch)
@@ -572,7 +581,9 @@ END_CONNECTION_POINT_MAP()
 	//CComObject<Surface> *m_psur;
 
 	Vector< IEditable > m_vedit;
-   Vector< IEditable > hiddenObjects;
+//   Vector< IEditable > hiddenObjects[8];
+   Vector< IEditable > layer[8];
+   bool activeLayers[8];
 
 	Vector< PinImage > m_vimage;
 

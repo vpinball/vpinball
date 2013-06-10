@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -190,6 +190,21 @@ BEGIN
         MENUITEM "&Security Options...",        ID_PREFERENCES_SECURITYOPTIONS
         MENUITEM "&Video Options...",           ID_EDIT_VIDEOOPTIONS
     END
+    POPUP "&Layer"
+    BEGIN
+        MENUITEM "Layer&1",                     ID_LAYER_LAYER1, CHECKED
+        MENUITEM "Layer&2",                     ID_LAYER_LAYER2
+        MENUITEM "Layer&3",                     ID_LAYER_LAYER3
+        MENUITEM "Layer&4",                     ID_LAYER_LAYER4
+        MENUITEM "Layer&5",                     ID_LAYER_LAYER5
+        MENUITEM "Layer&6",                     ID_LAYER_LAYER6
+        MENUITEM "Layer&7",                     ID_LAYER_LAYER7
+        MENUITEM "Layer&8",                     ID_LAYER_LAYER8
+        MENUITEM SEPARATOR
+        MENUITEM "&Merge All",                  ID_LAYER_MERGEALL
+        MENUITEM "Select &All",                 ID_LAYER_SELECTALL
+        MENUITEM "Select &None",                ID_LAYER_SELECTNONE
+    END
     POPUP "&Window"
     BEGIN
         MENUITEM "&Tile",                       ID_WINDOW_TILE
@@ -233,7 +248,6 @@ BEGIN
         MENUITEM "&Rotate",                     ID_WALLMENU_ROTATE
         MENUITEM "&Scale",                      ID_WALLMENU_SCALE
         MENUITEM "&Translate",                  ID_WALLMENU_TRANSLATE
-        MENUITEM "&Hide",                       ID_WALLMENU_MULTIHIDE
     END
 END
 
@@ -2460,6 +2474,10 @@ BEGIN
     IDS_TB_FLIPPER          "Flipper"
     IDS_TB_PLAY             "Play"
     IDS_FLIPPER_DESC        "Flipper Class"
+    IDS_LAYER1              "Layer1"
+    IDS_ASSIGNTO            "Assign to..."
+    IDS_LAYER2              "Layer2"
+    IDS_LAYER3              "Layer3"
 END
 
 STRINGTABLE 
@@ -2495,8 +2513,11 @@ END
 STRINGTABLE 
 BEGIN
     IDS_TIMER_DESC          "Timer Class"
+    IDS_LAYER4              "Layer4"
+    IDS_LAYER5              "Layer5"
     IDS_PLUNGER_DESC        "Plunger Class"
     IDS_TB_PLUNGER          "Plunger"
+    IDS_LAYER6              "Layer6"
     IDS_TEXTBOX_DESC        "Textbox Class"
     IDS_TB_TEXTBOX          "TextBox"
     IDS_DISPREEL_DESC       "DispReel Class"
@@ -2504,12 +2525,14 @@ BEGIN
     IDS_TB_BUMPER           "Bumper"
     IDS_TB_DISPREEL         "EMReel"
     IDS_PIEVENTHANDLER_DESC "PIEventHandler Class"
+    IDS_LAYER7              "Layer7"
     IDS_TRIGGER_DESC        "Trigger Class"
     IDS_TB_TRIGGER          "Trigger"
 END
 
 STRINGTABLE 
 BEGIN
+    IDS_LAYER8              "Layer8"
     IDS_LIGHT_DESC          "Light Class"
     IDS_TB_LIGHT            "Light"
     IDS_KICKER_DESC         "Kicker Class"
@@ -2590,7 +2613,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
