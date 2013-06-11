@@ -4283,6 +4283,40 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       LocalString ls13(IDS_LAYER8);
       AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER8, ls13.m_szbuffer);
 
+      if( psel->layerIndex==0 ) 
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER1, MF_CHECKED);
+      else
+       CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER1, MF_UNCHECKED);  
+      if( psel->layerIndex==1 ) 
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER2, MF_CHECKED);
+      else
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER2, MF_UNCHECKED);  
+      if( psel->layerIndex==2 ) 
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER3, MF_CHECKED);
+      else
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER3, MF_UNCHECKED);  
+      if( psel->layerIndex==3 ) 
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER4, MF_CHECKED);
+      else
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER4, MF_UNCHECKED);  
+      if( psel->layerIndex==4 ) 
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER5, MF_CHECKED);
+      else
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER5, MF_UNCHECKED);  
+      if( psel->layerIndex==5 ) 
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER6, MF_CHECKED);
+      else
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER6, MF_UNCHECKED);  
+      if( psel->layerIndex==6 ) 
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER7, MF_CHECKED);
+      else
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER7, MF_UNCHECKED);  
+      if( psel->layerIndex==7 ) 
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_CHECKED);
+      else
+         CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_UNCHECKED);  
+      
+      
       LocalString ls5(IDS_LOCK);
       AppendMenu(hmenu, MF_STRING, ID_LOCK, ls5.m_szbuffer);
 
