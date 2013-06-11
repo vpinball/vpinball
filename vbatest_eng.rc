@@ -276,7 +276,6 @@ BEGIN
     POPUP "Table Menu"
     BEGIN
         MENUITEM "Paste &At\tShift+Ctrl+V",     IDC_PASTEAT
-        MENUITEM "&Unhide all",                 ID_TABLEMENU_UNHIDEALL
     END
 END
 
