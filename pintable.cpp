@@ -3071,8 +3071,19 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    for( int t=0;t<8;t++ ) layer[t].Empty();
 
-   // copy all elements into layer1
-   m_vedit.Clone( &layer[0] );
+   // copy all elements into their layers
+   for( int i=0;i<8;i++ )
+   {
+      for( int t=0;t<m_vedit.Size();t++ )
+      {
+         IEditable *piedit = m_vedit.ElementAt(t);
+         if ( piedit->GetISelect()->layerIndex==i )
+         {
+            layer[i].AddElement(piedit);
+         }
+      }
+   }
+
    return hr;
 }
 
