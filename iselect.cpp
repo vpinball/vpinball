@@ -326,7 +326,10 @@ BOOL ISelect::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetBool(&m_fLocked);
 		}
-
+   if(id==FID(LAYR))
+   {
+      pbr->GetInt(&layerIndex);
+   }
 	return fTrue;
 	}
 
@@ -335,6 +338,6 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
 	bw.WriteBool(FID(LOCK), m_fLocked);
-
+   bw.WriteInt(FID(LAYR), layerIndex );
 	return S_OK;
 	}
