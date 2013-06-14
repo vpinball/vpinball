@@ -675,11 +675,6 @@
 #define IDC_COMCONTROL                  32840
 #define ID_INSERT_PRIMITIVE             32842
 #define IDC_PRIMITIVE                   32843
-#define ID_WALLMENU_HIDE                32844
-#define ID_WALLMENU_UNHIDEALL           32845
-#define ID_TABLEMENU_UNHIDEALL          32846
-#define ID_WALLMENU_HIDE32847           32847
-#define ID_WALLMENU_MULTIHIDE           32848
 #define ID_LAYER_LAYER1                 32849
 #define ID_LAYER_LAYER2                 32850
 #define ID_LAYER_LAYER3                 32851
@@ -701,10 +696,7 @@
 #define ID_LAYER_MERGEALL               32867
 #define ID_WALLMENU_SELECTALL           32868
 #define ID_WALLMENU_SELECTNONE          32869
-#define ID_LAYER_SELECTALL              32870
-#define ID_LAYER_SELECTNONE             32871
-#define ID_LAYER_SELECTALL32872         32872
-#define ID_LAYER_SELECTNONE32873        32873
+#define ID_LAYER_TOGGLEALL              32874
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -713,7 +705,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        390
-#define _APS_NEXT_COMMAND_VALUE         32874
+#define _APS_NEXT_COMMAND_VALUE         32875
 #define _APS_NEXT_CONTROL_VALUE         418
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

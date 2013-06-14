@@ -41,6 +41,7 @@ public:
 	void Init();
 	void RegisterClasses();
 	void CreateSideBar();
+   HWND CreateLayerToolbar(HWND hwndParent);
 	HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent);
 	void CreateMDIClient();
 	void InitVBA();
@@ -50,6 +51,8 @@ public:
 	//STDMETHOD(get_Parent)(IVisualPinball** lppaReturn);
 
 	void ParseCommand(int code, HWND hwnd, int notify);
+   void setLayerStatus( int layerNumber );
+
 	CComObject<PinTable> *GetActiveTable();
 	void InitTools();
 	void InitRegValues();			//>>> added by Chris
@@ -132,10 +135,12 @@ public:
 	int m_lcidVBA;
 
 	HWND m_hwndSideBar;
-	HWND m_hwndSideBarScroll;
+   HWND m_hwndSideBarScroll;
+   HWND m_hwndSideBarLayers;
 	HWND m_hwndWork;
 	HWND m_hwndToolbarMain;
-	HWND m_hwndToolbarPalette;
+   HWND m_hwndToolbarPalette;
+   HWND m_hwndToolbarLayers;
 	HWND m_hwndStatusBar;
 
 	int palettescroll;

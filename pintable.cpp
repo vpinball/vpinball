@@ -577,6 +577,7 @@ PinTable::PinTable()
    {
       activeLayers[i]=true;
    }
+   toggleAllLayers=false;
 
    m_vmultisel.AddElement((ISelect *)this);
    m_undo.m_ptable = this;
