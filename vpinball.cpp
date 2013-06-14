@@ -85,8 +85,18 @@ TBBUTTON const g_tbbuttonPalette[] = {
    {20, IDC_DISPREEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DISPREEL, 14},
    {21, IDC_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHTSEQ, 15},
    {22, IDC_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16},
-   {22, IDC_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16},
-   //{22, IDC_COMCONTROL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_COMCONTROL, 16},
+};
+
+TBBUTTON const g_tbbuttonLayers[] = {
+   {23, ID_LAYER_LAYER1, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0},
+   {24, ID_LAYER_LAYER2, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 1},
+   {25, ID_LAYER_LAYER3, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 2},
+   {26, ID_LAYER_LAYER4, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 3},
+   {27, ID_LAYER_LAYER5, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 4},
+   {28, ID_LAYER_LAYER6, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 5},
+   {29, ID_LAYER_LAYER7, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 6},
+   {30, ID_LAYER_LAYER8, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 7},
+   {31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 8},
 };
 
 MiniBitmapID const g_rgminibitmap[] = {
@@ -97,8 +107,21 @@ MiniBitmapID const g_rgminibitmap[] = {
    NULL, -1,
 };
 
+const int allLayers[8]=
+{
+   ID_LAYER_LAYER1,
+   ID_LAYER_LAYER2,
+   ID_LAYER_LAYER3,
+   ID_LAYER_LAYER4,
+   ID_LAYER_LAYER5,
+   ID_LAYER_LAYER6,
+   ID_LAYER_LAYER7,
+   ID_LAYER_LAYER8
+};
+
 #define TBCOUNTMAIN (sizeof(g_tbbuttonMain) / sizeof(TBBUTTON))
 #define TBCOUNTPALETTE (sizeof(g_tbbuttonPalette) / sizeof(TBBUTTON))
+#define TBCOUNTLAYERS (sizeof(g_tbbuttonLayers) / sizeof(TBBUTTON))
 
 LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -547,15 +570,58 @@ void VPinball::CreateSideBar()
    m_hwndSideBar = ::CreateWindowEx(/*WS_EX_WINDOWEDGE*/0,"VPStaticChild","",WS_VISIBLE | WS_CHILD | WS_BORDER,
       0,0,TOOLBAR_WIDTH + SCROLL_WIDTH,rc.bottom - rc.top,m_hwnd,NULL,g_hinst,0);
 
+   m_hwndSideBarLayers = ::CreateWindowEx(0,"VPStaticChild","",WS_VISIBLE | WS_CHILD,
+      0,48*(TBCOUNTMAIN/2),TOOLBAR_WIDTH + SCROLL_WIDTH,rc.bottom-rc.top,m_hwndSideBar,NULL,g_hinst,0);
+
    m_hwndSideBarScroll = ::CreateWindowEx(0,"VPStaticChild","",WS_VISIBLE | WS_CHILD | WS_VSCROLL,
-      0,48*(TBCOUNTMAIN/2),TOOLBAR_WIDTH + SCROLL_WIDTH,rc.bottom - rc.top,m_hwndSideBar,NULL,g_hinst,0);
+      0,28*(TBCOUNTLAYERS/2),TOOLBAR_WIDTH + SCROLL_WIDTH,rc.bottom - rc.top,m_hwndSideBarLayers,NULL,g_hinst,0);
+
 
    m_hwndToolbarMain = CreateToolbar((TBBUTTON *)g_tbbuttonMain, TBCOUNTMAIN, m_hwndSideBar);
+   m_hwndToolbarLayers = CreateLayerToolbar(m_hwndSideBarLayers);
    m_hwndToolbarPalette = CreateToolbar((TBBUTTON *)g_tbbuttonPalette, TBCOUNTPALETTE, m_hwndSideBarScroll);
-
    palettescroll = 0;
 }
 
+HWND VPinball::CreateLayerToolbar(HWND hwndParent)
+{
+   HWND hwnd = CreateToolbarEx(hwndParent,
+      WS_CHILD | WS_VISIBLE | TBSTYLE_BUTTON | TBSTYLE_WRAPABLE,
+      1, TBCOUNTLAYERS, g_hinst, IDB_TB_SELECT, g_tbbuttonLayers, TBCOUNTLAYERS, 24, 24, 24, 24,
+      sizeof(TBBUTTON));
+
+   SendMessage(hwnd, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);
+
+#ifdef IMSPANISH
+   SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
+      (LPARAM)(DWORD)MAKELONG(50,50));
+#elif defined(IMGERMAN)
+   SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
+      (LPARAM)(DWORD)MAKELONG(50,50));
+#else
+   SendMessage(hwnd, TB_SETBUTTONWIDTH, 0,
+      (LPARAM)(DWORD)MAKELONG(50,50));
+#endif
+
+   for (int i=0;i<TBCOUNTLAYERS;i++)
+   {
+      TBBUTTONINFO tbbi;
+      ZeroMemory(&tbbi,sizeof(TBBUTTONINFO));
+      tbbi.cbSize = sizeof(TBBUTTONINFO);
+      tbbi.dwMask = TBIF_SIZE | TBIF_COMMAND | TBIF_STATE | TBIF_STYLE;
+      SendMessage(hwnd, TB_GETBUTTONINFO, g_tbbuttonLayers[i].idCommand, (LPARAM)&tbbi);
+      if (tbbi.fsStyle & TBSTYLE_DROPDOWN)
+      {
+         tbbi.cx = 48;
+      }
+      SendMessage(hwnd, TB_SETBUTTONINFO, g_tbbuttonLayers[i].idCommand, (LPARAM)&tbbi);
+   }
+
+   SendMessage(hwnd, TB_AUTOSIZE, 0, 0);
+
+   return hwnd;
+
+}
 ///<summary>
 ///Creates Buttons in Toolbar-Windows (left Toolbar)
 ///<param name="*p_tbbutton">Pointer to Buttons as TBBUTTON[]</param>
@@ -825,7 +891,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          {
             hmenuEdit = GetSubMenu(hmenu, 1);
          }
-         /*const DWORD foo =*/ CheckMenuItem(hmenuEdit, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
+         CheckMenuItem(hmenuEdit, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
 
          m_sb.SetVisible(fShow);
 
@@ -1318,130 +1384,42 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       break;
    case ID_LAYER_LAYER1:
       {
-         ptCur = GetActiveTable();
-         if( !ptCur ) break;
-         HMENU hmenu = GetMenu(m_hwnd);
-         if( !ptCur->activeLayers[0] )
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER1, MF_CHECKED);
-         }
-         else
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER1, MF_UNCHECKED);
-         }
-         ptCur->SwitchToLayer(0);
+         setLayerStatus(0);
          break;
       }
    case ID_LAYER_LAYER2:
       {
-         ptCur = GetActiveTable();
-         if( !ptCur ) break;
-         HMENU hmenu = GetMenu(m_hwnd);
-         if( !ptCur->activeLayers[1] )
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER2, MF_CHECKED);
-         }
-         else
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER2, MF_UNCHECKED);
-         }
-         ptCur->SwitchToLayer(1);
+         setLayerStatus(1);
          break;
       }
    case ID_LAYER_LAYER3:
       {
-         ptCur = GetActiveTable();
-         if( !ptCur ) break;
-         HMENU hmenu = GetMenu(m_hwnd);
-         if( !ptCur->activeLayers[2] )
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER3, MF_CHECKED);
-         }
-         else
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER3, MF_UNCHECKED);
-         }
-         ptCur->SwitchToLayer(2);
+         setLayerStatus(2);
          break;
       }
    case ID_LAYER_LAYER4:
       {
-         ptCur = GetActiveTable();
-         if( !ptCur ) break;
-         HMENU hmenu = GetMenu(m_hwnd);
-         if( !ptCur->activeLayers[3] )
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER4, MF_CHECKED);
-         }
-         else
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER4, MF_UNCHECKED);
-         }
-         ptCur->SwitchToLayer(3);
+         setLayerStatus(3);
          break;
       }
    case ID_LAYER_LAYER5:
       {
-         ptCur = GetActiveTable();
-         if( !ptCur ) break;
-         HMENU hmenu = GetMenu(m_hwnd);
-         if( !ptCur->activeLayers[4] )
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER5, MF_CHECKED);
-         }
-         else
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER5, MF_UNCHECKED);
-         }
-         ptCur->SwitchToLayer(4);
+         setLayerStatus(4);
          break;
       }
    case ID_LAYER_LAYER6:
       {
-         ptCur = GetActiveTable();
-         if( !ptCur ) break;
-         HMENU hmenu = GetMenu(m_hwnd);
-         if( !ptCur->activeLayers[5] )
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER6, MF_CHECKED);
-         }
-         else
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER6, MF_UNCHECKED);
-         }
-         ptCur->SwitchToLayer(5);
+         setLayerStatus(5);
          break;
       }
    case ID_LAYER_LAYER7:
       {
-         ptCur = GetActiveTable();
-         if( !ptCur ) break;
-         HMENU hmenu = GetMenu(m_hwnd);
-         if( !ptCur->activeLayers[6] )
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER7, MF_CHECKED);
-         }
-         else
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER7, MF_UNCHECKED);
-         }
-         ptCur->SwitchToLayer(6);
+         setLayerStatus(6);
          break;
       }
    case ID_LAYER_LAYER8:
       {
-         ptCur = GetActiveTable();
-         if( !ptCur ) break;
-         HMENU hmenu = GetMenu(m_hwnd);
-         if( !ptCur->activeLayers[7] )
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER8, MF_CHECKED);
-         }
-         else
-         {
-            CheckMenuItem(hmenu, ID_LAYER_LAYER8, MF_UNCHECKED);
-         }
-         ptCur->SwitchToLayer(7);
+         setLayerStatus(7);
          break;
       }
    case ID_LAYER_MERGEALL:
@@ -1450,50 +1428,26 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if( !ptCur ) break;
          HMENU hmenu = GetMenu(m_hwnd);
          ptCur->MergeAllLayers();
-         CheckMenuItem(hmenu, ID_LAYER_LAYER1, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER2, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER3, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER4, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER5, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER6, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER7, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER8, MF_CHECKED);
          for( int i=0;i<8;i++ ) ptCur->activeLayers[i]=false;
-         for( int i=0;i<8;i++ ) ptCur->SwitchToLayer(i);
+         for( int i=0;i<8;i++ ) setLayerStatus(i);
          break;
       }
-   case ID_LAYER_SELECTALL:
+   case ID_LAYER_TOGGLEALL:
       {
          ptCur = GetActiveTable();
          if( !ptCur ) break;
          HMENU hmenu = GetMenu(m_hwnd);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER1, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER2, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER3, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER4, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER5, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER6, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER7, MF_CHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER8, MF_CHECKED);
-         for( int i=0;i<8;i++ ) ptCur->activeLayers[i]=false;
-         for( int i=0;i<8;i++ ) ptCur->SwitchToLayer(i);
-         break;
-      }
-   case ID_LAYER_SELECTNONE:
-      {
-         ptCur = GetActiveTable();
-         if( !ptCur ) break;
-         HMENU hmenu = GetMenu(m_hwnd);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER1, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER2, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER3, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER4, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER5, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER6, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER7, MF_UNCHECKED);
-         CheckMenuItem(hmenu, ID_LAYER_LAYER8, MF_UNCHECKED);
-         for( int i=0;i<8;i++ ) ptCur->activeLayers[i]=true;
-         for( int i=0;i<8;i++ ) ptCur->SwitchToLayer(i);
+         if( ptCur->toggleAllLayers )
+         {
+            for( int i=0;i<8;i++ ) ptCur->activeLayers[i]=false;
+            for( int i=0;i<8;i++ ) setLayerStatus(i);
+         }
+         else
+         {
+            for( int i=0;i<8;i++ ) ptCur->activeLayers[i]=true;
+            for( int i=0;i<8;i++ ) setLayerStatus(i);
+         }
+         ptCur->toggleAllLayers ^= true;   
          break;
       }
    case ID_HELP_ABOUT:
@@ -1509,6 +1463,45 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       }
       break;
    }
+}
+
+void VPinball::setLayerStatus( int layerNumber )
+{
+   CComObject<PinTable> *ptCur;
+
+   ptCur = GetActiveTable();
+   if( !ptCur  || layerNumber>7 ) return;
+
+   HMENU hmenu = GetMenu(m_hwnd);
+   
+   TBBUTTONINFO tbinfo;
+   ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
+   tbinfo.cbSize = sizeof(TBBUTTONINFO);
+   tbinfo.dwMask = TBIF_STATE;
+   //+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
+   SendMessage(m_hwndToolbarLayers,TB_GETBUTTONINFO,allLayers[layerNumber],(long)&tbinfo);
+
+   if( !ptCur->activeLayers[layerNumber] )
+   {
+      CheckMenuItem(hmenu, allLayers[layerNumber], MF_CHECKED);
+      if ( (tbinfo.fsState & TBSTATE_CHECKED) == 0 )
+      {
+         tbinfo.fsState ^= TBSTATE_CHECKED;
+      }
+   }
+   else
+   {
+      CheckMenuItem(hmenu, allLayers[layerNumber], MF_UNCHECKED);
+      if ( (tbinfo.fsState & TBSTATE_CHECKED) != 0 )
+      {
+         tbinfo.fsState ^= TBSTATE_CHECKED;
+      }
+   }
+
+
+   SendMessage(m_hwndToolbarLayers,TB_SETBUTTONINFO,allLayers[layerNumber],(long)&tbinfo);
+
+   ptCur->SwitchToLayer(layerNumber);
 }
 
 const int rgToolEnable[23][2] = {
@@ -1633,7 +1626,6 @@ void VPinball::SetEnableToolbar()
    }
 
    SetEnablePalette();
-
    ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 2);//redisplay 
 }
 
@@ -1738,6 +1730,20 @@ void VPinball::LoadFileName(char *szFileName)
       }
 
       UpdateRecentFileList(szFileName);
+   }
+
+   for( int i=0;i<8;i++ )
+   {
+      TBBUTTONINFO tbinfo;
+      ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
+      tbinfo.cbSize = sizeof(TBBUTTONINFO);
+      tbinfo.dwMask = TBIF_STATE;
+      //+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
+      SendMessage(m_hwndToolbarLayers,TB_GETBUTTONINFO,allLayers[i],(long)&tbinfo);
+
+      tbinfo.fsState |= TBSTATE_CHECKED;
+      SendMessage(m_hwndToolbarLayers,TB_SETBUTTONINFO,allLayers[i],(long)&tbinfo);
+
    }
 
    SetEnableToolbar();
@@ -2448,7 +2454,8 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          GetWindowRect(g_pvp->m_hwndStatusBar, &rcStatus);
          const int statheight = rcStatus.bottom - rcStatus.top;
 
-         const int scrollwindowtop = 48*(TBCOUNTMAIN/2);
+         //const int scrollwindowtop = 48*(TBCOUNTMAIN/2);
+         const int scrollwindowtop = 48*(TBCOUNTMAIN/2)+28*(TBCOUNTLAYERS/2);
          const int scrollwindowheight = rc.bottom - rc.top - statheight - scrollwindowtop;
          SetWindowPos(g_pvp->m_hwndSideBarScroll,NULL,
             0, scrollwindowtop, TOOLBAR_WIDTH + SCROLL_WIDTH, scrollwindowheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);

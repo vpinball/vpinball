@@ -584,6 +584,7 @@ END_CONNECTION_POINT_MAP()
 //   Vector< IEditable > hiddenObjects[8];
    Vector< IEditable > layer[8];
    bool activeLayers[8];
+   bool toggleAllLayers;
 
 	Vector< PinImage > m_vimage;
 

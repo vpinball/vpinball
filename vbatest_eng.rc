@@ -202,8 +202,7 @@ BEGIN
         MENUITEM "Layer&8",                     ID_LAYER_LAYER8
         MENUITEM SEPARATOR
         MENUITEM "&Merge All",                  ID_LAYER_MERGEALL
-        MENUITEM "Select &All",                 ID_LAYER_SELECTALL
-        MENUITEM "Select &None",                ID_LAYER_SELECTNONE
+        MENUITEM "&Toggle All",                 ID_LAYER_TOGGLEALL
     END
     POPUP "&Window"
     BEGIN
