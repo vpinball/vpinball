@@ -581,17 +581,6 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
 
    ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
 
-   Material mtrl;
-   mtrl.diffuse.a = 
-      mtrl.ambient.a =
-      mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-      mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-      mtrl.power = 0;
-
-   const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
    int ofs=0;
    for (int i=0;i<frameCount;i++,ofs+=8)
    {
@@ -630,19 +619,13 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
          g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-         mtrl.diffuse.r = mtrl.ambient.r =
-            mtrl.diffuse.g = mtrl.ambient.g =
-            mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+         ppin3d->SetMaterial(1.0f, 1.0f, 1.0f, 1.0f );
       }
       else // No image by that name
       {
          ppin3d->SetTexture(NULL);
-         mtrl.diffuse.r = mtrl.ambient.r = r;
-         mtrl.diffuse.g = mtrl.ambient.g = g;
-         mtrl.diffuse.b = mtrl.ambient.b = b;
+         ppin3d->SetMaterial(1.0f, m_d.m_color );
       }
-
-      pd3dDevice->SetMaterial(&mtrl);
 
       SetNormal(rgv3D, rgiSpinner2, 4, NULL, NULL, 0);
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSpinner2,4, 0);
@@ -674,27 +657,18 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
          g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-         mtrl.diffuse.r = mtrl.ambient.r = 1.0f;
-         mtrl.diffuse.g = mtrl.ambient.g = 1.0f;
-         mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+         ppin3d->SetMaterial(1.0f, 1.0f, 1.0f, 1.0f );
       }
       else // No image by that name
       {
          ppin3d->SetTexture(NULL);
-         mtrl.diffuse.r = mtrl.ambient.r = r;
-         mtrl.diffuse.g = mtrl.ambient.g = g;
-         mtrl.diffuse.b = mtrl.ambient.b = b;
+         ppin3d->SetMaterial(1.0f, m_d.m_color );
       }
-
-      pd3dDevice->SetMaterial(&mtrl);
 
       SetNormal(rgv3D, rgiSpinner3, 4, NULL, NULL, 0);
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner3, 4, 0);
 
-      mtrl.diffuse.r = mtrl.ambient.r = r;
-      mtrl.diffuse.g = mtrl.ambient.g = g;
-      mtrl.diffuse.b = mtrl.ambient.b = b;
-      pd3dDevice->SetMaterial(&mtrl);
+      ppin3d->SetMaterial(1.0f, m_d.m_color );
       ppin3d->SetTexture(NULL);
 
       if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)

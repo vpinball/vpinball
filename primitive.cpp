@@ -737,12 +737,6 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 	  RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
       PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 
-      Material mtrl;
-      mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a =
-      mtrl.emissive.r = mtrl.emissive.g = mtrl.emissive.b = mtrl.emissive.a =
-      mtrl.power = 0;
-	  mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
       if (pin)
       {
          // OK, Top is visible, and we have a image
@@ -761,23 +755,13 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
          g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
 
-         mtrl.diffuse.r = mtrl.ambient.r =
-         mtrl.diffuse.g = mtrl.ambient.g =
-         mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+         g_pplayer->m_pin3d.SetMaterial( 1.0f, 1.0f, 1.0f, 1.0f );
       }
       else
       {
-         const float r = (m_d.m_TopColor & 255) * (float)(1.0/255.0);
-         const float g = (m_d.m_TopColor & 65280) * (float)(1.0/65280.0);
-         const float b = (m_d.m_TopColor & 16711680) * (float)(1.0/16711680.0);
-
-         mtrl.diffuse.r = mtrl.ambient.r = r;
-         mtrl.diffuse.g = mtrl.ambient.g = g;
-         mtrl.diffuse.b = mtrl.ambient.b = b;
+         g_pplayer->m_pin3d.SetMaterial( 1.0f, m_d.m_TopColor );
       }
    
-      pd3dDevice->SetMaterial(&mtrl);
-
 	  if(vertexBufferRegenerate)
 	  {
 		  vertexBufferRegenerate = false;

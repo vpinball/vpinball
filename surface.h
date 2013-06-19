@@ -113,6 +113,8 @@ END_CONNECTION_POINT_MAP()
 
 	virtual void RenderSlingshots(RenderDevice* pd3dDevice);
 	virtual ObjFrame *RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, BOOL fDrop);
+   virtual void PrepareWallsAtHeight( RenderDevice* pd3dDevice );
+   virtual void PrepareSlingshots( RenderDevice *pd3dDevice );
 
 	virtual void RenderBlueprint(Sur *psur);
 
@@ -144,7 +146,13 @@ END_CONNECTION_POINT_MAP()
 	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
 	bool IsWall;
-
+   int numVertices, numPolys;
+   // two type for dropped and non-dropped walls
+   Vertex3D_NoLighting *vertsNotLit,*vertsTopNotLit[2];
+   Vertex3D *verts,*vertsTop[2];
+   VertexBuffer *slingshotVBuffer;
+   VertexBuffer *sideVBuffer;
+   VertexBuffer *topVBuffer[2];
 // ISurface
 public:
 	STDMETHOD(get_SideVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
