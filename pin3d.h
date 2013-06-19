@@ -219,6 +219,10 @@ public:
 	void SetTexture(Texture* pddsTexture);
 	void EnableLightMap(const BOOL fEnable, const float z);
 
+   void InitMaterial( Material &mtrl, const float a, const float r, const float g, const float b );
+   void InitMaterial( Material &mtrl, COLORREF _color );
+   void SetMaterial(const float a, const float r, const float g, const float b );
+   void SetMaterial( const float alpha, COLORREF _color );
 	void SetMaterial(const float l, const float a);
 	void SetColorKeyEnabled(const BOOL fColorKey) const;
 	void EnableAlphaTestReference(DWORD alphaRefValue) const;

@@ -554,22 +554,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); 
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-	const float r = (float)(color & 255) * (float)(1.0/255.0);
-	const float g = (float)(color & 65280) * (float)(1.0/65280.0);
-	const float b = (float)(color & 16711680) * (float)(1.0/16711680.0);
-
-	{
-	Material mtrl;
-	mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	mtrl.power = 0;
-	mtrl.diffuse.r = mtrl.ambient.r = r;
-	mtrl.diffuse.g = mtrl.ambient.g = g;
-	mtrl.diffuse.b = mtrl.ambient.b = b;
-	mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-	pd3dDevice->SetMaterial(&mtrl);
-	}
+   ppin3d->SetMaterial(1.0f, color );
 
 	Vertex2D vendcenter;
 	Vertex2D rgv[4];

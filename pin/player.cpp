@@ -1106,17 +1106,6 @@ void Player::InitStatic(HWND hwndProgress)
 
    // Direct all renders to the "static" buffer.
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
-
-   // basic setup for all render objects
-   for (int i=0;i<m_ptable->m_vedit.Size();i++)
-   {
-      Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
-      if (ph)
-      {
-         ph->RenderSetup(m_pin3d.m_pd3dDevice);
-      }
-   }
-
    // Draw stuff
    for (int i=0;i<m_ptable->m_vedit.Size();i++)
    {
@@ -1126,6 +1115,7 @@ void Player::InitStatic(HWND hwndProgress)
          Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
          if (ph)
          {
+            ph->RenderSetup(m_pin3d.m_pd3dDevice);
             ph->RenderStatic(m_pin3d.m_pd3dDevice);
             if (hwndProgress)
             {
@@ -1143,6 +1133,7 @@ void Player::InitStatic(HWND hwndProgress)
          Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
          if (ph)
          {
+            ph->RenderSetup(m_pin3d.m_pd3dDevice);
             ph->RenderStatic(m_pin3d.m_pd3dDevice);
             if (hwndProgress)
             {
@@ -1160,6 +1151,7 @@ void Player::InitStatic(HWND hwndProgress)
          Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
          if (ph)
          {
+            ph->RenderSetup(m_pin3d.m_pd3dDevice);
             ph->RenderStatic(m_pin3d.m_pd3dDevice);
             if (hwndProgress)
             {

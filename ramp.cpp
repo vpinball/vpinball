@@ -1097,6 +1097,7 @@ void Ramp::RenderStaticHabitrail(const RenderDevice* _pd3dDevice)
    const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
    {
+      // Pin3D::SetMaterial sets power to 0 so don't use it here
       Material mtrl;
       mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a = 0.0f;
       mtrl.diffuse.r = mtrl.ambient.r = r;
@@ -1635,12 +1636,6 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
       PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
       float maxtu = 0, maxtv = 0;
 
-      Material mtrl;
-      mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a =
-      mtrl.emissive.r = mtrl.emissive.g = mtrl.emissive.b = mtrl.emissive.a =
-      mtrl.power = 0;
-      mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
       if (pin)
       {
          m_ptable->GetTVTU(pin, &maxtu, &maxtv);
@@ -1657,14 +1652,14 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
             pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            g_pplayer->m_pin3d.EnableAlphaTestReference(0x00000001);
+            ppin3d->EnableAlphaTestReference(0x00000001);
             pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
             pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
 		    if(m_d.m_fAddBlend)
 		        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
          }
 
-         g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
+         ppin3d->SetColorKeyEnabled(TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
          // Check if this is an acrylic.
@@ -1673,34 +1668,25 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
             // Set a high threshold for writing transparent pixels to the z buffer.  
             // This allows some of the ball's pixels to write when under the ramp... 
             // giving the illusion of transparency (screen door). 
-            g_pplayer->m_pin3d.EnableAlphaTestReference(127);
+            ppin3d->EnableAlphaTestReference(127);
             // Make sure our textures tile.
             pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 
             // Turn off texture filtering.
-            g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_POINT );
+            ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_POINT );
          }
          else
          {
-            g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+            ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
          }
 
-         mtrl.diffuse.r = mtrl.ambient.r =
-         mtrl.diffuse.g = mtrl.ambient.g =
-         mtrl.diffuse.b = mtrl.ambient.b = 1.0f;			
+         ppin3d->SetMaterial( 1.0f, 1.0f, 1.0f, 1.0f );
       }
       else
       {
-         const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-         const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-         const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
-         mtrl.diffuse.r = mtrl.ambient.r = r;
-         mtrl.diffuse.g = mtrl.ambient.g = g;
-         mtrl.diffuse.b = mtrl.ambient.b = b;
+         ppin3d->SetMaterial( 1.0f,m_d.m_color );
       }
 
-      pd3dDevice->SetMaterial(&mtrl);
       int offset=0;
       for (int i=0; i<(rampVertex-1); i++,offset+=4)
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, staticVertexBuffer, offset, 4, (LPWORD)rgi0123, 4, 0 );
@@ -1708,16 +1694,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
       if (pin && !m_d.m_fImageWalls)
       {
          ppin3d->SetTexture(NULL);
-
-         const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-         const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-         const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
-         mtrl.diffuse.r = mtrl.ambient.r = r;
-         mtrl.diffuse.g = mtrl.ambient.g = g;
-         mtrl.diffuse.b = mtrl.ambient.b = b;
-
-         pd3dDevice->SetMaterial(&mtrl);
+         ppin3d->SetMaterial( 1.0f, m_d.m_color );
       }
 
       for (int i=0;i<(rampVertex-1);i++)
@@ -2619,15 +2596,10 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
    }
    else
    {	
+      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
       float maxtu = 0;
       float maxtv = 0;
-
-      Material mtrl;
-      mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a =
-      mtrl.emissive.r = mtrl.emissive.g = mtrl.emissive.b = mtrl.emissive.a =
-      mtrl.power = 0;
-      mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 
       if (pin)
       {
@@ -2639,33 +2611,23 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
          pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
 
-         g_pplayer->m_pin3d.EnableAlphaTestReference(0x00000001);
+         ppin3d->EnableAlphaTestReference(0x00000001);
          pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
          pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
          if(m_d.m_fAddBlend)
             pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
 
-         g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
+         ppin3d->SetColorKeyEnabled(TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
-         g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-         mtrl.diffuse.r = mtrl.ambient.r =
-         mtrl.diffuse.g = mtrl.ambient.g =
-         mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
+         ppin3d->SetMaterial( 1.0f, 1.0f, 1.0f, 1.0f );
       }
       else
       {
-         const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-         const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-         const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
-         mtrl.diffuse.r = mtrl.ambient.r = r;
-         mtrl.diffuse.g = mtrl.ambient.g = g;
-         mtrl.diffuse.b = mtrl.ambient.b = b;
+         ppin3d->SetMaterial( 1.0f, m_d.m_color );
       }
-
-      pd3dDevice->SetMaterial(&mtrl);
 
       int numVertices;
 
@@ -2872,20 +2834,10 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
       offset+=numVertices;
 
-      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       if (pin && !m_d.m_fImageWalls)
       {
          ppin3d->SetTexture(NULL);
-
-         const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-         const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-         const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
-         mtrl.diffuse.r = mtrl.ambient.r = r;
-         mtrl.diffuse.g = mtrl.ambient.g = g;
-         mtrl.diffuse.b = mtrl.ambient.b = b;
-
-         pd3dDevice->SetMaterial(&mtrl);
+         ppin3d->SetMaterial( 1.0f, m_d.m_color );
       }
 
       pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
