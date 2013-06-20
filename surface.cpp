@@ -1653,12 +1653,6 @@ void Surface::RenderMovers(const RenderDevice* pd3dDevice)
          m_phitdrop->m_polydropanim.m_pobjframe[1] = pof2;
       }
    }
-   delete[] verts;
-   delete[] vertsNotLit;
-   delete[] vertsTop[0];
-   delete[] vertsTop[1];
-   delete[] vertsTopNotLit[0];
-   delete[] vertsTopNotLit[1];
 }
 
 void Surface::DoCommand(int icmd, int x, int y)
