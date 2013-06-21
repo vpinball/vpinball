@@ -5118,6 +5118,8 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
          }
 
          m_vedit.AddElement(peditNew);
+         // copy the new element to the same layer as the source element
+         layer[peditNew->GetISelect()->layerIndex].AddElement(peditNew);
          peditNew->InitPostLoad();
          peditNew->m_fBackglass = g_pvp->m_fBackglassView;
 

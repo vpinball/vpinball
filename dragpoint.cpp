@@ -833,6 +833,7 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                v.y = sz2f(szT);
 
                psel->Rotate(f, &v);
+               psel->GetPTable()->SetDirtyDraw();
                break;
             }
          case IDC_ROTATE_UNDO_BUTTON:
@@ -841,11 +842,16 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                {
                   rotateApplyCount--;
                   psel->GetPTable()->Undo();
+                  psel->GetPTable()->SetDirtyDraw();
                }
                break;
             }
          case IDCANCEL:
-            for( int i=0;i<rotateApplyCount;i++ ) psel->GetPTable()->Undo();
+            if( rotateApplyCount>0 )
+            {
+               for( int i=0;i<rotateApplyCount;i++ ) psel->GetPTable()->Undo();
+               psel->GetPTable()->SetDirtyDraw();
+            }
             EndDialog(hwndDlg, FALSE);
             break;
          }
@@ -991,6 +997,7 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                //pihdp->ScalePoints(fx, fy, &v);
                psel->Scale(fx, fy, &v);
+               psel->GetPTable()->SetDirtyDraw();
                break;
             }
          case IDC_SCALE_UNDO_BUTTON:
@@ -999,11 +1006,16 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                {
                   scaleApplyCount--;
                   psel->GetPTable()->Undo();
+                  psel->GetPTable()->SetDirtyDraw();
                }
                break;
             }
          case IDCANCEL:
-            for( int i=0;i<scaleApplyCount;i++) psel->GetPTable()->Undo();
+            if( scaleApplyCount>0 )
+            {
+               for( int i=0;i<scaleApplyCount;i++) psel->GetPTable()->Undo();
+               psel->GetPTable()->SetDirtyDraw();
+            }
             EndDialog(hwndDlg, FALSE);
             break;
 
@@ -1104,6 +1116,7 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                v.y = sz2f(szT);
 
                psel->Translate(&v);
+               psel->GetPTable()->SetDirtyDraw();
                break;
             }
          case IDC_TRANSLATE_UNDO_BUTTON:
@@ -1112,11 +1125,16 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                {
                   translateApplyCount--;
                   psel->GetPTable()->Undo();
+                  psel->GetPTable()->SetDirtyDraw();
                }
                break;
             }
          case IDCANCEL:
-            for( int i=0;i<translateApplyCount;i++ ) psel->GetPTable()->Undo();
+            if( translateApplyCount>0 )
+            {
+               for( int i=0;i<translateApplyCount;i++ ) psel->GetPTable()->Undo();
+               psel->GetPTable()->SetDirtyDraw();
+            }
             EndDialog(hwndDlg, FALSE);
             break;
          }
