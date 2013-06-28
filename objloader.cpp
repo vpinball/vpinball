@@ -87,11 +87,35 @@ bool loadWavefrontObj( char *filename )
       }
       if( strcmp( lineHeader,"f") == 0 )
       {
+         if( tmpVerts.size()==0 )
+         {
+            ShowError("No vertices found in obj file, import is impossible!");
+            fclose(f);
+            return false;
+         }
+         if( tmpTexel.size()==0 )
+         {
+            ShowError("No texture coordinates (UVs) found in obj file, import is impossible!");
+            fclose(f);
+            return false;
+         }
+         if( tmpNorms.size()==0 )
+         {
+            ShowError("No normals found in obj file, import is impossible!");
+            fclose(f);
+            return false;
+         }
          MyPoly tmpFace;
          tmpFace.fi0 = tmpFace.fi1 = tmpFace.fi2 = -1;
          int matches = fscanf_s(f, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &tmpFace.vi0, &tmpFace.ti0, &tmpFace.ni0,
                                                                    &tmpFace.vi1, &tmpFace.ti1, &tmpFace.ni1,
                                                                    &tmpFace.vi2, &tmpFace.ti2, &tmpFace.ni2);
+         if( matches!=9 )
+         {
+            ShowError("Face information incorrect! Each face needs vertices, UVs and normals!");
+            fclose(f);
+            return false;
+         }
          tmpFace.vi0--; tmpFace.vi1--; tmpFace.vi2--;
          tmpFace.ti0--; tmpFace.ti1--; tmpFace.ti2--;
          tmpFace.ni0--; tmpFace.ni1--; tmpFace.ni2--;
