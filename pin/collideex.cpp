@@ -22,57 +22,12 @@ void PrimitiveAnimObject::Check3D()
 	{
 	m_fInvalid = true;
 
-	//!! until this will be implemented 'as intended' (who knows when??!), we use this costly abomination as primitives currently have very low polycount anyhow :(
-	// all kinda copy-pasted from Primitive::RecalculateVertices()
-	// directly calculates the rect to update from the original vertices
-
 	Primitive * const p = m_pprimitive;
-
-/*	p->RecalculateMatrices(); //!! most likely not necessary
-
-	const float outerRadius = -0.5f/cosf((float)M_PI/(float)p->m_d.m_Sides);
-	float currentAngle = (float)M_PI/(float)p->m_d.m_Sides;
-	const float addAngle = (float)(2.0*M_PI)/(float)p->m_d.m_Sides;
-
-	Vertex3D * const topVert = new Vertex3D();
-	Vertex3D * const bottomVert = new Vertex3D();
-
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-	ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
-	
-	for (int i = 0; i < p->m_d.m_Sides; ++i,currentAngle += addAngle)
-	{
-		topVert->x = sinf(currentAngle)*outerRadius;
-		topVert->y = cosf(currentAngle)*outerRadius * (1.0f+(p->m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f));
-		topVert->z =                           0.5f * (1.0f+(p->m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f));
-
-		topVert->x *= 1.0f+(p->m_d.m_vAxisScaleY.x - 1.0f)*(topVert->y+0.5f);
-		topVert->z *= 1.0f+(p->m_d.m_vAxisScaleY.z - 1.0f)*(topVert->y+0.5f);
-		bottomVert->z = -topVert->z;
-
-		const float tmp = topVert->x;
-		topVert->x    = tmp * (1.0f+(p->m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f));
-		bottomVert->x = tmp * (1.0f+(p->m_d.m_vAxisScaleZ.x - 1.0f)*(0.5f-topVert->z));
-
-		const float tmp2 = topVert->y;
-		topVert->y    = tmp2 * (1.0f+(p->m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f));
-		bottomVert->y = tmp2 * (1.0f+(p->m_d.m_vAxisScaleZ.y - 1.0f)*(0.5f-topVert->z));
-
-		p->fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
-		p->fullMatrix.MultiplyVector(bottomVert->x, bottomVert->y, bottomVert->z, bottomVert);
-
-		ppin3d->ExpandExtents(&m_rcBounds, topVert, NULL, NULL, 1, false);
-		ppin3d->ExpandExtents(&m_rcBounds, bottomVert, NULL, NULL, 1, false);
-	}
-
-	delete topVert;
-	delete bottomVert;*/
 
 	// Seems like for now we can simply abuse the already calculated coordinates
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
-	ppin3d->ExpandExtents(&m_rcBounds, p->rgv3DAll, NULL, NULL, p->m_d.m_Sides*4 + 2, fFalse);
+   memcpy( &m_rcBounds, &p->m_d.boundRectangle, sizeof(RECT));
 }
 
 void HitPrimitive::CalcHitRect()

@@ -3,7 +3,6 @@
 
 //////////////////////////////////////////////////////////////////
 // Surface
-
 Surface::Surface()
 {
    m_menuid = IDR_SURFACEMENU;
@@ -868,7 +867,6 @@ void Surface::MoveOffset(const float dx, const float dy)
 void Surface::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
 }
-
 void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 {
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -880,8 +878,8 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
    Vector<RenderVertex> vvertex;
    GetRgVertex(&vvertex);
-
    float *rgtexcoord = NULL;
+
    if (pinSide)
    {
       m_ptable->GetTVTU(pinSide, &maxtuSide, &maxtvSide);		
@@ -1086,6 +1084,15 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
       //!! combine drawcalls into one
       numPolys = vtri.Size();
+      if( numPolys==0 )
+      {         
+         for (int i=0;i<numVertices;i++)
+            delete vvertex.ElementAt(i);
+
+         // no polys to render leave vertex buffer undefined 
+         return;
+      }
+
       if(!m_d.m_fEnableLighting)
       {
          if( !topVBuffer[0] && !topVBuffer[1] )

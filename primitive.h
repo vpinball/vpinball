@@ -24,10 +24,14 @@ public:
 	//Vertex3Ds m_vRotation;
 	//Vertex3Ds m_vTransposition;
 	char m_szImage[MAXTOKEN];
+   char meshFileName[256];
+   bool use3DMesh;
+
 	COLORREF m_TopColor;
 	COLORREF m_SideColor;
 
 	TimerDataRoot m_tdr;
+   RECT boundRectangle;
 
 	bool m_TopVisible;
 	bool m_DrawTexturesInside;
@@ -120,7 +124,9 @@ public:
 
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
-	
+   STDMETHOD(get_MeshFileName)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_MeshFileName)(/*[in]*/ BSTR newVal);
+
 	Primitive();
 	virtual ~Primitive();
 
@@ -244,7 +250,11 @@ public:
 	void CopyOriginalVertices();
 	void ApplyMatrixToVertices();
 	void SortVertices();
-	
+   void UpdateMesh();
+   bool BrowseFor3DMeshFile();
+   virtual bool LoadMesh();
+   virtual void DeleteMesh();
+
 	Matrix3D fullMatrix;
 	void RecalculateMatrices();
 
@@ -257,6 +267,9 @@ public:
 	// is top behind bottom?
 	//int farthestIndex;
 	//bool topBehindBottom;
+   Vertex3D_NoTex2 *objMeshOrg, *objMesh;
+   WORD *indexList;
+   int indexListSize;
 };
 
 #endif // !defined(AFX_PRIMITIVE_H__31CD2D6B-9BDD-4B1B-BC62-B9DE588A0CAA__INCLUDED_)

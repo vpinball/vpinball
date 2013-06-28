@@ -8,6 +8,12 @@ Primitive::Primitive()
 {
    vertexBuffer = 0;
    vertexBufferRegenerate = true;
+   objMeshOrg=0;
+   objMesh=0;
+   indexList=0;
+   indexListSize=0;
+   m_d.use3DMesh=false;
+   m_d.meshFileName[0]=0;
 } 
 
 Primitive::~Primitive() 
@@ -18,6 +24,18 @@ Primitive::~Primitive()
 		vertexBuffer = 0;
 		//vertexBufferRegenerate = true;
 	}
+   if( objMeshOrg )
+   {
+      delete[] objMeshOrg;
+   }
+   if( objMesh )
+   {
+      delete[] objMesh;
+   }
+   if( indexList )
+   {
+      delete[] indexList;
+   }
 }
 
 HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -39,6 +57,9 @@ void Primitive::SetDefaults(bool fromMouseClick)
    HRESULT hr;
    int iTmp;
    float fTmp;
+
+   m_d.use3DMesh=false;
+   m_d.meshFileName[0]=0;
 
    // sides
    hr = GetRegInt("DefaultProps\\Primitive","Sides", &iTmp);
@@ -307,35 +328,51 @@ void Primitive::RecalculateVertices()
 
    RecalculateMatrices();
 
-   const float outerRadius = -0.5f/cosf((float)M_PI/(float)m_d.m_Sides);
-   float currentAngle = (float)M_PI/(float)m_d.m_Sides;
-   const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
-   for (int i = 0; i < m_d.m_Sides; ++i,currentAngle += addAngle)
+   if( !m_d.use3DMesh )
    {
-      Vertex3Ds * const topVert = new Vertex3Ds();
-      Vertex3Ds * const bottomVert = new Vertex3Ds();
+      const float outerRadius = -0.5f/cosf((float)M_PI/(float)m_d.m_Sides);
+      float currentAngle = (float)M_PI/(float)m_d.m_Sides;
+      const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
+      for (int i = 0; i < m_d.m_Sides; ++i,currentAngle += addAngle)
+      {
+         Vertex3Ds * const topVert = new Vertex3Ds();
+         Vertex3Ds * const bottomVert = new Vertex3Ds();
 
-      topVert->x = sinf(currentAngle)*outerRadius;
-      topVert->y = cosf(currentAngle)*outerRadius * (1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f));
-      topVert->z =                           0.5f * (1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f));
+         topVert->x = sinf(currentAngle)*outerRadius;
+         topVert->y = cosf(currentAngle)*outerRadius * (1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f));
+         topVert->z =                           0.5f * (1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f));
 
-      topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(topVert->y+0.5f);
-      topVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(topVert->y+0.5f);
-      bottomVert->z = -topVert->z;
+         topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(topVert->y+0.5f);
+         topVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(topVert->y+0.5f);
+         bottomVert->z = -topVert->z;
 
-      const float tmp = topVert->x;
-      topVert->x    = tmp * (1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f));
-      bottomVert->x = tmp * (1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(0.5f-topVert->z));
+         const float tmp = topVert->x;
+         topVert->x    = tmp * (1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f));
+         bottomVert->x = tmp * (1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(0.5f-topVert->z));
 
-      const float tmp2 = topVert->y;
-      topVert->y    = tmp2 * (1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f));
-      bottomVert->y = tmp2 * (1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(0.5f-topVert->z));
+         const float tmp2 = topVert->y;
+         topVert->y    = tmp2 * (1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f));
+         bottomVert->y = tmp2 * (1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(0.5f-topVert->z));
 
-      fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
-      fullMatrix.MultiplyVector(bottomVert->x, bottomVert->y, bottomVert->z, bottomVert);
-      verticesTop.AddElement(topVert);
-      verticesBottom.AddElement(bottomVert);
+         fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
+         fullMatrix.MultiplyVector(bottomVert->x, bottomVert->y, bottomVert->z, bottomVert);
+         verticesTop.AddElement(topVert);
+         verticesBottom.AddElement(bottomVert);
+      }
    }
+   else
+   {
+      for( int i=0;i<numVertices;i++ )
+      {
+         Vertex3Ds *const vert = new Vertex3Ds();
+         vert->x = objMeshOrg[i].x;
+         vert->y = objMeshOrg[i].y;
+         vert->z = objMeshOrg[i].z;
+         fullMatrix.MultiplyVector(vert->x, vert->y, vert->z, vert);
+         verticesTop.AddElement(vert);
+      }
+   }
+
 }
 
 //////////////////////////////
@@ -363,19 +400,34 @@ void Primitive::Render(Sur * const psur)
    //psur->SetFillColor(-1);
    psur->SetObject(this);
    //psur->SetObject(NULL);
-   for (int i = 0; i < m_d.m_Sides; i++)
+   if( !m_d.use3DMesh )
    {
-      const int inext = ((i+1) == m_d.m_Sides) ? 0 : i+1;
-      const Vertex3Ds * const topVert = verticesTop.ElementAt(i);
-      const Vertex3Ds * const nextTopVert = verticesTop.ElementAt(inext);
-      psur->Line(topVert->x, topVert->y, nextTopVert->x, nextTopVert->y);
-      const Vertex3Ds * const bottomVert = verticesBottom.ElementAt(i);
-      const Vertex3Ds * const nextBottomVert = verticesBottom.ElementAt(inext);
-      psur->Line(bottomVert->x, bottomVert->y, nextBottomVert->x, nextBottomVert->y);
-      psur->Line(bottomVert->x, bottomVert->y, topVert->x, topVert->y);
+      for (int i = 0; i < m_d.m_Sides; i++)
+      {
+         const int inext = ((i+1) == m_d.m_Sides) ? 0 : i+1;
+         const Vertex3Ds * const topVert = verticesTop.ElementAt(i);
+         const Vertex3Ds * const nextTopVert = verticesTop.ElementAt(inext);
+         psur->Line(topVert->x, topVert->y, nextTopVert->x, nextTopVert->y);
+         const Vertex3Ds * const bottomVert = verticesBottom.ElementAt(i);
+         const Vertex3Ds * const nextBottomVert = verticesBottom.ElementAt(inext);
+         psur->Line(bottomVert->x, bottomVert->y, nextBottomVert->x, nextBottomVert->y);
+         psur->Line(bottomVert->x, bottomVert->y, topVert->x, topVert->y);
+      }
+      psur->Line(m_d.m_vPosition.x -20.0f, m_d.m_vPosition.y,m_d.m_vPosition.x +20.0f, m_d.m_vPosition.y);
+      psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y -20.0f,m_d.m_vPosition.x, m_d.m_vPosition.y +20.0f);
    }
-   psur->Line(m_d.m_vPosition.x -20.0f, m_d.m_vPosition.y,m_d.m_vPosition.x +20.0f, m_d.m_vPosition.y);
-   psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y -20.0f,m_d.m_vPosition.x, m_d.m_vPosition.y +20.0f);
+   else
+   {
+      //just draw a simple mesh layout not the entire mesh for performance reasons
+      for( int i=0;i<indexListSize;i+=3 )
+      {
+         const Vertex3Ds * const A = verticesTop.ElementAt(indexList[i]);
+         const Vertex3Ds * const B = verticesTop.ElementAt(indexList[i+1]);
+         psur->Line( A->x,A->y,B->x,B->y);
+         //psur->Line( B->x,B->y,C->x,C->y);
+         //psur->Line( C->x,C->y,A->x,A->y);
+      }
+   }
 }
 
 //static const WORD rgiPrimStatic0[5] = {0,1,2,3,4};
@@ -660,75 +712,38 @@ void Primitive::CalculateRealTime()
    CopyOriginalVertices();
    ApplyMatrixToVertices();
    SortVertices();
-
-   // y at top is 0
-   // get inclination via m_ptable->m_inclination
-   // get layback via m_ptable->m_layback
-   // if incl = 0, the less Z, the farther away
-   // if incl = 90, the less Y, the farther away
-   // we could add layback here, but i don't think this would really impact much here.
-   /*
-   const float zMultiplicator = cosf(ANGTORAD(m_ptable->m_inclination));
-   const float yMultiplicator = sinf(ANGTORAD(m_ptable->m_inclination));
-   float farthest = 10000.f;
-
-   for (int i = 0; i < m_d.m_Sides; i++)
-   {
-   Vertex3D_NoTex2 * const topVert = &rgv3DTop[i];
-   topVert->x = rgv3DTopOriginal[i].x;
-   topVert->y = rgv3DTopOriginal[i].y;
-   topVert->z = rgv3DTopOriginal[i].z;
-   topVert->tu = rgv3DTopOriginal[i].tu;
-   topVert->tv = rgv3DTopOriginal[i].tv;
-   topVert->nx = 0;
-   topVert->ny = 0;
-   topVert->nz = -1.f;
-   topVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f);
-   topVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f);
-   topVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(topVert->y+0.5f);
-   topVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(topVert->y+0.5f);
-   topVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert->z+0.5f);
-   topVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert->z+0.5f);
-   fullMatrix.MultiplyVector(topVert->x, topVert->y, topVert->z, topVert);
-   Vertex3D_NoTex2 * const bottomVert = &rgv3DBottom[i];
-   bottomVert->x = rgv3DBottomOriginal[i].x;
-   bottomVert->y = rgv3DBottomOriginal[i].y;
-   bottomVert->z = rgv3DBottomOriginal[i].z;
-   bottomVert->tu = rgv3DBottomOriginal[i].tu;
-   bottomVert->tv = rgv3DBottomOriginal[i].tv;
-   bottomVert->nx = 0;
-   bottomVert->ny = 0;
-   bottomVert->nz = -1.f;
-   bottomVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(bottomVert->x+0.5f);
-   bottomVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(bottomVert->x+0.5f);
-   bottomVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(bottomVert->y+0.5f);
-   bottomVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(bottomVert->y+0.5f);
-   bottomVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(bottomVert->z+0.5f);
-   bottomVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(bottomVert->z+0.5f);
-   fullMatrix.MultiplyVector(bottomVert->x, bottomVert->y, bottomVert->z, bottomVert);
-
-   // check which is farther away and if it's the farthest.
-   // this is bad... i think i have to calculate the mean value of all, 
-   // and which is farther away wins.
-   // After the farthest, the middle has to be drawn with farthestIndex first, coming up
-   // then i should draw the top. Or should i draw everything in order of mean value?
-   // then i would do it with indices... and i should have a middle point for the top and bottom...
-   if ((topVert->z * zMultiplicator + topVert->y * yMultiplicator) < farthest)
-   {
-   farthest = topVert->z * zMultiplicator + topVert->y * yMultiplicator;
-   farthestIndex = i;
-   topBehindBottom = true;
-   }
-   if ((bottomVert->z * zMultiplicator + bottomVert->y * yMultiplicator) < farthest)
-   {
-   farthest = bottomVert->z * zMultiplicator + bottomVert->y * yMultiplicator;
-   farthestIndex = i;
-   topBehindBottom = false;
-   }		
-   }
-   */
+   // update the bounding box for the primitive to tell the renderer where to update the back buffer
+   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, rgv3DAll, NULL, NULL, m_d.m_Sides*4 + 2, fFalse);
 }
 
+void Primitive::UpdateMesh()
+{
+   RecalculateMatrices();
+   memcpy(objMesh,objMeshOrg,numVertices*sizeof(Vertex3D_NoTex2));
+   // could be optimized, if not everything is drawn.
+   for (int i = 0; i < numVertices; i++)
+   {
+      Vertex3D_NoTex2 * const tempVert = &objMesh[i];
+      tempVert->nx = 0;
+      tempVert->ny = 0;
+      tempVert->nz = -1.f;
+      tempVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(tempVert->x+0.5f);
+      tempVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(tempVert->x+0.5f);
+      tempVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(tempVert->y+0.5f);
+      tempVert->z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(tempVert->y+0.5f);
+      tempVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(tempVert->z+0.5f);
+      tempVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(tempVert->z+0.5f);
+      fullMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
+   }
+   // update the bounding box for the primitive to tell the renderer where to update the back buffer
+   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
+
+   Vertex3D_NoTex2 *buf;
+   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS );
+   memcpy( buf, objMesh, sizeof(Vertex3D_NoTex2)*numVertices );
+   vertexBuffer->unlock();
+
+}
 // Always called each frame to render over everything else (along with alpha ramps)
 void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
@@ -765,34 +780,51 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 	  if(vertexBufferRegenerate)
 	  {
 		  vertexBufferRegenerate = false;
+        if( m_d.use3DMesh )
+        {
+            UpdateMesh();
+        }
+        else
+        {
+   		  CalculateRealTime();
 
-		  CalculateRealTime();
-
-		  Vertex3D_NoTex2 *buf;
-		  vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
-		  memcpy( buf, rgv3DAll, sizeof(Vertex3D_NoTex2)*numVertices );
-		  vertexBuffer->unlock();
+		     Vertex3D_NoTex2 *buf;
+		     vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS );
+		     memcpy( buf, rgv3DAll, sizeof(Vertex3D_NoTex2)*numVertices );
+		     vertexBuffer->unlock();
+        }
 	  }
 
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, wIndicesAll, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
-/*      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 
-         MY_D3DFVF_NOTEX2_VERTEX,
-         rgv3DAll, 
-         m_d.m_Sides*4 + 2,
-         wIndicesAll, 
-         m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides,
-         0);*/
+     if( m_d.use3DMesh )
+     {
+        //pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices,0);
+        pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexList, indexListSize, 0 );
+     }
+     else
+     {
+        pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, wIndicesAll, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
+     }
    }
 }
 
+extern bool loadWavefrontObj( char *filename );
+extern Vertex3D_NoTex2 *GetVertices( int &numVertices );
+extern WORD *GetIndexList( int &indexListSize );
 void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-   numVertices = m_d.m_Sides*4+2;
+   if( m_d.use3DMesh )
+   {
+      objMesh = new Vertex3D_NoTex2[numVertices];         
+   }
+   else
+   {
+      numVertices = m_d.m_Sides*4+2;
+   }
    if( !vertexBuffer )
    {
       pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
-	  NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
+      NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
    }
 
    PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -808,7 +840,10 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
    else
       maxtu = maxtv = 1.f;
 
-   CalculateRealTimeOriginal();
+   if( !m_d.use3DMesh )
+   {
+      CalculateRealTimeOriginal();
+   }
 }
 
 // called to set up the initial backbuffer
@@ -892,6 +927,15 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(SCOL), m_d.m_SideColor);
    bw.WriteInt(FID(TVIS), (m_d.m_TopVisible) ? 1 : 0);
    bw.WriteInt(FID(DTXI), (m_d.m_DrawTexturesInside) ? 1 : 0);
+   bw.WriteInt(FID(U3DM), (m_d.use3DMesh) ? 1 : 0 );
+   if( m_d.use3DMesh )
+   {
+      bw.WriteString( FID(M3DN), m_d.meshFileName);
+      bw.WriteInt( FID(M3VN), numVertices );
+      bw.WriteStruct( FID(M3DX), objMeshOrg, sizeof(Vertex3D_NoTex2)*numVertices);
+      bw.WriteInt( FID(M3FN), indexListSize );
+      bw.WriteStruct( FID(M3DI), indexList, sizeof(WORD)*indexListSize );
+   }
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1047,6 +1091,42 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       pbr->GetInt(&iTmp);
       m_d.m_DrawTexturesInside = (iTmp==1);
    }
+   else if ( id == FID(U3DM))
+   {
+      int iTmp;
+      pbr->GetInt(&iTmp);
+      m_d.use3DMesh = (iTmp==1);
+   }
+   else if ( id == FID(M3DN))
+   {
+      pbr->GetWideString((WCHAR *)m_d.meshFileName);
+   }
+   else if( id == FID(M3VN) )
+   {
+      pbr->GetInt( &numVertices );
+   }
+   else if( id == FID(M3DX) )
+   {
+      if( objMeshOrg )
+      {
+         delete[] objMeshOrg;
+      }
+      objMeshOrg = new Vertex3D_NoTex2[numVertices];
+      pbr->GetStruct( objMeshOrg, sizeof(Vertex3D_NoTex2)*numVertices);
+   }
+   else if( id == FID(M3FN) )
+   {
+      pbr->GetInt( &indexListSize );
+   }
+   else if( id == FID(M3DI) )
+   {
+      if( indexList )
+      {
+         delete[] indexList;
+      }
+      indexList = new WORD[indexListSize];
+      pbr->GetStruct( indexList, sizeof(WORD)*indexListSize);
+   }
    else
    {
       ISelect::LoadToken(id, pbr);
@@ -1058,6 +1138,85 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 HRESULT Primitive::InitPostLoad()
 {
    return S_OK;
+}
+
+bool Primitive::BrowseFor3DMeshFile()
+{
+   char szFileName[1024];
+   char szInitialDir[1024];
+   szFileName[0] = '\0';
+
+   OPENFILENAME ofn;
+   ZeroMemory(&ofn, sizeof(OPENFILENAME));
+   ofn.lStructSize = sizeof(OPENFILENAME);
+   ofn.hInstance = g_hinst;
+   ofn.hwndOwner = g_pvp->m_hwnd;
+   // TEXT
+   ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
+   ofn.lpstrFile = szFileName;
+   ofn.nMaxFile = _MAX_PATH;
+   ofn.lpstrDefExt = "obj";
+   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+
+   const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+   if (hr == S_OK)
+   {
+      ofn.lpstrInitialDir = szInitialDir;
+   }
+   else
+   {
+      char szFoo[MAX_PATH];
+      lstrcpy(szFoo, "c:\\");
+      ofn.lpstrInitialDir = szFoo;
+   }
+
+#ifdef VBA
+   ApcHost->BeginModalDialog();
+#endif
+   const int ret = GetOpenFileName(&ofn);
+#ifdef VBA
+   ApcHost->EndModalDialog();
+#endif
+   string filename(ofn.lpstrFile);
+   int index = filename.find_last_of("\\");
+   if( index!=-1 )
+   {
+      index++;
+      string name = filename.substr(index, filename.length()-index);
+      strcpy_s( m_d.meshFileName, name.c_str());
+   }
+   if(ret == 0)
+   {
+      return false;
+   }
+   if( objMeshOrg )
+   {
+      delete[] objMeshOrg;
+   }
+   if( objMesh )
+   {
+      delete[] objMesh;
+   }
+   numVertices=0;
+   if( indexList )
+   {
+      delete[] indexList;
+   }
+   indexListSize=0;
+   m_d.use3DMesh=false;
+   if( vertexBuffer )
+   {
+      vertexBuffer->release();
+      vertexBuffer=0;
+   }
+   if ( loadWavefrontObj(ofn.lpstrFile) )
+   {
+      m_d.use3DMesh=true;
+      objMeshOrg = GetVertices( numVertices );
+      indexList = GetIndexList( indexListSize );
+      return true;
+   }
+   return false;
 }
 
 //////////////////////////////
@@ -1085,6 +1244,73 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
 
    return S_OK;
 }
+
+STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
+{
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_d.meshFileName, -1, wz, 256);
+   *pVal = SysAllocString(wz);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
+{
+   STARTUNDO
+
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.meshFileName, 256, NULL, NULL);
+   vertexBufferRegenerate = true;
+
+   STOPUNDO
+   return S_OK;
+}
+
+
+bool Primitive::LoadMesh()
+{
+   bool result=false;
+   STARTUNDO
+
+   result = BrowseFor3DMeshFile();
+   vertexBufferRegenerate = true;
+
+   STOPUNDO
+
+   return result;
+}
+
+
+void Primitive::DeleteMesh()
+{
+   STARTUNDO
+
+   m_d.use3DMesh = false;
+   if ( objMeshOrg ) 
+   {
+      delete[] objMeshOrg;
+      objMeshOrg=0;
+   }
+   if( objMesh )
+   {
+      delete[] objMesh;
+      objMesh=0;
+   }
+   if( indexList )
+   {
+      delete[] indexList;
+      indexList=0;
+      indexListSize=0;
+   }
+   numVertices = m_d.m_Sides*4+2;
+   CalculateRealTimeOriginal();
+
+   m_d.meshFileName[0]=0;
+   vertexBufferRegenerate = true;
+
+   STOPUNDO
+}
+
 
 STDMETHODIMP Primitive::get_Sides(int *pVal)
 {
