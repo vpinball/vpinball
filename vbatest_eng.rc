@@ -1767,11 +1767,12 @@ BEGIN
     CONTROL         "Visible",103,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,117,76,10
     CONTROL         "Draw Textures inside",106,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,130,82,10
     LTEXT           "Image",IDC_STATIC,7,21,20,8
-    LTEXT           "Image Mapping",IDC_STATIC,7,49,50,8
-    CONTROL         "",DISPID_IMAGEMAPPING,"Static",SS_ETCHEDFRAME | SS_CENTERIMAGE,61,48,58,33
     LTEXT           "Top/Bottom &Color",IDC_STATIC,7,87,63,9
     LTEXT           "Side &Color",IDC_STATIC,7,102,63,9
     LTEXT           "Sides",IDC_STATIC,7,10,18,8
+    GROUPBOX        "3D Mesh",IDC_STATIC,7,44,111,35
+    PUSHBUTTON      "Import Mesh",IDC_LOAD_MESH_BUTTON,11,58,48,14
+    PUSHBUTTON      "Delete Mesh",IDC_DELETE_MESH_BUTTON,65,58,46,14
 END
 
 IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 127, 79

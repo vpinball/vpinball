@@ -107,6 +107,10 @@
 #define DISPID_AXISSCALE_YZ             18
 #define DISPID_AXISSCALE_ZX             19
 #define DISPID_AXISSCALE_ZY             20
+#define DISPID_LOADED_MESH_EDIT         1601
+#define DISPID_LOAD_MESH_BUTTON         1602
+#define DISPID_DELETE_MESH_BUTTON       1603
+
 /*
 #define DISPID_ROTATION_X               12
 #define DISPID_ROTATION_Y               13
