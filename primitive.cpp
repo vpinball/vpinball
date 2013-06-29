@@ -739,7 +739,7 @@ void Primitive::UpdateMesh()
    g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
 
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS );
+   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
    memcpy( buf, objMesh, sizeof(Vertex3D_NoTex2)*numVertices );
    vertexBuffer->unlock();
 
@@ -789,7 +789,7 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
    		  CalculateRealTime();
 
 		     Vertex3D_NoTex2 *buf;
-		     vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS );
+		     vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
 		     memcpy( buf, rgv3DAll, sizeof(Vertex3D_NoTex2)*numVertices );
 		     vertexBuffer->unlock();
         }

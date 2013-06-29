@@ -789,20 +789,10 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   }
 
                   const float f = sz2f(szT);
-/*                  for( unsigned int i=0;i<strlen(szT);i++)
-                  {
-                     if( szT[i]=='.') szT[i]=',';
-                  }
-*/
                   GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
                   Vertex2D v;
                   v.x = sz2f(szT);
                   GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
-/*                  for( unsigned int i=0;i<strlen(szT);i++)
-                  {
-                     if( szT[i]=='.') szT[i]=',';
-                  }
-*/
                   v.y = sz2f(szT);
 
                   psel->Rotate(f, &v);
@@ -815,26 +805,11 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                rotateApplyCount++;
                char szT[256];
                GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);							
-/*               for( unsigned int i=0;i<strlen(szT);i++)
-               {
-                  if( szT[i]=='.') szT[i]=',';
-               }
-*/
                const float f = sz2f(szT);
                GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
-/*               for( unsigned int i=0;i<strlen(szT);i++)
-               {
-                  if( szT[i]=='.') szT[i]=',';
-               }
-*/
                Vertex2D v;
                v.x = sz2f(szT);
                GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
-/*               for( unsigned int i=0;i<strlen(szT);i++)
-               {
-                  if( szT[i]=='.') szT[i]=',';
-               }
-*/
                v.y = sz2f(szT);
 
                psel->Rotate(f, &v);
@@ -918,11 +893,6 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                {
                   char szT[256];
                   GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
-/*                  for( unsigned int i=0;i<strlen(szT);i++)
-                  {
-                     if( szT[i]=='.') szT[i]=',';
-                  }
-*/
                   const float fx = sz2f(szT);
                   const int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
                   float fy;
@@ -933,28 +903,13 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   else
                   {
                      GetDlgItemText(hwndDlg, IDC_SCALEY, szT, 255);
-/*                     for( unsigned int i=0;i<strlen(szT);i++)
-                     {
-                        if( szT[i]=='.') szT[i]=',';
-                     }
-*/
                      fy = sz2f(szT);
                   }
 
                   GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
-/*                  for( unsigned int i=0;i<strlen(szT);i++)
-                  {
-                     if( szT[i]=='.') szT[i]=',';
-                  }
-*/
                   Vertex2D v;
                   v.x = sz2f(szT);
                   GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
-/*                  for( unsigned int i=0;i<strlen(szT);i++)
-                  {
-                     if( szT[i]=='.') szT[i]=',';
-                  }
-*/
                   v.y = sz2f(szT);
 
                   //pihdp->ScalePoints(fx, fy, &v);
@@ -968,11 +923,6 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                scaleApplyCount++;
                char szT[256];
                GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
-/*               for( unsigned int i=0;i<strlen(szT);i++)
-               {
-                  if( szT[i]=='.') szT[i]=',';
-               }
-*/
                const float fx = sz2f(szT);
                const int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
                float fy;
@@ -983,28 +933,13 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                else
                {
                   GetDlgItemText(hwndDlg, IDC_SCALEY, szT, 255);
-/*                  for( unsigned int i=0;i<strlen(szT);i++)
-                  {
-                     if( szT[i]=='.') szT[i]=',';
-                  }
-*/
                   fy = sz2f(szT);
                }
 
                GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
-/*               for( unsigned int i=0;i<strlen(szT);i++)
-               {
-                  if( szT[i]=='.') szT[i]=',';
-               }
-*/
                Vertex2D v;
                v.x = sz2f(szT);
                GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
-/*               for( unsigned int i=0;i<strlen(szT);i++)
-               {
-                  if( szT[i]=='.') szT[i]=',';
-               }
-*/
                v.y = sz2f(szT);
 
                //pihdp->ScalePoints(fx, fy, &v);
@@ -1091,19 +1026,9 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                {
                   char szT[256];							
                   GetDlgItemText(hwndDlg, IDC_OFFSETX, szT, 255);
-/*                  for( unsigned int i=0;i<strlen(szT);i++)
-                  {
-                     if( szT[i]=='.') szT[i]=',';
-                  }
-*/
                   Vertex2D v;
                   v.x = sz2f(szT);
                   GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
-/*                  for( unsigned int i=0;i<strlen(szT);i++)
-                  {
-                     if( szT[i]=='.') szT[i]=',';
-                  }
-*/
                   v.y = sz2f(szT);
 
                   psel->Translate(&v);
@@ -1116,19 +1041,9 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                translateApplyCount++;
                char szT[256];							
                GetDlgItemText(hwndDlg, IDC_OFFSETX, szT, 255);
-/*               for( unsigned int i=0;i<strlen(szT);i++)
-               {
-                  if( szT[i]=='.') szT[i]=',';
-               }
-*/
                Vertex2D v;
                v.x = sz2f(szT);
                GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
-/*               for( unsigned int i=0;i<strlen(szT);i++)
-               {
-                  if( szT[i]=='.') szT[i]=',';
-               }
-*/
                v.y = sz2f(szT);
 
                psel->Translate(&v);
