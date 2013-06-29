@@ -713,7 +713,8 @@ void Primitive::CalculateRealTime()
    ApplyMatrixToVertices();
    SortVertices();
    // update the bounding box for the primitive to tell the renderer where to update the back buffer
-   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, rgv3DAll, NULL, NULL, m_d.m_Sides*4 + 2, fFalse);
+   g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
+   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, rgv3DAll, NULL, NULL, numVertices, fFalse);
 }
 
 void Primitive::UpdateMesh()
@@ -736,6 +737,7 @@ void Primitive::UpdateMesh()
       fullMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
    }
    // update the bounding box for the primitive to tell the renderer where to update the back buffer
+   g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
    g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
 
    Vertex3D_NoTex2 *buf;
@@ -844,6 +846,7 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
    {
       CalculateRealTimeOriginal();
    }
+   g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
 }
 
 // called to set up the initial backbuffer
