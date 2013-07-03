@@ -10,9 +10,6 @@
 class PrimitiveData
 	{
 public:
-	//Vertex2D m_vCenter;
-	
-	//external Variables
 	int m_Sides;
 	Vertex3Ds m_vPosition;
 	Vertex3Ds m_vSize;
@@ -21,8 +18,6 @@ public:
 	Vertex3Ds m_vAxisScaleZ;
 	float m_aRotAndTra[6];
 	RotAndTraTypeEnum m_aRotAndTraTypes[6];
-	//Vertex3Ds m_vRotation;
-	//Vertex3Ds m_vTransposition;
 	char m_szImage[MAXTOKEN];
     char meshFileName[256];
 
@@ -242,6 +237,13 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 
 //!! here starts the more general primitive stuff:
 
+	void RecalculateMatrices();
+	void RecalculateVertices();
+    void UpdateMesh();
+    bool BrowseFor3DMeshFile();
+    virtual bool LoadMesh();
+    virtual void DeleteMesh();
+
 	PrimitiveData m_d;
     int numVertices;
     VertexBuffer *vertexBuffer;
@@ -251,16 +253,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 	Vector<Vertex3Ds> verticesTop;
 	Vector<Vertex3Ds> verticesBottom;
 
-	void RecalculateVertices();
-    void UpdateMesh();
-    bool BrowseFor3DMeshFile();
-    virtual bool LoadMesh();
-    virtual void DeleteMesh();
-
 	Matrix3D fullMatrix;
-	void RecalculateMatrices();
-
-	float maxtu, maxtv;
 
     Vertex3D_NoTex2 *objMeshOrg, *objMesh;
     WORD *indexList;

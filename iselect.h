@@ -104,8 +104,8 @@ public:
 	HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
 
 	virtual int GetSelectLevel() {return 1;}
-   virtual bool LoadMesh(){ return false; }
-   virtual void DeleteMesh(){};
+    virtual bool LoadMesh(){ return false; }
+    virtual void DeleteMesh(){};
 
 	POINT m_ptLast;
 	BOOL m_fDragging;
