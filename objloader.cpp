@@ -15,23 +15,23 @@ vector<MyVector> tmpVerts;
 vector<MyVector> tmpNorms;
 vector<MyVector> tmpTexel;
 vector<MyPoly> tmpFaces;
-vector<Vertex3D> tmpAllVerts;
+vector<Vertex3D> verts;
 vector<int> faces;
 
-int isInList( int vi, int ti, int ni )
+int isInList( const int vi, const int ti, const int ni )
 {
-   for( unsigned int i=0;i<tmpAllVerts.size();i++ )
+   for( unsigned int i=0;i<verts.size();i++ )
    {
       int result=0;
-      if( tmpAllVerts[i].x==tmpVerts[vi].x && tmpAllVerts[i].y==tmpVerts[vi].y && tmpAllVerts[i].z==tmpVerts[vi].z )
+      if( verts[i].x==tmpVerts[vi].x && verts[i].y==tmpVerts[vi].y && verts[i].z==tmpVerts[vi].z )
       {
          result|=1;
       }
-      if( tmpAllVerts[i].tu==tmpTexel[ti].x && tmpAllVerts[i].tv==tmpTexel[ti].y )
+      if( verts[i].tu==tmpTexel[ti].x && verts[i].tv==tmpTexel[ti].y )
       {
          result|=2;
       }
-      if( tmpAllVerts[i].nx==tmpNorms[ni].x && tmpAllVerts[i].ny==tmpNorms[ni].y && tmpAllVerts[i].nz==tmpNorms[ni].z )
+      if( verts[i].nx==tmpNorms[ni].x && verts[i].ny==tmpNorms[ni].y && verts[i].nz==tmpNorms[ni].z )
       {
          result|=4;
       }
@@ -53,7 +53,9 @@ bool loadWavefrontObj( char *filename )
    tmpVerts.clear();
    tmpTexel.clear();
    tmpNorms.clear();
-   tmpAllVerts.clear();
+   tmpFaces.clear();
+   verts.clear();
+   faces.clear();
 
    // need some small data type 
    while ( 1 )
@@ -90,19 +92,25 @@ bool loadWavefrontObj( char *filename )
          if( tmpVerts.size()==0 )
          {
             ShowError("No vertices found in obj file, import is impossible!");
+            tmpNorms.clear();
+            tmpTexel.clear();
             fclose(f);
             return false;
          }
          if( tmpTexel.size()==0 )
          {
             ShowError("No texture coordinates (UVs) found in obj file, import is impossible!");
+		    tmpVerts.clear();
+            tmpNorms.clear();
             fclose(f);
             return false;
          }
          if( tmpNorms.size()==0 )
          {
             ShowError("No normals found in obj file, import is impossible!");
-            fclose(f);
+            tmpVerts.clear();
+            tmpTexel.clear();
+			fclose(f);
             return false;
          }
          MyPoly tmpFace;
@@ -113,6 +121,9 @@ bool loadWavefrontObj( char *filename )
          if( matches!=9 )
          {
             ShowError("Face information incorrect! Each face needs vertices, UVs and normals!");
+		    tmpVerts.clear();
+            tmpNorms.clear();
+            tmpTexel.clear();
             fclose(f);
             return false;
          }
@@ -136,8 +147,8 @@ bool loadWavefrontObj( char *filename )
          tmp.nx = tmpNorms[tmpFaces[i].ni0].x;
          tmp.ny = tmpNorms[tmpFaces[i].ni0].y;
          tmp.nz = tmpNorms[tmpFaces[i].ni0].z;
-         tmpAllVerts.push_back(tmp);
-         faces.push_back( tmpAllVerts.size()-1 );
+         verts.push_back(tmp);
+         faces.push_back( verts.size()-1 );
       }
       else
       {
@@ -156,8 +167,8 @@ bool loadWavefrontObj( char *filename )
          tmp.nx = tmpNorms[tmpFaces[i].ni1].x;
          tmp.ny = tmpNorms[tmpFaces[i].ni1].y;
          tmp.nz = tmpNorms[tmpFaces[i].ni1].z;
-         tmpAllVerts.push_back(tmp);
-         faces.push_back( tmpAllVerts.size()-1 );
+         verts.push_back(tmp);
+         faces.push_back( verts.size()-1 );
       }
       else
       {
@@ -176,8 +187,8 @@ bool loadWavefrontObj( char *filename )
          tmp.nx = tmpNorms[tmpFaces[i].ni2].x;
          tmp.ny = tmpNorms[tmpFaces[i].ni2].y;
          tmp.nz = tmpNorms[tmpFaces[i].ni2].z;
-         tmpAllVerts.push_back(tmp);
-         faces.push_back( tmpAllVerts.size()-1 );
+         verts.push_back(tmp);
+         faces.push_back( verts.size()-1 );
       }
       else
       {
@@ -187,34 +198,42 @@ bool loadWavefrontObj( char *filename )
    tmpVerts.clear();
    tmpTexel.clear();
    tmpNorms.clear();
+   tmpFaces.clear();
    return true;
 }
 
-Vertex3D_NoTex2 *GetVertices( int &numVertices )
+Vertex3D_NoTex2 *GetVertices( int &numVertices ) // clears temporary storage on the way
 {
-   Vertex3D_NoTex2 *objMesh = new Vertex3D_NoTex2[tmpAllVerts.size()];
-   for( unsigned int i=0;i<tmpAllVerts.size();i++ )
+   Vertex3D_NoTex2 * const objMesh = new Vertex3D_NoTex2[verts.size()];
+   for( unsigned int i=0;i<verts.size();i++ )
    {
-      objMesh[i].x = tmpAllVerts[i].x;
-      objMesh[i].y = tmpAllVerts[i].y;
-      objMesh[i].z = tmpAllVerts[i].z;
-      objMesh[i].tu = tmpAllVerts[i].tu;
-      objMesh[i].tv = tmpAllVerts[i].tv;
-      objMesh[i].nx = tmpAllVerts[i].nx;
-      objMesh[i].ny = tmpAllVerts[i].ny;
-      objMesh[i].nz = tmpAllVerts[i].nz;
+      objMesh[i].x = verts[i].x;
+      objMesh[i].y = verts[i].y;
+      objMesh[i].z = verts[i].z;
+      objMesh[i].tu = verts[i].tu;
+      objMesh[i].tv = verts[i].tv;
+      objMesh[i].nx = verts[i].nx;
+      objMesh[i].ny = verts[i].ny;
+      objMesh[i].nz = verts[i].nz;
    }
-   numVertices = tmpAllVerts.size();
+   numVertices = verts.size();
+   verts.clear();
    return objMesh;
 }
 
-WORD *GetIndexList( int &indexListSize )
+WORD *GetIndexList( int &indexListSize ) // clears temporary storage on the way
 {
-   WORD *list = new WORD[faces.size()];
+   bool showerror = true;
+   WORD * const list = new WORD[faces.size()];
    for( unsigned int i=0;i<faces.size();i++ )
    {
+	  if((faces[i] >= 65536) && showerror) { //!! DX7 limit, delete later-on
+           ShowError("Too many vertex indices in obj file");
+		   showerror = false;
+	  }
       list[i] = faces[i];
    }
    indexListSize = faces.size();
+   faces.clear();
    return list;
 }
