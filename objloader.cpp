@@ -42,6 +42,54 @@ int isInList( const int vi, const int ti, const int ni )
    }
    return -1;
 }
+void NormalizeNormals()
+{
+   for( unsigned int i=0;i<faces.size();i+=3 )
+   {
+      int A=faces[i];
+      int B=faces[i+1];
+      int C=faces[i+2];
+      float x1 = verts[B].x - verts[A].x;
+      float y1 = verts[B].y - verts[A].y;
+      float z1 = verts[B].z - verts[A].z;
+      float x2 = verts[C].x - verts[A].x;
+      float y2 = verts[C].y - verts[A].y;
+      float z2 = verts[C].z - verts[A].z;
+      float nx = y1*z2 - z1*y2;
+      float ny = z1*x2 - x1*z1;
+      float nz = x1*y2 - y1*x1;
+      float len = sqrt(nx*nx + ny*ny + nz*nz );
+      nx /=len;
+      ny /=len;
+      nz /=len;
+      int v[3];
+      v[0]=A; v[1]=B; v[2]=C;
+      vector<int> seen;
+      seen.resize( verts.size(),0 );
+      for( int t=0;t<3; t++ )
+      {
+         int c=v[t];
+         seen[c]++;
+         if( seen[c]==1 )
+         {
+            verts[c].nx = nx;
+            verts[c].ny = ny;
+            verts[c].nz = nz;
+         }
+         else
+         {
+            verts[c].nx = verts[c].nx * (1.0f - 1.0f/seen[c]) + nx*1.0f/seen[c];
+            verts[c].ny = verts[c].ny * (1.0f - 1.0f/seen[c]) + ny*1.0f/seen[c];
+            verts[c].nz = verts[c].nz * (1.0f - 1.0f/seen[c]) + nz*1.0f/seen[c];
+            len = sqrt(verts[c].nx*verts[c].nx + verts[c].ny*verts[c].ny + verts[c].nz*verts[c].nz);
+            verts[c].nx /= len;
+            verts[c].ny /= len;
+            verts[c].nz /= len;
+         }
+      }
+      seen.clear();
+   }
+}
 
 bool loadWavefrontObj( char *filename )
 {
@@ -78,7 +126,8 @@ bool loadWavefrontObj( char *filename )
       {
          MyVector tmp;
          fscanf_s(f, "%f %f\n",&tmp.x, &tmp.y );
-         tmp.y = 1-tmp.y;
+         // don't mirror v coordinates...better do it in Blender & co
+         //tmp.y = 1-tmp.y;
          tmpTexel.push_back(tmp);
       }
       if( strcmp( lineHeader,"vn") == 0 )
@@ -195,6 +244,9 @@ bool loadWavefrontObj( char *filename )
          faces.push_back(idx);
       }
    }
+   // not used yet
+//   NormalizeNormals();
+
    tmpVerts.clear();
    tmpTexel.clear();
    tmpNorms.clear();
