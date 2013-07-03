@@ -261,6 +261,12 @@ void Primitive::EndPlay()
 		vertexBuffer = 0;
 		vertexBufferRegenerate = true;
 	}
+
+	if(objMesh)
+	{
+		delete [] objMesh;
+		objMesh = 0;
+	}
 }
 
 //////////////////////////////
@@ -434,6 +440,20 @@ static const WORD rgiPrimStatic1[5] = {4,3,2,1,0};
 
 void Primitive::CalculateBuiltinOriginal()
 {
+   PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+   float maxtu,maxtv;
+   if (pin) 
+   {
+      DDSURFACEDESC2 ddsd;
+      ddsd.dwSize = sizeof(ddsd);
+
+      pin->m_pdsBuffer->GetSurfaceDesc(&ddsd);
+      maxtu = (float)pin->m_width / (float)ddsd.dwWidth;
+      maxtv = (float)pin->m_height / (float)ddsd.dwHeight;
+   }
+   else
+      maxtu = maxtv = 1.f;
+
    // this recalculates the Original Vertices -> should be only called, when sides are altered.
    const float outerRadius = -0.5f/(cosf((float)M_PI/(float)m_d.m_Sides));
    const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
@@ -814,7 +834,8 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
    
    if( m_d.use3DMesh )
    {
-      objMesh = new Vertex3D_NoTex2[numVertices];         
+	  if( !objMesh )
+          objMesh = new Vertex3D_NoTex2[numVertices];         
    }
    else
    {
@@ -826,19 +847,6 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
       pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
       NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2); //!! never cleared up again here
    }
-
-   PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
-   if (pin) 
-   {
-      DDSURFACEDESC2 ddsd;
-      ddsd.dwSize = sizeof(ddsd);
-
-      pin->m_pdsBuffer->GetSurfaceDesc(&ddsd);
-      maxtu = (float)pin->m_width / (float)ddsd.dwWidth;
-      maxtv = (float)pin->m_height / (float)ddsd.dwHeight;
-   }
-   else
-      maxtu = maxtv = 1.f;
 
    if( !m_d.use3DMesh )
    {
@@ -1194,15 +1202,18 @@ bool Primitive::BrowseFor3DMeshFile()
    if( objMeshOrg )
    {
       delete[] objMeshOrg;
+	  objMeshOrg = 0;
    }
    if( objMesh )
    {
       delete[] objMesh;
+	  objMesh = 0;
    }
    numVertices=0;
    if( indexList )
    {
       delete[] indexList;
+	  indexList = 0;
    }
    indexListSize=0;
    m_d.use3DMesh=false;
@@ -1268,7 +1279,6 @@ STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
    return S_OK;
 }
 
-
 bool Primitive::LoadMesh()
 {
    bool result=false;
@@ -1281,7 +1291,6 @@ bool Primitive::LoadMesh()
 
    return result;
 }
-
 
 void Primitive::DeleteMesh()
 {
@@ -1312,7 +1321,6 @@ void Primitive::DeleteMesh()
 
    STOPUNDO
 }
-
 
 STDMETHODIMP Primitive::get_Sides(int *pVal)
 {
