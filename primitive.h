@@ -24,15 +24,15 @@ public:
 	//Vertex3Ds m_vRotation;
 	//Vertex3Ds m_vTransposition;
 	char m_szImage[MAXTOKEN];
-   char meshFileName[256];
-   bool use3DMesh;
+    char meshFileName[256];
 
 	COLORREF m_TopColor;
 	COLORREF m_SideColor;
 
 	TimerDataRoot m_tdr;
-   RECT boundRectangle;
+    RECT boundRectangle;
 
+    bool use3DMesh;
 	bool m_TopVisible;
 	bool m_DrawTexturesInside;
 	};
@@ -124,8 +124,8 @@ public:
 
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_MeshFileName)(/*[out, retval]*/ BSTR *pVal);
-   STDMETHOD(put_MeshFileName)(/*[in]*/ BSTR newVal);
+    STDMETHOD(get_MeshFileName)(/*[out, retval]*/ BSTR *pVal);
+    STDMETHOD(put_MeshFileName)(/*[in]*/ BSTR newVal);
 
 	Primitive();
 	virtual ~Primitive();
@@ -173,21 +173,17 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 
 	PinTable *m_ptable;
 
-	PrimitiveData m_d;
-    int numVertices;
-    VertexBuffer *vertexBuffer;
-    BOOL vertexBufferRegenerate;
+//!! outdated(?) information (along with the variable decls) for the old builtin primitive code, kept for reference:
 
-public:
 	// Vertices for 3d Display
-//	Vertex3D_NoTex2 rgv3DTopOriginal[Max_Primitive_Sides+1]; // without transformation at index=0 is the middle point
-//	Vertex3D_NoTex2 rgv3DBottomOriginal[Max_Primitive_Sides+1];
+	//	Vertex3D_NoTex2 rgv3DTopOriginal[Max_Primitive_Sides+1]; // without transformation at index=0 is the middle point
+	//	Vertex3D_NoTex2 rgv3DBottomOriginal[Max_Primitive_Sides+1];
 
-	//these will be deleted:
-//	Vertex3D_NoTex2 rgv3DTop[Max_Primitive_Sides]; // with transformation
-//	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of each point could be a triangle (*3) and for both sides because of culling (*2)
-//	Vertex3D_NoTex2 rgv3DBottom[Max_Primitive_Sides];
-//	WORD wBottomIndices[Max_Primitive_Sides*6];
+	// these will be deleted:
+	//	Vertex3D_NoTex2 rgv3DTop[Max_Primitive_Sides]; // with transformation
+	//	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of each point could be a triangle (*3) and for both sides because of culling (*2)
+	//	Vertex3D_NoTex2 rgv3DBottom[Max_Primitive_Sides];
+	//	WORD wBottomIndices[Max_Primitive_Sides*6];
 	
 	// OK here are our vertices that should be drawn:
 		// Index				: Length		: Description
@@ -207,28 +203,6 @@ public:
 		// 14 to 17				: 4				: bottom Sides (With Normals to the side)
 	// These Vertices will always be complete. even if the user does not want to draw them (sides disabled or top/bottom disabled).
 	// maybe they are not updated anymore, but they will be there.
-	Vertex3D_NoTex2 rgv3DOriginal[Max_Primitive_Sides*4+2];
-	Vertex3D_NoTex2 rgv3DAll[Max_Primitive_Sides*4+2];
-
-	// So how many indices are needed?
-		// 3 per Triangle top - we have m_sides triangles -> 0, 1, 2, 0, 2, 3, 0, 3, 4, ...
-		// 3 per Triangle bottom - we have m_sides triangles
-		// 6 per Side at the side (two triangles form a rectangle) - we have m_sides sides
-		// == 12 * m_sides
-		// * 2 for both cullings (m_DrawTexturesInside == true)
-		// == 24 * m_sides
-		// this will also be the initial sorting, when depths, Vertices and Indices are recreated, because calculateRealTimeOriginal is called.
-	WORD wIndicesAll[Max_Primitive_Sides*24];
-
-	// depth calculation
-		// Since we are compiling with SSE, I'll use Floating points for comparison.
-		// I need m_sides values at top
-		// I need m_sides values at bottom
-		// I need m_sides * 2 values at the side
-		// in the implementation i will use shell sort like implemented at wikipedia.
-		// Other algorithms are better at presorted things, but i will have some reverse sorted elements between the presorted here. 
-		// That's why insertion or bubble sort does not work fast here...
-	float fDepth[Max_Primitive_Sides*4];
 
 	// per side i will use the following mem:
 	// 13 * float * sides * 3 (vertices) = 13 * 4 * sides * 3 = 156 * sides bytes
@@ -240,36 +214,57 @@ public:
 	// 13 * float * 2 (additional middle points at top and bottom)
 	// = nothing...
 
+	Vertex3D_NoTex2 builtin_rgvOriginal[Max_Primitive_Sides*4+2];
+	Vertex3D_NoTex2 builtin_rgv[Max_Primitive_Sides*4+2];
+
+	// So how many indices are needed?
+		// 3 per Triangle top - we have m_sides triangles -> 0, 1, 2, 0, 2, 3, 0, 3, 4, ...
+		// 3 per Triangle bottom - we have m_sides triangles
+		// 6 per Side at the side (two triangles form a rectangle) - we have m_sides sides
+		// == 12 * m_sides
+		// * 2 for both cullings (m_DrawTexturesInside == true)
+		// == 24 * m_sides
+		// this will also be the initial sorting, when depths, Vertices and Indices are recreated, because calculateRealTimeOriginal is called.
+	WORD builtin_indices[Max_Primitive_Sides*24];
+
+	// depth calculation
+		// Since we are compiling with SSE, I'll use Floating points for comparison.
+		// I need m_sides values at top
+		// I need m_sides values at bottom
+		// I need m_sides * 2 values at the side
+		// in the implementation i will use shell sort like implemented at wikipedia.
+		// Other algorithms are better at presorted things, but i will have some reverse sorted elements between the presorted here. 
+		// That's why insertion or bubble sort does not work fast here...
+	float builtin_depth[Max_Primitive_Sides*4];
+
+	void CalculateBuiltinOriginal();
+	void CalculateBuiltin();
+
+//!! here starts the more general primitive stuff:
+
+	PrimitiveData m_d;
+    int numVertices;
+    VertexBuffer *vertexBuffer;
+    BOOL vertexBufferRegenerate;
+
 	// Vertices for editor display
 	Vector<Vertex3Ds> verticesTop;
 	Vector<Vertex3Ds> verticesBottom;
 
 	void RecalculateVertices();
-	void CalculateRealTimeOriginal();
-	void CalculateRealTime();
-	void CopyOriginalVertices();
-	void ApplyMatrixToVertices();
-	void SortVertices();
-   void UpdateMesh();
-   bool BrowseFor3DMeshFile();
-   virtual bool LoadMesh();
-   virtual void DeleteMesh();
+    void UpdateMesh();
+    bool BrowseFor3DMeshFile();
+    virtual bool LoadMesh();
+    virtual void DeleteMesh();
 
 	Matrix3D fullMatrix;
 	void RecalculateMatrices();
 
-	//RECT m_rcBounds; // For testing against lights
-
-	//float m_leading, m_descent;
 	float maxtu, maxtv;
-	//float m_realwidth, m_realheight;
 
-	// is top behind bottom?
-	//int farthestIndex;
-	//bool topBehindBottom;
-   Vertex3D_NoTex2 *objMeshOrg, *objMesh;
-   WORD *indexList;
-   int indexListSize;
+    Vertex3D_NoTex2 *objMeshOrg, *objMesh;
+    WORD *indexList;
+    int indexListSize;
 };
 
 #endif // !defined(AFX_PRIMITIVE_H__31CD2D6B-9BDD-4B1B-BC62-B9DE588A0CAA__INCLUDED_)

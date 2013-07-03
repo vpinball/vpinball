@@ -326,18 +326,17 @@ void Primitive::RecalculateVertices()
    verticesTop.RemoveAllElements();
    verticesBottom.RemoveAllElements();
 
-   RecalculateMatrices();
-
    if( !m_d.use3DMesh )
    {
       const float outerRadius = -0.5f/cosf((float)M_PI/(float)m_d.m_Sides);
-      float currentAngle = (float)M_PI/(float)m_d.m_Sides;
       const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
-      for (int i = 0; i < m_d.m_Sides; ++i,currentAngle += addAngle)
+	  const float offsAngle = (float)M_PI/(float)m_d.m_Sides;
+      for (int i = 0; i < m_d.m_Sides; ++i)
       {
          Vertex3Ds * const topVert = new Vertex3Ds();
          Vertex3Ds * const bottomVert = new Vertex3Ds();
 
+		 const float currentAngle = addAngle*(float)i + offsAngle;
          topVert->x = sinf(currentAngle)*outerRadius;
          topVert->y = cosf(currentAngle)*outerRadius * (1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert->x+0.5f));
          topVert->z =                           0.5f * (1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert->x+0.5f));
@@ -372,7 +371,6 @@ void Primitive::RecalculateVertices()
          verticesTop.AddElement(vert);
       }
    }
-
 }
 
 //////////////////////////////
@@ -394,6 +392,7 @@ void Primitive::PreRender(Sur * const psur)
 
 void Primitive::Render(Sur * const psur)
 {
+   RecalculateMatrices();
    RecalculateVertices();
    //psur->SetBorderColor(RGB(0,0,0),false,2);
    psur->SetLineColor(RGB(0,0,0),false,1);
@@ -433,41 +432,42 @@ void Primitive::Render(Sur * const psur)
 //static const WORD rgiPrimStatic0[5] = {0,1,2,3,4};
 static const WORD rgiPrimStatic1[5] = {4,3,2,1,0};
 
-void Primitive::CalculateRealTimeOriginal()
+void Primitive::CalculateBuiltinOriginal()
 {
    // this recalculates the Original Vertices -> should be only called, when sides are altered.
    const float outerRadius = -0.5f/(cosf((float)M_PI/(float)m_d.m_Sides));
-   float currentAngle = (float)M_PI/(float)m_d.m_Sides;
    const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
+   const float offsAngle = (float)M_PI/(float)m_d.m_Sides;
    float minX = FLT_MAX;
    float minY = FLT_MAX;
    float maxX = -FLT_MAX;
    float maxY = -FLT_MAX;
 
    Vertex3D_NoTex2 *middle;
-   middle = &rgv3DOriginal[0]; // middle point top
+   middle = &builtin_rgvOriginal[0]; // middle point top
    middle->x = 0.0f;
    middle->y = 0.0f;
    middle->z = 0.5f;
-   middle = &rgv3DOriginal[m_d.m_Sides+1]; // middle point bottom
+   middle = &builtin_rgvOriginal[m_d.m_Sides+1]; // middle point bottom
    middle->x = 0.0f;
    middle->y = 0.0f;
    middle->z = -0.5f;
-   for (int i = 0; i < m_d.m_Sides; ++i,currentAngle += addAngle)
+   for (int i = 0; i < m_d.m_Sides; ++i)
    {
       // calculate Top
-      Vertex3D_NoTex2 * const topVert = &rgv3DOriginal[i+1]; // top point at side
+      Vertex3D_NoTex2 * const topVert = &builtin_rgvOriginal[i+1]; // top point at side
+      const float currentAngle = addAngle*(float)i + offsAngle;
       topVert->x = sinf(currentAngle)*outerRadius;
       topVert->y = cosf(currentAngle)*outerRadius;		
       topVert->z = 0.5f;
       // calculate bottom
-      Vertex3D_NoTex2 * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
+      Vertex3D_NoTex2 * const bottomVert = &builtin_rgvOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
       bottomVert->x = topVert->x;
       bottomVert->y = topVert->y;
       bottomVert->z = -0.5f;
       // calculate sides
-      rgv3DOriginal[m_d.m_Sides*2 + 2 + i] = *topVert; // sideTopVert
-      rgv3DOriginal[m_d.m_Sides*3 + 2 + i] = *bottomVert; // sideBottomVert
+      builtin_rgvOriginal[m_d.m_Sides*2 + 2 + i] = *topVert; // sideTopVert
+      builtin_rgvOriginal[m_d.m_Sides*3 + 2 + i] = *bottomVert; // sideBottomVert
 
       // calculate bounds for X and Y
       if (topVert->x < minX)
@@ -481,10 +481,10 @@ void Primitive::CalculateRealTimeOriginal()
    }
 
    // these have to be replaced for image mapping
-   middle = &rgv3DOriginal[0]; // middle point top
+   middle = &builtin_rgvOriginal[0]; // middle point top
    middle->tu = maxtu*0.25f;   // /4
    middle->tv = maxtv*0.25f;   // /4
-   middle = &rgv3DOriginal[m_d.m_Sides+1]; // middle point bottom
+   middle = &builtin_rgvOriginal[m_d.m_Sides+1]; // middle point bottom
    middle->tu = maxtu*(float)(0.25*3.); // /4*3
    middle->tv = maxtv*0.25f;   // /4
    const float invx = (maxtu*0.5f)/(maxX-minX);
@@ -492,16 +492,16 @@ void Primitive::CalculateRealTimeOriginal()
    const float invs = maxtu/(float)m_d.m_Sides;
    for (int i = 0; i < m_d.m_Sides; i++)
    {
-      Vertex3D_NoTex2 * const topVert = &rgv3DOriginal[i+1]; // top point at side
+      Vertex3D_NoTex2 * const topVert = &builtin_rgvOriginal[i+1]; // top point at side
       topVert->tu = (topVert->x - minX)*invx;
       topVert->tv = (topVert->y - minY)*invy;
 
-      Vertex3D_NoTex2 * const bottomVert = &rgv3DOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
+      Vertex3D_NoTex2 * const bottomVert = &builtin_rgvOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
       bottomVert->tu = topVert->tu+0.5f*maxtu;
       bottomVert->tv = topVert->tv;
 
-      Vertex3D_NoTex2 * const sideTopVert = &rgv3DOriginal[m_d.m_Sides*2 + 2 + i];
-      Vertex3D_NoTex2 * const sideBottomVert = &rgv3DOriginal[m_d.m_Sides*3 + 2 + i];
+      Vertex3D_NoTex2 * const sideTopVert = &builtin_rgvOriginal[m_d.m_Sides*2 + 2 + i];
+      Vertex3D_NoTex2 * const sideBottomVert = &builtin_rgvOriginal[m_d.m_Sides*3 + 2 + i];
 
       sideTopVert->tu = (float)i*invs;
       sideTopVert->tv = 0.5f*maxtv;
@@ -510,13 +510,13 @@ void Primitive::CalculateRealTimeOriginal()
    }
 }
 
-void Primitive::CopyOriginalVertices()
+void Primitive::CalculateBuiltin()
 {
-   // copy vertices
-   memcpy(rgv3DAll,rgv3DOriginal,(m_d.m_Sides*4 + 2)*sizeof(Vertex3D_NoTex2));
+   // 1 copy vertices
+   memcpy(builtin_rgv,builtin_rgvOriginal,(m_d.m_Sides*4 + 2)*sizeof(Vertex3D_NoTex2));
 
-   // restore indices
-   // check if anti culling is enabled:
+   // 2 restore indices
+   //   check if anti culling is enabled:
    if (m_d.m_DrawTexturesInside)
    {
       // yes: draw everything twice
@@ -525,34 +525,34 @@ void Primitive::CopyOriginalVertices()
       {
          const int tmp = (i == m_d.m_Sides-1) ? 1 : (i+2); // wrapping around
          // top
-         wIndicesAll[i*6  ] = 0;
-         wIndicesAll[i*6+1] = i + 1;
-         wIndicesAll[i*6+2] = tmp;
-         wIndicesAll[i*6+3] = 0;
-         wIndicesAll[i*6+4] = tmp;
-         wIndicesAll[i*6+5] = i + 1;
+         builtin_indices[i*6  ] = 0;
+         builtin_indices[i*6+1] = i + 1;
+         builtin_indices[i*6+2] = tmp;
+         builtin_indices[i*6+3] = 0;
+         builtin_indices[i*6+4] = tmp;
+         builtin_indices[i*6+5] = i + 1;
 
          const int tmp2 = tmp+1;
          // bottom
-         wIndicesAll[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + tmp2;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + 2 + i;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides + 1;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides + 2 + i;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides + tmp2;
+         builtin_indices[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
+         builtin_indices[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + tmp2;
+         builtin_indices[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + 2 + i;
+         builtin_indices[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides + 1;
+         builtin_indices[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides + 2 + i;
+         builtin_indices[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides + tmp2;
          // sides
-         wIndicesAll[12 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 1] = m_d.m_Sides*2 + 2 + i;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 2] = m_d.m_Sides*3 + 2 + i;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 3] = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 4] = m_d.m_Sides*3 + 2 + i;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 5] = m_d.m_Sides*3 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 6] = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 7] = m_d.m_Sides*3 + 2 + i;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 8] = m_d.m_Sides*2 + 2 + i;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 9] = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 10]= m_d.m_Sides*3 + tmp2;
-         wIndicesAll[12 * (i + m_d.m_Sides) + 11]= m_d.m_Sides*3 + 2 + i;
+         builtin_indices[12 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
+         builtin_indices[12 * (i + m_d.m_Sides) + 1] = m_d.m_Sides*2 + 2 + i;
+         builtin_indices[12 * (i + m_d.m_Sides) + 2] = m_d.m_Sides*3 + 2 + i;
+         builtin_indices[12 * (i + m_d.m_Sides) + 3] = m_d.m_Sides*2 + tmp2;
+         builtin_indices[12 * (i + m_d.m_Sides) + 4] = m_d.m_Sides*3 + 2 + i;
+         builtin_indices[12 * (i + m_d.m_Sides) + 5] = m_d.m_Sides*3 + tmp2;
+         builtin_indices[12 * (i + m_d.m_Sides) + 6] = m_d.m_Sides*2 + tmp2;
+         builtin_indices[12 * (i + m_d.m_Sides) + 7] = m_d.m_Sides*3 + 2 + i;
+         builtin_indices[12 * (i + m_d.m_Sides) + 8] = m_d.m_Sides*2 + 2 + i;
+         builtin_indices[12 * (i + m_d.m_Sides) + 9] = m_d.m_Sides*2 + tmp2;
+         builtin_indices[12 * (i + m_d.m_Sides) + 10]= m_d.m_Sides*3 + tmp2;
+         builtin_indices[12 * (i + m_d.m_Sides) + 11]= m_d.m_Sides*3 + 2 + i;
       }
    } else {
       // yes: draw everything twice
@@ -561,33 +561,32 @@ void Primitive::CopyOriginalVertices()
       {
          const int tmp = (i == m_d.m_Sides-1) ? 1 : (i+2); // wrapping around
          // top
-         wIndicesAll[i*3  ] = 0;
-         wIndicesAll[i*3+2] = i + 1;
-         wIndicesAll[i*3+1] = tmp;
+         builtin_indices[i*3  ] = 0;
+         builtin_indices[i*3+2] = i + 1;
+         builtin_indices[i*3+1] = tmp;
 
          const int tmp2 = tmp+1;
          // bottom
-         wIndicesAll[3 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
-         wIndicesAll[3 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 2 + i;
-         wIndicesAll[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + tmp2;
+         builtin_indices[3 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
+         builtin_indices[3 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 2 + i;
+         builtin_indices[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + tmp2;
 
          // sides
-         wIndicesAll[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides*3 + 2 + i;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides*2 + 2 + i;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides*2 + tmp2;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides*3 + tmp2;
-         wIndicesAll[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides*3 + 2 + i;
+         builtin_indices[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
+         builtin_indices[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides*3 + 2 + i;
+         builtin_indices[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides*2 + 2 + i;
+         builtin_indices[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides*2 + tmp2;
+         builtin_indices[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides*3 + tmp2;
+         builtin_indices[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides*3 + 2 + i;
       }
    }
-}
 
-void Primitive::ApplyMatrixToVertices()
-{
+   // 3 apply matrix trafo
+
    // could be optimized, if not everything is drawn.
    for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
    {
-      Vertex3D_NoTex2 * const tempVert = &rgv3DAll[i];
+      Vertex3D_NoTex2 * const tempVert = &builtin_rgv[i];
       tempVert->nx = 0;
       tempVert->ny = 0;
       tempVert->nz = -1.f;
@@ -599,11 +598,9 @@ void Primitive::ApplyMatrixToVertices()
       tempVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(tempVert->z+0.5f);
       fullMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
    }
-}
 
-void Primitive::SortVertices()
-{
-   // depth calculation
+   // 4 depth calculation / sorting
+
    // Since we are compiling with SSE, I'll use Floating points for comparison.
    // I need m_sides values at top
    // I need m_sides values at bottom
@@ -623,13 +620,13 @@ void Primitive::SortVertices()
       for (int i = 0; i < m_d.m_Sides * 2; i++)
       {
          //!! this is wrong!
-         fDepth[i] = 
-            zMultiplicator*rgv3DAll[wIndicesAll[i*3  ]].z+
-            zMultiplicator*rgv3DAll[wIndicesAll[i*3+1]].z+
-            zMultiplicator*rgv3DAll[wIndicesAll[i*3+2]].z+
-            yMultiplicator*rgv3DAll[wIndicesAll[i*3  ]].y+
-            yMultiplicator*rgv3DAll[wIndicesAll[i*3+1]].y+
-            yMultiplicator*rgv3DAll[wIndicesAll[i*3+2]].y;
+         builtin_depth[i] = 
+            zMultiplicator*builtin_rgv[builtin_indices[i*3  ]].z+
+            zMultiplicator*builtin_rgv[builtin_indices[i*3+1]].z+
+            zMultiplicator*builtin_rgv[builtin_indices[i*3+2]].z+
+            yMultiplicator*builtin_rgv[builtin_indices[i*3  ]].y+
+            yMultiplicator*builtin_rgv[builtin_indices[i*3+1]].y+
+            yMultiplicator*builtin_rgv[builtin_indices[i*3+2]].y;
       }
    } else {
       const float zM13 = (float)(1.0/3.0) * zMultiplicator;
@@ -637,14 +634,14 @@ void Primitive::SortVertices()
       // top and bottom
       for (int i = 0; i < m_d.m_Sides * 2; i++)
       {
-         fDepth[i] = 
-            (rgv3DAll[wIndicesAll[i*6  ]].z+
-             rgv3DAll[wIndicesAll[i*6+1]].z+
-             rgv3DAll[wIndicesAll[i*6+2]].z) 
+         builtin_depth[i] = 
+            (builtin_rgv[builtin_indices[i*6  ]].z+
+             builtin_rgv[builtin_indices[i*6+1]].z+
+             builtin_rgv[builtin_indices[i*6+2]].z) 
             * zM13 +
-            (rgv3DAll[wIndicesAll[i*6  ]].y+
-             rgv3DAll[wIndicesAll[i*6+1]].y+
-             rgv3DAll[wIndicesAll[i*6+2]].y) 
+            (builtin_rgv[builtin_indices[i*6  ]].y+
+             builtin_rgv[builtin_indices[i*6+1]].y+
+             builtin_rgv[builtin_indices[i*6+2]].y) 
             * yM13;
       }
 
@@ -652,19 +649,19 @@ void Primitive::SortVertices()
       const float yM05 = 0.5f * yMultiplicator;
       for (int i = m_d.m_Sides; i < m_d.m_Sides * 2; i++)
       {
-         fDepth[i*2] = 
-            (rgv3DAll[wIndicesAll[i*12  ]].z+
-             rgv3DAll[wIndicesAll[i*12+1]].z)
+         builtin_depth[i*2] = 
+            (builtin_rgv[builtin_indices[i*12  ]].z+
+             builtin_rgv[builtin_indices[i*12+1]].z)
             * zM05 +
-            (rgv3DAll[wIndicesAll[i*12  ]].y+
-             rgv3DAll[wIndicesAll[i*12+1]].y)
+            (builtin_rgv[builtin_indices[i*12  ]].y+
+             builtin_rgv[builtin_indices[i*12+1]].y)
             * yM05;
-         fDepth[i*2+1] = 
-            (rgv3DAll[wIndicesAll[i*12  ]].z+
-             rgv3DAll[wIndicesAll[i*12+1]].z)
+         builtin_depth[i*2+1] = 
+            (builtin_rgv[builtin_indices[i*12  ]].z+
+             builtin_rgv[builtin_indices[i*12+1]].z)
             * zM05 +
-            (rgv3DAll[wIndicesAll[i*12  ]].y+
-             rgv3DAll[wIndicesAll[i*12+1]].y)
+            (builtin_rgv[builtin_indices[i*12  ]].y+
+             builtin_rgv[builtin_indices[i*12+1]].y)
             * yM05;
       }
    }
@@ -678,23 +675,23 @@ void Primitive::SortVertices()
          for (int i = inc; i < m_d.m_Sides*4; i++)
          {
             // store temp
-            const float tempDepth = fDepth[i];
+            const float tempDepth = builtin_depth[i];
             int tempIndices[6];
             for (int tempI = 0; tempI < 6; tempI++)
-               tempIndices[tempI] = wIndicesAll[i*6 + tempI];
+               tempIndices[tempI] = builtin_indices[i*6 + tempI];
 
             int j = i;
-            while ((j >= inc) && (fDepth[j-inc] > tempDepth))
+            while ((j >= inc) && (builtin_depth[j-inc] > tempDepth))
             {
-               fDepth[j] = fDepth[j-inc];
+               builtin_depth[j] = builtin_depth[j-inc];
                for (int tempI = 0; tempI < 6; tempI++)
-                  wIndicesAll[j*6+tempI] = wIndicesAll[(j-inc)*6 + tempI];
+                  builtin_indices[j*6+tempI] = builtin_indices[(j-inc)*6 + tempI];
                j -= inc;
             }
 
-            fDepth[j] = tempDepth;
+            builtin_depth[j] = tempDepth;
             for (int tempI = 0; tempI < 6; tempI++)
-               wIndicesAll[j*6+tempI] = tempIndices[tempI];
+               builtin_indices[j*6+tempI] = tempIndices[tempI];
          }
 
          if(inc == 2)
@@ -704,23 +701,22 @@ void Primitive::SortVertices()
       }
    } //else { //!! this is missing completely!!???
    //}
-}
 
-void Primitive::CalculateRealTime()
-{
-   RecalculateMatrices();
-   CopyOriginalVertices();
-   ApplyMatrixToVertices();
-   SortVertices();
-   // update the bounding box for the primitive to tell the renderer where to update the back buffer
+   // 5 update the bounding box for the primitive to tell the renderer where to update the back buffer
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
-   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, rgv3DAll, NULL, NULL, numVertices, fFalse);
+   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, builtin_rgv, NULL, NULL, numVertices, fFalse);
+
+   // 6 store in vertexbuffer
+   Vertex3D_NoTex2 *buf;
+   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
+   memcpy( buf, builtin_rgv, sizeof(Vertex3D_NoTex2)*numVertices );
+   vertexBuffer->unlock();
 }
 
 void Primitive::UpdateMesh()
 {
-   RecalculateMatrices();
    memcpy(objMesh,objMeshOrg,numVertices*sizeof(Vertex3D_NoTex2));
+
    // could be optimized, if not everything is drawn.
    for (int i = 0; i < numVertices; i++)
    {
@@ -736,6 +732,7 @@ void Primitive::UpdateMesh()
       tempVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(tempVert->z+0.5f);
       fullMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
    }
+
    // update the bounding box for the primitive to tell the renderer where to update the back buffer
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
    g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
@@ -744,8 +741,8 @@ void Primitive::UpdateMesh()
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
    memcpy( buf, objMesh, sizeof(Vertex3D_NoTex2)*numVertices );
    vertexBuffer->unlock();
-
 }
+
 // Always called each frame to render over everything else (along with alpha ramps)
 void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
@@ -781,21 +778,19 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
    
 	  if(vertexBufferRegenerate)
 	  {
-		  vertexBufferRegenerate = false;
-        if( m_d.use3DMesh )
+ 	    vertexBufferRegenerate = false;
+        
+ 	    RecalculateMatrices();
+
+		if( m_d.use3DMesh )
         {
             UpdateMesh();
         }
         else
         {
-   		  CalculateRealTime();
-
-		     Vertex3D_NoTex2 *buf;
-		     vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
-		     memcpy( buf, rgv3DAll, sizeof(Vertex3D_NoTex2)*numVertices );
-		     vertexBuffer->unlock();
+   		    CalculateBuiltin();
         }
-	  }
+	 }
 
      if( m_d.use3DMesh )
      {
@@ -804,7 +799,7 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
      }
      else
      {
-        pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, wIndicesAll, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
+        pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, builtin_indices, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
      }
    }
 }
@@ -812,9 +807,11 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 extern bool loadWavefrontObj( char *filename );
 extern Vertex3D_NoTex2 *GetVertices( int &numVertices );
 extern WORD *GetIndexList( int &indexListSize );
+
 void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+   
    if( m_d.use3DMesh )
    {
       objMesh = new Vertex3D_NoTex2[numVertices];         
@@ -823,10 +820,11 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
    {
       numVertices = m_d.m_Sides*4+2;
    }
+
    if( !vertexBuffer )
    {
       pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
-      NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
+      NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2); //!! never cleared up again here
    }
 
    PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -844,8 +842,9 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
 
    if( !m_d.use3DMesh )
    {
-      CalculateRealTimeOriginal();
+      CalculateBuiltinOriginal();
    }
+
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
 }
 
@@ -1306,7 +1305,7 @@ void Primitive::DeleteMesh()
       indexListSize=0;
    }
    numVertices = m_d.m_Sides*4+2;
-   CalculateRealTimeOriginal();
+   CalculateBuiltinOriginal();
 
    m_d.meshFileName[0]=0;
    vertexBufferRegenerate = true;
@@ -1330,6 +1329,7 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
 
       m_d.m_Sides = newVal;
       vertexBufferRegenerate = true;
+      RecalculateMatrices();
 	  RecalculateVertices();
 
       STOPUNDO

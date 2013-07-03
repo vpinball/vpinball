@@ -32,7 +32,7 @@ void PrimitiveAnimObject::Check3D()
 
 void HitPrimitive::CalcHitRect()
 {
-	//!! m_rcHitRect = min/max(m_pprimitive->rgv3DAll)
+	//!! m_rcHitRect = min/max(m_pprimitive->builtin_rgv)
 }
 
 BumperHitCircle::BumperHitCircle()
