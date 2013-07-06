@@ -999,7 +999,7 @@ HRESULT Gate::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, H
 	DWORD dwID;
 	ULONG read = 0;
 	HRESULT hr;
-	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
+	if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
 		return hr;
 
 	if(FAILED(hr = pstm->Read(&m_d, sizeof(GateData), &read)))

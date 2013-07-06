@@ -729,7 +729,7 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
    m_ptable = ptable;
 
    DWORD dwID;
-   if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
+   if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
       return hr;
 
    if(FAILED(hr = pstm->Read(&m_d, sizeof(BumperData), &read)))

@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "resource.h"
 
 struct MyVector
 {
@@ -46,29 +45,28 @@ void NormalizeNormals()
 {
    for( unsigned int i=0;i<faces.size();i+=3 )
    {
-      int A=faces[i];
-      int B=faces[i+1];
-      int C=faces[i+2];
-      float x1 = verts[B].x - verts[A].x;
-      float y1 = verts[B].y - verts[A].y;
-      float z1 = verts[B].z - verts[A].z;
-      float x2 = verts[C].x - verts[A].x;
-      float y2 = verts[C].y - verts[A].y;
-      float z2 = verts[C].z - verts[A].z;
+      const int A=faces[i];
+      const int B=faces[i+1];
+      const int C=faces[i+2];
+      const float x1 = verts[B].x - verts[A].x;
+      const float y1 = verts[B].y - verts[A].y;
+      const float z1 = verts[B].z - verts[A].z;
+      const float x2 = verts[C].x - verts[A].x;
+      const float y2 = verts[C].y - verts[A].y;
+      const float z2 = verts[C].z - verts[A].z;
       float nx = y1*z2 - z1*y2;
       float ny = z1*x2 - x1*z1;
       float nz = x1*y2 - y1*x1;
-      float len = sqrt(nx*nx + ny*ny + nz*nz );
-      nx /=len;
-      ny /=len;
-      nz /=len;
-      int v[3];
-      v[0]=A; v[1]=B; v[2]=C;
+      const float inv_len = 1.0f/sqrtf(nx*nx + ny*ny + nz*nz );
+      nx *= inv_len;
+      ny *= inv_len;
+      nz *= inv_len;
+	  const int v[3] = {A,B,C};
       vector<int> seen;
-      seen.resize( verts.size(),0 );
+      seen.resize( verts.size(),0 ); //!!
       for( int t=0;t<3; t++ )
       {
-         int c=v[t];
+         const int c=v[t];
          seen[c]++;
          if( seen[c]==1 )
          {
@@ -78,13 +76,14 @@ void NormalizeNormals()
          }
          else
          {
-            verts[c].nx = verts[c].nx * (1.0f - 1.0f/seen[c]) + nx*1.0f/seen[c];
-            verts[c].ny = verts[c].ny * (1.0f - 1.0f/seen[c]) + ny*1.0f/seen[c];
-            verts[c].nz = verts[c].nz * (1.0f - 1.0f/seen[c]) + nz*1.0f/seen[c];
-            len = sqrt(verts[c].nx*verts[c].nx + verts[c].ny*verts[c].ny + verts[c].nz*verts[c].nz);
-            verts[c].nx /= len;
-            verts[c].ny /= len;
-            verts[c].nz /= len;
+			const float inv_seen = 1.0f/(float)seen[c];
+            verts[c].nx = verts[c].nx * (1.0f - inv_seen) + nx*inv_seen;
+            verts[c].ny = verts[c].ny * (1.0f - inv_seen) + ny*inv_seen;
+            verts[c].nz = verts[c].nz * (1.0f - inv_seen) + nz*inv_seen;
+            const float inv_len2 = 1.0f/sqrtf(verts[c].nx*verts[c].nx + verts[c].ny*verts[c].ny + verts[c].nz*verts[c].nz);
+            verts[c].nx *= inv_len2;
+            verts[c].ny *= inv_len2;
+            verts[c].nz *= inv_len2;
          }
       }
       seen.clear();
@@ -127,7 +126,7 @@ bool loadWavefrontObj( char *filename )
          MyVector tmp;
          fscanf_s(f, "%f %f\n",&tmp.x, &tmp.y );
          // don't mirror v coordinates...better do it in Blender & co
-         //tmp.y = 1-tmp.y;
+         //tmp.y = 1.f-tmp.y;
          tmpTexel.push_back(tmp);
       }
       if( strcmp( lineHeader,"vn") == 0 )

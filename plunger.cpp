@@ -565,7 +565,7 @@ HRESULT Plunger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
 	HRESULT hr;
 	ULONG read = 0;
 	DWORD dwID;
-	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
+	if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
 		return hr;
 
 	if(FAILED(hr = pstm->Read(&m_d, sizeof(PlungerData), &read)))
