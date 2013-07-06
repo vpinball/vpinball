@@ -1916,7 +1916,7 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    ULONG read = 0;
    DWORD dwID;
    HRESULT hr;
-   if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
+   if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
       return hr;
 
    int temp;

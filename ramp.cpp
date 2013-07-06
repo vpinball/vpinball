@@ -1810,7 +1810,7 @@ HRESULT Ramp::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, H
 
    DWORD dwID;
    HRESULT hr;
-   if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
+   if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
       return hr;
 
    if(FAILED(hr = InitPointLoad(pstm)))

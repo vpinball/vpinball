@@ -19,7 +19,7 @@ void HitPrimitive::Collide(Ball * const pball, Vertex3Ds * const phitnormal) //!
 }
 
 void PrimitiveAnimObject::Check3D()
-	{
+{
 	m_fInvalid = true;
 
 	Primitive * const p = m_pprimitive;
@@ -27,7 +27,7 @@ void PrimitiveAnimObject::Check3D()
 	// Seems like for now we can simply abuse the already calculated coordinates
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 	ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
-   memcpy( &m_rcBounds, &p->m_d.boundRectangle, sizeof(RECT));
+    memcpy( &m_rcBounds, &p->m_d.boundRectangle, sizeof(RECT));
 }
 
 void HitPrimitive::CalcHitRect()
