@@ -706,7 +706,6 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-#ifndef OLDLOAD
    BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
@@ -722,23 +721,6 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
    }
 
    return S_OK;
-#else
-   ULONG read = 0;
-   HRESULT hr = S_OK;
-
-   m_ptable = ptable;
-
-   DWORD dwID;
-   if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-      return hr;
-
-   if(FAILED(hr = pstm->Read(&m_d, sizeof(BumperData), &read)))
-      return hr;
-
-   *pid = dwID;
-
-   return hr;
-#endif
 }
 
 BOOL Bumper::LoadToken(int id, BiffReader *pbr)

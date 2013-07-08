@@ -616,7 +616,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
 		rgi[l*3+2] = l+2;
 		SetNormal(rgv3D, rgi+l*3, 3, NULL, NULL, 0);
 		}	
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D,16, rgi,3*14, 0);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D,16, rgi,3*14, 0); //!! fan instead
 	}
 
 	for (int l=0;l<14;l++)
@@ -664,7 +664,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
 		rgi[l*3+2] = l+2;
 		SetNormal(rgv3D, rgi+l*3, 3, NULL, NULL, 0);
 		}
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D,16, rgi,3*14, 0);
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, rgv3D,16, rgi,3*14, 0); //!! fan instead
 	}
 
 	for (int l=0;l<14;l++)
@@ -796,33 +796,16 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	}
 
 HRESULT Flipper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
+{
 	SetDefaults(false);
-#ifndef OLDLOAD
+
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
 	m_ptable = ptable;
 
 	br.Load();
 	return S_OK;
-#else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
-	m_ptable = ptable;
-
-	DWORD dwID;
-	if(FAILED(hr = pstm->Read(&dwID, sizeof dwID, &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_d, sizeof(FlipperData), &read)))
-		return hr;
-
-	*pid = dwID;
-
-	return hr;
-#endif
-	}
+}
 
 BOOL Flipper::LoadToken(int id, BiffReader *pbr)
 	{

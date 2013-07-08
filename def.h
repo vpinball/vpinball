@@ -41,8 +41,6 @@ __forceinline unsigned int max(const unsigned int x, const unsigned int y)
    return x < y ? y : x;
 }
 
-//#define OLDLOAD 1
-
 #define fTrue 1
 #define fFalse 0
 

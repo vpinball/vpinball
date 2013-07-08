@@ -505,33 +505,16 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 	}
 
 HRESULT Kicker::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
+{
 	SetDefaults(false);
-#ifndef OLDLOAD
+
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
 	m_ptable = ptable;
 
 	br.Load();
 	return S_OK;
-#else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
-	m_ptable = ptable;
-
-	DWORD dwID;
-	if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_d, sizeof(KickerData), &read)))
-		return hr;
-
-	*pid = dwID;
-
-	return hr;
-#endif
-	}
+}
 
 BOOL Kicker::LoadToken(int id, BiffReader *pbr)
 	{

@@ -544,51 +544,16 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	}
 
 HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
+{
 	SetDefaults(false);
-#ifndef OLDLOAD
+
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
 	m_ptable = ptable;
 
 	br.Load();
 	return S_OK;
-#else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
-	m_ptable = ptable;
-
-	DWORD dwID;
-	if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_d, sizeof(TextboxData), &read)))
-		return hr;
-
-	FONTDESC fd;
-	fd.cbSizeofstruct = sizeof(FONTDESC);
-	fd.lpstrName = L"Arial";
-	fd.cySize.int64 = 142500;
-	//fd.cySize.Lo = 0;
-	fd.sWeight = FW_NORMAL;
-	fd.sCharset = 0;
-    fd.fItalic = 0;
-	fd.fUnderline = 0;
-	fd.fStrikethrough = 0;
-	OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-
-	IPersistStream * ips;
-	m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-
-	ips->Load(pstm);
-
-	//ApcProjectItem.Register(ptable->ApcProject, GetDispatch(), dwID);
-	*pid = dwID;
-
-	return hr;
-#endif
-	}
+}
 
 BOOL Textbox::LoadToken(int id, BiffReader *pbr)
 	{

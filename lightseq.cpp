@@ -505,32 +505,16 @@ HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	}
 
 HRESULT LightSeq::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
+{
 	SetDefaults(false);
-#ifndef OLDLOAD
+
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
 	m_ptable = ptable;
 
 	br.Load();
 	return S_OK;
-#else
-	m_ptable = ptable;
-
-	DWORD dwID;
-	ULONG read = 0;
-	HRESULT hr;
-	if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_d, sizeof(LightSeqData), &read)))
-		return hr;
-
-	*pid = dwID;
-
-	return hr;
-#endif
-	}
+}
 
 BOOL LightSeq::LoadToken(int id, BiffReader *pbr)
 	{

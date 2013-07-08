@@ -1073,7 +1073,6 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-#ifndef OLDLOAD
 
    m_d.m_radius = 50;
    m_d.m_state = LightStateOff;
@@ -1100,25 +1099,6 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 
    br.Load();
    return S_OK;
-#else
-   m_ptable = ptable;
-
-   ULONG read = 0;
-   DWORD dwID;
-   HRESULT hr;
-   if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-      return hr;
-
-   if(FAILED(hr = InitPointLoad(pstm)))
-      return hr;
-
-   if(FAILED(hr = pstm->Read(&m_d, sizeof(LightData), &read)))
-      return hr;
-
-   *pid = dwID;
-
-   return hr;
-#endif
 }
 
 BOOL Light::LoadToken(int id, BiffReader *pbr)

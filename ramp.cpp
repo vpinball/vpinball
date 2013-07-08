@@ -1796,33 +1796,13 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 HRESULT Ramp::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-#ifndef OLDLOAD
+
    BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
    br.Load();
    return S_OK;
-#else
-   ULONG read = 0;	
-
-   m_ptable = ptable;
-
-   DWORD dwID;
-   HRESULT hr;
-   if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-      return hr;
-
-   if(FAILED(hr = InitPointLoad(pstm)))
-      return hr;
-
-   if(FAILED(hr = pstm->Read(&m_d, sizeof(RampData), &read)))
-      return hr;
-
-   *pid = dwID;
-
-   return hr;
-#endif
 }
 
 BOOL Ramp::LoadToken(int id, BiffReader *pbr)
