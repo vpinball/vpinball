@@ -1846,7 +1846,6 @@ HRESULT PinTable::InitVBA()
 		{
 		ShowError("Could not create VBA ProjectItem Table.");
 		}
-
 #endif
 	return hr;
 }
@@ -3240,7 +3239,6 @@ void PinTable::SetLoadDefaults()
 
 HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
-#ifndef OLDLOAD
 	SetLoadDefaults();
 
 	int rgi[6] = {0,0,0,0,0,0};
@@ -3260,98 +3258,6 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 	ccollection = rgi[5];
 
 	return S_OK;
-#else
-	ULONG read = 0;
-	HRESULT hr = S_OK;
-
-	int count;
-
-	if(FAILED(hr = pstm->Read(&count, sizeof(int), &read)))
-		return hr;
-
-	csubobj = count;
-
-	if(FAILED(hr = pstm->Read(&m_gridsize, sizeof(m_gridsize), &read)))
-		return hr;
-
-	DWORD dwID;
-	if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_left, sizeof(m_left), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_top, sizeof(m_top), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_right, sizeof(m_right), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_bottom, sizeof(m_bottom), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_xlatex, sizeof(m_xlatex), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_xlatey, sizeof(m_xlatey), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_scalex, sizeof(m_scalex), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_scaley, sizeof(m_scaley), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_offsetx, sizeof(m_offsetx), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_offsety, sizeof(m_offsety), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_zoom, sizeof(m_zoom), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_inclination, sizeof(m_inclination), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_maxSeparation, sizeof(m_maxSeparation), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_ZPD, sizeof(m_ZPD), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_FOV, sizeof(m_FOV), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&count, sizeof(int), &read)))
-		return hr;
-
-	if (read)
-		{
-		csounds = count;
-		}
-
-	if(FAILED(hr = pstm->Read(&count, sizeof(int), &read)))
-		return hr;
-
-	if (read)
-		{
-		ctextures = count;
-		}
-
-	if(FAILED(hr = pstm->Read(m_szImage, MAXTOKEN, &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_fGrid, sizeof(m_fGrid), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_fBackdrop, sizeof(m_fBackdrop), &read)))
-		return hr;
-
-	ApcProjectItem.Register(ApcProject, GetDispatch(), dwID);
-
-	return hr;
-#endif
 }
 
 BOOL PinTable::LoadToken(int id, BiffReader *pbr)

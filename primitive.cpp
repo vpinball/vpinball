@@ -957,30 +957,13 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
 HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-#ifndef OLDLOAD
+
    BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
    br.Load();
    return S_OK;
-#else
-   ULONG read = 0;
-   HRESULT hr = S_OK;
-
-   m_ptable = ptable;
-
-   DWORD dwID;
-   if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-      return hr;
-
-   if(FAILED(hr = pstm->Read(&m_d, sizeof(PrimitiveData), &read)))
-      return hr;
-
-   *pid = dwID;
-
-   return hr;
-#endif
 }
 
 BOOL Primitive::LoadToken(int id, BiffReader *pbr)

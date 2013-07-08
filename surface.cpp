@@ -920,6 +920,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       rgnormal[i].x = dy*inv_len;
       rgnormal[i].y = dx*inv_len;
    }
+
    Vertex3D_NoLighting *noLightBuf[2];
    Vertex3D *texelBuf[2];
    if(!m_d.m_fEnableLighting)
@@ -1003,10 +1004,8 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
             vertsNotLit[l].color = m_d.m_sidecolor;
             vertsNotLit[l+2].color = m_d.m_sidecolor;
          }
-         memcpy( &noLightBuf[0][offset], &vertsNotLit[offset], sizeof(Vertex3D_NoLighting) );
-         memcpy( &noLightBuf[0][offset+1], &vertsNotLit[offset+1], sizeof(Vertex3D_NoLighting) );
-         memcpy( &noLightBuf[0][offset+2], &vertsNotLit[offset+2], sizeof(Vertex3D_NoLighting) );
-         memcpy( &noLightBuf[0][offset+3], &vertsNotLit[offset+3], sizeof(Vertex3D_NoLighting) );
+
+         memcpy( &noLightBuf[0][offset], &vertsNotLit[offset], sizeof(Vertex3D_NoLighting)*4 );
       }
       else
       {
@@ -1047,10 +1046,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
             verts[l+2].nz = 0;
          }
 
-         memcpy( &texelBuf[0][offset], &verts[offset], sizeof(Vertex3D) );
-         memcpy( &texelBuf[0][offset+1], &verts[offset+1], sizeof(Vertex3D) );
-         memcpy( &texelBuf[0][offset+2], &verts[offset+2], sizeof(Vertex3D) );
-         memcpy( &texelBuf[0][offset+3], &verts[offset+3], sizeof(Vertex3D) );
+         memcpy( &texelBuf[0][offset], &verts[offset], sizeof(Vertex3D)*4 );
       }
    }
    sideVBuffer->unlock();
@@ -1082,7 +1078,6 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);
       const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
 
-      //!! combine drawcalls into one
       numPolys = vtri.Size();
       if( numPolys==0 )
       {         
@@ -1154,20 +1149,13 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
             for (int l=offset;l<offset+3;l++)
                vertsTopNotLit[0][l].color = m_d.m_topcolor;
-            memcpy( &vertsTopNotLit[1][offset], &vertsTopNotLit[0][offset], sizeof(Vertex3D_NoLighting) );
-            memcpy( &vertsTopNotLit[1][offset+1], &vertsTopNotLit[0][offset+1], sizeof(Vertex3D_NoLighting) );
-            memcpy( &vertsTopNotLit[1][offset+2], &vertsTopNotLit[0][offset+2], sizeof(Vertex3D_NoLighting) );
+            memcpy( &vertsTopNotLit[1][offset], &vertsTopNotLit[0][offset], sizeof(Vertex3D_NoLighting)*3 );
             vertsTopNotLit[1][offset].z = heightDropped;
             vertsTopNotLit[1][offset+1].z = heightDropped;
             vertsTopNotLit[1][offset+2].z = heightDropped;
 
-            memcpy( &noLightBuf[0][offset], &vertsTopNotLit[0][offset], sizeof(Vertex3D_NoLighting));
-            memcpy( &noLightBuf[0][offset+1], &vertsTopNotLit[0][offset+1], sizeof(Vertex3D_NoLighting));
-            memcpy( &noLightBuf[0][offset+2], &vertsTopNotLit[0][offset+2], sizeof(Vertex3D_NoLighting));
-
-            memcpy( &noLightBuf[1][offset], &vertsTopNotLit[1][offset], sizeof(Vertex3D_NoLighting));
-            memcpy( &noLightBuf[1][offset+1], &vertsTopNotLit[1][offset+1], sizeof(Vertex3D_NoLighting));
-            memcpy( &noLightBuf[1][offset+2], &vertsTopNotLit[1][offset+2], sizeof(Vertex3D_NoLighting));
+            memcpy( &noLightBuf[0][offset], &vertsTopNotLit[0][offset], sizeof(Vertex3D_NoLighting)*3);
+            memcpy( &noLightBuf[1][offset], &vertsTopNotLit[1][offset], sizeof(Vertex3D_NoLighting)*3);
          }
          else
          {
@@ -1183,9 +1171,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
             vertsTop[0][offset+2].tu = vertsTop[0][offset+2].x *inv_tablewidth;
             vertsTop[0][offset+2].tv = vertsTop[0][offset+2].y *inv_tableheight;
 
-            memcpy( &vertsTop[1][offset], &vertsTop[0][offset], sizeof(Vertex3D) );
-            memcpy( &vertsTop[1][offset+1], &vertsTop[0][offset+1], sizeof(Vertex3D) );
-            memcpy( &vertsTop[1][offset+2], &vertsTop[0][offset+2], sizeof(Vertex3D) );
+            memcpy( &vertsTop[1][offset], &vertsTop[0][offset], sizeof(Vertex3D)*3 );
             vertsTop[1][offset].z = heightDropped;
             vertsTop[1][offset+1].z = heightDropped;
             vertsTop[1][offset+2].z = heightDropped;
@@ -1206,13 +1192,8 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
                vertsTop[1][l].ny = 0;
                vertsTop[1][l].nz = -1.0f;
             }
-            memcpy( &texelBuf[0][offset], &vertsTop[0][offset], sizeof( Vertex3D));
-            memcpy( &texelBuf[0][offset+1], &vertsTop[0][offset+1], sizeof( Vertex3D));
-            memcpy( &texelBuf[0][offset+2], &vertsTop[0][offset+2], sizeof( Vertex3D));
-
-            memcpy( &texelBuf[1][offset], &vertsTop[1][offset], sizeof( Vertex3D));
-            memcpy( &texelBuf[1][offset+1], &vertsTop[1][offset+1], sizeof( Vertex3D));
-            memcpy( &texelBuf[1][offset+2], &vertsTop[1][offset+2], sizeof( Vertex3D));
+            memcpy( &texelBuf[0][offset], &vertsTop[0][offset], sizeof(Vertex3D)*3);
+            memcpy( &texelBuf[1][offset], &vertsTop[1][offset], sizeof(Vertex3D)*3);
          }
          delete vtri.ElementAt(i);
       }
@@ -1230,6 +1211,7 @@ static const WORD rgiSlingshot2[4] = {0,3,4,1};
 static const WORD rgiSlingshot3[4] = {1,4,5,2};
 static const WORD rgiSlingshot4[4] = {3,9,10,4};
 static const WORD rgiSlingshot5[4] = {4,10,11,5};
+
 void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
 {
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -1371,7 +1353,6 @@ void Surface::RenderStatic(const RenderDevice* pd3dDevice)
    {
       RenderWallsAtHeight( (RenderDevice*)pd3dDevice, fFalse, fFalse);
    }
-
 }
 
 void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
@@ -1700,7 +1681,7 @@ void Surface::DoCommand(int icmd, int x, int y)
       {
          STARTUNDO
 
-            RECT rc;
+         RECT rc;
          GetClientRect(m_ptable->m_hwnd, &rc);
 
          HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
@@ -1822,7 +1803,6 @@ void Surface::ClearForOverwrite()
 HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-#ifndef OLDLOAD
    BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
@@ -1910,51 +1890,6 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    }
 
    return S_OK;
-#else
-   m_ptable = ptable;
-
-   ULONG read = 0;
-   DWORD dwID;
-   HRESULT hr;
-   if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-      return hr;
-
-   int temp;
-   if(FAILED(hr = pstm->Read(&temp, sizeof(int), &read)))
-      return hr;
-
-   for (int i=0;i<temp;i++)
-   {
-      Vertex2D v;
-      BOOL fSmooth;
-      BOOL fSlingshot;
-
-      if(FAILED(hr = pstm->Read(&v, sizeof(Vertex2D), &read)))
-         return hr;
-      if(FAILED(hr = pstm->Read(&fSmooth, sizeof(BOOL), &read)))
-         return hr;
-      if(FAILED(hr = pstm->Read(&fSlingshot, sizeof(BOOL), &read)))
-         return hr;
-
-      CComObject<DragPoint> *pdp;
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(this, v.x, v.y);
-         pdp->m_fSmooth = fSmooth;
-         pdp->m_fSlingshot = fSlingshot;
-         m_vdpoint.AddElement(pdp);
-      }
-   }
-
-   if(FAILED(hr = pstm->Read(&m_d, sizeof(SurfaceData), &read)))
-      return hr;
-
-   *pid = dwID;
-
-   return hr;
-#endif
 }
 
 BOOL Surface::LoadToken(int id, BiffReader *pbr)

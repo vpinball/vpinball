@@ -549,33 +549,17 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	}
 
 HRESULT Plunger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
+{
 	m_d.m_color = RGB(76,76,76); //initialize color for new plunger
 	SetDefaults(false);
-#ifndef OLDLOAD
+
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
 	m_ptable = ptable;
 
 	br.Load();
 	return S_OK;
-#else
-	m_ptable = ptable;
-
-	HRESULT hr;
-	ULONG read = 0;
-	DWORD dwID;
-	if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_d, sizeof(PlungerData), &read)))
-		return hr;
-
-	*pid = dwID;
-
-	return hr;
-#endif
-	}
+}
 
 BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 	{

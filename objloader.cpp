@@ -108,7 +108,7 @@ bool loadWavefrontObj( char *filename )
    while ( 1 )
    {
       char lineHeader[128];
-      int res = fscanf(f,"%s", lineHeader );
+      int res = fscanf_s(f,"%s", lineHeader );
       if( res==EOF ) 
       {
          fclose(f);

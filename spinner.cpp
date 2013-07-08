@@ -776,32 +776,16 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	}
 
 HRESULT Spinner::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
+{
 	SetDefaults(false);
-#ifndef OLDLOAD
+
 	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
 	m_ptable = ptable;
 
 	br.Load();
 	return S_OK;
-#else
-	m_ptable = ptable;
-
-	ULONG read = 0;
-	DWORD dwID;
-	HRESULT hr;
-	if(FAILED(hr = pstm->Read(&dwID, sizeof(dwID), &read)))
-		return hr;
-
-	if(FAILED(hr = pstm->Read(&m_d, sizeof(SpinnerData), &read)))
-		return hr;
-
-	*pid = dwID;
-
-	return hr;
-#endif
-	}
+}
 
 BOOL Spinner::LoadToken(int id, BiffReader *pbr)
 	{
