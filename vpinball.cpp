@@ -142,6 +142,8 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+int CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 ///<summary>
 ///VPinball Constructor
 ///<para>Init</para>
@@ -967,7 +969,11 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          SetEnableToolbar();
       }
       break;
-
+   case ID_EDIT_SEARCH:
+      {
+         DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SEARCH_SELECT_ELEMENT), m_hwnd, SearchSelectProc, 0);
+         break;
+      }
    case IDC_SELECT:
    case IDC_MAGNIFY:
    case IDC_WALL:
@@ -1925,7 +1931,7 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, ID_TABLE_PLAY, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, IDC_MAGNIFY, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_ENABLED);
-
+      EnableMenuItem(hmenu, ID_EDIT_SEARCH, MF_BYCOMMAND | MF_ENABLED );
       // enable/disable save options
       UINT flags;
       if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
@@ -2025,6 +2031,7 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, ID_TABLE_COLLECTIONMANAGER, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, IDC_MAGNIFY, MF_BYCOMMAND | MF_GRAYED);
+      EnableMenuItem(hmenu, ID_EDIT_SEARCH, MF_BYCOMMAND | MF_GRAYED );
    }
 }
 //<<<
@@ -7967,6 +7974,90 @@ int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
    case WM_CLOSE:
       EndDialog(hwndDlg, FALSE);
+      break;
+   }
+
+   return FALSE;
+}
+
+
+int CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   //CCO(PinTable) *pt;
+   //pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+   switch (uMsg)
+   {
+   case WM_INITDIALOG:
+      {
+         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+
+
+//          HWND hwndName = GetDlgItem(hwndDlg, IDC_NAME);
+//          WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
+
+         char szT[MAX_PATH];
+         HWND listBox = GetDlgItem(hwndDlg, IDC_ELEMENT_LIST);
+         PinTable *pt = g_pvp->GetActiveTable();
+
+         for (int i=0;i<pt->m_vedit.Size();i++)
+         {
+            IEditable * const piedit = pt->m_vedit.ElementAt(i);
+            IScriptable * const piscript = piedit->GetScriptable();
+            if (piscript)
+            {
+               WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
+               const int index = SendMessage(listBox, LB_ADDSTRING, 0, (long)szT);
+               SendMessage(listBox, LB_SETITEMDATA, index, (long)piscript);
+            }
+         }
+
+         return TRUE;
+      }
+      break;
+
+   case WM_CLOSE:
+      EndDialog(hwndDlg, FALSE);
+      break;
+
+   case WM_COMMAND:
+      switch (HIWORD(wParam))
+      {
+      case BN_CLICKED:
+         switch (LOWORD(wParam))
+         {
+         case IDOK:
+            {
+               HWND listBox = GetDlgItem(hwndDlg, IDC_ELEMENT_LIST);
+               const int listsize = SendMessage(listBox, LB_GETCOUNT, 0, 0);
+               const int count = SendMessage(listBox, LB_GETSELCOUNT, 0, 0);
+               int * const rgsel = new int[count];
+               SendMessage(listBox, LB_GETSELITEMS, count, (LPARAM)rgsel);
+
+               PinTable *pt = g_pvp->GetActiveTable();
+               for (int i=0;i<count;i++)
+               {
+                  const int len = SendMessage(listBox, LB_GETTEXTLEN, rgsel[i], 0);
+                  char * const szT = new char[len+1]; // include null terminator
+                  SendMessage(listBox, LB_GETTEXT, rgsel[i], (LPARAM)szT);
+                  IScriptable * const piscript = (IScriptable *)SendMessage(listBox, LB_GETITEMDATA, rgsel[i], 0);
+                  ISelect * const pisel = piscript->GetISelect();
+                  if (pisel)
+                  {
+                     pt->AddMultiSel(pisel, fTrue, fTrue);
+                  }
+               }
+               delete[] rgsel;
+               EndDialog(hwndDlg, TRUE);
+            }
+            break;
+
+         case IDCANCEL:
+            EndDialog(hwndDlg, FALSE);
+            break;
+         }
+         break;
+      }
       break;
    }
 

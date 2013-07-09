@@ -467,6 +467,7 @@
 #define IDD_PROPBACKGLASS_VISUALS       362
 #define IDC_LIST1                       362
 #define IDC_LIST                        362
+#define IDC_ELEMENT_LIST                362
 #define IDD_PROPPOINT_POSITION          363
 #define IDD_PROPPOINT_VISUALS           364
 #define IDC_HANGDETECT                  364
@@ -510,6 +511,7 @@
 #define IDC_StretchMonitor              388
 #define DISPID_IMAGEMAPPING             389
 #define IDD_PROPTABLE_LIGHTSOURCES      390
+#define IDD_SEARCH_SELECT_ELEMENT       391
 #define IDC_CHECK1                      394
 #define IDC_CHECK3                      396
 #define IDC_EDIT2                       397
@@ -627,9 +629,9 @@
 #define IDC_NORMALIZENORMALS            578
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
-#define IDC_MESH_FILENAME_EDIT       1601
-#define IDC_LOAD_MESH_BUTTON         1602
-#define IDC_DELETE_MESH_BUTTON       1603
+#define IDC_MESH_FILENAME_EDIT          1601
+#define IDC_LOAD_MESH_BUTTON            1602
+#define IDC_DELETE_MESH_BUTTON          1603
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770
@@ -701,6 +703,7 @@
 #define ID_WALLMENU_SELECTALL           32868
 #define ID_WALLMENU_SELECTNONE          32869
 #define ID_LAYER_TOGGLEALL              32874
+#define ID_EDIT_SEARCH                  32875
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -708,8 +711,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        390
-#define _APS_NEXT_COMMAND_VALUE         32875
+#define _APS_NEXT_RESOURCE_VALUE        392
+#define _APS_NEXT_COMMAND_VALUE         32879
 #define _APS_NEXT_CONTROL_VALUE         419
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
