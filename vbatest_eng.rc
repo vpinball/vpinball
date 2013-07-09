@@ -14,6 +14,53 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SEARCH_SELECT_ELEMENT DIALOGEX 0, 0, 190, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Search/Select element"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "&Select",IDOK,75,162,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,135,162,50,14
+    LISTBOX         IDC_ELEMENT_LIST,7,7,178,149,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SEARCH_SELECT_ELEMENT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 185
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
@@ -144,6 +191,7 @@ BEGIN
         MENUITEM "&Paste\tCtrl+V",              IDC_PASTE
         MENUITEM "Paste &At\tCtrl+Shift+V",     IDC_PASTEAT
         MENUITEM "&Delete\tDel",                ID_DELETE
+        MENUITEM "Select &Element\tCtrl+Shift+E", ID_EDIT_SEARCH
         MENUITEM SEPARATOR
         MENUITEM "&Options",                    ID_EDIT_PROPERTIES
         MENUITEM "&Script",                     ID_EDIT_SCRIPT
@@ -302,32 +350,33 @@ IDB_CHEVRON             BITMAP                  "chevron.bmp"
 
 IDR_VPACCEL ACCELERATORS 
 BEGIN
-    "A",            IDC_TARGET,             VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
     "B",            IDC_BUMPER,             VIRTKEY, CONTROL, NOINVERT
     "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
     "D",            IDC_DECAL,              VIRTKEY, CONTROL, NOINVERT
-    "E",            IDC_TEXTBOX,            VIRTKEY, CONTROL, NOINVERT
+    "Y",            IDC_DISPREEL,           VIRTKEY, CONTROL, NOINVERT
     "F",            IDC_FLIPPER,            VIRTKEY, CONTROL, NOINVERT
     "G",            IDC_GATE,               VIRTKEY, CONTROL, NOINVERT
-    "I",            IDC_SPINNER,            VIRTKEY, CONTROL, NOINVERT
     "K",            IDC_KICKER,             VIRTKEY, CONTROL, NOINVERT
     "L",            IDC_LIGHT,              VIRTKEY, CONTROL, NOINVERT
-    "M",            IDC_TIMER,              VIRTKEY, CONTROL, NOINVERT
-    "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
-    "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
-    "P",            IDC_PLUNGER,            VIRTKEY, CONTROL, NOINVERT
     "Q",            IDC_LIGHTSEQ,           VIRTKEY, CONTROL, NOINVERT
-    "R",            IDC_RAMP,               VIRTKEY, CONTROL, NOINVERT
-    "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
-    "T",            IDC_TRIGGER,            VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTEAT,            VIRTKEY, SHIFT, CONTROL, NOINVERT
-    VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
+    "P",            IDC_PLUNGER,            VIRTKEY, CONTROL, NOINVERT
+    "R",            IDC_RAMP,               VIRTKEY, CONTROL, NOINVERT
     VK_ESCAPE,      IDC_SELECT,             VIRTKEY, NOINVERT
-    VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
+    "I",            IDC_SPINNER,            VIRTKEY, CONTROL, NOINVERT
+    "A",            IDC_TARGET,             VIRTKEY, CONTROL, NOINVERT
+    "E",            IDC_TEXTBOX,            VIRTKEY, CONTROL, NOINVERT
+    "M",            IDC_TIMER,              VIRTKEY, CONTROL, NOINVERT
+    "T",            IDC_TRIGGER,            VIRTKEY, CONTROL, NOINVERT
     "W",            IDC_WALL,               VIRTKEY, CONTROL, NOINVERT
-    "Y",            IDC_DISPREEL,           VIRTKEY, CONTROL, NOINVERT
-    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
+    "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
+    "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
+    "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
 END
 
 IDR_CODEVIEWACCEL ACCELERATORS 
