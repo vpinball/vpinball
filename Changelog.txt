@@ -1,5 +1,6 @@
 VP 9.1.6 Changelog
 ------------------------
+- add 'real' primitives, these can be loaded via .obj files (for example exported out of Blender)
 - add configurable lightsources: point, directional, spot; these share the same coordinate system as the table geometry (angle/rotation/scale independent! setting the direction of a directional light to 0,0,0 restores the old behavior though)
   (note that DX7 is still vertex lighting based, thus all lit objects MUST feature reasonable triangulation, like f.e. huge walls (the playfield itself is triangulated 100x100))
 - add exact lighting option to table (if you experience lighting problems with ramps, primitives or the ball, please enable this)
@@ -7,6 +8,7 @@ VP 9.1.6 Changelog
 - add flag to light objects to disable the lighting calculations when the 'On Image' is set (so that behavior is the same as when only using a color)
 - add flag for alpha ramps to optionally use additive blending (to cope with 2D-lighting-hacks like halos/flashers)
 - add hide/unhide all option: 'hide' hides the selected element only inside the editor, 'unhide all' shows all hidden elements again
+- add layering of table elements
 
 VP 9.1.5 Changelog
 ------------------------
