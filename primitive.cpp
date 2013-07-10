@@ -14,6 +14,7 @@ Primitive::Primitive()
    indexListSize=0;
    m_d.use3DMesh=false;
    m_d.meshFileName[0]=0;
+   m_d.useLightning=false;
 } 
 
 Primitive::~Primitive() 
@@ -607,9 +608,6 @@ void Primitive::CalculateBuiltin()
    for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
    {
       Vertex3D_NoTex2 * const tempVert = &builtin_rgv[i];
-      tempVert->nx = 0;
-      tempVert->ny = 0;
-      tempVert->nz = -1.f;
       tempVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(tempVert->x+0.5f);
       tempVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(tempVert->x+0.5f);
       tempVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(tempVert->y+0.5f);
@@ -741,9 +739,6 @@ void Primitive::UpdateMesh()
    for (int i = 0; i < numVertices; i++)
    {
       Vertex3D_NoTex2 * const tempVert = &objMesh[i];
-      tempVert->nx = 0;
-      tempVert->ny = 0;
-      tempVert->nz = -1.f;
       tempVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(tempVert->x+0.5f);
       tempVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(tempVert->x+0.5f);
       tempVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(tempVert->y+0.5f);
@@ -811,6 +806,12 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
    		    CalculateBuiltin();
         }
 	 }
+     if ( !m_d.useLightning )
+     {
+        // disable lightning is a default settings
+        // it could look odd if you switch lightning on on non mesh primitives
+        pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+     }
 
      if( m_d.use3DMesh )
      {
@@ -820,6 +821,11 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
      else
      {
         pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, builtin_indices, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
+     }
+
+     if ( !m_d.useLightning )
+     {
+        pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
      }
    }
 }
@@ -937,6 +943,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(SCOL), m_d.m_SideColor);
    bw.WriteInt(FID(TVIS), (m_d.m_TopVisible) ? 1 : 0);
    bw.WriteInt(FID(DTXI), (m_d.m_DrawTexturesInside) ? 1 : 0);
+   bw.WriteInt(FID(ENLI), (m_d.useLightning) ? 1 : 0);
    bw.WriteInt(FID(U3DM), (m_d.use3DMesh) ? 1 : 0 );
    if( m_d.use3DMesh )
    {
@@ -1083,6 +1090,12 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       int iTmp;
       pbr->GetInt(&iTmp);
       m_d.m_DrawTexturesInside = (iTmp==1);
+   }
+   else if (id == FID(ENLI))
+   {
+      int iTmp;
+      pbr->GetInt(&iTmp);
+      m_d.useLightning = (iTmp==1);
    }
    else if ( id == FID(U3DM))
    {
@@ -1857,6 +1870,24 @@ STDMETHODIMP Primitive::put_RotAndTraType5(RotAndTraTypeEnum newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Primitive::get_EnableLightning(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.useLightning);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_EnableLightning(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+   m_d.useLightning = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
