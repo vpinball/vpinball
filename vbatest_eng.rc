@@ -37,342 +37,6 @@ BEGIN
     LISTBOX         IDC_ELEMENT_LIST,7,7,178,149,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
 END
 
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_SEARCH_SELECT_ELEMENT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 185
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 176
-    END
-END
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include ""winres.h""\r\n"
-    "#include ""dispid.h""\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\r\n"
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 9,1,6,0
- PRODUCTVERSION 9,1,6,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904b0"
-        BEGIN
-            VALUE "FileDescription", "Visual Pinball 9.1.6"
-            VALUE "FileVersion", "9, 1, 6, 0"
-            VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000-2013"
-            VALUE "OriginalFilename", "VPinball.exe"
-            VALUE "ProductName", "Visual Pinball"
-            VALUE "ProductVersion", "9, 1, 6, 0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1200
-    END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// REGISTRY
-//
-
-IDR_VBATest             REGISTRY                "VBATest.rgs"
-IDR_SURFACE             REGISTRY                "Surface.rgs"
-IDR_DragPoint           REGISTRY                "DragPoint.rgs"
-IDR_Flipper             REGISTRY                "Flipper.rgs"
-IDR_Timer               REGISTRY                "Timer.rgs"
-IDR_Plunger             REGISTRY                "Plunger.rgs"
-IDR_Textbox             REGISTRY                "Textbox.rgs"
-IDR_Bumper              REGISTRY                "Bumper.rgs"
-IDR_PIEventHandler      REGISTRY                "PIEventHandler.rgs"
-IDR_Trigger             REGISTRY                "Trigger.rgs"
-IDR_Light               REGISTRY                "Light.rgs"
-IDR_Kicker              REGISTRY                "Kicker.rgs"
-IDR_Gate                REGISTRY                "Gate.rgs"
-IDR_Spinner             REGISTRY                "Spinner.rgs"
-IDR_Ramp                REGISTRY                "Ramp.rgs"
-IDR_DispReel            REGISTRY                "DispReel.rgs"
-IDR_LightSeq            REGISTRY                "LightSeq.rgs"
-IDR_Primitive           REGISTRY                "Primitive.rgs"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
-IDR_APPMENU MENU 
-BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "&New\tCtrl+N",                IDM_NEW
-        MENUITEM "&Open...\tCtrl+O",            IDM_OPEN
-        MENUITEM "&Close",                      IDM_CLOSE
-        MENUITEM SEPARATOR
-        MENUITEM "&Save\tCtrl+S",               IDM_SAVE
-        MENUITEM "Save &As...",                 IDM_SAVEAS
-        MENUITEM "Save As Pro&tected...",       IDM_SAVEASPROTECTED
-        MENUITEM SEPARATOR
-        POPUP "Ex&port"
-        BEGIN
-            MENUITEM "&Blueprint...",               ID_FILE_EXPORT_BLUEPRINT
-        END
-        MENUITEM "Unlock",                      IDM_UNLOCKPROTECTED
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_FILE_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
-        MENUITEM SEPARATOR
-        MENUITEM "&Copy\tCtrl+C",               IDC_COPY
-        MENUITEM "&Paste\tCtrl+V",              IDC_PASTE
-        MENUITEM "Paste &At\tCtrl+Shift+V",     IDC_PASTEAT
-        MENUITEM "&Delete\tDel",                ID_DELETE
-        MENUITEM "Select &Element\tCtrl+Shift+E", ID_EDIT_SEARCH
-        MENUITEM SEPARATOR
-        MENUITEM "&Options",                    ID_EDIT_PROPERTIES
-        MENUITEM "&Script",                     ID_EDIT_SCRIPT
-        MENUITEM "&Backglass View",             ID_EDIT_BACKGLASSVIEW
-    END
-    POPUP "&Insert"
-    BEGIN
-        MENUITEM "&Wall\tCtrl+W",               IDC_WALL
-        MENUITEM "&Gate\tCtrl+G",               IDC_GATE
-        MENUITEM "&Ramp\tCtrl+R",               IDC_RAMP
-        MENUITEM "&Flipper\tCtrl+F",            IDC_FLIPPER
-        MENUITEM "&Plunger\tCtrl+P",            IDC_PLUNGER
-        MENUITEM "&Bumper\tCtrl+B",             IDC_BUMPER
-        MENUITEM "&Spinner\tCtrl+I",            IDC_SPINNER
-        MENUITEM "&Timer\tCtrl+M",              IDC_TIMER
-        MENUITEM "Tr&igger\tCtrl+T",            IDC_TRIGGER
-        MENUITEM "&Light\tCtrl+L",              IDC_LIGHT
-        MENUITEM "&Kicker\tCtrl+K",             IDC_KICKER
-        MENUITEM "T&arget\tCtrl+A",             IDC_TARGET
-        MENUITEM "&Decal\tCtrl+D",              IDC_DECAL
-        MENUITEM "Te&xtbox\tCtrl+E",            IDC_TEXTBOX
-        MENUITEM "EM Reel\tCtrl+Y",             IDC_DISPREEL
-        MENUITEM "Light Se&quencer\tCtrl+Q",    IDC_LIGHTSEQ
-        MENUITEM "Pri&mitive\tCTRL+M",          IDC_PRIMITIVE
-        MENUITEM "ActiveX Control",             IDC_COMCONTROL
-    END
-    POPUP "&Table"
-    BEGIN
-        MENUITEM "&Play\tF5",                   ID_TABLE_PLAY
-        MENUITEM SEPARATOR
-        MENUITEM "&Table Info...",              ID_TABLE_TABLEINFO
-        MENUITEM "&Sound Manager...",           ID_TABLE_SOUNDMANAGER
-        MENUITEM "&Image Manager...",           ID_TABLE_IMAGEMANAGER
-        MENUITEM "&Font Manager...",            ID_TABLE_FONTMANAGER
-        MENUITEM "&Collection Manager...",      ID_TABLE_COLLECTIONMANAGER
-        MENUITEM SEPARATOR
-        MENUITEM "&Magnify",                    IDC_MAGNIFY
-    END
-    POPUP "&Preferences"
-    BEGIN
-        MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
-        MENUITEM "&Editor Options...",          ID_EDIT_EDITOROPTIONS
-        MENUITEM "&Keys...",                    ID_EDIT_KEYS
-        MENUITEM "&Security Options...",        ID_PREFERENCES_SECURITYOPTIONS
-        MENUITEM "&Video Options...",           ID_EDIT_VIDEOOPTIONS
-    END
-    POPUP "&Layer"
-    BEGIN
-        MENUITEM "Layer&1",                     ID_LAYER_LAYER1, CHECKED
-        MENUITEM "Layer&2",                     ID_LAYER_LAYER2
-        MENUITEM "Layer&3",                     ID_LAYER_LAYER3
-        MENUITEM "Layer&4",                     ID_LAYER_LAYER4
-        MENUITEM "Layer&5",                     ID_LAYER_LAYER5
-        MENUITEM "Layer&6",                     ID_LAYER_LAYER6
-        MENUITEM "Layer&7",                     ID_LAYER_LAYER7
-        MENUITEM "Layer&8",                     ID_LAYER_LAYER8
-        MENUITEM SEPARATOR
-        MENUITEM "&Merge All",                  ID_LAYER_MERGEALL
-        MENUITEM "&Toggle All",                 ID_LAYER_TOGGLEALL
-    END
-    POPUP "&Window"
-    BEGIN
-        MENUITEM "&Tile",                       ID_WINDOW_TILE
-        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
-        MENUITEM "Arrange &Icons",              ID_WINDOW_ARRANGEICONS
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "About...",                    ID_HELP_ABOUT
-    END
-END
-
-IDR_POINTMENU MENU 
-BEGIN
-    POPUP "PointMenu"
-    BEGIN
-        MENUITEM "Smooth",                      ID_POINTMENU_SMOOTH
-        MENUITEM "S&lingshot",                  ID_POINTMENU_SLINGSHOT
-    END
-END
-
-IDR_SURFACEMENU MENU 
-BEGIN
-    POPUP "WallMenu"
-    BEGIN
-        MENUITEM "Flip &X",                     ID_WALLMENU_MIRROR
-        MENUITEM "Flip &Y",                     ID_WALLMENU_FLIP
-        MENUITEM "&Rotate",                     ID_WALLMENU_ROTATE
-        MENUITEM "&Scale",                      ID_WALLMENU_SCALE
-        MENUITEM "&Translate",                  ID_WALLMENU_TRANSLATE
-        MENUITEM "Add &Point",                  ID_WALLMENU_ADDPOINT
-    END
-END
-
-IDR_MULTIMENU MENU 
-BEGIN
-    POPUP "WallMenu"
-    BEGIN
-        MENUITEM "Flip &X",                     ID_WALLMENU_MIRROR
-        MENUITEM "Flip &Y",                     ID_WALLMENU_FLIP
-        MENUITEM "&Rotate",                     ID_WALLMENU_ROTATE
-        MENUITEM "&Scale",                      ID_WALLMENU_SCALE
-        MENUITEM "&Translate",                  ID_WALLMENU_TRANSLATE
-    END
-END
-
-IDR_SCRIPTMENU MENU 
-BEGIN
-    POPUP "&Script"
-    BEGIN
-        MENUITEM "&Compile",                    ID_COMPILE
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
-        MENUITEM SEPARATOR
-        MENUITEM "&Copy\tCrtl+C",               ID_EDIT_COPY
-        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-        MENUITEM SEPARATOR
-        MENUITEM "&Find...\tCtrl+F",            ID_FIND
-        MENUITEM "Find &Next\tF3",              ID_EDIT_FINDNEXT
-        MENUITEM "Replace...\tCtrl+H",          ID_REPLACE
-    END
-END
-
-IDR_TABLEMENU MENU 
-BEGIN
-    POPUP "Table Menu"
-    BEGIN
-        MENUITEM "Paste &At\tShift+Ctrl+V",     IDC_PASTEAT
-    END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_TB_SELECT           BITMAP                  "toolbar.bmp"
-IDB_ICON_TRIGGER        BITMAP                  "IconTrigger.bmp"
-IDB_ICON_TIMER          BITMAP                  "IconTimer.bmp"
-IDB_ICON_FLIPPER        BITMAP                  "IconFlipper.bmp"
-IDB_ICON_LIGHT          BITMAP                  "IconLight.bmp"
-IDB_BALLTEXTURE         BITMAP                  "balltex2.bmp"
-IDB_WHITE               BITMAP                  "white.bmp"
-IDB_SUNBURST3           BITMAP                  "sunburst.bmp"
-IDB_LOGO                BITMAP                  "logo25.bmp"
-IDB_CHEVRON             BITMAP                  "chevron.bmp"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Accelerator
-//
-
-IDR_VPACCEL ACCELERATORS 
-BEGIN
-    VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
-    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
-    VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
-    "B",            IDC_BUMPER,             VIRTKEY, CONTROL, NOINVERT
-    "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
-    "D",            IDC_DECAL,              VIRTKEY, CONTROL, NOINVERT
-    "Y",            IDC_DISPREEL,           VIRTKEY, CONTROL, NOINVERT
-    "F",            IDC_FLIPPER,            VIRTKEY, CONTROL, NOINVERT
-    "G",            IDC_GATE,               VIRTKEY, CONTROL, NOINVERT
-    "K",            IDC_KICKER,             VIRTKEY, CONTROL, NOINVERT
-    "L",            IDC_LIGHT,              VIRTKEY, CONTROL, NOINVERT
-    "Q",            IDC_LIGHTSEQ,           VIRTKEY, CONTROL, NOINVERT
-    "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
-    "V",            IDC_PASTEAT,            VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "P",            IDC_PLUNGER,            VIRTKEY, CONTROL, NOINVERT
-    "R",            IDC_RAMP,               VIRTKEY, CONTROL, NOINVERT
-    VK_ESCAPE,      IDC_SELECT,             VIRTKEY, NOINVERT
-    "I",            IDC_SPINNER,            VIRTKEY, CONTROL, NOINVERT
-    "A",            IDC_TARGET,             VIRTKEY, CONTROL, NOINVERT
-    "E",            IDC_TEXTBOX,            VIRTKEY, CONTROL, NOINVERT
-    "M",            IDC_TIMER,              VIRTKEY, CONTROL, NOINVERT
-    "T",            IDC_TRIGGER,            VIRTKEY, CONTROL, NOINVERT
-    "W",            IDC_WALL,               VIRTKEY, CONTROL, NOINVERT
-    "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
-    "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
-    "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
-    "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
-END
-
-IDR_CODEVIEWACCEL ACCELERATORS 
-BEGIN
-    "F",            ID_FIND,                VIRTKEY, CONTROL, NOINVERT
-    "S",            ID_SAVE,                VIRTKEY, CONTROL, NOINVERT
-    "H",            ID_REPLACE,             VIRTKEY, CONTROL, NOINVERT
-    VK_F3,          ID_EDIT_FINDNEXT,       VIRTKEY, NOINVERT
-    VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
 IDD_SOUNDDIALOG DIALOGEX 0, 0, 515, 162
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Sound Manager"
@@ -1784,7 +1448,7 @@ BEGIN
     LTEXT           "&Z->Y",IDC_STATIC,14,205,21,8
 END
 
-IDD_PROPPRIMITIVE_VISUALS DIALOGEX 0, 0, 125, 141
+IDD_PROPPRIMITIVE_VISUALS DIALOGEX 0, 0, 125, 157
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1801,6 +1465,7 @@ BEGIN
     GROUPBOX        "3D Mesh",IDC_STATIC,7,44,111,35
     PUSHBUTTON      "Import Mesh",IDC_LOAD_MESH_BUTTON,11,58,48,14
     PUSHBUTTON      "Delete Mesh",IDC_DELETE_MESH_BUTTON,65,58,46,14
+    CONTROL         "Enable lightning",IDC_CHECK_PRIMITIVE_LIGHTNING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,142,66,10
 END
 
 IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 127, 79
@@ -1824,588 +1489,335 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
-    IDD_SOUNDDIALOG, DIALOG
+    IDD_SEARCH_SELECT_ELEMENT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 508
+        RIGHTMARGIN, 185
         TOPMARGIN, 7
-        BOTTOMMARGIN, 155
-    END
-
-    IDD_IMAGEDIALOG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 507
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 165
-    END
-
-    IDD_ROTATE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 88
-    END
-
-    IDD_SCALE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 178
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 116
-    END
-
-    IDD_PROGRESS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 160
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 37
-    END
-
-    IDD_PROPTIMER, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 50
-    END
-
-    IDD_PROPFLIPPER_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 116
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 95
-    END
-
-    IDD_PROPBUMPER_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 125
-    END
-
-    IDD_CODEVIEW, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 325
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 207
-    END
-
-    IDD_ABOUT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 223
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 215
-    END
-
-    IDD_VIDEO_OPTIONS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 326
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 259
-    END
-
-    IDD_FONTDIALOG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 309
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 160
-    END
-
-    IDD_KEYS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 495
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 270
-    END
-
-    IDD_TRANSLATE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 95
-    END
-
-    IDD_AUDIO_OPTIONS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 178
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 142
-    END
-
-    IDD_GAMEPAUSE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 71
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 73
-    END
-
-    IDD_EDITOR_OPTIONS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 178
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 91
-    END
-
-    IDD_COLLECTDIALOG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 309
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 160
-    END
-
-    IDD_COLLECTION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 225
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 224
-    END
-
-    IDD_PROPMULTI, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 116
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 55
-    END
-
-    IDD_PROTECT_DIALOG, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 210
-    END
-
-    IDD_TABLEINFO, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 448
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 324
-    END
-
-    IDD_PROP_NAME, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 19
-    END
-
-    IDD_PROP_TIMER, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 51
-    END
-
-    IDD_PROPLIGHT_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 145
-    END
-
-    IDD_PROPLIGHT_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 58
-    END
-
-    IDD_PROPLIGHT_STATE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 51
-    END
-
-    IDD_PROPBUMPER_PHYSICS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 36
-    END
-
-    IDD_PROPBUMPER_STATE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 67
-    END
-
-    IDD_PROPWALL_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 178
-    END
-
-    IDD_PROPWALL_PHYSICS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 113
-    END
-
-    IDD_PROPWALL_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 36
-    END
-
-    IDD_PROPGATE_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 9
-        BOTTOMMARGIN, 112
-    END
-
-    IDD_PROPGATE_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 129
-    END
-
-    IDD_PROPRAMP_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 152
-    END
-
-    IDD_PROPRAMP_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 127
-    END
-
-    IDD_PROPFLIPPER_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 116
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 144
-    END
-
-    IDD_PROPFLIPPER_PHYSICS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 116
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 120
-    END
-
-    IDD_PROPPLUNGER_PHYSICS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 4
-    END
-
-    IDD_PROPSPINNER_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 117
-    END
-
-    IDD_PROPSPINNER_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 173
-    END
-
-    IDD_PROPSPINNER_PHYSICS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 19
-    END
-
-    IDD_PROPRAMP_PHYSICS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 6
-        BOTTOMMARGIN, 101
-    END
-
-    IDD_PROPTRIGGER_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 45
-    END
-
-    IDD_PROPTRIGGER_STATE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 27
-    END
-
-    IDD_PROPKICKER_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 36
-    END
-
-    IDD_PROPDECAL_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 131
-    END
-
-    IDD_PROPDECAL_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 109
-    END
-
-    IDD_PROPLIGHTSEQ_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 6
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 35
-    END
-
-    IDD_PROPLIGHTSEQ_STATE, DIALOG
-    BEGIN
-        LEFTMARGIN, 6
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 45
-    END
-
-    IDD_PROPTEXTBOX_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 86
-    END
-
-    IDD_PROPTEXTBOX_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 67
-    END
-
-    IDD_PROPTEXTBOX_STATE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 20
-    END
-
-    IDD_PROPDISPREEL_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 6
-        RIGHTMARGIN, 119
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 209
-    END
-
-    IDD_PROPDISPREEL_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 6
-        RIGHTMARGIN, 97
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 103
-    END
-
-    IDD_PROPDISPREEL_STATE, DIALOG
-    BEGIN
-        LEFTMARGIN, 6
-        RIGHTMARGIN, 119
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 56
-    END
-
-    IDD_PROPTABLE_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 117
-        TOPMARGIN, 7
-    END
-
-    IDD_PROPTABLE_EDITOR, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 119
-        TOPMARGIN, 7
-    END
-
-    IDD_PROPTABLE_PHYSICS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 121
-        TOPMARGIN, 7
-    END
-
-    IDD_PROPTABLE_LIGHTSOURCES, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 121
-        TOPMARGIN, 7
-    END
-
-    IDD_PROPTABLE_BALL, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 120
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 74
-    END
-
-    IDD_PROPBACKGLASS_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 120
-        TOPMARGIN, 7
-    END
-
-    IDD_PROPBACKGLASS_PHYSICS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 120
-        TOPMARGIN, 7
-    END
-
-    IDD_PROPPOINT_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 35
-    END
-
-    IDD_PROPPOINT_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 15
-    END
-
-    IDD_SECURITY_OPTIONS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 201
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 175
-    END
-
-    IDD_PROPPOINT_VISUALSWTEX, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 47
-    END
-
-    IDD_PROPGATE_PHYSICS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 45
-    END
-
-    IDD_DEBUGGER, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 339
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 197
-    END
-
-    IDD_COMLIST, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 280
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 183
-    END
-
-    IDD_PROPKICKER_STATE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 46
-    END
-
-    IDD_PROPPRIMITIVE_POSITION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 326
-    END
-
-    IDD_PROPPRIMITIVE_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 118
-        TOPMARGIN, 7
-    END
-
-    IDD_PROPPLUNGER_VISUALS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 120
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 71
+        BOTTOMMARGIN, 176
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "#include ""dispid.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 9,1,6,0
+ PRODUCTVERSION 9,1,6,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileDescription", "Visual Pinball 9.1.6"
+            VALUE "FileVersion", "9, 1, 6, 0"
+            VALUE "InternalName", "Visual Pinball"
+            VALUE "LegalCopyright", "Copyright 2000-2013"
+            VALUE "OriginalFilename", "VPinball.exe"
+            VALUE "ProductName", "Visual Pinball"
+            VALUE "ProductVersion", "9, 1, 6, 0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// REGISTRY
+//
+
+IDR_VBATest             REGISTRY                "VBATest.rgs"
+IDR_SURFACE             REGISTRY                "Surface.rgs"
+IDR_DragPoint           REGISTRY                "DragPoint.rgs"
+IDR_Flipper             REGISTRY                "Flipper.rgs"
+IDR_Timer               REGISTRY                "Timer.rgs"
+IDR_Plunger             REGISTRY                "Plunger.rgs"
+IDR_Textbox             REGISTRY                "Textbox.rgs"
+IDR_Bumper              REGISTRY                "Bumper.rgs"
+IDR_PIEventHandler      REGISTRY                "PIEventHandler.rgs"
+IDR_Trigger             REGISTRY                "Trigger.rgs"
+IDR_Light               REGISTRY                "Light.rgs"
+IDR_Kicker              REGISTRY                "Kicker.rgs"
+IDR_Gate                REGISTRY                "Gate.rgs"
+IDR_Spinner             REGISTRY                "Spinner.rgs"
+IDR_Ramp                REGISTRY                "Ramp.rgs"
+IDR_DispReel            REGISTRY                "DispReel.rgs"
+IDR_LightSeq            REGISTRY                "LightSeq.rgs"
+IDR_Primitive           REGISTRY                "Primitive.rgs"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_APPMENU MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                IDM_NEW
+        MENUITEM "&Open...\tCtrl+O",            IDM_OPEN
+        MENUITEM "&Close",                      IDM_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "&Save\tCtrl+S",               IDM_SAVE
+        MENUITEM "Save &As...",                 IDM_SAVEAS
+        MENUITEM "Save As Pro&tected...",       IDM_SAVEASPROTECTED
+        MENUITEM SEPARATOR
+        POPUP "Ex&port"
+        BEGIN
+            MENUITEM "&Blueprint...",               ID_FILE_EXPORT_BLUEPRINT
+        END
+        MENUITEM "Unlock",                      IDM_UNLOCKPROTECTED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_FILE_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy\tCtrl+C",               IDC_COPY
+        MENUITEM "&Paste\tCtrl+V",              IDC_PASTE
+        MENUITEM "Paste &At\tCtrl+Shift+V",     IDC_PASTEAT
+        MENUITEM "&Delete\tDel",                ID_DELETE
+        MENUITEM "Select &Element\tCtrl+Shift+E", ID_EDIT_SEARCH
+        MENUITEM SEPARATOR
+        MENUITEM "&Options",                    ID_EDIT_PROPERTIES
+        MENUITEM "&Script",                     ID_EDIT_SCRIPT
+        MENUITEM "&Backglass View",             ID_EDIT_BACKGLASSVIEW
+    END
+    POPUP "&Insert"
+    BEGIN
+        MENUITEM "&Wall\tCtrl+W",               IDC_WALL
+        MENUITEM "&Gate\tCtrl+G",               IDC_GATE
+        MENUITEM "&Ramp\tCtrl+R",               IDC_RAMP
+        MENUITEM "&Flipper\tCtrl+F",            IDC_FLIPPER
+        MENUITEM "&Plunger\tCtrl+P",            IDC_PLUNGER
+        MENUITEM "&Bumper\tCtrl+B",             IDC_BUMPER
+        MENUITEM "&Spinner\tCtrl+I",            IDC_SPINNER
+        MENUITEM "&Timer\tCtrl+M",              IDC_TIMER
+        MENUITEM "Tr&igger\tCtrl+T",            IDC_TRIGGER
+        MENUITEM "&Light\tCtrl+L",              IDC_LIGHT
+        MENUITEM "&Kicker\tCtrl+K",             IDC_KICKER
+        MENUITEM "T&arget\tCtrl+A",             IDC_TARGET
+        MENUITEM "&Decal\tCtrl+D",              IDC_DECAL
+        MENUITEM "Te&xtbox\tCtrl+E",            IDC_TEXTBOX
+        MENUITEM "EM Reel\tCtrl+Y",             IDC_DISPREEL
+        MENUITEM "Light Se&quencer\tCtrl+Q",    IDC_LIGHTSEQ
+        MENUITEM "Pri&mitive\tCTRL+M",          IDC_PRIMITIVE
+        MENUITEM "ActiveX Control",             IDC_COMCONTROL
+    END
+    POPUP "&Table"
+    BEGIN
+        MENUITEM "&Play\tF5",                   ID_TABLE_PLAY
+        MENUITEM SEPARATOR
+        MENUITEM "&Table Info...",              ID_TABLE_TABLEINFO
+        MENUITEM "&Sound Manager...",           ID_TABLE_SOUNDMANAGER
+        MENUITEM "&Image Manager...",           ID_TABLE_IMAGEMANAGER
+        MENUITEM "&Font Manager...",            ID_TABLE_FONTMANAGER
+        MENUITEM "&Collection Manager...",      ID_TABLE_COLLECTIONMANAGER
+        MENUITEM SEPARATOR
+        MENUITEM "&Magnify",                    IDC_MAGNIFY
+    END
+    POPUP "&Preferences"
+    BEGIN
+        MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
+        MENUITEM "&Editor Options...",          ID_EDIT_EDITOROPTIONS
+        MENUITEM "&Keys...",                    ID_EDIT_KEYS
+        MENUITEM "&Security Options...",        ID_PREFERENCES_SECURITYOPTIONS
+        MENUITEM "&Video Options...",           ID_EDIT_VIDEOOPTIONS
+    END
+    POPUP "&Layer"
+    BEGIN
+        MENUITEM "Layer&1",                     ID_LAYER_LAYER1, CHECKED
+        MENUITEM "Layer&2",                     ID_LAYER_LAYER2
+        MENUITEM "Layer&3",                     ID_LAYER_LAYER3
+        MENUITEM "Layer&4",                     ID_LAYER_LAYER4
+        MENUITEM "Layer&5",                     ID_LAYER_LAYER5
+        MENUITEM "Layer&6",                     ID_LAYER_LAYER6
+        MENUITEM "Layer&7",                     ID_LAYER_LAYER7
+        MENUITEM "Layer&8",                     ID_LAYER_LAYER8
+        MENUITEM SEPARATOR
+        MENUITEM "&Merge All",                  ID_LAYER_MERGEALL
+        MENUITEM "&Toggle All",                 ID_LAYER_TOGGLEALL
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Tile",                       ID_WINDOW_TILE
+        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
+        MENUITEM "Arrange &Icons",              ID_WINDOW_ARRANGEICONS
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "About...",                    ID_HELP_ABOUT
+    END
+END
+
+IDR_POINTMENU MENU 
+BEGIN
+    POPUP "PointMenu"
+    BEGIN
+        MENUITEM "Smooth",                      ID_POINTMENU_SMOOTH
+        MENUITEM "S&lingshot",                  ID_POINTMENU_SLINGSHOT
+    END
+END
+
+IDR_SURFACEMENU MENU 
+BEGIN
+    POPUP "WallMenu"
+    BEGIN
+        MENUITEM "Flip &X",                     ID_WALLMENU_MIRROR
+        MENUITEM "Flip &Y",                     ID_WALLMENU_FLIP
+        MENUITEM "&Rotate",                     ID_WALLMENU_ROTATE
+        MENUITEM "&Scale",                      ID_WALLMENU_SCALE
+        MENUITEM "&Translate",                  ID_WALLMENU_TRANSLATE
+        MENUITEM "Add &Point",                  ID_WALLMENU_ADDPOINT
+    END
+END
+
+IDR_MULTIMENU MENU 
+BEGIN
+    POPUP "WallMenu"
+    BEGIN
+        MENUITEM "Flip &X",                     ID_WALLMENU_MIRROR
+        MENUITEM "Flip &Y",                     ID_WALLMENU_FLIP
+        MENUITEM "&Rotate",                     ID_WALLMENU_ROTATE
+        MENUITEM "&Scale",                      ID_WALLMENU_SCALE
+        MENUITEM "&Translate",                  ID_WALLMENU_TRANSLATE
+    END
+END
+
+IDR_SCRIPTMENU MENU 
+BEGIN
+    POPUP "&Script"
+    BEGIN
+        MENUITEM "&Compile",                    ID_COMPILE
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy\tCrtl+C",               ID_EDIT_COPY
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "&Find...\tCtrl+F",            ID_FIND
+        MENUITEM "Find &Next\tF3",              ID_EDIT_FINDNEXT
+        MENUITEM "Replace...\tCtrl+H",          ID_REPLACE
+    END
+END
+
+IDR_TABLEMENU MENU 
+BEGIN
+    POPUP "Table Menu"
+    BEGIN
+        MENUITEM "Paste &At\tShift+Ctrl+V",     IDC_PASTEAT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_TB_SELECT           BITMAP                  "toolbar.bmp"
+IDB_ICON_TRIGGER        BITMAP                  "IconTrigger.bmp"
+IDB_ICON_TIMER          BITMAP                  "IconTimer.bmp"
+IDB_ICON_FLIPPER        BITMAP                  "IconFlipper.bmp"
+IDB_ICON_LIGHT          BITMAP                  "IconLight.bmp"
+IDB_BALLTEXTURE         BITMAP                  "balltex2.bmp"
+IDB_WHITE               BITMAP                  "white.bmp"
+IDB_SUNBURST3           BITMAP                  "sunburst.bmp"
+IDB_LOGO                BITMAP                  "logo25.bmp"
+IDB_CHEVRON             BITMAP                  "chevron.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_VPACCEL ACCELERATORS 
+BEGIN
+    VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
+    "B",            IDC_BUMPER,             VIRTKEY, CONTROL, NOINVERT
+    "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
+    "D",            IDC_DECAL,              VIRTKEY, CONTROL, NOINVERT
+    "Y",            IDC_DISPREEL,           VIRTKEY, CONTROL, NOINVERT
+    "F",            IDC_FLIPPER,            VIRTKEY, CONTROL, NOINVERT
+    "G",            IDC_GATE,               VIRTKEY, CONTROL, NOINVERT
+    "K",            IDC_KICKER,             VIRTKEY, CONTROL, NOINVERT
+    "L",            IDC_LIGHT,              VIRTKEY, CONTROL, NOINVERT
+    "Q",            IDC_LIGHTSEQ,           VIRTKEY, CONTROL, NOINVERT
+    "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
+    "V",            IDC_PASTEAT,            VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "P",            IDC_PLUNGER,            VIRTKEY, CONTROL, NOINVERT
+    "R",            IDC_RAMP,               VIRTKEY, CONTROL, NOINVERT
+    VK_ESCAPE,      IDC_SELECT,             VIRTKEY, NOINVERT
+    "I",            IDC_SPINNER,            VIRTKEY, CONTROL, NOINVERT
+    "A",            IDC_TARGET,             VIRTKEY, CONTROL, NOINVERT
+    "E",            IDC_TEXTBOX,            VIRTKEY, CONTROL, NOINVERT
+    "M",            IDC_TIMER,              VIRTKEY, CONTROL, NOINVERT
+    "T",            IDC_TRIGGER,            VIRTKEY, CONTROL, NOINVERT
+    "W",            IDC_WALL,               VIRTKEY, CONTROL, NOINVERT
+    "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
+    "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
+    "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
+    "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+END
+
+IDR_CODEVIEWACCEL ACCELERATORS 
+BEGIN
+    "F",            ID_FIND,                VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_SAVE,                VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_REPLACE,             VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_EDIT_FINDNEXT,       VIRTKEY, NOINVERT
+    VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
+END
 
 
 /////////////////////////////////////////////////////////////////////////////
