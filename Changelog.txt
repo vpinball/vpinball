@@ -10,6 +10,7 @@ VP 9.1.6 Changelog
 - add flag to light objects to disable the lighting calculations when the 'On Image' is set (so that behavior is the same as when only using a color)
 - add flag for alpha ramps to optionally use additive blending (to cope with 2D-lighting-hacks like halos/flashers)
 - add layering of table elements
+- add per-table sound & music volume settings (0..100% scaling of the global VP settings)
 
 VP 9.1.5 Changelog
 ------------------------

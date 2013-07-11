@@ -628,6 +628,9 @@
 #define IDC_LIGHT1DZ                    576
 #define IDC_LIGHT1TYPE                  577
 #define IDC_NORMALIZENORMALS            578
+#define IDC_TABLESOUNDVOLUME			579
+#define IDC_TABLEMUSICVOLUME			580
+#define IDS_VISUALS_SOUND               581
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601

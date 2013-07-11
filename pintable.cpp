@@ -141,7 +141,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str)
 
 		g_pplayer->m_pxap = new XAudPlayer();
 
-		if (!g_pplayer->m_pxap->Init(szPath, g_pplayer->m_MusicVolume))
+		if (!g_pplayer->m_pxap->Init(szPath, (int)((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume)))
 			{
 			delete g_pplayer->m_pxap;
 			g_pplayer->m_pxap = NULL;
@@ -409,25 +409,21 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 	WideStrCopy(g_pvp->m_wzMyPath, wzPath);
 	WideStrCat(L"User\\VPReg.stg", wzPath);
 
-		if (FAILED(hr = StgOpenStorage(wzPath, NULL, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
-		{
+	if (FAILED(hr = StgOpenStorage(wzPath, NULL, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
+	{
 		// Registry file does not exist - create it
 		if (FAILED(hr = StgCreateDocfile(wzPath, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
-			{
+		{
 			WCHAR wzMkPath[MAX_PATH];
 			WideStrCopy(g_pvp->m_wzMyPath, wzMkPath);
 			WideStrCat(L"User", wzMkPath);
 			if (_wmkdir(wzMkPath) != 0) 
-				{
 				return hr;
-				}
 
 			if (FAILED(hr = StgCreateDocfile(wzPath, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
-				{
 				return hr;
-				}
-			}
 		}
+	}
 
 	if (FAILED(hr = pstgRoot->OpenStorage(TableName, NULL, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgTable)))
 		{
@@ -1236,7 +1232,6 @@ void PinTable::SetCaption(char *szCaption)
 
 void PinTable::InitPostLoad(VPinball *pvp)
 {
-
 	m_pvp = pvp;
 
 	m_hbmOffScreen = NULL;
@@ -1882,9 +1877,7 @@ HRESULT PinTable::ApcProject_Save()
 void PinTable::BeginAutoSaveCounter()
 {
 	if (g_pvp->m_autosaveTime > 0)
-		{
 		SetTimer(m_hwnd, TIMER_ID_AUTOSAVE, g_pvp->m_autosaveTime, NULL);
-		}
 }
 
 
@@ -1897,9 +1890,7 @@ void PinTable::EndAutoSaveCounter()
 void PinTable::AutoSave()
 {
 	if ((m_sdsCurrentDirtyState <= eSaveAutosaved) || CheckPermissions(DISABLE_TABLE_SAVE))
-		{
 		return;
-		}
 
 	KillTimer(m_hwnd, TIMER_ID_AUTOSAVE);
 
@@ -2009,7 +2000,6 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 		}
 	else
 		{
-			{
 			MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
 
 			STGOPTIONS stg;
@@ -2025,7 +2015,6 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 				MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
 				return hr;
 				}
-			}
 		}
 
 	{
@@ -2650,7 +2639,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
 	bw.WriteString(FID(SSHT), m_szScreenShot);
 
-
 	bw.WriteBool(FID(FGRD), m_fGrid);
 	bw.WriteBool(FID(FBCK), m_fBackdrop);
 
@@ -2699,6 +2687,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	bw.WriteInt(FID(LOTY), m_Light[1].type);
 
 	bw.WriteInt(FID(NONO), m_NormalizeNormals);
+
+	bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
+	bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
 
 	// HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
 	// Someday save these values into there own stream, used only when saving to file.
@@ -3235,6 +3226,9 @@ void PinTable::SetLoadDefaults()
 	m_angletiltMin = 4.5f;
 
 	m_NormalizeNormals = false;
+
+	m_TableSoundVolume = 1.0f;
+	m_TableMusicVolume = 1.0f;
 }
 
 HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -3664,6 +3658,14 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 		szName = new char[lstrlen(szT)+1];
 		lstrcpy(szName,szT);
 		m_vCustomInfoTag.AddElement(szName);
+		}
+	else if (id == FID(SVOL))
+		{
+		pbr->GetFloat(&m_TableSoundVolume);
+		}
+	else if (id == FID(MVOL))
+		{
+		pbr->GetFloat(&m_TableMusicVolume);
 		}
 
 	return fTrue;
@@ -5639,7 +5641,7 @@ void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 		pproppane = new PropertyPane(IDD_PROPTABLE_EDITOR, IDS_EDITOR);
 		pvproppane->AddElement(pproppane);
 
-		pproppane = new PropertyPane(IDD_PROPTABLE_VISUALS, IDS_VISUALS);
+		pproppane = new PropertyPane(IDD_PROPTABLE_VISUALS, IDS_VISUALS_SOUND);
 		pvproppane->AddElement(pproppane);
 
 		pproppane = new PropertyPane(IDD_PROPTABLE_BALL, IDS_DEFAULTBALL);
@@ -6208,7 +6210,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume)
 	ClearOldSounds();
 
 	const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
-	const float totalvolume = ((float)g_pplayer->m_SoundVolume)*volume;
+	const float totalvolume = ((float)g_pplayer->m_SoundVolume)*volume*m_TableSoundVolume;
 	const int decibelvolume = (int)(logf((float)totalvolume)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
 
 	LPDIRECTSOUNDBUFFER pdsb = m_vsound.ElementAt(i)->m_pDSBuffer;
@@ -7619,6 +7621,42 @@ STDMETHODIMP PinTable::put_NormalizeNormals(int newVal )
 	STARTUNDO
 
 	m_NormalizeNormals = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_TableSoundVolume(int *pVal)
+{
+	*pVal = (int)(m_TableSoundVolume*100.0f);
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_TableSoundVolume(int newVal )
+{
+	STARTUNDO
+
+	m_TableSoundVolume = (float)newVal/100.0f;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
+{
+	*pVal = (int)(m_TableMusicVolume*100.0f);
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_TableMusicVolume(int newVal )
+{
+	STARTUNDO
+
+	m_TableMusicVolume = (float)newVal/100.0f;
 
 	STOPUNDO
 

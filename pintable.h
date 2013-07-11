@@ -244,7 +244,13 @@ public:
 	STDMETHOD(put_JoltTriggerTime)(/*[in]*/ int newVal);
 	STDMETHOD(get_TiltTriggerTime)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TiltTriggerTime)(/*[in]*/ int newVal);
-	
+
+	STDMETHOD(get_TableSoundVolume)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_TableSoundVolume)(/*[in]*/ int newVal);
+
+	STDMETHOD(get_TableMusicVolume)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_TableMusicVolume)(/*[in]*/ int newVal);
+
 	/////////////////////////////////////////////
 	PinTable();
 	virtual ~PinTable();
@@ -597,6 +603,9 @@ END_CONNECTION_POINT_MAP()
 	COLORREF rgcolorcustom[16];		// array for the choosecolor in property browser
 
 	Vector< PinSoundCopy > m_voldsound; // copied sounds currently playing
+
+	float m_TableSoundVolume;
+	float m_TableMusicVolume;
 
 	//HBITMAP m_hbmBackdrop;
 
