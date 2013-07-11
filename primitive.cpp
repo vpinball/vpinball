@@ -14,7 +14,7 @@ Primitive::Primitive()
    indexListSize=0;
    m_d.use3DMesh=false;
    m_d.meshFileName[0]=0;
-   m_d.useLightning=false;
+   m_d.useLighting=false;
 } 
 
 Primitive::~Primitive() 
@@ -806,10 +806,10 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
    		    CalculateBuiltin();
         }
 	 }
-     if ( !m_d.useLightning )
+     if ( !m_d.useLighting )
      {
-        // disable lightning is a default settings
-        // it could look odd if you switch lightning on on non mesh primitives
+        // disable lighting is a default settings
+        // it could look odd if you switch lighting on on non mesh primitives
         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
      }
 
@@ -823,7 +823,7 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
         pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, builtin_indices, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
      }
 
-     if ( !m_d.useLightning )
+     if ( !m_d.useLighting )
      {
         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
      }
@@ -943,7 +943,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(SCOL), m_d.m_SideColor);
    bw.WriteInt(FID(TVIS), (m_d.m_TopVisible) ? 1 : 0);
    bw.WriteInt(FID(DTXI), (m_d.m_DrawTexturesInside) ? 1 : 0);
-   bw.WriteInt(FID(ENLI), (m_d.useLightning) ? 1 : 0);
+   bw.WriteInt(FID(ENLI), (m_d.useLighting) ? 1 : 0);
    bw.WriteInt(FID(U3DM), (m_d.use3DMesh) ? 1 : 0 );
    if( m_d.use3DMesh )
    {
@@ -1095,7 +1095,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       int iTmp;
       pbr->GetInt(&iTmp);
-      m_d.useLightning = (iTmp==1);
+      m_d.useLighting = (iTmp==1);
    }
    else if ( id == FID(U3DM))
    {
@@ -1872,18 +1872,18 @@ STDMETHODIMP Primitive::put_RotAndTraType5(RotAndTraTypeEnum newVal)
    return S_OK;
 }
 
-STDMETHODIMP Primitive::get_EnableLightning(VARIANT_BOOL *pVal)
+STDMETHODIMP Primitive::get_EnableLighting(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.useLightning);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.useLighting);
 
    return S_OK;
 }
 
-STDMETHODIMP Primitive::put_EnableLightning(VARIANT_BOOL newVal)
+STDMETHODIMP Primitive::put_EnableLighting(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-   m_d.useLightning = VBTOF(newVal);
+   m_d.useLighting = VBTOF(newVal);
 
    STOPUNDO
 

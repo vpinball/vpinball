@@ -1412,8 +1412,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_TRANSPOSITION_Z), helpstring("property Transposition Z")] HRESULT Transposition_Z([in] float newVal);*/
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
-  		[propget, id(394), helpstring("property enable lightning")] HRESULT EnableLightning([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(394), helpstring("property enable lightning")] HRESULT EnableLightning([in] VARIANT_BOOL newVal);
+  		[propget, id(394), helpstring("property enable lighting")] HRESULT EnableLighting([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(394), helpstring("property enable lighting")] HRESULT EnableLighting([in] VARIANT_BOOL newVal);
 
 	};
 
