@@ -27,10 +27,10 @@ public:
 	TimerDataRoot m_tdr;
     RECT boundRectangle;
 
-   bool use3DMesh;
+    bool use3DMesh;
 	bool m_TopVisible;
 	bool m_DrawTexturesInside;
-   bool useLightning;
+    bool useLighting;
 	};
 
 class Primitive :
@@ -122,8 +122,8 @@ public:
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_MeshFileName)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_MeshFileName)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_EnableLightning)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_EnableLightning)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_EnableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_EnableLighting)(/*[in]*/ VARIANT_BOOL newVal);
 
 	Primitive();
 	virtual ~Primitive();

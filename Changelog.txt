@@ -1,7 +1,7 @@
 VP 9.1.6 Changelog
 ------------------------
 - add 'real' primitives, these can be loaded via .obj files (for example exported out of Blender)
-- add lightning option for primitives
+- add lighting option for primitives
 - add selection dialog where you can select one or more elements out of a list of all elements in the table
 - add configurable lightsources: point, directional, spot; these share the same coordinate system as the table geometry (angle/rotation/scale independent! setting the direction of a directional light to 0,0,0 restores the old behavior though)
   (note that DX7 is still vertex lighting based, thus all lit objects MUST feature reasonable triangulation, like f.e. huge walls (the playfield itself is triangulated 100x100))
