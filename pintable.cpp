@@ -141,7 +141,10 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str)
 
 		g_pplayer->m_pxap = new XAudPlayer();
 
-		if (!g_pplayer->m_pxap->Init(szPath, (int)((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume)))
+		const float MusicVolumef = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume,100.0f),0.0f);
+		const int MusicVolume = (MusicVolumef == 0.0f) ? DSBVOLUME_MIN : (int)(logf(MusicVolumef)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
+
+		if (!g_pplayer->m_pxap->Init(szPath, MusicVolume))
 			{
 			delete g_pplayer->m_pxap;
 			g_pplayer->m_pxap = NULL;
@@ -3390,7 +3393,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(SLOP))
 		{
 		pbr->GetFloat(&m_angletiltMin);
-		if(m_angletiltMax == 726.0f) m_angletiltMax = m_angletiltMin;
+		if(m_angletiltMax == 726.0f) m_angletiltMax = m_angletiltMin; //!! ??
 		}
 	else if (id == FID(GLAS))
 		{
@@ -6210,8 +6213,8 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume)
 	ClearOldSounds();
 
 	const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
-	const float totalvolume = ((float)g_pplayer->m_SoundVolume)*volume*m_TableSoundVolume;
-	const int decibelvolume = (int)(logf((float)totalvolume)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
+	const float totalvolume = max(min(((float)g_pplayer->m_SoundVolume)*volume*m_TableSoundVolume,100.0f),0.0f);
+	const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf((float)totalvolume)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
 
 	LPDIRECTSOUNDBUFFER pdsb = m_vsound.ElementAt(i)->m_pDSBuffer;
 	PinSoundCopy * const ppsc = new PinSoundCopy();
