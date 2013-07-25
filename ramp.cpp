@@ -2743,7 +2743,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          offset+=numVertices;
 
          // only calculate vertices if one or both sides are visible (!=0)
-         if( m_d.m_leftwallheightvisible!=0 || m_d.m_rightwallheightvisible!=0 )
+         if( m_d.m_leftwallheightvisible!=0.f || m_d.m_rightwallheightvisible!=0.f )
          {
             for (int i=0;i<(rampVertex-1);i++)
             {
@@ -2823,7 +2823,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          ppin3d->SetTexture(NULL);
          ppin3d->SetMaterial( 1.0f, m_d.m_color );
       }
-      if ( m_d.m_leftwallheightvisible!=0 )
+      if ( m_d.m_leftwallheightvisible!=0.f )
       {
          //only render left side if the height is >0
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
@@ -2836,7 +2836,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          offset+=2*numVertices;
       }
 
-      if ( m_d.m_leftwallheightvisible!=0 )
+      if ( m_d.m_rightwallheightvisible!=0.f )
       {
          //only render right side if the height is >0
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
