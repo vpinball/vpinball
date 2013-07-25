@@ -79,6 +79,10 @@
 #define FPS 1                   // Enable FPS computation (default 'F10')
 #define STEPPING 1              // Enable Physics stepping
 
+#if defined(_DEBUG_) && defined(STEPPING)
+ #define MOUSEPAUSE 1
+#endif
+
 //#define PLAYBACK
 
 //#define LOG
