@@ -2823,23 +2823,27 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          ppin3d->SetTexture(NULL);
          ppin3d->SetMaterial( 1.0f, m_d.m_color );
       }
-      pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
-      offset+=numVertices;
-      pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
-      offset+=numVertices;
       if ( m_d.m_leftwallheightvisible!=0 )
       {
          //only render left side if the height is >0
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
+         offset+=numVertices;
+         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
+         offset+=numVertices;
       }
-      offset+=numVertices;
+      else
+      {
+         offset+=2*numVertices;
+      }
 
       if ( m_d.m_leftwallheightvisible!=0 )
       {
          //only render right side if the height is >0
+         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
+         offset+=numVertices;
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
+         offset+=numVertices;
       }
-      offset+=numVertices;
 
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
