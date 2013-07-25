@@ -1546,9 +1546,7 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
       m_iblinkframe = 0;
       const char cnew = m_rgblinkpattern[m_iblinkframe];
       if (cold != cnew)
-      {
-         DrawFrame(cnew == '1');
-      }
+          DrawFrame(cnew == '1');
       m_timenextblink = g_pplayer->m_timeCur + m_blinkinterval;
    }
 
@@ -1571,9 +1569,7 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
    m_blinkinterval = newVal;
 
    if (g_pplayer)
-   {
       m_timenextblink = g_pplayer->m_timeCur + m_blinkinterval;
-   }
 
    STOPUNDO
 

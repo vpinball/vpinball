@@ -1,15 +1,11 @@
 #pragma once
 
-#ifdef _DEBUG_
-#define MOUSEPAUSE 1
-#endif
-
 #define DEFAULT_PLAYER_WIDTH 912
 
 class IBlink;
 
 enum EnumAssignKeys
-	{
+{
 	eLeftFlipperKey,
 	eRightFlipperKey,
 	eLeftTiltKey,
@@ -32,7 +28,7 @@ enum EnumAssignKeys
 	};
 
 class Player
-	{
+{
 public:
 	Player();
 	virtual ~Player();
@@ -313,7 +309,7 @@ public:
 	bool m_fPause;
 	bool m_fStep;
 #endif
-	};
+};
 
 #ifdef ULTRAPIN
 enum 
