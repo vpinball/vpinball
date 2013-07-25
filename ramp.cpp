@@ -2742,64 +2742,68 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          memcpy( &buf[offset], rgvbuf, sizeof(Vertex3D_NoTex2)*numVertices );
          offset+=numVertices;
 
-         for (int i=0;i<(rampVertex-1);i++)
+         // only calculate vertices if one or both sides are visible (!=0)
+         if( m_d.m_leftwallheightvisible!=0 || m_d.m_rightwallheightvisible!=0 )
          {
-            Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
-            rgv3D[0].x = rgvLocal[rampVertex*2-i-2].x;
-            rgv3D[0].y = rgvLocal[rampVertex*2-i-2].y;
-            rgv3D[0].z = rgheight[i+1];
-
-            rgv3D[3].x = rgvLocal[rampVertex*2-i-1].x;
-            rgv3D[3].y = rgvLocal[rampVertex*2-i-1].y;
-            rgv3D[3].z = rgheight[i];
-
-            rgv3D[2].x = rgv3D[3].x;
-            rgv3D[2].y = rgv3D[3].y;
-            rgv3D[2].z = rgheight[i] + m_d.m_leftwallheightvisible;
-
-            rgv3D[1].x = rgv3D[0].x;
-            rgv3D[1].y = rgv3D[0].y;
-            rgv3D[1].z = rgheight[i+1] + m_d.m_leftwallheightvisible;
-
-            if (pin && m_d.m_fImageWalls)
+            for (int i=0;i<(rampVertex-1);i++)
             {
-               if (m_d.m_imagealignment == ImageModeWorld)
+               Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
+               rgv3D[0].x = rgvLocal[rampVertex*2-i-2].x;
+               rgv3D[0].y = rgvLocal[rampVertex*2-i-2].y;
+               rgv3D[0].z = rgheight[i+1];
+
+               rgv3D[3].x = rgvLocal[rampVertex*2-i-1].x;
+               rgv3D[3].y = rgvLocal[rampVertex*2-i-1].y;
+               rgv3D[3].z = rgheight[i];
+
+               rgv3D[2].x = rgv3D[3].x;
+               rgv3D[2].y = rgv3D[3].y;
+               rgv3D[2].z = rgheight[i] + m_d.m_leftwallheightvisible;
+
+               rgv3D[1].x = rgv3D[0].x;
+               rgv3D[1].y = rgv3D[0].y;
+               rgv3D[1].z = rgheight[i+1] + m_d.m_leftwallheightvisible;
+
+               if (pin && m_d.m_fImageWalls)
                {
-                  rgv3D[0].tu = rgv3D[0].x * inv_tablewidth;
-                  rgv3D[0].tv = rgv3D[0].y * inv_tableheight;
-                  rgv3D[2].tu = rgv3D[2].x * inv_tablewidth;
-                  rgv3D[2].tv = rgv3D[2].y * inv_tableheight;
+                  if (m_d.m_imagealignment == ImageModeWorld)
+                  {
+                     rgv3D[0].tu = rgv3D[0].x * inv_tablewidth;
+                     rgv3D[0].tv = rgv3D[0].y * inv_tableheight;
+                     rgv3D[2].tu = rgv3D[2].x * inv_tablewidth;
+                     rgv3D[2].tv = rgv3D[2].y * inv_tableheight;
+                  }
+                  else
+                  {
+                     rgv3D[0].tu = 0;
+                     rgv3D[0].tv = rgratio[i] * maxtv;
+                     rgv3D[2].tu = 0;
+                     rgv3D[2].tv = rgratio[i+1] * maxtv;
+                  }
+
+                  rgv3D[1].tu = rgv3D[0].tu;
+                  rgv3D[1].tv = rgv3D[0].tv;
+                  rgv3D[3].tu = rgv3D[2].tu;
+                  rgv3D[3].tv = rgv3D[2].tv;
                }
-               else
-               {
-                  rgv3D[0].tu = 0;
-                  rgv3D[0].tv = rgratio[i] * maxtv;
-                  rgv3D[2].tu = 0;
-                  rgv3D[2].tv = rgratio[i+1] * maxtv;
+
+               // 2-Sided polygon
+               SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
+            }
+            memcpy( &buf[offset], rgvbuf, sizeof(Vertex3D_NoTex2)*numVertices );
+            offset+=numVertices;
+
+            // Flip Normals and redraw
+            for (int i=0;i<(rampVertex-1);i++)
+            {
+               for(int j = 0; j < 4; ++j) {
+                  rgvbuf[i*4+j].nx = -rgvbuf[i*4+j].nx;
+                  rgvbuf[i*4+j].ny = -rgvbuf[i*4+j].ny;
+                  rgvbuf[i*4+j].nz = -rgvbuf[i*4+j].nz;
                }
-
-               rgv3D[1].tu = rgv3D[0].tu;
-               rgv3D[1].tv = rgv3D[0].tv;
-               rgv3D[3].tu = rgv3D[2].tu;
-               rgv3D[3].tv = rgv3D[2].tv;
             }
-
-            // 2-Sided polygon
-            SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
+            memcpy( &buf[offset], rgvbuf, sizeof(Vertex3D_NoTex2)*numVertices );
          }
-         memcpy( &buf[offset], rgvbuf, sizeof(Vertex3D_NoTex2)*numVertices );
-         offset+=numVertices;
-
-         // Flip Normals and redraw
-         for (int i=0;i<(rampVertex-1);i++)
-         {
-            for(int j = 0; j < 4; ++j) {
-               rgvbuf[i*4+j].nx = -rgvbuf[i*4+j].nx;
-               rgvbuf[i*4+j].ny = -rgvbuf[i*4+j].ny;
-               rgvbuf[i*4+j].nz = -rgvbuf[i*4+j].nz;
-            }
-         }
-         memcpy( &buf[offset], rgvbuf, sizeof(Vertex3D_NoTex2)*numVertices );
 
          dynamicVertexBuffer->unlock();
 
@@ -2819,14 +2823,22 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          ppin3d->SetTexture(NULL);
          ppin3d->SetMaterial( 1.0f, m_d.m_color );
       }
+      pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
+      offset+=numVertices;
+      pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
+      offset+=numVertices;
+      if ( m_d.m_leftwallheightvisible!=0 )
+      {
+         //only render left side if the height is >0
+         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
+      }
+      offset+=numVertices;
 
-      pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
-      offset+=numVertices;
-      pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
-      offset+=numVertices;
-      pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
-      offset+=numVertices;
-      pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
+      if ( m_d.m_leftwallheightvisible!=0 )
+      {
+         //only render right side if the height is >0
+         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
+      }
       offset+=numVertices;
 
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
