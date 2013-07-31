@@ -31,7 +31,6 @@ void ShowErrorID(int id)
 
 void ExitApp()
 {
-
 	bool	fe_shutdown_message_sent;
 	int		retries;
 	HWND	hFrontEndWnd;

@@ -118,9 +118,9 @@ Player::Player()
 	hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
 	if (hr != S_OK)
 		{
-		vsync = fFalse; // The default
+		vsync = 0; // The default
 		}
-	m_fVSync = (vsync == 1);
+	m_fVSync = vsync;
 
 	hr = GetRegInt("Player", "FXAA", &m_fFXAA);
 	if (hr != S_OK)
@@ -237,73 +237,60 @@ Player::Player()
 Player::~Player()
 {
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
-		{
+	{
 		Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
-			{
 			ph->EndPlay();
-			}
-		}
+	}
 
 	for (int i=0;i<m_vho.Size();i++)
-		{
 		delete m_vho.ElementAt(i);
-		}
 	m_vho.RemoveAllElements();
 
 	for (int i=0;i<m_vdebugho.Size();i++)
-		{
 		delete m_vdebugho.ElementAt(i);
-		}
 	m_vdebugho.RemoveAllElements();
 
 	// balls get deleted by the hit object vector
 	// not anymore - balls are added to the octree, but not the main list
 	for (int i=0;i<m_vball.Size();i++)
-		{
+	{
 		Ball * const pball = m_vball.ElementAt(i);
 		if (pball->m_pballex)
-			{
+		{
 			pball->m_pballex->m_pball = NULL;
 			pball->m_pballex->Release();
-			}
+		}
 
 		delete pball->m_vpVolObjs;
 		delete pball;
-		}
+	}
 	m_vball.RemoveAllElements();
-   if ( Ball::vertexBuffer!=0 )
-   {
-      Ball::vertexBuffer->release();
-      Ball::vertexBuffer=0;
-   }
+    if ( Ball::vertexBuffer!=0 )
+    {
+        Ball::vertexBuffer->release();
+        Ball::vertexBuffer=0;
+    }
 
 #ifdef LOG
 	if (m_flog)
-		{
 		fclose(m_flog);
-		}
 #endif
-
 #ifdef PLAYBACK
 	if (m_fplaylog)
-		{
 		fclose(m_fplaylog);
-		}
 #endif
 
 	CloseHandle(m_hSongCompletionEvent);
 
 	if (m_pxap)
-		{
+	{
 		delete m_pxap;
 		m_pxap = NULL;
-		}
+	}
 
 	for (int i=0;i<m_controlclsidsafe.Size();i++)
-		{
 		delete m_controlclsidsafe.ElementAt(i);
-		}
 	m_controlclsidsafe.RemoveAllElements();
 }
 
@@ -861,7 +848,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		}
 
 	//----------------------------------------------------------------------------------
-   Ball::ballsInUse=0;
+    Ball::ballsInUse=0;
 	// Pre-render all non-changing elements such as 
 	// static walls, rails, backdrops, etc.
 	InitStatic(hwndProgress);
@@ -1702,31 +1689,31 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 	int StaticCnts = STATICCNTS;	// maximum number of static counts
 
 	while (dtime > 0.f)
-		{
+	{
 		if (limitTime)//time in microseconds
-			{
+		{
 			const int time_elasped = (int)(usec()- startTime);
 
 			if (time_elasped > limitTime) //time in microseconds
 				return; // hung in the physics loop
 
 			if (time_elasped > halfLimitTime)		//time in microseconds
-				{
+			{
 				staticTime += staticTime*0.5f;		//increase minimum time step by 50%
 				halfLimitTime += halfLimitTime/2;	// set next half limit time step (logarithmic)			
-				}
 			}
+		}
 
 		// first find hits, if any +++++++++++++++++++++ 
 
 		hittime = dtime;	//begin time search from now ...  until delta ends
 
 		for (int i = 0; i < vballsize; i++)
-			{
+		{
 			Ball * const pball = m_vball.ElementAt(i);
 
 			if (!pball->fFrozen && pball->m_fDynamic > 0) // don't play with frozen balls
-				{
+			{
 				pball->m_hittime = hittime;				// search upto current hittime
 				pball->m_pho = NULL;
 
@@ -1737,7 +1724,7 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 				if(htz < 0) pball->m_pho = NULL;		// no negative time allowed
 
 				if (pball->m_pho)						// hit object
-					{
+				{
 #ifdef _DEBUG
 					++c_hitcnts;						// stats for display
 
@@ -1746,47 +1733,45 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 #endif
 					///////////////////////////////////////////////////////////////////////////
 					if (htz <= hittime)						//smaller hit time??
-						{
+					{
 						hittime = htz;						// record actual event time
 
 						if (htz < staticTime)				// less than static time interval
-							{ 
+						{ 
 							if(!pball->m_HitRigid) hittime = staticTime; // non-rigid ... set Static time
 							else if (--StaticCnts < 0)		
-								{
+							{
 								StaticCnts = 0;			// keep from wrapping
 								hittime = staticTime;		
-								}
 							}
 						}
 					}
-				}				
-			}
+				}
+			}				
+		}
 
 		// hittime now set ... or full frame if no hit 
 		// now update displacements to collide-contact or end of physics frame
 		// !!!!! 2) move objects to hittime
 
-		if (hittime > staticTime) StaticCnts = STATICCNTS;	// allow more zeros next round
+		if (hittime > staticTime) StaticCnts = STATICCNTS;		 // allow more zeros next round
 
 		for (int i=0;i<m_vmover.Size();i++)
-			{
 			m_vmover.ElementAt(i)->UpdateDisplacements(hittime); //step 2:  move the objects about according to velocities
-			} 
 
 		//  ok find balls that need to be collided and script'ed (generally there will be one, but more are possible)
 
-		for (int i=0; i < m_vball.Size(); i++)			// use m_vball.Size(), in case script deletes a ball
-			{
-			Ball * const pball = m_vball.ElementAt(i);			// local pointer
+		for (int i=0; i < m_vball.Size(); i++)					 // use m_vball.Size(), in case script deletes a ball
+		{
+			Ball * const pball = m_vball.ElementAt(i);			 // local pointer
 
 			if (pball->m_fDynamic > 0 && pball->m_pho && pball->m_hittime <= hittime) // find balls with hit objects and minimum time			
-				{			
+			{
 
 				// now collision, contact and script reactions on active ball (object)+++++++++
 				HitObject * const pho = pball->m_pho;// object that ball hit in trials
-				pball->m_pho = NULL;				// remove trial hit object pointer
-				m_pactiveball = pball;				// For script that wants the ball doing the collision
+				pball->m_pho = NULL;				 // remove trial hit object pointer
+				m_pactiveball = pball;				 // For script that wants the ball doing the collision
 
 				c_collisioncnt++;
 
@@ -1795,36 +1780,36 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 				// Collide may have changed the velocity of the ball, 
 				// and therefore the bounding box for the next hit cycle
 				if ( m_vball.ElementAt(i) != pball) // Ball still exists? may have been deleted from list
-					{
+				{
 					if(i) // collision script deleted the ball, back up one count, if not zero
 						--i;
-					}
+				}
 				else
-					{
+				{
 					pball->CalcBoundingRect();		// do new boundings 
 
 					// is this ball static? .. set static and quench	
-					if (pball->m_HitRigid && pball->m_HitDist < (float)PHYS_TOUCH) //rigid and close distance
-						{//contacts
+					if (pball->m_HitRigid && pball->m_HitDist < (float)PHYS_TOUCH) //rigid and close distance contacts
+					{
 						c_contactcnt++;
 						const float mag = pball->vx*pball->vx + pball->vy*pball->vy; // values below are taken from simulation
 						if (pball->drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->vz) < 0.2f)
-							{
+						{
 							if(--pball->m_fDynamic <= 0)						//... ball static, cancels next gravity increment
-								{												// m_fDynamic is cleared in ball gravity section
+							{													// m_fDynamic is cleared in ball gravity section
 								pball->m_fDynamic = 0;
 								c_staticcnt++;
 								pball->vx =	pball->vy = pball->vz = 0;			//quench the remaing velocity and set ...
-								}
 							}
 						}
 					}
 				}
 			}
+		}
 
 		dtime -= hittime;	//new delta .. i.e. time remaining
 
-		}// physics loop
+	} // end physics loop
 }
 
 #ifdef FPS
@@ -1837,45 +1822,45 @@ void Player::UpdatePhysics()
 	const U64 m_RealTimeClock = usec();
 
 	if (m_fNoTimeCorrect) // After debugging script
-		{
+	{
 		// Shift whole game foward in time
 		m_liStartTime += m_RealTimeClock - m_curPhysicsFrameTime;
 		m_nextPhysicsFrameTime += m_RealTimeClock - m_curPhysicsFrameTime;
 		m_curPhysicsFrameTime = m_RealTimeClock; // 0 time frame
 		m_fNoTimeCorrect = fFalse;
-		}
+	}
 
 #ifdef STEPPING
 #ifndef EVENTIME
 	if (m_fDebugWindowActive || m_fUserDebugPaused)
-		{
+	{
 		// Shift whole game foward in time
 		m_liStartTime += m_RealTimeClock - m_curPhysicsFrameTime;
 		m_nextPhysicsFrameTime += m_RealTimeClock - m_curPhysicsFrameTime;
 		if (m_fStep)
-			{
+		{
 			// Walk one physics step foward
 			m_curPhysicsFrameTime = m_RealTimeClock - PHYSICS_STEPTIME;
 			m_fStep = false;
-			}
-		else
-			{
-			m_curPhysicsFrameTime = m_RealTimeClock; // 0 time frame
-			}
 		}
+		else
+		{
+			m_curPhysicsFrameTime = m_RealTimeClock; // 0 time frame
+		}
+	}
 #endif
 #endif
 
 #ifdef EVENTIME
 	if (!m_fPause || m_fStep)
-		{
+	{
 		m_RealTimeClock = m_curPhysicsFrameTime - 3547811060 + 3547825450;
 		m_fStep = false;
-		}
+	}
 	else
-		{
+	{
 		m_RealTimeClock = m_curPhysicsFrameTime;
-		}
+	}
 #endif
 
 	// Get time in milliseconds for timers
@@ -1883,42 +1868,33 @@ void Player::UpdatePhysics()
 
 #ifdef FPS
 	//if (m_fShowFPS)
-		{
+	{
 		m_cframes++;
 		if ((m_timeCur - m_lastfpstime) > 1000)
-			{
+		{
 			m_fps = m_cframes * 1000 / (m_timeCur - m_lastfpstime);
-         m_fpsAvg += m_fps;
-         m_fpsCount++;
+            m_fpsAvg += m_fps;
+            m_fpsCount++;
 			m_lastfpstime = m_timeCur;
 			m_cframes = 0;
-			}
 		}
+	}
 #endif
 
 #ifdef LOG
 	const double timepassed = (double)(m_RealTimeClock - m_curPhysicsFrameTime) * (1.0/1000000.0);
-	float frametime;
 
+	const float frametime =
 #ifdef PLAYBACK
-	if (!m_fPlayback)
-		{
-		frametime = (float)(timepassed * 100.0);
-		}
-	else
-		{
-		frametime = ParseLog((LARGE_INTEGER*)&m_RealTimeClock, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
-		}
+		(!m_fPlayback) ? (float)(timepassed * 100.0) : ParseLog((LARGE_INTEGER*)&m_RealTimeClock, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
 #else
-
-#define TIMECORRECT 1
-#ifdef TIMECORRECT
-	frametime = (float)(timepassed * 100.0);
-	//frametime = 1.456927f;
-#else
-	frametime = 0.45f;
-#endif
-
+ #define TIMECORRECT 1
+ #ifdef TIMECORRECT
+		(float)(timepassed * 100.0);
+		// 1.456927f;
+ #else
+		0.45f;
+ #endif
 #endif //PLAYBACK
 
 	fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, m_RealTimeClock>>32, m_RealTimeClock, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
@@ -1931,7 +1907,7 @@ void Player::UpdatePhysics()
 #endif
 
 	while (m_curPhysicsFrameTime < m_RealTimeClock)		//loop here until next frame time
-		{
+	{
 #ifdef FPS
 		phys_iterations++;
 #endif
@@ -1946,18 +1922,18 @@ void Player::UpdatePhysics()
 		const U64 cur_time = usec();
 
 		if (physics_to_graphic_dtime < physics_dtime)				 // is graphic frame time next???
-			{		
+		{
 			PhysicsSimulateCycle(physics_to_graphic_dtime, cur_time);// advance physics to this time
 			m_curPhysicsFrameTime = m_RealTimeClock;				 // now current to the wall clock
 			break;	//this is the common exit from the loop			 // exit skipping accelerate
-			}		// some rare cases will exit from while()
+		}			// some rare cases will exit from while()
 
 		if (cur_time - m_RealTimeClock > 200000)					 // hung in the physics loop over 200 milliseconds
-			{														 // can not keep up to real time
+		{															 // can not keep up to real time
 			m_curPhysicsFrameTime = m_RealTimeClock;				 // skip physics forward ... slip-cycles
 			m_nextPhysicsFrameTime = m_RealTimeClock + PHYSICS_STEPTIME;
 			break;	//this is the common exit from the loop			 // go draw frame
-			}
+		}
 
 		//primary physics loop
 		PhysicsSimulateCycle(physics_dtime, cur_time); 				 // main simulator call physics_dtime
@@ -1996,14 +1972,12 @@ void Player::UpdatePhysics()
 			}
 		}
 #endif
-
 		//slintf( "%u %u\n", m_RealTimeClock/1000, sim_msec );
 		//slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
 
 		UltraNudge();		// physics_dtime is the balance of time to move from the graphic frame position to the next
 		UltraPlunger();		// integral physics frame.  So the previous graphics frame was (1.0 - physics_dtime) before 
 							// this integral physics frame. Accelerations and inputs are always physics frame aligned
-
 		if (m_nudgetime)
 		{
 			m_nudgetime--;
@@ -2011,20 +1985,19 @@ void Player::UpdatePhysics()
 			if (m_nudgetime == 5)
 			{
 				m_NudgeX = -m_NudgeBackX * 2.0f;
-				m_NudgeY = m_NudgeBackY * 2.0f;
+				m_NudgeY =  m_NudgeBackY * 2.0f;
 			}
 			else if (m_nudgetime == 0)
 			{
-				m_NudgeX = m_NudgeBackX;
+				m_NudgeX =  m_NudgeBackX;
 				m_NudgeY = -m_NudgeBackY;
 			}
 		}
 
 		for (int i=0;i<m_vmover.Size();i++)
-		{
 			m_vmover.ElementAt(i)->UpdateVelocities();	// always on integral physics frame boundary
-		}
 	} // end while (m_curPhysicsFrameTime < m_RealTimeClock)
+
 #ifdef FPS
 	phys_period = usec() - phys_period;
 #endif
@@ -2085,25 +2058,25 @@ void Player::Render()
 	// blitter gets stuck
 	const int cball = m_vball.Size();
 	if (cball == 0)
-		{
+	{
 		Sleep(1);
-		}
+	}
 
 	if (m_sleeptime > 0)
-		{
+	{
 		Sleep(m_sleeptime - 1);
-		}
+	}
 
 	if (m_fCheckBlt) // Don't calculate the next frame if the last one isn't done blitting yet
-		{
+	{
 		const HRESULT hrdone = m_pin3d.m_pddsFrontBuffer->GetBltStatus(DDGBS_ISBLTDONE);
 
 		if (hrdone != DD_OK)
-			{
+		{
 			//Sleep(1);
 			return;
-			}
 		}
+	}
 
 #ifdef ANTI_TEAR
 	static U64 sync;
@@ -2118,14 +2091,12 @@ void Player::Render()
 	//
 
 	for (int iball=0;iball<cball;iball++)
-		{
+	{
 		Ball * const pball = m_vball.ElementAt(iball);
 
 		if (pball->m_fErase) // Need to clear the ball off the playfield
-			{
 			EraseBall(pball);
-			}
-		}
+	}
 
 	// Erase the mixer volume.
 	mixer_erase();
@@ -2167,13 +2138,11 @@ void Player::Render()
 
 	// Check all elements that could possibly need updating.
 	for (int i=0;i<m_vscreenupdate.Size();i++)
-	{
 		if (m_vscreenupdate.ElementAt(i)->m_fInvalid)
 		{
 			// Flag the element's region as needing a redraw.
 			InvalidateRect(&m_vscreenupdate.ElementAt(i)->m_rcBounds);
 		}
-	}	
 
 	//rlc BUG -- moved this code before copy of static buffers being copied to back and z buffers
 	//rlc  JEP placed code for copy of static buffers too soon 
@@ -2193,10 +2162,10 @@ void Player::Render()
 				pblink->m_iblinkframe = 0;
 				cnew = pblink->m_rgblinkpattern[0];
 			}
+
 			if (cold != cnew)
-			{
 				pblink->DrawFrame(cnew == '1');
-			}
+
 			pblink->m_timenextblink += pblink->m_blinkinterval;
 		}
 	}
@@ -2243,14 +2212,14 @@ void Player::Render()
 	else
 		for (int i=0;i<m_vupdaterect.Size();i++)
 		{
-		UpdateRect * const pur = m_vupdaterect.ElementAt(i);
-		if (pur->m_fSeeThrough)
+			UpdateRect * const pur = m_vupdaterect.ElementAt(i);
+			if (pur->m_fSeeThrough)
 			{
-			RECT * const prc = &pur->m_rcupdate;
+				RECT * const prc = &pur->m_rcupdate;
 
-			// Redraw the region from the static buffers to the back and z buffers.
-			m_pin3d.m_pddsBackBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStatic, prc, 0);
-			m_pin3d.m_pddsZBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStaticZ, prc, 0);
+				// Redraw the region from the static buffers to the back and z buffers.
+				m_pin3d.m_pddsBackBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStatic, prc, 0);
+				m_pin3d.m_pddsZBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStaticZ, prc, 0);
 			}
 		}
 
@@ -2325,14 +2294,39 @@ void Player::Render()
 		 m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
 		// Draw with an offset to shake the display.
-		m_pin3d.Flip((int)m_NudgeBackX, (int)m_NudgeBackY, (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR));
+		bool vsync = false;
+		if(m_fVSync > 0)
+		{
+		    if(m_fVSync == 1) // legacy auto-detection
+			{
+				if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
+					vsync = true;
+		    }
+		    else
+				if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
+					vsync = true;
+		}
+
+		m_pin3d.Flip((int)m_NudgeBackX, (int)m_NudgeBackY, vsync);
 		m_fCleanBlt = fFalse;
 	}
 	else
 	{
-               if (m_fCleanBlt && (overall_area < FULLBLTAREA))
+		if (m_fCleanBlt && (overall_area < FULLBLTAREA)) //!! last check can lead to these strange super bright flashers in NBA, etc (overdraw of same stuff over and over again! -> maybe due to backbuffer not being blitted over frontbuffer but simply flipped??) //!! only with region optimization off??
 		{
-			if(m_fVSync && (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR))
+			bool vsync = false;
+			if(m_fVSync > 0)
+			{
+			    if(m_fVSync == 1) // legacy auto-detection
+				{
+					if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
+						vsync = true;
+			    }
+			    else
+					if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
+						vsync = true;
+			}
+			if(vsync)
 				g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
 
 			// Smart Blit - only update the invalidated areas
@@ -2354,8 +2348,21 @@ void Player::Render()
 		}
 		else
 		{
+			bool vsync = false;
+			if(m_fVSync > 0)
+			{
+			    if(m_fVSync == 1) // legacy auto-detection
+				{
+					if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
+						vsync = true;
+			    }
+			    else
+					if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
+						vsync = true;
+			}
+
 			// Copy the entire back buffer to the front buffer.
-			m_pin3d.Flip(0, 0, (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR));
+			m_pin3d.Flip(0, 0, vsync);
 
 			// Flag that we only need to update regions from now on...
 			if(m_fEnableRegionUpdates)
@@ -2588,8 +2595,20 @@ void Player::Render()
 	m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
 	} else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; // 'handle' fails to lock buffers
 
+	bool vsync = false;
+	if(m_fVSync > 0)
+	{
+	    if(m_fVSync == 1) // legacy auto-detection
+		{
+			if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
+				vsync = true;
+	    }
+	    else
+			if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
+				vsync = true;
+	}
 	// Copy the entire back buffer to the front buffer.
-	m_pin3d.Flip(0, 0, (m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR));
+	m_pin3d.Flip(0, 0, vsync);
 
 	// Flag that we only need to update regions from now on...
 	//if(m_fEnableRegionUpdates)
@@ -2659,12 +2678,12 @@ void Player::Render()
 
 		// Draw the framerate.
       int len2 = sprintf_s(szFoo, " FPS: %d FPS(avg): %d", m_fps,m_fpsAvg/m_fpsCount);
-      if( len2>=0 )
-      {
-         for(int l = len2; l < len+1; ++l)
-            szFoo[l] = ' ';
-         TextOut(hdcNull, 10, 10, szFoo, len);
-      }
+        if( len2>=0 )
+        {
+            for(int l = len2; l < len+1; ++l)
+                szFoo[l] = ' ';
+            TextOut(hdcNull, 10, 10, szFoo, len);
+        }
 
 		period = msec()-stamp;
 		if( period > m_max ) m_max = period;

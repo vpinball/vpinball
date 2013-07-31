@@ -158,7 +158,7 @@ public:
 
 	GPINFLOAT m_pixelaspectratio;
 
-	BOOL m_fVSync;
+	unsigned int m_fVSync; // targeted refresh rate in Hz
 
 	BOOL m_fFXAA;
 

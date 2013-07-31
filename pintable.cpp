@@ -4893,7 +4893,6 @@ void PinTable::Undelete(IEditable *pie)
 
 void PinTable::BackupForPlay()
 {
-#ifndef PERFTEST
 	m_undo.BeginUndo();
 
 	m_undo.MarkForUndo((IEditable *)this);
@@ -4903,7 +4902,6 @@ void PinTable::BackupForPlay()
 		}
 
 	m_undo.EndUndo();
-#endif //PERFTEST
 }
 
 void PinTable::RestoreBackup()

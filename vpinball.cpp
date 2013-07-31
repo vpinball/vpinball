@@ -725,20 +725,14 @@ void VPinball::SetActionCur(char *szaction)
 void VPinball::SetPosCur(float x, float y)
 {
    char szT[256];
-
-#ifndef PERFTEST
    sprintf_s(szT, "%.4f, %.4f", x, y);
-#endif
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (long)szT);
 }
 
 void VPinball::SetObjectPosCur(float x, float y)
 {
    char szT[256];
-
-#ifndef PERFTEST
    sprintf_s(szT, "%.4f, %.4f", x, y);
-#endif
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (long)szT);
 }
 
@@ -1503,7 +1497,6 @@ void VPinball::setLayerStatus( int layerNumber )
          tbinfo.fsState ^= TBSTATE_CHECKED;
       }
    }
-
 
    SendMessage(m_hwndToolbarLayers,TB_SETBUTTONINFO,allLayers[layerNumber],(long)&tbinfo);
 
@@ -3861,14 +3854,13 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          }
          SendMessage(hwndCheck, BM_SETCHECK, antialias ? BST_CHECKED : BST_UNCHECKED, 0);
 
-         hwndCheck = GetDlgItem(hwndDlg, IDC_ADAPTIVE_VSYNC);
          int vsync;
          hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
          if (hr != S_OK)
          {
-            vsync = fFalse; // The default
+            vsync = 0; // The default
          }
-         SendMessage(hwndCheck, BM_SETCHECK, vsync ? BST_CHECKED : BST_UNCHECKED, 0);
+		 SetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, vsync, FALSE);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_FXAA);
          int fxaa;
@@ -4034,7 +4026,6 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"10:21 (R)"); 
 
          SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_SETCURSEL, selected, 0);
-
       }
 
       return TRUE;
@@ -4093,8 +4084,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                   int antialias = SendMessage(hwndAlias, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallAntialias", REG_DWORD, &antialias, 4);
 
-                  HWND hwndVSync = GetDlgItem(hwndDlg, IDC_ADAPTIVE_VSYNC);
-                  int vsync = SendMessage(hwndVSync, BM_GETCHECK, 0, 0);
+                  int vsync = GetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, NULL, TRUE);
                   SetRegValue("Player", "AdaptiveVSync", REG_DWORD, &vsync, 4);
 
                   HWND hwndFXAA = GetDlgItem(hwndDlg, IDC_FXAA);
