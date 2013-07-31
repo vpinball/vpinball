@@ -236,8 +236,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,84,155,10
     CONTROL         "Region Optimization (NVIDIA (FX)AA tweak)",IDC_ENABLE_REGION_UPDATE_OPTIMIZATION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,97,155,10
-    CONTROL         "Adaptive VSync (to avoid tearing)",IDC_ADAPTIVE_VSYNC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,110,155,10
+    LTEXT           "Adaptive VSync (avoid tearing)",IDC_STATIC,162,110,150,10
+    EDITTEXT        IDC_ADAPTIVE_VSYNC,262,109,20,10,ES_RIGHT | ES_AUTOHSCROLL
+	LTEXT           "Hz  (1=auto)",IDC_STATIC,283,110,45,10
     CONTROL         "Check &Blit Status (for Win98 and 2K)",IDC_CHECKBLIT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,123,133,10
     CONTROL         "Reorder Playfield Objects (for ATI/AMD gfx)",216,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,136,155,10

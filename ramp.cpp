@@ -2609,7 +2609,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          ppin3d->SetMaterial( 1.0f, m_d.m_color );
       }
 
-      int numVertices;
+      unsigned int numVertices;
 
       if(dynamicVertexBufferRegenerate)
       {
@@ -2625,7 +2625,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          const float inv_tableheight = maxtv/(m_ptable->m_bottom - m_ptable->m_top);
 
          numVertices=(rampVertex-1)*4;
-         int offset=0;
+         unsigned int offset=0;
          for (int i=0;i<(rampVertex-1);i++)
          {
             Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
@@ -2814,7 +2814,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       else
          numVertices=(rampVertex-1)*4;
 
-      int offset=0;
+      unsigned int offset=0;
       pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
       offset+=numVertices;
 
@@ -2823,9 +2823,10 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          ppin3d->SetTexture(NULL);
          ppin3d->SetMaterial( 1.0f, m_d.m_color );
       }
+
       if ( m_d.m_rightwallheightvisible!=0.f )
       {
-         //only render left side if the height is >0
+         //only render right side if the height is >0
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
          offset+=numVertices;
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
@@ -2838,7 +2839,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
       if ( m_d.m_leftwallheightvisible!=0.f )
       {
-         //only render right side if the height is >0
+         //only render left side if the height is >0
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
          offset+=numVertices;
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
