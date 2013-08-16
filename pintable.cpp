@@ -5878,16 +5878,20 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			pt->DoRButtonDown(x,y);
 			break;
 			}
-
-		case WM_RBUTTONUP:
-			{
-			pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
-			const short x = (short)(lParam & 0xffff);
-			const short y = (short)((lParam>>16) & 0xffff);
-			pt->DoRButtonUp(x,y);
-			break;
-			}
-
+      case WM_CONTEXTMENU:
+         {
+            pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+            short x = (short)(lParam & 0xffff);
+            short y = (short)((lParam>>16) & 0xffff);
+            POINT p;
+            if ( GetCursorPos(&p) && ScreenToClient( hwnd, &p))
+            {
+               x = p.x;
+               y = p.y;
+            }
+            pt->DoRButtonUp(x,y);
+            break;
+         }
 		case WM_KEYDOWN:
 			{
 			pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
