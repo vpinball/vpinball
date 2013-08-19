@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "RenderDevice.h"
+#include "Material.h"
 
 static LPDIRECT3DDEVICE7 dx7Device;
 static LPDIRECT3D7 dx7;
@@ -25,7 +26,7 @@ bool RenderDevice::createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7
 RenderDevice::RenderDevice( void )
 {
    theDevice=this;
-
+   Material::setRenderDevice(this);
    memset( renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
    for( int i=0;i<8;i++ )
       for( int j=0;j<TEXTURE_STATE_CACHE_SIZE;j++ )
@@ -38,9 +39,9 @@ RenderDevice* RenderDevice::instance()
    return theDevice;
 }
 
-void RenderDevice::SetMaterial( THIS_ Material *_material )
+void RenderDevice::SetMaterial( THIS_ BaseMaterial *_material )
 {
-   if(_mm_movemask_ps(_mm_and_ps(
+/*   if(_mm_movemask_ps(_mm_and_ps(
 	  _mm_and_ps(_mm_cmpeq_ps(_material->d,materialStateCache.d),_mm_cmpeq_ps(_material->a,materialStateCache.a)),
 	  _mm_and_ps(_mm_cmpeq_ps(_material->s,materialStateCache.s),_mm_cmpeq_ps(_material->e,materialStateCache.e)))) == 15
 	  &&
@@ -51,6 +52,7 @@ void RenderDevice::SetMaterial( THIS_ Material *_material )
    materialStateCache.e = _material->e;
    materialStateCache.s = _material->s;
    materialStateCache.power = _material->power;
+*/
    dx7Device->SetMaterial( (LPD3DMATERIAL7)_material);
 }
 
@@ -168,7 +170,7 @@ STDMETHODIMP RenderDevice::GetMaterial( THIS_ LPD3DMATERIAL7 p1)
    return dx7Device->GetMaterial(p1);
 }
 
-void RenderDevice::getMaterial( THIS_ Material *_material )
+void RenderDevice::getMaterial( THIS_ BaseMaterial *_material )
 {
    dx7Device->GetMaterial((LPD3DMATERIAL7)_material);
 }

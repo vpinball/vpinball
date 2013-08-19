@@ -1092,23 +1092,7 @@ void Ramp::RenderStaticHabitrail(const RenderDevice* _pd3dDevice)
 
    pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, TRUE);
 
-   const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
-   {
-      // Pin3D::SetMaterial sets power to 0 so don't use it here
-      Material mtrl;
-      mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a = 0.0f;
-      mtrl.diffuse.r = mtrl.ambient.r = r;
-      mtrl.diffuse.g = mtrl.ambient.g = g;
-      mtrl.diffuse.b = mtrl.ambient.b = b;
-      mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-      mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a = 1.0f;
-      mtrl.power = 8.0f;
-      pd3dDevice->SetMaterial(&mtrl);
-   }
-
+   habitrailMaterial.set();
    int offset=0;
    for (int i=0;i<rampVertex;i++,offset+=32)
    {
@@ -1574,6 +1558,11 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
 
    rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit);
 
+   solidMaterial.setColor( 1.0f, m_d.m_color );
+   habitrailMaterial.setColor( 1.0f, m_d.m_color );
+   habitrailMaterial.setPower( 8.0f );
+   habitrailMaterial.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
+
    if( !staticVertexBuffer && m_d.m_IsVisible && !m_d.m_fAlpha )
    {
       if (m_d.m_type == RampType4Wire 
@@ -1680,11 +1669,11 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
             ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
          }
 
-         ppin3d->SetMaterial( 1.0f, 1.0f, 1.0f, 1.0f );
+         textureMaterial.set();
       }
       else
       {
-         ppin3d->SetMaterial( 1.0f,m_d.m_color );
+         solidMaterial.set();
       }
 
       int offset=0;
@@ -1694,7 +1683,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
       if (pin && !m_d.m_fImageWalls)
       {
          ppin3d->SetTexture(NULL);
-         ppin3d->SetMaterial( 1.0f, m_d.m_color );
+         solidMaterial.set();
       }
 
       for (int i=0;i<(rampVertex-1);i++)
@@ -2142,6 +2131,7 @@ STDMETHODIMP Ramp::put_Color(OLE_COLOR newVal)
    STARTUNDO
 
    m_d.m_color = newVal;
+   dynamicVertexBufferRegenerate = true;
 
    STOPUNDO
 
@@ -2566,12 +2556,23 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       // Don't render non-Alphas. 
       (!m_d.m_fAlpha)) return;
 
+   if(dynamicVertexBufferRegenerate)
+   {
+      solidMaterial.setColor(1.0f, m_d.m_color );
+   }
+
    if (m_d.m_type == RampType4Wire 
       || m_d.m_type == RampType1Wire //add check for 1 wire
       || m_d.m_type == RampType2Wire 
       || m_d.m_type == RampType3WireLeft 
       || m_d.m_type == RampType3WireRight)
    {
+      if(dynamicVertexBufferRegenerate)
+      {
+         habitrailMaterial.setColor( 1.0f, m_d.m_color );
+         habitrailMaterial.setPower( 8.0f );
+         habitrailMaterial.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
+      }
       RenderStaticHabitrail(pd3dDevice);
    }
    else
@@ -2602,11 +2603,11 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-         ppin3d->SetMaterial( 1.0f, 1.0f, 1.0f, 1.0f );
+         textureMaterial.set();
       }
       else
       {
-         ppin3d->SetMaterial( 1.0f, m_d.m_color );
+         solidMaterial.set();
       }
 
       unsigned int numVertices;
@@ -2821,7 +2822,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       if (pin && !m_d.m_fImageWalls)
       {
          ppin3d->SetTexture(NULL);
-         ppin3d->SetMaterial( 1.0f, m_d.m_color );
+         solidMaterial.set();
       }
 
       if ( m_d.m_rightwallheightvisible!=0.f )

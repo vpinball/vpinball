@@ -112,6 +112,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
    WORD indices[16*PLUNGEPOINTS1*4];
 
 	HitPlunger *m_phitplunger;
+   Material material;
+
 // IPlunger
 public:
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

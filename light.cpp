@@ -727,16 +727,10 @@ void Light::RenderStatic(const RenderDevice* _pd3dDevice)
 	   const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
 
 	   Material mtrl;
-	   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-	   mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-	   mtrl.power = 0;
-	   mtrl.diffuse.r = mtrl.ambient.r = r;
-	   mtrl.diffuse.g = mtrl.ambient.g = g;
-	   mtrl.diffuse.b = mtrl.ambient.b = b;
-	   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-       
-	   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-	   pd3dDevice->SetMaterial(&mtrl);
+      mtrl.setColor( 1.0f, m_d.m_bordercolor );
+
+      RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+      mtrl.set();
 
 	   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled()) {
 		   if(m_d.m_shape == ShapeCustom)
@@ -762,11 +756,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    Material mtrl;
-   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-   mtrl.emissive.a =
-   mtrl.power = 0;
-   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
+   
    const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
    const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
    const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
@@ -782,24 +772,18 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
             // Set the texture to the one defined in the editor.
             ppin3d->SetTexture(pin->m_pdsBuffer);
             ppin3d->EnableLightMap(fFalse, -1);
-            mtrl.diffuse.r = mtrl.ambient.r = 
-            mtrl.diffuse.g = mtrl.ambient.g = 
-            mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-            mtrl.emissive.r = 
-            mtrl.emissive.g = 
-            mtrl.emissive.b = 0.0f;
+            mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
          }
          else
          {
             // Set the texture to a default.
             ppin3d->SetTexture(ppin3d->m_pddsLightTexture);					
             ppin3d->EnableLightMap(!m_fBackglass, height);
-            mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0); //!! whacky, why 1/3?
-            mtrl.diffuse.g = mtrl.ambient.g = g*(float)(1.0/3.0);
-            mtrl.diffuse.b = mtrl.ambient.b = b*(float)(1.0/3.0);
-            mtrl.emissive.r = 
-            mtrl.emissive.g = 
-            mtrl.emissive.b = 0.0f;
+            mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
+            mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
+            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
          }
       } 
       else //LightStateOn 
@@ -813,27 +797,20 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
          {
             // Set the texture to the one defined in the editor.
             ppin3d->SetTexture(pin->m_pdsBuffer);
-            mtrl.diffuse.r = mtrl.ambient.r = 
-            mtrl.diffuse.g = mtrl.ambient.g = 
-            mtrl.diffuse.b = mtrl.ambient.b = 1.0f;
-            mtrl.emissive.r = 
-            mtrl.emissive.g = 
-            mtrl.emissive.b = 0.0f;
+            mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
          }
          else
          {
             // Set the texture to a default.
             ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
-            mtrl.diffuse.r = mtrl.ambient.r = 0;
-            mtrl.diffuse.g = mtrl.ambient.g = 0;
-            mtrl.diffuse.b = mtrl.ambient.b = 0;
-            mtrl.emissive.r = r;
-            mtrl.emissive.g = g;
-            mtrl.emissive.b = b;
+            mtrl.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
+            mtrl.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
+            mtrl.setEmissive(0.0f, r, g, b );
          }
       }
-
-      pd3dDevice->SetMaterial(&mtrl);
+     mtrl.set();    
 	  if (m_fBackglass && GetPTable()->GetDecalsEnabled())
          SetDiffuseFromMaterial(customMoverVertex[i], customMoverVertexNum, &mtrl);
 
@@ -931,37 +908,28 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
    const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
    Material mtrl;
-   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-   mtrl.emissive.a =
-   mtrl.power = 0;
-   mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
    for (int i=0; i<2; i++)
    {
-      if(i == LightStateOff) {
+      if(i == LightStateOff) 
+      {
          ppin3d->EnableLightMap(!m_fBackglass, height);
-         mtrl.diffuse.r = mtrl.ambient.r = r*(float)(1.0/3.0); //!! whacky, why 1/3?
-         mtrl.diffuse.g = mtrl.ambient.g = g*(float)(1.0/3.0);
-         mtrl.diffuse.b = mtrl.ambient.b = b*(float)(1.0/3.0);
-         mtrl.emissive.r =
-         mtrl.emissive.g =
-         mtrl.emissive.b = 0;
-      } else {
-	     if(!m_d.m_EnableLighting)
- 	         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
+         mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
+         mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
+         mtrl.setEmissive( 0.0f, 0.0f, 0.0f, 0.0f );
+      } else 
+      {
+         if(!m_d.m_EnableLighting)
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
          ppin3d->EnableLightMap(fFalse, -1);
-         mtrl.diffuse.r = mtrl.ambient.r = 0;
-         mtrl.diffuse.g = mtrl.ambient.g = 0;
-         mtrl.diffuse.b = mtrl.ambient.b = 0;
-         mtrl.emissive.r = r;
-         mtrl.emissive.g = g;
-         mtrl.emissive.b = b;
+         mtrl.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
+         mtrl.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
+         mtrl.setEmissive( 0.0f, r, g, b );
       }
 
       if (m_fBackglass)
          SetDiffuseFromMaterial(rgv3D, 32, &mtrl);
 
-      pd3dDevice->SetMaterial(&mtrl);
+      mtrl.set();
 
       m_pobjframe[i] = new ObjFrame();
 

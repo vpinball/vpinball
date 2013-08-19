@@ -764,7 +764,7 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
    if (m_d.m_TopVisible)
    {
 	  RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-      PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+     PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
 
       if (pin)
       {
@@ -783,14 +783,16 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
          g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
-
-         g_pplayer->m_pin3d.SetMaterial( 1.0f, 1.0f, 1.0f, 1.0f );
       }
       else
       {
-         g_pplayer->m_pin3d.SetMaterial( 1.0f, m_d.m_TopColor );
+         if( vertexBufferRegenerate )
+         {
+            material.setColor( 1.0f, m_d.m_TopColor );
+         }
       }
-   
+
+     material.set();
 	  if(vertexBufferRegenerate)
 	  {
  	    vertexBufferRegenerate = false;
@@ -1354,6 +1356,7 @@ STDMETHODIMP Primitive::put_TopColor(OLE_COLOR newVal)
    STARTUNDO
 
    m_d.m_TopColor = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 
@@ -1372,6 +1375,7 @@ STDMETHODIMP Primitive::put_SideColor(OLE_COLOR newVal)
    STARTUNDO
 
    m_d.m_SideColor = newVal;
+   vertexBufferRegenerate = true;
 
    STOPUNDO
 

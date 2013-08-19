@@ -690,7 +690,9 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 			// Render images and collect them
 			
 			// New rendering stuff
-			ppin3d->SetMaterial(1.0f, 0.5f);
+         Material mat;
+         mat.setColor( 0.5f, 1.0f, 1.0f, 1.0f );
+         mat.set();
 				
 			pin->EnsureMaxTextureCoordinates();
 				
@@ -742,9 +744,11 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 			SetHUDVertices(rgv3D, 4);
 			
 			{
-			Material mtrl;
-			pd3dDevice->getMaterial(&mtrl);
-			SetDiffuseFromMaterial(rgv3D, 4, &mtrl);
+			   BaseMaterial mtrl;
+			   pd3dDevice->getMaterial(&mtrl);
+            Material tmp;
+            tmp.setBaseMaterial( mtrl );
+			   SetDiffuseFromMaterial(rgv3D, 4, &tmp);
 			}
 			
 			//ppin3d->ExpandExtents(&m_preelframe->rc, rgv3D, NULL, NULL, 4, m_fBackglass);

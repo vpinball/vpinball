@@ -53,8 +53,8 @@ public:
 
     void DrawBallShadow(Ball * const pball);
     void CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
-	void DrawBalls(const bool only_invalidate_regions);
-    void DrawBallLogo(Ball * const pball, Material *mtrl);
+    void DrawBalls(const bool only_invalidate_regions);
+    void DrawBallLogo(Ball * const pball );
     void CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
 
 	void DrawAlphas();

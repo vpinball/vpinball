@@ -255,8 +255,6 @@ void Bumper::PostRenderStatic(const RenderDevice* pd3dDevice)
 }
 
 static const WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
-static const Material bumpermtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
-
 void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
 {
    int l,t,i;
@@ -268,6 +266,32 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);	
+
+   float r = (m_d.m_color & 255) * (float) (1.0/255.0);
+   float g = (m_d.m_color & 65280) * (float) (1.0/65280.0);
+   float b = (m_d.m_color & 16711680) * (float) (1.0/16711680.0);
+   topNonLitMaterial.setAmbient( 0.0f, r*0.5f, g*0.5f, b*0.5f );
+   topNonLitMaterial.setDiffuse( 0.0f, r*0.5f, g*0.5f, b*0.5f );
+   topLitMaterial.setEmissive( 0.0f, r, g, b );
+   topLitMaterial.setAmbient(0.0f, 0.0f, 0.0f, 0.0f );
+   topLitMaterial.setDiffuse(0.0f, 0.0f, 0.0f, 0.0f );
+
+   r = (m_d.m_sidecolor & 255) * (float) (1.0/255.0);
+   g = (m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
+   b = (m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
+   sideNonLitMaterial.setAmbient( 0.0f, r*0.5f, g*0.5f, b*0.5f );
+   sideNonLitMaterial.setDiffuse( 0.0f, r*0.5f, g*0.5f, b*0.5f );
+   sideLitMaterial.setEmissive( 0.0f, r, g, b );
+   sideLitMaterial.setAmbient(0.0f, 0.0f, 0.0f, 0.0f );
+   sideLitMaterial.setDiffuse(0.0f, 0.0f, 0.0f, 0.0f );
+
+   nonLitMaterial.setAmbient( 0.0f, 0.5f, 0.5f, 0.5f );
+   nonLitMaterial.setDiffuse( 0.0f, 0.5f, 0.5f, 0.5f );
+   nonLitMaterial.setEmissive(0.0f, 1.0f, 1.0f, 1.0f );
+
+   litMaterial.setAmbient( 0.0f, 0.0f, 0.0f, 0.0f );
+   litMaterial.setDiffuse( 0.0f, 0.0f, 0.0f, 0.0f );
+   litMaterial.setEmissive(0.0f, 1.0f, 1.0f, 1.0f );
 
    if ( pin )
    {
@@ -405,7 +429,7 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
       pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
       pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
 
-      pd3dDevice->SetMaterial((Material*)&bumpermtrl);
+      staticMaterial.set();
 
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, staticVertices, 32, (LPWORD)rgiBumperStatic, 32, 0);
       t=0;
@@ -445,45 +469,25 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 
       ppin3d->ExpandExtents(&pof->rc, moverVertices[i], &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar, 160, fFalse);
 
-      Material mtrl;
-      mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-      mtrl.emissive.a = mtrl.power = 0;
-      mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-
       PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (!pin) // Top solid color
       {
-         const float r = (m_d.m_color & 255) * (float) (1.0/255.0);
-         const float g = (m_d.m_color & 65280) * (float) (1.0/65280.0);
-         const float b = (m_d.m_color & 16711680) * (float) (1.0/16711680.0);
          switch (i)
          {
             case 0:
             {
                ppin3d->SetTexture(NULL);
-               mtrl.diffuse.r = mtrl.ambient.r = r * 0.5f;
-               mtrl.diffuse.g = mtrl.ambient.g = g * 0.5f;
-               mtrl.diffuse.b = mtrl.ambient.b = b * 0.5f;
-               mtrl.emissive.r =
-               mtrl.emissive.g =
-               mtrl.emissive.b = 0;
+               topNonLitMaterial.set();
                break;
             }
             case 1:
             {
                ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
                ppin3d->EnableLightMap(fFalse, -1);
-               mtrl.diffuse.r = mtrl.ambient.r = 0;//r/2;//r;
-               mtrl.diffuse.g = mtrl.ambient.g = 0;//g/2;//g;
-               mtrl.diffuse.b = mtrl.ambient.b = 0;//b/2;//b;
-               mtrl.emissive.r = r;
-               mtrl.emissive.g = g;
-               mtrl.emissive.b = b;
+               topLitMaterial.set();
             }
             break;
          }
-
-         pd3dDevice->SetMaterial(&mtrl);
 
          SetNormal(&moverVertices[i][64], rgiBumperStatic, 32, NULL, NULL, 0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 32, (LPWORD)rgiBumperStatic, 32, 0);
@@ -513,28 +517,17 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
             case 0:
             {
                ppin3d->SetTexture(NULL);
-               mtrl.diffuse.r = mtrl.ambient.r = rside * 0.5f;
-               mtrl.diffuse.g = mtrl.ambient.g = gside * 0.5f;
-               mtrl.diffuse.b = mtrl.ambient.b = bside * 0.5f;
-               mtrl.emissive.r =
-                  mtrl.emissive.g =
-                  mtrl.emissive.b = 0;
+               sideNonLitMaterial.set();
                break;
             }
             case 1:
             {
                ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
                ppin3d->EnableLightMap(fFalse, -1);
-               mtrl.diffuse.r = mtrl.ambient.r = 0;//r/2;//r;
-               mtrl.diffuse.g = mtrl.ambient.g = 0;//g/2;//g;
-               mtrl.diffuse.b = mtrl.ambient.b = 0;//b/2;//b;
-               mtrl.emissive.r = rside;
-               mtrl.emissive.g = gside;
-               mtrl.emissive.b = bside;
+               sideLitMaterial.set();
                break;
             }
          }
-         pd3dDevice->SetMaterial(&mtrl);
 
          t=0;
          k=0;
@@ -571,28 +564,17 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
             case 0:
             {
                ppin3d->EnableLightMap(fFalse, -1);
-               mtrl.diffuse.r = mtrl.ambient.r = 
-               mtrl.diffuse.g = mtrl.ambient.g = 
-               mtrl.diffuse.b = mtrl.ambient.b = 0.5f;
-               mtrl.emissive.r = 
-               mtrl.emissive.g = 
-               mtrl.emissive.b = 0;
+               nonLitMaterial.set();
                break;
             }
 
             case 1:
             {
                ppin3d->m_pd3dDevice->SetTexture(eLightProject1, ppin3d->m_pddsLightTexture);
-               mtrl.diffuse.r = mtrl.ambient.r =
-               mtrl.diffuse.g = mtrl.ambient.g =
-               mtrl.diffuse.b = mtrl.ambient.b = 0;
-               mtrl.emissive.r =
-               mtrl.emissive.g =
-               mtrl.emissive.b = 1.0f;
+               litMaterial.set();
                break;           
             }
          }
-         pd3dDevice->SetMaterial(&mtrl);
 
          SetNormal(&moverVertices[i][64], rgiBumperStatic, 32, NULL, NULL, 0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 32, (LPWORD)rgiBumperStatic, 32, 0);

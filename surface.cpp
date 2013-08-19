@@ -1341,7 +1341,18 @@ void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
          pd3dDevice->createVertexBuffer(m_vlinesling.Size()*24, 0, MY_D3DFVF_VERTEX, &slingshotVBuffer);
          NumVideoBytes += m_vlinesling.Size()*24*sizeof(Vertex3D);
       }
+      slingShotMaterial.setColor( 1.0f, m_d.m_slingshotColor );
       PrepareSlingshots(pd3dDevice);
+   }
+   PinImage * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
+   if (!pinSide)
+   {
+      sideMaterial.setColor( 1.0f, m_d.m_sidecolor );
+   }
+   PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+   if (!pin)
+   {
+      topMaterial.setColor( 1.0f, m_d.m_topcolor );
    }
    // create all vertices for dropped and non-dropped surface
    PrepareWallsAtHeight( pd3dDevice );
@@ -1374,7 +1385,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 
       ppin3d->m_pddsZBuffer->Blt(NULL, ppin3d->m_pddsStaticZ, NULL, DDBLT_WAIT, NULL);
 
-      ppin3d->SetMaterial( 1.0f, m_d.m_slingshotColor);
+      slingShotMaterial.set();
       ObjFrame *pof = plinesling->m_slingshotanim.m_pobjframe;
 
       pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
@@ -1461,14 +1472,9 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
       g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
-      ppin3d->SetMaterial( 1.0f, 1.0f, 1.0f, 1.0f );
-   }
-   else
-   {
-      ppin3d->SetMaterial( 1.0f, m_d.m_sidecolor );
    }
 
+   sideMaterial.set();
    if(!m_d.m_fEnableLighting)
       ppin3d->EnableLightMap(fFalse, -1);
    else
@@ -1567,14 +1573,12 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
          g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-         ppin3d->SetMaterial( 1.0f, 1.0f, 1.0f, 1.0f );
       }
       else
       {
          ppin3d->SetTexture(NULL);
-         ppin3d->SetMaterial( 1.0f, m_d.m_topcolor );
       }
-
+      topMaterial.set();
       //!! combine drawcalls into one
       offset=0;
       const int rgi210[3]={2,1,0};

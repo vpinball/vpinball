@@ -344,34 +344,38 @@ inline void SetNormal(Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const
 		}
 	}
 
-inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const Material * const pmtrl) // get rid of this?
-	{
-	const unsigned int r = (int)(((pmtrl->diffuse.r + pmtrl->emissive.r) * 255.0f) + 0.5f);
-	const unsigned int g = (int)(((pmtrl->diffuse.g + pmtrl->emissive.g) * 255.0f) + 0.5f);
-	const unsigned int b = (int)(((pmtrl->diffuse.b + pmtrl->emissive.b) * 255.0f) + 0.5f);
+inline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const Material *pmtrl) // get rid of this?
+{
+   D3DCOLORVALUE diffuse = pmtrl->getDiffuse();
+   D3DCOLORVALUE emissive = pmtrl->getEmissive();
+   const unsigned int r = (int)(((diffuse.r + emissive.r) * 255.0f) + 0.5f);
+   const unsigned int g = (int)(((diffuse.g + emissive.g) * 255.0f) + 0.5f);
+   const unsigned int b = (int)(((diffuse.b + emissive.b) * 255.0f) + 0.5f);
 
-	const unsigned int color = (r<<16) | (g<<8) | b;
+   const unsigned int color = (r<<16) | (g<<8) | b;
 
-	for (int i=0; i<count; ++i)
-		{
-		rgv[i].color = color;
-		}
-	}
+   for (int i=0; i<count; ++i)
+   {
+      rgv[i].color = color;
+   }
+}
 
 //copy pasted from above
 inline void SetDiffuseFromMaterial(Vertex3D_NoTex2 * const rgv, const int count, const Material * const pmtrl) // get rid of this?
-	{
-	const unsigned int r = (int)(((pmtrl->diffuse.r + pmtrl->emissive.r) * 255.0f) + 0.5f);
-	const unsigned int g = (int)(((pmtrl->diffuse.g + pmtrl->emissive.g) * 255.0f) + 0.5f);
-	const unsigned int b = (int)(((pmtrl->diffuse.b + pmtrl->emissive.b) * 255.0f) + 0.5f);
+{
+   D3DCOLORVALUE diffuse = pmtrl->getDiffuse();
+   D3DCOLORVALUE emissive = pmtrl->getEmissive();
+   const unsigned int r = (int)(((diffuse.r + emissive.r) * 255.0f) + 0.5f);
+   const unsigned int g = (int)(((diffuse.g + emissive.g) * 255.0f) + 0.5f);
+   const unsigned int b = (int)(((diffuse.b + emissive.b) * 255.0f) + 0.5f);
 
-	const unsigned int color = (r<<16) | (g<<8) | b;
+   const unsigned int color = (r<<16) | (g<<8) | b;
 
-	for (int i=0; i<count; ++i)
-		{
-		rgv[i].color = color;
-		}
-	}
+   for (int i=0; i<count; ++i)
+   {
+      rgv[i].color = color;
+   }
+}
 
 inline void SetDiffuse(Vertex3D * const rgv, const int count, const unsigned int color) // get rid of this?
 	{

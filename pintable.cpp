@@ -5881,8 +5881,8 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       case WM_CONTEXTMENU:
          {
             pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
-            short x = (short)(lParam & 0xffff);
-            short y = (short)((lParam>>16) & 0xffff);
+            long x = (long)(lParam & 0xffff);
+            long y = (long)((lParam>>16) & 0xffff);
             POINT p;
             if ( GetCursorPos(&p) && ScreenToClient( hwnd, &p))
             {

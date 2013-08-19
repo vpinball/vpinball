@@ -77,6 +77,9 @@ public:
    Vertex3D_NoTex2 logoVertices[4];
 
    static VertexBuffer *vertexBuffer;
+   Material shadowMaterial;
+   Material logoMaterial;
+   Material material;
 
 	BallAnimObject m_ballanim;
 

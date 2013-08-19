@@ -554,7 +554,9 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); 
 
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   ppin3d->SetMaterial(1.0f, color );
+   Material mat;
+   mat.setColor( 1.0f, color );
+   mat.set();
 
 	Vertex2D vendcenter;
 	Vertex2D rgv[4];

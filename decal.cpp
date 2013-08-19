@@ -436,12 +436,13 @@ void Decal::PostRenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 
-static const Material decalmtrl = {1.f,1.f,1.f,.5f, 1.f,1.f,1.f,.5f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
+   material.setAmbient(0.5f, 1.0f, 1.0f, 1.0f);
+   material.setDiffuse(0.5f, 1.0f, 1.0f, 1.0f);
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    float leading, descent; // For fonts
@@ -532,8 +533,7 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-	pd3dDevice->SetMaterial((Material*)&decalmtrl);
-
+   material.set();
 	PinImage *pin;
 	if (m_d.m_decaltype != DecalImage)
 	{

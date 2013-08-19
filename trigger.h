@@ -106,6 +106,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Trigger)
 
 	BOOL m_hitEnabled;		// for custom shape triggers
    Vertex3D staticVertices[40];
+   Material material;
+
 // ITrigger
 public:
 	STDMETHOD(get_Shape)(/*[out, retval]*/ Shape *pVal);

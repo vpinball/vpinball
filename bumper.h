@@ -132,6 +132,14 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
    WORD     normalIndices[6*32];
    WORD     indices[4*32];
 
+   Material topLitMaterial;
+   Material topNonLitMaterial;
+   Material sideLitMaterial;
+   Material sideNonLitMaterial;
+   Material litMaterial;
+   Material nonLitMaterial;
+   Material staticMaterial;
+
 // IBumper
 public:
 	STDMETHOD(get_SideColor)(/*[out, retval]*/ OLE_COLOR *pVal);

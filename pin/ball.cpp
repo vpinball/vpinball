@@ -10,24 +10,27 @@ int Ball::GetBallsInUse()
 
 Ball::Ball()
 {
-	ballsInUse++;
+   ballsInUse++;
 
-    // only use one vertex buffer for all balls
-    if( vertexBuffer==0 )
-    {
-        // VB for normal ball and logo(front+back) and shadow
-        g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
-        NumVideoBytes += 4*4*sizeof(Vertex3D_NoTex2);
-    }
+   // only use one vertex buffer for all balls
+   if( vertexBuffer==0 )
+   {
+      // VB for normal ball and logo(front+back) and shadow
+      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+      NumVideoBytes += 4*4*sizeof(Vertex3D_NoTex2);
+   }
 
-	m_pho = NULL;
-	m_pballex = NULL;
-	m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
-    m_pin=NULL;
-    m_pinBack=NULL;
-    m_pinFront=NULL;
-	m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
-    fFrozen=false;
+   m_pho = NULL;
+   m_pballex = NULL;
+   m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
+   m_pin=NULL;
+   m_pinBack=NULL;
+   m_pinFront=NULL;
+   m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
+   fFrozen=false;
+   logoMaterial.setDiffuse(0.8f, m_color );
+   logoMaterial.setAmbient(0.8f, m_color );
+   material.setColor( 1.0f, m_color );
 }
 
 Ball::~Ball()	
