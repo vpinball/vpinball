@@ -244,22 +244,9 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 
-   const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-/*
-   Material mtrl;
-   mtrl.diffuse.a = 
-   mtrl.ambient.a =
-   mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-   mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-   mtrl.power = 0;
-   mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
-   mtrl.diffuse.g = mtrl.ambient.g = g;//0.2f;
-   mtrl.diffuse.b = mtrl.ambient.b = b;//0.2f;
-   pd3dDevice->SetMaterial(&mtrl);
-*/
-   ppin3d->SetMaterial( 0, r, g, b );
+   colorMaterial.setColor( 0.0f, m_d.m_color );
+   blackMaterial.setColor( 0.0f, 0.0f, 0.0f, 0.0f );
+   colorMaterial.set();
 
    ppin3d->EnableLightMap(fTrue, height);
 
@@ -284,7 +271,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    HRESULT hr = pddsBufferBack->BltFast(0, 0, ppin3d->m_pddsStatic, &recBounds, DDBLTFAST_WAIT);
    pd3dDevice->Clear( 1, (D3DRECT *)&recBounds, D3DCLEAR_TARGET, 0x00ffffff, 1.0f, 0L );
 
-   ppin3d->SetMaterial( 0,0,0,0 );
+   blackMaterial.set();
 /*   mtrl.diffuse.r = mtrl.ambient.r = 
    mtrl.diffuse.g = mtrl.ambient.g = 
    mtrl.diffuse.b = mtrl.ambient.b = 0.0f;
@@ -358,7 +345,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
       case KickerHole: 
       {
          // Draw the kicker itself
-         ppin3d->SetMaterial( 0,0,0,0 );
+         blackMaterial.set();
 /*         
          mtrl.diffuse.r = mtrl.ambient.r =
          mtrl.diffuse.g = mtrl.ambient.g =
@@ -383,7 +370,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
          mtrl.diffuse.b = mtrl.ambient.b = b;//0.7f;
          pd3dDevice->SetMaterial(&mtrl);
 */
-         ppin3d->SetMaterial( 0, r, g, b );
+         colorMaterial.set();
          ppin3d->EnableLightMap(fTrue, height);
 
          for (int l=0;l<16;++l)
@@ -411,13 +398,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
 
       case KickerCup: 
       {
-/*         mtrl.diffuse.r = mtrl.ambient.r = r;//0.7f;
-         mtrl.diffuse.g = mtrl.ambient.g = g;//0.2f;
-         mtrl.diffuse.b = mtrl.ambient.b = b;//0.2f;
-         pd3dDevice->SetMaterial(&mtrl);
-*/
-         ppin3d->SetMaterial( 0, r, g, b );
-
+         colorMaterial.set();
          ppin3d->EnableLightMap(fTrue, height);
 
          WORD rgi[3*16];

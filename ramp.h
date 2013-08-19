@@ -136,6 +136,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;
 	BOOL dynamicVertexBufferRegenerate;
+   Material solidMaterial;
+   Material textureMaterial;
+   Material habitrailMaterial;
 
 	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
@@ -149,7 +152,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 
 	void RenderStaticHabitrail(const RenderDevice* _pd3dDevice);
 	void RenderPolygons(const RenderDevice* _pd3dDevice, int offset, WORD * const rgicrosssection, const int start, const int stop);
-
+   
 	//RECT invalidationRect;
 	//bool invalidationRectCalculated;
 

@@ -2344,6 +2344,7 @@ void Player::Render()
 				// Copy the region from the back buffer to the front buffer.
 				//m_pin3d.m_pddsFrontBuffer->BltFast(rcNew.left, rcNew.top, m_pin3d.m_pddsBackBuffer, prc, 0);
 				m_pin3d.m_pddsFrontBuffer->Blt(&rcNew, m_pin3d.m_pddsBackBuffer, prc, 0, NULL);
+
 			}
 		}
 		else
@@ -2847,7 +2848,6 @@ void Player::UnpauseMusic()
 		}
 }
 
-static const Material shadowmtrl = {1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
 {
    Ball ballT;
@@ -2943,7 +2943,7 @@ void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
 
 void Player::DrawBallShadow(Ball * const pball)
 {
-   m_pin3d.m_pd3dDevice->SetMaterial((Material*)&shadowmtrl);
+   pball->shadowMaterial.set();
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE); //!! actually fails then for shadows on alpha ramps/primitives
 
@@ -3033,11 +3033,10 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
 }
 
 // gets called from DrawBalls, all render states are handled there
-void Player::DrawBallLogo(Ball * const pball, Material *mtrl)
+void Player::DrawBallLogo(Ball * const pball)
 {
    // Draw the ball logo
-   mtrl->diffuse.a = mtrl->ambient.a = 0.8f;
-   m_pin3d.m_pd3dDevice->SetMaterial(mtrl);
+   pball->logoMaterial.set();
 
    m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
 
@@ -3069,7 +3068,6 @@ void Player::DrawBallLogo(Ball * const pball, Material *mtrl)
 
 void Player::DrawBalls(const bool only_invalidate_regions)
 {
-	Material mtrl;
 	if(!only_invalidate_regions)
 	{
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE );
@@ -3080,11 +3078,6 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-
-		mtrl.specular.r = mtrl.specular.g =	mtrl.specular.b = mtrl.specular.a =
-		mtrl.emissive.r = mtrl.emissive.g =	mtrl.emissive.b = mtrl.emissive.a =
-		mtrl.power = 0;
-		mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
 	}
 
 	const float sn = sinf(m_pin3d.m_inclination);
@@ -3098,13 +3091,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 		if(!only_invalidate_regions)
 		{
-			const float r = (pball->m_color & 255) * (float)(1.0/255.0);
-			const float g = (pball->m_color & 65280) * (float)(1.0/65280.0);
-			const float b = (pball->m_color & 16711680) * (float)(1.0/16711680.0);
-			mtrl.diffuse.r = mtrl.ambient.r = r;
-			mtrl.diffuse.g = mtrl.ambient.g = g;
-			mtrl.diffuse.b = mtrl.ambient.b = b;
-			m_pin3d.m_pd3dDevice->SetMaterial(&mtrl);
+         pball->material.set();
 		}
 
 		const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
@@ -3176,7 +3163,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 			m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
 
 			if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
-		        DrawBallLogo(pball, &mtrl);
+		        DrawBallLogo(pball );
 		}
 
         pball->m_fErase = true;

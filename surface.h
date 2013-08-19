@@ -153,6 +153,10 @@ END_CONNECTION_POINT_MAP()
    VertexBuffer *slingshotVBuffer;
    VertexBuffer *sideVBuffer;
    VertexBuffer *topVBuffer[2];
+   Material slingShotMaterial;
+   Material sideMaterial;
+   Material topMaterial;
+
 // ISurface
 public:
 	STDMETHOD(get_SideVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);

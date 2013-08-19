@@ -112,6 +112,7 @@ STANDARD_NONAPC_EDITABLE_DECLARES(eItemDecal)
 
 	float m_realwidth, m_realheight;
    Vertex3D_NoTex2 vertices[4];
+   Material material;
 };
 
 #endif // !defined(AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_)

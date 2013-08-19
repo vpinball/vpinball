@@ -92,6 +92,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Kicker)
    Vertex3D vertices[49];
    Vertex3D borderVerices[16];
    RECT recBounds;
+   Material colorMaterial;
+   Material blackMaterial;
 
 
 // IKicker

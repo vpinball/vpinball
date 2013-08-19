@@ -7,370 +7,373 @@
 //
 
 Gate::Gate()
-	{
-	m_phitgate = NULL;
-	m_plineseg = NULL;
-	m_d.m_fEnableLighting = fTrue;
-	}
+{
+   m_phitgate = NULL;
+   m_plineseg = NULL;
+   m_d.m_fEnableLighting = fTrue;
+   staticMaterial.setAmbient(0.0f, 0.6f, 0.6f, 0.6f );
+   staticMaterial.setDiffuse(0.0f, 0.6f, 0.6f, 0.6f );
+   solidMaterial.setColor( 1.0f, m_d.m_color );
+}
 
 Gate::~Gate()
-	{
-	}
+{
+}
 
 HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
-	{
-	HRESULT hr = S_OK;
+{
+   HRESULT hr = S_OK;
 
-	m_ptable = ptable;
+   m_ptable = ptable;
 
-	m_d.m_vCenter.x = x;
-	m_d.m_vCenter.y = y;
+   m_d.m_vCenter.x = x;
+   m_d.m_vCenter.y = y;
 
-	SetDefaults(fromMouseClick);
+   SetDefaults(fromMouseClick);
 
-	InitVBA(fTrue, 0, NULL);
+   InitVBA(fTrue, 0, NULL);
 
-	return hr;
-	}
+   return hr;
+}
 
 void Gate::SetDefaults(bool fromMouseClick)
-	{
-	HRESULT hr;
-	float fTmp;
-	int iTmp;
+{
+   HRESULT hr;
+   float fTmp;
+   int iTmp;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Gate","Length", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_length = fTmp;
-	else
-		m_d.m_length = 100;
+   hr = GetRegStringAsFloat("DefaultProps\\Gate","Length", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_length = fTmp;
+   else
+      m_d.m_length = 100;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Gate","Height", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_height = fTmp;
-	else
-		m_d.m_height = 50;
+   hr = GetRegStringAsFloat("DefaultProps\\Gate","Height", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_height = fTmp;
+   else
+      m_d.m_height = 50;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Gate","Rotation", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_rotation = fTmp;
-	else
-		m_d.m_rotation = -90;
+   hr = GetRegStringAsFloat("DefaultProps\\Gate","Rotation", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_rotation = fTmp;
+   else
+      m_d.m_rotation = -90;
 
-	hr = GetRegInt("DefaultProps\\Gate","Supports", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fSupports = iTmp == 0 ? false : true;
-	else
-		m_d.m_fSupports = fTrue;
-	
-	hr = GetRegInt("DefaultProps\\Gate","Collidable", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fCollidable = iTmp == 0 ? false : true;
-	else
-		m_d.m_fCollidable = fTrue;
+   hr = GetRegInt("DefaultProps\\Gate","Supports", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fSupports = iTmp == 0 ? false : true;
+   else
+      m_d.m_fSupports = fTrue;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Gate","AngleMin", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_angleMin = fTmp;
-	else
-		m_d.m_angleMin = 0;
+   hr = GetRegInt("DefaultProps\\Gate","Collidable", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fCollidable = iTmp == 0 ? false : true;
+   else
+      m_d.m_fCollidable = fTrue;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Gate","AngleMax", &fTmp);
-	if ((hr == S_OK)  && fromMouseClick)
-		m_d.m_angleMax = fTmp;
-	else
-		m_d.m_angleMax = (float)(M_PI/2.0);
+   hr = GetRegStringAsFloat("DefaultProps\\Gate","AngleMin", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_angleMin = fTmp;
+   else
+      m_d.m_angleMin = 0;
 
-	hr = GetRegInt("DefaultProps\\Gate","Visible", &iTmp);
-	if ((hr == S_OK)  && fromMouseClick)
-		m_d.m_fVisible = iTmp == 0 ? false : true;
-	else
-		m_d.m_fVisible = fTrue;
+   hr = GetRegStringAsFloat("DefaultProps\\Gate","AngleMax", &fTmp);
+   if ((hr == S_OK)  && fromMouseClick)
+      m_d.m_angleMax = fTmp;
+   else
+      m_d.m_angleMax = (float)(M_PI/2.0);
 
-	hr = GetRegInt("DefaultProps\\Gate","Animations", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_animations = iTmp;
-	else
-		m_d.m_animations = 0;	// animations frames, zero will calculate 1 frames per 6 degrees
+   hr = GetRegInt("DefaultProps\\Gate","Visible", &iTmp);
+   if ((hr == S_OK)  && fromMouseClick)
+      m_d.m_fVisible = iTmp == 0 ? false : true;
+   else
+      m_d.m_fVisible = fTrue;
 
-	hr = GetRegInt("DefaultProps\\Gate","Color", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_color = iTmp;
-	else
-		m_d.m_color = RGB(128,128,128);
+   hr = GetRegInt("DefaultProps\\Gate","Animations", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_animations = iTmp;
+   else
+      m_d.m_animations = 0;	// animations frames, zero will calculate 1 frames per 6 degrees
 
-	hr = GetRegInt("DefaultProps\\Gate","TimerEnabled", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-	else
-		m_d.m_tdr.m_fTimerEnabled = false;
-	
-	hr = GetRegInt("DefaultProps\\Gate","TimerInterval", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_TimerInterval = iTmp;
-	else
-		m_d.m_tdr.m_TimerInterval = 100;
+   hr = GetRegInt("DefaultProps\\Gate","Color", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_color = iTmp;
+   else
+      m_d.m_color = RGB(128,128,128);
 
-	hr = GetRegString("DefaultProps\\Gate","Surface", &m_d.m_szSurface, MAXTOKEN);
-	if ((hr != S_OK) || !fromMouseClick)
-		m_d.m_szSurface[0] = 0;
+   hr = GetRegInt("DefaultProps\\Gate","TimerEnabled", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
+   else
+      m_d.m_tdr.m_fTimerEnabled = false;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Gate","Elasticity", &fTmp);
-	if ((hr == S_OK)  && fromMouseClick)
-		m_d.m_elasticity = fTmp;
-	else
-		m_d.m_elasticity = 0.3f;
+   hr = GetRegInt("DefaultProps\\Gate","TimerInterval", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_tdr.m_TimerInterval = iTmp;
+   else
+      m_d.m_tdr.m_TimerInterval = 100;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Gate","Friction", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_friction =  fTmp;
-	else
-		m_d.m_friction = 0;	//zero uses global value
+   hr = GetRegString("DefaultProps\\Gate","Surface", &m_d.m_szSurface, MAXTOKEN);
+   if ((hr != S_OK) || !fromMouseClick)
+      m_d.m_szSurface[0] = 0;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Gate","Scatter", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_scatter = fTmp;
-	else
-		m_d.m_scatter = 0;	//zero uses global value
+   hr = GetRegStringAsFloat("DefaultProps\\Gate","Elasticity", &fTmp);
+   if ((hr == S_OK)  && fromMouseClick)
+      m_d.m_elasticity = fTmp;
+   else
+      m_d.m_elasticity = 0.3f;
 
-	hr = GetRegString("DefaultProps\\Gate","ImageFront", &m_d.m_szImageFront, MAXTOKEN);
-	if ((hr != S_OK) || !fromMouseClick)
-		m_d.m_szImageFront[0] = 0;
+   hr = GetRegStringAsFloat("DefaultProps\\Gate","Friction", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_friction =  fTmp;
+   else
+      m_d.m_friction = 0;	//zero uses global value
 
-	hr = GetRegString("DefaultProps\\Gate","ImageBack", &m_d.m_szImageBack, MAXTOKEN);
-	if ((hr != S_OK) || !fromMouseClick)
-		m_d.m_szImageBack[0] = 0;
+   hr = GetRegStringAsFloat("DefaultProps\\Gate","Scatter", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_scatter = fTmp;
+   else
+      m_d.m_scatter = 0;	//zero uses global value
 
-	hr = GetRegInt("DefaultProps\\Gate","EnableLighting", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fEnableLighting = iTmp == 0 ? false : true;
-	else
-		m_d.m_fEnableLighting = true;
-	}
+   hr = GetRegString("DefaultProps\\Gate","ImageFront", &m_d.m_szImageFront, MAXTOKEN);
+   if ((hr != S_OK) || !fromMouseClick)
+      m_d.m_szImageFront[0] = 0;
+
+   hr = GetRegString("DefaultProps\\Gate","ImageBack", &m_d.m_szImageBack, MAXTOKEN);
+   if ((hr != S_OK) || !fromMouseClick)
+      m_d.m_szImageBack[0] = 0;
+
+   hr = GetRegInt("DefaultProps\\Gate","EnableLighting", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fEnableLighting = iTmp == 0 ? false : true;
+   else
+      m_d.m_fEnableLighting = true;
+}
 
 
 void Gate::WriteRegDefaults()
-	{
-	char strTmp[MAXTOKEN];
+{
+   char strTmp[MAXTOKEN];
 
-	sprintf_s(strTmp, 40, "%f", m_d.m_length);
-	SetRegValue("DefaultProps\\Gate","Length", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_height);
-	SetRegValue("DefaultProps\\Gate","Height", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_rotation);
-	SetRegValue("DefaultProps\\Gate","Rotation", REG_SZ, &strTmp,strlen(strTmp));
-	SetRegValue("DefaultProps\\Gate","Supports",REG_DWORD,&m_d.m_fSupports,4);
-	SetRegValue("DefaultProps\\Gate","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
-	sprintf_s(strTmp, 40, "%f", m_d.m_angleMin);
-	SetRegValue("DefaultProps\\Gate","AngleMin", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_angleMax);
-	SetRegValue("DefaultProps\\Gate","AngleMax", REG_SZ, &strTmp,strlen(strTmp));
-	SetRegValue("DefaultProps\\Gate","Visible",REG_DWORD,&m_d.m_fVisible,4);
-	SetRegValue("DefaultProps\\Gate","Animations",REG_DWORD,&m_d.m_animations,4);
-	SetRegValue("DefaultProps\\Gate","Color",REG_DWORD,&m_d.m_color,4);
-	SetRegValue("DefaultProps\\Gate","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
-	SetRegValue("DefaultProps\\Gate","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-	SetRegValue("DefaultProps\\Gate","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
-	sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
-	SetRegValue("DefaultProps\\Gate","Elasticity", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_friction);
-	SetRegValue("DefaultProps\\Gate","Friction", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
-	SetRegValue("DefaultProps\\Gate","Scatter", REG_SZ, &strTmp,strlen(strTmp));
-	SetRegValue("DefaultProps\\Gate","ImageFront", REG_SZ, &m_d.m_szImageFront,strlen(m_d.m_szImageFront));
-	SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,strlen(m_d.m_szImageBack));
-	SetRegValue("DefaultProps\\Gate","EnableLighting",REG_DWORD,&m_d.m_fEnableLighting,4);
-	}
+   sprintf_s(strTmp, 40, "%f", m_d.m_length);
+   SetRegValue("DefaultProps\\Gate","Length", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_height);
+   SetRegValue("DefaultProps\\Gate","Height", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_rotation);
+   SetRegValue("DefaultProps\\Gate","Rotation", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValue("DefaultProps\\Gate","Supports",REG_DWORD,&m_d.m_fSupports,4);
+   SetRegValue("DefaultProps\\Gate","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
+   sprintf_s(strTmp, 40, "%f", m_d.m_angleMin);
+   SetRegValue("DefaultProps\\Gate","AngleMin", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_angleMax);
+   SetRegValue("DefaultProps\\Gate","AngleMax", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValue("DefaultProps\\Gate","Visible",REG_DWORD,&m_d.m_fVisible,4);
+   SetRegValue("DefaultProps\\Gate","Animations",REG_DWORD,&m_d.m_animations,4);
+   SetRegValue("DefaultProps\\Gate","Color",REG_DWORD,&m_d.m_color,4);
+   SetRegValue("DefaultProps\\Gate","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValue("DefaultProps\\Gate","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+   SetRegValue("DefaultProps\\Gate","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
+   sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
+   SetRegValue("DefaultProps\\Gate","Elasticity", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_friction);
+   SetRegValue("DefaultProps\\Gate","Friction", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
+   SetRegValue("DefaultProps\\Gate","Scatter", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValue("DefaultProps\\Gate","ImageFront", REG_SZ, &m_d.m_szImageFront,strlen(m_d.m_szImageFront));
+   SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,strlen(m_d.m_szImageBack));
+   SetRegValue("DefaultProps\\Gate","EnableLighting",REG_DWORD,&m_d.m_fEnableLighting,4);
+}
 
 void Gate::PreRender(Sur * const psur)
-	{
-	}
+{
+}
 
 void Gate::Render(Sur * const psur)
-	{
-	psur->SetLineColor(RGB(0,0,0),false,2);
-	psur->SetObject(this);
+{
+   psur->SetLineColor(RGB(0,0,0),false,2);
+   psur->SetObject(this);
 
-	float halflength = m_d.m_length * 0.5f;	
-	
-	Vertex2D tmp;
+   float halflength = m_d.m_length * 0.5f;	
 
-	const float radangle = ANGTORAD(m_d.m_rotation);
-	{
-	const float sn = sinf(radangle);
-	const float cs = cosf(radangle);
+   Vertex2D tmp;
 
-	psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
-		       m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
+   const float radangle = ANGTORAD(m_d.m_rotation);
+   {
+      const float sn = sinf(radangle);
+      const float cs = cosf(radangle);
 
-	// Draw Arrow
+      psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
+         m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 
-	psur->SetLineColor(RGB(0,0,0),false,1);
+      // Draw Arrow
 
-	halflength *= 0.5f;
+      psur->SetLineColor(RGB(0,0,0),false,1);
 
-	tmp.x = m_d.m_vCenter.x + sn*halflength;
-	tmp.y = m_d.m_vCenter.y - cs*halflength;
+      halflength *= 0.5f;
 
-	psur->Line(tmp.x, tmp.y,
-		       m_d.m_vCenter.x, m_d.m_vCenter.y);
-	}
+      tmp.x = m_d.m_vCenter.x + sn*halflength;
+      tmp.y = m_d.m_vCenter.y - cs*halflength;
 
-	halflength *= 0.5f;
+      psur->Line(tmp.x, tmp.y,
+         m_d.m_vCenter.x, m_d.m_vCenter.y);
+   }
 
-	{
-	const float arrowang = radangle+0.6f;
-	const float sn = sinf(arrowang);
-	const float cs = cosf(arrowang);
+   halflength *= 0.5f;
 
-	psur->Line(tmp.x, tmp.y,
-		       m_d.m_vCenter.x + sn*halflength, m_d.m_vCenter.y - cs*halflength);
-	}
+   {
+      const float arrowang = radangle+0.6f;
+      const float sn = sinf(arrowang);
+      const float cs = cosf(arrowang);
 
-	const float arrowang = radangle-0.6f;
-	const float sn = sinf(arrowang);
-	const float cs = cosf(arrowang);
+      psur->Line(tmp.x, tmp.y,
+         m_d.m_vCenter.x + sn*halflength, m_d.m_vCenter.y - cs*halflength);
+   }
 
-	psur->Line(tmp.x, tmp.y,
-		       m_d.m_vCenter.x + sn*halflength, m_d.m_vCenter.y - cs*halflength);
-	}
+   const float arrowang = radangle-0.6f;
+   const float sn = sinf(arrowang);
+   const float cs = cosf(arrowang);
+
+   psur->Line(tmp.x, tmp.y,
+      m_d.m_vCenter.x + sn*halflength, m_d.m_vCenter.y - cs*halflength);
+}
 
 void Gate::RenderBlueprint(Sur *psur)
-	{
-	}
+{
+}
 
 void Gate::GetTimers(Vector<HitTimer> * const pvht)
-	{
-	IEditable::BeginPlay();
+{
+   IEditable::BeginPlay();
 
-	HitTimer * const pht = new HitTimer();
-	pht->m_interval = m_d.m_tdr.m_TimerInterval;
-	pht->m_nextfire = pht->m_interval;
-	pht->m_pfe = (IFireEvents *)this;
+   HitTimer * const pht = new HitTimer();
+   pht->m_interval = m_d.m_tdr.m_TimerInterval;
+   pht->m_nextfire = pht->m_interval;
+   pht->m_pfe = (IFireEvents *)this;
 
-	m_phittimer = pht;
+   m_phittimer = pht;
 
-	if (m_d.m_tdr.m_fTimerEnabled)
-		{
-		pvht->AddElement(pht);
-		}
-	}
+   if (m_d.m_tdr.m_fTimerEnabled)
+   {
+      pvht->AddElement(pht);
+   }
+}
 
 void Gate::GetHitShapes(Vector<HitObject> * const pvho)
-	{
-	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-	const float h = m_d.m_height;		//relative height of the gate 
+{
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   const float h = m_d.m_height;		//relative height of the gate 
 
-	float halflength = m_d.m_length * 0.5f;	
+   float halflength = m_d.m_length * 0.5f;	
 
-	const float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
-	const float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
+   const float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
+   const float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
 
-	m_d.m_angleMin = angleMin;	
-	m_d.m_angleMax = angleMax;
+   m_d.m_angleMin = angleMin;	
+   m_d.m_angleMax = angleMax;
 
-	const float radangle = ANGTORAD(m_d.m_rotation);
-	const float sn = sinf(radangle);
-	const float cs = cosf(radangle);
+   const float radangle = ANGTORAD(m_d.m_rotation);
+   const float sn = sinf(radangle);
+   const float cs = cosf(radangle);
 
-	const Vertex2D rgv[2] = {
-		Vertex2D(m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN),//oversize by the ball's radius
-				 m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN)),// to prevent the ball from clipping through
+   const Vertex2D rgv[2] = {
+      Vertex2D(m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN),//oversize by the ball's radius
+      m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN)),// to prevent the ball from clipping through
 
-		Vertex2D(m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN),//the gate's edge
-				 m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN))};
+      Vertex2D(m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN),//the gate's edge
+      m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN))};
 
-	m_plineseg = new LineSeg();
+      m_plineseg = new LineSeg();
 
-	m_plineseg->m_pfe = NULL;
+      m_plineseg->m_pfe = NULL;
 
-	m_plineseg->m_rcHitRect.zlow = height;
-	m_plineseg->m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN); //+50.0f //ball diameter
-	
-	m_plineseg->v1.x = rgv[0].x;
-	m_plineseg->v1.y = rgv[0].y;
+      m_plineseg->m_rcHitRect.zlow = height;
+      m_plineseg->m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN); //+50.0f //ball diameter
 
-	m_plineseg->v2.x = rgv[1].x;
-	m_plineseg->v2.y = rgv[1].y;
+      m_plineseg->v1.x = rgv[0].x;
+      m_plineseg->v1.y = rgv[0].y;
 
-	m_plineseg->CalcNormal();
+      m_plineseg->v2.x = rgv[1].x;
+      m_plineseg->v2.y = rgv[1].y;
 
-	m_plineseg->m_elasticity = m_d.m_elasticity;
-	m_plineseg->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
-	m_plineseg->m_scatter = m_d.m_scatter;
+      m_plineseg->CalcNormal();
 
-	pvho->AddElement(m_plineseg);
+      m_plineseg->m_elasticity = m_d.m_elasticity;
+      m_plineseg->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+      m_plineseg->m_scatter = m_d.m_scatter;
 
-	m_plineseg->m_fEnabled = m_d.m_fCollidable;	
+      pvho->AddElement(m_plineseg);
 
-	m_phitgate = new HitGate(this);
+      m_plineseg->m_fEnabled = m_d.m_fCollidable;	
 
-	m_phitgate->m_pfe = (IFireEvents *)this;
+      m_phitgate = new HitGate(this);
 
-	m_phitgate->m_rcHitRect.zlow = height;
-	m_phitgate->m_rcHitRect.zhigh = height + h; //+50;
+      m_phitgate->m_pfe = (IFireEvents *)this;
 
-	m_phitgate->v1.x = rgv[1].x;
-	m_phitgate->v1.y = rgv[1].y;
+      m_phitgate->m_rcHitRect.zlow = height;
+      m_phitgate->m_rcHitRect.zhigh = height + h; //+50;
 
-	m_phitgate->v2.x = rgv[0].x;
-	m_phitgate->v2.y = rgv[0].y;
+      m_phitgate->v1.x = rgv[1].x;
+      m_phitgate->v1.y = rgv[1].y;
 
-	m_phitgate->CalcNormal();
+      m_phitgate->v2.x = rgv[0].x;
+      m_phitgate->v2.y = rgv[0].y;
 
-	m_phitgate->m_elasticity = m_d.m_elasticity;
-	m_phitgate->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
-	m_phitgate->m_scatter = m_d.m_scatter;
+      m_phitgate->CalcNormal();
 
-	pvho->AddElement(m_phitgate);
+      m_phitgate->m_elasticity = m_d.m_elasticity;
+      m_phitgate->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+      m_phitgate->m_scatter = m_d.m_scatter;
 
-	m_phitgate->m_fEnabled = m_d.m_fCollidable;
+      pvho->AddElement(m_phitgate);
 
-	if(m_d.m_fSupports)
-		{
-			{
-		HitCircle * const phitcircle = new HitCircle();
-		phitcircle->m_pfe = NULL;
-		phitcircle->center.x = m_d.m_vCenter.x + cs*halflength;
-		phitcircle->center.y = m_d.m_vCenter.y + sn*halflength;
-		phitcircle->radius = 0.01f;
-		phitcircle->zlow = height;
-		phitcircle->zhigh = height+h; //+50;
+      m_phitgate->m_fEnabled = m_d.m_fCollidable;
 
-		pvho->AddElement(phitcircle);
-			}
-		
-		HitCircle * const phitcircle = new HitCircle();
-		phitcircle->m_pfe = NULL;
-		phitcircle->center.x = m_d.m_vCenter.x - cs*halflength;
-		phitcircle->center.y = m_d.m_vCenter.y - sn*halflength;
-		phitcircle->radius = 0.01f;
-		phitcircle->zlow = height;
-		phitcircle->zhigh = height+h; //+50;
-		pvho->AddElement(phitcircle);
-		}
-	}
+      if(m_d.m_fSupports)
+      {
+         {
+            HitCircle * const phitcircle = new HitCircle();
+            phitcircle->m_pfe = NULL;
+            phitcircle->center.x = m_d.m_vCenter.x + cs*halflength;
+            phitcircle->center.y = m_d.m_vCenter.y + sn*halflength;
+            phitcircle->radius = 0.01f;
+            phitcircle->zlow = height;
+            phitcircle->zhigh = height+h; //+50;
+
+            pvho->AddElement(phitcircle);
+         }
+
+         HitCircle * const phitcircle = new HitCircle();
+         phitcircle->m_pfe = NULL;
+         phitcircle->center.x = m_d.m_vCenter.x - cs*halflength;
+         phitcircle->center.y = m_d.m_vCenter.y - sn*halflength;
+         phitcircle->radius = 0.01f;
+         phitcircle->zlow = height;
+         phitcircle->zhigh = height+h; //+50;
+         pvho->AddElement(phitcircle);
+      }
+}
 
 void Gate::GetHitShapesDebug(Vector<HitObject> * const pvho)
-	{
-	}
+{
+}
 
 void Gate::EndPlay()
-	{
-	IEditable::EndPlay();
+{
+   IEditable::EndPlay();
 
-	if (m_phitgate) // Failed Player case
-		{
-		for (int i=0;i<m_phitgate->m_gateanim.m_vddsFrame.Size();i++)
-			{
-			delete m_phitgate->m_gateanim.m_vddsFrame.ElementAt(i);
-			}
+   if (m_phitgate) // Failed Player case
+   {
+      for (int i=0;i<m_phitgate->m_gateanim.m_vddsFrame.Size();i++)
+      {
+         delete m_phitgate->m_gateanim.m_vddsFrame.ElementAt(i);
+      }
 
-		m_phitgate = NULL;
-		}
+      m_phitgate = NULL;
+   }
 
-	m_plineseg = NULL;
-	}
+   m_plineseg = NULL;
+}
 
 void Gate::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
@@ -387,7 +390,6 @@ static const WORD rgiGate5[4] = {4,5,7,6};
 static const WORD rgiGate6[4] = {0,4,6,2};
 static const WORD rgiGate7[4] = {1,3,7,5};
 
-static const Material gatemtrl = {0.6f,0.6f,0.6f,0.0f, 0.6f,0.6f,0.6f,0.0f, 0.f,0.f,0.f,0.f, 0.f,0.f,0.f,0.f, 0.f};
 void Gate::PrepareStatic(RenderDevice* pd3dDevice)
 {
    if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
@@ -643,43 +645,42 @@ void Gate::RenderSetup(const RenderDevice* _pd3dDevice)
 void Gate::RenderStatic(const RenderDevice* _pd3dDevice) // only the support structures are rendered here
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-	if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
+   if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
 
-	pd3dDevice->SetMaterial((Material*)&gatemtrl);
-
+   staticMaterial.set();
    Vertex3D rgv3D[8];
    memcpy( rgv3D, staticVertices, sizeof(Vertex3D)*8);
-	SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate0, 8);
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,(LPWORD)rgiGate0, 8, 0);
+   SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate0, 8);
+   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,(LPWORD)rgiGate0, 8, 0);
 
-	SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate1, 8);
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,(LPWORD)rgiGate1, 8, 0);
+   SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate1, 8);
+   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX,rgv3D,8,(LPWORD)rgiGate1, 8, 0);
 }
-	
+
 void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 {
-	RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-	COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
-	PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-	PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+   PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
+   PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
-	if (g_pvp->m_pdd.m_fHardwareAccel)
-	{
+   if (g_pvp->m_pdd.m_fHardwareAccel)
+   {
       pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
       pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
       pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-	}
-	else
-	{
+   }
+   else
+   {
       //modified to correct software render of plain gates
       ppin3d->SetColorKeyEnabled(FALSE);
-	}
-	// Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-	pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
+   }
+   // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+   pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
 
-	ppin3d->ClearExtents(&m_phitgate->m_gateanim.m_rcBounds, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar);
+   ppin3d->ClearExtents(&m_phitgate->m_gateanim.m_rcBounds, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar);
 
    if(!m_d.m_fEnableLighting)
       pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
@@ -727,12 +728,12 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
             ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-            ppin3d->SetMaterial(1.0f, 1.0f, 1.0f, 1.0f );
+            textureMaterial.set();
          }
          else // No image by that name  
          {
             ppin3d->SetTexture(NULL);
-            ppin3d->SetMaterial(1.0f, m_d.m_color );
+            solidMaterial.set();
          }
          SetNormal(rgv3D, rgiGate2, 4, NULL, NULL, 0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiGate2, 4, 0);
@@ -763,18 +764,18 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
             ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-            ppin3d->SetMaterial(1.0f, 1.0f, 1.0f, 1.0f );
+            textureMaterial.set();
          }
          else // No image by that name  
          {
             ppin3d->SetTexture(NULL);
-            ppin3d->SetMaterial(1.0f, m_d.m_color );
+            solidMaterial.set();
          }
 
          SetNormal(rgv3D, rgiGate3, 4, NULL, NULL, 0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiGate3, 4, 0);
 
-         ppin3d->SetMaterial(1.0f, m_d.m_color );
+         solidMaterial.set();
          ppin3d->SetTexture(NULL);
 
          if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
@@ -832,12 +833,12 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
             g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-            ppin3d->SetMaterial(1.0f, 1.0f, 1.0f, 1.0f );
+            textureMaterial.set();
          }
          else // No image by that name  
          {
             ppin3d->SetTexture(NULL);
-            ppin3d->SetMaterial(1.0f, m_d.m_color );
+            solidMaterial.set();
          }
 
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX,rgv3D, 6,(LPWORD)rgiGate2, 4, 0);
@@ -868,16 +869,16 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
             ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-            ppin3d->SetMaterial(1.0f, 1.0f, 1.0f, 1.0f );
+            textureMaterial.set();
          }
          else // No image by that name  
          {
             ppin3d->SetTexture(NULL);
-            ppin3d->SetMaterial(1.0f, m_d.m_color );
+            solidMaterial.set();
          }
 
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX,rgv3D, 8,(LPWORD)rgiGate3, 4, 0);
-         ppin3d->SetMaterial(1.0f, m_d.m_color );
+         solidMaterial.set();
          ppin3d->SetTexture(NULL);
 
          if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
@@ -924,691 +925,691 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
 }
 
 void Gate::SetObjectPos()
-	{
-	g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
-	}
+{
+   g_pvp->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+}
 
 void Gate::MoveOffset(const float dx, const float dy)
-	{
-	m_d.m_vCenter.x += dx;
-	m_d.m_vCenter.y += dy;
+{
+   m_d.m_vCenter.x += dx;
+   m_d.m_vCenter.y += dy;
 
-	m_ptable->SetDirtyDraw();
-	}
+   m_ptable->SetDirtyDraw();
+}
 
 void Gate::GetCenter(Vertex2D * const pv) const
-	{
-	*pv = m_d.m_vCenter;
-	}
+{
+   *pv = m_d.m_vCenter;
+}
 
 void Gate::PutCenter(const Vertex2D * const pv)
-	{
-	m_d.m_vCenter = *pv;
+{
+   m_d.m_vCenter = *pv;
 
-	m_ptable->SetDirtyDraw();
-	}
+   m_ptable->SetDirtyDraw();
+}
 
 HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
-	BiffWriter bw(pstm, hcrypthash, hcryptkey);
+{
+   BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
 #ifdef VBA
-	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
+   bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-	bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
-	bw.WriteFloat(FID(LGTH), m_d.m_length);
-	bw.WriteFloat(FID(HGTH), m_d.m_height);
-	bw.WriteFloat(FID(ROTA), m_d.m_rotation);
-	bw.WriteInt(FID(COLR), m_d.m_color);
-	bw.WriteInt(FID(GANM), m_d.m_animations);
-	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
-	bw.WriteBool(FID(GSUPT), m_d.m_fSupports);
-	bw.WriteBool(FID(GCOLD), m_d.m_fCollidable);
-	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-	bw.WriteString(FID(IMGF), m_d.m_szImageFront);
-	bw.WriteString(FID(IMGB), m_d.m_szImageBack);
-	bw.WriteString(FID(SURF), m_d.m_szSurface);
-	bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
-	bw.WriteFloat(FID(GAMAX), m_d.m_angleMax);
-	bw.WriteFloat(FID(GAMIN), m_d.m_angleMin);
-	bw.WriteFloat(FID(GFRCT), m_d.m_friction);
-	bw.WriteBool(FID(GVSBL), m_d.m_fVisible);
-	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
-	bw.WriteBool(FID(ELIT), m_d.m_fEnableLighting);
+   bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
+   bw.WriteFloat(FID(LGTH), m_d.m_length);
+   bw.WriteFloat(FID(HGTH), m_d.m_height);
+   bw.WriteFloat(FID(ROTA), m_d.m_rotation);
+   bw.WriteInt(FID(COLR), m_d.m_color);
+   bw.WriteInt(FID(GANM), m_d.m_animations);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteBool(FID(GSUPT), m_d.m_fSupports);
+   bw.WriteBool(FID(GCOLD), m_d.m_fCollidable);
+   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   bw.WriteString(FID(IMGF), m_d.m_szImageFront);
+   bw.WriteString(FID(IMGB), m_d.m_szImageBack);
+   bw.WriteString(FID(SURF), m_d.m_szSurface);
+   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   bw.WriteFloat(FID(GAMAX), m_d.m_angleMax);
+   bw.WriteFloat(FID(GAMIN), m_d.m_angleMin);
+   bw.WriteFloat(FID(GFRCT), m_d.m_friction);
+   bw.WriteBool(FID(GVSBL), m_d.m_fVisible);
+   bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
+   bw.WriteBool(FID(ELIT), m_d.m_fEnableLighting);
 
-	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
-	bw.WriteTag(FID(ENDB));
+   bw.WriteTag(FID(ENDB));
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
 HRESULT Gate::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
-	SetDefaults(false);
+{
+   SetDefaults(false);
 
-	BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
-	m_ptable = ptable;
+   m_ptable = ptable;
 
-	br.Load();
-	return S_OK;
+   br.Load();
+   return S_OK;
 }
 
 BOOL Gate::LoadToken(int id, BiffReader *pbr)
-	{
-	if (id == FID(PIID))
-		{
-		pbr->GetInt((int *)pbr->m_pdata);
-		}
-	else if (id == FID(VCEN))
-		{
-		pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
-		}
-	else if (id == FID(LGTH))
-		{
-		pbr->GetFloat(&m_d.m_length);
-		}
-	else if (id == FID(HGTH))
-		{
-		pbr->GetFloat(&m_d.m_height);
-		}
-	else if (id == FID(ROTA))
-		{
-		pbr->GetFloat(&m_d.m_rotation);
-		}
-	else if (id == FID(COLR))
-		{
-		pbr->GetInt(&m_d.m_color);
-		//if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
-		}
-	else if (id == FID(GANM))
-		{
-		pbr->GetInt(&m_d.m_animations);
-		}
-	else if (id == FID(TMON))
-		{
-		pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
-		}
-	else if (id == FID(GSUPT))
-		{
-		pbr->GetBool(&m_d.m_fSupports); 
-		}
-	else if (id == FID(GCOLD))
-		{
-		pbr->GetBool(&m_d.m_fCollidable); 
-		}
-	else if (id == FID(ELIT))
-		{
-		pbr->GetBool(&m_d.m_fEnableLighting); 
-		}
-	else if (id == FID(GVSBL))
-		{
-		pbr->GetBool(&m_d.m_fVisible); 
-		}
-	else if (id == FID(TMIN))
-		{
-		pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-		}
-	else if (id == FID(IMGF))
-		{
-		pbr->GetString(m_d.m_szImageFront);
-		}
-	else if (id == FID(IMGB))
-		{
-		pbr->GetString(m_d.m_szImageBack);
-		}
-	else if (id == FID(SURF))
-		{
-		pbr->GetString(m_d.m_szSurface);
-		}
-	else if (id == FID(NAME))
-		{
-		pbr->GetWideString((WCHAR *)m_wzName);
-		}
-	else if (id == FID(ELAS))
-		{
-		pbr->GetFloat(&m_d.m_elasticity);	
-		}
-	else if (id == FID(GAMAX))
-		{
-		pbr->GetFloat(&m_d.m_angleMax);
-		}
-	else if (id == FID(GAMIN))
-		{
-		pbr->GetFloat(&m_d.m_angleMin);
-		}
-	else if (id == FID(GFRCT))
-		{
-		pbr->GetFloat(&m_d.m_friction);
-		}
-	else
-		{
-		ISelect::LoadToken(id, pbr);
-		}
+{
+   if (id == FID(PIID))
+   {
+      pbr->GetInt((int *)pbr->m_pdata);
+   }
+   else if (id == FID(VCEN))
+   {
+      pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D));
+   }
+   else if (id == FID(LGTH))
+   {
+      pbr->GetFloat(&m_d.m_length);
+   }
+   else if (id == FID(HGTH))
+   {
+      pbr->GetFloat(&m_d.m_height);
+   }
+   else if (id == FID(ROTA))
+   {
+      pbr->GetFloat(&m_d.m_rotation);
+   }
+   else if (id == FID(COLR))
+   {
+      pbr->GetInt(&m_d.m_color);
+      //if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
+   }
+   else if (id == FID(GANM))
+   {
+      pbr->GetInt(&m_d.m_animations);
+   }
+   else if (id == FID(TMON))
+   {
+      pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+   }
+   else if (id == FID(GSUPT))
+   {
+      pbr->GetBool(&m_d.m_fSupports); 
+   }
+   else if (id == FID(GCOLD))
+   {
+      pbr->GetBool(&m_d.m_fCollidable); 
+   }
+   else if (id == FID(ELIT))
+   {
+      pbr->GetBool(&m_d.m_fEnableLighting); 
+   }
+   else if (id == FID(GVSBL))
+   {
+      pbr->GetBool(&m_d.m_fVisible); 
+   }
+   else if (id == FID(TMIN))
+   {
+      pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
+   }
+   else if (id == FID(IMGF))
+   {
+      pbr->GetString(m_d.m_szImageFront);
+   }
+   else if (id == FID(IMGB))
+   {
+      pbr->GetString(m_d.m_szImageBack);
+   }
+   else if (id == FID(SURF))
+   {
+      pbr->GetString(m_d.m_szSurface);
+   }
+   else if (id == FID(NAME))
+   {
+      pbr->GetWideString((WCHAR *)m_wzName);
+   }
+   else if (id == FID(ELAS))
+   {
+      pbr->GetFloat(&m_d.m_elasticity);	
+   }
+   else if (id == FID(GAMAX))
+   {
+      pbr->GetFloat(&m_d.m_angleMax);
+   }
+   else if (id == FID(GAMIN))
+   {
+      pbr->GetFloat(&m_d.m_angleMin);
+   }
+   else if (id == FID(GFRCT))
+   {
+      pbr->GetFloat(&m_d.m_friction);
+   }
+   else
+   {
+      ISelect::LoadToken(id, pbr);
+   }
 
-	return fTrue;
-	}
+   return fTrue;
+}
 
 HRESULT Gate::InitPostLoad()
-	{
-	return S_OK;
-	}
+{
+   return S_OK;
+}
 
 STDMETHODIMP Gate::InterfaceSupportsErrorInfo(REFIID riid)
 {
-	static const IID* arr[] =
-	{
-		&IID_IGate,
-	};
+   static const IID* arr[] =
+   {
+      &IID_IGate,
+   };
 
-	for (int i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
-	{
-		if (InlineIsEqualGUID(*arr[i],riid))
-			return S_OK;
-	}
-	return S_FALSE;
+   for (int i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
+   {
+      if (InlineIsEqualGUID(*arr[i],riid))
+         return S_OK;
+   }
+   return S_FALSE;
 }
 
 STDMETHODIMP Gate::get_Length(float *pVal)
 {
-	*pVal = m_d.m_length;
+   *pVal = m_d.m_length;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Length(float newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	m_d.m_length = newVal;
+      m_d.m_length = newVal;
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Gate::get_Height(float *pVal)
 {
-	*pVal = m_d.m_height;
+   *pVal = m_d.m_height;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Height(float newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	m_d.m_height = newVal;
+      m_d.m_height = newVal;
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Gate::get_Rotation(float *pVal)
 {
-	*pVal = m_d.m_rotation;
+   *pVal = m_d.m_rotation;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Rotation(float newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	m_d.m_rotation = newVal;
+      m_d.m_rotation = newVal;
 
-	STOPUNDO;
+   STOPUNDO;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_X(float *pVal)
 {
-	*pVal = m_d.m_vCenter.x;
+   *pVal = m_d.m_vCenter.x;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_X(float newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	m_d.m_vCenter.x = newVal;
+      m_d.m_vCenter.x = newVal;
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Gate::get_Y(float *pVal)
 {
-	*pVal = m_d.m_vCenter.y;
+   *pVal = m_d.m_vCenter.y;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Y(float newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	m_d.m_vCenter.y = newVal;
+      m_d.m_vCenter.y = newVal;
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Gate::get_Surface(BSTR *pVal)
 {
-	WCHAR wz[512];
-	MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
-	*pVal = SysAllocString(wz);
+   WCHAR wz[512];
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szSurface, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Surface(BSTR newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Gate::get_Color(OLE_COLOR *pVal)
 {
-	*pVal = m_d.m_color;
+   *pVal = m_d.m_color;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Color(OLE_COLOR newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	m_d.m_color = newVal;
+      m_d.m_color = newVal;
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Gate::get_ImageFront(BSTR *pVal)
 {
-	WCHAR wz[512];
-	MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageFront, -1, wz, 32);
-	*pVal = SysAllocString(wz);
+   WCHAR wz[512];
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageFront, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_ImageFront(BSTR newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImageFront, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImageFront, 32, NULL, NULL);
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Gate::get_ImageBack(BSTR *pVal)
 {
-	WCHAR wz[512];
+   WCHAR wz[512];
 
-	MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageBack, -1, wz, 32);
-	*pVal = SysAllocString(wz);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageBack, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_ImageBack(BSTR newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImageBack, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImageBack, 32, NULL, NULL);
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 
 STDMETHODIMP Gate::get_Open(VARIANT_BOOL *pVal)
 {
-	*pVal = (VARIANT_BOOL)FTOVB((m_phitgate) ? m_phitgate->m_gateanim.m_fOpen : fFalse);
+   *pVal = (VARIANT_BOOL)FTOVB((m_phitgate) ? m_phitgate->m_gateanim.m_fOpen : fFalse);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
 {
-	if (m_phitgate)
-		{
-		m_phitgate->m_gateanim.m_angleMax = m_d.m_angleMax;
-		m_phitgate->m_gateanim.m_angleMin = m_d.m_angleMin;
+   if (m_phitgate)
+   {
+      m_phitgate->m_gateanim.m_angleMax = m_d.m_angleMax;
+      m_phitgate->m_gateanim.m_angleMin = m_d.m_angleMin;
 
-		if (newVal)
-			{
-			m_phitgate->m_gateanim.m_fOpen = fTrue;
-			m_phitgate->m_fEnabled = fFalse;
-			m_plineseg->m_fEnabled = fFalse;
+      if (newVal)
+      {
+         m_phitgate->m_gateanim.m_fOpen = fTrue;
+         m_phitgate->m_fEnabled = fFalse;
+         m_plineseg->m_fEnabled = fFalse;
 
-			if (m_phitgate->m_gateanim.m_angle < m_phitgate->m_gateanim.m_angleMax)
-				m_phitgate->m_gateanim.m_anglespeed = 0.2f;
-			}
-		else
-			{
-			m_phitgate->m_gateanim.m_fOpen = fFalse;
+         if (m_phitgate->m_gateanim.m_angle < m_phitgate->m_gateanim.m_angleMax)
+            m_phitgate->m_gateanim.m_anglespeed = 0.2f;
+      }
+      else
+      {
+         m_phitgate->m_gateanim.m_fOpen = fFalse;
 
-			m_phitgate->m_fEnabled = m_d.m_fCollidable;
-			m_plineseg->m_fEnabled = m_d.m_fCollidable;					
+         m_phitgate->m_fEnabled = m_d.m_fCollidable;
+         m_plineseg->m_fEnabled = m_d.m_fCollidable;					
 
-			if (m_phitgate->m_gateanim.m_angle > m_phitgate->m_gateanim.m_angleMin)
-				m_phitgate->m_gateanim.m_anglespeed = -0.2f;
-			}
-		}
+         if (m_phitgate->m_gateanim.m_angle > m_phitgate->m_gateanim.m_angleMin)
+            m_phitgate->m_gateanim.m_anglespeed = -0.2f;
+      }
+   }
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Elasticity(float *pVal)
 {
-	*pVal = m_d.m_elasticity;
+   *pVal = m_d.m_elasticity;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Elasticity(float newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	m_d.m_elasticity = newVal;
+      m_d.m_elasticity = newVal;
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Gate::get_Supports(VARIANT_BOOL *pVal)
 {
-	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fSupports);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fSupports);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Supports(VARIANT_BOOL newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	m_d.m_fSupports = newVal;
+      m_d.m_fSupports = newVal;
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Gate::get_CloseAngle(float *pVal)
 {
-	*pVal = RADTOANG(g_pplayer ? m_phitgate->m_gateanim.m_angleMin : m_d.m_angleMin);
+   *pVal = RADTOANG(g_pplayer ? m_phitgate->m_gateanim.m_angleMin : m_d.m_angleMin);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_CloseAngle(float newVal)
 {
-	if (m_d.m_fCollidable) newVal = 0;
-	else newVal = ANGTORAD(newVal);
+   if (m_d.m_fCollidable) newVal = 0;
+   else newVal = ANGTORAD(newVal);
 
-	if (g_pplayer)
-		{
-		if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
-		else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;	
+   if (g_pplayer)
+   {
+      if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
+      else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;	
 
-		if (m_phitgate->m_gateanim.m_angleMax > newVal)	// max is bigger
-			m_phitgate->m_gateanim.m_angleMin = newVal;	//then set new minumum
-		else m_phitgate->m_gateanim.m_angleMax = newVal;//else set new max
-		}
-	else
-		{
-		STARTUNDO
-		m_d.m_angleMin = newVal;
-		STOPUNDO
-		}
-	return S_OK;
+      if (m_phitgate->m_gateanim.m_angleMax > newVal)	// max is bigger
+         m_phitgate->m_gateanim.m_angleMin = newVal;	//then set new minumum
+      else m_phitgate->m_gateanim.m_angleMax = newVal;//else set new max
+   }
+   else
+   {
+      STARTUNDO
+         m_d.m_angleMin = newVal;
+      STOPUNDO
+   }
+   return S_OK;
 }
 
 
 STDMETHODIMP Gate::get_OpenAngle(float *pVal)
 {
-	*pVal = RADTOANG((g_pplayer) ? m_phitgate->m_gateanim.m_angleMax : m_d.m_angleMax);	//player active value
+   *pVal = RADTOANG((g_pplayer) ? m_phitgate->m_gateanim.m_angleMax : m_d.m_angleMax);	//player active value
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_OpenAngle(float newVal)
 {
-if (m_d.m_fCollidable) newVal = 0;
-	else newVal = ANGTORAD(newVal);
+   if (m_d.m_fCollidable) newVal = 0;
+   else newVal = ANGTORAD(newVal);
 
-	if (g_pplayer)
-		{
-		if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
-		else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;	
+   if (g_pplayer)
+   {
+      if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
+      else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;	
 
-		if (m_phitgate->m_gateanim.m_angleMin < newVal)	// min is smaller
-			m_phitgate->m_gateanim.m_angleMax = newVal;	//then set new maximum
-		else m_phitgate->m_gateanim.m_angleMin = newVal;//else set new min
-		}
-	else
-		{
-		STARTUNDO
-		m_d.m_angleMax = newVal;
-		STOPUNDO
-		}
-	return S_OK;
+      if (m_phitgate->m_gateanim.m_angleMin < newVal)	// min is smaller
+         m_phitgate->m_gateanim.m_angleMax = newVal;	//then set new maximum
+      else m_phitgate->m_gateanim.m_angleMin = newVal;//else set new min
+   }
+   else
+   {
+      STARTUNDO
+         m_d.m_angleMax = newVal;
+      STOPUNDO
+   }
+   return S_OK;
 }
 
 
 STDMETHODIMP Gate::get_Collidable(VARIANT_BOOL *pVal)
 {
-	*pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitgate->m_fEnabled : m_d.m_fCollidable);
+   *pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitgate->m_fEnabled : m_d.m_fCollidable);
 
-	return S_OK;
+   return S_OK;
 }
 
 
 STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
 {	
-	if (g_pplayer)
-		{
-		m_phitgate->m_fEnabled = newVal;
-		m_plineseg->m_fEnabled = newVal;
-		m_phitgate->m_gateanim.m_angleMax = m_d.m_angleMax;
-		m_phitgate->m_gateanim.m_angleMin = m_d.m_angleMin;
+   if (g_pplayer)
+   {
+      m_phitgate->m_fEnabled = newVal;
+      m_plineseg->m_fEnabled = newVal;
+      m_phitgate->m_gateanim.m_angleMax = m_d.m_angleMax;
+      m_phitgate->m_gateanim.m_angleMin = m_d.m_angleMin;
 
-		if (newVal) m_phitgate->m_gateanim.m_angleMin = 0;
-		}
-	else
-		{
-		STARTUNDO
+      if (newVal) m_phitgate->m_gateanim.m_angleMin = 0;
+   }
+   else
+   {
+      STARTUNDO
 
-		m_d.m_fCollidable = newVal;
+         m_d.m_fCollidable = newVal;
 
-		if (newVal) m_d.m_angleMin = 0;	
+      if (newVal) m_d.m_angleMin = 0;	
 
-		STOPUNDO
-		}
+      STOPUNDO
+   }
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::Move(int dir, float speed, float angle)//move non-collidable gate, for graphic effects only
 {
-	if (g_pplayer)
-		{
-		m_phitgate->m_gateanim.m_fOpen = fTrue;	// move always turns off natural swing
-		m_phitgate->m_fEnabled = fFalse;		// and collidable off
-		m_plineseg->m_fEnabled = fFalse;		
+   if (g_pplayer)
+   {
+      m_phitgate->m_gateanim.m_fOpen = fTrue;	// move always turns off natural swing
+      m_phitgate->m_fEnabled = fFalse;		// and collidable off
+      m_plineseg->m_fEnabled = fFalse;		
 
-		if (speed <= 0.0f) speed = 0.2f;		//default gate angle speed
-		else speed *= (float)(M_PI/180.0);		// convert to radians
+      if (speed <= 0.0f) speed = 0.2f;		//default gate angle speed
+      else speed *= (float)(M_PI/180.0);		// convert to radians
 
-		if (!dir || angle != 0)					// if no direction or non-zero angle
-			{
-			angle *= (float)(M_PI/180.0);		// convert to radians
+      if (!dir || angle != 0)					// if no direction or non-zero angle
+      {
+         angle *= (float)(M_PI/180.0);		// convert to radians
 
-			if (angle < m_d.m_angleMin) angle = m_d.m_angleMin;
-			else if (angle > m_d.m_angleMax) angle = m_d.m_angleMax;
+         if (angle < m_d.m_angleMin) angle = m_d.m_angleMin;
+         else if (angle > m_d.m_angleMax) angle = m_d.m_angleMax;
 
-			const float da = angle - m_phitgate->m_gateanim.m_angle; //calc true direction
-		
-			if (da > 1.0e-5f) dir = +1;
-			else if (da < -1.0e-5f) dir = -1;
-			else 
-				{
-				dir = 0;									// do nothing
-				m_phitgate->m_gateanim.m_anglespeed = 0;	//stop 
-				}
-			}
-		else {angle = (dir < 0) ? m_d.m_angleMin : m_d.m_angleMax;}	//dir selected and angle not specified			
+         const float da = angle - m_phitgate->m_gateanim.m_angle; //calc true direction
 
-		if (dir > 0)
-			{
-			m_phitgate->m_gateanim.m_angleMax = angle;
+         if (da > 1.0e-5f) dir = +1;
+         else if (da < -1.0e-5f) dir = -1;
+         else 
+         {
+            dir = 0;									// do nothing
+            m_phitgate->m_gateanim.m_anglespeed = 0;	//stop 
+         }
+      }
+      else {angle = (dir < 0) ? m_d.m_angleMin : m_d.m_angleMax;}	//dir selected and angle not specified			
 
-			if (m_phitgate->m_gateanim.m_angle < m_phitgate->m_gateanim.m_angleMax)
-				m_phitgate->m_gateanim.m_anglespeed = speed;
-			}
-		else if (dir < 0)
-			{
-			m_phitgate->m_gateanim.m_angleMin = angle;
-			
-			if (m_phitgate->m_gateanim.m_angle > m_phitgate->m_gateanim.m_angleMin)
-				m_phitgate->m_gateanim.m_anglespeed = -speed;
-			}
-		}
+      if (dir > 0)
+      {
+         m_phitgate->m_gateanim.m_angleMax = angle;
 
-	return S_OK;
+         if (m_phitgate->m_gateanim.m_angle < m_phitgate->m_gateanim.m_angleMax)
+            m_phitgate->m_gateanim.m_anglespeed = speed;
+      }
+      else if (dir < 0)
+      {
+         m_phitgate->m_gateanim.m_angleMin = angle;
+
+         if (m_phitgate->m_gateanim.m_angle > m_phitgate->m_gateanim.m_angleMin)
+            m_phitgate->m_gateanim.m_anglespeed = -speed;
+      }
+   }
+
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Friction(float *pVal)
 {
-	*pVal = (g_pplayer) ? m_phitgate->m_gateanim.m_friction : m_d.m_friction;	
+   *pVal = (g_pplayer) ? m_phitgate->m_gateanim.m_friction : m_d.m_friction;	
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Friction(float newVal)
 {	
-	if (newVal < 0) newVal = 0;
-	else if (newVal > 1.0f) newVal = 1.0f;
+   if (newVal < 0) newVal = 0;
+   else if (newVal > 1.0f) newVal = 1.0f;
 
-	if (g_pplayer)
-		{
-		m_phitgate->m_gateanim.m_friction = newVal;	
-		}
-	else
-		{
-		STARTUNDO
+   if (g_pplayer)
+   {
+      m_phitgate->m_gateanim.m_friction = newVal;	
+   }
+   else
+   {
+      STARTUNDO
 
-		m_d.m_friction =  newVal;
+         m_d.m_friction =  newVal;
 
-		STOPUNDO
-		}
+      STOPUNDO
+   }
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Animations(int *pVal)
 {
-	if (!g_pplayer)
-		{
-		*pVal = m_d.m_animations;
-		}
+   if (!g_pplayer)
+   {
+      *pVal = m_d.m_animations;
+   }
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Animations(int newVal)
 {	
-	if (!g_pplayer)
-		{
-		STARTUNDO
+   if (!g_pplayer)
+   {
+      STARTUNDO
 
-		m_d.m_animations = newVal;
+         m_d.m_animations = newVal;
 
-		STOPUNDO
-		}
+      STOPUNDO
+   }
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 {
-	*pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitgate->m_gateanim.m_fVisible : m_d.m_fVisible);
+   *pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitgate->m_gateanim.m_fVisible : m_d.m_fVisible);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
 {	
-	if (g_pplayer)
-		{
-		m_phitgate->m_gateanim.m_fVisible = newVal;// && m_d.m_fVisible;
-		}
-	else
-		{
-		STARTUNDO
+   if (g_pplayer)
+   {
+      m_phitgate->m_gateanim.m_fVisible = newVal;// && m_d.m_fVisible;
+   }
+   else
+   {
+      STARTUNDO
 
-		m_d.m_fVisible = newVal;
+         m_d.m_fVisible = newVal;
 
-		STOPUNDO
-		}
+      STOPUNDO
+   }
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_EnableLighting(VARIANT_BOOL *pVal)
 {
-	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fEnableLighting);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fEnableLighting);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::put_EnableLighting(VARIANT_BOOL newVal)
 {	
-	STARTUNDO
+   STARTUNDO
 
-	m_d.m_fEnableLighting = newVal;
+      m_d.m_fEnableLighting = newVal;
 
-	STOPUNDO
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 void Gate::GetDialogPanes(Vector<PropertyPane> *pvproppane)
-	{
-	PropertyPane *pproppane;
+{
+   PropertyPane *pproppane;
 
-	pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
-	pvproppane->AddElement(pproppane);
+   pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
+   pvproppane->AddElement(pproppane);
 
-	pproppane = new PropertyPane(IDD_PROPGATE_VISUALS, IDS_VISUALS);
-	pvproppane->AddElement(pproppane);
+   pproppane = new PropertyPane(IDD_PROPGATE_VISUALS, IDS_VISUALS);
+   pvproppane->AddElement(pproppane);
 
-	pproppane = new PropertyPane(IDD_PROPGATE_POSITION, IDS_POSITION);
-	pvproppane->AddElement(pproppane);
+   pproppane = new PropertyPane(IDD_PROPGATE_POSITION, IDS_POSITION);
+   pvproppane->AddElement(pproppane);
 
-	pproppane = new PropertyPane(IDD_PROPGATE_PHYSICS, IDS_PHYSICS);
-	pvproppane->AddElement(pproppane);
+   pproppane = new PropertyPane(IDD_PROPGATE_PHYSICS, IDS_PHYSICS);
+   pvproppane->AddElement(pproppane);
 
-	pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
-	pvproppane->AddElement(pproppane);
-	}
+   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
+   pvproppane->AddElement(pproppane);
+}

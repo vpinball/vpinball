@@ -111,6 +111,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Gate)
    Vertex3D_NoLighting *nolitVertices;
    int frameCount;
 
+   Material staticMaterial;
+   Material solidMaterial;
+   Material textureMaterial;
+
 // IGate
 public:
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);

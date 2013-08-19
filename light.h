@@ -172,7 +172,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
    Vertex3D *staticCustomVertex;
    int staticCustomVertexNum;
    int customMoverVertexNum;
-   
+
 // ILight
 public:
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

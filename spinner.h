@@ -107,6 +107,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Spinner)
    Vertex3D *moverVertices;
    int frameCount;
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
+   Material staticMaterial;
+   Material textureMaterial;
+   Material solidMaterial;
 
 // ISpinner
 public:

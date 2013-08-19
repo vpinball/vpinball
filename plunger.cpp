@@ -316,6 +316,22 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
    cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke*(float)(1.0/80.0))) + 1; // 25 frames per 80 units travel
    const float inv_cframes = (cframes > 1) ? ((endy - beginy)/(float)(cframes-1)) : 0.0f;
 
+
+   if (m_d.m_type == PlungerTypeModern)
+   {
+      material.setPower( 1.0f );
+      material.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
+      material.setEmissive( 1.0f, 0.0f, 0.0f, 0.05f );
+      material.setDiffuse( 1.0f, 0.9f, 0.9f, 0.9f );
+      material.setAmbient( 1.0f, 0.9f, 0.9f, 0.9f );
+   } else 
+   {
+      material.setColor( 1.f, m_d.m_color );
+      material.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
+      material.setPower( 8.0f );
+   }
+
+
    verts = new Vertices[cframes];
    for ( int i=0;i<cframes; i++ )
    {
@@ -400,40 +416,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
 
       const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
 
-      Material mtrl;
-      if (m_d.m_type == PlungerTypeModern)
-      {
-         mtrl.power = 1.0f;
-         mtrl.specular.r = 1.0f;
-         mtrl.specular.g = 1.0f;
-         mtrl.specular.b = 1.0f;
-         mtrl.specular.a = 1.0f;
-         mtrl.emissive.r = 0;
-         mtrl.emissive.g = 0;
-         mtrl.emissive.b = 0.05f;
-         mtrl.emissive.a = 1.0f;
-         mtrl.diffuse.r = 0.9f;
-         mtrl.diffuse.g = 0.9f;
-         mtrl.diffuse.b = 0.9f;
-         mtrl.diffuse.a = 1.0f;
-         mtrl.ambient.r = 0.9f;
-         mtrl.ambient.g = 0.9f;
-         mtrl.ambient.b = 0.9f;
-         mtrl.ambient.a = 1.0f;
-      } else {
-         const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-         const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-         const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-         mtrl.emissive.r = mtrl.emissive.g = mtrl.emissive.b = mtrl.emissive.a = 0.0f;
-         mtrl.diffuse.r = mtrl.ambient.r = r;
-         mtrl.diffuse.g = mtrl.ambient.g = g;
-         mtrl.diffuse.b = mtrl.ambient.b = b;
-         mtrl.diffuse.a = mtrl.ambient.a = 1.0f;
-         mtrl.specular.r = mtrl.specular.g = mtrl.specular.b = mtrl.specular.a = 1.0f;
-         mtrl.power = 8.0f;
-      }
-
-      pd3dDevice->SetMaterial(&mtrl);
+      material.set();
 
       ppin3d->ClearExtents(&m_phitplunger->m_plungeranim.m_rcBounds, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar);
 

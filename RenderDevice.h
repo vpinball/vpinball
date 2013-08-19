@@ -35,7 +35,7 @@ public:
 
    static RenderDevice* instance( void );
 
-   virtual void SetMaterial( THIS_ Material *_material );
+   virtual void SetMaterial( THIS_ BaseMaterial *_material );
    virtual void SetRenderState( RenderStates,DWORD );
    bool createVertexBuffer( unsigned int _length, DWORD _usage, DWORD _fvf, VertexBuffer **_vBuffer );
    void renderPrimitive(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, LPWORD _indices, DWORD _numIndices, DWORD _flags);
@@ -77,7 +77,7 @@ public:
 
    virtual STDMETHODIMP GetMaterial( THIS_ LPD3DMATERIAL7 );
 
-   virtual void getMaterial( THIS_ Material *_material );
+   virtual void getMaterial( THIS_ BaseMaterial *_material );
 
    virtual STDMETHODIMP SetLight( THIS_ DWORD,LPD3DLIGHT7 );
 
@@ -148,7 +148,7 @@ private:
    static RenderDevice *theDevice;
    DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];
-   Material materialStateCache;
+   BaseMaterial materialStateCache;
 };
 
 class VertexBuffer : public IDirect3DVertexBuffer7
