@@ -299,19 +299,19 @@ public:
 	HRESULT SaveSoundToStream(PinSound *pps, IStream *pstm);
 	HRESULT LoadSoundFromStream(IStream *pstm);
 	void ClearOldSounds();
-	bool ExportImage(HWND hwndListView, PinImage *ppi, char *filename);
+	bool ExportImage(HWND hwndListView, Texture *ppi, char *filename);
 	void ImportImage(HWND hwndListView, char *filename);
-	void ReImportImage(HWND hwndListView, PinImage *ppi, char *filename);
+	void ReImportImage(HWND hwndListView, Texture *ppi, char *filename);
 	void ListImages(HWND hwndListView);
-	int AddListImage(HWND hwndListView, PinImage *ppi);
+	int AddListImage(HWND hwndListView, Texture *ppi);
 	//void RemoveListSound(HWND hwndListView, PinSound *pps);
-	void RemoveImage(PinImage *ppi);
+	void RemoveImage(Texture *ppi);
 	//HRESULT SaveImageToStream(PinImage *ppi, IStream *pstm);
 	HRESULT LoadImageFromStream(IStream *pstm, int version);
-	PinImage *GetImage(char *szName);
-	void GetTVTU(const PinImage * const ppi, float * const pmaxtu, float * const pmaxtv);
+	Texture *GetImage(char *szName);
+	void GetTVTU(const Texture * const ppi, float * const pmaxtu, float * const pmaxtv);
 	void CreateGDIBackdrop();
-	int GetImageLink(PinImage *ppi);
+	int GetImageLink(Texture *ppi);
 	PinBinary *PinTable::GetImageLinkBinary(int id);
 
 	void ListCustomInfo(HWND hwndListView);
@@ -592,7 +592,7 @@ END_CONNECTION_POINT_MAP()
    bool activeLayers[8];
    bool toggleAllLayers;
 
-	Vector< PinImage > m_vimage;
+	Vector< Texture > m_vimage;
 
 	Vector< PinSound > m_vsound;
 

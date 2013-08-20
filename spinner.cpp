@@ -415,8 +415,8 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float h = m_d.m_height*0.5f + 30.0f;
 
-   PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-   PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+   Texture* const pinback = m_ptable->GetImage(m_d.m_szImageBack);
+   Texture* const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
    float maxtuback, maxtvback;
    float maxtufront, maxtvfront;
@@ -526,12 +526,12 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
 
       if (pinback)
       {			
-         pinback->EnsureColorKey();
+         pinback->CreateAlphaChannel();
       }
 
       if (pinfront)
       {
-         pinfront->EnsureColorKey();
+         pinfront->CreateAlphaChannel();
       }
    }
 
@@ -539,17 +539,17 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
 void Spinner::RenderSetup(const RenderDevice* _pd3dDevice)
 {
    PrepareStatic( (RenderDevice*)_pd3dDevice );
-   PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-   PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+   Texture* const pinback = m_ptable->GetImage(m_d.m_szImageBack);
+   Texture* const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
    solidMaterial.setColor( 1.0f, m_d.m_color );
 
    if ( pinback )
    {
-      pinback->EnsureColorKey();
+      pinback->CreateAlphaChannel();
    }
    if( pinfront )
    {
-      pinfront->EnsureColorKey();
+      pinfront->CreateAlphaChannel();
    }
    PrepareMovers( (RenderDevice*)_pd3dDevice );
 }
@@ -580,8 +580,8 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
 
    COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
-   PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-   PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+   Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
+   Texture * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
    if (g_pvp->m_pdd.m_fHardwareAccel)
    {
@@ -593,7 +593,7 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
    pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
 
-   ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
+   ppin3d->ClearSpriteRectangle( &m_phitspinner->m_spinneranim, NULL );
 
    int ofs=0;
    for (int i=0;i<frameCount;i++,ofs+=8)
@@ -603,25 +603,21 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
       Vertex3D rgv3D[8];
       memcpy( rgv3D, &moverVertices[ofs], sizeof(Vertex3D)*8);
 
-      ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+      ppin3d->ClearSpriteRectangle( NULL, pof );
       ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar, 8, fFalse);
 
       // Draw Backside
       if (pinback)
       {			
+         pinback->Set( ePictureTexture );
          if (pinback->m_fTransparent)
          {				
-            pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
             if (m_d.m_color != rgbTransparent) rgbTransparent = pinback->m_rgbTransparent;
          }
          else 
          {	
-            pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            g_pplayer->m_pin3d.EnableAlphaTestReference(0x00000001);
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+            g_pplayer->m_pin3d.EnableAlphaBlend( 1, fFalse );
          } 
 
          if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
@@ -645,19 +641,15 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
       // Draw Frontside
       if (pinfront)
       {
+         pinfront->Set( ePictureTexture );
          if (pinfront->m_fTransparent)
          {				
-            pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);	
             if (m_d.m_color != rgbTransparent)rgbTransparent = pinfront->m_rgbTransparent;
          }
          else 
          {	
-            pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
-            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            g_pplayer->m_pin3d.EnableAlphaTestReference(0x00000001);
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+            g_pplayer->m_pin3d.EnableAlphaBlend( 1, fFalse );
          }
 
          if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
@@ -696,26 +688,9 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner7, 4, 0);
       }
 
-      // Create offscreen surfaces for color and depth buffers.
-      Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-      pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-
-      // Copy from the back color and depth buffers to the new surfaces.
-      pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
-      /*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-
+      ppin3d->CreateAndCopySpriteBuffers( &m_phitspinner->m_spinneranim, pof );
       m_phitspinner->m_spinneranim.m_vddsFrame.AddElement(pof);
-      pof->pdds = pdds;
 
-      ppin3d->ExpandRectByRect(&m_phitspinner->m_spinneranim.m_rcBounds, &pof->rc);
-
-      // reset the portion of the z-buffer that we changed
-      ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-      // Reset color key in back buffer
-      DDBLTFX ddbltfx;
-      ddbltfx.dwSize = sizeof(DDBLTFX);
-      ddbltfx.dwFillColor = 0;
-      ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
    }
 
    g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);

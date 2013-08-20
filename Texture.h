@@ -1,8 +1,73 @@
 #include "stdafx.h"
-
 #pragma once
 
-class Texture : public IDirectDrawSurface7
-{
+#ifdef RGB
+#undef RGB
+#endif
+#define BGR(b,g,r) ((COLORREF)(((DWORD)(b)) | (((DWORD)(g))<<8) | (((DWORD)(r))<<16)))
+#define RGB(r,g,b) ((COLORREF)(((DWORD)(r)) | (((DWORD)(g))<<8) | (((DWORD)(b))<<16)))
 
+#define NOTRANSCOLOR  RGB(123,123,123)
+
+class RenderDevice;
+
+class BaseTexture : public IDirectDrawSurface7
+{
+};
+
+class Texture : public ILoadable
+{
+public:
+   Texture();
+   virtual ~Texture();
+
+   // ILoadable callback
+   virtual BOOL LoadToken(int id, BiffReader *pbr);
+
+   HRESULT SaveToStream(IStream *pstream, PinTable *pt);
+   HRESULT LoadFromStream(IStream *pstream, int version, PinTable *pt);
+
+   void CreateAlphaChannel();
+   void EnsureBackdrop(const COLORREF color);
+   void FreeStuff();
+   void SetTransparentColor(const COLORREF color);
+   void EnsureMaxTextureCoordinates();
+
+   static void SetRenderDevice( RenderDevice *_device );
+   void SetBackDrop( DWORD textureChannel );
+   void Set( DWORD textureChannel );
+
+   void Release();
+   void EnsureHBitmap();
+   void CreateGDIVersion();
+
+   void Unset( DWORD textureChannel );
+
+   // width and height of texture can be different than width and height
+   // of dd surface, since the surface has to be in powers of 2
+   int m_width, m_height;
+   int m_originalWidth, m_originalHeight;
+
+   // Filled at runtime, accounts for buffer space to meet the power of 2
+   // requirement
+   float m_maxtu, m_maxtv;
+
+   char m_szName[MAXTOKEN];
+   char m_szInternalName[MAXTOKEN];
+   char m_szPath[MAX_PATH];
+
+   COLORREF m_rgbTransparent;
+   BOOL m_fTransparent; // Whether this picture actually contains transparent bits
+
+   COLORREF m_rgbBackdropCur;
+
+   HBITMAP m_hbmGDIVersion; // HBitmap at screen depth so GDI draws it fast
+
+   PinBinary *m_ppb;  // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
+
+   BaseTexture* m_pdsBuffer;
+   BaseTexture* m_pdsBufferColorKey;
+   BaseTexture* m_pdsBufferBackdrop;
+
+   static RenderDevice *renderDevice;
 };

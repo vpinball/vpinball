@@ -107,7 +107,7 @@ STANDARD_NONAPC_EDITABLE_DECLARES(eItemDecal)
 
 	RECT m_rcBounds; // For testing against lights
 
-	PinImage m_pinimage;
+	Texture m_pinimage;
 	float m_leading, m_descent;
 
 	float m_realwidth, m_realheight;

@@ -615,7 +615,7 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
     if (m_d.m_reeltype == ReelImage)
     {
 		// get a pointer to the image specified in the object
-		PinImage * const pin = m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
+		Texture * const pin = m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
 
         // was there a valid image (if not then m_preelframe->pdds remains NULL and void)
         if (pin)
@@ -701,8 +701,8 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 			// Set texture to mirror, so the alpha state of the texture blends correctly to the outside
 			pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
 				
-			pin->EnsureColorKey();
-			pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+			pin->CreateAlphaChannel();
+         pin->Set( ePictureTexture );
 
 			//pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 			//pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
@@ -916,7 +916,7 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 		for (int i=0; i < length; ++i)
       {
 			// allocate some memory for this strip
-         Texture *texel= m_vreelframe.ElementAt(i)->pdds;
+         BaseTexture *texel= m_vreelframe.ElementAt(i)->pdds;
 			texel = ppin3d->CreateOffscreen(maxwidth, maxheight);
 			// fill the strip with the reel colour
 			texel->GetDC(&hdc);

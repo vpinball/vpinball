@@ -3169,7 +3169,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                lvitem.iItem = pinfo->item.iItem;
                lvitem.iSubItem = 0;
                ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-               PinImage * const ppi = (PinImage *)lvitem.lParam;
+               Texture * const ppi = (Texture *)lvitem.lParam;
                lstrcpy(ppi->m_szName, pinfo->item.pszText);
                lstrcpy(ppi->m_szInternalName, pinfo->item.pszText);
                CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
@@ -3191,7 +3191,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                      lvitem.iItem = sel;
                      lvitem.iSubItem = 0;
                      ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                     PinImage * const ppi = (PinImage *)lvitem.lParam;
+                     Texture * const ppi = (Texture *)lvitem.lParam;
                      HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
                      SendMessage(hwndColor, CHANGE_COLOR, 0, ppi->m_rgbTransparent);
                      InvalidateRect(hwndColor, NULL, FALSE);
@@ -3224,7 +3224,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             lvitem.iItem = sel;
             lvitem.iSubItem = 0;
             ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-            PinImage * const ppi = (PinImage *)lvitem.lParam;
+            Texture * const ppi = (Texture *)lvitem.lParam;
             HDC hdcDD;
             //DDSURFACEDESC2 ddsd;
             //ddsd.dwSize = sizeof(ddsd);
@@ -3308,10 +3308,10 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                   lvitem.iItem = sel;
                   lvitem.iSubItem = 0;
                   ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                  PinImage * const ppi = (PinImage *)lvitem.lParam;
+                  Texture * const ppi = (Texture *)lvitem.lParam;
                   ppi->SetTransparentColor(color);
 
-                  /*const HRESULT hr =*/ SetRegValue("Editor", "TransparentColorKey", REG_DWORD, &color, 4);
+                  SetRegValue("Editor", "TransparentColorKey", REG_DWORD, &color, 4);
 
                   // The previous selection is now deleted, so look again from the top of the list
                   sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
@@ -3413,7 +3413,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                      lvitem.iItem = sel;
                      lvitem.iSubItem = 0;
                      ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                     PinImage * const ppi = (PinImage *)lvitem.lParam;									
+                     Texture * const ppi = (Texture*)lvitem.lParam;									
 
                      OPENFILENAME ofn;
                      ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -3481,7 +3481,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                         lvitem.iItem = sel;
                         lvitem.iSubItem = 0;
                         ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                        PinImage * const ppi = (PinImage *)lvitem.lParam;
+                        Texture * const ppi = (Texture*)lvitem.lParam;
                         pt->RemoveImage(ppi);
                         ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
 
@@ -3511,7 +3511,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                         lvitem.iItem = sel;
                         lvitem.iSubItem = 0;
                         ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                        PinImage * const ppi = (PinImage *)lvitem.lParam;
+                        Texture * const ppi = (Texture*)lvitem.lParam;
                         HANDLE hFile = CreateFile(ppi->m_szPath,GENERIC_READ, FILE_SHARE_READ,	
                            NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -3569,7 +3569,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                         lvitem.iItem = sel;
                         lvitem.iSubItem = 0;
                         ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                        PinImage * const ppi = (PinImage *)lvitem.lParam;
+                        Texture * const ppi = (Texture*)lvitem.lParam;
 
                         strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
                         szInitialDir[ofn.nFileOffset] = 0;
@@ -4979,7 +4979,7 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
          for (int i=0;i<pt->m_vimage.Size();i++)
          {
-            PinImage * const pin = pt->m_vimage.ElementAt(i);
+            Texture * const pin = pt->m_vimage.ElementAt(i);
             if (pin->m_ppb)
             {
                SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)pin->m_szName);

@@ -1299,7 +1299,7 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
 
    Pin3D *const ppin3d = &g_pplayer->m_pin3d;
 
-   PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    float maxtu = 0, maxtv = 0;
    if (pin)
    {
@@ -1622,30 +1622,24 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
    {
       Pin3D *const ppin3d = &g_pplayer->m_pin3d;
 
-      PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       float maxtu = 0, maxtv = 0;
 
       if (pin)
       {
          m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
-         pin->EnsureColorKey();
+         pin->CreateAlphaChannel();
+         pin->Set( ePictureTexture );
          if (pin->m_fTransparent)
          {				
-            pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
          }
          else // ppin3d->SetTexture(pin->m_pdsBuffer);
          {	
-            pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            ppin3d->EnableAlphaTestReference(0x00000001);
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
-		    if(m_d.m_fAddBlend)
-		        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
+            ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
          }
 
          ppin3d->SetColorKeyEnabled(TRUE);
@@ -2578,7 +2572,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
    else
    {	
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-      PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       float maxtu = 0;
       float maxtv = 0;
 
@@ -2586,17 +2580,11 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       {
          m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
-         pin->EnsureColorKey();
-         pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+         pin->CreateAlphaChannel();
+         pin->Set(ePictureTexture);
 
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-         pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-
-         ppin3d->EnableAlphaTestReference(0x00000001);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
-         if(m_d.m_fAddBlend)
-            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
+         ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
 
          ppin3d->SetColorKeyEnabled(TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)

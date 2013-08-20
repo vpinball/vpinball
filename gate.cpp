@@ -13,7 +13,6 @@ Gate::Gate()
    m_d.m_fEnableLighting = fTrue;
    staticMaterial.setAmbient(0.0f, 0.6f, 0.6f, 0.6f );
    staticMaterial.setDiffuse(0.0f, 0.6f, 0.6f, 0.6f );
-   solidMaterial.setColor( 1.0f, m_d.m_color );
 }
 
 Gate::~Gate()
@@ -463,7 +462,7 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);//surface gate is on
    const float h = m_d.m_height;		//relative height of the gate 
 
-   PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
+   Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
    float maxtuback, maxtvback;
    if (pinback)
    {
@@ -474,7 +473,7 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
       maxtuback = maxtvback = 1.0f;
    }
 
-   PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+   Texture * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
    float maxtufront, maxtvfront;
    if (pinfront)
    {
@@ -574,13 +573,13 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
          // Draw Backside
          if (pinback) //(pinback)
          {			
-            pinback->EnsureColorKey();
+            pinback->CreateAlphaChannel();
          }
 
          // Draw Frontside
          if (pinfront) 
          {			
-            pinfront->EnsureColorKey();
+            pinfront->CreateAlphaChannel();
          }
       }
       else // copy pasted from above, just without lighting
@@ -625,12 +624,12 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
          // Draw Backside
          if (pinback) //(pinback)
          {			
-            pinback->EnsureColorKey();
+            pinback->CreateAlphaChannel();
          }
          // Draw Frontside
          if (pinfront) 
          {			
-            pinfront->EnsureColorKey();
+            pinfront->CreateAlphaChannel();
          }
       }
    }
@@ -647,6 +646,7 @@ void Gate::RenderStatic(const RenderDevice* _pd3dDevice) // only the support str
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
 
+   solidMaterial.setColor( 1.0f, m_d.m_color );
    staticMaterial.set();
    Vertex3D rgv3D[8];
    memcpy( rgv3D, staticVertices, sizeof(Vertex3D)*8);
@@ -663,8 +663,8 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
-   PinImage * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-   PinImage * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+   Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
+   Texture * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
    if (g_pvp->m_pdd.m_fHardwareAccel)
    {
@@ -680,7 +680,8 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
 
-   ppin3d->ClearExtents(&m_phitgate->m_gateanim.m_rcBounds, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar);
+   //ppin3d->ClearExtents(&m_phitgate->m_gateanim.m_rcBounds, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar);
+   ppin3d->ClearSpriteRectangle( &m_phitgate->m_gateanim, NULL );
 
    if(!m_d.m_fEnableLighting)
       pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
@@ -695,32 +696,33 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
          Vertex3D rgv3D[8];
          memcpy(rgv3D,&litVertices[ofs],sizeof(Vertex3D)*8);
 
-         ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+         ppin3d->ClearSpriteRectangle( NULL, pof );
          ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar, 8, fFalse);
 
          // Draw Backside
          if (pinback) //(pinback)
          {			
-            pinback->EnsureColorKey();
-            //pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
+            pinback->CreateAlphaChannel();
+            pinback->Set( ePictureTexture );
 
             if (pinback->m_fTransparent)
             {				
-               pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
                pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);				
                if (m_d.m_color != rgbTransparent)
                   rgbTransparent = pinback->m_rgbTransparent;
             }
             else 
             {	
-               pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
-               pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+               ppin3d->EnableAlphaBlend( 0x80, fFalse );
+               pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
+/*               pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
                pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
                pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
                pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
                pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
                pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
                pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+*/
             }
 
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
@@ -741,22 +743,17 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
          // Draw Frontside
          if (pinfront) 
          {			
-            pinfront->EnsureColorKey();
-            //pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
+            pinfront->CreateAlphaChannel();
+            pinfront->Set( ePictureTexture );
             if (pinfront->m_fTransparent)
             {				
-               pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
                pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
                if (m_d.m_color != rgbTransparent)
                   rgbTransparent = pinfront->m_rgbTransparent;
             }
             else 
             {	
-               pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
-               pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-               ppin3d->EnableAlphaTestReference(0x00000001);
-               pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-               pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+               ppin3d->EnableAlphaBlend( 1,fFalse );
             }
 
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
@@ -800,32 +797,32 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
          Vertex3D_NoLighting rgv3D[8];
          memcpy( rgv3D, &nolitVertices[ofs],sizeof(Vertex3D_NoLighting)*8);
 
-         ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+         ppin3d->ClearSpriteRectangle( NULL, pof );
          ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitgate->m_gateanim.m_znear, &m_phitgate->m_gateanim.m_zfar, 8, fFalse);
 
          // Draw Backside
          if (pinback) //(pinback)
          {			
-            pinback->EnsureColorKey();
-            //pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
-
+            pinback->CreateAlphaChannel();
+            pinback->Set( ePictureTexture );
             if (pinback->m_fTransparent)
             {				
-               pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
                pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);				
                if (m_d.m_color != rgbTransparent)
                   rgbTransparent = pinback->m_rgbTransparent;
             }
             else 
             {	
-               pd3dDevice->SetTexture(ePictureTexture, pinback->m_pdsBufferColorKey);
-               pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+               ppin3d->EnableAlphaBlend( 0x80, fFalse );
+               pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
+/*               pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
                pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
                pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
                pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
                pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
                pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
                pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+*/
             }
 
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
@@ -846,22 +843,18 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
          // Draw Frontside
          if (pinfront) 
          {			
-            pinfront->EnsureColorKey();
+            pinfront->CreateAlphaChannel();
             //pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
+            pinfront->Set( ePictureTexture );
             if (pinfront->m_fTransparent)
             {				
-               pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
                pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
                if (m_d.m_color != rgbTransparent)
                   rgbTransparent = pinfront->m_rgbTransparent;
             }
             else 
             {	
-               pd3dDevice->SetTexture(ePictureTexture, pinfront->m_pdsBufferColorKey);
-               pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-               ppin3d->EnableAlphaTestReference(0x00000001);
-               pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-               pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+               ppin3d->EnableAlphaBlend(1,fFalse);
             }
 
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
@@ -894,26 +887,8 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
             pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX,rgv3D, 8,(LPWORD)rgiGate7, 4, 0);
          }
       }
-
-      Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-      pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-
-      pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
-
-      /*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-
+      ppin3d->CreateAndCopySpriteBuffers( &m_phitgate->m_gateanim, pof );
       m_phitgate->m_gateanim.m_vddsFrame.AddElement(pof);
-      pof->pdds = pdds;
-
-      ppin3d->ExpandRectByRect(&m_phitgate->m_gateanim.m_rcBounds, &pof->rc);
-
-      // reset the portion of the z-buffer that we changed
-      ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-      // Reset color key in back buffer
-      DDBLTFX ddbltfx;
-      ddbltfx.dwSize = sizeof(DDBLTFX);
-      ddbltfx.dwFillColor = 0;
-      ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
    }
 
    g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);

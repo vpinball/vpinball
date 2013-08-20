@@ -504,7 +504,7 @@ void Surface::PreRender(Sur * const psur)
    Vector<RenderVertex> vvertex;
    GetRgVertex(&vvertex);
 
-   PinImage *ppi;
+   Texture *ppi;
    if (m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
    {
       ppi->EnsureHBitmap();
@@ -870,7 +870,7 @@ void Surface::PostRenderStatic(const RenderDevice* pd3dDevice)
 void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 {
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   PinImage * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
+   Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
    float maxtuSide=1.0f, maxtvSide=1.0f;
 
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
@@ -1066,7 +1066,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       Vector<Triangle> vtri;
       PolygonToTriangles(vvertex, &vpoly, &vtri);
 
-      PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       float maxtu=1.0f, maxtv=1.0f;
       if (pin)
       {
@@ -1344,12 +1344,12 @@ void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
       slingShotMaterial.setColor( 1.0f, m_d.m_slingshotColor );
       PrepareSlingshots(pd3dDevice);
    }
-   PinImage * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
+   Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
    if (!pinSide)
    {
       sideMaterial.setColor( 1.0f, m_d.m_sidecolor );
    }
-   PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (!pin)
    {
       topMaterial.setColor( 1.0f, m_d.m_topcolor );
@@ -1388,8 +1388,6 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
       slingShotMaterial.set();
       ObjFrame *pof = plinesling->m_slingshotanim.m_pobjframe;
 
-      pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-      pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
 
       pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, slingshotVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0 );
       offset+=4;
@@ -1409,19 +1407,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
       pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, slingshotVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0 );
       offset+=4;
 
-      pof->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
-      pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-
-      ppin3d->ExpandRectByRect(&plinesling->m_slingshotanim.m_rcBounds, &pof->rc);
-
-      // reset the portion of the z-buffer that we changed
-      ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-      // Reset color key in back buffer
-      DDBLTFX ddbltfx;
-      ZeroMemory(&ddbltfx,sizeof(DDBLTFX));
-      ddbltfx.dwSize = sizeof(DDBLTFX);
-      ddbltfx.dwFillColor = 0;
-      ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT,&ddbltfx);
+      ppin3d->CreateAndCopySpriteBuffers( &plinesling->m_slingshotanim, pof );
    }
 }
 
@@ -1439,15 +1425,14 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
    {
       pof = new ObjFrame();
 
-      ppin3d->ClearExtents(&m_phitdrop->m_polydropanim.m_rcBounds, &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar);
-      ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+      ppin3d->ClearSpriteRectangle( &m_phitdrop->m_polydropanim, pof );
    }
 
-   PinImage * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
+   Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
    if (pinSide)
    {
-      pinSide->EnsureColorKey();
-      pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);		
+      pinSide->CreateAlphaChannel();
+      pinSide->Set( ePictureTexture );
 
       if (pinSide->m_fTransparent)
       {				
@@ -1463,10 +1448,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
       else 
       {	
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-         pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-         g_pplayer->m_pin3d.EnableAlphaTestReference(g_pvp->m_pdd.m_fHardwareAccel ? 128 : 1);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 			
+         g_pplayer->m_pin3d.EnableAlphaBlend( g_pvp->m_pdd.m_fHardwareAccel ? 128 : 1, fFalse );
       }
 
       g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
@@ -1525,8 +1507,8 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
          else
             ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 
-         pinSide->EnsureColorKey();
-         pd3dDevice->SetTexture(ePictureTexture, pinSide->m_pdsBufferColorKey);
+         pinSide->CreateAlphaChannel();
+         pinSide->Set(ePictureTexture);
 
          if (pinSide->m_fTransparent)
          {
@@ -1536,10 +1518,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
          else // ppin3d->SetTexture(pin->m_pdsBuffer);
          {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            g_pplayer->m_pin3d.EnableAlphaTestReference(g_pvp->m_pdd.m_fHardwareAccel ? 128 : 1);
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+            g_pplayer->m_pin3d.EnableAlphaBlend( g_pvp->m_pdd.m_fHardwareAccel ? 128 : 1, fFalse );
          }
 
          g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
@@ -1549,11 +1528,11 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
       else
          pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
 
-      PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
       {
-         pin->EnsureColorKey();
-         pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+         pin->CreateAlphaChannel();
+         pin->Set( ePictureTexture );
 
          if (pin->m_fTransparent)
          {				
@@ -1563,10 +1542,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
          else 
          {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-            pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            g_pplayer->m_pin3d.EnableAlphaTestReference(g_pvp->m_pdd.m_fHardwareAccel ? 128 : 1);
-            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA); 
+            g_pplayer->m_pin3d.EnableAlphaBlend( g_pvp->m_pdd.m_fHardwareAccel ? 128 : 1, fFalse );
          }
 
          g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
@@ -1596,13 +1572,13 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
    if (fMover)
    {
-      // Create the color surface.
+/*      // Create the color surface.
       pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
       pof->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
 
       // Create the z surface.
       pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-      /*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
+      pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
 
       ppin3d->ExpandRectByRect(&m_phitdrop->m_polydropanim.m_rcBounds, &pof->rc);
 
@@ -1613,6 +1589,8 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
       ddbltfx.dwSize = sizeof(DDBLTFX);
       ddbltfx.dwFillColor = 0;
       ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL,&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
+*/
+      ppin3d->CreateAndCopySpriteBuffers( &m_phitdrop->m_polydropanim, pof );
    }
 
    if(!m_d.m_fEnableLighting)
