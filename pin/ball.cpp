@@ -69,7 +69,7 @@ void Ball::RenderSetup()
    }
    else
    {
-      m_pin->EnsureColorKey();
+      m_pin->CreateAlphaChannel();
       vertices[3].tv = m_pin->m_maxtv;
       vertices[2].tu = m_pin->m_maxtu;
       vertices[2].tv = m_pin->m_maxtv;

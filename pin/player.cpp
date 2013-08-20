@@ -2051,7 +2051,7 @@ void Player::RenderDynamics()
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+bool firstRun=true;
 void Player::Render()
 {
 	// On Win95 when there are no balls, frame updates happen so fast the
@@ -2223,8 +2223,8 @@ void Player::Render()
 			}
 		}
 
-	Texture * const pdds = m_pin3d.m_pddsBackBuffer;
-	Texture * const pddsz= m_pin3d.m_pddsZBuffer;
+	BaseTexture * const pdds = m_pin3d.m_pddsBackBuffer;
+	BaseTexture * const pddsz= m_pin3d.m_pddsZBuffer;
 
 	// Process all regions that need updating.  
 	// The region will be drawn with the current frame.
@@ -2341,10 +2341,39 @@ void Player::Render()
 				rcNew.top = prc->top + m_pin3d.m_rcUpdate.top;
 				rcNew.bottom = prc->bottom + m_pin3d.m_rcUpdate.top;
 
-				// Copy the region from the back buffer to the front buffer.
-				//m_pin3d.m_pddsFrontBuffer->BltFast(rcNew.left, rcNew.top, m_pin3d.m_pddsBackBuffer, prc, 0);
-				m_pin3d.m_pddsFrontBuffer->Blt(&rcNew, m_pin3d.m_pddsBackBuffer, prc, 0, NULL);
+            m_pin3d.m_pddsFrontBuffer->Blt(&rcNew, m_pin3d.m_pddsBackBuffer, prc, 0, NULL); 
 
+            //this must be tested a bit more...seems to speed up some tables but can produce black screens on startup?!?
+            //if your use this be sure to disable the clipper in fullscreen mode -> see Pin3d::InitDD()
+/*            if( !firstRun && m_pin3d.fullscreen)
+            {
+
+               prc->top = max(prc->top, 0);
+               prc->left = max(prc->left, 0);
+               prc->right = min(prc->right, m_pin3d.m_dwRenderWidth-1);
+               prc->bottom = min(prc->bottom, m_pin3d.m_dwRenderHeight-1);
+
+               rcNew.left = max(rcNew.left, 0);
+               rcNew.top = max(rcNew.top, 0);
+               // Copy the region from the back buffer to the front buffer.
+               if ( prc->right>prc->left && prc->bottom>prc->top )
+               {
+                  HRESULT hr = m_pin3d.m_pddsFrontBuffer->BltFast(rcNew.left, rcNew.top, m_pin3d.m_pddsBackBuffer, prc, 0);
+                  if ( FAILED(hr))
+                  {
+                     char buff[256];
+                     sprintf(buff,"error code %08X  newLeft:%i newTop:%i left:%i right:%i top:%i bottom:%i",hr,rcNew.left, rcNew.top, prc->left, prc->right, prc->top, prc->bottom);
+                     ShowError(buff);
+                  }
+               }
+            }
+            else
+            {
+               // a test to prevent black screens on startup...the first blit is a slow one ;)
+				   m_pin3d.m_pddsFrontBuffer->Blt(&rcNew, m_pin3d.m_pddsBackBuffer, prc, 0, NULL); 
+               firstRun=false;
+            }
+*/
 			}
 		}
 		else
@@ -3049,16 +3078,16 @@ void Player::DrawBallLogo(Ball * const pball)
 
    if (pball->m_pinFront)
    {
-      pball->m_pinFront->EnsureColorKey();
-      m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinFront->m_pdsBufferColorKey);
+      pball->m_pinFront->CreateAlphaChannel();
+      pball->m_pinFront->Set( ePictureTexture );
       m_pin3d.m_pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, pball->vertexBuffer, 4, 4, (LPWORD)rgi0123, 4, 0);
    }
 
    if (pball->m_pinBack)
    {
       // Other side of ball
-      pball->m_pinBack->EnsureColorKey();
-      m_pin3d.m_pd3dDevice->SetTexture(0, pball->m_pinBack->m_pdsBufferColorKey);
+      pball->m_pinBack->CreateAlphaChannel();
+      pball->m_pinBack->Set( ePictureTexture );
 
       m_pin3d.m_pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, pball->vertexBuffer, 8, 4, (LPWORD)rgi0123, 4, 0);
    }
@@ -3070,7 +3099,8 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 {
 	if(!only_invalidate_regions)
 	{
-		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE );
+
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE );
 
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
 
@@ -3089,7 +3119,11 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		const float radiusX = pball->radius * m_BallStretchX;
 		const float radiusY = pball->radius * m_BallStretchY;
 
-		if(!only_invalidate_regions)
+      pball->logoMaterial.setDiffuse(0.8f, pball->m_color );
+      pball->logoMaterial.setAmbient(0.8f, pball->m_color );
+      pball->material.setColor( 1.0f, pball->m_color );
+
+      if(!only_invalidate_regions)
 		{
          pball->material.set();
 		}

@@ -232,7 +232,7 @@ void Light::PreRender(Sur * const psur)
       // Check if we should display the image in the editor.
       if (m_d.m_fDisplayImage)
       {
-         PinImage *ppi;
+         Texture *ppi;
          // Get the image.
          switch (m_d.m_state)
          {
@@ -273,7 +273,7 @@ void Light::PreRender(Sur * const psur)
       // Check if we should display the image in the editor.
       if (m_d.m_fDisplayImage)
       {
-         PinImage *ppi;
+         Texture *ppi;
          // Get the image.
          switch (m_d.m_state)
          {
@@ -608,7 +608,7 @@ void Light::PrepareMoversCustom()
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    for(int i=0; i<2; i++)
    {
-      PinImage* pin = NULL;
+      Texture* pin = NULL;
       if(i == LightStateOff && m_d.m_szOffImage[0] != 0) 
          pin = m_ptable->GetImage(m_d.m_szOffImage);
 
@@ -763,7 +763,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 
    for (int i=0; i<2; i++)
    {
-      PinImage* pin = NULL;
+      Texture* pin = NULL;
       if(i == LightStateOff) 
       {
          // Check if the light has an "off" texture.
@@ -933,12 +933,10 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 
       m_pobjframe[i] = new ObjFrame();
 
-      ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
+      ppin3d->ClearSpriteRectangle( NULL, m_pobjframe[i] );
       ppin3d->ExpandExtents(&m_pobjframe[i]->rc, rgv3D, NULL, NULL, 32, m_fBackglass);
 
       ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
-
-      m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 
       if (m_pobjframe[i]->pdds == NULL)
          continue;
@@ -965,6 +963,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 	  ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
 	  pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
+     m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 	  m_pobjframe[i]->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLTFAST_WAIT);
 
 	  // Reset color key in back buffer

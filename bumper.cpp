@@ -265,7 +265,7 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
    float maxtu, maxtv;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);	
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);	
 
    float r = (m_d.m_color & 255) * (float) (1.0/255.0);
    float g = (m_d.m_color & 65280) * (float) (1.0/65280.0);
@@ -420,13 +420,14 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
    
    int t,k;
    // All this function does is render the bumper image so the black shows through where it's missing in the animated form
-   PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);	
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);	
    if (pin)
    {
       Pin3D *const ppin3d = &g_pplayer->m_pin3d;
 
-      pin->EnsureColorKey();
-      pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+      pin->CreateAlphaChannel();
+      pin->Set(ePictureTexture);
+
       pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
 
       staticMaterial.set();
@@ -459,17 +460,17 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
    int k,t;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   ppin3d->ClearExtents(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar);
-
+   ppin3d->ClearSpriteRectangle(&m_pbumperhitcircle->m_bumperanim, NULL );
    for (int i=0;i<2;i++)	//0 is unlite, while 1 is lite
    {
       ObjFrame * const pof = new ObjFrame();
 
       ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+      ppin3d->ClearSpriteRectangle( NULL, pof );
 
       ppin3d->ExpandExtents(&pof->rc, moverVertices[i], &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar, 160, fFalse);
 
-      PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (!pin) // Top solid color
       {
          switch (i)
@@ -545,7 +546,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
          m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
          pin->EnsureBackdrop(m_d.m_color);
-         pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferBackdrop);
+         pin->SetBackDrop( ePictureTexture );
 
          //pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
          //pd3dDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
@@ -599,23 +600,8 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
          }
       }
 
-      pof->pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-      pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-
-      pof->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
-      /*const HRESULT hr =*/ pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-
+      ppin3d->CreateAndCopySpriteBuffers( &m_pbumperhitcircle->m_bumperanim, pof );
       m_pbumperhitcircle->m_bumperanim.m_pobjframe[i] = pof;
-
-      ppin3d->ExpandRectByRect(&m_pbumperhitcircle->m_bumperanim.m_rcBounds, &pof->rc);
-
-      // reset the portion of the z-buffer that we changed
-      ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-      // Reset color key in back buffer
-      DDBLTFX ddbltfx;
-      ddbltfx.dwSize = sizeof(DDBLTFX);
-      ddbltfx.dwFillColor = 0;
-      ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
    }
 
    ppin3d->SetTexture(NULL);

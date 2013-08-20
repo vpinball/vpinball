@@ -265,8 +265,8 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,borderVerices,16,rgi, 3*14, 0);
    }
 
-   Texture* pddsBufferBack = ppin3d->CreateOffscreen(recBounds.right - recBounds.left, recBounds.bottom - recBounds.top);
-   Texture* pddsMask = ppin3d->CreateOffscreen(recBounds.right - recBounds.left, recBounds.bottom - recBounds.top);
+   BaseTexture* pddsBufferBack = ppin3d->CreateOffscreen(recBounds.right - recBounds.left, recBounds.bottom - recBounds.top);
+   BaseTexture* pddsMask = ppin3d->CreateOffscreen(recBounds.right - recBounds.left, recBounds.bottom - recBounds.top);
 
    HRESULT hr = pddsBufferBack->BltFast(0, 0, ppin3d->m_pddsStatic, &recBounds, DDBLTFAST_WAIT);
    pd3dDevice->Clear( 1, (D3DRECT *)&recBounds, D3DCLEAR_TARGET, 0x00ffffff, 1.0f, 0L );

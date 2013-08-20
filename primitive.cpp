@@ -441,7 +441,7 @@ static const WORD rgiPrimStatic1[5] = {4,3,2,1,0};
 
 void Primitive::CalculateBuiltinOriginal()
 {
-   PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    float maxtu,maxtv;
    if (pin) 
    {
@@ -764,20 +764,16 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
    if (m_d.m_TopVisible)
    {
 	  RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-     PinImage * const pin = m_ptable->GetImage(m_d.m_szImage);
+     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
       if (pin)
       {
          // OK, Top is visible, and we have a image
          //lets draw
-         pin->EnsureColorKey();
-
-         pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBufferColorKey);
+         pin->CreateAlphaChannel();
+         pin->Set( ePictureTexture );
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-         pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-         g_pplayer->m_pin3d.EnableAlphaTestReference(0x00000001);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA); 
+         g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
 
          g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);

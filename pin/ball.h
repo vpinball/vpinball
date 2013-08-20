@@ -60,9 +60,9 @@ public:
 	char m_szImageFront[MAXTOKEN];
 	char m_szImageBack[MAXTOKEN];
 
-	PinImage *m_pin;
-	PinImage *m_pinFront;
-	PinImage *m_pinBack;
+	Texture *m_pin;
+	Texture *m_pinFront;
+	Texture *m_pinBack;
 
 	HitObject *m_pho;		//pointer to hit object trial, may not be a actual hit if something else happens first
 	VectorVoid* m_vpVolObjs;// vector of triggers we are now inside

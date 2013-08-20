@@ -29,7 +29,7 @@ public:
       ZWRITEENABLE       = D3DRENDERSTATE_ZWRITEENABLE,
 	  NORMALIZENORMALS   = D3DRENDERSTATE_NORMALIZENORMALS
    };
-   static bool createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7, Texture *_backBuffer );
+   static bool createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7, BaseTexture *_backBuffer );
 
    RenderDevice( void );
 

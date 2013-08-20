@@ -418,7 +418,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
 
       material.set();
 
-      ppin3d->ClearExtents(&m_phitplunger->m_plungeranim.m_rcBounds, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar);
+      ppin3d->ClearSpriteRectangle( &m_phitplunger->m_plungeranim, NULL );
 
       for (int i=0;i<cframes;i++)
       {
@@ -428,7 +428,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
 
          if (m_d.m_type == PlungerTypeModern)
          {
-            ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+            ppin3d->ClearSpriteRectangle( NULL, pof );
             ppin3d->ExpandExtents(&pof->rc, ptr, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS1), fFalse);
 
             int k=0;
@@ -442,7 +442,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
          }
          else if (m_d.m_type == PlungerTypeOrig)
          {
-            ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+            ppin3d->ClearSpriteRectangle( NULL, pof );
             ppin3d->ExpandExtents(&pof->rc, ptr, &m_phitplunger->m_plungeranim.m_znear, &m_phitplunger->m_plungeranim.m_zfar, (16*PLUNGEPOINTS0), fFalse);
 
             int k=0;
@@ -456,24 +456,8 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
             }
          }
 
-         Texture* pdds = ppin3d->CreateOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-         pof->pddsZBuffer = ppin3d->CreateZBufferOffscreen(pof->rc.right - pof->rc.left, pof->rc.bottom - pof->rc.top);
-
-         pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &pof->rc, DDBLTFAST_WAIT);
-         pof->pddsZBuffer->BltFast(0, 0, ppin3d->m_pddsZBuffer, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-
+         ppin3d->CreateAndCopySpriteBuffers( &m_phitplunger->m_plungeranim, pof );
          m_phitplunger->m_plungeranim.m_vddsFrame.AddElement(pof);
-         pof->pdds = pdds;
-
-         ppin3d->ExpandRectByRect(&m_phitplunger->m_plungeranim.m_rcBounds, &pof->rc);
-
-         // reset the portion of the z-buffer that we changed
-         ppin3d->m_pddsZBuffer->BltFast(pof->rc.left, pof->rc.top, ppin3d->m_pddsStaticZ, &pof->rc, DDBLTFAST_NOCOLORKEY | DDBLTFAST_WAIT);
-         // Reset color key in back buffer
-         DDBLTFX ddbltfx;
-         ddbltfx.dwSize = sizeof(DDBLTFX);
-         ddbltfx.dwFillColor = 0;
-         ppin3d->m_pddsBackBuffer->Blt(&pof->rc, NULL, &pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
       }
    }
 }

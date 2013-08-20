@@ -190,6 +190,8 @@ public:
 	void InitBackGraphics();
 
 	void InitLights();
+   void ClearSpriteRectangle( AnimObject *animObj, ObjFrame *pof );
+   void CreateAndCopySpriteBuffers( AnimObject *animObj, ObjFrame *pof );
 
 	void InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback, const float maxSeparation, const float ZPD);
 	void SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar);
@@ -206,21 +208,22 @@ public:
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 	void TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 
-	Texture* CreateShadow(const float height);
+	BaseTexture* CreateShadow(const float height);
 
 	void CreateBallShadow();
 
 	void SetUpdatePos(const int left, const int top);
 	void Flip(const int offsetx, const int offsety, const BOOL vsync);
 
-	void SetRenderTarget(const Texture* pddsSurface, const Texture* pddsZ) const;
+	void SetRenderTarget(const BaseTexture* pddsSurface, const BaseTexture* pddsZ) const;
 	void SetTextureFilter(const int TextureNum, const int Mode) const;
 	
-	void SetTexture(Texture* pddsTexture);
+	void SetTexture(BaseTexture* pddsTexture);
 	void EnableLightMap(const BOOL fEnable, const float z);
 
 	void SetColorKeyEnabled(const BOOL fColorKey) const;
 	void EnableAlphaTestReference(DWORD alphaRefValue) const;
+   void EnableAlphaBlend( DWORD alphaRefValue, BOOL additiveBlending=fFalse );
 
 	// Handy functions for creating obj frames
 
@@ -233,32 +236,32 @@ public:
 
 	void ClipRectToVisibleArea(RECT * const prc) const;
 
-	Texture* CreateOffscreen(const int width, const int height) const;
-	Texture* CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const;
-	Texture* CreateZBufferOffscreen(const int width, const int height) const;
+	BaseTexture* CreateOffscreen(const int width, const int height) const;
+	BaseTexture* CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const;
+	BaseTexture* CreateZBufferOffscreen(const int width, const int height) const;
 
 	LPDIRECTDRAW7 m_pDD;
-	Texture* m_pddsFrontBuffer;
-	Texture* m_pddsBackBuffer;
+	BaseTexture* m_pddsFrontBuffer;
+	BaseTexture* m_pddsBackBuffer;
 
-	Texture* m_pdds3DBackBuffer;
+	BaseTexture* m_pdds3DBackBuffer;
 	const unsigned int* __restrict m_pdds3Dbuffercopy;
 	const unsigned int* __restrict m_pdds3Dbufferzcopy;
 	unsigned char* __restrict m_pdds3Dbuffermask;
 
-	Texture* m_pddsZBuffer;
+	BaseTexture* m_pddsZBuffer;
 	LPDIRECT3D7 m_pD3D;
 	RenderDevice* m_pd3dDevice;
 
-	Texture* m_pddsStatic;
-	Texture* m_pddsStaticZ;
+	BaseTexture* m_pddsStatic;
+	BaseTexture* m_pddsStaticZ;
 
-	Texture* m_pddsBallTexture;
-	Texture* m_pddsShadowTexture;
-	Texture* m_pddsLightTexture;
+	BaseTexture* m_pddsBallTexture;
+	BaseTexture* m_pddsShadowTexture;
+	BaseTexture* m_pddsLightTexture;
 	//LPDIRECTDRAWSURFACE7 m_pddsPlayfieldTexture;
 	//LPDIRECTDRAWSURFACE7 m_pddsLightProjectTexture;
-	Texture* m_pddsLightWhite;
+	BaseTexture* m_pddsLightWhite;
 
 	ExVector<void> m_xvShadowMap;
 
@@ -289,7 +292,7 @@ public:
 	Vertex3Ds m_vertexcamera;
 
 	LightProjected m_lightproject;
-
+   bool fullscreen;
 	float m_maxSeparation, m_ZPD;
    D3DVIEWPORT7 vp;
 	};

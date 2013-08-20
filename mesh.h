@@ -26,8 +26,8 @@ public:
 	}
 
 	RECT rc;
-	Texture* pdds;
-	Texture* pddsZBuffer;
+	BaseTexture* pdds;
+	BaseTexture* pddsZBuffer;
 	};
 
 class CatmullCurve
