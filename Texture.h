@@ -40,6 +40,16 @@ public:
    void Release();
    void EnsureHBitmap();
    void CreateGDIVersion();
+   void CreateFromResource(const int id, int * const pwidth, int * const pheight);
+   BaseTexture *CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
+   void CreateTextureOffscreen(const int width, const int height);
+   BaseTexture *CreateBaseTexture(const int width, const int height);
+   void CreateMipMap();
+   BOOL SetAlpha(const COLORREF rgbTransparent, const int width, const int height);
+   void CreateNextMipMapLevel(BaseTexture* pdds);
+   void SetOpaqueBackdrop(BaseTexture* pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop, const int width, const int height);
+   void Lock();
+   void Unlock();
 
    void Unset( DWORD textureChannel );
 
@@ -47,6 +57,10 @@ public:
    // of dd surface, since the surface has to be in powers of 2
    int m_width, m_height;
    int m_originalWidth, m_originalHeight;
+
+   LONG pitch;
+   // only valid if Lock() was called before
+   BYTE *surfaceData;
 
    // Filled at runtime, accounts for buffer space to meet the power of 2
    // requirement
