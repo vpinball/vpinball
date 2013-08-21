@@ -2981,7 +2981,7 @@ void Player::DrawBallShadow(Ball * const pball)
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
    m_pin3d.SetColorKeyEnabled(FALSE);
 
-   m_pin3d.m_pd3dDevice->SetTexture(0, m_pin3d.m_pddsShadowTexture);
+   m_pin3d.ballShadowTexture.Set( ePictureTexture );
    m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
    Vertex3D_NoTex2 * const rgv3DShadow = pball->m_rgv3DShadow;
 
@@ -3177,7 +3177,14 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 			if (m_fBallShadows && m_fBallAntialias)
 				DrawBallShadow(pball);
 
-			m_pin3d.m_pd3dDevice->SetTexture(0, (!pball->m_pin) ? m_pin3d.m_pddsBallTexture : pball->m_pin->m_pdsBufferColorKey);
+         if( !pball->m_pin )
+         {
+            m_pin3d.ballTexture.Set( ePictureTexture );
+         }
+         else
+         {
+            pball->m_pin->Set( ePictureTexture );
+         }
 
 			if (m_fBallAntialias)
 			{

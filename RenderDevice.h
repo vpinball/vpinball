@@ -40,6 +40,16 @@ public:
    bool createVertexBuffer( unsigned int _length, DWORD _usage, DWORD _fvf, VertexBuffer **_vBuffer );
    void renderPrimitive(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, LPWORD _indices, DWORD _numIndices, DWORD _flags);
 
+   inline void setHardwareAccelerated( bool _hwAcc)
+   {
+      hardwareAccelerated = _hwAcc;
+   }
+
+   inline bool getHardwareAccelerated() const
+   {
+      return hardwareAccelerated;
+   }
+
    //########################## simple wrapper functions (interface for DX7)##################################
 
    virtual STDMETHODIMP QueryInterface( THIS_ REFIID riid, LPVOID * ppvObj );
@@ -148,6 +158,7 @@ private:
    static RenderDevice *theDevice;
    DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];
+   bool hardwareAccelerated;
    BaseMaterial materialStateCache;
 };
 

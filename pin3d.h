@@ -256,8 +256,8 @@ public:
 	BaseTexture* m_pddsStatic;
 	BaseTexture* m_pddsStaticZ;
 
-	BaseTexture* m_pddsBallTexture;
-	BaseTexture* m_pddsShadowTexture;
+	Texture ballTexture;
+	Texture ballShadowTexture;
 	BaseTexture* m_pddsLightTexture;
 	//LPDIRECTDRAWSURFACE7 m_pddsPlayfieldTexture;
 	//LPDIRECTDRAWSURFACE7 m_pddsLightProjectTexture;
