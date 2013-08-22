@@ -20,7 +20,6 @@ Pin3D::Pin3D()
    m_pd3dDevice = NULL;
    m_pddsStatic = NULL;
    m_pddsStaticZ = NULL;
-   m_pddsLightTexture = NULL;
    m_pddsLightWhite = NULL;
 }
 
@@ -50,8 +49,6 @@ Pin3D::~Pin3D()
    SAFE_RELEASE(m_pddsStatic);
 
    SAFE_RELEASE(m_pddsStaticZ);
-
-   SAFE_RELEASE(m_pddsLightTexture);
 
    for (int i=0; i<m_xvShadowMap.AbsoluteSize(); ++i)
       ((LPDIRECTDRAWSURFACE)m_xvShadowMap.AbsoluteElementAt(i))->Release();
@@ -864,9 +861,9 @@ retry7:
    ballTexture.SetAlpha(RGB(0,0,0), width, height);
    ballTexture.CreateMipMap();
 
-   m_pddsLightTexture = g_pvp->m_pdd.CreateFromResource(IDB_SUNBURST3, &width, &height);
-   g_pvp->m_pdd.SetAlpha(m_pddsLightTexture, RGB(0,0,0), width, height);
-   g_pvp->m_pdd.CreateNextMipMapLevel(m_pddsLightTexture);
+   lightTexture.CreateFromResource(IDB_SUNBURST3, &width, &height);
+   lightTexture.SetAlpha(RGB(0,0,0), width, height);
+   lightTexture.CreateMipMap();
 
    m_pddsLightWhite = g_pvp->m_pdd.CreateFromResource(IDB_WHITE, &width, &height);
    g_pvp->m_pdd.SetAlpha(m_pddsLightWhite, RGB(0,0,0), width, height);

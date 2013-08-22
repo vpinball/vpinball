@@ -270,27 +270,27 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
    float r = (m_d.m_color & 255) * (float) (1.0/255.0);
    float g = (m_d.m_color & 65280) * (float) (1.0/65280.0);
    float b = (m_d.m_color & 16711680) * (float) (1.0/16711680.0);
-   topNonLitMaterial.setAmbient( 0.0f, r*0.5f, g*0.5f, b*0.5f );
-   topNonLitMaterial.setDiffuse( 0.0f, r*0.5f, g*0.5f, b*0.5f );
+   topNonLitMaterial.setAmbient( 1.0f, r*0.5f, g*0.5f, b*0.5f );
+   topNonLitMaterial.setDiffuse( 1.0f, r*0.5f, g*0.5f, b*0.5f );
+   topLitMaterial.setAmbient(1.0f, 0.0f, 0.0f, 0.0f );
+   topLitMaterial.setDiffuse(1.0f, 0.0f, 0.0f, 0.0f );
    topLitMaterial.setEmissive( 0.0f, r, g, b );
-   topLitMaterial.setAmbient(0.0f, 0.0f, 0.0f, 0.0f );
-   topLitMaterial.setDiffuse(0.0f, 0.0f, 0.0f, 0.0f );
 
    r = (m_d.m_sidecolor & 255) * (float) (1.0/255.0);
    g = (m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
    b = (m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
-   sideNonLitMaterial.setAmbient( 0.0f, r*0.5f, g*0.5f, b*0.5f );
-   sideNonLitMaterial.setDiffuse( 0.0f, r*0.5f, g*0.5f, b*0.5f );
+   sideNonLitMaterial.setAmbient( 1.0f, r*0.5f, g*0.5f, b*0.5f );
+   sideNonLitMaterial.setDiffuse( 1.0f, r*0.5f, g*0.5f, b*0.5f );
+   sideLitMaterial.setAmbient(1.0f, 0.0f, 0.0f, 0.0f );
+   sideLitMaterial.setDiffuse(1.0f, 0.0f, 0.0f, 0.0f );
    sideLitMaterial.setEmissive( 0.0f, r, g, b );
-   sideLitMaterial.setAmbient(0.0f, 0.0f, 0.0f, 0.0f );
-   sideLitMaterial.setDiffuse(0.0f, 0.0f, 0.0f, 0.0f );
 
-   nonLitMaterial.setAmbient( 0.0f, 0.5f, 0.5f, 0.5f );
-   nonLitMaterial.setDiffuse( 0.0f, 0.5f, 0.5f, 0.5f );
-   nonLitMaterial.setEmissive(0.0f, 1.0f, 1.0f, 1.0f );
+   nonLitMaterial.setAmbient( 1.0f, 0.5f, 0.5f, 0.5f );
+   nonLitMaterial.setDiffuse( 1.0f, 0.5f, 0.5f, 0.5f );
+   nonLitMaterial.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
 
-   litMaterial.setAmbient( 0.0f, 0.0f, 0.0f, 0.0f );
-   litMaterial.setDiffuse( 0.0f, 0.0f, 0.0f, 0.0f );
+   litMaterial.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
+   litMaterial.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
    litMaterial.setEmissive(0.0f, 1.0f, 1.0f, 1.0f );
 
    if ( pin )
@@ -465,7 +465,6 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
    {
       ObjFrame * const pof = new ObjFrame();
 
-      ppin3d->ClearExtents(&pof->rc, NULL, NULL);
       ppin3d->ClearSpriteRectangle( NULL, pof );
 
       ppin3d->ExpandExtents(&pof->rc, moverVertices[i], &m_pbumperhitcircle->m_bumperanim.m_znear, &m_pbumperhitcircle->m_bumperanim.m_zfar, 160, fFalse);
@@ -483,7 +482,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
             }
             case 1:
             {
-               ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+               ppin3d->lightTexture.Set( ePictureTexture );
                ppin3d->EnableLightMap(fFalse, -1);
                topLitMaterial.set();
             }
@@ -523,7 +522,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
             }
             case 1:
             {
-               ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+               ppin3d->lightTexture.Set( ePictureTexture );
                ppin3d->EnableLightMap(fFalse, -1);
                sideLitMaterial.set();
                break;
@@ -571,7 +570,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 
             case 1:
             {
-               ppin3d->m_pd3dDevice->SetTexture(eLightProject1, ppin3d->m_pddsLightTexture);
+               ppin3d->lightTexture.Set( eLightProject1 );
                litMaterial.set();
                break;           
             }
