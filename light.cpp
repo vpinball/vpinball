@@ -937,6 +937,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
       ppin3d->ExpandExtents(&m_pobjframe[i]->rc, rgv3D, NULL, NULL, 32, m_fBackglass);
 
       ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
+      m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 
       if (m_pobjframe[i]->pdds == NULL)
          continue;
@@ -963,7 +964,6 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
      ppin3d->lightTexture.Set(ePictureTexture);
 	  pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
-     m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
 	  m_pobjframe[i]->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLTFAST_WAIT);
 
 	  // Reset color key in back buffer
