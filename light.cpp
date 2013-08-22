@@ -779,7 +779,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
          else
          {
             // Set the texture to a default.
-            ppin3d->SetTexture(ppin3d->m_pddsLightTexture);					
+            ppin3d->lightTexture.Set( ePictureTexture );
             ppin3d->EnableLightMap(!m_fBackglass, height);
             mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
             mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
@@ -804,7 +804,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
          else
          {
             // Set the texture to a default.
-            ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+            ppin3d->lightTexture.Set(ePictureTexture);
             mtrl.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
             mtrl.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
             mtrl.setEmissive(0.0f, r, g, b );
@@ -833,7 +833,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
             pie->GetIHitable()->RenderStatic(pd3dDevice);
       }
 
-      ppin3d->SetTexture(ppin3d->m_pddsLightTexture);	
+      ppin3d->lightTexture.Set(ePictureTexture);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
       ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
@@ -870,7 +870,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+   ppin3d->lightTexture.Set(ePictureTexture);
 
    //pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
 
@@ -960,7 +960,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 			 pie->GetIHitable()->RenderStatic(pd3dDevice);
 	  }
 
-	  ppin3d->SetTexture(ppin3d->m_pddsLightTexture);
+     ppin3d->lightTexture.Set(ePictureTexture);
 	  pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
      m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
