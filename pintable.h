@@ -589,6 +589,8 @@ END_CONNECTION_POINT_MAP()
 	Vector< IEditable > m_vedit;
 //   Vector< IEditable > hiddenObjects[8];
    Vector< IEditable > layer[8];
+   Vector<ISelect> allHitElements;
+      
    bool activeLayers[8];
    bool toggleAllLayers;
 

@@ -1414,6 +1414,7 @@ void PinTable::Render(Sur * const psur)
       Render3DProjection(psur);
    }
 
+
    for (int i=0;i<m_vedit.Size();i++)
    {
       IEditable *ptr = m_vedit.ElementAt(i);
@@ -1630,7 +1631,24 @@ ISelect *PinTable::HitTest(const int x, const int y)
 
    HitSur * const phs = new HitSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
 
+   allHitElements.RemoveAllElements();
    Render(phs);
+
+   for (int i=0;i<m_vedit.Size();i++)
+   {
+      IEditable *ptr = m_vedit.ElementAt(i);
+      if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
+      {
+         ISelect* tmp = phs->m_pselected;
+
+         ptr->PreRender(phs);
+         ISelect* tmp2 = phs->m_pselected;
+         if ( tmp!=tmp2 )
+         {
+            allHitElements.AddElement(tmp2);
+         }
+      }
+   }
 
    ISelect * const pisel = phs->m_pselected;
 
@@ -4243,6 +4261,26 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       LocalString ls5(IDS_LOCK);
       AppendMenu(hmenu, MF_STRING, ID_LOCK, ls5.m_szbuffer);
 
+      AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
+      AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
+      for( int i=allHitElements.Size()-1;i>=0;i-- )
+      {
+         ISelect *ptr = allHitElements.ElementAt(i);
+         if ( ptr )
+         {
+            ptr->GetIEditable()->GetScriptable()->m_wzName;
+            char szTemp[256];
+            WideCharToMultiByte(CP_ACP, 0, ptr->GetIEditable()->GetScriptable()->m_wzName, -1, szTemp, 256, NULL, NULL);
+            // what a hack!
+            // the element index of the allHitElements vector is encoded inside the ID of the context menu item
+            // I didn't find an easy way to identify the selected menu item of a context menu
+            // so the ID_SELECT_ELEMENT is the global ID for selecting an element from the list and the rest is
+            // added for finding the element out of the list
+            // the selection is done in ISelect::DoCommand()
+            unsigned long id = 0x80000000 + (i<<16) + ID_SELECT_ELEMENT;
+            AppendMenu(hmenu, MF_STRING, id, szTemp);
+         }
+      }
       BOOL fLocked = psel->m_fLocked;
       // HACK
       if (psel == this) // multi-select case
@@ -4253,12 +4291,11 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       CheckMenuItem(hmenu, ID_LOCK, MF_BYCOMMAND | (fLocked ? MF_CHECKED : MF_UNCHECKED));
    }
 
-   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD,
-      pt.x, pt.y, m_hwnd, NULL);
+   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD, pt.x, pt.y, m_hwnd, NULL);
 
    if (icmd != 0)
    {
-      psel->DoCommand(icmd, x, y);
+         psel->DoCommand(icmd, x, y);
    }
 
    DestroyMenu(hmenu);

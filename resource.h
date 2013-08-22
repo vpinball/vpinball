@@ -111,6 +111,7 @@
 #define IDR_Light                       130
 #define IDS_TB_LIGHT                    130
 #define IDC_LIGHT                       131
+#define IDS_DRAW_UP                     131
 #define IDS_KICKER_DESC                 132
 #define IDR_Kicker                      133
 #define IDS_TB_KICKER                   133
@@ -132,6 +133,7 @@
 #define IDC_GATE                        140
 #define IDC_CUR_TRIGGER                 140
 #define IDS_WRONGFILEVERSION2           140
+#define IDS_DRAW_DOWN                   140
 #define IDS_SPINNER_DESC                141
 #define IDC_CUR_GATE                    141
 #define IDR_Spinner                     142
@@ -628,8 +630,8 @@
 #define IDC_LIGHT1DZ                    576
 #define IDC_LIGHT1TYPE                  577
 #define IDC_NORMALIZENORMALS            578
-#define IDC_TABLESOUNDVOLUME			579
-#define IDC_TABLEMUSICVOLUME			580
+#define IDC_TABLESOUNDVOLUME            579
+#define IDC_TABLEMUSICVOLUME            580
 #define IDS_VISUALS_SOUND               581
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
@@ -708,6 +710,7 @@
 #define ID_WALLMENU_SELECTNONE          32869
 #define ID_LAYER_TOGGLEALL              32874
 #define ID_EDIT_SEARCH                  32875
+#define ID_SELECT_ELEMENT               32876
 #define DZVALUE                         65535
 #define DZName                          65535
 

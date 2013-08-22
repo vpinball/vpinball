@@ -114,6 +114,30 @@ void ISelect::DoCommand(int icmd, int x, int y)
 	{
 	IEditable *piedit = GetIEditable();
 
+   if ( (icmd & 0x0000FFFF) == ID_SELECT_ELEMENT )
+   {
+      const int ksshift = GetKeyState(VK_SHIFT);
+      const int ksctrl = GetKeyState(VK_CONTROL);
+
+      PinTable *currentTable = GetPTable();
+      int i = (icmd & 0x00FF0000)>>16;
+      ISelect * const pisel = currentTable->allHitElements.ElementAt(i);
+
+      const BOOL fAdd = ((ksshift & 0x80000000) != 0);
+
+      if (pisel == (ISelect *)currentTable && fAdd)
+      {
+         // Can not include the table in multi-select
+         // and table will not be unselected, because the
+         // user might be drawing a box around other objects
+         // to add them to the selection group
+         currentTable->OnLButtonDown(x,y); // Start the band select
+         return;
+      }
+
+      currentTable->AddMultiSel(pisel, fAdd, fTrue);
+      return;
+   }
 	switch (icmd)
 		{
 		case ID_DRAWINFRONT:
