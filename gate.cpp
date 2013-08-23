@@ -637,6 +637,7 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
 }
 void Gate::RenderSetup(const RenderDevice* _pd3dDevice)
 {
+   solidMaterial.setColor( 1.0f, m_d.m_color );
    PrepareStatic((RenderDevice*)_pd3dDevice);
    PrepareMovers((RenderDevice*)_pd3dDevice);
 }
@@ -646,7 +647,6 @@ void Gate::RenderStatic(const RenderDevice* _pd3dDevice) // only the support str
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
 
-   solidMaterial.setColor( 1.0f, m_d.m_color );
    staticMaterial.set();
    Vertex3D rgv3D[8];
    memcpy( rgv3D, staticVertices, sizeof(Vertex3D)*8);
