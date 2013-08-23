@@ -1733,10 +1733,19 @@ void PinTable::UpdateDrawingOrderListBox()
    for( int i=0; i<allHitElements.Size(); i++ )
    {
       WCHAR *elemName;
-      elemName = allHitElements.ElementAt(i)->GetIEditable()->GetScriptable()->m_wzName;
-      char szTemp[256];
-      WideCharToMultiByte(CP_ACP, 0, elemName, -1, szTemp, 256, NULL, NULL);
-      SendMessage( listHwnd, LB_ADDSTRING, i, (LPARAM)szTemp);
+      IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
+      IScriptable *pscript =NULL;
+      if ( pedit )
+      {
+         pscript = pedit->GetScriptable();
+      }
+      if ( pscript )
+      {
+         elemName = pscript->m_wzName;
+         char szTemp[256];
+         WideCharToMultiByte(CP_ACP, 0, elemName, -1, szTemp, 256, NULL, NULL);
+         SendMessage( listHwnd, LB_ADDSTRING, i, (LPARAM)szTemp);
+      }
    }
 }
 
@@ -1768,13 +1777,11 @@ ISelect *PinTable::HitTest(const int x, const int y)
       IEditable *ptr = m_vedit.ElementAt(i);
       if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
-         ISelect* tmp = phs->m_pselected;
-
          ptr->PreRender(phs);
-         ISelect* tmp2 = phs->m_pselected;
-         if ( tmp!=tmp2 )
+         ISelect* tmp = phs->m_pselected;
+         if ( allHitElements.IndexOf(tmp)==-1 && tmp!=NULL ) 
          {
-            allHitElements.AddElement(tmp2);
+            allHitElements.AddElement(tmp);
          }
       }
    }
