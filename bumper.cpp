@@ -399,13 +399,6 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
       ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+96],inv_width,inv_height);
       ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+128],inv_width,inv_height);
       memcpy( moverVertices[1], moverVertices[0], sizeof(Vertex3D)*160 );
-
-      moverVertices[1][l+64].tu = 0.5f+sinangle*0.25f;
-      moverVertices[1][l+64].tv = 0.5f+cosangle*0.25f;
-      moverVertices[1][l+96].tu = 0.5f+sinangle*(float)(0.5*0.9);
-      moverVertices[1][l+96].tv = 0.5f+cosangle*(float)(0.5*0.9);
-      moverVertices[1][l+128].tu = 0.5f+sinangle*0.5f;
-      moverVertices[1][l+128].tv = 0.5f+cosangle*0.5f;
    }
    SetNormal(staticVertices, rgiBumperStatic, 32, NULL, NULL, 0);
 }
