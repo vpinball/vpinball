@@ -1041,9 +1041,25 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                {
                   for( int i=0;i<psb->m_pvsel->Size();i++ )
                   {
-                     psb->m_pvsel->ElementAt(i)->DeleteMesh();
+                     psb->m_pvsel->ElementAt(i)->DeleteMesh();                    
                   }
                   psb->RefreshProperties();
+               }
+               else if( dispid == IDC_DRAW_ORDER_UP )
+               {
+                  for( int i=0;i<psb->m_pvsel->Size();i++ )
+                  {
+                     IEditable *ptr = psb->m_pvsel->ElementAt(i)->GetIEditable();
+                     ptr->GetPTable()->UpdateDrawingOrder(ptr, true );
+                  }
+               }
+               else if( dispid == IDC_DRAW_ORDER_DOWN )
+               {
+                  for( int i=0;i<psb->m_pvsel->Size();i++ )
+                  {
+                     IEditable *ptr = psb->m_pvsel->ElementAt(i)->GetIEditable();
+                     ptr->GetPTable()->UpdateDrawingOrder(ptr, false );
+                  }
                }
                else
                {

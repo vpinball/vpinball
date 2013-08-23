@@ -281,4 +281,5 @@ public:
 	//  that we have to put back if we undo
 	WCHAR *m_wzVBAName;
 	WCHAR *m_wzVBACode;
+   bool isVisible;
 	};
