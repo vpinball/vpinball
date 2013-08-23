@@ -1726,6 +1726,7 @@ void PinTable::UpdateDrawingOrderListBox()
       listHwnd=GetDlgItem( m_pvp->m_sb.m_vhwndDialog.ElementAt(t), IDC_DRAW_ORDER_LIST );
       if( listHwnd!=NULL )
       {
+         SendMessage( listHwnd, LB_RESETCONTENT, 0, 0);
          break;
       }
    }
@@ -1758,17 +1759,9 @@ ISelect *PinTable::HitTest(const int x, const int y)
    GetClientRect(m_hwnd, &rc);
 
    HitSur * const phs = new HitSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
+   HitSur * const phs2 = new HitSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
 
    allHitElements.RemoveAllElements();
-   for( int t=0;t<m_pvp->m_sb.m_vhwndDialog.Size();t++ )
-   {
-      listHwnd=GetDlgItem( m_pvp->m_sb.m_vhwndDialog.ElementAt(t), IDC_DRAW_ORDER_LIST );
-      if( listHwnd!=NULL )
-      {
-         SendMessage( listHwnd, LB_RESETCONTENT, 0, 0);
-         break;
-      }
-   }
 
    Render(phs);
 
@@ -1777,14 +1770,16 @@ ISelect *PinTable::HitTest(const int x, const int y)
       IEditable *ptr = m_vedit.ElementAt(i);
       if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
-         ptr->PreRender(phs);
-         ISelect* tmp = phs->m_pselected;
-         if ( allHitElements.IndexOf(tmp)==-1 && tmp!=NULL ) 
+         ptr->PreRender(phs2);
+         ISelect* tmp = phs2->m_pselected;
+         if ( allHitElements.IndexOf(tmp)==-1 && tmp!=NULL && tmp != this ) 
          {
             allHitElements.AddElement(tmp);
          }
       }
    }
+   delete phs2;
+
    Vector<ISelect> tmpBuffer;
    for( int i=allHitElements.Size()-1; i>=0; i-- )
    {
@@ -1795,9 +1790,9 @@ ISelect *PinTable::HitTest(const int x, const int y)
    {
       allHitElements.AddElement( tmpBuffer.ElementAt(i) );
    }
+   tmpBuffer.RemoveAllElements();
 
    ISelect * const pisel = phs->m_pselected;
-
    delete phs;
 
    ReleaseDC(m_hwnd, hdc);
@@ -5350,6 +5345,7 @@ void PinTable::AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate)
    else if (m_vmultisel.ElementAt(0) != psel) // Object already in list - no change to selection, only to primary
    {
       _ASSERTE(psel->m_selectstate != eNotSelected);
+
       // Make this new selection the primary one for the group
       m_vmultisel.ElementAt(0)->m_selectstate = eMultiSelected;
 
