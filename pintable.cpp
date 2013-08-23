@@ -1001,7 +1001,7 @@ void PinTable::SwitchToLayer(int layerNumber )
    //toggle layer
    activeLayers[layerNumber] ^= true;
 
-   m_vedit.RemoveAllElements();
+   // now set all elements to visible if their layer is active, otherwise hide them
    for( int i=0;i<8;i++ )
    {
       if( activeLayers[i] )
@@ -1009,7 +1009,15 @@ void PinTable::SwitchToLayer(int layerNumber )
          for( int t=0;t<layer[i].Size();t++ )
          {
             IEditable *piedit = layer[i].ElementAt(t);
-            m_vedit.AddElement(piedit);
+            piedit->isVisible=true;
+         }
+      }
+      else
+      {
+         for( int t=0;t<layer[i].Size();t++ )
+         {
+            IEditable *piedit = layer[i].ElementAt(t);
+            piedit->isVisible=false;
          }
       }
    }
@@ -1020,7 +1028,7 @@ void PinTable::AssignToLayer(IEditable *obj, int layerNumber )
 {
    if( !activeLayers[layerNumber] )
    {
-      m_vedit.RemoveElement(obj);
+      obj->isVisible=false;
    }
    layer[obj->GetISelect()->layerIndex].RemoveElement(obj);
    obj->GetISelect()->layerIndex=layerNumber;
@@ -1066,24 +1074,20 @@ void PinTable::BackupLayers()
          layer[0].AddElement(piedit);
       }
    }
-
-   // destroy any elements in the current view
-   m_vedit.RemoveAllElements();
-   // copy all elements in each layer to m_vedit as this is where the player uses it
+   // make all elements visible again
    for( int t=0;t<8;t++)
    {
       //      for( int i=layer[t].Size()-1;i>=0;i-- )
       for( int i=0;i<layer[t].Size();i++ )
       {
          IEditable *piedit = layer[t].ElementAt(i);
-         m_vedit.AddElement(piedit);
+         piedit->isVisible=true;
       }
    }
 }
 
 void PinTable::RestoreLayers()
 {
-   m_vedit.RemoveAllElements();
    for( int i=0;i<8;i++ )
    {
       if( activeLayers[i] )
@@ -1091,7 +1095,15 @@ void PinTable::RestoreLayers()
          for( int t=0;t<layer[i].Size();t++ )
          {
             IEditable *piedit = layer[i].ElementAt(t);
-            m_vedit.AddElement(piedit);
+            piedit->isVisible=true;
+         }
+      }
+      else
+      {
+         for( int t=0;t<layer[i].Size();t++ )
+         {
+            IEditable *piedit = layer[i].ElementAt(t);
+            piedit->isVisible=false;
          }
       }
    }
@@ -1420,7 +1432,8 @@ void PinTable::Render(Sur * const psur)
       IEditable *ptr = m_vedit.ElementAt(i);
       if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
-         ptr->PreRender(psur);
+         if ( ptr->isVisible )
+            ptr->PreRender(psur);
       }
    }
 
@@ -1458,7 +1471,8 @@ void PinTable::Render(Sur * const psur)
    {
       if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
       {
-         m_vedit.ElementAt(i)->Render(psur);
+         if( m_vedit.ElementAt(i)->isVisible )
+            m_vedit.ElementAt(i)->Render(psur);
       }
    }
 
@@ -1621,10 +1635,115 @@ void PinTable::Paint(HDC hdc)
    //DeleteObject(hbmOffScreen);
 }
 
+void PinTable::UpdateDrawingOrder( IEditable *ptr, bool up )
+{
+   if ( up )
+   {
+      for( int t=0;t<m_pvp->m_sb.m_vhwndDialog.Size();t++ )
+      {
+         HWND hw=GetDlgItem( m_pvp->m_sb.m_vhwndDialog.ElementAt(t), IDC_DRAW_ORDER_LIST );
+         if( hw!=NULL )
+         {
+            char nameBuf[256];
+            DWORD idx = SendMessage( hw, LB_GETCURSEL,0,0 );
+            if ( idx>0 )
+            {
+               SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
+               SendMessage( hw, LB_DELETESTRING, idx, 0 );
+               SendMessage( hw, LB_INSERTSTRING, idx-1, (WPARAM)nameBuf);
+               SendMessage( hw, LB_SETCURSEL, idx-1,0);
+               ISelect *psel = allHitElements.ElementAt(idx);
+               allHitElements.RemoveElementAt(idx);
+               if ( idx-1<0 )
+               {
+                  allHitElements.InsertElementAt(psel,0);
+               }
+               else
+                  allHitElements.InsertElementAt(psel, idx-1);
+               for ( int i=allHitElements.Size()-1;i>=0;i-- )
+               {
+                  IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
+                  int t=m_vedit.IndexOf(pedit);
+                  m_vedit.RemoveElementAt(t);
+               }
+               for ( int i=allHitElements.Size()-1;i>=0;i-- )
+               {
+                  IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
+                  m_vedit.AddElement(pedit);
+               }
+            }
+            break;
+         }
+      }
+   }
+   else
+   {
+      for( int t=0;t<m_pvp->m_sb.m_vhwndDialog.Size();t++ )
+      {
+         HWND hw=GetDlgItem( m_pvp->m_sb.m_vhwndDialog.ElementAt(t), IDC_DRAW_ORDER_LIST );
+         if( hw!=NULL )
+         {
+            char nameBuf[256];
+            DWORD idx = SendMessage( hw, LB_GETCURSEL,0,0 );
+            if ( idx<allHitElements.Size()-1 )
+            {
+               SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
+               SendMessage( hw, LB_DELETESTRING, idx, 0 );
+               SendMessage( hw, LB_INSERTSTRING, idx+1, (WPARAM)nameBuf);
+               SendMessage( hw, LB_SETCURSEL, idx+1,0);
+               ISelect *psel = allHitElements.ElementAt(idx);
+               allHitElements.RemoveElementAt(idx);
+               if ( idx+1>=allHitElements.Size() )
+               {
+                  allHitElements.AddElement(psel);
+               }
+               else
+                  allHitElements.InsertElementAt(psel, idx+1);
+               for ( int i=allHitElements.Size()-1;i>=0;i-- )
+               {
+                  IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
+                  int t=m_vedit.IndexOf(pedit);
+                  m_vedit.RemoveElementAt(t);
+               }
+               for ( int i=allHitElements.Size()-1;i>=0;i-- )
+               {
+                  IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
+                  m_vedit.AddElement(pedit);
+               }
+            }
+            break;
+         }
+      }
+   }
+
+}
+void PinTable::UpdateDrawingOrderListBox()
+{
+   HWND listHwnd=NULL;
+
+   for( int t=0;t<m_pvp->m_sb.m_vhwndDialog.Size();t++ )
+   {
+      listHwnd=GetDlgItem( m_pvp->m_sb.m_vhwndDialog.ElementAt(t), IDC_DRAW_ORDER_LIST );
+      if( listHwnd!=NULL )
+      {
+         break;
+      }
+   }
+
+   for( int i=0; i<allHitElements.Size(); i++ )
+   {
+      WCHAR *elemName;
+      elemName = allHitElements.ElementAt(i)->GetIEditable()->GetScriptable()->m_wzName;
+      char szTemp[256];
+      WideCharToMultiByte(CP_ACP, 0, elemName, -1, szTemp, 256, NULL, NULL);
+      SendMessage( listHwnd, LB_ADDSTRING, i, (LPARAM)szTemp);
+   }
+}
 
 ISelect *PinTable::HitTest(const int x, const int y)
 {
    HDC hdc = GetDC(m_hwnd);
+   HWND listHwnd = NULL;
 
    RECT rc;
    GetClientRect(m_hwnd, &rc);
@@ -1632,6 +1751,16 @@ ISelect *PinTable::HitTest(const int x, const int y)
    HitSur * const phs = new HitSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
 
    allHitElements.RemoveAllElements();
+   for( int t=0;t<m_pvp->m_sb.m_vhwndDialog.Size();t++ )
+   {
+      listHwnd=GetDlgItem( m_pvp->m_sb.m_vhwndDialog.ElementAt(t), IDC_DRAW_ORDER_LIST );
+      if( listHwnd!=NULL )
+      {
+         SendMessage( listHwnd, LB_RESETCONTENT, 0, 0);
+         break;
+      }
+   }
+
    Render(phs);
 
    for (int i=0;i<m_vedit.Size();i++)
@@ -1648,6 +1777,16 @@ ISelect *PinTable::HitTest(const int x, const int y)
             allHitElements.AddElement(tmp2);
          }
       }
+   }
+   Vector<ISelect> tmpBuffer;
+   for( int i=allHitElements.Size()-1; i>=0; i-- )
+   {
+      tmpBuffer.AddElement( allHitElements.ElementAt(i) );
+   }
+   allHitElements.RemoveAllElements();
+   for(int i=0;i<tmpBuffer.Size();i++)
+   {
+      allHitElements.AddElement( tmpBuffer.ElementAt(i) );
    }
 
    ISelect * const pisel = phs->m_pselected;
@@ -4263,8 +4402,13 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 
       AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
       AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
-      for( int i=allHitElements.Size()-1;i>=0;i-- )
+      for( int i=0; i<allHitElements.Size(); i++ ) 
       {
+         if( !allHitElements.ElementAt(i)->GetIEditable()->isVisible )
+         {
+            continue;
+         }
+
          ISelect *ptr = allHitElements.ElementAt(i);
          if ( ptr )
          {
@@ -5213,6 +5357,7 @@ void PinTable::AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate)
    if (fUpdate)
    {
       g_pvp->SetPropSel(&m_vmultisel);
+      UpdateDrawingOrderListBox();
    }
 
    if (m_vmultisel.ElementAt(0)->GetIEditable() && m_vmultisel.ElementAt(0)->GetIEditable()->GetScriptable())

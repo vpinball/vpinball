@@ -470,6 +470,7 @@
 #define IDC_LIST1                       362
 #define IDC_LIST                        362
 #define IDC_ELEMENT_LIST                362
+#define IDC_DRAW_ORDER_LIST             362
 #define IDD_PROPPOINT_POSITION          363
 #define IDD_PROPPOINT_VISUALS           364
 #define IDC_HANGDETECT                  364
@@ -545,7 +546,10 @@
 #define IDC_SCALE_UNDO_BUTTON           417
 #define IDC_TRANSLATE_UNDO_BUTTON2      417
 #define IDC_TRANSLATE_UNDO_BUTTON       417
+#define IDC_DRAW_ORDER_UP               417
 #define IDC_JOYCUSTOM3COMBO             418
+#define IDC_BUTTON3                     418
+#define IDC_DRAW_ORDER_DOWN             418
 #define IDC_JOYCUSTOM4COMBO             419
 #define IDC_JOYCUSTOM1COMBO2            420
 #define IDC_JOYDEBUGCOMBO               420
