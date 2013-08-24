@@ -1733,19 +1733,13 @@ void PinTable::UpdateDrawingOrderListBox()
 
    for( int i=0; i<allHitElements.Size(); i++ )
    {
-      WCHAR *elemName;
       IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
-      IScriptable *pscript =NULL;
       if ( pedit )
       {
-         pscript = pedit->GetScriptable();
-      }
-      if ( pscript )
-      {
-         elemName = pscript->m_wzName;
-         char szTemp[256];
-         WideCharToMultiByte(CP_ACP, 0, elemName, -1, szTemp, 256, NULL, NULL);
-         SendMessage( listHwnd, LB_ADDSTRING, i, (LPARAM)szTemp);
+         char *szTemp;
+         szTemp = GetElementName(pedit);
+         if( szTemp )
+            SendMessage( listHwnd, LB_ADDSTRING, i, (LPARAM)szTemp);
       }
    }
 }
@@ -1777,6 +1771,12 @@ ISelect *PinTable::HitTest(const int x, const int y)
             allHitElements.AddElement(tmp);
          }
       }
+   }
+   // it's possible that PreRender doesn't find all elements  (gates,plunger)
+   // check here if everything was already stored in the list
+   if( allHitElements.IndexOf(phs->m_pselected)==-1 )
+   {
+      allHitElements.AddElement(phs->m_pselected);
    }
    delete phs2;
 
@@ -4414,17 +4414,23 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
          ISelect *ptr = allHitElements.ElementAt(i);
          if ( ptr )
          {
-            ptr->GetIEditable()->GetScriptable()->m_wzName;
-            char szTemp[256];
-            WideCharToMultiByte(CP_ACP, 0, ptr->GetIEditable()->GetScriptable()->m_wzName, -1, szTemp, 256, NULL, NULL);
-            // what a hack!
-            // the element index of the allHitElements vector is encoded inside the ID of the context menu item
-            // I didn't find an easy way to identify the selected menu item of a context menu
-            // so the ID_SELECT_ELEMENT is the global ID for selecting an element from the list and the rest is
-            // added for finding the element out of the list
-            // the selection is done in ISelect::DoCommand()
-            unsigned long id = 0x80000000 + (i<<16) + ID_SELECT_ELEMENT;
-            AppendMenu(hmenu, MF_STRING, id, szTemp);
+            IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
+            if ( pedit )
+            {
+               char *szTemp;
+               szTemp = GetElementName(pedit);
+               if( szTemp )
+               {
+                  // what a hack!
+                  // the element index of the allHitElements vector is encoded inside the ID of the context menu item
+                  // I didn't find an easy way to identify the selected menu item of a context menu
+                  // so the ID_SELECT_ELEMENT is the global ID for selecting an element from the list and the rest is
+                  // added for finding the element out of the list
+                  // the selection is done in ISelect::DoCommand()
+                  unsigned long id = 0x80000000 + (i<<16) + ID_SELECT_ELEMENT;
+                  AppendMenu(hmenu, MF_STRING, id, szTemp);
+               }
+            }
          }
       }
       BOOL fLocked = psel->m_fLocked;
@@ -4450,6 +4456,27 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
    {
       DestroyMenu(hmenumain);
    }
+}
+
+char elementName[256];
+char *PinTable::GetElementName( IEditable *pedit )
+{
+   WCHAR *elemName=NULL;
+   IScriptable *pscript =NULL;
+   if ( pedit )
+   {
+      pscript = pedit->GetScriptable();
+      if ( pscript )
+      {
+         elemName = pscript->m_wzName;
+      }
+   }
+   if ( elemName )
+   {
+      WideCharToMultiByte(CP_ACP, 0, elemName, -1, elementName, 256, NULL, NULL);
+      return elementName;
+   }
+   return NULL;
 }
 
 BOOL PinTable::FMutilSelLocked()
@@ -5125,6 +5152,9 @@ void PinTable::Copy()
 }
 
 // BUG - in sync with list in ISelect.h
+// value gets and'ed with 1(table view) or 2(backglass view)
+// if you want to allow an element to be copy'n past for only table view use 1
+// for only backglass view 2 and for both use 3
 int rgItemViewAllowed[] =
 {
    1,
@@ -5146,7 +5176,7 @@ int rgItemViewAllowed[] =
    0,
    2,
    0,
-   0,
+   1,
    2,
 };
 

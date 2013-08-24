@@ -358,6 +358,7 @@ public:
 	virtual IScriptable *GetScriptable();
 
 	virtual PinTable *GetPTable() {return this;}
+   char *GetElementName( IEditable *pedit );
 
 	void OnDelete();
 
