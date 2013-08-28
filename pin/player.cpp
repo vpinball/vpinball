@@ -2287,6 +2287,18 @@ void Player::Render()
 		m_fCleanBlt = fFalse;
 	}
 
+   bool vsync = false;
+   if(m_fVSync > 0)
+   {
+      if(m_fVSync == 1) // legacy auto-detection
+      {
+         if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
+            vsync = true;
+      }
+      else
+         if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
+            vsync = true;
+   }
 
   if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (m_fFXAA == 0)) || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
   {
@@ -2294,18 +2306,6 @@ void Player::Render()
 		 m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
 		// Draw with an offset to shake the display.
-		bool vsync = false;
-		if(m_fVSync > 0)
-		{
-		    if(m_fVSync == 1) // legacy auto-detection
-			{
-				if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
-					vsync = true;
-		    }
-		    else
-				if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
-					vsync = true;
-		}
 
 		m_pin3d.Flip((int)m_NudgeBackX, (int)m_NudgeBackY, vsync);
 		m_fCleanBlt = fFalse;
@@ -2314,18 +2314,6 @@ void Player::Render()
 	{
 		if (m_fCleanBlt && (overall_area < FULLBLTAREA)) //!! last check can lead to these strange super bright flashers in NBA, etc (overdraw of same stuff over and over again! -> maybe due to backbuffer not being blitted over frontbuffer but simply flipped??) //!! only with region optimization off??
 		{
-			bool vsync = false;
-			if(m_fVSync > 0)
-			{
-			    if(m_fVSync == 1) // legacy auto-detection
-				{
-					if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
-						vsync = true;
-			    }
-			    else
-					if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
-						vsync = true;
-			}
 			if(vsync)
 				g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
 
@@ -2378,19 +2366,6 @@ void Player::Render()
 		}
 		else
 		{
-			bool vsync = false;
-			if(m_fVSync > 0)
-			{
-			    if(m_fVSync == 1) // legacy auto-detection
-				{
-					if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
-						vsync = true;
-			    }
-			    else
-					if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
-						vsync = true;
-			}
-
 			// Copy the entire back buffer to the front buffer.
 			m_pin3d.Flip(0, 0, vsync);
 

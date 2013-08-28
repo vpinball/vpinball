@@ -185,9 +185,10 @@ public:
 
 	void DrawBackground();
 
-	void InitRenderState() const;
+	void InitRenderState();
 
-	void InitBackGraphics();
+	void InitPlayfieldGraphics();
+   void RenderPlayfieldGraphics();
 
 	void InitLights();
    void ClearSpriteRectangle( AnimObject *animObj, ObjFrame *pof );
@@ -213,7 +214,7 @@ public:
 	void CreateBallShadow();
 
 	void SetUpdatePos(const int left, const int top);
-	void Flip(const int offsetx, const int offsety, const BOOL vsync);
+   void Flip(const int offsetx, const int offsety, const BOOL vsync);
 
 	void SetRenderTarget(const BaseTexture* pddsSurface, const BaseTexture* pddsZ) const;
 	void SetTextureFilter(const int TextureNum, const int Mode) const;
@@ -263,6 +264,11 @@ public:
 	//LPDIRECTDRAWSURFACE7 m_pddsLightProjectTexture;
 	BaseTexture* m_pddsLightWhite;
 
+   VertexBuffer *backgroundVBuffer;
+   VertexBuffer *tableVBuffer;
+   WORD *playfieldPolyIndices;
+   DWORD numPolys;
+   DWORD numVerts;
 	ExVector<void> m_xvShadowMap;
 
 	Matrix3D m_matrixTotal;

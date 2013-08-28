@@ -21,6 +21,8 @@ Pin3D::Pin3D()
    m_pddsStatic = NULL;
    m_pddsStaticZ = NULL;
    m_pddsLightWhite = NULL;
+   backgroundVBuffer = NULL;
+   tableVBuffer = NULL;
 }
 
 Pin3D::~Pin3D()
@@ -949,7 +951,7 @@ void Pin3D::SetRenderTarget(const BaseTexture* pddsSurface, const BaseTexture* p
    hr = m_pd3dDevice->SetRenderTarget((LPDIRECTDRAWSURFACE7)pddsZ, 0L);
 }
 
-void Pin3D::InitRenderState() const
+void Pin3D::InitRenderState() 
 {
    //hr = m_pd3dDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
    m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
@@ -975,28 +977,22 @@ void Pin3D::InitRenderState() const
    m_pd3dDevice->SetRenderState( RenderDevice::CLIPPLANEENABLE, 0 );
 
    m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
-}
 
-const WORD rgiPin3D1[4] = {2,3,5,6};
-
-void Pin3D::DrawBackground()
-{
+   //init background
+   if( !backgroundVBuffer )
+   {
+      m_pd3dDevice->createVertexBuffer( 4, 0, MY_D3DTRANSFORMED_NOTEX2_VERTEX, &backgroundVBuffer);
+      NumVideoBytes += 4*sizeof(Vertex3D_NoTex2); //!! never cleared up again here
+   }
    PinTable * const ptable = g_pplayer->m_ptable;
    Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)g_pplayer->m_ptable->m_szImageBackdrop) : NULL;
-
-   // Direct all renders to the "static" buffer.
-   SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
-
    if (pin)
    {
-      m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L );
-
-      m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-
       float maxtu,maxtv;
       g_pplayer->m_ptable->GetTVTU(pin, &maxtu, &maxtv);
 
       Vertex3D_NoTex2 rgv3D[4];
+
       rgv3D[0].x = 0;
       rgv3D[0].y = 0;
       rgv3D[0].tu = 0;
@@ -1017,17 +1013,35 @@ void Pin3D::DrawBackground()
       rgv3D[3].tu = 0;
       rgv3D[3].tv = maxtv;
 
-      SetTexture(pin->m_pdsBuffer);
-
       SetHUDVertices(rgv3D, 4);
       SetDiffuse(rgv3D, 4, 0xFFFFFF);
+      Vertex3D_NoTex2 *buf;
+      backgroundVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
+      memcpy( buf, rgv3D, sizeof(Vertex3D_NoTex2)*4);
+      backgroundVBuffer->unlock();
+   }
+   
+}
 
-      m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
-         rgv3D, 4,
-         (LPWORD)rgi0123, 4, 0);
-      //m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
-      //										  rgv3D, 4, 0);
+const WORD rgiPin3D1[4] = {2,3,5,6};
 
+void Pin3D::DrawBackground()
+{
+   PinTable * const ptable = g_pplayer->m_ptable;
+   Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)g_pplayer->m_ptable->m_szImageBackdrop) : NULL;
+
+   // Direct all renders to the "static" buffer.
+   SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
+
+   if (pin)
+   {
+      m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L );
+
+      m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+
+      SetTexture(pin->m_pdsBuffer);
+
+      m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, backgroundVBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
       m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    }
    else
@@ -1125,19 +1139,6 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
    DrawBackground();
 
-   /*
-   Vertex3D rgv[8];
-   rgv[0].x=left;    rgv[0].y=top;     rgv[0].z=0;
-   rgv[3].x=left;    rgv[3].y=bottom;  rgv[3].z=0;
-   rgv[2].x=right;   rgv[2].y=bottom;  rgv[2].z=0;
-   rgv[1].x=right;   rgv[1].y=top;     rgv[1].z=0;
-
-   // These next 4 vertices are used just to set the extents
-   rgv[4].x=left;    rgv[4].y=top;     rgv[4].z=50;
-   rgv[5].x=left;    rgv[5].y=bottom;  rgv[5].z=50;
-   rgv[6].x=right;   rgv[6].y=bottom;  rgv[6].z=50;
-   rgv[7].x=right;   rgv[7].y=top;     rgv[7].z=50;*/
-
    EnableLightMap(g_pplayer->m_ptable->m_fRenderShadows, 0);
 
    //m_pd3dDevice->SetTexture(eLightProject1, m_pddsLightProjectTexture);
@@ -1209,15 +1210,13 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
    //EnableLightMap(fFalse, -1);
    InitLights();
 
-   InitBackGraphics();
+   InitPlayfieldGraphics();
+   RenderPlayfieldGraphics();
 }
 
-void Pin3D::InitBackGraphics()
+void Pin3D::InitPlayfieldGraphics()
 {
-   // Direct all renders to the "static" buffer.
-   SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
-
-   EnableLightMap(fTrue, 0);
+#define TRIANGULATE_BACK 100
 
    Vertex3D rgv[8];
    rgv[0].x=g_pplayer->m_ptable->m_left;     rgv[0].y=g_pplayer->m_ptable->m_top;      rgv[0].z=0;
@@ -1231,34 +1230,30 @@ void Pin3D::InitBackGraphics()
    rgv[6].x=g_pplayer->m_ptable->m_right;    rgv[6].y=g_pplayer->m_ptable->m_bottom;   rgv[6].z=50.0f;
    rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
 
-   Material mtrl;
+   numVerts = (TRIANGULATE_BACK+1)*(TRIANGULATE_BACK+1);
+   if( !tableVBuffer )
+   {
+      m_pd3dDevice->createVertexBuffer( numVerts+7, 0, MY_D3DFVF_VERTEX, &tableVBuffer); //+7 verts for second rendering step
+      NumVideoBytes += numVerts*sizeof(Vertex3D); 
+   }
 
    const Texture * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
-
    float maxtu,maxtv;
 
    if (pin)
    {
       // Calculate texture coordinates.
       g_pplayer->m_ptable->GetTVTU(pin, &maxtu, &maxtv);		
-
-      //m_pd3dDevice->SetTexture(ePictureTexture, pin->m_pdsBuffer);
-      //SetTexture(pin->m_pdsBuffer);
-
-      //m_pd3dDevice->SetTextureStageState(eLightProject1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-      //m_pd3dDevice->SetTextureStageState(eLightProject1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-      SetTexture(pin->m_pdsBuffer);
    }
    else // No image by that name
    {
-      SetTexture(NULL);
-
-      mtrl.setColor( 1.0f, g_pplayer->m_ptable->m_colorplayfield );
       maxtv = maxtu = 1.0f;
    }
 
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
+   EnableLightMap(fTrue, 0);
 
    for (int i=0; i<4; ++i)
    {
@@ -1271,17 +1266,14 @@ void Pin3D::InitBackGraphics()
 
       m_lightproject.CalcCoordinates(&rgv[i],inv_width,inv_height);
    }
-   mtrl.set();
-
    // triangulate for better vertex based lighting //!! disable/set to 0 as soon as pixel shaders do the lighting
-#define TRIANGULATE_BACK 100
 
-#if (TRIANGULATE_BACK > 0)
-   Vertex3D buffer[(TRIANGULATE_BACK+1)*(TRIANGULATE_BACK+1)];
+   Vertex3D *buffer = new Vertex3D[numVerts];
 
    const float inv_tb = (float)(1.0/TRIANGULATE_BACK);
    unsigned int offs = 0;
    for(unsigned int y = 0; y <= TRIANGULATE_BACK; ++y)
+   {
       for(unsigned int x = 0; x <= TRIANGULATE_BACK; ++x,++offs) //!! triangulate more in y then in x?
       {
          Vertex3D &tmp = buffer[offs];
@@ -1297,42 +1289,60 @@ void Pin3D::InitBackGraphics()
          tmp.nz = rgv[0].nz;
          m_lightproject.CalcCoordinates(&tmp,inv_width,inv_height);
       }
+   }
+   playfieldPolyIndices = new WORD[TRIANGULATE_BACK*TRIANGULATE_BACK*6];
+   numPolys = TRIANGULATE_BACK*TRIANGULATE_BACK*6;
+   offs = 0;
+   unsigned int offs2 = 0;
+   for(int y = 0; y < TRIANGULATE_BACK; ++y)
+   {
+      for(int x = 0; x < TRIANGULATE_BACK; ++x,offs+=6,++offs2)
+      {
+         WORD *tmp = playfieldPolyIndices + offs;
+         tmp[3] = tmp[0] = offs2;
+         tmp[1] = offs2+1;
+         tmp[4] = tmp[2] = offs2+1+TRIANGULATE_BACK;
+         tmp[5] = offs2+TRIANGULATE_BACK;
+      }
+   }
+   Vertex3D *buf;
+   tableVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
+   memcpy( buf, buffer, sizeof(Vertex3D)*numVerts);
+   SetNormal(rgv, rgiPin3D1, 4, NULL, NULL, 0);
+   memcpy( &buf[numVerts], rgv, 7*sizeof(Vertex3D));
+   tableVBuffer->unlock();
 
-      WORD bufferi[TRIANGULATE_BACK*TRIANGULATE_BACK*6];
-      offs = 0;
-      unsigned int offs2 = 0;
-      for(int y = 0; y < TRIANGULATE_BACK; ++y)
-         for(int x = 0; x < TRIANGULATE_BACK; ++x,offs+=6,++offs2)
-         {
-            WORD *tmp = bufferi + offs;
-            tmp[3] = tmp[0] = offs2;
-            tmp[1] = offs2+1;
-            tmp[4] = tmp[2] = offs2+1+TRIANGULATE_BACK;
-            tmp[5] = offs2+TRIANGULATE_BACK;
-         }
-         m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,
-            buffer, (TRIANGULATE_BACK+1)*(TRIANGULATE_BACK+1),
-            bufferi, TRIANGULATE_BACK*TRIANGULATE_BACK*6, 0);
-#else
-   m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-      rgv, 4,
-      (LPWORD)rgi0123, 4, 0);
-   //m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-   //								  rgv, 4, 0);
-#endif
+   delete[] buffer;
+}
+
+void Pin3D::RenderPlayfieldGraphics()
+{
+   // Direct all renders to the "static" buffer.
+   SetRenderTarget(m_pddsStatic, m_pddsStaticZ);
+
+   EnableLightMap(fTrue, 0);
+
+   Material mtrl;
+
+   const Texture * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
+
+   if (pin)
+   {
+      SetTexture(pin->m_pdsBuffer);
+   }
+   else // No image by that name
+   {
+      SetTexture(NULL);
+
+      mtrl.setColor( 1.0f, g_pplayer->m_ptable->m_colorplayfield );
+   }
+   mtrl.set();
+
+   m_pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, tableVBuffer, 0, numVerts, playfieldPolyIndices, numPolys, 0 );
    EnableLightMap(fFalse, -1);
 
-   //m_pd3dDevice->SetTextureStageState(eLightProject1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-   //m_pd3dDevice->SetTextureStageState(eLightProject1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-   //pddsLightMap->Release();
-
-   //m_pd3dDevice->SetTexture(ePictureTexture, NULL);
    SetTexture(NULL);
-
-   SetNormal(rgv, rgiPin3D1, 4, NULL, NULL, 0);
-   m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-      rgv, 7,
-      (LPWORD)rgiPin3D1, 4, 0);
+   m_pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, tableVBuffer, numVerts, 7, (LPWORD)rgiPin3D1, 4, 0 );
 }
 
 const int rgfilterwindow[7][7] = {
