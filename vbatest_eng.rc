@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1241,16 +1241,20 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,205,115,10
 END
 
-IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 81
+IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 137
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        1505,7,18,113,120,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        1508,7,40,113,109,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        1509,7,62,113,112,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "&Ball Image:",-1,7,9,74,8
-    LTEXT           "&Front Decal:",-1,7,32,74,8
-    LTEXT           "Bac&k Decal:",-1,7,54,74,8
+    LTEXT           "&Ball Image:",IDC_STATIC,7,9,74,8
+    LTEXT           "&Front Decal:",IDC_STATIC,7,32,74,8
+    LTEXT           "Bac&k Decal:",IDC_STATIC,7,54,74,8
+    CONTROL         "Enable",IDC_BALL_REFLECTION,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,11,91,38,10
+    LTEXT           "Strength (0..255)",IDC_STATIC,12,105,54,8
+    EDITTEXT        IDC_REFLECTION_EDIT,69,102,31,14,ES_AUTOHSCROLL
+    GROUPBOX        "Reflection ",IDC_STATIC,7,79,113,42
 END
 
 IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 160
@@ -1509,6 +1513,11 @@ BEGIN
     IDD_PROP_NAME, DIALOG
     BEGIN
         BOTTOMMARGIN, 103
+    END
+
+    IDD_PROPTABLE_BALL, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 135
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2077,7 +2086,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

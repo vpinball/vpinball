@@ -86,7 +86,8 @@ public:
 	float x;
 	float y;
 	float z;
-	
+	float defaultZ;   //normal height of the ball
+
 	float vx;
 	float vy;
 	float vz;
