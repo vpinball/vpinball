@@ -11,7 +11,11 @@ VP 9.1.6 Changelog
 - add flag for alpha ramps to optionally use additive blending (to cope with 2D-lighting-hacks like halos/flashers)
 - add layering of table elements
 - add per-table sound & music volume settings (0..100% scaling of the global VP settings)
-
+- add easy selection mode if you right-click on an element in the context menu you can select those elements which are stacked under the mouse cursor
+- add drawing order. If you click on an element all elements which are over/under that clicked element are shown in a list box. You can move elements up/down to change the drawing order
+- add reflection option for balls per table. If you enable this option the ball is mirrored on the table. With reflection strength you can define how much the ball will reflect. 
+  If the value is too high the mirror effect will look odd.
+  
 VP 9.1.5 Changelog
 ------------------------
 - add flag for ramps to optionally make them not influence the 3D stereo rendering (to cope with 2D-hacks like halos/flashers/GI)

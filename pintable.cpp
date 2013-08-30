@@ -646,6 +646,8 @@ PinTable::PinTable()
    m_szBlurb = NULL;
    m_szDescription = NULL;
    m_szRules = NULL;
+   useReflectionForBalls=fFalse;
+   ballReflectionStrength=50;
 
    m_pbTempScreenshot = NULL;
 
@@ -2849,9 +2851,12 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(LOTY), m_Light[1].type);
 
    bw.WriteInt(FID(NONO), m_NormalizeNormals);
-
+   
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
+
+   bw.WriteInt(FID(BREF), useReflectionForBalls );
+   bw.WriteInt(FID(BRST), ballReflectionStrength );
 
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
    // Someday save these values into there own stream, used only when saving to file.
@@ -3705,6 +3710,14 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(NONO))
    {
       pbr->GetInt(&m_NormalizeNormals);
+   }
+   else if (id == FID(BREF))
+   {
+      pbr->GetInt(&useReflectionForBalls);
+   }
+   else if (id == FID(BRST))
+   {
+      pbr->GetInt(&ballReflectionStrength);
    }
    else if (id == FID(BCLR))
    {
@@ -7841,6 +7854,42 @@ STDMETHODIMP PinTable::put_NormalizeNormals(int newVal )
    STARTUNDO
 
       m_NormalizeNormals = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP PinTable::get_BallReflection(int *pVal)
+{
+   *pVal = useReflectionForBalls;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_BallReflection(int newVal )
+{
+   STARTUNDO
+
+      useReflectionForBalls = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ReflectionStength(int *pVal)
+{
+   *pVal = ballReflectionStrength;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ReflectionStength(int newVal )
+{
+   STARTUNDO
+
+      ballReflectionStrength = newVal;
 
    STOPUNDO
 

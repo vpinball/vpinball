@@ -162,8 +162,12 @@ public:
 	STDMETHOD(put_Light1DZ)(/*[in]*/ float newVal);
 	STDMETHOD(get_Light1Type)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Light1Type)(/*[in]*/ int newVal);
-	STDMETHOD(get_NormalizeNormals)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_NormalizeNormals)(/*[in]*/ int newVal);
+   STDMETHOD(get_NormalizeNormals)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_NormalizeNormals)(/*[in]*/ int newVal);
+   STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
+   STDMETHOD(get_ReflectionStength)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_ReflectionStength)(/*[in]*/ int newVal);
 
 	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
@@ -195,8 +199,8 @@ public:
 	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD(get_MaxSeparation)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_MaxSeparation)(/*[in]*/ float newVal);
@@ -666,7 +670,8 @@ END_CONNECTION_POINT_MAP()
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
 	BOOL m_NormalizeNormals;
-
+   BOOL useReflectionForBalls;
+   int ballReflectionStrength;
 	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 };
 

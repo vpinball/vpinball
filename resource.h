@@ -642,6 +642,8 @@
 #define IDC_MESH_FILENAME_EDIT          1601
 #define IDC_LOAD_MESH_BUTTON            1602
 #define IDC_DELETE_MESH_BUTTON          1603
+#define IDC_BALL_REFLECTION             1700
+#define IDC_REFLECTION_EDIT             1701
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770

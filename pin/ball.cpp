@@ -16,8 +16,8 @@ Ball::Ball()
    if( vertexBuffer==0 )
    {
       // VB for normal ball and logo(front+back) and shadow
-      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
-      NumVideoBytes += 4*4*sizeof(Vertex3D_NoTex2);
+      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 5*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+      NumVideoBytes += 5*4*sizeof(Vertex3D_NoTex2);
    }
 
    m_pho = NULL;
@@ -26,6 +26,7 @@ Ball::Ball()
    m_pin=NULL;
    m_pinBack=NULL;
    m_pinFront=NULL;
+   defaultZ = 25.0f;
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    fFrozen=false;
    logoMaterial.setDiffuse(0.8f, m_color );
