@@ -646,7 +646,15 @@ PinTable::PinTable()
    m_szBlurb = NULL;
    m_szDescription = NULL;
    m_szRules = NULL;
-   useReflectionForBalls=fFalse;
+
+   int reflection;
+   if ( FAILED(GetRegInt("Player", "BallReflection", &reflection)))
+   {
+      reflection = fTrue; // The default
+   }
+
+   //use ball reflection as default settings
+   useReflectionForBalls=reflection;
    ballReflectionStrength=50;
 
    m_pbTempScreenshot = NULL;

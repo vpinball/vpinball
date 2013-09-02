@@ -3854,6 +3854,15 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          }
          SendMessage(hwndCheck, BM_SETCHECK, antialias ? BST_CHECKED : BST_UNCHECKED, 0);
 
+         hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
+         int reflection;
+         hr = GetRegInt("Player", "BallReflection", &reflection);
+         if (hr != S_OK)
+         {
+            reflection = fTrue; // The default
+         }
+         SendMessage(hwndCheck, BM_SETCHECK, reflection ? BST_CHECKED : BST_UNCHECKED, 0);
+
          int vsync;
          hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
          if (hr != S_OK)
@@ -4083,6 +4092,10 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                   HWND hwndAlias = GetDlgItem(hwndDlg, IDC_ANTIALIAS);
                   int antialias = SendMessage(hwndAlias, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallAntialias", REG_DWORD, &antialias, 4);
+
+                  HWND hwndReflect = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
+                  int reflection = SendMessage(hwndReflect, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "BallReflection", REG_DWORD, &reflection, 4);
 
                   int vsync = GetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, NULL, TRUE);
                   SetRegValue("Player", "AdaptiveVSync", REG_DWORD, &vsync, 4);
