@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -211,55 +211,57 @@ BEGIN
     LTEXT           "Fuzzel",IDC_STATIC,13,141,21,8
 END
 
-IDD_VIDEO_OPTIONS DIALOGEX 0, 0, 333, 266
+IDD_VIDEO_OPTIONS DIALOGEX 0, 0, 351, 280
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Video Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "&Window",IDC_WINDOW,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,20,42,10
     CONTROL         "Full Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,16,31,56,10
-    LISTBOX         IDC_SIZELIST,14,42,129,125,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Enable Software FXAA",IDC_FXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,168,90,10
-    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,191,83,10
-    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,202,81,10
+    LISTBOX         IDC_SIZELIST,14,42,129,131,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable Software FXAA",IDC_FXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,179,90,10
+    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,203,83,10
+    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,213,81,10
     CONTROL         "At Full Screen anti-stretch the Ball",IDC_StretchMonitor,
-                    "Button",BS_AUTORADIOBUTTON,16,213,127,10
-    COMBOBOX        IDC_MonitorCombo,73,223,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+                    "Button",BS_AUTORADIOBUTTON,16,223,127,10
+    COMBOBOX        IDC_MonitorCombo,73,233,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Draw Ball &Shadows",IDC_SHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,77,10
-    CONTROL         "Draw Ball &Decals",IDC_DECAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,31,70,10
-    CONTROL         "&Antialias Ball",IDC_ANTIALIAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,44,55,10
-    CONTROL         "Enable 3D Stereo",IDC_3D_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,249,18,70,10
-    CONTROL         "Antialias 3D",IDC_3D_STEREO_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,249,31,70,10
-    CONTROL         "Use Y-Axis for 3D",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,249,44,70,10
-    CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,71,114,8
+    CONTROL         "Draw Ball &Decals",IDC_DECAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,30,70,10
+    CONTROL         "&Antialias Ball",IDC_ANTIALIAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,42,55,10
+    CONTROL         "Enable 3D Stereo",IDC_3D_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,18,70,10
+    CONTROL         "Antialias 3D",IDC_3D_STEREO_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,31,70,10
+    CONTROL         "Use Y-Axis for 3D",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,44,70,10
+    CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,81,114,8
     CONTROL         "Region Updates (faster on most hardware)",IDC_ENABLE_REGION_UPDATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,84,155,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,92,155,10
     CONTROL         "Region Optimization (NVIDIA (FX)AA tweak)",IDC_ENABLE_REGION_UPDATE_OPTIMIZATION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,97,155,10
-    LTEXT           "Adaptive VSync (avoid tearing)",IDC_STATIC,162,110,150,10
-    EDITTEXT        IDC_ADAPTIVE_VSYNC,262,109,20,10,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Hz  (1=auto)",IDC_STATIC,283,110,45,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,104,155,10
+    LTEXT           "Adaptive VSync (avoid tearing)",IDC_STATIC,162,121,150,10
+    EDITTEXT        IDC_ADAPTIVE_VSYNC,262,120,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Hz  (1=auto)",IDC_STATIC,283,123,45,10
     CONTROL         "Check &Blit Status (for Win98 and 2K)",IDC_CHECKBLIT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,123,133,10
-    CONTROL         "Reorder Playfield Objects (for ATI/AMD gfx)",216,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,136,155,10
-    CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,158,28,10
-    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,169,32,10
-    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,180,32,10
-    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,191,45,10
-    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | WS_TABSTOP,156,217,168,20
-    DEFPUSHBUTTON   "OK",IDOK,221,247,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,276,247,50,14
-    GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,237
-    GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,85,51
-    GROUPBOX        "3D Stereo Output",IDC_STATIC,242,7,84,51
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,59,172,184
-    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,148,162,55
-    LTEXT           "Restart Visual Pinball.",IDC_STATIC,244,159,72,8
-    LTEXT           "Only works for Images",IDC_STATIC,244,168,70,8
-    LTEXT           "that are not BMP.",IDC_STATIC,244,177,56,8
-    LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,208,156,8
-    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,180,133,59
-    LTEXT           "to my Monitor:",IDC_STATIC,27,225,45,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,135,133,10
+    CONTROL         "Reorder Playfield Objects (for ATI/AMD gfx)",216,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,147,155,10
+    CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,175,28,10
+    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,185,32,10
+    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,195,32,10
+    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,205,45,10
+    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | WS_TABSTOP,156,232,183,20
+    DEFPUSHBUTTON   "OK",IDOK,218,265,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,277,265,50,14
+    GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,251
+    GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,60
+    GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,60
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,69,190,188
+    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,163,180,55
+    LTEXT           "Restart Visual Pinball.",IDC_STATIC,244,178,72,8
+    LTEXT           "Only works for Images",IDC_STATIC,244,187,70,8
+    LTEXT           "that are not BMP.",IDC_STATIC,244,196,56,8
+    LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,222,156,8
+    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,192,133,59
+    LTEXT           "to my Monitor:",IDC_STATIC,27,235,45,8
+    CONTROL         "Reflect Ball on all tables",IDC_GLOBAL_REFLECTION_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,54,91,10
 END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
@@ -1510,6 +1512,12 @@ BEGIN
         BOTTOMMARGIN, 176
     END
 
+    IDD_VIDEO_OPTIONS, DIALOG
+    BEGIN
+        RIGHTMARGIN, 333
+        BOTTOMMARGIN, 266
+    END
+
     IDD_PROP_NAME, DIALOG
     BEGIN
         BOTTOMMARGIN, 103
@@ -2086,7 +2094,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -517,6 +517,7 @@
 #define IDD_SEARCH_SELECT_ELEMENT       391
 #define IDC_CHECK1                      394
 #define IDC_CHECK_PRIMITIVE_LIGHTING    394
+#define IDC_GLOBAL_REFLECTION_CHECK     394
 #define IDC_CHECK3                      396
 #define IDC_EDIT2                       397
 #define IDC_CHECK2                      398
