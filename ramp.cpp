@@ -2701,9 +2701,9 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
                }
                else
                {
-                  rgv3D[0].tu = maxtu;
+                  rgv3D[0].tu = 0;
                   rgv3D[0].tv = rgratio[i] * maxtv;
-                  rgv3D[2].tu = maxtu;
+                  rgv3D[2].tu = 0;
                   rgv3D[2].tv = rgratio[i+1] * maxtv;
                }
 
