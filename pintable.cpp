@@ -4978,9 +4978,10 @@ void PinTable::ExportBlueprint()
 
    for (int i=0;i<m_vedit.Size();i++)
    {
-      if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
+      IEditable *ptr = m_vedit.ElementAt(i);
+      if (ptr->isVisible && ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
-         m_vedit.ElementAt(i)->RenderBlueprint(psur);
+         ptr->RenderBlueprint(psur);
       }
    }
 

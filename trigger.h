@@ -105,8 +105,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Trigger)
 	TriggerHitCircle *m_ptriggerhitcircle;
 
 	BOOL m_hitEnabled;		// for custom shape triggers
-   Vertex3D staticVertices[40];
+   //Vertex3D staticVertices[40];
    Material material;
+   VertexBuffer *vertexBuffer;
 
 // ITrigger
 public:

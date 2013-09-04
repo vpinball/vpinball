@@ -13,11 +13,17 @@
 Decal::Decal()
 {
    m_pIFont = NULL;
+   vertexBuffer = NULL;
 } 
 
 Decal::~Decal() 
 {
    m_pIFont->Release();
+   if ( vertexBuffer )
+   {
+      vertexBuffer->release();
+      vertexBuffer=0;
+   }
 }
 
 HRESULT Decal::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -440,6 +446,7 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   Vertex3D_NoTex2 vertices[4];
 
    material.setAmbient(0.5f, 1.0f, 1.0f, 1.0f);
    material.setDiffuse(0.5f, 1.0f, 1.0f, 1.0f);
@@ -487,6 +494,7 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
    }
    ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
 
+
    const float halfwidth = m_realwidth * 0.5f;
    const float halfheight = m_realheight * 0.5f;
 
@@ -523,6 +531,21 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
       SetHUDVertices(vertices, 4);
       SetDiffuse(vertices, 4, 0xFFFFFF);
    }
+
+   if ( vertexBuffer== NULL )
+   {
+      DWORD vertexType = MY_D3DFVF_NOTEX2_VERTEX;
+      if ( GetPTable()->GetDecalsEnabled() )
+      {
+         vertexType = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
+      }
+      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+      NumVideoBytes += 4*sizeof(Vertex3D_NoTex2);
+   }
+   Vertex3D_NoTex2 *buf;
+   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+   memcpy( buf, vertices, 4*sizeof(Vertex3D_NoTex2));
+   vertexBuffer->unlock();
 
    ppin3d->ExpandExtents(&m_rcBounds, vertices, NULL, NULL, 4, m_fBackglass);
 
@@ -579,19 +602,7 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
       g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
    }
 
-   if (!m_fBackglass)
-   {
-      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,vertices, 4,(LPWORD)rgi0123,4,0);
-      //pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,0);
-   }
-   else
-   {
-      if( GetPTable()->GetDecalsEnabled() )
-      {
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,vertices, 4,(LPWORD)rgi0123,4,0);
-         //pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,rgv3D, 4,0);
-      }
-   }
+   pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
 
    // Set the texture state.
    pd3dDevice->SetTexture(ePictureTexture, NULL);

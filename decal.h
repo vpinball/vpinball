@@ -111,7 +111,7 @@ STANDARD_NONAPC_EDITABLE_DECLARES(eItemDecal)
 	float m_leading, m_descent;
 
 	float m_realwidth, m_realheight;
-   Vertex3D_NoTex2 vertices[4];
+   VertexBuffer *vertexBuffer;
    Material material;
 };
 

@@ -132,6 +132,7 @@ private:
     float       m_reeldigitheight;
     int         m_timenextupdate;
     bool        m_fforceupdate;
+    VertexBuffer *vertexBuffer;
 
 // IDispReel
 public:

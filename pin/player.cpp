@@ -2964,7 +2964,6 @@ void Player::DrawBallShadow(Ball * const pball)
    if (!pball->fFrozen && rgv3DShadow[0].x <= m_ptable->m_right && rgv3DShadow[2].y >= m_ptable->m_top)
    {
       m_pin3d.m_pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, pball->vertexBuffer, 12, 4, (LPWORD)rgi0123, 4, 0 );
-      //m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DShadow, 4, (LPWORD)rgi0123, 4, NULL);
    }
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -3002,7 +3001,6 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
 
 	  if(vBuffer)
           memcpy( vBuffer, rgv3DArrowTransformed, sizeof(Vertex3D_NoTex2)*4);
-          //m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, rgv3DArrowTransformed, 4, (LPWORD)rgi0123, 4, NULL);
    }
 
    orientation.Identity();

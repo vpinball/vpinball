@@ -106,6 +106,7 @@ DispReel::DispReel()
 {
 	m_pIFont = NULL;
 	m_ptu = NULL;
+   vertexBuffer = NULL;
 }
 
 
@@ -114,6 +115,11 @@ DispReel::DispReel()
 DispReel::~DispReel()
 {
 	m_pIFont->Release();
+   if( vertexBuffer )
+   {
+      vertexBuffer->release();
+      vertexBuffer=0;
+   }
 }
 
 
@@ -535,7 +541,13 @@ void DispReel::PostRenderStatic(const RenderDevice* pd3dDevice)
 
 void DispReel::RenderSetup(const RenderDevice* _pd3dDevice)
 {
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 
+   if ( vertexBuffer==NULL )
+   {
+      pd3dDevice->createVertexBuffer( 4, 0, MY_D3DTRANSFORMED_NOTEX2_VERTEX, &vertexBuffer );
+      NumVideoBytes += 4*sizeof(Vertex3D_NoTex2);
+   }
 }
 void DispReel::RenderStatic(const RenderDevice* pd3dDevice)
 {
@@ -783,12 +795,12 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 			
 				rgv3D[1].tu = rgv3D[2].tu = rgv3D[0].tu + ratiox;
 				rgv3D[2].tv = rgv3D[3].tv = rgv3D[0].tv + ratioy;
-			
-				pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
-												  rgv3D, 4,
-												  (LPWORD)rgi0123, 4, NULL);
-				//pd3dDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX,
-				//								  rgv3D, 4, NULL);
+
+            Vertex3D_NoTex2 *buf;
+            vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+            memcpy( buf, rgv3D, 4*sizeof(Vertex3D_NoTex2));
+            vertexBuffer->unlock();
+            pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
 
 				m_vreelframe.ElementAt(i)->pdds = ppin3d->CreateOffscreenWithCustomTransparency(/*m_reeldigitwidth*/m_renderwidth, /*m_reeldigitheight*/m_renderheight, m_rgbImageTransparent);
 				m_vreelframe.ElementAt(i)->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &rectSrc, 0);

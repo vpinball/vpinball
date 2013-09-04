@@ -8,11 +8,17 @@
 Plunger::Plunger()
 {
 	m_phitplunger = NULL;
+   vertexBuffer = NULL;
 }
 
 Plunger::~Plunger()
-	{
-	}
+{
+   if(vertexBuffer)
+   {
+      vertexBuffer->release();
+      vertexBuffer = NULL;
+   }
+}
 
 HRESULT Plunger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
@@ -333,6 +339,24 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
 
 
    verts = new Vertices[cframes];
+   if ( vertexBuffer == NULL )
+   {
+      if ( m_d.m_type == PlungerTypeModern )
+      {
+         g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( cframes*16*PLUNGEPOINTS1, 0, MY_D3DFVF_VERTEX, &vertexBuffer );
+         NumVideoBytes += (cframes*16*PLUNGEPOINTS1)*sizeof(Vertex3D);
+      }
+      else
+      {
+         g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( cframes*16*PLUNGEPOINTS0, 0, MY_D3DFVF_VERTEX, &vertexBuffer );
+         NumVideoBytes += (cframes*16*PLUNGEPOINTS0)*sizeof(Vertex3D);
+      }
+   }
+
+   int vbOffset=0;
+   Vertex3D *buf;
+   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+
    for ( int i=0;i<cframes; i++ )
    {
       const float height = beginy + inv_cframes*(float)i;
@@ -366,7 +390,8 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
             }
             ptr[PLUNGEPOINTS1-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
          }
-
+         memcpy( &buf[vbOffset], ptr, 16*PLUNGEPOINTS1*sizeof(Vertex3D));
+         vbOffset += (16*PLUNGEPOINTS1);
       }
       else if (m_d.m_type == PlungerTypeOrig)
       {
@@ -397,9 +422,11 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
             }
             ptr[PLUNGEPOINTS0-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
          }
+         memcpy( &buf[vbOffset], ptr, 16*PLUNGEPOINTS0*sizeof(Vertex3D));
+         vbOffset += (16*PLUNGEPOINTS0);
       }
-
    }
+   vertexBuffer->unlock();
 }
 
 void Plunger::RenderStatic(const RenderDevice* pd3dDevice)
@@ -414,10 +441,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
       _ASSERTE(m_phitplunger);
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-      const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
-
       material.set();
-
       ppin3d->ClearSpriteRectangle( &m_phitplunger->m_plungeranim, NULL );
 
       for (int i=0;i<cframes;i++)
@@ -436,7 +460,8 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
             {
                for (int m=0;m<(PLUNGEPOINTS1-1);m++,k+=4)
                {
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, ptr, (16*PLUNGEPOINTS1),(LPWORD)&indices[k], 4, 0);
+                  //pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, ptr, (16*PLUNGEPOINTS1),(LPWORD)&indices[k], 4, 0);
+                  pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, i*(16*PLUNGEPOINTS1), (16*PLUNGEPOINTS1), (LPWORD)&indices[k], 4, 0 );
                }
             }
          }
@@ -451,7 +476,8 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
                const int offset = l*PLUNGEPOINTS0;
                for (int m=0;m<(PLUNGEPOINTS0-1);m++,k+=4)
                {
-                  pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, ptr, 16*PLUNGEPOINTS0,(LPWORD)&indices[k], 4, 0);
+                  //pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, ptr, 16*PLUNGEPOINTS0,(LPWORD)&indices[k], 4, 0);
+                  pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, i*(16*PLUNGEPOINTS0), (16*PLUNGEPOINTS0), (LPWORD)&indices[k], 4, 0 );
                }
             }
          }

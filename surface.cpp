@@ -1472,7 +1472,6 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
          {
             // Draw side.
             pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, sideVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0);
-            //pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOLIGHTING_VERTEX, &vertsNotLit[offset], 4, (LPWORD)rgi0123, 4, 0);
          }
 
          if (fMover)
@@ -1487,7 +1486,6 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
          {
             // Draw side.
             pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, sideVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0);
-            //pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &verts[offset], 4, (LPWORD)rgi0123, 4, 0);
          }
 
          if (fMover)
