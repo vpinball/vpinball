@@ -234,8 +234,8 @@ BEGIN
     CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,81,114,8
     CONTROL         "Region Updates (faster on most hardware)",IDC_ENABLE_REGION_UPDATES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,92,155,10
-    CONTROL         "Region Optimization (NVIDIA (FX)AA tweak)",IDC_ENABLE_REGION_UPDATE_OPTIMIZATION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,104,155,10
+    CONTROL         "Region Optimization (NVIDIA/ATI (FX)AA tweak)",IDC_ENABLE_REGION_UPDATE_OPTIMIZATION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,104,168,10
     LTEXT           "Adaptive VSync (avoid tearing)",IDC_STATIC,162,121,150,10
     EDITTEXT        IDC_ADAPTIVE_VSYNC,262,120,20,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Hz  (1=auto)",IDC_STATIC,283,123,45,10
@@ -1514,7 +1514,7 @@ BEGIN
 
     IDD_VIDEO_OPTIONS, DIALOG
     BEGIN
-        RIGHTMARGIN, 333
+        RIGHTMARGIN, 344
         BOTTOMMARGIN, 266
     END
 

@@ -69,10 +69,34 @@ int LightCenter::GetSelectLevel()
 Light::Light() : m_lightcenter(this)
 {
    m_menuid = IDR_SURFACEMENU;
+   customVBuffer = NULL;
+   normalVBuffer = NULL;
+   customMoverVBuffer = NULL;
+   normalMoverVBuffer = NULL;
 }
 
 Light::~Light()
 {
+   if( customVBuffer )
+   {
+      customVBuffer->release();
+      customVBuffer=0;
+   }
+   if( normalVBuffer )
+   {
+      normalVBuffer->release();
+      normalVBuffer=0;
+   }
+   if( customMoverVBuffer )
+   {
+      customMoverVBuffer->release();
+      customMoverVBuffer=0;
+   }
+   if( normalMoverVBuffer )
+   {
+      normalMoverVBuffer->release();
+      normalMoverVBuffer=0;
+   }
 }
 
 HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -534,6 +558,12 @@ void Light::PrepareStaticCustom()
    PolygonToTriangles(rgv, &vpoly, &vtri);
    staticCustomVertexNum = vtri.Size()*3;
    staticCustomVertex = new Vertex3D[staticCustomVertexNum];
+   if ( customVBuffer==NULL )
+   {
+      DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
+      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( staticCustomVertexNum, 0, vertexType, &customVBuffer);
+      NumVideoBytes += staticCustomVertexNum*sizeof(Vertex3D);     
+   }
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    int k=0;
@@ -563,9 +593,14 @@ void Light::PrepareStaticCustom()
          SetDiffuse(&staticCustomVertex[k], 3, RGB_TO_BGR(m_d.m_bordercolor));
          SetHUDVertices(&staticCustomVertex[k], 3);
       }
-
 	  delete vtri.ElementAt(t);
    }
+
+   Vertex3D *buf;
+   customVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+   memcpy( buf, staticCustomVertex, staticCustomVertexNum*sizeof(Vertex3D));
+   customVBuffer->unlock();
+
    delete[] rgv;
 }
 
@@ -605,13 +640,27 @@ void Light::PrepareMoversCustom()
    customMoverVertex[0] = new Vertex3D[customMoverVertexNum];
    customMoverVertex[1] = new Vertex3D[customMoverVertexNum];
 
+   if ( customMoverVBuffer==NULL )
+   {
+      DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
+      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( customMoverVertexNum*2, 0, vertexType, &customMoverVBuffer);
+      NumVideoBytes += (customMoverVertexNum*2)*sizeof(Vertex3D);     
+   }
+   const int offsetOnState = customMoverVertexNum;
+
+   Material mtrl;
+
+   const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
+   const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
+   const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    for(int i=0; i<2; i++)
    {
       Texture* pin = NULL;
       if(i == LightStateOff && m_d.m_szOffImage[0] != 0) 
          pin = m_ptable->GetImage(m_d.m_szOffImage);
-
+      
       if(i == LightStateOn && m_d.m_szOnImage[0] != 0) 
          pin = m_ptable->GetImage(m_d.m_szOnImage);
 
@@ -666,7 +715,49 @@ void Light::PrepareMoversCustom()
          if (m_fBackglass)
             SetHUDVertices(&customMoverVertex[i][k], 3);
       }
+
+      if(i == LightStateOff) 
+      {
+         // Set the texture to the one defined in the editor.
+         mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
+         mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
+         mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
+         // Check if the light has an "off" texture.
+         if ((m_d.m_szOffImage[0] == 0) && (pin == NULL))
+         {
+            // Set the texture to a default.
+            mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
+            mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
+            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
+         }
+      } 
+      else //LightStateOn 
+      {
+         // Set the texture to the one defined in the editor.
+         mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
+         mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
+         mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
+         // Check if the light has an "on" texture.
+         if ((m_d.m_szOnImage[0] == 0) && (pin == NULL))
+         {
+            // Set the texture to a default.
+            mtrl.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
+            mtrl.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
+            mtrl.setEmissive(0.0f, r, g, b );
+         }
+      }
+      if (m_fBackglass && GetPTable()->GetDecalsEnabled())
+         SetDiffuseFromMaterial(customMoverVertex[i], customMoverVertexNum, &mtrl);
+
    }//for(i=0;i<2...)
+
+
+
+   Vertex3D *buf;
+   customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+   memcpy( buf, customMoverVertex[0], customMoverVertexNum*sizeof(Vertex3D));
+   memcpy( &buf[offsetOnState], customMoverVertex[1], customMoverVertexNum*sizeof(Vertex3D));
+   customMoverVBuffer->unlock();
 
    for (int i=0;i<cvertex;i++)
       delete vvertex.ElementAt(i);
@@ -692,7 +783,14 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
       const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
       const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-	  // prepare static circle object
+      if ( normalVBuffer==NULL )
+      {
+         DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
+         g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 32, 0, vertexType, &normalVBuffer);
+         NumVideoBytes += 32*sizeof(Vertex3D);     
+      }
+
+      // prepare static circle object
       for (int l=0; l<32; l++)
       {
          const float angle = (float)(M_PI*2.0/32.0)*(float)l;
@@ -710,6 +808,12 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
          SetHUDVertices(circleVertex, 32);
          SetDiffuse(circleVertex, 32, RGB_TO_BGR(m_d.m_bordercolor));
       }
+
+      Vertex3D *buf;
+      normalVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+      memcpy( buf, circleVertex, 32*sizeof(Vertex3D));
+      normalVBuffer->unlock();
+
    }
 }
 
@@ -717,14 +821,9 @@ void Light::RenderStatic(const RenderDevice* _pd3dDevice)
 {
    if (m_d.m_borderwidth > 0)
    {
-       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-       ppin3d->EnableLightMap(!m_fBackglass, height);
-
-	   const float r = (m_d.m_bordercolor & 255) * (float)(1.0/255.0);
-	   const float g = (m_d.m_bordercolor & 65280) * (float)(1.0/65280.0);
-	   const float b = (m_d.m_bordercolor & 16711680) * (float)(1.0/16711680.0);
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+      ppin3d->EnableLightMap(!m_fBackglass, height);
 
 	   Material mtrl;
       mtrl.setColor( 1.0f, m_d.m_bordercolor );
@@ -732,14 +831,15 @@ void Light::RenderStatic(const RenderDevice* _pd3dDevice)
       RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
       mtrl.set();
 
-	   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled()) {
+	   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled()) 
+      {
 		   if(m_d.m_shape == ShapeCustom)
          {
 			   for (int t=0; t<staticCustomVertexNum; t+=3)
-				   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, &staticCustomVertex[t], 3, (LPWORD)rgi0123, 3, 0); //!! optimize into single call
-		 }
+               pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, customVBuffer, t,3, (LPWORD)rgi0123, 3,0 );
+		   }
          else
-	           pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, circleVertex, 32, (LPWORD)rgiLightStatic1, 32, 0);
+            pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, normalVBuffer, 0, 32, (LPWORD)rgiLightStatic1, 32, 0);
 	   }
 
 	   ppin3d->EnableLightMap(fFalse, -1);
@@ -811,16 +911,15 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
          }
       }
      mtrl.set();    
-	  if (m_fBackglass && GetPTable()->GetDecalsEnabled())
-         SetDiffuseFromMaterial(customMoverVertex[i], customMoverVertexNum, &mtrl);
 
-      m_pobjframe[i] = new ObjFrame();
-      ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
+     m_pobjframe[i] = new ObjFrame();
+     ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
       
 	  for( int t=0; t<customMoverVertexNum; t+=3 ) //!! optimize into single call!
          if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
-             pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX, &customMoverVertex[i][t], 3, (LPWORD)rgi0123, 3, 0);
-
+         {
+            pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, customMoverVBuffer, (i*customMoverVertexNum)+t, 3, (LPWORD)rgi0123,3 ,0 );
+         }
 	  ppin3d->ExpandExtents(&m_pobjframe[i]->rc, customMoverVertex[i], NULL, NULL, customMoverVertexNum, m_fBackglass);
 
 	  if((i != LightStateOff) && (!m_d.m_EnableLighting))
@@ -903,6 +1002,13 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
    else
       SetHUDVertices(rgv3D, 32);
 
+   if ( normalMoverVBuffer==NULL )
+   {
+      DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
+      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 32, 0, vertexType, &normalMoverVBuffer);
+      NumVideoBytes += 32*sizeof(Vertex3D);     
+   }
+
    const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
    const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
    const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
@@ -930,6 +1036,10 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
          SetDiffuseFromMaterial(rgv3D, 32, &mtrl);
 
       mtrl.set();
+      Vertex3D *buf;
+      normalMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+      memcpy( buf, rgv3D, 32*sizeof(Vertex3D));
+      normalMoverVBuffer->unlock();
 
       m_pobjframe[i] = new ObjFrame();
 
@@ -944,11 +1054,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 
       if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
       {
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, !m_fBackglass ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX,
-            rgv3D, 32,
-            (LPWORD)rgiLightStatic1, 32, 0);
-         //Display_DrawPrimitive(pd3dDevice, D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,
-         //											  rgv3D, 32);
+         pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, normalMoverVBuffer, 0, 32, (LPWORD)rgiLightStatic1,32,0 );
       }
 
 	  if((i != LightStateOff) && (!m_d.m_EnableLighting))

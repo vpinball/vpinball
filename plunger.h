@@ -110,6 +110,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
    Vertices *verts;
    int cframes;
    WORD indices[16*PLUNGEPOINTS1*4];
+   VertexBuffer *vertexBuffer;
 
 	HitPlunger *m_phitplunger;
    Material material;

@@ -7,6 +7,7 @@ Trigger::Trigger()
    m_ptriggerhitcircle = NULL;
 
    m_hitEnabled = fTrue;
+   vertexBuffer = NULL;
 
    m_menuid = IDR_SURFACEMENU;
    material.setDiffuse( 0.0f, 0.5f, 0.5f, 0.5f );
@@ -18,6 +19,11 @@ Trigger::Trigger()
 
 Trigger::~Trigger()
 {
+   if( vertexBuffer )
+   {
+      vertexBuffer->release();
+      vertexBuffer=0;
+   }
 }
 
 HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -411,6 +417,7 @@ void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   Vertex3D staticVertices[40];
 
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
@@ -455,6 +462,17 @@ void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
          SetNormal(&staticVertices[offset], rgi, cpt, NULL, NULL, 0);
       }
    }
+
+   if ( vertexBuffer==NULL )
+   {
+      ppin3d->m_pd3dDevice->createVertexBuffer( 40, 0, MY_D3DFVF_VERTEX, &vertexBuffer );
+      NumVideoBytes += 40*sizeof(Vertex3D);
+   }
+   Vertex3D *buf;
+   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+   memcpy( buf, staticVertices, 40*sizeof(Vertex3D));
+   vertexBuffer->unlock();
+
 }
 
 void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
@@ -484,7 +502,7 @@ void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
             rgtriggerface[l][4]
          };
          const int cpt = (rgtriggerface[l][4] == 0xFFFF) ? 4 : 5;
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &staticVertices[offset], 10, (LPWORD)rgi, cpt, 0);
+         pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, offset, 10, (LPWORD)rgi, cpt, 0 );
       }
    }
 
