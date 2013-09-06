@@ -90,7 +90,7 @@ void NormalizeNormals()
    }
 }
 
-bool loadWavefrontObj( char *filename )
+bool loadWavefrontObj( char *filename, bool flipTv )
 {
    FILE *f;
    fopen_s(&f,filename,"r");
@@ -125,8 +125,10 @@ bool loadWavefrontObj( char *filename )
       {
          MyVector tmp;
          fscanf_s(f, "%f %f\n",&tmp.x, &tmp.y );
-         // don't mirror v coordinates...better do it in Blender & co
-         //tmp.y = 1.f-tmp.y;
+         if ( flipTv )
+         {
+            tmp.y = 1.f-tmp.y;
+         }
          tmpTexel.push_back(tmp);
       }
       if( strcmp( lineHeader,"vn") == 0 )
