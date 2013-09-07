@@ -615,6 +615,9 @@ PinTable::PinTable()
    m_xlatex = 0.0f;
    m_xlatey = 0.0f;
 
+   shadowDirX= 1.0f;
+   shadowDirY=-1.0f;
+
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
    m_pcv->Init((IScriptableHost*)this);
@@ -2859,6 +2862,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(LOTY), m_Light[1].type);
 
    bw.WriteInt(FID(NONO), m_NormalizeNormals);
+   bw.WriteFloat(FID(SDIX), shadowDirX);
+   bw.WriteFloat(FID(SDIY), shadowDirY);
    
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
@@ -3726,6 +3731,14 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BRST))
    {
       pbr->GetInt(&ballReflectionStrength);
+   }
+   else if (id == FID(SDIX))
+   {
+      pbr->GetFloat(&shadowDirX);
+   }
+   else if (id == FID(SDIY))
+   {
+      pbr->GetFloat(&shadowDirY);
    }
    else if (id == FID(BCLR))
    {
@@ -7904,6 +7917,48 @@ STDMETHODIMP PinTable::put_ReflectionStength(int newVal )
 
       return S_OK;
 }
+
+STDMETHODIMP PinTable::get_ShadowX(float *pVal)
+{
+   *pVal = shadowDirX;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ShadowX(float newVal )
+{
+   STARTUNDO
+
+   if ( newVal>1.0f ) newVal=1.0f;
+   if ( newVal<-1.0f ) newVal=-1.0f;
+   shadowDirX = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ShadowY(float *pVal)
+{
+   *pVal = shadowDirY;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ShadowY(float newVal )
+{
+   STARTUNDO
+
+   if ( newVal>1.0f ) newVal=1.0f;
+   if ( newVal<-1.0f ) newVal=-1.0f;
+   shadowDirY = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+
 
 STDMETHODIMP PinTable::get_TableSoundVolume(int *pVal)
 {

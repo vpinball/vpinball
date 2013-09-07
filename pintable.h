@@ -168,6 +168,10 @@ public:
    STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
    STDMETHOD(get_ReflectionStength)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_ReflectionStength)(/*[in]*/ int newVal);
+   STDMETHOD(get_ShadowX)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ShadowX)(/*[in]*/ float newVal);
+   STDMETHOD(get_ShadowY)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ShadowY)(/*[in]*/ float newVal);
 
 	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
@@ -672,6 +676,8 @@ END_CONNECTION_POINT_MAP()
 	BOOL m_NormalizeNormals;
    BOOL useReflectionForBalls;
    int ballReflectionStrength;
+   float shadowDirX;
+   float shadowDirY;
 	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 };
 
