@@ -36,4 +36,6 @@ public:
 	ISelect *m_psel;
 
 	float m_z; //height of this shadow
+   static float shadowDirX;
+   static float shadowDirY;
 	};

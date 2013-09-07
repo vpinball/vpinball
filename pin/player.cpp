@@ -57,7 +57,6 @@ Player::Player()
 	m_AccelAmpX = m_AccelAmp;	// Accelerometer gain X axis
 	m_AccelAmpY = m_AccelAmp;   // Accelerometer gain Y axis
 	m_AccelMAmp = 2.5f;			// manual input gain, generally from joysticks
-
 #ifdef PLAYBACK
 	m_fPlayback = fFalse;
 
@@ -630,6 +629,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	m_tilt_amount = (U32)m_ptable->m_tilt_amount;
 	m_jolt_trigger_time = (U32)m_ptable->m_jolt_trigger_time;
 	m_tilt_trigger_time = (U32)m_ptable->m_tilt_trigger_time;
+
+   ShadowSur::shadowDirX = ptable->shadowDirX;
+   ShadowSur::shadowDirY = ptable->shadowDirY;
 
     m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
@@ -2882,8 +2884,8 @@ void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
    }
    else // shadow is on the floor
    {
-      offsetx = pball->z*0.5f;
-      offsety = pball->z*-0.5f;
+      offsetx = pball->z*(m_ptable->shadowDirX*0.5f); //0.5f
+      offsety = pball->z*(m_ptable->shadowDirY*0.5f); //-0.5f
       shadowz = 0.1f; //pball->z - pball->radius + 0.1f;
    }
 

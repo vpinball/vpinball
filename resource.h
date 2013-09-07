@@ -636,6 +636,8 @@
 #define IDC_LIGHT1TYPE                  577
 #define IDC_NORMALIZENORMALS            578
 #define IDC_TABLESOUNDVOLUME            579
+#define IDC_LIGHT1SPECULAR2             579
+#define IDC_SHADOW_COLOR                579
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_VISUALS_SOUND               581
 #define DISPID_Gate_Height1             1142
@@ -645,6 +647,8 @@
 #define IDC_DELETE_MESH_BUTTON          1603
 #define IDC_BALL_REFLECTION             1700
 #define IDC_REFLECTION_EDIT             1701
+#define IDC_SHADOW_X                    1702
+#define IDC_SHADOW_Y                    1703
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770
@@ -727,7 +731,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        392
 #define _APS_NEXT_COMMAND_VALUE         32879
-#define _APS_NEXT_CONTROL_VALUE         419
+#define _APS_NEXT_CONTROL_VALUE         420
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
