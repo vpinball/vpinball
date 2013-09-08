@@ -535,7 +535,7 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
    if ( vertexBuffer== NULL )
    {
       DWORD vertexType = MY_D3DFVF_NOTEX2_VERTEX;
-      if ( GetPTable()->GetDecalsEnabled() )
+      if ( m_fBackglass && GetPTable()->GetDecalsEnabled() )
       {
          vertexType = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
       }
