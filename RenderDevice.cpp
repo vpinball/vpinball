@@ -51,20 +51,6 @@ void RenderDevice::SetMaterial( THIS_ BaseMaterial *_material )
 	  _material->power == materialStateCache.power)
 	  return;
 */
-   bool equal=true;
-   unsigned char *ptr1=(unsigned char*)_material;
-   unsigned char *ptr2=(unsigned char*)&materialStateCache;
-   for( int i=0;i<sizeof(BaseMaterial);i++ )
-   {
-      if( ptr1[i]!=ptr2[i] )
-      {
-         equal=false;
-         break;
-      }
-   }
-   if( equal )
-      return;
-
 /* this seems to be instable too (see above) !!!???
    materialStateCache.d = _material->d;
    materialStateCache.a = _material->a;
@@ -72,6 +58,10 @@ void RenderDevice::SetMaterial( THIS_ BaseMaterial *_material )
    materialStateCache.s = _material->s;
    materialStateCache.power = _material->power;
 */
+   if( !memcmp( _material, &materialStateCache, sizeof(BaseMaterial)) )
+   {
+      return;
+   }
    memcpy( &materialStateCache, _material, sizeof(BaseMaterial));
    dx7Device->SetMaterial( (LPD3DMATERIAL7)_material);
 }
