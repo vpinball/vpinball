@@ -539,8 +539,9 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
       {
          vertexType = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
       }
-      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4, 0, vertexType, &vertexBuffer );
       NumVideoBytes += 4*sizeof(Vertex3D_NoTex2);
+
    }
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
@@ -601,7 +602,6 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
       // Turn on anisotopic filtering. 
       g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
    }
-
    pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
 
    // Set the texture state.
