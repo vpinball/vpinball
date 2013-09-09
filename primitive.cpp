@@ -481,11 +481,13 @@ void Primitive::CalculateBuiltinOriginal()
       topVert->x = sinf(currentAngle)*outerRadius;
       topVert->y = cosf(currentAngle)*outerRadius;		
       topVert->z = 0.5f;
+
       // calculate bottom
       Vertex3D_NoTex2 * const bottomVert = &builtin_rgvOriginal[i+1 + m_d.m_Sides+1]; // bottompoint at side
       bottomVert->x = topVert->x;
       bottomVert->y = topVert->y;
       bottomVert->z = -0.5f;
+
       // calculate sides
       builtin_rgvOriginal[m_d.m_Sides*2 + 2 + i] = *topVert; // sideTopVert
       builtin_rgvOriginal[m_d.m_Sides*3 + 2 + i] = *bottomVert; // sideBottomVert
@@ -529,13 +531,6 @@ void Primitive::CalculateBuiltinOriginal()
       sideBottomVert->tu = sideTopVert->tu;
       sideBottomVert->tv = /*1.0f**/maxtv;
    }
-}
-
-void Primitive::CalculateBuiltin()
-{
-   // 1 copy vertices
-   memcpy(builtin_rgv,builtin_rgvOriginal,(m_d.m_Sides*4 + 2)*sizeof(Vertex3D_NoTex2));
-
    // 2 restore indices
    //   check if anti culling is enabled:
    if (m_d.m_DrawTexturesInside)
@@ -602,7 +597,16 @@ void Primitive::CalculateBuiltin()
       }
    }
 
-   // 3 apply matrix trafo
+}
+
+void Primitive::CalculateBuiltin()
+{
+   // 1 copy vertices
+   memcpy(builtin_rgv,builtin_rgvOriginal,(m_d.m_Sides*4 + 2)*sizeof(Vertex3D_NoTex2));
+
+   // 2 apply matrix trafo
+
+   SetNormal( builtin_rgv, builtin_indices,  m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides ,NULL,NULL,0 );
 
    // could be optimized, if not everything is drawn.
    for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
@@ -617,7 +621,7 @@ void Primitive::CalculateBuiltin()
       fullMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
    }
 
-   // 4 depth calculation / sorting
+   // 3 depth calculation / sorting
 
    // Since we are compiling with SSE, I'll use Floating points for comparison.
    // I need m_sides values at top
@@ -720,11 +724,11 @@ void Primitive::CalculateBuiltin()
    } //else { //!! this is missing completely!!???
    //}
 
-   // 5 update the bounding box for the primitive to tell the renderer where to update the back buffer
+   // 4 update the bounding box for the primitive to tell the renderer where to update the back buffer
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
    g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, builtin_rgv, NULL, NULL, numVertices, fFalse);
 
-   // 6 store in vertexbuffer
+   // 5 store in vertexbuffer
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
    memcpy( buf, builtin_rgv, sizeof(Vertex3D_NoTex2)*numVertices );
@@ -804,28 +808,27 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
    		    CalculateBuiltin();
         }
 	 }
-     if ( !m_d.useLighting )
-     {
-        // disable lighting is a default settings
-        // it could look odd if you switch lighting on on non mesh primitives
-        pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
-     }
+    if ( !m_d.useLighting )
+    {
+       // disable lighting is a default setting
+       // it could look odd if you switch lighting on on non mesh primitives
+       pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+    }
 
-     if( m_d.use3DMesh )
-     {
-        //pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices,0);
-        pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexList, indexListSize, 0 );
-     }
-     else
-     {
-        pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, builtin_indices, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
-     }
+    if( m_d.use3DMesh )
+    {
+       pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexList, indexListSize, 0 );
+    }
+    else
+    {
+       pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, builtin_indices, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
+    }
 
-     if ( !m_d.useLighting )
-     {
-        pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
-     }
-   }
+    if ( !m_d.useLighting )
+    {
+       pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+    }
+  }
 }
 
 extern bool loadWavefrontObj( char *filename, bool flipTv );

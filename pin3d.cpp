@@ -1094,8 +1094,39 @@ void Pin3D::InitLights()
 
       // transform dir & pos with world trafo to be always aligned with table (so that user trafos don't change the lighting!)
       if((g_pplayer->m_ptable->m_Light[i].dir.x == 0.0f) && (g_pplayer->m_ptable->m_Light[i].dir.y == 0.0f) && (g_pplayer->m_ptable->m_Light[i].dir.z == 0.0f) && (i < 2) && (light.dltType == D3DLIGHT_DIRECTIONAL))
-         light.dvDirection = (i == 0) ? D3DVECTOR(5.0f, sn * 21.0f, cs * -21.0f) : D3DVECTOR(-8.0f, sn * 11.0f, cs * -11.0f); // backwards compatibilty
-      else {
+      {
+         // backwards compatibilty
+         light.dcvAmbient.r   = 0.1f;
+         light.dcvAmbient.g   = 0.1f;
+         light.dcvAmbient.b   = 0.1f;
+         light.dcvDiffuse.r   = 0.4f;
+         light.dcvDiffuse.g   = 0.4f;
+         light.dcvDiffuse.b   = 0.4f;
+         light.dcvSpecular.r  = 0;
+         light.dcvSpecular.g  = 0;
+         light.dcvSpecular.b  = 0;
+         light.dvAttenuation0 = 0.0f;
+         light.dvAttenuation1 = 0.0f;
+         light.dvAttenuation2 = 0.0f;
+
+         if ( i==0 )
+         {
+            light.dvDirection = D3DVECTOR(5.0f, sn * 21.0f, cs * -21.0f);
+         }
+         else
+         {
+            light.dvDirection = D3DVECTOR(-8.0f, sn * 11.0f, cs * -11.0f); 
+            light.dcvDiffuse.r  = 0.6f;
+            light.dcvDiffuse.g  = 0.6f;
+            light.dcvDiffuse.b  = 0.6f;
+            light.dcvSpecular.r = 1.0f;
+            light.dcvSpecular.g = 1.0f;
+            light.dcvSpecular.b = 1.0f;
+         }
+
+      }
+      else 
+      {
          const Vertex3Ds tmp = matWorld.MultiplyVectorNoTranslate(g_pplayer->m_ptable->m_Light[i].dir);
          light.dvDirection = D3DVECTOR(tmp.x,tmp.y,tmp.z);
       }
