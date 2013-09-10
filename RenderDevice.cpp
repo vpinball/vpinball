@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "RenderDevice.h"
 #include "Material.h"
+#include "Texture.h"
 
 static LPDIRECT3DDEVICE7 dx7Device;
 static LPDIRECT3D7 dx7;
@@ -42,27 +43,20 @@ RenderDevice* RenderDevice::instance()
 
 void RenderDevice::SetMaterial( THIS_ BaseMaterial *_material )
 {
-/*
-   this produces a crash if the material is an object which is not on the current stack!!???!
+   // this produces a crash if BaseMaterial isn't proper aligned to 16byte (in vbatest.cpp new/delete is overloaded for that)
    if(_mm_movemask_ps(_mm_and_ps(
 	  _mm_and_ps(_mm_cmpeq_ps(_material->d,materialStateCache.d),_mm_cmpeq_ps(_material->a,materialStateCache.a)),
 	  _mm_and_ps(_mm_cmpeq_ps(_material->s,materialStateCache.s),_mm_cmpeq_ps(_material->e,materialStateCache.e)))) == 15
 	  &&
 	  _material->power == materialStateCache.power)
 	  return;
-*/
-/* this seems to be instable too (see above) !!!???
+
    materialStateCache.d = _material->d;
    materialStateCache.a = _material->a;
    materialStateCache.e = _material->e;
    materialStateCache.s = _material->s;
    materialStateCache.power = _material->power;
-*/
-   if( !memcmp( _material, &materialStateCache, sizeof(BaseMaterial)) )
-   {
-      return;
-   }
-   memcpy( &materialStateCache, _material, sizeof(BaseMaterial));
+
    dx7Device->SetMaterial( (LPD3DMATERIAL7)_material);
 }
 

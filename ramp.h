@@ -136,6 +136,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;
 	BOOL dynamicVertexBufferRegenerate;
+   BOOL updateTexture;
+   float oldTU;
+   float oldTV;
    Material solidMaterial;
    Material textureMaterial;
    Material habitrailMaterial;

@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "Texture.h"
-
+#include "Material.h"
 #pragma once
 
 class VertexBuffer;
+class BaseTexture;
 class RenderDevice : public IDirect3DDevice7
 {
 public:
