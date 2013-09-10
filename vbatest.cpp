@@ -14,6 +14,27 @@
 #include "VBATest_i.c"
 
 
+
+void *operator new( size_t size_req )
+{
+   return _aligned_malloc( size_req, 16 );
+}
+
+void operator delete( void *address )
+{
+   _aligned_free(address);
+}
+void *operator new[]( size_t size_req )
+{
+   return _aligned_malloc( size_req, 16 );
+}
+
+void operator delete[]( void *address )
+{
+   _aligned_free(address);
+}
+
+
 const DWORD dwTimeOut = 5000; // time for EXE to be idle before shutting down
 const DWORD dwPause = 1000; // time to wait for threads to finish up
 

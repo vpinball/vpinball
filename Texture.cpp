@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Texture.h"
 #include "freeimage.h"
-#include "RenderDevice.h"
 
 RenderDevice *Texture::renderDevice=0;
 
@@ -42,6 +41,7 @@ void Texture::SetBackDrop( DWORD textureChannel )
    }
 }
 
+/*
 void Texture::Set( DWORD textureChannel )
 {
    if ( m_pdsBufferColorKey )
@@ -52,8 +52,9 @@ void Texture::Set( DWORD textureChannel )
    {
       renderDevice->SetTexture(textureChannel, NULL);
    }
-}
 
+}
+*/
 void Texture::Unset( DWORD textureChannel )
 {
    renderDevice->SetTexture( textureChannel, NULL );
