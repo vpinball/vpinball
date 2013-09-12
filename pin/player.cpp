@@ -3110,22 +3110,21 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 	{
 		Ball * const pball = m_vball.ElementAt(i);
       // just calculate the vertices once!
+      const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
+
+      float maxz = pball->defaultZ+3.0f;
+      if( m_ptable->useReflectionForBalls )
+      {
+         // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
+         if( (zheight > maxz) /*|| (pball->z < minz)*/ )
+         {
+            drawReflection=false;
+         }
+      }
       if( only_invalidate_regions )
       {
          const float radiusX = pball->radius * m_BallStretchX;
          const float radiusY = pball->radius * m_BallStretchY;
-         const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
-
-         float minz = pball->defaultZ-5.0f;
-         float maxz = pball->defaultZ+3.0f;
-         if( m_ptable->useReflectionForBalls )
-         {
-            // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
-            if( (zheight > maxz) /*|| (pball->z < minz)*/ )
-            {
-               drawReflection=false;
-            }
-         }
          Vertex3D_NoTex2 * const rgv3D = pball->vertices;
          rgv3D[0].x = pball->x - radiusX;
          rgv3D[0].y = pball->y - (radiusY * cs);
@@ -3170,7 +3169,12 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		{
 	        // Mark ball rect as dirty for blitting to the screen
 		   m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
-			m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, pball->vertices, NULL, NULL, 4, fFalse);
+         m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, pball->vertices, NULL, NULL, 4, fFalse);
+         if( m_ptable->useReflectionForBalls )
+         {
+            m_pin3d.ClearExtents(&pball->m_rcReflection, NULL, NULL);
+            m_pin3d.ExpandExtentsPlus(&pball->m_rcReflection, pball->reflectVerts, NULL, NULL, 4, fFalse);
+         }
 		}
 
 		if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
@@ -3266,8 +3270,13 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 		if(only_invalidate_regions)
       {
-         if( drawReflection )
-            m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, pball->reflectVerts, NULL, NULL, 4, fFalse);
+         if (m_ptable->useReflectionForBalls)
+         {
+            pball->m_rcScreen.left = min(pball->m_rcScreen.left, pball->m_rcReflection.left);
+            pball->m_rcScreen.top = min(pball->m_rcScreen.top, pball->m_rcReflection.top);
+            pball->m_rcScreen.right = max(pball->m_rcScreen.right, pball->m_rcReflection.right);
+            pball->m_rcScreen.bottom = max(pball->m_rcScreen.bottom, pball->m_rcReflection.bottom);
+         }
          InvalidateRect(&pball->m_rcScreen);
       }
 	}
@@ -3275,7 +3284,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 	if(!only_invalidate_regions)
 	{
 		m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
-		//m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 	}
 }
 

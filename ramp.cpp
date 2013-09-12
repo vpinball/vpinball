@@ -14,6 +14,8 @@ Ramp::Ramp()
    updateTexture = true;
    oldTU=0.0f;
    oldTV=0.0f;
+   oldWidthBottom=0.0f;
+   oldWidthTop=0.0f;
 }
 
 Ramp::~Ramp()
@@ -2554,6 +2556,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       // Don't render non-Alphas. 
       (!m_d.m_fAlpha)) return;
 
+   if ( m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f )
+   {
+      dynamicVertexBufferRegenerate=false;
+      return;
+   }
+
    if(dynamicVertexBufferRegenerate)
    {
       solidMaterial.setColor(1.0f, m_d.m_color );
@@ -2589,6 +2597,8 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
             updateTexture=false;
             oldTV=pin->m_maxtv;
             oldTU=pin->m_maxtu;
+            oldWidthBottom=0.0f;
+            oldWidthTop=0.0f;
          }
          
          maxtu = pin->m_maxtu;
@@ -2612,10 +2622,18 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       }
 
       unsigned int numVertices;
+      // if the new width is the same as the last one rendered don't calculate the ramp again
+      // just use the data from the vertex buffer
+      if( m_d.m_widthbottom==oldWidthBottom && m_d.m_widthtop==oldWidthTop )
+      {
+         dynamicVertexBufferRegenerate=false;
+      }
 
       if(dynamicVertexBufferRegenerate)
       {
          dynamicVertexBufferRegenerate = false;
+         oldWidthBottom=m_d.m_widthbottom;
+         oldWidthTop=m_d.m_widthtop;
 
          Vertex3D_NoTex2 *buf;
          dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
