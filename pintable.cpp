@@ -1697,7 +1697,7 @@ void PinTable::UpdateDrawingOrder( IEditable *ptr, bool up )
          if( hw!=NULL )
          {
             char nameBuf[256];
-            DWORD idx = SendMessage( hw, LB_GETCURSEL,0,0 );
+            int idx = SendMessage( hw, LB_GETCURSEL,0,0 );
             if ( idx<allHitElements.Size()-1 )
             {
                SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
