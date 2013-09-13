@@ -139,8 +139,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
    BOOL updateTexture;
    float oldTU;
    float oldTV;
-   float oldWidthTop;
-   float oldWidthBottom;
    Material solidMaterial;
    Material textureMaterial;
    Material habitrailMaterial;
