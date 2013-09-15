@@ -11,9 +11,6 @@ Ramp::Ramp()
    staticVertexBuffer = 0;
    dynamicVertexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
-   updateTexture = true;
-   oldTU=0.0f;
-   oldTV=0.0f;
 }
 
 Ramp::~Ramp()
@@ -2190,8 +2187,7 @@ STDMETHODIMP Ramp::put_Image(BSTR newVal)
    STARTUNDO
 
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
-   //dynamicVertexBufferRegenerate = true;
-   updateTexture=true;
+   dynamicVertexBufferRegenerate = true;
 
    STOPUNDO
 
@@ -2589,13 +2585,6 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       if (pin)
       {
          //m_ptable->GetTVTU(pin, &maxtu, &maxtv);
-         if( (pin->m_maxtu!= oldTU || pin->m_maxtv!=oldTV) && updateTexture )
-         {
-            dynamicVertexBufferRegenerate=true;
-            updateTexture=false;
-            oldTV=pin->m_maxtv;
-            oldTU=pin->m_maxtu;
-         }
          maxtu = pin->m_maxtu;
          maxtv = pin->m_maxtv;
          pin->CreateAlphaChannel();

@@ -1246,7 +1246,11 @@ void Player::EraseBall(Ball *pball)
 			InvalidateRect(&pball->m_rcScreenShadow);
 		}
 	}
-	InvalidateRect(&pball->m_rcScreen);
+   if ( m_ptable->useReflectionForBalls )
+   {
+      InvalidateRect(&pball->m_rcReflection);
+   }
+   InvalidateRect(&pball->m_rcScreen);
 }
 
 void Player::DestroyBall(Ball *pball)
@@ -3113,10 +3117,11 @@ void Player::DrawBalls(const bool only_invalidate_regions)
       const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
       float maxz = pball->defaultZ+3.0f;
+      float minz = pball->defaultZ-1.0f;
       if( m_ptable->useReflectionForBalls )
       {
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
-         if( (zheight > maxz) /*|| (pball->z < minz)*/ )
+         if( (zheight > maxz) || (pball->z < minz) )
          {
             drawReflection=false;
          }
@@ -3142,19 +3147,21 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          rgv3D[3].y = pball->y + (radiusY * cs);
          rgv3D[3].z = zheight - (pball->radius * sn);
          memcpy( pball->reflectVerts, rgv3D, sizeof(Vertex3D_NoTex2)*4);
-
-         pball->reflectVerts[0].y = rgv3D[2].y- (rgv3D[2].y-rgv3D[0].y)*0.5f;
-         pball->reflectVerts[1].y = rgv3D[3].y- (rgv3D[3].y-rgv3D[1].y)*0.5f;
-         pball->reflectVerts[2].y = pball->reflectVerts[0].y+(rgv3D[2].y-rgv3D[0].y)*1.2f;
-         pball->reflectVerts[3].y = pball->reflectVerts[1].y+(rgv3D[3].y-rgv3D[1].y)*1.2f;
-         pball->reflectVerts[0].z= pball->reflectVerts[1].z = pball->reflectVerts[2].z = pball->reflectVerts[3].z-3.0f;
+         if ( drawReflection )
+         {
+            pball->reflectVerts[0].y = rgv3D[2].y- (rgv3D[2].y-rgv3D[0].y)*0.5f;
+            pball->reflectVerts[1].y = rgv3D[3].y- (rgv3D[3].y-rgv3D[1].y)*0.5f;
+            pball->reflectVerts[2].y = pball->reflectVerts[0].y+(rgv3D[2].y-rgv3D[0].y)*1.1f;
+            pball->reflectVerts[3].y = pball->reflectVerts[1].y+(rgv3D[3].y-rgv3D[1].y)*1.1f;
+            pball->reflectVerts[0].z= pball->reflectVerts[1].z = pball->reflectVerts[2].z = pball->reflectVerts[3].z-3.0f;
+         }
       }
 
 		// prepare the vertex buffer for all possible options (ball,logo,shadow)
       Vertex3D_NoTex2 *buf;
 		if(!only_invalidate_regions)
 		{
-         Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
+         Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
 			memcpy( buf, pball->vertices, sizeof(Vertex3D_NoTex2)*4 );
          if ( m_ptable->useReflectionForBalls )
          {
@@ -3223,15 +3230,17 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          if( drawReflection && m_fBallAntialias )
          {
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,FALSE);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, factor);
             m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1}
 
             m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 16, 4, (LPWORD)rgi0123, 4, 0 );
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
-            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
+             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,TRUE);
+             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
+             m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
          }
 
          m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
@@ -3270,12 +3279,9 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 		if(only_invalidate_regions)
       {
-         if (m_ptable->useReflectionForBalls)
+         if ( m_ptable->useReflectionForBalls )
          {
-            pball->m_rcScreen.left = min(pball->m_rcScreen.left, pball->m_rcReflection.left);
-            pball->m_rcScreen.top = min(pball->m_rcScreen.top, pball->m_rcReflection.top);
-            pball->m_rcScreen.right = max(pball->m_rcScreen.right, pball->m_rcReflection.right);
-            pball->m_rcScreen.bottom = max(pball->m_rcScreen.bottom, pball->m_rcReflection.bottom);
+            InvalidateRect(&pball->m_rcReflection);
          }
          InvalidateRect(&pball->m_rcScreen);
       }
@@ -3306,6 +3312,7 @@ void Player::InvalidateRect(RECT * const prc)
 	// Check all animated objects.
 	for (int i=0;i<m_vscreenupdate.Size();++i)
 		{
+         AnimObject *ptr = m_vscreenupdate.ElementAt(i);
 		// Get the bounds of this animated object.
 		const RECT * const prc2 = &m_vscreenupdate.ElementAt(i)->m_rcBounds;
 
