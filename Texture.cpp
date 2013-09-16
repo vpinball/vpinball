@@ -28,7 +28,7 @@ void Texture::Release()
 {
 }
 
-void Texture::SetBackDrop( const DWORD textureChannel )
+void Texture::SetBackDrop( DWORD textureChannel )
 {
     renderDevice->SetTexture( textureChannel, m_pdsBufferBackdrop ? (LPDIRECTDRAWSURFACE7)m_pdsBufferBackdrop : NULL);
 }

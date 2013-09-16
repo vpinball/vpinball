@@ -122,12 +122,12 @@ public:
     static int ballsInUse;
 };
 
-__forceinline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)
+inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)
 {
 	return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
 }
 
-__forceinline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
+inline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
 {
 	const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // this shouldn't use loadu, but doesn't work even with __declspec(align(16))?!
 	const __m128 rc1sh = _mm_shuffle_ps(rc1128,rc1128,_MM_SHUFFLE(1, 0, 3, 2));
@@ -138,7 +138,7 @@ __forceinline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
 	//return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
 }
 
-__forceinline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
+inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 {
 	const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // this shouldn't use loadu, but doesn't work even with __declspec(align(16))?!
 	const __m128 rc1sh = _mm_shuffle_ps(rc1128,rc1128,_MM_SHUFFLE(1, 0, 3, 2));
