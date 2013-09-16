@@ -4,6 +4,7 @@
 
 class VertexBuffer;
 class BaseTexture;
+
 class RenderDevice : public IDirect3DDevice7
 {
 public:
@@ -27,7 +28,7 @@ public:
       ZENABLE            = D3DRENDERSTATE_ZENABLE,
       ZFUNC              = D3DRENDERSTATE_ZFUNC,
       ZWRITEENABLE       = D3DRENDERSTATE_ZWRITEENABLE,
-	   NORMALIZENORMALS   = D3DRENDERSTATE_NORMALIZENORMALS,
+	  NORMALIZENORMALS   = D3DRENDERSTATE_NORMALIZENORMALS,
       TEXTUREFACTOR      = D3DRENDERSTATE_TEXTUREFACTOR
    };
    static bool createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7, BaseTexture *_backBuffer );
@@ -36,8 +37,8 @@ public:
 
    static RenderDevice* instance( void );
 
-   virtual void SetMaterial( THIS_ BaseMaterial *_material );
-   virtual void SetRenderState( RenderStates,DWORD );
+   virtual void SetMaterial( const THIS_ BaseMaterial * const _material );
+   virtual void SetRenderState( const RenderStates p1, const DWORD p2 );
    bool createVertexBuffer( unsigned int _length, DWORD _usage, DWORD _fvf, VertexBuffer **_vBuffer );
    void renderPrimitive(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, LPWORD _indices, DWORD _numIndices, DWORD _flags);
 

@@ -267,18 +267,18 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);	
 
-   float r = (m_d.m_color & 255) * (float) (1.0/255.0);
-   float g = (m_d.m_color & 65280) * (float) (1.0/65280.0);
-   float b = (m_d.m_color & 16711680) * (float) (1.0/16711680.0);
+   float r = (float)(m_d.m_color & 255) * (float) (1.0/255.0);
+   float g = (float)(m_d.m_color & 65280) * (float) (1.0/65280.0);
+   float b = (float)(m_d.m_color & 16711680) * (float) (1.0/16711680.0);
    topNonLitMaterial.setAmbient( 1.0f, r*0.5f, g*0.5f, b*0.5f );
    topNonLitMaterial.setDiffuse( 1.0f, r*0.5f, g*0.5f, b*0.5f );
    topLitMaterial.setAmbient(1.0f, 0.0f, 0.0f, 0.0f );
    topLitMaterial.setDiffuse(1.0f, 0.0f, 0.0f, 0.0f );
    topLitMaterial.setEmissive( 0.0f, r, g, b );
 
-   r = (m_d.m_sidecolor & 255) * (float) (1.0/255.0);
-   g = (m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
-   b = (m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
+   r = (float)(m_d.m_sidecolor & 255) * (float) (1.0/255.0);
+   g = (float)(m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
+   b = (float)(m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
    sideNonLitMaterial.setAmbient( 1.0f, r*0.5f, g*0.5f, b*0.5f );
    sideNonLitMaterial.setDiffuse( 1.0f, r*0.5f, g*0.5f, b*0.5f );
    sideLitMaterial.setAmbient(1.0f, 0.0f, 0.0f, 0.0f );
@@ -501,9 +501,9 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 
       if (m_d.m_fSideVisible)
       {
-         const float rside = (m_d.m_sidecolor & 255) * (float) (1.0/255.0);
-         const float gside = (m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
-         const float bside = (m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
+         const float rside = (float)(m_d.m_sidecolor & 255) * (float) (1.0/255.0);
+         const float gside = (float)(m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
+         const float bside = (float)(m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
          // Side color
          switch (i)
          {

@@ -451,9 +451,9 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
 
    ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
 
-   const float r = (m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
    const float inv_cframes = 1.0f/(float)cframes;
 
