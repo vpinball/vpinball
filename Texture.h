@@ -35,8 +35,8 @@ public:
    void EnsureMaxTextureCoordinates();
 
    static void SetRenderDevice( RenderDevice *_device );
-   void SetBackDrop( const DWORD textureChannel );
-   void Set( const DWORD textureChannel )
+   void SetBackDrop( DWORD textureChannel );
+   void Set( DWORD textureChannel )
    {
       renderDevice->SetTexture( textureChannel, (LPDIRECTDRAWSURFACE7)m_pdsBufferColorKey);
    }

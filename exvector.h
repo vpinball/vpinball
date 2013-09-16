@@ -12,19 +12,19 @@ private:
 
 public:
 
-	__forceinline ExVectorVoid()
+	inline ExVectorVoid()
 	{
 		m_pbaseobj = 0;
 		m_searchstart = 1;
 	}
 
-	__forceinline ExVectorVoid(void * const pobj)
+	inline ExVectorVoid(void * const pobj)
 	{
 		m_pbaseobj = pobj;
 		m_searchstart = 1;
 	}
 
-	__forceinline ExVectorVoid(ExVectorVoid * const xv)
+	inline ExVectorVoid(ExVectorVoid * const xv)
 	{
 		m_pbaseobj = xv->m_pbaseobj;
 		m_vobj = VectorVoid(xv->m_vobj);
@@ -32,7 +32,7 @@ public:
 		xv->m_searchstart=m_searchstart;
 	}
 
-	__forceinline void Clone(ExVectorVoid * const xv)
+	inline void Clone(ExVectorVoid * const xv)
 	{
 		xv->m_pbaseobj=m_pbaseobj;
 		m_vobj.Clone(&(xv->m_vobj));
@@ -40,7 +40,7 @@ public:
 		xv->m_searchstart=m_searchstart;
 	}
 
-	__forceinline void RecomputeSearchStart()
+	inline void RecomputeSearchStart()
 	{
 		const unsigned int size = m_vindex.Size();
 		unsigned int i = 1u<<31;
@@ -51,7 +51,7 @@ public:
 		m_searchstart = i;
 	}
 
-	__forceinline void SetBase(void * const pobj)
+	inline void SetBase(void * const pobj)
 	{
 		m_pbaseobj = pobj;
 	}
@@ -119,14 +119,14 @@ public:
 		return fFound;
 	}
 
-	__forceinline void RemoveAbsoluteElementAt(const int iex)
+	inline void RemoveAbsoluteElementAt(const int iex)
 	{
 		m_vobj.RemoveElementAt(iex);
 		m_vindex.RemoveElementAt(iex);
 		RecomputeSearchStart();
 	}
 		
-	__forceinline void RemoveElementAt(void * const pv)
+	inline void RemoveElementAt(void * const pv)
 	{
 		const int index = m_vindex.IndexOf(pv);
 		if (index != -1)
@@ -179,12 +179,12 @@ public:
 	}
 
 	// returns true iff index has an exception record
-	__forceinline bool FIsExceptionItem(const int j) const
+	inline bool FIsExceptionItem(const int j) const
 	{
 		return (ElementAtVoid(j) != m_pbaseobj);
 	}
 
-	__forceinline void RemoveExceptions()
+	inline void RemoveExceptions()
 	{
 		m_vindex.RemoveAllElements();
 		m_vobj.RemoveAllElements();
@@ -192,31 +192,31 @@ public:
 	}
 
 	// number of exceptions
-	__forceinline int AbsoluteSize() const
+	inline int AbsoluteSize() const
 	{
 		return m_vobj.Size();
 	}
 
 	// provides direct access to exceptions
-	__forceinline void *AbsoluteElementAtVoid(const int item) const
+	inline void *AbsoluteElementAtVoid(const int item) const
 	{
 		return m_vobj.ElementAt(item);
 	}
      	
 	// allows direct replacement of exceptions
-	__forceinline void ReplaceAbsoluteElementAt(void * const pT, const int item)
+	inline void ReplaceAbsoluteElementAt(void * const pT, const int item)
 	{
 		m_vobj.ReplaceElementAt(pT, item);
 	}
 
 	// Get the Exception index from absolute index
-	__forceinline int RelPosFromAbsPos(const int item) const
+	inline int RelPosFromAbsPos(const int item) const
 	{
 		return (int)m_vindex.ElementAt(item);
 	}
 
 	// a debug-thing:  free heap-alloced memory otherwise our quit-time mem checking will report leaks
-	__forceinline void Reset()
+	inline void Reset()
 	{
 		m_vobj.Reset();
 		m_vindex.Reset();
@@ -227,10 +227,10 @@ public:
 template<class T> class ExVector : public ExVectorVoid
 {
 public:
-	__forceinline ExVector() : ExVectorVoid() {}
-	__forceinline ExVector(void *pobj) : ExVectorVoid(void *pobj) {}
+	inline ExVector() : ExVectorVoid() {}
+	inline ExVector(void *pobj) : ExVectorVoid(void *pobj) {}
 	//inline ExVector(ExVector *xv) : ExVectorVoid(ExVector *xv)
 	
-	__forceinline T *ElementAt(const int m) const {return (T *)ElementAtVoid(m);}
-	__forceinline T *AbsoluteElementAt(const int item) const {return (T *)AbsoluteElementAtVoid(item);}
+	inline T *ElementAt(const int m) const {return (T *)ElementAtVoid(m);}
+	inline T *AbsoluteElementAt(const int item) const {return (T *)AbsoluteElementAtVoid(item);}
 };

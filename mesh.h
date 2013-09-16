@@ -10,7 +10,7 @@ public:
 class ObjFrame
 {
 public:
-	__forceinline ObjFrame() {
+	inline ObjFrame() {
 		rc.left = -42; // init with nonsense offscreen values
 		rc.top = -42;
 		rc.right = -23;
@@ -20,7 +20,7 @@ public:
 		pddsZBuffer = NULL;
 	}
 	
-	__forceinline ~ObjFrame() {
+	inline ~ObjFrame() {
 		SAFE_RELEASE(pdds);
 		SAFE_RELEASE(pddsZBuffer);
 	}
@@ -91,7 +91,7 @@ void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const flo
 void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy);
 
 
-__forceinline float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
+inline float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 {
 	return (pvJoint->x - pvEnd1->x)*(pvJoint->y - pvEnd2->y) - (pvJoint->y - pvEnd1->y)*(pvJoint->x - pvEnd2->x);
 }
@@ -222,7 +222,7 @@ inline bool AdvancePoint(const Vector<RenderVertex> &rgv, const Vector<void> * c
 	return true;
 }
 
-__forceinline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
+inline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 {
 	const Vertex2D vt1(pvJoint->x - pvEnd1->x, pvJoint->y - pvEnd1->y);
 	const Vertex2D vt2(pvJoint->x - pvEnd2->x, pvJoint->y - pvEnd2->y);
@@ -233,7 +233,7 @@ __forceinline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const
 }
 
 /*
-__forceinline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
+inline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 {
 	const float slope1 = (pvJoint->y - pvEnd1->y) / (pvJoint->x - pvEnd1->x);
 	const float slope2 = (pvJoint->y - pvEnd2->y) / (pvJoint->x - pvEnd2->x);
@@ -320,49 +320,49 @@ inline void SetNormal(Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const
 	}
 }
 
-__forceinline void SetDiffuseFromMaterial(Vertex3D * const rgv, const int count, const Material *pmtrl) // get rid of this?
+inline void SetDiffuseFromMaterial(Vertex3D *rgv, int count, Material *pmtrl) // get rid of this?
 {
-   const D3DCOLORVALUE diffuse = pmtrl->getDiffuse();
-   const D3DCOLORVALUE emissive = pmtrl->getEmissive();
-   const unsigned int r = (int)(((diffuse.r + emissive.r) * 255.0f) + 0.5f);
-   const unsigned int g = (int)(((diffuse.g + emissive.g) * 255.0f) + 0.5f);
-   const unsigned int b = (int)(((diffuse.b + emissive.b) * 255.0f) + 0.5f);
+   D3DCOLORVALUE diffuse = pmtrl->getDiffuse();
+   D3DCOLORVALUE emissive = pmtrl->getEmissive();
+   unsigned int r = (int)(((diffuse.r + emissive.r) * 255.0f) + 0.5f);
+   unsigned int g = (int)(((diffuse.g + emissive.g) * 255.0f) + 0.5f);
+   unsigned int b = (int)(((diffuse.b + emissive.b) * 255.0f) + 0.5f);
 
-   const unsigned int color = (r<<16) | (g<<8) | b;
+   unsigned int color = (r<<16) | (g<<8) | b;
 
    for (int i=0; i<count; ++i)
       rgv[i].color = color;
 }
 
 //copy pasted from above
-__forceinline void SetDiffuseFromMaterial(Vertex3D_NoTex2 * const rgv, const int count, const Material * const pmtrl) // get rid of this?
+inline void SetDiffuseFromMaterial(Vertex3D_NoTex2 *rgv, int count, Material *pmtrl) // get rid of this?
 {
-   const D3DCOLORVALUE diffuse = pmtrl->getDiffuse();
-   const D3DCOLORVALUE emissive = pmtrl->getEmissive();
-   const unsigned int r = (int)(((diffuse.r + emissive.r) * 255.0f) + 0.5f);
-   const unsigned int g = (int)(((diffuse.g + emissive.g) * 255.0f) + 0.5f);
-   const unsigned int b = (int)(((diffuse.b + emissive.b) * 255.0f) + 0.5f);
+   D3DCOLORVALUE diffuse = pmtrl->getDiffuse();
+   D3DCOLORVALUE emissive = pmtrl->getEmissive();
+   unsigned int r = (int)(((diffuse.r + emissive.r) * 255.0f) + 0.5f);
+   unsigned int g = (int)(((diffuse.g + emissive.g) * 255.0f) + 0.5f);
+   unsigned int b = (int)(((diffuse.b + emissive.b) * 255.0f) + 0.5f);
 
-   const unsigned int color = (r<<16) | (g<<8) | b;
+   unsigned int color = (r<<16) | (g<<8) | b;
 
    for (int i=0; i<count; ++i)
       rgv[i].color = color;
 }
 
-__forceinline void SetDiffuse(Vertex3D * const rgv, const int count, const unsigned int color) // get rid of this?
+inline void SetDiffuse(Vertex3D * const rgv, const int count, const unsigned int color) // get rid of this?
 {
 	for (int i=0; i<count; ++i)
 		rgv[i].color = color;
 }
 
 //copy pasted from above
-__forceinline void SetDiffuse(Vertex3D_NoTex2 * const rgv, const int count, const unsigned int color) // get rid of this?
+inline void SetDiffuse(Vertex3D_NoTex2 * const rgv, const int count, const unsigned int color) // get rid of this?
 {
 	for (int i=0; i<count; ++i)
 		rgv[i].color = color;
 }
 
-__forceinline bool Flat(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid)
+inline bool Flat(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid)
 {
 	const float det1 = pvt1->x*pvtMid->y - pvt1->y*pvtMid->x;
 	const float det2 = pvtMid->x*pvt2->y - pvtMid->y*pvt2->x;
@@ -375,7 +375,7 @@ __forceinline bool Flat(const Vertex2D * const pvt1, const Vertex2D * const pvt2
 
 // Calculate if two vectors are flat to each other
 // accuracy is a float greater 4 and smaller 4000000 (tested this out)
-__forceinline bool FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid, const float accuracy)
+inline bool FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid, const float accuracy)
 {
 	const float det1 = pvt1->x*pvtMid->y - pvt1->y*pvtMid->x;
 	const float det2 = pvtMid->x*pvt2->y - pvtMid->y*pvt2->x;
