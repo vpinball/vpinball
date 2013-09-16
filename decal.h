@@ -6,7 +6,7 @@
 #define AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_
 
 class DecalData
-	{
+{
 public:
 	Vertex2D m_vCenter;
 	float m_width, m_height;
@@ -21,7 +21,7 @@ public:
 	//BOOL m_fAutoAspect;
 	COLORREF m_color;
 	BOOL m_fVerticalText;
-	};
+};
 
 class Decal :
 	public IDispatchImpl<IDecal, &IID_IDecal, &LIBID_VBATESTLib>,
@@ -111,8 +111,8 @@ STANDARD_NONAPC_EDITABLE_DECLARES(eItemDecal)
 	float m_leading, m_descent;
 
 	float m_realwidth, m_realheight;
-   VertexBuffer *vertexBuffer;
-   Material material;
+    VertexBuffer *vertexBuffer;
+    Material material;
 };
 
 #endif // !defined(AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_)

@@ -26,40 +26,23 @@ void Texture::SetRenderDevice( RenderDevice *_device )
 
 void Texture::Release()
 {
-   
 }
 
-void Texture::SetBackDrop( DWORD textureChannel )
+void Texture::SetBackDrop( const DWORD textureChannel )
 {
-   if ( m_pdsBufferBackdrop )
-   {
-      renderDevice->SetTexture( textureChannel, (LPDIRECTDRAWSURFACE7)m_pdsBufferBackdrop);
-   }
-   else
-   {
-      renderDevice->SetTexture(textureChannel, NULL);
-   }
+    renderDevice->SetTexture( textureChannel, m_pdsBufferBackdrop ? (LPDIRECTDRAWSURFACE7)m_pdsBufferBackdrop : NULL);
 }
 
 /*
-void Texture::Set( DWORD textureChannel )
+void Texture::Set( const DWORD textureChannel )
 {
-   if ( m_pdsBufferColorKey )
-   {
-      renderDevice->SetTexture( textureChannel, (LPDIRECTDRAWSURFACE7)m_pdsBufferColorKey);
-   }
-   else
-   {
-      renderDevice->SetTexture(textureChannel, NULL);
-   }
-
+    renderDevice->SetTexture( textureChannel, m_pdsBufferColorKey ? (LPDIRECTDRAWSURFACE7)m_pdsBufferColorKey : NULL);
 }
 */
-void Texture::Unset( DWORD textureChannel )
+void Texture::Unset( const DWORD textureChannel )
 {
    renderDevice->SetTexture( textureChannel, NULL );
 }
-
 
 HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
 {

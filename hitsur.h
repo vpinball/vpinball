@@ -1,6 +1,7 @@
 #pragma once
+
 class HitSur : public Sur
-	{
+{
 public:
 
 	HitSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, ISelect * const pbackground);
@@ -28,4 +29,4 @@ public:
 	ISelect *m_pcur, *m_pselected;
 	
 	int m_hitx, m_hity;	
-	};
+};

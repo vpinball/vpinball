@@ -35,8 +35,8 @@ public:
    void EnsureMaxTextureCoordinates();
 
    static void SetRenderDevice( RenderDevice *_device );
-   void SetBackDrop( DWORD textureChannel );
-   inline void Set( DWORD textureChannel )
+   void SetBackDrop( const DWORD textureChannel );
+   __forceinline void Set( const DWORD textureChannel )
    {
       renderDevice->SetTexture( textureChannel, (LPDIRECTDRAWSURFACE7)m_pdsBufferColorKey);
    }
@@ -55,7 +55,7 @@ public:
    void Lock();
    void Unlock();
 
-   void Unset( DWORD textureChannel );
+   void Unset( const DWORD textureChannel );
 
    // width and height of texture can be different than width and height
    // of dd surface, since the surface has to be in powers of 2

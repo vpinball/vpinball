@@ -117,7 +117,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DispReel)
 
     DispReelUpdater *m_ptu;
     
-    int      m_renderwidth, m_renderheight;     // size of each reel (rendered)
+    int          m_renderwidth, m_renderheight;     // size of each reel (rendered)
 
 private:
     // rendering information (after scaling to render resolution)

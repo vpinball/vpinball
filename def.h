@@ -81,10 +81,10 @@ public:
    float x;
    float y;
 
-   inline Vertex2D() {}
-   inline Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
+   __forceinline Vertex2D() {}
+   __forceinline Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
 
-   inline void Normalize()
+   __forceinline void Normalize()
    {
       const float oneoverlength = 1.0f/sqrtf(x*x + y*y);
       x *= oneoverlength;
@@ -222,7 +222,7 @@ public:
       D3DCOLOR specular;
    };
 
-   inline void NormalizeNormal()
+   __forceinline void NormalizeNormal()
    {
       const float oneoverlength = 1.0f/sqrtf(nx*nx + ny*ny + nz*nz);
       nx *= oneoverlength;
@@ -246,49 +246,49 @@ public:
       __m128 xyz;
    };
 
-   inline Vertex3Ds() {}
-   inline Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
+   __forceinline Vertex3Ds() {}
+   __forceinline Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
 
-   inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
-   inline void Normalize()
+   __forceinline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
+   __forceinline void Normalize()
    {
       const float oneoverlength = 1.0f/sqrtf(x*x + y*y + z*z);
       x *= oneoverlength;
       y *= oneoverlength;
       z *= oneoverlength;
    }
-   inline void Normalize(const float scalar)
+   __forceinline void Normalize(const float scalar)
    {
       const float oneoverlength = scalar/sqrtf(x*x + y*y + z*z);
       x *= oneoverlength;
       y *= oneoverlength;
       z *= oneoverlength;
    }
-   inline float Dot(const Vertex3Ds &pv) const
+   __forceinline float Dot(const Vertex3Ds &pv) const
    {
       return x*pv.x + y*pv.y + z*pv.z;
    }
-   inline float Dot(const Vertex3D &pv) const
+   __forceinline float Dot(const Vertex3D &pv) const
    {
       return x*pv.x + y*pv.y + z*pv.z;
    }
-   inline float LengthSquared() const
+   __forceinline float LengthSquared() const
    {
       return x*x + y*y + z*z;
    }
-   inline void MultiplyScalar(const float scalar)
+   __forceinline void MultiplyScalar(const float scalar)
    {
       x *= scalar;
       y *= scalar;
       z *= scalar;
    }
-   inline void Add(const Vertex3Ds &pv)
+   __forceinline void Add(const Vertex3Ds &pv)
    {
       x += pv.x;
       y += pv.y;
       z += pv.z;
    }
-   inline void Sub(const Vertex3Ds &pv)
+   __forceinline void Sub(const Vertex3Ds &pv)
    {
       x -= pv.x;
       y -= pv.y;
@@ -296,7 +296,7 @@ public:
    }
 };
 
-inline Vertex2D Calc2DNormal(const Vertex2D &pv1, const Vertex2D &pv2)
+__forceinline Vertex2D Calc2DNormal(const Vertex2D &pv1, const Vertex2D &pv2)
 {
    const Vertex2D vT(pv1.x - pv2.x, pv1.y - pv2.y);
    // Set up line normal
@@ -452,39 +452,39 @@ inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 class Matrix3
 {
 public:
-   inline Matrix3()
+   __forceinline Matrix3()
    {
       Identity();
    }
 
-   inline void scaleX(const float factor)
+   __forceinline void scaleX(const float factor)
    {
       m_d[0][0] *= factor;
    }
-   inline void scaleY(const float factor)
+   __forceinline void scaleY(const float factor)
    {
       m_d[1][1] *= factor;
    }
-   inline void scaleZ(const float factor)
+   __forceinline void scaleZ(const float factor)
    {
       m_d[2][2] *= factor;
    }
 
-   inline void CreateSkewSymmetric(const Vertex3Ds &pv3D)
+   __forceinline void CreateSkewSymmetric(const Vertex3Ds &pv3D)
    {
       m_d[0][0] = 0; m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
       m_d[1][0] = pv3D.z; m_d[1][1] = 0; m_d[1][2] = -pv3D.x;
       m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x; m_d[2][2] = 0;
    }
 
-   inline void MultiplyScalar(const float scalar)
+   __forceinline void MultiplyScalar(const float scalar)
    {
       for (int i=0; i<3; ++i)
          for (int l=0; l<3; ++l)
             m_d[i][l] *= scalar;
    }
 
-   inline Vertex3Ds MultiplyVector(const Vertex3D &pv3D) const
+   __forceinline Vertex3Ds MultiplyVector(const Vertex3D &pv3D) const
    {
       return Vertex3Ds(m_d[0][0] * pv3D.x
          + m_d[0][1] * pv3D.y
@@ -497,7 +497,7 @@ public:
          + m_d[2][2] * pv3D.z);
    }
 
-   inline Vertex3Ds MultiplyVector(const Vertex3D_NoTex2 &pv3D) const
+   __forceinline Vertex3Ds MultiplyVector(const Vertex3D_NoTex2 &pv3D) const
    {
       return Vertex3Ds(m_d[0][0] * pv3D.x
          + m_d[0][1] * pv3D.y
@@ -510,7 +510,7 @@ public:
          + m_d[2][2] * pv3D.z);
    }
 
-   inline Vertex3Ds MultiplyVector(const Vertex3Ds &pv3D) const
+   __forceinline Vertex3Ds MultiplyVector(const Vertex3Ds &pv3D) const
    {
       return Vertex3Ds(m_d[0][0] * pv3D.x
          + m_d[0][1] * pv3D.y
@@ -523,7 +523,7 @@ public:
          + m_d[2][2] * pv3D.z);
    }
 
-   inline void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
+   __forceinline void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
    {
       Matrix3 matans;
       for(int i=0; i<3; ++i)
@@ -539,14 +539,14 @@ public:
             m_d[i][l] = matans.m_d[i][l];
    }
 
-   inline void AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
+   __forceinline void AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
    {
       for (int i=0; i<3; ++i)
          for (int l=0; l<3; ++l)
             m_d[i][l] = pmat1->m_d[i][l] + pmat2->m_d[i][l];
    }
 
-   inline void OrthoNormalize()
+   __forceinline void OrthoNormalize()
    {
       Vertex3Ds vX(m_d[0][0], m_d[1][0], m_d[2][0]);
       Vertex3Ds vY(m_d[0][1], m_d[1][1], m_d[2][1]);
@@ -561,7 +561,7 @@ public:
       m_d[2][0] = vX.z; m_d[2][1] = vY.z; m_d[2][2] = vZ.z;
    }
 
-   inline void Transpose(Matrix3 * const pmatOut) const
+   __forceinline void Transpose(Matrix3 * const pmatOut) const
    {
       for(int i=0; i<3; ++i)
       {
@@ -571,7 +571,7 @@ public:
       }
    }
 
-   inline void Identity(const float value = 1.0f)
+   __forceinline void Identity(const float value = 1.0f)
    {
       m_d[0][0] = m_d[1][1] = m_d[2][2] = value;
       m_d[0][1] = m_d[0][2] = 
@@ -628,31 +628,31 @@ const WORD rgi0123[4] = {0,1,2,3};
 
 #include "HELPERS.H"
 
-inline __m128 rcpps(const __m128 &T) //Newton Raphson
+__forceinline __m128 rcpps(const __m128 &T) //Newton Raphson
 {
    const __m128 TRCP = _mm_rcp_ps(T);
    return _mm_sub_ps(_mm_add_ps(TRCP,TRCP),_mm_mul_ps(_mm_mul_ps(TRCP,T),TRCP));
 }
 
-inline __m128 rsqrtps(const __m128 &T) //Newton Raphson
+__forceinline __m128 rsqrtps(const __m128 &T) //Newton Raphson
 {
    const __m128 TRSQRT = _mm_rsqrt_ps(T);
    return _mm_mul_ps(_mm_mul_ps(_mm_set1_ps(0.5f),TRSQRT), _mm_sub_ps(_mm_set1_ps(3.0f),_mm_mul_ps(_mm_mul_ps(TRSQRT,T),TRSQRT)));
 }
 
-inline __m128 rsqrtss(const __m128 &T) //Newton Raphson
+__forceinline __m128 rsqrtss(const __m128 &T) //Newton Raphson
 {
    const __m128 TRSQRT = _mm_rsqrt_ss(T);
    return _mm_mul_ss(_mm_mul_ss(_mm_set_ss(0.5f),TRSQRT), _mm_sub_ss(_mm_set_ss(3.0f),_mm_mul_ss(_mm_mul_ss(TRSQRT,T),TRSQRT)));
 }
 
-inline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instruction on SSE4
+__forceinline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instruction on SSE4
 {
    const __m128 ftemp = _mm_add_ps(a, _mm_movehl_ps(a, a));
    return _mm_add_ss(ftemp,_mm_shuffle_ps(ftemp, ftemp, 1));
 }
 
-inline void cpuid(
+__forceinline void cpuid(
                   const int op,	// cpuid opcode
                   int* const EAX,
                   int* const EBX,
@@ -718,8 +718,8 @@ __forceinline float int_as_float(const int i)
 
 extern unsigned long long tinymt64state[2];
 
-inline float rand_mt_01()  { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41)) - 1.0f; }
-inline float rand_mt_m11() { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41))*2.0f - 3.0f; }
+__forceinline float rand_mt_01()  { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41)) - 1.0f; }
+__forceinline float rand_mt_m11() { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41))*2.0f - 3.0f; }
 
 //
 
