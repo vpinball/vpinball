@@ -41,7 +41,7 @@ RenderDevice* RenderDevice::instance()
    return theDevice;
 }
 
-void RenderDevice::SetMaterial( THIS_ BaseMaterial *_material )
+void RenderDevice::SetMaterial( const THIS_ BaseMaterial * const _material )
 {
    // this produces a crash if BaseMaterial isn't proper aligned to 16byte (in vbatest.cpp new/delete is overloaded for that)
    if(_mm_movemask_ps(_mm_and_ps(
@@ -60,7 +60,7 @@ void RenderDevice::SetMaterial( THIS_ BaseMaterial *_material )
    dx7Device->SetMaterial( (LPD3DMATERIAL7)_material);
 }
 
-void RenderDevice::SetRenderState( RenderStates p1,DWORD p2)
+void RenderDevice::SetRenderState( const RenderStates p1, const DWORD p2 )
 {
    if ( p1<RENDER_STATE_CACHE_SIZE) 
    {
@@ -77,11 +77,11 @@ void RenderDevice::SetRenderState( RenderStates p1,DWORD p2)
 bool RenderDevice::createVertexBuffer( unsigned int _length, DWORD _usage, DWORD _fvf, VertexBuffer **_vBuffer )
 {
    D3DVERTEXBUFFERDESC vbd;
-   vbd.dwSize=sizeof(vbd);
-   vbd.dwCaps= D3DVBCAPS_WRITEONLY | D3DVBCAPS_SYSTEMMEMORY; // essential on some setups //!! but maybe problems for others??
-   vbd.dwFVF=_fvf;
-   vbd.dwNumVertices=_length;
-   dx7->CreateVertexBuffer(&vbd, (LPDIRECT3DVERTEXBUFFER7*)_vBuffer,0);
+   vbd.dwSize = sizeof(vbd);
+   vbd.dwCaps = D3DVBCAPS_WRITEONLY | D3DVBCAPS_SYSTEMMEMORY; // essential on some setups //!! but maybe problems for others??
+   vbd.dwFVF = _fvf;
+   vbd.dwNumVertices = _length;
+   dx7->CreateVertexBuffer(&vbd, (LPDIRECT3DVERTEXBUFFER7*)_vBuffer, 0);  //!! Later-on/DX9: CreateIndexBuffer (and release/realloc them??)
    return true;
 }
 
