@@ -15,19 +15,19 @@
 
 
 #ifndef DEBUG_XXX
-__forceinline void *operator new( const size_t size_req )
+void *operator new( const size_t size_req )
 {
    return _aligned_malloc( size_req, 16 );
 }
-__forceinline void operator delete( void *address )
+void operator delete( void *address )
 {
    _aligned_free(address);
 }
-__forceinline void *operator new[]( const size_t size_req )
+void *operator new[]( const size_t size_req )
 {
    return _aligned_malloc( size_req, 16 );
 }
-__forceinline void operator delete[]( void *address )
+void operator delete[]( void *address )
 {
    _aligned_free(address);
 }

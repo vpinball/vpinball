@@ -36,7 +36,7 @@ public:
 
    static void SetRenderDevice( RenderDevice *_device );
    void SetBackDrop( const DWORD textureChannel );
-   __forceinline void Set( const DWORD textureChannel )
+   void Set( const DWORD textureChannel )
    {
       renderDevice->SetTexture( textureChannel, (LPDIRECTDRAWSURFACE7)m_pdsBufferColorKey);
    }
