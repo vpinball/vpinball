@@ -15,21 +15,19 @@
 
 
 
-void *operator new( size_t size_req )
+__forceinline void *operator new( const size_t size_req )
 {
    return _aligned_malloc( size_req, 16 );
 }
-
-void operator delete( void *address )
+__forceinline void operator delete( void *address )
 {
    _aligned_free(address);
 }
-void *operator new[]( size_t size_req )
+__forceinline void *operator new[]( const size_t size_req )
 {
    return _aligned_malloc( size_req, 16 );
 }
-
-void operator delete[]( void *address )
+__forceinline void operator delete[]( void *address )
 {
    _aligned_free(address);
 }

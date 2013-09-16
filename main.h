@@ -28,7 +28,6 @@ class PinBinary;
 
 #include "worker.h"
 
-#include "cdjpeg.h"
 #include "XAudPlayer.h"
 #include "media/FileIO.h"
 #include "PinUndo.h"

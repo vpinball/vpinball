@@ -10,7 +10,7 @@
 //class Surface;
 
 class IHaveDragPoints
-	{
+{
 public:
 	virtual ~IHaveDragPoints();
 
@@ -43,7 +43,7 @@ public:
 	void GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoords);
 
 	Vector< CComObject<DragPoint> > m_vdpoint;
-	};
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // DragPoint

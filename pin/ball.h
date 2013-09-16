@@ -3,7 +3,7 @@ class HitObject;
 class Ball;
 
 class BallAnimObject : public AnimObject
-	{
+{
 public:
 	virtual bool FMover() const {return false;} // We add ourselves to the mover list.  
 											    // If we allow the table to do that, we might get added twice, 
@@ -12,12 +12,12 @@ public:
 	virtual void UpdateVelocities();
 
 	Ball *m_pball;
-	};
+};
 
 int NumBallsInitted();
 
 class Ball : public HitObject 
-	{
+{
 public:
 	Ball();
 	~Ball();
@@ -49,8 +49,8 @@ public:
 	Vertex3D_NoTex2 m_rgv3DShadow[4];			// Last vertices of the ball shadow
 
 	RECT m_rcScreen;							// rect where the ball appears on the screen
-   RECT m_rcScreenShadow;
-   RECT m_rcReflection;
+    RECT m_rcScreenShadow;
+    RECT m_rcReflection;
 	
 	COLORREF m_color;
 
@@ -74,16 +74,16 @@ public:
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
 	Vertex3Ds m_hitnormal[5];// 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
 
-   Vertex3D_NoTex2 vertices[4];
-   Vertex3D_NoTex2 logoVertices[4];
-   Vertex3D_NoTex2 reflectVerts[4];
-   Vertex3D_NoTex2 logoFrontVerts[4];
-   Vertex3D_NoTex2 logoBackVerts[4];
+    Vertex3D_NoTex2 vertices[4];
+    Vertex3D_NoTex2 logoVertices[4];
+    Vertex3D_NoTex2 reflectVerts[4];
+    Vertex3D_NoTex2 logoFrontVerts[4];
+    Vertex3D_NoTex2 logoBackVerts[4];
 
-   static VertexBuffer *vertexBuffer;
-   Material shadowMaterial;
-   Material logoMaterial;
-   Material material;
+    static VertexBuffer *vertexBuffer;
+    Material shadowMaterial;
+    Material logoMaterial;
+    Material material;
 
 	BallAnimObject m_ballanim;
 
@@ -120,15 +120,15 @@ public:
 	bool fFrozen;
    
     static int ballsInUse;
-	};
+};
 
-inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)
-	{
+__forceinline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)
+{
 	return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
-	}
+}
 
-inline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
-	{
+__forceinline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
+{
 	const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // this shouldn't use loadu, but doesn't work even with __declspec(align(16))?!
 	const __m128 rc1sh = _mm_shuffle_ps(rc1128,rc1128,_MM_SHUFFLE(1, 0, 3, 2));
 	const __m128 test = _mm_cmpge_ps(rc1sh,_mm_loadu_ps(&rc2.left));
@@ -136,10 +136,10 @@ inline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
 	return (mask == 3); //(1|(1<<1)|(0<<2)|(0<<3)));
 
 	//return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
-	}
+}
 
-inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
-	{
+__forceinline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
+{
 	const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // this shouldn't use loadu, but doesn't work even with __declspec(align(16))?!
 	const __m128 rc1sh = _mm_shuffle_ps(rc1128,rc1128,_MM_SHUFFLE(1, 0, 3, 2));
 	const __m128 test = _mm_cmpge_ps(rc1sh,_mm_loadu_ps(&rc2.left));
@@ -148,4 +148,4 @@ inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
    return ((mask == 3) && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow); //!! use SSE, too?
 
 	//return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow);
-	}
+}

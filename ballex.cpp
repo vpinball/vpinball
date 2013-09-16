@@ -2,29 +2,29 @@
 #include "VBATest.h"
 
 BallEx::BallEx()
-	{
+{
 	m_pball = NULL;
-	}
+}
 
 BallEx::~BallEx()
-	{
-	}
+{
+}
 
 void BallEx::GetDebugCommands(VectorInt<int> *pvids, VectorInt<int> *pvcommandid)
-	{
+{
 	pvids->AddElement(IDS_MAKEACTIVEBALL);
 	pvcommandid->AddElement(0);
-	}
+}
 
 void BallEx::RunDebugCommand(int id)
-	{
+{
 	switch (id)
-		{
+	{
 		case 0:
 			g_pplayer->m_pactiveballDebug = m_pball;
 			break;
-		}
 	}
+}
 
 #define CHECKSTALEBALL if (!m_pball) {return E_POINTER;}
 
@@ -180,19 +180,19 @@ STDMETHODIMP BallEx::put_Image(BSTR newVal)
 }
 
 HRESULT BallEx::get_UserValue(VARIANT *pVal)
-	{
+{
 	VariantClear(pVal);
 	VariantCopy(pVal, &m_uservalue);
 	return S_OK;
-	}
+}
 
 HRESULT BallEx::put_UserValue(VARIANT *newVal)
-	{
+{
 	VariantInit(&m_uservalue);
 	VariantClear(&m_uservalue);
 	/*const HRESULT hr =*/ VariantCopy(&m_uservalue, newVal);
 	return S_OK;
-	}
+}
 
 
 STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
@@ -284,11 +284,11 @@ STDMETHODIMP BallEx::DestroyBall(int *pVal)
 {
 	int cnt = 0;
 	if (g_pplayer)
-		{
+	{
 		++cnt;
 		g_pplayer->DestroyBall(g_pplayer->m_pactiveball);
 		g_pplayer->m_pactiveball = NULL;				// clear ActiveBall
-		}
+	}
 
 	if (pVal) *pVal = cnt;
 

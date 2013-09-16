@@ -1,6 +1,7 @@
 #pragma once
+
 class HitRectSur : public Sur
-	{
+{
 public:
 
 	HitRectSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, FRect * const prcRect, Vector<ISelect> * const pvsel);
@@ -37,4 +38,4 @@ private:
 	Vector<ISelect> m_vselFailed;	
 
 	bool m_fFailedAlready; // Object has already been discounted from selection
-	};
+};

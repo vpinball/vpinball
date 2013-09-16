@@ -133,7 +133,3 @@
 #define IDC_COMBO6                      345
 
 // Must have a carriage return at end of file for correct resource file parsing
-
-
-
-

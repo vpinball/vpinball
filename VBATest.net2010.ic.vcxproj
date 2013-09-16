@@ -333,7 +333,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -373,7 +373,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -424,7 +424,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -464,7 +464,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -506,7 +506,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <AdditionalOptions>/NODEFAULTLIB:LIBC
 /NODEFAULTLIB:LIBCMT
 /NODEFAULTLIB:LIBCD %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -544,7 +544,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -590,7 +590,7 @@ rem  Version changes during debug compile only
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>.\lib\</AdditionalLibraryDirectories>
@@ -632,7 +632,7 @@ rem  Version changes during debug compile only
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -673,7 +673,7 @@ rem  Version changes during debug compile only
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -716,7 +716,7 @@ rem  Version changes during debug compile only
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -775,7 +775,7 @@ rem  Version changes during debug compile only
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -836,7 +836,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -906,7 +906,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;dbghelp.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;scinlibr.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
