@@ -14,7 +14,7 @@
 #include "VBATest_i.c"
 
 
-
+#ifndef DEBUG_XXX
 __forceinline void *operator new( const size_t size_req )
 {
    return _aligned_malloc( size_req, 16 );
@@ -31,7 +31,7 @@ __forceinline void operator delete[]( void *address )
 {
    _aligned_free(address);
 }
-
+#endif
 
 const DWORD dwTimeOut = 5000; // time for EXE to be idle before shutting down
 const DWORD dwPause = 1000; // time to wait for threads to finish up
