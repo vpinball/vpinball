@@ -94,7 +94,7 @@ void RedirectIoToConsole()
 	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
 	// point to console as well
 	
-//	ios::sync_with_stdio();
+    // ios::sync_with_stdio();
 }
 
 void slintf_popup_console()
@@ -115,8 +115,6 @@ void slintf_close_console()
 	}
 }
 
-#define MAX_SCREEN_BUFER_SIZE 8192
-
 int file_exists( const char *filename )
 {
 	FILE *file;
@@ -131,6 +129,7 @@ int file_exists( const char *filename )
 
 void slintf( const char *str, ... )
 {
+#ifdef SLINTF
 	static int initted;
 	static int noconsole;
 
@@ -147,7 +146,8 @@ void slintf( const char *str, ... )
 		}
 	}
 
-	char buffer[MAX_SCREEN_BUFER_SIZE];
+#define MAX_SCREEN_BUFFER_SIZE 8192
+	char buffer[MAX_SCREEN_BUFFER_SIZE];
 	if( !str || !str[0] ) return;
 
 	va_list ap;
@@ -159,4 +159,5 @@ void slintf( const char *str, ... )
 	slintf_popup_console();
 
 	fputs( buffer, stdout );
+#endif
 }

@@ -377,7 +377,7 @@ BOOL PinDirectDraw::SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent, c
          }
          pch += pitch-(width*4);
       }
-      //slintf("amax:%d amin:%d\n",aMax,aMin);
+      slintf("amax:%d amin:%d\n",aMax,aMin);
       pch = (BYTE *)ddsd.lpSurface;
 
       for (int i=0;i<height;i++)
