@@ -73,6 +73,8 @@ Light::Light() : m_lightcenter(this)
    normalVBuffer = NULL;
    customMoverVBuffer = NULL;
    normalMoverVBuffer = NULL;
+   m_d.m_szOffImage[0]=0;
+   m_d.m_szOnImage[0]=0;
 }
 
 Light::~Light()
@@ -658,10 +660,10 @@ void Light::PrepareMoversCustom()
    for(int i=0; i<2; i++)
    {
       Texture* pin = NULL;
-      if(i == LightStateOff && m_d.m_szOffImage[0] != 0) 
+      if(i == LightStateOff ) 
          pin = m_ptable->GetImage(m_d.m_szOffImage);
       
-      if(i == LightStateOn && m_d.m_szOnImage[0] != 0) 
+      if(i == LightStateOn ) 
          pin = m_ptable->GetImage(m_d.m_szOnImage);
 
       int k=0;
@@ -718,32 +720,38 @@ void Light::PrepareMoversCustom()
 
       if(i == LightStateOff) 
       {
-         // Set the texture to the one defined in the editor.
-         mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
-         mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
-         mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
          // Check if the light has an "off" texture.
-         if ((m_d.m_szOffImage[0] == 0) && (pin == NULL))
+         if ( pin == NULL )
          {
             // Set the texture to a default.
             mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
             mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
             mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
          }
+         else
+         {
+            // Set the texture to the one defined in the editor.
+            mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
+         }
       } 
       else //LightStateOn 
       {
-         // Set the texture to the one defined in the editor.
-         mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
-         mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
-         mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
          // Check if the light has an "on" texture.
-         if ((m_d.m_szOnImage[0] == 0) && (pin == NULL))
+         if ( pin == NULL )
          {
             // Set the texture to a default.
             mtrl.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
             mtrl.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
             mtrl.setEmissive(0.0f, r, g, b );
+         }
+         else
+         {
+            // Set the texture to the one defined in the editor.
+            mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
          }
       }
       if (m_fBackglass && GetPTable()->GetDecalsEnabled())
