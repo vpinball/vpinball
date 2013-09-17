@@ -7,8 +7,6 @@
 using namespace MSAPC;
 #endif
 
-#include <xmmintrin.h>
-
 #ifdef min
 #undef min
 #endif
@@ -52,6 +50,7 @@ inline unsigned int max(const unsigned int x, const unsigned int y)
 
 #define SZTHISFILE
 #define ASSERT(fTest, err)
+#define Assert(x) //_ASSERTE(x)
 #define FAIL(err)
 
 #define CCO(x) CComObject<x>
@@ -60,13 +59,7 @@ inline unsigned int max(const unsigned int x, const unsigned int y)
 #define SAFE_DELETE(p)			{ if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_RELEASE(p)			{ if(p) { (p)->Release(); (p)=NULL; } }
 
-#define hrNotImplemented      ResultFromScode(E_NOTIMPL)
-
-#ifdef MYDEBUG
-#define Assert(x) _ASSERTE(x)
-#else
-#define Assert(x)
-#endif
+#define hrNotImplemented ResultFromScode(E_NOTIMPL)
 
 enum SaveDirtyState
 {
@@ -626,8 +619,6 @@ public:
 
 const WORD rgi0123[4] = {0,1,2,3};
 
-#include "HELPERS.H"
-
 inline __m128 rcpps(const __m128 &T) //Newton Raphson
 {
    const __m128 TRCP = _mm_rcp_ps(T);
@@ -731,8 +722,6 @@ int WideStrCmp(WCHAR *wz1, WCHAR *wz2);
 int WzSzStrCmp(WCHAR *wz1, char *sz2);
 void WideStrCat(WCHAR *wzin, WCHAR *wzout);
 int WzSzStrnCmp(WCHAR *wz1, char *sz2, int count);
-
-//void DumpNameTable (char *pszFile, char *pszName);
 
 HRESULT OpenURL(char *szURL);
 

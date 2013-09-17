@@ -357,13 +357,14 @@ void VPinball::Init()
 
    UpdateRecentFileList(NULL);							// update the recent loaded file list
 
-   wintimer_init();									// calibrate the timer routines
+   wintimer_init();									    // calibrate the timer routines
 
-   //slintf_init();									// initialize debug console (can be popupped by the following command)
-   // slintf_popup_console();
+#ifdef SLINTF
    // see slintf.cpp
-   //slintf_popup_console();
-   //slintf("Debug output:\n");	
+   slintf_init();									    // initialize debug console (can be popupped by the following command)
+   slintf_popup_console();
+   slintf("Debug output:\n");
+#endif
 }
 
 ///<summary>
@@ -379,7 +380,7 @@ void VPinball::EnsureWorkerThread()
       if (WaitForSingleObject(g_hWorkerStarted, 5000) == WAIT_TIMEOUT)
       {
       }
-      //SetThreadPriority(m_workerthread, THREAD_PRIORITY_LOWEST);
+      //SetThreadPriority(m_workerthread, THREAD_PRIORITY_LOWEST); //!!
    }
 }
 

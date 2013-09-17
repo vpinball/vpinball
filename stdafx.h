@@ -1,6 +1,7 @@
 #pragma once
 
 //#define DEBUG_XXX // helps to detect out-of-bounds access, needs to link dbghelp.lib then
+//#define SLINTF    // enable debug console output
 
 //#define ULTRAPIN       // define to enable deprecated UltraPin functionality
 //#define DONGLE_SUPPORT // define to enable deprecated UltraPin dongle (Remember to run hdd32.exe (HASP dongle driver setup) on host)
@@ -130,47 +131,6 @@ public:
 	bool bActivity;
 };
 extern CExeModule _Module;
-
-#include <Windows.h>
-
-#include "Richedit.h"
-#include "RichOle.h"
-#include "Tom.h"
-
-#include <atlcom.h>
-
-#ifdef VBA
-#define APC_IMPORT_MIDL
-#endif
-
-#include <atlbase.h>
-#include <atlhost.h>
-//extern CComModule _Module;
-#ifdef VBA
-#include <apcCpp.h>
-using namespace MSAPC;
-#endif
-
-#include "math.h"
-
-#include "commctrl.h"
-
-#include <activdbg.h>
-
-#include <atlctl.h>
-#include <atlhost.h>
-
-#define DIRECTINPUT_VERSION 0x0700
-#define D3D_OVERLOADS 1
-#include "dinput.h"
-#include "ddraw.h"
-#include "inc\d3d.h"
-#include "dsound.h"
-
-#include <ocidl.h>	// Added by ClassView
-
-#include "stdio.h"
-#include "wchar.h"
 
 #include "main.h"
 

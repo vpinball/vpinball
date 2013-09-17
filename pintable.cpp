@@ -4000,8 +4000,6 @@ void PinTable::ImportFont(HWND hwndListView, char *filename)
 
    if (ppb->m_pdata != NULL)
    {
-      //DumpNameTable(filename, ppb->m_szFontName);
-
       m_vfont.AddElement(ppb);
 
       const int index = AddListBinary(hwndListView, ppb);

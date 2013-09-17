@@ -1,4 +1,50 @@
 #pragma once
+
+#include <Windows.h>
+
+#include "Richedit.h"
+#include "RichOle.h"
+#include "Tom.h"
+
+#include <atlcom.h>
+
+#ifdef VBA
+#define APC_IMPORT_MIDL
+#endif
+
+#include <atlbase.h>
+#include <atlhost.h>
+//extern CComModule _Module;
+#ifdef VBA
+#include <apcCpp.h>
+using namespace MSAPC;
+#endif
+
+#include "math.h"
+
+#include "commctrl.h"
+
+#include <activdbg.h>
+
+#include <atlctl.h>
+#include <atlhost.h>
+
+#define DIRECTINPUT_VERSION 0x0700
+#define D3D_OVERLOADS 1
+#include "dinput.h"
+#include "ddraw.h"
+#include "inc\d3d.h"
+#include "dsound.h"
+
+#include <ocidl.h>	// Added by ClassView
+
+#include "stdio.h"
+#include "wchar.h"
+
+#include "HELPERS.H"
+
+#include <xmmintrin.h>
+
 #include "def.h"
 #include "resource.h"
 

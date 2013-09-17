@@ -227,8 +227,6 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
 
       HBITMAP hbm = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
 
-      //slintf("Pixel format: %s",hbm.PixelFormat.ToString());
-
       int dibWidth = FreeImage_GetWidth(dib);
       int dibHeight = FreeImage_GetHeight(dib);
 
@@ -755,7 +753,7 @@ BOOL Texture::SetAlpha(const COLORREF rgbTransparent, const int width, const int
          }
          pch += pitch-(width*4);
       }
-      //slintf("amax:%d amin:%d\n",aMax,aMin);
+      slintf("amax:%d amin:%d\n",aMax,aMin);
       pch = (BYTE *)ddsd.lpSurface;
 
       for (int i=0;i<height;i++)
