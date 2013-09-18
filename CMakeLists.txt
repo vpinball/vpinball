@@ -292,7 +292,7 @@ list(APPEND HEADERS "${CMAKE_BINARY_DIR}/VBATest.h")
 
 include_directories(pin)
 include_directories(media)
-include_directories(vp-sup/inc)
+include_directories(inc)
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${DirectX_INCLUDE_DIR})
