@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
 #
-@dirs = qw( . .. ../vp-sup ../vpinres ../pin ../media/xaudio );
+@dirs = qw( . .. ../inc ../vpinres ../pin ../media/xaudio );
 
 chdir "$ENV{'DEVEL'}/pin/vp/pin";
 
