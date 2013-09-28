@@ -888,6 +888,11 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
    numVertices = vvertex.Size();
    Vertex2D * const rgnormal = new Vertex2D[numVertices];
+   if ( sideVBuffer )
+   {
+      sideVBuffer->release();
+      sideVBuffer=0;
+   }
    if(!m_d.m_fEnableLighting)
    {
       if( !sideVBuffer )
@@ -895,7 +900,6 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
          pd3dDevice->createVertexBuffer( numVertices*4, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &sideVBuffer );
          NumVideoBytes += numVertices*4*sizeof(Vertex3D_NoLighting);
       }
-
       vertsNotLit = new Vertex3D_NoLighting[numVertices*4];
    }
    else
@@ -1088,6 +1092,16 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
          return;
       }
 
+      if( topVBuffer[0] )
+      {
+         topVBuffer[0]->release();
+         topVBuffer[0]=0;
+      }
+      if( topVBuffer[1] )
+      {
+         topVBuffer[1]->release();
+         topVBuffer[1]=0;
+      }
       if(!m_d.m_fEnableLighting)
       {
          if( !topVBuffer[0] && !topVBuffer[1] )
