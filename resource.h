@@ -111,7 +111,7 @@
 #define IDR_Light                       130
 #define IDS_TB_LIGHT                    130
 #define IDC_LIGHT                       131
-#define IDS_DRAW_UP                     131
+#define IDS_DRAWING_ORDER               131
 #define IDS_KICKER_DESC                 132
 #define IDR_Kicker                      133
 #define IDS_TB_KICKER                   133
@@ -133,7 +133,6 @@
 #define IDC_GATE                        140
 #define IDC_CUR_TRIGGER                 140
 #define IDS_WRONGFILEVERSION2           140
-#define IDS_DRAW_DOWN                   140
 #define IDS_SPINNER_DESC                141
 #define IDC_CUR_GATE                    141
 #define IDR_Spinner                     142
@@ -312,6 +311,7 @@
 #define IDC_ROTATE_APPLY_BUTTON         280
 #define IDC_SCALE_APPLY_BUTTON          280
 #define IDC_TRANSLATE_APPLY_BUTTON      280
+#define IDC_DRAWING_ORDER_UP            280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -470,7 +470,7 @@
 #define IDC_LIST1                       362
 #define IDC_LIST                        362
 #define IDC_ELEMENT_LIST                362
-#define IDC_DRAW_ORDER_LIST             362
+#define IDC_DRAWING_ORDER_LIST          362
 #define IDD_PROPPOINT_POSITION          363
 #define IDD_PROPPOINT_VISUALS           364
 #define IDC_HANGDETECT                  364
@@ -515,6 +515,7 @@
 #define DISPID_IMAGEMAPPING             389
 #define IDD_PROPTABLE_LIGHTSOURCES      390
 #define IDD_SEARCH_SELECT_ELEMENT       391
+#define IDD_DRAWING_ORDER               392
 #define IDC_CHECK1                      394
 #define IDC_CHECK_PRIMITIVE_LIGHTING    394
 #define IDC_GLOBAL_REFLECTION_CHECK     394
@@ -548,6 +549,7 @@
 #define IDC_TRANSLATE_UNDO_BUTTON2      417
 #define IDC_TRANSLATE_UNDO_BUTTON       417
 #define IDC_DRAW_ORDER_UP               417
+#define IDC_DRAWING_ORDER_DOWN          417
 #define IDC_JOYCUSTOM3COMBO             418
 #define IDC_BUTTON3                     418
 #define IDC_DRAW_ORDER_DOWN             418
@@ -722,6 +724,7 @@
 #define ID_LAYER_TOGGLEALL              32874
 #define ID_EDIT_SEARCH                  32875
 #define ID_SELECT_ELEMENT               32876
+#define ID_EDIT_DRAWINGORDER            32879
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -729,8 +732,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        392
-#define _APS_NEXT_COMMAND_VALUE         32879
+#define _APS_NEXT_RESOURCE_VALUE        393
+#define _APS_NEXT_COMMAND_VALUE         32882
 #define _APS_NEXT_CONTROL_VALUE         420
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

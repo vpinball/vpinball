@@ -1648,115 +1648,6 @@ void PinTable::Paint(HDC hdc)
    //DeleteObject(hbmOffScreen);
 }
 
-void PinTable::UpdateDrawingOrder( IEditable *ptr, bool up )
-{
-   if ( up )
-   {
-      for( int t=0;t<m_pvp->m_sb.m_vhwndDialog.Size();t++ )
-      {
-         HWND hw=GetDlgItem( m_pvp->m_sb.m_vhwndDialog.ElementAt(t), IDC_DRAW_ORDER_LIST );
-         if( hw!=NULL )
-         {
-            char nameBuf[256];
-            DWORD idx = SendMessage( hw, LB_GETCURSEL,0,0 );
-            if ( idx>0 )
-            {
-               SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
-               SendMessage( hw, LB_DELETESTRING, idx, 0 );
-               SendMessage( hw, LB_INSERTSTRING, idx-1, (WPARAM)nameBuf);
-               SendMessage( hw, LB_SETCURSEL, idx-1,0);
-               ISelect *psel = allHitElements.ElementAt(idx);
-               allHitElements.RemoveElementAt(idx);
-               if ( idx-1<0 )
-               {
-                  allHitElements.InsertElementAt(psel,0);
-               }
-               else
-                  allHitElements.InsertElementAt(psel, idx-1);
-               for ( int i=allHitElements.Size()-1;i>=0;i-- )
-               {
-                  IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
-                  int t=m_vedit.IndexOf(pedit);
-                  m_vedit.RemoveElementAt(t);
-               }
-               for ( int i=allHitElements.Size()-1;i>=0;i-- )
-               {
-                  IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
-                  m_vedit.AddElement(pedit);
-               }
-            }
-            break;
-         }
-      }
-   }
-   else
-   {
-      for( int t=0;t<m_pvp->m_sb.m_vhwndDialog.Size();t++ )
-      {
-         HWND hw=GetDlgItem( m_pvp->m_sb.m_vhwndDialog.ElementAt(t), IDC_DRAW_ORDER_LIST );
-         if( hw!=NULL )
-         {
-            char nameBuf[256];
-            int idx = SendMessage( hw, LB_GETCURSEL,0,0 );
-            if ( idx<allHitElements.Size()-1 )
-            {
-               SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
-               SendMessage( hw, LB_DELETESTRING, idx, 0 );
-               SendMessage( hw, LB_INSERTSTRING, idx+1, (WPARAM)nameBuf);
-               SendMessage( hw, LB_SETCURSEL, idx+1,0);
-               ISelect *psel = allHitElements.ElementAt(idx);
-               allHitElements.RemoveElementAt(idx);
-               if ( idx+1>=allHitElements.Size() )
-               {
-                  allHitElements.AddElement(psel);
-               }
-               else
-                  allHitElements.InsertElementAt(psel, idx+1);
-               for ( int i=allHitElements.Size()-1;i>=0;i-- )
-               {
-                  IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
-                  int t=m_vedit.IndexOf(pedit);
-                  m_vedit.RemoveElementAt(t);
-               }
-               for ( int i=allHitElements.Size()-1;i>=0;i-- )
-               {
-                  IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
-                  m_vedit.AddElement(pedit);
-               }
-            }
-            break;
-         }
-      }
-   }
-
-}
-void PinTable::UpdateDrawingOrderListBox()
-{
-   HWND listHwnd=NULL;
-
-   for( int t=0;t<m_pvp->m_sb.m_vhwndDialog.Size();t++ )
-   {
-      listHwnd=GetDlgItem( m_pvp->m_sb.m_vhwndDialog.ElementAt(t), IDC_DRAW_ORDER_LIST );
-      if( listHwnd!=NULL )
-      {
-         SendMessage( listHwnd, LB_RESETCONTENT, 0, 0);
-         break;
-      }
-   }
-
-   for( int i=0; i<allHitElements.Size(); i++ )
-   {
-      IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
-      if ( pedit )
-      {
-         char *szTemp;
-         szTemp = GetElementName(pedit);
-         if( szTemp )
-            SendMessage( listHwnd, LB_ADDSTRING, i, (LPARAM)szTemp);
-      }
-   }
-}
-
 ISelect *PinTable::HitTest(const int x, const int y)
 {
    HDC hdc = GetDC(m_hwnd);
@@ -4370,6 +4261,9 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
          subMenu = CreatePopupMenu();
       }
       // TEXT
+      LocalString ls14(IDS_DRAWING_ORDER);
+      AppendMenu(hmenu, MF_STRING, ID_EDIT_DRAWINGORDER, ls14.m_szbuffer);
+
       LocalString ls1(IDS_DRAWINFRONT);
       LocalString ls2(IDS_DRAWINBACK);
       AppendMenu(hmenu, MF_STRING, ID_DRAWINFRONT, ls1.m_szbuffer);
@@ -5423,7 +5317,6 @@ void PinTable::AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate)
    if (fUpdate)
    {
       g_pvp->SetPropSel(&m_vmultisel);
-      UpdateDrawingOrderListBox();
    }
 
    if (m_vmultisel.ElementAt(0)->GetIEditable() && m_vmultisel.ElementAt(0)->GetIEditable()->GetScriptable())

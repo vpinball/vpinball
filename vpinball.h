@@ -118,6 +118,7 @@ public:
 
 	void SetAutoSaveMinutes(int minutes);
 	static void SetOpenMinimized();
+   void ShowDrawingOrderDialog();
 
 	ULONG m_cref;
 	ITypeInfo *m_ptinfoCls;
