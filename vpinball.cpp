@@ -143,6 +143,7 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 ///<summary>
 ///VPinball Constructor
@@ -967,6 +968,12 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
    case ID_EDIT_SEARCH:
       {
          DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SEARCH_SELECT_ELEMENT), m_hwnd, SearchSelectProc, 0);
+         break;
+      }
+   case ID_EDIT_DRAWINGORDER:
+      {
+         //DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
+         ShowDrawingOrderDialog();
          break;
       }
    case IDC_SELECT:
@@ -1926,6 +1933,7 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, IDC_MAGNIFY, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_SEARCH, MF_BYCOMMAND | MF_ENABLED );
+      EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER, MF_BYCOMMAND | MF_ENABLED );
       // enable/disable save options
       UINT flags;
       if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
@@ -2026,6 +2034,7 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, IDC_MAGNIFY, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_EDIT_SEARCH, MF_BYCOMMAND | MF_GRAYED );
+      EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER, MF_BYCOMMAND | MF_GRAYED );
    }
 }
 //<<<
@@ -8056,6 +8065,160 @@ int CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             }
             break;
 
+         case IDCANCEL:
+            EndDialog(hwndDlg, FALSE);
+            break;
+         }
+         break;
+      }
+      break;
+   }
+
+   return FALSE;
+}
+
+void VPinball::ShowDrawingOrderDialog()
+{
+   DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
+}
+
+void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
+{
+   HWND hw=GetDlgItem( hwndDlg, IDC_DRAW_ORDER_LIST);
+   PinTable *pt = g_pvp->GetActiveTable();
+
+   if ( up )
+   {
+      char nameBuf[256];
+      DWORD idx = SendMessage( hw, LB_GETCURSEL,0,0 );
+      if ( idx>0 )
+      {
+         SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
+         SendMessage( hw, LB_DELETESTRING, idx, 0 );
+         SendMessage( hw, LB_INSERTSTRING, idx-1, (WPARAM)nameBuf);
+         SendMessage( hw, LB_SETCURSEL, idx-1,0);
+         ISelect *psel = pt->allHitElements.ElementAt(idx);
+         pt->allHitElements.RemoveElementAt(idx);
+         if ( idx-1<0 )
+         {
+            pt->allHitElements.InsertElementAt(psel,0);
+         }
+         else
+            pt->allHitElements.InsertElementAt(psel, idx-1);
+         for ( int i=pt->allHitElements.Size()-1;i>=0;i-- )
+         {
+            IEditable *pedit = pt->allHitElements.ElementAt(i)->GetIEditable();
+            int t=pt->m_vedit.IndexOf(pedit);
+            pt->m_vedit.RemoveElementAt(t);
+         }
+         for ( int i=pt->allHitElements.Size()-1;i>=0;i-- )
+         {
+            IEditable *pedit = pt->allHitElements.ElementAt(i)->GetIEditable();
+            pt->m_vedit.AddElement(pedit);
+         }
+      }
+   }
+   else
+   {
+      char nameBuf[256];
+      int idx = SendMessage( hw, LB_GETCURSEL,0,0 );
+      if ( idx<pt->allHitElements.Size()-1 )
+      {
+         SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
+         SendMessage( hw, LB_DELETESTRING, idx, 0 );
+         SendMessage( hw, LB_INSERTSTRING, idx+1, (WPARAM)nameBuf);
+         SendMessage( hw, LB_SETCURSEL, idx+1,0);
+         ISelect *psel = pt->allHitElements.ElementAt(idx);
+         pt->allHitElements.RemoveElementAt(idx);
+         if ( idx+1>=pt->allHitElements.Size() )
+         {
+            pt->allHitElements.AddElement(psel);
+         }
+         else
+            pt->allHitElements.InsertElementAt(psel, idx+1);
+         for ( int i=pt->allHitElements.Size()-1;i>=0;i-- )
+         {
+            IEditable *pedit = pt->allHitElements.ElementAt(i)->GetIEditable();
+            int t=pt->m_vedit.IndexOf(pedit);
+            pt->m_vedit.RemoveElementAt(t);
+         }
+         for ( int i=pt->allHitElements.Size()-1;i>=0;i-- )
+         {
+            IEditable *pedit = pt->allHitElements.ElementAt(i)->GetIEditable();
+            pt->m_vedit.AddElement(pedit);
+         }
+      }
+   }
+
+}
+
+
+int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   //CCO(PinTable) *pt;
+   //pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+   switch (uMsg)
+   {
+   case WM_INITDIALOG:
+      {
+         HWND listHwnd=GetDlgItem( hwndDlg, IDC_DRAW_ORDER_LIST);
+         PinTable *pt = g_pvp->GetActiveTable();
+
+         if( listHwnd!=NULL )
+         {
+            SendMessage( listHwnd, LB_RESETCONTENT, 0, 0);
+         }
+         for( int i=0; i<pt->allHitElements.Size(); i++ )
+         {
+            IEditable *pedit = pt->allHitElements.ElementAt(i)->GetIEditable();
+            if ( pedit )
+            {
+               char *szTemp;
+               szTemp = pt->GetElementName(pedit);
+               if( szTemp )
+                  SendMessage( listHwnd, LB_ADDSTRING, i, (LPARAM)szTemp);
+            }
+         }
+         return TRUE;
+      }
+      break;
+
+   case WM_CLOSE:
+      EndDialog(hwndDlg, FALSE);
+      break;
+
+   case WM_COMMAND:
+      switch (HIWORD(wParam))
+      {
+      case BN_CLICKED:
+         switch (LOWORD(wParam))
+         {
+         case IDC_DRAWING_ORDER_UP:
+            {
+               PinTable *pt = g_pvp->GetActiveTable();
+               for( int i=0;i<pt->m_vmultisel.Size();i++ )
+               {
+                  IEditable *ptr = pt->m_vmultisel.ElementAt(i)->GetIEditable();
+                  UpdateDrawingOrder(hwndDlg, ptr, true );
+               }
+               break;
+            }
+         case IDC_DRAWING_ORDER_DOWN:
+            {
+               PinTable *pt = g_pvp->GetActiveTable();
+               for( int i=0;i<pt->m_vmultisel.Size();i++ )
+               {
+                  IEditable *ptr = pt->m_vmultisel.ElementAt(i)->GetIEditable();
+                  UpdateDrawingOrder(hwndDlg, ptr, false );
+               }
+               break;
+            }
+         case IDOK:
+            {
+               EndDialog(hwndDlg, TRUE);
+               break;
+            }
          case IDCANCEL:
             EndDialog(hwndDlg, FALSE);
             break;

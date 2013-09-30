@@ -385,9 +385,6 @@ public:
 	STDMETHOD(put_GridSize)(float gs);
 
 	void AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate);
-   void UpdateDrawingOrder( IEditable *ptr, bool up );
-   void UpdateDrawingOrderListBox();
-
 	void BeginAutoSaveCounter();
 	void EndAutoSaveCounter();
 	void AutoSave();

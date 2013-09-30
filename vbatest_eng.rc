@@ -14,7 +14,55 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DRAWING_ORDER DIALOGEX 0, 0, 198, 159
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Drawing Order"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "&Close",IDOK,141,138,50,14
+    LISTBOX         IDC_DRAWING_ORDER_LIST,7,7,131,145,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Up",IDC_DRAWING_ORDER_UP,141,7,28,14
+    PUSHBUTTON      "&Down",IDC_DRAWING_ORDER_DOWN,141,22,28,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DRAWING_ORDER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 191
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 152
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -604,16 +652,12 @@ BEGIN
     LTEXT           "Value",IDC_STATIC,16,281,30,10
 END
 
-IDD_PROP_NAME DIALOGEX 0, 0, 125, 94
+IDD_PROP_NAME DIALOGEX 0, 0, 125, 27
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "&Name",IDC_STATIC,7,8,20,8
     EDITTEXT        30000,29,7,89,12,ES_AUTOHSCROLL
-    LISTBOX         IDC_DRAW_ORDER_LIST,6,38,86,48,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Up",IDC_DRAW_ORDER_UP,93,33,26,14
-    PUSHBUTTON      "Down",IDC_DRAW_ORDER_DOWN,93,49,26,14
-    GROUPBOX        "Drawing order",IDC_STATIC,3,26,119,65
 END
 
 IDD_PROP_TIMER DIALOGEX 0, 0, 125, 58
@@ -1525,7 +1569,7 @@ BEGIN
 
     IDD_PROP_NAME, DIALOG
     BEGIN
-        BOTTOMMARGIN, 92
+        BOTTOMMARGIN, 25
     END
 
     IDD_PROPTABLE_BALL, DIALOG
@@ -1659,6 +1703,7 @@ BEGIN
         MENUITEM "Paste &At\tCtrl+Shift+V",     IDC_PASTEAT
         MENUITEM "&Delete\tDel",                ID_DELETE
         MENUITEM "Select &Element\tCtrl+Shift+E", ID_EDIT_SEARCH
+        MENUITEM "Dra&wing Order\tCtrl+Shift+D", ID_EDIT_DRAWINGORDER
         MENUITEM SEPARATOR
         MENUITEM "&Options",                    ID_EDIT_PROPERTIES
         MENUITEM "&Script",                     ID_EDIT_SCRIPT
@@ -1818,6 +1863,7 @@ IDB_CHEVRON             BITMAP                  "chevron.bmp"
 IDR_VPACCEL ACCELERATORS 
 BEGIN
     VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
+    "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
     "B",            IDC_BUMPER,             VIRTKEY, CONTROL, NOINVERT
@@ -1843,7 +1889,7 @@ BEGIN
     "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
     "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
-    "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "D",            ID_EDIT_DRAWINGORDER,   VIRTKEY, SHIFT, CONTROL, NOINVERT
 END
 
 IDR_CODEVIEWACCEL ACCELERATORS 
@@ -1955,10 +2001,10 @@ BEGIN
     IDS_TB_FLIPPER          "Flipper"
     IDS_TB_PLAY             "Play"
     IDS_FLIPPER_DESC        "Flipper Class"
-    IDS_LAYER1              "Layer1"
-    IDS_ASSIGNTO            "Assign to..."
-    IDS_LAYER2              "Layer2"
-    IDS_LAYER3              "Layer3"
+    IDS_LAYER1              "Layer&1"
+    IDS_ASSIGNTO            "&Assign to..."
+    IDS_LAYER2              "Layer&2"
+    IDS_LAYER3              "Layer&3"
 END
 
 STRINGTABLE 
@@ -1971,7 +2017,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_NEED_DD9            "Visual Pinball requires DirectX 9.0 or higher from Microsoft."
-    IDS_LOCK                "Lock"
+    IDS_LOCK                "&Lock"
     IDS_MISC                "Misc"
     IDS_LIGHTSEQ_DESC       "LightSequencer Class"
     IDS_VISUALS             "Colors & Formatting"
@@ -1992,18 +2038,16 @@ BEGIN
     IDS_DIMENSIONSSLOPE     "Dimensions & Slope"
     IDS_LIGHTSOURCES        "Lightsources"
     IDS_INPUT               "Input"
-    IDS_UNHIDEALL           "Unhide all"
-    IDS_HIDE                "Hide"
 END
 
 STRINGTABLE 
 BEGIN
     IDS_TIMER_DESC          "Timer Class"
-    IDS_LAYER4              "Layer4"
-    IDS_LAYER5              "Layer5"
+    IDS_LAYER4              "Layer&4"
+    IDS_LAYER5              "Layer&5"
     IDS_PLUNGER_DESC        "Plunger Class"
     IDS_TB_PLUNGER          "Plunger"
-    IDS_LAYER6              "Layer6"
+    IDS_LAYER6              "Layer&6"
     IDS_TEXTBOX_DESC        "Textbox Class"
     IDS_TB_TEXTBOX          "TextBox"
     IDS_DISPREEL_DESC       "DispReel Class"
@@ -2011,16 +2055,17 @@ BEGIN
     IDS_TB_BUMPER           "Bumper"
     IDS_TB_DISPREEL         "EMReel"
     IDS_PIEVENTHANDLER_DESC "PIEventHandler Class"
-    IDS_LAYER7              "Layer7"
+    IDS_LAYER7              "Layer&7"
     IDS_TRIGGER_DESC        "Trigger Class"
     IDS_TB_TRIGGER          "Trigger"
 END
 
 STRINGTABLE 
 BEGIN
-    IDS_LAYER8              "Layer8"
+    IDS_LAYER8              "Layer&8"
     IDS_LIGHT_DESC          "Light Class"
     IDS_TB_LIGHT            "Light"
+    IDS_DRAWING_ORDER       "&Drawing Order"
     IDS_KICKER_DESC         "Kicker Class"
     IDS_TB_KICKER           "Kicker"
     IDS_TB_TARGET           "Target"
@@ -2099,7 +2144,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -140,6 +140,9 @@ void ISelect::DoCommand(int icmd, int x, int y)
    }
 	switch (icmd)
 		{
+      case ID_EDIT_DRAWINGORDER:
+         g_pvp->ShowDrawingOrderDialog();
+         break;
 		case ID_DRAWINFRONT:
 			GetPTable()->m_vedit.RemoveElement(piedit);
 			GetPTable()->m_vedit.AddElement(piedit);
