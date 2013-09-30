@@ -8084,7 +8084,7 @@ void VPinball::ShowDrawingOrderDialog()
 
 void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
 {
-   HWND hw=GetDlgItem( hwndDlg, IDC_DRAW_ORDER_LIST);
+   HWND hw=GetDlgItem( hwndDlg, IDC_DRAWING_ORDER_LIST);
    PinTable *pt = g_pvp->GetActiveTable();
 
    if ( up )
@@ -8162,7 +8162,7 @@ int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
    {
    case WM_INITDIALOG:
       {
-         HWND listHwnd=GetDlgItem( hwndDlg, IDC_DRAW_ORDER_LIST);
+         HWND listHwnd=GetDlgItem( hwndDlg, IDC_DRAWING_ORDER_LIST);
          PinTable *pt = g_pvp->GetActiveTable();
 
          if( listHwnd!=NULL )
