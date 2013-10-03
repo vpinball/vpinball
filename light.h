@@ -30,6 +30,7 @@ public:
 	char m_szOffImage[MAXTOKEN];
 	BOOL m_fDisplayImage;
 	BOOL m_EnableLighting;
+   BOOL m_EnableOffLighting;
 	};
 
 class LightCenter : public ISelect
@@ -206,8 +207,10 @@ public:
 	STDMETHOD(put_OnImage)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_DisplayImage)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_DisplayImage)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_EnableLighting)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_EnableLighting)(/*[in]*/ int newVal);
+   STDMETHOD(get_EnableLighting)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_EnableLighting)(/*[in]*/ int newVal);
+   STDMETHOD(get_EnableOffLighting)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_EnableOffLighting)(/*[in]*/ int newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)
