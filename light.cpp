@@ -209,6 +209,11 @@ void Light::SetDefaults(bool fromMouseClick)
       m_d.m_EnableLighting = iTmp;
    else
       m_d.m_EnableLighting = true;
+   hr = GetRegInt("DefaultProps\\Light","EnableOffLighting", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_EnableOffLighting = iTmp;
+   else
+      m_d.m_EnableOffLighting = true;
 }
 
 void Light::WriteRegDefaults()
@@ -232,6 +237,7 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
    SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
    SetRegValue("DefaultProps\\Light","EnableLighting", REG_DWORD, &m_d.m_EnableLighting,4);
+   SetRegValue("DefaultProps\\Light","EnableOffLighting", REG_DWORD, &m_d.m_EnableOffLighting,4);
 }
 
 void Light::PreRender(Sur * const psur)
@@ -874,6 +880,8 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
       Texture* pin = NULL;
       if(i == LightStateOff) 
       {
+         if(!m_d.m_EnableOffLighting)
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
          // Check if the light has an "off" texture.
          if ((m_d.m_szOffImage[0] != 0) && (pin = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
          {
@@ -930,7 +938,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
          }
 	  ppin3d->ExpandExtents(&m_pobjframe[i]->rc, customMoverVertex[i], NULL, NULL, customMoverVertexNum, m_fBackglass);
 
-	  if((i != LightStateOff) && (!m_d.m_EnableLighting))
+	  if((!m_d.m_EnableLighting))
 	      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
       for (int iedit=0; iedit<m_ptable->m_vedit.Size(); iedit++)
@@ -1026,11 +1034,14 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
    {
       if(i == LightStateOff) 
       {
+         if(!m_d.m_EnableOffLighting)
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
          ppin3d->EnableLightMap(!m_fBackglass, height);
          mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
          mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
          mtrl.setEmissive( 0.0f, 0.0f, 0.0f, 0.0f );
-      } else 
+      } 
+      else 
       {
          if(!m_d.m_EnableLighting)
             pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
@@ -1065,7 +1076,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
          pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, normalMoverVBuffer, 0, 32, (LPWORD)rgiLightStatic1,32,0 );
       }
 
-	  if((i != LightStateOff) && (!m_d.m_EnableLighting))
+	  if((!m_d.m_EnableLighting))
 	      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
 	  for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
@@ -1138,6 +1149,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(BGLS), m_fBackglass);
    bw.WriteBool(FID(ENLI), m_d.m_EnableLighting);
+   bw.WriteBool(FID(ENOL), m_d.m_EnableOffLighting);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1177,6 +1189,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_realState	= m_d.m_state;		//>>> added by chris
 
    m_d.m_EnableLighting = true;
+   m_d.m_EnableOffLighting = true;
 
    br.Load();
    return S_OK;
@@ -1259,9 +1272,13 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetBool(&m_fBackglass);
    }
-    if (id == FID(ENLI))
+   if (id == FID(ENLI))
    {
       pbr->GetBool(&m_d.m_EnableLighting);
+   }
+   else if (id == FID(ENOL))
+   {
+      pbr->GetBool(&m_d.m_EnableOffLighting);
    }
    else
    {
@@ -1791,6 +1808,24 @@ STDMETHODIMP Light::put_EnableLighting(int newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Light::get_EnableOffLighting(int *pVal)
+{
+   *pVal = m_d.m_EnableOffLighting;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_EnableOffLighting(int newVal)
+{
+   STARTUNDO
+
+      m_d.m_EnableOffLighting = newVal;
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
