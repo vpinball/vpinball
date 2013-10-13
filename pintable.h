@@ -580,6 +580,8 @@ END_CONNECTION_POINT_MAP()
 	int m_jolt_trigger_time;
 	int m_tilt_trigger_time;
 
+   short oldMousePosX;
+   short oldMousePosY;
 	BOOL m_fRenderShadows;
 	_protectionData	m_protectionData;
 

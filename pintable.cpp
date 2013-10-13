@@ -5968,11 +5968,11 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       }
       break;
 
+      
    case WM_LBUTTONDOWN: {
       pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
       const short x = (short)(lParam & 0xffff);
       const short y = (short)((lParam>>16) & 0xffff);
-
       if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == IDC_MAGNIFY))
       {
          pt->DoLButtonDown(x,y);
@@ -6006,7 +6006,33 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
          const short x = (short)(lParam & 0xffff);
          const short y = (short)((lParam>>16) & 0xffff);
          pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         const BOOL altPressed = ((GetKeyState(VK_MENU) & 0x80000000) != 0);
+         if ( altPressed )
+         {         
+            // panning feature starts here...if the user holds alt and moves the mouse 
+            // everything is moved in the direction of the mouse was moved
+            int deltaX = (int)abs(pt->oldMousePosX-x)+1;
+            int deltaY = (int)abs(pt->oldMousePosY-y)+1;
+            int factorX= (30*deltaX)/(deltaX+1);
+            int factorY= (30*deltaY)/(deltaY+1);
+            SCROLLINFO si;
+            ZeroMemory(&si,sizeof(SCROLLINFO));
+            si.cbSize = sizeof(SCROLLINFO);
+            si.fMask = SIF_ALL;
+            GetScrollInfo(hwnd, SB_HORZ, &si);
+            if ( pt->oldMousePosX>x )  pt->m_offsetx -= si.nPage/factorX;
+            if ( pt->oldMousePosX<x )  pt->m_offsetx += si.nPage/factorX;
+            GetScrollInfo(hwnd, SB_VERT, &si);
+            if ( pt->oldMousePosY>y )  pt->m_offsety -= si.nPage/factorY;
+            if ( pt->oldMousePosY<y )  pt->m_offsety += si.nPage/factorY;
+            pt->SetDirtyDraw();
+            pt->SetMyScrollInfo();
+
+            break;
+         }
          pt->DoMouseMove(x,y);
+         pt->oldMousePosX=x;
+         pt->oldMousePosY=y;
       }
       break;
 
