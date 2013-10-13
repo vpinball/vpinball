@@ -17,6 +17,8 @@ VP 9.1.6 Changelog
   If the value is too high the mirror effect will look odd.
 - add shadow orientation. In the table options under Lightsources you can change the shadow orientation by adding a factor to X and Y. Doing that you can change the projection of the shadow on the table.
   This is needed if you use the extra light sources to create a more real lighting/shadowing.
+- add panning feature. In the editor hold ALT and move the mouse and the view will change in the direction the mouse was moved. 
+  It just reacts on mouse movements if you don't move the mouse nothing will happen.
   
 VP 9.1.5 Changelog
 ------------------------
