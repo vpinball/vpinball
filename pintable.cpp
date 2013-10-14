@@ -6011,10 +6011,8 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
          {         
             // panning feature starts here...if the user holds alt and moves the mouse 
             // everything is moved in the direction of the mouse was moved
-            int deltaX = (int)abs(pt->oldMousePosX-x)+1;
-            int deltaY = (int)abs(pt->oldMousePosY-y)+1;
-            int factorX= (30*deltaX)/(deltaX+1);
-            int factorY= (30*deltaY)/(deltaY+1);
+            int factorX= 100;
+            int factorY= 100;
             SCROLLINFO si;
             ZeroMemory(&si,sizeof(SCROLLINFO));
             si.cbSize = sizeof(SCROLLINFO);
@@ -6027,7 +6025,8 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             if ( pt->oldMousePosY<y )  pt->m_offsety += si.nPage/factorY;
             pt->SetDirtyDraw();
             pt->SetMyScrollInfo();
-
+            pt->oldMousePosX=x;
+            pt->oldMousePosY=y;
             break;
          }
          pt->DoMouseMove(x,y);
