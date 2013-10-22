@@ -772,7 +772,15 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
   				if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
 	  				m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
 					{
-					m_vhitalpha.AddElement(ph);
+                  if ( m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive )
+                  {
+                     Primitive *prim = (Primitive *)m_ptable->m_vedit.ElementAt(i);
+                     if ( prim->m_d.staticRendering )
+                     {
+                        continue;
+                     }
+                  }
+					   m_vhitalpha.AddElement(ph);
 					}
 			}
 			else

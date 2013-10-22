@@ -31,6 +31,7 @@ public:
    bool m_TopVisible;
    bool m_DrawTexturesInside;
    bool useLighting;
+   bool staticRendering;
 };
 
 class Primitive :
@@ -124,6 +125,8 @@ public:
    STDMETHOD(put_MeshFileName)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_EnableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_EnableLighting)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_EnableStaticRendering)(/*[in]*/ VARIANT_BOOL newVal);
 
    Primitive();
    virtual ~Primitive();
@@ -236,14 +239,16 @@ public:
    float builtin_depth[Max_Primitive_Sides*4];
 
    void CalculateBuiltinOriginal();
-   void CalculateBuiltin();
+   void CalculateBuiltin( bool _regionUpdate );
 
    //!! here starts the more general primitive stuff:
 
    void RecalculateMatrices();
    void RecalculateVertices();
-   void UpdateMesh();
+   void UpdateMesh( bool _regionUpdate);
    bool BrowseFor3DMeshFile();
+   void RenderObject( RenderDevice *pd3dDevice, bool _regionUpdate );
+
    virtual bool LoadMesh();
    virtual void DeleteMesh();
 

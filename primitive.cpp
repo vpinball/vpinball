@@ -15,6 +15,7 @@ Primitive::Primitive()
    m_d.use3DMesh=false;
    m_d.meshFileName[0]=0;
    m_d.useLighting=false;
+   m_d.staticRendering=false;
 } 
 
 Primitive::~Primitive() 
@@ -77,6 +78,13 @@ void Primitive::SetDefaults(bool fromMouseClick)
    // visible
    hr = GetRegInt("DefaultProps\\Primitive", "TopVisible", &iTmp);
    m_d.m_TopVisible = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
+
+   // lighting on/off
+   hr = GetRegInt("DefaultProps\\Primitive", "UseLighting", &iTmp);
+   m_d.useLighting = (hr == S_OK) && fromMouseClick ? (iTmp==1) : false;
+
+   hr = GetRegInt("DefaultProps\\Primitive", "StaticRendering", &iTmp);
+   m_d.staticRendering = (hr == S_OK) && fromMouseClick ? (iTmp==1) : false;
 
    // Draw Textures inside
    hr = GetRegInt("DefaultProps\\Primitive", "DrawTexturesInside", &iTmp);
@@ -168,6 +176,10 @@ void Primitive::WriteRegDefaults()
    SetRegValue("DefaultProps\\Primitive","SideColor",REG_DWORD,&m_d.m_SideColor,4);
    iTmp = (m_d.m_TopVisible) ? 1 : 0;
    SetRegValue("DefaultProps\\Primitive","TopVisible",REG_DWORD,&iTmp,4);
+   iTmp = (m_d.useLighting) ? 1 : 0;
+   SetRegValue("DefaultProps\\Primitive","UseLighting",REG_DWORD,&iTmp,4);
+   iTmp = (m_d.staticRendering) ? 1 : 0;
+   SetRegValue("DefaultProps\\Primitive","StaticRendering",REG_DWORD,&iTmp,4);
 
    iTmp = (m_d.m_DrawTexturesInside) ? 1 : 0;
    SetRegValue("DefaultProps\\Primitive","DrawTexturesInside",REG_DWORD,&iTmp,4);
@@ -599,7 +611,7 @@ void Primitive::CalculateBuiltinOriginal()
 
 }
 
-void Primitive::CalculateBuiltin()
+void Primitive::CalculateBuiltin( bool _regionUpdate )
 {
    // 1 copy vertices
    memcpy(builtin_rgv,builtin_rgvOriginal,(m_d.m_Sides*4 + 2)*sizeof(Vertex3D_NoTex2));
@@ -726,7 +738,8 @@ void Primitive::CalculateBuiltin()
 
    // 4 update the bounding box for the primitive to tell the renderer where to update the back buffer
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
-   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, builtin_rgv, NULL, NULL, numVertices, fFalse);
+   if ( _regionUpdate )
+      g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, builtin_rgv, NULL, NULL, numVertices, fFalse);
 
    // 5 store in vertexbuffer
    Vertex3D_NoTex2 *buf;
@@ -735,7 +748,7 @@ void Primitive::CalculateBuiltin()
    vertexBuffer->unlock();
 }
 
-void Primitive::UpdateMesh()
+void Primitive::UpdateMesh( bool _regionUpdate)
 {
    memcpy(objMesh,objMeshOrg,numVertices*sizeof(Vertex3D_NoTex2));
 
@@ -754,7 +767,8 @@ void Primitive::UpdateMesh()
 
    // update the bounding box for the primitive to tell the renderer where to update the back buffer
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
-   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
+   if ( _regionUpdate )
+      g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
 
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
@@ -762,13 +776,11 @@ void Primitive::UpdateMesh()
    vertexBuffer->unlock();
 }
 
-// Always called each frame to render over everything else (along with alpha ramps)
-void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Primitive::RenderObject( RenderDevice *pd3dDevice, bool _regionUpdate )
 {
    if (m_d.m_TopVisible)
    {
-	  RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
       if (pin)
       {
@@ -792,43 +804,54 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
          }
       }
 
-     material.set();
-	  if(vertexBufferRegenerate)
-	  {
- 	    vertexBufferRegenerate = false;
-        
- 	    RecalculateMatrices();
+      material.set();
+      if(vertexBufferRegenerate)
+      {
+         vertexBufferRegenerate = false;
 
-		if( m_d.use3DMesh )
-        {
-            UpdateMesh();
-        }
-        else
-        {
-   		    CalculateBuiltin();
-        }
-	 }
-    if ( !m_d.useLighting )
-    {
-       // disable lighting is a default setting
-       // it could look odd if you switch lighting on on non mesh primitives
-       pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
-    }
+         RecalculateMatrices();
 
-    if( m_d.use3DMesh )
-    {
-       pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexList, indexListSize, 0 );
-    }
-    else
-    {
-       pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, builtin_indices, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
-    }
+         if( m_d.use3DMesh )
+         {
+            UpdateMesh( _regionUpdate );
+         }
+         else
+         {
+            CalculateBuiltin( _regionUpdate );
+         }
+      }
+      if ( !m_d.useLighting )
+      {
+         // disable lighting is a default setting
+         // it could look odd if you switch lighting on on non mesh primitives
+         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+      }
 
-    if ( !m_d.useLighting )
-    {
-       pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
-    }
-  }
+      if( m_d.use3DMesh )
+      {
+         pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexList, indexListSize, 0 );
+      }
+      else
+      {
+         pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, builtin_indices, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
+      }
+
+      if ( !m_d.useLighting )
+      {
+         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+      }
+   }
+}
+
+// Always called each frame to render over everything else (along with alpha ramps)
+void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
+{
+   if ( m_d.staticRendering )
+   {
+      return;
+   }
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+   RenderObject( pd3dDevice, true );
 }
 
 extern bool loadWavefrontObj( char *filename, bool flipTv );
@@ -863,9 +886,13 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
 }
 
-// called to set up the initial backbuffer
-void Primitive::RenderStatic(const RenderDevice* pd3dDevice)
+void Primitive::RenderStatic(const RenderDevice* _pd3dDevice)
 {
+   if( m_d.staticRendering )
+   {
+      RenderDevice *pd3dDevice = (RenderDevice*)_pd3dDevice;
+      RenderObject(pd3dDevice, false);
+   }
 }
 
 void Primitive::RenderMovers(const RenderDevice* pd3dDevice)
@@ -946,6 +973,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(DTXI), (m_d.m_DrawTexturesInside) ? 1 : 0);
    bw.WriteInt(FID(ENLI), (m_d.useLighting) ? 1 : 0);
    bw.WriteInt(FID(U3DM), (m_d.use3DMesh) ? 1 : 0 );
+   bw.WriteInt(FID(STRE), (m_d.staticRendering) ? 1 : 0 );
    if( m_d.use3DMesh )
    {
       bw.WriteString( FID(M3DN), m_d.meshFileName);
@@ -1097,6 +1125,12 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       int iTmp;
       pbr->GetInt(&iTmp);
       m_d.useLighting = (iTmp==1);
+   }
+   else if (id == FID(STRE))
+   {
+      int iTmp;
+      pbr->GetInt(&iTmp);
+      m_d.staticRendering = (iTmp==1);
    }
    else if ( id == FID(U3DM))
    {
@@ -1893,6 +1927,24 @@ STDMETHODIMP Primitive::put_EnableLighting(VARIANT_BOOL newVal)
    STARTUNDO
 
    m_d.useLighting = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Primitive::get_EnableStaticRendering(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.staticRendering);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_EnableStaticRendering(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.staticRendering = VBTOF(newVal);
 
    STOPUNDO
 
