@@ -19,6 +19,8 @@ VP 9.1.6 Changelog
   This is needed if you use the extra light sources to create a more real lighting/shadowing.
 - add panning feature. In the editor hold ALT and move the mouse and the view will change in the direction the mouse was moved. 
   It just reacts on mouse movements if you don't move the mouse nothing will happen.
+- add static rendering feature to primitives: if you set the 'Static Rendering' option, the primitive will be pre-rendered and you can't change any parameters from within the script. This is
+  helpful if you want to use 3D meshes for posts or toys which won't be animated at all.
   
 VP 9.1.5 Changelog
 ------------------------

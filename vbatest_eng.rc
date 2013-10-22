@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -37,30 +37,6 @@ BEGIN
     PUSHBUTTON      "&Up",IDC_DRAWING_ORDER_UP,141,7,28,14
     PUSHBUTTON      "&Down",IDC_DRAWING_ORDER_DOWN,141,22,28,14
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_DRAWING_ORDER, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 191
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 152
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
 
 IDD_SEARCH_SELECT_ELEMENT DIALOGEX 0, 0, 190, 183
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -1500,7 +1476,7 @@ BEGIN
     LTEXT           "&Z->Y",IDC_STATIC,14,192,21,8
 END
 
-IDD_PROPPRIMITIVE_VISUALS DIALOGEX 0, 0, 125, 157
+IDD_PROPPRIMITIVE_VISUALS DIALOGEX 0, 0, 125, 168
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1518,6 +1494,7 @@ BEGIN
     PUSHBUTTON      "Import Mesh",IDC_LOAD_MESH_BUTTON,11,58,48,14
     PUSHBUTTON      "Delete Mesh",IDC_DELETE_MESH_BUTTON,65,58,46,14
     CONTROL         "Enable lighting",IDC_CHECK_PRIMITIVE_LIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,142,66,10
+    CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,155,69,10
 END
 
 IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 127, 79
@@ -1541,28 +1518,12 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
-    IDD_SEARCH_SELECT_ELEMENT, DIALOG
+    IDD_DRAWING_ORDER, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 185
+        RIGHTMARGIN, 191
         TOPMARGIN, 7
-        BOTTOMMARGIN, 176
-    END
-
-    IDD_VIDEO_OPTIONS, DIALOG
-    BEGIN
-        RIGHTMARGIN, 344
-        BOTTOMMARGIN, 266
-    END
-
-    IDD_PROP_NAME, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 25
-    END
-
-    IDD_PROPTABLE_BALL, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 123
+        BOTTOMMARGIN, 152
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2132,7 +2093,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
