@@ -29,6 +29,7 @@ public:
 
    bool use3DMesh;
    bool m_TopVisible;
+   bool wasVisible;
    bool m_DrawTexturesInside;
    bool useLighting;
    bool staticRendering;
@@ -239,15 +240,15 @@ public:
    float builtin_depth[Max_Primitive_Sides*4];
 
    void CalculateBuiltinOriginal();
-   void CalculateBuiltin( bool _regionUpdate );
+   void CalculateBuiltin();
 
    //!! here starts the more general primitive stuff:
 
    void RecalculateMatrices();
    void RecalculateVertices();
-   void UpdateMesh( bool _regionUpdate);
+   void UpdateMesh();
    bool BrowseFor3DMeshFile();
-   void RenderObject( RenderDevice *pd3dDevice, bool _regionUpdate );
+   void RenderObject( RenderDevice *pd3dDevice);
 
    virtual bool LoadMesh();
    virtual void DeleteMesh();
