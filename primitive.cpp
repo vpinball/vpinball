@@ -16,6 +16,7 @@ Primitive::Primitive()
    m_d.meshFileName[0]=0;
    m_d.useLighting=false;
    m_d.staticRendering=false;
+   m_d.wasVisible=false;
 } 
 
 Primitive::~Primitive() 
@@ -611,7 +612,7 @@ void Primitive::CalculateBuiltinOriginal()
 
 }
 
-void Primitive::CalculateBuiltin( bool _regionUpdate )
+void Primitive::CalculateBuiltin()
 {
    // 1 copy vertices
    memcpy(builtin_rgv,builtin_rgvOriginal,(m_d.m_Sides*4 + 2)*sizeof(Vertex3D_NoTex2));
@@ -738,8 +739,7 @@ void Primitive::CalculateBuiltin( bool _regionUpdate )
 
    // 4 update the bounding box for the primitive to tell the renderer where to update the back buffer
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
-   if ( _regionUpdate )
-      g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, builtin_rgv, NULL, NULL, numVertices, fFalse);
+   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, builtin_rgv, NULL, NULL, numVertices, fFalse);
 
    // 5 store in vertexbuffer
    Vertex3D_NoTex2 *buf;
@@ -748,7 +748,7 @@ void Primitive::CalculateBuiltin( bool _regionUpdate )
    vertexBuffer->unlock();
 }
 
-void Primitive::UpdateMesh( bool _regionUpdate)
+void Primitive::UpdateMesh()
 {
    memcpy(objMesh,objMeshOrg,numVertices*sizeof(Vertex3D_NoTex2));
 
@@ -767,8 +767,7 @@ void Primitive::UpdateMesh( bool _regionUpdate)
 
    // update the bounding box for the primitive to tell the renderer where to update the back buffer
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
-   if ( _regionUpdate )
-      g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
+   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
 
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
@@ -776,7 +775,7 @@ void Primitive::UpdateMesh( bool _regionUpdate)
    vertexBuffer->unlock();
 }
 
-void Primitive::RenderObject( RenderDevice *pd3dDevice, bool _regionUpdate )
+void Primitive::RenderObject( RenderDevice *pd3dDevice )
 {
    if (m_d.m_TopVisible)
    {
@@ -813,11 +812,11 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice, bool _regionUpdate )
 
          if( m_d.use3DMesh )
          {
-            UpdateMesh( _regionUpdate );
+            UpdateMesh();
          }
          else
          {
-            CalculateBuiltin( _regionUpdate );
+            CalculateBuiltin();
          }
       }
       if ( !m_d.useLighting )
@@ -851,7 +850,7 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
       return;
    }
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-   RenderObject( pd3dDevice, true );
+   RenderObject( pd3dDevice );
 }
 
 extern bool loadWavefrontObj( char *filename, bool flipTv );
@@ -891,7 +890,7 @@ void Primitive::RenderStatic(const RenderDevice* _pd3dDevice)
    if( m_d.staticRendering )
    {
       RenderDevice *pd3dDevice = (RenderDevice*)_pd3dDevice;
-      RenderObject(pd3dDevice, false);
+      RenderObject(pd3dDevice);
    }
 }
 
@@ -1288,7 +1287,6 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
    STARTUNDO
 
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
-   vertexBufferRegenerate = true;
    
    STOPUNDO
 
@@ -1432,10 +1430,13 @@ STDMETHODIMP Primitive::put_TopVisible(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
+   if( m_d.m_TopVisible ) 
+      m_d.wasVisible=true;
+   else
+      m_d.wasVisible=false;
    m_d.m_TopVisible = VBTOF(newVal);
-
+   
    STOPUNDO
-
    return S_OK;
 }
 
