@@ -602,7 +602,14 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
       // Turn on anisotopic filtering. 
       g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
    }
-   pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
+   if( !m_fBackglass || GetPTable()->GetDecalsEnabled())
+   {
+      pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
+   }
+//    else if( GetPTable()->GetDecalsEnabled() )
+//    {
+//       pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
+//    }
 
    // Set the texture state.
    pd3dDevice->SetTexture(ePictureTexture, NULL);
