@@ -31,6 +31,7 @@ public:
 	BOOL m_fDisplayImage;
 	BOOL m_EnableLighting;
    BOOL m_EnableOffLighting;
+   BOOL m_OnImageIsLightMap;
 	};
 
 class LightCenter : public ISelect
@@ -211,6 +212,8 @@ public:
    STDMETHOD(put_EnableLighting)(/*[in]*/ int newVal);
    STDMETHOD(get_EnableOffLighting)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_EnableOffLighting)(/*[in]*/ int newVal);
+   STDMETHOD(get_OnImageIsLightmap)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_OnImageIsLightmap)(/*[in]*/ int newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

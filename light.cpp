@@ -75,6 +75,7 @@ Light::Light() : m_lightcenter(this)
    normalMoverVBuffer = NULL;
    m_d.m_szOffImage[0]=0;
    m_d.m_szOnImage[0]=0;
+   m_d.m_OnImageIsLightMap=false;
 }
 
 Light::~Light()
@@ -214,6 +215,11 @@ void Light::SetDefaults(bool fromMouseClick)
       m_d.m_EnableOffLighting = iTmp;
    else
       m_d.m_EnableOffLighting = true;
+   hr = GetRegInt("DefaultProps\\Light","OnImageIsLightmap", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_OnImageIsLightMap = iTmp;
+   else
+      m_d.m_OnImageIsLightMap = false;
 }
 
 void Light::WriteRegDefaults()
@@ -238,6 +244,7 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
    SetRegValue("DefaultProps\\Light","EnableLighting", REG_DWORD, &m_d.m_EnableLighting,4);
    SetRegValue("DefaultProps\\Light","EnableOffLighting", REG_DWORD, &m_d.m_EnableOffLighting,4);
+   SetRegValue("DefaultProps\\Light","OnImageIsLightmap", REG_DWORD, &m_d.m_OnImageIsLightMap,4);
 }
 
 void Light::PreRender(Sur * const psur)
@@ -620,7 +627,6 @@ void Light::PrepareMoversCustom()
 
    Vector<void> vpoly;
    float maxdist = 0;
-
    for (int i=0; i<cvertex; i++)
    {
       vpoly.AddElement((void *)i);
@@ -631,7 +637,6 @@ void Light::PrepareMoversCustom()
       if (dist > maxdist)
          maxdist = dist;
    }
-
    const float inv_maxdist = (maxdist > 0.0f) ? 0.5f/sqrtf(maxdist) : 0.0f;
    const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
@@ -702,10 +707,27 @@ void Light::PrepareMoversCustom()
             {
                float maxtu, maxtv;
                m_ptable->GetTVTU(pin, &maxtu, &maxtv);
+//                // Set texture coordinates for custom texture (world mode).
+               if ( i==1 && m_d.m_OnImageIsLightMap )
+               {
+                  const float dx = customMoverVertex[i][k+l].x - m_d.m_vCenter.x;
+                  const float dy = customMoverVertex[i][k+l].y - m_d.m_vCenter.y;
+                  const float ang = atan2f(dx,dy);
+                  const float dist = sqrtf(dx*dx + dy*dy);
 
-               // Set texture coordinates for custom texture (world mode).
-               customMoverVertex[i][k+l].tu = customMoverVertex[i][k+l].x * (inv_tablewidth * maxtu);
-               customMoverVertex[i][k+l].tv = customMoverVertex[i][k+l].y * (inv_tableheight * maxtv);
+                  customMoverVertex[i][k+l].tu2 = 0.5f + sinf(ang) * (dist*inv_maxdist);
+                  customMoverVertex[i][k+l].tv2 = 0.5f + cosf(ang) * (dist*inv_maxdist);
+               }
+               else
+               {
+                  customMoverVertex[i][k+l].tu = customMoverVertex[i][k+l].x * (inv_tablewidth * maxtu);
+                  customMoverVertex[i][k+l].tv = customMoverVertex[i][k+l].y * (inv_tableheight * maxtv);
+                  if ( i==0 && m_d.m_OnImageIsLightMap )
+                  {
+                     customMoverVertex[i+1][k+l].tu = customMoverVertex[i][k+l].x * (inv_tablewidth * maxtu);
+                     customMoverVertex[i+1][k+l].tv = customMoverVertex[i][k+l].y * (inv_tableheight * maxtv);
+                  }
+               }
             }
             else
             {
@@ -868,6 +890,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   bool useLightmap=false;
 
    Material mtrl;
    
@@ -912,7 +935,29 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
          if ((m_d.m_szOnImage[0] != 0) && (pin = m_ptable->GetImage(m_d.m_szOnImage)) != NULL)
          {
             // Set the texture to the one defined in the editor.
-            ppin3d->SetTexture(pin->m_pdsBuffer);
+            if ( i==1 && m_d.m_OnImageIsLightMap )
+            {
+               Texture *offTexel=m_ptable->GetImage(m_d.m_szOffImage);
+               if ( offTexel )
+               {
+                  pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0 );
+                  pd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+                  pd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE ); 
+                  pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+                  pd3dDevice->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_ADD );
+                  pd3dDevice->SetTexture(0, offTexel->m_pdsBuffer);
+                  pd3dDevice->SetTexture(1, pin->m_pdsBuffer);
+                  useLightmap=true;
+               }
+               else
+               {
+                  pd3dDevice->SetTexture(0, pin->m_pdsBuffer);
+               }
+            }
+            else
+               ppin3d->SetTexture(pin->m_pdsBuffer);
+
+ 
             mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
             mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
             mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
@@ -935,7 +980,15 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
          if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
          {
             pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, customMoverVBuffer, (i*customMoverVertexNum)+t, 3, (LPWORD)rgi0123,3 ,0 );
+
          }
+     if ( useLightmap )
+     {
+        pd3dDevice->SetTextureStageState( 1, D3DTSS_COLORARG2, D3DTA_CURRENT ); 
+        pd3dDevice->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+        ppin3d->SetTexture(pin->m_pdsBuffer);     
+        pd3dDevice->SetTexture(0,NULL);
+     }
 	  ppin3d->ExpandExtents(&m_pobjframe[i]->rc, customMoverVertex[i], NULL, NULL, customMoverVertexNum, m_fBackglass);
 
 	  if((!m_d.m_EnableLighting))
@@ -1150,6 +1203,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteBool(FID(BGLS), m_fBackglass);
    bw.WriteBool(FID(ENLI), m_d.m_EnableLighting);
    bw.WriteBool(FID(ENOL), m_d.m_EnableOffLighting);
+   bw.WriteBool(FID(ONLM), m_d.m_OnImageIsLightMap);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1279,6 +1333,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ENOL))
    {
       pbr->GetBool(&m_d.m_EnableOffLighting);
+   }
+   else if (id == FID(ONLM))
+   {
+      pbr->GetBool(&m_d.m_OnImageIsLightMap);
    }
    else
    {
@@ -1822,6 +1880,24 @@ STDMETHODIMP Light::put_EnableOffLighting(int newVal)
    STARTUNDO
 
       m_d.m_EnableOffLighting = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Light::get_OnImageIsLightmap(int *pVal)
+{
+   *pVal = m_d.m_OnImageIsLightMap;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_OnImageIsLightmap(int newVal)
+{
+   STARTUNDO
+
+      m_d.m_OnImageIsLightMap = newVal;
 
    STOPUNDO
 
