@@ -524,6 +524,7 @@
 #define IDC_EDIT2                       397
 #define IDC_CHECK2                      398
 #define IDC_STATIC_RENDERING_CHECK      398
+#define IDC_ON_LIGHT_LIGHTMAP           398
 #define IDC_JOYMECHTILTCOMBO            399
 #define IDC_ADDCREDITBUTTON2            400
 #define IDC_ADDCREDIT2                  401

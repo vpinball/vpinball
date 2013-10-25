@@ -634,7 +634,7 @@ BEGIN
     LTEXT           "User &Value",IDC_STATIC,7,40,38,9
 END
 
-IDD_PROPLIGHT_VISUALS DIALOGEX 0, 0, 125, 176
+IDD_PROPLIGHT_VISUALS DIALOGEX 0, 0, 125, 181
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -653,9 +653,10 @@ BEGIN
     LTEXT           "S&hape",-1,7,9,22,8
     LTEXT           "O&n Image:",-1,7,109,37,8
     LTEXT           "O&ff Image:",-1,7,83,37,8
-    CONTROL         "Enable Lighting 'On Image'",IDC_ENABLELIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,161,100,10
+    CONTROL         "Enable Lighting 'On Image'",IDC_ENABLELIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,158,100,10
     CONTROL         "Enable Lighting 'Off Image'",IDC_ENABLE_OFF_LIGHTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,150,100,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,146,100,10
+    CONTROL         "'On Image' Is Lightmap",IDC_ON_LIGHT_LIGHTMAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,169,87,10
 END
 
 IDD_PROPLIGHT_POSITION DIALOGEX 0, 0, 125, 65

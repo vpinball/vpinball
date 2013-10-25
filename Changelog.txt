@@ -21,6 +21,7 @@ VP 9.1.6 Changelog
   It just reacts on mouse movements if you don't move the mouse nothing will happen.
 - add static rendering feature to primitives: if you set the 'Static Rendering' option, the primitive will be pre-rendered and you can't change any parameters from within the script. This is
   helpful if you want to use 3D meshes for posts or toys which won't be animated at all.
+- add lightmap for lights: If the check this option ('On Image' Is Lightmap) you can define a lightmap for the on image. If the light is switched on the lightmap is rendered together with the off image. 
   
 VP 9.1.5 Changelog
 ------------------------
