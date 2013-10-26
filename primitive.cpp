@@ -17,6 +17,7 @@ Primitive::Primitive()
    m_d.useLighting=false;
    m_d.staticRendering=false;
    m_d.wasVisible=false;
+   m_d.sphereMapping=false;
 } 
 
 Primitive::~Primitive() 
@@ -86,6 +87,9 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Primitive", "StaticRendering", &iTmp);
    m_d.staticRendering = (hr == S_OK) && fromMouseClick ? (iTmp==1) : false;
+
+   hr = GetRegInt("DefaultProps\\Primitive", "SphereMapping", &iTmp);
+   m_d.sphereMapping = (hr == S_OK) && fromMouseClick ? (iTmp==1) : false;
 
    // Draw Textures inside
    hr = GetRegInt("DefaultProps\\Primitive", "DrawTexturesInside", &iTmp);
@@ -181,6 +185,8 @@ void Primitive::WriteRegDefaults()
    SetRegValue("DefaultProps\\Primitive","UseLighting",REG_DWORD,&iTmp,4);
    iTmp = (m_d.staticRendering) ? 1 : 0;
    SetRegValue("DefaultProps\\Primitive","StaticRendering",REG_DWORD,&iTmp,4);
+   iTmp = (m_d.sphereMapping) ? 1 : 0;
+   SetRegValue("DefaultProps\\Primitive","SphereMapping",REG_DWORD,&iTmp,4);
 
    iTmp = (m_d.m_DrawTexturesInside) ? 1 : 0;
    SetRegValue("DefaultProps\\Primitive","DrawTexturesInside",REG_DWORD,&iTmp,4);
@@ -305,6 +311,7 @@ void Primitive::RecalculateMatrices()
 
    Matrix3D RTmatrix;
    RTmatrix.SetIdentity();
+   rotMatrix.SetIdentity();
    for (int i = 5; i >= 0; i--)
    {
       Matrix3D tempMatrix;
@@ -333,6 +340,7 @@ void Primitive::RecalculateMatrices()
          break;
       }
       tempMatrix.Multiply(RTmatrix, RTmatrix);
+      tempMatrix.Multiply(rotMatrix, rotMatrix);
    }
 
    fullMatrix = Smatrix;
@@ -751,11 +759,29 @@ void Primitive::CalculateBuiltin()
 void Primitive::UpdateMesh()
 {
    memcpy(objMesh,objMeshOrg,numVertices*sizeof(Vertex3D_NoTex2));
-
+   Matrix3D matView;
+   if ( m_d.sphereMapping )
+   {
+      Matrix3D matWorld;
+      g_pplayer->m_pin3d.m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_VIEW,  &matView );
+      g_pplayer->m_pin3d.m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD, &matWorld );
+      matWorld.Multiply( matView, matView );
+      rotMatrix.Multiply(matView, matView);
+   }
    // could be optimized, if not everything is drawn.
    for (int i = 0; i < numVertices; i++)
    {
       Vertex3D_NoTex2 * const tempVert = &objMesh[i];
+      if ( m_d.sphereMapping )
+      {
+         Vertex3Ds norm;
+         norm.x = tempVert->nx;
+         norm.y = tempVert->ny;
+         norm.z = tempVert->nz;
+         norm = matView.MultiplyVectorNoTranslate(norm);
+         tempVert->tu = 0.5f+ norm.x/2;
+         tempVert->tv = 0.5f+ norm.y/2;
+      }
       tempVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(tempVert->x+0.5f);
       tempVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(tempVert->x+0.5f);
       tempVert->x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(tempVert->y+0.5f);
@@ -764,7 +790,6 @@ void Primitive::UpdateMesh()
       tempVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(tempVert->z+0.5f);
       fullMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
    }
-
    // update the bounding box for the primitive to tell the renderer where to update the back buffer
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
    g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
@@ -860,7 +885,6 @@ extern WORD *GetIndexList( int &indexListSize );
 void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-   
    if( m_d.use3DMesh )
    {
 	  if( !objMesh )
@@ -973,6 +997,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(ENLI), (m_d.useLighting) ? 1 : 0);
    bw.WriteInt(FID(U3DM), (m_d.use3DMesh) ? 1 : 0 );
    bw.WriteInt(FID(STRE), (m_d.staticRendering) ? 1 : 0 );
+   bw.WriteInt(FID(EVMP), (m_d.sphereMapping) ? 1 : 0 );
    if( m_d.use3DMesh )
    {
       bw.WriteString( FID(M3DN), m_d.meshFileName);
@@ -1130,6 +1155,12 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       int iTmp;
       pbr->GetInt(&iTmp);
       m_d.staticRendering = (iTmp==1);
+   }
+   else if (id == FID(EVMP))
+   {
+      int iTmp;
+      pbr->GetInt(&iTmp);
+      m_d.sphereMapping = (iTmp==1);
    }
    else if ( id == FID(U3DM))
    {
@@ -1946,6 +1977,24 @@ STDMETHODIMP Primitive::put_EnableStaticRendering(VARIANT_BOOL newVal)
    STARTUNDO
 
       m_d.staticRendering = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Primitive::get_EnableSphereMapping(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.sphereMapping);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_EnableSphereMapping(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.sphereMapping = VBTOF(newVal);
 
    STOPUNDO
 

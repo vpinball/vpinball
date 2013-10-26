@@ -521,6 +521,7 @@
 #define IDC_GLOBAL_REFLECTION_CHECK     394
 #define IDC_ENABLE_OFF_LIGHTING         394
 #define IDC_CHECK3                      396
+#define IDC_PRIM_ENV_MAP                396
 #define IDC_EDIT2                       397
 #define IDC_CHECK2                      398
 #define IDC_STATIC_RENDERING_CHECK      398
