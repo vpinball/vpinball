@@ -33,6 +33,7 @@ public:
    bool m_DrawTexturesInside;
    bool useLighting;
    bool staticRendering;
+   bool sphereMapping;
 };
 
 class Primitive :
@@ -128,6 +129,8 @@ public:
    STDMETHOD(put_EnableLighting)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_EnableStaticRendering)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_EnableSphereMapping)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_EnableSphereMapping)(/*[in]*/ VARIANT_BOOL newVal);
 
    Primitive();
    virtual ~Primitive();
@@ -263,7 +266,7 @@ public:
    Vector<Vertex3Ds> verticesTop;
    Vector<Vertex3Ds> verticesBottom;
 
-   Matrix3D fullMatrix;
+   Matrix3D fullMatrix, rotMatrix;
 
    Vertex3D_NoTex2 *objMeshOrg, *objMesh;
    WORD *indexList;

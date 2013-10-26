@@ -1432,6 +1432,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(394), helpstring("property enable lighting")] HRESULT EnableLighting([in] VARIANT_BOOL newVal);
   		[propget, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([in] VARIANT_BOOL newVal);
+  		[propget, id(396), helpstring("property sphere mapping")] HRESULT EnableSphereMapping([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(396), helpstring("property sphere mapping")] HRESULT EnableSphereMapping([in] VARIANT_BOOL newVal);
 
 	};
 

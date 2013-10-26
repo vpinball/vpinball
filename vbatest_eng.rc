@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1483,19 +1483,20 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        101,31,7,56,14,ES_AUTOHSCROLL
     COMBOBOX        DISPID_Image,7,31,111,124,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Custom2",102,"ColorControl",WS_TABSTOP,74,85,40,14
-    CONTROL         "Custom2",104,"ColorControl",WS_TABSTOP,74,100,40,14
-    CONTROL         "Visible",103,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,117,76,10
-    CONTROL         "Draw Textures inside",106,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,130,82,10
+    CONTROL         "Custom2",102,"ColorControl",WS_TABSTOP,74,78,40,14
+    CONTROL         "Custom2",104,"ColorControl",WS_TABSTOP,74,93,40,14
+    CONTROL         "Visible",103,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,108,76,10
+    CONTROL         "Draw Textures inside",106,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,121,82,10
     LTEXT           "Image",IDC_STATIC,7,21,20,8
-    LTEXT           "Top/Bottom &Color",IDC_STATIC,7,87,63,9
-    LTEXT           "Side &Color",IDC_STATIC,7,102,63,9
+    LTEXT           "Top/Bottom &Color",IDC_STATIC,7,80,63,9
+    LTEXT           "Side &Color",IDC_STATIC,7,95,63,9
     LTEXT           "Sides",IDC_STATIC,7,10,18,8
-    GROUPBOX        "3D Mesh",IDC_STATIC,7,44,111,35
-    PUSHBUTTON      "Import Mesh",IDC_LOAD_MESH_BUTTON,11,58,48,14
-    PUSHBUTTON      "Delete Mesh",IDC_DELETE_MESH_BUTTON,65,58,46,14
-    CONTROL         "Enable lighting",IDC_CHECK_PRIMITIVE_LIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,142,66,10
+    GROUPBOX        "3D Mesh",IDC_STATIC,7,44,111,30
+    PUSHBUTTON      "Import Mesh",IDC_LOAD_MESH_BUTTON,11,54,48,14
+    PUSHBUTTON      "Delete Mesh",IDC_DELETE_MESH_BUTTON,65,54,46,14
+    CONTROL         "Enable lighting",IDC_CHECK_PRIMITIVE_LIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,133,66,10
     CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,155,69,10
+    CONTROL         "Sphere Map 3D Mesh",IDC_PRIM_ENV_MAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,144,85,10
 END
 
 IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 127, 79
@@ -2094,7 +2095,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
