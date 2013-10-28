@@ -222,6 +222,9 @@ enum RotAndTraTypeEnum
 	TraX = 3,
 	TraY = 4,
 	TraZ = 5,
+   ObjRotX=6,
+   ObjRotY=7,
+   ObjRotZ=8,
     } 	RotAndTraTypeEnum;
 
 typedef [uuid(C0E543A2-50B3-4546-85F8-4D35BFBE09A2)]
@@ -1400,6 +1403,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_ROTRA5), helpstring("property Rot and Tra 5")] HRESULT RotAndTra4([in] float newVal);
 		[propget, id(DISPID_ROTRA6), helpstring("property Rot and Tra 6")] HRESULT RotAndTra5([out, retval] float *pVal);
 		[propput, id(DISPID_ROTRA6), helpstring("property Rot and Tra 6")] HRESULT RotAndTra5([in] float newVal);
+		[propget, id(DISPID_ROTRA7), helpstring("property Rot and Tra 7")] HRESULT RotAndTra6([out, retval] float *pVal);
+		[propput, id(DISPID_ROTRA7), helpstring("property Rot and Tra 7")] HRESULT RotAndTra6([in] float newVal);
+		[propget, id(DISPID_ROTRA8), helpstring("property Rot and Tra 8")] HRESULT RotAndTra7([out, retval] float *pVal);
+		[propput, id(DISPID_ROTRA8), helpstring("property Rot and Tra 8")] HRESULT RotAndTra7([in] float newVal);
+		[propget, id(DISPID_ROTRA9), helpstring("property Rot and Tra 9")] HRESULT RotAndTra8([out, retval] float *pVal);
+		[propput, id(DISPID_ROTRA9), helpstring("property Rot and Tra 9")] HRESULT RotAndTra8([in] float newVal);
 
 		[propget, id(IDC_COMBO1), helpstring("property Rot and Tra Type 1")] HRESULT RotAndTraType0([out, retval] RotAndTraTypeEnum *pVal);
 		[propput, id(IDC_COMBO1), helpstring("property Rot and Tra Type 1")] HRESULT RotAndTraType0([in] RotAndTraTypeEnum newVal);
@@ -1413,6 +1422,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(IDC_COMBO5), helpstring("property Rot and Tra Type 5")] HRESULT RotAndTraType4([in] RotAndTraTypeEnum newVal);
 		[propget, id(IDC_COMBO6), helpstring("property Rot and Tra Type 6")] HRESULT RotAndTraType5([out, retval] RotAndTraTypeEnum *pVal);
 		[propput, id(IDC_COMBO6), helpstring("property Rot and Tra Type 6")] HRESULT RotAndTraType5([in] RotAndTraTypeEnum newVal);
+		[propget, id(IDC_COMBO7), helpstring("property Rot and Tra Type 7")] HRESULT RotAndTraType6([out, retval] RotAndTraTypeEnum *pVal);
+		[propput, id(IDC_COMBO7), helpstring("property Rot and Tra Type 7")] HRESULT RotAndTraType6([in] RotAndTraTypeEnum newVal);
+		[propget, id(IDC_COMBO8), helpstring("property Rot and Tra Type 8")] HRESULT RotAndTraType7([out, retval] RotAndTraTypeEnum *pVal);
+		[propput, id(IDC_COMBO8), helpstring("property Rot and Tra Type 8")] HRESULT RotAndTraType7([in] RotAndTraTypeEnum newVal);
+		[propget, id(IDC_COMBO9), helpstring("property Rot and Tra Type 9")] HRESULT RotAndTraType8([out, retval] RotAndTraTypeEnum *pVal);
+		[propput, id(IDC_COMBO9), helpstring("property Rot and Tra Type 9")] HRESULT RotAndTraType8([in] RotAndTraTypeEnum newVal);
 		/*
 		[propget, id(DISPID_ROTATION_X), helpstring("property Rotation X")] HRESULT Rotation_X([out, retval] float *pVal);
 		[propput, id(DISPID_ROTATION_X), helpstring("property Rotation X")] HRESULT Rotation_X([in] float newVal);

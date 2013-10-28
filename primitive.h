@@ -16,8 +16,8 @@ public:
    Vertex3Ds m_vAxisScaleX;
    Vertex3Ds m_vAxisScaleY;
    Vertex3Ds m_vAxisScaleZ;
-   float m_aRotAndTra[6];
-   RotAndTraTypeEnum m_aRotAndTraTypes[6];
+   float m_aRotAndTra[9];
+   RotAndTraTypeEnum m_aRotAndTraTypes[9];
    char m_szImage[MAXTOKEN];
    char meshFileName[256];
 
@@ -107,6 +107,12 @@ public:
    STDMETHOD(put_RotAndTra4)(/*[in]*/ float newVal);
    STDMETHOD(get_RotAndTra5)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_RotAndTra5)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotAndTra6)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotAndTra6)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotAndTra7)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotAndTra7)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotAndTra8)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotAndTra8)(/*[in]*/ float newVal);
 
    STDMETHOD(get_RotAndTraType0)(/*[out, retval]*/ RotAndTraTypeEnum *pVal);
    STDMETHOD(put_RotAndTraType0)(/*[in]*/ RotAndTraTypeEnum newVal);
@@ -120,6 +126,12 @@ public:
    STDMETHOD(put_RotAndTraType4)(/*[in]*/ RotAndTraTypeEnum newVal);
    STDMETHOD(get_RotAndTraType5)(/*[out, retval]*/ RotAndTraTypeEnum *pVal);
    STDMETHOD(put_RotAndTraType5)(/*[in]*/ RotAndTraTypeEnum newVal);
+   STDMETHOD(get_RotAndTraType6)(/*[out, retval]*/ RotAndTraTypeEnum *pVal);
+   STDMETHOD(put_RotAndTraType6)(/*[in]*/ RotAndTraTypeEnum newVal);
+   STDMETHOD(get_RotAndTraType7)(/*[out, retval]*/ RotAndTraTypeEnum *pVal);
+   STDMETHOD(put_RotAndTraType7)(/*[in]*/ RotAndTraTypeEnum newVal);
+   STDMETHOD(get_RotAndTraType8)(/*[out, retval]*/ RotAndTraTypeEnum *pVal);
+   STDMETHOD(put_RotAndTraType8)(/*[in]*/ RotAndTraTypeEnum newVal);
 
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);

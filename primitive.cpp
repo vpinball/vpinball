@@ -137,6 +137,12 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_aRotAndTra[4] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
    hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra5", &fTmp);
    m_d.m_aRotAndTra[5] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
+   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra6", &fTmp);
+   m_d.m_aRotAndTra[6] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
+   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra7", &fTmp);
+   m_d.m_aRotAndTra[7] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
+   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra8", &fTmp);
+   m_d.m_aRotAndTra[8] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 
    hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType0", &iTmp);
    m_d.m_aRotAndTraTypes[0] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : RotX;
@@ -150,6 +156,12 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_aRotAndTraTypes[4] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : TraY;
    hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType5", &iTmp);
    m_d.m_aRotAndTraTypes[5] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : TraZ;
+   hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType6", &iTmp);
+   m_d.m_aRotAndTraTypes[6] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : ObjRotX;
+   hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType7", &iTmp);
+   m_d.m_aRotAndTraTypes[7] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : ObjRotY;
+   hr = GetRegInt("DefaultProps\\Primitive","RotAndTraType8", &iTmp);
+   m_d.m_aRotAndTraTypes[8] = (hr == S_OK) && fromMouseClick ? (enum RotAndTraTypeEnum)iTmp : ObjRotZ;
    /*
    hr = GetRegStringAsFloat("DefaultProps\\Primitive","Rotation_X", &fTmp);
    m_d.m_vRotation.x = (hr == S_OK) ? fTmp : 0;
@@ -226,6 +238,12 @@ void Primitive::WriteRegDefaults()
    SetRegValue("DefaultProps\\Primitive","RotAndTra4", REG_SZ, &strTmp,strlen(strTmp));	
    sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[5]);
    SetRegValue("DefaultProps\\Primitive","RotAndTra5", REG_SZ, &strTmp,strlen(strTmp));	
+   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[6]);
+   SetRegValue("DefaultProps\\Primitive","RotAndTra6", REG_SZ, &strTmp,strlen(strTmp));	
+   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[7]);
+   SetRegValue("DefaultProps\\Primitive","RotAndTra7", REG_SZ, &strTmp,strlen(strTmp));	
+   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[8]);
+   SetRegValue("DefaultProps\\Primitive","RotAndTra8", REG_SZ, &strTmp,strlen(strTmp));	
 
    SetRegValue("DefaultProps\\Primitive","RotAndTraType0",REG_DWORD,&m_d.m_aRotAndTraTypes[0],4);
    SetRegValue("DefaultProps\\Primitive","RotAndTraType1",REG_DWORD,&m_d.m_aRotAndTraTypes[1],4);
@@ -233,6 +251,9 @@ void Primitive::WriteRegDefaults()
    SetRegValue("DefaultProps\\Primitive","RotAndTraType3",REG_DWORD,&m_d.m_aRotAndTraTypes[3],4);
    SetRegValue("DefaultProps\\Primitive","RotAndTraType4",REG_DWORD,&m_d.m_aRotAndTraTypes[4],4);
    SetRegValue("DefaultProps\\Primitive","RotAndTraType5",REG_DWORD,&m_d.m_aRotAndTraTypes[5],4);
+   SetRegValue("DefaultProps\\Primitive","RotAndTraType6",REG_DWORD,&m_d.m_aRotAndTraTypes[6],4);
+   SetRegValue("DefaultProps\\Primitive","RotAndTraType7",REG_DWORD,&m_d.m_aRotAndTraTypes[7],4);
+   SetRegValue("DefaultProps\\Primitive","RotAndTraType8",REG_DWORD,&m_d.m_aRotAndTraTypes[8],4);
    /*
    sprintf_s(strTmp, 40, "%f", m_d.m_vRotation.x);
    SetRegValue("DefaultProps\\Primitive","Rotation_X", REG_SZ, &strTmp,strlen(strTmp));	
@@ -309,12 +330,13 @@ void Primitive::RecalculateMatrices()
    Tmatrix._42 = m_d.m_vPosition.y;
    Tmatrix._43 = m_d.m_vPosition.z;
 
+   Matrix3D tempMatrix;
    Matrix3D RTmatrix;
    RTmatrix.SetIdentity();
    rotMatrix.SetIdentity();
-   for (int i = 5; i >= 0; i--)
+   tempMatrix.SetIdentity();
+   for (int i = 8; i >= 0; i--)
    {
-      Matrix3D tempMatrix;
       switch (m_d.m_aRotAndTraTypes[i])
       {
       case RotX:
@@ -326,6 +348,39 @@ void Primitive::RecalculateMatrices()
       case RotZ:
          tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
          break;
+      default:
+         break;
+      }
+      tempMatrix.Multiply(RTmatrix, RTmatrix);
+      tempMatrix.Multiply(rotMatrix, rotMatrix);
+   }
+   
+   tempMatrix.SetIdentity();
+   for (int i = 8; i >= 0; i--)
+   {
+      switch (m_d.m_aRotAndTraTypes[i])
+      {
+      case ObjRotX:
+         tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
+         break;
+      case ObjRotY:
+         tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
+         break;
+      case ObjRotZ:
+         tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
+         break;
+      default:
+         break;
+      }
+      tempMatrix.Multiply(RTmatrix, RTmatrix);
+      tempMatrix.Multiply(rotMatrix, rotMatrix);
+   }
+
+   tempMatrix.SetIdentity();
+   for (int i = 8; i >= 0; i--)
+   {
+      switch (m_d.m_aRotAndTraTypes[i])
+      {
       case TraX:
          tempMatrix.SetIdentity();
          tempMatrix._41 = m_d.m_aRotAndTra[i];
@@ -337,6 +392,8 @@ void Primitive::RecalculateMatrices()
       case TraZ:
          tempMatrix.SetIdentity();
          tempMatrix._43 = m_d.m_aRotAndTra[i];
+         break;
+      default:;
          break;
       }
       tempMatrix.Multiply(RTmatrix, RTmatrix);
@@ -850,7 +907,6 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
          // it could look odd if you switch lighting on on non mesh primitives
          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
       }
-
       if( m_d.use3DMesh )
       {
          pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexList, indexListSize, 0 );
@@ -975,6 +1031,9 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteFloat(FID(RTV3), m_d.m_aRotAndTra[3]);
    bw.WriteFloat(FID(RTV4), m_d.m_aRotAndTra[4]);
    bw.WriteFloat(FID(RTV5), m_d.m_aRotAndTra[5]);
+   bw.WriteFloat(FID(RTV6), m_d.m_aRotAndTra[6]);
+   bw.WriteFloat(FID(RTV7), m_d.m_aRotAndTra[7]);
+   bw.WriteFloat(FID(RTV8), m_d.m_aRotAndTra[8]);
    int iTmp = m_d.m_aRotAndTraTypes[0];
    bw.WriteInt(FID(RTT0), iTmp);
    iTmp = m_d.m_aRotAndTraTypes[1];
@@ -987,6 +1046,12 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(RTT4), iTmp);
    iTmp = m_d.m_aRotAndTraTypes[5];
    bw.WriteInt(FID(RTT5), iTmp);
+   iTmp = m_d.m_aRotAndTraTypes[6];
+   bw.WriteInt(FID(RTT6), iTmp);
+   iTmp = m_d.m_aRotAndTraTypes[7];
+   bw.WriteInt(FID(RTT7), iTmp);
+   iTmp = m_d.m_aRotAndTraTypes[8];
+   bw.WriteInt(FID(RTT8), iTmp);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteInt(FID(SIDS), m_d.m_Sides);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -1111,6 +1176,36 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       int iTmp;
       pbr->GetInt(&iTmp);
       m_d.m_aRotAndTraTypes[5] = (RotAndTraTypeEnum)iTmp;
+   }
+   else if (id == FID(RTV6))
+   {
+      pbr->GetFloat(&m_d.m_aRotAndTra[6]);
+   }
+   else if (id == FID(RTT6))
+   {
+      int iTmp;
+      pbr->GetInt(&iTmp);
+      m_d.m_aRotAndTraTypes[6] = (RotAndTraTypeEnum)iTmp;
+   }
+   else if (id == FID(RTV7))
+   {
+      pbr->GetFloat(&m_d.m_aRotAndTra[7]);
+   }
+   else if (id == FID(RTT7))
+   {
+      int iTmp;
+      pbr->GetInt(&iTmp);
+      m_d.m_aRotAndTraTypes[7] = (RotAndTraTypeEnum)iTmp;
+   }
+   else if (id == FID(RTV8))
+   {
+      pbr->GetFloat(&m_d.m_aRotAndTra[8]);
+   }
+   else if (id == FID(RTT8))
+   {
+      int iTmp;
+      pbr->GetInt(&iTmp);
+      m_d.m_aRotAndTraTypes[8] = (RotAndTraTypeEnum)iTmp;
    }
    else if (id == FID(IMAG))
    {
@@ -1721,7 +1816,6 @@ STDMETHODIMP Primitive::put_AxisScaleZ_Y(float newVal)
 STDMETHODIMP Primitive::get_RotAndTra0(float *pVal)
 {
    *pVal = m_d.m_aRotAndTra[0];
-
    return S_OK;
 }
 
@@ -1832,6 +1926,62 @@ STDMETHODIMP Primitive::put_RotAndTra5(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP Primitive::get_RotAndTra6(float *pVal)
+{
+   *pVal = m_d.m_aRotAndTra[6];
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_RotAndTra6(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_aRotAndTra[6] = newVal;
+   vertexBufferRegenerate = true;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Primitive::get_RotAndTra7(float *pVal)
+{
+   *pVal = m_d.m_aRotAndTra[7];
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_RotAndTra7(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_aRotAndTra[7] = newVal;
+   vertexBufferRegenerate = true;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Primitive::get_RotAndTra8(float *pVal)
+{
+   *pVal = m_d.m_aRotAndTra[8];
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_RotAndTra8(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_aRotAndTra[8] = newVal;
+   vertexBufferRegenerate = true;
+
+   STOPUNDO
+
+      return S_OK;
+}
 
 STDMETHODIMP Primitive::get_RotAndTraType0(RotAndTraTypeEnum *pVal)
 {
@@ -1945,6 +2095,62 @@ STDMETHODIMP Primitive::put_RotAndTraType5(RotAndTraTypeEnum newVal)
    STOPUNDO
 
    return S_OK;
+}
+STDMETHODIMP Primitive::get_RotAndTraType6(RotAndTraTypeEnum *pVal)
+{
+   *pVal = m_d.m_aRotAndTraTypes[6];
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_RotAndTraType6(RotAndTraTypeEnum newVal)
+{
+   STARTUNDO
+
+   m_d.m_aRotAndTraTypes[6] = newVal;
+   vertexBufferRegenerate = true;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Primitive::get_RotAndTraType7(RotAndTraTypeEnum *pVal)
+{
+   *pVal = m_d.m_aRotAndTraTypes[7];
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_RotAndTraType7(RotAndTraTypeEnum newVal)
+{
+   STARTUNDO
+
+   m_d.m_aRotAndTraTypes[7] = newVal;
+   vertexBufferRegenerate = true;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Primitive::get_RotAndTraType8(RotAndTraTypeEnum *pVal)
+{
+   *pVal = m_d.m_aRotAndTraTypes[8];
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_RotAndTraType8(RotAndTraTypeEnum newVal)
+{
+   STARTUNDO
+
+   m_d.m_aRotAndTraTypes[8] = newVal;
+   vertexBufferRegenerate = true;
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP Primitive::get_EnableLighting(VARIANT_BOOL *pVal)

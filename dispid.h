@@ -125,11 +125,17 @@
 #define DISPID_ROTRA4					15
 #define DISPID_ROTRA5					16
 #define DISPID_ROTRA6					17
+#define DISPID_ROTRA7					21
+#define DISPID_ROTRA8					22
+#define DISPID_ROTRA9					23
 #define IDC_COMBO1                      340
 #define IDC_COMBO2                      341
 #define IDC_COMBO3                      342
 #define IDC_COMBO4                      343
 #define IDC_COMBO5                      344
 #define IDC_COMBO6                      345
+#define IDC_COMBO7                      346
+#define IDC_COMBO8                      347
+#define IDC_COMBO9                      348
 
 // Must have a carriage return at end of file for correct resource file parsing
