@@ -23,6 +23,8 @@ VP 9.1.6 Changelog
   helpful if you want to use 3D meshes for posts or toys which won't be animated at all.
 - add lightmap for lights: If option "'On Image' Is Lightmap" is checked you can define a lightmap for the on image. If the light is switched on the lightmap is rendered together with the off image.
 - add sphere mapping to 3D mesh primitives
+- add static rotation for primitives (ObjRotX, ObjRotY, ObjRotZ) to change the basic orientation of a primitive. The old rotation/translation settings animate the primitive. 
+  All rotation/translation settings can be used out of the script.
 
 VP 9.1.5 Changelog
 ------------------------

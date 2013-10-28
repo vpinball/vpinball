@@ -50,7 +50,10 @@
 #define DISPID_CASTSSHADOW              20
 #define DISPID_AXISSCALE_ZY             20
 #define DISPID_SMOOTHNORMALS            21
+#define DISPID_ROTRA7                   21
 #define DISPID_DRAWINSIDE               22
+#define DISPID_ROTRA8                   22
+#define DISPID_ROTRA9                   23
 #define IDS_PROJNAME                    100
 #define IDR_VBATest                     100
 #define IDR_SURFACE                     101
@@ -437,13 +440,16 @@
 #define IDD_PROPTRIGGER_STATE           346
 #define IDC_ACTIVEX3                    346
 #define IDS_HANG                        346
+#define IDC_COMBO7                      346
 #define IDD_PROPKICKER_VISUALS          347
 #define IDC_ACTIVEX4                    347
 #define IDC_CUSTOMNAME                  347
 #define IDS_PLAY                        347
+#define IDC_COMBO8                      347
 #define IDD_PROPDECAL_VISUALS           348
 #define IDC_CUSTOMVALUE                 348
 #define IDS_PAUSE                       348
+#define IDC_COMBO9                      348
 #define IDD_PROPDECAL_POSITION          349
 #define IDC_CUSTOMLIST                  349
 #define IDS_STEP                        349
