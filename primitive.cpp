@@ -920,6 +920,10 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
       {
          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
       }
+      if (pin)
+      {
+         pin->Unset(ePictureTexture);
+      }
    }
 }
 
