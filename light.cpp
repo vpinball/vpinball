@@ -987,7 +987,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
         pd3dDevice->SetTextureStageState( 1, D3DTSS_COLORARG2, D3DTA_CURRENT ); 
         pd3dDevice->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
         ppin3d->SetTexture(pin->m_pdsBuffer);     
-        pd3dDevice->SetTexture(0,NULL);
+        pd3dDevice->SetTexture(1,NULL);
      }
 	  ppin3d->ExpandExtents(&m_pobjframe[i]->rc, customMoverVertex[i], NULL, NULL, customMoverVertexNum, m_fBackglass);
 
