@@ -397,7 +397,6 @@ void Primitive::RecalculateMatrices()
          break;
       }
       tempMatrix.Multiply(RTmatrix, RTmatrix);
-      tempMatrix.Multiply(rotMatrix, rotMatrix);
    }
 
    fullMatrix = Smatrix;
@@ -816,14 +815,11 @@ void Primitive::CalculateBuiltin()
 void Primitive::UpdateMesh()
 {
    memcpy(objMesh,objMeshOrg,numVertices*sizeof(Vertex3D_NoTex2));
-   Matrix3D matView;
    if ( m_d.sphereMapping )
    {
       Matrix3D matWorld;
-      g_pplayer->m_pin3d.m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_VIEW,  &matView );
       g_pplayer->m_pin3d.m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD, &matWorld );
-      matWorld.Multiply( matView, matView );
-      rotMatrix.Multiply(matView, matView);
+      matWorld.Multiply(rotMatrix, rotMatrix);
    }
    // could be optimized, if not everything is drawn.
    for (int i = 0; i < numVertices; i++)
@@ -835,7 +831,7 @@ void Primitive::UpdateMesh()
          norm.x = tempVert->nx;
          norm.y = tempVert->ny;
          norm.z = tempVert->nz;
-         norm = matView.MultiplyVectorNoTranslate(norm);
+         norm = rotMatrix.MultiplyVectorNoTranslate(norm);
          tempVert->tu = 0.5f+ norm.x*0.5f;
          tempVert->tv = 0.5f+ norm.y*0.5f;
       }
