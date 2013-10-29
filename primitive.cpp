@@ -393,7 +393,7 @@ void Primitive::RecalculateMatrices()
          tempMatrix.SetIdentity();
          tempMatrix._43 = m_d.m_aRotAndTra[i];
          break;
-      default:;
+      default:
          break;
       }
       tempMatrix.Multiply(RTmatrix, RTmatrix);
@@ -836,8 +836,8 @@ void Primitive::UpdateMesh()
          norm.y = tempVert->ny;
          norm.z = tempVert->nz;
          norm = matView.MultiplyVectorNoTranslate(norm);
-         tempVert->tu = 0.5f+ norm.x/2;
-         tempVert->tv = 0.5f+ norm.y/2;
+         tempVert->tu = 0.5f+ norm.x*0.5f;
+         tempVert->tv = 0.5f+ norm.y*0.5f;
       }
       tempVert->y *= 1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(tempVert->x+0.5f);
       tempVert->z *= 1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(tempVert->x+0.5f);
