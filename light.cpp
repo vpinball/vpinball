@@ -336,7 +336,7 @@ void Light::PreRender(Sur * const psur)
                psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
          }
          else
-            // Error.  Just draw the polygon.
+            // Error. Just draw the polygon.
             psur->Polygon(vvertex);
       }
       else
