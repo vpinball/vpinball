@@ -1358,11 +1358,13 @@ void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
       slingShotMaterial.setColor( 1.0f, m_d.m_slingshotColor );
       PrepareSlingshots(pd3dDevice);
    }
+
    Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
    if (!pinSide)
    {
       sideMaterial.setColor( 1.0f, m_d.m_sidecolor );
    }
+
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (!pin)
    {
@@ -1375,10 +1377,10 @@ void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
 void Surface::RenderStatic(const RenderDevice* pd3dDevice)
 {
    if (!m_d.m_fDroppable)
-   {
       RenderWallsAtHeight( (RenderDevice*)pd3dDevice, fFalse, fFalse);
-   }
 }
+
+static const WORD rgisling[36] = {0,1,2,0,2,3, 4+0,4+1,4+2,4+0,4+2,4+3, 8+0,8+1,8+2,8+0,8+2,8+3, 12+0,12+1,12+2,12+0,12+2,12+3, 16+0,16+1,16+2,16+0,16+2,16+3, 20+0,20+1,20+2,20+0,20+2,20+3};
 
 void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 {
@@ -1402,24 +1404,8 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
       slingShotMaterial.set();
       ObjFrame *pof = plinesling->m_slingshotanim.m_pobjframe;
 
-
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, slingshotVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0 );
-      offset+=4;
-
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, slingshotVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0 );
-      offset+=4;
-
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, slingshotVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0 );
-      offset+=4;
-
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, slingshotVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0 );
-      offset+=4;
-
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, slingshotVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0 );
-      offset+=4;
-
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, slingshotVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0 );
-      offset+=4;
+      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, slingshotVBuffer, offset, 24, (LPWORD)rgisling, 36, 0 );
+      offset+=24;
 
       ppin3d->CreateAndCopySpriteBuffers( &plinesling->m_slingshotanim, pof );
    }
@@ -1451,9 +1437,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
       if (pinSide->m_fTransparent)
       {				
          if (g_pvp->m_pdd.m_fHardwareAccel)
-         {
             g_pplayer->m_pin3d.EnableAlphaTestReference(128);
-         }
          else
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
 
@@ -1477,37 +1461,33 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
       ppin3d->EnableLightMap(fTrue, fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
 
    // Render side
+
+   // combine drawcalls into one (hopefully faster)
+   WORD* const rgi = new WORD[numVertices*6];
    int offset=0;
-   for (int i=0;i<numVertices;i++, offset+=4)
+   int offset2=0;
+   for (int i=0;i<numVertices;i++, offset+=6,offset2+=4)
    {
-      if(!m_d.m_fEnableLighting)
-      {
-         if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped, but we do need to extend the extrema
-         {
-            // Draw side.
-            pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, sideVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0);
-         }
+	   rgi[offset] = offset2;
+	   rgi[offset+1] = offset2+1;
+	   rgi[offset+2] = offset2+2;
+	   rgi[offset+3] = offset2;
+	   rgi[offset+4] = offset2+2;
+	   rgi[offset+5] = offset2+3;
+   }
 
-         if (fMover)
-         {
-            // Only do two points - each segment has two new points
-            ppin3d->ExpandExtents(&pof->rc, &vertsNotLit[offset], &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar, 2, fFalse);
-         }
-      }
-      else
-      {
-         if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped, but we do need to extend the extrema
-         {
-            // Draw side.
-            pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, sideVBuffer, offset, 4, (LPWORD)rgi0123, 4, 0);
-         }
+   if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped
+	   pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, sideVBuffer, 0, numVertices*4, (LPWORD)rgi, numVertices*6, 0);
 
-         if (fMover)
-         {
-            // Only do two points - each segment has two new points
-            ppin3d->ExpandExtents(&pof->rc, &verts[offset], &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar, 2, fFalse);
-         }
-      }
+   delete [] rgi;
+
+   // but we do need to extend the extrema
+   if (fMover)
+   {
+	   if(!m_d.m_fEnableLighting)
+		   ppin3d->ExpandExtents(&pof->rc, vertsNotLit, &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar, numVertices*4, fFalse);
+	   else
+		   ppin3d->ExpandExtents(&pof->rc, verts, &m_phitdrop->m_polydropanim.m_znear, &m_phitdrop->m_polydropanim.m_zfar, numVertices*4, fFalse);
    }
 
    if (m_d.m_fVisible)
@@ -1560,22 +1540,23 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
          g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
          pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
          g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
       }
       else
       {
          ppin3d->SetTexture(NULL);
       }
-      topMaterial.set();
-      //!! combine drawcalls into one
-      offset=0;
-      for (int i=0;i<numPolys;i++, offset+=3)
-      {
-         if( !fDrop )
-            pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, topVBuffer[0], offset, 3, (LPWORD)rgi0123,3,0);
-         else
-            pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, topVBuffer[1], offset, 3, (LPWORD)rgi0123,3,0);
-      }
+
+	  topMaterial.set();
+
+      // combine drawcalls into one (hopefully faster)
+	  WORD* const rgi = new WORD[numPolys*3];
+      
+      for (int i=0;i<numPolys*3;i++)
+		  rgi[i] = i;
+
+	  pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, !fDrop ? topVBuffer[0] : topVBuffer[1], 0, numPolys*3, (LPWORD)rgi, numPolys*3, 0);
+
+	  delete [] rgi;
    }
 
    ppin3d->SetTexture(NULL);
@@ -2150,11 +2131,11 @@ STDMETHODIMP Surface::put_HeightTop(float newVal)
 {
    STARTUNDO
 
-      m_d.m_heighttop = newVal;
+   m_d.m_heighttop = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_FaceColor(OLE_COLOR *pVal)
