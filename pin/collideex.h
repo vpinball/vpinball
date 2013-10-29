@@ -105,7 +105,7 @@ public:
 
 	Vertex3Ds *m_rgv;
 	Vertex3Ds normal;
-	float D; // D for the plane equation.  A,B, and C are the plane normal (A x' + B y' +C z' = D, normal= x',y'+z'
+	float D; // D for the plane equation.  A,B, and C are the plane normal (A x' + B y' + C z' = D, normal= x',y'+z'
 	int m_cvertex;
 	BOOL m_fVisible; // for ball shadows
 	};
