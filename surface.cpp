@@ -601,7 +601,7 @@ void Surface::RenderBlueprint(Sur *psur)
 }
 
 void Surface::RenderShadow(ShadowSur * const psur, const float height)
-{	
+{
    if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
       return;
 
@@ -863,10 +863,10 @@ void Surface::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-
 void Surface::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
 }
+
 void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 {
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -1569,13 +1569,12 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
       topMaterial.set();
       //!! combine drawcalls into one
       offset=0;
-      const int rgi210[3]={2,1,0};
       for (int i=0;i<numPolys;i++, offset+=3)
       {
          if( !fDrop )
-            pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, topVBuffer[0], offset, 3, (LPWORD)rgi210,3,0);
+            pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, topVBuffer[0], offset, 3, (LPWORD)rgi0123,3,0);
          else
-            pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, topVBuffer[1], offset, 3, (LPWORD)rgi210,3,0);
+            pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, topVBuffer[1], offset, 3, (LPWORD)rgi0123,3,0);
       }
    }
 
