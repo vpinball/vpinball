@@ -631,9 +631,7 @@ void Surface::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
       pvht->AddElement(pht);
-   }
 }
 
 void Surface::GetHitShapes(Vector<HitObject> * const pvho)
@@ -718,9 +716,7 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
          plineseg->m_threshold = m_d.m_threshold;
       }
       else
-      {
          plineseg->m_pfe = NULL;
-      }
    }
    else
    {
@@ -751,9 +747,7 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
    pvho->AddElement(plineseg);
    if (m_d.m_fDroppable)
-   {
       m_vhoDrop.AddElement(plineseg);
-   }
 
    m_vhoCollidable.AddElement(plineseg);
    plineseg->m_fEnabled = m_d.m_fCollidable;
@@ -775,9 +769,7 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
          pjoint->m_threshold = m_d.m_threshold;
       }
       else
-      {
          pjoint->m_pfe = NULL;
-      }
 
       pjoint->m_rcHitRect.zlow = m_d.m_heightbottom;
       pjoint->m_rcHitRect.zhigh = m_d.m_heighttop;
@@ -835,12 +827,8 @@ void Surface::EndPlay()
    if (m_phitdrop) // Failed Player Case
    {
       if (m_d.m_fDroppable)
-      {
          for (int i=0;i<2;i++)
-         {
             delete m_phitdrop->m_polydropanim.m_pobjframe[i];
-         }
-      }
 
       m_phitdrop = NULL;
    }
@@ -893,6 +881,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       sideVBuffer->release();
       sideVBuffer=0;
    }
+
    if(!m_d.m_fEnableLighting)
    {
       if( !sideVBuffer )
@@ -927,14 +916,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
    Vertex3D_NoLighting *noLightBuf[2];
    Vertex3D *texelBuf[2];
-   if(!m_d.m_fEnableLighting)
-   {
-      sideVBuffer->lock(0,0,(void**)&noLightBuf[0], VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
-   }
-   else
-   {
-      sideVBuffer->lock(0,0,(void**)&texelBuf[0], VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
-   }
+   sideVBuffer->lock( 0, 0, !m_d.m_fEnableLighting ? (void**)&noLightBuf[0] : (void**)&texelBuf[0], VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
 
    int offset=0;
    // Render side
@@ -1005,7 +987,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
          for (int l=offset;l<offset+2;l++)
          {
-            vertsNotLit[l].color = m_d.m_sidecolor;
+            vertsNotLit[l].color = 
             vertsNotLit[l+2].color = m_d.m_sidecolor;
          }
 
@@ -1017,7 +999,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
          verts[offset].x=pv1->x;     verts[offset].y=pv1->y;     verts[offset].z=m_d.m_heightbottom;
          verts[offset+1].x=pv1->x;   verts[offset+1].y=pv1->y;   verts[offset+1].z=m_d.m_heighttop;
          verts[offset+2].x=pv2->x;   verts[offset+2].y=pv2->y;   verts[offset+2].z=m_d.m_heighttop;
-         verts[offset+3].x=pv2->x;   verts[offset+3].y=pv2->y;    verts[offset+3].z=m_d.m_heightbottom;
+         verts[offset+3].x=pv2->x;   verts[offset+3].y=pv2->y;   verts[offset+3].z=m_d.m_heightbottom;
 
          if (pinSide)
          {
@@ -1063,9 +1045,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       Vector<void> vpoly;
 
       for (int i=0;i<numVertices;i++)
-      {
          vpoly.AddElement((void *)i);
-      }
 
       Vector<Triangle> vtri;
       PolygonToTriangles(vvertex, &vpoly, &vtri);
@@ -1073,10 +1053,9 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       float maxtu=1.0f, maxtv=1.0f;
       if (pin)
-      {
          m_ptable->GetTVTU(pin, &maxtu, &maxtv);
-      }
-      const float heightNotDropped = m_d.m_heighttop;
+
+	  const float heightNotDropped = m_d.m_heighttop;
       const float heightDropped = (m_d.m_heightbottom + 0.1f);
 
       const float inv_tablewidth = maxtu/(m_ptable->m_right - m_ptable->m_left);
@@ -1102,7 +1081,8 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
          topVBuffer[1]->release();
          topVBuffer[1]=0;
       }
-      if(!m_d.m_fEnableLighting)
+      
+	  if(!m_d.m_fEnableLighting)
       {
          if( !topVBuffer[0] && !topVBuffer[1] )
          {
@@ -1163,7 +1143,8 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
             for (int l=offset;l<offset+3;l++)
                vertsTopNotLit[0][l].color = m_d.m_topcolor;
-            memcpy( &vertsTopNotLit[1][offset], &vertsTopNotLit[0][offset], sizeof(Vertex3D_NoLighting)*3 );
+      
+			memcpy( &vertsTopNotLit[1][offset], &vertsTopNotLit[0][offset], sizeof(Vertex3D_NoLighting)*3 );
             vertsTopNotLit[1][offset].z = heightDropped;
             vertsTopNotLit[1][offset+1].z = heightDropped;
             vertsTopNotLit[1][offset+2].z = heightDropped;
@@ -1189,7 +1170,8 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
             vertsTop[1][offset].z = heightDropped;
             vertsTop[1][offset+1].z = heightDropped;
             vertsTop[1][offset+2].z = heightDropped;
-            ppin3d->m_lightproject.CalcCoordinates(&vertsTop[0][offset],inv_width,inv_height);
+            
+			ppin3d->m_lightproject.CalcCoordinates(&vertsTop[0][offset],inv_width,inv_height);
             ppin3d->m_lightproject.CalcCoordinates(&vertsTop[0][offset+1],inv_width,inv_height);
             ppin3d->m_lightproject.CalcCoordinates(&vertsTop[0][offset+2],inv_width,inv_height);
 
@@ -1206,12 +1188,14 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
                vertsTop[1][l].ny = 0;
                vertsTop[1][l].nz = -1.0f;
             }
-            memcpy( &texelBuf[0][offset], &vertsTop[0][offset], sizeof(Vertex3D)*3);
+            
+			memcpy( &texelBuf[0][offset], &vertsTop[0][offset], sizeof(Vertex3D)*3);
             memcpy( &texelBuf[1][offset], &vertsTop[1][offset], sizeof(Vertex3D)*3);
          }
          delete vtri.ElementAt(i);
       }
-      topVBuffer[0]->unlock();
+
+	  topVBuffer[0]->unlock();
       topVBuffer[1]->unlock();
    }
 
@@ -1276,72 +1260,72 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
       }
 
       for (int l=0;l<12;l++)
-      {
          ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
-      }
-      ppin3d->ClearExtents(&pof->rc, NULL, NULL);
+      
+	  ppin3d->ClearExtents(&pof->rc, NULL, NULL);
       ppin3d->ExpandExtents(&pof->rc, rgv3D, &plinesling->m_slingshotanim.m_znear, &plinesling->m_slingshotanim.m_zfar, 6, fFalse);
 
       SetNormal(rgv3D, rgiSlingshot0, 4, NULL, NULL, NULL);
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot0[0]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot0[0]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot0[1]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot0[1]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot0[2]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot0[2]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot0[3]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot0[3]];
       offset++;
 
       SetNormal(rgv3D, rgiSlingshot1, 4, NULL, NULL, NULL);
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot1[0]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot1[0]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot1[1]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot1[1]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot1[2]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot1[2]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot1[3]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot1[3]];
       offset++;
 
       SetNormal(rgv3D, rgiSlingshot2, 4, NULL, NULL, NULL);
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot2[0]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot2[0]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot2[1]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot2[1]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot2[2]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot2[2]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot2[3]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot2[3]];
       offset++;
 
       SetNormal(rgv3D, rgiSlingshot3, 4, NULL, NULL, NULL);
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot3[0]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot3[0]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot3[1]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot3[1]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot3[2]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot3[2]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot3[3]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot3[3]];
       offset++;
 
       SetNormal(rgv3D, rgiSlingshot4, 4, NULL, NULL, NULL);
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot4[0]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot4[0]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot4[1]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot4[1]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot4[2]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot4[2]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot4[3]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot4[3]];
       offset++;
 
       SetNormal(rgv3D, rgiSlingshot5, 4, NULL, NULL, NULL);
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot5[0]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot5[0]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot5[1]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot5[1]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot5[2]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot5[2]];
       offset++;
-      memcpy( &buf[offset], &rgv3D[rgiSlingshot5[3]], sizeof(Vertex3D));
+      buf[offset] = rgv3D[rgiSlingshot5[3]];
       offset++;
    }
+
    slingshotVBuffer->unlock();
 }
 
@@ -1361,15 +1345,12 @@ void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
 
    Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
    if (!pinSide)
-   {
       sideMaterial.setColor( 1.0f, m_d.m_sidecolor );
-   }
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (!pin)
-   {
       topMaterial.setColor( 1.0f, m_d.m_topcolor );
-   }
+
    // create all vertices for dropped and non-dropped surface
    PrepareWallsAtHeight( pd3dDevice );
 }
@@ -1462,26 +1443,29 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
    // Render side
 
-   // combine drawcalls into one (hopefully faster)
-   WORD* const rgi = new WORD[numVertices*6];
-   int offset=0;
-   int offset2=0;
-   for (int i=0;i<numVertices;i++, offset+=6,offset2+=4)
-   {
-	   rgi[offset] = offset2;
-	   rgi[offset+1] = offset2+1;
-	   rgi[offset+2] = offset2+2;
-	   rgi[offset+3] = offset2;
-	   rgi[offset+4] = offset2+2;
-	   rgi[offset+5] = offset2+3;
-   }
-
    if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped
+   {
+       // combine drawcalls into one (hopefully faster)
+	   WORD* const rgi = new WORD[numVertices*6];
+	   
+	   int offset=0;
+	   int offset2=0;
+	   for (int i=0;i<numVertices;i++, offset+=6,offset2+=4)
+	   {
+		   rgi[offset] = offset2;
+		   rgi[offset+1] = offset2+1;
+		   rgi[offset+2] = offset2+2;
+		   rgi[offset+3] = offset2;
+		   rgi[offset+4] = offset2+2;
+		   rgi[offset+5] = offset2+3;
+	   }
+
 	   pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, sideVBuffer, 0, numVertices*4, (LPWORD)rgi, numVertices*6, 0);
 
-   delete [] rgi;
+	   delete [] rgi;
+   }
 
-   // but we do need to extend the extrema
+   // but we do need to always extend the extrema
    if (fMover)
    {
 	   if(!m_d.m_fEnableLighting)
@@ -2046,11 +2030,11 @@ STDMETHODIMP Surface::put_Image(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_SideColor(OLE_COLOR *pVal)
@@ -2064,11 +2048,11 @@ STDMETHODIMP Surface::put_SideColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_sidecolor = newVal;
+   m_d.m_sidecolor = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_SlingshotColor(OLE_COLOR *pVal)
@@ -2082,11 +2066,11 @@ STDMETHODIMP Surface::put_SlingshotColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_slingshotColor = newVal;
+   m_d.m_slingshotColor = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_ImageAlignment(ImageAlignment *pVal)
@@ -2113,11 +2097,11 @@ STDMETHODIMP Surface::put_HeightBottom(float newVal)
 {
    STARTUNDO
 
-      m_d.m_heightbottom = newVal;
+   m_d.m_heightbottom = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_HeightTop(float *pVal)
@@ -2149,11 +2133,11 @@ STDMETHODIMP Surface::put_FaceColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_topcolor = newVal;
+   m_d.m_topcolor = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Surface::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -2198,11 +2182,11 @@ STDMETHODIMP Surface::put_CanDrop(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fDroppable = VBTOF(newVal);
+   m_d.m_fDroppable = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_FlipbookAnimation(VARIANT_BOOL *pVal)
@@ -2216,19 +2200,17 @@ STDMETHODIMP Surface::put_FlipbookAnimation(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fFlipbook = VBTOF(newVal);
+   m_d.m_fFlipbook = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL *pVal)
 {
    if (!g_pplayer)
-   {
       return E_FAIL;
-   }
 
    *pVal = (VARIANT_BOOL)FTOVB(m_fIsDropped);
 
@@ -2238,9 +2220,7 @@ STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL *pVal)
 STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 {
    if (!g_pplayer || !m_d.m_fDroppable)
-   {
       return E_FAIL;
-   }
 
    const BOOL fNewVal = VBTOF(newVal);
 
@@ -2251,9 +2231,7 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
       m_phitdrop->m_polydropanim.m_iframedesire = m_fIsDropped ? 1 : 0;
 
       for (int i=0;i<m_vhoDrop.Size();i++)
-      {
          m_vhoDrop.ElementAt(i)->m_fEnabled = !m_fIsDropped && m_d.m_fCollidable; //disable hit on enities composing the object 
-      }
 
 #ifdef ULTRAPIN
       // Check if this surface has a user value.
@@ -2290,11 +2268,11 @@ STDMETHODIMP Surface::put_DisplayTexture(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fDisplayTexture = VBTOF(newVal);
+   m_d.m_fDisplayTexture = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_SlingshotStrength(float *pVal)
@@ -2310,11 +2288,11 @@ STDMETHODIMP Surface::put_SlingshotStrength(float newVal)
 {
    STARTUNDO
 
-      m_d.m_slingshotforce = newVal*10.0f;
+   m_d.m_slingshotforce = newVal*10.0f;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_Elasticity(float *pVal)
@@ -2328,11 +2306,11 @@ STDMETHODIMP Surface::put_Elasticity(float newVal)
 {
    STARTUNDO
 
-      m_d.m_elasticity = newVal;
+   m_d.m_elasticity = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -2347,14 +2325,14 @@ STDMETHODIMP Surface::put_Friction(float newVal)
 {
    STARTUNDO
 
-      if (newVal > 1.0f) newVal = 1.0f;
+   if (newVal > 1.0f) newVal = 1.0f;
       else if (newVal < 0.f) newVal = 0.f;
 
-      m_d.m_friction = newVal;
+   m_d.m_friction = newVal;
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_Scatter(float *pVal)
@@ -2368,13 +2346,12 @@ STDMETHODIMP Surface::put_Scatter(float newVal)
 {
    STARTUNDO
 
-      m_d.m_scatter = newVal;
+   m_d.m_scatter = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
-///////////////////////////////////////////////////////////
 
 STDMETHODIMP Surface::get_CastsShadow(VARIANT_BOOL *pVal)
 {
@@ -2387,11 +2364,11 @@ STDMETHODIMP Surface::put_CastsShadow(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fCastsShadow = VBTOF(newVal);
+   m_d.m_fCastsShadow = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_EnableLighting(VARIANT_BOOL *pVal)
@@ -2405,11 +2382,11 @@ STDMETHODIMP Surface::put_EnableLighting(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fEnableLighting = VBTOF(newVal);
+   m_d.m_fEnableLighting = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_Visible(VARIANT_BOOL *pVal)
@@ -2423,11 +2400,11 @@ STDMETHODIMP Surface::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fVisible = VBTOF(newVal);
+   m_d.m_fVisible = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
@@ -2444,11 +2421,11 @@ STDMETHODIMP Surface::put_SideImage(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSideImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSideImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_Disabled(VARIANT_BOOL *pVal)
@@ -2462,11 +2439,11 @@ STDMETHODIMP Surface::put_Disabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_fDisabled = VBTOF(newVal);
+   m_fDisabled = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_SideVisible(VARIANT_BOOL *pVal)
@@ -2480,11 +2457,11 @@ STDMETHODIMP Surface::put_SideVisible(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fSideVisible = VBTOF(newVal);
+   m_d.m_fSideVisible = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_Collidable(VARIANT_BOOL *pVal)
@@ -2500,7 +2477,7 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 
    STARTUNDO
 
-      m_d.m_fCollidable = fNewVal;
+   m_d.m_fCollidable = fNewVal;
 
    for (int i=0;i<m_vhoCollidable.Size();i++)
    {
@@ -2510,7 +2487,7 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 /////////////////////////////////////////////////////////////
@@ -2526,11 +2503,11 @@ STDMETHODIMP Surface::put_SlingshotThreshold(float newVal)
 {
    STARTUNDO
 
-      m_d.m_slingshot_threshold = newVal;
+   m_d.m_slingshot_threshold = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_SlingshotAnimation(VARIANT_BOOL *pVal)
@@ -2544,9 +2521,9 @@ STDMETHODIMP Surface::put_SlingshotAnimation(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fSlingshotAnimation = VBTOF(newVal);
+   m_d.m_fSlingshotAnimation = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
