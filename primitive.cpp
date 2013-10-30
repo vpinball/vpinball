@@ -348,13 +348,25 @@ void Primitive::RecalculateMatrices()
       case RotZ:
          tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
          break;
+      case TraX:
+         tempMatrix.SetIdentity();
+         tempMatrix._41 = m_d.m_aRotAndTra[i];
+         break;
+      case TraY:
+         tempMatrix.SetIdentity();
+         tempMatrix._42 = m_d.m_aRotAndTra[i];
+         break;
+      case TraZ:
+         tempMatrix.SetIdentity();
+         tempMatrix._43 = m_d.m_aRotAndTra[i];
+         break;
       default:
          break;
       }
       tempMatrix.Multiply(RTmatrix, RTmatrix);
       tempMatrix.Multiply(rotMatrix, rotMatrix);
    }
-   
+ 
    tempMatrix.SetIdentity();
    for (int i = 8; i >= 0; i--)
    {
@@ -374,29 +386,6 @@ void Primitive::RecalculateMatrices()
       }
       tempMatrix.Multiply(RTmatrix, RTmatrix);
       tempMatrix.Multiply(rotMatrix, rotMatrix);
-   }
-
-   tempMatrix.SetIdentity();
-   for (int i = 8; i >= 0; i--)
-   {
-      switch (m_d.m_aRotAndTraTypes[i])
-      {
-      case TraX:
-         tempMatrix.SetIdentity();
-         tempMatrix._41 = m_d.m_aRotAndTra[i];
-         break;
-      case TraY:
-         tempMatrix.SetIdentity();
-         tempMatrix._42 = m_d.m_aRotAndTra[i];
-         break;
-      case TraZ:
-         tempMatrix.SetIdentity();
-         tempMatrix._43 = m_d.m_aRotAndTra[i];
-         break;
-      default:
-         break;
-      }
-      tempMatrix.Multiply(RTmatrix, RTmatrix);
    }
 
    fullMatrix = Smatrix;
