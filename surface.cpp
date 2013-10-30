@@ -1443,7 +1443,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
    // Render side
 
-   if (!fDrop && m_d.m_fSideVisible) // Don't need to render walls if dropped
+   if (!fDrop && m_d.m_fSideVisible && (numVertices > 0)) // Don't need to render walls if dropped
    {
        // combine drawcalls into one (hopefully faster)
 	   WORD* const rgi = new WORD[numVertices*6];
@@ -1532,15 +1532,18 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 
 	  topMaterial.set();
 
-      // combine drawcalls into one (hopefully faster)
-	  WORD* const rgi = new WORD[numPolys*3];
+	  if(numPolys > 0)
+	  {
+		  // combine drawcalls into one (hopefully faster)
+		  WORD* const rgi = new WORD[numPolys*3];
       
-      for (int i=0;i<numPolys*3;i++)
-		  rgi[i] = i;
+		  for (int i=0;i<numPolys*3;i++)
+			  rgi[i] = i;
 
-	  pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, !fDrop ? topVBuffer[0] : topVBuffer[1], 0, numPolys*3, (LPWORD)rgi, numPolys*3, 0);
+		  pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, !fDrop ? topVBuffer[0] : topVBuffer[1], 0, numPolys*3, (LPWORD)rgi, numPolys*3, 0);
 
-	  delete [] rgi;
+		  delete [] rgi;
+	  }
    }
 
    ppin3d->SetTexture(NULL);
