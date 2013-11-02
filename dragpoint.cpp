@@ -783,10 +783,6 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                {
                   char szT[256];
                   GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);							
-                  for( unsigned int i=0;i<strlen(szT);i++)
-                  {
-                     if( szT[i]=='.') szT[i]=',';
-                  }
 
                   const float f = sz2f(szT);
                   GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
