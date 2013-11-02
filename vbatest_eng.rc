@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -799,7 +799,7 @@ BEGIN
     LTEXT           "Close Angle",-1,7,96,38,8
 END
 
-IDD_PROPRAMP_VISUALS DIALOGEX 0, 0, 125, 175
+IDD_PROPRAMP_VISUALS DIALOGEX 0, 0, 125, 187
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -807,22 +807,24 @@ BEGIN
     COMBOBOX        1500,7,31,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        8,33,46,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Apply Ima&ge to Walls",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,82,10
-    CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,76,40,14
-    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,94,61,10
-    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,40,10
-    CONTROL         "Normal 3D Stereo",IDC_MODIFY3DSTEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,106,70,10
-    LTEXT           "(only disable for",-1,68,116,70,10
-    LTEXT           " 2D-hacks like",-1,68,126,70,10
-    LTEXT           " Halo/Flasher/GI)",-1,68,136,70,10
+    CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,88,40,14
+    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,61,10
+    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,118,40,10
+    CONTROL         "Normal 3D Stereo",IDC_MODIFY3DSTEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,118,70,10
+    LTEXT           "(only disable for",-1,68,128,70,10
+    LTEXT           " 2D-hacks like",-1,68,138,70,10
+    LTEXT           " Halo/Flasher/GI)",-1,68,148,70,10
     LTEXT           "&Type",-1,7,9,25,8
-    LTEXT           "&Color",-1,7,79,17,8
+    LTEXT           "&Color",-1,7,91,17,8
     LTEXT           "&Image:",-1,7,21,22,8
     LTEXT           "&Mode",-1,7,49,25,8
-    CONTROL         "Solid",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,123,31,10
-    CONTROL         "Acrylic",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,136,37,10
-    CONTROL         "Alpha",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,149,34,10
-    CONTROL         "Additive Alpha Bl.",IDC_ADDBLEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,149,70,10
-    LTEXT           "(+disable Lighting)",-1,68,159,70,10
+    CONTROL         "Solid",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,135,31,10
+    CONTROL         "Acrylic",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,148,37,10
+    CONTROL         "Alpha",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,161,34,10
+    CONTROL         "Additive Alpha Bl.",IDC_ADDBLEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,161,70,10
+    LTEXT           "(+disable Lighting)",-1,68,171,70,10
+    CONTROL         "Enable Lighting for Image",IDC_ENABLE_RAMP_LIGHTING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,74,96,10
 END
 
 IDD_PROPRAMP_POSITION DIALOGEX 0, 0, 125, 134
@@ -2103,7 +2105,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

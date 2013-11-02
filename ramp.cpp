@@ -11,6 +11,7 @@ Ramp::Ramp()
    staticVertexBuffer = 0;
    dynamicVertexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
+   m_d.m_enableLightingImage=fTrue;
 }
 
 Ramp::~Ramp()
@@ -225,6 +226,12 @@ void Ramp::SetDefaults(bool fromMouseClick)
       m_d.m_fAddBlend = iTmp == 0 ? false : true;
    else
       m_d.m_fAddBlend = fFalse;
+
+   hr = GetRegInt("DefaultProps\\Ramp","EnableLightingOnImage", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_enableLightingImage = iTmp == 0 ? false : true;
+   else
+      m_d.m_enableLightingImage = fTrue;
 }
 
 void Ramp::WriteRegDefaults()
@@ -265,6 +272,7 @@ void Ramp::WriteRegDefaults()
    SetRegValue("DefaultProps\\Ramp","Visible",REG_DWORD,&m_d.m_IsVisible,4);
    SetRegValue("DefaultProps\\Ramp","Modify3DStereo",REG_DWORD,&m_d.m_fModify3DStereo,4);
    SetRegValue("DefaultProps\\Ramp","AddBlend",REG_DWORD,&m_d.m_fAddBlend,4);
+   SetRegValue("DefaultProps\\Ramp","EnableLighingOnImage",REG_DWORD,&m_d.m_enableLightingImage,4);
 }
 
 void Ramp::PreRender(Sur * const psur)
@@ -1664,6 +1672,10 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
          }
 
          textureMaterial.set();
+         if ( !m_d.m_enableLightingImage )
+         {
+            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+         }
       }
       else
       {
@@ -1678,6 +1690,10 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
       {
          ppin3d->SetTexture(NULL);
          solidMaterial.set();
+         if ( !m_d.m_enableLightingImage )
+         {
+            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+         }
       }
 
       for (int i=0;i<(rampVertex-1);i++)
@@ -1700,6 +1716,11 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
 
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+
+      if ( !m_d.m_enableLightingImage && pin!=NULL )
+      {
+         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+      }
    }
 }
 
@@ -1763,6 +1784,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteBool(FID(RVIS), m_d.m_IsVisible);	
    bw.WriteBool(FID(MSTE), m_d.m_fModify3DStereo);
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
+   bw.WriteBool(FID(ERLI), m_d.m_enableLightingImage);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1899,6 +1921,10 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ADDB))
    {
       pbr->GetBool(&m_d.m_fAddBlend);
+   }
+   else if (id == FID(ERLI))
+   {
+      pbr->GetBool(&m_d.m_enableLightingImage);
    }
    else
    {
@@ -2539,6 +2565,24 @@ STDMETHODIMP Ramp::put_AddBlend(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+STDMETHODIMP Ramp::get_EnableLightingImage(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_enableLightingImage);
+
+   return S_OK;
+}
+
+STDMETHODIMP Ramp::put_EnableLightingImage(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_enableLightingImage= VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
+}
+
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
@@ -2599,6 +2643,11 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
          textureMaterial.set();
+         if ( !m_d.m_enableLightingImage )
+         {
+            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+         }
+
       }
       else
       {
@@ -2818,6 +2867,10 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       {
          ppin3d->SetTexture(NULL);
          solidMaterial.set();
+         if ( !m_d.m_enableLightingImage )
+         {
+            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+         }
       }
 
       if ( m_d.m_rightwallheightvisible!=0.f )
@@ -2846,5 +2899,9 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
       ppin3d->SetTexture(NULL);
+      if ( !m_d.m_enableLightingImage && pin!=NULL )
+      {
+         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+      }
    }
 }

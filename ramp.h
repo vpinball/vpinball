@@ -34,6 +34,7 @@ public:
 	BOOL m_IsVisible;
 	BOOL m_fModify3DStereo;
 	BOOL m_fAddBlend;
+   BOOL m_enableLightingImage;
 	};
 
 /////////////////////////////////////////////////////////////////////////////
@@ -209,8 +210,10 @@ public:
 	STDMETHOD(get_Modify3DStereo)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Modify3DStereo)(/*[in]*/ VARIANT_BOOL newVal);
 
-	STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_EnableLightingImage)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_EnableLightingImage)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)
