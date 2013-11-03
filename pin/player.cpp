@@ -1987,8 +1987,8 @@ void Player::UpdatePhysics()
 			}
 		}
 #endif
-		//slintf( "%u %u\n", m_RealTimeClock/1000, sim_msec );
-		//slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
+		slintf( "%u %u\n", m_RealTimeClock/1000, sim_msec );
+		slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
 
 		UltraNudge();		// physics_dtime is the balance of time to move from the graphic frame position to the next
 		UltraPlunger();		// integral physics frame.  So the previous graphics frame was (1.0 - physics_dtime) before 
@@ -2203,7 +2203,9 @@ void Player::Render()
 			overall_area += (prc.right-prc.left)*(prc.bottom-prc.top);
 		}
 
-	if(m_fEnableRegionUpdateOptimization && (!m_fCleanBlt || (overall_area >= FULLBLTAREA))) {
+	if(((m_fEnableRegionUpdateOptimization && (m_ptable->m_TableRegionOptimization == -1)) || (m_ptable->m_TableRegionOptimization == 1))
+		&& (!m_fCleanBlt || (overall_area >= FULLBLTAREA)))
+	{
 		RECT rect;
 		rect.left = 0;
 		rect.right = min(GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
@@ -2385,7 +2387,7 @@ void Player::Render()
 			m_pin3d.Flip(0, 0, vsync);
 
 			// Flag that we only need to update regions from now on...
-			if(m_fEnableRegionUpdates)
+			if((m_fEnableRegionUpdates && (m_ptable->m_TableRegionUpdates == -1)) || (m_ptable->m_TableRegionUpdates == 1))
 				m_fCleanBlt = fTrue;
 		}
 	}
@@ -2631,7 +2633,7 @@ void Player::Render()
 	m_pin3d.Flip(0, 0, vsync);
 
 	// Flag that we only need to update regions from now on...
-	//if(m_fEnableRegionUpdates)
+	//if((m_fEnableRegionUpdates && (m_ptable->m_TableRegionUpdates == -1)) || (m_ptable->m_TableRegionUpdates == 1))
 		m_fCleanBlt = fTrue;
 	}
 
@@ -3157,16 +3159,16 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          memcpy( pball->reflectVerts, rgv3D, sizeof(Vertex3D_NoTex2)*4);
          if ( drawReflection )
          {
-            pball->reflectVerts[0].y = rgv3D[2].y- (rgv3D[2].y-rgv3D[0].y)*0.5f;
-            pball->reflectVerts[1].y = rgv3D[3].y- (rgv3D[3].y-rgv3D[1].y)*0.5f;
-            pball->reflectVerts[2].y = pball->reflectVerts[0].y+(rgv3D[2].y-rgv3D[0].y)*1.1f;
-            pball->reflectVerts[3].y = pball->reflectVerts[1].y+(rgv3D[3].y-rgv3D[1].y)*1.1f;
-            pball->reflectVerts[0].z= pball->reflectVerts[1].z = pball->reflectVerts[2].z = pball->reflectVerts[3].z-3.0f;
+            pball->reflectVerts[0].y = rgv3D[2].y - (rgv3D[2].y-rgv3D[0].y)*0.5f;
+            pball->reflectVerts[1].y = rgv3D[3].y - (rgv3D[3].y-rgv3D[1].y)*0.5f;
+            pball->reflectVerts[2].y = pball->reflectVerts[0].y + (rgv3D[2].y-rgv3D[0].y)*1.1f;
+            pball->reflectVerts[3].y = pball->reflectVerts[1].y + (rgv3D[3].y-rgv3D[1].y)*1.1f;
+            pball->reflectVerts[0].z = pball->reflectVerts[1].z = pball->reflectVerts[2].z = pball->reflectVerts[3].z-3.0f;
          }
       }
 
 		// prepare the vertex buffer for all possible options (ball,logo,shadow)
-      Vertex3D_NoTex2 *buf;
+        Vertex3D_NoTex2 *buf;
 		if(!only_invalidate_regions)
 		{
          Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);

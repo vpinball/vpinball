@@ -2755,7 +2755,10 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(NONO), m_NormalizeNormals);
    bw.WriteFloat(FID(SDIX), shadowDirX);
    bw.WriteFloat(FID(SDIY), shadowDirY);
-   
+
+   bw.WriteInt(FID(REGU), m_TableRegionUpdates);
+   bw.WriteInt(FID(REGO), m_TableRegionOptimization);
+
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
 
@@ -3298,6 +3301,9 @@ void PinTable::SetLoadDefaults()
 
    m_NormalizeNormals = false;
 
+   m_TableRegionUpdates = -1;
+   m_TableRegionOptimization = -1;
+
    m_TableSoundVolume = 1.0f;
    m_TableMusicVolume = 1.0f;
 }
@@ -3753,6 +3759,14 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(MVOL))
    {
       pbr->GetFloat(&m_TableMusicVolume);
+   }
+   else if (id == FID(REGU))
+   {
+      pbr->GetInt(&m_TableRegionUpdates);
+   }
+   else if (id == FID(REGO))
+   {
+      pbr->GetInt(&m_TableRegionOptimization);
    }
 
    return fTrue;
@@ -7874,8 +7888,6 @@ STDMETHODIMP PinTable::put_ShadowY(float newVal )
       return S_OK;
 }
 
-
-
 STDMETHODIMP PinTable::get_TableSoundVolume(int *pVal)
 {
    *pVal = (int)(m_TableSoundVolume*100.0f);
@@ -7887,11 +7899,47 @@ STDMETHODIMP PinTable::put_TableSoundVolume(int newVal )
 {
    STARTUNDO
 
-      m_TableSoundVolume = (float)newVal/100.0f;
+   m_TableSoundVolume = (float)newVal/100.0f;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_TableRegionUpdates(int *pVal)
+{
+   *pVal = m_TableRegionUpdates;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_TableRegionUpdates(int newVal )
+{
+   STARTUNDO
+
+   m_TableRegionUpdates = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_TableRegionOptimization(int *pVal)
+{
+   *pVal = m_TableRegionOptimization;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_TableRegionOptimization(int newVal )
+{
+   STARTUNDO
+
+   m_TableRegionOptimization = newVal;
+
+   STOPUNDO
+
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)

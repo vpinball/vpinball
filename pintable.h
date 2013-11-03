@@ -253,9 +253,13 @@ public:
 	STDMETHOD(get_TiltTriggerTime)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TiltTriggerTime)(/*[in]*/ int newVal);
 
+	STDMETHOD(get_TableRegionUpdates)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_TableRegionUpdates)(/*[in]*/ int newVal);
+	STDMETHOD(get_TableRegionOptimization)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_TableRegionOptimization)(/*[in]*/ int newVal);
+
 	STDMETHOD(get_TableSoundVolume)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TableSoundVolume)(/*[in]*/ int newVal);
-
 	STDMETHOD(get_TableMusicVolume)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TableMusicVolume)(/*[in]*/ int newVal);
 
@@ -615,6 +619,9 @@ END_CONNECTION_POINT_MAP()
 	COLORREF rgcolorcustom[16];		// array for the choosecolor in property browser
 
 	Vector< PinSoundCopy > m_voldsound; // copied sounds currently playing
+
+	int m_TableRegionUpdates;
+	int m_TableRegionOptimization;
 
 	float m_TableSoundVolume;
 	float m_TableMusicVolume;

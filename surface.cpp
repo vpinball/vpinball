@@ -807,15 +807,12 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
 void Surface::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 {
-   const float top = m_d.m_heighttop;
-   const float bottom = m_d.m_heightbottom;
-
    for (int i=0;i<8;i++)
    {
       Vertex3Ds * const pv = new Vertex3Ds();
       pv->x = i&1 ? m_ptable->m_right : m_ptable->m_left;
       pv->y = i&2 ? m_ptable->m_bottom : m_ptable->m_top;
-      pv->z = i&4 ? top : bottom;
+      pv->z = i&4 ? m_d.m_heighttop : m_d.m_heightbottom;
       pvvertex3D->AddElement(pv);
    }
 }
@@ -884,20 +881,14 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
    if(!m_d.m_fEnableLighting)
    {
-      if( !sideVBuffer )
-      {
-         pd3dDevice->createVertexBuffer( numVertices*4, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &sideVBuffer );
-         NumVideoBytes += numVertices*4*sizeof(Vertex3D_NoLighting);
-      }
+      pd3dDevice->createVertexBuffer( numVertices*4, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &sideVBuffer );
+      NumVideoBytes += numVertices*4*sizeof(Vertex3D_NoLighting);
       vertsNotLit = new Vertex3D_NoLighting[numVertices*4];
    }
    else
    {
-      if( !sideVBuffer )
-      {
-         pd3dDevice->createVertexBuffer( numVertices*4, 0, MY_D3DFVF_VERTEX, &sideVBuffer );
-         NumVideoBytes += numVertices*4*sizeof(Vertex3D);
-      }
+      pd3dDevice->createVertexBuffer( numVertices*4, 0, MY_D3DFVF_VERTEX, &sideVBuffer );
+      NumVideoBytes += numVertices*4*sizeof(Vertex3D);
       verts = new Vertex3D[numVertices*4];
    }
 
@@ -985,11 +976,8 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
             vertsNotLit[offset+3].tv = maxtvSide;
          }
 
-         for (int l=offset;l<offset+2;l++)
-         {
-            vertsNotLit[l].color = 
-            vertsNotLit[l+2].color = m_d.m_sidecolor;
-         }
+         vertsNotLit[offset].color = vertsNotLit[offset+1].color = 
+         vertsNotLit[offset+2].color = vertsNotLit[offset+3].color = m_d.m_sidecolor;
 
          memcpy( &noLightBuf[0][offset], &vertsNotLit[offset], sizeof(Vertex3D_NoLighting)*4 );
       }
@@ -1021,16 +1009,13 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
          ppin3d->m_lightproject.CalcCoordinates(&verts[offset+2],inv_width,inv_height);
          ppin3d->m_lightproject.CalcCoordinates(&verts[offset+3],inv_width,inv_height);
 
-         for (int l=offset;l<offset+2;l++)
-         {
-            verts[l].nx = -vnormal[0].x;
-            verts[l].ny = vnormal[0].y;
-            verts[l].nz = 0;
+         verts[offset].nx = verts[offset+1].nx = -vnormal[0].x;
+         verts[offset].ny = verts[offset+1].ny = vnormal[0].y;
+         verts[offset].nz = verts[offset+1].nz = 0;
 
-            verts[l+2].nx = -vnormal[1].x;
-            verts[l+2].ny = vnormal[1].y;
-            verts[l+2].nz = 0;
-         }
+         verts[offset+2].nx = verts[offset+3].nx = -vnormal[1].x;
+         verts[offset+2].ny = verts[offset+3].ny = vnormal[1].y;
+         verts[offset+2].nz = verts[offset+3].nz = 0;
 
          memcpy( &texelBuf[0][offset], &verts[offset], sizeof(Vertex3D)*4 );
       }
@@ -1084,25 +1069,19 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       
 	  if(!m_d.m_fEnableLighting)
       {
-         if( !topVBuffer[0] && !topVBuffer[1] )
-         {
-            pd3dDevice->createVertexBuffer( numPolys*3, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &topVBuffer[0] );
-            NumVideoBytes += numPolys*3*sizeof(Vertex3D_NoLighting);
-            pd3dDevice->createVertexBuffer( numPolys*3, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &topVBuffer[1] );
-            NumVideoBytes += numPolys*3*sizeof(Vertex3D_NoLighting);
-         }
+         pd3dDevice->createVertexBuffer( numPolys*3, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &topVBuffer[0] );
+         NumVideoBytes += numPolys*3*sizeof(Vertex3D_NoLighting);
+         pd3dDevice->createVertexBuffer( numPolys*3, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &topVBuffer[1] );
+         NumVideoBytes += numPolys*3*sizeof(Vertex3D_NoLighting);
          vertsTopNotLit[0] = new Vertex3D_NoLighting[numPolys*3];
          vertsTopNotLit[1] = new Vertex3D_NoLighting[numPolys*3];
       }
       else
       {
-         if( !topVBuffer[0] && !topVBuffer[1] )
-         {
-            pd3dDevice->createVertexBuffer( numPolys*3, 0, MY_D3DFVF_VERTEX, &topVBuffer[0] );
-            NumVideoBytes += numPolys*3*sizeof(Vertex3D);
-            pd3dDevice->createVertexBuffer( numPolys*3, 0, MY_D3DFVF_VERTEX, &topVBuffer[1] );
-            NumVideoBytes += numPolys*3*sizeof(Vertex3D);
-         }
+         pd3dDevice->createVertexBuffer( numPolys*3, 0, MY_D3DFVF_VERTEX, &topVBuffer[0] );
+         NumVideoBytes += numPolys*3*sizeof(Vertex3D);
+         pd3dDevice->createVertexBuffer( numPolys*3, 0, MY_D3DFVF_VERTEX, &topVBuffer[1] );
+         NumVideoBytes += numPolys*3*sizeof(Vertex3D);
          vertsTop[0] = new Vertex3D[numPolys*3];
          vertsTop[1] = new Vertex3D[numPolys*3];
       }
@@ -1119,7 +1098,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       }
 
       offset=0;
-      for (int i=0;i<vtri.Size();i++, offset+=3 )
+      for (int i=0;i<vtri.Size();i++, offset+=3)
       {
          const Triangle * const ptri = vtri.ElementAt(i);
 
@@ -1130,7 +1109,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
          if(!m_d.m_fEnableLighting)
          {
             //Vertex3D_NoLighting rgv3D[3];
-            vertsTopNotLit[0][offset].x=pv0->x;   vertsTopNotLit[0][offset].y=pv0->y;   vertsTopNotLit[0][offset].z=heightNotDropped;
+            vertsTopNotLit[0][offset].x=pv0->x;     vertsTopNotLit[0][offset].y=pv0->y;     vertsTopNotLit[0][offset].z=heightNotDropped;
             vertsTopNotLit[0][offset+2].x=pv1->x;   vertsTopNotLit[0][offset+2].y=pv1->y;   vertsTopNotLit[0][offset+2].z=heightNotDropped;
             vertsTopNotLit[0][offset+1].x=pv2->x;   vertsTopNotLit[0][offset+1].y=pv2->y;   vertsTopNotLit[0][offset+1].z=heightNotDropped;
 
@@ -1141,8 +1120,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
             vertsTopNotLit[0][offset+2].tu = vertsTopNotLit[0][offset+2].x *inv_tablewidth;
             vertsTopNotLit[0][offset+2].tv = vertsTopNotLit[0][offset+2].y *inv_tableheight;
 
-            for (int l=offset;l<offset+3;l++)
-               vertsTopNotLit[0][l].color = m_d.m_topcolor;
+            vertsTopNotLit[0][offset].color = vertsTopNotLit[0][offset+1].color = vertsTopNotLit[0][offset+2].color = m_d.m_topcolor;
       
 			memcpy( &vertsTopNotLit[1][offset], &vertsTopNotLit[0][offset], sizeof(Vertex3D_NoLighting)*3 );
             vertsTopNotLit[1][offset].z = heightDropped;
@@ -1452,7 +1430,7 @@ ObjFrame *Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fMover, B
 	   int offset2=0;
 	   for (int i=0;i<numVertices;i++, offset+=6,offset2+=4)
 	   {
-		   rgi[offset] = offset2;
+		   rgi[offset]   = offset2;
 		   rgi[offset+1] = offset2+1;
 		   rgi[offset+2] = offset2+2;
 		   rgi[offset+3] = offset2;

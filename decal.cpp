@@ -6,10 +6,6 @@
 
 #define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
 Decal::Decal()
 {
    m_pIFont = NULL;
@@ -259,7 +255,7 @@ void Decal::Render(Sur * const psur)
          Vertex2D(m_d.m_vCenter.x - sn*halfheight - cs*halfwidth,
          m_d.m_vCenter.y + cs*halfheight - sn*halfwidth)};
 
-         psur->Polygon(rgv, 4);
+      psur->Polygon(rgv, 4);
    }
 }
 
@@ -408,13 +404,11 @@ void Decal::GetHitShapes(Vector<HitObject> * const pvho)
          {
             rcOut.top = AUTOLEADING*i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
             rcOut.bottom = rcOut.top + 100;
-            /*const int foo =*/ DrawText(hdc, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+            DrawText(hdc, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
          }
       }
       else
-      {
          DrawText(hdc, m_d.m_sztext, len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
-      }
 
       SelectObject(hdcNull, hFontOld);
       ReleaseDC(NULL, hdcNull);
@@ -433,9 +427,7 @@ void Decal::GetHitShapesDebug(Vector<HitObject> * const pvho)
 void Decal::EndPlay()
 {
    if (m_pinimage.m_pdsBuffer)
-   {
       m_pinimage.FreeStuff();
-   }
 }
 
 void Decal::PostRenderStatic(const RenderDevice* pd3dDevice)
@@ -480,9 +472,7 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
    if (pin)
    {
       if (m_d.m_decaltype == DecalImage)
-      {
          m_ptable->GetTVTU(pin, &maxtu, &maxtv);
-      }
 
       pin->CreateAlphaChannel();
       ppin3d->EnableLightMap(fFalse, -1);
@@ -493,7 +483,6 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
       vertices[l].z = height + 0.2f;
    }
    ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
-
 
    const float halfwidth = m_realwidth * 0.5f;
    const float halfheight = m_realheight * 0.5f;
@@ -536,10 +525,9 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
    {
       DWORD vertexType = MY_D3DFVF_NOTEX2_VERTEX;
       if ( m_fBackglass && GetPTable()->GetDecalsEnabled() )
-      {
          vertexType = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-      }
-      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4, 0, vertexType, &vertexBuffer );
+
+	  g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4, 0, vertexType, &vertexBuffer );
       NumVideoBytes += 4*sizeof(Vertex3D_NoTex2);
 
    }
@@ -549,7 +537,6 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
    vertexBuffer->unlock();
 
    ppin3d->ExpandExtents(&m_rcBounds, vertices, NULL, NULL, 4, m_fBackglass);
-
 }
 
 void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
@@ -821,10 +808,9 @@ void Decal::EnsureSize()
       m_realheight = (float)cy.Lo * (float)(1.0/2545.0);
 
       if (m_d.m_fVerticalText)
-      {
-         m_realheight*=lstrlen(m_d.m_sztext);
-      }
-      m_realwidth = m_realheight * (float)sizex / (float)sizey;
+         m_realheight *= lstrlen(m_d.m_sztext);
+
+	  m_realwidth = m_realheight * (float)sizex / (float)sizey;
    }
    else // Auto aspect
    {
@@ -889,8 +875,6 @@ HFONT Decal::GetFont()
 
    lf.lfItalic = (BYTE)bl;
 
-
-
    HFONT hFont = CreateFontIndirect(&lf);
 
    return hFont;
@@ -907,11 +891,11 @@ STDMETHODIMP Decal::put_Rotation(float newVal)
 {
    STARTUNDO
 
-      m_d.m_rotation = newVal;
+   m_d.m_rotation = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Image(BSTR *pVal)
@@ -928,11 +912,11 @@ STDMETHODIMP Decal::put_Image(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Width(float *pVal)
@@ -946,13 +930,13 @@ STDMETHODIMP Decal::put_Width(float newVal)
 {
    STARTUNDO
 
-      m_d.m_width = newVal;
+   m_d.m_width = newVal;
 
    EnsureSize();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Height(float *pVal)
@@ -966,13 +950,13 @@ STDMETHODIMP Decal::put_Height(float newVal)
 {
    STARTUNDO
 
-      m_d.m_height = newVal;
+   m_d.m_height = newVal;
 
    EnsureSize();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_X(float *pVal)
@@ -986,11 +970,11 @@ STDMETHODIMP Decal::put_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.x = newVal;
+   m_d.m_vCenter.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Y(float *pVal)
@@ -1004,11 +988,11 @@ STDMETHODIMP Decal::put_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.y = newVal;
+   m_d.m_vCenter.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Surface(BSTR *pVal)
@@ -1025,11 +1009,11 @@ STDMETHODIMP Decal::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Decal::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -1054,13 +1038,13 @@ STDMETHODIMP Decal::put_Type(DecalType newVal)
 {
    STARTUNDO
 
-      m_d.m_decaltype = newVal;
+   m_d.m_decaltype = newVal;
 
    EnsureSize();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Text(BSTR *pVal)
@@ -1079,7 +1063,7 @@ STDMETHODIMP Decal::put_Text(BSTR newVal)
    {
       STARTUNDO
 
-         WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_sztext, 512, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_sztext, 512, NULL, NULL);
 
       EnsureSize();
 
@@ -1100,13 +1084,13 @@ STDMETHODIMP Decal::put_SizingType(SizingType newVal)
 {
    STARTUNDO
 
-      m_d.m_sizingtype = newVal;
+   m_d.m_sizingtype = newVal;
 
    EnsureSize();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_FontColor(OLE_COLOR *pVal)
@@ -1120,11 +1104,11 @@ STDMETHODIMP Decal::put_FontColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_color = newVal;
+   m_d.m_color = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Font(IFontDisp **pVal)
@@ -1156,7 +1140,7 @@ STDMETHODIMP Decal::put_HasVerticalText(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fVerticalText = VBTOF(newVal);
+   m_d.m_fVerticalText = VBTOF(newVal);
 
    SetDirtyDraw();
 
@@ -1164,5 +1148,5 @@ STDMETHODIMP Decal::put_HasVerticalText(VARIANT_BOOL newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
