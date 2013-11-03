@@ -1994,7 +1994,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_VISUALS_SOUND       "Colors, Sound & Formatting"
+    IDS_VISUALS_SOUND       "Colors, Sound & Graphics"
 END
 
 STRINGTABLE 
