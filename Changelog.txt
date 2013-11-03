@@ -25,6 +25,7 @@ VP 9.1.6 Changelog
 - add sphere mapping to 3D mesh primitives
 - add static rotation for primitives (ObjRotX, ObjRotY, ObjRotZ) to change the basic orientation of a primitive. The old rotation/translation settings animate the primitive. 
   All rotation/translation settings can be used out of the script.
+- add per-table region updates and region optimization (-1 takes the default from the video preferences, 0 forces off, 1 forces on)
 
 VP 9.1.5 Changelog
 ------------------------

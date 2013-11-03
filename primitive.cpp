@@ -865,9 +865,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
       else
       {
          if( vertexBufferRegenerate )
-         {
             material.setColor( 1.0f, m_d.m_TopColor );
-         }
       }
 
       material.set();
@@ -878,37 +876,28 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
          RecalculateMatrices();
 
          if( m_d.use3DMesh )
-         {
             UpdateMesh();
-         }
          else
-         {
             CalculateBuiltin();
-         }
       }
-      if ( !m_d.useLighting )
+
+	  if ( !m_d.useLighting )
       {
          // disable lighting is a default setting
          // it could look odd if you switch lighting on on non mesh primitives
          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
       }
-      if( m_d.use3DMesh )
-      {
+      
+	  if( m_d.use3DMesh )
          pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexList, indexListSize, 0 );
-      }
       else
-      {
          pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, builtin_indices, m_d.m_DrawTexturesInside ? 24*m_d.m_Sides : 12*m_d.m_Sides, 0 );
-      }
 
       if ( !m_d.useLighting )
-      {
          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
-      }
-      if (pin)
-      {
+
+	  if (pin)
          pin->Unset(ePictureTexture);
-      }
    }
 }
 
@@ -916,9 +905,8 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
    if ( m_d.staticRendering )
-   {
       return;
-   }
+
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    RenderObject( pd3dDevice );
 }
@@ -936,9 +924,7 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
           objMesh = new Vertex3D_NoTex2[numVertices];         
    }
    else
-   {
       numVertices = m_d.m_Sides*4+2;
-   }
 
    if( !vertexBuffer )
    {
@@ -947,9 +933,7 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
    }
 
    if( !m_d.use3DMesh )
-   {
       CalculateBuiltinOriginal();
-   }
 
    g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
 }
