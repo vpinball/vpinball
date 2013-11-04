@@ -1573,7 +1573,6 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
          rgvbuf = new Vertex3D_NoTex2[numVertices];
          rgibuf = new WORD[(rampVertex-1)*6];
          invrgibuf = new WORD[(rampVertex-1)*6];
-
       }
    }
 

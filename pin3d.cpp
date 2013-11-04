@@ -60,6 +60,13 @@ Pin3D::~Pin3D()
 	SAFE_RELEASE(m_pD3D);
 
 	SAFE_RELEASE(m_pd3dDevice);
+
+	if(backgroundVBuffer)
+		backgroundVBuffer->release();
+	if(tableVBuffer)
+		tableVBuffer->release();
+	if(playfieldPolyIndices)
+		delete [] playfieldPolyIndices;
 }
 
 static HRESULT WINAPI EnumZBufferFormatsCallback( DDPIXELFORMAT * pddpf,
@@ -1268,6 +1275,8 @@ void Pin3D::InitPlayfieldGraphics()
 		}
 	}
 
+	if(playfieldPolyIndices)
+		delete [] playfieldPolyIndices;
 	playfieldPolyIndices = new WORD[TRIANGULATE_BACK*TRIANGULATE_BACK*6];
 	numPolys = TRIANGULATE_BACK*TRIANGULATE_BACK*6;
 	offs = 0;
