@@ -529,7 +529,6 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
 
 	  g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4, 0, vertexType, &vertexBuffer );
       NumVideoBytes += 4*sizeof(Vertex3D_NoTex2);
-
    }
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
