@@ -200,6 +200,7 @@ public:
    }
    ULONG release(void)
    {
-      return this->Release();
+      while ( this->Release()!=0 );
+      return 0;
    }
 };

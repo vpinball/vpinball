@@ -518,6 +518,41 @@ void Light::EndPlay()
    m_fLockedByLS = false;			//>>> added by chris
 
    IEditable::EndPlay();
+   if( customVBuffer )
+   {
+      customVBuffer->release();
+      customVBuffer=0;
+   }
+   if( normalVBuffer )
+   {
+      normalVBuffer->release();
+      normalVBuffer=0;
+   }
+   if( customMoverVBuffer )
+   {
+      customMoverVBuffer->release();
+      customMoverVBuffer=0;
+   }
+   if( normalMoverVBuffer )
+   {
+      normalMoverVBuffer->release();
+      normalMoverVBuffer=0;
+   }
+   if( staticCustomVertex )
+   {
+      delete [] staticCustomVertex;
+      staticCustomVertex=0;
+   }
+   if(customMoverVertex[0])
+   {
+      delete [] customMoverVertex[0];
+      customMoverVertex[0]=0;
+   }
+   if(customMoverVertex[1])
+   {
+      delete [] customMoverVertex[1];
+      customMoverVertex[1]=0;
+   }
 }
 
 void Light::ClearForOverwrite()

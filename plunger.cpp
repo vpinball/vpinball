@@ -20,7 +20,10 @@ Plunger::~Plunger()
       vertexBuffer = NULL;
    }
    if(verts)
+   {
 	   delete [] verts;
+      verts=0;
+   }
 }
 
 HRESULT Plunger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -245,7 +248,12 @@ void Plunger::EndPlay()
 		}
 
 	IEditable::EndPlay();
-	}
+   if(vertexBuffer)
+   {
+      vertexBuffer->release();
+      vertexBuffer = NULL;
+   }
+}
 
 void Plunger::SetObjectPos()
 	{
