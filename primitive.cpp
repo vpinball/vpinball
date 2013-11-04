@@ -1246,6 +1246,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if( id == FID(M3DX) )
    {
+      if( objMesh )
+      {
+         delete[] objMesh;
+		 objMesh = 0;
+      }
       if( objMeshOrg )
       {
          delete[] objMeshOrg;
