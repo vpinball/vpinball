@@ -380,6 +380,12 @@ void Trigger::EndPlay()
 {
    IEditable::EndPlay();
 
+   if( vertexBuffer )
+   {
+      vertexBuffer->release();
+      vertexBuffer=0;
+   }
+
    m_ptriggerhitcircle = NULL;
 }
 
