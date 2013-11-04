@@ -76,6 +76,9 @@ Light::Light() : m_lightcenter(this)
    m_d.m_szOffImage[0]=0;
    m_d.m_szOnImage[0]=0;
    m_d.m_OnImageIsLightMap=false;
+   staticCustomVertex = 0;
+   customMoverVertex[0] = 0;
+   customMoverVertex[1] = 0;
 }
 
 Light::~Light()
@@ -100,6 +103,12 @@ Light::~Light()
       normalMoverVBuffer->release();
       normalMoverVBuffer=0;
    }
+   if( staticCustomVertex )
+	   delete [] staticCustomVertex;
+   if(customMoverVertex[0])
+	   delete [] customMoverVertex[0];
+   if(customMoverVertex[1])
+	   delete [] customMoverVertex[1];
 }
 
 HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -572,6 +581,8 @@ void Light::PrepareStaticCustom()
    Vector<Triangle> vtri;
    PolygonToTriangles(rgv, &vpoly, &vtri);
    staticCustomVertexNum = vtri.Size()*3;
+   if(staticCustomVertex)
+	   delete [] staticCustomVertex;
    staticCustomVertex = new Vertex3D[staticCustomVertexNum];
    if ( customVBuffer==NULL )
    {
@@ -649,6 +660,10 @@ void Light::PrepareMoversCustom()
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
+   if(customMoverVertex[0])
+	   delete [] customMoverVertex[0];
+   if(customMoverVertex[1])
+	   delete [] customMoverVertex[1];
    customMoverVertexNum = vtri.Size()*3;
    customMoverVertex[0] = new Vertex3D[customMoverVertexNum];
    customMoverVertex[1] = new Vertex3D[customMoverVertexNum];
@@ -868,13 +883,13 @@ void Light::RenderStatic(const RenderDevice* _pd3dDevice)
       mtrl.set();
 
 	   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled()) 
-      {
+       {
 		   if(m_d.m_shape == ShapeCustom)
-         {
+           {
 			   for (int t=0; t<staticCustomVertexNum; t+=3)
-               pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, customVBuffer, t,3, (LPWORD)rgi0123, 3,0 );
+					pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, customVBuffer, t,3, (LPWORD)rgi0123, 3,0 );
 		   }
-         else
+           else
             pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, normalVBuffer, 0, 32, (LPWORD)rgiLightStatic1, 32, 0);
 	   }
 
@@ -1490,7 +1505,7 @@ STDMETHODIMP Light::put_Radius(float newVal)
 
    STARTUNDO
 
-      m_d.m_radius = newVal;
+   m_d.m_radius = newVal;
 
    STOPUNDO
 
@@ -1507,16 +1522,14 @@ STDMETHODIMP Light::get_State(LightState *pVal)
 STDMETHODIMP Light::put_State(LightState newVal)
 {
    STARTUNDO
-      // if the light is locked by the LS then just change the state and don't change the actual light
-      if (!m_fLockedByLS)
-      {
-         setLightState(newVal);
-      }
-      m_d.m_state = newVal;
+   // if the light is locked by the LS then just change the state and don't change the actual light
+   if (!m_fLockedByLS)
+      setLightState(newVal);
+   m_d.m_state = newVal;
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 void Light::DrawFrame(BOOL fOn)
