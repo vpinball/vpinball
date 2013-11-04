@@ -23,6 +23,7 @@ Pin3D::Pin3D()
 	m_pddsLightWhite = NULL;
 	backgroundVBuffer = NULL;
 	tableVBuffer = NULL;
+   playfieldPolyIndices = NULL;
 }
 
 Pin3D::~Pin3D()

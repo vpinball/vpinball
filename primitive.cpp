@@ -396,6 +396,12 @@ void Primitive::RecalculateMatrices()
 
 void Primitive::RecalculateVertices() 
 {
+   for( int i=0;i<verticesTop.Size();i++ )
+      delete verticesTop.ElementAt(i);
+
+   for( int i=0;i<verticesBottom.Size();i++ )
+      delete verticesBottom.ElementAt(i);
+
    verticesTop.RemoveAllElements();
    verticesBottom.RemoveAllElements();
 
