@@ -13,10 +13,13 @@ Spinner::Spinner()
    staticMaterial.setSpecular( 0.0f, 0.0f, 0.0f, 0.0f );
    staticMaterial.setEmissive( 0.0f, 0.0f, 0.0f, 0.0f );
    staticMaterial.setPower( 0.0f );
+   moverVertices = 0;
 }
 
 Spinner::~Spinner()
 {
+	if(moverVertices)
+		delete [] moverVertices;
 }
 
 HRESULT Spinner::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -460,6 +463,8 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
    frameCount=cframes;
+   if(moverVertices)
+	   delete [] moverVertices;
    moverVertices = new Vertex3D[8*frameCount];
    int ofs=0;
    for ( int i=0;i<cframes;i++,ofs+=8 )

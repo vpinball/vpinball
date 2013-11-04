@@ -13,10 +13,16 @@ Gate::Gate()
    m_d.m_fEnableLighting = fTrue;
    staticMaterial.setAmbient(0.0f, 0.6f, 0.6f, 0.6f );
    staticMaterial.setDiffuse(0.0f, 0.6f, 0.6f, 0.6f );
+   litVertices = 0;
+   nolitVertices = 0;
 }
 
 Gate::~Gate()
 {
+   if(litVertices)
+	   delete [] litVertices;
+   if(nolitVertices)
+	   delete [] nolitVertices;
 }
 
 HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -513,6 +519,11 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
 
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
+
+   if(litVertices)
+	   delete [] litVertices;
+   if(nolitVertices)
+	   delete [] nolitVertices;
 
    if( m_d.m_fEnableLighting )
    {

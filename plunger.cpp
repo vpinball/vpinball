@@ -9,6 +9,7 @@ Plunger::Plunger()
 {
 	m_phitplunger = NULL;
    vertexBuffer = NULL;
+   verts = 0;
 }
 
 Plunger::~Plunger()
@@ -18,6 +19,8 @@ Plunger::~Plunger()
       vertexBuffer->release();
       vertexBuffer = NULL;
    }
+   if(verts)
+	   delete [] verts;
 }
 
 HRESULT Plunger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -337,7 +340,8 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
       material.setPower( 8.0f );
    }
 
-
+   if(verts)
+	   delete [] verts;
    verts = new Vertices[cframes];
    if ( vertexBuffer == NULL )
    {
