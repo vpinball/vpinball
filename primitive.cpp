@@ -911,7 +911,7 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
    RenderObject( pd3dDevice );
 }
 
-extern bool loadWavefrontObj( char *filename, bool flipTv );
+extern bool loadWavefrontObj( char *filename, bool flipTv, bool convertToLeftHanded );
 extern Vertex3D_NoTex2 *GetVertices( int &numVertices );
 extern WORD *GetIndexList( int &indexListSize );
 
@@ -1352,12 +1352,21 @@ bool Primitive::BrowseFor3DMeshFile()
       vertexBuffer=0;
    }
    bool flipTV=false;
-   const int ans = MessageBox(g_pvp->m_hwnd, "Do you want to convert texture coordinates?", "Confirm", MB_YESNO | MB_DEFBUTTON2);
+   bool convertToLeftHanded=false;
+   int ans = MessageBox(g_pvp->m_hwnd, "Do you want to mirror the object?", "Convert coordinate system?", MB_YESNO | MB_DEFBUTTON2);
    if (ans == IDYES)
    {
-      flipTV=true;
+      convertToLeftHanded=true;
    }
-   if ( loadWavefrontObj(ofn.lpstrFile, flipTV) )
+   else
+   {
+      ans = MessageBox(g_pvp->m_hwnd, "Do you want to convert texture coordinates?", "Confirm", MB_YESNO | MB_DEFBUTTON2);
+      if (ans == IDYES)
+      {
+         flipTV=true;
+      }
+   }
+   if ( loadWavefrontObj(ofn.lpstrFile, flipTV, convertToLeftHanded) )
    {
       m_d.use3DMesh=true;
       objMeshOrg = GetVertices( numVertices );

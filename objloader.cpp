@@ -90,7 +90,7 @@ void NormalizeNormals()
    }
 }
 
-bool loadWavefrontObj( char *filename, bool flipTv )
+bool loadWavefrontObj( char *filename, bool flipTv, bool convertToLeftHanded )
 {
    FILE *f;
    fopen_s(&f,filename,"r");
@@ -119,13 +119,15 @@ bool loadWavefrontObj( char *filename, bool flipTv )
       {
          MyVector tmp;
          fscanf_s(f, "%f %f %f\n",&tmp.x, &tmp.y, &tmp.z );
+         if ( convertToLeftHanded )
+            tmp.z*=-1.0f;
          tmpVerts.push_back(tmp);
       }
       if( strcmp( lineHeader,"vt") == 0 )
       {
          MyVector tmp;
          fscanf_s(f, "%f %f\n",&tmp.x, &tmp.y );
-         if ( flipTv )
+         if ( flipTv || convertToLeftHanded )
          {
             tmp.y = 1.f-tmp.y;
          }
@@ -135,6 +137,8 @@ bool loadWavefrontObj( char *filename, bool flipTv )
       {
          MyVector tmp;
          fscanf_s(f, "%f %f %f\n",&tmp.x, &tmp.y, &tmp.z );
+         if ( convertToLeftHanded )
+            tmp.z*=-1;
          tmpNorms.push_back(tmp);
       }
       if( strcmp( lineHeader,"f") == 0 )
@@ -165,9 +169,20 @@ bool loadWavefrontObj( char *filename, bool flipTv )
          }
          MyPoly tmpFace;
          tmpFace.fi0 = tmpFace.fi1 = tmpFace.fi2 = -1;
-         int matches = fscanf_s(f, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &tmpFace.vi0, &tmpFace.ti0, &tmpFace.ni0,
-                                                                   &tmpFace.vi1, &tmpFace.ti1, &tmpFace.ni1,
-                                                                   &tmpFace.vi2, &tmpFace.ti2, &tmpFace.ni2);
+         int matches=0;
+         if ( convertToLeftHanded )
+         {
+            matches = fscanf_s(f, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &tmpFace.vi2, &tmpFace.ti2, &tmpFace.ni2,
+                                                                  &tmpFace.vi1, &tmpFace.ti1, &tmpFace.ni1,
+                                                                  &tmpFace.vi0, &tmpFace.ti0, &tmpFace.ni0);
+         }
+         else
+         {
+            matches = fscanf_s(f, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &tmpFace.vi0, &tmpFace.ti0, &tmpFace.ni0,
+                                                                  &tmpFace.vi1, &tmpFace.ti1, &tmpFace.ni1,
+                                                                  &tmpFace.vi2, &tmpFace.ti2, &tmpFace.ni2);
+         }
+
          if( matches!=9 )
          {
             ShowError("Face information incorrect! Each face needs vertices, UVs and normals!");
