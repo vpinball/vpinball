@@ -43,6 +43,7 @@ RenderDevice* RenderDevice::instance()
 
 void RenderDevice::SetMaterial( const THIS_ BaseMaterial * const _material )
 {
+#if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC)
    // this produces a crash if BaseMaterial isn't proper aligned to 16byte (in vbatest.cpp new/delete is overloaded for that)
    if(_mm_movemask_ps(_mm_and_ps(
 	  _mm_and_ps(_mm_cmpeq_ps(_material->d,materialStateCache.d),_mm_cmpeq_ps(_material->a,materialStateCache.a)),
@@ -56,6 +57,7 @@ void RenderDevice::SetMaterial( const THIS_ BaseMaterial * const _material )
    materialStateCache.e = _material->e;
    materialStateCache.s = _material->s;
    materialStateCache.power = _material->power;
+#endif
 
    dx7Device->SetMaterial( (LPD3DMATERIAL7)_material);
 }

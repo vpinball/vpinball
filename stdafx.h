@@ -1,5 +1,10 @@
 #pragma once
 
+//#define _CRTDBG_MAP_ALLOC
+#ifdef _CRTDBG_MAP_ALLOC
+ #include <crtdbg.h>
+#endif
+
 //#define DEBUG_XXX // helps to detect out-of-bounds access, needs to link dbghelp.lib then
 //#define SLINTF    // enable debug console output
 
