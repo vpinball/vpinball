@@ -10,11 +10,6 @@
 class IEditable;
 class PinTable;
 
-class IUndo
-	{
-public:
-	};
-
 class UndoRecord
 	{
 public:
