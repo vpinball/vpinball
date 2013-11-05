@@ -66,7 +66,6 @@ class PinTable :
 	// VBA does not need this interface for some reason
 	public IProvideClassInfo2Impl<&CLSID_Table, &DIID_ITableEvents, &LIBID_VBATESTLib>,
 	public ISelect,
-	//public IUndo,
 	public IScriptable,
 	public IScriptableHost,
 	public IEditable,

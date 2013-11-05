@@ -695,7 +695,6 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
 
       ppin3d->CreateAndCopySpriteBuffers( &m_phitspinner->m_spinneranim, pof );
       m_phitspinner->m_spinneranim.m_vddsFrame.AddElement(pof);
-
    }
 
    g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);

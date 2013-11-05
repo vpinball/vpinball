@@ -206,7 +206,7 @@ class EventProxyBase;
 // And talk to the player
 // Example:  Bumper is an IEditable and ISelect, but DragPoint is only ISelect.
 
-class IEditable : public IUndo
+class IEditable
 	{
 public:
 	IEditable();
