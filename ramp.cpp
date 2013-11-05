@@ -763,7 +763,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       }
    }
 
-   if (wallheightleft > 0)
+   if (wallheightleft > 0.f)
    {
       for (int i=0;i<(cvertex-1);i++)
       {
@@ -2313,7 +2313,7 @@ STDMETHODIMP Ramp::put_LeftWallHeight(float newVal)
 {
    STARTUNDO
 
-   m_d.m_leftwallheight = newVal < 0 ? 0 : newVal;
+   m_d.m_leftwallheight = newVal < 0.f ? 0.f : newVal;
    dynamicVertexBufferRegenerate = true;
 
    STOPUNDO
@@ -2332,7 +2332,7 @@ STDMETHODIMP Ramp::put_RightWallHeight(float newVal)
 {
    STARTUNDO
 
-   m_d.m_rightwallheight = newVal < 0 ? 0 : newVal;
+   m_d.m_rightwallheight = newVal < 0.f ? 0.f : newVal;
    dynamicVertexBufferRegenerate = true;
 
    STOPUNDO
@@ -2351,7 +2351,7 @@ STDMETHODIMP Ramp::put_VisibleLeftWallHeight(float newVal)
 {
    STARTUNDO
 
-   m_d.m_leftwallheightvisible = newVal < 0 ? 0 : newVal;
+   m_d.m_leftwallheightvisible = newVal < 0.f ? 0.f : newVal;
    dynamicVertexBufferRegenerate = true;
 
    STOPUNDO
@@ -2370,7 +2370,7 @@ STDMETHODIMP Ramp::put_VisibleRightWallHeight(float newVal)
 {
    STARTUNDO
 
-   m_d.m_rightwallheightvisible = newVal < 0 ? 0 : newVal;
+   m_d.m_rightwallheightvisible = newVal < 0.f ? 0.f : newVal;
    dynamicVertexBufferRegenerate = true;
 
    STOPUNDO
@@ -2408,7 +2408,7 @@ STDMETHODIMP Ramp::put_Friction(float newVal)
    STARTUNDO
 
    if (newVal > 1.0f) newVal = 1.0f;
-      else if (newVal < 0) newVal = 0;
+      else if (newVal < 0.f) newVal = 0.f;
  
    m_d.m_friction = newVal;
 
@@ -2542,11 +2542,11 @@ STDMETHODIMP Ramp::put_EnableLightingImage(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_enableLightingImage= VBTOF(newVal);
+   m_d.m_enableLightingImage= VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 // Always called each frame to render over everything else (along with primitives)

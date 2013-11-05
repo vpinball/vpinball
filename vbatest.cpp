@@ -14,7 +14,7 @@
 #include "VBATest_i.c"
 
 
-#ifndef DEBUG_XXX
+#if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC)
 void *operator new( const size_t size_req )
 {
    return _aligned_malloc( size_req, 16 );
@@ -337,6 +337,9 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
     _Module.Term();
     CoUninitialize();
+#ifdef _CRTDBG_MAP_ALLOC
+	_CrtDumpMemoryLeaks();
+#endif
 #ifdef DEBUG_XXX  //disable this in perference to DevPartner
 	_CrtSetDumpClient(MemLeakAlert);
 	_CrtDumpMemoryLeaks( );
