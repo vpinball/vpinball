@@ -63,6 +63,8 @@ PinInput::PinInput()
 	m_joycustom2 = 0;
 	m_joycustom3 = 0;
 	m_joycustom4 = 0;
+	m_joydebug = 0;
+	m_joymechtilt = 0;
 
 	firedautostart = 0;
 	firedautocoin = 0;
@@ -71,6 +73,8 @@ PinInput::PinInput()
 	started_stamp = 0;
 	pressed_start = 0;
 
+
+	
 	HRESULT hr;
 	int tmp;
 
@@ -190,8 +194,14 @@ PinInput::PinInput()
 
 	hr = GetRegInt("Player", "JoyCustom4Key", &tmp);
 	if (hr == S_OK) m_joycustom4key = tmp;
-}
 
+	hr = GetRegInt("Player", "JoyMechTiltKey", &tmp);
+	if (hr == S_OK) m_joymechtilt = tmp;
+
+	hr = GetRegInt("Player", "JoyDebugKey", &tmp);
+	if (hr == S_OK) m_joydebug = tmp;
+
+}
 
 PinInput::~PinInput()
 {
