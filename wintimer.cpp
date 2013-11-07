@@ -1,18 +1,14 @@
 #include "StdAfx.h"
 
 static unsigned int sTimerInit = 0;
-static double sTimerFreqDiv1000;
-static double sTimerFreqDiv1000000;
+static LARGE_INTEGER TimerFreq;
 static LARGE_INTEGER sTimerStart;
 
 void wintimer_init()
 {
 	sTimerInit = 1;
 
-    LARGE_INTEGER TimerFreq;
-	QueryPerformanceFrequency( &TimerFreq );
-	sTimerFreqDiv1000 = 1000.0/TimerFreq.QuadPart;
-	sTimerFreqDiv1000000 = 1000000.0/TimerFreq.QuadPart;
+    QueryPerformanceFrequency( &TimerFreq );
 	QueryPerformanceCounter( &sTimerStart );
 }
 
@@ -23,7 +19,8 @@ LONGLONG usec()
     LARGE_INTEGER TimerNow;
 	QueryPerformanceCounter( &TimerNow );
 	const LONGLONG cur_tick = TimerNow.QuadPart - sTimerStart.QuadPart;
-	return (LONGLONG)((double)cur_tick*sTimerFreqDiv1000000);
+	return (TimerFreq.QuadPart < 100000000ull) ? (LONGLONG)((unsigned long long)cur_tick*1000000ull/(unsigned long long)TimerFreq.QuadPart)
+		                                       : (LONGLONG)((unsigned long long)cur_tick*1000ull/((unsigned long long)TimerFreq.QuadPart/1000ull));
 }
 
 U32 msec()
@@ -33,5 +30,5 @@ U32 msec()
     LARGE_INTEGER TimerNow;
 	QueryPerformanceCounter( &TimerNow );
 	const LONGLONG cur_tick = TimerNow.QuadPart - sTimerStart.QuadPart;
-	return (U32)((double)cur_tick*sTimerFreqDiv1000);
+	return (U32)((unsigned long long)cur_tick*1000ull/(unsigned long long)TimerFreq.QuadPart);
 }
