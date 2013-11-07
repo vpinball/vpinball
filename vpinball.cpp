@@ -7052,6 +7052,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   HWND hwndControl;
                   int key;
                   int selected;
+                  int newvalue;
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO);
                   selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
@@ -7125,163 +7126,175 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyPMEnter", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy01 = GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO);
-                  selected = SendMessage(hwndJoy01, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyLFlipKey", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy02 = GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO);
-                  selected = SendMessage(hwndJoy02, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyRFlipKey", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy03 = GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO);
-                  selected = SendMessage(hwndJoy03, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyPlungerKey", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy04 = GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO);
-                  selected = SendMessage(hwndJoy04, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyAddCreditKey", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy05 = GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO);
-                  selected = SendMessage(hwndJoy05, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyAddCredit2Key", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy06 = GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO);
-                  selected = SendMessage(hwndJoy06, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyLMagnaSave", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy07 = GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO);
-                  selected = SendMessage(hwndJoy07, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyRMagnaSave", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy08 = GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO);
-                  selected = SendMessage(hwndJoy08, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyStartGameKey", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy09 = GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO);
-                  selected = SendMessage(hwndJoy09, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyExitGameKey", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy10 = GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO);
-                  selected = SendMessage(hwndJoy10, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyFrameCount", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy11 = GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO);
-                  selected = SendMessage(hwndJoy11, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyVolumeUp", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy12 = GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO);
-                  selected = SendMessage(hwndJoy12, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyVolumeDown", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy13 = GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO);
-                  selected = SendMessage(hwndJoy13, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyLTiltKey", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy14 = GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO);
-                  selected = SendMessage(hwndJoy14, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyCTiltKey", REG_DWORD, &selected, 4);
 
-                  HWND hwndJoy15 = GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO);
-                  selected = SendMessage(hwndJoy15, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 0; // assume no assignment as standard
                   SetRegValue("Player", "JoyRTiltKey", REG_DWORD, &selected, 4);
 
-                  HWND hwndPAxis = GetDlgItem(hwndDlg, IDC_PLUNGERAXIS);
-                  selected = SendMessage(hwndPAxis, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+                  if (selected == LB_ERR)
+                     selected = 0; // assume no assignment as standard
+                  SetRegValue("Player", "JoyMechTiltKey", REG_DWORD, &selected, 4);
+
+                  hwndControl = GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+                  if (selected == LB_ERR)
+                     selected = 0; // assume no assignment as standard
+                  SetRegValue("Player", "JoyDebugKey", REG_DWORD, &selected, 4);
+
+                  hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGERAXIS);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 3; // assume Z Axis as standard
                   SetRegValue("Player", "PlungerAxis", REG_DWORD, &selected, 4);
 
-                  HWND hwndLRAxis = GetDlgItem(hwndDlg, IDC_LRAXISCOMBO);
-                  selected = SendMessage(hwndLRAxis, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_LRAXISCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 1; // assume X Axis as standard
                   SetRegValue("Player", "LRAxis", REG_DWORD, &selected, 4);
 
-                  HWND hwndUDAxis = GetDlgItem(hwndDlg, IDC_UDAXISCOMBO);
-                  selected = SendMessage(hwndUDAxis, CB_GETCURSEL, 0, 0);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_UDAXISCOMBO);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 2; // assume Y Axis as standard
                   SetRegValue("Player", "UDAxis", REG_DWORD, &selected, 4);
 
-                  int lraxisgain = GetDlgItemInt(hwndDlg, IDC_LRAXISGAIN, NULL, TRUE);
-                  if (lraxisgain < 0)	{lraxisgain = 0;}
-                  SetRegValue("Player", "PBWAccelGainX", REG_DWORD, &lraxisgain, 4);
+                  newvalue = GetDlgItemInt(hwndDlg, IDC_LRAXISGAIN, NULL, TRUE);
+                  if (newvalue < 0)	{newvalue = 0;}
+                  SetRegValue("Player", "PBWAccelGainX", REG_DWORD, &newvalue, 4);
 
-                  int udaxisgain = GetDlgItemInt(hwndDlg, IDC_UDAXISGAIN, NULL, TRUE);
-                  if (udaxisgain < 0)	{udaxisgain = 0;}
-                  SetRegValue("Player", "PBWAccelGainY", REG_DWORD, &udaxisgain, 4);
+                  newvalue = GetDlgItemInt(hwndDlg, IDC_UDAXISGAIN, NULL, TRUE);
+                  if (newvalue < 0)	{newvalue = 0;}
+                  SetRegValue("Player", "PBWAccelGainY", REG_DWORD, &newvalue, 4);
 
-                  int deadzoneamt = GetDlgItemInt(hwndDlg, IDC_DEADZONEAMT, NULL, TRUE);
-                  if (deadzoneamt < 0)	{deadzoneamt = 0;}
-                  if (deadzoneamt > 100)	{deadzoneamt = 100;}
-                  SetRegValue("Player", "DeadZone", REG_DWORD, &deadzoneamt, 4);
+                  newvalue = GetDlgItemInt(hwndDlg, IDC_DEADZONEAMT, NULL, TRUE);
+                  if (newvalue < 0) {newvalue = 0;}
+                  if (newvalue > 100) {newvalue = 100;}
+                  SetRegValue("Player", "DeadZone", REG_DWORD, &newvalue, 4);
 
-                  HWND hwndDLayout = GetDlgItem(hwndDlg, IDC_DefaultLayout);
-                  int DLayout = SendMessage(hwndDLayout, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "PBWDefaultLayout", REG_DWORD, &DLayout, 4);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_DefaultLayout);
+                  selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "PBWDefaultLayout", REG_DWORD, &selected, 4);
 
-                  HWND hwndDEsc = GetDlgItem(hwndDlg, IDC_DisableESC_CB);
-                  int DEsc = SendMessage(hwndDEsc, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "DisableESC", REG_DWORD, &DEsc, 4);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_DisableESC_CB);
+                  selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "DisableESC", REG_DWORD, &selected, 4);
 
-                  HWND hwndLRFlip = GetDlgItem(hwndDlg, IDC_LRAXISFLIP);
-                  int reverse = SendMessage(hwndLRFlip, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "LRAxisFlip", REG_DWORD, &reverse, 4);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_LRAXISFLIP);
+                  selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "LRAxisFlip", REG_DWORD, &selected, 4);
 
-                  HWND hwndUDFlip = GetDlgItem(hwndDlg, IDC_UDAXISFLIP);
-                  reverse = SendMessage(hwndUDFlip, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "UDAxisFlip", REG_DWORD, &reverse, 4);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_UDAXISFLIP);
+                  selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "UDAxisFlip", REG_DWORD, &selected, 4);
 
-                  HWND hwndRPlunger = GetDlgItem(hwndDlg, IDC_ReversePlunger);
-                  reverse = SendMessage(hwndRPlunger, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "ReversePlungerAxis", REG_DWORD, &reverse, 4);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_ReversePlunger);
+                  selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "ReversePlungerAxis", REG_DWORD, &selected, 4);
 
-                  HWND hwndGAccel = GetDlgItem(hwndDlg, IDC_GLOBALACCEL);
-                  int gaccel = SendMessage(hwndGAccel, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "PBWEnabled", REG_DWORD, &gaccel, 4);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_GLOBALACCEL);
+                  selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "PBWEnabled", REG_DWORD, &selected, 4);
 
-                  HWND hwndGNMount = GetDlgItem(hwndDlg, IDC_GLOBALNMOUNT);
-                  int gnmount = SendMessage(hwndGNMount, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "PBWNormalMount", REG_DWORD, &gnmount, 4);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_GLOBALNMOUNT);
+                  selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "PBWNormalMount", REG_DWORD, &selected, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_CBGLOBALROTATION);
                   key = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "PBWRotationCB", REG_DWORD, &key, 4);
-                  int rotv = GetDlgItemInt(hwndDlg, IDC_GLOBALROTATION, NULL, TRUE);
-                  SetRegValue("Player", "PBWRotationValue", REG_DWORD, &rotv, 4);
+                  newvalue = GetDlgItemInt(hwndDlg, IDC_GLOBALROTATION, NULL, TRUE);
+                  SetRegValue("Player", "PBWRotationValue", REG_DWORD, &newvalue, 4);
                   if (key == 1)
                   {
-                     SetRegValue("Player", "PBWRotation", REG_DWORD, &rotv, 4);
+                     SetRegValue("Player", "PBWRotation", REG_DWORD, &newvalue, 4);
                   }
                   else
                   {
@@ -7294,13 +7307,13 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   hwndControl = GetDlgItem(hwndDlg, IDC_CBGLOBALTILT);
                   key = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "TiltSensCB", REG_DWORD, &key, 4);
-                  int tiltv = GetDlgItemInt(hwndDlg, IDC_GLOBALTILT, NULL, TRUE);
-                  if (tiltv < 0) tiltv = 0;
-                  if (tiltv > 1000) tiltv = 1000;
-                  SetRegValue("Player", "TiltSensValue", REG_DWORD, &tiltv, 4);
+                  newvalue = GetDlgItemInt(hwndDlg, IDC_GLOBALTILT, NULL, TRUE);
+				  if (newvalue < 0) {newvalue = 0;}
+				  if (newvalue > 1000) {newvalue = 1000;}
+                  SetRegValue("Player", "TiltSensValue", REG_DWORD, &newvalue, 4);
                   if (key == 1)
                   {
-                     SetRegValue("Player", "TiltSensitivity", REG_DWORD, &tiltv, 4);
+                     SetRegValue("Player", "TiltSensitivity", REG_DWORD, &newvalue, 4);
                   }
                   else
                   {
