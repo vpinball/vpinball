@@ -1233,6 +1233,8 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             PatBlt(hdc, 6 + offset, 6 + offset, pdis->rcItem.right - pdis->rcItem.left - 12, pdis->rcItem.bottom - pdis->rcItem.top - 12, PATCOPY);
 
             SelectObject(hdc, hbrushOld);
+
+			DeleteObject(hbrush);
          }
       }
       break;

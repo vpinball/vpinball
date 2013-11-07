@@ -1155,9 +1155,8 @@ void PinTable::Init(VPinball *pvp)
    CreateILockBytesOnHGlobal(hcopiedmem, TRUE, &pilb); // "TRUE" parm gives ownership of hcopiedmem to Global Object
 
    IStorage *pis;
-
    StgOpenStorageOnILockBytes(pilb,NULL,STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE,NULL,0,&pis);
-   pilb->Release();	// free pilb and hcopyiedmem
+   pilb->Release();	// free pilb and hcopiedmem
 
    m_glassheight = 210;
    m_tableheight = 0;
