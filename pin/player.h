@@ -84,7 +84,9 @@ public:
 	void UltraNudge();
 	void UltraNudgeX( const int x, const int j );
 	void UltraNudgeY( const int y, const int j );
+#if 0
 	int  UltraNudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
+#endif
 
 	void UltraPlunger();
 	void mechPlungerIn( const int z );		

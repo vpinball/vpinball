@@ -1537,6 +1537,7 @@ void Player::UltraNudgeY(const int y, const int j )
 #define GetX() (((F32)curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN))) // Get the -1.0f to +1.0f values from joystick input tilt sensor / ushock
 #define GetY() (((F32)curAccel_y[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN)))
 
+#if 0
 int Player::UltraNudgeGetTilt()
 {
 	static U32 last_tilt_time;
@@ -1569,6 +1570,7 @@ int Player::UltraNudgeGetTilt()
 
 	return 0;
 }
+#endif
 
 void Player::UltraNudge()	// called on every integral physics frame
 {	
@@ -1959,7 +1961,7 @@ void Player::UpdatePhysics()
 		// now get and/or calculate integral cycle physics events, digital filters, external acceleration inputs, etc.
 
 		const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
-		m_pininput.ProcessKeys(m_ptable, sim_msec);
+		m_pininput.ProcessKeys(m_ptable, sim_msec, cur_time/1000);
 
 		if(m_pininput.Pressed(PININ_ENABLE3D)) {
 			m_fStereo3Denabled = !m_fStereo3Denabled;

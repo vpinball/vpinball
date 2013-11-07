@@ -71,8 +71,6 @@ PinInput::PinInput()
 	started_stamp = 0;
 	pressed_start = 0;
 
-
-	
 	HRESULT hr;
 	int tmp;
 
@@ -192,8 +190,6 @@ PinInput::PinInput()
 
 	hr = GetRegInt("Player", "JoyCustom4Key", &tmp);
 	if (hr == S_OK) m_joycustom4key = tmp;
-
-
 }
 
 
@@ -254,7 +250,6 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
 	}
 
 #ifdef _DEBUG
-
 	if (pdidoi->guidType == GUID_XAxis)			{++nAxis;}
 	else if (pdidoi->guidType == GUID_YAxis)	{++nAxis;}
 	else if (pdidoi->guidType == GUID_ZAxis)	{++nAxis;}
@@ -266,7 +261,6 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
 	else if (pdidoi->guidType == GUID_Key)		{++nKey;}
 	else if (pdidoi->guidType == GUID_POV)		{++nPOVCount;}	
 	else if (pdidoi->guidType == GUID_Unknown)	{++nUnknown;}
-
 #endif
 
 	return DIENUM_CONTINUE;
@@ -288,8 +282,8 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	
 	HRESULT hr;
 	
-	hr = ppinput->m_pDI->CreateDeviceEx(lpddi->guidInstance, IID_IDirectInputDevice7
-										,(void **)&ppinput->m_pJoystick[ppinput->e_JoyCnt], NULL);
+	hr = ppinput->m_pDI->CreateDeviceEx(lpddi->guidInstance, IID_IDirectInputDevice7,
+		                                (void **)&ppinput->m_pJoystick[ppinput->e_JoyCnt], NULL);
 	if (FAILED(hr))
 		{
 		ppinput->m_pJoystick[ppinput->e_JoyCnt] = NULL; //make sure no garbage
@@ -355,37 +349,33 @@ int PinInput::QueueFull()
 	return ( ( ( m_head+1 ) % MAX_KEYQUEUE_SIZE ) == m_tail );
 }
 
-
 int PinInput::QueueEmpty()
 {
 	return m_head == m_tail;
 }
-
 
 void PinInput::AdvanceHead()
 {
 	m_head = ( m_head + 1 ) % MAX_KEYQUEUE_SIZE;
 }
 
-
 void PinInput::AdvanceTail()
 {
 	m_tail = ( m_tail + 1 ) % MAX_KEYQUEUE_SIZE;
 }
 
-
-void PinInput::PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data )
+void PinInput::PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data, const U32 curr_time_msec )
 {
 	if(( !data ) || QueueFull()) return;
 
 	m_diq[m_head] = *data;
-	m_diq[m_head].dwTimeStamp = msec();		//rewrite time from game start
+	m_diq[m_head].dwTimeStamp = curr_time_msec;		//rewrite time from game start
 	m_diq[m_head].dwSequence = app_data;
 	AdvanceHead();
 }
 
 
-DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 cur_sim_msec )
+DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 curr_sim_msec )
 {
 	if( QueueEmpty() ) return NULL;
 
@@ -393,10 +383,10 @@ DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 cur_sim_msec )
 
 	DIDEVICEOBJECTDATA *ptr = &m_diq[tmp];
 
-	const int diff = (int)( cur_sim_msec - ptr->dwTimeStamp );
+	const int diff = (int)( curr_sim_msec - ptr->dwTimeStamp );
 
 	// If we've simulated to or beyond the timestamp of when this control was received then process the control into the system
-	if( diff > 0 || cur_sim_msec == 0xffffffff )
+	if( diff > 0 || curr_sim_msec == 0xffffffff )
 	{
 		AdvanceTail();
 
@@ -408,7 +398,7 @@ DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 cur_sim_msec )
 
 //RLC combine these threads if the Xenon problem is smashed
 
-void PinInput::GetInputDeviceData() 
+void PinInput::GetInputDeviceData(const U32 curr_time_msec) 
 	{
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
 	DWORD dwElements;
@@ -417,7 +407,7 @@ void PinInput::GetInputDeviceData()
 
 	if(!s_pPinInput) return;	// bad pointer exit
 
-   hwnd = s_pPinInput->m_hwnd;
+	hwnd = s_pPinInput->m_hwnd;
 	{
 	const LPDIRECTINPUTDEVICE pkyb = s_pPinInput->m_pKeyboard;
 	if (pkyb) //keyboard
@@ -432,7 +422,7 @@ void PinInput::GetInputDeviceData()
 				{					
 				if (hwnd == GetForegroundWindow())
 					{
-					for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_KEYBOARD ); 
+					for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_KEYBOARD, curr_time_msec );
 					}
 				}
 			}
@@ -455,7 +445,7 @@ void PinInput::GetInputDeviceData()
 					{	
 					if (hwnd == GetForegroundWindow())
 						{														
-						for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_JOYSTICK(k)); 
+						for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_JOYSTICK(k), curr_time_msec); 
 						}
 					}	
 				}
@@ -669,7 +659,7 @@ int PinInput::started()
 
 // Adds coins that were passed in from the 
 // credit manager via a window message. 
-void PinInput::autocoin( const F32 secs )
+void PinInput::autocoin( const F32 secs, const U32 curr_time_msec )
 {
 	// Make sure we have a player.
 	if( !g_pplayer ) 
@@ -681,10 +671,9 @@ void PinInput::autocoin( const F32 secs )
 	// Check if we have coins.
 	if ( g_pplayer->Coins > 0 )
 	{
-		const U32 curr_time_msec = msec();
 		if( (firedautocoin > 0) &&														// Initialized.
 			(down == 1) &&																// Coin button is down.
-			((curr_time_msec - firedautocoin) > 100) )											// Coin button has been down for at least 0.10 seconds.
+			((curr_time_msec - firedautocoin) > 100) )									// Coin button has been down for at least 0.10 seconds.
 		{
 			// Release coin button.
 			firedautocoin = curr_time_msec;
@@ -711,13 +700,11 @@ void PinInput::autocoin( const F32 secs )
 			OutputDebugString( "**Autocoin: Press.\n" );
 		}
 	}
-
 }
 
 
-void PinInput::autostart( const F32 secs, const F32 retrysecs )
+void PinInput::autostart( const F32 secs, const F32 retrysecs, const U32 curr_time_msec )
 {
-
 //	if( !VPinball::m_open_minimized ) 
 //	{
 //		return;
@@ -731,8 +718,6 @@ void PinInput::autostart( const F32 secs, const F32 retrysecs )
 
 	static int down = 0;
 	static int didonce = 0;
-
-	const U32 curr_time_msec = msec();
 		
 	if( (firedautostart > 0) &&				// Initialized.
 		(down == 1) &&						// Start button is down.
@@ -768,7 +753,6 @@ void PinInput::autostart( const F32 secs, const F32 retrysecs )
 
 		OutputDebugString( "Autostart: Press.\n" );
 	}
-
 }
 
 #ifdef ULTRAPIN
@@ -791,10 +775,8 @@ static U32 exit_stamp;
 static U32 fastexit_stamp;
 static U32 first_stamp;
 
-void PinInput::button_exit( const F32 secs )
+void PinInput::button_exit( const F32 secs, const U32 curr_time_msec )
 {
-	const U32 curr_time_msec = msec();
-
 	if( !first_stamp ) 
 	{
 		first_stamp = curr_time_msec;
@@ -835,7 +817,7 @@ void PinInput::tilt_update()
 	if( updown != tmp ) FireKeyEvent( updown, g_pplayer->m_rgKeys[eCenterTiltKey] );
 }
 
-void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
+void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, const U32 curr_time_msec )
 {
 	m_ptable = ptable;
 
@@ -849,24 +831,22 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 		if( ptable->m_tblAutoStartEnabled ) 
 		{
 			// Update autostart.
-			autostart( ptable->m_tblAutoStart, ptable->m_tblAutoStartRetry );
+			autostart( ptable->m_tblAutoStart, ptable->m_tblAutoStartRetry, curr_time_msec );
 		}
 		
 		// Update autocoin (use autostart seconds to define when nvram is ready).
-		autocoin( ptable->m_tblAutoStart );
+		autocoin( ptable->m_tblAutoStart, curr_time_msec );
 
 #ifdef ULTRAPIN
 		// Update autoexit.
 		autoexit( ptable->m_timeout );
 #endif
 
-		button_exit( ptable->m_tblExitConfirm );
+		button_exit( ptable->m_tblExitConfirm, curr_time_msec );
 
 		// Update tilt.
 		tilt_update();
 	}
-
-	const U32 curr_time_msec = msec();
 
 	// Check if we've been initialized.
 	if( firedautostart == 0 )
@@ -880,10 +860,10 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 		firedautocoin = curr_time_msec;
 	}
 
-	GetInputDeviceData();
+	GetInputDeviceData(curr_time_msec);
 
 	const DIDEVICEOBJECTDATA * __restrict input;
-	while( ( input = GetTail( cur_sim_msec ) ) )
+	while( ( input = GetTail( curr_sim_msec ) ) )
 	{
 		if( input->dwSequence == APP_KEYBOARD )
 		{
@@ -2253,7 +2233,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 cur_sim_msec )
 									}
 									else
 									{
-									g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match joystick
+										g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match joystick
 									}
 								}
 								if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_ud_axis != 0))
