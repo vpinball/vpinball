@@ -31,6 +31,7 @@ void ShowErrorID(int id)
 
 void ExitApp()
 {
+#ifdef ULTRAPIN
 	bool	fe_shutdown_message_sent;
 	int		retries;
 	HWND	hFrontEndWnd;
@@ -59,6 +60,7 @@ void ExitApp()
 
 		retries++;
 	}
+#endif
 #ifdef DONGLE_SUPPORT
 	// Check if we have a dongle.
 	if ( get_dongle_status() == DONGLE_STATUS_OK )
@@ -78,5 +80,4 @@ void ExitApp()
 		exit(0);
 	}
 #endif
-
 }

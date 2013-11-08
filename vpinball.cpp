@@ -99,6 +99,7 @@ TBBUTTON const g_tbbuttonLayers[] = {
    {31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 8},
 };
 
+#ifdef VBA
 MiniBitmapID const g_rgminibitmap[] = {
    {L"{44D58C78-14BA-47F3-B82C-425853ABB698}", IDB_ICON_TRIGGER}, // Trigger
    {L"{A0B914E6-56A8-4CC1-A846-45FFF4D8CA17}", IDB_ICON_TIMER}, // Timer
@@ -106,6 +107,7 @@ MiniBitmapID const g_rgminibitmap[] = {
    {L"{31DD37E7-DB9B-4AB1-94C9-FAA06B252DFA}", IDB_ICON_LIGHT}, // Light
    NULL, -1,
 };
+#endif
 
 const int allLayers[8]=
 {
