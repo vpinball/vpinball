@@ -2184,7 +2184,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
          if(SUCCEEDED(hr = pstgData->CreateStream(L"Version", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
          {
             ULONG writ;
-            int version = CURRENT_FILE_FORMAT_VERSION; //0.3
+            int version = CURRENT_FILE_FORMAT_VERSION;
             CryptHashData(hch, (BYTE *)&version, sizeof(version), 0);
             pstmItem->Write(&version, sizeof(version), &writ);
             pstmItem->Release();
@@ -2322,7 +2322,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
       if(SUCCEEDED(hr = pstgData->CreateStream(L"MAC", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
       {
          ULONG writ;
-         //int version = CURRENT_FILE_FORMAT_VERSION; //0.3
+         //int version = CURRENT_FILE_FORMAT_VERSION;
          pstmItem->Write(hashval, hashlen, &writ);
          pstmItem->Release();
          pstmItem = NULL;
@@ -2884,7 +2884,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          int ctextures = 0;
          int cfonts = 0;
          int ccollection = 0;
-         int version = CURRENT_FILE_FORMAT_VERSION; //.3
+         int version = CURRENT_FILE_FORMAT_VERSION;
 
          if(SUCCEEDED(hr = pstgData->OpenStream(L"Version", NULL, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
          {

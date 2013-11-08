@@ -254,7 +254,7 @@ private:
 	float m_NudgeAccX;
 	float m_NudgeAccY;
 
-	int curPlunger;				// assume
+	int curPlunger;
 
 	HANDLE m_hSongCompletionEvent;
 

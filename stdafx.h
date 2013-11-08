@@ -80,7 +80,7 @@
 
 #define ADAPT_VSYNC_FACTOR 0.95 // safety factor where vsync is turned off (f.e. drops below 60fps * 0.95 = 57fps)
 
-#define PHYSICS_STEPTIME 10000	// usecs to go between each physics update
+#define PHYSICS_STEPTIME 10000	// usecs to go between each physics update //!! cannot be changed, otherwise physics are slower/faster
 
 #define ACCURATETIMERS 1
 

@@ -9,19 +9,22 @@
 #define BEYOND_FILE_FORMAT_VERSION 701
 
 #define	WINDOWMESSAGE_ADDUNITS			5150			// Message ID to request the game window to add units (coins).
-#define	WINDOWMESSAGE_FIRSTBALLEJECTED	37				// Message ID to indicate that the first ball has been ejected.
-#define	WINDOWMESSAGE_VPINBALLSHUTDOWN	86				// Message ID indicating that VPinball is shutting down.
+#ifdef ULTRAPIN
+ #define WINDOWMESSAGE_VPINBALLSHUTDOWN	86				// Message ID indicating that VPinball is shutting down. (sent to "Ultrapin (plfe)")
+#endif
 
 #define DEFAULT_SECURITY_LEVEL 0
 
 #define LAST_OPENED_TABLE_COUNT	8
 
+#ifdef VBA
 class MiniBitmapID
 	{
 public:
 	WCHAR *wzGUID;
 	int resid;
 	};
+#endif
 
 class PinTable;
 
@@ -51,7 +54,7 @@ public:
 	//STDMETHOD(get_Parent)(IVisualPinball** lppaReturn);
 
 	void ParseCommand(int code, HWND hwnd, int notify);
-   void setLayerStatus( int layerNumber );
+    void setLayerStatus( int layerNumber );
 
 	CComObject<PinTable> *GetActiveTable();
 	void InitTools();
