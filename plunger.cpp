@@ -336,11 +336,9 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
 
    if (m_d.m_type == PlungerTypeModern)
    {
-      material.setPower( 1.0f );
+      material.setColor( 1.f, m_d.m_color );
+      material.setPower( 8.0f );
       material.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
-      material.setEmissive( 1.0f, 0.0f, 0.0f, 0.05f );
-      material.setDiffuse( 1.0f, 0.9f, 0.9f, 0.9f );
-      material.setAmbient( 1.0f, 0.9f, 0.9f, 0.9f );
    } else 
    {
       material.setColor( 1.f, m_d.m_color );
