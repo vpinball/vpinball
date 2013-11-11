@@ -597,12 +597,12 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	float impulse = 1.005f + m_elasticity;		// hit on static, immovable flipper ... i.e on the stops
 	float obliquecorr = 0.0f;
 
-	if ((dot < -0.25f) && (g_pplayer->m_timeCur - m_last_hittime) > 250) // limit rate to 333 milliseconds per event 
+	if ((dot < -0.25f) && (g_pplayer->m_time_msec - m_last_hittime) > 250) // limit rate to 333 milliseconds per event 
 		{
 			flipperHit = (distance == 0.0f) ? -1.0f : -dot; // move event processing to end of collision handler...
 		}
 
-	m_last_hittime = g_pplayer->m_timeCur; // keep resetting until idle for 250 milliseconds
+	m_last_hittime = g_pplayer->m_time_msec; // keep resetting until idle for 250 milliseconds
 
 	if (distance > 0.f)	// recoil possible 
 		{			

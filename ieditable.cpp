@@ -89,7 +89,7 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 			{
 			if (fNew)
 				{
-				m_phittimer->m_nextfire = g_pplayer->m_timeCur + m_phittimer->m_interval;
+				m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
 				g_pplayer->m_vht.AddElement(m_phittimer);
 				}
 			else
@@ -115,7 +115,7 @@ HRESULT IEditable::put_TimerInterval(long newVal, int *pti)
 	if (m_phittimer)
 		{
 		m_phittimer->m_interval = newVal;
-		m_phittimer->m_nextfire = g_pplayer->m_timeCur + m_phittimer->m_interval;
+		m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
 		}
 
 	STOPUNDO

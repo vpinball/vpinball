@@ -249,7 +249,7 @@ float HitPlunger::HitTest(Ball * const pball, const float dtime, Vertex3Ds * con
 	// If we got here, then the ball is close enough to the plunger
 	// to where we should animate the button's light.
 	// Save the time so we can tell the button when to turn on/off.  
-	g_pplayer->LastPlungerHit = msec();
+	g_pplayer->m_LastPlungerHit = msec();
 
 	// We are close enable the plunger light.
 	Vertex3Ds hitnormal;

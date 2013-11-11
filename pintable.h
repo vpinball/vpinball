@@ -579,12 +579,12 @@ END_CONNECTION_POINT_MAP()
 	
 	int m_jolt_amount;
 	int m_tilt_amount;
-	int DeadZ;
+	int m_DeadZ;
 	int m_jolt_trigger_time;
 	int m_tilt_trigger_time;
 
-   short oldMousePosX;
-   short oldMousePosY;
+    short m_oldMousePosX;
+    short m_oldMousePosY;
 	BOOL m_fRenderShadows;
 	_protectionData	m_protectionData;
 
@@ -601,11 +601,11 @@ END_CONNECTION_POINT_MAP()
 
 	Vector< IEditable > m_vedit;
 //   Vector< IEditable > hiddenObjects[8];
-   Vector< IEditable > layer[8];
-   Vector<ISelect> allHitElements;
+    Vector< IEditable > layer[8];
+    Vector<ISelect> allHitElements;
       
-   bool activeLayers[8];
-   bool toggleAllLayers;
+    bool activeLayers[8];
+    bool toggleAllLayers;
 
 	Vector< Texture > m_vimage;
 

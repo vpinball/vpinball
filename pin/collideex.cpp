@@ -84,7 +84,7 @@ void BumperHitCircle::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 		if (m_pbumper->m_d.m_fFlashWhenHit)
 		{
-			m_bumperanim.m_TimeReset = g_pplayer->m_timeCur + 100;
+			m_bumperanim.m_TimeReset = g_pplayer->m_time_msec + 100;
 			m_bumperanim.m_fAutoTurnedOff = fTrue;
 		}
 
@@ -102,7 +102,7 @@ void BumperAnimObject::Check3D()
 		m_iframe = 1;
 		m_fInvalid = true;
 	}
-	else if (m_fAutoTurnedOff && (m_iframe == 1) && (m_TimeReset < g_pplayer->m_timeCur) && (m_iframe != m_iframedesired))
+	else if (m_fAutoTurnedOff && (m_iframe == 1) && (m_TimeReset < g_pplayer->m_time_msec) && (m_iframe != m_iframedesired))
 	{
 		m_iframe = m_iframedesired;
 		m_fInvalid = true;
@@ -198,13 +198,13 @@ void LineSegSlingshot::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 					if (threshold)
 					{
 						m_pfe->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
-						m_slingshotanim.m_TimeReset = g_pplayer->m_timeCur + 100;
+						m_slingshotanim.m_TimeReset = g_pplayer->m_time_msec + 100;
 					}
 				}
 				else if (dot <= -m_threshold)//legacy wall threshold
 				{
 					m_pfe->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
-					m_slingshotanim.m_TimeReset = g_pplayer->m_timeCur + 100;
+					m_slingshotanim.m_TimeReset = g_pplayer->m_time_msec + 100;
 				}
 			}
 		}
@@ -221,7 +221,7 @@ void SlingshotAnimObject::Check3D()
 		m_iframe = 1;
 		m_fInvalid = true;
 	}
-	else if ((m_iframe == 1) && (m_TimeReset < g_pplayer->m_timeCur))
+	else if ((m_iframe == 1) && (m_TimeReset < g_pplayer->m_time_msec))
 	{
 		m_iframe = 0;
 		m_fInvalid = true;

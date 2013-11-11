@@ -192,7 +192,7 @@ STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
 			{
 			if (fNew)
 				{
-				m_phittimer->m_nextfire = g_pplayer->m_timeCur + m_phittimer->m_interval;
+				m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
 				g_pplayer->m_vht.AddElement(m_phittimer);
 				}
 			else
@@ -225,7 +225,7 @@ STDMETHODIMP Timer::put_Interval(long newVal)
 	if (m_phittimer)
 		{
 		m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval;
-		m_phittimer->m_nextfire = g_pplayer->m_timeCur + m_phittimer->m_interval;
+		m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
 		}
 
 	STOPUNDO

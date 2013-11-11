@@ -555,7 +555,7 @@ STDMETHODIMP ScriptGlobalTable::get_GameTime(long *pVal)
       return E_POINTER;
    }
 
-   *pVal = g_pplayer->m_timeCur;
+   *pVal = g_pplayer->m_time_msec;
 
    return S_OK;
 }
@@ -1278,10 +1278,10 @@ void PinTable::InitPostLoad(VPinball *pvp)
    m_pcv->AddItem(m_psgt, fTrue);
    m_pcv->AddItem(m_pcv->m_pdm, fFalse);
 
-   const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
+   const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
    if (hr != S_OK)
    {
-      g_pplayer->DeadZ = 0;
+      g_pplayer->m_DeadZ = 0;
    }
 
    CreateTableWindow();
@@ -6031,20 +6031,20 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             si.cbSize = sizeof(SCROLLINFO);
             si.fMask = SIF_ALL;
             GetScrollInfo(hwnd, SB_HORZ, &si);
-            if ( pt->oldMousePosX>x )  pt->m_offsetx -= si.nPage/factorX;
-            if ( pt->oldMousePosX<x )  pt->m_offsetx += si.nPage/factorX;
+            if ( pt->m_oldMousePosX>x )  pt->m_offsetx -= si.nPage/factorX;
+            if ( pt->m_oldMousePosX<x )  pt->m_offsetx += si.nPage/factorX;
             GetScrollInfo(hwnd, SB_VERT, &si);
-            if ( pt->oldMousePosY>y )  pt->m_offsety -= si.nPage/factorY;
-            if ( pt->oldMousePosY<y )  pt->m_offsety += si.nPage/factorY;
+            if ( pt->m_oldMousePosY>y )  pt->m_offsety -= si.nPage/factorY;
+            if ( pt->m_oldMousePosY<y )  pt->m_offsety += si.nPage/factorY;
             pt->SetDirtyDraw();
             pt->SetMyScrollInfo();
-            pt->oldMousePosX=x;
-            pt->oldMousePosY=y;
+            pt->m_oldMousePosX=x;
+            pt->m_oldMousePosY=y;
             break;
          }
          pt->DoMouseMove(x,y);
-         pt->oldMousePosX=x;
-         pt->oldMousePosY=y;
+         pt->m_oldMousePosX=x;
+         pt->m_oldMousePosY=y;
       }
       break;
 
@@ -8672,9 +8672,9 @@ STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
 ///////////////////////////////////////////////////////////
 STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
 {
-   const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
-   if (hr != S_OK)	DeadZ = 0; // The default
-   *pVal=DeadZ;
+   const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
+   if (hr != S_OK)	m_DeadZ = 0; // The default
+   *pVal=m_DeadZ;
 
    return S_OK;
 }
@@ -8683,17 +8683,17 @@ STDMETHODIMP PinTable::put_DeadSlider(int newVal)
 {
    if (newVal>100) newVal=100;
    if (newVal<0) newVal=0;
-   DeadZ=newVal;
+   m_DeadZ=newVal;
 
-   SetRegValue("Player", "DeadZone", REG_DWORD, &DeadZ, 4);
-   if (g_pplayer) DeadZ = (int)newVal; //VB Script
+   SetRegValue("Player", "DeadZone", REG_DWORD, &m_DeadZ, 4);
+   if (g_pplayer) m_DeadZ = (int)newVal; //VB Script
    else
    {						//VP Editor		
-      const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
+      const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
       if (hr != S_OK)
       {
          STARTUNDO
-            DeadZ = newVal;
+         m_DeadZ = newVal;
          STOPUNDO
       }
    }
@@ -8702,13 +8702,13 @@ STDMETHODIMP PinTable::put_DeadSlider(int newVal)
 
 STDMETHODIMP PinTable::get_DeadZone(int *pVal)
 {
-   const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
-   if (hr != S_OK) DeadZ = 0;
+   const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
+   if (hr != S_OK) m_DeadZ = 0;
 
    if (*pVal>100) *pVal=100;
    if (*pVal<0) *pVal=0;
 
-   *pVal = (g_pplayer) ? DeadZ : DeadZ; //VB Script or VP Editor
+   *pVal = (g_pplayer) ? m_DeadZ : m_DeadZ; //VB Script or VP Editor
 
    return S_OK;
 }
@@ -8719,14 +8719,14 @@ STDMETHODIMP PinTable::put_DeadZone(int newVal)
    if (newVal<0) newVal=0;
 
    SetRegValue("Player", "DeadZone", REG_DWORD, &newVal, 4);
-   if (g_pplayer) DeadZ = (int)newVal; //VB Script
+   if (g_pplayer) m_DeadZ = (int)newVal; //VB Script
    else
    {						//VP Editor		
-      const HRESULT hr = GetRegInt("Player", "DeadZone", &DeadZ);
+      const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
       if (hr != S_OK)
       {
          STARTUNDO
-            DeadZ = newVal;
+         m_DeadZ = newVal;
          STOPUNDO
       }
    }

@@ -576,7 +576,7 @@ void DispReel::RenderMovers(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
     // set any defaults for the game rendering
-    m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
+    m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
     m_fforceupdate = false;
 
     m_pobjframe = GetPTable()->GetEMReelsEnabled() ? (new ObjFrame()) : NULL;
@@ -985,9 +985,9 @@ bool DispReel::RenderAnimation()
     bool    rc = false;
     OLECHAR mySound[256];
 
-    if (g_pplayer->m_timeCur >= m_timenextupdate)
+    if (g_pplayer->m_time_msec >= m_timenextupdate)
 	{
-        m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
+        m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
 
         // work out the roll over values
         const int OverflowValue = m_d.m_digitrange;
@@ -1677,7 +1677,7 @@ STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
     
 	m_d.m_updateinterval = max(5, newVal);
 	if (g_pplayer)
-		m_timenextupdate = g_pplayer->m_timeCur + m_d.m_updateinterval;
+		m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
     
 	STOPUNDO
 	
@@ -1782,7 +1782,7 @@ STDMETHODIMP DispReel::SetValue(long Value)
 
     // force a immediate screen update
     m_fforceupdate = true;
-	m_timenextupdate = g_pplayer->m_timeCur;
+	m_timenextupdate = g_pplayer->m_time_msec;
 
     return S_OK;
 }

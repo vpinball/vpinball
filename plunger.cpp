@@ -692,11 +692,11 @@ STDMETHODIMP Plunger::MotionDevice(int *pVal)
 
 STDMETHODIMP Plunger::Position(int *pVal)
 {
-//	*pVal=curMechPlungerPos;
+//	*pVal=m_curMechPlungerPos;
 	if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_PBWIZARD)
 	{
 		const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-		float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+		float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 		tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 		*pVal = (int)(tmp*(float)(1.0/0.04));
 	}
@@ -704,7 +704,7 @@ STDMETHODIMP Plunger::Position(int *pVal)
 	if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_ULTRACADE)
 	{
 		const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-		float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+		float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 		tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 		*pVal = (int)(tmp*(float)(1.0/0.04));
 	}
@@ -712,7 +712,7 @@ STDMETHODIMP Plunger::Position(int *pVal)
 	if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_SIDEWINDER)
 	{
 		const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-		float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+		float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 		tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 		*pVal = (int)(tmp*(float)(1.0/0.04));
 	}
@@ -720,7 +720,7 @@ STDMETHODIMP Plunger::Position(int *pVal)
 	if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_VIRTUAPIN)
 	{
 		const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-		float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+		float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 		tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 		*pVal = (int)(tmp*(float)(1.0/0.04));
 	}
@@ -728,7 +728,7 @@ STDMETHODIMP Plunger::Position(int *pVal)
 	if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_GENERIC)
 	{
 		const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-		float tmp = (g_pplayer->curMechPlungerPos < 0.f) ? g_pplayer->curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+		float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
 		tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 		*pVal = (int)(tmp*(float)(1.0/0.04));
 	}

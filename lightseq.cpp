@@ -391,11 +391,11 @@ bool LightSeq::RenderAnimation()
 {
 	if (m_playInProgress)
 	{
-	    if (g_pplayer->m_timeCur >= m_timeNextUpdate)
+	    if (g_pplayer->m_time_msec >= m_timeNextUpdate)
 		{
 			if (m_pauseInProgress == false)
 			{
-	    	    m_timeNextUpdate = g_pplayer->m_timeCur + m_updateRate;
+	    	    m_timeNextUpdate = g_pplayer->m_time_msec + m_updateRate;
 				// process the head tracers
 				const bool th1finished = ProcessTracer(&m_th1, LightStateOn);
 				const bool th2finished = ProcessTracer(&m_th2, LightStateOn);
@@ -408,7 +408,7 @@ bool LightSeq::RenderAnimation()
 				{
 					// the sequence has finished, paused for the specified value or a single interval
 					// (bit of a breather or load balance)
-					m_timeNextUpdate = g_pplayer->m_timeCur + max(m_updateRate, m_pauseValue);
+					m_timeNextUpdate = g_pplayer->m_time_msec + max(m_updateRate, m_pauseValue);
 					m_pauseInProgress = true;
 				}
 			}
@@ -1591,7 +1591,7 @@ void LightSeq::SetupTracers(const SequencerState Animation, long TailLength, lon
 		memcpy(&m_th2, &temp,  sizeof(_tracer));
 	}
 
-	m_timeNextUpdate = g_pplayer->m_timeCur + m_updateRate;
+	m_timeNextUpdate = g_pplayer->m_time_msec + m_updateRate;
 	m_playInProgress = true;
 }
 
@@ -1613,12 +1613,12 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 	   			{
 	   				case 2:
 	   					SetAllLightsToState(LightStateOn);
-	   		    	    m_timeNextUpdate = g_pplayer->m_timeCur + m_pauseValue;
+	   		    	    m_timeNextUpdate = g_pplayer->m_time_msec + m_pauseValue;
 	   					break;
 
 	   				case 1:
 	   					SetAllLightsToState(LightStateOff);
-	   		    	    m_timeNextUpdate = g_pplayer->m_timeCur + m_pauseValue;
+	   		    	    m_timeNextUpdate = g_pplayer->m_time_msec + m_pauseValue;
 	   					break;
 
 	   				case 0:
