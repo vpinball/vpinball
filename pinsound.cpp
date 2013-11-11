@@ -181,7 +181,7 @@ HRESULT PinDirectSound::CreateStaticBuffer(TCHAR* strFileName, PinSound *pps)
     DSBUFFERDESC dsbd;
     ZeroMemory( &dsbd, sizeof(DSBUFFERDESC) );
     dsbd.dwSize        = sizeof(DSBUFFERDESC);
-    dsbd.dwFlags       = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME;
+    dsbd.dwFlags       = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
     dsbd.dwBufferBytes = m_pWaveSoundRead->m_ckIn.cksize;
     dsbd.lpwfxFormat   = m_pWaveSoundRead->m_pwfx;
 
@@ -267,7 +267,7 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound *pps, WAVEFORMATEX *pwfx
 	DSBUFFERDESC dsbd;
     ZeroMemory( &dsbd, sizeof(DSBUFFERDESC) );
     dsbd.dwSize        = sizeof(DSBUFFERDESC);
-    dsbd.dwFlags       = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME;
+    dsbd.dwFlags       = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
     dsbd.dwBufferBytes = pps->m_cdata;
     dsbd.lpwfxFormat   = pwfx;
 
