@@ -65,9 +65,9 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume)
+STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume, float randompitch)
 {
-   if (g_pplayer && g_pplayer->m_fPlaySound) m_pt->PlaySound(bstr, LoopCount, volume);
+   if (g_pplayer && g_pplayer->m_fPlaySound) m_pt->PlaySound(bstr, LoopCount, volume, randompitch);
 
    return S_OK;
 }
@@ -6367,7 +6367,7 @@ HRESULT PinTable::StopSound(BSTR Sound)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume)
+STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float randompitch)
 {
    MAKE_ANSIPTR_FROMWIDE(szName, bstr);
    CharLowerBuff(szName, lstrlen(szName));
@@ -6405,6 +6405,14 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume)
    if (ppsc->m_pDSBuffer)
    {
       ppsc->m_pDSBuffer->SetVolume(decibelvolume);
+	  if(randompitch > 0.f)
+	  {
+		  DWORD freq;
+		  pdsb->GetFrequency(&freq);
+		  const float rndh = rand_mt_01();
+		  const float rndl = rand_mt_01();
+		  ppsc->m_pDSBuffer->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
+	  }
 
       ppsc->m_pDSBuffer->Play(0,0,flags);
       ppsc->m_ppsOriginal = m_vsound.ElementAt(i);
