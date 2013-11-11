@@ -227,7 +227,7 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    if (m_d.m_state == LightStateBlinking)
    {
       g_pplayer->m_vblink.AddElement((IBlink *)this);
-      m_timenextblink = g_pplayer->m_timeCur + m_blinkinterval;
+      m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
    }
    m_iblinkframe = 0;
 }
@@ -1048,7 +1048,7 @@ STDMETHODIMP Bumper::put_BlinkPattern(BSTR newVal)
       const char cnew = m_rgblinkpattern[m_iblinkframe];
       if (cold != cnew)
           DrawFrame(cnew == '1');
-      m_timenextblink = g_pplayer->m_timeCur + m_blinkinterval;
+      m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
    }
 
    STOPUNDO
@@ -1070,7 +1070,7 @@ STDMETHODIMP Bumper::put_BlinkInterval(long newVal)
    m_blinkinterval = newVal;
 
    if (g_pplayer)
-      m_timenextblink = g_pplayer->m_timeCur + m_blinkinterval;
+      m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
 
    STOPUNDO
 
@@ -1189,7 +1189,7 @@ void Bumper::setLightState(const LightState newVal)
          {
             // must be blinking now
             g_pplayer->m_vblink.AddElement((IBlink *)this);
-            m_timenextblink = g_pplayer->m_timeCur; // Start pattern right away // + m_d.m_blinkinterval;
+            m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;
          }
 
          switch (m_realState)

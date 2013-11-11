@@ -48,7 +48,7 @@ public:
 	void AdvanceTail (); // called from thread sync'd with visuals as each keystroke is applied to the sim
 
 	void PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data, const U32 curr_time_msec ); // called from sep thread
-	DIDEVICEOBJECTDATA *GetTail  ( const U32 curr_sim_msec ); // called from visually sync'd main thread
+	const DIDEVICEOBJECTDATA *GetTail ( const U32 curr_sim_msec ); // called from visually sync'd main thread
 
 	// Process keys up until msec_age ago .. don't consider keys that are too new for the current simulation step!
     void autostart( const F32 secs, const F32 retrysecs, const U32 curr_time_msec );

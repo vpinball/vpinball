@@ -74,7 +74,6 @@ PinInput::PinInput()
 	pressed_start = 0;
 
 
-	
 	HRESULT hr;
 	int tmp;
 
@@ -200,7 +199,6 @@ PinInput::PinInput()
 
 	hr = GetRegInt("Player", "JoyDebugKey", &tmp);
 	if (hr == S_OK) m_joydebug = tmp;
-
 }
 
 PinInput::~PinInput()
@@ -244,7 +242,7 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
 
 		// Set the range for the axis
 		if( FAILED( ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetProperty( DIPROP_RANGE, &diprg.diph ) ) ) 
-			{return DIENUM_STOP;}   
+			return DIENUM_STOP;   
 
 		// set DEADBAND to Zero
 		DIPROPDWORD dipdw;
@@ -252,11 +250,11 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
 		dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
 		dipdw.diph.dwObj		= pdidoi->dwType; // Specify the enumerated axis
 		dipdw.diph.dwHow		= DIPH_BYID;
-		dipdw.dwData			= 30;//g_pplayer->DeadZ; //allows for 0-100% deadzone in 1% increments
+		dipdw.dwData			= 30;//g_pplayer->m_DeadZ; //allows for 0-100% deadzone in 1% increments
  
 		// Set the deadzone
 		if(FAILED(ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetProperty(DIPROP_DEADZONE, &dipdw.diph)))
-			{return DIENUM_STOP;}
+			return DIENUM_STOP;
 	}
 
 #ifdef _DEBUG
@@ -280,9 +278,8 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
 // Callback for enumerating joysticks (gamepads)
 
 BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
-	{
+{
 	DIPROPSTRING dstr;
-	
 	dstr.diph.dwSize = sizeof(DIPROPSTRING);
 	dstr.diph.dwHeaderSize = sizeof(DIPROPHEADER);  
 	dstr.diph.dwObj = 0;
@@ -352,7 +349,7 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	if(++(ppinput->e_JoyCnt) < PININ_JOYMXCNT) return DIENUM_CONTINUE;
 
 	return DIENUM_STOP;			//allocation for only PININ_JOYMXCNT joysticks, ignore any others
-	}
+}
 
 int PinInput::QueueFull()
 {
@@ -381,22 +378,18 @@ void PinInput::PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int ap
 	m_diq[m_head] = *data;
 	m_diq[m_head].dwTimeStamp = curr_time_msec;		//rewrite time from game start
 	m_diq[m_head].dwSequence = app_data;
+
 	AdvanceHead();
 }
 
-
-DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 curr_sim_msec )
+const DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 curr_sim_msec )
 {
 	if( QueueEmpty() ) return NULL;
 
-	const int tmp = m_tail;
-
-	DIDEVICEOBJECTDATA *ptr = &m_diq[tmp];
-
-	const int diff = (int)( curr_sim_msec - ptr->dwTimeStamp );
+	const DIDEVICEOBJECTDATA * const ptr = &m_diq[m_tail];
 
 	// If we've simulated to or beyond the timestamp of when this control was received then process the control into the system
-	if( diff > 0 || curr_sim_msec == 0xffffffff )
+	if( curr_sim_msec >= ptr->dwTimeStamp ) //!! disable to save a bit of lag?
 	{
 		AdvanceTail();
 
@@ -409,23 +402,19 @@ DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 curr_sim_msec )
 //RLC combine these threads if the Xenon problem is smashed
 
 void PinInput::GetInputDeviceData(const U32 curr_time_msec) 
-	{
-	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
-	DWORD dwElements;
-	HRESULT hr;		
-	HWND hwnd;// = s_pPinInput->m_hwnd;
-
+{
 	if(!s_pPinInput) return;	// bad pointer exit
 
-	hwnd = s_pPinInput->m_hwnd;
-	{
+	const HWND hwnd = s_pPinInput->m_hwnd;
+	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
+
 	const LPDIRECTINPUTDEVICE pkyb = s_pPinInput->m_pKeyboard;
 	if (pkyb) //keyboard
 		{	
-		hr = pkyb->Acquire();				// try to Acquire keyboard input
+		HRESULT hr = pkyb->Acquire();				// try to Acquire keyboard input
 		if (hr == S_OK || hr == S_FALSE)
 			{
-			dwElements = INPUT_BUFFER_SIZE;
+			DWORD dwElements = INPUT_BUFFER_SIZE;
 			hr = pkyb->GetDeviceData( sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0 );				
 			
 			if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
@@ -445,72 +434,68 @@ void PinInput::GetInputDeviceData(const U32 curr_time_msec)
 		const LPDIRECTINPUTDEVICE pjoy = s_pPinInput->m_pJoystick[k];
 		if (pjoy)
 			{				
-			hr = pjoy->Acquire();							// try to Acquire joustick input
+			HRESULT hr = pjoy->Acquire();							// try to Acquire joustick input
 			if (hr == S_OK || hr == S_FALSE)
 				{					
-				dwElements = INPUT_BUFFER_SIZE;
-				hr = pjoy->GetDeviceData( sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);						
+				DWORD dwElements = INPUT_BUFFER_SIZE;
+				hr = pjoy->GetDeviceData( sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0 );						
 
 				if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
 					{	
 					if (hwnd == GetForegroundWindow())
 						{														
-						for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_JOYSTICK(k), curr_time_msec); 
+						for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_JOYSTICK(k), curr_time_msec ); 
 						}
 					}	
 				}
 			}
 		}	
-	}
-	}
+}
 
 void PinInput::Init(const HWND hwnd)
-	{
-	HRESULT hr;
-
+{
 	m_hwnd = hwnd;
 
+	HRESULT hr;
 	hr = DirectInputCreateEx(g_hinst, DIRECTINPUT_VERSION, IID_IDirectInput7, (void **)&m_pDI, NULL);
 
-		{
-		// Create keyboard device
-		hr = m_pDI->CreateDevice( GUID_SysKeyboard, &m_pKeyboard, NULL); //Standard Keyboard device
+	// Create keyboard device
+	hr = m_pDI->CreateDevice( GUID_SysKeyboard, &m_pKeyboard, NULL); //Standard Keyboard device
 
-		hr = m_pKeyboard->SetDataFormat( &c_dfDIKeyboard );
+	hr = m_pKeyboard->SetDataFormat( &c_dfDIKeyboard );
 
-		hr = m_pKeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
-		
-		DIPROPDWORD dipdw;
-		dipdw.diph.dwSize = sizeof(DIPROPDWORD);
-		dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-		dipdw.diph.dwObj = 0;
-		dipdw.diph.dwHow = DIPH_DEVICE;
-		dipdw.dwData = INPUT_BUFFER_SIZE;
+	hr = m_pKeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 
-		hr = m_pKeyboard->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
+	DIPROPDWORD dipdw;
+	dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+	dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+	dipdw.diph.dwObj = 0;
+	dipdw.diph.dwHow = DIPH_DEVICE;
+	dipdw.dwData = INPUT_BUFFER_SIZE;
 
-		/*  Disable Sticky Keys */
+	hr = m_pKeyboard->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
 
-		// get the current state
-		m_StartupStickyKeys.cbSize = sizeof(STICKYKEYS);
-		SystemParametersInfo(SPI_GETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, 0);
+	/* Disable Sticky Keys */
 
-		// turn it all OFF
-		STICKYKEYS newStickyKeys;
-		ZeroMemory(&newStickyKeys,sizeof(STICKYKEYS));
-		newStickyKeys.cbSize = sizeof(STICKYKEYS);
-		newStickyKeys.dwFlags = 0;
-		SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &newStickyKeys, SPIF_SENDCHANGE);
-		}
+	// get the current state
+	m_StartupStickyKeys.cbSize = sizeof(STICKYKEYS);
+	SystemParametersInfo(SPI_GETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, 0);
 
-		uShockDevice = -1;
-		uShockType = 0;
+	// turn it all OFF
+	STICKYKEYS newStickyKeys;
+	ZeroMemory(&newStickyKeys,sizeof(STICKYKEYS));
+	newStickyKeys.cbSize = sizeof(STICKYKEYS);
+	newStickyKeys.dwFlags = 0;
+	SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &newStickyKeys, SPIF_SENDCHANGE);
 
-		m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);//enum Joysticks
+	uShockDevice = -1;
+	uShockType = 0;
 
-		//InputControlRun = 1;	//0== stalled, 1==run,  0 < shutting down, 2==terminated
-		//_beginthread( InputControlProcess, 0, NULL );
-	}
+	m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);//enum Joysticks
+
+	//InputControlRun = 1;	//0== stalled, 1==run,  0 < shutting down, 2==terminated
+	//_beginthread( InputControlProcess, 0, NULL );
+}
 
 
 void PinInput::UnInit()
@@ -533,8 +518,8 @@ void PinInput::UnInit()
 		m_pKeyboard = NULL;
 		}
 
-		// restore the state of the sticky keys
-		SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, SPIF_SENDCHANGE);
+	// restore the state of the sticky keys
+	SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, SPIF_SENDCHANGE);
 
 	for (int k = 0; k < e_JoyCnt; ++k)
 		{
@@ -585,7 +570,7 @@ void PinInput::FireKeyEvent( const int dispid, const int key )
 	else
 	{
 		// Normal left & right input.
-			if( mkey == g_pplayer->m_rgKeys[eLeftFlipperKey]  ) val |= PININ_LEFT;
+			 if( mkey == g_pplayer->m_rgKeys[eLeftFlipperKey]  ) val |= PININ_LEFT;
 		else if( mkey == g_pplayer->m_rgKeys[eRightFlipperKey] ) val |= PININ_RIGHT;
 		else if( mkey == g_pplayer->m_rgKeys[eLeftMagnaSave]   ) val |= PININ_LEFT2;
 		else if( mkey == g_pplayer->m_rgKeys[eRightMagnaSave]  ) val |= PININ_RIGHT2;
@@ -679,7 +664,7 @@ void PinInput::autocoin( const F32 secs, const U32 curr_time_msec )
 	static int didonce = 0;
 
 	// Check if we have coins.
-	if ( g_pplayer->Coins > 0 )
+	if ( g_pplayer->m_Coins > 0 )
 	{
 		if( (firedautocoin > 0) &&														// Initialized.
 			(down == 1) &&																// Coin button is down.
@@ -691,7 +676,7 @@ void PinInput::autocoin( const F32 secs, const U32 curr_time_msec )
 			FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eAddCreditKey] );
 
 			// Update the counter.
-			g_pplayer->Coins--;
+			g_pplayer->m_Coins--;
 
 			OutputDebugString( "**Autocoin: Release.\n" );
 		}
@@ -699,7 +684,7 @@ void PinInput::autocoin( const F32 secs, const U32 curr_time_msec )
 		// Logic to do "autocoin"
 		if( (down == 0) &&																// Coin button is up.
 			(((didonce == 1) && ((curr_time_msec - firedautocoin) > 500))) ||					// Last attempt was at least 0.50 seconds ago.
-			((didonce == 0) && ((curr_time_msec - firedautocoin) > ((U32)(secs*1000.0f)))) )	// Never attempted and at least autostart seconds have elapsed.
+			 ((didonce == 0) && ((curr_time_msec - firedautocoin) > ((U32)(secs*1000.0f)))) )	// Never attempted and at least autostart seconds have elapsed.
 		{
 			// Press coin button.
 			firedautocoin = curr_time_msec;
@@ -744,11 +729,11 @@ void PinInput::autostart( const F32 secs, const F32 retrysecs, const U32 curr_ti
 	// Logic to do "autostart"
 	if( (down == 0) &&																					// Start button is up.
 		(((didonce == 1) && !started() && ((curr_time_msec - firedautostart) > ((U32)(retrysecs*1000.0f))))) ||	// Not started and last attempt was at least AutoStartRetry seconds ago.
-		((didonce == 0) && ((curr_time_msec - firedautostart) > ((U32)(secs*1000.0f)))) )						// Never attempted and autostart time has elapsed.
+		 ((didonce == 0) && ((curr_time_msec - firedautostart) > ((U32)(secs*1000.0f)))) )						// Never attempted and autostart time has elapsed.
 	{
 		// Check if we haven't accounted for the play.
-		if ( (didonce == 0) &&								// Never attempted autostarted.
-							(!started()) )					// Player hasn't already started manually.
+		if ( (didonce == 0) &&				// Never attempted autostarted.
+			 (!started()) )					// Player hasn't already started manually.
 		{
 			// Update the number of plays.
 			VPinball::NumPlays++;
@@ -797,9 +782,9 @@ void PinInput::button_exit( const F32 secs, const U32 curr_time_msec )
 		return; 
 
 	// Check if we can exit.
-	if( (exit_stamp) &&											// Initialized.
-		((curr_time_msec - exit_stamp) > (secs * 1000.0f)) &&	// Held exit button for number of seconds.
-		(g_pplayer->Coins == 0) )								// No coins queued to be entered.
+	if( (exit_stamp) &&											   // Initialized.
+		((curr_time_msec - exit_stamp) > (U32)(secs * 1000.0f)) && // Held exit button for number of seconds.
+		(g_pplayer->m_Coins == 0) )								   // No coins queued to be entered.
 	{
 #ifndef STUCK_EXIT_BUTTON
 		if (uShockType == USHOCKTYPE_ULTRACADE)
@@ -812,7 +797,6 @@ void PinInput::button_exit( const F32 secs, const U32 curr_time_msec )
 		}
 #endif
 	}
-
 }
 
 void PinInput::tilt_update()
@@ -873,7 +857,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 	GetInputDeviceData(curr_time_msec);
 
 	const DIDEVICEOBJECTDATA * __restrict input;
-	while( ( input = GetTail( curr_sim_msec ) ) )
+	while( input = GetTail( curr_sim_msec ) )
 	{
 		if( input->dwSequence == APP_KEYBOARD )
 		{
@@ -882,6 +866,15 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 				if (input->dwData & 0x80)
 				{
 					g_pplayer->ToggleFPS();
+				}
+			}
+			else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEnable3D])
+			{
+				if (input->dwData & 0x80)
+				{
+					g_pplayer->m_fStereo3Denabled = !g_pplayer->m_fStereo3Denabled;
+					SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &g_pplayer->m_fStereo3Denabled, 4);
+					g_pplayer->m_fCleanBlt = fFalse;
 				}
 			}
 			else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])
@@ -895,7 +888,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 			}
 			else if( ((input->dwOfs == DIK_ESCAPE) && (m_disable_esc == 0)) || ( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]) )
 			{
-				if (input->dwData & 0x80) g_pplayer->m_fCloseDown = fTrue; //on key down only
+				if (input->dwData & 0x80)
+					g_pplayer->m_fCloseDown = fTrue; //on key down only
 			}
 			else
 			{
@@ -2137,9 +2131,7 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 //char myCharString[8];
 //itoa( DeadZ2, myCharString, 10 );
 //ShowError(myCharString);
-				// Convert to signed int
-				union { int i; unsigned int ui; } u;
-				u.ui = input->dwData;
+				int u = (int)input->dwData;
 				
 				switch (input->dwOfs)		// Axis, Sliders and POV
 				{	// with selectable axes added to menu, giving prioity in this order... X Axis (the Left/Right Axis), Y Axis
@@ -2150,56 +2142,56 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 							{ // Check if L/R Axis or U/D Axis is selected (in the case of the Generic controller),
 							  // or non Generic controllers are being used...
 								// Axis Deadzone
-								if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
-								if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
-								if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
-								if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
+								if((u<=0) && (u>=DeadZ2*(-10))){u = 0;}
+								if((u>=0) && (u<=DeadZ2*10)){u = 0;}
+								if((u<0) && (u<DeadZ2*(-10))){u = u + DeadZ2*10;}
+								if((u>0) && (u>DeadZ2*10)){u = u - DeadZ2*10;}
 								if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_lr_axis != 0))
 								{
-									g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match Pinball Wizard
+									g_pplayer->UltraNudgeX(-u, joyk); //rotate to match Pinball Wizard
 								}
 								if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_lr_axis != 0))
 								{
 									if (rotLeftManual)
 									{
-										g_pplayer->UltraNudgeX(u.i, joyk);
+										g_pplayer->UltraNudgeX(u, joyk);
 									}
 									else
 									{
-									g_pplayer->UltraNudgeY(-u.i, joyk); //rotate to match joystick
+										g_pplayer->UltraNudgeY(-u, joyk); //rotate to match joystick
 									}
 								}
 								if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_lr_axis != 0))
 								{
 									if (m_lr_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeX(u.i, joyk);
+										g_pplayer->UltraNudgeX(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeX(-u.i, joyk);
+										g_pplayer->UltraNudgeX(-u, joyk);
 									}
 								}
 								if ((m_lr_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
 								{ // giving L/R Axis priority over U/D Axis incase both are assigned to same axis
 									if (m_lr_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeX(-u.i, joyk);
+										g_pplayer->UltraNudgeX(-u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeX(u.i, joyk);
+										g_pplayer->UltraNudgeX(u, joyk);
 									}
 								}
 								else if ((m_ud_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
 								{
 									if (m_ud_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeY(u.i, joyk);
+										g_pplayer->UltraNudgeY(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeY(-u.i, joyk);
+										g_pplayer->UltraNudgeY(-u, joyk);
 									}
 								}
 							}
@@ -2209,11 +2201,11 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{
 									if (m_plunger_reverse == 0)
 									{
-										g_pplayer->mechPlungerIn(-u.i);
+										g_pplayer->mechPlungerIn(-u);
 									}
 									else
 									{
-										g_pplayer->mechPlungerIn(u.i);
+										g_pplayer->mechPlungerIn(u);
 									}
 								}
 							}
@@ -2227,56 +2219,56 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 							{ // Check if L/R Axis or U/D Axis is selected (in the case of the Generic controller),
 							  // or non Generic controllers are being used...
 								// Axis Deadzone
-								if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
-								if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
-								if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
-								if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
+								if((u<=0) && (u>=DeadZ2*(-10))){u = 0;}
+								if((u>=0) && (u<=DeadZ2*10)){u = 0;}
+								if((u<0) && (u<DeadZ2*(-10))){u = u + DeadZ2*10;}
+								if((u>0) && (u>DeadZ2*10)){u = u - DeadZ2*10;}
 								if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_ud_axis != 0))
 								{
-									g_pplayer->UltraNudgeY(u.i, joyk); //rotate to match Pinball Wizard
+									g_pplayer->UltraNudgeY(u, joyk); //rotate to match Pinball Wizard
 								}
 								if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_ud_axis != 0))
 								{
 									if (rotLeftManual)
 									{
-										g_pplayer->UltraNudgeY(u.i, joyk);
+										g_pplayer->UltraNudgeY(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeX(-u.i, joyk); //rotate to match joystick
+										g_pplayer->UltraNudgeX(-u, joyk); //rotate to match joystick
 									}
 								}
 								if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_ud_axis != 0))
 								{
 									if (m_ud_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeY(u.i, joyk);
+										g_pplayer->UltraNudgeY(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeY(-u.i, joyk);
+										g_pplayer->UltraNudgeY(-u, joyk);
 									}
 								}
 								if ((m_lr_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
 								{
 									if (m_lr_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeX(-u.i, joyk);
+										g_pplayer->UltraNudgeX(-u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeX(u.i, joyk);
+										g_pplayer->UltraNudgeX(u, joyk);
 									}	
 								}
 								else if ((m_ud_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
 								{
 									if (m_ud_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeY(u.i, joyk);
+										g_pplayer->UltraNudgeY(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeY(-u.i, joyk);
+										g_pplayer->UltraNudgeY(-u, joyk);
 									}
 								}
 							}
@@ -2286,11 +2278,11 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{
 									if (m_plunger_reverse == 0)
 									{
-										g_pplayer->mechPlungerIn(-u.i);
+										g_pplayer->mechPlungerIn(-u);
 									}
 									else
 									{
-										g_pplayer->mechPlungerIn(u.i);
+										g_pplayer->mechPlungerIn(u);
 									}
 								}
 							}
@@ -2302,46 +2294,46 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{
 							if (uShockType == USHOCKTYPE_ULTRACADE)
 							{
-								g_pplayer->mechPlungerIn(u.i);
+								g_pplayer->mechPlungerIn(u);
 							}
 							if (((m_plunger_axis != 6) && (m_plunger_axis != 0)) || (m_override_default_buttons == 0))
 							{																// with the ability to use rZ for plunger, checks to see if
 								if (uShockType == USHOCKTYPE_PBWIZARD) 						// the override is used and if so, if Plunger is set to Rz or
 								{															// disabled. If override isn't used, uses default assignment
-									g_pplayer->mechPlungerIn(-u.i);							// of the Z axis.
+									g_pplayer->mechPlungerIn(-u);							// of the Z axis.
 								}
 							}
 							if ((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_plunger_axis != 0))
 							{
-								g_pplayer->mechPlungerIn(-u.i);
+								g_pplayer->mechPlungerIn(-u);
 							}
 							if (((m_lr_axis == 3) || (m_ud_axis == 3)) && (uShockType == USHOCKTYPE_GENERIC))
 							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
 								// Axis Deadzone
-								if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
-								if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
-								if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
-								if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
+								if((u<=0) && (u>=DeadZ2*(-10))){u = 0;}
+								if((u>=0) && (u<=DeadZ2*10)){u = 0;}
+								if((u<0) && (u<DeadZ2*(-10))){u = u + DeadZ2*10;}
+								if((u>0) && (u>DeadZ2*10)){u = u - DeadZ2*10;}
 								if (m_lr_axis == 3)
 								{
 									if (m_lr_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeX(-u.i, joyk);
+										g_pplayer->UltraNudgeX(-u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeX(u.i, joyk);
+										g_pplayer->UltraNudgeX(u, joyk);
 									}
 								}
 								else if (m_ud_axis == 3)
 								{
 									if (m_ud_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeY(u.i, joyk);
+										g_pplayer->UltraNudgeY(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeY(-u.i, joyk);
+										g_pplayer->UltraNudgeY(-u, joyk);
 									}
 								}
 							}
@@ -2351,11 +2343,11 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{
 									if (m_plunger_reverse == 0)
 									{
-										g_pplayer->mechPlungerIn(-u.i);
+										g_pplayer->mechPlungerIn(-u);
 									}
 									else
 									{
-										g_pplayer->mechPlungerIn(u.i);
+										g_pplayer->mechPlungerIn(u);
 									}
 								}
 							}
@@ -2368,30 +2360,30 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 							if (((m_lr_axis == 4) || (m_ud_axis == 4)) && (uShockType == USHOCKTYPE_GENERIC))
 							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
 								// Axis Deadzone
-								if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
-								if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
-								if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
-								if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
+								if((u<=0) && (u>=DeadZ2*(-10))){u = 0;}
+								if((u>=0) && (u<=DeadZ2*10)){u = 0;}
+								if((u<0) && (u<DeadZ2*(-10))){u = u + DeadZ2*10;}
+								if((u>0) && (u>DeadZ2*10)){u = u - DeadZ2*10;}
 								if (m_lr_axis == 4)
 								{
 									if (m_lr_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeX(-u.i, joyk);
+										g_pplayer->UltraNudgeX(-u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeX(u.i, joyk);
+										g_pplayer->UltraNudgeX(u, joyk);
 									}
 								}
 								else if (m_ud_axis == 4)
 								{
 									if (m_ud_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeY(u.i, joyk);
+										g_pplayer->UltraNudgeY(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeY(-u.i, joyk);
+										g_pplayer->UltraNudgeY(-u, joyk);
 									}
 								}
 							}
@@ -2401,11 +2393,11 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{
 									if (m_plunger_reverse == 0)
 									{
-										g_pplayer->mechPlungerIn(-u.i);
+										g_pplayer->mechPlungerIn(-u);
 									}
 									else
 									{
-										g_pplayer->mechPlungerIn(u.i);
+										g_pplayer->mechPlungerIn(u);
 									}
 								}
 							}
@@ -2418,30 +2410,30 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 							if (((m_lr_axis == 5) || (m_ud_axis == 5)) && (uShockType == USHOCKTYPE_GENERIC))
 							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
 								// Axis Deadzone
-								if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
-								if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
-								if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
-								if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
+								if((u<=0) && (u>=DeadZ2*(-10))){u = 0;}
+								if((u>=0) && (u<=DeadZ2*10)){u = 0;}
+								if((u<0) && (u<DeadZ2*(-10))){u = u + DeadZ2*10;}
+								if((u>0) && (u>DeadZ2*10)){u = u - DeadZ2*10;}
 								if (m_lr_axis == 5)
 								{
 									if (m_lr_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeX(-u.i, joyk);
+										g_pplayer->UltraNudgeX(-u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeX(u.i, joyk);
+										g_pplayer->UltraNudgeX(u, joyk);
 									}
 								}
 								else if (m_ud_axis == 5)
 								{
 									if (m_ud_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeY(u.i, joyk);
+										g_pplayer->UltraNudgeY(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeY(-u.i, joyk);
+										g_pplayer->UltraNudgeY(-u, joyk);
 									}
 								}
 							}
@@ -2451,11 +2443,11 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{
 									if (m_plunger_reverse == 0)
 									{
-										g_pplayer->mechPlungerIn(-u.i);
+										g_pplayer->mechPlungerIn(-u);
 									}
 									else
 									{
-										g_pplayer->mechPlungerIn(u.i);
+										g_pplayer->mechPlungerIn(u);
 									}
 								}
 							}
@@ -2467,35 +2459,35 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{
 							if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 1) && (m_plunger_axis == 6))
 							{
-								g_pplayer->mechPlungerIn(u.i);
+								g_pplayer->mechPlungerIn(u);
 							}
 							if (((m_lr_axis == 6) || (m_ud_axis == 6)) && (uShockType == USHOCKTYPE_GENERIC))
 							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
 								// Axis Deadzone
-								if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
-								if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
-								if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
-								if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
+								if((u<=0) && (u>=DeadZ2*(-10))){u = 0;}
+								if((u>=0) && (u<=DeadZ2*10)){u = 0;}
+								if((u<0) && (u<DeadZ2*(-10))){u = u + DeadZ2*10;}
+								if((u>0) && (u>DeadZ2*10)){u = u - DeadZ2*10;}
 								if (m_lr_axis == 6)
 								{
 									if (m_lr_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeX(-u.i, joyk);
+										g_pplayer->UltraNudgeX(-u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeX(u.i, joyk);
+										g_pplayer->UltraNudgeX(u, joyk);
 									}
 								}
 								else if (m_ud_axis == 6)
 								{
 									if (m_ud_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeY(u.i, joyk);
+										g_pplayer->UltraNudgeY(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeY(-u.i, joyk);
+										g_pplayer->UltraNudgeY(-u, joyk);
 									}
 								}
 							}
@@ -2505,11 +2497,11 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{
 									if (m_plunger_reverse == 0)
 									{
-										g_pplayer->mechPlungerIn(-u.i);
+										g_pplayer->mechPlungerIn(-u);
 									}
 									else
 									{
-										g_pplayer->mechPlungerIn(u.i);
+										g_pplayer->mechPlungerIn(u);
 									}
 								}
 							}
@@ -2523,40 +2515,40 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 							{
 								if (m_plunger_reverse == 0)
 								{
-									g_pplayer->mechPlungerIn(-u.i);
+									g_pplayer->mechPlungerIn(-u);
 								}
 								else
 								{
-									g_pplayer->mechPlungerIn(u.i);
+									g_pplayer->mechPlungerIn(u);
 								}
 							}
 							if (((m_lr_axis == 7) || (m_ud_axis == 7)) && (uShockType == USHOCKTYPE_GENERIC))
 							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
 								// Axis Deadzone
-								if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
-								if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
-								if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
-								if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
+								if((u<=0) && (u>=DeadZ2*(-10))){u = 0;}
+								if((u>=0) && (u<=DeadZ2*10)){u = 0;}
+								if((u<0) && (u<DeadZ2*(-10))){u = u + DeadZ2*10;}
+								if((u>0) && (u>DeadZ2*10)){u = u - DeadZ2*10;}
 								if (m_lr_axis == 7)
 								{
 									if (m_lr_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeX(-u.i, joyk);
+										g_pplayer->UltraNudgeX(-u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeX(u.i, joyk);
+										g_pplayer->UltraNudgeX(u, joyk);
 									}
 								}
 								else if (m_ud_axis == 7)
 								{
 									if (m_ud_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeY(u.i, joyk);
+										g_pplayer->UltraNudgeY(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeY(-u.i, joyk);
+										g_pplayer->UltraNudgeY(-u, joyk);
 									}
 								}
 							}
@@ -2566,11 +2558,11 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{
 									if (m_plunger_reverse == 0)
 									{
-										g_pplayer->mechPlungerIn(-u.i);
+										g_pplayer->mechPlungerIn(-u);
 									}
 									else
 									{
-										g_pplayer->mechPlungerIn(u.i);
+										g_pplayer->mechPlungerIn(u);
 									}
 								}
 							}
@@ -2583,30 +2575,30 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 							if (((m_lr_axis == 8) || (m_ud_axis == 8)) && (uShockType == USHOCKTYPE_GENERIC))
 							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
 								// Axis Deadzone
-								if((u.i<=0) && (u.i>=DeadZ2*(-10))){u.i = 0;}
-								if((u.i>=0) && (u.i<=DeadZ2*10)){u.i = 0;}
-								if((u.i<0) && (u.i<DeadZ2*(-10))){u.i = u.i + DeadZ2*10;}
-								if((u.i>0) && (u.i>DeadZ2*10)){u.i = u.i - DeadZ2*10;}
+								if((u<=0) && (u>=DeadZ2*(-10))){u = 0;}
+								if((u>=0) && (u<=DeadZ2*10)){u = 0;}
+								if((u<0) && (u<DeadZ2*(-10))){u = u + DeadZ2*10;}
+								if((u>0) && (u>DeadZ2*10)){u = u - DeadZ2*10;}
 								if (m_lr_axis == 8)
 								{
 									if (m_lr_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeX(-u.i, joyk);
+										g_pplayer->UltraNudgeX(-u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeX(u.i, joyk);
+										g_pplayer->UltraNudgeX(u, joyk);
 									}
 								}
 								else if (m_ud_axis == 8)
 								{
 									if (m_ud_axis_reverse == 0)
 									{
-										g_pplayer->UltraNudgeY(u.i, joyk);
+										g_pplayer->UltraNudgeY(u, joyk);
 									}
 									else
 									{
-										g_pplayer->UltraNudgeY(-u.i, joyk);
+										g_pplayer->UltraNudgeY(-u, joyk);
 									}
 								}
 							}
@@ -2616,11 +2608,11 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{
 									if (m_plunger_reverse == 0)
 									{
-										g_pplayer->mechPlungerIn(-u.i);
+										g_pplayer->mechPlungerIn(-u);
 									}
 									else
 									{
-										g_pplayer->mechPlungerIn(u.i);
+										g_pplayer->mechPlungerIn(u);
 									}
 								}
 							}

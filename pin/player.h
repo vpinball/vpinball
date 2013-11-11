@@ -81,14 +81,14 @@ public:
 	void RecomputePauseState();
 	void RecomputePseudoPauseState();
 
-	void UltraNudge();
+	void UltraNudge_update();
 	void UltraNudgeX( const int x, const int j );
 	void UltraNudgeY( const int y, const int j );
 #if 0
 	int  UltraNudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
 #endif
 
-	void UltraPlunger();
+	void UltraPlunger_update();
 	void mechPlungerIn( const int z );		
 
 #ifdef PLAYBACK
@@ -104,11 +104,11 @@ public:
 
 	Pin3D m_pin3d;
 
-	int m_timeCur;
+	int m_time_msec;
 
 	int m_frotate;
 
-	int DeadZ;
+	int m_DeadZ;
 
 	Ball *m_pactiveball;		// ball the script user can get with ActiveBall
 	Ball *m_pactiveballDebug;	// ball the debugger will use as Activeball when firing events
@@ -193,10 +193,10 @@ public:
 	U32 c_contactcnt;
 	U32 c_staticcnt;
 	U32 c_embedcnts;
-	int movedPlunger;			// has plunger moved, must have moved at least three times
-	U32 LastPlungerHit;			// The last time the plunger was in contact (at least the vicinity) of the ball.
-	int Coins;					// The number of coins queued to be inserted.  These were sent from the shell after the load.
-	float curMechPlungerPos;
+	int m_movedPlunger;			// has plunger moved, must have moved at least three times
+	U32 m_LastPlungerHit;		// The last time the plunger was in contact (at least the vicinity) of the ball.
+	int m_Coins;				// The number of coins queued to be inserted.  These were sent from the shell after the load.
+	float m_curMechPlungerPos;
 
 	bool m_fDrawCursor;
 	bool m_fGameWindowActive;
@@ -220,7 +220,7 @@ private:
 	int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
 	BOOL m_fFullScreen;
 
-	U64 m_liStartTime;
+	U64 m_StartTime_usec;
 	U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn
 	U64 m_nextPhysicsFrameTime;	// time at which the next physics update should be
 
@@ -254,7 +254,7 @@ private:
 	float m_NudgeAccX;
 	float m_NudgeAccY;
 
-	int curPlunger;
+	int m_curPlunger;
 
 	HANDLE m_hSongCompletionEvent;
 

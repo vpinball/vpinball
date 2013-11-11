@@ -463,12 +463,12 @@ void VPinball::InitRegValues()
       g_pvp->m_pdd.m_fHardwareAccel = 1; // default value
    }
 
-   hr = GetRegInt("Player", "DeadZone", &DeadZ);
+   hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
    if (hr != S_OK)
    {
-      DeadZ = 0; // default value
+      m_DeadZ = 0; // default value
    }
-   SetRegValue("Player", "DeadZone", REG_DWORD, &DeadZ, 4);
+   SetRegValue("Player", "DeadZone", REG_DWORD, &m_DeadZ, 4);
 
    hr = GetRegInt("Player", "AlternateRender", &m_fAlternateRender);
    if (hr != S_OK)

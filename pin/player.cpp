@@ -79,7 +79,7 @@ Player::Player()
 	m_pxap = NULL;
 	m_pactiveball = NULL;
 
-	curPlunger = JOYRANGEMN-1;
+	m_curPlunger = JOYRANGEMN-1;
 
 	int checkblit;
 	HRESULT hr = GetRegInt("Player", "CheckBlit", &checkblit);
@@ -228,9 +228,9 @@ Player::Player()
 	c_contactcnt = 0;
 	c_staticcnt = 0;
 	c_embedcnts = 0;
-	movedPlunger = 0;
-	LastPlungerHit = 0;
-	Coins = 0;
+	m_movedPlunger = 0;
+	m_LastPlungerHit = 0;
+	m_Coins = 0;
 }
 
 Player::~Player()
@@ -296,7 +296,7 @@ Player::~Player()
 void Player::ToggleFPS()
 {
 	m_fShowFPS = !m_fShowFPS;
-	m_lastfpstime = m_timeCur;
+	m_lastfpstime = m_time_msec;
 	m_cframes = 0;
 	m_fps = 0;
    m_fpsAvg=0;
@@ -731,16 +731,16 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	m_NudgeX = 0;
 	m_NudgeY = 0;
 	m_nudgetime = 0;
-	movedPlunger = 0;	// has plunger moved, must have moved at least three times
+	m_movedPlunger = 0;	// has plunger moved, must have moved at least three times
 
 	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
 	SetWindowText(hwndProgressName, "Initalizing Physics...");
 
 	// Need to set timecur here, for init functions that set timers
-	m_timeCur = 0;
+	m_time_msec = 0;
 
 #ifdef FPS
-	m_lastfpstime = m_timeCur;
+	m_lastfpstime = m_time_msec;
 	m_cframes = 0;
 	m_fps = 0;
 	m_max = 0;
@@ -760,7 +760,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 			const int currentsize = m_vho.Size();
 			ph->GetHitShapes(&m_vho);
 			const int newsize = m_vho.Size();
-			// Save the objects the trouble of having the set the idispatch pointer themselves
+			// Save the objects the trouble of having to set the idispatch pointer themselves
 			for (int hitloop = currentsize; hitloop < newsize; hitloop++)
 				{
 				m_vho.ElementAt(hitloop)->m_pfedebug = m_ptable->m_vedit.ElementAt(i)->GetIFireEvents();
@@ -955,20 +955,20 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	wintimer_init();
 
-	m_liStartTime = usec();
+	m_StartTime_usec = usec();
 
-	m_curPhysicsFrameTime = m_liStartTime;
+	m_curPhysicsFrameTime = m_StartTime_usec;
 	m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
 
 #ifdef PLAYBACK
 	if (m_fPlayback)
 		{
-		ParseLog((LARGE_INTEGER*)&m_PhysicsStepTime, (LARGE_INTEGER*)&m_liStartTime);
+		ParseLog((LARGE_INTEGER*)&m_PhysicsStepTime, (LARGE_INTEGER*)&m_StartTime_usec);
 		}
 #endif
 
 #ifdef LOG
-	fprintf(m_flog, "Step Time %llu\n", m_liStartTime);
+	fprintf(m_flog, "Step Time %llu\n", m_StartTime_usec);
 	fprintf(m_flog, "End Frame\n");
 #endif
 
@@ -1240,7 +1240,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
 		{
 		m_pactiveballDebug = pball;
 		}
-   pball->defaultZ = pball->z;
+    pball->defaultZ = pball->z;
 	return pball;
 }
 
@@ -1534,8 +1534,8 @@ void Player::UltraNudgeY(const int y, const int j )
 	curAccel_y[j] = y;
 }
 
-#define GetX() (((F32)curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN))) // Get the -1.0f to +1.0f values from joystick input tilt sensor / ushock
-#define GetY() (((F32)curAccel_y[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN)))
+#define GetUltraNudgeX() (((F32)curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN))) // Get the -1.0f to +1.0f values from joystick input tilt sensor / ushock
+#define GetUltraNudgeY() (((F32)curAccel_y[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN)))
 
 #if 0
 int Player::UltraNudgeGetTilt()
@@ -1572,10 +1572,8 @@ int Player::UltraNudgeGetTilt()
 }
 #endif
 
-void Player::UltraNudge()	// called on every integral physics frame
-{	
-	static F32 cna=1.f,sna=0.f,na=0.f;	// initialize for angle 0
-
+void Player::UltraNudge_update()	// called on every integral physics frame
+{
 	if (m_NudgeManual >= 0)			    // Only one joystick controls in manual mode
 	{		
 		m_NudgeX = m_AccelMAmp * ((float)curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE); // * Manual Gain
@@ -1593,13 +1591,8 @@ void Player::UltraNudge()	// called on every integral physics frame
 	if(!m_fAccelerometer) return;	// uShock is disabled 
 
 	//rotate to match hardware mounting orentation, including left or right coordinates
-	// Cache the sin and cos results whenever the angle changes
-	if( na != m_AccelAngle )
-	{
-		na = m_AccelAngle;
-		cna = cosf(na);
-		sna = sinf(na);
-	}
+	const float cna = cosf(m_AccelAngle);
+	const float sna = sinf(m_AccelAngle);
 
 	for(int j = 0; j < m_pininput.e_JoyCnt; ++j)
 	{		
@@ -1609,63 +1602,66 @@ void Player::UltraNudge()	// called on every integral physics frame
 			dx = -dx;
 		m_NudgeX += m_AccelAmpX*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
 		const float nugY = m_AccelAmpY*(dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
-		m_NudgeY = m_AccelNormalMount ? (m_NudgeY + nugY): (m_NudgeY - nugY);	// add as left or right hand coordinate system
+		m_NudgeY = m_AccelNormalMount ? (m_NudgeY + nugY) : (m_NudgeY - nugY);	// add as left or right hand coordinate system
 	}
 }
 
-void Player::UltraPlunger()	// called on every intergral physics frame
-{	
 #define IIR_Order 4
 
+// coefficients for IIR_Order Butterworth filter set to 10 Hz passband
+static const float a [IIR_Order+1] = {
+	0.0048243445f,
+	0.019297378f,	
+	0.028946068f,
+	0.019297378f,
+	0.0048243445f};
+
+static const float b [IIR_Order+1] = {
+	1.00000000f, //if not 1 add division below
+	-2.369513f,
+	2.3139884f,
+	-1.0546654f,
+	0.1873795f};
+
+void Player::UltraPlunger_update()	// called on every integral physics frame
+{	
 	static int init = IIR_Order;	// first time call
 	static float x [IIR_Order+1] = {0,0,0,0,0};
 	static float y [IIR_Order+1] = {0,0,0,0,0};	
-
-	// coefficients for IIR_Order Butterworth filter set to 10 Hz passband
-	static const float a [IIR_Order+1] = {	0.0048243445f,
-											0.019297378f,	
-											0.028946068f,
-											0.019297378f,
-											0.0048243445f};
-
-	static const float b [IIR_Order+1] = {	1.00000000f, //if not 1 add division below
-											-2.369513f,
-											 2.3139884f,
-											-1.0546654f,
-											 0.1873795f};
 
 	//http://www.dsptutor.freeuk.com/IIRFilterDesign/IIRFilterDesign.html  
 	// (this applet is set to 8000Hz sample rate, therefore, multiply ...
 	// our values by 80 to shift sample clock of 100hz to 8000hz)
 
-	if (movedPlunger < 3) 
-		{
+	if (m_movedPlunger < 3) 
+	{
 		//int init = IIR_Order;
-		curMechPlungerPos = 0;
+		m_curMechPlungerPos = 0;
 		return;	// not until a real value is entered
-		}
+	}
 
 	if (!c_plungerFilter)
-		{ 
-		curMechPlungerPos = (float)curPlunger;
+	{ 
+		m_curMechPlungerPos = (float)m_curPlunger;
 		return;
-		}
+	}
 
-	x[0] = (float)curPlunger; //initialize filter
-	do	{
+	x[0] = (float)m_curPlunger; //initialize filter
+	do
+	{
 		y[0] = a[0]*x[0];	  // initial
 
-		for (int i = IIR_Order; i > 0 ;--i) // all terms but the zero-th 
-			{ 
+		for (int i = IIR_Order; i > 0; --i) // all terms but the zero-th 
+		{
 			y[0] += (a[i]*x[i] - b[i]*y[i]);// /b[0]; always one     // sum terms from high to low
 			x[i] = x[i-1];		//shift 
 			y[i] = y[i-1];		//shift
-			}			
-		} while (init--); //loop until all registers are initialized with the first input
+		}
+	} while (init--); //loop until all registers are initialized with the first input
 
 	init = 0;
 
-	curMechPlungerPos = y[0];
+	m_curMechPlungerPos = y[0];
 }
 
 // mechPlunger NOTE: Normalized position is from 0.0 to +1.0f
@@ -1678,16 +1674,15 @@ void Player::UltraPlunger()	// called on every intergral physics frame
 float PlungerAnimObject::mechPlunger() const
 {
 	const float range = (float)JOYRANGEMX * (1.0f - m_parkPosition) - (float)JOYRANGEMN *m_parkPosition; // final range limit
-	float tmp = (g_pplayer->curMechPlungerPos < 0) ? g_pplayer->curMechPlungerPos*m_parkPosition : g_pplayer->curMechPlungerPos*(1.0f - m_parkPosition);
-	tmp = tmp/range + m_parkPosition;		//scale and offset
-	return tmp;
+	const float tmp = (g_pplayer->m_curMechPlungerPos < 0) ? g_pplayer->m_curMechPlungerPos*m_parkPosition : g_pplayer->m_curMechPlungerPos*(1.0f - m_parkPosition);
+	return tmp/range + m_parkPosition;		//scale and offset
 }
 
 void Player::mechPlungerIn(const int z)
 {
-	curPlunger = -z; //axis reversal
+	m_curPlunger = -z; //axis reversal
 
-	if (++movedPlunger == 0x7ffffff) movedPlunger = 3; //restart at 3
+	if (++m_movedPlunger == 0x7ffffff) m_movedPlunger = 3; //restart at 3
 }
 
 //++++++++++++++++++++++++++++++++++++++++
@@ -1738,7 +1733,7 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 
 				const float htz = pball->m_hittime;		// this ball's hit time
 
-				if(htz < 0) pball->m_pho = NULL;		// no negative time allowed
+				if(htz < 0.f) pball->m_pho = NULL;		// no negative time allowed
 
 				if (pball->m_pho)						// hit object
 				{
@@ -1784,7 +1779,6 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 
 			if (pball->m_fDynamic > 0 && pball->m_pho && pball->m_hittime <= hittime) // find balls with hit objects and minimum time			
 			{
-
 				// now collision, contact and script reactions on active ball (object)+++++++++
 				HitObject * const pho = pball->m_pho;// object that ball hit in trials
 				pball->m_pho = NULL;				 // remove trial hit object pointer
@@ -1816,7 +1810,7 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 							{													// m_fDynamic is cleared in ball gravity section
 								pball->m_fDynamic = 0;
 								c_staticcnt++;
-								pball->vx =	pball->vy = pball->vz = 0;			//quench the remaing velocity and set ...
+								pball->vx =	pball->vy = pball->vz = 0.f;		//quench the remaing velocity and set ...
 							}
 						}
 					}
@@ -1836,14 +1830,14 @@ U64 phys_period = 0;
 
 void Player::UpdatePhysics()
 {
-	const U64 m_RealTimeClock = usec();
+	const U64 initial_time_usec = usec();
 
 	if (m_fNoTimeCorrect) // After debugging script
 	{
 		// Shift whole game foward in time
-		m_liStartTime += m_RealTimeClock - m_curPhysicsFrameTime;
-		m_nextPhysicsFrameTime += m_RealTimeClock - m_curPhysicsFrameTime;
-		m_curPhysicsFrameTime = m_RealTimeClock; // 0 time frame
+		m_StartTime_usec += initial_time_usec - m_curPhysicsFrameTime;
+		m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
+		m_curPhysicsFrameTime = initial_time_usec; // 0 time frame
 		m_fNoTimeCorrect = fFalse;
 	}
 
@@ -1852,17 +1846,17 @@ void Player::UpdatePhysics()
 	if (m_fDebugWindowActive || m_fUserDebugPaused)
 	{
 		// Shift whole game foward in time
-		m_liStartTime += m_RealTimeClock - m_curPhysicsFrameTime;
-		m_nextPhysicsFrameTime += m_RealTimeClock - m_curPhysicsFrameTime;
+		m_StartTime_usec += initial_time_usec - m_curPhysicsFrameTime;
+		m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
 		if (m_fStep)
 		{
 			// Walk one physics step foward
-			m_curPhysicsFrameTime = m_RealTimeClock - PHYSICS_STEPTIME;
+			m_curPhysicsFrameTime = initial_time_usec - PHYSICS_STEPTIME;
 			m_fStep = false;
 		}
 		else
 		{
-			m_curPhysicsFrameTime = m_RealTimeClock; // 0 time frame
+			m_curPhysicsFrameTime = initial_time_usec; // 0 time frame
 		}
 	}
 #endif
@@ -1871,39 +1865,42 @@ void Player::UpdatePhysics()
 #ifdef EVENTIME
 	if (!m_fPause || m_fStep)
 	{
-		m_RealTimeClock = m_curPhysicsFrameTime - 3547811060 + 3547825450;
+		initial_time_usec = m_curPhysicsFrameTime - 3547811060 + 3547825450;
 		m_fStep = false;
 	}
 	else
 	{
-		m_RealTimeClock = m_curPhysicsFrameTime;
+		initial_time_usec = m_curPhysicsFrameTime;
 	}
 #endif
 
 	// Get time in milliseconds for timers
-	m_timeCur = (int)((m_RealTimeClock - m_liStartTime)/1000);
+	m_time_msec = (int)((initial_time_usec - m_StartTime_usec)/1000);
 
 #ifdef FPS
 	//if (m_fShowFPS)
 	{
 		m_cframes++;
-		if ((m_timeCur - m_lastfpstime) > 1000)
+		if ((m_time_msec - m_lastfpstime) > 1000)
 		{
-			m_fps = m_cframes * 1000 / (m_timeCur - m_lastfpstime);
+			m_fps = m_cframes * 1000 / (m_time_msec - m_lastfpstime);
             m_fpsAvg += m_fps;
             m_fpsCount++;
-			m_lastfpstime = m_timeCur;
+			m_lastfpstime = m_time_msec;
 			m_cframes = 0;
 		}
 	}
+
+    phys_iterations = 0;
+    phys_period = initial_time_usec;	
 #endif
 
 #ifdef LOG
-	const double timepassed = (double)(m_RealTimeClock - m_curPhysicsFrameTime) * (1.0/1000000.0);
+	const double timepassed = (double)(initial_time_usec - m_curPhysicsFrameTime) * (1.0/1000000.0);
 
 	const float frametime =
 #ifdef PLAYBACK
-		(!m_fPlayback) ? (float)(timepassed * 100.0) : ParseLog((LARGE_INTEGER*)&m_RealTimeClock, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
+		(!m_fPlayback) ? (float)(timepassed * 100.0) : ParseLog((LARGE_INTEGER*)&initial_time_usec, (LARGE_INTEGER*)&m_nextPhysicsFrameTime);
 #else
  #define TIMECORRECT 1
  #ifdef TIMECORRECT
@@ -1914,46 +1911,41 @@ void Player::UpdatePhysics()
  #endif
 #endif //PLAYBACK
 
-	fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, m_RealTimeClock>>32, m_RealTimeClock, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
+	fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, initial_time_usec>>32, initial_time_usec, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
 	fprintf(m_flog, "End Frame\n");
 #endif
 
-#ifdef FPS
-   phys_iterations = 0;
-   phys_period = m_RealTimeClock;	
-#endif
-
-	while (m_curPhysicsFrameTime < m_RealTimeClock)		//loop here until next frame time
+	while (m_curPhysicsFrameTime < initial_time_usec) // loop here until current (real) time matches the physics (simulated) time
 	{
 #ifdef FPS
 		phys_iterations++;
 #endif
 		// Get the time until the next physics tick is done, and get the time
-		// Until the next frame is done (newtime)
+		// until the next frame is done
 		// If the frame is the next thing to happen, update physics to that
 		// point next update acceleration, and continue loop
 
-		const float physics_dtime = (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
-		const float physics_to_graphic_dtime = (float)((double)(m_RealTimeClock - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
+		const float physics_diff_time =       (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
+		const float physics_to_graphic_diff_time = (float)((double)(initial_time_usec - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
 
-		const U64 cur_time = usec();
+		const U64 cur_time_usec = usec();
 
-		if (physics_to_graphic_dtime < physics_dtime)				 // is graphic frame time next???
+		if (physics_to_graphic_diff_time < physics_diff_time)		 // is graphic frame time next???
 		{
-			PhysicsSimulateCycle(physics_to_graphic_dtime, cur_time);// advance physics to this time
-			m_curPhysicsFrameTime = m_RealTimeClock;				 // now current to the wall clock
+			PhysicsSimulateCycle(physics_to_graphic_diff_time, cur_time_usec); // advance physics to this time
+			m_curPhysicsFrameTime = initial_time_usec;				 // now current to the wall clock
 			break;	//this is the common exit from the loop			 // exit skipping accelerate
 		}			// some rare cases will exit from while()
 
-		if (cur_time - m_RealTimeClock > 200000)					 // hung in the physics loop over 200 milliseconds
+		if (cur_time_usec - initial_time_usec > 200000)				 // hung in the physics loop over 200 milliseconds
 		{															 // can not keep up to real time
-			m_curPhysicsFrameTime = m_RealTimeClock;				 // skip physics forward ... slip-cycles
-			m_nextPhysicsFrameTime = m_RealTimeClock + PHYSICS_STEPTIME;
-			break;	//this is the common exit from the loop			 // go draw frame
+			m_curPhysicsFrameTime = initial_time_usec;				 // skip physics forward ... slip-cycles
+			m_nextPhysicsFrameTime = initial_time_usec + PHYSICS_STEPTIME;
+			break;													 // go draw frame
 		}
 
 		//primary physics loop
-		PhysicsSimulateCycle(physics_dtime, cur_time); 				 // main simulator call physics_dtime
+		PhysicsSimulateCycle(physics_diff_time, cur_time_usec);		 // main simulator call
 
  		m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				 // new cycle, on physics frame boundary
 		m_nextPhysicsFrameTime += PHYSICS_STEPTIME;					 // advance physics position
@@ -1961,23 +1953,17 @@ void Player::UpdatePhysics()
 		// now get and/or calculate integral cycle physics events, digital filters, external acceleration inputs, etc.
 
 		const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
-		m_pininput.ProcessKeys(m_ptable, sim_msec, cur_time/1000);
-
-		if(m_pininput.Pressed(PININ_ENABLE3D)) {
-			m_fStereo3Denabled = !m_fStereo3Denabled;
-			SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &m_fStereo3Denabled, 4);
-			m_fCleanBlt = fFalse;
-		}
+		const U32 cur_msec = (U32)(cur_time_usec/1000);
+		m_pininput.ProcessKeys(m_ptable, sim_msec, cur_msec);
 
         mixer_update(m_pininput);
-
         hid_update(sim_msec);
-        plumb_update(sim_msec, GetX(), GetY());
+        plumb_update(sim_msec, GetUltraNudgeX(), GetUltraNudgeY());
 
 #ifdef ACCURATETIMERS
-		m_pactiveball = NULL;  // No ball is the active ball for timers/key events
+		m_pactiveball = NULL; // No ball is the active ball for timers/key events
 
-		const int p_timeCur = (int)((m_curPhysicsFrameTime - m_liStartTime)/1000); // milliseconds
+		const int p_timeCur = (int)((m_curPhysicsFrameTime - m_StartTime_usec)/1000); // milliseconds
 
 		for (int i=0;i<m_vht.Size();i++)
 		{
@@ -1989,12 +1975,11 @@ void Player::UpdatePhysics()
 			}
 		}
 #endif
-		slintf( "%u %u\n", m_RealTimeClock/1000, sim_msec );
-		slintf( "%f %f %d %d\n", physics_dtime, physics_to_graphic_dtime, sim_msec, msec() );	
+		slintf( "PT: %f %f %u %u %u\n", physics_diff_time, physics_to_graphic_diff_time, sim_msec, initial_time_usec/1000, cur_msec );
 
-		UltraNudge();		// physics_dtime is the balance of time to move from the graphic frame position to the next
-		UltraPlunger();		// integral physics frame.  So the previous graphics frame was (1.0 - physics_dtime) before 
-							// this integral physics frame. Accelerations and inputs are always physics frame aligned
+		UltraNudge_update();		// physics_diff_time is the balance of time to move from the graphic frame position to the next
+		UltraPlunger_update();		// integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
+									// this integral physics frame. Accelerations and inputs are always physics frame aligned
 		if (m_nudgetime)
 		{
 			m_nudgetime--;
@@ -2013,7 +1998,7 @@ void Player::UpdatePhysics()
 
 		for (int i=0;i<m_vmover.Size();i++)
 			m_vmover.ElementAt(i)->UpdateVelocities();	// always on integral physics frame boundary
-	} // end while (m_curPhysicsFrameTime < m_RealTimeClock)
+	} // end while (m_curPhysicsFrameTime < initial_time_usec)
 
 #ifdef FPS
 	phys_period = usec() - phys_period;
@@ -2052,10 +2037,6 @@ void Player::RenderDynamics()
    // Draw the alpha-ramps and primitives.
    //if (g_pvp->m_pdd.m_fHardwareAccel)
    DrawAlphas();
-
-   // Check if we should turn animate the plunger light.
-   const U32 cur_time_msec = msec();
-   hid_set_output ( HID_OUTPUT_PLUNGER, ((cur_time_msec - LastPlungerHit) < 512) && ((cur_time_msec & 512) > 0) );
 
    // Draw the mixer volume.
    mixer_draw();
@@ -2169,7 +2150,7 @@ void Player::Render()
 	for (int i=0;i<m_vblink.Size();i++)
 	{
 		IBlink * const pblink = m_vblink.ElementAt(i);
-		if (pblink->m_timenextblink <= m_timeCur)
+		if (pblink->m_timenextblink <= m_time_msec)
 		{
 			const char cold = pblink->m_rgblinkpattern[pblink->m_iblinkframe];
 			pblink->m_iblinkframe++;
@@ -2297,6 +2278,10 @@ void Player::Render()
 	}
 
     RenderDynamics();
+
+    // Check if we should turn animate the plunger light.
+    const U32 cur_time_msec = msec();
+    hid_set_output ( HID_OUTPUT_PLUNGER, ((cur_time_msec - m_LastPlungerHit) < 512) && ((cur_time_msec & 512) > 0) );
 
 	// Check if we are mirrored.
 	if ( m_ptable->m_tblMirrorEnabled )
@@ -2655,7 +2640,7 @@ void Player::Render()
 	for (int i=0;i<m_vht.Size();i++)
 	{
 		HitTimer * const pht = m_vht.ElementAt(i);
-		if (pht->m_nextfire <= m_timeCur)
+		if (pht->m_nextfire <= m_time_msec)
 		{
 			pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
 			pht->m_nextfire += pht->m_interval;
@@ -2774,7 +2759,7 @@ void Player::Render()
 		}
 #endif
 
-	if ((m_PauseTimeTarget > 0) && (m_PauseTimeTarget <= m_timeCur))
+	if ((m_PauseTimeTarget > 0) && (m_PauseTimeTarget <= m_time_msec))
 	{
 		m_PauseTimeTarget = 0;
 		m_fUserDebugPaused = true;
@@ -3763,7 +3748,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 							if ( (lParam > 0) && (lParam < 10) )
 							{
 								// Add the coins.
-								g_pplayer->Coins += lParam;
+								g_pplayer->m_Coins += lParam;
 								ReturnCode = TRUE;
 							}
 							else
@@ -4002,7 +3987,7 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							case IDC_STEP:
 								{
 								int ms = GetDlgItemInt(hwndDlg, IDC_STEPAMOUNT, NULL, FALSE);
-								g_pplayer->m_PauseTimeTarget = g_pplayer->m_timeCur + ms;
+								g_pplayer->m_PauseTimeTarget = g_pplayer->m_time_msec + ms;
 								g_pplayer->m_fUserDebugPaused = false;
 								g_pplayer->RecomputePseudoPauseState();
 								SendMessage(hwndDlg, RECOMPUTEBUTTONCHECK, 0, 0);

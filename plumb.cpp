@@ -172,7 +172,7 @@ void plumb_draw()
 
 	draw_transparent_box( 5, 5, x, y, 0xffffffff );
 	draw_transparent_box( 3, 3, x, y, 0x000000ff );
-	draw_transparent_box( 3, 3, x+GetY()*100.0f, y+ac*(-(GetX()))*100.0f, 0xffffffff );
+	draw_transparent_box( 3, 3, x+GetUltraNudgeY()*100.0f, y+ac*(-(GetUltraNudgeX()))*100.0f, 0xffffffff );
 
 	draw_transparent_box( 5, 5, x, y, 0xffffffff );
 	draw_transparent_box( 3, 3, x, y, 0x000000ff );
