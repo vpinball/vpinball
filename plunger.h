@@ -94,27 +94,28 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   enum
-   {
+    enum
+    {
       PLUNGEPOINTS0 = 5,
       PLUNGEPOINTS1 = 7
-   };
-   struct Vertices
-   {
+    };
+    struct Vertices
+    {
       Vertex3D moverVertices[16*PLUNGEPOINTS1];
-   };
+    };
 
 	PinTable *m_ptable;
 
 	PlungerData m_d;
-   Vertices *verts;
-   int cframes;
-   WORD indices[16*PLUNGEPOINTS1*4];
-   VertexBuffer *vertexBuffer;
-   bool renderNewPlunger;
+    Vertices *verts;
+    int cframes;
+    WORD indices[16*PLUNGEPOINTS1*4];
+    VertexBuffer *vertexBuffer;
 
 	HitPlunger *m_phitplunger;
-   Material material;
+    Material material;
+
+    bool renderNewPlunger;
 
 // IPlunger
 public:

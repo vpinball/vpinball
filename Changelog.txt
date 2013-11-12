@@ -1,4 +1,4 @@
-VP 9.1.6 Changelog
+VP 9.2.0 Changelog
 ------------------------
 - add 'real' primitives, these can be loaded via .obj files (for example exported out of Blender)
 - add lighting option for primitives
@@ -30,7 +30,7 @@ VP 9.1.6 Changelog
   pan ranges from -1.0 (left) over 0.0 (both) to 1.0 (right)
   randompitch ranges from 0.0 (no randomization) to 1.0 (vary between half speed to double speed)
   so f.e. PlaySound "FlipperUp",0,0.5,-1.0,1.0 would play the sound not looped (0), at half the volume (0.5), only on left speaker (-1.0), with varying pitch (1.0)
-- add modern plunger texture mapping support
+- add modern plunger texture mapping support and correct coloring
 
 VP 9.1.5 Changelog
 ------------------------
