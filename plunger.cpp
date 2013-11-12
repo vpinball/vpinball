@@ -430,7 +430,7 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
          }
          else
          {
-            float tv = i*inv_scale;
+            const float tv = (float)i*inv_scale;
             ptr[0].x = m_d.m_v.x;               ptr[0].nx = 0.0f;          ptr[0].tu = 0.0f;
             ptr[0].y = m_d.m_v.y;               ptr[0].ny = 0.0f;          ptr[0].tv = tv;
             ptr[0].z = m_d.m_width+zheight;     ptr[0].nz = -1.0f;
