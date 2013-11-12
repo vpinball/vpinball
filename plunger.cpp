@@ -333,22 +333,14 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
    cframes = (int)((float)PLUNGER_FRAME_COUNT * (m_d.m_stroke*(float)(1.0/80.0))) + 1; // 25 frames per 80 units travel
    const float inv_cframes = (cframes > 1) ? ((endy - beginy)/(float)(cframes-1)) : 0.0f;
 
-
-   if (m_d.m_type == PlungerTypeModern)
-   {
-      material.setColor( 1.f, m_d.m_color );
-      material.setPower( 8.0f );
-      material.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
-   } else 
-   {
-      material.setColor( 1.f, m_d.m_color );
-      material.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
-      material.setPower( 8.0f );
-   }
+   material.setColor( 1.f, m_d.m_color );
+   material.setPower( 8.0f );
+   material.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
 
    if(verts)
 	   delete [] verts;
    verts = new Vertices[cframes];
+
    if ( vertexBuffer == NULL )
    {
       if ( m_d.m_type == PlungerTypeModern )
