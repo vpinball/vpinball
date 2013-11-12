@@ -65,9 +65,9 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume, float randompitch)
+STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume, float pan, float randompitch)
 {
-   if (g_pplayer && g_pplayer->m_fPlaySound) m_pt->PlaySound(bstr, LoopCount, volume, randompitch);
+   if (g_pplayer && g_pplayer->m_fPlaySound) m_pt->PlaySound(bstr, LoopCount, volume, pan, randompitch);
 
    return S_OK;
 }
@@ -6367,7 +6367,7 @@ HRESULT PinTable::StopSound(BSTR Sound)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float randompitch)
+STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float pan, float randompitch)
 {
    MAKE_ANSIPTR_FROMWIDE(szName, bstr);
    CharLowerBuff(szName, lstrlen(szName));
@@ -6395,7 +6395,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float r
 
    const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
    const float totalvolume = max(min(((float)g_pplayer->m_SoundVolume)*volume*m_TableSoundVolume,100.0f),0.0f);
-   const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf((float)totalvolume)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
+   const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf(totalvolume)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
 
    LPDIRECTSOUNDBUFFER pdsb = m_vsound.ElementAt(i)->m_pDSBuffer;
    PinSoundCopy * const ppsc = new PinSoundCopy();
@@ -6413,6 +6413,8 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float r
 		  const float rndl = rand_mt_01();
 		  ppsc->m_pDSBuffer->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
 	  }
+	  if(pan != 0.f)
+		  ppsc->m_pDSBuffer->SetPan((LONG)(pan*DSBPAN_RIGHT));
 
       ppsc->m_pDSBuffer->Play(0,0,flags);
       ppsc->m_ppsOriginal = m_vsound.ElementAt(i);

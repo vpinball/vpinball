@@ -35,7 +35,7 @@ public:
 		STDMETHOD(SeqSoundStop)(/*[in]*/ long Channel, /*[in]*/ BSTR Sound, /*[in]*/ float Volume, /*[in]*/ long Delay);
 		STDMETHOD(SeqSoundFlush)(/*[in]*/ long Channel);
 
-		STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float randompitch);
+		STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch);
 		STDMETHOD(FireKnocker)(/*[in]*/ int Count);
 		STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 		STDMETHOD(StartShake)(/*[in]*/ void);

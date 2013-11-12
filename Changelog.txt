@@ -26,9 +26,11 @@ VP 9.1.6 Changelog
 - add static rotation for primitives (ObjRotX, ObjRotY, ObjRotZ) to change the basic orientation of a primitive. The old rotation/translation settings animate the primitive. 
   All rotation/translation settings can be used out of the script.
 - add per-table region updates and region optimization (-1 takes the default from the video preferences, 0 forces off, 1 forces on)
-- add additional (optional) parameter to PlaySound to randomize the pitch of the played sound effect: Instead of  PlaySound "name",loopcount,volume  one can now use  PlaySound "name",loopcount,volume,randompitch  (randompitch ranges from 0.0 to 1.0)
-  (so f.e. PlaySound "FlipperUp",0,1.0,1.0)
-  
+- add additional (optional) parameters to PlaySound to set the pan and/or randomize the pitch of the played sound effect: Instead of  PlaySound "name",loopcount,volume  one can now use  PlaySound "name",loopcount,volume,pan,randompitch
+  pan ranges from -1.0 (left) over 0.0 (both) to 1.0 (right)
+  randompitch ranges from 0.0 (no randomization) to 1.0 (vary between half speed to double speed)
+  so f.e. PlaySound "FlipperUp",0,0.5,-1.0,1.0 would play the sound not looped (0), at half the volume (0.5), only on left speaker (-1.0), with varying pitch (1.0)
+
 VP 9.1.5 Changelog
 ------------------------
 - add flag for ramps to optionally make them not influence the 3D stereo rendering (to cope with 2D-hacks like halos/flashers/GI)

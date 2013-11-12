@@ -188,7 +188,7 @@ public:
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 
-	STDMETHOD(PlaySound)(BSTR bstr, int loopcount, float volume, float randompitch);
+	STDMETHOD(PlaySound)(BSTR bstr, int loopcount, float volume, float pan, float randompitch);
 	STDMETHOD(FireKnocker)(/*[in]*/ int Count);
 	STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 	STDMETHOD(StartShake)(/*[in]*/ void);
