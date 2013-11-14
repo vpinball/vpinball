@@ -356,18 +356,18 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
    {
       if ( m_d.m_type == PlungerTypeModern )
       {
-         g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( cframes*16*PLUNGEPOINTS1, 0, MY_D3DFVF_VERTEX, &vertexBuffer );
-         NumVideoBytes += (cframes*16*PLUNGEPOINTS1)*sizeof(Vertex3D);
+         g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( cframes*16*PLUNGEPOINTS1, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+         NumVideoBytes += (cframes*16*PLUNGEPOINTS1)*sizeof(Vertex3D_NoTex2);
       }
       else
       {
-         g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( cframes*16*PLUNGEPOINTS0, 0, MY_D3DFVF_VERTEX, &vertexBuffer );
-         NumVideoBytes += (cframes*16*PLUNGEPOINTS0)*sizeof(Vertex3D);
+         g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( cframes*16*PLUNGEPOINTS0, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+         NumVideoBytes += (cframes*16*PLUNGEPOINTS0)*sizeof(Vertex3D_NoTex2);
       }
    }
 
    int vbOffset=0;
-   Vertex3D *buf;
+   Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
 
    renderNewPlunger=false;
@@ -386,7 +386,7 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
    for ( int i=0;i<cframes; i++ )
    {
       const float height = beginy + inv_cframes*(float)i;
-      Vertex3D *ptr = verts[i].moverVertices;
+      Vertex3D_NoTex2 *ptr = verts[i].moverVertices;
 
       if (m_d.m_type == PlungerTypeModern)
       {
@@ -408,8 +408,6 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
                {
                   float y = height + rgcrossplunger1[m][1];
                   ptr[m + offset].x = rgcrossplunger1[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
-                  // cut the plunger at the bottom of the table otherwise it will vanish or produces texture distortion
-                  if ( y>g_pplayer->m_ptable->m_bottom ) y = g_pplayer->m_ptable->m_bottom-0.5f;
                   ptr[m + offset].y = y;
                   ptr[m + offset].z = rgcrossplunger1[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight;
                   ptr[m + offset].nx = rgcrossplungerNormal1[m][0] * sn;
@@ -428,7 +426,7 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
                }
                ptr[PLUNGEPOINTS1-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
             }
-            memcpy( &buf[vbOffset], ptr, 16*PLUNGEPOINTS1*sizeof(Vertex3D));
+            memcpy( &buf[vbOffset], ptr, 16*PLUNGEPOINTS1*sizeof(Vertex3D_NoTex2));
             vbOffset += (16*PLUNGEPOINTS1);
          }
          else
@@ -446,7 +444,7 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
             ptr[3].x = m_d.m_v.x+m_d.m_width;   ptr[3].nx = 0.0f;          ptr[3].tu = 1.0f;
             ptr[3].y = m_d.m_v.y;               ptr[3].ny = 0.0f;          ptr[3].tv = tv;
             ptr[3].z = m_d.m_width+zheight;     ptr[3].nz = -1.0f;
-            memcpy( &buf[vbOffset], ptr, 4*sizeof(Vertex3D));
+            memcpy( &buf[vbOffset], ptr, 4*sizeof(Vertex3D_NoTex2));
             vbOffset += 4;
          }
       }
@@ -479,7 +477,7 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
             }
             ptr[PLUNGEPOINTS0-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
          }
-         memcpy( &buf[vbOffset], ptr, 16*PLUNGEPOINTS0*sizeof(Vertex3D));
+         memcpy( &buf[vbOffset], ptr, 16*PLUNGEPOINTS0*sizeof(Vertex3D_NoTex2));
          vbOffset += (16*PLUNGEPOINTS0);
       }
    }
@@ -501,10 +499,11 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
 
       material.set();
       ppin3d->ClearSpriteRectangle( &m_phitplunger->m_plungeranim, NULL );
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
       for (int i=0;i<cframes;i++)
       {
-         Vertex3D *ptr = verts[i].moverVertices;
+         Vertex3D_NoTex2 *ptr = verts[i].moverVertices;
 
          ObjFrame * const pof = new ObjFrame();
 
@@ -570,7 +569,6 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
                }
             }
          }
-
          ppin3d->CreateAndCopySpriteBuffers( &m_phitplunger->m_plungeranim, pof );
          m_phitplunger->m_plungeranim.m_vddsFrame.AddElement(pof);
       }

@@ -1791,6 +1791,12 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const p
 		prc->top = min(prc->top, y - 1);
 		prc->right = max(prc->right, x + 1);
 		prc->bottom = max(prc->bottom, y + 1);
+      // clip the update rectangle to the screen boundary, 
+      // if something gets out of the screen the result can be a slow-down, render destortion or a crash
+      prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
+      prc->right  = min( prc->right, m_dwRenderWidth-1 );
+      if ( prc->bottom<prc->top ) prc->top=prc->bottom-1;
+      if ( prc->right<prc->left ) prc->left=prc->right-1;
 
 		if (pznear)
 		{
@@ -1820,6 +1826,12 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D_NoTex2* const rgv, float * 
 		prc->top = min(prc->top, y - 1);
 		prc->right = max(prc->right, x + 1);
 		prc->bottom = max(prc->bottom, y + 1);
+      // clip the update rectangle to the screen boundary, 
+      // if something gets out of the screen the result can be a slow-down, render destortion or a crash
+      prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
+      prc->right  = min( prc->right, m_dwRenderWidth-1 );
+      if ( prc->bottom<prc->top ) prc->top=prc->bottom-1;
+      if ( prc->right<prc->left ) prc->left=prc->right-1;
 
 		if (pznear)
 		{
@@ -1849,7 +1861,13 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D_NoLighting* const rgv, floa
 		prc->top = min(prc->top, y - 1);
 		prc->right = max(prc->right, x + 1);
 		prc->bottom = max(prc->bottom, y + 1);
-
+      // clip the update rectangle to the screen boundary, 
+      // if something gets out of the screen the result can be a slow-down, render destortion or a crash
+      prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
+      prc->right  = min( prc->right, m_dwRenderWidth-1 );
+      if ( prc->bottom<prc->top ) prc->top=prc->bottom-1;
+      if ( prc->right<prc->left ) prc->left=prc->right-1;
+ 
 		if (pznear)
 		{
 			*pznear = min(*pznear, rgvOut[i].z);
@@ -1878,6 +1896,12 @@ void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D_NoTex2* const rgv, floa
 		prc->top = min(prc->top, y - 2);
 		prc->right = max(prc->right, x + 2);
 		prc->bottom = max(prc->bottom, y + 2);
+      // clip the update rectangle to the screen boundary, 
+      // if something gets out of the screen the result can be a slow-down, render destortion or a crash
+      prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
+      prc->right  = min( prc->right, m_dwRenderWidth-1 );
+      if ( prc->bottom<prc->top ) prc->top=prc->bottom-1;
+      if ( prc->right<prc->left ) prc->left=prc->right-1;
 
 		if (pznear)
 		{
@@ -1896,6 +1920,12 @@ void Pin3D::ExpandRectByRect(RECT * const prc, const RECT * const prcNew) const
 	prc->top = min(prc->top, prcNew->top);
 	prc->right = max(prc->right, prcNew->right);
 	prc->bottom = max(prc->bottom, prcNew->bottom);
+   // clip the update rectangle to the screen boundary, 
+   // if something gets out of the screen the result can be a slow-down, render destortion or a crash
+   prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
+   prc->right  = min( prc->right, m_dwRenderWidth-1 );
+   if ( prc->bottom<prc->top ) prc->top=prc->bottom-1;
+   if ( prc->right<prc->left ) prc->left=prc->right-1;
 }
 
 void PinProjection::Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z)
