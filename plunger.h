@@ -101,7 +101,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
     };
     struct Vertices
     {
-      Vertex3D moverVertices[16*PLUNGEPOINTS1];
+      Vertex3D_NoTex2 moverVertices[16*PLUNGEPOINTS1];
     };
 
 	PinTable *m_ptable;
