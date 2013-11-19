@@ -1795,8 +1795,6 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D* const rgv, float * const p
       // if something gets out of the screen the result can be a slow-down, render destortion or a crash
       prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
       prc->right  = min( prc->right, m_dwRenderWidth-1 );
-      prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
-      prc->right  = min( prc->right, m_dwRenderWidth-1 );
       prc->top    = min( prc->top, m_dwRenderHeight-2 );
       prc->left   = min( prc->left, m_dwRenderWidth-2 );
 
@@ -1867,8 +1865,6 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D_NoLighting* const rgv, floa
       // if something gets out of the screen the result can be a slow-down, render destortion or a crash
       prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
       prc->right  = min( prc->right, m_dwRenderWidth-1 );
-      prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
-      prc->right  = min( prc->right, m_dwRenderWidth-1 );
       prc->top    = min( prc->top, m_dwRenderHeight-2 );
       prc->left   = min( prc->left, m_dwRenderWidth-2 );
  
@@ -1904,8 +1900,6 @@ void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D_NoTex2* const rgv, floa
       // if something gets out of the screen the result can be a slow-down, render destortion or a crash
       prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
       prc->right  = min( prc->right, m_dwRenderWidth-1 );
-      prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
-      prc->right  = min( prc->right, m_dwRenderWidth-1 );
       prc->top    = min( prc->top, m_dwRenderHeight-2 );
       prc->left   = min( prc->left, m_dwRenderWidth-2 );
 
@@ -1927,9 +1921,7 @@ void Pin3D::ExpandRectByRect(RECT * const prc, const RECT * const prcNew) const
 	prc->right = max(prc->right, prcNew->right);
 	prc->bottom = max(prc->bottom, prcNew->bottom);
    // clip the update rectangle to the screen boundary, 
-   // if something gets out of the screen the result can be a slow-down, render destortion or a crash
-   prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
-   prc->right  = min( prc->right, m_dwRenderWidth-1 );
+   // if something gets out of the screen the result can be a slow-down, render distortion or a crash
    prc->bottom = min( prc->bottom, m_dwRenderHeight-1);
    prc->right  = min( prc->right, m_dwRenderWidth-1 );
    prc->top    = min( prc->top, m_dwRenderHeight-2 );
