@@ -353,38 +353,22 @@ void Primitive::RecalculateMatrices()
    RTmatrix.SetIdentity();
 
    tempMatrix.SetIdentity();
-   for (int i = 8; i >= 0; i--)
-   {
-      switch (m_d.m_aRotAndTraTypes[i])
-      {
-      case RotX:
-         tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
-         break;
-      case RotY:
-         tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
-         break;
-      case RotZ:
-         tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
-         break;
-      case TraX:
-         tempMatrix.SetIdentity();
-         tempMatrix._41 = m_d.m_aRotAndTra[i];
-         break;
-      case TraY:
-         tempMatrix.SetIdentity();
-         tempMatrix._42 = m_d.m_aRotAndTra[i];
-         break;
-      case TraZ:
-         tempMatrix.SetIdentity();
-         tempMatrix._43 = m_d.m_aRotAndTra[i];
-         break;
-      default:
-         break;
-      }
-      tempMatrix.Multiply(RTmatrix, RTmatrix);
-   }
+   tempMatrix._41 = m_d.m_aRotAndTra[3];
+   tempMatrix._42 = m_d.m_aRotAndTra[4];
+   tempMatrix._43 = m_d.m_aRotAndTra[5];
+   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_aRotAndTra[2]));
+   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_aRotAndTra[1]));
+   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_aRotAndTra[0]));
+   tempMatrix.Multiply(RTmatrix, RTmatrix);
  
-   tempMatrix.SetRotation( ANGTORAD(m_d.m_aRotAndTra[6]), ANGTORAD(m_d.m_aRotAndTra[7]), ANGTORAD(m_d.m_aRotAndTra[8]) );
+   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_aRotAndTra[8]));
+   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_aRotAndTra[7]));
+   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_aRotAndTra[6]));
    tempMatrix.Multiply(RTmatrix, RTmatrix);
 
    rotMatrix = RTmatrix;
