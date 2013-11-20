@@ -128,14 +128,14 @@
 #define DISPID_ROTRA7					21
 #define DISPID_ROTRA8					22
 #define DISPID_ROTRA9					23
-#define IDC_COMBO1                      340
-#define IDC_COMBO2                      341
-#define IDC_COMBO3                      342
-#define IDC_COMBO4                      343
-#define IDC_COMBO5                      344
-#define IDC_COMBO6                      345
-#define IDC_COMBO7                      346
-#define IDC_COMBO8                      347
-#define IDC_COMBO9                      348
+#define DISPID_ROT_X 					24
+#define DISPID_ROT_Y 					25
+#define DISPID_ROT_Z 					26
+#define DISPID_TRANS_X 					27
+#define DISPID_TRANS_Y 					28
+#define DISPID_TRANS_Z 					29
+#define DISPID_OBJROT_X 				30
+#define DISPID_OBJROT_Y 				31
+#define DISPID_OBJROT_Z 				32
 
 // Must have a carriage return at end of file for correct resource file parsing
