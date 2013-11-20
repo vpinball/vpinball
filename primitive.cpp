@@ -351,7 +351,7 @@ void Primitive::RecalculateMatrices()
    Matrix3D tempMatrix;
    Matrix3D RTmatrix;
    RTmatrix.SetIdentity();
-   rotMatrix.SetIdentity();
+
    tempMatrix.SetIdentity();
    for (int i = 8; i >= 0; i--)
    {
@@ -382,30 +382,12 @@ void Primitive::RecalculateMatrices()
          break;
       }
       tempMatrix.Multiply(RTmatrix, RTmatrix);
-      tempMatrix.Multiply(rotMatrix, rotMatrix);
    }
  
-   tempMatrix.SetIdentity();
-   for (int i = 8; i >= 0; i--)
-   {
-      switch (m_d.m_aRotAndTraTypes[i])
-      {
-      case ObjRotX:
-         tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
-         break;
-      case ObjRotY:
-         tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
-         break;
-      case ObjRotZ:
-         tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_aRotAndTra[i]));
-         break;
-      default:
-         break;
-      }
-      tempMatrix.Multiply(RTmatrix, RTmatrix);
-      tempMatrix.Multiply(rotMatrix, rotMatrix);
-   }
+   tempMatrix.SetRotation( ANGTORAD(m_d.m_aRotAndTra[6]), ANGTORAD(m_d.m_aRotAndTra[7]), ANGTORAD(m_d.m_aRotAndTra[8]) );
+   tempMatrix.Multiply(RTmatrix, RTmatrix);
 
+   rotMatrix = RTmatrix;
    fullMatrix = Smatrix;
 
    RTmatrix.Multiply(fullMatrix, fullMatrix);

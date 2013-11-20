@@ -55,6 +55,19 @@ public:
 	_12 = (float)sin(z);
 	_21 = -_12;
 	}
+   inline void SetRotation( const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z)
+   {
+      SetIdentity();
+      _22 = _33 = (float)cos(x);
+      _23 = (float)sin(x);
+      _32 = -_23;
+      _11 = _33 = (float)cos(y);
+      _31 = (float)sin(y);
+      _13 = -_31;
+      _11 = _22 = (float)cos(z);
+      _12 = (float)sin(z);
+      _21 = -_12;
+   }
 	inline void SetIdentity()
 	{
 	_11 = _22 = _33 = _44 = 1.0f;
