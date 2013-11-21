@@ -135,6 +135,7 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1238,6 +1239,12 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       }
       break;
 
+   case ID_EDIT_PHYSICSOPTIONS:
+      {
+         /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_PHYSICS_OPTIONS),
+            m_hwnd, PhysicsOptionsProc, 0);
+      }
+      break;
 
    case ID_EDIT_EDITOROPTIONS:
       {
@@ -7630,6 +7637,234 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
    case WM_DESTROY:
       SendMessage(hwndDlg, RESET_SoundList_CONTENT, 0, 0);
+      break;
+   }
+
+   return FALSE;
+}
+
+int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   switch (uMsg)
+   {
+   case WM_INITDIALOG:
+      {
+         HWND hwndParent = GetParent(hwndDlg);
+         RECT rcDlg;
+         RECT rcMain;
+         GetWindowRect(hwndParent, &rcMain);
+         GetWindowRect(hwndDlg, &rcDlg);
+
+         SetWindowPos(hwndDlg, NULL,
+            (rcMain.right + rcMain.left)/2 - (rcDlg.right - rcDlg.left)/2,
+            (rcMain.bottom + rcMain.top)/2 - (rcDlg.bottom - rcDlg.top)/2,
+            0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
+
+         HRESULT hr;
+		 char tmp[256];
+
+		 float FlipperPhysicsSpeed = 0.15f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsSpeed", &FlipperPhysicsSpeed);
+         if (hr != S_OK)
+         {
+            FlipperPhysicsSpeed = 0.15f;
+         }
+
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsSpeed);
+ 		 SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp);
+
+		 float FlipperPhysicsStrength = 3.f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsStrength", &FlipperPhysicsStrength);
+         if (hr != S_OK)
+         {
+            FlipperPhysicsStrength = 3.f;
+         }
+
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsStrength);
+ 		 SetDlgItemTextA(hwndDlg, 19, tmp);
+
+ 		 float FlipperPhysicsElasticity = 0.55f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsElasticity", &FlipperPhysicsElasticity);
+         if (hr != S_OK)
+         {
+            FlipperPhysicsElasticity = 0.55f;
+         }
+
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsElasticity);
+ 		 SetDlgItemTextA(hwndDlg, 21, tmp);
+
+  		 float FlipperPhysicsScatter = -11.f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsScatter", &FlipperPhysicsScatter);
+         if (hr != S_OK)
+         {
+            FlipperPhysicsScatter = -11.f;
+         }
+
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsScatter);
+ 		 SetDlgItemTextA(hwndDlg, 112, tmp);
+
+  		 float FlipperPhysicsReturnStrength = 0.09f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsReturnStrength", &FlipperPhysicsReturnStrength);
+         if (hr != S_OK)
+         {
+            FlipperPhysicsReturnStrength = 0.09f;
+         }
+
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsReturnStrength);
+ 		 SetDlgItemTextA(hwndDlg, 23, tmp);
+
+		 float FlipperPhysicsRecoil = 2.f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsRecoil", &FlipperPhysicsRecoil);
+         if (hr != S_OK)
+         {
+            FlipperPhysicsRecoil = 2.f;
+         }
+
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsRecoil);
+ 		 SetDlgItemTextA(hwndDlg, 22, tmp);
+
+  		 float FlipperPhysicsPowerLaw = 1.f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsPowerLaw", &FlipperPhysicsPowerLaw);
+         if (hr != S_OK)
+         {
+            FlipperPhysicsPowerLaw = 1.f;
+         }
+
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsPowerLaw);
+ 		 SetDlgItemTextA(hwndDlg, 109, tmp);
+
+		 float FlipperPhysicsOblique = 3.f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsOblique", &FlipperPhysicsOblique);
+         if (hr != S_OK)
+         {
+            FlipperPhysicsOblique = 3.f;
+         }
+
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsOblique);
+ 		 SetDlgItemTextA(hwndDlg, 110, tmp);
+
+		 float TablePhysicsGravityConstant = 1.6774f;
+         hr = GetRegStringAsFloat("Player", "TablePhysicsGravityConstant", &TablePhysicsGravityConstant);
+         if (hr != S_OK)
+         {
+            TablePhysicsGravityConstant = 1.6774f;
+         }
+
+		 sprintf_s(tmp,256,"%f",TablePhysicsGravityConstant);
+ 		 SetDlgItemTextA(hwndDlg, 1100, tmp);
+
+		 float TablePhysicsContactFriction = 0.0005f;
+         hr = GetRegStringAsFloat("Player", "TablePhysicsContactFriction", &TablePhysicsContactFriction);
+         if (hr != S_OK)
+         {
+            TablePhysicsContactFriction = 0.0005f;
+         }
+
+		 sprintf_s(tmp,256,"%f",TablePhysicsContactFriction);
+ 		 SetDlgItemTextA(hwndDlg, 1101, tmp);
+
+		 float TablePhysicsContactScatterAngle = 0.5f;
+         hr = GetRegStringAsFloat("Player", "TablePhysicsContactScatterAngle", &TablePhysicsContactScatterAngle);
+         if (hr != S_OK)
+         {
+            TablePhysicsContactScatterAngle = 0.5f;
+         }
+
+		 sprintf_s(tmp,256,"%f",TablePhysicsContactScatterAngle);
+ 		 SetDlgItemTextA(hwndDlg, 1102, tmp);
+
+		 float TablePhysicsDampeningSpeed = 65.f;
+         hr = GetRegStringAsFloat("Player", "TablePhysicsDampeningSpeed", &TablePhysicsDampeningSpeed);
+         if (hr != S_OK)
+         {
+            TablePhysicsDampeningSpeed = 65.f;
+         }
+
+		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningSpeed);
+ 		 SetDlgItemTextA(hwndDlg, 1103, tmp);
+
+		 float TablePhysicsDampeningFriction = 0.95f;
+         hr = GetRegStringAsFloat("Player", "TablePhysicsDampeningFriction", &TablePhysicsDampeningFriction);
+         if (hr != S_OK)
+         {
+            TablePhysicsDampeningFriction = 0.95f;
+         }
+
+		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningFriction);
+ 		 SetDlgItemTextA(hwndDlg, 1106, tmp);
+
+		 return TRUE;
+      }
+      break;
+
+   case WM_COMMAND:
+      {
+         switch (HIWORD(wParam))
+         {
+         case BN_CLICKED:
+            switch (LOWORD(wParam))
+            {
+            case IDOK:
+               {
+                  char tmp[256];
+
+                  GetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp, 256);
+ 			      SetRegValue("Player", "FlipperPhysicsSpeed", REG_SZ, &tmp, strlen(tmp));	
+
+                  GetDlgItemTextA(hwndDlg, 19, tmp, 256);
+ 			      SetRegValue("Player", "FlipperPhysicsStrength", REG_SZ, &tmp, strlen(tmp));	
+
+                  GetDlgItemTextA(hwndDlg, 21, tmp, 256);
+ 			      SetRegValue("Player", "FlipperPhysicsElasticity", REG_SZ, &tmp, strlen(tmp));	
+
+                  GetDlgItemTextA(hwndDlg, 112, tmp, 256);
+ 			      SetRegValue("Player", "FlipperPhysicsScatter", REG_SZ, &tmp, strlen(tmp));	
+
+                  GetDlgItemTextA(hwndDlg, 23, tmp, 256);
+ 			      SetRegValue("Player", "FlipperPhysicsReturnStrength", REG_SZ, &tmp, strlen(tmp));	
+
+				  GetDlgItemTextA(hwndDlg, 22, tmp, 256);
+ 			      SetRegValue("Player", "FlipperPhysicsRecoil", REG_SZ, &tmp, strlen(tmp));	
+
+                  GetDlgItemTextA(hwndDlg, 109, tmp, 256);
+ 			      SetRegValue("Player", "FlipperPhysicsPowerLaw", REG_SZ, &tmp, strlen(tmp));	
+
+				  GetDlgItemTextA(hwndDlg, 110, tmp, 256);
+ 			      SetRegValue("Player", "FlipperPhysicsOblique", REG_SZ, &tmp, strlen(tmp));	
+
+
+				  GetDlgItemTextA(hwndDlg, 1100, tmp, 256);
+ 			      SetRegValue("Player", "TablePhysicsGravityConstant", REG_SZ, &tmp, strlen(tmp));	
+
+				  GetDlgItemTextA(hwndDlg, 1101, tmp, 256);
+ 			      SetRegValue("Player", "TablePhysicsContactFriction", REG_SZ, &tmp, strlen(tmp));	
+
+				  GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
+ 			      SetRegValue("Player", "TablePhysicsContactScatterAngle", REG_SZ, &tmp, strlen(tmp));	
+
+				  GetDlgItemTextA(hwndDlg, 1103, tmp, 256);
+ 			      SetRegValue("Player", "TablePhysicsDampeningSpeed", REG_SZ, &tmp, strlen(tmp));	
+
+				  GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
+ 			      SetRegValue("Player", "TablePhysicsDampeningFriction", REG_SZ, &tmp, strlen(tmp));	
+
+				  EndDialog(hwndDlg, TRUE);
+               }
+               break;
+
+            case IDCANCEL:
+               EndDialog(hwndDlg, FALSE);
+               break;
+            }
+         }
+      }
+      break;
+
+   case WM_CLOSE:
+      EndDialog(hwndDlg, FALSE);
+      break;
+
+   case WM_DESTROY:
       break;
    }
 

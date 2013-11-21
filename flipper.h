@@ -41,6 +41,16 @@ public:
 	float m_recoil;
 	float m_return;
 	float m_angleEOS;	//angle at which EOS switch opens, as measured from EOS parked position
+
+	float m_OverrideSpeed;
+	float m_OverrideStrength;
+ 	float m_OverrideElasticity;
+  	float m_OverrideScatter;
+  	float m_OverrideReturnStrength;
+	float m_OverrideRecoil;
+  	float m_OverridePowerLaw;
+	float m_OverrideOblique;
+	BOOL m_OverridePhysics;
 	};
 
 class Flipper : 
@@ -130,6 +140,8 @@ public:
 	STDMETHOD(put_RubberColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_Speed)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Speed)(/*[in]*/ float newVal);
+	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_OverridePhysics)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

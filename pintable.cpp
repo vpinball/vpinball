@@ -587,6 +587,8 @@ PinTable::PinTable()
    m_fRenderDecals = fTrue;
    m_fRenderEMReels = fTrue;
 
+   m_fOverridePhysics = fFalse;
+
    m_Gravity = GRAVITYCONST;
    m_hardFriction = C_FRICTIONCONST;
    m_hardScatter = 0;
@@ -774,7 +776,7 @@ PinTable::PinTable()
    // Write the version of this exe to the registry.  
    // This will be read later by the front end.
    char Version[64];
-   sprintf_s( Version, "00.85.%04d", BUILD_NUMBER );
+   sprintf_s( Version, "00.85.%04d", BUILD_NUMBER ); //!!
    SetRegValue ( "Version", "VPinball", REG_SZ, Version, strlen(Version) );
 
    m_jolt_amount = 500;
@@ -1555,9 +1557,9 @@ void PinTable::Render3DProjection(Sur * const psur)
    // create a normal matrix.
    matTrans._11 = matTrans._22 = matTrans._33 = matTrans._44 = 1.0f;
    matTrans._12 = matTrans._13 = matTrans._14 = 
-      matTrans._21 = matTrans._23 = matTrans._24 = 
-      matTrans._34 = 
-      matTrans._43 = 0.0f;
+   matTrans._21 = matTrans._23 = matTrans._24 = 
+   matTrans._34 = 
+   matTrans._43 = 0.0f;
    // Skew for FOV of 0 Deg. is not supported. so change it a little bit.
    const float skewFOV = (realFOV < 0.01f) ? 0.01f : realFOV;
    // create skew the z axis to x and y direction.
@@ -1767,24 +1769,68 @@ void PinTable::Play()
 
    if (!m_pcv->m_fScriptError)
    {
-
       g_pplayer = new Player();
-      const HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
+      HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
       if (!m_pcv->m_fScriptError) 
       {
+		 float m_fOverrideContactFriction;
+		 float m_fOverrideContactScatterAngle;
+		 float m_fOverrideDampeningSpeed;
+		 float m_fOverrideDampeningFriction;
+		 
+		 if(m_fOverridePhysics)
+		 {
+			 m_fOverrideGravityConstant = 1.6774f;
+			 hr = GetRegStringAsFloat("Player", "TablePhysicsGravityConstant", &m_fOverrideGravityConstant);
+			 if (hr != S_OK)
+			 {
+				m_fOverrideGravityConstant = 1.6774f;
+			 }
+			 m_fOverrideGravityConstant *= GRAVITYCONST;
+
+			 m_fOverrideContactFriction = 0.0005f;
+			 hr = GetRegStringAsFloat("Player", "TablePhysicsContactFriction", &m_fOverrideContactFriction);
+			 if (hr != S_OK)
+			 {
+				m_fOverrideContactFriction = 0.0005f;
+			 }
+
+			 m_fOverrideContactScatterAngle = 0.5f;
+			 hr = GetRegStringAsFloat("Player", "TablePhysicsContactScatterAngle", &m_fOverrideContactScatterAngle);
+			 if (hr != S_OK)
+			 {
+				m_fOverrideContactScatterAngle = 0.5f;
+			 }
+			 m_fOverrideContactScatterAngle = ANGTORAD(m_fOverrideContactScatterAngle);
+
+			 m_fOverrideDampeningSpeed = 65.f;
+			 hr = GetRegStringAsFloat("Player", "TablePhysicsDampeningSpeed", &m_fOverrideDampeningSpeed);
+			 if (hr != S_OK)
+			 {
+				m_fOverrideDampeningSpeed = 65.f;
+			 }
+
+			 m_fOverrideDampeningFriction = 0.95f;
+			 hr = GetRegStringAsFloat("Player", "TablePhysicsDampeningFriction", &m_fOverrideDampeningFriction);
+			 if (hr != S_OK)
+			 {
+				m_fOverrideDampeningFriction = 0.95f;
+			 }
+		 }
+
          //c_Gravity = m_Gravity;				// set physical constants
-         c_hardFriction = 1.0f - m_hardFriction;	// convert to reciprocal
-         c_hardScatter = m_hardScatter;
-         c_maxBallSpeedSqr = m_maxBallSpeed*m_maxBallSpeed;
-         c_dampingFriction = m_dampingFriction;
+         c_hardFriction = 1.0f - (m_fOverridePhysics ? m_fOverrideContactFriction : m_hardFriction);	// convert to reciprocal
+         c_hardScatter = (m_fOverridePhysics ? m_fOverrideContactScatterAngle : m_hardScatter);
+         c_maxBallSpeedSqr = (m_fOverridePhysics ? m_fOverrideDampeningSpeed*m_fOverrideDampeningSpeed : m_maxBallSpeed*m_maxBallSpeed);
+         c_dampingFriction = (m_fOverridePhysics ? m_fOverrideDampeningFriction : m_dampingFriction);
          c_plungerNormalize = m_plungerNormalize*(float)(1.0/1300.0);
          c_plungerFilter = (m_plungerFilter != 0); 
 
          const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
          g_pplayer->m_gravity.x = 0; 
-         g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
-         g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
+         g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity); //0.06f;
+         g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
 
          m_pcv->SetEnabled(fFalse); // Can't edit script while playing
 
@@ -1813,7 +1859,6 @@ void PinTable::Play()
    }
 
    DestroyWindow(hwndProgressDialog);
-
 
    //EnableWindow(g_pvp->m_hwndWork, fFalse); // Go modal in our main app window
 }
@@ -2667,6 +2712,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(SCLX), m_scalex);
    bw.WriteFloat(FID(SCLY), m_scaley);
 
+   bw.WriteBool(FID(ORRP), m_fOverridePhysics);
    bw.WriteFloat(FID(GAVT), m_Gravity);
    bw.WriteFloat(FID(FRCT), m_hardFriction);
    bw.WriteFloat(FID(SCAT), m_hardScatter);
@@ -3377,6 +3423,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SCLY))
    {
       pbr->GetFloat(&m_scaley);
+   }
+   else if( id == FID(ORRP))
+   {
+      pbr->GetBool(&m_fOverridePhysics);
    }
    else if( id == FID(GAVT))
    {
@@ -8031,13 +8081,13 @@ STDMETHODIMP PinTable::put_Gravity(float newVal )
       const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
       g_pplayer->m_gravity.x = 0; 
-      g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
-      g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
+      g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity); //0.06f;
+      g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
       STARTUNDO
-         m_Gravity = newVal*GRAVITYCONST;
+      m_Gravity = newVal*GRAVITYCONST;
       STOPUNDO
    }	
    return S_OK;
@@ -8054,14 +8104,14 @@ STDMETHODIMP PinTable::put_HardFriction(float newVal )
 {	
    STARTUNDO
 
-      if (newVal > 1.0f) newVal = 1.0f;
+   if (newVal > 1.0f) newVal = 1.0f;
       else if (newVal < 0) newVal = 0;
 
-      m_hardFriction = newVal ;
+   m_hardFriction = newVal;
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_HardScatter(float *pVal)
@@ -8075,11 +8125,11 @@ STDMETHODIMP PinTable::put_HardScatter(float newVal )
 {
    STARTUNDO
 
-      m_hardScatter = ANGTORAD(newVal);
+   m_hardScatter = ANGTORAD(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_MaxBallSpeed(float *pVal)
@@ -8093,7 +8143,7 @@ STDMETHODIMP PinTable::put_MaxBallSpeed(float newVal )
 {
    STARTUNDO
 
-      m_maxBallSpeed = newVal;
+   m_maxBallSpeed = newVal;
 
    STOPUNDO
       return S_OK;
@@ -8110,7 +8160,7 @@ STDMETHODIMP PinTable::put_DampingFriction(float newVal )
 {
    STARTUNDO
 
-      m_dampingFriction = newVal;
+   m_dampingFriction = newVal;
 
    STOPUNDO
       return S_OK;
@@ -8278,13 +8328,13 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
       const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
       g_pplayer->m_gravity.x = 0; 
-      g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
-      g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
+      g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity); //0.06f;
+      g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
       STARTUNDO
-         m_angletiltMax = newVal;
+      m_angletiltMax = newVal;
       STOPUNDO
    }
    return S_OK;
@@ -8306,13 +8356,13 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
       const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
       g_pplayer->m_gravity.x = 0;
-      g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*m_Gravity; //0.06f;
-      g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*m_Gravity;
+      g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity); //0.06f;
+      g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
       STARTUNDO
-         m_angletiltMin = newVal;
+      m_angletiltMin = newVal;
       STOPUNDO
    }
    return S_OK;
@@ -8382,10 +8432,26 @@ STDMETHODIMP PinTable::get_RenderShadows(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_RenderShadows(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_fRenderShadows = VBTOF(newVal);
+   m_fRenderShadows = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_OverridePhysics(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_fOverridePhysics);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_OverridePhysics(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+   m_fOverridePhysics = VBTOF(newVal);
+   STOPUNDO
+
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)

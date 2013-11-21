@@ -33,6 +33,8 @@ VP 9.2.0 Changelog
 - add modern plunger texture mapping support and correct coloring
 - rotation/translation of primitives can be changed from within the script with the properties .RotX, .RotY, .RotZ, .TransX, .TransY, .TransZ, .ObjRotX, .ObjRotY, .ObjRotZ
   or for backwards compatibility you can use .rotandtrans0-8
+- add global physics options to tweak some of the table and flipper settings that can then optionally override the table settings (when enabled in the table physics options and/or the flipper physics options)
+  this enables quick changes to flipper and physics settings for a whole bunch of tables (for example to tweak for less input lag or adapt the ball simulation/'speed')
 
 VP 9.1.5 Changelog
 ------------------------

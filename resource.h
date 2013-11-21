@@ -354,6 +354,7 @@
 #define IDC_CHECKBLIT                   295
 #define ID_DEBUGWINDOW                  295
 #define IDC_SHADOW                      296
+#define IDD_PHYSICS_OPTIONS             297
 #define IDC_VERSION                     302
 #define IDC_TRANSWEBSITE                303
 #define IDC_TRANSNAME                   304
@@ -699,6 +700,7 @@
 #define ID_EDIT_CUT                     32813
 #define ID_EDIT_PASTE                   32814
 #define ID_EDIT_AUDIOOPTIONS            32815
+#define ID_EDIT_PHYSICSOPTIONS          32816
 #define ID_EDIT_BACKGLASSVIEW           32817
 #define ID_DELETE                       32818
 #define ID_EDIT_FINDNEXT                32819

@@ -202,8 +202,11 @@ public:
 	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
+    
+	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_OverridePhysics)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD(get_MaxSeparation)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_MaxSeparation)(/*[in]*/ float newVal);
@@ -531,6 +534,9 @@ END_CONNECTION_POINT_MAP()
 	float m_angletiltMax;
 	float m_angletiltMin;
 
+	BOOL m_fOverridePhysics;
+    float m_fOverrideGravityConstant;
+
 	float m_Gravity;
 	float m_hardFriction;
 	float m_hardScatter;
@@ -679,10 +685,10 @@ END_CONNECTION_POINT_MAP()
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
 	BOOL m_NormalizeNormals;
-   BOOL useReflectionForBalls;
-   int ballReflectionStrength;
-   float shadowDirX;
-   float shadowDirY;
+    BOOL useReflectionForBalls;
+    int ballReflectionStrength;
+    float shadowDirX;
+    float shadowDirY;
 	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 };
 

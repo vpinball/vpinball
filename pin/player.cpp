@@ -725,8 +725,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 					  * ptable->m_globalDifficulty;
 
 	m_gravity.x = 0;
-	m_gravity.y =  sinf(ANGTORAD(slope))*ptable->m_Gravity;
-	m_gravity.z = -cosf(ANGTORAD(slope))*ptable->m_Gravity;
+	m_gravity.y =  sinf(ANGTORAD(slope))*(ptable->m_fOverridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
+	m_gravity.z = -cosf(ANGTORAD(slope))*(ptable->m_fOverridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
 
 	m_NudgeX = 0;
 	m_NudgeY = 0;
@@ -1609,14 +1609,14 @@ void Player::UltraNudge_update()	// called on every integral physics frame
 #define IIR_Order 4
 
 // coefficients for IIR_Order Butterworth filter set to 10 Hz passband
-static const float a [IIR_Order+1] = {
+const float a [IIR_Order+1] = {
 	0.0048243445f,
 	0.019297378f,	
 	0.028946068f,
 	0.019297378f,
 	0.0048243445f};
 
-static const float b [IIR_Order+1] = {
+const float b [IIR_Order+1] = {
 	1.00000000f, //if not 1 add division below
 	-2.369513f,
 	2.3139884f,
