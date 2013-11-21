@@ -467,6 +467,43 @@ BEGIN
     LTEXT           "&Sound Volume",IDC_STATIC_SOUND,39,99,47,8
 END
 
+IDD_PHYSICS_OPTIONS DIALOGEX 0, 0, 185, 250
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Global Physics Options"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,128,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,128,24,50,14
+    LTEXT           "Flipper Settings",-1,7,4,106,8
+    EDITTEXT        DISPID_Flipper_Speed,80,17,40,12,ES_AUTOHSCROLL
+    EDITTEXT        19,80,32,40,12,ES_AUTOHSCROLL
+    EDITTEXT        21,80,47,40,12,ES_AUTOHSCROLL
+    EDITTEXT        112,80,61,40,12,ES_AUTOHSCROLL
+    EDITTEXT        23,80,75,40,12,ES_AUTOHSCROLL
+    EDITTEXT        22,80,90,40,12,ES_AUTOHSCROLL
+    EDITTEXT        109,80,105,40,12,ES_AUTOHSCROLL
+    EDITTEXT        110,80,118,40,12,ES_AUTOHSCROLL
+    LTEXT           "S&peed",-1,7,19,66,8
+    LTEXT           "Stre&ngth",-1,7,34,66,8
+    LTEXT           "Elast&icity",-1,7,49,66,8
+    LTEXT           "Recoil Velocity",-1,7,92,66,8
+    LTEXT           "Return Strength Ratio",-1,7,77,66,8
+    LTEXT           "Oblique Correction",-1,7,120,66,8
+    LTEXT           "Scatter Angle",-1,7,63,66,8
+    LTEXT           "Power-Law",-1,7,107,66,8
+    LTEXT           "Table Settings",-1,7,140,106,8
+    EDITTEXT        1100,80,157,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1101,80,171,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1102,80,184,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1103,80,198,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1106,80,212,40,12,ES_AUTOHSCROLL
+    LTEXT           "Gravity Constant",IDC_STATIC,7,159,69,8
+    LTEXT           "Contact Friction",IDC_STATIC,7,173,69,8
+    LTEXT           "Contact Scatter Angle",IDC_STATIC,7,187,69,8
+    LTEXT           "Dampening Speed",IDC_STATIC,7,201,69,8
+    LTEXT           "Dampening Friction",IDC_STATIC,7,215,69,8
+END
+
 IDD_GAMEPAUSE DIALOGEX 0, 0, 78, 80
 STYLE DS_SETFONT | WS_POPUP | WS_BORDER
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -873,10 +910,11 @@ BEGIN
     LTEXT           "Max.Difficulty Length",-1,7,113,68,8
 END
 
-IDD_PROPFLIPPER_PHYSICS DIALOGEX 0, 0, 125, 128
+IDD_PROPFLIPPER_PHYSICS DIALOGEX 0, 0, 125, 145
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
+    CONTROL         "Override by Global Physics Sett.",1044,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,130,161,10
     EDITTEXT        DISPID_Flipper_Speed,76,7,40,12,ES_AUTOHSCROLL
     EDITTEXT        19,76,22,40,12,ES_AUTOHSCROLL
     EDITTEXT        21,76,37,40,12,ES_AUTOHSCROLL
@@ -1306,7 +1344,7 @@ BEGIN
     LTEXT           "Y Offset",IDC_STATIC,7,143,67,8
 END
 
-IDD_PROPBACKGLASS_PHYSICS DIALOGEX 0, 0, 125, 180
+IDD_PROPBACKGLASS_PHYSICS DIALOGEX 0, 0, 125, 190
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1318,8 +1356,8 @@ BEGIN
     EDITTEXT        1105,80,76,40,12,ES_AUTOHSCROLL
     EDITTEXT        1104,80,90,40,12,ES_AUTOHSCROLL
     CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,111,9
-    CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,125,104,10
-    CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,137,105,10
+    CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,137,104,10
+    CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,149,105,10
     EDITTEXT        1041,80,149,40,12,ES_AUTOHSCROLL
     EDITTEXT        1042,80,163,40,12,ES_AUTOHSCROLL
     LTEXT           "Gravity Constant",IDC_STATIC,7,9,69,8
@@ -1329,9 +1367,10 @@ BEGIN
     LTEXT           "Dampening Friction",IDC_STATIC,7,65,69,8
     LTEXT           "Physics Max.Looptime",IDC_STATIC,7,79,70,8
     LTEXT           "Mech-Plunger Adjust",IDC_STATIC,7,92,70,8
-    LTEXT           "- - -",IDC_STATIC,7,115,113,8
-    LTEXT           "3D Stereo Separation",IDC_STATIC,7,151,70,8
-    LTEXT           "3D Stereo ZPD",IDC_STATIC,7,165,70,8
+    CONTROL         "Override by Global Physics Sett.",1043,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,118,161,10
+    LTEXT           "- - -",IDC_STATIC,7,127,113,8
+    LTEXT           "3D Stereo Separation",IDC_STATIC,7,163,70,8
+    LTEXT           "3D Stereo ZPD",IDC_STATIC,7,177,70,8
 END
 
 IDD_PROPPOINT_POSITION DIALOGEX 0, 0, 125, 42
@@ -1715,6 +1754,7 @@ BEGIN
         MENUITEM "&Keys...",                    ID_EDIT_KEYS
         MENUITEM "&Security Options...",        ID_PREFERENCES_SECURITYOPTIONS
         MENUITEM "&Video Options...",           ID_EDIT_VIDEOOPTIONS
+        MENUITEM "&Physics Options...",         ID_EDIT_PHYSICSOPTIONS
     END
     POPUP "&Layer"
     BEGIN

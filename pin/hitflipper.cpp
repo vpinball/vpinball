@@ -607,15 +607,15 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	if (distance > 0.f)	// recoil possible 
 		{			
 		const float maxradius = m_pflipper->m_d.m_FlipperRadius + m_pflipper->m_d.m_EndRadius; 		
-		const float recoil = m_pflipper->m_d.m_recoil/maxradius;				// convert to Radians/time
+		const float recoil = (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideRecoil : m_pflipper->m_d.m_recoil)/maxradius; // convert to Radians/time
 		const float tfdr = distance/maxradius; 		
-		const float tfr = powf(tfdr,m_pflipper->m_d.m_powerlaw);				// apply powerlaw weighting
+		const float tfr = powf(tfdr, (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverridePowerLaw : m_pflipper->m_d.m_powerlaw));				// apply powerlaw weighting
 		const float dvt = dv.x * phitnormal[1].x + dv.y  * phitnormal[1].y;		// velocity transvere to flipper
 		const float anglespeed = m_flipperanim.m_anglespeed + dvt * tfr * impulse/(distance*(m_forcemass + tfr));		
 
 		if (m_flipperanim.m_fAcc != 0)											// currently in rotation
 			{	
-			obliquecorr = m_flipperanim.m_fAcc * m_pflipper->m_d.m_obliquecorrection; //flipper trajectory correction
+			obliquecorr = m_flipperanim.m_fAcc * (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideOblique : m_pflipper->m_d.m_obliquecorrection); //flipper trajectory correction
 			impulse = (1.005f + m_elasticity)*m_forcemass/(m_forcemass + tfr);	// impulse for pinball
 			m_flipperanim.m_anglespeed = anglespeed;							// new angle speed for flipper	
 			}
@@ -644,7 +644,7 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 	pball->vx -= impulse*dot * phitnormal->x; 							// new velocity for ball after impact
 	pball->vy -= impulse*dot * phitnormal->y;	
 
-	float scatter_angle = m_pflipper->m_d.m_scatterangle;				// object specific roughness
+	float scatter_angle = (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideScatter : m_pflipper->m_d.m_scatterangle); // object specific roughness
 	if (scatter_angle <= 0.0f)
 		scatter_angle = c_hardScatter;
 	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply difficulty weighting

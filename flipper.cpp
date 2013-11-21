@@ -68,6 +68,8 @@ void Flipper::SetDefaults(bool fromMouseClick)
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Elasticity", &fTmp);
    m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.55f;
 
+   m_d.m_OverridePhysics = fFalse;
+
    //hr = GetRegStringAsFloat("DefaultProps\\Flipper","Friction", &fTmp);
    //if (hr == S_OK)
    //	m_d.m_friction = fTmp;
@@ -193,9 +195,72 @@ void Flipper::GetTimers(Vector<HitTimer> * const pvht)
 
 void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
 {
+   if(m_d.m_OverridePhysics)
+   {
+		 m_d.m_OverrideSpeed = 0.15f;
+         HRESULT hr = GetRegStringAsFloat("Player", "FlipperPhysicsSpeed", &m_d.m_OverrideSpeed);
+         if (hr != S_OK)
+         {
+            m_d.m_OverrideSpeed = 0.15f;
+         }
+
+		 m_d.m_OverrideStrength = 3.f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsStrength", &m_d.m_OverrideStrength);
+         if (hr != S_OK)
+         {
+            m_d.m_OverrideStrength = 3.f;
+         }
+
+ 		 m_d.m_OverrideElasticity = 0.55f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsElasticity", &m_d.m_OverrideElasticity);
+         if (hr != S_OK)
+         {
+            m_d.m_OverrideElasticity = 0.55f;
+         }
+
+  		 m_d.m_OverrideScatter = -11.f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsScatter", &m_d.m_OverrideScatter);
+         if (hr != S_OK)
+         {
+            m_d.m_OverrideScatter = -11.f;
+         }
+		 m_d.m_OverrideScatter = ANGTORAD(m_d.m_OverrideScatter);
+
+  		 m_d.m_OverrideReturnStrength = 0.09f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsReturnStrength", &m_d.m_OverrideReturnStrength);
+         if (hr != S_OK)
+         {
+            m_d.m_OverrideReturnStrength = 0.09f;
+         }
+
+		 m_d.m_OverrideRecoil = 2.f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsRecoil", &m_d.m_OverrideRecoil);
+         if (hr != S_OK)
+         {
+            m_d.m_OverrideRecoil = 2.f;
+         }
+
+  		 m_d.m_OverridePowerLaw = 1.f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsPowerLaw", &m_d.m_OverridePowerLaw);
+         if (hr != S_OK)
+         {
+            m_d.m_OverridePowerLaw = 1.f;
+         }
+
+		 m_d.m_OverrideOblique = 3.f;
+         hr = GetRegStringAsFloat("Player", "FlipperPhysicsOblique", &m_d.m_OverrideOblique);
+         if (hr != S_OK)
+         {
+            m_d.m_OverrideOblique = 3.f;
+         }
+		 m_d.m_OverrideOblique = ANGTORAD(m_d.m_OverrideOblique);
+   }
+
+   //
+
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
-   if (m_d.m_FlipperRadiusMin > 0 && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
+   if (m_d.m_FlipperRadiusMin > 0.f && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
    {
       m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - (m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
       m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
@@ -203,9 +268,9 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
    HitFlipper * const phf = new HitFlipper(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, m_d.m_EndRadius,
-      m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), height, height + m_d.m_height, m_d.m_strength,m_d.m_mass);
+	   m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), height, height + m_d.m_height, (m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength), m_d.m_mass);
 
-   phf->m_elasticity = m_d.m_elasticity;
+   phf->m_elasticity = (m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity);
    phf->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
    phf->m_scatter = m_d.m_scatter;
 
@@ -493,9 +558,9 @@ STDMETHODIMP Flipper::RotateToEnd() //power stroke to hit ball
       }
       else m_phitflipper->m_flipperanim.m_fAcc = (endAng > m_phitflipper->m_flipperanim.m_angleCur) ? +1 : -1;
 
-      m_phitflipper->m_flipperanim.m_maxvelocity = m_d.m_force * 4.5f;
-      m_phitflipper->m_flipperanim.m_force = m_d.m_force;
-      m_phitflipper->m_forcemass = m_d.m_strength;
+	  m_phitflipper->m_flipperanim.m_maxvelocity = (m_d.m_OverridePhysics ? m_d.m_OverrideSpeed : m_d.m_force) * 4.5f;
+      m_phitflipper->m_flipperanim.m_force = (m_d.m_OverridePhysics ? m_d.m_OverrideSpeed : m_d.m_force);
+      m_phitflipper->m_forcemass = (m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength);
    }
    return S_OK;
 }
@@ -515,13 +580,13 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
       }
       else m_phitflipper->m_flipperanim.m_fAcc = (startAng > m_phitflipper->m_flipperanim.m_angleCur) ? +1 : -1;
 
-      m_phitflipper->m_flipperanim.m_maxvelocity = m_d.m_force * 4.5f;
+      m_phitflipper->m_flipperanim.m_maxvelocity = (m_d.m_OverridePhysics ? m_d.m_OverrideSpeed : m_d.m_force) * 4.5f;
 
-      float rtn = m_d.m_return;
+      float rtn = (m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : m_d.m_return);
       if (rtn <= 0) rtn = 1.0f;
 
-      m_phitflipper->m_flipperanim.m_force = m_d.m_force * rtn;
-      m_phitflipper->m_forcemass = m_d.m_strength * rtn;		
+      m_phitflipper->m_flipperanim.m_force = (m_d.m_OverridePhysics ? m_d.m_OverrideSpeed : m_d.m_force) * rtn;
+      m_phitflipper->m_forcemass = (m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength) * rtn;		
    }
    return S_OK;
 }
@@ -751,6 +816,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(FRTN), m_d.m_return);
    bw.WriteFloat(FID(ANGS), m_d.m_StartAngle);
    bw.WriteFloat(FID(ANGE), m_d.m_EndAngle);
+   bw.WriteBool(FID(OVRP), m_d.m_OverridePhysics);
    bw.WriteFloat(FID(FORC), m_d.m_force);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -830,6 +896,10 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ANGE))
    {
       pbr->GetFloat(&m_d.m_EndAngle);
+   }
+   else if (id == FID(OVRP))
+   {
+      pbr->GetBool(&m_d.m_OverridePhysics);
    }
    else if (id == FID(FORC))
    {
@@ -923,7 +993,7 @@ HRESULT Flipper::InitPostLoad()
    {
       m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
    }
-   if(m_d.m_rubberwidth>1000) m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
+   if(m_d.m_rubberwidth > 1000) m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
 
    return S_OK;
 }
@@ -1011,7 +1081,7 @@ STDMETHODIMP Flipper::put_EndAngle(float newVal)
 {
    STARTUNDO
 
-      m_d.m_EndAngle = newVal;
+   m_d.m_EndAngle = newVal;
 
    STOPUNDO;
 
@@ -1043,11 +1113,11 @@ STDMETHODIMP Flipper::put_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_Center.x = newVal;
+   m_d.m_Center.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Y(float *pVal)
@@ -1061,11 +1131,11 @@ STDMETHODIMP Flipper::put_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_Center.y = newVal;
+   m_d.m_Center.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Surface(BSTR *pVal)
@@ -1082,11 +1152,11 @@ STDMETHODIMP Flipper::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Color(OLE_COLOR *pVal)
@@ -1100,11 +1170,11 @@ STDMETHODIMP Flipper::put_Color(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_color = newVal;
+   m_d.m_color = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Recoil(float *pVal)
@@ -1118,11 +1188,11 @@ STDMETHODIMP Flipper::put_Recoil(float newVal)
 {
    STARTUNDO
 
-      m_d.m_recoil = newVal;
+   m_d.m_recoil = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_AngleEOS(float *pVal)
@@ -1136,11 +1206,11 @@ STDMETHODIMP Flipper::put_AngleEOS(float newVal)
 {
    STARTUNDO
 
-      m_d.m_angleEOS = newVal;
+   m_d.m_angleEOS = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Flipper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -1178,14 +1248,30 @@ STDMETHODIMP Flipper::put_Speed(float newVal)
 {
    /*	if (m_phitflipper)
    {
-   m_phitflipper->m_flipperanim.m_anglespeed = newVal *PI/180.0f;
+	  m_phitflipper->m_flipperanim.m_anglespeed = newVal *PI/180.0f;
    }
    else*/
    {
       STARTUNDO
-         m_d.m_force = newVal;
+      m_d.m_force = newVal;
       STOPUNDO
    }
+
+   return S_OK;
+}
+
+STDMETHODIMP Flipper::get_OverridePhysics(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_OverridePhysics);
+
+   return S_OK;
+}
+
+STDMETHODIMP Flipper::put_OverridePhysics(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+   m_d.m_OverridePhysics = VBTOF(newVal);
+   STOPUNDO
 
    return S_OK;
 }
@@ -1201,11 +1287,11 @@ STDMETHODIMP Flipper::put_RubberColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_rubbercolor = newVal;
+   m_d.m_rubbercolor = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_RubberThickness(long *pVal)
@@ -1233,35 +1319,36 @@ STDMETHODIMP Flipper::put_RubberThickness(long newVal)
 {
    STARTUNDO
 
-      m_d.m_rubberthickness = newVal;
+   m_d.m_rubberthickness = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_RubberHeight(long newVal)
 {
    STARTUNDO
-      if (newVal < 0) newVal = 0;
+
+   if (newVal < 0) newVal = 0;
       else if (newVal > 1000) newVal = 50;
 
-      m_d.m_rubberheight = newVal;
+   m_d.m_rubberheight = newVal;
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_RubberWidth(long newVal)
 {
    STARTUNDO
 
-      m_d.m_rubberwidth = newVal;
+   m_d.m_rubberwidth = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Strength(float *pVal)
@@ -1275,11 +1362,11 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 {
    STARTUNDO
 
-      m_d.m_strength = newVal;
+   m_d.m_strength = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Visible(VARIANT_BOOL *pVal)
@@ -1299,7 +1386,7 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
    else
    {
       STARTUNDO
-         m_d.m_fVisible = VBTOF(newVal);
+      m_d.m_fVisible = VBTOF(newVal);
       STOPUNDO
    }
    return S_OK;
@@ -1316,12 +1403,12 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
 {
    if (m_phitflipper)
    {
-      m_phitflipper->m_elasticity = m_d.m_elasticity;
+      m_phitflipper->m_elasticity = (m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity);
    }
    else
    {
       STARTUNDO
-         m_d.m_elasticity = newVal;
+      m_d.m_elasticity = newVal;
       STOPUNDO
    }
 
@@ -1339,11 +1426,11 @@ STDMETHODIMP Flipper::put_Height(float newVal)
 {
    STARTUNDO
 
-      m_d.m_height = newVal;
+   m_d.m_height = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Mass(float *pVal)
@@ -1357,11 +1444,11 @@ STDMETHODIMP Flipper::put_Mass(float newVal)
 {
    STARTUNDO
 
-      m_d.m_mass = newVal;
+   m_d.m_mass = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Return(float *pVal)
@@ -1375,14 +1462,14 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 {
    STARTUNDO
 
-      if (newVal < 0) newVal = 0;
+   if (newVal < 0) newVal = 0;
       else if (newVal > 1.0f) newVal = 1.0f;
 
-      m_d.m_return = newVal;
+   m_d.m_return = newVal;
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_PowerLaw(float *pVal)
@@ -1396,14 +1483,14 @@ STDMETHODIMP Flipper::put_PowerLaw(float newVal)
 {
    STARTUNDO
 
-      if (newVal < 0.0f) newVal = 0.0f;
+   if (newVal < 0.0f) newVal = 0.0f;
       else if (newVal > 4.0f) newVal = 4.0f;
 
-      m_d.m_powerlaw = newVal;
+   m_d.m_powerlaw = newVal;
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_ObliqueCorrection(float *pVal)
@@ -1417,11 +1504,11 @@ STDMETHODIMP Flipper::put_ScatterAngle(float newVal)
 {
    STARTUNDO
 
-      m_d.m_scatterangle = ANGTORAD(newVal);
+   m_d.m_scatterangle = ANGTORAD(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_ScatterAngle(float *pVal)
@@ -1435,11 +1522,11 @@ STDMETHODIMP Flipper::put_ObliqueCorrection(float newVal)
 {
    STARTUNDO
 
-      m_d.m_obliquecorrection = ANGTORAD(newVal);
+   m_d.m_obliquecorrection = ANGTORAD(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_FlipperRadiusMin(float *pVal)
@@ -1453,11 +1540,11 @@ STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 {
    STARTUNDO
 
-      if (newVal < 0.0f) newVal = 0.0f;
+   if (newVal < 0.0f) newVal = 0.0f;
 
    m_d.m_FlipperRadiusMin = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }

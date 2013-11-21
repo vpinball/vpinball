@@ -7,6 +7,7 @@
 #define DISPID_Table_Layback 1040
 #define DISPID_Table_MaxSeparation 1041
 #define DISPID_Table_ZPD 1042
+#define DISPID_Table_OverridePhysics 1043
 #define DISPID_Table_DisplayGrid 106
 #define DISPID_Table_DisplayBackdrop 107
 #define DISPID_Table_Nudge 21
@@ -17,6 +18,7 @@
 #define DISPID_Surface_FaceColor 10
 
 #define DISPID_Flipper_Speed 16
+#define DISPID_Flipper_OverridePhysics 1044
 
 #define DISPID_Light_State 2
 #define DISPID_Light_BlinkInterval 10
