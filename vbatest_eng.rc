@@ -501,7 +501,7 @@ BEGIN
     LTEXT           "Dampening Speed",IDC_STATIC,11,205,69,8
     LTEXT           "Dampening Friction",IDC_STATIC,11,219,69,8
     GROUPBOX        "Flipper Settings",IDC_STATIC,5,10,127,129
-    GROUPBOX        "Table Settings",IDC_STATIC,4,148,127,87
+    GROUPBOX        "Table Settings",IDC_STATIC,5,148,127,87
 END
 
 IDD_GAMEPAUSE DIALOGEX 0, 0, 78, 80
