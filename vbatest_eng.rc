@@ -1358,8 +1358,8 @@ BEGIN
     CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,111,9
     CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,137,104,10
     CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,149,105,10
-    EDITTEXT        1041,80,149,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1042,80,163,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1041,80,161,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1042,80,175,40,12,ES_AUTOHSCROLL
     LTEXT           "Gravity Constant",IDC_STATIC,7,9,69,8
     LTEXT           "Contact Friction",IDC_STATIC,7,23,69,8
     LTEXT           "Contact Scatter Angle",IDC_STATIC,7,37,69,8
