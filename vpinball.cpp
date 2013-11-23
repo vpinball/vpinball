@@ -7705,8 +7705,9 @@ void savecurrentphysicssetting(HWND hwndDlg)
     sprintf_s(tmp2,256,"TablePhysicsDampeningFriction%u",physicsselection);
 	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
+	GetDlgItemTextA(hwndDlg, 1110, tmp, 256);
     sprintf_s(tmp2,256,"PhysicsSetName%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, physicsoptions[physicsselection], strlen(physicsoptions[physicsselection]));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));
 }
 
 int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
