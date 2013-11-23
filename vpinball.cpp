@@ -7643,6 +7643,77 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
    return FALSE;
 }
 
+const unsigned int num_physicsoptions = 8;
+const char po0[] = "Set 1";
+const char po1[] = "Set 2";
+const char po2[] = "Set 3";
+const char po3[] = "Set 4";
+const char po4[] = "Set 5";
+const char po5[] = "Set 6";
+const char po6[] = "Set 7";
+const char po7[] = "Set 8";
+const char * physicsoptions[num_physicsoptions] = {po0,po1,po2,po3,po4,po5,po6,po7};
+static unsigned int physicsselection = 0;
+
+void savecurrentphysicssetting(HWND hwndDlg)
+{
+    char tmp[256];
+    char tmp2[256];
+	
+	GetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp, 256);
+    sprintf_s(tmp2,256,"FlipperPhysicsSpeed%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 19, tmp, 256);
+    sprintf_s(tmp2,256,"FlipperPhysicsStrength%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 21, tmp, 256);
+    sprintf_s(tmp2,256,"FlipperPhysicsElasticity%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 112, tmp, 256);
+    sprintf_s(tmp2,256,"FlipperPhysicsScatter%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 23, tmp, 256);
+    sprintf_s(tmp2,256,"FlipperPhysicsReturnStrength%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 22, tmp, 256);
+    sprintf_s(tmp2,256,"FlipperPhysicsRecoil%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 109, tmp, 256);
+    sprintf_s(tmp2,256,"FlipperPhysicsPowerLaw%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 110, tmp, 256);
+    sprintf_s(tmp2,256,"FlipperPhysicsOblique%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+
+	GetDlgItemTextA(hwndDlg, 1100, tmp, 256);
+    sprintf_s(tmp2,256,"TablePhysicsGravityConstant%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 1101, tmp, 256);
+    sprintf_s(tmp2,256,"TablePhysicsContactFriction%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
+    sprintf_s(tmp2,256,"TablePhysicsContactScatterAngle%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 1103, tmp, 256);
+    sprintf_s(tmp2,256,"TablePhysicsDampeningSpeed%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
+    sprintf_s(tmp2,256,"TablePhysicsDampeningFriction%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+}
+
 int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
@@ -7660,11 +7731,35 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
             (rcMain.bottom + rcMain.top)/2 - (rcDlg.bottom - rcDlg.top)/2,
             0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
+		 //
+
+         HWND hwndList = GetDlgItem(hwndDlg, IDC_PhysicsList);
+
+		 const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+         for (int i=0;i<size;i++)
+         {
+            int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
+            delete sd;
+         }
+         SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+
+		 for (unsigned int i=0;i<num_physicsoptions;i++)
+         {
+            const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)physicsoptions[i]);
+            int * const sd = new int;
+            *sd = i;
+            SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
+         }
+         SendMessage(hwndList, LB_SETCURSEL, physicsselection, 0);
+
+		 //
+
          HRESULT hr;
 		 char tmp[256];
 
 		 float FlipperPhysicsSpeed = 0.15f;
-         hr = GetRegStringAsFloat("Player", "FlipperPhysicsSpeed", &FlipperPhysicsSpeed);
+		 sprintf_s(tmp,256,"FlipperPhysicsSpeed%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsSpeed);
          if (hr != S_OK)
          {
             FlipperPhysicsSpeed = 0.15f;
@@ -7674,7 +7769,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp);
 
 		 float FlipperPhysicsStrength = 3.f;
-         hr = GetRegStringAsFloat("Player", "FlipperPhysicsStrength", &FlipperPhysicsStrength);
+		 sprintf_s(tmp,256,"FlipperPhysicsStrength%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsStrength);
          if (hr != S_OK)
          {
             FlipperPhysicsStrength = 3.f;
@@ -7684,7 +7780,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 19, tmp);
 
  		 float FlipperPhysicsElasticity = 0.55f;
-         hr = GetRegStringAsFloat("Player", "FlipperPhysicsElasticity", &FlipperPhysicsElasticity);
+		 sprintf_s(tmp,256,"FlipperPhysicsElasticity%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsElasticity);
          if (hr != S_OK)
          {
             FlipperPhysicsElasticity = 0.55f;
@@ -7694,7 +7791,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 21, tmp);
 
   		 float FlipperPhysicsScatter = -11.f;
-         hr = GetRegStringAsFloat("Player", "FlipperPhysicsScatter", &FlipperPhysicsScatter);
+		 sprintf_s(tmp,256,"FlipperPhysicsScatter%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsScatter);
          if (hr != S_OK)
          {
             FlipperPhysicsScatter = -11.f;
@@ -7704,7 +7802,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 112, tmp);
 
   		 float FlipperPhysicsReturnStrength = 0.09f;
-         hr = GetRegStringAsFloat("Player", "FlipperPhysicsReturnStrength", &FlipperPhysicsReturnStrength);
+		 sprintf_s(tmp,256,"FlipperPhysicsReturnStrength%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsReturnStrength);
          if (hr != S_OK)
          {
             FlipperPhysicsReturnStrength = 0.09f;
@@ -7714,7 +7813,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 23, tmp);
 
 		 float FlipperPhysicsRecoil = 2.f;
-         hr = GetRegStringAsFloat("Player", "FlipperPhysicsRecoil", &FlipperPhysicsRecoil);
+		 sprintf_s(tmp,256,"FlipperPhysicsRecoil%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsRecoil);
          if (hr != S_OK)
          {
             FlipperPhysicsRecoil = 2.f;
@@ -7724,7 +7824,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 22, tmp);
 
   		 float FlipperPhysicsPowerLaw = 1.f;
-         hr = GetRegStringAsFloat("Player", "FlipperPhysicsPowerLaw", &FlipperPhysicsPowerLaw);
+		 sprintf_s(tmp,256,"FlipperPhysicsPowerLaw%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsPowerLaw);
          if (hr != S_OK)
          {
             FlipperPhysicsPowerLaw = 1.f;
@@ -7734,7 +7835,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 109, tmp);
 
 		 float FlipperPhysicsOblique = 3.f;
-         hr = GetRegStringAsFloat("Player", "FlipperPhysicsOblique", &FlipperPhysicsOblique);
+		 sprintf_s(tmp,256,"FlipperPhysicsOblique%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsOblique);
          if (hr != S_OK)
          {
             FlipperPhysicsOblique = 3.f;
@@ -7744,7 +7846,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 110, tmp);
 
 		 float TablePhysicsGravityConstant = 1.6774f;
-         hr = GetRegStringAsFloat("Player", "TablePhysicsGravityConstant", &TablePhysicsGravityConstant);
+		 sprintf_s(tmp,256,"TablePhysicsGravityConstant%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsGravityConstant);
          if (hr != S_OK)
          {
             TablePhysicsGravityConstant = 1.6774f;
@@ -7754,7 +7857,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 1100, tmp);
 
 		 float TablePhysicsContactFriction = 0.0005f;
-         hr = GetRegStringAsFloat("Player", "TablePhysicsContactFriction", &TablePhysicsContactFriction);
+		 sprintf_s(tmp,256,"TablePhysicsContactFriction%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactFriction);
          if (hr != S_OK)
          {
             TablePhysicsContactFriction = 0.0005f;
@@ -7764,7 +7868,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 1101, tmp);
 
 		 float TablePhysicsContactScatterAngle = 0.5f;
-         hr = GetRegStringAsFloat("Player", "TablePhysicsContactScatterAngle", &TablePhysicsContactScatterAngle);
+		 sprintf_s(tmp,256,"TablePhysicsContactScatterAngle%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactScatterAngle);
          if (hr != S_OK)
          {
             TablePhysicsContactScatterAngle = 0.5f;
@@ -7774,7 +7879,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 1102, tmp);
 
 		 float TablePhysicsDampeningSpeed = 65.f;
-         hr = GetRegStringAsFloat("Player", "TablePhysicsDampeningSpeed", &TablePhysicsDampeningSpeed);
+		 sprintf_s(tmp,256,"TablePhysicsDampeningSpeed%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsDampeningSpeed);
          if (hr != S_OK)
          {
             TablePhysicsDampeningSpeed = 65.f;
@@ -7784,7 +7890,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
  		 SetDlgItemTextA(hwndDlg, 1103, tmp);
 
 		 float TablePhysicsDampeningFriction = 0.95f;
-         hr = GetRegStringAsFloat("Player", "TablePhysicsDampeningFriction", &TablePhysicsDampeningFriction);
+		 sprintf_s(tmp,256,"TablePhysicsDampeningFriction%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsDampeningFriction);
          if (hr != S_OK)
          {
             TablePhysicsDampeningFriction = 0.95f;
@@ -7806,47 +7913,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
             {
             case IDOK:
                {
-                  char tmp[256];
-
-                  GetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp, 256);
- 			      SetRegValue("Player", "FlipperPhysicsSpeed", REG_SZ, &tmp, strlen(tmp));	
-
-                  GetDlgItemTextA(hwndDlg, 19, tmp, 256);
- 			      SetRegValue("Player", "FlipperPhysicsStrength", REG_SZ, &tmp, strlen(tmp));	
-
-                  GetDlgItemTextA(hwndDlg, 21, tmp, 256);
- 			      SetRegValue("Player", "FlipperPhysicsElasticity", REG_SZ, &tmp, strlen(tmp));	
-
-                  GetDlgItemTextA(hwndDlg, 112, tmp, 256);
- 			      SetRegValue("Player", "FlipperPhysicsScatter", REG_SZ, &tmp, strlen(tmp));	
-
-                  GetDlgItemTextA(hwndDlg, 23, tmp, 256);
- 			      SetRegValue("Player", "FlipperPhysicsReturnStrength", REG_SZ, &tmp, strlen(tmp));	
-
-				  GetDlgItemTextA(hwndDlg, 22, tmp, 256);
- 			      SetRegValue("Player", "FlipperPhysicsRecoil", REG_SZ, &tmp, strlen(tmp));	
-
-                  GetDlgItemTextA(hwndDlg, 109, tmp, 256);
- 			      SetRegValue("Player", "FlipperPhysicsPowerLaw", REG_SZ, &tmp, strlen(tmp));	
-
-				  GetDlgItemTextA(hwndDlg, 110, tmp, 256);
- 			      SetRegValue("Player", "FlipperPhysicsOblique", REG_SZ, &tmp, strlen(tmp));	
-
-
-				  GetDlgItemTextA(hwndDlg, 1100, tmp, 256);
- 			      SetRegValue("Player", "TablePhysicsGravityConstant", REG_SZ, &tmp, strlen(tmp));	
-
-				  GetDlgItemTextA(hwndDlg, 1101, tmp, 256);
- 			      SetRegValue("Player", "TablePhysicsContactFriction", REG_SZ, &tmp, strlen(tmp));	
-
-				  GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
- 			      SetRegValue("Player", "TablePhysicsContactScatterAngle", REG_SZ, &tmp, strlen(tmp));	
-
-				  GetDlgItemTextA(hwndDlg, 1103, tmp, 256);
- 			      SetRegValue("Player", "TablePhysicsDampeningSpeed", REG_SZ, &tmp, strlen(tmp));	
-
-				  GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
- 			      SetRegValue("Player", "TablePhysicsDampeningFriction", REG_SZ, &tmp, strlen(tmp));	
+				  savecurrentphysicssetting(hwndDlg);
 
 				  EndDialog(hwndDlg, TRUE);
                }
@@ -7856,6 +7923,29 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                EndDialog(hwndDlg, FALSE);
                break;
             }
+		 break;
+
+		 case LBN_SELCHANGE:
+			{
+				HWND hwndList = GetDlgItem(hwndDlg, IDC_PhysicsList);
+
+				const int tmp = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
+
+				if(tmp != physicsselection)
+				{
+					int result = MessageBox(NULL,"Save","Save current physics set?",MB_YESNOCANCEL | MB_ICONQUESTION);
+					if(result == IDYES)
+					    savecurrentphysicssetting(hwndDlg);
+					if(result != IDCANCEL)
+					{
+						physicsselection = tmp;
+						SendMessage(hwndDlg, WM_INITDIALOG, 0, 0); // reinit all boxes
+					}
+					else
+						SendMessage(hwndList, LB_SETCURSEL, physicsselection, 0);
+				}
+			}
+		 break;
          }
       }
       break;
@@ -7865,6 +7955,16 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
       break;
 
    case WM_DESTROY:
+	  {
+         HWND hwndList = GetDlgItem(hwndDlg, IDC_PhysicsList);
+         const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+         for (int i=0;i<size;i++)
+         {
+            int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
+            delete sd;
+         }
+         SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+	  }
       break;
    }
 
