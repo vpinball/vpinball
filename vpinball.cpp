@@ -7644,15 +7644,7 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 }
 
 const unsigned int num_physicsoptions = 8;
-const char po0[] = "Set 1";
-const char po1[] = "Set 2";
-const char po2[] = "Set 3";
-const char po3[] = "Set 4";
-const char po4[] = "Set 5";
-const char po5[] = "Set 6";
-const char po6[] = "Set 7";
-const char po7[] = "Set 8";
-const char * physicsoptions[num_physicsoptions] = {po0,po1,po2,po3,po4,po5,po6,po7};
+static char * physicsoptions[num_physicsoptions] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 static unsigned int physicsselection = 0;
 
 void savecurrentphysicssetting(HWND hwndDlg)
@@ -7712,6 +7704,10 @@ void savecurrentphysicssetting(HWND hwndDlg)
 	GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsDampeningFriction%u",physicsselection);
 	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+
+	GetDlgItemTextA(hwndDlg, 1110, tmp, 256);
+    sprintf_s(tmp2,256,"PhysicsSetName%u",physicsselection);
+	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));
 }
 
 int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -7733,11 +7729,15 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 		 //
 
+		 char tmp[256];
+
          HWND hwndList = GetDlgItem(hwndDlg, IDC_PhysicsList);
 
 		 const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
          for (int i=0;i<size;i++)
          {
+			if(physicsoptions[i])
+				delete [] physicsoptions[i];
             int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
             delete sd;
          }
@@ -7745,6 +7745,10 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 		 for (unsigned int i=0;i<num_physicsoptions;i++)
          {
+			physicsoptions[i] = new char[256];
+			sprintf_s(tmp,256,"PhysicsSetName%u",i);
+			if(GetRegString("Player", tmp, physicsoptions[i], 256) != S_OK)
+				sprintf_s(physicsoptions[i],256,"Set %u",i+1);
             const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)physicsoptions[i]);
             int * const sd = new int;
             *sd = i;
@@ -7755,7 +7759,6 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 //
 
          HRESULT hr;
-		 char tmp[256];
 
 		 float FlipperPhysicsSpeed = 0.15f;
 		 sprintf_s(tmp,256,"FlipperPhysicsSpeed%u",physicsselection);
@@ -7900,6 +7903,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningFriction);
  		 SetDlgItemTextA(hwndDlg, 1106, tmp);
 
+ 		 SetDlgItemTextA(hwndDlg, 1110, physicsoptions[physicsselection]);
+
 		 return TRUE;
       }
       break;
@@ -7960,6 +7965,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
          const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
          for (int i=0;i<size;i++)
          {
+			if(physicsoptions[i])
+				delete [] physicsoptions[i];
             int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
             delete sd;
          }
