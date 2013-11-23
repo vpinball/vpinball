@@ -1037,11 +1037,11 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   }
                   psb->RefreshProperties();
                }
-               else if ( dispid == IDC_DELETE_MESH_BUTTON )
+               else if ( dispid == IDC_EXPORT_MESH_BUTTON )
                {
                   for( int i=0;i<psb->m_pvsel->Size();i++ )
                   {
-                     psb->m_pvsel->ElementAt(i)->DeleteMesh();                    
+                     psb->m_pvsel->ElementAt(i)->ExportMesh();                    
                   }
                   psb->RefreshProperties();
                }

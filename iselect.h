@@ -105,7 +105,7 @@ public:
 
 	virtual int GetSelectLevel() {return 1;}
     virtual bool LoadMesh(){ return false; }
-    virtual void DeleteMesh(){};
+    virtual void ExportMesh(){};
 
 	POINT m_ptLast;
 	BOOL m_fDragging;

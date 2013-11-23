@@ -904,6 +904,7 @@ void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 extern bool loadWavefrontObj( char *filename, bool flipTv, bool convertToLeftHanded );
 extern Vertex3D_NoTex2 *GetVertices( int &numVertices );
 extern WORD *GetIndexList( int &indexListSize );
+extern void SaveOBJ( char *filename, Primitive *mesh );
 
 void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
 {
@@ -1376,34 +1377,53 @@ bool Primitive::LoadMesh()
    return result;
 }
 
-void Primitive::DeleteMesh()
+void Primitive::ExportMesh()
 {
-   STARTUNDO
+   char szFileName[1024];
+   char szInitialDir[1024];
+   szFileName[0] = '\0';
 
-   m_d.use3DMesh = false;
-   if ( objMeshOrg ) 
+   if ( !m_d.use3DMesh )
    {
-      delete[] objMeshOrg;
-      objMeshOrg=0;
+      ShowError("This primitive isn't a 3D Mesh!");
+      return;
    }
-   if( objMesh )
-   {
-      delete[] objMesh;
-      objMesh=0;
-   }
-   if( indexList )
-   {
-      delete[] indexList;
-      indexList=0;
-      indexListSize=0;
-   }
-   numVertices = m_d.m_Sides*4+2;
-   CalculateBuiltinOriginal();
+   OPENFILENAME ofn;
+   ZeroMemory(&ofn, sizeof(OPENFILENAME));
+   ofn.lStructSize = sizeof(OPENFILENAME);
+   ofn.hInstance = g_hinst;
+   ofn.hwndOwner = g_pvp->m_hwnd;
+   // TEXT
+   ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
+   ofn.lpstrFile = szFileName;
+   ofn.nMaxFile = _MAX_PATH;
+   ofn.lpstrDefExt = "obj";
+   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   m_d.meshFileName[0]=0;
-   vertexBufferRegenerate = true;
+   const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+   if (hr == S_OK)
+   {
+      ofn.lpstrInitialDir = szInitialDir;
+   }
+   else
+   {
+      char szFoo[MAX_PATH];
+      lstrcpy(szFoo, "c:\\");
+      ofn.lpstrInitialDir = szFoo;
+   }
 
-   STOPUNDO
+#ifdef VBA
+   ApcHost->BeginModalDialog();
+#endif
+   const int ret = GetSaveFileName(&ofn);
+#ifdef VBA
+   ApcHost->EndModalDialog();
+#endif
+   if(ret == 0)
+   {
+      return;
+   }
+   SaveOBJ( ofn.lpstrFile, this );
 }
 
 STDMETHODIMP Primitive::get_Sides(int *pVal)
