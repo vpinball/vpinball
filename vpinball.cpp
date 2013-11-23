@@ -7654,60 +7654,59 @@ void savecurrentphysicssetting(HWND hwndDlg)
 	
 	GetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsSpeed%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 19, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsStrength%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 21, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsElasticity%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 112, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsScatter%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 23, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsReturnStrength%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 22, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsRecoil%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 109, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsPowerLaw%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 110, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsOblique%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 
 	GetDlgItemTextA(hwndDlg, 1100, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsGravityConstant%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 1101, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsContactFriction%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsContactScatterAngle%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 1103, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsDampeningSpeed%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsDampeningFriction%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
 
-	GetDlgItemTextA(hwndDlg, 1110, tmp, 256);
     sprintf_s(tmp2,256,"PhysicsSetName%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, &tmp, strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, physicsoptions[physicsselection], strlen(physicsoptions[physicsselection]));
 }
 
 int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -7749,7 +7748,8 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			sprintf_s(tmp,256,"PhysicsSetName%u",i);
 			if(GetRegString("Player", tmp, physicsoptions[i], 256) != S_OK)
 				sprintf_s(physicsoptions[i],256,"Set %u",i+1);
-            const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)physicsoptions[i]);
+			sprintf_s(tmp,256,"%u: %s",i+1,physicsoptions[i]);
+            const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)tmp);
             int * const sd = new int;
             *sd = i;
             SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
