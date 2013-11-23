@@ -266,7 +266,7 @@ public:
    void RenderObject( RenderDevice *pd3dDevice);
 
    virtual bool LoadMesh();
-   virtual void DeleteMesh();
+   virtual void ExportMesh();
 
    PrimitiveData m_d;
    int numVertices;

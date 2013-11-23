@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1552,7 +1552,7 @@ BEGIN
     LTEXT           "Sides",IDC_STATIC,7,10,18,8
     GROUPBOX        "3D Mesh",IDC_STATIC,7,44,111,30
     PUSHBUTTON      "Import Mesh",IDC_LOAD_MESH_BUTTON,11,54,48,14
-    PUSHBUTTON      "Delete Mesh",IDC_DELETE_MESH_BUTTON,65,54,46,14
+    PUSHBUTTON      "Export Mesh",IDC_EXPORT_MESH_BUTTON,65,54,46,14
     CONTROL         "Enable lighting",IDC_CHECK_PRIMITIVE_LIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,133,66,10
     CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,155,69,10
     CONTROL         "Sphere Map 3D Mesh",IDC_PRIM_ENV_MAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,144,85,10
@@ -2143,7 +2143,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

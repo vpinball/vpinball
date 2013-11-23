@@ -655,13 +655,13 @@
 #define IDC_SHADOW_COLOR                579
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_VISUALS_SOUND               581
-#define IDC_REGION_UPDATES_TABLE		582
-#define IDC_REGION_OPT_TABLE			583
+#define IDC_REGION_UPDATES_TABLE        582
+#define IDC_REGION_OPT_TABLE            583
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
 #define IDC_LOAD_MESH_BUTTON            1602
-#define IDC_DELETE_MESH_BUTTON          1603
+#define IDC_EXPORT_MESH_BUTTON          1603
 #define IDC_BALL_REFLECTION             1700
 #define IDC_REFLECTION_EDIT             1701
 #define IDC_SHADOW_X                    1702

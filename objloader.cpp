@@ -305,3 +305,39 @@ WORD *GetIndexList( int &indexListSize ) // clears temporary storage on the way
    faces.clear();
    return list;
 }
+
+// exporting a mesh to a Wavefront .OBJ file. The mesh is converted into right-handed coordinate system (VP uses left-handed)
+void SaveOBJ( char *filename, Primitive *mesh )
+{
+   FILE *f;
+   fopen_s(&f,filename,"wt");
+   if( !f )
+      return ;
+
+   fprintf_s(f,"# Visual Pinball OBJ file\n");
+   fprintf_s(f,"# numVerts: %i numFaces: %i\n", mesh->numVertices, mesh->indexListSize );
+   fprintf_s(f,"o %s\n",mesh->m_d.meshFileName );
+   for( int i=0; i<mesh->numVertices;i++ )
+   {
+      float z = mesh->objMeshOrg[i].z;
+      z*=-1.0f;
+      fprintf_s(f,"v %f %f %f\n", mesh->objMeshOrg[i].x, mesh->objMeshOrg[i].y, z );
+   }
+   for( int i=0; i<mesh->numVertices;i++ )
+   {
+      fprintf_s(f,"vn %f %f %f\n",mesh->objMeshOrg[i].nx, mesh->objMeshOrg[i].ny, mesh->objMeshOrg[i].nz );
+   }
+   for( int i=0; i<mesh->numVertices;i++ )
+   {
+      float tv = 1.f-mesh->objMeshOrg[i].tv;
+      fprintf_s(f,"vt %f %f\n", mesh->objMeshOrg[i].tu, tv );
+   }
+
+   for( int i=0; i<mesh->indexListSize;i+=3 )
+   {
+      fprintf_s(f,"f %i/%i/%i %i/%i/%i %i/%i/%i\n", mesh->indexList[i+2]+1, mesh->indexList[i+2]+1, mesh->indexList[i+2]+1
+                                                  , mesh->indexList[i+1]+1, mesh->indexList[i+1]+1, mesh->indexList[i+1]+1
+                                                  , mesh->indexList[i  ]+1, mesh->indexList[i  ]+1, mesh->indexList[i  ]+1 );
+   }
+   fclose(f);
+}
