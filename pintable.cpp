@@ -587,7 +587,7 @@ PinTable::PinTable()
    m_fRenderDecals = fTrue;
    m_fRenderEMReels = fTrue;
 
-   m_fOverridePhysics = fFalse;
+   m_fOverridePhysics = 0;
 
    m_Gravity = GRAVITYCONST;
    m_hardFriction = C_FRICTIONCONST;
@@ -1780,8 +1780,11 @@ void PinTable::Play()
 		 
 		 if(m_fOverridePhysics)
 		 {
+			 char tmp[256];
+
 			 m_fOverrideGravityConstant = 1.6774f;
-			 hr = GetRegStringAsFloat("Player", "TablePhysicsGravityConstant", &m_fOverrideGravityConstant);
+		     sprintf_s(tmp,256,"TablePhysicsGravityConstant%u",m_fOverridePhysics-1);
+			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideGravityConstant);
 			 if (hr != S_OK)
 			 {
 				m_fOverrideGravityConstant = 1.6774f;
@@ -1789,14 +1792,16 @@ void PinTable::Play()
 			 m_fOverrideGravityConstant *= GRAVITYCONST;
 
 			 m_fOverrideContactFriction = 0.0005f;
-			 hr = GetRegStringAsFloat("Player", "TablePhysicsContactFriction", &m_fOverrideContactFriction);
+		     sprintf_s(tmp,256,"TablePhysicsContactFriction%u",m_fOverridePhysics-1);
+			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactFriction);
 			 if (hr != S_OK)
 			 {
 				m_fOverrideContactFriction = 0.0005f;
 			 }
 
 			 m_fOverrideContactScatterAngle = 0.5f;
-			 hr = GetRegStringAsFloat("Player", "TablePhysicsContactScatterAngle", &m_fOverrideContactScatterAngle);
+		     sprintf_s(tmp,256,"TablePhysicsContactScatterAngle%u",m_fOverridePhysics-1);
+			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactScatterAngle);
 			 if (hr != S_OK)
 			 {
 				m_fOverrideContactScatterAngle = 0.5f;
@@ -1804,14 +1809,16 @@ void PinTable::Play()
 			 m_fOverrideContactScatterAngle = ANGTORAD(m_fOverrideContactScatterAngle);
 
 			 m_fOverrideDampeningSpeed = 65.f;
-			 hr = GetRegStringAsFloat("Player", "TablePhysicsDampeningSpeed", &m_fOverrideDampeningSpeed);
+		     sprintf_s(tmp,256,"TablePhysicsDampeningSpeed%u",m_fOverridePhysics-1);
+			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideDampeningSpeed);
 			 if (hr != S_OK)
 			 {
 				m_fOverrideDampeningSpeed = 65.f;
 			 }
 
 			 m_fOverrideDampeningFriction = 0.95f;
-			 hr = GetRegStringAsFloat("Player", "TablePhysicsDampeningFriction", &m_fOverrideDampeningFriction);
+		     sprintf_s(tmp,256,"TablePhysicsDampeningFriction%u",m_fOverridePhysics-1);
+			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideDampeningFriction);
 			 if (hr != S_OK)
 			 {
 				m_fOverrideDampeningFriction = 0.95f;
@@ -2712,7 +2719,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(SCLX), m_scalex);
    bw.WriteFloat(FID(SCLY), m_scaley);
 
-   bw.WriteBool(FID(ORRP), m_fOverridePhysics);
+   bw.WriteInt(FID(ORRP), m_fOverridePhysics);
    bw.WriteFloat(FID(GAVT), m_Gravity);
    bw.WriteFloat(FID(FRCT), m_hardFriction);
    bw.WriteFloat(FID(SCAT), m_hardScatter);
@@ -3426,7 +3433,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if( id == FID(ORRP))
    {
-      pbr->GetBool(&m_fOverridePhysics);
+      pbr->GetInt(&m_fOverridePhysics);
    }
    else if( id == FID(GAVT))
    {
@@ -8438,17 +8445,17 @@ STDMETHODIMP PinTable::put_RenderShadows(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_OverridePhysics(VARIANT_BOOL *pVal)
+STDMETHODIMP PinTable::get_OverridePhysics(long *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_fOverridePhysics);
+   *pVal = m_fOverridePhysics;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_OverridePhysics(VARIANT_BOOL newVal)
+STDMETHODIMP PinTable::put_OverridePhysics(long newVal)
 {
    STARTUNDO
-   m_fOverridePhysics = VBTOF(newVal);
+   m_fOverridePhysics = newVal;
    STOPUNDO
 
    return S_OK;

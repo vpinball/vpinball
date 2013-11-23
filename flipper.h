@@ -50,7 +50,7 @@ public:
 	float m_OverrideRecoil;
   	float m_OverridePowerLaw;
 	float m_OverrideOblique;
-	BOOL m_OverridePhysics;
+	int m_OverridePhysics;
 	};
 
 class Flipper : 
@@ -140,8 +140,8 @@ public:
 	STDMETHOD(put_RubberColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_Speed)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Speed)(/*[in]*/ float newVal);
-	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_OverridePhysics)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
+    STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
 	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

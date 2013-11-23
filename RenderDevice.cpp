@@ -90,7 +90,7 @@ bool RenderDevice::createVertexBuffer( unsigned int _length, DWORD _usage, DWORD
 void RenderDevice::renderPrimitive(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, LPWORD _indices, DWORD _numIndices, DWORD _flags)
 {
    dx7Device->DrawIndexedPrimitiveVB( _primType, (LPDIRECT3DVERTEXBUFFER7)_vbuffer, _startVertex, _numVertices, _indices, _numIndices, _flags );
-} 
+}
 
 //########################## simple wrapper functions (interface for DX7)##################################
 

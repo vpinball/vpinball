@@ -205,8 +205,8 @@ public:
     STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
     
-	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_OverridePhysics)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
+    STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
 
 	STDMETHOD(get_MaxSeparation)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_MaxSeparation)(/*[in]*/ float newVal);
@@ -534,7 +534,7 @@ END_CONNECTION_POINT_MAP()
 	float m_angletiltMax;
 	float m_angletiltMin;
 
-	BOOL m_fOverridePhysics;
+	int m_fOverridePhysics;
     float m_fOverrideGravityConstant;
 
 	float m_Gravity;

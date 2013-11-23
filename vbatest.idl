@@ -486,8 +486,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Image4), helpstring("property BallFrontDecal")] HRESULT BallFrontDecal([in] BSTR newVal);
 		[propget, id(DISPID_Image5), helpstring("property BallBackDecal")] HRESULT BallBackDecal([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image5), helpstring("property BallBackDecal")] HRESULT BallBackDecal([in] BSTR newVal);
-		[propget, id(DISPID_Table_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(DISPID_Table_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] VARIANT_BOOL newVal);
+		[propget, id(DISPID_Table_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] long *pVal);
+		[propput, id(DISPID_Table_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] long newVal);
 		[propget, id(13432), helpstring("property RenderEMReels")] HRESULT EnableEMReels([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(13432), helpstring("property RenderEMReels")] HRESULT EnableEMReels([in] VARIANT_BOOL newVal);
 		[propget, id(13433), helpstring("property RenderDecals")] HRESULT EnableDecals([out, retval] VARIANT_BOOL *pVal);
@@ -828,8 +828,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(15), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
 		[propget, id(DISPID_Flipper_Speed), helpstring("property Speed")] HRESULT Speed([out, retval] float *pVal);
 		[propput, id(DISPID_Flipper_Speed), helpstring("property Speed")] HRESULT Speed([in] float newVal);
-		[propget, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] VARIANT_BOOL newVal);
+		[propget, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] long *pVal);
+		[propput, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] long newVal);
 		[propget, id(17), helpstring("property RubberColor")] HRESULT RubberColor([out, retval] OLE_COLOR *pVal);
 		[propput, id(17), helpstring("property RubberColor")] HRESULT RubberColor([in] OLE_COLOR newVal);
 		[propget, id(18), helpstring("property RubberThickness")] HRESULT RubberThickness([out, retval] long *pVal);
