@@ -1604,7 +1604,8 @@ void PinTable::Render3DProjection(Sur * const psur)
 
    Vertex2D rgvOut[8];
    pinproj.TransformVertices(rgvIn, NULL, 8, rgvOut);
-   psur->Polygon(rgvOut, 8);}
+   psur->Polygon(rgvOut, 8);
+}
 
 
 BOOL PinTable::GetDecalsEnabled() const

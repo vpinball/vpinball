@@ -16,6 +16,7 @@ Pin3D::Pin3D()
 	m_pdds3Dbufferzcopy = NULL;
 	m_pdds3Dbuffermask = NULL;
 	m_pddsZBuffer = NULL;
+	antiAliasTexture = NULL;
 	m_pD3D = NULL;
 	m_pd3dDevice = NULL;
 	m_pddsStatic = NULL;
@@ -122,18 +123,18 @@ void Pin3D::CreateAndCopySpriteBuffers( AnimObject *animObj, ObjFrame *pof )
 
 void Pin3D::DrawSprite( DWORD x, DWORD y, RECT *prc, BaseTexture *texture )
 {
-   D3DTLVERTEX verts[4];
-   float z=1.0f;
-   float rhw=1.0f/(z*m_rzfar );
-   float width  = (float)(prc->right-prc->left);
-   float height = (float)(prc->bottom-prc->top);
+   const float z = 1.0f;
+   const float rhw = 1.0f/(z*m_rzfar);
+   const float width  = (float)(prc->right-prc->left);
+   const float height = (float)(prc->bottom-prc->top);
 
    DDSURFACEDESC2 ddsd;
    ddsd.dwSize = sizeof(ddsd);
    texture->GetSurfaceDesc( &ddsd );
-   float maxtu = (float)width / ddsd.dwWidth;
-   float maxtv = (float)height/ ddsd.dwHeight;
+   const float maxtu = (float)width / (float)ddsd.dwWidth;
+   const float maxtv = (float)height/ (float)ddsd.dwHeight;
 
+   D3DTLVERTEX verts[4];
    verts[0].sx = x;
    verts[0].sy = y;
    verts[0].sz = z;
@@ -165,11 +166,11 @@ void Pin3D::DrawSprite( DWORD x, DWORD y, RECT *prc, BaseTexture *texture )
    verts[3].color=0xFFFFFFFF;
    verts[3].tu = 0.0f;
    verts[3].tv = maxtv;
-   WORD idx[6]={0,1,2,2,3,0};
+   static const WORD idx[6]={0,1,2,2,3,0};
    m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
    m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
    m_pd3dDevice->SetTexture(0, texture);
-   m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, D3DFVF_TLVERTEX, verts, 4,idx, 6, 0);
+   m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, D3DFVF_TLVERTEX, verts, 4, (LPWORD)idx, 6, 0);
    m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
    m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
    m_pd3dDevice->SetTexture(0, NULL);
@@ -585,7 +586,7 @@ retryall:
 	return pdds;
 }
 
-HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const bool stereo3DFXAA)
+HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const bool stereo3DFXAA, const bool AA)
 {
 	m_hwnd = hwnd;
 	//fullscreen = fFullScreen;
@@ -721,39 +722,44 @@ retry3:
 	// Update the count.
 	NumVideoBytes += ddsd.dwWidth * ddsd.dwHeight * (ddsd.ddpfPixelFormat.dwRGBBitCount/8);
 
-   int texwidth = 8; // Minimum size 8
-   while(texwidth < m_dwRenderWidth)
-      texwidth <<= 1;
+	if(AA)
+	{
+	   int texwidth = 8; // Minimum size 8
+	   while(texwidth < m_dwRenderWidth)
+		  texwidth <<= 1;
 
-   int texheight = 8;
-   while(texheight < m_dwRenderHeight)
-      texheight <<= 1;
+	   int texheight = 8;
+	   while(texheight < m_dwRenderHeight)
+		  texheight <<= 1;
 
-   // D3D7 does not support textures greater than 4096 in either dimension
-   if (texwidth > MAX_TEXTURE_SIZE)
-   {
-      texwidth = MAX_TEXTURE_SIZE;
-   }
+	   // D3D7 does not support textures greater than 4096 in either dimension
+	   if (texwidth > MAX_TEXTURE_SIZE)
+	   {
+		  texwidth = MAX_TEXTURE_SIZE;
+	   }
 
-   if (texheight > MAX_TEXTURE_SIZE)
-   {
-      texheight = MAX_TEXTURE_SIZE;
-   }
-   // Define a backbuffer.
-   ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
-   ddsd.dwWidth        = texwidth;
-   ddsd.dwHeight       = texheight;
-   ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_3DDEVICE;
+	   if (texheight > MAX_TEXTURE_SIZE)
+	   {
+		  texheight = MAX_TEXTURE_SIZE;
+	   }
+	   // Define a backbuffer.
+	   ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
+	   ddsd.dwWidth        = texwidth;
+	   ddsd.dwHeight       = texheight;
+	   ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_3DDEVICE;
+ 	   //!!? ddsd.ddsCaps.dwCaps2 = DDSCAPS2_HINTDYNAMIC;
 
-   if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&antiAliasTexture, NULL ) ) )
-   {
-      if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
-         ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
-         goto retry3;
-      }
-      ShowError("Could not create static buffer.");
-      return hr;
-   }
+retry4:
+	   if( FAILED( hr = m_pDD->CreateSurface( &ddsd, (LPDIRECTDRAWSURFACE7*)&antiAliasTexture, NULL ) ) )
+	   {
+		  if((ddsd.ddsCaps.dwCaps & DDSCAPS_NONLOCALVIDMEM) == 0) {
+			 ddsd.ddsCaps.dwCaps |= DDSCAPS_NONLOCALVIDMEM;
+			 goto retry4;
+		  }
+		  ShowError("Could not create antialias buffer.");
+		  return hr;
+	   }
+	}
 
 	// Create the D3D device.  This device will pre-render everything once...
 	// Then it will render only the ball and its shadow in real time.
@@ -935,14 +941,18 @@ retry7:
       ShowError("Could not attach static Z-Buffer.");
       return hr; 
    }
-   // Attach the "static" z buffer to the "static" buffer.
-   if( FAILED( hr = antiAliasTexture->AddAttachedSurface( m_pddsZBuffer ) ) )
+
+   if(antiAliasTexture)
    {
-      ShowError("Could not attach static Z-Buffer.");
-      return hr; 
+	   // Attach the "static" z buffer to the "static" buffer.
+	   if( FAILED( hr = antiAliasTexture->AddAttachedSurface( m_pddsZBuffer ) ) )
+	   {
+		  ShowError("Could not attach AA Z-Buffer.");
+		  return hr;
+	   }
    }
 
-	return S_OK;
+   return S_OK;
 }
 
 // Sets the texture filtering state.

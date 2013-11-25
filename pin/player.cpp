@@ -656,13 +656,13 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    {
       useAA=false;
    }
-   else
-   {
-      useAA=true;
-   }
+   //else
+   //{
+   //   useAA=true;
+   //}
 
 	// width, height, and colordepth are only defined if fullscreen is true.
-	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, (!!m_fStereo3D) || (!!m_fFXAA));
+	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, (!!m_fStereo3D) || (!!m_fFXAA), useAA);
 
 	if (hr != S_OK)
 		{
@@ -2312,6 +2312,7 @@ void Player::Render()
           m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 	
           m_pin3d.DrawSprite(0,0, &rect, m_pin3d.antiAliasTexture );
           m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE); 	
+          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,FALSE);
           m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
           m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
           m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1}
