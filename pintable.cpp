@@ -1585,17 +1585,19 @@ void PinTable::Render3DProjection(Sur * const psur)
    psur->SetFillColor(RGB(200,200,200));
    psur->SetBorderColor(-1,false,0);
 
-   Vertex3D rgvIn[6];
+   Vertex3D rgvIn[8];
    rgvIn[0].x = m_left;    rgvIn[0].y=m_top;    rgvIn[0].z=50.0f;
-   rgvIn[1].x = m_right;   rgvIn[1].y=m_top;    rgvIn[1].z=50.0f;
-   rgvIn[2].x = m_right;   rgvIn[2].y=m_bottom; rgvIn[2].z=50.0f;
-   rgvIn[3].x = m_right;   rgvIn[3].y=m_bottom; rgvIn[3].z=0.0f;
-   rgvIn[4].x = m_left;    rgvIn[4].y=m_bottom; rgvIn[4].z=0.0f;
-   rgvIn[5].x = m_left;    rgvIn[5].y=m_bottom; rgvIn[5].z=50.0f;
+   rgvIn[1].x = m_left;    rgvIn[1].y=m_top;    rgvIn[1].z=m_glassheight;
+   rgvIn[2].x = m_right;   rgvIn[2].y=m_top;    rgvIn[2].z=m_glassheight;
+   rgvIn[3].x = m_right;   rgvIn[3].y=m_top;    rgvIn[3].z=50.0f;
+   rgvIn[4].x = m_right;   rgvIn[4].y=m_bottom; rgvIn[4].z=50.0f;
+   rgvIn[5].x = m_right;   rgvIn[5].y=m_bottom; rgvIn[5].z=0.0f;
+   rgvIn[6].x = m_left;    rgvIn[6].y=m_bottom; rgvIn[6].z=0.0f;
+   rgvIn[7].x = m_left;    rgvIn[7].y=m_bottom; rgvIn[7].z=50.0f;
 
-   Vertex2D rgvOut[6];
-   pinproj.TransformVertices(rgvIn, NULL, 6, rgvOut);
-   psur->Polygon(rgvOut, 6);
+   Vertex2D rgvOut[8];
+   pinproj.TransformVertices(rgvIn, NULL, 8, rgvOut);
+   psur->Polygon(rgvOut, 8);
 }
 
 
