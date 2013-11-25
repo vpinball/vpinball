@@ -527,7 +527,7 @@ retryall:
 HRESULT Pin3D::InitDD(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const bool stereo3DFXAA)
 {
 	m_hwnd = hwnd;
-	fullscreen = fFullScreen;
+	//fullscreen = fFullScreen;
 	// Check if we are rendering in hardware.
 	const GUID* pDeviceGUID = (g_pvp->m_pdd.m_fHardwareAccel) ? &IID_IDirect3DHALDevice : &IID_IDirect3DRGBDevice;
 
@@ -1606,7 +1606,7 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 	{
 		//vertexT = rgv[i];
 
-		GPINFLOAT vertexTy = (*pvvertex3D->ElementAt(i)).y; //+ ((*pvvertex3D->ElementAt(i)).z*skew*-1.0f)  ;
+		GPINFLOAT vertexTy = (*pvvertex3D->ElementAt(i)).y; //+ ((*pvvertex3D->ElementAt(i)).z*skew*-1.0f);
 		// calculation of skew does not work, since boundary boxes are too big. Boundary boxes for
 		// Walls are always the full table dimension. The users have to test good values out.
 		slintf ("skewchange: %f to %f\n",(*pvvertex3D->ElementAt(i)).z*skew*-1.0f,vertexTy);

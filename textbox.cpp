@@ -350,19 +350,7 @@ void Textbox::RenderText()
 
 	HFONT hFont;
 	m_pIFontPlay->get_hFont(&hFont);
-	if (g_pplayer->m_frotate)
-		{
-		LOGFONT lf;
-		GetObject(hFont, sizeof(LOGFONT), &lf);
-		lf.lfOrientation = 900;
-		lf.lfEscapement = 900;
-		HFONT hfontNew = CreateFontIndirect(&lf);
-		SelectObject(hdc, hfontNew);
-		}
-	else
-		{
-		SelectObject(hdc, hFont);
-		}
+	SelectObject(hdc, hFont);
 
 	SetTextColor(hdc, m_d.m_fontcolor);
 

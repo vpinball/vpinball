@@ -106,8 +106,6 @@ public:
 
 	int m_time_msec;
 
-	int m_frotate;
-
 	int m_DeadZ;
 
 	Ball *m_pactiveball;		// ball the script user can get with ActiveBall

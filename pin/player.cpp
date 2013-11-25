@@ -63,8 +63,6 @@ Player::Player()
 	m_fplaylog = NULL;
 #endif
 
-	m_frotate = fFalse;
-
 #ifdef LOG
 	m_flog = NULL;
 #endif
