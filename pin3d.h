@@ -224,7 +224,7 @@ public:
 
 	void SetColorKeyEnabled(const BOOL fColorKey) const;
 	void EnableAlphaTestReference(DWORD alphaRefValue) const;
-   void EnableAlphaBlend( DWORD alphaRefValue, BOOL additiveBlending=fFalse );
+    void EnableAlphaBlend( DWORD alphaRefValue, BOOL additiveBlending=fFalse );
 
 	// Handy functions for creating obj frames
 
@@ -260,7 +260,6 @@ public:
 	Texture ballTexture;
 	Texture ballShadowTexture;
 	Texture lightTexture;
-	//LPDIRECTDRAWSURFACE7 m_pddsPlayfieldTexture;
 	//LPDIRECTDRAWSURFACE7 m_pddsLightProjectTexture;
 	BaseTexture* m_pddsLightWhite;
 
@@ -276,8 +275,6 @@ public:
 	RECT m_rcScreen;
 	int m_dwRenderWidth;
 	int m_dwRenderHeight;
-	int m_dwViewPortWidth;
-	int m_dwViewPortHeight;
 
 	RECT m_rcUpdate;
 
@@ -298,7 +295,7 @@ public:
 	Vertex3Ds m_vertexcamera;
 
 	LightProjected m_lightproject;
-   bool fullscreen;
+   //bool fullscreen;
 	float m_maxSeparation, m_ZPD;
    D3DVIEWPORT7 vp;
 	};

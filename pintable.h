@@ -610,9 +610,6 @@ END_CONNECTION_POINT_MAP()
     Vector< IEditable > layer[8];
     Vector<ISelect> allHitElements;
       
-    bool activeLayers[8];
-    bool toggleAllLayers;
-
 	Vector< Texture > m_vimage;
 
 	Vector< PinSound > m_vsound;
@@ -641,8 +638,6 @@ END_CONNECTION_POINT_MAP()
 	HBITMAP m_hbmOffScreen; // Buffer for drawing the editor window
 	BOOL m_fDirtyDraw; // Whether our background bitmap is up to date
 
-	//UndoRecord* m_pstgBackup; // back up of object data during play, for restoring original state afterwards
-
 	PinUndo m_undo;
 
 	CComObject<CodeViewer> *m_pcv;
@@ -655,11 +650,6 @@ END_CONNECTION_POINT_MAP()
 	SaveDirtyState m_sdsDirtyScript;
 	SaveDirtyState m_sdsNonUndoableDirty;
 	SaveDirtyState m_sdsCurrentDirtyState;
-
-	//BOOL m_fScriptDirtyBeforePlay;
-
-	//temp storage for resolved name
-	WCHAR mp_resolvedName[MAXNAMEBUFFER];
 
 	// Table info
 	char *m_szTableName;
@@ -674,7 +664,6 @@ END_CONNECTION_POINT_MAP()
 	char m_szScreenShot[MAXTOKEN];
 
 	PinBinary *m_pbTempScreenshot; // Holds contents of screenshot image until the image asks for it
-	//PinBinary m_pbScreenSound;
 
 	Vector<char> m_vCustomInfoTag;
 	Vector<char> m_vCustomInfoContent;
@@ -690,6 +679,9 @@ END_CONNECTION_POINT_MAP()
     float shadowDirX;
     float shadowDirY;
 	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
+
+	bool activeLayers[8];
+    bool toggleAllLayers;
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
