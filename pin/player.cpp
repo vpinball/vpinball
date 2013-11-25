@@ -119,16 +119,22 @@ Player::Player()
 		}
 	m_fVSync = vsync;
 
-	hr = GetRegInt("Player", "FXAA", &m_fFXAA);
-	if (hr != S_OK)
-		{
-		m_fFXAA = fFalse; // The default = off
-		}
-	if ((m_fFXAA != fFalse) && (!SSE2_supported)) // SSE2 necessary for the FXAA code
-		{
-		ShowError("SSE2 is not supported on this processor (necessary for FXAA)");
-		m_fFXAA = fFalse;
-		}
+   hr = GetRegInt("Player", "FXAA", &m_fFXAA);
+   if (hr != S_OK)
+   {
+      m_fFXAA = fFalse; // The default = off
+   }
+   if ((m_fFXAA != fFalse) && (!SSE2_supported)) // SSE2 necessary for the FXAA code
+   {
+      ShowError("SSE2 is not supported on this processor (necessary for FXAA)");
+      m_fFXAA = fFalse;
+   }
+
+   hr = GetRegInt("Player", "USEAA", &useAA);
+   if (hr != S_OK)
+   {
+      useAA = fFalse; // The default = off
+   }
 
 	hr = GetRegInt("Player", "Stereo3D", &m_fStereo3D);
 	if (hr != S_OK)
@@ -645,6 +651,15 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	InitKeys();
 
 	InitRegValues();
+
+   if( !ptable->useAA )
+   {
+      useAA=false;
+   }
+   else
+   {
+      useAA=true;
+   }
 
 	// width, height, and colordepth are only defined if fullscreen is true.
 	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, (!!m_fStereo3D) || (!!m_fFXAA));
@@ -1163,7 +1178,7 @@ void Player::InitAnimations(HWND hwndProgress)
 	HRESULT hr = m_pin3d.m_pd3dDevice->BeginScene();
 
 	// Direct all renders to the back buffer.
-	m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
+   m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
 
 	// Set up z-buffer to the static one, so movers can clip to it
 	m_pin3d.m_pddsZBuffer->BltFast(0, 0, m_pin3d.m_pddsStaticZ, NULL, DDBLTFAST_WAIT);
@@ -2042,6 +2057,7 @@ void Player::RenderDynamics()
 
    m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
 
+
    // Finish rendering the next frame.
    m_pin3d.m_pd3dDevice->EndScene();
 }
@@ -2107,6 +2123,8 @@ void Player::Render()
 	///+++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     UpdatePhysics();
+   if( useAA )
+      m_pin3d.SetRenderTarget(m_pin3d.antiAliasTexture, m_pin3d.m_pddsZBuffer );
 
 	// This only invalidates all of the new Ball regions upfront, which is needed due to the double buffering of DX7 to properly invalidate -all- regions (i.e. reblit the static buffer beforehand!). This can be removed as soon as region updates of the back/frontbuffer are deprecated and always the full static/backbuffer are blitted each frame!
 	DrawBalls(true);
@@ -2183,6 +2201,11 @@ void Player::Render()
 			const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
 			overall_area += (prc.right-prc.left)*(prc.bottom-prc.top);
 		}
+   BaseTexture *backBuffer = m_pin3d.m_pddsBackBuffer;
+   if ( useAA )
+     backBuffer = m_pin3d.antiAliasTexture; //m_pin3d.m_pddsBackBuffer;
+
+   BaseTexture * const backBufferZ = m_pin3d.m_pddsZBuffer;
 
 	if(((m_fEnableRegionUpdateOptimization && (m_ptable->m_TableRegionOptimization == -1)) || (m_ptable->m_TableRegionOptimization == 1))
 		&& (!m_fCleanBlt || (overall_area >= FULLBLTAREA)))
@@ -2192,8 +2215,8 @@ void Player::Render()
 		rect.right = min(GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
 		rect.top = 0;
 		rect.bottom = min(GetSystemMetrics(SM_CYSCREEN), m_pin3d.m_dwRenderHeight);
-		m_pin3d.m_pddsBackBuffer->BltFast(rect.left, rect.top, m_pin3d.m_pddsStatic, &rect, 0);
-		m_pin3d.m_pddsZBuffer->BltFast(rect.left, rect.top, m_pin3d.m_pddsStaticZ, &rect, 0);
+		backBuffer->BltFast(rect.left, rect.top, m_pin3d.m_pddsStatic, &rect, 0);
+		backBufferZ->BltFast(rect.left, rect.top, m_pin3d.m_pddsStaticZ, &rect, 0);
 
 		// kill all update regions and create one screen sized one
 		for (int i=0;i<m_vupdaterect.Size();i++)
@@ -2216,13 +2239,10 @@ void Player::Render()
 				RECT * const prc = &pur->m_rcupdate;
 
 				// Redraw the region from the static buffers to the back and z buffers.
-				m_pin3d.m_pddsBackBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStatic, prc, 0);
-				m_pin3d.m_pddsZBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStaticZ, prc, 0);
+				backBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStatic, prc, 0);
+				backBufferZ->BltFast(prc->left, prc->top, m_pin3d.m_pddsStaticZ, prc, 0);
 			}
 		}
-
-	BaseTexture * const pdds = m_pin3d.m_pddsBackBuffer;
-	BaseTexture * const pddsz= m_pin3d.m_pddsZBuffer;
 
 	// Process all regions that need updating.  
 	// The region will be drawn with the current frame.
@@ -2261,14 +2281,14 @@ void Player::Render()
 					if (pobjframe->pdds != NULL)
 					{
 						// Blit to the backbuffer with DDraw.   
-						pdds->BltFast(bltleft, blttop, pobjframe->pdds, &rcUpdate, DDBLTFAST_SRCCOLORKEY);
+						backBuffer->BltFast(bltleft, blttop, pobjframe->pdds, &rcUpdate, DDBLTFAST_SRCCOLORKEY);
 					}
 
 					// Make sure we have a source z surface.
 					if (pobjframe->pddsZBuffer != NULL)
 					{
 						// Blit to the z buffer.	
-						pddsz->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
+						backBufferZ->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
 					}
 				}
 			}
@@ -2276,6 +2296,35 @@ void Player::Render()
 	}
 
     RenderDynamics();
+
+#pragma region ANTIALIAS
+    if ( useAA )
+    {
+       m_pin3d.m_pd3dDevice->SetRenderTarget( m_pin3d.m_pddsBackBuffer,0  );
+       RECT rect;
+       rect.left = 0;
+       rect.right = min(GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
+       rect.top = 0;
+       rect.bottom = min(GetSystemMetrics(SM_CYSCREEN), m_pin3d.m_dwRenderHeight);
+       if ( m_pin3d.m_pd3dDevice->BeginScene()==D3D_OK )
+       {
+          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 	
+          m_pin3d.DrawSprite(0,0, &rect, m_pin3d.antiAliasTexture );
+          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE); 	
+          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+          m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1}
+          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0x40404040);
+          m_pin3d.DrawSprite(1,1, &rect, m_pin3d.antiAliasTexture );
+          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
+          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,TRUE);
+          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
+          m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+          m_pin3d.m_pd3dDevice->EndScene();
+       }
+    }
+#pragma endregion ANTIALIAS
 
     // Check if we should turn animate the plunger light.
     const U32 cur_time_msec = msec();

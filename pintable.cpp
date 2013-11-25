@@ -662,6 +662,13 @@ PinTable::PinTable()
    useReflectionForBalls=reflection;
    ballReflectionStrength=50;
 
+   int enableAA;
+   if ( FAILED(GetRegInt("Player", "USEAA", &enableAA)))
+   {
+      enableAA = fFalse; // The default
+   }
+   useAA=enableAA;
+
    m_pbTempScreenshot = NULL;
 
    HRESULT hr;
@@ -1597,8 +1604,7 @@ void PinTable::Render3DProjection(Sur * const psur)
 
    Vertex2D rgvOut[8];
    pinproj.TransformVertices(rgvIn, NULL, 8, rgvOut);
-   psur->Polygon(rgvOut, 8);
-}
+   psur->Polygon(rgvOut, 8);}
 
 
 BOOL PinTable::GetDecalsEnabled() const
@@ -2819,6 +2825,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(BREF), useReflectionForBalls );
    bw.WriteInt(FID(BRST), ballReflectionStrength );
 
+   bw.WriteInt(FID(UAAL), useAA );
+
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
    // Someday save these values into there own stream, used only when saving to file.
 
@@ -3686,6 +3694,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BRST))
    {
       pbr->GetInt(&ballReflectionStrength);
+   }
+   else if (id == FID(UAAL))
+   {
+      pbr->GetInt(&useAA);
    }
    else if (id == FID(SDIX))
    {
@@ -8441,10 +8453,26 @@ STDMETHODIMP PinTable::get_RenderShadows(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_RenderShadows(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_fRenderShadows = VBTOF(newVal);
+      m_fRenderShadows = VBTOF(newVal);
    STOPUNDO
 
+      return S_OK;
+}
+
+STDMETHODIMP PinTable::get_EnableAntialiasing(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(useAA);
+
    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_EnableAntialiasing(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+      useAA = VBTOF(newVal);
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP PinTable::get_OverridePhysics(long *pVal)

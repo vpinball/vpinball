@@ -223,20 +223,20 @@ BEGIN
     LTEXT           "Koadic",IDC_STATIC,150,141,42,9
 END
 
-IDD_VIDEO_OPTIONS DIALOGEX 0, 0, 351, 280
+IDD_VIDEO_OPTIONS DIALOGEX 0, 0, 351, 297
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Video Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "&Window",IDC_WINDOW,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,20,42,10
     CONTROL         "Full Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,16,31,56,10
-    LISTBOX         IDC_SIZELIST,14,42,129,131,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Enable Software FXAA",IDC_FXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,179,90,10
-    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,203,83,10
-    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,213,81,10
+    LISTBOX         IDC_SIZELIST,14,42,129,122,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable Software FXAA",IDC_FXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,169,90,10
+    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,212,83,10
+    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,222,81,10
     CONTROL         "At Full Screen anti-stretch the Ball",IDC_StretchMonitor,
-                    "Button",BS_AUTORADIOBUTTON,16,223,127,10
-    COMBOBOX        IDC_MonitorCombo,73,233,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+                    "Button",BS_AUTORADIOBUTTON,16,232,127,10
+    COMBOBOX        IDC_MonitorCombo,73,242,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Draw Ball &Shadows",IDC_SHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,77,10
     CONTROL         "Draw Ball &Decals",IDC_DECAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,30,70,10
     CONTROL         "&Antialias Ball",IDC_ANTIALIAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,42,55,10
@@ -259,21 +259,23 @@ BEGIN
     CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,195,32,10
     CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,205,45,10
     CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | WS_TABSTOP,156,232,183,20
-    DEFPUSHBUTTON   "OK",IDOK,218,265,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,277,265,50,14
-    GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,251
+    DEFPUSHBUTTON   "OK",IDOK,218,280,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,277,280,50,14
+    GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,263
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,60
     GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,60
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,69,190,188
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,69,190,202
     GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,163,180,55
     LTEXT           "Restart Visual Pinball.",IDC_STATIC,244,178,72,8
     LTEXT           "Only works for Images",IDC_STATIC,244,187,70,8
     LTEXT           "that are not BMP.",IDC_STATIC,244,196,56,8
     LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,222,156,8
-    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,192,133,59
-    LTEXT           "to my Monitor:",IDC_STATIC,27,235,45,8
+    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,62
+    LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
     CONTROL         "Reflect Ball on all tables",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,54,91,10
+    CONTROL         "fake AA on all tables (experimental)",IDC_AA_ALL_TABLES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,182,126,10
 END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
@@ -1211,23 +1213,24 @@ BEGIN
     LTEXT           "&Sound:",IDC_STATIC,6,35,22,8
 END
 
-IDD_PROPTABLE_VISUALS DIALOGEX 0, 0, 125, 120
+IDD_PROPTABLE_VISUALS DIALOGEX 0, 0, 125, 131
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Custom2",4,"ColorControl",WS_TABSTOP,27,7,40,14
-    COMBOBOX        DISPID_Image,7,34,110,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Render Shadows",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,71,10
-    LTEXT           "I&mage:",-1,7,24,22,8
+    COMBOBOX        DISPID_Image,7,32,110,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Render Shadows",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,57,71,10
+    LTEXT           "I&mage:",-1,7,23,22,8
     LTEXT           "&Color",-1,7,10,20,9
-    EDITTEXT        IDC_REGION_UPDATES_TABLE,101,60,20,12,ES_AUTOHSCROLL
-    LTEXT           "Region Upd.    (-1=default",-1,7,62,94,8
-    EDITTEXT        IDC_REGION_OPT_TABLE,101,74,20,12,ES_AUTOHSCROLL
-    LTEXT           "Region Opt.       0=off, 1=on)",-1,7,76,94,8
-    EDITTEXT        IDC_TABLESOUNDVOLUME,101,88,20,12,ES_AUTOHSCROLL
-    LTEXT           "Table Sound Volume (0..100)",-1,7,90,94,8
-    EDITTEXT        IDC_TABLEMUSICVOLUME,101,102,20,12,ES_AUTOHSCROLL
-    LTEXT           "Table Music Volume (0..100)",-1,7,104,94,8
+    EDITTEXT        IDC_REGION_UPDATES_TABLE,101,69,20,12,ES_AUTOHSCROLL
+    LTEXT           "Region Upd.    (-1=default)",-1,7,71,94,8
+    EDITTEXT        IDC_REGION_OPT_TABLE,101,83,20,12,ES_AUTOHSCROLL
+    LTEXT           "Region Opt.     (0=off, 1=on)",-1,7,85,94,8
+    EDITTEXT        IDC_TABLESOUNDVOLUME,101,97,20,12,ES_AUTOHSCROLL
+    LTEXT           "Table Sound Volume (0..100)",-1,7,99,94,8
+    EDITTEXT        IDC_TABLEMUSICVOLUME,101,111,20,12,ES_AUTOHSCROLL
+    LTEXT           "Table Music Volume (0..100)",-1,7,113,94,8
+    CONTROL         "Enable Antialiasing",IDC_ENABLE_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,47,75,10
 END
 
 IDD_PROPTABLE_EDITOR DIALOGEX 0, 0, 125, 38
@@ -1587,9 +1590,19 @@ BEGIN
         BOTTOMMARGIN, 152
     END
 
+    IDD_VIDEO_OPTIONS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 280
+    END
+
     IDD_PHYSICS_OPTIONS, DIALOG
     BEGIN
         RIGHTMARGIN, 194
+    END
+
+    IDD_PROPTABLE_VISUALS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 120
     END
 END
 #endif    // APSTUDIO_INVOKED

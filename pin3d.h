@@ -234,13 +234,14 @@ public:
 	void ExpandExtents(RECT * const prc, Vertex3D_NoLighting* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed);
 	void ExpandExtentsPlus(RECT * const prc, Vertex3D_NoTex2* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed);
 	void ExpandRectByRect(RECT * const prc, const RECT * const prcNew) const;
+   void DrawSprite( DWORD x, DWORD y, RECT *prc, BaseTexture *texture );
 
 	void ClipRectToVisibleArea(RECT * const prc) const;
 
 	BaseTexture* CreateOffscreen(const int width, const int height) const;
 	BaseTexture* CreateOffscreenWithCustomTransparency(const int width, const int height, const int color) const;
 	BaseTexture* CreateZBufferOffscreen(const int width, const int height) const;
-
+   
 	LPDIRECTDRAW7 m_pDD;
 	BaseTexture* m_pddsFrontBuffer;
 	BaseTexture* m_pddsBackBuffer;
@@ -257,6 +258,7 @@ public:
 	BaseTexture* m_pddsStatic;
 	BaseTexture* m_pddsStaticZ;
 
+   BaseTexture *antiAliasTexture;
 	Texture ballTexture;
 	Texture ballShadowTexture;
 	Texture lightTexture;
