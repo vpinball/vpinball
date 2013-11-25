@@ -274,8 +274,8 @@ BEGIN
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
     CONTROL         "Reflect Ball on all tables",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,54,91,10
-    CONTROL         "fake AA on all tables (experimental)",IDC_AA_ALL_TABLES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,182,126,10
+    CONTROL         "Fake AA on all tables (experimental)",IDC_AA_ALL_TABLES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,182,126,10
 END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
