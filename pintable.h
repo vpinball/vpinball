@@ -202,8 +202,10 @@ public:
 	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
-    STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_EnableAntialiasing)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
     
 	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
     STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
@@ -675,6 +677,8 @@ END_CONNECTION_POINT_MAP()
 	LightSource m_Light[MAX_LIGHT_SOURCES];
 	BOOL m_NormalizeNormals;
     BOOL useReflectionForBalls;
+    BOOL useAA;
+
     int ballReflectionStrength;
     float shadowDirX;
     float shadowDirY;

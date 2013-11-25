@@ -36,6 +36,7 @@ VP 9.2.0 Changelog
 - add 8 sets of global physics options to tweak some of the table and flipper settings that can then optionally override the table settings (when enabled in the table physics options and/or the flipper physics options)
   this enables quick changes to flipper and physics settings for a whole bunch of tables (for example to tweak for less input lag or adapt the ball simulation/'speed')
   the 8 different sets can be used f.e. to tweak for different hardware generations or the manufacturer
+- add fake antialiasing(AA) as a global option in the video settings and a per table setting
 
 VP 9.1.5 Changelog
 ------------------------
