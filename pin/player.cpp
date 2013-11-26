@@ -718,7 +718,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	m_LightHackWidth[LIGHTHACK_FIREPOWER_P4] = 86;
 	m_LightHackHeight[LIGHTHACK_FIREPOWER_P4] = 512;
 #endif
-
 	// Initialize render and texture states for D3D blit support.
 	//Display_InitializeRenderStates();
 	//Display_InitializeTextureStates();
@@ -745,6 +744,12 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	m_NudgeY = 0;
 	m_nudgetime = 0;
 	m_movedPlunger = 0;	// has plunger moved, must have moved at least three times
+
+   if ( useAA )
+   {
+      m_pin3d.InitAntiAliasing();
+   }
+
 
 	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
 	SetWindowText(hwndProgressName, "Initalizing Physics...");
@@ -2300,30 +2305,7 @@ void Player::Render()
 #pragma region ANTIALIAS
     if ( useAA )
     {
-       m_pin3d.m_pd3dDevice->SetRenderTarget( m_pin3d.m_pddsBackBuffer,0  );
-       RECT rect;
-       rect.left = 0;
-       rect.right = min(GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
-       rect.top = 0;
-       rect.bottom = min(GetSystemMetrics(SM_CYSCREEN), m_pin3d.m_dwRenderHeight);
-       if ( m_pin3d.m_pd3dDevice->BeginScene()==D3D_OK )
-       {
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 	
-          m_pin3d.DrawSprite(0,0, &rect, m_pin3d.antiAliasTexture );
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE); 	
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,FALSE);
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-          m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1}
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0x40404040);
-          m_pin3d.DrawSprite(1,1, &rect, m_pin3d.antiAliasTexture );
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,TRUE);
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
-          m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-          m_pin3d.m_pd3dDevice->EndScene();
-       }
+       m_pin3d.AntiAliasingScene();
     }
 #pragma endregion ANTIALIAS
 
