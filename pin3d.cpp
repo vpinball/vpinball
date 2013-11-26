@@ -724,16 +724,18 @@ retry3:
 
 	if(AA)
 	{
-	   int texwidth = 8; // Minimum size 8
-	   while(texwidth < m_dwRenderWidth)
-		  texwidth <<= 1;
+	   //!! aligning to power of two does not seem to be necessary
 
-	   int texheight = 8;
-	   while(texheight < m_dwRenderHeight)
-		  texheight <<= 1;
+	   int texwidth = m_dwRenderWidth;//8; // Minimum size 8
+//	   while(texwidth < m_dwRenderWidth)
+//		  texwidth <<= 1;
+
+	   int texheight = m_dwRenderHeight;//8;
+//	   while(texheight < m_dwRenderHeight)
+//		  texheight <<= 1;
 
 	   // D3D7 does not support textures greater than 4096 in either dimension
-	   if (texwidth > MAX_TEXTURE_SIZE)
+	   /*if (texwidth > MAX_TEXTURE_SIZE)
 	   {
 		  texwidth = MAX_TEXTURE_SIZE;
 	   }
@@ -741,7 +743,8 @@ retry3:
 	   if (texheight > MAX_TEXTURE_SIZE)
 	   {
 		  texheight = MAX_TEXTURE_SIZE;
-	   }
+	   }*/
+
 	   // Define a backbuffer.
 	   ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
 	   ddsd.dwWidth        = texwidth;
