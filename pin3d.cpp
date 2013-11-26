@@ -25,6 +25,7 @@ Pin3D::Pin3D()
 	backgroundVBuffer = NULL;
 	tableVBuffer = NULL;
    playfieldPolyIndices = NULL;
+   spriteVertexBuffer=NULL;
 }
 
 Pin3D::~Pin3D()
@@ -65,6 +66,11 @@ Pin3D::~Pin3D()
 
    SAFE_RELEASE(antiAliasTexture);
 
+   if( spriteVertexBuffer )
+   {
+      spriteVertexBuffer->release();
+      spriteVertexBuffer=0;
+   }
    ballShadowTexture.FreeStuff();
    ballTexture.FreeStuff();
    lightTexture.FreeStuff();
@@ -121,20 +127,30 @@ void Pin3D::CreateAndCopySpriteBuffers( AnimObject *animObj, ObjFrame *pof )
 	m_pddsBackBuffer->Blt(&pof->rc, NULL,&pof->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
 }
 
-void Pin3D::DrawSprite( DWORD x, DWORD y, RECT *prc, BaseTexture *texture )
+// assumes that antiAliasTexture is already initialized and that m_rzfar is correct
+// so be sure to call this function after InitDD and InitLayout
+void Pin3D::InitAntiAliasing()
 {
-   const float z = 1.0f;
-   const float rhw = 1.0f/(z*m_rzfar);
-   const float width  = (float)(prc->right-prc->left);
-   const float height = (float)(prc->bottom-prc->top);
-
+   if( !spriteVertexBuffer )
+   {
+      m_pd3dDevice->createVertexBuffer(8, 0, D3DFVF_TLVERTEX, &spriteVertexBuffer );
+      NumVideoBytes += 8*sizeof(D3DTLVERTEX);
+   }
    DDSURFACEDESC2 ddsd;
    ddsd.dwSize = sizeof(ddsd);
-   texture->GetSurfaceDesc( &ddsd );
+   antiAliasTexture->GetSurfaceDesc( &ddsd );
+
+   const float width = (float)min(GetSystemMetrics(SM_CXSCREEN), m_dwRenderWidth);
+   const float height = (float)min(GetSystemMetrics(SM_CYSCREEN), m_dwRenderHeight);
    const float maxtu = (float)width / (float)ddsd.dwWidth;
    const float maxtv = (float)height/ (float)ddsd.dwHeight;
-
-   D3DTLVERTEX verts[4];
+   const float z = 1.0f;
+   const float rhw = 1.0f/(z*(float)m_rzfar);
+   float x=0;
+   float y=0;
+   
+   D3DTLVERTEX *verts;
+   spriteVertexBuffer->lock(0,0,(void**)&verts, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
    verts[0].sx = x;
    verts[0].sy = y;
    verts[0].sz = z;
@@ -166,14 +182,45 @@ void Pin3D::DrawSprite( DWORD x, DWORD y, RECT *prc, BaseTexture *texture )
    verts[3].color=0xFFFFFFFF;
    verts[3].tu = 0.0f;
    verts[3].tv = maxtv;
+   for( int i=4;i<8;i++ )
+   {
+      verts[i].sx++;
+      verts[i].sy++;
+   }
+   spriteVertexBuffer->unlock();
+}
+
+void Pin3D::AntiAliasingScene()
+{
    static const WORD idx[6]={0,1,2,2,3,0};
-   m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
-   m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
-   m_pd3dDevice->SetTexture(0, texture);
-   m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, D3DFVF_TLVERTEX, verts, 4, (LPWORD)idx, 6, 0);
-   m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-   m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-   m_pd3dDevice->SetTexture(0, NULL);
+   m_pd3dDevice->SetRenderTarget( m_pddsBackBuffer,0  );
+   if ( m_pd3dDevice->BeginScene()==D3D_OK )
+   {
+      m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+      m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+      m_pd3dDevice->SetTexture(0, antiAliasTexture);
+
+      m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+      m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 	
+      m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, spriteVertexBuffer, 0, 4, (LPWORD)idx, 6, 0 );
+
+      m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE); 	
+      m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,FALSE);
+      m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+      m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+      m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1}
+      m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0x40404040);
+      m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, spriteVertexBuffer, 4, 4, (LPWORD)idx, 6, 0 );
+
+      m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
+      m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,TRUE);
+      m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
+      m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+      m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+      m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+      m_pd3dDevice->SetTexture(0, NULL);
+      m_pd3dDevice->EndScene();
+   }
 }
 
 void Pin3D::ClipRectToVisibleArea(RECT * const prc) const
