@@ -21,8 +21,10 @@ void HitPrimitive::Collide(Ball * const pball, Vertex3Ds * const phitnormal) //!
 void PrimitiveAnimObject::Check3D()
 {
 	Primitive * const p = m_pprimitive;
-	if(!p->m_d.m_TopVisible)
+	if(!p->m_d.m_TopVisible && !p->m_d.wasVisible)
 		return;
+
+	p->m_d.wasVisible = false;
 
 	m_fInvalid = true;
 
