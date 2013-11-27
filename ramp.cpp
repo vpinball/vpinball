@@ -2038,12 +2038,15 @@ STDMETHODIMP Ramp::get_HeightBottom(float *pVal)
 
 STDMETHODIMP Ramp::put_HeightBottom(float newVal)
 {
-   STARTUNDO
+   if(m_d.m_heightbottom != newVal)
+   {
+	   STARTUNDO
 
-   m_d.m_heightbottom = newVal;
-   dynamicVertexBufferRegenerate = true;
+	   m_d.m_heightbottom = newVal;
+	   dynamicVertexBufferRegenerate = true;
 
-   STOPUNDO
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2057,12 +2060,15 @@ STDMETHODIMP Ramp::get_HeightTop(float *pVal)
 
 STDMETHODIMP Ramp::put_HeightTop(float newVal)
 {
-   STARTUNDO
+   if(m_d.m_heighttop != newVal)
+   {
+	   STARTUNDO
 
-   m_d.m_heighttop = newVal;
-   dynamicVertexBufferRegenerate = true;
+	   m_d.m_heighttop = newVal;
+	   dynamicVertexBufferRegenerate = true;
 
-   STOPUNDO
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2076,12 +2082,15 @@ STDMETHODIMP Ramp::get_WidthBottom(float *pVal)
 
 STDMETHODIMP Ramp::put_WidthBottom(float newVal)
 {
-   STARTUNDO
+   if(m_d.m_widthbottom != newVal)
+   {
+	   STARTUNDO
 
-   m_d.m_widthbottom = newVal;
-   dynamicVertexBufferRegenerate = true;
+	   m_d.m_widthbottom = newVal;
+	   dynamicVertexBufferRegenerate = true;
 
-   STOPUNDO
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2095,12 +2104,15 @@ STDMETHODIMP Ramp::get_WidthTop(float *pVal)
 
 STDMETHODIMP Ramp::put_WidthTop(float newVal)
 {
-   STARTUNDO
+   if(m_d.m_widthtop != newVal)
+   {
+	   STARTUNDO
 
-   m_d.m_widthtop = newVal;
-   dynamicVertexBufferRegenerate = true;
+	   m_d.m_widthtop = newVal;
+	   dynamicVertexBufferRegenerate = true;
 
-   STOPUNDO
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2114,12 +2126,15 @@ STDMETHODIMP Ramp::get_Color(OLE_COLOR *pVal)
 
 STDMETHODIMP Ramp::put_Color(OLE_COLOR newVal)
 {
-   STARTUNDO
+   if(m_d.m_color != newVal)
+   {
+	   STARTUNDO
 
-   m_d.m_color = newVal;
-   dynamicVertexBufferRegenerate = true;
+	   m_d.m_color = newVal;
+	   dynamicVertexBufferRegenerate = true;
 
-   STOPUNDO
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2176,12 +2191,18 @@ STDMETHODIMP Ramp::get_Image(BSTR *pVal)
 
 STDMETHODIMP Ramp::put_Image(BSTR newVal)
 {
-   STARTUNDO
+   char m_szImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
 
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
-   dynamicVertexBufferRegenerate = true;
+   if(strcmp(m_szImage,m_d.m_szImage) != 0)
+   {
+	   STARTUNDO
 
-   STOPUNDO
+	   strcpy_s(m_d.m_szImage, MAXTOKEN, m_szImage);
+	   dynamicVertexBufferRegenerate = true;
+
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2195,12 +2216,15 @@ STDMETHODIMP Ramp::get_ImageAlignment(RampImageAlignment *pVal)
 
 STDMETHODIMP Ramp::put_ImageAlignment(RampImageAlignment newVal)
 {
-   STARTUNDO
+   if(m_d.m_imagealignment != newVal)
+   {
+	   STARTUNDO
 
-   m_d.m_imagealignment = newVal;
-   dynamicVertexBufferRegenerate = true;
+	   m_d.m_imagealignment = newVal;
+	   dynamicVertexBufferRegenerate = true;
 
-   STOPUNDO
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2214,12 +2238,15 @@ STDMETHODIMP Ramp::get_HasWallImage(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Ramp::put_HasWallImage(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+   if(m_d.m_fImageWalls != VBTOF(newVal))
+   {
+	   STARTUNDO
 
-   m_d.m_fImageWalls = VBTOF(newVal);
-   dynamicVertexBufferRegenerate = true;
+	   m_d.m_fImageWalls = VBTOF(newVal);
+	   dynamicVertexBufferRegenerate = true;
 
-   STOPUNDO
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2311,12 +2338,17 @@ STDMETHODIMP Ramp::get_LeftWallHeight(float *pVal)
 
 STDMETHODIMP Ramp::put_LeftWallHeight(float newVal)
 {
-   STARTUNDO
+   const float nv = newVal < 0.f ? 0.f : newVal;
 
-   m_d.m_leftwallheight = newVal < 0.f ? 0.f : newVal;
-   dynamicVertexBufferRegenerate = true;
+   if(m_d.m_leftwallheight != nv)
+   {
+	   STARTUNDO
 
-   STOPUNDO
+	   m_d.m_leftwallheight = nv;
+	   dynamicVertexBufferRegenerate = true;
+
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2330,12 +2362,17 @@ STDMETHODIMP Ramp::get_RightWallHeight(float *pVal)
 
 STDMETHODIMP Ramp::put_RightWallHeight(float newVal)
 {
-   STARTUNDO
+   const float nv = newVal < 0.f ? 0.f : newVal;
 
-   m_d.m_rightwallheight = newVal < 0.f ? 0.f : newVal;
-   dynamicVertexBufferRegenerate = true;
+   if(m_d.m_rightwallheight != nv)
+   {
+	   STARTUNDO
 
-   STOPUNDO
+	   m_d.m_rightwallheight = nv;
+	   dynamicVertexBufferRegenerate = true;
+
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2349,12 +2386,17 @@ STDMETHODIMP Ramp::get_VisibleLeftWallHeight(float *pVal)
 
 STDMETHODIMP Ramp::put_VisibleLeftWallHeight(float newVal)
 {
-   STARTUNDO
+   const float nv = newVal < 0.f ? 0.f : newVal;
 
-   m_d.m_leftwallheightvisible = newVal < 0.f ? 0.f : newVal;
-   dynamicVertexBufferRegenerate = true;
+   if(m_d.m_leftwallheightvisible != nv)
+   {
+	   STARTUNDO
 
-   STOPUNDO
+	   m_d.m_leftwallheightvisible = nv;
+	   dynamicVertexBufferRegenerate = true;
+
+	   STOPUNDO
+   }
 
    return S_OK;
 }
@@ -2368,12 +2410,17 @@ STDMETHODIMP Ramp::get_VisibleRightWallHeight(float *pVal)
 
 STDMETHODIMP Ramp::put_VisibleRightWallHeight(float newVal)
 {
-   STARTUNDO
+   const float nv = newVal < 0.f ? 0.f : newVal;
 
-   m_d.m_rightwallheightvisible = newVal < 0.f ? 0.f : newVal;
-   dynamicVertexBufferRegenerate = true;
+   if(m_d.m_rightwallheightvisible != nv)
+   {
+	   STARTUNDO
 
-   STOPUNDO
+	   m_d.m_rightwallheightvisible = nv;
+	   dynamicVertexBufferRegenerate = true;
+
+	   STOPUNDO
+   }
 
    return S_OK;
 }

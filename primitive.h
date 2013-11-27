@@ -29,7 +29,6 @@ public:
 
    bool use3DMesh;
    bool m_TopVisible;
-   bool wasVisible;
    bool m_DrawTexturesInside;
    bool useLighting;
    bool staticRendering;
