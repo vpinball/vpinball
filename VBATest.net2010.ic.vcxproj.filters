@@ -686,4 +686,7 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <Object Include="dispatchpatch32.obj" />
+  </ItemGroup>
 </Project>

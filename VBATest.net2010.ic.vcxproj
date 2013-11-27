@@ -897,7 +897,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <OptimizeForWindowsApplication>false</OptimizeForWindowsApplication>
       <FlushDenormalResultsToZero>true</FlushDenormalResultsToZero>
       <UnmaskFloatingPointExceptions>NoTraps</UnmaskFloatingPointExceptions>
-      <UseProcessorExtensions>None</UseProcessorExtensions>
+      <UseProcessorExtensions>SSE3</UseProcessorExtensions>
       <RecognizeRestrictKeyword>true</RecognizeRestrictKeyword>
       <CheckUndimensionedArrays>true</CheckUndimensionedArrays>
     </ClCompile>
@@ -3886,6 +3886,9 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="wall.cur" />
     <None Include="white.bmp" />
     <None Include="BaseTable17.vpt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="dispatchpatch32.obj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
