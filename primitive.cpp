@@ -321,6 +321,8 @@ void Primitive::EndPlay()
 		vertexBufferRegenerate = true;
 	}
 
+	m_d.wasVisible = false;
+
 	if(objMesh)
 	{
 		delete [] objMesh;
