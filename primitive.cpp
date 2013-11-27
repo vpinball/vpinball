@@ -13,6 +13,7 @@ Primitive::Primitive()
    indexList=0;
    indexListSize=0;
    m_d.use3DMesh=false;
+   m_d.wasVisible=false;
    m_d.meshFileName[0]=0;
    m_d.useLighting=false;
    m_d.staticRendering=false;
@@ -1504,6 +1505,8 @@ STDMETHODIMP Primitive::put_TopVisible(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
+   if( m_d.m_TopVisible && !VBTOF(newVal) )
+      m_d.wasVisible=true;
    m_d.m_TopVisible = VBTOF(newVal);
    
    STOPUNDO
