@@ -470,6 +470,7 @@ BaseTexture* Texture::CreateBaseTexture(const int width, const int height)
    ZeroMemory( &ddsd, sizeof(ddsd) );
    ddsd.dwSize = sizeof(ddsd);
 
+   //!! power of two only necessary because of mipmaps?
    int texwidth = 8; // Minimum size 8
    while(texwidth < width)
       texwidth <<= 1;
