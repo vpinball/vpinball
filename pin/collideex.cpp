@@ -22,6 +22,7 @@ void PrimitiveAnimObject::Check3D()
 {
 	Primitive * const p = m_pprimitive;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   m_fInvalid = true;
    // rcBounds must be initialized here otherwise the whole screen is updated
    ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
    if ( !p->m_d.staticRendering )
