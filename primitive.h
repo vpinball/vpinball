@@ -25,15 +25,16 @@ public:
    COLORREF m_SideColor;
 
    TimerDataRoot m_tdr;
-   RECT boundRectangle;
+   RECT m_boundRectangle;
 
    bool use3DMesh;
    bool m_TopVisible;
-   bool wasVisible;
+   bool m_wasVisible;
    bool m_DrawTexturesInside;
    bool useLighting;
    bool staticRendering;
    bool sphereMapping;
+   bool m_triggerUpdateRegion;
 };
 
 class Primitive :

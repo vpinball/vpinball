@@ -1120,7 +1120,7 @@ void Player::InitStatic(HWND hwndProgress)
 			Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 			if (ph)
 				{
-            ph->RenderSetup(m_pin3d.m_pd3dDevice);
+                ph->RenderSetup(m_pin3d.m_pd3dDevice);
 				ph->RenderStatic(m_pin3d.m_pd3dDevice);
 				if (hwndProgress)
 					{
@@ -2053,7 +2053,6 @@ void Player::RenderDynamics()
 
    m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
 
-
    // Finish rendering the next frame.
    m_pin3d.m_pd3dDevice->EndScene();
 }
@@ -2152,6 +2151,10 @@ void Player::Render()
 			// Flag the element's region as needing a redraw.
 			InvalidateRect(&m_vscreenupdate.ElementAt(i)->m_rcBounds);
 		}
+
+	// For alphas (alpha ramps & primitives), abuse the RenderMovers call to (optionally) invalidate regions that need updates.
+    for (int i=0;i<m_vhitalpha.Size();i++)
+		m_vhitalpha.ElementAt(i)->RenderMovers(m_pin3d.m_pd3dDevice);
 
 	//rlc BUG -- moved this code before copy of static buffers being copied to back and z buffers
 	//rlc  JEP placed code for copy of static buffers too soon 

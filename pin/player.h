@@ -223,7 +223,7 @@ private:
 	U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn
 	U64 m_nextPhysicsFrameTime;	// time at which the next physics update should be
 
-    // caching hitable alpha ramps & primitives to speed up DrawAlphas()
+    // caching hitable alpha ramps & primitives to speed up DrawAlphas() and set up invalid regions
 	Vector< Hitable > m_vhitalpha;
 
 	int curAccel_x[PININ_JOYMXCNT];

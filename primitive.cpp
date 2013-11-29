@@ -13,7 +13,8 @@ Primitive::Primitive()
    indexList=0;
    indexListSize=0;
    m_d.use3DMesh=false;
-   m_d.wasVisible=false;
+   m_d.m_wasVisible=false;
+   g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
    m_d.meshFileName[0]=0;
    m_d.useLighting=false;
    m_d.staticRendering=false;
@@ -27,6 +28,7 @@ Primitive::Primitive()
    m_d.m_aRotAndTraTypes[6] = ObjRotX;
    m_d.m_aRotAndTraTypes[7] = ObjRotY;
    m_d.m_aRotAndTraTypes[8] = ObjRotZ;
+   m_d.m_triggerUpdateRegion = true;
 } 
 
 Primitive::~Primitive() 
@@ -301,11 +303,9 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
    // OK, i need a hitprimitive class and a hitanimobject class.
    // the hitprimitive class should add itself to the HitObjectVector.
    // i think i have to look at easy hit objects and then at ramps hitobjects.
-   HitPrimitive * pHitPrimitive = new HitPrimitive();
+   /*HitPrimitive * pHitPrimitive = new HitPrimitive();
 
-   pHitPrimitive->m_primitiveAnim.m_pprimitive = this; //!! as a temporary(?) workaround use this to recalculate
-
-   pvho->AddElement(pHitPrimitive);
+   pvho->AddElement(pHitPrimitive);*/
 }
 
 void Primitive::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -321,13 +321,14 @@ void Primitive::EndPlay()
 		vertexBufferRegenerate = true;
 	}
 
-	m_d.wasVisible = false;
-
 	if(objMesh)
 	{
 		delete [] objMesh;
 		objMesh = 0;
 	}
+
+	m_d.m_wasVisible = false;
+    g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
 }
 
 //////////////////////////////
@@ -783,8 +784,8 @@ void Primitive::CalculateBuiltin()
    //}
 
    // 4 update the bounding box for the primitive to tell the renderer where to update the back buffer
-   g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
-   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, builtin_rgv, NULL, NULL, numVertices, fFalse);
+   g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
+   g_pplayer->m_pin3d.ExpandExtents(&m_d.m_boundRectangle, builtin_rgv, NULL, NULL, numVertices, fFalse);
 
    // 5 store in vertexbuffer
    Vertex3D_NoTex2 *buf;
@@ -825,8 +826,8 @@ void Primitive::UpdateMesh()
       fullMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
    }
    // update the bounding box for the primitive to tell the renderer where to update the back buffer
-   g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
-   g_pplayer->m_pin3d.ExpandExtents(&m_d.boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
+   g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
+   g_pplayer->m_pin3d.ExpandExtents(&m_d.m_boundRectangle, objMesh, NULL, NULL, numVertices, fFalse);
 
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
@@ -928,7 +929,7 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
    if( !m_d.use3DMesh )
       CalculateBuiltinOriginal();
 
-   g_pplayer->m_pin3d.ClearExtents(&m_d.boundRectangle,NULL,NULL);
+   g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
 }
 
 void Primitive::RenderStatic(const RenderDevice* _pd3dDevice)
@@ -942,6 +943,17 @@ void Primitive::RenderStatic(const RenderDevice* _pd3dDevice)
 
 void Primitive::RenderMovers(const RenderDevice* pd3dDevice)
 {
+    if(!m_d.m_triggerUpdateRegion)
+	   return;
+
+    if(m_d.staticRendering ||
+	  (!m_d.m_TopVisible && !m_d.m_wasVisible))
+		return;
+
+	m_d.m_wasVisible = false;
+
+	// Seems like for now we can simply abuse the already calculated coordinates
+    g_pplayer->InvalidateRect(&m_d.m_boundRectangle);
 }
 
 //////////////////////////////
@@ -1508,7 +1520,7 @@ STDMETHODIMP Primitive::put_TopVisible(VARIANT_BOOL newVal)
    STARTUNDO
 
    if( m_d.m_TopVisible && !VBTOF(newVal) )
-      m_d.wasVisible=true;
+      m_d.m_wasVisible=true;
    m_d.m_TopVisible = VBTOF(newVal);
    
    STOPUNDO

@@ -8,7 +8,7 @@
 #include "resource.h"       // main symbols
 
 class RampData
-	{
+{
 public:
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
@@ -19,10 +19,6 @@ public:
 	RampType m_type;
 	char m_szImage[MAXTOKEN];
 	RampImageAlignment m_imagealignment;
-	BOOL m_fImageWalls;
-	BOOL m_fCastsShadow;
-	BOOL m_fAcrylic;
-	BOOL m_fAlpha;
 	float m_leftwallheight;
 	float m_rightwallheight;
 	float m_leftwallheightvisible;
@@ -30,12 +26,21 @@ public:
 	float m_elasticity;
 	float m_friction;
 	float m_scatter;
-	BOOL m_fCollidable;
-	BOOL m_IsVisible;
-	BOOL m_fModify3DStereo;
-	BOOL m_fAddBlend;
-   BOOL m_enableLightingImage;
-	};
+
+    RECT m_boundRectangle;
+	
+	bool m_fCollidable;
+	bool m_IsVisible;
+	bool m_fModify3DStereo;
+	bool m_fAddBlend;
+    bool m_enableLightingImage;
+	bool m_fImageWalls;
+	bool m_fCastsShadow;
+	bool m_fAcrylic;
+	bool m_fAlpha;
+	bool m_wasVisible;
+	bool m_triggerUpdateRegion;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // Ramp
@@ -137,9 +142,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;
 	BOOL dynamicVertexBufferRegenerate;
-   Material solidMaterial;
-   Material textureMaterial;
-   Material habitrailMaterial;
+    Material solidMaterial;
+    Material textureMaterial;
+    Material habitrailMaterial;
 
 	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
@@ -154,9 +159,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	void RenderStaticHabitrail(const RenderDevice* _pd3dDevice);
 	void RenderPolygons(const RenderDevice* _pd3dDevice, int offset, WORD * const rgicrosssection, const int start, const int stop);
    
-	//RECT invalidationRect;
-	//bool invalidationRectCalculated;
-
 // IRamp
 public:
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);

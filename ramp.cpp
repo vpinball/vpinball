@@ -5,13 +5,15 @@
 Ramp::Ramp()
 {
    m_menuid = IDR_SURFACEMENU;
-   m_d.m_fCollidable = fTrue;
-   m_d.m_IsVisible = fTrue;
-   //invalidationRectCalculated = false;
+   m_d.m_fCollidable = true;
+   m_d.m_IsVisible = true;
+   m_d.m_wasVisible=false;
+   g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
    staticVertexBuffer = 0;
    dynamicVertexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
-   m_d.m_enableLightingImage=fTrue;
+   m_d.m_enableLightingImage = true;
+   m_d.m_triggerUpdateRegion = false;
 }
 
 Ramp::~Ramp()
@@ -35,7 +37,7 @@ Ramp::~Ramp()
 HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
-   m_d.m_IsVisible = fTrue;
+   m_d.m_IsVisible = true;
 
    HRESULT hr;
    float fTmp;
@@ -139,25 +141,25 @@ void Ramp::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fImageWalls = iTmp == 0 ? false : true;
    else
-      m_d.m_fImageWalls = fTrue;
+      m_d.m_fImageWalls = true;
 
    hr = GetRegInt("DefaultProps\\Ramp","CastsShadow", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fCastsShadow = iTmp == 0 ? false : true;
    else
-      m_d.m_fCastsShadow = fTrue;
+      m_d.m_fCastsShadow = true;
 
    hr = GetRegInt("DefaultProps\\Ramp","Acrylic", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fAcrylic = iTmp == 0 ? false : true;
    else
-      m_d.m_fAcrylic = fFalse;
+      m_d.m_fAcrylic = false;
 
    hr = GetRegInt("DefaultProps\\Ramp","Alpha", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fAlpha = iTmp == 0 ? false : true;
    else
-      m_d.m_fAlpha = fFalse;
+      m_d.m_fAlpha = false;
    if (m_d.m_fAlpha) 
       m_d.m_fAcrylic = true;   // A alpha Ramp is automatically acrylic.
 
@@ -207,31 +209,31 @@ void Ramp::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fCollidable = iTmp == 0 ? false : true;
    else
-      m_d.m_fCollidable = fTrue;
+      m_d.m_fCollidable = true;
 
    hr = GetRegInt("DefaultProps\\Ramp","Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_IsVisible = iTmp == 0 ? false : true;
    else
-      m_d.m_IsVisible = fTrue;
+      m_d.m_IsVisible = true;
 
    hr = GetRegInt("DefaultProps\\Ramp","Modify3DStereo", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fModify3DStereo = iTmp == 0 ? false : true;
    else
-      m_d.m_fModify3DStereo = fTrue;
+      m_d.m_fModify3DStereo = true;
 
    hr = GetRegInt("DefaultProps\\Ramp","AddBlend", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fAddBlend = iTmp == 0 ? false : true;
    else
-      m_d.m_fAddBlend = fFalse;
+      m_d.m_fAddBlend = false;
 
    hr = GetRegInt("DefaultProps\\Ramp","EnableLightingOnImage", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_enableLightingImage = iTmp == 0 ? false : true;
    else
-      m_d.m_enableLightingImage = fTrue;
+      m_d.m_enableLightingImage = true;
 }
 
 void Ramp::WriteRegDefaults()
@@ -744,7 +746,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       wallheightright = (float)(6+12.5);
    }
 
-   if (wallheightright > 0)
+   if (wallheightright > 0.f)
    {
       for (int i=0;i<(cvertex-1);i++)
       {
@@ -810,7 +812,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
             ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
             if (m_d.m_type == RampTypeFlat)
-               ph3dpoly->m_fVisible = fTrue;
+               ph3dpoly->m_fVisible = true;
 
             pvho->AddElement(ph3dpoly);
 
@@ -834,7 +836,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
          if (m_d.m_type == RampTypeFlat)
-            ph3dpoly->m_fVisible = fTrue;
+            ph3dpoly->m_fVisible = true;
 
          pvho->AddElement(ph3dpoly);
 
@@ -1038,6 +1040,9 @@ void Ramp::EndPlay()
         delete [] rgibuf;
         delete [] invrgibuf;
 	}
+
+	m_d.m_wasVisible = false;
+    g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
 }
 
 static const WORD rgicrosssection[] = {
@@ -1693,6 +1698,23 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
 
 void Ramp::RenderMovers(const RenderDevice* pd3dDevice)
 {
+   if(!m_d.m_triggerUpdateRegion)
+	   return;
+
+   if((!m_d.m_IsVisible && !m_d.m_wasVisible) ||		
+      // Don't render non-Alphas. 
+      (!m_d.m_fAlpha) ||
+	  ( m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f ) ||
+      (m_d.m_type == RampType4Wire 
+      || m_d.m_type == RampType1Wire //add check for 1 wire
+      || m_d.m_type == RampType2Wire 
+      || m_d.m_type == RampType3WireLeft 
+      || m_d.m_type == RampType3WireRight))
+	  return;
+
+   m_d.m_wasVisible = false;
+
+   g_pplayer->InvalidateRect(&m_d.m_boundRectangle);
 }
 
 void Ramp::SetObjectPos()
@@ -1826,20 +1848,28 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(IMGW))
    {
-      pbr->GetBool(&m_d.m_fImageWalls);
+      BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_fImageWalls = (iTmp==1);
    }
    else if (id == FID(CSHD))
    {
-      pbr->GetBool(&m_d.m_fCastsShadow);
+      BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_fCastsShadow = (iTmp==1);
    }
    else if (id == FID(ACRY))
    {
-      pbr->GetBool(&m_d.m_fAcrylic);
-      m_d.m_fAlpha = false; // Alpha is read after acrylic
+      BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_fAcrylic = (iTmp==1);
+      m_d.m_fAlpha = false; // Alpha is read after acrylic //!! uhoh
    }
    else if (id == FID(ALPH))
    {
-      pbr->GetBool(&m_d.m_fAlpha);
+      BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_fAlpha = (iTmp==1);
    }
    else if (id == FID(NAME))
    {
@@ -1875,23 +1905,33 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(CLDRP))
    {
-      pbr->GetBool(&m_d.m_fCollidable);
+	  BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_fCollidable = (iTmp==1);
    }
    else if (id == FID(RVIS))
    {
-      pbr->GetBool(&m_d.m_IsVisible);
+	  BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_IsVisible = (iTmp==1);
    }
    else if (id == FID(MSTE))
    {
-      pbr->GetBool(&m_d.m_fModify3DStereo);
+      BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_fModify3DStereo = (iTmp==1);
    }
    else if (id == FID(ADDB))
    {
-      pbr->GetBool(&m_d.m_fAddBlend);
+      BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_fAddBlend = (iTmp==1);
    }
    else if (id == FID(ERLI))
    {
-      pbr->GetBool(&m_d.m_enableLightingImage);
+	  BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_enableLightingImage = (iTmp==1);
    }
    else
    {
@@ -2520,25 +2560,14 @@ STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
    {
       STARTUNDO
 
+      if( m_d.m_IsVisible && !VBTOF(newVal) )
+          m_d.m_wasVisible=true;
+
       m_d.m_IsVisible = VBTOF(newVal);			// set visibility
       
 	  STOPUNDO
    }
-   /*
-   // OK this (ramp.isvisible in player) does only work in HS-Device Rendering Mode.
-   // The problem is (if i'm right), that the ramp is drawed to the fixed backbuffer.
-   // This did work only with HD-Device rendering and alpha ramps, since alpha ramps are drawn
-   // in realtime. I think that, to get this working even in SWDR, the ramp had to be written 
-   // to an own texture and should have to be blit on screen.   Cupid
-   else 
-   {
-   if (invalidationRectCalculated && m_d.m_fAcrylic && m_d.m_fAlpha)
-   {
-   g_pplayer->InvalidateRect(&invalidationRect);
-   m_d.m_IsVisible = VBTOF(newVal);
-   }
-   }
-   */
+
    return S_OK;
 }
 
@@ -2857,7 +2886,15 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
             memcpy( &buf[offset], rgvbuf, sizeof(Vertex3D_NoTex2)*numVertices );
          }
 
-         dynamicVertexBuffer->unlock();
+		 // update the bounding box for the primitive to tell the renderer where to update the back buffer
+		 g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
+		 g_pplayer->m_pin3d.ExpandExtents(&m_d.m_boundRectangle, buf, NULL, NULL, numVertices, fFalse);
+		 if ( m_d.m_rightwallheightvisible!=0.f )
+			 g_pplayer->m_pin3d.ExpandExtents(&m_d.m_boundRectangle, buf+numVertices, NULL, NULL, numVertices*2, fFalse);
+	     if ( m_d.m_leftwallheightvisible!=0.f )
+			 g_pplayer->m_pin3d.ExpandExtents(&m_d.m_boundRectangle, buf+numVertices*3, NULL, NULL, numVertices*2, fFalse);
+	     
+		 dynamicVertexBuffer->unlock();
 
          delete [] rgvLocal;
          delete [] rgheight;
