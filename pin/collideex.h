@@ -1,31 +1,6 @@
 #pragma once
+
 class Surface;
-
-class PrimitiveAnimObject : public AnimObject
-{
-public:
-	virtual bool FMover() const {return true;}
-	virtual void Check3D();
-
-	Primitive *m_pprimitive; //!! temporary to update rect directly from original data
-
-	BOOL m_fVisible;
-	BOOL m_fDisabled;
-};
-
-class HitPrimitive : public HitObject
-{
-public:
-	HitPrimitive();
-
-	virtual AnimObject *GetAnimObject() {return &m_primitiveAnim;}
-	PrimitiveAnimObject m_primitiveAnim;
-
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
-	virtual int GetType() const {return ePrimitive;}
-	virtual void CalcHitRect();
-};
 
 class BumperAnimObject : public AnimObject
 {

@@ -1,49 +1,5 @@
 #include "stdafx.h"
 
-HitPrimitive::HitPrimitive()
-{
-	m_primitiveAnim.m_fVisible = fTrue;
-	m_primitiveAnim.m_fDisabled = fFalse;
-	m_elasticity = 0.3f;
-	m_antifriction = 1.0f;
-	m_scatter = 0;
-}
-
-float HitPrimitive::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) //!!
-{
-	return -1.0f;
-}
-
-void HitPrimitive::Collide(Ball * const pball, Vertex3Ds * const phitnormal) //!!
-{
-}
-
-void PrimitiveAnimObject::Check3D()
-{
-	Primitive * const p = m_pprimitive;
-	
-    if(p->m_d.staticRendering ||
-	  (!p->m_d.m_TopVisible && !p->m_d.wasVisible))
-	{
-	    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-	    ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
-
-		return;
-	}
-
-	p->m_d.wasVisible = false;
-
-	m_fInvalid = true;
-
-	// Seems like for now we can simply abuse the already calculated coordinates
-    memcpy( &m_rcBounds, &p->m_d.boundRectangle, sizeof(RECT));
-}
-
-void HitPrimitive::CalcHitRect()
-{
-	//!! m_rcHitRect = min/max(m_pprimitive->builtin_rgv)
-}
-
 BumperHitCircle::BumperHitCircle()
 {
 	m_bumperanim.m_iframe = -1;
