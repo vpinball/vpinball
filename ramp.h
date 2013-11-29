@@ -40,6 +40,7 @@ public:
 	bool m_fAlpha;
 	bool m_wasVisible;
 	bool m_triggerUpdateRegion;
+    bool m_triggerSingleUpdateRegion;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -214,6 +215,7 @@ public:
 
 	STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(TriggerSingleUpdate)();
 
 	STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);

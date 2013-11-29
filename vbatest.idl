@@ -1375,6 +1375,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([in] VARIANT_BOOL newVal);
 		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
+		[id(1585), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 
@@ -1710,6 +1711,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
 		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
+		[id(1584), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();
 
 		[propget, id(556), helpstring("property AddBlend")] HRESULT AddBlend([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(556), helpstring("property AddBlend")] HRESULT AddBlend([in] VARIANT_BOOL newVal);
