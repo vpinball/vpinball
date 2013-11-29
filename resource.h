@@ -659,6 +659,7 @@
 #define IDS_VISUALS_SOUND               581
 #define IDC_REGION_UPDATES_TABLE        582
 #define IDC_REGION_OPT_TABLE            583
+#define IDC_UPDATEREGIONS				584
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
