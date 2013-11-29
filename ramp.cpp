@@ -223,6 +223,12 @@ void Ramp::SetDefaults(bool fromMouseClick)
    else
       m_d.m_fModify3DStereo = true;
 
+   hr = GetRegInt("DefaultProps\\Ramp","UpdateRegions", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_triggerUpdateRegion = iTmp == 0 ? false : true;
+   else
+      m_d.m_triggerUpdateRegion = fromMouseClick; // new elements have it true, old saved tables will have it false
+   
    hr = GetRegInt("DefaultProps\\Ramp","AddBlend", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fAddBlend = iTmp == 0 ? false : true;
@@ -273,6 +279,7 @@ void Ramp::WriteRegDefaults()
    SetRegValue("DefaultProps\\Ramp","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
    SetRegValue("DefaultProps\\Ramp","Visible",REG_DWORD,&m_d.m_IsVisible,4);
    SetRegValue("DefaultProps\\Ramp","Modify3DStereo",REG_DWORD,&m_d.m_fModify3DStereo,4);
+   SetRegValue("DefaultProps\\Ramp","UpdateRegions",REG_DWORD,&m_d.m_triggerUpdateRegion,4);
    SetRegValue("DefaultProps\\Ramp","AddBlend",REG_DWORD,&m_d.m_fAddBlend,4);
    SetRegValue("DefaultProps\\Ramp","EnableLighingOnImage",REG_DWORD,&m_d.m_enableLightingImage,4);
 }
@@ -1772,6 +1779,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
    bw.WriteBool(FID(RVIS), m_d.m_IsVisible);	
    bw.WriteBool(FID(MSTE), m_d.m_fModify3DStereo);
+   bw.WriteBool(FID(TRUR), m_d.m_triggerUpdateRegion);
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
    bw.WriteBool(FID(ERLI), m_d.m_enableLightingImage);
 
@@ -1920,6 +1928,12 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
       BOOL iTmp;
       pbr->GetBool(&iTmp);
       m_d.m_fModify3DStereo = (iTmp==1);
+   }
+   else if (id == FID(TRUR))
+   {
+      BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_triggerUpdateRegion = (iTmp==1);
    }
    else if (id == FID(ADDB))
    {
@@ -2583,6 +2597,24 @@ STDMETHODIMP Ramp::put_Modify3DStereo(VARIANT_BOOL newVal)
    STARTUNDO
 
    m_d.m_fModify3DStereo = VBTOF(newVal);
+   
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Ramp::get_UpdateRegions(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_triggerUpdateRegion);
+
+   return S_OK;
+}
+
+STDMETHODIMP Ramp::put_UpdateRegions(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+   m_d.m_triggerUpdateRegion = VBTOF(newVal);
    
    STOPUNDO
 

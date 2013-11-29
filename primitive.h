@@ -71,6 +71,9 @@ public:
    STDMETHOD(get_TopVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_TopVisible)(/*[in]*/ VARIANT_BOOL newVal);
 
+   STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
+   
    STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_X)(/*[in]*/ float newVal);
    STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);

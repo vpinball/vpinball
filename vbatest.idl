@@ -1373,10 +1373,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(104), helpstring("property Side Color")] HRESULT SideColor([in] OLE_COLOR newVal);
 		[propget, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([in] VARIANT_BOOL newVal);
+		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 
-      [propget, id(DISPID_POSITION_X), helpstring("property X")] HRESULT X([out, retval] float *pVal);
+        [propget, id(DISPID_POSITION_X), helpstring("property X")] HRESULT X([out, retval] float *pVal);
 		[propput, id(DISPID_POSITION_X), helpstring("property X")] HRESULT X([in] float newVal);
 		[propget, id(DISPID_POSITION_Y), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
 		[propput, id(DISPID_POSITION_Y), helpstring("property Y")] HRESULT Y([in] float newVal);
@@ -1706,10 +1708,13 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(554), helpstring("property Modify3DStereo")] HRESULT Modify3DStereo([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(554), helpstring("property Modify3DStereo")] HRESULT Modify3DStereo([in] VARIANT_BOOL newVal);
 
+		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
+
 		[propget, id(556), helpstring("property AddBlend")] HRESULT AddBlend([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(556), helpstring("property AddBlend")] HRESULT AddBlend([in] VARIANT_BOOL newVal);
 
-      [propget, id(394), helpstring("property EnableLightingImage")] HRESULT EnableLightingImage([out, retval] VARIANT_BOOL *pVal);
+        [propget, id(394), helpstring("property EnableLightingImage")] HRESULT EnableLightingImage([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(394), helpstring("property EnableLightingImage")] HRESULT EnableLightingImage([in] VARIANT_BOOL newVal);
 	};
 
