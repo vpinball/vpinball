@@ -771,43 +771,34 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 #endif
 
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
-		{
+	{
 		Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
 		if (ph)
-			{
+		{
 			const int currentsize = m_vho.Size();
 			ph->GetHitShapes(&m_vho);
 			const int newsize = m_vho.Size();
 			// Save the objects the trouble of having to set the idispatch pointer themselves
 			for (int hitloop = currentsize; hitloop < newsize; hitloop++)
-				{
 				m_vho.ElementAt(hitloop)->m_pfedebug = m_ptable->m_vedit.ElementAt(i)->GetIFireEvents();
-				}
+
 			ph->GetTimers(&m_vht);
 
     		if (g_pvp->m_pdd.m_fHardwareAccel)
 			{
   				if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
-	  				m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
+	  				(m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive && !((Primitive *)m_ptable->m_vedit.ElementAt(i))->m_d.staticRendering))
 					{
-                  if ( m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive )
-                  {
-                     Primitive *prim = (Primitive *)m_ptable->m_vedit.ElementAt(i);
-                     if ( prim->m_d.staticRendering )
-                     {
-                        continue;
-                     }
-                  }
-					   m_vhitalpha.AddElement(ph);
+					  m_vhitalpha.AddElement(ph);
 					}
 			}
 			else
 				if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
 					{
-					m_vhitalpha.AddElement(ph);
+					  m_vhitalpha.AddElement(ph);
 					}
-			}
 		}
+	}
 
 	CreateBoundingHitShapes(&m_vho);
 
@@ -2068,7 +2059,7 @@ void Player::RenderDynamics()
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-bool firstRun=true;
+//bool firstRun=true;
 void Player::Render()
 {
 	// On Win95 when there are no balls, frame updates happen so fast the
@@ -2136,7 +2127,6 @@ void Player::Render()
 
 	m_LastKnownGoodCounter++;
 
-   // cupid for primitives: OK, i need my primitives in here... And they need to understand m_fInvalid, Check3D and m_rcBounds
 	for (int i=0;i<m_vscreenupdate.Size();i++)
 	{
 		// Check if the element is invalid (its frame changed).
@@ -2197,14 +2187,16 @@ void Player::Render()
 	// it with the contents of the static buffer.
 
 	// Check if more stuff is updated than area of whole screen
-#define FULLBLTAREA (unsigned int)(m_pin3d.m_dwRenderWidth*m_pin3d.m_dwRenderHeight) //!! other heuristic? seems like 1/8th would be good enough already?
+#define FULLBLTAREA (unsigned int)(m_pin3d.m_dwRenderWidth*m_pin3d.m_dwRenderHeight) //!! other heuristic? seems like 1/8th would be good enough already?!
+#define FULLBLTAREA2 (unsigned int)(m_pin3d.m_dwRenderWidth*m_pin3d.m_dwRenderHeight/8) //!! dto.
 
 	unsigned int overall_area = 0;
 	if(m_fCleanBlt)
 		for (int i=0;i<m_vupdaterect.Size();++i)
 		{
 			const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
-			overall_area += (prc.right-prc.left)*(prc.bottom-prc.top);
+			if(prc.right > prc.left && prc.bottom > prc.top)
+				overall_area += (prc.right-prc.left)*(prc.bottom-prc.top);
 		}
    BaseTexture *backBuffer = m_pin3d.m_pddsBackBuffer;
    if ( useAA )
@@ -2302,12 +2294,8 @@ void Player::Render()
 
     RenderDynamics();
 
-#pragma region ANTIALIAS
     if ( useAA )
-    {
        m_pin3d.AntiAliasingScene();
-    }
-#pragma endregion ANTIALIAS
 
     // Check if we should turn animate the plunger light.
     const U32 cur_time_msec = msec();
@@ -2346,7 +2334,7 @@ void Player::Render()
 	}
 	else
 	{
-		if (m_fCleanBlt && (overall_area < FULLBLTAREA)) //!! last check can lead to these strange super bright flashers in NBA, etc (overdraw of same stuff over and over again! -> maybe due to backbuffer not being blitted over frontbuffer but simply flipped??) //!! only with region optimization off??
+		if (m_fCleanBlt && (overall_area < FULLBLTAREA2)) //!! last check can lead to these strange super bright flashers in NBA, etc (overdraw of same stuff over and over again! -> maybe due to backbuffer not being blitted over frontbuffer but simply flipped??) //!! only with region optimization off??
 		{
 			if(vsync)
 				g_pvp->m_pdd.m_pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
@@ -2363,7 +2351,8 @@ void Player::Render()
 				rcNew.top = prc->top + m_pin3d.m_rcUpdate.top;
 				rcNew.bottom = prc->bottom + m_pin3d.m_rcUpdate.top;
 
-            m_pin3d.m_pddsFrontBuffer->Blt(&rcNew, m_pin3d.m_pddsBackBuffer, prc, 0, NULL); 
+				if(rcNew.right > rcNew.left && rcNew.bottom > rcNew.top)
+					m_pin3d.m_pddsFrontBuffer->Blt(&rcNew, m_pin3d.m_pddsBackBuffer, prc, 0, NULL); 
 
             //this must be tested a bit more...seems to speed up some tables but can produce black screens on startup?!?
             //if your use this be sure to disable the clipper in fullscreen mode -> see Pin3d::InitDD()
@@ -2460,7 +2449,8 @@ void Player::Render()
 					const int top    = max(prc.top + m_pin3d.m_rcUpdate.top,0);
 					const int bottom = min(prc.bottom + m_pin3d.m_rcUpdate.top,(int)height-1);
 
-					overall_area += (right-left)*(bottom-top);
+					if((right > left) && (bottom > top))
+						overall_area += (right-left)*(bottom-top);
 				}
 			}
 
@@ -2474,7 +2464,7 @@ void Player::Render()
 
 					const int left4     =  max(prc.left  + m_pin3d.m_rcUpdate.left,0           )<<shift;
 					const int copywidth = (min(prc.right + m_pin3d.m_rcUpdate.left,(int)width-1)<<shift) - left4;
-					if(copywidth <= 0)
+					if((copywidth <= 0) || (prc.bottom <= prc.top))
 						continue;
 
 					const int top    = left4 + max(prc.top    + m_pin3d.m_rcUpdate.top,0            )*ddsd.lPitch;
@@ -2537,7 +2527,7 @@ void Player::Render()
 
 	const unsigned int nPitch = ddsd.lPitch >> shift;
 
-                     if(stereopath) {
+  if(stereopath) {
 	const unsigned int maxSeparationU = m_fStereo3DY ? (unsigned int)(height*m_pin3d.m_maxSeparation) :
 													   (unsigned int)(width*m_pin3d.m_maxSeparation);
 	const unsigned int ZPDU = m_fStereo3DY ? (unsigned int)(16u * zmask * (height*m_pin3d.m_maxSeparation)*m_pin3d.m_ZPD) :
@@ -2598,7 +2588,7 @@ void Player::Render()
 						stereo_repro_32bit_x(0, height, (maxSeparationU+1+3)&0xFFFFFFFC, (width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask);
 				}
 
-                     } else { // continue with FXAA path
+  } else { // continue with FXAA path
 
 #ifdef ONLY3DUPD
 			if (m_fCleanBlt)
@@ -2630,7 +2620,8 @@ void Player::Render()
 				else
 					fxaa_32bit((FXAA_OFFS+1+1), (height-(FXAA_OFFS+1)), (FXAA_OFFS+1+1)&0xFFFFFFFC, (width-3-(FXAA_OFFS+1))&0xFFFFFFFC, width,oPitch,nPitch,height,(unsigned int   *)buffercopy,(unsigned int   *)bufferfinal,mask,true);
 
-                     }
+  }
+
 	m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
 	} else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; // 'handle' fails to lock buffers
 
@@ -3323,6 +3314,8 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 void Player::InvalidateRect(RECT * const prc)
 {
+	if(prc->left >= prc->right || prc->top >= prc->bottom)
+		return;
     // fuzzel: if the if-statement below is missing the ball drawing/updating 
     //         has problems on some tables (like CFTBL,MonsterBash,Genie,T2Chrome...)
     // This assumes the caller does not need *prc any more!!!
@@ -3339,9 +3332,11 @@ void Player::InvalidateRect(RECT * const prc)
 	// Check all animated objects.
 	for (int i=0;i<m_vscreenupdate.Size();++i)
 		{
-         AnimObject *ptr = m_vscreenupdate.ElementAt(i);
 		// Get the bounds of this animated object.
 		const RECT * const prc2 = &m_vscreenupdate.ElementAt(i)->m_rcBounds;
+
+		if(/*prc->left >= prc->right ||*/ prc2->left >= prc2->right || /*prc->top >= prc->bottom ||*/ prc2->top >= prc2->bottom)
+			continue;
 
 		// Check if the bounds of the animated object are within the bounds of our invalid rectangle.
 		if ((prc->right >= prc2->left) && (prc->left <= prc2->right) && (prc->bottom >= prc2->top) && (prc->top <= prc2->bottom))

@@ -28,7 +28,7 @@ public:
 };
 
 class BumperAnimObject : public AnimObject
-	{
+{
 public:
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
@@ -42,10 +42,10 @@ public:
 	BOOL m_fVisible;
 
 	ObjFrame *m_pobjframe[2];
-	};
+};
 
 class BumperHitCircle : public HitCircle
-	{
+{
 public:
 	BumperHitCircle();
 	virtual ~BumperHitCircle();
@@ -57,10 +57,10 @@ public:
 	BumperAnimObject m_bumperanim;
 
 	Bumper *m_pbumper;
-	};
+};
 
 class SlingshotAnimObject : public AnimObject
-	{
+{
 public:
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
@@ -71,10 +71,10 @@ public:
 	int m_iframe;
 	int m_TimeReset; // Time at which to pull in slingshot
 	bool m_fAnimations;
-	};
+};
 
 class LineSegSlingshot : public LineSeg
-	{
+{
 public:
 	LineSegSlingshot();
 	virtual ~LineSegSlingshot();
@@ -89,10 +89,10 @@ public:
 	float m_force;
 
 	Surface *m_psurface;
-	};
+};
 
 class Hit3DPoly : public HitObject
-	{
+{
 public:
 	Hit3DPoly(Vertex3Ds * const rgv, const int count);
 	virtual ~Hit3DPoly();
@@ -108,10 +108,10 @@ public:
 	float D; // D for the plane equation.  A,B, and C are the plane normal (A x' + B y' + C z' = D, normal= x',y'+z'
 	int m_cvertex;
 	BOOL m_fVisible; // for ball shadows
-	};
+};
 
 class SpinnerAnimObject : public AnimObject
-	{
+{
 public:
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
@@ -136,10 +136,10 @@ public:
 	float m_friction;
 	float m_scatter;
 	BOOL m_fVisible;
-	};
+};
 
 class HitSpinner : public HitObject
-	{
+{
 public:
 	HitSpinner(Spinner * const pspinner, const float height);
 
@@ -156,10 +156,10 @@ public:
 	LineSeg m_lineseg[2];
 
 	SpinnerAnimObject m_spinneranim;
-	};
+};
 
 class GateAnimObject : public AnimObject
-	{
+{
 public:
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
@@ -183,10 +183,10 @@ public:
 	BOOL m_fVisible; 
 	
 	BOOL m_fOpen; // True when the table logic is opening the gate, not just the ball passing through
-	};
+};
 
 class HitGate : public LineSeg
-	{
+{
 public:
 	HitGate(Gate * const pgate);
 
@@ -201,10 +201,10 @@ public:
 	Gate *m_pgate;
 	
 	GateAnimObject m_gateanim;
-	};
+};
 
 class TriggerLineSeg : public LineSeg
-	{
+{
 public:
 	TriggerLineSeg();
 
@@ -214,10 +214,10 @@ public:
 	virtual int GetType() const {return eTrigger;}
 
 	Trigger *m_ptrigger;
-	};
+};
 
 class TriggerHitCircle : public HitCircle
-	{
+{
 public:
 	TriggerHitCircle();
 
@@ -227,10 +227,10 @@ public:
 	virtual int GetType() const {return eTrigger;}
 
 	Trigger *m_ptrigger;
-	};
+};
 
 class Hit3DCylinder : public HitCircle
-	{
+{
 public:
 	Hit3DCylinder(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, const Vertex3Ds * const pvnormal);
 
@@ -249,10 +249,10 @@ public:
 	Vertex3Ds vtrans[2];
 	Vertex3Ds transaxis;
 	float transangle;
-	};
+};
 
 class PolyDropAnimObject : public AnimObject
-	{
+{
 public:
 	virtual void Check3D();
 	virtual ObjFrame *Draw3D(const RECT * const prc);
@@ -264,30 +264,30 @@ public:
 	int m_iframedesire; // Frame we want to be at
 
 	ObjFrame *m_pobjframe[2];
-	};
+};
 
 class Hit3DPolyDrop : public Hit3DPoly
-	{
+{
 public:
 	Hit3DPolyDrop(Vertex3Ds * const rgv, const int count);
 
 	virtual AnimObject *GetAnimObject() {return &m_polydropanim;}
 
 	PolyDropAnimObject m_polydropanim;
-	};
+};
 
 class TextboxAnimObject : public AnimObject
-	{
+{
 public:
 	virtual void Check3D() {}
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
 	Textbox *m_ptextbox;
-	};
+};
 
 class TextboxUpdater : public HitObject
-	{
+{
 public:
 	TextboxUpdater(Textbox * const ptb) {m_textboxanim.m_ptextbox = ptb;}
 	virtual ~TextboxUpdater() {}
@@ -302,20 +302,20 @@ public:
 	virtual AnimObject *GetAnimObject() {return &m_textboxanim;}
 
 	TextboxAnimObject m_textboxanim;
-	};
+};
 
 class DispReelAnimObject : public AnimObject
-	{
+{
 public:
     virtual void Check3D(); //{}
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
 	DispReel *m_pDispReel;
-	};
+};
 
 class DispReelUpdater : public HitObject
-	{
+{
 public:
 	DispReelUpdater(DispReel * const ptb) {m_dispreelanim.m_pDispReel = ptb;}
 	virtual ~DispReelUpdater() {}
@@ -330,19 +330,19 @@ public:
 	virtual AnimObject *GetAnimObject() {return &m_dispreelanim;}
 
 	DispReelAnimObject m_dispreelanim;
-	};
+};
 
 class LightSeqAnimObject : public AnimObject
-	{
+{
 public:
     virtual void Check3D(); //{}
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 
 	LightSeq *m_pLightSeq;
-	};
+};
 
 class LightSeqUpdater : public HitObject
-	{
+{
 public:
 	LightSeqUpdater(LightSeq * const ptb) {m_lightseqanim.m_pLightSeq = ptb;}
 	virtual ~LightSeqUpdater() {}
@@ -357,4 +357,4 @@ public:
 	virtual AnimObject *GetAnimObject() {return &m_lightseqanim;}
 
 	LightSeqAnimObject m_lightseqanim;
-	};
+};
