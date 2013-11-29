@@ -14,6 +14,7 @@ Ramp::Ramp()
    dynamicVertexBufferRegenerate = true;
    m_d.m_enableLightingImage = true;
    m_d.m_triggerUpdateRegion = false;
+   m_d.m_triggerSingleUpdateRegion = true;
 }
 
 Ramp::~Ramp()
@@ -1050,6 +1051,7 @@ void Ramp::EndPlay()
 
 	m_d.m_wasVisible = false;
     g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
+    m_d.m_triggerSingleUpdateRegion = true;
 }
 
 static const WORD rgicrosssection[] = {
@@ -1705,7 +1707,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
 
 void Ramp::RenderMovers(const RenderDevice* pd3dDevice)
 {
-   if(!m_d.m_triggerUpdateRegion)
+   if(!m_d.m_triggerSingleUpdateRegion && !m_d.m_triggerUpdateRegion)
 	   return;
 
    if((!m_d.m_IsVisible && !m_d.m_wasVisible) ||		
@@ -1720,6 +1722,7 @@ void Ramp::RenderMovers(const RenderDevice* pd3dDevice)
 	  return;
 
    m_d.m_wasVisible = false;
+   m_d.m_triggerSingleUpdateRegion = false;
 
    g_pplayer->InvalidateRect(&m_d.m_boundRectangle);
 }
@@ -2618,6 +2621,12 @@ STDMETHODIMP Ramp::put_UpdateRegions(VARIANT_BOOL newVal)
    
    STOPUNDO
 
+   return S_OK;
+}
+
+STDMETHODIMP Ramp::TriggerSingleUpdate() 
+{
+   m_d.m_triggerSingleUpdateRegion = true;
    return S_OK;
 }
 

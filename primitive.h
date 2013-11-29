@@ -35,6 +35,7 @@ public:
    bool staticRendering;
    bool sphereMapping;
    bool m_triggerUpdateRegion;
+   bool m_triggerSingleUpdateRegion;
 };
 
 class Primitive :
@@ -73,7 +74,8 @@ public:
 
    STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
-   
+   STDMETHOD(TriggerSingleUpdate)();
+
    STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_X)(/*[in]*/ float newVal);
    STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
