@@ -21,23 +21,22 @@ void HitPrimitive::Collide(Ball * const pball, Vertex3Ds * const phitnormal) //!
 void PrimitiveAnimObject::Check3D()
 {
 	Primitive * const p = m_pprimitive;
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   m_fInvalid = true;
-   // rcBounds must be initialized here otherwise the whole screen is updated
-   ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
-   if ( !p->m_d.staticRendering )
-   {
-      if ( p->m_d.m_TopVisible )
-      {
-         memcpy( &m_rcBounds, &p->m_d.boundRectangle, sizeof(RECT));
-      }
-      else if ( p->m_d.wasVisible )
-      {
-         memcpy( &m_rcBounds, &p->m_d.boundRectangle, sizeof(RECT));
-         p->m_d.wasVisible=false;
-      }
-   }
+	
+    if(p->m_d.staticRendering ||
+	  (!p->m_d.m_TopVisible && !p->m_d.wasVisible))
+	{
+	    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	    ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
 
+		return;
+	}
+
+	p->m_d.wasVisible = false;
+
+	m_fInvalid = true;
+
+	// Seems like for now we can simply abuse the already calculated coordinates
+    memcpy( &m_rcBounds, &p->m_d.boundRectangle, sizeof(RECT));
 }
 
 void HitPrimitive::CalcHitRect()
@@ -1024,12 +1023,10 @@ TriggerHitCircle::TriggerHitCircle()
 	m_fEnabled = fTrue;
 }
 
-
 float TriggerHitCircle::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
 {
 	return HitTestBasicRadius(pball, dtime, phitnormal, false, false, false); //any face, not-lateral, non-rigid
 }
-
 
 void TriggerHitCircle::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 {
