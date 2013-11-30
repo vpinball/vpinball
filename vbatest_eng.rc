@@ -851,9 +851,9 @@ BEGIN
     COMBOBOX        8,33,46,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Apply Ima&ge to Walls",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,82,10
     CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,88,40,14
-    CONTROL         "Shadows",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,61,10
+    CONTROL         "Shadows",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,41,10
     CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,118,40,10
-    CONTROL         "Update Regions",IDC_UPDATEREGIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,106,70,10
+    CONTROL         "Update Regions",IDC_UPDATEREGIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,106,66,10
     CONTROL         "Normal 3D Stereo",IDC_MODIFY3DSTEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,118,70,10
     LTEXT           "(only disable for",-1,68,128,70,10
     LTEXT           " 2D-hacks like",-1,68,138,70,10
