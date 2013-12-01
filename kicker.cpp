@@ -236,6 +236,7 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);	
+   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);	
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
