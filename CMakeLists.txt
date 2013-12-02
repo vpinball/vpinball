@@ -319,7 +319,7 @@ find_library(LIB_FREEIMAGE freeimage.lib PATHS ${CMAKE_SOURCE_DIR})
 find_library(LIB_DSOUND dsound.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_DINPUT dinput.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_XAUDIO xaudio.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
-find_library(LIB_SCINLIBR scinlibr.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
+find_library(LIB_SCINLIBR SciLexer.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_HID hid.lib PATHS ${CMAKE_SOURCE_DIR})
 
 add_executable(${NAME} WIN32 ${SOURCES} ${HEADERS} ${RC_RESOURCE})
