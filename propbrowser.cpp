@@ -294,6 +294,19 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 0, 0);
       ShowWindow(m_vhwndExpand.ElementAt(i), SW_SHOWNOACTIVATE);
    }
+   if ( pisel && pisel->GetItemType()==eItemTable )
+   {
+      // 
+      int data = GetBaseISel()->GetPTable()->m_alphaRampsAccuracy;
+
+      SendMessage(hwndParent, TBM_SETRANGE, fTrue, MAKELONG(0, 10));
+      SendMessage(hwndParent, TBM_SETTICFREQ, 1, 0);
+      SendMessage(hwndParent, TBM_SETLINESIZE, 0, 1);
+      SendMessage(hwndParent, TBM_SETPAGESIZE, 0, 1);
+      SendMessage(hwndParent, TBM_SETTHUMBLENGTH, 5, 0);
+      SendMessage(hwndParent, TBM_SETPOS, TRUE, data);
+   }
+
 
    // expand bottom last
    //for (int i=0;i<m_vhwndExpand.Size();i++) SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0); 
@@ -535,7 +548,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    {
       type = eFont;
    }
-   else if (!strcmp(szName, "msctls_trackbar32"))
+   else if (!strcmp(szName, "msctls_trackbar32") || !strcmp(szName,"IDC_ALPHA_SLIDER"))
    {
       type = eSlider;
    }
@@ -729,26 +742,44 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       {
          VariantChangeType(&var, &var, 0, VT_I4);
 
-         int data = V_INT(&var);
-         // get the range value
-         int range = (data & 0x0000FF00) >> 8;
-         if (range == 0) range = 100;
-         // mask off the range from the data
-         data &= 0x000000FF;
-
-         // sliders hold a value between 0 and 100 in steps of 1
-         SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100)); //0 - 100 range
-         SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0); //tic mark frequency
-         SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1); //number of positions to move per keypress
-         SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 1); //number of positions to move per click
-         SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 0, 0); //ignored
-         if (!fNinch)
+         if ( dispid==IDC_ALPHA_SLIDER )
          {
-            SendMessage(hwndControl, TBM_SETPOS, 1, data);
+            int data = V_INT(&var);
+            // get the range value
+            int range = (data & 0x0000FF00) >> 8;
+            // mask off the range from the data
+            data &= 0x000000FF;
+            
+            SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 10));
+            SendMessage(hwndControl, TBM_SETTICFREQ, 1, 0);
+            SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1);
+            SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 1);
+            SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 5, 0);
+            SendMessage(hwndControl, TBM_SETPOS, TRUE, data);
          }
          else
          {
-            SendMessage(hwndControl, TBM_SETPOS, 0, data);
+            int data = V_INT(&var);
+            // get the range value
+            int range = (data & 0x0000FF00) >> 8;
+            if (range == 0) range = 100;
+            // mask off the range from the data
+            data &= 0x000000FF;
+
+            // sliders hold a value between 0 and 100 in steps of 1
+            SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100)); //0 - 100 range
+            SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0); //tic mark frequency
+            SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1); //number of positions to move per keypress
+            SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 1); //number of positions to move per click
+            SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 0, 0); //ignored
+            if (!fNinch)
+            {
+               SendMessage(hwndControl, TBM_SETPOS, 1, data);
+            }
+            else
+            {
+               SendMessage(hwndControl, TBM_SETPOS, 0, data);
+            }
          }
       }
       break;
