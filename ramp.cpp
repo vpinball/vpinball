@@ -2553,7 +2553,7 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
    {	
       STARTUNDO
 
-      m_d.m_fCollidable = fNewVal;		
+      m_d.m_fCollidable = !!fNewVal;		
 
       STOPUNDO
    }
