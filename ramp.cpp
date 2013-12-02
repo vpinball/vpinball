@@ -7,7 +7,8 @@ Ramp::Ramp()
    m_menuid = IDR_SURFACEMENU;
    m_d.m_fCollidable = true;
    m_d.m_IsVisible = true;
-   m_d.m_wasVisible=false;
+   m_d.m_wasVisible = false;
+   m_d.m_wasAlpha = false;
    g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
    staticVertexBuffer = 0;
    dynamicVertexBuffer = 0;
@@ -1050,6 +1051,7 @@ void Ramp::EndPlay()
 	}
 
 	m_d.m_wasVisible = false;
+    m_d.m_wasAlpha = false;
     g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
     m_d.m_triggerSingleUpdateRegion = true;
 }
@@ -1712,9 +1714,9 @@ void Ramp::RenderMovers(const RenderDevice* pd3dDevice)
 
    if((!m_d.m_IsVisible && !m_d.m_wasVisible) ||		
       // Don't render non-Alphas. 
-      (!m_d.m_fAlpha) ||
-	  ( m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f ) ||
-      (m_d.m_type == RampType4Wire 
+      (!m_d.m_fAlpha && !m_d.m_wasAlpha) ||
+	  (m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f) ||
+      (  m_d.m_type == RampType4Wire 
       || m_d.m_type == RampType1Wire //add check for 1 wire
       || m_d.m_type == RampType2Wire 
       || m_d.m_type == RampType3WireLeft 
@@ -1722,6 +1724,7 @@ void Ramp::RenderMovers(const RenderDevice* pd3dDevice)
 	  return;
 
    m_d.m_wasVisible = false;
+   m_d.m_wasAlpha = false;
    m_d.m_triggerSingleUpdateRegion = false;
 
    g_pplayer->InvalidateRect(&m_d.m_boundRectangle);
@@ -2355,7 +2358,10 @@ STDMETHODIMP Ramp::get_Alpha(VARIANT_BOOL *pVal)
 STDMETHODIMP Ramp::put_Alpha(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   
+
+   if(m_d.m_fAlpha && !VBTOF(newVal))
+      m_d.m_wasAlpha=true;
+
    m_d.m_fAlpha = VBTOF(newVal);
    dynamicVertexBufferRegenerate = true;
    

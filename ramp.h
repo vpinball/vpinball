@@ -39,6 +39,7 @@ public:
 	bool m_fAcrylic;
 	bool m_fAlpha;
 	bool m_wasVisible;
+	bool m_wasAlpha;
 	bool m_triggerUpdateRegion;
     bool m_triggerSingleUpdateRegion;
 };
