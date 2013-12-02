@@ -3,7 +3,7 @@
  ** Interface to platform facilities. Also includes some basic utilities.
  ** Implemented in PlatGTK.cxx for GTK+/Linux, PlatWin.cxx for Windows, and PlatWX.cxx for wxWindows.
  **/
-// Copyright 1998-2002 by Neil Hodgson <neilh@scintilla.org>
+// Copyright 1998-2009 by Neil Hodgson <neilh@scintilla.org>
 // The License.txt file describes the conditions under which this software may be distributed.
 
 #ifndef PLATFORM_H
@@ -13,12 +13,18 @@
 // PLAT_GTK_WIN32 is defined additionally when running PLAT_GTK under Win32
 // PLAT_WIN = Win32 API on Win32 OS
 // PLAT_WX is wxWindows on any supported platform
+// PLAT_TK = Tcl/TK on Linux or Win32
 
 #define PLAT_GTK 0
 #define PLAT_GTK_WIN32 0
+#define PLAT_GTK_MACOSX 0
+#define PLAT_MACOSX 0
 #define PLAT_WIN 0
 #define PLAT_WX  0
+#define PLAT_QT 0
 #define PLAT_FOX 0
+#define PLAT_CURSES 0
+#define PLAT_TK 0
 
 #if defined(FOX)
 #undef PLAT_FOX
@@ -28,14 +34,36 @@
 #undef PLAT_WX
 #define PLAT_WX  1
 
+#elif defined(CURSES)
+#undef PLAT_CURSES
+#define PLAT_CURSES 1
+
+#elif defined(SCINTILLA_QT)
+#undef PLAT_QT
+#define PLAT_QT 1
+
+#elif defined(TK)
+#undef PLAT_TK
+#define PLAT_TK 1
+
 #elif defined(GTK)
 #undef PLAT_GTK
 #define PLAT_GTK 1
 
-#ifdef _MSC_VER
+#if defined(__WIN32__) || defined(_MSC_VER)
 #undef PLAT_GTK_WIN32
 #define PLAT_GTK_WIN32 1
 #endif
+
+#if defined(__APPLE__)
+#undef PLAT_GTK_MACOSX
+#define PLAT_GTK_MACOSX 1
+#endif
+
+#elif defined(__APPLE__)
+
+#undef PLAT_MACOSX
+#define PLAT_MACOSX 1
 
 #else
 #undef PLAT_WIN
@@ -43,6 +71,13 @@
 
 #endif
 
+#ifdef SCI_NAMESPACE
+namespace Scintilla {
+#endif
+
+typedef float XYPOSITION;
+typedef double XYACCUMULATOR;
+//#define XYPOSITION int
 
 // Underlying the implementation of the platform classes are platform specific types.
 // Sometimes these need to be passed around by client code so they are defined here
@@ -52,6 +87,8 @@ typedef void *SurfaceID;
 typedef void *WindowID;
 typedef void *MenuID;
 typedef void *TickerID;
+typedef void *Function;
+typedef void *IdlerID;
 
 /**
  * A geometric point class.
@@ -59,10 +96,10 @@ typedef void *TickerID;
  */
 class Point {
 public:
-	int x;
-	int y;
+	XYPOSITION x;
+	XYPOSITION y;
 
-	Point(int x_=0, int y_=0) : x(x_), y(y_) {
+	explicit Point(XYPOSITION x_=0, XYPOSITION y_=0) : x(x_), y(y_) {
 	}
 
 	// Other automatically defined methods (assignment, copy constructor, destructor) are fine
@@ -77,48 +114,45 @@ public:
  */
 class PRectangle {
 public:
-	int left;
-	int top;
-	int right;
-	int bottom;
+	XYPOSITION left;
+	XYPOSITION top;
+	XYPOSITION right;
+	XYPOSITION bottom;
 
-	PRectangle(int left_=0, int top_=0, int right_=0, int bottom_ = 0) :
+	PRectangle(XYPOSITION left_=0, XYPOSITION top_=0, XYPOSITION right_=0, XYPOSITION bottom_ = 0) :
 		left(left_), top(top_), right(right_), bottom(bottom_) {
 	}
 
 	// Other automatically defined methods (assignment, copy constructor, destructor) are fine
 
-	bool operator==(PRectangle &rc) {
+	bool operator==(PRectangle &rc) const {
 		return (rc.left == left) && (rc.right == right) &&
 			(rc.top == top) && (rc.bottom == bottom);
 	}
-	bool Contains(Point pt) {
+	bool Contains(Point pt) const {
 		return (pt.x >= left) && (pt.x <= right) &&
 			(pt.y >= top) && (pt.y <= bottom);
 	}
-	bool Contains(PRectangle rc) {
+	bool Contains(PRectangle rc) const {
 		return (rc.left >= left) && (rc.right <= right) &&
 			(rc.top >= top) && (rc.bottom <= bottom);
 	}
-	bool Intersects(PRectangle other) {
-		return (right >= other.left) && (left <= other.right) &&
-			(bottom >= other.top) && (top <= other.bottom);
+	bool Intersects(PRectangle other) const {
+		return (right > other.left) && (left < other.right) &&
+			(bottom > other.top) && (top < other.bottom);
 	}
-	int Width() { return right - left; }
-	int Height() { return bottom - top; }
+	void Move(XYPOSITION xDelta, XYPOSITION yDelta) {
+		left += xDelta;
+		top += yDelta;
+		right += xDelta;
+		bottom += yDelta;
+	}
+	XYPOSITION Width() const { return right - left; }
+	XYPOSITION Height() const { return bottom - top; }
+	bool Empty() const {
+		return (Height() <= 0) || (Width() <= 0);
+	}
 };
-
-/**
- * In some circumstances, including Win32 in paletted mode and GTK+, each colour
- * must be allocated before use. The desired colours are held in the ColourDesired class, 
- * and after allocation the allocation entry is stored in the ColourAllocated class. In other
- * circumstances, such as Win32 in true colour mode, the allocation process just copies 
- * the RGB values from the desired to the allocated class.
- * As each desired colour requires allocation before it can be used, the ColourPair class
- * holds both a ColourDesired and a ColourAllocated
- * The Palette class is responsible for managing the palette of colours which contains a 
- * list of ColourPair objects and performs the allocation.
- */
 
 /**
  * Holds a desired RGB colour.
@@ -129,127 +163,119 @@ public:
 	ColourDesired(long lcol=0) {
 		co = lcol;
 	}
-	
+
 	ColourDesired(unsigned int red, unsigned int green, unsigned int blue) {
-		co = red | (green << 8) | (blue << 16);
+		Set(red, green, blue);
 	}
-	
+
 	bool operator==(const ColourDesired &other) const {
 		return co == other.co;
 	}
-	
+
 	void Set(long lcol) {
 		co = lcol;
 	}
-	
+
+	void Set(unsigned int red, unsigned int green, unsigned int blue) {
+		co = red | (green << 8) | (blue << 16);
+	}
+
+	static inline unsigned int ValueOfHex(const char ch) {
+		if (ch >= '0' && ch <= '9')
+			return ch - '0';
+		else if (ch >= 'A' && ch <= 'F')
+			return ch - 'A' + 10;
+		else if (ch >= 'a' && ch <= 'f')
+			return ch - 'a' + 10;
+		else
+			return 0;
+	}
+
+	void Set(const char *val) {
+		if (*val == '#') {
+			val++;
+		}
+		unsigned int r = ValueOfHex(val[0]) * 16 + ValueOfHex(val[1]);
+		unsigned int g = ValueOfHex(val[2]) * 16 + ValueOfHex(val[3]);
+		unsigned int b = ValueOfHex(val[4]) * 16 + ValueOfHex(val[5]);
+		Set(r, g, b);
+	}
+
 	long AsLong() const {
 		return co;
 	}
-	
-	unsigned int GetRed() {
+
+	unsigned int GetRed() const {
 		return co & 0xff;
 	}
-	
-	unsigned int GetGreen() {
+
+	unsigned int GetGreen() const {
 		return (co >> 8) & 0xff;
 	}
-	
-	unsigned int GetBlue() {
+
+	unsigned int GetBlue() const {
 		return (co >> 16) & 0xff;
 	}
 };
 
 /**
- * Holds an allocated RGB colour which may be an approximation to the desired colour.
- */
-class ColourAllocated {
-	long coAllocated;
-	
-public:
-
-	ColourAllocated(long lcol=0) {
-		coAllocated = lcol;
-	}
-	
-	void Set(long lcol) {
-		coAllocated = lcol;
-	}
-	
-	long AsLong() const {
-		return coAllocated;
-	}
-};
-
-/**
- * Colour pairs hold a desired colour and an allocated colour.
- */
-struct ColourPair {
-	ColourDesired desired;
-	ColourAllocated allocated;
-
-	ColourPair(ColourDesired desired_=ColourDesired(0,0,0)) {
-		desired = desired_;
-		allocated.Set(desired.AsLong());
-	}
-};
-
-class Window;	// Forward declaration for Palette
-
-/**
- * Colour palette management.
- */
-class Palette {
-	int used;
-	enum {numEntries = 100};
-	ColourPair entries[numEntries];
-#if PLAT_GTK
-	void *allocatedPalette; // GdkColor *
-	int allocatedLen;
-#endif
-public:
-#if PLAT_WIN
-	void *hpal;
-#endif
-	bool allowRealization;
-
-	Palette();
-	~Palette();
-
-	void Release();
-
-	/**
-	 * This method either adds a colour to the list of wanted colours (want==true)
-	 * or retrieves the allocated colour back to the ColourPair.
-	 * This is one method to make it easier to keep the code for wanting and retrieving in sync.
-	 */
-	void WantFind(ColourPair &cp, bool want);
-
-	void Allocate(Window &w);
-};
-
-/**
  * Font management.
  */
+
+struct FontParameters {
+	const char *faceName;
+	float size;
+	int weight;
+	bool italic;
+	int extraFontFlag;
+	int technology;
+	int characterSet;
+
+	FontParameters(
+		const char *faceName_,
+		float size_=10,
+		int weight_=400,
+		bool italic_=false,
+		int extraFontFlag_=0,
+		int technology_=0,
+		int characterSet_=0) :
+
+		faceName(faceName_),
+		size(size_),
+		weight(weight_),
+		italic(italic_),
+		extraFontFlag(extraFontFlag_),
+		technology(technology_),
+		characterSet(characterSet_)
+	{
+	}
+
+};
+
 class Font {
 protected:
-	FontID id;
+	FontID fid;
 #if PLAT_WX
 	int ascent;
 #endif
 	// Private so Font objects can not be copied
-	Font(const Font &) {}
-	Font &operator=(const Font &) { id=0; return *this; }
+	Font(const Font &);
+	Font &operator=(const Font &);
 public:
 	Font();
 	virtual ~Font();
 
-	virtual void Create(const char *faceName, int characterSet, int size, bool bold, bool italic);
+	virtual void Create(const FontParameters &fp);
 	virtual void Release();
 
-	FontID GetID() { return id; }
+	FontID GetID() { return fid; }
 	// Alias another font - caller guarantees not to Release
-	void SetID(FontID id_) { id = id_; }
+	void SetID(FontID fid_) { fid = fid_; }
+#if PLAT_WX
+	void SetAscent(int ascent_) { ascent = ascent_; }
+#endif
 	friend class Surface;
+	friend class SurfaceImpl;
 };
 
 /**
@@ -261,46 +287,50 @@ private:
 	Surface(const Surface &) {}
 	Surface &operator=(const Surface &) { return *this; }
 public:
-	Surface() {};
-	virtual ~Surface() {};
-	static Surface *Allocate();
+	Surface() {}
+	virtual ~Surface() {}
+	static Surface *Allocate(int technology);
 
-	virtual void Init()=0;
-	virtual void Init(SurfaceID sid)=0;
-	virtual void InitPixMap(int width, int height, Surface *surface_)=0;
+	virtual void Init(WindowID wid)=0;
+	virtual void Init(SurfaceID sid, WindowID wid)=0;
+	virtual void InitPixMap(int width, int height, Surface *surface_, WindowID wid)=0;
 
 	virtual void Release()=0;
 	virtual bool Initialised()=0;
-	virtual void PenColour(ColourAllocated fore)=0;
+	virtual void PenColour(ColourDesired fore)=0;
 	virtual int LogPixelsY()=0;
 	virtual int DeviceHeightFont(int points)=0;
 	virtual void MoveTo(int x_, int y_)=0;
 	virtual void LineTo(int x_, int y_)=0;
-	virtual void Polygon(Point *pts, int npts, ColourAllocated fore, ColourAllocated back)=0;
-	virtual void RectangleDraw(PRectangle rc, ColourAllocated fore, ColourAllocated back)=0;
-	virtual void FillRectangle(PRectangle rc, ColourAllocated back)=0;
+	virtual void Polygon(Point *pts, int npts, ColourDesired fore, ColourDesired back)=0;
+	virtual void RectangleDraw(PRectangle rc, ColourDesired fore, ColourDesired back)=0;
+	virtual void FillRectangle(PRectangle rc, ColourDesired back)=0;
 	virtual void FillRectangle(PRectangle rc, Surface &surfacePattern)=0;
-	virtual void RoundedRectangle(PRectangle rc, ColourAllocated fore, ColourAllocated back)=0;
-	virtual void Ellipse(PRectangle rc, ColourAllocated fore, ColourAllocated back)=0;
+	virtual void RoundedRectangle(PRectangle rc, ColourDesired fore, ColourDesired back)=0;
+	virtual void AlphaRectangle(PRectangle rc, int cornerSize, ColourDesired fill, int alphaFill,
+		ColourDesired outline, int alphaOutline, int flags)=0;
+	virtual void DrawRGBAImage(PRectangle rc, int width, int height, const unsigned char *pixelsImage) = 0;
+	virtual void Ellipse(PRectangle rc, ColourDesired fore, ColourDesired back)=0;
 	virtual void Copy(PRectangle rc, Point from, Surface &surfaceSource)=0;
 
-	virtual void DrawTextNoClip(PRectangle rc, Font &font_, int ybase, const char *s, int len, ColourAllocated fore, ColourAllocated back)=0;
-	virtual void DrawTextClipped(PRectangle rc, Font &font_, int ybase, const char *s, int len, ColourAllocated fore, ColourAllocated back)=0;
-	virtual void MeasureWidths(Font &font_, const char *s, int len, int *positions)=0;
-	virtual int WidthText(Font &font_, const char *s, int len)=0;
-	virtual int WidthChar(Font &font_, char ch)=0;
-	virtual int Ascent(Font &font_)=0;
-	virtual int Descent(Font &font_)=0;
-	virtual int InternalLeading(Font &font_)=0;
-	virtual int ExternalLeading(Font &font_)=0;
-	virtual int Height(Font &font_)=0;
-	virtual int AverageCharWidth(Font &font_)=0;
+	virtual void DrawTextNoClip(PRectangle rc, Font &font_, XYPOSITION ybase, const char *s, int len, ColourDesired fore, ColourDesired back)=0;
+	virtual void DrawTextClipped(PRectangle rc, Font &font_, XYPOSITION ybase, const char *s, int len, ColourDesired fore, ColourDesired back)=0;
+	virtual void DrawTextTransparent(PRectangle rc, Font &font_, XYPOSITION ybase, const char *s, int len, ColourDesired fore)=0;
+	virtual void MeasureWidths(Font &font_, const char *s, int len, XYPOSITION *positions)=0;
+	virtual XYPOSITION WidthText(Font &font_, const char *s, int len)=0;
+	virtual XYPOSITION WidthChar(Font &font_, char ch)=0;
+	virtual XYPOSITION Ascent(Font &font_)=0;
+	virtual XYPOSITION Descent(Font &font_)=0;
+	virtual XYPOSITION InternalLeading(Font &font_)=0;
+	virtual XYPOSITION ExternalLeading(Font &font_)=0;
+	virtual XYPOSITION Height(Font &font_)=0;
+	virtual XYPOSITION AverageCharWidth(Font &font_)=0;
 
-	virtual int SetPalette(Palette *pal, bool inBackGround)=0;
 	virtual void SetClip(PRectangle rc)=0;
 	virtual void FlushCachedState()=0;
 
 	virtual void SetUnicodeMode(bool unicodeMode_)=0;
+	virtual void SetDBCSMode(int codePage)=0;
 };
 
 /**
@@ -314,17 +344,19 @@ typedef void (*CallBackAction)(void*);
  */
 class Window {
 protected:
-	WindowID id;
+	WindowID wid;
 public:
-	Window() : id(0), cursorLast(cursorInvalid) {}
-	Window(const Window &source) : id(source.id), cursorLast(cursorInvalid) {}
+	Window() : wid(0), cursorLast(cursorInvalid) {
+	}
+	Window(const Window &source) : wid(source.wid), cursorLast(cursorInvalid) {
+	}
 	virtual ~Window();
-	Window &operator=(WindowID id_) {
-		id = id_;
+	Window &operator=(WindowID wid_) {
+		wid = wid_;
 		return *this;
 	}
-	WindowID GetID() { return id; }
-	bool Created() { return id != 0; }
+	WindowID GetID() const { return wid; }
+	bool Created() const { return wid != 0; }
 	void Destroy();
 	bool HasFocus();
 	PRectangle GetPosition();
@@ -335,9 +367,10 @@ public:
 	void InvalidateAll();
 	void InvalidateRectangle(PRectangle rc);
 	virtual void SetFont(Font &font);
-	enum Cursor { cursorInvalid, cursorText, cursorArrow, cursorUp, cursorWait, cursorHoriz, cursorVert, cursorReverseArrow };
+	enum Cursor { cursorInvalid, cursorText, cursorArrow, cursorUp, cursorWait, cursorHoriz, cursorVert, cursorReverseArrow, cursorHand };
 	void SetCursor(Cursor curs);
 	void SetTitle(const char *s);
+	PRectangle GetMonitorRect(Point pt);
 private:
 	Cursor cursorLast;
 };
@@ -347,48 +380,40 @@ private:
  */
 
 class ListBox : public Window {
-private:
-#if PLAT_GTK
-	WindowID list;
-	WindowID scroller;
-	int current;
-#endif
-	int desiredVisibleRows;
-	unsigned int maxItemCharacters;
-	unsigned int aveCharWidth;
-public:
-	CallBackAction doubleClickAction;
-	void *doubleClickActionData;
 public:
 	ListBox();
 	virtual ~ListBox();
-	void Create(Window &parent, int ctrlID);
-	virtual void SetFont(Font &font);
-	void SetAverageCharWidth(int width);
-	void SetVisibleRows(int rows);
-	PRectangle GetDesiredRect();
-	void Clear();
-	void Append(char *s);
-	int Length();
-	void Select(int n);
-	int GetSelection();
-	int Find(const char *prefix);
-	void GetValue(int n, char *value, int len);
-	void Sort();
-	void SetDoubleClickAction(CallBackAction action, void *data) {
-		doubleClickAction = action;
-		doubleClickActionData = data;
-	}
+	static ListBox *Allocate();
+
+	virtual void SetFont(Font &font)=0;
+	virtual void Create(Window &parent, int ctrlID, Point location, int lineHeight_, bool unicodeMode_, int technology_)=0;
+	virtual void SetAverageCharWidth(int width)=0;
+	virtual void SetVisibleRows(int rows)=0;
+	virtual int GetVisibleRows() const=0;
+	virtual PRectangle GetDesiredRect()=0;
+	virtual int CaretFromEdge()=0;
+	virtual void Clear()=0;
+	virtual void Append(char *s, int type = -1)=0;
+	virtual int Length()=0;
+	virtual void Select(int n)=0;
+	virtual int GetSelection()=0;
+	virtual int Find(const char *prefix)=0;
+	virtual void GetValue(int n, char *value, int len)=0;
+	virtual void RegisterImage(int type, const char *xpm_data)=0;
+	virtual void RegisterRGBAImage(int type, int width, int height, const unsigned char *pixelsImage) = 0;
+	virtual void ClearRegisteredImages()=0;
+	virtual void SetDoubleClickAction(CallBackAction, void *)=0;
+	virtual void SetList(const char* list, char separator, char typesep)=0;
 };
 
 /**
  * Menu management.
  */
 class Menu {
-	MenuID id;
+	MenuID mid;
 public:
 	Menu();
-	MenuID GetID() { return id; }
+	MenuID GetID() { return mid; }
 	void CreatePopUp();
 	void Destroy();
 	void Show(Point pt, Window &w);
@@ -400,6 +425,23 @@ class ElapsedTime {
 public:
 	ElapsedTime();
 	double Duration(bool reset=false);
+};
+
+/**
+ * Dynamic Library (DLL/SO/...) loading
+ */
+class DynamicLibrary {
+public:
+	virtual ~DynamicLibrary() {}
+
+	/// @return Pointer to function "name", or NULL on failure.
+	virtual Function FindFunction(const char *name) = 0;
+
+	/// @return true if the library was loaded successfully.
+	virtual bool IsValid() = 0;
+
+	/// @return An instance of a DynamicLibrary subclass with "modulePath" loaded.
+	static DynamicLibrary *Load(const char *modulePath);
 };
 
 /**
@@ -420,11 +462,16 @@ public:
 	static const char *DefaultFont();
 	static int DefaultFontSize();
 	static unsigned int DoubleClickTime();
+	static bool MouseButtonBounce();
 	static void DebugDisplay(const char *s);
 	static bool IsKeyDown(int key);
 	static long SendScintilla(
 		WindowID w, unsigned int msg, unsigned long wParam=0, long lParam=0);
+	static long SendScintillaPointer(
+		WindowID w, unsigned int msg, unsigned long wParam=0, void *lParam=0);
 	static bool IsDBCSLeadByte(int codePage, char ch);
+	static int DBCSCharLength(int codePage, const char *s);
+	static int DBCSCharMaxLength();
 
 	// These are utility functions not really tied to a platform
 	static int Minimum(int a, int b);
@@ -448,12 +495,24 @@ public:
 #ifdef  NDEBUG
 #define PLATFORM_ASSERT(c) ((void)0)
 #else
+#ifdef SCI_NAMESPACE
+#define PLATFORM_ASSERT(c) ((c) ? (void)(0) : Scintilla::Platform::Assert(#c, __FILE__, __LINE__))
+#else
 #define PLATFORM_ASSERT(c) ((c) ? (void)(0) : Platform::Assert(#c, __FILE__, __LINE__))
+#endif
+#endif
+
+#ifdef SCI_NAMESPACE
+}
 #endif
 
 // Shut up annoying Visual C++ warnings:
 #ifdef _MSC_VER
 #pragma warning(disable: 4244 4309 4514 4710)
+#endif
+
+#if defined(__GNUC__) && defined(SCINTILLA_QT)
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
 #endif

@@ -52,7 +52,8 @@ class HitTimer;
 class PinBinary;
 
 #define INCLUDE_DEPRECATED_FEATURES 1 // Scintilla
-#include "ScinAll.h"
+#include "Scintilla.h"
+#include "scilexer.h"
 
 #include "pintypes.h"
 #include "memutil.h"
