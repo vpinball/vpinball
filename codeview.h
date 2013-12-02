@@ -222,8 +222,6 @@ END_COM_MAP()
 	void EvaluateScriptStatement(char *szScript);
 	void AddToDebugOutput(char *szText);
 
-	LexerModule *m_pscinlexer;//lmVB(SCLEX_VB, ColouriseVBDoc, "vb", FoldVBDoc);
-
 	CComObject<DebuggerModule> *m_pdm; // Object to expose to script for global functions
 	//ULONG m_cref;
 

@@ -174,8 +174,8 @@ VPinball::~VPinball()
 {
    //	DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
    SetClipboard(NULL);
-
-   Scintilla_ReleaseResources();
+   FreeLibrary(scintillaDll);
+   //Scintilla_ReleaseResources();
 }
 
 ///<summary>
@@ -254,7 +254,13 @@ void VPinball::Init()
    GetMyPath();												//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
 
    RegisterClasses();											//TODO - brief description of what happens in the function
-   Scintilla_RegisterClasses(g_hinst);							//registering Scintilla with current Application instance number.
+   //Scintilla_RegisterClasses(g_hinst);							//registering Scintilla with current Application instance number.
+
+   scintillaDll = LoadLibrary("SciLexer.DLL");
+   if ( scintillaDll==NULL )
+   {
+      ShowError("unable to load SciLexer.DLL");
+   }
 
    char szName[256];
    LoadString(g_hinstres, IDS_PROJNAME, szName, 256);
