@@ -26,7 +26,7 @@ VP 9.2.0 Changelog
 - add lightmap for lights: If option "'On Image' Is Lightmap" is checked you can define a lightmap for the on image. If the light is switched on the lightmap is rendered together with the off image.
 - add sphere mapping to 3D mesh primitives
 - add static rotation for primitives (ObjRotX, ObjRotY, ObjRotZ) to change the basic orientation of a primitive. The old rotation/translation settings animate the primitive. 
-  All rotation/translation settings can be used out of the script.
+  all rotation/translation settings can be used out of the script.
 - add per-table region updates and region optimization (-1 takes the default from the video preferences, 0 forces off, 1 forces on)
 - add additional (optional) parameters to PlaySound to set the pan and/or randomize the pitch of the played sound effect: Instead of  PlaySound "name",loopcount,volume  one can now use  PlaySound "name",loopcount,volume,pan,randompitch
   pan ranges from -1.0 (left) over 0.0 (both) to 1.0 (right)
@@ -39,7 +39,8 @@ VP 9.2.0 Changelog
   this enables quick changes to flipper and physics settings for a whole bunch of tables (for example to tweak for less input lag or adapt the ball simulation/'speed')
   the 8 different sets can be used f.e. to tweak for different hardware generations or the manufacturer
 - add fake antialiasing(AA) as a global option in the video settings and a per table setting
-- Alpha ramp accuracy can be set per table
+- alpha ramp accuracy can be set per table
+- updated to latest scintilla (3.3.6)
 
 VP 9.1.5 Changelog
 ------------------------
