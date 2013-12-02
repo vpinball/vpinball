@@ -195,7 +195,7 @@ public:
 	bool m_fDebugging; // Whether VBA is currently in debugging mode
 	bool m_bWinHelp;
 	static bool m_open_minimized;
-   HMODULE scintillaDll;
+    //HMODULE scintillaDll;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
