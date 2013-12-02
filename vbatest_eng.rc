@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -258,7 +258,7 @@ BEGIN
     CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,185,32,10
     CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,195,32,10
     CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,205,45,10
-    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | WS_TABSTOP,156,232,183,20
+    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,156,232,183,20
     DEFPUSHBUTTON   "OK",IDOK,218,280,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,277,280,50,14
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,263
@@ -1214,24 +1214,26 @@ BEGIN
     LTEXT           "&Sound:",IDC_STATIC,6,35,22,8
 END
 
-IDD_PROPTABLE_VISUALS DIALOGEX 0, 0, 125, 131
+IDD_PROPTABLE_VISUALS DIALOGEX 0, 0, 125, 169
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Custom2",4,"ColorControl",WS_TABSTOP,27,7,40,14
     COMBOBOX        DISPID_Image,7,32,110,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Render Shadows",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,57,71,10
-    LTEXT           "I&mage:",-1,7,23,22,8
-    LTEXT           "&Color",-1,7,10,20,9
+    LTEXT           "I&mage:",IDC_STATIC,7,23,22,8
+    LTEXT           "&Color",IDC_STATIC,7,10,20,9
     EDITTEXT        IDC_REGION_UPDATES_TABLE,101,69,20,12,ES_AUTOHSCROLL
-    LTEXT           "Region Upd.    (-1=default)",-1,7,71,94,8
+    LTEXT           "Region Upd.    (-1=default)",IDC_STATIC,7,71,94,8
     EDITTEXT        IDC_REGION_OPT_TABLE,101,83,20,12,ES_AUTOHSCROLL
-    LTEXT           "Region Opt.     (0=off, 1=on)",-1,7,85,94,8
+    LTEXT           "Region Opt.     (0=off, 1=on)",IDC_STATIC,7,85,94,8
     EDITTEXT        IDC_TABLESOUNDVOLUME,101,97,20,12,ES_AUTOHSCROLL
-    LTEXT           "Table Sound Volume (0..100)",-1,7,99,94,8
+    LTEXT           "Table Sound Volume (0..100)",IDC_STATIC,7,99,94,8
     EDITTEXT        IDC_TABLEMUSICVOLUME,101,111,20,12,ES_AUTOHSCROLL
-    LTEXT           "Table Music Volume (0..100)",-1,7,113,94,8
+    LTEXT           "Table Music Volume (0..100)",IDC_STATIC,7,113,94,8
     CONTROL         "Enable Antialiasing",IDC_ENABLE_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,47,75,10
+    CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,7,135,113,28
+    GROUPBOX        "Alpha Ramp Accuracy",IDC_STATIC,7,125,114,39
 END
 
 IDD_PROPTABLE_EDITOR DIALOGEX 0, 0, 125, 38
@@ -1600,11 +1602,6 @@ BEGIN
     IDD_PHYSICS_OPTIONS, DIALOG
     BEGIN
         RIGHTMARGIN, 194
-    END
-
-    IDD_PROPTABLE_VISUALS, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 120
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2158,7 +2155,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

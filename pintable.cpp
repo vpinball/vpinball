@@ -786,6 +786,11 @@ PinTable::PinTable()
    sprintf_s( Version, "00.85.%04d", BUILD_NUMBER ); //!!
    SetRegValue ( "Version", "VPinball", REG_SZ, Version, strlen(Version) );
 
+   if ( FAILED(GetRegInt("Player", "AlphaRampAccuracy", &m_alphaRampsAccuracy) ) ) 
+   {
+      m_alphaRampsAccuracy = 5;
+   }
+
    m_jolt_amount = 500;
    m_tilt_amount = 950;
    m_jolt_trigger_time = 1000;
@@ -1725,14 +1730,6 @@ void PinTable::Play()
    if (g_pplayer)
    {
       return; // Can't play twice
-   }
-
-   {
-      const HRESULT hr = GetRegInt("Player", "AlphaRampAccuracy", &m_alphaRampsAccuracy);
-      if (hr != S_OK)
-      {
-         m_alphaRampsAccuracy = 5;
-      }
    }
 
    mixer_volmod( m_tblVolmod );
@@ -2825,6 +2822,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteInt(FID(BREF), useReflectionForBalls );
    bw.WriteInt(FID(BRST), ballReflectionStrength );
+   bw.WriteInt(FID(ARAC), m_alphaRampsAccuracy );
 
    bw.WriteInt(FID(UAAL), useAA );
 
@@ -3839,7 +3837,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetInt(&m_TableRegionOptimization);
    }
-
+   else if ( id == FID(ARAC))
+   {
+      pbr->GetInt(&m_alphaRampsAccuracy);
+   }
    return fTrue;
 }
 
@@ -8022,6 +8023,25 @@ STDMETHODIMP PinTable::put_TableRegionOptimization(int newVal )
 
    return S_OK;
 }
+
+STDMETHODIMP PinTable::get_AlphaRampAccuracy(int *pVal)
+{
+   *pVal = m_alphaRampsAccuracy;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_AlphaRampAccuracy(int newVal )
+{
+   STARTUNDO
+
+      m_alphaRampsAccuracy = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
 
 STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
 {

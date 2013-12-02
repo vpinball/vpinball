@@ -571,6 +571,8 @@
 #define IDC_JOYCUSTOM4COMBO             419
 #define IDC_JOYCUSTOM1COMBO2            420
 #define IDC_JOYDEBUGCOMBO               420
+#define IDC_SLIDER1                     420
+#define IDC_ALPHA_SLIDER                420
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -659,7 +661,7 @@
 #define IDS_VISUALS_SOUND               581
 #define IDC_REGION_UPDATES_TABLE        582
 #define IDC_REGION_OPT_TABLE            583
-#define IDC_UPDATEREGIONS				584
+#define IDC_UPDATEREGIONS               584
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -753,7 +755,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        393
 #define _APS_NEXT_COMMAND_VALUE         32882
-#define _APS_NEXT_CONTROL_VALUE         420
+#define _APS_NEXT_CONTROL_VALUE         421
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
