@@ -577,6 +577,7 @@ PinTable::PinTable()
       activeLayers[i]=true;
    }
    toggleAllLayers=false;
+   savingActive=false;
 
    m_vmultisel.AddElement((ISelect *)this);
    m_undo.m_ptable = this;
@@ -2174,6 +2175,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
    IStorage *pstgData, *pstgInfo;
    IStream *pstmGame, *pstmItem;
 
+   savingActive=true;
    RECT rc;
    SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (long)&rc);
 
@@ -2413,7 +2415,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
    //Error:
 
    DestroyWindow(hwndProgressBar);
-
+   savingActive=false;
    return hr;
 }
 

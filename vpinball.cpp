@@ -2413,6 +2413,14 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_CLOSE:
       {
          BOOL fCanClose;
+         PinTable *ptable = g_pvp->GetActiveTable();
+         if ( ptable )
+         {
+            while( ptable->savingActive )
+            {
+               Sleep(1000);
+            }
+         }
 #ifdef VBA
          g_pvp->ApcHost.WmClose(fCanClose);
 #else
