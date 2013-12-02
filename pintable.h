@@ -689,6 +689,7 @@ END_CONNECTION_POINT_MAP()
 
 	bool activeLayers[8];
    bool toggleAllLayers;   
+   bool savingActive;
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
