@@ -1,0 +1,545 @@
+Visual Pinball command Reference v0.1
+by Fuzzel 
+
+This is a quick overview of all commands/variables VP knows. A lot of them haven't an effect from the script because the have an impact on the pre-rendering.
+Variables starting with a (*) can't be used from the script or haven't an effect
+
+TABLE
+==============================================================================================================================================
+
+Variables
+---------
+
+*GlassHeight(float) 
+*PlayfieldColor(OLE_COLOR)
+*BackDropColor(OLE_COLOR)
+*SlopeMax(float)
+*SlopeMin(float)
+*Rotation(float)
+*Scalex(float)
+*Scaley(float)
+*Xlatex(float) - X Offset
+*Xlatey(float) - Y Offset
+Gravity(float) - default=0.86543
+HardFriction(float) - default=2.5e-3
+HardScatter(float) - default=0
+MaxBallSpeed(float) - default=60.0
+PlungerNormalize(int) - Mech-Plunger component adjustment or weak spring, aging. default=100
+PhysicsLoopTime(int) - default=0
+DampingFriction(float) - default=0.95
+PlungerFilter(bool) - default=false
+YieldTime(long) - time in milliseconds to sleep during each frame - can helps side threads like vpinmame. default=0
+BallImage(string) 
+BallFrontDecal(string) - image of the ball front decal
+BallBackDecal(string) - image of the ball back decal
+BackdropImage(string)
+*Width(float) - table width. default=1000
+*Height(float) - table height. default=2000
+*Inclination(float) - default=43
+*Layback(float) - default=0
+*MaxSeparation(float)
+*ZPD(float)
+*FieldOfView(float) - default=45
+*DisplayGrid(bool) - default=true
+*DisplayBackdrop(bool) - displays backdrop image in editor. default=true
+*Image(string) - playfield image
+*Name(string) - table name
+*EnableAntialiasing(bool) - enables fake AA for this table if you have set 'Fake AA on all tables' in the video options. default=false
+ÜRenderShadows(bool) - default=true
+ÜOverridePhysics(long) - overrides the table physics settings with pre defined settings defined under Preferences -> Physics Options.
+                         You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
+						 by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
+*RenderEMReels(bool) - default=true						
+*RenderDecals(bool) - default=true
+*Accelerometer(bool) 
+*AccelNormalMount(bool)
+*AccelerometerAngle(float)
+*AccelerometerAmp(float)
+*AccelerManualAmp(float)
+*JoltAmount(int)
+*TiltAmount(int)
+*JoltTriggerTime(int)
+*TiltTriggerTime(int)
+*GlobalDifficulty(float)
+*HardwareRender(bool) - default=true 
+*AlternateRender(bool) - reorder playfield objects (forATI/AMD gfx) default=false
+*TableHeight -
+*DeadZone(int)
+*DeadSlider(int)
+*Light0Ambient(OLE_COLOR)
+*Light0Diffuse(OLE_COLOR)
+*Light0Specular(OLE_COLOR)
+*Light0PX(float) - X position of light0
+*Light0PY(float) - Y position of light0
+*Light0PZ(float) - Z position of light0
+*Light0DX(float) - X direction of light0 (only valid if Light0Type is 0 (directional)
+*Light0DY(float) - Y direction of light0 (only valid if Light0Type is 0 (directional)
+*Light0DZ(float) - Z direction of light0 (only valid if Light0Type is 0 (directional)
+*Light0Type(int) - 0= directional, 1=spot, 2=point
+*Light1Ambient(OLE_COLOR)
+*Light1Diffuse(OLE_COLOR)
+*Light1Specular(OLE_COLOR)
+*Light1PX(float) - X position of light1
+*Light1PY(float) - Y position of light1
+*Light1PZ(float) - Z position of light1
+*Light1DX(float) - X direction of light1 (only valid if Light0Type is 0 (directional)
+*Light1DY(float) - Y direction of light1 (only valid if Light0Type is 0 (directional)
+*Light1DZ(float) - Z direction of light1 (only valid if Light0Type is 0 (directional)
+*Light1Type(int) - 0= directional, 1=spot, 2=point
+*NormalizeNormals(int) - Exact lighting on dynamic objects. default=0
+*TableSoundVolume(int) - default=100
+*TableMusicVolume(int) - default=100
+*TableRegionUpdates(int) - defines region updates for this table(-1=use global setting, 0=off, 1=on)
+*TableRegionOptimization(int) - defines region optimization for this table (-1=use global setting, 0=off, 1=on)
+*BallReflection - enable ball reflection on table. depending on the global video setting 'Reflect Ball on all tables' this is on or off. Or it is defined spezific for this table.
+*ReflectionStrength(int) - defines the reflection strength of the ball reflection (0-255)
+*ShadowX(float) - defines the shadow X direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate
+*ShadowY(float) - defines the shadow Y direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate
+*AlphaRampAccuracy(int) - defines the alpha ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
+
+Methods
+-------
+Nudge(float Angle, float Force)
+StartShake()
+StopShake()
+
+
+BUMPER
+==============================================================================================================================================
+
+Variables
+---------
+
+*Radius(float) - default=45.0
+*X(float) - X position
+*Y(float) - Y position
+State(LightState) - 0=Off, 1=On, 2=Blinking
+BlinkPattern(string) - default=10
+BlinkInterval(long) - default=125 milliseconds
+FlashWhenHit(bool) - default=true
+*SideColor(OLE_COLOR)
+UserValue(any)
+*Surface(string)
+Force(float)
+Threshold(float)
+TimerEnabled(bool)
+TimerInterval(long)
+*Overhang(float) - default=25
+*Color(OLE_COLOR)
+*Image(string)
+*Name(string)
+*CastShadow(bool) - default=true
+*Disabled(bool) - default=false
+*Visible(bool) - default=true
+*SideVisible(bool) - default=true
+
+
+
+DECAL
+==============================================================================================================================================
+
+Variables
+---------
+
+*Rotation(float)
+*Image(string)
+*Width(float)
+*Height(float)
+*X(float)
+*Y(float)
+*Type(DecalType) - 0=Text, 1=Image
+*Text(string)
+*SizingType(SizingType) - 0=AutoSize, 1=AutoWidth, 2=ManualSize
+*FontColor(OLE_COLOR)
+*Font(IFontDisp)
+*HasVerticalText(bool)
+*Surface(string)
+
+EMREEL
+==============================================================================================================================================
+
+Variables
+---------
+
+*BackColor(OLE_COLOR)
+*Image(string)
+*FontColor(OLE_COLOR)
+*ReelColor(OLE_COLOR)
+Font(IFontDisp)
+Reels(float)
+Width(float)
+Height(float)
+Spacing(float)
+IsTransparent(bool)
+Sound(string)
+Steps(float)
+IsShading(bool)
+TimerEnabled(bool)
+TimerInterval(long)
+*X(float)
+*Y(float)
+*Type(ReelType) = 0=text, 1=image
+Range(float)
+*Name(string)
+UpdateInterval(long)
+UserValue(any)
+*UserImageGrid(bool)
+ImagesPerGridRow(long)
+
+Methods
+-------
+AddValue(long value)
+ResetToZero()
+SpinReel(long ReelNumber, long PulseCount)
+SetValue(long value)
+
+FLIPPER
+==============================================================================================================================================
+
+Variables
+---------
+
+*BaseRadius(float)
+*EndRadius(float)
+*Length(float)
+*StartAngle(float)
+*EndAngle(float)
+CurrentAngle(float) - only readable
+TimerEnabled(bool)
+TimerInterval(long)
+*X(float)
+*Y(float)
+*Color(OLE_COLOR)
+*Speed(float)
+OverridePhysics(long) - overrides the table physics settings with pre defined settings defined under Preferences -> Physics Options.
+                        You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
+						by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
+*RubberColor(OLE_COLOR)
+*RubberThickness(long)
+*Strength(float)
+*Visible(bool)
+Elasticity(float)
+Recoil(float)
+Return(float)
+*RubberHeight(long)
+*RubberWidth(long)
+*Surface(string)
+Mass(float)
+PowerLaw(float)
+*ObliqueCorrection(float)
+*FlipperRadiusMin(float)
+ScatterAngle(float)
+						
+Methods
+-------
+
+RotateToStart()
+RotateToEnd()
+
+
+GATE
+==============================================================================================================================================
+
+Variables
+---------
+
+*Name(string)
+TimerEnabled(bool)
+TimerInterval(long)
+*Length(float)
+*Height(float)
+*Rotation(float)
+*X(float)
+*Y(float)
+Open(bool)
+*ImageFront(string)
+*ImageBack(string)
+*Color(OLE_COLOR)
+Elasticity(float)
+*Surface(string)
+UserValue(any)
+*CloseAngle(float)
+*OpenAngle(float)
+Collidable(bool)
+Friction(float)
+Animations(int)
+*Visible(bool)
+Supports(bool)
+*EnableLighting(bool) 
+
+Methods
+-------
+
+Move( int dir, float speed, float angle) - dir(0/1)
+
+
+KICKER
+==============================================================================================================================================
+
+Variables
+---------
+
+*Name(string)
+TimerEnabled(bool)
+TimerInterval(long)
+*X(float)
+*Y(float)
+Enabled(bool)
+*DrawStyle(KickerType) - 0=Hidden, 1=Hole, 2=Cup, 3=Invisible
+*Color(OLE_COLOR)
+*Surface(string)
+UserValue(any)
+Scatter(float)
+HitHeight(float)
+
+Methods
+-------
+CreateBall(IBall **ball)
+CreateSizedBall(IBall **ball)
+DestroyBall( int ballId)
+Kick(float angle, float speed, float inclination)
+KickXYZ(float angle, float speed, float inclination, float x, float y, float z)
+KickZ(float angle, float speed, float inclination, float heightz)
+BallCntOver(int)
+
+
+KICKER
+==============================================================================================================================================
+
+Variables
+---------
+*Radius(float)
+State(LightState) - 0=Off, 1=On, 2=Blinking
+*Color(OLE_COLOR)
+TimerEnabled(bool)
+TimerInterval(long)
+*X(float)
+*Y(float)
+*Shape(Shape) - 0=Circle, 1=Custom
+BlinkPattern(string)
+BlinkInterval(long)
+*BorderColor(OLE_COLOR)
+*BorderWidth(float)
+*Surface(string)
+*Name(string)
+UserValue(any)
+*OffImage(string)
+*OnImage(string)
+*EnableOffLighting(bool) - defines if the off image/shape should be shaded or not
+*EnableOnLighting(bool)  - defines if the on image/shape should be shaded or not
+*OnImageIsLightmap(int) - if set to 1 the on image is used as a add. alpha blend image, this works only on custom light shapes
+
+
+PLUNGER
+==============================================================================================================================================
+
+Variables
+---------
+
+*PullSpeed(float)
+FireSpeed(float)
+TimerEnabled(bool)
+TimerInterval(long)
+*X(float)
+*Y(float)
+*Surface(string)
+*Name(string)
+UserValue(any)
+*Type(PlungerType) - 0=Original, 1=Modern
+*Color(OLE_COLOR)
+*Image(string)
+*MeshPLunger(bool)
+*AutoPlunger(bool)
+*Visible(bool)
+MechStrength(float)
+ParkPosition(float)
+Stroke(float)
+ScatterVelocity(float)
+BreakOverVelocity(float)
+
+Methods
+-------
+Pullback()
+Fire()
+CreateBall(IBall **ball)
+Position(int value) - added for mechanical plunger position BDS
+MotionDevice(int value) - added for uShockType
+
+
+PRIMITIVE
+==============================================================================================================================================
+
+Variables
+---------
+
+Sides(float) - amount of sides for the old standard primitive
+TopVisible(bool) - toggle visibility
+TopColor(OLE_COLOR) - topColor of the old standard primitive (only valid if no image was set)
+SideColor(OLE_COLOR) - sideColor of the old standard primitive (only valid if no image was set)
+DrawTexturesInside(bool) - textures the inside of the old standard primitive
+UpdateRegions(bool) - update the region of this primitive
+Image(string) - texture name
+X(float) - X position
+Y(float) - Y position
+Z(float) - Z position
+Size_X(float) - X size
+Size_Y(float) - Y size
+Size_Z(float) - Z size
+AxisScaleX_Y(float) - scale X-Y axis
+AxisScaleX_Z(float) - scale X-Z axis
+AxisScaleY_X(float) - scale Y-X axis
+AxisScaleY_Z(float) - scale Y-Z axis
+AxisScaleZ_X(float) - scale Z-X axis
+AxisScaleZ_Y(float) - scale Z-Y axis
+RotAndTra0(float) or RotX(float) - rotates the primitive around it's X axis
+RotAndTra1(float) or RotY(float) - rotates the primitive around it's Y axis
+RotAndTra2(float) or RotZ(float) - rotates the primitive around it's Z axis
+RotAndTra3(float) or TransX(float) - translates the primitive along it's X axis
+RotAndTra4(float) or TransY(float) - translates the primitive along it's Y axis
+RotAndTra5(float) or TransZ(float) - translates the primitive along it's Z axis
+RotAndTra6(float) or ObjRotX(float) - rotates the X axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
+RotAndTra7(float) or ObjRotY(float) - rotates the Y axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
+RotAndTra8(float) or ObjRotZ(float) - rotates the Z axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
+*Name(string)
+EnableLighting(bool) - enable/disable lighting for this primitive. You should use the table lights 0/1 to get best results
+*EnableStaticRendering - if set the primitive is only rendered once (like walls) any dynamic changes later 
+                         won't have an effect. This is useful for objects like posts or static toys, because this won't have an impact of the perfomance
+EnableSphereMapping(bool) - enable/disable sphere mapping/environment mapping.						 
+
+Methods
+-------
+TriggerSingleUpdate() - triggers only one region update for all primitivies
+
+
+RAMP
+==============================================================================================================================================
+
+Variables
+---------
+*Name(string)
+HeightBottom(float)
+HeightTop(float)
+WidthBottom(float)
+WidthTop(float)
+Color(OLE_COLOR)
+*Type(RampType) - 0=Flat, 1=4Wire, 2=2Wire, 3=3WireLeft, 4=3WireRight, 5=Wire
+Image(string)
+ImageAlignment(RampImageAlignment) - 0=ImageModeWorld, 1=ImageModeWrap
+HasWallImage(bool) - apply image to walls
+LeftWallHeight(float)
+RightWallHeight(float)
+*Solid(bool)
+*Acrylic(bool)
+Alpha(bool)
+UserValue(bool)
+*CastShadow(bool)
+VisibleLeftWallHeight(float)
+VisibleRightWallHeight(float)
+Elasticity(float)
+Collidable(bool)
+IsVisible(bool)
+Friction(float)
+Scatter(float)
+Modify3DStereo(bool)
+UpdateRegions(bool) - update the region of this ramp
+AddBlend(bool) - additive blending
+EnableLightingImage(bool) - defines if the image/ramp should be shaded or not
+
+Methods
+-------
+
+TriggerSingleUpdate() - triggers only one region update for all ramps
+
+
+SPINNER
+==============================================================================================================================================
+
+Variables
+---------
+
+*Name(string)
+TimerEnabled(bool)
+TimerInterval(long)
+*Length(float)
+*Rotation(float)
+*Height(float)
+*OverHang(float)
+Friction(float)
+*ImageFront(string)
+*ImageBack(string)
+*Color(OLE_COLOR)
+*X(float)
+*Y(float)
+*Surface(float)
+UserValue(any)
+*CastShadow(bool)
+*Supports(bool)
+*AngleMax(float)
+*AngleMin(float)
+Elasticity(float)
+*Animations(int)
+*Visible(bool)
+
+
+TRIGGER
+==============================================================================================================================================
+
+Variables
+---------
+
+*Radius(float)
+TimerEnabled(bool)
+TimerInterval(long)
+*X(float)
+*Y(float)
+*Enabled(bool)
+*Visible(bool)
+*Shape(Shape) - 0=Circle, 1=Custom
+Surface(string)
+*Name(string)
+UserValue(any)
+HitHeight(float)
+
+Methods
+-------
+
+BallCntOver(int value)
+DestroyBall(int ballId)
+
+
+WALL
+==============================================================================================================================================
+
+Variables
+---------
+
+*Name(string)
+TimerEnabled(bool)
+TimerInterval(long)
+*HasHitEvent(bool)
+Threshold(float)
+*Image(string)
+*SideColor(OLE_COLOR)
+*ImageAlignment(ImageAlignment) - 0=ImageAlignWorld, 1=ImageAlignTopLeft, 2=ImageAlignCenter
+*HeightBottom(float)
+*HeightTop(float)
+*FaceColor(OLE_COLOR)
+*CanDrop(bool)
+Collideable(bool)
+IsDropped(bool)
+*DisplayTexture(bool)
+Elasticity(float)
+*CastsShadow(bool)
+*SideImage(string)
+*Visible(bool)
+Disabled(bool)
+*SideVisible(bool)
+UserValue(any)
+*SlingshotColor(OLE_COLOR)
+SlingshotThreshold(float)
+*SlingshotAnimation(bool)
+*FlipbookAnimation(bool)
+Friction(float)
+Scatter(float)
+*EnableLighting(bool) - defines if the image/wall should be shaded or not
+
