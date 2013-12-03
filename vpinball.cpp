@@ -257,7 +257,7 @@ void VPinball::Init()
    scintillaDll = LoadLibrary("SciLexer.DLL");
    if ( scintillaDll==NULL )
    {
-      ShowError("unable to load SciLexer.DLL");
+      ShowError("Unable to load SciLexer.DLL");
    }
 
    char szName[256];

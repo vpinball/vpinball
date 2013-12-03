@@ -18,14 +18,14 @@ BOOL g_fWriteHitDeleteLog = fTrue;
 
 void ShowError(char *sz)
 {
-	MessageBox(g_pvp->m_hwnd, sz, "Error", MB_OK | MB_ICONEXCLAMATION);
+	MessageBox(NULL, sz, "Error", MB_OK | MB_ICONEXCLAMATION);
 }
 
 
 void ShowErrorID(int id)
 {
 	LocalString ls(id);
-	MessageBox(g_pvp->m_hwnd, ls.m_szbuffer, "Error", MB_OK | MB_ICONEXCLAMATION);
+	MessageBox(NULL, ls.m_szbuffer, "Error", MB_OK | MB_ICONEXCLAMATION);
 }
  
 
