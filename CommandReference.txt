@@ -10,47 +10,62 @@ TABLE
 Variables
 ---------
 
-*GlassHeight(float) 
+*Width(float) - Playfield width. default=1000
+*Height(float) - Playfield height. default=2000
+*GlassHeight(float) - Height of Glass above Playfield
+*TableHeight
+*Inclination(float) - Angle of Table (used for Display only). default=43
+*Rotation(float) - Rotation of Table (used mainly for FS/Cab tables: 270)
+*Scalex(float) - X Scale of Table
+*Scaley(float) - Y Scale of Table
+*Xlatex(float) - X Offset of Table
+*Xlatey(float) - Y Offset of Table
+*Layback(float) - Skew of Table (used mainly for FS/Cab tables). default=0
+*FieldOfView(float) - Perspective of Table. default=45
+*MaxSeparation(float) - Maximum separation/scale effect for Stereo 3D (ranges from 0..1)
+*ZPD(float) - Sets the depth where the Stereo 3D should happen (ranges from 0..1)
 *PlayfieldColor(OLE_COLOR)
 *BackDropColor(OLE_COLOR)
-*SlopeMax(float)
-*SlopeMin(float)
-*Rotation(float)
-*Scalex(float)
-*Scaley(float)
-*Xlatex(float) - X Offset
-*Xlatey(float) - Y Offset
+BackdropImage(string)
+
+*SlopeMax(float) - Angle of Playfield within Cabinet (used for Physics only)
+*SlopeMin(float) - Angle of Playfield within Cabinet (used for Physics only)
+*GlobalDifficulty(float) - Choose between SlopeMax and SlopeMin
 Gravity(float) - default=0.86543
-HardFriction(float) - default=2.5e-3
+HardFriction(float) - default=0.0025
 HardScatter(float) - default=0
 MaxBallSpeed(float) - default=60.0
-PlungerNormalize(int) - Mech-Plunger component adjustment or weak spring, aging. default=100
-PhysicsLoopTime(int) - default=0
 DampingFriction(float) - default=0.95
-PlungerFilter(bool) - default=false
-YieldTime(long) - time in milliseconds to sleep during each frame - can helps side threads like vpinmame. default=0
+*OverridePhysics(long) - overrides the table physics settings with pre defined settings defined under Preferences -> Physics Options.
+                         You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
+						 by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
+
+PhysicsLoopTime(int) - default=0
+YieldTime(long) - time in milliseconds to sleep during each frame - can help side threads like vpinmame. default=0
+
 BallImage(string) 
 BallFrontDecal(string) - image of the ball front decal
 BallBackDecal(string) - image of the ball back decal
-BackdropImage(string)
-*Width(float) - table width. default=1000
-*Height(float) - table height. default=2000
-*Inclination(float) - default=43
-*Layback(float) - default=0
-*MaxSeparation(float)
-*ZPD(float)
-*FieldOfView(float) - default=45
+
 *DisplayGrid(bool) - default=true
 *DisplayBackdrop(bool) - displays backdrop image in editor. default=true
 *Image(string) - playfield image
 *Name(string) - table name
+
 *EnableAntialiasing(bool) - enables fake AA for this table if you have set 'Fake AA on all tables' in the video options. default=false
-ÜRenderShadows(bool) - default=true
-ÜOverridePhysics(long) - overrides the table physics settings with pre defined settings defined under Preferences -> Physics Options.
-                         You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
-						 by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
+*RenderShadows(bool) - default=true
 *RenderEMReels(bool) - default=true						
 *RenderDecals(bool) - default=true
+*HardwareRender(bool) - default=true 
+*AlternateRender(bool) - reorder playfield objects (for ATI/AMD gfx) default=false
+*TableRegionUpdates(int) - defines region updates for this table(-1=use global setting, 0=off, 1=on)
+*TableRegionOptimization(int) - defines region optimization for this table (-1=use global setting, 0=off, 1=on)
+*BallReflection - enable ball reflection on table. depending on the global video setting 'Reflect Ball on all tables' this is on or off. Or it is defined spezific for this table.
+*ReflectionStrength(int) - defines the reflection strength of the ball reflection (0-255)
+*AlphaRampAccuracy(int) - defines the alpha ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
+
+PlungerNormalize(int) - Mech-Plunger component adjustment or weak spring, aging. default=100
+PlungerFilter(bool) - default=false
 *Accelerometer(bool) 
 *AccelNormalMount(bool)
 *AccelerometerAngle(float)
@@ -60,42 +75,35 @@ BackdropImage(string)
 *TiltAmount(int)
 *JoltTriggerTime(int)
 *TiltTriggerTime(int)
-*GlobalDifficulty(float)
-*HardwareRender(bool) - default=true 
-*AlternateRender(bool) - reorder playfield objects (forATI/AMD gfx) default=false
-*TableHeight -
 *DeadZone(int)
 *DeadSlider(int)
-*Light0Ambient(OLE_COLOR)
-*Light0Diffuse(OLE_COLOR)
-*Light0Specular(OLE_COLOR)
-*Light0PX(float) - X position of light0
-*Light0PY(float) - Y position of light0
-*Light0PZ(float) - Z position of light0
-*Light0DX(float) - X direction of light0 (only valid if Light0Type is 0 (directional)
-*Light0DY(float) - Y direction of light0 (only valid if Light0Type is 0 (directional)
-*Light0DZ(float) - Z direction of light0 (only valid if Light0Type is 0 (directional)
-*Light0Type(int) - 0= directional, 1=spot, 2=point
-*Light1Ambient(OLE_COLOR)
-*Light1Diffuse(OLE_COLOR)
-*Light1Specular(OLE_COLOR)
-*Light1PX(float) - X position of light1
-*Light1PY(float) - Y position of light1
-*Light1PZ(float) - Z position of light1
-*Light1DX(float) - X direction of light1 (only valid if Light0Type is 0 (directional)
-*Light1DY(float) - Y direction of light1 (only valid if Light0Type is 0 (directional)
-*Light1DZ(float) - Z direction of light1 (only valid if Light0Type is 0 (directional)
-*Light1Type(int) - 0= directional, 1=spot, 2=point
-*NormalizeNormals(int) - Exact lighting on dynamic objects. default=0
-*TableSoundVolume(int) - default=100
-*TableMusicVolume(int) - default=100
-*TableRegionUpdates(int) - defines region updates for this table(-1=use global setting, 0=off, 1=on)
-*TableRegionOptimization(int) - defines region optimization for this table (-1=use global setting, 0=off, 1=on)
-*BallReflection - enable ball reflection on table. depending on the global video setting 'Reflect Ball on all tables' this is on or off. Or it is defined spezific for this table.
-*ReflectionStrength(int) - defines the reflection strength of the ball reflection (0-255)
-*ShadowX(float) - defines the shadow X direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate
+
+*TableSoundVolume(int) - Scales the global sound volume. default=100
+*TableMusicVolume(int) - Scales the global music volume. default=100
+
+*Light0Ambient(OLE_COLOR) - changes the ambient color contribution for each material from light0
+*Light0Diffuse(OLE_COLOR) - changes the diffuse color contribution for each material from light0
+*Light0Specular(OLE_COLOR) - changes the specular color contribution for each material from light0
+*Light0PX(float) - X position of light0 (PXPYPZ and DXDYDZ being both 0,0,0 means to use the old defaults of VP) 
+*Light0PY(float) - Y position of light0 (PX and PY are relative to the playfield width and height)
+*Light0PZ(float) - Z position of light0 (PZ varies the height of the light)
+*Light0DX(float) - X direction of light0 (only valid if Light0Type is 0 or 1 (directional)) (DXDYDZ being 0,0,-1 means that the light shines directly from above)
+*Light0DY(float) - Y direction of light0 (only valid if Light0Type is 0 or 1 (directional))
+*Light0DZ(float) - Z direction of light0 (only valid if Light0Type is 0 or 1 (directional))
+*Light0Type(int) - 0=directional, 1=spot, 2=point
+*Light1Ambient(OLE_COLOR) - changes the ambient color contribution for each material from light1
+*Light1Diffuse(OLE_COLOR) - changes the diffuse color contribution for each material from light1
+*Light1Specular(OLE_COLOR) - changes the specular color contribution for each material from light1
+*Light1PX(float) - X position of light1 (PXPYPZ and DXDYDZ being both 0,0,0 means to use the old defaults of VP)
+*Light1PY(float) - Y position of light1 (PX and PY are relative to the playfield width and height)
+*Light1PZ(float) - Z position of light1 (PZ varies the height of the light)
+*Light1DX(float) - X direction of light1 (only valid if Light1Type is 0 or 1 (directional)) (DXDYDZ being 0,0,-1 means that the light shines directly from above)
+*Light1DY(float) - Y direction of light1 (only valid if Light1Type is 0 or 1 (directional))
+*Light1DZ(float) - Z direction of light1 (only valid if Light1Type is 0 or 1 (directional))
+*Light1Type(int) - 0=directional, 1=spot, 2=point
+*NormalizeNormals(int) - Exact lighting on dynamic objects (try on your table on/off and see if the change is dramatic, if it is then better enable it). default=0
+*ShadowX(float) - defines the shadow X direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate (if X and Y are both zero one can have an ambient occlusion like effect)
 *ShadowY(float) - defines the shadow Y direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate
-*AlphaRampAccuracy(int) - defines the alpha ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
 
 Methods
 -------
@@ -211,7 +219,7 @@ TimerInterval(long)
 *Y(float)
 *Color(OLE_COLOR)
 *Speed(float)
-OverridePhysics(long) - overrides the table physics settings with pre defined settings defined under Preferences -> Physics Options.
+OverridePhysics(long) - overrides the flipper physics settings with pre defined settings defined under Preferences -> Physics Options.
                         You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
 						by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
 *RubberColor(OLE_COLOR)
@@ -542,4 +550,3 @@ SlingshotThreshold(float)
 Friction(float)
 Scatter(float)
 *EnableLighting(bool) - defines if the image/wall should be shaded or not
-
