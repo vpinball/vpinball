@@ -1,8 +1,9 @@
 Visual Pinball command Reference v0.1
 by Fuzzel 
 
-This is a quick overview of all commands/variables VP knows. A lot of them haven't an effect from the script because the have an impact on the pre-rendering.
-Variables starting with a (*) can't be used from the script or haven't an effect
+This is a quick overview of all commands/variables VP knows. A lot of them haven't an effect from the script because they have an impact on the pre-rendering only.
+Variables starting with a (*) can't be used from the script or don't have an effect.
+
 
 TABLE
 ==============================================================================================================================================
@@ -40,7 +41,7 @@ DampingFriction(float) - default=0.95
                          You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
 						 by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
 
-PhysicsLoopTime(int) - default=0
+PhysicsLoopTime(int) - can help performance by limiting the maximum milliseconds spend in the physics loop. default=0
 YieldTime(long) - time in milliseconds to sleep during each frame - can help side threads like vpinmame. default=0
 
 BallImage(string) 
@@ -78,8 +79,8 @@ PlungerFilter(bool) - default=false
 *DeadZone(int)
 *DeadSlider(int)
 
-*TableSoundVolume(int) - Scales the global sound volume. default=100
-*TableMusicVolume(int) - Scales the global music volume. default=100
+*TableSoundVolume(int) - Scales the global sound volume (in percent). default=100
+*TableMusicVolume(int) - Scales the global music volume (in percent). default=100
 
 *Light0Ambient(OLE_COLOR) - changes the ambient color contribution for each material from light0
 *Light0Diffuse(OLE_COLOR) - changes the diffuse color contribution for each material from light0
@@ -125,7 +126,6 @@ State(LightState) - 0=Off, 1=On, 2=Blinking
 BlinkPattern(string) - default=10
 BlinkInterval(long) - default=125 milliseconds
 FlashWhenHit(bool) - default=true
-*SideColor(OLE_COLOR)
 UserValue(any)
 *Surface(string)
 Force(float)
@@ -134,13 +134,13 @@ TimerEnabled(bool)
 TimerInterval(long)
 *Overhang(float) - default=25
 *Color(OLE_COLOR)
+*SideColor(OLE_COLOR)
 *Image(string)
 *Name(string)
 *CastShadow(bool) - default=true
 *Disabled(bool) - default=false
 *Visible(bool) - default=true
 *SideVisible(bool) - default=true
-
 
 
 DECAL
@@ -150,12 +150,12 @@ Variables
 ---------
 
 *Rotation(float)
-*Image(string)
 *Width(float)
 *Height(float)
 *X(float)
 *Y(float)
 *Type(DecalType) - 0=Text, 1=Image
+*Image(string)
 *Text(string)
 *SizingType(SizingType) - 0=AutoSize, 1=AutoWidth, 2=ManualSize
 *FontColor(OLE_COLOR)
@@ -163,12 +163,17 @@ Variables
 *HasVerticalText(bool)
 *Surface(string)
 
+
 EMREEL
 ==============================================================================================================================================
 
 Variables
 ---------
 
+*X(float)
+*Y(float)
+*Type(ReelType) = 0=Text, 1=Image
+Range(float)
 *BackColor(OLE_COLOR)
 *Image(string)
 *FontColor(OLE_COLOR)
@@ -184,10 +189,6 @@ Steps(float)
 IsShading(bool)
 TimerEnabled(bool)
 TimerInterval(long)
-*X(float)
-*Y(float)
-*Type(ReelType) = 0=text, 1=image
-Range(float)
 *Name(string)
 UpdateInterval(long)
 UserValue(any)
@@ -201,42 +202,44 @@ ResetToZero()
 SpinReel(long ReelNumber, long PulseCount)
 SetValue(long value)
 
+
 FLIPPER
 ==============================================================================================================================================
 
 Variables
 ---------
 
+*X(float)
+*Y(float)
 *BaseRadius(float)
 *EndRadius(float)
 *Length(float)
 *StartAngle(float)
 *EndAngle(float)
+*FlipperRadiusMin(float)
 CurrentAngle(float) - only readable
-TimerEnabled(bool)
-TimerInterval(long)
-*X(float)
-*Y(float)
-*Color(OLE_COLOR)
-*Speed(float)
-OverridePhysics(long) - overrides the flipper physics settings with pre defined settings defined under Preferences -> Physics Options.
-                        You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
-						by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
-*RubberColor(OLE_COLOR)
-*RubberThickness(long)
-*Strength(float)
-*Visible(bool)
-Elasticity(float)
-Recoil(float)
-Return(float)
-*RubberHeight(long)
-*RubberWidth(long)
-*Surface(string)
+
 Mass(float)
 PowerLaw(float)
 *ObliqueCorrection(float)
-*FlipperRadiusMin(float)
 ScatterAngle(float)
+Elasticity(float)
+Recoil(float)
+Return(float)
+*Speed(float)
+*Strength(float)
+OverridePhysics(long) - overrides the flipper physics settings with pre defined settings defined under Preferences -> Physics Options.
+                        You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
+			by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
+TimerEnabled(bool)
+TimerInterval(long)
+*Color(OLE_COLOR)
+*RubberColor(OLE_COLOR)
+*RubberThickness(long)
+*Visible(bool)
+*RubberHeight(long)
+*RubberWidth(long)
+*Surface(string)
 						
 Methods
 -------
@@ -251,14 +254,14 @@ GATE
 Variables
 ---------
 
-*Name(string)
-TimerEnabled(bool)
-TimerInterval(long)
+*X(float)
+*Y(float)
 *Length(float)
 *Height(float)
 *Rotation(float)
-*X(float)
-*Y(float)
+*Name(string)
+TimerEnabled(bool)
+TimerInterval(long)
 Open(bool)
 *ImageFront(string)
 *ImageBack(string)
@@ -278,7 +281,7 @@ Supports(bool)
 Methods
 -------
 
-Move( int dir, float speed, float angle) - dir(0/1)
+Move(int dir, float speed, float angle) - dir(0/1)
 
 
 KICKER
@@ -287,11 +290,11 @@ KICKER
 Variables
 ---------
 
+*X(float)
+*Y(float)
 *Name(string)
 TimerEnabled(bool)
 TimerInterval(long)
-*X(float)
-*Y(float)
 Enabled(bool)
 *DrawStyle(KickerType) - 0=Hidden, 1=Hole, 2=Cup, 3=Invisible
 *Color(OLE_COLOR)
@@ -311,19 +314,20 @@ KickZ(float angle, float speed, float inclination, float heightz)
 BallCntOver(int)
 
 
-KICKER
+LIGHT
 ==============================================================================================================================================
 
 Variables
 ---------
+
+*X(float)
+*Y(float)
+*Shape(Shape) - 0=Circle, 1=Custom
 *Radius(float)
 State(LightState) - 0=Off, 1=On, 2=Blinking
 *Color(OLE_COLOR)
 TimerEnabled(bool)
 TimerInterval(long)
-*X(float)
-*Y(float)
-*Shape(Shape) - 0=Circle, 1=Custom
 BlinkPattern(string)
 BlinkInterval(long)
 *BorderColor(OLE_COLOR)
@@ -344,12 +348,12 @@ PLUNGER
 Variables
 ---------
 
+*X(float)
+*Y(float)
 *PullSpeed(float)
 FireSpeed(float)
 TimerEnabled(bool)
 TimerInterval(long)
-*X(float)
-*Y(float)
 *Surface(string)
 *Name(string)
 UserValue(any)
@@ -412,7 +416,7 @@ RotAndTra8(float) or ObjRotZ(float) - rotates the Z axis of the primitive's loca
 EnableLighting(bool) - enable/disable lighting for this primitive. You should use the table lights 0/1 to get best results
 *EnableStaticRendering - if set the primitive is only rendered once (like walls) any dynamic changes later 
                          won't have an effect. This is useful for objects like posts or static toys, because this won't have an impact of the perfomance
-EnableSphereMapping(bool) - enable/disable sphere mapping/environment mapping.						 
+EnableSphereMapping(bool) - enable/disable sphere mapping/environment mapping (useful for faking good looking reflections).
 
 Methods
 -------
@@ -424,6 +428,7 @@ RAMP
 
 Variables
 ---------
+
 *Name(string)
 HeightBottom(float)
 HeightTop(float)
@@ -448,9 +453,9 @@ Collidable(bool)
 IsVisible(bool)
 Friction(float)
 Scatter(float)
-Modify3DStereo(bool)
-UpdateRegions(bool) - update the region of this ramp
-AddBlend(bool) - additive blending
+Modify3DStereo(bool) - modifies the depth buffer, which can look confusing if the ramp is used for 2D flasher effects, etc and Stereo 3D is used
+UpdateRegions(bool) - automatically update the region of this ramp
+AddBlend(bool) - use additive blending instead of classical alpha blending
 EnableLightingImage(bool) - defines if the image/ramp should be shaded or not
 
 Methods
@@ -465,6 +470,8 @@ SPINNER
 Variables
 ---------
 
+*X(float)
+*Y(float)
 *Name(string)
 TimerEnabled(bool)
 TimerInterval(long)
@@ -476,8 +483,6 @@ Friction(float)
 *ImageFront(string)
 *ImageBack(string)
 *Color(OLE_COLOR)
-*X(float)
-*Y(float)
 *Surface(float)
 UserValue(any)
 *CastShadow(bool)
@@ -495,11 +500,11 @@ TRIGGER
 Variables
 ---------
 
+*X(float)
+*Y(float)
 *Radius(float)
 TimerEnabled(bool)
 TimerInterval(long)
-*X(float)
-*Y(float)
 *Enabled(bool)
 *Visible(bool)
 *Shape(Shape) - 0=Circle, 1=Custom
