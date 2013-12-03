@@ -1,6 +1,5 @@
 /*==========================================================================;
  *
- *  Copyright (C) Microsoft Corporation.  All Rights Reserved.
  *
  *  File:   d3d.h
  *  Content:    Direct3D include file
@@ -10,13 +9,6 @@
 #ifndef _D3D_H_
 #define _D3D_H_
 
-#ifndef DIRECT3D_VERSION
-#define DIRECT3D_VERSION         0x0700
-#endif
-
-// include this file content only if compiling for <=DX7 interfaces
-#if(DIRECT3D_VERSION < 0x0800)
-
 
 #include <stdlib.h>
 
@@ -24,6 +16,10 @@
 #include <objbase.h>
 
 #define D3DAPI WINAPI
+
+#ifndef DIRECT3D_VERSION
+#define DIRECT3D_VERSION         0x0700
+#endif
 
 /*
  * Interface IID's
@@ -1683,6 +1679,5 @@ typedef struct IDirect3DVertexBuffer7 *LPDIRECT3DVERTEXBUFFER7;
 };
 #endif
 
-#endif /* (DIRECT3D_VERSION < 0x0800) */
 #endif /* _D3D_H_ */
 

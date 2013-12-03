@@ -4,7 +4,6 @@
 
 #include "Richedit.h"
 #include "RichOle.h"
-#include "Tom.h"
 
 #include <atlcom.h>
 
@@ -33,7 +32,7 @@ using namespace MSAPC;
 #define D3D_OVERLOADS 1
 #include "dinput.h"
 #include "ddraw.h"
-#include "inc\d3d.h"
+#include "d3d.h"
 #include "dsound.h"
 
 #include <ocidl.h>	// Added by ClassView
