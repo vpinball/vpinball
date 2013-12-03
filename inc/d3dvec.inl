@@ -5,7 +5,7 @@
  *                                                                *
  *   Float-valued 3D vector class for Direct3D.                   *
  *                                                                *
- *   Copyright (c) Microsoft Corp. All rights reserved.           *
+ *   Copyright (c) 1996-1998 Microsoft Corp. All rights reserved. *
  *                                                                *
  ******************************************************************/
 

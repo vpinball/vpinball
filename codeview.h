@@ -195,7 +195,7 @@ END_COM_MAP()
 	char szFindString[81];
 	char szReplaceString[81];
 
-	BOOL m_fScriptError; // Whether a script error was occured - used for polling from the game
+	BOOL m_fScriptError; // Whether a script error has occured - used for polling from the game
 
 	IScriptableHost *m_psh;
 
