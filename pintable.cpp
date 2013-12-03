@@ -7914,14 +7914,14 @@ STDMETHODIMP PinTable::put_BallReflection(int newVal )
       return S_OK;
 }
 
-STDMETHODIMP PinTable::get_ReflectionStength(int *pVal)
+STDMETHODIMP PinTable::get_ReflectionStrength(int *pVal)
 {
    *pVal = ballReflectionStrength;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_ReflectionStength(int newVal )
+STDMETHODIMP PinTable::put_ReflectionStrength(int newVal )
 {
    STARTUNDO
 

@@ -165,8 +165,8 @@ public:
    STDMETHOD(put_NormalizeNormals)(/*[in]*/ int newVal);
    STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
-   STDMETHOD(get_ReflectionStength)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_ReflectionStength)(/*[in]*/ int newVal);
+   STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_ReflectionStrength)(/*[in]*/ int newVal);
    STDMETHOD(get_ShadowX)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_ShadowX)(/*[in]*/ float newVal);
    STDMETHOD(get_ShadowY)(/*[out, retval]*/ float *pVal);
