@@ -571,7 +571,6 @@
 #define IDC_JOYCUSTOM4COMBO             419
 #define IDC_JOYCUSTOM1COMBO2            420
 #define IDC_JOYDEBUGCOMBO               420
-#define IDC_SLIDER1                     420
 #define IDC_ALPHA_SLIDER                420
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
@@ -746,6 +745,10 @@
 #define ID_EDIT_SEARCH                  32875
 #define ID_SELECT_ELEMENT               32876
 #define ID_EDIT_DRAWINGORDER            32879
+#define ID_EDIT_COMMENT                 32882
+#define ID_ADD_COMMENT                  32883
+#define ID_EDIT_UNCOMMENT               32886
+#define ID_REMOVE_COMMENT               32888
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -754,7 +757,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        393
-#define _APS_NEXT_COMMAND_VALUE         32882
+#define _APS_NEXT_COMMAND_VALUE         32890
 #define _APS_NEXT_CONTROL_VALUE         421
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

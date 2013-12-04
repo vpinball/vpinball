@@ -391,8 +391,6 @@ void CodeViewer::Create(HWND hwndParent)
       WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
       0, 10 + 22, 300, 300, m_hwndMain, NULL, g_hinst, 0);
 
-   //m_pscinlexer = new LexerModule((int)this, ColouriseVBDoc, "vb", FoldVBDoc);
-
    SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
 
    SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsKeyWords);
@@ -1181,19 +1179,19 @@ void CodeViewer::FindCodeFromEvent()
       tr.lpstrText = szEnd;
 
       // Make sure there is at least a one space gap between the last function and this new one
-      SendMessage(m_hwndScintilla, EM_GETTEXTEX, 0, (long)&tr);
+      SendMessage(m_hwndScintilla, SCI_GETTEXT, 0, (long)&tr);
 
       if (szEnd[0] != '\n')
       {
-         SendMessage(m_hwndScintilla, EM_SETSEL, codelen, codelen);
-         SendMessage(m_hwndScintilla, EM_REPLACESEL, TRUE, (long)"\n");
+         SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
+         SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (long)"\n");
          codelen++;
       }
 
       if (szEnd[1] != '\n')
       {
-         SendMessage(m_hwndScintilla, EM_SETSEL, codelen, codelen);
-         SendMessage(m_hwndScintilla, EM_REPLACESEL, TRUE, (long)"\n");
+         SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
+         SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (long)"\n");
          codelen++;
       }
 
@@ -1212,9 +1210,9 @@ void CodeViewer::FindCodeFromEvent()
       const int subtitlelen = lstrlen(szNewCode);
       lstrcat(szNewCode, "\nEnd Sub");
 
-      SendMessage(m_hwndScintilla, EM_REPLACESEL, TRUE, (long)szNewCode);
+      SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (long)szNewCode);
 
-      SendMessage(m_hwndScintilla, EM_SETSEL, codelen+subtitlelen, codelen+subtitlelen);
+      SendMessage(m_hwndScintilla, SCI_SETSEL, codelen+subtitlelen, codelen+subtitlelen);
    }
 
    SetFocus(m_hwndScintilla);
@@ -1456,6 +1454,95 @@ void CodeViewer::MarginClick(int position, int modifiers)
    }
 }
 
+void AddComment( HWND sciHwnd )
+{
+   char *comment="'";
+
+   int startSel=SendMessage(sciHwnd, SCI_GETSELECTIONSTART,0,0);
+   int endSel=SendMessage(sciHwnd, SCI_GETSELECTIONEND,0,0);
+   int pos=SendMessage(sciHwnd, SCI_GETCURRENTPOS, 0, 0);
+
+   int selStartLine = SendMessage(sciHwnd, SCI_LINEFROMPOSITION, startSel,0 );
+   int selEndLine = SendMessage(sciHwnd, SCI_LINEFROMPOSITION, endSel,0 );
+   int lines = selEndLine-selStartLine+1;
+   int posFromLine = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, selEndLine,0 );
+
+   if( lines>1 && endSel==posFromLine )
+   {
+      selEndLine--;
+      lines--;
+      endSel=SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine, 0);
+   }
+   SendMessage(sciHwnd, SCI_BEGINUNDOACTION,0,0 );
+   int lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, selStartLine,0 );
+   if (lines <= 1) 
+   {
+      // Only a single line was selected, so just append whitespace + end-comment at end of line if needed
+      int lineEnd = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine,0 );
+      SendMessage(sciHwnd, SCI_INSERTTEXT, lineStart, (LPARAM)comment);
+   }
+   else 
+   {
+      // More than one line selected, so insert middle_comments where needed
+      for (int i = selStartLine; i < selEndLine+1; i++) 
+      {
+         lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, i, 0 );
+         SendMessage(sciHwnd, SCI_INSERTTEXT, lineStart, (LPARAM)comment);
+      }
+   }
+   SendMessage(sciHwnd, SCI_ENDUNDOACTION,0,0 );
+}
+
+void GetRange(HWND sciHwnd, int start, int end, char *text )
+{
+   Sci_TextRange tr;
+   tr.chrg.cpMin = start;
+   tr.chrg.cpMax = end;
+   tr.lpstrText = text;
+   SendMessage(sciHwnd, SCI_GETTEXTRANGE,0,(LPARAM)&tr);
+}
+
+void RemoveComment( HWND sciHwnd )
+{
+   char *comment="\b";
+   int startSel=SendMessage(sciHwnd, SCI_GETSELECTIONSTART,0,0);
+   int endSel=SendMessage(sciHwnd, SCI_GETSELECTIONEND,0,0);
+   int pos=SendMessage(sciHwnd, SCI_GETCURRENTPOS, 0, 0);
+
+   int selStartLine = SendMessage(sciHwnd, SCI_LINEFROMPOSITION, startSel,0 );
+   int selEndLine = SendMessage(sciHwnd, SCI_LINEFROMPOSITION, endSel,0 );
+   int lines = selEndLine-selStartLine+1;
+   int posFromLine = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, selEndLine,0 );
+
+   if( lines>1 && endSel==posFromLine )
+   {
+      selEndLine--;
+      lines--;
+      endSel=SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine, 0);
+   }
+
+   SendMessage(sciHwnd, SCI_BEGINUNDOACTION,0,0 );
+
+   for( int i=selStartLine; i<selEndLine+1; i++ )
+   {
+      int lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, i, 0 );
+      int lineEnd = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, i, 0 );
+      char buf[1024];
+      if( lineEnd-lineStart<1023)
+      {
+         GetRange(sciHwnd, lineStart, lineEnd, buf );
+         string line(buf);
+         int idx = line.find_first_of("'");
+         if( idx==0 )
+         {
+            SendMessage(sciHwnd, SCI_SETSEL, lineStart, lineStart+1);
+            SendMessage(sciHwnd, SCI_REPLACESEL, 0, (LPARAM)"");
+         }
+      }     
+   }
+   SendMessage(sciHwnd, SCI_ENDUNDOACTION,0,0 );
+}
+
 LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    if (uMsg == g_FindMsgString)
@@ -1561,10 +1648,19 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                case ID_EDIT_PASTE:
                   SendMessage(pcv->m_hwndScintilla, WM_PASTE, 0, 0);
                   break;
+               case ID_ADD_COMMENT:
+                  {
+                     AddComment(pcv->m_hwndScintilla);
+                     break;
+                  }
+               case ID_REMOVE_COMMENT:
+                  {
+                     RemoveComment(pcv->m_hwndScintilla);
+                     break;
+                  }
                }
             }
             break;
-
          case CBN_SELCHANGE: // Or accelerator
             {
                CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -1602,6 +1698,16 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                      pcv->FindCodeFromEvent();
                   }
                   break;
+               case ID_ADD_COMMENT:
+                  {
+                     AddComment(pcv->m_hwndScintilla);
+                     break;
+                  }
+               case ID_REMOVE_COMMENT:
+                  {
+                     RemoveComment(pcv->m_hwndScintilla);
+                     break;
+                  }
                }
             }
             break;
@@ -1656,7 +1762,9 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                }
             }
             break;
+            
          }
+
          break;
       }
 

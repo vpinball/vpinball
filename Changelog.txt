@@ -41,6 +41,8 @@ VP 9.2.0 Changelog
 - add fake antialiasing(AA) as a global option in the video settings and a per table setting
 - alpha ramp accuracy can be set per table
 - updated to latest scintilla (3.3.6)
+- add multi comment/uncomment feature to the script editor
+
 
 VP 9.1.5 Changelog
 ------------------------
