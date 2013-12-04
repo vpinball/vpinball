@@ -1855,6 +1855,9 @@ BEGIN
         MENUITEM "&Find...\tCtrl+F",            ID_FIND
         MENUITEM "Find &Next\tF3",              ID_EDIT_FINDNEXT
         MENUITEM "Replace...\tCtrl+H",          ID_REPLACE
+        MENUITEM SEPARATOR
+        MENUITEM "Comment\tCtrl+W",             ID_ADD_COMMENT
+        MENUITEM "UnComment\tCtrl+E",           ID_REMOVE_COMMENT
     END
 END
 
@@ -1891,6 +1894,7 @@ IDB_CHEVRON             BITMAP                  "chevron.bmp"
 IDR_VPACCEL ACCELERATORS 
 BEGIN
     VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
+    "D",            ID_EDIT_DRAWINGORDER,   VIRTKEY, SHIFT, CONTROL, NOINVERT
     "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
@@ -1917,15 +1921,16 @@ BEGIN
     "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
     "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
-    "D",            ID_EDIT_DRAWINGORDER,   VIRTKEY, SHIFT, CONTROL, NOINVERT
 END
 
 IDR_CODEVIEWACCEL ACCELERATORS 
 BEGIN
-    "F",            ID_FIND,                VIRTKEY, CONTROL, NOINVERT
-    "S",            ID_SAVE,                VIRTKEY, CONTROL, NOINVERT
-    "H",            ID_REPLACE,             VIRTKEY, CONTROL, NOINVERT
+    "W",            ID_ADD_COMMENT,         VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_EDIT_FINDNEXT,       VIRTKEY, NOINVERT
+    "F",            ID_FIND,                VIRTKEY, CONTROL, NOINVERT
+    "E",            ID_REMOVE_COMMENT,      VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_REPLACE,             VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_SAVE,                VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
 END
 
