@@ -835,7 +835,7 @@ next:
    SendMessage(m_hwndScintilla, SCI_SETSEL, ft.chrgText.cpMin, ft.chrgText.cpMax);
    if(((pfr->Flags & FR_REPLACE) && cszReplaced == 0) || (pfr->Flags & FR_REPLACEALL))
    {
-      SendMessage(m_hwndScintilla, EM_REPLACESEL, true, (LPARAM) pfr->lpstrReplaceWith);
+      SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM) pfr->lpstrReplaceWith);
       ft.chrg.cpMin = cpMatch + lstrlen(pfr->lpstrReplaceWith);
       ft.chrg.cpMax = len;	// search through end of the text
       cszReplaced++;
@@ -1196,7 +1196,7 @@ void CodeViewer::FindCodeFromEvent()
       }
 
       // Add the new function at the end
-      SendMessage(m_hwndScintilla, EM_SETSEL, codelen, codelen);
+      SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
 
       char szParams[1024];
 
