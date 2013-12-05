@@ -218,6 +218,11 @@ void Ball::CalcBoundingRect()
 
 	m_rcHitRect.zlow  = min(z, z+vz) - radius;
 	m_rcHitRect.zhigh = max(z, z+vz) + (radius + 0.1f);
+   // update defaultZ for ball reflection
+   // if the ball was created by a kicker which is higher than the playfield 
+   // the defaultZ must be updated if the ball falls onto the playfield that means the Z value is equal to the radius
+   if ( z==radius )
+      defaultZ = z;
 }
 
 void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elasticity, float antifriction, float scatter_angle)
