@@ -2310,6 +2310,6 @@ void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pproppane = new PropertyPane(IDD_PROPPRIMITIVE_VISUALS, IDS_VISUALS);
    pvproppane->AddElement(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPPRIMITIVE_POSITION, IDS_POSITION);
+   pproppane = new PropertyPane(IDD_PROPPRIMITIVE_POSITION, IDS_POSITION_TRANSLATION);
    pvproppane->AddElement(pproppane);
 }

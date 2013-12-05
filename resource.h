@@ -203,6 +203,7 @@
 #define IDS_PHYSICS                     185
 #define IDS_TB_PRIMITIVE                186
 #define IDR_COMCONTROL                  187
+#define IDS_POSITION_TRANSLATION        188
 #define IDR_APPMENU                     201
 #define IDC_SOUNDLIST                   201
 #define IDR_POINTMENU                   202

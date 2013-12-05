@@ -1482,13 +1482,13 @@ BEGIN
     EDITTEXT        314,63,34,55,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPPRIMITIVE_POSITION DIALOGEX 0, 0, 125, 295
+IDD_PROPPRIMITIVE_POSITION DIALOGEX 0, 0, 125, 305
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        DISPID_POSITION_X,25,13,27,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_POSITION_Y,25,27,27,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_POSITION_Z,25,40,27,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_POSITION_X,24,13,27,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_POSITION_Y,24,27,27,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_POSITION_Z,24,40,27,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_SIZE_X,87,13,27,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_SIZE_Y,87,27,27,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_SIZE_Z,87,40,27,12,ES_AUTOHSCROLL
@@ -1498,12 +1498,12 @@ BEGIN
     EDITTEXT        DISPID_AXISSCALE_YZ,44,109,40,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_AXISSCALE_ZX,44,123,40,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_AXISSCALE_ZY,44,137,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA1,24,162,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA2,24,176,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA3,24,190,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA4,24,204,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA5,24,218,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA6,24,232,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA1,24,172,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA2,24,186,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA3,24,200,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA4,24,214,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA5,24,228,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA6,24,242,40,12,ES_AUTOHSCROLL
     LTEXT           "XSize",IDC_STATIC,64,15,23,8
     LTEXT           "YSize",IDC_STATIC,64,28,23,8
     LTEXT           "ZSize",IDC_STATIC,64,42,23,8
@@ -1514,32 +1514,32 @@ BEGIN
     LTEXT           "&X->Y",IDC_STATIC,14,69,22,8
     LTEXT           "&X->Z",IDC_STATIC,14,83,18,8
     LTEXT           "&Y->X",IDC_STATIC,14,97,25,8
-    GROUPBOX        "Axis Scale",IDC_STATIC,7,58,111,93
-    LTEXT           "0",IDC_STATIC,14,163,8,8
-    LTEXT           "1",IDC_STATIC,14,178,8,8
-    LTEXT           "2",IDC_STATIC,14,192,8,8
-    GROUPBOX        "Rotation and Transposition",IDC_STATIC,7,152,111,139
-    LTEXT           "3",IDC_STATIC,14,205,9,8
-    LTEXT           "4",IDC_STATIC,14,220,8,8
-    LTEXT           "5",IDC_STATIC,14,234,8,8
+    GROUPBOX        "Axis Scale",IDC_STATIC,7,58,111,98
+    LTEXT           "0",IDC_STATIC,14,174,8,8
+    LTEXT           "1",IDC_STATIC,14,188,8,8
+    LTEXT           "2",IDC_STATIC,14,202,8,8
+    GROUPBOX        "Rotation and Transposition",IDC_STATIC,7,162,111,139
+    LTEXT           "3",IDC_STATIC,14,216,8,8
+    LTEXT           "4",IDC_STATIC,14,230,8,8
+    LTEXT           "5",IDC_STATIC,14,244,8,8
     LTEXT           "&Y->Z",IDC_STATIC,14,111,22,8
     LTEXT           "&Z->X",IDC_STATIC,14,125,24,8
     LTEXT           "&Z->Y",IDC_STATIC,14,139,21,8
-    EDITTEXT        DISPID_ROTRA7,23,247,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA8,23,260,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA9,23,275,40,12,ES_AUTOHSCROLL
-    LTEXT           "6",IDC_STATIC,13,248,9,8
-    LTEXT           "7",IDC_STATIC,13,263,8,8
-    LTEXT           "8",IDC_STATIC,13,276,8,8
-    LTEXT           "RotX",IDC_STATIC,69,165,38,8
-    LTEXT           "RotY",IDC_STATIC,69,179,35,10
-    LTEXT           "RotZ",IDC_STATIC,69,193,35,10
-    LTEXT           "TransX",IDC_STATIC,69,207,35,10
-    LTEXT           "TransY",IDC_STATIC,69,221,35,10
-    LTEXT           "TransZ",IDC_STATIC,69,235,35,10
-    LTEXT           "ObjRotX",IDC_STATIC,69,250,35,10
-    LTEXT           "ObjRotY",IDC_STATIC,69,264,35,10
-    LTEXT           "ObjRotZ",IDC_STATIC,69,276,35,10
+    EDITTEXT        DISPID_ROTRA7,24,256,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA8,24,270,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA9,24,284,40,12,ES_AUTOHSCROLL
+    LTEXT           "6",IDC_STATIC,14,258,8,8
+    LTEXT           "7",IDC_STATIC,14,272,8,8
+    LTEXT           "8",IDC_STATIC,14,286,8,8
+    LTEXT           "RotX",IDC_STATIC,69,174,38,8
+    LTEXT           "RotY",IDC_STATIC,69,188,35,10
+    LTEXT           "RotZ",IDC_STATIC,69,202,35,10
+    LTEXT           "TransX",IDC_STATIC,69,216,35,10
+    LTEXT           "TransY",IDC_STATIC,69,230,35,10
+    LTEXT           "TransZ",IDC_STATIC,69,244,35,10
+    LTEXT           "ObjRotX",IDC_STATIC,69,258,35,10
+    LTEXT           "ObjRotY",IDC_STATIC,69,272,35,10
+    LTEXT           "ObjRotZ",IDC_STATIC,69,286,35,10
 END
 
 IDD_PROPPRIMITIVE_VISUALS DIALOGEX 0, 0, 125, 170
@@ -2022,43 +2022,24 @@ BEGIN
     IDS_ASSIGNTO            "&Assign to..."
     IDS_LAYER2              "Layer&2"
     IDS_LAYER3              "Layer&3"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_TB_LIGHTSEQ         "LightSeq"
     IDS_REPLACEALL          "Replaced"
     IDS_REPLACEALL2         "occurrences in script."
-END
-
-STRINGTABLE 
-BEGIN
     IDS_NEED_DD9            "Visual Pinball requires DirectX 9.0 or higher from Microsoft."
     IDS_LOCK                "&Lock"
     IDS_MISC                "Misc"
     IDS_LIGHTSEQ_DESC       "LightSequencer Class"
     IDS_VISUALS             "Colors & Formatting"
     IDS_POSITION            "Position"
+    IDS_POSITION_TRANSLATION"Position & Translation"
     IDS_STATE               "State"
     IDS_PHYSICS             "Physics"
     IDS_TB_PRIMITIVE        "Primitive"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_VISUALS_SOUND       "Colors, Sound & Graphics"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_PHYSICSGFX          "Physics & Graphics"
     IDS_DIMENSIONSSLOPE     "Dimensions & Slope"
     IDS_LIGHTSOURCES        "Lightsources"
     IDS_INPUT               "Input"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_TIMER_DESC          "Timer Class"
     IDS_LAYER4              "Layer&4"
     IDS_LAYER5              "Layer&5"
@@ -2075,10 +2056,6 @@ BEGIN
     IDS_LAYER7              "Layer&7"
     IDS_TRIGGER_DESC        "Trigger Class"
     IDS_TB_TRIGGER          "Trigger"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_LAYER8              "Layer&8"
     IDS_LIGHT_DESC          "Light Class"
     IDS_TB_LIGHT            "Light"
@@ -2093,10 +2070,6 @@ BEGIN
     IDS_TB_GATE             "Gate"
     IDS_SPINNER_DESC        "Spinner Class"
     IDS_TB_SPINNER          "Spinner"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_RAMP_DESC           "Ramp Class"
     IDS_TB_RAMP             "Ramp"
     IDS_TB_SCRIPT           "Script"
@@ -2112,20 +2085,12 @@ BEGIN
     IDS_SAVE_CHANGES1       "Table '"
     IDS_SAVE_CHANGES2       "' has changed.  Do you want to save changes before exiting?"
     IDS_DRAWINFRONT         "Draw In &Front"
-END
-
-STRINGTABLE 
-BEGIN
-    IDS_PERMISSION_ERROR    "This table is protected.\n\nThe table author has requested that this option be restricted. "
-    IDS_PROTECT_ONETICKED   "You must tick at least one protection option. "
+    IDS_PERMISSION_ERROR    "This table is protected.\n\nThe table author has requested that this option be restricted."
+    IDS_PROTECT_ONETICKED   "You must tick at least one protection option."
     IDS_PROTECT_PW_ZEROLEN  "You must supply a valid password."
-    IDS_PROTECT_PW_MISMATCH "Passwords don't match, please reenter your password. "
-    IDS_UNLOCK_FAILED       "Password is invalid. "
-    IDS_UNLOCK_SUCCESS      "This table has been successfully unlocked. "
-END
-
-STRINGTABLE 
-BEGIN
+    IDS_PROTECT_PW_MISMATCH "Passwords don't match, please reenter your password."
+    IDS_UNLOCK_FAILED       "Password is invalid."
+    IDS_UNLOCK_SUCCESS      "This table has been successfully unlocked."
     IDS_DRAWINBACK          "Draw In &Back"
     IDS_SAVEERROR           "There was an error saving the file."
     IDS_TB_BACKGLASS        "Backdrop"
@@ -2140,10 +2105,6 @@ BEGIN
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object may not be safe.  Do you want to allow this object to be created?  Only answer Yes if you trust the author of this table."
     IDS_COLLECTION          "Collection"
-END
-
-STRINGTABLE 
-BEGIN
     IDS_EDITOR              "Editor"
     IDS_DEFAULTBALL         "Ball"
     IDS_NONE                "<None>"
