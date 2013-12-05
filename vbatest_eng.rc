@@ -1744,17 +1744,17 @@ BEGIN
         MENUITEM "&Flipper\tCtrl+F",            IDC_FLIPPER
         MENUITEM "&Plunger\tCtrl+P",            IDC_PLUNGER
         MENUITEM "&Bumper\tCtrl+B",             IDC_BUMPER
-        MENUITEM "&Spinner\tCtrl+I",            IDC_SPINNER
-        MENUITEM "&Timer\tCtrl+M",              IDC_TIMER
-        MENUITEM "Tr&igger\tCtrl+T",            IDC_TRIGGER
+        MENUITEM "Sp&inner\tCtrl+I",            IDC_SPINNER
+        MENUITEM "Ti&mer\tCtrl+M",              IDC_TIMER
+        MENUITEM "&Trigger\tCtrl+T",            IDC_TRIGGER
         MENUITEM "&Light\tCtrl+L",              IDC_LIGHT
         MENUITEM "&Kicker\tCtrl+K",             IDC_KICKER
         MENUITEM "T&arget\tCtrl+A",             IDC_TARGET
         MENUITEM "&Decal\tCtrl+D",              IDC_DECAL
-        MENUITEM "Te&xtbox\tCtrl+E",            IDC_TEXTBOX
+        MENUITEM "T&extbox\tCtrl+E",            IDC_TEXTBOX
         MENUITEM "EM Reel\tCtrl+Y",             IDC_DISPREEL
         MENUITEM "Light Se&quencer\tCtrl+Q",    IDC_LIGHTSEQ
-        MENUITEM "Pri&mitive\tCTRL+M",          IDC_PRIMITIVE
+        MENUITEM "Primitive/Ob&ject\tCtrl+J",   IDC_PRIMITIVE
         MENUITEM "ActiveX Control",             IDC_COMCONTROL
     END
     POPUP "&Table"
@@ -1915,6 +1915,7 @@ BEGIN
     "I",            IDC_SPINNER,            VIRTKEY, CONTROL, NOINVERT
     "A",            IDC_TARGET,             VIRTKEY, CONTROL, NOINVERT
     "E",            IDC_TEXTBOX,            VIRTKEY, CONTROL, NOINVERT
+    "J",            IDC_PRIMITIVE,          VIRTKEY, CONTROL, NOINVERT
     "M",            IDC_TIMER,              VIRTKEY, CONTROL, NOINVERT
     "T",            IDC_TRIGGER,            VIRTKEY, CONTROL, NOINVERT
     "W",            IDC_WALL,               VIRTKEY, CONTROL, NOINVERT
