@@ -43,9 +43,9 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Search/Select element"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
+    LISTBOX         IDC_ELEMENT_LIST,7,7,178,149,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "&Select",IDOK,75,162,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,135,162,50,14
-    LISTBOX         IDC_ELEMENT_LIST,7,7,178,149,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SOUNDDIALOG DIALOGEX 0, 0, 515, 162
@@ -90,14 +90,14 @@ BEGIN
     EDITTEXT        IDC_ROTATEBY,51,20,52,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_CENTERX,51,50,52,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_CENTERY,51,67,52,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Apply",IDC_ROTATE_APPLY_BUTTON,129,50,50,14
+    PUSHBUTTON      "&Undo",IDC_ROTATE_UNDO_BUTTON,129,67,50,14
     DEFPUSHBUTTON   "O&K",IDOK,129,7,50,14
     PUSHBUTTON      "&Cancel",IDCANCEL,129,24,50,14
     LTEXT           "Rotate by",IDC_STATIC,7,21,37,10
     LTEXT           "Center",IDC_STATIC,7,51,24,11
     LTEXT           "X",IDC_STATIC,37,51,8,10
     LTEXT           "Y",IDC_STATIC,37,65,8,10
-    PUSHBUTTON      "&Apply",IDC_ROTATE_APPLY_BUTTON,129,50,50,14
-    PUSHBUTTON      "&Undo",IDC_ROTATE_UNDO_BUTTON,129,67,50,14
 END
 
 IDD_SCALE DIALOGEX 0, 0, 185, 123
@@ -110,6 +110,8 @@ BEGIN
     CONTROL         "Square Scaling",IDC_SQUARE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,43,49,64,10
     EDITTEXT        IDC_CENTERX,51,74,52,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_CENTERY,51,92,52,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Apply",IDC_SCALE_APPLY_BUTTON,128,74,50,14
+    PUSHBUTTON      "&Undo",IDC_SCALE_UNDO_BUTTON,128,92,50,14
     DEFPUSHBUTTON   "O&K",IDOK,128,7,50,14
     PUSHBUTTON      "&Cancel",IDCANCEL,128,24,50,14
     LTEXT           "Scale X",IDC_STATIC,19,20,26,8
@@ -117,8 +119,6 @@ BEGIN
     LTEXT           "X",IDC_STATIC,37,75,8,10
     LTEXT           "Y",IDC_STATIC,37,89,8,10
     LTEXT           "Scale Y",IDC_STATIC_SCALEY,19,35,26,8
-    PUSHBUTTON      "&Apply",IDC_SCALE_APPLY_BUTTON,128,74,50,14
-    PUSHBUTTON      "&Undo",IDC_SCALE_UNDO_BUTTON,128,92,50,14
 END
 
 IDD_PROGRESS DIALOG  0, 0, 167, 44
@@ -230,8 +230,9 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "&Window",IDC_WINDOW,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,20,42,10
     CONTROL         "Full Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,16,31,56,10
-    LISTBOX         IDC_SIZELIST,14,42,129,122,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Enable Software FXAA",IDC_FXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,169,90,10
+    CONTROL         "Fake AA on all tables (experimental)",IDC_AA_ALL_TABLES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,182,126,10
     CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,212,83,10
     CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,222,81,10
     CONTROL         "At Full Screen anti-stretch the Ball",IDC_StretchMonitor,
@@ -240,17 +241,14 @@ BEGIN
     CONTROL         "Draw Ball &Shadows",IDC_SHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,77,10
     CONTROL         "Draw Ball &Decals",IDC_DECAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,30,70,10
     CONTROL         "&Antialias Ball",IDC_ANTIALIAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,42,55,10
-    CONTROL         "Enable 3D Stereo",IDC_3D_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,18,70,10
-    CONTROL         "Antialias 3D",IDC_3D_STEREO_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,31,70,10
-    CONTROL         "Use Y-Axis for 3D",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,44,70,10
+    CONTROL         "Reflect Ball on all tables",IDC_GLOBAL_REFLECTION_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,54,91,10
     CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,81,114,8
     CONTROL         "Region Updates (faster on most hardware)",IDC_ENABLE_REGION_UPDATES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,92,155,10
     CONTROL         "Region Optimization (NVIDIA/ATI (FX)AA tweak)",IDC_ENABLE_REGION_UPDATE_OPTIMIZATION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,104,168,10
     LTEXT           "Adaptive VSync (avoid tearing)",IDC_STATIC,162,121,150,10
-    EDITTEXT        IDC_ADAPTIVE_VSYNC,262,120,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Hz  (1=auto)",IDC_STATIC,283,123,45,10
     CONTROL         "Check &Blit Status (for Win98 and 2K)",IDC_CHECKBLIT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,135,133,10
     CONTROL         "Reorder Playfield Objects (for ATI/AMD gfx)",216,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,147,155,10
@@ -258,24 +256,26 @@ BEGIN
     CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,185,32,10
     CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,195,32,10
     CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,205,45,10
+    LTEXT           "Restart Visual Pinball.",IDC_STATIC,244,178,72,8
+    LTEXT           "Only works for Images",IDC_STATIC,244,187,70,8
+    LTEXT           "that are not BMP.",IDC_STATIC,244,196,56,8
     CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,156,232,183,20
+    CONTROL         "Enable 3D Stereo",IDC_3D_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,18,70,10
+    CONTROL         "Antialias 3D",IDC_3D_STEREO_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,31,70,10
+    CONTROL         "Use Y-Axis for 3D",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,44,70,10
     DEFPUSHBUTTON   "OK",IDOK,218,280,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,277,280,50,14
+    LISTBOX         IDC_SIZELIST,14,42,129,122,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_ADAPTIVE_VSYNC,262,120,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Hz  (1=auto)",IDC_STATIC,283,123,45,10
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,263
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,60
     GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,60
     GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,69,190,202
     GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,163,180,55
-    LTEXT           "Restart Visual Pinball.",IDC_STATIC,244,178,72,8
-    LTEXT           "Only works for Images",IDC_STATIC,244,187,70,8
-    LTEXT           "that are not BMP.",IDC_STATIC,244,196,56,8
     LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,222,156,8
     GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,62
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
-    CONTROL         "Reflect Ball on all tables",IDC_GLOBAL_REFLECTION_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,54,91,10
-    CONTROL         "Fake AA on all tables (experimental)",IDC_AA_ALL_TABLES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,182,126,10
 END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
@@ -443,13 +443,13 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        IDC_OFFSETX,51,13,52,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_OFFSETY,51,27,52,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Apply",IDC_TRANSLATE_APPLY_BUTTON,129,54,50,14
+    PUSHBUTTON      "&Undo",IDC_TRANSLATE_UNDO_BUTTON,129,73,50,14
     DEFPUSHBUTTON   "O&K",IDOK,129,7,50,14
     PUSHBUTTON      "&Cancel",IDCANCEL,129,24,50,14
     LTEXT           "Offset",IDC_STATIC,7,14,24,11
     LTEXT           "X",IDC_STATIC,37,14,8,10
     LTEXT           "Y",IDC_STATIC,37,28,8,10
-    PUSHBUTTON      "&Apply",IDC_TRANSLATE_APPLY_BUTTON,129,54,50,14
-    PUSHBUTTON      "&Undo",IDC_TRANSLATE_UNDO_BUTTON,129,73,50,14
 END
 
 IDD_AUDIO_OPTIONS DIALOGEX 0, 0, 185, 200
@@ -475,7 +475,6 @@ CAPTION "Global Physics Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,144,10,50,14
-    PUSHBUTTON      "&Cancel",IDCANCEL,144,28,50,14
     EDITTEXT        DISPID_Flipper_Speed,83,21,40,12,ES_AUTOHSCROLL
     EDITTEXT        19,83,36,40,12,ES_AUTOHSCROLL
     EDITTEXT        21,83,51,40,12,ES_AUTOHSCROLL
@@ -484,6 +483,14 @@ BEGIN
     EDITTEXT        22,83,94,40,12,ES_AUTOHSCROLL
     EDITTEXT        109,83,109,40,12,ES_AUTOHSCROLL
     EDITTEXT        110,83,122,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1100,83,161,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1101,83,175,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1102,83,188,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1103,83,202,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1106,83,216,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1110,43,242,80,12,ES_AUTOHSCROLL
+    LISTBOX         IDC_PhysicsList,5,260,180,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Cancel",IDCANCEL,144,28,50,14
     LTEXT           "S&peed",IDC_STATIC,11,23,66,8
     LTEXT           "Stre&ngth",IDC_STATIC,11,38,66,8
     LTEXT           "Elast&icity",IDC_STATIC,11,53,66,8
@@ -492,11 +499,6 @@ BEGIN
     LTEXT           "Oblique Correction",IDC_STATIC,11,124,66,8
     LTEXT           "Scatter Angle",IDC_STATIC,11,67,66,8
     LTEXT           "Power-Law",IDC_STATIC,11,111,66,8
-    EDITTEXT        1100,83,161,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1101,83,175,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1102,83,188,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1103,83,202,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1106,83,216,40,12,ES_AUTOHSCROLL
     LTEXT           "Gravity Constant",IDC_STATIC,11,163,69,8
     LTEXT           "Contact Friction",IDC_STATIC,11,177,69,8
     LTEXT           "Contact Scatter Angle",IDC_STATIC,11,191,69,8
@@ -505,8 +507,6 @@ BEGIN
     GROUPBOX        "Flipper Settings",IDC_STATIC,5,10,127,129
     GROUPBOX        "Table Settings",IDC_STATIC,5,148,127,87
     LTEXT           "Set Name",IDC_STATIC,5,245,69,8
-    EDITTEXT        1110,43,242,80,12,ES_AUTOHSCROLL
-    LISTBOX         IDC_PhysicsList,5,260,180,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_GAMEPAUSE DIALOGEX 0, 0, 78, 80
@@ -689,6 +689,10 @@ BEGIN
     COMBOBOX        DISPID_Image,7,92,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        DISPID_Image2,7,119,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Display &Image in Editor",13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,135,87,10
+    CONTROL         "Enable Lighting 'Off Image'",IDC_ENABLE_OFF_LIGHTING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,146,100,10
+    CONTROL         "Enable Lighting 'On Image'",IDC_ENABLELIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,158,100,10
+    CONTROL         "'On Image' Is Lightmap",IDC_ON_LIGHT_LIGHTMAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,169,87,10
     LTEXT           "&Color",-1,7,41,43,8
     LTEXT           "&Radius",-1,7,25,43,8
     LTEXT           "Border &Width",-1,7,57,42,8
@@ -696,34 +700,30 @@ BEGIN
     LTEXT           "S&hape",-1,7,9,22,8
     LTEXT           "O&n Image:",-1,7,109,37,8
     LTEXT           "O&ff Image:",-1,7,83,37,8
-    CONTROL         "Enable Lighting 'On Image'",IDC_ENABLELIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,158,100,10
-    CONTROL         "Enable Lighting 'Off Image'",IDC_ENABLE_OFF_LIGHTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,146,100,10
-    CONTROL         "'On Image' Is Lightmap",IDC_ON_LIGHT_LIGHTMAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,169,87,10
 END
 
 IDD_PROPLIGHT_POSITION DIALOGEX 0, 0, 125, 65
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "&X",-1,7,9,8,8
     EDITTEXT        902,26,7,49,12,ES_AUTOHSCROLL
-    LTEXT           "&Y",-1,7,25,8,8
     EDITTEXT        903,26,23,49,12,ES_AUTOHSCROLL
-    LTEXT           "&Surface:",-1,7,37,26,9
     COMBOBOX        1502,7,46,111,162,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&X",-1,7,9,8,8
+    LTEXT           "&Y",-1,7,25,8,8
+    LTEXT           "&Surface:",-1,7,37,26,9
 END
 
 IDD_PROPLIGHT_STATE DIALOGEX 0, 0, 125, 58
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "S&tate:",-1,7,9,25,8
     COMBOBOX        DISPID_Light_State,33,7,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Blink &Pattern",-1,7,25,43,9
     EDITTEXT        9,51,23,67,12,ES_AUTOHSCROLL
-    LTEXT           "Blink Inter&val",-1,7,40,41,9
     EDITTEXT        DISPID_Light_BlinkInterval,51,38,67,12,ES_AUTOHSCROLL
+    LTEXT           "S&tate:",-1,7,9,25,8
+    LTEXT           "Blink &Pattern",-1,7,25,43,9
+    LTEXT           "Blink Inter&val",-1,7,40,41,9
 END
 
 IDD_PROPBUMPER_PHYSICS DIALOGEX 0, 0, 125, 43
@@ -740,13 +740,13 @@ IDD_PROPBUMPER_STATE DIALOGEX 0, 0, 125, 74
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "S&tate",-1,7,10,18,8
     COMBOBOX        11,26,7,92,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Blink &Pattern",-1,7,27,43,9
     EDITTEXT        12,51,24,45,12,ES_AUTOHSCROLL
-    LTEXT           "Blink Inter&val",-1,7,43,41,9
     EDITTEXT        13,51,42,45,12,ES_AUTOHSCROLL
     CONTROL         "F&lash When Hit",14,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,57,65,10
+    LTEXT           "S&tate",-1,7,10,18,8
+    LTEXT           "Blink &Pattern",-1,7,27,43,9
+    LTEXT           "Blink Inter&val",-1,7,43,41,9
 END
 
 IDD_PROPWALL_VISUALS DIALOGEX 0, 0, 125, 195
@@ -850,25 +850,25 @@ BEGIN
     COMBOBOX        1500,7,31,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        8,33,46,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Apply Ima&ge to Walls",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,82,10
+    CONTROL         "Enable Lighting for Image",IDC_ENABLE_RAMP_LIGHTING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,74,96,10
     CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,88,40,14
     CONTROL         "Shadows",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,41,10
-    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,118,40,10
     CONTROL         "Update Regions",IDC_UPDATEREGIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,106,66,10
+    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,118,40,10
     CONTROL         "Normal 3D Stereo",IDC_MODIFY3DSTEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,118,70,10
-    LTEXT           "(only disable for",-1,68,128,70,10
-    LTEXT           " 2D-hacks like",-1,68,138,70,10
-    LTEXT           " Halo/Flasher/GI)",-1,68,148,70,10
-    LTEXT           "&Type",-1,7,9,25,8
-    LTEXT           "&Color",-1,7,91,17,8
-    LTEXT           "&Image:",-1,7,21,22,8
-    LTEXT           "&Mode",-1,7,49,25,8
     CONTROL         "Solid",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,135,31,10
     CONTROL         "Acrylic",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,148,37,10
     CONTROL         "Alpha",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,161,34,10
     CONTROL         "Additive Alpha Bl.",IDC_ADDBLEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,161,70,10
+    LTEXT           "&Type",-1,7,9,25,8
+    LTEXT           "&Image:",-1,7,21,22,8
+    LTEXT           "&Mode",-1,7,49,25,8
+    LTEXT           "(only disable for",-1,55,137,70,10
+    LTEXT           " 2D-hacks like",-1,68,138,70,10
+    LTEXT           " Halo/Flasher/GI)",-1,68,148,70,10
+    LTEXT           "&Color",-1,7,91,17,8
     LTEXT           "(+disable Lighting)",-1,68,171,70,10
-    CONTROL         "Enable Lighting for Image",IDC_ENABLE_RAMP_LIGHTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,74,96,10
 END
 
 IDD_PROPRAMP_POSITION DIALOGEX 0, 0, 125, 134
@@ -920,8 +920,6 @@ IDD_PROPFLIPPER_PHYSICS DIALOGEX 0, 0, 125, 145
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        1044,106,130,10,12,ES_AUTOHSCROLL
-    LTEXT           "Override by Global Physics Set",-1,7,132,98,8
     EDITTEXT        DISPID_Flipper_Speed,76,7,40,12,ES_AUTOHSCROLL
     EDITTEXT        19,76,22,40,12,ES_AUTOHSCROLL
     EDITTEXT        21,76,37,40,12,ES_AUTOHSCROLL
@@ -930,6 +928,8 @@ BEGIN
     EDITTEXT        22,76,82,40,12,ES_AUTOHSCROLL
     EDITTEXT        109,76,97,40,12,ES_AUTOHSCROLL
     EDITTEXT        110,76,112,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1044,106,130,10,12,ES_AUTOHSCROLL
+    LTEXT           "Override by Global Physics Set",-1,7,132,98,8
     LTEXT           "S&peed",-1,7,9,66,8
     LTEXT           "Stre&ngth",-1,7,24,66,8
     LTEXT           "Elast&icity",-1,7,39,66,8
@@ -1058,10 +1058,10 @@ IDD_PROPKICKER_VISUALS DIALOGEX 0, 0, 125, 43
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "&Color",-1,7,10,17,8
     CONTROL         "Custom2",10,"ColorControl",WS_TABSTOP,46,7,47,14
-    LTEXT           "&Display:",-1,7,27,29,8
     COMBOBOX        9,37,24,81,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Color",-1,7,10,17,8
+    LTEXT           "&Display:",-1,7,27,29,8
 END
 
 IDD_PROPDECAL_VISUALS DIALOGEX 0, 0, 125, 138
@@ -1207,10 +1207,10 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        8,58,7,40,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "M&otor Steps",IDC_STATIC,6,9,39,8
-    CONTROL         "Update Inter&val",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,6,24,54,9
     EDITTEXT        15,58,24,40,12,ES_AUTOHSCROLL | ES_NUMBER
     COMBOBOX        DISPID_Sound,6,44,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "M&otor Steps",IDC_STATIC,6,9,39,8
+    CONTROL         "Update Inter&val",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,6,24,54,9
     LTEXT           "&Sound:",IDC_STATIC,6,35,22,8
 END
 
@@ -1220,19 +1220,19 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Custom2",4,"ColorControl",WS_TABSTOP,27,7,40,14
     COMBOBOX        DISPID_Image,7,32,110,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable Antialiasing",IDC_ENABLE_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,47,75,10
     CONTROL         "Render Shadows",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,57,71,10
+    EDITTEXT        IDC_REGION_UPDATES_TABLE,101,69,20,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_REGION_OPT_TABLE,101,83,20,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TABLESOUNDVOLUME,101,97,20,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TABLEMUSICVOLUME,101,111,20,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,135,107,25
+    LTEXT           "Region Upd.    (-1=default)",IDC_STATIC,7,71,94,8
     LTEXT           "I&mage:",IDC_STATIC,7,23,22,8
     LTEXT           "&Color",IDC_STATIC,7,10,20,9
-    EDITTEXT        IDC_REGION_UPDATES_TABLE,101,69,20,12,ES_AUTOHSCROLL
-    LTEXT           "Region Upd.    (-1=default)",IDC_STATIC,7,71,94,8
-    EDITTEXT        IDC_REGION_OPT_TABLE,101,83,20,12,ES_AUTOHSCROLL
     LTEXT           "Region Opt.     (0=off, 1=on)",IDC_STATIC,7,85,94,8
-    EDITTEXT        IDC_TABLESOUNDVOLUME,101,97,20,12,ES_AUTOHSCROLL
     LTEXT           "Table Sound Volume (0..100)",IDC_STATIC,7,99,94,8
-    EDITTEXT        IDC_TABLEMUSICVOLUME,101,111,20,12,ES_AUTOHSCROLL
     LTEXT           "Table Music Volume (0..100)",IDC_STATIC,7,113,94,8
-    CONTROL         "Enable Antialiasing",IDC_ENABLE_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,47,75,10
-    CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,7,135,113,28
     GROUPBOX        "Alpha Ramp Accuracy",IDC_STATIC,7,125,114,39
 END
 
@@ -1271,44 +1271,44 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Custom2",IDC_LIGHT0AMBIENT,"ColorControl",WS_TABSTOP,47,7,40,14
-    LTEXT           "L0 Ambient",IDC_STATIC,7,10,40,9
     CONTROL         "Custom2",IDC_LIGHT0DIFFUSE,"ColorControl",WS_TABSTOP,47,22,40,14
-    LTEXT           "L0 Diffuse",IDC_STATIC,7,25,40,9
     CONTROL         "Custom2",IDC_LIGHT0SPECULAR,"ColorControl",WS_TABSTOP,47,37,40,14
-    LTEXT           "L0 Specular",IDC_STATIC,7,40,40,9
     CONTROL         "Custom2",IDC_LIGHT1AMBIENT,"ColorControl",WS_TABSTOP,47,52,40,14
-    LTEXT           "L1 Ambient",IDC_STATIC,7,55,40,9
     CONTROL         "Custom2",IDC_LIGHT1DIFFUSE,"ColorControl",WS_TABSTOP,47,67,40,14
-    LTEXT           "L1 Diffuse",IDC_STATIC,7,70,40,9
     CONTROL         "Custom2",IDC_LIGHT1SPECULAR,"ColorControl",WS_TABSTOP,47,82,40,14
-    LTEXT           "L1 Specular",IDC_STATIC,7,85,40,9
     EDITTEXT        IDC_LIGHT0PX,47,97,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_LIGHT0PY,73,97,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_LIGHT0PZ,99,97,24,12,ES_AUTOHSCROLL
-    LTEXT           "L0 Pos XYZ",IDC_STATIC,7,100,40,9
     EDITTEXT        IDC_LIGHT0DX,47,112,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_LIGHT0DY,73,112,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_LIGHT0DZ,99,112,24,12,ES_AUTOHSCROLL
-    LTEXT           "L0 Dir XYZ",IDC_STATIC,7,115,40,9
     EDITTEXT        IDC_LIGHT0TYPE,47,127,24,12,ES_AUTOHSCROLL
-    LTEXT           "L0 Type",IDC_STATIC,7,130,40,9
     EDITTEXT        IDC_LIGHT1PX,47,142,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_LIGHT1PY,73,142,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_LIGHT1PZ,99,142,24,12,ES_AUTOHSCROLL
-    LTEXT           "L1 Pos XYZ",IDC_STATIC,7,145,40,9
     EDITTEXT        IDC_LIGHT1DX,47,157,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_LIGHT1DY,73,157,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_LIGHT1DZ,99,157,24,12,ES_AUTOHSCROLL
-    LTEXT           "L1 Dir XYZ",IDC_STATIC,7,160,40,9
     EDITTEXT        IDC_LIGHT1TYPE,47,172,24,12,ES_AUTOHSCROLL
-    LTEXT           "L1 Type",IDC_STATIC,7,175,40,9
-    LTEXT           "(Type 0: Directional, 1: Spot, 2: Point)",IDC_STATIC,7,190,120,9
     CONTROL         "Exact Lighting on Dynamic Objs",IDC_NORMALIZENORMALS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,205,115,10
-    GROUPBOX        "Shadow Direction (-1.0..+1.0) ",IDC_STATIC,5,222,117,42
-    LTEXT           "X",IDC_STATIC,13,233,8,8
     EDITTEXT        IDC_SHADOW_X,22,231,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_SHADOW_Y,22,247,24,12,ES_AUTOHSCROLL
+    LTEXT           "(Type 0: Directional, 1: Spot, 2: Point)",IDC_STATIC,7,190,120,9
+    LTEXT           "L0 Ambient",IDC_STATIC,7,10,40,9
+    LTEXT           "L0 Diffuse",IDC_STATIC,7,25,40,9
+    LTEXT           "L0 Specular",IDC_STATIC,7,40,40,9
+    LTEXT           "L1 Ambient",IDC_STATIC,7,55,40,9
+    LTEXT           "L1 Diffuse",IDC_STATIC,7,70,40,9
+    LTEXT           "L1 Specular",IDC_STATIC,7,85,40,9
+    LTEXT           "L0 Pos XYZ",IDC_STATIC,7,100,40,9
+    LTEXT           "L0 Dir XYZ",IDC_STATIC,7,115,40,9
+    LTEXT           "L0 Type",IDC_STATIC,7,130,40,9
+    LTEXT           "L1 Pos XYZ",IDC_STATIC,7,145,40,9
+    LTEXT           "L1 Dir XYZ",IDC_STATIC,7,160,40,9
+    LTEXT           "L1 Type",IDC_STATIC,7,175,40,9
+    GROUPBOX        "Shadow Direction (-1.0..+1.0) ",IDC_STATIC,5,222,117,42
+    LTEXT           "X",IDC_STATIC,13,233,8,8
     LTEXT           "Y",IDC_STATIC,13,249,8,8
 END
 
@@ -1319,12 +1319,12 @@ BEGIN
     COMBOBOX        1505,7,18,113,120,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        1508,7,40,113,109,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        1509,7,62,113,112,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable",IDC_BALL_REFLECTION,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,11,91,38,10
+    EDITTEXT        IDC_REFLECTION_EDIT,69,102,31,14,ES_AUTOHSCROLL
     LTEXT           "&Ball Image:",IDC_STATIC,7,9,74,8
     LTEXT           "&Front Decal:",IDC_STATIC,7,32,74,8
     LTEXT           "Bac&k Decal:",IDC_STATIC,7,54,74,8
-    CONTROL         "Enable",IDC_BALL_REFLECTION,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,11,91,38,10
     LTEXT           "Strength (0..255)",IDC_STATIC,12,105,54,8
-    EDITTEXT        IDC_REFLECTION_EDIT,69,102,31,14,ES_AUTOHSCROLL
     GROUPBOX        "Reflection ",IDC_STATIC,7,79,113,42
 END
 
@@ -1366,6 +1366,7 @@ BEGIN
     EDITTEXT        1105,80,76,40,12,ES_AUTOHSCROLL
     EDITTEXT        1104,80,90,40,12,ES_AUTOHSCROLL
     CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,111,9
+    EDITTEXT        1043,106,116,14,12,ES_AUTOHSCROLL
     CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,137,104,10
     CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,149,105,10
     EDITTEXT        1041,80,161,40,12,ES_AUTOHSCROLL
@@ -1377,7 +1378,6 @@ BEGIN
     LTEXT           "Dampening Friction",IDC_STATIC,7,65,69,8
     LTEXT           "Physics Max.Looptime",IDC_STATIC,7,79,70,8
     LTEXT           "Mech-Plunger Adjust",IDC_STATIC,7,92,70,8
-    EDITTEXT        1043,106,116,14,12,ES_AUTOHSCROLL
     LTEXT           "Override by Global Physics Set",IDC_STATIC,7,118,98,8
     LTEXT           "- - -",IDC_STATIC,7,127,113,8
     LTEXT           "3D Stereo Separation",IDC_STATIC,7,163,70,8
@@ -1476,10 +1476,10 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "&Enabled",DISPID_Enabled,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,111,11
-    LTEXT           "Scatter Angle",-1,7,22,56,8
     EDITTEXT        313,63,20,55,12,ES_AUTOHSCROLL
-    LTEXT           "Hit Height",-1,7,36,56,8
     EDITTEXT        314,63,34,55,12,ES_AUTOHSCROLL
+    LTEXT           "Scatter Angle",-1,7,22,56,8
+    LTEXT           "Hit Height",-1,7,36,56,8
 END
 
 IDD_PROPPRIMITIVE_POSITION DIALOGEX 0, 0, 125, 305
@@ -1504,6 +1504,9 @@ BEGIN
     EDITTEXT        DISPID_ROTRA4,24,214,40,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_ROTRA5,24,228,40,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_ROTRA6,24,242,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA7,24,256,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA8,24,270,40,12,ES_AUTOHSCROLL
+    EDITTEXT        DISPID_ROTRA9,24,284,40,12,ES_AUTOHSCROLL
     LTEXT           "XSize",IDC_STATIC,64,15,23,8
     LTEXT           "YSize",IDC_STATIC,64,28,23,8
     LTEXT           "ZSize",IDC_STATIC,64,42,23,8
@@ -1525,9 +1528,6 @@ BEGIN
     LTEXT           "&Y->Z",IDC_STATIC,14,111,22,8
     LTEXT           "&Z->X",IDC_STATIC,14,125,24,8
     LTEXT           "&Z->Y",IDC_STATIC,14,139,21,8
-    EDITTEXT        DISPID_ROTRA7,24,256,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA8,24,270,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA9,24,284,40,12,ES_AUTOHSCROLL
     LTEXT           "6",IDC_STATIC,14,258,8,8
     LTEXT           "7",IDC_STATIC,14,272,8,8
     LTEXT           "8",IDC_STATIC,14,286,8,8
@@ -1548,21 +1548,21 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        101,31,7,56,14,ES_AUTOHSCROLL
     COMBOBOX        DISPID_Image,7,31,111,124,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Import Mesh",IDC_LOAD_MESH_BUTTON,11,54,48,14
+    PUSHBUTTON      "Export Mesh",IDC_EXPORT_MESH_BUTTON,65,54,46,14
     CONTROL         "Custom2",102,"ColorControl",WS_TABSTOP,74,78,40,14
     CONTROL         "Custom2",104,"ColorControl",WS_TABSTOP,74,93,40,14
     CONTROL         "Visible",103,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,108,76,10
     CONTROL         "Update Regions",IDC_UPDATEREGIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,118,76,10
     CONTROL         "Draw Textures inside",106,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,128,82,10
-    LTEXT           "Image",IDC_STATIC,7,21,20,8
+    CONTROL         "Enable lighting",IDC_CHECK_PRIMITIVE_LIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,138,66,10
+    CONTROL         "Sphere Map 3D Mesh",IDC_PRIM_ENV_MAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,148,85,10
+    CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,158,69,10
     LTEXT           "Top/Bottom &Color",IDC_STATIC,7,80,63,9
+    LTEXT           "Image",IDC_STATIC,7,21,20,8
     LTEXT           "Side &Color",IDC_STATIC,7,95,63,9
     LTEXT           "Sides",IDC_STATIC,7,10,18,8
     GROUPBOX        "3D Mesh",IDC_STATIC,7,44,111,30
-    PUSHBUTTON      "Import Mesh",IDC_LOAD_MESH_BUTTON,11,54,48,14
-    PUSHBUTTON      "Export Mesh",IDC_EXPORT_MESH_BUTTON,65,54,46,14
-    CONTROL         "Enable lighting",IDC_CHECK_PRIMITIVE_LIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,138,66,10
-    CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,158,69,10
-    CONTROL         "Sphere Map 3D Mesh",IDC_PRIM_ENV_MAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,148,85,10
 END
 
 IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 127, 79
@@ -2022,24 +2022,44 @@ BEGIN
     IDS_ASSIGNTO            "&Assign to..."
     IDS_LAYER2              "Layer&2"
     IDS_LAYER3              "Layer&3"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_TB_LIGHTSEQ         "LightSeq"
     IDS_REPLACEALL          "Replaced"
     IDS_REPLACEALL2         "occurrences in script."
+END
+
+STRINGTABLE 
+BEGIN
     IDS_NEED_DD9            "Visual Pinball requires DirectX 9.0 or higher from Microsoft."
     IDS_LOCK                "&Lock"
     IDS_MISC                "Misc"
     IDS_LIGHTSEQ_DESC       "LightSequencer Class"
     IDS_VISUALS             "Colors & Formatting"
     IDS_POSITION            "Position"
-    IDS_POSITION_TRANSLATION"Position & Translation"
     IDS_STATE               "State"
     IDS_PHYSICS             "Physics"
     IDS_TB_PRIMITIVE        "Primitive"
+    IDS_POSITION_TRANSLATION "Position & Translation"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_VISUALS_SOUND       "Colors, Sound & Graphics"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_PHYSICSGFX          "Physics & Graphics"
     IDS_DIMENSIONSSLOPE     "Dimensions & Slope"
     IDS_LIGHTSOURCES        "Lightsources"
     IDS_INPUT               "Input"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_TIMER_DESC          "Timer Class"
     IDS_LAYER4              "Layer&4"
     IDS_LAYER5              "Layer&5"
@@ -2056,6 +2076,10 @@ BEGIN
     IDS_LAYER7              "Layer&7"
     IDS_TRIGGER_DESC        "Trigger Class"
     IDS_TB_TRIGGER          "Trigger"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_LAYER8              "Layer&8"
     IDS_LIGHT_DESC          "Light Class"
     IDS_TB_LIGHT            "Light"
@@ -2070,6 +2094,10 @@ BEGIN
     IDS_TB_GATE             "Gate"
     IDS_SPINNER_DESC        "Spinner Class"
     IDS_TB_SPINNER          "Spinner"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_RAMP_DESC           "Ramp Class"
     IDS_TB_RAMP             "Ramp"
     IDS_TB_SCRIPT           "Script"
@@ -2085,12 +2113,20 @@ BEGIN
     IDS_SAVE_CHANGES1       "Table '"
     IDS_SAVE_CHANGES2       "' has changed.  Do you want to save changes before exiting?"
     IDS_DRAWINFRONT         "Draw In &Front"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_PERMISSION_ERROR    "This table is protected.\n\nThe table author has requested that this option be restricted."
     IDS_PROTECT_ONETICKED   "You must tick at least one protection option."
     IDS_PROTECT_PW_ZEROLEN  "You must supply a valid password."
     IDS_PROTECT_PW_MISMATCH "Passwords don't match, please reenter your password."
     IDS_UNLOCK_FAILED       "Password is invalid."
     IDS_UNLOCK_SUCCESS      "This table has been successfully unlocked."
+END
+
+STRINGTABLE 
+BEGIN
     IDS_DRAWINBACK          "Draw In &Back"
     IDS_SAVEERROR           "There was an error saving the file."
     IDS_TB_BACKGLASS        "Backdrop"
@@ -2105,6 +2141,10 @@ BEGIN
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object may not be safe.  Do you want to allow this object to be created?  Only answer Yes if you trust the author of this table."
     IDS_COLLECTION          "Collection"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_EDITOR              "Editor"
     IDS_DEFAULTBALL         "Ball"
     IDS_NONE                "<None>"
