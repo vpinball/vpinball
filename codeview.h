@@ -232,6 +232,7 @@ END_COM_MAP()
 
 	HWND m_hwndItemList;
 	HWND m_hwndEventList;
+   HWND m_hwndFunctionList;
 
 	SaveDirtyState m_sdsDirty;
 	BOOL m_fIgnoreDirty;

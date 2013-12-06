@@ -421,6 +421,7 @@
 #define IDC_SCREENSHOT                  340
 #define IDS_MAKEACTIVEBALL              340
 #define IDC_MonitorCombo                340
+#define IDC_FUNCTIONLIST                340
 #define IDC_COMBO2                      341
 #define IDD_PROPSPINNER_VISUALS         341
 #define IDS_DEBUGNOCONVERT              341

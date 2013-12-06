@@ -21,6 +21,7 @@ const char vbsKeyWords[] =
 LRESULT CALLBACK CodeViewWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 WNDPROC g_RichEditProc;
+int *functionLines;
 
 IScriptable::IScriptable()
 {
@@ -466,9 +467,16 @@ void CodeViewer::Create(HWND hwndParent)
 
    m_hwndEventList = CreateWindowEx(0, "ComboBox", "Events",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      200 + 5, 5, 150, 400, m_hwndMain, NULL, g_hinst, 0);
+      180 + 5, 5, 150, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLong(m_hwndEventList, GWL_ID, IDC_EVENTLIST);
    SendMessage(m_hwndEventList, WM_SETFONT, (DWORD)GetStockObject(DEFAULT_GUI_FONT), 0);
+
+   m_hwndFunctionList = CreateWindowEx(0, "ComboBox", "Functions",
+      WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
+      360 + 5, 5, 150, 400, m_hwndMain, NULL, g_hinst, 0);
+   SetWindowLong(m_hwndFunctionList, GWL_ID, IDC_FUNCTIONLIST);
+   SendMessage(m_hwndFunctionList, WM_SETFONT, (DWORD)GetStockObject(DEFAULT_GUI_FONT), 0);
+
 
    SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
 }
@@ -1543,6 +1551,60 @@ void RemoveComment( HWND sciHwnd )
    SendMessage(sciHwnd, SCI_ENDUNDOACTION,0,0 );
 }
 
+string upperCase( string input )
+{
+   for( string::iterator it = input.begin(); it!=input.end(); it++ )
+      *it = toupper(*it);
+   return input;
+}
+
+void ParseForFunction( CodeViewer *pcv )
+{
+   HWND sciHwnd = pcv->m_hwndScintilla;
+   char text[1024];
+   int scriptLines = SendMessage(sciHwnd, SCI_GETLINECOUNT, 0,0 );
+
+   delete[] functionLines;
+   SendMessage(pcv->m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
+
+   functionLines = new int[scriptLines];
+   for( int i=0;i<scriptLines;i++ )
+   {
+      memset(text,0,1024);
+      const int lineLength = SendMessage(sciHwnd, SCI_LINELENGTH, i, 0 );
+      if ( lineLength>1023 ) 
+         continue;
+      SendMessage(sciHwnd, SCI_GETLINE, i, (LPARAM)text );
+      string line(text);
+      const int idx = upperCase(line).find("SUB");
+      if( idx>=0 )
+      {
+         const int endIdx = upperCase(line).find("END",idx-4);
+         const int exitIdx = upperCase(line).find("EXIT",idx-5);
+         const int commentIdx = upperCase(line).find("'");
+         if( endIdx==-1 && exitIdx==-1 )
+         {
+            if ( commentIdx>=0 && commentIdx<idx )
+               continue;
+
+            int end = line.find("(",idx);
+            if( end==-1 )
+            {
+               end=line.find(":",idx);
+               if ( end==-1 )
+                  end=line.find("\n",idx);
+            }
+            if( end!=-1 )
+            {
+               const int index = SendMessage(pcv->m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)line.substr(idx+3, end-3).c_str());
+               functionLines[index]=i;
+            }
+         }
+      }
+   }
+
+}
+
 LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    if (uMsg == g_FindMsgString)
@@ -1661,6 +1723,13 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                }
             }
             break;
+         case CBN_SETFOCUS:
+            {
+               CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               if ( id==IDC_FUNCTIONLIST ) 
+                  ParseForFunction(pcv);
+               break;
+            }
          case CBN_SELCHANGE: // Or accelerator
             {
                CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -1696,6 +1765,13 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                case IDC_EVENTLIST:
                   {
                      pcv->FindCodeFromEvent();
+                  }
+                  break;
+               case IDC_FUNCTIONLIST:
+                  {
+                     const int index = SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
+                     SendMessage( pcv->m_hwndScintilla, SCI_GOTOLINE, functionLines[index],0);
+                     SendMessage( pcv->m_hwndScintilla, SCI_GRABFOCUS, 0,0 );
                   }
                   break;
                case ID_ADD_COMMENT:
@@ -1751,7 +1827,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (long)szT);
             }
             break;
-
          case SCN_MARGINCLICK:
             {
                SCNotification * const pscn = (SCNotification *)lParam;
