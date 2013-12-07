@@ -865,7 +865,7 @@ BEGIN
     LTEXT           "&Type",-1,7,9,25,8
     LTEXT           "&Image:",-1,7,21,22,8
     LTEXT           "&Mode",-1,7,49,25,8
-    LTEXT           "(only disable for",-1,55,137,70,10
+    LTEXT           "(only disable for",-1,68,128,70,10
     LTEXT           " 2D-hacks like",-1,68,138,70,10
     LTEXT           " Halo/Flasher/GI)",-1,68,148,70,10
     LTEXT           "&Color",-1,7,91,17,8
