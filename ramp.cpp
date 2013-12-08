@@ -1638,7 +1638,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
          }
 
          ppin3d->SetColorKeyEnabled(TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
+		 pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo || (g_pplayer->m_fStereo3D == 0) || !g_pplayer->m_fStereo3Denabled); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
          // Check if this is an acrylic.
          if (m_d.m_fAcrylic)
@@ -2725,7 +2725,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
 
          ppin3d->SetColorKeyEnabled(TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo || (g_pplayer->m_fStereo3D == 0) || !g_pplayer->m_fStereo3Denabled); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
