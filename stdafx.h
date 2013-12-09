@@ -84,7 +84,7 @@
 
 #define ACCURATETIMERS 1
 
-#define FPS 1                   // Enable FPS computation (default 'F10')
+#define FPS 1                   // Enable FPS computation (default 'F11')
 #define STEPPING 1              // Enable Physics stepping
 
 #if defined(_DEBUG_) && defined(STEPPING)
