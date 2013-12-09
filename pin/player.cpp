@@ -3317,17 +3317,26 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 void Player::InvalidateRect(RECT * const prc)
 {
-	if(prc->left >= prc->right || prc->top >= prc->bottom)
+	if(prc->left >= prc->right || prc->top >= prc->bottom) // uninitialized or broken region?
 		return;
-    // fuzzel: if the if-statement below is missing the ball drawing/updating 
-    //         has problems on some tables (like CFTBL,MonsterBash,Genie,T2Chrome...)
+	if(prc->right < 0 || prc->bottom < 0) // completely off-screen?
+		return;
+	const int width = min(GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
+	const int height = min(GetSystemMetrics(SM_CYSCREEN), m_pin3d.m_dwRenderHeight);
+	if(prc->left >= width || prc->top >= height) // completely off-screen?
+		return;
+
     // This assumes the caller does not need *prc any more!!!
-    // Either that, or we assume it can be permanently changed,
-    // Because we never care about redrawing stuff off the screen.
-    if( prc->top<0 )
-	{
+	// Clip regions so that blits, etc. can succeed
+    if( prc->top < 0 )
         prc->top = 0;
-    }
+	if( prc->left < 0 )
+		prc->left = 0;
+	if( prc->bottom >= height )
+        prc->bottom = height-1;
+	if( prc->right >= width )
+        prc->right = width-1;
+
 	UpdateRect * const pur = new UpdateRect();
 	pur->m_rcupdate = *prc;
 	pur->m_fSeeThrough = fTrue;
