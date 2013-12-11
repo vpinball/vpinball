@@ -1614,6 +1614,10 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       if (pfr->Flags & FR_DIALOGTERM)
       {
          pcv->m_hwndFind = NULL;
+         const DWORD selstart = SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+         const DWORD selend = SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
+         ::SetFocus(pcv->m_hwndScintilla);
+         SendMessage(pcv->m_hwndScintilla, SCI_SETSEL, selstart, selend);
          return 0;
       }
       if (pfr->Flags & FR_FINDNEXT)
