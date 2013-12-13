@@ -2,15 +2,20 @@ VP 9.2.0 Changelog
 ------------------------
 - add 'real' primitives, these can be loaded via .obj files (for example exported out of Blender)
 - add lighting option for primitives
-- primitives can now select to trigger region updates (also via script: Toggle via UpdateRegions or a single one via TriggerSingleUpdate)
-- alpha ramps can now select to trigger region updates (also via script: Toggle via UpdateRegions or a single one via TriggerSingleUpdate)
+- primitives can now select to trigger region updates (also via script: Toggle via UpdateRegions or a single one via TriggerSingleUpdate) to avoid having to use the refresh-light trick
+- alpha ramps can now select to trigger region updates (also via script: Toggle via UpdateRegions or a single one via TriggerSingleUpdate) to avoid having to use the refresh-light trick
 - add selection dialog where you can select one or more elements out of a list of all elements in the table
 - add configurable lightsources: point, directional, spot; these share the same coordinate system as the table geometry (angle/rotation/scale independent! setting the direction of a directional light to 0,0,0 restores the old behavior though)
-  (note that DX7 is still vertex lighting based, thus all lit objects MUST feature reasonable triangulation, like f.e. huge walls (the playfield itself is triangulated 100x100))
+  note that DX7 is still vertex lighting based, thus all lit objects MUST feature reasonable triangulation, like f.e. huge walls (the playfield itself is triangulated 100x100)
+  look at the built-in default table to get a feeling for the setup of these lightsources
 - add exact lighting option to table (if you experience lighting problems with ramps, primitives or the ball, please enable this)
 - add flag to walls and gates to disable lighting and shadows (to assist in using fully artist driven lighting)
 - add flag to light objects to disable the lighting calculations when the 'On Image' is set (so that behavior is the same as when only using a color)
 - add flag for alpha ramps to optionally use additive blending (to cope with 2D-lighting-hacks like halos/flashers)
+  note that in order to implement fake GI/lighting or flashers via alpha ramps you should follow the following guidelines:
+  1) if multiple alpha ramps overlap, then the drawing order (see below) and the height level of these ramps have to match, so that the lowest ramp gets drawn first, etc (make sure to move same height alpha ramps to slightly different heights first!)
+  2) uncheck the 'normal 3D stereo' to not have each 3D user have to do this on his/her own (please do this only for lighting or flashers!)
+  3) to go for maximum performance disable visibility or the alpha flag for turned off lights/flashers via the script
 - add layering of table elements
 - add per-table sound & music volume settings (0..100% scaling of the global VP settings)
 - add easy selection mode if you right-click on an element in the context menu you can select those elements which are stacked under the mouse cursor
@@ -24,7 +29,7 @@ VP 9.2.0 Changelog
 - add static rendering feature to primitives: if you set the 'Static Rendering' option, the primitive will be pre-rendered and you can't change any parameters from within the script. This is
   helpful if you want to use 3D meshes for posts or toys which won't be animated at all.
 - add lightmap for lights: If option "'On Image' Is Lightmap" is checked you can define a lightmap for the on image. If the light is switched on the lightmap is rendered together with the off image.
-- add sphere mapping to 3D mesh primitives
+- add sphere mapping to 3D mesh primitives (useful to fake reflections)
 - add static rotation for primitives (ObjRotX, ObjRotY, ObjRotZ) to change the basic orientation of a primitive. The old rotation/translation settings animate the primitive. 
   all rotation/translation settings can be used out of the script.
 - add per-table region updates and region optimization (-1 takes the default from the video preferences, 0 forces off, 1 forces on)
@@ -32,6 +37,7 @@ VP 9.2.0 Changelog
   pan ranges from -1.0 (left) over 0.0 (both) to 1.0 (right)
   randompitch ranges from 0.0 (no randomization) to 1.0 (vary between half speed to double speed)
   so f.e. PlaySound "FlipperUp",0,0.5,-1.0,1.0 would play the sound not looped (0), at half the volume (0.5), only on left speaker (-1.0), with varying pitch (1.0)
+  look at the built-in default table to get a feeling for the setup of these parameters
 - add modern plunger texture mapping support and correct coloring
 - rotation/translation of primitives can be changed from within the script with the properties .RotX, .RotY, .RotZ, .TransX, .TransY, .TransZ, .ObjRotX, .ObjRotY, .ObjRotZ
   or for backwards compatibility you can use .rotandtrans0-8
