@@ -250,6 +250,10 @@ Player::~Player()
 		delete m_vho.ElementAt(i);
 	m_vho.RemoveAllElements();
 
+	for (int i=0;i<m_vidxalpha.Size();i++)
+		delete m_vidxalpha.ElementAt(i);
+	m_vidxalpha.RemoveAllElements();
+
 	for (int i=0;i<m_vdebugho.Size();i++)
 		delete m_vdebugho.ElementAt(i);
 	m_vdebugho.RemoveAllElements();
@@ -790,12 +794,18 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	  				(m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive && !((Primitive *)m_ptable->m_vedit.ElementAt(i))->m_d.staticRendering))
 					{
 					  m_vhitalpha.AddElement(ph);
+					  int *ii = new int;
+					  *ii = i;
+					  m_vidxalpha.AddElement(ii);
 					}
 			}
 			else
 				if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive)
 					{
 					  m_vhitalpha.AddElement(ph);
+					  int *ii = new int;
+					  *ii = i;
+					  m_vidxalpha.AddElement(ii);
 					}
 		}
 	}
@@ -4188,8 +4198,64 @@ void Player::DrawAlphas()
 
 	// the helper list of m_vhitalpha only contains objects which evaluated to true in the old code.
 	// it is created once on startup and never changed during play. (SnailGary)
+	
+	//!! optimize allocs in here and the crappy m_vidxalpha stuff
+
+	// first collect all z values
+	float * z = new float[m_vhitalpha.Size()];
+	int * idx = new int[m_vhitalpha.Size()];
+
 	for (int i=0;i<m_vhitalpha.Size();i++)
-		m_vhitalpha.ElementAt(i)->PostRenderStatic(m_pin3d.m_pd3dDevice);
+	{
+		const int editidx = *(m_vidxalpha.ElementAt(i));
+		if (m_ptable->m_vedit.ElementAt(editidx)->GetItemType() == eItemRamp)
+		{
+			Ramp * r = (Ramp*)m_ptable->m_vedit.ElementAt(editidx);
+			z[i] = (r->m_d.m_heighttop + r->m_d.m_heightbottom)*0.5f; //!!?
+			idx[i] = i;
+		}
+		else if (m_ptable->m_vedit.ElementAt(editidx)->GetItemType() == eItemPrimitive)
+		{
+			Primitive * p = (Primitive *)m_ptable->m_vedit.ElementAt(editidx);
+			z[i] = -FLT_MAX; //!!?
+			idx[i] = i;
+		}
+	}
+
+	// second sort the z values (and corresponding indices)
+	int inc = m_vhitalpha.Size()/2;
+	while (inc > 0)
+	{
+		for (int i = inc; i < m_vhitalpha.Size(); i++)
+		{
+			// store temp
+			const float tempZ = z[i];
+			const int tempIdx = idx[i];
+
+			int j = i;
+			while ((j >= inc) && (z[j-inc] > tempZ))
+			{
+				z[j] = z[j-inc];
+				idx[j] = idx[j-inc];
+				j -= inc;
+			}
+
+			z[j] = tempZ;
+			idx[j] = tempIdx;
+		}
+
+		if(inc == 2)
+			inc = 1;
+		else
+			inc = (int)((float)inc*(float)(1.0/2.2));
+	}
+
+	// third draw in order
+	for (int i=0;i<m_vhitalpha.Size();i++)
+		m_vhitalpha.ElementAt(idx[i])->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+	delete [] z;
+	delete [] idx;
 
 	// AMD profiler shows a lot of activity inside this block at runtime... so I decided to make a new list with
 	// hitable-only objects which saves a lot of dereferencing/checks at runtime (SnailGary)
