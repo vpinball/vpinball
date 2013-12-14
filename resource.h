@@ -114,9 +114,9 @@
 #define IDR_Light                       130
 #define IDS_TB_LIGHT                    130
 #define IDC_LIGHT                       131
-#define IDS_DRAWING_ORDER               131
+#define IDS_DRAWING_ORDER_HIT           131
 #define IDS_KICKER_DESC                 132
-#define IDR_Kicker                      133
+#define IDR_KICKER                      133
 #define IDS_TB_KICKER                   133
 #define IDC_KICKER                      134
 #define IDS_TB_TARGET                   134
@@ -204,6 +204,7 @@
 #define IDS_TB_PRIMITIVE                186
 #define IDR_COMCONTROL                  187
 #define IDS_POSITION_TRANSLATION        188
+#define IDS_DRAWING_ORDER_SELECT        200
 #define IDR_APPMENU                     201
 #define IDC_SOUNDLIST                   201
 #define IDR_POINTMENU                   202
@@ -746,7 +747,8 @@
 #define ID_LAYER_TOGGLEALL              32874
 #define ID_EDIT_SEARCH                  32875
 #define ID_SELECT_ELEMENT               32876
-#define ID_EDIT_DRAWINGORDER            32879
+#define ID_EDIT_DRAWINGORDER_HIT        32879
+#define ID_EDIT_DRAWINGORDER_SELECT     32880
 #define ID_EDIT_COMMENT                 32882
 #define ID_ADD_COMMENT                  32883
 #define ID_EDIT_UNCOMMENT               32886

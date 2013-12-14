@@ -1737,7 +1737,8 @@ BEGIN
         MENUITEM "Paste &At\tCtrl+Shift+V",     IDC_PASTEAT
         MENUITEM "&Delete\tDel",                ID_DELETE
         MENUITEM "Select &Element\tCtrl+Shift+E", ID_EDIT_SEARCH
-        MENUITEM "Dra&wing Order\tCtrl+Shift+D", ID_EDIT_DRAWINGORDER
+        MENUITEM "Dra&wing Order (Hit)\tCtrl+Shift+D", ID_EDIT_DRAWINGORDER_HIT
+        MENUITEM "Draw&ing Order (Select)\tCtrl+Shift+S", ID_EDIT_DRAWINGORDER_SELECT
         MENUITEM SEPARATOR
         MENUITEM "&Options",                    ID_EDIT_PROPERTIES
         MENUITEM "&Script",                     ID_EDIT_SCRIPT
@@ -1901,7 +1902,8 @@ IDB_CHEVRON             BITMAP                  "chevron.bmp"
 IDR_VPACCEL ACCELERATORS 
 BEGIN
     VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
-    "D",            ID_EDIT_DRAWINGORDER,   VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "D",            ID_EDIT_DRAWINGORDER_HIT, VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "S",            ID_EDIT_DRAWINGORDER_SELECT, VIRTKEY, SHIFT, CONTROL, NOINVERT
     "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
@@ -2090,7 +2092,8 @@ BEGIN
     IDS_LAYER8              "Layer&8"
     IDS_LIGHT_DESC          "Light Class"
     IDS_TB_LIGHT            "Light"
-    IDS_DRAWING_ORDER       "&Drawing Order"
+    IDS_DRAWING_ORDER_HIT   "&Drawing Order (Hit)"
+    IDS_DRAWING_ORDER_SELECT"D&rawing Order (Select)"
     IDS_KICKER_DESC         "Kicker Class"
     IDS_TB_KICKER           "Kicker"
     IDS_TB_TARGET           "Target"

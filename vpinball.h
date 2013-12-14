@@ -117,11 +117,11 @@ public:
 
 	void EnsureWorkerThread();
 	HANDLE PostWorkToWorkerThread(int workid, LPARAM lParam);
-   void InitLayerMenu();
+    void InitLayerMenu();
 
 	void SetAutoSaveMinutes(int minutes);
 	static void SetOpenMinimized();
-   void ShowDrawingOrderDialog();
+    void ShowDrawingOrderDialog(bool select);
 
 	ULONG m_cref;
 	ITypeInfo *m_ptinfoCls;

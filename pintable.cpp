@@ -4349,8 +4349,10 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
          subMenu = CreatePopupMenu();
       }
       // TEXT
-      LocalString ls14(IDS_DRAWING_ORDER);
-      AppendMenu(hmenu, MF_STRING, ID_EDIT_DRAWINGORDER, ls14.m_szbuffer);
+      LocalString ls14(IDS_DRAWING_ORDER_HIT);
+      AppendMenu(hmenu, MF_STRING, ID_EDIT_DRAWINGORDER_HIT, ls14.m_szbuffer);
+      LocalString ls15(IDS_DRAWING_ORDER_SELECT);
+      AppendMenu(hmenu, MF_STRING, ID_EDIT_DRAWINGORDER_SELECT, ls15.m_szbuffer);
 
       LocalString ls1(IDS_DRAWINFRONT);
       LocalString ls2(IDS_DRAWINBACK);
