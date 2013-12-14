@@ -1,4 +1,5 @@
 #pragma once
+
 class Hitable
 	{
 public:
@@ -10,5 +11,5 @@ public:
 	virtual void RenderStatic( const RenderDevice* pd3dDevice) = 0;
 	virtual void PostRenderStatic( const RenderDevice* pd3dDevice) = 0;
 	virtual void RenderMovers( const RenderDevice* pd3dDevice) = 0;
-   virtual void RenderSetup( const RenderDevice* _pd3dDevice) = 0;
+    virtual void RenderSetup( const RenderDevice* _pd3dDevice) = 0;
 	};

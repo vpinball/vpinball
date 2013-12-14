@@ -161,7 +161,7 @@ public:
 	unsigned int m_fVSync; // targeted refresh rate in Hz
 
 	BOOL m_fFXAA;
-   BOOL useAA;
+    BOOL useAA;
 
 	int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG //!! support sidebyside, too?
 	BOOL m_fStereo3Denabled;
@@ -225,7 +225,6 @@ private:
 
     // caching hitable alpha ramps & primitives to speed up DrawAlphas() and set up invalid regions
 	Vector< Hitable > m_vhitalpha;
-	Vector< int > m_vidxalpha;
 
 	int curAccel_x[PININ_JOYMXCNT];
 	int curAccel_y[PININ_JOYMXCNT];

@@ -140,14 +140,17 @@ void ISelect::DoCommand(int icmd, int x, int y)
    }
 	switch (icmd)
 		{
-      case ID_EDIT_DRAWINGORDER:
-         g_pvp->ShowDrawingOrderDialog();
-         break;
+        case ID_EDIT_DRAWINGORDER_HIT:
+            g_pvp->ShowDrawingOrderDialog(false);
+            break;
+		case ID_EDIT_DRAWINGORDER_SELECT:
+            g_pvp->ShowDrawingOrderDialog(true);
+            break;
 		case ID_DRAWINFRONT:
 			GetPTable()->m_vedit.RemoveElement(piedit);
 			GetPTable()->m_vedit.AddElement(piedit);
-         GetPTable()->layer[ layerIndex ].RemoveElement(piedit);
-         GetPTable()->layer[ layerIndex ].AddElement(piedit);
+            GetPTable()->layer[ layerIndex ].RemoveElement(piedit);
+            GetPTable()->layer[ layerIndex ].AddElement(piedit);
 			GetPTable()->SetDirtyDraw();
 			break;
 		case ID_DRAWINBACK:
