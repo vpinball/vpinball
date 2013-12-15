@@ -18,6 +18,7 @@ VP 9.2.0 Changelog
   3) to go for maximum performance disable visibility or the alpha flag for turned off lights/flashers via the script
 - add layering of table elements
 - add per-table sound & music volume settings (0..100% scaling of the global VP settings)
+- add per-table software FXAA setting (only works if also enabled in the video settings)
 - add easy selection mode if you right-click on an element in the context menu you can select those elements which are stacked under the mouse cursor
 - add drawing order (via 2 modes: Hit and Select), you can move elements up/down in a list to change the drawing order
   Hit:    If you click on an element all elements which are over/under that clicked element are shown in the list box

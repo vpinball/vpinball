@@ -533,6 +533,7 @@
 #define IDC_ENABLE_OFF_LIGHTING         394
 #define IDC_ENABLE_RAMP_LIGHTING        394
 #define IDC_ENABLE_AA                   394
+#define IDC_ENABLE_FXAA                 395
 #define IDC_CHECK3                      396
 #define IDC_PRIM_ENV_MAP                396
 #define IDC_EDIT2                       397

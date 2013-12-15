@@ -202,10 +202,12 @@ public:
 	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_EnableAntialiasing)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_EnableAntialiasing)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_EnableFXAA)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
     
 	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
     STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
@@ -679,17 +681,18 @@ END_CONNECTION_POINT_MAP()
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
 	BOOL m_NormalizeNormals;
-   BOOL useReflectionForBalls;
-   BOOL useAA;
+    BOOL m_useReflectionForBalls;
+    int m_ballReflectionStrength;
+    BOOL m_useAA;
+    BOOL m_useFXAA;
 
-   int ballReflectionStrength;
-   float shadowDirX;
-   float shadowDirY;
+    float m_shadowDirX;
+    float m_shadowDirY;
 	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 
 	bool activeLayers[8];
-   bool toggleAllLayers;   
-   bool savingActive;
+    bool toggleAllLayers;   
+    bool savingActive;
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

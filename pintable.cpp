@@ -9,8 +9,8 @@
 #define HASHLENGTH 16
 
 #if _MSC_VER <= 1310 // VC 2003 and before
-#define _itoa_s(a,b,c,d) _itoa(a,b,d)
-#define _itow_s(a,b,c,d) _itow(a,b,d)
+ #define _itoa_s(a,b,c,d) _itoa(a,b,d)
+ #define _itow_s(a,b,c,d) _itow(a,b,d)
 #endif
 
 const unsigned char TABLE_KEY[] = "Visual Pinball";
@@ -43,7 +43,7 @@ void ScriptGlobalTable::Init(PinTable *pt)
 // prior to a game start. 
 int PinTable::NumStartBalls()
 {
-   return ( PinTable::m_tblNumStartBalls );
+   return PinTable::m_tblNumStartBalls;
 }
 
 STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
@@ -618,8 +618,8 @@ PinTable::PinTable()
    m_xlatex = 0.0f;
    m_xlatey = 0.0f;
 
-   shadowDirX= 1.0f;
-   shadowDirY=-1.0f;
+   m_shadowDirX= 1.0f;
+   m_shadowDirY=-1.0f;
 
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
@@ -659,16 +659,23 @@ PinTable::PinTable()
       reflection = fTrue; // The default
    }
 
-   //use ball reflection as default settings
-   useReflectionForBalls=reflection;
-   ballReflectionStrength=50;
+   // use ball reflection as default settings
+   m_useReflectionForBalls = reflection;
+   m_ballReflectionStrength = 50;
 
    int enableAA;
    if ( FAILED(GetRegInt("Player", "USEAA", &enableAA)))
    {
       enableAA = fFalse; // The default
    }
-   useAA=enableAA;
+   m_useAA=enableAA;
+
+   int enableFXAA;
+   if ( FAILED(GetRegInt("Player", "FXAA", &enableFXAA)))
+   {
+      enableFXAA = fFalse; // The default
+   }
+   m_useFXAA=enableFXAA;
 
    m_pbTempScreenshot = NULL;
 
@@ -2813,8 +2820,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(LOTY), m_Light[1].type);
 
    bw.WriteInt(FID(NONO), m_NormalizeNormals);
-   bw.WriteFloat(FID(SDIX), shadowDirX);
-   bw.WriteFloat(FID(SDIY), shadowDirY);
+   bw.WriteFloat(FID(SDIX), m_shadowDirX);
+   bw.WriteFloat(FID(SDIY), m_shadowDirY);
 
    bw.WriteInt(FID(REGU), m_TableRegionUpdates);
    bw.WriteInt(FID(REGO), m_TableRegionOptimization);
@@ -2822,11 +2829,12 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
 
-   bw.WriteInt(FID(BREF), useReflectionForBalls );
-   bw.WriteInt(FID(BRST), ballReflectionStrength );
+   bw.WriteInt(FID(BREF), m_useReflectionForBalls );
+   bw.WriteInt(FID(BRST), m_ballReflectionStrength );
    bw.WriteInt(FID(ARAC), m_alphaRampsAccuracy );
 
-   bw.WriteInt(FID(UAAL), useAA );
+   bw.WriteInt(FID(UAAL), m_useAA );
+   bw.WriteInt(FID(UFXA), m_useFXAA );
 
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
    // Someday save these values into there own stream, used only when saving to file.
@@ -3690,23 +3698,27 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BREF))
    {
-      pbr->GetInt(&useReflectionForBalls);
+      pbr->GetInt(&m_useReflectionForBalls);
    }
    else if (id == FID(BRST))
    {
-      pbr->GetInt(&ballReflectionStrength);
+      pbr->GetInt(&m_ballReflectionStrength);
    }
    else if (id == FID(UAAL))
    {
-      pbr->GetInt(&useAA);
+      pbr->GetInt(&m_useAA);
+   }
+   else if (id == FID(UFXA))
+   {
+      pbr->GetInt(&m_useFXAA);
    }
    else if (id == FID(SDIX))
    {
-      pbr->GetFloat(&shadowDirX);
+      pbr->GetFloat(&m_shadowDirX);
    }
    else if (id == FID(SDIY))
    {
-      pbr->GetFloat(&shadowDirY);
+      pbr->GetFloat(&m_shadowDirY);
    }
    else if (id == FID(BCLR))
    {
@@ -7892,7 +7904,7 @@ STDMETHODIMP PinTable::put_NormalizeNormals(int newVal )
 
 STDMETHODIMP PinTable::get_BallReflection(int *pVal)
 {
-   *pVal = useReflectionForBalls;
+   *pVal = m_useReflectionForBalls;
 
    return S_OK;
 }
@@ -7901,7 +7913,7 @@ STDMETHODIMP PinTable::put_BallReflection(int newVal )
 {
    STARTUNDO
 
-      useReflectionForBalls = newVal;
+      m_useReflectionForBalls = newVal;
 
    STOPUNDO
 
@@ -7910,7 +7922,7 @@ STDMETHODIMP PinTable::put_BallReflection(int newVal )
 
 STDMETHODIMP PinTable::get_ReflectionStrength(int *pVal)
 {
-   *pVal = ballReflectionStrength;
+   *pVal = m_ballReflectionStrength;
 
    return S_OK;
 }
@@ -7919,7 +7931,7 @@ STDMETHODIMP PinTable::put_ReflectionStrength(int newVal )
 {
    STARTUNDO
 
-      ballReflectionStrength = newVal;
+      m_ballReflectionStrength = newVal;
 
    STOPUNDO
 
@@ -7928,7 +7940,7 @@ STDMETHODIMP PinTable::put_ReflectionStrength(int newVal )
 
 STDMETHODIMP PinTable::get_ShadowX(float *pVal)
 {
-   *pVal = shadowDirX;
+   *pVal = m_shadowDirX;
 
    return S_OK;
 }
@@ -7939,7 +7951,7 @@ STDMETHODIMP PinTable::put_ShadowX(float newVal )
 
    if ( newVal>1.0f ) newVal=1.0f;
    if ( newVal<-1.0f ) newVal=-1.0f;
-   shadowDirX = newVal;
+   m_shadowDirX = newVal;
 
    STOPUNDO
 
@@ -7948,7 +7960,7 @@ STDMETHODIMP PinTable::put_ShadowX(float newVal )
 
 STDMETHODIMP PinTable::get_ShadowY(float *pVal)
 {
-   *pVal = shadowDirY;
+   *pVal = m_shadowDirY;
 
    return S_OK;
 }
@@ -7959,7 +7971,7 @@ STDMETHODIMP PinTable::put_ShadowY(float newVal )
 
    if ( newVal>1.0f ) newVal=1.0f;
    if ( newVal<-1.0f ) newVal=-1.0f;
-   shadowDirY = newVal;
+   m_shadowDirY = newVal;
 
    STOPUNDO
 
@@ -8478,7 +8490,7 @@ STDMETHODIMP PinTable::put_RenderShadows(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_EnableAntialiasing(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(useAA);
+   *pVal = (VARIANT_BOOL)FTOVB(m_useAA);
 
    return S_OK;
 }
@@ -8486,10 +8498,26 @@ STDMETHODIMP PinTable::get_EnableAntialiasing(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_EnableAntialiasing(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      useAA = VBTOF(newVal);
+   m_useAA = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_EnableFXAA(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_useFXAA);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_EnableFXAA(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+   m_useFXAA = VBTOF(newVal);
+   STOPUNDO
+
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_OverridePhysics(long *pVal)

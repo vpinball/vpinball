@@ -119,22 +119,22 @@ Player::Player()
 		}
 	m_fVSync = vsync;
 
-   hr = GetRegInt("Player", "FXAA", &m_fFXAA);
-   if (hr != S_OK)
-   {
+    hr = GetRegInt("Player", "FXAA", &m_fFXAA);
+    if (hr != S_OK)
+    {
       m_fFXAA = fFalse; // The default = off
-   }
-   if ((m_fFXAA != fFalse) && (!SSE2_supported)) // SSE2 necessary for the FXAA code
-   {
+    }
+    if ((m_fFXAA != fFalse) && (!SSE2_supported)) // SSE2 necessary for the FXAA code
+    {
       ShowError("SSE2 is not supported on this processor (necessary for FXAA)");
       m_fFXAA = fFalse;
-   }
+    }
 
-   hr = GetRegInt("Player", "USEAA", &useAA);
-   if (hr != S_OK)
-   {
-      useAA = fFalse; // The default = off
-   }
+    hr = GetRegInt("Player", "USEAA", &m_useAA);
+    if (hr != S_OK)
+    {
+      m_useAA = fFalse; // The default = off
+    }
 
 	hr = GetRegInt("Player", "Stereo3D", &m_fStereo3D);
 	if (hr != S_OK)
@@ -634,8 +634,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	m_jolt_trigger_time = (U32)m_ptable->m_jolt_trigger_time;
 	m_tilt_trigger_time = (U32)m_ptable->m_tilt_trigger_time;
 
-   ShadowSur::shadowDirX = ptable->shadowDirX;
-   ShadowSur::shadowDirY = ptable->shadowDirY;
+    ShadowSur::m_shadowDirX = ptable->m_shadowDirX;
+    ShadowSur::m_shadowDirY = ptable->m_shadowDirY;
 
     m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
@@ -652,17 +652,17 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	InitRegValues();
 
-   if( !ptable->useAA )
-   {
-      useAA=false;
-   }
-   //else
-   //{
-   //   useAA=true;
-   //}
+    if( !ptable->m_useAA )
+    {
+      m_useAA = false;
+    }
+    if( !ptable->m_useFXAA )
+    {
+      m_fFXAA = false;
+    }
 
 	// width, height, and colordepth are only defined if fullscreen is true.
-	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, (!!m_fStereo3D) || (!!m_fFXAA), !!useAA);
+	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, (!!m_fStereo3D) || (!!m_fFXAA), !!m_useAA);
 
 	if (hr != S_OK)
 		{
@@ -745,11 +745,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	m_nudgetime = 0;
 	m_movedPlunger = 0;	// has plunger moved, must have moved at least three times
 
-   if ( useAA )
-   {
+    if ( m_useAA )
+    {
       m_pin3d.InitAntiAliasing();
-   }
-
+    }
 
 	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
 	SetWindowText(hwndProgressName, "Initalizing Physics...");
@@ -1263,7 +1262,7 @@ void Player::EraseBall(Ball *pball)
 			InvalidateRect(&pball->m_rcScreenShadow);
 		}
 	}
-   if ( m_ptable->useReflectionForBalls )
+   if ( m_ptable->m_useReflectionForBalls )
    {
       InvalidateRect(&pball->m_rcReflection);
    }
@@ -2118,7 +2117,7 @@ void Player::Render()
 	///+++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     UpdatePhysics();
-   if( useAA )
+    if( m_useAA )
       m_pin3d.SetRenderTarget(m_pin3d.antiAliasTexture, m_pin3d.m_pddsZBuffer );
 
 	// This only invalidates all of the new Ball regions upfront, which is needed due to the double buffering of DX7 to properly invalidate -all- regions (i.e. reblit the static buffer beforehand!). This can be removed as soon as region updates of the back/frontbuffer are deprecated and always the full static/backbuffer are blitted each frame!
@@ -2201,11 +2200,11 @@ void Player::Render()
 			if(prc.right > prc.left && prc.bottom > prc.top)
 				overall_area += (prc.right-prc.left)*(prc.bottom-prc.top);
 		}
-   BaseTexture *backBuffer = m_pin3d.m_pddsBackBuffer;
-   if ( useAA )
+    BaseTexture *backBuffer = m_pin3d.m_pddsBackBuffer;
+    if ( m_useAA )
      backBuffer = m_pin3d.antiAliasTexture; //m_pin3d.m_pddsBackBuffer;
 
-   BaseTexture * const backBufferZ = m_pin3d.m_pddsZBuffer;
+    BaseTexture * const backBufferZ = m_pin3d.m_pddsZBuffer;
 
 	if(((m_fEnableRegionUpdateOptimization && (m_ptable->m_TableRegionOptimization == -1)) || (m_ptable->m_TableRegionOptimization == 1))
 		&& (!m_fCleanBlt || (overall_area >= FULLBLTAREA)))
@@ -2297,7 +2296,7 @@ void Player::Render()
 
     RenderDynamics();
 
-    if ( useAA )
+    if ( m_useAA )
        m_pin3d.AntiAliasingScene();
 
     // Check if we should turn animate the plunger light.
@@ -2913,8 +2912,8 @@ void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
       }
       else // shadow is on the floor
       {
-         offsetx = pball->z*(m_ptable->shadowDirX*0.5f); //0.5f
-         offsety = pball->z*(m_ptable->shadowDirY*0.5f); //-0.5f
+         offsetx = pball->z*(m_ptable->m_shadowDirX*0.5f); //0.5f
+         offsety = pball->z*(m_ptable->m_shadowDirY*0.5f); //-0.5f
          shadowz = 0.1f; //pball->z - pball->radius + 0.1f;
       }
 
@@ -3111,8 +3110,8 @@ void Player::DrawBallLogo(Ball * const pball)
 
 void Player::DrawBalls(const bool only_invalidate_regions)
 {
-   bool drawReflection=m_ptable->useReflectionForBalls==fTrue;
-   DWORD strength = (DWORD) m_ptable->ballReflectionStrength;
+   bool drawReflection=m_ptable->m_useReflectionForBalls==fTrue;
+   DWORD strength = (DWORD) m_ptable->m_ballReflectionStrength;
    DWORD factor = (DWORD)(strength<<24) + (DWORD)(strength<<16) + (DWORD)(strength<<8) + strength;
 
 	if(!only_invalidate_regions)
@@ -3139,7 +3138,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
       float maxz = pball->defaultZ+3.0f;
       float minz = pball->defaultZ-1.0f;
-      if( m_ptable->useReflectionForBalls )
+      if( m_ptable->m_useReflectionForBalls )
       {
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          if( (zheight > maxz) || (pball->z < minz) )
@@ -3184,7 +3183,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		{
          Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
 			memcpy( buf, pball->vertices, sizeof(Vertex3D_NoTex2)*4 );
-         if ( m_ptable->useReflectionForBalls )
+         if ( m_ptable->m_useReflectionForBalls )
          {
             memcpy( &buf[16], pball->reflectVerts, sizeof(Vertex3D_NoTex2)*4 );
          }
@@ -3198,7 +3197,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 	        // Mark ball rect as dirty for blitting to the screen
 		   m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
          m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, pball->vertices, NULL, NULL, 4, fFalse);
-         if( m_ptable->useReflectionForBalls )
+         if( m_ptable->m_useReflectionForBalls )
          {
             m_pin3d.ClearExtents(&pball->m_rcReflection, NULL, NULL);
             m_pin3d.ExpandExtentsPlus(&pball->m_rcReflection, pball->reflectVerts, NULL, NULL, 4, fFalse);
@@ -3300,7 +3299,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 		if(only_invalidate_regions)
       {
-         if ( m_ptable->useReflectionForBalls )
+         if ( m_ptable->m_useReflectionForBalls )
          {
             InvalidateRect(&pball->m_rcReflection);
          }

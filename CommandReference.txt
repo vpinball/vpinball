@@ -54,6 +54,7 @@ BallBackDecal(string) - image of the ball back decal
 *Name(string) - table name
 
 *EnableAntialiasing(bool) - enables fake AA for this table if you have set 'Fake AA on all tables' in the video options. default=false
+*EnableFXAA(bool) - enables FXAA for this table if you have set 'FXAA' in the video options. default=false
 *RenderShadows(bool) - default=true
 *RenderEMReels(bool) - default=true						
 *RenderDecals(bool) - default=true
