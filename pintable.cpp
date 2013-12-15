@@ -4803,22 +4803,14 @@ void PinTable::DoRButtonUp(int x,int y)
       //SetSel(HitTest(x,y));
       //AddMultiSel(HitTest(x,y), fFalse);
       //m_pselcur->OnRButtonDown(x,y,m_hwnd);
-      if (m_vmultisel.Size() > 1)
+      if (m_vmultisel.ElementAt(0) != this)
       {
-         DoContextMenu(x, y, IDR_MULTIMENU, this);
+         // No right click menu for main table object
+         DoContextMenu(x, y, m_vmultisel.ElementAt(0)->m_menuid, m_vmultisel.ElementAt(0));
       }
       else
       {
-         if (m_vmultisel.ElementAt(0) != this)
-         {
-            // No right click menu for main table object
-            DoContextMenu(x, y, m_vmultisel.ElementAt(0)->m_menuid, m_vmultisel.ElementAt(0));
-            //m_vmultisel.ElementAt(0)->OnRButtonDown(x,y,m_hwnd);
-         }
-         else
-         {
-            DoContextMenu(x, y, IDR_TABLEMENU, m_vmultisel.ElementAt(0));
-         }
+         DoContextMenu(x, y, IDR_TABLEMENU, m_vmultisel.ElementAt(0));
       }
    }
 }
