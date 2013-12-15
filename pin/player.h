@@ -226,8 +226,8 @@ private:
     // caching hitable alpha ramps & primitives to speed up DrawAlphas() and set up invalid regions
 	Vector< Hitable > m_vhitalpha;
 
-	int curAccel_x[PININ_JOYMXCNT];
-	int curAccel_y[PININ_JOYMXCNT];
+	int m_curAccel_x[PININ_JOYMXCNT];
+	int m_curAccel_y[PININ_JOYMXCNT];
 
 	BOOL m_fPlayback;
 	char m_szPlaybackFile;

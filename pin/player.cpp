@@ -68,8 +68,8 @@ Player::Player()
 #endif
 
 	for(int i = 0; i < PININ_JOYMXCNT; ++i) {
-		curAccel_x[i] = 0;
-		curAccel_y[i] = 0;
+		m_curAccel_x[i] = 0;
+		m_curAccel_y[i] = 0;
 	}
 
 	m_sleeptime = 0;
@@ -1534,16 +1534,16 @@ void Player::InitWindow()
 
 void Player::UltraNudgeX(const int x, const int j )
 {
-	curAccel_x[j] = x;
+	m_curAccel_x[j] = x;
 }
 
 void Player::UltraNudgeY(const int y, const int j )
 {
-	curAccel_y[j] = y;
+	m_curAccel_y[j] = y;
 }
 
-#define GetUltraNudgeX() (((F32)curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN))) // Get the -1.0f to +1.0f values from joystick input tilt sensor / ushock
-#define GetUltraNudgeY() (((F32)curAccel_y[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN)))
+#define GetUltraNudgeX() (((F32)m_curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN))) // Get the -1.0f to +1.0f values from joystick input tilt sensor / ushock
+#define GetUltraNudgeY() (((F32)m_curAccel_y[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN)))
 
 #if 0
 int Player::UltraNudgeGetTilt()
@@ -1559,7 +1559,7 @@ int Player::UltraNudgeGetTilt()
 	U32 tilt_2 = 0;
 	for(int j = 0; j < m_pininput.e_JoyCnt; ++j)	//find largest value
 		{
-		tilt_2 = max(tilt_2,(U32)(curAccel_x[j] * curAccel_x[j] + curAccel_y[j] * curAccel_y[j])); //always postive numbers
+		tilt_2 = max(tilt_2,(U32)(m_curAccel_x[j] * m_curAccel_x[j] + m_curAccel_y[j] * m_curAccel_y[j])); //always postive numbers
 		}
 
 	if( ( ms - last_jolt_time > m_jolt_trigger_time ) &&
@@ -1584,8 +1584,8 @@ void Player::UltraNudge_update()	// called on every integral physics frame
 {
 	if (m_NudgeManual >= 0)			    // Only one joystick controls in manual mode
 	{		
-		m_NudgeX = m_AccelMAmp * ((float)curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE); // * Manual Gain
-		m_NudgeY = m_AccelMAmp * ((float)curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
+		m_NudgeX = m_AccelMAmp * ((float)m_curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE); // * Manual Gain
+		m_NudgeY = m_AccelMAmp * ((float)m_curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
 
 		if (m_ptable->m_tblMirrorEnabled)
 			m_NudgeX = -m_NudgeX;
@@ -1604,8 +1604,8 @@ void Player::UltraNudge_update()	// called on every integral physics frame
 
 	for(int j = 0; j < m_pininput.e_JoyCnt; ++j)
 	{		
-		float dx = ((float)curAccel_x[j])*(float)(1.0/JOYRANGE);		// norm range -1 .. 1	
-		const float dy = ((float)curAccel_y[j])*(float)(1.0/JOYRANGE);	
+		float dx = ((float)m_curAccel_x[j])*(float)(1.0/JOYRANGE);		// norm range -1 .. 1	
+		const float dy = ((float)m_curAccel_y[j])*(float)(1.0/JOYRANGE);	
 		if ( m_ptable->m_tblMirrorEnabled )
 			dx = -dx;
 		m_NudgeX += m_AccelAmpX*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X

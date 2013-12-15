@@ -5,10 +5,6 @@
 #if !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)
 #define AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_
 
-#include <vector>
-#include <string>
-using namespace std;
-
 struct DSAudioDevice
 {
     LPGUID guid;
@@ -32,7 +28,7 @@ class PinSound
 {
 public:
 	PinSound();
-	virtual ~PinSound();
+	~PinSound();
 
 	LPDIRECTSOUNDBUFFER m_pDSBuffer;
 

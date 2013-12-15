@@ -44,6 +44,10 @@ using namespace MSAPC;
 
 #include <xmmintrin.h>
 
+#include <vector>
+#include <string>
+using namespace std;
+
 #include "def.h"
 #include "resource.h"
 

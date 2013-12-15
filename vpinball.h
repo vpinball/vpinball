@@ -44,7 +44,7 @@ public:
 	void Init();
 	void RegisterClasses();
 	void CreateSideBar();
-   HWND CreateLayerToolbar(HWND hwndParent);
+    HWND CreateLayerToolbar(HWND hwndParent);
 	HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent);
 	void CreateMDIClient();
 	void InitVBA();
@@ -135,23 +135,21 @@ public:
 	CComObject<PinTable> *m_ptableActive;
 
 	// From VBA APC
-	static int NumPlays;
 	int m_lcidVBA;
 
 	HWND m_hwndSideBar;
-   HWND m_hwndSideBarScroll;
-   HWND m_hwndSideBarLayers;
+    HWND m_hwndSideBarScroll;
+    HWND m_hwndSideBarLayers;
 	HWND m_hwndWork;
 	HWND m_hwndToolbarMain;
-   HWND m_hwndToolbarPalette;
-   HWND m_hwndToolbarLayers;
+    HWND m_hwndToolbarPalette;
+    HWND m_hwndToolbarLayers;
 	HWND m_hwndStatusBar;
 
-	int palettescroll;
+	int m_palettescroll;
 
 	SmartBrowser m_sb;
 
-	//IStorage *m_pistgClipboard;
 	Vector<IStream> m_vstmclipboard;
 
 	PinDirectSound m_pds;
@@ -178,7 +176,7 @@ public:
 	char m_szMyPath[MAX_PATH];
 	WCHAR m_wzMyPath[MAX_PATH];
 
-	char 	m_szRecentTableList[LAST_OPENED_TABLE_COUNT+1][MAX_PATH];
+	char m_szRecentTableList[LAST_OPENED_TABLE_COUNT+1][MAX_PATH];
 
 	STDMETHOD(PlaySound)(BSTR bstr);
 
@@ -190,12 +188,13 @@ public:
 	HANDLE m_workerthread;
 	DWORD m_workerthreadid;
 
+    HMODULE m_scintillaDll;
+
 	int m_autosaveTime;
 
 	bool m_fDebugging; // Whether VBA is currently in debugging mode
 	bool m_bWinHelp;
 	static bool m_open_minimized;
-   HMODULE scintillaDll;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

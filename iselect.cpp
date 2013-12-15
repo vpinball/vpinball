@@ -121,7 +121,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
 
       PinTable *currentTable = GetPTable();
       int i = (icmd & 0x00FF0000)>>16;
-      ISelect * const pisel = currentTable->allHitElements.ElementAt(i);
+      ISelect * const pisel = currentTable->m_allHitElements.ElementAt(i);
 
       const BOOL fAdd = ((ksshift & 0x80000000) != 0);
 
@@ -149,15 +149,15 @@ void ISelect::DoCommand(int icmd, int x, int y)
 		case ID_DRAWINFRONT:
 			GetPTable()->m_vedit.RemoveElement(piedit);
 			GetPTable()->m_vedit.AddElement(piedit);
-            GetPTable()->layer[ layerIndex ].RemoveElement(piedit);
-            GetPTable()->layer[ layerIndex ].AddElement(piedit);
+            GetPTable()->m_layer[ layerIndex ].RemoveElement(piedit);
+            GetPTable()->m_layer[ layerIndex ].AddElement(piedit);
 			GetPTable()->SetDirtyDraw();
 			break;
 		case ID_DRAWINBACK:
 			GetPTable()->m_vedit.RemoveElement(piedit);
 			GetPTable()->m_vedit.InsertElementAt(piedit, 0);
-         GetPTable()->layer[ layerIndex ].RemoveElement(piedit);
-         GetPTable()->layer[ layerIndex ].InsertElementAt(piedit,0);
+            GetPTable()->m_layer[ layerIndex ].RemoveElement(piedit);
+            GetPTable()->m_layer[ layerIndex ].InsertElementAt(piedit,0);
 			GetPTable()->SetDirtyDraw();
 			break;
 		case ID_SETASDEFAULT:
