@@ -943,7 +943,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case GET_COLOR_TABLE:
       {
          SmartBrowser * const psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
-         *((unsigned long **)lParam) = psb->GetBaseISel()->GetPTable()->rgcolorcustom;
+         *((unsigned long **)lParam) = psb->GetBaseISel()->GetPTable()->m_rgcolorcustom;
          return TRUE;
       }
       break;
@@ -1285,7 +1285,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                cc.hInstance = NULL;
                cc.rgbResult = GetWindowLong(hwnd, GWL_USERDATA);
                SendMessage(hwndDlg, GET_COLOR_TABLE, 0, (long)&cc.lpCustColors);
-               //cc.lpCustColors = (unsigned long *)SendMessage(hwndDlg, GET_COLOR_TABLE, 0, 0);//psb->m_pisel->GetPTable()->rgcolorcustom;//cr;
+               //cc.lpCustColors = (unsigned long *)SendMessage(hwndDlg, GET_COLOR_TABLE, 0, 0);//psb->m_pisel->GetPTable()->m_rgcolorcustom;//cr;
                cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
                cc.lCustData = NULL;
                cc.lpfnHook  = NULL;

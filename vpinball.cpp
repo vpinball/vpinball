@@ -9,15 +9,15 @@
 #include "resource.h"
 
 #if _MSC_VER <= 1310 // VC 2003 and before
-#define _itoa_s(a,b,c,d) _itoa(a,b,d)
+ #define _itoa_s(a,b,c,d) _itoa(a,b,d)
 #endif
 
 #if defined(IMSPANISH)
-#define TOOLBAR_WIDTH 152
+ #define TOOLBAR_WIDTH 152
 #elif defined(IMGERMAN)
-#define TOOLBAR_WIDTH 152
+ #define TOOLBAR_WIDTH 152
 #else
-#define TOOLBAR_WIDTH 102 //98 //102
+ #define TOOLBAR_WIDTH 102 //98 //102
 #endif
 
 #define SCROLL_WIDTH GetSystemMetrics(SM_CXVSCROLL)
@@ -157,10 +157,8 @@ VPinball::VPinball()
    //	DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); //add FreeImage support BDS
 
    m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
-   //implement this and StdMethods QueryInterface, AddRef and Release
+							//implement this and StdMethods QueryInterface, AddRef and Release
    m_open_minimized = 0;
-
-   NumPlays = 0;			// for Statistics in Registry (?)
 
    m_pcv = NULL;			// no currently active code window
 }
@@ -174,7 +172,7 @@ VPinball::~VPinball()
 {
    //	DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); //remove FreeImage support BDS
    SetClipboard(NULL);
-   FreeLibrary(scintillaDll);
+   FreeLibrary(m_scintillaDll);
 }
 
 ///<summary>
@@ -210,7 +208,6 @@ void VPinball::GetMyPath()
 
 // Class Variables
 bool VPinball::m_open_minimized;
-int VPinball::NumPlays;
 
 ///<summary>
 ///Sets m_open_minimized to 1
@@ -248,14 +245,12 @@ void VPinball::Init()
 
    m_workerthread = NULL;										//Workerthread - only for hanging scripts and autosave - will be created later
 
-   //m_pistgClipboard = NULL;
-
    GetMyPath();												//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
 
    RegisterClasses();											//TODO - brief description of what happens in the function
 
-   scintillaDll = LoadLibrary("SciLexer.DLL");
-   if ( scintillaDll==NULL )
+   m_scintillaDll = LoadLibrary("SciLexer.DLL");
+   if ( m_scintillaDll==NULL )
    {
       ShowError("Unable to load SciLexer.DLL");
    }
@@ -591,7 +586,7 @@ void VPinball::CreateSideBar()
    m_hwndToolbarMain = CreateToolbar((TBBUTTON *)g_tbbuttonMain, TBCOUNTMAIN, m_hwndSideBar);
    m_hwndToolbarLayers = CreateLayerToolbar(m_hwndSideBarLayers);
    m_hwndToolbarPalette = CreateToolbar((TBBUTTON *)g_tbbuttonPalette, TBCOUNTPALETTE, m_hwndSideBarScroll);
-   palettescroll = 0;
+   m_palettescroll = 0;
 }
 
 HWND VPinball::CreateLayerToolbar(HWND hwndParent)
@@ -768,7 +763,7 @@ void VPinball::InitLayerMenu()
    {
       for( int i=0;i<8;i++ )
       {
-         ptCur->activeLayers[i]=true;
+         ptCur->m_activeLayers[i]=true;
       }
    }
 }
@@ -1455,7 +1450,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if( !ptCur ) break;
          HMENU hmenu = GetMenu(m_hwnd);
          ptCur->MergeAllLayers();
-         for( int i=0;i<8;i++ ) ptCur->activeLayers[i]=false;
+         for( int i=0;i<8;i++ ) ptCur->m_activeLayers[i]=false;
          for( int i=0;i<8;i++ ) setLayerStatus(i);
          break;
       }
@@ -1464,17 +1459,17 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          ptCur = GetActiveTable();
          if( !ptCur ) break;
          HMENU hmenu = GetMenu(m_hwnd);
-         if( ptCur->toggleAllLayers )
+         if( ptCur->m_toggleAllLayers )
          {
-            for( int i=0;i<8;i++ ) ptCur->activeLayers[i]=false;
+            for( int i=0;i<8;i++ ) ptCur->m_activeLayers[i]=false;
             for( int i=0;i<8;i++ ) setLayerStatus(i);
          }
          else
          {
-            for( int i=0;i<8;i++ ) ptCur->activeLayers[i]=true;
+            for( int i=0;i<8;i++ ) ptCur->m_activeLayers[i]=true;
             for( int i=0;i<8;i++ ) setLayerStatus(i);
          }
-         ptCur->toggleAllLayers ^= true;   
+         ptCur->m_toggleAllLayers ^= true;   
          break;
       }
    case ID_HELP_ABOUT:
@@ -1508,7 +1503,7 @@ void VPinball::setLayerStatus( int layerNumber )
    //+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
    SendMessage(m_hwndToolbarLayers,TB_GETBUTTONINFO,allLayers[layerNumber],(long)&tbinfo);
 
-   if( !ptCur->activeLayers[layerNumber] )
+   if( !ptCur->m_activeLayers[layerNumber] )
    {
       CheckMenuItem(hmenu, allLayers[layerNumber], MF_CHECKED);
       if ( (tbinfo.fsState & TBSTATE_CHECKED) == 0 )
@@ -2422,7 +2417,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          PinTable *ptable = g_pvp->GetActiveTable();
          if ( ptable )
          {
-            while( ptable->savingActive )
+            while( ptable->m_savingActive )
             {
                Sleep(1000);
             }
@@ -2524,23 +2519,23 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          si.nMin = 0;
          si.nMax = ((vertbutsize+vertpadding) * (TBCOUNTPALETTE/2)) + 4; // Add 4 padding
          si.nPage = scrollwindowheight;
-         si.nPos = g_pvp->palettescroll;
+         si.nPos = g_pvp->m_palettescroll;
 
          SetScrollInfo(g_pvp->m_hwndSideBarScroll, SB_VERT, &si, TRUE);
 
          // check if we have any blank space at the bottom and fill it in by moving the scrollbar up
          if ((int)(si.nPos + si.nPage) > si.nMax)
          {
-            g_pvp->palettescroll = si.nMax - si.nPage;
-            if (g_pvp->palettescroll < 0)
+            g_pvp->m_palettescroll = si.nMax - si.nPage;
+            if (g_pvp->m_palettescroll < 0)
             {
-               g_pvp->palettescroll = 0;
+               g_pvp->m_palettescroll = 0;
             }
 
-            SetScrollPos(hwnd, SB_VERT, g_pvp->palettescroll, TRUE);
+            SetScrollPos(hwnd, SB_VERT, g_pvp->m_palettescroll, TRUE);
 
             SetWindowPos(g_pvp->m_hwndToolbarPalette,NULL,
-               0, -g_pvp->palettescroll, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+               0, -g_pvp->m_palettescroll, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
          }
 
          int sidebarwidth = TOOLBAR_WIDTH;
@@ -2693,29 +2688,29 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
          switch (LOWORD(wParam))
          {
          case SB_LINEUP:
-            g_pvp->palettescroll -= si.nPage/10;
+            g_pvp->m_palettescroll -= si.nPage/10;
             break;
          case SB_LINEDOWN:
-            g_pvp->palettescroll += si.nPage/10;
+            g_pvp->m_palettescroll += si.nPage/10;
             break;
          case SB_PAGEUP:
-            g_pvp->palettescroll -= si.nPage/2;
+            g_pvp->m_palettescroll -= si.nPage/2;
             break;
          case SB_PAGEDOWN:
-            g_pvp->palettescroll += si.nPage/2;
+            g_pvp->m_palettescroll += si.nPage/2;
             break;
          case SB_THUMBTRACK:
             {
-               const int delta = (int)(g_pvp->palettescroll - si.nPos);
-               g_pvp->palettescroll = ((short)HIWORD(wParam) + delta);
+               const int delta = (int)(g_pvp->m_palettescroll - si.nPos);
+               g_pvp->m_palettescroll = ((short)HIWORD(wParam) + delta);
             }
             break;
          }
 
-         SetScrollPos(hwnd, SB_VERT, g_pvp->palettescroll, TRUE);
+         SetScrollPos(hwnd, SB_VERT, g_pvp->m_palettescroll, TRUE);
 
          SetWindowPos(g_pvp->m_hwndToolbarPalette,NULL,
-            0, -g_pvp->palettescroll, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            0, -g_pvp->m_palettescroll, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
       }
       break;
    }
@@ -3185,7 +3180,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
    case GET_COLOR_TABLE:
       {
-         *((unsigned long **)lParam) = pt->rgcolorcustom;
+         *((unsigned long **)lParam) = pt->m_rgcolorcustom;
          return TRUE;
       }
       break;
@@ -8515,23 +8510,23 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
          }
          else
          {
-			 ISelect *psel = pt->allHitElements.ElementAt(idx);
-			 pt->allHitElements.RemoveElementAt(idx);
+			 ISelect *psel = pt->m_allHitElements.ElementAt(idx);
+			 pt->m_allHitElements.RemoveElementAt(idx);
 			 if ( idx-1<0 )
 			 {
-				pt->allHitElements.InsertElementAt(psel,0);
+				pt->m_allHitElements.InsertElementAt(psel,0);
 			 }
 			 else
-				pt->allHitElements.InsertElementAt(psel, idx-1);
-			 for ( int i=pt->allHitElements.Size()-1;i>=0;i-- )
+				pt->m_allHitElements.InsertElementAt(psel, idx-1);
+			 for ( int i=pt->m_allHitElements.Size()-1;i>=0;i-- )
 			 {
-				IEditable *pedit = pt->allHitElements.ElementAt(i)->GetIEditable();
+				IEditable *pedit = pt->m_allHitElements.ElementAt(i)->GetIEditable();
 				int t=pt->m_vedit.IndexOf(pedit);
 				pt->m_vedit.RemoveElementAt(t);
 			 }
-			 for ( int i=pt->allHitElements.Size()-1;i>=0;i-- )
+			 for ( int i=pt->m_allHitElements.Size()-1;i>=0;i-- )
 			 {
-				IEditable *pedit = pt->allHitElements.ElementAt(i)->GetIEditable();
+				IEditable *pedit = pt->m_allHitElements.ElementAt(i)->GetIEditable();
 				pt->m_vedit.AddElement(pedit);
 			 }
          }
@@ -8572,29 +8567,29 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
 	  }
       else
       {
-		  if ( idx<pt->allHitElements.Size()-1 )
+		  if ( idx<pt->m_allHitElements.Size()-1 )
 		  {
 			 SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
 			 SendMessage( hw, LB_DELETESTRING, idx, 0 );
 			 SendMessage( hw, LB_INSERTSTRING, idx+1, (WPARAM)nameBuf);
 			 SendMessage( hw, LB_SETCURSEL, idx+1,0);
-			 ISelect *psel = pt->allHitElements.ElementAt(idx);
-			 pt->allHitElements.RemoveElementAt(idx);
-			 if ( idx+1>=pt->allHitElements.Size() )
+			 ISelect *psel = pt->m_allHitElements.ElementAt(idx);
+			 pt->m_allHitElements.RemoveElementAt(idx);
+			 if ( idx+1>=pt->m_allHitElements.Size() )
 			 {
-				pt->allHitElements.AddElement(psel);
+				pt->m_allHitElements.AddElement(psel);
 			 }
 			 else
-				pt->allHitElements.InsertElementAt(psel, idx+1);
-			 for ( int i=pt->allHitElements.Size()-1;i>=0;i-- )
+				pt->m_allHitElements.InsertElementAt(psel, idx+1);
+			 for ( int i=pt->m_allHitElements.Size()-1;i>=0;i-- )
 			 {
-				IEditable *pedit = pt->allHitElements.ElementAt(i)->GetIEditable();
+				IEditable *pedit = pt->m_allHitElements.ElementAt(i)->GetIEditable();
 				int t=pt->m_vedit.IndexOf(pedit);
 				pt->m_vedit.RemoveElementAt(t);
 			 }
-			 for ( int i=pt->allHitElements.Size()-1;i>=0;i-- )
+			 for ( int i=pt->m_allHitElements.Size()-1;i>=0;i-- )
 			 {
-				IEditable *pedit = pt->allHitElements.ElementAt(i)->GetIEditable();
+				IEditable *pedit = pt->m_allHitElements.ElementAt(i)->GetIEditable();
 				pt->m_vedit.AddElement(pedit);
 			 }
 		  }
@@ -8619,9 +8614,9 @@ int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          {
             SendMessage( listHwnd, LB_RESETCONTENT, 0, 0);
          }
-         for( int i=0; i<(drawing_order_select ? pt->m_vmultisel.Size() : pt->allHitElements.Size()); i++ )
+         for( int i=0; i<(drawing_order_select ? pt->m_vmultisel.Size() : pt->m_allHitElements.Size()); i++ )
          {
-            IEditable *pedit = drawing_order_select ? pt->m_vmultisel.ElementAt(i)->GetIEditable() : pt->allHitElements.ElementAt(i)->GetIEditable();
+            IEditable *pedit = drawing_order_select ? pt->m_vmultisel.ElementAt(i)->GetIEditable() : pt->m_allHitElements.ElementAt(i)->GetIEditable();
             if ( pedit )
             {
                char *szTemp;

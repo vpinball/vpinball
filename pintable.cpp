@@ -574,10 +574,10 @@ PinTable::PinTable()
 {
    for( int i=0;i<8;i++ )
    {
-      activeLayers[i]=true;
+      m_activeLayers[i]=true;
    }
-   toggleAllLayers=false;
-   savingActive=false;
+   m_toggleAllLayers=false;
+   m_savingActive=false;
 
    m_vmultisel.AddElement((ISelect *)this);
    m_undo.m_ptable = this;
@@ -1022,7 +1022,7 @@ void PinTable::SwitchToLayer(int layerNumber )
       bool alreadyIn=false;
       for( int i=0;i<8;i++ )
       {
-         if( layer[i].IndexOf(piedit)!=-1 )
+         if( m_layer[i].IndexOf(piedit)!=-1 )
          {
             alreadyIn=true;
          }
@@ -1030,28 +1030,28 @@ void PinTable::SwitchToLayer(int layerNumber )
       if( !alreadyIn )
       {
          piedit->GetISelect()->layerIndex=0;
-         layer[0].AddElement(piedit);
+         m_layer[0].AddElement(piedit);
       }
    }
    //toggle layer
-   activeLayers[layerNumber] ^= true;
+   m_activeLayers[layerNumber] ^= true;
 
    // now set all elements to visible if their layer is active, otherwise hide them
    for( int i=0;i<8;i++ )
    {
-      if( activeLayers[i] )
+      if( m_activeLayers[i] )
       {         
-         for( int t=0;t<layer[i].Size();t++ )
+         for( int t=0;t<m_layer[i].Size();t++ )
          {
-            IEditable *piedit = layer[i].ElementAt(t);
+            IEditable *piedit = m_layer[i].ElementAt(t);
             piedit->isVisible=true;
          }
       }
       else
       {
-         for( int t=0;t<layer[i].Size();t++ )
+         for( int t=0;t<m_layer[i].Size();t++ )
          {
-            IEditable *piedit = layer[i].ElementAt(t);
+            IEditable *piedit = m_layer[i].ElementAt(t);
             piedit->isVisible=false;
          }
       }
@@ -1061,13 +1061,13 @@ void PinTable::SwitchToLayer(int layerNumber )
 
 void PinTable::AssignToLayer(IEditable *obj, int layerNumber )
 {
-   if( !activeLayers[layerNumber] )
+   if( !m_activeLayers[layerNumber] )
    {
       obj->isVisible=false;
    }
-   layer[obj->GetISelect()->layerIndex].RemoveElement(obj);
+   m_layer[obj->GetISelect()->layerIndex].RemoveElement(obj);
    obj->GetISelect()->layerIndex=layerNumber;
-   layer[layerNumber].InsertElementAt(obj,0);
+   m_layer[layerNumber].InsertElementAt(obj,0);
    SetDirtyDraw();
 }
 
@@ -1075,15 +1075,15 @@ void PinTable::MergeAllLayers()
 {
    for( int t=1;t<8;t++)
    {
-      for( int i=layer[t].Size()-1;i>=0;i-- )
+      for( int i=m_layer[t].Size()-1;i>=0;i-- )
       {
-         IEditable *piedit = layer[t].ElementAt(i);
+         IEditable *piedit = m_layer[t].ElementAt(i);
          piedit->GetISelect()->layerIndex=0;
-         layer[0].AddElement(piedit);
+         m_layer[0].AddElement(piedit);
       }
-      layer[t].RemoveAllElements();
+      m_layer[t].RemoveAllElements();
    }
-   layer[0].Clone( &m_vedit );
+   m_layer[0].Clone( &m_vedit );
 
    SetDirtyDraw();
 }
@@ -1098,7 +1098,7 @@ void PinTable::BackupLayers()
       bool alreadyIn=false;
       for( int i=0;i<8;i++ )
       {
-         if( layer[i].IndexOf(piedit)!=-1 )
+         if( m_layer[i].IndexOf(piedit)!=-1 )
          {
             alreadyIn=true;
          }
@@ -1106,16 +1106,16 @@ void PinTable::BackupLayers()
       if( !alreadyIn )
       {
          piedit->GetISelect()->layerIndex=0;
-         layer[0].AddElement(piedit);
+         m_layer[0].AddElement(piedit);
       }
    }
    // make all elements visible again
    for( int t=0;t<8;t++)
    {
-      //      for( int i=layer[t].Size()-1;i>=0;i-- )
-      for( int i=0;i<layer[t].Size();i++ )
+      //      for( int i=m_layer[t].Size()-1;i>=0;i-- )
+      for( int i=0;i<m_layer[t].Size();i++ )
       {
-         IEditable *piedit = layer[t].ElementAt(i);
+         IEditable *piedit = m_layer[t].ElementAt(i);
          piedit->isVisible=true;
       }
    }
@@ -1125,19 +1125,19 @@ void PinTable::RestoreLayers()
 {
    for( int i=0;i<8;i++ )
    {
-      if( activeLayers[i] )
+      if( m_activeLayers[i] )
       {         
-         for( int t=0;t<layer[i].Size();t++ )
+         for( int t=0;t<m_layer[i].Size();t++ )
          {
-            IEditable *piedit = layer[i].ElementAt(t);
+            IEditable *piedit = m_layer[i].ElementAt(t);
             piedit->isVisible=true;
          }
       }
       else
       {
-         for( int t=0;t<layer[i].Size();t++ )
+         for( int t=0;t<m_layer[i].Size();t++ )
          {
-            IEditable *piedit = layer[i].ElementAt(t);
+            IEditable *piedit = m_layer[i].ElementAt(t);
             piedit->isVisible=false;
          }
       }
@@ -1148,9 +1148,9 @@ void PinTable::DeleteFromLayer( IEditable *obj )
 {
    for( int i=0;i<8;i++ )
    {
-      if( layer[i].IndexOf(obj)!=-1 )
+      if( m_layer[i].IndexOf(obj)!=-1 )
       {
-         layer[i].RemoveElement(obj);
+         m_layer[i].RemoveElement(obj);
          break;
       }
    }
@@ -1185,7 +1185,7 @@ void PinTable::Init(VPinball *pvp)
 
    for (int i=0;i<16;i++)
    {
-      rgcolorcustom[i] = RGB(0,0,0);
+      m_rgcolorcustom[i] = RGB(0,0,0);
    }
 
 #ifdef VBA
@@ -1682,7 +1682,7 @@ ISelect *PinTable::HitTest(const int x, const int y)
    HitSur * const phs = new HitSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
    HitSur * const phs2 = new HitSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
 
-   allHitElements.RemoveAllElements();
+   m_allHitElements.RemoveAllElements();
 
    Render(phs);
 
@@ -1693,29 +1693,29 @@ ISelect *PinTable::HitTest(const int x, const int y)
       {
          ptr->PreRender(phs2);
          ISelect* tmp = phs2->m_pselected;
-         if ( allHitElements.IndexOf(tmp)==-1 && tmp!=NULL && tmp != this ) 
+         if ( m_allHitElements.IndexOf(tmp)==-1 && tmp!=NULL && tmp != this ) 
          {
-            allHitElements.AddElement(tmp);
+            m_allHitElements.AddElement(tmp);
          }
       }
    }
    // it's possible that PreRender doesn't find all elements  (gates,plunger)
    // check here if everything was already stored in the list
-   if( allHitElements.IndexOf(phs->m_pselected)==-1 )
+   if( m_allHitElements.IndexOf(phs->m_pselected)==-1 )
    {
-      allHitElements.AddElement(phs->m_pselected);
+      m_allHitElements.AddElement(phs->m_pselected);
    }
    delete phs2;
 
    Vector<ISelect> tmpBuffer;
-   for( int i=allHitElements.Size()-1; i>=0; i-- )
+   for( int i=m_allHitElements.Size()-1; i>=0; i-- )
    {
-      tmpBuffer.AddElement( allHitElements.ElementAt(i) );
+      tmpBuffer.AddElement( m_allHitElements.ElementAt(i) );
    }
-   allHitElements.RemoveAllElements();
+   m_allHitElements.RemoveAllElements();
    for(int i=0;i<tmpBuffer.Size();i++)
    {
-      allHitElements.AddElement( tmpBuffer.ElementAt(i) );
+      m_allHitElements.AddElement( tmpBuffer.ElementAt(i) );
    }
    tmpBuffer.RemoveAllElements();
 
@@ -2182,7 +2182,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
    IStorage *pstgData, *pstgInfo;
    IStream *pstmGame, *pstmItem;
 
-   savingActive=true;
+   m_savingActive=true;
    RECT rc;
    SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (long)&rc);
 
@@ -2330,7 +2330,6 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                if(SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
                   m_vimage.ElementAt(i)->SaveToStream(pstmItem, this);
-                  //SaveImageToStream(m_vimage.ElementAt(i), pstmItem);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -2422,7 +2421,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
    //Error:
 
    DestroyWindow(hwndProgressBar);
-   savingActive=false;
+   m_savingActive=false;
    return hr;
 }
 
@@ -2849,7 +2848,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
       bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 
-      bw.WriteStruct(FID(CCUS), rgcolorcustom, sizeof(COLORREF)*16);
+      bw.WriteStruct(FID(CCUS), m_rgcolorcustom, sizeof(COLORREF)*16);
 
       bw.WriteStruct(FID(SECB), &m_protectionData, sizeof(_protectionData));
 
@@ -3205,7 +3204,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
    g_pvp->SetActionCur("");
 
-   for( int t=0;t<8;t++ ) layer[t].Empty();
+   for( int t=0;t<8;t++ ) m_layer[t].Empty();
 
    // copy all elements into their layers
    for( int i=0;i<8;i++ )
@@ -3215,7 +3214,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
          IEditable *piedit = m_vedit.ElementAt(t);
          if ( piedit->GetISelect()->layerIndex==i )
          {
-            layer[i].AddElement(piedit);
+            m_layer[i].AddElement(piedit);
          }
       }
    }
@@ -3746,7 +3745,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(CCUS))
    {
-      pbr->GetStruct(rgcolorcustom, sizeof(COLORREF)*16);
+      pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF)*16);
    }
    else if (id == FID(DSHD))
    {
@@ -4432,17 +4431,17 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 
       AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
       AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
-      for( int i=0; i<allHitElements.Size(); i++ ) 
+      for( int i=0; i<m_allHitElements.Size(); i++ ) 
       {
-         if( !allHitElements.ElementAt(i)->GetIEditable()->isVisible )
+         if( !m_allHitElements.ElementAt(i)->GetIEditable()->isVisible )
          {
             continue;
          }
 
-         ISelect *ptr = allHitElements.ElementAt(i);
+         ISelect *ptr = m_allHitElements.ElementAt(i);
          if ( ptr )
          {
-            IEditable *pedit = allHitElements.ElementAt(i)->GetIEditable();
+            IEditable *pedit = m_allHitElements.ElementAt(i)->GetIEditable();
             if ( pedit )
             {
                char *szTemp;
@@ -4815,15 +4814,15 @@ void PinTable::DoRButtonUp(int x,int y)
       //SetSel(HitTest(x,y));
       //AddMultiSel(HitTest(x,y), fFalse);
       //m_pselcur->OnRButtonDown(x,y,m_hwnd);
-      if (m_vmultisel.ElementAt(0) != this)
-      {
-         // No right click menu for main table object
-         DoContextMenu(x, y, m_vmultisel.ElementAt(0)->m_menuid, m_vmultisel.ElementAt(0));
-      }
-      else
-      {
-         DoContextMenu(x, y, IDR_TABLEMENU, m_vmultisel.ElementAt(0));
-      }
+         if (m_vmultisel.ElementAt(0) != this)
+         {
+            // No right click menu for main table object
+            DoContextMenu(x, y, m_vmultisel.ElementAt(0)->m_menuid, m_vmultisel.ElementAt(0));
+         }
+         else
+         {
+            DoContextMenu(x, y, IDR_TABLEMENU, m_vmultisel.ElementAt(0));
+         }
    }
 }
 
@@ -5262,7 +5261,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
 
          m_vedit.AddElement(peditNew);
          // copy the new element to the same layer as the source element
-         layer[peditNew->GetISelect()->layerIndex].AddElement(peditNew);
+         m_layer[peditNew->GetISelect()->layerIndex].AddElement(peditNew);
          peditNew->InitPostLoad();
          peditNew->m_fBackglass = g_pvp->m_fBackglassView;
 

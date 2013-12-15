@@ -731,15 +731,6 @@ void PinInput::autostart( const F32 secs, const F32 retrysecs, const U32 curr_ti
 		(((didonce == 1) && !started() && ((curr_time_msec - firedautostart) > ((U32)(retrysecs*1000.0f))))) ||	// Not started and last attempt was at least AutoStartRetry seconds ago.
 		 ((didonce == 0) && ((curr_time_msec - firedautostart) > ((U32)(secs*1000.0f)))) )						// Never attempted and autostart time has elapsed.
 	{
-		// Check if we haven't accounted for the play.
-		if ( (didonce == 0) &&				// Never attempted autostarted.
-			 (!started()) )					// Player hasn't already started manually.
-		{
-			// Update the number of plays.
-			VPinball::NumPlays++;
-			SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-		}
-
 		// Press start.
 		firedautostart = curr_time_msec;
 		down = 1;
@@ -922,10 +913,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 1)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -974,10 +963,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 2)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1024,10 +1011,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 3)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1074,10 +1059,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 4)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1124,10 +1107,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 5)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1174,10 +1155,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 6)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1226,10 +1205,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 7)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1290,10 +1267,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 8)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1330,10 +1305,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+						}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0))	// left
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );}
 					else
@@ -1348,10 +1321,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 9)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1398,10 +1369,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 10)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1450,10 +1419,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 11)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1500,10 +1467,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 12)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1544,10 +1509,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 							(pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown ) // Check if this was a press.
-								{	VPinball::NumPlays++; // Update the number of plays.
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+					    }
 					else
 						{	if (m_joylflipkey == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftFlipperKey] );
 							if (m_joyrflipkey == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightFlipperKey] );
@@ -1560,10 +1523,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 13)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1610,10 +1571,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 14)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1669,10 +1628,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-										if ( updown == DISPID_GameEvents_KeyDown )
-										{	VPinball::NumPlays++;
-											SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-								}	}	}
+									}
+								}
 							if (m_joyexitgamekey == 15)
 								{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
@@ -1716,10 +1673,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+						}
 					if (m_joyexitgamekey == 16)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
@@ -1762,10 +1717,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+						}
 					if (m_joyexitgamekey == 17)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
@@ -1808,10 +1761,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+						}
 					if (m_joyexitgamekey == 18)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
@@ -1854,10 +1805,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+						}
 					if (m_joyexitgamekey == 19)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
@@ -1900,10 +1849,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+						}
 					if (m_joyexitgamekey == 20)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
@@ -1946,10 +1893,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+						}
 					if (m_joyexitgamekey == 21)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
@@ -1992,10 +1937,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+						}
 					if (m_joyexitgamekey == 22)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
@@ -2038,10 +1981,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+						}
 					if (m_joyexitgamekey == 23)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}
@@ -2084,10 +2025,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
-								if ( updown == DISPID_GameEvents_KeyDown )
-								{	VPinball::NumPlays++;
-									SetRegValue( "Statistics", "NumPlays", REG_DWORD, &(VPinball::NumPlays), 4 );
-						}	}	}
+							}
+						}
 					if (m_joyexitgamekey == 24)
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{g_pplayer->m_fCloseDown = fTrue;}

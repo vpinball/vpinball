@@ -161,16 +161,16 @@ public:
 	STDMETHOD(put_Light1DZ)(/*[in]*/ float newVal);
 	STDMETHOD(get_Light1Type)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Light1Type)(/*[in]*/ int newVal);
-   STDMETHOD(get_NormalizeNormals)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_NormalizeNormals)(/*[in]*/ int newVal);
-   STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
-   STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_ReflectionStrength)(/*[in]*/ int newVal);
-   STDMETHOD(get_ShadowX)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_ShadowX)(/*[in]*/ float newVal);
-   STDMETHOD(get_ShadowY)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_ShadowY)(/*[in]*/ float newVal);
+    STDMETHOD(get_NormalizeNormals)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_NormalizeNormals)(/*[in]*/ int newVal);
+    STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
+    STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_ReflectionStrength)(/*[in]*/ int newVal);
+    STDMETHOD(get_ShadowX)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_ShadowX)(/*[in]*/ float newVal);
+    STDMETHOD(get_ShadowY)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_ShadowY)(/*[in]*/ float newVal);
 
 	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
@@ -269,8 +269,8 @@ public:
 	STDMETHOD(get_TableMusicVolume)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TableMusicVolume)(/*[in]*/ int newVal);
 
-   STDMETHOD(get_AlphaRampAccuracy)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_AlphaRampAccuracy)(/*[in]*/ int newVal);
+    STDMETHOD(get_AlphaRampAccuracy)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_AlphaRampAccuracy)(/*[in]*/ int newVal);
 
 	/////////////////////////////////////////////
 	PinTable();
@@ -315,7 +315,6 @@ public:
 	bool ExportSound(HWND hwndListView, PinSound *pps,char *filename);
 	void ListSounds(HWND hwndListView);
 	int AddListSound(HWND hwndListView, PinSound *pps);
-	//void RemoveListSound(HWND hwndListView, PinSound *pps);
 	void RemoveSound(PinSound *pps);
 	HRESULT SaveSoundToStream(PinSound *pps, IStream *pstm);
 	HRESULT LoadSoundFromStream(IStream *pstm);
@@ -325,9 +324,7 @@ public:
 	void ReImportImage(HWND hwndListView, Texture *ppi, char *filename);
 	void ListImages(HWND hwndListView);
 	int AddListImage(HWND hwndListView, Texture *ppi);
-	//void RemoveListSound(HWND hwndListView, PinSound *pps);
 	void RemoveImage(Texture *ppi);
-	//HRESULT SaveImageToStream(PinImage *ppi, IStream *pstm);
 	HRESULT LoadImageFromStream(IStream *pstm, int version);
 	Texture *GetImage(char *szName);
 	void GetTVTU(const Texture * const ppi, float * const pmaxtu, float * const pmaxtv);
@@ -352,12 +349,10 @@ public:
 	void DoContextMenu(int x, int y, int menuid, ISelect *psel);
 	virtual void DoCommand(int icmd, int x, int y);
 	BOOL FMutilSelLocked();
-	//void DoCommandToObject(int x, int y, int command, ISelect *psel);
 
 	virtual void SelectItem(IScriptable *piscript);
 	virtual void DoCodeViewCommand(int command);
 	virtual void SetDirtyScript(SaveDirtyState sds);
-	//virtual void UnsetDirtyScript();
 
 	// Multi-object manipulation
 	virtual void GetCenter(Vertex2D * const pv) const;
@@ -379,7 +374,7 @@ public:
 	virtual IScriptable *GetScriptable();
 
 	virtual PinTable *GetPTable() {return this;}
-   char *GetElementName( IEditable *pedit );
+    char *GetElementName( IEditable *pedit );
 
 	void OnDelete();
 
@@ -613,9 +608,8 @@ END_CONNECTION_POINT_MAP()
 	//CComObject<Surface> *m_psur;
 
 	Vector< IEditable > m_vedit;
-//   Vector< IEditable > hiddenObjects[8];
-    Vector< IEditable > layer[8];
-    Vector<ISelect> allHitElements;
+    Vector< IEditable > m_layer[8];
+    Vector<ISelect> m_allHitElements;
       
 	Vector< Texture > m_vimage;
 
@@ -625,7 +619,7 @@ END_CONNECTION_POINT_MAP()
 
 	Vector< CComObject<Collection> > m_vcollection;
 
-	COLORREF rgcolorcustom[16];		// array for the choosecolor in property browser
+	COLORREF m_rgcolorcustom[16];		// array for the choosecolor in property browser
 
 	Vector< PinSoundCopy > m_voldsound; // copied sounds currently playing
 
@@ -668,7 +662,7 @@ END_CONNECTION_POINT_MAP()
 	char *m_szBlurb;
 	char *m_szDescription;
 	char *m_szRules;
-	char m_szScreenShot[MAXTOKEN];
+	char  m_szScreenShot[MAXTOKEN];
 
 	PinBinary *m_pbTempScreenshot; // Holds contents of screenshot image until the image asks for it
 
@@ -690,9 +684,9 @@ END_CONNECTION_POINT_MAP()
     float m_shadowDirY;
 	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 
-	bool activeLayers[8];
-    bool toggleAllLayers;   
-    bool savingActive;
+	bool m_activeLayers[8];
+    bool m_toggleAllLayers;   
+    bool m_savingActive;
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
