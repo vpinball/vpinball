@@ -161,7 +161,7 @@ public:
 	unsigned int m_fVSync; // targeted refresh rate in Hz
 
 	BOOL m_fFXAA;
-    BOOL useAA;
+    BOOL m_useAA;
 
 	int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG //!! support sidebyside, too?
 	BOOL m_fStereo3Denabled;

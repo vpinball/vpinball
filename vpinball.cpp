@@ -3911,13 +3911,13 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		 SetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, vsync, FALSE);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
-         int useAA;
-         hr = GetRegInt("Player", "USEAA", &useAA);
+         int m_useAA;
+         hr = GetRegInt("Player", "USEAA", &m_useAA);
          if (hr != S_OK)
          {
-            useAA = 0; // The default = off
+            m_useAA = 0; // The default = off
          }
-         SendMessage(hwndCheck, BM_SETCHECK, (useAA != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+         SendMessage(hwndCheck, BM_SETCHECK, (m_useAA != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_FXAA);
          int fxaa;
@@ -4153,8 +4153,8 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                   SetRegValue("Player", "FXAA", REG_DWORD, &fxaa, 4);
 
                   HWND hwndUseAA = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
-                  int useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "USEAA", REG_DWORD, &useAA, 4);
+                  int m_useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "USEAA", REG_DWORD, &m_useAA, 4);
 
                   HWND hwndStereo3D = GetDlgItem(hwndDlg, IDC_3D_STEREO);
                   int stereo3D = SendMessage(hwndStereo3D, BM_GETCHECK, 0, 0);

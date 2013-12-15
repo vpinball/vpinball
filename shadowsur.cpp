@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 
-float ShadowSur::shadowDirX =  1.0f;
-float ShadowSur::shadowDirY = -1.0f;
+float ShadowSur::m_shadowDirX =  1.0f;
+float ShadowSur::m_shadowDirY = -1.0f;
 
 ShadowSur::ShadowSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const float z, ISelect *psel) : Sur(hdc, zoom, offx, offy, width, height)
 {
@@ -95,7 +95,7 @@ void ShadowSur::EllipseSkew(const float centerx, const float centery, const floa
 	for (int i=bottom;i<top;i++)
 	{
 		//SetViewportOrgEx(m_hdc, i, -i, NULL);
-		SetViewportOrgEx(m_hdc, (int)((float)i*shadowDirX), (int)((float)i*shadowDirY), NULL);
+		SetViewportOrgEx(m_hdc, (int)((float)i*m_shadowDirX), (int)((float)i*m_shadowDirY), NULL);
 		::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir, iy + ir);
 	}
 
@@ -203,7 +203,7 @@ void ShadowSur::PolygonSkew(const Vector<RenderVertex> &rgv, const float z1, con
 	for (int i=bottom;i<top;i++)
 	{
 		//SetViewportOrgEx(m_hdc, i, -i, NULL);
-		SetViewportOrgEx(m_hdc, (int)((float)i*shadowDirX), (int)((float)i*shadowDirY), NULL);
+		SetViewportOrgEx(m_hdc, (int)((float)i*m_shadowDirX), (int)((float)i*m_shadowDirY), NULL);
 		::Polygon(m_hdc, rgpt, count);
 	}
 
@@ -236,7 +236,7 @@ void ShadowSur::PolylineSkew(const Vertex2D * const rgv, const int count, const 
 	for (int i=0;i<1;++i)
 	{
 		//SetViewportOrgEx(m_hdc, i, -i, NULL);
-		SetViewportOrgEx(m_hdc, (int)((float)i*shadowDirX), (int)((float)i*shadowDirY), NULL);
+		SetViewportOrgEx(m_hdc, (int)((float)i*m_shadowDirX), (int)((float)i*m_shadowDirY), NULL);
 
 		::Polyline(m_hdc, rgpt, cpoints);
 	}
