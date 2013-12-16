@@ -272,6 +272,8 @@ public:
     STDMETHOD(get_AlphaRampAccuracy)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_AlphaRampAccuracy)(/*[in]*/ int newVal);
 
+	STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
+
 	/////////////////////////////////////////////
 	PinTable();
 	virtual ~PinTable();
