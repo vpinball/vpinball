@@ -4539,6 +4539,14 @@ void PinTable::DoCommand(int icmd, int x, int y)
       }
       break;
 
+   case ID_EDIT_DRAWINGORDER_HIT:
+      g_pvp->ShowDrawingOrderDialog(false);
+      break;
+
+   case ID_EDIT_DRAWINGORDER_SELECT:
+      g_pvp->ShowDrawingOrderDialog(true);
+      break;
+
    case ID_LOCK:
       {
          BeginUndo();
@@ -4811,18 +4819,23 @@ void PinTable::DoRButtonUp(int x,int y)
    // Only bring up context menu if we weren't in magnify mode
    if (!((g_pvp->m_ToolCur == IDC_MAGNIFY) || (ks & 0x80000000)))
    {
-      //SetSel(HitTest(x,y));
-      //AddMultiSel(HitTest(x,y), fFalse);
-      //m_pselcur->OnRButtonDown(x,y,m_hwnd);
+      if (m_vmultisel.Size() > 1)
+      {
+         DoContextMenu(x, y, IDR_MULTIMENU, this);
+      }
+      else
+      {
          if (m_vmultisel.ElementAt(0) != this)
          {
             // No right click menu for main table object
             DoContextMenu(x, y, m_vmultisel.ElementAt(0)->m_menuid, m_vmultisel.ElementAt(0));
+            //m_vmultisel.ElementAt(0)->OnRButtonDown(x,y,m_hwnd);
          }
          else
          {
             DoContextMenu(x, y, IDR_TABLEMENU, m_vmultisel.ElementAt(0));
          }
+      }
    }
 }
 
