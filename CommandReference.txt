@@ -113,7 +113,7 @@ Methods
 Nudge(float Angle, float Force)
 StartShake()
 StopShake()
-Version(int) - returns the Visual Pinball version number (i.e. 920)
+Version(int) - returns the Visual Pinball version number (i.e. 9.2.0: 9200)
 
 
 BUMPER
