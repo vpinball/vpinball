@@ -9098,3 +9098,10 @@ STDMETHODIMP PinTable::StopShake()
 
    return S_OK;
 }
+
+STDMETHODIMP PinTable::Version(int *pVal)
+{
+	*pVal = 920;
+
+	return S_OK;
+}

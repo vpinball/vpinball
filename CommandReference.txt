@@ -109,9 +109,11 @@ PlungerFilter(bool) - default=false
 
 Methods
 -------
+
 Nudge(float Angle, float Force)
 StartShake()
 StopShake()
+Version(int) - returns the Visual Pinball version number (i.e. 920)
 
 
 BUMPER
@@ -198,6 +200,7 @@ ImagesPerGridRow(int)
 
 Methods
 -------
+
 AddValue(int value)
 ResetToZero()
 SpinReel(int ReelNumber, int PulseCount)
@@ -230,8 +233,8 @@ Return(float)
 *Speed(float)
 *Strength(float)
 OverridePhysics(int) - overrides the flipper physics settings with pre defined settings defined under Preferences -> Physics Options.
-                        You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
-			by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
+                       You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
+		       by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
 TimerEnabled(bool)
 TimerInterval(int)
 *Color(OLE_COLOR)
@@ -306,6 +309,7 @@ HitHeight(float)
 
 Methods
 -------
+
 CreateBall(IBall **ball)
 CreateSizedBall(IBall **ball)
 DestroyBall( int ballId)
@@ -372,6 +376,7 @@ BreakOverVelocity(float)
 
 Methods
 -------
+
 Pullback()
 Fire()
 CreateBall(IBall **ball)
@@ -421,6 +426,7 @@ EnableSphereMapping(bool) - enable/disable sphere mapping/environment mapping (u
 
 Methods
 -------
+
 TriggerSingleUpdate() - triggers only one region update for all primitivies
 
 
