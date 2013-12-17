@@ -11,6 +11,7 @@ TABLE
 Variables
 ---------
 
+*Name(string) - table name
 *Width(float) - Playfield width. default=1000
 *Height(float) - Playfield height. default=2000
 *GlassHeight(float) - Height of Glass above Playfield
@@ -51,10 +52,9 @@ BallBackDecal(string) - image of the ball back decal
 *DisplayGrid(bool) - default=true
 *DisplayBackdrop(bool) - displays backdrop image in editor. default=true
 *Image(string) - playfield image
-*Name(string) - table name
 
-*EnableAntialiasing(bool) - enables fake AA for this table if you have set 'Fake AA on all tables' in the video options. default=false
-*EnableFXAA(bool) - enables FXAA for this table if you have set 'FXAA' in the video options. default=false
+*EnableAntialiasing(bool) - enables fake AA for this table if you have set 'Enable Fake AntiAliasing' in the video options. default=false
+*EnableFXAA(bool) - enables FXAA for this table if you have set 'Enable FXAA' in the video options. default=false
 *RenderShadows(bool) - default=true
 *RenderEMReels(bool) - default=true						
 *RenderDecals(bool) - default=true
@@ -122,6 +122,7 @@ BUMPER
 Variables
 ---------
 
+*Name(string)
 *Radius(float) - default=45.0
 *X(float) - X position
 *Y(float) - Y position
@@ -139,7 +140,6 @@ TimerInterval(int)
 *Color(OLE_COLOR)
 *SideColor(OLE_COLOR)
 *Image(string) - texture name
-*Name(string)
 *CastShadow(bool) - default=true
 *Disabled(bool) - default=false
 *Visible(bool) - default=true
@@ -173,6 +173,9 @@ EMREEL
 Variables
 ---------
 
+*Name(string)
+Width(float)
+Height(float)
 *X(float)
 *Y(float)
 *Type(ReelType) - 0=Text, 1=Image
@@ -183,8 +186,6 @@ Range(float)
 *ReelColor(OLE_COLOR)
 Font(IFontDisp)
 Reels(float)
-Width(float)
-Height(float)
 Spacing(float)
 IsTransparent(bool)
 Sound(string)
@@ -192,7 +193,6 @@ Steps(float)
 IsShading(bool)
 TimerEnabled(bool)
 TimerInterval(int)
-*Name(string)
 UpdateInterval(int)
 UserValue(any)
 *UserImageGrid(bool)
@@ -258,12 +258,12 @@ GATE
 Variables
 ---------
 
+*Name(string)
 *X(float)
 *Y(float)
 *Length(float)
 *Height(float)
 *Rotation(float)
-*Name(string)
 TimerEnabled(bool)
 TimerInterval(int)
 Open(bool)
@@ -294,9 +294,9 @@ KICKER
 Variables
 ---------
 
+*Name(string)
 *X(float)
 *Y(float)
-*Name(string)
 TimerEnabled(bool)
 TimerInterval(int)
 Enabled(bool)
@@ -325,6 +325,7 @@ LIGHT
 Variables
 ---------
 
+*Name(string)
 *X(float)
 *Y(float)
 *Shape(Shape) - 0=Circle, 1=Custom
@@ -338,7 +339,6 @@ BlinkInterval(int)
 *BorderColor(OLE_COLOR)
 *BorderWidth(float)
 *Surface(string)
-*Name(string)
 UserValue(any)
 *OffImage(string)
 *OnImage(string)
@@ -353,6 +353,7 @@ PLUNGER
 Variables
 ---------
 
+*Name(string)
 *X(float)
 *Y(float)
 *PullSpeed(float)
@@ -360,7 +361,6 @@ FireSpeed(float)
 TimerEnabled(bool)
 TimerInterval(int)
 *Surface(string)
-*Name(string)
 UserValue(any)
 *Type(PlungerType) - 0=Original, 1=Modern
 *Color(OLE_COLOR)
@@ -390,6 +390,7 @@ PRIMITIVE
 Variables
 ---------
 
+*Name(string)
 Sides(float) - amount of sides for the old standard primitive
 TopVisible(bool) - toggle visibility
 TopColor(OLE_COLOR) - topColor of the old standard primitive (only valid if no image was set)
@@ -418,7 +419,6 @@ RotAndTra5(float) or TransZ(float) - translates the primitive along it's Z axis
 RotAndTra6(float) or ObjRotX(float) - rotates the X axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
 RotAndTra7(float) or ObjRotY(float) - rotates the Y axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
 RotAndTra8(float) or ObjRotZ(float) - rotates the Z axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
-*Name(string)
 EnableLighting(bool) - enable/disable lighting for this primitive. You should use the table lights 0/1 to get best results
 *EnableStaticRendering(bool) - if set the primitive is only rendered once (like walls) any dynamic changes later 
                                won't have an effect. This is useful for objects like posts or static toys, because this won't have an impact of the perfomance
@@ -477,9 +477,9 @@ SPINNER
 Variables
 ---------
 
+*Name(string)
 *X(float)
 *Y(float)
-*Name(string)
 TimerEnabled(bool)
 TimerInterval(int)
 *Length(float)
@@ -507,6 +507,7 @@ TRIGGER
 Variables
 ---------
 
+*Name(string)
 *X(float)
 *Y(float)
 *Radius(float)
@@ -516,7 +517,6 @@ TimerInterval(int)
 *Visible(bool)
 *Shape(Shape) - 0=Circle, 1=Custom
 Surface(string)
-*Name(string)
 UserValue(any)
 HitHeight(float)
 
