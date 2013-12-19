@@ -1,3 +1,7 @@
+VP 9.2.1 Changelog
+------------------------
+- script editor updated to use latest scintilla (3.3.7)
+
 VP 9.2.0 Changelog
 ------------------------
 - alpha ramps can now select to trigger region updates (also via script: Toggle via UpdateRegions or a single one via TriggerSingleUpdate) to avoid having to use the refresh-light trick
