@@ -1268,7 +1268,7 @@ BEGIN
     LTEXT           "&Global Difficulty Level",-1,7,92,73,8
 END
 
-IDD_PROPTABLE_LIGHTSOURCES DIALOGEX 0, 0, 135, 265
+IDD_PROPTABLE_LIGHTSOURCES DIALOGEX 0, 0, 125, 265
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1296,7 +1296,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,205,115,10
     EDITTEXT        IDC_SHADOW_X,22,231,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_SHADOW_Y,22,247,24,12,ES_AUTOHSCROLL
-    LTEXT           "(Type 0: Directional, 1: Spot, 2: Point)",IDC_STATIC,7,190,120,9
+    LTEXT           "(Type 0: Directional, 1: Spot, 2: Point)",IDC_STATIC,3,190,120,9
     LTEXT           "L0 Ambient",IDC_STATIC,7,10,40,9
     LTEXT           "L0 Diffuse",IDC_STATIC,7,25,40,9
     LTEXT           "L0 Specular",IDC_STATIC,7,40,40,9
@@ -1611,6 +1611,11 @@ BEGIN
     BEGIN
         RIGHTMARGIN, 194
     END
+
+    IDD_PROPTABLE_LIGHTSOURCES, DIALOG
+    BEGIN
+        RIGHTMARGIN, 123
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1696,7 +1701,7 @@ IDR_Bumper              REGISTRY                "Bumper.rgs"
 IDR_PIEventHandler      REGISTRY                "PIEventHandler.rgs"
 IDR_Trigger             REGISTRY                "Trigger.rgs"
 IDR_Light               REGISTRY                "Light.rgs"
-IDR_Kicker              REGISTRY                "Kicker.rgs"
+IDR_KICKER              REGISTRY                "Kicker.rgs"
 IDR_Gate                REGISTRY                "Gate.rgs"
 IDR_Spinner             REGISTRY                "Spinner.rgs"
 IDR_Ramp                REGISTRY                "Ramp.rgs"
@@ -2094,7 +2099,6 @@ BEGIN
     IDS_LIGHT_DESC          "Light Class"
     IDS_TB_LIGHT            "Light"
     IDS_DRAWING_ORDER_HIT   "&Drawing Order (Hit)"
-    IDS_DRAWING_ORDER_SELECT"D&rawing Order (Select)"
     IDS_KICKER_DESC         "Kicker Class"
     IDS_TB_KICKER           "Kicker"
     IDS_TB_TARGET           "Target"
@@ -2105,6 +2109,11 @@ BEGIN
     IDS_TB_GATE             "Gate"
     IDS_SPINNER_DESC        "Spinner Class"
     IDS_TB_SPINNER          "Spinner"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_DRAWING_ORDER_SELECT "D&rawing Order (Select)"
 END
 
 STRINGTABLE 
