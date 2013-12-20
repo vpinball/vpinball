@@ -8475,18 +8475,30 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
 {
    HWND hw=GetDlgItem( hwndDlg, IDC_DRAWING_ORDER_LIST);
    PinTable *pt = g_pvp->GetActiveTable();
+   char text0[256], text1[256], text2[256]; 
+   LVITEM lv;
+   lv.mask = LVIF_TEXT;
+   int idx = ListView_GetNextItem( hw, -1, LVNI_FOCUSED);
 
    if ( up )
    {
-      char nameBuf[256];
-      DWORD idx = SendMessage( hw, LB_GETCURSEL,0,0 );
       if ( idx>0 )
       {
-         SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
-         SendMessage( hw, LB_DELETESTRING, idx, 0 );
-         SendMessage( hw, LB_INSERTSTRING, idx-1, (WPARAM)nameBuf);
-         SendMessage( hw, LB_SETCURSEL, idx-1,0);
-		 if(drawing_order_select)
+         ListView_GetItemText( hw, idx, 0, text0, 256 );
+         ListView_GetItemText( hw, idx, 1, text1, 256 );
+         ListView_GetItemText( hw, idx, 2, text2, 256 );
+         ListView_DeleteItem( hw, idx );
+         lv.iItem = idx-1;
+         lv.iSubItem=0;
+         lv.pszText = text0;
+         ListView_InsertItem( hw, &lv );
+         ListView_SetItemText( hw, idx-1, 1, text1 );
+         ListView_SetItemText( hw, idx-1, 2, text2 );
+         ListView_SetItemState( hw, -1, 0, LVIS_SELECTED);
+         ListView_SetItemState( hw, idx-1, LVIS_SELECTED, LVIS_SELECTED);
+         ListView_SetItemState( hw, idx-1, LVIS_FOCUSED, LVIS_FOCUSED);
+         SetFocus(hw);
+         if(drawing_order_select)
          {
 			 ISelect *psel = pt->m_vmultisel.ElementAt(idx);
 			 pt->m_vmultisel.RemoveElementAt(idx);
@@ -8534,16 +8546,24 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
    }
    else
    {
-      char nameBuf[256];
-      int idx = SendMessage( hw, LB_GETCURSEL,0,0 );
       if(drawing_order_select)
       {
 		  if ( idx<pt->m_vmultisel.Size()-1 )
 		  {
-			 SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
-			 SendMessage( hw, LB_DELETESTRING, idx, 0 );
-			 SendMessage( hw, LB_INSERTSTRING, idx+1, (WPARAM)nameBuf);
-			 SendMessage( hw, LB_SETCURSEL, idx+1,0);
+           ListView_GetItemText( hw, idx, 0, text0, 256 );
+           ListView_GetItemText( hw, idx, 1, text1, 256 );
+           ListView_GetItemText( hw, idx, 2, text2, 256 );
+           ListView_DeleteItem( hw, idx );
+           lv.iItem = idx+1;
+           lv.iSubItem=0;
+           lv.pszText = text0;
+           ListView_InsertItem( hw, &lv );
+           ListView_SetItemText( hw, idx+1, 1, text1 );
+           ListView_SetItemText( hw, idx+1, 2, text2 );
+           ListView_SetItemState( hw, -1, 0, LVIS_SELECTED);
+           ListView_SetItemState( hw, idx+1, LVIS_SELECTED, LVIS_SELECTED);
+           ListView_SetItemState( hw, idx+1, LVIS_FOCUSED, LVIS_FOCUSED);
+           SetFocus(hw);
 			 ISelect *psel = pt->m_vmultisel.ElementAt(idx);
 			 pt->m_vmultisel.RemoveElementAt(idx);
 			 if ( idx+1>=pt->m_vmultisel.Size() )
@@ -8569,10 +8589,21 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
       {
 		  if ( idx<pt->m_allHitElements.Size()-1 )
 		  {
-			 SendMessage( hw, LB_GETTEXT, (WPARAM)idx, (LPARAM)nameBuf );
-			 SendMessage( hw, LB_DELETESTRING, idx, 0 );
-			 SendMessage( hw, LB_INSERTSTRING, idx+1, (WPARAM)nameBuf);
-			 SendMessage( hw, LB_SETCURSEL, idx+1,0);
+           ListView_GetItemText( hw, idx, 0, text0, 256 );
+           ListView_GetItemText( hw, idx, 1, text1, 256 );
+           ListView_GetItemText( hw, idx, 2, text2, 256 );
+           ListView_DeleteItem( hw, idx );
+           lv.iItem = idx+1;
+           lv.iSubItem=0;
+           lv.pszText = text0;
+           ListView_InsertItem( hw, &lv );
+           ListView_SetItemText( hw, idx+1, 1, text1 );
+           ListView_SetItemText( hw, idx+1, 2, text2 );
+           ListView_SetItemState( hw, -1, 0, LVIS_SELECTED);
+           ListView_SetItemState( hw, idx+1, LVIS_SELECTED, LVIS_SELECTED);
+           ListView_SetItemState( hw, idx+1, LVIS_FOCUSED, LVIS_FOCUSED);
+           SetFocus(hw);
+
 			 ISelect *psel = pt->m_allHitElements.ElementAt(idx);
 			 pt->m_allHitElements.RemoveElementAt(idx);
 			 if ( idx+1>=pt->m_allHitElements.Size() )
@@ -8609,11 +8640,28 @@ int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
       {
          HWND listHwnd=GetDlgItem( hwndDlg, IDC_DRAWING_ORDER_LIST);
          PinTable *pt = g_pvp->GetActiveTable();
-
+         LVCOLUMN lvc;
+         LVITEM lv;
+         
+         ListView_SetExtendedListViewStyle( listHwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+         memset( &lvc, 0, sizeof(LVCOLUMN));
+         lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
+         lvc.cx=200;
+         lvc.pszText = TEXT("Name");
+         ListView_InsertColumn( listHwnd, 0, &lvc );
+         lvc.cx=100;
+         lvc.pszText = TEXT("Height/Z");
+         ListView_InsertColumn( listHwnd, 1, &lvc );
+         lvc.cx=100;
+         lvc.pszText = TEXT("Type");
+         ListView_InsertColumn( listHwnd, 2, &lvc );
+         
          if( listHwnd!=NULL )
          {
-            SendMessage( listHwnd, LB_RESETCONTENT, 0, 0);
+            ListView_DeleteAllItems( listHwnd );
          }
+         lv.mask = LVIF_TEXT;
+         char textBuf[256];
          for( int i=0; i<(drawing_order_select ? pt->m_vmultisel.Size() : pt->m_allHitElements.Size()); i++ )
          {
             IEditable *pedit = drawing_order_select ? pt->m_vmultisel.ElementAt(i)->GetIEditable() : pt->m_allHitElements.ElementAt(i)->GetIEditable();
@@ -8622,7 +8670,80 @@ int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                char *szTemp;
                szTemp = pt->GetElementName(pedit);
                if( szTemp )
-                  SendMessage( listHwnd, LB_ADDSTRING, i, (LPARAM)szTemp);
+               {
+                  lv.iItem = i;
+                  lv.iSubItem=0;
+                  lv.pszText = szTemp;
+                  ListView_InsertItem( listHwnd, &lv );
+                  if ( pedit->GetItemType()==eItemSurface )
+                  {
+                     Surface *sur = (Surface*)pedit;
+                     sprintf_s(textBuf,"%.02f", sur->m_d.m_heighttop);
+                     ListView_SetItemText( listHwnd, i, 1, textBuf);
+                     ListView_SetItemText( listHwnd, i, 2, "Wall");
+                  }
+                  else if ( pedit->GetItemType()==eItemPrimitive )
+                  {
+                     Primitive *prim = (Primitive*)pedit;
+                     sprintf_s(textBuf,"%.02f", prim->m_d.m_vPosition.z);
+                     ListView_SetItemText( listHwnd, i, 1, textBuf);
+                     ListView_SetItemText( listHwnd, i, 2, "Primitive");
+                  }
+                  else if ( pedit->GetItemType()==eItemRamp )
+                  {
+                     Ramp *ramp= (Ramp*)pedit;
+                     sprintf_s(textBuf,"%.02f", ramp->m_d.m_heighttop);
+                     ListView_SetItemText( listHwnd, i, 1, textBuf);
+                     ListView_SetItemText( listHwnd, i, 2, "Ramp");
+                  }
+                  else if ( pedit->GetItemType()==eItemSpinner )
+                  {
+                     Spinner *spin= (Spinner*)pedit;
+                     sprintf_s(textBuf,"%.02f", spin->m_d.m_height);
+                     ListView_SetItemText( listHwnd, i, 1, textBuf);
+                     ListView_SetItemText( listHwnd, i, 2, "Spinner");
+                  }
+                  else if ( pedit->GetItemType()==eItemKicker )
+                  {
+                     Kicker *kick= (Kicker*)pedit;
+                     sprintf_s(textBuf,"%.02f", kick->m_d.m_hit_height);
+                     ListView_SetItemText( listHwnd, i, 1, textBuf);
+                     ListView_SetItemText( listHwnd, i, 2, "Kicker");
+                  }
+                  else if ( pedit->GetItemType()==eItemLight )
+                  {
+                     Light *light= (Light*)pedit;
+                     ListView_SetItemText( listHwnd, i, 1, "n.a.");
+                     ListView_SetItemText( listHwnd, i, 2, "Light");
+                  }
+                  else if ( pedit->GetItemType()==eItemBumper )
+                  {
+                     Bumper *bump= (Bumper*)pedit;
+                     ListView_SetItemText( listHwnd, i, 1, "n.a.");
+                     ListView_SetItemText( listHwnd, i, 2, "Bumper");
+                  }
+                  else if ( pedit->GetItemType()==eItemFlipper )
+                  {
+                     Flipper *flip= (Flipper*)pedit;
+                     sprintf_s(textBuf,"%.02f", flip->m_d.m_height);
+                     ListView_SetItemText( listHwnd, i, 1, textBuf);
+                     ListView_SetItemText( listHwnd, i, 2, "Flipper");
+                  }
+                  else if ( pedit->GetItemType()==eItemGate )
+                  {
+                     Gate *gate= (Gate*)pedit;
+                     sprintf_s(textBuf,"%.02f", gate->m_d.m_height);
+                     ListView_SetItemText( listHwnd, i, 1, textBuf);
+                     ListView_SetItemText( listHwnd, i, 2, "Gate");
+                  }
+                  else if ( pedit->GetItemType()==eItemPlunger )
+                  {
+                     Plunger *plung= (Plunger*)pedit;
+                     sprintf_s(textBuf,"%.02f", plung->m_d.m_height);
+                     ListView_SetItemText( listHwnd, i, 1, textBuf);
+                     ListView_SetItemText( listHwnd, i, 2, "Plunger");
+                  }
+               }
             }
          }
          return TRUE;
