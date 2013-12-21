@@ -8662,9 +8662,22 @@ int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          }
          lv.mask = LVIF_TEXT;
          char textBuf[256];
-         for( int i=0; i<(drawing_order_select ? pt->m_vmultisel.Size() : pt->m_allHitElements.Size()); i++ )
+         // create a selection in the same drawing order as the selected elements are stored in the main vector
+         Vector<ISelect> selection;
+         if ( drawing_order_select )
          {
-            IEditable *pedit = drawing_order_select ? pt->m_vmultisel.ElementAt(i)->GetIEditable() : pt->m_allHitElements.ElementAt(i)->GetIEditable();
+            for( int i=pt->m_vedit.Size()-1;i>=0;i-- )
+               for( int t=0;t<pt->m_vmultisel.Size();t++ )
+               {
+                  if( pt->m_vmultisel.ElementAt(t) == pt->m_vedit.ElementAt(i)->GetISelect() )
+                  {
+                     selection.AddElement(pt->m_vmultisel.ElementAt(t));
+                  }
+               }
+         }
+         for( int i=0; i<(drawing_order_select ? selection.Size() : pt->m_allHitElements.Size()); i++ )
+         {
+            IEditable *pedit = drawing_order_select ? selection.ElementAt(i)->GetIEditable() : pt->m_allHitElements.ElementAt(i)->GetIEditable();
             if ( pedit )
             {
                char *szTemp;
