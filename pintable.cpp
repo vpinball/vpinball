@@ -65,9 +65,9 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume, float pan, float randompitch)
+STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart)
 {
-   if (g_pplayer && g_pplayer->m_fPlaySound) m_pt->PlaySound(bstr, LoopCount, volume, pan, randompitch);
+   if (g_pplayer && g_pplayer->m_fPlaySound) m_pt->PlaySound(bstr, LoopCount, volume, pan, randompitch, pitch, usesame, restart);
 
    return S_OK;
 }
@@ -6460,7 +6460,7 @@ HRESULT PinTable::StopSound(BSTR Sound)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float pan, float randompitch)
+STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart)
 {
    MAKE_ANSIPTR_FROMWIDE(szName, bstr);
    CharLowerBuff(szName, lstrlen(szName));
@@ -6491,9 +6491,27 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf(totalvolume)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
 
    LPDIRECTSOUNDBUFFER pdsb = m_vsound.ElementAt(i)->m_pDSBuffer;
-   PinSoundCopy * const ppsc = new PinSoundCopy();
+   PinSoundCopy * ppsc = NULL;
+   bool foundsame = false;
+   if(usesame)
+   {
+	   for (int i=0;i<m_voldsound.Size();i++)
+	   {
+		  if(m_voldsound.ElementAt(i)->m_ppsOriginal->m_pDSBuffer == pdsb)
+		  {
+			  ppsc = m_voldsound.ElementAt(i);
+			  foundsame = true;
+			  break;
+		  }
+	   }
+   }
 
-   g_pvp->m_pds.m_pDS->DuplicateSoundBuffer(pdsb, &ppsc->m_pDSBuffer/*&pdsbNew*/);
+   if(ppsc == NULL)
+   {
+       ppsc = new PinSoundCopy();
+
+	   g_pvp->m_pds.m_pDS->DuplicateSoundBuffer(pdsb, &ppsc->m_pDSBuffer/*&pdsbNew*/);
+   }
 
    if (ppsc->m_pDSBuffer)
    {
@@ -6502,33 +6520,61 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 	  {
 		  DWORD freq;
 		  pdsb->GetFrequency(&freq);
+		  freq += pitch;
 		  const float rndh = rand_mt_01();
 		  const float rndl = rand_mt_01();
 		  ppsc->m_pDSBuffer->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
 	  }
+	  else if (pitch != 0)
+	  {
+		  DWORD freq;
+		  pdsb->GetFrequency(&freq);
+		  ppsc->m_pDSBuffer->SetFrequency(freq + pitch);
+	  }
 	  if(pan != 0.f)
 		  ppsc->m_pDSBuffer->SetPan((LONG)(pan*DSBPAN_RIGHT));
 
-      ppsc->m_pDSBuffer->Play(0,0,flags);
-      ppsc->m_ppsOriginal = m_vsound.ElementAt(i);
-      m_voldsound.AddElement(ppsc);
+	  DWORD status;
+	  ppsc->m_pDSBuffer->GetStatus(&status);
+	  if (!(status & DSBSTATUS_PLAYING))
+	     ppsc->m_pDSBuffer->Play(0,0,flags);
+	  else if(restart)
+		 ppsc->m_pDSBuffer->SetCurrentPosition(0);
+	  if(!foundsame)
+	  {
+		ppsc->m_ppsOriginal = m_vsound.ElementAt(i);
+		m_voldsound.AddElement(ppsc);
+	  }
    }
-   else // Couldn't create a copy - just play the original and hope it doesn't get played again before it finishes
+   else // Couldn't or didn't want to create a copy - just play the original
    {
       delete ppsc;
 
-      DWORD status;
-      pdsb->GetStatus(&status);
-
-      if (!(status & DSBSTATUS_PLAYING))
-      {
-         pdsb->SetVolume(decibelvolume);
-         pdsb->Play(0,0,flags);
-      }
-      else // Okay, it got played again before it finished.  Well, just start it over.
-      {
-         pdsb->SetCurrentPosition(0);
-      }
+      pdsb->SetVolume(decibelvolume);
+	  if(randompitch > 0.f)
+	  {
+	     DWORD freq;
+	     pdsb->GetFrequency(&freq); //!! meh, if already randompitched before
+	     freq += pitch;
+	     const float rndh = rand_mt_01();
+	     const float rndl = rand_mt_01();
+	     pdsb->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
+	  }
+	  else if (pitch != 0)
+	  {
+		 DWORD freq;
+		 pdsb->GetFrequency(&freq);
+		 pdsb->SetFrequency(freq + pitch);
+	  }
+	  if(pan != 0.f)
+	     pdsb->SetPan((LONG)(pan*DSBPAN_RIGHT));
+    
+	  DWORD status;
+	  pdsb->GetStatus(&status);
+	  if (!(status & DSBSTATUS_PLAYING))
+		 pdsb->Play(0,0,flags);
+	  else if(restart)// Okay, it got played again before it finished.  Well, just start it over.
+		 pdsb->SetCurrentPosition(0);
    }
 
    return S_OK;
