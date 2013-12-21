@@ -8479,6 +8479,8 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
    LVITEM lv;
    lv.mask = LVIF_TEXT;
    int idx = ListView_GetNextItem( hw, -1, LVNI_FOCUSED);
+   if( idx==-1 )
+      return;
 
    if ( up )
    {
