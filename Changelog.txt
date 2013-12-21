@@ -1,5 +1,11 @@
 VP 9.2.1 Changelog
 ------------------------
+- add additional (optional) parameters to PlaySound to increase/decrease the frequency, apply all the settings to an already playing sample and choose if to restart this sample from the beginning or not
+  all parameters are now: PlaySound "name",loopcount,volume,pan,randompitch,pitch,useexisting,restart
+  pitch can be positive or negative and directly adds onto the standard sample frequency
+  useexisting is 0 or 1 (if no existing/playing copy of the sound is found, then a new one is created)
+  restart is 0 or 1 (only useful if useexisting is 1)
+
 - script editor updated to use latest scintilla (3.3.7)
 
 VP 9.2.0 Changelog
