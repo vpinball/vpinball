@@ -22,7 +22,7 @@ public:
 	Ball();
 	~Ball();
 
-   static int GetBallsInUse();
+    static int GetBallsInUse();
 	void Init();
     void RenderSetup();
 
@@ -51,6 +51,7 @@ public:
 	RECT m_rcScreen;							// rect where the ball appears on the screen
     RECT m_rcScreenShadow;
     RECT m_rcReflection;
+    RECT m_rcTrail;
 	
 	COLORREF m_color;
 
@@ -91,6 +92,9 @@ public:
 	float y;
 	float z;
 	float defaultZ;   //normal height of the ball
+
+	Vertex3Ds oldpos[10]; // for the optional ball trails
+	unsigned int ringcounter_oldpos;
 
 	float vx;
 	float vy;

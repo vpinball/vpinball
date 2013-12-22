@@ -576,6 +576,7 @@
 #define IDC_JOYCUSTOM1COMBO2            420
 #define IDC_JOYDEBUGCOMBO               420
 #define IDC_ALPHA_SLIDER                420
+#define IDC_GLOBAL_TRAIL_CHECK		    421
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -674,6 +675,8 @@
 #define IDC_REFLECTION_EDIT             1701
 #define IDC_SHADOW_X                    1702
 #define IDC_SHADOW_Y                    1703
+#define IDC_BALL_TRAIL					1704
+#define IDC_TRAIL_EDIT					1705
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770

@@ -597,6 +597,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(1702), helpstring("property ShadowX")] HRESULT ShadowX([in] float newVal);
 		[propget, id(1703), helpstring("property ShadowY")] HRESULT ShadowY([out, retval] float *pVal);
 		[propput, id(1703), helpstring("property ShadowY")] HRESULT ShadowY([in] float newVal);
+		[propget, id(1704), helpstring("property BallTrail")] HRESULT BallTrail([out, retval] int *pVal);
+		[propput, id(1704), helpstring("property BallTrail")] HRESULT BallTrail([in] int newVal);
+		[propget, id(1705), helpstring("property TrailStength")] HRESULT TrailStrength([out, retval] int *pVal);
+		[propput, id(1705), helpstring("property TrailStength")] HRESULT TrailStrength([in] int newVal);
 		[propget, id(420), helpstring("property AlphaRampAccuracy")] HRESULT AlphaRampAccuracy([out, retval] int *pVal);
 		[propput, id(420), helpstring("property AlphaRampAccuracy")] HRESULT AlphaRampAccuracy([in] int newVal);
 		[id(219), helpstring("method Version")] HRESULT Version([out, retval] int *pVal);

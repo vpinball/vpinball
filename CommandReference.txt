@@ -62,8 +62,10 @@ BallBackDecal(string) - image of the ball back decal
 *AlternateRender(bool) - reorder playfield objects (for ATI/AMD gfx) default=false
 *TableRegionUpdates(int) - defines region updates for this table(-1=use global setting, 0=off, 1=on)
 *TableRegionOptimization(int) - defines region optimization for this table (-1=use global setting, 0=off, 1=on)
-*BallReflection - enable ball reflection on table. depending on the global video setting 'Reflect Ball on all tables' this is on or off. Or it is defined spezific for this table.
+*BallReflection - enable ball reflection on table. depending on the global video setting 'Reflect Ball on Playfield' this is on or off. Or it is defined specific for this table.
 *ReflectionStrength(int) - defines the reflection strength of the ball reflection (0-255)
+*BallTrail - enable ball trail/motion blur on table. depending on the global video setting 'Ball Trail/Motion Blur' this is on or off. Or it is defined specific for this table.
+*TrailStrength(int) - defines the strength of the ball trail (0-255)
 *AlphaRampAccuracy(int) - defines the alpha ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
 
 PlungerNormalize(int) - Mech-Plunger component adjustment or weak spring, aging. default=100

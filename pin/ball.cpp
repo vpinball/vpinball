@@ -28,10 +28,14 @@ Ball::Ball()
    m_pinFront=NULL;
    defaultZ = 25.0f;
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
-   fFrozen=false;
+   fFrozen = false;
    logoMaterial.setDiffuse(0.8f, m_color );
    logoMaterial.setAmbient(0.8f, m_color );
    material.setColor( 1.0f, m_color );
+
+   ringcounter_oldpos = 0;
+   for(int i = 0; i < 10; ++i)
+	   oldpos[i].x = FLT_MAX;
 }
 
 Ball::~Ball()	

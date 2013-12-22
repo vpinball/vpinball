@@ -1254,18 +1254,17 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
 
 void Player::EraseBall(Ball *pball)
 {
-	// Flag the region as needing to be updated.
-	if (m_fBallShadows)
-	{
+   // Flag the region as needing to be updated.
+   if (m_fBallShadows)
 		if (!fIntRectIntersect(pball->m_rcScreen, pball->m_rcScreenShadow))
-		{
 			InvalidateRect(&pball->m_rcScreenShadow);
-		}
-	}
+
    if ( m_ptable->m_useReflectionForBalls )
-   {
       InvalidateRect(&pball->m_rcReflection);
-   }
+
+   if ( m_ptable->m_useTrailForBalls )
+      InvalidateRect(&pball->m_rcTrail);
+
    InvalidateRect(&pball->m_rcScreen);
 }
 
@@ -1954,6 +1953,18 @@ void Player::UpdatePhysics()
 
 		//primary physics loop
 		PhysicsSimulateCycle(physics_diff_time, cur_time_usec);		 // main simulator call
+
+		for (int i=0; i < m_vball.Size(); i++)
+		{
+			Ball * const pball = m_vball.ElementAt(i);
+			pball->oldpos[pball->ringcounter_oldpos].x = pball->x;
+			pball->oldpos[pball->ringcounter_oldpos].y = pball->y;
+			pball->oldpos[pball->ringcounter_oldpos].z = pball->z;
+
+			pball->ringcounter_oldpos++;
+			if(pball->ringcounter_oldpos == 10)
+				pball->ringcounter_oldpos = 0;
+		}
 
  		m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				 // new cycle, on physics frame boundary
 		m_nextPhysicsFrameTime += PHYSICS_STEPTIME;					 // advance physics position
@@ -3110,21 +3121,19 @@ void Player::DrawBallLogo(Ball * const pball)
 
 void Player::DrawBalls(const bool only_invalidate_regions)
 {
-   bool drawReflection=m_ptable->m_useReflectionForBalls==fTrue;
+   bool drawReflection = m_ptable->m_useReflectionForBalls==fTrue;
    DWORD strength = (DWORD) m_ptable->m_ballReflectionStrength;
    DWORD factor = (DWORD)(strength<<24) + (DWORD)(strength<<16) + (DWORD)(strength<<8) + strength;
 
 	if(!only_invalidate_regions)
 	{
-
-      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE );
+        m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE );
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
 
 		m_pin3d.EnableAlphaTestReference( 0x0000001 );
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
 		m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-
 	}
 
 	const float sn = sinf(m_pin3d.m_inclination);
@@ -3132,7 +3141,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 	for (int i=0; i<m_vball.Size(); i++)
 	{
-		Ball * const pball = m_vball.ElementAt(i);
+ 	  Ball * const pball = m_vball.ElementAt(i);
       // just calculate the vertices once!
       const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
@@ -3182,7 +3191,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		if(!only_invalidate_regions)
 		{
          Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
-			memcpy( buf, pball->vertices, sizeof(Vertex3D_NoTex2)*4 );
+		 memcpy( buf, pball->vertices, sizeof(Vertex3D_NoTex2)*4 );
          if ( m_ptable->m_useReflectionForBalls )
          {
             memcpy( &buf[16], pball->reflectVerts, sizeof(Vertex3D_NoTex2)*4 );
@@ -3190,12 +3199,12 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		}
 
 		if (m_fBallShadows)
-            CalcBallShadow(pball, only_invalidate_regions ? NULL : &buf[12]);
+           CalcBallShadow(pball, only_invalidate_regions ? NULL : &buf[12]);
 
 		if(only_invalidate_regions)
 		{
-	        // Mark ball rect as dirty for blitting to the screen
-		   m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
+	     // Mark ball rect as dirty for blitting to the screen
+		 m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
          m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, pball->vertices, NULL, NULL, 4, fFalse);
          if( m_ptable->m_useReflectionForBalls )
          {
@@ -3209,7 +3218,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 		if(!only_invalidate_regions)
 		{
-			Ball::vertexBuffer->unlock();
+		 Ball::vertexBuffer->unlock();
 
          pball->logoMaterial.setDiffuse(0.8f, pball->m_color );
          pball->logoMaterial.setAmbient(0.8f, pball->m_color );
@@ -3217,8 +3226,8 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          pball->material.set();
 
          // now render the ball with the vertex buffer data
-			if (m_fBallShadows && m_fBallAntialias)
-				DrawBallShadow(pball);
+		 if (m_fBallShadows && m_fBallAntialias)
+			DrawBallShadow(pball);
 
          if( !pball->m_pin )
          {
@@ -3229,44 +3238,135 @@ void Player::DrawBalls(const bool only_invalidate_regions)
             pball->m_pin->Set( ePictureTexture );
          }
 
-			if (m_fBallAntialias)
-			{
-			   m_pin3d.SetColorKeyEnabled(FALSE);
-				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+		 if (m_fBallAntialias)
+		 {
+		    m_pin3d.SetColorKeyEnabled(FALSE);
+			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
             if ( !drawReflection )
             {
 				   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
 				   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
             }
-				m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
-			}
-			else
-			{
-				m_pin3d.SetColorKeyEnabled(TRUE);
-				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-				m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_NONE);
-			}
+			m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+		 }
+		 else
+		 {
+			m_pin3d.SetColorKeyEnabled(TRUE);
+			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+			m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+		 }
 
+		 // reflection of ball
          if( drawReflection && m_fBallAntialias )
          {
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,FALSE);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, factor);
             m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1}
 
             m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 16, 4, (LPWORD)rgi0123, 4, 0 );
-             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
-             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,TRUE);
-             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
-             m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
          }
 
+		 // normal ball
          m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
 
-			if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
-		        DrawBallLogo(pball );
+		 // ball trails
+		 if( m_ptable->m_useTrailForBalls==fTrue && m_fBallAntialias )
+         {
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is set below
+
+            m_pin3d.ClearExtents(&pball->m_rcTrail, NULL, NULL);
+
+			for(int i2 = 0; i2 < 10-1; ++i2)
+			{
+				int i = pball->ringcounter_oldpos-1-i2;
+				if(i<0)
+					i += 10;
+				int io = i-1;
+				if(io<0)
+					io += 10;
+
+				if((pball->oldpos[i].x != FLT_MAX) && (pball->oldpos[io].x != FLT_MAX))
+				{
+					Vertex3Ds vec;
+					vec.x = pball->oldpos[io].x-pball->oldpos[i].x;
+					vec.y = pball->oldpos[io].y-pball->oldpos[i].y;
+					vec.z = pball->oldpos[io].z-pball->oldpos[i].z;
+					const unsigned int b = (unsigned int)((float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f));
+		            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, b | (b<<8) | (b<<16) | (b<<24));
+					const float r = min(pball->radius*0.9f, 2.0f*pball->radius/powf((float)(i2+2), 0.6f));
+
+					Vertex3Ds v = vec;
+					v.Normalize();
+					Vertex3Ds up;
+					up.x = 0.f;
+					up.y = 0.f;
+					up.z = 1.f;
+					Vertex3Ds n = CrossProduct(v,up);
+					n.x *= r;
+					n.y *= r;
+					n.z *= r;
+					
+				    Vertex3D_NoTex2 rgv3D[4];
+				    rgv3D[0].x = pball->oldpos[i].x - n.x;
+                    rgv3D[0].y = pball->oldpos[i].y - n.y;
+                    rgv3D[0].z = pball->oldpos[i].z - n.z;
+				    rgv3D[1].x = pball->oldpos[i].x + n.x;
+                    rgv3D[1].y = pball->oldpos[i].y + n.y;
+                    rgv3D[1].z = pball->oldpos[i].z + n.z;
+				    rgv3D[2].x = pball->oldpos[io].x + n.x;
+                    rgv3D[2].y = pball->oldpos[io].y + n.y;
+                    rgv3D[2].z = pball->oldpos[io].z + n.z;
+				    rgv3D[3].x = pball->oldpos[io].x - n.x;
+                    rgv3D[3].y = pball->oldpos[io].y - n.y;
+                    rgv3D[3].z = pball->oldpos[io].z - n.z;
+
+				    rgv3D[0].nx = 0.f;
+				    rgv3D[0].ny = 0.f;
+   				    rgv3D[0].nz = 1.f;
+				    rgv3D[1].nx = 0.f;
+				    rgv3D[1].ny = 0.f;
+   				    rgv3D[1].nz = 1.f;
+				    rgv3D[2].nx = 0.f;
+				    rgv3D[2].ny = 0.f;
+   				    rgv3D[2].nz = 1.f;
+				    rgv3D[3].nx = 0.f;
+				    rgv3D[3].ny = 0.f;
+   				    rgv3D[3].nz = 1.f;
+
+				    rgv3D[0].tu = 0.5f+(float)(i2)*(float)(1.0/(2.0*(10-1)));
+				    rgv3D[0].tv = 0.f;
+				    rgv3D[1].tu = rgv3D[0].tu;
+				    rgv3D[1].tv = 1.f;
+				    rgv3D[2].tu = 0.5f+(float)(i2+1)*(float)(1.0/(2.0*(10-1)));
+				    rgv3D[2].tv = 1.f;
+				    rgv3D[3].tu = rgv3D[2].tu;
+				    rgv3D[3].tv = 0.f;
+
+				    m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4, 0);
+
+					m_pin3d.ExpandExtentsPlus(&pball->m_rcTrail, rgv3D, NULL, NULL, 4, fFalse);
+				}
+			}
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+         }
+
+		 if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
+		    DrawBallLogo(pball);
 		}
 
         pball->m_fErase = true;
@@ -3298,13 +3398,13 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		}
 
 		if(only_invalidate_regions)
-      {
+        {
          if ( m_ptable->m_useReflectionForBalls )
-         {
             InvalidateRect(&pball->m_rcReflection);
-         }
+         if ( m_ptable->m_useTrailForBalls )
+            InvalidateRect(&pball->m_rcTrail);
          InvalidateRect(&pball->m_rcScreen);
-      }
+        }
 	}
 
 	if(!only_invalidate_regions)
