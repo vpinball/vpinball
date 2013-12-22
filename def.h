@@ -269,6 +269,10 @@ public:
    {
       return x*x + y*y + z*z;
    }
+   inline float Length() const
+   {
+      return sqrtf(x*x + y*y + z*z);
+   }
    inline void MultiplyScalar(const float scalar)
    {
       x *= scalar;

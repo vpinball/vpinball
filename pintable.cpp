@@ -663,6 +663,16 @@ PinTable::PinTable()
    m_useReflectionForBalls = reflection;
    m_ballReflectionStrength = 50;
 
+   int trail;
+   if ( FAILED(GetRegInt("Player", "BallTrail", &trail)))
+   {
+      trail = fTrue; // The default
+   }
+
+   // use ball trail as default settings
+   m_useTrailForBalls = trail;
+   m_ballTrailStrength = 100;
+
    int enableAA;
    if ( FAILED(GetRegInt("Player", "USEAA", &enableAA)))
    {
@@ -2830,6 +2840,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteInt(FID(BREF), m_useReflectionForBalls );
    bw.WriteInt(FID(BRST), m_ballReflectionStrength );
+   bw.WriteInt(FID(BTRA), m_useTrailForBalls );
+   bw.WriteInt(FID(BTST), m_ballTrailStrength );
    bw.WriteInt(FID(ARAC), m_alphaRampsAccuracy );
 
    bw.WriteInt(FID(UAAL), m_useAA );
@@ -3702,6 +3714,14 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BRST))
    {
       pbr->GetInt(&m_ballReflectionStrength);
+   }
+   else if (id == FID(BTRA))
+   {
+      pbr->GetInt(&m_useTrailForBalls);
+   }
+   else if (id == FID(BTST))
+   {
+      pbr->GetInt(&m_ballTrailStrength);
    }
    else if (id == FID(UAAL))
    {
@@ -7971,11 +7991,11 @@ STDMETHODIMP PinTable::put_BallReflection(int newVal )
 {
    STARTUNDO
 
-      m_useReflectionForBalls = newVal;
+   m_useReflectionForBalls = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_ReflectionStrength(int *pVal)
@@ -7989,11 +8009,11 @@ STDMETHODIMP PinTable::put_ReflectionStrength(int newVal )
 {
    STARTUNDO
 
-      m_ballReflectionStrength = newVal;
+   m_ballReflectionStrength = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_ShadowX(float *pVal)
@@ -8034,6 +8054,42 @@ STDMETHODIMP PinTable::put_ShadowY(float newVal )
    STOPUNDO
 
       return S_OK;
+}
+
+STDMETHODIMP PinTable::get_BallTrail(int *pVal)
+{
+   *pVal = m_useTrailForBalls;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_BallTrail(int newVal )
+{
+   STARTUNDO
+
+   m_useTrailForBalls = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_TrailStrength(int *pVal)
+{
+   *pVal = m_ballTrailStrength;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_TrailStrength(int newVal )
+{
+   STARTUNDO
+
+   m_ballTrailStrength = newVal;
+
+   STOPUNDO
+
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TableSoundVolume(int *pVal)

@@ -171,7 +171,11 @@ public:
     STDMETHOD(put_ShadowX)(/*[in]*/ float newVal);
     STDMETHOD(get_ShadowY)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_ShadowY)(/*[in]*/ float newVal);
-
+	STDMETHOD(get_BallTrail)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_BallTrail)(/*[in]*/ int newVal);
+    STDMETHOD(get_TrailStrength)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_TrailStrength)(/*[in]*/ int newVal);
+    
 	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
 	STDMETHOD(get_Width)(/*[out, retval]*/ float *pVal);
@@ -679,6 +683,8 @@ END_CONNECTION_POINT_MAP()
 	BOOL m_NormalizeNormals;
     BOOL m_useReflectionForBalls;
     int m_ballReflectionStrength;
+    BOOL m_useTrailForBalls;
+    int m_ballTrailStrength;
     BOOL m_useAA;
     BOOL m_useFXAA;
 

@@ -6,6 +6,8 @@ VP 9.2.1 Changelog
   useexisting is 0 or 1 (if no existing/playing copy of the sound is found, then a new one is created)
   restart is 0 or 1 (only useful if useexisting is 1)
 
+- add optional ball trails/motion blur (also adjustable per-table)
+
 - script editor updated to use latest scintilla (3.3.7)
 
 VP 9.2.0 Changelog

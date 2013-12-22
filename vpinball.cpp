@@ -3897,7 +3897,16 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          }
          SendMessage(hwndCheck, BM_SETCHECK, reflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-         int vsync;
+         hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_TRAIL_CHECK);
+         int trail;
+         hr = GetRegInt("Player", "BallTrail", &trail);
+         if (hr != S_OK)
+         {
+            trail = fTrue; // The default
+         }
+         SendMessage(hwndCheck, BM_SETCHECK, trail ? BST_CHECKED : BST_UNCHECKED, 0);
+		 
+		 int vsync;
          hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
          if (hr != S_OK)
          {
@@ -4140,7 +4149,11 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                   int reflection = SendMessage(hwndReflect, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallReflection", REG_DWORD, &reflection, 4);
 
-                  int vsync = GetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, NULL, TRUE);
+                  HWND hwndTrail = GetDlgItem(hwndDlg, IDC_GLOBAL_TRAIL_CHECK);
+                  int trail = SendMessage(hwndTrail, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "BallTrail", REG_DWORD, &trail, 4);
+
+				  int vsync = GetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, NULL, TRUE);
                   SetRegValue("Player", "AdaptiveVSync", REG_DWORD, &vsync, 4);
 
                   HWND hwndFXAA = GetDlgItem(hwndDlg, IDC_FXAA);

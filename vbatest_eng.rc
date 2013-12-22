@@ -242,39 +242,41 @@ BEGIN
     CONTROL         "Draw Ball &Shadows",IDC_SHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,77,10
     CONTROL         "Draw Ball &Decals",IDC_DECAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,30,70,10
     CONTROL         "&Antialias Ball",IDC_ANTIALIAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,42,55,10
-    CONTROL         "Reflect Ball on all tables",IDC_GLOBAL_REFLECTION_CHECK,
+    CONTROL         "Reflect Ball on Playfield",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,54,91,10
-    CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,81,114,8
+    CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,66,91,10
+    CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,92,114,8
     CONTROL         "Region Updates (faster on most hardware)",IDC_ENABLE_REGION_UPDATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,92,155,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,104,155,10
     CONTROL         "Region Optimization (NVIDIA/ATI (FX)AA tweak)",IDC_ENABLE_REGION_UPDATE_OPTIMIZATION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,104,168,10
-    LTEXT           "Adaptive VSync (avoid tearing)",IDC_STATIC,162,121,150,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,116,168,10
+    LTEXT           "Adaptive VSync (avoid tearing)",IDC_STATIC,162,128,150,10
     CONTROL         "Check &Blit Status (for Win98 and 2K)",IDC_CHECKBLIT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,135,133,10
-    CONTROL         "Reorder Playfield Objects (for ATI/AMD gfx)",216,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,147,155,10
-    CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,175,28,10
-    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,185,32,10
-    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,195,32,10
-    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,205,45,10
-    LTEXT           "Restart Visual Pinball.",IDC_STATIC,244,178,72,8
-    LTEXT           "Only works for Images",IDC_STATIC,244,187,70,8
-    LTEXT           "that are not BMP.",IDC_STATIC,244,196,56,8
-    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,156,232,183,20
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,140,133,10
+    CONTROL         "Reorder Playfield Objects (for ATI/AMD gfx)",216,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,152,155,10
+    CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,180,28,10
+    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,190,32,10
+    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,200,32,10
+    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,210,45,10
+    LTEXT           "Restart Visual Pinball.",IDC_STATIC,244,183,72,8
+    LTEXT           "Only works for Images",IDC_STATIC,244,192,70,8
+    LTEXT           "that are not BMP.",IDC_STATIC,244,201,56,8
+    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,156,242,183,20
     CONTROL         "Enable 3D Stereo",IDC_3D_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,18,70,10
     CONTROL         "Antialias 3D",IDC_3D_STEREO_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,31,70,10
     CONTROL         "Use Y-Axis for 3D",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,44,70,10
     DEFPUSHBUTTON   "OK",IDOK,218,280,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,277,280,50,14
     LISTBOX         IDC_SIZELIST,14,42,129,122,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_ADAPTIVE_VSYNC,262,120,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Hz  (1=auto)",IDC_STATIC,283,123,45,10
+    EDITTEXT        IDC_ADAPTIVE_VSYNC,262,126,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Hz  (1=auto)",IDC_STATIC,283,128,45,10
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,263
-    GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,60
-    GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,60
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,69,190,202
-    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,163,180,55
-    LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,222,156,8
+    GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,72
+    GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,72
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,81,190,188
+    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,170,180,55
+    LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,232,156,8
     GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,62
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
 END
@@ -1314,20 +1316,24 @@ BEGIN
     LTEXT           "Y",IDC_STATIC,13,249,8,8
 END
 
-IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 125
+IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 170
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        1505,7,18,113,120,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        1508,7,40,113,109,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        1509,7,62,113,112,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Enable",IDC_BALL_REFLECTION,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,11,91,38,10
-    EDITTEXT        IDC_REFLECTION_EDIT,69,102,31,14,ES_AUTOHSCROLL
     LTEXT           "&Ball Image:",IDC_STATIC,7,9,74,8
     LTEXT           "&Front Decal:",IDC_STATIC,7,32,74,8
     LTEXT           "Bac&k Decal:",IDC_STATIC,7,54,74,8
+    GROUPBOX        "Reflection",IDC_STATIC,7,79,113,42
+    CONTROL         "Enable",IDC_BALL_REFLECTION,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,11,91,38,10
     LTEXT           "Strength (0..255)",IDC_STATIC,12,105,54,8
-    GROUPBOX        "Reflection ",IDC_STATIC,7,79,113,42
+    EDITTEXT        IDC_REFLECTION_EDIT,69,102,31,14,ES_AUTOHSCROLL
+    GROUPBOX        "Trail/Motion Blur",IDC_STATIC,7,124,113,42
+    CONTROL         "Enable",IDC_BALL_TRAIL,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,11,136,38,10
+    LTEXT           "Strength (0..255)",IDC_STATIC,12,150,54,8
+    EDITTEXT        IDC_TRAIL_EDIT,69,147,31,14,ES_AUTOHSCROLL
 END
 
 IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 160
