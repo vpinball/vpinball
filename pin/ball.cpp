@@ -36,6 +36,7 @@ Ball::Ball()
    ringcounter_oldpos = 0;
    for(int i = 0; i < 10; ++i)
 	   oldpos[i].x = FLT_MAX;
+   g_pplayer->m_pin3d.ClearExtents(&m_rcTrail, NULL, NULL);
 }
 
 Ball::~Ball()	
