@@ -3280,13 +3280,10 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		 // ball trails
 		 if( m_ptable->m_useTrailForBalls==fTrue && m_fBallAntialias )
          {
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is set below
-
             m_pin3d.ClearExtents(&pball->m_rcTrail, NULL, NULL);
+
+			Vertex3D_NoLighting rgv3D_all[10*2];
+			unsigned int num_rgv3D = 0;
 
 			for(int i2 = 0; i2 < 10-1; ++i2)
 			{
@@ -3297,72 +3294,98 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 				if(io<0)
 					io += 10;
 
-				if((pball->oldpos[i].x != FLT_MAX) && (pball->oldpos[io].x != FLT_MAX))
+				if((pball->oldpos[i].x != FLT_MAX) && (pball->oldpos[io].x != FLT_MAX)) // only if already initialized
 				{
 					Vertex3Ds vec;
 					vec.x = pball->oldpos[io].x-pball->oldpos[i].x;
 					vec.y = pball->oldpos[io].y-pball->oldpos[i].y;
 					vec.z = pball->oldpos[io].z-pball->oldpos[i].z;
-					const unsigned int b = (unsigned int)((float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f));
-		            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, b | (b<<8) | (b<<16) | (b<<24));
-					const float r = min(pball->radius*0.9f, 2.0f*pball->radius/powf((float)(i2+2), 0.6f));
+					const unsigned int b = (unsigned int)((float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f)); //!! 16=magic alpha falloff
+					const float r = min(pball->radius*0.9f, 2.0f*pball->radius/powf((float)(i2+2), 0.6f)); //!! consts are for magic radius falloff
 
-					Vertex3Ds v = vec;
-					v.Normalize();
-					Vertex3Ds up;
-					up.x = 0.f;
-					up.y = 0.f;
-					up.z = 1.f;
-					Vertex3Ds n = CrossProduct(v,up);
-					n.x *= r;
-					n.y *= r;
-					n.z *= r;
-					
-				    Vertex3D_NoTex2 rgv3D[4];
-				    rgv3D[0].x = pball->oldpos[i].x - n.x;
-                    rgv3D[0].y = pball->oldpos[i].y - n.y;
-                    rgv3D[0].z = pball->oldpos[i].z - n.z;
-				    rgv3D[1].x = pball->oldpos[i].x + n.x;
-                    rgv3D[1].y = pball->oldpos[i].y + n.y;
-                    rgv3D[1].z = pball->oldpos[i].z + n.z;
-				    rgv3D[2].x = pball->oldpos[io].x + n.x;
-                    rgv3D[2].y = pball->oldpos[io].y + n.y;
-                    rgv3D[2].z = pball->oldpos[io].z + n.z;
-				    rgv3D[3].x = pball->oldpos[io].x - n.x;
-                    rgv3D[3].y = pball->oldpos[io].y - n.y;
-                    rgv3D[3].z = pball->oldpos[io].z - n.z;
+					if(b > 0 && r > FLT_MIN)
+					{
+						Vertex3Ds v = vec;
+						v.Normalize();
+						Vertex3Ds up;
+						up.x = 0.f;
+						up.y = 0.f;
+						up.z = 1.f;
+						Vertex3Ds n = CrossProduct(v,up);
+						n.x *= r;
+						n.y *= r;
+						n.z *= r;
 
-				    rgv3D[0].nx = 0.f;
-				    rgv3D[0].ny = 0.f;
-   				    rgv3D[0].nz = 1.f;
-				    rgv3D[1].nx = 0.f;
-				    rgv3D[1].ny = 0.f;
-   				    rgv3D[1].nz = 1.f;
-				    rgv3D[2].nx = 0.f;
-				    rgv3D[2].ny = 0.f;
-   				    rgv3D[2].nz = 1.f;
-				    rgv3D[3].nx = 0.f;
-				    rgv3D[3].ny = 0.f;
-   				    rgv3D[3].nz = 1.f;
+						Vertex3D_NoLighting rgv3D[4];
+						rgv3D[0].x = pball->oldpos[i].x - n.x;
+						rgv3D[0].y = pball->oldpos[i].y - n.y;
+						rgv3D[0].z = pball->oldpos[i].z - n.z;
+						rgv3D[1].x = pball->oldpos[i].x + n.x;
+						rgv3D[1].y = pball->oldpos[i].y + n.y;
+						rgv3D[1].z = pball->oldpos[i].z + n.z;
+						rgv3D[2].x = pball->oldpos[io].x + n.x;
+						rgv3D[2].y = pball->oldpos[io].y + n.y;
+						rgv3D[2].z = pball->oldpos[io].z + n.z;
+						rgv3D[3].x = pball->oldpos[io].x - n.x;
+						rgv3D[3].y = pball->oldpos[io].y - n.y;
+						rgv3D[3].z = pball->oldpos[io].z - n.z;
 
-				    rgv3D[0].tu = 0.5f+(float)(i2)*(float)(1.0/(2.0*(10-1)));
-				    rgv3D[0].tv = 0.f;
-				    rgv3D[1].tu = rgv3D[0].tu;
-				    rgv3D[1].tv = 1.f;
-				    rgv3D[2].tu = 0.5f+(float)(i2+1)*(float)(1.0/(2.0*(10-1)));
-				    rgv3D[2].tv = 1.f;
-				    rgv3D[3].tu = rgv3D[2].tu;
-				    rgv3D[3].tv = 0.f;
+						rgv3D[0].color = rgv3D[1].color = rgv3D[2].color = rgv3D[3].color = b | (b<<8) | (b<<16) | (b<<24);
 
-				    m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX,rgv3D, 4,(LPWORD)rgi0123, 4, 0);
+						rgv3D[0].tu = 0.5f+(float)(i2)*(float)(1.0/(2.0*(10-1)));
+						rgv3D[0].tv = 0.f;
+						rgv3D[1].tu = rgv3D[0].tu;
+						rgv3D[1].tv = 1.f;
+						rgv3D[2].tu = 0.5f+(float)(i2+1)*(float)(1.0/(2.0*(10-1)));
+						rgv3D[2].tv = 1.f;
+						rgv3D[3].tu = rgv3D[2].tu;
+						rgv3D[3].tv = 0.f;
 
-					m_pin3d.ExpandExtentsPlus(&pball->m_rcTrail, rgv3D, NULL, NULL, 4, fFalse);
+						if(num_rgv3D == 0)
+						{
+							rgv3D_all[0] = rgv3D[0];
+							rgv3D_all[1] = rgv3D[1];
+							rgv3D_all[2] = rgv3D[3];
+							rgv3D_all[3] = rgv3D[2];
+						}
+						else
+						{
+							rgv3D_all[num_rgv3D-2].x = (rgv3D[0].x+rgv3D_all[num_rgv3D-2].x)*0.5f;
+							rgv3D_all[num_rgv3D-2].y = (rgv3D[0].y+rgv3D_all[num_rgv3D-2].y)*0.5f;
+							rgv3D_all[num_rgv3D-2].z = (rgv3D[0].z+rgv3D_all[num_rgv3D-2].z)*0.5f;
+							rgv3D_all[num_rgv3D-1].x = (rgv3D[1].x+rgv3D_all[num_rgv3D-1].x)*0.5f;
+							rgv3D_all[num_rgv3D-1].y = (rgv3D[1].y+rgv3D_all[num_rgv3D-1].y)*0.5f;
+							rgv3D_all[num_rgv3D-1].z = (rgv3D[1].z+rgv3D_all[num_rgv3D-1].z)*0.5f;
+							rgv3D_all[num_rgv3D] = rgv3D[3];
+							rgv3D_all[num_rgv3D+1] = rgv3D[2];
+						}
+
+						if(num_rgv3D == 0)
+							num_rgv3D += 4;
+						else
+							num_rgv3D += 2;
+					}
 				}
 			}
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
-            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+
+			static const WORD rgi_all[10*2] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+
+			if(num_rgv3D > 0)
+			{
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, TRUE); 	
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+
+				m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D_all, num_rgv3D, (LPWORD)rgi_all, num_rgv3D, 0);
+
+				m_pin3d.ExpandExtents/*Plus*/(&pball->m_rcTrail, rgv3D_all, NULL, NULL, num_rgv3D, fFalse);
+
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+			}
          }
 
 		 if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
