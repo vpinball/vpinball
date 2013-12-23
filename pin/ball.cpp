@@ -712,8 +712,8 @@ void Ball::UpdateVelocities()
 		
 	vx *= antifrict;	// speed damping
 	vy *= antifrict;
-	vz *= antifrict;	
-				
+	vz *= antifrict;
+
 	m_fDynamic = C_DYNAMIC; // always set .. after adding velocity
 
 	CalcBoundingRect();

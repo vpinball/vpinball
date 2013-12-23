@@ -560,7 +560,7 @@ STDMETHODIMP Flipper::RotateToEnd() //power stroke to hit ball
       m_phitflipper->m_flipperanim.m_EnableRotateEvent = 1;
       m_phitflipper->m_flipperanim.m_angleEnd = endAng;
 
-      if (fabsf(endAng - m_phitflipper->m_flipperanim.m_angleCur)< 1.0e-5f)   //already there?
+      if (fabsf(endAng - m_phitflipper->m_flipperanim.m_angleCur) < 1.0e-5f)   //already there?
       {
          m_phitflipper->m_flipperanim.m_fAcc = 0;
          m_phitflipper->m_flipperanim.m_anglespeed = 0;
@@ -999,9 +999,7 @@ HRESULT Flipper::InitPostLoad()
    if(m_d.m_height > 1000.0f) m_d.m_height = 50.0f;
    if(m_d.m_rubberheight > 1000) m_d.m_rubberheight = 8;
    if(m_d.m_rubberthickness > 0 && m_d.m_height > 16.0f && m_d.m_rubberwidth == 0)
-   {
       m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
-   }
    if(m_d.m_rubberwidth > 1000) m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
 
    return S_OK;
@@ -1018,7 +1016,7 @@ STDMETHODIMP Flipper::put_BaseRadius(float newVal)
 {
    STARTUNDO
 
-      m_d.m_BaseRadius = newVal;
+   m_d.m_BaseRadius = newVal;
 
    STOPUNDO;
 
@@ -1036,11 +1034,11 @@ STDMETHODIMP Flipper::put_EndRadius(float newVal)
 {
    STARTUNDO
 
-      m_d.m_EndRadius = newVal;
+   m_d.m_EndRadius = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Length(float *pVal)
@@ -1054,11 +1052,11 @@ STDMETHODIMP Flipper::put_Length(float newVal)
 {
    STARTUNDO
 
-      m_d.m_FlipperRadiusMax = newVal;
+   m_d.m_FlipperRadiusMax = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_StartAngle(float *pVal)
@@ -1072,11 +1070,11 @@ STDMETHODIMP Flipper::put_StartAngle(float newVal)
 {
    STARTUNDO
 
-      m_d.m_StartAngle = newVal;
+   m_d.m_StartAngle = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_EndAngle(float *pVal)
@@ -1105,9 +1103,7 @@ STDMETHODIMP Flipper::get_CurrentAngle(float *pVal)
       return S_OK;
    }
    else
-   {
       return E_FAIL;
-   }
 }
 
 
