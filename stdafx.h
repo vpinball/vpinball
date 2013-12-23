@@ -44,6 +44,7 @@
 #define C_DYNAMIC 2
 //trigger/kicker boundary crossing hysterisis
 #define STATICTIME 0.005f
+#define PHYSICS_STEPTIME 10000	// usecs to go between each physics update //!! cannot be changed, otherwise physics are slower/faster
 
 //Flippers:
 #define C_FLIPPERACCEL   1.25f
@@ -80,14 +81,12 @@
 
 #define ADAPT_VSYNC_FACTOR 0.95 // safety factor where vsync is turned off (f.e. drops below 60fps * 0.95 = 57fps)
 
-#define PHYSICS_STEPTIME 10000	// usecs to go between each physics update //!! cannot be changed, otherwise physics are slower/faster
-
 #define ACCURATETIMERS 1
 
 #define FPS 1                   // Enable FPS computation (default 'F11')
 #define STEPPING 1              // Enable Physics stepping
 
-#if defined(_DEBUG_) && defined(STEPPING)
+#if defined(_DEBUG) && defined(STEPPING)
  #define MOUSEPAUSE 1
 #endif
 

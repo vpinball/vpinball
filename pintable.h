@@ -552,7 +552,7 @@ END_CONNECTION_POINT_MAP()
 	float m_dampingFriction;
 	int m_plungerNormalize;
 	BOOL m_plungerFilter;
-	int m_PhysicsLoopTime;
+	unsigned int m_PhysicsMaxLoops;
 
     static int m_tblNumStartBalls;	// The number of balls that are on the table at startup minus the current player ball.
 	static int NumStartBalls();		// Returns the number of start balls.
