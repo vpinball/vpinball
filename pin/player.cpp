@@ -1928,7 +1928,7 @@ void Player::UpdatePhysics()
 			break;	//this is the common exit from the loop			 // exit skipping accelerate
 		}			// some rare cases will exit from while()
 
-		if ((cur_time_usec - initial_time_usec > 200000) || (phys_iterations > m_ptable->m_PhysicsMaxLoops/*2*/)) // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
+		if ((cur_time_usec - initial_time_usec > 200000) || (phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) ? 0xFFFFFFFFu : m_ptable->m_PhysicsMaxLoops/*2*/))) // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
 		{															 // can not keep up to real time
 			m_curPhysicsFrameTime = initial_time_usec;				 // skip physics forward ... slip-cycles -> 'slowed' down physics
 			m_nextPhysicsFrameTime = initial_time_usec + PHYSICS_STEPTIME;
