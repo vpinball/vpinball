@@ -250,7 +250,7 @@ void UndoRecord::MarkForUndo(IEditable *pie)
 
 void UndoRecord::MarkForCreate(IEditable *pie)
 	{
-#ifdef DEBUG
+#ifdef _DEBUG
 	if (m_vieCreate.IndexOf(pie) != -1) // Created twice?
 			{
 			_ASSERTE(fFalse);
@@ -263,7 +263,7 @@ void UndoRecord::MarkForCreate(IEditable *pie)
 
 void UndoRecord::MarkForDelete(IEditable *pie)
 	{
-#ifdef DEBUG
+#ifdef _DEBUG
 	if (m_vieDelete.IndexOf(pie) != -1) // Already deleted - bad thing
 			{
 			_ASSERTE(fFalse);

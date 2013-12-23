@@ -2,7 +2,7 @@
 
 #define INPUT_BUFFER_SIZE 32
 
-static PinInput *s_pPinInput;
+static PinInput *s_pPinInput = NULL;
 
 PinInput::PinInput()
 	{
@@ -371,25 +371,25 @@ void PinInput::AdvanceTail()
 	m_tail = ( m_tail + 1 ) % MAX_KEYQUEUE_SIZE;
 }
 
-void PinInput::PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data, const U32 curr_time_msec )
+void PinInput::PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/ )
 {
 	if(( !data ) || QueueFull()) return;
 
 	m_diq[m_head] = *data;
-	m_diq[m_head].dwTimeStamp = curr_time_msec;		//rewrite time from game start
+	//m_diq[m_head].dwTimeStamp = curr_time_msec;		//rewrite time from game start
 	m_diq[m_head].dwSequence = app_data;
 
 	AdvanceHead();
 }
 
-const DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 curr_sim_msec )
+const DIDEVICEOBJECTDATA *PinInput::GetTail( /*const U32 curr_sim_msec*/ )
 {
 	if( QueueEmpty() ) return NULL;
 
 	const DIDEVICEOBJECTDATA * const ptr = &m_diq[m_tail];
 
 	// If we've simulated to or beyond the timestamp of when this control was received then process the control into the system
-	if( curr_sim_msec >= ptr->dwTimeStamp ) //!! disable to save a bit of lag?
+	//if( curr_sim_msec >= ptr->dwTimeStamp ) //!! disable to save a bit of lag?
 	{
 		AdvanceTail();
 
@@ -401,7 +401,7 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail( const U32 curr_sim_msec )
 
 //RLC combine these threads if the Xenon problem is smashed
 
-void PinInput::GetInputDeviceData(const U32 curr_time_msec) 
+void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/) 
 {
 	if(!s_pPinInput) return;	// bad pointer exit
 
@@ -421,7 +421,7 @@ void PinInput::GetInputDeviceData(const U32 curr_time_msec)
 				{					
 				if (hwnd == GetForegroundWindow())
 					{
-					for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_KEYBOARD, curr_time_msec );
+					for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_KEYBOARD/*, curr_time_msec*/ );
 					}
 				}
 			}
@@ -444,7 +444,7 @@ void PinInput::GetInputDeviceData(const U32 curr_time_msec)
 					{	
 					if (hwnd == GetForegroundWindow())
 						{														
-						for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_JOYSTICK(k), curr_time_msec ); 
+						for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_JOYSTICK(k)/*, curr_time_msec*/ ); 
 						}
 					}	
 				}
@@ -611,7 +611,7 @@ void PinInput::FireKeyEvent( const int dispid, const int key )
 	else if( mkey == DIK_T		) val |= PININ_MTILT;
 	else if( mkey == DIK_F11	) val |= PININ_FRAMES;
 
-	// Check the the mkey is down.
+	// Check if the mkey is down.
 	if( dispid == DISPID_GameEvents_KeyDown )
 	{
 		// Turn the bit on.
@@ -678,7 +678,9 @@ void PinInput::autocoin( const F32 secs, const U32 curr_time_msec )
 			// Update the counter.
 			g_pplayer->m_Coins--;
 
+#ifdef _DEBUG
 			OutputDebugString( "**Autocoin: Release.\n" );
+#endif
 		}
 
 		// Logic to do "autocoin"
@@ -692,7 +694,9 @@ void PinInput::autocoin( const F32 secs, const U32 curr_time_msec )
 			didonce = 1;
 			FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eAddCreditKey] );
 
+#ifdef _DEBUG
 			OutputDebugString( "**Autocoin: Press.\n" );
+#endif
 		}
 	}
 }
@@ -723,7 +727,9 @@ void PinInput::autostart( const F32 secs, const F32 retrysecs, const U32 curr_ti
 		down = 0;
 		FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eStartGameKey] );
 
+#ifdef _DEBUG
 		OutputDebugString( "Autostart: Release.\n" );
+#endif
 	}
 
 	// Logic to do "autostart"
@@ -737,7 +743,9 @@ void PinInput::autostart( const F32 secs, const F32 retrysecs, const U32 curr_ti
 		didonce = 1;
 		FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eStartGameKey] );
 
+#ifdef _DEBUG
 		OutputDebugString( "Autostart: Press.\n" );
+#endif
 	}
 }
 
@@ -764,9 +772,7 @@ static U32 first_stamp;
 void PinInput::button_exit( const F32 secs, const U32 curr_time_msec )
 {
 	if( !first_stamp ) 
-	{
 		first_stamp = curr_time_msec;
-	}
 
 	// Don't allow button exit until after game has been running for 1 second.
 	if( curr_time_msec - first_stamp < 1000 ) 
@@ -777,16 +783,10 @@ void PinInput::button_exit( const F32 secs, const U32 curr_time_msec )
 		((curr_time_msec - exit_stamp) > (U32)(secs * 1000.0f)) && // Held exit button for number of seconds.
 		(g_pplayer->m_Coins == 0) )								   // No coins queued to be entered.
 	{
-#ifndef STUCK_EXIT_BUTTON
 		if (uShockType == USHOCKTYPE_ULTRACADE)
-		{
 			ExitApp();  //remove pesky exit button
-		}
 		else
-		{
 			exit(0); //Close out to desktop
-		}
-#endif
 	}
 }
 
@@ -794,7 +794,7 @@ void PinInput::tilt_update()
 {
 	if( !g_pplayer || g_pplayer->m_NudgeManual >= 0) return;
 
-	static int updown;
+	static int updown = 0;
 	int tmp = updown;
 
 	updown = plumb_tilted() ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
@@ -802,7 +802,7 @@ void PinInput::tilt_update()
 	if( updown != tmp ) FireKeyEvent( updown, g_pplayer->m_rgKeys[eCenterTiltKey] );
 }
 
-void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, const U32 curr_time_msec )
+void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, const U32 curr_time_msec )
 {
 	m_ptable = ptable;
 
@@ -814,10 +814,8 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 	{
 		// Check if autostart is enabled.
 		if( ptable->m_tblAutoStartEnabled ) 
-		{
 			// Update autostart.
 			autostart( ptable->m_tblAutoStart, ptable->m_tblAutoStartRetry, curr_time_msec );
-		}
 		
 		// Update autocoin (use autostart seconds to define when nvram is ready).
 		autocoin( ptable->m_tblAutoStart, curr_time_msec );
@@ -835,29 +833,23 @@ void PinInput::ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, con
 
 	// Check if we've been initialized.
 	if( firedautostart == 0 )
-	{
 		firedautostart = curr_time_msec;
-	}
 
 	// Check if we've been initialized.
 	if( firedautocoin == 0 )
-	{
 		firedautocoin = curr_time_msec;
-	}
 
-	GetInputDeviceData(curr_time_msec);
+	GetInputDeviceData(/*curr_time_msec*/);
 
 	const DIDEVICEOBJECTDATA * __restrict input;
-	while( input = GetTail( curr_sim_msec ) )
+	while( input = GetTail( /*curr_sim_msec*/ ) )
 	{
 		if( input->dwSequence == APP_KEYBOARD )
 		{
 			if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
 			{
 				if (input->dwData & 0x80)
-				{
 					g_pplayer->ToggleFPS();
-				}
 			}
 			else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEnable3D])
 			{

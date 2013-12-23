@@ -303,8 +303,8 @@ void Player::ToggleFPS()
 	m_lastfpstime = m_time_msec;
 	m_cframes = 0;
 	m_fps = 0;
-   m_fpsAvg=0;
-   m_fpsCount=1;
+    m_fpsAvg = 0;
+    m_fpsCount = 1;
 	m_total = 0;
 	m_count = 0;
 	m_max = 0;
@@ -1698,31 +1698,13 @@ void Player::mechPlungerIn(const int z)
 
 void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move physics forward to this time
 {
-	float hittime;
-	float staticTime = STATICTIME;
-	const int limitTime = m_ptable->m_PhysicsLoopTime;
-	int halfLimitTime = limitTime/2;
-
 	const int vballsize = m_vball.Size();
 
+	float hittime;
 	int StaticCnts = STATICCNTS;	// maximum number of static counts
 
 	while (dtime > 0.f)
 	{
-		if (limitTime)//time in microseconds
-		{
-			const int time_elasped = (int)(usec()- startTime);
-
-			if (time_elasped > limitTime) //time in microseconds
-				return; // hung in the physics loop
-
-			if (time_elasped > halfLimitTime)		//time in microseconds
-			{
-				staticTime += staticTime*0.5f;		//increase minimum time step by 50%
-				halfLimitTime += halfLimitTime/2;	// set next half limit time step (logarithmic)			
-			}
-		}
-
 		// first find hits, if any +++++++++++++++++++++ 
 
 		hittime = dtime;	//begin time search from now ...  until delta ends
@@ -1755,13 +1737,13 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 					{
 						hittime = htz;						// record actual event time
 
-						if (htz < staticTime)				// less than static time interval
+						if (htz < STATICTIME)				// less than static time interval
 						{ 
-							if(!pball->m_HitRigid) hittime = staticTime; // non-rigid ... set Static time
+							if(!pball->m_HitRigid) hittime = STATICTIME; // non-rigid ... set Static time
 							else if (--StaticCnts < 0)		
 							{
 								StaticCnts = 0;			// keep from wrapping
-								hittime = staticTime;		
+								hittime = STATICTIME;		
 							}
 						}
 					}
@@ -1773,7 +1755,7 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 		// now update displacements to collide-contact or end of physics frame
 		// !!!!! 2) move objects to hittime
 
-		if (hittime > staticTime) StaticCnts = STATICCNTS;		 // allow more zeros next round
+		if (hittime > STATICTIME) StaticCnts = STATICCNTS;		 // allow more zeros next round
 
 		for (int i=0;i<m_vmover.Size();i++)
 			m_vmover.ElementAt(i)->UpdateDisplacements(hittime); //step 2:  move the objects about according to velocities
@@ -1830,8 +1812,8 @@ void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move phys
 	} // end physics loop
 }
 
+U32 phys_iterations;
 #ifdef FPS
-U32 phys_iterations = 0;
 U64 phys_period = 0;	
 #endif
 
@@ -1884,6 +1866,7 @@ void Player::UpdatePhysics()
 	// Get time in milliseconds for timers
 	m_time_msec = (int)((initial_time_usec - m_StartTime_usec)/1000);
 
+	phys_iterations = 0;
 #ifdef FPS
 	//if (m_fShowFPS)
 	{
@@ -1898,7 +1881,6 @@ void Player::UpdatePhysics()
 		}
 	}
 
-    phys_iterations = 0;
     phys_period = initial_time_usec;	
 #endif
 
@@ -1924,9 +1906,8 @@ void Player::UpdatePhysics()
 
 	while (m_curPhysicsFrameTime < initial_time_usec) // loop here until current (real) time matches the physics (simulated) time
 	{
-#ifdef FPS
 		phys_iterations++;
-#endif
+
 		// Get the time until the next physics tick is done, and get the time
 		// until the next frame is done
 		// If the frame is the next thing to happen, update physics to that
@@ -1936,6 +1917,9 @@ void Player::UpdatePhysics()
 		const float physics_to_graphic_diff_time = (float)((double)(initial_time_usec - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
 
 		const U64 cur_time_usec = usec();
+		const U32 cur_msec = (U32)(cur_time_usec/1000);
+
+		m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, cur_msec);
 
 		if (physics_to_graphic_diff_time < physics_diff_time)		 // is graphic frame time next???
 		{
@@ -1944,9 +1928,9 @@ void Player::UpdatePhysics()
 			break;	//this is the common exit from the loop			 // exit skipping accelerate
 		}			// some rare cases will exit from while()
 
-		if (cur_time_usec - initial_time_usec > 200000)				 // hung in the physics loop over 200 milliseconds
+		if ((cur_time_usec - initial_time_usec > 200000) || (phys_iterations > m_ptable->m_PhysicsMaxLoops/*2*/)) // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
 		{															 // can not keep up to real time
-			m_curPhysicsFrameTime = initial_time_usec;				 // skip physics forward ... slip-cycles
+			m_curPhysicsFrameTime = initial_time_usec;				 // skip physics forward ... slip-cycles -> 'slowed' down physics
 			m_nextPhysicsFrameTime = initial_time_usec + PHYSICS_STEPTIME;
 			break;													 // go draw frame
 		}
@@ -1954,6 +1938,7 @@ void Player::UpdatePhysics()
 		//primary physics loop
 		PhysicsSimulateCycle(physics_diff_time, cur_time_usec);		 // main simulator call
 
+		//ball trail, keep old pos of balls
 		for (int i=0; i < m_vball.Size(); i++)
 		{
 			Ball * const pball = m_vball.ElementAt(i);
@@ -1969,14 +1954,9 @@ void Player::UpdatePhysics()
  		m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				 // new cycle, on physics frame boundary
 		m_nextPhysicsFrameTime += PHYSICS_STEPTIME;					 // advance physics position
 
-		// now get and/or calculate integral cycle physics events, digital filters, external acceleration inputs, etc.
-
-		const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
-		const U32 cur_msec = (U32)(cur_time_usec/1000);
-		m_pininput.ProcessKeys(m_ptable, sim_msec, cur_msec);
-
-        mixer_update(m_pininput);
-        hid_update(sim_msec);
+		mixer_update(m_pininput);
+        const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
+		hid_update(sim_msec);
         plumb_update(sim_msec, GetUltraNudgeX(), GetUltraNudgeY());
 
 #ifdef ACCURATETIMERS
@@ -2778,7 +2758,7 @@ void Player::Render()
 		TextOut(hdcNull, 10, 140, szFoo, len);
 
 		len = sprintf_s(szFoo, sizeof(szFoo), "phys:%5d iterations(%5d avg %5d max))   ",
-			   	(U32)phys_iterations,
+			   	phys_iterations,
 			   	(U32)( m_phys_total_iterations / m_count ),
 				(U32)m_phys_max_iterations );
 		TextOut(hdcNull, 10, 160, szFoo, len);
@@ -3913,7 +3893,9 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 							else
 							{
 								// Print an error.
+#ifdef _DEBUG
 								OutputDebugString ( "Autocoin: Invalid parameter." );
+#endif
 							}
 						}
 					}

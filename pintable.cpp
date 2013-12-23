@@ -598,7 +598,7 @@ PinTable::PinTable()
 
    m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
    m_plungerFilter = fFalse;
-   m_PhysicsLoopTime = 0;	   //Physics 10 millisecond loop max calculation time
+   m_PhysicsMaxLoops = 0xFFFFFFFF;
 
    m_right = 0.0f;
    m_bottom = 0.0f;
@@ -2751,7 +2751,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(DAMF), m_dampingFriction);
    bw.WriteInt(FID(MPGC), m_plungerNormalize);
    bw.WriteBool(FID(MPDF), m_plungerFilter);
-   bw.WriteInt(FID(PLTMX), m_PhysicsLoopTime);
+   bw.WriteInt(FID(PHML), m_PhysicsMaxLoops);
 
    //bw.WriteFloat(FID(IMTCOL), m_transcolor);
 
@@ -3497,10 +3497,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
       /*const HRESULT hr =*/ GetRegInt("Player", "PlungerFilter", &tmp);
       m_plungerFilter = (tmp != 0);		
    }
-   else if( id == FID(PLTMX))
+   else if( id == FID(PHML))
    {
-      pbr->GetInt(&m_PhysicsLoopTime);
-      /*const HRESULT hr =*/ GetRegInt("Player", "PhysicsLoopTime", &m_PhysicsLoopTime);
+      pbr->GetInt(&m_PhysicsMaxLoops);
+      /*const HRESULT hr =*/ GetRegInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
    }
    else if (id == FID(DECL))
    {
@@ -7516,11 +7516,11 @@ STDMETHODIMP PinTable::put_GlassHeight(float newVal)
 {
    STARTUNDO
 
-      m_glassheight = newVal;
+   m_glassheight = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TableHeight(float *pVal)
@@ -7534,11 +7534,11 @@ STDMETHODIMP PinTable::put_TableHeight(float newVal)
 {
    STARTUNDO
 
-      m_tableheight = newVal;
+   m_tableheight = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 STDMETHODIMP PinTable::get_Width(float *pVal)
 {
@@ -7551,7 +7551,7 @@ STDMETHODIMP PinTable::put_Width(float newVal)
 {
    STARTUNDO
 
-      m_right = newVal;
+   m_right = newVal;
 
    SetDirtyDraw();
 
@@ -7559,7 +7559,7 @@ STDMETHODIMP PinTable::put_Width(float newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Height(float *pVal)
@@ -7573,7 +7573,7 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 {
    STARTUNDO
 
-      m_bottom = newVal;
+   m_bottom = newVal;
 
    SetDirtyDraw();
 
@@ -7581,7 +7581,7 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_PlayfieldColor(OLE_COLOR *pVal)
@@ -7595,11 +7595,11 @@ STDMETHODIMP PinTable::put_PlayfieldColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_colorplayfield = newVal;
+   m_colorplayfield = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0Ambient(OLE_COLOR *pVal)
@@ -7613,11 +7613,11 @@ STDMETHODIMP PinTable::put_Light0Ambient(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_Light[0].ambient = newVal;
+   m_Light[0].ambient = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0Diffuse(OLE_COLOR *pVal)
@@ -7631,11 +7631,11 @@ STDMETHODIMP PinTable::put_Light0Diffuse(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_Light[0].diffuse = newVal;
+   m_Light[0].diffuse = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0Specular(OLE_COLOR *pVal)
@@ -7649,11 +7649,11 @@ STDMETHODIMP PinTable::put_Light0Specular(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_Light[0].specular = newVal;
+   m_Light[0].specular = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0PX(float *pVal)
@@ -7667,11 +7667,11 @@ STDMETHODIMP PinTable::put_Light0PX(float newVal)
 {
    STARTUNDO
 
-      m_Light[0].pos.x = newVal;
+   m_Light[0].pos.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0PY(float *pVal)
@@ -7685,11 +7685,11 @@ STDMETHODIMP PinTable::put_Light0PY(float newVal)
 {
    STARTUNDO
 
-      m_Light[0].pos.y = newVal;
+   m_Light[0].pos.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0PZ(float *pVal)
@@ -7703,11 +7703,11 @@ STDMETHODIMP PinTable::put_Light0PZ(float newVal)
 {
    STARTUNDO
 
-      m_Light[0].pos.z = -newVal; // transform to local
+   m_Light[0].pos.z = -newVal; // transform to local
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0DX(float *pVal)
@@ -7721,11 +7721,11 @@ STDMETHODIMP PinTable::put_Light0DX(float newVal)
 {
    STARTUNDO
 
-      m_Light[0].dir.x = newVal;
+   m_Light[0].dir.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0DY(float *pVal)
@@ -7739,11 +7739,11 @@ STDMETHODIMP PinTable::put_Light0DY(float newVal)
 {
    STARTUNDO
 
-      m_Light[0].dir.y = newVal;
+   m_Light[0].dir.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0DZ(float *pVal)
@@ -7757,11 +7757,11 @@ STDMETHODIMP PinTable::put_Light0DZ(float newVal)
 {
    STARTUNDO
 
-      m_Light[0].dir.z = -newVal; // transform to local
+   m_Light[0].dir.z = -newVal; // transform to local
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light0Type(int *pVal)
@@ -7775,11 +7775,11 @@ STDMETHODIMP PinTable::put_Light0Type(int newVal)
 {
    STARTUNDO
 
-      m_Light[0].type = (LightType)newVal;
+   m_Light[0].type = (LightType)newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light1Ambient(OLE_COLOR *pVal)
@@ -7793,11 +7793,11 @@ STDMETHODIMP PinTable::put_Light1Ambient(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_Light[1].ambient = newVal;
+   m_Light[1].ambient = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light1Diffuse(OLE_COLOR *pVal)
@@ -7811,11 +7811,11 @@ STDMETHODIMP PinTable::put_Light1Diffuse(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_Light[1].diffuse = newVal;
+   m_Light[1].diffuse = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light1Specular(OLE_COLOR *pVal)
@@ -7829,11 +7829,11 @@ STDMETHODIMP PinTable::put_Light1Specular(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_Light[1].specular = newVal;
+   m_Light[1].specular = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light1PX(float *pVal)
@@ -7847,11 +7847,11 @@ STDMETHODIMP PinTable::put_Light1PX(float newVal)
 {
    STARTUNDO
 
-      m_Light[1].pos.x = newVal;
+   m_Light[1].pos.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light1PY(float *pVal)
@@ -7865,11 +7865,11 @@ STDMETHODIMP PinTable::put_Light1PY(float newVal)
 {
    STARTUNDO
 
-      m_Light[1].pos.y = newVal;
+   m_Light[1].pos.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light1PZ(float *pVal)
@@ -7883,11 +7883,11 @@ STDMETHODIMP PinTable::put_Light1PZ(float newVal)
 {
    STARTUNDO
 
-      m_Light[1].pos.z = -newVal; // transform to local
+   m_Light[1].pos.z = -newVal; // transform to local
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light1DX(float *pVal)
@@ -7901,11 +7901,11 @@ STDMETHODIMP PinTable::put_Light1DX(float newVal)
 {
    STARTUNDO
 
-      m_Light[1].dir.x = newVal;
+   m_Light[1].dir.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light1DY(float *pVal)
@@ -7919,11 +7919,11 @@ STDMETHODIMP PinTable::put_Light1DY(float newVal)
 {
    STARTUNDO
 
-      m_Light[1].dir.y = newVal;
+   m_Light[1].dir.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light1DZ(float *pVal)
@@ -7937,11 +7937,11 @@ STDMETHODIMP PinTable::put_Light1DZ(float newVal)
 {
    STARTUNDO
 
-      m_Light[1].dir.z = -newVal; // transform to local
+   m_Light[1].dir.z = -newVal; // transform to local
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Light1Type(int *pVal)
@@ -7955,11 +7955,11 @@ STDMETHODIMP PinTable::put_Light1Type(int newVal)
 {
    STARTUNDO
 
-      m_Light[1].type = (LightType)newVal;
+   m_Light[1].type = (LightType)newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_NormalizeNormals(int *pVal)
@@ -7973,11 +7973,11 @@ STDMETHODIMP PinTable::put_NormalizeNormals(int newVal )
 {
    STARTUNDO
 
-      m_NormalizeNormals = newVal;
+   m_NormalizeNormals = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BallReflection(int *pVal)
@@ -8033,7 +8033,7 @@ STDMETHODIMP PinTable::put_ShadowX(float newVal )
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_ShadowY(float *pVal)
@@ -8053,7 +8053,7 @@ STDMETHODIMP PinTable::put_ShadowY(float newVal )
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BallTrail(int *pVal)
@@ -8157,11 +8157,11 @@ STDMETHODIMP PinTable::put_AlphaRampAccuracy(int newVal )
 {
    STARTUNDO
 
-      m_alphaRampsAccuracy = newVal;
+   m_alphaRampsAccuracy = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -8176,11 +8176,11 @@ STDMETHODIMP PinTable::put_TableMusicVolume(int newVal )
 {
    STARTUNDO
 
-      m_TableMusicVolume = (float)newVal/100.0f;
+   m_TableMusicVolume = (float)newVal/100.0f;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BackdropColor(OLE_COLOR *pVal)
@@ -8194,11 +8194,11 @@ STDMETHODIMP PinTable::put_BackdropColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_colorbackdrop = newVal;
+   m_colorbackdrop = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BackdropImage(BSTR *pVal)
@@ -8215,7 +8215,7 @@ STDMETHODIMP PinTable::put_BackdropImage(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImageBackdrop, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImageBackdrop, 32, NULL, NULL);
 
    if (!g_pplayer)
    {
@@ -8225,7 +8225,7 @@ STDMETHODIMP PinTable::put_BackdropImage(BSTR newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Gravity(float *pVal)
@@ -8310,7 +8310,7 @@ STDMETHODIMP PinTable::put_MaxBallSpeed(float newVal )
    m_maxBallSpeed = newVal;
 
    STOPUNDO
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_DampingFriction(float *pVal)
@@ -8327,7 +8327,7 @@ STDMETHODIMP PinTable::put_DampingFriction(float newVal )
    m_dampingFriction = newVal;
 
    STOPUNDO
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
@@ -8341,12 +8341,12 @@ STDMETHODIMP PinTable::put_PlungerNormalize(int newVal )
 {
    STARTUNDO
 
-      m_plungerNormalize = newVal;
+   m_plungerNormalize = newVal;
    GetRegInt("Player", "PlungerNormalize", &m_plungerNormalize);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_PlungerFilter(VARIANT_BOOL *pVal)
@@ -8359,17 +8359,17 @@ STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal )
 {
    STARTUNDO
 
-      BOOL tmp = VBTOF(newVal);
+   BOOL tmp = VBTOF(newVal);
    GetRegInt("Player", "PlungerFilter", &tmp);
    m_plungerFilter = (tmp != 0);
 
    STOPUNDO
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_PhysicsLoopTime(int *pVal)
 {
-   *pVal = m_PhysicsLoopTime;
+   *pVal = m_PhysicsMaxLoops;
 
    return S_OK;
 }
@@ -8378,13 +8378,14 @@ STDMETHODIMP PinTable::put_PhysicsLoopTime(int newVal )
 {
    STARTUNDO
 
-      m_PhysicsLoopTime = newVal;
-   GetRegInt("Player", "PhysicsLoopTime", &m_PhysicsLoopTime);
+   m_PhysicsMaxLoops = newVal;
+   GetRegInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
+
 
 STDMETHODIMP PinTable::get_Scalex(float *pVal)
 {
@@ -8397,11 +8398,11 @@ STDMETHODIMP PinTable::put_Scalex(float newVal)
 {
    STARTUNDO
 
-      m_scalex = newVal;
+   m_scalex = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Scaley(float *pVal)
@@ -8415,11 +8416,11 @@ STDMETHODIMP PinTable::put_Scaley(float newVal)
 {
    STARTUNDO
 
-      m_scaley = newVal;
+   m_scaley = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Xlatex(float *pVal)
@@ -8433,11 +8434,11 @@ STDMETHODIMP PinTable::put_Xlatex(float newVal)
 {
    STARTUNDO
 
-      m_xlatex = newVal;
+   m_xlatex = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Xlatey(float *pVal)
@@ -8451,11 +8452,11 @@ STDMETHODIMP PinTable::put_Xlatey(float newVal)
 {
    STARTUNDO
 
-      m_xlatey = newVal;
+   m_xlatey = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Rotation(float *pVal)
@@ -8469,11 +8470,11 @@ STDMETHODIMP PinTable::put_Rotation(float newVal)
 {
    STARTUNDO
 
-      m_rotation = newVal;
+   m_rotation = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_SlopeMax(float *pVal)
@@ -8546,11 +8547,11 @@ STDMETHODIMP PinTable::put_BallImage(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_YieldTime(long *pVal)
@@ -8596,10 +8597,10 @@ STDMETHODIMP PinTable::get_RenderShadows(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_RenderShadows(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_fRenderShadows = VBTOF(newVal);
+   m_fRenderShadows = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_EnableAntialiasing(VARIANT_BOOL *pVal)
@@ -8660,10 +8661,10 @@ STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_fRenderDecals = VBTOF(newVal);
+   m_fRenderDecals = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_EnableEMReels(VARIANT_BOOL *pVal)
@@ -8676,10 +8677,10 @@ STDMETHODIMP PinTable::get_EnableEMReels(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_EnableEMReels(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_fRenderEMReels = VBTOF(newVal);
+   m_fRenderEMReels = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 //////////////////////// uShock Accelerometer controls ///////////////////
 
@@ -8700,11 +8701,11 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
       else 
       {
          STARTUNDO
-            if (newVal < 0) newVal = 0;
+         if (newVal < 0) newVal = 0;
             else if (newVal > 1.0f) newVal = 1.0f;
 
-            m_globalDifficulty = newVal;
-            STOPUNDO
+         m_globalDifficulty = newVal;
+         STOPUNDO
       }
    }
    return S_OK;
@@ -8784,7 +8785,7 @@ STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
       else
       {
          STARTUNDO
-            m_tblAccelerometer = VBTOF(newVal);
+         m_tblAccelerometer = VBTOF(newVal);
          STOPUNDO
       }
    }
@@ -8808,7 +8809,7 @@ STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
       else
       {
          STARTUNDO
-            m_tblAccelNormalMount = VBTOF(newVal);
+         m_tblAccelNormalMount = VBTOF(newVal);
          STOPUNDO
       }
    }
@@ -8833,7 +8834,7 @@ STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
       else 
       {		
          STARTUNDO
-            m_tblAccelAngle = newVal;
+         m_tblAccelAngle = newVal;
          STOPUNDO
       }
    }
@@ -8858,7 +8859,7 @@ STDMETHODIMP PinTable::put_AccelerometerAmp(float newVal)
       else 
       {
          STARTUNDO
-            m_tblAccelAmp = newVal;
+         m_tblAccelAmp = newVal;
          STOPUNDO
       }
    }
@@ -8883,7 +8884,7 @@ STDMETHODIMP PinTable::put_AccelerometerAmpX(float newVal)
       else 
       {
          STARTUNDO
-            m_tblAccelAmpX = newVal;
+         m_tblAccelAmpX = newVal;
          STOPUNDO
       }
    }
@@ -8908,7 +8909,7 @@ STDMETHODIMP PinTable::put_AccelerometerAmpY(float newVal)
       else 
       {
          STARTUNDO
-            m_tblAccelAmpY = newVal;
+         m_tblAccelAmpY = newVal;
          STOPUNDO
       }
    }
@@ -8934,7 +8935,7 @@ STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
       else
       {
          STARTUNDO
-            m_tblAccelManualAmp = newVal;
+         m_tblAccelManualAmp = newVal;
          STOPUNDO
       }
    }
@@ -9021,7 +9022,7 @@ STDMETHODIMP PinTable::put_JoltAmount(int newVal)
       if (hr != S_OK) 
       {
          STARTUNDO
-            m_jolt_amount = newVal;
+         m_jolt_amount = newVal;
          STOPUNDO
       }
    }
@@ -9044,7 +9045,7 @@ STDMETHODIMP PinTable::put_TiltAmount(int newVal)
       if (hr != S_OK) 
       {
          STARTUNDO
-            m_tilt_amount = newVal;
+         m_tilt_amount = newVal;
          STOPUNDO
       }
    }
@@ -9067,7 +9068,7 @@ STDMETHODIMP PinTable::put_JoltTriggerTime(int newVal)
       if (hr != S_OK)
       {
          STARTUNDO
-            m_jolt_trigger_time = newVal;
+         m_jolt_trigger_time = newVal;
          STOPUNDO
       }
    }
@@ -9090,7 +9091,7 @@ STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
       if (hr != S_OK)
       {
          STARTUNDO
-            m_tilt_trigger_time = newVal;
+         m_tilt_trigger_time = newVal;
          STOPUNDO
       }
    }
@@ -9105,7 +9106,6 @@ STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 
 void ScriptGlobalTable::SeqSoundInit()
 {
-
 }
 
 STDMETHODIMP ScriptGlobalTable::SeqSoundPlay(/*[in]*/ long Channel, /*[in]*/ BSTR Sound, /*[in]*/ long LoopCount, /*[in]*/ float Volume, long Delay)
@@ -9139,11 +9139,11 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImageFront, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImageFront, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BallBackDecal(BSTR *pVal)
@@ -9160,11 +9160,11 @@ STDMETHODIMP PinTable::put_BallBackDecal(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImageBack, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImageBack, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::FireKnocker(int Count)

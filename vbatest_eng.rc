@@ -1384,7 +1384,7 @@ BEGIN
     LTEXT           "Contact Scatter Angle",IDC_STATIC,7,37,69,8
     LTEXT           "Dampening Speed",IDC_STATIC,7,51,69,8
     LTEXT           "Dampening Friction",IDC_STATIC,7,65,69,8
-    LTEXT           "Physics Max.Looptime",IDC_STATIC,7,79,70,8
+    LTEXT           "Physics Max. Loops",IDC_STATIC,7,79,70,8
     LTEXT           "Mech-Plunger Adjust",IDC_STATIC,7,92,70,8
     LTEXT           "Override by Global Physics Set",IDC_STATIC,7,118,98,8
     LTEXT           "- - -",IDC_STATIC,7,127,113,8

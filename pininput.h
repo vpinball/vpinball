@@ -47,8 +47,8 @@ public:
 	void AdvanceHead (); // called from sep thread
 	void AdvanceTail (); // called from thread sync'd with visuals as each keystroke is applied to the sim
 
-	void PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data, const U32 curr_time_msec ); // called from sep thread
-	const DIDEVICEOBJECTDATA *GetTail ( const U32 curr_sim_msec ); // called from visually sync'd main thread
+	void PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/ ); // called from sep thread
+	const DIDEVICEOBJECTDATA *GetTail ( /*const U32 curr_sim_msec*/ ); // called from visually sync'd main thread
 
 	// Process keys up until msec_age ago .. don't consider keys that are too new for the current simulation step!
     void autostart( const F32 secs, const F32 retrysecs, const U32 curr_time_msec );
@@ -58,11 +58,11 @@ public:
 	void autocoin( const F32 secs, const U32 curr_time_msec );
     void button_exit( const F32 secs, const U32 curr_time_msec );
     void tilt_update();
-	void ProcessKeys(PinTable * const ptable, const U32 curr_sim_msec, const U32 curr_time_msec );
+	void ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, const U32 curr_time_msec );
 
 	int GetNextKey();
 
-	void GetInputDeviceData(const U32 curr_time_msec);
+	void GetInputDeviceData(/*const U32 curr_time_msec*/);
 
 	U32 Pressed ( const U32 mask ) const;
 	U32 Released( const U32 mask ) const;

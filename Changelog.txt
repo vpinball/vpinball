@@ -6,6 +6,13 @@ VP 9.2.1 Changelog
   useexisting is 0 or 1 (if no existing/playing copy of the sound is found, then a new one is created)
   restart is 0 or 1 (only useful if useexisting is 1)
 
+- change the old 'Physics Max.Looptime' setting to 'Physics Max. Loops'
+  it allows to specify the maximum number of iterations spent in the physics update.
+  by setting it f.e. to 1, the rendered frame updates will -always- match the physics updates, everything above 1 allows for multiple physics updates per frame
+  (2, 3 or 4 can be good values for this, as it slows down the physics temporarily if the FPS drop below 50, 33 or 25 in these cases).
+
+- tweak key input code to save one frame (or more?) of lag
+
 - add optional ball trails/motion blur (also adjustable per-table)
 
 - script editor updated to use latest scintilla (3.3.7)
