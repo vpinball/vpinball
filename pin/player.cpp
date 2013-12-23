@@ -1581,7 +1581,7 @@ int Player::UltraNudgeGetTilt()
 
 void Player::UltraNudge_update()	// called on every integral physics frame
 {
-	if (m_NudgeManual >= 0)			    // Only one joystick controls in manual mode
+	if (m_NudgeManual >= 0)			// Only one joystick controls in manual mode
 	{		
 		m_NudgeX = m_AccelMAmp * ((float)m_curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE); // * Manual Gain
 		m_NudgeY = m_AccelMAmp * ((float)m_curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
@@ -1696,7 +1696,7 @@ void Player::mechPlungerIn(const int z)
 
 #define STATICCNTS 10
 
-void Player::PhysicsSimulateCycle(float dtime, const U64 startTime) // move physics forward to this time
+void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this time
 {
 	const int vballsize = m_vball.Size();
 
@@ -1916,18 +1916,14 @@ void Player::UpdatePhysics()
 		const float physics_diff_time =       (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
 		const float physics_to_graphic_diff_time = (float)((double)(initial_time_usec - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
 
-		const U64 cur_time_usec = usec();
-		const U32 cur_msec = (U32)(cur_time_usec/1000);
-
-		m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, cur_msec);
-
 		if (physics_to_graphic_diff_time < physics_diff_time)		 // is graphic frame time next???
 		{
-			PhysicsSimulateCycle(physics_to_graphic_diff_time, cur_time_usec); // advance physics to this time
+			PhysicsSimulateCycle(physics_to_graphic_diff_time);      // advance physics to this time
 			m_curPhysicsFrameTime = initial_time_usec;				 // now current to the wall clock
 			break;	//this is the common exit from the loop			 // exit skipping accelerate
 		}			// some rare cases will exit from while()
 
+		const U64 cur_time_usec = usec();
 		if ((cur_time_usec - initial_time_usec > 200000) || (phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) ? 0xFFFFFFFFu : m_ptable->m_PhysicsMaxLoops/*2*/))) // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
 		{															 // can not keep up to real time
 			m_curPhysicsFrameTime = initial_time_usec;				 // skip physics forward ... slip-cycles -> 'slowed' down physics
@@ -1935,29 +1931,15 @@ void Player::UpdatePhysics()
 			break;													 // go draw frame
 		}
 
-		//primary physics loop
-		PhysicsSimulateCycle(physics_diff_time, cur_time_usec);		 // main simulator call
+		//update keys, hid, plumb, nudge, timers, etc
+        //const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
+		const U32 cur_time_msec = (U32)(cur_time_usec/1000);
 
-		//ball trail, keep old pos of balls
-		for (int i=0; i < m_vball.Size(); i++)
-		{
-			Ball * const pball = m_vball.ElementAt(i);
-			pball->oldpos[pball->ringcounter_oldpos].x = pball->x;
-			pball->oldpos[pball->ringcounter_oldpos].y = pball->y;
-			pball->oldpos[pball->ringcounter_oldpos].z = pball->z;
-
-			pball->ringcounter_oldpos++;
-			if(pball->ringcounter_oldpos == 10)
-				pball->ringcounter_oldpos = 0;
-		}
-
- 		m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				 // new cycle, on physics frame boundary
-		m_nextPhysicsFrameTime += PHYSICS_STEPTIME;					 // advance physics position
+		m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, cur_time_msec);
 
 		mixer_update(m_pininput);
-        const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
-		hid_update(sim_msec);
-        plumb_update(sim_msec, GetUltraNudgeX(), GetUltraNudgeY());
+		hid_update(/*sim_msec*/cur_time_msec);
+        plumb_update(/*sim_msec*/cur_time_msec, GetUltraNudgeX(), GetUltraNudgeY());
 
 #ifdef ACCURATETIMERS
 		m_pactiveball = NULL; // No ball is the active ball for timers/key events
@@ -1974,8 +1956,6 @@ void Player::UpdatePhysics()
 			}
 		}
 #endif
-		slintf( "PT: %f %f %u %u %u\n", physics_diff_time, physics_to_graphic_diff_time, sim_msec, initial_time_usec/1000, cur_msec );
-
 		UltraNudge_update();		// physics_diff_time is the balance of time to move from the graphic frame position to the next
 		UltraPlunger_update();		// integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
 									// this integral physics frame. Accelerations and inputs are always physics frame aligned
@@ -1997,6 +1977,27 @@ void Player::UpdatePhysics()
 
 		for (int i=0;i<m_vmover.Size();i++)
 			m_vmover.ElementAt(i)->UpdateVelocities();	// always on integral physics frame boundary
+
+		//primary physics loop
+		PhysicsSimulateCycle(physics_diff_time);	    // main simulator call
+
+		//ball trail, keep old pos of balls
+		for (int i=0; i < m_vball.Size(); i++)
+		{
+			Ball * const pball = m_vball.ElementAt(i);
+			pball->oldpos[pball->ringcounter_oldpos].x = pball->x;
+			pball->oldpos[pball->ringcounter_oldpos].y = pball->y;
+			pball->oldpos[pball->ringcounter_oldpos].z = pball->z;
+
+			pball->ringcounter_oldpos++;
+			if(pball->ringcounter_oldpos == 10)
+				pball->ringcounter_oldpos = 0;
+		}
+
+		slintf( "PT: %f %f %u %u %u\n", physics_diff_time, physics_to_graphic_diff_time, (U32)(m_curPhysicsFrameTime/1000), (U32)(initial_time_usec/1000), cur_time_msec );
+
+		m_curPhysicsFrameTime = m_nextPhysicsFrameTime;				 // new cycle, on physics frame boundary
+		m_nextPhysicsFrameTime += PHYSICS_STEPTIME;					 // advance physics position
 	} // end while (m_curPhysicsFrameTime < initial_time_usec)
 
 #ifdef FPS
@@ -2700,7 +2701,7 @@ void Player::Render()
 		TextOut(hdcNull, 10, 30, szFoo, len);
 
 		// Draw the framerate.
-      int len2 = sprintf_s(szFoo, " FPS: %d FPS(avg): %d", m_fps,m_fpsAvg/m_fpsCount);
+        int len2 = sprintf_s(szFoo, " FPS: %d FPS(avg): %d", m_fps,m_fpsAvg/m_fpsCount);
         if( len2>=0 )
         {
             for(int l = len2; l < len+1; ++l)
@@ -2708,7 +2709,9 @@ void Player::Render()
             TextOut(hdcNull, 10, 10, szFoo, len);
         }
 
-		period = msec()-stamp;
+		const U32 curr_msec = msec();
+		period = curr_msec-stamp;
+		stamp = curr_msec;
 		if( period > m_max ) m_max = period;
 		if( phys_period > m_phys_max ) m_phys_max = phys_period;
 		if( phys_iterations > m_phys_max_iterations ) m_phys_max_iterations = phys_iterations;
@@ -2767,8 +2770,6 @@ void Player::Render()
 		c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts);
 		TextOut(hdcNull, 10, 180, szFoo, len);
 #endif
-
-		stamp = msec();
 		ReleaseDC(NULL, hdcNull);
 		}
 #endif

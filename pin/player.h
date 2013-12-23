@@ -59,7 +59,7 @@ public:
 
 	void DrawAlphas();
 
-	void PhysicsSimulateCycle(float dtime, const U64 startTime);
+	void PhysicsSimulateCycle(float dtime);
 
 	void InvalidateRect(RECT * const prc);
 #ifdef ULTRAPIN
