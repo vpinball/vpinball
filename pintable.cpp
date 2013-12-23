@@ -599,6 +599,7 @@ PinTable::PinTable()
    m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
    m_plungerFilter = fFalse;
    m_PhysicsMaxLoops = 0xFFFFFFFF;
+   /*const HRESULT hr =*/ GetRegInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
 
    m_right = 0.0f;
    m_bottom = 0.0f;
@@ -3500,7 +3501,8 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if( id == FID(PHML))
    {
       pbr->GetInt(&m_PhysicsMaxLoops);
-      /*const HRESULT hr =*/ GetRegInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
+	  if(m_PhysicsMaxLoops == 0xFFFFFFFF)
+        /*const HRESULT hr =*/ GetRegInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
    }
    else if (id == FID(DECL))
    {
@@ -8379,7 +8381,6 @@ STDMETHODIMP PinTable::put_PhysicsLoopTime(int newVal )
    STARTUNDO
 
    m_PhysicsMaxLoops = newVal;
-   GetRegInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
 
    STOPUNDO
 
