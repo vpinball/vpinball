@@ -1231,7 +1231,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
 			else if (input->dwOfs == DIJOFS_BUTTON7)
 				{
-					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0) && (m_disable_esc = 0)) // exit
+					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0) && (m_disable_esc == 0)) // exit
 						{	// Check if we have started a game yet.
 							if ((started()) || (ptable->m_tblAutoStartEnabled == false))
 							{	if( DISPID_GameEvents_KeyDown == updown ) 
@@ -1243,7 +1243,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 								{	FireKeyEvent( DISPID_GameEvents_KeyUp,g_pplayer->m_rgKeys[eExitGame ] );  
 									exit_stamp = 0;
 						}	}	}
-					else if	((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_override_default_buttons == 0) && (m_disable_esc = 0)) // exit
+					else if	((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_override_default_buttons == 0) && (m_disable_esc == 0)) // exit
 						{	if( DISPID_GameEvents_KeyDown == updown ) 
 										{g_pplayer->m_fCloseDown = fTrue;}
 						}
