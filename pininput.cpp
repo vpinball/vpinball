@@ -2,10 +2,10 @@
 
 #define INPUT_BUFFER_SIZE 32
 
-static PinInput *s_pPinInput = NULL;
-
 PinInput::PinInput()
 	{
+	ZeroMemory(this,sizeof(PinInput));
+
 	//InputControlRun = 0;
 
 	m_pDI = NULL;
@@ -18,15 +18,12 @@ PinInput::PinInput()
 
 	ZeroMemory( m_diq, sizeof( m_diq ) );
 
-	s_pPinInput = this;
-
 	e_JoyCnt = 0;
 	//m_pJoystick = NULL;
 	for (int k = 0; k < PININ_JOYMXCNT; ++k) m_pJoystick[k] = NULL;
 
 	uShockDevice = -1;	// only one uShock device
 	uShockType = 0;
-	fe_message_sent = false;
 
 	m_plunger_axis = 3;
 	m_lr_axis = 1;
@@ -68,9 +65,7 @@ PinInput::PinInput()
 
 	firedautostart = 0;
 	firedautocoin = 0;
-	LastAttempt = 0;
 
-	started_stamp = 0;
 	pressed_start = 0;
 
 
@@ -203,7 +198,6 @@ PinInput::PinInput()
 
 PinInput::~PinInput()
 {
-	s_pPinInput = NULL;
 }
 
 
@@ -351,12 +345,12 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	return DIENUM_STOP;			//allocation for only PININ_JOYMXCNT joysticks, ignore any others
 }
 
-int PinInput::QueueFull()
+int PinInput::QueueFull() const
 {
 	return ( ( ( m_head+1 ) % MAX_KEYQUEUE_SIZE ) == m_tail );
 }
 
-int PinInput::QueueEmpty()
+int PinInput::QueueEmpty() const
 {
 	return m_head == m_tail;
 }
@@ -389,7 +383,7 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail( /*const U32 curr_sim_msec*/ )
 	const DIDEVICEOBJECTDATA * const ptr = &m_diq[m_tail];
 
 	// If we've simulated to or beyond the timestamp of when this control was received then process the control into the system
-	//if( curr_sim_msec >= ptr->dwTimeStamp ) //!! disable to save a bit of lag?
+	//if( curr_sim_msec >= ptr->dwTimeStamp ) //!! disabled to save a bit of lag
 	{
 		AdvanceTail();
 
@@ -399,16 +393,11 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail( /*const U32 curr_sim_msec*/ )
 }
 
 
-//RLC combine these threads if the Xenon problem is smashed
-
 void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/) 
 {
-	if(!s_pPinInput) return;	// bad pointer exit
-
-	const HWND hwnd = s_pPinInput->m_hwnd;
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
 
-	const LPDIRECTINPUTDEVICE pkyb = s_pPinInput->m_pKeyboard;
+	const LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
 	if (pkyb) //keyboard
 		{	
 		HRESULT hr = pkyb->Acquire();				// try to Acquire keyboard input
@@ -419,9 +408,9 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 			
 			if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
 				{					
-				if (hwnd == GetForegroundWindow())
+				if (m_hwnd == GetForegroundWindow())
 					{
-					for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_KEYBOARD/*, curr_time_msec*/ );
+					for (DWORD i = 0; i < dwElements; i++) PushQueue( &didod[i], APP_KEYBOARD/*, curr_time_msec*/ );
 					}
 				}
 			}
@@ -431,10 +420,10 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 
 	for (int k = 0; k < e_JoyCnt; ++k)
 		{
-		const LPDIRECTINPUTDEVICE pjoy = s_pPinInput->m_pJoystick[k];
+		const LPDIRECTINPUTDEVICE pjoy = m_pJoystick[k];
 		if (pjoy)
 			{				
-			HRESULT hr = pjoy->Acquire();							// try to Acquire joustick input
+			HRESULT hr = pjoy->Acquire();							// try to acquire joystick input
 			if (hr == S_OK || hr == S_FALSE)
 				{					
 				DWORD dwElements = INPUT_BUFFER_SIZE;
@@ -442,9 +431,9 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 
 				if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
 					{	
-					if (hwnd == GetForegroundWindow())
+					if (m_hwnd == GetForegroundWindow())
 						{														
-						for (DWORD i = 0; i < dwElements; i++) s_pPinInput->PushQueue( &didod[i], APP_JOYSTICK(k)/*, curr_time_msec*/ ); 
+						for (DWORD i = 0; i < dwElements; i++) PushQueue( &didod[i], APP_JOYSTICK(k)/*, curr_time_msec*/ ); 
 						}
 					}	
 				}
@@ -533,7 +522,6 @@ void PinInput::UnInit()
 			}
 		}
 
-	s_pPinInput = NULL;							// clean up
 	// Release any DirectInput objects.
 	if( m_pDI ) 
 		{
@@ -641,7 +629,7 @@ int PinInput::started()
 	}
 
 	// Are there more balls on the table than what was loaded?
-   if ( (Ball::GetBallsInUse() - PinTable::NumStartBalls()) > 0 )
+    if ( (Ball::GetBallsInUse() - PinTable::NumStartBalls()) > 0 )
 	{
 		pressed_start = 1;
 		return 1;
@@ -654,7 +642,7 @@ int PinInput::started()
 
 // Adds coins that were passed in from the 
 // credit manager via a window message. 
-void PinInput::autocoin( const F32 secs, const U32 curr_time_msec )
+void PinInput::autocoin( const U32 msecs, const U32 curr_time_msec )
 {
 	// Make sure we have a player.
 	if( !g_pplayer ) 
@@ -684,9 +672,9 @@ void PinInput::autocoin( const F32 secs, const U32 curr_time_msec )
 		}
 
 		// Logic to do "autocoin"
-		if( (down == 0) &&																// Coin button is up.
-			(((didonce == 1) && ((curr_time_msec - firedautocoin) > 500))) ||					// Last attempt was at least 0.50 seconds ago.
-			 ((didonce == 0) && ((curr_time_msec - firedautocoin) > ((U32)(secs*1000.0f)))) )	// Never attempted and at least autostart seconds have elapsed.
+		if( (down == 0) &&														// Coin button is up.
+			(((didonce == 1) && ((curr_time_msec - firedautocoin) > 500))) ||	// Last attempt was at least 0.50 seconds ago.
+			 ((didonce == 0) && ((curr_time_msec - firedautocoin) > msecs)) )	// Never attempted and at least autostart seconds have elapsed.
 		{
 			// Press coin button.
 			firedautocoin = curr_time_msec;
@@ -702,7 +690,7 @@ void PinInput::autocoin( const F32 secs, const U32 curr_time_msec )
 }
 
 
-void PinInput::autostart( const F32 secs, const F32 retrysecs, const U32 curr_time_msec )
+void PinInput::autostart( const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec )
 {
 //	if( !VPinball::m_open_minimized ) 
 //	{
@@ -733,9 +721,9 @@ void PinInput::autostart( const F32 secs, const F32 retrysecs, const U32 curr_ti
 	}
 
 	// Logic to do "autostart"
-	if( (down == 0) &&																					// Start button is up.
-		(((didonce == 1) && !started() && ((curr_time_msec - firedautostart) > ((U32)(retrysecs*1000.0f))))) ||	// Not started and last attempt was at least AutoStartRetry seconds ago.
-		 ((didonce == 0) && ((curr_time_msec - firedautostart) > ((U32)(secs*1000.0f)))) )						// Never attempted and autostart time has elapsed.
+	if( (down == 0) &&																			 // Start button is up.
+		(((didonce == 1) && !started() && ((curr_time_msec - firedautostart) > retry_msecs))) || // Not started and last attempt was at least AutoStartRetry seconds ago.
+		 ((didonce == 0) && ((curr_time_msec - firedautostart) > msecs)) )						 // Never attempted and autostart time has elapsed.
 	{
 		// Press start.
 		firedautostart = curr_time_msec;
@@ -750,11 +738,11 @@ void PinInput::autostart( const F32 secs, const F32 retrysecs, const U32 curr_ti
 }
 
 #ifdef ULTRAPIN
-void PinInput::autoexit( const F32 secs )
+void PinInput::autoexit( const U32 msecs )
 {
 	if (( !VPinball::m_open_minimized ) ||
 		( !g_pplayer ) ||
-		( secs == 0.0f) ||
+		( msecs == 0 ) ||
 		// Check if we have not started.
 		( !started() ))
 		return;
@@ -765,11 +753,10 @@ void PinInput::autoexit( const F32 secs )
 }
 #endif
 
-static U32 exit_stamp;
-static U32 fastexit_stamp;
-static U32 first_stamp;
+static U32 exit_stamp = 0;
+static U32 first_stamp = 0;
 
-void PinInput::button_exit( const F32 secs, const U32 curr_time_msec )
+void PinInput::button_exit( const U32 msecs, const U32 curr_time_msec )
 {
 	if( !first_stamp ) 
 		first_stamp = curr_time_msec;
@@ -779,9 +766,9 @@ void PinInput::button_exit( const F32 secs, const U32 curr_time_msec )
 		return; 
 
 	// Check if we can exit.
-	if( (exit_stamp) &&											   // Initialized.
-		((curr_time_msec - exit_stamp) > (U32)(secs * 1000.0f)) && // Held exit button for number of seconds.
-		(g_pplayer->m_Coins == 0) )								   // No coins queued to be entered.
+	if( (exit_stamp) &&							   // Initialized.
+		((curr_time_msec - exit_stamp) > msecs) && // Held exit button for number of seconds.
+		(g_pplayer->m_Coins == 0) )				   // No coins queued to be entered.
 	{
 		if (uShockType == USHOCKTYPE_ULTRACADE)
 			ExitApp();  //remove pesky exit button
@@ -824,7 +811,6 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 		// Update autoexit.
 		autoexit( ptable->m_timeout );
 #endif
-
 		button_exit( ptable->m_tblExitConfirm, curr_time_msec );
 
 		// Update tilt.
@@ -887,7 +873,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 			if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
 			{
 				const int updown = (input->dwData & 0x80)?DISPID_GameEvents_KeyDown:DISPID_GameEvents_KeyUp;
-				if (input->dwOfs == DIJOFS_BUTTON0)
+				if (input->dwOfs == DIJOFS_BUTTON0) //!! kill copy pasted code -> only m_joyXXX is copied :/
 				{
 					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // plunge
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[ePlungerKey] );}
@@ -902,7 +888,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 1) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 1)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -952,7 +938,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 2) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 2)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1000,7 +986,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 3) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 3)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1048,7 +1034,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 4) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 4)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1096,7 +1082,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 5) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 5)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1144,7 +1130,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 6) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 6)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1194,7 +1180,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 7) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 7)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1256,7 +1242,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 8) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 8)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1294,7 +1280,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 			else if (input->dwOfs == DIJOFS_BUTTON8)
 				{
 					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0))
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
@@ -1310,7 +1296,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 9) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 9)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1358,7 +1344,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 10) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 10)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1408,7 +1394,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 11) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 11)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1456,7 +1442,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 12) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 12)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1497,7 +1483,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 						{	FireKeyEvent( updown,g_pplayer->m_rgKeys[eAddCreditKey2] );}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // start
 						{ // Check if we can allow the start (table is done initializing).
-							if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) ||
+							if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) ||
 							(pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
@@ -1512,7 +1498,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 13) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 13)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1560,7 +1546,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 14) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 14)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1617,7 +1603,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							if (m_joylmagnasave == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 							if (m_joyrmagnasave == 15) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 							if (m_joystartgamekey == 15)
-								{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+								{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 									{	pressed_start = 1;
 										FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 									}
@@ -1662,7 +1648,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					if (m_joylmagnasave == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 					if (m_joyrmagnasave == 16) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 					if (m_joystartgamekey == 16)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
@@ -1706,7 +1692,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					if (m_joylmagnasave == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 					if (m_joyrmagnasave == 17) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 					if (m_joystartgamekey == 17)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
@@ -1750,7 +1736,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					if (m_joylmagnasave == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 					if (m_joyrmagnasave == 18) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 					if (m_joystartgamekey == 18)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
@@ -1794,7 +1780,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					if (m_joylmagnasave == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 					if (m_joyrmagnasave == 19) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 					if (m_joystartgamekey == 19)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
@@ -1838,7 +1824,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					if (m_joylmagnasave == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 					if (m_joyrmagnasave == 20) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 					if (m_joystartgamekey == 20)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
@@ -1882,7 +1868,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					if (m_joylmagnasave == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 					if (m_joyrmagnasave == 21) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 					if (m_joystartgamekey == 21)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
@@ -1926,7 +1912,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					if (m_joylmagnasave == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 					if (m_joyrmagnasave == 22) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 					if (m_joystartgamekey == 22)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
@@ -1970,7 +1956,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					if (m_joylmagnasave == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 					if (m_joyrmagnasave == 23) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 					if (m_joystartgamekey == 23)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
@@ -2014,7 +2000,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					if (m_joylmagnasave == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eLeftMagnaSave] );
 					if (m_joyrmagnasave == 24) FireKeyEvent( updown,g_pplayer->m_rgKeys[eRightMagnaSave] );
 					if (m_joystartgamekey == 24)
-						{	if( ((curr_time_msec - firedautostart) > ((U32)(ptable->m_tblAutoStart*1000.0f))) || (pressed_start) || started() ) 
+						{	if( ((curr_time_msec - firedautostart) > ptable->m_tblAutoStart) || (pressed_start) || started() ) 
 							{	pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
@@ -2562,12 +2548,12 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
 int PinInput::GetNextKey() // return last valid keyboard key 
 {
-	if (m_pKeyboard != NULL && s_pPinInput != NULL)
+	if (m_pKeyboard != NULL)
 	{
 		DIDEVICEOBJECTDATA didod[1];  // Receives buffered data
 		DWORD dwElements;
 		HRESULT hr;
-		LPDIRECTINPUTDEVICE pkyb = s_pPinInput->m_pKeyboard;
+		LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
 
 		for (int j = 0; j < 2; ++j)
 		{
@@ -2583,6 +2569,7 @@ int PinInput::GetNextKey() // return last valid keyboard key
 	return 0;
 }
 
+#if 0
 // Returns non-zero if the key was pressed.
 U32 PinInput::Pressed( const U32 val ) const
 {
@@ -2601,14 +2588,15 @@ U32 PinInput::Held( const U32 val ) const
 	return m_PreviousKeys & val;
 }
 
-// Returns non-zero if the key is held down.
-U32 PinInput::Down( const U32 val ) const
-{
-	return Held( val );
-}
-
 // Returns non-zero if the key was changed.
 U32 PinInput::Changed( const U32 val ) const
 {
 	return m_ChangedKeys & val;
+}
+#endif
+
+// Returns non-zero if the key is held down.
+U32 PinInput::Down( const U32 val ) const
+{
+	return m_PreviousKeys & val;
 }

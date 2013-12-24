@@ -2,6 +2,10 @@
 
 #define MAX_KEYQUEUE_SIZE 32
 
+#if MAX_KEYQUEUE_SIZE & (MAX_KEYQUEUE_SIZE-1)
+ #error Note that MAX_KEYQUEUE_SIZE must be power of 2
+#endif
+
 #define USHOCKTYPE_PBWIZARD		1
 #define USHOCKTYPE_ULTRACADE	2
 #define USHOCKTYPE_SIDEWINDER	3
@@ -22,16 +26,6 @@
 #define APP_JOYSTICKMX (APP_JOYSTICKMN + PININ_JOYMXCNT -1)
 #define APP_JOYSTICK(n) (APP_JOYSTICKMN + n)
 
-#if MAX_KEYQUEUE_SIZE & (MAX_KEYQUEUE_SIZE-1)
-NOTE THAT MAX_KEYQUEUE_SIZE Must be power of 2
-#endif
-
-struct KeySample
-{
-	U64 stamp;
-	U32 keymask;
-};
-
 class PinInput
 {
 public:
@@ -41,49 +35,52 @@ public:
 	void Init(const HWND hwnd);
 	void UnInit();
 
+	// implicitly sync'd with visuals as each keystroke is applied to the sim
 	void FireKeyEvent( const int dispid, const int keycode );
-	int  QueueFull   ();
-	int  QueueEmpty  ();
-	void AdvanceHead (); // called from sep thread
-	void AdvanceTail (); // called from thread sync'd with visuals as each keystroke is applied to the sim
+	int  QueueFull   () const;
+	int  QueueEmpty  () const;
+	void AdvanceHead ();
+	void AdvanceTail ();
 
-	void PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/ ); // called from sep thread
-	const DIDEVICEOBJECTDATA *GetTail ( /*const U32 curr_sim_msec*/ ); // called from visually sync'd main thread
+	void PushQueue( DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/ );
+	const DIDEVICEOBJECTDATA *GetTail ( /*const U32 curr_sim_msec*/ );
 
-	// Process keys up until msec_age ago .. don't consider keys that are too new for the current simulation step!
-    void autostart( const F32 secs, const F32 retrysecs, const U32 curr_time_msec );
+    void autostart( const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec );
 #ifdef ULTRAPIN
-    void autoexit( const F32 secs );
+    void autoexit( const U32 msecs );
 #endif
-	void autocoin( const F32 secs, const U32 curr_time_msec );
-    void button_exit( const F32 secs, const U32 curr_time_msec );
-    void tilt_update();
+	void autocoin( const U32 msecs, const U32 curr_time_msec );
+    void button_exit( const U32 msecs, const U32 curr_time_msec );
+
+	void tilt_update();
+	
 	void ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, const U32 curr_time_msec );
 
 	int GetNextKey();
 
 	void GetInputDeviceData(/*const U32 curr_time_msec*/);
 
+#if 0
 	U32 Pressed ( const U32 mask ) const;
 	U32 Released( const U32 mask ) const;
 	U32 Held    ( const U32 mask ) const;
-	U32 Down    ( const U32 mask ) const;
 	U32 Changed ( const U32 mask ) const;
+#endif
+	U32 Down    ( const U32 mask ) const; //!! only still used by mixer
+
+	int e_JoyCnt;
+	int uShockDevice;	// only one uShock device
+	int uShockType;
 
 	LPDIRECTINPUT7       m_pDI;
 	LPDIRECTINPUTDEVICE7 m_pJoystick[PININ_JOYMXCNT];
 
 	HWND m_hwnd;
 
-	//int InputControlRun;
-
-	int e_JoyCnt;
-	int uShockDevice;	// only one uShock device
-	int uShockType;
-	bool fe_message_sent;
-
 private:
 	int started();
+
+	//int InputControlRun;
 
 	LPDIRECTINPUTDEVICE  m_pKeyboard;
 
@@ -98,20 +95,15 @@ private:
 
 	U32 firedautostart;
 	U32 firedautocoin;
-	U32 LastAttempt;
 
-	U32 started_stamp;
 	int pressed_start;
 
-	// Writable by real-time thread only, read-only from dispatch thread
-	DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events assembled in real time every couple milliseconds
+	DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events
 
 	STICKYKEYS	m_StartupStickyKeys;
 
-	// Modified by real-time input thread (only)
 	int m_head; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
 
-	// Modified by input dispatcher (only)
 	int m_tail; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
 
 	PinTable *m_ptable;

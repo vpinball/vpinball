@@ -730,7 +730,7 @@ PinTable::PinTable()
 #ifdef ULTRAPIN
    m_timeout = 0;								// easy by default
    hr = GetRegInt("Player", "Timeout", &tmp);
-   if (hr == S_OK) m_timeout = (float)tmp*(float)(1.0/60.0);
+   if (hr == S_OK) m_timeout = tmp*1000/60;
 #endif
 
    tmp = 1;
@@ -771,13 +771,13 @@ PinTable::PinTable()
    hr = GetRegInt("Player", "JoystickGain", &tmp);
    if (hr == S_OK) m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
 
-   m_tblAutoStart = 0.0f;
+   m_tblAutoStart = 0;
    hr = GetRegInt("Player", "Autostart", &tmp);
-   if( hr == S_OK ) m_tblAutoStart = (float)tmp*(float)(1.0/100.0);
+   if( hr == S_OK ) m_tblAutoStart = tmp*10;
 
-   m_tblAutoStartRetry = 0.0f;
+   m_tblAutoStartRetry = 0;
    hr = GetRegInt("Player", "AutostartRetry", &tmp);
-   if( hr == S_OK ) m_tblAutoStartRetry = (float)tmp*(float)(1.0/100.0);
+   if( hr == S_OK ) m_tblAutoStartRetry = tmp*10;
 
    PinTable::m_tblNumStartBalls = 0;
    hr = GetRegInt("Player", "NumStartBalls", &tmp);
@@ -795,9 +795,9 @@ PinTable::PinTable()
    hr = GetRegInt("Player", "mirror", &tmp);
    if( hr == S_OK ) m_tblMirrorEnabled = ( tmp != 0 );
 
-   m_tblExitConfirm = 0.0f;
+   m_tblExitConfirm = 0;
    hr = GetRegInt("Player", "Exitconfirm", &tmp);
-   if( hr == S_OK ) m_tblExitConfirm = (float)tmp*(float)(1.0/60.0);
+   if( hr == S_OK ) m_tblExitConfirm = tmp*1000/60;
 
    // Write the version of this exe to the registry.  
    // This will be read later by the front end.
