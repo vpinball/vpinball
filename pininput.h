@@ -79,6 +79,7 @@ public:
 
 private:
 	int started();
+	void Joy(const unsigned int n, const int updown, const bool start);
 
 	//int InputControlRun;
 
