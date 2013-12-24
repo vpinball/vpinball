@@ -433,9 +433,9 @@ BEGIN
     PUSHBUTTON      "OK",IDOK,322,246,40,14
     PUSHBUTTON      "Cancel",IDCANCEL,382,246,40,14
     CONTROL         "Disable ESC key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,215,68,10
-    GROUPBOX        "",IDC_STATIC,262,106,155,21
-    GROUPBOX        "",IDC_STATIC,262,124,155,21
-    GROUPBOX        "",IDC_STATIC,262,142,155,21
+    GROUPBOX        "",IDC_STATIC,262,106,158,21
+    GROUPBOX        "",IDC_STATIC,262,124,158,21
+    GROUPBOX        "",IDC_STATIC,262,142,158,21
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,230,168,25
 END
 

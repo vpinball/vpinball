@@ -566,14 +566,14 @@ END_CONNECTION_POINT_MAP()
 	float m_tblAccelAmpX;			// Accelerometer gain X axis
 	float m_tblAccelAmpY;			// Accelerometer gain Y axis
 	float m_tblAccelManualAmp;		// manual input gain, generally from joysticks
-    float m_tblAutoStart;           // seconds before trying an autostart if doing once-only method .. 0 is automethod
-    float m_tblAutoStartRetry;      // seconds before retrying to autostart.
+    U32 m_tblAutoStart;             // msecs before trying an autostart if doing once-only method .. 0 is automethod
+    U32 m_tblAutoStartRetry;        // msecs before retrying to autostart.
     float m_tblVolmod;              // volume modulation for doing audio balancing
-    float m_tblExitConfirm;         // seconds before trying an autostart if doing once-only method .. 0 is automethod
+    U32 m_tblExitConfirm;           // msecs
 	float m_globalDifficulty;		// Table Difficulty Level
 
 #ifdef ULTRAPIN
-    float m_timeout;                // 0 means no timeout, otherwise in units of seconds when the table timeout should occur
+    U32 m_timeout;                  // 0 means no timeout, otherwise in units of msecs when the table timeout should occur
 #endif
 
     // 1.0f means constantly tilting (an invalid/degenerative state)
