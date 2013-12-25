@@ -494,6 +494,8 @@ BEGIN
     EDITTEXT        1110,43,242,80,12,ES_AUTOHSCROLL
     LISTBOX         IDC_PhysicsList,5,260,180,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Cancel",IDCANCEL,144,28,50,14
+    PUSHBUTTON      "&Import Set",1111,144,220,50,14
+    PUSHBUTTON      "&Export Set",1112,144,238,50,14
     LTEXT           "S&peed",IDC_STATIC,11,23,66,8
     LTEXT           "Stre&ngth",IDC_STATIC,11,38,66,8
     LTEXT           "Elast&icity",IDC_STATIC,11,53,66,8
@@ -509,7 +511,7 @@ BEGIN
     LTEXT           "Dampening Friction",IDC_STATIC,11,219,69,8
     GROUPBOX        "Flipper Settings",IDC_STATIC,5,10,127,129
     GROUPBOX        "Table Settings",IDC_STATIC,5,148,127,87
-    LTEXT           "Set Name",IDC_STATIC,5,245,69,8
+    LTEXT           "Set Name",IDC_STATIC,5,245,35,8
 END
 
 IDD_GAMEPAUSE DIALOGEX 0, 0, 78, 80
