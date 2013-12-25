@@ -106,7 +106,6 @@ BEGIN_CONNECTION_POINT_MAP(Surface)
 END_CONNECTION_POINT_MAP()
 
 	//virtual HRESULT GetTypeName(BSTR *pVal);
-	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 	// From IHaveDragPoints
 	virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);

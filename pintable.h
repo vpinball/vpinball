@@ -278,7 +278,11 @@ public:
 
 	STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
 
+	STDMETHOD(get_GridSize)(float *pgs);
+	STDMETHOD(put_GridSize)(float gs);
+
 	/////////////////////////////////////////////
+
 	PinTable();
 	virtual ~PinTable();
 
@@ -286,7 +290,6 @@ public:
 	void InitPostLoad(VPinball *pvp);
 
 	virtual HRESULT GetTypeName(BSTR *pVal);
-	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	void CreateTableWindow();
@@ -395,9 +398,6 @@ public:
 
 	void TransformPoint(int x, int y, Vertex2D *pv);
 
-	STDMETHOD(get_GridSize)(float *pgs);
-	STDMETHOD(put_GridSize)(float gs);
-
 	void AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate);
 	void BeginAutoSaveCounter();
 	void EndAutoSaveCounter();
@@ -480,13 +480,13 @@ public:
 	BOOL SetupProtectionBlock(unsigned char *pPassword, unsigned long flags);
 	BOOL UnlockProtectionBlock(unsigned char *pPassword);
 
-   void SwitchToLayer(int layerNumber );
-   void AssignToLayer(IEditable *obj, int layerNumber );
-   void AssignMultiToLayer( int layerNumber, int x, int y );
-   void MergeAllLayers();
-   void RestoreLayers();
-   void BackupLayers();
-   void DeleteFromLayer( IEditable *obj );
+    void SwitchToLayer(int layerNumber );
+    void AssignToLayer(IEditable *obj, int layerNumber );
+    void AssignMultiToLayer( int layerNumber, int x, int y );
+    void MergeAllLayers();
+    void RestoreLayers();
+    void BackupLayers();
+    void DeleteFromLayer( IEditable *obj );
 
 
 BEGIN_COM_MAP(PinTable)
@@ -554,9 +554,6 @@ END_CONNECTION_POINT_MAP()
 	BOOL m_plungerFilter;
 	unsigned int m_PhysicsMaxLoops;
 
-    static int m_tblNumStartBalls;	// The number of balls that are on the table at startup minus the current player ball.
-	static int NumStartBalls();		// Returns the number of start balls.
-
 	BOOL m_tblAccelerometer;		// true if electronic accelerometer enabled
 	BOOL m_tblAccelNormalMount;		// true is Normal Mounting (Left Hand Coordinates)
     BOOL m_tblAutoStartEnabled;
@@ -576,21 +573,6 @@ END_CONNECTION_POINT_MAP()
     U32 m_timeout;                  // 0 means no timeout, otherwise in units of msecs when the table timeout should occur
 #endif
 
-    // 1.0f means constantly tilting (an invalid/degenerative state)
-    // 0.0f means will never tilt
-    F32 m_tiltsens;  // 0.0f to 1.0f
-
-    // NOTE: m_nudgesens is not strictly needed
-    // as is duplicate data as in the joystick calibration
-    // but it is here for completeness
-    F32 m_nudgesens; // 0.0f to 1.0f
-
-    int m_units_coin1;				// The number of units added on an event from coin switch 1.
-    int m_units_coin2;				// The number of units added on an event from coin switch 2.
-    int m_units_bonus;				// The number of units required for a bonus credit.
-    int m_units_credit;				// The number of units for a credit.
-    int m_custom_coins;
-	
 	int m_jolt_amount;
 	int m_tilt_amount;
 	int m_DeadZ;
@@ -615,7 +597,7 @@ END_CONNECTION_POINT_MAP()
 
 	Vector< IEditable > m_vedit;
     Vector< IEditable > m_layer[8];
-    Vector<ISelect> m_allHitElements;
+    Vector< ISelect > m_allHitElements;
       
 	Vector< Texture > m_vimage;
 
@@ -635,8 +617,6 @@ END_CONNECTION_POINT_MAP()
 	float m_TableSoundVolume;
 	float m_TableMusicVolume;
 
-	//HBITMAP m_hbmBackdrop;
-
 	BOOL m_fGrid; // Display grid or not
 	BOOL m_fBackdrop;
 
@@ -650,8 +630,6 @@ END_CONNECTION_POINT_MAP()
 	CComObject<CodeViewer> *m_pcv;
 
 	CComObject<ScriptGlobalTable> *m_psgt; // Object to expose to script for global functions
-
-	int m_suffixcount[eItemTypeCount]; // For finding unique item names when adding an item
 
 	SaveDirtyState m_sdsDirtyProp;
 	SaveDirtyState m_sdsDirtyScript;

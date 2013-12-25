@@ -136,7 +136,6 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       {
          pisel = pvsel->ElementAt(0);
          pisel->GetDialogPanes(&m_vproppane);
-         //resourceid = pisel->GetDialogID();
       }
    }
 

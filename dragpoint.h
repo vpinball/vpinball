@@ -82,7 +82,6 @@ public:
 	virtual IEditable *GetIEditable() {return m_pihdp->GetIEditable();}
 	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual IDispatch *GetDispatch();
-	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual int GetSelectLevel() {return 2;} // So dragpoints won't be band-selected with the main objects

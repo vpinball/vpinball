@@ -50,9 +50,6 @@ public:
 	void InitVBA();
 	HRESULT AddMiniBitmaps();
 
-	//STDMETHOD(get_Application)(IVisualPinball** lppaReturn);
-	//STDMETHOD(get_Parent)(IVisualPinball** lppaReturn);
-
 	void ParseCommand(int code, HWND hwnd, int notify);
     void setLayerStatus( int layerNumber );
 
@@ -61,7 +58,6 @@ public:
 	void InitRegValues();			//>>> added by Chris
 	void LoadFile();
 	void LoadFileName(char *szFileName);
-	//void SetClipboard(IStorage *pistg);
 	void SetClipboard(Vector<IStream> *pvstm);
 
 	BOOL FCanClose();
@@ -82,10 +78,7 @@ public:
 	STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
 	STDMETHOD_(ULONG, AddRef)();
 	STDMETHOD_(ULONG, Release)();
-	//inline IUnknown  *GetUnknown()  {return (IVisualPinball *)this;}
 	//inline IDispatch *GetDispatch() {return (IVisualPinball *)this;}
-
-	//DECLARE_STANDARD_DISPATCH();
 
 	HRESULT CheckTypeInfo(UINT itinfo, LCID lcid);
 	ITypeInfo **GetTinfoClsAddr() { return &m_ptinfoCls; }
@@ -126,8 +119,6 @@ public:
 	ULONG m_cref;
 	ITypeInfo *m_ptinfoCls;
 	ITypeInfo *m_ptinfoInt;
-
-	IDispatch *m_pdispBaseObject;
 
 	HWND m_hwnd;
 
@@ -193,7 +184,6 @@ public:
 	int m_autosaveTime;
 
 	bool m_fDebugging; // Whether VBA is currently in debugging mode
-	bool m_bWinHelp;
 	static bool m_open_minimized;
 };
 

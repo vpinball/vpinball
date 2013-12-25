@@ -98,7 +98,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
 	//virtual HRESULT GetTypeName(BSTR *pVal);
-	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	// Multi-object manipulation

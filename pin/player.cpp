@@ -82,48 +82,36 @@ Player::Player()
 	int checkblit;
 	HRESULT hr = GetRegInt("Player", "CheckBlit", &checkblit);
 	if (hr != S_OK)
-		{
 		checkblit = g_pvp->FDefaultCheckBlit(); // The default
-		}
 	m_fCheckBlt = (checkblit == 1);
 
 	int shadow;
 	hr = GetRegInt("Player", "BallShadows", &shadow);
 	if (hr != S_OK)
-		{
 		shadow = fTrue; // The default
-		}
 	m_fBallShadows = (shadow == 1);
 
 	int decal;
 	hr = GetRegInt("Player", "BallDecals", &decal);
 	if (hr != S_OK)
-		{
 		decal = fTrue; // The default
-		}
 	m_fBallDecals = (decal == 1);
 
 	int antialias;
 	hr = GetRegInt("Player", "BallAntialias", &antialias);
 	if (hr != S_OK)
-		{
 		antialias = fTrue; // The default
-		}
 	m_fBallAntialias = (antialias == 1);
 
 	int vsync;
 	hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
 	if (hr != S_OK)
-		{
 		vsync = 0; // The default
-		}
 	m_fVSync = vsync;
 
     hr = GetRegInt("Player", "FXAA", &m_fFXAA);
     if (hr != S_OK)
-    {
       m_fFXAA = fFalse; // The default = off
-    }
     if ((m_fFXAA != fFalse) && (!SSE2_supported)) // SSE2 necessary for the FXAA code
     {
       ShowError("SSE2 is not supported on this processor (necessary for FXAA)");
@@ -132,67 +120,51 @@ Player::Player()
 
     hr = GetRegInt("Player", "USEAA", &m_useAA);
     if (hr != S_OK)
-    {
       m_useAA = fFalse; // The default = off
-    }
 
 	hr = GetRegInt("Player", "Stereo3D", &m_fStereo3D);
 	if (hr != S_OK)
-		{
 		m_fStereo3D = 0; // The default = off
-		}
 	if ((m_fStereo3D != 0) && (!SSE2_supported)) // SSE2 necessary for the 3D stereo code
-		{
+	{
 		ShowError("SSE2 is not supported on this processor (necessary for 3D Stereo)");
 		m_fStereo3D = 0;
-		}
+	}
 
 	int stereo3Denabled;
 	hr = GetRegInt("Player", "Stereo3DEnabled", &stereo3Denabled);
 	if (hr != S_OK)
-		{
 		stereo3Denabled = (m_fStereo3D != 0); // The default
-		}
 	m_fStereo3Denabled = (stereo3Denabled == 1);
 
 	int stereo3DAA;
 	hr = GetRegInt("Player", "Stereo3DAntialias", &stereo3DAA);
 	if (hr != S_OK)
-		{
 		stereo3DAA = fFalse; // The default
-		}
 	m_fStereo3DAA = (stereo3DAA == 1);
 
 	int stereo3DY;
 	hr = GetRegInt("Player", "Stereo3DYAxis", &stereo3DY);
 	if (hr != S_OK)
-		{
 		stereo3DY = fFalse; // The default
-		}
 	m_fStereo3DY = (stereo3DY == 1);
 
 	int enableRegionUpdates;
 	hr = GetRegInt("Player", "EnableRegionUpdates", &enableRegionUpdates);
 	if (hr != S_OK)
-		{
 		enableRegionUpdates = fTrue; // The default
-		}
 	m_fEnableRegionUpdates = (enableRegionUpdates == 1);
 
 	int enableRegionUpdateOptimization;
 	hr = GetRegInt("Player", "EnableRegionUpdateOptimization", &enableRegionUpdateOptimization);
 	if (hr != S_OK)
-		{
 		enableRegionUpdateOptimization = fTrue; // The default
-		}
 	m_fEnableRegionUpdateOptimization = (enableRegionUpdateOptimization == 1);
 
 	int detecthang;
 	hr = GetRegInt("Player", "DetectHang", &detecthang);
 	if (hr != S_OK)
-		{
 		detecthang = fFalse; // The default
-		}
 	m_fDetectScriptHang = (detecthang == 1);
 
 #if defined( DEBUG_FPS )
@@ -555,27 +527,19 @@ void Player::InitRegValues()
 
 	hr = GetRegInt("Player", "PlayMusic", &m_fPlayMusic);
 	if (hr != S_OK)
-		{
 		m_fPlayMusic = 1; // default value
-		}
 
 	hr = GetRegInt("Player", "PlaySound", &m_fPlaySound);
 	if (hr != S_OK)
-		{
 		m_fPlaySound = 1; // default value
-		}
 
 	hr = GetRegInt("Player", "MusicVolume", &m_MusicVolume);
 	if (hr != S_OK)
-		{
 		m_MusicVolume = 100; // default value
-		}
 
 	hr = GetRegInt("Player", "SoundVolume", &m_SoundVolume);
 	if (hr != S_OK)
-		{
 		m_SoundVolume = 100; // default value
-		}
 }
 
 void Player::InitDebugHitStructure()
@@ -653,24 +617,21 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	InitRegValues();
 
     if( !ptable->m_useAA )
-    {
       m_useAA = false;
-    }
-    if( !ptable->m_useFXAA )
-    {
+
+	if( !ptable->m_useFXAA )
       m_fFXAA = false;
-    }
 
 	// width, height, and colordepth are only defined if fullscreen is true.
 	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, (!!m_fStereo3D) || (!!m_fFXAA), !!m_useAA);
 
 	if (hr != S_OK)
-		{
+	{
 		char szfoo[64];
 		sprintf_s(szfoo, "Error code: %x",hr);
 		ShowError(szfoo);
 		return hr;
-		}
+	}
 
 	if (m_fFullScreen)
 		{
@@ -1343,60 +1304,50 @@ void Player::InitWindow()
 
 	hr = GetRegInt("Player", "Width", &m_width);
 	if (hr != S_OK)
-		{
 		m_width = DEFAULT_PLAYER_WIDTH; // The default
-		}
 
 	hr = GetRegInt("Player", "Height", &m_height);
 	if (hr != S_OK)
-		{
 		m_height = m_width *3/4;
-		}
 
 	hr = GetRegInt("Player", "FullScreen", &m_fFullScreen);
 	if (hr != S_OK)
-		{
 		m_fFullScreen = fFalse;
-		}
 
 	int screenwidth;
 	int screenheight;
 
 	if (m_fFullScreen)
-		{
+	{
 		m_screenwidth = m_width;
 		m_screenheight = m_height;
 		screenwidth = m_width;
 		screenheight = m_height;
 		hr = GetRegInt("Player", "ColorDepth", &m_screendepth);
 		if (hr != S_OK)
-			{
 			m_screendepth = 32; // The default
-			}
 		hr = GetRegInt("Player", "RefreshRate", &m_refreshrate);
 		if (hr != S_OK)
-			{
 			m_refreshrate = 0; // The default
-			}
-		}
+	}
 	else
-		{
+	{
 		screenwidth = GetSystemMetrics(SM_CXSCREEN);
 		screenheight = GetSystemMetrics(SM_CYSCREEN);
-		}
+	}
 
 	// constrain window to screen
 	if (!m_fFullScreen && (m_width > screenwidth))
-		{
+	{
 		m_width = screenwidth;
 		m_height = m_width * 3 / 4;
-		}
+	}
 
 	if (!m_fFullScreen && (m_height > screenheight))
-		{
+	{
 		m_height = screenheight;
 		m_width = m_height * 4 / 3;
-		}
+	}
 
 	int x = (screenwidth - m_width) / 2;
 	int y = (screenheight - m_height) / 2;
@@ -1434,17 +1385,13 @@ void Player::InitWindow()
 	int ballStretchMode;
 	hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
 	if (hr != S_OK)
-	{
 		ballStretchMode = 0;
-	}
 
 	// Monitors: 4:3, 16:9, 16:10, 21:10
 	int ballStretchMonitor;
 	hr = GetRegInt("Player", "BallStretchMonitor", &ballStretchMonitor);
 	if (hr != S_OK)
-	{
 		ballStretchMonitor = 1; // assume 16:9
-	}
 
 	const float scalebackX = (m_ptable->m_scalex != 0.0f) ? ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scalex : 1.0f;
 	const float scalebackY = (m_ptable->m_scaley != 0.0f) ? ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scaley : 1.0f;

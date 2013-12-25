@@ -67,9 +67,7 @@ void PinDirectSound::InitDirectSound(HWND hwnd)
 	{
 		hr = GetRegInt("Player", "SoundDevice", &DSidx);
 		if ((hr != S_OK) || ((unsigned int)DSidx >= DSads.size()))
-		{
 			DSidx = 0; // The default primary sound device
-		}
 	}
 
     // Create IDirectSound using the selected sound device

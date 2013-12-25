@@ -46,15 +46,11 @@ HRESULT PinDirectDraw::InitDD()
 
    HRESULT hr = (*m_DDCreate)(NULL, (VOID **)&m_pDD, IID_IDirectDraw7, NULL);
    if (hr != S_OK)
-   {
       ShowError("Could not create Direct Draw.");
-   }
 
    hr = m_pDD->SetCooperativeLevel(NULL, DDSCL_NORMAL | DDSCL_FPUSETUP); // was DDSCL_FPUPRESERVE, which in theory adds lots of overhead, but who knows if this is even supported nowadays by the drivers
    if (hr != S_OK)
-   {
       ShowError("Could not set Direct Draw cooperative level.");
-   }
 
    return S_OK;
 }

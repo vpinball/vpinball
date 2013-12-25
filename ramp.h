@@ -96,7 +96,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
 	//virtual HRESULT GetTypeName(BSTR *pVal);
-	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	void RenderOutline(Sur * const psur);

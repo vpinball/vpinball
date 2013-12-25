@@ -232,11 +232,9 @@ void VPinball::SetOpenMinimized()
 ///</summary>
 void VPinball::Init() 
 {
-
    HRESULT hr;
    m_NextTableID = 1;
 
-   m_bWinHelp = false;											//unused or neccessary for VBA?
    m_lcidVBA = 1033;											//local ID: english - used when creating VBA APC Host
 
    m_ptableActive = NULL;
@@ -245,7 +243,7 @@ void VPinball::Init()
 
    m_workerthread = NULL;										//Workerthread - only for hanging scripts and autosave - will be created later
 
-   GetMyPath();												//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
+   GetMyPath();													//Store path of vpinball.exe in m_szMyPath and m_wzMyPath
 
    RegisterClasses();											//TODO - brief description of what happens in the function
 
@@ -323,7 +321,7 @@ void VPinball::Init()
 
    CreateSideBar();									// Create Sidebar
 
-   CreateMDIClient();									// Create MDI Child
+   CreateMDIClient();								// Create MDI Child
 
    int foo[4] = {120,240,400,600};
 
@@ -334,24 +332,22 @@ void VPinball::Init()
 
    SendMessage(m_hwndStatusBar, SB_SETPARTS, 4, (long)foo);	// Initialise Status bar with 4 empty cells
 
-   m_sb.Init(m_hwnd);									// initialize smartbrowser (Property bar on the right) - see propbrowser.cpp
+   m_sb.Init(m_hwnd);								// initialize smartbrowser (Property bar on the right) - see propbrowser.cpp
 
-   SendMessage(m_hwnd, WM_SIZE, 0, 0);					// Make our window relay itself out
+   SendMessage(m_hwnd, WM_SIZE, 0, 0);				// Make our window relay itself out
 
    InitTools();										// eventually show smartbrowser
 
    InitRegValues();									// get default values from registry
 
-   InitVBA();											// Create APC VBA host
+   InitVBA();										// Create APC VBA host
 
-   m_pds.InitDirectSound(m_hwnd);						// init Direct Sound (in pinsound.cpp)
+   m_pds.InitDirectSound(m_hwnd);					// init Direct Sound (in pinsound.cpp)
    hr = m_pdd.InitDD();								// init direct draw (in pinimage.cpp)
 
    // check if Direct draw could be initalized
    if (hr != S_OK)
-   {
       SendMessage(m_hwnd, WM_CLOSE, 0, 0);
-   }
 
    m_fBackglassView = fFalse;							// we are viewing Pinfield and not the backglass at first
 
@@ -383,7 +379,7 @@ void VPinball::EnsureWorkerThread()
       if (WaitForSingleObject(g_hWorkerStarted, 5000) == WAIT_TIMEOUT)
       {
       }
-      //SetThreadPriority(m_workerthread, THREAD_PRIORITY_LOWEST); //!!
+      SetThreadPriority(m_workerthread, THREAD_PRIORITY_LOWEST);
    }
 }
 
@@ -412,14 +408,7 @@ HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
 ///</summary>
 void VPinball::SetAutoSaveMinutes(int minutes)
 {
-   if (minutes <= 0)
-   {
-      m_autosaveTime = -1;
-   }
-   else
-   {
-      m_autosaveTime = minutes * 60 * 1000; // convert to milliseconds
-   }
+   m_autosaveTime = (minutes <= 0) ? -1 : minutes * (60 * 1000); // convert to milliseconds
 }
 
 ///<summary>
@@ -438,7 +427,7 @@ void VPinball::InitTools()
    if ((hr == S_OK) && (state == 1))
    {
       // if so then re-open it
-      ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 1);//display
+      ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 1); //display
    }
 
    m_ToolCur = IDC_SELECT;
@@ -459,67 +448,47 @@ void VPinball::InitRegValues()
 
    hr = GetRegInt("Player", "HardwareRender", &m_fHardwareAccel);
    if (hr != S_OK)
-   {
       g_pvp->m_pdd.m_fHardwareAccel = 1; // default value
-   }
 
    hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
    if (hr != S_OK)
-   {
       m_DeadZ = 0; // default value
-   }
    SetRegValue("Player", "DeadZone", REG_DWORD, &m_DeadZ, 4);
 
    hr = GetRegInt("Player", "AlternateRender", &m_fAlternateRender);
    if (hr != S_OK)
-   {
       g_pvp->m_pdd.m_fAlternateRender=0; // default value
-   }
 
    hr = GetRegInt("Editor", "ShowDragPoints", &m_fAlwaysDrawDragPoints);
    if (hr != S_OK)
-   {
       m_fAlwaysDrawDragPoints = fFalse; // default value
-   }
 
    hr = GetRegInt("Editor", "DrawLightCenters", &m_fAlwaysDrawLightCenters);
    if (hr != S_OK)
-   {
       m_fAlwaysDrawLightCenters = fFalse; // default value
-   }
 
    BOOL fAutoSave;
    hr = GetRegInt("Editor", "AutoSaveOn", &fAutoSave);
    if (hr != S_OK)
-   {
       fAutoSave = fTrue; // default value
-   }
 
    if (fAutoSave)
    {
       int autosavetime;
       hr = GetRegInt("Editor", "AutoSaveTime", &autosavetime);
       if (hr != S_OK)
-      {
          autosavetime = AUTOSAVE_DEFAULT_TIME;
-      }
       SetAutoSaveMinutes(autosavetime);
    }
    else
-   {
       m_autosaveTime = -1;
-   }
 
    hr = GetRegInt("Player", "SecurityLevel", &m_securitylevel);
    if (hr != S_OK)
-   {
-      m_securitylevel = DEFAULT_SECURITY_LEVEL; // The default
-   }
+      m_securitylevel = DEFAULT_SECURITY_LEVEL;
 
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
-   {
       m_securitylevel = eSecurityNoControls;
-   }
 
    // get the list of the last n loaded tables
    for (int i=0; i<LAST_OPENED_TABLE_COUNT; i++)
@@ -582,7 +551,6 @@ void VPinball::CreateSideBar()
    m_hwndSideBarScroll = ::CreateWindowEx(0,"VPStaticChild","",WS_VISIBLE | WS_CHILD | WS_VSCROLL,
       0,28*(TBCOUNTLAYERS/2),TOOLBAR_WIDTH + SCROLL_WIDTH,rc.bottom - rc.top,m_hwndSideBarLayers,NULL,g_hinst,0);
 
-
    m_hwndToolbarMain = CreateToolbar((TBBUTTON *)g_tbbuttonMain, TBCOUNTMAIN, m_hwndSideBar);
    m_hwndToolbarLayers = CreateLayerToolbar(m_hwndSideBarLayers);
    m_hwndToolbarPalette = CreateToolbar((TBBUTTON *)g_tbbuttonPalette, TBCOUNTPALETTE, m_hwndSideBarScroll);
@@ -617,17 +585,15 @@ HWND VPinball::CreateLayerToolbar(HWND hwndParent)
       tbbi.dwMask = TBIF_SIZE | TBIF_COMMAND | TBIF_STATE | TBIF_STYLE;
       SendMessage(hwnd, TB_GETBUTTONINFO, g_tbbuttonLayers[i].idCommand, (LPARAM)&tbbi);
       if (tbbi.fsStyle & TBSTYLE_DROPDOWN)
-      {
          tbbi.cx = 48;
-      }
       SendMessage(hwnd, TB_SETBUTTONINFO, g_tbbuttonLayers[i].idCommand, (LPARAM)&tbbi);
    }
 
    SendMessage(hwnd, TB_AUTOSIZE, 0, 0);
 
    return hwnd;
-
 }
+
 ///<summary>
 ///Creates Buttons in Toolbar-Windows (left Toolbar)
 ///<param name="*p_tbbutton">Pointer to Buttons as TBBUTTON[]</param>
@@ -674,9 +640,7 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
       tbbi.dwMask = TBIF_SIZE | TBIF_COMMAND | TBIF_STATE | TBIF_STYLE;
       /*int foo =*/ SendMessage(hwnd, TB_GETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
       if (tbbi.fsStyle & TBSTYLE_DROPDOWN)
-      {
          tbbi.cx = 48;
-      }
       /*foo =*/ SendMessage(hwnd, TB_SETBUTTONINFO, p_tbbutton[i].idCommand, (LPARAM)&tbbi);
    }
 
@@ -701,18 +665,12 @@ void VPinball::CreateMDIClient()
 void VPinball::SetClipboard(Vector<IStream> *pvstm)
 {
    for (int i=0;i<m_vstmclipboard.Size();i++)
-   {
       m_vstmclipboard.ElementAt(i)->Release();
-   }
    m_vstmclipboard.RemoveAllElements();
 
    if (pvstm)
-   {
       for (int i=0;i<pvstm->Size();i++)
-      {
          m_vstmclipboard.AddElement(pvstm->ElementAt(i));
-      }
-   }
 }
 
 void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
@@ -758,14 +716,11 @@ void VPinball::InitLayerMenu()
    CheckMenuItem(hmenu, ID_LAYER_LAYER6, MF_CHECKED);
    CheckMenuItem(hmenu, ID_LAYER_LAYER7, MF_CHECKED);
    CheckMenuItem(hmenu, ID_LAYER_LAYER8, MF_CHECKED);
+
    ptCur = GetActiveTable();
    if( ptCur )
-   {
       for( int i=0;i<8;i++ )
-      {
          ptCur->m_activeLayers[i]=true;
-      }
-   }
 }
 void VPinball::SetPropSel(Vector<ISelect> *pvsel)
 {
@@ -797,13 +752,9 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE))
-            {
                ShowPermissionError();
-            }
             else
-            {
                ptCur->OnDelete();
-            }
          }
       }
       break;
@@ -820,13 +771,9 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING))
-            {
                ShowPermissionError();
-            }
             else
-            {
                ptCur->m_pcv->SetVisible(fTrue);
-            }
          }
       }
       break;
@@ -850,7 +797,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
             break;
          case 1: fShow = fTrue;   //set
             break;
-         case 2:					 //re-display 
+         case 2:				  //re-display 
             break;			
          default: fShow = !fShow; //toggle
             break;
@@ -881,16 +828,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          // Set menu item to the correct state
          HMENU hmenu = GetMenu(m_hwnd);
          const int count = GetMenuItemCount(hmenu);
-         HMENU hmenuEdit;
-         if (count > 7)
-         {
-            // MDI has added it's crap
-            hmenuEdit = GetSubMenu(hmenu, 2);
-         }
-         else
-         {
-            hmenuEdit = GetSubMenu(hmenu, 1);
-         }
+         HMENU hmenuEdit = GetSubMenu(hmenu, (count > 7) ? 2 // MDI has added it's crap
+				                                         : 1);
          CheckMenuItem(hmenuEdit, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
 
          m_sb.SetVisible(fShow);
@@ -902,9 +841,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
             if (ptCur)
             {
                if (!ptCur->CheckPermissions(DISABLE_TABLEVIEW))
-               {
                   m_sb.CreateFromDispatch(m_hwnd, &ptCur->m_vmultisel);
-               }
             }
          }
       }
@@ -932,16 +869,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          // Set menu item to the correct state
          HMENU hmenu = GetMenu(m_hwnd);
          const int count = GetMenuItemCount(hmenu);
-         HMENU hmenuEdit;
-         if (count > 7)
-         {
-            // MDI has added it's crap
-            hmenuEdit = GetSubMenu(hmenu, 2);
-         }
-         else
-         {
-            hmenuEdit = GetSubMenu(hmenu, 1);
-         }
+         HMENU hmenuEdit = GetSubMenu(hmenu, (count > 7) ? 2 // MDI has added it's crap
+				                                         : 1);
          /*const DWORD foo =*/ CheckMenuItem(hmenuEdit, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
 
          m_fBackglassView = fShow;
@@ -958,10 +887,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (!ptCur->CheckPermissions(DISABLE_TABLEVIEW))
-            {
                // Set selection to something in the new view (unless hiding table elements)
                ptCur->AddMultiSel((ISelect *)ptCur, fFalse, fTrue);
-            }
          }
 
          SetEnableToolbar();
@@ -1039,16 +966,12 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
-            {
                ShowPermissionError();
-            }
             else
             {
                HRESULT hr = ptCur->TableSave();
                if (hr == S_OK)
-               {
                   UpdateRecentFileList(ptCur->m_szFileName);
-               }
             }
          }
       }
@@ -1060,16 +983,12 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
-            {
                ShowPermissionError();
-            }
             else
             {
                HRESULT hr = ptCur->SaveAs();
                if (hr == S_OK)
-               {
                   UpdateRecentFileList(ptCur->m_szFileName);
-               }
             }
          }
       }
@@ -1082,9 +1001,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          {
             if ( (ptCur->CheckPermissions(DISABLE_TABLE_SAVE)) ||
                (ptCur->CheckPermissions(DISABLE_TABLE_SAVEPROT)) )
-            {
                ShowPermissionError();
-            }
             else
             {
                int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_PROTECT_DIALOG),
@@ -1102,10 +1019,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                      UpdateRecentFileList(ptCur->m_szFileName);
                   }
                   else
-                  {
                      // if the save failed, then reset the permissions
                      ptCur->ResetProtectionBlock();
-                  }
                }
             }
          }
@@ -1160,9 +1075,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       {
          ptCur = GetActiveTable();
          if (ptCur)
-         {
             CloseTable(ptCur);
-         }
       }
       break;
 
@@ -1172,13 +1085,9 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE))
-            {
                ShowPermissionError();
-            }
             else
-            {
                ptCur->Copy();
-            }
          }
       }
       break;
@@ -1187,9 +1096,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       {
          ptCur = GetActiveTable();
          if (ptCur)
-         {
             ptCur->Paste(fFalse, 0, 0);
-         }
       }
       break;
 
@@ -1210,9 +1117,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       {
          ptCur = GetActiveTable();
          if (ptCur)
-         {
             ptCur->Undo();
-         }
       }
       break;
 
@@ -1222,13 +1127,9 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
-            {
                ShowPermissionError();
-            }
             else
-            {
                ptCur->ExportBlueprint();
-            }
          }
       }
       break;
@@ -1260,9 +1161,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          // force a screen refresh (it an active table is loaded)
          ptCur = GetActiveTable();
          if (ptCur)
-         {
             ptCur->SetDirtyDraw();
-         }
       }
       break;
 
@@ -1312,9 +1211,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-            {
                ShowPermissionError();
-            }
             else
             {
 #ifdef VBA
@@ -1335,9 +1232,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-            {
                ShowPermissionError();
-            }
             else
             {
 #ifdef VBA
@@ -1360,9 +1255,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-            {
                ShowPermissionError();
-            }
             else
             {
 #ifdef VBA
@@ -1384,9 +1277,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-            {
                ShowPermissionError();
-            }
             else
             {
 #ifdef VBA
@@ -1459,16 +1350,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          ptCur = GetActiveTable();
          if( !ptCur ) break;
          HMENU hmenu = GetMenu(m_hwnd);
-         if( ptCur->m_toggleAllLayers )
-         {
-            for( int i=0;i<8;i++ ) ptCur->m_activeLayers[i]=false;
-            for( int i=0;i<8;i++ ) setLayerStatus(i);
-         }
-         else
-         {
-            for( int i=0;i<8;i++ ) ptCur->m_activeLayers[i]=true;
-            for( int i=0;i<8;i++ ) setLayerStatus(i);
-         }
+         for( int i=0;i<8;i++ ) ptCur->m_activeLayers[i] = !ptCur->m_toggleAllLayers;
+         for( int i=0;i<8;i++ ) setLayerStatus(i);
          ptCur->m_toggleAllLayers ^= true;   
          break;
       }
@@ -1492,7 +1375,7 @@ void VPinball::setLayerStatus( int layerNumber )
    CComObject<PinTable> *ptCur;
 
    ptCur = GetActiveTable();
-   if( !ptCur  || layerNumber>7 ) return;
+   if( !ptCur || layerNumber>7 ) return;
 
    HMENU hmenu = GetMenu(m_hwnd);
    
@@ -1563,9 +1446,7 @@ void VPinball::SetEnablePalette()
    if (ptCur)
    {
       if (ptCur->CheckPermissions(DISABLE_TABLEVIEW))
-      {
          fTableActive = false;
-      }
    }
 
    const int state = (m_fBackglassView ? 2 : 1);
@@ -1594,17 +1475,8 @@ void VPinball::SetEnablePalette()
       // Set menu item
       HMENU hmenu = GetMenu(m_hwnd);
       const int count = GetMenuItemCount(hmenu);
-      HMENU hmenuEdit;
-      // Get the insert menu
-      if (count > 7)
-      {
-         // MDI has added it's crap
-         hmenuEdit = GetSubMenu(hmenu, 3);
-      }
-      else
-      {
-         hmenuEdit = GetSubMenu(hmenu, 2);
-      }
+      HMENU hmenuEdit = GetSubMenu(hmenu, (count > 7) ? 3 // MDI has added it's crap
+			                                          : 2);
       /*const DWORD foo =*/ EnableMenuItem(hmenuEdit, id, MF_BYCOMMAND | (fEnable ? MF_ENABLED : MF_GRAYED));
    }
 }
@@ -1625,10 +1497,8 @@ void VPinball::SetEnableToolbar()
 
       if (ptCur)
       {
-         if ((id == ID_EDIT_SCRIPT) && (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING)))
-         {
+         if ((id == ID_EDIT_SCRIPT) && ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING))
             fEnable = fFalse;
-         }
       }
 
       // Set toolbar state
@@ -1655,9 +1525,7 @@ void VPinball::DoPlay()
    NumVideoBytes = 0;
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
-   {
       ptCur->Play();
-   }
 }
 
 void VPinball::LoadFile()
@@ -1700,9 +1568,8 @@ void VPinball::LoadFile()
 #endif
 
    if(ret == 0)
-   {
       return;
-   }
+
    //>>> moved by chris down into loadfilename()
    //	strcpy(szInitialDir, szFileName);
    //	szInitialDir[ofn.nFileOffset] = 0;
@@ -1746,9 +1613,7 @@ void VPinball::LoadFileName(char *szFileName)
       // make sure the load directory is the active directory
       DWORD err = SetCurrentDirectory(szLoadDir);
       if (err == 0)
-      {
          err = GetLastError();
-      }
 
       UpdateRecentFileList(szFileName);
    }
@@ -1764,7 +1629,6 @@ void VPinball::LoadFileName(char *szFileName)
 
       tbinfo.fsState |= TBSTATE_CHECKED;
       SendMessage(m_hwndToolbarLayers,TB_SETBUTTONINFO,allLayers[i],(long)&tbinfo);
-
    }
 
    SetEnableToolbar();
@@ -1782,9 +1646,7 @@ CComObject<PinTable> *VPinball::GetActiveTable()
       return pt;
    }
    else
-   {
       return NULL;
-   }
 }
 
 BOOL VPinball::FCanClose()
@@ -1796,9 +1658,7 @@ BOOL VPinball::FCanClose()
       fCanClose = CloseTable(m_vtable.ElementAt(0));
 
       if (!fCanClose)
-      {
          return fFalse;
-      }
    }
 
    return fTrue;
@@ -1819,10 +1679,9 @@ BOOL VPinball::CloseTable(PinTable *ppt)
       const int result = MessageBox(m_hwnd, szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
       delete [] szText;
       if (result == IDCANCEL)
-      {
          return fFalse;
-      }
-      if (result == IDYES)
+
+	  if (result == IDYES)
       {
          if (ppt->TableSave() != S_OK)
          {
@@ -1836,9 +1695,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
    /*const BOOL fSafe =*/ ppt->FVerifySaveToClose();
 
    if (m_sb.GetBaseISel() && (ppt == m_sb.GetBaseISel()->GetPTable()))
-   {
       SetPropSel(NULL);
-   }
 
 #ifdef VBA
    ppt->CloseVBA();
@@ -1857,9 +1714,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 
 BOOL VPinball::FDefaultCheckBlit()
 {
-   const DWORD ver = GetVersion();
-
-   const bool fCheckBlt = ((ver & 0x80000000) != 0); // check blt status on Win9x
+   const bool fCheckBlt = ((GetVersion() & 0x80000000) != 0); // check blt status on Win9x
 
    return fCheckBlt;
 }
@@ -1879,9 +1734,7 @@ void VPinball::InitVBA()
    SysFreeString(bstrLicKey);
 
    if (hr != S_OK)
-   {
       ShowError("Could not create VBA.");
-   }
 
    AddMiniBitmaps();
 #endif
@@ -1950,15 +1803,7 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_HIT, MF_BYCOMMAND | MF_ENABLED );
       EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_SELECT, MF_BYCOMMAND | MF_ENABLED );
       // enable/disable save options
-      UINT flags;
-      if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
-      {
-         flags = MF_BYCOMMAND | MF_GRAYED;
-      }
-      else
-      {
-         flags = MF_BYCOMMAND | MF_ENABLED;
-      }
+      UINT flags = MF_BYCOMMAND | (ptCur->CheckPermissions(DISABLE_TABLE_SAVE) ? MF_GRAYED : MF_ENABLED);
       EnableMenuItem(hmenu, IDM_SAVE, flags);
       EnableMenuItem(hmenu, IDM_SAVEAS, flags);
       EnableMenuItem(hmenu, IDM_SAVEASPROTECTED, flags);
@@ -1968,44 +1813,21 @@ void VPinball::SetEnableMenuItems()
       // (if we cant do any saves it is already disabled)
       if ( (!ptCur->CheckPermissions(DISABLE_TABLE_SAVE))	&&
          (ptCur->CheckPermissions(DISABLE_TABLE_SAVEPROT)) )
-      {
          EnableMenuItem(hmenu, IDM_SAVEASPROTECTED, MF_BYCOMMAND | MF_GRAYED);
-      }
 
       // enable/disable script option
-      if (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING))
-      {
-         flags = MF_BYCOMMAND | MF_GRAYED;
-      }
-      else
-      {
-         flags = MF_BYCOMMAND | MF_ENABLED;
-      }
+      flags = MF_BYCOMMAND | (ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING) ? MF_GRAYED : MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_SCRIPT, flags);
 
       // enable/disable managers options
-      if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-      {
-         flags = MF_BYCOMMAND | MF_GRAYED;
-      }
-      else
-      {
-         flags = MF_BYCOMMAND | MF_ENABLED;
-      }
+      flags = MF_BYCOMMAND | (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS) ? MF_GRAYED : MF_ENABLED);
       EnableMenuItem(hmenu, ID_TABLE_SOUNDMANAGER, flags);
       EnableMenuItem(hmenu, ID_TABLE_IMAGEMANAGER, flags);
       //EnableMenuItem(hmenu, ID_TABLE_FONTMANAGER, flags);
       EnableMenuItem(hmenu, ID_TABLE_COLLECTIONMANAGER, flags);
 
       // enable/disable editing options
-      if (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE))
-      {
-         flags = MF_BYCOMMAND | MF_GRAYED;
-      }
-      else
-      {
-         flags = MF_BYCOMMAND | MF_ENABLED;
-      }
+      flags = MF_BYCOMMAND | (ptCur->CheckPermissions(DISABLE_CUTCOPYPASTE) ? MF_GRAYED : MF_ENABLED);
       EnableMenuItem(hmenu, IDC_COPY, flags);
       EnableMenuItem(hmenu, IDC_PASTE, flags);
       EnableMenuItem(hmenu, IDC_PASTEAT, flags);
@@ -2109,22 +1931,12 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       // update the file menu to contain the last n recent loaded files
       HMENU hmenu = GetMenu(m_hwnd);
       int count = GetMenuItemCount(hmenu);
-      HMENU hmenuFile;
-      if (count > 8)
-      {
-         // MDI has added it's stuff (table icon for first menu item)
-         hmenuFile = GetSubMenu(hmenu, 1);
-      }
-      else
-      {
-         hmenuFile = GetSubMenu(hmenu, 0);
-      }
+      HMENU hmenuFile = GetSubMenu(hmenu, (count > 8) ? 1 // MDI has added it's stuff (table icon for first menu item)
+			                                          : 0);
 
       // delete all the recent file IDM's from this menu
       for (int i=RECENT_FIRST_MENU_IDM; i<=RECENT_LAST_MENU_IDM; i++)
-      {
          DeleteMenu(hmenuFile, i, MF_BYCOMMAND);
-      }
 
       // get the number of entrys in the file menu
       count = GetMenuItemCount(hmenuFile);
@@ -2179,9 +1991,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
       for (int i=0;i<m_sb.m_vhwndDialog.Size();i++)
       {
          if (IsDialogMessage(m_sb.m_vhwndDialog.ElementAt(i), pmsg))
-         {
             *pfConsumed = TRUE;
-         }
       }
       if (m_pcv && m_pcv->m_hwndMain)
       {
@@ -2190,32 +2000,22 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
             int fTranslated = fFalse;
 
             if ((pmsg->hwnd == m_pcv->m_hwndMain) || IsChild(m_pcv->m_hwndMain, pmsg->hwnd))
-            {
                fTranslated = TranslateAccelerator(m_pcv->m_hwndMain, m_pcv->m_haccel, pmsg);
-            }
 
             if (fTranslated)
-            {
                *pfConsumed = TRUE;
-            }
             else
             {
                if (IsDialogMessage(m_pcv->m_hwndMain, pmsg))
-               {
                   *pfConsumed = TRUE;
-               }
             }
          }
       }
 
       if (m_pcv && m_pcv->m_hwndFind)
       {
-         {
-            if (IsDialogMessage(m_pcv->m_hwndFind, pmsg))
-            {
-               *pfConsumed = TRUE;
-            }
-         }
+         if (IsDialogMessage(m_pcv->m_hwndFind, pmsg))
+            *pfConsumed = TRUE;
       }
 
       if (!(*pfConsumed))
@@ -2223,24 +2023,18 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
          const int fTranslated = TranslateAccelerator(m_hwnd, g_haccel, pmsg);
 
          if (fTranslated != 0)
-         {
             *pfConsumed = TRUE;
-         }
       }
 
       if (!(*pfConsumed))
-      {
          /*const int fTranslated =*/ TranslateMessage(pmsg);
-      }
    }
    else
    {
       if (g_pplayer->m_fDebugMode)
       {
          if (IsDialogMessage(g_pplayer->m_hwndDebugger, pmsg))
-         {
             *pfConsumed = TRUE;
-         }
       }
    }
 
@@ -2267,20 +2061,14 @@ HRESULT VPinball::MainMsgLoop()
          ApcHost_OnTranslateMessage(&msg, &fConsumed);
 
          if (!fConsumed)
-         {
             DispatchMessage(&msg);
-         }
       }
       else
       {
          if (g_pplayer && !g_pplayer->m_fPause)
-         {
             ApcHost_OnIdle(&fConsumed);
-         }
          else
-         {
             WaitMessage();
-         }
       }
    }
 
@@ -2324,9 +2112,7 @@ HRESULT VPinball::ApcHost_BeforePause()
 {
    m_fDebugging = true;
    if (g_pplayer)
-   {
       g_pplayer->m_fNoTimeCorrect = fTrue; // So ball doesn't jump ahead next frame
-   }
    return S_OK;
 }
 
@@ -2370,27 +2156,23 @@ STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
 }
 
 
-HRESULT VPinball::GetTypeLibInfo
-(
- HINSTANCE    *phinstOut,
- const GUID  **pplibidOut,
- SHORT        *pwMajLib,
- SHORT        *pwMinLib,
- const CLSID **ppclsidOut,
- const IID   **ppiidOut,
- ITypeLib   ***ppptlOut
- )
+HRESULT VPinball::GetTypeLibInfo(
+   HINSTANCE    *phinstOut,
+   const GUID  **pplibidOut,
+   SHORT        *pwMajLib,
+   SHORT        *pwMinLib,
+   const CLSID **ppclsidOut,
+   const IID   **ppiidOut,
+   ITypeLib   ***ppptlOut)
 {
    return S_OK;
 }
-
 
 STDMETHODIMP_(ULONG) VPinball::AddRef ()
 {
    ASSERT(m_cref, "bad m_cref");
    return ++m_cref;
 }
-
 
 STDMETHODIMP_(ULONG) VPinball::Release ()
 {
@@ -2406,7 +2188,6 @@ STDMETHODIMP_(ULONG) VPinball::Release ()
    return m_cref;
 }
 
-
 LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
@@ -2418,17 +2199,13 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          if ( ptable )
          {
             while( ptable->m_savingActive )
-            {
                Sleep(1000);
-            }
          }
 #ifdef VBA
          g_pvp->ApcHost.WmClose(fCanClose);
 #else
          if (g_pplayer)
-         {
             SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
-         }
 
          fCanClose = fTrue;
 #endif
@@ -2437,7 +2214,6 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             fCanClose = g_pvp->FCanClose();
             if (fCanClose)
             {
-
                WINDOWPLACEMENT winpl;
                winpl.length = sizeof(winpl);
 
@@ -2528,9 +2304,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          {
             g_pvp->m_palettescroll = si.nMax - si.nPage;
             if (g_pvp->m_palettescroll < 0)
-            {
                g_pvp->m_palettescroll = 0;
-            }
 
             SetScrollPos(hwnd, SB_VERT, g_pvp->m_palettescroll, TRUE);
 
@@ -2540,9 +2314,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          int sidebarwidth = TOOLBAR_WIDTH;
          if (scrollwindowheight < si.nMax)
-         {
             sidebarwidth += SCROLL_WIDTH;
-         }
 
          SetWindowPos(g_pvp->m_hwndSideBar,NULL,
             0, 0, sidebarwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
@@ -2588,9 +2360,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                if (pt)
                {
                   if (pt->CheckPermissions(DISABLE_TABLEVIEW))
-                  {
                      break;
-                  }
 
                   HMENU hmenu = CreatePopupMenu();
 
@@ -2629,9 +2399,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                      int flags = MF_STRING;
 
                      if ((menucount%30 == 0) && (menucount != 0))
-                     {
                         flags |= MF_MENUBARBREAK;
-                     }
 
                      SendMessage(hwndList, LB_GETTEXT, i, (LPARAM)szT);
                      const int data = SendMessage(hwndList, LB_GETITEMDATA, i, 0);
@@ -2648,8 +2416,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                   const int ksshift = GetKeyState(VK_SHIFT);
                   const BOOL fAdd = ((ksshift & 0x80000000) != 0);
 
-                  const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | 16384/*TPM_NOANIMATION*/,
-                     mousept.x, mousept.y, hwnd, NULL);
+                  const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | 16384/*TPM_NOANIMATION*/, mousept.x, mousept.y, hwnd, NULL);
 
                   if (icmd != 0)
                   {
@@ -2657,14 +2424,10 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                      {
                         Collection * const pcol = pt->m_vcollection.ElementAt(icmd & 0x7fffffff);
                         for (int i=0;i<pcol->m_visel.Size();i++)
-                        {
                            pt->AddMultiSel(pcol->m_visel.ElementAt(i), i == 0 ? fAdd : TRUE, TRUE);
-                        }
                      }
                      else
-                     {
                         pt->AddMultiSel(pt->m_vedit.ElementAt(icmd-1)->GetISelect(), fAdd, TRUE);
-                     }
                   }
                   DestroyMenu(hmenu);
                }
@@ -2732,7 +2495,6 @@ STDMETHODIMP VPinball::FireKnocker(int Count)
    if (g_pplayer) g_pplayer->m_ptable->FireKnocker(Count);
 
    return S_OK;
-
 }
 
 STDMETHODIMP VPinball::QuitPlayer(int CloseType)
@@ -2760,11 +2522,10 @@ STDMETHODIMP VPinball::StopShake()
 
 void VPinball::Quit()
 {
-   if( g_pplayer ) g_pplayer->m_fCloseDown = fTrue;
+   if( g_pplayer )
+	   g_pplayer->m_fCloseDown = fTrue;
    else
-   {
       PostMessage(m_hwnd, WM_CLOSE, 0, 0);
-   }
 }
 
 
@@ -2811,9 +2572,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             {
                NMLVDISPINFO *pinfo = (NMLVDISPINFO *)lParam;
                if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
-               {
                   return FALSE;
-               }
                ListView_SetItemText(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pinfo->item.iItem, 0, pinfo->item.pszText);
                LVITEM lvitem;
                lvitem.mask = LVIF_PARAM;
@@ -2877,14 +2636,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
                HRESULT hr = GetRegString("RecentDir","SoundDir", szInitialDir, 1024);
-               if (hr == S_OK)
-               {
-                  ofn.lpstrInitialDir = szInitialDir;
-               }
-               else
-               {
-                  ofn.lpstrInitialDir = NULL;
-               }
+               ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
                const int ret = GetOpenFileName(&ofn);
 
@@ -2985,14 +2737,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                      ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
                      HRESULT hr = GetRegString("RecentDir","SoundDir", szInitialDir, 1024);
-                     if (hr == S_OK)
-                     {
-                        ofn.lpstrInitialDir = szInitialDir;
-                     }
-                     else
-                     {
-                        ofn.lpstrInitialDir = NULL;
-                     }
+                     ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
                      const int ret = GetOpenFileName(&ofn);
 
@@ -3093,7 +2838,6 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                }
             }
             break;
-
 
          case IDC_RENAME:
             {
@@ -3265,7 +3009,6 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             //ppi->m_pdsBuffer->GetSurfaceDesc( &ddsd );
 
             RECT rcClient;
-
             GetWindowRect(pdis->hwndItem , &rcClient);
 
             const int xsize = rcClient.right - rcClient.left;
@@ -3705,16 +3448,12 @@ int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                {
                   HRESULT hr;
                   if (LOWORD(wParam) == IDC_WEBSITE)
-                  {
                      hr = OpenURL("http://www.vpforums.org");
-                  }
                   else
                   {
                      HWND hwndTransURL = GetDlgItem(hwndDlg, IDC_TRANSWEBSITE);
                      char szSite[MAX_PATH];
                      GetWindowText(hwndTransURL, szSite, MAX_PATH);
-
-                     // "http://perso.wanadoo.es/tecnopinball/"
                      hr = OpenURL(szSite);
                   }
                   /*IUniformResourceLocator* pURL;
@@ -3808,13 +3547,10 @@ HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpCon
       SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)pvm);
 
       if (pvm->width == widthcur && pvm->height == heightcur && pvm->depth == depthcur)
-      {
          SendMessage(hwndList, LB_SETCURSEL, index, 0);
-      }
    }
    return DDENUMRET_OK;
 }
-
 
 const int rgwindowsize[] = {640, 720, 800, 912, 1024, 1152, 1280, 1600};  // windowed resolutions for selection list
 
@@ -3839,17 +3575,13 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          int checkblit;
          HRESULT hr = GetRegInt("Player", "CheckBlit", &checkblit);
          if (hr != S_OK)
-         {
-            checkblit = g_pvp->FDefaultCheckBlit(); // The default
-         }
+            checkblit = g_pvp->FDefaultCheckBlit();
          SendMessage(hwndCheck, BM_SETCHECK, checkblit ? BST_CHECKED : BST_UNCHECKED, 0);
 
          int maxTexDim;
          hr = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
          if (hr != S_OK)
-         {
             maxTexDim = 0; // default: Don't resize textures
-         }
          switch(maxTexDim)
          {
          case 512:	SendMessage(GetDlgItem(hwndDlg, IDC_Tex512),BM_SETCHECK, BST_CHECKED,0);
@@ -3865,165 +3597,125 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          int shadow;
          hr = GetRegInt("Player", "BallShadows", &shadow);
          if (hr != S_OK)
-         {
-            shadow = fTrue; // The default
-         }
+            shadow = fTrue;
          SendMessage(hwndCheck, BM_SETCHECK, shadow ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_DECAL);
          int decal;
          hr = GetRegInt("Player", "BallDecals", &decal);
          if (hr != S_OK)
-         {
-            decal = fTrue; // The default
-         }
+            decal = fTrue;
          SendMessage(hwndCheck, BM_SETCHECK, decal ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_ANTIALIAS);
          int antialias;
          hr = GetRegInt("Player", "BallAntialias", &antialias);
          if (hr != S_OK)
-         {
-            antialias = fTrue; // The default
-         }
+            antialias = fTrue;
          SendMessage(hwndCheck, BM_SETCHECK, antialias ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
          int reflection;
          hr = GetRegInt("Player", "BallReflection", &reflection);
          if (hr != S_OK)
-         {
-            reflection = fTrue; // The default
-         }
+            reflection = fTrue;
          SendMessage(hwndCheck, BM_SETCHECK, reflection ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_TRAIL_CHECK);
          int trail;
          hr = GetRegInt("Player", "BallTrail", &trail);
          if (hr != S_OK)
-         {
-            trail = fTrue; // The default
-         }
+            trail = fTrue;
          SendMessage(hwndCheck, BM_SETCHECK, trail ? BST_CHECKED : BST_UNCHECKED, 0);
 		 
 		 int vsync;
          hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
          if (hr != S_OK)
-         {
-            vsync = 0; // The default
-         }
+            vsync = 0;
 		 SetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, vsync, FALSE);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
          int m_useAA;
          hr = GetRegInt("Player", "USEAA", &m_useAA);
          if (hr != S_OK)
-         {
-            m_useAA = 0; // The default = off
-         }
+            m_useAA = 0;
          SendMessage(hwndCheck, BM_SETCHECK, (m_useAA != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_FXAA);
          int fxaa;
          hr = GetRegInt("Player", "FXAA", &fxaa);
          if (hr != S_OK)
-         {
-            fxaa = 0; // The default = off
-         }
+            fxaa = 0;
          SendMessage(hwndCheck, BM_SETCHECK, (fxaa != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO);
          int stereo3D;
          hr = GetRegInt("Player", "Stereo3D", &stereo3D);
          if (hr != S_OK)
-         {
-            stereo3D = 0; // The default = off
-         }
+            stereo3D = 0;
          SendMessage(hwndCheck, BM_SETCHECK, (stereo3D != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO_AA);
          int stereo3DAA;
          hr = GetRegInt("Player", "Stereo3DAntialias", &stereo3DAA);
          if (hr != S_OK)
-         {
-            stereo3DAA = fFalse; // The default
-         }
+            stereo3DAA = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, stereo3DAA ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
          int stereo3DY;
          hr = GetRegInt("Player", "Stereo3DYAxis", &stereo3DY);
          if (hr != S_OK)
-         {
-            stereo3DY = fFalse; // The default
-         }
+            stereo3DY = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATES);
          int enableRegionUpdates;
          hr = GetRegInt("Player", "EnableRegionUpdates", &enableRegionUpdates);
          if (hr != S_OK)
-         {
-            enableRegionUpdates = fTrue; // The default
-         }
+            enableRegionUpdates = fTrue;
          SendMessage(hwndCheck, BM_SETCHECK, enableRegionUpdates ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATE_OPTIMIZATION);
          int enableRegionUpdateOptimization;
          hr = GetRegInt("Player", "EnableRegionUpdateOptimization", &enableRegionUpdateOptimization);
          if (hr != S_OK)
-         {
-            enableRegionUpdateOptimization = fTrue; // The default
-         }
+            enableRegionUpdateOptimization = fTrue;
          SendMessage(hwndCheck, BM_SETCHECK, enableRegionUpdateOptimization ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, 211); //HardwareRender
          int hardrend;
          hr = GetRegInt("Player", "HardwareRender", &hardrend);
          if (hr != S_OK)
-         {
             hardrend = fTrue;
-         }
          SendMessage(hwndCheck, BM_SETCHECK, hardrend ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, 216); //AlternateRender
          int altrender;
          hr = GetRegInt("Player", "AlternateRender", &altrender);
          if (hr != S_OK)
-         {
-            altrender = fFalse; // The default
-         }
+            altrender = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, altrender ? BST_CHECKED : BST_UNCHECKED, 0);
 
-
-         int widthcur = 0;
-         //int indexcur = -1;
+         int widthcur;
          hr = GetRegInt("Player", "Width", &widthcur);
          if (hr != S_OK)
-         {
-            widthcur = DEFAULT_PLAYER_WIDTH; // The default
-         }
+            widthcur = DEFAULT_PLAYER_WIDTH;
 
-         int heightcur = 0;
+         int heightcur;
          hr = GetRegInt("Player", "Height", &heightcur);
          if (hr != S_OK)
-         {
-            heightcur = widthcur*3/4; // The default
-         }
+            heightcur = widthcur*3/4;
 
-         int depthcur = 0;
+         int depthcur;
          hr = GetRegInt("Player", "ColorDepth", &depthcur);
          if (hr != S_OK)
-         {
-            depthcur = 32; // The default
-         }
+            depthcur = 32;
 
          int fullscreen;
          hr = GetRegInt("Player", "FullScreen", &fullscreen);
          if (hr != S_OK)
-         {
-            fullscreen = 0; // The default
-         }
+            fullscreen = 0;
 
          if (fullscreen)
          {
@@ -4041,9 +3733,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          int alphaRampsAccuracy;
          hr = GetRegInt("Player", "AlphaRampAccuracy", &alphaRampsAccuracy);
          if (hr != S_OK)
-         {
             alphaRampsAccuracy = 10;
-         }
          HWND hwndARASlider = GetDlgItem(hwndDlg, IDC_ARASlider);
          SendMessage(hwndARASlider, TBM_SETRANGE, fTrue, MAKELONG(0, 10));
          SendMessage(hwndARASlider, TBM_SETTICFREQ, 1, 0);
@@ -4055,18 +3745,16 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          int ballStretchMode;
          hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
          if (hr != S_OK)
-         {
             ballStretchMode = 0;
-         }
          switch(ballStretchMode)
          {
-         case 0:	SendMessage(GetDlgItem(hwndDlg, IDC_StretchNo),BM_SETCHECK, BST_CHECKED,0);
+         case 0:  SendMessage(GetDlgItem(hwndDlg, IDC_StretchNo),BM_SETCHECK, BST_CHECKED,0);
             break;
          case 1:  SendMessage(GetDlgItem(hwndDlg, IDC_StretchYes),BM_SETCHECK, BST_CHECKED,0);
             break;
          case 2:  SendMessage(GetDlgItem(hwndDlg, IDC_StretchMonitor),BM_SETCHECK, BST_CHECKED,0);
             break;
-         default:	SendMessage(GetDlgItem(hwndDlg, IDC_StretchNo),BM_SETCHECK, BST_CHECKED,0);
+         default: SendMessage(GetDlgItem(hwndDlg, IDC_StretchNo),BM_SETCHECK, BST_CHECKED,0);
          }
 
          // set selected Monitors
@@ -4074,9 +3762,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          int selected;
          hr = GetRegInt("Player", "BallStretchMonitor", &selected);
          if (hr != S_OK)
-         {
             selected = 1; // assume 16:9 as standard
-         }		
          SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"4:3");
          SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"16:9");
          SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_ADDSTRING, 0, (LPARAM)"16:10");
@@ -4222,15 +3908,11 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                break;
 
             case IDC_WINDOW:
-               {
-                  SendMessage(hwndDlg, GET_WINDOW_MODES, 0, 0);
-               }
+               SendMessage(hwndDlg, GET_WINDOW_MODES, 0, 0);
                break;
 
             case IDC_FULLSCREEN:
-               {
-                  SendMessage(hwndDlg, GET_FULLSCREENMODES, 0, 0);
-               }
+               SendMessage(hwndDlg, GET_FULLSCREENMODES, 0, 0);
                break;
 
             case IDCANCEL:
@@ -4258,9 +3940,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             if (xsize <= screenwidth)
             {
                if (xsize == widthcur)
-               {
                   indexcur = i;
-               }
                sprintf_s(szT, "%d x %d", xsize, xsize*3/4);
                const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)szT);
                VideoMode * const pvm = new VideoMode();
@@ -4270,14 +3950,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             }
          }
 
-         if (indexcur != -1)
-         {
-            SendMessage(hwndList, LB_SETCURSEL, indexcur, 0);
-         }
-         else
-         {
-            SendMessage(hwndList, LB_SETCURSEL, 0, 0);
-         }
+         SendMessage(hwndList, LB_SETCURSEL, (indexcur != -1) ? indexcur : 0, 0);
       }
       break;
 
@@ -4293,9 +3966,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          g_pvp->m_pdd.m_pDD->EnumDisplayModes(0, NULL, &evms, EnumModesCallback2);
 
          if (SendMessage(hwndList, LB_GETCURSEL, 0, 0) == -1)
-         {
             SendMessage(hwndList, LB_SETCURSEL, 0, 0);
-         }
       }
       break;
 
@@ -4324,7 +3995,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
    return FALSE;
 }
 
-int rgDlgIDFromSecurityLevel [] = {IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4};
+const int rgDlgIDFromSecurityLevel [] = {IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4};
 
 int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -4346,14 +4017,10 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          int security;
          HRESULT hr = GetRegInt("Player", "SecurityLevel", &security);
          if (hr != S_OK)
-         {
-            security = DEFAULT_SECURITY_LEVEL; // The default
-         }
+            security = DEFAULT_SECURITY_LEVEL;
 
          if (security < 0 || security > 4)
-         {
             security = 0;
-         }
 
          const int buttonid = rgDlgIDFromSecurityLevel[security];
 
@@ -4365,9 +4032,7 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          int hangdetect;
          hr = GetRegInt("Player", "DetectHang", &hangdetect);
          if (hr != S_OK)
-         {
-            hangdetect = fFalse; // The default
-         }
+            hangdetect = fFalse;
          SendMessage(hwndDetectHang, BM_SETCHECK, hangdetect ? BST_CHECKED : BST_UNCHECKED, 0);
 
          return TRUE;
@@ -4388,9 +4053,7 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                      HWND hwndCheck = GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]);
                      int checked = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
                      if (checked == BST_CHECKED)
-                     {
                         SetRegValue("Player", "SecurityLevel", REG_DWORD, &i, 4);
-                     }
                   }
 
                   HWND hwndCheck = GetDlgItem(hwndDlg, IDC_HANGDETECT);
@@ -4642,14 +4305,11 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
    case WM_NOTIFY:
       {
          LPNMHDR pnmhdr = (LPNMHDR)lParam;
-         switch (pnmhdr->code)
-         {
-         case LVN_ENDLABELEDIT:
+         if(pnmhdr->code == LVN_ENDLABELEDIT)
+		 {
             NMLVDISPINFO *pinfo = (NMLVDISPINFO *)lParam;
             if (pinfo->item.pszText == NULL || pinfo->item.pszText[0] == '\0')
-            {
                return FALSE;
-            }
             LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;
             lvitem.iItem = pinfo->item.iItem;
@@ -4662,7 +4322,6 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
             pt->SetCollectionName(pcol, pinfo->item.pszText, GetDlgItem(hwndDlg, IDC_SOUNDLIST), pinfo->item.iItem);
             pt->SetNonUndoableDirty(eSaveDirty);
             return TRUE;
-            break;
          }
       }
       break;
@@ -4715,9 +4374,7 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                      hwndDlg, CollectionProc, (long)&cds/*pcol*/);
 
                   if (ret)
-                  {
                      pt->SetNonUndoableDirty(eSaveDirty);
-                  }
 
                   char szT[MAX_PATH];
                   WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
@@ -4876,9 +4533,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
                   int oldindex = rgsel[i];
 
                   if (oldindex > newindex)
-                  {
                      oldindex++; // old item will be one lower when we try to delete it
-                  }
 
                   const int index = SendMessage(hwndList, LB_INSERTSTRING, newindex, (LPARAM)szT);
                   SendMessage(hwndList, LB_SETITEMDATA, index, data);
@@ -4927,9 +4582,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
                // Remove the old strings after everything else, to avoid messing up indices
                // Remove things in reverse order, so we don't get messed up inside this loop
                for (int i=0;i<count;i++)
-               {
                   SendMessage(hwndOut, LB_DELETESTRING, rgsel[count-i-1], 0);
-               }
 
                delete [] rgsel;
             }
@@ -5054,9 +4707,7 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
          {
             Texture * const pin = pt->m_vimage.ElementAt(i);
             if (pin->m_ppb)
-            {
                SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)pin->m_szName);
-            }
          }
 
          SendMessage(hwndList, CB_SELECTSTRING, ~0u, (LPARAM)pt->m_szScreenShot);
@@ -5131,9 +4782,7 @@ int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                   const int found = ListView_FindItem(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), -1, &lvfi);
 
                   if (found != -1)
-                  {
                      ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_CUSTOMLIST), found);
-                  }
 
                   char *szCustomValue;
                   VPGetDialogItemText(hwndDlg, IDC_CUSTOMVALUE, &szCustomValue);
@@ -5507,15 +5156,11 @@ WNDPROC g_ButtonProc;
 
 LRESULT CALLBACK MyKeyButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   switch (uMsg)
-   {
-   case WM_GETDLGCODE:
+   if(uMsg == WM_GETDLGCODE)
       // Eat all acceleratable messges
-      return DLGC_WANTARROWS | DLGC_WANTTAB | DLGC_WANTALLKEYS | DLGC_WANTCHARS;
-      break;
-   }
-
-   return CallWindowProc(g_ButtonProc, hwnd, uMsg, wParam, lParam);
+      return (DLGC_WANTARROWS | DLGC_WANTTAB | DLGC_WANTALLKEYS | DLGC_WANTCHARS);
+   else
+	  return CallWindowProc(g_ButtonProc, hwnd, uMsg, wParam, lParam);
 }
 
 int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -5549,1043 +5194,154 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          hwndCheck = GetDlgItem(hwndDlg, IDC_DefaultLayout);
          hr = GetRegInt("Player", "PBWDefaultLayout", &key);
          if (hr != S_OK)
-         {
-            key = fFalse; // The default
-         }
+            key = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_DisableESC_CB);
          hr = GetRegInt("Player", "DisableESC", &key);
          if (hr != S_OK)
-         {
-            key = fFalse; // The default
-         }
+            key = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALROTATION);
          hr = GetRegInt("Player", "PBWRotationCB", &key);
          if (hr != S_OK)
-         {
-            key = 0; // The default
-         }
+            key = 0;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hr = GetRegInt("Player", "PBWRotationValue", &key);
          if (hr != S_OK)
-         {
-            key = 0; // The default
-         }
+            key = 0;
          SetDlgItemInt(hwndDlg, IDC_GLOBALROTATION, key, FALSE);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALTILT);
          hr = GetRegInt("Player", "TiltSensCB", &key);
          if (hr != S_OK)
-         {
-            key = 0; // The default
-         }
+            key = 0;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hr = GetRegInt("Player", "TiltSensValue", &key);
          if (hr != S_OK)
-         {
-            key = 400; // The default
-         }
+            key = 400;
          SetDlgItemInt(hwndDlg, IDC_GLOBALTILT, key, FALSE);
 
          hr = GetRegInt("Player", "DeadZone", &key);
          if (hr != S_OK)
-         {
-            key = 0; // The default
-         }
+            key = 0;
          SetDlgItemInt(hwndDlg, IDC_DEADZONEAMT, key, FALSE);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBALACCEL);
          hr = GetRegInt("Player", "PBWEnabled", &key);
          if (hr != S_OK)
-         {
-            key = 0; // The default
-         }
+            key = 0;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBALNMOUNT);
          hr = GetRegInt("Player", "PBWNormalMount", &key);
          if (hr != S_OK)
-         {
-            key = 0; // The default
-         }
+            key = 0;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_ReversePlunger);
          hr = GetRegInt("Player", "ReversePlungerAxis", &key);
          if (hr != S_OK)
-         {
-            key = fFalse; // The default
-         }
+            key = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_LRAXISFLIP);
          hr = GetRegInt("Player", "LRAxisFlip", &key);
          if (hr != S_OK)
-         {
-            key = fFalse; // The default
-         }
+            key = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_UDAXISFLIP);
          hr = GetRegInt("Player", "UDAxisFlip", &key);
          if (hr != S_OK)
-         {
-            key = fFalse; // The default
-         }
+            key = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hr = GetRegInt("Player", "PBWAccelGainX", &key);
          if (hr != S_OK)
-         {
-            key = 150; // The default
-         }
+            key = 150;
          SetDlgItemInt(hwndDlg, IDC_LRAXISGAIN, key, FALSE);
 
          hr = GetRegInt("Player", "PBWAccelGainY", &key);
          if (hr != S_OK)
-         {
-            key = 150; // The default
-         }
+            key = 150;
          SetDlgItemInt(hwndDlg, IDC_UDAXISGAIN, key, FALSE);
 
-         hr = GetRegInt("Player", "JoyLFlipKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLFLIPCOMBO), CB_SETCURSEL, selected, 0);
+		 for(unsigned int i = 0; i <= 28; ++i)
+		 {
+			 int item;
+			 switch(i)
+			 {
+			 case 0: hr = GetRegInt("Player", "JoyLFlipKey", &selected); item = IDC_JOYLFLIPCOMBO; break;
+			 case 1: hr = GetRegInt("Player", "JoyRFlipKey", &selected); item = IDC_JOYRFLIPCOMBO; break;
+			 case 2: hr = GetRegInt("Player", "JoyPlungerKey", &selected); item = IDC_JOYPLUNGERCOMBO; break;
+			 case 3: hr = GetRegInt("Player", "JoyAddCreditKey", &selected); item = IDC_JOYADDCREDITCOMBO; break;
+			 case 4: hr = GetRegInt("Player", "JoyAddCredit2Key", &selected); item = IDC_JOYADDCREDIT2COMBO; break;
+			 case 5: hr = GetRegInt("Player", "JoyLMagnaSave", &selected); item = IDC_JOYLMAGNACOMBO; break;
+			 case 6: hr = GetRegInt("Player", "JoyRMagnaSave", &selected); item = IDC_JOYRMAGNACOMBO; break;
+			 case 7: hr = GetRegInt("Player", "JoyStartGameKey", &selected); item = IDC_JOYSTARTCOMBO; break;
+			 case 8: hr = GetRegInt("Player", "JoyExitGameKey", &selected); item = IDC_JOYEXITCOMBO; break;
+			 case 9: hr = GetRegInt("Player", "JoyFrameCount", &selected); item = IDC_JOYFPSCOMBO; break;
+			 case 10:hr = GetRegInt("Player", "JoyVolumeUp", &selected); item = IDC_JOYVOLUPCOMBO; break;
+			 case 11:hr = GetRegInt("Player", "JoyVolumeDown", &selected); item = IDC_JOYVOLDNCOMBO; break;
+			 case 12:hr = GetRegInt("Player", "JoyLTiltKey", &selected); item = IDC_JOYLTILTCOMBO; break;
+			 case 13:hr = GetRegInt("Player", "JoyCTiltKey", &selected); item = IDC_JOYCTILTCOMBO; break;
+			 case 14:hr = GetRegInt("Player", "JoyRTiltKey", &selected); item = IDC_JOYRTILTCOMBO; break;
+			 case 15:hr = GetRegInt("Player", "JoyMechTiltKey", &selected); item = IDC_JOYMECHTILTCOMBO; break;
+			 case 16:hr = GetRegInt("Player", "JoyDebugKey", &selected); item = IDC_JOYDEBUGCOMBO; break;
+			 case 17:hr = GetRegInt("Player", "JoyCustom1", &selected); item = IDC_JOYCUSTOM1COMBO; break;
+			 case 18:hr = GetRegInt("Player", "JoyCustom2", &selected); item = IDC_JOYCUSTOM2COMBO; break;
+			 case 19:hr = GetRegInt("Player", "JoyCustom3", &selected); item = IDC_JOYCUSTOM3COMBO; break;
+			 case 20:hr = GetRegInt("Player", "JoyCustom4", &selected); item = IDC_JOYCUSTOM4COMBO; break;
+			 case 21:hr = GetRegInt("Player", "JoyPMBuyIn", &selected); item = IDC_JOYPMBUYIN; break;
+			 case 22:hr = GetRegInt("Player", "JoyPMCoin3", &selected); item = IDC_JOYPMCOIN3; break;
+			 case 23:hr = GetRegInt("Player", "JoyPMCoin4", &selected); item = IDC_JOYPMCOIN4; break;
+			 case 24:hr = GetRegInt("Player", "JoyPMCoinDoor", &selected); item = IDC_JOYPMCOINDOOR; break;
+			 case 25:hr = GetRegInt("Player", "JoyPMCancel", &selected); item = IDC_JOYPMCANCEL; break;
+			 case 26:hr = GetRegInt("Player", "JoyPMDown", &selected); item = IDC_JOYPMDOWN; break;
+			 case 27:hr = GetRegInt("Player", "JoyPMUp", &selected); item = IDC_JOYPMUP; break;
+			 case 28:hr = GetRegInt("Player", "JoyPMEnter", &selected); item = IDC_JOYPMENTER; break;
+			 }
 
-         hr = GetRegInt("Player", "JoyRFlipKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRFLIPCOMBO), CB_SETCURSEL, selected, 0);
+			 if (hr != S_OK)
+				selected = 0; // assume no assignment as standard
 
-         hr = GetRegInt("Player", "JoyPlungerKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPLUNGERCOMBO), CB_SETCURSEL, selected, 0);
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)" (none)");
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 1");
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 2");
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 4");
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 5");
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 6");
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 14");
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 15");
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 16");
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
+			 SendMessage(GetDlgItem(hwndDlg, item), CB_SETCURSEL, selected, 0);
+		 }
 
-         hr = GetRegInt("Player", "JoyAddCreditKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDITCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyAddCredit2Key", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYADDCREDIT2COMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyLMagnaSave", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLMAGNACOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyRMagnaSave", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRMAGNACOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyStartGameKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYSTARTCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyExitGameKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYEXITCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyFrameCount", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYFPSCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyVolumeUp", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLUPCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyVolumeDown", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYVOLDNCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyLTiltKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYLTILTCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyCTiltKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCTILTCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyRTiltKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYRTILTCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyMechTiltKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYMECHTILTCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyDebugKey", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYDEBUGCOMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyCustom1", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyCustom2", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM2COMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyCustom3", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM3COMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyCustom4", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYCUSTOM4COMBO), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyPMBuyIn", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMBUYIN), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyPMCoin3", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN3), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyPMCoin4", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOIN4), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyPMCoinDoor", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCOINDOOR), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyPMCancel", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMCANCEL), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyPMDown", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMDOWN), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyPMUp", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMUP), CB_SETCURSEL, selected, 0);
-
-         hr = GetRegInt("Player", "JoyPMEnter", &selected);
-         if (hr != S_OK)
-         {
-            selected = 0; // assume no assignment as standard
-         }		
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 3"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 7"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 8"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 9"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 10"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 11"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 12"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 13"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 17"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 18"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 19"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 20"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 21"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 22"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 23"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_ADDSTRING, 0, (LPARAM)"Button 24"); 
-         SendMessage(GetDlgItem(hwndDlg, IDC_JOYPMENTER), CB_SETCURSEL, selected, 0);
+		 //
 
          hr = GetRegInt("Player", "PlungerAxis", &selected);
          if (hr != S_OK)
-         {
             selected = 3; // assume Z Axis as standard
-         }		
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_ADDSTRING, 0, (LPARAM)"(disabled)");
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_ADDSTRING, 0, (LPARAM)"X Axis");
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_ADDSTRING, 0, (LPARAM)"Y Axis");
@@ -6599,9 +5355,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          hr = GetRegInt("Player", "LRAxis", &selected);
          if (hr != S_OK)
-         {
             selected = 1; // assume X Axis as standard
-         }		
          SendMessage(GetDlgItem(hwndDlg, IDC_LRAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"(disabled)");
          SendMessage(GetDlgItem(hwndDlg, IDC_LRAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"X Axis");
          SendMessage(GetDlgItem(hwndDlg, IDC_LRAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"Y Axis");
@@ -6615,9 +5369,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          hr = GetRegInt("Player", "UDAxis", &selected);
          if (hr != S_OK)
-         {
             selected = 2; // assume Y Axis as standard
-         }		
          SendMessage(GetDlgItem(hwndDlg, IDC_UDAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"(disabled)");
          SendMessage(GetDlgItem(hwndDlg, IDC_UDAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"X Axis");
          SendMessage(GetDlgItem(hwndDlg, IDC_UDAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"Y Axis");
@@ -6631,195 +5383,154 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          hr = GetRegInt("Player","LFlipKey", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_LSHIFT;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_LEFTFLIPPER);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","RFlipKey", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_RSHIFT;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_RIGHTFLIPPER);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","LTiltKey", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_Z;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_LEFTTILT);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","RTiltKey", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_SLASH;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_RIGHTTILT);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","CTiltKey", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_SPACE;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_CENTERTILT);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","PlungerKey", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_RETURN;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGER);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","AddCreditKey", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_5;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDIT);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","AddCreditKey2", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_4;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDITKEY2);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","StartGameKey", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_1;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_STARTGAME);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","ExitGameKey", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_Q;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_EXITGAME);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","FrameCount", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_F11;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_FRAMECOUNT);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","VolumeUp", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_MINUS;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEUP);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","VolumeDown", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_EQUALS;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEDN);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","DebugBalls", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_O;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_DEBUGBALL);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","RMagnaSave", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             //key = DIK_BACKSPACE;
             key = DIK_RCONTROL;		//157 (0x9D) DIK_RCONTROL 
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_RMAGSAVE);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","LMagnaSave", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             //key = DIK_APOSTROPHE;
             key = DIK_LCONTROL; //29 (0x1D)
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_LMAGSAVE );
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","MechTilt", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_T;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_MECHTILT );
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","JoyCustom1Key", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_UP;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM1 );
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","JoyCustom2Key", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_DOWN;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM2 );
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","JoyCustom3Key", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_LEFT;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM3 );
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
          hr = GetRegInt("Player","JoyCustom4Key", &key);
          if (hr != S_OK || key > 0xdd)
-         {
             key = DIK_RIGHT;
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM4 );
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLong(hwndControl, GWL_USERDATA, key);
 
+		 //
 
          KeyWindowStruct * const pksw = new KeyWindowStruct();
          pksw->pi.Init(hwndDlg);
@@ -6935,7 +5646,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          const int key = pksw->pi.GetNextKey();
          if (key != 0)
          {
-            if(key < 0xDD)	//0xDD		// Key mapping
+            if(key < 0xDD)	// Key mapping
             {
                if (key == DIK_ESCAPE)
                {
@@ -7082,7 +5793,6 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         pksw->pi.GetNextKey(); // Clear the current buffer out
                         break;
                      }
-
 
                      pksw->pi.GetNextKey(); // Clear the current buffer out
 
@@ -7343,9 +6053,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   newvalue = GetDlgItemInt(hwndDlg, IDC_GLOBALROTATION, NULL, TRUE);
                   SetRegValue("Player", "PBWRotationValue", REG_DWORD, &newvalue, 4);
                   if (key == 1)
-                  {
                      SetRegValue("Player", "PBWRotation", REG_DWORD, &newvalue, 4);
-                  }
                   else
                   {
                      HKEY hkey;
@@ -7362,9 +6070,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				  if (newvalue > 1000) {newvalue = 1000;}
                   SetRegValue("Player", "TiltSensValue", REG_DWORD, &newvalue, 4);
                   if (key == 1)
-                  {
                      SetRegValue("Player", "TiltSensitivity", REG_DWORD, &newvalue, 4);
-                  }
                   else
                   {
                      HKEY hkey;
@@ -7499,9 +6205,7 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          HWND hwndControl;
          hr = GetRegInt("Player", "PlayMusic", &fmusic);
          if (hr != S_OK)
-         {
-            fmusic = 1; // The default
-         }
+            fmusic = 1;
 
          hwndControl = GetDlgItem(hwndDlg, IDC_PLAY_MUSIC);
          SendMessage(hwndControl, BM_SETCHECK, fmusic ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -7515,9 +6219,7 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
          hr = GetRegInt("Player", "PlaySound", &fmusic);
          if (hr != S_OK)
-         {
-            fmusic = 1; // The default
-         }
+            fmusic = 1;
 
          hwndControl = GetDlgItem(hwndDlg, IDC_PLAY_SOUND);
          SendMessage(hwndControl, BM_SETCHECK, fmusic ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -7531,9 +6233,7 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
          hr = GetRegInt("Player", "MusicVolume", &fmusic);
          if (hr != S_OK)
-         {
-            fmusic = 100; // The default
-         }
+            fmusic = 100;
          hwndControl = GetDlgItem(hwndDlg, IDC_MUSIC_SLIDER);
          ::SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
          ::SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0);
@@ -7544,9 +6244,7 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
          hr = GetRegInt("Player", "SoundVolume", &fmusic);
          if (hr != S_OK)
-         {
-            fmusic = 100; // The default
-         }
+            fmusic = 100;
          hwndControl = GetDlgItem(hwndDlg, IDC_SOUND_SLIDER);
          ::SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
          ::SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0);
@@ -7558,9 +6256,7 @@ int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          int sd;
          hr = GetRegInt("Player", "SoundDevice", &sd);
          if (hr != S_OK)
-         {
-            sd = 0; // The default
-         }
+            sd = 0;
          SendMessage(hwndDlg, GET_SOUNDDEVICES, sd, 0);
 
          return TRUE;
@@ -7806,9 +6502,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"FlipperPhysicsSpeed%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsSpeed);
          if (hr != S_OK)
-         {
             FlipperPhysicsSpeed = 0.15f;
-         }
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsSpeed);
  		 SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp);
@@ -7817,9 +6511,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"FlipperPhysicsStrength%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsStrength);
          if (hr != S_OK)
-         {
             FlipperPhysicsStrength = 3.f;
-         }
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsStrength);
  		 SetDlgItemTextA(hwndDlg, 19, tmp);
@@ -7828,9 +6520,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"FlipperPhysicsElasticity%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsElasticity);
          if (hr != S_OK)
-         {
             FlipperPhysicsElasticity = 0.55f;
-         }
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsElasticity);
  		 SetDlgItemTextA(hwndDlg, 21, tmp);
@@ -7839,9 +6529,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"FlipperPhysicsScatter%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsScatter);
          if (hr != S_OK)
-         {
             FlipperPhysicsScatter = -11.f;
-         }
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsScatter);
  		 SetDlgItemTextA(hwndDlg, 112, tmp);
@@ -7850,9 +6538,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"FlipperPhysicsReturnStrength%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsReturnStrength);
          if (hr != S_OK)
-         {
             FlipperPhysicsReturnStrength = 0.09f;
-         }
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsReturnStrength);
  		 SetDlgItemTextA(hwndDlg, 23, tmp);
@@ -7861,9 +6547,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"FlipperPhysicsRecoil%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsRecoil);
          if (hr != S_OK)
-         {
             FlipperPhysicsRecoil = 2.f;
-         }
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsRecoil);
  		 SetDlgItemTextA(hwndDlg, 22, tmp);
@@ -7872,9 +6556,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"FlipperPhysicsPowerLaw%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsPowerLaw);
          if (hr != S_OK)
-         {
             FlipperPhysicsPowerLaw = 1.f;
-         }
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsPowerLaw);
  		 SetDlgItemTextA(hwndDlg, 109, tmp);
@@ -7883,9 +6565,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"FlipperPhysicsOblique%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsOblique);
          if (hr != S_OK)
-         {
             FlipperPhysicsOblique = 3.f;
-         }
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsOblique);
  		 SetDlgItemTextA(hwndDlg, 110, tmp);
@@ -7894,9 +6574,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"TablePhysicsGravityConstant%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsGravityConstant);
          if (hr != S_OK)
-         {
             TablePhysicsGravityConstant = 1.6774f;
-         }
 
 		 sprintf_s(tmp,256,"%f",TablePhysicsGravityConstant);
  		 SetDlgItemTextA(hwndDlg, 1100, tmp);
@@ -7905,9 +6583,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"TablePhysicsContactFriction%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactFriction);
          if (hr != S_OK)
-         {
             TablePhysicsContactFriction = 0.0005f;
-         }
 
 		 sprintf_s(tmp,256,"%f",TablePhysicsContactFriction);
  		 SetDlgItemTextA(hwndDlg, 1101, tmp);
@@ -7916,9 +6592,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"TablePhysicsContactScatterAngle%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactScatterAngle);
          if (hr != S_OK)
-         {
             TablePhysicsContactScatterAngle = 0.5f;
-         }
 
 		 sprintf_s(tmp,256,"%f",TablePhysicsContactScatterAngle);
  		 SetDlgItemTextA(hwndDlg, 1102, tmp);
@@ -7927,9 +6601,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"TablePhysicsDampeningSpeed%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsDampeningSpeed);
          if (hr != S_OK)
-         {
             TablePhysicsDampeningSpeed = 65.f;
-         }
 
 		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningSpeed);
  		 SetDlgItemTextA(hwndDlg, 1103, tmp);
@@ -7938,9 +6610,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		 sprintf_s(tmp,256,"TablePhysicsDampeningFriction%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsDampeningFriction);
          if (hr != S_OK)
-         {
             TablePhysicsDampeningFriction = 0.95f;
-         }
 
 		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningFriction);
  		 SetDlgItemTextA(hwndDlg, 1106, tmp);
@@ -8037,42 +6707,35 @@ int CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
             (rcMain.bottom + rcMain.top)/2 - (rcDlg.bottom - rcDlg.top)/2,
             0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-         // drag points
-         int	fdrawpoints = 0;
          HRESULT hr;
-         HWND 	hwndControl;
+         HWND hwndControl;
+
+		 // drag points
+         int fdrawpoints = 0;
          hr = GetRegInt("Editor", "ShowDragPoints", &fdrawpoints);
          if (hr != S_OK)
-         {
             fdrawpoints = 0; // The default (draw points)
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_DRAW_DRAGPOINTS);
          SendMessage(hwndControl, BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
 
          // light centers
-         int	fdrawcenters = 0;
+         int fdrawcenters = 0;
          hr = GetRegInt("Editor", "DrawLightCenters", &fdrawcenters);
          if (hr != S_OK)
-         {
             fdrawcenters = 0; // The default (don't draw centers)
-         }
          hwndControl = GetDlgItem(hwndDlg, IDC_DRAW_LIGHTCENTERS);
          SendMessage(hwndControl, BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
 
          int fautosave = 0;
          hr = GetRegInt("Editor", "AutoSaveOn", &fautosave);
          if (hr != S_OK)
-         {
-            fautosave = 1; // The default
-         }
+            fautosave = 1;
          SendDlgItemMessage(hwndDlg, IDC_AUTOSAVE, BM_SETCHECK, fautosave ? BST_CHECKED : BST_UNCHECKED, 0);
 
          int fautosavetime = 0;
          hr = GetRegInt("Editor", "AutoSaveTime", &fautosavetime);
          if (hr != S_OK)
-         {
-            fautosavetime = AUTOSAVE_DEFAULT_TIME; // The default
-         }
+            fautosavetime = AUTOSAVE_DEFAULT_TIME;
          SetDlgItemInt(hwndDlg, IDC_AUTOSAVE_MINUTES, fautosavetime, FALSE);
       }
 
@@ -8108,18 +6771,14 @@ int CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 
                   int autosavetime = GetDlgItemInt(hwndDlg, IDC_AUTOSAVE_MINUTES, NULL, TRUE);
                   if (autosavetime < 0)
-                  {
                      autosavetime = 0;
-                  }
                   SetRegValue("Editor", "AutoSaveTime", REG_DWORD, &autosavetime, 4);
 
                   // Go through and reset the autosave time on all the tables
                   g_pvp->SetAutoSaveMinutes(autosavetime);
                   for (int i=0;i<g_pvp->m_vtable.Size();i++)
-                  {
                      g_pvp->m_vtable.ElementAt(i)->BeginAutoSaveCounter();
-                  }
-
+       
                   EndDialog(hwndDlg, TRUE);
                }
                break;
@@ -8222,7 +6881,6 @@ int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             case IDOK:
                {
                   BOOL fail = fFalse;
-                  BOOL rc;
 
                   // get the check box status(s)
                   unsigned long flags = 0;
@@ -8287,7 +6945,7 @@ int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                   {
                      // nope.. lets get started
                      PinTable *pt = g_pvp->GetActiveTable();
-                     rc = pt->SetupProtectionBlock((unsigned char *)pw, flags);
+                     BOOL rc = pt->SetupProtectionBlock((unsigned char *)pw, flags);
                      EndDialog(hwndDlg, rc);
                   }
                }
@@ -8404,7 +7062,6 @@ int CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
       {
          SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 
-
 //          HWND hwndName = GetDlgItem(hwndDlg, IDC_NAME);
 //          WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
 
@@ -8455,9 +7112,7 @@ int CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                   IScriptable * const piscript = (IScriptable *)SendMessage(listBox, LB_GETITEMDATA, rgsel[i], 0);
                   ISelect * const pisel = piscript->GetISelect();
                   if (pisel)
-                  {
                      pt->AddMultiSel(pisel, fTrue, fTrue);
-                  }
                }
                delete[] rgsel;
                EndDialog(hwndDlg, TRUE);
@@ -8517,18 +7172,19 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
          {
 			 ISelect *psel = pt->m_vmultisel.ElementAt(idx);
 			 pt->m_vmultisel.RemoveElementAt(idx);
+
 			 if ( idx-1<0 )
-			 {
 				pt->m_vmultisel.InsertElementAt(psel,0);
-			 }
 			 else
 				pt->m_vmultisel.InsertElementAt(psel, idx-1);
+
 			 for ( int i=pt->m_vmultisel.Size()-1;i>=0;i-- )
 			 {
 				IEditable *pedit = pt->m_vmultisel.ElementAt(i)->GetIEditable();
 				int t=pt->m_vedit.IndexOf(pedit);
 				pt->m_vedit.RemoveElementAt(t);
 			 }
+
 			 for ( int i=pt->m_vmultisel.Size()-1;i>=0;i-- )
 			 {
 				IEditable *pedit = pt->m_vmultisel.ElementAt(i)->GetIEditable();
@@ -8539,18 +7195,19 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
          {
 			 ISelect *psel = pt->m_allHitElements.ElementAt(idx);
 			 pt->m_allHitElements.RemoveElementAt(idx);
+
 			 if ( idx-1<0 )
-			 {
 				pt->m_allHitElements.InsertElementAt(psel,0);
-			 }
 			 else
 				pt->m_allHitElements.InsertElementAt(psel, idx-1);
+
 			 for ( int i=pt->m_allHitElements.Size()-1;i>=0;i-- )
 			 {
 				IEditable *pedit = pt->m_allHitElements.ElementAt(i)->GetIEditable();
 				int t=pt->m_vedit.IndexOf(pedit);
 				pt->m_vedit.RemoveElementAt(t);
 			 }
+
 			 for ( int i=pt->m_allHitElements.Size()-1;i>=0;i-- )
 			 {
 				IEditable *pedit = pt->m_allHitElements.ElementAt(i)->GetIEditable();
@@ -8581,18 +7238,19 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
            SetFocus(hw);
 			 ISelect *psel = pt->m_vmultisel.ElementAt(idx);
 			 pt->m_vmultisel.RemoveElementAt(idx);
+
 			 if ( idx+1>=pt->m_vmultisel.Size() )
-			 {
 				pt->m_vmultisel.AddElement(psel);
-			 }
 			 else
 				pt->m_vmultisel.InsertElementAt(psel, idx+1);
+
 			 for ( int i=pt->m_vmultisel.Size()-1;i>=0;i-- )
 			 {
 				IEditable *pedit = pt->m_vmultisel.ElementAt(i)->GetIEditable();
 				int t=pt->m_vedit.IndexOf(pedit);
 				pt->m_vedit.RemoveElementAt(t);
 			 }
+
 			 for ( int i=pt->m_vmultisel.Size()-1;i>=0;i-- )
 			 {
 				IEditable *pedit = pt->m_vmultisel.ElementAt(i)->GetIEditable();
@@ -8621,18 +7279,19 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
 
 			 ISelect *psel = pt->m_allHitElements.ElementAt(idx);
 			 pt->m_allHitElements.RemoveElementAt(idx);
+
 			 if ( idx+1>=pt->m_allHitElements.Size() )
-			 {
 				pt->m_allHitElements.AddElement(psel);
-			 }
 			 else
 				pt->m_allHitElements.InsertElementAt(psel, idx+1);
+
 			 for ( int i=pt->m_allHitElements.Size()-1;i>=0;i-- )
 			 {
 				IEditable *pedit = pt->m_allHitElements.ElementAt(i)->GetIEditable();
 				int t=pt->m_vedit.IndexOf(pedit);
 				pt->m_vedit.RemoveElementAt(t);
 			 }
+
 			 for ( int i=pt->m_allHitElements.Size()-1;i>=0;i-- )
 			 {
 				IEditable *pedit = pt->m_allHitElements.ElementAt(i)->GetIEditable();
@@ -8672,9 +7331,7 @@ int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          ListView_InsertColumn( listHwnd, 2, &lvc );
          
          if( listHwnd!=NULL )
-         {
             ListView_DeleteAllItems( listHwnd );
-         }
          lv.mask = LVIF_TEXT;
          char textBuf[256];
          // create a selection in the same drawing order as the selected elements are stored in the main vector
@@ -8685,9 +7342,7 @@ int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                for( int t=0;t<pt->m_vmultisel.Size();t++ )
                {
                   if( pt->m_vmultisel.ElementAt(t) == pt->m_vedit.ElementAt(i)->GetISelect() )
-                  {
                      selection.AddElement(pt->m_vmultisel.ElementAt(t));
-                  }
                }
          }
          for( int i=0; i<(drawing_order_select ? selection.Size() : pt->m_allHitElements.Size()); i++ )

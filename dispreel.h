@@ -90,7 +90,6 @@ STANDARD_DISPATCH_DECLARE
 STANDARD_EDITABLE_DECLARES(eItemDispReel)
 
 	//virtual HRESULT GetTypeName(BSTR *pVal);
-	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void MoveOffset(const float dx, const float dy);
