@@ -6639,8 +6639,201 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
             case IDCANCEL:
                EndDialog(hwndDlg, FALSE);
                break;
-            }
-		 break;
+            
+			case 1111:
+		 	   {
+			   char szFileName[1024];
+			   char szInitialDir[1024];
+			   szFileName[0] = '\0';
+
+			   OPENFILENAME ofn;
+			   ZeroMemory(&ofn, sizeof(OPENFILENAME));
+			   ofn.lStructSize = sizeof(OPENFILENAME);
+			   ofn.hInstance = g_hinst;
+			   ofn.hwndOwner = g_pvp->m_hwnd;
+			   // TEXT
+			   ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
+			   ofn.lpstrFile = szFileName;
+			   ofn.nMaxFile = _MAX_PATH;
+			   ofn.lpstrDefExt = "vpp";
+			   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+
+			   const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+			   if (hr == S_OK)
+			   {
+				  ofn.lpstrInitialDir = szInitialDir;
+			   }
+			   else
+			   {
+				  char szFoo[MAX_PATH];
+				  lstrcpy(szFoo, "c:\\");
+				  ofn.lpstrInitialDir = szFoo;
+			   }
+
+#ifdef VBA
+			   ApcHost->BeginModalDialog();
+#endif
+			   const int ret = GetOpenFileName(&ofn);
+#ifdef VBA
+			   ApcHost->EndModalDialog();
+#endif
+			   if(ret == 0)
+				  break;
+
+			   FILE *f;
+			   fopen_s(&f,ofn.lpstrFile,"r");
+			   if( !f )
+				   break;
+
+			   char tmp[256];
+			   char tmp2[256];
+
+			   float FlipperPhysicsSpeed,FlipperPhysicsStrength,FlipperPhysicsElasticity,FlipperPhysicsScatter,FlipperPhysicsReturnStrength,FlipperPhysicsRecoil,FlipperPhysicsPowerLaw,FlipperPhysicsOblique;
+			   fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsSpeed,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsRecoil,&FlipperPhysicsPowerLaw,&FlipperPhysicsOblique);
+			   float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle,TablePhysicsDampeningSpeed,TablePhysicsDampeningFriction;
+			   fscanf_s(f,"%f %f %f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle,&TablePhysicsDampeningSpeed,&TablePhysicsDampeningFriction);
+			   fscanf_s(f,"%s",tmp2);
+			   fclose(f);
+
+   				 sprintf_s(tmp,256,"%f",FlipperPhysicsSpeed);
+ 				 SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp);
+
+				 sprintf_s(tmp,256,"%f",FlipperPhysicsStrength);
+ 				 SetDlgItemTextA(hwndDlg, 19, tmp);
+
+				 sprintf_s(tmp,256,"%f",FlipperPhysicsElasticity);
+ 				 SetDlgItemTextA(hwndDlg, 21, tmp);
+
+				 sprintf_s(tmp,256,"%f",FlipperPhysicsScatter);
+ 				 SetDlgItemTextA(hwndDlg, 112, tmp);
+
+				 sprintf_s(tmp,256,"%f",FlipperPhysicsReturnStrength);
+ 				 SetDlgItemTextA(hwndDlg, 23, tmp);
+
+				 sprintf_s(tmp,256,"%f",FlipperPhysicsRecoil);
+ 				 SetDlgItemTextA(hwndDlg, 22, tmp);
+
+				 sprintf_s(tmp,256,"%f",FlipperPhysicsPowerLaw);
+ 				 SetDlgItemTextA(hwndDlg, 109, tmp);
+
+				 sprintf_s(tmp,256,"%f",FlipperPhysicsOblique);
+ 				 SetDlgItemTextA(hwndDlg, 110, tmp);
+
+				 sprintf_s(tmp,256,"%f",TablePhysicsGravityConstant);
+ 				 SetDlgItemTextA(hwndDlg, 1100, tmp);
+
+				 sprintf_s(tmp,256,"%f",TablePhysicsContactFriction);
+ 				 SetDlgItemTextA(hwndDlg, 1101, tmp);
+
+				 sprintf_s(tmp,256,"%f",TablePhysicsContactScatterAngle);
+ 				 SetDlgItemTextA(hwndDlg, 1102, tmp);
+
+				 sprintf_s(tmp,256,"%f",TablePhysicsDampeningSpeed);
+ 				 SetDlgItemTextA(hwndDlg, 1103, tmp);
+
+				 sprintf_s(tmp,256,"%f",TablePhysicsDampeningFriction);
+ 				 SetDlgItemTextA(hwndDlg, 1106, tmp);
+
+ 				 SetDlgItemTextA(hwndDlg, 1110, tmp2);
+			   }
+			   break;
+
+			case 1112:
+			   {
+			   char szFileName[1024];
+			   char szInitialDir[1024];
+			   szFileName[0] = '\0';
+
+			   OPENFILENAME ofn;
+			   ZeroMemory(&ofn, sizeof(OPENFILENAME));
+			   ofn.lStructSize = sizeof(OPENFILENAME);
+			   ofn.hInstance = g_hinst;
+			   ofn.hwndOwner = g_pvp->m_hwnd;
+			   // TEXT
+			   ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
+			   ofn.lpstrFile = szFileName;
+			   ofn.nMaxFile = _MAX_PATH;
+			   ofn.lpstrDefExt = "vpp";
+			   ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+
+			   const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+			   if (hr == S_OK)
+			   {
+				  ofn.lpstrInitialDir = szInitialDir;
+			   }
+			   else
+			   {
+				  char szFoo[MAX_PATH];
+				  lstrcpy(szFoo, "c:\\");
+				  ofn.lpstrInitialDir = szFoo;
+			   }
+
+#ifdef VBA
+			   ApcHost->BeginModalDialog();
+#endif
+			   const int ret = GetSaveFileName(&ofn);
+#ifdef VBA
+			   ApcHost->EndModalDialog();
+#endif
+			   if(ret == 0)
+				  break;
+
+			   FILE *f;
+			   fopen_s(&f,ofn.lpstrFile,"w");
+			   if( !f )
+				   break;
+
+				char tmp[256];
+	
+				GetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 19, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 21, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 112, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 23, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 22, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 109, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 110, tmp, 256);
+				fprintf_s(f,"%s\n",tmp);
+
+
+				GetDlgItemTextA(hwndDlg, 1100, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 1101, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 1103, tmp, 256);
+				fprintf_s(f,"%s ",tmp);
+
+				GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
+				fprintf_s(f,"%s\n",tmp);
+
+
+				GetDlgItemTextA(hwndDlg, 1110, tmp, 256);
+				fprintf_s(f,"%s",tmp);
+
+			   fclose(f);
+			   }
+			   break;
+			}
+			break;
 
 		 case LBN_SELCHANGE:
 			{
