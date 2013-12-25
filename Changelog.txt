@@ -11,6 +11,8 @@ VP 9.2.1 Changelog
   by setting it f.e. to 1, the rendered frame updates will -always- match the physics updates, everything above 1 allows for multiple physics updates per frame
   (2, 3 or 4 can be good values for this, as it slows down the physics temporarily if the FPS drop below 50, 33 or 25 in these cases).
 
+- import/export of global physics options sets
+
 - tweak key input code to save one frame (or more?) of lag
 
 - add optional ball trails/motion blur (also adjustable per-table)
