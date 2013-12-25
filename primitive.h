@@ -185,7 +185,6 @@ public:
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
    void WriteRegDefaults();
    //virtual HRESULT GetTypeName(BSTR *pVal);
-   //virtual int GetDialogID();
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
    //virtual IScriptable *GetScriptable() {return NULL;}

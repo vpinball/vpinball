@@ -16,8 +16,6 @@
 const unsigned char TABLE_KEY[] = "Visual Pinball";
 const unsigned char PARAPHRASE_KEY[] = { 0xB4, 0x0B, 0xBE, 0x37, 0xC3, 0x0C, 0x8E, 0xA1, 0x5A, 0x05, 0xDF, 0x1B, 0x2D, 0x02, 0xEF, 0x8D };
 
-int PinTable::m_tblNumStartBalls = 0;
-
 int CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -36,14 +34,6 @@ void ScriptGlobalTable::Init(PinTable *pt)
 
    // initialise the sound sequencer
    SeqSoundInit();
-}
-
-
-// Returns the number of balls that are expected to be on the table
-// prior to a game start. 
-int PinTable::NumStartBalls()
-{
-   return PinTable::m_tblNumStartBalls;
 }
 
 STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
@@ -631,11 +621,6 @@ PinTable::PinTable()
    m_psgt->AddRef();
    m_psgt->Init(this);
 
-   for (int i=0;i<eItemTypeCount;i++)
-   {
-      m_suffixcount[i] = 1;
-   }
-
    m_sdsDirtyProp = eSaveClean;
    m_sdsDirtyScript = eSaveClean;
    m_sdsNonUndoableDirty = eSaveClean;
@@ -693,35 +678,15 @@ PinTable::PinTable()
    HRESULT hr;
    int tmp;
 
-   m_tiltsens = 0.40f;
+   F32 tiltsens = 0.40f;
    hr = GetRegInt("Player", "TiltSensitivity", &tmp);
-   if (hr == S_OK) m_tiltsens = (float)tmp*(float)(1.0/1000.0);	
-   plumb_set_sensitivity( m_tiltsens );
+   if (hr == S_OK) tiltsens = (float)tmp*(float)(1.0/1000.0);	
+   plumb_set_sensitivity( tiltsens );
 
-   m_nudgesens = 0.50f;
+   F32 nudgesens = 0.50f;
    hr = GetRegInt("Player", "NudgeSensitivity", &tmp);
-   if (hr == S_OK) m_nudgesens = (float)tmp*(float)(1.0/1000.0);	
-   nudge_set_sensitivity( m_nudgesens );
-
-   m_units_coin1 = 1;
-   hr = GetRegInt("Player", "UnitsMech1", &tmp);
-   if (hr == S_OK) m_units_coin1 = tmp;
-
-   m_units_coin2 = 1;
-   hr = GetRegInt("Player", "UnitsMech2", &tmp);
-   if (hr == S_OK) m_units_coin2 = tmp;
-
-   m_units_credit = 2;
-   hr = GetRegInt("Player", "UnitsCredit", &tmp);
-   if (hr == S_OK) m_units_credit = tmp;
-
-   m_units_bonus = 8;
-   hr = GetRegInt("Player", "UnitsBonus", &tmp);
-   if (hr == S_OK) m_units_bonus = tmp;
-
-   m_custom_coins = 0;
-   hr = GetRegInt("Player", "CustomCoins", &tmp);
-   if (hr == S_OK) m_custom_coins = tmp;
+   if (hr == S_OK) nudgesens = (float)tmp*(float)(1.0/1000.0);	
+   nudge_set_sensitivity( nudgesens );
 
    m_globalDifficulty = 0;						// easy by default
    hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
@@ -779,17 +744,13 @@ PinTable::PinTable()
    hr = GetRegInt("Player", "AutostartRetry", &tmp);
    if( hr == S_OK ) m_tblAutoStartRetry = tmp*10;
 
-   PinTable::m_tblNumStartBalls = 0;
-   hr = GetRegInt("Player", "NumStartBalls", &tmp);
-   if( hr == S_OK ) PinTable::m_tblNumStartBalls = tmp;
+   m_tblAutoStartEnabled = 0;
+   hr = GetRegInt("Player", "asenable", &tmp);
+   if( hr == S_OK ) m_tblAutoStartEnabled = ( tmp != 0 );
 
    m_tblVolmod = 1.0f;
    hr = GetRegInt("Player", "Volmod", &tmp);
    if( hr == S_OK ) m_tblVolmod = (float)tmp*(float)(1.0/1000.0);
-
-   m_tblAutoStartEnabled = 0;
-   hr = GetRegInt("Player", "asenable", &tmp);
-   if( hr == S_OK ) m_tblAutoStartEnabled = ( tmp != 0 );
 
    m_tblMirrorEnabled = 0;
    hr = GetRegInt("Player", "mirror", &tmp);
@@ -893,7 +854,7 @@ BOOL PinTable::FVerifySaveToClose()
 BOOL PinTable::CheckPermissions(unsigned long flag)
 {
    return ( ((m_protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) ||
-      ((m_protectionData.flags & flag) 				== flag) 				);
+      ((m_protectionData.flags & flag) == flag)	);
 }
 
 BOOL PinTable::IsTableProtected()
@@ -1313,9 +1274,7 @@ void PinTable::InitPostLoad(VPinball *pvp)
 
    const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
    if (hr != S_OK)
-   {
       g_pplayer->m_DeadZ = 0;
-   }
 
    CreateTableWindow();
 
@@ -1432,7 +1391,7 @@ void PinTable::Render(Sur * const psur)
       rrb.x = min(rrb.x, frect.right);
       rrb.y = min(rrb.y, frect.bottom);
 
-      psur->SetObject(NULL); 							// Don't hit test edgelines
+      psur->SetObject(NULL); 						// Don't hit test edgelines
 
       psur->SetLineColor(RGB(0,0,0), false, 0);		// black outline
 
@@ -1747,9 +1706,7 @@ void PinTable::SetDirtyDraw()
 void PinTable::Play()
 {
    if (g_pplayer)
-   {
       return; // Can't play twice
-   }
 
    mixer_volmod( m_tblVolmod );
 
@@ -1761,9 +1718,7 @@ void PinTable::Play()
    // make sure the load directory is the active directory
    DWORD err = SetCurrentDirectory(szLoadDir);
    if (err == 0)
-   {
       err = GetLastError();
-   }
 
    BackupLayers();
 
@@ -1811,43 +1766,33 @@ void PinTable::Play()
 		     sprintf_s(tmp,256,"TablePhysicsGravityConstant%u",m_fOverridePhysics-1);
 			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideGravityConstant);
 			 if (hr != S_OK)
-			 {
 				m_fOverrideGravityConstant = 1.6774f;
-			 }
 			 m_fOverrideGravityConstant *= GRAVITYCONST;
 
 			 m_fOverrideContactFriction = 0.0005f;
 		     sprintf_s(tmp,256,"TablePhysicsContactFriction%u",m_fOverridePhysics-1);
 			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactFriction);
 			 if (hr != S_OK)
-			 {
 				m_fOverrideContactFriction = 0.0005f;
-			 }
 
 			 m_fOverrideContactScatterAngle = 0.5f;
 		     sprintf_s(tmp,256,"TablePhysicsContactScatterAngle%u",m_fOverridePhysics-1);
 			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactScatterAngle);
 			 if (hr != S_OK)
-			 {
 				m_fOverrideContactScatterAngle = 0.5f;
-			 }
 			 m_fOverrideContactScatterAngle = ANGTORAD(m_fOverrideContactScatterAngle);
 
 			 m_fOverrideDampeningSpeed = 65.f;
 		     sprintf_s(tmp,256,"TablePhysicsDampeningSpeed%u",m_fOverridePhysics-1);
 			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideDampeningSpeed);
 			 if (hr != S_OK)
-			 {
 				m_fOverrideDampeningSpeed = 65.f;
-			 }
 
 			 m_fOverrideDampeningFriction = 0.95f;
 		     sprintf_s(tmp,256,"TablePhysicsDampeningFriction%u",m_fOverridePhysics-1);
 			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideDampeningFriction);
 			 if (hr != S_OK)
-			 {
 				m_fOverrideDampeningFriction = 0.95f;
-			 }
 		 }
 
          //c_Gravity = m_Gravity;				// set physical constants
@@ -1973,16 +1918,12 @@ HRESULT PinTable::InitVBA()
    }
 
    if (hr != S_OK)
-   {
       ShowError("Could not create VBA Project.");
-   }
 
    hr = ApcProjectItem.Define(ApcProject, GetDispatch(), axTypeHostProjectItem, L"Table", NULL);
 
    if (hr != S_OK)
-   {
       ShowError("Could not create VBA ProjectItem Table.");
-   }
 #endif
    return hr;
 }
@@ -8947,7 +8888,8 @@ STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
 STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
 {
    const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
-   if (hr != S_OK)	m_DeadZ = 0; // The default
+   if (hr != S_OK)
+	   m_DeadZ = 0; // The default
    *pVal=m_DeadZ;
 
    return S_OK;
@@ -8977,7 +8919,8 @@ STDMETHODIMP PinTable::put_DeadSlider(int newVal)
 STDMETHODIMP PinTable::get_DeadZone(int *pVal)
 {
    const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
-   if (hr != S_OK) m_DeadZ = 0;
+   if (hr != S_OK)
+	   m_DeadZ = 0;
 
    if (*pVal>100) *pVal=100;
    if (*pVal<0) *pVal=0;

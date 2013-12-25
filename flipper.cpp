@@ -202,66 +202,50 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
 	     sprintf_s(tmp,256,"FlipperPhysicsSpeed%u",m_d.m_OverridePhysics-1);
          HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideSpeed);
          if (hr != S_OK)
-         {
             m_d.m_OverrideSpeed = 0.15f;
-         }
 
 		 m_d.m_OverrideStrength = 3.f;
 	     sprintf_s(tmp,256,"FlipperPhysicsStrength%u",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideStrength);
          if (hr != S_OK)
-         {
             m_d.m_OverrideStrength = 3.f;
-         }
 
  		 m_d.m_OverrideElasticity = 0.55f;
 	     sprintf_s(tmp,256,"FlipperPhysicsElasticity%u",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticity);
          if (hr != S_OK)
-         {
             m_d.m_OverrideElasticity = 0.55f;
-         }
 
   		 m_d.m_OverrideScatter = -11.f;
 	     sprintf_s(tmp,256,"FlipperPhysicsScatter%u",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideScatter);
          if (hr != S_OK)
-         {
             m_d.m_OverrideScatter = -11.f;
-         }
 		 m_d.m_OverrideScatter = ANGTORAD(m_d.m_OverrideScatter);
 
   		 m_d.m_OverrideReturnStrength = 0.09f;
 	     sprintf_s(tmp,256,"FlipperPhysicsReturnStrength%u",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideReturnStrength);
          if (hr != S_OK)
-         {
             m_d.m_OverrideReturnStrength = 0.09f;
-         }
 
 		 m_d.m_OverrideRecoil = 2.f;
 	     sprintf_s(tmp,256,"FlipperPhysicsRecoil%u",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideRecoil);
          if (hr != S_OK)
-         {
             m_d.m_OverrideRecoil = 2.f;
-         }
 
   		 m_d.m_OverridePowerLaw = 1.f;
 	     sprintf_s(tmp,256,"FlipperPhysicsPowerLaw%u",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverridePowerLaw);
          if (hr != S_OK)
-         {
             m_d.m_OverridePowerLaw = 1.f;
-         }
 
 		 m_d.m_OverrideOblique = 3.f;
 	     sprintf_s(tmp,256,"FlipperPhysicsOblique%u",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideOblique);
          if (hr != S_OK)
-         {
             m_d.m_OverrideOblique = 3.f;
-         }
 		 m_d.m_OverrideOblique = ANGTORAD(m_d.m_OverrideOblique);
    }
 

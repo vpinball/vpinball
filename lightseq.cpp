@@ -1891,11 +1891,6 @@ IDispatch *LightSeqCenter::GetDispatch()
 	return m_pLightSeq->GetDispatch();
 }
 
-/*int LightSeqCenter::GetDialogID()
-{
-	return m_pLightSeq->GetDialogID();
-}*/
-
 void LightSeqCenter::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	{
 	m_pLightSeq->GetDialogPanes(pvproppane);

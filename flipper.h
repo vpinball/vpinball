@@ -77,7 +77,6 @@ public:
 	void SetVertices(const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
 
 	//virtual HRESULT GetTypeName(BSTR *pVal);
-	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	STANDARD_DISPATCH_DECLARE
@@ -163,8 +162,6 @@ public:
 	STDMETHOD(put_EndRadius)(/*[in]*/ float newVal);
 	STDMETHOD(get_BaseRadius)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_BaseRadius)(/*[in]*/ float newVal);
-	//STDMETHOD(get_Application)(IVisualPinball **lppaReturn);
-	//STDMETHOD(get_Parent)(ITable **lppaReturn);
 	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
 	STDMETHOD(get_Mass)(/*[out, retval]*/ float *pVal);

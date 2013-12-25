@@ -81,7 +81,6 @@ public:
 
 	virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual IDispatch *GetDispatch()=0;
-	//virtual int GetDialogID()=0;
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane)=0;
 	virtual ItemTypeEnum GetItemType() = 0;
 

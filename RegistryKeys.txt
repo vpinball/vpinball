@@ -1,0 +1,10 @@
+This is a quick overview of all non-exposed registry keys VP parses.
+(some might not work correctly anymore, who knows)
+
+"Player" / "PhysicsMaxLoops"
+"Player" / "GlobalDifficulty" chooses slope difficulty of all tables
+"Player" / "Autostart"        presses start after loading a table automatically
+"Player" / "AutostartRetry"
+"Player" / "asenable"         enable autostart?
+"Player" / "mirror"           mirror playfield (also mirrors keys accordingly)
+"Player" / "Exitconfirm"

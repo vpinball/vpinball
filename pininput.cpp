@@ -625,8 +625,7 @@ int PinInput::started()
 	if( pressed_start ) 
 		return 1;
 
-	// Are there more balls on the table than what was loaded?
-    if ( (Ball::GetBallsInUse() - PinTable::NumStartBalls()) > 0 )
+    if ( Ball::GetBallsInUse() > 0 )
 	{
 		pressed_start = 1;
 		return 1;
@@ -693,9 +692,9 @@ void PinInput::autostart( const U32 msecs, const U32 retry_msecs, const U32 curr
 //	}
 	
 	// Make sure we have a player.
-	if(( !g_pplayer ) ||
+	if( !g_pplayer ||
 	// Check if we already started.
-		( started() ))
+		started() )
 		return;
 
 	static int down = 0;
@@ -735,11 +734,11 @@ void PinInput::autostart( const U32 msecs, const U32 retry_msecs, const U32 curr
 #ifdef ULTRAPIN
 void PinInput::autoexit( const U32 msecs )
 {
-	if (( !VPinball::m_open_minimized ) ||
-		( !g_pplayer ) ||
+	if ( !VPinball::m_open_minimized ||
+		 !g_pplayer ||
 		( msecs == 0 ) ||
 		// Check if we have not started.
-		( !started() ))
+		 !started() )
 		return;
 
 	// Check if we can exit.
@@ -984,7 +983,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 				{
 					if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 0) && (m_disable_esc == 0)) // exit
 						{	// Check if we have started a game yet.
-							if ((started()) || (m_ptable->m_tblAutoStartEnabled == false))
+							if (started() || (m_ptable->m_tblAutoStartEnabled == false))
 							{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{	first_stamp = curr_time_msec;
 									exit_stamp = curr_time_msec;

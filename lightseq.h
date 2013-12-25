@@ -68,7 +68,6 @@ public:
 	LightSeqCenter(LightSeq * const pLightSeq);
 	virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual IDispatch *GetDispatch();
-	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void Delete();
@@ -133,7 +132,6 @@ BEGIN_CONNECTION_POINT_MAP(LightSeq)
 END_CONNECTION_POINT_MAP()
 
 	//virtual HRESULT GetTypeName(BSTR *pVal);
-	//virtual int GetDialogID();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	void RenderOutline(Sur * const psur);
