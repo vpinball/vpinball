@@ -1,7 +1,8 @@
 VP 9.2.1 Changelog
 ------------------------
-- Alpha-Flasher element added. Use this element to add (additive) alpha flashers instead using of abusing the alpha ramp element. The flasher is a 'dynamic' element that means it is not pre-rendered
+- Alpha-Flasher element added. Use this element to add (additive) alpha flashers instead of abusing the alpha ramp element. The flasher is a 'dynamic' element, that means it is not pre-rendered
   and it'll be updated every frame.
+  Limitations:
   If 'Display Image In Editor' option is selected and the flasher is rotated the image won't rotate due to a DX7 limitation.
   If the flasher is not an additive alpha flasher you can colorize the image with 'Color' if you don't want that effect set the color to blank white (RGB 255,255,255).
 

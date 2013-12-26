@@ -29,7 +29,6 @@ enum ItemTypeEnum
 	};
 
 int rgTypeStringIndex[];
-//int rgTypeStringIndexPlural[];
 
 class Sur;
 
