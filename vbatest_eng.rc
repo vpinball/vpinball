@@ -244,8 +244,7 @@ BEGIN
     CONTROL         "&Antialias Ball",IDC_ANTIALIAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,42,55,10
     CONTROL         "Reflect Ball on Playfield",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,54,91,10
-    CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,66,91,10
+    CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,66,91,10
     CONTROL         "Hardware Device Rendering",211,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,92,114,8
     CONTROL         "Region Updates (faster on most hardware)",IDC_ENABLE_REGION_UPDATES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,104,155,10
@@ -1587,6 +1586,40 @@ BEGIN
     LTEXT           "&Image:",-1,7,21,22,8
 END
 
+IDD_PROPFLASHER_VISUALS DIALOGEX 0, 0, 125, 119
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    COMBOBOX        DISPID_Image,7,15,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "I&mage:",IDC_STATIC,7,6,22,8
+    CONTROL         "Additive Alpha Bl.",IDC_ADDBLEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,83,70,10
+    CONTROL         "Update Regions",IDC_UPDATEREGIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,73,66,10
+    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,40,8
+    LTEXT           "Add. Blend Factor (0..255)",IDC_STATIC,7,95,84,8
+    EDITTEXT        IDC_ALPHA_EDIT,93,92,25,14,ES_AUTOHSCROLL
+    CONTROL         "Custom2",11,"ColorControl",WS_TABSTOP,27,43,40,14
+    LTEXT           "&Color",IDC_STATIC,7,46,17,8
+    CONTROL         "Display &Image in Editor",13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,29,87,10
+END
+
+IDD_PROPFLASHER_POSITION DIALOGEX 0, 0, 125, 108
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    EDITTEXT        5,37,7,40,12,ES_AUTOHSCROLL
+    EDITTEXT        6,37,23,40,12,ES_AUTOHSCROLL
+    EDITTEXT        3,37,39,40,12,ES_AUTOHSCROLL
+    EDITTEXT        4,37,55,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1,37,88,40,12,ES_AUTOHSCROLL
+    LTEXT           "&X",IDC_STATIC,7,8,8,8
+    LTEXT           "&Y",IDC_STATIC,7,24,8,8
+    LTEXT           "SizeX",IDC_STATIC,7,42,19,8
+    LTEXT           "SizeY",IDC_STATIC,7,58,19,8
+    LTEXT           "&Rotation",IDC_STATIC,7,90,28,8
+    LTEXT           "Height",IDC_STATIC,7,74,22,8
+    EDITTEXT        IDC_HEIGHT_EDIT,37,71,40,14,ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1763,6 +1796,7 @@ BEGIN
         MENUITEM "&Wall\tCtrl+W",               IDC_WALL
         MENUITEM "&Gate\tCtrl+G",               IDC_GATE
         MENUITEM "&Ramp\tCtrl+R",               IDC_RAMP
+        MENUITEM "Fla&sher\tCtrl+H",            IDC_FLASHER
         MENUITEM "&Flipper\tCtrl+F",            IDC_FLIPPER
         MENUITEM "&Plunger\tCtrl+P",            IDC_PLUNGER
         MENUITEM "&Bumper\tCtrl+B",             IDC_BUMPER
@@ -1933,18 +1967,19 @@ BEGIN
     "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTEAT,            VIRTKEY, SHIFT, CONTROL, NOINVERT
     "P",            IDC_PLUNGER,            VIRTKEY, CONTROL, NOINVERT
+    "J",            IDC_PRIMITIVE,          VIRTKEY, CONTROL, NOINVERT
     "R",            IDC_RAMP,               VIRTKEY, CONTROL, NOINVERT
     VK_ESCAPE,      IDC_SELECT,             VIRTKEY, NOINVERT
     "I",            IDC_SPINNER,            VIRTKEY, CONTROL, NOINVERT
     "A",            IDC_TARGET,             VIRTKEY, CONTROL, NOINVERT
     "E",            IDC_TEXTBOX,            VIRTKEY, CONTROL, NOINVERT
-    "J",            IDC_PRIMITIVE,          VIRTKEY, CONTROL, NOINVERT
     "M",            IDC_TIMER,              VIRTKEY, CONTROL, NOINVERT
     "T",            IDC_TRIGGER,            VIRTKEY, CONTROL, NOINVERT
     "W",            IDC_WALL,               VIRTKEY, CONTROL, NOINVERT
     "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
     "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
+    "H",            IDC_FLASHER,            VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_CODEVIEWACCEL ACCELERATORS 
@@ -1999,6 +2034,7 @@ IDC_CUR_DISPSEGMENT     CURSOR                  "cur_dispseg.cur"
 IDC_CUR_DISPDMD         CURSOR                  "cur_dispdmd.cur"
 IDC_CUR_LIGHTSEQ        CURSOR                  "cur_lightseq.cur"
 IDC_CUR_PRIMITIVE       CURSOR                  "cur_prim.cur"
+IDC_CUR_FLASHER         CURSOR                  "cur00002.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2115,6 +2151,7 @@ BEGIN
     IDS_TB_MAGNIFY          "Magnify"
     IDS_GATE_DESC           "Gate Class"
     IDS_TB_GATE             "Gate"
+    IDS_TB_FLASHER          "Flasher"
     IDS_SPINNER_DESC        "Spinner Class"
     IDS_TB_SPINNER          "Spinner"
 END

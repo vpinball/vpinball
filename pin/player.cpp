@@ -747,7 +747,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
     		if (g_pvp->m_pdd.m_fHardwareAccel)
 			{
   				if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
-	  				(m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive && !((Primitive *)m_ptable->m_vedit.ElementAt(i))->m_d.staticRendering))
+	  				(m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive && !((Primitive *)m_ptable->m_vedit.ElementAt(i))->m_d.staticRendering) ||
+               (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemFlasher) )
 					{
 					  m_vhitalpha.AddElement(ph);
 					}

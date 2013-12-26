@@ -136,6 +136,7 @@
 #define IDC_GATE                        140
 #define IDC_CUR_TRIGGER                 140
 #define IDS_WRONGFILEVERSION2           140
+#define IDS_TB_FLASHER                  140
 #define IDS_SPINNER_DESC                141
 #define IDC_CUR_GATE                    141
 #define IDR_Spinner                     142
@@ -504,6 +505,8 @@
 #define IDC_EDIT1                       377
 #define IDC_Layback                     377
 #define IDC_LOADED_MESH_TEXT            377
+#define IDC_ALPHA_EDIT                  377
+#define IDC_HEIGHT_EDIT                 378
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
 #define DISPID_SIDES                    378
@@ -520,6 +523,7 @@
 #define IDC_CUR_PRIMITIVE               385
 #define IDC_StretchNo                   386
 #define IDR_REGISTRY1                   386
+#define IDC_CUR_RAMP1                   386
 #define IDC_StretchYes                  387
 #define IDR_REGISTRY2                   387
 #define IDC_StretchMonitor              388
@@ -527,13 +531,16 @@
 #define IDD_PROPTABLE_LIGHTSOURCES      390
 #define IDD_SEARCH_SELECT_ELEMENT       391
 #define IDD_DRAWING_ORDER               392
+#define IDR_Flasher                     393
 #define IDC_CHECK1                      394
 #define IDC_CHECK_PRIMITIVE_LIGHTING    394
 #define IDC_GLOBAL_REFLECTION_CHECK     394
 #define IDC_ENABLE_OFF_LIGHTING         394
 #define IDC_ENABLE_RAMP_LIGHTING        394
 #define IDC_ENABLE_AA                   394
+#define IDR_REGISTRY3                   394
 #define IDC_ENABLE_FXAA                 395
+#define IDR_REGISTRY4                   395
 #define IDC_CHECK3                      396
 #define IDC_PRIM_ENV_MAP                396
 #define IDC_EDIT2                       397
@@ -542,6 +549,7 @@
 #define IDC_ON_LIGHT_LIGHTMAP           398
 #define IDC_AA_ALL_TABLES               398
 #define IDC_JOYMECHTILTCOMBO            399
+#define IDC_CUR_FLASHER                 399
 #define IDC_ADDCREDITBUTTON2            400
 #define IDC_ADDCREDIT2                  401
 #define IDC_ADDCREDITKEY2               401
@@ -576,7 +584,7 @@
 #define IDC_JOYCUSTOM1COMBO2            420
 #define IDC_JOYDEBUGCOMBO               420
 #define IDC_ALPHA_SLIDER                420
-#define IDC_GLOBAL_TRAIL_CHECK		    421
+#define IDC_GLOBAL_TRAIL_CHECK          421
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -626,7 +634,9 @@
 #define IDC_STATIC_SOUNDDEVICE          546
 #define IDD_PROPBACKGLASS_PHYSICS       547
 #define IDS_PHYSICSGFX                  548
+#define IDD_PROPFLASHER_POSITION        548
 #define IDS_DIMENSIONSSLOPE             549
+#define IDD_PROPFLASHER_VISUALS         549
 #define IDS_LIGHTSOURCES                550
 #define IDS_INPUT                       551
 #define IDC_FXAA                        552
@@ -675,8 +685,8 @@
 #define IDC_REFLECTION_EDIT             1701
 #define IDC_SHADOW_X                    1702
 #define IDC_SHADOW_Y                    1703
-#define IDC_BALL_TRAIL					1704
-#define IDC_TRAIL_EDIT					1705
+#define IDC_BALL_TRAIL                  1704
+#define IDC_TRAIL_EDIT                  1705
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770
@@ -757,6 +767,9 @@
 #define ID_ADD_COMMENT                  32883
 #define ID_EDIT_UNCOMMENT               32886
 #define ID_REMOVE_COMMENT               32888
+#define ID_INSERT_FLASHER               32890
+#define IDC_FLASHER                     32891
+#define ID_INSERT_FLASHER32892          32892
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -764,8 +777,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        393
-#define _APS_NEXT_COMMAND_VALUE         32890
+#define _APS_NEXT_RESOURCE_VALUE        400
+#define _APS_NEXT_COMMAND_VALUE         32894
 #define _APS_NEXT_CONTROL_VALUE         421
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

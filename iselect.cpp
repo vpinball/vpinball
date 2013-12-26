@@ -15,6 +15,7 @@ int rgTypeStringIndex[] = {
 	IDS_TB_GATE, //eItemGate,
 	IDS_TB_SPINNER, //eItemSpinner,
 	IDS_TB_RAMP, //eItemRamp,
+   IDS_TB_FLASHER, //eItemFlasher
 	IDS_TABLE, //eItemTable,
 	IDS_TB_LIGHT, //eItemLightCenter,
 	IDS_CONTROLPOINT, //eItemDragPoint,

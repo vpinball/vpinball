@@ -3335,6 +3335,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\flasher.cpp"
+				>
+			</File>
+			<File
 				RelativePath="flipper.cpp"
 				>
 				<FileConfiguration
@@ -9573,6 +9577,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\flasher.h"
+				>
+			</File>
+			<File
 				RelativePath="flipper.h"
 				>
 			</File>
@@ -10003,6 +10011,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\cur00002.cur"
+				>
+			</File>
+			<File
 				RelativePath="cur_bump.cur"
 				>
 			</File>
@@ -10080,6 +10092,10 @@
 			</File>
 			<File
 				RelativePath="DragPoint.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\flasher.rgs"
 				>
 			</File>
 			<File
@@ -10180,6 +10196,10 @@
 			</File>
 			<File
 				RelativePath="sunburst4.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\sunburst5.bmp"
 				>
 			</File>
 			<File

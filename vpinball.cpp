@@ -85,6 +85,7 @@ TBBUTTON const g_tbbuttonPalette[] = {
    {20, IDC_DISPREEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DISPREEL, 14},
    {21, IDC_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHTSEQ, 15},
    {22, IDC_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16},
+   {35, IDC_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLASHER, 17},
 };
 
 TBBUTTON const g_tbbuttonLayers[] = {
@@ -927,6 +928,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
    case IDC_GATE:
    case IDC_SPINNER:
    case IDC_RAMP:
+   case IDC_FLASHER:
    case IDC_DISPREEL:
    case IDC_LIGHTSEQ:
    case IDC_PRIMITIVE:
@@ -1408,10 +1410,11 @@ void VPinball::setLayerStatus( int layerNumber )
    ptCur->SwitchToLayer(layerNumber);
 }
 
-const int rgToolEnable[23][2] = {
+const int rgToolEnable[24][2] = {
    IDC_WALL, 1,
    IDC_GATE, 1,
    IDC_RAMP, 1,
+   IDC_FLASHER, 1,
    IDC_FLIPPER, 1,
    IDC_PLUNGER, 1,
    IDC_BUMPER, 1,
@@ -7571,6 +7574,13 @@ int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                      sprintf_s(textBuf,"%.02f", ramp->m_d.m_heighttop);
                      ListView_SetItemText( listHwnd, i, 1, textBuf);
                      ListView_SetItemText( listHwnd, i, 2, "Ramp");
+                  }
+                  else if ( pedit->GetItemType()==eItemFlasher )
+                  {
+                     Flasher *flasher= (Flasher*)pedit;
+                     sprintf_s(textBuf,"%.02f", flasher->m_d.m_height);
+                     ListView_SetItemText( listHwnd, i, 1, textBuf);
+                     ListView_SetItemText( listHwnd, i, 2, "Flasher");
                   }
                   else if ( pedit->GetItemType()==eItemSpinner )
                   {

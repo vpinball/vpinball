@@ -1,0 +1,21 @@
+HKCR
+{
+	VBATest.Flasher.1 = s 'Flasher Class'
+	{
+		CLSID = s '{847B5F6C-65DC-4b3a-A721-B8F931C23133}'
+	}
+	VBATest.Flasher = s 'Flasher Class'
+	{
+		CLSID = s '{847B5F6C-65DC-4b3a-A721-B8F931C23133}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {847B5F6C-65DC-4b3a-A721-B8F931C23133} = s 'Flasher Class'
+		{
+			ProgID = s 'VBATest.Flasher.1'
+			VersionIndependentProgID = s 'VBATest.Flasher'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}

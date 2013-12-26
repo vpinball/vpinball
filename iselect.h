@@ -14,6 +14,7 @@ enum ItemTypeEnum
 	eItemGate,
 	eItemSpinner,
 	eItemRamp,
+   eItemFlasher,
 	eItemTable,
 	eItemLightCenter,
 	eItemDragPoint,

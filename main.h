@@ -137,6 +137,7 @@ class PinBinary;
 #include "Gate.h"
 #include "Spinner.h"
 #include "Ramp.h"
+#include "flasher.h"
 #include "display.h"
 #include "mixer.h"
 #include "hid.h"
