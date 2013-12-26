@@ -1230,7 +1230,7 @@ STDMETHODIMP Flipper::get_Speed(float *pVal)
    }
    else*/ *pVal = m_d.m_force;
 
-return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_Speed(float newVal)

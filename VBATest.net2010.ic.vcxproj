@@ -937,6 +937,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="flasher.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="Pin\ball.cpp">
@@ -3683,6 +3684,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="flasher.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Pin\ball.h" />
     <ClInclude Include="ballex.h" />
@@ -3829,6 +3831,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="chevron.bmp" />
     <None Include="ComControl.rgs" />
     <None Include="cur00001.cur" />
+    <None Include="cur00002.cur" />
     <None Include="cur_bump.cur" />
     <None Include="cur_deca.cur" />
     <None Include="cur_dispdmd.cur" />
@@ -3849,6 +3852,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="cursor1.cur" />
     <None Include="DispReel.rgs" />
     <None Include="DragPoint.rgs" />
+    <None Include="flasher.rgs" />
     <None Include="Flipper.rgs" />
     <None Include="Gate.rgs" />
     <None Include="ico00001.ico" />
