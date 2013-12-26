@@ -15,14 +15,14 @@ int rgTypeStringIndex[] = {
 	IDS_TB_GATE, //eItemGate,
 	IDS_TB_SPINNER, //eItemSpinner,
 	IDS_TB_RAMP, //eItemRamp,
-   IDS_TB_FLASHER, //eItemFlasher
 	IDS_TABLE, //eItemTable,
 	IDS_TB_LIGHT, //eItemLightCenter,
 	IDS_CONTROLPOINT, //eItemDragPoint,
 	IDS_COLLECTION, //eItemCollection,
-    IDS_TB_DISPREEL, //eItemDispReel,
+   IDS_TB_DISPREEL, //eItemDispReel,
 	IDS_TB_LIGHTSEQ, //eItemLightSeq,
 	IDS_TB_PRIMITIVE, //eItemPrimitive	
+   IDS_TB_FLASHER, //eItemFlasher
 	IDS_TB_LIGHTSEQ, //light seq center
 	IDS_TB_COMCONTROL, //eItemComControl
     };

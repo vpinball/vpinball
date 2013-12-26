@@ -633,6 +633,9 @@ void Flasher::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
    pproppane = new PropertyPane(IDD_PROPFLASHER_POSITION, IDS_POSITION);
    pvproppane->AddElement(pproppane);
+
+   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
+   pvproppane->AddElement(pproppane);
 }
 
 
@@ -701,7 +704,7 @@ STDMETHODIMP Flasher::put_IsVisible(VARIANT_BOOL newVal)
       if( m_d.m_IsVisible && !VBTOF(newVal) )
          m_d.m_wasVisible=true;
       m_d.m_IsVisible = VBTOF(newVal);			// set visibility
-
+      dynamicVertexBufferRegenerate=true;
       STOPUNDO
    }
 
