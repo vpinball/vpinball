@@ -262,7 +262,7 @@ public:
    BaseTexture *antiAliasTexture;
 	Texture ballTexture;
 	Texture ballShadowTexture;
-	Texture lightTexture;
+	Texture lightTexture[2]; // 0=bumper, 1=lights
 	//LPDIRECTDRAWSURFACE7 m_pddsLightProjectTexture;
 	BaseTexture* m_pddsLightWhite;
 

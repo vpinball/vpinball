@@ -280,10 +280,11 @@
 #define IDC_SIZELIST                    257
 #define IDC_SoundList                   258
 #define IDC_PhysicsList                 259
-#define IDB_SUNBURST3                   260
+#define IDB_SUNBURST                    260
 #define IDD_KEYS                        261
 #define IDC_LEFTFLIPPERBUTTON           262
 #define IDD_TRANSLATE                   262
+#define IDB_SUNBURST5                   263
 #define IDC_RIGHTFLIPPERBUTTON          264
 #define IDB_LOGO                        264
 #define IDC_LEFTTILTBUTTON              266

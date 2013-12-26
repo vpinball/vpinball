@@ -73,7 +73,8 @@ Pin3D::~Pin3D()
    }
    ballShadowTexture.FreeStuff();
    ballTexture.FreeStuff();
-   lightTexture.FreeStuff();
+   lightTexture[0].FreeStuff();
+   lightTexture[1].FreeStuff();
 
 	if(backgroundVBuffer)
 		backgroundVBuffer->release();
@@ -970,9 +971,13 @@ retry7:
 	ballTexture.SetAlpha(RGB(0,0,0), width, height);
 	ballTexture.CreateMipMap();
 
-	lightTexture.CreateFromResource(IDB_SUNBURST3, &width, &height);
-	lightTexture.SetAlpha(RGB(0,0,0), width, height);
-	lightTexture.CreateMipMap();
+	lightTexture[0].CreateFromResource(IDB_SUNBURST, &width, &height);
+	lightTexture[0].SetAlpha(RGB(0,0,0), width, height);
+	lightTexture[0].CreateMipMap();
+
+	lightTexture[1].CreateFromResource(IDB_SUNBURST5, &width, &height);
+	lightTexture[1].SetAlpha(RGB(0,0,0), width, height);
+	lightTexture[1].CreateMipMap();
 
 	m_pddsLightWhite = g_pvp->m_pdd.CreateFromResource(IDB_WHITE, &width, &height);
 	g_pvp->m_pdd.SetAlpha(m_pddsLightWhite, RGB(0,0,0), width, height);
