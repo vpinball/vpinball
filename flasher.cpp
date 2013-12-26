@@ -150,10 +150,10 @@ void Flasher::PreRender(Sur * const psur)
    const float radangle = ANGTORAD(m_d.m_rotation);
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
-   float minx=5000000000.0f;
-   float miny=5000000000.0f;
-   float maxx=-5000000000.0f;
-   float maxy=-5000000000.0f;
+   float minx=FLT_MAX;
+   float miny=FLT_MAX;
+   float maxx=-FLT_MAX;
+   float maxy=-FLT_MAX;
 
    const Vertex2D rgv[4] = 
    {

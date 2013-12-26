@@ -1075,7 +1075,15 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   }
                   psb->RefreshProperties();
                }
-               else
+               else if ( dispid == IDC_IMPORT_PHYSICS_BUTTON )
+               {
+				   psb->GetBaseISel()->GetPTable()->ImportPhysics();
+			   }
+               else if ( dispid == IDC_EXPORT_PHYSICS_BUTTON )
+               {
+				   psb->GetBaseISel()->GetPTable()->ExportPhysics();
+			   }
+			   else
                {
                   const int state = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
 

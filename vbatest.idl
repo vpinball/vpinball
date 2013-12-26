@@ -638,9 +638,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] long *pVal);
 		[id(25), helpstring("method BeginModal")] HRESULT BeginModal();
 		[id(26), helpstring("method EndModal")] HRESULT EndModal();
-		//[id(25), helpstring("property SeqSoundPlay")] HRESULT SeqSoundPlay([defaultvalue(1)] long Channel, BSTR Sound, [defaultvalue(1)] long LoopCount, [defaultvalue(1)] float Volume, [defaultvalue(0)] long Delay);
-		//[id(26), helpstring("property SeqSoundStop")] HRESULT SeqSoundStop([defaultvalue(1)] long Channel, BSTR Sound, [defaultvalue(1)] float Volume, [defaultvalue(0)] long Delay);
-		//[id(27), helpstring("property SeqSoundFlush")] HRESULT SeqSoundFlush([defaultvalue(1)] long Channel);
 		[id(DISPID_Table_Nudge), helpstring("method Nudge")] HRESULT Nudge([in] float Angle, [in] float Force);
 
 		[propget, id(30), helpstring("property MechanicalTilt")] HRESULT MechanicalTilt([out, retval] long *pVal);

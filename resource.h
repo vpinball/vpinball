@@ -681,6 +681,8 @@
 #define IDC_MESH_FILENAME_EDIT          1601
 #define IDC_LOAD_MESH_BUTTON            1602
 #define IDC_EXPORT_MESH_BUTTON          1603
+#define IDC_IMPORT_PHYSICS_BUTTON       1604
+#define IDC_EXPORT_PHYSICS_BUTTON       1605
 #define IDC_BALL_REFLECTION             1700
 #define IDC_REFLECTION_EDIT             1701
 #define IDC_SHADOW_X                    1702
