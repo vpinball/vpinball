@@ -5,7 +5,7 @@
 #include "StdAfx.h"
 
 #ifdef _ATL_STATIC_REGISTRY
-#include <statreg.h>
+ #include <statreg.h>
 #endif
 #include "Timer.h"
 #include "Plunger.h"
@@ -17,6 +17,8 @@
 #include "Gate.h"
 #include "Spinner.h"
 #include "Ramp.h"
+#include "Primitive.h"
+#include "Flasher.h"
 #include "BallEx.h"
 #include "DispReel.h"
 #include "LightSeq.h"
@@ -36,6 +38,8 @@ OBJECT_ENTRY(CLSID_Kicker, Kicker)
 OBJECT_ENTRY(CLSID_Gate, Gate)
 OBJECT_ENTRY(CLSID_Spinner, Spinner)
 OBJECT_ENTRY(CLSID_Ramp, Ramp)
+OBJECT_ENTRY(CLSID_Primitive, Primitive)
+OBJECT_ENTRY(CLSID_Flasher, Flasher)
 OBJECT_ENTRY(CLSID_Ball, BallEx)
 OBJECT_ENTRY(CLSID_DispReel, DispReel)
 OBJECT_ENTRY(CLSID_LightSeq, LightSeq)
