@@ -216,6 +216,9 @@ public:
 	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
     STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
 
+	STDMETHOD(ImportPhysics)();
+	STDMETHOD(ExportPhysics)();
+
 	STDMETHOD(get_MaxSeparation)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_MaxSeparation)(/*[in]*/ float newVal);
 	STDMETHOD(get_ZPD)(/*[out, retval]*/ float *pVal);

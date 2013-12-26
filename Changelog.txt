@@ -18,6 +18,8 @@ VP 9.2.1 Changelog
   (2, 3 or 4 can be good values for this, as it slows down the physics temporarily if the FPS drop below 50, 33 or 25 in these cases).
 
 - import/export of global physics options sets
+- import/export of local/table physics options sets (that could then be reused globally of course and the other way round)
+  Note that for local/table export the first found flipper is used to export the flipper physics settings (and for import all flippers will be assigned with the same settings)
 
 - tweak key input code to save one frame (or more?) of lag
 

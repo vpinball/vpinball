@@ -31,9 +31,6 @@ public:
 		STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ long *pVal);
 		STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ long *pVal);
 		STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(SeqSoundPlay)(/*[in]*/ long Channel, /*[in]*/ BSTR Sound, /*[in]*/ long LoopCount, /*[in]*/ float Volume, /*[in]*/ long Delay);
-		STDMETHOD(SeqSoundStop)(/*[in]*/ long Channel, /*[in]*/ BSTR Sound, /*[in]*/ float Volume, /*[in]*/ long Delay);
-		STDMETHOD(SeqSoundFlush)(/*[in]*/ long Channel);
 
 		STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
 		STDMETHOD(FireKnocker)(/*[in]*/ int Count);
@@ -51,7 +48,6 @@ public:
 		
 
 	void Init(PinTable *pt);
-	void SeqSoundInit();
 
 	virtual IDispatch *GetDispatch();
 
