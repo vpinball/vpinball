@@ -12,6 +12,8 @@ VP 9.2.1 Changelog
   useexisting is 0 or 1 (if no existing/playing copy of the sound is found, then a new one is created)
   restart is 0 or 1 (only useful if useexisting is 1)
 
+- tweak key input code to save one frame (or more?) of lag
+
 - change the old 'Physics Max.Looptime' setting to 'Physics Max. Loops'
   it allows to specify the maximum number of iterations spent in the physics update.
   by setting it f.e. to 1, the rendered frame updates will -always- match the physics updates, everything above 1 allows for multiple physics updates per frame
@@ -21,9 +23,9 @@ VP 9.2.1 Changelog
 - import/export of local/table physics options sets (that could then be reused globally of course and the other way round)
   Note that for local/table export the first found flipper is used to export the flipper physics settings (and for import all flippers will be assigned with the same settings)
 
-- tweak key input code to save one frame (or more?) of lag
-
 - add optional ball trails/motion blur (also adjustable per-table)
+
+- separate/new texture maps for the lighting of lights (more details) and bumpers (brighter)
 
 - script editor updated to use latest scintilla (3.3.7)
 
