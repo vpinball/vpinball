@@ -1730,6 +1730,57 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	};
 
 	/////////////////////////////////////////////
+	// Flasher
+	//////////////////////////////////////////
+
+	[
+		object,
+		uuid(87DAB93E-7D6F-4fe4-A5F9-632FD82BDB4A),
+		dual,
+		helpstring("IFlasher Interface"),
+		pointer_default(unique)
+	]
+	interface IFlasher : IDispatch
+	{
+		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+		[propget, id(5), helpstring("property X")] HRESULT X([out, retval] float *pVal);
+		[propput, id(5), helpstring("property X")] HRESULT X([in] float newVal);
+		[propget, id(6), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
+		[propput, id(6), helpstring("property Y")] HRESULT Y([in] float newVal);
+		[propget, id(3), helpstring("property SizeX")] HRESULT SizeX([out, retval] float *pVal);
+		[propput, id(3), helpstring("property SizeX")] HRESULT SizeX([in] float newVal);
+		[propget, id(4), helpstring("property SizeY")] HRESULT SizeY([out, retval] float *pVal);
+		[propput, id(4), helpstring("property SizeY")] HRESULT SizeY([in] float newVal);
+		[propget, id(378), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
+		[propput, id(378), helpstring("property Height")] HRESULT Height([in] float newVal);
+		[propget, id(1), helpstring("property Rotation")] HRESULT Rotation([out, retval] float *pVal);
+		[propput, id(1), helpstring("property Rotation")] HRESULT Rotation([in] float newVal);
+		[propget, id(11), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
+		[propput, id(11), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
+		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
+		[propget, id(13), helpstring("property DisplayTexture")] HRESULT DisplayTexture([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(13), helpstring("property DisplayTexture")] HRESULT DisplayTexture([in] VARIANT_BOOL newVal);
+		[propget, id(377), helpstring("property Alpha")] HRESULT Alpha([out, retval] long *pVal);
+		[propput, id(377), helpstring("property Alpha")] HRESULT Alpha([in] long newVal);
+		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
+		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+
+		[propget, id(112), helpstring("property IsVisible")] HRESULT IsVisible([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(112), helpstring("property IsVisible")] HRESULT IsVisible([in] VARIANT_BOOL newVal);
+
+		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
+		[id(1584), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();
+
+		[propget, id(556), helpstring("property AddBlend")] HRESULT AddBlend([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(556), helpstring("property AddBlend")] HRESULT AddBlend([in] VARIANT_BOOL newVal);
+	};
+
+   
+   
+   /////////////////////////////////////////////
 	// Ball
 	//////////////////////////////////////////
 	[
@@ -1776,6 +1827,17 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	uuid(4392878D-6B34-404e-8CE5-BD368C60133A),
 	]
 	dispinterface IRampEvents
+	{
+	properties:
+	methods:
+		[id(DISPID_GameEvents_Init)]  void Init();
+		//[id(DISPID_TimerEvents_Timer)]  void Timer();
+	}
+
+   [
+	uuid(AC861BD8-A2BB-4d29-9EC5-A8E9C49D80FB),
+	]
+	dispinterface IFlasherEvents
 	{
 	properties:
 	methods:
@@ -2094,6 +2156,16 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	{
 		[default] interface IRamp;
 		[default, source]  dispinterface IRampEvents;
+	};
+
+   [
+		uuid(847B5F6C-65DC-4b3a-A721-B8F931C23133),
+		helpstring("Flasher Class")
+	]
+	coclass Flasher
+	{
+		[default] interface IFlasher;
+		[default, source]  dispinterface IFlasherEvents;
 	};
 
 	[

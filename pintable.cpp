@@ -3281,6 +3281,11 @@ HRESULT PinTable::CreateIEditableFromType(int type, IEditable **piedit)
       CComObject<Primitive>::CreateInstance(&pprimitive);
       *piedit = pprimitive;
       break;}
+   case eItemFlasher: {
+      CComObject<Flasher> *pflasher;
+      CComObject<Flasher>::CreateInstance(&pflasher);
+      *piedit = pflasher;
+      break;}
 
    default:
       _ASSERTE(fFalse);
@@ -5676,6 +5681,18 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
+   case IDC_FLASHER:
+      {
+         CComObject<Flasher> *pflasher;
+         CComObject<Flasher>::CreateInstance(&pflasher);
+         if (pflasher)
+         {
+            pflasher->AddRef();
+            pflasher->Init(this, v.x, v.y, true);
+            pie = (IEditable *)pflasher;
+         }
+         break;
+      }
    case IDC_DISPREEL:
       {
          CComObject<DispReel> *pdispreel;
@@ -5995,6 +6012,10 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
             case IDC_RAMP:
                cursorid = MAKEINTRESOURCE(IDC_CUR_RAMP);
+               break;
+
+            case IDC_FLASHER:
+               cursorid = MAKEINTRESOURCE(IDC_CUR_FLASHER);
                break;
 
             case IDC_DISPREEL:

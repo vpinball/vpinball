@@ -219,6 +219,9 @@
     <ClCompile Include="objloader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="flasher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vbatest.idl">
@@ -480,6 +483,9 @@
     <ClInclude Include="Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="flasher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="arrow.cur">
@@ -675,6 +681,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="BaseTable17.vpt" />
+    <None Include="cur00002.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="flasher.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="resource.h">
