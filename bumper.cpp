@@ -475,7 +475,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
             }
             case 1:
             {
-               ppin3d->lightTexture.Set( ePictureTexture );
+               ppin3d->lightTexture[0].Set( ePictureTexture );
                ppin3d->EnableLightMap(fFalse, -1);
                topLitMaterial.set();
             }
@@ -515,7 +515,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
             }
             case 1:
             {
-               ppin3d->lightTexture.Set( ePictureTexture );
+               ppin3d->lightTexture[0].Set( ePictureTexture );
                ppin3d->EnableLightMap(fFalse, -1);
                sideLitMaterial.set();
                break;
@@ -563,7 +563,7 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
 
             case 1:
             {
-               ppin3d->lightTexture.Set( eLightProject1 );
+               ppin3d->lightTexture[0].Set( eLightProject1 );
                litMaterial.set();
                break;           
             }
