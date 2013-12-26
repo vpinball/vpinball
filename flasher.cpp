@@ -4,7 +4,6 @@
 
 Flasher::Flasher()
 {
-   m_menuid = IDR_SURFACEMENU;
    m_d.m_IsVisible = true;
    m_d.m_wasVisible = false;
    g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
