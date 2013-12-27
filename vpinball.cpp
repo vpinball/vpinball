@@ -5,7 +5,7 @@
 #include "StdAfx.h"
 
 #include "buildnumber.h"
-#include "SVNRevision.h"
+//#include "SVNRevision.h"
 #include "resource.h"
 
 #if _MSC_VER <= 1310 // VC 2003 and before
@@ -193,9 +193,7 @@ void VPinball::GetMyPath()
    while (szEnd > szPath)
    {
       if (*szEnd == '\\')
-      {
          break;
-      }
       szEnd--;
    }
 
@@ -233,7 +231,6 @@ void VPinball::SetOpenMinimized()
 ///</summary>
 void VPinball::Init() 
 {
-   HRESULT hr;
    m_NextTableID = 1;
 
    m_lcidVBA = 1033;											//local ID: english - used when creating VBA APC Host
@@ -250,9 +247,7 @@ void VPinball::Init()
 
    m_scintillaDll = LoadLibrary("SciLexer.DLL");
    if ( m_scintillaDll==NULL )
-   {
       ShowError("Unable to load SciLexer.DLL");
-   }
 
    char szName[256];
    LoadString(g_hinstres, IDS_PROJNAME, szName, 256);
@@ -269,9 +264,7 @@ void VPinball::Init()
    LPTSTR lpCmdLine = GetCommandLine();						//this line necessary for _ATL_MIN_CRT
 
    if( strstr( lpCmdLine, "minimized" ) )
-   {
       SetOpenMinimized();
-   }
 
    m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW,"VPinball",szName,
       ( m_open_minimized ? WS_MINIMIZE : 0 ) | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
@@ -302,13 +295,9 @@ void VPinball::Init()
          winpl.rcNormalPosition.bottom = bottom;
 
          if( m_open_minimized )
-         {
             winpl.showCmd |= SW_MINIMIZE;
-         }
          else if (hrmax == S_OK && fMaximized)
-         {
             winpl.showCmd |= SW_MAXIMIZE;
-         }
 
          SetWindowPlacement(m_hwnd, &winpl);
       }
@@ -344,24 +333,24 @@ void VPinball::Init()
    InitVBA();										// Create APC VBA host
 
    m_pds.InitDirectSound(m_hwnd);					// init Direct Sound (in pinsound.cpp)
-   hr = m_pdd.InitDD();								// init direct draw (in pinimage.cpp)
+   HRESULT hr = m_pdd.InitDD();						// init direct draw (in pinimage.cpp)
 
    // check if Direct draw could be initalized
    if (hr != S_OK)
       SendMessage(m_hwnd, WM_CLOSE, 0, 0);
 
-   m_fBackglassView = fFalse;							// we are viewing Pinfield and not the backglass at first
+   m_fBackglassView = fFalse;						// we are viewing Pinfield and not the backglass at first
 
    SetEnableToolbar();
    SetEnableMenuItems();
 
-   UpdateRecentFileList(NULL);							// update the recent loaded file list
+   UpdateRecentFileList(NULL);						// update the recent loaded file list
 
-   wintimer_init();									    // calibrate the timer routines
+   wintimer_init();								    // calibrate the timer routines
 
 #ifdef SLINTF
    // see slintf.cpp
-   slintf_init();									    // initialize debug console (can be popupped by the following command)
+   slintf_init();								    // initialize debug console (can be popupped by the following command)
    slintf_popup_console();
    slintf("Debug output:\n");
 #endif

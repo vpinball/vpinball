@@ -187,11 +187,13 @@ public:
 	int m_LastKnownGoodCounter;
 	int m_ModalRefCount;
 
+#ifdef _DEBUGPHYSICS
 	U32 c_hitcnts;
 	U32 c_collisioncnt;
 	U32 c_contactcnt;
 	U32 c_staticcnt;
 	U32 c_embedcnts;
+#endif
 	int m_movedPlunger;			// has plunger moved, must have moved at least three times
 	U32 m_LastPlungerHit;		// The last time the plunger was in contact (at least the vicinity) of the ball.
 	int m_Coins;				// The number of coins queued to be inserted.  These were sent from the shell after the load.
@@ -229,8 +231,10 @@ private:
 	int m_curAccel_x[PININ_JOYMXCNT];
 	int m_curAccel_y[PININ_JOYMXCNT];
 
+#ifdef PLAYBACK
 	BOOL m_fPlayback;
-	char m_szPlaybackFile;
+	FILE *m_fplaylog;
+#endif
 
 	BOOL m_fCheckBlt;
 
@@ -255,7 +259,7 @@ private:
 
 	int m_curPlunger;
 
-	HANDLE m_hSongCompletionEvent;
+	//HANDLE m_hSongCompletionEvent;
 
 	int m_pauseRefCount;
 
@@ -277,10 +281,6 @@ private:
 #ifdef LOG
 	FILE *m_flog;
 	int m_timestamp;
-#endif
-
-#ifdef PLAYBACK
-	FILE *m_fplaylog;
 #endif
 
 #ifdef FPS

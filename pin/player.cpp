@@ -2,7 +2,7 @@
 
 #include "..\stereo3D.h"
 #ifdef DONGLE_SUPPORT
-#include "..\DongleAPI.h"
+ #include "..\DongleAPI.h"
 #endif
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
@@ -43,7 +43,10 @@ Player::Player()
 		_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // only flush denorms to zero
 	}
 
+#ifdef _DEBUGPHYSICS
 	c_embedcnts = 0;
+#endif
+
 	m_fPause = false;
 	m_fStep = false;
 	m_fPseudoPause = false;
@@ -199,11 +202,14 @@ Player::Player()
 	m_lastcursory = 0xfffffff;
 	m_NudgeManual = -1;
 
+#ifdef _DEBUGPHYSICS
 	c_hitcnts = 0;
 	c_collisioncnt = 0;
 	c_contactcnt = 0;
 	c_staticcnt = 0;
 	c_embedcnts = 0;
+#endif
+
 	m_movedPlunger = 0;
 	m_LastPlungerHit = 0;
 	m_Coins = 0;
@@ -256,7 +262,7 @@ Player::~Player()
 		fclose(m_fplaylog);
 #endif
 
-	CloseHandle(m_hSongCompletionEvent);
+	//CloseHandle(m_hSongCompletionEvent);
 
 	if (m_pxap)
 	{
@@ -601,7 +607,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
     ShadowSur::m_shadowDirX = ptable->m_shadowDirX;
     ShadowSur::m_shadowDirY = ptable->m_shadowDirY;
 
-    m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+    //m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
 	SendMessage(hwndProgress, PBM_SETPOS, 40, 0);
 	// TEXT
@@ -748,7 +754,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 			{
   				if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
 	  				(m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive && !((Primitive *)m_ptable->m_vedit.ElementAt(i))->m_d.staticRendering) ||
-               (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemFlasher) )
+                    (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemFlasher) )
 					{
 					  m_vhitalpha.AddElement(ph);
 					}
@@ -1674,7 +1680,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 				if (pball->m_pho)						// hit object
 				{
-#ifdef _DEBUG
+#ifdef _DEBUGPHYSICS
 					++c_hitcnts;						// stats for display
 
 					if (pball->m_HitRigid && pball->m_HitDist < -0.0875f) //rigid and embedded
@@ -1720,9 +1726,9 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 				HitObject * const pho = pball->m_pho;// object that ball hit in trials
 				pball->m_pho = NULL;				 // remove trial hit object pointer
 				m_pactiveball = pball;				 // For script that wants the ball doing the collision
-
+#ifdef _DEBUGPHYSICS
 				c_collisioncnt++;
-
+#endif
 				pho->Collide(pball, pball->m_hitnormal);	//!!!!! 3) collision on active ball
 
 				// Collide may have changed the velocity of the ball, 
@@ -1739,14 +1745,18 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 					// is this ball static? .. set static and quench	
 					if (pball->m_HitRigid && pball->m_HitDist < (float)PHYS_TOUCH) //rigid and close distance contacts
 					{
+#ifdef _DEBUGPHYSICS
 						c_contactcnt++;
+#endif
 						const float mag = pball->vx*pball->vx + pball->vy*pball->vy; // values below are taken from simulation
 						if (pball->drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->vz) < 0.2f)
 						{
 							if(--pball->m_fDynamic <= 0)						//... ball static, cancels next gravity increment
 							{													// m_fDynamic is cleared in ball gravity section
 								pball->m_fDynamic = 0;
+#ifdef _DEBUGPHYSICS
 								c_staticcnt++;
+#endif
 								pball->vx =	pball->vy = pball->vz = 0.f;		//quench the remaing velocity and set ...
 							}
 						}
@@ -2049,10 +2059,12 @@ void Player::Render()
 	// Plumb only (broken?) debug code
     plumb_erase();
 
+#ifdef _DEBUGPHYSICS
 	c_collisioncnt = 0; 
 	c_hitcnts = 0;
 	c_contactcnt = 0;
 	c_staticcnt = 0;
+#endif
 
 	///+++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2240,8 +2252,7 @@ void Player::Render()
        m_pin3d.AntiAliasingScene();
 
     // Check if we should turn animate the plunger light.
-    const U32 cur_time_msec = msec();
-    hid_set_output ( HID_OUTPUT_PLUNGER, ((cur_time_msec - m_LastPlungerHit) < 512) && ((cur_time_msec & 512) > 0) );
+    hid_set_output ( HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0) );
 
 	// Check if we are mirrored.
 	if ( m_ptable->m_tblMirrorEnabled )
