@@ -250,7 +250,7 @@ void VPinball::Init()
       ShowError("Unable to load SciLexer.DLL");
 
    char szName[256];
-   LoadString(g_hinstres, IDS_PROJNAME, szName, 256);
+   LoadString(g_hinst, IDS_PROJNAME, szName, 256);
    // loading String "Visual Pinball" from Exe properties
 
    const int screenwidth = GetSystemMetrics(SM_CXSCREEN);		// width of primary monitor
@@ -606,7 +606,7 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 
    for (int i=0;i<count;i++)
    {
-      LoadString(g_hinstres, p_tbbutton[i].dwData, szBuf, MAXRESLEN-1);
+      LoadString(g_hinst, p_tbbutton[i].dwData, szBuf, MAXRESLEN-1);
       szBuf[lstrlen(szBuf) + 1] = 0;  //Double-null terminate.
       /*const int foo =*/ SendMessage(hwnd, TB_ADDSTRING, 0, (LPARAM) szBuf);
    }
@@ -886,18 +886,18 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       break;
    case ID_EDIT_SEARCH:
       {
-         DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SEARCH_SELECT_ELEMENT), m_hwnd, SearchSelectProc, 0);
+         DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SEARCH_SELECT_ELEMENT), m_hwnd, SearchSelectProc, 0);
          break;
       }
    case ID_EDIT_DRAWINGORDER_HIT:
       {
-         //DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
+         //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
          ShowDrawingOrderDialog(false);
          break;
       }
    case ID_EDIT_DRAWINGORDER_SELECT:
       {
-         //DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
+         //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
          ShowDrawingOrderDialog(true);
          break;
       }
@@ -995,7 +995,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                ShowPermissionError();
             else
             {
-               int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_PROTECT_DIALOG),
+               int foo = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_PROTECT_DIALOG),
                   m_hwnd, ProtectTableProc, 0);
                // if the dialog returned ok then perform a normal save as
                if (foo)
@@ -1023,7 +1023,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          ptCur = GetActiveTable();
          if (ptCur)
          {
-            int foo = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_UNLOCK_DIALOG),
+            int foo = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_UNLOCK_DIALOG),
                m_hwnd, UnlockTableProc, 0);
             // if the dialog returned ok then table is unlocked
             if (foo)
@@ -1131,21 +1131,21 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
    case ID_EDIT_AUDIOOPTIONS:
       {
-         /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_AUDIO_OPTIONS),
+         /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_AUDIO_OPTIONS),
             m_hwnd, AudioOptionsProc, 0);
       }
       break;
 
    case ID_EDIT_PHYSICSOPTIONS:
       {
-         /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_PHYSICS_OPTIONS),
+         /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_PHYSICS_OPTIONS),
             m_hwnd, PhysicsOptionsProc, 0);
       }
       break;
 
    case ID_EDIT_EDITOROPTIONS:
       {
-         /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_EDITOR_OPTIONS),
+         /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_EDITOR_OPTIONS),
             m_hwnd, EditorOptionsProc, 0);
          // refresh editor options from the registry
          InitRegValues();
@@ -1158,14 +1158,14 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
    case ID_EDIT_VIDEOOPTIONS:
       {
-         /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_VIDEO_OPTIONS),
+         /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_VIDEO_OPTIONS),
             m_hwnd, VideoOptionsProc, 0);
       }
       break;
 
    case ID_PREFERENCES_SECURITYOPTIONS:
       {
-         /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS),
+         /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS),
             m_hwnd, SecurityOptionsProc, 0);
 
          // refresh editor options from the registry
@@ -1175,7 +1175,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
    case ID_EDIT_KEYS:
       {
-         /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_KEYS),m_hwnd, KeysProc, 0);
+         /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_KEYS),m_hwnd, KeysProc, 0);
       }
       break;
 
@@ -1187,7 +1187,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
             ApcHost->BeginModalDialog();
 #endif
-            /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_TABLEINFO),
+            /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TABLEINFO),
                m_hwnd, TableInfoProc, (long)ptCur);
 #ifdef VBA
             ApcHost->EndModalDialog();
@@ -1208,7 +1208,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
                ApcHost->BeginModalDialog();
 #endif
-               /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SOUNDDIALOG),m_hwnd, SoundManagerProc, (long)ptCur);
+               /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SOUNDDIALOG),m_hwnd, SoundManagerProc, (long)ptCur);
 #ifdef VBA
                ApcHost->EndModalDialog();
 #endif					
@@ -1229,7 +1229,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
                ApcHost->BeginModalDialog();
 #endif
-               /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_IMAGEDIALOG), m_hwnd, ImageManagerProc, (long)ptCur);
+               /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_IMAGEDIALOG), m_hwnd, ImageManagerProc, (long)ptCur);
                m_sb.PopulateDropdowns(); // May need to update list of images
                m_sb.RefreshProperties();
 #ifdef VBA
@@ -1252,7 +1252,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
                ApcHost->BeginModalDialog();
 #endif
-               /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_FONTDIALOG),
+               /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG),
                   m_hwnd, FontManagerProc, (long)ptCur);
 #ifdef VBA
                ApcHost->EndModalDialog();
@@ -1274,7 +1274,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
                ApcHost->BeginModalDialog();
 #endif
-               /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_COLLECTDIALOG),
+               /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COLLECTDIALOG),
                   m_hwnd, CollectManagerProc, (long)ptCur);
 
                m_sb.PopulateDropdowns(); // May need to update list of collections
@@ -1351,7 +1351,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #ifdef VBA
          ApcHost->BeginModalDialog();
 #endif
-         /*const DWORD foo =*/ DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_ABOUT),
+         /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ABOUT),
             m_hwnd, AboutProc, 0);
 #ifdef VBA
          ApcHost->EndModalDialog();
@@ -4362,7 +4362,7 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                   cds.pcol = pcol;
                   cds.ppt = pt;
 
-                  const int ret = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_COLLECTION),
+                  const int ret = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COLLECTION),
                      hwndDlg, CollectionProc, (long)&cds/*pcol*/);
 
                   if (ret)
@@ -7321,7 +7321,7 @@ static bool drawing_order_select; //!! meh
 void VPinball::ShowDrawingOrderDialog(bool select)
 {
    drawing_order_select = select; //!! meh
-   DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
+   DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
 }
 
 void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )

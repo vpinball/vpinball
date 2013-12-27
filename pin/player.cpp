@@ -786,14 +786,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 			}
 		}
 
-#ifdef HITLOG	
-	if (g_fWriteHitDeleteLog)
-		{
-		FILE *file = fopen("c:\\log.txt", "w"); 
-		fclose(file);
-		}
-#endif
-
 	m_hitoctree.m_rectbounds.left = m_ptable->m_left;
 	m_hitoctree.m_rectbounds.right = m_ptable->m_right;
 	m_hitoctree.m_rectbounds.top = m_ptable->m_top;
@@ -2760,7 +2752,7 @@ void Player::Render()
 			}
 			else if( !VPinball::m_open_minimized && m_fCloseType == 0)
 			{
-				option = DialogBox(g_hinstres, MAKEINTRESOURCE(IDD_GAMEPAUSE), m_hwnd, PauseProc);
+				option = DialogBox(g_hinst, MAKEINTRESOURCE(IDD_GAMEPAUSE), m_hwnd, PauseProc);
 			}
 			else //m_fCloseType == all others
 			{

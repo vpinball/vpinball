@@ -1688,7 +1688,7 @@ void PinTable::Play()
 
    BackupLayers();
 
-   HWND hwndProgressDialog = CreateDialog(g_hinstres, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->m_hwnd, ProgressProc);
+   HWND hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->m_hwnd, ProgressProc);
    // TEXT
    ShowWindow(hwndProgressDialog, SW_SHOW);
 
@@ -4275,7 +4275,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
    HMENU subMenu;
    if (menuid != -1)
    {
-      hmenumain = LoadMenu(g_hinstres, MAKEINTRESOURCE(menuid));
+      hmenumain = LoadMenu(g_hinst, MAKEINTRESOURCE(menuid));
 
       hmenu = GetSubMenu(hmenumain, 0);
    }
@@ -4529,7 +4529,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 #ifdef VBA
          g_pvp->ApcHost->BeginModalDialog();
 #endif
-         DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_ROTATE),
+         DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE),
             g_pvp->m_hwnd, RotateProc, (long)(ISelect *)this);
 #ifdef VBA
          g_pvp->ApcHost->EndModalDialog();
@@ -4542,7 +4542,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 #ifdef VBA
          g_pvp->ApcHost->BeginModalDialog();
 #endif
-         DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SCALE),
+         DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE),
             g_pvp->m_hwnd, ScaleProc, (long)(ISelect *)this);
 #ifdef VBA
          g_pvp->ApcHost->EndModalDialog();
@@ -4555,7 +4555,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 #ifdef VBA
          g_pvp->ApcHost->BeginModalDialog();
 #endif
-         DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_TRANSLATE),
+         DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE),
             g_pvp->m_hwnd, TranslateProc, (long)(ISelect *)this);
 #ifdef VBA
          g_pvp->ApcHost->EndModalDialog();

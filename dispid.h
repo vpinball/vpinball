@@ -62,7 +62,6 @@
 //<<<
 
 // Surface
-#define DISPID_SurfaceEvents_Collide 1100
 #define DISPID_SurfaceEvents_Slingshot 1101
 
 // Flipper
