@@ -98,7 +98,7 @@ void IHaveDragPoints::RotateDialog()
 #ifdef VBA
    g_pvp->ApcHost->BeginModalDialog();
 #endif
-   DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_ROTATE),
+   DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE),
       g_pvp->m_hwnd, RotateProc, (long)this->GetIEditable()->GetISelect());//(long)this);
 #ifdef VBA
    g_pvp->ApcHost->EndModalDialog();
@@ -110,7 +110,7 @@ void IHaveDragPoints::ScaleDialog()
 #ifdef VBA
    g_pvp->ApcHost->BeginModalDialog();
 #endif
-   DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_SCALE),
+   DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE),
       g_pvp->m_hwnd, ScaleProc, (long)this->GetIEditable()->GetISelect());
 #ifdef VBA
    g_pvp->ApcHost->EndModalDialog();
@@ -122,7 +122,7 @@ void IHaveDragPoints::TranslateDialog()
 #ifdef VBA
    g_pvp->ApcHost->BeginModalDialog();
 #endif
-   DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_TRANSLATE),
+   DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE),
       g_pvp->m_hwnd, TranslateProc, (long)this->GetIEditable()->GetISelect());
 #ifdef VBA
    g_pvp->ApcHost->EndModalDialog();

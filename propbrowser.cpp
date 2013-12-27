@@ -242,10 +242,10 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
       HWND hwndDialog;
       if (pproppane->dialogid != 0)
-         hwndDialog = CreateDialogParam(g_hinstres, MAKEINTRESOURCE(pproppane->dialogid),
+         hwndDialog = CreateDialogParam(g_hinst, MAKEINTRESOURCE(pproppane->dialogid),
             hwndExpand, PropertyProc, (long)this);
       else
-         hwndDialog = CreateDialogIndirectParam(g_hinstres, pproppane->ptemplate,
+         hwndDialog = CreateDialogIndirectParam(g_hinst, pproppane->ptemplate,
             hwndExpand, PropertyProc, (long)this);
 
       m_vhwndDialog.AddElement(hwndDialog);

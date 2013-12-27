@@ -546,7 +546,7 @@ void PinComControl::SetDefaults(bool fromMouseClick)
 
 HRESULT PinComControl::ChooseComponent()
 	{
-	int response = DialogBoxParam(g_hinstres, MAKEINTRESOURCE(IDD_COMLIST),
+	int response = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COMLIST),
 		m_ptable->m_hwnd, ComListProc, (LPARAM)this);
 
 	if (!response)

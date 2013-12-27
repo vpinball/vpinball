@@ -103,12 +103,7 @@ int WzSzStrnCmp(WCHAR *wz1, char *sz2, int count)
 
 LocalString::LocalString(const int resid)
 	{
-	int cchar = LoadString(g_hinstres, resid, m_szbuffer, 256);
-	if (cchar == 0 && g_hinstres != g_hinst)
-		{
-		// string not in resource dll, check main dll
-		cchar = LoadString(g_hinst, resid, m_szbuffer, 256);
-		}
+	const int cchar = LoadString(g_hinst, resid, m_szbuffer, 256);
 	}
 
 WCHAR *MakeWide(char *sz)

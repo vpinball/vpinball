@@ -13,7 +13,7 @@
 
 #include <atlbase.h>
 #include <atlhost.h>
-//extern CComModule _Module;
+
 #ifdef VBA
 #include <apcCpp.h>
 using namespace MSAPC;

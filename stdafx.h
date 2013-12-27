@@ -13,7 +13,7 @@
 
 #define GRAVITYCONST 0.86543f
 
-// Collisions (also some more defaults are in collide.cpp):
+// Collisions:
 //
 // test near zero conditions in linear, well behaved, conditions
 #define C_PRECISION 0.01f
@@ -28,6 +28,7 @@
 // Setting this value during testing to 0.1 will insure clearance. After testing set the value to 0.005
 // Default 0.01
 #define PHYS_TOUCH 0.05
+#define C_PLUNGERNORMALIZE ((float)(1.0/13.0)) //match button plunger physics
 // Low Normal speed collison is handled as contact process rather than impulse collision
 #define C_LOWNORMVEL 0.0001f
 #define C_CONTACTVEL 0.099f
@@ -94,7 +95,6 @@
 
 //#define LOG
 //#define HITLOG
-//#define GLOBALLOG
 
 //#define _DEBUGPHYSICS
 //#define DEBUG_FPS
@@ -112,11 +112,12 @@
 #define _HAS_ITERATOR_DEBUGGING 0
 
 #define STRICT
+
 #ifndef _WIN32_WINNT
 #if _MSC_VER < 1600
-#define _WIN32_WINNT 0x0400
+ #define _WIN32_WINNT 0x0400
 #else
-#define _WIN32_WINNT 0x0403
+ #define _WIN32_WINNT 0x0403
 #endif
 #endif
 #define _ATL_APARTMENT_THREADED
@@ -126,15 +127,7 @@
 //something, but do not change the name of _Module
 class CExeModule : public CComModule
 {
-public:
-	LONG Unlock();
-	DWORD dwThreadID;
-	HANDLE hEventShutdown;
-	void MonitorShutdown();
-	bool StartMonitor();
-	bool bActivity;
 };
-extern CExeModule _Module;
 
 #include "main.h"
 

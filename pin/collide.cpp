@@ -5,7 +5,7 @@
 
 float c_maxBallSpeedSqr = C_SPEEDLIMIT*C_SPEEDLIMIT; 
 float c_dampingFriction = C_DAMPFRICTION;
-float c_plungerNormalize = (float)(1.0/13.0);  //match button plunger physics
+float c_plungerNormalize = C_PLUNGERNORMALIZE;
 bool c_plungerFilter = false;
 
 float c_hardScatter = 0.0f;

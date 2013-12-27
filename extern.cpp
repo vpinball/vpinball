@@ -1,16 +1,10 @@
 #include "StdAfx.h"
 
 HINSTANCE g_hinst;
-HINSTANCE g_hinstres;
-ITypeLib *g_ptlMain;
 VPinball *g_pvp;
 Player *g_pplayer;
 HACCEL g_haccel;
 BOOL g_fKeepUndoRecords = fTrue;
-
-#ifdef GLOBALLOG
-FILE *logfile;
-#endif
 
 #ifdef HITLOG
 BOOL g_fWriteHitDeleteLog = fTrue;
@@ -20,14 +14,6 @@ void ShowError(char *sz)
 {
 	MessageBox(NULL, sz, "Error", MB_OK | MB_ICONEXCLAMATION);
 }
-
-
-void ShowErrorID(int id)
-{
-	LocalString ls(id);
-	MessageBox(NULL, ls.m_szbuffer, "Error", MB_OK | MB_ICONEXCLAMATION);
-}
- 
 
 void ExitApp()
 {
