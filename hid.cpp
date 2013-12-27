@@ -224,7 +224,7 @@ void hid_knock( const int count )
     if( count )
     {
         sKnock = count;
-        sKnockStamp = msec();
+        sKnockStamp = g_pplayer->m_time_msec;
         sKnockState = 1;
     }
 }

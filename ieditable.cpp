@@ -34,14 +34,10 @@ IEditable::IEditable()
 IEditable::~IEditable()
 	{
 	if (m_wzVBAName)
-		{
 		delete [] m_wzVBAName;
-		}
 
 	if (m_wzVBACode)
-		{
 		delete [] m_wzVBACode;
-		}
 	}
 
 Hitable *IEditable::GetIHitable()
@@ -94,9 +90,7 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 				g_pplayer->m_vht.AddElement(m_phittimer);
 				}
 			else
-				{
 				g_pplayer->m_vht.RemoveElement(m_phittimer);
-				}
 			}
 		}
 
@@ -159,9 +153,7 @@ void IEditable::BeginPlay()
 			m_viEventCollection.AddElement(m_viCollection.ElementAt(i));
 			}
 		if (pcol->m_fStopSingleEvents)
-			{
 			m_fSingleEvents = fFalse;
-			}
 		}
 	}
 
@@ -252,10 +244,8 @@ void IEditable::Undelete()
 		}
 
 	if (!m_wzVBAName)
-		{
 		// Not a project item (Decal)
 		return;
-		}
 
 	delete [] m_wzVBAName;
 	m_wzVBAName = NULL;
@@ -282,10 +272,8 @@ void IEditable::Undelete()
 void IEditable::InitScript()
 	{
 	if (lstrlenW(GetScriptable()->m_wzName) == 0)
-		{
 		// Just in case something screws up - not good having a null script name
 		swprintf_s(GetScriptable()->m_wzName, L"%d", (long)this);
-		}
 
 	GetPTable()->m_pcv->AddItem(GetScriptable(), fFalse);
 	}

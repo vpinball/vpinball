@@ -9,7 +9,7 @@
 #include "media\xaudio\mpeg_codec.h"
 
 class XAudPlayer
-	{
+{
 public:
 	XAudPlayer();
 	~XAudPlayer();
@@ -41,14 +41,11 @@ private:
 
 	//LPDIRECTSOUND       m_pDS            = NULL;
 	LPDIRECTSOUNDBUFFER m_pDSBuffer;
-	LPDIRECTSOUNDNOTIFY m_pDSNotify;
+	//LPDIRECTSOUNDNOTIFY m_pDSNotify;
 
-	DSBPOSITIONNOTIFY   m_aPosNotify;  
-	HANDLE              m_hNotificationEvent;
+	//DSBPOSITIONNOTIFY   m_aPosNotify;  
+	//HANDLE              m_hNotificationEvent;
 
 	DWORD               m_dwBufferSize;
-	DWORD               m_dwNotifySize;
 	DWORD               m_dwNextWriteOffset;
-	DWORD               m_dwProgress;
-	DWORD               m_dwLastPos;
-	};
+};

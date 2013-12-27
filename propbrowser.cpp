@@ -39,9 +39,7 @@ SmartBrowser::SmartBrowser()
 SmartBrowser::~SmartBrowser()
 {
    if (m_pvsel)
-   {
       delete m_pvsel;
-   }
 
    DestroyWindow(m_hwndFrame);
    DeleteObject(m_hfontHeader);
@@ -101,9 +99,7 @@ void SmartBrowser::Init(HWND hwndParent)
 void SmartBrowser::FreePropPanes()
 {
    for (int i=0;i<m_vproppane.Size();i++)
-   {
       delete m_vproppane.ElementAt(i);
-   }
 
    m_vproppane.RemoveAllElements();
 }
@@ -155,9 +151,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
          }
       }
       if (fSame)
-      {
          return;
-      }
    }
 
    m_olddialog = propID;
@@ -169,17 +163,14 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       do
       {
          if (hwndFocus == m_hwndFrame)
-         {
             SetFocus(hwndParent);
-         }
       }
       while ((hwndFocus = GetParent(hwndFocus)) != NULL);
 
       for (int i=0;i<m_vhwndExpand.Size();i++)
-      {
          DestroyWindow(m_vhwndExpand.ElementAt(i));
-      }
-      m_vhwndExpand.RemoveAllElements();
+
+	  m_vhwndExpand.RemoveAllElements();
       m_vhwndDialog.RemoveAllElements(); // Dialog windows will have been destroyed along with their parent expando window
    }
 
@@ -213,18 +204,12 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
       //char szNum[64];
       if (pvsel->Size() > 1)
-      {
          sprintf_s(m_szHeader, "%s(%d)", szTemp, pvsel->Size());
-      }
       else
-      {
          lstrcpy(m_szHeader, szTemp);
-      }
    }
    else
-   {
       m_szHeader[0] = '\0';
-   }
 
    InvalidateRect(m_hwndFrame, NULL, fTrue);
 
@@ -257,15 +242,11 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
       HWND hwndDialog;
       if (pproppane->dialogid != 0)
-      {
          hwndDialog = CreateDialogParam(g_hinstres, MAKEINTRESOURCE(pproppane->dialogid),
             hwndExpand, PropertyProc, (long)this);
-      }
       else
-      {
          hwndDialog = CreateDialogIndirectParam(g_hinstres, pproppane->ptemplate,
             hwndExpand, PropertyProc, (long)this);
-      }
 
       m_vhwndDialog.AddElement(hwndDialog);
 
@@ -280,23 +261,21 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       {
          HWND hwndName = GetDlgItem(hwndDialog, DISPID_FAKE_NAME);
          if (hwndName)
-         {
             EnableWindow(hwndName, FALSE);
-         }
       }
    }
 
    LayoutExpandoWidth();
 
-   for	(int i=0;i<m_vhwndExpand.Size();i++)
+   for(int i=0; i<m_vhwndExpand.Size(); i++)
    {
       SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 0, 0);
       ShowWindow(m_vhwndExpand.ElementAt(i), SW_SHOWNOACTIVATE);
    }
+
    if ( pisel && pisel->GetItemType()==eItemTable )
    {
-      // 
-      int data = GetBaseISel()->GetPTable()->m_alphaRampsAccuracy;
+      const int data = GetBaseISel()->GetPTable()->m_alphaRampsAccuracy;
 
       SendMessage(hwndParent, TBM_SETRANGE, fTrue, MAKELONG(0, 10));
       SendMessage(hwndParent, TBM_SETTICFREQ, 1, 0);
@@ -306,12 +285,12 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       SendMessage(hwndParent, TBM_SETPOS, TRUE, data);
    }
 
-
    // expand bottom last
    //for (int i=0;i<m_vhwndExpand.Size();i++) SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0); 
 
    //expand top last
-   for	(int i= m_vhwndExpand.Size()-1; i >= 0;--i) SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
+   for(int i = m_vhwndExpand.Size()-1; i >= 0; --i)
+	   SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
 }
 
 BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
@@ -324,14 +303,10 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
    int type = eNotControl;
 
    if (!strcmp(szName, "ComboBox"))
-   {
       type = eCombo;
-   }
 
    if (type == eNotControl)
-   {
       return TRUE;
-   }
 
    int dispid = GetDlgCtrlID(hwnd);
 
@@ -358,7 +333,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
             SendMessage(hwnd, CB_RESETCONTENT, 0, 0);
 
-            for (ULONG i=0;i<castr.cElems;i++)
+            for (ULONG i=0; i<castr.cElems; i++)
             {
                WideCharToMultiByte(CP_ACP, 0, castr.pElems[i], -1, szT, 512, NULL, NULL);
                const int index = SendMessage(hwnd, CB_ADDSTRING, 0, (int)szT);
@@ -367,7 +342,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
             CoTaskMemFree((void *)cadw.pElems);
 
-            for (ULONG i=0; i < castr.cElems; i++)
+            for (ULONG i=0; i<castr.cElems; i++)
                CoTaskMemFree((void *)castr.pElems[i]);
 
             CoTaskMemFree((void *)castr.pElems);
@@ -429,9 +404,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
                         SendMessage(hwnd, CB_SETITEMDATA, index, V_I4(pvd->lpvarValue));
 
                         for (unsigned int i2=0; i2 < cnames; i2++)
-                        {
                            SysFreeString(rgstr[i2]);
-                        }
 
                         CoTaskMemFree(rgstr);
                      }
@@ -469,17 +442,13 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 void SmartBrowser::PopulateDropdowns()
 {
    for (int i=0;i<m_vhwndDialog.Size();i++)
-   {
       EnumChildWindows(m_vhwndDialog.ElementAt(i), EnumChildInitList, (long)this);
-   }
 }
 
 void SmartBrowser::RefreshProperties()
 {
    for (int i=0;i<m_vhwndDialog.Size();i++)
-   {
       EnumChildWindows(m_vhwndDialog.ElementAt(i), EnumChildProc, (long)this);
-   }
 }
 
 void SmartBrowser::SetVisible(BOOL fVisible)
@@ -527,36 +496,23 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       char szParentName[256];
       GetClassName(hwndParent, szParentName, 256);
       if (!strcmp(szParentName, "ComboBox"))
-      {
          type = eNotControl; // Ignore edit boxes which are part of a combo-box
-      }
    }
    else if (!strcmp(szName, "Button"))
-   {
       type = eButton;
-   }
    else if (!strcmp(szName, "ComboBox"))
-   {
       type = eCombo;
-   }
    else if (!strcmp(szName, "ColorControl"))
-   {
       type = eColor;
-   }
    else if (!strcmp(szName, "FontControl"))
-   {
       type = eFont;
-   }
    else if (!strcmp(szName, "msctls_trackbar32") || !strcmp(szName,"IDC_ALPHA_SLIDER"))
-   {
       type = eSlider;
-   }
-   if (type == eNotControl)
-   {
-      return;
-   }
 
-   DISPPARAMS dispparams  = {
+   if (type == eNotControl)
+      return;
+
+   DISPPARAMS dispparams = {
       NULL,
       NULL,
       0,
@@ -572,9 +528,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    // name id is greater than 0xffff, which doesn't work as a
    // dialog control id on Win9x.
    if (dispid == DISPID_FAKE_NAME)
-   {
       dispid = 0x80010000;
-   }
 
    CComVariant var;
    HRESULT hr = pdisp->Invoke(
@@ -632,9 +586,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
             SetWindowText(hwndControl, szT);
          }
          else
-         {
             SetWindowText(hwndControl, "");
-         }
       }
       break;
 
@@ -649,37 +601,21 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
             SendMessage(hwndControl, BM_SETCHECK, fCheck ? BST_CHECKED : BST_UNCHECKED, 0);
          }
          else
-         {
             SendMessage(hwndControl, BM_SETCHECK, BST_UNCHECKED, 0);
-         }
       }
       break;
 
    case eColor:
       {
          VariantChangeType(&var, &var, 0, VT_I4);
-         if (!fNinch)
-         {
-            SendMessage(hwndControl, CHANGE_COLOR, 0, V_I4(&var));
-         }
-         else
-         {
-            SendMessage(hwndControl, CHANGE_COLOR, 1, V_I4(&var));
-         }
+         SendMessage(hwndControl, CHANGE_COLOR, (!fNinch) ? 0 : 1, V_I4(&var));
       }
       break;
 
    case eFont:
       {
          VariantChangeType(&var, &var, 0, VT_I4);
-         if (!fNinch)
-         {
-            SendMessage(hwndControl, CHANGE_FONT, 0, (long)V_DISPATCH(&var));
-         }
-         else
-         {
-            SendMessage(hwndControl, CHANGE_FONT, 1, (long)V_DISPATCH(&var));
-         }
+         SendMessage(hwndControl, CHANGE_FONT, (!fNinch) ? 0 : 1, (long)V_DISPATCH(&var));
       }
       break;
 
@@ -725,14 +661,10 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
                   }
                }
                else
-               {
                   SendMessage(hwndControl, CB_SETCURSEL, index, 0);
-               }
             }
             else
-            {
                SendMessage(hwndControl, WM_SETTEXT, 0, (LPARAM)szT);
-            }
          } // !fNinch
       }
       break;
@@ -771,18 +703,10 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
             SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1); //number of positions to move per keypress
             SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 1); //number of positions to move per click
             SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 0, 0); //ignored
-            if (!fNinch)
-            {
-               SendMessage(hwndControl, TBM_SETPOS, 1, data);
-            }
-            else
-            {
-               SendMessage(hwndControl, TBM_SETPOS, 0, data);
-            }
+            SendMessage(hwndControl, TBM_SETPOS, (!fNinch) ? 1 : 0, data);
          }
       }
       break;
-
    }
 }
 
@@ -809,7 +733,7 @@ void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, BOOL fPutRef)
 void SmartBrowser::LayoutExpandoWidth()
 {
    int maxwidth = 20; // Just in case we have a weird situation where there are no dialogs
-   for (int i=0;i<m_vhwndDialog.Size();i++)
+   for (int i=0; i<m_vhwndDialog.Size(); i++)
    {
       HWND hwnd = m_vhwndDialog.ElementAt(i);
       RECT rc;
@@ -817,7 +741,7 @@ void SmartBrowser::LayoutExpandoWidth()
       maxwidth = max(maxwidth, (rc.right - rc.left));
    }
 
-   for (int i=0;i<m_vhwndExpand.Size();i++)
+   for (int i=0; i<m_vhwndExpand.Size(); i++)
    {
       HWND hwndExpand = m_vhwndExpand.ElementAt(i);
       SetWindowPos(hwndExpand, NULL, 0, 0, maxwidth, 20, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
@@ -836,9 +760,7 @@ void SmartBrowser::RelayoutExpandos()
       HWND hwndExpand = m_vhwndExpand.ElementAt(i);
       ExpandoInfo *pexinfo = (ExpandoInfo *)GetWindowLong(hwndExpand, GWL_USERDATA);
       if (pexinfo->m_fExpanded)
-      {
          totalheight += pexinfo->m_dialogheight;
-      }
       totalheight += EXPANDOHEIGHT;
    }
 
@@ -858,8 +780,8 @@ void SmartBrowser::RelayoutExpandos()
       // longest time ago)
       // If nothing has ever been expanded by the user, higher panels will
       // get priority over lower panels
-      for (int i=0;i<m_vhwndExpand.Size();i++)
-      {			
+      for (int i=0; i<m_vhwndExpand.Size(); i++)
+      {
          const int titleid = m_vproppane.ElementAt(i)->titlestringid;
          if (titleid != NULL)
          {
@@ -868,7 +790,7 @@ void SmartBrowser::RelayoutExpandos()
             GetWindowRect(hwndExpand, &rc);
             if ((rc.bottom - rc.top) > EXPANDOHEIGHT)
             {
-               int prio = m_vproppriority.IndexOf(titleid);
+               const int prio = m_vproppriority.IndexOf(titleid);
                cnt++;
                if (prio != -1 && prio <= prioBest) //
                {
@@ -891,7 +813,7 @@ void SmartBrowser::RelayoutExpandos()
    }
 
    totalheight = 0;
-   for (int i=0;i<m_vhwndExpand.Size();i++)
+   for (int i=0; i<m_vhwndExpand.Size(); i++)
    {
       HWND hwndExpand = m_vhwndExpand.ElementAt(i);
       SetWindowPos(hwndExpand, NULL, EXPANDO_X_OFFSET, totalheight + EXPANDO_Y_OFFSET, 0, 0, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);
@@ -989,9 +911,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          int dispid = LOWORD(wParam);
 
          if (dispid == DISPID_FAKE_NAME)
-         {
             dispid = 0x80010000;
-         }
 
          SmartBrowser * const psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
          //IDispatch *pdisp = psb->m_pdisp;
@@ -1016,9 +936,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   hwndEdit = ChildWindowFromPoint((HWND)lParam, pt);
                   fChanged = GetWindowLong(hwndEdit, GWL_USERDATA);
                   if (fChanged)
-                  {
                      SetWindowLong(hwndEdit, GWL_USERDATA, 0);
-                  }
                }
 
                if (fChanged)//SendMessage(hwndEdit, EM_GETMODIFY, 0, 0))
@@ -1062,17 +980,13 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                else if( dispid == IDC_LOAD_MESH_BUTTON )
                {
                   for( int i=0;i<psb->m_pvsel->Size();i++ )
-                  {
                      psb->m_pvsel->ElementAt(i)->LoadMesh();
-                  }
                   psb->RefreshProperties();
                }
                else if ( dispid == IDC_EXPORT_MESH_BUTTON )
                {
                   for( int i=0;i<psb->m_pvsel->Size();i++ )
-                  {
                      psb->m_pvsel->ElementAt(i)->ExportMesh();                    
-                  }
                   psb->RefreshProperties();
                }
                else if ( dispid == IDC_IMPORT_PHYSICS_BUTTON )
@@ -1197,7 +1111,8 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          int colorkey;
          const HRESULT hr = GetRegInt("Editor", "TransparentColorKey", &colorkey);
-         if (hr != S_OK) colorkey = (int)NOTRANSCOLOR; //not set assign no transparent color 	
+         if (hr != S_OK)
+			 colorkey = (int)NOTRANSCOLOR; //not set assign no transparent color 	
 
          /*const HWND hwndButton =*/ CreateWindow("BUTTON","Color",WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
          SetWindowLong(hwnd, GWL_USERDATA, colorkey); // get cached colorkey
@@ -1208,9 +1123,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          int color = lParam;
          if (wParam == 1)
-         {
             color |= 0x80000000;
-         }
          SetWindowLong(hwnd, GWL_USERDATA, color);
          InvalidateRect(hwnd, NULL, fFalse);
       }
@@ -1344,9 +1257,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          SendMessage(hwndButton, WM_SETFONT, NULL, 0); // Just in case the button needs to use a font before it is destroyed
 
          if (hfontButton)
-         {
             DeleteObject(hfontButton);
-         }
       }
       break;
 
@@ -1373,9 +1284,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetWindowText(hwndButton, szT);
          }
          else
-         {
             SetWindowText(hwndButton, "");
-         }
       }
       break;
 
@@ -1480,16 +1389,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             //const int xPos = LOWORD(lParam); 
             const int yPos = HIWORD(lParam);
             if (yPos < 16)//wParam == HTCAPTION)
-            {
-               if (pexinfo->m_fExpanded)
-               {
-                  SendMessage(hwnd, EXPANDO_COLLAPSE, 1, 0);
-               }
-               else
-               {
-                  SendMessage(hwnd, EXPANDO_EXPAND, 1, 0);
-               }
-            }
+               SendMessage(hwnd, pexinfo->m_fExpanded ? EXPANDO_COLLAPSE : EXPANDO_EXPAND, 1, 0);
          }
       }
       break;
@@ -1500,25 +1400,20 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          pexinfo->m_fExpanded = fTrue;			
 
          int titleheight;
-
          if (pexinfo->m_fHasCaption) // Null title means not an expando
          {
             titleheight = EXPANDOHEIGHT;
             pexinfo->m_psb->ResetPriority(pexinfo->m_id);
          }
          else
-         {
             titleheight = 0;
-         }
 
          SetWindowPos(hwnd, NULL, 0, 0, pexinfo->m_psb->m_maxdialogwidth, titleheight + pexinfo->m_dialogheight, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
 
          InvalidateRect(hwnd, NULL, fFalse);
 
          if (wParam == 1)
-         {
             pexinfo->m_psb->RelayoutExpandos();
-         }
       }
       break;
 
@@ -1532,9 +1427,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          InvalidateRect(hwnd, NULL, fFalse);
 
          if (wParam == 1)
-         {
             pexinfo->m_psb->RelayoutExpandos();
-         }
       }
       break;
 

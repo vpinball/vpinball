@@ -12,9 +12,9 @@ inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 XAudPlayer::XAudPlayer()
 	{
 	m_pDSBuffer = NULL;
-	m_pDSNotify = NULL;
+	//m_pDSNotify = NULL;
 	m_decoder = NULL;
-	m_hNotificationEvent = NULL;
+	//m_hNotificationEvent = NULL;
 	m_fEndData = false;
 	m_lastplaypos = 0;
 	}
@@ -22,12 +22,12 @@ XAudPlayer::XAudPlayer()
 XAudPlayer::~XAudPlayer()
 	{
 	SAFE_RELEASE(m_pDSBuffer);
-	SAFE_RELEASE(m_pDSNotify);
+	//SAFE_RELEASE(m_pDSNotify);
 
-	if (m_hNotificationEvent)
+	/*if (m_hNotificationEvent)
 		{
 		CloseHandle(m_hNotificationEvent);
-		}
+		}*/
 
 	if (m_decoder)
 		{
@@ -134,7 +134,7 @@ int XAudPlayer::Tick()
 		DWORD dwBufferLength2;
 
 		HRESULT hr;
-		if( FAILED( hr = m_pDSBuffer->Lock(m_dwNextWriteOffset, cbData/*m_dwNotifySize*/, 
+		if( FAILED( hr = m_pDSBuffer->Lock(m_dwNextWriteOffset, cbData, 
 											&pbBuffer, &dwBufferLength, &pbBuffer2, &dwBufferLength2, 0L) ) )
 			return 0;
 
@@ -259,13 +259,11 @@ HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
     const INT nSamplesPerSec = pwfx->nSamplesPerSec;
 
     // The g_dwNotifySize should be an integer multiple of nBlockAlign
-    m_dwNotifySize = nSamplesPerSec * 3 * nBlockAlign;// / NUM_PLAY_NOTIFICATIONS;
-    m_dwNotifySize -= m_dwNotifySize % nBlockAlign;
+    DWORD dwNotifySize = nSamplesPerSec * 3 * nBlockAlign;// / NUM_PLAY_NOTIFICATIONS;
+    dwNotifySize -= dwNotifySize % nBlockAlign;
 
     // The buffersize should approximately 3 seconds of wav data
-    m_dwBufferSize  = m_dwNotifySize;// * NUM_PLAY_NOTIFICATIONS;
-    m_dwProgress    = 0;
-    m_dwLastPos     = 0;
+    m_dwBufferSize  = dwNotifySize;// * NUM_PLAY_NOTIFICATIONS;
 
     // Set up the direct sound buffer, and only request the flags needed
     // since each requires some overhead and limits if the buffer can 
@@ -283,12 +281,10 @@ HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
         return hr;
 
 	m_dwNextWriteOffset = 0; 
-    m_dwProgress = 0;
-    m_dwLastPos  = 0;
 
 	m_pDSBuffer->SetCurrentPosition(0);
 
-	m_hNotificationEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+	//m_hNotificationEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 
     return S_OK;
 }

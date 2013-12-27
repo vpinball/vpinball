@@ -88,7 +88,7 @@ int mixer_init( HWND wnd )
 
 void mixer_display_volume()
 {
-	volume_stamp = msec();
+	volume_stamp = g_pplayer->m_time_msec;
 }
 
 void mixer_shutdown()
@@ -212,7 +212,7 @@ void mixer_draw()
 
 	m_bUpdate = true;
 
-	F32 fade = 1.0f - ( ( (F32) ( msec() - volume_stamp ) ) * 0.001f );
+	F32 fade = 1.0f - ( ( (F32) ( g_pplayer->m_time_msec - volume_stamp ) ) * 0.001f );
     if( fade > 1.0f ) fade = 1.0f;
     if( fade <= 0.0f )
 	{
