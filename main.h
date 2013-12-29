@@ -3,7 +3,6 @@
 #include <Windows.h>
 
 #include "Richedit.h"
-#include "RichOle.h"
 
 #include <atlcom.h>
 
@@ -26,7 +25,6 @@ using namespace MSAPC;
 #include <activdbg.h>
 
 #include <atlctl.h>
-#include <atlhost.h>
 
 #define DIRECTINPUT_VERSION 0x0700
 #define D3D_OVERLOADS 1
@@ -34,8 +32,6 @@ using namespace MSAPC;
 #include "ddraw.h"
 #include "d3d.h"
 #include "dsound.h"
-
-#include <ocidl.h>	// Added by ClassView
 
 #include "stdio.h"
 #include "wchar.h"
@@ -54,11 +50,9 @@ using namespace std;
 class HitTimer;
 class PinBinary;
 
-#define INCLUDE_DEPRECATED_FEATURES 1 // Scintilla
 #include "Scintilla.h"
 #include "scilexer.h"
 
-#include "pintypes.h"
 #include "memutil.h"
 #include "disputil.h"
 

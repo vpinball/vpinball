@@ -1,8 +1,4 @@
-// Kicker.cpp : Implementation of CVBATestApp and DLL registration.
-
 #include "StdAfx.h"
-
-////////////////////////////////////////////////////////////////////
 
 Kicker::Kicker()
 	{

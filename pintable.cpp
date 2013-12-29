@@ -1,7 +1,3 @@
-// PinTable.cpp: implementation of the PinTable class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "StdAfx.h"
 #include "buildnumber.h"
 #include "resource.h"
@@ -1674,7 +1670,7 @@ void PinTable::Play()
    if (g_pplayer)
       return; // Can't play twice
 
-   mixer_volmod( m_tblVolmod );
+   mixer_get_volume();
 
    EndAutoSaveCounter();
 

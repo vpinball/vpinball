@@ -7,27 +7,21 @@
 
 DEFINE_GUID(GUID_OLE_COLOR, 0x66504301, 0xBE0F, 0x101A, 0x8B, 0xBB, 0x00, 0xAA, 0x00, 0x30, 0x0C, 0xAB);
 
-int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	switch (uMsg)
 		{
 		case WM_INITDIALOG:
 			{
-			ICatInformation *pci;
-			HRESULT hr;
-			HWND hwndList;
-			HWND hwndOk;
-
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 
-			hwndOk = GetDlgItem(hwndDlg, IDOK);
+			const HWND hwndOk = GetDlgItem(hwndDlg, IDOK);
 			EnableWindow(hwndOk, FALSE);
 
-			hwndList = GetDlgItem(hwndDlg, IDC_LIST);
+			const HWND hwndList = GetDlgItem(hwndDlg, IDC_LIST);
 			
-			hr = CoCreateInstance(CLSID_StdComponentCategoriesMgr, NULL, CLSCTX_SERVER, IID_ICatInformation, (void **)&pci);
+			ICatInformation *pci;
+			HRESULT hr = CoCreateInstance(CLSID_StdComponentCategoriesMgr, NULL, CLSCTX_SERVER, IID_ICatInformation, (void **)&pci);
 			
 			if (pci)
 				{
@@ -103,10 +97,9 @@ int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						{
 						case IDOK:
 							{
-							HWND hwndList;
-							hwndList = GetDlgItem(hwndDlg, IDC_LIST);
+							const HWND hwndList = GetDlgItem(hwndDlg, IDC_LIST);
 
-							int selection = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
+							const int selection = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
 
 							if (selection == -1)
 								{
@@ -135,13 +128,9 @@ int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					}
 				case LBN_SELCHANGE:
 					{
-					HWND hwndOk;
-					HWND hwndList;
-
-					hwndOk = GetDlgItem(hwndDlg, IDOK);
-					hwndList = GetDlgItem(hwndDlg, IDC_LIST);
-
-					int selection = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
+					const HWND hwndOk = GetDlgItem(hwndDlg, IDOK);
+					const HWND hwndList = GetDlgItem(hwndDlg, IDC_LIST);
+					const int selection = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
 
 					EnableWindow(hwndOk, (selection != -1));
 					}
@@ -345,9 +334,7 @@ DispExtender::~DispExtender()
 	{
 	m_pdispEdit->Release();
 	if (m_pti2)
-		{
 		m_pti2->Release();
-		}
 	}
 
 ULONG DispExtender::AddRef()
@@ -393,18 +380,14 @@ HRESULT DispExtender::QueryInterface(REFIID iid, void **ppvObject)
 		return S_OK;
 		}
 	else
-		{
 		return m_pdisp->QueryInterface(iid, ppvObject);
-		}
 	}
 
 HRESULT DispExtender::GetIDsOfNames(REFIID riid, OLECHAR FAR *FAR *rgszNames, unsigned int cNames, LCID lcid, DISPID FAR *rgDispId)
 	{
 	HRESULT hr = m_pdisp->GetIDsOfNames(riid, rgszNames, cNames, lcid, rgDispId);
 	if (hr == DISP_E_UNKNOWNNAME)
-		{
 		hr = m_pdispControl->GetIDsOfNames(riid, rgszNames, cNames, lcid, rgDispId);
-		}
 
 	return hr;
 	}
@@ -425,9 +408,7 @@ HRESULT DispExtender::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD w
 	HRESULT hr = m_pdisp->Invoke(dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
 	
 	if (hr == DISP_E_MEMBERNOTFOUND)
-		{
 		hr = m_pdispControl->Invoke(dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
-		}
 
 	return hr;
 	}
@@ -445,14 +426,8 @@ HRESULT DispExtender::GetGUID(DWORD dwGuidKind, GUID* pGUID)
 
 HRESULT DispExtender::GetMultiTypeInfoCount(ULONG *pcti)
 	{
-	if (m_pti2 == NULL)
-		{
-		*pcti = 1;
-		}
-	else
-		{
-		*pcti = 2;
-		}
+	*pcti = (m_pti2 == NULL) ? 1 : 2;
+
 	return S_OK;
 	}
 
@@ -489,30 +464,20 @@ PinComControl::PinComControl()
 PinComControl::~PinComControl()
 	{
 	if (m_punk)
-		{
 		m_punk->Release();
-		}
 
 	if (m_ptemplate)
-		{
 		delete m_ptemplate;
-		}
 
 	if (m_pdispextender)
-		{
 		delete m_pdispextender;
-		}
 
 	if (m_pmcw)
-		{
 		m_pmcw->FinalRelease();
-		}
 	}
 
 HRESULT PinComControl::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
-	HRESULT hr;
-
 	m_ptable = ptable;
 
 	m_d.m_v1.x = x;
@@ -522,12 +487,10 @@ HRESULT PinComControl::Init(PinTable *ptable, float x, float y, bool fromMouseCl
 
 	SetDefaults(fromMouseClick);
 
-	hr = ChooseComponent();
+	const HRESULT hr = ChooseComponent();
 
 	if (hr == E_FAIL)
-		{
 		return hr;
-		}
 
 	CreateControl(NULL);
 
@@ -546,21 +509,14 @@ void PinComControl::SetDefaults(bool fromMouseClick)
 
 HRESULT PinComControl::ChooseComponent()
 	{
-	int response = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COMLIST),
+	const int response = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COMLIST),
 		m_ptable->m_hwnd, ComListProc, (LPARAM)this);
 
-	if (!response)
-		{
-		return E_FAIL;
-		}
-
-	return S_OK;
+	return (!response) ? E_FAIL : S_OK;
 	}
 
 void PinComControl::CreateControl(IStream *pstm)
 	{
-	HRESULT hr;
-
 	AtlAxWinInit();
 	//RECT rcWnd = {0, 0, 200, 200};
 
@@ -571,7 +527,7 @@ void PinComControl::CreateControl(IStream *pstm)
 	m_pmcw->m_ppcc = this;
 
 	IUnknown *punk;
-	hr = CoCreateInstance(m_d.m_clsid, NULL, CLSCTX_SERVER, IID_IUnknown, (void **)&punk);
+	HRESULT hr = CoCreateInstance(m_d.m_clsid, NULL, CLSCTX_SERVER, IID_IUnknown, (void **)&punk);
 
 	if (SUCCEEDED(hr))
 	{
@@ -603,20 +559,15 @@ void PinComControl::CreateControl(IStream *pstm)
 		m_pdispextender->m_pti2 = pti;
 		}
 	else
-		{
 		m_pdispextender->m_pti2 = NULL;
-		}
 
 	punk->Release(); // Don't need to keep the IUnknown pointer around anymore
-	
 	}
 
 
-LPWORD lpwAlign ( LPWORD lpIn)
+LPWORD lpwAlign ( LPWORD lpIn )
 {
-    ULONG ul;
-
-    ul = (ULONG) lpIn;
+    ULONG ul = (ULONG) lpIn;
     ul +=3;
     ul >>=2;
     ul <<=2;
@@ -660,9 +611,7 @@ void PinComControl::CreateControlDialogTemplate()
 		piti->GetFuncDesc(i, &pfd);
 
 		if (pfd->invkind == INVOKE_PROPERTYPUT && !((pfd->wFuncFlags & FUNCFLAG_FHIDDEN) || (pfd->wFuncFlags & FUNCFLAG_FRESTRICTED)))
-			{
 			cdispfuncs++;
-			}
 
 		piti->ReleaseFuncDesc(pfd);
 		}
@@ -842,9 +791,7 @@ void PinComControl::CreateControlDialogTemplate()
 			cfunccur++;
 
 			for (unsigned int i2=0; i2 < cnames; i2++)
-				{
 				SysFreeString(rgstr[i2]);
-				}
 
 			CoTaskMemFree(rgstr);
 			}
@@ -862,7 +809,6 @@ void PinComControl::CreateControlDialogTemplate()
 	*pdialogheight = 10+16*cdispfuncs;
 
 	m_ptemplate = (DLGTEMPLATE *)pdlgtemplate;
-
 	}
 
 
@@ -960,9 +906,7 @@ void PinComControl::GetTimers(Vector<HitTimer> * const pvht)
 	m_phittimer = pht;
 
 	if (m_d.m_tdr.m_fTimerEnabled)
-		{
 		pvht->AddElement(pht);
-		}
 
 	CComPtr<IUnknown> spUnkContainer;
 	
@@ -1004,9 +948,7 @@ void PinComControl::EndPlay()
    m_pdispextender->m_pdispPlayer->Release();
 
    if (m_pmcwPlayer)
-   {
       m_pmcwPlayer->FinalRelease();
-   }
 
    IEditable::EndPlay();
 }
@@ -1017,7 +959,6 @@ void PinComControl::PostRenderStatic(const RenderDevice* pd3dDevice)
 
 void PinComControl::RenderSetup(const RenderDevice* _pd3dDevice)
 {
-
 }
 
 void PinComControl::RenderStatic(const RenderDevice* pd3dDevice)
@@ -1173,9 +1114,7 @@ void PinComControl::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 	pvproppane->AddElement(pproppane);
 
 	if (m_ptemplate == NULL)
-		{
 		CreateControlDialogTemplate();
-		}
 
 	pproppane = new PropertyPane(m_ptemplate, IDS_MISC);
 	pvproppane->AddElement(pproppane);
@@ -1228,7 +1167,7 @@ STDMETHODIMP PinComControl::put_X(float newVal)
 {
 	STARTUNDO
 
-	float delta = newVal - m_d.m_v1.x;
+	const float delta = newVal - m_d.m_v1.x;
 
 	m_d.m_v1.x += delta;
 	m_d.m_v2.x += delta;
@@ -1249,7 +1188,7 @@ STDMETHODIMP PinComControl::put_Y(float newVal)
 {
 	STARTUNDO
 
-	float delta = newVal - m_d.m_v1.y;
+	const float delta = newVal - m_d.m_v1.y;
 
 	m_d.m_v1.y += delta;
 	m_d.m_v2.y += delta;

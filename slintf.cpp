@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 
+#ifdef SLINTF
 #include <windows.h>
 #include <conio.h>
 #include <stdio.h>
@@ -126,6 +127,7 @@ int file_exists( const char *filename )
 		return 1;
 	}
 }
+#endif
 
 void slintf( const char *str, ... )
 {

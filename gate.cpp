@@ -1,10 +1,4 @@
-// Gate.cpp : Implementation of CVBATestApp and DLL registration.
-
 #include "StdAfx.h"
-#include "Material.h"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 
 Gate::Gate()
 {
