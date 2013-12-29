@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 
-// BUG - this table must be kept in sync with the ISelectable ItemTypeEnum table
+// this table must be kept in sync with the ISelectable ItemTypeEnum table
 int rgTypeStringIndex[] = {
 	IDS_TB_WALL, //eItemSurface,
 	IDS_TB_FLIPPER, //eItemFlipper,
@@ -19,10 +19,10 @@ int rgTypeStringIndex[] = {
 	IDS_TB_LIGHT, //eItemLightCenter,
 	IDS_CONTROLPOINT, //eItemDragPoint,
 	IDS_COLLECTION, //eItemCollection,
-   IDS_TB_DISPREEL, //eItemDispReel,
+    IDS_TB_DISPREEL, //eItemDispReel,
 	IDS_TB_LIGHTSEQ, //eItemLightSeq,
 	IDS_TB_PRIMITIVE, //eItemPrimitive	
-   IDS_TB_FLASHER, //eItemFlasher
+    IDS_TB_FLASHER, //eItemFlasher
 	IDS_TB_LIGHTSEQ, //light seq center
 	IDS_TB_COMCONTROL, //eItemComControl
     };

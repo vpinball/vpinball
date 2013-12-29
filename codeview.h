@@ -12,8 +12,6 @@ enum SecurityLevelEnum
 	eSecurityNoControls = 4
 	};
 
-void AddEventToList(char *sz, int dispid, LPARAM lparam);
-
 class IScriptable
 	{
 public:
@@ -69,7 +67,6 @@ public:
 	IDispatch *m_pdisp;
 	IScriptable *m_piscript;
 	BOOL m_fGlobal;
-	//virtual int SortStrCmp(ISortStrings *pss);
 	virtual int SortAgainst(CodeViewDispatch *pcvd/*void *pvoid*/);
 	virtual int SortAgainstValue(void *pv);
 	};
@@ -323,7 +320,7 @@ inline bool FIsWhitespace(const char ch)
 
 inline void AddEventToList(char * const sz, const int index, const int dispid, const LPARAM lparam)
 {
-	HWND hwnd = (HWND)lparam;
+	const HWND hwnd = (HWND)lparam;
 	const int listindex = SendMessage(hwnd, CB_ADDSTRING, 0, (int)sz);
 	SendMessage(hwnd, CB_SETITEMDATA, listindex, index);
 }

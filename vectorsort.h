@@ -1,9 +1,9 @@
 #pragma once
+
 template<class T>
 class ISort
 	{
 public:
-	//virtual int SortStrCmp(ISortStrings *pss) = 0;
 	virtual int SortAgainst(T *pT/*void *pvoid*/) = 0;
 	virtual int SortAgainstValue(void *pv) = 0;
 	};

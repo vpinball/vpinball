@@ -906,7 +906,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;xaudio.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -3736,7 +3736,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="pininput.h" />
     <ClInclude Include="pinsound.h" />
     <ClInclude Include="pintable.h" />
-    <ClInclude Include="pintypes.h" />
     <ClInclude Include="pinundo.h" />
     <ClInclude Include="Pin\player.h" />
     <ClInclude Include="plumb.h" />

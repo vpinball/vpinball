@@ -1,11 +1,4 @@
-// LightSeq.cpp : Implementation of CVBATestApp and DLL registration.
-
 #include "StdAfx.h"
-#include "VBATest.h"
-#include <atlbase.h>
-
-/////////////////////////////////////////////////////////////////////////////
-//
 
 LightSeq::LightSeq() : m_LightSeqCenter(this)
 {

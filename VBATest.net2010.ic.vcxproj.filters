@@ -396,9 +396,6 @@
     <ClInclude Include="pintable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pintypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pinundo.h">
       <Filter>Header Files</Filter>
     </ClInclude>

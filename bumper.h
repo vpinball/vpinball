@@ -114,9 +114,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 
 	BumperHitCircle *m_pbumperhitcircle;
 
-	//int m_iblinkframe;
-	//int m_timenextblink;
-
 //>>> Added By Chris
 	BOOL		m_fDisabled;
 	LightState 	m_realState;

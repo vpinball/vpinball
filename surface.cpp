@@ -1,8 +1,5 @@
-// Surface.cpp : Implementation of Surface
 #include "StdAfx.h"
 
-//////////////////////////////////////////////////////////////////
-// Surface
 Surface::Surface()
 {
    m_menuid = IDR_SURFACEMENU;
