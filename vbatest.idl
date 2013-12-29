@@ -1767,9 +1767,9 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(112), helpstring("property IsVisible")] HRESULT IsVisible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(112), helpstring("property IsVisible")] HRESULT IsVisible([in] VARIANT_BOOL newVal);
 
-		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
-		[id(1584), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();
+//		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
+//		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
+//		[id(1584), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();
 
 		[propget, id(556), helpstring("property AddBlend")] HRESULT AddBlend([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(556), helpstring("property AddBlend")] HRESULT AddBlend([in] VARIANT_BOOL newVal);

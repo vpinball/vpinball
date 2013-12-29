@@ -299,8 +299,9 @@ void Flasher::RenderStatic(const RenderDevice* _pd3dDevice)
 
 void Flasher::RenderMovers(const RenderDevice* pd3dDevice)
 {
-   if(!m_d.m_triggerSingleUpdateRegion && !m_d.m_triggerUpdateRegion)
-      return;
+   //remove this so the flasher always updates it's region
+//    if(!m_d.m_triggerSingleUpdateRegion && !m_d.m_triggerUpdateRegion)
+//       return;
 
    if((!m_d.m_IsVisible && !m_d.m_wasVisible) )
       return;
@@ -729,29 +730,29 @@ STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_UpdateRegions(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_triggerUpdateRegion);
-
-   return S_OK;
-}
-
-STDMETHODIMP Flasher::put_UpdateRegions(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-   m_d.m_triggerUpdateRegion = VBTOF(newVal);
-   
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Flasher::TriggerSingleUpdate() 
-{
-   m_d.m_triggerSingleUpdateRegion = true;
-   return S_OK;
-}
+// STDMETHODIMP Flasher::get_UpdateRegions(VARIANT_BOOL *pVal)
+// {
+//    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_triggerUpdateRegion);
+// 
+//    return S_OK;
+// }
+// 
+// STDMETHODIMP Flasher::put_UpdateRegions(VARIANT_BOOL newVal)
+// {
+//    STARTUNDO
+// 
+//    m_d.m_triggerUpdateRegion = VBTOF(newVal);
+//    
+//    STOPUNDO
+// 
+//    return S_OK;
+// }
+// 
+// STDMETHODIMP Flasher::TriggerSingleUpdate() 
+// {
+//    m_d.m_triggerSingleUpdateRegion = true;
+//    return S_OK;
+// }
 
 STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal)
 {
@@ -804,8 +805,11 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
          pin->Set(ePictureTexture);
 
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-         DWORD factor = (DWORD)(m_d.m_fAlpha<<24) + (DWORD)(m_d.m_fAlpha<<16) + (DWORD)(m_d.m_fAlpha<<8) + m_d.m_fAlpha;
-         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, factor);
+         if ( m_d.m_fAddBlend )
+         {
+            DWORD factor = (DWORD)(m_d.m_fAlpha<<24) + (DWORD)(m_d.m_fAlpha<<16) + (DWORD)(m_d.m_fAlpha<<8) + m_d.m_fAlpha;
+            pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, factor);
+         }
          ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
 
          ppin3d->SetColorKeyEnabled(TRUE);
@@ -876,7 +880,8 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
       pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, dynamicVertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
 
       pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
-      pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xFFFFFFFF);
+      if ( m_d.m_fAddBlend )
+         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xFFFFFFFF);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 

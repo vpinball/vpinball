@@ -585,6 +585,5 @@ Alpha - let's you define an alpha factor(0..255) for additive alpha blending and
 Color - defines the color how the element is colored in the editor. If 'Additive Alpha Bl.' isn't checked this will colorize the image too. If you don't want to colorize the image set the color to 
         blank white (RGB 255,255,255)
 IsVisible(bool) - shows/hides the flasher
-UpdateRegions(bool) - automatically update the region of this ramp
 AddBlend(bool) - use additive blending instead of classical alpha blending
 		
