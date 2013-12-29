@@ -5125,27 +5125,28 @@ void PinTable::Copy()
 // for only backglass view 2 and for both use 3
 int rgItemViewAllowed[] =
 {
-   1,
-   1,
-   3,
-   1,
-   2,
-   1,
-   1,
-   3,
-   1,
-   3,
-   1,
-   1,
-   1,
-   0,
-   0,
-   0,
-   0,
-   2,
-   0,
-   1,
-   2,
+   1, //eItemSurface
+   1, //eItemFlipper
+   3, //eItemTimer
+   1, //eItemPlunger
+   2, //eItemTextbox
+   1, //eItemBumper
+   1, //eItemTrigger
+   3, //eItemLight
+   1, //eItemKicker
+   3, //eItemDecal
+   1, //eItemGate
+   1, //eItemSpinner
+   1, //eItemRamp
+   0, //eItemTable
+   0, //eItemLightCenter
+   0, //eItemDispReel
+   0, //eItemLightSeq
+   2, //eItemPrimitve
+   2, //eItemFlasher
+   0, //eItemLightSeqCenter
+   1, //eItemComControl
+   2, //eItemTypeCount
 };
 
 void PinTable::Paste(BOOL fAtLocation, int x, int y)
