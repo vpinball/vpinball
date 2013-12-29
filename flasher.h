@@ -140,9 +140,9 @@ public:
    STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
 
-	STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(TriggerSingleUpdate)();
+// 	STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+// 	STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
+// 	STDMETHOD(TriggerSingleUpdate)();
 
 	STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
