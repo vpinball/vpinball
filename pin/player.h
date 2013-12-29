@@ -47,15 +47,18 @@ public:
 	void InitStatic(HWND hwndProgress);
 	void InitAnimations(HWND hwndProgress);
 
-    void UpdatePhysics();
+   void UpdatePhysics();
 	void Render();
-    void RenderDynamics();
+   void RenderDynamics();
 
-    void DrawBallShadow(Ball * const pball);
-    void CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
-    void DrawBalls(const bool only_invalidate_regions);
-    void DrawBallLogo(Ball * const pball );
-    void CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
+   void DrawBallShadow(Ball * const pball);
+   void CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
+   void DrawBalls(const bool only_invalidate_regions);
+   void DrawBallLogo(Ball * const pball );
+   void CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
+   unsigned int CheckAndUpdateRegions();
+   void FlipVideoBuffersNormal( unsigned int overall_area, bool vsync );
+   void FlipVideoBuffers3D( unsigned int overall_area);
 
 	void DrawAlphas();
 
