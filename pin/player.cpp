@@ -1998,278 +1998,184 @@ void Player::RenderDynamics()
    m_pin3d.m_pd3dDevice->EndScene();
 }
 
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//bool firstRun=true;
-void Player::Render()
+unsigned int Player::CheckAndUpdateRegions()
 {
-	// On Win95 when there are no balls, frame updates happen so fast the
-	// blitter gets stuck
-	const int cball = m_vball.Size();
-	if (cball == 0)
-	{
-		Sleep(1);
-	}
-
-	if (m_sleeptime > 0)
-	{
-		Sleep(m_sleeptime - 1);
-	}
-
-	if (m_fCheckBlt) // Don't calculate the next frame if the last one isn't done blitting yet
-	{
-		const HRESULT hrdone = m_pin3d.m_pddsFrontBuffer->GetBltStatus(DDGBS_ISBLTDONE);
-
-		if (hrdone != DD_OK)
-		{
-			//Sleep(1);
-			return;
-		}
-	}
-
-#ifdef ANTI_TEAR
-	static U64 sync;
-
-	if( sync ) // Spin the CPU to prevent from running graphics faster than necessary
-	{
-		while( usec() - sync < 16666 ) { ; } // ~60 fps
-	}
-	sync = usec();
-#endif
-
-	//
-
-	for (int iball=0;iball<cball;iball++)
-	{
-		Ball * const pball = m_vball.ElementAt(iball);
-
-		if (pball->m_fErase) // Need to clear the ball off the playfield
-			EraseBall(pball);
-	}
-
-	// Erase the mixer volume.
-	mixer_erase();
-	// Plumb only (broken?) debug code
-    plumb_erase();
-
-#ifdef _DEBUGPHYSICS
-	c_collisioncnt = 0; 
-	c_hitcnts = 0;
-	c_contactcnt = 0;
-	c_staticcnt = 0;
-#endif
-
-	///+++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    UpdatePhysics();
-    if( m_useAA )
-      m_pin3d.SetRenderTarget(m_pin3d.antiAliasTexture, m_pin3d.m_pddsZBuffer );
-
-	// This only invalidates all of the new Ball regions upfront, which is needed due to the double buffering of DX7 to properly invalidate -all- regions (i.e. reblit the static buffer beforehand!). This can be removed as soon as region updates of the back/frontbuffer are deprecated and always the full static/backbuffer are blitted each frame!
-	DrawBalls(true);
-
-	m_LastKnownGoodCounter++;
-
-	for (int i=0;i<m_vscreenupdate.Size();i++)
-	{
-		// Check if the element is invalid (its frame changed).
-		m_vscreenupdate.ElementAt(i)->m_fInvalid = false;
-		m_vscreenupdate.ElementAt(i)->Check3D();
-
-		// Clamp all bounds to screen (if not completely offscreen)
-		RECT * const prc = &m_vscreenupdate.ElementAt(i)->m_rcBounds;
-		if ((prc->top < 0) && (prc->bottom >= 0))
-			prc->top = 0;
-		if ((prc->left < 0) && (prc->right >= 0))
-			prc->left = 0;
-		if ((prc->bottom > m_pin3d.m_dwRenderHeight-1) && (prc->top <= m_pin3d.m_dwRenderHeight-1))
-			prc->bottom = m_pin3d.m_dwRenderHeight-1;
-		if ((prc->right > m_pin3d.m_dwRenderWidth-1) && (prc->left <= m_pin3d.m_dwRenderWidth-1))
-			prc->right = m_pin3d.m_dwRenderWidth-1;
-	}
-
-	// Check all elements that could possibly need updating.
-	for (int i=0;i<m_vscreenupdate.Size();i++)
-		if (m_vscreenupdate.ElementAt(i)->m_fInvalid)
-		{
-			// Flag the element's region as needing a redraw.
-			InvalidateRect(&m_vscreenupdate.ElementAt(i)->m_rcBounds);
-		}
-
-	// For alphas (alpha ramps & primitives), abuse the RenderMovers call to (optionally) invalidate regions that need updates.
-    for (int i=0;i<m_vhitalpha.Size();i++)
-		m_vhitalpha.ElementAt(i)->RenderMovers(m_pin3d.m_pd3dDevice);
-
-	//rlc BUG -- moved this code before copy of static buffers being copied to back and z buffers
-	//rlc  JEP placed code for copy of static buffers too soon 
-	// Notice - the light can only update once per frame, so if the light
-	// is blinking faster than the frame rate, the user will still see
-	// the light blinking, it will just be slower than intended.
-	for (int i=0;i<m_vblink.Size();i++)
-	{
-		IBlink * const pblink = m_vblink.ElementAt(i);
-		if (pblink->m_timenextblink <= m_time_msec)
-		{
-			const char cold = pblink->m_rgblinkpattern[pblink->m_iblinkframe];
-			pblink->m_iblinkframe++;
-			char cnew = pblink->m_rgblinkpattern[pblink->m_iblinkframe];
-			if (cnew == 0)
-			{
-				pblink->m_iblinkframe = 0;
-				cnew = pblink->m_rgblinkpattern[0];
-			}
-
-			if (cold != cnew)
-				pblink->DrawFrame(cnew == '1');
-
-			pblink->m_timenextblink += pblink->m_blinkinterval;
-		}
-	}
-
-	//
-	// dynamic ... copies Static buffers to back buffer and z buffer
-	//
-
-	// Initialize all invalid regions by resetting the region (basically clear) 
-	// it with the contents of the static buffer.
-
-	// Check if more stuff is updated than area of whole screen
-#define FULLBLTAREA (unsigned int)(m_pin3d.m_dwRenderWidth*m_pin3d.m_dwRenderHeight) //!! other heuristic? seems like 1/8th would be good enough already?!
-#define FULLBLTAREA2 (unsigned int)(m_pin3d.m_dwRenderWidth*m_pin3d.m_dwRenderHeight/8) //!! dto.
-
-	unsigned int overall_area = 0;
-	if(m_fCleanBlt)
-		for (int i=0;i<m_vupdaterect.Size();++i)
-		{
-			const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
-			if(prc.right > prc.left && prc.bottom > prc.top)
-				overall_area += (prc.right-prc.left)*(prc.bottom-prc.top);
-		}
-    BaseTexture *backBuffer = m_pin3d.m_pddsBackBuffer;
-    if ( m_useAA )
-     backBuffer = m_pin3d.antiAliasTexture; //m_pin3d.m_pddsBackBuffer;
-
-    BaseTexture * const backBufferZ = m_pin3d.m_pddsZBuffer;
-
-	if(((m_fEnableRegionUpdateOptimization && (m_ptable->m_TableRegionOptimization == -1)) || (m_ptable->m_TableRegionOptimization == 1))
-		&& (!m_fCleanBlt || (overall_area >= FULLBLTAREA)))
-	{
-		RECT rect;
-		rect.left = 0;
-		rect.right = min(GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
-		rect.top = 0;
-		rect.bottom = min(GetSystemMetrics(SM_CYSCREEN), m_pin3d.m_dwRenderHeight);
-		backBuffer->BltFast(rect.left, rect.top, m_pin3d.m_pddsStatic, &rect, 0);
-		backBufferZ->BltFast(rect.left, rect.top, m_pin3d.m_pddsStaticZ, &rect, 0);
-
-		// kill all update regions and create one screen sized one
-		for (int i=0;i<m_vupdaterect.Size();i++)
-		{
-			UpdateRect * const pur = m_vupdaterect.ElementAt(i);
-			delete pur;
-		}
-		m_vupdaterect.RemoveAllElements();
-
-		InvalidateRect(&rect);
-
-		overall_area = rect.right*rect.bottom;
-	}
-	else
-		for (int i=0;i<m_vupdaterect.Size();i++)
-		{
-			UpdateRect * const pur = m_vupdaterect.ElementAt(i);
-			if (pur->m_fSeeThrough)
-			{
-				RECT * const prc = &pur->m_rcupdate;
-
-				// Redraw the region from the static buffers to the back and z buffers.
-				backBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStatic, prc, 0);
-				backBufferZ->BltFast(prc->left, prc->top, m_pin3d.m_pddsStaticZ, prc, 0);
-			}
-		}
-
-	// Process all regions that need updating.  
-	// The region will be drawn with the current frame.
-	for (int i=0;i<m_vupdaterect.Size();i++)
-	{
-		const UpdateRect * const pur = m_vupdaterect.ElementAt(i);
-
-		// Process all objects associated with this region.
-		for (int l=0;l<pur->m_vobject.Size();l++)
-		{
-			// Get the object's frame to draw.
-			const ObjFrame * const pobjframe = pur->m_vobject.ElementAt(l)->Draw3D(&pur->m_rcupdate);
-
-			// Make sure we have a frame.
-			if (pobjframe != NULL)
-			{
-				const RECT * const prc = &pur->m_rcupdate;
-
-				// NOTE: prc is the rectangle of the region needing to be updated.
-				// NOTE: pobjframe->rc is the rectangle of the entire object that intersects the region needing to updated.
-				// I think they are trying to define a rectangle that intersects... but why subtract pobjframe->rc?   -JEP
-
-				const int bltleft = max(pobjframe->rc.left, prc->left);
-				const int blttop = max(pobjframe->rc.top, prc->top);
-
-				RECT rcUpdate;
-				rcUpdate.left = bltleft - pobjframe->rc.left;
-				rcUpdate.top = blttop - pobjframe->rc.top;
-				rcUpdate.right = min(pobjframe->rc.right, prc->right) - pobjframe->rc.left;
-				rcUpdate.bottom = min(pobjframe->rc.bottom, prc->bottom) - pobjframe->rc.top;
-
-				// Make sure our rectangle dimensions aren't wacky.
-				if ((rcUpdate.right > rcUpdate.left) && (rcUpdate.bottom > rcUpdate.top))
-				{
-					// Make sure we have a source color surface.
-					if (pobjframe->pdds != NULL)
-					{
-						// Blit to the backbuffer with DDraw.   
-						backBuffer->BltFast(bltleft, blttop, pobjframe->pdds, &rcUpdate, DDBLTFAST_SRCCOLORKEY);
-					}
-
-					// Make sure we have a source z surface.
-					if (pobjframe->pddsZBuffer != NULL)
-					{
-						// Blit to the z buffer.	
-						backBufferZ->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
-					}
-				}
-			}
-		}
-	}
-
-    RenderDynamics();
-
-    if ( m_useAA )
-       m_pin3d.AntiAliasingScene();
-
-    // Check if we should turn animate the plunger light.
-    hid_set_output ( HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0) );
-
-	// Check if we are mirrored.
-	if ( m_ptable->m_tblMirrorEnabled )
-	{
-		// Mirroring only works if we mirror the entire backbuffer.
-		// Flag to draw the entire backbuffer.
-		m_fCleanBlt = fFalse;
-	}
-
-   bool vsync = false;
-   if(m_fVSync > 0)
+   for (int i=0;i<m_vscreenupdate.Size();i++)
    {
-      if(m_fVSync == 1) // legacy auto-detection
-      {
-         if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
-            vsync = true;
-      }
-      else
-         if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
-            vsync = true;
+      // Check if the element is invalid (its frame changed).
+      m_vscreenupdate.ElementAt(i)->m_fInvalid = false;
+      m_vscreenupdate.ElementAt(i)->Check3D();
+
+      // Clamp all bounds to screen (if not completely offscreen)
+      RECT * const prc = &m_vscreenupdate.ElementAt(i)->m_rcBounds;
+      if ((prc->top < 0) && (prc->bottom >= 0))
+         prc->top = 0;
+      if ((prc->left < 0) && (prc->right >= 0))
+         prc->left = 0;
+      if ((prc->bottom > m_pin3d.m_dwRenderHeight-1) && (prc->top <= m_pin3d.m_dwRenderHeight-1))
+         prc->bottom = m_pin3d.m_dwRenderHeight-1;
+      if ((prc->right > m_pin3d.m_dwRenderWidth-1) && (prc->left <= m_pin3d.m_dwRenderWidth-1))
+         prc->right = m_pin3d.m_dwRenderWidth-1;
    }
 
-  if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (m_fFXAA == 0)) || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
-  {
-	if ( m_nudgetime &&			// Table is being nudged.
+   // Check all elements that could possibly need updating.
+   for (int i=0;i<m_vscreenupdate.Size();i++)
+      if (m_vscreenupdate.ElementAt(i)->m_fInvalid)
+      {
+         // Flag the element's region as needing a redraw.
+         InvalidateRect(&m_vscreenupdate.ElementAt(i)->m_rcBounds);
+      }
+
+   // For alphas (alpha ramps & primitives), abuse the RenderMovers call to (optionally) invalidate regions that need updates.
+   for (int i=0;i<m_vhitalpha.Size();i++)
+      m_vhitalpha.ElementAt(i)->RenderMovers(m_pin3d.m_pd3dDevice);
+
+   //rlc BUG -- moved this code before copy of static buffers being copied to back and z buffers
+   //rlc  JEP placed code for copy of static buffers too soon 
+   // Notice - the light can only update once per frame, so if the light
+   // is blinking faster than the frame rate, the user will still see
+   // the light blinking, it will just be slower than intended.
+   for (int i=0;i<m_vblink.Size();i++)
+   {
+      IBlink * const pblink = m_vblink.ElementAt(i);
+      if (pblink->m_timenextblink <= m_time_msec)
+      {
+         const char cold = pblink->m_rgblinkpattern[pblink->m_iblinkframe];
+         pblink->m_iblinkframe++;
+         char cnew = pblink->m_rgblinkpattern[pblink->m_iblinkframe];
+         if (cnew == 0)
+         {
+            pblink->m_iblinkframe = 0;
+            cnew = pblink->m_rgblinkpattern[0];
+         }
+
+         if (cold != cnew)
+            pblink->DrawFrame(cnew == '1');
+
+         pblink->m_timenextblink += pblink->m_blinkinterval;
+      }
+   }
+
+   //
+   // dynamic ... copies Static buffers to back buffer and z buffer
+   //
+
+   // Initialize all invalid regions by resetting the region (basically clear) 
+   // it with the contents of the static buffer.
+
+   // Check if more stuff is updated than area of whole screen
+   #define FULLBLTAREA (unsigned int)(m_pin3d.m_dwRenderWidth*m_pin3d.m_dwRenderHeight) //!! other heuristic? seems like 1/8th would be good enough already?!
+
+   unsigned int overall_area = 0;
+   if(m_fCleanBlt)
+      for (int i=0;i<m_vupdaterect.Size();++i)
+      {
+         const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
+         if(prc.right > prc.left && prc.bottom > prc.top)
+            overall_area += (prc.right-prc.left)*(prc.bottom-prc.top);
+      }
+
+   BaseTexture *backBuffer = m_pin3d.m_pddsBackBuffer;
+   if ( m_useAA )
+      backBuffer = m_pin3d.antiAliasTexture; //m_pin3d.m_pddsBackBuffer;
+
+   BaseTexture * const backBufferZ = m_pin3d.m_pddsZBuffer;
+
+   if(((m_fEnableRegionUpdateOptimization && (m_ptable->m_TableRegionOptimization == -1)) || (m_ptable->m_TableRegionOptimization == 1))
+      && (!m_fCleanBlt || (overall_area >= FULLBLTAREA)))
+   {
+      RECT rect;
+      rect.left = 0;
+      rect.right = min(GetSystemMetrics(SM_CXSCREEN), m_pin3d.m_dwRenderWidth);
+      rect.top = 0;
+      rect.bottom = min(GetSystemMetrics(SM_CYSCREEN), m_pin3d.m_dwRenderHeight);
+      backBuffer->BltFast(rect.left, rect.top, m_pin3d.m_pddsStatic, &rect, 0);
+      backBufferZ->BltFast(rect.left, rect.top, m_pin3d.m_pddsStaticZ, &rect, 0);
+
+      // kill all update regions and create one screen sized one
+      for (int i=0;i<m_vupdaterect.Size();i++)
+      {
+         UpdateRect * const pur = m_vupdaterect.ElementAt(i);
+         delete pur;
+      }
+      m_vupdaterect.RemoveAllElements();
+
+      InvalidateRect(&rect);
+
+      overall_area = rect.right*rect.bottom;
+   }
+   else
+      for (int i=0;i<m_vupdaterect.Size();i++)
+      {
+         UpdateRect * const pur = m_vupdaterect.ElementAt(i);
+         if (pur->m_fSeeThrough)
+         {
+            RECT * const prc = &pur->m_rcupdate;
+
+            // Redraw the region from the static buffers to the back and z buffers.
+            backBuffer->BltFast(prc->left, prc->top, m_pin3d.m_pddsStatic, prc, 0);
+            backBufferZ->BltFast(prc->left, prc->top, m_pin3d.m_pddsStaticZ, prc, 0);
+         }
+      }
+
+   // Process all regions that need updating.  
+   // The region will be drawn with the current frame.
+   for (int i=0;i<m_vupdaterect.Size();i++)
+   {
+      const UpdateRect * const pur = m_vupdaterect.ElementAt(i);
+
+      // Process all objects associated with this region.
+      for (int l=0;l<pur->m_vobject.Size();l++)
+      {
+         // Get the object's frame to draw.
+         const ObjFrame * const pobjframe = pur->m_vobject.ElementAt(l)->Draw3D(&pur->m_rcupdate);
+
+         // Make sure we have a frame.
+         if (pobjframe != NULL)
+         {
+            const RECT * const prc = &pur->m_rcupdate;
+
+            // NOTE: prc is the rectangle of the region needing to be updated.
+            // NOTE: pobjframe->rc is the rectangle of the entire object that intersects the region needing to updated.
+            // I think they are trying to define a rectangle that intersects... but why subtract pobjframe->rc?   -JEP
+
+            const int bltleft = max(pobjframe->rc.left, prc->left);
+            const int blttop = max(pobjframe->rc.top, prc->top);
+
+            RECT rcUpdate;
+            rcUpdate.left = bltleft - pobjframe->rc.left;
+            rcUpdate.top = blttop - pobjframe->rc.top;
+            rcUpdate.right = min(pobjframe->rc.right, prc->right) - pobjframe->rc.left;
+            rcUpdate.bottom = min(pobjframe->rc.bottom, prc->bottom) - pobjframe->rc.top;
+
+            // Make sure our rectangle dimensions aren't wacky.
+            if ((rcUpdate.right > rcUpdate.left) && (rcUpdate.bottom > rcUpdate.top))
+            {
+               // Make sure we have a source color surface.
+               if (pobjframe->pdds != NULL)
+               {
+                  // Blit to the backbuffer with DDraw.   
+                  backBuffer->BltFast(bltleft, blttop, pobjframe->pdds, &rcUpdate, DDBLTFAST_SRCCOLORKEY);
+               }
+
+               // Make sure we have a source z surface.
+               if (pobjframe->pddsZBuffer != NULL)
+               {
+                  // Blit to the z buffer.	
+                  backBufferZ->BltFast(bltleft, blttop, pobjframe->pddsZBuffer, &rcUpdate, DDBLTFAST_NOCOLORKEY);
+               }
+            }
+         }
+      }
+   }
+   return overall_area;
+}
+
+void Player::FlipVideoBuffersNormal(unsigned int overall_area, bool vsync )
+{
+#define FULLBLTAREA2 (unsigned int)(m_pin3d.m_dwRenderWidth*m_pin3d.m_dwRenderHeight/8) //!! dto.
+
+   if ( m_nudgetime &&			// Table is being nudged.
 		 m_ptable->m_Shake )	// The "EarthShaker" effect is active.
 	{
 		// Draw with an offset to shake the display.
@@ -2342,253 +2248,365 @@ void Player::Render()
 				m_fCleanBlt = fTrue;
 		}
 	}
+}
+
+void Player::FlipVideoBuffers3D( unsigned int overall_area )
+{
+   //!! num_threads(max_threads-1 or -2) ? on my AMD omp is not really faster for the update path, a bit faster for full path
+   //!! overall half resolution necessary only (Y3D profits from full res though (implicit filtering))
+
+   static const unsigned int zmask = 0xFFFFFFu; //!! can this really be hardcoded? only has to be used for 32bit (because of 8bit stencil) so far
+   static const __m128i zmask128 = _mm_set1_epi32(zmask);
+
+   DDSURFACEDESC2 ddsd,ddsdz;
+   ZeroMemory( &ddsd, sizeof(ddsd) );
+   ZeroMemory( &ddsdz, sizeof(ddsdz) );
+   ddsd.dwSize = sizeof(ddsd);
+   ddsdz.dwSize = sizeof(ddsdz);
+
+   HRESULT hr = m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL);
+   if(!FAILED(hr) && (ddsd.lpSurface != NULL)) {
+
+      const bool stereopath = ((m_fStereo3D != 0) && m_fStereo3Denabled);
+      bool cont;
+      if(stereopath)
+      {
+         hr = m_pin3d.m_pddsZBuffer->Lock(NULL, &ddsdz,   DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL); 
+         cont = (!FAILED(hr) && (ddsdz.lpSurface != NULL));
+      }
+      else
+      {
+         ddsdz.dwWidth = ddsd.dwWidth;
+         ddsdz.dwHeight = ddsd.dwHeight;
+         cont = true;
+      }
+
+      if(cont) {
+
+         const unsigned int width  = min((unsigned int)GetSystemMetrics(SM_CXSCREEN), min(ddsd.dwWidth,ddsdz.dwWidth));   // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
+         const unsigned int height = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), min(ddsd.dwHeight,ddsdz.dwHeight)); // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
+         const unsigned int shift = (ddsd.ddpfPixelFormat.dwRGBBitCount == 32) ? 2 : 1;
+
+#ifdef ONLY3DUPD
+         overall_area = 0;
+
+         if (m_fCleanBlt) // detect overall area to blit
+         {
+            for (int i=0;i<m_vupdaterect.Size();++i)
+            {
+               const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
+
+               const int left   = max(prc.left + m_pin3d.m_rcUpdate.left,0);
+               const int right  = min(prc.right + m_pin3d.m_rcUpdate.left,(int)width-1);
+               const int top    = max(prc.top + m_pin3d.m_rcUpdate.top,0);
+               const int bottom = min(prc.bottom + m_pin3d.m_rcUpdate.top,(int)height-1);
+
+               if((right > left) && (bottom > top))
+                  overall_area += (right-left)*(bottom-top);
+            }
+         }
+
+         if (m_fCleanBlt && (overall_area < width*height)) //!! other heuristic? // test if its worth to blit every element separately
+         {
+            // Smart Blit - only update the invalidated areas
+#pragma omp parallel for schedule(dynamic)
+            for (int i=0;i<m_vupdaterect.Size();++i)
+            {
+               const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
+
+               const int left4     =  max(prc.left  + m_pin3d.m_rcUpdate.left,0           )<<shift;
+               const int copywidth = (min(prc.right + m_pin3d.m_rcUpdate.left,(int)width-1)<<shift) - left4;
+               if((copywidth <= 0) || (prc.bottom <= prc.top))
+                  continue;
+
+               const int top    = left4 + max(prc.top    + m_pin3d.m_rcUpdate.top,0            )*ddsd.lPitch;
+               const int bottom = left4 + min(prc.bottom + m_pin3d.m_rcUpdate.top,(int)height-1)*ddsd.lPitch;
+
+               // Copy the region from the back buffer to the front buffer.
+               unsigned char* __restrict bc  = ((unsigned char*)m_pin3d.m_pdds3Dbuffercopy) +top;
+               unsigned char* __restrict bcz = ((unsigned char*)m_pin3d.m_pdds3Dbufferzcopy)+top;
+               unsigned char* __restrict sf  = ((unsigned char*)ddsd.lpSurface) +top;
+               unsigned char* __restrict sfz = ((unsigned char*)ddsdz.lpSurface)+top;
+               for(int offset = top; offset < bottom; offset+=ddsd.lPitch,bc+=ddsd.lPitch,bcz+=ddsd.lPitch,sf+=ddsd.lPitch,sfz+=ddsd.lPitch)
+               {
+                  memcpy/*_sse2*/(bc,  sf,  copywidth); //!! sse2 version slower here (vc10)?! or is this some other bug comin into play?
+                  if(stereopath)
+                     memcpy/*_sse2*/(bcz, sfz, copywidth);
+               }
+            }
+         }
+         else
+         {
+#endif
+            if(!stereopath || (m_fStereo3DAA) || (m_fStereo3DY))
+            {
+               memcpy_sse2((void*)m_pin3d.m_pdds3Dbuffercopy, ddsd.lpSurface, ddsd.lPitch*height);
+               if(stereopath)
+                  memcpy_sse2((void*)m_pin3d.m_pdds3Dbufferzcopy,ddsdz.lpSurface,ddsd.lPitch*height);
+            }
+            else
+            {
+#pragma omp parallel for schedule(dynamic)
+               for(int y = 0; y < (int)height; y+=2) { //!! opt to copy larger blocks somehow? //!! opt. muls?
+                  memcpy_sse2(((unsigned char* const __restrict)m_pin3d.m_pdds3Dbuffercopy) +ddsd.lPitch*y, ((const unsigned char* const __restrict)ddsd.lpSurface) +ddsd.lPitch*y, ddsd.lPitch);
+                  memcpy_sse2(((unsigned char* const __restrict)m_pin3d.m_pdds3Dbufferzcopy)+ddsd.lPitch*y, ((const unsigned char* const __restrict)ddsdz.lpSurface)+ddsd.lPitch*y, ddsd.lPitch);
+               }
+            }
+#ifdef ONLY3DUPD
+         }
+#endif
+         const unsigned int oPitch = ddsd.lPitch >> shift;
+
+         m_pin3d.m_pddsBackBuffer->Unlock(NULL);
+         if(stereopath)
+            m_pin3d.m_pddsZBuffer->Unlock(NULL);
+
+         ZeroMemory( &ddsd, sizeof(ddsd) );
+         ddsd.dwSize = sizeof(ddsd);
+#ifdef ONLY3DUPD
+         hr = m_pin3d.m_pdds3DBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL);
+#else
+         hr = m_pin3d.m_pdds3DBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, NULL);
+#endif
+
+         unsigned int* const __restrict bufferfinal = (unsigned int*)ddsd.lpSurface;
+         if(!FAILED(hr) && (bufferfinal != NULL)) {
+            const unsigned int* const __restrict buffercopy = m_pin3d.m_pdds3Dbuffercopy;
+            const unsigned int* const __restrict bufferzcopy = m_pin3d.m_pdds3Dbufferzcopy;
+            unsigned char* const __restrict mask = m_pin3d.m_pdds3Dbuffermask;
+
+            ZeroMemory(mask,(width*height)>>2); //!! not necessary when full update
+
+            const unsigned int nPitch = ddsd.lPitch >> shift;
+
+            if(stereopath) {
+               const unsigned int maxSeparationU = m_fStereo3DY ? (unsigned int)(height*m_pin3d.m_maxSeparation) :
+                  (unsigned int)(width*m_pin3d.m_maxSeparation);
+               const unsigned int ZPDU = m_fStereo3DY ? (unsigned int)(16u * zmask * (height*m_pin3d.m_maxSeparation)*m_pin3d.m_ZPD) :
+                  (unsigned int)(16u * zmask * (width*m_pin3d.m_maxSeparation)*m_pin3d.m_ZPD); // 16 = fixed point math for filtering pixels
+               const unsigned int samples[3] = { m_fStereo3DY ? ((unsigned int)(0.5 * (height*m_pin3d.m_maxSeparation)))*oPitch :
+                  (unsigned int)(0.5 * (width*m_pin3d.m_maxSeparation)),
+                  m_fStereo3DY ? ((unsigned int)(0.666 * (height*m_pin3d.m_maxSeparation)))*oPitch :
+                  (unsigned int)(0.666 * (width*m_pin3d.m_maxSeparation)),
+                  m_fStereo3DY ? maxSeparationU*oPitch :
+                  maxSeparationU }; // filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
+
+               const __m128 ZPDU128 = _mm_set1_ps((float)ZPDU * ((shift == 1) ? (float)(1.0/256.0) : 1.0f)); // in 16bit scale z value by 256 (16bit zbuffer values scaled to 24bit (=32-8stencil), so its the same as when rendering in 32bit)
+               const float maxSepShl4 = (float)(maxSeparationU<<4);
+               const __m128 maxSepShl4128 = _mm_set1_ps(maxSepShl4);
+               const __m128i nPitch128 = _mm_set1_epi32(nPitch);
+
+#ifdef ONLY3DUPD
+               if (m_fCleanBlt)
+               {
+                  // Smart Blit - only update the invalidated areas
+#pragma omp parallel for schedule(dynamic)
+                  for (int i=0;i<m_vupdaterect.Size();++i)
+                  {
+                     const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
+
+                     const int left   = prc.left + m_pin3d.m_rcUpdate.left;
+                     const int right  = prc.right + m_pin3d.m_rcUpdate.left;
+                     const int top    = prc.top + m_pin3d.m_rcUpdate.top;
+                     const int bottom = prc.bottom + m_pin3d.m_rcUpdate.top;
+                     if((left >= right) || (top >= bottom))
+                        continue;
+
+                     // Update the region (+ area around) from the back buffer to the front buffer.
+                     if(m_fStereo3DY) {
+                        if(shift == 1)
+                           stereo_repro_16bit_y(max(top-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min((unsigned int)bottom+maxSeparationU+1,height-(maxSeparationU+1))&0xFFFFFFFE, max(left,0)&0xFFFFFFFE, min((unsigned int)right+1,width)&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,false,(m_fStereo3D == 1),m_fStereo3DAA,mask); //!! x: +1,&0xFFFFFFFE due to SSE //!! y: opt. for AA3D only(?):&0xFFFFFFFE, also bottom+1 then
+                        else
+                           stereo_repro_32bit_y(max(top-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min((unsigned int)bottom+maxSeparationU+1,height-(maxSeparationU+1))&0xFFFFFFFE, max(left,0)&0xFFFFFFFC, min((unsigned int)right+3,width)&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false,(m_fStereo3D == 1),m_fStereo3DAA,mask); //!! x: +3,&0xFFFFFFFC due to SSE //!! y: opt. for AA3D only(?):&0xFFFFFFFE, also bottom+1 then
+                     } else {
+                        if(shift == 1)
+                           stereo_repro_16bit_x(max(top,0)&0xFFFFFFFE, min((unsigned int)bottom+1,height)&0xFFFFFFFE, max(left-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min(right+maxSeparationU+1,width-(maxSeparationU+1))&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,false,(m_fStereo3D == 1),m_fStereo3DAA,mask); //!! x: +1,&0xFFFFFFFE due to SSE //!! y: opt. for AA3D only:&0xFFFFFFFE, also bottom+1 then
+                        else
+                           stereo_repro_32bit_x(max(top,0)&0xFFFFFFFE, min((unsigned int)bottom+1,height)&0xFFFFFFFE, max(left-(int)maxSeparationU,(int)maxSeparationU+1+3)&0xFFFFFFFC, min(right+maxSeparationU+3,width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false,(m_fStereo3D == 1),m_fStereo3DAA,mask); //!! x: +3,&0xFFFFFFFC due to SSE //!! y: opt. for AA3D only:&0xFFFFFFFE, also bottom+1 then
+                     }
+                  }
+               }
+               else
+#endif
+                  if(m_fStereo3DY) {
+                     if(shift == 1)
+                        stereo_repro_16bit_y((maxSeparationU+1+1)&0xFFFFFFFE, (height-(maxSeparationU+1))&0xFFFFFFFE, 0, width&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask); //!! mask not necessary for full update
+                     else
+                        stereo_repro_32bit_y((maxSeparationU+1+1)&0xFFFFFFFE, (height-(maxSeparationU+1))&0xFFFFFFFE, 0, width&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask);
+                  } else {
+                     if(shift == 1)
+                        stereo_repro_16bit_x(0, height, (maxSeparationU+1+1)&0xFFFFFFFE, (width-(maxSeparationU+1))&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask);
+                     else
+                        stereo_repro_32bit_x(0, height, (maxSeparationU+1+3)&0xFFFFFFFC, (width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask);
+                  }
+
+            } else { // continue with FXAA path
+
+#ifdef ONLY3DUPD
+               if (m_fCleanBlt)
+               {
+                  // Smart Blit - only update the invalidated areas
+#pragma omp parallel for schedule(dynamic)
+                  for (int i=0;i<m_vupdaterect.Size();++i)
+                  {
+                     const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
+
+                     const int left   = prc.left + m_pin3d.m_rcUpdate.left;
+                     const int right  = prc.right + m_pin3d.m_rcUpdate.left;
+                     const int top    = prc.top + m_pin3d.m_rcUpdate.top;
+                     const int bottom = prc.bottom + m_pin3d.m_rcUpdate.top;
+                     if((left >= right) || (top >= bottom))
+                        continue;
+
+                     // Update the region (+ area around) from the back buffer to the front buffer.
+                     if(shift == 1)
+                        fxaa_16bit(max(top-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1), min((unsigned int)bottom+FXAA_OFFS+1,height-(FXAA_OFFS+1)), max(left-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1)&0xFFFFFFFE, min((unsigned int)right+1+FXAA_OFFS+1,width-1-(FXAA_OFFS+1))&0xFFFFFFFE, width,oPitch,nPitch,height,(unsigned short *)buffercopy,(unsigned short *)bufferfinal,mask,false); //!! borders okay like this?
+                     else
+                        fxaa_32bit(max(top-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1), min((unsigned int)bottom+FXAA_OFFS+1,height-(FXAA_OFFS+1)), max(left-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1)&0xFFFFFFFC, min((unsigned int)right+3+FXAA_OFFS+1,width-3-(FXAA_OFFS+1))&0xFFFFFFFC, width,oPitch,nPitch,height,(unsigned int   *)buffercopy,(unsigned int   *)bufferfinal,mask,false);
+                  }
+               }
+               else
+#endif
+                  if(shift == 1)
+                     fxaa_16bit((FXAA_OFFS+1+1), (height-(FXAA_OFFS+1)), (FXAA_OFFS+1+1)&0xFFFFFFFE, (width-1-(FXAA_OFFS+1))&0xFFFFFFFE, width,oPitch,nPitch,height,(unsigned short *)buffercopy,(unsigned short *)bufferfinal,mask,true); //!! mask not necessary here //!! borders okay like this?
+                  else
+                     fxaa_32bit((FXAA_OFFS+1+1), (height-(FXAA_OFFS+1)), (FXAA_OFFS+1+1)&0xFFFFFFFC, (width-3-(FXAA_OFFS+1))&0xFFFFFFFC, width,oPitch,nPitch,height,(unsigned int   *)buffercopy,(unsigned int   *)bufferfinal,mask,true);
+
+            }
+
+            m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
+         } else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; // 'handle' fails to lock buffers
+
+         bool vsync = false;
+         if(m_fVSync > 0)
+         {
+            if(m_fVSync == 1) // legacy auto-detection
+            {
+               if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
+                  vsync = true;
+            }
+            else
+               if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
+                  vsync = true;
+         }
+         // Copy the entire back buffer to the front buffer.
+         m_pin3d.Flip(0, 0, vsync);
+
+         // Flag that we only need to update regions from now on...
+         //if((m_fEnableRegionUpdates && (m_ptable->m_TableRegionUpdates == -1)) || (m_ptable->m_TableRegionUpdates == 1))
+         m_fCleanBlt = fTrue;
+}
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//bool firstRun=true;
+void Player::Render()
+{
+	// On Win95 when there are no balls, frame updates happen so fast the
+	// blitter gets stuck
+	const int cball = m_vball.Size();
+	if (cball == 0)
+	{
+		Sleep(1);
+	}
+
+	if (m_sleeptime > 0)
+	{
+		Sleep(m_sleeptime - 1);
+	}
+
+	if (m_fCheckBlt) // Don't calculate the next frame if the last one isn't done blitting yet
+	{
+		const HRESULT hrdone = m_pin3d.m_pddsFrontBuffer->GetBltStatus(DDGBS_ISBLTDONE);
+
+		if (hrdone != DD_OK)
+		{
+			//Sleep(1);
+			return;
+		}
+	}
+
+#ifdef ANTI_TEAR
+	static U64 sync;
+
+	if( sync ) // Spin the CPU to prevent from running graphics faster than necessary
+	{
+		while( usec() - sync < 16666 ) { ; } // ~60 fps
+	}
+	sync = usec();
+#endif
+
+	//
+
+	for (int iball=0;iball<cball;iball++)
+	{
+		Ball * const pball = m_vball.ElementAt(iball);
+
+		if (pball->m_fErase) // Need to clear the ball off the playfield
+			EraseBall(pball);
+	}
+
+	// Erase the mixer volume.
+	mixer_erase();
+	// Plumb only (broken?) debug code
+   plumb_erase();
+
+#ifdef _DEBUGPHYSICS
+	c_collisioncnt = 0; 
+	c_hitcnts = 0;
+	c_contactcnt = 0;
+	c_staticcnt = 0;
+#endif
+
+	///+++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    UpdatePhysics();
+    if( m_useAA )
+      m_pin3d.SetRenderTarget(m_pin3d.antiAliasTexture, m_pin3d.m_pddsZBuffer );
+
+	// This only invalidates all of the new Ball regions upfront, which is needed due to the double buffering of DX7 to properly invalidate -all- regions (i.e. reblit the static buffer beforehand!). This can be removed as soon as region updates of the back/frontbuffer are deprecated and always the full static/backbuffer are blitted each frame!
+	DrawBalls(true);
+
+	m_LastKnownGoodCounter++;
+
+   unsigned int overall_area = CheckAndUpdateRegions();
+   RenderDynamics();
+
+   if ( m_useAA )
+    m_pin3d.AntiAliasingScene();
+
+    // Check if we should turn animate the plunger light.
+    hid_set_output ( HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0) );
+
+	// Check if we are mirrored.
+	if ( m_ptable->m_tblMirrorEnabled )
+	{
+		// Mirroring only works if we mirror the entire backbuffer.
+		// Flag to draw the entire backbuffer.
+		m_fCleanBlt = fFalse;
+	}
+
+   bool vsync = false;
+   if(m_fVSync > 0)
+   {
+      if(m_fVSync == 1) // legacy auto-detection
+      {
+         if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
+            vsync = true;
+      }
+      else
+         if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
+            vsync = true;
+   }
+
+
+  if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (m_fFXAA == 0)) || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
+  {
+     FlipVideoBuffersNormal( overall_area, vsync );
   }
   else
   {
-	//!! num_threads(max_threads-1 or -2) ? on my AMD omp is not really faster for the update path, a bit faster for full path
-	//!! overall half resolution necessary only (Y3D profits from full res though (implicit filtering))
-
-	static const unsigned int zmask = 0xFFFFFFu; //!! can this really be hardcoded? only has to be used for 32bit (because of 8bit stencil) so far
-	static const __m128i zmask128 = _mm_set1_epi32(zmask);
-
-	DDSURFACEDESC2 ddsd,ddsdz;
-	ZeroMemory( &ddsd, sizeof(ddsd) );
-	ZeroMemory( &ddsdz, sizeof(ddsdz) );
-	ddsd.dwSize = sizeof(ddsd);
-	ddsdz.dwSize = sizeof(ddsdz);
-
-	HRESULT hr = m_pin3d.m_pddsBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL);
-	if(!FAILED(hr) && (ddsd.lpSurface != NULL)) {
-
-	const bool stereopath = ((m_fStereo3D != 0) && m_fStereo3Denabled);
-	bool cont;
-	if(stereopath)
-	{
-		hr = m_pin3d.m_pddsZBuffer->Lock(NULL, &ddsdz,   DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_READONLY, NULL); 
-    	cont = (!FAILED(hr) && (ddsdz.lpSurface != NULL));
-	}
-	else
-	{
-		ddsdz.dwWidth = ddsd.dwWidth;
-		ddsdz.dwHeight = ddsd.dwHeight;
-		cont = true;
-	}
-
-	if(cont) {
-
-	const unsigned int width  = min((unsigned int)GetSystemMetrics(SM_CXSCREEN), min(ddsd.dwWidth,ddsdz.dwWidth));   // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
-	const unsigned int height = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), min(ddsd.dwHeight,ddsdz.dwHeight)); // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
-	const unsigned int shift = (ddsd.ddpfPixelFormat.dwRGBBitCount == 32) ? 2 : 1;
-
-#ifdef ONLY3DUPD
-			overall_area = 0;
-
-			if (m_fCleanBlt) // detect overall area to blit
-			{
-				for (int i=0;i<m_vupdaterect.Size();++i)
-				{
-					const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
-
-					const int left   = max(prc.left + m_pin3d.m_rcUpdate.left,0);
-					const int right  = min(prc.right + m_pin3d.m_rcUpdate.left,(int)width-1);
-					const int top    = max(prc.top + m_pin3d.m_rcUpdate.top,0);
-					const int bottom = min(prc.bottom + m_pin3d.m_rcUpdate.top,(int)height-1);
-
-					if((right > left) && (bottom > top))
-						overall_area += (right-left)*(bottom-top);
-				}
-			}
-
-			if (m_fCleanBlt && (overall_area < width*height)) //!! other heuristic? // test if its worth to blit every element separately
-			{
-				// Smart Blit - only update the invalidated areas
-#pragma omp parallel for schedule(dynamic)
-				for (int i=0;i<m_vupdaterect.Size();++i)
-				{
-					const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
-
-					const int left4     =  max(prc.left  + m_pin3d.m_rcUpdate.left,0           )<<shift;
-					const int copywidth = (min(prc.right + m_pin3d.m_rcUpdate.left,(int)width-1)<<shift) - left4;
-					if((copywidth <= 0) || (prc.bottom <= prc.top))
-						continue;
-
-					const int top    = left4 + max(prc.top    + m_pin3d.m_rcUpdate.top,0            )*ddsd.lPitch;
-					const int bottom = left4 + min(prc.bottom + m_pin3d.m_rcUpdate.top,(int)height-1)*ddsd.lPitch;
-
-					// Copy the region from the back buffer to the front buffer.
-					unsigned char* __restrict bc  = ((unsigned char*)m_pin3d.m_pdds3Dbuffercopy) +top;
-					unsigned char* __restrict bcz = ((unsigned char*)m_pin3d.m_pdds3Dbufferzcopy)+top;
-					unsigned char* __restrict sf  = ((unsigned char*)ddsd.lpSurface) +top;
-					unsigned char* __restrict sfz = ((unsigned char*)ddsdz.lpSurface)+top;
-					for(int offset = top; offset < bottom; offset+=ddsd.lPitch,bc+=ddsd.lPitch,bcz+=ddsd.lPitch,sf+=ddsd.lPitch,sfz+=ddsd.lPitch)
-					{
-						memcpy/*_sse2*/(bc,  sf,  copywidth); //!! sse2 version slower here (vc10)?! or is this some other bug comin into play?
-						if(stereopath)
-							memcpy/*_sse2*/(bcz, sfz, copywidth);
-					}
-				}
-			}
-			else
-			{
-#endif
-				if(!stereopath || (m_fStereo3DAA) || (m_fStereo3DY))
-				{
-					memcpy_sse2((void*)m_pin3d.m_pdds3Dbuffercopy, ddsd.lpSurface, ddsd.lPitch*height);
-					if(stereopath)
-						memcpy_sse2((void*)m_pin3d.m_pdds3Dbufferzcopy,ddsdz.lpSurface,ddsd.lPitch*height);
-				}
-				else
-				{
-#pragma omp parallel for schedule(dynamic)
-					for(int y = 0; y < (int)height; y+=2) { //!! opt to copy larger blocks somehow? //!! opt. muls?
-						memcpy_sse2(((unsigned char* const __restrict)m_pin3d.m_pdds3Dbuffercopy) +ddsd.lPitch*y, ((const unsigned char* const __restrict)ddsd.lpSurface) +ddsd.lPitch*y, ddsd.lPitch);
-						memcpy_sse2(((unsigned char* const __restrict)m_pin3d.m_pdds3Dbufferzcopy)+ddsd.lPitch*y, ((const unsigned char* const __restrict)ddsdz.lpSurface)+ddsd.lPitch*y, ddsd.lPitch);
-					}
-				}
-#ifdef ONLY3DUPD
-			}
-#endif
-	const unsigned int oPitch = ddsd.lPitch >> shift;
-
-	m_pin3d.m_pddsBackBuffer->Unlock(NULL);
-	if(stereopath)
-		m_pin3d.m_pddsZBuffer->Unlock(NULL);
-
-	ZeroMemory( &ddsd, sizeof(ddsd) );
-	ddsd.dwSize = sizeof(ddsd);
-#ifdef ONLY3DUPD
-	hr = m_pin3d.m_pdds3DBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY, NULL);
-#else
-	hr = m_pin3d.m_pdds3DBackBuffer->Lock(NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS, NULL);
-#endif
-
-	      unsigned int* const __restrict bufferfinal = (unsigned int*)ddsd.lpSurface;
-    if(!FAILED(hr) && (bufferfinal != NULL)) {
-	const unsigned int* const __restrict buffercopy = m_pin3d.m_pdds3Dbuffercopy;
-	const unsigned int* const __restrict bufferzcopy = m_pin3d.m_pdds3Dbufferzcopy;
-	     unsigned char* const __restrict mask = m_pin3d.m_pdds3Dbuffermask;
-
-	ZeroMemory(mask,(width*height)>>2); //!! not necessary when full update
-
-	const unsigned int nPitch = ddsd.lPitch >> shift;
-
-  if(stereopath) {
-	const unsigned int maxSeparationU = m_fStereo3DY ? (unsigned int)(height*m_pin3d.m_maxSeparation) :
-													   (unsigned int)(width*m_pin3d.m_maxSeparation);
-	const unsigned int ZPDU = m_fStereo3DY ? (unsigned int)(16u * zmask * (height*m_pin3d.m_maxSeparation)*m_pin3d.m_ZPD) :
-											 (unsigned int)(16u * zmask * (width*m_pin3d.m_maxSeparation)*m_pin3d.m_ZPD); // 16 = fixed point math for filtering pixels
-	const unsigned int samples[3] = { m_fStereo3DY ? ((unsigned int)(0.5 * (height*m_pin3d.m_maxSeparation)))*oPitch :
-													  (unsigned int)(0.5 * (width*m_pin3d.m_maxSeparation)),
-									  m_fStereo3DY ? ((unsigned int)(0.666 * (height*m_pin3d.m_maxSeparation)))*oPitch :
-													  (unsigned int)(0.666 * (width*m_pin3d.m_maxSeparation)),
-									  m_fStereo3DY ? maxSeparationU*oPitch :
-													 maxSeparationU }; // filter depth values instead of trunc?? (not necessary, would blur depth values anyhow?)
-
-	const __m128 ZPDU128 = _mm_set1_ps((float)ZPDU * ((shift == 1) ? (float)(1.0/256.0) : 1.0f)); // in 16bit scale z value by 256 (16bit zbuffer values scaled to 24bit (=32-8stencil), so its the same as when rendering in 32bit)
-	const float maxSepShl4 = (float)(maxSeparationU<<4);
-	const __m128 maxSepShl4128 = _mm_set1_ps(maxSepShl4);
-	const __m128i nPitch128 = _mm_set1_epi32(nPitch);
-
-#ifdef ONLY3DUPD
-			if (m_fCleanBlt)
-			{
-				// Smart Blit - only update the invalidated areas
-#pragma omp parallel for schedule(dynamic)
-				for (int i=0;i<m_vupdaterect.Size();++i)
-				{
-					const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
-
-					const int left   = prc.left + m_pin3d.m_rcUpdate.left;
-					const int right  = prc.right + m_pin3d.m_rcUpdate.left;
-					const int top    = prc.top + m_pin3d.m_rcUpdate.top;
-					const int bottom = prc.bottom + m_pin3d.m_rcUpdate.top;
-					if((left >= right) || (top >= bottom))
-						continue;
-
-					// Update the region (+ area around) from the back buffer to the front buffer.
-					if(m_fStereo3DY) {
-						if(shift == 1)
-							stereo_repro_16bit_y(max(top-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min((unsigned int)bottom+maxSeparationU+1,height-(maxSeparationU+1))&0xFFFFFFFE, max(left,0)&0xFFFFFFFE, min((unsigned int)right+1,width)&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,false,(m_fStereo3D == 1),m_fStereo3DAA,mask); //!! x: +1,&0xFFFFFFFE due to SSE //!! y: opt. for AA3D only(?):&0xFFFFFFFE, also bottom+1 then
-						else
-							stereo_repro_32bit_y(max(top-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min((unsigned int)bottom+maxSeparationU+1,height-(maxSeparationU+1))&0xFFFFFFFE, max(left,0)&0xFFFFFFFC, min((unsigned int)right+3,width)&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false,(m_fStereo3D == 1),m_fStereo3DAA,mask); //!! x: +3,&0xFFFFFFFC due to SSE //!! y: opt. for AA3D only(?):&0xFFFFFFFE, also bottom+1 then
-					} else {
-						if(shift == 1)
-							stereo_repro_16bit_x(max(top,0)&0xFFFFFFFE, min((unsigned int)bottom+1,height)&0xFFFFFFFE, max(left-(int)maxSeparationU,(int)maxSeparationU+1+1)&0xFFFFFFFE, min(right+maxSeparationU+1,width-(maxSeparationU+1))&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,false,(m_fStereo3D == 1),m_fStereo3DAA,mask); //!! x: +1,&0xFFFFFFFE due to SSE //!! y: opt. for AA3D only:&0xFFFFFFFE, also bottom+1 then
-						else
-							stereo_repro_32bit_x(max(top,0)&0xFFFFFFFE, min((unsigned int)bottom+1,height)&0xFFFFFFFE, max(left-(int)maxSeparationU,(int)maxSeparationU+1+3)&0xFFFFFFFC, min(right+maxSeparationU+3,width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,false,(m_fStereo3D == 1),m_fStereo3DAA,mask); //!! x: +3,&0xFFFFFFFC due to SSE //!! y: opt. for AA3D only:&0xFFFFFFFE, also bottom+1 then
-					}
-				}
-			}
-			else
-#endif
-				if(m_fStereo3DY) {
-					if(shift == 1)
-	 					stereo_repro_16bit_y((maxSeparationU+1+1)&0xFFFFFFFE, (height-(maxSeparationU+1))&0xFFFFFFFE, 0, width&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask); //!! mask not necessary for full update
-					else
-						stereo_repro_32bit_y((maxSeparationU+1+1)&0xFFFFFFFE, (height-(maxSeparationU+1))&0xFFFFFFFE, 0, width&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask);
-				} else {
-					if(shift == 1)
-						stereo_repro_16bit_x(0, height, (maxSeparationU+1+1)&0xFFFFFFFE, (width-(maxSeparationU+1))&0xFFFFFFFE, width,oPitch,nPitch,height,maxSeparationU,(unsigned short*)buffercopy,(unsigned short*)bufferzcopy,(unsigned short*)bufferfinal,samples,         ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask);
-					else
-						stereo_repro_32bit_x(0, height, (maxSeparationU+1+3)&0xFFFFFFFC, (width-(maxSeparationU+1))&0xFFFFFFFC, width,oPitch,nPitch,height,maxSeparationU,(unsigned int  *)buffercopy,(unsigned int  *)bufferzcopy,(unsigned int  *)bufferfinal,samples,zmask128,ZPDU128,maxSepShl4128,true,(m_fStereo3D == 1),m_fStereo3DAA,mask);
-				}
-
-  } else { // continue with FXAA path
-
-#ifdef ONLY3DUPD
-			if (m_fCleanBlt)
-			{
-				// Smart Blit - only update the invalidated areas
-#pragma omp parallel for schedule(dynamic)
-				for (int i=0;i<m_vupdaterect.Size();++i)
-				{
-					const RECT& prc = m_vupdaterect.ElementAt(i)->m_rcupdate;
-
-					const int left   = prc.left + m_pin3d.m_rcUpdate.left;
-					const int right  = prc.right + m_pin3d.m_rcUpdate.left;
-					const int top    = prc.top + m_pin3d.m_rcUpdate.top;
-					const int bottom = prc.bottom + m_pin3d.m_rcUpdate.top;
-					if((left >= right) || (top >= bottom))
-						continue;
-
-					// Update the region (+ area around) from the back buffer to the front buffer.
-					if(shift == 1)
-						fxaa_16bit(max(top-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1), min((unsigned int)bottom+FXAA_OFFS+1,height-(FXAA_OFFS+1)), max(left-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1)&0xFFFFFFFE, min((unsigned int)right+1+FXAA_OFFS+1,width-1-(FXAA_OFFS+1))&0xFFFFFFFE, width,oPitch,nPitch,height,(unsigned short *)buffercopy,(unsigned short *)bufferfinal,mask,false); //!! borders okay like this?
-					else
-						fxaa_32bit(max(top-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1), min((unsigned int)bottom+FXAA_OFFS+1,height-(FXAA_OFFS+1)), max(left-(int)FXAA_OFFS,(int)FXAA_OFFS+1+1)&0xFFFFFFFC, min((unsigned int)right+3+FXAA_OFFS+1,width-3-(FXAA_OFFS+1))&0xFFFFFFFC, width,oPitch,nPitch,height,(unsigned int   *)buffercopy,(unsigned int   *)bufferfinal,mask,false);
-				}
-			}
-			else
-#endif
-				if(shift == 1)
-					fxaa_16bit((FXAA_OFFS+1+1), (height-(FXAA_OFFS+1)), (FXAA_OFFS+1+1)&0xFFFFFFFE, (width-1-(FXAA_OFFS+1))&0xFFFFFFFE, width,oPitch,nPitch,height,(unsigned short *)buffercopy,(unsigned short *)bufferfinal,mask,true); //!! mask not necessary here //!! borders okay like this?
-				else
-					fxaa_32bit((FXAA_OFFS+1+1), (height-(FXAA_OFFS+1)), (FXAA_OFFS+1+1)&0xFFFFFFFC, (width-3-(FXAA_OFFS+1))&0xFFFFFFFC, width,oPitch,nPitch,height,(unsigned int   *)buffercopy,(unsigned int   *)bufferfinal,mask,true);
-
+     FlipVideoBuffers3D(overall_area);
   }
-
-	m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
-	} else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; // 'handle' fails to lock buffers
-
-	bool vsync = false;
-	if(m_fVSync > 0)
-	{
-	    if(m_fVSync == 1) // legacy auto-detection
-		{
-			if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
-				vsync = true;
-	    }
-	    else
-			if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
-				vsync = true;
-	}
-	// Copy the entire back buffer to the front buffer.
-	m_pin3d.Flip(0, 0, vsync);
-
-	// Flag that we only need to update regions from now on...
-	//if((m_fEnableRegionUpdates && (m_ptable->m_TableRegionUpdates == -1)) || (m_ptable->m_TableRegionUpdates == 1))
-		m_fCleanBlt = fTrue;
-	}
 
 	// Remove the list of update regions.
 	// Note:  The balls, mixer, etc. update rects are removed here as well...
