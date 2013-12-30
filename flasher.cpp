@@ -817,8 +817,7 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
          ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
 
          ppin3d->SetColorKeyEnabled(TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
-
+         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, (g_pplayer->m_fStereo3D == 0) || !g_pplayer->m_fStereo3Denabled );
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
 
@@ -827,6 +826,7 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
       else
          solidMaterial.set();
 
+      const WORD indices[4] = {0,1,3,2};
       if(dynamicVertexBufferRegenerate)
       {
          dynamicVertexBufferRegenerate = false;
@@ -871,8 +871,7 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
          vertices[3].color = m_d.m_color;
          vertices[3].tu = 0;
          vertices[3].tv = maxtv;
-//         SetNormal(vertices, rgi0123, 4, NULL, NULL, 0);
-
+         
          memcpy( buf, vertices, sizeof(Vertex3D_NoLighting)*4 );
 		 // update the bounding box for the primitive to tell the renderer where to update the back buffer
  		 g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
@@ -881,7 +880,7 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		 dynamicVertexBuffer->unlock();
       }
 
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, dynamicVertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
+      pd3dDevice->renderPrimitive( D3DPT_TRIANGLESTRIP, dynamicVertexBuffer, 0, 4, (LPWORD)indices, 4, 0 );
 
       pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
       if ( m_d.m_fAddBlend )
