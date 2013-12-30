@@ -27,6 +27,9 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
 
+   m_d.m_rotX=0.0f;
+   m_d.m_rotY=0.0f;
+   m_d.m_rotZ=0.0f;
    SetDefaults(fromMouseClick);
 
    InitVBA(fTrue, 0, NULL);
@@ -58,11 +61,23 @@ void Flasher::SetDefaults(bool fromMouseClick)
    else
       m_d.m_sizeY = 100.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flasher","Rotation", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher","RotX", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_rotation = fTmp;
+      m_d.m_rotX = fTmp;
    else
-      m_d.m_rotation = 0.0f;
+      m_d.m_rotX = 0.0f;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher","RotY", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_rotY = fTmp;
+   else
+      m_d.m_rotY = 0.0f;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher","RotZ", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_rotZ = fTmp;
+   else
+      m_d.m_rotZ = 0.0f;
 
    hr = GetRegInt("DefaultProps\\Flasher","Color", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -122,8 +137,12 @@ void Flasher::WriteRegDefaults()
    SetRegValue("DefaultProps\\Flasher","SizeX", REG_SZ, &strTmp,strlen(strTmp));
    sprintf_s(strTmp, 40, "%f", m_d.m_sizeY);
    SetRegValue("DefaultProps\\Flasher","SizeY", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_rotation);
-   SetRegValue("DefaultProps\\Flasher","Rotation", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_rotX);
+   SetRegValue("DefaultProps\\Flasher","RotX", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_rotY);
+   SetRegValue("DefaultProps\\Flasher","RotY", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_rotZ);
+   SetRegValue("DefaultProps\\Flasher","RotZ", REG_SZ, &strTmp,strlen(strTmp));
    SetRegValue("DefaultProps\\Flasher","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValue("DefaultProps\\Flasher","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Flasher","TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
@@ -144,7 +163,7 @@ void Flasher::PreRender(Sur * const psur)
    const float halfwidth = m_d.m_sizeX * 0.5f;
    const float halfheight = m_d.m_sizeY * 0.5f;
 
-   const float radangle = ANGTORAD(m_d.m_rotation);
+   const float radangle = ANGTORAD(m_d.m_rotZ);
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
    float minx=FLT_MAX;
@@ -217,7 +236,7 @@ void Flasher::Render(Sur * const psur)
    const float halfwidth = m_d.m_sizeX * 0.5f;
    const float halfheight = m_d.m_sizeY * 0.5f;
 
-   const float radangle = ANGTORAD(m_d.m_rotation);
+   const float radangle = ANGTORAD(m_d.m_rotZ);
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
@@ -291,6 +310,49 @@ void Flasher::RenderSetup(const RenderDevice* _pd3dDevice)
    pd3dDevice->createVertexBuffer(4, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &dynamicVertexBuffer);
    NumVideoBytes += 4*sizeof(Vertex3D_NoLighting);     
    solidMaterial.setColor( 1.0f, m_d.m_color );
+
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+   float maxtu = 0;
+   float maxtv = 0;
+
+   if (pin)
+   {
+      //m_ptable->GetTVTU(pin, &maxtu, &maxtv);
+      maxtu = pin->m_maxtu;
+      maxtv = pin->m_maxtv;
+   }
+   const float halfwidth = m_d.m_sizeX*0.5f;
+   const float halfheight = m_d.m_sizeY*0.5f;
+   const float height = m_d.m_height;
+
+   vertices[0].x = m_d.m_vCenter.x - halfwidth;
+   vertices[0].y = m_d.m_vCenter.y - halfheight;
+   vertices[0].z = height;
+   vertices[0].color = m_d.m_color;
+   vertices[0].tu = 0;
+   vertices[0].tv = 0;
+
+   vertices[1].x = m_d.m_vCenter.x + halfwidth;
+   vertices[1].y = m_d.m_vCenter.y - halfheight;
+   vertices[1].z = height;
+   vertices[1].color = m_d.m_color;
+   vertices[1].tu = maxtu;
+   vertices[1].tv = 0;
+
+   vertices[2].x = m_d.m_vCenter.x + halfwidth;
+   vertices[2].y = m_d.m_vCenter.y + halfheight;
+   vertices[2].z = height;
+   vertices[2].color = m_d.m_color;
+   vertices[2].tu = maxtu;
+   vertices[2].tv = maxtv;
+
+   vertices[3].x = m_d.m_vCenter.x - halfwidth;
+   vertices[3].y = m_d.m_vCenter.y + halfheight;
+   vertices[3].z = height;
+   vertices[3].color = m_d.m_color;
+   vertices[3].tu = 0;
+   vertices[3].tv = maxtv;
+
 }
 
 void Flasher::RenderStatic(const RenderDevice* _pd3dDevice)
@@ -299,9 +361,8 @@ void Flasher::RenderStatic(const RenderDevice* _pd3dDevice)
 
 void Flasher::RenderMovers(const RenderDevice* pd3dDevice)
 {
-   //remove this so the flasher always updates it's region
-//    if(!m_d.m_triggerSingleUpdateRegion && !m_d.m_triggerUpdateRegion)
-//       return;
+   if(!m_d.m_triggerSingleUpdateRegion && !m_d.m_triggerUpdateRegion)
+      return;
 
    if((!m_d.m_IsVisible && !m_d.m_wasVisible) )
       return;
@@ -338,7 +399,9 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(FSIY), m_d.m_sizeY);
    bw.WriteFloat(FID(FLAX), m_d.m_vCenter.x);
    bw.WriteFloat(FID(FLAY), m_d.m_vCenter.y);
-   bw.WriteFloat(FID(FROT), m_d.m_rotation);
+   bw.WriteFloat(FID(FROX), m_d.m_rotX);
+   bw.WriteFloat(FID(FROY), m_d.m_rotY);
+   bw.WriteFloat(FID(FROZ), m_d.m_rotZ);
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -394,9 +457,17 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_vCenter.y);
    }
-   else if (id == FID(FROT))
+   else if (id == FID(FROX))
    {
-      pbr->GetFloat(&m_d.m_rotation);
+      pbr->GetFloat(&m_d.m_rotX);
+   }
+   else if (id == FID(FROY))
+   {
+      pbr->GetFloat(&m_d.m_rotY);
+   }
+   else if (id == FID(FROZ))
+   {
+      pbr->GetFloat(&m_d.m_rotZ);
    }
    else if (id == FID(COLR))
    {
@@ -513,20 +584,64 @@ STDMETHODIMP Flasher::put_Y(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_Rotation(float *pVal)
+STDMETHODIMP Flasher::get_RotX(float *pVal)
 {
-   *pVal = m_d.m_rotation;
+   *pVal = m_d.m_rotX;
 
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_Rotation(float newVal)
+STDMETHODIMP Flasher::put_RotX(float newVal)
 {
-   if(m_d.m_rotation != newVal)
+   if(m_d.m_rotX != newVal)
    {
       STARTUNDO
 
-      m_d.m_rotation = newVal;
+      m_d.m_rotX = newVal;
+      dynamicVertexBufferRegenerate = true;
+
+      STOPUNDO
+   }
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::get_RotY(float *pVal)
+{
+   *pVal = m_d.m_rotY;
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_RotY(float newVal)
+{
+   if(m_d.m_rotY != newVal)
+   {
+      STARTUNDO
+
+      m_d.m_rotY = newVal;
+      dynamicVertexBufferRegenerate = true;
+
+      STOPUNDO
+   }
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::get_RotZ(float *pVal)
+{
+   *pVal = m_d.m_rotZ;
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_RotZ(float newVal)
+{
+   if(m_d.m_rotZ != newVal)
+   {
+      STARTUNDO
+
+      m_d.m_rotZ = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -570,7 +685,7 @@ STDMETHODIMP Flasher::put_SizeY(float newVal)
    {
       STARTUNDO
 
-         m_d.m_sizeY = newVal;
+      m_d.m_sizeY = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -734,29 +849,29 @@ STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-// STDMETHODIMP Flasher::get_UpdateRegions(VARIANT_BOOL *pVal)
-// {
-//    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_triggerUpdateRegion);
-// 
-//    return S_OK;
-// }
-// 
-// STDMETHODIMP Flasher::put_UpdateRegions(VARIANT_BOOL newVal)
-// {
-//    STARTUNDO
-// 
-//    m_d.m_triggerUpdateRegion = VBTOF(newVal);
-//    
-//    STOPUNDO
-// 
-//    return S_OK;
-// }
-// 
-// STDMETHODIMP Flasher::TriggerSingleUpdate() 
-// {
-//    m_d.m_triggerSingleUpdateRegion = true;
-//    return S_OK;
-// }
+STDMETHODIMP Flasher::get_UpdateRegions(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_triggerUpdateRegion);
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_UpdateRegions(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+   m_d.m_triggerUpdateRegion = VBTOF(newVal);
+   
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::TriggerSingleUpdate() 
+{
+   m_d.m_triggerSingleUpdateRegion = true;
+   return S_OK;
+}
 
 STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal)
 {
@@ -808,7 +923,7 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
          pin->CreateAlphaChannel();
          pin->Set(ePictureTexture);
 
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
          if ( m_d.m_fAddBlend )
          {
             DWORD factor = (DWORD)(m_d.m_fAlpha<<24) + (DWORD)(m_d.m_fAlpha<<16) + (DWORD)(m_d.m_fAlpha<<8) + m_d.m_fAlpha;
@@ -834,44 +949,65 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
          Vertex3D_NoLighting *buf;
          dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
 
-         const float radangle = ANGTORAD(m_d.m_rotation);
-         const float sn = sinf(radangle);
-         const float cs = cosf(radangle);
-
          const float halfwidth = m_d.m_sizeX*0.5f;
          const float halfheight = m_d.m_sizeY*0.5f;
          Vertex3D_NoLighting vertices[4];
          const float height = m_d.m_height;
 
-         for (int l=0;l<4;l++)
-         {
-            vertices[l].z = height + 0.2f;
-         }
-
-         vertices[0].x = m_d.m_vCenter.x + sn*halfheight - cs*halfwidth;
-         vertices[0].y = m_d.m_vCenter.y - cs*halfheight - sn*halfwidth;
+         vertices[0].x = m_d.m_vCenter.x - halfwidth;
+         vertices[0].y = m_d.m_vCenter.y - halfheight;
+         vertices[0].z = height;
          vertices[0].color = m_d.m_color;
          vertices[0].tu = 0;
          vertices[0].tv = 0;
 
-         vertices[1].x = m_d.m_vCenter.x + sn*halfheight + cs*halfwidth;
-         vertices[1].y = m_d.m_vCenter.y - cs*halfheight + sn*halfwidth;
+         vertices[1].x = m_d.m_vCenter.x + halfwidth;
+         vertices[1].y = m_d.m_vCenter.y - halfheight;
+         vertices[1].z = height;
          vertices[1].color = m_d.m_color;
          vertices[1].tu = maxtu;
          vertices[1].tv = 0;
 
-         vertices[2].x = m_d.m_vCenter.x - sn*halfheight + cs*halfwidth;
-         vertices[2].y = m_d.m_vCenter.y + cs*halfheight + sn*halfwidth;
+         vertices[2].x = m_d.m_vCenter.x + halfwidth;
+         vertices[2].y = m_d.m_vCenter.y + halfheight;
+         vertices[2].z = height;
          vertices[2].color = m_d.m_color;
          vertices[2].tu = maxtu;
          vertices[2].tv = maxtv;
 
-         vertices[3].x = m_d.m_vCenter.x - sn*halfheight - cs*halfwidth;
-         vertices[3].y = m_d.m_vCenter.y + cs*halfheight - sn*halfwidth;
+         vertices[3].x = m_d.m_vCenter.x - halfwidth;
+         vertices[3].y = m_d.m_vCenter.y + halfheight;
+         vertices[3].z = height;
          vertices[3].color = m_d.m_color;
          vertices[3].tu = 0;
          vertices[3].tv = maxtv;
-         
+
+         Matrix3D tempMatrix,RTmatrix,TMatrix,T2Matrix;
+         RTmatrix.SetIdentity();
+         TMatrix.SetIdentity();
+         T2Matrix.SetIdentity();
+         T2Matrix._41 = -m_d.m_vCenter.x;
+         T2Matrix._42 = -m_d.m_vCenter.y;
+         T2Matrix._43 = -height;
+         TMatrix._41 = m_d.m_vCenter.x;
+         TMatrix._42 = m_d.m_vCenter.y;
+         TMatrix._43 = height;
+
+         tempMatrix.SetIdentity();
+         tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotX));
+         tempMatrix.Multiply(RTmatrix, RTmatrix);
+         tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
+         tempMatrix.Multiply(RTmatrix, RTmatrix);
+         tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotZ));
+         tempMatrix.Multiply(RTmatrix, RTmatrix);
+         for( int i=0;i<4;i++ )
+         {      
+            Vertex3D_NoLighting * const tempVert = &vertices[i];
+            T2Matrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
+            RTmatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
+            TMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
+         }
+
          memcpy( buf, vertices, sizeof(Vertex3D_NoLighting)*4 );
 		 // update the bounding box for the primitive to tell the renderer where to update the back buffer
  		 g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
@@ -882,6 +1018,7 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
       pd3dDevice->renderPrimitive( D3DPT_TRIANGLESTRIP, dynamicVertexBuffer, 0, 4, (LPWORD)indices, 4, 0 );
 
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
       if ( m_d.m_fAddBlend )
          pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xFFFFFFFF);
