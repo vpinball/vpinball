@@ -14,13 +14,13 @@ public:
    float m_sizeX; 
    float m_sizeY;
    float m_height;
-   float m_rotation;
    bool m_fDisplayTexture;
    COLORREF m_color;
 	TimerDataRoot m_tdr;
 	char m_szImage[MAXTOKEN];
    RECT m_boundRectangle;
-	
+	float m_rotX,m_rotY,m_rotZ;
+
 	bool m_IsVisible;
 	bool m_fAddBlend;
 	long m_fAlpha;
@@ -109,11 +109,11 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;
 	BOOL dynamicVertexBufferRegenerate;
-    Material solidMaterial;
-    Material textureMaterial;
-    Material habitrailMaterial;
+   Material solidMaterial;
+   Material textureMaterial;
+   Material habitrailMaterial;
+   Vertex3D_NoLighting vertices[4];
 
-	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
 // IFlasher
 public:
@@ -131,8 +131,12 @@ public:
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
    STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Y)(/*[in]*/ float newVal);
-   STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotX)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotX)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotY)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotY)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
 	STDMETHOD(get_Alpha)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(put_Alpha)(/*[in]*/ long newVal);
    STDMETHOD(get_IsVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -140,9 +144,9 @@ public:
    STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
 
-// 	STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-// 	STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
-// 	STDMETHOD(TriggerSingleUpdate)();
+	STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(TriggerSingleUpdate)();
 
 	STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
