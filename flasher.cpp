@@ -443,6 +443,10 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
       pbr->GetBool(&iTmp);
       m_d.m_fAddBlend = (iTmp==1);
    }
+   else
+   {
+      ISelect::LoadToken(id, pbr);
+   }
    return fTrue;
 }
 

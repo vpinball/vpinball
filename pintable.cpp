@@ -5136,10 +5136,12 @@ int rgItemViewAllowed[] =
    1, //eItemRamp
    0, //eItemTable
    0, //eItemLightCenter
+   0, //eItemDragPoint
+   0, //eItemCollection
    0, //eItemDispReel
    0, //eItemLightSeq
-   2, //eItemPrimitve
-   2, //eItemFlasher
+   1, //eItemPrimitve
+   1, //eItemFlasher
    0, //eItemLightSeqCenter
    1, //eItemComControl
    2, //eItemTypeCount
