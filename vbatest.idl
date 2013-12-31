@@ -1751,10 +1751,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(4), helpstring("property SizeY")] HRESULT SizeY([in] float newVal);
 		[propget, id(378), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
 		[propput, id(378), helpstring("property Height")] HRESULT Height([in] float newVal);
-		[propget, id(1), helpstring("property Rotation")] HRESULT Rotation([out, retval] float *pVal);
-		[propput, id(1), helpstring("property Rotation")] HRESULT Rotation([in] float newVal);
-		[propget, id(7), helpstring("property Angle")] HRESULT Angle([out, retval] float *pVal);
-		[propput, id(7), helpstring("property Angle")] HRESULT Angle([in] float newVal);
+		[propget, id(1), helpstring("property RotZ")] HRESULT RotZ([out, retval] float *pVal);
+		[propput, id(1), helpstring("property RotZ")] HRESULT RotZ([in] float newVal);
+		[propget, id(2), helpstring("property RotY")] HRESULT RotY([out, retval] float *pVal);
+		[propput, id(2), helpstring("property RotY")] HRESULT RotY([in] float newVal);
+		[propget, id(7), helpstring("property RotX")] HRESULT RotX([out, retval] float *pVal);
+		[propput, id(7), helpstring("property RotX")] HRESULT RotX([in] float newVal);
 		[propget, id(11), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
 		[propput, id(11), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);

@@ -19,8 +19,7 @@ public:
 	TimerDataRoot m_tdr;
 	char m_szImage[MAXTOKEN];
    RECT m_boundRectangle;
-	float m_angle;
-   float m_rotation;
+	float m_rotX,m_rotY,m_rotZ;
 
 	bool m_IsVisible;
 	bool m_fAddBlend;
@@ -132,10 +131,12 @@ public:
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
    STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Y)(/*[in]*/ float newVal);
-   STDMETHOD(get_Angle)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Angle)(/*[in]*/ float newVal);
-   STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotX)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotX)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotY)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotY)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
 	STDMETHOD(get_Alpha)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(put_Alpha)(/*[in]*/ long newVal);
    STDMETHOD(get_IsVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
