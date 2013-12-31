@@ -27,6 +27,9 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
 
+   m_d.m_rotX=0.0f;
+   m_d.m_rotY=0.0f;
+   m_d.m_rotZ=0.0f;
    SetDefaults(fromMouseClick);
 
    InitVBA(fTrue, 0, NULL);
@@ -58,17 +61,23 @@ void Flasher::SetDefaults(bool fromMouseClick)
    else
       m_d.m_sizeY = 100.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flasher","Angle", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher","RotX", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_angle = fTmp;
+      m_d.m_rotX = fTmp;
    else
-      m_d.m_angle = 0.0f;
+      m_d.m_rotX = 0.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flasher","Rotation", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher","RotY", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_rotation = fTmp;
+      m_d.m_rotY = fTmp;
    else
-      m_d.m_rotation = 0.0f;
+      m_d.m_rotY = 0.0f;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher","RotZ", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_rotZ = fTmp;
+   else
+      m_d.m_rotZ = 0.0f;
 
    hr = GetRegInt("DefaultProps\\Flasher","Color", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -128,10 +137,12 @@ void Flasher::WriteRegDefaults()
    SetRegValue("DefaultProps\\Flasher","SizeX", REG_SZ, &strTmp,strlen(strTmp));
    sprintf_s(strTmp, 40, "%f", m_d.m_sizeY);
    SetRegValue("DefaultProps\\Flasher","SizeY", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_angle);
-   SetRegValue("DefaultProps\\Flasher","Angle", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_rotation);
-   SetRegValue("DefaultProps\\Flasher","Rotation", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_rotX);
+   SetRegValue("DefaultProps\\Flasher","RotX", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_rotY);
+   SetRegValue("DefaultProps\\Flasher","RotY", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_rotZ);
+   SetRegValue("DefaultProps\\Flasher","RotZ", REG_SZ, &strTmp,strlen(strTmp));
    SetRegValue("DefaultProps\\Flasher","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValue("DefaultProps\\Flasher","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Flasher","TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
@@ -152,7 +163,7 @@ void Flasher::PreRender(Sur * const psur)
    const float halfwidth = m_d.m_sizeX * 0.5f;
    const float halfheight = m_d.m_sizeY * 0.5f;
 
-   const float radangle = ANGTORAD(m_d.m_rotation);
+   const float radangle = ANGTORAD(m_d.m_rotZ);
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
    float minx=FLT_MAX;
@@ -225,7 +236,7 @@ void Flasher::Render(Sur * const psur)
    const float halfwidth = m_d.m_sizeX * 0.5f;
    const float halfheight = m_d.m_sizeY * 0.5f;
 
-   const float radangle = ANGTORAD(m_d.m_rotation);
+   const float radangle = ANGTORAD(m_d.m_rotZ);
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
@@ -388,8 +399,9 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(FSIY), m_d.m_sizeY);
    bw.WriteFloat(FID(FLAX), m_d.m_vCenter.x);
    bw.WriteFloat(FID(FLAY), m_d.m_vCenter.y);
-   bw.WriteFloat(FID(FRAN), m_d.m_angle);
-   bw.WriteFloat(FID(FROT), m_d.m_rotation);
+   bw.WriteFloat(FID(FROX), m_d.m_rotX);
+   bw.WriteFloat(FID(FROY), m_d.m_rotY);
+   bw.WriteFloat(FID(FROZ), m_d.m_rotZ);
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -445,13 +457,17 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_vCenter.y);
    }
-   else if (id == FID(FRAN))
+   else if (id == FID(FROX))
    {
-      pbr->GetFloat(&m_d.m_angle);
+      pbr->GetFloat(&m_d.m_rotX);
    }
-   else if (id == FID(FROT))
+   else if (id == FID(FROY))
    {
-      pbr->GetFloat(&m_d.m_rotation);
+      pbr->GetFloat(&m_d.m_rotY);
+   }
+   else if (id == FID(FROZ))
+   {
+      pbr->GetFloat(&m_d.m_rotZ);
    }
    else if (id == FID(COLR))
    {
@@ -568,20 +584,20 @@ STDMETHODIMP Flasher::put_Y(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_Angle(float *pVal)
+STDMETHODIMP Flasher::get_RotX(float *pVal)
 {
-   *pVal = m_d.m_angle;
+   *pVal = m_d.m_rotX;
 
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_Angle(float newVal)
+STDMETHODIMP Flasher::put_RotX(float newVal)
 {
-   if(m_d.m_angle != newVal)
+   if(m_d.m_rotX != newVal)
    {
       STARTUNDO
 
-      m_d.m_angle = newVal;
+      m_d.m_rotX = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -590,20 +606,42 @@ STDMETHODIMP Flasher::put_Angle(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_Rotation(float *pVal)
+STDMETHODIMP Flasher::get_RotY(float *pVal)
 {
-   *pVal = m_d.m_rotation;
+   *pVal = m_d.m_rotY;
 
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_Rotation(float newVal)
+STDMETHODIMP Flasher::put_RotY(float newVal)
 {
-   if(m_d.m_rotation != newVal)
+   if(m_d.m_rotY != newVal)
    {
       STARTUNDO
 
-      m_d.m_rotation = newVal;
+      m_d.m_rotY = newVal;
+      dynamicVertexBufferRegenerate = true;
+
+      STOPUNDO
+   }
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::get_RotZ(float *pVal)
+{
+   *pVal = m_d.m_rotZ;
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_RotZ(float newVal)
+{
+   if(m_d.m_rotZ != newVal)
+   {
+      STARTUNDO
+
+      m_d.m_rotZ = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -956,9 +994,11 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
          TMatrix._43 = height;
 
          tempMatrix.SetIdentity();
-         tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+         tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotX));
          tempMatrix.Multiply(RTmatrix, RTmatrix);
-         tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_angle));
+         tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
+         tempMatrix.Multiply(RTmatrix, RTmatrix);
+         tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotZ));
          tempMatrix.Multiply(RTmatrix, RTmatrix);
          for( int i=0;i<4;i++ )
          {      
