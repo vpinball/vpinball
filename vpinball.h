@@ -159,7 +159,6 @@ public:
 	BOOL m_fAlternateRender;
 	int m_DeadZ;
 	BOOL m_fAlwaysDrawLightCenters;
-   BOOL m_fThrowBalls;
 
 	int m_securitylevel;
 

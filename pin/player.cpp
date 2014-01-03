@@ -53,6 +53,7 @@ Player::Player()
 	m_pauseRefCount = 0;
 	m_fNoTimeCorrect = fFalse;
 
+   m_fThrowBalls = fFalse;
 	m_fAccelerometer = fTrue;	// true if electronic Accelerometer enabled 
 	m_AccelNormalMount = fTrue;	// normal mounting (left hand coordinates)
 	m_AccelAngle = 0;			// 0 degrees (GUI is lefthand coordinates)
@@ -4100,6 +4101,15 @@ int CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							case IDC_EXPAND:
 								SendMessage(hwndDlg, RESIZE_FROM_EXPAND, 0, 0);
 								break;
+                     case IDC_BALL_THROWING:
+                        {
+                           HWND hwndControl;
+                           int checked;
+                           hwndControl = GetDlgItem(hwndDlg, IDC_BALL_THROWING);
+                           checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                           g_pplayer->m_fThrowBalls = checked;
+                           break;
+                        }
 							}
 					}
 				break;
