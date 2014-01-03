@@ -1886,6 +1886,52 @@ void Pin3D::Translate(const float x, const float y, const float z)
 	m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 }
 
+Vertex3Ds Pin3D::Unproject( Vertex3Ds *point)
+{
+//    D3DXMATRIX m1, m2, m3;
+//    D3DXVECTOR3 vec;
+//    
+//    D3DXMatrixMultiply(&m1, pworld, pview);
+//    D3DXMatrixMultiply(&m2, &m1, pprojection);
+//    D3DXMatrixInverse(&m3, NULL, &m2);
+//    vec.x = 2.0f * ( pv->x - pviewport->X ) / pviewport->Width - 1.0f;
+//    vec.y = 1.0f - 2.0f * ( pv->y - pviewport->Y ) / pviewport->Height;
+//    vec.z = ( pv->z - pviewport->MinZ) / ( pviewport->MaxZ - pviewport->MinZ );
+//    D3DXVec3TransformCoord(pout, &vec, &m3);
+//    return pout;
+   Matrix3D matProj, matView, matWorld,m1,m2;
+   g_pplayer->m_pin3d.m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_PROJECTION, &matProj );
+   g_pplayer->m_pin3d.m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_VIEW, &matView );
+   g_pplayer->m_pin3d.m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD, &matWorld );
+//    matWorld.Multiply( matView, m1);
+//    m1.Multiply(matProj,m2);
+   matProj.Multiply(matView,m1);
+   m1.Multiply( matWorld,m2 );
+   
+   m2.Invert();
+   Vertex3Ds p,p3;
+
+   p.x = 2.0f * (point->x-g_pplayer->m_pin3d.vp.dwX) / g_pplayer->m_pin3d.vp.dwWidth - 1.0f; 
+   p.y = 1.0f - 2.0f * (point->y-g_pplayer->m_pin3d.vp.dwY) / g_pplayer->m_pin3d.vp.dwHeight; 
+   p.z = (point->z - g_pplayer->m_pin3d.vp.dvMinZ) / (g_pplayer->m_pin3d.vp.dvMaxZ-g_pplayer->m_pin3d.vp.dvMinZ);
+   p3 = m2.MultiplyVector( p );
+   return p3;
+}
+
+Vertex3Ds Pin3D::Get3DPointFrom2D( POINT *p )
+{
+   Vertex3Ds p1,p2,pNear,pFar;
+   pNear.x = (float)p->x; pNear.y = (float)p->y; pNear.z = (float)vp.dvMinZ;
+   pFar.x = (float)p->x; pFar.y = (float)p->y; pFar.z = (float)vp.dvMaxZ;
+   p1 = Unproject( &pNear );
+   p2 = Unproject( &pFar);
+   float wz = 0.0f;
+   float wx = ((wz-p1.z)*(p2.x-p1.x))/(p2.z-p1.z) + p1.x;
+   float wy = ((wz-p1.z)*(p2.y-p1.y))/(p2.z-p1.z) + p1.y;
+   Vertex3Ds vertex(wx,wy,wz);
+   return vertex;
+}
+
 void Pin3D::SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar)
 {
 	// From the Field Of View and far z clipping plane, determine the front clipping plane size

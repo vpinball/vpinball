@@ -223,6 +223,8 @@ public:
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 	void TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 
+   Vertex3Ds Unproject( Vertex3Ds *point );
+   Vertex3Ds Get3DPointFrom2D( POINT *p );
 	BaseTexture* CreateShadow(const float height);
 
 	void CreateBallShadow();

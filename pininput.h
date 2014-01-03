@@ -14,6 +14,7 @@
 
 #define APP_KEYBOARD 0
 #define APP_JOYSTICKMN 1
+#define APP_MOUSE 2
 
 // handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
 #define PININ_JOYMXCNT 4
@@ -71,7 +72,12 @@ public:
 	int e_JoyCnt;
 	int uShockDevice;	// only one uShock device
 	int uShockType;
-
+   int mouseX;
+   int mouseY;
+   long mouseDX;
+   long mouseDY;
+   bool leftMouseButtonDown;
+   bool rightMouseButtonDown;
 	LPDIRECTINPUT7       m_pDI;
 	LPDIRECTINPUTDEVICE7 m_pJoystick[PININ_JOYMXCNT];
 
@@ -83,7 +89,8 @@ private:
 
 	//int InputControlRun;
 
-	LPDIRECTINPUTDEVICE  m_pKeyboard;
+   LPDIRECTINPUTDEVICE  m_pKeyboard;
+   LPDIRECTINPUTDEVICE  m_pMouse;
 
 	int m_plunger_axis, m_lr_axis, m_ud_axis, m_plunger_reverse, m_lr_axis_reverse, m_ud_axis_reverse, m_override_default_buttons, m_disable_esc;
 	int m_joylflipkey, m_joyrflipkey, m_joylmagnasave, m_joyrmagnasave, m_joyplungerkey, m_joystartgamekey, m_joyexitgamekey, m_joyaddcreditkey;

@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -535,6 +535,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,67,77,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,128,77,50,14
     LTEXT           "minutes",IDC_STATIC,132,33,25,8
+    CONTROL         "Throw Balls in Player",IDC_BALL_THROWING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,47,81,10
 END
 
 IDD_COLLECTDIALOG DIALOG  0, 0, 316, 167
@@ -2234,7 +2235,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
