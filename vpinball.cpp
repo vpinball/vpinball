@@ -457,11 +457,7 @@ void VPinball::InitRegValues()
    if (hr != S_OK)
       m_fAlwaysDrawLightCenters = fFalse; // default value
 
-   hr = GetRegInt("Editor", "ThrowBalls", &m_fThrowBalls);
-   if (hr != S_OK)
-      m_fThrowBalls = fFalse; // default value
-
-   BOOL fAutoSave;
+    BOOL fAutoSave;
    hr = GetRegInt("Editor", "AutoSaveOn", &fAutoSave);
    if (hr != S_OK)
       fAutoSave = fTrue; // default value
@@ -6927,12 +6923,6 @@ int CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
             fautosavetime = AUTOSAVE_DEFAULT_TIME;
          SetDlgItemInt(hwndDlg, IDC_AUTOSAVE_MINUTES, fautosavetime, FALSE);
 
-         int fThrowBalls = 0;
-         hr = GetRegInt("Editor", "ThrowBalls", &fThrowBalls);
-         if (hr != S_OK)
-            fThrowBalls = 0; 
-         hwndControl = GetDlgItem(hwndDlg, IDC_BALL_THROWING);
-         SendMessage(hwndControl, BM_SETCHECK, fThrowBalls ? BST_CHECKED : BST_UNCHECKED, 0);
       }
 
       return TRUE;
@@ -6975,11 +6965,6 @@ int CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
                   for (int i=0;i<g_pvp->m_vtable.Size();i++)
                      g_pvp->m_vtable.ElementAt(i)->BeginAutoSaveCounter();
        
-                  hwndControl = GetDlgItem(hwndDlg, IDC_BALL_THROWING);
-                  checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
-                  fdrawpoints = (checked == BST_CHECKED) ? 1:0;
-                  SetRegValue("Editor", "ThrowBalls", REG_DWORD, &fdrawpoints, 4);
-
                   EndDialog(hwndDlg, TRUE);
                }
                break;

@@ -418,7 +418,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 			}
 		}
 
-   if ( m_pMouse && g_pvp->m_fThrowBalls)
+   if ( m_pMouse && g_pplayer->m_fThrowBalls)
    {
       HRESULT hr = m_pMouse->Acquire();				// try to Acquire keyboard input
       if (hr == S_OK || hr == S_FALSE)

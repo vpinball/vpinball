@@ -120,6 +120,7 @@ public:
 	Vector<HitTimer> m_vht;
 	Vector<IBlink> m_vblink;	// Lights which are set to blink
 
+   BOOL m_fThrowBalls;
 	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
 	BOOL m_AccelNormalMount;	//true if normal mounting (left hand coordinates)
 	float m_AccelAngle;			// 0 Radians rotated counterclockwise (GUI is lefthand coordinates)
@@ -206,6 +207,8 @@ public:
 	bool m_fGameWindowActive;
 	bool m_fUserDebugPaused;
 	bool m_fDebugWindowActive;
+   int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
+   BOOL m_fFullScreen;
 	
 private:
 	Vector<HitObject> m_vho;
@@ -221,8 +224,6 @@ private:
 
 	int m_width, m_height;
 
-	int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
-	BOOL m_fFullScreen;
 
 	U64 m_StartTime_usec;
 	U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn

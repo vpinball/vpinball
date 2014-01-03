@@ -1,7 +1,7 @@
 VP 9.2.1 Changelog
 ------------------------
 
-- add a ball throwing feature to VP. To use it check under Preferences->Editor Options -> "Throw Balls in Player" and by left clicking and holding the left mouse 
+- add a ball throwing feature to VP. To use it check "Throw Balls in Player" in the debug window (ESC -> "Debug Window") and by left clicking and holding the left mouse 
   button you create a new ball and it throws the balls in that direction you move the mouse cursor when you release the left mouse button. If you click on a non 
   moving ball you can reuse that ball and no new calls will be created. A right click on a ball will remove that ball from the table.
 
