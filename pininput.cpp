@@ -10,7 +10,11 @@ PinInput::PinInput()
 
 	m_pDI = NULL;
 	m_pKeyboard = NULL;
-	
+   m_pMouse = NULL;
+
+   leftMouseButtonDown=false;
+   rightMouseButtonDown=false;
+
 	m_head = m_tail = 0;
 	m_PreviousKeys = 0;
 	m_ChangedKeys = 0;
@@ -395,7 +399,6 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail( /*const U32 curr_sim_msec*/ )
 void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/) 
 {
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
-
 	const LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
 	if (pkyb) //keyboard
 		{	
@@ -415,6 +418,59 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 			}
 		}
 
+   if ( m_pMouse && g_pvp->m_fThrowBalls)
+   {
+      HRESULT hr = m_pMouse->Acquire();				// try to Acquire keyboard input
+      if (hr == S_OK || hr == S_FALSE)
+      {
+         DIMOUSESTATE mouseState;
+         hr = m_pMouse->GetDeviceState( sizeof(DIMOUSESTATE), &mouseState );				
+
+         if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
+         {					
+            if (m_hwnd == GetForegroundWindow())
+            {
+               if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown )
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  mouseX = curPos.x;
+                  mouseY = curPos.y;
+
+                  leftMouseButtonDown=true;
+               }
+               if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown )
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  mouseDX = curPos.x-mouseX;
+                  mouseDY = curPos.y-mouseY;
+                  didod[0].dwData=1;
+                  PushQueue( &didod[0],APP_MOUSE );
+                  leftMouseButtonDown=false;
+               }
+               if ( (mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown )
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  mouseX = curPos.x;
+                  mouseY = curPos.y;
+                  rightMouseButtonDown=true;
+               }
+               if ( !(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown )
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  mouseDX = curPos.x-mouseX;
+                  mouseDY = curPos.y-mouseY;
+                  didod[0].dwData=2;
+                  PushQueue( &didod[0],APP_MOUSE );
+                  rightMouseButtonDown=false;
+               }
+            }
+         }
+      }
+   }
 	// same for joysticks 
 
 	for (int k = 0; k < e_JoyCnt; ++k)
@@ -449,20 +505,34 @@ void PinInput::Init(const HWND hwnd)
 
 	// Create keyboard device
 	hr = m_pDI->CreateDevice( GUID_SysKeyboard, &m_pKeyboard, NULL); //Standard Keyboard device
+   // Create mouse device
+   hr = m_pDI->CreateDevice( GUID_SysMouse, &m_pMouse, NULL); //Standard Keyboard device
 
 	hr = m_pKeyboard->SetDataFormat( &c_dfDIKeyboard );
 
 	hr = m_pKeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 
-	DIPROPDWORD dipdw;
-	dipdw.diph.dwSize = sizeof(DIPROPDWORD);
-	dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-	dipdw.diph.dwObj = 0;
-	dipdw.diph.dwHow = DIPH_DEVICE;
-	dipdw.dwData = INPUT_BUFFER_SIZE;
+   DIPROPDWORD dipdw;
+   dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+   dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+   dipdw.diph.dwObj = 0;
+   dipdw.diph.dwHow = DIPH_DEVICE;
+   dipdw.dwData = INPUT_BUFFER_SIZE;
 
-	hr = m_pKeyboard->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
+   hr = m_pKeyboard->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
 
+
+   hr = m_pMouse->SetDataFormat( &c_dfDIMouse );
+
+   //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+   dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+   dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+   dipdw.diph.dwObj = 0;
+   dipdw.diph.dwHow = DIPH_DEVICE;
+   dipdw.dwData = INPUT_BUFFER_SIZE;
+
+   hr = m_pMouse->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
+   
 	/* Disable Sticky Keys */
 
 	// get the current state
@@ -505,6 +575,13 @@ void PinInput::UnInit()
 		m_pKeyboard->Release();
 		m_pKeyboard = NULL;
 		}
+
+   if ( m_pMouse )
+   {
+      m_pMouse->Unacquire();
+      m_pMouse->Release();
+      m_pMouse = NULL;
+   }
 
 	// restore the state of the sticky keys
 	SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, SPIF_SENDCHANGE);
@@ -872,7 +949,75 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 	const DIDEVICEOBJECTDATA * __restrict input;
 	while( input = GetTail( /*curr_sim_msec*/ ) )
 	{
-		if( input->dwSequence == APP_KEYBOARD )
+      if ( input->dwSequence == APP_MOUSE )
+      {
+         if ( input->dwData==1 )
+         {
+            POINT point = {mouseX,mouseY};
+            ScreenToClient(m_hwnd, &point);
+            Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
+
+            float vx = (float)mouseDX*0.1f;
+            float vy = (float)mouseDY*0.1f;
+            if (ptable->m_rotation!=0 && ptable->m_rotation!=360 )
+            {
+               const float radangle = ANGTORAD(ptable->m_rotation);
+               const float sn = sinf(radangle);
+               const float cs = cosf(radangle);
+
+               float vx2 = cs*vx - sn*vy;
+               float vy2 = sn*vx + cs*vy;
+               vx = -vx2;
+               vy = -vy2;
+            }
+            bool ballGrabbed=false;
+            for( int i=0;i<g_pplayer->m_vball.Size();i++ )
+            {
+               Ball *pBall = g_pplayer->m_vball.ElementAt(i);
+               float dx = abs(vertex.x - pBall->x);
+               float dy = abs(vertex.y - pBall->y);
+               if ( dx<50 && dy<50 )
+               {
+                  POINT newPoint;
+                  GetCursorPos(&newPoint);
+                  ScreenToClient(m_hwnd, &newPoint);
+                  Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(&newPoint);
+
+                  ballGrabbed=true;
+                  pBall->x = vert.x;
+                  pBall->y = vert.y;
+                  pBall->vx = vx;
+                  pBall->vy = vy;
+                  pBall->Init();
+                  break;
+               }
+            }
+            if ( !ballGrabbed )
+            {
+               Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, 1.0f, vx, vy, 0);
+               pball->m_pballex->AddRef();
+            }
+         }
+         else if ( input->dwData==2 )
+         {
+            POINT point = {mouseX,mouseY};
+            ScreenToClient(m_hwnd, &point);
+            Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
+
+            for( int i=0;i<g_pplayer->m_vball.Size();i++ )
+            {
+               Ball *pBall = g_pplayer->m_vball.ElementAt(i);
+               float dx = abs(vertex.x - pBall->x);
+               float dy = abs(vertex.y - pBall->y);
+               if ( dx<50 && dy<50 )
+               {
+                  g_pplayer->DestroyBall(pBall);
+                  break;
+               }
+            }
+         }
+      }
+		else if( input->dwSequence == APP_KEYBOARD )
 		{
 			if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
 			{

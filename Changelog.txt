@@ -1,5 +1,10 @@
 VP 9.2.1 Changelog
 ------------------------
+
+- add a ball throwing feature to VP. To use it check under Preferences->Editor Options -> "Throw Balls in Player" and by left clicking and holding the left mouse 
+  button you create a new ball and it throws the balls in that direction you move the mouse cursor when you release the left mouse button. If you click on a non 
+  moving ball you can reuse that ball and no new calls will be created. A right click on a ball will remove that ball from the table.
+
 - Alpha-Flasher element added. Use this element to add (additive) alpha flashers instead of abusing the alpha ramp element. The flasher is a 'dynamic' element, that means it is not pre-rendered
   and it'll be updated every frame.
   Limitations:
@@ -12,6 +17,7 @@ VP 9.2.1 Changelog
   useexisting is 0 or 1 (if no existing/playing copy of the sound is found, then a new one is created)
   restart is 0 or 1 (only useful if useexisting is 1)
 
+ 
 - tweak key input code to save one frame (or more?) of lag
 
 - change the old 'Physics Max.Looptime' setting to 'Physics Max. Loops'

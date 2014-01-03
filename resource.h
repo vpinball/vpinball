@@ -540,6 +540,7 @@
 #define IDC_ENABLE_RAMP_LIGHTING        394
 #define IDC_ENABLE_AA                   394
 #define IDR_REGISTRY3                   394
+#define IDC_BALL_THROWING               394
 #define IDC_ENABLE_FXAA                 395
 #define IDR_REGISTRY4                   395
 #define IDC_CHECK3                      396
