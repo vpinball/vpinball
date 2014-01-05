@@ -24,7 +24,7 @@ bool RenderDevice::createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7
    return true;
 }
 
-RenderDevice::RenderDevice( void )
+RenderDevice::RenderDevice()
 {
    theDevice=this;
    Material::setRenderDevice(this);

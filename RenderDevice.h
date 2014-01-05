@@ -33,16 +33,16 @@ public:
    };
    static bool createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7, BaseTexture *_backBuffer );
 
-   RenderDevice( void );
+   RenderDevice();
 
-   static RenderDevice* instance( void );
+   static RenderDevice* instance();
 
    virtual void SetMaterial( const THIS_ BaseMaterial * const _material );
    virtual void SetRenderState( const RenderStates p1, const DWORD p2 );
    bool createVertexBuffer( unsigned int _length, DWORD _usage, DWORD _fvf, VertexBuffer **_vBuffer );
    void renderPrimitive(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, LPWORD _indices, DWORD _numIndices, DWORD _flags);
 
-   inline void setHardwareAccelerated( int _hwAcc)
+   inline void setHardwareAccelerated( const int _hwAcc)
    {
       hardwareAccelerated = _hwAcc;
    }
@@ -174,31 +174,19 @@ public:
       NOOVERWRITE = DDLOCK_NOOVERWRITE,
       DISCARDCONTENTS = DDLOCK_DISCARDCONTENTS
    };
-   bool lock( unsigned int _offsetToLock, unsigned int _sizeToLock, void **_dataBuffer, DWORD _flags )
+   inline bool lock( unsigned int _offsetToLock, unsigned int _sizeToLock, void **_dataBuffer, DWORD _flags )
    {
-      if ( FAILED(this->Lock( (DWORD)_flags, _dataBuffer, 0 )) )
-      {
-         return false;
-      }
-      return true;
+      return ( !FAILED(this->Lock( (DWORD)_flags, _dataBuffer, 0 )) );
    }
-   bool unlock(void)
+   inline bool unlock(void)
    {
-      if ( FAILED(this->Unlock() ) )
-      {
-         return false;
-      }
-      return true;
+      return ( !FAILED(this->Unlock() ) );
    }
-   bool optimize( RenderDevice *device)
+   inline bool optimize( RenderDevice *device)
    {
-      if( FAILED(this->Optimize((LPDIRECT3DDEVICE7)device,0)))
-      {
-         return false;
-      }
-      return true;
+      return ( !FAILED(this->Optimize((LPDIRECT3DDEVICE7)device,0)));
    }
-   ULONG release(void)
+   inline ULONG release(void)
    {
       while ( this->Release()!=0 );
       return 0;
