@@ -90,6 +90,7 @@ BEGIN_CONNECTION_POINT_MAP(Bumper)
 END_CONNECTION_POINT_MAP()
 
 DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
+
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
@@ -121,20 +122,21 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 	void		unLockLight();
 	void		setLightStateBypass(const LightState newVal);
 	void		setLightState(const LightState newVal);
-	bool		m_fLockedByLS;
 //<<<
-   Vertex3D staticVertices[96];
-   Vertex3D moverVertices[2][160];
-   WORD     normalIndices[6*32];
-   WORD     indices[4*32];
+    Vertex3D staticVertices[96];
+    Vertex3D moverVertices[2][160];
+    WORD     normalIndices[6*32];
+    WORD     indices[4*32];
 
-   Material topLitMaterial;
-   Material topNonLitMaterial;
-   Material sideLitMaterial;
-   Material sideNonLitMaterial;
-   Material litMaterial;
-   Material nonLitMaterial;
-   Material staticMaterial;
+    Material topLitMaterial;
+    Material topNonLitMaterial;
+    Material sideLitMaterial;
+    Material sideNonLitMaterial;
+    Material litMaterial;
+    Material nonLitMaterial;
+    Material staticMaterial;
+
+	bool m_fLockedByLS;
 
 // IBumper
 public:

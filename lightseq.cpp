@@ -1827,7 +1827,6 @@ void LightSeq::SetElementToState(const int index, const LightState State)
 
 bool LightSeq::VerifyAndSetGridElement(const int x, const int y, const LightState State)
 {
-
 	if ( ((x >=0) && (x < m_lightSeqGridWidth)) &&
 		 ((y >=0) && (y < m_lightSeqGridHeight)) )
 	{

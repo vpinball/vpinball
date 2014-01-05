@@ -676,9 +676,7 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
    br.Load();
 
    if (version < 41)
-   {
       m_d.m_sidecolor = m_d.m_color; // So tables look like they did before
-   }
 
    return S_OK;
 }
@@ -796,11 +794,11 @@ STDMETHODIMP Bumper::put_Radius(float newVal)
 {
    STARTUNDO
 
-      m_d.m_radius = newVal;
+   m_d.m_radius = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Force(float *pVal)
@@ -814,11 +812,11 @@ STDMETHODIMP Bumper::put_Force(float newVal)
 {
    STARTUNDO
 
-      m_d.m_force = newVal;
+   m_d.m_force = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Threshold(float *pVal)
@@ -832,11 +830,11 @@ STDMETHODIMP Bumper::put_Threshold(float newVal)
 {
    STARTUNDO
 
-      m_d.m_threshold = newVal;
+   m_d.m_threshold = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Overhang(float *pVal)
@@ -850,11 +848,11 @@ STDMETHODIMP Bumper::put_Overhang(float newVal)
 {
    STARTUNDO
 
-      m_d.m_overhang = newVal;
+   m_d.m_overhang = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Color(OLE_COLOR *pVal)
@@ -868,11 +866,11 @@ STDMETHODIMP Bumper::put_Color(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_color = newVal;
+   m_d.m_color = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_SideColor(OLE_COLOR *pVal)
@@ -886,11 +884,11 @@ STDMETHODIMP Bumper::put_SideColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_sidecolor = newVal;
+   m_d.m_sidecolor = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Image(BSTR *pVal)
@@ -907,11 +905,11 @@ STDMETHODIMP Bumper::put_Image(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_X(float *pVal)
@@ -925,11 +923,11 @@ STDMETHODIMP Bumper::put_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.x = newVal;
+   m_d.m_vCenter.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Y(float *pVal)
@@ -943,11 +941,11 @@ STDMETHODIMP Bumper::put_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.y = newVal;
+   m_d.m_vCenter.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Surface(BSTR *pVal)
@@ -964,11 +962,11 @@ STDMETHODIMP Bumper::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Bumper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -1005,16 +1003,14 @@ STDMETHODIMP Bumper::put_State(LightState newVal)
 {
    STARTUNDO
 
-      // if the light is locked by the LS then just change the state and don't change the actual light
-      if (!m_fLockedByLS)
-      {
-         setLightState(newVal);
-      }
-      m_d.m_state = newVal;
+   // if the light is locked by the LS then just change the state and don't change the actual light
+   if (!m_fLockedByLS)
+      setLightState(newVal);
+   m_d.m_state = newVal;
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_BlinkPattern(BSTR *pVal)
@@ -1031,7 +1027,7 @@ STDMETHODIMP Bumper::put_BlinkPattern(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, 32, NULL, NULL);
 
    if (m_rgblinkpattern[0] == '\0')
    {
@@ -1053,7 +1049,7 @@ STDMETHODIMP Bumper::put_BlinkPattern(BSTR newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_BlinkInterval(long *pVal)
@@ -1101,10 +1097,10 @@ STDMETHODIMP Bumper::get_CastsShadow(VARIANT_BOOL *pVal)
 STDMETHODIMP Bumper::put_CastsShadow(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_fCastsShadow = VBTOF(newVal);
+   m_d.m_fCastsShadow = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Disabled(VARIANT_BOOL *pVal)
@@ -1117,10 +1113,10 @@ STDMETHODIMP Bumper::get_Disabled(VARIANT_BOOL *pVal)
 STDMETHODIMP Bumper::put_Disabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_fDisabled = VBTOF(newVal);
+   m_fDisabled = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Visible(VARIANT_BOOL *pVal)
@@ -1133,10 +1129,10 @@ STDMETHODIMP Bumper::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP Bumper::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_fVisible = VBTOF(newVal);
+   m_d.m_fVisible = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_SideVisible(VARIANT_BOOL *pVal)
@@ -1149,10 +1145,10 @@ STDMETHODIMP Bumper::get_SideVisible(VARIANT_BOOL *pVal)
 STDMETHODIMP Bumper::put_SideVisible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_fSideVisible = VBTOF(newVal);
+   m_d.m_fSideVisible = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Bumper::lockLight()

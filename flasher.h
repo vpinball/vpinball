@@ -10,21 +10,21 @@
 class FlasherData
 {
 public:
-   Vertex2D m_vCenter;
-   float m_sizeX; 
-   float m_sizeY;
-   float m_height;
-   bool m_fDisplayTexture;
-   COLORREF m_color;
+    Vertex2D m_vCenter;
+    float m_sizeX; 
+    float m_sizeY;
+    float m_height;
+    COLORREF m_color;
 	TimerDataRoot m_tdr;
 	char m_szImage[MAXTOKEN];
-   RECT m_boundRectangle;
+    RECT m_boundRectangle;
 	float m_rotX,m_rotY,m_rotZ;
 
+	long m_fAlpha;
 	bool m_IsVisible;
 	bool m_fAddBlend;
-	long m_fAlpha;
-   bool m_wasVisible;
+    bool m_wasVisible;
+    bool m_fDisplayTexture;
 	bool m_triggerUpdateRegion;
    bool m_triggerSingleUpdateRegion;
 };
@@ -89,8 +89,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 
 	virtual int GetMinimumPoints() {return 2;}
 
-   virtual void GetCenter(Vertex2D * const pv) const {*pv = m_d.m_vCenter;}
-   virtual void PutCenter(const Vertex2D * const pv) {m_d.m_vCenter = *pv; m_ptable->SetDirtyDraw();}
+    virtual void GetCenter(Vertex2D * const pv) const {*pv = m_d.m_vCenter;}
+    virtual void PutCenter(const Vertex2D * const pv) {m_d.m_vCenter = *pv; m_ptable->SetDirtyDraw();}
 
 	void WriteRegDefaults();
 
@@ -109,9 +109,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;
 	BOOL dynamicVertexBufferRegenerate;
-   Material solidMaterial;
-   Material textureMaterial;
-   Material habitrailMaterial;
+    Material solidMaterial;
+    Material textureMaterial;
+    Material habitrailMaterial;
    Vertex3D_NoLighting vertices[4];
 
 
@@ -123,14 +123,14 @@ public:
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_SizeX)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_SizeX)(/*[in]*/ float newVal);
-   STDMETHOD(get_SizeY)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_SizeY)(/*[in]*/ float newVal);
-   STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Height)(/*[in]*/ float newVal);
+    STDMETHOD(get_SizeY)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_SizeY)(/*[in]*/ float newVal);
+    STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_Height)(/*[in]*/ float newVal);
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
-   STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Y)(/*[in]*/ float newVal);
+    STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_Y)(/*[in]*/ float newVal);
    STDMETHOD(get_RotX)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_RotX)(/*[in]*/ float newVal);
    STDMETHOD(get_RotY)(/*[out, retval]*/ float *pVal);
@@ -139,17 +139,17 @@ public:
    STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
 	STDMETHOD(get_Alpha)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(put_Alpha)(/*[in]*/ long newVal);
-   STDMETHOD(get_IsVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_IsVisible)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_IsVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_IsVisible)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(TriggerSingleUpdate)();
 
 	STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)

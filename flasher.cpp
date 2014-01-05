@@ -292,12 +292,13 @@ void Flasher::EndPlay()
     IEditable::EndPlay();
 
 	if(dynamicVertexBuffer) 
-   {
+    {
 		dynamicVertexBuffer->release();
 		dynamicVertexBuffer = 0;
 		dynamicVertexBufferRegenerate = true;
 
 	}
+
     g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
     m_d.m_wasVisible = false;
     m_d.m_triggerSingleUpdateRegion = true;
@@ -364,7 +365,7 @@ void Flasher::RenderMovers(const RenderDevice* pd3dDevice)
    if(!m_d.m_triggerSingleUpdateRegion && !m_d.m_triggerUpdateRegion)
       return;
 
-   if((!m_d.m_IsVisible && !m_d.m_wasVisible) )
+   if(!m_d.m_IsVisible && !m_d.m_wasVisible)
       return;
 
    m_d.m_wasVisible = false;
@@ -685,7 +686,7 @@ STDMETHODIMP Flasher::put_SizeY(float newVal)
    {
       STARTUNDO
 
-      m_d.m_sizeY = newVal;
+         m_d.m_sizeY = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO

@@ -10,8 +10,6 @@
 
 #define NOTRANSCOLOR  RGB(123,123,123)
 
-//class RenderDevice;
-
 class BaseTexture : public IDirectDrawSurface7
 {
 };
@@ -36,7 +34,7 @@ public:
 
    static void SetRenderDevice( RenderDevice *_device );
    void SetBackDrop( DWORD textureChannel );
-   void Set( DWORD textureChannel )
+   inline void Set( DWORD textureChannel )
    {
       renderDevice->SetTexture( textureChannel, (LPDIRECTDRAWSURFACE7)m_pdsBufferColorKey);
    }

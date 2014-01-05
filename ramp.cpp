@@ -1557,7 +1557,7 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
    habitrailMaterial.setPower( 8.0f );
    habitrailMaterial.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
 
-   if( !staticVertexBuffer && m_d.m_IsVisible && !m_d.m_fAlpha )
+   if( !staticVertexBuffer && m_d.m_IsVisible && !(m_d.m_fAlpha && g_pvp->m_pdd.m_fHardwareAccel) )
    {
       if (m_d.m_type == RampType4Wire 
          || m_d.m_type == RampType1Wire //add check for 1 wire
