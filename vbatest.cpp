@@ -9,6 +9,18 @@
 
 #include "VBATest_i.c"
 
+#if (WINVER <= 0x0601 /* _WIN32_WINNT_WIN7 */ )
+typedef enum ORIENTATION_PREFERENCE {
+    ORIENTATION_PREFERENCE_NONE = 0x0,
+    ORIENTATION_PREFERENCE_LANDSCAPE = 0x1,
+    ORIENTATION_PREFERENCE_PORTRAIT = 0x2,
+    ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED = 0x4,
+    ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED = 0x8
+} ORIENTATION_PREFERENCE;
+typedef BOOL (WINAPI *pSDARP)(ORIENTATION_PREFERENCE orientation);
+
+static pSDARP SetDisplayAutoRotationPreferences = NULL;
+#endif
 
 #if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC)
 void *operator new( const size_t size_req )
@@ -117,6 +129,16 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
+	// disable auto-rotate on tablets
+#if (WINVER <= 0x0601)
+    SetDisplayAutoRotationPreferences = (pSDARP) GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
+                                                                "SetDisplayAutoRotationPreferences");
+    if(SetDisplayAutoRotationPreferences)
+        SetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE);
+#else
+    SetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE);
+#endif
+
 	g_hinst = hInstance;
    
 #if _WIN32_WINNT >= 0x0400 & defined(_ATL_FREE_THREADED)
