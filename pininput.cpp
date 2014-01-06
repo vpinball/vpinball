@@ -418,7 +418,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 			}
 		}
 
-   if ( m_pMouse && g_pplayer->m_fThrowBalls)
+   if ( m_pMouse )
    {
       HRESULT hr = m_pMouse->Acquire();				// try to Acquire keyboard input
       if (hr == S_OK || hr == S_FALSE)
@@ -430,43 +430,67 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
          {					
             if (m_hwnd == GetForegroundWindow())
             {
-               if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown )
+               if ( g_pplayer->m_fThrowBalls )
                {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  mouseX = curPos.x;
-                  mouseY = curPos.y;
+                  if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown )
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     mouseX = curPos.x;
+                     mouseY = curPos.y;
 
-                  leftMouseButtonDown=true;
+                     leftMouseButtonDown=true;
+                  }
+                  if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown )
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     mouseDX = curPos.x-mouseX;
+                     mouseDY = curPos.y-mouseY;
+                     didod[0].dwData=1;
+                     PushQueue( &didod[0],APP_MOUSE );
+                     leftMouseButtonDown=false;
+                  }
+                  if ( (mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown )
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     mouseX = curPos.x;
+                     mouseY = curPos.y;
+                     rightMouseButtonDown=true;
+                  }
+                  if ( !(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown )
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     mouseDX = curPos.x-mouseX;
+                     mouseDY = curPos.y-mouseY;
+                     didod[0].dwData=2;
+                     PushQueue( &didod[0],APP_MOUSE );
+                     rightMouseButtonDown=false;
+                  }
                }
-               if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown )
+               else
                {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  mouseDX = curPos.x-mouseX;
-                  mouseDY = curPos.y-mouseY;
-                  didod[0].dwData=1;
-                  PushQueue( &didod[0],APP_MOUSE );
-                  leftMouseButtonDown=false;
+                  if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown )
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     mouseX = curPos.x;
+                     mouseY = curPos.y;
+                     leftMouseButtonDown=true;
+                     didod[0].dwData=3;
+                     PushQueue( &didod[0],APP_MOUSE );
+                  }
+                  if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown )
+                  {
+                     leftMouseButtonDown=false;
+                     didod[0].dwData=4;
+                     PushQueue( &didod[0],APP_MOUSE );
+                  }                  
+                  
                }
-               if ( (mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown )
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  mouseX = curPos.x;
-                  mouseY = curPos.y;
-                  rightMouseButtonDown=true;
-               }
-               if ( !(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown )
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  mouseDX = curPos.x-mouseX;
-                  mouseDY = curPos.y-mouseY;
-                  didod[0].dwData=2;
-                  PushQueue( &didod[0],APP_MOUSE );
-                  rightMouseButtonDown=false;
-               }
+
             }
          }
       }
@@ -951,71 +975,99 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 	{
       if ( input->dwSequence == APP_MOUSE )
       {
-         if ( input->dwData==1 )
+         if ( g_pplayer->m_fThrowBalls )
          {
-            POINT point = {mouseX,mouseY};
-            ScreenToClient(m_hwnd, &point);
-            Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
-
-            float vx = (float)mouseDX*0.1f;
-            float vy = (float)mouseDY*0.1f;
-            if (ptable->m_rotation!=0 && ptable->m_rotation!=360 )
+            if ( input->dwData==1 )
             {
-               const float radangle = ANGTORAD(ptable->m_rotation);
-               const float sn = sinf(radangle);
-               const float cs = cosf(radangle);
+               POINT point = {mouseX,mouseY};
+               ScreenToClient(m_hwnd, &point);
+               Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
 
-               float vx2 = cs*vx - sn*vy;
-               float vy2 = sn*vx + cs*vy;
-               vx = -vx2;
-               vy = -vy2;
-            }
-            bool ballGrabbed=false;
-            for( int i=0;i<g_pplayer->m_vball.Size();i++ )
-            {
-               Ball *pBall = g_pplayer->m_vball.ElementAt(i);
-               float dx = abs(vertex.x - pBall->x);
-               float dy = abs(vertex.y - pBall->y);
-               if ( dx<50 && dy<50 )
+               float vx = (float)mouseDX*0.1f;
+               float vy = (float)mouseDY*0.1f;
+               if (ptable->m_rotation!=0 && ptable->m_rotation!=360 )
                {
-                  POINT newPoint;
-                  GetCursorPos(&newPoint);
-                  ScreenToClient(m_hwnd, &newPoint);
-                  Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(&newPoint);
+                  const float radangle = ANGTORAD(ptable->m_rotation);
+                  const float sn = sinf(radangle);
+                  const float cs = cosf(radangle);
 
-                  ballGrabbed=true;
-                  pBall->x = vert.x;
-                  pBall->y = vert.y;
-                  pBall->vx = vx;
-                  pBall->vy = vy;
-                  pBall->Init();
-                  break;
+                  float vx2 = cs*vx - sn*vy;
+                  float vy2 = sn*vx + cs*vy;
+                  vx = -vx2;
+                  vy = -vy2;
+               }
+               bool ballGrabbed=false;
+               for( int i=0;i<g_pplayer->m_vball.Size();i++ )
+               {
+                  Ball *pBall = g_pplayer->m_vball.ElementAt(i);
+                  float dx = abs(vertex.x - pBall->x);
+                  float dy = abs(vertex.y - pBall->y);
+                  if ( dx<50 && dy<50 )
+                  {
+                     POINT newPoint;
+                     GetCursorPos(&newPoint);
+                     ScreenToClient(m_hwnd, &newPoint);
+                     Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(&newPoint);
+
+                     ballGrabbed=true;
+                     pBall->x = vert.x;
+                     pBall->y = vert.y;
+                     pBall->vx = vx;
+                     pBall->vy = vy;
+                     pBall->Init();
+                     break;
+                  }
+               }
+               if ( !ballGrabbed )
+               {
+                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, 1.0f, vx, vy, 0);
+                  pball->m_pballex->AddRef();
                }
             }
-            if ( !ballGrabbed )
+            else if ( input->dwData==2 )
             {
-               Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, 1.0f, vx, vy, 0);
-               pball->m_pballex->AddRef();
-            }
-         }
-         else if ( input->dwData==2 )
-         {
-            POINT point = {mouseX,mouseY};
-            ScreenToClient(m_hwnd, &point);
-            Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
+               POINT point = {mouseX,mouseY};
+               ScreenToClient(m_hwnd, &point);
+               Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
 
-            for( int i=0;i<g_pplayer->m_vball.Size();i++ )
-            {
-               Ball *pBall = g_pplayer->m_vball.ElementAt(i);
-               float dx = abs(vertex.x - pBall->x);
-               float dy = abs(vertex.y - pBall->y);
-               if ( dx<50 && dy<50 )
+               for( int i=0;i<g_pplayer->m_vball.Size();i++ )
                {
-                  g_pplayer->DestroyBall(pBall);
-                  break;
+                  Ball *pBall = g_pplayer->m_vball.ElementAt(i);
+                  float dx = abs(vertex.x - pBall->x);
+                  float dy = abs(vertex.y - pBall->y);
+                  if ( dx<50 && dy<50 )
+                  {
+                     g_pplayer->DestroyBall(pBall);
+                     break;
+                  }
                }
             }
          }
+         POINT point = {mouseX,mouseY};
+         ScreenToClient(m_hwnd, &point);
+         if ( point.x>=0 && point.x<(g_pplayer->m_screenwidth/2) )
+         {
+            if ( input->dwData==3 )
+            {
+               FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eLeftFlipperKey]);
+            }
+            else if( input->dwData==4 )
+            {
+               FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eLeftFlipperKey]);
+            }
+         }
+         else if ( point.x>=(g_pplayer->m_screenwidth/2) && point.x<g_pplayer->m_screenwidth )
+         {
+            if ( input->dwData==3 )
+            {
+               FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eRightFlipperKey]);
+            }
+            else if( input->dwData==4 )
+            {
+               FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eRightFlipperKey]);
+            }
+         }
+
       }
 		else if( input->dwSequence == APP_KEYBOARD )
 		{
