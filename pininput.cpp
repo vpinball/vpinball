@@ -1045,7 +1045,25 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
          }
          POINT point = {mouseX,mouseY};
          ScreenToClient(m_hwnd, &point);
-         if ( point.x>=0 && point.x<(g_pplayer->m_screenwidth/2) )
+         unsigned int halfWidth=g_pplayer->m_screenwidth/2;
+         unsigned int fullWidth=g_pplayer->m_screenwidth;
+         float xx=point.x;
+         float yy=point.y;
+         if (ptable->m_rotation!=0 && ptable->m_rotation!=360 )
+         {
+            halfWidth=g_pplayer->m_screenheight/2;
+            fullWidth=g_pplayer->m_screenheight;
+            const float radangle = ANGTORAD(ptable->m_rotation);
+            const float sn = sinf(radangle);
+            const float cs = cosf(radangle);
+
+            float xx2 = cs*xx - sn*yy;
+            float yy2 = sn*xx + cs*yy;
+            xx = g_pplayer->m_screenheight-abs(xx2);
+            yy = abs(yy2);
+         }
+
+         if ( xx>=0 && xx<halfWidth )
          {
             if ( input->dwData==3 )
             {
@@ -1056,7 +1074,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eLeftFlipperKey]);
             }
          }
-         else if ( point.x>=(g_pplayer->m_screenwidth/2) && point.x<g_pplayer->m_screenwidth )
+         else if ( xx>=halfWidth && xx<fullWidth)
          {
             if ( input->dwData==3 )
             {
