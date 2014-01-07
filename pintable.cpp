@@ -3621,6 +3621,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BREF))
    {
       pbr->GetInt(&m_useReflectionForBalls);
+	  int tmp;
+	  if(!FAILED(GetRegInt("Player", "BallReflection", &tmp)))
+		  if(tmp == 0)
+			  m_useReflectionForBalls = 0;
    }
    else if (id == FID(BRST))
    {
@@ -3629,6 +3633,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BTRA))
    {
       pbr->GetInt(&m_useTrailForBalls);
+	  int tmp;
+	  if(!FAILED(GetRegInt("Player", "BallTrail", &tmp)))
+		  if(tmp == 0)
+			  m_useTrailForBalls = 0;
    }
    else if (id == FID(BTST))
    {
