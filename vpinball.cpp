@@ -5262,6 +5262,12 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             key = 150;
          SetDlgItemInt(hwndDlg, IDC_UDAXISGAIN, key, FALSE);
 
+         hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_MOUSE_PLAYER);
+         hr = GetRegInt("Player", "EnableMouseInPlayer", &key);
+         if (hr != S_OK)
+            key = fTrue;
+         SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
+
 		 for(unsigned int i = 0; i <= 28; ++i)
 		 {
 			 int item;
@@ -6154,6 +6160,10 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM4);
                   key = GetWindowLong(hwndControl, GWL_USERDATA);
                   SetRegValue("Player", "JoyCustom4Key", REG_DWORD, &key, 4);
+
+                  hwndControl = GetDlgItem(hwndDlg, IDC_ENABLE_MOUSE_PLAYER);
+                  selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "EnableMouseInPlayer", REG_DWORD, &selected, 4);
 
                   EndDialog(hwndDlg, TRUE);
                }

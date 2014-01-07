@@ -71,6 +71,7 @@ PinInput::PinInput()
 	firedautocoin = 0;
 
 	pressed_start = 0;
+   m_enableMouseInPlayer=true;
 
 	HRESULT hr;
 	int tmp;
@@ -197,6 +198,10 @@ PinInput::PinInput()
 
 	hr = GetRegInt("Player", "JoyDebugKey", &tmp);
 	if (hr == S_OK) m_joydebug = tmp;
+
+   hr = GetRegInt("Player", "EnableMouseInPlayer", &tmp);
+   if (hr == S_OK) m_enableMouseInPlayer = tmp==fTrue;
+
 }
 
 PinInput::~PinInput()
@@ -418,80 +423,81 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 			}
 		}
 
-   if ( m_pMouse )
+   if ( m_enableMouseInPlayer )
    {
-      HRESULT hr = m_pMouse->Acquire();				// try to Acquire keyboard input
-      if (hr == S_OK || hr == S_FALSE)
+      DIMOUSESTATE mouseState;
+      mouseState.rgbButtons[0]=0;
+      mouseState.rgbButtons[1]=0;
+      if ( GetKeyState(VK_LBUTTON) & 0x80 )
       {
-         DIMOUSESTATE mouseState;
-         hr = m_pMouse->GetDeviceState( sizeof(DIMOUSESTATE), &mouseState );				
-
-         if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
-         {					
-            if (m_hwnd == GetForegroundWindow())
+         mouseState.rgbButtons[0] = 0x80;
+      }
+      if ( GetKeyState(VK_RBUTTON) & 0x80 )
+      {
+         mouseState.rgbButtons[1] = 0x80;
+      }
+      					
+      if (m_hwnd == GetForegroundWindow())
+      {
+         if ( g_pplayer->m_fThrowBalls )
+         {
+            if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown )
             {
-               if ( g_pplayer->m_fThrowBalls )
-               {
-                  if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown )
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     mouseX = curPos.x;
-                     mouseY = curPos.y;
+               POINT curPos;
+               GetCursorPos(&curPos);
+               mouseX = curPos.x;
+               mouseY = curPos.y;
 
-                     leftMouseButtonDown=true;
-                  }
-                  if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown )
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     mouseDX = curPos.x-mouseX;
-                     mouseDY = curPos.y-mouseY;
-                     didod[0].dwData=1;
-                     PushQueue( &didod[0],APP_MOUSE );
-                     leftMouseButtonDown=false;
-                  }
-                  if ( (mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown )
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     mouseX = curPos.x;
-                     mouseY = curPos.y;
-                     rightMouseButtonDown=true;
-                  }
-                  if ( !(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown )
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     mouseDX = curPos.x-mouseX;
-                     mouseDY = curPos.y-mouseY;
-                     didod[0].dwData=2;
-                     PushQueue( &didod[0],APP_MOUSE );
-                     rightMouseButtonDown=false;
-                  }
-               }
-               else
-               {
-                  if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown )
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     mouseX = curPos.x;
-                     mouseY = curPos.y;
-                     leftMouseButtonDown=true;
-                     didod[0].dwData=3;
-                     PushQueue( &didod[0],APP_MOUSE );
-                  }
-                  if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown )
-                  {
-                     leftMouseButtonDown=false;
-                     didod[0].dwData=4;
-                     PushQueue( &didod[0],APP_MOUSE );
-                  }                  
-                  
-               }
-
+               leftMouseButtonDown=true;
             }
+            if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown )
+            {
+               POINT curPos;
+               GetCursorPos(&curPos);
+               mouseDX = curPos.x-mouseX;
+               mouseDY = curPos.y-mouseY;
+               didod[0].dwData=1;
+               PushQueue( &didod[0],APP_MOUSE );
+               leftMouseButtonDown=false;
+            }
+            if ( (mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown )
+            {
+               POINT curPos;
+               GetCursorPos(&curPos);
+               mouseX = curPos.x;
+               mouseY = curPos.y;
+               rightMouseButtonDown=true;
+            }
+            if ( !(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown )
+            {
+               POINT curPos;
+               GetCursorPos(&curPos);
+               mouseDX = curPos.x-mouseX;
+               mouseDY = curPos.y-mouseY;
+               didod[0].dwData=2;
+               PushQueue( &didod[0],APP_MOUSE );
+               rightMouseButtonDown=false;
+            }
+         }
+         else
+         {
+            if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown )
+            {
+               POINT curPos;
+               GetCursorPos(&curPos);
+               mouseX = curPos.x;
+               mouseY = curPos.y;
+               leftMouseButtonDown=true;
+               didod[0].dwData=3;
+               PushQueue( &didod[0],APP_MOUSE );
+            }
+            if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown )
+            {
+               leftMouseButtonDown=false;
+               didod[0].dwData=4;
+               PushQueue( &didod[0],APP_MOUSE );
+            }                  
+            
          }
       }
    }
@@ -529,8 +535,6 @@ void PinInput::Init(const HWND hwnd)
 
 	// Create keyboard device
 	hr = m_pDI->CreateDevice( GUID_SysKeyboard, &m_pKeyboard, NULL); //Standard Keyboard device
-   // Create mouse device
-   hr = m_pDI->CreateDevice( GUID_SysMouse, &m_pMouse, NULL); //Standard Keyboard device
 
 	hr = m_pKeyboard->SetDataFormat( &c_dfDIKeyboard );
 
@@ -545,17 +549,23 @@ void PinInput::Init(const HWND hwnd)
 
    hr = m_pKeyboard->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
 
+//    if ( m_enableMouseInPlayer )
+//    {
+//       // Create mouse device
+//       hr = m_pDI->CreateDevice( GUID_SysMouse, &m_pMouse, NULL); //Standard Keyboard device
+// 
+//       hr = m_pMouse->SetDataFormat( &c_dfDIMouse );
+// 
+//       //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+//       dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+//       dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+//       dipdw.diph.dwObj = 0;
+//       dipdw.diph.dwHow = DIPH_DEVICE;
+//       dipdw.dwData = INPUT_BUFFER_SIZE;
+// 
+//       hr = m_pMouse->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
+//    }
 
-   hr = m_pMouse->SetDataFormat( &c_dfDIMouse );
-
-   //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
-   dipdw.diph.dwSize = sizeof(DIPROPDWORD);
-   dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-   dipdw.diph.dwObj = 0;
-   dipdw.diph.dwHow = DIPH_DEVICE;
-   dipdw.dwData = INPUT_BUFFER_SIZE;
-
-   hr = m_pMouse->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
    
 	/* Disable Sticky Keys */
 
