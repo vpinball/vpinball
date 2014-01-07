@@ -328,13 +328,9 @@ void Player::RecomputePseudoPauseState()
 	if (fOldPseudoPause != m_fPseudoPause)
 		{
 		if (m_fPseudoPause)
-			{
 			PauseMusic();
-			}
 		else
-			{
 			UnpauseMusic();
-			}
 		}
 }
 
@@ -917,9 +913,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 #ifdef PLAYBACK
 	if (m_fPlayback)
-		{
 		m_fplaylog = fopen("c:\\badlog.txt","r");
-		}
 #endif
 
 	wintimer_init();
@@ -931,9 +925,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 #ifdef PLAYBACK
 	if (m_fPlayback)
-		{
 		ParseLog((LARGE_INTEGER*)&m_PhysicsStepTime, (LARGE_INTEGER*)&m_StartTime_usec);
-		}
 #endif
 
 #ifdef LOG
@@ -942,7 +934,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 #endif
 
 	SendMessage(hwndProgress, PBM_SETPOS, 100, 0);
-	// TEXT
+
 	SetWindowText(hwndProgressName, "Starting...");
 
 	// Check if we should show the window.
@@ -964,16 +956,12 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		if (ph)
 			{
 			if (ph->GetEventProxyBase())
-				{
 				ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
-				}
 			}
 		}
 
 	if (m_fDetectScriptHang)
-		{
 		g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
-		}
 
 #ifdef DONGLE_SUPPORT
 	if ( get_dongle_status() != DONGLE_STATUS_OK )
@@ -1083,9 +1071,7 @@ void Player::InitStatic(HWND hwndProgress)
                 ph->RenderSetup(m_pin3d.m_pd3dDevice);
 				ph->RenderStatic(m_pin3d.m_pd3dDevice);
 				if (hwndProgress)
-					{
 					SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15*i)/m_ptable->m_vedit.Size()), 0);
-					}
 				}
 			}
 		}
@@ -1101,9 +1087,7 @@ void Player::InitStatic(HWND hwndProgress)
             ph->RenderSetup(m_pin3d.m_pd3dDevice);
 				ph->RenderStatic(m_pin3d.m_pd3dDevice);
 				if (hwndProgress)
-					{
 					SendMessage(hwndProgress, PBM_SETPOS, 75 + ((5*i)/m_ptable->m_vedit.Size()), 0);
-					}
 				}
 			}
 		}
@@ -1119,9 +1103,7 @@ void Player::InitStatic(HWND hwndProgress)
             ph->RenderSetup(m_pin3d.m_pd3dDevice);
 				ph->RenderStatic(m_pin3d.m_pd3dDevice);
 				if (hwndProgress)
-					{
 					SendMessage(hwndProgress, PBM_SETPOS, 80 + ((5*i)/m_ptable->m_vedit.Size()), 0);
-					}
 				}
 			}
 		}
@@ -1149,9 +1131,7 @@ void Player::InitAnimations(HWND hwndProgress)
 			ph->RenderMovers(m_pin3d.m_pd3dDevice);
 
 			if (hwndProgress)
-			{
 				SendMessage(hwndProgress, PBM_SETPOS, 85 + ((15*i)/m_ptable->m_vedit.Size()), 0);
-			}
 		}
 	}
 
@@ -1234,9 +1214,7 @@ void Player::DestroyBall(Ball *pball)
 	if (!pball) return;
 
 	if (pball->m_fErase) // Need to clear the ball off the playfield
-		{
 		EraseBall(pball);
-		}
 
 	if (pball->m_pballex)
 		{
@@ -1252,9 +1230,7 @@ void Player::DestroyBall(Ball *pball)
 	m_vballDelete.AddElement(pball);
 
 	if (m_pactiveballDebug == pball)
-		{
 		m_pactiveballDebug = (m_vball.Size() > 0) ? m_vball.ElementAt(0) : NULL;
-		}
 }
 
 #ifdef ULTRAPIN
@@ -1450,15 +1426,8 @@ void Player::InitWindow()
 		case 0:	m_BallStretchX = 1.0f;
 				m_BallStretchY = 1.0f;
 				break;
-		case 1: /*
-				m_width
-				m_height
-				m_ptable->m_scalex
-				m_ptable->m_scaley
-				*/
-				m_BallStretchX = scalebackX*c + scalebackY*s;
+		case 1: m_BallStretchX = scalebackX*c + scalebackY*s;
 				m_BallStretchY = scalebackY*c + scalebackX*s;
-
 				break;
 		case 2: m_BallStretchX = scalebackX*c + scalebackY*s;
 				m_BallStretchY = scalebackY*c + scalebackX*s;
@@ -2480,16 +2449,20 @@ void Player::FlipVideoBuffers3D( unsigned int overall_area )
 	m_pin3d.m_pdds3DBackBuffer->Unlock(NULL);
 	} else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; } else m_fStereo3Denabled = false; // 'handle' fails to lock buffers
 
+	//
+
+	const unsigned int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
+
 	bool vsync = false;
-	if(m_fVSync > 0)
+	if(localvsync > 0)
 	{
-	    if(m_fVSync == 1) // legacy auto-detection
+	    if(localvsync == 1) // legacy auto-detection
 		{
 			if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
 				vsync = true;
 	    }
 	    else
-			if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
+			if(m_fps > localvsync*ADAPT_VSYNC_FACTOR)
 				vsync = true;
 	}
 	// Copy the entire back buffer to the front buffer.
@@ -2587,16 +2560,20 @@ void Player::Render()
 		m_fCleanBlt = fFalse;
 	}
 
+	//
+
+	const unsigned int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
+
    bool vsync = false;
-   if(m_fVSync > 0)
+   if(localvsync > 0)
    {
-      if(m_fVSync == 1) // legacy auto-detection
+      if(localvsync == 1) // legacy auto-detection
       {
          if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
             vsync = true;
       }
       else
-         if(m_fps > m_fVSync*ADAPT_VSYNC_FACTOR)
+         if(m_fps > localvsync*ADAPT_VSYNC_FACTOR)
             vsync = true;
    }
 
@@ -2953,9 +2930,7 @@ void Player::DrawBallShadow(Ball * const pball)
    Vertex3D_NoTex2 * const rgv3DShadow = pball->m_rgv3DShadow;
 
    if (!pball->fFrozen && rgv3DShadow[0].x <= m_ptable->m_right && rgv3DShadow[2].y >= m_ptable->m_top)
-   {
       m_pin3d.m_pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, pball->vertexBuffer, 12, 4, (LPWORD)rgi0123, 4, 0 );
-   }
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 }

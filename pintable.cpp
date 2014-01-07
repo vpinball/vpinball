@@ -2742,6 +2742,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
 
+   bw.WriteInt(FID(AVSY), m_TableAdaptiveVSync);
+
    bw.WriteInt(FID(BREF), m_useReflectionForBalls );
    bw.WriteInt(FID(BRST), m_ballReflectionStrength );
    bw.WriteInt(FID(BTRA), m_useTrailForBalls );
@@ -3298,6 +3300,8 @@ void PinTable::SetLoadDefaults()
 
    m_TableSoundVolume = 1.0f;
    m_TableMusicVolume = 1.0f;
+
+   m_TableAdaptiveVSync = -1;
 }
 
 HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -3673,14 +3677,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(CODE))
    {
       // if the script is protected then we pass in the proper cyptokey into the code loadstream
-      if (CheckPermissions(DISABLE_SCRIPT_EDITING))
-      {
-         m_pcv->LoadFromStream(pbr->m_pistream, pbr->m_hcrypthash, pbr->m_hcryptkey);
-      }
-      else
-      {
-         m_pcv->LoadFromStream(pbr->m_pistream, pbr->m_hcrypthash, NULL);
-      }
+      m_pcv->LoadFromStream(pbr->m_pistream, pbr->m_hcrypthash, CheckPermissions(DISABLE_SCRIPT_EDITING) ? pbr->m_hcryptkey : NULL);
    }
    else if (id == FID(CCUS))
    {
@@ -3780,6 +3777,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(MVOL))
    {
       pbr->GetFloat(&m_TableMusicVolume);
+   }
+   else if (id == FID(AVSY))
+   {
+      pbr->GetInt(&m_TableAdaptiveVSync);
    }
    else if (id == FID(REGU))
    {
@@ -8082,7 +8083,6 @@ STDMETHODIMP PinTable::put_AlphaRampAccuracy(int newVal )
    return S_OK;
 }
 
-
 STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
 {
    *pVal = (int)(m_TableMusicVolume*100.0f);
@@ -8095,6 +8095,24 @@ STDMETHODIMP PinTable::put_TableMusicVolume(int newVal )
    STARTUNDO
 
    m_TableMusicVolume = (float)newVal/100.0f;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_TableAdaptiveVSync(int *pVal)
+{
+   *pVal = m_TableAdaptiveVSync;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_TableAdaptiveVSync(int newVal )
+{
+   STARTUNDO
+
+   m_TableAdaptiveVSync = newVal;
 
    STOPUNDO
 

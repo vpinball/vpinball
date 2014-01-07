@@ -203,12 +203,13 @@ public:
 	int m_Coins;				// The number of coins queued to be inserted.  These were sent from the shell after the load.
 	float m_curMechPlungerPos;
 
-	bool m_fDrawCursor;
+    int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
+    BOOL m_fFullScreen;
+
+    bool m_fDrawCursor;
 	bool m_fGameWindowActive;
 	bool m_fUserDebugPaused;
 	bool m_fDebugWindowActive;
-   int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
-   BOOL m_fFullScreen;
 	
 private:
 	Vector<HitObject> m_vho;
@@ -223,7 +224,6 @@ private:
 	HitOctree m_debugoctree;
 
 	int m_width, m_height;
-
 
 	U64 m_StartTime_usec;
 	U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn
