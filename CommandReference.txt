@@ -32,7 +32,7 @@ BackdropImage(string)
 
 *SlopeMax(float) - Angle of Playfield within Cabinet (used for Physics only)
 *SlopeMin(float) - Angle of Playfield within Cabinet (used for Physics only)
-*GlobalDifficulty(float) - Choose between SlopeMax and SlopeMin
+*GlobalDifficulty(float) - Mainly chooses/weights between SlopeMax and SlopeMin, but also affects precision of flippers/scattering
 Gravity(float) - default=0.86543
 HardFriction(float) - default=0.0025
 HardScatter(float) - default=0

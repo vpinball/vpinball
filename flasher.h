@@ -26,7 +26,7 @@ public:
     bool m_wasVisible;
     bool m_fDisplayTexture;
 	bool m_triggerUpdateRegion;
-   bool m_triggerSingleUpdateRegion;
+    bool m_triggerSingleUpdateRegion;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -97,23 +97,12 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 	PinTable *m_ptable;
 
 	FlasherData m_d;
-	int rampVertex;
-	Vertex3D_NoTex2 *rgvbuf;
-    
-	Vertex2D *rgvInit;    // just for setup/static drawing
-    float *rgheightInit,*rgratioInit;
 
-	WORD *rgibuf;
-	WORD *invrgibuf;
-
-	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;
 	BOOL dynamicVertexBufferRegenerate;
     Material solidMaterial;
     Material textureMaterial;
-    Material habitrailMaterial;
-   Vertex3D_NoLighting vertices[4];
-
+    Vertex3D_NoLighting vertices[4];
 
 // IFlasher
 public:
@@ -131,12 +120,12 @@ public:
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
     STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Y)(/*[in]*/ float newVal);
-   STDMETHOD(get_RotX)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_RotX)(/*[in]*/ float newVal);
-   STDMETHOD(get_RotY)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_RotY)(/*[in]*/ float newVal);
-   STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
+    STDMETHOD(get_RotX)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_RotX)(/*[in]*/ float newVal);
+    STDMETHOD(get_RotY)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_RotY)(/*[in]*/ float newVal);
+    STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
 	STDMETHOD(get_Alpha)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(put_Alpha)(/*[in]*/ long newVal);
     STDMETHOD(get_IsVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);

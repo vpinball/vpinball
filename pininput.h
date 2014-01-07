@@ -69,19 +69,20 @@ public:
 #endif
 	U32 Down    ( const U32 mask ) const; //!! only still used by mixer
 
-	int e_JoyCnt;
-	int uShockDevice;	// only one uShock device
-	int uShockType;
-   int mouseX;
-   int mouseY;
-   long mouseDX;
-   long mouseDY;
-   bool leftMouseButtonDown;
-   bool rightMouseButtonDown;
 	LPDIRECTINPUT7       m_pDI;
 	LPDIRECTINPUTDEVICE7 m_pJoystick[PININ_JOYMXCNT];
 
 	HWND m_hwnd;
+	
+	int e_JoyCnt;
+	int uShockDevice;	// only one uShock device
+	int uShockType;
+    int mouseX;
+    int mouseY;
+    long mouseDX;
+    long mouseDY;
+    bool leftMouseButtonDown;
+    bool rightMouseButtonDown;
 
 private:
 	int started();
@@ -89,33 +90,33 @@ private:
 
 	//int InputControlRun;
 
-   LPDIRECTINPUTDEVICE  m_pKeyboard;
-   LPDIRECTINPUTDEVICE  m_pMouse;
+    LPDIRECTINPUTDEVICE  m_pKeyboard;
+    //LPDIRECTINPUTDEVICE  m_pMouse;
 
-	int m_plunger_axis, m_lr_axis, m_ud_axis, m_plunger_reverse, m_lr_axis_reverse, m_ud_axis_reverse, m_override_default_buttons, m_disable_esc;
-	int m_joylflipkey, m_joyrflipkey, m_joylmagnasave, m_joyrmagnasave, m_joyplungerkey, m_joystartgamekey, m_joyexitgamekey, m_joyaddcreditkey;
-	int m_joyaddcreditkey2, m_joyframecount, m_joyvolumeup, m_joyvolumedown, m_joylefttilt, m_joycentertilt, m_joyrighttilt, m_joypmbuyin;
-	int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebug, m_joymechtilt;
-	int m_joycustom1, m_joycustom1key, m_joycustom2, m_joycustom2key, m_joycustom3, m_joycustom3key, m_joycustom4, m_joycustom4key;
-   bool m_enableMouseInPlayer;
+	U32 m_PreviousKeys;	// Masks of PININ_* inputs used by ultracade - AMH
+	U32 m_ChangedKeys;
 
-	U32 m_PreviousKeys;		// Masks of PININ_* inputs used by ultracade - AMH
-	U32 m_ChangedKeys;		// Masks of PININ_* inputs used by ultracade - AMH
+	U32 m_firedautostart;
+	U32 m_firedautocoin;
 
-	U32 firedautostart;
-	U32 firedautocoin;
-
-	int pressed_start;
+	int m_pressed_start;
 
 	DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events
 
-	STICKYKEYS	m_StartupStickyKeys;
+	STICKYKEYS m_StartupStickyKeys;
 
 	int m_head; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
 
 	int m_tail; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
 
 	PinTable *m_ptable;
+
+	int m_plunger_axis, m_lr_axis, m_ud_axis, m_plunger_reverse, m_lr_axis_reverse, m_ud_axis_reverse, m_override_default_buttons, m_disable_esc;
+	int m_joylflipkey, m_joyrflipkey, m_joylmagnasave, m_joyrmagnasave, m_joyplungerkey, m_joystartgamekey, m_joyexitgamekey, m_joyaddcreditkey;
+	int m_joyaddcreditkey2, m_joyframecount, m_joyvolumeup, m_joyvolumedown, m_joylefttilt, m_joycentertilt, m_joyrighttilt, m_joypmbuyin;
+	int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebug, m_joymechtilt;
+	int m_joycustom1, m_joycustom1key, m_joycustom2, m_joycustom2key, m_joycustom3, m_joycustom3key, m_joycustom4, m_joycustom4key;
+    bool m_enableMouseInPlayer;
 };
 
 // - Added by AMH --modified by Koadic (not sure if necessary, but doesn't hurt anything)
