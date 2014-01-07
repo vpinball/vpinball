@@ -422,7 +422,7 @@ BEGIN
     RTEXT           "Dead Zone",IDC_STATIC,421,149,36,8
     EDITTEXT        IDC_DEADZONEAMT,460,148,20,13,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,482,149,8,8
-    GROUPBOX        "Global Options (*Changes will not effect open tables)",IDC_STATIC,254,88,241,110
+    GROUPBOX        "Global Options (*Changes will not effect open tables)",IDC_STATIC,255,88,241,110
     CONTROL         "Enable Analog Nudge",IDC_GLOBALACCEL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,171,83,10
     CONTROL         "Normal Mounting Orientation",IDC_GLOBALNMOUNT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,380,171,102,10
     CONTROL         "Tilt Sensitivity",IDC_CBGLOBALTILT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,183,55,10
@@ -436,6 +436,7 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,262,124,158,21
     GROUPBOX        "",IDC_STATIC,262,142,158,21
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,230,168,25
+    CONTROL         "Enable Mouse in Player",IDC_ENABLE_MOUSE_PLAYER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,255,201,90,10
 END
 
 IDD_TRANSLATE DIALOGEX 0, 0, 186, 102

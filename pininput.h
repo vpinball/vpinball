@@ -97,6 +97,7 @@ private:
 	int m_joyaddcreditkey2, m_joyframecount, m_joyvolumeup, m_joyvolumedown, m_joylefttilt, m_joycentertilt, m_joyrighttilt, m_joypmbuyin;
 	int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebug, m_joymechtilt;
 	int m_joycustom1, m_joycustom1key, m_joycustom2, m_joycustom2key, m_joycustom3, m_joycustom3key, m_joycustom4, m_joycustom4key;
+   bool m_enableMouseInPlayer;
 
 	U32 m_PreviousKeys;		// Masks of PININ_* inputs used by ultracade - AMH
 	U32 m_ChangedKeys;		// Masks of PININ_* inputs used by ultracade - AMH
