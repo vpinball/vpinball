@@ -30,7 +30,6 @@ Ramp::~Ramp()
 
 		delete [] rgvbuf;
         delete [] rgibuf;
-        delete [] invrgibuf;
 	}
 }
 
@@ -1045,7 +1044,6 @@ void Ramp::EndPlay()
 
 		delete [] rgvbuf;
         delete [] rgibuf;
-        delete [] invrgibuf;
 	}
 
 	m_d.m_wasVisible = false;
@@ -1585,8 +1583,7 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
          NumVideoBytes += numVertices*5*sizeof(Vertex3D_NoTex);     
 
          rgvbuf = new Vertex3D_NoTex2[numVertices];
-         rgibuf = new WORD[(rampVertex-1)*6];
-         invrgibuf = new WORD[(rampVertex-1)*6];
+         rgibuf = new WORD[(rampVertex-1)*6*2];
       }
    }
 
@@ -1656,9 +1653,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
 
          textureMaterial.set();
          if ( !m_d.m_enableLightingImage )
-         {
             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
-         }
       }
       else
          solidMaterial.set();
@@ -2729,10 +2724,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
          textureMaterial.set();
          if ( !m_d.m_enableLightingImage )
-         {
             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
-         }
-
       }
       else
          solidMaterial.set();
@@ -2753,6 +2745,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
          numVertices=(rampVertex-1)*4;
          unsigned int offset=0;
+		 const unsigned int rgioffset = (rampVertex-1)*6;
          for (int i=0;i<(rampVertex-1);i++)
          {
             Vertex3D_NoTex2 * const rgv3D = rgvbuf+i*4;
@@ -2807,12 +2800,12 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
             rgibuf[i*6+4] = i*4+2;
             rgibuf[i*6+5] = i*4+3;
 
-            invrgibuf[i*6]   = i*4;
-            invrgibuf[i*6+1] = i*4+3;
-            invrgibuf[i*6+2] = i*4+2;
-            invrgibuf[i*6+3] = i*4;
-            invrgibuf[i*6+4] = i*4+2;
-            invrgibuf[i*6+5] = i*4+1;
+            rgibuf[i*6+rgioffset]   = i*4+numVertices;
+            rgibuf[i*6+rgioffset+1] = i*4+numVertices+3;
+            rgibuf[i*6+rgioffset+2] = i*4+numVertices+2;
+            rgibuf[i*6+rgioffset+3] = i*4+numVertices;
+            rgibuf[i*6+rgioffset+4] = i*4+numVertices+2;
+            rgibuf[i*6+rgioffset+5] = i*4+numVertices+1;
          }
          memcpy( &buf[offset], rgvbuf, sizeof(Vertex3D_NoTex2)*numVertices );
          offset+=numVertices;
@@ -2962,33 +2955,18 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          }
       }
 
-      if ( m_d.m_rightwallheightvisible!=0.f )
-      {
-         //only render right side if the height is >0
-         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
-         offset+=numVertices;
-         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
-         offset+=numVertices;
-      }
-      else
-         offset+=2*numVertices;
+      if ( m_d.m_rightwallheightvisible!=0.f ) //only render right side if the height is >0
+         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices*2, (LPWORD)rgibuf, (rampVertex-1)*6*2, 0 );
+      offset+=2*numVertices;
 
-      if ( m_d.m_leftwallheightvisible!=0.f )
-      {
-         //only render left side if the height is >0
-         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)rgibuf, (rampVertex-1)*6, 0 );
-         offset+=numVertices;
-         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices, (LPWORD)invrgibuf, (rampVertex-1)*6, 0 );
-         offset+=numVertices;
-      }
+      if ( m_d.m_leftwallheightvisible!=0.f ) //only render left side if the height is >0
+         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices*2, (LPWORD)rgibuf, (rampVertex-1)*6*2, 0 );
 
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
       ppin3d->SetTexture(NULL);
       if ( !m_d.m_enableLightingImage && pin!=NULL )
-      {
          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
-      }
    }
 }

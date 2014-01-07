@@ -283,9 +283,9 @@ void Flipper::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
-   if (m_d.m_FlipperRadiusMin > 0 && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
+   if (m_d.m_FlipperRadiusMin > 0.f && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
    {
-      m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax -( m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) *m_ptable->m_globalDifficulty;
+      m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - ( m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
       m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
    }
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
@@ -406,9 +406,9 @@ void Flipper::Render(Sur * const psur)
    else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
       , rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);
 
-   if (m_d.m_FlipperRadiusMin > 0 && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
+   if (m_d.m_FlipperRadiusMin > 0.f && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
    {
-      m_d.m_FlipperRadius = (m_ptable->m_globalDifficulty > 0) ? m_d.m_FlipperRadiusMin : m_d.m_FlipperRadiusMax;
+      m_d.m_FlipperRadius = (m_ptable->m_globalDifficulty > 0.f) ? m_d.m_FlipperRadiusMin : m_d.m_FlipperRadiusMax;
       m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
    }
    else return;
@@ -447,8 +447,7 @@ void Flipper::Render(Sur * const psur)
       else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
          , rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);
 
-      m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax -( m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) 
-         *m_ptable->m_globalDifficulty;
+      m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - (m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
       m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
 
       SetVertices(anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
@@ -571,7 +570,7 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
       m_phitflipper->m_flipperanim.m_maxvelocity = (m_d.m_OverridePhysics ? m_d.m_OverrideSpeed : m_d.m_force) * 4.5f;
 
       float rtn = (m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : m_d.m_return);
-      if (rtn <= 0) rtn = 1.0f;
+      if (rtn <= 0.f) rtn = 1.0f;
 
       m_phitflipper->m_flipperanim.m_force = (m_d.m_OverridePhysics ? m_d.m_OverrideSpeed : m_d.m_force) * rtn;
       m_phitflipper->m_forcemass = (m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength) * rtn;		

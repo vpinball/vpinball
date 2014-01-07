@@ -168,12 +168,12 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
 		{
 		m_angleCur = m_angleMax; 
 
-		if (m_anglespeed > 0) 
+		if (m_anglespeed > 0.f) 
 			{
 			if(m_fAcc > 0) m_fAcc = 0;
 
 			const float anglespd = fabsf(RADTOANG(m_anglespeed));
-			m_anglespeed = 0; 
+			m_anglespeed = 0.f;
 			
 			if (m_EnableRotateEvent > 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS,anglespd); // send EOS event
 			else if (m_EnableRotateEvent < 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd);	// send Beginning of Stroke event
@@ -184,12 +184,12 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
 		{
 		m_angleCur = m_angleMin; 
 
-		if (m_anglespeed < 0)
+		if (m_anglespeed < 0.f)
 			{
 			if(m_fAcc < 0) m_fAcc = 0;
 
 			const float anglespd = fabsf(RADTOANG(m_anglespeed));
-			m_anglespeed = 0;			
+			m_anglespeed = 0.f;			
 
 			if (m_EnableRotateEvent > 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS,anglespd); // send EOS event
 			else if (m_EnableRotateEvent < 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd);	// send Park event
@@ -201,7 +201,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
 void FlipperAnimObject::UpdateVelocities()
 	{
 	if (m_fAcc == 0) ;//m_anglespeed = 0; //idle
-	else if (m_fAcc > 0) // postive ... increasing angle
+	else if (m_fAcc > 0) // positive ... increasing angle
 		{			
 		m_anglespeed += (m_force/m_mass) * C_FLIPPERACCEL; //new angular rate
 
@@ -210,7 +210,7 @@ void FlipperAnimObject::UpdateVelocities()
 		}
 	else // negative ... decreasing angle
 		{		
-		m_anglespeed -= (m_force/m_mass) * C_FLIPPERACCEL;	//new angular rate
+		m_anglespeed -= (m_force/m_mass) * C_FLIPPERACCEL; //new angular rate
 
 		if (m_anglespeed < -m_maxvelocity) 
 			m_anglespeed = -m_maxvelocity; //limit			
@@ -615,7 +615,7 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 
 		if (m_flipperanim.m_fAcc != 0)											// currently in rotation
 			{	
-			obliquecorr = m_flipperanim.m_fAcc * (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideOblique : m_pflipper->m_d.m_obliquecorrection); //flipper trajectory correction
+			obliquecorr = (float)m_flipperanim.m_fAcc * (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideOblique : m_pflipper->m_d.m_obliquecorrection); //flipper trajectory correction
 			impulse = (1.005f + m_elasticity)*m_forcemass/(m_forcemass + tfr);	// impulse for pinball
 			m_flipperanim.m_anglespeed = anglespeed;							// new angle speed for flipper	
 			}
@@ -649,12 +649,12 @@ void HitFlipper::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		scatter_angle = c_hardScatter;
 	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply difficulty weighting
 
-	if (dot > -1.0f) scatter_angle = 0;									// not for low velocities
+	if (dot > -1.0f) scatter_angle = 0.f;								// not for low velocities
 
-	if (obliquecorr != 0 || scatter_angle > 1.0e-5f)					// trajectory correction to reduce the obliqueness 
+	if (obliquecorr != 0.f || scatter_angle > 1.0e-5f)					// trajectory correction to reduce the obliqueness 
 		{
 		float scatter = rand_mt_m11();			    // -1.0f..1.0f
-		scatter *= (1.0f - scatter*scatter)* 2.59808f * scatter_angle;	// shape quadratic distribution and scale
+		scatter *= (1.0f - scatter*scatter) * 2.59808f * scatter_angle;	// shape quadratic distribution and scale
 		scatter_angle = obliquecorr + scatter;
 		const float radsin = sinf(scatter_angle);	//  Green's transform matrix... rotate angle delta 
 		const float radcos = cosf(scatter_angle);	//  rotational transform from current position to position at time t

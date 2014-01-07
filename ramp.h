@@ -138,7 +138,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
     float *rgheightInit,*rgratioInit;
 
 	WORD *rgibuf;
-	WORD *invrgibuf;
 
 	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;

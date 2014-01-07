@@ -10,10 +10,10 @@ PinInput::PinInput()
 
 	m_pDI = NULL;
 	m_pKeyboard = NULL;
-   m_pMouse = NULL;
+    //m_pMouse = NULL;
 
-   leftMouseButtonDown=false;
-   rightMouseButtonDown=false;
+    leftMouseButtonDown=false;
+    rightMouseButtonDown=false;
 
 	m_head = m_tail = 0;
 	m_PreviousKeys = 0;
@@ -24,7 +24,8 @@ PinInput::PinInput()
 
 	e_JoyCnt = 0;
 	//m_pJoystick = NULL;
-	for (int k = 0; k < PININ_JOYMXCNT; ++k) m_pJoystick[k] = NULL;
+	for (int k = 0; k < PININ_JOYMXCNT; ++k)
+		m_pJoystick[k] = NULL;
 
 	uShockDevice = -1;	// only one uShock device
 	uShockType = 0;
@@ -67,11 +68,12 @@ PinInput::PinInput()
 	m_joydebug = 0;
 	m_joymechtilt = 0;
 
-	firedautostart = 0;
-	firedautocoin = 0;
+	m_firedautostart = 0;
+	m_firedautocoin = 0;
 
-	pressed_start = 0;
-   m_enableMouseInPlayer=true;
+	m_pressed_start = 0;
+    
+	m_enableMouseInPlayer=true;
 
 	HRESULT hr;
 	int tmp;
@@ -397,15 +399,17 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail( /*const U32 curr_sim_msec*/ )
 
 		return ptr;
 	}
-	return NULL;
+	//return NULL;
 }
 
 
 void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/) 
 {
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
+
+	// keyboard
 	const LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
-	if (pkyb) //keyboard
+	if (pkyb)
 		{	
 		HRESULT hr = pkyb->Acquire();				// try to Acquire keyboard input
 		if (hr == S_OK || hr == S_FALSE)
@@ -416,13 +420,13 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 			if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
 				{					
 				if (m_hwnd == GetForegroundWindow())
-					{
-					for (DWORD i = 0; i < dwElements; i++) PushQueue( &didod[i], APP_KEYBOARD/*, curr_time_msec*/ );
-					}
+					for (DWORD i = 0; i < dwElements; i++)
+						PushQueue( &didod[i], APP_KEYBOARD/*, curr_time_msec*/ );
 				}
 			}
 		}
 
+   // mouse
    if ( m_enableMouseInPlayer )
    {
       DIMOUSESTATE mouseState;
@@ -437,72 +441,70 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
          mouseState.rgbButtons[1] = 0x80;
       }
       					
-      if (m_hwnd == GetForegroundWindow())
-      {
-         if ( g_pplayer->m_fThrowBalls )
-         {
-            if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown )
+            if (m_hwnd == GetForegroundWindow())
             {
-               POINT curPos;
-               GetCursorPos(&curPos);
-               mouseX = curPos.x;
-               mouseY = curPos.y;
-
-               leftMouseButtonDown=true;
+               if ( g_pplayer->m_fThrowBalls )
+               {
+               if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown )
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  mouseX = curPos.x;
+                  mouseY = curPos.y;
+                  leftMouseButtonDown=true;
+               }
+               if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown )
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  mouseDX = curPos.x-mouseX;
+                  mouseDY = curPos.y-mouseY;
+                  didod[0].dwData=1;
+                  PushQueue( &didod[0],APP_MOUSE );
+                  leftMouseButtonDown=false;
+               }
+               if ( (mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown )
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  mouseX = curPos.x;
+                  mouseY = curPos.y;
+                  rightMouseButtonDown=true;
+               }
+               if ( !(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown )
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  mouseDX = curPos.x-mouseX;
+                  mouseDY = curPos.y-mouseY;
+                  didod[0].dwData=2;
+                  PushQueue( &didod[0],APP_MOUSE );
+                  rightMouseButtonDown=false;
+               }
             }
-            if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown )
-            {
-               POINT curPos;
-               GetCursorPos(&curPos);
-               mouseDX = curPos.x-mouseX;
-               mouseDY = curPos.y-mouseY;
-               didod[0].dwData=1;
-               PushQueue( &didod[0],APP_MOUSE );
-               leftMouseButtonDown=false;
-            }
-            if ( (mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown )
-            {
-               POINT curPos;
-               GetCursorPos(&curPos);
-               mouseX = curPos.x;
-               mouseY = curPos.y;
-               rightMouseButtonDown=true;
-            }
-            if ( !(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown )
-            {
-               POINT curPos;
-               GetCursorPos(&curPos);
-               mouseDX = curPos.x-mouseX;
-               mouseDY = curPos.y-mouseY;
-               didod[0].dwData=2;
-               PushQueue( &didod[0],APP_MOUSE );
-               rightMouseButtonDown=false;
-            }
+               else
+               {
+                  if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown )
+                  {
+                     POINT curPos;
+                     GetCursorPos(&curPos);
+                     mouseX = curPos.x;
+                     mouseY = curPos.y;
+                     leftMouseButtonDown=true;
+                     didod[0].dwData=3;
+                     PushQueue( &didod[0],APP_MOUSE );
          }
-         else
-         {
-            if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown )
-            {
-               POINT curPos;
-               GetCursorPos(&curPos);
-               mouseX = curPos.x;
-               mouseY = curPos.y;
-               leftMouseButtonDown=true;
-               didod[0].dwData=3;
-               PushQueue( &didod[0],APP_MOUSE );
-            }
-            if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown )
-            {
-               leftMouseButtonDown=false;
-               didod[0].dwData=4;
-               PushQueue( &didod[0],APP_MOUSE );
-            }                  
-            
-         }
+                  if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown )
+                  {
+                     leftMouseButtonDown=false;
+                     didod[0].dwData=4;
+                     PushQueue( &didod[0],APP_MOUSE );
+                  }                  
+                  
       }
    }
-	// same for joysticks 
-
+         }
+    // same for joysticks 
 	for (int k = 0; k < e_JoyCnt; ++k)
 		{
 		const LPDIRECTINPUTDEVICE pjoy = m_pJoystick[k];
@@ -517,9 +519,8 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 				if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
 					{	
 					if (m_hwnd == GetForegroundWindow())
-						{														
-						for (DWORD i = 0; i < dwElements; i++) PushQueue( &didod[i], APP_JOYSTICK(k)/*, curr_time_msec*/ ); 
-						}
+						for (DWORD i = 0; i < dwElements; i++)
+							PushQueue( &didod[i], APP_JOYSTICK(k)/*, curr_time_msec*/ ); 
 					}	
 				}
 			}
@@ -610,12 +611,12 @@ void PinInput::UnInit()
 		m_pKeyboard = NULL;
 		}
 
-   if ( m_pMouse )
+   /*if ( m_pMouse )
    {
       m_pMouse->Unacquire();
       m_pMouse->Release();
       m_pMouse = NULL;
-   }
+   }*/
 
 	// restore the state of the sticky keys
 	SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, SPIF_SENDCHANGE);
@@ -733,12 +734,12 @@ void PinInput::FireKeyEvent( const int dispid, const int key )
 int PinInput::started()
 {
 	// Was the start button pressed?
-	if( pressed_start ) 
+	if( m_pressed_start ) 
 		return 1;
 
     if ( Ball::GetBallsInUse() > 0 )
 	{
-		pressed_start = 1;
+		m_pressed_start = 1;
 		return 1;
 	}
 	else
@@ -759,12 +760,12 @@ void PinInput::autocoin( const U32 msecs, const U32 curr_time_msec )
 	// Check if we have coins.
 	if ( g_pplayer->m_Coins > 0 )
 	{
-		if( (firedautocoin > 0) &&														// Initialized.
+		if( (m_firedautocoin > 0) &&														// Initialized.
 			(down == 1) &&																// Coin button is down.
-			((curr_time_msec - firedautocoin) > 100) )									// Coin button has been down for at least 0.10 seconds.
+			((curr_time_msec - m_firedautocoin) > 100) )									// Coin button has been down for at least 0.10 seconds.
 		{
 			// Release coin button.
-			firedautocoin = curr_time_msec;
+			m_firedautocoin = curr_time_msec;
 			down = 0;
 			FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eAddCreditKey] );
 
@@ -778,11 +779,11 @@ void PinInput::autocoin( const U32 msecs, const U32 curr_time_msec )
 
 		// Logic to do "autocoin"
 		if( (down == 0) &&														// Coin button is up.
-			(((didonce == 1) && ((curr_time_msec - firedautocoin) > 500))) ||	// Last attempt was at least 0.50 seconds ago.
-			 ((didonce == 0) && ((curr_time_msec - firedautocoin) > msecs)) )	// Never attempted and at least autostart seconds have elapsed.
+			(((didonce == 1) && ((curr_time_msec - m_firedautocoin) > 500))) ||	// Last attempt was at least 0.50 seconds ago.
+			 ((didonce == 0) && ((curr_time_msec - m_firedautocoin) > msecs)) )	// Never attempted and at least autostart seconds have elapsed.
 		{
 			// Press coin button.
-			firedautocoin = curr_time_msec;
+			m_firedautocoin = curr_time_msec;
 			down = 1;
 			didonce = 1;
 			FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eAddCreditKey] );
@@ -798,9 +799,7 @@ void PinInput::autocoin( const U32 msecs, const U32 curr_time_msec )
 void PinInput::autostart( const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec )
 {
 //	if( !VPinball::m_open_minimized ) 
-//	{
 //		return;
-//	}
 	
 	// Make sure we have a player.
 	if( !g_pplayer ||
@@ -811,12 +810,12 @@ void PinInput::autostart( const U32 msecs, const U32 retry_msecs, const U32 curr
 	static int down = 0;
 	static int didonce = 0;
 		
-	if( (firedautostart > 0) &&				// Initialized.
+	if( (m_firedautostart > 0) &&				// Initialized.
 		(down == 1) &&						// Start button is down.
-		((curr_time_msec - firedautostart) > 100) )	// Start button has been down for at least 0.10 seconds.
+		((curr_time_msec - m_firedautostart) > 100) )	// Start button has been down for at least 0.10 seconds.
 	{
 		// Release start.
-		firedautostart = curr_time_msec;
+		m_firedautostart = curr_time_msec;
 		down = 0;
 		FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eStartGameKey] );
 
@@ -827,11 +826,11 @@ void PinInput::autostart( const U32 msecs, const U32 retry_msecs, const U32 curr
 
 	// Logic to do "autostart"
 	if( (down == 0) &&																			 // Start button is up.
-		(((didonce == 1) && !started() && ((curr_time_msec - firedautostart) > retry_msecs))) || // Not started and last attempt was at least AutoStartRetry seconds ago.
-		 ((didonce == 0) && ((curr_time_msec - firedautostart) > msecs)) )						 // Never attempted and autostart time has elapsed.
+		(((didonce == 1) && !started() && ((curr_time_msec - m_firedautostart) > retry_msecs))) || // Not started and last attempt was at least AutoStartRetry seconds ago.
+		 ((didonce == 0) && ((curr_time_msec - m_firedautostart) > msecs)) )						 // Never attempted and autostart time has elapsed.
 	{
 		// Press start.
-		firedautostart = curr_time_msec;
+		m_firedautostart = curr_time_msec;
 		down = 1;
 		didonce = 1;
 		FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eStartGameKey] );
@@ -891,7 +890,8 @@ void PinInput::tilt_update()
 
 	updown = plumb_tilted() ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
 
-	if( updown != tmp ) FireKeyEvent( updown, g_pplayer->m_rgKeys[eCenterTiltKey] );
+	if( updown != tmp )
+		FireKeyEvent( updown, g_pplayer->m_rgKeys[eCenterTiltKey] );
 }
 
 void PinInput::Joy(const unsigned int n, const int updown, const bool start)
@@ -907,7 +907,7 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
 	{
 		if( start ) 
 		{
-			pressed_start = n;
+			m_pressed_start = n;
 			FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 		}
 	}
@@ -971,12 +971,12 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 	}
 
 	// Check if we've been initialized.
-	if( firedautostart == 0 )
-		firedautostart = curr_time_msec;
+	if( m_firedautostart == 0 )
+		m_firedautostart = curr_time_msec;
 
 	// Check if we've been initialized.
-	if( firedautocoin == 0 )
-		firedautocoin = curr_time_msec;
+	if( m_firedautocoin == 0 )
+		m_firedautocoin = curr_time_msec;
 
 	GetInputDeviceData(/*curr_time_msec*/);
 
@@ -987,79 +987,79 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
       {
          if ( g_pplayer->m_fThrowBalls )
          {
-            if ( input->dwData==1 )
+         if ( input->dwData==1 )
+         {
+            POINT point = {mouseX,mouseY};
+            ScreenToClient(m_hwnd, &point);
+            const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
+
+            float vx = (float)mouseDX*0.1f;
+            float vy = (float)mouseDY*0.1f;
+            if (ptable->m_rotation!=0.f && ptable->m_rotation!=360.f )
             {
-               POINT point = {mouseX,mouseY};
-               ScreenToClient(m_hwnd, &point);
-               Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
+               const float radangle = ANGTORAD(ptable->m_rotation);
+               const float sn = sinf(radangle);
+               const float cs = cosf(radangle);
 
-               float vx = (float)mouseDX*0.1f;
-               float vy = (float)mouseDY*0.1f;
-               if (ptable->m_rotation!=0 && ptable->m_rotation!=360 )
+               const float vx2 = cs*vx - sn*vy;
+               const float vy2 = sn*vx + cs*vy;
+               vx = -vx2;
+               vy = -vy2;
+            }
+            bool ballGrabbed=false;
+            for( int i=0;i<g_pplayer->m_vball.Size();i++ )
+            {
+               Ball * const pBall = g_pplayer->m_vball.ElementAt(i);
+               const float dx = fabsf(vertex.x - pBall->x);
+               const float dy = fabsf(vertex.y - pBall->y);
+               if ( dx<50.f && dy<50.f )
                {
-                  const float radangle = ANGTORAD(ptable->m_rotation);
-                  const float sn = sinf(radangle);
-                  const float cs = cosf(radangle);
+                  POINT newPoint;
+                  GetCursorPos(&newPoint);
+                  ScreenToClient(m_hwnd, &newPoint);
+                  const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(&newPoint);
 
-                  float vx2 = cs*vx - sn*vy;
-                  float vy2 = sn*vx + cs*vy;
-                  vx = -vx2;
-                  vy = -vy2;
-               }
-               bool ballGrabbed=false;
-               for( int i=0;i<g_pplayer->m_vball.Size();i++ )
-               {
-                  Ball *pBall = g_pplayer->m_vball.ElementAt(i);
-                  float dx = abs(vertex.x - pBall->x);
-                  float dy = abs(vertex.y - pBall->y);
-                  if ( dx<50 && dy<50 )
-                  {
-                     POINT newPoint;
-                     GetCursorPos(&newPoint);
-                     ScreenToClient(m_hwnd, &newPoint);
-                     Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(&newPoint);
-
-                     ballGrabbed=true;
-                     pBall->x = vert.x;
-                     pBall->y = vert.y;
-                     pBall->vx = vx;
-                     pBall->vy = vy;
-                     pBall->Init();
-                     break;
-                  }
-               }
-               if ( !ballGrabbed )
-               {
-                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, 1.0f, vx, vy, 0);
-                  pball->m_pballex->AddRef();
+                  ballGrabbed=true;
+                  pBall->x = vert.x;
+                  pBall->y = vert.y;
+                  pBall->vx = vx;
+                  pBall->vy = vy;
+                  pBall->Init();
+                  break;
                }
             }
-            else if ( input->dwData==2 )
+            if ( !ballGrabbed )
             {
-               POINT point = {mouseX,mouseY};
-               ScreenToClient(m_hwnd, &point);
-               Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
+               Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, 1.0f, vx, vy, 0);
+               pball->m_pballex->AddRef();
+            }
+         }
+         else if ( input->dwData==2 )
+         {
+            POINT point = {mouseX,mouseY};
+            ScreenToClient(m_hwnd, &point);
+            const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
 
-               for( int i=0;i<g_pplayer->m_vball.Size();i++ )
+            for( int i=0;i<g_pplayer->m_vball.Size();i++ )
+            {
+               Ball *pBall = g_pplayer->m_vball.ElementAt(i);
+               const float dx = fabsf(vertex.x - pBall->x);
+               const float dy = fabsf(vertex.y - pBall->y);
+               if ( dx<50.f && dy<50.f )
                {
-                  Ball *pBall = g_pplayer->m_vball.ElementAt(i);
-                  float dx = abs(vertex.x - pBall->x);
-                  float dy = abs(vertex.y - pBall->y);
-                  if ( dx<50 && dy<50 )
-                  {
-                     g_pplayer->DestroyBall(pBall);
-                     break;
-                  }
+                  g_pplayer->DestroyBall(pBall);
+                  break;
                }
             }
          }
+      }
          POINT point = {mouseX,mouseY};
          ScreenToClient(m_hwnd, &point);
          unsigned int halfWidth=g_pplayer->m_screenwidth/2;
          unsigned int fullWidth=g_pplayer->m_screenwidth;
          float xx=point.x;
          float yy=point.y;
-         if (ptable->m_rotation!=0 && ptable->m_rotation!=360 )
+         if (ptable->m_rotation!=0.f && ptable->m_rotation!=360.f )
          {
             halfWidth=g_pplayer->m_screenheight/2;
             fullWidth=g_pplayer->m_screenheight;
@@ -1067,13 +1067,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
             const float sn = sinf(radangle);
             const float cs = cosf(radangle);
 
-            float xx2 = cs*xx - sn*yy;
-            float yy2 = sn*xx + cs*yy;
-            xx = g_pplayer->m_screenheight-abs(xx2);
-            yy = abs(yy2);
+            const float xx2 = cs*xx - sn*yy;
+            const float yy2 = sn*xx + cs*yy;
+            xx = g_pplayer->m_screenheight-fabsf(xx2);
+            yy = fabsf(yy2);
          }
 
-         if ( xx>=0 && xx<halfWidth )
+         if ( xx>=0.f && xx<(float)halfWidth )
          {
             if ( input->dwData==3 )
             {
@@ -1084,7 +1084,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eLeftFlipperKey]);
             }
          }
-         else if ( xx>=halfWidth && xx<fullWidth)
+         else if ( xx>=(float)halfWidth && xx<(float)fullWidth)
          {
             if ( input->dwData==3 )
             {
@@ -1141,7 +1141,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 			if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
 			{
 			const int updown = (input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-			const bool start = ((curr_time_msec - firedautostart) > m_ptable->m_tblAutoStart) || pressed_start || started();
+			const bool start = ((curr_time_msec - m_firedautostart) > m_ptable->m_tblAutoStart) || m_pressed_start || started();
 			if (input->dwOfs == DIJOFS_BUTTON0)
 				{
 					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // plunge
@@ -1226,7 +1226,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 				{
 					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0))
 						{	if( start ) 
-							{	pressed_start = 1;
+							{	m_pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
 						}
@@ -1269,7 +1269,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // start
 						{ // Check if we can allow the start (table is done initializing).
 							if( start ) 
-							{	pressed_start = 1;
+							{	m_pressed_start = 1;
 								FireKeyEvent( updown,g_pplayer->m_rgKeys[eStartGameKey] );
 							}
 					    }
