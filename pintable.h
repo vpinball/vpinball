@@ -276,7 +276,10 @@ public:
 	STDMETHOD(get_TableMusicVolume)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TableMusicVolume)(/*[in]*/ int newVal);
 
-    STDMETHOD(get_AlphaRampAccuracy)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_TableAdaptiveVSync)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_TableAdaptiveVSync)(/*[in]*/ int newVal);
+
+	STDMETHOD(get_AlphaRampAccuracy)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_AlphaRampAccuracy)(/*[in]*/ int newVal);
 
 	STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
@@ -619,6 +622,8 @@ END_CONNECTION_POINT_MAP()
 
 	float m_TableSoundVolume;
 	float m_TableMusicVolume;
+
+	int m_TableAdaptiveVSync;
 
 	BOOL m_fGrid; // Display grid or not
 	BOOL m_fBackdrop;
