@@ -1650,11 +1650,11 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 						++c_embedcnts;
 #endif
 					///////////////////////////////////////////////////////////////////////////
-					if (htz <= hittime)						//smaller hit time??
+					if (htz <= hittime)					//smaller hit time??
 					{
-						hittime = htz;						// record actual event time
+						hittime = htz;					// record actual event time
 
-						if (htz < STATICTIME)				// less than static time interval
+						if (htz < STATICTIME)			// less than static time interval
 						{ 
 							if(!pball->m_HitRigid) hittime = STATICTIME; // non-rigid ... set Static time
 							else if (--StaticCnts < 0)		
@@ -2812,9 +2812,9 @@ void Player::UnpauseMusic()
 		}
 }
 
-void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
+void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoLighting *vBuffer)
 {
-   Vertex3D_NoTex2 * const rgv3DShadow = pball->m_rgv3DShadow;
+   Vertex3D_NoLighting * const rgv3DShadow = pball->m_rgv3DShadow;
 
    if ( !vBuffer )
    {
@@ -2910,7 +2910,7 @@ void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
       if (!pball->fFrozen && rgv3DShadow[0].x <= m_ptable->m_right && rgv3DShadow[2].y >= m_ptable->m_top)
       {
          if(vBuffer)
-            memcpy( vBuffer, rgv3DShadow, sizeof(Vertex3D_NoTex2)*4);
+            memcpy( vBuffer, rgv3DShadow, sizeof(Vertex3D_NoLighting)*4);
       }
    }
 }
@@ -2928,7 +2928,7 @@ void Player::DrawBallShadow(Ball * const pball)
 
    m_pin3d.ballShadowTexture.Set( ePictureTexture );
    m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
-   Vertex3D_NoTex2 * const rgv3DShadow = pball->m_rgv3DShadow;
+   Vertex3D_NoLighting * const rgv3DShadow = pball->m_rgv3DShadow;
 
    if (!pball->fFrozen && rgv3DShadow[0].x <= m_ptable->m_right && rgv3DShadow[2].y >= m_ptable->m_top)
       m_pin3d.m_pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, pball->vertexBuffer, 12, 4, (LPWORD)rgi0123, 4, 0 );
@@ -2937,11 +2937,11 @@ void Player::DrawBallShadow(Ball * const pball)
 }
 
 // gets called from DrawBalls, all render states are handled there
-void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
+void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoLighting *vBuffer)
 {
    // Draw the ball logo
-   Vertex3D_NoTex2 *rgv3DArrowTransformed = pball->logoFrontVerts;
-   Vertex3D_NoTex2 *rgv3DArrowTransformed2 = pball->logoBackVerts;
+   Vertex3D_NoLighting *rgv3DArrowTransformed = pball->logoFrontVerts;
+   Vertex3D_NoLighting *rgv3DArrowTransformed2 = pball->logoBackVerts;
    if ( !vBuffer )
    {
       const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
@@ -2958,9 +2958,7 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
          for (int iPoint=0;iPoint<4;iPoint++)
          {
             const Vertex3Ds tmp = orientation.MultiplyVector(pball->logoVertices[iPoint]);
-            rgv3DArrowTransformed[iPoint].nx = tmp.x;
-            rgv3DArrowTransformed[iPoint].ny = tmp.y;
-            rgv3DArrowTransformed[iPoint].nz = tmp.z;
+            rgv3DArrowTransformed[iPoint].color = pball->m_color;
             rgv3DArrowTransformed[iPoint].x = pball->x - tmp.x*pball->radius;
             rgv3DArrowTransformed[iPoint].y = pball->y - tmp.y*pball->radius;
             rgv3DArrowTransformed[iPoint].z = zheight  - tmp.z*pball->radius;
@@ -2980,9 +2978,7 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
             pball->logoVertices[iPoint].x = -pball->logoVertices[iPoint].x;
             pball->logoVertices[iPoint].z = -pball->logoVertices[iPoint].z;
             const Vertex3Ds tmp = orientation.MultiplyVector(pball->logoVertices[iPoint]);
-            rgv3DArrowTransformed2[iPoint].nx = tmp.x;
-            rgv3DArrowTransformed2[iPoint].ny = tmp.y;
-            rgv3DArrowTransformed2[iPoint].nz = tmp.z;
+            rgv3DArrowTransformed2[iPoint].color = pball->m_color;
             rgv3DArrowTransformed2[iPoint].x = pball->x - tmp.x*pball->radius;
             rgv3DArrowTransformed2[iPoint].y = pball->y - tmp.y*pball->radius;
             rgv3DArrowTransformed2[iPoint].z = zheight  - tmp.z*pball->radius;
@@ -3000,8 +2996,8 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
    }
    else
    {
-      memcpy( vBuffer, pball->logoFrontVerts, sizeof(Vertex3D_NoTex2)*4);
-      memcpy( &vBuffer[4], pball->logoBackVerts, sizeof(Vertex3D_NoTex2)*4);
+      memcpy( vBuffer, pball->logoFrontVerts, sizeof(Vertex3D_NoLighting)*4);
+      memcpy( &vBuffer[4], pball->logoBackVerts, sizeof(Vertex3D_NoLighting)*4);
    }
 }
 
@@ -3071,15 +3067,13 @@ void Player::DrawBalls(const bool only_invalidate_regions)
       {
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          if( (zheight > maxz) || (pball->z < minz) )
-         {
             drawReflection=false;
-         }
       }
       if( only_invalidate_regions )
       {
          const float radiusX = pball->radius * m_BallStretchX;
          const float radiusY = pball->radius * m_BallStretchY;
-         Vertex3D_NoTex2 * const rgv3D = pball->vertices;
+         Vertex3D_NoLighting * const rgv3D = pball->vertices;
          rgv3D[0].x = pball->x - radiusX;
          rgv3D[0].y = pball->y - (radiusY * cs);
          rgv3D[0].z = zheight + (pball->radius * sn);
@@ -3095,7 +3089,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          rgv3D[3].x = pball->x - radiusX;
          rgv3D[3].y = pball->y + (radiusY * cs);
          rgv3D[3].z = zheight - (pball->radius * sn);
-         memcpy( pball->reflectVerts, rgv3D, sizeof(Vertex3D_NoTex2)*4);
+         memcpy( pball->reflectVerts, rgv3D, sizeof(Vertex3D_NoLighting)*4);
          if ( drawReflection )
          {
             pball->reflectVerts[0].y = rgv3D[2].y - (rgv3D[2].y-rgv3D[0].y)*0.5f;
@@ -3107,14 +3101,14 @@ void Player::DrawBalls(const bool only_invalidate_regions)
       }
 
 		// prepare the vertex buffer for all possible options (ball,logo,shadow)
-        Vertex3D_NoTex2 *buf;
+        Vertex3D_NoLighting *buf;
 		if(!only_invalidate_regions)
 		{
          Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
-		 memcpy( buf, pball->vertices, sizeof(Vertex3D_NoTex2)*4 );
+		 memcpy( buf, pball->vertices, sizeof(Vertex3D_NoLighting)*4 );
          if ( m_ptable->m_useReflectionForBalls )
          {
-            memcpy( &buf[16], pball->reflectVerts, sizeof(Vertex3D_NoTex2)*4 );
+            memcpy( &buf[16], pball->reflectVerts, sizeof(Vertex3D_NoLighting)*4 );
          }
 		}
 
@@ -3145,7 +3139,9 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          pball->material.setColor( 1.0f, pball->m_color );
          pball->material.set();
 
-         // now render the ball with the vertex buffer data
+ 		 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+
+		 // now render the ball with the vertex buffer data
 		 if (m_fBallShadows && m_fBallAntialias)
 			DrawBallShadow(pball);
 
@@ -3296,13 +3292,13 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
 				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+				//m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
 
 				m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D_all, num_rgv3D, (LPWORD)rgi_all, num_rgv3D, 0);
 
 				m_pin3d.ExpandExtents/*Plus*/(&pball->m_rcTrail, rgv3D_all, NULL, NULL, num_rgv3D, fFalse);
 
-				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+				//m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
 			}
@@ -3310,6 +3306,8 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 		 if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
 		    DrawBallLogo(pball);
+
+ 		 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 		}
 
         pball->m_fErase = true;
@@ -3333,11 +3331,15 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 			}
 
 		    if (!m_fBallAntialias)
+			{
+	 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
 				// When not antialiasing, we can get a perf win by
 				// drawing the ball first.  That way, the part of the
 				// shadow that gets obscured doesn't need to do
 				// alpha-blending
 				DrawBallShadow(pball);
+	 		    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+			}
 		}
 
 		if(only_invalidate_regions)
