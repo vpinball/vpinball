@@ -546,6 +546,7 @@
 #define IDR_REGISTRY4                   395
 #define IDC_CHECK3                      396
 #define IDC_PRIM_ENV_MAP                396
+#define IDC_VB_IN_VRAM                  396
 #define IDC_EDIT2                       397
 #define IDC_CHECK2                      398
 #define IDC_STATIC_RENDERING_CHECK      398
@@ -679,7 +680,7 @@
 #define IDC_REGION_UPDATES_TABLE        582
 #define IDC_REGION_OPT_TABLE            583
 #define IDC_UPDATEREGIONS               584
-#define IDC_TABLEAVSYNC		            585
+#define IDC_TABLEAVSYNC                 585
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601

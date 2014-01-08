@@ -3675,6 +3675,13 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             enableRegionUpdateOptimization = fTrue;
          SendMessage(hwndCheck, BM_SETCHECK, enableRegionUpdateOptimization ? BST_CHECKED : BST_UNCHECKED, 0);
 
+         hwndCheck = GetDlgItem(hwndDlg, IDC_VB_IN_VRAM); 
+         int vbInVram;
+         hr = GetRegInt("Player", "VBinVRAM", &vbInVram);
+         if (hr != S_OK)
+            vbInVram = fFalse;
+         SendMessage(hwndCheck, BM_SETCHECK, vbInVram ? BST_CHECKED : BST_UNCHECKED, 0);
+
          hwndCheck = GetDlgItem(hwndDlg, 211); //HardwareRender
          int hardrend;
          hr = GetRegInt("Player", "HardwareRender", &hardrend);
@@ -3862,6 +3869,10 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                   HWND hwndEnableRegionUpdateOptimization = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATE_OPTIMIZATION);
                   int enableRegionUpdateOptimization = SendMessage(hwndEnableRegionUpdateOptimization, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "EnableRegionUpdateOptimization", REG_DWORD, &enableRegionUpdateOptimization, 4);
+
+                  HWND hwndVbInVRAM = GetDlgItem(hwndDlg, IDC_VB_IN_VRAM);
+                  int vbInVram = SendMessage(hwndVbInVRAM, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "VBinVRAM", REG_DWORD, &vbInVram, 4);
 
                   HWND hwndHWR = GetDlgItem(hwndDlg, 211);
                   int hardrend = SendMessage(hwndHWR, BM_GETCHECK, 0, 0);
