@@ -27,6 +27,7 @@ bool RenderDevice::createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7
 RenderDevice::RenderDevice()
 {
    theDevice=this;
+   vbInVRAM=false;
    Material::setRenderDevice(this);
    Texture::SetRenderDevice(this);
    memset( renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
@@ -80,7 +81,11 @@ bool RenderDevice::createVertexBuffer( unsigned int _length, DWORD _usage, DWORD
 {
    D3DVERTEXBUFFERDESC vbd;
    vbd.dwSize = sizeof(vbd);
-   vbd.dwCaps = D3DVBCAPS_WRITEONLY | D3DVBCAPS_SYSTEMMEMORY; // essential on some setups //!! but maybe problems for others??
+   if( vbInVRAM )
+      vbd.dwCaps = 0; // set nothing to let the driver decide what's best for us ;)
+   else
+      vbd.dwCaps = D3DVBCAPS_WRITEONLY | D3DVBCAPS_SYSTEMMEMORY; // essential on some setups //!! but maybe problems for others??
+
    vbd.dwFVF = _fvf;
    vbd.dwNumVertices = _length;
    dx7->CreateVertexBuffer(&vbd, (LPDIRECT3DVERTEXBUFFER7*)_vBuffer, 0);  //!! Later-on/DX9: CreateIndexBuffer (and release/realloc them??)

@@ -43,6 +43,11 @@ public:
    void renderPrimitive(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, LPWORD _indices, DWORD _numIndices, DWORD _flags);
    void renderPrimitiveListed(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, DWORD _flags);
 
+   inline void setVBInVRAM( const BOOL _state )
+   {
+      vbInVRAM=(_state==1);
+   }
+
    inline void setHardwareAccelerated( const int _hwAcc)
    {
       hardwareAccelerated = _hwAcc;
@@ -163,6 +168,7 @@ private:
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];
    int hardwareAccelerated;
    BaseMaterial materialStateCache;
+   bool vbInVRAM;
 };
 
 class VertexBuffer : public IDirect3DVertexBuffer7

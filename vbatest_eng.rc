@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -254,14 +254,14 @@ BEGIN
     CONTROL         "Check &Blit Status (for Win98 and 2K)",IDC_CHECKBLIT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,140,133,10
     CONTROL         "Reorder Playfield Objects (for ATI/AMD gfx)",216,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,152,155,10
-    CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,180,28,10
-    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,190,32,10
-    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,200,32,10
-    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,210,45,10
-    LTEXT           "Restart Visual Pinball.",IDC_STATIC,244,183,72,8
-    LTEXT           "Only works for Images",IDC_STATIC,244,192,70,8
-    LTEXT           "that are not BMP.",IDC_STATIC,244,201,56,8
-    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,156,242,183,20
+    CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,192,28,10
+    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,202,32,10
+    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,212,32,10
+    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,222,45,10
+    LTEXT           "Restart Visual Pinball.",IDC_STATIC,244,195,72,8
+    LTEXT           "Only works for Images",IDC_STATIC,244,204,70,8
+    LTEXT           "that are not BMP.",IDC_STATIC,244,213,56,8
+    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,156,247,183,20
     CONTROL         "Enable 3D Stereo",IDC_3D_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,18,70,10
     CONTROL         "Antialias 3D",IDC_3D_STEREO_AA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,31,70,10
     CONTROL         "Use Y-Axis for 3D",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,44,70,10
@@ -274,10 +274,11 @@ BEGIN
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,72
     GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,72
     GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,81,190,188
-    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,170,180,55
-    LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,232,156,8
+    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,181,180,54
+    LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,238,156,8
     GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,62
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
+    CONTROL         "Vertex Buffers in VRAM",IDC_VB_IN_VRAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,163,90,10
 END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
@@ -436,7 +437,8 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,262,124,158,21
     GROUPBOX        "",IDC_STATIC,262,142,158,21
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,230,168,25
-    CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,201,100,10
+    CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,201,100,10
 END
 
 IDD_TRANSLATE DIALOGEX 0, 0, 186, 102
@@ -2238,7 +2240,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -165,7 +165,13 @@ Player::Player()
 		enableRegionUpdateOptimization = fTrue; // The default
 	m_fEnableRegionUpdateOptimization = (enableRegionUpdateOptimization == 1);
 
-	int detecthang;
+   int vbInVram;
+   hr = GetRegInt("Player", "VBinVRAM", &vbInVram);
+   if (hr != S_OK)
+      vbInVram = fFalse; // The default
+   m_fVertexBuffersInVRAM = (vbInVram == 1);
+
+   int detecthang;
 	hr = GetRegInt("Player", "DetectHang", &detecthang);
 	if (hr != S_OK)
 		detecthang = fFalse; // The default
@@ -635,6 +641,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		ShowError(szfoo);
 		return hr;
 	}
+
+   m_pin3d.m_pd3dDevice->setVBInVRAM( m_fVertexBuffersInVRAM );
 
 	if (m_fFullScreen)
 		{
