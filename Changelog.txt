@@ -31,6 +31,7 @@ VP 9.2.1 Changelog
   Note that for local/table export the first found flipper is used to export the flipper physics settings (and for import all flippers will be assigned with the same settings)
 
 - add optional ball trails/motion blur (also adjustable per-table)
+- disable lighting on balls
 
 - separate/new texture maps for the lighting of lights (more details) and bumpers (brighter)
 
