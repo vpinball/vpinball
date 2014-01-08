@@ -29,7 +29,7 @@ Ball::Ball()
    defaultZ = 25.0f;
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    fFrozen = false;
-   m_color = RGB(255*0.8,255*0.8,255*0.8); //!! make configurable
+   m_color = RGB(255*0.9,255*0.9,255*0.9); //!! make configurable
    logoMaterial.setDiffuse(0.8f, m_color );
    logoMaterial.setAmbient(0.8f, m_color );
    material.setColor( 1.0f, m_color );
@@ -146,7 +146,7 @@ void Ball::Init()
 
    m_vpVolObjs = new VectorVoid;
 
-   m_color = RGB(255*0.8,255*0.8,255*0.8); //!! make configurable
+   m_color = RGB(255*0.9,255*0.9,255*0.9); //!! make configurable
 
    if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
    {
