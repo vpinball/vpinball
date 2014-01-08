@@ -92,6 +92,11 @@ void RenderDevice::renderPrimitive(D3DPRIMITIVETYPE _primType, VertexBuffer* _vb
    dx7Device->DrawIndexedPrimitiveVB( _primType, (LPDIRECT3DVERTEXBUFFER7)_vbuffer, _startVertex, _numVertices, _indices, _numIndices, _flags );
 }
 
+void RenderDevice::renderPrimitiveListed(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, DWORD _flags)
+{
+   dx7Device->DrawPrimitiveVB( _primType, (LPDIRECT3DVERTEXBUFFER7)_vbuffer, _startVertex, _numVertices, _flags );
+}
+
 //########################## simple wrapper functions (interface for DX7)##################################
 
 STDMETHODIMP RenderDevice::QueryInterface( THIS_ REFIID riid, LPVOID * ppvObj )
