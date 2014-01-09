@@ -507,7 +507,7 @@ public:
          + m_d[2][2] * pv3D.z);
    }
 
-   inline Vertex3Ds MultiplyVector(const Vertex3D_NoLighting &pv3D) const
+   inline Vertex3Ds MultiplyVector(const Vertex3D_NoTex2 &pv3D) const
    {
       return Vertex3Ds(m_d[0][0] * pv3D.x
          + m_d[0][1] * pv3D.y

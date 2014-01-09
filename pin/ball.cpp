@@ -16,8 +16,8 @@ Ball::Ball()
    if( vertexBuffer==0 )
    {
       // VB for normal ball and logo(front+back) and shadow
-      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 5*4, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &vertexBuffer );
-      NumVideoBytes += 5*4*sizeof(Vertex3D_NoLighting);
+      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 5*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+      NumVideoBytes += 5*4*sizeof(Vertex3D_NoTex2);
    }
 
    m_pho = NULL;
@@ -29,7 +29,7 @@ Ball::Ball()
    defaultZ = 25.0f;
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    fFrozen = false;
-   m_color = RGB(255*0.8,255*0.8,255*0.8); //!! make configurable
+   m_color = RGB(255,255,255);
    logoMaterial.setDiffuse(0.8f, m_color );
    logoMaterial.setAmbient(0.8f, m_color );
    material.setColor( 1.0f, m_color );
@@ -49,15 +49,23 @@ void Ball::RenderSetup()
 {
    vertices[0].tu = 0;
    vertices[0].tv = 0;
-   vertices[0].color = m_color;
+   vertices[0].nx = 0;
+   vertices[0].ny = 0;
+   vertices[0].nz = -1.0f;
 
    vertices[3].tu = 0;
-   vertices[3].color = m_color;
+   vertices[3].nx = 0;
+   vertices[3].ny = 0;
+   vertices[3].nz = -1.0f;
 
-   vertices[2].color = m_color;
+   vertices[2].nx = 0;
+   vertices[2].ny = 0;
+   vertices[2].nz = -1.0f;
 
    vertices[1].tv = 0;
-   vertices[1].color = m_color;
+   vertices[1].nx = 0;
+   vertices[1].ny = 0;
+   vertices[1].nz = -1.0f;
 
    if (!m_pin)
    {
@@ -101,19 +109,27 @@ void Ball::RenderSetup()
 
    m_rgv3DShadow[0].tu = 0;
    m_rgv3DShadow[0].tv = 0;
-   m_rgv3DShadow[0].color = RGB(255,255,255);
+   m_rgv3DShadow[0].nx = 0;
+   m_rgv3DShadow[0].ny = 0;
+   m_rgv3DShadow[0].nz = -1.0f;
 
    m_rgv3DShadow[1].tu = 1.0f;
    m_rgv3DShadow[1].tv = 0;
-   m_rgv3DShadow[1].color = RGB(255,255,255);
+   m_rgv3DShadow[1].nx = 0;
+   m_rgv3DShadow[1].ny = 0;
+   m_rgv3DShadow[1].nz = -1.0f;
 
    m_rgv3DShadow[2].tu = 1.0f;
    m_rgv3DShadow[2].tv = 1.0f;
-   m_rgv3DShadow[2].color = RGB(255,255,255);
+   m_rgv3DShadow[2].nx = 0;
+   m_rgv3DShadow[2].ny = 0;
+   m_rgv3DShadow[2].nz = -1.0f;
 
    m_rgv3DShadow[3].tu = 0;
    m_rgv3DShadow[3].tv = 1.0f;
-   m_rgv3DShadow[3].color = RGB(255,255,255);
+   m_rgv3DShadow[3].nx = 0;
+   m_rgv3DShadow[3].ny = 0;
+   m_rgv3DShadow[3].nz = -1.0f;
 }
 
 void Ball::Init()
@@ -146,7 +162,7 @@ void Ball::Init()
 
    m_vpVolObjs = new VectorVoid;
 
-   m_color = RGB(255*0.8,255*0.8,255*0.8); //!! make configurable
+   m_color = RGB(255,255,255);
 
    if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
    {

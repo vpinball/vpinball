@@ -52,10 +52,10 @@ public:
    void RenderDynamics();
 
    void DrawBallShadow(Ball * const pball);
-   void CalcBallShadow(Ball * const pball, Vertex3D_NoLighting *vBuffer);
+   void CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
    void DrawBalls(const bool only_invalidate_regions);
    void DrawBallLogo(Ball * const pball );
-   void CalcBallLogo(Ball * const pball, Vertex3D_NoLighting *vBuffer);
+   void CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
    unsigned int CheckAndUpdateRegions();
    void FlipVideoBuffersNormal( unsigned int overall_area, bool vsync );
    void FlipVideoBuffers3D( unsigned int overall_area);
