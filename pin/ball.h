@@ -46,7 +46,7 @@ public:
 
 	void EnsureOMObject();
 
-	Vertex3D_NoLighting m_rgv3DShadow[4];		// Last vertices of the ball shadow
+	Vertex3D_NoTex2 m_rgv3DShadow[4];			// Last vertices of the ball shadow
 
 	RECT m_rcScreen;							// rect where the ball appears on the screen
     RECT m_rcScreenShadow;
@@ -75,11 +75,11 @@ public:
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
 	Vertex3Ds m_hitnormal[5];// 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
 
-    Vertex3D_NoLighting vertices[4];
-    Vertex3D_NoLighting logoVertices[4];
-    Vertex3D_NoLighting reflectVerts[4];
-    Vertex3D_NoLighting logoFrontVerts[4];
-    Vertex3D_NoLighting logoBackVerts[4];
+    Vertex3D_NoTex2 vertices[4];
+    Vertex3D_NoTex2 logoVertices[4];
+    Vertex3D_NoTex2 reflectVerts[4];
+    Vertex3D_NoTex2 logoFrontVerts[4];
+    Vertex3D_NoTex2 logoBackVerts[4];
 
     static VertexBuffer *vertexBuffer;
     Material shadowMaterial;

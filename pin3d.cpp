@@ -2092,9 +2092,9 @@ void Pin3D::ExpandExtents(RECT * const prc, Vertex3D_NoLighting* const rgv, floa
 }
 
 //copy pasted from above , +/- 2 instead
-void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D_NoLighting* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed)
+void Pin3D::ExpandExtentsPlus(RECT * const prc, Vertex3D_NoTex2* const rgv, float * const pznear, float * const pzfar, const int count, const BOOL fTransformed)
 {
-	Vertex3D_NoLighting * const rgvOut = (!fTransformed) ? new Vertex3D_NoLighting[count] : rgv;
+	Vertex3D_NoTex2 * const rgvOut = (!fTransformed) ? new Vertex3D_NoTex2[count] : rgv;
 
 	if (!fTransformed)
 		TransformVertices(rgv, NULL, count, rgvOut);
