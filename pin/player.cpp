@@ -3141,8 +3141,8 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		{
 		 Ball::vertexBuffer->unlock();
 
-         pball->logoMaterial.setDiffuse(0.8f, pball->m_color );
-         pball->logoMaterial.setAmbient(0.8f, pball->m_color );
+         pball->logoMaterial.setDiffuse( 0.8f, pball->m_color );
+         pball->logoMaterial.setAmbient( 0.8f, pball->m_color );
          pball->material.setColor( 1.0f, pball->m_color );
          pball->material.set();
 
@@ -3186,7 +3186,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 			if(!pball->m_disableLighting)
 			    factor = (strength<<24) | (strength<<16) | (strength<<8) | strength;
 			else
-			    factor = (strength<<24) | ((strength*(pball->m_color>>16)/255)<<16) | ((strength*((pball->m_color>>8)&255)/255)<<8) | (strength*(pball->m_color&255)/255);
+			    factor = (strength<<24) | (strength*(pball->m_color>>16)/255) | ((strength*((pball->m_color>>8)&255)/255)<<8) | ((strength*(pball->m_color&255)/255)<<16);
 		    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, factor);
 			m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // do not modify tex by diffuse lighting
 
@@ -3200,7 +3200,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 		 if(pball->m_disableLighting)
 		 {
-		    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, pball->m_color);
+		    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, (pball->m_color>>16) | (pball->m_color&0x00FF00) | ((pball->m_color&255)<<16));
 			m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // do not modify tex by diffuse lighting
 		 }
 
@@ -3326,7 +3326,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 		 if(pball->m_disableLighting)
 		 {
-		    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, pball->m_color);
+		    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, (pball->m_color>>16) | (pball->m_color&0x00FF00) | ((pball->m_color&255)<<16));
 			m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // do not modify tex by diffuse lighting
 		 }
 
@@ -3364,7 +3364,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 			{
 	 		    if(pball->m_disableLighting)
                 {
-		            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, pball->m_color);
+		            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, (pball->m_color>>16) | (pball->m_color&0x00FF00) | ((pball->m_color&255)<<16));
 				    m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // do not modify tex by diffuse lighting
                 }
 
