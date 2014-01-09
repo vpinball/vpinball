@@ -10,7 +10,7 @@ PinInput::PinInput()
 
 	m_pDI = NULL;
 	m_pKeyboard = NULL;
-    //m_pMouse = NULL;
+//   m_pMouse = NULL;
 
     leftMouseButtonDown=false;
     rightMouseButtonDown=false;
@@ -432,78 +432,79 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
       DIMOUSESTATE mouseState;
       mouseState.rgbButtons[0]=0;
       mouseState.rgbButtons[1]=0;
+
       if ( GetKeyState(VK_LBUTTON) & 0x80 )
       {
          mouseState.rgbButtons[0] = 0x80;
       }
+
       if ( GetKeyState(VK_RBUTTON) & 0x80 )
       {
          mouseState.rgbButtons[1] = 0x80;
       }
       					
-            if (m_hwnd == GetForegroundWindow())
+      if (m_hwnd == GetForegroundWindow())
+      {
+         if ( g_pplayer->m_fThrowBalls )
+         {
+            if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown )
             {
-               if ( g_pplayer->m_fThrowBalls )
-               {
-               if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown )
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  mouseX = curPos.x;
-                  mouseY = curPos.y;
-                  leftMouseButtonDown=true;
-               }
-               if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown )
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  mouseDX = curPos.x-mouseX;
-                  mouseDY = curPos.y-mouseY;
-                  didod[0].dwData=1;
-                  PushQueue( &didod[0],APP_MOUSE );
-                  leftMouseButtonDown=false;
-               }
-               if ( (mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown )
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  mouseX = curPos.x;
-                  mouseY = curPos.y;
-                  rightMouseButtonDown=true;
-               }
-               if ( !(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown )
-               {
-                  POINT curPos;
-                  GetCursorPos(&curPos);
-                  mouseDX = curPos.x-mouseX;
-                  mouseDY = curPos.y-mouseY;
-                  didod[0].dwData=2;
-                  PushQueue( &didod[0],APP_MOUSE );
-                  rightMouseButtonDown=false;
-               }
+               POINT curPos;
+               GetCursorPos(&curPos);
+               mouseX = curPos.x;
+               mouseY = curPos.y;
+               leftMouseButtonDown=true;
             }
-               else
-               {
-                  if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown )
-                  {
-                     POINT curPos;
-                     GetCursorPos(&curPos);
-                     mouseX = curPos.x;
-                     mouseY = curPos.y;
-                     leftMouseButtonDown=true;
-                     didod[0].dwData=3;
-                     PushQueue( &didod[0],APP_MOUSE );
+            if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown )
+            {
+               POINT curPos;
+               GetCursorPos(&curPos);
+               mouseDX = curPos.x-mouseX;
+               mouseDY = curPos.y-mouseY;
+               didod[0].dwData=1;
+               PushQueue( &didod[0],APP_MOUSE );
+               leftMouseButtonDown=false;
+            }
+            if ( (mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown )
+            {
+               POINT curPos;
+               GetCursorPos(&curPos);
+               mouseX = curPos.x;
+               mouseY = curPos.y;
+               rightMouseButtonDown=true;
+            }
+            if ( !(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown )
+            {
+               POINT curPos;
+               GetCursorPos(&curPos);
+               mouseDX = curPos.x-mouseX;
+               mouseDY = curPos.y-mouseY;
+               didod[0].dwData=2;
+               PushQueue( &didod[0],APP_MOUSE );
+               rightMouseButtonDown=false;
+            }
          }
-                  if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown )
-                  {
-                     leftMouseButtonDown=false;
-                     didod[0].dwData=4;
-                     PushQueue( &didod[0],APP_MOUSE );
-                  }                  
-                  
+         else
+         {
+            if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown )
+            {
+               POINT curPos;
+               GetCursorPos(&curPos);
+               mouseX = curPos.x;
+               mouseY = curPos.y;
+               leftMouseButtonDown=true;
+               didod[0].dwData=3;
+               PushQueue( &didod[0],APP_MOUSE );
+            }
+            if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown )
+            {
+               leftMouseButtonDown=false;
+               didod[0].dwData=4;
+               PushQueue( &didod[0],APP_MOUSE );
+            }                  
+        }
       }
    }
-         }
     // same for joysticks 
 	for (int k = 0; k < e_JoyCnt; ++k)
 		{
@@ -611,12 +612,12 @@ void PinInput::UnInit()
 		m_pKeyboard = NULL;
 		}
 
-   /*if ( m_pMouse )
-   {
-      m_pMouse->Unacquire();
-      m_pMouse->Release();
-      m_pMouse = NULL;
-   }*/
+//    if ( m_pMouse )
+//    {
+//       m_pMouse->Unacquire();
+//       m_pMouse->Release();
+//       m_pMouse = NULL;
+//    }
 
 	// restore the state of the sticky keys
 	SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, SPIF_SENDCHANGE);
@@ -983,76 +984,76 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 	const DIDEVICEOBJECTDATA * __restrict input;
 	while( input = GetTail( /*curr_sim_msec*/ ) )
 	{
-      if ( input->dwSequence == APP_MOUSE )
+      if ( input->dwSequence == APP_MOUSE && m_enableMouseInPlayer )
       {
          if ( g_pplayer->m_fThrowBalls )
          {
-         if ( input->dwData==1 )
-         {
-            POINT point = {mouseX,mouseY};
-            ScreenToClient(m_hwnd, &point);
-            const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
-
-            float vx = (float)mouseDX*0.1f;
-            float vy = (float)mouseDY*0.1f;
-            if (ptable->m_rotation!=0.f && ptable->m_rotation!=360.f )
+            if ( input->dwData==1 )
             {
-               const float radangle = ANGTORAD(ptable->m_rotation);
-               const float sn = sinf(radangle);
-               const float cs = cosf(radangle);
+               POINT point = {mouseX,mouseY};
+               ScreenToClient(m_hwnd, &point);
+               const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
 
-               const float vx2 = cs*vx - sn*vy;
-               const float vy2 = sn*vx + cs*vy;
-               vx = -vx2;
-               vy = -vy2;
-            }
-            bool ballGrabbed=false;
-            for( int i=0;i<g_pplayer->m_vball.Size();i++ )
-            {
-               Ball * const pBall = g_pplayer->m_vball.ElementAt(i);
-               const float dx = fabsf(vertex.x - pBall->x);
-               const float dy = fabsf(vertex.y - pBall->y);
-               if ( dx<50.f && dy<50.f )
+               float vx = (float)mouseDX*0.1f;
+               float vy = (float)mouseDY*0.1f;
+               if (ptable->m_rotation!=0.f && ptable->m_rotation!=360.f )
                {
-                  POINT newPoint;
-                  GetCursorPos(&newPoint);
-                  ScreenToClient(m_hwnd, &newPoint);
-                  const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(&newPoint);
+                  const float radangle = ANGTORAD(ptable->m_rotation);
+                  const float sn = sinf(radangle);
+                  const float cs = cosf(radangle);
 
-                  ballGrabbed=true;
-                  pBall->x = vert.x;
-                  pBall->y = vert.y;
-                  pBall->vx = vx;
-                  pBall->vy = vy;
-                  pBall->Init();
-                  break;
+                  const float vx2 = cs*vx - sn*vy;
+                  const float vy2 = sn*vx + cs*vy;
+                  vx = -vx2;
+                  vy = -vy2;
+               }
+               bool ballGrabbed=false;
+               for( int i=0;i<g_pplayer->m_vball.Size();i++ )
+               {
+                  Ball * const pBall = g_pplayer->m_vball.ElementAt(i);
+                  const float dx = fabsf(vertex.x - pBall->x);
+                  const float dy = fabsf(vertex.y - pBall->y);
+                  if ( dx<50.f && dy<50.f )
+                  {
+                     POINT newPoint;
+                     GetCursorPos(&newPoint);
+                     ScreenToClient(m_hwnd, &newPoint);
+                     const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(&newPoint);
+
+                     ballGrabbed=true;
+                     pBall->x = vert.x;
+                     pBall->y = vert.y;
+                     pBall->vx = vx;
+                     pBall->vy = vy;
+                     pBall->Init();
+                     break;
+                  }
+               }
+               if ( !ballGrabbed )
+               {
+                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, 1.0f, vx, vy, 0);
+                  pball->m_pballex->AddRef();
                }
             }
-            if ( !ballGrabbed )
+            else if ( input->dwData==2 )
             {
-               Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, 1.0f, vx, vy, 0);
-               pball->m_pballex->AddRef();
-            }
-         }
-         else if ( input->dwData==2 )
-         {
-            POINT point = {mouseX,mouseY};
-            ScreenToClient(m_hwnd, &point);
-            const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
+               POINT point = {mouseX,mouseY};
+               ScreenToClient(m_hwnd, &point);
+               const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
 
-            for( int i=0;i<g_pplayer->m_vball.Size();i++ )
-            {
-               Ball *pBall = g_pplayer->m_vball.ElementAt(i);
-               const float dx = fabsf(vertex.x - pBall->x);
-               const float dy = fabsf(vertex.y - pBall->y);
-               if ( dx<50.f && dy<50.f )
+               for( int i=0;i<g_pplayer->m_vball.Size();i++ )
                {
-                  g_pplayer->DestroyBall(pBall);
-                  break;
+                  Ball *pBall = g_pplayer->m_vball.ElementAt(i);
+                  const float dx = fabsf(vertex.x - pBall->x);
+                  const float dy = fabsf(vertex.y - pBall->y);
+                  if ( dx<50.f && dy<50.f )
+                  {
+                     g_pplayer->DestroyBall(pBall);
+                     break;
+                  }
                }
             }
          }
-      }
          POINT point = {mouseX,mouseY};
          ScreenToClient(m_hwnd, &point);
          unsigned int halfWidth=g_pplayer->m_screenwidth/2;
@@ -1095,9 +1096,9 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eRightFlipperKey]);
             }
          }
-
       }
-		else if( input->dwSequence == APP_KEYBOARD )
+		
+      if( input->dwSequence == APP_KEYBOARD )
 		{
 			if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
 			{
