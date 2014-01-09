@@ -1619,11 +1619,11 @@ STDMETHODIMP Light::put_Color(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_color = newVal;
+   m_d.m_color = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_X(float *pVal)

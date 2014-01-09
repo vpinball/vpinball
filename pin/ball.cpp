@@ -30,9 +30,11 @@ Ball::Ball()
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    fFrozen = false;
    m_color = RGB(255,255,255);
-   logoMaterial.setDiffuse(0.8f, m_color );
-   logoMaterial.setAmbient(0.8f, m_color );
+   logoMaterial.setDiffuse( 0.8f, m_color );
+   logoMaterial.setAmbient( 0.8f, m_color );
    material.setColor( 1.0f, m_color );
+
+   m_disableLighting = false;
 
    ringcounter_oldpos = 0;
    for(int i = 0; i < 10; ++i)
@@ -163,6 +165,8 @@ void Ball::Init()
    m_vpVolObjs = new VectorVoid;
 
    m_color = RGB(255,255,255);
+
+   m_disableLighting = false;
 
    if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
    {

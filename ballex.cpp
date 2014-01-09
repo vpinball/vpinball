@@ -26,7 +26,7 @@ void BallEx::RunDebugCommand(int id)
 	}
 }
 
-#define CHECKSTALEBALL if (!m_pball) {return E_POINTER;}
+#define CHECKSTALEBALL if (!m_pball) return E_POINTER;
 
 STDMETHODIMP BallEx::get_X(float *pVal)
 {
@@ -160,6 +160,24 @@ STDMETHODIMP BallEx::put_Color(OLE_COLOR newVal)
 	return S_OK;
 }
 
+STDMETHODIMP BallEx::get_DisableLighting(VARIANT_BOOL *pVal)
+{
+	CHECKSTALEBALL
+
+	*pVal = m_pball->m_disableLighting;
+
+	return S_OK;
+}
+
+STDMETHODIMP BallEx::put_DisableLighting(VARIANT_BOOL newVal)
+{
+	CHECKSTALEBALL
+
+	m_pball->m_disableLighting = newVal;
+
+	return S_OK;
+}
+
 STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 {
 	WCHAR wz[512];
@@ -174,8 +192,8 @@ STDMETHODIMP BallEx::put_Image(BSTR newVal)
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImage, 32, NULL, NULL);
 
 	m_pball->m_pin = (lstrlen(m_pball->m_szImage) > 0) ? g_pplayer->m_ptable->GetImage(m_pball->m_szImage) : NULL;
-   // recalcultate texture coords for new texture
-   m_pball->RenderSetup();
+    // recalculate texture coords for new texture
+    m_pball->RenderSetup();
 	return S_OK;
 }
 
