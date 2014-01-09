@@ -1809,6 +1809,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(6), helpstring("property VelZ")] HRESULT VelZ([in] float newVal);
 		[propget, id(7), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
 		[propput, id(7), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
+		[propget, id(13), helpstring("property DisableLighting")] HRESULT DisableLighting([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(13), helpstring("property DisableLighting")] HRESULT DisableLighting([in] VARIANT_BOOL newVal);
 		[propget, id(8), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(8), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 		[propget, id(9), helpstring("property FrontDecal")] HRESULT FrontDecal([out, retval] BSTR *pVal);

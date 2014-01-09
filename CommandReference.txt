@@ -587,4 +587,12 @@ Color - defines the color of the element in the editor. If 'Additive Alpha Bl.' 
         blank white (RGB 255,255,255)
 IsVisible(bool) - shows/hides the flasher
 AddBlend(bool) - use additive alpha blending instead of classical alpha blending
-		
+
+BALL
+==============================================================================================================================================
+
+Variables
+---------
+
+DisableLighting(bool) - enables/disables lighting of the ball
+Color(OLE_COLOR) - if lighting disabled, sets color of ball

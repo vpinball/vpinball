@@ -41,6 +41,8 @@ public:
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_DisableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_VelZ)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_VelZ)(/*[in]*/ float newVal);
 	STDMETHOD(get_Z)(/*[out, retval]*/ float *pVal);

@@ -1657,11 +1657,11 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 						++c_embedcnts;
 #endif
 					///////////////////////////////////////////////////////////////////////////
-					if (htz <= hittime)						//smaller hit time??
+					if (htz <= hittime)					//smaller hit time??
 					{
-						hittime = htz;						// record actual event time
+						hittime = htz;					// record actual event time
 
-						if (htz < STATICTIME)				// less than static time interval
+						if (htz < STATICTIME)			// less than static time interval
 						{ 
 							if(!pball->m_HitRigid) hittime = STATICTIME; // non-rigid ... set Static time
 							else if (--StaticCnts < 0)		
@@ -3049,8 +3049,6 @@ void Player::DrawBallLogo(Ball * const pball)
 void Player::DrawBalls(const bool only_invalidate_regions)
 {
    bool drawReflection = m_ptable->m_useReflectionForBalls==fTrue;
-   DWORD strength = (DWORD) m_ptable->m_ballReflectionStrength;
-   DWORD factor = (DWORD)(strength<<24) + (DWORD)(strength<<16) + (DWORD)(strength<<8) + strength;
 
 	if(!only_invalidate_regions)
 	{
@@ -3079,7 +3077,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          if( (zheight > maxz) || (pball->z < minz) )
             drawReflection=false;
-         }
+      }
       if( only_invalidate_regions )
       {
          const float radiusX = pball->radius * m_BallStretchX;
@@ -3118,9 +3116,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
 		 memcpy( buf, pball->vertices, sizeof(Vertex3D_NoTex2)*4 );
          if ( m_ptable->m_useReflectionForBalls )
-         {
             memcpy( &buf[16], pball->reflectVerts, sizeof(Vertex3D_NoTex2)*4 );
-         }
 		}
 
 		if (m_fBallShadows)
@@ -3150,18 +3146,14 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          pball->material.setColor( 1.0f, pball->m_color );
          pball->material.set();
 
-         // now render the ball with the vertex buffer data
+		 // now render the ball with the vertex buffer data
 		 if (m_fBallShadows && m_fBallAntialias)
 			DrawBallShadow(pball);
 
          if( !pball->m_pin )
-         {
             m_pin3d.ballTexture.Set( ePictureTexture );
-         }
          else
-         {
             pball->m_pin->Set( ePictureTexture );
-         }
 
 		 if (m_fBallAntialias)
 		 {
@@ -3169,8 +3161,8 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
             if ( !drawReflection )
             {
-				   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
-				   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
+			   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
+			   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND,  D3DBLEND_INVSRCALPHA);
             }
 			m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
 		 }
@@ -3188,24 +3180,43 @@ void Player::DrawBalls(const bool only_invalidate_regions)
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, factor);
-            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1}
+
+			const DWORD strength = m_ptable->m_ballReflectionStrength;
+			DWORD factor;
+			if(!pball->m_disableLighting)
+			    factor = (strength<<24) | (strength<<16) | (strength<<8) | strength;
+			else
+			    factor = (strength<<24) | ((strength*(pball->m_color>>16)/255)<<16) | ((strength*((pball->m_color>>8)&255)/255)<<8) | (strength*(pball->m_color&255)/255);
+		    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, factor);
+			m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // do not modify tex by diffuse lighting
 
             m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 16, 4, (LPWORD)rgi0123, 4, 0 );
 
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
+            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
-            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
          }
+
+		 if(pball->m_disableLighting)
+		 {
+		    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, pball->m_color);
+			m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // do not modify tex by diffuse lighting
+		 }
 
 		 // normal ball
          m_pin3d.m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, pball->vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
 
-		 // ball trails
+		 if(pball->m_disableLighting)
+		 {
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
+            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+		 }
+
+		 // ball trails //!! misses lighting disabled part!
 		 if( m_ptable->m_useTrailForBalls==fTrue && m_fBallAntialias )
          {
-            m_pin3d.ClearExtents(&pball->m_rcTrail, NULL, NULL);
+			m_pin3d.ClearExtents(&pball->m_rcTrail, NULL, NULL);
 
 			Vertex3D_NoLighting rgv3D_all[10*2];
 			unsigned int num_rgv3D = 0;
@@ -3313,8 +3324,20 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 			}
          }
 
+		 if(pball->m_disableLighting)
+		 {
+		    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, pball->m_color);
+			m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // do not modify tex by diffuse lighting
+		 }
+
 		 if (m_fBallDecals && (pball->m_pinFront || pball->m_pinBack))
 		    DrawBallLogo(pball);
+
+		 if(pball->m_disableLighting)
+		 {
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
+            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+		 }
 		}
 
         pball->m_fErase = true;
@@ -3338,11 +3361,25 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 			}
 
 		    if (!m_fBallAntialias)
+			{
+	 		    if(pball->m_disableLighting)
+                {
+		            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, pball->m_color);
+				    m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // do not modify tex by diffuse lighting
+                }
+
 				// When not antialiasing, we can get a perf win by
 				// drawing the ball first.  That way, the part of the
 				// shadow that gets obscured doesn't need to do
 				// alpha-blending
 				DrawBallShadow(pball);
+			    
+				if(pball->m_disableLighting)
+                {
+                    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
+				    m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+                }
+			}
 		}
 
 		if(only_invalidate_regions)
