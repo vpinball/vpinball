@@ -7722,44 +7722,43 @@ struct ManufacturerDimensions
    float height;
 };
 
-#define DIM_TABLE_SIZE 35
+#define DIM_TABLE_SIZE 34
 ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
 {
    {"Atari (widebody)", 27.0f, 45.0f },
-   {"Bally 70s EM (standard)", 20.25f, 41.0f},
+   {"Bally 70s EM (standard)", 20.25f, 41.0f },
    {"Bally (standard)", 20.25f, 42.0f },
    {"Bally (widebody)", 26.75f, 42.0f },
    {"Capcom", 20.25f, 46.0f },
    {"Data East/Sega (standard)", 20.25f, 46.0f },
    {"Data East/Sega (widebody)", 23.25f, 46.0f },
-   {"Capcom", 20.25f, 46.0f },
-   {"G 70s EM (standard)", 20.25f, 41.0f},
-   {"G System1 (standad)", 20.25f ,42.0f},
    {"Game Plan", 20.25f, 42.0f },
+   {"Gottlieb 70s EM (standard)", 20.25f, 41.0f },
+   {"Gottlieb System 1 (standard)", 20.25f ,42.0f },
    {"Gottlieb System 3", 20.25f, 46.0f },
    {"Gottlieb System 80 (standard)", 20.25f, 42.0f },
    {"Gottlieb System 80 (widebody)", 23.75f, 46.5f },
    {"Gottlieb System 80 (extrawide)", 26.75f, 46.5f },
-   {"Pin2K", 20.5f, 43.0f },
    {"Stern (widebody)", 23.875f, 45.0f },
    {"Stern (standard)", 23.25f, 42.0f },
    {"Stern Modern (standard)", 20.25f, 45.0f },
+   {"WMS Pinball 2000", 20.5f, 43.0f },
    {"WMS System 1-11 (standard)", 20.25f, 42.0f },
    {"WMS System 1-11 (widebody)", 27.0f, 42.0f },
    {"WPC (through 1987)", 20.5f, 42.0f },
    {"WPC (1987 on)", 20.5f, 46.0f },
-   {"WPC (superpin)", 23.25f ,46.0f},
+   {"WPC (superpin)", 23.25f ,46.0f },
    {"Zaccaria (standard)", 20.25f, 42.0f },
-   {"Black Knight 2000 (1991)", 20.25f ,46.0f},
-   {"Bride Of Pinbot (1991)", 20.25f ,45.25f},
-   {"BSD Dracula (1993)", 20.25f ,45.0f},
-   {"Doctor Who (1992)", 20.25f ,45.0625f},
-   {"Genie (1979)", 16.75f ,47.0f},
-   {"Hercules (1979 Atari)", 36.0f ,72.0f},
-   {"Mystery Castle (Alvin G)", 20.25f ,46.0f},
-   {"Safecracker", 16.5f ,41.5f},
-   {"Varkon (1982)", 24.0f ,21.0f},
-   {"World Cup Soccer (1994)", 20.25f ,45.75f}
+   {"Black Knight 2000 (1991)", 20.25f ,46.0f },
+   {"Bride Of Pinbot (1991)", 20.25f ,45.25f },
+   {"BSD Dracula (1993)", 20.25f ,45.0f },
+   {"Doctor Who (1992)", 20.25f ,45.0625f },
+   {"Genie (1979)", 16.75f ,47.0f },
+   {"Hercules (1979 Atari)", 36.0f ,72.0f },
+   {"Mystery Castle (Alvin G)", 20.25f ,46.0f },
+   {"Safecracker", 16.5f ,41.5f },
+   {"Varkon (1982)", 24.0f ,21.0f },
+   {"World Cup Soccer (1994)", 20.25f ,45.75f }
 };
 
 int CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -7916,4 +7915,3 @@ int CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
    return FALSE;
 }
-
