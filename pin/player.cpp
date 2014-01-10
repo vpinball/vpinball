@@ -1449,7 +1449,7 @@ void Player::InitWindow()
 
 	m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
-#if (WINVER < 0x0601)
+/*#if (WINVER < 0x0601)
  #define TWF_FINETOUCH       (0x00000001)
  #define TWF_WANTPALM        (0x00000002)
 
@@ -1461,7 +1461,7 @@ void Player::InitWindow()
         RegisterTouchWindow(m_hwnd, TWF_FINETOUCH);
 #else
 	RegisterTouchWindow(m_hwnd, TWF_FINETOUCH);
-#endif
+#endif*/
 
     mixer_init( m_hwnd );
     hid_init();
@@ -3716,6 +3716,8 @@ LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 }
 #endif
 
+bool pointerdown = false;
+
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -3821,6 +3823,18 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				g_pplayer->DoDebugObjectMenu(x, y);
 				}
 			return 0;
+			}
+			break;
+
+		case 0x0246/*WM_POINTERDOWN*/:
+			{
+			pointerdown = true;
+			}
+			break;
+
+		case 0x0247/*WM_POINTERUP*/:
+			{
+			pointerdown = false;
 			}
 			break;
 
