@@ -402,6 +402,7 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail( /*const U32 curr_sim_msec*/ )
 	//return NULL;
 }
 
+extern bool pointerdown;
 
 void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/) 
 {
@@ -433,7 +434,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
       mouseState.rgbButtons[0]=0;
       mouseState.rgbButtons[1]=0;
 
-      if ( GetKeyState(VK_LBUTTON) & 0x80 )
+      if ( (GetKeyState(VK_LBUTTON) & 0x80) || pointerdown)
       {
          mouseState.rgbButtons[0] = 0x80;
       }
