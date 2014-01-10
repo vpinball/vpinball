@@ -1458,9 +1458,9 @@ void Player::InitWindow()
     RegisterTouchWindow = (BOOL (WINAPI *)( HWND, ULONG )) GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
                                                                 "RegisterTouchWindow");
     if(RegisterTouchWindow)
-        RegisterTouchWindow(m_hwnd, TWF_FINETOUCH | TWF_WANTPALM);
+        RegisterTouchWindow(m_hwnd, TWF_FINETOUCH);
 #else
-	RegisterTouchWindow(m_hwnd, TWF_FINETOUCH | TWF_WANTPALM);
+	RegisterTouchWindow(m_hwnd, TWF_FINETOUCH);
 #endif
 
     mixer_init( m_hwnd );
