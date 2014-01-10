@@ -129,6 +129,7 @@ const int allLayers[8]=
 LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+int CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1254,6 +1255,27 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 #endif
                /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG),
                   m_hwnd, FontManagerProc, (long)ptCur);
+#ifdef VBA
+               ApcHost->EndModalDialog();
+#endif
+            }
+         }
+      }
+      break;
+
+   case ID_TABLE_DIMENSIONMANAGER:
+      {
+         ptCur = GetActiveTable();
+         if (ptCur)
+         {
+            if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
+               ShowPermissionError();
+            else
+            {
+#ifdef VBA
+               ApcHost->BeginModalDialog();
+#endif
+               DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DIMENSION_CALCULATOR), m_hwnd, DimensionProc, (long)ptCur);
 #ifdef VBA
                ApcHost->EndModalDialog();
 #endif
@@ -7692,3 +7714,206 @@ int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
    return FALSE;
 }
+
+struct ManufacturerDimensions
+{
+   char name[32];
+   float width;
+   float height;
+};
+
+#define DIM_TABLE_SIZE 35
+ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
+{
+   {"Atari (widebody)", 27.0f, 45.0f },
+   {"Bally 70s EM (standard)", 20.25f, 41.0f},
+   {"Bally (standard)", 20.25f, 42.0f },
+   {"Bally (widebody)", 26.75f, 42.0f },
+   {"Capcom", 20.25f, 46.0f },
+   {"Data East/Sega (standard)", 20.25f, 46.0f },
+   {"Data East/Sega (widebody)", 23.25f, 46.0f },
+   {"Capcom", 20.25f, 46.0f },
+   {"G 70s EM (standard)", 20.25f, 41.0f},
+   {"G System1 (standad)", 20.25f ,42.0f},
+   {"Game Plan", 20.25f, 42.0f },
+   {"Gottlieb System 3", 20.25f, 46.0f },
+   {"Gottlieb System 80 (standard)", 20.25f, 42.0f },
+   {"Gottlieb System 80 (widebody)", 23.75f, 46.5f },
+   {"Gottlieb System 80 (extrawide)", 26.75f, 46.5f },
+   {"Pin2K", 20.5f, 43.0f },
+   {"Stern (widebody)", 23.875f, 45.0f },
+   {"Stern (standard)", 23.25f, 42.0f },
+   {"Stern Modern (standard)", 20.25f, 45.0f },
+   {"WMS System 1-11 (standard)", 20.25f, 42.0f },
+   {"WMS System 1-11 (widebody)", 27.0f, 42.0f },
+   {"WPC (through 1987)", 20.5f, 42.0f },
+   {"WPC (1987 on)", 20.5f, 46.0f },
+   {"WPC (superpin)", 23.25f ,46.0f},
+   {"Zaccaria (standard)", 20.25f, 42.0f },
+   {"Black Knight 2000 (1991)", 20.25f ,46.0f},
+   {"Bride Of Pinbot (1991)", 20.25f ,45.25f},
+   {"BSD Dracula (1993)", 20.25f ,45.0f},
+   {"Doctor Who (1992)", 20.25f ,45.0625f},
+   {"Genie (1979)", 16.75f ,47.0f},
+   {"Hercules (1979 Atari)", 36.0f ,72.0f},
+   {"Mystery Castle (Alvin G)", 20.25f ,46.0f},
+   {"Safecracker", 16.5f ,41.5f},
+   {"Varkon (1982)", 24.0f ,21.0f},
+   {"World Cup Soccer (1994)", 20.25f ,45.75f}
+};
+
+int CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   switch (uMsg)
+   {
+      case WM_INITDIALOG:
+      {
+         HWND listHwnd=GetDlgItem( hwndDlg, IDC_TABLE_DIM_LIST);
+         PinTable *pt = g_pvp->GetActiveTable();
+         LVCOLUMN lvc;
+         LVITEM lv;
+
+         ListView_SetExtendedListViewStyle( listHwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+         memset( &lvc, 0, sizeof(LVCOLUMN));
+         lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
+         lvc.cx=150;
+         lvc.pszText = TEXT("Manufacturer");
+         ListView_InsertColumn( listHwnd, 0, &lvc );
+         lvc.cx=60;
+         lvc.pszText = TEXT("Width");
+         ListView_InsertColumn( listHwnd, 1, &lvc );
+         lvc.cx=60;
+         lvc.pszText = TEXT("Height");
+         ListView_InsertColumn( listHwnd, 2, &lvc );
+
+         if( listHwnd!=NULL )
+            ListView_DeleteAllItems( listHwnd );
+         lv.mask = LVIF_TEXT;
+         char textBuf[32];
+         for ( int i=0;i<DIM_TABLE_SIZE; i++ )
+         {
+            lv.iItem = i;
+            lv.iSubItem = 0;
+            lv.pszText = dimTable[i].name;
+            ListView_InsertItem( listHwnd, &lv );
+            sprintf_s(textBuf, "%.03f", dimTable[i].width );
+            ListView_SetItemText( listHwnd, i, 1, textBuf);
+            sprintf_s(textBuf, "%.03f", dimTable[i].height );
+            ListView_SetItemText( listHwnd, i, 2, textBuf);
+         }
+         return TRUE;
+      }
+      break;
+
+   case WM_CLOSE:
+      EndDialog(hwndDlg, FALSE);
+      break;
+   case WM_NOTIFY:
+      {
+         HWND listhw=GetDlgItem( hwndDlg, IDC_DRAWING_ORDER_LIST);
+         LPNMHDR pnmhdr = (LPNMHDR)lParam;
+         switch (pnmhdr->code)
+         {
+            case LVN_ITEMCHANGED:
+            {
+               NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
+               int idx = plistview->iItem;
+               if ( idx>DIM_TABLE_SIZE || idx<0 )
+                  break;
+
+               int width = (int)floor(dimTable[idx].width*47.0f+0.5f);
+               int height = (int)floor(dimTable[idx].height*47.0f+0.5f);
+               char textBuf[32];
+               sprintf_s(textBuf,"%i",width);
+               SetDlgItemText(hwndDlg, IDC_VP_WIDTH, textBuf);
+               sprintf_s(textBuf,"%i",height);
+               SetDlgItemText(hwndDlg, IDC_VP_HEIGHT, textBuf);
+               sprintf_s(textBuf,"%.03f",dimTable[idx].width);
+               SetDlgItemText(hwndDlg, IDC_SIZE_WIDTH, textBuf);
+               sprintf_s(textBuf,"%.03f",dimTable[idx].height);
+               SetDlgItemText(hwndDlg, IDC_SIZE_HEIGHT, textBuf);
+               break;
+            }
+         }
+      }
+   case WM_COMMAND:
+      switch (HIWORD(wParam))
+      {
+         case EN_KILLFOCUS:
+         {
+            float sizeWidth, sizeHeight;
+            int vpWidth, vpHeight;
+            int ret=0;
+            if( LOWORD(wParam)==IDC_SIZE_WIDTH )              
+            {
+               char textBuf[32];
+               GetDlgItemText(hwndDlg, IDC_SIZE_WIDTH, textBuf,31);
+               ret = sscanf_s(textBuf,"%f",&sizeWidth);
+               if (ret!=1 || sizeWidth<0.0f )
+                  sizeWidth=0;
+               int width = (int)floor(sizeWidth*47.0f+0.5f);
+               sprintf_s(textBuf,"%i",width);
+               SetDlgItemText(hwndDlg, IDC_VP_WIDTH, textBuf);
+            }
+            if( LOWORD(wParam)==IDC_SIZE_HEIGHT )              
+            {
+               char textBuf[32];
+               GetDlgItemText(hwndDlg, IDC_SIZE_HEIGHT, textBuf,31);
+               ret = sscanf_s(textBuf,"%f",&sizeHeight);
+               if (ret!=1 || sizeHeight<0.0f)
+                  sizeHeight=0;
+               int height = (int)floor(sizeHeight*47.0f+0.5f);
+               sprintf_s(textBuf,"%i",height);
+               SetDlgItemText(hwndDlg, IDC_VP_HEIGHT, textBuf);
+            }
+            if( LOWORD(wParam)==IDC_VP_WIDTH )              
+            {
+               char textBuf[32];
+               GetDlgItemText(hwndDlg, IDC_VP_WIDTH, textBuf,31);
+               ret = sscanf_s(textBuf,"%i",&vpWidth);
+               if (ret!=1 || vpWidth<0 )
+                  vpWidth=0;
+               float width = (float)vpWidth/47.0f;
+               sprintf_s(textBuf,"%.3f",width);
+               SetDlgItemText(hwndDlg, IDC_SIZE_WIDTH, textBuf);
+            }
+            if( LOWORD(wParam)==IDC_VP_HEIGHT )              
+            {
+               char textBuf[32];
+               GetDlgItemText(hwndDlg, IDC_VP_HEIGHT, textBuf,31);
+               ret = sscanf_s(textBuf,"%i",&vpHeight);
+               if (ret!=1 || vpHeight<0 )
+                  vpHeight=0;
+               float height = (float)vpHeight/47.0f;
+               sprintf_s(textBuf,"%.03f",height);
+               SetDlgItemText(hwndDlg, IDC_SIZE_HEIGHT, textBuf);
+            }
+            break;
+         }
+      case BN_CLICKED:
+         switch (LOWORD(wParam))
+         {
+            case IDOK:
+            {
+               HWND hwndTest = GetFocus();
+               HWND okButtonHwnd = GetDlgItem(hwndDlg,IDOK);
+               if ( hwndTest==okButtonHwnd )
+               {
+                  EndDialog(hwndDlg, TRUE);
+                  break;
+               }
+               PostMessage(hwndDlg, WM_NEXTDLGCTL, 0, 0L);
+               break;
+            }
+            case IDCANCEL:
+               EndDialog(hwndDlg, FALSE);
+               break;
+         }
+         break;
+      }
+      break;
+   }
+
+   return FALSE;
+}
+

@@ -507,6 +507,7 @@
 #define IDC_Layback                     377
 #define IDC_LOADED_MESH_TEXT            377
 #define IDC_ALPHA_EDIT                  377
+#define IDC_SIZE_WIDTH                  377
 #define IDC_HEIGHT_EDIT                 378
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
@@ -548,6 +549,7 @@
 #define IDC_PRIM_ENV_MAP                396
 #define IDC_VB_IN_VRAM                  396
 #define IDC_EDIT2                       397
+#define IDC_SIZE_HEIGHT                 397
 #define IDC_CHECK2                      398
 #define IDC_STATIC_RENDERING_CHECK      398
 #define IDC_ON_LIGHT_LIGHTMAP           398
@@ -555,6 +557,7 @@
 #define IDC_JOYMECHTILTCOMBO            399
 #define IDC_CUR_FLASHER                 399
 #define IDC_ADDCREDITBUTTON2            400
+#define IDD_DIMENSION_CALCULATOR        400
 #define IDC_ADDCREDIT2                  401
 #define IDC_ADDCREDITKEY2               401
 #define IDC_EXITGAME                    402
@@ -589,6 +592,10 @@
 #define IDC_JOYDEBUGCOMBO               420
 #define IDC_ALPHA_SLIDER                420
 #define IDC_GLOBAL_TRAIL_CHECK          421
+#define IDC_VP_WIDTH                    421
+#define IDC_VP_HEIGHT                   422
+#define IDC_TABLE_DIM_LIST              423
+#define IDC_LIST3                       424
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -777,6 +784,7 @@
 #define ID_INSERT_FLASHER               32890
 #define IDC_FLASHER                     32891
 #define ID_INSERT_FLASHER32892          32892
+#define ID_TABLE_DIMENSIONMANAGER       32894
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -784,9 +792,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        400
-#define _APS_NEXT_COMMAND_VALUE         32894
-#define _APS_NEXT_CONTROL_VALUE         421
+#define _APS_NEXT_RESOURCE_VALUE        401
+#define _APS_NEXT_COMMAND_VALUE         32895
+#define _APS_NEXT_CONTROL_VALUE         425
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

@@ -14,7 +14,64 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIMENSION_CALCULATOR DIALOGEX 0, 0, 316, 169
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dimensions Manager"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,259,148,50,14
+    GROUPBOX        "Table size (inch)",IDC_STATIC,221,9,79,47
+    GROUPBOX        "Table size in VP",IDC_STATIC,221,59,79,47
+    LTEXT           "Width",IDC_STATIC,228,23,20,8
+    LTEXT           "Height",IDC_STATIC,228,39,22,8
+    EDITTEXT        IDC_SIZE_WIDTH,252,20,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SIZE_HEIGHT,252,36,40,14,ES_AUTOHSCROLL
+    LTEXT           "Width",IDC_STATIC,228,72,20,8
+    LTEXT           "Height",IDC_STATIC,228,88,22,8
+    EDITTEXT        IDC_VP_WIDTH,252,68,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_VP_HEIGHT,252,85,40,14,ES_AUTOHSCROLL
+    GROUPBOX        "Predefined Tables",IDC_STATIC,7,7,207,155
+    CONTROL         "",IDC_TABLE_DIM_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,12,16,198,141
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DIMENSION_CALCULATOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 162
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1833,6 +1890,7 @@ BEGIN
         MENUITEM "&Sound Manager...",           ID_TABLE_SOUNDMANAGER
         MENUITEM "&Image Manager...",           ID_TABLE_IMAGEMANAGER
         MENUITEM "&Font Manager...",            ID_TABLE_FONTMANAGER
+        MENUITEM "&Dimensions Manager...",      ID_TABLE_DIMENSIONMANAGER
         MENUITEM "&Collection Manager...",      ID_TABLE_COLLECTIONMANAGER
         MENUITEM SEPARATOR
         MENUITEM "&Magnify",                    IDC_MAGNIFY
@@ -2240,7 +2298,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
