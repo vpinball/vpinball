@@ -4875,12 +4875,12 @@ void PinTable::ExportBlueprint()
    int bmwidth, bmheight;
    if (tableheight > tablewidth)
    {
-      bmheight = 1024;
+      bmheight = 4096;
       bmwidth = (int)((tablewidth/tableheight) * bmheight + 0.5f);
    }
    else
    {
-      bmwidth = 1024;
+      bmwidth = 4096; 
       bmheight = (int)((tableheight/tablewidth) * bmwidth + 0.5f);
    }
 
