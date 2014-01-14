@@ -2,6 +2,8 @@
 
 #define INPUT_BUFFER_SIZE 32
 
+extern EnumAssignKeys touchkeymap[8];
+
 PinInput::PinInput()
 	{
 	ZeroMemory(this,sizeof(PinInput));
@@ -402,8 +404,6 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail( /*const U32 curr_sim_msec*/ )
 	//return NULL;
 }
 
-extern bool pointerdown;
-
 void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/) 
 {
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
@@ -428,7 +428,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 		}
 
    // mouse
-   if ( m_enableMouseInPlayer )
+   if ( m_pMouse && m_enableMouseInPlayer )
    {
 	  HRESULT hr = m_pMouse->Acquire();	// try to Acquire mouse input
       if (hr == S_OK || hr == S_FALSE)
@@ -494,14 +494,25 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 				hr = pjoy->GetDeviceData( sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0 );						
 
 				if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
-					{	
+					{
 					if (m_hwnd == GetForegroundWindow())
 						for (DWORD i = 0; i < dwElements; i++)
 							PushQueue( &didod[i], APP_JOYSTICK(k)/*, curr_time_msec*/ ); 
 					}
 				}
 			}
-		}	
+		}
+
+	// and for touch input
+	for(unsigned int i = 0; i < 8; ++i)
+		if(g_pplayer->m_touchregion_changed[i])
+		{
+			DIDEVICEOBJECTDATA didod;
+			didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
+			didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
+			PushQueue( &didod, APP_KEYBOARD/*, curr_time_msec*/ );
+			g_pplayer->m_touchregion_changed[i] = false;
+		}
 }
 
 void PinInput::Init(const HWND hwnd)
@@ -530,18 +541,20 @@ void PinInput::Init(const HWND hwnd)
     if ( m_enableMouseInPlayer )
     {
        // Create mouse device
-       hr = m_pDI->CreateDevice( GUID_SysMouse, &m_pMouse, NULL); //Standard Keyboard device
+	   if(!FAILED(m_pDI->CreateDevice( GUID_SysMouse, &m_pMouse, NULL)))
+	   {
+		   HRESULT hr = m_pMouse->SetDataFormat( &c_dfDIMouse );
  
-       hr = m_pMouse->SetDataFormat( &c_dfDIMouse );
+		   //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+		   dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+		   dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+		   dipdw.diph.dwObj = 0;
+		   dipdw.diph.dwHow = DIPH_DEVICE;
+		   dipdw.dwData = INPUT_BUFFER_SIZE;
  
-       //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
-       dipdw.diph.dwSize = sizeof(DIPROPDWORD);
-       dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-       dipdw.diph.dwObj = 0;
-       dipdw.diph.dwHow = DIPH_DEVICE;
-       dipdw.dwData = INPUT_BUFFER_SIZE;
- 
-       hr = m_pMouse->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
+		   hr = m_pMouse->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
+	   } else
+		   m_pMouse = NULL;
     }
    
 	/* Disable Sticky Keys */
@@ -959,7 +972,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 	const DIDEVICEOBJECTDATA * __restrict input;
 	while( input = GetTail( /*curr_sim_msec*/ ) )
 	{
-      if ( input->dwSequence == APP_MOUSE && m_enableMouseInPlayer )
+      if ( input->dwSequence == APP_MOUSE )
       {
          if ( g_pplayer->m_fThrowBalls )
          {

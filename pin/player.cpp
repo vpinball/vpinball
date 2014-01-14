@@ -1,7 +1,104 @@
 #include "stdafx.h"
 
-#define WM_POINTERDOWN 0x0246
-#define WM_POINTERUP 0x0247
+// touch defines, delete as soon as we can get rid of old compilers that have these natively
+
+//#define TEST_TOUCH_WITH_MOUSE
+#ifdef TEST_TOUCH_WITH_MOUSE
+ #define WM_POINTERDOWN WM_LBUTTONDOWN
+ #define WM_POINTERUP WM_LBUTTONUP
+#else
+ #define WM_POINTERDOWN 0x0246
+ #define WM_POINTERUP 0x0247
+#endif
+
+typedef enum tagPOINTER_INPUT_TYPE { 
+  PT_POINTER  = 0x00000001,
+  PT_TOUCH    = 0x00000002,
+  PT_PEN      = 0x00000003,
+  PT_MOUSE    = 0x00000004
+} POINTER_INPUT_TYPE;
+
+typedef enum tagPOINTER_FLAGS
+{
+	POINTER_FLAG_NONE           = 0x00000000,
+	POINTER_FLAG_NEW            = 0x00000001,
+	POINTER_FLAG_INRANGE        = 0x00000002,
+	POINTER_FLAG_INCONTACT      = 0x00000004,
+	POINTER_FLAG_FIRSTBUTTON    = 0x00000010,
+	POINTER_FLAG_SECONDBUTTON   = 0x00000020,
+	POINTER_FLAG_THIRDBUTTON    = 0x00000040,
+	POINTER_FLAG_OTHERBUTTON    = 0x00000080,
+	POINTER_FLAG_PRIMARY        = 0x00000100,
+	POINTER_FLAG_CONFIDENCE     = 0x00000200,
+	POINTER_FLAG_CANCELLED      = 0x00000400,
+	POINTER_FLAG_DOWN           = 0x00010000,
+	POINTER_FLAG_UPDATE         = 0x00020000,
+	POINTER_FLAG_UP             = 0x00040000,
+	POINTER_FLAG_WHEEL          = 0x00080000,
+	POINTER_FLAG_HWHEEL         = 0x00100000, 
+	POINTER_FLAG_CAPTURECHANGED = 0x00200000
+} POINTER_FLAGS;
+
+typedef enum _POINTER_BUTTON_CHANGE_TYPE { 
+  POINTER_CHANGE_NONE               ,
+  POINTER_CHANGE_FIRSTBUTTON_DOWN   ,
+  POINTER_CHANGE_FIRSTBUTTON_UP     ,
+  POINTER_CHANGE_SECONDBUTTON_DOWN  ,
+  POINTER_CHANGE_SECONDBUTTON_UP    ,
+  POINTER_CHANGE_THIRDBUTTON_DOWN   ,
+  POINTER_CHANGE_THIRDBUTTON_UP     ,
+  POINTER_CHANGE_FOURTHBUTTON_DOWN  ,
+  POINTER_CHANGE_FOURTHBUTTON_UP    ,
+  POINTER_CHANGE_FIFTHBUTTON_DOWN   ,
+  POINTER_CHANGE_FIFTHBUTTON_UP 
+} POINTER_BUTTON_CHANGE_TYPE;
+
+typedef struct tagPOINTER_INFO {
+  POINTER_INPUT_TYPE         pointerType;
+  UINT32                     pointerId;
+  UINT32                     frameId;
+  POINTER_FLAGS              pointerFlags;
+  HANDLE                     sourceDevice;
+  HWND                       hwndTarget;
+  POINT                      ptPixelLocation;
+  POINT                      ptHimetricLocation;
+  POINT                      ptPixelLocationRaw;
+  POINT                      ptHimetricLocationRaw;
+  DWORD                      dwTime;
+  UINT32                     historyCount;
+  INT32                      inputData;
+  DWORD                      dwKeyStates;
+  UINT64                     PerformanceCount;
+  POINTER_BUTTON_CHANGE_TYPE ButtonChangeType;
+} POINTER_INFO;
+
+typedef BOOL (WINAPI *pGPI)(UINT32 pointerId, POINTER_INFO *pointerInfo);
+
+static pGPI GetPointerInfo = NULL;
+
+#define GET_POINTERID_WPARAM(wParam) (LOWORD (wParam))
+
+const RECT touchregion[8] = { //left,top,right,bottom (in % of screen)
+{0,0,50,10},      // ExtraBall
+{0,10,50,50},     // 2nd Left Button
+{0,50,50,90},     // 1st Left Button (Flipper)
+{0,90,50,100},    // Start
+{50,0,100,10},    // Exit
+{50,10,100,50},   // 2nd Right Button
+{50,50,100,90},   // 1st Right Button (Flipper)
+{50,90,100,100}}; // Plunger
+
+EnumAssignKeys touchkeymap[8] = {
+eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+eLeftMagnaSave,
+eLeftFlipperKey,
+eStartGameKey,
+eExitGame,
+eRightMagnaSave,
+eRightFlipperKey,
+ePlungerKey};
+
+//
 
 #include "..\stereo3D.h"
 #ifdef DONGLE_SUPPORT
@@ -56,7 +153,7 @@ Player::Player()
 	m_pauseRefCount = 0;
 	m_fNoTimeCorrect = fFalse;
 
-   m_fThrowBalls = fFalse;
+    m_fThrowBalls = fFalse;
 	m_fAccelerometer = fTrue;	// true if electronic Accelerometer enabled 
 	m_AccelNormalMount = fTrue;	// normal mounting (left hand coordinates)
 	m_AccelAngle = 0;			// 0 degrees (GUI is lefthand coordinates)
@@ -223,6 +320,9 @@ Player::Player()
 	m_movedPlunger = 0;
 	m_LastPlungerHit = 0;
 	m_Coins = 0;
+
+	for(unsigned int i = 0; i < 8; ++i)
+		m_touchregion_changed[i] = false;
 }
 
 Player::~Player()
@@ -3814,14 +3914,31 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_POINTERDOWN:
-			{
-			    //!!
-			}
-			break;
-
 		case WM_POINTERUP:
 			{
-				//!!
+#ifndef TEST_TOUCH_WITH_MOUSE
+				if(!GetPointerInfo)
+					GetPointerInfo = (pGPI) GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
+						                                   "GetPointerInfo");
+				if(GetPointerInfo)
+#endif
+				{
+					POINTER_INFO pointerInfo;
+#ifdef TEST_TOUCH_WITH_MOUSE
+                    GetCursorPos(&pointerInfo.ptPixelLocation);
+#else
+					if (GetPointerInfo(GET_POINTERID_WPARAM(wParam), &pointerInfo))
+#endif
+					{
+						ScreenToClient(g_pplayer->m_hwnd, &pointerInfo.ptPixelLocation);
+						for (unsigned int i = 0; i < 8; ++i)
+							if((g_pplayer->m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], g_pplayer->m_screenwidth, g_pplayer->m_screenheight, pointerInfo.ptPixelLocation, fmodf(g_pplayer->m_ptable->m_rotation,360.0f) != 0.f))
+							{
+								g_pplayer->m_touchregion_changed[i] = true;
+								g_pplayer->m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
+							}
+					}
+				}
 			}
 			break;
 
