@@ -47,18 +47,18 @@ public:
 	void InitStatic(HWND hwndProgress);
 	void InitAnimations(HWND hwndProgress);
 
-   void UpdatePhysics();
+    void UpdatePhysics();
 	void Render();
-   void RenderDynamics();
+    void RenderDynamics();
 
-   void DrawBallShadow(Ball * const pball);
-   void CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
-   void DrawBalls(const bool only_invalidate_regions);
-   void DrawBallLogo(Ball * const pball );
-   void CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
-   unsigned int CheckAndUpdateRegions();
-   void FlipVideoBuffersNormal( unsigned int overall_area, bool vsync );
-   void FlipVideoBuffers3D( unsigned int overall_area);
+    void DrawBallShadow(Ball * const pball);
+    void CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
+    void DrawBalls(const bool only_invalidate_regions);
+    void DrawBallLogo(Ball * const pball );
+    void CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
+    unsigned int CheckAndUpdateRegions();
+    void FlipVideoBuffersNormal( unsigned int overall_area, bool vsync );
+    void FlipVideoBuffers3D( unsigned int overall_area);
 
 	void DrawAlphas();
 
@@ -120,7 +120,7 @@ public:
 	Vector<HitTimer> m_vht;
 	Vector<IBlink> m_vblink;	// Lights which are set to blink
 
-   BOOL m_fThrowBalls;
+    BOOL m_fThrowBalls;
 	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
 	BOOL m_AccelNormalMount;	//true if normal mounting (left hand coordinates)
 	float m_AccelAngle;			// 0 Radians rotated counterclockwise (GUI is lefthand coordinates)
@@ -180,7 +180,7 @@ public:
 	BOOL m_fEnableRegionUpdates; // Use the CleanBlt flag below or not, nowadays some setups are slower when using it (especially NVIDIA Optimus setups)
 	BOOL m_fCleanBlt;			 // We can do smart blitting next frame
 	BOOL m_fEnableRegionUpdateOptimization; // Check if area of updated regions is larger than screen and/or if everything should be redrawn (helps mainly NVIDIA FXAA, but also can be more speedy)
-   BOOL m_fVertexBuffersInVRAM;  //VertexBuffers are created inside the VRAM not in system memory if fTRUE
+    BOOL m_fVertexBuffersInVRAM;  //VertexBuffers are created inside the VRAM not in system memory if fTRUE
 
 	BOOL m_fPlayMusic;
 	BOOL m_fPlaySound;
@@ -206,6 +206,9 @@ public:
 
     int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
     BOOL m_fFullScreen;
+
+	bool m_touchregion_pressed[8]; // status for each touch region (true = finger on, false = finger off)
+	bool m_touchregion_changed[8]; // flags if there was a change in m_touchregion_pressed happening
 
     bool m_fDrawCursor;
 	bool m_fGameWindowActive;

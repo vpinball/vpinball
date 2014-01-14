@@ -133,6 +133,14 @@ inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)
 	return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
 }
 
+inline bool Intersect(const RECT &rc, const int width, const int height, const POINT &p, const bool rotated)
+{
+	if(!rotated)
+		return (p.x >= rc.left*width/100 && p.x <= rc.right*width/100 && p.y >= rc.top*height/100 && p.y <= rc.bottom*height/100);
+	else
+		return (p.x >= rc.top*width/100 && p.x <= rc.bottom*width/100 && p.y <= height-rc.left*height/100 && p.y >= height-rc.right*height/100);
+}
+
 inline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
 {
 	const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // this shouldn't use loadu, but doesn't work even with __declspec(align(16))?!
