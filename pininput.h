@@ -91,7 +91,7 @@ private:
 	//int InputControlRun;
 
     LPDIRECTINPUTDEVICE  m_pKeyboard;
-    //LPDIRECTINPUTDEVICE  m_pMouse;
+    LPDIRECTINPUTDEVICE  m_pMouse;
 
 	U32 m_PreviousKeys;	// Masks of PININ_* inputs used by ultracade - AMH
 	U32 m_ChangedKeys;

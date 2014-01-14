@@ -10,7 +10,7 @@ PinInput::PinInput()
 
 	m_pDI = NULL;
 	m_pKeyboard = NULL;
-//   m_pMouse = NULL;
+    m_pMouse = NULL;
 
     leftMouseButtonDown=false;
     rightMouseButtonDown=false;
@@ -430,23 +430,15 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
    // mouse
    if ( m_enableMouseInPlayer )
    {
-      DIMOUSESTATE mouseState;
-      mouseState.rgbButtons[0]=0;
-      mouseState.rgbButtons[1]=0;
+	  HRESULT hr = m_pMouse->Acquire();	// try to Acquire mouse input
+      if (hr == S_OK || hr == S_FALSE)
+      {
+         DIMOUSESTATE mouseState;
+         hr = m_pMouse->GetDeviceState( sizeof(DIMOUSESTATE), &mouseState );
 
-      if ( (GetKeyState(VK_LBUTTON) & 0x80) || pointerdown)
-      {
-         mouseState.rgbButtons[0] = 0x80;
-      }
-
-      if ( GetKeyState(VK_RBUTTON) & 0x80 )
-      {
-         mouseState.rgbButtons[1] = 0x80;
-      }
-      					
-      if (m_hwnd == GetForegroundWindow())
-      {
-         if ( g_pplayer->m_fThrowBalls )
+         if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_hwnd == GetForegroundWindow()))
+		 {
+         if ( g_pplayer->m_fThrowBalls ) // debug ball throw functionality
          {
             if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown )
             {
@@ -485,27 +477,10 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                rightMouseButtonDown=false;
             }
          }
-         else
-         {
-            if ( (mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown )
-            {
-               POINT curPos;
-               GetCursorPos(&curPos);
-               mouseX = curPos.x;
-               mouseY = curPos.y;
-               leftMouseButtonDown=true;
-               didod[0].dwData=3;
-               PushQueue( &didod[0],APP_MOUSE );
-            }
-            if ( !(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown )
-            {
-               leftMouseButtonDown=false;
-               didod[0].dwData=4;
-               PushQueue( &didod[0],APP_MOUSE );
-            }                  
-        }
-      }
+		 }
+	  }
    }
+
     // same for joysticks 
 	for (int k = 0; k < e_JoyCnt; ++k)
 		{
@@ -523,7 +498,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 					if (m_hwnd == GetForegroundWindow())
 						for (DWORD i = 0; i < dwElements; i++)
 							PushQueue( &didod[i], APP_JOYSTICK(k)/*, curr_time_msec*/ ); 
-					}	
+					}
 				}
 			}
 		}	
@@ -552,23 +527,22 @@ void PinInput::Init(const HWND hwnd)
 
    hr = m_pKeyboard->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
 
-//    if ( m_enableMouseInPlayer )
-//    {
-//       // Create mouse device
-//       hr = m_pDI->CreateDevice( GUID_SysMouse, &m_pMouse, NULL); //Standard Keyboard device
-// 
-//       hr = m_pMouse->SetDataFormat( &c_dfDIMouse );
-// 
-//       //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
-//       dipdw.diph.dwSize = sizeof(DIPROPDWORD);
-//       dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-//       dipdw.diph.dwObj = 0;
-//       dipdw.diph.dwHow = DIPH_DEVICE;
-//       dipdw.dwData = INPUT_BUFFER_SIZE;
-// 
-//       hr = m_pMouse->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
-//    }
-
+    if ( m_enableMouseInPlayer )
+    {
+       // Create mouse device
+       hr = m_pDI->CreateDevice( GUID_SysMouse, &m_pMouse, NULL); //Standard Keyboard device
+ 
+       hr = m_pMouse->SetDataFormat( &c_dfDIMouse );
+ 
+       //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+       dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+       dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+       dipdw.diph.dwObj = 0;
+       dipdw.diph.dwHow = DIPH_DEVICE;
+       dipdw.dwData = INPUT_BUFFER_SIZE;
+ 
+       hr = m_pMouse->SetProperty( DIPROP_BUFFERSIZE, &dipdw.diph );
+    }
    
 	/* Disable Sticky Keys */
 
@@ -613,12 +587,12 @@ void PinInput::UnInit()
 		m_pKeyboard = NULL;
 		}
 
-//    if ( m_pMouse )
-//    {
-//       m_pMouse->Unacquire();
-//       m_pMouse->Release();
-//       m_pMouse = NULL;
-//    }
+    if ( m_pMouse )
+    {
+       m_pMouse->Unacquire();
+       m_pMouse->Release();
+       m_pMouse = NULL;
+    }
 
 	// restore the state of the sticky keys
 	SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_StartupStickyKeys, SPIF_SENDCHANGE);
@@ -1053,48 +1027,6 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                      break;
                   }
                }
-            }
-         }
-         POINT point = {mouseX,mouseY};
-         ScreenToClient(m_hwnd, &point);
-         unsigned int halfWidth=g_pplayer->m_screenwidth/2;
-         unsigned int fullWidth=g_pplayer->m_screenwidth;
-         float xx=point.x;
-         float yy=point.y;
-         if (ptable->m_rotation!=0.f && ptable->m_rotation!=360.f )
-         {
-            halfWidth=g_pplayer->m_screenheight/2;
-            fullWidth=g_pplayer->m_screenheight;
-            const float radangle = ANGTORAD(ptable->m_rotation);
-            const float sn = sinf(radangle);
-            const float cs = cosf(radangle);
-
-            const float xx2 = cs*xx - sn*yy;
-            const float yy2 = sn*xx + cs*yy;
-            xx = g_pplayer->m_screenheight-fabsf(xx2);
-            yy = fabsf(yy2);
-         }
-
-         if ( xx>=0.f && xx<(float)halfWidth )
-         {
-            if ( input->dwData==3 )
-            {
-               FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eLeftFlipperKey]);
-            }
-            else if( input->dwData==4 )
-            {
-               FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eLeftFlipperKey]);
-            }
-         }
-         else if ( xx>=(float)halfWidth && xx<(float)fullWidth)
-         {
-            if ( input->dwData==3 )
-            {
-               FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eRightFlipperKey]);
-            }
-            else if( input->dwData==4 )
-            {
-               FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eRightFlipperKey]);
             }
          }
       }

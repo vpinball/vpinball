@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#define WM_POINTERDOWN 0x0246
+#define WM_POINTERUP 0x0247
+
 #include "..\stereo3D.h"
 #ifdef DONGLE_SUPPORT
  #include "..\DongleAPI.h"
@@ -1448,20 +1451,6 @@ void Player::InitWindow()
 	}
 
 	m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
-
-/*#if (WINVER < 0x0601)
- #define TWF_FINETOUCH       (0x00000001)
- #define TWF_WANTPALM        (0x00000002)
-
-	BOOL (WINAPI *RegisterTouchWindow)( HWND, ULONG ); 
-
-    RegisterTouchWindow = (BOOL (WINAPI *)( HWND, ULONG )) GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
-                                                                "RegisterTouchWindow");
-    if(RegisterTouchWindow)
-        RegisterTouchWindow(m_hwnd, TWF_FINETOUCH);
-#else
-	RegisterTouchWindow(m_hwnd, TWF_FINETOUCH);
-#endif*/
 
     mixer_init( m_hwnd );
     hid_init();
@@ -3716,8 +3705,6 @@ LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 }
 #endif
 
-bool pointerdown = false;
-
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -3826,15 +3813,15 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			}
 			break;
 
-		case 0x0246/*WM_POINTERDOWN*/:
+		case WM_POINTERDOWN:
 			{
-			pointerdown = true;
+			    //!!
 			}
 			break;
 
-		case 0x0247/*WM_POINTERUP*/:
+		case WM_POINTERUP:
 			{
-			pointerdown = false;
+				//!!
 			}
 			break;
 
