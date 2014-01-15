@@ -307,8 +307,6 @@ private:
 
 public:
 	void ToggleFPS();
-	void DisableFPS();
-	void EnableFPS();
 #endif
 
 #ifdef STEPPING
