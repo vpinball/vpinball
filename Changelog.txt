@@ -6,6 +6,17 @@ VP 9.2.1 Changelog
   button you create a new ball and it throws the balls in that direction you move the mouse cursor when you release the left mouse button. If you click on a non 
   moving ball you can reuse that ball and no new calls will be created. A right click on a ball will remove that ball from the table.
 
+- add touch support for tablets (windows 8 and upwards)
+  current mapping:
+   upper left - add credit
+   middle upper left - left magna save/2nd button
+   middle lower left - left flipper
+   lower left - start
+   upper right - quit
+   middle upper right - right magna save/2nd button
+   middle lower right - right flipper
+   lower right - plunger 
+
 - Alpha-Flasher element added. Use this element to add (additive) alpha flashers instead of abusing the alpha ramp element. The flasher is a 'dynamic' element, that means it is not pre-rendered
   and it'll be updated every frame.
   Limitations:
@@ -32,7 +43,9 @@ VP 9.2.1 Changelog
   Note that for local/table export the first found flipper is used to export the flipper physics settings (and for import all flippers will be assigned with the same settings)
 
 - add optional ball trails/motion blur (also adjustable per-table)
-- add script option 'DisableLighting' for balls to disable lighting. This also allows to change the color of the ball via 'Color'.
+- add script option 'DisableLighting' for balls to disable lighting. This also allows to change the color of the ball via 'Color' directly
+
+- add enabled flag to flippers
 
 - separate/new texture maps for the lighting of lights (more details) and bumpers (brighter)
 
