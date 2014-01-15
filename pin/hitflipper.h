@@ -60,6 +60,7 @@ public:
 	Vertex2D zeroAngNorm; // base norms at zero degrees	
 
 	bool m_fEnabled;
+   bool m_fVisible;
 	bool m_lastHitFace;
 	};
 
