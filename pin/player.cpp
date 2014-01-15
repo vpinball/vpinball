@@ -277,11 +277,7 @@ Player::Player()
 		detecthang = fFalse; // The default
 	m_fDetectScriptHang = (detecthang == 1);
 
-#if defined( DEBUG_FPS )
-	m_fShowFPS = fTrue;
-#else
 	m_fShowFPS = fFalse;
-#endif
 
 	m_fCloseDown = fFalse;
 	m_fCloseType = 0;
@@ -323,6 +319,10 @@ Player::Player()
 
 	for(unsigned int i = 0; i < 8; ++i)
 		m_touchregion_pressed[i] = false;
+
+#ifdef DEBUG_FPS
+	ToggleFPS();
+#endif
 }
 
 Player::~Player()
@@ -401,18 +401,6 @@ void Player::ToggleFPS()
 	m_phys_max = 0;
 	m_phys_max_iterations = 0;
 	m_phys_total_iterations = 0;
-}
-
-void Player::EnableFPS()
-{
-	ToggleFPS();
-	m_fShowFPS = 1;
-}
-
-void Player::DisableFPS()
-{
-	ToggleFPS();
-	m_fShowFPS = 0;
 }
 
 void Player::RecomputePauseState()
