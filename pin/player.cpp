@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-// touch defines, delete as soon as we can get rid of old compilers that have these natively
+// touch defines, delete as soon as we can get rid of old compilers and use new ones that have these natively
 
 //#define TEST_TOUCH_WITH_MOUSE
 #ifdef TEST_TOUCH_WITH_MOUSE
@@ -322,7 +322,7 @@ Player::Player()
 	m_Coins = 0;
 
 	for(unsigned int i = 0; i < 8; ++i)
-		m_touchregion_changed[i] = false;
+		m_touchregion_pressed[i] = false;
 }
 
 Player::~Player()
@@ -3934,8 +3934,12 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 						for (unsigned int i = 0; i < 8; ++i)
 							if((g_pplayer->m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], g_pplayer->m_screenwidth, g_pplayer->m_screenheight, pointerInfo.ptPixelLocation, fmodf(g_pplayer->m_ptable->m_rotation,360.0f) != 0.f))
 							{
-								g_pplayer->m_touchregion_changed[i] = true;
 								g_pplayer->m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
+
+								DIDEVICEOBJECTDATA didod;
+								didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
+								didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
+								g_pplayer->m_pininput.PushQueue( &didod, APP_KEYBOARD/*, curr_time_msec*/ );
 							}
 					}
 				}
