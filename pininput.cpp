@@ -2,8 +2,6 @@
 
 #define INPUT_BUFFER_SIZE 32
 
-extern EnumAssignKeys touchkeymap[8];
-
 PinInput::PinInput()
 	{
 	ZeroMemory(this,sizeof(PinInput));
@@ -501,17 +499,6 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 					}
 				}
 			}
-		}
-
-	// and for touch input
-	for(unsigned int i = 0; i < 8; ++i)
-		if(g_pplayer->m_touchregion_changed[i])
-		{
-			DIDEVICEOBJECTDATA didod;
-			didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
-			didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
-			PushQueue( &didod, APP_KEYBOARD/*, curr_time_msec*/ );
-			g_pplayer->m_touchregion_changed[i] = false;
 		}
 }
 

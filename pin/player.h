@@ -207,8 +207,7 @@ public:
     int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
     BOOL m_fFullScreen;
 
-	bool m_touchregion_pressed[8]; // status for each touch region (true = finger on, false = finger off)
-	bool m_touchregion_changed[8]; // flags if there was a change in m_touchregion_pressed happening
+	bool m_touchregion_pressed[8]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
 
     bool m_fDrawCursor;
 	bool m_fGameWindowActive;
