@@ -123,6 +123,12 @@ void Flipper::SetDefaults(bool fromMouseClick)
       m_d.m_fVisible = iTmp == 0 ? false : true;
    else
       m_d.m_fVisible = fTrue;
+
+   hr = GetRegInt("DefaultProps\\Flipper","Enabled", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fEnabled = iTmp == 0 ? false : true;
+   else
+      m_d.m_fEnabled = fTrue;
 }
 
 void Flipper::WriteRegDefaults()
@@ -168,6 +174,7 @@ void Flipper::WriteRegDefaults()
    SetRegValue("DefaultProps\\Flipper","RubberHeight", REG_DWORD, &m_d.m_rubberheight, 4);
    SetRegValue("DefaultProps\\Flipper","RubberWidth", REG_DWORD, &m_d.m_rubberwidth, 4);
    SetRegValue("DefaultProps\\Flipper","Visible",REG_DWORD,&m_d.m_fVisible,4);
+   SetRegValue("DefaultProps\\Flipper","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
 }
 
 
@@ -271,7 +278,8 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    phf->m_flipperanim.m_angleMin = min(phf->m_flipperanim.m_frameStart, phf->m_flipperanim.m_frameEnd);
    phf->m_flipperanim.m_angleMax = max(phf->m_flipperanim.m_frameStart, phf->m_flipperanim.m_frameEnd);
 
-   phf->m_flipperanim.m_fEnabled = (m_d.m_fVisible != 0);
+   phf->m_flipperanim.m_fEnabled = (m_d.m_fEnabled != 0);
+   phf->m_flipperanim.m_fVisible = (m_d.m_fVisible != 0);
 
    pvho->AddElement(phf);
    phf->m_pflipper = this;
@@ -817,6 +825,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(STRG), m_d.m_strength);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
+   bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
    bw.WriteFloat(FID(FPWL), m_d.m_powerlaw);	
    bw.WriteFloat(FID(FOCR), m_d.m_obliquecorrection);	
    bw.WriteFloat(FID(FSCT), m_d.m_scatterangle);	
@@ -963,6 +972,10 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(VSBL))
    {
       pbr->GetBool(&m_d.m_fVisible);
+   }
+   else if (id == FID(ENBL))
+   {
+      pbr->GetBool(&m_d.m_fEnabled);
    }
    else
    {
@@ -1354,7 +1367,7 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 
 STDMETHODIMP Flipper::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperanim.m_fEnabled : m_d.m_fVisible);
+   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperanim.m_fVisible : m_d.m_fVisible);
 
    return S_OK;
 }
@@ -1364,12 +1377,35 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
    if (m_phitflipper)
    {
       //m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible; //rlc error 
-      m_phitflipper->m_flipperanim.m_fEnabled = VBTOF(newVal);
+      m_phitflipper->m_flipperanim.m_fVisible = VBTOF(newVal);
    }
    else
    {
       STARTUNDO
       m_d.m_fVisible = VBTOF(newVal);
+      STOPUNDO
+   }
+   return S_OK;
+}
+
+STDMETHODIMP Flipper::get_Enabled(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_phitflipper ? m_phitflipper->m_flipperanim.m_fEnabled : m_d.m_fEnabled);
+
+   return S_OK;
+}
+
+STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
+{
+   if (m_phitflipper)
+   {
+      //m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible; //rlc error 
+      m_phitflipper->m_flipperanim.m_fEnabled = VBTOF(newVal);
+   }
+   else
+   {
+      STARTUNDO
+         m_d.m_fEnabled = VBTOF(newVal);
       STOPUNDO
    }
    return S_OK;
