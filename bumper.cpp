@@ -36,6 +36,9 @@ void Bumper::SetDefaults(bool fromMouseClick)
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","Force", &fTmp);
    m_d.m_force = (hr == S_OK) && fromMouseClick ? fTmp : 15;
 
+   hr = GetRegStringAsFloat("DefaultProps\\Bumper","HeightOffset", &fTmp);
+   m_d.m_heightoffset = (hr == S_OK) && fromMouseClick ? fTmp : 0;
+
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","Threshold", &fTmp);
    m_d.m_threshold = (hr == S_OK) && fromMouseClick ? fTmp : 1;
 
@@ -108,6 +111,8 @@ void Bumper::WriteRegDefaults()
    SetRegValue("DefaultProps\\Bumper","Radius", REG_SZ, &strTmp,strlen(strTmp));	
    sprintf_s(strTmp, 40, "%f", m_d.m_force);
    SetRegValue("DefaultProps\\Bumper","Force", REG_SZ, &strTmp,strlen(strTmp));	
+   sprintf_s(strTmp, 40, "%f", m_d.m_heightoffset);
+   SetRegValue("DefaultProps\\Bumper","HeightOffset", REG_SZ, &strTmp,strlen(strTmp));	
    sprintf_s(strTmp, 40, "%f", m_d.m_threshold);
    SetRegValue("DefaultProps\\Bumper","Threshold", REG_SZ, &strTmp,strlen(strTmp));	
    sprintf_s(strTmp, 40, "%f", m_d.m_overhang);
@@ -179,9 +184,9 @@ void Bumper::RenderShadow(ShadowSur * const psur, const float z)
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-   psur->EllipseSkew(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius, height, height+40.0f);
+   psur->EllipseSkew(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius, height, height+40.0f+m_d.m_heightoffset);
 
-   psur->EllipseSkew(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_overhang, height+40.0f, height+65.0f);
+   psur->EllipseSkew(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_overhang, height+40.0f+m_d.m_heightoffset, height+65.0f+m_d.m_heightoffset);
 }
 
 void Bumper::GetTimers(Vector<HitTimer> * const pvht)
@@ -196,9 +201,7 @@ void Bumper::GetTimers(Vector<HitTimer> * const pvht)
    m_phittimer = pht;
 
    if (m_d.m_tdr.m_fTimerEnabled)
-   {
       pvht->AddElement(pht);
-   }
 }
 
 void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
@@ -213,7 +216,7 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    phitcircle->center.y = m_d.m_vCenter.y;
    phitcircle->radius = m_d.m_radius;
    phitcircle->zlow = height;
-   phitcircle->zhigh = height+50.0f;
+   phitcircle->zhigh = height+50.0f+m_d.m_heightoffset;
 
    phitcircle->m_pbumper = this;
 
@@ -236,7 +239,7 @@ void Bumper::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-   HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 50.0f, m_d.m_radius + m_d.m_overhang, 32);
+   HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 50.0f + m_d.m_heightoffset, m_d.m_radius + m_d.m_overhang, 32);
    pvho->AddElement(pho);
 }
 
@@ -257,7 +260,6 @@ void Bumper::PostRenderStatic(const RenderDevice* pd3dDevice)
 static const WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
 {
-   int l,t,i;
    const float outerradius = m_d.m_radius + m_d.m_overhang;
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
@@ -294,12 +296,11 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
    litMaterial.setEmissive(0.0f, 1.0f, 1.0f, 1.0f );
 
    if ( pin )
-   {
       m_ptable->GetTVTU(pin, &maxtu, &maxtv);
-   }
-   t=0;
-   i=0;
-   for (l=0;l<32;l++,t+=6,i+=4)
+
+   int t=0;
+   int i=0;
+   for (int l=0;l<32;l++,t+=6,i+=4)
    {
       normalIndices[t  ] = (l==0) ? 31 : (l-1);
       normalIndices[t+1] = (l==0) ? 63 : (l+31);
@@ -319,15 +320,15 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
 
       staticVertices[l].x    = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
       staticVertices[l].y    = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
-      staticVertices[l].z    = height+60.0f;
+      staticVertices[l].z    = height+60.0f+m_d.m_heightoffset;
 
       staticVertices[l+32].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
       staticVertices[l+32].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
-      staticVertices[l+32].z = height+50.0f;
+      staticVertices[l+32].z = height+50.0f+m_d.m_heightoffset;
 
       staticVertices[l+64].x = sinangle*outerradius + m_d.m_vCenter.x;
       staticVertices[l+64].y = cosangle*outerradius + m_d.m_vCenter.y;
-      staticVertices[l+64].z = height+40.0f;
+      staticVertices[l+64].z = height+40.0f+m_d.m_heightoffset;
 
       if (pin)
       {
@@ -341,22 +342,22 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
 
       moverVertices[0][l].x = sinangle*m_d.m_radius + m_d.m_vCenter.x;
       moverVertices[0][l].y = cosangle*m_d.m_radius + m_d.m_vCenter.y;
-      moverVertices[0][l].z = height+40.0f;
+      moverVertices[0][l].z = height+40.0f+m_d.m_heightoffset;
       moverVertices[0][l+32].x = moverVertices[0][l].x;
       moverVertices[0][l+32].y = moverVertices[0][l].y;
       moverVertices[0][l+32].z = height;
 
       moverVertices[0][l+64].x = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
       moverVertices[0][l+64].y = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
-      moverVertices[0][l+64].z = height+60.0f;
+      moverVertices[0][l+64].z = height+60.0f+m_d.m_heightoffset;
 
       moverVertices[0][l+96].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
       moverVertices[0][l+96].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
-      moverVertices[0][l+96].z = height+50.0f;
+      moverVertices[0][l+96].z = height+50.0f+m_d.m_heightoffset;
 
       moverVertices[0][l+128].x = sinangle*outerradius + m_d.m_vCenter.x;
       moverVertices[0][l+128].y = cosangle*outerradius + m_d.m_vCenter.y;
-      moverVertices[0][l+128].z = height+40.0f;
+      moverVertices[0][l+128].z = height+40.0f+m_d.m_heightoffset;
 
       moverVertices[0][l].tu = 0.5f+sinangle*0.5f;
       moverVertices[0][l].tv = 0.5f-cosangle*0.5f;
@@ -411,7 +412,6 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
    m_fDisabled = fFalse;
    if(!m_d.m_fVisible)	return;
    
-   int t,k;
    // All this function does is render the bumper image so the black shows through where it's missing in the animated form
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);	
    if (pin)
@@ -426,8 +426,8 @@ void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
       staticMaterial.set();
 
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, staticVertices, 32, (LPWORD)rgiBumperStatic, 32, 0);
-      t=0;
-      k=0;
+      int t=0;
+      int k=0;
       for (int l=0;l<32;l++,t+=6,k+=4)
       {
          SetNormal(staticVertices, &normalIndices[t], 3, NULL, &indices[k], 2);
@@ -450,7 +450,6 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    if(!m_d.m_fVisible)	return;
 
-   int k,t;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    ppin3d->ClearSpriteRectangle(&m_pbumperhitcircle->m_bumperanim, NULL );
@@ -485,8 +484,8 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
          SetNormal(&moverVertices[i][64], rgiBumperStatic, 32, NULL, NULL, 0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 32, (LPWORD)rgiBumperStatic, 32, 0);
 
-         t=0;
-         k=0;
+         int t=0;
+         int k=0;
          for (int l=0;l<32;l++,t+=6,k+=4)
          {
             SetNormal(&moverVertices[i][64], &normalIndices[t], 3, NULL, &indices[k], 2);
@@ -522,8 +521,8 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
             }
          }
 
-         t=0;
-         k=0;
+         int t=0;
+         int k=0;
          for (int l=0;l<32;l++,t+=6,k+=4)
          {
             SetNormal(moverVertices[i], &normalIndices[t], 3, NULL, &indices[k], 2);
@@ -572,8 +571,8 @@ void Bumper::RenderMovers(const RenderDevice* _pd3dDevice)
          SetNormal(&moverVertices[i][64], rgiBumperStatic, 32, NULL, NULL, 0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX, &moverVertices[i][64], 32, (LPWORD)rgiBumperStatic, 32, 0);
 
-         t=0;
-         k=0;
+         int t=0;
+         int k=0;
          for (int l=0;l<32;l++,t+=6,k+=4)
          {
             SetNormal(&moverVertices[i][64], &normalIndices[t], 3, NULL, &indices[k], 2);
@@ -626,8 +625,6 @@ void Bumper::PutCenter(const Vertex2D * const pv)
 
 HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
-   //HRESULT hr;
-
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
 #ifdef VBA
@@ -639,6 +636,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(FORC), m_d.m_force);
+   bw.WriteFloat(FID(HOFF), m_d.m_heightoffset);
    bw.WriteFloat(FID(OVRH), m_d.m_overhang);
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteInt(FID(SCLR), m_d.m_sidecolor);
@@ -720,6 +718,10 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(FORC))
    {
       pbr->GetFloat(&m_d.m_force);
+   }
+   else if (id == FID(HOFF))
+   {
+      pbr->GetFloat(&m_d.m_heightoffset);
    }
    else if (id == FID(OVRH))
    {
@@ -813,6 +815,24 @@ STDMETHODIMP Bumper::put_Force(float newVal)
    STARTUNDO
 
    m_d.m_force = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Bumper::get_HeightOffset(float *pVal)
+{
+   *pVal = m_d.m_heightoffset;
+
+   return S_OK;
+}
+
+STDMETHODIMP Bumper::put_HeightOffset(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_heightoffset = newVal;
 
    STOPUNDO
 

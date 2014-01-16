@@ -54,6 +54,7 @@
 #define DISPID_DRAWINSIDE               22
 #define DISPID_ROTRA8                   22
 #define DISPID_ROTRA9                   23
+#define DISPID_HEIGHTOFFSET             24
 #define IDS_PROJNAME                    100
 #define IDR_VBATest                     100
 #define IDR_SURFACE                     101
