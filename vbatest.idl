@@ -1105,6 +1105,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(6), helpstring("property Overhang")] HRESULT Overhang([in] float newVal);
 		[propget, id(7), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
 		[propput, id(7), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
+		[propget, id(24), helpstring("property HeightOffset")] HRESULT HeightOffset([out, retval] float *pVal);
+		[propput, id(24), helpstring("property HeightOffset")] HRESULT HeightOffset([in] float newVal);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);

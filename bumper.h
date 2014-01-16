@@ -26,6 +26,7 @@ public:
 	float m_radius;
 	float m_threshold; // speed at which ball needs to hit to register a hit
 	float m_force; // force the bumper kicks back with
+	float m_heightoffset;
 	TimerDataRoot m_tdr;
 	float m_overhang;
 	COLORREF m_color;
@@ -166,6 +167,8 @@ public:
 	STDMETHOD(put_Threshold)(/*[in]*/ float newVal);
 	STDMETHOD(get_Force)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Force)(/*[in]*/ float newVal);
+	STDMETHOD(get_HeightOffset)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_HeightOffset)(/*[in]*/ float newVal);
 	STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Radius)(/*[in]*/ float newVal);
 	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
