@@ -1428,6 +1428,11 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
 void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
 {
    RenderDevice *pd3dDevice = (RenderDevice*)_pd3dDevice;
+   float oldBottomHeight = m_d.m_heightbottom;
+   float oldTopHeight = m_d.m_heighttop;
+
+   m_d.m_heightbottom *= m_ptable->zScale;
+   m_d.m_heighttop *= m_ptable->zScale;
    if( m_vlinesling.Size()>0 )
    {
       if( !slingshotVBuffer )
@@ -1449,6 +1454,8 @@ void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
 
    // create all vertices for dropped and non-dropped surface
    PrepareWallsAtHeight( pd3dDevice );
+   m_d.m_heightbottom = oldBottomHeight;
+   m_d.m_heighttop = oldTopHeight;
 }
 
 void Surface::RenderStatic(const RenderDevice* pd3dDevice)

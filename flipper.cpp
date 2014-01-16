@@ -631,6 +631,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
       rgv3D[l].x = rgv[l&3].x;
       rgv3D[l].y = rgv[l&3].y;
       rgv3D[l].z = (l<4) ? height + flipperheight + 0.1f : height; // Make flippers a bit taller so they draw above walls
+      rgv3D[l].z *= m_ptable->zScale;
       ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);		
    }
 
@@ -657,9 +658,11 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
       rgv3D[l].x = m_d.m_Center.x + sinf(anglel)*baseradius;
       rgv3D[l].y = m_d.m_Center.y - cosf(anglel)*baseradius;
       rgv3D[l].z = height + flipperheight + 0.1f;
+      rgv3D[l].z *= m_ptable->zScale;
       rgv3D[l+16].x = rgv3D[l].x;
       rgv3D[l+16].y = rgv3D[l].y;
       rgv3D[l+16].z = height;
+      rgv3D[l+16].z *= m_ptable->zScale;
 
       ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
       ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16],inv_width,inv_height);
@@ -706,9 +709,11 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
       rgv3D[l].x = vendcenter.x + sinf(anglel)*endradius;
       rgv3D[l].y = vendcenter.y - cosf(anglel)*endradius;
       rgv3D[l].z = height + flipperheight + 0.1f;
+      rgv3D[l].z *= m_ptable->zScale;
       rgv3D[l+16].x = rgv3D[l].x;
       rgv3D[l+16].y = rgv3D[l].y;
       rgv3D[l+16].z = height;
+      rgv3D[l+16].z *= m_ptable->zScale;
 
       ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
       ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16],inv_width,inv_height);

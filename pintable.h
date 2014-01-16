@@ -102,8 +102,10 @@ public:
 
 	STDMETHOD(get_Scalex)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Scalex)(/*[in]*/ float newVal);
-	STDMETHOD(get_Scaley)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Scaley)(/*[in]*/ float newVal);
+   STDMETHOD(get_Scaley)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Scaley)(/*[in]*/ float newVal);
+   STDMETHOD(get_Scalez)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Scalez)(/*[in]*/ float newVal);
 	STDMETHOD(get_Xlatex)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Xlatex)(/*[in]*/ float newVal);
 	STDMETHOD(get_Xlatey)(/*[out, retval]*/ float *pVal);
@@ -681,6 +683,7 @@ END_CONNECTION_POINT_MAP()
 	bool m_activeLayers[8];
     bool m_toggleAllLayers;   
     bool m_savingActive;
+    float zScale;
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

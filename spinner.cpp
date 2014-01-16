@@ -398,7 +398,7 @@ void Spinner::PrepareStatic( RenderDevice* pd3dDevice )
       staticVertices[l].x += m_d.m_vCenter.x;
       staticVertices[l].y += m_d.m_vCenter.y;
       staticVertices[l].z += height;
-
+      staticVertices[l].z *= m_ptable->zScale;
       ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l],inv_width,inv_height);
    }
 
@@ -411,7 +411,7 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
    COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   const float h = m_d.m_height*0.5f + 30.0f;
+   const float h = (m_d.m_height*0.5f + 30.0f);
 
    Texture* const pinback = m_ptable->GetImage(m_d.m_szImageBack);
    Texture* const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
@@ -520,6 +520,7 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
          rgv3D[l].y += m_d.m_vCenter.y;
          //rgv3D[l].z += 60.0f + height;
          rgv3D[l].z += h + height;
+         rgv3D[l].z *= m_ptable->zScale;
 
          ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
       }

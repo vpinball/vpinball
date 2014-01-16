@@ -448,7 +448,7 @@ void Gate::PrepareStatic(RenderDevice* pd3dDevice)
 
       staticVertices[l].x += m_d.m_vCenter.x;
       staticVertices[l].y += m_d.m_vCenter.y;
-      staticVertices[l].z += height;
+      staticVertices[l].z += height*m_ptable->zScale;
 
       ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l],inv_width,inv_height);
    }
@@ -571,6 +571,7 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
             rgv3D[l].y += m_d.m_vCenter.y;
             //rgv3D[l].z += height + 50.0f;
             rgv3D[l].z += height + h;
+            rgv3D[l].z *= m_ptable->zScale;
 
             ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
          }
@@ -622,6 +623,7 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
             rgv3D[l].y += m_d.m_vCenter.y;
             //rgv3D[l].z += height + 50.0f;
             rgv3D[l].z += height + h;
+            rgv3D[l].z *= m_ptable->zScale;
 
             rgv3D[l].color = m_d.m_color;
          }
