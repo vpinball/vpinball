@@ -440,6 +440,7 @@ void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
          const float x = rgtriggervertex[l][0]*m_d.m_radius;
          const float y = rgtriggervertex[l][1]*m_d.m_radius;
          staticVertices[l+offset].z = rgtriggervertex[l][2] + height + 0.1f;
+         staticVertices[l+offset].z *= m_ptable->zScale;
 
          staticVertices[l+offset].x =  cs*x + sn*y + m_d.m_vCenter.x;
          staticVertices[l+offset].y = -sn*x + cs*y + m_d.m_vCenter.y;

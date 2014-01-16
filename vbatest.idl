@@ -426,6 +426,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(100), helpstring("property Scalex")] HRESULT Scalex([in] float newVal);
 		[propget, id(101), helpstring("property Scaley")] HRESULT Scaley([out, retval] float *pVal);
 		[propput, id(101), helpstring("property Scaley")] HRESULT Scaley([in] float newVal);
+		[propget, id(108), helpstring("property Scalez")] HRESULT Scalez([out, retval] float *pVal);
+		[propput, id(108), helpstring("property Scalez")] HRESULT Scalez([in] float newVal);
 		[propget, id(102), helpstring("property Xlatex")] HRESULT Xlatex([out, retval] float *pVal);
 		[propput, id(102), helpstring("property Xlatex")] HRESULT Xlatex([in] float newVal);
 		[propget, id(103), helpstring("property Xlatey")] HRESULT Xlatey([out, retval] float *pVal);

@@ -66,6 +66,7 @@
 #define IDC_POINTER                     104
 #define IDS_TB_FLIPPER                  105
 #define IDS_TB_PLAY                     106
+#define IDC_TABLE_SCALEZ                108
 #define IDS_FLIPPER_DESC                107
 #define IDR_Flipper                     108
 #define IDS_LAYER1                      108

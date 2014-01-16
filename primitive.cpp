@@ -832,6 +832,7 @@ void Primitive::UpdateMesh()
       tempVert->x *= 1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(tempVert->z+0.5f);
       tempVert->y *= 1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(tempVert->z+0.5f);
       fullMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
+      tempVert->z *= m_ptable->zScale;
    }
    // update the bounding box for the primitive to tell the renderer where to update the back buffer
    g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);

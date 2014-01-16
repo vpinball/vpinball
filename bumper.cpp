@@ -261,7 +261,7 @@ static const WORD rgiBumperStatic[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1
 void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
 {
    const float outerradius = m_d.m_radius + m_d.m_overhang;
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->zScale;
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
    float maxtu, maxtv;
@@ -320,15 +320,15 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
 
       staticVertices[l].x    = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
       staticVertices[l].y    = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
-      staticVertices[l].z    = height+60.0f+m_d.m_heightoffset;
+      staticVertices[l].z    = height+(60.0f+m_d.m_heightoffset)*m_ptable->zScale;
 
       staticVertices[l+32].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
       staticVertices[l+32].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
-      staticVertices[l+32].z = height+50.0f+m_d.m_heightoffset;
+      staticVertices[l+32].z = height+(50.0f+m_d.m_heightoffset)*m_ptable->zScale;
 
       staticVertices[l+64].x = sinangle*outerradius + m_d.m_vCenter.x;
       staticVertices[l+64].y = cosangle*outerradius + m_d.m_vCenter.y;
-      staticVertices[l+64].z = height+40.0f+m_d.m_heightoffset;
+      staticVertices[l+64].z = height+(40.0f+m_d.m_heightoffset)*m_ptable->zScale;
 
       if (pin)
       {
@@ -342,22 +342,22 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
 
       moverVertices[0][l].x = sinangle*m_d.m_radius + m_d.m_vCenter.x;
       moverVertices[0][l].y = cosangle*m_d.m_radius + m_d.m_vCenter.y;
-      moverVertices[0][l].z = height+40.0f+m_d.m_heightoffset;
+      moverVertices[0][l].z = height+(40.0f+m_d.m_heightoffset)*m_ptable->zScale;
       moverVertices[0][l+32].x = moverVertices[0][l].x;
       moverVertices[0][l+32].y = moverVertices[0][l].y;
       moverVertices[0][l+32].z = height;
 
       moverVertices[0][l+64].x = sinangle*outerradius*0.5f + m_d.m_vCenter.x;
       moverVertices[0][l+64].y = cosangle*outerradius*0.5f + m_d.m_vCenter.y;
-      moverVertices[0][l+64].z = height+60.0f+m_d.m_heightoffset;
+      moverVertices[0][l+64].z = height+(60.0f+m_d.m_heightoffset)*m_ptable->zScale;
 
       moverVertices[0][l+96].x = sinangle*outerradius*0.9f + m_d.m_vCenter.x;
       moverVertices[0][l+96].y = cosangle*outerradius*0.9f + m_d.m_vCenter.y;
-      moverVertices[0][l+96].z = height+50.0f+m_d.m_heightoffset;
+      moverVertices[0][l+96].z = height+(50.0f+m_d.m_heightoffset)*m_ptable->zScale;
 
       moverVertices[0][l+128].x = sinangle*outerradius + m_d.m_vCenter.x;
       moverVertices[0][l+128].y = cosangle*outerradius + m_d.m_vCenter.y;
-      moverVertices[0][l+128].z = height+40.0f+m_d.m_heightoffset;
+      moverVertices[0][l+128].z = height+(40.0f+m_d.m_heightoffset)*m_ptable->zScale;
 
       moverVertices[0][l].tu = 0.5f+sinangle*0.5f;
       moverVertices[0][l].tv = 0.5f-cosangle*0.5f;

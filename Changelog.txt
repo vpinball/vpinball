@@ -1,5 +1,7 @@
 VP 9.2.1 Changelog
 ------------------------
+- add Z scale option to the backdrop options. With this setting you're able to reduce/increase the overall depth of a table.
+
 - add table dimension manager for an easy way to calculate real table dimensions into VP table unit and vice versa
 
 - add a ball throwing feature to VP. To use it check "Throw Balls in Player" in the debug window (ESC -> "Debug Window") and by left clicking and holding the left mouse 
