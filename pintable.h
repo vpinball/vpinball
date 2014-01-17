@@ -108,8 +108,10 @@ public:
    STDMETHOD(put_Scalez)(/*[in]*/ float newVal);
 	STDMETHOD(get_Xlatex)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Xlatex)(/*[in]*/ float newVal);
-	STDMETHOD(get_Xlatey)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Xlatey)(/*[in]*/ float newVal);
+   STDMETHOD(get_Xlatey)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Xlatey)(/*[in]*/ float newVal);
+   STDMETHOD(get_Xlatez)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Xlatez)(/*[in]*/ float newVal);
 	STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
 	STDMETHOD(get_SlopeMax)(/*[out, retval]*/ float *pVal);
@@ -545,6 +547,7 @@ END_CONNECTION_POINT_MAP()
 	float m_ZPD;
 	float m_xlatex;
 	float m_xlatey;
+   float m_xlatez;
 	float m_scalex;
 	float m_scaley;
 	float m_angletiltMax;

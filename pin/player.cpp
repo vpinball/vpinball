@@ -792,7 +792,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	m_pin3d.InitLayout(ptable->m_left, ptable->m_top, ptable->m_right,
 					   ptable->m_bottom, ptable->m_inclination, realFOV,
 					   ptable->m_rotation, ptable->m_scalex, ptable->m_scaley,
-					   ptable->m_xlatex, ptable->m_xlatey, ptable->m_layback,
+					   ptable->m_xlatex, ptable->m_xlatey, ptable->m_xlatez, ptable->m_layback,
 					   ptable->m_maxSeparation, ptable->m_ZPD);
 
 	const float slope = ptable->m_angletiltMin 
