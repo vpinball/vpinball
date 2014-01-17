@@ -2053,7 +2053,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_APPICON             ICON                    "icon1.ico"
+IDI_APPICON             ICON                    "ball.ico"
 IDI_SCRIPTICON          ICON                    "ico00001.ico"
 IDI_TABLEICON           ICON                    "TableIcon.ico"
 IDI_PLAY                ICON                    "step1.ico"
