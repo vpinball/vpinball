@@ -579,7 +579,7 @@ PinTable::PinTable()
    m_shadowDirX= 1.0f;
    m_shadowDirY=-1.0f;
 
-   zScale = 1.0f;
+   m_zScale = 1.0f;
 
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
@@ -2648,7 +2648,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(XLTY), m_xlatey);
    bw.WriteFloat(FID(SCLX), m_scalex);
    bw.WriteFloat(FID(SCLY), m_scaley);
-   bw.WriteFloat(FID(SCLZ), zScale);
+   bw.WriteFloat(FID(SCLZ), m_zScale);
 
    bw.WriteInt(FID(ORRP), m_fOverridePhysics);
    bw.WriteFloat(FID(GAVT), m_Gravity);
@@ -3380,7 +3380,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(SCLZ))
    {
-      pbr->GetFloat(&zScale);
+      pbr->GetFloat(&m_zScale);
    }
    else if( id == FID(ORRP))
    {
@@ -8367,7 +8367,7 @@ STDMETHODIMP PinTable::put_Scaley(float newVal)
 
 STDMETHODIMP PinTable::get_Scalez(float *pVal)
 {
-   *pVal = zScale;
+   *pVal = m_zScale;
 
    return S_OK;
 }
@@ -8376,7 +8376,7 @@ STDMETHODIMP PinTable::put_Scalez(float newVal)
 {
    STARTUNDO
 
-      zScale = newVal;
+      m_zScale = newVal;
 
    STOPUNDO
 

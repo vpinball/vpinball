@@ -3061,7 +3061,7 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
             rgv3DArrowTransformed[iPoint].nz = tmp.z;
             rgv3DArrowTransformed[iPoint].x = pball->x - tmp.x*pball->radius;
             rgv3DArrowTransformed[iPoint].y = pball->y - tmp.y*pball->radius;
-            rgv3DArrowTransformed[iPoint].z = zheight  - tmp.z*pball->radius;
+            rgv3DArrowTransformed[iPoint].z = zheight - tmp.z*pball->radius;
             rgv3DArrowTransformed[iPoint].tu = pball->logoVertices[iPoint].tu * pball->m_pinFront->m_maxtu;
             rgv3DArrowTransformed[iPoint].tv = pball->logoVertices[iPoint].tv * pball->m_pinFront->m_maxtv;
          }
@@ -3083,7 +3083,7 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
             rgv3DArrowTransformed2[iPoint].nz = tmp.z;
             rgv3DArrowTransformed2[iPoint].x = pball->x - tmp.x*pball->radius;
             rgv3DArrowTransformed2[iPoint].y = pball->y - tmp.y*pball->radius;
-            rgv3DArrowTransformed2[iPoint].z = zheight  - tmp.z*pball->radius;
+            rgv3DArrowTransformed2[iPoint].z = zheight - tmp.z*pball->radius;
             rgv3DArrowTransformed2[iPoint].tu = pball->logoVertices[iPoint].tu * pball->m_pinBack->m_maxtu;
             rgv3DArrowTransformed2[iPoint].tv = pball->logoVertices[iPoint].tv * pball->m_pinBack->m_maxtv;
             pball->logoVertices[iPoint].x = -pball->logoVertices[iPoint].x;
@@ -3159,7 +3159,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 	{
  	  Ball * const pball = m_vball.ElementAt(i);
       // just calculate the vertices once!
-      const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
+      float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
 
       float maxz = pball->defaultZ+3.0f;
       float minz = pball->defaultZ-1.0f;
@@ -3167,7 +3167,9 @@ void Player::DrawBalls(const bool only_invalidate_regions)
       {
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          if( (zheight > maxz) || (pball->z < minz) )
+         {
             drawReflection=false;
+         }
       }
       if( only_invalidate_regions )
       {
@@ -3176,7 +3178,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          Vertex3D_NoTex2 * const rgv3D = pball->vertices;
          rgv3D[0].x = pball->x - radiusX;
          rgv3D[0].y = pball->y - (radiusY * cs);
-         rgv3D[0].z = zheight + (pball->radius * sn);
+         rgv3D[0].z = zheight+ (pball->radius * sn);
 
          rgv3D[1].x = pball->x + radiusX;
          rgv3D[1].y = pball->y - (radiusY * cs);
@@ -3188,7 +3190,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
          rgv3D[3].x = pball->x - radiusX;
          rgv3D[3].y = pball->y + (radiusY * cs);
-         rgv3D[3].z = zheight - (pball->radius * sn);
+         rgv3D[3].z = zheight  - (pball->radius * sn);
          memcpy( pball->reflectVerts, rgv3D, sizeof(Vertex3D_NoTex2)*4);
          if ( drawReflection )
          {

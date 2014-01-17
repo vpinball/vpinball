@@ -1268,6 +1268,21 @@ void Pin3D::InitLights()
 	m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 }
 
+void LookAt( Matrix3D &mat, D3DVECTOR eye, D3DVECTOR target, D3DVECTOR up )
+{
+   D3DVECTOR zaxis = Normalize(eye - target);
+   D3DVECTOR xaxis = Normalize(CrossProduct(up,zaxis));
+   D3DVECTOR yaxis = CrossProduct(zaxis,xaxis);
+   mat._11 = xaxis.x; mat._12 = yaxis.x; mat._13 = zaxis.x; mat._14=0.0f;
+   mat._21 = xaxis.y; mat._22 = yaxis.y; mat._23 = zaxis.y; mat._24=0.0f;
+   mat._31 = xaxis.z; mat._32 = yaxis.z; mat._33 = zaxis.z; mat._34=0.0f;
+   mat._41 = 0.0f;    mat._42 = 0.0f;    mat._43 = zaxis.x; mat._44=0.0f;
+   Matrix3D trans;
+   trans.SetIdentity();
+   trans._41 = eye.x; trans._42 = eye.y; trans._43=eye.z;
+   mat.Multiply( trans, mat );
+}
+
 void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback, const float maxSeparation, const float ZPD)
 {
 	m_layback = layback;
@@ -1324,6 +1339,9 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 	FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), aspect, m_rotation, m_inclination, FOV, skew);
 
 	SetFieldOfView(FOV, aspect, m_rznear, m_rzfar);
+//    Matrix3D viewMat;
+//    LookAt(viewMat, D3DVECTOR(0.0f, 0.0f, 0.0f), D3DVECTOR(0.0f, 0.0f, 1.0f), D3DVECTOR(0.0f, 0.0f, -1.0f));
+//    m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_VIEW, &viewMat);
 
 	// skew the coordinate system from kartesian to non kartesian.
 	skewX = -sinf(m_rotation)*skew;

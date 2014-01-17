@@ -563,7 +563,7 @@ void Light::PostRenderStatic(const RenderDevice* pd3dDevice)
 
 void Light::PrepareStaticCustom()
 {
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->zScale;
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
@@ -690,7 +690,7 @@ void Light::PrepareMoversCustom()
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->zScale;
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    if(customMoverVertex[0])
 	   delete [] customMoverVertex[0];
@@ -862,7 +862,7 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
    else
    {
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->zScale;
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
       const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
       const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
@@ -934,7 +934,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
    RenderDevice *pd3dDevice=(RenderDevice*)_pd3dDevice;
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->zScale;
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    bool useLightmap=false;
@@ -1082,7 +1082,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->zScale;
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    ppin3d->lightTexture[1].Set(ePictureTexture);

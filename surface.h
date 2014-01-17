@@ -17,8 +17,10 @@ public:
 	char m_szImage[MAXTOKEN];
 	char m_szSideImage[MAXTOKEN];
 	COLORREF m_sidecolor;
-	float m_heightbottom;
-	float m_heighttop;
+   float m_heightbottom;
+   float m_heighttop;
+   float m_savedHeightbottom;
+   float m_savedHeighttop;
 	COLORREF m_topcolor;
 	BOOL m_fDroppable;
 	BOOL m_fFlipbook;
