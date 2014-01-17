@@ -580,6 +580,7 @@ PinTable::PinTable()
    m_shadowDirY=-1.0f;
 
    m_zScale = 1.0f;
+   m_xlatez = 0.0f;
 
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
@@ -1171,9 +1172,11 @@ void PinTable::Init(VPinball *pvp)
 
    m_scalex = 1.0f;
    m_scaley = 1.0f;
+   m_zScale = 1.0f;
 
    m_xlatex = 0.0f;
    m_xlatey = 0.0f;
+   m_xlatez = 0.0f;
 
    m_inclination = 43;
    m_layback = 0;
@@ -1500,7 +1503,7 @@ void PinTable::Render3DProjection(Sur * const psur)
 
    const float realFOV = (m_FOV < 0.01f) ? 0.01f : m_FOV; // Can't have a real zero FOV, but this will look almost the same
 
-   pinproj.FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), aspect, rotation, inclination, realFOV);
+   pinproj.FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), aspect, rotation, inclination, realFOV, m_xlatez);
    pinproj.SetFieldOfView(realFOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
 
 
@@ -2646,6 +2649,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(BOTM), m_bottom);
    bw.WriteFloat(FID(XLTX), m_xlatex);
    bw.WriteFloat(FID(XLTY), m_xlatey);
+   bw.WriteFloat(FID(XLTZ), m_xlatez);
    bw.WriteFloat(FID(SCLX), m_scalex);
    bw.WriteFloat(FID(SCLY), m_scaley);
    bw.WriteFloat(FID(SCLZ), m_zScale);
@@ -3363,6 +3367,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(XLTY))
    {
       pbr->GetFloat(&m_xlatey);
+   }
+   else if (id == FID(XLTZ))
+   {
+      pbr->GetFloat(&m_xlatez);
    }
 #if 0
    else if (id == FID(VERS))
@@ -8417,6 +8425,24 @@ STDMETHODIMP PinTable::put_Xlatey(float newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Xlatez(float *pVal)
+{
+   *pVal = m_xlatez;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Xlatez(float newVal)
+{
+   STARTUNDO
+
+      m_xlatez = newVal;
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Rotation(float *pVal)

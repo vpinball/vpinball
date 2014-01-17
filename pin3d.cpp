@@ -1283,7 +1283,7 @@ void LookAt( Matrix3D &mat, D3DVECTOR eye, D3DVECTOR target, D3DVECTOR up )
    mat.Multiply( trans, mat );
 }
 
-void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float layback, const float maxSeparation, const float ZPD)
+void Pin3D::InitLayout(const float left, const float top, const float right, const float bottom, const float inclination, const float FOV, const float rotation, const float scalex, const float scaley, const float xlatex, const float xlatey, const float xlatez, const float layback, const float maxSeparation, const float ZPD)
 {
 	m_layback = layback;
 
@@ -1336,11 +1336,11 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	const GPINFLOAT aspect = 4.0/3.0;//((GPINFLOAT)m_dwRenderWidth)/m_dwRenderHeight;
 	const float skew = -tanf(m_layback*(float)(M_PI/360));
-	FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), aspect, m_rotation, m_inclination, FOV, skew);
+	FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), aspect, m_rotation, m_inclination, FOV, skew, xlatez);
 
 	SetFieldOfView(FOV, aspect, m_rznear, m_rzfar);
 //    Matrix3D viewMat;
-//    LookAt(viewMat, D3DVECTOR(0.0f, 0.0f, 0.0f), D3DVECTOR(0.0f, 0.0f, 1.0f), D3DVECTOR(0.0f, 0.0f, -1.0f));
+//    LookAt(viewMat, D3DVECTOR(0.0f, 0.0f, 0.0f), D3DVECTOR(0.0f, 0.0f, 1.0f), D3DVECTOR(0.0f, -1.0f, 0.0f));
 //    m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_VIEW, &viewMat);
 
 	// skew the coordinate system from kartesian to non kartesian.
@@ -1762,7 +1762,7 @@ void Pin3D::Flip(const int offsetx, const int offsety, const BOOL vsync)
 		hr = g_pvp->m_pdd.m_pDD->RestoreAllSurfaces();
 }
 
-void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *rgv*/, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV, const GPINFLOAT skew)
+void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *rgv*/, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV, const GPINFLOAT skew, const float xlatez)
 {
 	// Determine camera distance
 
@@ -1833,6 +1833,7 @@ void Pin3D::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D/*Vertex3D *
 	const GPINFLOAT ydist = (maxyintercept - minyintercept) / (slopey*2.0);
 	const GPINFLOAT xdist = (maxxintercept - minxintercept) / (slopex*2.0);
 	m_vertexcamera.z = (float)(max(ydist,xdist));
+   m_vertexcamera.z += xlatez;
 	// changed this since it's the same and better understandable.
 	// m_vertexcamera.y = (float)(slopey*ydist + minyintercept);
 	m_vertexcamera.y = (float)((maxyintercept - minyintercept)*0.5 + minyintercept);
@@ -2203,7 +2204,7 @@ void PinProjection::Multiply(const Matrix3D& mat)
 	m_matWorld.Multiply(mat, m_matWorld);
 }
 
-void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV)
+void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV, const float xlatez)
 {
 	// Determine camera distance
 	const GPINFLOAT rrotsin = sin(-rotation);
@@ -2262,6 +2263,7 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, co
 	const GPINFLOAT ydist = (maxyintercept - minyintercept) / (slopey*2.0);
 	const GPINFLOAT xdist = (maxxintercept - minxintercept) / (slopex*2.0);
 	m_vertexcamera.z = (float)(max(ydist,xdist));
+   m_vertexcamera.z += xlatez;
 	// changed this since it's the same and better understandable.
 	// m_vertexcamera.y = (float)(slopey*ydist + minyintercept);
 	m_vertexcamera.y = (float)((maxyintercept - minyintercept)*0.5 + minyintercept);

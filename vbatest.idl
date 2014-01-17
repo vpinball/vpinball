@@ -432,6 +432,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(102), helpstring("property Xlatex")] HRESULT Xlatex([in] float newVal);
 		[propget, id(103), helpstring("property Xlatey")] HRESULT Xlatey([out, retval] float *pVal);
 		[propput, id(103), helpstring("property Xlatey")] HRESULT Xlatey([in] float newVal);
+		[propget, id(110), helpstring("property Xlatez")] HRESULT Xlatez([out, retval] float *pVal);
+		[propput, id(110), helpstring("property Xlatez")] HRESULT Xlatez([in] float newVal);
 		
 		[propget, id(1100), helpstring("property Gravity")] HRESULT Gravity([out, retval] float *pVal);
 		[propput, id(1100), helpstring("property Gravity")] HRESULT Gravity([in] float newVal);

@@ -1,5 +1,7 @@
 VP 9.2.1 Changelog
 ------------------------
+- add Z offset to the backdrop options. With this settings you're able to zoom in/out the table without changing FOV/Inclination/Layback settings
+
 - add Z scale option to the backdrop options. With this setting you're able to reduce/increase the overall depth of a table.
 
 - add table dimension manager for an easy way to calculate real table dimensions into VP table unit and vice versa
