@@ -153,7 +153,7 @@ void Ball::Init()
    //	y_min = g_pplayer->m_ptable->m_top + radius;
    //	y_max = g_pplayer->m_ptable->m_bottom - radius;
    z_min = g_pplayer->m_ptable->m_tableheight + radius;
-   z_max = g_pplayer->m_ptable->m_glassheight - radius;
+   z_max = (g_pplayer->m_ptable->m_glassheight - radius);
 
    m_fErase = false;
 

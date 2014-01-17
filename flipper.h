@@ -25,8 +25,10 @@ public:
 	COLORREF m_rubbercolor;
 	float m_force;
 	int m_rubberthickness;
-	int m_rubberheight;
-	int m_rubberwidth;
+   int m_rubberheight;
+   int m_rubberwidth;
+   int m_savedRubberheight;
+   int m_savedRubberwidth;
 	float m_strength;
 	BOOL  m_fVisible;
    BOOL  m_fEnabled;
@@ -34,6 +36,7 @@ public:
 	float m_friction;
 	float m_scatter;
 	float m_height;
+   float m_savedHeight;
 	float m_mass;
 	float m_powerlaw;
 	float m_obliquecorrection;

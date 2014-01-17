@@ -16,6 +16,7 @@ public:
 	Vertex2D m_vCenter;
 	float m_length;
 	float m_height;
+   float m_savedHeight;
 	float m_rotation;
 	BOOL m_fSupports;
 	BOOL m_fCollidable;
