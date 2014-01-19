@@ -442,7 +442,7 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
 
    material.setAmbient(0.5f, 1.0f, 1.0f, 1.0f);
    material.setDiffuse(0.5f, 1.0f, 1.0f, 1.0f);
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
 
    float leading, descent; // For fonts
    float maxtu, maxtv;

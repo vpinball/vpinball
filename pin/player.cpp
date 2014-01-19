@@ -3169,6 +3169,12 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          if( (zheight > maxz) || (pball->z < minz) )
          {
             drawReflection=false;
+            // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
+            // by reducing it with 0.9095f (a factor found by trial'n error) the ball is a bit lower as 
+            if ( m_ptable->m_zScale!=1.0f )
+            {
+               zheight *= m_ptable->m_zScale*0.9095f; 
+            }
          }
       }
       if( only_invalidate_regions )

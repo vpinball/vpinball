@@ -256,9 +256,6 @@ void Spinner::GetTimers(Vector<HitTimer> * const pvht)
 
 void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   m_d.m_savedHeight = m_d.m_height;
-   m_d.m_height *= m_ptable->m_zScale;
-
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float h = m_d.m_height*0.5f + 30.0f;
 
@@ -310,8 +307,6 @@ void Spinner::GetHitShapesDebug(Vector<HitObject> * const pvho)
 void Spinner::EndPlay()
 {
    IEditable::EndPlay();
-
-   m_d.m_height = m_d.m_savedHeight;
 
    if (m_phitspinner) // Failed Player case
    {
@@ -403,6 +398,7 @@ void Spinner::PrepareStatic( RenderDevice* pd3dDevice )
       staticVertices[l].x += m_d.m_vCenter.x;
       staticVertices[l].y += m_d.m_vCenter.y;
       staticVertices[l].z += height;
+      staticVertices[l].z *= m_ptable->m_zScale;
       ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l],inv_width,inv_height);
    }
 
@@ -524,6 +520,7 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
          rgv3D[l].y += m_d.m_vCenter.y;
          //rgv3D[l].z += 60.0f + height;
          rgv3D[l].z += h + height;
+         rgv3D[l].z *= m_ptable->m_zScale;
 
          ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
       }

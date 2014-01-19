@@ -261,9 +261,6 @@ void Gate::GetTimers(Vector<HitTimer> * const pvht)
 void Gate::GetHitShapes(Vector<HitObject> * const pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   m_d.m_savedHeight = m_d.m_height;
-   m_d.m_height *= m_ptable->m_zScale;
-
    const float h = m_d.m_height;		//relative height of the gate 
 
    float halflength = m_d.m_length * 0.5f;	
@@ -364,8 +361,6 @@ void Gate::EndPlay()
 {
    IEditable::EndPlay();
 
-   m_d.m_height = m_d.m_savedHeight;
-
    if (m_phitgate) // Failed Player case
    {
       for (int i=0;i<m_phitgate->m_gateanim.m_vddsFrame.Size();i++)
@@ -453,7 +448,7 @@ void Gate::PrepareStatic(RenderDevice* pd3dDevice)
 
       staticVertices[l].x += m_d.m_vCenter.x;
       staticVertices[l].y += m_d.m_vCenter.y;
-      staticVertices[l].z += height;
+      staticVertices[l].z += height*m_ptable->m_zScale;
 
       ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l],inv_width,inv_height);
    }
@@ -576,6 +571,7 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
             rgv3D[l].y += m_d.m_vCenter.y;
             //rgv3D[l].z += height + 50.0f;
             rgv3D[l].z += height + h;
+            rgv3D[l].z *= m_ptable->m_zScale;
 
             ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
          }
@@ -627,6 +623,7 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
             rgv3D[l].y += m_d.m_vCenter.y;
             //rgv3D[l].z += height + 50.0f;
             rgv3D[l].z += height + h;
+            rgv3D[l].z *= m_ptable->m_zScale;
 
             rgv3D[l].color = m_d.m_color;
          }

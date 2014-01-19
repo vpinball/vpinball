@@ -12,10 +12,8 @@ class RampData
 public:
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
-   float m_heightbottom;
-   float m_heighttop;
-   float m_savedHeightbottom;
-   float m_savedHeighttop;
+	float m_heightbottom;
+	float m_heighttop;
 	float m_widthbottom;
 	float m_widthtop;
 	RampType m_type;
@@ -23,10 +21,8 @@ public:
 	RampImageAlignment m_imagealignment;
 	float m_leftwallheight;
 	float m_rightwallheight;
-   float m_leftwallheightvisible;
-   float m_rightwallheightvisible;
-   float m_savedLeftwallheightvisible;
-   float m_savedRightwallheightvisible;
+	float m_leftwallheightvisible;
+	float m_rightwallheightvisible;
 	float m_elasticity;
 	float m_friction;
 	float m_scatter;
