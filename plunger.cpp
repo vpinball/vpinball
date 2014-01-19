@@ -404,7 +404,7 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
                   float y = height + rgcrossplunger1[m][1];
                   ptr[m + offset].x = rgcrossplunger1[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
                   ptr[m + offset].y = y;
-                  ptr[m + offset].z = (rgcrossplunger1[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight);
+                  ptr[m + offset].z = (rgcrossplunger1[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight)*m_ptable->m_zScale;
                   ptr[m + offset].nx = rgcrossplungerNormal1[m][0] * sn;
                   ptr[m + offset].ny = rgcrossplungerNormal1[m][1];
                   ptr[m + offset].nz = -rgcrossplungerNormal1[m][0] * cs;
@@ -456,7 +456,7 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
             {
                ptr[m + offset].x = rgcrossplunger0[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
                ptr[m + offset].y = height + rgcrossplunger0[m][1];
-               ptr[m + offset].z = (rgcrossplunger0[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight);
+               ptr[m + offset].z = (rgcrossplunger0[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight)*m_ptable->m_zScale;
                ptr[m + offset].nx = rgcrossplungerNormal0[m][0] * sn;
                ptr[m + offset].ny = rgcrossplungerNormal0[m][1];
                ptr[m + offset].nz = -rgcrossplungerNormal0[m][0] * cs;

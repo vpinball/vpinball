@@ -670,11 +670,6 @@ void Surface::GetTimers(Vector<HitTimer> * const pvht)
 
 void Surface::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   m_d.m_savedHeightbottom = m_d.m_heightbottom;
-   m_d.m_savedHeighttop = m_d.m_heighttop;
-   m_d.m_heighttop *= m_ptable->m_zScale;
-   m_d.m_heightbottom *= m_ptable->m_zScale;
-
    CurvesToShapes(pvho);
 
    m_fIsDropped = fFalse;
@@ -852,6 +847,7 @@ void Surface::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
       pv->x = i&1 ? m_ptable->m_right : m_ptable->m_left;
       pv->y = i&2 ? m_ptable->m_bottom : m_ptable->m_top;
       pv->z = i&4 ? m_d.m_heighttop : m_d.m_heightbottom;
+
       pvvertex3D->AddElement(pv);
    }
 }
@@ -868,9 +864,6 @@ void Surface::EndPlay()
 
       m_phitdrop = NULL;
    }
-
-   m_d.m_heightbottom = m_d.m_savedHeightbottom;
-   m_d.m_savedHeighttop = m_d.m_savedHeighttop;
 
    m_vlinesling.RemoveAllElements();
    m_vhoDrop.RemoveAllElements();
@@ -1436,6 +1429,11 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
 void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
 {
    RenderDevice *pd3dDevice = (RenderDevice*)_pd3dDevice;
+   float oldBottomHeight = m_d.m_heightbottom;
+   float oldTopHeight = m_d.m_heighttop;
+
+   m_d.m_heightbottom *= m_ptable->m_zScale;
+   m_d.m_heighttop *= m_ptable->m_zScale;
    if( m_vlinesling.Size()>0 )
    {
       if( !slingshotVBuffer )
@@ -1457,6 +1455,8 @@ void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
 
    // create all vertices for dropped and non-dropped surface
    PrepareWallsAtHeight( pd3dDevice );
+   m_d.m_heightbottom = oldBottomHeight;
+   m_d.m_heighttop = oldTopHeight;
 }
 
 void Surface::RenderStatic(const RenderDevice* pd3dDevice)
