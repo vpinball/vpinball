@@ -2948,6 +2948,7 @@ void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
          shadowz = 0.1f; //pball->z - pball->radius + 0.1f;
       }
 
+      shadowz *= m_ptable->m_zScale;
       const float shadowradius = pball->radius*1.2f;
       const float shadowradiusX = shadowradius * m_BallStretchX;
       const float shadowradiusY = shadowradius * m_BallStretchY;
@@ -3042,7 +3043,18 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
    Vertex3D_NoTex2 *rgv3DArrowTransformed2 = pball->logoBackVerts;
    if ( !vBuffer )
    {
-      const float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
+      float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
+      float maxz = pball->defaultZ+3.0f;
+      float minz = pball->defaultZ-1.0f;
+      if( (zheight > maxz) || (pball->z < minz) )
+      {
+         // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
+         // by reducing it with 0.96f (a factor found by trial'n error) the ball is on the ramp again
+         if ( m_ptable->m_zScale!=1.0f )
+         {
+            zheight *= (m_ptable->m_zScale*0.96f); 
+         }
+      }
 
       // Scale the orientation for Ball stretching
       Matrix3 orientation;
@@ -3169,14 +3181,18 @@ void Player::DrawBalls(const bool only_invalidate_regions)
          if( (zheight > maxz) || (pball->z < minz) )
          {
             drawReflection=false;
-            // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
-            // by reducing it with 0.9095f (a factor found by trial'n error) the ball is a bit lower as 
-            if ( m_ptable->m_zScale!=1.0f )
-            {
-               zheight *= m_ptable->m_zScale*0.9095f; 
-            }
          }
       }
+      if( (zheight > maxz) || (pball->z < minz) )
+      {
+         // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
+         // by reducing it with 0.96f (a factor found by trial'n error) the ball is on the ramp again
+         if ( m_ptable->m_zScale!=1.0f )
+         {
+            zheight *= (m_ptable->m_zScale*0.96f); 
+         }
+      }
+
       if( only_invalidate_regions )
       {
          const float radiusX = pball->radius * m_BallStretchX;
