@@ -147,6 +147,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 	virtual void DrawFrame(BOOL fOn);
 
 	void WriteRegDefaults();
+   void FreeBuffers();
 
 	PinTable *m_ptable;
 

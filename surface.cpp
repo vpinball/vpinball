@@ -869,58 +869,7 @@ void Surface::EndPlay()
    m_vhoDrop.RemoveAllElements();
    m_vhoCollidable.RemoveAllElements();
 
-   if( slingshotVBuffer )
-   {
-      slingshotVBuffer->release();
-      slingshotVBuffer=0;
-   }
-   if( sideVBuffer )
-   {
-      sideVBuffer->release();
-      sideVBuffer=0;
-   }
-   if( vertsNotLit )
-   {
-      delete [] vertsNotLit;
-      vertsNotLit = 0;
-   }
-   if( verts )
-   {
-      delete [] verts;
-      verts = 0;
-   }
-   if( topVBuffer[0] )
-   {
-      topVBuffer[0]->release();
-      topVBuffer[0]=0;
-   }
-   if( vertsTopNotLit[0] )
-   {
-      delete [] vertsTopNotLit[0];
-      vertsTopNotLit[0] = 0;
-   }
-   if( vertsTop[0] )
-   {
-      delete [] vertsTop[0];
-      vertsTop[0] = 0;
-   }
-
-   if( topVBuffer[1] )
-   {
-      topVBuffer[1]->release();
-      topVBuffer[1]=0;
-   }
-   if( vertsTopNotLit[1] )
-   {
-      delete [] vertsTopNotLit[1];
-      vertsTopNotLit[1] = 0;
-   }
-   if( vertsTop[1] )
-   {
-      delete [] vertsTop[1];
-      vertsTop[1] = 0;
-   }
-
+   FreeBuffers();
 }
 
 void Surface::MoveOffset(const float dx, const float dy)
@@ -1459,6 +1408,61 @@ void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
    m_d.m_heighttop = oldTopHeight;
 }
 
+void Surface::FreeBuffers()
+{
+   if( slingshotVBuffer )
+   {
+      slingshotVBuffer->release();
+      slingshotVBuffer=0;
+   }
+   if( sideVBuffer )
+   {
+      sideVBuffer->release();
+      sideVBuffer=0;
+   }
+   if( vertsNotLit )
+   {
+      delete [] vertsNotLit;
+      vertsNotLit = 0;
+   }
+   if( verts )
+   {
+      delete [] verts;
+      verts = 0;
+   }
+   if( topVBuffer[0] )
+   {
+      topVBuffer[0]->release();
+      topVBuffer[0]=0;
+   }
+   if( vertsTopNotLit[0] )
+   {
+      delete [] vertsTopNotLit[0];
+      vertsTopNotLit[0] = 0;
+   }
+   if( vertsTop[0] )
+   {
+      delete [] vertsTop[0];
+      vertsTop[0] = 0;
+   }
+
+   if( topVBuffer[1] )
+   {
+      topVBuffer[1]->release();
+      topVBuffer[1]=0;
+   }
+   if( vertsTopNotLit[1] )
+   {
+      delete [] vertsTopNotLit[1];
+      vertsTopNotLit[1] = 0;
+   }
+   if( vertsTop[1] )
+   {
+      delete [] vertsTop[1];
+      vertsTop[1] = 0;
+   }
+}
+
 void Surface::RenderStatic(const RenderDevice* pd3dDevice)
 {
    if (!m_d.m_fDroppable)
@@ -1706,6 +1710,7 @@ void Surface::RenderMovers(const RenderDevice* pd3dDevice)
          m_phitdrop->m_polydropanim.m_pobjframe[1] = pof2;
       }
    }
+   FreeBuffers();
 }
 
 void Surface::DoCommand(int icmd, int x, int y)

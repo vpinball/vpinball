@@ -502,19 +502,8 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
    }
 }
 
-void Light::EndPlay()
+void Light::FreeBuffers()
 {
-   for (int i=0;i<2;i++)
-   {
-      //m_pobjframe[i]->ppds->Release();
-      delete m_pobjframe[i];
-      m_pobjframe[i] = NULL;
-   }
-
-   // ensure not locked just in case the player exits during a LS sequence
-   m_fLockedByLS = false;			//>>> added by chris
-
-   IEditable::EndPlay();
    if( customVBuffer )
    {
       customVBuffer->release();
@@ -550,6 +539,22 @@ void Light::EndPlay()
       delete [] customMoverVertex[1];
       customMoverVertex[1]=0;
    }
+}
+
+void Light::EndPlay()
+{
+   for (int i=0;i<2;i++)
+   {
+      //m_pobjframe[i]->ppds->Release();
+      delete m_pobjframe[i];
+      m_pobjframe[i] = NULL;
+   }
+
+   // ensure not locked just in case the player exits during a LS sequence
+   m_fLockedByLS = false;			//>>> added by chris
+
+   IEditable::EndPlay();
+   FreeBuffers();
 }
 
 void Light::ClearForOverwrite()
@@ -1069,6 +1074,7 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 
    ppin3d->SetTexture(NULL);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   FreeBuffers();
 }
 
 void Light::RenderMovers(const RenderDevice* _pd3dDevice)
@@ -1201,6 +1207,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 
    ppin3d->SetTexture(NULL);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   FreeBuffers();
 }
 
 void Light::SetObjectPos()

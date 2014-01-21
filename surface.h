@@ -127,6 +127,7 @@ END_CONNECTION_POINT_MAP()
 
 	virtual void GetCenter(Vertex2D * const pv) const {GetPointCenter(pv);}
 	virtual void PutCenter(const Vertex2D * const pv) {PutPointCenter(pv);}
+   void FreeBuffers();
 
 	//void CheckIntersecting();
 
