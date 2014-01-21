@@ -534,7 +534,7 @@ STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_IFlasher
    };
 
-   for (int i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
+   for (size_t i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
       if (InlineIsEqualGUID(*arr[i],riid))
          return S_OK;
 
@@ -952,36 +952,36 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
          const float halfwidth = m_d.m_sizeX*0.5f;
          const float halfheight = m_d.m_sizeY*0.5f;
-         Vertex3D_NoLighting vertices[4];
          const float height = m_d.m_height;
 
-         vertices[0].x = m_d.m_vCenter.x - halfwidth;
-         vertices[0].y = m_d.m_vCenter.y - halfheight;
-         vertices[0].z = height;
-         vertices[0].color = m_d.m_color;
-         vertices[0].tu = 0;
-         vertices[0].tv = 0;
+         Vertex3D_NoLighting lvertices[4];
+         lvertices[0].x = m_d.m_vCenter.x - halfwidth;
+         lvertices[0].y = m_d.m_vCenter.y - halfheight;
+         lvertices[0].z = height;
+         lvertices[0].color = m_d.m_color;
+         lvertices[0].tu = 0;
+         lvertices[0].tv = 0;
 
-         vertices[1].x = m_d.m_vCenter.x + halfwidth;
-         vertices[1].y = m_d.m_vCenter.y - halfheight;
-         vertices[1].z = height;
-         vertices[1].color = m_d.m_color;
-         vertices[1].tu = maxtu;
-         vertices[1].tv = 0;
+         lvertices[1].x = m_d.m_vCenter.x + halfwidth;
+         lvertices[1].y = m_d.m_vCenter.y - halfheight;
+         lvertices[1].z = height;
+         lvertices[1].color = m_d.m_color;
+         lvertices[1].tu = maxtu;
+         lvertices[1].tv = 0;
 
-         vertices[2].x = m_d.m_vCenter.x + halfwidth;
-         vertices[2].y = m_d.m_vCenter.y + halfheight;
-         vertices[2].z = height;
-         vertices[2].color = m_d.m_color;
-         vertices[2].tu = maxtu;
-         vertices[2].tv = maxtv;
+         lvertices[2].x = m_d.m_vCenter.x + halfwidth;
+         lvertices[2].y = m_d.m_vCenter.y + halfheight;
+         lvertices[2].z = height;
+         lvertices[2].color = m_d.m_color;
+         lvertices[2].tu = maxtu;
+         lvertices[2].tv = maxtv;
 
-         vertices[3].x = m_d.m_vCenter.x - halfwidth;
-         vertices[3].y = m_d.m_vCenter.y + halfheight;
-         vertices[3].z = height;
-         vertices[3].color = m_d.m_color;
-         vertices[3].tu = 0;
-         vertices[3].tv = maxtv;
+         lvertices[3].x = m_d.m_vCenter.x - halfwidth;
+         lvertices[3].y = m_d.m_vCenter.y + halfheight;
+         lvertices[3].z = height;
+         lvertices[3].color = m_d.m_color;
+         lvertices[3].tu = 0;
+         lvertices[3].tv = maxtv;
 
          Matrix3D tempMatrix,RTmatrix,TMatrix,T2Matrix;
          RTmatrix.SetIdentity();
@@ -1003,16 +1003,16 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
          tempMatrix.Multiply(RTmatrix, RTmatrix);
          for( int i=0;i<4;i++ )
          {      
-            Vertex3D_NoLighting * const tempVert = &vertices[i];
+            Vertex3D_NoLighting * const tempVert = &lvertices[i];
             T2Matrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
             RTmatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
             TMatrix.MultiplyVector(tempVert->x, tempVert->y, tempVert->z, tempVert);
          }
 
-         memcpy( buf, vertices, sizeof(Vertex3D_NoLighting)*4 );
+         memcpy( buf, lvertices, sizeof(Vertex3D_NoLighting)*4 );
 		 // update the bounding box for the primitive to tell the renderer where to update the back buffer
  		 g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
- 		 g_pplayer->m_pin3d.ExpandExtents(&m_d.m_boundRectangle, vertices, NULL, NULL, 4, fFalse);
+ 		 g_pplayer->m_pin3d.ExpandExtents(&m_d.m_boundRectangle, lvertices, NULL, NULL, 4, fFalse);
      
 		 dynamicVertexBuffer->unlock();
       }

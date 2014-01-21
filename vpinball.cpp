@@ -568,7 +568,7 @@ HWND VPinball::CreateLayerToolbar(HWND hwndParent)
       (LPARAM)(DWORD)MAKELONG(50,50));
 #endif
 
-   for (int i=0;i<TBCOUNTLAYERS;i++)
+   for (unsigned int i=0;i<TBCOUNTLAYERS;i++)
    {
       TBBUTTONINFO tbbi;
       ZeroMemory(&tbbi,sizeof(TBBUTTONINFO));
@@ -1465,7 +1465,7 @@ void VPinball::SetEnablePalette()
 
    const int state = (m_fBackglassView ? 2 : 1);
 
-   for (int i=0;i<TBCOUNTPALETTE;i++)		//<<< changed by Chris from 0->14 to 0->15
+   for (unsigned int i=0;i<TBCOUNTPALETTE;i++)		//<<< changed by Chris from 0->14 to 0->15
    {
       const int id = rgToolEnable[i][0];
       const int enablecode = rgToolEnable[i][1];
@@ -1504,7 +1504,7 @@ void VPinball::SetEnableToolbar()
 
    //int state = (m_fBackglassView ? 2 : 1);
 
-   for (int i=TBCOUNTPALETTE;i<(TBCOUNTPALETTE+5);i++)
+   for (unsigned int i=TBCOUNTPALETTE;i<(TBCOUNTPALETTE+5);i++)
    {
       const int id = rgToolEnable[i][0];
       BOOL fEnable = fTableActive;

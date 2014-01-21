@@ -12,7 +12,7 @@ bool RenderDevice::createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7
    dx7=_dx7;
    memset( theDevice->renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
    for( int i=0;i<8;i++ )
-      for( int j=0;j<TEXTURE_STATE_CACHE_SIZE;j++ )
+      for( unsigned int j=0;j<TEXTURE_STATE_CACHE_SIZE;j++ )
          theDevice->textureStateCache[i][j]=0xFFFFFFFF;
    memset(&theDevice->materialStateCache, 0xFFFFFFFF, sizeof(Material));
 
@@ -32,7 +32,7 @@ RenderDevice::RenderDevice()
    Texture::SetRenderDevice(this);
    memset( renderStateCache, 0xFFFFFFFF, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
    for( int i=0;i<8;i++ )
-      for( int j=0;j<TEXTURE_STATE_CACHE_SIZE;j++ )
+      for( unsigned int j=0;j<TEXTURE_STATE_CACHE_SIZE;j++ )
          textureStateCache[i][j]=0xFFFFFFFF;
    memset(&materialStateCache, 0xFFFFFFFF, sizeof(Material));
 }
@@ -65,7 +65,7 @@ void RenderDevice::SetMaterial( const THIS_ BaseMaterial * const _material )
 
 void RenderDevice::SetRenderState( const RenderStates p1, const DWORD p2 )
 {
-   if ( p1<RENDER_STATE_CACHE_SIZE) 
+   if ( (unsigned int)p1 < RENDER_STATE_CACHE_SIZE) 
    {
       if( renderStateCache[p1]==p2 )
       {
@@ -84,7 +84,7 @@ bool RenderDevice::createVertexBuffer( unsigned int _length, DWORD _usage, DWORD
    if( vbInVRAM )
       vbd.dwCaps = 0; // set nothing to let the driver decide what's best for us ;)
    else
-      vbd.dwCaps = D3DVBCAPS_WRITEONLY | D3DVBCAPS_SYSTEMMEMORY; // essential on some setups //!! but maybe problems for others??
+      vbd.dwCaps = D3DVBCAPS_WRITEONLY | D3DVBCAPS_SYSTEMMEMORY; // essential on some setups to enforce this variant
 
    vbd.dwFVF = _fvf;
    vbd.dwNumVertices = _length;
@@ -288,7 +288,7 @@ STDMETHODIMP RenderDevice::GetTextureStageState( THIS_ DWORD p1,D3DTEXTURESTAGES
 
 STDMETHODIMP RenderDevice::SetTextureStageState( THIS_ DWORD p1,D3DTEXTURESTAGESTATETYPE p2,DWORD p3)
 {
-   if( p2<TEXTURE_STATE_CACHE_SIZE && p1<8) 
+   if( (unsigned int)p2 < TEXTURE_STATE_CACHE_SIZE && p1<8) 
    {
       if( textureStateCache[p1][p2]==p3 )
       {

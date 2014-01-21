@@ -346,7 +346,7 @@ void CodeViewer::SetCaption(char *szCaption)
    SetWindowText(m_hwndMain, szT);
 }
 
-void CodeViewer::Create(HWND hwndParent)
+void CodeViewer::Create()
 {
    m_haccel = LoadAccelerators(g_hinst,MAKEINTRESOURCE(IDR_CODEVIEWACCEL));// Accelerator keys
 
@@ -909,6 +909,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
 
 void CodeViewer::ColorLine(int line)
 {
+	//!!
 }
 
 void CodeViewer::UncolorError()

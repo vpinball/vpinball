@@ -17,8 +17,7 @@ public:
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
 	float m_overhang;
-   float m_height;
-   float m_savedHeight;
+    float m_height;
 	float m_antifriction;
 	float m_angleMax;
 	float m_angleMin;
