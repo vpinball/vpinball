@@ -110,6 +110,7 @@ set(SOURCES
   dragpoint.cpp
   eventproxy.cpp
   extern.cpp
+  flasher.cpp
   flipper.cpp
   gate.cpp
   hid.cpp
@@ -124,6 +125,7 @@ set(SOURCES
   memutil.cpp
   mesh.cpp
   mixer.cpp
+  objloader.cpp
   paintsur.cpp
   pin3d.cpp
   pinbinary.cpp
@@ -142,7 +144,6 @@ set(SOURCES
   shadowsur.cpp
   slintf.cpp
   spinner.cpp
-  sur.cpp
   surface.cpp
   tableglobal.cpp
   textbox.cpp
@@ -213,7 +214,6 @@ set(HEADERS
   pininput.h
   pinsound.h
   pintable.h
-  pintypes.h
   pinundo.h
   plumb.h
   plunger.h
@@ -249,13 +249,10 @@ set(HEADERS
   pin/hitplunger.h
   pin/hittimer.h
   pin/player.h
-  media/asferr.h
   media/fileio.h
   media/lzwreader.h
   media/lzwwriter.h
-  media/nserror.h
   media/wavread.h
-  media/wmaudiosdk.h
   )
 
 set(RC_RESOURCE

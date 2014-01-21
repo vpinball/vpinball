@@ -3,11 +3,6 @@
 /* xaudio general includes */
 #include "media\xaudio\decoder.h"
 
-/* xaudio plug-in modules */
-#include "media\xaudio\memory_input.h"
-#include "media\xaudio\audio_output.h"
-#include "media\xaudio\mpeg_codec.h"
-
 class XAudPlayer
 {
 public:

@@ -367,7 +367,7 @@ void CodeViewer::Create()
       WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
       10, 10, 300, 300, m_hwndMain, NULL, g_hinst, 0);
 
-   SetWindowLong(m_hwndMain, GWL_USERDATA, (long)this);
+   SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (long)this);
 
    SetWindowPos(m_hwndMain,NULL,
       0, 0, 640, 480, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
@@ -1178,9 +1178,9 @@ void CodeViewer::FindCodeFromEvent()
 }
 
 HRESULT STDMETHODCALLTYPE CodeViewer::GetSecurityId(
-   BYTE __RPC_FAR *pbSecurityId,
-   DWORD __RPC_FAR *pcbSecurityId,
-   DWORD dwReserved)
+   BYTE *pbSecurityId,
+   DWORD *pcbSecurityId,
+   DWORD_PTR dwReserved)
 {
    return S_OK;
 }
@@ -1530,11 +1530,16 @@ void ParseForFunction( CodeViewer *pcv )
 
 }
 
+static CodeViewer* GetCodeViewerPtr(HWND hwndDlg)
+{
+      return (CodeViewer *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+}
+
 LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    if (uMsg == g_FindMsgString)
    {
-      CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+      CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
       FINDREPLACE * const pfr = (FINDREPLACE *)lParam;
       if (pfr->Flags & FR_DIALOGTERM)
       {
@@ -1561,13 +1566,13 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    case WM_ACTIVATE:
       {
          if (LOWORD(wParam) != WA_INACTIVE)
-            g_pvp->m_pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+            g_pvp->m_pcv = GetCodeViewerPtr(hwndDlg);
       }
       break;
 
    case WM_CLOSE:
       {
-         CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
          pcv->SetVisible(fFalse);
          return 0;
       }
@@ -1583,7 +1588,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          {
          case SCEN_CHANGE:
             {
-               CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
                if (pcv->m_errorLineNumber != -1)
                   pcv->UncolorError();
                if (!pcv->m_fIgnoreDirty && (pcv->m_sdsDirty < eSaveDirty))
@@ -1596,7 +1601,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          case BN_CLICKED: // or menu
             {
-               CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
                switch (id)
                {
                case ID_COMPILE:
@@ -1646,14 +1651,14 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             break;
          case CBN_SETFOCUS:
             {
-               CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
                if ( id==IDC_FUNCTIONLIST ) 
                   ParseForFunction(pcv);
                break;
             }
          case CBN_SELCHANGE: // Or accelerator
             {
-               CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
                switch (id)
                {
                case ID_FIND: // accelerator
@@ -1723,7 +1728,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          {
          case SCN_SAVEPOINTREACHED:
             {
-               CodeViewer *pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
                if (pcv->m_sdsDirty > eSaveClean)
                {
                   pcv->m_sdsDirty = eSaveClean;
@@ -1737,7 +1742,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                SCNotification * const pscn = (SCNotification *)lParam;
 
                char szT[256];
-               CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
                DWORD pos = SendMessage(hwndRE, SCI_GETCURRENTPOS, 0, 0);
                const DWORD line = SendMessage(hwndRE, SCI_LINEFROMPOSITION, pos, 0)+1;
                const DWORD column = SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
@@ -1751,7 +1756,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          case SCN_MARGINCLICK:
             {
                SCNotification * const pscn = (SCNotification *)lParam;
-               CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
                if (pscn->margin == 1)
                {
                   pcv->MarginClick(pscn->position, pscn->modifiers);
@@ -1766,7 +1771,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
    case RECOLOR_LINE:
       {
-         CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
 
          for (int i=wParam; i<=lParam; i++)
             pcv->ColorLine(i);
@@ -1777,7 +1782,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       {
          RECT rc;
          GetClientRect(hwndDlg, &rc);
-         CodeViewer * const pcv = (CodeViewer *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
 
          if (pcv && pcv->m_hwndStatus)
          {

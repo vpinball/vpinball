@@ -736,7 +736,7 @@ STDMETHODIMP DragPoint::put_TextureCoordinateU(float newVal)
 }
 
 int rotateApplyCount=0;
-int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
 
@@ -745,9 +745,9 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_INITDIALOG:
       {
          rotateApplyCount=0;
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
-         psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
          Vertex2D v;			
          psel->GetCenter(&v);
@@ -766,7 +766,7 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
       break;
 
    case WM_COMMAND:
-      psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
+      psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
       switch (HIWORD(wParam))
       {
       case BN_CLICKED:
@@ -835,7 +835,7 @@ int CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 int scaleApplyCount=0;
-int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
 
@@ -844,8 +844,8 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_INITDIALOG:
       {
          scaleApplyCount=0;
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-         psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+         psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
          Vertex2D v;			
          psel->GetCenter(&v);
@@ -872,7 +872,7 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
       break;
 
    case WM_COMMAND:
-      psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
+      psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
       switch (HIWORD(wParam))
       {
       case BN_CLICKED:
@@ -977,7 +977,7 @@ int CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 int translateApplyCount=0;
-int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
 
@@ -986,10 +986,10 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
    case WM_INITDIALOG:
       {
          translateApplyCount=0;
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-         psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+         psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
          char szT[256];
          f2sz(0, szT);
@@ -1005,7 +1005,7 @@ int CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
       break;
 
    case WM_COMMAND:
-      psel = (ISelect *)GetWindowLong(hwndDlg, GWL_USERDATA);
+      psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
       switch (HIWORD(wParam))
       {
       case BN_CLICKED:

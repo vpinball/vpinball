@@ -329,7 +329,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
          {
             fGotStrings = fTrue;
 
-            SetWindowLong(hwnd, GWL_USERDATA, 0); // So we know later whether to set the property as a string or a number from itemdata
+            SetWindowLongPtr(hwnd, GWLP_USERDATA, 0); // So we know later whether to set the property as a string or a number from itemdata
 
             SendMessage(hwnd, CB_RESETCONTENT, 0, 0);
 
@@ -353,7 +353,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
       if (!fGotStrings)
       {
-         SetWindowLong(hwnd, GWL_USERDATA, 1); // So we know later whether to set the property as a string or a number from itemdata
+         SetWindowLongPtr(hwnd, GWLP_USERDATA, 1); // So we know later whether to set the property as a string or a number from itemdata
 
          ITypeInfo *piti;
          psb->GetBaseIDisp()->GetTypeInfo(0, 0x409, &piti);
@@ -758,7 +758,7 @@ void SmartBrowser::RelayoutExpandos()
    for (int i=0;i<m_vhwndExpand.Size();i++)
    {
       HWND hwndExpand = m_vhwndExpand.ElementAt(i);
-      ExpandoInfo *pexinfo = (ExpandoInfo *)GetWindowLong(hwndExpand, GWL_USERDATA);
+      ExpandoInfo *pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwndExpand, GWLP_USERDATA);
       if (pexinfo->m_fExpanded)
          totalheight += pexinfo->m_dialogheight;
       totalheight += EXPANDOHEIGHT;
@@ -832,7 +832,7 @@ void SmartBrowser::ResetPriority(int expandoid)
 }
 
 
-int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    //HRESULT hr;
 
@@ -840,7 +840,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
    case WM_INITDIALOG:
       {
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
          EnumChildWindows(hwndDlg, EnumChildInitList, lParam);
 
@@ -863,7 +863,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case GET_COLOR_TABLE:
       {
-         SmartBrowser * const psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         SmartBrowser * const psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
          *((unsigned long **)lParam) = psb->GetBaseISel()->GetPTable()->m_rgcolorcustom;
          return TRUE;
       }
@@ -885,7 +885,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                (nScrollCode == SB_THUMBPOSITION) ||		// updates for mouse scrollwheel
                (nScrollCode == SB_THUMBTRACK) )			// update as long as button is held down
             {
-               SmartBrowser *psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               SmartBrowser *psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
                if (psb != NULL)
                {
                   int nPos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
@@ -913,7 +913,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          if (dispid == DISPID_FAKE_NAME)
             dispid = 0x80010000;
 
-         SmartBrowser * const psb = (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         SmartBrowser * const psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
          //IDispatch *pdisp = psb->m_pdisp;
          switch (code)
          {
@@ -934,9 +934,9 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   pt.x = 1;
                   pt.y = 1;
                   hwndEdit = ChildWindowFromPoint((HWND)lParam, pt);
-                  fChanged = GetWindowLong(hwndEdit, GWL_USERDATA);
+                  fChanged = GetWindowLongPtr(hwndEdit, GWLP_USERDATA);
                   if (fChanged)
-                     SetWindowLong(hwndEdit, GWL_USERDATA, 0);
+                     SetWindowLongPtr(hwndEdit, GWLP_USERDATA, 0);
                }
 
                if (fChanged)//SendMessage(hwndEdit, EM_GETMODIFY, 0, 0))
@@ -962,7 +962,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                pt.x = 1;
                pt.y = 1;
                HWND hwndEdit = ChildWindowFromPoint((HWND)lParam, pt);
-               SetWindowLong(hwndEdit, GWL_USERDATA, 1);
+               SetWindowLongPtr(hwndEdit, GWLP_USERDATA, 1);
             }
             break;
 
@@ -1017,7 +1017,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                const int sel = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
                const DWORD cookie = SendMessage((HWND)lParam, CB_GETITEMDATA, sel, 0);
 
-               const int proptype = GetWindowLong((HWND)lParam, GWL_USERDATA);
+               const int proptype = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
 
                if (proptype == 0)
                {
@@ -1045,7 +1045,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          case COLOR_CHANGED:
             {
-               const int color = GetWindowLong((HWND)lParam, GWL_USERDATA);/*SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);*/
+               const int color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);/*SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);*/
 
                CComVariant var(color);
 
@@ -1057,7 +1057,7 @@ int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          case FONT_CHANGED:
             {
-               IFontDisp * const pifd = (IFontDisp*)GetWindowLong((HWND)lParam, GWL_USERDATA);
+               IFontDisp * const pifd = (IFontDisp*)GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
                // Addred because the object will release the old one (really this one), before addreffing it again
                pifd->AddRef();
                CComVariant var(pifd);
@@ -1079,7 +1079,7 @@ LRESULT CALLBACK SBFrameProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_CREATE:
       {
          CREATESTRUCT * const pcs = (CREATESTRUCT *)lParam;
-         SetWindowLong(hwnd, GWL_USERDATA, (long)pcs->lpCreateParams);
+         SetWindowLongPtr(hwnd, GWLP_USERDATA, (long)pcs->lpCreateParams);
       }
       break;
 
@@ -1088,7 +1088,7 @@ LRESULT CALLBACK SBFrameProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          PAINTSTRUCT ps;
          HDC hdc = BeginPaint(hwnd,&ps);
 
-         SmartBrowser * const psb = (SmartBrowser *)GetWindowLong(hwnd, GWL_USERDATA);
+         SmartBrowser * const psb = (SmartBrowser *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          psb->DrawHeader(hdc);
 
          EndPaint(hwnd,&ps);
@@ -1115,7 +1115,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			 colorkey = (int)NOTRANSCOLOR; //not set assign no transparent color 	
 
          /*const HWND hwndButton =*/ CreateWindow("BUTTON","Color",WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
-         SetWindowLong(hwnd, GWL_USERDATA, colorkey); // get cached colorkey
+         SetWindowLongPtr(hwnd, GWLP_USERDATA, colorkey); // get cached colorkey
       }
       break;
 
@@ -1124,14 +1124,14 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          int color = lParam;
          if (wParam == 1)
             color |= 0x80000000;
-         SetWindowLong(hwnd, GWL_USERDATA, color);
+         SetWindowLongPtr(hwnd, GWLP_USERDATA, color);
          InvalidateRect(hwnd, NULL, fFalse);
       }
       break;
 
    case WM_GETTEXT:
       {
-         return GetWindowLong(hwnd, GWL_USERDATA);
+         return GetWindowLongPtr(hwnd, GWLP_USERDATA);
       }
       break;
 
@@ -1141,7 +1141,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       PAINTSTRUCT ps;
       hdc = BeginPaint(hwnd,&ps);
 
-      //SmartBrowser *psb = (SmartBrowser *)GetWindowLong(hwnd, GWL_USERDATA);
+      //SmartBrowser *psb = (SmartBrowser *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
       //psb->DrawHeader(hdc);
 
       HBRUSH hbrush = CreateSolidBrush(RGB(255,0,0));
@@ -1172,11 +1172,11 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          DrawFrameControl(hdc, &pdis->rcItem, DFC_BUTTON, state);
 
-         const int color = GetWindowLong(hwnd, GWL_USERDATA);
+         const int color = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
          if (!(color & 0x80000000)) // normal color, not ninched
          {
-            const int oldcolor = GetWindowLong(hwnd, GWL_USERDATA) & 0xffffff; // have to AND it to get rid of ninch bit
+            const int oldcolor = GetWindowLongPtr(hwnd, GWLP_USERDATA) & 0xffffff; // have to AND it to get rid of ninch bit
             HBRUSH hbrush = CreateSolidBrush(oldcolor);
 
             HBRUSH hbrushOld = (HBRUSH)SelectObject(hdc, hbrush);
@@ -1198,12 +1198,12 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          case BN_CLICKED:
             {
                HWND hwndDlg = GetParent(hwnd);
-               /*SmartBrowser * const psb =*/ (SmartBrowser *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               /*SmartBrowser * const psb =*/ (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
                CHOOSECOLOR cc;
                cc.lStructSize = sizeof(CHOOSECOLOR);
                cc.hwndOwner = hwnd;
                cc.hInstance = NULL;
-               cc.rgbResult = GetWindowLong(hwnd, GWL_USERDATA);
+               cc.rgbResult = GetWindowLongPtr(hwnd, GWLP_USERDATA);
                SendMessage(hwndDlg, GET_COLOR_TABLE, 0, (long)&cc.lpCustColors);
                //cc.lpCustColors = (unsigned long *)SendMessage(hwndDlg, GET_COLOR_TABLE, 0, 0);//psb->m_pisel->GetPTable()->m_rgcolorcustom;//cr;
                cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
@@ -1213,7 +1213,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (ChooseColor(&cc))
                {
                   const int id = GetDlgCtrlID(hwnd);
-                  SetWindowLong(hwnd, GWL_USERDATA, cc.rgbResult);
+                  SetWindowLongPtr(hwnd, GWLP_USERDATA, cc.rgbResult);
                   SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(id, COLOR_CHANGED), (LPARAM)hwnd);
                   InvalidateRect(hwnd, NULL, fFalse);
                }
@@ -1235,7 +1235,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          RECT rc;
          GetClientRect(hwnd, &rc);
          HWND hwndButton = CreateWindow("BUTTON","",BS_LEFT | WS_VISIBLE | WS_CHILD, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
-         SetWindowLong(hwnd, GWL_USERDATA, 0);
+         SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 
          HFONT hfontButton = CreateFont(-10, 0, 0, 0, /*FW_NORMAL*/ FW_MEDIUM, FALSE, FALSE, FALSE,
             DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
@@ -1263,7 +1263,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case CHANGE_FONT:
       {
-         SetWindowLong(hwnd, GWL_USERDATA, lParam);
+         SetWindowLongPtr(hwnd, GWLP_USERDATA, lParam);
 
          POINT pt;
          pt.x = 1;
@@ -1290,7 +1290,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case WM_GETTEXT:
       {
-         return GetWindowLong(hwnd, GWL_USERDATA);
+         return GetWindowLongPtr(hwnd, GWLP_USERDATA);
       }
       break;
 
@@ -1306,7 +1306,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                char szstyle[256];
 
                // Set up logfont to be like our current font
-               IFontDisp * const pifd = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);
+               IFontDisp * const pifd = (IFontDisp *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
                IFont *pif;
                pifd->QueryInterface(IID_IFont, (void **)&pif);
 
@@ -1326,7 +1326,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                cf.Flags = CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT;
                if (ChooseFont(&cf))
                {
-                  IFontDisp * const pifd2 = (IFontDisp *)GetWindowLong(hwnd, GWL_USERDATA);
+                  IFontDisp * const pifd2 = (IFontDisp *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
                   IFont *pif2;
                   pifd2->QueryInterface(IID_IFont, (void **)&pif2);
 
@@ -1369,20 +1369,20 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_CREATE:
       {
          CREATESTRUCT * const pcs = (CREATESTRUCT *)lParam;
-         SetWindowLong(hwnd, GWL_USERDATA, (long)pcs->lpCreateParams);
+         SetWindowLongPtr(hwnd, GWLP_USERDATA, (long)pcs->lpCreateParams);
          break;
       }
 
    case WM_DESTROY:
       {
-         pexinfo = (ExpandoInfo *)GetWindowLong(hwnd, GWL_USERDATA);
+         pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          delete pexinfo;
          break;
       }
 
    case WM_LBUTTONUP:
       {
-         pexinfo = (ExpandoInfo *)GetWindowLong(hwnd, GWL_USERDATA);
+         pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
          if (pexinfo->m_fHasCaption) // Null title means not an expando
          {
@@ -1396,7 +1396,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case EXPANDO_EXPAND:
       {
-         pexinfo = (ExpandoInfo *)GetWindowLong(hwnd, GWL_USERDATA);
+         pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          pexinfo->m_fExpanded = fTrue;			
 
          int titleheight;
@@ -1419,7 +1419,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case EXPANDO_COLLAPSE:
       {
-         pexinfo = (ExpandoInfo *)GetWindowLong(hwnd, GWL_USERDATA);
+         pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          pexinfo->m_fExpanded = fFalse;
 
          SetWindowPos(hwnd, NULL, 0, 0, pexinfo->m_psb->m_maxdialogwidth, EXPANDOHEIGHT, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
@@ -1452,7 +1452,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          PAINTSTRUCT ps;
          HDC hdc = BeginPaint(hwnd,&ps);
 
-         pexinfo = (ExpandoInfo *)GetWindowLong(hwnd, GWL_USERDATA);
+         pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
          //int textlength = GetWindowTextLength(hwnd);
 
