@@ -675,18 +675,33 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
 
       if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
       {
+         Vertex3D verts[16];
+         const WORD idx[24] = {0,1,2,0,1,2, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
          // Top & Bottom
          SetNormal(rgv3D, rgiSpinner4, 4, NULL, NULL, 0);
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 4,(LPWORD)rgiSpinner4, 4, 0);
+         memcpy( &verts[0 ], &rgv3D[ rgiSpinner4[0]], sizeof(Vertex3D));
+         memcpy( &verts[1 ], &rgv3D[ rgiSpinner4[1]], sizeof(Vertex3D));
+         memcpy( &verts[2 ], &rgv3D[ rgiSpinner4[2]], sizeof(Vertex3D));
+         memcpy( &verts[3 ], &rgv3D[ rgiSpinner4[3]], sizeof(Vertex3D));
 
          SetNormal(rgv3D, rgiSpinner5, 4, NULL, NULL, 0);
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner5, 4, 0);
+         memcpy( &verts[4 ], &rgv3D[ rgiSpinner5[0]], sizeof(Vertex3D));
+         memcpy( &verts[5 ], &rgv3D[ rgiSpinner5[1]], sizeof(Vertex3D));
+         memcpy( &verts[6 ], &rgv3D[ rgiSpinner5[2]], sizeof(Vertex3D));
+         memcpy( &verts[7 ], &rgv3D[ rgiSpinner5[3]], sizeof(Vertex3D));
          // Sides
          SetNormal(rgv3D, rgiSpinner6, 4, NULL, NULL, 0);
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 7,(LPWORD)rgiSpinner6, 4, 0);
+         memcpy( &verts[8 ], &rgv3D[ rgiSpinner6[0]], sizeof(Vertex3D));
+         memcpy( &verts[9 ], &rgv3D[ rgiSpinner6[1]], sizeof(Vertex3D));
+         memcpy( &verts[10], &rgv3D[ rgiSpinner6[2]], sizeof(Vertex3D));
+         memcpy( &verts[11], &rgv3D[ rgiSpinner6[3]], sizeof(Vertex3D));
 
          SetNormal(rgv3D, rgiSpinner7, 4, NULL, NULL, 0);
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner7, 4, 0);
+         memcpy( &verts[12], &rgv3D[ rgiSpinner7[0]], sizeof(Vertex3D));
+         memcpy( &verts[13], &rgv3D[ rgiSpinner7[1]], sizeof(Vertex3D));
+         memcpy( &verts[14], &rgv3D[ rgiSpinner7[2]], sizeof(Vertex3D));
+         memcpy( &verts[15], &rgv3D[ rgiSpinner7[3]], sizeof(Vertex3D));
+         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,verts, 16,(LPWORD)idx, 24, 0);
       }
 
       ppin3d->CreateAndCopySpriteBuffers( &m_phitspinner->m_spinneranim, pof );
