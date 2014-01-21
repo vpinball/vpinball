@@ -585,7 +585,7 @@ PinTable::PinTable()
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
    m_pcv->Init((IScriptableHost*)this);
-   m_pcv->Create(g_pvp->m_hwnd);
+   m_pcv->Create();
 
    CComObject<ScriptGlobalTable>::CreateInstance(&m_psgt);
    m_psgt->AddRef();
@@ -7312,9 +7312,9 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
                ClosestPointOnPolygon(vvertex, Vertex2D(x,y), &vOut, &iSeg, false);
 
                // Go through vertices (including iSeg itself) counting control points until iSeg
-               float totallength = 0;
-               float startlength = 0;
-               float zheight = 0;
+               float totallength = 0.f;
+               float startlength = 0.f;
+               float zheight = 0.f;
 
                if (iSeg == -1)
                {
@@ -7348,7 +7348,7 @@ HeightError:
                   delete vvertex.ElementAt(i2);
 
                return zheight;
-                            }
+               }
             }
          }
       }

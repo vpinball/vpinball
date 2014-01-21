@@ -108,8 +108,8 @@ public:
    STDMETHOD(put_Scalez)(/*[in]*/ float newVal);
 	STDMETHOD(get_Xlatex)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Xlatex)(/*[in]*/ float newVal);
-   STDMETHOD(get_Xlatey)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Xlatey)(/*[in]*/ float newVal);
+	STDMETHOD(get_Xlatey)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Xlatey)(/*[in]*/ float newVal);
    STDMETHOD(get_Xlatez)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Xlatez)(/*[in]*/ float newVal);
 	STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
@@ -679,14 +679,15 @@ END_CONNECTION_POINT_MAP()
     BOOL m_useAA;
     BOOL m_useFXAA;
 
-    float m_shadowDirX;
+    float m_zScale;
+
+	float m_shadowDirX;
     float m_shadowDirY;
 	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 
 	bool m_activeLayers[8];
     bool m_toggleAllLayers;   
     bool m_savingActive;
-    float m_zScale;
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

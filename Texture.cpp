@@ -153,7 +153,7 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
 
       lzwreader.Decoder();
 
-      const int pitch = ddsd.lPitch;
+      const int lpitch = ddsd.lPitch;
 
       // Assume our 32 bit color structure
       BYTE *pch = (BYTE *)ddsd.lpSurface;
@@ -169,7 +169,7 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
                max = pch[3];					
             pch += 4;
          }
-         pch += pitch - m_width*4;
+         pch += lpitch - m_width*4;
       }
 
       pch = (BYTE *)ddsd.lpSurface;
@@ -181,7 +181,7 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
                pch[3] = 0xff;
                pch += 4;
             }
-            pch += pitch-(m_width*4);
+            pch += lpitch-(m_width*4);
          }
 
          m_pdsBuffer->Unlock(NULL);
@@ -559,7 +559,7 @@ void Texture::SetOpaqueBackdrop(BaseTexture* pdds, const COLORREF rgbTransparent
    ddsd.dwSize = sizeof(ddsd);
    pdds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
-   const int pitch = ddsd.lPitch;
+   const int lpitch = ddsd.lPitch;
 
    const unsigned int rback = (rgbBackdrop & 0x00ff0000) >> 16;
    const unsigned int gback = (rgbBackdrop & 0x0000ff00) >> 8;
@@ -584,7 +584,7 @@ void Texture::SetOpaqueBackdrop(BaseTexture* pdds, const COLORREF rgbTransparent
          }
          pch += 4;
       }
-      pch += pitch-(width*4);
+      pch += lpitch-(width*4);
    }
 
    pdds->Unlock(NULL);
@@ -614,7 +614,7 @@ void Texture::CreateNextMipMapLevel(BaseTexture* pdds)
       pdds->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
       pddsNext->Lock(NULL, &ddsdNext, DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
 
-      const int pitch = ddsd.lPitch;
+      const int lpitch = ddsd.lPitch;
       const int pitchNext = ddsdNext.lPitch;
       const int width = ddsdNext.dwWidth;
       const int height = ddsdNext.dwHeight;
@@ -622,9 +622,9 @@ void Texture::CreateNextMipMapLevel(BaseTexture* pdds)
       BYTE *pchNext = (BYTE *)ddsdNext.lpSurface;
 
       const BYTE* pbytes1 = pch;
-      const BYTE* pbytes2 = pch + pitch;
+      const BYTE* pbytes2 = pch + lpitch;
 
-      const int addtoouterpitch = pitch*2 - (width*2*4);
+      const int addtoouterpitch = lpitch*2 - (width*2*4);
 
       for (int y=0;y<height;y++)
       {
@@ -727,7 +727,7 @@ BOOL Texture::SetAlpha(const COLORREF rgbTransparent, const int width, const int
 
    BOOL fTransparent = fFalse;	
 
-   const int pitch = ddsd.lPitch;
+   const int lpitch = ddsd.lPitch;
 
    const COLORREF rtrans = (rgbTransparent & 0x000000ff);
    const COLORREF gtrans = (rgbTransparent & 0x0000ff00) >> 8;
@@ -752,7 +752,7 @@ BOOL Texture::SetAlpha(const COLORREF rgbTransparent, const int width, const int
                aMin = ((*(COLORREF *)pch) & 0xff000000)>>24;
             pch += 4;
          }
-         pch += pitch-(width*4);
+         pch += lpitch-(width*4);
       }
       slintf("amax:%d amin:%d\n",aMax,aMin);
       pch = (BYTE *)ddsd.lpSurface;
@@ -780,7 +780,7 @@ BOOL Texture::SetAlpha(const COLORREF rgbTransparent, const int width, const int
             }
             pch += 4;
          }
-         pch += pitch-(width*4);
+         pch += lpitch-(width*4);
       }	
 
 

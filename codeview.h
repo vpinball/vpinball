@@ -87,7 +87,7 @@ public:
 
 	void Init(IScriptableHost *psh);
 
-	void Create(HWND hwndParent);
+	void Create();
 	void Destroy();
 	void SetVisible(BOOL fVisible);
 
