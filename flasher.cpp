@@ -952,7 +952,7 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
          const float halfwidth = m_d.m_sizeX*0.5f;
          const float halfheight = m_d.m_sizeY*0.5f;
-         const float height = m_d.m_height;
+         const float height = m_d.m_height*m_ptable->m_zScale;
 
          Vertex3D_NoLighting lvertices[4];
          lvertices[0].x = m_d.m_vCenter.x - halfwidth;
