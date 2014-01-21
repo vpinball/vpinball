@@ -3,7 +3,7 @@
 #define __DISPLAY_H__
 
 #include <ddraw.h>
-#include "inc\d3d.h"
+#include "d3d.h"
 
 inline unsigned int RGB_TO_BGR(const unsigned int c)
 {

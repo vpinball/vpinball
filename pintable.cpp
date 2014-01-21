@@ -12,7 +12,7 @@
 const unsigned char TABLE_KEY[] = "Visual Pinball";
 const unsigned char PARAPHRASE_KEY[] = { 0xB4, 0x0B, 0xBE, 0x37, 0xC3, 0x0C, 0x8E, 0xA1, 0x5A, 0x05, 0xDF, 0x1B, 0x2D, 0x02, 0xEF, 0x8D };
 
-int CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -1867,7 +1867,7 @@ void PinTable::CreateTableWindow()
 
    BeginAutoSaveCounter();
 
-   SetWindowLong(m_hwnd, GWL_USERDATA, (long)this);
+   SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (long)this);
 }
 
 
@@ -5897,7 +5897,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
    case WM_CLOSE:
       {
          // Scary!!!!
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA); 			
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA); 			
          //DefMDIChildProc(hwnd, uMsg, wParam, lParam);
 
          KillTimer(hwnd, TIMER_ID_AUTOSAVE);
@@ -5908,7 +5908,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
    case WM_TIMER:
       {
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          switch (wParam)
          {
          case TIMER_ID_AUTOSAVE:
@@ -6029,7 +6029,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
    case WM_PAINT: {
       hdc = BeginPaint(hwnd,&ps);
-      pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+      pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
       pt->Paint(hdc);
       EndPaint(hwnd,&ps);
       break;
@@ -6039,7 +6039,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
    case WM_ACTIVATE:
       if (LOWORD(wParam) != WA_INACTIVE)
       {
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          pt->m_pvp->m_ptableActive = pt;
 
          // re-evaluate the toolbar/menuitems depending on table permissions
@@ -6050,7 +6050,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
       
    case WM_LBUTTONDOWN: {
-      pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+      pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
       const short x = (short)(lParam & 0xffff);
       const short y = (short)((lParam>>16) & 0xffff);
       if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == IDC_MAGNIFY))
@@ -6065,7 +6065,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                         }
 
    case WM_LBUTTONDBLCLK: {
-      pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+      pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
       const short x = (short)(lParam & 0xffff);
       const short y = (short)((lParam>>16) & 0xffff);
       pt->DoLDoubleClick(x,y);
@@ -6076,7 +6076,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       {
          const short x = (short)(lParam & 0xffff);
          const short y = (short)((lParam>>16) & 0xffff);
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          pt->DoLButtonUp(x,y);
       }
       break;
@@ -6085,7 +6085,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       {
          const short x = (short)(lParam & 0xffff);
          const short y = (short)((lParam>>16) & 0xffff);
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          const BOOL altPressed = ((GetKeyState(VK_MENU) & 0x80000000) != 0);
          if ( altPressed )
          {         
@@ -6117,7 +6117,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
    case WM_RBUTTONDOWN:
       {
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          const short x = (short)(lParam & 0xffff);
          const short y = (short)((lParam>>16) & 0xffff);
 
@@ -6126,7 +6126,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       }
    case WM_CONTEXTMENU:
       {
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          long x = (long)(lParam & 0xffff);
          long y = (long)((lParam>>16) & 0xffff);
          POINT p;
@@ -6140,14 +6140,14 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       }
    case WM_KEYDOWN:
       {
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          pt->OnKeyDown(wParam);
          break;
       }
 
    case WM_HSCROLL:
       {
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          SCROLLINFO si;
          ZeroMemory(&si,sizeof(SCROLLINFO));
          si.cbSize = sizeof(SCROLLINFO);
@@ -6182,7 +6182,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
    case WM_VSCROLL:
       {
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          SCROLLINFO si;
          ZeroMemory(&si,sizeof(SCROLLINFO));
          si.cbSize = sizeof(SCROLLINFO);
@@ -6217,7 +6217,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
    case WM_MOUSEWHEEL:
       {
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          const short zDelta = (short) HIWORD(wParam);    // wheel rotation
          pt->m_offsety -= zDelta / pt->m_zoom;	// change to orientation to match windows default
          pt->SetDirtyDraw();
@@ -6228,7 +6228,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
    case WM_SIZE:
       {
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          if (pt) // Window might have just been created
          {
             pt->SetMyScrollInfo();
@@ -6246,7 +6246,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
    case DONE_AUTOSAVE:
       {
-         pt = (CComObject<PinTable> *)GetWindowLong(hwnd, GWL_USERDATA);
+         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          if (lParam == S_OK)
          {
             g_pvp->SetActionCur("");
@@ -7397,7 +7397,7 @@ STDMETHODIMP PinTable::put_DisplayBackdrop(VARIANT_BOOL newVal)
       return S_OK;
 }
 
-int CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {

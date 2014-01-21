@@ -3,6 +3,8 @@
 #ifndef __DEF_H__
 #define __DEF_H__
 
+#include <intrin.h>
+
 #ifdef VBA
 using namespace MSAPC;
 #endif
@@ -667,20 +669,12 @@ inline void cpuid(
                   int* const ECX,
                   int* const EDX)
 {
-   int Regax, Regbx, Regcx, Regdx;
-   __asm
-   {
-      mov eax,op
-         cpuid
-         mov Regax, eax
-         mov Regbx, ebx
-         mov Regcx, ecx
-         mov Regdx, edx
-   }
-   *EAX = Regax;
-   *EBX = Regbx;
-   *ECX = Regcx;
-   *EDX = Regdx;
+   int regs[4];
+   __cpuid(regs, op);
+   *EAX = regs[0];
+   *EBX = regs[1];
+   *ECX = regs[2];
+   *EDX = regs[3];
 }
 
 //

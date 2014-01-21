@@ -67,6 +67,12 @@ __forceinline __m128i _mm_mul_int_i(const __m128i& a, const __m128i& b) // b nee
 #endif
 }
 
+#ifdef _M_X64   // assembly version only works on x86
+
+#define memcpy_sse2 memcpy
+
+#else
+
 inline void memcpy_sse2(void * const __restrict dst, const void * const __restrict src, const unsigned int nBytes) //!! seems to be even faster than intel c builtin version?!
 {
     __asm
@@ -355,6 +361,7 @@ last:
 endc:
     }
 }
+#endif // __amd64__
 
 // initial non-intrinsic implementation of stereo3D
 #if 0

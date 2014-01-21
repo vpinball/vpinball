@@ -164,7 +164,7 @@ STDMETHODIMP BallEx::get_DisableLighting(VARIANT_BOOL *pVal)
 {
 	CHECKSTALEBALL
 
-	*pVal = m_pball->m_disableLighting;
+	*pVal = (VARIANT_BOOL)FTOVB(m_pball->m_disableLighting);
 
 	return S_OK;
 }
@@ -173,7 +173,7 @@ STDMETHODIMP BallEx::put_DisableLighting(VARIANT_BOOL newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->m_disableLighting = newVal;
+	m_pball->m_disableLighting = VBTOF(newVal);
 
 	return S_OK;
 }

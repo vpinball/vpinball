@@ -140,9 +140,9 @@ public:
 	// Internet Security interface
 
     virtual HRESULT STDMETHODCALLTYPE GetSecurityId(
-        /* [size_is][out] */ BYTE __RPC_FAR *pbSecurityId,
-        /* [out][in] */ DWORD __RPC_FAR *pcbSecurityId,
-        /* [in] */ DWORD dwReserved);
+        /* [size_is][out] */ BYTE *pbSecurityId,
+        /* [out][in] */ DWORD *pcbSecurityId,
+        /* [in] */ DWORD_PTR dwReserved);
 
     virtual HRESULT STDMETHODCALLTYPE ProcessUrlAction(
         /* [in] */ DWORD dwAction,

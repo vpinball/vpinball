@@ -18,7 +18,7 @@ enum
 #define CHANGE_FONT WM_USER+103
 #define GET_COLOR_TABLE WM_USER+104
 
-int CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 class SmartBrowser;
 

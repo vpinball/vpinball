@@ -7,13 +7,13 @@
 
 DEFINE_GUID(GUID_OLE_COLOR, 0x66504301, 0xBE0F, 0x101A, 0x8B, 0xBB, 0x00, 0xAA, 0x00, 0x30, 0x0C, 0xAB);
 
-int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	switch (uMsg)
 		{
 		case WM_INITDIALOG:
 			{
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
 			const HWND hwndOk = GetDlgItem(hwndDlg, IDOK);
 			EnableWindow(hwndOk, FALSE);
@@ -110,7 +110,7 @@ int CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							CLSID *pclsid;
 							pclsid = (CLSID *)SendMessage(hwndList, LB_GETITEMDATA, selection, 0);
 
-							PinComControl *pcc = (PinComControl *)GetWindowLong(hwndDlg, GWL_USERDATA);
+							PinComControl *pcc = (PinComControl *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 							pcc->m_d.m_clsid = *pclsid;
 

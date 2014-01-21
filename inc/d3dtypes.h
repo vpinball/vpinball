@@ -147,6 +147,7 @@ typedef struct _D3DVECTOR {
     D3DVALUE z;
     D3DVALUE dvZ;
     };
+#define D3DVECTOR_DEFINED
 #if(DIRECT3D_VERSION >= 0x0500)
 #if (defined __cplusplus) && (defined D3D_OVERLOADS)
 

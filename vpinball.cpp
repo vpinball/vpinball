@@ -129,26 +129,26 @@ const int allLayers[8]=
 LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-int CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-int CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 ///<summary>
 ///VPinball Constructor
@@ -306,7 +306,7 @@ void VPinball::Init()
 
    ShowWindow(m_hwnd, SW_SHOW);
 
-   SetWindowLong(m_hwnd, GWL_USERDATA, (long)this);	// set this class (vpinball) as callback for MDI Child / has to be confirmed
+   SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (long)this);	// set this class (vpinball) as callback for MDI Child / has to be confirmed
    // can be a problem for 64 bit compatibility.
    // maybe use SetWindowLongPtr instead
 
@@ -1656,7 +1656,7 @@ CComObject<PinTable> *VPinball::GetActiveTable()
 
    if (hwndT)
    {
-      CComObject<PinTable> *pt = (CComObject<PinTable> *)GetWindowLong(hwndT, GWL_USERDATA);
+      CComObject<PinTable> *pt = (CComObject<PinTable> *)GetWindowLongPtr(hwndT, GWLP_USERDATA);
       return pt;
    }
    else
@@ -2543,15 +2543,15 @@ void VPinball::Quit()
 }
 
 
-int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
    {
    case WM_INITDIALOG:
       {
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
          LVCOLUMN lvcol;
 
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
@@ -2565,7 +2565,7 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          lvcol.cx = 200;
          ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 1, &lvcol);
 
-         pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
          pt->ListSounds(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 
@@ -2902,15 +2902,15 @@ int CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
    return FALSE;
 }
 
-int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
    {
    case WM_INITDIALOG:
       {
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
          LVCOLUMN lvcol;
 
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
@@ -2924,7 +2924,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          lvcol.cx = 200;
          ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 1, &lvcol);
 
-         pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
          pt->ListImages(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 
@@ -3385,7 +3385,7 @@ int CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
    return FALSE;
 }
 
-int CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
@@ -3567,7 +3567,7 @@ HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpCon
 
 const int rgwindowsize[] = {640, 720, 800, 912, 1024, 1152, 1280, 1600};  // windowed resolutions for selection list
 
-int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
@@ -4021,7 +4021,7 @@ int CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 const int rgDlgIDFromSecurityLevel [] = {IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4};
 
-int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
@@ -4104,15 +4104,15 @@ int CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    return FALSE;
 }
 
-int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
    {
    case WM_INITDIALOG:
       {
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
          LVCOLUMN lvcol;
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
@@ -4126,7 +4126,7 @@ int CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
          lvcol.cx = 200;
          ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 1, &lvcol);
 
-         pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
          pt->ListFonts(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 
@@ -4301,15 +4301,15 @@ public:
    PinTable *ppt;
 };
 
-int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
    {
    case WM_INITDIALOG:
       {
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
          LVCOLUMN lvcol;
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
@@ -4318,7 +4318,7 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
          lvcol.cx = 200;
          ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 0, &lvcol);
 
-         pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
          pt->ListCollections(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 
@@ -4449,17 +4449,17 @@ int CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
    return FALSE;
 }
 
-int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    //CCO(PinTable) *pt;
-   //pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+   //pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
    {
    case WM_INITDIALOG:
       {
          CollectionDialogStruct * const pcds = (CollectionDialogStruct *)lParam;
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
          Collection * const pcol = pcds->pcol;
 
@@ -4614,7 +4614,7 @@ int CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
          case IDOK:
             {
-               CollectionDialogStruct * const pcds = (CollectionDialogStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
+               CollectionDialogStruct * const pcds = (CollectionDialogStruct *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
                Collection * const pcol = pcds->pcol;
 
@@ -4686,16 +4686,16 @@ void VPGetDialogItemText(HWND hDlg, int nIDDlgItem, char **psztext)
    GetWindowText(hwndItem, *psztext, length+1);
 }
 
-int CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
    {
    case WM_INITDIALOG:
       {
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-         pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+         pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
          HWND hwndParent = GetParent(hwndDlg);
          RECT rcDlg;
@@ -5187,10 +5187,10 @@ LRESULT CALLBACK MyKeyButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	  return CallWindowProc(g_ButtonProc, hwnd, uMsg, wParam, lParam);
 }
 
-int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    //CCO(PinTable) *pt;
-   //pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+   //pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
    //	KeyWindowStruct *pksw;//moved to expand scope
    //	pksw = new KeyWindowStruct();// moved to expand scope
 
@@ -5416,98 +5416,98 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             key = DIK_LSHIFT;
          hwndControl = GetDlgItem(hwndDlg, IDC_LEFTFLIPPER);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","RFlipKey", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_RSHIFT;
          hwndControl = GetDlgItem(hwndDlg, IDC_RIGHTFLIPPER);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","LTiltKey", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_Z;
          hwndControl = GetDlgItem(hwndDlg, IDC_LEFTTILT);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","RTiltKey", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_SLASH;
          hwndControl = GetDlgItem(hwndDlg, IDC_RIGHTTILT);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","CTiltKey", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_SPACE;
          hwndControl = GetDlgItem(hwndDlg, IDC_CENTERTILT);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","PlungerKey", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_RETURN;
          hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGER);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","AddCreditKey", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_5;
          hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDIT);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","AddCreditKey2", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_4;
          hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDITKEY2);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","StartGameKey", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_1;
          hwndControl = GetDlgItem(hwndDlg, IDC_STARTGAME);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","ExitGameKey", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_Q;
          hwndControl = GetDlgItem(hwndDlg, IDC_EXITGAME);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","FrameCount", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_F11;
          hwndControl = GetDlgItem(hwndDlg, IDC_FRAMECOUNT);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","VolumeUp", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_MINUS;
          hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEUP);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","VolumeDown", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_EQUALS;
          hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEDN);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","DebugBalls", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_O;
          hwndControl = GetDlgItem(hwndDlg, IDC_DEBUGBALL);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","RMagnaSave", &key);
          if (hr != S_OK || key > 0xdd)
@@ -5515,7 +5515,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             key = DIK_RCONTROL;		//157 (0x9D) DIK_RCONTROL 
          hwndControl = GetDlgItem(hwndDlg, IDC_RMAGSAVE);
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","LMagnaSave", &key);
          if (hr != S_OK || key > 0xdd)
@@ -5523,136 +5523,136 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             key = DIK_LCONTROL; //29 (0x1D)
          hwndControl = GetDlgItem(hwndDlg, IDC_LMAGSAVE );
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","MechTilt", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_T;
          hwndControl = GetDlgItem(hwndDlg, IDC_MECHTILT );
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","JoyCustom1Key", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_UP;
          hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM1 );
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","JoyCustom2Key", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_DOWN;
          hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM2 );
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","JoyCustom3Key", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_LEFT;
          hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM3 );
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
          hr = GetRegInt("Player","JoyCustom4Key", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_RIGHT;
          hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM4 );
          SetWindowText(hwndControl, rgszKeyName[key]);
-         SetWindowLong(hwndControl, GWL_USERDATA, key);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
 		 //
 
          KeyWindowStruct * const pksw = new KeyWindowStruct();
          pksw->pi.Init(hwndDlg);
          pksw->m_timerid = 0;
-         SetWindowLong(hwndDlg, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (long)pksw);
 
          // Set buttons to ignore keyboard shortcuts when using DirectInput
          HWND hwndButton;
          hwndButton = GetDlgItem(hwndDlg, IDC_LEFTFLIPPERBUTTON);
-         g_ButtonProc = (WNDPROC)GetWindowLong(hwndButton, GWL_WNDPROC);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         g_ButtonProc = (WNDPROC)GetWindowLongPtr(hwndButton, GWLP_WNDPROC);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_RIGHTFLIPPERBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_LEFTTILTBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_RIGHTTILTBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_CENTERTILTBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_PLUNGERBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_ADDCREDITBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_ADDCREDITBUTTON2);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_STARTGAMEBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_EXITGAMEBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_FRAMECOUNTBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_VOLUPBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_VOLDOWNBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_DEBUGBALLSBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_RMAGSAVEBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_LMAGSAVEBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_MECHTILTBUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_JOYCUSTOM1BUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_JOYCUSTOM2BUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_JOYCUSTOM3BUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_JOYCUSTOM4BUTTON);
-         SetWindowLong(hwndButton, GWL_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLong(hwndButton, GWL_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
 
          return TRUE;
       }
@@ -5660,7 +5660,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case WM_DESTROY:
       {
-         KeyWindowStruct * const pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         KeyWindowStruct * const pksw = (KeyWindowStruct *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
          if (pksw->m_timerid)
          {
             KillTimer(hwndDlg, pksw->m_timerid);
@@ -5672,7 +5672,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case WM_TIMER:
       {
-         KeyWindowStruct * const pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
+         KeyWindowStruct * const pksw = (KeyWindowStruct *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
          const int key = pksw->pi.GetNextKey();
          if (key != 0)
          {
@@ -5681,13 +5681,13 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (key == DIK_ESCAPE)
                {
                   // reset key to old value
-                  const int oldkey = GetWindowLong(pksw->hwndKeyControl, GWL_USERDATA);
+                  const int oldkey = GetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA);
                   SetWindowText(pksw->hwndKeyControl, rgszKeyName[oldkey]);
                }
                else
                {
                   SetWindowText(pksw->hwndKeyControl, rgszKeyName[key]);
-                  SetWindowLong(pksw->hwndKeyControl, GWL_USERDATA, key);
+                  SetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA, key);
                }
                KillTimer(hwndDlg, pksw->m_timerid);
                pksw->m_timerid = 0;
@@ -5701,7 +5701,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          switch (HIWORD(wParam))
          {
          case BN_CLICKED:
-            KeyWindowStruct * const pksw = (KeyWindowStruct *)GetWindowLong(hwndDlg, GWL_USERDATA);
+            KeyWindowStruct * const pksw = (KeyWindowStruct *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
             switch (LOWORD(wParam))
             {
             case IDC_LEFTFLIPPERBUTTON:
@@ -6110,87 +6110,87 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   }
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_LEFTFLIPPER);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "LFlipKey", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_RIGHTFLIPPER);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "RFlipKey", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_LEFTTILT);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "LTiltKey", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_RIGHTTILT);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "RTiltKey", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_CENTERTILT);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "CTiltKey", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGER);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "PlungerKey", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDIT);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "AddCreditKey", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDITKEY2);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "AddCreditKey2", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_STARTGAME);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "StartGameKey", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_EXITGAME);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "ExitGameKey", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_FRAMECOUNT);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "FrameCount", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEUP);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "VolumeUp", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEDN);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "VolumeDown", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_DEBUGBALL);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "DebugBalls", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_RMAGSAVE);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "RMagnaSave", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_LMAGSAVE);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "LMagnaSave", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_MECHTILT);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "MechTilt", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM1);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "JoyCustom1Key", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM2);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "JoyCustom2Key", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM3);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "JoyCustom3Key", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM4);
-                  key = GetWindowLong(hwndControl, GWL_USERDATA);
+                  key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "JoyCustom4Key", REG_DWORD, &key, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_ENABLE_MOUSE_PLAYER);
@@ -6217,7 +6217,7 @@ int CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
    return FALSE;
 }
 
-int CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
@@ -6481,7 +6481,7 @@ void savecurrentphysicssetting(HWND hwndDlg)
 	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));
 }
 
-int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
@@ -6917,7 +6917,7 @@ int CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
    return FALSE;
 }
 
-int CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
@@ -7027,7 +7027,7 @@ int CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
    return FALSE;
 }
 
-int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
@@ -7195,7 +7195,7 @@ int CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
    return FALSE;
 }
 
-int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
@@ -7279,16 +7279,16 @@ int CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 
-int CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    //CCO(PinTable) *pt;
-   //pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+   //pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
    {
    case WM_INITDIALOG:
       {
-         SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
 //          HWND hwndName = GetDlgItem(hwndDlg, IDC_NAME);
 //          WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
@@ -7531,10 +7531,10 @@ void UpdateDrawingOrder( HWND hwndDlg, IEditable *ptr, bool up )
 }
 
 
-int CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    //CCO(PinTable) *pt;
-   //pt = (CCO(PinTable) *)GetWindowLong(hwndDlg, GWL_USERDATA);
+   //pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
    {
@@ -7761,7 +7761,7 @@ ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
    {"World Cup Soccer (1994)", 20.25f ,45.75f }
 };
 
-int CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {

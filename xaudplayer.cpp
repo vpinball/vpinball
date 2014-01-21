@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "Mmsystem.h"
 
+
 #if _MSC_VER <= 1310 // VC 2003 and before
 inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 {
@@ -8,6 +9,14 @@ inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 	return (*f == NULL);
 }
 #endif
+
+
+#ifndef NO_XAUDIO
+
+/* xaudio plug-in modules */
+#include "media\xaudio\memory_input.h"
+#include "media\xaudio\audio_output.h"
+#include "media\xaudio\mpeg_codec.h"
 
 XAudPlayer::XAudPlayer()
 	{
@@ -288,3 +297,37 @@ HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 
     return S_OK;
 }
+
+#else // no XAudio
+
+XAudPlayer::XAudPlayer()
+	{
+	}
+
+XAudPlayer::~XAudPlayer()
+	{
+	}
+
+void XAudPlayer::Pause()
+	{
+	}
+
+void XAudPlayer::Unpause()
+	{
+	}
+
+int XAudPlayer::Tick()
+	{
+	return 1;
+	}
+
+void XAudPlayer::End()
+	{
+	}
+
+int XAudPlayer::Init(char * const szFileName, const int volume)
+	{
+    return 1;
+	}
+
+#endif // NO_XAUDIO
