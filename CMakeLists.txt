@@ -256,12 +256,8 @@ set(HEADERS
   )
 
 set(RC_RESOURCE
-  vbatest_eng.rc
+  vbatest.rc
   )
-#  vbatest.rc
-#  vbatest_fre.rc
-#  vbatest_ger.rc
-#  vbatest_spa.rc
  
 # dummy collection of resources - not used in build (resource compiler takes care of everything)
 # (only listed for completeness)
