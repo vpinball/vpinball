@@ -1583,7 +1583,7 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
          NumVideoBytes += numVertices*5*sizeof(Vertex3D_NoTex);     
 
          rgvbuf = new Vertex3D_NoTex2[numVertices];
-         rgibuf = new WORD[(rampVertex-1)*6*2];
+         rgibuf = new WORD[(rampVertex-1)*6*2*2];
       }
    }
 
@@ -2806,6 +2806,20 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
             rgibuf[i*6+rgioffset+3] = i*4+numVertices;
             rgibuf[i*6+rgioffset+4] = i*4+numVertices+2;
             rgibuf[i*6+rgioffset+5] = i*4+numVertices+1;
+
+            rgibuf[i*6+rgioffset*2]   = i*4+numVertices*2;
+            rgibuf[i*6+rgioffset*2+1] = i*4+numVertices*2+1;
+            rgibuf[i*6+rgioffset*2+2] = i*4+numVertices*2+2;
+            rgibuf[i*6+rgioffset*2+3] = i*4+numVertices*2;
+            rgibuf[i*6+rgioffset*2+4] = i*4+numVertices*2+2;
+            rgibuf[i*6+rgioffset*2+5] = i*4+numVertices*2+3;
+
+			rgibuf[i*6+rgioffset*3]   = i*4+numVertices*3;
+            rgibuf[i*6+rgioffset*3+1] = i*4+numVertices*3+3;
+            rgibuf[i*6+rgioffset*3+2] = i*4+numVertices*3+2;
+            rgibuf[i*6+rgioffset*3+3] = i*4+numVertices*3;
+            rgibuf[i*6+rgioffset*3+4] = i*4+numVertices*3+2;
+            rgibuf[i*6+rgioffset*3+5] = i*4+numVertices*3+1;
          }
          memcpy( &buf[offset], rgvbuf, sizeof(Vertex3D_NoTex2)*numVertices );
          offset+=numVertices;
@@ -2950,17 +2964,20 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
          ppin3d->SetTexture(NULL);
          solidMaterial.set();
          if ( !m_d.m_enableLightingImage )
-         {
             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
-         }
       }
 
-      if ( m_d.m_rightwallheightvisible!=0.f ) //only render right side if the height is >0
-         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices*2, (LPWORD)rgibuf, (rampVertex-1)*6*2, 0 );
-      offset+=2*numVertices;
+	  if(m_d.m_rightwallheightvisible!=0.f && m_d.m_leftwallheightvisible!=0.f) //only render left & right side if the height is >0
+         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices*2*2, (LPWORD)rgibuf, (rampVertex-1)*6*2*2, 0 );
+	  else
+	  {
+		if ( m_d.m_rightwallheightvisible!=0.f ) //only render right side if the height is >0
+			pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices*2, (LPWORD)rgibuf, (rampVertex-1)*6*2, 0 );
+		offset+=2*numVertices;
 
-      if ( m_d.m_leftwallheightvisible!=0.f ) //only render left side if the height is >0
-         pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices*2, (LPWORD)rgibuf, (rampVertex-1)*6*2, 0 );
+		if ( m_d.m_leftwallheightvisible!=0.f ) //only render left side if the height is >0
+			pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, numVertices*2, (LPWORD)rgibuf, (rampVertex-1)*6*2, 0 );
+	  }
 
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
