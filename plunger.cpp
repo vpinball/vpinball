@@ -516,7 +516,7 @@ void Plunger::RenderMovers(const RenderDevice* _pd3dDevice)
                pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
                ppin3d->EnableAlphaBlend( 1, false );
                ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-               const WORD idx[6] = {0,1,2,2,3,0};
+               static const WORD idx[6] = {0,1,2,2,3,0};
                pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vertexBuffer, i*4, 4, (LPWORD)idx, 6, 0 );   
                pin->Unset(ePictureTexture);
                pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE );

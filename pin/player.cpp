@@ -128,15 +128,15 @@ Player::Player()
 {
 	bool SSE2_supported;
 	{
-	int EAX,EBX,ECX,EDX;
-	cpuid(1,&EAX,&EBX,&ECX,&EDX);
+	int regs[4];
+	__cpuid(regs,1);
 	// check for SSE and exit if not available, as some code relies on it by now
-	if((EDX & 0x002000000) == 0) { // NO SSE?
+	if((regs[3] & 0x002000000) == 0) { // NO SSE?
 		ShowError("SSE is not supported on this processor");
 		exit(0);
 	}
 	// disable denormalized floating point numbers, can be faster on some CPUs (and VP doesn't need to rely on denormals)
-	SSE2_supported = ((EDX & 0x004000000) != 0);
+	SSE2_supported = ((regs[3] & 0x004000000) != 0);
 	if(SSE2_supported) // SSE2?
 		_mm_setcsr(_mm_getcsr() | 0x8040); // flush denorms to zero and also treat incoming denorms as zeros
 	else
@@ -3044,8 +3044,8 @@ void Player::CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
    if ( !vBuffer )
    {
       float zheight = (!pball->fFrozen) ? pball->z : (pball->z - pball->radius);
-      float maxz = pball->defaultZ+3.0f;
-      float minz = pball->defaultZ-1.0f;
+      const float maxz = pball->defaultZ+3.0f;
+      const float minz = pball->defaultZ-1.0f;
       if( (zheight > maxz) || (pball->z < minz) )
       {
          // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
@@ -3351,10 +3351,10 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 					vec.x = pball->oldpos[io].x-pball->oldpos[i].x;
 					vec.y = pball->oldpos[io].y-pball->oldpos[i].y;
 					vec.z = pball->oldpos[io].z-pball->oldpos[i].z;
-					const unsigned int b = (unsigned int)((float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f)); //!! 16=magic alpha falloff
+					const unsigned int bc = (unsigned int)((float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f)); //!! 16=magic alpha falloff
 					const float r = min(pball->radius*0.9f, 2.0f*pball->radius/powf((float)(i2+2), 0.6f)); //!! consts are for magic radius falloff
 
-					if(b > 0 && r > FLT_MIN)
+					if(bc > 0 && r > FLT_MIN)
 					{
 						Vertex3Ds v = vec;
 						v.Normalize();
@@ -3381,7 +3381,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 						rgv3D[3].y = pball->oldpos[io].y - n.y;
 						rgv3D[3].z = pball->oldpos[io].z - n.z;
 
-						rgv3D[0].color = rgv3D[1].color = rgv3D[2].color = rgv3D[3].color = b | (b<<8) | (b<<16) | (b<<24);
+						rgv3D[0].color = rgv3D[1].color = rgv3D[2].color = rgv3D[3].color = bc | (bc<<8) | (bc<<16) | (bc<<24);
 
 						rgv3D[0].tu = 0.5f+(float)(i2)*(float)(1.0/(2.0*(10-1)));
 						rgv3D[0].tv = 0.f;

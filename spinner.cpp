@@ -676,7 +676,7 @@ void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
       if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
       {
          Vertex3D verts[16];
-         const WORD idx[24] = {0,1,2,0,1,2, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
+         static const WORD idx[24] = {0,1,2,0,1,2, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
          // Top & Bottom
          SetNormal(rgv3D, rgiSpinner4, 4, NULL, NULL, 0);
          memcpy( &verts[0 ], &rgv3D[ rgiSpinner4[0]], sizeof(Vertex3D));

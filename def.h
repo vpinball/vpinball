@@ -3,8 +3,6 @@
 #ifndef __DEF_H__
 #define __DEF_H__
 
-#include <intrin.h>
-
 #ifdef VBA
 using namespace MSAPC;
 #endif
@@ -660,21 +658,6 @@ inline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instruction on S
 {
    const __m128 ftemp = _mm_add_ps(a, _mm_movehl_ps(a, a));
    return _mm_add_ss(ftemp,_mm_shuffle_ps(ftemp, ftemp, 1));
-}
-
-inline void cpuid(
-                  const int op,	// cpuid opcode
-                  int* const EAX,
-                  int* const EBX,
-                  int* const ECX,
-                  int* const EDX)
-{
-   int regs[4];
-   __cpuid(regs, op);
-   *EAX = regs[0];
-   *EBX = regs[1];
-   *ECX = regs[2];
-   *EDX = regs[3];
 }
 
 //
