@@ -1074,7 +1074,6 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
 
    ppin3d->SetTexture(NULL);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   FreeBuffers();
 }
 
 void Light::RenderMovers(const RenderDevice* _pd3dDevice)
@@ -1207,7 +1206,6 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 
    ppin3d->SetTexture(NULL);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   FreeBuffers();
 }
 
 void Light::SetObjectPos()
