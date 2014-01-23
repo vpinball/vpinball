@@ -2573,9 +2573,18 @@ void Player::FlipVideoBuffers3D( unsigned int overall_area )
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//bool firstRun=true;
+bool firstRun=true;
+
 void Player::Render()
 {
+	if(firstRun)
+	{
+		const HWND hVPMWnd = FindWindow( "MAME", NULL );
+		if (hVPMWnd != NULL)
+			SetWindowPos ( hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE) ); // in some strange cases the vpinmame window is not on top, so enforce it
+		firstRun = false; //!! meh
+	}
+
 	// On Win95 when there are no balls, frame updates happen so fast the blitter gets stuck
 	const int cball = m_vball.Size();
 	if (cball == 0)
