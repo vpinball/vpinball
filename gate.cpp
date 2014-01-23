@@ -695,7 +695,7 @@ void Gate::RenderMovers(const RenderDevice* _pd3dDevice)
    if(!m_d.m_fEnableLighting)
       pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
 
-   const WORD idx[24] = {0,1,2,0,1,2, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
+   static const WORD idx[24] = {0,1,2,0,1,2, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
 
    int ofs=0;
    for (int i=0;i<frameCount;i++, ofs+=8)

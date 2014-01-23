@@ -38,6 +38,7 @@ using namespace MSAPC;
 
 #include "HELPERS.H"
 
+#include <intrin.h>
 #include <xmmintrin.h>
 
 #include <vector>

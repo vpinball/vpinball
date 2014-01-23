@@ -261,7 +261,7 @@ void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float m_elastic
 #endif		
 
 	dot *= -1.005f - m_elasticity; //!! some small minimum
-	vx += dot * phitnormal->x;	
+	vx += dot * phitnormal->x;
 	vy += dot * phitnormal->y;
 
 	if (antifriction >= 1.0f || antifriction <= 0.0f) 

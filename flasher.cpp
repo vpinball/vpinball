@@ -942,7 +942,7 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
       else
          solidMaterial.set();
 
-      const WORD indices[4] = {0,1,3,2};
+      static const WORD indices[4] = {0,1,3,2};
       if(dynamicVertexBufferRegenerate)
       {
          dynamicVertexBufferRegenerate = false;
