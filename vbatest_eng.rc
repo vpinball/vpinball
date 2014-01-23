@@ -301,7 +301,7 @@ BEGIN
     LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,238,156,8
     GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,62
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
-    CONTROL         "Vertex Buffers in VRAM",IDC_VB_IN_VRAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,163,90,10
+    CONTROL         "Do not force Vertex Buffers into SysRAM",IDC_VB_IN_VRAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,163,150,10
 END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
