@@ -1032,7 +1032,6 @@ void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
          if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
          {
             pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, customMoverVBuffer, (i*customMoverVertexNum)+t, 3, (LPWORD)rgi0123,3 ,0 );
-
          }
      if ( useLightmap )
      {

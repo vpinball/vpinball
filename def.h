@@ -22,6 +22,14 @@ inline float max(const float x, const float y)
 {
    return x < y ? y : x;
 }
+inline double min(const double x, const double y)
+{
+	return x < y ? x : y;
+}
+inline double max(const double x, const double y)
+{
+	return x < y ? y : x;
+}
 inline int min(const int x, const int y)
 {
    return x < y ? x : y;
