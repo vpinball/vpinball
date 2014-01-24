@@ -1955,9 +1955,9 @@ void PinTable::AutoSave()
 
    const HRESULT hr = SaveToStorage(pstgroot);
 
-   m_undo.SetCleanPoint(min(m_sdsDirtyProp, eSaveAutosaved));
-   m_pcv->SetClean(min(m_sdsDirtyScript, eSaveAutosaved));
-   SetNonUndoableDirty(min(m_sdsNonUndoableDirty, eSaveAutosaved));
+   m_undo.SetCleanPoint((SaveDirtyState)min((int)m_sdsDirtyProp, (int)eSaveAutosaved));
+   m_pcv->SetClean((SaveDirtyState)min((int)m_sdsDirtyScript, (int)eSaveAutosaved));
+   SetNonUndoableDirty((SaveDirtyState)min((int)m_sdsNonUndoableDirty, (int)eSaveAutosaved));
 
    AutoSavePackage * const pasp = new AutoSavePackage();
    pasp->pstg = pstgroot;
@@ -5027,7 +5027,7 @@ void PinTable::SetNonUndoableDirty(SaveDirtyState sds)
 
 void PinTable::CheckDirty()
 {
-   SaveDirtyState sdsNewDirtyState = max(max(m_sdsDirtyProp, m_sdsDirtyScript), m_sdsNonUndoableDirty);
+   SaveDirtyState sdsNewDirtyState = (SaveDirtyState)max(max((int)m_sdsDirtyProp, (int)m_sdsDirtyScript), (int)m_sdsNonUndoableDirty);
 
    if (sdsNewDirtyState != m_sdsCurrentDirtyState)
    {

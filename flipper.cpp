@@ -1486,7 +1486,7 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 {
    STARTUNDO
 
-   if (newVal < 0) newVal = 0;
+   if (newVal < 0.f) newVal = 0.f;
       else if (newVal > 1.0f) newVal = 1.0f;
 
    m_d.m_return = newVal;
