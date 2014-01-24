@@ -315,6 +315,8 @@ public:
 	bool m_fPause;
 	bool m_fStep;
 #endif
+
+	bool m_firstFrame;
 };
 
 #ifdef ULTRAPIN

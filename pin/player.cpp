@@ -152,6 +152,7 @@ Player::Player()
 	m_fPseudoPause = false;
 	m_pauseRefCount = 0;
 	m_fNoTimeCorrect = fFalse;
+	m_firstFrame = true;
 
     m_fThrowBalls = fFalse;
 	m_fAccelerometer = fTrue;	// true if electronic Accelerometer enabled 
@@ -2278,7 +2279,7 @@ void Player::FlipVideoBuffersNormal(unsigned int overall_area, bool vsync )
 
             //this must be tested a bit more...seems to speed up some tables but can produce black screens on startup?!?
             //if you use this be sure to disable the clipper in fullscreen mode -> see Pin3d::InitDD()
-/*            if( !firstRun && m_pin3d.fullscreen)
+/*            if( !m_firstFrame && m_pin3d.fullscreen)
             {
 
                prc->top = max(prc->top, 0);
@@ -2304,7 +2305,6 @@ void Player::FlipVideoBuffersNormal(unsigned int overall_area, bool vsync )
             {
                // a test to prevent black screens on startup...the first blit is a slow one ;)
 				   m_pin3d.m_pddsFrontBuffer->Blt(&rcNew, m_pin3d.m_pddsBackBuffer, prc, 0, NULL); 
-               firstRun=false;
             }
 */
 			}
@@ -2573,16 +2573,16 @@ void Player::FlipVideoBuffers3D( unsigned int overall_area )
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-bool firstRun=true;
-
 void Player::Render()
 {
-	if(firstRun)
+	if(m_firstFrame)
 	{
 		const HWND hVPMWnd = FindWindow( "MAME", NULL );
 		if (hVPMWnd != NULL)
-			SetWindowPos ( hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE) ); // in some strange cases the vpinmame window is not on top, so enforce it
-		firstRun = false; //!! meh
+		{
+			if(IsWindowVisible( hVPMWnd ))
+				SetWindowPos ( hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE) ); // in some strange cases the vpinmame window is not on top, so enforce it
+		}
 	}
 
 	// On Win95 when there are no balls, frame updates happen so fast the blitter gets stuck
@@ -2743,6 +2743,8 @@ void Player::Render()
 	}
 
 	m_vballDelete.RemoveAllElements();
+
+	m_firstFrame = false;
 
 #ifdef FPS
 	if (m_fShowFPS)
