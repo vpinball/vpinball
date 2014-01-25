@@ -601,15 +601,10 @@ void Flipper::PostRenderStatic(const RenderDevice* _pd3dDevice)
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    if ( !m_d.m_fVisible )
       return;
-   int frame = m_phitflipper->m_flipperanim.m_iframe;
-   if( frame==-1 )
-   {
+   const int frame = m_phitflipper->m_flipperanim.m_iframe;
+   if (frame == -1 || frame >= maxFrames)
       return;
-   }
-   if ( frame>=maxFrames )
-   {
-      return;
-   }
+
    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); 
@@ -666,7 +661,7 @@ void Flipper::RenderSetup(const RenderDevice* _pd3dDevice)
    // Pre-render each of the frames.
    unsigned long ofs=0;
 
-   WORD idx[18+3*14+3*14+6*14*2]={0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11 };
+   static WORD idx[18+3*14+3*14+6*14*2]={0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11 };
    for( int i=0;i<14;i++ )
    {
       idx[18+i*3  ] = 12;
@@ -763,27 +758,24 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
 
    SetNormal(rgv3D, rgi0123, 4, NULL, NULL, 0);
    // Draw top.
-//   memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*4 );
-   memcpy( &buf[offset  ], &rgv3D[0], sizeof(Vertex3D) );
-   memcpy( &buf[offset+1], &rgv3D[1], sizeof(Vertex3D) );
-   memcpy( &buf[offset+2], &rgv3D[2], sizeof(Vertex3D) );
-   memcpy( &buf[offset+3], &rgv3D[3], sizeof(Vertex3D) );
+   buf[offset    ] = rgv3D[0];
+   buf[offset + 1] = rgv3D[1];
+   buf[offset + 2] = rgv3D[2];
+   buf[offset + 3] = rgv3D[3];
    offset+=4;
    SetNormal(rgv3D, rgiFlipper1, 4, NULL, NULL, 0);
    // Draw front side wall of flipper (flipper and rubber).
-//   memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*6 );
-   memcpy( &buf[offset  ], &rgv3D[0], sizeof(Vertex3D) );
-   memcpy( &buf[offset+1], &rgv3D[4], sizeof(Vertex3D) );
-   memcpy( &buf[offset+2], &rgv3D[5], sizeof(Vertex3D) );
-   memcpy( &buf[offset+3], &rgv3D[1], sizeof(Vertex3D) );
+   buf[offset    ] = rgv3D[0];
+   buf[offset + 1] = rgv3D[4];
+   buf[offset + 2] = rgv3D[5];
+   buf[offset + 3] = rgv3D[1];
    offset+=4;
    SetNormal(rgv3D, rgiFlipper2, 4, NULL, NULL, 0);
    // Draw back side wall.
-//   memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*8 );
-   memcpy( &buf[offset  ], &rgv3D[2], sizeof(Vertex3D) );
-   memcpy( &buf[offset+1], &rgv3D[6], sizeof(Vertex3D) );
-   memcpy( &buf[offset+2], &rgv3D[7], sizeof(Vertex3D) );
-   memcpy( &buf[offset+3], &rgv3D[3], sizeof(Vertex3D) );
+   buf[offset    ] = rgv3D[2];
+   buf[offset + 1] = rgv3D[6];
+   buf[offset + 2] = rgv3D[7];
+   buf[offset + 3] = rgv3D[3];
    offset+=4;
 
    // Base circle
@@ -793,6 +785,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
       rgv3D[l].x = m_d.m_Center.x + sinf(anglel)*baseradius;
       rgv3D[l].y = m_d.m_Center.y - cosf(anglel)*baseradius;
       rgv3D[l].z = height + flipperheight + 0.1f;
+	  rgv3D[l].z *= m_ptable->m_zScale;
       rgv3D[l+16].x = rgv3D[l].x;
       rgv3D[l+16].y = rgv3D[l].y;
       rgv3D[l+16].z = height;
@@ -840,7 +833,6 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
       offset+=4;
    }
 
-
    // End circle.
    for (int l=0;l<16;l++)
    {
@@ -848,7 +840,8 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
       rgv3D[l].x = vendcenter.x + sinf(anglel)*endradius;
       rgv3D[l].y = vendcenter.y - cosf(anglel)*endradius;
       rgv3D[l].z = height + flipperheight + 0.1f;
-      rgv3D[l+16].x = rgv3D[l].x;
+	  rgv3D[l].z *= m_ptable->m_zScale;
+	  rgv3D[l+16].x = rgv3D[l].x;
       rgv3D[l+16].y = rgv3D[l].y;
       rgv3D[l+16].z = height;
       rgv3D[l+16].z *= m_ptable->m_zScale;
@@ -1581,7 +1574,7 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 {
    STARTUNDO
 
-   if (newVal < 0) newVal = 0;
+   if (newVal < 0.f) newVal = 0.f;
       else if (newVal > 1.0f) newVal = 1.0f;
 
    m_d.m_return = newVal;
