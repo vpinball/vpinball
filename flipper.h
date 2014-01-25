@@ -104,7 +104,7 @@ END_CONNECTION_POINT_MAP()
 
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
-	void RenderAtThickness(RenderDevice* pd3dDevice, ObjFrame * const pof, const float angle, const float height, const COLORREF color, const float baseradius, const float endradius, const float flipperheight);
+	void RenderAtThickness(RenderDevice* pd3dDevice, ObjFrame * const pof, const float angle, const float height, const float baseradius, const float endradius, const float flipperheight, const bool isRubber, const int vBufferIndex);
 
 	void WriteRegDefaults();
 
@@ -122,6 +122,13 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flipper)
 
 	HitFlipper *m_phitflipper;
 
+   struct VertexBufferArray
+   {
+      VertexBuffer *vbuffer;
+   };
+   VertexBufferArray *vBufferArray;
+   WORD indexBuffer[270];
+   int maxFrames;
 // IFlipper
 public:
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
