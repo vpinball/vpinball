@@ -851,7 +851,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 			{
   				if ((m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemRamp && ((Ramp*)m_ptable->m_vedit.ElementAt(i))->m_d.m_fAlpha) ||
 	  				(m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemPrimitive && !((Primitive *)m_ptable->m_vedit.ElementAt(i))->m_d.staticRendering) ||
-                    (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemFlasher) /*|| (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemFlipper )*/ )
+                    (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemFlasher) || (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemFlipper ) )
 					{
 					  m_vhitalpha.AddElement(ph);
 					}
@@ -2354,8 +2354,8 @@ void Player::FlipVideoBuffers3D( unsigned int overall_area )
 
 	if(cont) {
 
-	const unsigned int width  = min((unsigned int)GetSystemMetrics(SM_CXSCREEN), min((unsigned int)ddsd.dwWidth,  (unsigned int)ddsdz.dwWidth));   // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
-	const unsigned int height = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), min((unsigned int)ddsd.dwHeight, (unsigned int)ddsdz.dwHeight)); // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
+   const unsigned int width  = min((unsigned int)GetSystemMetrics(SM_CXSCREEN), min((unsigned int)ddsd.dwWidth,  (unsigned int)ddsdz.dwWidth));   // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
+   const unsigned int height = min((unsigned int)GetSystemMetrics(SM_CYSCREEN), min((unsigned int)ddsd.dwHeight, (unsigned int)ddsdz.dwHeight)); // just to make sure we don't screw with some weird configuration and also avoid unnecessary (offscreen) work
 	const unsigned int shift = (ddsd.ddpfPixelFormat.dwRGBBitCount == 32) ? 2 : 1;
 
 #ifdef ONLY3DUPD
