@@ -296,7 +296,6 @@ void Flasher::EndPlay()
 		dynamicVertexBuffer->release();
 		dynamicVertexBuffer = 0;
 		dynamicVertexBufferRegenerate = true;
-
 	}
 
     g_pplayer->m_pin3d.ClearExtents(&m_d.m_boundRectangle,NULL,NULL);
@@ -897,7 +896,6 @@ STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
 // Also has less drawing calls by bundling seperate calls.
 void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    // Don't render if invisible.
    if(!m_d.m_IsVisible) 
       return;
@@ -908,13 +906,10 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
       return;
    }
 
-   if(dynamicVertexBufferRegenerate)
-      solidMaterial.setColor(1.0f, m_d.m_color );
-
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-      float maxtu = 0;
-      float maxtv = 0;
+      float maxtu = 0.f;
+      float maxtv = 0.f;
 
       if (pin)
       {
@@ -924,25 +919,17 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
          pin->CreateAlphaChannel();
          pin->Set(ePictureTexture);
 
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-         if ( m_d.m_fAddBlend )
-         {
-            DWORD factor = (DWORD)(m_d.m_fAlpha<<24) + (DWORD)(m_d.m_fAlpha<<16) + (DWORD)(m_d.m_fAlpha<<8) + m_d.m_fAlpha;
-            pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, factor);
-         }
-         ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
-
          ppin3d->SetColorKeyEnabled(TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, (g_pplayer->m_fStereo3D == 0) || !g_pplayer->m_fStereo3Denabled );
-         ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
-
-         textureMaterial.set();
+		 ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+		 
+		 textureMaterial.set();
       }
       else
-         solidMaterial.set();
+	  {
+         solidMaterial.setColor(1.0f, m_d.m_color );
+		 solidMaterial.set();
+	  }
 
-      static const WORD indices[4] = {0,1,3,2};
       if(dynamicVertexBufferRegenerate)
       {
          dynamicVertexBufferRegenerate = false;
@@ -1017,14 +1004,32 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
 		 dynamicVertexBuffer->unlock();
       }
 
+	  RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+      if ( m_d.m_fAddBlend )
+      {
+         const DWORD factor = (DWORD)(m_d.m_fAlpha<<24) + (DWORD)(m_d.m_fAlpha<<16) + (DWORD)(m_d.m_fAlpha<<8) + m_d.m_fAlpha;
+         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, factor);
+      }
+      ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
+
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, (g_pplayer->m_fStereo3D == 0) || !g_pplayer->m_fStereo3Denabled );
+      pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+
+      static const WORD indices[4] = {0,1,3,2};
       pd3dDevice->renderPrimitive( D3DPT_TRIANGLESTRIP, dynamicVertexBuffer, 0, 4, (LPWORD)indices, 4, 0 );
 
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
       if ( m_d.m_fAddBlend )
+	  {
          pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xFFFFFFFF);
+         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	  }
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
+      ppin3d->SetColorKeyEnabled(FALSE);
       ppin3d->SetTexture(NULL);
+	  pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, FALSE);
+      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 	
 }

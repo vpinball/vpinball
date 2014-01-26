@@ -3162,7 +3162,7 @@ void Player::DrawBallLogo(Ball * const pball)
 
 void Player::DrawBalls(const bool only_invalidate_regions)
 {
-   bool drawReflection = m_ptable->m_useReflectionForBalls==fTrue;
+    bool drawReflection = m_ptable->m_useReflectionForBalls==fTrue;
 
 	if(!only_invalidate_regions)
 	{
@@ -3190,18 +3190,14 @@ void Player::DrawBalls(const bool only_invalidate_regions)
       {
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          if( (zheight > maxz) || (pball->z < minz) )
-         {
             drawReflection=false;
-         }
       }
       if( (zheight > maxz) || (pball->z < minz) )
       {
          // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
          // by reducing it with 0.96f (a factor found by trial'n error) the ball is on the ramp again
          if ( m_ptable->m_zScale!=1.0f )
-         {
             zheight *= (m_ptable->m_zScale*0.96f); 
-         }
       }
 
       if( only_invalidate_regions )
@@ -3321,6 +3317,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);            
             m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+			m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, FALSE);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
          }
 
@@ -3444,6 +3441,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 				m_pin3d.ExpandExtents/*Plus*/(&pball->m_rcTrail, rgv3D_all, NULL, NULL, num_rgv3D, fFalse);
 
+				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, FALSE);
 				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 				m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
@@ -3522,6 +3520,8 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 	{
 		m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, FALSE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 	
 	}
 }
 
