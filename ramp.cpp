@@ -418,11 +418,7 @@ void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 
    if (range > 0)
    {
-      if (m_d.m_type == RampType4Wire 
-         || m_d.m_type == RampType1Wire 
-         || m_d.m_type == RampType2Wire 
-         || m_d.m_type == RampType3WireLeft 
-         || m_d.m_type == RampType3WireRight)
+      if (isHabitrail())
       {
          float * const rgheight2 = new float[cvertex];
 
@@ -1090,6 +1086,15 @@ static const WORD rgicrosssection[] = {
    12,28,31
 };
 
+bool Ramp::isHabitrail() const
+{
+    return  m_d.m_type == RampType4Wire
+         || m_d.m_type == RampType1Wire
+         || m_d.m_type == RampType2Wire
+         || m_d.m_type == RampType3WireLeft
+         || m_d.m_type == RampType3WireRight;
+}
+
 void Ramp::RenderStaticHabitrail(const RenderDevice* _pd3dDevice)
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
@@ -1557,22 +1562,14 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
 
    if( !staticVertexBuffer && m_d.m_IsVisible && !(m_d.m_fAlpha && g_pvp->m_pdd.m_fHardwareAccel) )
    {
-      if (m_d.m_type == RampType4Wire 
-         || m_d.m_type == RampType1Wire //add check for 1 wire
-         || m_d.m_type == RampType2Wire 
-         || m_d.m_type == RampType3WireLeft 
-         || m_d.m_type == RampType3WireRight)
+      if (isHabitrail())
          prepareHabitrail( pd3dDevice );
       else
          prepareStatic( pd3dDevice );
    }
    else if( !dynamicVertexBuffer && m_d.m_IsVisible && m_d.m_fAlpha )
    {
-      if (m_d.m_type == RampType4Wire 
-         || m_d.m_type == RampType1Wire //add check for 1 wire
-         || m_d.m_type == RampType2Wire 
-         || m_d.m_type == RampType3WireLeft 
-         || m_d.m_type == RampType3WireRight)
+      if (isHabitrail())
       {
          prepareHabitrail( pd3dDevice );
       }
@@ -1600,11 +1597,7 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
    if (m_d.m_fAlpha && g_pvp->m_pdd.m_fHardwareAccel) return;
 
-   if (m_d.m_type == RampType4Wire 
-      || m_d.m_type == RampType1Wire  //add check for 1 wire
-      || m_d.m_type == RampType2Wire 
-      || m_d.m_type == RampType3WireLeft 
-      || m_d.m_type == RampType3WireRight)
+   if (isHabitrail())
    {
       RenderStaticHabitrail(pd3dDevice);
    }
@@ -1709,11 +1702,7 @@ void Ramp::RenderMovers(const RenderDevice* pd3dDevice)
       // Don't render non-Alphas. 
       (!m_d.m_fAlpha && !m_d.m_wasAlpha) ||
 	  (m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f) ||
-      (  m_d.m_type == RampType4Wire 
-      || m_d.m_type == RampType1Wire //add check for 1 wire
-      || m_d.m_type == RampType2Wire 
-      || m_d.m_type == RampType3WireLeft 
-      || m_d.m_type == RampType3WireRight))
+      (isHabitrail()))
 	  return;
 
    m_d.m_wasVisible = false;
@@ -2685,11 +2674,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
    if(dynamicVertexBufferRegenerate)
       solidMaterial.setColor(1.0f, m_d.m_color );
 
-   if (m_d.m_type == RampType4Wire 
-      || m_d.m_type == RampType1Wire //add check for 1 wire
-      || m_d.m_type == RampType2Wire 
-      || m_d.m_type == RampType3WireLeft 
-      || m_d.m_type == RampType3WireRight)
+   if (isHabitrail())
    {
       if(dynamicVertexBufferRegenerate)
       {

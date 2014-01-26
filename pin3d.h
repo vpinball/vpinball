@@ -21,6 +21,7 @@ enum
 class Matrix3D : public D3DMATRIX
 	{
 public:
+    // premultiply the given matrix, i.e., result = mult * (*this)
 	inline void Multiply(const Matrix3D &mult, Matrix3D &result) const
 	{
 	Matrix3D matrixT;
@@ -171,7 +172,7 @@ public:
 	void Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z);
 	void Translate(const float x, const float y, const float z);
 	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV, const float xlatez);
-	void CacheTransform();
+	void CacheTransform();      // compute m_matrixTotal = m_World * m_View * m_Proj
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout) const;
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 	void SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar);
@@ -215,7 +216,7 @@ public:
 	void Scale(const float x, const float y, const float z);
 	void Translate(const float x, const float y, const float z);
 	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, const int cvert, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV, const GPINFLOAT skew, const float xlatez);
-	void CacheTransform();
+	void CacheTransform();      // compute m_matrixTotal = mWorld * mView * mProj
 
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout) const;
 	void TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex3D_NoTex2 * const rgvout) const;

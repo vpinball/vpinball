@@ -209,7 +209,7 @@ void Pin3D::AntiAliasingScene()
       m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,FALSE);
       m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
       m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-      m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1}
+      m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
       m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0x40404040);
       m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, spriteVertexBuffer, 4, 4, (LPWORD)idx, 6, 0 );
 
@@ -400,8 +400,6 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * co
 {
 	// Get the width and height of the viewport. This is needed to scale the
 	// transformed vertices to fit the render window.
-	D3DVIEWPORT7 vp;
-	m_pd3dDevice->GetViewport( &vp );
 	const float rClipWidth  = vp.dwWidth*0.5f;
 	const float rClipHeight = vp.dwHeight*0.5f;
 	const int xoffset = vp.dwX;
@@ -1143,7 +1141,7 @@ void Pin3D::InitRenderState()
 	}
 }
 
-const WORD rgiPin3D1[4] = {2,3,5,6};
+static const WORD rgiPin3D1[4] = {2,3,5,6};
 
 void Pin3D::DrawBackground()
 {
@@ -1712,7 +1710,7 @@ void Pin3D::EnableAlphaBlend( DWORD alphaRefValue, BOOL additiveBlending )
 	m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
 	m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
 	if(additiveBlending)
-		m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1}
+		m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1
 }
 
 void Pin3D::SetUpdatePos(const int left, const int top)
@@ -1877,7 +1875,7 @@ void Pin3D::Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z)
 	matRotateY.RotateYMatrix(y);
 	matTemp.Multiply(matRotateY, matTemp);
 	matRotateZ.RotateZMatrix(z);
-	matTemp.Multiply(matRotateZ, matTemp);
+	matTemp.Multiply(matRotateZ, matTemp);        // matTemp = rotZ * rotY * rotX * matWorld
 
 	m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matTemp);
 }
@@ -1924,8 +1922,8 @@ Vertex3Ds Pin3D::Unproject( Vertex3Ds *point)
    g_pplayer->m_pin3d.m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD, &matWorld );
 //    matWorld.Multiply( matView, m1);
 //    m1.Multiply(matProj,m2);
-   matProj.Multiply(matView,m1);
-   m1.Multiply( matWorld,m2 );
+   matProj.Multiply(matView,m1);    // m1 = matView * matProj
+   m1.Multiply( matWorld,m2 );      // m2 = matWorld * matView * matProj
    
    m2.Invert();
    Vertex3Ds p,p3;
@@ -1986,8 +1984,8 @@ void Pin3D::CacheTransform()
 	m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD,      &matWorld );
 	m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_VIEW,       &matView );
 	m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_PROJECTION, &matProj );
-	matProj.Multiply(matView, matView);
-	matView.Multiply(matWorld, m_matrixTotal);
+	matProj.Multiply(matView, matView);             // matView = matView * matProj
+	matView.Multiply(matWorld, m_matrixTotal);      // total = matWorld * matView
 }
 
 #define MAX_INT 0x0fffffff //!!?
@@ -2170,7 +2168,7 @@ void PinProjection::Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT
 	matRotateY.RotateYMatrix(y);
 	m_matWorld.Multiply(matRotateY, m_matWorld);
 	matRotateZ.RotateZMatrix(z);
-	m_matWorld.Multiply(matRotateZ, m_matWorld);
+	m_matWorld.Multiply(matRotateZ, m_matWorld);        // matWorld = rotZ * rotY * rotX * origMatWorld
 
 	//m_pd3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &matTemp);
 }
@@ -2321,16 +2319,12 @@ void PinProjection::CacheTransform()
 	//m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD,      &matWorld );
 	//m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_VIEW,       &matView );
 	//m_pd3dDevice->GetTransform( D3DTRANSFORMSTATE_PROJECTION, &matProj );
-	m_matProj.Multiply(m_matView, matT);
-	matT.Multiply(m_matWorld, m_matrixTotal);
+	m_matProj.Multiply(m_matView, matT);        // matT = matView * matProj
+	matT.Multiply(m_matWorld, m_matrixTotal);   // total = matWorld * matT
 }
 
 void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex3D * const rgvout) const
 {
-	// Get the width and height of the viewport. This is needed to scale the
-	// transformed vertices to fit the render window.
-	//D3DVIEWPORT7 vp;
-	//m_pd3dDevice->GetViewport( &vp );
 	const float rClipWidth  = (m_rcviewport.right - m_rcviewport.left)*0.5f;
 	const float rClipHeight = (m_rcviewport.bottom - m_rcviewport.top)*0.5f;
 	const int xoffset = m_rcviewport.left;
@@ -2371,10 +2365,6 @@ void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * c
 //copy pasted from above
 void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
 {
-	// Get the width and height of the viewport. This is needed to scale the
-	// transformed vertices to fit the render window.
-	//D3DVIEWPORT7 vp;
-	//m_pd3dDevice->GetViewport( &vp );
 	const float rClipWidth  = (m_rcviewport.right - m_rcviewport.left)*0.5f;
 	const float rClipHeight = (m_rcviewport.bottom - m_rcviewport.top)*0.5f;
 	const int xoffset = m_rcviewport.left;
