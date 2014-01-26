@@ -598,14 +598,16 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
 
 void Flipper::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-   if ( !m_d.m_fVisible )
+   if (m_phitflipper && !m_phitflipper->m_flipperanim.m_fVisible)
       return;
+   if (m_phitflipper == NULL && !m_d.m_fVisible)
+	   return;
    const int frame = m_phitflipper->m_flipperanim.m_iframe;
    if (frame == -1 || frame >= maxFrames)
       return;
 
-   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
+   RenderDevice* const pd3dDevice = (RenderDevice*)_pd3dDevice;
+   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); 
 
@@ -1498,7 +1500,7 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
    else
    {
       STARTUNDO
-         m_d.m_fEnabled = VBTOF(newVal);
+      m_d.m_fEnabled = VBTOF(newVal);
       STOPUNDO
    }
    return S_OK;
