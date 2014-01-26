@@ -205,7 +205,8 @@ void Pin3D::AntiAliasingScene()
       m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 	
       m_pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, spriteVertexBuffer, 0, 4, (LPWORD)idx, 6, 0 );
 
-      m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE); 	
+      m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+	  m_pd3dDevice->SetRenderState(RenderDevice::DITHERENABLE, FALSE);
       m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE,FALSE);
       m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,   D3DBLEND_SRCALPHA);
       m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
