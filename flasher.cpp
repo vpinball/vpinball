@@ -982,11 +982,11 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
          TMatrix._43 = height;
 
          tempMatrix.SetIdentity();
-         tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotX));
+         tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
          tempMatrix.Multiply(RTmatrix, RTmatrix);
          tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
          tempMatrix.Multiply(RTmatrix, RTmatrix);
-         tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotZ));
+         tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
          tempMatrix.Multiply(RTmatrix, RTmatrix);
          for( int i=0;i<4;i++ )
          {      
