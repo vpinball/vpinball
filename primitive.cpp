@@ -206,6 +206,31 @@ void Primitive::SetDefaults(bool fromMouseClick)
    hr = GetRegString("DefaultProps\\Primitive","Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage[0] = 0;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Ramp","Elasticity", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_elasticity = fTmp;
+   else
+      m_d.m_elasticity = 0.3f;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Ramp","Friction", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_friction = fTmp;
+   else
+      m_d.m_friction = 0;	//zero uses global value
+
+   hr = GetRegStringAsFloat("DefaultProps\\Ramp","Scatter", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_scatter = fTmp;
+   else
+      m_d.m_scatter = 0;	//zero uses global value
+
+   hr = GetRegInt("DefaultProps\\Ramp","Collidable", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fCollidable = iTmp == 0 ? false : true;
+   else
+      m_d.m_fCollidable = true;
+
 }
 
 void Primitive::WriteRegDefaults()
@@ -297,6 +322,15 @@ void Primitive::WriteRegDefaults()
    SetRegValue("DefaultProps\\Primitive","Transposition_Z", REG_SZ, &strTmp,strlen(strTmp));	
    */
    SetRegValue("DefaultProps\\Primitive","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
+
+   sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
+   SetRegValue("DefaultProps\\Ramp","Elasticity", REG_SZ, &strTmp,strlen(strTmp));	
+   sprintf_s(strTmp, 40, "%f", m_d.m_friction);
+   SetRegValue("DefaultProps\\Ramp","Friction", REG_SZ, &strTmp,strlen(strTmp));	
+   sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
+   SetRegValue("DefaultProps\\Ramp","Scatter", REG_SZ, &strTmp,strlen(strTmp));	
+   SetRegValue("DefaultProps\\Ramp","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
+
 }
 
 void Primitive::GetTimers(Vector<HitTimer> * const pvht)
@@ -313,14 +347,75 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
    /*HitPrimitive * pHitPrimitive = new HitPrimitive();
 
    pvho->AddElement(pHitPrimitive);*/
+   if( !m_d.use3DMesh )
+      return;
+
+   RecalculateMatrices();
+   RecalculateVertices();
+   Hit3DPoly *ph3dpolyOld = NULL;
+
+   for( int i=0;i<indexListSize;i+=3 )
+   {
+      Vertex3Ds * const rgv3D = new Vertex3Ds[3];
+      rgv3D[0].x = verticesTop.ElementAt( indexList[i  ] )->x;
+      rgv3D[0].y = verticesTop.ElementAt( indexList[i  ] )->y;
+      rgv3D[0].z = verticesTop.ElementAt( indexList[i  ] )->z;
+      rgv3D[1].x = verticesTop.ElementAt( indexList[i+1] )->x;
+      rgv3D[1].y = verticesTop.ElementAt( indexList[i+1] )->y;
+      rgv3D[1].z = verticesTop.ElementAt( indexList[i+1] )->z;
+      rgv3D[2].x = verticesTop.ElementAt( indexList[i+2] )->x;
+      rgv3D[2].y = verticesTop.ElementAt( indexList[i+2] )->y;
+      rgv3D[2].z = verticesTop.ElementAt( indexList[i+2] )->z;
+      Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,3);
+      ph3dpoly->m_elasticity = m_d.m_elasticity;
+      ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
+      ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+      ph3dpoly->m_fVisible=fTrue;
+      ph3dpoly->m_fEnabled=m_d.m_fCollidable;
+      pvho->AddElement( ph3dpoly );
+
+      if (ph3dpolyOld)
+        CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
+
+      ph3dpolyOld = ph3dpoly;
+   }
 }
 
 void Primitive::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
 }
 
+void Primitive::CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph3d1, const Hit3DPoly * const ph3d2)
+{
+   Vertex3Ds vjointnormal = CrossProduct(ph3d1->normal, ph3d2->normal);
+   //vjointnormal.x = ph3d1->normal.x + ph3d2->normal.x;
+   //vjointnormal.y = ph3d1->normal.y + ph3d2->normal.y;
+   //vjointnormal.z = ph3d1->normal.z + ph3d2->normal.z;
+
+   const float sqrlength = vjointnormal.x * vjointnormal.x + vjointnormal.y * vjointnormal.y + vjointnormal.z * vjointnormal.z;
+   if (sqrlength < 1.0e-8f) return;
+
+   const float inv_length = 1.0f/sqrtf(sqrlength);
+   vjointnormal.x *= inv_length;
+   vjointnormal.y *= inv_length;
+   vjointnormal.z *= inv_length;
+
+   // By convention of the calling function, points 1 [0] and 2 [1] of the second polygon will
+   // be the common-edge points
+
+   Hit3DCylinder * const ph3dc = new Hit3DCylinder(&ph3d2->m_rgv[0], &ph3d2->m_rgv[1], &vjointnormal);
+   ph3dc->m_elasticity = m_d.m_elasticity;
+   ph3dc->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+   ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
+   pvho->AddElement(ph3dc);
+
+   m_vhoCollidable.AddElement(ph3dc);	//remember hit components of ramp
+   ph3dc->m_fEnabled = m_d.m_fCollidable;
+}
+
 void Primitive::EndPlay()
 {
+   m_vhoCollidable.RemoveAllElements();
 	if(vertexBuffer)
 	{
 		vertexBuffer->release();
@@ -1055,6 +1150,10 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(TVIS), (m_d.m_TopVisible) ? 1 : 0);
    bw.WriteInt(FID(DTXI), (m_d.m_DrawTexturesInside) ? 1 : 0);
    bw.WriteInt(FID(TRUR), (m_d.m_triggerUpdateRegion) ? 1 : 0);
+   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   bw.WriteFloat(FID(RFCT), m_d.m_friction);
+   bw.WriteFloat(FID(RSCT), m_d.m_scatter);
+   bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
    bw.WriteInt(FID(ENLI), (m_d.useLighting) ? 1 : 0);
    bw.WriteInt(FID(U3DM), (m_d.use3DMesh) ? 1 : 0 );
    bw.WriteInt(FID(STRE), (m_d.staticRendering) ? 1 : 0 );
@@ -1186,6 +1285,24 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       int iTmp;
       pbr->GetInt(&iTmp);
       m_d.m_triggerUpdateRegion = (iTmp==1);
+   }
+   else if (id == FID(ELAS))
+   {
+      pbr->GetFloat(&m_d.m_elasticity);
+   }
+   else if (id == FID(RFCT))
+   {
+      pbr->GetFloat(&m_d.m_friction);
+   }
+   else if (id == FID(RSCT))
+   {
+      pbr->GetFloat(&m_d.m_scatter);
+   }
+   else if (id == FID(CLDRP))
+   {
+      BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_fCollidable = (iTmp==1);
    }
    else if (id == FID(ENLI))
    {
@@ -2284,6 +2401,88 @@ STDMETHODIMP Primitive::put_EnableSphereMapping(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+STDMETHODIMP Primitive::get_Elasticity(float *pVal)
+{
+   *pVal = m_d.m_elasticity;
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_Elasticity(float newVal)
+{
+   STARTUNDO
+
+      m_d.m_elasticity = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Primitive::get_Friction(float *pVal)
+{
+   *pVal = m_d.m_friction;
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_Friction(float newVal)
+{
+   STARTUNDO
+
+      if (newVal > 1.0f) newVal = 1.0f;
+      else if (newVal < 0.f) newVal = 0.f;
+
+      m_d.m_friction = newVal;
+
+      STOPUNDO
+
+         return S_OK;
+}
+
+STDMETHODIMP Primitive::get_Scatter(float *pVal)
+{
+   *pVal = m_d.m_scatter;
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_Scatter(float newVal)
+{
+   STARTUNDO
+
+      m_d.m_scatter = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Primitive::get_Collidable(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable.ElementAt(0)->m_fEnabled);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
+{
+   BOOL fNewVal = VBTOF(newVal);	
+   if (!g_pplayer)
+   {	
+      STARTUNDO
+
+         m_d.m_fCollidable = !!fNewVal;		
+
+      STOPUNDO
+   }
+   else
+      for (int i=0;i < m_vhoCollidable.Size();i++)
+         m_vhoCollidable.ElementAt(i)->m_fEnabled = fNewVal;	//copy to hit checking on enities composing the object 
+
+   return S_OK;
+}
+
 STDMETHODIMP Primitive::get_UpdateRegions(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_triggerUpdateRegion);
@@ -2319,5 +2518,8 @@ void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pvproppane->AddElement(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPPRIMITIVE_POSITION, IDS_POSITION_TRANSLATION);
+   pvproppane->AddElement(pproppane);
+
+   pproppane = new PropertyPane(IDD_PROPPRIMITIVE_PHYSICS, IDS_PHYSICS);
    pvproppane->AddElement(pproppane);
 }
