@@ -302,6 +302,8 @@ WORD *GetIndexList( int &indexListSize ) // clears temporary storage on the way
       list[i] = faces[i];
    }
    indexListSize = faces.size();
+   if(indexListSize >= 65536) //!! DX7 limit, delete later-on
+	   ShowError("Too many polygons in obj file, this can lead to driver problems");
    faces.clear();
    return list;
 }
