@@ -206,30 +206,36 @@ void Primitive::SetDefaults(bool fromMouseClick)
    hr = GetRegString("DefaultProps\\Primitive","Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage[0] = 0;
+   SetRegValue("DefaultProps\\Primitive","HitEvent", REG_DWORD, &m_d.m_fHitEvent,4);
+   hr = GetRegStringAsFloat("DefaultProps\\Primitive","HitThreshold", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_threshold = fTmp;
+   else
+      m_d.m_threshold = 2.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","Elasticity", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Elasticity", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_elasticity = fTmp;
    else
       m_d.m_elasticity = 0.3f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","Friction", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Friction", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_friction = fTmp;
    else
       m_d.m_friction = 0;	//zero uses global value
 
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","Scatter", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Scatter", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_scatter = fTmp;
    else
       m_d.m_scatter = 0;	//zero uses global value
 
-   hr = GetRegInt("DefaultProps\\Ramp","Collidable", &iTmp);
+   hr = GetRegInt("DefaultProps\\Primitive","Collidable", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fCollidable = iTmp == 0 ? false : true;
    else
-      m_d.m_fCollidable = true;
+      m_d.m_fCollidable = false;
 
 }
 
@@ -322,14 +328,16 @@ void Primitive::WriteRegDefaults()
    SetRegValue("DefaultProps\\Primitive","Transposition_Z", REG_SZ, &strTmp,strlen(strTmp));	
    */
    SetRegValue("DefaultProps\\Primitive","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
-
+   SetRegValue("DefaultProps\\Primitive","HitEvent", REG_DWORD, &m_d.m_fHitEvent,4);
+   sprintf_s(strTmp, 40, "%f", m_d.m_threshold);
+   SetRegValue("DefaultProps\\Primitive","HitThreshold", REG_SZ, &strTmp,strlen(strTmp));
    sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
-   SetRegValue("DefaultProps\\Ramp","Elasticity", REG_SZ, &strTmp,strlen(strTmp));	
+   SetRegValue("DefaultProps\\Primitive","Elasticity", REG_SZ, &strTmp,strlen(strTmp));	
    sprintf_s(strTmp, 40, "%f", m_d.m_friction);
-   SetRegValue("DefaultProps\\Ramp","Friction", REG_SZ, &strTmp,strlen(strTmp));	
+   SetRegValue("DefaultProps\\Primitive","Friction", REG_SZ, &strTmp,strlen(strTmp));	
    sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
-   SetRegValue("DefaultProps\\Ramp","Scatter", REG_SZ, &strTmp,strlen(strTmp));	
-   SetRegValue("DefaultProps\\Ramp","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
+   SetRegValue("DefaultProps\\Primitive","Scatter", REG_SZ, &strTmp,strlen(strTmp));	
+   SetRegValue("DefaultProps\\Primitive","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
 
 }
 
@@ -371,7 +379,13 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
       ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
       ph3dpoly->m_fVisible=fTrue;
+      ph3dpoly->m_threshold = m_d.m_threshold;
       ph3dpoly->m_fEnabled=m_d.m_fCollidable;
+      ph3dpoly->m_ObjType = ePrimitive;
+      if ( m_d.m_fHitEvent )
+         ph3dpoly->m_pfe = (IFireEvents *)this;
+      else  
+         ph3dpoly->m_pfe = 0;
       pvho->AddElement( ph3dpoly );
 
       if (ph3dpolyOld)
@@ -407,6 +421,12 @@ void Primitive::CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * con
    ph3dc->m_elasticity = m_d.m_elasticity;
    ph3dc->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
    ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
+   ph3dc->m_threshold = m_d.m_threshold;
+   ph3dc->m_ObjType = ePrimitive;
+   if ( m_d.m_fHitEvent )
+      ph3dc->m_pfe = (IFireEvents *)this;
+   else
+      ph3dc->m_pfe = 0;
    pvho->AddElement(ph3dc);
 
    m_vhoCollidable.AddElement(ph3dc);	//remember hit components of ramp
@@ -1150,6 +1170,8 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(TVIS), (m_d.m_TopVisible) ? 1 : 0);
    bw.WriteInt(FID(DTXI), (m_d.m_DrawTexturesInside) ? 1 : 0);
    bw.WriteInt(FID(TRUR), (m_d.m_triggerUpdateRegion) ? 1 : 0);
+   bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
+   bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
@@ -1285,6 +1307,14 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       int iTmp;
       pbr->GetInt(&iTmp);
       m_d.m_triggerUpdateRegion = (iTmp==1);
+   }
+   else if (id == FID(HTEV))
+   {
+      pbr->GetBool(&m_d.m_fHitEvent);
+   }
+   else if (id == FID(THRS))
+   {
+      pbr->GetFloat(&m_d.m_threshold);
    }
    else if (id == FID(ELAS))
    {
@@ -2399,6 +2429,43 @@ STDMETHODIMP Primitive::put_EnableSphereMapping(VARIANT_BOOL newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Primitive::get_HasHitEvent(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fHitEvent);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_HasHitEvent(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_fHitEvent = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+
+STDMETHODIMP Primitive::get_Threshold(float *pVal)
+{
+   *pVal = m_d.m_threshold;
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_Threshold(float newVal)
+{
+   STARTUNDO
+
+      m_d.m_threshold = newVal;
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Elasticity(float *pVal)

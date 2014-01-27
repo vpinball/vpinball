@@ -690,7 +690,30 @@ float Hit3DPoly::HitTestBasicPolygon(Ball * const pball, const float dtime, Vert
 
 void Hit3DPoly::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 {
-	if (m_ObjType != eTrigger) pball->Collide3DWall(&normal, m_elasticity, m_antifriction, m_scatter); 
+	if (m_ObjType != eTrigger) 
+   {
+      const float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
+
+      pball->Collide3DWall(&normal, m_elasticity, m_antifriction, m_scatter); 
+      if ( m_ObjType == ePrimitive )
+      {
+         if ( m_pfe && m_fEnabled)
+         {
+            if ( dot <= -m_threshold )
+            {
+               const float dx = pball->m_Event_Pos.x - pball->x; // is this the same place as last event????
+               const float dy = pball->m_Event_Pos.y - pball->y; // if same then ignore it
+               const float dz = pball->m_Event_Pos.z - pball->z;
+
+               if (dx*dx + dy*dy + dz*dz > 0.25f) // must be a new place if only by a little
+               {
+                  m_pfe->FireGroupEvent(DISPID_HitEvents_Hit);
+               }
+            }
+
+         }
+      }
+   }
 	else		
 	{
 		if (!pball->m_vpVolObjs) return;
@@ -828,7 +851,26 @@ float Hit3DCylinder::HitTest(Ball * const pball, const float dtime, Vertex3Ds * 
 
 void Hit3DCylinder::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 {
+   const float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
 	pball->Collide3DWall(phitnormal, m_elasticity, m_antifriction, m_scatter);
+   if ( m_ObjType == ePrimitive )
+   {
+      if ( m_pfe && m_fEnabled )
+      {
+         if ( dot <= -m_threshold )
+         {
+            const float dx = pball->m_Event_Pos.x - pball->x; // is this the same place as last event????
+            const float dy = pball->m_Event_Pos.y - pball->y; // if same then ignore it
+            const float dz = pball->m_Event_Pos.z - pball->z;
+
+            if (dx*dx + dy*dy + dz*dz > 0.25f) // must be a new place if only by a little
+            {
+               m_pfe->FireGroupEvent(DISPID_HitEvents_Hit);
+            }
+         }
+
+      }
+   }
 }
 
 void Hit3DCylinder::CalcHitRect()
