@@ -1512,10 +1512,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	properties:
 	methods:
 		[id(DISPID_GameEvents_Init)]  void Init();
-		[id(DISPID_TimerEvents_Timer)]  void Timer();
+//		[id(DISPID_TimerEvents_Timer)]  void Timer();
 		[id(DISPID_HitEvents_Hit)]  void Hit();
-		[id(DISPID_LimitEvents_EOS)]  void LimitEOS( [in] float parm);
-		[id(DISPID_LimitEvents_BOS)]  void LimitBOS( [in] float parm);
 	}
 
 	//////////////////////////////
