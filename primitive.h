@@ -36,6 +36,12 @@ public:
    bool sphereMapping;
    bool m_triggerUpdateRegion;
    bool m_triggerSingleUpdateRegion;
+
+   bool m_fCollidable;
+   float m_elasticity;
+   float m_friction;
+   float m_scatter;
+
 };
 
 class Primitive :
@@ -149,6 +155,15 @@ public:
    STDMETHOD(put_EnableStaticRendering)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_EnableSphereMapping)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_EnableSphereMapping)(/*[in]*/ VARIANT_BOOL newVal);
+
+   STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
+   STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Friction)(/*[in]*/ float newVal);
+   STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
 
    Primitive();
    virtual ~Primitive();
@@ -269,6 +284,7 @@ public:
    void UpdateMesh();
    bool BrowseFor3DMeshFile();
    void RenderObject( RenderDevice *pd3dDevice);
+   void CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph3d1, const Hit3DPoly * const ph3d2);
 
    virtual bool LoadMesh();
    virtual void ExportMesh();
@@ -278,6 +294,8 @@ public:
    VertexBuffer *vertexBuffer;
    BOOL vertexBufferRegenerate;
    Material material;
+
+   Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
    // Vertices for editor display
    Vector<Vertex3Ds> verticesTop;

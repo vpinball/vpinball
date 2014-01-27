@@ -1487,6 +1487,18 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
   		[propget, id(396), helpstring("property sphere mapping")] HRESULT EnableSphereMapping([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(396), helpstring("property sphere mapping")] HRESULT EnableSphereMapping([in] VARIANT_BOOL newVal);
 
+  		[propget, id(110), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
+		[propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
+		
+		[propget, id(111), helpstring("property Collidable")] HRESULT Collidable([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(111), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
+
+		[propget, id(114), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
+		[propput, id(114), helpstring("property Friction")] HRESULT Friction([in] float newVal);
+		[propget, id(115), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
+		[propput, id(115), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
+
+
 	};
 
 	[
