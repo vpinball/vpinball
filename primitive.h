@@ -37,19 +37,23 @@ public:
    bool m_triggerUpdateRegion;
    bool m_triggerSingleUpdateRegion;
 
+   BOOL m_fHitEvent;
    bool m_fCollidable;
+   float m_threshold;			// speed at which ball needs to hit to register a hit
    float m_elasticity;
    float m_friction;
    float m_scatter;
 
 };
 
-class Primitive :
+class ATL_NO_VTABLE Primitive :
+
+
+   public CComObjectRootEx<CComSingleThreadModel>,
    public IDispatchImpl<IPrimitive, &IID_IPrimitive, &LIBID_VBATESTLib>,
-   public CComObjectRoot,
+   //public CComObjectRoot,
    public CComCoClass<Primitive,&CLSID_Primitive>,
 #ifdef VBA
-   //public CApcaaaControl<Primitive>,
    public CApcProjectItem<Primitive>,
 #endif
    public EventProxy<Primitive, &DIID_IPrimitiveEvents>,
@@ -156,6 +160,10 @@ public:
    STDMETHOD(get_EnableSphereMapping)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_EnableSphereMapping)(/*[in]*/ VARIANT_BOOL newVal);
 
+   STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_HasHitEvent)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Threshold)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Threshold)(/*[in]*/ float newVal);
    STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
@@ -179,13 +187,14 @@ public:
       COM_INTERFACE_ENTRY(IProvideClassInfo)
       COM_INTERFACE_ENTRY(IProvideClassInfo2)
    END_COM_MAP()
-   STANDARD_DISPATCH_DECLARE
-   STANDARD_EDITABLE_DECLARES(eItemPrimitive)
-
 
    BEGIN_CONNECTION_POINT_MAP(Primitive)
       CONNECTION_POINT_ENTRY(DIID_IPrimitiveEvents)
    END_CONNECTION_POINT_MAP()
+
+
+   STANDARD_DISPATCH_DECLARE
+   STANDARD_EDITABLE_DECLARES(eItemPrimitive)
 
    DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
 
