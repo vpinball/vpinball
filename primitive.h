@@ -27,6 +27,12 @@ public:
    TimerDataRoot m_tdr;
    RECT m_boundRectangle;
 
+   BOOL m_fHitEvent;
+   float m_threshold;			// speed at which ball needs to hit to register a hit
+   float m_elasticity;
+   float m_friction;
+   float m_scatter;
+
    bool use3DMesh;
    bool m_TopVisible;
    bool m_wasVisible;
@@ -37,13 +43,7 @@ public:
    bool m_triggerUpdateRegion;
    bool m_triggerSingleUpdateRegion;
 
-   BOOL m_fHitEvent;
    bool m_fCollidable;
-   float m_threshold;			// speed at which ball needs to hit to register a hit
-   float m_elasticity;
-   float m_friction;
-   float m_scatter;
-
 };
 
 class ATL_NO_VTABLE Primitive :
