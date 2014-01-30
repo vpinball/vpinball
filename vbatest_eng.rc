@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -161,7 +161,7 @@ BEGIN
     LTEXT           "User &Value",IDC_STATIC,7,38,38,9
 END
 
-IDD_PROPFLIPPER_VISUALS DIALOGEX 0, 0, 125, 102
+IDD_PROPFLIPPER_VISUALS DIALOGEX 0, 0, 125, 130
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -177,6 +177,9 @@ BEGIN
     LTEXT           "Rubber &Width",IDC_STATIC,7,73,45,8
     LTEXT           "Rubber Offset &Height",IDC_STATIC,7,59,68,8
     CONTROL         "Enabled",IDC_FLIPPER_ENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,76,85,43,10
+    CONTROL         "Compatibility Mode",IDC_FLIPPER_COMPATIBILITY_MODE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,95,75,10
+    LTEXT           "(If set flippers aren't dynamic and the Visible flag disables the flipper)",IDC_STATIC,17,104,89,25
 END
 
 IDD_PROPBUMPER_VISUALS DIALOGEX 0, 0, 125, 135
@@ -1701,6 +1704,11 @@ BEGIN
         BOTTOMMARGIN, 193
     END
 
+    IDD_PROPFLIPPER_VISUALS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 116
+    END
+
     IDD_CODEVIEW, DIALOG
     BEGIN
         RIGHTMARGIN, 413
@@ -2303,7 +2311,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

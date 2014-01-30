@@ -558,6 +558,7 @@
 #define IDC_STATIC_RENDERING_CHECK      398
 #define IDC_ON_LIGHT_LIGHTMAP           398
 #define IDC_AA_ALL_TABLES               398
+#define IDC_FLIPPER_COMPATIBILITY_MODE  398
 #define IDC_JOYMECHTILTCOMBO            399
 #define IDC_CUR_FLASHER                 399
 #define IDC_ADDCREDITBUTTON2            400

@@ -4,6 +4,7 @@ HitFlipper::HitFlipper(const float x, const float y, float baser, float endr, fl
                        const float zlow, const float zhigh, float strength, const float mass)
 {	
    m_flipperanim.m_height = zhigh - zlow;
+   m_flipperanim.m_fCompatibility=fTrue;
 
    m_flipperanim.m_hitcircleBase.m_pfe = NULL;
    m_flipperanim.m_hitcircleEnd.m_pfe = NULL;
@@ -706,7 +707,12 @@ void FlipperAnimObject::Check3D()
 
 ObjFrame *FlipperAnimObject::Draw3D(const RECT * const prc)
 {
-   /*if (m_iframe == -1)*/ return NULL;
+   if ( m_fCompatibility )
+   {
+      if (m_iframe == -1) return NULL;
 
-   //return (m_fVisible) ? m_vddsFrame.ElementAt(m_iframe) : NULL;
+      return (m_fVisible) ? m_vddsFrame.ElementAt(m_iframe) : NULL;
+   }
+   else
+      return NULL;
 }

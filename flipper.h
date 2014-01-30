@@ -30,6 +30,7 @@ public:
 	float m_strength;
 	BOOL  m_fVisible;
    BOOL  m_fEnabled;
+   BOOL  m_fCompatibility;
 	float m_elasticity;
 	float m_friction;
 	float m_scatter;
@@ -119,6 +120,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flipper)
 	PinTable *m_ptable;
 
 	FlipperData m_d;
+   bool setupMode;
 
 	HitFlipper *m_phitflipper;
 
@@ -137,6 +139,8 @@ public:
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_CompatibilityMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_CompatibilityMode)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Strength)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Strength)(/*[in]*/ float newVal);
 	STDMETHOD(get_RubberThickness)(/*[out, retval]*/ long *pVal);

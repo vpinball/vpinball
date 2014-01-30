@@ -130,6 +130,12 @@ void Flipper::SetDefaults(bool fromMouseClick)
       m_d.m_fEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_fEnabled = fTrue;
+
+   hr = GetRegInt("DefaultProps\\Flipper","CompatibilityMode", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fCompatibility = iTmp == 0 ? false : true;
+   else
+      m_d.m_fCompatibility = fTrue;
 }
 
 void Flipper::WriteRegDefaults()
@@ -176,6 +182,7 @@ void Flipper::WriteRegDefaults()
    SetRegValue("DefaultProps\\Flipper","RubberWidth", REG_DWORD, &m_d.m_rubberwidth, 4);
    SetRegValue("DefaultProps\\Flipper","Visible",REG_DWORD,&m_d.m_fVisible,4);
    SetRegValue("DefaultProps\\Flipper","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
+   SetRegValue("DefaultProps\\Flipper","CompatibilityMode",REG_DWORD,&m_d.m_fCompatibility,4);
 }
 
 
@@ -285,6 +292,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    pvho->AddElement(phf);
    phf->m_pflipper = this;
    phf->m_flipperanim.m_pflipper = this;
+   phf->m_flipperanim.m_fCompatibility = (m_d.m_fCompatibility==fTrue);
    m_phitflipper = phf;	
 }
 
@@ -598,6 +606,8 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
 
 void Flipper::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
+   if( m_d.m_fCompatibility )
+      return;
    if (m_phitflipper && !m_phitflipper->m_flipperanim.m_fVisible)
       return;
    if (m_phitflipper == NULL && !m_d.m_fVisible)
@@ -610,8 +620,10 @@ void Flipper::PostRenderStatic(const RenderDevice* _pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); 
-
+   
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   ppin3d->SetTexture(NULL);
+
    Material mat;
    mat.setColor( 1.0f, m_d.m_color);
    mat.set();
@@ -634,6 +646,11 @@ void Flipper::RenderSetup(const RenderDevice* _pd3dDevice)
    _ASSERTE(m_phitflipper);
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
+   setupMode=true;
+   if ( m_d.m_fCompatibility )
+   {
+      m_d.m_fEnabled = m_d.m_fVisible;
+   }
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
    ppin3d->ClearSpriteRectangle( &m_phitflipper->m_flipperanim, NULL );
@@ -887,6 +904,40 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
 
 void Flipper::RenderMovers(const RenderDevice* _pd3dDevice)
 {
+   if (!m_d.m_fCompatibility )
+      return;
+   if ( m_d.m_fCompatibility && !setupMode )
+      return;
+
+   setupMode=false;
+   
+   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+
+   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); 
+
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   ppin3d->SetTexture(NULL);
+   for( int i=0;i<maxFrames; i++ )
+   {
+      Material mat;
+      mat.setColor( 1.0f, m_d.m_color);
+      mat.set();
+
+      //draw flipper
+      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vBufferArray[i].vbuffer, 0, 162, (LPWORD)indexBuffer, 270, 0 );
+
+      // render the rubber
+      mat.setColor( 1.0f, m_d.m_rubbercolor);
+      mat.set();
+
+      //draw rubber
+      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vBufferArray[i].vbuffer, 162, 162, (LPWORD)indexBuffer, 270, 0 );
+
+      ppin3d->CreateAndCopySpriteBuffers( &m_phitflipper->m_flipperanim, m_phitflipper->m_flipperanim.m_vddsFrame.ElementAt(i) );
+
+   }
 }
 
 
@@ -921,6 +972,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
+   bw.WriteBool(FID(COMP), m_d.m_fCompatibility);
    bw.WriteFloat(FID(FPWL), m_d.m_powerlaw);	
    bw.WriteFloat(FID(FOCR), m_d.m_obliquecorrection);	
    bw.WriteFloat(FID(FSCT), m_d.m_scatterangle);	
@@ -1071,6 +1123,10 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ENBL))
    {
       pbr->GetBool(&m_d.m_fEnabled);
+   }
+   else if (id == FID(COMP))
+   {
+      pbr->GetBool(&m_d.m_fCompatibility);
    }
    else
    {
@@ -1473,11 +1529,19 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
    {
       //m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible; //rlc error 
       m_phitflipper->m_flipperanim.m_fVisible = VBTOF(newVal);
+      if( m_d.m_fCompatibility )
+      {
+         m_phitflipper->m_flipperanim.m_fEnabled = VBTOF(newVal);
+      }
    }
    else
    {
       STARTUNDO
       m_d.m_fVisible = VBTOF(newVal);
+      if( m_d.m_fCompatibility )
+      {
+         m_d.m_fEnabled = m_d.m_fVisible;
+      }
       STOPUNDO
    }
    return S_OK;
@@ -1500,9 +1564,24 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
    else
    {
       STARTUNDO
-      m_d.m_fEnabled = VBTOF(newVal);
+         m_d.m_fEnabled = VBTOF(newVal);
       STOPUNDO
    }
+   return S_OK;
+}
+
+STDMETHODIMP Flipper::get_CompatibilityMode(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCompatibility);
+
+   return S_OK;
+}
+
+STDMETHODIMP Flipper::put_CompatibilityMode(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+      m_d.m_fCompatibility = VBTOF(newVal);
+   STOPUNDO
    return S_OK;
 }
 
