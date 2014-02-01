@@ -57,7 +57,9 @@ VP 9.2.1 Changelog
 
 - separate/new texture maps for the lighting of lights (more details) and bumpers (brighter)
 
-- script editor updated to use latest scintilla (3.3.7)
+- fix problem with DMD/VPinMAME window being hidden behind VP window
+
+- script editor updated to use latest scintilla (3.3.9)
 
 VP 9.2.0 Changelog
 ------------------------
