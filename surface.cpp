@@ -1475,6 +1475,9 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 {
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
+   if ( ! m_d.m_fSideVisible )
+      return;
+
    const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
    const float slingtop    = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
 
