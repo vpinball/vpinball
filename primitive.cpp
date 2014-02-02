@@ -237,6 +237,11 @@ void Primitive::SetDefaults(bool fromMouseClick)
    else
       m_d.m_fCollidable = false;
 
+   hr = GetRegInt("DefaultProps\\Primitive","IsToy", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fToy= iTmp == 0 ? false : true;
+   else
+      m_d.m_fToy = true;
 }
 
 void Primitive::WriteRegDefaults()
@@ -338,6 +343,7 @@ void Primitive::WriteRegDefaults()
    sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
    SetRegValue("DefaultProps\\Primitive","Scatter", REG_SZ, &strTmp,strlen(strTmp));	
    SetRegValue("DefaultProps\\Primitive","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
+   SetRegValue("DefaultProps\\Primitive","IsToy",REG_DWORD,&m_d.m_fToy,4);
 
 }
 
@@ -348,14 +354,7 @@ void Primitive::GetTimers(Vector<HitTimer> * const pvht)
 
 void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   //!! Here the hitshapes have to be added... lets look at other implementations.
-   // OK, i need a hitprimitive class and a hitanimobject class.
-   // the hitprimitive class should add itself to the HitObjectVector.
-   // i think i have to look at easy hit objects and then at ramps hitobjects.
-   /*HitPrimitive * pHitPrimitive = new HitPrimitive();
-
-   pvho->AddElement(pHitPrimitive);*/
-   if( !m_d.use3DMesh )
+   if( !m_d.use3DMesh || m_d.m_fToy )
       return;
 
    RecalculateMatrices();
@@ -1176,6 +1175,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
+   bw.WriteBool(FID(ISTO), m_d.m_fToy);
    bw.WriteInt(FID(ENLI), (m_d.useLighting) ? 1 : 0);
    bw.WriteInt(FID(U3DM), (m_d.use3DMesh) ? 1 : 0 );
    bw.WriteInt(FID(STRE), (m_d.staticRendering) ? 1 : 0 );
@@ -1333,6 +1333,12 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       BOOL iTmp;
       pbr->GetBool(&iTmp);
       m_d.m_fCollidable = (iTmp==1);
+   }
+   else if (id == FID(ISTO))
+   {
+      BOOL iTmp;
+      pbr->GetBool(&iTmp);
+      m_d.m_fToy = (iTmp==1);
    }
    else if (id == FID(ENLI))
    {
@@ -2546,6 +2552,24 @@ STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
    else
       for (int i=0;i < m_vhoCollidable.Size();i++)
          m_vhoCollidable.ElementAt(i)->m_fEnabled = fNewVal;	//copy to hit checking on enities composing the object 
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::get_IsToy(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fToy);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_IsToy(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_fToy = VBTOF(newVal);		
+
+   STOPUNDO
 
    return S_OK;
 }

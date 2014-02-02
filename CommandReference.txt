@@ -434,9 +434,11 @@ EnableLighting(bool) - enable/disable lighting for this primitive. You should us
 EnableSphereMapping(bool) - enable/disable sphere mapping/environment mapping (useful for faking good looking reflections).
 HasHitEvent(bool) - enables the support for a hit event in the script (it's the same as for walls)
 Threshold(float) - hit threshold for firing the hit event
-Collidable(bool) - enables/disables collision detection
+Collidable(bool) - enables/disables collision detection, this can be used from within the script.
 Friction(float) 
 Scatter(float)
+*IsToy(bool) - disables collision handling completely. It overwrites the Collidable-flag and can't be used from within the script. This option is usefull if you have real toys
+               or static primitives which are never hitable at all.
 
 Methods
 -------
