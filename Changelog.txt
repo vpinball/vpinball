@@ -1,6 +1,6 @@
 VP 9.2.1 Changelog
 ------------------------
-- ass "Is Toy" checkbox to disable collision handling on mesh primitives completely. 
+- add "Is Toy" checkbox to disable collision handling on mesh primitives completely. 
 
 - add collision detection to mesh primitives together with hit threshold and hit event
 
