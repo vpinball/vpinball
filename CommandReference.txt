@@ -437,7 +437,7 @@ Threshold(float) - hit threshold for firing the hit event
 Collidable(bool) - enables/disables collision detection, this can be used from within the script.
 Friction(float) 
 Scatter(float)
-*IsToy(bool) - disables collision handling completely. It overwrites the Collidable-flag and can't be used from within the script. This option is usefull if you have real toys
+*IsToy(bool) - disables collision handling completely. It overwrites the Collidable-flag and can't be used from within the script. This option is useful if you have real toys
                or static primitives which are never hitable at all.
 
 Methods
