@@ -1384,7 +1384,11 @@ STDMETHODIMP Gate::get_CloseAngle(float *pVal)
 
 STDMETHODIMP Gate::put_CloseAngle(float newVal)
 {
-   if (m_d.m_fCollidable) newVal = 0;
+   if (m_d.m_fCollidable) 
+   {
+      newVal = 0;
+      ShowError("Gate is collidable! closing angles other than 0 aren't possible!");
+   }
    else newVal = ANGTORAD(newVal);
 
    if (g_pplayer)
