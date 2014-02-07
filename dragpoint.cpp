@@ -17,10 +17,11 @@ void IHaveDragPoints::GetPointCenter(Vertex2D * const pv) const
 
    for (int i=0;i<m_vdpoint.Size();i++)
    {
-      minx = min(minx, m_vdpoint.ElementAt(i)->m_v.x);
-      maxx = max(maxx, m_vdpoint.ElementAt(i)->m_v.x);
-      miny = min(miny, m_vdpoint.ElementAt(i)->m_v.y);
-      maxy = max(maxy, m_vdpoint.ElementAt(i)->m_v.y);
+      const Vertex2D v = m_vdpoint.ElementAt(i)->m_v;
+      minx = min(minx, v.x);
+      maxx = max(maxx, v.x);
+      miny = min(miny, v.y);
+      maxy = max(maxy, v.y);
 
    }
 

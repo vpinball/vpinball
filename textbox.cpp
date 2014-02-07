@@ -357,7 +357,7 @@ void Textbox::RenderText()
 
 	SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
 
-	if (m_d.sztext)
+	//if (m_d.sztext)
 		{
 		//ExtTextOut(hdc, m_pobjframe->rc.right - m_pobjframe->rc.left - 4, 4, 0, NULL, m_d.sztext, lstrlen(m_d.sztext), NULL);
 

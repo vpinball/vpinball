@@ -240,7 +240,6 @@ void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-
    colorMaterial.setColor( 0.0f, m_d.m_color );
    blackMaterial.setColor( 0.0f, 0.0f, 0.0f, 0.0f );
    colorMaterial.set();

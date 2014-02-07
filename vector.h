@@ -133,7 +133,7 @@ public:
 
 			if (m_rg)
 				{
-				m_rgNew = (void **)realloc((void *)m_rg, sizeof(void *) * (i));
+				m_rgNew = (void **)realloc((void *)m_rg, sizeof(void *) * i);
 				}
 			else
 				{

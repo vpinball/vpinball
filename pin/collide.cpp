@@ -544,12 +544,13 @@ void HitOctree::InitSseArrays()
 
     for (int j=0;j<m_vho.Size();j++)
     {
-      lefts[j] = m_vho.ElementAt(j)->m_rcHitRect.left;
-      rights[j] = m_vho.ElementAt(j)->m_rcHitRect.right;
-      tops[j] = m_vho.ElementAt(j)->m_rcHitRect.top;
-      bottoms[j] = m_vho.ElementAt(j)->m_rcHitRect.bottom;
-      zlows[j] = m_vho.ElementAt(j)->m_rcHitRect.zlow;
-      zhighs[j] = m_vho.ElementAt(j)->m_rcHitRect.zhigh;
+	const FRect3D r = m_vho.ElementAt(j)->m_rcHitRect;
+      lefts[j] = r.left;
+      rights[j] = r.right;
+      tops[j] = r.top;
+      bottoms[j] = r.bottom;
+      zlows[j] = r.zlow;
+      zhighs[j] = r.zhigh;
     }
 
 	for (int j=m_vho.Size();j<((m_vho.Size()+3)/4)*4;j++)

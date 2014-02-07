@@ -1998,7 +1998,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
       ofn.hInstance = g_hinst;
       ofn.hwndOwner = g_pvp->m_hwnd;
       // TEXT
-      ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt";
+      ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt\0";
       ofn.lpstrFile = m_szFileName;
       ofn.nMaxFile = _MAX_PATH;
       ofn.lpstrDefExt = "vpt";
@@ -2006,13 +2006,13 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 
       char szInitialDir[1024];
       HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+      char szFoo[MAX_PATH];
       if (hr == S_OK)
       {
          ofn.lpstrInitialDir = szInitialDir;
       }
       else
       {
-         char szFoo[MAX_PATH];
          lstrcpy(szFoo, g_pvp->m_szMyPath);
          lstrcat(szFoo, "Tables");
          ofn.lpstrInitialDir = szFoo;
@@ -6669,9 +6669,8 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
       bmpf.bfOffBits = sizeof(BITMAPFILEHEADER)+ sizeof(BITMAPINFOHEADER);
 
       DWORD write;
-      int foo;
       // write BMP file header	
-      foo = WriteFile(hFile, &bmpf, sizeof(BITMAPFILEHEADER), &write, NULL);
+      WriteFile(hFile, &bmpf, sizeof(BITMAPFILEHEADER), &write, NULL);
 
       BITMAPINFOHEADER bmpi;		// info header		
       bmpi.biSize = sizeof(BITMAPINFOHEADER);	//only a few fields are used 
@@ -6687,7 +6686,7 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
       bmpi.biClrImportant = 0;
 
       //write BMP Info Header
-      foo = WriteFile(hFile, &bmpi, sizeof(BITMAPINFOHEADER), &write, NULL);
+      WriteFile(hFile, &bmpi, sizeof(BITMAPINFOHEADER), &write, NULL);
 
       unsigned char* sinfo = new unsigned char[bmplnsize+4]; //linebuffer and safty pad
       if (!sinfo) 
@@ -6713,8 +6712,8 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
             pch += 4;
          }
 
-         foo = WriteFile(hFile, sinfo, bmplnsize, &write, NULL);
-         foo = GetLastError();			
+         WriteFile(hFile, sinfo, bmplnsize, &write, NULL);
+         GetLastError();			
       }
 
       ppi->m_pdsBuffer->Unlock(NULL);	
@@ -8650,13 +8649,13 @@ STDMETHODIMP PinTable::ImportPhysics()
 	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
 	const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+	char szFoo[MAX_PATH];
 	if (hr == S_OK)
 	{
 		ofn.lpstrInitialDir = szInitialDir;
 	}
 	else
 	{
-		char szFoo[MAX_PATH];
 		lstrcpy(szFoo, "c:\\");
 		ofn.lpstrInitialDir = szFoo;
 	}
@@ -8745,13 +8744,13 @@ STDMETHODIMP PinTable::ExportPhysics()
 	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
 	const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+	char szFoo[MAX_PATH];
 	if (hr == S_OK)
 	{
 		ofn.lpstrInitialDir = szInitialDir;
 	}
 	else
 	{
-		char szFoo[MAX_PATH];
 		lstrcpy(szFoo, "c:\\");
 		ofn.lpstrInitialDir = szFoo;
 	}
@@ -9153,7 +9152,7 @@ STDMETHODIMP PinTable::get_DeadZone(int *pVal)
    if (*pVal>100) *pVal=100;
    if (*pVal<0) *pVal=0;
 
-   *pVal = (g_pplayer) ? m_DeadZ : m_DeadZ; //VB Script or VP Editor
+   *pVal = m_DeadZ;
 
    return S_OK;
 }

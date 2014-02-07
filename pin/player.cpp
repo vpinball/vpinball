@@ -939,14 +939,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	///// (List of movers which can be blitted at any time)
 	/////////////////////////
 
-   // Cupid for Primitives: 
-	// seems to me that this is the place, where Animobjects schould be added to the m_vscreenupdate vector.
-	// But the problem is that primitives should have an animobject first.
-	// Primitives should respond to GetAnimObject now.
-	// No, they dont respond to GetAnimObject and all the other elements dont either...
-	// So there must be another place, where m_vho is filled... m_vho seems to be a hitobject... what does
-	// this have to do with animobjects.
-
 	for (int i=0;i<m_vho.Size();i++)
 		{
 		if (m_vho.ElementAt(i)->GetAnimObject() != NULL)
@@ -2815,7 +2807,7 @@ void Player::Render()
 		len = sprintf_s(szFoo, sizeof(szFoo), "physTimes %10d uS(%12d avg %12d max)    ",
 			   	(U32)phys_period,
 			   	(U32)(m_phys_total / m_count),
-			   	m_phys_max );
+			   	(U32)m_phys_max );
 		TextOut(hdcNull, 10, 140, szFoo, len);
 
 		len = sprintf_s(szFoo, sizeof(szFoo), "phys:%5d iterations(%5d avg %5d max))   ",

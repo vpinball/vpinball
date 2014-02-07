@@ -103,7 +103,10 @@ int WzSzStrnCmp(WCHAR *wz1, char *sz2, int count)
 
 LocalString::LocalString(const int resid)
 	{
-	const int cchar = LoadString(g_hinst, resid, m_szbuffer, 256);
+	    if(resid > 0)
+		/*const int cchar =*/ LoadString(g_hinst, resid, m_szbuffer, 256);
+	    else
+		m_szbuffer[0] = 0;
 	}
 
 WCHAR *MakeWide(char *sz)
