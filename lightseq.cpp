@@ -33,7 +33,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_updateinterval = 25;
 
-	char tmp[MAXTOKEN];
+	char tmp[MAXNAMEBUFFER];
 	hr = GetRegString("DefaultProps\\LightSequence","Collection", tmp, MAXTOKEN);
 	if ((hr != S_OK) || !fromMouseClick)
 		m_d.m_wzCollection[0] = 0x00;

@@ -221,18 +221,9 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       pexinfo->m_fExpanded = fFalse;
       pexinfo->m_psb = this;
 
-      char *szCaption;
-      if (pproppane->titlestringid)
-      {
-         LocalString ls(pproppane->titlestringid);
-         szCaption = ls.m_szbuffer;
-         pexinfo->m_fHasCaption = fTrue;
-      }
-      else
-      {
-         szCaption = "";
-         pexinfo->m_fHasCaption = fFalse;
-      }
+      LocalString ls(pproppane->titlestringid);
+      char *szCaption = ls.m_szbuffer;
+      pexinfo->m_fHasCaption = (pproppane->titlestringid != 0);
 
       HWND hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
          WS_CHILD /*| WS_VISIBLE *//*| WS_BORDER*/,

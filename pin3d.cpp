@@ -1267,7 +1267,7 @@ void Pin3D::InitLights()
 	m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 }
 
-void LookAt( Matrix3D &mat, D3DVECTOR eye, D3DVECTOR target, D3DVECTOR up )
+void LookAt( Matrix3D &mat, const D3DVECTOR &eye, const D3DVECTOR &target, const D3DVECTOR &up )
 {
    D3DVECTOR zaxis = Normalize(eye - target);
    D3DVECTOR xaxis = Normalize(CrossProduct(up,zaxis));
@@ -1386,7 +1386,7 @@ void Pin3D::InitPlayfieldGraphics()
 {
 #define TRIANGULATE_BACK 100
 
-	Vertex3D rgv[8];
+	Vertex3D rgv[7];
 	rgv[0].x=g_pplayer->m_ptable->m_left;     rgv[0].y=g_pplayer->m_ptable->m_top;      rgv[0].z=0;
 	rgv[1].x=g_pplayer->m_ptable->m_right;    rgv[1].y=g_pplayer->m_ptable->m_top;      rgv[1].z=0;
 	rgv[2].x=g_pplayer->m_ptable->m_right;    rgv[2].y=g_pplayer->m_ptable->m_bottom;   rgv[2].z=0;
@@ -1396,13 +1396,13 @@ void Pin3D::InitPlayfieldGraphics()
 	rgv[4].x=g_pplayer->m_ptable->m_left;     rgv[4].y=g_pplayer->m_ptable->m_top;      rgv[4].z=50.0f;
 	rgv[5].x=g_pplayer->m_ptable->m_left;     rgv[5].y=g_pplayer->m_ptable->m_bottom;   rgv[5].z=50.0f;
 	rgv[6].x=g_pplayer->m_ptable->m_right;    rgv[6].y=g_pplayer->m_ptable->m_bottom;   rgv[6].z=50.0f;
-	rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
+	//rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
 
 	numVerts = (TRIANGULATE_BACK+1)*(TRIANGULATE_BACK+1);
 	if( !tableVBuffer )
 	{
 		m_pd3dDevice->createVertexBuffer( numVerts+7, 0, MY_D3DFVF_VERTEX, &tableVBuffer); //+7 verts for second rendering step
-		NumVideoBytes += numVerts*sizeof(Vertex3D); 
+		NumVideoBytes += (numVerts+7)*sizeof(Vertex3D); 
 	}
 
 	const Texture * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);

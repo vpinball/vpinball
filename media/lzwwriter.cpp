@@ -62,7 +62,6 @@ HRESULT LZWWriter::CompressBits(int init_bits)
 	m_iPixelCur = 0;
 	m_iXCur = 0;
 
-	m_free_ent = 0;
 	m_clear_flg = fFalse;
 	
 	m_cur_accum = 0;
@@ -76,7 +75,6 @@ HRESULT LZWWriter::CompressBits(int init_bits)
 	m_init_bits = init_bits;
 
 	// Set up the necessary values
-	m_clear_flg = false;
 	m_nbits = m_init_bits;
 	m_maxcode = Maxcode( m_nbits );
 

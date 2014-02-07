@@ -87,69 +87,69 @@ public:
       return mat.power;
    }
 
-   void setDiffuse(  D3DCOLORVALUE _diffuse )
+   void setDiffuse(  const D3DCOLORVALUE &_diffuse )
    {
       mat.diffuse = _diffuse;
    }
-   void setDiffuse(  D3DVALUE a,  D3DVALUE r,  D3DVALUE g,  D3DVALUE b )
+   void setDiffuse(  const D3DVALUE a,  const D3DVALUE r,  const D3DVALUE g,  const D3DVALUE b )
    {
       mat.diffuse.r = r;
       mat.diffuse.g = g;
       mat.diffuse.b = b;
       mat.diffuse.a = a;
    }
-   void setDiffuse(  D3DVALUE a,  COLORREF _color )
+   void setDiffuse(  const D3DVALUE a,  const COLORREF _color )
    {
       mat.diffuse.r = (float)(_color & 255) * (float)(1.0/255.0);
       mat.diffuse.g = (float)(_color & 65280) * (float)(1.0/65280.0);
       mat.diffuse.b = (float)(_color & 16711680) * (float)(1.0/16711680.0);
 	  mat.diffuse.a = a;
    }
-   void setAmbient(  D3DCOLORVALUE _ambient )
+   void setAmbient(  const D3DCOLORVALUE &_ambient )
    {
       mat.ambient = _ambient;
    }
-   void setAmbient(  D3DVALUE a,  D3DVALUE r,  D3DVALUE g,  D3DVALUE b )
+   void setAmbient(  const D3DVALUE a,  const D3DVALUE r,  const D3DVALUE g,  const D3DVALUE b )
    {
       mat.ambient.r = r;
       mat.ambient.g = g;
       mat.ambient.b = b;
 	  mat.ambient.a = a;
    }
-   void setAmbient(  D3DVALUE a,  COLORREF _color )
+   void setAmbient(  const D3DVALUE a,  const COLORREF _color )
    {
       mat.ambient.r = (float)(_color & 255) * (float)(1.0/255.0);
       mat.ambient.g = (float)(_color & 65280) * (float)(1.0/65280.0);
       mat.ambient.b = (float)(_color & 16711680) * (float)(1.0/16711680.0);
       mat.ambient.a = a;
    }
-   void setEmissive(  D3DCOLORVALUE _emissive )
+   void setEmissive(  const D3DCOLORVALUE &_emissive )
    {
       mat.emissive = _emissive;
    }
-   void setEmissive(  D3DVALUE a,  D3DVALUE r,  D3DVALUE g,  D3DVALUE b )
+   void setEmissive( const D3DVALUE a,  const D3DVALUE r,  const D3DVALUE g,  const D3DVALUE b )
    {
       mat.emissive.r = r;
       mat.emissive.g = g;
       mat.emissive.b = b;
       mat.emissive.a = a;
    }
-   void setSpecular(  D3DCOLORVALUE _specular )
+   void setSpecular(  const D3DCOLORVALUE &_specular )
    {
       mat.specular = _specular;
    }
-   void setSpecular(  D3DVALUE a,  D3DVALUE r,  D3DVALUE g,  D3DVALUE b )
+   void setSpecular(  const D3DVALUE a,  const D3DVALUE r,  const D3DVALUE g,  const D3DVALUE b )
    {
       mat.specular.r = r;
       mat.specular.g = g;
       mat.specular.b = b;
       mat.specular.a = a;
    }
-   void setPower(  D3DVALUE _power )
+   void setPower(  const D3DVALUE _power )
    {
       mat.power = _power;
    }
-   void setColor(  float a,  float r,  float g,  float b )
+   void setColor(  const float a,  const float r,  const float g,  const float b )
    {
       mat.specular.r = 0.0f;
       mat.specular.g = 0.0f;
@@ -169,7 +169,7 @@ public:
       mat.ambient.b = b;
       mat.ambient.a = a;
    }
-   void setColor(  float a,  COLORREF _color )
+   void setColor(  const float a,  const COLORREF _color )
    {
       setColor( a, (float)(_color & 255) * (float)(1.0/255.0),
                    (float)(_color & 65280) * (float)(1.0/65280.0),

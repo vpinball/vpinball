@@ -1478,7 +1478,7 @@ void RemoveComment( HWND sciHwnd )
 
 string upperCase( string input )
 {
-   for( string::iterator it = input.begin(); it!=input.end(); it++ )
+   for( string::iterator it = input.begin(); it!=input.end(); ++it )
       *it = toupper(*it);
    return input;
 }
