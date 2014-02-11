@@ -32,3 +32,20 @@ U32 msec()
 	const LONGLONG cur_tick = TimerNow.QuadPart - sTimerStart.QuadPart;
 	return (U32)((unsigned long long)cur_tick*1000ull/(unsigned long long)TimerFreq.QuadPart);
 }
+
+void uSleep(const unsigned long long u)
+{
+	if( sTimerInit == 0 ) return;
+
+	LARGE_INTEGER TimerEnd;
+	QueryPerformanceCounter(&TimerEnd);
+	TimerEnd.QuadPart += (u * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart;
+
+	LARGE_INTEGER TimerNow;
+	do
+	{
+		SwitchToThread();
+
+		QueryPerformanceCounter(&TimerNow);
+	} while (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEnd.QuadPart);
+}

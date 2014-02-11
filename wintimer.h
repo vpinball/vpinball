@@ -7,4 +7,6 @@ void wintimer_init();
 U32 msec();
 unsigned long long usec();
 
+void uSleep(const unsigned long long u);
+
 #endif /* !__WINTIMER_H__ */
