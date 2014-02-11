@@ -1,73 +1,7 @@
 #include "StdAfx.h"
 
-void PolygonToTriangles(const RenderVertex * const rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri)
-	{
-	// There should be this many convex triangles.
-	// If not, the polygon is self-intersecting
-	const int tricount = pvpoly->Size() - 2;
 
-	Assert(tricount > 0);
-
-	for (int l=0; l<tricount; ++l)
-	//while (pvpoly->Size() > 2)
-		{
-		for (int i=0; i<pvpoly->Size(); ++i)
-			{
-			const int s    = pvpoly->Size();
-			const int pre  = (int)pvpoly->ElementAt((i == 0) ? (s-1) : (i-1));
-			const int a    = (int)pvpoly->ElementAt(i);
-			const int b    = (int)pvpoly->ElementAt((i < s-1) ? (i+1) : 0);
-			const int c    = (int)pvpoly->ElementAt((i < s-2) ? (i+2) : ((i+2) - s));
-			const int post = (int)pvpoly->ElementAt((i < s-3) ? (i+3) : ((i+3) - s));			
-			if (AdvancePoint(rgv, pvpoly, a, b, c, pre, post))
-				{
-				Triangle * const ptri = new Triangle();
-				ptri->a = a;
-				ptri->b = b;
-				ptri->c = c;
-				pvtri->AddElement(ptri);
-				pvpoly->RemoveElementAt((i < s-1) ? (i+1) : 0); // b
-				break;
-				}
-			}
-		}
-	}
-
-//!! copypasted from above
-void PolygonToTriangles(const Vector<RenderVertex> &rgv, Vector<void> * const pvpoly, Vector<Triangle> * const pvtri)
-	{
-	// There should be this many convex triangles.
-	// If not, the polygon is self-intersecting
-	const int tricount = pvpoly->Size() - 2;
-
-	Assert(tricount > 0);
-
-	for (int l=0; l<tricount; ++l)
-	//while (pvpoly->Size() > 2)
-		{
-		for (int i=0; i<pvpoly->Size(); ++i)
-			{
-			const int s    = pvpoly->Size();
-			const int pre  = (int)pvpoly->ElementAt((i == 0) ? (s-1) : (i-1));
-			const int a    = (int)pvpoly->ElementAt(i);
-			const int b    = (int)pvpoly->ElementAt((i < s-1) ? (i+1) : 0);
-			const int c    = (int)pvpoly->ElementAt((i < s-2) ? (i+2) : ((i+2) - s));
-			const int post = (int)pvpoly->ElementAt((i < s-3) ? (i+3) : ((i+3) - s));			
-			if (AdvancePoint(rgv, pvpoly, a, b, c, pre, post))
-				{
-				Triangle * const ptri = new Triangle();
-				ptri->a = a;
-				ptri->b = b;
-				ptri->c = c;
-				pvtri->AddElement(ptri);
-				pvpoly->RemoveElementAt((i < s-1) ? (i+1) : 0); // b
-				break;
-				}
-			}
-		}
-	}
-
-void LightProjected::CalcCoordinates(Vertex3D * const pv, const float inv_width, const float inv_height) const
+void LightProjected::CalcCoordinates(Vertex3D * const pv) const
 	{
 	const Vertex2D vOrigin(
 	// light is rotated around the light as the origin
@@ -104,40 +38,6 @@ void LightProjected::CalcCoordinates(Vertex3D * const pv, const float inv_width,
 	pv->tv2 = (vOrigin.y /*(vT.y - m_v.y)*/ * inv_height + 0.5f) * g_pplayer->m_pin3d.m_maxtv;
 	}
 
-void SetHUDVertices(Vertex3D * const rgv, const int count)
-	{
-	const float mult = (float)g_pplayer->m_pin3d.m_dwRenderWidth * (float)(1.0/1000.0);
-	const float ymult = mult / (float)g_pplayer->m_pixelaspectratio;
-
-	for (int i=0; i<count; ++i)
-		{
-		rgv[i].x *= mult;
-		rgv[i].y *= ymult;
-		rgv[i].x -= 0.5f;
-		rgv[i].y -= 0.5f;
-		rgv[i].z = 0;//1.0f;
-		rgv[i].rhw = 0.1f;
-		rgv[i].specular = 0;
-		}
-	}
-
-//copy pasted from above
-void SetHUDVertices(Vertex3D_NoTex2 * const rgv, const int count)
-	{
-	const float mult = (float)g_pplayer->m_pin3d.m_dwRenderWidth * (float)(1.0/1000.0);
-	const float ymult = mult / (float)g_pplayer->m_pixelaspectratio;
-
-	for (int i=0; i<count; ++i)
-		{
-		rgv[i].x *= mult;
-		rgv[i].y *= ymult;
-		rgv[i].x -= 0.5f;
-		rgv[i].y -= 0.5f;
-		rgv[i].z = 0;//1.0f;
-		rgv[i].rhw = 0.1f;
-		rgv[i].specular = 0;
-		}
-	}
 
 void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv)
 	{

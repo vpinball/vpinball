@@ -262,8 +262,6 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
 {
    const float outerradius = m_d.m_radius + m_d.m_overhang;
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
    float maxtu, maxtv;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -394,11 +392,11 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
          moverVertices[0][l+128].tv2 = (0.5f+cosangle*0.5f)*lightmaxtv;
       }
 
-      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+32],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+64],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+96],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+128],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l]);
+      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+32]);
+      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+64]);
+      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+96]);
+      ppin3d->m_lightproject.CalcCoordinates(&moverVertices[0][l+128]);
       memcpy( moverVertices[1], moverVertices[0], sizeof(Vertex3D)*160 );
    }
    SetNormal(staticVertices, rgiBumperStatic, 32, NULL, NULL, 0);

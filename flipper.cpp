@@ -754,9 +754,6 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
    Vertex2D rgv[4];
    SetVertices(angle, &vendcenter, rgv, baseradius, endradius);
 
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-
    Vertex3D rgv3D[32];
    for (int l=0;l<8;l++)
    {
@@ -764,7 +761,7 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
       rgv3D[l].y = rgv[l&3].y;
       rgv3D[l].z = (l<4) ? height + flipperheight + 0.1f : height; // Make flippers a bit taller so they draw above walls
       rgv3D[l].z *= m_ptable->m_zScale;
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);		
+      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
    }
 
    ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear, &m_phitflipper->m_flipperanim.m_zfar, 8, fFalse);
@@ -810,8 +807,8 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
       rgv3D[l+16].z = height;
       rgv3D[l+16].z *= m_ptable->m_zScale;
 
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16]);
    }
 
    ppin3d->ExpandExtents(&pof->rc, rgv3D,&m_phitflipper->m_flipperanim.m_znear,
@@ -865,8 +862,8 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof,
       rgv3D[l+16].z = height;
       rgv3D[l+16].z *= m_ptable->m_zScale;
 
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
+      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16]);
    }
 
    ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear, &m_phitflipper->m_flipperanim.m_zfar, 32, fFalse);

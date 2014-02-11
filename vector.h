@@ -323,13 +323,16 @@ public:
 template<class T> class Vector : public VectorVoid
 	{
 public:
-	inline Vector() : VectorVoid() {}
-	inline Vector(const int cSize) : VectorVoid(cSize) {}
+	Vector() : VectorVoid() {}
+	Vector(const int cSize) : VectorVoid(cSize) {}
 
-	inline T *ElementAt(const int iItem) const
+	T *ElementAt(const int iItem) const
 		{
 		return (T *) (m_rg[iItem]);
 		}	
+
+          T& operator[](const int iItem)        { return *ElementAt(iItem); }
+    const T& operator[](const int iItem) const  { return *ElementAt(iItem); }
 	};
 
 template<class T> class VectorInt : public VectorVoid
@@ -369,7 +372,7 @@ public:
 		}
 	};
 
-typedef Vector<void> VectorPV;
+typedef VectorVoid VectorPV;
 typedef VectorPV * PVectorPV;
 
 template<class T> 

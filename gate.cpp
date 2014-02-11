@@ -437,9 +437,6 @@ void Gate::PrepareStatic(RenderDevice* pd3dDevice)
    staticVertices[7].y = 0;
    staticVertices[7].z = h + halfthick;
 
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-
    for (int l=0;l<8;l++)
    {
       const float temp = staticVertices[l].x;
@@ -450,7 +447,7 @@ void Gate::PrepareStatic(RenderDevice* pd3dDevice)
       staticVertices[l].y += m_d.m_vCenter.y;
       staticVertices[l].z += height*m_ptable->m_zScale;
 
-      ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l]);
    }
 }
 
@@ -511,9 +508,6 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
 
    const float inv_cframes = (cframes > 1) ? ((m_d.m_angleMax - m_d.m_angleMin)/(float)(cframes-1)) : 0.0f;
 
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-
    if(litVertices)
 	   delete [] litVertices;
    if(nolitVertices)
@@ -573,7 +567,7 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
             rgv3D[l].z += height + h;
             rgv3D[l].z *= m_ptable->m_zScale;
 
-            ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+            ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
          }
 
          // Draw Backside

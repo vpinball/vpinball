@@ -1701,7 +1701,7 @@ void Ramp::RenderMovers(const RenderDevice* pd3dDevice)
    if(!m_d.m_triggerSingleUpdateRegion && !m_d.m_triggerUpdateRegion)
 	   return;
 
-   if((!m_d.m_IsVisible && !m_d.m_wasVisible) ||		
+   if((!m_d.m_IsVisible && !m_d.m_wasVisible) ||
       // Don't render non-Alphas. 
       (!m_d.m_fAlpha && !m_d.m_wasAlpha) ||
 	  (m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f) ||
