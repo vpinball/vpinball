@@ -1582,6 +1582,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(14), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
 		[propget, id(15), helpstring("property Supports")] HRESULT Supports([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(15), helpstring("property Supports")] HRESULT Supports([in] VARIANT_BOOL newVal);
+		[propget, id(16), nonbrowsable, helpstring("property CurrentAngle")] HRESULT CurrentAngle([out, retval] float *pVal);
 		[propget, id(557), helpstring("property EnableLighting")] HRESULT EnableLighting([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(557), helpstring("property EnableLighting")] HRESULT EnableLighting([in] VARIANT_BOOL newVal);
 	};

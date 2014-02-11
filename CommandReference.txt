@@ -290,6 +290,7 @@ Animations(int)
 *Visible(bool)
 Supports(bool)
 *EnableLighting(bool) 
+CurrentAngle(float) - only readable, it returns the current open angle
 
 Methods
 -------
