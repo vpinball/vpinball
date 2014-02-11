@@ -4293,6 +4293,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
    HMENU hmenumain;
    HMENU hmenu;
    HMENU subMenu;
+   HMENU colSubMenu;
    if (menuid != -1)
    {
       hmenumain = LoadMenu(g_hinst, MAKEINTRESOURCE(menuid));
@@ -4303,6 +4304,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
    {
       hmenu = CreatePopupMenu();
       subMenu = CreatePopupMenu();
+      colSubMenu = CreatePopupMenu();
    }
 
    psel->EditMenu(hmenu);
@@ -4313,6 +4315,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       {
          AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
          subMenu = CreatePopupMenu();
+         colSubMenu = CreatePopupMenu();
       }
       // TEXT
       LocalString ls14(IDS_DRAWING_ORDER_HIT);
@@ -4380,7 +4383,28 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       else
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_UNCHECKED);  
 
+      LocalString ls16(IDS_TO_COLLECTION);
+      AppendMenu(hmenu, MF_POPUP|MF_STRING, (UINT)colSubMenu, ls16.m_szbuffer);
+      for (int i=0;i<m_vcollection.Size() && i<32;i++)
+      {
+          CComBSTR bstr;
+          m_vcollection.ElementAt(i)->get_Name(&bstr);
+          char szT[64]; // Names can only be 32 characters (plus terminator)
+          WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
 
+          AppendMenu(colSubMenu, MF_POPUP, 0x40000+i, szT);
+          CheckMenuItem(colSubMenu, 0x40000+i, MF_UNCHECKED );
+      }
+      for (int i=0;i<m_vcollection.Size() && i<32;i++)
+      {
+          for( int t=0;t<m_vcollection.ElementAt(i)->m_visel.Size();t++ )
+          {
+              if( psel==m_vcollection.ElementAt(i)->m_visel.ElementAt(t) )
+              {
+                  CheckMenuItem(colSubMenu, 0x40000+i, MF_CHECKED );
+              }
+          }
+      }
       LocalString ls5(IDS_LOCK);
       AppendMenu(hmenu, MF_STRING, ID_LOCK, ls5.m_szbuffer);
 
@@ -4479,6 +4503,11 @@ BOOL PinTable::FMutilSelLocked()
 
 void PinTable::DoCommand(int icmd, int x, int y)
 {
+   if ( ((icmd & 0x000FFFFF) >= 0x40000 ) && ((icmd & 0x000FFFFF)<0x40020) ) 
+   {
+       AddToCollection( icmd & 0x000000FF );
+       return;
+   }
    switch (icmd)
    {
    case ID_DRAWINFRONT:
@@ -4676,6 +4705,28 @@ void PinTable::AssignMultiToLayer( int layerNumber, int x, int y )
       }
    }
 }
+
+void PinTable::AddToCollection(int index)
+{
+    if( index<m_vcollection.Size() && index<32 )
+    {
+        if ( m_vmultisel.Size()>0 )
+        {
+            for( int t=0;t<m_vmultisel.Size();t++ )
+            {
+                ISelect *ptr = m_vmultisel.ElementAt(t);
+                for( int k=0;k<m_vcollection.ElementAt(index)->m_visel.Size();k++ )
+                {
+                    if ( ptr==m_vcollection.ElementAt(index)->m_visel.ElementAt(k))
+                        //already assigned
+                        return;
+                }
+                m_vcollection.ElementAt(index)->m_visel.AddElement(m_vmultisel.ElementAt(t));
+            }
+        }
+    }
+}
+
 void PinTable::FlipY(Vertex2D * const pvCenter)
 {
    BeginUndo();

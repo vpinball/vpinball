@@ -112,35 +112,44 @@ void ISelect::EditMenu(HMENU hmenu)
 	}
 
 void ISelect::DoCommand(int icmd, int x, int y)
-	{
-	IEditable *piedit = GetIEditable();
+{
+    IEditable *piedit = GetIEditable();
 
-   if ( (icmd & 0x0000FFFF) == ID_SELECT_ELEMENT )
-   {
-      const int ksshift = GetKeyState(VK_SHIFT);
-      const int ksctrl = GetKeyState(VK_CONTROL);
+    if ( (icmd & 0x0000FFFF) == ID_SELECT_ELEMENT )
+    {
+       const int ksshift = GetKeyState(VK_SHIFT);
+       const int ksctrl = GetKeyState(VK_CONTROL);
 
-      PinTable *currentTable = GetPTable();
-      int i = (icmd & 0x00FF0000)>>16;
-      ISelect * const pisel = currentTable->m_allHitElements.ElementAt(i);
+       PinTable *currentTable = GetPTable();
+       int i = (icmd & 0x00FF0000)>>16;
+       ISelect * const pisel = currentTable->m_allHitElements.ElementAt(i);
 
-      const BOOL fAdd = ((ksshift & 0x80000000) != 0);
+       const BOOL fAdd = ((ksshift & 0x80000000) != 0);
 
-      if (pisel == (ISelect *)currentTable && fAdd)
-      {
-         // Can not include the table in multi-select
-         // and table will not be unselected, because the
-         // user might be drawing a box around other objects
-         // to add them to the selection group
-         currentTable->OnLButtonDown(x,y); // Start the band select
-         return;
-      }
+       if (pisel == (ISelect *)currentTable && fAdd)
+       {
+          // Can not include the table in multi-select
+          // and table will not be unselected, because the
+          // user might be drawing a box around other objects
+          // to add them to the selection group
+          currentTable->OnLButtonDown(x,y); // Start the band select
+          return;
+       }
 
-      currentTable->AddMultiSel(pisel, fAdd, fTrue);
-      return;
-   }
+       currentTable->AddMultiSel(pisel, fAdd, fTrue);
+       return;
+    }
+    if ( ((icmd & 0x000FFFFF) >= 0x40000 ) && ((icmd & 0x000FFFFF)<0x40020) ) 
+    {
+        const int ksshift = GetKeyState(VK_SHIFT);
+        const int ksctrl = GetKeyState(VK_CONTROL);
+
+        PinTable *currentTable = GetPTable();
+        int i = icmd & 0x000000FF;
+        currentTable->AddToCollection(i);
+    }
 	switch (icmd)
-		{
+    {
         case ID_EDIT_DRAWINGORDER_HIT:
             g_pvp->ShowDrawingOrderDialog(false);
             break;
@@ -214,8 +223,8 @@ void ISelect::DoCommand(int icmd, int x, int y)
 		/*default:
 			psel->DoCommand(command, x, y);
 			break;*/
-		}
-	}
+    }
+}
 
 #define COLOR_LOCKED RGB(160,160,160)
 //GetSysColor(COLOR_GRAYTEXT)

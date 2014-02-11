@@ -146,6 +146,8 @@
 #define IDC_CUR_TIMER                   142
 #define IDC_SPINNER                     143
 #define IDC_CUR_PLUNGER                 143
+#define IDS_SELECT_COLLECTION           143
+#define IDS_TO_COLLECTION               143
 #define IDS_RAMP_DESC                   144
 #define IDC_CUR_TEXTBOX                 144
 #define IDR_Ramp                        145

@@ -497,6 +497,7 @@ public:
     void RestoreLayers();
     void BackupLayers();
     void DeleteFromLayer( IEditable *obj );
+    void AddToCollection(int index);
 
 
 BEGIN_COM_MAP(PinTable)
