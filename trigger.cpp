@@ -423,9 +423,6 @@ void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    Vertex3D staticVertices[40];
 
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-
    for (int i=0;i<4;i++)
    {
       const float angle = (float)(M_PI*2.0/8.0)*(float)i;
@@ -445,7 +442,7 @@ void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
          staticVertices[l+offset].x =  cs*x + sn*y + m_d.m_vCenter.x;
          staticVertices[l+offset].y = -sn*x + cs*y + m_d.m_vCenter.y;
 
-         ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l+offset],inv_width,inv_height);
+         ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l+offset]);
       }
    }
 

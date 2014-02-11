@@ -186,9 +186,6 @@ void Kicker::RenderSetup(const RenderDevice* _pd3dDevice)
 
    ppin3d->ClearExtents(&recBounds, NULL, NULL);	
 
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-
    for (int l=0;l<16;l++)
    {
       const float angle = (float)(M_PI*2.0/16.0)*(float)l;
@@ -204,15 +201,15 @@ void Kicker::RenderSetup(const RenderDevice* _pd3dDevice)
       borderVerices[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius+6.0f);
       borderVerices[l].z = height + 0.05f*m_ptable->m_zScale;
 
-      ppin3d->m_lightproject.CalcCoordinates(&vertices[l],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&vertices[l+16],inv_width,inv_height);
-      ppin3d->m_lightproject.CalcCoordinates(&borderVerices[l],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&vertices[l]);
+      ppin3d->m_lightproject.CalcCoordinates(&vertices[l+16]);
+      ppin3d->m_lightproject.CalcCoordinates(&borderVerices[l]);
    }
 
    vertices[48].x = m_d.m_vCenter.x;
    vertices[48].y = m_d.m_vCenter.y;
    vertices[48].z = height + (0.1f - 30.0f)*m_ptable->m_zScale;
-   ppin3d->m_lightproject.CalcCoordinates(&vertices[48],inv_width,inv_height);
+   ppin3d->m_lightproject.CalcCoordinates(&vertices[48]);
 
    ppin3d->EnableLightMap(fTrue, height);
 

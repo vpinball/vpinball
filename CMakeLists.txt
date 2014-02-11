@@ -316,6 +316,8 @@ find_library(LIB_DINPUT dinput.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_XAUDIO xaudio.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_HID hid.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 
+LINK_DIRECTORIES(C:/WinDDK7.1/Lib/atl/i386)
+
 add_executable(${NAME} WIN32 ${SOURCES} ${HEADERS} ${RC_RESOURCE})
 target_link_libraries(${NAME} comctl32.lib ${LIB_DXGUID} ${LIB_FREEIMAGE} ${LIB_DSOUND} winmm.lib ${LIB_DINPUT} 
   ${LIB_XAUDIO} imm32.lib setupapi.lib ${LIB_HID})

@@ -1325,6 +1325,8 @@ void Pin3D::InitLayout(const float left, const float top, const float right, con
 
 	m_lightproject.m_v.x = g_pplayer->m_ptable->m_right *0.5f;
 	m_lightproject.m_v.y = g_pplayer->m_ptable->m_bottom *0.5f;
+    m_lightproject.inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
+    m_lightproject.inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
 	Vector<Vertex3Ds> vvertex3D;
 	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
@@ -1418,9 +1420,6 @@ void Pin3D::InitPlayfieldGraphics()
 		maxtv = maxtu = 1.0f;
 	}
 
-	const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-
 	EnableLightMap(fTrue, 0);
 
 	for (int i=0; i<4; ++i)
@@ -1432,7 +1431,7 @@ void Pin3D::InitPlayfieldGraphics()
 		rgv[i].tv = (i&2) ? maxtv : 0;
 		rgv[i].tu = (i==1 || i==2) ? maxtu : 0;
 
-		m_lightproject.CalcCoordinates(&rgv[i],inv_width,inv_height);
+		m_lightproject.CalcCoordinates(&rgv[i]);
 	}
 	// triangulate for better vertex based lighting //!! disable/set to 0 as soon as pixel shaders do the lighting
 
@@ -1455,7 +1454,7 @@ void Pin3D::InitPlayfieldGraphics()
 			tmp.nx = rgv[0].nx;
 			tmp.ny = rgv[0].ny;
 			tmp.nz = rgv[0].nz;
-			m_lightproject.CalcCoordinates(&tmp,inv_width,inv_height);
+			m_lightproject.CalcCoordinates(&tmp);
 		}
 	}
 

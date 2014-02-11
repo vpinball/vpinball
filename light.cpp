@@ -569,8 +569,6 @@ void Light::PostRenderStatic(const RenderDevice* pd3dDevice)
 void Light::PrepareStaticCustom()
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
    // prepare static custom object
    Vector<RenderVertex> vvertex;
@@ -611,7 +609,7 @@ void Light::PrepareStaticCustom()
    for (int i=0; i<cvertex; i++)
       delete vvertex.ElementAt(i);
 
-   Vector<void> vpoly;
+   VectorVoid vpoly;
    for (int i=0; i<cvertex; i++)
       vpoly.AddElement((void *)i);
 
@@ -649,7 +647,7 @@ void Light::PrepareStaticCustom()
          staticCustomVertex[k+2].nx = 0;    staticCustomVertex[k+2].ny = 0;    staticCustomVertex[k+2].nz = -1.0f;
 
          for (int l=0; l<3; l++)
-            ppin3d->m_lightproject.CalcCoordinates(&staticCustomVertex[k+l],inv_width,inv_height);
+            ppin3d->m_lightproject.CalcCoordinates(&staticCustomVertex[k+l]);
       }
       else
       {
@@ -673,7 +671,7 @@ void Light::PrepareMoversCustom()
    GetRgVertex(&vvertex);
    const int cvertex = vvertex.Size();
 
-   Vector<void> vpoly;
+   VectorVoid vpoly;
    float maxdist = 0;
    for (int i=0; i<cvertex; i++)
    {
@@ -691,9 +689,6 @@ void Light::PrepareMoversCustom()
 
    Vector<Triangle> vtri;
    PolygonToTriangles(vvertex, &vpoly, &vtri);
-
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
 
@@ -752,7 +747,7 @@ void Light::PrepareMoversCustom()
          for (int l=0;l<3;l++)
          {
             if (!m_fBackglass)
-               ppin3d->m_lightproject.CalcCoordinates(&customMoverVertex[i][k+l],inv_width,inv_height);
+               ppin3d->m_lightproject.CalcCoordinates(&customMoverVertex[i][k+l]);
 
             // Check if we are using a custom texture.
             if (pin != NULL)
@@ -868,8 +863,6 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
    {
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
-      const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-      const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
       if ( normalVBuffer==NULL )
       {
@@ -886,7 +879,7 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
          circleVertex[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius + m_d.m_borderwidth);
          circleVertex[l].z = height + 0.05f;
 
-         ppin3d->m_lightproject.CalcCoordinates(&circleVertex[l],inv_width,inv_height);
+         ppin3d->m_lightproject.CalcCoordinates(&circleVertex[l]);
       }
 
       if( !m_fBackglass )
@@ -1098,9 +1091,6 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
 
    g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-
    Vertex3D rgv3D[32];
    for (int l=0; l<32; l++)
    {
@@ -1114,7 +1104,7 @@ void Light::RenderMovers(const RenderDevice* _pd3dDevice)
       rgv3D[l].tu = 0.5f + sinangle*0.5f;
       rgv3D[l].tv = 0.5f + cosangle*0.5f;
 
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
    }
 
    if (!m_fBackglass)

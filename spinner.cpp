@@ -386,9 +386,6 @@ void Spinner::PrepareStatic( RenderDevice* pd3dDevice )
    const float snY = sinf(radangle);
    const float csY = cosf(radangle);
 
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-
    for (int l=0;l<8;l++)
    {
       const float temp = staticVertices[l].x;
@@ -399,7 +396,7 @@ void Spinner::PrepareStatic( RenderDevice* pd3dDevice )
       staticVertices[l].y += m_d.m_vCenter.y;
       staticVertices[l].z += height;
       staticVertices[l].z *= m_ptable->m_zScale;
-      ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l],inv_width,inv_height);
+      ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l]);
    }
 
 }
@@ -455,8 +452,6 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
 
    const float inv_cframes = 1.0f/(float)cframes;
 
-   const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-   const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
    frameCount=cframes;
    if(moverVertices)
 	   delete [] moverVertices;
@@ -522,7 +517,7 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
          rgv3D[l].z += h + height;
          rgv3D[l].z *= m_ptable->m_zScale;
 
-         ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l],inv_width,inv_height);
+         ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
       }
 
       if (pinback)
