@@ -1612,6 +1612,17 @@ STDMETHODIMP Gate::put_EnableLighting(VARIANT_BOOL newVal)
       return S_OK;
 }
 
+STDMETHODIMP Gate::get_CurrentAngle(float *pVal)
+{
+    if (g_pplayer)
+    {
+        *pVal = RADTOANG(m_phitgate->m_gateanim.m_angle);
+        return S_OK;
+    }
+    else
+        return E_FAIL;
+}
+
 void Gate::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 {
    PropertyPane *pproppane;
