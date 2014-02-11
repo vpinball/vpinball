@@ -1,5 +1,7 @@
 VP 9.2.1 Changelog
 ------------------------
+- add "To Collection" to the context menu to assign a selected element to a collection
+
 - add CurrentAngle() function to the gate object
 
 - add "Is Toy" checkbox to disable collision handling on mesh primitives completely. 

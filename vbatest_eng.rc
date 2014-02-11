@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -2239,6 +2239,7 @@ BEGIN
     IDS_TB_FLASHER          "Flasher"
     IDS_SPINNER_DESC        "Spinner Class"
     IDS_TB_SPINNER          "Spinner"
+    IDS_TO_COLLECTION       "To &Collection"
 END
 
 STRINGTABLE 
@@ -2312,7 +2313,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
