@@ -231,7 +231,7 @@ BEGIN
     LTEXT           "Mark Parris - testing",IDC_STATIC,13,101,67,9
     GROUPBOX        "Credits",IDC_STATIC,7,62,216,93
     LTEXT           "Jerry Rice - music",IDC_STATIC,86,101,66,9
-    CTEXT           "Copyright (C) 2000-2013 Randy Davis. All rights reserved",IDC_STATIC,7,164,118,19
+    CTEXT           "Copyright (C) 2000-2014 Randy Davis. All rights reserved",IDC_STATIC,7,164,118,19
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,108,36,115,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,184,32,8,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Chris Leathley - additional development",IDC_STATIC,13,89,123,9
@@ -1796,7 +1796,7 @@ BEGIN
             VALUE "FileDescription", "Visual Pinball 9.2.1"
             VALUE "FileVersion", "9, 2, 1, 0"
             VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000-2013"
+            VALUE "LegalCopyright", "Copyright 2000-2014"
             VALUE "OriginalFilename", "VPinball.exe"
             VALUE "ProductName", "Visual Pinball"
             VALUE "ProductVersion", "9, 2, 1, 0"
