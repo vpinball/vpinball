@@ -165,7 +165,10 @@ public:
 	unsigned int m_fVSync; // targeted refresh rate in Hz
 
 	BOOL m_fFXAA;
-    BOOL m_useAA;
+    BOOL m_fAA;
+
+	BOOL m_fReflectionForBalls;
+	BOOL m_fTrailForBalls;
 
 	int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG //!! support sidebyside, too?
 	BOOL m_fStereo3Denabled;

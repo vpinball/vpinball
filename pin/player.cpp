@@ -223,9 +223,17 @@ Player::Player()
       m_fFXAA = fFalse;
     }
 
-    hr = GetRegInt("Player", "USEAA", &m_useAA);
+    hr = GetRegInt("Player", "BallTrail", &m_fTrailForBalls);
     if (hr != S_OK)
-      m_useAA = fFalse; // The default = off
+      m_fTrailForBalls = fTrue; // The default = on
+
+	hr = GetRegInt("Player", "BallReflection", &m_fReflectionForBalls);
+    if (hr != S_OK)
+      m_fReflectionForBalls = fFalse; // The default = on
+
+    hr = GetRegInt("Player", "USEAA", &m_fAA);
+    if (hr != S_OK)
+      m_fAA = fFalse; // The default = off
 
 	hr = GetRegInt("Player", "Stereo3D", &m_fStereo3D);
 	if (hr != S_OK)
@@ -717,14 +725,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	InitRegValues();
 
-    if( !ptable->m_useAA )
-      m_useAA = false;
-
-	if( !ptable->m_useFXAA )
-      m_fFXAA = false;
-
 	// width, height, and colordepth are only defined if fullscreen is true.
-	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, (!!m_fStereo3D) || (!!m_fFXAA), !!m_useAA);
+	HRESULT hr = m_pin3d.InitDD(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth, m_refreshrate, (!!m_fStereo3D) || ((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 1)), ((m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1)));
 
 	if (hr != S_OK)
 	{
@@ -809,10 +811,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	m_nudgetime = 0;
 	m_movedPlunger = 0;	// has plunger moved, must have moved at least three times
 
-    if ( m_useAA )
-    {
+    if((m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1))
       m_pin3d.InitAntiAliasing();
-    }
 
 	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
 	SetWindowText(hwndProgressName, "Initalizing Physics...");
@@ -1292,10 +1292,10 @@ void Player::EraseBall(Ball *pball)
 		if (!fIntRectIntersect(pball->m_rcScreen, pball->m_rcScreenShadow))
 			InvalidateRect(&pball->m_rcScreenShadow);
 
-   if ( m_ptable->m_useReflectionForBalls )
+   if ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
       InvalidateRect(&pball->m_rcReflection);
 
-   if ( m_ptable->m_useTrailForBalls )
+   if ((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1))
       InvalidateRect(&pball->m_rcTrail);
 
    InvalidateRect(&pball->m_rcScreen);
@@ -2139,7 +2139,7 @@ unsigned int Player::CheckAndUpdateRegions()
 		}
 
     BaseTexture *backBuffer = m_pin3d.m_pddsBackBuffer;
-    if ( m_useAA )
+    if((m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1))
         backBuffer = m_pin3d.antiAliasTexture; //m_pin3d.m_pddsBackBuffer;
 
     BaseTexture * const backBufferZ = m_pin3d.m_pddsZBuffer;
@@ -2635,7 +2635,7 @@ void Player::Render()
 	///+++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     UpdatePhysics();
-    if( m_useAA )
+    if((m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1))
       m_pin3d.SetRenderTarget(m_pin3d.antiAliasTexture, m_pin3d.m_pddsZBuffer );
 
 	// This only invalidates all of the new Ball regions upfront, which is needed due to the double buffering of DX7 to properly invalidate -all- regions (i.e. reblit the static buffer beforehand!). This can be removed as soon as region updates of the back/frontbuffer are deprecated and always the full static/backbuffer are blitted each frame!
@@ -2643,11 +2643,11 @@ void Player::Render()
 
 	m_LastKnownGoodCounter++;
 
-   unsigned int overall_area = CheckAndUpdateRegions();
-   RenderDynamics();
+    unsigned int overall_area = CheckAndUpdateRegions();
+    RenderDynamics();
 
-   if ( m_useAA )
-    m_pin3d.AntiAliasingScene();
+    if((m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1))
+      m_pin3d.AntiAliasingScene();
 
     // Check if we should turn animate the plunger light.
     hid_set_output ( HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0) );
@@ -2677,8 +2677,7 @@ void Player::Render()
             vsync = true;
    }
 
-
-  if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (m_fFXAA == 0)) || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
+  if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 1)) == false)) || (m_pin3d.m_maxSeparation <= 0.0f) || (m_pin3d.m_maxSeparation >= 1.0f) || (m_pin3d.m_ZPD <= 0.0f) || (m_pin3d.m_ZPD >= 1.0f) || !m_pin3d.m_pdds3Dbuffercopy || !m_pin3d.m_pdds3DBackBuffer)
   {
      FlipVideoBuffersNormal( overall_area, vsync );
   }
@@ -3154,7 +3153,7 @@ void Player::DrawBallLogo(Ball * const pball)
 
 void Player::DrawBalls(const bool only_invalidate_regions)
 {
-    bool drawReflection = m_ptable->m_useReflectionForBalls==fTrue;
+    bool drawReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
 	if(!only_invalidate_regions)
 	{
@@ -3178,7 +3177,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
       float maxz = pball->defaultZ+3.0f;
       float minz = pball->defaultZ-1.0f;
-      if( m_ptable->m_useReflectionForBalls )
+      if((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
       {
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          if( (zheight > maxz) || (pball->z < minz) )
@@ -3229,7 +3228,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		{
          Ball::vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
 		 memcpy( buf, pball->vertices, sizeof(Vertex3D_NoTex2)*4 );
-         if ( m_ptable->m_useReflectionForBalls )
+         if((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
             memcpy( &buf[16], pball->reflectVerts, sizeof(Vertex3D_NoTex2)*4 );
 		}
 
@@ -3241,7 +3240,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 	     // Mark ball rect as dirty for blitting to the screen
 		 m_pin3d.ClearExtents(&pball->m_rcScreen, NULL, NULL);
          m_pin3d.ExpandExtentsPlus(&pball->m_rcScreen, pball->vertices, NULL, NULL, 4, fFalse);
-         if( m_ptable->m_useReflectionForBalls )
+         if((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
          {
             m_pin3d.ClearExtents(&pball->m_rcReflection, NULL, NULL);
             m_pin3d.ExpandExtentsPlus(&pball->m_rcReflection, pball->reflectVerts, NULL, NULL, 4, fFalse);
@@ -3329,7 +3328,7 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 		 }
 
 		 // ball trails //!! misses lighting disabled part!
-		 if( m_ptable->m_useTrailForBalls==fTrue && m_fBallAntialias )
+		 if( ((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1)) && m_fBallAntialias )
          {
 			m_pin3d.ClearExtents(&pball->m_rcTrail, NULL, NULL);
 
@@ -3500,9 +3499,9 @@ void Player::DrawBalls(const bool only_invalidate_regions)
 
 		if(only_invalidate_regions)
         {
-         if ( m_ptable->m_useReflectionForBalls )
+         if ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
             InvalidateRect(&pball->m_rcReflection);
-         if ( m_ptable->m_useTrailForBalls )
+         if ((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1))
             InvalidateRect(&pball->m_rcTrail);
          InvalidateRect(&pball->m_rcScreen);
         }

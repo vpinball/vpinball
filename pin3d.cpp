@@ -1749,11 +1749,11 @@ void Pin3D::Flip(const int offsetx, const int offsety, const BOOL vsync)
 	HRESULT hr;
 	//if(ddbltfx.dwDDFX)
 	hr = m_pddsFrontBuffer->Blt(&rcNew, 
-		((((g_pplayer->m_fStereo3D != 0) && g_pplayer->m_fStereo3Denabled) || (g_pplayer->m_fFXAA)) && (m_maxSeparation > 0.0f) && (m_maxSeparation < 1.0f) && (m_ZPD > 0.0f) && (m_ZPD < 1.0f) && m_pdds3Dbuffercopy && m_pdds3DBackBuffer) ? m_pdds3DBackBuffer : 
+		((((g_pplayer->m_fStereo3D != 0) && g_pplayer->m_fStereo3Denabled) || ((g_pplayer->m_fFXAA && (g_pplayer->m_ptable->m_useFXAA == -1)) || (g_pplayer->m_ptable->m_useFXAA == 1))) && (m_maxSeparation > 0.0f) && (m_maxSeparation < 1.0f) && (m_ZPD > 0.0f) && (m_ZPD < 1.0f) && m_pdds3Dbuffercopy && m_pdds3DBackBuffer) ? m_pdds3DBackBuffer : 
 		m_pddsBackBuffer, NULL, ddbltfx.dwDDFX ? DDBLT_DDFX : 0, &ddbltfx);
 	/*else
 	hr = m_pddsFrontBuffer->BltFast(rcNew.left, rcNew.top, 
-	((((g_pplayer->m_fStereo3D != 0) && g_pplayer->m_fStereo3Denabled) || (g_pplayer->m_fFXAA)) && (m_maxSeparation > 0.0f) && (m_maxSeparation < 1.0f) && (m_ZPD > 0.0f) && (m_ZPD < 1.0f) && m_pdds3Dbuffercopy && m_pdds3DBackBuffer) ? m_pdds3DBackBuffer : 
+	((((g_pplayer->m_fStereo3D != 0) && g_pplayer->m_fStereo3Denabled) || ((g_pplayer->m_fFXAA && (g_pplayer->m_ptable->m_useFXAA == -1)) || (g_pplayer->m_ptable->m_useFXAA == 1))) && (m_maxSeparation > 0.0f) && (m_maxSeparation < 1.0f) && (m_ZPD > 0.0f) && (m_ZPD < 1.0f) && m_pdds3Dbuffercopy && m_pdds3DBackBuffer) ? m_pdds3DBackBuffer : 
 	m_pddsBackBuffer, NULL, 0);*/
 
 	if (hr == DDERR_SURFACELOST)
