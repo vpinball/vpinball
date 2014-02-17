@@ -324,6 +324,7 @@
 #define IDC_SCALE_APPLY_BUTTON          280
 #define IDC_TRANSLATE_APPLY_BUTTON      280
 #define IDC_DRAWING_ORDER_UP            280
+#define IDC_COL_UP_BUTTON               280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -592,6 +593,7 @@
 #define IDC_TRANSLATE_UNDO_BUTTON       417
 #define IDC_DRAW_ORDER_UP               417
 #define IDC_DRAWING_ORDER_DOWN          417
+#define IDC_COL_DOWN_BUTTON             417
 #define IDC_JOYCUSTOM3COMBO             418
 #define IDC_BUTTON3                     418
 #define IDC_DRAW_ORDER_DOWN             418

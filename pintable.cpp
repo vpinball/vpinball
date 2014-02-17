@@ -4066,6 +4066,26 @@ void PinTable::RemoveCollection(CComObject<Collection> *pcol)
    pcol->Release();
 }
 
+void PinTable::MoveCollectionUp(CComObject<Collection> *pcol )
+{
+    int idx = m_vcollection.IndexOf(pcol);
+    m_vcollection.RemoveElementAt(idx);
+    if ( idx-1<0 )
+        m_vcollection.AddElement(pcol);
+    else
+        m_vcollection.InsertElementAt( pcol, idx-1 );
+}
+
+void PinTable::MoveCollectionDown(CComObject<Collection> *pcol )
+{
+    int idx = m_vcollection.IndexOf(pcol);
+    m_vcollection.RemoveElementAt(idx);
+    if( idx+1>=m_vcollection.Size() )
+        m_vcollection.InsertElementAt( pcol, 0 );    
+    else
+        m_vcollection.InsertElementAt( pcol, idx+1 );
+}
+
 void PinTable::SetCollectionName(Collection *pcol, char *szName, HWND hwndList, int index)
 {
    WCHAR wzT[1024];
@@ -4385,7 +4405,11 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 
       LocalString ls16(IDS_TO_COLLECTION);
       AppendMenu(hmenu, MF_POPUP|MF_STRING, (UINT)colSubMenu, ls16.m_szbuffer);
-      for (int i=0;i<m_vcollection.Size() && i<32;i++)
+
+      int maxItems = m_vcollection.Size()-1;
+      if ( maxItems>32 ) maxItems=32;
+
+      for (int i=maxItems; i>=0;i--)
       {
           CComBSTR bstr;
           m_vcollection.ElementAt(i)->get_Name(&bstr);
@@ -4395,7 +4419,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
           AppendMenu(colSubMenu, MF_POPUP, 0x40000+i, szT);
           CheckMenuItem(colSubMenu, 0x40000+i, MF_UNCHECKED );
       }
-      for (int i=0;i<m_vcollection.Size() && i<32;i++)
+      for (int i=maxItems; i>=0;i--)
       {
           for( int t=0;t<m_vcollection.ElementAt(i)->m_visel.Size();t++ )
           {

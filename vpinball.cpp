@@ -4413,11 +4413,64 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
                if (sel != -1)
                {
                   SetFocus(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-                  /*const HWND hwndFoo =*/ ListView_EditLabel(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
+                  ListView_EditLabel(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
                }
             }
             break;
-
+         case IDC_COL_UP_BUTTON:
+             {
+                 HWND listHwnd = GetDlgItem(hwndDlg, IDC_SOUNDLIST);
+                 const int idx = ListView_GetNextItem(listHwnd, -1, LVNI_SELECTED);
+                 if (idx != -1 && idx>0)
+                 {
+                     SetFocus(listHwnd);
+                     LVITEM lvitem1;
+                     lvitem1.mask = LVCF_TEXT | LVIF_PARAM;
+                     lvitem1.iItem = idx;
+                     lvitem1.iSubItem = 0;
+                     ListView_GetItem( listHwnd, &lvitem1 );
+                     CComObject<Collection> * const pcol = (CComObject<Collection> *)lvitem1.lParam;
+                     pt->MoveCollectionUp(pcol);
+                     ListView_DeleteItem( listHwnd, idx );
+                     lvitem1.mask = LVIF_PARAM;
+                     lvitem1.iItem = idx-1;
+                     ListView_InsertItem( listHwnd, &lvitem1 );
+                     char szT[MAX_PATH];
+                     WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
+                     ListView_SetItemText( listHwnd, idx-1, 0, szT );
+                     ListView_SetItemState( listHwnd, -1, 0, LVIS_SELECTED);
+                     ListView_SetItemState( listHwnd, idx-1, LVIS_SELECTED, LVIS_SELECTED);
+                     ListView_SetItemState( listHwnd, idx-1, LVIS_FOCUSED, LVIS_FOCUSED);
+                 }
+             }
+             break;
+         case IDC_COL_DOWN_BUTTON:
+             {
+                 HWND listHwnd = GetDlgItem(hwndDlg, IDC_SOUNDLIST);
+                 const int idx = ListView_GetNextItem(listHwnd, -1, LVNI_SELECTED);
+                 if (idx != -1 && (idx<pt->m_vcollection.Size()-1) )
+                 {
+                     SetFocus(listHwnd);
+                     LVITEM lvitem1;
+                     lvitem1.mask = LVCF_TEXT | LVIF_PARAM;
+                     lvitem1.iItem = idx;
+                     lvitem1.iSubItem = 0;
+                     ListView_GetItem( listHwnd, &lvitem1 );
+                     CComObject<Collection> * const pcol = (CComObject<Collection> *)lvitem1.lParam;
+                     pt->MoveCollectionDown(pcol);
+                     ListView_DeleteItem( listHwnd, idx );
+                     lvitem1.mask = LVIF_PARAM;
+                     lvitem1.iItem = idx+1;
+                     ListView_InsertItem( listHwnd, &lvitem1 );
+                     char szT[MAX_PATH];
+                     WideCharToMultiByte(CP_ACP, 0, pcol->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
+                     ListView_SetItemText( listHwnd, idx+1, 0, szT );
+                     ListView_SetItemState( listHwnd, -1, 0, LVIS_SELECTED);
+                     ListView_SetItemState( listHwnd, idx+1, LVIS_SELECTED, LVIS_SELECTED);
+                     ListView_SetItemState( listHwnd, idx+1, LVIS_FOCUSED, LVIS_FOCUSED);
+                 }
+             }
+             break;
          case IDC_DELETE:
             {
                const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
