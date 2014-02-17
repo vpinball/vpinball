@@ -498,6 +498,8 @@ public:
     void BackupLayers();
     void DeleteFromLayer( IEditable *obj );
     void AddToCollection(int index);
+    void MoveCollectionUp(CComObject<Collection> *pcol );
+    void MoveCollectionDown(CComObject<Collection> *pcol );
 
 
 BEGIN_COM_MAP(PinTable)
