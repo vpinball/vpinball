@@ -484,10 +484,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
-		[propget, id(394), helpstring("property enableAA")] HRESULT EnableAntialiasing([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(394), helpstring("property enableAA")] HRESULT EnableAntialiasing([in] VARIANT_BOOL newVal);
-		[propget, id(395), helpstring("property enableFXAA")] HRESULT EnableFXAA([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(395), helpstring("property enableFXAA")] HRESULT EnableFXAA([in] VARIANT_BOOL newVal);
+		[propget, id(394), helpstring("property enableAA")] HRESULT EnableAntialiasing([out, retval] int *pVal);
+		[propput, id(394), helpstring("property enableAA")] HRESULT EnableAntialiasing([in] int newVal);
+		[propget, id(395), helpstring("property enableFXAA")] HRESULT EnableFXAA([out, retval] int *pVal);
+		[propput, id(395), helpstring("property enableFXAA")] HRESULT EnableFXAA([in] int newVal);
 		[propget, id(9), helpstring("property RenderShadows")] HRESULT RenderShadows([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(9), helpstring("property RenderShadows")] HRESULT RenderShadows([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Image4), helpstring("property BallFrontDecal")] HRESULT BallFrontDecal([out, retval] BSTR *pVal);

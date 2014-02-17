@@ -1,8 +1,9 @@
 This is a quick overview of all non-exposed registry keys VP parses.
 (some might not work correctly anymore, who knows)
 
+"Player" / "Stereo3D"         non-exposed/beta feature: setting this to 2 enables scanline interleaved mode (the LGs i have use that for example)
 "Player" / "PhysicsMaxLoops"
-"Player" / "GlobalDifficulty" chooses slope difficulty of all tables (0..100)
+"Player" / "GlobalDifficulty" chooses slope/scatter/flipper difficulty of all tables (0..100, easy..difficult)
 "Player" / "Autostart"        presses start after loading a table automatically
 "Player" / "AutostartRetry"
 "Player" / "asenable"         enable autostart? (0 or 1)

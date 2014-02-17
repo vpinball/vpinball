@@ -210,10 +210,10 @@ public:
 	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
-    STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_EnableAntialiasing)(/*[in]*/ VARIANT_BOOL newVal);
-    STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_EnableFXAA)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_EnableAntialiasing)(/*[in]*/ int newVal);
+    STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_EnableFXAA)(/*[in]*/ int newVal);
     STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
     
@@ -675,12 +675,12 @@ END_CONNECTION_POINT_MAP()
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
 	BOOL m_NormalizeNormals;
-    BOOL m_useReflectionForBalls;
+    int m_useReflectionForBalls;
     int m_ballReflectionStrength;
-    BOOL m_useTrailForBalls;
+    int m_useTrailForBalls;
     int m_ballTrailStrength;
-    BOOL m_useAA;
-    BOOL m_useFXAA;
+    int m_useAA;
+    int m_useFXAA;
 
     float m_zScale;
 

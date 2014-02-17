@@ -1,8 +1,7 @@
 VP 9.2.1 Changelog
 ------------------------
-- add moving of single selected collection in the collection manager
-
 - add "To Collection" to the context menu to assign a selected element to a collection
+- add moving of single selected collection in the collection manager
 
 - add CurrentAngle() function to the gate object
 
@@ -46,7 +45,8 @@ VP 9.2.1 Changelog
   restart is 0 or 1 (only useful if useexisting is 1)
 
 - per table setting of adaptive vsync (-1 = default, 0 = off, 1 = automatic detection, anything else: refresh rate in Hz)
- 
+- change per table settings for AA, FXAA and ball reflection (-1 takes the default from the video preferences, 0 forces off, 1 forces on)
+
 - tweak key input code to save one frame (or more?) of lag
 
 - change the old 'Physics Max.Looptime' setting to 'Physics Max. Loops'
