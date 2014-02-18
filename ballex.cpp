@@ -235,7 +235,7 @@ STDMETHODIMP BallEx::get_BackDecal(BSTR *pVal)
 {
 	WCHAR wz[512];
 
-	MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageFront, -1, wz, 32);
+	MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageBack, -1, wz, 32);
 	*pVal = SysAllocString(wz);
 	return S_OK;
 }
