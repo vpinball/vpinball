@@ -75,7 +75,9 @@ public:
 	_32 *= z;
 	_33 *= z;
 	}
-	inline void MultiplyVector(const float x, const float y, const float z, Vertex3D * const pv3DOut) const
+
+    template <class Vec>
+	inline void MultiplyVector(const float x, const float y, const float z, Vec * const pv3DOut) const
 	{
 	// Transform it through the current matrix set
 	const float xp = _11*x + _21*y + _31*z + _41;
@@ -88,45 +90,7 @@ public:
 	pv3DOut->y = yp*inv_wp;
 	pv3DOut->z = zp*inv_wp;
 	}
-   inline void MultiplyVector(const float x, const float y, const float z, Vertex3D_NoTex2 * const pv3DOut) const
-   {
-      // Transform it through the current matrix set
-      const float xp = _11*x + _21*y + _31*z + _41;
-      const float yp = _12*x + _22*y + _32*z + _42;
-      const float zp = _13*x + _23*y + _33*z + _43;
-      const float wp = _14*x + _24*y + _34*z + _44;
 
-      const float inv_wp = 1.0f/wp;
-      pv3DOut->x = xp*inv_wp;
-      pv3DOut->y = yp*inv_wp;
-      pv3DOut->z = zp*inv_wp;
-   }
-   inline void MultiplyVector(const float x, const float y, const float z, Vertex3D_NoLighting * const pv3DOut) const
-   {
-      // Transform it through the current matrix set
-      const float xp = _11*x + _21*y + _31*z + _41;
-      const float yp = _12*x + _22*y + _32*z + _42;
-      const float zp = _13*x + _23*y + _33*z + _43;
-      const float wp = _14*x + _24*y + _34*z + _44;
-
-      const float inv_wp = 1.0f/wp;
-      pv3DOut->x = xp*inv_wp;
-      pv3DOut->y = yp*inv_wp;
-      pv3DOut->z = zp*inv_wp;
-   }
-	inline void MultiplyVector(const float x, const float y, const float z, Vertex3Ds * const pv3DOut) const
-	{
-	// Transform it through the current matrix set
-	const float xp = _11*x + _21*y + _31*z + _41;
-	const float yp = _12*x + _22*y + _32*z + _42;
-	const float zp = _13*x + _23*y + _33*z + _43;
-	const float wp = _14*x + _24*y + _34*z + _44;
-
-	const float inv_wp = 1.0f/wp;
-	pv3DOut->x = xp*inv_wp;
-	pv3DOut->y = yp*inv_wp;
-	pv3DOut->z = zp*inv_wp;
-	}
 	inline Vertex3Ds MultiplyVector(const Vertex3Ds &v) const
 	{
 	// Transform it through the current matrix set
