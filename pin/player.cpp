@@ -1382,8 +1382,14 @@ void Player::InitWindow()
 	if (hr != S_OK)
 		m_fFullScreen = fFalse;
 
-	int screenwidth;
-	int screenheight;
+	int	screenwidth = GetSystemMetrics(SM_CXSCREEN);
+	int screenheight = GetSystemMetrics(SM_CYSCREEN);
+
+	if(!m_fFullScreen) // be upwards compatible with DX9 VP
+	{
+		if((m_width == screenwidth) && (m_height == screenheight))
+			m_fFullScreen = fTrue;
+	}
 
 	if (m_fFullScreen)
 	{
@@ -1397,11 +1403,6 @@ void Player::InitWindow()
 		hr = GetRegInt("Player", "RefreshRate", &m_refreshrate);
 		if (hr != S_OK)
 			m_refreshrate = 0; // The default
-	}
-	else
-	{
-		screenwidth = GetSystemMetrics(SM_CXSCREEN);
-		screenheight = GetSystemMetrics(SM_CYSCREEN);
 	}
 
 	// constrain window to screen
