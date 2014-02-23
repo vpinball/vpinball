@@ -2412,7 +2412,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
       return hr;
    }
 
-   if (g_pvp->m_pds.CreateDirectFromNative(pps, &wfx) == S_OK)
+   if (pps->GetPinDirectSound()->CreateDirectFromNative(pps, &wfx) == S_OK)
    {
       m_vsound.AddElement(pps);
    }
@@ -6515,6 +6515,8 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    const int decibelvolume = (totalvolume == 0.0f) ? DSBVOLUME_MIN : (int)(logf(totalvolume)*(float)(1000.0/log(10.0)) - 2000.0f); // 10 volume = -10Db
 
    LPDIRECTSOUNDBUFFER pdsb = m_vsound.ElementAt(i)->m_pDSBuffer;
+   PinDirectSound *pDS = m_vsound.ElementAt(i)->m_pPinDirectSound;
+
    PinSoundCopy * ppsc = NULL;
    bool foundsame = false;
    if(usesame)
@@ -6533,8 +6535,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    if(ppsc == NULL)
    {
        ppsc = new PinSoundCopy();
-
-	   g_pvp->m_pds.m_pDS->DuplicateSoundBuffer(pdsb, &ppsc->m_pDSBuffer/*&pdsbNew*/);
+	   pDS->m_pDS->DuplicateSoundBuffer(pdsb, &ppsc->m_pDSBuffer/*&pdsbNew*/);
    }
 
    if (ppsc->m_pDSBuffer)

@@ -59,7 +59,7 @@ INT_PTR CALLBACK ComListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 								SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)pclsid);
 
 								CoTaskMemFree(ppwz);
-                        delete pclsid;
+                   //     delete pclsid;
 								}
 							}
 						} while (hr == S_OK);
@@ -980,6 +980,7 @@ HRESULT PinComControl::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY 
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
 
 	bw.WriteWideString(FID(PROG), m_d.m_progid);
+	bw.WriteStruct(FID(CLSD), &m_d.m_clsid, sizeof(CLSID));
 
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1067,6 +1068,10 @@ BOOL PinComControl::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetWideString(m_d.m_progid);
 		}
+	else if (id == FID(CLSD))
+	{
+		pbr->GetStruct(&m_d.m_clsid, sizeof(CLSID));
+	}
 	else if (id == FID(STRM))
 		{
 		CComPtr<IUnknown> spUnk;

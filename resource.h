@@ -228,6 +228,7 @@
 #define IDC_SNDEXPORT                   209
 #define IDC_ROTATEBY                    210
 #define IDC_EXPORT                      210
+#define IDC_SNDTOBG                     210
 #define IDC_CENTERX                     211
 #define IDC_CENTERY                     212
 #define IDB_ICON_TIMER                  213
@@ -284,6 +285,7 @@
 #define IDC_SIZELIST                    257
 #define IDC_SoundList                   258
 #define IDC_PhysicsList                 259
+#define IDC_SoundListBG                 259
 #define IDB_SUNBURST                    260
 #define IDD_KEYS                        261
 #define IDC_LEFTFLIPPERBUTTON           262
@@ -654,6 +656,7 @@
 #define IDC_ADAPTIVE_VSYNC              545
 #define IDC_STATIC_SOUNDDEVICE          546
 #define IDD_PROPBACKGLASS_PHYSICS       547
+#define IDC_STATIC_SOUNDDEVICE2         547
 #define IDS_PHYSICSGFX                  548
 #define IDD_PROPFLASHER_POSITION        548
 #define IDS_DIMENSIONSSLOPE             549

@@ -23,7 +23,6 @@ typedef vector<DSAudioDevice*> DSAudioDevices;
 
 BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list);
 
-
 class PinSound
 {
 public:
@@ -31,6 +30,7 @@ public:
 	~PinSound();
 
 	LPDIRECTSOUNDBUFFER m_pDSBuffer;
+	class PinDirectSound *m_pPinDirectSound;
 
 	char m_szName[MAXTOKEN];
 	char m_szInternalName[MAXTOKEN];
@@ -38,6 +38,8 @@ public:
 
 	char *m_pdata; // Copy of the buffer data so we can save it out
 	int m_cdata;
+
+	class PinDirectSound *GetPinDirectSound();
 };
 
 class PinSoundCopy
@@ -53,7 +55,7 @@ public:
 	PinDirectSound();
 	~PinDirectSound();
 
-	void InitDirectSound(HWND hwnd);
+	void InitDirectSound(HWND hwnd, bool IsBackglass);
 	PinSound *LoadWaveFile( TCHAR* strFileName );
 	HRESULT CreateStaticBuffer(TCHAR* strFileName, PinSound *pps);
 	HRESULT FillBuffer(PinSound *pps);
