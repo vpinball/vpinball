@@ -67,6 +67,10 @@ VP 9.2.1 Changelog
 
 - fix problem with DMD/VPinMAME window being hidden behind VP window
 
+- secondary/backglass sound output (by DJRobX)
+  if a sound effect contains 'bgout_' in the name or '* Backglass Output *' in its path then it is played via the secondary sound output (music always)
+  this can also be done with existing tables by using the new 'To BG Out' button in the sound manager
+
 - script editor updated to use latest scintilla (3.3.9)
 
 VP 9.2.0 Changelog

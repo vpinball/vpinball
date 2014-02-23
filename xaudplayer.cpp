@@ -286,7 +286,7 @@ HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 
     // Create a DirectSound buffer
 	HRESULT hr;
-    if( FAILED( hr = g_pvp->m_pds.m_pDS->CreateSoundBuffer( &dsbd, &m_pDSBuffer, NULL ) ) )
+	if( FAILED( hr = g_pvp->m_pbackglassds->m_pDS->CreateSoundBuffer( &dsbd, &m_pDSBuffer, NULL ) ) )
         return hr;
 
 	m_dwNextWriteOffset = 0; 

@@ -4,6 +4,7 @@ PinSound::PinSound()
 {
 	m_pDSBuffer = NULL;
 	m_pdata = NULL;
+    m_pPinDirectSound = NULL;
 }
 
 PinSound::~PinSound()
@@ -14,6 +15,21 @@ PinSound::~PinSound()
 		{
 		delete [] m_pdata;
 		}
+}
+
+class PinDirectSound *PinSound::GetPinDirectSound()
+{
+	if (m_pPinDirectSound)
+		return m_pPinDirectSound;
+
+	// If the sound name has "bgout_", or its path is the special token "* Backglass Output *,
+	// route the sound to the backglass speaker.   Note that the user will need to reload the table
+	// as the sounds get attached to the DirectSound buffer at load time.
+
+	if (strstr(m_szInternalName, "bgout_")!=NULL || !strcmp(m_szPath, "* Backglass Output *"))
+		return g_pvp->m_pbackglassds;
+
+	return &(g_pvp->m_pds);
 }
 
 PinDirectSound::PinDirectSound()
@@ -27,6 +43,7 @@ PinDirectSound::~PinDirectSound()
 	SAFE_DELETE(m_pWaveSoundRead);
 	SAFE_RELEASE(m_pDS);
 	}
+
 
 
 BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
@@ -44,7 +61,7 @@ BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
     return true;
 }
 
-void PinDirectSound::InitDirectSound(HWND hwnd)
+void PinDirectSound::InitDirectSound(HWND hwnd, bool IsBackglass)
 {
     HRESULT hr;
     LPDIRECTSOUNDBUFFER pDSBPrimary = NULL;
@@ -57,7 +74,7 @@ void PinDirectSound::InitDirectSound(HWND hwnd)
 	int DSidx = 0;
 	if (!FAILED (DirectSoundEnumerate (DSEnumCallBack, &DSads)))
 	{
-		hr = GetRegInt("Player", "SoundDevice", &DSidx);
+		hr = GetRegInt("Player", IsBackglass ? "SoundDeviceBG" : "SoundDevice", &DSidx);
 		if ((hr != S_OK) || ((unsigned int)DSidx >= DSads.size()))
 			DSidx = 0; // The default primary sound device
 	}
@@ -185,6 +202,7 @@ HRESULT PinDirectSound::CreateStaticBuffer(TCHAR* strFileName, PinSound *pps)
 
     // Remember how big the buffer is
     m_dwBufferBytes = dsbd.dwBufferBytes;
+	pps->m_pPinDirectSound = this;
 
     return S_OK;
 }
@@ -275,6 +293,7 @@ HRESULT PinDirectSound::CreateDirectFromNative(PinSound *pps, WAVEFORMATEX *pwfx
         return hr;
 		}
 
+	pps->m_pPinDirectSound = this;
     VOID*   pbData  = NULL;
     VOID*   pbData2 = NULL;
     DWORD   dwLength;

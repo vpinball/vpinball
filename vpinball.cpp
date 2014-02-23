@@ -333,8 +333,22 @@ void VPinball::Init()
 
    InitVBA();										// Create APC VBA host
 
-   m_pds.InitDirectSound(m_hwnd);					// init Direct Sound (in pinsound.cpp)
-   HRESULT hr = m_pdd.InitDD();						// init direct draw (in pinimage.cpp)
+   int DSidx1 = 0, DSidx2 =0;
+   GetRegInt("Player", "SoundDevice", &DSidx1);
+   GetRegInt("Player", "SoundDeviceBG", &DSidx2);
+
+   m_pds.InitDirectSound(m_hwnd, false);						// init Direct Sound (in pinsound.cpp)
+   if (DSidx1==DSidx2) // If these are the same device, just point the backglass device to the main one. 
+   {
+	    m_pbackglassds = &m_pds;
+   }
+   else
+   {
+	   m_pbackglassds = new PinDirectSound();
+	   m_pbackglassds->InitDirectSound(m_hwnd, true);
+   }
+
+   HRESULT hr = m_pdd.InitDD();								// init direct draw (in pinimage.cpp)
 
    // check if Direct draw could be initalized
    if (hr != S_OK)
@@ -2832,6 +2846,28 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
                   }
                   /*const HRESULT hr =*/ SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+                  EndDialog(hwndDlg, TRUE);
+               }
+            }
+            break;
+		case IDC_SNDTOBG:
+            {								
+               if(ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST)))
+               {	     
+                  LVITEM lvitem;
+                  int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED); //next selected item 	
+                  while (sel != -1)
+                  {									
+                     lvitem.mask = LVIF_PARAM;
+                     lvitem.iItem = sel;
+                     lvitem.iSubItem = 0;
+                     ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+                     PinSound *pps = (PinSound *)lvitem.lParam;								
+
+					 strcpy_s(pps->m_szPath, "* Backglass Output *");
+                     sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
+
+                  }
                   EndDialog(hwndDlg, TRUE);
                }
             }
@@ -6340,11 +6376,16 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          ::SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 10, 0);
          ::SendMessage(hwndControl, TBM_SETPOS, TRUE, fmusic);
 
-         int sd;
+         int sd, sdbg;
          hr = GetRegInt("Player", "SoundDevice", &sd);
          if (hr != S_OK)
             sd = 0;
-         SendMessage(hwndDlg, GET_SOUNDDEVICES, sd, 0);
+		  hr = GetRegInt("Player", "SoundDeviceBG", &sdbg);
+         if (hr != S_OK)
+         {
+            sdbg = 0; // The default
+         }
+         SendMessage(hwndDlg, GET_SOUNDDEVICES, sd, sdbg);
 
          return TRUE;
       }
@@ -6386,6 +6427,11 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   int soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
                   int* sd = (int*)SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
                   SetRegValue("Player", "SoundDevice", REG_DWORD, sd, 4);
+				  
+				  hwndSoundList = GetDlgItem(hwndDlg, IDC_SoundListBG);
+                  soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
+                  sd = (int*)SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
+                  SetRegValue("Player", "SoundDeviceBG", REG_DWORD, sd, 4);
 
                   EndDialog(hwndDlg, TRUE);
                }
@@ -6425,6 +6471,8 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       {
          SendMessage(hwndDlg, RESET_SoundList_CONTENT, 0, 0);
          HWND hwndList = GetDlgItem(hwndDlg, IDC_SoundList);
+		 HWND hwndListBG = GetDlgItem(hwndDlg, IDC_SoundListBG);
+
 
          DSAudioDevices DSads;
          if (!FAILED (DirectSoundEnumerate (DSEnumCallBack, &DSads)))
@@ -6435,20 +6483,31 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                int * const sd = new int;
                *sd = i;
                SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
+
+			   const int indexbg = SendMessage(hwndListBG, LB_ADDSTRING, 0, (long)DSads[i]->description.c_str());
+               int * const sdbg = new int;
+               *sdbg = i;
+			   SendMessage(hwndListBG, LB_SETITEMDATA, index, (LPARAM)sdbg);
             }
          }
 
          SendMessage(hwndList, LB_SETCURSEL, (wParam < DSads.size()) ? wParam : 0, 0);
+		 SendMessage(hwndListBG, LB_SETCURSEL, (wParam < DSads.size()) ? lParam : 0, 0);
+
       }
       break;
 
    case RESET_SoundList_CONTENT:
       {
          HWND hwndList = GetDlgItem(hwndDlg, IDC_SoundList);
+		 HWND hwndListBG = GetDlgItem(hwndDlg, IDC_SoundListBG);
+
          const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
          for (int i=0;i<size;i++)
          {
             int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
+            delete sd;
+			sd = (int *)SendMessage(hwndListBG, LB_GETITEMDATA, i, 0);
             delete sd;
          }
          SendMessage(hwndList, LB_RESETCONTENT, 0, 0);

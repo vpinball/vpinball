@@ -28,9 +28,9 @@ public:
 
 class PinTable;
 
-class VPinball// : //public IVisualPinball, public COleAuto,
+class VPinball //:// public IVisualPinball, public COleAuto,
 #ifdef VBA
-public CApcHost<VPinball>,
+public CApcHost<VPinball> //,
 #endif
 //public IDispatchImpl<IVisualPinball, &IID_IVisualPinball, &LIBID_VBATESTLib>
 
@@ -144,6 +144,7 @@ public:
 	Vector<IStream> m_vstmclipboard;
 
 	PinDirectSound m_pds;
+	PinDirectSound *m_pbackglassds;
 	PinDirectDraw m_pdd;
 
 	int m_ToolCur; // Palette button currently pressed
