@@ -1,5 +1,7 @@
 VP 9.2.1 Changelog
 ------------------------
+- this is the final release to be based on DirectX 7
+
 - add "To Collection" to the context menu to assign a selected element to a collection
 - add moving of single selected collection in the collection manager
 
@@ -10,10 +12,9 @@ VP 9.2.1 Changelog
 - add collision detection to mesh primitives together with hit threshold and hit event
 
 - add Z offset to the backdrop options. With this settings you're able to zoom in/out the table without changing FOV/Inclination/Layback settings
-
 - add Z scale option to the backdrop options. With this setting you're able to reduce/increase the overall depth of a table.
 
-- add table dimension manager for an easy way to calculate real table dimensions into VP table unit and vice versa
+- add table dimension manager for an easy way to calculate real table dimensions into VP table units and vice versa
 
 - add a ball throwing feature to VP. To use it check "Throw Balls in Player" in the debug window (ESC -> "Debug Window") and by left clicking and holding the left mouse 
   button you create a new ball and it throws the balls in that direction you move the mouse cursor when you release the left mouse button. If you click on a non 
@@ -30,7 +31,7 @@ VP 9.2.1 Changelog
    middle lower right - right flipper
    lower right - plunger 
 
-- Alpha-Flasher element added. Use this element to add (additive) alpha flashers instead of abusing the alpha ramp element. The flasher is a 'dynamic' element, that means it is not pre-rendered
+- add Alpha-Flasher element. Use this element to add (additive) alpha flashers instead of abusing the alpha ramp element. The flasher is a 'dynamic' element, that means it is not pre-rendered
   and it'll be updated every frame.
   Limitations:
   If 'Display Image In Editor' option is selected and the flasher is rotated the image won't rotate due to a DX7 limitation.
