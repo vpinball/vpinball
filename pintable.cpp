@@ -4424,6 +4424,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
             {
                char *szTemp;
                szTemp = GetElementName(pedit);
+
                if( szTemp )
                {
                   // what a hack!
@@ -4471,6 +4472,10 @@ char *PinTable::GetElementName( IEditable *pedit )
    if ( pedit )
    {
       pscript = pedit->GetScriptable();
+      if ( pedit->GetItemType()==eItemDecal )
+      {
+          return "Decal";
+      }
       if ( pscript )
       {
          elemName = pscript->m_wzName;
