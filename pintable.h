@@ -286,7 +286,10 @@ public:
 	STDMETHOD(get_AlphaRampAccuracy)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_AlphaRampAccuracy)(/*[in]*/ int newVal);
 
-	STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(get_GlobalAlphaAcc)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_GlobalAlphaAcc)(/*[in]*/ VARIANT_BOOL newVal);
+
+    STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
 
 	STDMETHOD(get_GridSize)(float *pgs);
 	STDMETHOD(put_GridSize)(float gs);
@@ -501,6 +504,7 @@ public:
     void MoveCollectionUp(CComObject<Collection> *pcol );
     void MoveCollectionDown(CComObject<Collection> *pcol );
 
+    int GetAlphaRampsAccuracy();
 
 BEGIN_COM_MAP(PinTable)
 	COM_INTERFACE_ENTRY(ITable)
@@ -671,7 +675,10 @@ END_CONNECTION_POINT_MAP()
 
 	VectorInt<HANDLE> m_vAsyncHandles;
 
-	int m_alphaRampsAccuracy;
+    int m_globalAlphaRampsAccuracy;
+    int m_userAlphaRampsAccuracy;
+	//int m_alphaRampsAccuracy;
+    BOOL m_overwriteGlobalAlphaRampsAccuracy;
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
 	BOOL m_NormalizeNormals;
