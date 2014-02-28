@@ -717,8 +717,12 @@ PinTable::PinTable()
    sprintf_s( Version, "%d", BUILD_NUMBER );
    SetRegValue ( "Version", "VPinball", REG_SZ, Version, strlen(Version) );
 
-   if ( FAILED(GetRegInt("Player", "AlphaRampAccuracy", &m_alphaRampsAccuracy) ) ) 
-      m_alphaRampsAccuracy = 5;
+   if ( FAILED(GetRegInt("Player", "AlphaRampAccuracy", &m_globalAlphaRampsAccuracy) ) )
+   {
+      m_globalAlphaRampsAccuracy = 5;
+      m_userAlphaRampsAccuracy=5;
+   }
+   m_overwriteGlobalAlphaRampsAccuracy = fFalse;
 
    m_jolt_amount = 500;
    m_tilt_amount = 950;
@@ -2729,7 +2733,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(BRST), m_ballReflectionStrength );
    bw.WriteInt(FID(BTRA), m_useTrailForBalls );
    bw.WriteInt(FID(BTST), m_ballTrailStrength );
-   bw.WriteInt(FID(ARAC), m_alphaRampsAccuracy );
+   bw.WriteInt(FID(ARAC), m_userAlphaRampsAccuracy );
+   bw.WriteBool(FID(OGAC), m_overwriteGlobalAlphaRampsAccuracy );
 
    bw.WriteInt(FID(UAAL), m_useAA );
    bw.WriteInt(FID(UFXA), m_useFXAA );
@@ -3780,9 +3785,13 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetInt(&m_TableRegionOptimization);
    }
-   else if ( id == FID(ARAC))
+   else if ( id == FID(OGAC))
    {
-      pbr->GetInt(&m_alphaRampsAccuracy);
+       pbr->GetBool(&m_overwriteGlobalAlphaRampsAccuracy);
+   }
+   else if ( id == FID(ARAC))
+   {      
+      pbr->GetInt(&m_userAlphaRampsAccuracy);
    }
    return fTrue;
 }
@@ -4049,6 +4058,14 @@ void PinTable::MoveCollectionUp(CComObject<Collection> *pcol )
         m_vcollection.AddElement(pcol);
     else
         m_vcollection.InsertElementAt( pcol, idx-1 );
+}
+
+int PinTable::GetAlphaRampsAccuracy()
+{
+    if( m_overwriteGlobalAlphaRampsAccuracy )
+        return m_userAlphaRampsAccuracy;
+    else
+        return m_globalAlphaRampsAccuracy;
 }
 
 void PinTable::MoveCollectionDown(CComObject<Collection> *pcol )
@@ -8137,7 +8154,10 @@ STDMETHODIMP PinTable::put_TableRegionOptimization(int newVal )
 
 STDMETHODIMP PinTable::get_AlphaRampAccuracy(int *pVal)
 {
-   *pVal = m_alphaRampsAccuracy;
+    if( m_overwriteGlobalAlphaRampsAccuracy )
+        *pVal = m_userAlphaRampsAccuracy;
+    else
+        *pVal = m_globalAlphaRampsAccuracy;
 
    return S_OK;
 }
@@ -8146,12 +8166,37 @@ STDMETHODIMP PinTable::put_AlphaRampAccuracy(int newVal )
 {
    STARTUNDO
 
-   m_alphaRampsAccuracy = newVal;
+   if( m_overwriteGlobalAlphaRampsAccuracy )
+   {
+       m_userAlphaRampsAccuracy = newVal;
+   }
 
    STOPUNDO
 
    return S_OK;
 }
+
+STDMETHODIMP PinTable::get_GlobalAlphaAcc(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_overwriteGlobalAlphaRampsAccuracy);
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal )
+{
+    STARTUNDO
+
+        m_overwriteGlobalAlphaRampsAccuracy = VBTOF(newVal);
+        if ( !m_overwriteGlobalAlphaRampsAccuracy )
+        {
+            m_userAlphaRampsAccuracy = m_globalAlphaRampsAccuracy;
+        }
+    STOPUNDO
+
+        return S_OK;
+}
+
 
 STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
 {
