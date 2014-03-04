@@ -584,7 +584,7 @@ END_CONNECTION_POINT_MAP()
     U32 m_tblAutoStart;             // msecs before trying an autostart if doing once-only method .. 0 is automethod
     U32 m_tblAutoStartRetry;        // msecs before retrying to autostart.
     float m_tblVolmod;              // volume modulation for doing audio balancing
-    U32 m_tblExitConfirm;           // msecs
+    U32 m_tblExitConfirm;           // msecs for esc button to be pressed to exit completely
 	float m_globalDifficulty;		// Table Difficulty Level
 
 #ifdef ULTRAPIN

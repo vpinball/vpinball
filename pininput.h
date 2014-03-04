@@ -101,6 +101,17 @@ private:
 
 	int m_pressed_start;
 
+    U32 m_exit_stamp;
+    U32 m_first_stamp;
+
+	int m_as_down;
+    int m_as_didonce;
+
+    int m_ac_down;
+    int m_ac_didonce;
+
+    int m_tilt_updown;
+
 	DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events
 
 	STICKYKEYS m_StartupStickyKeys;

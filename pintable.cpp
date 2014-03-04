@@ -706,7 +706,7 @@ PinTable::PinTable()
    if( hr == S_OK )
 	   m_tblMirrorEnabled = ( tmp != 0 );
 
-   m_tblExitConfirm = 0;
+   m_tblExitConfirm = 2000;
    hr = GetRegInt("Player", "Exitconfirm", &tmp);
    if( hr == S_OK )
 	   m_tblExitConfirm = tmp*1000/60;

@@ -8,5 +8,5 @@ This is a quick overview of all non-exposed registry keys VP parses.
 "Player" / "AutostartRetry"
 "Player" / "asenable"         enable autostart? (0 or 1)
 "Player" / "mirror"           mirror playfield (also mirrors keys accordingly) (0 or 1)
-"Player" / "Exitconfirm"
+"Player" / "Exitconfirm"      seconds that escape key has to be pressed to exit VP completely
 "Player" / "Volmod"           sets default sound mixer volume (0..1000)

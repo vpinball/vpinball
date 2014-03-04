@@ -204,12 +204,21 @@ PinInput::PinInput()
    hr = GetRegInt("Player", "EnableMouseInPlayer", &tmp);
    if (hr == S_OK) m_enableMouseInPlayer = tmp==fTrue;
 
+   m_exit_stamp = 0;
+   m_first_stamp = msec();
+
+   m_as_down = 0;
+   m_as_didonce = 0;
+
+   m_ac_down = 0;
+   m_ac_didonce = 0;
+
+   m_tilt_updown = 0;
 }
 
 PinInput::~PinInput()
 {
 }
-
 
 //-----------------------------------------------------------------------------
 // Name: EnumObjectsCallback()
@@ -280,7 +289,6 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
 
 
 // Callback for enumerating joysticks (gamepads)
-
 BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
 	DIPROPSTRING dstr;
@@ -292,7 +300,6 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	PinInput * const ppinput = (PinInput *)pvRef;
 	
 	HRESULT hr;
-	
 	hr = ppinput->m_pDI->CreateDeviceEx(lpddi->guidInstance, IID_IDirectInputDevice7,
 		                                (void **)&ppinput->m_pJoystick[ppinput->e_JoyCnt], NULL);
 	if (FAILED(hr))
@@ -730,19 +737,16 @@ void PinInput::autocoin( const U32 msecs, const U32 curr_time_msec )
 	if( !g_pplayer ) 
 		return;
 
-	static int down = 0;
-	static int didonce = 0;
-
 	// Check if we have coins.
 	if ( g_pplayer->m_Coins > 0 )
 	{
 		if( (m_firedautocoin > 0) &&														// Initialized.
-			(down == 1) &&																// Coin button is down.
+			(m_ac_down == 1) &&																// Coin button is down.
 			((curr_time_msec - m_firedautocoin) > 100) )									// Coin button has been down for at least 0.10 seconds.
 		{
 			// Release coin button.
 			m_firedautocoin = curr_time_msec;
-			down = 0;
+			m_ac_down = 0;
 			FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eAddCreditKey] );
 
 			// Update the counter.
@@ -754,14 +758,14 @@ void PinInput::autocoin( const U32 msecs, const U32 curr_time_msec )
 		}
 
 		// Logic to do "autocoin"
-		if( (down == 0) &&														// Coin button is up.
-			(((didonce == 1) && ((curr_time_msec - m_firedautocoin) > 500))) ||	// Last attempt was at least 0.50 seconds ago.
-			 ((didonce == 0) && ((curr_time_msec - m_firedautocoin) > msecs)) )	// Never attempted and at least autostart seconds have elapsed.
+		if( (m_ac_down == 0) &&														// Coin button is up.
+			(((m_ac_didonce == 1) && ((curr_time_msec - m_firedautocoin) > 500))) ||	// Last attempt was at least 0.50 seconds ago.
+			 ((m_ac_didonce == 0) && ((curr_time_msec - m_firedautocoin) > msecs)) )	// Never attempted and at least autostart seconds have elapsed.
 		{
 			// Press coin button.
 			m_firedautocoin = curr_time_msec;
-			down = 1;
-			didonce = 1;
+			m_ac_down = 1;
+			m_ac_didonce = 1;
 			FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eAddCreditKey] );
 
 #ifdef _DEBUG
@@ -783,16 +787,13 @@ void PinInput::autostart( const U32 msecs, const U32 retry_msecs, const U32 curr
 		started() )
 		return;
 
-	static int down = 0;
-	static int didonce = 0;
-		
 	if( (m_firedautostart > 0) &&				// Initialized.
-		(down == 1) &&						// Start button is down.
+		(m_as_down == 1) &&						// Start button is down.
 		((curr_time_msec - m_firedautostart) > 100) )	// Start button has been down for at least 0.10 seconds.
 	{
 		// Release start.
 		m_firedautostart = curr_time_msec;
-		down = 0;
+		m_as_down = 0;
 		FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eStartGameKey] );
 
 #ifdef _DEBUG
@@ -801,14 +802,14 @@ void PinInput::autostart( const U32 msecs, const U32 retry_msecs, const U32 curr
 	}
 
 	// Logic to do "autostart"
-	if( (down == 0) &&																			 // Start button is up.
-		(((didonce == 1) && !started() && ((curr_time_msec - m_firedautostart) > retry_msecs))) || // Not started and last attempt was at least AutoStartRetry seconds ago.
-		 ((didonce == 0) && ((curr_time_msec - m_firedautostart) > msecs)) )						 // Never attempted and autostart time has elapsed.
+	if( (m_as_down == 0) &&																			 // Start button is up.
+		(((m_as_didonce == 1) && !started() && ((curr_time_msec - m_firedautostart) > retry_msecs))) || // Not started and last attempt was at least AutoStartRetry seconds ago.
+		 ((m_as_didonce == 0) && ((curr_time_msec - m_firedautostart) > msecs)) )						 // Never attempted and autostart time has elapsed.
 	{
 		// Press start.
 		m_firedautostart = curr_time_msec;
-		down = 1;
-		didonce = 1;
+		m_as_down = 1;
+		m_as_didonce = 1;
 		FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eStartGameKey] );
 
 #ifdef _DEBUG
@@ -833,27 +834,22 @@ void PinInput::autoexit( const U32 msecs )
 }
 #endif
 
-static U32 exit_stamp = 0;
-static U32 first_stamp = 0;
-
 void PinInput::button_exit( const U32 msecs, const U32 curr_time_msec )
 {
-	if( !first_stamp ) 
-		first_stamp = curr_time_msec;
-
 	// Don't allow button exit until after game has been running for 1 second.
-	if( curr_time_msec - first_stamp < 1000 ) 
+	if( curr_time_msec - m_first_stamp < 1000 )
 		return; 
 
 	// Check if we can exit.
-	if( (exit_stamp) &&							   // Initialized.
-		((curr_time_msec - exit_stamp) > msecs) && // Held exit button for number of seconds.
+	if( m_exit_stamp &&							   // Initialized.
+		(curr_time_msec - m_exit_stamp > msecs) && // Held exit button for number of mseconds.
 		(g_pplayer->m_Coins == 0) )				   // No coins queued to be entered.
 	{
 		if (uShockType == USHOCKTYPE_ULTRACADE)
-			ExitApp();  //remove pesky exit button
+			ExitApp(); //remove pesky exit button
 		else
-			exit(0); //Close out to desktop
+			//exit(0); //Close out to desktop
+			g_pvp->Quit();
 	}
 }
 
@@ -861,13 +857,11 @@ void PinInput::tilt_update()
 {
 	if( !g_pplayer || g_pplayer->m_NudgeManual >= 0) return;
 
-	static int updown = 0;
-	int tmp = updown;
+	const int tmp = m_tilt_updown;
+	m_tilt_updown = plumb_tilted() ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
 
-	updown = plumb_tilted() ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-
-	if( updown != tmp )
-		FireKeyEvent( updown, g_pplayer->m_rgKeys[eCenterTiltKey] );
+	if( m_tilt_updown != tmp )
+		FireKeyEvent( m_tilt_updown, g_pplayer->m_rgKeys[eCenterTiltKey] );
 }
 
 void PinInput::Joy(const unsigned int n, const int updown, const bool start)
@@ -1059,7 +1053,10 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 			else if( ((input->dwOfs == DIK_ESCAPE) && (m_disable_esc == 0)) || ( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]) )
 			{
 				if (input->dwData & 0x80)
-					g_pplayer->m_fCloseDown = fTrue; //on key down only
+					m_exit_stamp = curr_time_msec; //on key down only
+				
+				if ((input->dwData & 0x80) == 0)
+					g_pplayer->m_fCloseDown = fTrue; //on key up only
 			}
 			else
 			{
@@ -1144,13 +1141,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 						{	// Check if we have started a game yet.
 							if (started() || (m_ptable->m_tblAutoStartEnabled == false))
 							{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{	first_stamp = curr_time_msec;
-									exit_stamp = curr_time_msec;
+								{	m_first_stamp = curr_time_msec;
+									m_exit_stamp = curr_time_msec;
 									FireKeyEvent( DISPID_GameEvents_KeyDown,g_pplayer->m_rgKeys[eExitGame ] );  
 								}
 								else 
 								{	FireKeyEvent( DISPID_GameEvents_KeyUp,g_pplayer->m_rgKeys[eExitGame ] );  
-									exit_stamp = 0;
+									m_exit_stamp = 0;
 						}	}	}
 					else
 						Joy(8,updown,start);
@@ -1224,13 +1221,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // exit
 						{	if (started() || (m_ptable->m_tblAutoStartEnabled == false)) // Check if we have started a game yet.
 							{	if( DISPID_GameEvents_KeyDown == updown ) 
-								{	first_stamp = curr_time_msec;
-									exit_stamp = curr_time_msec;
+								{	m_first_stamp = curr_time_msec;
+									m_exit_stamp = curr_time_msec;
 									FireKeyEvent( DISPID_GameEvents_KeyDown,g_pplayer->m_rgKeys[eExitGame ] );  
 								}
 								else 
 								{	FireKeyEvent( DISPID_GameEvents_KeyUp,g_pplayer->m_rgKeys[eExitGame ] );  
-									exit_stamp = 0;
+									m_exit_stamp = 0;
 						}	}	}
 					else
 						Joy(15,updown,start);
