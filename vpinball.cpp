@@ -2550,8 +2550,10 @@ STDMETHODIMP VPinball::StopShake()
 
 void VPinball::Quit()
 {
-   if( g_pplayer )
+   if( g_pplayer ) {
 	   g_pplayer->m_fCloseDown = fTrue;
+	   g_pplayer->m_fCloseType = 1;
+   }
    else
       PostMessage(m_hwnd, WM_CLOSE, 0, 0);
 }
