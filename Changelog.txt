@@ -26,7 +26,7 @@ VP 9.2.1 Changelog
    middle upper left - left magna save/2nd button
    middle lower left - left flipper
    lower left - start
-   upper right - quit
+   upper right - quit (press for 2 seconds to exit VP completely)
    middle upper right - right magna save/2nd button
    middle lower right - right flipper
    lower right - plunger 
