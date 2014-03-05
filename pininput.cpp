@@ -1052,11 +1052,19 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 			}
 			else if( ((input->dwOfs == DIK_ESCAPE) && (m_disable_esc == 0)) || ( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]) )
 			{
-				if (input->dwData & 0x80)
-					m_exit_stamp = curr_time_msec; //on key down only
+			    // Check if we have started a game yet.
+			    if (started() || (m_ptable->m_tblAutoStartEnabled == false))
+			    {
+				if (input->dwData & 0x80) { //on key down only
+					m_first_stamp = curr_time_msec;
+					m_exit_stamp = curr_time_msec;
+				}
 				
-				if ((input->dwData & 0x80) == 0)
-					g_pplayer->m_fCloseDown = fTrue; //on key up only
+				if ((input->dwData & 0x80) == 0) { //on key up only
+					m_exit_stamp = 0;
+					g_pplayer->m_fCloseDown = fTrue;
+				}
+			    }
 			}
 			else
 			{
