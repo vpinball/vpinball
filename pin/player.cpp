@@ -4313,13 +4313,11 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 							{
 							case ID_RESUME:
 								{
-								g_pplayer->m_pininput.m_exit_stamp = 0;
 								EndDialog(hwndDlg, ID_RESUME);
 								}
 								break;
 							case ID_DEBUGWINDOW:
 								{
-								g_pplayer->m_pininput.m_exit_stamp = 0;
 								if (g_pplayer->m_ptable->CheckPermissions(DISABLE_DEBUGGER))
 									{
 									EndDialog(hwndDlg, ID_RESUME);
