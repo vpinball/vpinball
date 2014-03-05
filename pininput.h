@@ -84,6 +84,8 @@ public:
     bool leftMouseButtonDown;
     bool rightMouseButtonDown;
 
+	U32 m_exit_stamp;
+
 private:
 	int started();
 	void Joy(const unsigned int n, const int updown, const bool start);
@@ -101,7 +103,6 @@ private:
 
 	int m_pressed_start;
 
-    U32 m_exit_stamp;
     U32 m_first_stamp;
 
 	int m_as_down;
