@@ -24,7 +24,7 @@ public:
 	bool m_IsVisible;
 	bool m_fAddBlend;
     bool m_wasVisible;
-    bool m_fDisplayTexture;
+    BOOL m_fDisplayTexture;
 	bool m_triggerUpdateRegion;
     bool m_triggerSingleUpdateRegion;
 };
