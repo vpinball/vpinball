@@ -125,6 +125,12 @@ void Flasher::SetDefaults(bool fromMouseClick)
    else
       m_d.m_fAddBlend = false;
 
+   hr = GetRegInt("DefaultProps\\Flasher","DisplayTexture", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_fDisplayTexture = (iTmp == 0) ? false : true;
+   else
+       m_d.m_fDisplayTexture = fFalse;
+
 }
 
 void Flasher::WriteRegDefaults()
@@ -151,6 +157,8 @@ void Flasher::WriteRegDefaults()
    SetRegValue("DefaultProps\\Flasher","Visible",REG_DWORD,&m_d.m_IsVisible,4);
    SetRegValue("DefaultProps\\Flasher","UpdateRegions",REG_DWORD,&m_d.m_triggerUpdateRegion,4);
    SetRegValue("DefaultProps\\Flasher","AddBlend",REG_DWORD,&m_d.m_fAddBlend,4);
+   SetRegValue("DefaultProps\\Flasher","DisplayTexture", REG_DWORD, &m_d.m_fDisplayTexture,4);
+
 }
 
 void Flasher::PreRender(Sur * const psur)
@@ -411,6 +419,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(FVIS), m_d.m_IsVisible);	
    bw.WriteBool(FID(TRUR), m_d.m_triggerUpdateRegion);
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
+   bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -513,6 +522,10 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
       BOOL iTmp;
       pbr->GetBool(&iTmp);
       m_d.m_fAddBlend = (iTmp==1);
+   }
+   else if (id == FID(DSPT))
+   {
+       pbr->GetBool(&m_d.m_fDisplayTexture);
    }
    else
    {
