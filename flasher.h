@@ -17,16 +17,12 @@ public:
     COLORREF m_color;
 	TimerDataRoot m_tdr;
 	char m_szImage[MAXTOKEN];
-    RECT m_boundRectangle;
 	float m_rotX,m_rotY,m_rotZ;
 
 	long m_fAlpha;
 	bool m_IsVisible;
 	bool m_fAddBlend;
-    bool m_wasVisible;
     BOOL m_fDisplayTexture;
-	bool m_triggerUpdateRegion;
-    bool m_triggerSingleUpdateRegion;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -92,6 +88,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
     virtual void GetCenter(Vertex2D * const pv) const {*pv = m_d.m_vCenter;}
     virtual void PutCenter(const Vertex2D * const pv) {m_d.m_vCenter = *pv; m_ptable->SetDirtyDraw();}
 
+    virtual bool IsTransparent()    { return true; }
+    virtual float GetDepth(const Vertex3Ds& viewDir)
+      { return viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height; }
+
 	void WriteRegDefaults();
 
 	PinTable *m_ptable;
@@ -99,10 +99,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 	FlasherData m_d;
 
 	VertexBuffer *dynamicVertexBuffer;
-	BOOL dynamicVertexBufferRegenerate;
     Material solidMaterial;
     Material textureMaterial;
     Vertex3D_NoLighting vertices[4];
+	bool dynamicVertexBufferRegenerate;
 
 // IFlasher
 public:
@@ -133,6 +133,7 @@ public:
     STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
 
+	//!! deprecated
 	STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(TriggerSingleUpdate)();

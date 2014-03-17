@@ -150,24 +150,24 @@ void ISelect::DoCommand(int icmd, int x, int y)
     }
 	switch (icmd)
     {
-        case ID_EDIT_DRAWINGORDER_HIT:
-            g_pvp->ShowDrawingOrderDialog(false);
-            break;
+		case ID_EDIT_DRAWINGORDER_HIT:
+			g_pvp->ShowDrawingOrderDialog(false);
+			break;
 		case ID_EDIT_DRAWINGORDER_SELECT:
-            g_pvp->ShowDrawingOrderDialog(true);
-            break;
+			g_pvp->ShowDrawingOrderDialog(true);
+			break;
 		case ID_DRAWINFRONT:
 			GetPTable()->m_vedit.RemoveElement(piedit);
 			GetPTable()->m_vedit.AddElement(piedit);
-            GetPTable()->m_layer[ layerIndex ].RemoveElement(piedit);
-            GetPTable()->m_layer[ layerIndex ].AddElement(piedit);
+			GetPTable()->m_layer[ layerIndex ].RemoveElement(piedit);
+			GetPTable()->m_layer[ layerIndex ].AddElement(piedit);
 			GetPTable()->SetDirtyDraw();
 			break;
 		case ID_DRAWINBACK:
 			GetPTable()->m_vedit.RemoveElement(piedit);
 			GetPTable()->m_vedit.InsertElementAt(piedit, 0);
-            GetPTable()->m_layer[ layerIndex ].RemoveElement(piedit);
-            GetPTable()->m_layer[ layerIndex ].InsertElementAt(piedit,0);
+			GetPTable()->m_layer[ layerIndex ].RemoveElement(piedit);
+			GetPTable()->m_layer[ layerIndex ].InsertElementAt(piedit,0);
 			GetPTable()->SetDirtyDraw();
 			break;
 		case ID_SETASDEFAULT:
@@ -338,14 +338,6 @@ void ISelect::Translate(Vertex2D *pvOffset)
 	vCenter.x += pvOffset->x;
 	vCenter.y += pvOffset->y;
 	PutCenter(&vCenter);
-	}
-
-void ISelect::GetCenter(Vertex2D * const pv) const
-	{
-	}
-
-void ISelect::PutCenter(const Vertex2D * const pv)
-	{
 	}
 
 HRESULT ISelect::GetTypeName(BSTR *pVal)

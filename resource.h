@@ -363,7 +363,6 @@
 #define ID_QUIT                         293
 #define IDD_PROPBUMPER_STATE            293
 #define ID_RESUME                       294
-#define IDC_CHECKBLIT                   295
 #define ID_DEBUGWINDOW                  295
 #define IDC_SHADOW                      296
 #define IDD_PHYSICS_OPTIONS             297
@@ -557,7 +556,6 @@
 #define IDR_REGISTRY4                   395
 #define IDC_CHECK3                      396
 #define IDC_PRIM_ENV_MAP                396
-#define IDC_VB_IN_VRAM                  396
 #define IDC_EDIT2                       397
 #define IDC_SIZE_HEIGHT                 397
 #define IDC_CHECK2                      398
@@ -609,6 +607,11 @@
 #define IDC_VP_HEIGHT                   422
 #define IDC_TABLE_DIM_LIST              423
 #define IDC_LIST3                       424
+#define IDC_FORCE_ANISO					425
+#define IDC_QFXAA                       426
+#define IDC_GLOBAL_3DSTEREO				427
+#define IDC_3D_STEREO_MS                428
+#define IDC_3D_STEREO_ZPD               429
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -666,12 +669,10 @@
 #define IDD_PROPRAMP_PHYSICS1           550
 #define IDD_PROPPRIMITIVE_PHYSICS       550
 #define IDS_INPUT                       551
-#define IDC_FXAA                        552
+#define IDC_FFXAA                       552
 #define IDS_UNHIDEALL                   552
-#define IDC_ENABLE_REGION_UPDATES       553
 #define IDS_HIDE                        553
 #define IDC_MODIFY3DSTEREO              554
-#define IDC_ENABLE_REGION_UPDATE_OPTIMIZATION 555
 #define IDC_ADDBLEND                    556
 #define IDC_ENABLELIGHTING              557
 #define IDC_LIGHT0AMBIENT               558
@@ -700,9 +701,6 @@
 #define IDC_SHADOW_COLOR                579
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_VISUALS_SOUND               581
-#define IDC_REGION_UPDATES_TABLE        582
-#define IDC_REGION_OPT_TABLE            583
-#define IDC_UPDATEREGIONS               584
 #define IDC_TABLEAVSYNC                 585
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500

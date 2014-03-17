@@ -67,9 +67,6 @@ void CodeViewer::Init(IScriptableHost *psh)
    m_hwndFind = NULL;
    m_hwndStatus = NULL;
 
-   m_lastline = -1;
-   m_previousline = -1;
-
    szFindString[0] = '\0';
    szReplaceString[0] = '\0';
 
@@ -1097,7 +1094,7 @@ void CodeViewer::FindCodeFromEvent()
       else
       {
          szLine[i+1] = '\0';
-         if (lstrcmpi(&szLine[i-2], "sub"))
+         if (lstrcmpi(&szLine[i-2], "sub")) //!! correct like this?
             fGoodMatch = false;
       }
 
@@ -1746,8 +1743,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                DWORD pos = SendMessage(hwndRE, SCI_GETCURRENTPOS, 0, 0);
                const DWORD line = SendMessage(hwndRE, SCI_LINEFROMPOSITION, pos, 0)+1;
                const DWORD column = SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
-
-               pcv->m_lastline = line;
 
                sprintf_s(szT, "Line %u, Col %u", line, column);
                SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (long)szT);

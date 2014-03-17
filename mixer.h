@@ -10,6 +10,5 @@ void mixer_get_volume();
 void mixer_update(const PinInput &pininput);
 
 void mixer_draw();
-void mixer_erase();
 
 #endif/* !__MIXER_H__ */

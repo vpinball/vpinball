@@ -17,6 +17,33 @@ public:
 
 	int m_timenextblink;
 	int m_iblinkframe;
+
+    void UpdateBlinker(int time_msec)
+    {
+        if (m_timenextblink <= time_msec)
+        {
+            m_iblinkframe++;
+            char cnew = m_rgblinkpattern[m_iblinkframe];
+            if (cnew == 0)
+            {
+                m_iblinkframe = 0;
+                cnew = m_rgblinkpattern[0];
+            }
+
+            DrawFrame(cnew == '1');
+            m_timenextblink += m_blinkinterval;
+        }
+    }
+
+    void RestartBlinker(int cur_time_msec)
+    {
+        m_iblinkframe = 0;
+        const char cnew = m_rgblinkpattern[m_iblinkframe];
+
+        DrawFrame(cnew == '1');
+        m_timenextblink = cur_time_msec + m_blinkinterval;
+    }
+
 	};
 
 class BumperData
@@ -124,10 +151,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
 	void		setLightStateBypass(const LightState newVal);
 	void		setLightState(const LightState newVal);
 //<<<
-    Vertex3D staticVertices[96];
-    Vertex3D moverVertices[2][160];
-    WORD     normalIndices[6*32];
-    WORD     indices[4*32];
+
+private:
+    VertexBuffer *vtxBuf;
+    IndexBuffer *idxBuf;
 
     Material topLitMaterial;
     Material topNonLitMaterial;
@@ -135,7 +162,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Bumper)
     Material sideNonLitMaterial;
     Material litMaterial;
     Material nonLitMaterial;
-    Material staticMaterial;
 
 	bool m_fLockedByLS;
 

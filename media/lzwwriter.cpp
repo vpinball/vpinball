@@ -62,7 +62,7 @@ HRESULT LZWWriter::CompressBits(int init_bits)
 	m_iPixelCur = 0;
 	m_iXCur = 0;
 
-	m_clear_flg = fFalse;
+	m_clear_flg = false;
 	
 	m_cur_accum = 0;
 	m_cur_bits = 0;

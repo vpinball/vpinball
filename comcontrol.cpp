@@ -916,10 +916,10 @@ void PinComControl::GetTimers(Vector<HitTimer> * const pvht)
 
 	m_pmcwPlayer->m_ppcc = this;
 
-	rcWnd.left = (int)((m_d.m_v1.x / 1000) * ppin3d->m_dwRenderWidth); // substitute 640 for play window width
-	rcWnd.top = (int)((m_d.m_v1.y / 750) * ppin3d->m_dwRenderHeight);
-	rcWnd.right = (int)((m_d.m_v2.x / 1000) * ppin3d->m_dwRenderWidth);
-	rcWnd.bottom = (int)((m_d.m_v2.y / 750) * ppin3d->m_dwRenderHeight);
+	rcWnd.left = (int)((m_d.m_v1.x / EDITOR_BG_WIDTH) * ppin3d->m_dwRenderWidth); // substitute play window width
+	rcWnd.top = (int)((m_d.m_v1.y / EDITOR_BG_HEIGHT) * ppin3d->m_dwRenderHeight);
+	rcWnd.right = (int)((m_d.m_v2.x / EDITOR_BG_WIDTH) * ppin3d->m_dwRenderWidth);
+	rcWnd.bottom = (int)((m_d.m_v2.y / EDITOR_BG_HEIGHT) * ppin3d->m_dwRenderHeight);
 
 	m_pmcwPlayer->SetRect(&rcWnd);
 
@@ -962,10 +962,6 @@ void PinComControl::RenderSetup(const RenderDevice* _pd3dDevice)
 }
 
 void PinComControl::RenderStatic(const RenderDevice* pd3dDevice)
-{
-}
-
-void PinComControl::RenderMovers(const RenderDevice* pd3dDevice)
 {
 }
 

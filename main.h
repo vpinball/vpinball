@@ -18,6 +18,8 @@
 using namespace MSAPC;
 #endif
 
+#include <assert.h>
+
 #include "math.h"
 
 #include "commctrl.h"
@@ -26,12 +28,18 @@ using namespace MSAPC;
 
 #include <atlctl.h>
 
-#define DIRECTINPUT_VERSION 0x0700
-#define D3D_OVERLOADS 1
-#include "dinput.h"
-#include "ddraw.h"
-#include "d3d.h"
-#include "dsound.h"
+#ifdef VP10
+ #define DIRECTINPUT_VERSION 0x0800
+#else
+ #define DIRECTINPUT_VERSION 0x0700
+#endif
+#include <dinput.h>
+#include <dsound.h>
+
+#ifdef _DEBUG
+ #define D3D_DEBUG_INFO
+#endif
+#include <d3d9.h>
 
 #include "stdio.h"
 #include "wchar.h"
@@ -46,6 +54,11 @@ using namespace MSAPC;
 using namespace std;
 
 #include "def.h"
+
+#include "math/vector.h"
+#include "math/matrix.h"
+#include "math/bbox.h"
+
 #include "resource.h"
 
 class HitTimer;
@@ -61,7 +74,6 @@ class PinBinary;
 
 #include "variant.h"
 #include "vector.h"
-#include "exvector.h"
 #include "vectorsort.h"
 #include "VBATest.h"
 #include "OLEAUTO.h"
@@ -86,7 +98,6 @@ class PinBinary;
 #include "media/wavread.h"
 #include "PinInput.h"
 #include "PinSound.h"
-#include "PinImage.h"
 #include "PinBinary.h"
 
 #include "VPinball.h"
@@ -105,7 +116,6 @@ class PinBinary;
 
 #include "BallEx.h"
 
-#include "pin/draw.h"
 #include "pin/collideex.h"
 #include "pin/ball.h"
 #include "pin/hittimer.h"
@@ -138,8 +148,11 @@ class PinBinary;
 #include "hid.h"
 #include "plumb.h"
 
+#include "kdtree.h"
+
 #include "wintimer.h"
 
 #include "slintf.h"
+#include "trace.h"
 
 #include "extern.h"

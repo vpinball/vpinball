@@ -1,13 +1,20 @@
 #include "StdAfx.h"
 
+const int numIndices = 294;
+
 Flipper::Flipper()
 {
    m_phitflipper = NULL;
-   vBufferArray=0;
+   vertexBuffer = NULL;
+   indexBuffer = NULL;
 }
 
 Flipper::~Flipper()
 {
+    if (vertexBuffer)
+        vertexBuffer->release();
+    if (indexBuffer)
+        indexBuffer->release();
 }
 
 HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -76,9 +83,9 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Flipper","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
+      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
    else
-      m_d.m_tdr.m_fTimerEnabled = false;
+      m_d.m_tdr.m_fTimerEnabled = fFalse;
 
    hr = GetRegInt("DefaultProps\\Flipper","TimerInterval", &iTmp);
    m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
@@ -209,50 +216,50 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    {
 	     char tmp[256];
 		 m_d.m_OverrideSpeed = 0.15f;
-	     sprintf_s(tmp,256,"FlipperPhysicsSpeed%u",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsSpeed%d",m_d.m_OverridePhysics-1);
          HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideSpeed);
          if (hr != S_OK)
             m_d.m_OverrideSpeed = 0.15f;
 
 		 m_d.m_OverrideStrength = 3.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsStrength%u",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsStrength%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideStrength);
          if (hr != S_OK)
             m_d.m_OverrideStrength = 3.f;
 
  		 m_d.m_OverrideElasticity = 0.55f;
-	     sprintf_s(tmp,256,"FlipperPhysicsElasticity%u",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsElasticity%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticity);
          if (hr != S_OK)
             m_d.m_OverrideElasticity = 0.55f;
 
   		 m_d.m_OverrideScatter = -11.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsScatter%u",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsScatter%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideScatter);
          if (hr != S_OK)
             m_d.m_OverrideScatter = -11.f;
 		 m_d.m_OverrideScatter = ANGTORAD(m_d.m_OverrideScatter);
 
   		 m_d.m_OverrideReturnStrength = 0.09f;
-	     sprintf_s(tmp,256,"FlipperPhysicsReturnStrength%u",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsReturnStrength%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideReturnStrength);
          if (hr != S_OK)
             m_d.m_OverrideReturnStrength = 0.09f;
 
 		 m_d.m_OverrideRecoil = 2.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsRecoil%u",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsRecoil%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideRecoil);
          if (hr != S_OK)
             m_d.m_OverrideRecoil = 2.f;
 
   		 m_d.m_OverridePowerLaw = 1.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsPowerLaw%u",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsPowerLaw%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverridePowerLaw);
          if (hr != S_OK)
             m_d.m_OverridePowerLaw = 1.f;
 
 		 m_d.m_OverrideOblique = 3.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsOblique%u",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsOblique%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideOblique);
          if (hr != S_OK)
             m_d.m_OverrideOblique = 3.f;
@@ -281,10 +288,10 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
 
    phf->m_pfe = NULL;
 
-   phf->m_flipperanim.m_frameStart = ANGTORAD(m_d.m_StartAngle);
-   phf->m_flipperanim.m_frameEnd = ANGTORAD(m_d.m_EndAngle);
-   phf->m_flipperanim.m_angleMin = min(phf->m_flipperanim.m_frameStart, phf->m_flipperanim.m_frameEnd);
-   phf->m_flipperanim.m_angleMax = max(phf->m_flipperanim.m_frameStart, phf->m_flipperanim.m_frameEnd);
+   const float angStart = ANGTORAD(m_d.m_StartAngle);
+   const float angEnd = ANGTORAD(m_d.m_EndAngle);
+   phf->m_flipperanim.m_angleMin = min(angStart, angEnd);
+   phf->m_flipperanim.m_angleMax = max(angStart, angEnd);
 
    phf->m_flipperanim.m_fEnabled = (m_d.m_fEnabled != 0);
    phf->m_flipperanim.m_fVisible = (m_d.m_fVisible != 0);
@@ -313,40 +320,34 @@ void Flipper::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
 void Flipper::EndPlay()
 {
-   if (m_phitflipper) // Failed player case
-   {
-      for (int i=0;i<m_phitflipper->m_flipperanim.m_vddsFrame.Size();i++)
-      {
-         delete m_phitflipper->m_flipperanim.m_vddsFrame.ElementAt(i);
-      }
+    if (m_phitflipper) // Failed player case
+    {
+        m_phitflipper = NULL;
+    }
+    if (vertexBuffer)
+    {
+        vertexBuffer->release();
+        vertexBuffer = NULL;
+    }
+    if (indexBuffer)
+    {
+        indexBuffer->release();
+        indexBuffer = NULL;
+    }
 
-      m_phitflipper = NULL;
-   }
-   if ( vBufferArray )
-   {
-      for( int i=0;i<maxFrames; i++ )
-      {
-         vBufferArray[i].vbuffer->release();
-         vBufferArray[i].vbuffer=0;
-      }
-      delete[] vBufferArray;
-      vBufferArray=0;
-   }
-   IEditable::EndPlay();
+    IEditable::EndPlay();
 }
 
-void Flipper::SetVertices(const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const
+void Flipper::SetVertices(float basex, float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const
 {
    const float fradius = m_d.m_FlipperRadius;
    const float fa = asinf((baseradius-endradius)/fradius); //face to centerline angle (center to center)
 
    const float faceNormOffset = (float)(M_PI/2.0) - fa; //angle of normal when flipper center line at angle zero	
 
-   const float basex = m_d.m_Center.x;
-   const float endx = m_d.m_Center.x + fradius*sinf(angle); //place end radius center
+   const float endx = basex + fradius*sinf(angle); //place end radius center
    pvEndCenter->x = endx;
-   const float basey = m_d.m_Center.y;
-   const float endy = m_d.m_Center.y - fradius*cosf(angle);	
+   const float endy = basey - fradius*cosf(angle);
    pvEndCenter->y = endy;
 
    const float faceNormx1 =  sinf(angle - faceNormOffset); // normals to new face positions
@@ -380,7 +381,7 @@ void Flipper::PreRender(Sur * const psur)
 
    Vertex2D vendcenter;
    Vertex2D rgv[4];
-   SetVertices(anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);	
+   SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
    psur->SetObject(this);
 
@@ -396,7 +397,7 @@ void Flipper::Render(Sur * const psur)
 
    Vertex2D vendcenter;
    Vertex2D rgv[4];
-   SetVertices(anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
+   SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
    psur->SetFillColor(RGB(192,192,192));
    psur->SetBorderColor(-1,false,0);
@@ -410,7 +411,7 @@ void Flipper::Render(Sur * const psur)
    psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
    psur->Arc(vendcenter.x, vendcenter.y, m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-   SetVertices(anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
+   SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
    psur->SetLineColor(RGB(128,128,128), true, 0);
 
@@ -441,7 +442,7 @@ void Flipper::Render(Sur * const psur)
 
    if (m_d.m_FlipperRadius != m_d.m_FlipperRadiusMax)
    {
-      SetVertices(anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
+      SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
       psur->SetObject(this);
 
@@ -451,7 +452,7 @@ void Flipper::Render(Sur * const psur)
       psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
       psur->Arc(vendcenter.x, vendcenter.y, m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-      SetVertices(anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
+      SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
       psur->SetLineColor(RGB(128,128,128), true, 0);
 
@@ -476,7 +477,7 @@ void Flipper::Render(Sur * const psur)
       m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - (m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
       m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
 
-      SetVertices(anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
+      SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
       psur->SetObject(this);
 
@@ -486,7 +487,7 @@ void Flipper::Render(Sur * const psur)
       psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
       psur->Arc(vendcenter.x, vendcenter.y, m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-      SetVertices(anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
+      SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
       psur->SetLineColor(RGB(128,128,128), true, 0);
 
@@ -606,135 +607,143 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
 
 void Flipper::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
-   if( m_d.m_fCompatibility )
-      return;
-   if (m_phitflipper && !m_phitflipper->m_flipperanim.m_fVisible)
-      return;
-   if (m_phitflipper == NULL && !m_d.m_fVisible)
-	   return;
-   const int frame = m_phitflipper->m_flipperanim.m_iframe;
-   if (frame == -1 || frame >= maxFrames)
-      return;
+    TRACE_FUNCTION();
+    /* HACK / VP9COMPAT:
+     * Some tables, say Scared Stiff by JPSalas/Highrise, use pure black flippers which
+     * are supposed to be invisible, and then draw the flippers using sprites on walls.
+     * We emulate this here by making a pure black flipper invisible.
+     */
+    if (m_d.m_color == 0 && m_d.m_rubbercolor == 0)
+        return;
 
-   RenderDevice* const pd3dDevice = (RenderDevice*)_pd3dDevice;
-   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); 
-   
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   ppin3d->SetTexture(NULL);
+    //if( m_d.m_fCompatibility )
+    //    return;
+    if (m_phitflipper && !m_phitflipper->m_flipperanim.m_fVisible)
+        return;
+    if (m_phitflipper == NULL && !m_d.m_fVisible)
+        return;
 
-   Material mat;
-   mat.setColor( 1.0f, m_d.m_color);
-   mat.set();
+    RenderDevice* const pd3dDevice = (RenderDevice*)_pd3dDevice;
+    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
+    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
-   //draw flipper
-   pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vBufferArray[frame].vbuffer, 0, 162, (LPWORD)indexBuffer, 270, 0 );
+    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+    ppin3d->SetTexture(NULL);
 
-   // render the rubber
-   mat.setColor( 1.0f, m_d.m_rubbercolor);
-   mat.set();
+    Material mat;
+    mat.setColor( 1.0f, m_d.m_color);
+    pd3dDevice->SetMaterial(mat);
 
-   //draw rubber
-   pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vBufferArray[frame].vbuffer, 162, 162, (LPWORD)indexBuffer, 270, 0 );
+    Matrix3D matOrig, matNew, matTemp;
+	pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+
+    matTemp.SetIdentity();
+    matTemp._41 = m_d.m_Center.x;
+    matTemp._42 = m_d.m_Center.y;
+    matOrig.Multiply(matTemp, matNew);
+
+    matTemp.RotateZMatrix(m_phitflipper->m_flipperanim.m_angleCur);
+    matNew.Multiply(matTemp, matNew);
+
+    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
+
+    // render flipper
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, 108, indexBuffer, 0, numIndices );
+
+    // render rubber
+    if (m_d.m_rubberthickness > 0)
+    {
+        mat.setColor( 1.0f, m_d.m_rubbercolor);
+        pd3dDevice->SetMaterial(mat);
+
+        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 108, 108, indexBuffer, 0, numIndices );
+    }
+
+    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
 }
+
 
 void Flipper::RenderSetup(const RenderDevice* _pd3dDevice)
 {
-  const unsigned long numVertices= 162*2; //*2 for flipper plus rubber
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-   _ASSERTE(m_phitflipper);
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+    const unsigned long numVertices= 108*2; //*2 for flipper plus rubber
+    // 12 + 16 + 32 + 16 + 32
+    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+    _ASSERTE(m_phitflipper);
+    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   setupMode=true;
-   if ( m_d.m_fCompatibility )
-   {
-      m_d.m_fEnabled = m_d.m_fVisible;
-   }
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
+    if ( m_d.m_fCompatibility )
+    {
+        m_d.m_fEnabled = m_d.m_fVisible;
+    }
+    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
-   ppin3d->ClearSpriteRectangle( &m_phitflipper->m_flipperanim, NULL );
+    const float anglerad = ANGTORAD(m_d.m_StartAngle);
+    const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
 
-   const float anglerad = ANGTORAD(m_d.m_StartAngle);
-   const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
+    ppin3d->SetTexture(NULL);
 
-   ppin3d->SetTexture(NULL);
+    if (!vertexBuffer)
+    {
+        pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_VERTEX, &vertexBuffer);
+    }
 
-   const int cframes = max(abs(((int)(m_d.m_EndAngle - m_d.m_StartAngle))/2),2);//10),2);
+    unsigned long ofs=0;
 
-   if( !vBufferArray )
-   {      
-      vBufferArray = new VertexBufferArray[cframes];
-      for( int i=0; i<cframes; i++ )
-      {
-         pd3dDevice->createVertexBuffer( numVertices, 0, MY_D3DFVF_VERTEX, &vBufferArray[i].vbuffer );
-         NumVideoBytes += numVertices*sizeof(Vertex3D); //!! never cleared up again here
-      }
-      maxFrames = cframes;
-   }
+    // 18 + 3*14 + 3*14 + 6*16*2 = 294
+    // first 6 quads: top/front/back sides (no bottom)
+    // next 14 tris:  base top cap
+    // next 14 tris:  end top cap
+    // next 16 quads: base mantle
+    // next 16 quads: end mantle
+    static WORD idx[numIndices]={0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11 };
+    for( int i=0;i<14;i++ )
+    {
+        idx[18 + i*3  ] = 12;
+        idx[18 + i*3+1] = 12+i+1;
+        idx[18 + i*3+2] = 12+i+2;
 
-   // Direct all renders to the back buffer.
-   //ppin3d->SetRenderTarget(g_pplayer->m_pin3d.m_pddsBackBuffer);
+        idx[60 + i*3  ] = 60;
+        idx[60 + i*3+1] = 60+i+1;
+        idx[60 + i*3+2] = 60+i+2;
+    }
 
-   const float inv_cframes = (anglerad2 - anglerad)/(float)(cframes-1);
-   // Pre-render each of the frames.
-   unsigned long ofs=0;
+    for(int i=0;i<16;i++ )
+    {
+        const WORD o = 2 * i;
 
-   static WORD idx[18+3*14+3*14+6*14*2]={0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11 };
-   for( int i=0;i<14;i++ )
-   {
-      idx[18+i*3  ] = 12;
-      idx[18+i*3+1] = 12+i+1;
-      idx[18+i*3+2] = 12+i+2;
-      idx[60+i*3  ] = 84;
-      idx[60+i*3+1] = 84+i+1;
-      idx[60+i*3+2] = 84+i+2;
-   }
+        idx[102 + i*6  ] = 28 + o;
+        idx[102 + i*6+1] = 28 + (o+1)%32;
+        idx[102 + i*6+2] = 28 + (o+2)%32;
+        idx[102 + i*6+3] = 28 + (o+1)%32;
+        idx[102 + i*6+4] = 28 + (o+3)%32;
+        idx[102 + i*6+5] = 28 + (o+2)%32;
 
-   WORD iidx[6*14*2];
-   WORD o=28;
-   for(int i=0;i<14;i++ )
-   {
-      iidx[i*6  ] = o;
-      iidx[i*6+1] = o+1;
-      iidx[i*6+2] = o+2;
-      iidx[i*6+3] = o;
-      iidx[i*6+4] = o+2;
-      iidx[i*6+5] = o+3;
+        idx[102 + 96 + i*6  ] = 76 + o;
+        idx[102 + 96 + i*6+1] = 76 + (o+1)%32;
+        idx[102 + 96 + i*6+2] = 76 + (o+2)%32;
+        idx[102 + 96 + i*6+3] = 76 + (o+1)%32;
+        idx[102 + 96 + i*6+4] = 76 + (o+3)%32;
+        idx[102 + 96 + i*6+5] = 76 + (o+2)%32;
+    }
 
-      iidx[84+i*6  ] = 72+o;
-      iidx[84+i*6+1] = 72+o+1;
-      iidx[84+i*6+2] = 72+o+2;
-      iidx[84+i*6+3] = 72+o;
-      iidx[84+i*6+4] = 72+o+2;
-      iidx[84+i*6+5] = 72+o+3;
-      o+=4;
-   }
-   memcpy( &idx[102], iidx, sizeof(WORD)*6*14*2);
-   memcpy( indexBuffer, idx, sizeof(WORD)*270);
+    if (indexBuffer)
+        indexBuffer->release();
+    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(numIndices, idx);
 
-   for (int i=0;i<cframes;i++)
-   {
-      const float angle = anglerad + inv_cframes*(float)i;
+    Vertex3D *buf;
+    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
 
-      ObjFrame * const pof = new ObjFrame();
+    // Render just the flipper (in standard position, angle=0)
+    RenderAtThickness(pd3dDevice, 0.0f, height, m_d.m_BaseRadius - (float)m_d.m_rubberthickness, m_d.m_EndRadius - (float)m_d.m_rubberthickness, m_d.m_height, buf);
 
-      ppin3d->ClearSpriteRectangle( NULL, pof );
+    // Render just the rubber.
+    if (m_d.m_rubberthickness > 0)
+    {
+        RenderAtThickness(pd3dDevice, 0.0f, height + (float)m_d.m_rubberheight, m_d.m_BaseRadius, m_d.m_EndRadius, (float)m_d.m_rubberwidth, buf+108);
+    }
 
-      // Render just the flipper.
-      RenderAtThickness(pd3dDevice, pof, angle,  height, m_d.m_BaseRadius - (float)m_d.m_rubberthickness, m_d.m_EndRadius - (float)m_d.m_rubberthickness, m_d.m_height, false, i );
-
-      // Render just the rubber.
-      if (m_d.m_rubberthickness > 0)
-      {
-         RenderAtThickness(pd3dDevice, pof, angle, height + (float)m_d.m_rubberheight, m_d.m_BaseRadius, m_d.m_EndRadius, (float)m_d.m_rubberwidth, true, i );// 34);
-      }
-      //ppin3d->CreateAndCopySpriteBuffers( &m_phitflipper->m_flipperanim, pof );
-      ppin3d->ExpandRectByRect(&m_phitflipper->m_flipperanim.m_rcBounds, &pof->rc);
-
-      m_phitflipper->m_flipperanim.m_vddsFrame.AddElement(pof);
-   }
-
+    vertexBuffer->unlock();
 }
 
 void Flipper::RenderStatic(const RenderDevice* pd3dDevice)
@@ -743,198 +752,137 @@ void Flipper::RenderStatic(const RenderDevice* pd3dDevice)
 
 static const WORD rgiFlipper1[4] = {0,4,5,1};
 static const WORD rgiFlipper2[4] = {2,6,7,3};
-void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, ObjFrame * const pof, const float angle, const float height, 
-                                const float baseradius, const float endradius, const float flipperheight, const bool isRubber, const int vBufferIndex)
+
+void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, float angle, float height,
+                                float baseradius, float endradius, float flipperheight, Vertex3D* buf)
 {
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   unsigned long offset=0;
+    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   Vertex2D vendcenter;
-   Vertex2D rgv[4];
-   SetVertices(angle, &vendcenter, rgv, baseradius, endradius);
+    Vertex2D vendcenter;
+    Vertex2D rgv[4];
+    SetVertices(0.0f, 0.0f, angle, &vendcenter, rgv, baseradius, endradius);
 
-   Vertex3D rgv3D[32];
-   for (int l=0;l<8;l++)
-   {
-      rgv3D[l].x = rgv[l&3].x;
-      rgv3D[l].y = rgv[l&3].y;
-      rgv3D[l].z = (l<4) ? height + flipperheight + 0.1f : height; // Make flippers a bit taller so they draw above walls
-      rgv3D[l].z *= m_ptable->m_zScale;
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-   }
+    Vertex3D rgv3D[32];
+    for (int l=0;l<8;l++)
+    {
+        rgv3D[l].x = rgv[l&3].x;
+        rgv3D[l].y = rgv[l&3].y;
+        rgv3D[l].z = (l<4) ? height + flipperheight + 0.1f : height; // Make flippers a bit taller so they draw above walls
+        rgv3D[l].z *= m_ptable->m_zScale;
+    }
+    ppin3d->CalcShadowCoordinates(rgv3D,8);
 
-   ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear, &m_phitflipper->m_flipperanim.m_zfar, 8, fFalse);
+    unsigned long offset = 0;
 
-   if( isRubber )
-      offset=162;
+    SetNormal(rgv3D, rgi0123, 3, NULL, NULL, 4);
+    // Draw top.
+    buf[offset ] = rgv3D[0];
+    buf[offset + 1] = rgv3D[1];
+    buf[offset + 2] = rgv3D[2];
+    buf[offset + 3] = rgv3D[3];
+    offset+=4;
+    SetNormal(rgv3D, rgiFlipper1, 3, NULL, NULL, 4);
+    // Draw front side wall.
+    buf[offset ] = rgv3D[0];
+    buf[offset + 1] = rgv3D[4];
+    buf[offset + 2] = rgv3D[5];
+    buf[offset + 3] = rgv3D[1];
+    offset+=4;
+    SetNormal(rgv3D, rgiFlipper2, 3, NULL, NULL, 4);
+    // Draw back side wall.
+    buf[offset ] = rgv3D[2];
+    buf[offset + 1] = rgv3D[6];
+    buf[offset + 2] = rgv3D[7];
+    buf[offset + 3] = rgv3D[3];
+    offset+=4;
 
-   Vertex3D *buf;
-   vBufferArray[vBufferIndex].vbuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE );
+    // offset = 12
 
-   SetNormal(rgv3D, rgi0123, 4, NULL, NULL, 0);
-   // Draw top.
-   buf[offset    ] = rgv3D[0];
-   buf[offset + 1] = rgv3D[1];
-   buf[offset + 2] = rgv3D[2];
-   buf[offset + 3] = rgv3D[3];
-   offset+=4;
-   SetNormal(rgv3D, rgiFlipper1, 4, NULL, NULL, 0);
-   // Draw front side wall of flipper (flipper and rubber).
-   buf[offset    ] = rgv3D[0];
-   buf[offset + 1] = rgv3D[4];
-   buf[offset + 2] = rgv3D[5];
-   buf[offset + 3] = rgv3D[1];
-   offset+=4;
-   SetNormal(rgv3D, rgiFlipper2, 4, NULL, NULL, 0);
-   // Draw back side wall.
-   buf[offset    ] = rgv3D[2];
-   buf[offset + 1] = rgv3D[6];
-   buf[offset + 2] = rgv3D[7];
-   buf[offset + 3] = rgv3D[3];
-   offset+=4;
+    // Base circle
+    for (int l=0;l<16;l++)
+    {
+        const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
+        rgv3D[l].x = /*m_d.m_Center.x*/ + sinf(anglel)*baseradius;
+        rgv3D[l].y = /*m_d.m_Center.y*/ - cosf(anglel)*baseradius;
+        rgv3D[l].z = height + flipperheight + 0.1f;
+        rgv3D[l].z *= m_ptable->m_zScale;
+        rgv3D[l+16].x = rgv3D[l].x;
+        rgv3D[l+16].y = rgv3D[l].y;
+        rgv3D[l+16].z = height;
+        rgv3D[l+16].z *= m_ptable->m_zScale;
+    }
+    ppin3d->CalcShadowCoordinates(rgv3D,32);
 
-   // Base circle
-   for (int l=0;l<16;l++)
-   {
-      const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
-      rgv3D[l].x = m_d.m_Center.x + sinf(anglel)*baseradius;
-      rgv3D[l].y = m_d.m_Center.y - cosf(anglel)*baseradius;
-      rgv3D[l].z = height + flipperheight + 0.1f;
-	  rgv3D[l].z *= m_ptable->m_zScale;
-      rgv3D[l+16].x = rgv3D[l].x;
-      rgv3D[l+16].y = rgv3D[l].y;
-      rgv3D[l+16].z = height;
-      rgv3D[l+16].z *= m_ptable->m_zScale;
+    // Draw end caps of cylinders of large ends.
+    WORD endCapsIndex[3*14];
+    for (int l=0;l<14;l++)
+    {
+        endCapsIndex[l*3 ] = 0;
+        endCapsIndex[l*3+1] = l+1;
+        endCapsIndex[l*3+2] = l+2;
+        SetNormal(rgv3D, endCapsIndex+l*3, 3, NULL, NULL, 0);
+    }
+    memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*16 );
+    offset += 16;
 
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16]);
-   }
+    // offset = 28
 
-   ppin3d->ExpandExtents(&pof->rc, rgv3D,&m_phitflipper->m_flipperanim.m_znear,
-      &m_phitflipper->m_flipperanim.m_zfar, 32, fFalse);
+    // Draw vertical cylinders at large end of flipper.
+    for (int l=0; l<16; l++)
+    {
+        // set normal according to cylinder surface
+        const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
+        rgv3D[l].nx = rgv3D[l+16].nx = /* VP9COMPAT + */ -sinf(anglel);
+        rgv3D[l].ny = rgv3D[l+16].ny = /* VP9COMPAT - */ +cosf(anglel);
+        rgv3D[l].nz = rgv3D[l+16].nz = 0.0f;
 
-   // Draw end caps of cylinders of large ends.
-   WORD endCapsIndex[3*14];
-   for (int l=0;l<14;l++)
-   {
-      endCapsIndex[l*3  ] = 0;
-      endCapsIndex[l*3+1] = l+1;
-      endCapsIndex[l*3+2] = l+2;
-      SetNormal(rgv3D, endCapsIndex+l*3, 3, NULL, NULL, 0);
-   }	
-   memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*16 );
-   offset+=16;
+        memcpy( &buf[offset], &rgv3D[l], sizeof(Vertex3D));
+        memcpy( &buf[offset+1], &rgv3D[l+16], sizeof(Vertex3D));
+        offset += 2;
+    }
 
-   for (int l=0;l<14;l++)
-   {
-      const WORD rgiNormal[6] = 
-      {
-         (l+15) % 16,
-         (l+15) % 16 + 16,
-         l+1,
-         l,
-         l+16,
-         (l+2) % 16
-      };
+    // offset = 60
 
-      const WORD rgi[4] = {l,l+16,l+1+16,l+1};
-      SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
-      SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-      // Draw vertical cylinders at large end of flipper.
-      memcpy( &buf[offset],   &rgv3D[l], sizeof(Vertex3D));
-      memcpy( &buf[offset+1], &rgv3D[l+16], sizeof(Vertex3D));
-      memcpy( &buf[offset+2], &rgv3D[l+1+16], sizeof(Vertex3D));
-      memcpy( &buf[offset+3], &rgv3D[l+1], sizeof(Vertex3D));
-      offset+=4;
-   }
+    // End circle.
+    for (int l=0;l<16;l++)
+    {
+        const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
+        rgv3D[l].x = vendcenter.x + sinf(anglel)*endradius;
+        rgv3D[l].y = vendcenter.y - cosf(anglel)*endradius;
+        rgv3D[l].z = height + flipperheight + 0.1f;
+        rgv3D[l].z *= m_ptable->m_zScale;
+        rgv3D[l+16].x = rgv3D[l].x;
+        rgv3D[l+16].y = rgv3D[l].y;
+        rgv3D[l+16].z = height;
+        rgv3D[l+16].z *= m_ptable->m_zScale;
+    }
+    ppin3d->CalcShadowCoordinates(rgv3D,32);
 
-   // End circle.
-   for (int l=0;l<16;l++)
-   {
-      const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
-      rgv3D[l].x = vendcenter.x + sinf(anglel)*endradius;
-      rgv3D[l].y = vendcenter.y - cosf(anglel)*endradius;
-      rgv3D[l].z = height + flipperheight + 0.1f;
-	  rgv3D[l].z *= m_ptable->m_zScale;
-	  rgv3D[l+16].x = rgv3D[l].x;
-      rgv3D[l+16].y = rgv3D[l].y;
-      rgv3D[l+16].z = height;
-      rgv3D[l+16].z *= m_ptable->m_zScale;
+    // Draw end caps to vertical cylinder at small end.
+    for (int l=0;l<14;l++)
+    {
+        SetNormal(rgv3D, endCapsIndex+l*3, 3, NULL, NULL, 0);
+    }
+    memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*16 );
+    offset += 16;
 
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l+16]);
-   }
+    // offset = 76
 
-   ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitflipper->m_flipperanim.m_znear, &m_phitflipper->m_flipperanim.m_zfar, 32, fFalse);
+    // Draw vertical cylinders at small end.
+    for (int l=0;l<16;l++)
+    {
+        const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
+        rgv3D[l].nx = rgv3D[l+16].nx = /* VP9COMPAT + */ -sinf(anglel);
+        rgv3D[l].ny = rgv3D[l+16].ny = /* VP9COMPAT - */ +cosf(anglel);
+        rgv3D[l].nz = rgv3D[l+16].nz = 0.0f;
 
-   // Draw end caps to vertical cylinder at small end.
-   for (int l=0;l<14;l++)
-   {
-      SetNormal(rgv3D, endCapsIndex+l*3, 3, NULL, NULL, 0);
-   }
-   memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*16 );
-   offset+=16;
+        memcpy( &buf[offset], &rgv3D[l], sizeof(Vertex3D));
+        memcpy( &buf[offset+1], &rgv3D[l+16], sizeof(Vertex3D));
+        offset += 2;
+    }
 
-   for (int l=0;l<14;l++)
-   {
-      const WORD rgiNormal[6] = {
-         (l+15) % 16,
-         (l+15) % 16 + 16,
-         l+1,
-         l,
-         l+16,
-         (l+2) % 16};
-
-         const WORD rgi[4] = {l,l+16,l+1+16,l+1};
-         SetNormal(rgv3D, rgiNormal, 3, NULL, rgi, 2);
-         SetNormal(rgv3D, &rgiNormal[3], 3, NULL, &rgi[2], 2);
-         // Draw vertical cylinders at small end.
-         memcpy( &buf[offset],   &rgv3D[l], sizeof(Vertex3D));
-         memcpy( &buf[offset+1], &rgv3D[l+16], sizeof(Vertex3D));
-         memcpy( &buf[offset+2], &rgv3D[l+1+16], sizeof(Vertex3D));
-         memcpy( &buf[offset+3], &rgv3D[l+1], sizeof(Vertex3D));
-         offset+=4;
-   }
-   vBufferArray[vBufferIndex].vbuffer->unlock();
-}
-
-void Flipper::RenderMovers(const RenderDevice* _pd3dDevice)
-{
-   if (!m_d.m_fCompatibility )
-      return;
-   if ( m_d.m_fCompatibility && !setupMode )
-      return;
-
-   setupMode=false;
-   
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-
-   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE); 
-
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   ppin3d->SetTexture(NULL);
-   for( int i=0;i<maxFrames; i++ )
-   {
-      Material mat;
-      mat.setColor( 1.0f, m_d.m_color);
-      mat.set();
-
-      //draw flipper
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vBufferArray[i].vbuffer, 0, 162, (LPWORD)indexBuffer, 270, 0 );
-
-      // render the rubber
-      mat.setColor( 1.0f, m_d.m_rubbercolor);
-      mat.set();
-
-      //draw rubber
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLELIST, vBufferArray[i].vbuffer, 162, 162, (LPWORD)indexBuffer, 270, 0 );
-
-      ppin3d->CreateAndCopySpriteBuffers( &m_phitflipper->m_flipperanim, m_phitflipper->m_flipperanim.m_vddsFrame.ElementAt(i) );
-
-   }
+    // offset = 108
 }
 
 
@@ -1062,12 +1010,10 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(COLR))
    {
       pbr->GetInt(&m_d.m_color);
-      //if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
    }
    else if (id == FID(FCLR))
    {
       pbr->GetInt(&m_d.m_rubbercolor);
-      //if (!(m_d.m_rubbercolor & MINBLACKMASK)) {m_d.m_rubbercolor |= MINBLACK;}	// set minimum black
    }
    else if (id == FID(NAME))
    {

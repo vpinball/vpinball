@@ -5,27 +5,25 @@ class Surface;
 class BumperAnimObject : public AnimObject
 {
 public:
-	virtual void Check3D();
-	virtual ObjFrame *Draw3D(const RECT * const prc);
+	virtual void Check3D()   { }
+	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 	virtual void Reset();
+    void UpdateAnimation();
 
 	int m_iframe;
-	int m_TimeReset; // Time at which to turn off light
+	U32 m_TimeReset; // Time at which to turn off light
 	int m_iframedesired;
 	BOOL m_fAutoTurnedOff;
 	BOOL m_fDisabled;
 	BOOL m_fVisible;
-
-	ObjFrame *m_pobjframe[2];
 };
 
 class BumperHitCircle : public HitCircle
 {
 public:
 	BumperHitCircle();
-	virtual ~BumperHitCircle();
 
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual void Collide(CollisionEvent* coll);
 
 	virtual AnimObject *GetAnimObject() {return &m_bumperanim;}
 
@@ -38,13 +36,11 @@ class SlingshotAnimObject : public AnimObject
 {
 public:
 	virtual void Check3D();
-	virtual ObjFrame *Draw3D(const RECT * const prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 	virtual void Reset();
 
-	ObjFrame *m_pobjframe;
-
 	int m_iframe;
-	int m_TimeReset; // Time at which to pull in slingshot
+	U32 m_TimeReset; // Time at which to pull in slingshot
 	bool m_fAnimations;
 };
 
@@ -52,10 +48,9 @@ class LineSegSlingshot : public LineSeg
 {
 public:
 	LineSegSlingshot();
-	virtual ~LineSegSlingshot();
 
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+	virtual void Collide(CollisionEvent* coll);
 
 	virtual AnimObject *GetAnimObject() {return &m_slingshotanim;}
 
@@ -71,17 +66,29 @@ class Hit3DPoly : public HitObject
 public:
 	Hit3DPoly(Vertex3Ds * const rgv, const int count);
 	virtual ~Hit3DPoly();
-	virtual float HitTestBasicPolygon(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool rigid);
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual int GetType() const {return e3DPoly;}
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
-	void CalcNormal();
+	virtual void Collide(CollisionEvent *coll);
 	virtual void CalcHitRect();
 
 	Vertex3Ds *m_rgv;
 	Vertex3Ds normal;
-	float D; // D for the plane equation.  A,B, and C are the plane normal (A x' + B y' + C z' = D, normal= x',y'+z'
 	int m_cvertex;
+	BOOL m_fVisible; // for ball shadows
+};
+
+class HitTriangle : public HitObject
+{
+public:
+	HitTriangle(const Vertex3Ds rgv[3]);
+	virtual ~HitTriangle() {}
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+	virtual int GetType() const {return eTriangle;}
+	virtual void Collide(CollisionEvent* coll);
+	virtual void CalcHitRect();
+
+	Vertex3Ds m_rgv[3];
+	Vertex3Ds normal;
 	BOOL m_fVisible; // for ball shadows
 };
 
@@ -93,15 +100,10 @@ public:
 
 	virtual bool FMover() const {return true;}
 
-	virtual void Check3D();
-	virtual ObjFrame *Draw3D(const RECT * const prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 	virtual void Reset();
 
-	Vector<ObjFrame> m_vddsFrame;
-
 	Spinner *m_pspinner;
-
-	int m_iframe; //Frame index that this spinner is currently displaying
 
 	float m_anglespeed;
 	float m_angle;
@@ -120,9 +122,9 @@ public:
 
 	virtual int GetType() const {return eSpinner;}
 
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual void Collide(CollisionEvent* coll);
 
 	virtual void CalcHitRect();
 
@@ -141,15 +143,10 @@ public:
 
 	virtual bool FMover() const {return true;}
 
-	virtual void Check3D();
-	virtual ObjFrame *Draw3D(const RECT * const prc);
+	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 	virtual void Reset();
 
-	Vector<ObjFrame> m_vddsFrame;
-
 	Gate *m_pgate;
-
-	int m_iframe; //Frame index that this flipper is currently displaying
 
 	float m_anglespeed;
 	float m_angle;
@@ -167,9 +164,9 @@ public:
 
 	virtual int GetType() const {return eGate;}
 
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual void Collide(CollisionEvent* coll);
 
 	virtual AnimObject *GetAnimObject() {return &m_gateanim;}
 
@@ -183,8 +180,8 @@ class TriggerLineSeg : public LineSeg
 public:
 	TriggerLineSeg();
 
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+	virtual void Collide(CollisionEvent* coll);
 
 	virtual int GetType() const {return eTrigger;}
 
@@ -196,8 +193,8 @@ class TriggerHitCircle : public HitCircle
 public:
 	TriggerHitCircle();
 
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+	virtual void Collide(CollisionEvent* coll);
 
 	virtual int GetType() const {return eTrigger;}
 
@@ -209,8 +206,8 @@ class Hit3DCylinder : public HitCircle
 public:
 	Hit3DCylinder(const Vertex3Ds * const pv1, const Vertex3Ds * const pv2, const Vertex3Ds * const pvnormal);
 
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+	virtual void Collide(CollisionEvent* coll);
 
 	virtual void CalcHitRect();
 
@@ -226,35 +223,10 @@ public:
 	float transangle;
 };
 
-class PolyDropAnimObject : public AnimObject
-{
-public:
-	virtual void Check3D();
-	virtual ObjFrame *Draw3D(const RECT * const prc);
-	virtual void Reset();
-
-	int m_iframe;
-	int m_TimeReset; // Time at which to turn off light
-
-	int m_iframedesire; // Frame we want to be at
-
-	ObjFrame *m_pobjframe[2];
-};
-
-class Hit3DPolyDrop : public Hit3DPoly
-{
-public:
-	Hit3DPolyDrop(Vertex3Ds * const rgv, const int count);
-
-	virtual AnimObject *GetAnimObject() {return &m_polydropanim;}
-
-	PolyDropAnimObject m_polydropanim;
-};
 
 class TextboxAnimObject : public AnimObject
 {
 public:
-	virtual void Check3D() {}
 	virtual ObjFrame *Draw3D(const RECT * const prc);
 	virtual void Reset();
 
@@ -270,8 +242,8 @@ public:
 	virtual int GetType() const {return eTextbox;}
 
 	// Bogus methods
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal) {}
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) {return -1;}
+	virtual void Collide(CollisionEvent* coll) {}
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) {return -1;}
 	virtual void CalcHitRect() {}
 
 	virtual AnimObject *GetAnimObject() {return &m_textboxanim;}
@@ -282,8 +254,8 @@ public:
 class DispReelAnimObject : public AnimObject
 {
 public:
-    virtual void Check3D(); //{}
-	virtual ObjFrame *Draw3D(const RECT * const prc);
+    virtual void Check3D();
+	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 	virtual void Reset();
 
 	DispReel *m_pDispReel;
@@ -298,8 +270,8 @@ public:
 	virtual int GetType() const {return eDispReel;}
 
 	// Bogus methods
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal) {}
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) {return -1;}
+	virtual void Collide(CollisionEvent* coll) {}
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) {return -1;}
 	virtual void CalcHitRect() {}
 
 	virtual AnimObject *GetAnimObject() {return &m_dispreelanim;}
@@ -310,8 +282,8 @@ public:
 class LightSeqAnimObject : public AnimObject
 {
 public:
-    virtual void Check3D(); //{}
-	virtual ObjFrame *Draw3D(const RECT * const prc);
+    virtual void Check3D();
+	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 
 	LightSeq *m_pLightSeq;
 };
@@ -325,8 +297,8 @@ public:
 	virtual int GetType() const {return eLightSeq;}
 
 	// Bogus methods
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal) {}
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) {return -1;}
+	virtual void Collide(CollisionEvent* coll) {}
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) {return -1;}
 	virtual void CalcHitRect() {}
 
 	virtual AnimObject *GetAnimObject() {return &m_lightseqanim;}

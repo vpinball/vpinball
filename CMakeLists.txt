@@ -41,12 +41,13 @@ endmacro(add_msvc_precompiled_header)
 #
 set(DirectX_FOUND "NO")
 if(WIN32)
-  find_path(DirectX_INCLUDE_DIR "d3d.h"
+  find_path(DirectX_INCLUDE_DIR "d3dx9.h"
     "$ENV{DXSDK_DIR}/Include"
     "C:/Program Files/Microsoft DirectX SDK (August 2007)/Include"
     "C:/Programme/Microsoft DirectX SDK (August 2007)/Include"
     "C:/Program Files/Microsoft DirectX SDK (February 2007)/Include"
     "C:/Program Files (x86)/Microsoft DirectX SDK (August 2007)/Include"
+    "C:/DirectX-SDK-2007/Include"
     )
 
   find_path(DirectX_LIB_DIR "dinput.lib"
@@ -55,6 +56,7 @@ if(WIN32)
     "C:/Programme/Microsoft DirectX SDK (August 2007)/Lib/x86"
     "C:/Program Files/Microsoft DirectX SDK (February 2007)/Lib/x86"
     "C:/Program Files (x86)/Microsoft DirectX SDK (August 2007)/Lib/x86"
+    "C:/DirectX-SDK-2007/Lib/x86"
     )
 
   if(DirectX_INCLUDE_DIR AND DirectX_LIB_DIR)
@@ -78,11 +80,13 @@ endif()
 find_path(ATL_BASEPATH atlbase.h HINTS
   "C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Include/atl"
   "C:/Programme/Microsoft Platform SDK for Windows Server 2003 R2/Include/atl"
+  "C:/WinDDK7.1/inc/atl71"
   DOC "ATL Include Directory"
   )
 find_path(MFC_BASEPATH winres.h HINTS
   "C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Include/mfc"
   "C:/Programme/Microsoft Platform SDK for Windows Server 2003 R2/Include/mfc"
+  "C:/WinDDK7.1/inc/mfc42"
   DOC "MFC Include Directory"
   )
 
@@ -113,15 +117,16 @@ set(SOURCES
   flasher.cpp
   flipper.cpp
   gate.cpp
+  hash.cpp
   hid.cpp
   hitrectsur.cpp
   hitsur.cpp
   ieditable.cpp
   iselect.cpp
+  kdtree.cpp
   kicker.cpp
   light.cpp
   lightseq.cpp
-  Material.cpp
   memutil.cpp
   mesh.cpp
   mixer.cpp
@@ -129,7 +134,6 @@ set(SOURCES
   paintsur.cpp
   pin3d.cpp
   pinbinary.cpp
-  pinimage.cpp
   pininput.cpp
   pinsound.cpp
   pintable.cpp
@@ -138,6 +142,7 @@ set(SOURCES
   plunger.cpp
   primitive.cpp
   propbrowser.cpp
+  quadtree.cpp
   ramp.cpp
   regutil.cpp
   RenderDevice.cpp
@@ -166,6 +171,7 @@ set(SOURCES
   media/lzwreader.cpp
   media/lzwwriter.cpp
   media/wavread.cpp
+  math/matrix.cpp
   )
 
 set(HEADERS
@@ -185,7 +191,6 @@ set(HEADERS
   dragpoint.h
   eventproxy.h
   extern.h
-  exvector.h
   flipper.h
   freeimage.h
   gate.h
@@ -199,6 +204,7 @@ set(HEADERS
   idebug.h
   ieditable.h
   iselect.h
+  kdtree.h
   kicker.h
   light.h
   lightseq.h
@@ -210,7 +216,6 @@ set(HEADERS
   paintsur.h
   pin3d.h
   pinbinary.h
-  pinimage.h
   pininput.h
   pinsound.h
   pintable.h
@@ -219,6 +224,7 @@ set(HEADERS
   plunger.h
   primitive.h
   propbrowser.h
+  quadtree.h
   ramp.h
   regutil.h
   resource.h
@@ -243,7 +249,6 @@ set(HEADERS
   pin/ball.h
   pin/collide.h
   pin/collideex.h
-  pin/draw.h
   pin/hitable.h
   pin/hitflipper.h
   pin/hitplunger.h
@@ -253,6 +258,9 @@ set(HEADERS
   media/lzwreader.h
   media/lzwwriter.h
   media/wavread.h
+  math/matrix.h
+  math/vector.h
+  math/bbox.h
   )
 
 set(RC_RESOURCE
@@ -297,29 +305,33 @@ include_directories(${ATL_BASEPATH} ${MFC_BASEPATH})
 add_definitions(-D_ATL_STATIC_REGISTRY -D_WIN32_WINNT=0x0501 /Yu"stdafx.h")
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
 string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DCOR_ENABLE_PROFILING /DMYDEBUG /D_DEBUGPHYSICS /MTd")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /Ox /Ob2 /Oi /Ot /GL /GF /GS- /GR- /fp:fast")
-set(CMAKE_CXX_FLAGS_RELWITHSSE "${CMAKE_CXX_FLAGS_RELWITHSSE} /MT /Ox /Ob2 /Oi /Ot /GL /GF /GS- /GR- /fp:fast /arch:SSE")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MT /Ox /Ob2 /Oi /Ot /GR-")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBC;atlthunk")
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /NODEFAULTLIB:LIBCMT;LIBCD")
+string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+set(CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG}          /MTd /D_DEBUGPHYSICS")
+set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE}        /MT /O2 /GL /GS- /GR- /fp:fast")
+set(CMAKE_CXX_FLAGS_RELWITHSSE     "${CMAKE_CXX_FLAGS_RELWITHSSE}     /MT /O2 /GL /GS- /GR- /fp:fast /arch:SSE")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MT /O2 /GR-")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBC;atlthunk /LARGEADDRESSAWARE")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /NODEFAULTLIB:LIBCMT")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG")
 set(CMAKE_EXE_LINKER_FLAGS_RELWITHSSE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG")
 
 
+find_library(LIB_NVAPI nvapi.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_DXGUID dxguid.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_FREEIMAGE freeimage.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_DSOUND dsound.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_DINPUT dinput.lib PATHS ${DirectX_LIB_DIR})
+find_library(LIB_D3DX9 d3dx9.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_XAUDIO xaudio.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_HID hid.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 
 LINK_DIRECTORIES(C:/WinDDK7.1/Lib/atl/i386)
 
 add_executable(${NAME} WIN32 ${SOURCES} ${HEADERS} ${RC_RESOURCE})
-target_link_libraries(${NAME} comctl32.lib ${LIB_DXGUID} ${LIB_FREEIMAGE} ${LIB_DSOUND} winmm.lib ${LIB_DINPUT} 
+target_link_libraries(${NAME} comctl32.lib ${LIB_NVAPI} ${LIB_DXGUID} ${LIB_FREEIMAGE} ${LIB_DSOUND} winmm.lib ${LIB_DINPUT} ${LIB_D3DX9}
   ${LIB_XAUDIO} imm32.lib setupapi.lib ${LIB_HID})
 
 

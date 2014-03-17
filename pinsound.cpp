@@ -58,7 +58,7 @@ BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
     ad->description = desc;
     ad->module = mod;
     (static_cast<DSAudioDevices*>(list))->push_back(ad);
-    return true;
+    return fTrue;
 }
 
 void PinDirectSound::InitDirectSound(HWND hwnd, bool IsBackglass)
@@ -85,6 +85,10 @@ void PinDirectSound::InitDirectSound(HWND hwnd, bool IsBackglass)
 		ShowError("Could not create Direct Sound.");
         return;// hr;
 		}
+
+    // free audio devices list
+    for (size_t i=0; i<DSads.size(); i++)
+        delete DSads[i];
 
     // Set coop level to DSSCL_PRIORITY
     if( FAILED( hr = m_pDS->SetCooperativeLevel( hwnd, DSSCL_PRIORITY ) ) )

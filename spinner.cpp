@@ -8,13 +8,23 @@ Spinner::Spinner()
    staticMaterial.setSpecular( 0.0f, 0.0f, 0.0f, 0.0f );
    staticMaterial.setEmissive( 0.0f, 0.0f, 0.0f, 0.0f );
    staticMaterial.setPower( 0.0f );
-   moverVertices = 0;
+
+   vtxBuf = 0;
+   idxBuf = 0;
 }
 
 Spinner::~Spinner()
 {
-	if(moverVertices)
-		delete [] moverVertices;
+   if (vtxBuf)
+   {
+       vtxBuf->release();
+       vtxBuf = 0;
+   }
+   if (idxBuf)
+   {
+       idxBuf->release();
+       idxBuf = 0;
+   }
 }
 
 HRESULT Spinner::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -57,7 +67,6 @@ void Spinner::WriteRegDefaults()
    SetRegValue("DefaultProps\\Spinner","Friction", REG_SZ, &strTmp,strlen(strTmp));
    sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
    SetRegValue("DefaultProps\\Spinner","Scatter", REG_SZ, &strTmp,strlen(strTmp));
-   SetRegValue("DefaultProps\\Spinner","Animations", REG_DWORD, &m_d.m_animations, 4);
    SetRegValue("DefaultProps\\Spinner","Visible",REG_DWORD,&m_d.m_fVisible,4);
    SetRegValue("DefaultProps\\Spinner","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Spinner","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
@@ -146,12 +155,6 @@ void Spinner::SetDefaults(bool fromMouseClick)
       m_d.m_scatter = fTmp;
    else
       m_d.m_scatter = 0;	//zero uses global value
-
-   hr = GetRegInt("DefaultProps\\Spinner","Animations", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_animations = iTmp;
-   else
-      m_d.m_animations = 0;	// manual selection of the animations frame count
 
    hr = GetRegInt("DefaultProps\\Spinner","Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -307,32 +310,140 @@ void Spinner::GetHitShapesDebug(Vector<HitObject> * const pvho)
 void Spinner::EndPlay()
 {
    IEditable::EndPlay();
+   m_phitspinner = NULL;
 
-   if (m_phitspinner) // Failed Player case
+   if (vtxBuf)
    {
-      for (int i=0;i<m_phitspinner->m_spinneranim.m_vddsFrame.Size();i++)
-      {
-         delete m_phitspinner->m_spinneranim.m_vddsFrame.ElementAt(i);
-      }
-
-      m_phitspinner = NULL;
+       vtxBuf->release();
+       vtxBuf = 0;
    }
-}
-
-void Spinner::PostRenderStatic(const RenderDevice* pd3dDevice)
-{
+   if (idxBuf)
+   {
+       idxBuf->release();
+       idxBuf = 0;
+   }
 }
 
 static const WORD rgiSpinner0[8] = {0,1,2,3,6,7,4,5};
 static const WORD rgiSpinner1[8] = {4,5,6,7,2,3,0,1};
 static const WORD rgiSpinnerNormal[3] = {0,1,3};
 
-static const WORD rgiSpinner2[4] = {0,1,5,4};
-static const WORD rgiSpinner3[4] = {2,6,7,3};
-static const WORD rgiSpinner4[4] = {0,2,3,1};
-static const WORD rgiSpinner5[4] = {4,5,7,6};
-static const WORD rgiSpinner6[4] = {0,4,6,2};
-static const WORD rgiSpinner7[4] = {1,3,7,5};
+static const WORD rgiSpinner2[4] = {0,1,5,4};      // back
+static const WORD rgiSpinner3[4] = {2,6,7,3};      // front
+static const WORD rgiSpinner4[4] = {0,2,3,1};      // bottom
+static const WORD rgiSpinner5[4] = {4,5,7,6};      // top
+static const WORD rgiSpinner6[4] = {0,4,6,2};      // left
+static const WORD rgiSpinner7[4] = {1,3,7,5};      // right
+
+void Spinner::PostRenderStatic(const RenderDevice* _pd3dDevice)
+{
+    TRACE_FUNCTION();
+    if (!m_phitspinner->m_spinneranim.m_fVisible)
+        return;
+
+    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+    RenderDevice *pd3dDevice = (RenderDevice*)_pd3dDevice;
+
+    COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
+
+    Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
+    Texture * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+
+    g_pplayer->m_pin3d.EnableAlphaTestReference(0x80);
+
+    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
+
+    // set world transform
+    Matrix3D matOrig, matNew, matTemp;
+    pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+
+    matTemp.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
+    matOrig.Multiply(matTemp, matNew);
+
+    matTemp.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+    matNew.Multiply(matTemp, matNew);
+
+    matTemp.RotateXMatrix(-m_phitspinner->m_spinneranim.m_angle);
+    matNew.Multiply(matTemp, matNew);
+
+    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
+    //
+
+    // Draw Backside
+    if (pinback)
+    {
+        pinback->Set( ePictureTexture );
+        if (pinback->m_fTransparent)
+        {
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+            if (m_d.m_color != rgbTransparent) rgbTransparent = pinback->m_rgbTransparent;
+        }
+        else 
+        {
+            g_pplayer->m_pin3d.EnableAlphaBlend( 1, fFalse );
+        } 
+
+        if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+        else
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
+        g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+        pd3dDevice->SetMaterial(textureMaterial);
+    }
+    else // No image by that name
+    {
+        ppin3d->SetTexture(NULL);
+        pd3dDevice->SetMaterial(solidMaterial);
+    }
+
+    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 0, 4);
+
+    // Draw Frontside
+    if (pinfront)
+    {
+        pinfront->Set( ePictureTexture );
+        if (pinfront->m_fTransparent)
+        {
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);	
+            if (m_d.m_color != rgbTransparent) rgbTransparent = pinfront->m_rgbTransparent;
+        }
+        else 
+        {
+            g_pplayer->m_pin3d.EnableAlphaBlend( 1, fFalse );
+        }
+
+        if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+        else
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
+        g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+        pd3dDevice->SetMaterial(textureMaterial);
+    }
+    else // No image by that name
+    {
+        ppin3d->SetTexture(NULL);
+        pd3dDevice->SetMaterial(solidMaterial);
+    }
+
+    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 4, 4);
+
+    pd3dDevice->SetMaterial(solidMaterial);
+
+    if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
+    {
+        ppin3d->SetTexture(NULL);
+        pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 8, 16, idxBuf, 0, 24);
+    }
+
+    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+
+    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
+}
 
 void Spinner::PrepareStatic( RenderDevice* pd3dDevice )
 {
@@ -396,9 +507,8 @@ void Spinner::PrepareStatic( RenderDevice* pd3dDevice )
       staticVertices[l].y += m_d.m_vCenter.y;
       staticVertices[l].z += height;
       staticVertices[l].z *= m_ptable->m_zScale;
-      ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l]);
    }
-
+   ppin3d->CalcShadowCoordinates(staticVertices,8);
 }
 
 void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
@@ -409,129 +519,85 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float h = (m_d.m_height*0.5f + 30.0f);
-
-   Texture* const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-   Texture* const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
-
-   float maxtuback, maxtvback;
-   float maxtufront, maxtvfront;
-   if (pinback)
-   {
-      m_ptable->GetTVTU(pinback, &maxtuback, &maxtvback);
-   }
-   else
-   {
-      maxtuback = maxtvback = 1.0f;
-   }
-
-   if (pinfront)
-   {
-      m_ptable->GetTVTU(pinfront, &maxtufront, &maxtvfront);
-   }
-   else
-   {
-      maxtufront = maxtvfront = 1.0f;
-   }
-
-   int cframes;
-   if (m_d.m_animations > 0) cframes = m_d.m_animations;
-   else if (m_d.m_angleMax != m_d.m_angleMin)
-   {
-      cframes = (int)((m_d.m_angleMax - m_d.m_angleMin)*(float)((20-1)/90.0) + 1.5f); // 15 frames per 90 degrees
-   }
-   else cframes = 80;
+   m_posZ = (h + height) * m_ptable->m_zScale;
 
    const float halflength = m_d.m_length * 0.5f;
    const float halfwidth = m_d.m_height * 0.5f;
-
-   ppin3d->ClearExtents(&m_phitspinner->m_spinneranim.m_rcBounds, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar);
 
    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
-   const float inv_cframes = 1.0f/(float)cframes;
+   const float minx = -halflength;
+   const float maxx = halflength;
+   const float miny = -3.0f;
+   const float maxy = 3.0f;
+   const float minz = -halfwidth;
+   const float maxz = halfwidth;
 
-   frameCount=cframes;
-   if(moverVertices)
-	   delete [] moverVertices;
-   moverVertices = new Vertex3D[8*frameCount];
-   int ofs=0;
-   for ( int i=0;i<cframes;i++,ofs+=8 )
+   Vertex3D moverVertices[8];
+
+   for (int l=0;l<8;l++)
    {
-      float angle;
-      if (m_d.m_angleMax != m_d.m_angleMin)
-         angle = ANGTORAD(m_d.m_angleMin + (m_d.m_angleMax - m_d.m_angleMin)*inv_cframes*(float)i);
-      else angle = (float)(2.0*M_PI)*inv_cframes*(float)i;
+       moverVertices[l].x = (l & 1) ? maxx : minx;
+       moverVertices[l].y = (l & 2) ? maxy : miny;
+       moverVertices[l].z = (l & 4) ? maxz : minz;
 
-      const float radangle = ANGTORAD(m_d.m_rotation);
-      const float snY = sinf(radangle);
-      const float csY = cosf(radangle);
-
-      const float snTurn = sinf(angle);
-      const float csTurn = cosf(angle);
-
-      const float minx = -halflength;
-      const float maxx = halflength;
-      const float miny = -3.0f;
-      const float maxy = 3.0f;
-      const float minz = -halfwidth;
-      const float maxz = halfwidth;
-
-      Vertex3D *rgv3D=&moverVertices[ofs];
-      for (int l=0;l<8;l++)
-      {
-         rgv3D[l].x = (l & 1) ? maxx : minx;
-         rgv3D[l].y = (l & 2) ? maxy : miny;
-         rgv3D[l].z = (l & 4) ? maxz : minz;
-
-         if (l & 2)
-         {
-            rgv3D[l].tu = (l & 1) ? maxtufront : 0;
-            rgv3D[l].tv = (l & 4) ? 0 : maxtvfront;
-         }
-         else
-         {
-            rgv3D[l].tu = (l & 1) ? maxtuback : 0;
-            rgv3D[l].tv = (l & 4) ? maxtvback : 0;
-         }
-      }
-
-      for (int l=0;l<8;l++)
-      {
-         {
-            const float temp = rgv3D[l].y;
-            rgv3D[l].y = csTurn*temp + snTurn*rgv3D[l].z;
-            rgv3D[l].z = csTurn*rgv3D[l].z - snTurn*temp;
-         }
-
-         {
-            const float temp = rgv3D[l].x;
-            rgv3D[l].x = csY*temp - snY*rgv3D[l].y;
-            rgv3D[l].y = csY*rgv3D[l].y + snY*temp;
-         }
-
-         rgv3D[l].x += m_d.m_vCenter.x;
-         rgv3D[l].y += m_d.m_vCenter.y;
-         //rgv3D[l].z += 60.0f + height;
-         rgv3D[l].z += h + height;
-         rgv3D[l].z *= m_ptable->m_zScale;
-
-         ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-      }
-
-      if (pinback)
-      {			
-         pinback->CreateAlphaChannel();
-      }
-
-      if (pinfront)
-      {
-         pinfront->CreateAlphaChannel();
-      }
+       if (l & 2)
+       {
+           moverVertices[l].tu = (l & 1) ? 1.0f : 0.f;
+           moverVertices[l].tv = (l & 4) ? 0.f : 1.0f;
+       }
+       else
+       {
+           moverVertices[l].tu = (l & 1) ? 1.0f : 0.f;
+           moverVertices[l].tv = (l & 4) ? 1.0f : 0.f;
+       }
    }
 
+   ppin3d->CalcShadowCoordinates(moverVertices, 8);
+
+   std::vector< Vertex3D > vbVerts;
+   vbVerts.reserve(6*4);
+
+   SetNormal(moverVertices, rgiSpinner2, 4);        // back
+   for (int i = 0; i < 4; ++i)
+       vbVerts.push_back( moverVertices[ rgiSpinner2[i] ] );
+
+   SetNormal(moverVertices, rgiSpinner3, 4);        // front
+   for (int i = 0; i < 4; ++i)
+       vbVerts.push_back( moverVertices[ rgiSpinner3[i] ] );
+
+   SetNormal(moverVertices, rgiSpinner4, 4);        // bottom
+   for (int i = 0; i < 4; ++i)
+       vbVerts.push_back( moverVertices[ rgiSpinner4[i] ] );
+
+   SetNormal(moverVertices, rgiSpinner5, 4);        // top
+   for (int i = 0; i < 4; ++i)
+       vbVerts.push_back( moverVertices[ rgiSpinner5[i] ] );
+
+   SetNormal(moverVertices, rgiSpinner6, 4);        // left
+   for (int i = 0; i < 4; ++i)
+       vbVerts.push_back( moverVertices[ rgiSpinner6[i] ] );
+
+   SetNormal(moverVertices, rgiSpinner7, 4);        // right
+   for (int i = 0; i < 4; ++i)
+       vbVerts.push_back( moverVertices[ rgiSpinner7[i] ] );
+
+   if (vtxBuf)
+       vtxBuf->release();
+   pd3dDevice->CreateVertexBuffer(vbVerts.size(), 0, MY_D3DFVF_VERTEX, &vtxBuf);
+   void *buf;
+   vtxBuf->lock(0, 0, &buf, 0);
+   memcpy(buf, &vbVerts[0], vbVerts.size() * sizeof(vbVerts[0]));
+   vtxBuf->unlock();
+
+   if (idxBuf)
+       idxBuf->release();
+   static const WORD idx[24] = {0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
+   idxBuf = pd3dDevice->CreateAndFillIndexBuffer(24, idx);
 }
+
 void Spinner::RenderSetup(const RenderDevice* _pd3dDevice)
 {
    PrepareStatic( (RenderDevice*)_pd3dDevice );
@@ -558,154 +624,15 @@ void Spinner::RenderStatic(const RenderDevice* _pd3dDevice)
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   staticMaterial.set();
+   pd3dDevice->SetMaterial(staticMaterial);
    Vertex3D rgv3D[8];
    memcpy( rgv3D, staticVertices, sizeof(Vertex3D)*8);
 
    SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner0, 8);
-   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, (LPWORD)rgiSpinner0, 8, 0);
+   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, rgiSpinner0, 8);
 
    SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner1, 8);
-   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, (LPWORD)rgiSpinner1, 8, 0);
-}
-
-void Spinner::RenderMovers(const RenderDevice* _pd3dDevice)
-{
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   RenderDevice *pd3dDevice = (RenderDevice*)_pd3dDevice;
-
-   COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
-
-   Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-   Texture * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
-
-   if (g_pvp->m_pdd.m_fHardwareAccel)
-   {
-      pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
-      pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
-      pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-   }
-
-   // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-   pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
-
-   ppin3d->ClearSpriteRectangle( &m_phitspinner->m_spinneranim, NULL );
-
-   int ofs=0;
-   for (int i=0;i<frameCount;i++,ofs+=8)
-   {
-      ObjFrame * const pof = new ObjFrame();
-
-      Vertex3D rgv3D[8];
-      memcpy( rgv3D, &moverVertices[ofs], sizeof(Vertex3D)*8);
-
-      ppin3d->ClearSpriteRectangle( NULL, pof );
-      ppin3d->ExpandExtents(&pof->rc, rgv3D, &m_phitspinner->m_spinneranim.m_znear, &m_phitspinner->m_spinneranim.m_zfar, 8, fFalse);
-
-      // Draw Backside
-      if (pinback)
-      {			
-         pinback->Set( ePictureTexture );
-         if (pinback->m_fTransparent)
-         {				
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-            if (m_d.m_color != rgbTransparent) rgbTransparent = pinback->m_rgbTransparent;
-         }
-         else 
-         {	
-            g_pplayer->m_pin3d.EnableAlphaBlend( 1, fFalse );
-         } 
-
-         if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-         else pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-
-         g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-         g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-         textureMaterial.set();
-      }
-      else // No image by that name
-      {
-         ppin3d->SetTexture(NULL);
-         solidMaterial.set();
-      }
-
-      SetNormal(rgv3D, rgiSpinner2, 4, NULL, NULL, 0);
-      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 6,(LPWORD)rgiSpinner2,4, 0);
-
-      // Draw Frontside
-      if (pinfront)
-      {
-         pinfront->Set( ePictureTexture );
-         if (pinfront->m_fTransparent)
-         {				
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);	
-            if (m_d.m_color != rgbTransparent)rgbTransparent = pinfront->m_rgbTransparent;
-         }
-         else 
-         {	
-            g_pplayer->m_pin3d.EnableAlphaBlend( 1, fFalse );
-         }
-
-         if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-         else pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-
-         g_pplayer->m_pin3d.SetColorKeyEnabled(TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-         g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-         textureMaterial.set();
-      }
-      else // No image by that name
-      {
-         ppin3d->SetTexture(NULL);
-         solidMaterial.set();
-      }
-      SetNormal(rgv3D, rgiSpinner3, 4, NULL, NULL, 0);
-      pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,rgv3D, 8,(LPWORD)rgiSpinner3, 4, 0);
-
-      solidMaterial.set();
-      ppin3d->SetTexture(NULL);
-
-      if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
-      {
-         Vertex3D verts[16];
-         static const WORD idx[24] = {0,1,2,0,1,2, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
-         // Top & Bottom
-         SetNormal(rgv3D, rgiSpinner4, 4, NULL, NULL, 0);
-         memcpy( &verts[0 ], &rgv3D[ rgiSpinner4[0]], sizeof(Vertex3D));
-         memcpy( &verts[1 ], &rgv3D[ rgiSpinner4[1]], sizeof(Vertex3D));
-         memcpy( &verts[2 ], &rgv3D[ rgiSpinner4[2]], sizeof(Vertex3D));
-         memcpy( &verts[3 ], &rgv3D[ rgiSpinner4[3]], sizeof(Vertex3D));
-
-         SetNormal(rgv3D, rgiSpinner5, 4, NULL, NULL, 0);
-         memcpy( &verts[4 ], &rgv3D[ rgiSpinner5[0]], sizeof(Vertex3D));
-         memcpy( &verts[5 ], &rgv3D[ rgiSpinner5[1]], sizeof(Vertex3D));
-         memcpy( &verts[6 ], &rgv3D[ rgiSpinner5[2]], sizeof(Vertex3D));
-         memcpy( &verts[7 ], &rgv3D[ rgiSpinner5[3]], sizeof(Vertex3D));
-         // Sides
-         SetNormal(rgv3D, rgiSpinner6, 4, NULL, NULL, 0);
-         memcpy( &verts[8 ], &rgv3D[ rgiSpinner6[0]], sizeof(Vertex3D));
-         memcpy( &verts[9 ], &rgv3D[ rgiSpinner6[1]], sizeof(Vertex3D));
-         memcpy( &verts[10], &rgv3D[ rgiSpinner6[2]], sizeof(Vertex3D));
-         memcpy( &verts[11], &rgv3D[ rgiSpinner6[3]], sizeof(Vertex3D));
-
-         SetNormal(rgv3D, rgiSpinner7, 4, NULL, NULL, 0);
-         memcpy( &verts[12], &rgv3D[ rgiSpinner7[0]], sizeof(Vertex3D));
-         memcpy( &verts[13], &rgv3D[ rgiSpinner7[1]], sizeof(Vertex3D));
-         memcpy( &verts[14], &rgv3D[ rgiSpinner7[2]], sizeof(Vertex3D));
-         memcpy( &verts[15], &rgv3D[ rgiSpinner7[3]], sizeof(Vertex3D));
-         pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,verts, 16,(LPWORD)idx, 24, 0);
-      }
-
-      ppin3d->CreateAndCopySpriteBuffers( &m_phitspinner->m_spinneranim, pof );
-      m_phitspinner->m_spinneranim.m_vddsFrame.AddElement(pof);
-   }
-
-   g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);
-   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
-   pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
+   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, rgiSpinner1, 8);
 }
 
 void Spinner::SetObjectPos()
@@ -751,7 +678,6 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(SMAX), m_d.m_angleMax);
    bw.WriteFloat(FID(SMIN), m_d.m_angleMin);
    bw.WriteFloat(FID(SELA), m_d.m_elasticity);
-   bw.WriteInt(FID(SANM), m_d.m_animations);
    bw.WriteInt(FID(SVIS), m_d.m_fVisible);
    bw.WriteBool(FID(SSUPT), m_d.m_fSupports);
    bw.WriteFloat(FID(OVRH), m_d.m_overhang);
@@ -798,7 +724,6 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(COLR))
    {
       pbr->GetInt(&m_d.m_color);
-      //		if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
    }
    else if (id == FID(TMON))
    {
@@ -835,10 +760,6 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SELA))
    {
       pbr->GetFloat(&m_d.m_elasticity);
-   }
-   else if (id == FID(SANM))
-   {
-      pbr->GetInt(&m_d.m_animations);
    }
    else if (id == FID(SVIS))
    {
@@ -1245,27 +1166,16 @@ STDMETHODIMP Spinner::put_Elasticity(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Spinner::get_Animations(int *pVal)
+STDMETHODIMP Spinner::get_Animations(int *pVal)     // TODO: obsolete, remove
 {
-   if (!g_pplayer)
-   {
-      *pVal = m_d.m_animations;
-   }
-
-   return S_OK;
+    *pVal = 0;
+    return S_OK;
 }
-
-STDMETHODIMP Spinner::put_Animations(int newVal)
+STDMETHODIMP Spinner::put_Animations(int newVal)    // TODO: obsolete, remove
 {	
-   if (!g_pplayer)
-   {
-      STARTUNDO
-         m_d.m_animations = newVal;
-      STOPUNDO
-   }
-
    return S_OK;
 }
+
 STDMETHODIMP Spinner::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitspinner->m_spinneranim.m_fVisible : m_d.m_fVisible);

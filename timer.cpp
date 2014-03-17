@@ -28,9 +28,9 @@ void Timer::SetDefaults(bool fromMouseClick)
 
 	hr = GetRegInt("DefaultProps\\Timer","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
+		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
 	else
-		m_d.m_tdr.m_fTimerEnabled = true;
+		m_d.m_tdr.m_fTimerEnabled = fTrue;
 	
 	hr = GetRegInt("DefaultProps\\Timer","TimerInterval", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -148,10 +148,6 @@ void Timer::RenderStatic(const RenderDevice* pd3dDevice)
 	{
 	}
 	
-void Timer::RenderMovers(const RenderDevice* pd3dDevice)
-	{
-	}
-
 STDMETHODIMP Timer::InterfaceSupportsErrorInfo(REFIID riid)
 {
 	static const IID* arr[] =

@@ -31,7 +31,6 @@ public:
 	int m_codetab[HSIZE];
 
 	int m_free_ent;
-	BOOL m_clear_flg;
 
 	int m_init_bits;
 
@@ -59,6 +58,8 @@ public:
 	int m_iXCur;
 
 	int bNextPixel();
+
+	bool m_clear_flg;
 
 	inline int Maxcode( int n_bits )
 	{

@@ -27,7 +27,6 @@ public:
 	int			m_digitrange;			// max number of digits per reel (usually 9)
 
     char        m_szSound[MAXTOKEN];    // sound to play for each turn of a digit
-    BOOL        m_fShading;             // apply alpha shading to the reel (darken the Y axis edges)
     long        m_updateinterval;       // time in ms between each animation update
 
     COLORREF    m_backcolor;            // colour of the background
@@ -39,7 +38,7 @@ public:
 };
 
 typedef struct {
-    RECT    position;           // position within the object frame (includes rendering size)
+    FRect   position;           // screen position (includes rendering size)
     int     currentValue;       // current digit value
     int     motorPulses;        // number of motor pulses received for this reel (can be negative)
     int		motorStepCount;     // when equal to zero then at a whole letter
@@ -47,7 +46,7 @@ typedef struct {
     float   motorOffset;        // frame value of motor (where to display the reel)
 } _reelInfo;
 
-class ATL_NO_VTABLE DispReel :
+class DispReel :
 	public CComObjectRootEx<CComSingleThreadModel>,
     public IDispatchImpl<IDispReel, &IID_IDispReel, &LIBID_VBATESTLib>,
 #ifdef VBA
@@ -108,7 +107,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DispReel)
 	void WriteRegDefaults();
 
     PinTable    *m_ptable;
-    ObjFrame    *m_pobjframe;      // overall object frame (box) which contains the boarder and reels
 
     DispReelData m_d;
 
@@ -116,7 +114,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DispReel)
 
     DispReelUpdater *m_ptu;
     
-    int          m_renderwidth, m_renderheight;     // size of each reel (rendered)
+    float          m_renderwidth, m_renderheight;     // size of each reel (rendered)
 
 private:
     // rendering information (after scaling to render resolution)
@@ -129,9 +127,17 @@ private:
 
 	float       m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
     float       m_reeldigitheight;
-    int         m_timenextupdate;
+    U32         m_timenextupdate;
     bool        m_fforceupdate;
     VertexBuffer *vertexBuffer;
+
+    struct TexCoordRect
+    {
+        float u_min, u_max;
+        float v_min, v_max;
+    };
+
+    std::vector<TexCoordRect> m_digitTexCoords;
 
 // IDispReel
 public:
@@ -183,11 +189,11 @@ public:
 	STDMETHOD(SetValue)(/*[in]*/ long Value);
     STDMETHOD(SpinReel)(/*[in]*/ long ReelNumber, /*[in]*/ long PulseCount);
 
-	void    UpdateObjFrame();
-
 private:
+	void    UpdateObjFrame();
     float   getBoxWidth() const;
     float   getBoxHeight() const;
+    void    SetVerticesForReel(int reelNum, int digit, Vertex3D_NoTex2 * v);
 };
 
 #endif // !defined(AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_)

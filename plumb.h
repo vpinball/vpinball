@@ -13,6 +13,5 @@ void plumb_update(const U32 curr_time_msec, const float getx, const float gety);
 int  plumb_tilted();
 
 void plumb_draw();
-void plumb_erase();
 
 #endif/* !__PLUMB_H__ */

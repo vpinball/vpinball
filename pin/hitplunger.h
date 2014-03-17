@@ -7,8 +7,8 @@ public:
 
 	virtual bool FMover() const {return true;}
 
-	virtual void Check3D();
-	virtual ObjFrame *Draw3D(const RECT * const prc);
+	virtual void Check3D()                                  { }
+	virtual ObjFrame *Draw3D(const RECT * const prc)        { return NULL; }
 
 	void SetObjects(const float len);
 
@@ -21,14 +21,9 @@ public:
 	Joint m_jointBase[2];
 	Joint m_jointEnd[2];
 
-	Vector<ObjFrame> m_vddsFrame;
-
-	int m_iframe; //Frame index that this flipper is currently displaying
-
 	float m_speed;
 	float m_pos;
 	float m_posdesired;
-	float m_posFrame; // Location of plunger at beginning of frame
 	float m_mass;
 
 	float m_x,m_x2,m_y;
@@ -58,19 +53,15 @@ public:
 	HitPlunger(const float x, const float y, const float x2, const float pos, const float zheight, Plunger * const pPlunger);
 	~HitPlunger() {}
 
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
 	virtual int GetType() const {return ePlunger;}
 
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual void Collide(CollisionEvent *coll);
 
 	virtual void CalcHitRect();
 
 	virtual AnimObject *GetAnimObject() {return &m_plungeranim;}
-
-	//Vector<HitObject> m_vho;
-
-	//float m_acc;
 
 	PlungerAnimObject m_plungeranim;
 

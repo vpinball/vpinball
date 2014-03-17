@@ -123,9 +123,6 @@
     <ClCompile Include="pinbinary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pinimage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pininput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -207,12 +204,6 @@
     <ClCompile Include="xaudplayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RenderDevice.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -220,6 +211,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="flasher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -295,9 +292,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="extern.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="exvector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Media\fileio.h">
@@ -382,9 +376,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pinbinary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pinimage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pininput.h">
@@ -481,6 +472,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="flasher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

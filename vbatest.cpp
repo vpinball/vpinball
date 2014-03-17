@@ -9,6 +9,12 @@
 
 #include "VBATest_i.c"
 
+#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
+ extern "C" {
+	__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+ }
+#endif
+
 #if (WINVER <= 0x0601 /* _WIN32_WINNT_WIN7 */ )
 typedef enum ORIENTATION_PREFERENCE {
     ORIENTATION_PREFERENCE_NONE = 0x0,
@@ -282,11 +288,10 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
     _Module.Term();
     CoUninitialize();
 #ifdef _CRTDBG_MAP_ALLOC
-	_CrtDumpMemoryLeaks();
-#endif
 #ifdef DEBUG_XXX  //disable this in perference to DevPartner
 	_CrtSetDumpClient(MemLeakAlert);
-	_CrtDumpMemoryLeaks( );
+#endif
+	_CrtDumpMemoryLeaks();
 #endif
 	//SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
 

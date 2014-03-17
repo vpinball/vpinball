@@ -8,8 +8,8 @@ public:
 
 	virtual bool FMover() const {return true;}
 
-	virtual void Check3D();
-	virtual ObjFrame *Draw3D(const RECT * const prc);
+	virtual void Check3D()                              { }
+	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 
 	Flipper *m_pflipper;
 
@@ -23,13 +23,10 @@ public:
 	// New Flipper motion basis, uses Green's transform to rotate these valuse to curAngle
 	Vertex2D m_leftFaceNormal, m_rightFaceNormal, m_leftFaceBase, m_rightFaceBase;
 	Vertex2D m_endRadiusCenter;
-	float m_lengthFace;
 
 	float m_anglespeed;
 	float m_angleCur;
 	float m_angleEnd;
-
-	float m_lastAngspd;
 
 	float m_flipperradius;
 	float m_force;
@@ -43,17 +40,9 @@ public:
 
 	float m_angleMin, m_angleMax;
 
-	Vector<ObjFrame> m_vddsFrame;
-	float m_frameStart;
-	float m_frameEnd;
-
-	float m_angleFrame; // angle at the beginning of this frame
-
 #if 0
 	float m_inertia;	//moment of inertia
 #endif
-
-	int m_iframe;		//Frame index that this flipper is currently displaying
 
 	int m_EnableRotateEvent;
 
@@ -76,23 +65,19 @@ public:
 		       const float zlow, const float zhigh, float strength, const float mass);
 	~HitFlipper();
 
-	virtual float HitTestFlipperFace(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool face1);
+	virtual float HitTestFlipperFace(const Ball * pball, const float dtime, CollisionEvent& coll, const bool face1);
 
-	virtual float HitTestFlipperEnd(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	virtual float HitTestFlipperEnd(const Ball * pball, const float dtime, CollisionEvent& coll);
 
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	
 	virtual int GetType() const {return eFlipper;}
 
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual void Collide(CollisionEvent *coll);
 
 	virtual AnimObject *GetAnimObject() {return &m_flipperanim;}
 
 	virtual void CalcHitRect();
-
-	//LineSeg m_linesegConnect;
-
-	//Vector<HitObject> m_vho;
 
 	Flipper *m_pflipper;
 

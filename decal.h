@@ -104,8 +104,6 @@ STANDARD_NONAPC_EDITABLE_DECLARES(eItemDecal)
 
 	DecalData m_d;
 
-	RECT m_rcBounds; // For testing against lights
-
 	Texture m_pinimage;
 	float m_leading, m_descent;
 

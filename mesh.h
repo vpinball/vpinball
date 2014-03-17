@@ -1,5 +1,6 @@
 #pragma once
 #include "Material.h"
+#include "Texture.h"
 
 class Triangle
 {
@@ -21,8 +22,8 @@ public:
 	}
 	
 	inline ~ObjFrame() {
-		SAFE_RELEASE(pdds);
-		SAFE_RELEASE(pddsZBuffer);
+        delete pdds;
+        delete pddsZBuffer;
 	}
 
 	RECT rc;
@@ -65,16 +66,6 @@ private:
 	float y1,y2,y3,y4;
 };
 
-class LightProjected
-{
-public:
-	Vertex3Ds m_v;
-    float inv_width;
-    float inv_height;
-
-	void CalcCoordinates(Vertex3D * const pv) const;
-};
-
 class RenderVertex : public Vertex2D
 {
 public:
@@ -88,7 +79,7 @@ public:
 template <class VtxType>
 void SetHUDVertices(VtxType * const rgv, const int count)
 	{
-	const float mult = (float)g_pplayer->m_pin3d.m_dwRenderWidth * (float)(1.0/1000.0);
+	const float mult = (float)g_pplayer->m_pin3d.m_dwRenderWidth * (float)(1.0/EDITOR_BG_WIDTH);
 	const float ymult = mult / (float)g_pplayer->m_pixelaspectratio;
 
 	for (int i=0; i<count; ++i)
@@ -214,8 +205,15 @@ inline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJo
 }
 */
 
+// Computes the normal for a single, plane polygon described by the indices and applies it either
+// to the original vertices or to the vertices indexed by rgiApply.
+//
+// This functions uses Newell's method to compute the normal. However, this is the version for
+// a right-handed coordinate system, and therefore produces wrong results for the VP renderer,
+// which is left-handed. However, the VP physics seem to be right-handed (!!), and therefore
+// in VP10 we will need two versions of this function, left- and right-handed.
 template <class VtxType>
-void SetNormal(VtxType * const rgv, const WORD * const rgi, const int count, void * prgvApply, const WORD * rgiApply, int applycount)
+void SetNormal(VtxType * const rgv, const WORD * const rgi, const int count, void * prgvApply=NULL, const WORD * rgiApply=NULL, int applycount=NULL)
 {
 	// If apply-to array is null, just apply the resulting normal to incoming array
     VtxType * rgvApply = prgvApply ? (VtxType*)prgvApply : rgv;

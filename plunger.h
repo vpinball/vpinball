@@ -98,18 +98,13 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
       PLUNGEPOINTS0 = 5,
       PLUNGEPOINTS1 = 7
     };
-    struct Vertices
-    {
-      Vertex3D_NoTex2 moverVertices[16*PLUNGEPOINTS1];
-    };
 
 	PinTable *m_ptable;
 
 	PlungerData m_d;
-    Vertices *verts;
     int cframes;
-    WORD indices[16*PLUNGEPOINTS1*4];
     VertexBuffer *vertexBuffer;
+    IndexBuffer *indexBuffer;
 
 	HitPlunger *m_phitplunger;
     Material material;

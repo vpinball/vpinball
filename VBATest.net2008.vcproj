@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="VBATest"
 	ProjectGUID="{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
 	RootNamespace="VBATest"
@@ -73,11 +73,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;.\lib\&quot;"
+				AdditionalLibraryDirectories="$(DXSDK_DIR)\Lib\x86;&quot;.\lib\&quot;"
 				IgnoreDefaultLibraryNames="LIBC;LIBCMT;LIBCD"
 				SubSystem="2"
 				LargeAddressAware="2"
@@ -165,7 +165,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -260,7 +260,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -352,11 +352,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories=".\lib\"
+				AdditionalLibraryDirectories="$(DXSDK_DIR)\Lib\x86;.\lib\"
 				IgnoreDefaultLibraryNames="LIBC;LIBCMT;LIBCD"
 				SubSystem="2"
 				LargeAddressAware="2"
@@ -444,7 +444,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBC&#x0D;&#x0A;/NODEFAULTLIB:LIBCMT&#x0D;&#x0A;/NODEFAULTLIB:LIBCD"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -534,7 +534,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -625,11 +625,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories=".\lib\;$(NOINHERIT)"
+				AdditionalLibraryDirectories="$(DXSDK_DIR)\Lib\x86;.\lib\;$(NOINHERIT)"
 				IgnoreDefaultLibraryNames="LIBC;LIBCMT;LIBD"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -719,7 +719,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -812,7 +812,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -907,7 +907,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -1004,7 +1004,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -1109,7 +1109,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
@@ -1215,7 +1215,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
+				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
 				OutputFile="$(OutDir)\VPinball.exe"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
@@ -3615,6 +3615,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\hash.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\hid.cpp"
 				>
 				<FileConfiguration
@@ -5145,10 +5149,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\Material.cpp"
-				>
-			</File>
-			<File
 				RelativePath="memutil.cpp"
 				>
 				<FileConfiguration
@@ -5718,144 +5718,6 @@
 			</File>
 			<File
 				RelativePath="pinbinary.cpp"
-				>
-				<FileConfiguration
-					Name="Unicode Release MinSize|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestSpanish|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Release MinDependency|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_STATIC_REGISTRY;_ATL_MIN_CRT;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinSize|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_UNICODE;$(NoInherit)"
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestGerman|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestFrench|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTest|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency Fast|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency Fast+SSE|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="pinimage.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -9569,10 +9431,6 @@
 				>
 			</File>
 			<File
-				RelativePath="exvector.h"
-				>
-			</File>
-			<File
 				RelativePath="Media\fileio.h"
 				>
 			</File>
@@ -9590,6 +9448,10 @@
 			</File>
 			<File
 				RelativePath="gate.h"
+				>
+			</File>
+			<File
+				RelativePath=".\hash.h"
 				>
 			</File>
 			<File
@@ -9690,10 +9552,6 @@
 			</File>
 			<File
 				RelativePath="pinbinary.h"
-				>
-			</File>
-			<File
-				RelativePath="pinimage.h"
 				>
 			</File>
 			<File

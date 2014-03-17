@@ -876,8 +876,6 @@ BEGIN
     LISTBOX         IDC_SIZELIST,7,37,112,81,LBS_NOINTEGRALHEIGHT | 
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Abbrechen",IDCANCEL,69,157,50,14
-    CONTROL         "Blit-Status prüfen",IDC_CHECKBLIT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,126,70,10
     CONTROL         "Kugel-Schatten zeichnen",IDC_SHADOW,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,140,77,10
 END

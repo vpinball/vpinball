@@ -127,8 +127,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 	void PrepareStaticCustom();
     void PrepareMoversCustom();
 
-	void RenderCustomMovers(const RenderDevice* pd3dDevice);
-
 	virtual void EditMenu(HMENU hmenu);
 	virtual void DoCommand(int icmd, int x, int y);
 
@@ -144,33 +142,36 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 	virtual void GetPointCenter(Vertex2D * const pv) const;
 	virtual void PutPointCenter(const Vertex2D * const pv);
 
-	virtual void DrawFrame(BOOL fOn);
+	virtual void DrawFrame(BOOL fOn)  { }
+    void PostRenderStaticCustom(RenderDevice* pd3dDevice);
+
+    virtual bool IsTransparent()    { return m_d.m_OnImageIsLightMap != FALSE; }
+    virtual float GetDepth(const Vertex3Ds& viewDir)
+      { return viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; }
 
 	void WriteRegDefaults();
    void FreeBuffers();
 
-	PinTable *m_ptable;
-
-	LightData m_d;
-
-	// Run-time
-	ObjFrame *m_pobjframe[2];
-	//int m_iblinkframe;
-	//int m_timenextblink;
-
-	LightCenter m_lightcenter;
-
-//>>> Added By Chris
-	LightState 	m_realState;
 	void		lockLight();
 	void		unLockLight();
 	void		setLightStateBypass(const LightState newVal);
 	void		setLightState(const LightState newVal);
+
+	PinTable *m_ptable;
+
+	LightData m_d;
+	LightState 	m_realState;
+
+	// Run-time
+private:
+    float m_surfaceHeight;
+	ObjFrame *m_pobjframe[2];
+
+	LightCenter m_lightcenter;
+
+//>>> Added By Chris
 	bool		m_fLockedByLS;
 //<<<
-   Vertex3D circleVertex[32];
-   Vertex3D *customMoverVertex[2];
-   Vertex3D *staticCustomVertex;
    int staticCustomVertexNum;
    int customMoverVertexNum;
    VertexBuffer *customVBuffer;

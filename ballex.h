@@ -9,7 +9,7 @@ class Ball;
 
 /////////////////////////////////////////////////////////////////////////////
 // CBall
-class ATL_NO_VTABLE BallEx : 
+class BallEx : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<BallEx, &CLSID_Ball>,
 	public IDispatchImpl<IBall, &IID_IBall, &LIBID_VBATESTLib>,

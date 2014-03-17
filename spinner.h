@@ -24,7 +24,6 @@ public:
 	float m_elasticity;
 	float m_friction;
 	float m_scatter;
-	int m_animations;			 //animation frames
 	BOOL m_fVisible;
 	BOOL m_fCastsShadow;		//>>> added by Chris
 	char m_szImageFront[MAXTOKEN];
@@ -91,6 +90,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Spinner)
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
 
+	virtual void RenderShadow(ShadowSur * const psur, const float height);
+
    void PrepareStatic( RenderDevice* pd3dDevice );
    void PrepareMovers( RenderDevice* pd3dDevice );
 
@@ -99,13 +100,14 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Spinner)
 	PinTable *m_ptable;
 
 	SpinnerData m_d;
+    float m_posZ;
 
 	HitSpinner *m_phitspinner;
 
+private:
    Vertex3D staticVertices[8];
-   Vertex3D *moverVertices;
-   int frameCount;
-	virtual void RenderShadow(ShadowSur * const psur, const float height);
+   VertexBuffer *vtxBuf;
+   IndexBuffer *idxBuf;
    Material staticMaterial;
    Material textureMaterial;
    Material solidMaterial;

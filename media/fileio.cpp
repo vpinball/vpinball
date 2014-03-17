@@ -128,12 +128,12 @@ BOOL RawReadFromFile(char *szfilename, int *psize, char **pszout)
 
 	DWORD read;
 
-	BOOL fFoo = ReadFile(hFile, *pszout, *psize, &read, NULL);
+	/*BOOL fFoo =*/ ReadFile(hFile, *pszout, *psize, &read, NULL);
 
 	(*pszout)[*psize] = '\0';
 	(*pszout)[*psize+1] = '\0'; // In case this is a unicode file, end it with a null character properly
 
-	fFoo = CloseHandle(hFile);
+	/*fFoo =*/ CloseHandle(hFile);
 
 	return fTrue;
 	}

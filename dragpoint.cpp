@@ -492,8 +492,6 @@ void DragPoint::MoveOffset(const float dx, const float dy)
    m_v.x += dx;
    m_v.y += dy;
 
-   //m_psur->CheckIntersecting();
-
    m_pihdp->GetIEditable()->SetDirtyDraw();
 }
 

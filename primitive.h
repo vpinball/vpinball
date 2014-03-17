@@ -7,6 +7,18 @@
 
 #include "resource.h"
 
+
+// Indices for RotAndTra:
+//     RotX = 0
+//     RotY = 1
+//     RotZ = 2
+//     TraX = 3
+//     TraY = 4
+//     TraZ = 5
+//  ObjRotX = 6
+//  ObjRotY = 7
+//  ObjRotZ = 8
+
 class PrimitiveData
 {
 public:
@@ -17,7 +29,6 @@ public:
    Vertex3Ds m_vAxisScaleY;
    Vertex3Ds m_vAxisScaleZ;
    float m_aRotAndTra[9];
-   RotAndTraTypeEnum m_aRotAndTraTypes[9];
    char m_szImage[MAXTOKEN];
    char meshFileName[256];
 
@@ -25,7 +36,6 @@ public:
    COLORREF m_SideColor;
 
    TimerDataRoot m_tdr;
-   RECT m_boundRectangle;
 
    BOOL m_fHitEvent;
    float m_threshold;			// speed at which ball needs to hit to register a hit
@@ -35,19 +45,16 @@ public:
 
    bool use3DMesh;
    bool m_TopVisible;
-   bool m_wasVisible;
    bool m_DrawTexturesInside;
    bool useLighting;
    bool staticRendering;
    bool sphereMapping;
-   bool m_triggerUpdateRegion;
-   bool m_triggerSingleUpdateRegion;
 
    bool m_fCollidable;
    bool m_fToy;
 };
 
-class ATL_NO_VTABLE Primitive :
+class Primitive :
 
 
    public CComObjectRootEx<CComSingleThreadModel>,
@@ -83,6 +90,7 @@ public:
    STDMETHOD(get_TopVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_TopVisible)(/*[in]*/ VARIANT_BOOL newVal);
 
+   //!! deprecated
    STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(TriggerSingleUpdate)();
@@ -222,6 +230,42 @@ public:
 
    PinTable *m_ptable;
 
+   //!! here starts the more general primitive stuff:
+
+   virtual bool LoadMesh();
+   virtual void ExportMesh();
+
+   virtual bool IsTransparent();
+   virtual float GetDepth(const Vertex3Ds& viewDir);
+
+   std::vector<Vertex3D_NoTex2> objMeshOrg;
+   std::vector<Vertex3D_NoTex2> objMesh;
+   std::vector<WORD> indexList;
+
+   PrimitiveData m_d;
+
+private:        // private member functions
+
+   int numIndices;       // only used during loading
+   int numVertices;         // only used during loading
+
+   void RecalculateMatrices();
+   void RecalculateVertices();
+   void UpdateMesh();
+
+   bool BrowseFor3DMeshFile();
+   void RenderObject( RenderDevice *pd3dDevice);
+   void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
+
+   void CalculateBuiltinOriginal();
+   void UpdateMeshBuiltin();
+
+   inline void TransformVertex(Vertex3D_NoTex2& v) const;
+
+private:        // private data members
+
+   Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
+
    //!! outdated(?) information (along with the variable decls) for the old builtin primitive code, kept for reference:
 
    // Vertices for 3d Display
@@ -263,61 +307,16 @@ public:
    // 13 * float * 2 (additional middle points at top and bottom)
    // = nothing...
 
-   Vertex3D_NoTex2 builtin_rgvOriginal[Max_Primitive_Sides*4+2];
-   Vertex3D_NoTex2 builtin_rgv[Max_Primitive_Sides*4+2];
-
-   // So how many indices are needed?
-   // 3 per Triangle top - we have m_sides triangles -> 0, 1, 2, 0, 2, 3, 0, 3, 4, ...
-   // 3 per Triangle bottom - we have m_sides triangles
-   // 6 per Side at the side (two triangles form a rectangle) - we have m_sides sides
-   // == 12 * m_sides
-   // * 2 for both cullings (m_DrawTexturesInside == true)
-   // == 24 * m_sides
-   // this will also be the initial sorting, when depths, Vertices and Indices are recreated, because calculateRealTimeOriginal is called.
-   WORD builtin_indices[Max_Primitive_Sides*24];
-
-   // depth calculation
-   // Since we are compiling with SSE, I'll use Floating points for comparison.
-   // I need m_sides values at top
-   // I need m_sides values at bottom
-   // I need m_sides * 2 values at the side
-   // in the implementation i will use shell sort like implemented at wikipedia.
-   // Other algorithms are better at presorted things, but i will have some reverse sorted elements between the presorted here. 
-   // That's why insertion or bubble sort does not work fast here...
-   float builtin_depth[Max_Primitive_Sides*4];
-
-   void CalculateBuiltinOriginal();
-   void CalculateBuiltin();
-
-   //!! here starts the more general primitive stuff:
-
-   void RecalculateMatrices();
-   void RecalculateVertices();
-   void UpdateMesh();
-   bool BrowseFor3DMeshFile();
-   void RenderObject( RenderDevice *pd3dDevice);
-   void CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph3d1, const Hit3DPoly * const ph3d2);
-
-   virtual bool LoadMesh();
-   virtual void ExportMesh();
-
-   PrimitiveData m_d;
-   int numVertices;
-   VertexBuffer *vertexBuffer;
-   BOOL vertexBufferRegenerate;
    Material material;
 
-   Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
-
    // Vertices for editor display
-   Vector<Vertex3Ds> verticesTop;
-   Vector<Vertex3Ds> verticesBottom;
+   std::vector<Vertex3Ds> vertices;
 
    Matrix3D fullMatrix, rotMatrix;
 
-   Vertex3D_NoTex2 *objMeshOrg, *objMesh;
-   WORD *indexList;
-   int indexListSize;
+   VertexBuffer *vertexBuffer;
+   IndexBuffer *indexBuffer;
+   bool vertexBufferRegenerate;
 };
 
 #endif // !defined(AFX_PRIMITIVE_H__31CD2D6B-9BDD-4B1B-BC62-B9DE588A0CAA__INCLUDED_)

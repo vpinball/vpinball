@@ -1,0 +1,91 @@
+#pragma once
+
+#include "stdafx.h"
+#include "pin/ball.h"
+#include "pin/collide.h"
+
+#define SSE_LEAFTEST
+
+class HitKD;
+
+class HitKDNode
+{
+private:
+	void Reset() { m_children = NULL; m_hitoct = NULL; m_start = 0; m_items = 0; }
+
+	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const;
+
+	void HitTestBall(Ball * const pball) const;
+
+	void CreateNextLevel();
+
+#ifdef SSE_LEAFTEST
+	void HitTestBallSse(Ball * const pball) const;
+	void HitTestBallSseInner(Ball * const pball, const int i) const;
+#else
+#define HitTestBallSse HitTestBall
+#endif
+
+	FRect3D m_rectbounds;
+	unsigned int m_start;
+	unsigned int m_items; // contains the 2 bits for axis (bits 30/31)
+
+	HitKDNode * m_children; // if NULL, is a leaf; otherwise keeps the 2 children
+
+	HitKD * m_hitoct; //!! meh, stupid
+
+    friend class HitKD;
+};
+
+class HitKD
+{
+public:
+    HitKD();
+	~HitKD();
+
+	void Init(Vector<HitObject> *vho, const unsigned int num_items);
+
+    void AddElementByIndex(unsigned i)
+      { m_org_idx.push_back( i ); }
+
+    void FillFromVector(Vector<HitObject>& vho);
+    void FillFromIndices();
+    void FillFromIndices(const FRect3D& initialBounds);
+
+    // call when the bounding boxes of the HitObjects have changed to update the tree
+    void Update();
+
+	void HitTestBall(Ball * const pball) const
+      { m_rootNode.HitTestBallSse(pball); }
+
+	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const
+      { m_rootNode.HitTestXRay(pball, pvhoHit); }
+
+private:
+
+	void InitSseArrays();
+
+    std::vector<unsigned int> m_org_idx;
+
+    HitKDNode m_rootNode;
+
+	unsigned int m_num_items;
+	unsigned int m_max_items;
+
+    HitObject* GetItemAt(unsigned i)
+      { return m_org_vho->ElementAt( m_org_idx[i] ); }
+
+    HitKDNode* AllocTwoNodes();
+
+	Vector<HitObject> *m_org_vho;
+    std::vector<unsigned int> tmp;
+#ifdef SSE_LEAFTEST
+	float * __restrict l_r_t_b_zl_zh;
+#endif
+
+    std::vector< HitKDNode > m_nodes;
+    unsigned m_num_nodes;
+
+    friend class HitKDNode;
+};
+

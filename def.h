@@ -47,6 +47,12 @@ inline unsigned int max(const unsigned int x, const unsigned int y)
    return x < y ? y : x;
 }
 
+template <typename T>
+void RemoveFromVector(std::vector<T>& v, const T& val)
+{
+    v.erase( std::remove( v.begin(), v.end(), val ), v.end() );
+}
+
 #define fTrue 1
 #define fFalse 0
 
@@ -89,23 +95,7 @@ enum SaveDirtyState
    eSaveDirty
 };
 
-class Vertex2D
-{
-public:
-   float x;
-   float y;
-
-   inline Vertex2D() {}
-   inline Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
-
-   inline void Normalize()
-   {
-      const float oneoverlength = 1.0f/sqrtf(x*x + y*y);
-      x *= oneoverlength;
-      y *= oneoverlength;
-   }
-};
-
+#define MY_D3DFVF_TEX					(D3DFVF_XYZ | D3DFVF_TEX1)
 
 #define MY_D3DFVF_NOTEX_VERTEX          (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX0)
 #define MY_D3DTRANSFORMED_NOTEX_VERTEX  (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX0)
@@ -169,43 +159,37 @@ public:
    D3DVALUE tv;
 };
 
-__declspec(align(16))
 class Vertex3D_NoTex2 // for rendering, uses MY_D3DFVF_NOTEX2_VERTEX or MY_D3DTRANSFORMED_NOTEX2_VERTEX
 {
 public:
-   union {
-      struct{
-         // Position
-         D3DVALUE x; 
-         D3DVALUE y; 
-         D3DVALUE z;
+   struct{
+      // Position
+      D3DVALUE x;
+      D3DVALUE y;
+      D3DVALUE z;
 
-         // Normals
-         union
-         {
-            D3DVALUE nx;
-            D3DVALUE rhw;
-         };
-
-         union
-         {
-            D3DVALUE ny;
-            D3DCOLOR color;
-         };
-
-         union
-         {
-            D3DVALUE nz;
-            D3DCOLOR specular;
-         };
-
-         // Texture coordinates
-         D3DVALUE tu;
-         D3DVALUE tv;
+      // Normals
+      union
+      {
+         D3DVALUE nx;
+         D3DVALUE rhw;
       };
-      struct{
-         __m128 v0,v1;
+
+      union
+      {
+         D3DVALUE ny;
+         D3DCOLOR color;
       };
+
+      union
+      {
+         D3DVALUE nz;
+         D3DCOLOR specular;
+      };
+
+      // Texture coordinates
+      D3DVALUE tu;
+      D3DVALUE tv;
    };
 };
 
@@ -245,386 +229,6 @@ public:
    }
 };
 
-__declspec(align(16))
-class Vertex3Ds // for internal calculations that only need xyz
-{
-public:
-   union {
-      struct {
-         float x; 
-         float y; 
-         float z;
-         // dummy value to help with 16-byte alignment of Vertex3Ds objects
-         float _dummy;
-      };
-      __m128 xyz;
-   };
-
-   inline Vertex3Ds() {}
-   inline Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
-
-   inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
-   inline void Normalize()
-   {
-      const float oneoverlength = 1.0f/sqrtf(x*x + y*y + z*z);
-      x *= oneoverlength;
-      y *= oneoverlength;
-      z *= oneoverlength;
-   }
-   inline void Normalize(const float scalar)
-   {
-      const float oneoverlength = scalar/sqrtf(x*x + y*y + z*z);
-      x *= oneoverlength;
-      y *= oneoverlength;
-      z *= oneoverlength;
-   }
-   inline float Dot(const Vertex3Ds &pv) const
-   {
-      return x*pv.x + y*pv.y + z*pv.z;
-   }
-   inline float Dot(const Vertex3D &pv) const
-   {
-      return x*pv.x + y*pv.y + z*pv.z;
-   }
-   inline float LengthSquared() const
-   {
-      return x*x + y*y + z*z;
-   }
-   inline float Length() const
-   {
-      return sqrtf(x*x + y*y + z*z);
-   }
-   inline void MultiplyScalar(const float scalar)
-   {
-      x *= scalar;
-      y *= scalar;
-      z *= scalar;
-   }
-   inline void Add(const Vertex3Ds &pv)
-   {
-      x += pv.x;
-      y += pv.y;
-      z += pv.z;
-   }
-   inline void Sub(const Vertex3Ds &pv)
-   {
-      x -= pv.x;
-      y -= pv.y;
-      z -= pv.z;
-   }
-};
-
-inline Vertex2D Calc2DNormal(const Vertex2D &pv1, const Vertex2D &pv2)
-{
-   const Vertex2D vT(pv1.x - pv2.x, pv1.y - pv2.y);
-   // Set up line normal
-   const float inv_length = 1.0f/sqrtf(vT.x * vT.x + vT.y * vT.y);
-   return Vertex2D(vT.y * inv_length, -vT.x * inv_length);
-}
-
-inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3D * const pvPoint, const int count, const float angle)
-{
-   const float rsin = sinf(angle);
-   const float rcos = cosf(angle);
-
-   // Matrix for rotating around an arbitrary vector
-
-   float matrix[3][3];
-   matrix[0][0] = pvAxis.x*pvAxis.x + rcos*(1.0f-pvAxis.x*pvAxis.x);
-   matrix[1][0] = pvAxis.x*pvAxis.y*(1.0f-rcos) - pvAxis.z*rsin;
-   matrix[2][0] = pvAxis.z*pvAxis.x*(1.0f-rcos) + pvAxis.y*rsin;
-
-   matrix[0][1] = pvAxis.x*pvAxis.y*(1.0f-rcos) + pvAxis.z*rsin;
-   matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f-pvAxis.y*pvAxis.y);
-   matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f-rcos) - pvAxis.x*rsin;
-
-   matrix[0][2] = pvAxis.z*pvAxis.x*(1.0f-rcos) - pvAxis.y*rsin;
-   matrix[1][2] = pvAxis.y*pvAxis.z*(1.0f-rcos) + pvAxis.x*rsin;
-   matrix[2][2] = pvAxis.z*pvAxis.z + rcos*(1.0f-pvAxis.z*pvAxis.z);
-
-   for (int i=0; i<count; ++i)
-   {
-      const float result[3] = {
-         matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z,
-         matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z,
-         matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z};
-
-         pvPoint[i].x = result[0];
-         pvPoint[i].y = result[1];
-         pvPoint[i].z = result[2];
-
-         const float resultn[3] = {
-            matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz,
-            matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz,
-            matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz};
-
-            pvPoint[i].nx = resultn[0];
-            pvPoint[i].ny = resultn[1];
-            pvPoint[i].nz = resultn[2];
-   }
-}
-
-inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex * const pvPoint, const int count, const float angle)
-{
-   const float rsin = sinf(angle);
-   const float rcos = cosf(angle);
-
-   // Matrix for rotating around an arbitrary vector
-
-   float matrix[3][3];
-   matrix[0][0] = pvAxis.x*pvAxis.x + rcos*(1.0f-pvAxis.x*pvAxis.x);
-   matrix[1][0] = pvAxis.x*pvAxis.y*(1.0f-rcos) - pvAxis.z*rsin;
-   matrix[2][0] = pvAxis.z*pvAxis.x*(1.0f-rcos) + pvAxis.y*rsin;
-
-   matrix[0][1] = pvAxis.x*pvAxis.y*(1.0f-rcos) + pvAxis.z*rsin;
-   matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f-pvAxis.y*pvAxis.y);
-   matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f-rcos) - pvAxis.x*rsin;
-
-   matrix[0][2] = pvAxis.z*pvAxis.x*(1.0f-rcos) - pvAxis.y*rsin;
-   matrix[1][2] = pvAxis.y*pvAxis.z*(1.0f-rcos) + pvAxis.x*rsin;
-   matrix[2][2] = pvAxis.z*pvAxis.z + rcos*(1.0f-pvAxis.z*pvAxis.z);
-
-   for (int i=0; i<count; ++i)
-   {
-      const float result[3] = {
-         matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z,
-         matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z,
-         matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z};
-
-         pvPoint[i].x = result[0];
-         pvPoint[i].y = result[1];
-         pvPoint[i].z = result[2];
-
-         const float resultn[3] = {
-            matrix[0][0]*pvPoint[i].nx + matrix[0][1]*pvPoint[i].ny + matrix[0][2]*pvPoint[i].nz,
-            matrix[1][0]*pvPoint[i].nx + matrix[1][1]*pvPoint[i].ny + matrix[1][2]*pvPoint[i].nz,
-            matrix[2][0]*pvPoint[i].nx + matrix[2][1]*pvPoint[i].ny + matrix[2][2]*pvPoint[i].nz};
-
-            pvPoint[i].nx = resultn[0];
-            pvPoint[i].ny = resultn[1];
-            pvPoint[i].nz = resultn[2];
-   }
-}
-
-inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, const int count, const float angle)
-{
-   const float rsin = sinf(angle);
-   const float rcos = cosf(angle);
-
-   // Matrix for rotating around an arbitrary vector
-
-   float matrix[3][3];
-   matrix[0][0] = pvAxis.x*pvAxis.x + rcos*(1.0f-pvAxis.x*pvAxis.x);
-   matrix[1][0] = pvAxis.x*pvAxis.y*(1.0f-rcos) - pvAxis.z*rsin;
-   matrix[2][0] = pvAxis.z*pvAxis.x*(1.0f-rcos) + pvAxis.y*rsin;
-
-   matrix[0][1] = pvAxis.x*pvAxis.y*(1.0f-rcos) + pvAxis.z*rsin;
-   matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f-pvAxis.y*pvAxis.y);
-   matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f-rcos) - pvAxis.x*rsin;
-
-   matrix[0][2] = pvAxis.z*pvAxis.x*(1.0f-rcos) - pvAxis.y*rsin;
-   matrix[1][2] = pvAxis.y*pvAxis.z*(1.0f-rcos) + pvAxis.x*rsin;
-   matrix[2][2] = pvAxis.z*pvAxis.z + rcos*(1.0f-pvAxis.z*pvAxis.z);
-
-   for (int i=0; i<count; ++i)
-   {
-      const float result[3] = {
-         matrix[0][0]*pvPoint[i].x + matrix[0][1]*pvPoint[i].y + matrix[0][2]*pvPoint[i].z,
-         matrix[1][0]*pvPoint[i].x + matrix[1][1]*pvPoint[i].y + matrix[1][2]*pvPoint[i].z,
-         matrix[2][0]*pvPoint[i].x + matrix[2][1]*pvPoint[i].y + matrix[2][2]*pvPoint[i].z};
-
-         pvPoint[i].x = result[0];
-         pvPoint[i].y = result[1];
-         pvPoint[i].z = result[2];
-   }
-}
-
-inline Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, const float angle)
-{
-   const float rsin = sinf(angle);
-   const float rcos = cosf(angle);
-
-   // Matrix for rotating around an arbitrary vector
-
-   float matrix[3][2];
-   matrix[0][0] = pvAxis.x*pvAxis.x + rcos*(1.0f-pvAxis.x*pvAxis.x);
-   matrix[1][0] = pvAxis.x*pvAxis.y*(1.0f-rcos) - pvAxis.z*rsin;
-   matrix[2][0] = pvAxis.z*pvAxis.x*(1.0f-rcos) + pvAxis.y*rsin;
-
-   matrix[0][1] = pvAxis.x*pvAxis.y*(1.0f-rcos) + pvAxis.z*rsin;
-   matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f-pvAxis.y*pvAxis.y);
-   matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f-rcos) - pvAxis.x*rsin;
-
-   return Vertex3Ds(matrix[0][0]*pvPoint.x + matrix[0][1]*pvPoint.y,
-      matrix[1][0]*pvPoint.x + matrix[1][1]*pvPoint.y,
-      matrix[2][0]*pvPoint.x + matrix[2][1]*pvPoint.y);
-}
-
-inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
-{
-   return Vertex3Ds(pv1.y * pv2.z - pv1.z * pv2.y,
-      pv1.z * pv2.x - pv1.x * pv2.z,
-      pv1.x * pv2.y - pv1.y * pv2.x);
-}
-
-class Matrix3
-{
-public:
-   inline Matrix3()
-   {
-      Identity();
-   }
-
-   inline void scaleX(const float factor)
-   {
-      m_d[0][0] *= factor;
-   }
-   inline void scaleY(const float factor)
-   {
-      m_d[1][1] *= factor;
-   }
-   inline void scaleZ(const float factor)
-   {
-      m_d[2][2] *= factor;
-   }
-
-   inline void CreateSkewSymmetric(const Vertex3Ds &pv3D)
-   {
-      m_d[0][0] = 0; m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
-      m_d[1][0] = pv3D.z; m_d[1][1] = 0; m_d[1][2] = -pv3D.x;
-      m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x; m_d[2][2] = 0;
-   }
-
-   inline void MultiplyScalar(const float scalar)
-   {
-      for (int i=0; i<3; ++i)
-         for (int l=0; l<3; ++l)
-            m_d[i][l] *= scalar;
-   }
-
-   inline Vertex3Ds MultiplyVector(const Vertex3D &pv3D) const
-   {
-      return Vertex3Ds(m_d[0][0] * pv3D.x
-         + m_d[0][1] * pv3D.y
-         + m_d[0][2] * pv3D.z,
-         m_d[1][0] * pv3D.x
-         + m_d[1][1] * pv3D.y
-         + m_d[1][2] * pv3D.z,
-         m_d[2][0] * pv3D.x
-         + m_d[2][1] * pv3D.y
-         + m_d[2][2] * pv3D.z);
-   }
-
-   inline Vertex3Ds MultiplyVector(const Vertex3D_NoTex2 &pv3D) const
-   {
-      return Vertex3Ds(m_d[0][0] * pv3D.x
-         + m_d[0][1] * pv3D.y
-         + m_d[0][2] * pv3D.z,
-         m_d[1][0] * pv3D.x
-         + m_d[1][1] * pv3D.y
-         + m_d[1][2] * pv3D.z,
-         m_d[2][0] * pv3D.x
-         + m_d[2][1] * pv3D.y
-         + m_d[2][2] * pv3D.z);
-   }
-
-   inline Vertex3Ds MultiplyVector(const Vertex3Ds &pv3D) const
-   {
-      return Vertex3Ds(m_d[0][0] * pv3D.x
-         + m_d[0][1] * pv3D.y
-         + m_d[0][2] * pv3D.z,
-         m_d[1][0] * pv3D.x
-         + m_d[1][1] * pv3D.y
-         + m_d[1][2] * pv3D.z,
-         m_d[2][0] * pv3D.x
-         + m_d[2][1] * pv3D.y
-         + m_d[2][2] * pv3D.z);
-   }
-
-   inline void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
-   {
-      Matrix3 matans;
-      for(int i=0; i<3; ++i)
-         for(int l=0; l<3; ++l)
-            matans.m_d[i][l] = pmat1->m_d[i][0] * pmat2->m_d[0][l] +
-            pmat1->m_d[i][1] * pmat2->m_d[1][l] +
-            pmat1->m_d[i][2] * pmat2->m_d[2][l];
-
-      // Copy the final values over later.  This makes it so pmat1 and pmat2 can
-      // point to the same matrix.
-      for(int i=0; i<3; ++i)
-         for (int l=0; l<3; ++l)
-            m_d[i][l] = matans.m_d[i][l];
-   }
-
-   inline void AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
-   {
-      for (int i=0; i<3; ++i)
-         for (int l=0; l<3; ++l)
-            m_d[i][l] = pmat1->m_d[i][l] + pmat2->m_d[i][l];
-   }
-
-   inline void OrthoNormalize()
-   {
-      Vertex3Ds vX(m_d[0][0], m_d[1][0], m_d[2][0]);
-      Vertex3Ds vY(m_d[0][1], m_d[1][1], m_d[2][1]);
-      vX.Normalize();
-      Vertex3Ds vZ = CrossProduct(vX, vY);
-      vZ.Normalize();
-      vY = CrossProduct(vZ, vX);
-      vY.Normalize();
-
-      m_d[0][0] = vX.x; m_d[0][1] = vY.x; m_d[0][2] = vZ.x;
-      m_d[1][0] = vX.y; m_d[1][1] = vY.y; m_d[1][2] = vZ.y;
-      m_d[2][0] = vX.z; m_d[2][1] = vY.z; m_d[2][2] = vZ.z;
-   }
-
-   inline void Transpose(Matrix3 * const pmatOut) const
-   {
-      for(int i=0; i<3; ++i)
-      {
-         pmatOut->m_d[0][i] = m_d[i][0];
-         pmatOut->m_d[1][i] = m_d[i][1];
-         pmatOut->m_d[2][i] = m_d[i][2];
-      }
-   }
-
-   inline void Identity(const float value = 1.0f)
-   {
-      m_d[0][0] = m_d[1][1] = m_d[2][2] = value;
-      m_d[0][1] = m_d[0][2] = 
-         m_d[1][0] = m_d[1][2] = 
-         m_d[2][0] = m_d[2][1] = 0.0f;
-   }
-private:
-   float m_d[3][3];
-};
-
-class FRect
-{
-public:
-   union {
-      struct {
-         float left, top, right, bottom;
-      };
-      struct {
-         __m128 ltrb;
-      };
-   };
-};
-
-class FRect3D
-{
-public:
-   union {
-      struct {
-         float left, top, right, bottom, zlow, zhigh;
-      };
-      struct {
-         __m128 ltrb,zlzh;
-      };
-   };
-};
 
 class LocalString
 {
@@ -669,6 +273,48 @@ inline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instruction on S
 }
 
 //
+
+inline int float_as_int(const float x)
+{
+	union {
+		float f;
+		int i;
+	} uc;
+	uc.f = x;
+	return uc.i;
+}
+
+inline float int_as_float(const int i)
+{
+   union {
+      int i;
+      float f;
+   } iaf;
+   iaf.i = i;
+   return iaf.f;
+}
+
+inline bool infNaN(const float a)
+{
+	return ((float_as_int(a)&0x7F800000) == 0x7F800000);
+}
+
+inline bool inf(const float a)
+{
+	return ((float_as_int(a)&0x7FFFFFFF) == 0x7F800000);
+}
+
+inline bool NaN(const float a)
+{
+	return (((float_as_int(a)&0x7F800000) == 0x7F800000) && ((float_as_int(a)&0x007FFFFF) != 0));
+}
+
+inline bool deNorm(const float a)
+{
+    return (((float_as_int(a)&0x7FFFFFFF) < 0x00800000) && (a != 0.0));
+}
+
+//
 // TinyMT64 for random numbers (much better than rand())
 //
 
@@ -697,16 +343,6 @@ inline unsigned long long tinymtu(unsigned long long state[2]) {
 #endif
    x ^= state[0] >> TINYMT64_SH8;
    return x ^ (-((long long)x & 1) & TINYMT64_TMAT);
-}
-
-inline float int_as_float(const int i)
-{
-   union {
-      int i;
-      float f;
-   } iaf;
-   iaf.i = i;
-   return iaf.f;
 }
 
 extern unsigned long long tinymt64state[2];

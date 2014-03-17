@@ -72,7 +72,7 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 // CComControl
-class ATL_NO_VTABLE PinComControl : 
+class PinComControl : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<PinComControl, &CLSID_ComControl>,
 	public IDispatchImpl<IComControl, &IID_IComControl, &LIBID_VBATESTLib>,

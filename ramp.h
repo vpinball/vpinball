@@ -27,8 +27,6 @@ public:
 	float m_friction;
 	float m_scatter;
 
-    RECT m_boundRectangle;
-	
 	bool m_fCollidable;
 	bool m_IsVisible;
 	bool m_fModify3DStereo;
@@ -38,10 +36,6 @@ public:
 	bool m_fCastsShadow;
 	bool m_fAcrylic;
 	bool m_fAlpha;
-	bool m_wasVisible;
-	bool m_wasAlpha;
-	bool m_triggerUpdateRegion;
-    bool m_triggerSingleUpdateRegion;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -104,11 +98,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	virtual void ClearForOverwrite();
 
 	void GetRgVertex(Vector<RenderVertex> * const pvv);
-	Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio);
-
-	void AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight);
-
-	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
 
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
@@ -126,41 +115,51 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
 	virtual void GetCenter(Vertex2D * const pv) const {GetPointCenter(pv);}
 	virtual void PutCenter(const Vertex2D * const pv) {PutPointCenter(pv);}
 
+	virtual void RenderShadow(ShadowSur * const psur, const float height);
+
+	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
+
+    virtual bool IsTransparent()    { return m_d.m_fAlpha; }
+    virtual float GetDepth(const Vertex3Ds& viewDir);
+
 	void WriteRegDefaults();
 
 	PinTable *m_ptable;
 
 	RampData m_d;
+
+private:
 	int rampVertex;
-	Vertex3D_NoTex2 *rgvbuf;
-    
 	Vertex2D *rgvInit;    // just for setup/static drawing
     float *rgheightInit,*rgratioInit;
 
-	WORD *rgibuf;
+    int m_numVertices;      // this goes along with dynamicVertexBuffer
+
+    Material solidMaterial;
+    Material textureMaterial;
+
+    std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
 	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;
-	BOOL dynamicVertexBufferRegenerate;
-    Material solidMaterial;
-    Material textureMaterial;
-    Material habitrailMaterial;
-
-	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
+    IndexBuffer *dynamicIndexBuffer;
+	bool dynamicVertexBufferRegenerate;
 
     bool isHabitrail() const;
 
+	Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio);
 	void prepareHabitrail(RenderDevice* pd3dDevice);
-	void prepareStatic(RenderDevice* _pd3dDevice);
-	virtual void RenderShadow(ShadowSur * const psur, const float height);
+	void prepareStatic(RenderDevice* pd3dDevice);
+	void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 
-	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
+	void RenderStaticHabitrail(RenderDevice* pd3dDevice);
+	void RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgicrosssection, const int start, const int stop);
 
-	void CheckJoint(Vector<HitObject> * const pvho, const Hit3DPoly * const ph3d1, const Hit3DPoly * const ph3d2);
-
-	void RenderStaticHabitrail(const RenderDevice* _pd3dDevice);
-	void RenderPolygons(const RenderDevice* _pd3dDevice, int offset, WORD * const rgicrosssection, const int start, const int stop);
+    void GenerateVertexBuffer(RenderDevice* pd3dDevice);
    
+	void AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight);
+	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
+
 // IRamp
 public:
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
@@ -214,6 +213,7 @@ public:
 	STDMETHOD(get_Modify3DStereo)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Modify3DStereo)(/*[in]*/ VARIANT_BOOL newVal);
 
+	//!! deprecated
 	STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(TriggerSingleUpdate)();

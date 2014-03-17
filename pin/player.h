@@ -1,8 +1,9 @@
 #pragma once
 
-#define DEFAULT_PLAYER_WIDTH 912
+#include "kdtree.h"
+#include "quadtree.h"
 
-class IBlink;
+#define DEFAULT_PLAYER_WIDTH 1024
 
 enum EnumAssignKeys
 {
@@ -27,6 +28,76 @@ enum EnumAssignKeys
 	eCKeys
 	};
 
+/*
+ * Class to limit the length of the GPU command buffer queue to at most 'numFrames' frames.
+ * Excessive buffering of GPU commands creates high latency and can create stuttery overlong
+ * frames when the CPU stalls due to a full command buffer ring.
+ *
+ * Calling Execute() within a BeginScene() / EndScene() pair creates an artificial pipeline
+ * stall by locking a vertex buffer which was rendered from (numFrames-1) frames ago. This
+ * forces the CPU to wait and let the GPU catch up so that rendering doesn't lag more than
+ * numFrames behind the CPU. It does *NOT* limit the framerate itself, only the drawahead.
+ * Note that VP is currently usually GPU-bound.
+ *
+ * This is similar to Flush() in later DX versions, but doesn't flush the entire command
+ * buffer, only up to a certain previous frame.
+ *
+ * Use of this class has been observed to effectively reduce stutter at least on an NVidia/
+ * Win7 64 bit setup. The queue limiting effect can be clearly seen in GPUView.
+ *
+ * The initial cause for the stutter may be that our command buffers are too big (two
+ * packets per frame on typical tables, instead of one), so with more optimizations to
+ * draw calls/state changes, none of this may be needed anymore.
+ */
+class FrameQueueLimiter
+{
+public:
+    void Init(int numFrames)
+    {
+        m_buffers.resize(numFrames, NULL);
+        m_curIdx = 0;
+    }
+
+    ~FrameQueueLimiter()
+    {
+        for (unsigned i = 0; i < m_buffers.size(); ++i)
+        {
+            if (m_buffers[i])
+                m_buffers[i]->release();
+        }
+    }
+
+    void Execute(RenderDevice *pd3dDevice)
+    {
+        if (m_buffers.empty())
+            return;
+
+        if (m_buffers[m_curIdx])
+            pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, m_buffers[m_curIdx], 0, 3);
+
+        m_curIdx = (m_curIdx + 1) % m_buffers.size();
+
+        if (!m_buffers[m_curIdx])
+            pd3dDevice->CreateVertexBuffer(1024, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_buffers[m_curIdx]);
+
+        // idea: locking a static vertex buffer stalls the pipeline if that VB is still
+        // in the GPU render queue. In effect, this lets the GPU catch up.
+        Vertex3D_NoTex2* buf;
+        m_buffers[m_curIdx]->lock(0, 0, (void**)&buf, 0);
+        memset(buf, 0, 3*sizeof(buf[0]));
+        buf[0].z = buf[1].z = buf[2].z = 1e5f;      // single triangle, degenerates to point far off screen
+        m_buffers[m_curIdx]->unlock();
+    }
+
+private:
+    std::vector<VertexBuffer*> m_buffers;
+    unsigned m_curIdx;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 class Player
 {
 public:
@@ -43,9 +114,7 @@ public:
 
 	virtual IEditable *GetIEditable() { return (IEditable*)this; }
 
-	void ReOrder();
 	void InitStatic(HWND hwndProgress);
-	void InitAnimations(HWND hwndProgress);
 
     void UpdatePhysics();
 	void Render();
@@ -53,22 +122,17 @@ public:
 
     void DrawBallShadow(Ball * const pball);
     void CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
-    void DrawBalls(const bool only_invalidate_regions);
+    void DrawBalls();
     void DrawBallLogo(Ball * const pball );
     void CalcBallLogo(Ball * const pball, Vertex3D_NoTex2 *vBuffer);
-    unsigned int CheckAndUpdateRegions();
-    void FlipVideoBuffersNormal( unsigned int overall_area, bool vsync );
-    void FlipVideoBuffers3D( unsigned int overall_area);
-
-	void DrawAlphas();
+    void CheckAndUpdateRegions();
+    void FlipVideoBuffersNormal( const bool vsync );
+    void FlipVideoBuffers3DFXAA( const bool vsync );
 
 	void PhysicsSimulateCycle(float dtime);
-
-	void InvalidateRect(RECT * const prc);
 #ifdef ULTRAPIN
 	void DrawLightHack();
 #endif
-	void EraseBall(Ball *pball);
 
 	Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f);
 	void DestroyBall(Ball *pball);
@@ -94,6 +158,8 @@ public:
 	void UltraPlunger_update();
 	void mechPlungerIn( const int z );		
 
+    void SetGravity(float slopeDeg, float strength);
+
 #ifdef PLAYBACK
 	float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
 #endif
@@ -107,18 +173,16 @@ public:
 
 	Pin3D m_pin3d;
 
-	int m_time_msec;
+	U32 m_time_msec;
 
 	int m_DeadZ;
 
 	Ball *m_pactiveball;		// ball the script user can get with ActiveBall
 	Ball *m_pactiveballDebug;	// ball the debugger will use as Activeball when firing events
 
-	Vector<Ball> m_vball;
-	Vector<UpdateRect> m_vupdaterect;
+    std::vector<Ball*> m_vball;
 	Vector<AnimObject> m_vscreenupdate;
 	Vector<HitTimer> m_vht;
-	Vector<IBlink> m_vblink;	// Lights which are set to blink
 
     BOOL m_fThrowBalls;
 	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
@@ -154,7 +218,7 @@ public:
 	Vector<CLSID> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
 
 	BOOL m_fCloseDown;			// Whether to shut down the player at the end of this frame
-	int m_fCloseType;			// if 0 exit player and close application if started minimized, if 1 close application always
+	int m_fCloseType;			// if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
 
 	int m_sleeptime;			// time to sleep during each frame - can helps side threads like vpinmame
 
@@ -162,9 +226,9 @@ public:
 
 	GPINFLOAT m_pixelaspectratio;
 
-	unsigned int m_fVSync; // targeted refresh rate in Hz
+	int m_fVSync; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
 
-	BOOL m_fFXAA;
+	int m_fFXAA;
     BOOL m_fAA;
 
 	BOOL m_fReflectionForBalls;
@@ -179,11 +243,6 @@ public:
 
 	BOOL m_DebugBalls;			 // Draw balls in the foreground.
 	BOOL m_ToggleDebugBalls;
-
-	BOOL m_fEnableRegionUpdates; // Use the CleanBlt flag below or not, nowadays some setups are slower when using it (especially NVIDIA Optimus setups)
-	BOOL m_fCleanBlt;			 // We can do smart blitting next frame
-	BOOL m_fEnableRegionUpdateOptimization; // Check if area of updated regions is larger than screen and/or if everything should be redrawn (helps mainly NVIDIA FXAA, but also can be more speedy)
-    BOOL m_fVertexBuffersInVRAM;  //VertexBuffers are created inside the VRAM not in system memory if fTRUE
 
 	BOOL m_fPlayMusic;
 	BOOL m_fPlaySound;
@@ -201,6 +260,14 @@ public:
 	U32 c_contactcnt;
 	U32 c_staticcnt;
 	U32 c_embedcnts;
+	U32 c_timesearch;
+
+	U32 c_octNextlevels;
+	U32 c_traversed;
+	U32 c_tested;
+	U32 c_deepTested;
+
+    VertexBuffer * m_ballDebugPoints;
 #endif
 	int m_movedPlunger;			// has plunger moved, must have moved at least three times
 	U32 m_LastPlungerHit;		// The last time the plunger was in contact (at least the vicinity) of the ball.
@@ -210,6 +277,8 @@ public:
     int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
     BOOL m_fFullScreen;
 
+	int m_width, m_height;
+
 	bool m_touchregion_pressed[8]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
 
     bool m_fDrawCursor;
@@ -217,26 +286,33 @@ public:
 	bool m_fUserDebugPaused;
 	bool m_fDebugWindowActive;
 	
+    std::vector< Hitable* > m_triggeredLights;  // lights whose state changed this frame (VP9COMPAT)
+
 private:
 	Vector<HitObject> m_vho;
-	Vector<AnimObject> m_vmover;
+    std::vector< AnimObject* > m_vmover;    // moving objects for physics simulation
 
-	Vector<Ball> m_vballDelete;	// Balls to free at the end of the frame
+    std::vector<Ball*> m_vballDelete;	// Balls to free at the end of the frame
 
-	HitOctree m_hitoctree;
-	HitOctree m_shadowoctree;
+	HitQuadtree m_hitoctree;
+	HitQuadtree m_shadowoctree;
 
 	Vector<HitObject> m_vdebugho;
-	HitOctree m_debugoctree;
+	HitQuadtree m_debugoctree;
 
-	int m_width, m_height;
+	Vector<HitObject> m_vho_dynamic;
+    HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
 
 	U64 m_StartTime_usec;
 	U64 m_curPhysicsFrameTime;	// Time when the last frame was drawn
 	U64 m_nextPhysicsFrameTime;	// time at which the next physics update should be
 
-    // caching hitable alpha ramps & primitives to speed up DrawAlphas() and set up invalid regions
-	Vector< Hitable > m_vhitalpha;
+    // all Hitables obtained from the table's list of Editables
+    std::vector< Hitable* > m_vhitables;
+    std::vector< Hitable* > m_vHitNonTrans; // non-transparent hitables
+    std::vector< Hitable* > m_vHitTrans;    // transparent hitables
+    std::vector< Hitable* > m_vHitBackglass; // backglass objects (VP9COMPAT)
+    std::vector< Hitable* > m_vLights;      // lights objects (VP9COMPAT)
 
 	int m_curAccel_x[PININ_JOYMXCNT];
 	int m_curAccel_y[PININ_JOYMXCNT];
@@ -245,8 +321,6 @@ private:
 	BOOL m_fPlayback;
 	FILE *m_fplaylog;
 #endif
-
-	BOOL m_fCheckBlt;
 
 	BOOL m_fBallShadows;
 	BOOL m_fBallDecals;
@@ -296,17 +370,22 @@ private:
 #ifdef FPS
 	int m_lastfpstime;
 	int m_cframes;
-	int m_fps;
-    int m_fpsAvg;
+	float m_fps;
+    float m_fpsAvg;
     int m_fpsCount;
+    U64 m_lastTime_usec;
+    U64 m_lastFrameDuration;
 	U64 m_count;
 	U64 m_total;
-	U32 m_max;
+	U64 m_max;
+    int m_lastMaxChangeTime;
 	U64 m_phys_total;
 	U64 m_phys_max;
 	U64 m_phys_total_iterations;
 	U64 m_phys_max_iterations;
 	BOOL m_fShowFPS;
+
+    FrameQueueLimiter m_limiter;
 
 public:
 	void ToggleFPS();
@@ -314,7 +393,7 @@ public:
 
 #ifdef STEPPING
 public:
-	int m_PauseTimeTarget;
+	U32 m_PauseTimeTarget;
 	bool m_fPause;
 	bool m_fStep;
 #endif

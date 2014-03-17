@@ -81,6 +81,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_KICKER)
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
 
+	virtual void PreRenderStatic( RenderDevice* pd3dDevice);
+
 	void WriteRegDefaults();
 
 	PinTable *m_ptable;
@@ -89,11 +91,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_KICKER)
 
 	KickerHitCircle *m_phitkickercircle;
    Vertex3D vertices[49];
-   Vertex3D borderVerices[16];
-   RECT recBounds;
-   Material colorMaterial;
-   Material blackMaterial;
-
 
 // IKicker
 public:
@@ -128,7 +125,8 @@ class KickerHitCircle : public TriggerHitCircle
 	{
 public:
 	KickerHitCircle();
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	void DoCollide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual void Collide(CollisionEvent *coll)  { DoCollide(coll->ball, coll->normal); }
 
 	Kicker *m_pkicker;
 	Ball *m_pball;  //The ball inside this kicker
