@@ -5,10 +5,11 @@
 #if !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
 #define AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_
 
+#include <unordered_map>
+#include "hash.h"
+
 #define MIN_ZOOM 0.126f // purposely make them offset from powers to 2 to account for roundoff error
 #define MAX_ZOOM 63.9f
-
-#define MAX_TEXTURE_SIZE 4096 // D3D7 resolution limit
 
 // define table protection flags
 #define DISABLE_TABLE_SAVE		0x00000001      // cannot save table (or export)
@@ -251,11 +252,11 @@ public:
 	STDMETHOD(get_GlobalDifficulty)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_GlobalDifficulty)(/*[in]*/ float newVal);
 
+	//!! deprecated
 	STDMETHOD(get_HardwareRender)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_HardwareRender)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_AlternateRender)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_AlternateRender)(/*[in]*/ VARIANT_BOOL newVal);
-	/////////////////////////////////////////////
 
 	STDMETHOD(get_DeadSlider)(/*[out, retval]*/  int *pVal);
 	STDMETHOD(put_DeadSlider)(/*[in]*/ int newVal);
@@ -270,11 +271,6 @@ public:
 	STDMETHOD(get_TiltTriggerTime)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TiltTriggerTime)(/*[in]*/ int newVal);
 
-	STDMETHOD(get_TableRegionUpdates)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_TableRegionUpdates)(/*[in]*/ int newVal);
-	STDMETHOD(get_TableRegionOptimization)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_TableRegionOptimization)(/*[in]*/ int newVal);
-
 	STDMETHOD(get_TableSoundVolume)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TableSoundVolume)(/*[in]*/ int newVal);
 	STDMETHOD(get_TableMusicVolume)(/*[out, retval]*/ int *pVal);
@@ -288,6 +284,9 @@ public:
 
     STDMETHOD(get_GlobalAlphaAcc)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_GlobalAlphaAcc)(/*[in]*/ VARIANT_BOOL newVal);
+
+    STDMETHOD(get_GlobalStereo3D)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_GlobalStereo3D)(/*[in]*/ VARIANT_BOOL newVal);
 
     STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
 
@@ -349,7 +348,6 @@ public:
 	void RemoveImage(Texture *ppi);
 	HRESULT LoadImageFromStream(IStream *pstm, int version);
 	Texture *GetImage(char *szName);
-	void GetTVTU(const Texture * const ppi, float * const pmaxtu, float * const pmaxtv);
 	void CreateGDIBackdrop();
 	int GetImageLink(Texture *ppi);
 	PinBinary *PinTable::GetImageLinkBinary(int id);
@@ -505,6 +503,10 @@ public:
     void MoveCollectionDown(CComObject<Collection> *pcol );
 
     int GetAlphaRampsAccuracy();
+    float GetZPD();
+    float GetMaxSeparation();
+
+    FRect3D GetBoundingBox();
 
 BEGIN_COM_MAP(PinTable)
 	COM_INTERFACE_ENTRY(ITable)
@@ -550,11 +552,16 @@ END_CONNECTION_POINT_MAP()
 	float m_inclination;
 	float m_layback;
 	float m_FOV;
+	
 	float m_maxSeparation;
+	float m_globalMaxSeparation;
 	float m_ZPD;
+	float m_globalZPD;
+    BOOL m_overwriteGlobalStereo3D;
+
 	float m_xlatex;
 	float m_xlatey;
-   float m_xlatez;
+    float m_xlatez;
 	float m_scalex;
 	float m_scaley;
 	float m_angletiltMax;
@@ -629,9 +636,6 @@ END_CONNECTION_POINT_MAP()
 
 	Vector< PinSoundCopy > m_voldsound; // copied sounds currently playing
 
-	int m_TableRegionUpdates;
-	int m_TableRegionOptimization;
-
 	float m_TableSoundVolume;
 	float m_TableMusicVolume;
 
@@ -677,7 +681,6 @@ END_CONNECTION_POINT_MAP()
 
     int m_globalAlphaRampsAccuracy;
     int m_userAlphaRampsAccuracy;
-	//int m_alphaRampsAccuracy;
     BOOL m_overwriteGlobalAlphaRampsAccuracy;
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
@@ -698,6 +701,9 @@ END_CONNECTION_POINT_MAP()
 	bool m_activeLayers[8];
     bool m_toggleAllLayers;   
     bool m_savingActive;
+
+private:
+    std::tr1::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

@@ -371,8 +371,7 @@ void Decal::GetHitShapes(Vector<HitObject> * const pvho)
 
       m_pinimage.m_width = rcOut.right;
       m_pinimage.m_height = rcOut.bottom;
-      m_pinimage.m_pdsBuffer = NULL;
-      m_pinimage.m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(m_pinimage.m_width, m_pinimage.m_height);
+      m_pinimage.m_pdsBuffer = new MemTexture(rcOut.right, rcOut.bottom);
 
       if (m_d.m_color == RGB(255,255,255))
          m_d.m_color = RGB(254,255,255); //m_pinimage.SetTransparentColor(RGB(0,0,0));
@@ -380,7 +379,7 @@ void Decal::GetHitShapes(Vector<HitObject> * const pvho)
          m_d.m_color = RGB(0,0,1);
 
       HDC hdc;
-      m_pinimage.m_pdsBuffer->GetDC(&hdc);
+      m_pinimage.GetTextureDC(&hdc);
       /*if (m_d.m_color == RGB(255,255,255))
       {
       SelectObject(hdc, GetStockObject(BLACK_BRUSH));
@@ -413,9 +412,9 @@ void Decal::GetHitShapes(Vector<HitObject> * const pvho)
       SelectObject(hdcNull, hFontOld);
       ReleaseDC(NULL, hdcNull);
 
-      m_pinimage.m_pdsBuffer->ReleaseDC(hdc);
+      m_pinimage.ReleaseTextureDC(hdc);
 
-      g_pvp->m_pdd.SetOpaque(m_pinimage.m_pdsBuffer, m_pinimage.m_width, m_pinimage.m_height);
+      Texture::SetOpaque(m_pinimage.m_pdsBuffer);
       DeleteObject(hFont);
    }
 }
@@ -428,6 +427,12 @@ void Decal::EndPlay()
 {
    if (m_pinimage.m_pdsBuffer)
       m_pinimage.FreeStuff();
+
+   if ( vertexBuffer )
+   {
+      vertexBuffer->release();
+      vertexBuffer=0;
+   }
 }
 
 void Decal::PostRenderStatic(const RenderDevice* pd3dDevice)
@@ -445,18 +450,12 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
 
    float leading, descent; // For fonts
-   float maxtu, maxtv;
    Texture *pin;
    if (m_d.m_decaltype != DecalImage)
    {
       leading = m_leading;
       descent = m_descent;
 
-      DDSURFACEDESC2 ddsd;
-      ddsd.dwSize = sizeof(ddsd);
-      m_pinimage.m_pdsBuffer->GetSurfaceDesc(&ddsd);
-      maxtu = (float)m_pinimage.m_width / (float)ddsd.dwWidth;
-      maxtv = (float)m_pinimage.m_height / (float)ddsd.dwHeight;
       pin = &m_pinimage;
    }
    else
@@ -465,24 +464,15 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
       pin = m_ptable->GetImage(m_d.m_szImage);
       leading = 0;
       descent = 0;
-      maxtu = 1.0f;
-      maxtv = 1.0f;
    }
 
    if (pin)
-   {
-      if (m_d.m_decaltype == DecalImage)
-         m_ptable->GetTVTU(pin, &maxtu, &maxtv);
-
       pin->CreateAlphaChannel();
-      ppin3d->EnableLightMap(fFalse, -1);
-   }
 
    for (int l=0;l<4;l++)
    {
       vertices[l].z = height + 0.2f;
    }
-   ppin3d->ClearExtents(&m_rcBounds, NULL, NULL);
 
    const float halfwidth = m_realwidth * 0.5f;
    const float halfheight = m_realheight * 0.5f;
@@ -498,18 +488,18 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
 
    vertices[1].x = m_d.m_vCenter.x + sn*(halfheight+leading) + cs*halfwidth;
    vertices[1].y = m_d.m_vCenter.y - cs*(halfheight+leading) + sn*halfwidth;
-   vertices[1].tu = maxtu;
+   vertices[1].tu = 1.0f;
    vertices[1].tv = 0;
 
    vertices[2].x = m_d.m_vCenter.x - sn*(halfheight+descent) + cs*halfwidth;
    vertices[2].y = m_d.m_vCenter.y + cs*(halfheight+descent) + sn*halfwidth;
-   vertices[2].tu = maxtu;
-   vertices[2].tv = maxtv;
+   vertices[2].tu = 1.0f;
+   vertices[2].tv = 1.0f;
 
    vertices[3].x = m_d.m_vCenter.x - sn*(halfheight+descent) - cs*halfwidth;
    vertices[3].y = m_d.m_vCenter.y + cs*(halfheight+descent) - sn*halfwidth;
    vertices[3].tu = 0;
-   vertices[3].tv = maxtv;
+   vertices[3].tv = 1.0f;
 
    if (!m_fBackglass)
    {
@@ -518,7 +508,11 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
    else
    {
       SetHUDVertices(vertices, 4);
-      SetDiffuse(vertices, 4, 0xFFFFFF);
+      SetDiffuse(vertices, 4, 0xFFFFFFFF);
+
+      // make sure depth is very small so that we render in front of table
+      for (int i = 0; i < 4; ++i)
+          vertices[i].rhw = 1e5f;
    }
 
    if ( vertexBuffer== NULL )
@@ -527,23 +521,27 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
       if ( m_fBackglass && GetPTable()->GetDecalsEnabled() )
          vertexType = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
 
-	  g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 4, 0, vertexType, &vertexBuffer );
+	  pd3dDevice->CreateVertexBuffer( 4, 0, vertexType, &vertexBuffer );
       NumVideoBytes += 4*sizeof(Vertex3D_NoTex2);
    }
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    memcpy( buf, vertices, 4*sizeof(Vertex3D_NoTex2));
    vertexBuffer->unlock();
-
-   ppin3d->ExpandExtents(&m_rcBounds, vertices, NULL, NULL, 4, m_fBackglass);
 }
 
 void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
 {
+   if( m_fBackglass && !GetPTable()->GetDecalsEnabled())
+       return;
+
+   if (m_d.m_decaltype != DecalImage)
+       return;      // TODO: support text decals as well
+
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   material.set();
+   pd3dDevice->SetMaterial(material);
    Texture *pin;
    if (m_d.m_decaltype != DecalImage)
    {
@@ -554,61 +552,47 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
       pin = m_ptable->GetImage(m_d.m_szImage);
    }
 
-   pd3dDevice->SetRenderState( RenderDevice::ZWRITEENABLE, FALSE);
-
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-   pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_MIRROR);
+   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
    if (pin)
    {
       pin->CreateAlphaChannel();
       pin->Set( ePictureTexture );
 
-      g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);
-      g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
+      ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
       pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
-
-      ppin3d->EnableLightMap(fFalse, -1);
    }
    else // No image by that name
    {
       pd3dDevice->SetTexture(ePictureTexture, NULL);
-      g_pplayer->m_pin3d.SetColorKeyEnabled(FALSE);
    }
 
-   // Check if we are in hardware.
-   if (g_pvp->m_pdd.m_fHardwareAccel)
-   {
-      // Render all alpha pixels.
-      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, (DWORD)0x00000001);
-      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-      g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE); 
+   // Perform alpha test so that we don't write to the depth buffer on transparent pixels.
+   pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
+   pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
+   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
 
-      // Turn on anisotopic filtering. 
-      g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
-   }
-   if( !m_fBackglass || GetPTable()->GetDecalsEnabled())
+   // Turn on anisotopic filtering.
+   ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
+
+   if (!m_fBackglass)
    {
-      pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
+       float depthbias = -5 * BASEDEPTHBIAS;
+       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
    }
-//    else if( GetPTable()->GetDecalsEnabled() )
-//    {
-//       pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4, (LPWORD)rgi0123, 4, 0 );
-//    }
+
+   pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4 );
+
+   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 
    // Set the texture state.
    pd3dDevice->SetTexture(ePictureTexture, NULL);
-   g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+   ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
    // Set the render state.
    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   pd3dDevice->SetTextureStageState( ePictureTexture, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
-}
-
-void Decal::RenderMovers(const RenderDevice* pd3dDevice)
-{
+   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
 }
 
 void Decal::SetObjectPos()
@@ -736,7 +720,6 @@ BOOL Decal::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(COLR))
    {
       pbr->GetInt(&m_d.m_color);
-      //		if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
    }
    else if (id == FID(SIZE))
    {

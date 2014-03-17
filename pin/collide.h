@@ -11,6 +11,7 @@ enum
 	eSpinner,
 	eBall,
 	e3DPoly,
+	eTriangle,
 	e3DLine,
 	eGate,
 	eTextbox,
@@ -21,7 +22,6 @@ enum
 	eKicker		// this is done to limit to one test
 	};
 
-//extern float c_Gravity;
 extern float c_hardFriction; 
 extern float c_hardScatter; 
 extern float c_maxBallSpeedSqr; 
@@ -30,32 +30,30 @@ extern float c_dampingFriction;
 extern float c_plungerNormalize;  //Adjust Mech-Plunger, useful for component change or weak spring etc.
 extern bool c_plungerFilter;
 
-inline bool FQuickLineIntersect(const float x1, const float y1, const float x2, const float y2,
-								const float x3, const float y3, const float x4, const float y4)
-	{
-	const float d123 = (x2 - x1)*(y3 - y1) - (x3 - x1)*(y2 - y1);
-	const float d124 = (x2 - x1)*(y4 - y1) - (x4 - x1)*(y2 - y1);
-
-	if(d123 * d124 > 0.0f)
-	    return false;
-
-    const float d341 = (x3 - x1)*(y4 - y1) - (x4 - x1)*(y3 - y1);
-    const float d342 = d123 - d124 + d341;
-
-	return (d341 * d342 <= 0.0f);
-	}
-
+// forward declarations
 class Ball;
 class HitObject;
 class AnimObject;
 
-class UpdateRect
-	{
-public:
-	RECT m_rcupdate;
-	Vector<AnimObject> m_vobject;
-	BOOL m_fSeeThrough;
-	};
+
+struct CollisionEvent
+{
+    Ball* ball;         // the ball that collided with smth
+    HitObject* obj;     // what the ball collided with
+
+    float hittime;      // when the collision happens (relative to current physics state, units: 10 ms)
+    float distance;     // hit distance 
+    float normVel;      // hit normal velocity
+
+    // additional collision information; typical use (not always the same):
+    // 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
+    Vertex3Ds normal[5];
+
+    float hitx, hity;   // position of the ball at hit time (saved to avoid floating point errors with multiple time slices)
+
+    bool hitRigid;      // rigid body collision?
+};
+
 
 HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections);
 
@@ -66,11 +64,11 @@ public:
 	HitObject();
 	virtual ~HitObject() {}
 
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) = 0;
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) = 0;
 
 	virtual int GetType() const = 0;
 
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal) = 0;
+    virtual void Collide(CollisionEvent *hit) = 0;
 
 	virtual void CalcHitRect() = 0;
 	
@@ -82,7 +80,6 @@ public:
 	//IDispatch *m_pdisp;
 	IFireEvents *m_pfedebug;
 
-	//RECT m_rcUpdate;
 	FRect3D m_rcHitRect;
 
 	BOOL  m_fEnabled;
@@ -103,42 +100,37 @@ public:
     virtual void Check3D() {}
 	virtual ObjFrame *Draw3D(const RECT * const prc) {return NULL;}
 	virtual void Reset() {}
-
-	RECT m_rcBounds; // bounding box for invalidation
-	float m_znear, m_zfar; // To tell which objects are closer and should be blitted last
-
-	bool m_fInvalid;
 	};
 
 class LineSeg : public HitObject
 	{
 public:
-	Vertex2D normal;
-	Vertex2D v1, v2;
-	float length;
-
-	virtual float HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool lateral, const bool rigid);
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	virtual float HitTestBasic(const Ball * pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual int GetType() const {return eLineSeg;}
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual void Collide(CollisionEvent *coll);
 	void CalcNormal();
 	void CalcLength();
 	virtual void CalcHitRect();
+
+	Vertex2D normal;
+	Vertex2D v1, v2;
+	float length;
 	};
 
 class HitCircle : public HitObject
 	{
 public:
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
-	float HitTestBasicRadius(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal,
+	float HitTestBasicRadius(const Ball * pball, const float dtime, CollisionEvent& coll,
 									const bool direction, const bool lateral, const bool rigid);
 
-	float HitTestRadius(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	float HitTestRadius(const Ball * pball, const float dtime, CollisionEvent& coll);
 
 	virtual int GetType() const {return eCircle;}
 
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual void Collide(CollisionEvent *coll);
 
 	virtual void CalcHitRect();
 
@@ -153,11 +145,11 @@ class Joint : public HitCircle
 public:
 	Joint();
 
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
 	virtual int GetType() const {return eJoint;}
 
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual void Collide(CollisionEvent *coll);
 
 	virtual void CalcHitRect();
 
@@ -165,44 +157,11 @@ public:
 	Vertex2D normal;
 	};
 
-class HitOctree
-	{
-public:
-	inline HitOctree() : m_fLeaf(true)
-		{
-    lefts = 0;
-    rights = 0;
-    tops = 0;
-    bottoms = 0;
-    zlows = 0;
-    zhighs = 0;
-		}
-		
-	~HitOctree();
 
-	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const;
 
-	void HitTestBall(Ball * const pball) const;
-	void HitTestBallSse(Ball * const pball) const;
-	void HitTestBallSseInner(Ball * const pball, const int i) const;
 
-	void CreateNextLevel();
+// Callback for the broadphase collision test.
+// Perform the actual hittest between ball and hit object and update
+// collision information if a hit occurred.
+void DoHitTest(Ball *pball, HitObject *pho);
 
-	HitOctree * __restrict m_phitoct[8];
-
-	Vector<HitObject> m_vho;
-
-	// helper arrays for SSE boundary checks
-	void InitSseArrays();
-	float* __restrict lefts;
-	float* __restrict rights;
-	float* __restrict tops;
-	float* __restrict bottoms;
-	float* __restrict zlows;
-	float* __restrict zhighs;
-
-	FRect3D m_rectbounds;
-	Vertex3Ds m_vcenter;
-
-	bool m_fLeaf;
-	};

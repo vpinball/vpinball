@@ -236,9 +236,6 @@ END_COM_MAP()
 
 	HACCEL m_haccel; // Accelerator keys
 
-	int m_lastline; // line we were currently on, for color-coding
-	int m_previousline; // line we used to be on (could also be the current line)
-
 	FINDREPLACE m_findreplaceold; //the last thing found/replaced
 
 	int m_errorLineNumber;
@@ -289,7 +286,7 @@ END_CONNECTION_POINT_MAP()
 	BOOL m_fStopSingleEvents;
 	};
 
-class ATL_NO_VTABLE OMCollectionEnum :
+class OMCollectionEnum :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public IEnumVARIANT
 	{

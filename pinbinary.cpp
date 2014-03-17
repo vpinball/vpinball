@@ -9,7 +9,7 @@ PinBinary::~PinBinary()
 	{
 	if (m_pdata)
 		{
-		delete m_pdata;
+		delete [] m_pdata;
 		}
 	}
 
@@ -36,9 +36,9 @@ void PinBinary::ReadFromFile(char *szfilename)
 
 	DWORD read;
 
-	int fFoo = ReadFile(hFile, m_pdata, m_cdata, &read, NULL);
+	/*int fFoo =*/ ReadFile(hFile, m_pdata, m_cdata, &read, NULL);
 
-	fFoo = CloseHandle(hFile);
+	/*fFoo =*/ CloseHandle(hFile);
 
 	lstrcpy(m_szPath, szfilename);
 
@@ -62,10 +62,9 @@ bool PinBinary::WriteToFile(char *szfilename)
 		}
 
 	DWORD write;
+	/*int foo =*/ WriteFile(hFile, m_pdata, m_cdata, &write, NULL);
 
-	int foo = WriteFile(hFile, m_pdata, m_cdata, &write, NULL);
-
-	foo = GetLastError();
+	/*foo =*/ GetLastError();
 
 	CloseHandle(hFile);
 	return true;

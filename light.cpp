@@ -72,10 +72,7 @@ Light::Light() : m_lightcenter(this)
    normalMoverVBuffer = NULL;
    m_d.m_szOffImage[0]=0;
    m_d.m_szOnImage[0]=0;
-   m_d.m_OnImageIsLightMap=false;
-   staticCustomVertex = 0;
-   customMoverVertex[0] = 0;
-   customMoverVertex[1] = 0;
+   m_d.m_OnImageIsLightMap=fFalse;
 }
 
 Light::~Light()
@@ -100,12 +97,6 @@ Light::~Light()
       normalMoverVBuffer->release();
       normalMoverVBuffer=0;
    }
-   if( staticCustomVertex )
-	   delete [] staticCustomVertex;
-   if(customMoverVertex[0])
-	   delete [] customMoverVertex[0];
-   if(customMoverVertex[1])
-	   delete [] customMoverVertex[1];
 }
 
 HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -215,17 +206,17 @@ void Light::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_EnableLighting = iTmp;
    else
-      m_d.m_EnableLighting = true;
+      m_d.m_EnableLighting = fTrue;
    hr = GetRegInt("DefaultProps\\Light","EnableOffLighting", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_EnableOffLighting = iTmp;
    else
-      m_d.m_EnableOffLighting = true;
+      m_d.m_EnableOffLighting = fTrue;
    hr = GetRegInt("DefaultProps\\Light","OnImageIsLightmap", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_OnImageIsLightMap = iTmp;
    else
-      m_d.m_OnImageIsLightMap = false;
+      m_d.m_OnImageIsLightMap = fFalse;
 }
 
 void Light::WriteRegDefaults()
@@ -455,14 +446,6 @@ void Light::GetTimers(Vector<HitTimer> * const pvht)
 
 void Light::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   // HACK - should pass pointer to vector in
-   if (m_d.m_state == LightStateBlinking)
-   {
-      g_pplayer->m_vblink.AddElement((IBlink *)this);
-      m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
-   }
-
-   m_iblinkframe = 0;
 }
 
 void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -524,21 +507,6 @@ void Light::FreeBuffers()
       normalMoverVBuffer->release();
       normalMoverVBuffer=0;
    }
-   if( staticCustomVertex )
-   {
-      delete [] staticCustomVertex;
-      staticCustomVertex=0;
-   }
-   if(customMoverVertex[0])
-   {
-      delete [] customMoverVertex[0];
-      customMoverVertex[0]=0;
-   }
-   if(customMoverVertex[1])
-   {
-      delete [] customMoverVertex[1];
-      customMoverVertex[1]=0;
-   }
 }
 
 void Light::EndPlay()
@@ -562,20 +530,238 @@ void Light::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-void Light::PostRenderStatic(const RenderDevice* pd3dDevice)
+//static const WORD rgiLightStatic0[3] = {0,1,2};
+static const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+
+void Light::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
+    TRACE_FUNCTION();
+    /* HACK / VP9COMPAT:
+     * In VP9, people commonly used pure black "update lights" whose only function was to refresh
+     * their region. Since lights were blitted using color keying, pure black objects didn't show.
+     * In DX9, there is no native colorkeying, so here we attempt to detect such lights and simply
+     * don't render them.
+     */
+    if ( m_d.m_color == 0
+         && m_ptable->GetImage(m_d.m_szOffImage) == NULL
+         && m_ptable->GetImage(m_d.m_szOnImage) == NULL)
+        return;
+
+    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
+        return;
+
+    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
+
+    if (m_d.m_state == LightStateBlinking)
+        UpdateBlinker(g_pplayer->m_time_msec);
+
+    if (m_d.m_shape == ShapeCustom)
+    {
+        PostRenderStaticCustom(pd3dDevice);
+        return;
+    }
+
+    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+    ppin3d->lightTexture[1].Set( ePictureTexture );
+
+    g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+
+    const float height = m_surfaceHeight;
+
+    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+
+    Material mtrl;
+    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
+
+    ppin3d->SetTexture(NULL);
+
+    if (!isOn)
+    {
+        if(!m_d.m_EnableOffLighting)
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
+
+        mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
+        mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
+        mtrl.setEmissive( 0.0f, 0.0f, 0.0f, 0.0f );
+
+        if (!m_fBackglass)
+            ppin3d->EnableLightMap(height);
+        else  // backglass
+        {
+            /*
+             * Pre-transformed vertices are not affected by vertex lighting, so we have to provide the
+             * color through the texture factor.
+             */
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
+            pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, BGR(255*b*0.3f, 255*g*0.3f, 255*r*0.3f));
+        }
+    } 
+    else 
+    {
+        if(!m_d.m_EnableLighting)
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
+        mtrl.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
+        mtrl.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
+        mtrl.setEmissive( 0.0f, r, g, b );
+
+        if (m_fBackglass)
+        {
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
+            pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, BGR(255*b, 255*g, 255*r));
+        }
+    }
+
+    pd3dDevice->SetMaterial(mtrl);
+
+    if (!m_fBackglass)
+    {
+        float depthbias = -BASEDEPTHBIAS;
+        pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
+    }
+
+    ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
+
+    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, normalMoverVBuffer, 0, 32);
+
+    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+
+    // reset render states
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+    if (!isOn)
+        ppin3d->DisableLightMap();
+    if (m_fBackglass)
+    {
+        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
+    }
 }
+
+
+void Light::PostRenderStaticCustom(RenderDevice* pd3dDevice)
+{
+    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+
+    bool useLightmap = false;
+
+    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
+    const float height = m_surfaceHeight;
+
+    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+
+    Texture* pin = NULL;
+    Material mtrl;
+
+    if (!isOn)
+    {
+        if(!m_d.m_EnableOffLighting)
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
+        // Check if the light has an "off" texture.
+        if ((pin = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
+        {
+            // Set the texture to the one defined in the editor.
+            ppin3d->SetTexture(pin);
+            ppin3d->DisableLightMap();
+            mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
+        }
+        else
+        {
+            // Set the texture to a default.
+            ppin3d->lightTexture[1].Set( ePictureTexture );
+            if (!m_fBackglass)
+                ppin3d->EnableLightMap(height);
+            mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
+            mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
+            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
+        }
+    } 
+    else // LightStateOn 
+    {
+        if(!m_d.m_EnableLighting)
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
+        ppin3d->DisableLightMap();
+
+        // Check if the light has an "on" texture.
+        if ((pin = m_ptable->GetImage(m_d.m_szOnImage)) != NULL)
+        {
+            // Set the texture to the one defined in the editor.
+            if ( isOn && m_d.m_OnImageIsLightMap )
+            {
+                Texture *offTexel=m_ptable->GetImage(m_d.m_szOffImage);
+                if ( offTexel )
+                {
+                    pd3dDevice->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_ADD );
+                    ppin3d->SetBaseTexture(ePictureTexture, offTexel->m_pdsBuffer);
+                    ppin3d->SetBaseTexture(eLightProject1, pin->m_pdsBuffer);
+                    useLightmap=true;
+                }
+                else
+                {
+                    ppin3d->SetBaseTexture(ePictureTexture, pin->m_pdsBuffer);
+                }
+            }
+            else
+                ppin3d->SetTexture(pin);
+
+            mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
+            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
+        }
+        else
+        {
+            // Set the texture to a default.
+            ppin3d->lightTexture[1].Set(ePictureTexture);
+            mtrl.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
+            mtrl.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
+            mtrl.setEmissive(0.0f, r, g, b );
+        }
+    }
+    pd3dDevice->SetMaterial(mtrl);    
+
+    if (!m_fBackglass)
+    {
+        float depthbias = -BASEDEPTHBIAS;
+        pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
+    }
+
+    ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
+
+    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, (isOn ? customMoverVertexNum : 0), customMoverVertexNum);
+
+    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+
+    if ( useLightmap )
+    {
+        pd3dDevice->SetTextureStageState( 1, D3DTSS_COLOROP, D3DTOP_MODULATE );
+    }
+
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+    ppin3d->DisableLightMap();
+}
+
 
 void Light::PrepareStaticCustom()
 {
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
+   const float height = m_surfaceHeight;
 
    // prepare static custom object
    Vector<RenderVertex> vvertex;
    GetRgVertex(&vvertex);
 
    const int cvertex = vvertex.Size();
-   RenderVertex *const rgv = new RenderVertex[cvertex];
+   std::vector<RenderVertex> rgv(cvertex);
 
    for (int i=0; i<cvertex; ++i)
    {
@@ -616,14 +802,12 @@ void Light::PrepareStaticCustom()
    Vector<Triangle> vtri;
    PolygonToTriangles(rgv, &vpoly, &vtri);
    staticCustomVertexNum = vtri.Size()*3;
-   if(staticCustomVertex)
-	   delete [] staticCustomVertex;
-   staticCustomVertex = new Vertex3D[staticCustomVertexNum];
+   std::vector<Vertex3D> staticCustomVertex(staticCustomVertexNum);
+
    if ( customVBuffer==NULL )
    {
       DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
-      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( staticCustomVertexNum, 0, vertexType, &customVBuffer);
-      NumVideoBytes += staticCustomVertexNum*sizeof(Vertex3D);     
+      g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( staticCustomVertexNum, 0, vertexType, &customVBuffer);
    }
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -646,8 +830,7 @@ void Light::PrepareStaticCustom()
          staticCustomVertex[k+1].nx = 0;    staticCustomVertex[k+1].ny = 0;    staticCustomVertex[k+1].nz = -1.0f;
          staticCustomVertex[k+2].nx = 0;    staticCustomVertex[k+2].ny = 0;    staticCustomVertex[k+2].nz = -1.0f;
 
-         for (int l=0; l<3; l++)
-            ppin3d->m_lightproject.CalcCoordinates(&staticCustomVertex[k+l]);
+         ppin3d->CalcShadowCoordinates(&staticCustomVertex[k],3);
       }
       else
       {
@@ -658,11 +841,9 @@ void Light::PrepareStaticCustom()
    }
 
    Vertex3D *buf;
-   customVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
-   memcpy( buf, staticCustomVertex, staticCustomVertexNum*sizeof(Vertex3D));
+   customVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+   memcpy( buf, &staticCustomVertex[0], staticCustomVertexNum*sizeof(Vertex3D));
    customVBuffer->unlock();
-
-   delete[] rgv;
 }
 
 void Light::PrepareMoversCustom()
@@ -690,12 +871,10 @@ void Light::PrepareMoversCustom()
    Vector<Triangle> vtri;
    PolygonToTriangles(vvertex, &vpoly, &vtri);
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
+   const float height = m_surfaceHeight;
 
-   if(customMoverVertex[0])
-	   delete [] customMoverVertex[0];
-   if(customMoverVertex[1])
-	   delete [] customMoverVertex[1];
+   Vertex3D *customMoverVertex[2];
+
    customMoverVertexNum = vtri.Size()*3;
    customMoverVertex[0] = new Vertex3D[customMoverVertexNum];
    customMoverVertex[1] = new Vertex3D[customMoverVertexNum];
@@ -703,10 +882,8 @@ void Light::PrepareMoversCustom()
    if ( customMoverVBuffer==NULL )
    {
       DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
-      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( customMoverVertexNum*2, 0, vertexType, &customMoverVBuffer);
-      NumVideoBytes += (customMoverVertexNum*2)*sizeof(Vertex3D);     
+      g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum*2, 0, vertexType, &customMoverVBuffer);
    }
-   const int offsetOnState = customMoverVertexNum;
 
    Material mtrl;
 
@@ -747,32 +924,27 @@ void Light::PrepareMoversCustom()
          for (int l=0;l<3;l++)
          {
             if (!m_fBackglass)
-               ppin3d->m_lightproject.CalcCoordinates(&customMoverVertex[i][k+l]);
+               ppin3d->CalcShadowCoordinates(&customMoverVertex[i][k+l],1);
 
             // Check if we are using a custom texture.
             if (pin != NULL)
             {
-               float maxtu, maxtv;
-               m_ptable->GetTVTU(pin, &maxtu, &maxtv);
-//                // Set texture coordinates for custom texture (world mode).
+               // Set texture coordinates for custom texture (world mode).
                if ( i==1 && m_d.m_OnImageIsLightMap )
                {
                   const float dx = customMoverVertex[i][k+l].x - m_d.m_vCenter.x;
                   const float dy = customMoverVertex[i][k+l].y - m_d.m_vCenter.y;
-                  const float ang = atan2f(dx,dy);
-                  const float dist = sqrtf(dx*dx + dy*dy);
-
-                  customMoverVertex[i][k+l].tu2 = 0.5f + sinf(ang) * (dist*inv_maxdist);
-                  customMoverVertex[i][k+l].tv2 = 0.5f + cosf(ang) * (dist*inv_maxdist);
+                  customMoverVertex[i][k+l].tu2 = 0.5f + dx * inv_maxdist;
+                  customMoverVertex[i][k+l].tv2 = 0.5f + dy * inv_maxdist;
                }
                else
                {
-                  customMoverVertex[i][k+l].tu = customMoverVertex[i][k+l].x * (inv_tablewidth * maxtu);
-                  customMoverVertex[i][k+l].tv = customMoverVertex[i][k+l].y * (inv_tableheight * maxtv);
+                  customMoverVertex[i][k+l].tu = customMoverVertex[i][k+l].x * inv_tablewidth;
+                  customMoverVertex[i][k+l].tv = customMoverVertex[i][k+l].y * inv_tableheight;
                   if ( i==0 && m_d.m_OnImageIsLightMap )
                   {
-                     customMoverVertex[i+1][k+l].tu = customMoverVertex[i][k+l].x * (inv_tablewidth * maxtu);
-                     customMoverVertex[i+1][k+l].tv = customMoverVertex[i][k+l].y * (inv_tableheight * maxtv);
+                     customMoverVertex[i+1][k+l].tu = customMoverVertex[i][k+l].x * inv_tablewidth;
+                     customMoverVertex[i+1][k+l].tv = customMoverVertex[i][k+l].y * inv_tableheight;
                   }
                }
             }
@@ -781,11 +953,8 @@ void Light::PrepareMoversCustom()
                // Set texture coordinates for default light.
                const float dx = customMoverVertex[i][k+l].x - m_d.m_vCenter.x;
                const float dy = customMoverVertex[i][k+l].y - m_d.m_vCenter.y;
-               const float ang = atan2f(dy,dx);
-               const float dist = sqrtf(dx*dx + dy*dy);
-
-               customMoverVertex[i][k+l].tu = 0.5f + sinf(ang) * (dist*inv_maxdist);
-               customMoverVertex[i][k+l].tv = 0.5f + cosf(ang) * (dist*inv_maxdist);
+               customMoverVertex[i][k+l].tu = 0.5f + dx * inv_maxdist;
+               customMoverVertex[i][k+l].tv = 0.5f + dy * inv_maxdist;
             }
          }
 
@@ -835,12 +1004,14 @@ void Light::PrepareMoversCustom()
    }//for(i=0;i<2...)
 
 
-
    Vertex3D *buf;
-   customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+   customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    memcpy( buf, customMoverVertex[0], customMoverVertexNum*sizeof(Vertex3D));
-   memcpy( &buf[offsetOnState], customMoverVertex[1], customMoverVertexNum*sizeof(Vertex3D));
+   memcpy( &buf[customMoverVertexNum], customMoverVertex[1], customMoverVertexNum*sizeof(Vertex3D));
    customMoverVBuffer->unlock();
+
+   delete [] customMoverVertex[0];
+   delete [] customMoverVertex[1];
 
    for (int i=0;i<cvertex;i++)
       delete vvertex.ElementAt(i);
@@ -849,352 +1020,121 @@ void Light::PrepareMoversCustom()
       delete vtri.ElementAt(i);
 }
 
-//static const WORD rgiLightStatic0[3] = {0,1,2};
-static const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
-
 void Light::RenderSetup(const RenderDevice* _pd3dDevice)
 {
-   if (m_d.m_shape == ShapeCustom)
-   {
-      PrepareStaticCustom();
-      PrepareMoversCustom();
-   }
-   else
-   {
-      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
+    m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
 
-      if ( normalVBuffer==NULL )
-      {
-         DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
-         g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 32, 0, vertexType, &normalVBuffer);
-         NumVideoBytes += 32*sizeof(Vertex3D);     
-      }
+    if (m_d.m_state == LightStateBlinking)
+        RestartBlinker(g_pplayer->m_time_msec);
 
-      // prepare static circle object
-      for (int l=0; l<32; l++)
-      {
-         const float angle = (float)(M_PI*2.0/32.0)*(float)l;
-         circleVertex[l].x = m_d.m_vCenter.x + sinf(angle)*(m_d.m_radius + m_d.m_borderwidth);
-         circleVertex[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius + m_d.m_borderwidth);
-         circleVertex[l].z = height + 0.05f;
+    // VP9COMPAT
+    Texture *tex;
+    if ((tex = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
+        tex->CreateAlphaChannel();
+    if ((tex = m_ptable->GetImage(m_d.m_szOnImage)) != NULL)
+        tex->CreateAlphaChannel();
+    // end compat
 
-         ppin3d->m_lightproject.CalcCoordinates(&circleVertex[l]);
-      }
+    if (m_d.m_shape == ShapeCustom)
+    {
+        PrepareStaticCustom();
+        PrepareMoversCustom();
+    }
+    else
+    {
+        Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+        const float height = m_surfaceHeight;
 
-      if( !m_fBackglass )
-         SetNormal(circleVertex, rgiLightStatic1, 32, NULL, NULL, 0);
-      else
-      {
-         SetHUDVertices(circleVertex, 32);
-         SetDiffuse(circleVertex, 32, RGB_TO_BGR(m_d.m_bordercolor));
-      }
+        if ( normalVBuffer==NULL )
+        {
+            DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
+            g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( 32, 0, vertexType, &normalVBuffer);
+        }
 
-      Vertex3D *buf;
-      normalVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
-      memcpy( buf, circleVertex, 32*sizeof(Vertex3D));
-      normalVBuffer->unlock();
+        Vertex3D circleVertex[32];
 
-   }
+        // prepare static circle object
+        for (int l=0; l<32; l++)
+        {
+            const float angle = (float)(M_PI*2.0/32.0)*(float)l;
+            circleVertex[l].x = m_d.m_vCenter.x + sinf(angle)*(m_d.m_radius + m_d.m_borderwidth);
+            circleVertex[l].y = m_d.m_vCenter.y - cosf(angle)*(m_d.m_radius + m_d.m_borderwidth);
+            circleVertex[l].z = height + 0.05f;
+        }
+        ppin3d->CalcShadowCoordinates(circleVertex,32);
+
+        if( !m_fBackglass )
+            SetNormal(circleVertex, rgiLightStatic1, 32, NULL, NULL, 0);
+        else
+        {
+            SetHUDVertices(circleVertex, 32);
+            SetDiffuse(circleVertex, 32, RGB_TO_BGR(m_d.m_bordercolor));
+        }
+
+        Vertex3D *buf;
+        normalVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+        memcpy( buf, circleVertex, 32*sizeof(Vertex3D));
+        normalVBuffer->unlock();
+
+        ///// prepare mover vertex buffer
+
+        Vertex3D rgv3D[32];
+        for (int l=0; l<32; l++)
+        {
+            const float angle = (float)(M_PI*2.0/32.0)*(float)l;
+            const float sinangle = sinf(angle);
+            const float cosangle = cosf(angle);
+            rgv3D[l].x = m_d.m_vCenter.x + sinangle*m_d.m_radius;
+            rgv3D[l].y = m_d.m_vCenter.y - cosangle*m_d.m_radius;
+            rgv3D[l].z = height + 0.1f;
+
+            rgv3D[l].tu = 0.5f + sinangle*0.5f;
+            rgv3D[l].tv = 0.5f + cosangle*0.5f;
+        }
+        ppin3d->CalcShadowCoordinates(rgv3D,32);
+
+        if (!m_fBackglass)
+            SetNormal(rgv3D, rgiLightStatic1, 32, NULL, NULL, 0);
+        else
+            SetHUDVertices(rgv3D, 32);
+
+        if ( normalMoverVBuffer==NULL )
+        {
+            DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
+            g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( 32, 0, vertexType, &normalMoverVBuffer);
+        }
+
+        normalMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+        memcpy( buf, rgv3D, 32*sizeof(Vertex3D));
+        normalMoverVBuffer->unlock();
+    }
 }
 
 void Light::RenderStatic(const RenderDevice* _pd3dDevice)
 {
-   if (m_d.m_borderwidth > 0)
-   {
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-      ppin3d->EnableLightMap(!m_fBackglass, height);
+    if (m_d.m_borderwidth > 0)
+    {
+        const float height = m_surfaceHeight;
+        Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+        if (!m_fBackglass)
+            ppin3d->EnableLightMap(height);
 
-	   Material mtrl;
-      mtrl.setColor( 1.0f, m_d.m_bordercolor );
+        Material mtrl;
+        mtrl.setColor( 1.0f, m_d.m_bordercolor );
 
-      RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-      mtrl.set();
+        RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
+        pd3dDevice->SetMaterial(mtrl);
 
-	   if((!m_fBackglass) || GetPTable()->GetDecalsEnabled()) 
-       {
-		   if(m_d.m_shape == ShapeCustom)
-           {
-			   for (int t=0; t<staticCustomVertexNum; t+=3)
-					pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, customVBuffer, t,3, (LPWORD)rgi0123, 3,0 );
-		   }
-           else
-            pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, normalVBuffer, 0, 32, (LPWORD)rgiLightStatic1, 32, 0);
-	   }
-
-	   ppin3d->EnableLightMap(fFalse, -1);
-   }
-}
-
-void Light::RenderCustomMovers(const RenderDevice* _pd3dDevice)
-{
-   RenderDevice *pd3dDevice=(RenderDevice*)_pd3dDevice;
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
-
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   bool useLightmap=false;
-
-   Material mtrl;
-   
-   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
-   for (int i=0; i<2; i++)
-   {
-      Texture* pin = NULL;
-      if(i == LightStateOff) 
-      {
-         if(!m_d.m_EnableOffLighting)
-            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
-         // Check if the light has an "off" texture.
-         if ((m_d.m_szOffImage[0] != 0) && (pin = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
-         {
-            // Set the texture to the one defined in the editor.
-            ppin3d->SetTexture(pin->m_pdsBuffer);
-            ppin3d->EnableLightMap(fFalse, -1);
-            mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
-            mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
-            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
-         }
-         else
-         {
-            // Set the texture to a default.
-            ppin3d->lightTexture[1].Set( ePictureTexture );
-            ppin3d->EnableLightMap(!m_fBackglass, height);
-            mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
-            mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
-            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
-         }
-      } 
-      else //LightStateOn 
-      {
-	     if(!m_d.m_EnableLighting)
-	         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
-		 ppin3d->EnableLightMap(fFalse, -1);
-         
-		 // Check if the light has an "on" texture.
-         if ((m_d.m_szOnImage[0] != 0) && (pin = m_ptable->GetImage(m_d.m_szOnImage)) != NULL)
-         {
-            // Set the texture to the one defined in the editor.
-            if ( i==1 && m_d.m_OnImageIsLightMap )
-            {
-               Texture *offTexel=m_ptable->GetImage(m_d.m_szOffImage);
-               if ( offTexel )
-               {
-                  pd3dDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0 );
-                  pd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-                  pd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE ); 
-                  pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-                  pd3dDevice->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_ADD );
-                  pd3dDevice->SetTexture(0, offTexel->m_pdsBuffer);
-                  pd3dDevice->SetTexture(1, pin->m_pdsBuffer);
-                  useLightmap=true;
-               }
-               else
-               {
-                  pd3dDevice->SetTexture(0, pin->m_pdsBuffer);
-               }
-            }
+        if((!m_fBackglass) || GetPTable()->GetDecalsEnabled())
+        {
+            if(m_d.m_shape == ShapeCustom)
+                pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customVBuffer, 0, staticCustomVertexNum);
             else
-               ppin3d->SetTexture(pin->m_pdsBuffer);
+                pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, normalVBuffer, 0, 32 );
+        }
 
- 
-            mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
-            mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
-            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
-         }
-         else
-         {
-            // Set the texture to a default.
-            ppin3d->lightTexture[1].Set(ePictureTexture);
-            mtrl.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
-            mtrl.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
-            mtrl.setEmissive(0.0f, r, g, b );
-         }
-      }
-     mtrl.set();    
-
-     m_pobjframe[i] = new ObjFrame();
-     ppin3d->ClearExtents(&m_pobjframe[i]->rc, NULL, NULL);
-      
-	  for( int t=0; t<customMoverVertexNum; t+=3 ) //!! optimize into single call!
-         if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
-         {
-            pd3dDevice->renderPrimitive(D3DPT_TRIANGLELIST, customMoverVBuffer, (i*customMoverVertexNum)+t, 3, (LPWORD)rgi0123,3 ,0 );
-         }
-     if ( useLightmap )
-     {
-        pd3dDevice->SetTextureStageState( 1, D3DTSS_COLORARG2, D3DTA_CURRENT ); 
-        pd3dDevice->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-        ppin3d->SetTexture(pin->m_pdsBuffer);     
-        pd3dDevice->SetTexture(1,NULL);
-     }
-	  ppin3d->ExpandExtents(&m_pobjframe[i]->rc, customMoverVertex[i], NULL, NULL, customMoverVertexNum, m_fBackglass);
-
-	  if((!m_d.m_EnableLighting))
-	      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-
-      for (int iedit=0; iedit<m_ptable->m_vedit.Size(); iedit++)
-      {
-         IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
-         if ((pie->GetItemType() == eItemDecal) && (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc)))
-            pie->GetIHitable()->RenderStatic(pd3dDevice);
-      }
-
-      ppin3d->lightTexture[1].Set(ePictureTexture);
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-
-      ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
-      m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
-
-      if (m_pobjframe[i]->pdds == NULL)
-         continue;
-
-      m_pobjframe[i]->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLTFAST_WAIT);
-
-      // Reset color key in back buffer
-      DDBLTFX ddbltfx;
-      ddbltfx.dwSize = sizeof(DDBLTFX);
-      ddbltfx.dwFillColor = 0;
-      ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe[i]->rc, NULL,
-         &m_pobjframe[i]->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
-   }
-
-   ppin3d->SetTexture(NULL);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-}
-
-void Light::RenderMovers(const RenderDevice* _pd3dDevice)
-{
-   if (m_d.m_shape == ShapeCustom)
-   {
-      RenderCustomMovers(_pd3dDevice);
-      return;
-   }
-
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
-
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   ppin3d->lightTexture[1].Set(ePictureTexture);
-
-   //pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
-
-   //pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-   //pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-
-   g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
-   Vertex3D rgv3D[32];
-   for (int l=0; l<32; l++)
-   {
-      const float angle = (float)(M_PI*2.0/32.0)*(float)l;
-      const float sinangle = sinf(angle);
-      const float cosangle = cosf(angle);
-      rgv3D[l].x = m_d.m_vCenter.x + sinangle*m_d.m_radius;
-      rgv3D[l].y = m_d.m_vCenter.y - cosangle*m_d.m_radius;
-      rgv3D[l].z = height + 0.1f;
-
-      rgv3D[l].tu = 0.5f + sinangle*0.5f;
-      rgv3D[l].tv = 0.5f + cosangle*0.5f;
-
-      ppin3d->m_lightproject.CalcCoordinates(&rgv3D[l]);
-   }
-
-   if (!m_fBackglass)
-      SetNormal(rgv3D, rgiLightStatic1, 32, NULL, NULL, 0);
-   else
-      SetHUDVertices(rgv3D, 32);
-
-   if ( normalMoverVBuffer==NULL )
-   {
-      DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
-      g_pplayer->m_pin3d.m_pd3dDevice->createVertexBuffer( 32, 0, vertexType, &normalMoverVBuffer);
-      NumVideoBytes += 32*sizeof(Vertex3D);     
-   }
-
-   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
-   Material mtrl;
-   for (int i=0; i<2; i++)
-   {
-      if(i == LightStateOff) 
-      {
-         if(!m_d.m_EnableOffLighting)
-            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
-         ppin3d->EnableLightMap(!m_fBackglass, height);
-         mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
-         mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
-         mtrl.setEmissive( 0.0f, 0.0f, 0.0f, 0.0f );
-      } 
-      else 
-      {
-         if(!m_d.m_EnableLighting)
-            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1 by default -> do not modify tex by diffuse lighting
-         ppin3d->EnableLightMap(fFalse, -1);
-         mtrl.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
-         mtrl.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
-         mtrl.setEmissive( 0.0f, r, g, b );
-      }
-
-      if (m_fBackglass)
-         SetDiffuseFromMaterial(rgv3D, 32, &mtrl);
-
-      mtrl.set();
-      Vertex3D *buf;
-      normalMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
-      memcpy( buf, rgv3D, 32*sizeof(Vertex3D));
-      normalMoverVBuffer->unlock();
-
-      m_pobjframe[i] = new ObjFrame();
-
-      ppin3d->ClearSpriteRectangle( NULL, m_pobjframe[i] );
-      ppin3d->ExpandExtents(&m_pobjframe[i]->rc, rgv3D, NULL, NULL, 32, m_fBackglass);
-
-      ppin3d->ClipRectToVisibleArea(&m_pobjframe[i]->rc);
-      m_pobjframe[i]->pdds = ppin3d->CreateOffscreen(m_pobjframe[i]->rc.right - m_pobjframe[i]->rc.left, m_pobjframe[i]->rc.bottom - m_pobjframe[i]->rc.top);
-
-      if (m_pobjframe[i]->pdds == NULL)
-         continue;
-
-      if (!m_fBackglass || GetPTable()->GetDecalsEnabled())
-      {
-         pd3dDevice->renderPrimitive(D3DPT_TRIANGLEFAN, normalMoverVBuffer, 0, 32, (LPWORD)rgiLightStatic1,32,0 );
-      }
-
-	  if((!m_d.m_EnableLighting))
-	      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-
-	  for (int iedit=0;iedit<m_ptable->m_vedit.Size();iedit++)
-	  {
-		 IEditable * const pie = m_ptable->m_vedit.ElementAt(iedit);
-		 if ((pie->GetItemType() == eItemDecal) && (fIntRectIntersect(((Decal *)pie)->m_rcBounds, m_pobjframe[i]->rc)))
-			 pie->GetIHitable()->RenderStatic(pd3dDevice);
-	  }
-
-     ppin3d->lightTexture[1].Set(ePictureTexture);
-	  pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-
-	  m_pobjframe[i]->pdds->BltFast(0, 0, ppin3d->m_pddsBackBuffer, &m_pobjframe[i]->rc, DDBLTFAST_WAIT);
-
-	  // Reset color key in back buffer
-	  DDBLTFX ddbltfx;
-	  ddbltfx.dwSize = sizeof(DDBLTFX);
-	  ddbltfx.dwFillColor = 0;//0xffff;
-	  ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe[i]->rc, NULL,
-		 &m_pobjframe[i]->rc, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
-   }
-
-   ppin3d->SetTexture(NULL);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+        ppin3d->DisableLightMap();
+    }
 }
 
 void Light::SetObjectPos()
@@ -1283,8 +1223,8 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_fLockedByLS = false;			//>>> added by chris
    m_realState	= m_d.m_state;		//>>> added by chris
 
-   m_d.m_EnableLighting = true;
-   m_d.m_EnableOffLighting = true;
+   m_d.m_EnableLighting = fTrue;
+   m_d.m_EnableOffLighting = fTrue;
 
    br.Load();
    return S_OK;
@@ -1312,7 +1252,6 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(COLR))
    {
       pbr->GetInt(&m_d.m_color);
-      //		if (!(m_d.m_color & MINBLACKMASK)) {m_d.m_color |= MINBLACK;}	// set minimum black
    }
    else if (id == FID(IMG1))
    {
@@ -1349,7 +1288,6 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BCOL))
    {
       pbr->GetInt(&m_d.m_bordercolor);
-      //		if (!(m_d.m_bordercolor & MINBLACKMASK)) {m_d.m_bordercolor |= MINBLACK;}	// set minimum black
    }
    else if (id == FID(BWTH))
    {
@@ -1558,25 +1496,6 @@ STDMETHODIMP Light::put_State(LightState newVal)
    return S_OK;
 }
 
-void Light::DrawFrame(BOOL fOn)
-{
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-   const int frame = fOn;
-
-   // Light might be off the screen and have no image
-
-   // Make sure we have a DDraw surface. 
-   if (m_pobjframe[frame]->pdds != NULL)
-   {
-      // NOTE: They are drawing to their own static buffer below in the BltFast... NOT the back buffer!
-      // We can use BltFast here because we are drawing to our own offscreen iamge
-      /*const HRESULT hr =*/ ppin3d->m_pddsStatic->BltFast(m_pobjframe[frame]->rc.left, m_pobjframe[frame]->rc.top, m_pobjframe[frame]->pdds, NULL, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
-
-      g_pplayer->InvalidateRect(&m_pobjframe[frame]->rc);
-   }
-}
-
 void Light::FlipY(Vertex2D * const pvCenter)
 {
    IHaveDragPoints::FlipPointY(pvCenter);
@@ -1735,14 +1654,7 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 
    if (g_pplayer)
    {
-      // Restart the sequence
-      // BUG - merge with code in player for light blinking someday
-      const char cold = m_rgblinkpattern[m_iblinkframe];
-      m_iblinkframe = 0;
-      const char cnew = m_rgblinkpattern[m_iblinkframe];
-      if (cold != cnew)
-          DrawFrame(cnew == '1');
-      m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
+       RestartBlinker(g_pplayer->m_time_msec);
    }
 
    STOPUNDO
@@ -1988,32 +1900,13 @@ void Light::setLightState(const LightState newVal)
 
       if (g_pplayer)
       {
-         if (lastState == LightStateBlinking)
+         // notify the player that we changed our state (for draw order determination)
+         g_pplayer->m_triggeredLights.push_back(this);
+
+         if (m_realState == LightStateBlinking)
          {
-            // must not be blinking anymore
-            g_pplayer->m_vblink.RemoveElement((IBlink *)this);
-         }
-         else if (m_realState == LightStateBlinking)
-         {
-            // must be blinking now
-            g_pplayer->m_vblink.AddElement((IBlink *)this);
             m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;
-         }
-
-         if (m_pobjframe[0])
-         {
-            switch (m_realState)
-            {
-            case LightStateOff:
-            case LightStateOn:
-               DrawFrame(m_realState);
-               break;
-
-            case LightStateBlinking:
-               // We know we can't be on the list already because we make sure our state has changed
-               m_iblinkframe = 0; // reset pattern
-               break;
-            }
+            m_iblinkframe = 0; // reset pattern
          }
       }
    }

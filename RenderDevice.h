@@ -1,201 +1,321 @@
-#include "stdafx.h"
-#include "Material.h"
 #pragma once
 
-class VertexBuffer;
-class BaseTexture;
+#include <map>
+#include "stdafx.h"
+#include <d3d9.h>
+#include "Material.h"
+#include "Texture.h"
 
-class RenderDevice : public IDirect3DDevice7
+#define CHECKD3D(s) { HRESULT hr = (s); if (FAILED(hr)) ReportError(hr, __FILE__, __LINE__); }
+
+void ReportError(HRESULT hr, const char *file, int line);
+
+typedef IDirect3DTexture9 D3DTexture;
+typedef D3DVIEWPORT9 ViewPort;
+typedef IDirect3DSurface9 RenderTarget;
+
+struct VideoMode
+{
+   int width;
+   int height;
+   int depth;
+   int refreshrate;
+};
+
+void EnumerateDisplayModes(int adapter, std::vector<VideoMode>& modes);
+
+
+enum TransformStateType {
+    TRANSFORMSTATE_WORLD      = D3DTS_WORLD,
+    TRANSFORMSTATE_VIEW       = D3DTS_VIEW,
+    TRANSFORMSTATE_PROJECTION = D3DTS_PROJECTION
+};
+
+enum UsageFlags {
+    USAGE_DYNAMIC   = D3DUSAGE_DYNAMIC      // to be used for vertex/index buffers which are locked every frame
+};
+
+
+class TextureManager
 {
 public:
+    TextureManager(RenderDevice& rd) : m_rd(rd)
+    { }
 
-   typedef enum RenderStates
-   {
-      ALPHABLENDENABLE   = D3DRENDERSTATE_ALPHABLENDENABLE,
-      ALPHATESTENABLE    = D3DRENDERSTATE_ALPHATESTENABLE,
-      ALPHAREF           = D3DRENDERSTATE_ALPHAREF,
-      ALPHAFUNC          = D3DRENDERSTATE_ALPHAFUNC,
-      CLIPPING           = D3DRENDERSTATE_CLIPPING,
-      CLIPPLANEENABLE    = D3DRENDERSTATE_CLIPPLANEENABLE,
-      COLORKEYENABLE     = D3DRENDERSTATE_COLORKEYENABLE,
-      CULLMODE           = D3DRENDERSTATE_CULLMODE,
-      DITHERENABLE       = D3DRENDERSTATE_DITHERENABLE,
-      DESTBLEND          = D3DRENDERSTATE_DESTBLEND,
-      LIGHTING           = D3DRENDERSTATE_LIGHTING,
-      SPECULARENABLE     = D3DRENDERSTATE_SPECULARENABLE,
-      SRCBLEND           = D3DRENDERSTATE_SRCBLEND,
-      TEXTUREPERSPECTIVE = D3DRENDERSTATE_TEXTUREPERSPECTIVE,
-      ZENABLE            = D3DRENDERSTATE_ZENABLE,
-      ZFUNC              = D3DRENDERSTATE_ZFUNC,
-      ZWRITEENABLE       = D3DRENDERSTATE_ZWRITEENABLE,
-	  NORMALIZENORMALS   = D3DRENDERSTATE_NORMALIZENORMALS,
-      TEXTUREFACTOR      = D3DRENDERSTATE_TEXTUREFACTOR
-   };
-   static bool createDevice(const GUID * const _deviceGUID, LPDIRECT3D7 _dx7, BaseTexture *_backBuffer );
+    ~TextureManager()
+    {
+        UnloadAll();
+    }
 
-   RenderDevice();
+    D3DTexture* LoadTexture(MemTexture* memtex);
+    void UnloadTexture(MemTexture* memtex);
 
-   static RenderDevice* instance();
-
-   virtual void SetMaterial( const THIS_ BaseMaterial * const _material );
-   virtual void SetRenderState( const RenderStates p1, const DWORD p2 );
-   bool createVertexBuffer( unsigned int _length, DWORD _usage, DWORD _fvf, VertexBuffer **_vBuffer );
-   void renderPrimitive(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, LPWORD _indices, DWORD _numIndices, DWORD _flags);
-   void renderPrimitiveListed(D3DPRIMITIVETYPE _primType, VertexBuffer* _vbuffer, DWORD _startVertex, DWORD _numVertices, DWORD _flags);
-
-   inline void setVBInVRAM( const BOOL _state )
-   {
-      vbInVRAM=(_state==1);
-   }
-
-   inline void setHardwareAccelerated( const int _hwAcc)
-   {
-      hardwareAccelerated = _hwAcc;
-   }
-
-   inline int getHardwareAccelerated() const
-   {
-      return hardwareAccelerated;
-   }
-
-   //########################## simple wrapper functions (interface for DX7)##################################
-
-   virtual STDMETHODIMP QueryInterface( THIS_ REFIID riid, LPVOID * ppvObj );
-
-   virtual STDOVERRIDEMETHODIMP_(ULONG) AddRef( void );
-   virtual STDOVERRIDEMETHODIMP_(ULONG) Release( void );
-
-   virtual STDMETHODIMP GetCaps( THIS_ LPD3DDEVICEDESC7 );
-
-   virtual STDMETHODIMP EnumTextureFormats( THIS_ LPD3DENUMPIXELFORMATSCALLBACK,LPVOID );
-
-   virtual STDMETHODIMP BeginScene( THIS );
-
-   virtual STDMETHODIMP EndScene( THIS );
-
-   virtual STDMETHODIMP GetDirect3D( THIS_ LPDIRECT3D7* );
-
-   virtual STDMETHODIMP SetRenderTarget( THIS_ LPDIRECTDRAWSURFACE7,DWORD );
-
-   virtual STDMETHODIMP GetRenderTarget( THIS_ LPDIRECTDRAWSURFACE7 * );
-
-   virtual STDMETHODIMP Clear( THIS_ DWORD,LPD3DRECT,DWORD,D3DCOLOR,D3DVALUE,DWORD );
-
-   virtual STDMETHODIMP SetTransform( THIS_ D3DTRANSFORMSTATETYPE,LPD3DMATRIX );
-
-   virtual STDMETHODIMP GetTransform( THIS_ D3DTRANSFORMSTATETYPE,LPD3DMATRIX );
-
-   virtual STDMETHODIMP SetViewport( THIS_ LPD3DVIEWPORT7 );
-
-   virtual STDMETHODIMP MultiplyTransform( THIS_ D3DTRANSFORMSTATETYPE,LPD3DMATRIX );
-
-   virtual STDMETHODIMP GetViewport( THIS_ LPD3DVIEWPORT7 );
-
-   virtual STDMETHODIMP SetMaterial( THIS_ LPD3DMATERIAL7 );
-
-   virtual STDMETHODIMP GetMaterial( THIS_ LPD3DMATERIAL7 );
-
-   virtual void getMaterial( THIS_ BaseMaterial *_material );
-
-   virtual STDMETHODIMP SetLight( THIS_ DWORD,LPD3DLIGHT7 );
-
-   virtual STDMETHODIMP GetLight( THIS_ DWORD,LPD3DLIGHT7 );
-
-   virtual STDMETHODIMP SetRenderState( THIS_ D3DRENDERSTATETYPE,DWORD );
-
-   virtual STDMETHODIMP GetRenderState( THIS_ D3DRENDERSTATETYPE,LPDWORD );
-
-   virtual STDMETHODIMP BeginStateBlock( THIS );
-
-   virtual STDMETHODIMP EndStateBlock( THIS_ LPDWORD );
-
-   virtual STDMETHODIMP PreLoad( THIS_ LPDIRECTDRAWSURFACE7 );
-
-   virtual STDMETHODIMP DrawPrimitive( THIS_ D3DPRIMITIVETYPE,DWORD,LPVOID,DWORD,DWORD );
-
-   virtual STDMETHODIMP DrawIndexedPrimitive( THIS_ D3DPRIMITIVETYPE,DWORD,LPVOID,DWORD,LPWORD,DWORD,DWORD );
-
-   virtual STDMETHODIMP SetClipStatus( THIS_ LPD3DCLIPSTATUS );
-
-   virtual STDMETHODIMP GetClipStatus( THIS_ LPD3DCLIPSTATUS );
-
-   virtual STDMETHODIMP DrawPrimitiveStrided( THIS_ D3DPRIMITIVETYPE,DWORD,LPD3DDRAWPRIMITIVESTRIDEDDATA,DWORD,DWORD );
-
-   virtual STDMETHODIMP DrawIndexedPrimitiveStrided( THIS_ D3DPRIMITIVETYPE,DWORD,LPD3DDRAWPRIMITIVESTRIDEDDATA,DWORD,LPWORD,DWORD,DWORD );
-
-   virtual STDMETHODIMP DrawPrimitiveVB( THIS_ D3DPRIMITIVETYPE,LPDIRECT3DVERTEXBUFFER7,DWORD,DWORD,DWORD );
-
-   virtual STDMETHODIMP DrawIndexedPrimitiveVB( THIS_ D3DPRIMITIVETYPE,LPDIRECT3DVERTEXBUFFER7,DWORD,DWORD,LPWORD,DWORD,DWORD );
-
-   virtual STDMETHODIMP ComputeSphereVisibility( THIS_ LPD3DVECTOR,LPD3DVALUE,DWORD,DWORD,LPDWORD );
-
-   virtual STDMETHODIMP GetTexture( THIS_ DWORD,LPDIRECTDRAWSURFACE7 * );
-
-   virtual STDMETHODIMP SetTexture( THIS_ DWORD,LPDIRECTDRAWSURFACE7 );
-
-   virtual STDMETHODIMP GetTextureStageState( THIS_ DWORD,D3DTEXTURESTAGESTATETYPE,LPDWORD );
-
-   virtual STDMETHODIMP SetTextureStageState( THIS_ DWORD,D3DTEXTURESTAGESTATETYPE,DWORD );
-
-   virtual STDMETHODIMP ValidateDevice( THIS_ LPDWORD );
-
-   virtual STDMETHODIMP ApplyStateBlock( THIS_ DWORD );
-
-   virtual STDMETHODIMP CaptureStateBlock( THIS_ DWORD );
-
-   virtual STDMETHODIMP DeleteStateBlock( THIS_ DWORD );
-
-   virtual STDMETHODIMP CreateStateBlock( THIS_ D3DSTATEBLOCKTYPE,LPDWORD );
-
-   virtual STDMETHODIMP Load( THIS_ LPDIRECTDRAWSURFACE7,LPPOINT,LPDIRECTDRAWSURFACE7,LPRECT,DWORD );
-
-   virtual STDMETHODIMP LightEnable( THIS_ DWORD,BOOL );
-
-   virtual STDMETHODIMP GetLightEnable( THIS_ DWORD,BOOL* );
-
-   virtual STDMETHODIMP SetClipPlane( THIS_ DWORD,D3DVALUE* );
-
-   virtual STDMETHODIMP GetClipPlane( THIS_ DWORD,D3DVALUE* );
-
-   virtual STDMETHODIMP GetInfo( THIS_ DWORD,LPVOID,DWORD );
+    void UnloadAll();
 
 private:
+    struct TexInfo
+    {
+        D3DTexture* d3dtex;
+        int texWidth;
+        int texHeight;
+    };
+
+    RenderDevice& m_rd;
+    std::map<MemTexture*, TexInfo> m_map;
+    typedef std::map<MemTexture*, TexInfo>::iterator Iter;
+};
+
+
+// adds simple setters and getters on top of D3DLIGHT9, for compatibility
+struct BaseLight : public D3DLIGHT9
+{
+    BaseLight()
+    {
+		ZeroMemory(this, sizeof(*this));
+    }
+
+    D3DLIGHTTYPE getType()          { return Type; }
+    void setType(D3DLIGHTTYPE lt)   { Type = lt; }
+
+    const D3DCOLORVALUE& getDiffuse()      { return Diffuse; }
+    const D3DCOLORVALUE& getSpecular()     { return Specular; }
+    const D3DCOLORVALUE& getAmbient()      { return Ambient; }
+
+    void setDiffuse(float r, float g, float b)
+    {
+        Diffuse.r = r;
+        Diffuse.g = g;
+        Diffuse.b = b;
+    }
+    void setSpecular(float r, float g, float b)
+    {
+        Specular.r = r;
+        Specular.g = g;
+        Specular.b = b;
+    }
+    void setAmbient(float r, float g, float b)
+    {
+        Ambient.r = r;
+        Ambient.g = g;
+        Ambient.b = b;
+    }
+    void setPosition(float x, float y, float z)
+    {
+        Position.x = x;
+        Position.y = y;
+        Position.z = z;
+    }
+    void setDirection(float x, float y, float z)
+    {
+        Direction.x = x;
+        Direction.y = y;
+        Direction.z = z;
+    }
+    void setRange(float r)          { Range = r; }
+    void setFalloff(float r)        { Falloff = r; }
+    void setAttenuation0(float r)   { Attenuation0 = r; }
+    void setAttenuation1(float r)   { Attenuation1 = r; }
+    void setAttenuation2(float r)   { Attenuation2 = r; }
+    void setTheta(float r)          { Theta = r; }
+    void setPhi(float r)            { Phi = r; }
+};
+
+
+
+class VertexBuffer : public IDirect3DVertexBuffer9
+{
+public:
+    enum LockFlags
+    {
+        WRITEONLY = 0,                        // in DX9, this is specified during VB creation
+        NOOVERWRITE = D3DLOCK_NOOVERWRITE,    // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
+                                              // it's only needed for VBs which are locked several times per frame
+        DISCARDCONTENTS = D3DLOCK_DISCARD     // discard previous contents; only works with dynamic VBs
+    };
+    void lock( unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags )
+    {
+        CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
+    }
+    void unlock(void)
+    {
+        CHECKD3D(this->Unlock());
+    }
+    void release(void)
+    {
+        while ( this->Release()!=0 );
+    }
+private:
+    VertexBuffer();     // disable default constructor
+};
+
+
+class IndexBuffer : public IDirect3DIndexBuffer9
+{
+public:
+    enum Format {
+        FMT_INDEX16 = D3DFMT_INDEX16,
+        FMT_INDEX32 = D3DFMT_INDEX32
+    };
+    enum LockFlags
+    {
+        WRITEONLY = 0,                      // in DX9, this is specified during VB creation
+        NOOVERWRITE = D3DLOCK_NOOVERWRITE,  // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
+                                            // it's only needed for VBs which are locked several times per frame
+        DISCARD = D3DLOCK_DISCARD           // discard previous contents; only works with dynamic VBs
+    };
+    void lock( unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags )
+    {
+        CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags) );
+    }
+    void unlock(void)
+    {
+        CHECKD3D(this->Unlock());
+    }
+    void release(void)
+    {
+        while ( this->Release()!=0 );
+    }
+private:
+    IndexBuffer();      // disable default constructor
+};
+
+
+class RenderDevice
+{
+public:
+   typedef enum RenderStates
+   {
+      ALPHABLENDENABLE   = D3DRS_ALPHABLENDENABLE,
+      ALPHATESTENABLE    = D3DRS_ALPHATESTENABLE,
+      ALPHAREF           = D3DRS_ALPHAREF,
+      ALPHAFUNC          = D3DRS_ALPHAFUNC,
+      CLIPPING           = D3DRS_CLIPPING,
+      CLIPPLANEENABLE    = D3DRS_CLIPPLANEENABLE,
+      CULLMODE           = D3DRS_CULLMODE,
+      DESTBLEND          = D3DRS_DESTBLEND,
+      LIGHTING           = D3DRS_LIGHTING,
+      SPECULARENABLE     = D3DRS_SPECULARENABLE,
+      SRCBLEND           = D3DRS_SRCBLEND,
+      ZENABLE            = D3DRS_ZENABLE,
+      ZFUNC              = D3DRS_ZFUNC,
+      ZWRITEENABLE       = D3DRS_ZWRITEENABLE,
+	  NORMALIZENORMALS   = D3DRS_NORMALIZENORMALS,
+      TEXTUREFACTOR      = D3DRS_TEXTUREFACTOR,
+      DEPTHBIAS          = D3DRS_DEPTHBIAS,
+      COLORWRITEENABLE   = D3DRS_COLORWRITEENABLE
+   };
+
+   enum TextureAddressMode {
+       TEX_WRAP          = D3DTADDRESS_WRAP,
+       TEX_CLAMP         = D3DTADDRESS_CLAMP,
+       TEX_MIRROR        = D3DTADDRESS_MIRROR
+   };
+
+   RenderDevice(HWND hwnd, int width, int height, bool fullscreen, int screenWidth, int screenHeight, int colordepth, int &refreshrate, int VSync, bool useAA, bool stereo3DFXAA);
+   ~RenderDevice();
+
+   void BeginScene();
+   void EndScene();
+
+   void Clear(DWORD numRects, D3DRECT* rects, DWORD flags, D3DCOLOR color, D3DVALUE z, DWORD stencil);
+   void Flip(bool vsync);
+
+   RenderTarget* GetBackBuffer() { return m_pBackBuffer; }
+   RenderTarget* DuplicateRenderTarget(RenderTarget* src);
+   D3DTexture* DuplicateTexture(RenderTarget* src);
+   D3DTexture* DuplicateDepthTexture(RenderTarget* src);
+
+   void SetRenderTarget( RenderTarget* );
+   void SetZBuffer( RenderTarget* );
+
+   RenderTarget* AttachZBufferTo(RenderTarget* surf);
+   void CopySurface(RenderTarget* dest, RenderTarget* src);
+   void CopySurface(D3DTexture* dest, RenderTarget* src);
+   void CopyDepth(D3DTexture* dest, RenderTarget* src);
+
+   D3DTexture* RenderDevice::UploadTexture(MemTexture* surf, int *pTexWidth=NULL, int *pTexHeight=NULL);
+   void SetRenderState( const RenderStates p1, const DWORD p2 );
+   void SetTexture( DWORD, D3DTexture* );
+   void SetTextureFilter(DWORD texUnit, DWORD mode);
+   void SetTextureAddressMode(DWORD texUnit, TextureAddressMode mode);
+   void SetTextureStageState(DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
+   void SetMaterial( const BaseMaterial * const material );
+   void SetMaterial( const Material & material )        { SetMaterial(&material.getBaseMaterial()); }
+
+   void CreateVertexBuffer( unsigned int numVerts, DWORD usage, DWORD fvf, VertexBuffer **vBuffer );
+   void CreateIndexBuffer(unsigned int numIndices, DWORD usage, IndexBuffer::Format format, IndexBuffer **idxBuffer);
+
+   IndexBuffer* CreateAndFillIndexBuffer(unsigned int numIndices, const WORD * indices);
+   IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices);
+
+   void DrawPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* vertices, DWORD vertexCount);
+   void DrawIndexedPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* vertices, DWORD vertexCount, const WORD* indices, DWORD indexCount);
+   void DrawPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount);
+   void DrawIndexedPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, const WORD* indices, DWORD indexCount);
+   void DrawIndexedPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, IndexBuffer* ib, DWORD startIndex, DWORD indexCount);
+
+   void GetMaterial( BaseMaterial *_material );
+
+   void LightEnable( DWORD, BOOL );
+   void SetLight( DWORD, BaseLight* );
+   void GetLight( DWORD, BaseLight* );
+   void SetViewport( ViewPort* );
+   void GetViewport( ViewPort* );
+
+   void SetTransform( TransformStateType, D3DMATRIX* );
+   void GetTransform( TransformStateType, D3DMATRIX* );
+
+   void CreatePixelShader( const char* shader );
+   void SetPixelShaderConstants(const float* constantData, const unsigned int numFloat4s);
+
+   void RevertPixelShaderToFixedFunction();
+
+   void ForceAnisotropicFiltering( const bool enable ) { m_force_aniso = enable; }
+
+   // performance counters
+   unsigned Perf_GetNumDrawCalls()         { return m_frameDrawCalls; }
+   unsigned Perf_GetNumStateChanges()      { return m_frameStateChanges; }
+   unsigned Perf_GetNumTextureChanges()    { return m_frameTextureChanges; }
+
+private:
+#ifdef USE_D3D9EX
+   IDirect3D9Ex* m_pD3D;
+
+   IDirect3DDevice9Ex* m_pD3DDevice;
+#else
+   IDirect3D9* m_pD3D;
+
+   IDirect3DDevice9* m_pD3DDevice;
+#endif
+
+   IDirect3DSurface9* m_pBackBuffer;
+   CComPtr<IndexBuffer> m_dynIndexBuffer;      // workaround for DrawIndexedPrimitiveVB
+
+   UINT m_adapter;      // index of the display adapter to use
+
    static const DWORD RENDER_STATE_CACHE_SIZE=256;
    static const DWORD TEXTURE_STATE_CACHE_SIZE=256;
 
-   static RenderDevice *theDevice;
    DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];
-   int hardwareAccelerated;
    BaseMaterial materialStateCache;
-   bool vbInVRAM;
-};
 
-class VertexBuffer : public IDirect3DVertexBuffer7
-{
+   VertexBuffer* m_curVertexBuffer;     // for caching
+   IndexBuffer* m_curIndexBuffer;       // for caching
+   D3DTexture* m_curTexture[8];         // for caching
+
+   DWORD m_maxaniso;
+   bool m_mag_aniso;
+
+   bool m_autogen_mipmap;
+
+   bool m_force_aniso;
+
+   // performance counters
+   unsigned m_curDrawCalls, m_frameDrawCalls;
+   unsigned m_curStateChanges, m_frameStateChanges;
+   unsigned m_curTextureChanges, m_frameTextureChanges;
+
 public:
-
-   enum LockFlags
-   {
-      WRITEONLY = DDLOCK_WRITEONLY,
-      NOOVERWRITE = DDLOCK_NOOVERWRITE,
-      DISCARDCONTENTS = DDLOCK_DISCARDCONTENTS
-   };
-   inline bool lock( unsigned int _offsetToLock, unsigned int _sizeToLock, void **_dataBuffer, DWORD _flags )
-   {
-      return ( !FAILED(this->Lock( (DWORD)_flags, _dataBuffer, 0 )) );
-   }
-   inline bool unlock(void)
-   {
-      return ( !FAILED(this->Unlock() ) );
-   }
-   inline bool optimize( RenderDevice *device)
-   {
-      return ( !FAILED(this->Optimize((LPDIRECT3DDEVICE7)device,0)));
-   }
-   inline ULONG release(void)
-   {
-      while ( this->Release()!=0 );
-      return 0;
-   }
+   TextureManager m_texMan;
 };

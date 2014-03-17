@@ -2,6 +2,7 @@
 
 #ifdef DEBUG_XXX  //rlc remove these method in perference to DevPartner
 
+#pragma comment(lib, "dbghelp.lib")
 #include "dbghelp.h"
 
 #define STACKLEVEL 5
@@ -96,7 +97,12 @@ void * operator new( unsigned int cb )
     return (void *)((int)res+extraspace);
 }
 
-void operator delete( void * p )
+void *operator new[](std::size_t s)
+{
+    return (operator new)(s);
+}
+
+void operator delete(void * p)
 {
 	if (p == NULL)
 		{
@@ -106,6 +112,11 @@ void operator delete( void * p )
 	const int extraspace = 5*sizeof(void*);
 
 	_free_dbg((void *)((int)p-extraspace), _CLIENT_BLOCK);
+}
+
+void operator delete[](void *p) throw()
+{
+    (operator delete)(p);
 }
 
 #endif

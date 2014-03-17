@@ -55,15 +55,11 @@ BallBackDecal(string) - image of the ball back decal
 *DisplayBackdrop(bool) - displays backdrop image in editor. default=true
 *Image(string) - playfield image
 
-*EnableAntialiasing(bool) - enables fake AA for this table if you have set 'Enable Fake AntiAliasing' in the video options. default=false
+*EnableAntialiasing(bool) - enables AA for this table if you have set 'Enable AntiAliasing' in the video options. default=false
 *EnableFXAA(bool) - enables FXAA for this table if you have set 'Enable FXAA' in the video options. default=false
 *RenderShadows(bool) - default=true
 *RenderEMReels(bool) - default=true						
 *RenderDecals(bool) - default=true
-*HardwareRender(bool) - default=true 
-*AlternateRender(bool) - reorder playfield objects (for ATI/AMD gfx) default=false
-*TableRegionUpdates(int) - defines region updates for this table(-1=use global setting, 0=off, 1=on)
-*TableRegionOptimization(int) - defines region optimization for this table (-1=use global setting, 0=off, 1=on)
 *TableAdaptiveVSync(int) - sets adaptive vsync option for this table (-1=use global setting, 0=off, 1=automatic, any other number is refresh rate in Hz)
 *BallReflection - enable ball reflection on table. depending on the global video setting 'Reflect Ball on Playfield' this is on or off. Or it is defined specific for this table.
 *ReflectionStrength(int) - defines the reflection strength of the ball reflection (0-255)
@@ -406,7 +402,6 @@ TopVisible(bool) - toggle visibility
 TopColor(OLE_COLOR) - topColor of the old standard primitive (only valid if no image was set)
 SideColor(OLE_COLOR) - sideColor of the old standard primitive (only valid if no image was set)
 DrawTexturesInside(bool) - textures the inside of the old standard primitive
-UpdateRegions(bool) - update the region of this primitive
 Image(string) - texture name
 X(float) - X position
 Y(float) - Y position
@@ -441,11 +436,6 @@ Scatter(float)
 *IsToy(bool) - disables collision handling completely. It overwrites the Collidable-flag and can't be used from within the script. This option is useful if you have real toys
                or static primitives which are never hitable at all.
 
-Methods
--------
-
-TriggerSingleUpdate() - triggers only one region update for all primitives
-
 
 RAMP
 ==============================================================================================================================================
@@ -478,14 +468,8 @@ IsVisible(bool)
 Friction(float)
 Scatter(float)
 Modify3DStereo(bool) - modifies the depth buffer, which can look confusing if the ramp is used for 2D flasher or GI effects, etc and the Stereo 3D rendering is used, thus it should be disabled for flashers, GI, etc
-UpdateRegions(bool) - automatically update the region of this ramp
 AddBlend(bool) - use additive blending instead of classical alpha blending
 EnableLightingImage(bool) - defines if the image/ramp should be shaded or not
-
-Methods
--------
-
-TriggerSingleUpdate() - triggers only one region update for this ramp
 
 
 SPINNER

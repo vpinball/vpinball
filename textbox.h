@@ -24,7 +24,7 @@ public:
 	BOOL m_fTransparent;
 	};
 
-class ATL_NO_VTABLE Textbox :
+class Textbox :
 	public CComObjectRootEx<CComSingleThreadModel>, 
 	public IDispatchImpl<ITextbox, &IID_ITextbox, &LIBID_VBATESTLib>,
 #ifdef VBA

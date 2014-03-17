@@ -8,7 +8,6 @@ static DWORD m_dwVolumeControlID;
 static F32 gMixerVolume;
 static int nmixers;
 static U32 volume_stamp = 0;
-static bool m_regionUpdate = false;
 
 const F32 volume_adjustment_bar_pos[2] = { 15.0f, 400.0f };
 const F32 volume_adjustment_bar_big_size[2] = { 20.0f, 4.0f };
@@ -187,8 +186,6 @@ void mixer_draw()
 	if( !volume_stamp )
 		return;
 
-	m_regionUpdate = true;
-
 	F32 fade = 1.0f - ( ( (F32) ( g_pplayer->m_time_msec - volume_stamp ) ) * 0.001f );
     if( fade > 1.0f )
 		fade = 1.0f;
@@ -203,14 +200,15 @@ void mixer_draw()
 	D3DMATRIX			RestoreWorldMatrix;
 
 	// Save the current transformation state.
-	g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+	g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( TRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 	// Save the current render state.
 	//Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
 	// Save the current texture state.
 	//Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 
-    static const D3DMATRIX WorldMatrix(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
-	g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, (LPD3DMATRIX)&WorldMatrix ); 
+    static /* const */ Matrix3D WorldMatrix; //(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
+    WorldMatrix.SetIdentity();
+	g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( TRANSFORMSTATE_WORLD, (D3DMATRIX*)&WorldMatrix );
 
     const U32 alpha = (U32) ( fade * 222.2f );
 
@@ -291,31 +289,5 @@ void mixer_draw()
 	// Restore the texture state.
 	//Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 	// Restore the transformation state.
-	g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
-}
-
-// Flags that the region behind the mixer volume should be refreshed.
-void mixer_erase()
-{
-	if( !m_regionUpdate )
-		return;
-
-	// Calculate the scale.
-	const float sX = - (float)g_pplayer->m_pin3d.m_dwRenderHeight*(float)(1.0/600.0);
-
-	// Set the position.  
-	//const float fX = ((float) g_pplayer->m_pin3d.m_dwRenderHeight) + (volume_adjustment_bar_pos[0] * sX);
-
-	// Set the width and height.
-	const float Width = volume_adjustment_bar_big_size[0] * sX;
-
-	// Invalidate the window region to signal an update from the back buffer (after render is complete).
-	RECT Rect;
-	Rect.top = (LONG) ((float)g_pplayer->m_pin3d.m_dwRenderHeight + volume_adjustment_bar_pos[0] * sX + Width);
-	Rect.left = 0;
-	Rect.bottom = g_pplayer->m_pin3d.m_dwRenderHeight - 1;
-	Rect.right = g_pplayer->m_pin3d.m_dwRenderWidth - 1;
-	g_pplayer->InvalidateRect(&Rect);
-
-	m_regionUpdate = false;
+	g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( TRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
 }

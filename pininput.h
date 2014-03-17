@@ -69,8 +69,13 @@ public:
 #endif
 	U32 Down    ( const U32 mask ) const; //!! only still used by mixer
 
-	LPDIRECTINPUT7       m_pDI;
-	LPDIRECTINPUTDEVICE7 m_pJoystick[PININ_JOYMXCNT];
+#ifdef VP10
+	LPDIRECTINPUT8       m_pDI;
+	LPDIRECTINPUTDEVICE8 m_pJoystick[PININ_JOYMXCNT];
+#else
+	LPDIRECTINPUT        m_pDI;
+	LPDIRECTINPUTDEVICE  m_pJoystick[PININ_JOYMXCNT];
+#endif
 
 	HWND m_hwnd;
 	
@@ -90,8 +95,13 @@ private:
 
 	//int InputControlRun;
 
-    LPDIRECTINPUTDEVICE  m_pKeyboard;
-    LPDIRECTINPUTDEVICE  m_pMouse;
+#ifdef VP10
+    LPDIRECTINPUTDEVICE8 m_pKeyboard;
+    LPDIRECTINPUTDEVICE8 m_pMouse;
+#else
+    LPDIRECTINPUTDEVICE m_pKeyboard;
+    LPDIRECTINPUTDEVICE m_pMouse;
+#endif
 
 	U32 m_PreviousKeys;	// Masks of PININ_* inputs used by ultracade - AMH
 	U32 m_ChangedKeys;

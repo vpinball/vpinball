@@ -32,7 +32,7 @@ STDMETHODIMP BallEx::get_X(float *pVal)
 {
 	CHECKSTALEBALL
 
-	*pVal = m_pball->x;
+	*pVal = m_pball->pos.x;
 
 	return S_OK;
 }
@@ -41,7 +41,7 @@ STDMETHODIMP BallEx::put_X(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->x = newVal;
+	m_pball->pos.x = newVal;
 
 	return S_OK;
 }
@@ -50,7 +50,7 @@ STDMETHODIMP BallEx::get_Y(float *pVal)
 {
 	CHECKSTALEBALL
 
-	*pVal = m_pball->y;
+	*pVal = m_pball->pos.y;
 
 	return S_OK;
 }
@@ -59,7 +59,7 @@ STDMETHODIMP BallEx::put_Y(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->y = newVal;
+	m_pball->pos.y = newVal;
 
 	return S_OK;
 }
@@ -68,7 +68,7 @@ STDMETHODIMP BallEx::get_VelX(float *pVal)
 {
 	CHECKSTALEBALL
 
-	*pVal = m_pball->vx;
+	*pVal = m_pball->vel.x;
 
 	return S_OK;
 }
@@ -77,9 +77,9 @@ STDMETHODIMP BallEx::put_VelX(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->vx = newVal;
+	m_pball->vel.x = newVal;
 
-	m_pball->CalcBoundingRect();
+	m_pball->CalcHitRect();
 
 	return S_OK;
 }
@@ -88,7 +88,7 @@ STDMETHODIMP BallEx::get_VelY(float *pVal)
 {
 	CHECKSTALEBALL
 
-	*pVal = m_pball->vy;
+	*pVal = m_pball->vel.y;
 
 	return S_OK;
 }
@@ -97,9 +97,9 @@ STDMETHODIMP BallEx::put_VelY(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->vy = newVal;
+	m_pball->vel.y = newVal;
 
-	m_pball->CalcBoundingRect();
+	m_pball->CalcHitRect();
 
 	return S_OK;
 }
@@ -108,7 +108,7 @@ STDMETHODIMP BallEx::get_Z(float *pVal)
 {
 	CHECKSTALEBALL
 
-	*pVal = m_pball->z;
+	*pVal = m_pball->pos.z;
 
 	return S_OK;
 }
@@ -117,7 +117,7 @@ STDMETHODIMP BallEx::put_Z(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->z = newVal;
+	m_pball->pos.z = newVal;
 
 	return S_OK;
 }
@@ -126,7 +126,7 @@ STDMETHODIMP BallEx::get_VelZ(float *pVal)
 {
 	CHECKSTALEBALL
 
-	*pVal = m_pball->vz;
+	*pVal = m_pball->vel.z;
 
 	return S_OK;
 }
@@ -135,9 +135,9 @@ STDMETHODIMP BallEx::put_VelZ(float newVal)
 {
 	CHECKSTALEBALL
 
-	m_pball->vz = newVal;
+	m_pball->vel.z = newVal;
 
-	m_pball->CalcBoundingRect();
+	m_pball->CalcHitRect();
 
 	return S_OK;
 }
@@ -293,7 +293,7 @@ STDMETHODIMP BallEx::put_Radius(float newVal)
 
 	m_pball->radius = newVal;
 
-	m_pball->CalcBoundingRect();
+	m_pball->CalcHitRect();
 
 	return S_OK;
 }

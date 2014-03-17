@@ -213,20 +213,6 @@ typedef [uuid(A5C333FD-0AD4-490a-BA6B-994CAB23501E)]
 		}
 		SizingType;
 
-typedef [uuid(99405AE9-FBCF-4EDF-9FF7-C0FE901D85F3)] 
-enum RotAndTraTypeEnum
-    {	
-	RotX = 0,
-	RotY = 1,
-	RotZ = 2,
-	TraX = 3,
-	TraY = 4,
-	TraZ = 5,
-   ObjRotX=6,
-   ObjRotY=7,
-   ObjRotZ=8,
-    } 	RotAndTraTypeEnum;
-
 typedef [uuid(C0E543A2-50B3-4546-85F8-4D35BFBE09A2)]
 	enum KickerType
 		{
@@ -473,6 +459,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Table_MaxSeparation), helpstring("property MaxSeparation")] HRESULT MaxSeparation([in] float newVal);
 		[propget, id(DISPID_Table_ZPD), helpstring("property ZPD")] HRESULT ZPD([out, retval] float *pVal);
 		[propput, id(DISPID_Table_ZPD), helpstring("property ZPD")] HRESULT ZPD([in] float newVal);
+		[propget, id(427), helpstring("property Overwrite3DStereo")] HRESULT GlobalStereo3D([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(427), helpstring("property Overwrite3DStereo")] HRESULT GlobalStereo3D([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Table_FieldOfView), helpstring("property FieldOfView")] HRESULT FieldOfView([out, retval] float *pVal);
 		[propput, id(DISPID_Table_FieldOfView), helpstring("property FieldOfView")] HRESULT FieldOfView([in] float newVal);
 		[propget, id(DISPID_Table_DisplayGrid), helpstring("property DisplayGrid")] HRESULT DisplayGrid([out, retval] VARIANT_BOOL *pVal);
@@ -589,10 +577,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(579), helpstring("property TableSoundVolume")] HRESULT TableSoundVolume([in] int newVal);
 		[propget, id(580), helpstring("property TableMusicVolume")] HRESULT TableMusicVolume([out, retval] int *pVal);
 		[propput, id(580), helpstring("property TableMusicVolume")] HRESULT TableMusicVolume([in] int newVal);
-		[propget, id(582), helpstring("property TableRegionUpdates")] HRESULT TableRegionUpdates([out, retval] int *pVal);
-		[propput, id(582), helpstring("property TableRegionUpdates")] HRESULT TableRegionUpdates([in] int newVal);
-		[propget, id(583), helpstring("property TableRegionOptimization")] HRESULT TableRegionOptimization([out, retval] int *pVal);
-		[propput, id(583), helpstring("property TableRegionOptimization")] HRESULT TableRegionOptimization([in] int newVal);
 		[propget, id(585), helpstring("property TableAdaptiveVSync")] HRESULT TableAdaptiveVSync([out, retval] int *pVal);
 		[propput, id(585), helpstring("property TableAdaptiveVSync")] HRESULT TableAdaptiveVSync([in] int newVal);
 		[propget, id(1700), helpstring("property BallReflection")] HRESULT BallReflection([out, retval] int *pVal);
@@ -1393,9 +1377,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(104), helpstring("property Side Color")] HRESULT SideColor([in] OLE_COLOR newVal);
 		[propget, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([in] VARIANT_BOOL newVal);
+
+		//!! deprecated
 		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
 		[id(1585), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();
+
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 
@@ -1745,6 +1732,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(554), helpstring("property Modify3DStereo")] HRESULT Modify3DStereo([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(554), helpstring("property Modify3DStereo")] HRESULT Modify3DStereo([in] VARIANT_BOOL newVal);
 
+	    //!! deprecated
 		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
 		[id(1584), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();
@@ -1801,6 +1789,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(112), helpstring("property IsVisible")] HRESULT IsVisible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(112), helpstring("property IsVisible")] HRESULT IsVisible([in] VARIANT_BOOL newVal);
 
+	    //!! deprecated
 		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
 		[id(1584), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();

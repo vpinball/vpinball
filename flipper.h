@@ -76,7 +76,7 @@ public:
 	Flipper();
 	virtual ~Flipper();
 
-	void SetVertices(const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
+	void SetVertices(float basex, float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
 
 	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
@@ -105,7 +105,7 @@ END_CONNECTION_POINT_MAP()
 
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
-	void RenderAtThickness(RenderDevice* pd3dDevice, ObjFrame * const pof, const float angle, const float height, const float baseradius, const float endradius, const float flipperheight, const bool isRubber, const int vBufferIndex);
+    void RenderAtThickness(RenderDevice* pd3dDevice, float angle, float height, float baseradius, float endradius, float flipperheight, Vertex3D* buf);
 
 	void WriteRegDefaults();
 
@@ -120,18 +120,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flipper)
 	PinTable *m_ptable;
 
 	FlipperData m_d;
-    
+    VertexBuffer *vertexBuffer;
+    IndexBuffer *indexBuffer;
+
 	HitFlipper *m_phitflipper;
-
-   struct VertexBufferArray
-   {
-      VertexBuffer *vbuffer;
-   };
-   VertexBufferArray *vBufferArray;
-   WORD indexBuffer[270];
-   int maxFrames;
-
-   bool setupMode;
 
 // IFlipper
 public:

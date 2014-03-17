@@ -1,7 +1,4 @@
 #include "stdafx.h"
-#include <xmmintrin.h>
-
-//spare
 
 float c_maxBallSpeedSqr = C_SPEEDLIMIT*C_SPEEDLIMIT; 
 float c_dampingFriction = C_DAMPFRICTION;
@@ -10,7 +7,6 @@ bool c_plungerFilter = false;
 
 float c_hardScatter = 0.0f;
 float c_hardFriction = 1.0f - C_FRICTIONCONST;
-//float c_Gravity = GRAVITYCONST;
 
 HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections)
 	{
@@ -42,16 +38,17 @@ void LineSeg::CalcHitRect()
 	m_rcHitRect.right = max(v1.x, v2.x);
 	m_rcHitRect.top = min(v1.y, v2.y);
 	m_rcHitRect.bottom = max(v1.y, v2.y);
-	//m_rcHitRect.zlow = 0;
+
+	//m_rcHitRect.zlow = 0; //!!?
 	//m_rcHitRect.zhigh = 50;
 	}
 
-float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal, const bool direction, const bool lateral, const bool rigid)
+float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid)
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
 
-	const float ballvx = pball->vx;							// ball velocity
-	const float ballvy = pball->vy;
+	const float ballvx = pball->vel.x;							// ball velocity
+	const float ballvy = pball->vel.y;
 
 	const float bnv = ballvx*normal.x + ballvy*normal.y;	// ball velocity normal to segment, positive if receding, zero=parallel
 	bool bUnHit = (bnv > C_LOWNORMVEL);
@@ -61,8 +58,8 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 		return -1.0f;
 		}
 
-	const float ballx = pball->x;							// ball position
-	const float bally = pball->y;
+	const float ballx = pball->pos.x;							// ball position
+	const float bally = pball->pos.y;
 
 	// ball normal distance: contact distance normal to segment. lateral contact subtract the ball radius 
 
@@ -118,31 +115,31 @@ float LineSeg::HitTestBasic(Ball * const pball, const float dtime, Vertex3Ds * c
 		return -1.0f;
 
 	if (!rigid)												  // non rigid body collision? return direction
-		phitnormal[1].x = bUnHit ? 1.0f : 0.0f;				  // UnHit signal is receding from outside target
+		coll.normal[1].x = bUnHit ? 1.0f : 0.0f;				  // UnHit signal is receding from outside target
 	
 	const float ballr = pball->radius;
-	const float hitz = pball->z - ballr + pball->vz*hittime;  // check too high or low relative to ball rolling point at hittime
+	const float hitz = pball->pos.z - ballr + pball->vel.z*hittime;  // check too high or low relative to ball rolling point at hittime
 
 	if (hitz + ballr * 1.5f < m_rcHitRect.zlow				  // check limits of object's height and depth  
 		|| hitz + ballr * 0.5f > m_rcHitRect.zhigh)
 		return -1.0f;
 
-	phitnormal->x = normal.x;				// hit normal is same as line segment normal
-	phitnormal->y = normal.y;
+	coll.normal->x = normal.x;				// hit normal is same as line segment normal
+	coll.normal->y = normal.y;
 		
-	pball->m_HitDist = bnd;					// actual contact distance ... 
-	pball->m_HitNormVel = bnv;
-	pball->m_HitRigid = rigid;				// collision type
+	coll.distance = bnd;					// actual contact distance ...
+	coll.normVel = bnv;
+	coll.hitRigid = rigid;				// collision type
 
 	return hittime;
-	}	
-
-float LineSeg::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal) 
-	{															// normal face, lateral, rigid
-	return HitTestBasic(pball, dtime, phitnormal, true, true, true);
 	}
 
-float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal,
+float LineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+	{															// normal face, lateral, rigid
+	return HitTestBasic(pball, dtime, coll, true, true, true);
+	}
+
+float HitCircle::HitTestBasicRadius(const Ball * pball, const float dtime, CollisionEvent& coll,
 									const bool direction, const bool lateral, const bool rigid)
 	{
 	if (!m_fEnabled || pball->fFrozen) return -1.0f;	
@@ -150,16 +147,16 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 	const float x = center.x;
 	const float y = center.y;	
 	
-	const float dx = pball->x - x;	// form delta components (i.e. translate coordinate frame)
-	const float dy = pball->y - y;
+	const float dx = pball->pos.x - x;	// form delta components (i.e. translate coordinate frame)
+	const float dy = pball->pos.y - y;
 
-	const float dvx = pball->vx;	// delta velocity from ball's coordinate frame
-	const float dvy = pball->vy;
+	const float dvx = pball->vel.x;	// delta velocity from ball's coordinate frame
+	const float dvy = pball->vel.y;
 
 	float targetRadius,z,dz,dvz;
 	bool capsule3D;
 	
-	if (!lateral && pball->z > zhigh)
+	if (!lateral && pball->pos.z > zhigh)
 		{
 		capsule3D = true;										// handle ball over target? 
 		//const float hcap = radius*(float)(1.0/5.0);			// cap height to hit-circle radius ratio
@@ -167,8 +164,8 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 		targetRadius = radius*(float)(13.0/5.0);				// optimized version of above code
 		//z = zhigh - (targetRadius - hcap);					// b = c - h
 		z = zhigh - radius*(float)(12.0/5.0);					// optimized version of above code
-		dz = pball->z - z;										// ball rolling point - capsule center height 			
-		dvz = pball->vz;										// differential velocity
+		dz = pball->pos.z - z;										// ball rolling point - capsule center height 			
+		dvz = pball->vel.z;										// differential velocity
 		}
 	else
 		{
@@ -252,48 +249,51 @@ float HitCircle::HitTestBasicRadius(Ball * const pball, const float dtime, Verte
 		if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f; // contact out of physics frame
 		}
 	
-	const float hitz = pball->z - pball->radius + pball->vz * hittime; //rolling point
+	const float hitz = pball->pos.z - pball->radius + pball->vel.z * hittime; //rolling point
 
 	if(((hitz + pball->radius *1.5f) < zlow) ||
 	   (!capsule3D && (hitz + pball->radius*0.5f) > zhigh) ||
-	   (capsule3D && (pball->z + pball->vz * hittime) < zhigh)) return -1.0f;
+	   (capsule3D && (pball->pos.z + pball->vel.z * hittime) < zhigh)) return -1.0f;
 		
-	const float hitx = pball->x + pball->vx*hittime;
-	const float hity = pball->y + pball->vy*hittime;
+	const float hitx = pball->pos.x + pball->vel.x*hittime;
+	const float hity = pball->pos.y + pball->vel.y*hittime;
 
 	const float sqrlen = (hitx - x)*(hitx - x)+(hity - y)*(hity - y);
 
 	 if (sqrlen > 1.0e-8f) // over center???
 		{//no
 		const float inv_len = 1.0f/sqrtf(sqrlen);
-		phitnormal->x = (hitx - x)*inv_len;
-		phitnormal->y = (hity - y)*inv_len;
+		coll.normal->x = (hitx - x)*inv_len;
+		coll.normal->y = (hity - y)*inv_len;
 		}
 	 else 
 		{//yes over center
-		phitnormal->x = 0; // make up a value, any direction is ok
-		phitnormal->y = 1.0f;
+		coll.normal->x = 0; // make up a value, any direction is ok
+		coll.normal->y = 1.0f;
 		}
 	
 	if (!rigid)											// non rigid body collision? return direction
-		phitnormal[1].x = fUnhit ? 1.0f : 0.0f;			// UnHit signal	is receding from target
+		coll.normal[1].x = fUnhit ? 1.0f : 0.0f;			// UnHit signal	is receding from target
 
-	pball->m_HitDist = bnd;					//actual contact distance ... 
-	pball->m_HitNormVel = bnv;
-	pball->m_HitRigid = rigid;				// collision type
+	coll.distance = bnd;					//actual contact distance ... 
+	coll.normVel = bnv;
+	coll.hitRigid = rigid;				// collision type
 
 	return hittime;
 	}
 
-float HitCircle::HitTestRadius(Ball *pball, float dtime, Vertex3Ds *phitnormal)
+float HitCircle::HitTestRadius(const Ball *pball, float dtime, CollisionEvent& coll)
 	{	
 													//normal face, lateral, rigid
-	return HitTestBasicRadius(pball, dtime, phitnormal, true, true, true);		
+	return HitTestBasicRadius(pball, dtime, coll, true, true, true);
 	}	
 
-void LineSeg::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
+void LineSeg::Collide(CollisionEvent *coll)
 	{
-	const float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
+    Ball *pball = coll->ball;
+    Vertex3Ds *phitnormal = coll->normal;
+
+	const float dot = phitnormal->x * pball->vel.x + phitnormal->y * pball->vel.y;
 
 	pball->CollideWall(phitnormal, m_elasticity, m_antifriction, m_scatter);
 
@@ -301,9 +301,9 @@ void LineSeg::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		{			
 		if (dot <= -m_threshold)
 			{
-			const float dx = pball->m_Event_Pos.x - pball->x; // is this the same place as last event????
-			const float dy = pball->m_Event_Pos.y - pball->y; // if same then ignore it
-			const float dz = pball->m_Event_Pos.z - pball->z;
+			const float dx = pball->m_Event_Pos.x - pball->pos.x; // is this the same place as last event????
+			const float dy = pball->m_Event_Pos.y - pball->pos.y; // if same then ignore it
+			const float dz = pball->m_Event_Pos.z - pball->pos.z;
 
 			if (dx*dx + dy*dy + dz*dz > 0.25f)// must be a new place if only by a little
 				{
@@ -311,9 +311,7 @@ void LineSeg::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 				}
 			}
 		
-		pball->m_Event_Pos.x = pball->x; 
-		pball->m_Event_Pos.y = pball->y; 
-		pball->m_Event_Pos.z = pball->z; //remember last collide position
+        pball->m_Event_Pos = pball->pos; //remember last collide position
 		}
 	}
 
@@ -341,21 +339,24 @@ void Joint::CalcHitRect()
 	m_rcHitRect.top = center.y;
 	m_rcHitRect.bottom = center.y;
 	
-	zlow = m_rcHitRect.zlow;
+	zlow = m_rcHitRect.zlow; //!!?
 	zhigh = m_rcHitRect.zhigh;
 	}
 
-float Joint::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
+float Joint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 	{
 	if (!m_fEnabled)
 		return -1.0f;
 
-	return HitTestRadius(pball, dtime, phitnormal);	
+	return HitTestRadius(pball, dtime, coll);
 	}
 
-void Joint::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
+void Joint::Collide(CollisionEvent *coll)
 	{
-	const float dot = phitnormal->x * pball->vx + phitnormal->y * pball->vy;
+    Ball *pball = coll->ball;
+    Vertex3Ds *phitnormal = coll->normal;
+
+	const float dot = phitnormal->x * pball->vel.x + phitnormal->y * pball->vel.y;
 
 	pball->CollideWall(phitnormal, m_elasticity, m_antifriction, m_scatter);
 
@@ -363,9 +364,9 @@ void Joint::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 		{			
 		if (dot <= -m_threshold)
 			{
-			const float dx = pball->m_Event_Pos.x - pball->x; // is this the same place as last event????
-			const float dy = pball->m_Event_Pos.y - pball->y; // if same then ignore it
-			const float dz = pball->m_Event_Pos.z - pball->z;
+			const float dx = pball->m_Event_Pos.x - pball->pos.x; // is this the same place as last event????
+			const float dy = pball->m_Event_Pos.y - pball->pos.y; // if same then ignore it
+			const float dz = pball->m_Event_Pos.z - pball->pos.z;
 
 			if (dx*dx + dy*dy + dz*dz > 0.25f) // must be a new place if only by a little
 				{
@@ -373,9 +374,7 @@ void Joint::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
 				}
 			}
 		
-		pball->m_Event_Pos.x = pball->x; 
-		pball->m_Event_Pos.y = pball->y; 
-		pball->m_Event_Pos.z = pball->z; //remember last collide position
+        pball->m_Event_Pos = pball->pos;        //remember last collide position
 		}
 	}
 
@@ -390,395 +389,29 @@ void HitCircle::CalcHitRect()
 	m_rcHitRect.zhigh = zhigh;
 	}
 
-float HitCircle::HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal)
+float HitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 	{
-	return HitTestRadius(pball, dtime, phitnormal);
+	return HitTestRadius(pball, dtime, coll);
 	}
 
-void HitCircle::Collide(Ball * const pball, Vertex3Ds * const phitnormal)
-	{
-	pball->CollideWall(phitnormal, m_elasticity, m_antifriction, m_scatter);
-	}
-
-HitOctree::~HitOctree()
-	{
-#ifdef HITLOG
-	if (g_fWriteHitDeleteLog)
-		{
-		FILE * const file = fopen("c:\\log.txt", "a");
-		fprintf(file,"Deleting %f %f %f %f %d\n", m_rectbounds.left, m_rectbounds.top, m_rectbounds.right, m_rectbounds.bottom, m_fLeaf); 
-		fclose(file);
-		}
-#endif
-
-	if(lefts != 0)
-	{
-	_aligned_free(lefts);
-	_aligned_free(rights);
-	_aligned_free(tops);
-	_aligned_free(bottoms);
-	_aligned_free(zlows);
-	_aligned_free(zhighs);
-	}
-
-	if (!m_fLeaf)
-		{
-		for (int i=0;i<8;i++)
-			{
-			delete m_phitoct[i];
-			}
-		}
-	}
-
-void HitOctree::CreateNextLevel()
-	{
-	m_fLeaf = false;
-
-	Vector<HitObject> vRemain; // hit objects which did not go to an octant
-
-	for (int i=0;i<8;i++)
-		{
-		m_phitoct[i] = new HitOctree();
-
-		m_phitoct[i]->m_rectbounds.left = (i&1) ? m_vcenter.x : m_rectbounds.left;
-		m_phitoct[i]->m_rectbounds.top  = (i&2) ? m_vcenter.y : m_rectbounds.top;
-		m_phitoct[i]->m_rectbounds.zlow = (i&4) ? m_vcenter.z : m_rectbounds.zlow;
-
-		m_phitoct[i]->m_rectbounds.right  = (i&1) ? m_rectbounds.right  : m_vcenter.x;
-		m_phitoct[i]->m_rectbounds.bottom = (i&2) ? m_rectbounds.bottom : m_vcenter.y;
-		m_phitoct[i]->m_rectbounds.zhigh  = (i&4) ? m_rectbounds.zhigh  : m_vcenter.z;
-
-		m_phitoct[i]->m_vcenter.x = (m_phitoct[i]->m_rectbounds.left + m_phitoct[i]->m_rectbounds.right )*0.5f;
-		m_phitoct[i]->m_vcenter.y = (m_phitoct[i]->m_rectbounds.top  + m_phitoct[i]->m_rectbounds.bottom)*0.5f;
-		m_phitoct[i]->m_vcenter.z = (m_phitoct[i]->m_rectbounds.zlow + m_phitoct[i]->m_rectbounds.zhigh )*0.5f;
-
-		m_phitoct[i]->m_fLeaf = true;
-		}
-
-	//int ccross = 0;
-	//int ccrossx = 0, ccrossy = 0;
-
-	for (int i=0;i<m_vho.Size();i++)
-		{
-		int oct;
-		HitObject * const pho = m_vho.ElementAt(i);
-
-		if (pho->m_rcHitRect.right < m_vcenter.x)
-			{
-			oct = 0;
-			}
-		else if (pho->m_rcHitRect.left > m_vcenter.x)
-			{
-			oct = 1;
-			}
-		else
-			{
-			oct = 128;
-			//ccrossx++;
-			}
-
-		if (pho->m_rcHitRect.bottom < m_vcenter.y)
-			{
-			//oct |= 0;
-			}
-		else if (pho->m_rcHitRect.top > m_vcenter.y)
-			{
-			oct |= 2;
-			}
-		else
-			{
-			oct |= 128;
-			//ccrossy++;
-			}
-
-		if ((oct & 128) == 0)
-			{
-			m_phitoct[oct]->m_vho.AddElement(pho);
-			}
-		else
-			{
-			vRemain.AddElement(pho);
-			//ccross++;
-			}
-		}
-
-	m_vho.RemoveAllElements();
-	for (int i=0;i<vRemain.Size();i++)
-		{
-		m_vho.AddElement(vRemain.ElementAt(i));
-		}
-
-	if (m_vcenter.x - m_rectbounds.left > 125.0f)
-		{
-		for (int i=0; i<8; ++i)
-			{
-			m_phitoct[i]->CreateNextLevel();
-		    }
-		}
-
-	InitSseArrays();
-	for (int i=0; i<8; ++i)
-		m_phitoct[i]->InitSseArrays();
-	}
-
-void HitOctree::InitSseArrays()
+void HitCircle::Collide(CollisionEvent *coll)
 {
-  // build SSE boundary arrays of the local hit-object list
-  // (don't init twice)
-  const int ssebytes = sizeof(float) * ((m_vho.Size()+3)/4)*4;
-  if (ssebytes > 0 && lefts == 0)
-  {
-    lefts = (float*)_aligned_malloc(ssebytes, 16);
-    rights = (float*)_aligned_malloc(ssebytes, 16);
-    tops = (float*)_aligned_malloc(ssebytes, 16);
-    bottoms = (float*)_aligned_malloc(ssebytes, 16);
-    zlows = (float*)_aligned_malloc(ssebytes, 16);
-    zhighs = (float*)_aligned_malloc(ssebytes, 16);
+    coll->ball->CollideWall(coll->normal, m_elasticity, m_antifriction, m_scatter);
+}
 
-    //memset(lefts, 0, ssebytes);
-    //memset(rights, 0, ssebytes);
-    //memset(tops, 0, ssebytes);
-    //memset(bottoms, 0, ssebytes);
-    //memset(zlows, 0, ssebytes);
-    //memset(zhighs, 0, ssebytes);
 
-    for (int j=0;j<m_vho.Size();j++)
+void DoHitTest(Ball *pball, HitObject *pho)
+{
+#ifdef _DEBUGPHYSICS
+    g_pplayer->c_deepTested++;
+#endif
+    const float newtime = pho->HitTest(pball, pball->m_coll.hittime, pball->m_coll);
+    if ((newtime >= 0) && (newtime <= pball->m_coll.hittime))
     {
-	const FRect3D r = m_vho.ElementAt(j)->m_rcHitRect;
-      lefts[j] = r.left;
-      rights[j] = r.right;
-      tops[j] = r.top;
-      bottoms[j] = r.bottom;
-      zlows[j] = r.zlow;
-      zhighs[j] = r.zhigh;
+        pball->m_coll.obj = pho;
+        pball->m_coll.hittime = newtime;
+        pball->m_coll.hitx = pball->pos.x + pball->vel.x*newtime;
+        pball->m_coll.hity = pball->pos.y + pball->vel.y*newtime;
     }
-
-	for (int j=m_vho.Size();j<((m_vho.Size()+3)/4)*4;j++)
-	{
-	  lefts[j] = FLT_MAX;
-	  rights[j] = -FLT_MAX;
-	  tops[j] = FLT_MAX;
-	  bottoms[j] = -FLT_MAX;
-	  zlows[j] = FLT_MAX;
-	  zhighs[j] = -FLT_MAX;
-	}
-  }
 }
 
-#ifdef LOG
-extern int cTested;
-extern int cDeepTested;
-#endif
-
-
-/*  RLC
-
-Hit logic needs to be expanded, during static and psudo-static conditions, multiple hits (multi-face contacts)
-are possible and should be handled, with embedding (pentrations) some contacts persist for long periods
-and may cause others not to be seen (masked because of their position in the object list).
-
-A short term solution might be to rotate the object list on each collision round. Currently, its a linear array.
-and some subscript magic might be needed, where the actually collision counts are used to cycle the starting position
-for the next search. This could become a Ball property ... i.e my last hit object index, start at the next
-and cycle around until the last hit object is the last to be tested ... this could be made complex due to 
-scripts removing objects .... i.e. balls ... better study well before I start
-
-The most effective would be to sort the search results, always moving the last hit to the end of it's grouping
-
-At this instance, I'm reporting static contacts as random hitimes during the specific physics frame; the zero time
-slot is not in the random time generator algorithm, it is offset by STATICTIME so not to compete with the fast moving
-collisions
-
-*/
-
-void HitOctree::HitTestBall(Ball * const pball) const
-	{
-	for (int i=0; i<m_vho.Size(); i++)
-		{
-#ifdef LOG
-		cTested++;
-#endif
-		if ((pball != m_vho.ElementAt(i)) // ball can not hit itself
-		       && fRectIntersect3D(pball->m_rcHitRect, m_vho.ElementAt(i)->m_rcHitRect))
-			{
-#ifdef LOG
-			cDeepTested++;
-#endif
-			const float newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal); // test for hit
-			if ((newtime >= 0) && (newtime <= pball->m_hittime))
-				{
-				pball->m_pho = m_vho.ElementAt(i);
-				pball->m_hittime = newtime;
-				pball->m_hitx = pball->x + pball->vx*newtime;
-				pball->m_hity = pball->y + pball->vy*newtime;
-				}
-			}
-		}//end for loop
-
-	if (!m_fLeaf)
-		{
-		const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
-		const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
-
-#ifdef LOG
-		cTested++;
-#endif
-		if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
-		{
-			if (fLeft)
-				m_phitoct[0]->HitTestBallSse(pball);
-			if (fRight)
-				m_phitoct[1]->HitTestBallSse(pball);
-		}
-		if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
-		{
-			if (fLeft)
-				m_phitoct[2]->HitTestBallSse(pball);
-			if (fRight)
-				m_phitoct[3]->HitTestBallSse(pball);
-		}
-		}
-	}
-
-
-void HitOctree::HitTestBallSseInner(Ball * const pball, const int i) const
-{
-  // ball can not hit itself
-  if (pball == m_vho.ElementAt(i))
-    return;
-
-  const float newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal); // test for hit
-  if ((newtime >= 0) && (newtime <= pball->m_hittime))
-	{
-  	pball->m_pho = m_vho.ElementAt(i);
-  	pball->m_hittime = newtime;
-  	pball->m_hitx = pball->x + pball->vx*newtime;
-  	pball->m_hity = pball->y + pball->vy*newtime;
-	}
-}
-
-void HitOctree::HitTestBallSse(Ball * const pball) const
-{
-  if (lefts != 0)
-  {
-    // init SSE registers with ball bbox
-    const __m128 bleft = _mm_set1_ps(pball->m_rcHitRect.left);
-    const __m128 bright = _mm_set1_ps(pball->m_rcHitRect.right);
-    const __m128 btop = _mm_set1_ps(pball->m_rcHitRect.top);
-    const __m128 bbottom = _mm_set1_ps(pball->m_rcHitRect.bottom);
-    const __m128 bzlow = _mm_set1_ps(pball->m_rcHitRect.zlow);
-    const __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);
-
-    const __m128* const pL = (__m128*)lefts;
-    const __m128* const pR = (__m128*)rights;
-    const __m128* const pT = (__m128*)tops;
-    const __m128* const pB = (__m128*)bottoms;
-    const __m128* const pZl = (__m128*)zlows;
-    const __m128* const pZh = (__m128*)zhighs;
-
-    // loop implements 4 collision checks at once
-    // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
-    const int size = (m_vho.Size()+3)/4;
-    for (int i=0; i<size; ++i)
-    {
-      // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
-      // bits set, there is a bounding box collision
-      __m128 cmp = _mm_cmpge_ps(bright, pL[i]);
-      int mask = _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-	  cmp = _mm_cmple_ps(bleft, pR[i]);
-      mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-      cmp = _mm_cmpge_ps(bbottom, pT[i]);
-      mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-      cmp = _mm_cmple_ps(btop, pB[i]);
-      mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-      cmp = _mm_cmpge_ps(bzhigh, pZl[i]);
-      mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-	  cmp = _mm_cmple_ps(bzlow, pZh[i]);
-      mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-      // now there is at least one bbox collision
-      if ((mask & 1) != 0) HitTestBallSseInner(pball, i*4);
-      if ((mask & 2) != 0 /*&& (i*4+1)<m_vho.Size()*/) HitTestBallSseInner(pball, i*4+1); // boundary checks not necessary
-      if ((mask & 4) != 0 /*&& (i*4+2)<m_vho.Size()*/) HitTestBallSseInner(pball, i*4+2); //  anymore as non-valid entries were
-      if ((mask & 8) != 0 /*&& (i*4+3)<m_vho.Size()*/) HitTestBallSseInner(pball, i*4+3); //  initialized to keep these maskbits 0
-    }
-  }
-
-	if (!m_fLeaf)
-		{
-		const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
-		const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
-
-		if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
-		{
-			if (fLeft)
-				m_phitoct[0]->HitTestBallSse(pball);
-			if (fRight)
-				m_phitoct[1]->HitTestBallSse(pball);
-		}
-		if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
-		{
-			if (fLeft)
-				m_phitoct[2]->HitTestBallSse(pball);
-			if (fRight)
-				m_phitoct[3]->HitTestBallSse(pball);
-		}
-		}
-}
-
-void HitOctree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const
-	{
-	for (int i=0; i<m_vho.Size(); i++)
-		{
-#ifdef LOG
-		cTested++;
-#endif
-		if ((pball != m_vho.ElementAt(i)) && fRectIntersect3D(pball->m_rcHitRect, m_vho.ElementAt(i)->m_rcHitRect))
-			{
-#ifdef LOG
-			cDeepTested++;
-#endif
-			const float newtime = m_vho.ElementAt(i)->HitTest(pball, pball->m_hittime, pball->m_hitnormal);
-			if (newtime >= 0)
-				{
-				pvhoHit->AddElement(m_vho.ElementAt(i));
-				}
-			}
-		}
-
-	if (!m_fLeaf)
-		{
-		const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
-		const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
-
-#ifdef LOG
-		cTested++;
-#endif
-
-		if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
-		{
-			if (fLeft)
-				m_phitoct[0]->HitTestXRay(pball, pvhoHit);
-			if (fRight)
-				m_phitoct[1]->HitTestXRay(pball, pvhoHit);
-		}
-		if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
-		{
-			if (fLeft)
-				m_phitoct[2]->HitTestXRay(pball, pvhoHit);
-			if (fRight)
-				m_phitoct[3]->HitTestXRay(pball, pvhoHit);
-		}
-		}
-	}

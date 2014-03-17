@@ -6,10 +6,6 @@ Player *g_pplayer;
 HACCEL g_haccel;
 BOOL g_fKeepUndoRecords = fTrue;
 
-#ifdef HITLOG
-BOOL g_fWriteHitDeleteLog = fTrue;
-#endif
-
 void ShowError(char *sz)
 {
 	MessageBox(NULL, sz, "Error", MB_OK | MB_ICONEXCLAMATION);

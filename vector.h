@@ -5,36 +5,6 @@
 #define START_SIZE 32
 #define GROW_SIZE  32
 
-inline unsigned int uintCast(const float x)
-{
-	union {
-		float f;
-		unsigned int u;
-	} uc;
-	uc.f = x;
-	return uc.u;
-}
-
-inline bool infNaN(const float a)
-{
-	return ((uintCast(a)&0x7F800000) == 0x7F800000);
-}
-
-inline bool inf(const float a)
-{
-	return ((uintCast(a)&0x7FFFFFFF) == 0x7F800000);
-}
-
-inline bool NaN(const float a)
-{
-	return (((uintCast(a)&0x7F800000) == 0x7F800000) && ((uintCast(a)&0x007FFFFF) != 0));
-}
-
-inline bool deNorm(const float a)
-{
-    return (((uintCast(a)&0x7FFFFFFF) < 0x00800000) && (a != 0.0));
-}
-
 class VectorVoid
 {
 protected:

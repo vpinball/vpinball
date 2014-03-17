@@ -131,20 +131,7 @@ void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 c
                         NULL, 1.0f, 1.0f );
 }
 
-void invalidate_box( const F32 sx, const F32 sy, const F32 x, const F32 y )
-{
-	RECT	Rect;
-
-	// Invalidate the window region to signal an update from the back buffer (after render is complete).
-	Rect.left   = (int)( y - sy * 0.5f );
-	Rect.right  = (int)( y + sy * 0.5f );
-	Rect.top    = (int)( x - sx * 0.5f );
-	Rect.bottom = (int)( x + sx * 0.5f );
-	g_pplayer->InvalidateRect(&Rect);
-}
-
 F32 sPlumbPos[2] = { 300, 100 };
-static int dirty;
 #endif
 
 void plumb_draw()
@@ -184,17 +171,5 @@ void plumb_draw()
 	//Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
 	// Restore the transformation state.
 	ReturnCode = g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( D3DTRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
-
-    dirty = 1;
-#endif
-}
-
-// Flags that the region behind the mixer volume should be refreshed.
-void plumb_erase()
-{
-#ifdef DEBUG_PLUMB
-    invalidate_box( 120, 120, sPlumbPos[0], sPlumbPos[1] );
-
-	dirty = false;
 #endif
 }

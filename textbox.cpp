@@ -241,9 +241,6 @@ void Textbox::GetHitShapes(Vector<HitObject> * const pvho)
 	{
 	m_ptu = new TextboxUpdater(this);
 
-	m_ptu->m_textboxanim.m_znear = 0;
-	m_ptu->m_textboxanim.m_zfar = 0;
-
 	// HACK - adding object directly to screen update list.  Someday make hit objects and screenupdaters seperate objects
 	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_textboxanim);
 	}
@@ -273,17 +270,19 @@ void Textbox::EndPlay()
 	}
 
 void Textbox::PostRenderStatic(const RenderDevice* pd3dDevice)
-	{
-	}
+{
+}
+
 void Textbox::RenderSetup(const RenderDevice* _pd3dDevice)
 {
-
+    RenderText();
 }
 
 void Textbox::RenderStatic(const RenderDevice* pd3dDevice)
-	{
-	}
+{
+}
 	
+#ifdef VPINBALL_DX7_LEFTOVERS
 void Textbox::RenderMovers(const RenderDevice* pd3dDevice)
 	{
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -305,7 +304,7 @@ void Textbox::RenderMovers(const RenderDevice* pd3dDevice)
 
 	m_ptu->m_textboxanim.m_rcBounds = m_pobjframe->rc;
 
-	m_pobjframe->pdds = ppin3d->CreateOffscreen(m_pobjframe->rc.right - m_pobjframe->rc.left, m_pobjframe->rc.bottom - m_pobjframe->rc.top);
+	m_pobjframe->pdds = g_pvp->m_pdd.CreateOffscreenPlain(m_pobjframe->rc.right - m_pobjframe->rc.left, m_pobjframe->rc.bottom - m_pobjframe->rc.top);
 
 	m_pIFont->Clone(&m_pIFontPlay);
 
@@ -316,9 +315,11 @@ void Textbox::RenderMovers(const RenderDevice* pd3dDevice)
 	size.int64 = size.int64 / 912 * ppin3d->m_dwRenderWidth;
 	m_pIFontPlay->put_Size(size);
 	}
+#endif
 
 void Textbox::RenderText()
 	{
+#ifdef VPINBALL_DX7_LEFTOVERS
 	//DDBLTFX ddbfx;
 	Pin3D *const ppin3d = &g_pplayer->m_pin3d;
 
@@ -378,7 +379,7 @@ void Textbox::RenderText()
 				break;
 			}
 
-		int border = (4 * ppin3d->m_dwRenderWidth) / 1000;
+		int border = (4 * ppin3d->m_dwRenderWidth) / EDITOR_BG_WIDTH;
 		RECT rcOut;
 
 		rcOut.left = border;
@@ -397,6 +398,7 @@ void Textbox::RenderText()
 	pur->m_rcupdate = m_pobjframe->rc;
 	pur->m_fSeeThrough = fFalse;
 	g_pplayer->m_vupdaterect.AddElement(pur);
+#endif
 	}
 
 void Textbox::SetObjectPos()
@@ -555,12 +557,10 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(CLRB))
 		{
 		pbr->GetInt(&m_d.m_backcolor);
-//		if (!(m_d.m_backcolor & MINBLACKMASK)) {m_d.m_backcolor |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(CLRF))
 		{
 		pbr->GetInt(&m_d.m_fontcolor);
-//		if (!(m_d.m_fontcolor & MINBLACKMASK)) {m_d.m_fontcolor |= MINBLACK;}	// set minimum black
 		}
 	else if (id == FID(TMON))
 		{

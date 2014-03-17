@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "buildnumber.h"
 #include "resource.h"
+#include "hash.h"
+#include <algorithm>
 
 #define HASHLENGTH 16
 
@@ -551,7 +553,7 @@ PinTable::PinTable()
    m_hardFriction = C_FRICTIONCONST;
    m_hardScatter = 0;
    m_maxBallSpeed = C_SPEEDLIMIT;
-   m_dampingFriction = 0.95f;
+   m_dampingFriction = C_DAMPFRICTION;
 
    m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
    m_plungerFilter = fFalse;
@@ -563,9 +565,6 @@ PinTable::PinTable()
 
    m_rotation = 0;
    m_layback = 0;
-
-   m_maxSeparation = 0.015f;
-   m_ZPD = 0.1f; // 0.5f for X?
 
    m_glassheight = 210;
    m_tableheight = 0;
@@ -637,14 +636,6 @@ PinTable::PinTable()
    if (hr == S_OK)
 	   m_timeout = tmp*1000/60;
 #endif
-
-   tmp = 1;
-   hr = GetRegInt("Player", "HardwareRender", &tmp);
-   g_pvp->m_pdd.m_fHardwareAccel = (tmp != 0);
-
-   tmp = 0;										
-   hr = GetRegInt("Player", "AlternateRender", &tmp);
-   g_pvp->m_pdd.m_fAlternateRender = (tmp != 0);
 
    m_tblAccelerometer = fTrue;							// true if electronic accelerometer enabled
    hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
@@ -720,14 +711,28 @@ PinTable::PinTable()
    if ( FAILED(GetRegInt("Player", "AlphaRampAccuracy", &m_globalAlphaRampsAccuracy) ) )
    {
       m_globalAlphaRampsAccuracy = 5;
-      m_userAlphaRampsAccuracy=5;
    }
+   m_userAlphaRampsAccuracy=5;
    m_overwriteGlobalAlphaRampsAccuracy = fFalse;
+
+   if ( FAILED(GetRegStringAsFloat("Player", "Stereo3DZPD", &m_globalZPD) ) )
+   {
+      m_globalZPD = 0.5f;
+   }
+   m_ZPD = 0.5f;
+   if ( FAILED(GetRegStringAsFloat("Player", "Stereo3DMaxSeparation", &m_globalMaxSeparation) ) )
+   {
+      m_globalMaxSeparation = 0.03f;
+   }
+   m_maxSeparation = 0.03f;
+   m_overwriteGlobalStereo3D = fFalse;
 
    m_jolt_amount = 500;
    m_tilt_amount = 950;
    m_jolt_trigger_time = 1000;
    m_tilt_trigger_time = 10000;
+
+   m_Shake = false;
 }
 
 PinTable::~PinTable()
@@ -975,6 +980,7 @@ void PinTable::SwitchToLayer(int layerNumber )
          }
       }
    }
+
    SetDirtyDraw();
 }
 
@@ -1145,8 +1151,8 @@ void PinTable::Init(VPinball *pvp)
 
    m_left = 0;
    m_top = 0;
-   m_right = 1000;
-   m_bottom = 2000;
+   m_right = EDITOR_BG_WIDTH;
+   m_bottom = EDITOR_BG_WIDTH*2;
 
    m_scalex = 1.0f;
    m_scaley = 1.0f;
@@ -1160,8 +1166,8 @@ void PinTable::Init(VPinball *pvp)
    m_layback = 0;
    m_FOV = 45;
 
-   m_maxSeparation = 0.015f;
-   m_ZPD = 0.1f; // 0.5f for X?
+   m_maxSeparation = 0.03f;
+   m_ZPD = 0.5f;
 
    SetDefaultView();
 
@@ -1430,7 +1436,7 @@ void PinTable::Render(Sur * const psur)
       psur->SetObject(NULL);
       psur->SetFillColor(-1);
       psur->SetBorderColor(RGB(0,0,0), false, 1);
-      psur->Rectangle(0,0,1000,750);
+      psur->Rectangle(0,0,EDITOR_BG_WIDTH,EDITOR_BG_HEIGHT);
    }
 
    if (m_fDragging)
@@ -1474,40 +1480,40 @@ void PinTable::Render3DProjection(Sur * const psur)
    PinProjection pinproj;
    pinproj.m_rcviewport.left = 0;
    pinproj.m_rcviewport.top = 0;
-   pinproj.m_rcviewport.right = 1000;
-   pinproj.m_rcviewport.bottom = 750;
+   pinproj.m_rcviewport.right = EDITOR_BG_WIDTH;
+   pinproj.m_rcviewport.bottom = EDITOR_BG_HEIGHT;
 
    const GPINFLOAT aspect = 4.0/3.0;
 
-   const float realFOV = (m_FOV < 0.01f) ? 0.01f : m_FOV; // Can't have a real zero FOV, but this will look almost the same
+   const float realFOV = (m_FOV < 1.0f) ? 1.0f : m_FOV; // Can't have a real zero FOV, but this will look almost the same
 
-   pinproj.FitCameraToVertices(&vvertex3D/*rgv*/, vvertex3D.Size(), aspect, rotation, inclination, realFOV, m_xlatez);
+   pinproj.FitCameraToVertices(&vvertex3D/*rgv*/, aspect, rotation, inclination, realFOV, m_xlatez);
    pinproj.SetFieldOfView(realFOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
 
 
-   const float skew = -tanf(m_layback*(float)(M_PI/360));
+   const float skew = -tanf(0.5f*ANGTORAD(m_layback));
    const float skewX = -sinf(rotation)*skew;
    const float skewY =  cosf(rotation)*skew;
-   Matrix3D matTrans;
-   // create a normal matrix.
-   matTrans._11 = matTrans._22 = matTrans._33 = matTrans._44 = 1.0f;
-   matTrans._12 = matTrans._13 = matTrans._14 = 
-   matTrans._21 = matTrans._23 = matTrans._24 = 
-   matTrans._34 = 
-   matTrans._43 = 0.0f;
    // Skew for FOV of 0 Deg. is not supported. so change it a little bit.
    const float skewFOV = (realFOV < 0.01f) ? 0.01f : realFOV;
    // create skew the z axis to x and y direction.
-   const float skewtan = tanf((180.0f-skewFOV)*(float)(M_PI/360.0))*pinproj.m_vertexcamera.y;
-   matTrans._42 = skewtan*skewY;
+   const float skewtan = tanf(ANGTORAD((180.0f-skewFOV)*0.5f))*pinproj.m_vertexcamera.y;
+   Matrix3D matTrans;
+   matTrans.SetIdentity();
+   matTrans._31 = skewX;
    matTrans._32 = skewY;
    matTrans._41 = skewtan*skewX;
-   matTrans._31 = skewX;
+   matTrans._42 = skewtan*skewY;
    pinproj.Multiply(matTrans);
 
    pinproj.Scale(m_scalex != 0.0f ? m_scalex : 1.0f, m_scaley != 0.0f ? m_scaley : 1.0f, 1.0f);
-   pinproj.Rotate(0,0,rotation);
-   pinproj.Translate(m_xlatex-pinproj.m_vertexcamera.x,m_xlatey-pinproj.m_vertexcamera.y,-pinproj.m_vertexcamera.z);
+#ifdef VP10
+   pinproj.Translate(m_xlatex-pinproj.m_vertexcamera.x, m_xlatey-pinproj.m_vertexcamera.y, -pinproj.m_vertexcamera.z);
+   pinproj.Rotate( 0, 0, rotation );
+#else
+   pinproj.Rotate( 0, 0, rotation );
+   pinproj.Translate(m_xlatex-pinproj.m_vertexcamera.x, m_xlatey-pinproj.m_vertexcamera.y, -pinproj.m_vertexcamera.z);
+#endif
    pinproj.Rotate(inclination, 0, 0);
 
    pinproj.CacheTransform();
@@ -1694,6 +1700,13 @@ void PinTable::Play()
 
    if (!m_pcv->m_fScriptError)
    {
+      // set up the texture hashtable for fast access
+      m_textureMap.clear();
+      for (int i=0;i<m_vimage.Size();i++)
+      {
+          m_textureMap[ m_vimage.ElementAt(i)->m_szInternalName ] = m_vimage.ElementAt(i);
+      }
+
       g_pplayer = new Player();
       HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
       if (!m_pcv->m_fScriptError) 
@@ -1707,40 +1720,39 @@ void PinTable::Play()
 		 {
 			 char tmp[256];
 
-			 m_fOverrideGravityConstant = 1.6774f;
-		     sprintf_s(tmp,256,"TablePhysicsGravityConstant%u",m_fOverridePhysics-1);
+			 m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
+		     sprintf_s(tmp,256,"TablePhysicsGravityConstant%d",m_fOverridePhysics-1);
 			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideGravityConstant);
 			 if (hr != S_OK)
-				m_fOverrideGravityConstant = 1.6774f;
+				m_fOverrideGravityConstant = DEFAULT_TABLE_GRAVITY;
 			 m_fOverrideGravityConstant *= GRAVITYCONST;
 
-			 m_fOverrideContactFriction = 0.0005f;
-		     sprintf_s(tmp,256,"TablePhysicsContactFriction%u",m_fOverridePhysics-1);
+			 m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
+		     sprintf_s(tmp,256,"TablePhysicsContactFriction%d",m_fOverridePhysics-1);
 			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactFriction);
 			 if (hr != S_OK)
-				m_fOverrideContactFriction = 0.0005f;
+				m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
 
-			 m_fOverrideContactScatterAngle = 0.5f;
-		     sprintf_s(tmp,256,"TablePhysicsContactScatterAngle%u",m_fOverridePhysics-1);
+			 m_fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
+		     sprintf_s(tmp,256,"TablePhysicsContactScatterAngle%d",m_fOverridePhysics-1);
 			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactScatterAngle);
 			 if (hr != S_OK)
-				m_fOverrideContactScatterAngle = 0.5f;
+				m_fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
 			 m_fOverrideContactScatterAngle = ANGTORAD(m_fOverrideContactScatterAngle);
 
-			 m_fOverrideDampeningSpeed = 65.f;
-		     sprintf_s(tmp,256,"TablePhysicsDampeningSpeed%u",m_fOverridePhysics-1);
+			 m_fOverrideDampeningSpeed = DEFAULT_TABLE_DAMPENINGSPEED;
+		     sprintf_s(tmp,256,"TablePhysicsDampeningSpeed%d",m_fOverridePhysics-1);
 			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideDampeningSpeed);
 			 if (hr != S_OK)
-				m_fOverrideDampeningSpeed = 65.f;
+				m_fOverrideDampeningSpeed = DEFAULT_TABLE_DAMPENINGSPEED;
 
-			 m_fOverrideDampeningFriction = 0.95f;
-		     sprintf_s(tmp,256,"TablePhysicsDampeningFriction%u",m_fOverridePhysics-1);
+			 m_fOverrideDampeningFriction = DEFAULT_TABLE_DAMPENINGFRICTION;
+		     sprintf_s(tmp,256,"TablePhysicsDampeningFriction%d",m_fOverridePhysics-1);
 			 hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideDampeningFriction);
 			 if (hr != S_OK)
-				m_fOverrideDampeningFriction = 0.95f;
+				m_fOverrideDampeningFriction = DEFAULT_TABLE_DAMPENINGFRICTION;
 		 }
 
-         //c_Gravity = m_Gravity;				// set physical constants
          c_hardFriction = 1.0f - (m_fOverridePhysics ? m_fOverrideContactFriction : m_hardFriction);	// convert to reciprocal
          c_hardScatter = (m_fOverridePhysics ? m_fOverrideContactScatterAngle : m_hardScatter);
          c_maxBallSpeedSqr = (m_fOverridePhysics ? m_fOverrideDampeningSpeed*m_fOverrideDampeningSpeed : m_maxBallSpeed*m_maxBallSpeed);
@@ -1750,9 +1762,7 @@ void PinTable::Play()
 
          const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
-         g_pplayer->m_gravity.x = 0; 
-         g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity); //0.06f;
-         g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+         g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
 
          m_pcv->SetEnabled(fFalse); // Can't edit script while playing
 
@@ -1808,6 +1818,8 @@ void PinTable::StopPlaying()
    ClearOldSounds();
 
    m_pcv->EndSession();
+
+   m_textureMap.clear();
 
    ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
    //	EnableWindow(g_pvp->m_hwndWork, fTrue); // Disable modal state after game ends
@@ -2661,6 +2673,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteFloat(FID(MAXSEP), m_maxSeparation);
    bw.WriteFloat(FID(ZPD), m_ZPD);
+   bw.WriteBool(FID(OGST), m_overwriteGlobalStereo3D );
 
    bw.WriteString(FID(IMAG), m_szImage);
    bw.WriteString(FID(BIMG), m_szImageBackdrop);
@@ -2720,9 +2733,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(NONO), m_NormalizeNormals);
    bw.WriteFloat(FID(SDIX), m_shadowDirX);
    bw.WriteFloat(FID(SDIY), m_shadowDirY);
-
-   bw.WriteInt(FID(REGU), m_TableRegionUpdates);
-   bw.WriteInt(FID(REGO), m_TableRegionOptimization);
 
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
@@ -3279,16 +3289,13 @@ void PinTable::SetLoadDefaults()
    m_angletiltMax = 726.0f;
    m_angletiltMin = 4.5f;
 
-   m_NormalizeNormals = false;
+   m_NormalizeNormals = fFalse;
 
    m_useReflectionForBalls = -1;
    m_ballReflectionStrength = 50;
 
    m_useTrailForBalls = -1;
    m_ballTrailStrength = 100;
-
-   m_TableRegionUpdates = -1;
-   m_TableRegionOptimization = -1;
 
    m_useAA = -1;
    m_useFXAA = -1;
@@ -3463,6 +3470,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ZPD))
    {
       pbr->GetFloat(&m_ZPD);
+   }
+   else if ( id == FID(OGST))
+   {
+       pbr->GetBool(&m_overwriteGlobalStereo3D);
    }
    else if (id == FID(SLPX))
    {
@@ -3777,14 +3788,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetInt(&m_TableAdaptiveVSync);
    }
-   else if (id == FID(REGU))
-   {
-      pbr->GetInt(&m_TableRegionUpdates);
-   }
-   else if (id == FID(REGO))
-   {
-      pbr->GetInt(&m_TableRegionOptimization);
-   }
    else if ( id == FID(OGAC))
    {
        pbr->GetBool(&m_overwriteGlobalAlphaRampsAccuracy);
@@ -4068,6 +4071,34 @@ int PinTable::GetAlphaRampsAccuracy()
         return m_globalAlphaRampsAccuracy;
 }
 
+float PinTable::GetZPD()
+{
+    if( m_overwriteGlobalStereo3D )
+        return m_ZPD;
+    else
+        return m_globalZPD;
+}
+
+float PinTable::GetMaxSeparation()
+{
+    if( m_overwriteGlobalStereo3D )
+        return m_maxSeparation;
+    else
+        return m_globalMaxSeparation;
+}
+
+FRect3D PinTable::GetBoundingBox()
+{
+    FRect3D bbox;
+    bbox.left = m_left;
+    bbox.right = m_right;
+    bbox.top = m_top;
+    bbox.bottom = m_bottom;
+    bbox.zlow = m_tableheight;
+    bbox.zhigh = m_glassheight;
+    return bbox;
+}
+
 void PinTable::MoveCollectionDown(CComObject<Collection> *pcol )
 {
     int idx = m_vcollection.IndexOf(pcol);
@@ -4102,18 +4133,16 @@ STDMETHODIMP PinTable::put_GridSize(float gs)
 {
    STARTUNDO
 
-      if (gs < 1)
-      {
-         gs = 1;
-      }
+   if (gs < 1)
+     gs = 1;
 
-      m_gridsize = gs;
+   m_gridsize = gs;
 
-      SetDirtyDraw();
+   SetDirtyDraw();
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 void PinTable::SetZoom(float zoom)
@@ -4135,8 +4164,8 @@ void PinTable::GetViewRect(FRect *pfrect)
    {
       pfrect->left = 0;
       pfrect->top = 0;
-      pfrect->right = 1000;
-      pfrect->bottom = 750;
+      pfrect->right = EDITOR_BG_WIDTH;
+      pfrect->bottom = EDITOR_BG_HEIGHT;
    }
 }
 
@@ -4950,8 +4979,8 @@ void PinTable::ExportBlueprint()
    float tableheight, tablewidth;
    if (g_pvp->m_fBackglassView)
    {
-      tablewidth = 1000.0f;
-      tableheight = 750.0f;
+      tablewidth = (float)EDITOR_BG_WIDTH;
+      tableheight = (float)EDITOR_BG_HEIGHT;
    }
    else
    {
@@ -6408,7 +6437,10 @@ STDMETHODIMP PinTable::put_Layback(float newVal)
 
 STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
 {
-   *pVal = m_maxSeparation;
+   if( m_overwriteGlobalStereo3D )
+	   *pVal = m_maxSeparation;
+   else
+	   *pVal = m_globalMaxSeparation;
 
    return S_OK;
 }
@@ -6417,16 +6449,20 @@ STDMETHODIMP PinTable::put_MaxSeparation(float newVal)
 {
    STARTUNDO
 
-      m_maxSeparation = newVal;
+   if( m_overwriteGlobalStereo3D )
+	   m_maxSeparation = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_ZPD(float *pVal)
 {
-   *pVal = m_ZPD;
+   if( m_overwriteGlobalStereo3D )
+	   *pVal = m_ZPD;
+   else
+	   *pVal = m_globalZPD;
 
    return S_OK;
 }
@@ -6435,11 +6471,12 @@ STDMETHODIMP PinTable::put_ZPD(float newVal)
 {
    STARTUNDO
 
-      m_ZPD = newVal;
+   if( m_overwriteGlobalStereo3D )
+	   m_ZPD = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_FieldOfView(float *pVal)
@@ -6630,28 +6667,31 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
 Texture *PinTable::GetImage(char *szName)
 {
-   CharLowerBuff(szName, lstrlen(szName));
+    if (szName == NULL || szName[0] == 0)
+        return NULL;
+
+    CharLowerBuff(szName, lstrlen(szName));
+
+    // during playback, we use the hashtable for lookup
+    if (!m_textureMap.empty())
+    {
+        std::tr1::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator>::const_iterator
+            it = m_textureMap.find(szName);
+        if (it != m_textureMap.end())
+            return it->second;
+        else
+            return NULL;
+    }
 
    for (int i=0;i<m_vimage.Size();i++)
    {
-      if (!lstrcmp(m_vimage.ElementAt(i)->m_szInternalName, szName)) //!! strcmp calls are actually pretty expensive currently for drawing the acrylics! -> 10-20% overall frame time
+      if (!lstrcmp(m_vimage.ElementAt(i)->m_szInternalName, szName))
       {
          return m_vimage.ElementAt(i);
       }
    }
 
    return NULL;
-}
-
-void PinTable::GetTVTU(const Texture * const ppi, float * const pmaxtu, float * const pmaxtv)
-{
-   DDSURFACEDESC2 ddsd;
-   ddsd.dwSize = sizeof(ddsd);
-
-   ppi->m_pdsBuffer->GetSurfaceDesc(&ddsd);
-
-   *pmaxtu = (float)ppi->m_width / (float)ddsd.dwWidth;
-   *pmaxtv = (float)ppi->m_height / (float)ddsd.dwHeight;
 }
 
 void PinTable::CreateGDIBackdrop()
@@ -6680,11 +6720,9 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
       ppb->ReadFromFile(filename);
    }
 
-   Texture piT;
-   // Make sure we can import the new file before blowing away anything we had before
-   piT.m_pdsBuffer = g_pvp->m_pdd.CreateFromFile(filename, &ppi->m_width, &ppi->m_height, ppi->m_originalWidth, ppi->m_originalHeight);
+   MemTexture *tex = MemTexture::CreateFromFile(filename);
 
-   if (piT.m_pdsBuffer == NULL)
+   if (tex == NULL)
    {
       if( ppb ) delete ppb;
       return;
@@ -6699,14 +6737,11 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
 
    //SAFE_RELEASE(ppi->m_pdsBuffer);
 
-   ppi->m_pdsBuffer = piT.m_pdsBuffer;
-   ppi->m_pdsBuffer->AddRef();
+   ppi->m_width = tex->width();
+   ppi->m_height = tex->height();
+   ppi->m_pdsBuffer = tex;
 
    lstrcpy(ppi->m_szPath, filename);
-
-   g_pvp->m_pdd.CreateNextMipMapLevel(ppi->m_pdsBuffer);
-
-   ppi->EnsureMaxTextureCoordinates();
 }
 
 
@@ -6715,10 +6750,6 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
    if (ppi->m_ppb != NULL)return ppi->m_ppb->WriteToFile(szfilename); 
    else if (ppi->m_pdsBuffer != NULL)
    {
-      DDSURFACEDESC2 ddsd;
-      ddsd.dwSize = sizeof(ddsd);
-      ppi->m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_READONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-
       HANDLE hFile = CreateFile(szfilename,GENERIC_WRITE, FILE_SHARE_READ,
          NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -6771,12 +6802,13 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
       unsigned char* info;
       for (info = sinfo + surfwidth*3; info < sinfo + bmplnsize; *info++ = 0); //fill padding with 0			
 
-      const BYTE *spch = (BYTE *)ddsd.lpSurface + (surfheight * ddsd.lPitch);	// just past the end of the Texture part of DD surface
+      const int pitch = ppi->m_pdsBuffer->pitch();
+      const BYTE *spch = ppi->m_pdsBuffer->data() + (surfheight * pitch);	// just past the end of the Texture part of DD surface
 
       for (int i=0;i<surfheight;i++)
       {
          info = sinfo; //reset to start	
-         const BYTE *pch = (spch -= ddsd.lPitch);  // start on previous previous line			
+         const BYTE *pch = (spch -= pitch);  // start on previous previous line
 
          for (int l=0;l<surfwidth;l++)
          {					
@@ -6789,7 +6821,6 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
          GetLastError();			
       }
 
-      ppi->m_pdsBuffer->Unlock(NULL);	
       delete [] sinfo; sinfo = NULL;
       CloseHandle(hFile);	
       return true;
@@ -6949,70 +6980,8 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
 {
    if (version < 100) // Tech Beta 3 and below
    {
-      Texture * const ppi = new Texture();
-
-      int len;
-      ULONG read = 0;
-      HRESULT hr;
-      if(FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
-         return hr;
-
-      if(FAILED(hr = pstm->Read(ppi->m_szName, len, &read)))
-         return hr;
-
-      ppi->m_szName[len] = 0;
-
-      if(FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
-         return hr;
-
-      if(FAILED(hr = pstm->Read(ppi->m_szPath, len, &read)))
-         return hr;
-
-      ppi->m_szPath[len] = 0;
-
-      if(FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
-         return hr;
-
-      if(FAILED(hr = pstm->Read(ppi->m_szInternalName, len, &read)))
-         return hr;
-
-      ppi->m_szInternalName[len] = 0;
-
-      int width, height;
-      if(FAILED(hr = pstm->Read(&width, sizeof(int), &read)))
-         return hr;
-
-      if(FAILED(hr = pstm->Read(&height, sizeof(int), &read)))
-         return hr;
-
-      ppi->m_width = width;
-      ppi->m_height = height;
-      ppi->m_pdsBuffer = g_pvp->m_pdd.CreateTextureOffscreen(width, height);
-
-      if (ppi->m_pdsBuffer == NULL)
-      {
-         delete ppi;
-         return E_FAIL;
-      }
-
-      DDSURFACEDESC2 ddsd;
-      ddsd.dwSize = sizeof(ddsd);
-
-      hr = ppi->m_pdsBuffer->Lock(NULL, &ddsd, DDLOCK_WRITEONLY | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL);
-
-      // 32-bit picture
-      LZWReader lzwreader(pstm, (int *)ddsd.lpSurface, width*4, height, ddsd.lPitch);
-
-      lzwreader.Decoder();
-
-      ppi->m_pdsBuffer->Unlock(NULL);
-
-      if(FAILED(hr = pstm->Read(&ppi->m_rgbTransparent, sizeof(ppi->m_rgbTransparent), &read)))
-         ppi->m_rgbTransparent = NOTRANSCOLOR;
-
-      g_pvp->m_pdd.CreateNextMipMapLevel(ppi->m_pdsBuffer);
-
-      m_vimage.AddElement(ppi);
+       ShowError("Tables from Tech Beta 3 and below are not supported in this version.");
+       return E_FAIL;
    }
    else
    {
@@ -7020,8 +6989,6 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
 
       if (ppi->LoadFromStream(pstm, version, this) == S_OK)
       {
-         g_pvp->m_pdd.CreateNextMipMapLevel(ppi->m_pdsBuffer);
-
          m_vimage.AddElement(ppi);
       }
       else
@@ -7047,7 +7014,7 @@ STDMETHODIMP PinTable::put_Image(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
 
    if (!g_pplayer)
    {
@@ -7057,7 +7024,7 @@ STDMETHODIMP PinTable::put_Image(BSTR newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut)
@@ -7351,6 +7318,9 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 
 float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 {
+   if (szName == NULL || szName[0] == 0)
+       return 0.0f;
+
    for (int i=0;i<m_vedit.Size();i++)
    {
       IEditable *item=m_vedit.ElementAt(i);
@@ -7440,13 +7410,13 @@ STDMETHODIMP PinTable::put_DisplayGrid(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_fGrid = VBTOF(newVal);
+   m_fGrid = VBTOF(newVal);
 
    SetDirtyDraw();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_DisplayBackdrop(VARIANT_BOOL *pVal)
@@ -7460,13 +7430,13 @@ STDMETHODIMP PinTable::put_DisplayBackdrop(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_fBackdrop = VBTOF(newVal);
+   m_fBackdrop = VBTOF(newVal);
 
    SetDirtyDraw();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 INT_PTR CALLBACK ProgressProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -8116,42 +8086,6 @@ STDMETHODIMP PinTable::put_TableSoundVolume(int newVal )
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_TableRegionUpdates(int *pVal)
-{
-   *pVal = m_TableRegionUpdates;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_TableRegionUpdates(int newVal )
-{
-   STARTUNDO
-
-   m_TableRegionUpdates = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_TableRegionOptimization(int *pVal)
-{
-   *pVal = m_TableRegionOptimization;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_TableRegionOptimization(int newVal )
-{
-   STARTUNDO
-
-   m_TableRegionOptimization = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
 STDMETHODIMP PinTable::get_AlphaRampAccuracy(int *pVal)
 {
     if( m_overwriteGlobalAlphaRampsAccuracy )
@@ -8187,16 +8121,39 @@ STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal )
 {
     STARTUNDO
 
-        m_overwriteGlobalAlphaRampsAccuracy = VBTOF(newVal);
-        if ( !m_overwriteGlobalAlphaRampsAccuracy )
-        {
-            m_userAlphaRampsAccuracy = m_globalAlphaRampsAccuracy;
-        }
-    STOPUNDO
+    m_overwriteGlobalAlphaRampsAccuracy = VBTOF(newVal);
+    if ( !m_overwriteGlobalAlphaRampsAccuracy )
+    {
+        m_userAlphaRampsAccuracy = m_globalAlphaRampsAccuracy;
+    }
 
-        return S_OK;
+	STOPUNDO
+
+    return S_OK;
 }
 
+STDMETHODIMP PinTable::get_GlobalStereo3D(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_overwriteGlobalStereo3D);
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal )
+{
+    STARTUNDO
+
+    m_overwriteGlobalStereo3D = VBTOF(newVal);
+    if ( !m_overwriteGlobalStereo3D )
+    {
+		m_maxSeparation = m_globalMaxSeparation;
+		m_ZPD = m_globalZPD;
+    }
+
+	STOPUNDO
+
+    return S_OK;
+}
 
 STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
 {
@@ -8294,10 +8251,7 @@ STDMETHODIMP PinTable::put_Gravity(float newVal )
    {
       m_Gravity = newVal*GRAVITYCONST;
       const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
-
-      g_pplayer->m_gravity.x = 0; 
-      g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity); //0.06f;
-      g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
@@ -8577,10 +8531,7 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
    {
       m_angletiltMax = newVal;
       const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
-
-      g_pplayer->m_gravity.x = 0; 
-      g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity); //0.06f;
-      g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
@@ -8605,10 +8556,7 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
    {
       m_angletiltMin = newVal;
       const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
-
-      g_pplayer->m_gravity.x = 0;
-      g_pplayer->m_gravity.y =  sinf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity); //0.06f;
-      g_pplayer->m_gravity.z = -cosf(ANGTORAD(slope))*(m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
+      g_pplayer->SetGravity(slope, m_fOverridePhysics ? m_fOverrideGravityConstant : m_Gravity);
    }
    else
    {
@@ -8981,61 +8929,29 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_AlternateRender(VARIANT_BOOL *pVal)
+STDMETHODIMP PinTable::get_AlternateRender(VARIANT_BOOL *pVal)      // TODO: remove
 {
-   *pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_pdd.m_fAlternateRender : false); //VP Editor
-
+   *pVal = (VARIANT_BOOL)FTOVB(false);
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_AlternateRender(VARIANT_BOOL newVal)
+STDMETHODIMP PinTable::put_AlternateRender(VARIANT_BOOL newVal)     // TODO: remove
 {
-   if (!g_pplayer && g_pvp) 
-   {														//VP Editor
-      int tmp;
-      const HRESULT hr = GetRegInt("Player", "AlternateRender", &tmp);
-      if ((hr == S_OK) && (tmp == 1))
-      {
-         tmp = 0;
-         g_pvp->m_pdd.m_fAlternateRender = tmp;
-      }
-      else
-      {
-         tmp = 1;
-         g_pvp->m_pdd.m_fAlternateRender = tmp;
-      }
-      SetRegValue("Player", "AlternateRender", REG_DWORD, &tmp, 4);
-   }
-
    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_HardwareRender(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? g_pvp->m_pdd.m_fHardwareAccel : false); //VP Editor
+	//!! deprecated
+    *pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? true : false); //VP Editor
 
-   return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_HardwareRender(VARIANT_BOOL newVal)
 {
-   if (!g_pplayer && g_pvp) 
-   {														//VP Editor
-      int tmp;
-      const HRESULT hr = GetRegInt("Player", "HardwareRender", &tmp);
-      if ((hr == S_OK) && (tmp == 1))
-      {
-         tmp = 0;
-         g_pvp->m_pdd.m_fHardwareAccel = tmp;
-      }
-      else
-      {
-         tmp = 1;
-         g_pvp->m_pdd.m_fHardwareAccel = tmp;
-      }
-      SetRegValue("Player", "HardwareRender", REG_DWORD, &tmp, 4);
-   }
-   return S_OK;
+	//!! deprecated
+	return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
@@ -9448,7 +9364,7 @@ STDMETHODIMP PinTable::StopShake()
 
 STDMETHODIMP PinTable::Version(int *pVal)
 {
-	*pVal = 9210;
+	*pVal = 9900;
 
 	return S_OK;
 }

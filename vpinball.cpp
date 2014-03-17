@@ -234,7 +234,9 @@ void VPinball::Init()
 {
    m_NextTableID = 1;
 
+#ifdef VBA
    m_lcidVBA = 1033;											//local ID: english - used when creating VBA APC Host
+#endif
 
    m_ptableActive = NULL;
    m_hwndSideBar = NULL;										//Handle for left Sidebar
@@ -331,7 +333,9 @@ void VPinball::Init()
 
    InitRegValues();									// get default values from registry
 
+#ifdef VBA
    InitVBA();										// Create APC VBA host
+#endif
 
    int DSidx1 = 0, DSidx2 =0;
    GetRegInt("Player", "SoundDevice", &DSidx1);
@@ -347,12 +351,6 @@ void VPinball::Init()
 	   m_pbackglassds = new PinDirectSound();
 	   m_pbackglassds->InitDirectSound(m_hwnd, true);
    }
-
-   HRESULT hr = m_pdd.InitDD();								// init direct draw (in pinimage.cpp)
-
-   // check if Direct draw could be initalized
-   if (hr != S_OK)
-      SendMessage(m_hwnd, WM_CLOSE, 0, 0);
 
    m_fBackglassView = fFalse;						// we are viewing Pinfield and not the backglass at first
 
@@ -380,7 +378,7 @@ void VPinball::EnsureWorkerThread()
    if (!m_workerthread)
    {
       g_hWorkerStarted = CreateEvent(NULL,TRUE,FALSE,NULL);
-      m_workerthread = CreateThread(NULL, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid);
+      m_workerthread = CreateThread(NULL, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid); //!! _beginthreadex is safer
       if (WaitForSingleObject(g_hWorkerStarted, 5000) == WAIT_TIMEOUT)
       {
       }
@@ -443,7 +441,7 @@ void VPinball::InitTools()
 ///<summary>
 ///Initializes Default Values of many variables (from Registry if keys are present). 
 ///<para>Registry Values under HKEY-CURRENT-USER/Software/Visual Pinball</para>
-///<para>HardwareAceelleration, Deadzone, AlternateRender, ShowDragPoints, DrawLightCenters,</para>
+///<para>Deadzone, ShowDragPoints, DrawLightCenters,</para>
 ///<para>AutoSaveOn, AutoSaveTime, SecurityLevel</para>
 ///<para>Gets the last loaded Tables (List under File-Menu)</para>
 ///</summary>
@@ -451,18 +449,10 @@ void VPinball::InitRegValues()
 {
    HRESULT hr;
 
-   hr = GetRegInt("Player", "HardwareRender", &m_fHardwareAccel);
-   if (hr != S_OK)
-      g_pvp->m_pdd.m_fHardwareAccel = 1; // default value
-
    hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
    if (hr != S_OK)
       m_DeadZ = 0; // default value
    SetRegValue("Player", "DeadZone", REG_DWORD, &m_DeadZ, 4);
-
-   hr = GetRegInt("Player", "AlternateRender", &m_fAlternateRender);
-   if (hr != S_OK)
-      g_pvp->m_pdd.m_fAlternateRender=0; // default value
 
    hr = GetRegInt("Editor", "ShowDragPoints", &m_fAlwaysDrawDragPoints);
    if (hr != S_OK)
@@ -1739,19 +1729,10 @@ BOOL VPinball::CloseTable(PinTable *ppt)
    return fTrue;
 }
 
-
-BOOL VPinball::FDefaultCheckBlit()
-{
-   const bool fCheckBlt = ((GetVersion() & 0x80000000) != 0); // check blt status on Win9x
-
-   return fCheckBlt;
-}
-
-
-void VPinball::InitVBA()
-{
-   m_fDebugging = false;
 #ifdef VBA
+void VPinball::InitVBA()
+{   
+   m_fDebugging = false;
    m_ptinfoCls       = NULL;
    m_ptinfoInt       = NULL;
 
@@ -1765,8 +1746,8 @@ void VPinball::InitVBA()
       ShowError("Could not create VBA.");
 
    AddMiniBitmaps();
-#endif
 }
+#endif
 
 HRESULT VPinball::AddMiniBitmaps()
 {
@@ -2104,30 +2085,13 @@ HRESULT VPinball::MainMsgLoop()
 #endif
 }
 
-#ifdef VBA
 HRESULT VPinball::ApcHost_OnIdle(BOOL* pfContinue)
 {
 #ifdef VBA
    ApcHost.OnIdle(pfContinue);
-#endif
-
-   if (g_pplayer && !m_fDebugging)
-   {
-      g_pplayer->Render();
-      *pfContinue = TRUE;
-   }
-
-   return S_OK;
-}
-#endif
-
-HRESULT VPinball::ApcHost_OnIdle(BOOL* pfContinue)
-{
-#ifdef VBA
-   ApcHost.OnIdle(pfContinue);
-#endif
 
    if (!m_fDebugging)
+#endif
    {
       g_pplayer->Render();
       *pfContinue = TRUE;
@@ -2136,6 +2100,7 @@ HRESULT VPinball::ApcHost_OnIdle(BOOL* pfContinue)
    return S_OK;
 }
 
+#ifdef VBA
 HRESULT VPinball::ApcHost_BeforePause()
 {
    m_fDebugging = true;
@@ -2152,7 +2117,6 @@ HRESULT VPinball::ApcHost_AfterPause()
 
 HRESULT VPinball::ShowIDE()
 {
-#ifdef VBA
    IApcIde *pIDE = NULL;
    VARIANT_BOOL vbVisible = VARIANT_TRUE;
    HRESULT hr;
@@ -2162,10 +2126,8 @@ HRESULT VPinball::ShowIDE()
       pIDE->Release();
    }
    return hr;
-#else
-   return S_OK;
-#endif
 }
+#endif
 
 STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
 {
@@ -3055,10 +3017,6 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             lvitem.iSubItem = 0;
             ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
             Texture * const ppi = (Texture *)lvitem.lParam;
-            HDC hdcDD;
-            //DDSURFACEDESC2 ddsd;
-            //ddsd.dwSize = sizeof(ddsd);
-            //ppi->m_pdsBuffer->GetSurfaceDesc( &ddsd );
 
             RECT rcClient;
             GetWindowRect(pdis->hwndItem , &rcClient);
@@ -3084,9 +3042,10 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             const int x = (xsize - width) / 2;
             const int y = (ysize - height) / 2;
 
-            ppi->m_pdsBuffer->GetDC(&hdcDD);
+            HDC hdcDD;
+            ppi->GetTextureDC(&hdcDD);
             StretchBlt(pdis->hDC, x, y, width, height, hdcDD, 0, 0, ppi->m_width, ppi->m_height, SRCCOPY);
-            ppi->m_pdsBuffer->ReleaseDC(hdcDD);
+            ppi->ReleaseTextureDC(hdcDD);
          }
          else
          {
@@ -3560,50 +3519,32 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
    return FALSE;
 }
 
-struct VideoMode
+
+void FillVideoModesList(HWND hwnd, const std::vector<VideoMode>& modes, const VideoMode* curSelMode=0)
 {
-   int width;
-   int height;
-   int depth;
-   int refreshrate;
-};
+    SendMessage(hwnd, LB_RESETCONTENT, 0, 0);
 
-struct EnumVideoModeStruct
-{
-   int widthcur;
-   int heightcur;
-   int depthcur;
-   HWND hwndList;
-};
+    for (unsigned i = 0; i < modes.size(); ++i)
+    {
+        char szT[128];
+        if (modes[i].depth)
+            sprintf_s(szT, "%d x %d x %d", modes[i].width, modes[i].height, modes[i].depth);
+        else
+            sprintf_s(szT, "%d x %d", modes[i].width, modes[i].height);
+        SendMessage(hwnd, LB_ADDSTRING, 0, (LPARAM)szT);
 
-HRESULT WINAPI EnumModesCallback2(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpContext)
-{
-   // Throw away displays we won't do (ModeX and 8-bit)
-   if (lpDDSurfaceDesc->dwWidth >= 640 && lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount >= 16) // UltraPin is 32bit only
-   {
-      char szT[128];
-      EnumVideoModeStruct *pevms = (EnumVideoModeStruct *)lpContext;
-      HWND hwndList = pevms->hwndList;
-      const int widthcur = pevms->widthcur;
-      const int heightcur = pevms->heightcur;
-      const int depthcur = pevms->depthcur;
-      sprintf_s(szT, "%u x %u x %u", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
-      const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
-
-      VideoMode * const pvm = new VideoMode();
-      pvm->width = lpDDSurfaceDesc->dwWidth;
-      pvm->height = lpDDSurfaceDesc->dwHeight;
-      pvm->depth = lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount;
-      pvm->refreshrate = 0;
-      SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)pvm);
-
-      if (pvm->width == widthcur && pvm->height == heightcur && pvm->depth == depthcur)
-         SendMessage(hwndList, LB_SETCURSEL, index, 0);
-   }
-   return DDENUMRET_OK;
+        if (curSelMode &&
+              modes[i].width == curSelMode->width &&
+              modes[i].height == curSelMode->height &&
+              modes[i].depth == curSelMode->depth)
+            SendMessage(hwnd, LB_SETCURSEL, i, 0);
+    }
 }
 
+
 const int rgwindowsize[] = {640, 720, 800, 912, 1024, 1152, 1280, 1600};  // windowed resolutions for selection list
+
+std::vector<VideoMode> allVideoModes;
 
 INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -3622,15 +3563,8 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             (rcMain.bottom + rcMain.top)/2 - (rcDlg.bottom - rcDlg.top)/2,
             0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-         HWND hwndCheck = GetDlgItem(hwndDlg, IDC_CHECKBLIT);
-         int checkblit;
-         HRESULT hr = GetRegInt("Player", "CheckBlit", &checkblit);
-         if (hr != S_OK)
-            checkblit = g_pvp->FDefaultCheckBlit();
-         SendMessage(hwndCheck, BM_SETCHECK, checkblit ? BST_CHECKED : BST_UNCHECKED, 0);
-
          int maxTexDim;
-         hr = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
+         HRESULT hr = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
          if (hr != S_OK)
             maxTexDim = 0; // default: Don't resize textures
          switch(maxTexDim)
@@ -3644,7 +3578,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          default:	SendMessage(GetDlgItem(hwndDlg, IDC_TexUnlimited),BM_SETCHECK, BST_CHECKED,0);
          }
 
-         hwndCheck = GetDlgItem(hwndDlg, IDC_SHADOW);
+         HWND hwndCheck = GetDlgItem(hwndDlg, IDC_SHADOW);
          int shadow;
          hr = GetRegInt("Player", "BallShadows", &shadow);
          if (hr != S_OK)
@@ -3692,12 +3626,14 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             m_useAA = 0;
          SendMessage(hwndCheck, BM_SETCHECK, (m_useAA != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-         hwndCheck = GetDlgItem(hwndDlg, IDC_FXAA);
          int fxaa;
          hr = GetRegInt("Player", "FXAA", &fxaa);
          if (hr != S_OK)
             fxaa = 0;
-         SendMessage(hwndCheck, BM_SETCHECK, (fxaa != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+         hwndCheck = GetDlgItem(hwndDlg, IDC_FFXAA);
+         SendMessage(hwndCheck, BM_SETCHECK, (fxaa == 1) ? BST_CHECKED : BST_UNCHECKED, 0);
+         hwndCheck = GetDlgItem(hwndDlg, IDC_QFXAA);
+         SendMessage(hwndCheck, BM_SETCHECK, (fxaa == 2) ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO);
          int stereo3D;
@@ -3720,40 +3656,27 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             stereo3DY = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
 
-         hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATES);
-         int enableRegionUpdates;
-         hr = GetRegInt("Player", "EnableRegionUpdates", &enableRegionUpdates);
+		 char tmp[256];
+         float stereo3DMS;
+         hr = GetRegStringAsFloat("Player", "Stereo3DMaxSeparation", &stereo3DMS);
          if (hr != S_OK)
-            enableRegionUpdates = fTrue;
-         SendMessage(hwndCheck, BM_SETCHECK, enableRegionUpdates ? BST_CHECKED : BST_UNCHECKED, 0);
+            stereo3DMS = 0.03f;
+		 sprintf_s(tmp,256,"%f",stereo3DMS);
+ 		 SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_MS, tmp);
 
-         hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATE_OPTIMIZATION);
-         int enableRegionUpdateOptimization;
-         hr = GetRegInt("Player", "EnableRegionUpdateOptimization", &enableRegionUpdateOptimization);
+         float stereo3DZPD;
+         hr = GetRegStringAsFloat("Player", "Stereo3DZPD", &stereo3DZPD);
          if (hr != S_OK)
-            enableRegionUpdateOptimization = fTrue;
-         SendMessage(hwndCheck, BM_SETCHECK, enableRegionUpdateOptimization ? BST_CHECKED : BST_UNCHECKED, 0);
+            stereo3DZPD = 0.5f;
+		 sprintf_s(tmp,256,"%f",stereo3DZPD);
+ 		 SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, tmp);
 
-         hwndCheck = GetDlgItem(hwndDlg, IDC_VB_IN_VRAM); 
-         int vbInVram;
-         hr = GetRegInt("Player", "VBinVRAM", &vbInVram);
-         if (hr != S_OK)
-            vbInVram = fFalse;
-         SendMessage(hwndCheck, BM_SETCHECK, vbInVram ? BST_CHECKED : BST_UNCHECKED, 0);
-
-         hwndCheck = GetDlgItem(hwndDlg, 211); //HardwareRender
-         int hardrend;
-         hr = GetRegInt("Player", "HardwareRender", &hardrend);
-         if (hr != S_OK)
-            hardrend = fTrue;
-         SendMessage(hwndCheck, BM_SETCHECK, hardrend ? BST_CHECKED : BST_UNCHECKED, 0);
-
-         hwndCheck = GetDlgItem(hwndDlg, 216); //AlternateRender
-         int altrender;
-         hr = GetRegInt("Player", "AlternateRender", &altrender);
-         if (hr != S_OK)
-            altrender = fFalse;
-         SendMessage(hwndCheck, BM_SETCHECK, altrender ? BST_CHECKED : BST_UNCHECKED, 0);
+         hwndCheck = GetDlgItem(hwndDlg, IDC_FORCE_ANISO);
+		 int forceAniso;
+         hr = GetRegInt("Player", "ForceAnisotropicFiltering", &forceAniso);
+		 if (hr != S_OK)
+            forceAniso = fFalse;
+         SendMessage(hwndCheck, BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
 
          int widthcur;
          hr = GetRegInt("Player", "Width", &widthcur);
@@ -3783,7 +3706,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          }
          else
          {
-            SendMessage(hwndDlg, GET_WINDOW_MODES, widthcur, 0);
+            SendMessage(hwndDlg, GET_WINDOW_MODES, widthcur, heightcur);
             HWND hwndRadio = GetDlgItem(hwndDlg, IDC_WINDOW);
             SendMessage(hwndRadio, BM_SETCHECK, BST_CHECKED, 0);
          }
@@ -3851,7 +3774,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
                   HWND hwndList = GetDlgItem(hwndDlg, IDC_SIZELIST);
                   int index = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
-                  VideoMode* pvm = (VideoMode*)SendMessage(hwndList, LB_GETITEMDATA, index, 0);
+                  VideoMode* pvm = &allVideoModes[index];
                   SetRegValue("Player", "Width", REG_DWORD, &pvm->width, 4);
                   SetRegValue("Player", "Height", REG_DWORD, &pvm->height, 4);
                   if (fullscreen)
@@ -3859,10 +3782,6 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      SetRegValue("Player", "ColorDepth", REG_DWORD, &pvm->depth, 4);
                      SetRegValue("Player", "RefreshRate", REG_DWORD, &pvm->refreshrate, 4);
                   }
-
-                  HWND hwndCheck = GetDlgItem(hwndDlg, IDC_CHECKBLIT);
-                  int checkblit = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "CheckBlit", REG_DWORD, &checkblit, 4);
 
                   HWND maxTexDim512 = GetDlgItem(hwndDlg, IDC_Tex512);
                   HWND maxTexDim1024 = GetDlgItem(hwndDlg, IDC_Tex1024);
@@ -3900,9 +3819,14 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 				  int vsync = GetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, NULL, TRUE);
                   SetRegValue("Player", "AdaptiveVSync", REG_DWORD, &vsync, 4);
 
-                  HWND hwndFXAA = GetDlgItem(hwndDlg, IDC_FXAA);
-                  int fxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "FXAA", REG_DWORD, &fxaa, 4);
+                  HWND hwndFXAA = GetDlgItem(hwndDlg, IDC_FFXAA);
+                  int ffxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0);
+				  hwndFXAA = GetDlgItem(hwndDlg, IDC_QFXAA);
+                  int qfxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0)*2;
+				  if(qfxaa)
+					SetRegValue("Player", "FXAA", REG_DWORD, &qfxaa, 4);
+				  else
+					SetRegValue("Player", "FXAA", REG_DWORD, &ffxaa, 4);
 
                   HWND hwndUseAA = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
                   int m_useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
@@ -3921,33 +3845,22 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   int stereo3DY = SendMessage(hwndStereo3DY, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "Stereo3DYAxis", REG_DWORD, &stereo3DY, 4);
 
-                  HWND hwndEnableRegionUpdates = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATES);
-                  int enableRegionUpdates = SendMessage(hwndEnableRegionUpdates, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "EnableRegionUpdates", REG_DWORD, &enableRegionUpdates, 4);
-
-                  HWND hwndEnableRegionUpdateOptimization = GetDlgItem(hwndDlg, IDC_ENABLE_REGION_UPDATE_OPTIMIZATION);
-                  int enableRegionUpdateOptimization = SendMessage(hwndEnableRegionUpdateOptimization, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "EnableRegionUpdateOptimization", REG_DWORD, &enableRegionUpdateOptimization, 4);
-
-                  HWND hwndVbInVRAM = GetDlgItem(hwndDlg, IDC_VB_IN_VRAM);
-                  int vbInVram = SendMessage(hwndVbInVRAM, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "VBinVRAM", REG_DWORD, &vbInVram, 4);
-
-                  HWND hwndHWR = GetDlgItem(hwndDlg, 211);
-                  int hardrend = SendMessage(hwndHWR, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "HardwareRender", REG_DWORD, &hardrend, 4);
-                  g_pvp->m_pdd.m_fHardwareAccel = (hardrend != 0);
-
-                  HWND hwndARend = GetDlgItem(hwndDlg, 216);
-                  int altrend = SendMessage(hwndARend, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "AlternateRender", REG_DWORD, &altrend, 4);
-                  g_pvp->m_pdd.m_fAlternateRender = (altrend != 0);
+                  HWND hwndForceAniso = GetDlgItem(hwndDlg, IDC_FORCE_ANISO);
+                  int forceAniso = SendMessage(hwndForceAniso, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "ForceAnisotropicFiltering", REG_DWORD, &forceAniso, 4);
 
                   HWND hwndAraSlider = GetDlgItem(hwndDlg, IDC_ARASlider);
                   int alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
                   SetRegValue("Player", "AlphaRampAccuracy", REG_DWORD, &alphaRampsAccuracy, 4);
 
-                  //HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
+				  char strTmp[256];
+				  GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_MS, strTmp, 256);
+				  SetRegValue("Player", "Stereo3DMaxSeparation", REG_SZ, &strTmp,strlen(strTmp));
+
+				  GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, strTmp, 256);
+				  SetRegValue("Player", "Stereo3DZPD", REG_SZ, &strTmp,strlen(strTmp));
+
+				  //HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
                   HWND hwndBallStretchYes = GetDlgItem(hwndDlg, IDC_StretchYes);
                   HWND hwndBallStretchMonitor = GetDlgItem(hwndDlg, IDC_StretchMonitor);
                   int ballStretchMode = 0;
@@ -3988,29 +3901,50 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
    case GET_WINDOW_MODES:
       {
          int indexcur = -1;
-         int widthcur = wParam;
+         int widthcur = wParam, heightcur = (int)lParam;
 
          SendMessage(hwndDlg, RESET_SIZELIST_CONTENT, 0, 0);
          HWND hwndList = GetDlgItem(hwndDlg, IDC_SIZELIST);
 
          const int csize = sizeof(rgwindowsize)/sizeof(int);
          const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
-         char szT[128];
-         for (int i=0;i<csize;i++)
+
+         allVideoModes.clear();
+
+         for (int i=0; i<csize; ++i)
          {
             const int xsize = rgwindowsize[i];
             if (xsize <= screenwidth)
             {
                if (xsize == widthcur)
                   indexcur = i;
-               sprintf_s(szT, "%d x %d", xsize, xsize*3/4);
-               const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)szT);
-               VideoMode * const pvm = new VideoMode();
-               pvm->width = xsize;
-               pvm->height = xsize*3/4;
-               SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)pvm);
+
+               VideoMode mode;
+               mode.width = xsize;
+               mode.height = xsize*3/4;
+               mode.depth = 0;
+               mode.refreshrate = 0;
+
+               allVideoModes.push_back(mode);
             }
          }
+
+         FillVideoModesList(hwndList, allVideoModes);
+
+         // set up windowed fullscreen mode
+         VideoMode mode;
+         // TODO: use multi-monitor functions
+         mode.width = GetSystemMetrics( SM_CXSCREEN );
+         mode.height = GetSystemMetrics( SM_CYSCREEN );
+         mode.depth = 0;
+         mode.refreshrate = 0;
+         allVideoModes.push_back(mode);
+
+         char szT[128];
+         sprintf_s(szT, "%d x %d (windowed fullscreen)", mode.width, mode.height);
+         SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
+         if (mode.width == widthcur && mode.height == heightcur)
+             indexcur = SendMessage(hwndList, LB_GETCOUNT, 0, 0) - 1;
 
          SendMessage(hwndList, LB_SETCURSEL, (indexcur != -1) ? indexcur : 0, 0);
       }
@@ -4018,14 +3952,15 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
    case GET_FULLSCREENMODES:
       {
-         SendMessage(hwndDlg, RESET_SIZELIST_CONTENT, 0, 0);
          HWND hwndList = GetDlgItem(hwndDlg, IDC_SIZELIST);
-         EnumVideoModeStruct evms;
-         evms.widthcur = wParam;
-         evms.heightcur = lParam>>16;
-         evms.depthcur = lParam & 0xffff;
-         evms.hwndList = hwndList;
-         g_pvp->m_pdd.m_pDD->EnumDisplayModes(0, NULL, &evms, EnumModesCallback2);
+         EnumerateDisplayModes(0, allVideoModes);
+
+         VideoMode curSelMode;
+         curSelMode.width = wParam;
+         curSelMode.height = lParam>>16;
+         curSelMode.depth = lParam & 0xffff;
+
+         FillVideoModesList(hwndList, allVideoModes, &curSelMode);
 
          if (SendMessage(hwndList, LB_GETCURSEL, 0, 0) == -1)
             SendMessage(hwndList, LB_SETCURSEL, 0, 0);
@@ -4035,12 +3970,6 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
    case RESET_SIZELIST_CONTENT:
       {
          HWND hwndList = GetDlgItem(hwndDlg, IDC_SIZELIST);
-         const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-         for (int i=0;i<size;i++)
-         {
-            VideoMode * const pvm = (VideoMode *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
-            delete pvm;
-         }
          SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
       }
       break;
@@ -6427,13 +6356,12 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
                   HWND hwndSoundList = GetDlgItem(hwndDlg, IDC_SoundList);
                   int soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
-                  int* sd = (int*)SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-                  SetRegValue("Player", "SoundDevice", REG_DWORD, sd, 4);
-				  
+                  int sd = (int)SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
+                  SetRegValue("Player", "SoundDevice", REG_DWORD, &sd, 4);
 				  hwndSoundList = GetDlgItem(hwndDlg, IDC_SoundListBG);
                   soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
-                  sd = (int*)SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-                  SetRegValue("Player", "SoundDeviceBG", REG_DWORD, sd, 4);
+                  sd = (int)SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
+                  SetRegValue("Player", "SoundDeviceBG", REG_DWORD, &sd, 4);
 
                   EndDialog(hwndDlg, TRUE);
                }
@@ -6482,14 +6410,10 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             for (size_t i=0;i<DSads.size();i++)
             {
                const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)DSads[i]->description.c_str());
-               int * const sd = new int;
-               *sd = i;
-               SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
-
+               SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)i);
 			   const int indexbg = SendMessage(hwndListBG, LB_ADDSTRING, 0, (long)DSads[i]->description.c_str());
-               int * const sdbg = new int;
-               *sdbg = i;
-			   SendMessage(hwndListBG, LB_SETITEMDATA, index, (LPARAM)sdbg);
+			   SendMessage(hwndListBG, LB_SETITEMDATA, index, (LPARAM)i);
+               delete DSads[i];
             }
          }
 
@@ -6503,16 +6427,8 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       {
          HWND hwndList = GetDlgItem(hwndDlg, IDC_SoundList);
 		 HWND hwndListBG = GetDlgItem(hwndDlg, IDC_SoundListBG);
-
-         const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-         for (int i=0;i<size;i++)
-         {
-            int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
-            delete sd;
-			sd = (int *)SendMessage(hwndListBG, LB_GETITEMDATA, i, 0);
-            delete sd;
-         }
          SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+         SendMessage(hwndListBG, LB_RESETCONTENT, 0, 0);
       }
       break;
 
@@ -6718,47 +6634,47 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsOblique);
  		 SetDlgItemTextA(hwndDlg, 110, tmp);
 
-		 float TablePhysicsGravityConstant = 1.6774f;
+		 float TablePhysicsGravityConstant = DEFAULT_TABLE_GRAVITY;
 		 sprintf_s(tmp,256,"TablePhysicsGravityConstant%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsGravityConstant);
          if (hr != S_OK)
-            TablePhysicsGravityConstant = 1.6774f;
+            TablePhysicsGravityConstant = DEFAULT_TABLE_GRAVITY;
 
 		 sprintf_s(tmp,256,"%f",TablePhysicsGravityConstant);
  		 SetDlgItemTextA(hwndDlg, 1100, tmp);
 
-		 float TablePhysicsContactFriction = 0.0005f;
+		 float TablePhysicsContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
 		 sprintf_s(tmp,256,"TablePhysicsContactFriction%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactFriction);
          if (hr != S_OK)
-            TablePhysicsContactFriction = 0.0005f;
+            TablePhysicsContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
 
 		 sprintf_s(tmp,256,"%f",TablePhysicsContactFriction);
  		 SetDlgItemTextA(hwndDlg, 1101, tmp);
 
-		 float TablePhysicsContactScatterAngle = 0.5f;
+		 float TablePhysicsContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
 		 sprintf_s(tmp,256,"TablePhysicsContactScatterAngle%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactScatterAngle);
          if (hr != S_OK)
-            TablePhysicsContactScatterAngle = 0.5f;
+            TablePhysicsContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
 
 		 sprintf_s(tmp,256,"%f",TablePhysicsContactScatterAngle);
  		 SetDlgItemTextA(hwndDlg, 1102, tmp);
 
-		 float TablePhysicsDampeningSpeed = 65.f;
+		 float TablePhysicsDampeningSpeed = DEFAULT_TABLE_DAMPENINGSPEED;
 		 sprintf_s(tmp,256,"TablePhysicsDampeningSpeed%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsDampeningSpeed);
          if (hr != S_OK)
-            TablePhysicsDampeningSpeed = 65.f;
+            TablePhysicsDampeningSpeed = DEFAULT_TABLE_DAMPENINGSPEED;
 
 		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningSpeed);
  		 SetDlgItemTextA(hwndDlg, 1103, tmp);
 
-		 float TablePhysicsDampeningFriction = 0.95f;
+		 float TablePhysicsDampeningFriction = DEFAULT_TABLE_DAMPENINGFRICTION;
 		 sprintf_s(tmp,256,"TablePhysicsDampeningFriction%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsDampeningFriction);
          if (hr != S_OK)
-            TablePhysicsDampeningFriction = 0.95f;
+            TablePhysicsDampeningFriction = DEFAULT_TABLE_DAMPENINGFRICTION;
 
 		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningFriction);
  		 SetDlgItemTextA(hwndDlg, 1106, tmp);
@@ -7440,7 +7356,6 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          case IDOK:
             {
                HWND listBox = GetDlgItem(hwndDlg, IDC_ELEMENT_LIST);
-               const int listsize = SendMessage(listBox, LB_GETCOUNT, 0, 0);
                const int count = SendMessage(listBox, LB_GETSELCOUNT, 0, 0);
                int * const rgsel = new int[count];
                SendMessage(listBox, LB_GETSELITEMS, count, (LPARAM)rgsel);

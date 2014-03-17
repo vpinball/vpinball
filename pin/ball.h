@@ -1,6 +1,7 @@
 #pragma once
-class HitObject;
-class Ball;
+
+#include "pin/collide.h"
+
 
 class BallAnimObject : public AnimObject
 {
@@ -30,29 +31,23 @@ public:
 	virtual void UpdateVelocities();
 
 	// From HitObject
-	virtual float HitTest(Ball * const pball, const float dtime, Vertex3Ds * const phitnormal);	
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual int GetType() const {return eBall;}
-	virtual void Collide(Ball * const pball, Vertex3Ds * const phitnormal);
+	virtual void Collide(CollisionEvent *coll);
 	virtual void CalcHitRect();
 	virtual AnimObject *GetAnimObject() {return &m_ballanim;}
 
 	//semi-generic collide methods
-	void CollideWall(const Vertex3Ds * const phitnormal, const float elasticity, float antifriction, float scatter_angle);
-	void Collide3DWall(const Vertex3Ds * const phitnormal, const float m_elasticity, float antifriction, float scatter_angle);
+	void CollideWall(const Vertex3Ds * const phitnormal, const float elasticity, float antifriction, float scatter_angle, bool collide3D=false);
+	void Collide3DWall(const Vertex3Ds * const phitnormal, const float elasticity, float antifriction, float scatter_angle)
+      { CollideWall(phitnormal, elasticity, antifriction, scatter_angle, true); }
 
-	void AngularAcceleration(const Vertex3Ds * const phitnormal);
-
-	void CalcBoundingRect();
+	void AngularAcceleration(const Vertex3Ds& hitnormal);
 
 	void EnsureOMObject();
 
 	Vertex3D_NoTex2 m_rgv3DShadow[4];			// Last vertices of the ball shadow
 
-	RECT m_rcScreen;							// rect where the ball appears on the screen
-    RECT m_rcScreenShadow;
-    RECT m_rcReflection;
-    RECT m_rcTrail;
-	
 	COLORREF m_color;
 
 	// Per frame info
@@ -66,14 +61,11 @@ public:
 	Texture *m_pinFront;
 	Texture *m_pinBack;
 
-	HitObject *m_pho;		//pointer to hit object trial, may not be a actual hit if something else happens first
 	VectorVoid* m_vpVolObjs;// vector of triggers we are now inside
-	float m_hittime;		// time at which this ball will hit something
-	float m_hitx, m_hity;	// position of the ball at hit time (saved to avoid floating point errors with multiple time slices)
-	float m_HitDist;		// hit distance 
-	float m_HitNormVel;		// hit normal Velocity
+
+    CollisionEvent m_coll;  // collision information, may not be a actual hit if something else happens first
+
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
-	Vertex3Ds m_hitnormal[5];// 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
 
     Vertex3D_NoTex2 vertices[4];
     Vertex3D_NoTex2 logoVertices[4];
@@ -88,17 +80,13 @@ public:
 
 	BallAnimObject m_ballanim;
 
-	float x;
-	float y;
-	float z;
-	float defaultZ;   //normal height of the ball
+    Vertex3Ds pos;
+	float defaultZ;   //normal height of the ball //!! remove
 
 	Vertex3Ds oldpos[10]; // for the optional ball trails
 	unsigned int ringcounter_oldpos;
 
-	float vx;
-	float vy;
-	float vz;
+    Vertex3Ds vel;      // ball velocity
 
 	float drsq;	// square of distance moved
 
@@ -117,49 +105,9 @@ public:
 	Matrix3 m_inverseworldinertiatensor;
 	Matrix3 m_inversebodyinertiatensor;
 
-	bool m_HitRigid;	// Rigid = 1, Non-Rigid = 0
-
-	bool m_fErase;		// set after the ball has been drawn for the first time
-
 	bool fFrozen;
 
 	bool m_disableLighting;
    
     static int ballsInUse;
 };
-
-inline bool fIntRectIntersect(const RECT &rc1, const RECT &rc2)
-{
-	return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
-}
-
-inline bool Intersect(const RECT &rc, const int width, const int height, const POINT &p, const bool rotated)
-{
-	if(!rotated)
-		return (p.x >= rc.left*width/100 && p.x <= rc.right*width/100 && p.y >= rc.top*height/100 && p.y <= rc.bottom*height/100);
-	else
-		return (p.x >= rc.top*width/100 && p.x <= rc.bottom*width/100 && p.y <= height-rc.left*height/100 && p.y >= height-rc.right*height/100);
-}
-
-inline bool fRectIntersect(const FRect &rc1, const FRect &rc2)
-{
-	const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // this shouldn't use loadu, but doesn't work even with __declspec(align(16))?!
-	const __m128 rc1sh = _mm_shuffle_ps(rc1128,rc1128,_MM_SHUFFLE(1, 0, 3, 2));
-	const __m128 test = _mm_cmpge_ps(rc1sh,_mm_loadu_ps(&rc2.left));
-	const int mask = _mm_movemask_ps(test);
-	return (mask == 3); //(1|(1<<1)|(0<<2)|(0<<3)));
-
-	//return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom);
-}
-
-inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
-{
-	const __m128 rc1128 = _mm_loadu_ps(&rc1.left); // this shouldn't use loadu, but doesn't work even with __declspec(align(16))?!
-	const __m128 rc1sh = _mm_shuffle_ps(rc1128,rc1128,_MM_SHUFFLE(1, 0, 3, 2));
-	const __m128 test = _mm_cmpge_ps(rc1sh,_mm_loadu_ps(&rc2.left));
-	const int mask = _mm_movemask_ps(test);
-//   return ((mask == (1|(1<<1)|(0<<2)|(0<<3))) && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow); //!! use SSE, too?
-   return ((mask == 3) && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow); //!! use SSE, too?
-
-	//return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow);
-}

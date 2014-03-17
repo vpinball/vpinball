@@ -5,6 +5,8 @@
 #if !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
 #define AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_
 
+#include "RenderDevice.h"
+
 #define CURRENT_FILE_FORMAT_VERSION 601
 #define BEYOND_FILE_FORMAT_VERSION 701
 
@@ -47,7 +49,9 @@ public:
     HWND CreateLayerToolbar(HWND hwndParent);
 	HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent);
 	void CreateMDIClient();
+#ifdef VBA
 	void InitVBA();
+#endif
 	HRESULT AddMiniBitmaps();
 
 	void ParseCommand(int code, HWND hwnd, int notify);
@@ -94,14 +98,14 @@ public:
 	HRESULT MainMsgLoop();
 	HRESULT ApcHost_OnIdle(BOOL* pfContinue);
 	HRESULT ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed);
+#ifdef VBA
 	// IApcEvents
 	HRESULT ApcHost_BeforePause();
 	HRESULT ApcHost_AfterPause();
-
 	HRESULT ShowIDE();
-	BOOL CloseTable(PinTable *ppt);
+#endif
 
-	BOOL FDefaultCheckBlit();
+	BOOL CloseTable(PinTable *ppt);
 
 	void SetEnableToolbar();
 	void SetEnablePalette();
@@ -125,8 +129,10 @@ public:
 	Vector< CComObject<PinTable> > m_vtable;
 	CComObject<PinTable> *m_ptableActive;
 
+#ifdef VBA
 	// From VBA APC
 	int m_lcidVBA;
+#endif
 
 	HWND m_hwndSideBar;
     HWND m_hwndSideBarScroll;
@@ -145,7 +151,6 @@ public:
 
 	PinDirectSound m_pds;
 	PinDirectSound *m_pbackglassds;
-	PinDirectDraw m_pdd;
 
 	int m_ToolCur; // Palette button currently pressed
 
@@ -156,19 +161,13 @@ public:
 	BOOL m_fBackglassView; // Whether viewing the playfield or screen layout
 
 	BOOL m_fAlwaysDrawDragPoints;
-	BOOL m_fHardwareAccel;
-	BOOL m_fAlternateRender;
 	int m_DeadZ;
 	BOOL m_fAlwaysDrawLightCenters;
 
 	int m_securitylevel;
 
-	// Global functions
-
 	char m_szMyPath[MAX_PATH];
 	WCHAR m_wzMyPath[MAX_PATH];
-
-	char m_szRecentTableList[LAST_OPENED_TABLE_COUNT+1][MAX_PATH];
 
 	STDMETHOD(PlaySound)(BSTR bstr);
 
@@ -177,15 +176,20 @@ public:
 	STDMETHOD(StartShake)();
 	STDMETHOD(StopShake)();
 
+	int m_autosaveTime;
+	static bool m_open_minimized;
+
+private:
+	char m_szRecentTableList[LAST_OPENED_TABLE_COUNT+1][MAX_PATH];
+
 	HANDLE m_workerthread;
 	DWORD m_workerthreadid;
 
     HMODULE m_scintillaDll;
 
-	int m_autosaveTime;
-
+#ifdef VBA
 	bool m_fDebugging; // Whether VBA is currently in debugging mode
-	static bool m_open_minimized;
+#endif
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

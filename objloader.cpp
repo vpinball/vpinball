@@ -17,7 +17,7 @@ vector<MyPoly> tmpFaces;
 vector<Vertex3D> verts;
 vector<int> faces;
 
-int isInList( const int vi, const int ti, const int ni )
+static int isInList( const int vi, const int ti, const int ni )
 {
    for( unsigned int i=0;i<verts.size();i++ )
    {
@@ -41,7 +41,8 @@ int isInList( const int vi, const int ti, const int ni )
    }
    return -1;
 }
-void NormalizeNormals()
+
+static void NormalizeNormals()
 {
    for( unsigned int i=0;i<faces.size();i+=3 )
    {
@@ -90,7 +91,7 @@ void NormalizeNormals()
    }
 }
 
-bool loadWavefrontObj( char *filename, bool flipTv, bool convertToLeftHanded )
+bool WaveFrontObj_Load( char *filename, bool flipTv, bool convertToLeftHanded )
 {
    FILE *f;
    fopen_s(&f,filename,"r");
@@ -270,9 +271,9 @@ bool loadWavefrontObj( char *filename, bool flipTv, bool convertToLeftHanded )
    return true;
 }
 
-Vertex3D_NoTex2 *GetVertices( int &numVertices ) // clears temporary storage on the way
+void WaveFrontObj_GetVertices( std::vector<Vertex3D_NoTex2>& objMesh ) // clears temporary storage on the way
 {
-   Vertex3D_NoTex2 * const objMesh = new Vertex3D_NoTex2[verts.size()];
+   objMesh.resize( verts.size() );
    for( unsigned int i=0;i<verts.size();i++ )
    {
       objMesh[i].x = verts[i].x;
@@ -284,32 +285,19 @@ Vertex3D_NoTex2 *GetVertices( int &numVertices ) // clears temporary storage on 
       objMesh[i].ny = verts[i].ny;
       objMesh[i].nz = verts[i].nz;
    }
-   numVertices = verts.size();
    verts.clear();
-   return objMesh;
 }
 
-WORD *GetIndexList( int &indexListSize ) // clears temporary storage on the way
+void WaveFrontObj_GetIndices( std::vector<WORD>& list ) // clears temporary storage on the way
 {
-   bool showerror = true;
-   WORD * const list = new WORD[faces.size()];
-   for( unsigned int i=0;i<faces.size();i++ )
-   {
-	  if((faces[i] >= 65536) && showerror) { //!! DX7 limit, delete later-on
-           ShowError("Too many vertex indices in obj file");
-		   showerror = false;
-	  }
-      list[i] = faces[i];
-   }
-   indexListSize = faces.size();
-   if(indexListSize >= 65536) //!! DX7 limit, delete later-on
-	   ShowError("Too many polygons in obj file, this can lead to driver problems");
+   list.resize( faces.size() );
+   for( unsigned int i=0; i<faces.size(); i++ )
+      list[i] = (WORD)faces[i];
    faces.clear();
-   return list;
 }
 
 // exporting a mesh to a Wavefront .OBJ file. The mesh is converted into right-handed coordinate system (VP uses left-handed)
-void SaveOBJ( char *filename, Primitive *mesh )
+void WaveFrontObj_Save( char *filename, Primitive *mesh )
 {
    FILE *f;
    fopen_s(&f,filename,"wt");
@@ -317,25 +305,23 @@ void SaveOBJ( char *filename, Primitive *mesh )
       return ;
 
    fprintf_s(f,"# Visual Pinball OBJ file\n");
-   fprintf_s(f,"# numVerts: %i numFaces: %i\n", mesh->numVertices, mesh->indexListSize );
+   fprintf_s(f,"# numVerts: %u numFaces: %u\n", mesh->objMeshOrg.size(), mesh->indexList.size() );
    fprintf_s(f,"o %s\n",mesh->m_d.meshFileName );
-   for( int i=0; i<mesh->numVertices;i++ )
+   for( unsigned i=0; i<mesh->objMeshOrg.size(); i++ )
    {
-      float z = mesh->objMeshOrg[i].z;
-      z*=-1.0f;
-      fprintf_s(f,"v %f %f %f\n", mesh->objMeshOrg[i].x, mesh->objMeshOrg[i].y, z );
+      fprintf_s(f,"v %f %f %f\n", mesh->objMeshOrg[i].x, mesh->objMeshOrg[i].y, -mesh->objMeshOrg[i].z );
    }
-   for( int i=0; i<mesh->numVertices;i++ )
+   for( unsigned i=0; i<mesh->objMeshOrg.size(); i++ )
    {
       fprintf_s(f,"vn %f %f %f\n",mesh->objMeshOrg[i].nx, mesh->objMeshOrg[i].ny, mesh->objMeshOrg[i].nz );
    }
-   for( int i=0; i<mesh->numVertices;i++ )
+   for( unsigned i=0; i<mesh->objMeshOrg.size(); i++ )
    {
       float tv = 1.f-mesh->objMeshOrg[i].tv;
       fprintf_s(f,"vt %f %f\n", mesh->objMeshOrg[i].tu, tv );
    }
 
-   for( int i=0; i<mesh->indexListSize;i+=3 )
+   for( unsigned i=0; i<mesh->indexList.size(); i+=3 )
    {
       fprintf_s(f,"f %i/%i/%i %i/%i/%i %i/%i/%i\n", mesh->indexList[i+2]+1, mesh->indexList[i+2]+1, mesh->indexList[i+2]+1
                                                   , mesh->indexList[i+1]+1, mesh->indexList[i+1]+1, mesh->indexList[i+1]+1

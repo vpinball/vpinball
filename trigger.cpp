@@ -441,10 +441,9 @@ void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
 
          staticVertices[l+offset].x =  cs*x + sn*y + m_d.m_vCenter.x;
          staticVertices[l+offset].y = -sn*x + cs*y + m_d.m_vCenter.y;
-
-         ppin3d->m_lightproject.CalcCoordinates(&staticVertices[l+offset]);
       }
    }
+   ppin3d->CalcShadowCoordinates(staticVertices,40);
 
    for (int i=0;i<4;i++)
    {
@@ -467,11 +466,11 @@ void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
 
    if ( vertexBuffer==NULL )
    {
-      ppin3d->m_pd3dDevice->createVertexBuffer( 40, 0, MY_D3DFVF_VERTEX, &vertexBuffer );
+      ppin3d->m_pd3dDevice->CreateVertexBuffer( 40, 0, MY_D3DFVF_VERTEX, &vertexBuffer );
       NumVideoBytes += 40*sizeof(Vertex3D);
    }
    Vertex3D *buf;
-   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::NOOVERWRITE);
+   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    memcpy( buf, staticVertices, 40*sizeof(Vertex3D));
    vertexBuffer->unlock();
 
@@ -485,9 +484,9 @@ void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   ppin3d->EnableLightMap(fTrue, height);
+   ppin3d->EnableLightMap(height);
 
-   material.set();
+   pd3dDevice->SetMaterial(material);
 
    for (int i=0;i<4;i++)
    {
@@ -504,15 +503,11 @@ void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
             rgtriggerface[l][4]
          };
          const int cpt = (rgtriggerface[l][4] == 0xFFFF) ? 4 : 5;
-         pd3dDevice->renderPrimitive( D3DPT_TRIANGLEFAN, vertexBuffer, offset, 10, (LPWORD)rgi, cpt, 0 );
+         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLEFAN, vertexBuffer, offset, 10, (LPWORD)rgi, cpt);
       }
    }
 
-   ppin3d->EnableLightMap(fFalse, -1);
-}
-
-void Trigger::RenderMovers(const RenderDevice* pd3dDevice)
-{
+   ppin3d->DisableLightMap();
 }
 
 void Trigger::SetObjectPos()
@@ -928,11 +923,9 @@ STDMETHODIMP Trigger::BallCntOver(int *pVal)
 
    if (g_pplayer)
    {
-      const int vballsize = g_pplayer->m_vball.Size();
-
-      for (int i = 0; i < vballsize; i++)
+      for (unsigned i = 0; i < g_pplayer->m_vball.size(); i++)
       {
-         Ball * const pball = g_pplayer->m_vball.ElementAt(i);
+         Ball * const pball = g_pplayer->m_vball[i];
 
          if (pball->m_vpVolObjs && pball->m_vpVolObjs->IndexOf(this) >= 0)
          {
@@ -952,9 +945,9 @@ STDMETHODIMP Trigger::DestroyBall(int *pVal)
 
    if (g_pplayer)
    {
-      for (int i = 0; i < g_pplayer->m_vball.Size(); i++)
+      for (unsigned i = 0; i < g_pplayer->m_vball.size(); i++)
       {
-         Ball * const pball = g_pplayer->m_vball.ElementAt(i);
+         Ball * const pball = g_pplayer->m_vball[i];
 
          int j;
          if (pball->m_vpVolObjs && (j = pball->m_vpVolObjs->IndexOf(this)) >= 0)

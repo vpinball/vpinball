@@ -315,10 +315,10 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCMT;LIBCD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -355,7 +355,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -406,7 +406,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -446,10 +446,10 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCMT;LIBCD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -488,7 +488,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <AdditionalOptions>/NODEFAULTLIB:LIBC
 /NODEFAULTLIB:LIBCMT
 /NODEFAULTLIB:LIBCD %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -526,7 +526,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -572,7 +572,7 @@ rem  Version changes during debug compile only
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>.\lib\</AdditionalLibraryDirectories>
@@ -614,7 +614,7 @@ rem  Version changes during debug compile only
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -655,7 +655,7 @@ rem  Version changes during debug compile only
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -698,7 +698,7 @@ rem  Version changes during debug compile only
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -757,10 +757,10 @@ rem  Version changes during debug compile only
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;nvapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCMT;LIBCD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -818,7 +818,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -881,7 +881,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;odbc32.lib;odbccp32.lib;xaudio.lib;imm32.lib;setupapi.lib;hid.lib;DongleAPI.lib;nvapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)VPinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -913,7 +913,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="flasher.cpp" />
-    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="hash.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="Pin\ball.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -2406,51 +2406,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="pinimage.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinSize|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release MinSize|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release MinSize|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTestFrench|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ReleaseTestFrench|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ReleaseTestFrench|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTestGerman|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ReleaseTestGerman|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ReleaseTestGerman|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTestSpanish|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ReleaseTestSpanish|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ReleaseTestSpanish|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">Disabled</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_UNICODE</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_STATIC_REGISTRY;_ATL_MIN_CRT</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">MinSpace</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="pininput.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -3661,6 +3616,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
   <ItemGroup>
     <ClInclude Include="flasher.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="physconst.h" />
     <ClInclude Include="Pin\ball.h" />
     <ClInclude Include="ballex.h" />
     <ClInclude Include="bumper.h" />
@@ -3675,10 +3631,8 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="dispreel.h" />
     <ClInclude Include="disputil.h" />
     <ClInclude Include="dragpoint.h" />
-    <ClInclude Include="Pin\draw.h" />
     <ClInclude Include="eventproxy.h" />
     <ClInclude Include="extern.h" />
-    <ClInclude Include="exvector.h" />
     <ClInclude Include="Media\fileio.h" />
     <ClInclude Include="flipper.h" />
     <ClInclude Include="freeimage.h" />
@@ -3707,11 +3661,9 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="paintsur.h" />
     <ClInclude Include="pin3d.h" />
     <ClInclude Include="pinbinary.h" />
-    <ClInclude Include="pinimage.h" />
     <ClInclude Include="pininput.h" />
     <ClInclude Include="pinsound.h" />
     <ClInclude Include="pintable.h" />
-    <ClInclude Include="pintypes.h" />
     <ClInclude Include="pinundo.h" />
     <ClInclude Include="Pin\player.h" />
     <ClInclude Include="plumb.h" />

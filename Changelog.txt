@@ -1,3 +1,31 @@
+VP 9.9.0 Changelog
+------------------------
+- DX9 port for the graphics by new team member Mukuste
+
+- DX8 port for input handling (currently disabled)
+
+- enable NVIDIA Optimus cards by default (currently disabled)
+
+- texture size limit/downscale now respects aspect ratio (currently disabled)
+- new video setting: Force anisotropic texture filtering. This results in higher quality results, but can affect performance on lower end cards.
+
+- stereo 3D AA is now basically for free and can always be enabled if stereo 3D output is used
+  Note that the depth/parameters of stereo had to be changed. As a positive sideeffect the two stereo parameters are the same for most tables now,
+  so there is now a global setting in the video preferences. These can still be overwritten per table though.
+
+- FXAA now has two modes: Fast and Quality
+
+- region updates and optimizations settings are not needed anymore due to the new graphics pipeline
+- same goes for alternate render
+
+- adaptive vsync behavior changed:
+  0: disable vsync
+  1: enable/automatic detection of vsync rate
+  if adaptive vsync is set to anything higher than the monitor refresh rate, the engine will limit the FPS to this rate (but of course without using real vsync)
+  the old original behavior had to be disabled for now due to XP compatibility
+
+- technical note: the minimum version to compile VP is now visual studio 2008 (incl. feature pack)
+
 VP 9.2.1 Changelog
 ------------------------
 - this is the final release to be based on DirectX 7

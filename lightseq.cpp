@@ -46,13 +46,13 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_vCenter.x = fTmp;
 	else
-		m_d.m_vCenter.x = 1000/2;
+		m_d.m_vCenter.x = EDITOR_BG_WIDTH/2;
 
 	hr = GetRegStringAsFloat("DefaultProps\\LightSequence","CenterY", &fTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_vCenter.y = fTmp;
 	else
-		m_d.m_vCenter.y = 2000/2;
+		m_d.m_vCenter.y = (2*EDITOR_BG_WIDTH)/2;
 	
 	hr = GetRegInt("DefaultProps\\LightSequence","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -216,9 +216,6 @@ void LightSeq::GetHitShapes(Vector<HitObject> * const pvho)
 {
     m_ptu = new LightSeqUpdater(this);
 
-	m_ptu->m_lightseqanim.m_znear = 0;
-	m_ptu->m_lightseqanim.m_zfar = 0;
-
 	// HACK - adding object directly to screen update list.  Someday make hit objects and screenupdaters seperate objects
 	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_lightseqanim);
 }
@@ -250,17 +247,9 @@ void LightSeq::EndPlay()
 void LightSeq::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
 }
+
 void LightSeq::RenderSetup(const RenderDevice* _pd3dDevice)
 {
-
-}
-void LightSeq::RenderStatic(const RenderDevice* pd3dDevice)
-{
-}
-
-void LightSeq::RenderMovers(const RenderDevice* _pd3dDevice)
-{
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 	// zero pointers as a safe guard
 	m_pcollection = NULL;
 	m_pgridData	= NULL;
@@ -361,7 +350,7 @@ void LightSeq::RenderMovers(const RenderDevice* _pd3dDevice)
 			// scale down to suit the size of the light sequence grid
 			const unsigned int ix = (int)(x * (float)(1.0/LIGHTSEQGRIDSCALE));
 			const unsigned int iy = (int)(y * (float)(1.0/LIGHTSEQGRIDSCALE));
-			// if on the playfield (1000 by 2000)
+			// if on the playfield
 			if ( /*(ix >= 0) &&*/ (ix < (unsigned int)m_lightSeqGridWidth) && //>=0 handled by unsigned int
 				 /*(iy >= 0) &&*/ (iy < (unsigned int)m_lightSeqGridHeight) ) //>=0 handled by unsigned int
 			{
@@ -372,6 +361,10 @@ void LightSeq::RenderMovers(const RenderDevice* _pd3dDevice)
 			}
 		}
 	}
+}
+
+void LightSeq::RenderStatic(const RenderDevice* pd3dDevice)
+{
 }
 
 // This function is called during Check3D.  It basically check to see if the update
@@ -386,7 +379,7 @@ bool LightSeq::RenderAnimation()
 	{
 	    if (g_pplayer->m_time_msec >= m_timeNextUpdate)
 		{
-			if (m_pauseInProgress == false)
+			if (!m_pauseInProgress)
 			{
 	    	    m_timeNextUpdate = g_pplayer->m_time_msec + m_updateRate;
 				// process the head tracers
@@ -605,7 +598,7 @@ STDMETHODIMP LightSeq::get_CenterX(float *pVal)
 
 STDMETHODIMP LightSeq::put_CenterX(float newVal)
 {
-	if ((newVal < 0) || (newVal >= 1000.0f))
+	if ((newVal < 0) || (newVal >= (float)EDITOR_BG_WIDTH))
 		return E_FAIL;
 	STARTUNDO
 	m_d.m_vCenter.x = newVal;
@@ -626,7 +619,7 @@ STDMETHODIMP LightSeq::get_CenterY(float *pVal)
 
 STDMETHODIMP LightSeq::put_CenterY(float newVal)
 {
-	if ((newVal < 0) || (newVal >= 2000.0f))
+	if ((newVal < 0) || (newVal >= (float)(2*EDITOR_BG_WIDTH)))
 		return E_FAIL;
 
 	STARTUNDO

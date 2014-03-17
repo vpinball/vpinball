@@ -157,7 +157,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LightSeq)
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
 private:
-    int				m_timeNextUpdate;
+    U32				m_timeNextUpdate;
 	int				m_blinkSequence;
 	float			m_GridXCenter;
 	float			m_GridYCenter;

@@ -50,7 +50,6 @@ struct ExpandoInfo
 	SmartBrowser *m_psb;
 	BOOL m_fHasCaption; // Also means 'can expand/collapse'
 	int m_dialogheight;
-	int m_desiredheight; // for animation
 	};
 
 class SmartBrowser

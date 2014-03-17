@@ -300,8 +300,8 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	PinInput * const ppinput = (PinInput *)pvRef;
 	
 	HRESULT hr;
-	hr = ppinput->m_pDI->CreateDeviceEx(lpddi->guidInstance, IID_IDirectInputDevice7,
-		                                (void **)&ppinput->m_pJoystick[ppinput->e_JoyCnt], NULL);
+	
+	hr = ppinput->m_pDI->CreateDevice(lpddi->guidInstance, &ppinput->m_pJoystick[ppinput->e_JoyCnt], NULL);
 	if (FAILED(hr))
 		{
 		ppinput->m_pJoystick[ppinput->e_JoyCnt] = NULL; //make sure no garbage
@@ -414,7 +414,11 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 	DIDEVICEOBJECTDATA didod[ INPUT_BUFFER_SIZE ];  // Receives buffered data 
 
 	// keyboard
+#ifdef VP10
+	const LPDIRECTINPUTDEVICE8 pkyb = m_pKeyboard;
+#else
 	const LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
+#endif
 	if (pkyb)
 		{	
 		HRESULT hr = pkyb->Acquire();				// try to Acquire keyboard input
@@ -438,8 +442,8 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 	  HRESULT hr = m_pMouse->Acquire();	// try to Acquire mouse input
       if (hr == S_OK || hr == S_FALSE)
       {
-         DIMOUSESTATE mouseState;
-         hr = m_pMouse->GetDeviceState( sizeof(DIMOUSESTATE), &mouseState );
+         DIMOUSESTATE2 mouseState;
+         hr = m_pMouse->GetDeviceState( sizeof(DIMOUSESTATE2), &mouseState );
 
          if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_hwnd == GetForegroundWindow()))
 		 {
@@ -489,7 +493,11 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
     // same for joysticks 
 	for (int k = 0; k < e_JoyCnt; ++k)
 		{
+#ifdef VP10
+		const LPDIRECTINPUTDEVICE8 pjoy = m_pJoystick[k];
+#else
 		const LPDIRECTINPUTDEVICE pjoy = m_pJoystick[k];
+#endif
 		if (pjoy)
 			{				
 			HRESULT hr = pjoy->Acquire();							// try to acquire joystick input
@@ -514,14 +522,18 @@ void PinInput::Init(const HWND hwnd)
 	m_hwnd = hwnd;
 
 	HRESULT hr;
-	hr = DirectInputCreateEx(g_hinst, DIRECTINPUT_VERSION, IID_IDirectInput7, (void **)&m_pDI, NULL);
+#ifdef VP10
+	hr = DirectInput8Create(g_hinst, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&m_pDI, NULL);
+#else
+	hr = DirectInputCreate(g_hinst, DIRECTINPUT_VERSION, &m_pDI, NULL);
+#endif
 
 	// Create keyboard device
 	hr = m_pDI->CreateDevice( GUID_SysKeyboard, &m_pKeyboard, NULL); //Standard Keyboard device
 
 	hr = m_pKeyboard->SetDataFormat( &c_dfDIKeyboard );
 
-	hr = m_pKeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+	hr = m_pKeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND); //!! exclusive necessary??
 
    DIPROPDWORD dipdw;
    dipdw.diph.dwSize = sizeof(DIPROPDWORD);
@@ -537,7 +549,7 @@ void PinInput::Init(const HWND hwnd)
        // Create mouse device
 	   if(!FAILED(m_pDI->CreateDevice( GUID_SysMouse, &m_pMouse, NULL)))
 	   {
-		   HRESULT hr = m_pMouse->SetDataFormat( &c_dfDIMouse );
+		   HRESULT hr = m_pMouse->SetDataFormat( &c_dfDIMouse2 );
  
 		   //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 		   dipdw.diph.dwSize = sizeof(DIPROPDWORD);
@@ -566,8 +578,11 @@ void PinInput::Init(const HWND hwnd)
 
 	uShockDevice = -1;
 	uShockType = 0;
-
+#ifdef VP10
+	m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);//enum Joysticks
+#else
 	m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);//enum Joysticks
+#endif
 
 	//InputControlRun = 1;	//0== stalled, 1==run,  0 < shutting down, 2==terminated
 	//_beginthread( InputControlProcess, 0, NULL );
@@ -977,11 +992,11 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                   vy = -vy2;
                }
                bool ballGrabbed=false;
-               for( int i=0;i<g_pplayer->m_vball.Size();i++ )
+               for( unsigned i=0; i<g_pplayer->m_vball.size(); i++ )
                {
-                  Ball * const pBall = g_pplayer->m_vball.ElementAt(i);
-                  const float dx = fabsf(vertex.x - pBall->x);
-                  const float dy = fabsf(vertex.y - pBall->y);
+                  Ball * const pBall = g_pplayer->m_vball[i];
+                  const float dx = fabsf(vertex.x - pBall->pos.x);
+                  const float dy = fabsf(vertex.y - pBall->pos.y);
                   if ( dx<50.f && dy<50.f )
                   {
                      POINT newPoint;
@@ -990,10 +1005,10 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                      const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(&newPoint);
 
                      ballGrabbed=true;
-                     pBall->x = vert.x;
-                     pBall->y = vert.y;
-                     pBall->vx = vx;
-                     pBall->vy = vy;
+                     pBall->pos.x = vert.x;
+                     pBall->pos.y = vert.y;
+                     pBall->vel.x = vx;
+                     pBall->vel.y = vy;
                      pBall->Init();
                      break;
                   }
@@ -1010,11 +1025,11 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                ScreenToClient(m_hwnd, &point);
                const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
 
-               for( int i=0;i<g_pplayer->m_vball.Size();i++ )
+               for( unsigned i=0; i<g_pplayer->m_vball.size(); i++ )
                {
-                  Ball *pBall = g_pplayer->m_vball.ElementAt(i);
-                  const float dx = fabsf(vertex.x - pBall->x);
-                  const float dy = fabsf(vertex.y - pBall->y);
+                  Ball *pBall = g_pplayer->m_vball[i];
+                  const float dx = fabsf(vertex.x - pBall->pos.x);
+                  const float dy = fabsf(vertex.y - pBall->pos.y);
                   if ( dx<50.f && dy<50.f )
                   {
                      g_pplayer->DestroyBall(pBall);
@@ -1038,7 +1053,6 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 				{
 					g_pplayer->m_fStereo3Denabled = !g_pplayer->m_fStereo3Denabled;
 					SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &g_pplayer->m_fStereo3Denabled, 4);
-					g_pplayer->m_fCleanBlt = fFalse;
 				}
 			}
 			else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])
@@ -1052,18 +1066,18 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 			}
 			else if( ((input->dwOfs == DIK_ESCAPE) && (m_disable_esc == 0)) || ( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]) )
 			{
-			    // Check if we have started a game yet.
+				// Check if we have started a game yet.
 			    if (started() || (m_ptable->m_tblAutoStartEnabled == false))
 			    {
-				if (input->dwData & 0x80) { //on key down only
-					m_first_stamp = curr_time_msec;
-					m_exit_stamp = curr_time_msec;
-				}
+					if (input->dwData & 0x80) { //on key down only
+						m_first_stamp = curr_time_msec;
+						m_exit_stamp = curr_time_msec;
+					}
 				
-				if ((input->dwData & 0x80) == 0) { //on key up only
-					m_exit_stamp = 0;
-					g_pplayer->m_fCloseDown = fTrue;
-				}
+					if ((input->dwData & 0x80) == 0) { //on key up only
+						m_exit_stamp = 0;
+						g_pplayer->m_fCloseDown = fTrue;
+					}
 			    }
 			}
 			else
@@ -1507,8 +1521,11 @@ int PinInput::GetNextKey() // return last valid keyboard key
 		DIDEVICEOBJECTDATA didod[1];  // Receives buffered data
 		DWORD dwElements;
 		HRESULT hr;
+#ifdef VP10
+		LPDIRECTINPUTDEVICE8 pkyb = m_pKeyboard;
+#else
 		LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
-
+#endif
 		for (int j = 0; j < 2; ++j)
 		{
 			dwElements = 1;

@@ -29,7 +29,6 @@ public:
 	char m_szImageBack[MAXTOKEN];
 	float m_angleMin;
 	float m_angleMax;
-	int m_animations; //animation frames
 	BOOL m_fVisible;
 	BOOL m_fEnableLighting;
 	};
@@ -97,18 +96,22 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Gate)
 
 	virtual void RenderBlueprint(Sur *psur);
 
+    int angleToFrame(float angle) const;
+
 	void WriteRegDefaults();
 	PinTable *m_ptable;
 
 	GateData m_d;
 
+private:
 	LineSeg *m_plineseg;
 	HitGate *m_phitgate;
    Vertex3D staticVertices[8];
 
-   Vertex3D *litVertices;
-   Vertex3D_NoLighting *nolitVertices;
-   int frameCount;
+   float m_posZ;        // z coordinate for rendering
+
+   VertexBuffer *vtxBuf;
+   IndexBuffer *idxBuf;
 
    Material staticMaterial;
    Material solidMaterial;
