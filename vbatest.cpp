@@ -226,19 +226,23 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
 	free(szArglist);
 
-	{
-	char szFileName[_MAX_PATH];
-	if (GetModuleFileName(hInstance, szFileName, _MAX_PATH))
-		{
-		ITypeLib *ptl = NULL;
-		MAKE_WIDEPTR_FROMANSI(wszFileName, szFileName);
-		if (SUCCEEDED(LoadTypeLib(wszFileName, &ptl)))
-			{
-			RegisterTypeLib(ptl, wszFileName, NULL);
-			ptl->Release();
-			}
-		}
-	}
+    // load and register VP type library for COM integration
+    char szFileName[_MAX_PATH];
+    if (GetModuleFileName(hInstance, szFileName, _MAX_PATH))
+    {
+        ITypeLib *ptl = NULL;
+        MAKE_WIDEPTR_FROMANSI(wszFileName, szFileName);
+        if (SUCCEEDED(LoadTypeLib(wszFileName, &ptl)))
+        {
+            HRESULT hr = RegisterTypeLibForUser(ptl, wszFileName, NULL);
+            if (!SUCCEEDED(hr))
+                MessageBox(0, "Could not register type library. Please run Visual Pinball as administrator.", "Error", MB_ICONWARNING);
+
+            ptl->Release();
+        }
+        else
+            MessageBox(0, "Could not load type library.", "Error", MB_ICONSTOP);
+    }
 
     if (bRun)
     {
