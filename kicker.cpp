@@ -812,10 +812,8 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds * const phitnormal
 	const int i = pball->m_vpVolObjs->IndexOf(m_pObj);	// check if kicker in ball's volume set
 
 	if (!phitnormal || ((phitnormal[1].x < 1) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
-		{		
-		pball->pos.x += pball->vel.x * STATICTIME; //move ball slightly forward
-		pball->pos.y += pball->vel.y * STATICTIME;
-		pball->pos.z += pball->vel.z * STATICTIME;
+		{
+        pball->pos += STATICTIME * pball->vel;          // move ball slightly forward
 
 		if (i < 0)	//entering Kickers volume
 			{ 

@@ -164,6 +164,10 @@ public:
         _42 = ty;
         _43 = tz;
     }
+    void SetTranslation(const Vertex3Ds& t)
+    {
+        SetTranslation(t.x, t.y, t.z);
+    }
 
     void SetScaling(float sx, float sy, float sz)
     {

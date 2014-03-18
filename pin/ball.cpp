@@ -213,12 +213,10 @@ void Ball::EnsureOMObject()
 	m_pballex->m_pball = this;
 }
  
-void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float elasticity, float antifriction, float scatter_angle, bool collide3D)
+void Ball::Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, float antifriction, float scatter_angle)
 {
     //speed normal to wall
-    float dot = collide3D
-        ? vel.Dot(*phitnormal)
-        : (vel.x * phitnormal->x + vel.y * phitnormal->y);
+    float dot = vel.Dot(hitNormal);
 
 	if (dot >= -C_LOWNORMVEL )							// nearly receding ... make sure of conditions
 	{													// otherwise if clearly approaching .. process the collision
@@ -238,18 +236,13 @@ void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float elasticit
 	{
 		if (hdist > C_DISP_LIMIT) 
 			hdist = C_DISP_LIMIT;	// crossing ramps, delta noise
-		pos.x += hdist * phitnormal->x;	// push along norm, back to free area
-		pos.y += hdist * phitnormal->y;	// use the norm, but this is not correct, reverse time is correct
-        if (collide3D)
-            pos.z += hdist * phitnormal->z;
+		pos += hdist * hitNormal;	// push along norm, back to free area
+        // use the norm, but this is not correct, reverse time is correct
 	}
 #endif
 
 	dot *= -1.005f - elasticity; //!! some small minimum
-	vel.x += dot * phitnormal->x;
-	vel.y += dot * phitnormal->y;
-    if (collide3D)
-        vel.z += dot * phitnormal->z;
+	vel += dot * hitNormal;
 
 	if (antifriction >= 1.0f || antifriction <= 0.0f) 
 		antifriction = c_hardFriction; // use global
@@ -273,13 +266,7 @@ void Ball::CollideWall(const Vertex3Ds * const phitnormal, const float elasticit
 	}
 
     //calc new rolling dynamics
-    if (collide3D)
-        AngularAcceleration(*phitnormal);
-    else
-    {
-        const Vertex3Ds vnormal(phitnormal->x, phitnormal->y, 0.0f);
-        AngularAcceleration(vnormal);
-    }
+    AngularAcceleration(hitNormal);
 }
 
 float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
@@ -354,18 +341,13 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
             return -1.0f; // .. was some time previous || beyond the next physics tick
 	}
 
-	const float hitx = pball->pos.x + dv.x * hittime;  // new ball position
-	const float hity = pball->pos.y + dv.y * hittime;
-	const float hitz = pball->pos.z + dv.z * hittime;
+    const Vertex3Ds hitPos = pball->pos + hittime * dv; // new ball position
 
     //calc unit normal of collision
-	coll.normal->x = hitx - pos.x;
-	coll.normal->y = hity - pos.y;
-	coll.normal->z = hitz - pos.z;
-    coll.normal->Normalize();
+	coll.normal[0] = hitPos - pos;
+    coll.normal[0].Normalize();
 
 	coll.distance = bnd;					//actual contact distance
-	coll.normVel = bnv;
 	coll.hitRigid = true;					//rigid collision type
 
 	return hittime;	
@@ -403,9 +385,8 @@ void Ball::Collide(CollisionEvent *coll)
 		if (edist > C_DISP_LIMIT) 
 			edist = C_DISP_LIMIT;		// crossing ramps, delta noise
 		if (!fFrozen) edist *= 0.5f;	// if the hitten ball is not frozen
-		pball->pos.x += edist * vnormal.x;	// push along norm, back to free area
-		pball->pos.y += edist * vnormal.y;	// use the norm, but is not correct, but cheaply handled
-		pball->pos.z += edist * vnormal.z;	// 
+        pball->pos += edist * vnormal;// push along norm, back to free area
+        // use the norm, but is not correct, but cheaply handled
 	}
 
 	edist = -C_DISP_GAIN * m_coll.distance;	// noisy value .... needs investigation
@@ -414,9 +395,7 @@ void Ball::Collide(CollisionEvent *coll)
 		if (edist > C_DISP_LIMIT) 
 			edist = C_DISP_LIMIT;		// crossing ramps, delta noise
 		edist *= 0.5f;		
-		pos.x -= edist * vnormal.x;			// pull along norm, back to free area
-		pos.y -= edist * vnormal.y;			// use the norm
-		pos.z -= edist * vnormal.z;			//
+        pos -= edist * vnormal;         // pull along norm, back to free area
 	}
 #endif				
 

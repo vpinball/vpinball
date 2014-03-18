@@ -128,7 +128,6 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 	coll.normal->y = normal.y;
 		
 	coll.distance = bnd;					// actual contact distance ...
-	coll.normVel = bnv;
 	coll.hitRigid = rigid;				// collision type
 
 	return hittime;
@@ -276,7 +275,6 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, const float dtime, Colli
 		coll.normal[1].x = fUnhit ? 1.0f : 0.0f;			// UnHit signal	is receding from target
 
 	coll.distance = bnd;					//actual contact distance ... 
-	coll.normVel = bnv;
 	coll.hitRigid = rigid;				// collision type
 
 	return hittime;
@@ -291,21 +289,20 @@ float HitCircle::HitTestRadius(const Ball *pball, float dtime, CollisionEvent& c
 void LineSeg::Collide(CollisionEvent *coll)
 	{
     Ball *pball = coll->ball;
-    Vertex3Ds *phitnormal = coll->normal;
+    const Vertex3Ds& hitnormal = coll->normal[0];
 
-	const float dot = phitnormal->x * pball->vel.x + phitnormal->y * pball->vel.y;
-
-	pball->CollideWall(phitnormal, m_elasticity, m_antifriction, m_scatter);
+	pball->CollideWall(hitnormal, m_elasticity, m_antifriction, m_scatter);
 
 	if (m_pfe)
 		{			
+        const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
 		if (dot <= -m_threshold)
 			{
-			const float dx = pball->m_Event_Pos.x - pball->pos.x; // is this the same place as last event????
-			const float dy = pball->m_Event_Pos.y - pball->pos.y; // if same then ignore it
-			const float dz = pball->m_Event_Pos.z - pball->pos.z;
+            // is this the same place as last event????
+            // if same then ignore it
+            const Vertex3Ds dist = pball->m_Event_Pos - pball->pos;
 
-			if (dx*dx + dy*dy + dz*dz > 0.25f)// must be a new place if only by a little
+            if (dist.LengthSquared() > 0.25f) // must be a new place if only by a little
 				{
 				m_pfe->FireGroupEvent(DISPID_HitEvents_Hit);
 				}
@@ -354,28 +351,28 @@ float Joint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 void Joint::Collide(CollisionEvent *coll)
 	{
     Ball *pball = coll->ball;
-    Vertex3Ds *phitnormal = coll->normal;
+    const Vertex3Ds& hitnormal = coll->normal[0];
 
-	const float dot = phitnormal->x * pball->vel.x + phitnormal->y * pball->vel.y;
+	pball->CollideWall(hitnormal, m_elasticity, m_antifriction, m_scatter);
 
-	pball->CollideWall(phitnormal, m_elasticity, m_antifriction, m_scatter);
+    if (m_pfe)
+    {
+        const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
 
-	if (m_pfe)
-		{			
-		if (dot <= -m_threshold)
-			{
-			const float dx = pball->m_Event_Pos.x - pball->pos.x; // is this the same place as last event????
-			const float dy = pball->m_Event_Pos.y - pball->pos.y; // if same then ignore it
-			const float dz = pball->m_Event_Pos.z - pball->pos.z;
+        if (dot <= -m_threshold)
+        {
+            // is this the same place as last event????
+            // if same then ignore it
+            const Vertex3Ds dist = pball->m_Event_Pos - pball->pos;
 
-			if (dx*dx + dy*dy + dz*dz > 0.25f) // must be a new place if only by a little
-				{
-				m_pfe->FireGroupEvent(DISPID_HitEvents_Hit);
-				}
-			}
-		
+            if (dist.LengthSquared() > 0.25f) // must be a new place if only by a little
+            {
+                m_pfe->FireGroupEvent(DISPID_HitEvents_Hit);
+            }
+        }
+
         pball->m_Event_Pos = pball->pos;        //remember last collide position
-		}
+    }
 	}
 
 void HitCircle::CalcHitRect()
@@ -396,7 +393,7 @@ float HitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 void HitCircle::Collide(CollisionEvent *coll)
 {
-    coll->ball->CollideWall(coll->normal, m_elasticity, m_antifriction, m_scatter);
+    coll->ball->CollideWall(coll->normal[0], m_elasticity, m_antifriction, m_scatter);
 }
 
 

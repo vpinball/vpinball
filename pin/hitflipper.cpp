@@ -395,7 +395,6 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
       return -1.0f; // not hit ... ball is receding from face already, must have been embedded or shallow angled
 
    coll.distance = bfend;				//actual contact distance ..
-   coll.normVel = bnv;
    coll.hitRigid = true;				// collision type
 
    return t;
@@ -549,7 +548,6 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
       return -1.0f; // not hit ... ball is receding from endradius already, must have been embedded
 
    coll.distance = bffnd;				//normal ...actual contact distance ... 
-   coll.normVel = bnv;
    coll.hitRigid = true;				// collision type
 
    return t;
@@ -561,16 +559,14 @@ void HitFlipper::Collide(CollisionEvent *coll)
     Ball *pball = coll->ball;
     Vertex3Ds *phitnormal = coll->normal;
 
-   const float vx = pball->vel.x;
-   const float vy = pball->vel.y;
    const float distance = phitnormal[2].x;				// moment .... and the flipper response
    const float angsp = m_flipperanim.m_anglespeed;		// angular rate of flipper at impact moment
    float tanspd = distance * angsp;					// distance * anglespeed
    float flipperHit = 0;
 
    Vertex2D dv(
-      vx - phitnormal[1].x*tanspd, 
-      vy - phitnormal[1].y*tanspd);					 //delta velocity ball to face
+      pball->vel.x - phitnormal[1].x*tanspd,
+      pball->vel.y - phitnormal[1].y*tanspd);					 //delta velocity ball to face
 
    float dot = dv.x*phitnormal->x + dv.y*phitnormal->y; //dot Normal to delta v
 
