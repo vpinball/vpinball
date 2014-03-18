@@ -256,7 +256,6 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 		coll.normal[0] = hit.normal[0];
 		coll.distance = hit.distance;
-		coll.normVel = hit.normVel;
 		coll.hitRigid = true;
 		coll.normal[1].x = 0;
 		coll.normal[1].y = 0;
@@ -272,7 +271,6 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 			coll.normal[0] = hit.normal[0];
 			coll.distance = hit.distance;
-			coll.normVel = hit.normVel;
 			coll.hitRigid = true;
 
 			coll.normal[1].x = 0;
@@ -287,7 +285,6 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 			coll.normal[0] = hit.normal[0];
 			coll.distance = hit.distance;
-			coll.normVel = hit.normVel;
 			coll.hitRigid = true;
 			coll.normal[1].x = 0;
 			coll.normal[1].y = 0;
@@ -306,7 +303,6 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 		coll.normal[0] = hit.normal[0];
 		coll.distance = hit.distance;
-		coll.normVel = hit.normVel;
 		coll.hitRigid = true;
 		coll.normal[1].x = 0;
 		coll.normal[1].y = deltay;	 //m_speed;		//>>> changed by chris
@@ -322,7 +318,6 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 			coll.normal[0] = hit.normal[0];
 			coll.distance = hit.distance;
-			coll.normVel = hit.normVel;
 			coll.hitRigid = true;
 			coll.normal[1].x = 0;
 			coll.normal[1].y = deltay;	 //m_speed;		//>>> changed by chris

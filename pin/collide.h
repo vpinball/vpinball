@@ -43,7 +43,6 @@ struct CollisionEvent
 
     float hittime;      // when the collision happens (relative to current physics state, units: 10 ms)
     float distance;     // hit distance 
-    float normVel;      // hit normal velocity
 
     // additional collision information; typical use (not always the same):
     // 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
