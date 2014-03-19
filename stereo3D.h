@@ -20,7 +20,7 @@ static const char stereo3Dshader[] = \
 "{"
 "float2 u = uorg + w_h_height.xy*0.5;"
 "const float MaxSeparation = ms_zpd_ya_td.x;"
-"const float MS_ZPD = ms_zpd_ya_td.y;"
+"const float ZPD = ms_zpd_ya_td.y;"
 "const bool yaxis = (ms_zpd_ya_td.z != 0.0);" //!! uniform
 "const bool topdown = (ms_zpd_ya_td.w != 0.0);" //!! uniform
 "const int y = w_h_height.z*u.y;"
@@ -29,7 +29,7 @@ static const char stereo3Dshader[] = \
 "if(topdown) { u.y *= 2.0; if(!l) u.y -= 1.0; }"  //!! !topdown: (u.y+w_h_height.y) ?
 "const float su = l ? MaxSeparation : -MaxSeparation;"
 "float minDepth = min(min(tex2D(depth,u + (yaxis ? float2(0.0,0.5*su) : float2(0.5*su,0.0))).x, tex2D(depth,u + (yaxis ? float2(0.0,0.666*su) : float2(0.666*su,0.0))).x), tex2D(depth,u + (yaxis ? float2(0.0,su) : float2(su,0.0))).x);"
-"float parallax = MaxSeparation - min(MS_ZPD/minDepth, MaxSeparation);"
+"float parallax = MaxSeparation - min(MaxSeparation*ZPD/(0.5*ZPD+minDepth*(1.0-0.5*ZPD)), MaxSeparation);"
 "if(!l)"
 "parallax = -parallax;"
 "if(yaxis)"
@@ -38,7 +38,7 @@ static const char stereo3Dshader[] = \
 "if(!aa)"
 "return col;" // otherwise blend with 'missing' scanline
 "minDepth = min(min(tex2D(depth,u + (yaxis ? float2(0.0,0.5*su+w_h_height.y) : float2(0.5*su,w_h_height.y))).x, tex2D(depth,u + (yaxis ? float2(0.0,0.666*su+w_h_height.y) : float2(0.666*su,w_h_height.y))).x), tex2D(depth,u + (yaxis ? float2(0.0,su+w_h_height.y) : float2(su,w_h_height.y))).x);"
-"parallax = MaxSeparation - min(MS_ZPD/minDepth, MaxSeparation);"
+"parallax = MaxSeparation - min(MaxSeparation*ZPD/(0.5*ZPD+minDepth*(1.0-0.5*ZPD)), MaxSeparation);"
 "if(!l)"
 "parallax = -parallax;"
 "if(yaxis)"

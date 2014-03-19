@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "quadtree.h"
 
 HitQuadtree::~HitQuadtree()
