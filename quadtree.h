@@ -53,8 +53,8 @@ public:
         for (int i = 0; i <= indentLevel; ++i)
             indent[i] = (i==indentLevel) ? 0 : ' ';
         char msg[256];
-        sprintf(msg, "[%f %f], items=%u", m_vcenter.x, m_vcenter.y, m_vho.size());
-        strcat(indent, msg);
+        sprintf_s(msg, "[%f %f], items=%u", m_vcenter.x, m_vcenter.y, m_vho.size());
+        strcat_s(indent, msg);
         OutputDebugString(indent);
         if (!m_fLeaf)
         {
