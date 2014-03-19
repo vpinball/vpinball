@@ -237,6 +237,7 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    m_pbumperhitcircle = phitcircle;
 
    phitcircle->m_bumperanim.m_fVisible = m_d.m_fVisible;
+   DrawFrame( m_d.m_state == LightStateOn );        // make sure bumper light gets turned on
 
    if (m_d.m_state == LightStateBlinking)
    {
