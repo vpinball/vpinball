@@ -422,17 +422,18 @@ Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count) : m_rgv(rgv),m_cver
 	normal.y = 0.f;
 	normal.z = 0.f;
 
+    // Newell's method for normal computation
 	for (int i=0; i<m_cvertex; ++i)
 	{
 		const int m = (i < m_cvertex-1) ? (i+1) : 0;
 
-		normal.x += (m_rgv[i].y - m_rgv[m].y) * (m_rgv[i].z + m_rgv[m].z); //!! WTF?
+		normal.x += (m_rgv[i].y - m_rgv[m].y) * (m_rgv[i].z + m_rgv[m].z);
 		normal.y += (m_rgv[i].z - m_rgv[m].z) * (m_rgv[i].x + m_rgv[m].x);
 		normal.z += (m_rgv[i].x - m_rgv[m].x) * (m_rgv[i].y + m_rgv[m].y);		
 	}
 
 	const float sqr_len = normal.x * normal.x + normal.y * normal.y + normal.z * normal.z;
-	const float inv_len = (sqr_len > 0.0f) ? -1.0f/sqrtf(sqr_len) : 0.0f;
+	const float inv_len = (sqr_len > 0.0f) ? -1.0f/sqrtf(sqr_len) : 0.0f;   // NOTE: normal is flipped!
 	normal.x *= inv_len;
 	normal.y *= inv_len;
 	normal.z *= inv_len;
@@ -648,15 +649,10 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
 	m_rgv[1] = rgv[1];
 	m_rgv[2] = rgv[2];
 
-	const Vertex3Ds e0(m_rgv[2].x-m_rgv[0].x,m_rgv[2].y-m_rgv[0].y,m_rgv[2].z-m_rgv[0].z);
-	const Vertex3Ds e1(m_rgv[1].x-m_rgv[0].x,m_rgv[1].y-m_rgv[0].y,m_rgv[1].z-m_rgv[0].z);
+	const Vertex3Ds e0 = m_rgv[2] - m_rgv[0];
+	const Vertex3Ds e1 = m_rgv[1] - m_rgv[0];
 	normal = CrossProduct(e0,e1);
-
-	const float sqr_len = normal.x * normal.x + normal.y * normal.y + normal.z * normal.z;
-	const float inv_len = (sqr_len > 0.0f) ? 1.0f/sqrtf(sqr_len) : 0.0f;
-	normal.x *= inv_len;
-	normal.y *= inv_len;
-	normal.z *= inv_len;
+    normal.Normalize();
 
 	m_fVisible = fFalse;
 	m_elasticity = 0.3f;
