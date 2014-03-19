@@ -230,14 +230,6 @@ public:
       D3DVALUE nz;
       D3DCOLOR specular;
    };
-
-   inline void NormalizeNormal()
-   {
-      const float oneoverlength = 1.0f/sqrtf(nx*nx + ny*ny + nz*nz);
-      nx *= oneoverlength;
-      ny *= oneoverlength;
-      nz *= oneoverlength;
-   }
 };
 
 

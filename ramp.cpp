@@ -1084,12 +1084,25 @@ bool Ramp::isHabitrail() const
 void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 {
    pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, TRUE);
+   
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
-   Material habitrailMaterial;
-   habitrailMaterial.setColor( 1.0f, m_d.m_color );
-   habitrailMaterial.setPower( 8.0f );
-   habitrailMaterial.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
-   pd3dDevice->SetMaterial(habitrailMaterial);
+   if ( !pin )
+   {
+       Material habitrailMaterial;
+       habitrailMaterial.setColor( 1.0f, m_d.m_color );
+       habitrailMaterial.setPower( 8.0f );
+       habitrailMaterial.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
+       pd3dDevice->SetMaterial(habitrailMaterial);
+   }
+   else
+   {
+       pin->CreateAlphaChannel();
+       pin->Set( ePictureTexture );
+       pd3dDevice->SetMaterial(textureMaterial);
+       g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
+}
 
    int offset=0;
    for (int i=0; i<rampVertex-1; i++,offset+=32)
@@ -1115,14 +1128,17 @@ void Ramp::RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgi
 
 void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
 {
-   const int numVertices = (rampVertex - 1)*32;
-   pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX_VERTEX, &staticVertexBuffer);
+   Matrix3D matWorld = g_pplayer->m_pin3d.GetWorldTransform();
 
-   Vertex3D_NoTex *buf;
+   const int numVertices = (rampVertex - 1)*32;
+   pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &staticVertexBuffer);
+
+   Vertex3D_NoTex2 *buf;
    staticVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 
    int offset=0;
-   Vertex3D_NoTex rgv3D[32];
+   float l;
+   Vertex3D_NoTex2 rgv3D[32];
    for (int i=0;i<rampVertex;i++)
    {
       rgv3D[0].x = -3.0f;
@@ -1131,7 +1147,10 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[0].nx = -1.0f;
       rgv3D[0].ny = -1.0f;
       rgv3D[0].nz = 0;
-      rgv3D[0].NormalizeNormal();
+      l = (float)1.0f/sqrtf(rgv3D[0].nx*rgv3D[0].nx + rgv3D[0].ny*rgv3D[0].ny + rgv3D[0].nz*rgv3D[0].nz);
+      rgv3D[0].nx *= l;
+      rgv3D[0].ny *= l;
+      rgv3D[0].nz *= l;
 
       rgv3D[1].x = 3.0f;
       rgv3D[1].y = -3.0f;
@@ -1139,7 +1158,10 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[1].nx = 1.0f;
       rgv3D[1].ny = -1.0f;
       rgv3D[1].nz = 0;
-      rgv3D[1].NormalizeNormal();
+      l = (float)1.0f/sqrtf(rgv3D[1].nx*rgv3D[1].nx + rgv3D[1].ny*rgv3D[1].ny + rgv3D[1].nz*rgv3D[1].nz);
+      rgv3D[1].nx *= l;
+      rgv3D[1].ny *= l;
+      rgv3D[1].nz *= l;
 
       rgv3D[2].x = 3.0f;
       rgv3D[2].y = 3.0f;
@@ -1147,7 +1169,10 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[2].nx = 1.0f;
       rgv3D[2].ny = 1.0f;
       rgv3D[2].nz = 0;
-      rgv3D[2].NormalizeNormal();
+      l = (float)1.0f/sqrtf(rgv3D[2].nx*rgv3D[2].nx + rgv3D[2].ny*rgv3D[2].ny + rgv3D[2].nz*rgv3D[2].nz);
+      rgv3D[2].nx *= l;
+      rgv3D[2].ny *= l;
+      rgv3D[2].nz *= l;
 
       rgv3D[3].x = -3.0f;
       rgv3D[3].y = 3.0f;
@@ -1155,7 +1180,10 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[3].nx = -1.0f;
       rgv3D[3].ny = 1.0f;
       rgv3D[3].nz = 0;
-      rgv3D[3].NormalizeNormal();
+      l = (float)1.0f/sqrtf(rgv3D[3].nx*rgv3D[3].nx + rgv3D[3].ny*rgv3D[3].ny + rgv3D[3].nz*rgv3D[3].nz);
+      rgv3D[3].nx *= l;
+      rgv3D[3].ny *= l;
+      rgv3D[3].nz *= l;
 
       if (m_d.m_type != RampType1Wire)
       {
@@ -1262,12 +1290,20 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
          rgv3D[l].z += rgheightInit[p2]*m_ptable->m_zScale;
       }
 
+      // apply environment texture coords if a texture was assigned to a wired ramp
+      for( int k=0;k<16;k++ )
+      {
+          Vertex3Ds norm(rgv3D[k].nx, rgv3D[k].ny, rgv3D[k].nz);
+          matWorld.MultiplyVectorNoTranslate(norm, norm);
+          rgv3D[k].tu = 0.5f + norm.x*0.5f;
+          rgv3D[k].tv = 0.5f + norm.y*0.5f;
+      }
       if (i != 0)
       {
-         memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex)*32);
+         memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*32);
          offset+=32;
       }
-      memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D_NoTex)*16);
+      memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D_NoTex2)*16);
    }
 
    staticVertexBuffer->unlock();  
@@ -1278,9 +1314,6 @@ static const WORD rgiRampStatic1[4] = {0,3,2,1};
 
 void Ramp::prepareStatic(RenderDevice* pd3dDevice)
 {
-//   float *rgheight,*rgratio;
-//   Vertex2D *rgv = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio);
-
    const int numVertices = (rampVertex-1)*4*5;
    pd3dDevice->CreateVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &staticVertexBuffer);
 
