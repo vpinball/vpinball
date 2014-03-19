@@ -7,14 +7,14 @@ HitKD::HitKD()
     m_max_items = 0;
     m_num_nodes = 0;
     m_rootNode.m_hitoct = this;
-#ifdef SSE_LEAFTEST
+#ifdef KDTREE_SSE_LEAFTEST
     l_r_t_b_zl_zh = NULL;
 #endif
 }
 
 HitKD::~HitKD()
 {
-#ifdef SSE_LEAFTEST
+#ifdef KDTREE_SSE_LEAFTEST
     if (l_r_t_b_zl_zh)
         _aligned_free(l_r_t_b_zl_zh);
 #endif
@@ -27,7 +27,7 @@ void HitKD::Init(Vector<HitObject> *vho, const unsigned int num_items)
 
     if (m_num_items > m_max_items)
     {
-#ifdef SSE_LEAFTEST
+#ifdef KDTREE_SSE_LEAFTEST
         if (l_r_t_b_zl_zh)
             _aligned_free(l_r_t_b_zl_zh);
         l_r_t_b_zl_zh = (float*)_aligned_malloc(sizeof(float) * ((m_num_items+3)&0xFFFFFFFC) * 6, 16);
@@ -68,7 +68,7 @@ HitKDNode* HitKD::AllocTwoNodes()
 // build SSE boundary arrays of the local hit-object/m_vho HitRect list, generated for -full- list completely in the end!
 void HitKD::InitSseArrays()
 {
-#ifdef SSE_LEAFTEST
+#ifdef KDTREE_SSE_LEAFTEST
 	const unsigned int padded = (m_num_items+3)&0xFFFFFFFC;
 	if(!l_r_t_b_zl_zh)
 		l_r_t_b_zl_zh = (float*)_aligned_malloc(sizeof(float) * padded * 6, 16);
@@ -341,8 +341,16 @@ collisions
 
 */
 
-void HitKDNode::HitTestBall(Ball * const pball) const
+void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 {
+#ifdef KDTREE_SSE_LEAFTEST
+    /// with SSE optimizations ///////////////////////
+
+    HitTestBallSse(pball, coll);
+
+#else
+    /// without SSE optimization /////////////////////
+
 	const unsigned int org_items = (m_items&0x3FFFFFFF);
 	const unsigned int axis = (m_items>>30);
 
@@ -355,7 +363,7 @@ void HitKDNode::HitTestBall(Ball * const pball) const
 		if ((pball != pho) // ball can not hit itself
 		       && fRectIntersect3D(pball->m_rcHitRect, pho->m_rcHitRect))
 		{
-            DoHitTest(pball, pho);
+            DoHitTest(pball, pho, coll);
 		}
 	}
 
@@ -368,33 +376,34 @@ void HitKDNode::HitTestBall(Ball * const pball) const
 		{
 			const float vcenter = (m_rectbounds.left+m_rectbounds.right)*0.5f;
 			if(pball->m_rcHitRect.left <= vcenter)
-				m_children[0].HitTestBallSse(pball);
+				m_children[0].HitTestBall(pball, coll);
 			if(pball->m_rcHitRect.right >= vcenter)
-				m_children[1].HitTestBallSse(pball);
+				m_children[1].HitTestBall(pball, coll);
 		}
 		else
 		if(axis == 1)
 		{
 			const float vcenter = (m_rectbounds.top+m_rectbounds.bottom)*0.5f;
 			if (pball->m_rcHitRect.top <= vcenter)
-				m_children[0].HitTestBallSse(pball);
+				m_children[0].HitTestBall(pball, coll);
 			if (pball->m_rcHitRect.bottom >= vcenter)
-				m_children[1].HitTestBallSse(pball);
+				m_children[1].HitTestBall(pball, coll);
 		}
 		else
 		{
 			const float vcenter = (m_rectbounds.zlow+m_rectbounds.zhigh)*0.5f;
 
 			if(pball->m_rcHitRect.zlow <= vcenter)
-				m_children[0].HitTestBallSse(pball);
+				m_children[0].HitTestBall(pball, coll);
 			if(pball->m_rcHitRect.zhigh >= vcenter)
-				m_children[1].HitTestBallSse(pball);
+				m_children[1].HitTestBall(pball, coll);
 		}
 	}
+#endif
 }
 
-#ifdef SSE_LEAFTEST
-void HitKDNode::HitTestBallSseInner(Ball * const pball, const int i) const
+#ifdef KDTREE_SSE_LEAFTEST
+void HitKDNode::HitTestBallSseInner(Ball * const pball, const int i, CollisionEvent& coll) const
 {
   HitObject * const pho = m_hitoct->GetItemAt( i );
 
@@ -402,10 +411,10 @@ void HitKDNode::HitTestBallSseInner(Ball * const pball, const int i) const
   if (pball == pho)
     return;
 
-  DoHitTest(pball, pho);
+  DoHitTest(pball, pho, coll);
 }
 
-void HitKDNode::HitTestBallSse(Ball * const pball) const
+void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 {
 	const unsigned int org_items = (m_items&0x3FFFFFFF);
 	const unsigned int axis = (m_items>>30);
@@ -462,10 +471,10 @@ void HitKDNode::HitTestBallSse(Ball * const pball) const
       if (mask == 0) continue;
 
       // now there is at least one bbox collision
-      if ((mask & 1) != 0) HitTestBallSseInner(pball, i*4);
-      if ((mask & 2) != 0 /*&& (i*4+1)<m_hitoct->m_num_items*/) HitTestBallSseInner(pball, i*4+1); // boundary checks not necessary
-      if ((mask & 4) != 0 /*&& (i*4+2)<m_hitoct->m_num_items*/) HitTestBallSseInner(pball, i*4+2); //  anymore as non-valid entries were
-      if ((mask & 8) != 0 /*&& (i*4+3)<m_hitoct->m_num_items*/) HitTestBallSseInner(pball, i*4+3); //  initialized to keep these maskbits 0
+      if ((mask & 1) != 0) HitTestBallSseInner(pball, i*4, coll);
+      if ((mask & 2) != 0 /*&& (i*4+1)<m_hitoct->m_num_items*/) HitTestBallSseInner(pball, i*4+1, coll); // boundary checks not necessary
+      if ((mask & 4) != 0 /*&& (i*4+2)<m_hitoct->m_num_items*/) HitTestBallSseInner(pball, i*4+2, coll); //  anymore as non-valid entries were
+      if ((mask & 8) != 0 /*&& (i*4+3)<m_hitoct->m_num_items*/) HitTestBallSseInner(pball, i*4+3, coll); //  initialized to keep these maskbits 0
     }
 
 	if (m_children) // not a leaf
@@ -477,33 +486,33 @@ void HitKDNode::HitTestBallSse(Ball * const pball) const
 		{
 			const float vcenter = (m_rectbounds.left+m_rectbounds.right)*0.5f;
 			if(pball->m_rcHitRect.left <= vcenter)
-				m_children[0].HitTestBallSse(pball);
+				m_children[0].HitTestBallSse(pball, coll);
 			if(pball->m_rcHitRect.right >= vcenter)
-				m_children[1].HitTestBallSse(pball);
+				m_children[1].HitTestBallSse(pball, coll);
 		}
 		else
 		if(axis == 1)
 		{
 			const float vcenter = (m_rectbounds.top+m_rectbounds.bottom)*0.5f;
 			if (pball->m_rcHitRect.top <= vcenter)
-				m_children[0].HitTestBallSse(pball);
+				m_children[0].HitTestBallSse(pball, coll);
 			if (pball->m_rcHitRect.bottom >= vcenter)
-				m_children[1].HitTestBallSse(pball);
+				m_children[1].HitTestBallSse(pball, coll);
 		}
 		else
 		{
 			const float vcenter = (m_rectbounds.zlow+m_rectbounds.zhigh)*0.5f;
 
 			if(pball->m_rcHitRect.zlow <= vcenter)
-				m_children[0].HitTestBallSse(pball);
+				m_children[0].HitTestBallSse(pball, coll);
 			if(pball->m_rcHitRect.zhigh >= vcenter)
-				m_children[1].HitTestBallSse(pball);
+				m_children[1].HitTestBallSse(pball, coll);
 		}
 	}
 }
 #endif
 
-void HitKDNode::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const
+void HitKDNode::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const
 {
 	const unsigned int org_items = (m_items&0x3FFFFFFF);
 	const unsigned int axis = (m_items>>30);
@@ -520,7 +529,7 @@ void HitKDNode::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHi
 #ifdef _DEBUGPHYSICS
 			g_pplayer->c_deepTested++;
 #endif
-			const float newtime = pho->HitTest(pball, pball->m_coll.hittime, pball->m_coll);
+			const float newtime = pho->HitTest(pball, coll.hittime, coll);
 			if (newtime >= 0)
 				pvhoHit->AddElement(pho);
 		}
@@ -535,27 +544,27 @@ void HitKDNode::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHi
 		{
 			const float vcenter = (m_rectbounds.left+m_rectbounds.right)*0.5f;
 			if(pball->m_rcHitRect.left <= vcenter)
-				m_children[0].HitTestXRay(pball,pvhoHit);
+				m_children[0].HitTestXRay(pball, pvhoHit, coll);
 			if(pball->m_rcHitRect.right >= vcenter)
-				m_children[1].HitTestXRay(pball,pvhoHit);
+				m_children[1].HitTestXRay(pball, pvhoHit, coll);
 		}
 		else
 		if(axis == 1)
 		{
 			const float vcenter = (m_rectbounds.top+m_rectbounds.bottom)*0.5f;
 			if (pball->m_rcHitRect.top <= vcenter)
-				m_children[0].HitTestXRay(pball,pvhoHit);
+				m_children[0].HitTestXRay(pball, pvhoHit, coll);
 			if (pball->m_rcHitRect.bottom >= vcenter)
-				m_children[1].HitTestXRay(pball,pvhoHit);
+				m_children[1].HitTestXRay(pball, pvhoHit, coll);
 		}
 		else
 		{
 			const float vcenter = (m_rectbounds.zlow+m_rectbounds.zhigh)*0.5f;
 
 			if(pball->m_rcHitRect.zlow <= vcenter)
-				m_children[0].HitTestXRay(pball,pvhoHit);
+				m_children[0].HitTestXRay(pball, pvhoHit, coll);
 			if(pball->m_rcHitRect.zhigh >= vcenter)
-				m_children[1].HitTestXRay(pball,pvhoHit);
+				m_children[1].HitTestXRay(pball, pvhoHit, coll);
 		}
 	}
 }

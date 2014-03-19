@@ -397,18 +397,18 @@ void HitCircle::Collide(CollisionEvent *coll)
 }
 
 
-void DoHitTest(Ball *pball, HitObject *pho)
+void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll)
 {
 #ifdef _DEBUGPHYSICS
     g_pplayer->c_deepTested++;
 #endif
-    const float newtime = pho->HitTest(pball, pball->m_coll.hittime, pball->m_coll);
-    if ((newtime >= 0) && (newtime <= pball->m_coll.hittime))
+    const float newtime = pho->HitTest(pball, coll.hittime, coll);
+    if ((newtime >= 0) && (newtime <= coll.hittime))
     {
-        pball->m_coll.obj = pho;
-        pball->m_coll.hittime = newtime;
-        pball->m_coll.hitx = pball->pos.x + pball->vel.x*newtime;
-        pball->m_coll.hity = pball->pos.y + pball->vel.y*newtime;
+        coll.obj = pho;
+        coll.hittime = newtime;
+        coll.hitx = pball->pos.x + pball->vel.x*newtime;
+        coll.hity = pball->pos.y + pball->vel.y*newtime;
     }
 }
 

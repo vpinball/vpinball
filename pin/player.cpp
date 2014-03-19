@@ -1502,8 +1502,8 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 				pball->m_coll.hittime = hittime;		// search upto current hittime
 				pball->m_coll.obj = NULL;
 
-                m_hitoctree_dynamic.HitTestBall(pball); // dynamic objects
-				m_hitoctree.HitTestBall(pball);			// find the hit objects and hit times
+                m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll);  // dynamic objects
+				m_hitoctree.HitTestBall(pball, pball->m_coll);  // find the hit objects and hit times
 
 				const float htz = pball->m_coll.hittime;// this ball's hit time
 				if(htz < 0.f) pball->m_coll.obj = NULL;	// no negative time allowed
@@ -2331,7 +2331,7 @@ void Player::CalcBallShadow(Ball * const pball, Vertex3D_NoTex2 *vBuffer)
 
     ballT.CalcHitRect();
 
-    m_shadowoctree.HitTestBall(&ballT);
+    m_shadowoctree.HitTestBall(&ballT, ballT.m_coll);
 
     float offsetx;
     float offsety;
@@ -2898,9 +2898,9 @@ void Player::DoDebugObjectMenu(int x, int y)
 	Vector<HitObject> vhoHit;
 	Vector<IFireEvents> vpfe;
 
-    m_hitoctree_dynamic.HitTestXRay(&ballT, &vhoHit);
-	m_hitoctree.HitTestXRay(&ballT, &vhoHit);
-	m_debugoctree.HitTestXRay(&ballT, &vhoHit);
+    m_hitoctree_dynamic.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
+	m_hitoctree.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
+	m_debugoctree.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
 
 	VectorInt<HMENU> vsubmenu;
 	HMENU hmenu = CreatePopupMenu();

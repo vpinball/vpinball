@@ -22,14 +22,14 @@ public:
     void Initialize();
     void Initialize(const FRect3D& bounds)  { CreateNextLevel(bounds); }
 
-    void HitTestBall(Ball * const pball) const;
-    void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const;
+    void HitTestBall(Ball * const pball, CollisionEvent& coll) const;
+    void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const;
 
 private:
 
     void CreateNextLevel(const FRect3D& bounds);
-    void HitTestBallSse(Ball * const pball) const;
-    void HitTestBallSseInner(Ball * const pball, const int i) const;
+    void HitTestBallSse(Ball * const pball, CollisionEvent& coll) const;
+    void HitTestBallSseInner(Ball * const pball, const int i, CollisionEvent& coll) const;
 
     std::vector<HitObject*> m_vho;
     HitQuadtree * __restrict m_children[4];
