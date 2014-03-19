@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="VBATest"
 	ProjectGUID="{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
 	RootNamespace="VBATest"
@@ -4459,6 +4459,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\kdtree.cpp"
+				>
+			</File>
+			<File
 				RelativePath="kicker.cpp"
 				>
 				<FileConfiguration
@@ -5147,6 +5151,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\math\matrix.cpp"
+				>
 			</File>
 			<File
 				RelativePath="memutil.cpp"
@@ -6835,6 +6843,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\quadtree.cpp"
+				>
 			</File>
 			<File
 				RelativePath="ramp.cpp"
@@ -9371,6 +9383,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\buildnum.h"
+				>
+			</File>
+			<File
+				RelativePath=".\buildnumber.h"
+				>
+			</File>
+			<File
 				RelativePath="bumper.h"
 				>
 			</File>
@@ -9412,6 +9432,10 @@
 			</File>
 			<File
 				RelativePath="disputil.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DongleAPI.h"
 				>
 			</File>
 			<File
@@ -9463,6 +9487,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\hidpi.h"
+				>
+			</File>
+			<File
+				RelativePath=".\hidsdi.h"
+				>
+			</File>
+			<File
+				RelativePath=".\hidusage.h"
+				>
+			</File>
+			<File
 				RelativePath="Pin\hitable.h"
 				>
 			</File>
@@ -9499,6 +9535,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\kdtree.h"
+				>
+			</File>
+			<File
 				RelativePath="kicker.h"
 				>
 			</File>
@@ -9527,6 +9567,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\math\matrix.h"
+				>
+			</File>
+			<File
 				RelativePath="memutil.h"
 				>
 			</File>
@@ -9544,6 +9588,10 @@
 			</File>
 			<File
 				RelativePath="paintsur.h"
+				>
+			</File>
+			<File
+				RelativePath=".\physconst.h"
 				>
 			</File>
 			<File
@@ -9592,6 +9640,10 @@
 			</File>
 			<File
 				RelativePath="propbrowser.h"
+				>
+			</File>
+			<File
+				RelativePath=".\quadtree.h"
 				>
 			</File>
 			<File
@@ -9654,6 +9706,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SVNRevision.h"
+				>
+			</File>
+			<File
 				RelativePath="tableglobal.h"
 				>
 			</File>
@@ -9667,6 +9723,10 @@
 			</File>
 			<File
 				RelativePath="timer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\trace.h"
 				>
 			</File>
 			<File

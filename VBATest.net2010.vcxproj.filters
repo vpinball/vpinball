@@ -219,6 +219,12 @@
     <ClCompile Include="flasher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="kdtree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="quadtree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vbatest.idl">
@@ -472,6 +478,42 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="physconst.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="buildnum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="buildnumber.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DongleAPI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hidpi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hidsdi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hidusage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kdtree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quadtree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SVNRevision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vbatest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

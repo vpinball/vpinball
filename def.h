@@ -42,6 +42,10 @@ inline unsigned int min(const unsigned int x, const unsigned int y)
 {
    return x < y ? x : y;
 }
+inline unsigned int min(const DWORD x, const DWORD y)
+{
+	return x < y ? x : y;
+}
 inline unsigned int max(const unsigned int x, const unsigned int y)
 {
    return x < y ? y : x;

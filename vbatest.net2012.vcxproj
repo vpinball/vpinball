@@ -890,6 +890,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   <ItemGroup>
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hash.cpp" />
+    <ClCompile Include="kdtree.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="Pin\ball.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -1781,6 +1782,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">MinSpace</Optimization>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="quadtree.cpp" />
     <ClCompile Include="ramp.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -2292,8 +2294,17 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="buildnum.h" />
+    <ClInclude Include="buildnumber.h" />
+    <ClInclude Include="DongleAPI.h" />
     <ClInclude Include="flasher.h" />
+    <ClInclude Include="hash.h" />
+    <ClInclude Include="hidpi.h" />
+    <ClInclude Include="hidsdi.h" />
+    <ClInclude Include="hidusage.h" />
+    <ClInclude Include="kdtree.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="physconst.h" />
     <ClInclude Include="Pin\ball.h" />
     <ClInclude Include="ballex.h" />
     <ClInclude Include="bumper.h" />
@@ -2349,6 +2360,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="plunger.h" />
     <ClInclude Include="primitive.h" />
     <ClInclude Include="propbrowser.h" />
+    <ClInclude Include="quadtree.h" />
     <ClInclude Include="ramp.h" />
     <ClInclude Include="regutil.h" />
     <CustomBuild Include="resource.h">
@@ -2362,12 +2374,15 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="stereo3D.h" />
     <ClInclude Include="sur.h" />
     <ClInclude Include="surface.h" />
+    <ClInclude Include="SVNRevision.h" />
     <ClInclude Include="tableglobal.h" />
     <ClInclude Include="textbox.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="timer.h" />
+    <ClInclude Include="trace.h" />
     <ClInclude Include="trigger.h" />
     <ClInclude Include="variant.h" />
+    <ClInclude Include="vbatest.h" />
     <ClInclude Include="vector.h" />
     <ClInclude Include="vectorsort.h" />
     <CustomBuild Include="vpinball.h">
