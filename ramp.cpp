@@ -1147,7 +1147,7 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[0].nx = -1.0f;
       rgv3D[0].ny = -1.0f;
       rgv3D[0].nz = 0;
-      l = (float)1.0f/sqrtf(rgv3D[0].nx*rgv3D[0].nx + rgv3D[0].ny*rgv3D[0].ny + rgv3D[0].nz*rgv3D[0].nz);
+      l = 1.0f/sqrtf(rgv3D[0].nx*rgv3D[0].nx + rgv3D[0].ny*rgv3D[0].ny + rgv3D[0].nz*rgv3D[0].nz);
       rgv3D[0].nx *= l;
       rgv3D[0].ny *= l;
       rgv3D[0].nz *= l;
@@ -1158,7 +1158,7 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[1].nx = 1.0f;
       rgv3D[1].ny = -1.0f;
       rgv3D[1].nz = 0;
-      l = (float)1.0f/sqrtf(rgv3D[1].nx*rgv3D[1].nx + rgv3D[1].ny*rgv3D[1].ny + rgv3D[1].nz*rgv3D[1].nz);
+      l = 1.0f/sqrtf(rgv3D[1].nx*rgv3D[1].nx + rgv3D[1].ny*rgv3D[1].ny + rgv3D[1].nz*rgv3D[1].nz);
       rgv3D[1].nx *= l;
       rgv3D[1].ny *= l;
       rgv3D[1].nz *= l;
@@ -1169,7 +1169,7 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[2].nx = 1.0f;
       rgv3D[2].ny = 1.0f;
       rgv3D[2].nz = 0;
-      l = (float)1.0f/sqrtf(rgv3D[2].nx*rgv3D[2].nx + rgv3D[2].ny*rgv3D[2].ny + rgv3D[2].nz*rgv3D[2].nz);
+      l = 1.0f/sqrtf(rgv3D[2].nx*rgv3D[2].nx + rgv3D[2].ny*rgv3D[2].ny + rgv3D[2].nz*rgv3D[2].nz);
       rgv3D[2].nx *= l;
       rgv3D[2].ny *= l;
       rgv3D[2].nz *= l;
@@ -1180,7 +1180,7 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[3].nx = -1.0f;
       rgv3D[3].ny = 1.0f;
       rgv3D[3].nz = 0;
-      l = (float)1.0f/sqrtf(rgv3D[3].nx*rgv3D[3].nx + rgv3D[3].ny*rgv3D[3].ny + rgv3D[3].nz*rgv3D[3].nz);
+      l = 1.0f/sqrtf(rgv3D[3].nx*rgv3D[3].nx + rgv3D[3].ny*rgv3D[3].ny + rgv3D[3].nz*rgv3D[3].nz);
       rgv3D[3].nx *= l;
       rgv3D[3].ny *= l;
       rgv3D[3].nz *= l;

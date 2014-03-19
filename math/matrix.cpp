@@ -1,4 +1,5 @@
-#include "math/matrix.h"
+#include "stdafx.h"
+#include "matrix.h"
 
 void Matrix3D::Invert()
 //void Gauss (RK8 ** a, RK8 ** b, int n)
