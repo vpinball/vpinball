@@ -160,11 +160,11 @@ void HitQuadtree::InitSseArrays()
 
 */
 
-void HitQuadtree::HitTestBall(Ball * const pball) const
+void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 {
 #if 1   /// with SSE optimizations //////////////////////////
 
-    HitTestBallSse(pball);
+    HitTestBallSse(pball, coll);
 
 #else   /// without SSE optimization ////////////////////////
 
@@ -176,7 +176,7 @@ void HitQuadtree::HitTestBall(Ball * const pball) const
         if ((pball != m_vho[i]) // ball can not hit itself
                 && fRectIntersect3D(pball->m_rcHitRect, m_vho[i]->m_rcHitRect))
         {
-            DoHitTest(pball, m_vho[i]);
+            DoHitTest(pball, m_vho[i], coll);
         }
     }//end for loop
 
@@ -190,29 +190,29 @@ void HitQuadtree::HitTestBall(Ball * const pball) const
 #endif
         if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
         {
-            if (fLeft)  m_children[0]->HitTestBall(pball);
-            if (fRight) m_children[1]->HitTestBall(pball);
+            if (fLeft)  m_children[0]->HitTestBall(pball, coll);
+            if (fRight) m_children[1]->HitTestBall(pball, coll);
         }
         if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
         {
-            if (fLeft)  m_children[2]->HitTestBall(pball);
-            if (fRight) m_children[3]->HitTestBall(pball);
+            if (fLeft)  m_children[2]->HitTestBall(pball, coll);
+            if (fRight) m_children[3]->HitTestBall(pball, coll);
         }
     }
 #endif
 }
 
 
-void HitQuadtree::HitTestBallSseInner(Ball * const pball, const int i) const
+void HitQuadtree::HitTestBallSseInner(Ball * const pball, const int i, CollisionEvent& coll) const
 {
     // ball can not hit itself
     if (pball == m_vho[i])
         return;
 
-    DoHitTest(pball, m_vho[i]);
+    DoHitTest(pball, m_vho[i], coll);
 }
 
-void HitQuadtree::HitTestBallSse(Ball * const pball) const
+void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 {
     if (lefts != 0)
     {
@@ -263,10 +263,10 @@ void HitQuadtree::HitTestBallSse(Ball * const pball) const
             if (mask == 0) continue;
 
             // now there is at least one bbox collision
-            if ((mask & 1) != 0) HitTestBallSseInner(pball, i*4);
-            if ((mask & 2) != 0 /*&& (i*4+1)<m_vho.size()*/) HitTestBallSseInner(pball, i*4+1); // boundary checks not necessary
-            if ((mask & 4) != 0 /*&& (i*4+2)<m_vho.size()*/) HitTestBallSseInner(pball, i*4+2); //  anymore as non-valid entries were
-            if ((mask & 8) != 0 /*&& (i*4+3)<m_vho.size()*/) HitTestBallSseInner(pball, i*4+3); //  initialized to keep these maskbits 0
+            if ((mask & 1) != 0) HitTestBallSseInner(pball, i*4, coll);
+            if ((mask & 2) != 0 /*&& (i*4+1)<m_vho.size()*/) HitTestBallSseInner(pball, i*4+1, coll); // boundary checks not necessary
+            if ((mask & 4) != 0 /*&& (i*4+2)<m_vho.size()*/) HitTestBallSseInner(pball, i*4+2, coll); //  anymore as non-valid entries were
+            if ((mask & 8) != 0 /*&& (i*4+3)<m_vho.size()*/) HitTestBallSseInner(pball, i*4+3, coll); //  initialized to keep these maskbits 0
         }
     }
 
@@ -277,18 +277,18 @@ void HitQuadtree::HitTestBallSse(Ball * const pball) const
 
         if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
         {
-            if (fLeft)  m_children[0]->HitTestBallSse(pball);
-            if (fRight) m_children[1]->HitTestBallSse(pball);
+            if (fLeft)  m_children[0]->HitTestBallSse(pball, coll);
+            if (fRight) m_children[1]->HitTestBallSse(pball, coll);
         }
         if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
         {
-            if (fLeft)  m_children[2]->HitTestBallSse(pball);
-            if (fRight) m_children[3]->HitTestBallSse(pball);
+            if (fLeft)  m_children[2]->HitTestBallSse(pball, coll);
+            if (fRight) m_children[3]->HitTestBallSse(pball, coll);
         }
     }
 }
 
-void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const
+void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const
 {
     for (unsigned i=0; i<m_vho.size(); i++)
     {
@@ -300,7 +300,7 @@ void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvho
 #ifdef LOG
             g_pplayer->c_deepTested++;
 #endif
-            const float newtime = m_vho[i]->HitTest(pball, pball->m_coll.hittime, pball->m_coll);
+            const float newtime = m_vho[i]->HitTest(pball, coll.hittime, coll);
             if (newtime >= 0)
             {
                 pvhoHit->AddElement(m_vho[i]);
@@ -319,13 +319,13 @@ void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvho
 
         if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
         {
-            if (fLeft)  m_children[0]->HitTestXRay(pball, pvhoHit);
-            if (fRight) m_children[1]->HitTestXRay(pball, pvhoHit);
+            if (fLeft)  m_children[0]->HitTestXRay(pball, pvhoHit, coll);
+            if (fRight) m_children[1]->HitTestXRay(pball, pvhoHit, coll);
         }
         if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
         {
-            if (fLeft)  m_children[2]->HitTestXRay(pball, pvhoHit);
-            if (fRight) m_children[3]->HitTestXRay(pball, pvhoHit);
+            if (fLeft)  m_children[2]->HitTestXRay(pball, pvhoHit, coll);
+            if (fRight) m_children[3]->HitTestXRay(pball, pvhoHit, coll);
         }
     }
 }

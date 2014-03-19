@@ -4,7 +4,7 @@
 #include "pin/ball.h"
 #include "pin/collide.h"
 
-#define SSE_LEAFTEST
+#define KDTREE_SSE_LEAFTEST
 
 class HitKD;
 
@@ -13,17 +13,14 @@ class HitKDNode
 private:
 	void Reset() { m_children = NULL; m_hitoct = NULL; m_start = 0; m_items = 0; }
 
-	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const;
-
-	void HitTestBall(Ball * const pball) const;
+	void HitTestBall(Ball * const pball, CollisionEvent& coll) const;
+	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const;
 
 	void CreateNextLevel();
 
-#ifdef SSE_LEAFTEST
-	void HitTestBallSse(Ball * const pball) const;
-	void HitTestBallSseInner(Ball * const pball, const int i) const;
-#else
-#define HitTestBallSse HitTestBall
+#ifdef KDTREE_SSE_LEAFTEST
+	void HitTestBallSse(Ball * const pball, CollisionEvent& coll) const;
+	void HitTestBallSseInner(Ball * const pball, const int i, CollisionEvent& coll) const;
 #endif
 
 	FRect3D m_rectbounds;
@@ -55,11 +52,11 @@ public:
     // call when the bounding boxes of the HitObjects have changed to update the tree
     void Update();
 
-	void HitTestBall(Ball * const pball) const
-      { m_rootNode.HitTestBallSse(pball); }
+	void HitTestBall(Ball * const pball, CollisionEvent& coll) const
+      { m_rootNode.HitTestBallSse(pball, coll); }
 
-	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit) const
-      { m_rootNode.HitTestXRay(pball, pvhoHit); }
+	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const
+      { m_rootNode.HitTestXRay(pball, pvhoHit, coll); }
 
 private:
 
@@ -79,7 +76,7 @@ private:
 
 	Vector<HitObject> *m_org_vho;
     std::vector<unsigned int> tmp;
-#ifdef SSE_LEAFTEST
+#ifdef KDTREE_SSE_LEAFTEST
 	float * __restrict l_r_t_b_zl_zh;
 #endif
 

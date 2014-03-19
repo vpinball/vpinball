@@ -162,5 +162,5 @@ public:
 // Callback for the broadphase collision test.
 // Perform the actual hittest between ball and hit object and update
 // collision information if a hit occurred.
-void DoHitTest(Ball *pball, HitObject *pho);
+void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll);
 
