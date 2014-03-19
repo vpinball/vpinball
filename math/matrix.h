@@ -36,44 +36,18 @@ public:
             m_d[i][l] *= scalar;
    }
 
-   Vertex3Ds MultiplyVector(const Vertex3D &pv3D) const
+   template <class VecType>
+   Vertex3Ds operator* (const VecType& v) const
    {
-      return Vertex3Ds(m_d[0][0] * pv3D.x
-         + m_d[0][1] * pv3D.y
-         + m_d[0][2] * pv3D.z,
-         m_d[1][0] * pv3D.x
-         + m_d[1][1] * pv3D.y
-         + m_d[1][2] * pv3D.z,
-         m_d[2][0] * pv3D.x
-         + m_d[2][1] * pv3D.y
-         + m_d[2][2] * pv3D.z);
+      return Vertex3Ds(
+         m_d[0][0] * v.x + m_d[0][1] * v.y + m_d[0][2] * v.z,
+         m_d[1][0] * v.x + m_d[1][1] * v.y + m_d[1][2] * v.z,
+         m_d[2][0] * v.x + m_d[2][1] * v.y + m_d[2][2] * v.z);
    }
 
-   Vertex3Ds MultiplyVector(const Vertex3D_NoTex2 &pv3D) const
-   {
-      return Vertex3Ds(m_d[0][0] * pv3D.x
-         + m_d[0][1] * pv3D.y
-         + m_d[0][2] * pv3D.z,
-         m_d[1][0] * pv3D.x
-         + m_d[1][1] * pv3D.y
-         + m_d[1][2] * pv3D.z,
-         m_d[2][0] * pv3D.x
-         + m_d[2][1] * pv3D.y
-         + m_d[2][2] * pv3D.z);
-   }
-
-   Vertex3Ds MultiplyVector(const Vertex3Ds &pv3D) const
-   {
-      return Vertex3Ds(m_d[0][0] * pv3D.x
-         + m_d[0][1] * pv3D.y
-         + m_d[0][2] * pv3D.z,
-         m_d[1][0] * pv3D.x
-         + m_d[1][1] * pv3D.y
-         + m_d[1][2] * pv3D.z,
-         m_d[2][0] * pv3D.x
-         + m_d[2][1] * pv3D.y
-         + m_d[2][2] * pv3D.z);
-   }
+   template <class VecType>
+   Vertex3Ds MultiplyVector(const VecType& v) const
+     { return (*this) * v; }
 
    void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
    {
