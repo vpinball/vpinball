@@ -379,6 +379,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(FVIS), m_d.m_IsVisible);
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
    bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
+   bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -478,6 +479,10 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(DSPT))
    {
        pbr->GetBool(&m_d.m_fDisplayTexture);
+   }
+   else if (id == FID(FLDB))
+   {
+      pbr->GetFloat(&m_d.m_depthBias);
    }
    else
    {
@@ -843,6 +848,28 @@ STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
    m_d.m_fAddBlend = VBTOF(newVal);
    
    STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::get_DepthBias(float *pVal)
+{
+   *pVal = m_d.m_depthBias;
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_DepthBias(float newVal)
+{
+   if(m_d.m_depthBias != newVal)
+   {
+      STARTUNDO
+
+      m_d.m_depthBias = newVal;
+      dynamicVertexBufferRegenerate = true;
+
+      STOPUNDO
+   }
 
    return S_OK;
 }

@@ -558,6 +558,7 @@
 #define IDC_PRIM_ENV_MAP                396
 #define IDC_EDIT2                       397
 #define IDC_SIZE_HEIGHT                 397
+#define IDC_DEPTH_BIAS                  397
 #define IDC_CHECK2                      398
 #define IDC_STATIC_RENDERING_CHECK      398
 #define IDC_ON_LIGHT_LIGHTMAP           398
@@ -607,9 +608,9 @@
 #define IDC_VP_HEIGHT                   422
 #define IDC_TABLE_DIM_LIST              423
 #define IDC_LIST3                       424
-#define IDC_FORCE_ANISO					425
+#define IDC_FORCE_ANISO                 425
 #define IDC_QFXAA                       426
-#define IDC_GLOBAL_3DSTEREO				427
+#define IDC_GLOBAL_3DSTEREO             427
 #define IDC_3D_STEREO_MS                428
 #define IDC_3D_STEREO_ZPD               429
 #define IDC_JOYLFLIPCOMBO               501

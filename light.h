@@ -215,6 +215,8 @@ public:
    STDMETHOD(put_EnableOffLighting)(/*[in]*/ int newVal);
    STDMETHOD(get_OnImageIsLightmap)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_OnImageIsLightmap)(/*[in]*/ int newVal);
+   STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

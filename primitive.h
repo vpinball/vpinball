@@ -184,6 +184,8 @@ public:
    STDMETHOD(put_Friction)(/*[in]*/ float newVal);
    STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
+   STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
 
    Primitive();
    virtual ~Primitive();
