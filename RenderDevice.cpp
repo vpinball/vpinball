@@ -548,7 +548,7 @@ void RenderDevice::SetTextureFilter(DWORD texUnit, DWORD mode)
 		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MAGFILTER, m_mag_aniso ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR));
 		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC));
 		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MAXANISOTROPY, min(m_maxaniso,16)));
+		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MAXANISOTROPY, min(m_maxaniso,(DWORD)16)));
 		break;
 	}
 }
