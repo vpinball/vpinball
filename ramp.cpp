@@ -10,6 +10,7 @@ Ramp::Ramp()
    dynamicIndexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
    m_d.m_enableLightingImage = true;
+   m_d.m_depthBias = 0.0f;
 }
 
 Ramp::~Ramp()
@@ -1068,7 +1069,7 @@ float Ramp::GetDepth(const Vertex3Ds& viewDir)
     Vertex2D center2D;
     GetCenter(&center2D);
     const float centerZ = 0.5f * (m_d.m_heightbottom + m_d.m_heighttop);
-    return viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
+    return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
 }
 
 

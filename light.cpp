@@ -73,6 +73,7 @@ Light::Light() : m_lightcenter(this)
    m_d.m_szOffImage[0]=0;
    m_d.m_szOnImage[0]=0;
    m_d.m_OnImageIsLightMap=fFalse;
+   m_d.m_depthBias = 0.0f;
 }
 
 Light::~Light()

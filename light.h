@@ -32,6 +32,7 @@ public:
 	BOOL m_EnableLighting;
    BOOL m_EnableOffLighting;
    BOOL m_OnImageIsLightMap;
+    float m_depthBias;      // for determining depth sorting
 	};
 
 class LightCenter : public ISelect
@@ -147,7 +148,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Light)
 
     virtual bool IsTransparent()    { return m_d.m_OnImageIsLightMap != FALSE; }
     virtual float GetDepth(const Vertex3Ds& viewDir)
-      { return viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; }
+      { return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; }
 
 	void WriteRegDefaults();
    void FreeBuffers();

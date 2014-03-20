@@ -36,6 +36,7 @@ public:
 	bool m_fCastsShadow;
 	bool m_fAcrylic;
 	bool m_fAlpha;
+    float m_depthBias;      // for determining depth sorting (alpha ramps only)
 };
 
 /////////////////////////////////////////////////////////////////////////////
