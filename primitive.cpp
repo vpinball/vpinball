@@ -14,6 +14,7 @@ Primitive::Primitive()
    m_d.useLighting=false;
    m_d.staticRendering=false;
    m_d.sphereMapping=false;
+   m_d.m_depthBias = 0.0f;
    numIndices = 0;
    numVertices = 0;
 } 
@@ -1466,7 +1467,7 @@ bool Primitive::IsTransparent()
 
 float Primitive::GetDepth(const Vertex3Ds& viewDir)
 {
-    return m_d.m_vPosition.Dot( viewDir );
+    return m_d.m_depthBias + m_d.m_vPosition.Dot( viewDir );
 }
 
 STDMETHODIMP Primitive::get_Sides(int *pVal)

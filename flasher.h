@@ -23,6 +23,7 @@ public:
 	bool m_IsVisible;
 	bool m_fAddBlend;
     BOOL m_fDisplayTexture;
+    float m_depthBias;      // for determining depth sorting
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -90,7 +91,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 
     virtual bool IsTransparent()    { return true; }
     virtual float GetDepth(const Vertex3Ds& viewDir)
-      { return viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height; }
+      { return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height; }
 
 	void WriteRegDefaults();
 

@@ -52,6 +52,7 @@ public:
 
    bool m_fCollidable;
    bool m_fToy;
+   float m_depthBias;      // for determining depth sorting
 };
 
 class Primitive :

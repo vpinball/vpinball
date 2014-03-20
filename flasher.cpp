@@ -3,6 +3,7 @@
 Flasher::Flasher()
 {
    m_d.m_IsVisible = true;
+   m_d.m_depthBias = 0.0f;
    dynamicVertexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
 }
