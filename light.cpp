@@ -1186,6 +1186,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteBool(FID(ENLI), m_d.m_EnableLighting);
    bw.WriteBool(FID(ENOL), m_d.m_EnableOffLighting);
    bw.WriteBool(FID(ONLM), m_d.m_OnImageIsLightMap);
+   bw.WriteFloat(FID(LIDB), m_d.m_depthBias);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1317,6 +1318,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ONLM))
    {
       pbr->GetBool(&m_d.m_OnImageIsLightMap);
+   }
+   else if (id == FID(LIDB))
+   {
+      pbr->GetFloat(&m_d.m_depthBias);
    }
    else
    {
@@ -1854,6 +1859,24 @@ STDMETHODIMP Light::put_OnImageIsLightmap(int newVal)
    STOPUNDO
 
       return S_OK;
+}
+
+STDMETHODIMP Light::get_DepthBias(float *pVal)
+{
+   *pVal = m_d.m_depthBias;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_DepthBias(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_depthBias = newVal;
+
+   STOPUNDO
+
+   return S_OK;
 }
 
 void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)

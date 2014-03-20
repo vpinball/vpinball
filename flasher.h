@@ -141,6 +141,8 @@ public:
 
 	STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)

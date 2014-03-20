@@ -223,6 +223,8 @@ public:
     STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_EnableLightingImage)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_EnableLightingImage)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)

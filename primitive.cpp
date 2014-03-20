@@ -1060,6 +1060,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
       bw.WriteInt( FID(M3FN), indexList.size() );
       bw.WriteStruct( FID(M3DI), &indexList[0], sizeof(WORD)*indexList.size() );
    }
+   bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1253,6 +1254,10 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       indexList.resize( numIndices );
       pbr->GetStruct( &indexList[0], sizeof(WORD)*numIndices);
+   }
+   else if (id == FID(PIDB))
+   {
+      pbr->GetFloat(&m_d.m_depthBias);
    }
    else
    {
@@ -2328,4 +2333,25 @@ void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
    pproppane = new PropertyPane(IDD_PROPPRIMITIVE_PHYSICS, IDS_PHYSICS);
    pvproppane->AddElement(pproppane);
+}
+
+STDMETHODIMP Primitive::get_DepthBias(float *pVal)
+{
+   *pVal = m_d.m_depthBias;
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_DepthBias(float newVal)
+{
+   if(m_d.m_depthBias != newVal)
+   {
+      STARTUNDO
+
+      m_d.m_depthBias = newVal;
+
+      STOPUNDO
+   }
+
+   return S_OK;
 }

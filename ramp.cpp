@@ -1759,6 +1759,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteBool(FID(MSTE), m_d.m_fModify3DStereo);
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
    bw.WriteBool(FID(ERLI), m_d.m_enableLightingImage);
+   bw.WriteFloat(FID(RADB), m_d.m_depthBias);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1916,6 +1917,10 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
 	  BOOL iTmp;
       pbr->GetBool(&iTmp);
       m_d.m_enableLightingImage = (iTmp==1);
+   }
+   else if (id == FID(RADB))
+   {
+      pbr->GetFloat(&m_d.m_depthBias);
    }
    else
    {
@@ -2616,6 +2621,28 @@ STDMETHODIMP Ramp::put_EnableLightingImage(VARIANT_BOOL newVal)
    m_d.m_enableLightingImage= VBTOF(newVal);
 
    STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Ramp::get_DepthBias(float *pVal)
+{
+   *pVal = m_d.m_depthBias;
+
+   return S_OK;
+}
+
+STDMETHODIMP Ramp::put_DepthBias(float newVal)
+{
+   if(m_d.m_depthBias != newVal)
+   {
+      STARTUNDO
+
+      m_d.m_depthBias = newVal;
+      dynamicVertexBufferRegenerate = true;
+
+      STOPUNDO
+   }
 
    return S_OK;
 }
