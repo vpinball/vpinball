@@ -154,6 +154,8 @@ public:
 	STDMETHOD (put_Elasticity)(/*[in]*/ float newVal);
 	STDMETHOD(get_Animations)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Animations)(/*[in]*/ int newVal);
+    STDMETHODIMP get_CurrentAngle(float *pVal);
+
 };
 
 #endif // !defined(AFX_SPINNER_H__8D8CB0E1_8C8F_49BF_A639_4DFA12DD4C3C__INCLUDED_)

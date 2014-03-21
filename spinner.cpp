@@ -1202,6 +1202,17 @@ STDMETHODIMP Spinner::put_Visible(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+STDMETHODIMP Spinner::get_CurrentAngle(float *pVal)
+{
+    if (m_phitspinner)
+    {
+        *pVal = RADTOANG(m_phitspinner->m_spinneranim.m_angle);
+        return S_OK;
+    }
+    else
+        return E_FAIL;
+}
+
 void Spinner::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 {
    PropertyPane *pproppane;
