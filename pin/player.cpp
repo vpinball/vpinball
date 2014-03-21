@@ -852,10 +852,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		if (ph)
 		{
             // sort into proper categories
-            if (pe->m_fBackglass)
-                m_vHitBackglass.push_back(ph);      // VP9COMPAT: fixes Homer head on TSPP, remove in VP10
-            else if (pe->GetItemType() == eItemLight)
+            if (pe->GetItemType() == eItemLight)
                 m_vLights.push_back(ph);            // VP9COMPAT: special treatment for lights
+            else if (pe->m_fBackglass)
+                m_vHitBackglass.push_back(ph);      // VP9COMPAT: fixes Homer head on TSPP, remove in VP10
             else if (ph->IsTransparent())
                 m_vHitTrans.push_back(ph);
             else
