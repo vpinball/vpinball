@@ -943,6 +943,27 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
    sideVBuffer->unlock();
 
+   // prepare index buffer for sides
+   {
+       std::vector<WORD> rgi;
+       rgi.reserve(numVertices*6);
+
+       int offset2=0;
+       for (int i=0; i<numVertices; i++, offset2+=4)
+       {
+           rgi.push_back( offset2 );
+           rgi.push_back( offset2+1 );
+           rgi.push_back( offset2+2 );
+           rgi.push_back( offset2 );
+           rgi.push_back( offset2+2 );
+           rgi.push_back( offset2+3 );
+       }
+
+       if (sideIBuffer)
+           sideIBuffer->release();
+       sideIBuffer = pd3dDevice->CreateAndFillIndexBuffer(rgi);
+   }
+
    // draw top
    SAFE_VECTOR_DELETE(rgtexcoord);
    if (m_d.m_fVisible)      // BUG? Visible could still be set later if rendered dynamically?
@@ -1028,27 +1049,6 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
    for (int i=0;i<numVertices;i++)
       delete vvertex.ElementAt(i);
-
-   // prepare index buffer for sides
-   {
-       std::vector<WORD> rgi;
-       rgi.reserve(numVertices*6);
-
-       int offset2=0;
-       for (int i=0; i<numVertices; i++, offset2+=4)
-       {
-           rgi.push_back( offset2 );
-           rgi.push_back( offset2+1 );
-           rgi.push_back( offset2+2 );
-           rgi.push_back( offset2 );
-           rgi.push_back( offset2+2 );
-           rgi.push_back( offset2+3 );
-       }
-
-       if (sideIBuffer)
-           sideIBuffer->release();
-       sideIBuffer = pd3dDevice->CreateAndFillIndexBuffer(rgi);
-   }
 }
 
 static const WORD rgisling[36] = {0,1,2,0,2,3, 4+0,4+1,4+2,4+0,4+2,4+3, 8+0,8+1,8+2,8+0,8+2,8+3, 12+0,12+1,12+2,12+0,12+2,12+3, 16+0,16+1,16+2,16+0,16+2,16+3, 20+0,20+1,20+2,20+0,20+2,20+3};
