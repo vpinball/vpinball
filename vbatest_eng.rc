@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -877,7 +877,7 @@ BEGIN
     LTEXT           "Close Angle",-1,7,96,38,8
 END
 
-IDD_PROPRAMP_VISUALS DIALOGEX 0, 0, 125, 187
+IDD_PROPRAMP_VISUALS DIALOGEX 0, 0, 125, 186
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -887,27 +887,27 @@ BEGIN
     CONTROL         "Apply Ima&ge to Walls",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,82,10
     CONTROL         "Enable Lighting for Image",IDC_ENABLE_RAMP_LIGHTING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,74,96,10
-    CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,88,40,14
-    CONTROL         "Shadows",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,41,10
-    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,118,40,10
-    CONTROL         "Normal 3D Stereo",IDC_MODIFY3DSTEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,118,70,10
-    CONTROL         "Solid",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,135,31,10
-    CONTROL         "Acrylic",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,148,37,10
-    CONTROL         "Alpha",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,161,34,10
-    CONTROL         "Additive Alpha Bl.",IDC_ADDBLEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,161,70,10
+    CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,86,40,14
+    CONTROL         "Shadows",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,105,41,10
+    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,117,40,10
+    CONTROL         "Normal 3D Stereo",IDC_MODIFY3DSTEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,117,70,10
+    CONTROL         "Solid",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,134,31,10
+    CONTROL         "Acrylic",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,147,37,10
+    CONTROL         "Alpha",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,160,34,10
+    CONTROL         "Additive Alpha Bl.",IDC_ADDBLEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,54,160,70,10
     LTEXT           "&Type",IDC_STATIC,7,9,25,8
     LTEXT           "&Image:",IDC_STATIC,7,21,22,8
     LTEXT           "&Mode",IDC_STATIC,7,49,25,8
-    LTEXT           "(only disable for",IDC_STATIC,68,128,70,10
-    LTEXT           " 2D-hacks like",IDC_STATIC,68,138,70,10
-    LTEXT           " Halo/Flasher/GI)",IDC_STATIC,68,148,70,10
-    LTEXT           "&Color",IDC_STATIC,7,91,17,8
-    LTEXT           "(+disable Lighting)",IDC_STATIC,68,171,70,10
-    LTEXT           "Depth Bias",IDC_STATIC,83,86,36,8
-    EDITTEXT        IDC_DEPTH_BIAS,83,95,36,14,ES_AUTOHSCROLL
+    LTEXT           "(only disable for",IDC_STATIC,68,127,70,10
+    LTEXT           " 2D-hacks like",IDC_STATIC,68,137,70,10
+    LTEXT           " Halo/Flasher/GI)",IDC_STATIC,68,150,70,10
+    LTEXT           "&Color",IDC_STATIC,7,89,17,8
+    LTEXT           "(+disable Lighting)",IDC_STATIC,68,170,70,10
+    LTEXT           "Depth Bias",IDC_STATIC,83,84,36,8
+    EDITTEXT        IDC_DEPTH_BIAS,83,93,36,14,ES_AUTOHSCROLL
 END
 
-IDD_PROPRAMP_POSITION DIALOGEX 0, 0, 125, 134
+IDD_PROPRAMP_POSITION DIALOGEX 0, 0, 125, 202
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -917,13 +917,20 @@ BEGIN
     EDITTEXT        3,59,60,40,12,ES_AUTOHSCROLL
     EDITTEXT        108,59,93,40,12,ES_AUTOHSCROLL
     EDITTEXT        109,59,109,40,12,ES_AUTOHSCROLL
-    LTEXT           "To&p Height",-1,7,7,43,8
-    LTEXT           "&Bottom Height",-1,7,23,47,8
-    LTEXT           "Top &Width",-1,7,47,43,8
-    LTEXT           "&Bottom Wi&dth",-1,7,63,47,8
-    LTEXT           "&Left Wall",-1,13,95,42,8
-    LTEXT           "&Right Wall",-1,13,111,39,8
-    GROUPBOX        "Visible Wall",-1,7,82,111,45
+    LTEXT           "To&p Height",IDC_STATIC,7,7,43,8
+    LTEXT           "&Bottom Height",IDC_STATIC,7,23,47,8
+    LTEXT           "Top &Width",IDC_STATIC,7,47,43,8
+    LTEXT           "&Bottom Wi&dth",IDC_STATIC,7,63,47,8
+    LTEXT           "&Left Wall",IDC_STATIC,13,95,42,8
+    LTEXT           "&Right Wall",IDC_STATIC,13,111,39,8
+    GROUPBOX        "Visible Wall",IDC_STATIC,7,82,111,45
+    GROUPBOX        "Wire Ramp",IDC_STATIC,8,129,111,61
+    LTEXT           "Diameter",IDC_STATIC,13,143,29,8
+    LTEXT           "DistanceX",IDC_STATIC,13,159,34,8
+    LTEXT           "DistanceY",IDC_STATIC,13,174,34,8
+    EDITTEXT        IDC_WIRE_DIAMETER,59,140,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_WIRE_DISTX,59,156,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_WIRE_DISTY,59,173,40,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPFLIPPER_POSITION DIALOGEX 0, 0, 125, 151
@@ -1732,6 +1739,11 @@ BEGIN
         RIGHTMARGIN, 194
     END
 
+    IDD_PROPRAMP_VISUALS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 184
+    END
+
     IDD_PROPTABLE_LIGHTSOURCES, DIALOG
     BEGIN
         RIGHTMARGIN, 123
@@ -2324,7 +2336,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

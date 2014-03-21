@@ -1750,6 +1750,15 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		
 		[propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
 		[propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);	
+
+		[propget, id(377), helpstring("property WireDiameter")] HRESULT WireDiameter([out, retval] float *pVal);
+		[propput, id(377), helpstring("property WireDiameter")] HRESULT WireDiameter([in] float newVal);	
+
+		[propget, id(398), helpstring("property WireDistanceX")] HRESULT WireDistanceX([out, retval] float *pVal);
+		[propput, id(398), helpstring("property WireDistanceX")] HRESULT WireDistanceX([in] float newVal);	
+
+		[propget, id(425), helpstring("property WireDistanceY")] HRESULT WireDistanceY([out, retval] float *pVal);
+		[propput, id(425), helpstring("property WireDistanceY")] HRESULT WireDistanceY([in] float newVal);			
 	};
 
 	/////////////////////////////////////////////

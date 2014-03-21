@@ -1,5 +1,7 @@
 VP 9.9.0 Changelog
 ------------------------
+- add options for wire ramps (define diameter and distance x/y of wires)
+
 - add currentAngle function to spinner
 
 - add depth bias option to flasher, light, primitive and ramp to fine tune depth sorting

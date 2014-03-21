@@ -514,6 +514,7 @@
 #define IDC_LOADED_MESH_TEXT            377
 #define IDC_ALPHA_EDIT                  377
 #define IDC_SIZE_WIDTH                  377
+#define IDC_WIRE_DIAMETER               377
 #define IDC_HEIGHT_EDIT                 378
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
@@ -559,6 +560,7 @@
 #define IDC_EDIT2                       397
 #define IDC_SIZE_HEIGHT                 397
 #define IDC_DEPTH_BIAS                  397
+#define IDC_WIRE_DISTX                  398
 #define IDC_CHECK2                      398
 #define IDC_STATIC_RENDERING_CHECK      398
 #define IDC_ON_LIGHT_LIGHTMAP           398
@@ -609,6 +611,8 @@
 #define IDC_TABLE_DIM_LIST              423
 #define IDC_LIST3                       424
 #define IDC_FORCE_ANISO                 425
+#define IDC_EDIT3                       425
+#define IDC_WIRE_DISTY                  425
 #define IDC_QFXAA                       426
 #define IDC_GLOBAL_3DSTEREO             427
 #define IDC_3D_STEREO_MS                428
@@ -809,7 +813,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        401
 #define _APS_NEXT_COMMAND_VALUE         32895
-#define _APS_NEXT_CONTROL_VALUE         425
+#define _APS_NEXT_CONTROL_VALUE         426
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
