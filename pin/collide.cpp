@@ -291,11 +291,11 @@ void LineSeg::Collide(CollisionEvent *coll)
     Ball *pball = coll->ball;
     const Vertex3Ds& hitnormal = coll->normal[0];
 
+    const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
 	pball->CollideWall(hitnormal, m_elasticity, m_antifriction, m_scatter);
 
 	if (m_pfe)
 		{			
-        const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
 		if (dot <= -m_threshold)
 			{
             // is this the same place as last event????
@@ -353,12 +353,11 @@ void Joint::Collide(CollisionEvent *coll)
     Ball *pball = coll->ball;
     const Vertex3Ds& hitnormal = coll->normal[0];
 
+    const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
 	pball->CollideWall(hitnormal, m_elasticity, m_antifriction, m_scatter);
 
     if (m_pfe)
     {
-        const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
-
         if (dot <= -m_threshold)
         {
             // is this the same place as last event????
