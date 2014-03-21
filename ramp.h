@@ -26,6 +26,9 @@ public:
 	float m_elasticity;
 	float m_friction;
 	float m_scatter;
+    float m_wireDiameter;
+    float m_wireDistanceX;
+    float m_wireDistanceY;
 
 	bool m_fCollidable;
 	bool m_IsVisible;
@@ -225,6 +228,12 @@ public:
     STDMETHOD(put_EnableLightingImage)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
+    STDMETHOD(get_WireDiameter)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_WireDiameter)(/*[in]*/ float newVal);
+    STDMETHOD(get_WireDistanceX)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_WireDistanceX)(/*[in]*/ float newVal);
+    STDMETHOD(get_WireDistanceY)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_WireDistanceY)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)

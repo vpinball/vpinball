@@ -11,6 +11,9 @@ Ramp::Ramp()
    dynamicVertexBufferRegenerate = true;
    m_d.m_enableLightingImage = true;
    m_d.m_depthBias = 0.0f;
+   m_d.m_wireDiameter=6.0f;
+   m_d.m_wireDistanceX = 38.0f;
+   m_d.m_wireDistanceY = 88.0f;
 }
 
 Ramp::~Ramp()
@@ -225,6 +228,25 @@ void Ramp::SetDefaults(bool fromMouseClick)
       m_d.m_enableLightingImage = iTmp == 0 ? false : true;
    else
       m_d.m_enableLightingImage = true;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Ramp","WireDiameter", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_wireDiameter = fTmp;
+   else
+       m_d.m_wireDiameter = 6.0f;	
+
+   hr = GetRegStringAsFloat("DefaultProps\\Ramp","WireDistanceX", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_wireDistanceX = fTmp;
+   else
+       m_d.m_wireDistanceX = 38.0f;	
+
+   hr = GetRegStringAsFloat("DefaultProps\\Ramp","WireDistanceY", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_wireDistanceY = fTmp;
+   else
+       m_d.m_wireDistanceY = 88.0f;	
+
 }
 
 void Ramp::WriteRegDefaults()
@@ -266,6 +288,12 @@ void Ramp::WriteRegDefaults()
    SetRegValue("DefaultProps\\Ramp","Modify3DStereo",REG_DWORD,&m_d.m_fModify3DStereo,4);
    SetRegValue("DefaultProps\\Ramp","AddBlend",REG_DWORD,&m_d.m_fAddBlend,4);
    SetRegValue("DefaultProps\\Ramp","EnableLighingOnImage",REG_DWORD,&m_d.m_enableLightingImage,4);
+   sprintf_s(strTmp, 40, "%f", m_d.m_wireDiameter);
+   SetRegValue("DefaultProps\\Ramp","WireDiameter", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_wireDistanceX);
+   SetRegValue("DefaultProps\\Ramp","WireDistanceX", REG_SZ, &strTmp,strlen(strTmp));
+   sprintf_s(strTmp, 40, "%f", m_d.m_wireDistanceY);
+   SetRegValue("DefaultProps\\Ramp","WireDistanceY", REG_SZ, &strTmp,strlen(strTmp));
 }
 
 void Ramp::PreRender(Sur * const psur)
@@ -1140,10 +1168,11 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
    int offset=0;
    float l;
    Vertex3D_NoTex2 rgv3D[32];
+   const float halfDiameter=m_d.m_wireDiameter/2.0f;
    for (int i=0;i<rampVertex;i++)
    {
-      rgv3D[0].x = -3.0f;
-      rgv3D[0].y = -3.0f;
+      rgv3D[0].x = -halfDiameter;
+      rgv3D[0].y = -halfDiameter;
       rgv3D[0].z = 0;
       rgv3D[0].nx = -1.0f;
       rgv3D[0].ny = -1.0f;
@@ -1153,8 +1182,8 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[0].ny *= l;
       rgv3D[0].nz *= l;
 
-      rgv3D[1].x = 3.0f;
-      rgv3D[1].y = -3.0f;
+      rgv3D[1].x = halfDiameter;
+      rgv3D[1].y = -halfDiameter;
       rgv3D[1].z = 0;
       rgv3D[1].nx = 1.0f;
       rgv3D[1].ny = -1.0f;
@@ -1164,8 +1193,8 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[1].ny *= l;
       rgv3D[1].nz *= l;
 
-      rgv3D[2].x = 3.0f;
-      rgv3D[2].y = 3.0f;
+      rgv3D[2].x = halfDiameter;
+      rgv3D[2].y = halfDiameter;
       rgv3D[2].z = 0;
       rgv3D[2].nx = 1.0f;
       rgv3D[2].ny = 1.0f;
@@ -1175,8 +1204,8 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[2].ny *= l;
       rgv3D[2].nz *= l;
 
-      rgv3D[3].x = -3.0f;
-      rgv3D[3].y = 3.0f;
+      rgv3D[3].x = -halfDiameter;
+      rgv3D[3].y = halfDiameter;
       rgv3D[3].z = 0;
       rgv3D[3].nx = -1.0f;
       rgv3D[3].ny = 1.0f;
@@ -1186,18 +1215,21 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       rgv3D[3].ny *= l;
       rgv3D[3].nz *= l;
 
+      const float halfWireDistanceY=m_d.m_wireDistanceY/2.0f;
+      const float halfWireDistanceX=m_d.m_wireDistanceX/2.0f;
+      const float wireOffset=9.5f;
       if (m_d.m_type != RampType1Wire)
       {
          for (int l=0;l<4;l++)
          {
-            rgv3D[l+ 4].x = rgv3D[l].x + 44.0f; //44.0f
-            rgv3D[l+ 4].y = rgv3D[l].y - 19.0f; //22.0f
+            rgv3D[l+ 4].x = rgv3D[l].x + halfWireDistanceY; //44.0f
+            rgv3D[l+ 4].y = rgv3D[l].y - halfWireDistanceX; //22.0f
             rgv3D[l+ 4].z = rgv3D[l].z;
-            rgv3D[l+ 8].x = rgv3D[l].x + 9.5f;
-            rgv3D[l+ 8].y = rgv3D[l].y + 19.0f;
+            rgv3D[l+ 8].x = rgv3D[l].x + wireOffset;
+            rgv3D[l+ 8].y = rgv3D[l].y + halfWireDistanceX;
             rgv3D[l+ 8].z = rgv3D[l].z;
-            rgv3D[l+12].x = rgv3D[l].x + 44.0f;
-            rgv3D[l+12].y = rgv3D[l].y + 19.0f;
+            rgv3D[l+12].x = rgv3D[l].x + halfWireDistanceY;
+            rgv3D[l+12].y = rgv3D[l].y + halfWireDistanceX;
             rgv3D[l+12].z = rgv3D[l].z;
 
             rgv3D[l+ 4].nx = rgv3D[l].nx;
@@ -1212,21 +1244,21 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
          }
          for (int l=0;l<4;l++)
          {
-            rgv3D[l].x += 9.5f;
-            rgv3D[l].y += -19.0f;
+            rgv3D[l].x += wireOffset;
+            rgv3D[l].y += -halfWireDistanceX;
          }
       }
       else
       {
          for (int l=0;l<4;l++)
          {
-            rgv3D[l+ 4].x = rgv3D[l].x+44.0f; //44.0f
+            rgv3D[l+ 4].x = rgv3D[l].x+halfWireDistanceY; //44.0f
             rgv3D[l+ 4].y = rgv3D[l].y;
             rgv3D[l+ 4].z = rgv3D[l].z;
-            rgv3D[l+ 8].x = rgv3D[l].x + 9.5f;
+            rgv3D[l+ 8].x = rgv3D[l].x + wireOffset;
             rgv3D[l+ 8].y = rgv3D[l].y;
             rgv3D[l+ 8].z = rgv3D[l].z;
-            rgv3D[l+12].x = rgv3D[l].x+44.0f;
+            rgv3D[l+12].x = rgv3D[l].x+halfWireDistanceY;
             rgv3D[l+12].y = rgv3D[l].y;
             rgv3D[l+12].z = rgv3D[l].z;
 
@@ -1760,6 +1792,9 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
    bw.WriteBool(FID(ERLI), m_d.m_enableLightingImage);
    bw.WriteFloat(FID(RADB), m_d.m_depthBias);
+   bw.WriteFloat(FID(RADI), m_d.m_wireDiameter);
+   bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
+   bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1921,6 +1956,18 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RADB))
    {
       pbr->GetFloat(&m_d.m_depthBias);
+   }
+   else if (id == FID(RADI))
+   {
+       pbr->GetFloat(&m_d.m_wireDiameter);
+   }
+   else if (id == FID(RADX))
+   {
+       pbr->GetFloat(&m_d.m_wireDistanceX);
+   }
+   else if (id == FID(RADY))
+   {
+       pbr->GetFloat(&m_d.m_wireDistanceY);
    }
    else
    {
@@ -2645,6 +2692,69 @@ STDMETHODIMP Ramp::put_DepthBias(float newVal)
    }
 
    return S_OK;
+}
+
+STDMETHODIMP Ramp::get_WireDiameter(float *pVal)
+{
+    *pVal = m_d.m_wireDiameter;
+
+    return S_OK;
+}
+
+STDMETHODIMP Ramp::put_WireDiameter(float newVal)
+{
+    if(m_d.m_wireDiameter != newVal)
+    {
+        STARTUNDO
+
+        m_d.m_wireDiameter = newVal;
+
+        STOPUNDO
+    }
+
+    return S_OK;
+}
+
+STDMETHODIMP Ramp::get_WireDistanceX(float *pVal)
+{
+    *pVal = m_d.m_wireDistanceX;
+
+    return S_OK;
+}
+
+STDMETHODIMP Ramp::put_WireDistanceX(float newVal)
+{
+    if(m_d.m_wireDistanceX != newVal)
+    {
+        STARTUNDO
+
+        m_d.m_wireDistanceX = newVal;
+
+        STOPUNDO
+    }
+
+    return S_OK;
+}
+
+STDMETHODIMP Ramp::get_WireDistanceY(float *pVal)
+{
+    *pVal = m_d.m_wireDistanceY;
+
+    return S_OK;
+}
+
+STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
+{
+    if(m_d.m_wireDistanceY != newVal)
+    {
+        STARTUNDO
+
+        m_d.m_wireDistanceY = newVal;
+
+        STOPUNDO
+    }
+
+    return S_OK;
 }
 
 // Always called each frame to render over everything else (along with primitives)
