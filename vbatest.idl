@@ -1652,6 +1652,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(16), helpstring("property Animations")] HRESULT Animations([in] int newVal);
 		[propget, id(17), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(17), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
+		[propget, id(18), nonbrowsable, helpstring("property CurrentAngle")] HRESULT CurrentAngle([out, retval] float *pVal);
 	};
 
 	[

@@ -1,5 +1,11 @@
 VP 9.9.0 Changelog
 ------------------------
+- add currentAngle function to spinner
+
+- add depth bias option to flasher, light, primitive and ramp to fine tune depth sorting
+
+- add sphere mapping to wired ramps if an image was assigned to a wired ramp
+
 - DX9 port for the graphics by new team member Mukuste
 
 - DX8 port for input handling (currently disabled)

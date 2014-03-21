@@ -500,7 +500,7 @@ UserValue(any)
 Elasticity(float)
 *Animations(int)
 *Visible(bool)
-
+CurrentAngle(float) - only readable
 
 TRIGGER
 ==============================================================================================================================================
