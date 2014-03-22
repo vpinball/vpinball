@@ -1020,11 +1020,16 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
 #ifdef VBA
    bw.WriteInt(FID(PIID), ApcControl.ID());
 #endif
-   bw.WriteStruct(FID(VPOS), &m_d.m_vPosition, sizeof(Vertex3Ds));
-   bw.WriteStruct(FID(VSIZ), &m_d.m_vSize, sizeof(Vertex3Ds));
-   bw.WriteStruct(FID(AXSX), &m_d.m_vAxisScaleX, sizeof(Vertex3Ds));
-   bw.WriteStruct(FID(AXSY), &m_d.m_vAxisScaleY, sizeof(Vertex3Ds));
-   bw.WriteStruct(FID(AXSZ), &m_d.m_vAxisScaleZ, sizeof(Vertex3Ds));
+   /*
+    * Someone decided that it was a good idea to write these vectors including
+    * the fourth padding float that they used to have, so now we have to write
+    * them padded to 4 floats to maintain compatibility.
+    */
+   bw.WriteVector3Padded(FID(VPOS), &m_d.m_vPosition);
+   bw.WriteVector3Padded(FID(VSIZ), &m_d.m_vSize);
+   bw.WriteVector3Padded(FID(AXSX), &m_d.m_vAxisScaleX);
+   bw.WriteVector3Padded(FID(AXSY), &m_d.m_vAxisScaleY);
+   bw.WriteVector3Padded(FID(AXSZ), &m_d.m_vAxisScaleZ);
    bw.WriteFloat(FID(RTV0), m_d.m_aRotAndTra[0]);
    bw.WriteFloat(FID(RTV1), m_d.m_aRotAndTra[1]);
    bw.WriteFloat(FID(RTV2), m_d.m_aRotAndTra[2]);
@@ -1089,23 +1094,23 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(VPOS))
    {
-      pbr->GetStruct(&m_d.m_vPosition, sizeof(Vertex3Ds));
+      pbr->GetVector3Padded(&m_d.m_vPosition);
    }
    else if (id == FID(VSIZ))
    {
-      pbr->GetStruct(&m_d.m_vSize, sizeof(Vertex3Ds));
+      pbr->GetVector3Padded(&m_d.m_vSize);
    }
    else if (id == FID(AXSX))
    {
-      pbr->GetStruct(&m_d.m_vAxisScaleX, sizeof(Vertex3Ds));
+      pbr->GetVector3Padded(&m_d.m_vAxisScaleX);
    }
    else if (id == FID(AXSY))
    {
-      pbr->GetStruct(&m_d.m_vAxisScaleY, sizeof(Vertex3Ds));
+      pbr->GetVector3Padded(&m_d.m_vAxisScaleY);
    }
    else if (id == FID(AXSZ))
    {
-      pbr->GetStruct(&m_d.m_vAxisScaleZ, sizeof(Vertex3Ds));
+      pbr->GetVector3Padded(&m_d.m_vAxisScaleZ);
    }
    else if (id == FID(RTV0))
    {

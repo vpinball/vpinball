@@ -267,6 +267,21 @@ HRESULT BiffWriter::WriteStruct(int id, void *pvalue, int size)
 	return hr;
 	}
 
+HRESULT BiffWriter::WriteVector3(int id, Vertex3Ds* vec)
+{
+    return WriteStruct(id, &vec->x, 3 * sizeof(float));
+}
+
+HRESULT BiffWriter::WriteVector3Padded(int id, Vertex3Ds* vec)
+{
+    float data[4];
+    data[0] = vec->x;
+    data[1] = vec->y;
+    data[2] = vec->z;
+    data[3] = 0.0f;
+    return WriteStruct(id, data, 4 * sizeof(float));
+}
+
 HRESULT BiffWriter::WriteTag(int id)
 	{
 	ULONG writ = 0;
@@ -377,6 +392,25 @@ HRESULT BiffReader::GetStruct(void *pvalue, int size)
 	ULONG read = 0;
 	return ReadBytes(pvalue, size, &read);
 	}
+
+HRESULT BiffReader::GetVector3(Vertex3Ds* vec)
+{
+    assert(sizeof(Vertex3Ds) == 3 * sizeof(float));     // fields need to be contiguous
+    return GetStruct(&vec->x, 3 * sizeof(float));
+}
+
+HRESULT BiffReader::GetVector3Padded(Vertex3Ds* vec)
+{
+    float data[4];
+    HRESULT hr = GetStruct(data, 4 * sizeof(float));
+    if (SUCCEEDED(hr))
+    {
+        vec->x = data[0];
+        vec->y = data[1];
+        vec->z = data[2];
+    }
+    return hr;
+}
 
 HRESULT BiffReader::Load()
 	{

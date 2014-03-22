@@ -174,6 +174,7 @@ public:
    D3DVALUE tv;
 };
 
+// NB: this struct MUST NOT BE CHANGED as the Primitive class uses it for file I/O...
 class Vertex3D_NoTex2 // for rendering, uses MY_D3DFVF_NOTEX2_VERTEX or MY_D3DTRANSFORMED_NOTEX2_VERTEX
 {
 public:

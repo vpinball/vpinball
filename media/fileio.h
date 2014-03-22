@@ -25,6 +25,8 @@ public:
 	HRESULT WriteBool(int id, BOOL fvalue);
 	HRESULT WriteFloat(int id, float value);
 	HRESULT WriteStruct(int id, void *pvalue, int size);
+	HRESULT WriteVector3(int id, Vertex3Ds* vec);
+	HRESULT WriteVector3Padded(int id, Vertex3Ds* vec);
 	HRESULT WriteTag(int id);
 
 	HRESULT WriteBytes(const void *pv,unsigned long count,unsigned long *foo);
@@ -48,6 +50,8 @@ public:
 	HRESULT GetFloat(float *pvalue);
 	HRESULT GetBool(BOOL *pfvalue);
 	HRESULT GetStruct(void *pvalue, int size);
+	HRESULT GetVector3(Vertex3Ds* vec);
+	HRESULT GetVector3Padded(Vertex3Ds* vec);
 
 	HRESULT ReadBytes(void *pv,unsigned long count,unsigned long *foo);
 
