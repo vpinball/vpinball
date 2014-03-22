@@ -509,52 +509,54 @@ BOOL Texture::SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent)
 
     const int pitch = pdds->pitch();
 
+    // COLORREF order:  ABGR  (msb to lsb)
+    // D3DCOLOR order:  ARGB  (msb to lsb)
+
     const COLORREF rtrans = (rgbTransparent & 0x000000ff);
     const COLORREF gtrans = (rgbTransparent & 0x0000ff00) >> 8;
     const COLORREF btrans = (rgbTransparent & 0x00ff0000) >> 16;
 
-    const COLORREF bgrTransparent = btrans | (gtrans << 8) | (rtrans << 16) | 0xff000000;  // color order different in DirectX texture buffer
+    const D3DCOLOR bgrTransparent = btrans | (gtrans << 8) | (rtrans << 16) | 0xff000000;
     // Assume our 32 bit color structure
 
+    // check if image has its own alpha channel
+    bool hasAlphaChannel = false;
+
     BYTE *pch = pdds->data();
+    for (int i=0; i<height; i++)
+    {
+        for (int l=0; l<width; l++)
+        {
+            unsigned alpha = ((*(D3DCOLOR*)pch) & 0xff000000) >> 24;
+            if (alpha < 255)
+            {
+                hasAlphaChannel = true;
+                goto AlphaCheckDone;
+            }
+            pch += 4;
+        }
+        pch += pitch-(width*4);
+    }
+AlphaCheckDone:
+
+    if (hasAlphaChannel)
+        fTransparent = true;
+
     if (rgbTransparent != NOTRANSCOLOR)
     {
-        // check if image has it's own alpha channel -- compute min and max alpha
-        unsigned int aMax = ((*(COLORREF *)pch) & 0xff000000)>>24;
-        unsigned int aMin = ((*(COLORREF *)pch) & 0xff000000)>>24;
-        for (int i=0;i<height;i++)
-        {
-            for (int l=0;l<width;l++)
-            {
-                if (((*(COLORREF *)pch) & 0xff000000)>>24 > aMax)
-                    aMax = ((*(COLORREF *)pch) & 0xff000000)>>24;
-                if (((*(COLORREF *)pch) & 0xff000000)>>24 < aMin)
-                    aMin = ((*(COLORREF *)pch) & 0xff000000)>>24;
-                pch += 4;
-            }
-            pch += pitch-(width*4);
-        }
-        slintf("amax:%d amin:%d\n",aMax,aMin);
         pch = pdds->data();
-
         for (int i=0;i<height;i++)
         {
             for (int l=0;l<width;l++)
             {
-                const COLORREF tc = (*(COLORREF *)pch) | 0xff000000; //set to opaque
-                if (tc == bgrTransparent )					// reg-blue order reversed
+                const D3DCOLOR tc = (*(D3DCOLOR *)pch) | 0xff000000; //set to opaque
+                if (tc == bgrTransparent )
                 {
-                    *(unsigned int *)pch = 0x00000000;		// set transparent colorkey to black	and alpha transparent
+                    *(unsigned int *)pch = 0x00000000;		// set transparent colorkey to black and alpha transparent
                     fTransparent = fTrue;					// colorkey is true
                 }
-                else
-                {
-                    //to enable alpha uncomment these three lines (does not work with HD-Render)
-                    if ((aMin == aMax) && (aMin == 255))    // if there is no alpha-channel info in the image, set to opaque
-                        *(COLORREF *)pch = tc;
-                    else
-                        fTransparent = fTrue;   // does not work. - cupid: i need a real PC to test this.
-                }
+                else if (!hasAlphaChannel)       // if there is no alpha-channel info in the image, set to opaque
+                    *(D3DCOLOR*)pch = tc;
                 pch += 4;
             }
             pch += pitch-(width*4);
