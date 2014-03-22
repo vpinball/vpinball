@@ -1662,10 +1662,11 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
          pin->CreateAlphaChannel();
          pin->Set( ePictureTexture );
 
-         ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
-
          if (pin->m_fTransparent)
+         {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+            ppin3d->EnableAlphaTestReference(128);
+         }
          else
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
