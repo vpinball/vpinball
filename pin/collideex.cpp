@@ -652,7 +652,7 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
 	const Vertex3Ds e0 = m_rgv[2] - m_rgv[0];
 	const Vertex3Ds e1 = m_rgv[1] - m_rgv[0];
 	normal = CrossProduct(e0,e1);
-    normal.Normalize();
+    normal.NormalizeSafe();
 
 	m_fVisible = fFalse;
 	m_elasticity = 0.3f;

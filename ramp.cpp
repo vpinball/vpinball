@@ -847,22 +847,30 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
             rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]);
 
             HitTriangle * const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
-            ph3dpoly->m_elasticity = m_d.m_elasticity;
-            ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
-            ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
-            if (m_d.m_type == RampTypeFlat)
-               ph3dpoly->m_fVisible = fTrue;
+            if (ph3dpoly->IsDegenerate())       // degenerate triangles happen if width is 0 at some point
+            {
+                delete ph3dpoly;
+            }
+            else
+            {
+                ph3dpoly->m_elasticity = m_d.m_elasticity;
+                ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+                ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
-            pvho->AddElement(ph3dpoly);
+                if (m_d.m_type == RampTypeFlat)
+                    ph3dpoly->m_fVisible = fTrue;
 
-            m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
-            ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+                pvho->AddElement(ph3dpoly);
 
-            if (ph3dpolyOld)
-               CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
+                m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
+                ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 
-            ph3dpolyOld = ph3dpoly;
+                if (ph3dpolyOld)
+                    CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
+
+                ph3dpolyOld = ph3dpoly;
+            }
          }
 
          // right ramp floor triangle, CCW order
@@ -872,20 +880,27 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          rgv3D[2] = Vertex3Ds(pv4->x,pv4->y,rgheight1[i+1]);
 
          HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
-         ph3dpoly->m_elasticity = m_d.m_elasticity;
-         ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
-         ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+         if (ph3dpoly->IsDegenerate())
+         {
+             delete ph3dpoly;
+         }
+         else
+         {
+             ph3dpoly->m_elasticity = m_d.m_elasticity;
+             ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
+             ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
-         if (m_d.m_type == RampTypeFlat)
-            ph3dpoly->m_fVisible = fTrue;
+             if (m_d.m_type == RampTypeFlat)
+                 ph3dpoly->m_fVisible = fTrue;
 
-         pvho->AddElement(ph3dpoly);
+             pvho->AddElement(ph3dpoly);
 
-         m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
-         ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+             m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
+             ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 
-         CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
-         ph3dpolyOld = ph3dpoly;
+             CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
+             ph3dpolyOld = ph3dpoly;
+         }
       }
 
       Vertex3Ds rgv3D[3];
@@ -920,14 +935,21 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]);
 
          HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
-         ph3dpoly->m_elasticity = m_d.m_elasticity;
-         ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
-         ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+         if (ph3dpoly->IsDegenerate())
+         {
+             delete ph3dpoly;
+         }
+         else
+         {
+             ph3dpoly->m_elasticity = m_d.m_elasticity;
+             ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+             ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
-         pvho->AddElement(ph3dpoly);
+             pvho->AddElement(ph3dpoly);
 
-         m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
-         ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+             m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
+             ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+         }
       }
 
       // right ramp triangle, order CW
@@ -937,14 +959,21 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,rgheight1[i]);
 
       HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
-      ph3dpoly->m_elasticity = m_d.m_elasticity;
-      ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
-      ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+      if (ph3dpoly->IsDegenerate())
+      {
+          delete ph3dpoly;
+      }
+      else
+      {
+          ph3dpoly->m_elasticity = m_d.m_elasticity;
+          ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
+          ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
-      pvho->AddElement(ph3dpoly);
+          pvho->AddElement(ph3dpoly);
 
-      m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
-      ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+          m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
+          ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+      }
    }
 #endif
 

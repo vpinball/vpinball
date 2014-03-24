@@ -84,6 +84,17 @@ public:
       x *= oneoverlength;
       y *= oneoverlength;
    }
+
+   void NormalizeSafe()
+   {
+       if (!IsZero())
+           Normalize();
+   }
+
+   bool IsZero() const
+   {
+       return x == 0 && y == 0;
+   }
 };
 
 
@@ -173,6 +184,13 @@ public:
       z *= oneoverlength;
    }
 
+   void NormalizeSafe()
+   {
+       if (!IsZero())
+           Normalize();
+   }
+
+
    float Dot(const Vertex3Ds &pv) const
    {
       return x*pv.x + y*pv.y + z*pv.z;
@@ -190,6 +208,11 @@ public:
    float Length() const
    {
       return sqrtf(x*x + y*y + z*z);
+   }
+
+   bool IsZero() const
+   {
+       return x == 0 && y == 0 && z == 0;
    }
 };
 

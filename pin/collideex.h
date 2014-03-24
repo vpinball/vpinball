@@ -87,6 +87,8 @@ public:
 	virtual void Collide(CollisionEvent* coll);
 	virtual void CalcHitRect();
 
+    bool IsDegenerate() const       { return normal.IsZero(); }
+
 	Vertex3Ds m_rgv[3];
 	Vertex3Ds normal;
 	BOOL m_fVisible; // for ball shadows
