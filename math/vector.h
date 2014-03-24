@@ -11,9 +11,76 @@ public:
    Vertex2D() {}
    Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
 
+   Vertex2D operator+ (const Vertex2D& v) const
+   {
+       return Vertex2D(x + v.x, y + v.y);
+   }
+   Vertex2D operator- (const Vertex2D& v) const
+   {
+       return Vertex2D(x - v.x, y - v.y);
+   }
+   Vertex2D operator- () const
+   {
+       return Vertex2D(-x, -y);
+   }
+
+   Vertex2D& operator+= (const Vertex2D& v)
+   {
+       x += v.x;
+       y += v.y;
+       return *this;
+   }
+   Vertex2D& operator-= (const Vertex2D& v)
+   {
+       x -= v.x;
+       y -= v.y;
+       return *this;
+   }
+
+   Vertex2D operator* (float s) const
+   {
+       return Vertex2D(s*x, s*y);
+   }
+   friend Vertex2D operator* (float s, const Vertex2D& v)
+   {
+       return Vertex2D(s*v.x, s*v.y);
+   }
+   Vertex2D operator/ (float s) const
+   {
+       return Vertex2D(x/s, y/s);
+   }
+
+   Vertex2D& operator*= (float s)
+   {
+       x *= s;
+       y *= s;
+       return *this;
+   }
+   Vertex2D& operator/= (float s)
+   {
+       x /= s;
+       y /= s;
+       return *this;
+   }
+
+   float Dot(const Vertex2D &pv) const
+   {
+      return x*pv.x + y*pv.y;
+   }
+
+   float LengthSquared() const
+   {
+      return x*x + y*y;
+   }
+
+   float Length() const
+   {
+      return sqrtf(x*x + y*y);
+   }
+
    void Normalize()
    {
-      const float oneoverlength = 1.0f/sqrtf(x*x + y*y);
+      const float oneoverlength = 1.0f / Length();
       x *= oneoverlength;
       y *= oneoverlength;
    }
