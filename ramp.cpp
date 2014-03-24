@@ -508,11 +508,22 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
    delete [] rgheight1;
 }
 
+/*
+ * Compute the vertices and additional information for the ramp shape.
+ *
+ * Output:
+ *  pcvertex     - number of vertices for the central curve
+ *  return value - size 2*cvertex, vertices forming the 2D outline of the ramp
+ *                 order: first forward along right side of ramp, then backward along the left side
+ *  ppheight     - size cvertex, height of the ramp at the i-th vertex
+ *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
+ *  ppratio      - how far along the ramp length the i-th vertex is, 1=start=bottom, 0=end=top (??)
+ */
 Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio)
 {
    Vector<RenderVertex> vvertex;
    GetRgVertex(&vvertex);
-   // vvertex are the 2D vertices forming the outline of the ramp as seen from above
+   // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
 
    const int cvertex = vvertex.Size();
    Vertex2D * const rgvLocal = new Vertex2D[cvertex * 2];
@@ -529,14 +540,16 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       *ppratio = new float[cvertex];
    }
 
+   // Compute an approximation to the length of the central curve
+   // by adding up the lengths of the line segments.
    float totallength = 0;
    for (int i=0; i<(cvertex-1); i++)
    {
-      const RenderVertex * const pv1 = vvertex.ElementAt(i);
-      const RenderVertex * const pv2 = vvertex.ElementAt(i+1);
+      const RenderVertex & v1 = vvertex[i];
+      const RenderVertex & v2 = vvertex[i+1];
 
-      const float dx = pv1->x - pv2->x;
-      const float dy = pv1->y - pv2->y;
+      const float dx = v1.x - v2.x;
+      const float dy = v1.y - v2.y;
       const float length = sqrtf(dx*dx + dy*dy);
 
       totallength += length;
@@ -545,17 +558,17 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    float currentlength = 0;
    for (int i=0; i<cvertex; i++)
    {
-      const RenderVertex * const pv1 = vvertex.ElementAt((i>0) ? i-1 : i);
-      const RenderVertex * const pv2 = vvertex.ElementAt((i < (cvertex-1)) ? i+1 : i);
-      const RenderVertex * const pvmiddle = vvertex.ElementAt(i);
+      const RenderVertex & vprev = vvertex[(i>0) ? i-1 : i];
+      const RenderVertex & vnext = vvertex[(i < (cvertex-1)) ? i+1 : i];
+      const RenderVertex & vmiddle = vvertex[i];
 
       Vertex2D vnormal;
       {
          // Get normal at this point
          // Notice that these values equal the ones in the line
          // equation and could probably be substituted by them.
-         Vertex2D v1normal(pv1->y - pvmiddle->y, pvmiddle->x - pv1->x);
-         Vertex2D v2normal(pvmiddle->y - pv2->y, pv2->x - pvmiddle->x);		
+         Vertex2D v1normal(vprev.y - vmiddle.y, vmiddle.x - vprev.x);   // vector vmiddle-vprev rotated RIGHT
+         Vertex2D v2normal(vmiddle.y - vnext.y, vnext.x - vmiddle.x);   // vector vnext-vmiddle rotated RIGHT
 
          if (i == (cvertex-1))
          {
@@ -571,7 +584,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
          {
             v1normal.Normalize();
             v2normal.Normalize();
-            if (fabsf(v1normal.x-v2normal.x) < 0.0001f && fabsf(v1normal.y-v2normal.y) < 0.0001f)
+            if (fabsf(v1normal.x - v2normal.x) < 0.0001f && fabsf(v1normal.y - v2normal.y) < 0.0001f)
             {
                // Two parallel segments
                v1normal.Normalize();
@@ -586,18 +599,18 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
                // shift those lines outwards along their normals
 
                // First line
-               const float A = pv1->y - pvmiddle->y;
-               const float B = pvmiddle->x - pv1->x;
+               const float A = vprev.y - vmiddle.y;
+               const float B = vmiddle.x - vprev.x;
 
                // Shift line along the normal
-               const float C = -(A*(pv1->x-v1normal.x) + B*(pv1->y-v1normal.y));
+               const float C = -(A*(vprev.x - v1normal.x) + B*(vprev.y - v1normal.y));
 
                // Second line
-               const float D = pv2->y - pvmiddle->y;
-               const float E = pvmiddle->x - pv2->x;
+               const float D = vnext.y - vmiddle.y;
+               const float E = vmiddle.x - vnext.x;
 
                // Shift line along the normal
-               const float F = -(D*(pv2->x-v2normal.x) + E*(pv2->y-v2normal.y));
+               const float F = -(D*(vnext.x - v2normal.x) + E*(vnext.y - v2normal.y));
 
                const float det = A*E - B*D;
                const float inv_det = (det != 0.0f) ? 1.0f/det : 0.0f;
@@ -605,15 +618,16 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
                const float intersectx = (B*F-E*C)*inv_det;
                const float intersecty = (C*D-A*F)*inv_det;
 
-               vnormal.x = pvmiddle->x - intersectx;
-               vnormal.y = pvmiddle->y - intersecty;
+               vnormal.x = vmiddle.x - intersectx;
+               vnormal.y = vmiddle.y - intersecty;
             }
          }
       }
 
+      // Update current length along the ramp.
       {
-         const float dx = pv1->x - pvmiddle->x;
-         const float dy = pv1->y - pvmiddle->y;
+         const float dx = vprev.x - vmiddle.x;
+         const float dy = vprev.y - vmiddle.y;
          const float length = sqrtf(dx*dx + dy*dy);
 
          currentlength += length;
@@ -634,10 +648,8 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
          (*ppratio)[i] = percentage;
       }
 
-      rgvLocal[i].x = pvmiddle->x + vnormal.x * (widthcur*0.5f);
-      rgvLocal[i].y = pvmiddle->y + vnormal.y * (widthcur*0.5f);
-      rgvLocal[cvertex*2 - i - 1].x = pvmiddle->x - vnormal.x * (widthcur*0.5f);
-      rgvLocal[cvertex*2 - i - 1].y = pvmiddle->y - vnormal.y * (widthcur*0.5f);
+      rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
+      rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
    }
 
    if (ppfCross)
@@ -651,6 +663,13 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    return rgvLocal;
 }
 
+/*
+ * Get an approximation of the curve described by the control points of this ramp.
+ *
+ * This overrides IHaveDragPoints::GetRgVertex() - the only real difference to that
+ * function seems to be the added support for user-defined accuracy, and not closing
+ * the loop.
+ */
 void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
 {
    const int cpoint = m_vdpoint.Size();
@@ -755,6 +774,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       wallheightright = (float)(6+12.5);
    }
 
+   // Add line segments for right ramp wall.
    if (wallheightright > 0.f)
    {
       for (int i=0;i<(cvertex-1);i++)
@@ -774,6 +794,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       }
    }
 
+   // Add line segments for left ramp wall.
    if (wallheightleft > 0.f)
    {
       for (int i=0;i<(cvertex-1);i++)
@@ -794,6 +815,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    }
 
 #ifndef RAMPTEST
+   // Add hit triangles for the ramp floor.
    {
       HitTriangle *ph3dpolyOld = NULL;
 
@@ -804,12 +826,21 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 
       for (int i=0;i<(cvertex-1);i++)
       {
-         pv1 = &rgvLocal[i];
-         pv2 = &rgvLocal[cvertex*2 - i - 1];
-         pv3 = &rgvLocal[cvertex*2 - i - 2];
-         pv4 = &rgvLocal[i+1];
+         /*
+          * Layout of one ramp quad seen from above, ramp direction is bottom to top:
+          *
+          *    3 - - 4
+          *    | \   |
+          *    |   \ |
+          *    2 - - 1
+          */
+         pv1 = &rgvLocal[i];                    // i-th right
+         pv2 = &rgvLocal[cvertex*2 - i - 1];    // i-th left
+         pv3 = &rgvLocal[cvertex*2 - i - 2];    // (i+1)-th left
+         pv4 = &rgvLocal[i+1];                  // (i+1)-th right
 
          {
+            // left ramp floor triangle, CCW order
             Vertex3Ds rgv3D[3];
             rgv3D[0] = Vertex3Ds(pv2->x,pv2->y,rgheight1[i]);
             rgv3D[1] = Vertex3Ds(pv1->x,pv1->y,rgheight1[i]);
@@ -834,6 +865,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
             ph3dpolyOld = ph3dpoly;
          }
 
+         // right ramp floor triangle, CCW order
          Vertex3Ds rgv3D[3];
          rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]);
          rgv3D[1] = Vertex3Ds(pv1->x,pv1->y,rgheight1[i]);
@@ -870,16 +902,18 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    // add outside bottom, 
    // joints at the intersections are not needed since the inner surface has them
    // this surface is identical... except for the direction of the normal face.
-   // hence the joints protect both surface edges from haveing a fall through
+   // hence the joints protect both surface edges from having a fall through
 
    for (int i=0; i<(cvertex-1); i++)
    {
+      // see sketch above
       const Vertex2D * const pv1 = &rgvLocal[i];
       const Vertex2D * const pv2 = &rgvLocal[cvertex*2 - i - 1];
       const Vertex2D * const pv3 = &rgvLocal[cvertex*2 - i - 2];
       const Vertex2D * const pv4 = &rgvLocal[i+1];
 
       {
+         // left ramp triangle, order CW
          Vertex3Ds rgv3D[3];
          rgv3D[0] = Vertex3Ds(pv1->x,pv1->y,rgheight1[i]);
          rgv3D[1] = Vertex3Ds(pv2->x,pv2->y,rgheight1[i]);
@@ -896,6 +930,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          ph3dpoly->m_fEnabled = m_d.m_fCollidable;
       }
 
+      // right ramp triangle, order CW
       Vertex3Ds rgv3D[3];
       rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]);
       rgv3D[1] = Vertex3Ds(pv4->x,pv4->y,rgheight1[i+1]);
