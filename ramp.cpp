@@ -898,7 +898,8 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
              m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
              ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 
-             CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
+             if (ph3dpolyOld)
+                 CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
              ph3dpolyOld = ph3dpoly;
          }
       }
