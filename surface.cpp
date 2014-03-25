@@ -1277,13 +1277,8 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         g_pplayer->m_pin3d.SetTexture(NULL);
 
     pd3dDevice->SetMaterial(sideMaterial);
-    if (m_d.m_fEnableLighting)
-        ppin3d->EnableLightMap(fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
-    else
-    {
-        ppin3d->DisableLightMap();
+    if (!m_d.m_fEnableLighting)
         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_sidecolor));
-    }
 
     // Render side
 
@@ -1321,8 +1316,13 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             ppin3d->SetTexture(NULL);
 
         pd3dDevice->SetMaterial(topMaterial);
-        if (!m_d.m_fEnableLighting)
+        if (m_d.m_fEnableLighting)
+            ppin3d->EnableLightMap(fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
+        else
+        {
+            ppin3d->DisableLightMap();
             pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_topcolor));
+        }
 
         if(numPolys > 0)
         {
