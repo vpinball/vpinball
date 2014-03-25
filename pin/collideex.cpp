@@ -1026,7 +1026,7 @@ TriggerHitCircle::TriggerHitCircle()
 
 float TriggerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {
-	return HitTestBasicRadius((Ball*)pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid    // TODO
+	return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
 void TriggerHitCircle::Collide(CollisionEvent* coll)
