@@ -415,7 +415,6 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
    const float ballr = pball->radius;	
    const float ballvx = pball->vel.x;
    const float ballvy = pball->vel.y;	
-   //float ballrEndr = m_flipperanim.m_hitcircleEnd.radius + ballr;// magnititude of (ball - flipperEnd)
 
    // flipper positions at zero degrees rotation
 
@@ -568,14 +567,14 @@ void HitFlipper::Collide(CollisionEvent *coll)
       pball->vel.x - phitnormal[1].x*tanspd,
       pball->vel.y - phitnormal[1].y*tanspd);					 //delta velocity ball to face
 
-   float dot = dv.x*phitnormal->x + dv.y*phitnormal->y; //dot Normal to delta v
+   float bnv = dv.x*phitnormal[0].x + dv.y*phitnormal[0].y; //dot Normal to delta v
 
-   if (dot >= -C_LOWNORMVEL )							 // nearly receding ... make sure of conditions
+   if (bnv >= -C_LOWNORMVEL )							 // nearly receding ... make sure of conditions
    {												 // otherwise if clearly approaching .. process the collision
-      if (dot > C_LOWNORMVEL) return;					 //is this velocity clearly receding (i.e must > a minimum)		
+      if (bnv > C_LOWNORMVEL) return;					 //is this velocity clearly receding (i.e must > a minimum)		
 #ifdef C_EMBEDDED
       if (coll->distance < -C_EMBEDDED)
-         dot = -C_EMBEDSHOT;							 // has ball become embedded???, give it a kick
+         bnv = -C_EMBEDSHOT;							 // has ball become embedded???, give it a kick
       else return;
 #endif		
    }
@@ -595,9 +594,9 @@ void HitFlipper::Collide(CollisionEvent *coll)
    float impulse = 1.005f + m_elasticity;		// hit on static, immovable flipper ... i.e on the stops
    float obliquecorr = 0.0f;
 
-   if ((dot < -0.25f) && (g_pplayer->m_time_msec - m_last_hittime) > 250) // limit rate to 333 milliseconds per event //!! WTF?
+   if ((bnv < -0.25f) && (g_pplayer->m_time_msec - m_last_hittime) > 250) // limit rate to 333 milliseconds per event //!! WTF?
    {
-      flipperHit = (distance == 0.0f) ? -1.0f : -dot; // move event processing to end of collision handler...
+      flipperHit = (distance == 0.0f) ? -1.0f : -bnv; // move event processing to end of collision handler...
    }
 
    m_last_hittime = g_pplayer->m_time_msec; // keep resetting until idle for 250 milliseconds
@@ -639,15 +638,15 @@ void HitFlipper::Collide(CollisionEvent *coll)
          }
       }	
    }
-   pball->vel.x -= impulse*dot * phitnormal->x; 							// new velocity for ball after impact
-   pball->vel.y -= impulse*dot * phitnormal->y;	
+   pball->vel.x -= impulse*bnv * phitnormal->x; 							// new velocity for ball after impact
+   pball->vel.y -= impulse*bnv * phitnormal->y;
 
    float scatter_angle = (m_pflipper->m_d.m_OverridePhysics ? m_pflipper->m_d.m_OverrideScatter : m_pflipper->m_d.m_scatterangle); // object specific roughness
    if (scatter_angle <= 0.0f)
       scatter_angle = c_hardScatter;
    scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply difficulty weighting
 
-   if (dot > -1.0f) scatter_angle = 0.f;								// not for low velocities
+   if (bnv > -1.0f) scatter_angle = 0.f;								// not for low velocities
 
    if (obliquecorr != 0.f || scatter_angle > 1.0e-5f)					// trajectory correction to reduce the obliqueness 
    {
@@ -670,13 +669,13 @@ void HitFlipper::Collide(CollisionEvent *coll)
    dv.x = (pball->vel.x - phitnormal[1].x * tanspd); // project along unit transverse vector
    dv.y = (pball->vel.y - phitnormal[1].y * tanspd); // delta velocity
 
-   dot = dv.x*phitnormal->x + dv.y*phitnormal->y;	// dot face Normal to delta v
+   bnv = dv.x*phitnormal->x + dv.y*phitnormal->y;	// dot face Normal to delta v
 
-   if (dot < 0)
+   if (bnv < 0)
    {	// opps .... impulse calculations were off a bit, add a little boost
-      dot *= -1.2f;						// small bounce
-      pball->vel.x += dot * phitnormal->x;	// new velocity for ball after corrected impact
-      pball->vel.y += dot * phitnormal->y;	//
+      bnv *= -1.2f;						// small bounce
+      pball->vel.x += bnv * phitnormal->x;	// new velocity for ball after corrected impact
+      pball->vel.y += bnv * phitnormal->y;	//
    }
 
    // move hit event to end of collision routine, pinball may be deleted
