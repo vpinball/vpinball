@@ -1798,12 +1798,12 @@ void Player::UpdatePhysics()
 }
 
 template <typename T>
-struct NotMemberOf
+struct IsMemberOf
 {
-    NotMemberOf(const std::vector<T>& _v) : v(_v) { }
+    IsMemberOf(const std::vector<T>& _v) : v(_v) { }
 
     bool operator()(const T& val) const
-    { return !std::binary_search(v.begin(), v.end(), val); }
+    { return std::binary_search(v.begin(), v.end(), val); }
 
     const std::vector<T>& v;
 };
@@ -1844,12 +1844,36 @@ void Player::RenderDynamics()
     * state, it is blitted to the backbuffer. We emulate this by putting lights which
     * change state to the end of the draw order for lights.
     */
-   // sort the list of triggered lights so that we can use binary search
-   std::sort( m_triggeredLights.begin(), m_triggeredLights.end() );
-   // put triggered lights at the end of the m_vLights vector
-   std::stable_partition( m_vLights.begin(), m_vLights.end(), NotMemberOf<Hitable*>(m_triggeredLights) );
-   // reset list of triggered lights
-   m_triggeredLights.clear();
+   {
+       const unsigned numLights = m_vLights.size();
+
+       // sort the list of triggered lights so that we can use binary search
+       m_sortedTriggeredLights = m_triggeredLights;
+       std::sort( m_sortedTriggeredLights.begin(), m_sortedTriggeredLights.end() );
+
+       // remove triggered lights from the m_vLights vector
+       m_vLights.erase(
+         std::remove_if( m_vLights.begin(), m_vLights.end(), IsMemberOf<Hitable*>(m_sortedTriggeredLights) ),
+         m_vLights.end() );
+
+       // now re-add the triggered lights at the end in the proper order,
+       // but make sure to add each only once
+       m_alreadyAddedLights.clear();
+       for (unsigned i = 0; i < m_triggeredLights.size(); ++i)
+       {
+           Hitable * cur = m_triggeredLights[i];
+           if (m_alreadyAddedLights.find(cur) == m_alreadyAddedLights.end())       // not yet added?
+           {
+               m_vLights.push_back(cur);
+               m_alreadyAddedLights.insert(cur);
+           }
+       }
+
+       // reset list of triggered lights
+       m_triggeredLights.clear();
+
+       assert( numLights == m_vLights.size() );     // make sure we didn't mess up
+   }
 
    // Draw non-transparent objects.
    for (unsigned i=0; i < m_vHitNonTrans.size(); ++i)
