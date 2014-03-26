@@ -4,7 +4,6 @@ DX9 renderer known issues:
 *) EM reels only work in Image Reel mode, not Text Reel
 *) text decals don't work
 *) kickers cut the ball in half
-*) some depth ordering issues remain
 *) Stereo 3D only works on NVIDIA so far
 *) AA hardwired to 4xMSAA, flickers
 *) textures aren't preloaded, can lead to stutter in some cases
