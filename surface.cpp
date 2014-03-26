@@ -701,7 +701,7 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
    plineseg->v2.y = pv2->y;
 
    plineseg->m_elasticity = m_d.m_elasticity;
-   plineseg->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+   plineseg->SetFriction(m_d.m_friction);
    plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
 
    pvho->AddElement(plineseg);
@@ -734,7 +734,7 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
       pjoint->m_rcHitRect.zhigh = m_d.m_heighttop;
 
       pjoint->m_elasticity = m_d.m_elasticity;
-      pjoint->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+      pjoint->SetFriction(m_d.m_friction);
       pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
 
       pjoint->center.x = pv1->x;

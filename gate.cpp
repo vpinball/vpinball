@@ -291,7 +291,7 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
       m_plineseg->CalcNormal();
 
       m_plineseg->m_elasticity = m_d.m_elasticity;
-      m_plineseg->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+      m_plineseg->SetFriction(m_d.m_friction);
       m_plineseg->m_scatter = m_d.m_scatter;
 
       pvho->AddElement(m_plineseg);
@@ -314,7 +314,7 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
       m_phitgate->CalcNormal();
 
       m_phitgate->m_elasticity = m_d.m_elasticity;
-      m_phitgate->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+      m_phitgate->SetFriction(m_d.m_friction);
       m_phitgate->m_scatter = m_d.m_scatter;
 
       pvho->AddElement(m_phitgate);

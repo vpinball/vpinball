@@ -855,7 +855,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
             else
             {
                 ph3dpoly->m_elasticity = m_d.m_elasticity;
-                ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+                ph3dpoly->SetFriction(m_d.m_friction);
                 ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
                 if (m_d.m_type == RampTypeFlat)
@@ -887,7 +887,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          else
          {
              ph3dpoly->m_elasticity = m_d.m_elasticity;
-             ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
+             ph3dpoly->SetFriction(m_d.m_friction);
              ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
              if (m_d.m_type == RampTypeFlat)
@@ -943,7 +943,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          else
          {
              ph3dpoly->m_elasticity = m_d.m_elasticity;
-             ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+             ph3dpoly->SetFriction(m_d.m_friction);
              ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
              pvho->AddElement(ph3dpoly);
@@ -967,7 +967,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       else
       {
           ph3dpoly->m_elasticity = m_d.m_elasticity;
-          ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
+          ph3dpoly->SetFriction(m_d.m_friction);
           ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
           pvho->AddElement(ph3dpoly);
@@ -996,7 +996,7 @@ void Ramp::AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv
 
    Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4); //!!
    ph3dpoly->m_elasticity = m_d.m_elasticity;
-   ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
+   ph3dpoly->SetFriction(m_d.m_friction);
    ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
    pvho->AddElement(ph3dpoly);
@@ -1025,7 +1025,7 @@ void Ramp::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const 
 
    Hit3DCylinder * const ph3dc = new Hit3DCylinder(&ph3d2->m_rgv[0], &ph3d2->m_rgv[1], &vjointnormal);
    ph3dc->m_elasticity = m_d.m_elasticity;
-   ph3dc->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+   ph3dc->SetFriction(m_d.m_friction);
    ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
    pvho->AddElement(ph3dc);
 
@@ -1038,7 +1038,7 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 {
    LineSeg * const plineseg = new LineSeg();
    plineseg->m_elasticity = m_d.m_elasticity;
-   plineseg->m_antifriction = 1.0f - m_d.m_friction;
+   plineseg->SetFriction(m_d.m_friction);
    plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
 
    plineseg->m_pfe = NULL;
@@ -1068,7 +1068,7 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
       {
          Joint * const pjoint = new Joint();
          pjoint->m_elasticity = m_d.m_elasticity;
-         pjoint->m_antifriction = 1.0f - m_d.m_friction;
+         pjoint->SetFriction(m_d.m_friction);
          pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
 
          pjoint->m_pfe = NULL;

@@ -281,7 +281,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
 	   m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), height, height + m_d.m_height, (m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength), m_d.m_mass);
 
    phf->m_elasticity = (m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity);
-   phf->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+   phf->SetFriction(m_d.m_friction);
    phf->m_scatter = m_d.m_scatter;
 
    phf->m_flipperanim.m_EnableRotateEvent = 0;

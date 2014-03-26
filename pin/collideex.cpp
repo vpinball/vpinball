@@ -7,7 +7,7 @@ BumperHitCircle::BumperHitCircle()
 	m_bumperanim.m_iframedesired = 0;
 	m_bumperanim.m_fAutoTurnedOff = fFalse;
 	m_elasticity = 0.3f;
-	m_antifriction = 1.0f;
+    SetFriction(0.0f);
 	m_scatter = 0;
 	m_bumperanim.m_fVisible = fTrue;
 }
@@ -71,7 +71,7 @@ LineSegSlingshot::LineSegSlingshot()
 	m_slingshotanim.m_iframe = 0;
 	m_slingshotanim.m_TimeReset = 0; // zero means the slingshot is currently reset
 	m_elasticity = 0.3f;
-	m_antifriction = 1.0f;
+    SetFriction(0.0f);
 	m_scatter = 0;
 }
 
@@ -440,7 +440,7 @@ Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count) : m_rgv(rgv),m_cver
 
 	m_fVisible = fFalse;
 	m_elasticity = 0.3f;
-	m_antifriction = 1.0f;
+    SetFriction(0.0f);
 	m_scatter = 0;
 }
 
@@ -656,7 +656,7 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
 
 	m_fVisible = fFalse;
 	m_elasticity = 0.3f;
-	m_antifriction = 1.0f;
+    SetFriction(0.0f);
 	m_scatter = 0;
 }
 
