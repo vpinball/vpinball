@@ -2,6 +2,7 @@
 
 #include "kdtree.h"
 #include "quadtree.h"
+#include <unordered_set>
 
 #define DEFAULT_PLAYER_WIDTH 1024
 
@@ -313,6 +314,11 @@ private:
     std::vector< Hitable* > m_vHitTrans;    // transparent hitables
     std::vector< Hitable* > m_vHitBackglass; // backglass objects (VP9COMPAT)
     std::vector< Hitable* > m_vLights;      // lights objects (VP9COMPAT)
+
+    // VP9COMPAT: these are only used during the lights update routine,
+    // but we keep them around to minimize dynamic allocations
+    std::vector< Hitable* > m_sortedTriggeredLights;
+    std::tr1::unordered_set< Hitable* > m_alreadyAddedLights;
 
 	int m_curAccel_x[PININ_JOYMXCNT];
 	int m_curAccel_y[PININ_JOYMXCNT];
