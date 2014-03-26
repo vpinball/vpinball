@@ -300,7 +300,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       rgv3D[2] = vertices[ indexList[i+2] ];
       HitTriangle * const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
       ph3dpoly->m_elasticity = m_d.m_elasticity;
-      ph3dpoly->m_antifriction = 1.0f - m_d.m_friction;
+      ph3dpoly->SetFriction(m_d.m_friction);
       ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
       ph3dpoly->m_fVisible=fTrue;
       ph3dpoly->m_threshold = m_d.m_threshold;
@@ -343,7 +343,7 @@ void Primitive::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * c
 
    Hit3DCylinder * const ph3dc = new Hit3DCylinder(&ph3d2->m_rgv[0], &ph3d2->m_rgv[1], &vjointnormal);
    ph3dc->m_elasticity = m_d.m_elasticity;
-   ph3dc->m_antifriction = 1.0f - m_d.m_friction;	//antifriction
+   ph3dc->SetFriction(m_d.m_friction);
    ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
    ph3dc->m_threshold = m_d.m_threshold;
    ph3dc->m_ObjType = ePrimitive;
