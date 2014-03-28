@@ -912,7 +912,6 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
          verts[offset+1].x=pv1->x;   verts[offset+1].y=pv1->y;   verts[offset+1].z=m_d.m_heighttop;
          verts[offset+2].x=pv2->x;   verts[offset+2].y=pv2->y;   verts[offset+2].z=m_d.m_heighttop;
          verts[offset+3].x=pv2->x;   verts[offset+3].y=pv2->y;   verts[offset+3].z=m_d.m_heightbottom;
-
          if (pinSide)
          {
             verts[offset].tu = rgtexcoord[i];
@@ -1247,10 +1246,10 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
     if(!m_d.m_fEnableLighting)
     {
-        pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
-
-        // replace Diffuse arg by constant color
-        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
+       pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+       // replace Diffuse arg by constant color
+       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);      
+       pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_sidecolor));
     }
 
     Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
@@ -1267,8 +1266,8 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         else
         {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-            g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
         }
+        g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
 
         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
         g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
@@ -1277,8 +1276,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         g_pplayer->m_pin3d.SetTexture(NULL);
 
     pd3dDevice->SetMaterial(sideMaterial);
-    if (!m_d.m_fEnableLighting)
-        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_sidecolor));
 
     // Render side
 
@@ -1306,9 +1303,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             else
             {
                 pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-                g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
             }
 
+            g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
             pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
             g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
         }
