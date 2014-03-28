@@ -1267,6 +1267,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         else
         {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+            g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
         }
 
         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -1305,6 +1306,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             else
             {
                 pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+                g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
             }
 
             pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
