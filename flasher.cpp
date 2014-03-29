@@ -898,7 +898,7 @@ void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
       {
          pin->CreateAlphaChannel();
          pin->Set(ePictureTexture);
-
+         ppin3d->EnableAlphaBlend(0x80,FALSE);
 		 ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 		 
 		 pd3dDevice->SetMaterial(textureMaterial);
