@@ -442,10 +442,7 @@ void Gate::PostRenderStatic(const RenderDevice* _pd3dDevice)
             if (m_d.m_color != rgbTransparent)
                 rgbTransparent = pinback->m_rgbTransparent;
         }
-        else
-        {
-            ppin3d->EnableAlphaBlend( 0x80, fFalse );
-        }
+        ppin3d->EnableAlphaBlend( 0x80, fFalse );
 
         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -473,10 +470,7 @@ void Gate::PostRenderStatic(const RenderDevice* _pd3dDevice)
             if (m_d.m_color != rgbTransparent)
                 rgbTransparent = pinfront->m_rgbTransparent;
         }
-        else 
-        {
-            ppin3d->EnableAlphaBlend( 0x80, fFalse );
-        }
+        ppin3d->EnableAlphaBlend( 0x80, fFalse );
 
         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
