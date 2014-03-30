@@ -819,6 +819,7 @@ void Primitive::TransformVertex(Vertex3D_NoTex2& v) const
     v.z *= 1.0f + (m_d.m_vAxisScaleY.z - 1.0f)*(v.y+0.5f);
     v.x *= 1.0f + (m_d.m_vAxisScaleZ.x - 1.0f)*(v.z+0.5f);
     v.y *= 1.0f + (m_d.m_vAxisScaleZ.y - 1.0f)*(v.z+0.5f);
+    v.z *= m_ptable->m_zScale;
 }
 
 void Primitive::UpdateMesh()
@@ -843,7 +844,6 @@ void Primitive::UpdateMesh()
          tempVert->tv = 0.5f + norm.y*0.5f;
       }
       TransformVertex(*tempVert);
-
       /* HACK/VP9COMPAT:
        * In VP9, all the normals are the wrong way around, so we also
        * have to flip them on imported meshes for now.
