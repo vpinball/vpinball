@@ -9,5 +9,4 @@ Things which have to be done before the official DX9 release:
 *) disable MSAA until we fix the flickering
 *) improve GUI for vsync/frame limiting (very unintuitive right now)
 *) remove true fullscreen options completely?
-*) change registry key to be distinct from DX7 versions?
 *) nice to have: multi-monitor support; but probably later

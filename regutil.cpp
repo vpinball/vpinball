@@ -52,7 +52,7 @@ HRESULT GetRegInt(char *szKey, char *szValue, int *pint)
 HRESULT GetRegValue(char *szKey, char *szValue, DWORD *ptype, void *pvalue, DWORD size)
 {
 	char szPath[1024];
-	lstrcpy(szPath, "Software\\Visual Pinball\\");
+	lstrcpy(szPath, "Software\\Visual Pinball\\DX9\\");
 	lstrcat(szPath, szKey);
 
 	HKEY hk;
@@ -75,7 +75,7 @@ HRESULT GetRegValue(char *szKey, char *szValue, DWORD *ptype, void *pvalue, DWOR
 HRESULT SetRegValue(char *szKey, char *szValue, DWORD type, void *pvalue, DWORD size)
 {
 	char szPath[1024];
-	lstrcpy(szPath, "Software\\Visual Pinball\\");
+	lstrcpy(szPath, "Software\\Visual Pinball\\DX9\\");
 	lstrcat(szPath, szKey);
 
 	HKEY hk;
