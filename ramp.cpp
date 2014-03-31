@@ -1730,12 +1730,14 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
          if (pin->m_fTransparent)
          {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-            ppin3d->EnableAlphaTestReference(128);
          }
          else
+         {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+         }
+       ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
 
-		 pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo || (g_pplayer->m_fStereo3D == 0) || !g_pplayer->m_fStereo3Denabled); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
+       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo || (g_pplayer->m_fStereo3D == 0) || !g_pplayer->m_fStereo3Denabled); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
 
          // Check if this is an acrylic.
          if (m_d.m_fAcrylic)
