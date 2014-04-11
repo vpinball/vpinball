@@ -9,10 +9,12 @@ VP 9.9.0 Changelog
 - add sphere mapping to wired ramps if an image was assigned to a wired ramp
 
 - DX9 port for the graphics by new team member Mukuste
+- region updates and optimizations settings are not needed anymore due to the new graphics pipeline
+- same goes for alternate render
 
 - DX8 port for input handling (currently disabled)
 
-- enable NVIDIA Optimus cards by default (currently disabled)
+- enable NVIDIA Optimus cards by default
 
 - texture size limit/downscale now respects aspect ratio (currently disabled)
 - new video setting: Force anisotropic texture filtering. This results in higher quality results, but can affect performance on lower end cards.
@@ -23,14 +25,13 @@ VP 9.9.0 Changelog
 
 - FXAA now has two modes: Fast and Quality
 
-- region updates and optimizations settings are not needed anymore due to the new graphics pipeline
-- same goes for alternate render
-
 - adaptive vsync behavior changed:
   0: disable vsync
   1: enable/automatic detection of vsync rate
   if adaptive vsync is set to anything higher than the monitor refresh rate, the engine will limit the FPS to this rate (but of course without using real vsync)
   the old original behavior had to be disabled for now due to XP compatibility
+
+- Running as administrator is no longer required (except for tables which write high scores to system directories). UAC setting removed from executable.
 
 - technical note: the minimum version to compile VP is now visual studio 2008 (incl. feature pack)
 
