@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 
+#define VP_REGKEY  "Software\\Visual Pinball\\DX9\\"
+
 HRESULT GetRegString(char *szKey, char *szValue, void *szbuffer, DWORD size)
 {
 	DWORD type=REG_NONE;
@@ -52,7 +54,7 @@ HRESULT GetRegInt(char *szKey, char *szValue, int *pint)
 HRESULT GetRegValue(char *szKey, char *szValue, DWORD *ptype, void *pvalue, DWORD size)
 {
 	char szPath[1024];
-	lstrcpy(szPath, "Software\\Visual Pinball\\DX9\\");
+	lstrcpy(szPath, VP_REGKEY);
 	lstrcat(szPath, szKey);
 
 	HKEY hk;
@@ -72,10 +74,26 @@ HRESULT GetRegValue(char *szKey, char *szValue, DWORD *ptype, void *pvalue, DWOR
 	return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;	
 }
 
+
+int GetRegIntWithDefault(const char *szKey, const char *szValue, int def)
+{
+    int val;
+    HRESULT hr = GetRegInt((char*)szKey, (char*)szValue, &val);
+    return SUCCEEDED(hr) ? val : def;
+}
+
+float GetRegStringAsFloatWithDefault(const char *szKey, const char *szValue, float def)
+{
+    float val;
+    HRESULT hr = GetRegStringAsFloat((char*)szKey, (char*)szValue, &val);
+    return SUCCEEDED(hr) ? val : def;
+}
+
+
 HRESULT SetRegValue(char *szKey, char *szValue, DWORD type, void *pvalue, DWORD size)
 {
 	char szPath[1024];
-	lstrcpy(szPath, "Software\\Visual Pinball\\DX9\\");
+	lstrcpy(szPath, VP_REGKEY);
 	lstrcat(szPath, szKey);
 
 	HKEY hk;
