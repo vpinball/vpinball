@@ -104,9 +104,6 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
 
-   m_pobjframe[0] = NULL;
-   m_pobjframe[1] = NULL;
-
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
 
@@ -512,13 +509,6 @@ void Light::FreeBuffers()
 
 void Light::EndPlay()
 {
-   for (int i=0;i<2;i++)
-   {
-      //m_pobjframe[i]->ppds->Release();
-      delete m_pobjframe[i];
-      m_pobjframe[i] = NULL;
-   }
-
    // ensure not locked just in case the player exits during a LS sequence
    m_fLockedByLS = false;			//>>> added by chris
 
@@ -1334,9 +1324,6 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Light::InitPostLoad()
 {
-   m_pobjframe[0] = NULL;
-   m_pobjframe[1] = NULL;
-
    return S_OK;
 }
 
