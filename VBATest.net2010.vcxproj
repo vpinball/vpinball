@@ -366,7 +366,6 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
@@ -831,7 +830,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
@@ -894,7 +892,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>

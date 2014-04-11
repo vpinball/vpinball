@@ -234,10 +234,15 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
         MAKE_WIDEPTR_FROMANSI(wszFileName, szFileName);
         if (SUCCEEDED(LoadTypeLib(wszFileName, &ptl)))
         {
-            HRESULT hr = RegisterTypeLibForUser(ptl, wszFileName, NULL);
+            // first try to register system-wide (if running as admin)
+            HRESULT hr = RegisterTypeLib(ptl, wszFileName, NULL);
             if (!SUCCEEDED(hr))
-                MessageBox(0, "Could not register type library. Please run Visual Pinball as administrator.", "Error", MB_ICONWARNING);
-
+            {
+                // if failed, register only for current user
+                hr = RegisterTypeLibForUser(ptl, wszFileName, NULL);
+                if (!SUCCEEDED(hr))
+                    MessageBox(0, "Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONWARNING);
+            }
             ptl->Release();
         }
         else
