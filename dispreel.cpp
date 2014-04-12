@@ -989,8 +989,7 @@ bool DispReel::RenderAnimation()
 
 
 // This function gets calls just before the game starts to draw the first instance of
-// the object on the screen.  it is not called after that.  Check3D and Draw3D handle
-// any dynamic updates.
+// the object on the screen.  it is not called after that.  Check3D handles any dynamic updates.
 //
 void DispReel::RenderText()
 {
@@ -1752,10 +1751,6 @@ float DispReel::getBoxHeight() const
 }
 
 
-// This function renders the in-game object which is then drawn onto the screen (in Draw3D)
-//
-// It first draws the object box (either solid or transparent) and draws the reels within it
-//
 void DispReel::UpdateObjFrame()
 {
 #ifdef VPINBALL_DX7_LEFTOVERS

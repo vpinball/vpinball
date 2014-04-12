@@ -8,7 +8,6 @@ public:
 	virtual bool FMover() const {return true;}
 
 	virtual void Check3D()                                  { }
-	virtual ObjFrame *Draw3D(const RECT * const prc)        { return NULL; }
 
 	void SetObjects(const float len);
 
