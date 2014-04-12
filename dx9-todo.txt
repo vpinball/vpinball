@@ -1,6 +1,5 @@
 Things which have to be done before the official DX9 release:
 
-*) fix textboxes
 *) fix text reels
 *) fix text decals
 *) fix kickers cutting the ball in half
