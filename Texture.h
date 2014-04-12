@@ -45,6 +45,9 @@ public:
     int m_height;
     std::vector<BYTE> m_data;
 
+    void CopyBits(const void* bits)      // copy bits which are already in the right format
+    { memcpy( data(), bits, m_data.size() ); }
+
     static MemTexture *CreateFromHBitmap(HBITMAP hbm);
     static MemTexture *CreateFromFile(const char *filename);
     static MemTexture *CreateFromFreeImage(FIBITMAP* dib);

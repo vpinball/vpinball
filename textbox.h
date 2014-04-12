@@ -81,18 +81,19 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Textbox)
 
 	void WriteRegDefaults();
 
+private:
 	PinTable *m_ptable;
 
 	TextboxData m_d;
 
-	ObjFrame *m_pobjframe;
+    RECT m_rect;
+    Vertex3D_NoTex2 rgv3D[4];
+    MemTexture *m_texture;
 
 	IFont *m_pIFont;
 
 	IFont *m_pIFontPlay; // Our font, scaled to match play window resolution
 	HFONT m_hfont;
-
-	TextboxUpdater *m_ptu;
 
 // ITextbox
 public:

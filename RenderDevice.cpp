@@ -22,13 +22,26 @@ D3DTexture* TextureManager::LoadTexture(MemTexture* memtex)
         texinfo.d3dtex = m_rd.UploadTexture(memtex, &texinfo.texWidth, &texinfo.texHeight);
         if (!texinfo.d3dtex)
             return 0;
+        texinfo.dirty = false;
         m_map[memtex] = texinfo;
         return texinfo.d3dtex;
     }
     else
     {
+        if (it->second.dirty)
+        {
+            m_rd.UpdateTexture(it->second.d3dtex, memtex);
+            it->second.dirty = false;
+        }
         return it->second.d3dtex;
     }
+}
+
+void TextureManager::SetDirty(MemTexture* memtex)
+{
+    Iter it = m_map.find(memtex);
+    if (it != m_map.end())
+        it->second.dirty = true;
 }
 
 void TextureManager::UnloadTexture(MemTexture* memtex)
@@ -464,15 +477,12 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 	CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, NULL, dest, NULL, D3DTEXF_NONE));
 }
 
-D3DTexture* RenderDevice::UploadTexture(MemTexture* surf, int *pTexWidth, int *pTexHeight)
+D3DTexture* RenderDevice::CreateSystemTexture(MemTexture* surf)
 {
-    IDirect3DTexture9 *sysTex, *tex;
+    IDirect3DTexture9 *sysTex;
 
     int texwidth = surf->width();
     int texheight = surf->height();
-
-    if (pTexWidth) *pTexWidth = texwidth;
-    if (pTexHeight) *pTexHeight = texheight;
 
     CHECKD3D(m_pD3DDevice->CreateTexture(texwidth, texheight, m_autogen_mipmap ? 1 : 0, 0, D3DFMT_A8R8G8B8,
                 D3DPOOL_SYSTEMMEM, &sysTex, NULL));
@@ -490,6 +500,21 @@ D3DTexture* RenderDevice::UploadTexture(MemTexture* surf, int *pTexWidth, int *p
 	if(!m_autogen_mipmap)
 		CHECKD3D(D3DXFilterTexture(sysTex,NULL,D3DX_DEFAULT,D3DX_DEFAULT));
 
+    return sysTex;
+}
+
+D3DTexture* RenderDevice::UploadTexture(MemTexture* surf, int *pTexWidth, int *pTexHeight)
+{
+    IDirect3DTexture9 *sysTex, *tex;
+
+    int texwidth = surf->width();
+    int texheight = surf->height();
+
+    if (pTexWidth) *pTexWidth = texwidth;
+    if (pTexHeight) *pTexHeight = texheight;
+
+    sysTex = CreateSystemTexture(surf);
+
 	CHECKD3D(m_pD3DDevice->CreateTexture(texwidth, texheight, m_autogen_mipmap ? 0 : sysTex->GetLevelCount(), m_autogen_mipmap ? D3DUSAGE_AUTOGENMIPMAP : 0, D3DFMT_A8R8G8B8,
                 D3DPOOL_DEFAULT, &tex, NULL));
 
@@ -500,6 +525,13 @@ D3DTexture* RenderDevice::UploadTexture(MemTexture* surf, int *pTexWidth, int *p
 	    tex->GenerateMipSubLevels(); // tell driver that now is a good time to generate mipmaps
     
     return tex;
+}
+
+void RenderDevice::UpdateTexture(D3DTexture* tex, MemTexture* surf)
+{
+    IDirect3DTexture9* sysTex = CreateSystemTexture(surf);
+    CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
+    CHECKD3D(sysTex->Release());
 }
 
 void RenderDevice::SetTexture(DWORD texUnit, D3DTexture* tex )
