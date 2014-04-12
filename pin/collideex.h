@@ -6,7 +6,6 @@ class BumperAnimObject : public AnimObject
 {
 public:
 	virtual void Check3D()   { }
-	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 	virtual void Reset();
     void UpdateAnimation();
 
@@ -36,7 +35,6 @@ class SlingshotAnimObject : public AnimObject
 {
 public:
 	virtual void Check3D();
-	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 	virtual void Reset();
 
 	int m_iframe;
@@ -102,7 +100,6 @@ public:
 
 	virtual bool FMover() const {return true;}
 
-	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 	virtual void Reset();
 
 	Spinner *m_pspinner;
@@ -145,7 +142,6 @@ public:
 
 	virtual bool FMover() const {return true;}
 
-	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 	virtual void Reset();
 
 	Gate *m_pgate;
@@ -230,7 +226,6 @@ class DispReelAnimObject : public AnimObject
 {
 public:
     virtual void Check3D();
-	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 	virtual void Reset();
 
 	DispReel *m_pDispReel;
@@ -258,7 +253,6 @@ class LightSeqAnimObject : public AnimObject
 {
 public:
     virtual void Check3D();
-	virtual ObjFrame *Draw3D(const RECT * const prc)    { return NULL; }
 
 	LightSeq *m_pLightSeq;
 };
