@@ -462,11 +462,7 @@ void Texture::SetOpaqueBackdrop(BaseTexture* pdds, const COLORREF rgbTransparent
    const int height = pdds->height();
    const int lpitch = pdds->pitch();
 
-   const unsigned int rback = (rgbBackdrop & 0x00ff0000) >> 16;
-   const unsigned int gback = (rgbBackdrop & 0x0000ff00) >> 8;
-   const unsigned int bback = (rgbBackdrop & 0x000000ff);
-
-   const unsigned int rgbBd = rback | (gback << 8) | (bback << 16) | ((unsigned int)0xff << 24);
+   const D3DCOLOR rgbBd = COLORREF_to_D3DCOLOR(rgbBackdrop);
 
    // Assume our 32 bit color structure
    BYTE *pch = pdds->data();
@@ -511,13 +507,7 @@ BOOL Texture::SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent)
 
     // COLORREF order:  ABGR  (msb to lsb)
     // D3DCOLOR order:  ARGB  (msb to lsb)
-
-    const COLORREF rtrans = (rgbTransparent & 0x000000ff);
-    const COLORREF gtrans = (rgbTransparent & 0x0000ff00) >> 8;
-    const COLORREF btrans = (rgbTransparent & 0x00ff0000) >> 16;
-
-    const D3DCOLOR bgrTransparent = btrans | (gtrans << 8) | (rtrans << 16) | 0xff000000;
-    // Assume our 32 bit color structure
+    const D3DCOLOR bgrTransparent = COLORREF_to_D3DCOLOR(rgbTransparent);
 
     // check if image has its own alpha channel
     bool hasAlphaChannel = false;
