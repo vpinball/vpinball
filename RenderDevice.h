@@ -48,6 +48,7 @@ public:
     }
 
     D3DTexture* LoadTexture(MemTexture* memtex);
+    void SetDirty(MemTexture* memtex);
     void UnloadTexture(MemTexture* memtex);
 
     void UnloadAll();
@@ -58,6 +59,7 @@ private:
         D3DTexture* d3dtex;
         int texWidth;
         int texHeight;
+        bool dirty;
     };
 
     RenderDevice& m_rd;
@@ -233,7 +235,10 @@ public:
    void CopySurface(D3DTexture* dest, RenderTarget* src);
    void CopyDepth(D3DTexture* dest, RenderTarget* src);
 
-   D3DTexture* RenderDevice::UploadTexture(MemTexture* surf, int *pTexWidth=NULL, int *pTexHeight=NULL);
+   D3DTexture* CreateSystemTexture(MemTexture* surf);
+   D3DTexture* UploadTexture(MemTexture* surf, int *pTexWidth=NULL, int *pTexHeight=NULL);
+   void UpdateTexture(D3DTexture* tex, MemTexture* surf);
+
    void SetRenderState( const RenderStates p1, const DWORD p2 );
    void SetTexture( DWORD, D3DTexture* );
    void SetTextureFilter(DWORD texUnit, DWORD mode);

@@ -950,15 +950,6 @@ void Hit3DCylinder::CalcHitRect()
 
 
 
-ObjFrame *TextboxAnimObject::Draw3D(const RECT * const prc)
-{
-	return m_ptextbox->m_pobjframe;
-}
-
-void TextboxAnimObject::Reset()
-{
-}
-
 // this function is called every frame to see if the object needs updating
 //
 void DispReelAnimObject::Check3D()

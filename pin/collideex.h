@@ -226,33 +226,6 @@ public:
 };
 
 
-class TextboxAnimObject : public AnimObject
-{
-public:
-	virtual ObjFrame *Draw3D(const RECT * const prc);
-	virtual void Reset();
-
-	Textbox *m_ptextbox;
-};
-
-class TextboxUpdater : public HitObject
-{
-public:
-	TextboxUpdater(Textbox * const ptb) {m_textboxanim.m_ptextbox = ptb;}
-	virtual ~TextboxUpdater() {}
-
-	virtual int GetType() const {return eTextbox;}
-
-	// Bogus methods
-	virtual void Collide(CollisionEvent* coll) {}
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) {return -1;}
-	virtual void CalcHitRect() {}
-
-	virtual AnimObject *GetAnimObject() {return &m_textboxanim;}
-
-	TextboxAnimObject m_textboxanim;
-};
-
 class DispReelAnimObject : public AnimObject
 {
 public:

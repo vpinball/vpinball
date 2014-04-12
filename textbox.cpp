@@ -1,154 +1,101 @@
 #include "StdAfx.h"
 
 Textbox::Textbox()
-	{
-	m_pIFont = NULL;
-	m_ptu = NULL;
-	}
+{
+    m_pIFont = NULL;
+    m_texture = NULL;
+}
 
 Textbox::~Textbox()
-	{
-	m_pIFont->Release();
-	}
+{
+    m_pIFont->Release();
+}
 
 HRESULT Textbox::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
-	{
-	m_ptable = ptable;
+{
+    m_ptable = ptable;
 
-	HRESULT hr;
-	float fTmp, width, height;
+    const float width  = GetRegStringAsFloatWithDefault("DefaultProps\\TextBox","Width", 100.0f);
+    const float height = GetRegStringAsFloatWithDefault("DefaultProps\\TextBox","Height", 50.0f);
 
-	hr = GetRegStringAsFloat("DefaultProps\\TextBox","Width", &fTmp);
-	if (hr == S_OK)
-		width = fTmp;
-	else
-		width = 100.0f;
+    m_d.m_v1.x = x;
+    m_d.m_v1.y = y;
+    m_d.m_v2.x = x+width;
+    m_d.m_v2.y = y+height;
 
-	hr = GetRegStringAsFloat("DefaultProps\\TextBox","Height", &fTmp);
-	if (hr == S_OK)
-		height = fTmp;
-	else
-		height = 50.0f;
+    SetDefaults(fromMouseClick);
 
-	m_d.m_v1.x = x;
-	m_d.m_v1.y = y;
-	m_d.m_v2.x = x+width;
-	m_d.m_v2.y = y+height;
-
-	m_pobjframe = NULL;
-
-	SetDefaults(fromMouseClick);
-
-	return InitVBA(fTrue, 0, NULL);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Textbox", NULL);
-	}
+    return InitVBA(fTrue, 0, NULL);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, L"Textbox", NULL);
+}
 
 void Textbox::SetDefaults(bool fromMouseClick)
-	{
-	float fTmp;
-	//Textbox is always located on backdrop
-	m_fBackglass = fTrue;
+{
+    //Textbox is always located on backdrop
+    m_fBackglass = fTrue;
 
-	HRESULT hr;
-	int iTmp;
+    FONTDESC fd;
+    fd.cbSizeofstruct = sizeof(FONTDESC);
+    bool free_lpstrName = false;
 
-	hr = GetRegInt("DefaultProps\\TextBox","BackColor", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_backcolor = iTmp;
-	else
-		m_d.m_backcolor = RGB(0,0,0);
-    
-	hr = GetRegInt("DefaultProps\\TextBox","FontColor", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fontcolor = iTmp;
-	else
-		m_d.m_fontcolor = RGB(255,255,255);
+    if (!fromMouseClick)
+    {
+        m_d.m_backcolor = RGB(0,0,0);
+        m_d.m_fontcolor = RGB(255,255,255);
+        m_d.m_tdr.m_fTimerEnabled = false;
+        m_d.m_tdr.m_TimerInterval = 100;
+        m_d.m_talign = TextAlignRight;
+        m_d.m_fTransparent = FALSE;
+        lstrcpy(m_d.sztext,"0");
 
-	hr = GetRegInt("DefaultProps\\TextBox","TimerEnabled", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
-	else
-		m_d.m_tdr.m_fTimerEnabled = false;
-	
-	hr = GetRegInt("DefaultProps\\TextBox","TimerInterval", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_tdr.m_TimerInterval = iTmp;
-	else
-		m_d.m_tdr.m_TimerInterval = 100;
+        fd.cySize.int64 = (LONGLONG)(14.25f * 10000.0f);
+        fd.lpstrName = L"Arial";
+        fd.sWeight = FW_NORMAL;
+        fd.sCharset = 0;
+        fd.fItalic = 0;
+        fd.fUnderline = 0;
+        fd.fStrikethrough = 0;
+    }
+    else
+    {
+        m_d.m_backcolor = GetRegIntWithDefault("DefaultProps\\TextBox","BackColor", RGB(0,0,0));
+        m_d.m_fontcolor = GetRegIntWithDefault("DefaultProps\\TextBox","FontColor", RGB(255,255,255));
+        m_d.m_tdr.m_fTimerEnabled = GetRegIntWithDefault("DefaultProps\\TextBox","TimerEnabled", 0) ? true : false;
+        m_d.m_tdr.m_TimerInterval = GetRegIntWithDefault("DefaultProps\\TextBox","TimerInterval", 100);
+        m_d.m_talign = (TextAlignment)GetRegIntWithDefault("DefaultProps\\TextBox","TextAlignment", TextAlignRight);
+        m_d.m_fTransparent = GetRegIntWithDefault("DefaultProps\\TextBox","Transparent", 0);
 
-	hr = GetRegInt("DefaultProps\\TextBox","TextAlignment", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_talign = (enum TextAlignment)iTmp;
-	else	
-		m_d.m_talign = TextAlignRight;
+        const float fontSize = GetRegStringAsFloatWithDefault("DefaultProps\\TextBox","FontSize", 14.25f);
+        fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
 
-	hr = GetRegInt("DefaultProps\\TextBox","Transparent", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_fTransparent = iTmp == 0 ? false : true;
-	else	
-		m_d.m_fTransparent = fFalse;
+        char tmp[256];
+        HRESULT hr;
+        hr = GetRegString("DefaultProps\\TextBox","FontName", tmp, 256);
+        if (hr != S_OK)
+            fd.lpstrName = L"Arial";
+        else
+        {
+            unsigned int len = strlen(&tmp[0])+1;
+            fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
+            UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
+            fd.lpstrName[len] = 0;
+            free_lpstrName = true;
+        }
 
-	FONTDESC fd;
+        fd.sWeight = GetRegIntWithDefault("DefaultProps\\TextBox", "FontWeight", FW_NORMAL);
+        fd.sCharset = GetRegIntWithDefault("DefaultProps\\TextBox", "FontCharSet", 0);
+        fd.fItalic = GetRegIntWithDefault("DefaultProps\\TextBox", "FontItalic", 0);
+        fd.fUnderline = GetRegIntWithDefault("DefaultProps\\TextBox", "FontUnderline", 0);
+        fd.fStrikethrough = GetRegIntWithDefault("DefaultProps\\TextBox", "FontStrikeThrough", 0);
 
-	fd.cbSizeofstruct = sizeof(FONTDESC);
+        hr = GetRegString("DefaultProps\\TextBox","Text", m_d.sztext, MAXSTRING);
+        if (hr != S_OK)
+            lstrcpy(m_d.sztext,"0");
+    }
 
-	hr = GetRegStringAsFloat("DefaultProps\\TextBox","FontSize", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		fd.cySize.int64 = (LONGLONG)(fTmp * 10000.0);
-	else	
-		fd.cySize.int64 = 142500;
-
-	char tmp[256];
-	bool free_lpstrName = false;
-	hr = GetRegString("DefaultProps\\TextBox","FontName", tmp, 256);
-	if ((hr != S_OK) || !fromMouseClick)
-		fd.lpstrName = L"Arial";
-	else
-	{
-		unsigned int len = strlen(&tmp[0])+1;
-		fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
-		UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
-		fd.lpstrName[len] = 0;
-		free_lpstrName = true;
-	}
-
-	hr = GetRegInt("DefaultProps\\TextBox", "FontWeight", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		fd.sWeight = (SHORT)iTmp;
-	else
-		fd.sWeight = FW_NORMAL;
-
-	hr = GetRegInt("DefaultProps\\TextBox", "FontCharSet", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		fd.sCharset = (SHORT)iTmp;
-	else
-		fd.sCharset = 0;
-	
-	hr = GetRegInt("DefaultProps\\TextBox", "FontItalic", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		fd.fItalic = iTmp == 0 ? false : true;
-	else
-		fd.fItalic = 0;
-
-	hr = GetRegInt("DefaultProps\\TextBox", "FontUnderline", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		fd.fUnderline = iTmp == 0 ? false : true;
-	else
-		fd.fUnderline = 0;
-	
-	hr = GetRegInt("DefaultProps\\TextBox", "FontStrikeThrough", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		fd.fStrikethrough = iTmp == 0 ? false : true;
-	else
-		fd.fStrikethrough = 0;
-
-	hr = GetRegString("DefaultProps\\TextBox","Text", m_d.sztext, MAXSTRING);
-	if ((hr != S_OK) || !fromMouseClick)
-		lstrcpy(m_d.sztext,"0");
-
-	OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-	if(free_lpstrName)
-		free( fd.lpstrName );
-	}
+    OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+    if(free_lpstrName)
+        free( fd.lpstrName );
+}
 
 void Textbox::WriteRegDefaults()
 	{
@@ -183,8 +130,10 @@ void Textbox::WriteRegDefaults()
 	SetRegValue("DefaultProps\\TextBox","FontItalic",REG_DWORD,&fd.fItalic,4);
 	SetRegValue("DefaultProps\\TextBox","FontUnderline",REG_DWORD,&fd.fUnderline,4);
 	SetRegValue("DefaultProps\\TextBox","FontStrikeThrough",REG_DWORD,&fd.fStrikethrough,4);
+
 	SetRegValue("DefaultProps\\TextBox","Text", REG_SZ, &m_d.sztext,strlen(m_d.sztext));
 	}
+
 STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
 {
 	static const IID* arr[] =
@@ -238,43 +187,112 @@ void Textbox::GetTimers(Vector<HitTimer> * const pvht)
 	}
 
 void Textbox::GetHitShapes(Vector<HitObject> * const pvho)
-	{
-	m_ptu = new TextboxUpdater(this);
-
-	// HACK - adding object directly to screen update list.  Someday make hit objects and screenupdaters seperate objects
-	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_textboxanim);
-	}
+{
+}
 
 void Textbox::GetHitShapesDebug(Vector<HitObject> * const pvho)
-	{
-	}
+{
+}
 
 void Textbox::EndPlay()
-	{
-
-	if (m_pobjframe) // Failed Player case
-		{
-		delete m_pobjframe;
-		m_pobjframe = NULL;
-
-		m_pIFontPlay->Release();
-		}
-
-	if (m_ptu)
-		{
-		delete m_ptu;
-		m_ptu = NULL;
-		}
-
-	IEditable::EndPlay();
-	}
-
-void Textbox::PostRenderStatic(const RenderDevice* pd3dDevice)
 {
+    if (m_texture)
+    {
+        delete m_texture;
+        m_texture = NULL;
+
+        m_pIFontPlay->Release();
+    }
+
+    IEditable::EndPlay();
+}
+
+void Textbox::PostRenderStatic(const RenderDevice* _pd3dDevice)
+{
+    TRACE_FUNCTION();
+
+    if (!m_texture)
+        return;
+
+    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
+    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
+    pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+
+    Material mat;
+    mat.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    pd3dDevice->SetMaterial(mat);
+
+    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
+
+    ppin3d->SetBaseTexture(ePictureTexture, m_texture);
+
+    ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_BILINEAR);
+    ppin3d->EnableAlphaTestReference(0x80);
+
+    ppin3d->DisableLightMap();
+
+    pd3dDevice->DrawPrimitive( D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX, rgv3D, 4);
+
+    // reset render state
+    ppin3d->DisableAlphaBlend();
+    pd3dDevice->SetTexture(ePictureTexture, NULL);
+    ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
+    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+    pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 }
 
 void Textbox::RenderSetup(const RenderDevice* _pd3dDevice)
 {
+    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
+    const float left   = min(m_d.m_v1.x, m_d.m_v2.x);
+    const float right  = max(m_d.m_v1.x, m_d.m_v2.x);
+    const float top    = min(m_d.m_v1.y, m_d.m_v2.y);
+    const float bottom = max(m_d.m_v1.y, m_d.m_v2.y);
+
+    m_rect.left   = (int)left;
+    m_rect.top    = (int)top;
+    m_rect.right  = (int)right;
+    m_rect.bottom = (int)bottom;
+
+    rgv3D[0].x = left;
+    rgv3D[0].y = top;
+    rgv3D[0].tu = 0;
+    rgv3D[0].tv = 0;
+
+    rgv3D[1].x = right;
+    rgv3D[1].y = top;
+    rgv3D[1].tu = 1;
+    rgv3D[1].tv = 0;
+
+    rgv3D[2].x = right;
+    rgv3D[2].y = bottom;
+    rgv3D[2].tu = 1;
+    rgv3D[2].tv = 1;
+
+    rgv3D[3].x = left;
+    rgv3D[3].y = bottom;
+    rgv3D[3].tu = 0;
+    rgv3D[3].tv = 1;
+
+    SetHUDVertices(rgv3D, 4);
+
+    rgv3D[0].z = rgv3D[1].z = rgv3D[2].z = rgv3D[3].z = 1.0f;
+    rgv3D[0].rhw = rgv3D[1].rhw = rgv3D[2].rhw = rgv3D[3].rhw = 1.0f;
+
+    m_pIFont->Clone(&m_pIFontPlay);
+
+    CY size;
+    m_pIFontPlay->get_Size(&size);
+    // I choose 912 because that was the original playing size I tested with,
+    // and this way I don't have to change my tables
+    size.int64 = size.int64 / 912 * ppin3d->m_dwRenderWidth;
+    m_pIFontPlay->put_Size(size);
+
     RenderText();
 }
 
@@ -282,124 +300,90 @@ void Textbox::RenderStatic(const RenderDevice* pd3dDevice)
 {
 }
 	
-#ifdef VPINBALL_DX7_LEFTOVERS
-void Textbox::RenderMovers(const RenderDevice* pd3dDevice)
-	{
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-	m_pobjframe = new ObjFrame();
-
-	Vertex3D rgv3D[2];
-	rgv3D[0].x = m_d.m_v1.x;
-	rgv3D[0].y = m_d.m_v1.y;
-	rgv3D[1].x = m_d.m_v2.x;
-	rgv3D[1].y = m_d.m_v2.y;
-
-	SetHUDVertices(rgv3D, 2);
-
-	m_pobjframe->rc.left = (int)min(rgv3D[0].x, rgv3D[1].x);
-	m_pobjframe->rc.top = (int)min(rgv3D[0].y, rgv3D[1].y);
-	m_pobjframe->rc.right = (int)max(rgv3D[0].x, rgv3D[1].x);
-	m_pobjframe->rc.bottom = (int)max(rgv3D[0].y, rgv3D[1].y);
-
-	m_ptu->m_textboxanim.m_rcBounds = m_pobjframe->rc;
-
-	m_pobjframe->pdds = g_pvp->m_pdd.CreateOffscreenPlain(m_pobjframe->rc.right - m_pobjframe->rc.left, m_pobjframe->rc.bottom - m_pobjframe->rc.top);
-
-	m_pIFont->Clone(&m_pIFontPlay);
-
-	CY size;
-	m_pIFontPlay->get_Size(&size);
-	// I choose 912 because that was the original playing size I tested with,
-	// and this way I don't have to change my tables
-	size.int64 = size.int64 / 912 * ppin3d->m_dwRenderWidth;
-	m_pIFontPlay->put_Size(size);
-	}
-#endif
-
 void Textbox::RenderText()
-	{
-#ifdef VPINBALL_DX7_LEFTOVERS
-	//DDBLTFX ddbfx;
-	Pin3D *const ppin3d = &g_pplayer->m_pin3d;
+{
+    Pin3D *const ppin3d = &g_pplayer->m_pin3d;
 
-	HDC hdc;
+    const int width = m_rect.right - m_rect.left;
+    const int height = m_rect.bottom - m_rect.top;
 
-	if (m_d.m_fTransparent)
-		{
-		m_pobjframe->pdds->BltFast(0, 0, ppin3d->m_pddsStatic, &m_pobjframe->rc, DDBLTFAST_WAIT);
-		m_pobjframe->pdds->GetDC(&hdc);
-		}
-	else
-		{
-		m_pobjframe->pdds->GetDC(&hdc);
+    BITMAPINFO bmi;
+    ZeroMemory(&bmi, sizeof(bmi));
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = width;
+    bmi.bmiHeader.biHeight = -height;
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+    bmi.bmiHeader.biSizeImage = 0;
 
-		HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
-		HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
+    void *bits;
+    HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, NULL, 0);
+    assert(hbm);
 
-		PatBlt(hdc, 0, 0, m_pobjframe->rc.right - m_pobjframe->rc.left, m_pobjframe->rc.bottom - m_pobjframe->rc.top, PATCOPY);
+    HDC hdc = CreateCompatibleDC(NULL);
+    SelectObject(hdc, hbm);
 
-		SelectObject(hdc, hbrushold);
+    /*if (m_d.m_fTransparent)   // TODO: support transparent textboxes
+      {
+      m_pobjframe->pdds->BltFast(0, 0, ppin3d->m_pddsStatic, &m_rect, DDBLTFAST_WAIT);
+      m_pobjframe->pdds->GetDC(&hdc);
+      }
+      else    */
+    {
+        HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
+        HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
+        PatBlt(hdc, 0, 0, width, height, PATCOPY);
+        SelectObject(hdc, hbrushold);
+        DeleteObject(hbrush);
+    }
 
-		DeleteObject(hbrush);
-		}
+    HFONT hFont;
+    m_pIFontPlay->get_hFont(&hFont);
+    SelectObject(hdc, hFont);
+    SetTextColor(hdc, m_d.m_fontcolor);
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
 
-	HFONT hFont;
-	m_pIFontPlay->get_hFont(&hFont);
-	SelectObject(hdc, hFont);
+    int alignment;
+    switch (m_d.m_talign)
+    {
+        case TextAlignLeft:
+            alignment = DT_LEFT;
+            break;
 
-	SetTextColor(hdc, m_d.m_fontcolor);
+        default:
+        case TextAlignCenter:
+            alignment = DT_CENTER;
+            break;
 
-	SetBkMode(hdc, TRANSPARENT);
+        case TextAlignRight:
+            alignment = DT_RIGHT;
+            break;
+    }
 
-	//RECT rc = {4,4,m_pobjframe->rc.right - m_pobjframe->rc.left - 8, m_pobjframe->rc.bottom - m_pobjframe->rc.top - 8};
+    int border = (4 * ppin3d->m_dwRenderWidth) / EDITOR_BG_WIDTH;
+    RECT rcOut;
 
-	//SetTextAlign(hdc, TA_RIGHT);
+    rcOut.left = border;
+    rcOut.top = border;
+    rcOut.right = m_rect.right - m_rect.left - border * 2;
+    rcOut.bottom = m_rect.bottom - m_rect.top - border * 2;
 
-	SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
+    DrawText(hdc, m_d.sztext, lstrlen(m_d.sztext), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
-	//if (m_d.sztext)
-		{
-		//ExtTextOut(hdc, m_pobjframe->rc.right - m_pobjframe->rc.left - 4, 4, 0, NULL, m_d.sztext, lstrlen(m_d.sztext), NULL);
+    DeleteDC(hdc);
+    GdiFlush();     // make sure everything is drawn
 
-		int alignment;
-		switch (m_d.m_talign)
-			{
-			case TextAlignLeft:
-				alignment = DT_LEFT;
-				break;
+    if (!m_texture)
+        m_texture = new MemTexture(m_rect.right - m_rect.left, m_rect.bottom - m_rect.top);
+    m_texture->CopyBits(bits);
+    Texture::SetOpaque(m_texture);
 
-			default:
-			case TextAlignCenter:
-				alignment = DT_CENTER;
-				break;
+    ppin3d->m_pd3dDevice->m_texMan.SetDirty(m_texture);
 
-			case TextAlignRight:
-				alignment = DT_RIGHT;
-				break;
-			}
-
-		int border = (4 * ppin3d->m_dwRenderWidth) / EDITOR_BG_WIDTH;
-		RECT rcOut;
-
-		rcOut.left = border;
-		rcOut.top = border;
-		rcOut.right = m_pobjframe->rc.right - m_pobjframe->rc.left - border * 2;
-		rcOut.bottom = m_pobjframe->rc.bottom - m_pobjframe->rc.top - border * 2;
-
-		DrawText(hdc, m_d.sztext, lstrlen(m_d.sztext), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
-		}
-
-	m_pobjframe->pdds->ReleaseDC(hdc);
-
-	ppin3d->m_pddsBackBuffer->Blt(&m_pobjframe->rc, m_pobjframe->pdds, NULL, DDBLT_WAIT, NULL);
-
-	UpdateRect *pur = new UpdateRect();
-	pur->m_rcupdate = m_pobjframe->rc;
-	pur->m_fSeeThrough = fFalse;
-	g_pplayer->m_vupdaterect.AddElement(pur);
-#endif
-	}
+    DeleteObject(hbm);
+}
 
 void Textbox::SetObjectPos()
 	{
@@ -486,10 +470,8 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
 
 		WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.sztext, 512, NULL, NULL);
 
-		if (m_pobjframe)
-			{
+		if (g_pplayer)
 			RenderText();
-			}
 
 		STOPUNDO
 		}
@@ -618,7 +600,7 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Textbox::InitPostLoad()
 	{
-	m_pobjframe = NULL;
+	m_texture = NULL;
 
 	return S_OK;
 	}
