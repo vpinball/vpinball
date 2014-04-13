@@ -9,3 +9,6 @@ int GetRegIntWithDefault(const char *szKey, const char *szValue, int def);
 float GetRegStringAsFloatWithDefault(const char *szKey, const char *szValue, float def);
 
 HRESULT SetRegValue(char *szKey, char *szValue, DWORD type, void *pvalue, DWORD size);
+
+HRESULT SetRegValueInt(const char *szKey, const char *szValue, int val);
+HRESULT SetRegValueFloat(const char *szKey, const char *szValue, float val);
