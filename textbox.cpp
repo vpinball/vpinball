@@ -232,7 +232,7 @@ void Textbox::PostRenderStatic(const RenderDevice* _pd3dDevice)
     ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_BILINEAR);
     ppin3d->EnableAlphaTestReference(0x80);
 
-    ppin3d->DisableLightMap();
+    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
 
     pd3dDevice->DrawPrimitive( D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX, rgv3D, 4);
 
@@ -241,6 +241,7 @@ void Textbox::PostRenderStatic(const RenderDevice* _pd3dDevice)
     pd3dDevice->SetTexture(ePictureTexture, NULL);
     ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
+    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
     pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 }
@@ -322,7 +323,7 @@ void Textbox::RenderText()
     assert(hbm);
 
     HDC hdc = CreateCompatibleDC(NULL);
-    SelectObject(hdc, hbm);
+    HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
 
     /*if (m_d.m_fTransparent)   // TODO: support transparent textboxes
       {
@@ -340,7 +341,7 @@ void Textbox::RenderText()
 
     HFONT hFont;
     m_pIFontPlay->get_hFont(&hFont);
-    SelectObject(hdc, hFont);
+    HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
     SetTextColor(hdc, m_d.m_fontcolor);
     SetBkMode(hdc, TRANSPARENT);
     SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
@@ -372,7 +373,6 @@ void Textbox::RenderText()
 
     DrawText(hdc, m_d.sztext, lstrlen(m_d.sztext), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
-    DeleteDC(hdc);
     GdiFlush();     // make sure everything is drawn
 
     if (!m_texture)
@@ -382,6 +382,9 @@ void Textbox::RenderText()
 
     ppin3d->m_pd3dDevice->m_texMan.SetDirty(m_texture);
 
+    SelectObject(hdc, oldFont);
+    SelectObject(hdc, oldBmp);
+    DeleteDC(hdc);
     DeleteObject(hbm);
 }
 
