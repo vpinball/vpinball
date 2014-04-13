@@ -2,7 +2,7 @@
 
 #define VP_REGKEY  "Software\\Visual Pinball\\DX9\\"
 
-HRESULT GetRegString(char *szKey, char *szValue, void *szbuffer, DWORD size)
+HRESULT GetRegString(const char *szKey, const char *szValue, void *szbuffer, DWORD size)
 {
 	DWORD type=REG_NONE;
 	const HRESULT hr = GetRegValue(szKey, szValue, &type, szbuffer, size);
@@ -13,7 +13,7 @@ HRESULT GetRegString(char *szKey, char *szValue, void *szbuffer, DWORD size)
 	return hr;
 }
 
-HRESULT GetRegStringAsFloat(char *szKey, char *szValue, float *pfloat)
+HRESULT GetRegStringAsFloat(const char *szKey, const char *szValue, float *pfloat)
 {
 	DWORD type=REG_NONE;
 	char szbuffer[16];
@@ -40,7 +40,7 @@ HRESULT GetRegStringAsFloat(char *szKey, char *szValue, float *pfloat)
 	return hr;
 }
 
-HRESULT GetRegInt(char *szKey, char *szValue, int *pint)
+HRESULT GetRegInt(const char *szKey, const char *szValue, int *pint)
 {
 	DWORD type=REG_NONE;
 	const HRESULT hr = GetRegValue(szKey, szValue, &type, (void *)pint, 4);
@@ -51,7 +51,7 @@ HRESULT GetRegInt(char *szKey, char *szValue, int *pint)
 	return hr;
 }
 
-HRESULT GetRegValue(char *szKey, char *szValue, DWORD *ptype, void *pvalue, DWORD size)
+HRESULT GetRegValue(const char *szKey, const char *szValue, DWORD *ptype, void *pvalue, DWORD size)
 {
 	char szPath[1024];
 	lstrcpy(szPath, VP_REGKEY);
@@ -78,19 +78,19 @@ HRESULT GetRegValue(char *szKey, char *szValue, DWORD *ptype, void *pvalue, DWOR
 int GetRegIntWithDefault(const char *szKey, const char *szValue, int def)
 {
     int val;
-    HRESULT hr = GetRegInt((char*)szKey, (char*)szValue, &val);
+    HRESULT hr = GetRegInt(szKey, szValue, &val);
     return SUCCEEDED(hr) ? val : def;
 }
 
 float GetRegStringAsFloatWithDefault(const char *szKey, const char *szValue, float def)
 {
     float val;
-    HRESULT hr = GetRegStringAsFloat((char*)szKey, (char*)szValue, &val);
+    HRESULT hr = GetRegStringAsFloat(szKey, szValue, &val);
     return SUCCEEDED(hr) ? val : def;
 }
 
 
-HRESULT SetRegValue(char *szKey, char *szValue, DWORD type, void *pvalue, DWORD size)
+HRESULT SetRegValue(const char *szKey, const char *szValue, DWORD type, void *pvalue, DWORD size)
 {
 	char szPath[1024];
 	lstrcpy(szPath, VP_REGKEY);
@@ -113,12 +113,12 @@ HRESULT SetRegValue(char *szKey, char *szValue, DWORD type, void *pvalue, DWORD 
 
 HRESULT SetRegValueInt(const char *szKey, const char *szValue, int val)
 {
-    return SetRegValue((char*)szKey, (char*)szValue, REG_DWORD, &val, sizeof(DWORD));
+    return SetRegValue(szKey, szValue, REG_DWORD, &val, sizeof(DWORD));
 }
 
 HRESULT SetRegValueFloat(const char *szKey, const char *szValue, float val)
 {
     char buf[40];
     sprintf_s(buf, 40, "%f", val);
-    return SetRegValue((char*)szKey, (char*)szValue, REG_SZ, buf, strlen(buf));
+    return SetRegValue(szKey, szValue, REG_SZ, buf, strlen(buf));
 }
