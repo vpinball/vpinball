@@ -110,3 +110,15 @@ HRESULT SetRegValue(char *szKey, char *szValue, DWORD type, void *pvalue, DWORD 
 
 	return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;	
 }
+
+HRESULT SetRegValueInt(const char *szKey, const char *szValue, int val)
+{
+    return SetRegValue((char*)szKey, (char*)szValue, REG_DWORD, &val, sizeof(DWORD));
+}
+
+HRESULT SetRegValueFloat(const char *szKey, const char *szValue, float val)
+{
+    char buf[40];
+    sprintf_s(buf, 40, "%f", val);
+    return SetRegValue((char*)szKey, (char*)szValue, REG_SZ, buf, strlen(buf));
+}
