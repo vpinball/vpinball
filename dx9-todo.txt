@@ -1,7 +1,6 @@
 Things which have to be done before the official DX9 release:
 
 *) fix text reels
-*) fix text decals
 *) fix kickers cutting the ball in half
 *) add video option for "Max prerendered frames" (currently hardcoded to 2, see m_limiter in player.cpp; best to default to 2)
 *) add checkbox to use software vertex processing (fixes rendering on some Intel chipsets)
