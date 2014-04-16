@@ -10,11 +10,14 @@ Decal::Decal()
 {
    m_pIFont = NULL;
    vertexBuffer = NULL;
+   m_textImg = NULL;
 } 
 
 Decal::~Decal() 
 {
    m_pIFont->Release();
+   if (m_textImg)
+       delete m_textImg;
    if ( vertexBuffer )
    {
       vertexBuffer->release();
@@ -313,110 +316,130 @@ void Decal::GetTextSize(int * const px, int * const py)
    DeleteObject(hFont);
 }
 
-void Decal::GetHitShapes(Vector<HitObject> * const pvho)
+void Decal::RenderText()
 {
-   if (m_d.m_decaltype != DecalImage)
-   {
-      RECT rcOut;
-      const int len = lstrlen(m_d.m_sztext);
-      HFONT hFont, hFontOld;
-      hFont = GetFont();
-      int alignment = DT_LEFT;
+    if (m_d.m_decaltype != DecalText)
+        return;
 
-      HDC hdcNull;
-      hdcNull = GetDC(NULL);
-      hFontOld = (HFONT)SelectObject(hdcNull, hFont);
+    RECT rcOut;
+    const int len = lstrlen(m_d.m_sztext);
+    HFONT hFont, hFontOld;
+    hFont = GetFont();
+    int alignment = DT_LEFT;
 
-      TEXTMETRIC tm;
-      GetTextMetrics(hdcNull, &tm);
+    HDC hdcNull;
+    hdcNull = GetDC(NULL);
+    hFontOld = (HFONT)SelectObject(hdcNull, hFont);
 
-      float charheight;
-      if (m_d.m_fVerticalText)
-      {
-         int maxwidth = 0;
+    TEXTMETRIC tm;
+    GetTextMetrics(hdcNull, &tm);
 
-         for (int i=0;i<len;i++)
-         {
+    float charheight;
+    if (m_d.m_fVerticalText)
+    {
+        int maxwidth = 0;
+
+        for (int i=0;i<len;i++)
+        {
             rcOut.left = 0;
             rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
             rcOut.right = 1;
             rcOut.bottom = 1;
             DrawText(hdcNull, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
             maxwidth = max(maxwidth, rcOut.right);
-         }
+        }
 
-         rcOut.bottom += AUTOLEADING * (len-1);
-         rcOut.right = maxwidth;
+        rcOut.bottom += AUTOLEADING * (len-1);
+        rcOut.right = maxwidth;
 
-         charheight = m_realheight/(float)len;
-      }
-      else
-      {
-         rcOut.left = 0;
-         rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
-         rcOut.right = 1;
-         rcOut.bottom = 1;
-         DrawText(hdcNull, m_d.m_sztext, len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+        charheight = m_realheight/(float)len;
+    }
+    else
+    {
+        rcOut.left = 0;
+        rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
+        rcOut.right = 1;
+        rcOut.bottom = 1;
+        DrawText(hdcNull, m_d.m_sztext, len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
 
-         charheight = m_realheight;
-      }
+        charheight = m_realheight;
+    }
 
-      SelectObject(hdcNull, hFontOld);
-      ReleaseDC(NULL, hdcNull);
+    SelectObject(hdcNull, hFontOld);
+    ReleaseDC(NULL, hdcNull);
 
-      // Calculate the percentage of the texture which is for oomlats and commas.
-      const float invascent = charheight/(float)tm.tmAscent;
-      m_leading = (float)tm.tmInternalLeading * invascent /*m_d.m_height*/;
-      m_descent = (float)tm.tmDescent * invascent;
+    // Calculate the percentage of the texture which is for oomlats and commas.
+    const float invascent = charheight/(float)tm.tmAscent;
+    m_leading = (float)tm.tmInternalLeading * invascent /*m_d.m_height*/;
+    m_descent = (float)tm.tmDescent * invascent;
 
-      m_pinimage.m_width = rcOut.right;
-      m_pinimage.m_height = rcOut.bottom;
-      m_pinimage.m_pdsBuffer = new MemTexture(rcOut.right, rcOut.bottom);
+    m_textImg = new MemTexture(rcOut.right, rcOut.bottom);
 
-      if (m_d.m_color == RGB(255,255,255))
-         m_d.m_color = RGB(254,255,255); //m_pinimage.SetTransparentColor(RGB(0,0,0));
-      else if (m_d.m_color == RGB(0,0,0))
-         m_d.m_color = RGB(0,0,1);
+    if (m_d.m_color == RGB(255,255,255))
+        m_d.m_color = RGB(254,255,255); //m_pinimage.SetTransparentColor(RGB(0,0,0));
+    else if (m_d.m_color == RGB(0,0,0))
+        m_d.m_color = RGB(0,0,1);
 
-      HDC hdc;
-      m_pinimage.GetTextureDC(&hdc);
-      /*if (m_d.m_color == RGB(255,255,255))
+    BITMAPINFO bmi;
+    ZeroMemory(&bmi, sizeof(bmi));
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = m_textImg->width();
+    bmi.bmiHeader.biHeight = -m_textImg->height();
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+    bmi.bmiHeader.biSizeImage = 0;
+
+    void *bits;
+    HBITMAP hbm = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, &bits, NULL, 0);
+    assert(hbm);
+
+    HDC hdc = CreateCompatibleDC(NULL);
+    HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
+
+    //m_pinimage.GetTextureDC(&hdc);
+    /*if (m_d.m_color == RGB(255,255,255))
       {
       SelectObject(hdc, GetStockObject(BLACK_BRUSH));
       }
       else*/
-      {
-         SelectObject(hdc, GetStockObject(WHITE_BRUSH));
-      }
+    {
+        SelectObject(hdc, GetStockObject(WHITE_BRUSH));
+    }
 
-      PatBlt(hdc,0,0,m_pinimage.m_width,m_pinimage.m_height,PATCOPY);
-      hFontOld = (HFONT)SelectObject(hdc, hFont);
+    PatBlt(hdc, 0, 0, rcOut.right, rcOut.bottom, PATCOPY);
+    hFontOld = (HFONT)SelectObject(hdc, hFont);
 
-      SetTextColor(hdc, m_d.m_color);
-      SetBkMode(hdc, TRANSPARENT);
-      SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
-      alignment = DT_CENTER;
+    SetTextColor(hdc, m_d.m_color);
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
+    alignment = DT_CENTER;
 
-      if (m_d.m_fVerticalText)
-      {
-         for (int i=0;i<len;i++)
-         {
+    if (m_d.m_fVerticalText)
+    {
+        for (int i=0;i<len;i++)
+        {
             rcOut.top = AUTOLEADING*i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
             rcOut.bottom = rcOut.top + 100;
             DrawText(hdc, &m_d.m_sztext[i], 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
-         }
-      }
-      else
-         DrawText(hdc, m_d.m_sztext, len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+        }
+    }
+    else
+        DrawText(hdc, m_d.m_sztext, len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
-      SelectObject(hdcNull, hFontOld);
-      ReleaseDC(NULL, hdcNull);
+    m_textImg->CopyBits(bits);
+    Texture::SetOpaque(m_textImg);
+    Texture::SetAlpha(m_textImg, RGB(255,255,255));
 
-      m_pinimage.ReleaseTextureDC(hdc);
+    SelectObject(hdc, hFontOld);
+    SelectObject(hdc, oldBmp);
+    DeleteDC(hdc);
+    DeleteObject(hFont);
+    DeleteObject(hbm);
+}
 
-      Texture::SetOpaque(m_pinimage.m_pdsBuffer);
-      DeleteObject(hFont);
-   }
+void Decal::GetHitShapes(Vector<HitObject> * const pvho)
+{
 }
 
 void Decal::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -425,8 +448,11 @@ void Decal::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
 void Decal::EndPlay()
 {
-   if (m_pinimage.m_pdsBuffer)
-      m_pinimage.FreeStuff();
+   if (m_textImg)
+   {
+       delete m_textImg;
+       m_textImg = 0;
+   }
 
    if ( vertexBuffer )
    {
@@ -441,6 +467,8 @@ void Decal::PostRenderStatic(const RenderDevice* pd3dDevice)
 
 void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
 {
+   RenderText();
+
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Vertex3D_NoTex2 vertices[4];
@@ -450,24 +478,19 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
 
    float leading, descent; // For fonts
-   Texture *pin;
    if (m_d.m_decaltype != DecalImage)
    {
       leading = m_leading;
       descent = m_descent;
-
-      pin = &m_pinimage;
    }
    else
    {
-      m_pinimage.m_pdsBuffer = NULL;
-      pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture *pin = m_ptable->GetImage(m_d.m_szImage);
+      if (pin)
+          pin->CreateAlphaChannel();
       leading = 0;
       descent = 0;
    }
-
-   if (pin)
-      pin->CreateAlphaChannel();
 
    for (int l=0;l<4;l++)
    {
@@ -522,7 +545,6 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
          vertexType = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
 
 	  pd3dDevice->CreateVertexBuffer( 4, 0, vertexType, &vertexBuffer );
-      NumVideoBytes += 4*sizeof(Vertex3D_NoTex2);
    }
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
@@ -535,43 +557,32 @@ void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
    if( m_fBackglass && !GetPTable()->GetDecalsEnabled())
        return;
 
-   if (m_d.m_decaltype != DecalImage)
-       return;      // TODO: support text decals as well
-
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    pd3dDevice->SetMaterial(material);
-   Texture *pin;
    if (m_d.m_decaltype != DecalImage)
    {
-      pin = &m_pinimage;
+       ppin3d->SetBaseTexture(ePictureTexture, m_textImg);
    }
    else
    {
-      pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture *pin = m_ptable->GetImage(m_d.m_szImage);
+      if (pin)
+      {
+          pin->CreateAlphaChannel();
+          pin->Set( ePictureTexture );
+      }
    }
 
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
-   if (pin)
-   {
-      pin->CreateAlphaChannel();
-      pin->Set( ePictureTexture );
-
-      ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-      pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
-   }
-   else // No image by that name
-   {
-      pd3dDevice->SetTexture(ePictureTexture, NULL);
-   }
+   ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+   pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
 
    // Perform alpha test so that we don't write to the depth buffer on transparent pixels.
-   pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
-   pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
-   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
+   ppin3d->EnableAlphaTestReference(0x80);
 
    // Turn on anisotopic filtering.
    ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );

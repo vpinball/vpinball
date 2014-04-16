@@ -98,13 +98,17 @@ STANDARD_NONAPC_EDITABLE_DECLARES(eItemDecal)
 	virtual IApcControl *GetIApcControl() {return ApcControl.GetApcControl();}
 #endif
 
+private:
+    void RenderText();
+
+private:
 	IFont *m_pIFont;
 
 	PinTable *m_ptable;
 
 	DecalData m_d;
 
-	Texture m_pinimage;
+    MemTexture *m_textImg;
 	float m_leading, m_descent;
 
 	float m_realwidth, m_realheight;
