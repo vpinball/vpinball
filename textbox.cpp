@@ -325,12 +325,6 @@ void Textbox::RenderText()
     HDC hdc = CreateCompatibleDC(NULL);
     HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
 
-    /*if (m_d.m_fTransparent)   // TODO: support transparent textboxes
-      {
-      m_pobjframe->pdds->BltFast(0, 0, ppin3d->m_pddsStatic, &m_rect, DDBLTFAST_WAIT);
-      m_pobjframe->pdds->GetDC(&hdc);
-      }
-      else    */
     {
         HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
         HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
@@ -379,6 +373,8 @@ void Textbox::RenderText()
         m_texture = new MemTexture(m_rect.right - m_rect.left, m_rect.bottom - m_rect.top);
     m_texture->CopyBits(bits);
     Texture::SetOpaque(m_texture);
+    if (m_d.m_fTransparent)
+        Texture::SetAlpha(m_texture, COLORREF_to_D3DCOLOR(m_d.m_backcolor));
 
     ppin3d->m_pd3dDevice->m_texMan.SetDirty(m_texture);
 
