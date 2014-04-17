@@ -31,9 +31,17 @@
 |*  the above Disclaimer (as applicable) and U.S. Government End Users Notice.                                                        *|
 |*                                                                                                                                    *|
  \************************************************************************************************************************************/
+
+#include"nvapi_lite_salstart.h"
+#include"nvapi_lite_common.h"
+#include"nvapi_lite_sli.h"
+#include"nvapi_lite_surround.h"
+#include"nvapi_lite_stereo.h"
+#include"nvapi_lite_d3dext.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Date: Oct 30, 2013
+// Date: Feb 23, 2014 
 // File: nvapi.h
 //
 // NvAPI provides an interface to NVIDIA devices. This file contains the 
@@ -59,1091 +67,7 @@ extern "C" {
 #define __cdecl
 #endif
 
-// ====================================================
-// SAL related support
-// ====================================================
-#ifndef __ecount
-    #define __nvapi_undef__ecount
-    #define __ecount(size)
-#endif
-#ifndef __bcount
-    #define __nvapi_undef__bcount
-    #define __bcount(size)
-#endif
-#ifndef __in
-    #define __nvapi_undef__in
-    #define __in
-#endif
-#ifndef __in_ecount
-    #define __nvapi_undef__in_ecount
-    #define __in_ecount(size)
-#endif
-#ifndef __in_bcount
-    #define __nvapi_undef__in_bcount
-    #define __in_bcount(size)
-#endif
-#ifndef __in_z
-    #define __nvapi_undef__in_z
-    #define __in_z
-#endif
-#ifndef __in_ecount_z
-    #define __nvapi_undef__in_ecount_z
-    #define __in_ecount_z(size)
-#endif
-#ifndef __in_bcount_z
-    #define __nvapi_undef__in_bcount_z
-    #define __in_bcount_z(size)
-#endif
-#ifndef __in_nz
-    #define __nvapi_undef__in_nz
-    #define __in_nz
-#endif
-#ifndef __in_ecount_nz
-    #define __nvapi_undef__in_ecount_nz
-    #define __in_ecount_nz(size)
-#endif
-#ifndef __in_bcount_nz
-    #define __nvapi_undef__in_bcount_nz
-    #define __in_bcount_nz(size)
-#endif
-#ifndef __out
-    #define __nvapi_undef__out
-    #define __out
-#endif
-#ifndef __out_ecount
-    #define __nvapi_undef__out_ecount
-    #define __out_ecount(size)
-#endif
-#ifndef __out_bcount
-    #define __nvapi_undef__out_bcount
-    #define __out_bcount(size)
-#endif
-#ifndef __out_ecount_part
-    #define __nvapi_undef__out_ecount_part
-    #define __out_ecount_part(size,length)
-#endif
-#ifndef __out_bcount_part
-    #define __nvapi_undef__out_bcount_part
-    #define __out_bcount_part(size,length)
-#endif
-#ifndef __out_ecount_full
-    #define __nvapi_undef__out_ecount_full
-    #define __out_ecount_full(size)
-#endif
-#ifndef __out_bcount_full
-    #define __nvapi_undef__out_bcount_full
-    #define __out_bcount_full(size)
-#endif
-#ifndef __out_z
-    #define __nvapi_undef__out_z
-    #define __out_z
-#endif
-#ifndef __out_z_opt
-    #define __nvapi_undef__out_z_opt
-    #define __out_z_opt
-#endif
-#ifndef __out_ecount_z
-    #define __nvapi_undef__out_ecount_z
-    #define __out_ecount_z(size)
-#endif
-#ifndef __out_bcount_z
-    #define __nvapi_undef__out_bcount_z
-    #define __out_bcount_z(size)
-#endif
-#ifndef __out_ecount_part_z
-    #define __nvapi_undef__out_ecount_part_z
-    #define __out_ecount_part_z(size,length)
-#endif
-#ifndef __out_bcount_part_z
-    #define __nvapi_undef__out_bcount_part_z
-    #define __out_bcount_part_z(size,length)
-#endif
-#ifndef __out_ecount_full_z
-    #define __nvapi_undef__out_ecount_full_z
-    #define __out_ecount_full_z(size)
-#endif
-#ifndef __out_bcount_full_z
-    #define __nvapi_undef__out_bcount_full_z
-    #define __out_bcount_full_z(size)
-#endif
-#ifndef __out_nz
-    #define __nvapi_undef__out_nz
-    #define __out_nz
-#endif
-#ifndef __out_nz_opt
-    #define __nvapi_undef__out_nz_opt
-    #define __out_nz_opt
-#endif
-#ifndef __out_ecount_nz
-    #define __nvapi_undef__out_ecount_nz
-    #define __out_ecount_nz(size)
-#endif
-#ifndef __out_bcount_nz
-    #define __nvapi_undef__out_bcount_nz
-    #define __out_bcount_nz(size)
-#endif
-#ifndef __inout
-    #define __nvapi_undef__inout
-    #define __inout
-#endif
-#ifndef __inout_ecount
-    #define __nvapi_undef__inout_ecount
-    #define __inout_ecount(size)
-#endif
-#ifndef __inout_bcount
-    #define __nvapi_undef__inout_bcount
-    #define __inout_bcount(size)
-#endif
-#ifndef __inout_ecount_part
-    #define __nvapi_undef__inout_ecount_part
-    #define __inout_ecount_part(size,length)
-#endif
-#ifndef __inout_bcount_part
-    #define __nvapi_undef__inout_bcount_part
-    #define __inout_bcount_part(size,length)
-#endif
-#ifndef __inout_ecount_full
-    #define __nvapi_undef__inout_ecount_full
-    #define __inout_ecount_full(size)
-#endif
-#ifndef __inout_bcount_full
-    #define __nvapi_undef__inout_bcount_full
-    #define __inout_bcount_full(size)
-#endif
-#ifndef __inout_z
-    #define __nvapi_undef__inout_z
-    #define __inout_z
-#endif
-#ifndef __inout_ecount_z
-    #define __nvapi_undef__inout_ecount_z
-    #define __inout_ecount_z(size)
-#endif
-#ifndef __inout_bcount_z
-    #define __nvapi_undef__inout_bcount_z
-    #define __inout_bcount_z(size)
-#endif
-#ifndef __inout_nz
-    #define __nvapi_undef__inout_nz
-    #define __inout_nz
-#endif
-#ifndef __inout_ecount_nz
-    #define __nvapi_undef__inout_ecount_nz
-    #define __inout_ecount_nz(size)
-#endif
-#ifndef __inout_bcount_nz
-    #define __nvapi_undef__inout_bcount_nz
-    #define __inout_bcount_nz(size)
-#endif
-#ifndef __ecount_opt
-    #define __nvapi_undef__ecount_opt
-    #define __ecount_opt(size)
-#endif
-#ifndef __bcount_opt
-    #define __nvapi_undef__bcount_opt
-    #define __bcount_opt(size)
-#endif
-#ifndef __in_opt
-    #define __nvapi_undef__in_opt
-    #define __in_opt
-#endif
-#ifndef __in_ecount_opt
-    #define __nvapi_undef__in_ecount_opt
-    #define __in_ecount_opt(size)
-#endif
-#ifndef __in_bcount_opt
-    #define __nvapi_undef__in_bcount_opt
-    #define __in_bcount_opt(size)
-#endif
-#ifndef __in_z_opt
-    #define __nvapi_undef__in_z_opt
-    #define __in_z_opt
-#endif
-#ifndef __in_ecount_z_opt
-    #define __nvapi_undef__in_ecount_z_opt
-    #define __in_ecount_z_opt(size)
-#endif
-#ifndef __in_bcount_z_opt
-    #define __nvapi_undef__in_bcount_z_opt
-    #define __in_bcount_z_opt(size)
-#endif
-#ifndef __in_nz_opt
-    #define __nvapi_undef__in_nz_opt
-    #define __in_nz_opt
-#endif
-#ifndef __in_ecount_nz_opt
-    #define __nvapi_undef__in_ecount_nz_opt
-    #define __in_ecount_nz_opt(size)
-#endif
-#ifndef __in_bcount_nz_opt
-    #define __nvapi_undef__in_bcount_nz_opt
-    #define __in_bcount_nz_opt(size)
-#endif
-#ifndef __out_opt
-    #define __nvapi_undef__out_opt
-    #define __out_opt
-#endif
-#ifndef __out_ecount_opt
-    #define __nvapi_undef__out_ecount_opt
-    #define __out_ecount_opt(size)
-#endif
-#ifndef __out_bcount_opt
-    #define __nvapi_undef__out_bcount_opt
-    #define __out_bcount_opt(size)
-#endif
-#ifndef __out_ecount_part_opt
-    #define __nvapi_undef__out_ecount_part_opt
-    #define __out_ecount_part_opt(size,length)
-#endif
-#ifndef __out_bcount_part_opt
-    #define __nvapi_undef__out_bcount_part_opt
-    #define __out_bcount_part_opt(size,length)
-#endif
-#ifndef __out_ecount_full_opt
-    #define __nvapi_undef__out_ecount_full_opt
-    #define __out_ecount_full_opt(size)
-#endif
-#ifndef __out_bcount_full_opt
-    #define __nvapi_undef__out_bcount_full_opt
-    #define __out_bcount_full_opt(size)
-#endif
-#ifndef __out_ecount_z_opt
-    #define __nvapi_undef__out_ecount_z_opt
-    #define __out_ecount_z_opt(size)
-#endif
-#ifndef __out_bcount_z_opt
-    #define __nvapi_undef__out_bcount_z_opt
-    #define __out_bcount_z_opt(size)
-#endif
-#ifndef __out_ecount_part_z_opt
-    #define __nvapi_undef__out_ecount_part_z_opt
-    #define __out_ecount_part_z_opt(size,length)
-#endif
-#ifndef __out_bcount_part_z_opt
-    #define __nvapi_undef__out_bcount_part_z_opt
-    #define __out_bcount_part_z_opt(size,length)
-#endif
-#ifndef __out_ecount_full_z_opt
-    #define __nvapi_undef__out_ecount_full_z_opt
-    #define __out_ecount_full_z_opt(size)
-#endif
-#ifndef __out_bcount_full_z_opt
-    #define __nvapi_undef__out_bcount_full_z_opt
-    #define __out_bcount_full_z_opt(size)
-#endif
-#ifndef __out_ecount_nz_opt
-    #define __nvapi_undef__out_ecount_nz_opt
-    #define __out_ecount_nz_opt(size)
-#endif
-#ifndef __out_bcount_nz_opt
-    #define __nvapi_undef__out_bcount_nz_opt
-    #define __out_bcount_nz_opt(size)
-#endif
-#ifndef __inout_opt
-    #define __nvapi_undef__inout_opt
-    #define __inout_opt
-#endif
-#ifndef __inout_ecount_opt
-    #define __nvapi_undef__inout_ecount_opt
-    #define __inout_ecount_opt(size)
-#endif
-#ifndef __inout_bcount_opt
-    #define __nvapi_undef__inout_bcount_opt
-    #define __inout_bcount_opt(size)
-#endif
-#ifndef __inout_ecount_part_opt
-    #define __nvapi_undef__inout_ecount_part_opt
-    #define __inout_ecount_part_opt(size,length)
-#endif
-#ifndef __inout_bcount_part_opt
-    #define __nvapi_undef__inout_bcount_part_opt
-    #define __inout_bcount_part_opt(size,length)
-#endif
-#ifndef __inout_ecount_full_opt
-    #define __nvapi_undef__inout_ecount_full_opt
-    #define __inout_ecount_full_opt(size)
-#endif
-#ifndef __inout_bcount_full_opt
-    #define __nvapi_undef__inout_bcount_full_opt
-    #define __inout_bcount_full_opt(size)
-#endif
-#ifndef __inout_z_opt
-    #define __nvapi_undef__inout_z_opt
-    #define __inout_z_opt
-#endif
-#ifndef __inout_ecount_z_opt
-    #define __nvapi_undef__inout_ecount_z_opt
-    #define __inout_ecount_z_opt(size)
-#endif
-#ifndef __inout_ecount_z_opt
-    #define __nvapi_undef__inout_ecount_z_opt
-    #define __inout_ecount_z_opt(size)
-#endif
-#ifndef __inout_bcount_z_opt
-    #define __nvapi_undef__inout_bcount_z_opt
-    #define __inout_bcount_z_opt(size)
-#endif
-#ifndef __inout_nz_opt
-    #define __nvapi_undef__inout_nz_opt
-    #define __inout_nz_opt
-#endif
-#ifndef __inout_ecount_nz_opt
-    #define __nvapi_undef__inout_ecount_nz_opt
-    #define __inout_ecount_nz_opt(size)
-#endif
-#ifndef __inout_bcount_nz_opt
-    #define __nvapi_undef__inout_bcount_nz_opt
-    #define __inout_bcount_nz_opt(size)
-#endif
-#ifndef __deref_ecount
-    #define __nvapi_undef__deref_ecount
-    #define __deref_ecount(size)
-#endif
-#ifndef __deref_bcount
-    #define __nvapi_undef__deref_bcount
-    #define __deref_bcount(size)
-#endif
-#ifndef __deref_out
-    #define __nvapi_undef__deref_out
-    #define __deref_out
-#endif
-#ifndef __deref_out_ecount
-    #define __nvapi_undef__deref_out_ecount
-    #define __deref_out_ecount(size)
-#endif
-#ifndef __deref_out_bcount
-    #define __nvapi_undef__deref_out_bcount
-    #define __deref_out_bcount(size)
-#endif
-#ifndef __deref_out_ecount_part
-    #define __nvapi_undef__deref_out_ecount_part
-    #define __deref_out_ecount_part(size,length)
-#endif
-#ifndef __deref_out_bcount_part
-    #define __nvapi_undef__deref_out_bcount_part
-    #define __deref_out_bcount_part(size,length)
-#endif
-#ifndef __deref_out_ecount_full
-    #define __nvapi_undef__deref_out_ecount_full
-    #define __deref_out_ecount_full(size)
-#endif
-#ifndef __deref_out_bcount_full
-    #define __nvapi_undef__deref_out_bcount_full
-    #define __deref_out_bcount_full(size)
-#endif
-#ifndef __deref_out_z
-    #define __nvapi_undef__deref_out_z
-    #define __deref_out_z
-#endif
-#ifndef __deref_out_ecount_z
-    #define __nvapi_undef__deref_out_ecount_z
-    #define __deref_out_ecount_z(size)
-#endif
-#ifndef __deref_out_bcount_z
-    #define __nvapi_undef__deref_out_bcount_z
-    #define __deref_out_bcount_z(size)
-#endif
-#ifndef __deref_out_nz
-    #define __nvapi_undef__deref_out_nz
-    #define __deref_out_nz
-#endif
-#ifndef __deref_out_ecount_nz
-    #define __nvapi_undef__deref_out_ecount_nz
-    #define __deref_out_ecount_nz(size)
-#endif
-#ifndef __deref_out_bcount_nz
-    #define __nvapi_undef__deref_out_bcount_nz
-    #define __deref_out_bcount_nz(size)
-#endif
-#ifndef __deref_inout
-    #define __nvapi_undef__deref_inout
-    #define __deref_inout
-#endif
-#ifndef __deref_inout_z
-    #define __nvapi_undef__deref_inout_z
-    #define __deref_inout_z
-#endif
-#ifndef __deref_inout_ecount
-    #define __nvapi_undef__deref_inout_ecount
-    #define __deref_inout_ecount(size)
-#endif
-#ifndef __deref_inout_bcount
-    #define __nvapi_undef__deref_inout_bcount
-    #define __deref_inout_bcount(size)
-#endif
-#ifndef __deref_inout_ecount_part
-    #define __nvapi_undef__deref_inout_ecount_part
-    #define __deref_inout_ecount_part(size,length)
-#endif
-#ifndef __deref_inout_bcount_part
-    #define __nvapi_undef__deref_inout_bcount_part
-    #define __deref_inout_bcount_part(size,length)
-#endif
-#ifndef __deref_inout_ecount_full
-    #define __nvapi_undef__deref_inout_ecount_full
-    #define __deref_inout_ecount_full(size)
-#endif
-#ifndef __deref_inout_bcount_full
-    #define __nvapi_undef__deref_inout_bcount_full
-    #define __deref_inout_bcount_full(size)
-#endif
-#ifndef __deref_inout_z
-    #define __nvapi_undef__deref_inout_z
-    #define __deref_inout_z
-#endif
-#ifndef __deref_inout_ecount_z
-    #define __nvapi_undef__deref_inout_ecount_z
-    #define __deref_inout_ecount_z(size)
-#endif
-#ifndef __deref_inout_bcount_z
-    #define __nvapi_undef__deref_inout_bcount_z
-    #define __deref_inout_bcount_z(size)
-#endif
-#ifndef __deref_inout_nz
-    #define __nvapi_undef__deref_inout_nz
-    #define __deref_inout_nz
-#endif
-#ifndef __deref_inout_ecount_nz
-    #define __nvapi_undef__deref_inout_ecount_nz
-    #define __deref_inout_ecount_nz(size)
-#endif
-#ifndef __deref_inout_bcount_nz
-    #define __nvapi_undef__deref_inout_bcount_nz
-    #define __deref_inout_bcount_nz(size)
-#endif
-#ifndef __deref_ecount_opt
-    #define __nvapi_undef__deref_ecount_opt
-    #define __deref_ecount_opt(size)
-#endif
-#ifndef __deref_bcount_opt
-    #define __nvapi_undef__deref_bcount_opt
-    #define __deref_bcount_opt(size)
-#endif
-#ifndef __deref_out_opt
-    #define __nvapi_undef__deref_out_opt
-    #define __deref_out_opt
-#endif
-#ifndef __deref_out_ecount_opt
-    #define __nvapi_undef__deref_out_ecount_opt
-    #define __deref_out_ecount_opt(size)
-#endif
-#ifndef __deref_out_bcount_opt
-    #define __nvapi_undef__deref_out_bcount_opt
-    #define __deref_out_bcount_opt(size)
-#endif
-#ifndef __deref_out_ecount_part_opt
-    #define __nvapi_undef__deref_out_ecount_part_opt
-    #define __deref_out_ecount_part_opt(size,length)
-#endif
-#ifndef __deref_out_bcount_part_opt
-    #define __nvapi_undef__deref_out_bcount_part_opt
-    #define __deref_out_bcount_part_opt(size,length)
-#endif
-#ifndef __deref_out_ecount_full_opt
-    #define __nvapi_undef__deref_out_ecount_full_opt
-    #define __deref_out_ecount_full_opt(size)
-#endif
-#ifndef __deref_out_bcount_full_opt
-    #define __nvapi_undef__deref_out_bcount_full_opt
-    #define __deref_out_bcount_full_opt(size)
-#endif
-#ifndef __deref_out_z_opt
-    #define __nvapi_undef__deref_out_z_opt
-    #define __deref_out_z_opt
-#endif
-#ifndef __deref_out_ecount_z_opt
-    #define __nvapi_undef__deref_out_ecount_z_opt
-    #define __deref_out_ecount_z_opt(size)
-#endif
-#ifndef __deref_out_bcount_z_opt
-    #define __nvapi_undef__deref_out_bcount_z_opt
-    #define __deref_out_bcount_z_opt(size)
-#endif
-#ifndef __deref_out_nz_opt
-    #define __nvapi_undef__deref_out_nz_opt
-    #define __deref_out_nz_opt
-#endif
-#ifndef __deref_out_ecount_nz_opt
-    #define __nvapi_undef__deref_out_ecount_nz_opt
-    #define __deref_out_ecount_nz_opt(size)
-#endif
-#ifndef __deref_out_bcount_nz_opt
-    #define __nvapi_undef__deref_out_bcount_nz_opt
-    #define __deref_out_bcount_nz_opt(size)
-#endif
-#ifndef __deref_inout_opt
-    #define __nvapi_undef__deref_inout_opt
-    #define __deref_inout_opt
-#endif
-#ifndef __deref_inout_ecount_opt
-    #define __nvapi_undef__deref_inout_ecount_opt
-    #define __deref_inout_ecount_opt(size)
-#endif
-#ifndef __deref_inout_bcount_opt
-    #define __nvapi_undef__deref_inout_bcount_opt
-    #define __deref_inout_bcount_opt(size)
-#endif
-#ifndef __deref_inout_ecount_part_opt
-    #define __nvapi_undef__deref_inout_ecount_part_opt
-    #define __deref_inout_ecount_part_opt(size,length)
-#endif
-#ifndef __deref_inout_bcount_part_opt
-    #define __nvapi_undef__deref_inout_bcount_part_opt
-    #define __deref_inout_bcount_part_opt(size,length)
-#endif
-#ifndef __deref_inout_ecount_full_opt
-    #define __nvapi_undef__deref_inout_ecount_full_opt
-    #define __deref_inout_ecount_full_opt(size)
-#endif
-#ifndef __deref_inout_bcount_full_opt
-    #define __nvapi_undef__deref_inout_bcount_full_opt
-    #define __deref_inout_bcount_full_opt(size)
-#endif
-#ifndef __deref_inout_z_opt
-    #define __nvapi_undef__deref_inout_z_opt
-    #define __deref_inout_z_opt
-#endif
-#ifndef __deref_inout_ecount_z_opt
-    #define __nvapi_undef__deref_inout_ecount_z_opt
-    #define __deref_inout_ecount_z_opt(size)
-#endif
-#ifndef __deref_inout_bcount_z_opt
-    #define __nvapi_undef__deref_inout_bcount_z_opt
-    #define __deref_inout_bcount_z_opt(size)
-#endif
-#ifndef __deref_inout_nz_opt
-    #define __nvapi_undef__deref_inout_nz_opt
-    #define __deref_inout_nz_opt
-#endif
-#ifndef __deref_inout_ecount_nz_opt
-    #define __nvapi_undef__deref_inout_ecount_nz_opt
-    #define __deref_inout_ecount_nz_opt(size)
-#endif
-#ifndef __deref_inout_bcount_nz_opt
-    #define __nvapi_undef__deref_inout_bcount_nz_opt
-    #define __deref_inout_bcount_nz_opt(size)
-#endif
-#ifndef __deref_opt_ecount
-    #define __nvapi_undef__deref_opt_ecount
-    #define __deref_opt_ecount(size)
-#endif
-#ifndef __deref_opt_bcount
-    #define __nvapi_undef__deref_opt_bcount
-    #define __deref_opt_bcount(size)
-#endif
-#ifndef __deref_opt_out
-    #define __nvapi_undef__deref_opt_out
-    #define __deref_opt_out
-#endif
-#ifndef __deref_opt_out_z
-    #define __nvapi_undef__deref_opt_out_z
-    #define __deref_opt_out_z
-#endif
-#ifndef __deref_opt_out_ecount
-    #define __nvapi_undef__deref_opt_out_ecount
-    #define __deref_opt_out_ecount(size)
-#endif
-#ifndef __deref_opt_out_bcount
-    #define __nvapi_undef__deref_opt_out_bcount
-    #define __deref_opt_out_bcount(size)
-#endif
-#ifndef __deref_opt_out_ecount_part
-    #define __nvapi_undef__deref_opt_out_ecount_part
-    #define __deref_opt_out_ecount_part(size,length)
-#endif
-#ifndef __deref_opt_out_bcount_part
-    #define __nvapi_undef__deref_opt_out_bcount_part
-    #define __deref_opt_out_bcount_part(size,length)
-#endif
-#ifndef __deref_opt_out_ecount_full
-    #define __nvapi_undef__deref_opt_out_ecount_full
-    #define __deref_opt_out_ecount_full(size)
-#endif
-#ifndef __deref_opt_out_bcount_full
-    #define __nvapi_undef__deref_opt_out_bcount_full
-    #define __deref_opt_out_bcount_full(size)
-#endif
-#ifndef __deref_opt_inout
-    #define __nvapi_undef__deref_opt_inout
-    #define __deref_opt_inout
-#endif
-#ifndef __deref_opt_inout_ecount
-    #define __nvapi_undef__deref_opt_inout_ecount
-    #define __deref_opt_inout_ecount(size)
-#endif
-#ifndef __deref_opt_inout_bcount
-    #define __nvapi_undef__deref_opt_inout_bcount
-    #define __deref_opt_inout_bcount(size)
-#endif
-#ifndef __deref_opt_inout_ecount_part
-    #define __nvapi_undef__deref_opt_inout_ecount_part
-    #define __deref_opt_inout_ecount_part(size,length)
-#endif
-#ifndef __deref_opt_inout_bcount_part
-    #define __nvapi_undef__deref_opt_inout_bcount_part
-    #define __deref_opt_inout_bcount_part(size,length)
-#endif
-#ifndef __deref_opt_inout_ecount_full
-    #define __nvapi_undef__deref_opt_inout_ecount_full
-    #define __deref_opt_inout_ecount_full(size)
-#endif
-#ifndef __deref_opt_inout_bcount_full
-    #define __nvapi_undef__deref_opt_inout_bcount_full
-    #define __deref_opt_inout_bcount_full(size)
-#endif
-#ifndef __deref_opt_inout_z
-    #define __nvapi_undef__deref_opt_inout_z
-    #define __deref_opt_inout_z
-#endif
-#ifndef __deref_opt_inout_ecount_z
-    #define __nvapi_undef__deref_opt_inout_ecount_z
-    #define __deref_opt_inout_ecount_z(size)
-#endif
-#ifndef __deref_opt_inout_bcount_z
-    #define __nvapi_undef__deref_opt_inout_bcount_z
-    #define __deref_opt_inout_bcount_z(size)
-#endif
-#ifndef __deref_opt_inout_nz
-    #define __nvapi_undef__deref_opt_inout_nz
-    #define __deref_opt_inout_nz
-#endif
-#ifndef __deref_opt_inout_ecount_nz
-    #define __nvapi_undef__deref_opt_inout_ecount_nz
-    #define __deref_opt_inout_ecount_nz(size)
-#endif
-#ifndef __deref_opt_inout_bcount_nz
-    #define __nvapi_undef__deref_opt_inout_bcount_nz
-    #define __deref_opt_inout_bcount_nz(size)
-#endif
-#ifndef __deref_opt_ecount_opt
-    #define __nvapi_undef__deref_opt_ecount_opt
-    #define __deref_opt_ecount_opt(size)
-#endif
-#ifndef __deref_opt_bcount_opt
-    #define __nvapi_undef__deref_opt_bcount_opt
-    #define __deref_opt_bcount_opt(size)
-#endif
-#ifndef __deref_opt_out_opt
-    #define __nvapi_undef__deref_opt_out_opt
-    #define __deref_opt_out_opt
-#endif
-#ifndef __deref_opt_out_ecount_opt
-    #define __nvapi_undef__deref_opt_out_ecount_opt
-    #define __deref_opt_out_ecount_opt(size)
-#endif
-#ifndef __deref_opt_out_bcount_opt
-    #define __nvapi_undef__deref_opt_out_bcount_opt
-    #define __deref_opt_out_bcount_opt(size)
-#endif
-#ifndef __deref_opt_out_ecount_part_opt
-    #define __nvapi_undef__deref_opt_out_ecount_part_opt
-    #define __deref_opt_out_ecount_part_opt(size,length)
-#endif
-#ifndef __deref_opt_out_bcount_part_opt
-    #define __nvapi_undef__deref_opt_out_bcount_part_opt
-    #define __deref_opt_out_bcount_part_opt(size,length)
-#endif
-#ifndef __deref_opt_out_ecount_full_opt
-    #define __nvapi_undef__deref_opt_out_ecount_full_opt
-    #define __deref_opt_out_ecount_full_opt(size)
-#endif
-#ifndef __deref_opt_out_bcount_full_opt
-    #define __nvapi_undef__deref_opt_out_bcount_full_opt
-    #define __deref_opt_out_bcount_full_opt(size)
-#endif
-#ifndef __deref_opt_out_z_opt
-    #define __nvapi_undef__deref_opt_out_z_opt
-    #define __deref_opt_out_z_opt
-#endif
-#ifndef __deref_opt_out_ecount_z_opt
-    #define __nvapi_undef__deref_opt_out_ecount_z_opt
-    #define __deref_opt_out_ecount_z_opt(size)
-#endif
-#ifndef __deref_opt_out_bcount_z_opt
-    #define __nvapi_undef__deref_opt_out_bcount_z_opt
-    #define __deref_opt_out_bcount_z_opt(size)
-#endif
-#ifndef __deref_opt_out_nz_opt
-    #define __nvapi_undef__deref_opt_out_nz_opt
-    #define __deref_opt_out_nz_opt
-#endif
-#ifndef __deref_opt_out_ecount_nz_opt
-    #define __nvapi_undef__deref_opt_out_ecount_nz_opt
-    #define __deref_opt_out_ecount_nz_opt(size)
-#endif
-#ifndef __deref_opt_out_bcount_nz_opt
-    #define __nvapi_undef__deref_opt_out_bcount_nz_opt
-    #define __deref_opt_out_bcount_nz_opt(size)
-#endif
-#ifndef __deref_opt_inout_opt
-    #define __nvapi_undef__deref_opt_inout_opt
-    #define __deref_opt_inout_opt
-#endif
-#ifndef __deref_opt_inout_ecount_opt
-    #define __nvapi_undef__deref_opt_inout_ecount_opt
-    #define __deref_opt_inout_ecount_opt(size)
-#endif
-#ifndef __deref_opt_inout_bcount_opt
-    #define __nvapi_undef__deref_opt_inout_bcount_opt
-    #define __deref_opt_inout_bcount_opt(size)
-#endif
-#ifndef __deref_opt_inout_ecount_part_opt
-    #define __nvapi_undef__deref_opt_inout_ecount_part_opt
-    #define __deref_opt_inout_ecount_part_opt(size,length)
-#endif
-#ifndef __deref_opt_inout_bcount_part_opt
-    #define __nvapi_undef__deref_opt_inout_bcount_part_opt
-    #define __deref_opt_inout_bcount_part_opt(size,length)
-#endif
-#ifndef __deref_opt_inout_ecount_full_opt
-    #define __nvapi_undef__deref_opt_inout_ecount_full_opt
-    #define __deref_opt_inout_ecount_full_opt(size)
-#endif
-#ifndef __deref_opt_inout_bcount_full_opt
-    #define __nvapi_undef__deref_opt_inout_bcount_full_opt
-    #define __deref_opt_inout_bcount_full_opt(size)
-#endif
-#ifndef __deref_opt_inout_z_opt
-    #define __nvapi_undef__deref_opt_inout_z_opt
-    #define __deref_opt_inout_z_opt
-#endif
-#ifndef __deref_opt_inout_ecount_z_opt
-    #define __nvapi_undef__deref_opt_inout_ecount_z_opt
-    #define __deref_opt_inout_ecount_z_opt(size)
-#endif
-#ifndef __deref_opt_inout_bcount_z_opt
-    #define __nvapi_undef__deref_opt_inout_bcount_z_opt
-    #define __deref_opt_inout_bcount_z_opt(size)
-#endif
-#ifndef __deref_opt_inout_nz_opt
-    #define __nvapi_undef__deref_opt_inout_nz_opt
-    #define __deref_opt_inout_nz_opt
-#endif
-#ifndef __deref_opt_inout_ecount_nz_opt
-    #define __nvapi_undef__deref_opt_inout_ecount_nz_opt
-    #define __deref_opt_inout_ecount_nz_opt(size)
-#endif
-#ifndef __deref_opt_inout_bcount_nz_opt
-    #define __nvapi_undef__deref_opt_inout_bcount_nz_opt
-    #define __deref_opt_inout_bcount_nz_opt(size)
-#endif
-#ifndef __success
-    #define __nvapi_success
-    #define __success(epxr)
-#endif
-#ifndef _Ret_notnull_
-    #define __nvapi__Ret_notnull_
-    #define _Ret_notnull_
-#endif
-#ifndef _Post_writable_byte_size_
-    #define __nvapi__Post_writable_byte_size_
-    #define _Post_writable_byte_size_(n)
-#endif
-#ifndef _Outptr_ 
-    #define __nvapi_Outptr_ 
-    #define _Outptr_ 
-#endif
 
-#define NVAPI_INTERFACE extern __success(return == NVAPI_OK) NvAPI_Status __cdecl
-
-#if (defined(WIN32) || defined(_WIN32)) && defined(_MSC_VER) && (_MSC_VER > 1399) && !defined(NVAPI_INTERNAL) && !defined(NVAPI_DEPRECATED_OLD)
-#ifndef __nvapi_deprecated_function
-#define __nvapi_deprecated_function(message) __declspec(deprecated(message))
-#endif
-#ifndef __nvapi_deprecated_datatype
-#define __nvapi_deprecated_datatype(FirstRelease) __declspec(deprecated("Do not use this data type - it is deprecated in release " #FirstRelease "."))
-#endif
-#else
-#ifndef __nvapi_deprecated_function
-#define __nvapi_deprecated_function(message)
-#endif
-#ifndef __nvapi_deprecated_datatype
-#define __nvapi_deprecated_datatype(FirstRelease)
-#endif
-#endif
-
-/* 64-bit types for compilers that support them, plus some obsolete variants */
-#if defined(__GNUC__) || defined(__arm) || defined(__IAR_SYSTEMS_ICC__) || defined(__ghs__) || defined(_WIN64)
-typedef unsigned long long NvU64; /* 0 to 18446744073709551615  */
-typedef long long          NvS64; /* -9223372036854775808 to 9223372036854775807  */
-#else
-typedef unsigned __int64   NvU64; /* 0 to 18446744073709551615  */
-typedef __int64            NvS64; /* -9223372036854775808 to 9223372036854775807  */
-#endif
-
-// mac os 32-bit still needs this
-#if (defined(macintosh) || defined(__APPLE__)) && !defined(__LP64__)
-typedef signed long        NvS32; /* -2147483648 to 2147483647  */   
-#else
-typedef signed int         NvS32; /* -2147483648 to 2147483647 */  
-#endif
-
-// mac os 32-bit still needs this
-#if ( (defined(macintosh) && defined(__LP64__) && (__NVAPI_RESERVED0__)) || \
-      (!defined(macintosh) && defined(__NVAPI_RESERVED0__)) ) 
-typedef unsigned int       NvU32; /* 0 to 4294967295                         */
-#else
-typedef unsigned long      NvU32; /* 0 to 4294967295                         */
-#endif
-
-typedef signed   short   NvS16;
-typedef unsigned short   NvU16;
-typedef unsigned char    NvU8;
-typedef signed   char    NvS8;
-
-typedef struct _NV_RECT
-{
-    NvU32    left;
-    NvU32    top;
-    NvU32    right;
-    NvU32    bottom;
-} NV_RECT;
-
-
-
-#define NV_DECLARE_HANDLE(name) struct name##__ { int unused; }; typedef struct name##__ *name
-
-//! \addtogroup nvapihandles
-//! NVAPI Handles - These handles are retrieved from various calls and passed in to others in NvAPI
-//!                 These are meant to be opaque types.  Do not assume they correspond to indices, HDCs,
-//!                 display indexes or anything else.
-//!
-//!                 Most handles remain valid until a display re-configuration (display mode set) or GPU
-//!                 reconfiguration (going into or out of SLI modes) occurs.  If NVAPI_HANDLE_INVALIDATED
-//!                 is received by an app, it should discard all handles, and re-enumerate them.
-//! @{  
-NV_DECLARE_HANDLE(NvDisplayHandle);                //!< Display Device driven by NVIDIA GPU(s) (an attached display)
-NV_DECLARE_HANDLE(NvMonitorHandle);                //!< Monitor handle
-NV_DECLARE_HANDLE(NvUnAttachedDisplayHandle);      //!< Unattached Display Device driven by NVIDIA GPU(s)
-NV_DECLARE_HANDLE(NvLogicalGpuHandle);             //!< One or more physical GPUs acting in concert (SLI)
-NV_DECLARE_HANDLE(NvPhysicalGpuHandle);            //!< A single physical GPU
-NV_DECLARE_HANDLE(NvEventHandle);                  //!< A handle to an event registration instance
-NV_DECLARE_HANDLE(NvVisualComputingDeviceHandle);  //!< A handle to a Visual Computing Device
-NV_DECLARE_HANDLE(NvHICHandle);                    //!< A handle to a Host Interface Card
-NV_DECLARE_HANDLE(NvGSyncDeviceHandle);            //!< A handle to a Sync device
-NV_DECLARE_HANDLE(NvVioHandle);                    //!< A handle to an SDI device
-NV_DECLARE_HANDLE(NvTransitionHandle);             //!< A handle to address a single transition request
-NV_DECLARE_HANDLE(NvAudioHandle);                  //!< NVIDIA HD Audio Device
-NV_DECLARE_HANDLE(Nv3DVPContextHandle);            //!< A handle for a 3D Vision Pro (3DVP) context
-NV_DECLARE_HANDLE(Nv3DVPTransceiverHandle);        //!< A handle for a 3DVP RF transceiver
-NV_DECLARE_HANDLE(Nv3DVPGlassesHandle);            //!< A handle for a pair of 3DVP RF shutter glasses
-
-typedef void* StereoHandle;                        //!< A stereo handle, that corresponds to the device interface
-
-NV_DECLARE_HANDLE(NvSourceHandle);                 //!< Unique source handle on the system
-NV_DECLARE_HANDLE(NvTargetHandle);                 //!< Unique target handle on the system
-NV_DECLARE_HANDLE(NVDX_SwapChainHandle);           //!< DirectX SwapChain objects
-static const NVDX_SwapChainHandle NVDX_SWAPCHAIN_NONE = 0;
-//! @}
-
-//! \ingroup nvapihandles
-//! @{
-#define NVAPI_DEFAULT_HANDLE        0
-#define NV_BIT(x)    (1 << (x)) 
-//! @}
-
-
-
-//! \addtogroup nvapitypes
-//! @{
-#define NVAPI_GENERIC_STRING_MAX    4096
-#define NVAPI_LONG_STRING_MAX       256
-#define NVAPI_SHORT_STRING_MAX      64
-
-
-typedef struct 
-{
-    NvS32   sX;
-    NvS32   sY;
-    NvS32   sWidth;
-    NvS32   sHeight;
-} NvSBox;
-
-#ifndef NvGUID_Defined
-#define NvGUID_Defined
-
-typedef struct
-{
-    NvU32 data1;
-    NvU16 data2;
-    NvU16 data3;
-    NvU8  data4[8];
-} NvGUID, NvLUID;
-
-#endif //#ifndef NvGUID_Defined
-
-
-#define NVAPI_MAX_PHYSICAL_GPUS             64
-#define NVAPI_MAX_PHYSICAL_BRIDGES          100
-#define NVAPI_PHYSICAL_GPUS                 32
-#define NVAPI_MAX_LOGICAL_GPUS              64
-#define NVAPI_MAX_AVAILABLE_GPU_TOPOLOGIES  256
-#define NVAPI_MAX_AVAILABLE_SLI_GROUPS      256
-#define NVAPI_MAX_GPU_TOPOLOGIES            NVAPI_MAX_PHYSICAL_GPUS
-#define NVAPI_MAX_GPU_PER_TOPOLOGY          8
-#define NVAPI_MAX_DISPLAY_HEADS             2
-#define NVAPI_ADVANCED_DISPLAY_HEADS        4
-#define NVAPI_MAX_DISPLAYS                  NVAPI_PHYSICAL_GPUS * NVAPI_ADVANCED_DISPLAY_HEADS
-#define NVAPI_MAX_ACPI_IDS                  16
-#define NVAPI_MAX_VIEW_MODES                8
-#define NV_MAX_HEADS                        4   //!< Maximum heads, each with NVAPI_DESKTOP_RES resolution
-#define NVAPI_MAX_HEADS_PER_GPU             32
-
-#define NV_MAX_HEADS        4   //!< Maximum number of heads, each with #NVAPI_DESKTOP_RES resolution
-#define NV_MAX_VID_STREAMS  4   //!< Maximum number of input video streams, each with a #NVAPI_VIDEO_SRC_INFO
-#define NV_MAX_VID_PROFILES 4   //!< Maximum number of output video profiles supported
-
-#define NVAPI_SYSTEM_MAX_DISPLAYS           NVAPI_MAX_PHYSICAL_GPUS * NV_MAX_HEADS
-
-#define NVAPI_SYSTEM_MAX_HWBCS              128
-#define NVAPI_SYSTEM_HWBC_INVALID_ID        0xffffffff
-#define NVAPI_MAX_AUDIO_DEVICES             16
-
-
-typedef char NvAPI_String[NVAPI_GENERIC_STRING_MAX];
-typedef char NvAPI_LongString[NVAPI_LONG_STRING_MAX];
-typedef char NvAPI_ShortString[NVAPI_SHORT_STRING_MAX];
-//! @}
-
-
-// =========================================================================================
-//!  NvAPI Version Definition \n
-//!  Maintain per structure specific version define using the MAKE_NVAPI_VERSION macro. \n
-//!  Usage: #define NV_GENLOCK_STATUS_VER  MAKE_NVAPI_VERSION(NV_GENLOCK_STATUS, 1)
-//!  \ingroup nvapitypes
-// =========================================================================================
-#define MAKE_NVAPI_VERSION(typeName,ver) (NvU32)(sizeof(typeName) | ((ver)<<16))
-
-//!  \ingroup nvapitypes
-#define GET_NVAPI_VERSION(ver) (NvU32)((ver)>>16)
-
-//!  \ingroup nvapitypes
-#define GET_NVAPI_SIZE(ver) (NvU32)((ver) & 0xffff)
-
-
-// ====================================================
-//! NvAPI Status Values
-//!   All NvAPI functions return one of these codes.
-//!   \ingroup nvapistatus 
-// ====================================================
-
-
-typedef enum _NvAPI_Status
-{
-    NVAPI_OK                                    =  0,      //!< Success. Request is completed.
-    NVAPI_ERROR                                 = -1,      //!< Generic error
-    NVAPI_LIBRARY_NOT_FOUND                     = -2,      //!< NVAPI support library cannot be loaded.
-    NVAPI_NO_IMPLEMENTATION                     = -3,      //!< not implemented in current driver installation
-    NVAPI_API_NOT_INITIALIZED                   = -4,      //!< NvAPI_Initialize has not been called (successfully)
-    NVAPI_INVALID_ARGUMENT                      = -5,      //!< The argument/parameter value is not valid or NULL.
-    NVAPI_NVIDIA_DEVICE_NOT_FOUND               = -6,      //!< No NVIDIA display driver, or NVIDIA GPU driving a display, was found.
-    NVAPI_END_ENUMERATION                       = -7,      //!< No more items to enumerate
-    NVAPI_INVALID_HANDLE                        = -8,      //!< Invalid handle
-    NVAPI_INCOMPATIBLE_STRUCT_VERSION           = -9,      //!< An argument's structure version is not supported
-    NVAPI_HANDLE_INVALIDATED                    = -10,     //!< The handle is no longer valid (likely due to GPU or display re-configuration)
-    NVAPI_OPENGL_CONTEXT_NOT_CURRENT            = -11,     //!< No NVIDIA OpenGL context is current (but needs to be)
-    NVAPI_INVALID_POINTER                       = -14,     //!< An invalid pointer, usually NULL, was passed as a parameter
-    NVAPI_NO_GL_EXPERT                          = -12,     //!< OpenGL Expert is not supported by the current drivers
-    NVAPI_INSTRUMENTATION_DISABLED              = -13,     //!< OpenGL Expert is supported, but driver instrumentation is currently disabled
-    NVAPI_NO_GL_NSIGHT                          = -15,     //!< OpenGL does not support Nsight
-
-    NVAPI_EXPECTED_LOGICAL_GPU_HANDLE           = -100,    //!< Expected a logical GPU handle for one or more parameters
-    NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE          = -101,    //!< Expected a physical GPU handle for one or more parameters
-    NVAPI_EXPECTED_DISPLAY_HANDLE               = -102,    //!< Expected an NV display handle for one or more parameters
-    NVAPI_INVALID_COMBINATION                   = -103,    //!< The combination of parameters is not valid. 
-    NVAPI_NOT_SUPPORTED                         = -104,    //!< Requested feature is not supported in the selected GPU
-    NVAPI_PORTID_NOT_FOUND                      = -105,    //!< No port ID was found for the I2C transaction
-    NVAPI_EXPECTED_UNATTACHED_DISPLAY_HANDLE    = -106,    //!< Expected an unattached display handle as one of the input parameters.
-    NVAPI_INVALID_PERF_LEVEL                    = -107,    //!< Invalid perf level 
-    NVAPI_DEVICE_BUSY                           = -108,    //!< Device is busy; request not fulfilled
-    NVAPI_NV_PERSIST_FILE_NOT_FOUND             = -109,    //!< NV persist file is not found
-    NVAPI_PERSIST_DATA_NOT_FOUND                = -110,    //!< NV persist data is not found
-    NVAPI_EXPECTED_TV_DISPLAY                   = -111,    //!< Expected a TV output display
-    NVAPI_EXPECTED_TV_DISPLAY_ON_DCONNECTOR     = -112,    //!< Expected a TV output on the D Connector - HDTV_EIAJ4120.
-    NVAPI_NO_ACTIVE_SLI_TOPOLOGY                = -113,    //!< SLI is not active on this device.
-    NVAPI_SLI_RENDERING_MODE_NOTALLOWED         = -114,    //!< Setup of SLI rendering mode is not possible right now.
-    NVAPI_EXPECTED_DIGITAL_FLAT_PANEL           = -115,    //!< Expected a digital flat panel.
-    NVAPI_ARGUMENT_EXCEED_MAX_SIZE              = -116,    //!< Argument exceeds the expected size.
-    NVAPI_DEVICE_SWITCHING_NOT_ALLOWED          = -117,    //!< Inhibit is ON due to one of the flags in NV_GPU_DISPLAY_CHANGE_INHIBIT or SLI active.
-    NVAPI_TESTING_CLOCKS_NOT_SUPPORTED          = -118,    //!< Testing of clocks is not supported.
-    NVAPI_UNKNOWN_UNDERSCAN_CONFIG              = -119,    //!< The specified underscan config is from an unknown source (e.g. INF)
-    NVAPI_TIMEOUT_RECONFIGURING_GPU_TOPO        = -120,    //!< Timeout while reconfiguring GPUs
-    NVAPI_DATA_NOT_FOUND                        = -121,    //!< Requested data was not found
-    NVAPI_EXPECTED_ANALOG_DISPLAY               = -122,    //!< Expected an analog display
-    NVAPI_NO_VIDLINK                            = -123,    //!< No SLI video bridge is present
-    NVAPI_REQUIRES_REBOOT                       = -124,    //!< NVAPI requires a reboot for the settings to take effect
-    NVAPI_INVALID_HYBRID_MODE                   = -125,    //!< The function is not supported with the current Hybrid mode.
-    NVAPI_MIXED_TARGET_TYPES                    = -126,    //!< The target types are not all the same
-    NVAPI_SYSWOW64_NOT_SUPPORTED                = -127,    //!< The function is not supported from 32-bit on a 64-bit system.
-    NVAPI_IMPLICIT_SET_GPU_TOPOLOGY_CHANGE_NOT_ALLOWED = -128,    //!< There is no implicit GPU topology active. Use NVAPI_SetHybridMode to change topology.
-    NVAPI_REQUEST_USER_TO_CLOSE_NON_MIGRATABLE_APPS = -129,      //!< Prompt the user to close all non-migratable applications.    
-    NVAPI_OUT_OF_MEMORY                         = -130,    //!< Could not allocate sufficient memory to complete the call.
-    NVAPI_WAS_STILL_DRAWING                     = -131,    //!< The previous operation that is transferring information to or from this surface is incomplete.
-    NVAPI_FILE_NOT_FOUND                        = -132,    //!< The file was not found.
-    NVAPI_TOO_MANY_UNIQUE_STATE_OBJECTS         = -133,    //!< There are too many unique instances of a particular type of state object.
-    NVAPI_INVALID_CALL                          = -134,    //!< The method call is invalid. For example, a method's parameter may not be a valid pointer.
-    NVAPI_D3D10_1_LIBRARY_NOT_FOUND             = -135,    //!< d3d10_1.dll cannot be loaded.
-    NVAPI_FUNCTION_NOT_FOUND                    = -136,    //!< Couldn't find the function in the loaded DLL.
-    NVAPI_INVALID_USER_PRIVILEGE                = -137,    //!< Current User is not Admin.
-    NVAPI_EXPECTED_NON_PRIMARY_DISPLAY_HANDLE   = -138,    //!< The handle corresponds to GDIPrimary.
-    NVAPI_EXPECTED_COMPUTE_GPU_HANDLE           = -139,    //!< Setting Physx GPU requires that the GPU is compute-capable.
-    NVAPI_STEREO_NOT_INITIALIZED                = -140,    //!< The Stereo part of NVAPI failed to initialize completely. Check if the stereo driver is installed.
-    NVAPI_STEREO_REGISTRY_ACCESS_FAILED         = -141,    //!< Access to stereo-related registry keys or values has failed.
-    NVAPI_STEREO_REGISTRY_PROFILE_TYPE_NOT_SUPPORTED = -142, //!< The given registry profile type is not supported.
-    NVAPI_STEREO_REGISTRY_VALUE_NOT_SUPPORTED   = -143,    //!< The given registry value is not supported.
-    NVAPI_STEREO_NOT_ENABLED                    = -144,    //!< Stereo is not enabled and the function needed it to execute completely.
-    NVAPI_STEREO_NOT_TURNED_ON                  = -145,    //!< Stereo is not turned on and the function needed it to execute completely.
-    NVAPI_STEREO_INVALID_DEVICE_INTERFACE       = -146,    //!< Invalid device interface.
-    NVAPI_STEREO_PARAMETER_OUT_OF_RANGE         = -147,    //!< Separation percentage or JPEG image capture quality is out of [0-100] range.
-    NVAPI_STEREO_FRUSTUM_ADJUST_MODE_NOT_SUPPORTED = -148, //!< The given frustum adjust mode is not supported.
-    NVAPI_TOPO_NOT_POSSIBLE                     = -149,    //!< The mosaic topology is not possible given the current state of the hardware.
-    NVAPI_MODE_CHANGE_FAILED                    = -150,    //!< An attempt to do a display resolution mode change has failed.        
-    NVAPI_D3D11_LIBRARY_NOT_FOUND               = -151,    //!< d3d11.dll/d3d11_beta.dll cannot be loaded.
-    NVAPI_INVALID_ADDRESS                       = -152,    //!< Address is outside of valid range.
-    NVAPI_STRING_TOO_SMALL                      = -153,    //!< The pre-allocated string is too small to hold the result.
-    NVAPI_MATCHING_DEVICE_NOT_FOUND             = -154,    //!< The input does not match any of the available devices.
-    NVAPI_DRIVER_RUNNING                        = -155,    //!< Driver is running.
-    NVAPI_DRIVER_NOTRUNNING                     = -156,    //!< Driver is not running.
-    NVAPI_ERROR_DRIVER_RELOAD_REQUIRED          = -157,    //!< A driver reload is required to apply these settings.
-    NVAPI_SET_NOT_ALLOWED                       = -158,    //!< Intended setting is not allowed.
-    NVAPI_ADVANCED_DISPLAY_TOPOLOGY_REQUIRED    = -159,    //!< Information can't be returned due to "advanced display topology".
-    NVAPI_SETTING_NOT_FOUND                     = -160,    //!< Setting is not found.
-    NVAPI_SETTING_SIZE_TOO_LARGE                = -161,    //!< Setting size is too large.
-    NVAPI_TOO_MANY_SETTINGS_IN_PROFILE          = -162,    //!< There are too many settings for a profile. 
-    NVAPI_PROFILE_NOT_FOUND                     = -163,    //!< Profile is not found.
-    NVAPI_PROFILE_NAME_IN_USE                   = -164,    //!< Profile name is duplicated.
-    NVAPI_PROFILE_NAME_EMPTY                    = -165,    //!< Profile name is empty.
-    NVAPI_EXECUTABLE_NOT_FOUND                  = -166,    //!< Application not found in the Profile.
-    NVAPI_EXECUTABLE_ALREADY_IN_USE             = -167,    //!< Application already exists in the other profile.
-    NVAPI_DATATYPE_MISMATCH                     = -168,    //!< Data Type mismatch 
-    NVAPI_PROFILE_REMOVED                       = -169,    //!< The profile passed as parameter has been removed and is no longer valid.
-    NVAPI_UNREGISTERED_RESOURCE                 = -170,    //!< An unregistered resource was passed as a parameter. 
-    NVAPI_ID_OUT_OF_RANGE                       = -171,    //!< The DisplayId corresponds to a display which is not within the normal outputId range.
-    NVAPI_DISPLAYCONFIG_VALIDATION_FAILED       = -172,    //!< Display topology is not valid so the driver cannot do a mode set on this configuration.
-    NVAPI_DPMST_CHANGED                         = -173,    //!< Display Port Multi-Stream topology has been changed.
-    NVAPI_INSUFFICIENT_BUFFER                   = -174,    //!< Input buffer is insufficient to hold the contents.    
-    NVAPI_ACCESS_DENIED                         = -175,    //!< No access to the caller.
-    NVAPI_MOSAIC_NOT_ACTIVE                     = -176,    //!< The requested action cannot be performed without Mosaic being enabled.
-    NVAPI_SHARE_RESOURCE_RELOCATED              = -177,    //!< The surface is relocated away from video memory.
-    NVAPI_REQUEST_USER_TO_DISABLE_DWM           = -178,    //!< The user should disable DWM before calling NvAPI.
-    NVAPI_D3D_DEVICE_LOST                       = -179,    //!< D3D device status is D3DERR_DEVICELOST or D3DERR_DEVICENOTRESET - the user has to reset the device.
-    NVAPI_INVALID_CONFIGURATION                 = -180,    //!< The requested action cannot be performed in the current state.
-    NVAPI_STEREO_HANDSHAKE_NOT_DONE             = -181,    //!< Call failed as stereo handshake not completed.
-    NVAPI_EXECUTABLE_PATH_IS_AMBIGUOUS          = -182,    //!< The path provided was too short to determine the correct NVDRS_APPLICATION
-    NVAPI_DEFAULT_STEREO_PROFILE_IS_NOT_DEFINED = -183,    //!< Default stereo profile is not currently defined
-    NVAPI_DEFAULT_STEREO_PROFILE_DOES_NOT_EXIST = -184,    //!< Default stereo profile does not exist
-    NVAPI_CLUSTER_ALREADY_EXISTS                = -185,    //!< A cluster is already defined with the given configuration.
-    NVAPI_DPMST_DISPLAY_ID_EXPECTED             = -186,    //!< The input display id is not that of a multi stream enabled connector or a display device in a multi stream topology 
-    NVAPI_INVALID_DISPLAY_ID                    = -187,    //!< The input display id is not valid or the monitor associated to it does not support the current operation
-    NVAPI_STREAM_IS_OUT_OF_SYNC                 = -188,    //!< While playing secure audio stream, stream goes out of sync
-    NVAPI_INCOMPATIBLE_AUDIO_DRIVER             = -189,    //!< Older audio driver version than required
-    NVAPI_VALUE_ALREADY_SET                     = -190,    //!< Value already set, setting again not allowed.
-    NVAPI_TIMEOUT                               = -191,    //!< Requested operation timed out 
-    NVAPI_GPU_WORKSTATION_FEATURE_INCOMPLETE    = -192,    //!< The requested workstation feature set has incomplete driver internal allocation resources
-    NVAPI_STEREO_INIT_ACTIVATION_NOT_DONE       = -193,    //!< Call failed because InitActivation was not called.
-	NVAPI_SYNC_NOT_ACTIVE                       = -194,    //!< The requested action cannot be performed without Sync being enabled.
-	NVAPI_SYNC_MASTER_NOT_FOUND                 = -195,    //!< The requested action cannot be performed without Sync Master being enabled.
-	NVAPI_INVALID_SYNC_TOPOLOGY                 = -196,    //!< Invalid displays passed in the NV_GSYNC_DISPLAY pointer.
-} NvAPI_Status;
 
 //! @}
 
@@ -1652,7 +576,7 @@ typedef struct _NV_TIMING
     NvU8  VSyncPol;         //!< vertical sync polarity: 1-negative, 0-positive
     
     NvU16 interlaced;       //!< 1-interlaced, 0-progressive
-    NvU32 pclk;             //!< pixel clock in 10KHz
+    NvU32 pclk;             //!< pixel clock in 10 kHz
 
     //other timing related extras
     NV_TIMINGEXT etc;          
@@ -2057,97 +981,6 @@ NVAPI_INTERFACE NvAPI_GetDisplayDriverVersion(NvDisplayHandle hNvDisplay, NV_DIS
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_SYS_GetDriverAndBranchVersion
-//
-//!   DESCRIPTION: This API returns display driver version and driver-branch string.
-//!
-//! SUPPORTED OS:  Windows XP and higher
-//!
-//! 
-//! \param [out]  pDriverVersion         Contains the driver version after successful return.
-//! \param [out]  szBuildBranchString    Contains the driver-branch string after successful return.
-//!
-//! \retval ::NVAPI_INVALID_ARGUMENT: either pDriverVersion is NULL or enum index too big
-//! \retval ::NVAPI_OK - completed request
-//! \retval ::NVAPI_API_NOT_INTIALIZED - NVAPI not initialized
-//! \retval ::NVAPI_ERROR - miscellaneous error occurred
-//! 
-//! \ingroup driverapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_SYS_GetDriverAndBranchVersion(NvU32* pDriverVersion, NvAPI_ShortString szBuildBranchString);
-
-
-
-//! \ingroup driverapi
-//! Used in NvAPI_GPU_GetMemoryInfo().
-typedef struct 
-{
-    NvU32   version;                        //!< Version info
-    NvU32   dedicatedVideoMemory;           //!< Size(in kb) of the physical framebuffer.
-    NvU32   availableDedicatedVideoMemory;  //!< Size(in kb) of the available physical framebuffer for allocating video memory surfaces.
-    NvU32   systemVideoMemory;              //!< Size(in kb) of system memory the driver allocates at load time.
-    NvU32   sharedSystemMemory;             //!< Size(in kb) of shared system memory that driver is allowed to commit for surfaces across all allocations.
-
-} NV_DISPLAY_DRIVER_MEMORY_INFO_V1;
-
-
-//! \ingroup driverapi
-//! Used in NvAPI_GPU_GetMemoryInfo().
-typedef struct
-{
-    NvU32   version;                           //!< Version info
-    NvU32   dedicatedVideoMemory;              //!< Size(in kb) of the physical framebuffer.
-    NvU32   availableDedicatedVideoMemory;     //!< Size(in kb) of the available physical framebuffer for allocating video memory surfaces.
-    NvU32   systemVideoMemory;                 //!< Size(in kb) of system memory the driver allocates at load time.
-    NvU32   sharedSystemMemory;                //!< Size(in kb) of shared system memory that driver is allowed to commit for surfaces across all allocations.
-    NvU32   curAvailableDedicatedVideoMemory;  //!< Size(in kb) of the current available physical framebuffer for allocating video memory surfaces.
-
-} NV_DISPLAY_DRIVER_MEMORY_INFO_V2;
-
-
-//! \ingroup driverapi
-typedef NV_DISPLAY_DRIVER_MEMORY_INFO_V2 NV_DISPLAY_DRIVER_MEMORY_INFO;
-
-//! \ingroup driverapi
-//! Macro for constructing the version field of NV_DISPLAY_DRIVER_MEMORY_INFO_V1
-#define NV_DISPLAY_DRIVER_MEMORY_INFO_VER_1  MAKE_NVAPI_VERSION(NV_DISPLAY_DRIVER_MEMORY_INFO_V1,1)
-
-//! \ingroup driverapi
-//! Macro for constructing the version field of NV_DISPLAY_DRIVER_MEMORY_INFO_V2
-#define NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2  MAKE_NVAPI_VERSION(NV_DISPLAY_DRIVER_MEMORY_INFO_V2,2)
-
-//! \ingroup driverapi
-#define NV_DISPLAY_DRIVER_MEMORY_INFO_VER    NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_GPU_GetMemoryInfo
-//
-//!   DESCRIPTION: This function retrieves the available driver memory footprint for the specified GPU. 
-//!
-//! SUPPORTED OS:  Windows XP and higher
-//!
-//!
-//! TCC_SUPPORTED
-//!
-//! \since Release: 177
-//!
-//!  \param [in]   hPhysicalGpu  Handle of the physical GPU for which the memory information is to be extracted.
-//!  \param [out]  pMemoryInfo   The memory footprint available in the driver. See NV_DISPLAY_DRIVER_MEMORY_INFO.
-//!
-//!  \retval       NVAPI_INVALID_ARGUMENT             pMemoryInfo is NULL.
-//!  \retval       NVAPI_OK                           Call successful.
-//!  \retval       NVAPI_NVIDIA_DEVICE_NOT_FOUND      No NVIDIA GPU driving a display was found.
-//!  \retval       NVAPI_INCOMPATIBLE_STRUCT_VERSION  NV_DISPLAY_DRIVER_MEMORY_INFO structure version mismatch.
-//!
-//!  \ingroup  driverapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_DISPLAY_DRIVER_MEMORY_INFO *pMemoryInfo);
 
 
 
@@ -2339,39 +1172,6 @@ NVAPI_INTERFACE NvAPI_OGL_ExpertModeDefaultsGet(NvU32 *pExpertDetailLevel,
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_EnumPhysicalGPUs
-//
-//! This function returns an array of physical GPU handles.
-//! Each handle represents a physical GPU present in the system.
-//! That GPU may be part of an SLI configuration, or may not be visible to the OS directly.
-//!
-//! At least one GPU must be present in the system and running an NVIDIA display driver.
-//!
-//! The array nvGPUHandle will be filled with physical GPU handle values. The returned
-//! gpuCount determines how many entries in the array are valid.
-//!
-//! \note In drivers older than 105.00, all physical GPU handles get invalidated on a
-//!       modeset. So the calling applications need to renum the handles after every modeset.\n
-//!       With drivers 105.00 and up, all physical GPU handles are constant.
-//!       Physical GPU handles are constant as long as the GPUs are not physically moved and 
-//!       the SBIOS VGA order is unchanged.
-//!
-//!       For GPU handles in TCC MODE please use NvAPI_EnumTCCPhysicalGPUs()
-//!
-//! SUPPORTED OS:  Windows XP and higher,  Mac OS X
-//!
-//!
-//! \par Introduced in
-//! \since Release: 80
-//!
-//! \retval NVAPI_INVALID_ARGUMENT         nvGPUHandle or pGpuCount is NULL
-//! \retval NVAPI_OK                       One or more handles were returned
-//! \retval NVAPI_NVIDIA_DEVICE_NOT_FOUND  No NVIDIA GPU driving a display was found
-//! \ingroup gpu
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -3721,7 +2521,7 @@ typedef struct
     //! These bits are reserved for future use (must be always 0)
     NvU32                                       reserved:31;
 
-    //! Current frequency delta from nominal settings in [kHz]
+    //! Current frequency delta from nominal settings in (kHz)
     NV_GPU_PERF_PSTATES20_PARAM_DELTA           freqDelta_kHz;
 
     //! Clock domain type dependant information
@@ -3729,19 +2529,19 @@ typedef struct
     {
         struct
         {
-            //! Clock frequency within given pstate in [kHz]
+            //! Clock frequency within given pstate in (kHz)
             NvU32                               freq_kHz;
         } single;
 
         struct
         {
-            //! Min clock frequency within given pstate in [kHz]
+            //! Min clock frequency within given pstate in (kHz)
             NvU32                               minFreq_kHz;
 
-            //! Max clock frequency within given pstate in [kHz]
+            //! Max clock frequency within given pstate in (kHz)
             NvU32                               maxFreq_kHz;
 
-            //! Voltage domain ID and value range (in [uV]) required for this clock
+            //! Voltage domain ID and value range in (uV) required for this clock
             NV_GPU_PERF_VOLTAGE_INFO_DOMAIN_ID  domainId;
             NvU32                               minVoltage_uV;
             NvU32                               maxVoltage_uV;
@@ -4041,9 +2841,9 @@ typedef struct
     struct 
     {
         NV_THERMAL_CONTROLLER       controller;        //!< internal, ADM1032, MAX6649...
-        NvU32                       defaultMinTemp;    //!< The min default temperature value of the thermal sensor in degrees centigrade 
-        NvU32                       defaultMaxTemp;    //!< The max default temperature value of the thermal sensor in degrees centigrade 
-        NvU32                       currentTemp;       //!< The current temperature value of the thermal sensor in degrees centigrade 
+        NvU32                       defaultMinTemp;    //!< The min default temperature value of the thermal sensor in degree Celsius 
+        NvU32                       defaultMaxTemp;    //!< The max default temperature value of the thermal sensor in degree Celsius 
+        NvU32                       currentTemp;       //!< The current temperature value of the thermal sensor in degree Celsius 
         NV_THERMAL_TARGET           target;            //!< Thermal sensor targeted @ GPU, memory, chipset, powersupply, Visual Computing Device, etc.
     } sensor[NVAPI_MAX_THERMAL_SENSORS_PER_GPU];
 
@@ -4057,9 +2857,9 @@ typedef struct
     struct
     {
         NV_THERMAL_CONTROLLER       controller;         //!< internal, ADM1032, MAX6649...
-        NvS32                       defaultMinTemp;     //!< Minimum default temperature value of the thermal sensor in degrees C
-        NvS32                       defaultMaxTemp;     //!< Maximum default temperature value of the thermal sensor in degrees C
-        NvS32                       currentTemp;        //!< Current temperature value of the thermal sensor in degrees C
+        NvS32                       defaultMinTemp;     //!< Minimum default temperature value of the thermal sensor in degree Celsius
+        NvS32                       defaultMaxTemp;     //!< Maximum default temperature value of the thermal sensor in degree Celsius
+        NvS32                       currentTemp;        //!< Current temperature value of the thermal sensor in degree Celsius
         NV_THERMAL_TARGET           target;             //!< Thermal sensor targeted - GPU, memory, chipset, powersupply, Visual Computing Device, etc
     } sensor[NVAPI_MAX_THERMAL_SENSORS_PER_GPU];
 
@@ -4157,7 +2957,7 @@ typedef struct
                                                 //!< field must be 0.
     NvU8*                   pbData;             //!< The buffer of data which is to be read or written (depending on the command).
     NvU32                   cbSize;             //!< The size of the data buffer, pbData, to be read or written.
-    NvU32                   i2cSpeed;           //!< The target speed of the transaction (between 28kbps to 40kbps; not guaranteed).
+    NvU32                   i2cSpeed;           //!< The target speed of the transaction (between 28Kbps to 40Kbps; not guaranteed).
 } NV_I2C_INFO_V1;
 
 //! Used in NvAPI_I2CRead() and NvAPI_I2CWrite()
@@ -4178,7 +2978,7 @@ typedef struct
     NvU8*                   pbData;             //!< The buffer of data which is to be read or written (depending on the command).
     NvU32                   cbSize;             //!< The size of the data buffer, pbData, to be read or written.
     NvU32                   i2cSpeed;           //!< Deprecated, Must be set to NVAPI_I2C_SPEED_DEPRECATED.
-    NV_I2C_SPEED            i2cSpeedKhz;        //!< The target speed of the transaction in KHz (Chosen from the enum NV_I2C_SPEED).
+    NV_I2C_SPEED            i2cSpeedKhz;        //!< The target speed of the transaction in (kHz) (Chosen from the enum NV_I2C_SPEED).
 } NV_I2C_INFO_V2;
 
 //! Used in NvAPI_I2CRead() and NvAPI_I2CWrite()
@@ -4199,7 +2999,7 @@ typedef struct
     NvU8*                   pbData;             //!< The buffer of data which is to be read or written (depending on the command).
     NvU32                   cbSize;             //!< The size of the data buffer, pbData, to be read or written.
     NvU32                   i2cSpeed;           //!< Deprecated, Must be set to NVAPI_I2C_SPEED_DEPRECATED.
-    NV_I2C_SPEED            i2cSpeedKhz;        //!< The target speed of the transaction in KHz (Chosen from the enum NV_I2C_SPEED).
+    NV_I2C_SPEED            i2cSpeedKhz;        //!< The target speed of the transaction in (kHz) (Chosen from the enum NV_I2C_SPEED).
     NvU8                    portId;             //!< The portid on which device is connected (remember to set bIsPortIdSet if this value is set)
                                                 //!< Optional for pre-Kepler
     NvU32                   bIsPortIdSet;       //!< set this flag on if and only if portid value is set
@@ -4672,6 +3472,236 @@ NVAPI_INTERFACE NvAPI_GPU_GetECCConfigurationInfo(NvPhysicalGpuHandle hPhysicalG
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_GPU_SetECCConfiguration(NvPhysicalGpuHandle hPhysicalGpu, NvU8 bEnable,
                                               NvU8 bEnableImmediately);
+
+
+
+//! \ingroup gpu
+typedef struct
+{
+    NvU32  version;              //!< version of this structure
+    NvU32  width;                //!< width of the input texture
+    NvU32  height;               //!< height of the input texture
+    float* blendingTexture;      //!< array of floating values building an intensity RGB texture
+} NV_SCANOUT_INTENSITY_DATA_V1;
+
+//! \ingroup gpu
+typedef struct
+{
+    NvU32  version;              //!< version of this structure
+    NvU32  width;                //!< width of the input texture
+    NvU32  height;               //!< height of the input texture
+    float* blendingTexture;      //!< array of floating values building an intensity RGB texture
+    float* offsetTexture;        //!< array of floating values building an offset texture
+    NvU32  offsetTexChannels;    //!< number of channels per pixel in the offset texture
+} NV_SCANOUT_INTENSITY_DATA_V2;
+
+typedef NV_SCANOUT_INTENSITY_DATA_V2 NV_SCANOUT_INTENSITY_DATA;
+
+//! \ingroup gpu
+#define NV_SCANOUT_INTENSITY_DATA_VER1    MAKE_NVAPI_VERSION(NV_SCANOUT_INTENSITY_DATA_V1, 1)
+#define NV_SCANOUT_INTENSITY_DATA_VER2    MAKE_NVAPI_VERSION(NV_SCANOUT_INTENSITY_DATA_V2, 2)
+#define NV_SCANOUT_INTENSITY_DATA_VER      NV_SCANOUT_INTENSITY_DATA_VER2
+
+///////////////////////////////////////////////////////////////////////////////
+// FUNCTION NAME: NvAPI_GPU_SetScanoutIntensity
+//
+//!   DESCRIPTION: This API enables and sets up per-pixel intensity feature on the specified display.
+//!
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+//!
+//! \param [in]   displayId              combined physical display and GPU identifier of the display to apply the intensity control.
+//! \param [in]   scanoutIntensityData   the intensity texture info.
+//! \param [out]  pbSticky(OUT)           indicates whether the settings will be kept over a reboot.
+//!
+//! \retval ::NVAPI_INVALID_ARGUMENT Invalid input parameters.
+//! \retval ::NVAPI_API_NOT_INITIALIZED NvAPI not initialized.
+//! \retval ::NVAPI_NOT_SUPPORTED Interface not supported by the driver used, or only supported on selected GPUs
+//! \retval ::NVAPI_INVALID_ARGUMENT Invalid input data.
+//! \retval ::NVAPI_INCOMPATIBLE_STRUCT_VERSION NV_SCANOUT_INTENSITY_DATA structure version mismatch.
+//! \retval ::NVAPI_OK Feature enabled.
+//! \retval ::NVAPI_ERROR Miscellaneous error occurred.
+//!
+//! \ingroup gpu
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_GPU_SetScanoutIntensity(NvU32 displayId, NV_SCANOUT_INTENSITY_DATA* scanoutIntensityData, int *pbSticky);
+
+
+//! \ingroup gpu
+typedef struct _NV_SCANOUT_INTENSITY_STATE_DATA
+{
+    NvU32  version;                                 //!< version of this structure
+    NvU32  bEnabled;                                //!< intensity is enabled or not
+} NV_SCANOUT_INTENSITY_STATE_DATA;
+
+//! \ingroup gpu
+#define NV_SCANOUT_INTENSITY_STATE_VER    MAKE_NVAPI_VERSION(NV_SCANOUT_INTENSITY_STATE_DATA, 1)
+
+///////////////////////////////////////////////////////////////////////////////
+// FUNCTION NAME: NvAPI_GPU_GetScanoutIntensityState
+//
+//!   DESCRIPTION: This API queries current state of the intensity feature on the specified display.
+//!
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+//!
+//! \param [in]     displayId                       combined physical display and GPU identifier of the display to query the configuration.
+//! \param [in,out] scanoutIntensityStateData       intensity state data.
+//!
+//! \return  This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//!          specific meaning for this API, they are listed below.
+//!
+//! \retval ::NVAPI_INVALID_ARGUMENT Invalid input parameters.
+//! \retval ::NVAPI_API_NOT_INITIALIZED NvAPI not initialized.
+//! \retval ::NVAPI_NOT_SUPPORTED Interface not supported by the driver used, or only supported on selected GPUs.
+//! \retval ::NVAPI_OK Feature enabled.
+//! \retval ::NVAPI_ERROR Miscellaneous error occurred.
+//!
+//! \ingroup gpu
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_GPU_GetScanoutIntensityState(__in NvU32 displayId, __inout NV_SCANOUT_INTENSITY_STATE_DATA* scanoutIntensityStateData);
+
+
+//! \ingroup gpu
+typedef enum
+{
+    NV_GPU_WARPING_VERTICE_FORMAT_TRIANGLESTRIP_XYUVRQ = 0,
+    NV_GPU_WARPING_VERTICE_FORMAT_TRIANGLES_XYUVRQ     = 1,
+} NV_GPU_WARPING_VERTICE_FORMAT;
+
+//! \ingroup gpu
+typedef struct
+{
+    NvU32  version;                                 //!< version of this structure
+    float* vertices;                                //!< width of the input texture
+    NV_GPU_WARPING_VERTICE_FORMAT vertexFormat;     //!< format of the input vertices
+    int    numVertices;                             //!< number of the input vertices
+    NvSBox* textureRect;                            //!< rectangle in desktop coordinates describing the source area for the warping
+} NV_SCANOUT_WARPING_DATA;
+
+//! \ingroup gpu
+#define NV_SCANOUT_WARPING_VER    MAKE_NVAPI_VERSION(NV_SCANOUT_WARPING_DATA, 1)
+
+
+///////////////////////////////////////////////////////////////////////////////
+// FUNCTION NAME: NvAPI_GPU_SetScanoutWarping
+//
+//!   DESCRIPTION: This API enables and sets up the warping feature on the specified display.
+//!
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+//!
+//! \param [in]    displayId               Combined physical display and GPU identifier of the display to apply the intensity control
+//! \param [in]    scanoutWarpingData      The warping data info
+//! \param [out]   pbSticky                Indicates whether the settings will be kept over a reboot.
+//!
+//! \retval ::NVAPI_INVALID_ARGUMENT Invalid input parameters.
+//! \retval ::NVAPI_API_NOT_INITIALIZED NvAPI not initialized.
+//! \retval ::NVAPI_NOT_SUPPORTED Interface not supported by the driver used, or only supported on selected GPUs
+//! \retval ::NVAPI_INVALID_ARGUMENT Invalid input data.
+//! \retval ::NVAPI_INCOMPATIBLE_STRUCT_VERSION NV_SCANOUT_INTENSITY_DATA structure version mismatch.
+//! \retval ::NVAPI_OK Feature enabled.
+//! \retval ::NVAPI_ERROR Miscellaneous error occurred.
+//!
+//! \ingroup gpu
+///////////////////////////////////////////////////////////////////////////////
+
+NVAPI_INTERFACE NvAPI_GPU_SetScanoutWarping(NvU32 displayId, NV_SCANOUT_WARPING_DATA* scanoutWarpingData, int* piMaxNumVertices, int* pbSticky);
+
+
+//! \ingroup gpu
+typedef struct _NV_SCANOUT_WARPING_STATE_DATA
+{
+    NvU32  version;                                  //!< version of this structure
+    NvU32  bEnabled;                                 //!< warping is enabled or not
+} NV_SCANOUT_WARPING_STATE_DATA;
+
+//! \ingroup gpu
+#define NV_SCANOUT_WARPING_STATE_VER    MAKE_NVAPI_VERSION(NV_SCANOUT_WARPING_STATE_DATA, 1)
+
+///////////////////////////////////////////////////////////////////////////////
+// FUNCTION NAME: NvAPI_GPU_GetScanoutWarpingState
+//
+//!   DESCRIPTION: This API queries current state of the warping feature on the specified display.
+//!
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+//!
+//! \param [in]     displayId                      combined physical display and GPU identifier of the display to query the configuration.
+//! \param [in,out] scanoutWarpingStateData        warping state data.
+//!
+//! \return  This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
+//!          specific meaning for this API, they are listed below.
+//!
+//! \retval ::NVAPI_INVALID_ARGUMENT Invalid input parameters.
+//! \retval ::NVAPI_API_NOT_INITIALIZED NvAPI not initialized.
+//! \retval ::NVAPI_NOT_SUPPORTED Interface not supported by the driver used, or only supported on selected GPUs.
+//! \retval ::NVAPI_OK Feature enabled.
+//! \retval ::NVAPI_ERROR Miscellaneous error occurred.
+//!
+//! \ingroup gpu
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_GPU_GetScanoutWarpingState(__in NvU32 displayId, __inout NV_SCANOUT_WARPING_STATE_DATA* scanoutWarpingStateData);
+
+
+///////////////////////////////////////////////////////////////////////////////
+// FUNCTION NAME: NvAPI_GPU_GetScanoutConfiguration
+//
+//!   DESCRIPTION: This API queries the desktop and scanout portion of the specified display.
+//!
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+//!
+//! \param [in]     displayId          combined physical display and GPU identifier of the display to query the configuration.
+//! \param [in,out] desktopRect        desktop area of the display in desktop coordinates.
+//! \param [in,out] scanoutRect        scanout area of the display relative to desktopRect.
+//!
+//! \retval ::NVAPI_INVALID_ARGUMENT Invalid input parameters.
+//! \retval ::NVAPI_API_NOT_INITIALIZED NvAPI not initialized.
+//! \retval ::NVAPI_NOT_SUPPORTED Interface not supported by the driver used, or only supported on selected GPUs.
+//! \retval ::NVAPI_OK Feature enabled.
+//! \retval ::NVAPI_ERROR Miscellaneous error occurred.
+//!
+//! \ingroup gpu
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_GPU_GetScanoutConfiguration(NvU32 displayId, NvSBox* desktopRect, NvSBox* scanoutRect);
+
+
+
+//! \ingroup gpu
+//! Used in NvAPI_GPU_GetScanoutConfigurationEx().
+typedef struct _NV_SCANOUT_INFORMATION
+{
+    NvU32      version;                 //!< Structure version, needs to be initialized with NV_SCANOUT_INFORMATION_VER.
+
+    NvSBox     sourceDesktopRect;       //!< Operating system display device rect in desktop coordinates displayId is scanning out from.
+    NvSBox     sourceViewportRect;      //!< Area inside the sourceDesktopRect which is scanned out to the display.
+    NvSBox     targetViewportRect;      //!< Area inside the rect described by targetDisplayWidth/Height sourceViewportRect is scanned out to.
+    NvU32      targetDisplayWidth;      //!< Horizontal size of the active resolution scanned out to the display.
+    NvU32      targetDisplayHeight;     //!< Vertical size of the active resolution scanned out to the display.
+    NvU32      cloneImportance;         //!< If targets are cloned views of the sourceDesktopRect the cloned targets have an imporantce assigned (0:primary,1 secondary,...).
+    NV_ROTATE  sourceToTargetRotation;  //!< Rotation performed between the sourceViewportRect and the targetViewportRect.
+} NV_SCANOUT_INFORMATION;
+
+#define NV_SCANOUT_INFORMATION_VER  MAKE_NVAPI_VERSION(NV_SCANOUT_INFORMATION,1)
+
+///////////////////////////////////////////////////////////////////////////////
+// FUNCTION NAME: NvAPI_GPU_GetScanoutConfigurationEx
+//
+//!   DESCRIPTION: This API queries the desktop and scanout portion of the specified display.
+//!
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+//! \since Release: 331
+//!
+//! \param [in]     displayId            combined physical display and GPU identifier of the display to query the configuration.
+//! \param [in,out] pScanoutInformation  desktop area to displayId mapping information.
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!
+//! \ingroup gpu
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_GPU_GetScanoutConfigurationEx(__in NvU32 displayId, __inout NV_SCANOUT_INFORMATION *pScanoutInformation);
 
 
 //! Used in NvAPI_GPU_GetPerfDecreaseInfo.
@@ -6392,26 +5422,6 @@ NVAPI_INTERFACE NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, Nv
 
 
 
-//! SUPPORTED OS:  Windows XP and higher
-//!
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME:   NvAPI_DISP_GetGDIPrimaryDisplayId
-//
-//! DESCRIPTION:     This API returns the Display ID of the GDI Primary.
-//!
-//! \param [out]     displayId   Display ID of the GDI Primary display.
-//!
-//! \retval ::NVAPI_OK:                          Capabilties have been returned.
-//! \retval ::NVAPI_NVIDIA_DEVICE_NOT_FOUND:     GDI Primary not on an NVIDIA GPU.
-//! \retval ::NVAPI_INVALID_ARGUMENT:            One or more args passed in are invalid.
-//! \retval ::NVAPI_API_NOT_INTIALIZED:          The NvAPI API needs to be initialized first
-//! \retval ::NVAPI_NO_IMPLEMENTATION:           This entrypoint not available
-//! \retval ::NVAPI_ERROR:                       Miscellaneous error occurred
-//!
-//! \ingroup dispcontrol
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32* displayId);
 
 ///////////////////////////////////////////////////////////////////////////////
 // FUNCTION NAME:   NvAPI_DISP_GetDisplayConfig
@@ -6503,9 +5513,6 @@ NVAPI_INTERFACE NvAPI_DISP_SetDisplayConfig(__in NvU32 pathInfoCount, __in_ecoun
 
 #define NVAPI_MAX_MOSAIC_DISPLAY_ROWS       8
 #define NVAPI_MAX_MOSAIC_DISPLAY_COLUMNS    8
-
-#define NV_MOSAIC_MAX_DISPLAYS      (64)
-
 //
 // These bits are used to describe the validity of a topo.
 //
@@ -7040,44 +6047,6 @@ typedef NV_MOSAIC_GRID_TOPO_V1           NV_MOSAIC_GRID_TOPO;
 //! @}
 
 //! since Release R290
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME:   NvAPI_Mosaic_GetDisplayViewportsByResolution
-//
-//! DESCRIPTION:     This API returns the viewports that would be applied on
-//!                  the requested display.
-//!
-//! \param [in]      displayId       Display ID of a single display in the active
-//!                                  mosaic topology to query.
-//! \param [in]      srcWidth        Width of full display topology. If both
-//!                                  width and height are 0, the current
-//!                                  resolution is used.
-//! \param [in]      srcHeight       Height of full display topology. If both
-//!                                  width and height are 0, the current
-//!                                  resolution is used.
-//! \param [out]     viewports       Array of NV_RECT viewports which represent
-//!                                  the displays as identified in
-//!                                  NvAPI_Mosaic_EnumGridTopologies. If the
-//!                                  requested resolution is a single-wide
-//!                                  resolution, only viewports[0] will
-//!                                  contain the viewport details, regardless
-//!                                  of which display is driving the display.
-//! \param [out]     bezelCorrected  Returns 1 if the requested resolution is
-//!                                  bezel corrected. May be NULL.
-//!
-//! \retval ::NVAPI_OK                          Capabilties have been returned.
-//! \retval ::NVAPI_INVALID_ARGUMENT            One or more args passed in are invalid.
-//! \retval ::NVAPI_API_NOT_INTIALIZED          The NvAPI API needs to be initialized first
-//! \retval ::NVAPI_MOSAIC_NOT_ACTIVE           The display does not belong to an active Mosaic Topology
-//! \retval ::NVAPI_NO_IMPLEMENTATION           This entrypoint not available
-//! \retval ::NVAPI_ERROR                       Miscellaneous error occurred
-//!
-//! \ingroup mosaicapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Mosaic_GetDisplayViewportsByResolution(NvU32 displayId, NvU32 srcWidth, NvU32 srcHeight, NV_RECT viewports[NV_MOSAIC_MAX_DISPLAYS], NvU8* bezelCorrected);
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7879,62 +6848,8 @@ NVAPI_INTERFACE NvAPI_GSync_GetStatusParameters(NvGSyncDeviceHandle hNvGSyncDevi
 
 
 
-//-----------------------------------------------------------------------------
-// DirectX APIs
-//-----------------------------------------------------------------------------
 
 
-//! \ingroup dx
-//! Used in NvAPI_D3D10_GetCurrentSLIState(), and NvAPI_D3D_GetCurrentSLIState().
-typedef struct
-{
-    NvU32 version;                    //!< Structure version
-    NvU32 maxNumAFRGroups;            //!< [OUT] The maximum possible value of numAFRGroups
-    NvU32 numAFRGroups;               //!< [OUT] The number of AFR groups enabled in the system
-    NvU32 currentAFRIndex;            //!< [OUT] The AFR group index for the frame currently being rendered
-    NvU32 nextFrameAFRIndex;          //!< [OUT] What the AFR group index will be for the next frame (i.e. after calling Present)
-    NvU32 previousFrameAFRIndex;      //!< [OUT] The AFR group index that was used for the previous frame (~0 if more than one frame has not been rendered yet)
-    NvU32 bIsCurAFRGroupNew;          //!< [OUT] Boolean: Is this frame the first time running on the current AFR group
-
-} NV_GET_CURRENT_SLI_STATE;
-
-//! \ingroup dx
-#define NV_GET_CURRENT_SLI_STATE_VER  MAKE_NVAPI_VERSION(NV_GET_CURRENT_SLI_STATE,1)
-
-
-
-
-#if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
-
-NV_DECLARE_HANDLE(NVDX_ObjectHandle);  // DX Objects
-static const NVDX_ObjectHandle NVDX_OBJECT_NONE = 0;
-
-#endif //if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
-
-
-#if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME:   NvAPI_D3D_GetCurrentSLIState
-//
-//! DESCRIPTION:     This function returns the current SLI state for the specified device.  The structure
-//!                  contains the number of AFR groups, the current AFR group index,
-//!                  and what the AFR group index will be for the next frame. \p
-//!                  pDevice can be either a IDirect3DDevice9 or ID3D10Device pointer.
-//!
-//! SUPPORTED OS:  Windows XP and higher
-//!
-//!
-//! \since Release: 173
-//!
-//! \retval         NVAPI_OK     Completed request
-//! \retval         NVAPI_ERROR  Error occurred
-//!
-//! \ingroup  dx
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_D3D_GetCurrentSLIState(IUnknown *pDevice, NV_GET_CURRENT_SLI_STATE *pSliState);
-#endif //if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
 
 #if defined(_D3D9_H_)
 ///////////////////////////////////////////////////////////////////////////////
@@ -8097,6 +7012,13 @@ NVAPI_INTERFACE NvAPI_D3D9_ClearRT(IDirect3DDevice9 * pDevice,
 
 
 
+
+
+
+
+
+
+
 #if defined(_D3D9_H_) && defined(__cplusplus)
 //! SUPPORTED OS:  Windows XP and higher
 //!
@@ -8189,6 +7111,9 @@ NVAPI_INTERFACE NvAPI_D3D9_VideoSetStereoInfo(IDirect3DDevice9 *pDev,
 
 //! @}
 #endif //defined(_D3D9_H_) && defined(__cplusplus)
+
+
+
 
 
 #if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__)
@@ -9881,73 +8806,7 @@ NVAPI_INTERFACE NvAPI_Stereo_SetConfigurationProfileValue(NV_STEREO_REGISTRY_PRO
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_Stereo_DeleteConfigurationProfileValue(NV_STEREO_REGISTRY_PROFILE_TYPE registryProfileType, NV_STEREO_REGISTRY_ID valueRegistryID);
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_Enable
-//
-//! DESCRIPTION:   This APU enables stereo mode in the registry.
-//!                Calls to this function affect the entire system.
-//!                If stereo is not enabled, then calls to functions that require that stereo is enabled have no effect,
-//!                and will return the appropriate error code.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \retval ::NVAPI_OK                      Stereo is now enabled.
-//! \retval ::NVAPI_API_NOT_INTIALIZED 
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED  Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR 
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_Enable(void);
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_Disable
-//
-//! DESCRIPTION:   This API disables stereo mode in the registry.
-//!                Calls to this function affect the entire system.
-//!                If stereo is not enabled, then calls to functions that require that stereo is enabled have no effect,
-//!                and will return the appropriate error code.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \retval ::NVAPI_OK                     Stereo is now disabled.
-//! \retval ::NVAPI_API_NOT_INTIALIZED  
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR 
-//!
-//! \ingroup stereoapi 
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_Disable(void);
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_IsEnabled
-//
-//! DESCRIPTION:   This API checks if stereo mode is enabled in the registry.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \param [out]     pIsStereoEnabled   Address where the result of the inquiry will be placed.
-//!
-//! \retval ::NVAPI_OK                       Check was sucessfully completed and result reflects current state of stereo availability.
-//! \retval ::NVAPI_API_NOT_INTIALIZED 
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED   Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR 
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_IsEnabled(NvU8 *pIsStereoEnabled);
 
 
 
@@ -10001,206 +8860,11 @@ typedef NVAPI_STEREO_CAPS_V1    NVAPI_STEREO_CAPS;
 NVAPI_INTERFACE NvAPI_Stereo_GetStereoSupport(__in NvMonitorHandle hMonitor, __out NVAPI_STEREO_CAPS *pCaps);
 
 
-#if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_CreateHandleFromIUnknown
-//
-//! DESCRIPTION:   This API creates a stereo handle that is used in subsequent calls related to a given device interface.
-//!                This must be called before any other NvAPI_Stereo_ function for that handle.
-//!                Multiple devices can be used at one time using multiple calls to this function (one per each device). 
-//!
-//! HOW TO USE:    After the Direct3D device is created, create the stereo handle.
-//!                On call success:
-//!                -# Use all other NvAPI_Stereo_ functions that have stereo handle as first parameter.
-//!                -# After the device interface that corresponds to the the stereo handle is destroyed,
-//!                the application should call NvAPI_DestroyStereoHandle() for that stereo handle. 
-//!
-//! WHEN TO USE:   After the stereo handle for the device interface is created via successfull call to the appropriate NvAPI_Stereo_CreateHandleFrom() function.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \param [in]     pDevice        Pointer to IUnknown interface that is IDirect3DDevice9* in DX9, ID3D10Device*.
-//! \param [out]    pStereoHandle  Pointer to the newly created stereo handle.
-//!
-//! \retval ::NVAPI_OK                       Stereo handle is created for given device interface.
-//! \retval ::NVAPI_INVALID_ARGUMENT         Provided device interface is invalid.
-//! \retval ::NVAPI_API_NOT_INTIALIZED  
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED   Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR 
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_CreateHandleFromIUnknown(IUnknown *pDevice, StereoHandle *pStereoHandle);
-
-#endif // defined(_D3D9_H_) || defined(__d3d10_h__)
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_DestroyHandle
-//
-//! DESCRIPTION:   This API destroys the stereo handle created with one of the NvAPI_Stereo_CreateHandleFrom() functions.
-//!                This should be called after the device corresponding to the handle has been destroyed.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \param [in]     stereoHandle  Stereo handle that is to be destroyed.
-//!
-//! \retval ::NVAPI_OK                      Stereo handle is destroyed.
-//! \retval ::NVAPI_API_NOT_INTIALIZED      
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED  Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR                   
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_DestroyHandle(StereoHandle stereoHandle);
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_Activate
-//
-//! DESCRIPTION:   This API activates stereo for the device interface corresponding to the given stereo handle.
-//!                Activating stereo is possible only if stereo was enabled previously in the registry.
-//!                If stereo is not activated, then calls to functions that require that stereo is activated have no effect,
-//!                and will return the appropriate error code. 
-//!
-//! WHEN TO USE:   After the stereo handle for the device interface is created via successfull call to the appropriate NvAPI_Stereo_CreateHandleFrom() function.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \param [in]    stereoHandle  Stereo handle corresponding to the device interface.
-//!
-//! \retval ::NVAPI_OK                                Stereo is turned on.
-//! \retval ::NVAPI_STEREO_INVALID_DEVICE_INTERFACE   Device interface is not valid. Create again, then attach again.
-//! \retval ::NVAPI_API_NOT_INTIALIZED 
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED            Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR 
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_Activate(StereoHandle stereoHandle);
 
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_Deactivate
-//
-//! DESCRIPTION:   This API deactivates stereo for the given device interface.
-//!                If stereo is not activated, then calls to functions that require that stereo is activated have no effect,
-//!                and will return the appropriate error code. 
-//!
-//! WHEN TO USE:   After the stereo handle for the device interface is created via successfull call to the appropriate NvAPI_Stereo_CreateHandleFrom() function.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \param [in]     stereoHandle  Stereo handle that corresponds to the device interface.
-//!
-//! \retval ::NVAPI_OK                               Stereo is turned off.
-//! \retval ::NVAPI_STEREO_INVALID_DEVICE_INTERFACE  Device interface is not valid. Create again, then attach again.
-//! \retval ::NVAPI_API_NOT_INTIALIZED 
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED           Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR 
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_Deactivate(StereoHandle stereoHandle);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_IsActivated
-//
-//! DESCRIPTION:   This API checks if stereo is activated for the given device interface. 
-//!
-//! WHEN TO USE:   After the stereo handle for the device interface is created via successfull call to the appropriate NvAPI_Stereo_CreateHandleFrom() function.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \param [in]    stereoHandle  Stereo handle that corresponds to the device interface.
-//! \param [in]    pIsStereoOn   Address where result of the inquiry will be placed.
-//! 
-//! \retval ::NVAPI_OK - Check was sucessfully completed and result reflects current state of stereo (on/off).
-//! \retval ::NVAPI_STEREO_INVALID_DEVICE_INTERFACE - Device interface is not valid. Create again, then attach again.
-//! \retval ::NVAPI_API_NOT_INTIALIZED - NVAPI not initialized.
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED - Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR - Something is wrong (generic error).
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_IsActivated(StereoHandle stereoHandle, NvU8 *pIsStereoOn);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_GetSeparation
-//
-//! DESCRIPTION:   This API gets current separation value (in percents). 
-//!
-//! WHEN TO USE:   After the stereo handle for the device interface is created via successfull call to the appropriate NvAPI_Stereo_CreateHandleFrom() function.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \param [in]     stereoHandle           Stereo handle that corresponds to the device interface.
-//! \param [out]    pSeparationPercentage  Address of @c float type variable to store current separation percentage in.
-//!
-//! \retval ::NVAPI_OK                                Retrieval of separation percentage was successfull.
-//! \retval ::NVAPI_STEREO_INVALID_DEVICE_INTERFACE   Device interface is not valid. Create again, then attach again.
-//! \retval ::NVAPI_API_NOT_INTIALIZED  
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED            Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR  
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_GetSeparation(StereoHandle stereoHandle, float *pSeparationPercentage);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_SetSeparation
-//
-//! DESCRIPTION:   This API sets separation to given percentage. 
-//!
-//! WHEN TO USE:   After the stereo handle for the device interface is created via successfull call to appropriate NvAPI_Stereo_CreateHandleFrom() function.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \param [in]     stereoHandle             Stereo handle that corresponds to the device interface.
-//! \param [in]     newSeparationPercentage  New value for separation percentage.
-//!
-//! \retval ::NVAPI_OK                               Setting of separation percentage was successfull.
-//! \retval ::NVAPI_STEREO_INVALID_DEVICE_INTERFACE  Device interface is not valid. Create again, then attach again.
-//! \retval ::NVAPI_API_NOT_INTIALIZED               NVAPI not initialized.
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED           Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_STEREO_PARAMETER_OUT_OF_RANGE    Given separation percentage is out of [0..100] range.
-//! \retval ::NVAPI_ERROR 
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_SetSeparation(StereoHandle stereoHandle, float newSeparationPercentage);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10255,58 +8919,6 @@ NVAPI_INTERFACE NvAPI_Stereo_DecreaseSeparation(StereoHandle stereoHandle);
 NVAPI_INTERFACE NvAPI_Stereo_IncreaseSeparation(StereoHandle stereoHandle);
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_GetConvergence
-//
-//! DESCRIPTION:   This API gets the current convergence value.
-//!
-//! WHEN TO USE:   After the stereo handle for the device interface is created via successfull call to the appropriate NvAPI_Stereo_CreateHandleFrom() function.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \param [in]     stereoHandle   Stereo handle that corresponds to the device interface.
-//! \param [out]    pConvergence   Address of @c float type variable to store current convergence value in.
-//!
-//! \retval ::NVAPI_OK                               Retrieval of convergence value was successfull.
-//! \retval ::NVAPI_STEREO_INVALID_DEVICE_INTERFACE  Device interface is not valid. Create again, then attach again.
-//! \retval ::NVAPI_API_NOT_INTIALIZED  
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED           Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR 
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_GetConvergence(StereoHandle stereoHandle, float *pConvergence);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_SetConvergence
-//
-//! DESCRIPTION:   This API sets convergence to the given value.
-//!
-//! WHEN TO USE:   After the stereo handle for the device interface is created via successfull call to the appropriate NvAPI_Stereo_CreateHandleFrom() function.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 180
-//!
-//! \param [in]     stereoHandle              Stereo handle that corresponds to the device interface.
-//! \param [in]     newConvergence            New value for convergence.
-//! 
-//! \retval ::NVAPI_OK                                Setting of convergence value was successfull.
-//! \retval ::NVAPI_STEREO_INVALID_DEVICE_INTERFACE   Device interface is not valid. Create again, then attach again.
-//! \retval ::NVAPI_API_NOT_INTIALIZED  
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED            Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR 
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_SetConvergence(StereoHandle stereoHandle, float newConvergence);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10645,167 +9257,14 @@ NVAPI_INTERFACE NvAPI_Stereo_ReverseStereoBlitControl(StereoHandle hStereoHandle
 NVAPI_INTERFACE NvAPI_Stereo_SetNotificationMessage(StereoHandle hStereoHandle, NvU64 hWnd,NvU64 messageID);
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_SetActiveEye
-//
-//! \fn NvAPI_Stereo_SetActiveEye(StereoHandle hStereoHandle, NV_STEREO_ACTIVE_EYE StereoEye);
-//! DESCRIPTION:   This API sets the back buffer to left or right in Direct stereo mode.
-//!                  
-//! HOW TO USE:    After the stereo handle for device interface is created via successfull call to appropriate 
-//!                NvAPI_Stereo_CreateHandleFrom function.
-//!
-//! \since Release: 285
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \param [in]   stereoHandle  Stereo handle that corresponds to the device interface.
-//! \param [in]   StereoEye     Defines active eye in Direct stereo mode
-//!
-//! \retval ::NVAPI_OK - Active eye is set.
-//! \retval ::NVAPI_STEREO_INVALID_DEVICE_INTERFACE - Device interface is not valid. Create again, then attach again.
-//! \retval ::NVAPI_API_NOT_INTIALIZED - NVAPI not initialized.
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED - Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_INVALID_ARGUMENT - StereoEye parameter has not allowed value.
-//! \retval ::NVAPI_SET_NOT_ALLOWED  - Current stereo mode is not Direct
-//! \retval ::NVAPI_ERROR - Something is wrong (generic error).
-//
-///////////////////////////////////////////////////////////////////////////////
-
-//! \ingroup stereoapi
-typedef enum _NV_StereoActiveEye
-{
-    NVAPI_STEREO_EYE_RIGHT = 1,
-    NVAPI_STEREO_EYE_LEFT = 2,
-    NVAPI_STEREO_EYE_MONO = 3,
-} NV_STEREO_ACTIVE_EYE;
-
-//! \ingroup stereoapi
-NVAPI_INTERFACE NvAPI_Stereo_SetActiveEye(StereoHandle hStereoHandle, NV_STEREO_ACTIVE_EYE StereoEye);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_SetDriverMode
-//
-//! \fn NvAPI_Stereo_SetDriverMode( NV_STEREO_DRIVER_MODE mode );
-//! DESCRIPTION:   This API sets the 3D stereo driver mode: Direct or Automatic
-//!                  
-//! HOW TO USE:    This API must be called before the device is created.
-//!                Applies to DirectX 9 and higher.
-//!
-//! \since Release: 285
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!      
-//! \param [in]    mode       Defines the 3D stereo driver mode: Direct or Automatic
-//!
-//! \retval ::NVAPI_OK                      Active eye is set.
-//! \retval ::NVAPI_API_NOT_INTIALIZED      NVAPI not initialized.
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED  Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_INVALID_ARGUMENT        mode parameter has not allowed value.
-//! \retval ::NVAPI_ERROR                   Something is wrong (generic error).
-//
-///////////////////////////////////////////////////////////////////////////////
-
-//! \ingroup stereoapi
-typedef enum _NV_StereoDriverMode
-{
-    NVAPI_STEREO_DRIVER_MODE_AUTOMATIC = 0,
-    NVAPI_STEREO_DRIVER_MODE_DIRECT    = 2,
-} NV_STEREO_DRIVER_MODE;
-
-//! \ingroup stereoapi
-NVAPI_INTERFACE NvAPI_Stereo_SetDriverMode( NV_STEREO_DRIVER_MODE mode );
 
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_GetEyeSeparation
-//
-//! DESCRIPTION:   This API returns eye separation as a ratio of <between eye distance>/<physical screen width>.
-//! 
-//! HOW TO USE:    After the stereo handle for device interface is created via successfull call to appropriate API. Applies only to DirectX 9 and up.
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \param [in]   stereoHandle  Stereo handle that corresponds to the device interface.
-//! \param [out]  pSeparation   Eye separation.
-//!
-//! \retval ::NVAPI_OK                               Active eye is set.
-//! \retval ::NVAPI_STEREO_INVALID_DEVICE_INTERFACE  Device interface is not valid. Create again, then attach again.
-//! \retval ::NVAPI_API_NOT_INTIALIZED               NVAPI not initialized.
-//! \retval ::NVAPI_STEREO_NOT_INITIALIZED           Stereo part of NVAPI not initialized.
-//! \retval ::NVAPI_ERROR  (generic error).
-//!
-//! \ingroup stereoapi
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_Stereo_GetEyeSeparation(StereoHandle hStereoHandle,  float *pSeparation );
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_SetSurfaceCreationMode
-//
-//! \function NvAPI_Stereo_SetSurfaceCreationMode(StereoHandle hStereoHandle, NVAPI_STEREO_SURFACECREATEMODE creationMode)
-//! \param [in]   hStereoHandle   Stereo handle that corresponds to the device interface.
-//! \param [in]   creationMode    New surface creation mode for this device interface.
-//!
-//! \since Release: 285
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! DESCRIPTION: This API sets surface creation mode for this device interface.
-//!
-//! WHEN TO USE: After the stereo handle for device interface is created via successful call to appropriate NvAPI_Stereo_CreateHandleFrom function.
-//!
-//! \return      This API can return any of the error codes enumerated in #NvAPI_Status. 
-//!              There are no return error codes with specific meaning for this API.
-//!
-///////////////////////////////////////////////////////////////////////////////
-
-//! \ingroup stereoapi
-typedef enum _NVAPI_STEREO_SURFACECREATEMODE 
-{
-    NVAPI_STEREO_SURFACECREATEMODE_AUTO,        //!< Use driver registry profile settings for surface creation mode. 
-    NVAPI_STEREO_SURFACECREATEMODE_FORCESTEREO, //!< Always create stereo surfaces. 
-    NVAPI_STEREO_SURFACECREATEMODE_FORCEMONO    //!< Always create mono surfaces. 
-} NVAPI_STEREO_SURFACECREATEMODE; 
-
-//! \ingroup stereoapi
-NVAPI_INTERFACE NvAPI_Stereo_SetSurfaceCreationMode(__in StereoHandle hStereoHandle, __in NVAPI_STEREO_SURFACECREATEMODE creationMode);
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_Stereo_GetSurfaceCreationMode
-//
-//! \function NvAPI_Stereo_GetSurfaceCreationMode(StereoHandle hStereoHandle, NVAPI_STEREO_SURFACECREATEMODE* pCreationMode)
-//! \param [in]   hStereoHandle   Stereo handle that corresponds to the device interface.
-//! \param [out]   pCreationMode   The current creation mode for this device interface.
-//!
-//! \since Release: 295
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! DESCRIPTION: This API gets surface creation mode for this device interface.
-//!
-//! WHEN TO USE: After the stereo handle for device interface is created via successful call to appropriate NvAPI_Stereo_CreateHandleFrom function.
-//!
-//! \return      This API can return any of the error codes enumerated in #NvAPI_Status. 
-//!              There are no return error codes with specific meaning for this API.
-//!
-///////////////////////////////////////////////////////////////////////////////
-
-//! \ingroup stereoapi
-NVAPI_INTERFACE NvAPI_Stereo_GetSurfaceCreationMode(__in StereoHandle hStereoHandle, __in NVAPI_STEREO_SURFACECREATEMODE* pCreationMode);
 
 
 
@@ -11973,793 +10432,6 @@ NVAPI_INTERFACE NvAPI_SYS_GetGpuAndOutputIdFromDisplayId(NvU32 displayId, NvPhys
 NVAPI_INTERFACE NvAPI_SYS_GetPhysicalGpuFromDisplayId(NvU32 displayId, NvPhysicalGpuHandle *hPhysicalGpu);
 
 
-#if (((defined(WIN32) || defined(_WIN32)) && defined(_MSC_VER) && (_MSC_VER <= 1399) && !defined(NVAPI_INTERNAL)) || defined(NVAPI_DEPRECATED_OLD))
-#pragma deprecated( NvAPI_SetView, NvAPI_SetViewEx, NvAPI_GetDisplayDriverVersion, NvAPI_GPU_GetAllOutputs, NvAPI_GPU_GetConnectedOutputs, NvAPI_GPU_GetConnectedSLIOutputs, NvAPI_GPU_GetConnectedOutputsWithLidState, NvAPI_GPU_GetConnectedSLIOutputsWithLidState, NvAPI_GPU_GetPstatesInfoEx, NvAPI_GetView, NvAPI_GetViewEx, NvAPI_VIO_SetCSC, NvAPI_VIO_GetCSC, NvAPI_VIO_SetGamma, NvAPI_VIO_GetGamma, NvAPI_VIO_SetSyncDelay, NvAPI_VIO_GetSyncDelay )
-#endif
-
-#ifndef __NVAPI_EMPTY_SAL
-#ifdef __nvapi_undef__ecount
-    #undef __ecount
-    #undef __nvapi_undef__ecount
-#endif
-#ifdef __nvapi_undef__bcount
-    #undef __bcount
-    #undef __nvapi_undef__bcount
-#endif
-#ifdef __nvapi_undef__in
-    #undef __in
-    #undef __nvapi_undef__in
-#endif
-#ifdef __nvapi_undef__in_ecount
-    #undef __in_ecount
-    #undef __nvapi_undef__in_ecount
-#endif
-#ifdef __nvapi_undef__in_bcount
-    #undef __in_bcount
-    #undef __nvapi_undef__in_bcount
-#endif
-#ifdef __nvapi_undef__in_z
-    #undef __in_z
-    #undef __nvapi_undef__in_z
-#endif
-#ifdef __nvapi_undef__in_ecount_z
-    #undef __in_ecount_z
-    #undef __nvapi_undef__in_ecount_z
-#endif
-#ifdef __nvapi_undef__in_bcount_z
-    #undef __in_bcount_z
-    #undef __nvapi_undef__in_bcount_z
-#endif
-#ifdef __nvapi_undef__in_nz
-    #undef __in_nz
-    #undef __nvapi_undef__in_nz
-#endif
-#ifdef __nvapi_undef__in_ecount_nz
-    #undef __in_ecount_nz
-    #undef __nvapi_undef__in_ecount_nz
-#endif
-#ifdef __nvapi_undef__in_bcount_nz
-    #undef __in_bcount_nz
-    #undef __nvapi_undef__in_bcount_nz
-#endif
-#ifdef __nvapi_undef__out
-    #undef __out
-    #undef __nvapi_undef__out
-#endif
-#ifdef __nvapi_undef__out_ecount
-    #undef __out_ecount
-    #undef __nvapi_undef__out_ecount
-#endif
-#ifdef __nvapi_undef__out_bcount
-    #undef __out_bcount
-    #undef __nvapi_undef__out_bcount
-#endif
-#ifdef __nvapi_undef__out_ecount_part
-    #undef __out_ecount_part
-    #undef __nvapi_undef__out_ecount_part
-#endif
-#ifdef __nvapi_undef__out_bcount_part
-    #undef __out_bcount_part
-    #undef __nvapi_undef__out_bcount_part
-#endif
-#ifdef __nvapi_undef__out_ecount_full
-    #undef __out_ecount_full
-    #undef __nvapi_undef__out_ecount_full
-#endif
-#ifdef __nvapi_undef__out_bcount_full
-    #undef __out_bcount_full
-    #undef __nvapi_undef__out_bcount_full
-#endif
-#ifdef __nvapi_undef__out_z
-    #undef __out_z
-    #undef __nvapi_undef__out_z
-#endif
-#ifdef __nvapi_undef__out_z_opt
-    #undef __out_z_opt
-    #undef __nvapi_undef__out_z_opt
-#endif
-#ifdef __nvapi_undef__out_ecount_z
-    #undef __out_ecount_z
-    #undef __nvapi_undef__out_ecount_z
-#endif
-#ifdef __nvapi_undef__out_bcount_z
-    #undef __out_bcount_z
-    #undef __nvapi_undef__out_bcount_z
-#endif
-#ifdef __nvapi_undef__out_ecount_part_z
-    #undef __out_ecount_part_z
-    #undef __nvapi_undef__out_ecount_part_z
-#endif
-#ifdef __nvapi_undef__out_bcount_part_z
-    #undef __out_bcount_part_z
-    #undef __nvapi_undef__out_bcount_part_z
-#endif
-#ifdef __nvapi_undef__out_ecount_full_z
-    #undef __out_ecount_full_z
-    #undef __nvapi_undef__out_ecount_full_z
-#endif
-#ifdef __nvapi_undef__out_bcount_full_z
-    #undef __out_bcount_full_z
-    #undef __nvapi_undef__out_bcount_full_z
-#endif
-#ifdef __nvapi_undef__out_nz
-    #undef __out_nz
-    #undef __nvapi_undef__out_nz
-#endif
-#ifdef __nvapi_undef__out_nz_opt
-    #undef __out_nz_opt
-    #undef __nvapi_undef__out_nz_opt
-#endif
-#ifdef __nvapi_undef__out_ecount_nz
-    #undef __out_ecount_nz
-    #undef __nvapi_undef__out_ecount_nz
-#endif
-#ifdef __nvapi_undef__out_bcount_nz
-    #undef __out_bcount_nz
-    #undef __nvapi_undef__out_bcount_nz
-#endif
-#ifdef __nvapi_undef__inout
-    #undef __inout
-    #undef __nvapi_undef__inout
-#endif
-#ifdef __nvapi_undef__inout_ecount
-    #undef __inout_ecount
-    #undef __nvapi_undef__inout_ecount
-#endif
-#ifdef __nvapi_undef__inout_bcount
-    #undef __inout_bcount
-    #undef __nvapi_undef__inout_bcount
-#endif
-#ifdef __nvapi_undef__inout_ecount_part
-    #undef __inout_ecount_part
-    #undef __nvapi_undef__inout_ecount_part
-#endif
-#ifdef __nvapi_undef__inout_bcount_part
-    #undef __inout_bcount_part
-    #undef __nvapi_undef__inout_bcount_part
-#endif
-#ifdef __nvapi_undef__inout_ecount_full
-    #undef __inout_ecount_full
-    #undef __nvapi_undef__inout_ecount_full
-#endif
-#ifdef __nvapi_undef__inout_bcount_full
-    #undef __inout_bcount_full
-    #undef __nvapi_undef__inout_bcount_full
-#endif
-#ifdef __nvapi_undef__inout_z
-    #undef __inout_z
-    #undef __nvapi_undef__inout_z
-#endif
-#ifdef __nvapi_undef__inout_ecount_z
-    #undef __inout_ecount_z
-    #undef __nvapi_undef__inout_ecount_z
-#endif
-#ifdef __nvapi_undef__inout_bcount_z
-    #undef __inout_bcount_z
-    #undef __nvapi_undef__inout_bcount_z
-#endif
-#ifdef __nvapi_undef__inout_nz
-    #undef __inout_nz
-    #undef __nvapi_undef__inout_nz
-#endif
-#ifdef __nvapi_undef__inout_ecount_nz
-    #undef __inout_ecount_nz
-    #undef __nvapi_undef__inout_ecount_nz
-#endif
-#ifdef __nvapi_undef__inout_bcount_nz
-    #undef __inout_bcount_nz
-    #undef __nvapi_undef__inout_bcount_nz
-#endif
-#ifdef __nvapi_undef__ecount_opt
-    #undef __ecount_opt
-    #undef __nvapi_undef__ecount_opt
-#endif
-#ifdef __nvapi_undef__bcount_opt
-    #undef __bcount_opt
-    #undef __nvapi_undef__bcount_opt
-#endif
-#ifdef __nvapi_undef__in_opt
-    #undef __in_opt
-    #undef __nvapi_undef__in_opt
-#endif
-#ifdef __nvapi_undef__in_ecount_opt
-    #undef __in_ecount_opt
-    #undef __nvapi_undef__in_ecount_opt
-#endif
-#ifdef __nvapi_undef__in_bcount_opt
-    #undef __in_bcount_opt
-    #undef __nvapi_undef__in_bcount_opt
-#endif
-#ifdef __nvapi_undef__in_z_opt
-    #undef __in_z_opt
-    #undef __nvapi_undef__in_z_opt
-#endif
-#ifdef __nvapi_undef__in_ecount_z_opt
-    #undef __in_ecount_z_opt
-    #undef __nvapi_undef__in_ecount_z_opt
-#endif
-#ifdef __nvapi_undef__in_bcount_z_opt
-    #undef __in_bcount_z_opt
-    #undef __nvapi_undef__in_bcount_z_opt
-#endif
-#ifdef __nvapi_undef__in_nz_opt
-    #undef __in_nz_opt
-    #undef __nvapi_undef__in_nz_opt
-#endif
-#ifdef __nvapi_undef__in_ecount_nz_opt
-    #undef __in_ecount_nz_opt
-    #undef __nvapi_undef__in_ecount_nz_opt
-#endif
-#ifdef __nvapi_undef__in_bcount_nz_opt
-    #undef __in_bcount_nz_opt
-    #undef __nvapi_undef__in_bcount_nz_opt
-#endif
-#ifdef __nvapi_undef__out_opt
-    #undef __out_opt
-    #undef __nvapi_undef__out_opt
-#endif
-#ifdef __nvapi_undef__out_ecount_opt
-    #undef __out_ecount_opt
-    #undef __nvapi_undef__out_ecount_opt
-#endif
-#ifdef __nvapi_undef__out_bcount_opt
-    #undef __out_bcount_opt
-    #undef __nvapi_undef__out_bcount_opt
-#endif
-#ifdef __nvapi_undef__out_ecount_part_opt
-    #undef __out_ecount_part_opt
-    #undef __nvapi_undef__out_ecount_part_opt
-#endif
-#ifdef __nvapi_undef__out_bcount_part_opt
-    #undef __out_bcount_part_opt
-    #undef __nvapi_undef__out_bcount_part_opt
-#endif
-#ifdef __nvapi_undef__out_ecount_full_opt
-    #undef __out_ecount_full_opt
-    #undef __nvapi_undef__out_ecount_full_opt
-#endif
-#ifdef __nvapi_undef__out_bcount_full_opt
-    #undef __out_bcount_full_opt
-    #undef __nvapi_undef__out_bcount_full_opt
-#endif
-#ifdef __nvapi_undef__out_ecount_z_opt
-    #undef __out_ecount_z_opt
-    #undef __nvapi_undef__out_ecount_z_opt
-#endif
-#ifdef __nvapi_undef__out_bcount_z_opt
-    #undef __out_bcount_z_opt
-    #undef __nvapi_undef__out_bcount_z_opt
-#endif
-#ifdef __nvapi_undef__out_ecount_part_z_opt
-    #undef __out_ecount_part_z_opt
-    #undef __nvapi_undef__out_ecount_part_z_opt
-#endif
-#ifdef __nvapi_undef__out_bcount_part_z_opt
-    #undef __out_bcount_part_z_opt
-    #undef __nvapi_undef__out_bcount_part_z_opt
-#endif
-#ifdef __nvapi_undef__out_ecount_full_z_opt
-    #undef __out_ecount_full_z_opt
-    #undef __nvapi_undef__out_ecount_full_z_opt
-#endif
-#ifdef __nvapi_undef__out_bcount_full_z_opt
-    #undef __out_bcount_full_z_opt
-    #undef __nvapi_undef__out_bcount_full_z_opt
-#endif
-#ifdef __nvapi_undef__out_ecount_nz_opt
-    #undef __out_ecount_nz_opt
-    #undef __nvapi_undef__out_ecount_nz_opt
-#endif
-#ifdef __nvapi_undef__out_bcount_nz_opt
-    #undef __out_bcount_nz_opt
-    #undef __nvapi_undef__out_bcount_nz_opt
-#endif
-#ifdef __nvapi_undef__inout_opt
-    #undef __inout_opt
-    #undef __nvapi_undef__inout_opt
-#endif
-#ifdef __nvapi_undef__inout_ecount_opt
-    #undef __inout_ecount_opt
-    #undef __nvapi_undef__inout_ecount_opt
-#endif
-#ifdef __nvapi_undef__inout_bcount_opt
-    #undef __inout_bcount_opt
-    #undef __nvapi_undef__inout_bcount_opt
-#endif
-#ifdef __nvapi_undef__inout_ecount_part_opt
-    #undef __inout_ecount_part_opt
-    #undef __nvapi_undef__inout_ecount_part_opt
-#endif
-#ifdef __nvapi_undef__inout_bcount_part_opt
-    #undef __inout_bcount_part_opt
-    #undef __nvapi_undef__inout_bcount_part_opt
-#endif
-#ifdef __nvapi_undef__inout_ecount_full_opt
-    #undef __inout_ecount_full_opt
-    #undef __nvapi_undef__inout_ecount_full_opt
-#endif
-#ifdef __nvapi_undef__inout_bcount_full_opt
-    #undef __inout_bcount_full_opt
-    #undef __nvapi_undef__inout_bcount_full_opt
-#endif
-#ifdef __nvapi_undef__inout_z_opt
-    #undef __inout_z_opt
-    #undef __nvapi_undef__inout_z_opt
-#endif
-#ifdef __nvapi_undef__inout_ecount_z_opt
-    #undef __inout_ecount_z_opt
-    #undef __nvapi_undef__inout_ecount_z_opt
-#endif
-#ifdef __nvapi_undef__inout_ecount_z_opt
-    #undef __inout_ecount_z_opt
-    #undef __nvapi_undef__inout_ecount_z_opt
-#endif
-#ifdef __nvapi_undef__inout_bcount_z_opt
-    #undef __inout_bcount_z_opt
-    #undef __nvapi_undef__inout_bcount_z_opt
-#endif
-#ifdef __nvapi_undef__inout_nz_opt
-    #undef __inout_nz_opt
-    #undef __nvapi_undef__inout_nz_opt
-#endif
-#ifdef __nvapi_undef__inout_ecount_nz_opt
-    #undef __inout_ecount_nz_opt
-    #undef __nvapi_undef__inout_ecount_nz_opt
-#endif
-#ifdef __nvapi_undef__inout_bcount_nz_opt
-    #undef __inout_bcount_nz_opt
-    #undef __nvapi_undef__inout_bcount_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_ecount
-    #undef __deref_ecount
-    #undef __nvapi_undef__deref_ecount
-#endif
-#ifdef __nvapi_undef__deref_bcount
-    #undef __deref_bcount
-    #undef __nvapi_undef__deref_bcount
-#endif
-#ifdef __nvapi_undef__deref_out
-    #undef __deref_out
-    #undef __nvapi_undef__deref_out
-#endif
-#ifdef __nvapi_undef__deref_out_ecount
-    #undef __deref_out_ecount
-    #undef __nvapi_undef__deref_out_ecount
-#endif
-#ifdef __nvapi_undef__deref_out_bcount
-    #undef __deref_out_bcount
-    #undef __nvapi_undef__deref_out_bcount
-#endif
-#ifdef __nvapi_undef__deref_out_ecount_part
-    #undef __deref_out_ecount_part
-    #undef __nvapi_undef__deref_out_ecount_part
-#endif
-#ifdef __nvapi_undef__deref_out_bcount_part
-    #undef __deref_out_bcount_part
-    #undef __nvapi_undef__deref_out_bcount_part
-#endif
-#ifdef __nvapi_undef__deref_out_ecount_full
-    #undef __deref_out_ecount_full
-    #undef __nvapi_undef__deref_out_ecount_full
-#endif
-#ifdef __nvapi_undef__deref_out_bcount_full
-    #undef __deref_out_bcount_full
-    #undef __nvapi_undef__deref_out_bcount_full
-#endif
-#ifdef __nvapi_undef__deref_out_z
-    #undef __deref_out_z
-    #undef __nvapi_undef__deref_out_z
-#endif
-#ifdef __nvapi_undef__deref_out_ecount_z
-    #undef __deref_out_ecount_z
-    #undef __nvapi_undef__deref_out_ecount_z
-#endif
-#ifdef __nvapi_undef__deref_out_bcount_z
-    #undef __deref_out_bcount_z
-    #undef __nvapi_undef__deref_out_bcount_z
-#endif
-#ifdef __nvapi_undef__deref_out_nz
-    #undef __deref_out_nz
-    #undef __nvapi_undef__deref_out_nz
-#endif
-#ifdef __nvapi_undef__deref_out_ecount_nz
-    #undef __deref_out_ecount_nz
-    #undef __nvapi_undef__deref_out_ecount_nz
-#endif
-#ifdef __nvapi_undef__deref_out_bcount_nz
-    #undef __deref_out_bcount_nz
-    #undef __nvapi_undef__deref_out_bcount_nz
-#endif
-#ifdef __nvapi_undef__deref_inout
-    #undef __deref_inout
-    #undef __nvapi_undef__deref_inout
-#endif
-#ifdef __nvapi_undef__deref_inout_z
-    #undef __deref_inout_z
-    #undef __nvapi_undef__deref_inout_z
-#endif
-#ifdef __nvapi_undef__deref_inout_ecount
-    #undef __deref_inout_ecount
-    #undef __nvapi_undef__deref_inout_ecount
-#endif
-#ifdef __nvapi_undef__deref_inout_bcount
-    #undef __deref_inout_bcount
-    #undef __nvapi_undef__deref_inout_bcount
-#endif
-#ifdef __nvapi_undef__deref_inout_ecount_part
-    #undef __deref_inout_ecount_part
-    #undef __nvapi_undef__deref_inout_ecount_part
-#endif
-#ifdef __nvapi_undef__deref_inout_bcount_part
-    #undef __deref_inout_bcount_part
-    #undef __nvapi_undef__deref_inout_bcount_part
-#endif
-#ifdef __nvapi_undef__deref_inout_ecount_full
-    #undef __deref_inout_ecount_full
-    #undef __nvapi_undef__deref_inout_ecount_full
-#endif
-#ifdef __nvapi_undef__deref_inout_bcount_full
-    #undef __deref_inout_bcount_full
-    #undef __nvapi_undef__deref_inout_bcount_full
-#endif
-#ifdef __nvapi_undef__deref_inout_z
-    #undef __deref_inout_z
-    #undef __nvapi_undef__deref_inout_z
-#endif
-#ifdef __nvapi_undef__deref_inout_ecount_z
-    #undef __deref_inout_ecount_z
-    #undef __nvapi_undef__deref_inout_ecount_z
-#endif
-#ifdef __nvapi_undef__deref_inout_bcount_z
-    #undef __deref_inout_bcount_z
-    #undef __nvapi_undef__deref_inout_bcount_z
-#endif
-#ifdef __nvapi_undef__deref_inout_nz
-    #undef __deref_inout_nz
-    #undef __nvapi_undef__deref_inout_nz
-#endif
-#ifdef __nvapi_undef__deref_inout_ecount_nz
-    #undef __deref_inout_ecount_nz
-    #undef __nvapi_undef__deref_inout_ecount_nz
-#endif
-#ifdef __nvapi_undef__deref_inout_bcount_nz
-    #undef __deref_inout_bcount_nz
-    #undef __nvapi_undef__deref_inout_bcount_nz
-#endif
-#ifdef __nvapi_undef__deref_ecount_opt
-    #undef __deref_ecount_opt
-    #undef __nvapi_undef__deref_ecount_opt
-#endif
-#ifdef __nvapi_undef__deref_bcount_opt
-    #undef __deref_bcount_opt
-    #undef __nvapi_undef__deref_bcount_opt
-#endif
-#ifdef __nvapi_undef__deref_out_opt
-    #undef __deref_out_opt
-    #undef __nvapi_undef__deref_out_opt
-#endif
-#ifdef __nvapi_undef__deref_out_ecount_opt
-    #undef __deref_out_ecount_opt
-    #undef __nvapi_undef__deref_out_ecount_opt
-#endif
-#ifdef __nvapi_undef__deref_out_bcount_opt
-    #undef __deref_out_bcount_opt
-    #undef __nvapi_undef__deref_out_bcount_opt
-#endif
-#ifdef __nvapi_undef__deref_out_ecount_part_opt
-    #undef __deref_out_ecount_part_opt
-    #undef __nvapi_undef__deref_out_ecount_part_opt
-#endif
-#ifdef __nvapi_undef__deref_out_bcount_part_opt
-    #undef __deref_out_bcount_part_opt
-    #undef __nvapi_undef__deref_out_bcount_part_opt
-#endif
-#ifdef __nvapi_undef__deref_out_ecount_full_opt
-    #undef __deref_out_ecount_full_opt
-    #undef __nvapi_undef__deref_out_ecount_full_opt
-#endif
-#ifdef __nvapi_undef__deref_out_bcount_full_opt
-    #undef __deref_out_bcount_full_opt
-    #undef __nvapi_undef__deref_out_bcount_full_opt
-#endif
-#ifdef __nvapi_undef__deref_out_z_opt
-    #undef __deref_out_z_opt
-    #undef __nvapi_undef__deref_out_z_opt
-#endif
-#ifdef __nvapi_undef__deref_out_ecount_z_opt
-    #undef __deref_out_ecount_z_opt
-    #undef __nvapi_undef__deref_out_ecount_z_opt
-#endif
-#ifdef __nvapi_undef__deref_out_bcount_z_opt
-    #undef __deref_out_bcount_z_opt
-    #undef __nvapi_undef__deref_out_bcount_z_opt
-#endif
-#ifdef __nvapi_undef__deref_out_nz_opt
-    #undef __deref_out_nz_opt
-    #undef __nvapi_undef__deref_out_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_out_ecount_nz_opt
-    #undef __deref_out_ecount_nz_opt
-    #undef __nvapi_undef__deref_out_ecount_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_out_bcount_nz_opt
-    #undef __deref_out_bcount_nz_opt
-    #undef __nvapi_undef__deref_out_bcount_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_opt
-    #undef __deref_inout_opt
-    #undef __nvapi_undef__deref_inout_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_ecount_opt
-    #undef __deref_inout_ecount_opt
-    #undef __nvapi_undef__deref_inout_ecount_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_bcount_opt
-    #undef __deref_inout_bcount_opt
-    #undef __nvapi_undef__deref_inout_bcount_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_ecount_part_opt
-    #undef __deref_inout_ecount_part_opt
-    #undef __nvapi_undef__deref_inout_ecount_part_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_bcount_part_opt
-    #undef __deref_inout_bcount_part_opt
-    #undef __nvapi_undef__deref_inout_bcount_part_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_ecount_full_opt
-    #undef __deref_inout_ecount_full_opt
-    #undef __nvapi_undef__deref_inout_ecount_full_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_bcount_full_opt
-    #undef __deref_inout_bcount_full_opt
-    #undef __nvapi_undef__deref_inout_bcount_full_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_z_opt
-    #undef __deref_inout_z_opt
-    #undef __nvapi_undef__deref_inout_z_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_ecount_z_opt
-    #undef __deref_inout_ecount_z_opt
-    #undef __nvapi_undef__deref_inout_ecount_z_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_bcount_z_opt
-    #undef __deref_inout_bcount_z_opt
-    #undef __nvapi_undef__deref_inout_bcount_z_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_nz_opt
-    #undef __deref_inout_nz_opt
-    #undef __nvapi_undef__deref_inout_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_ecount_nz_opt
-    #undef __deref_inout_ecount_nz_opt
-    #undef __nvapi_undef__deref_inout_ecount_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_inout_bcount_nz_opt
-    #undef __deref_inout_bcount_nz_opt
-    #undef __nvapi_undef__deref_inout_bcount_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_ecount
-    #undef __deref_opt_ecount
-    #undef __nvapi_undef__deref_opt_ecount
-#endif
-#ifdef __nvapi_undef__deref_opt_bcount
-    #undef __deref_opt_bcount
-    #undef __nvapi_undef__deref_opt_bcount
-#endif
-#ifdef __nvapi_undef__deref_opt_out
-    #undef __deref_opt_out
-    #undef __nvapi_undef__deref_opt_out
-#endif
-#ifdef __nvapi_undef__deref_opt_out_z
-    #undef __deref_opt_out_z
-    #undef __nvapi_undef__deref_opt_out_z
-#endif
-#ifdef __nvapi_undef__deref_opt_out_ecount
-    #undef __deref_opt_out_ecount
-    #undef __nvapi_undef__deref_opt_out_ecount
-#endif
-#ifdef __nvapi_undef__deref_opt_out_bcount
-    #undef __deref_opt_out_bcount
-    #undef __nvapi_undef__deref_opt_out_bcount
-#endif
-#ifdef __nvapi_undef__deref_opt_out_ecount_part
-    #undef __deref_opt_out_ecount_part
-    #undef __nvapi_undef__deref_opt_out_ecount_part
-#endif
-#ifdef __nvapi_undef__deref_opt_out_bcount_part
-    #undef __deref_opt_out_bcount_part
-    #undef __nvapi_undef__deref_opt_out_bcount_part
-#endif
-#ifdef __nvapi_undef__deref_opt_out_ecount_full
-    #undef __deref_opt_out_ecount_full
-    #undef __nvapi_undef__deref_opt_out_ecount_full
-#endif
-#ifdef __nvapi_undef__deref_opt_out_bcount_full
-    #undef __deref_opt_out_bcount_full
-    #undef __nvapi_undef__deref_opt_out_bcount_full
-#endif
-#ifdef __nvapi_undef__deref_opt_inout
-    #undef __deref_opt_inout
-    #undef __nvapi_undef__deref_opt_inout
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_ecount
-    #undef __deref_opt_inout_ecount
-    #undef __nvapi_undef__deref_opt_inout_ecount
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_bcount
-    #undef __deref_opt_inout_bcount
-    #undef __nvapi_undef__deref_opt_inout_bcount
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_ecount_part
-    #undef __deref_opt_inout_ecount_part
-    #undef __nvapi_undef__deref_opt_inout_ecount_part
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_bcount_part
-    #undef __deref_opt_inout_bcount_part
-    #undef __nvapi_undef__deref_opt_inout_bcount_part
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_ecount_full
-    #undef __deref_opt_inout_ecount_full
-    #undef __nvapi_undef__deref_opt_inout_ecount_full
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_bcount_full
-    #undef __deref_opt_inout_bcount_full
-    #undef __nvapi_undef__deref_opt_inout_bcount_full
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_z
-    #undef __deref_opt_inout_z
-    #undef __nvapi_undef__deref_opt_inout_z
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_ecount_z
-    #undef __deref_opt_inout_ecount_z
-    #undef __nvapi_undef__deref_opt_inout_ecount_z
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_bcount_z
-    #undef __deref_opt_inout_bcount_z
-    #undef __nvapi_undef__deref_opt_inout_bcount_z
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_nz
-    #undef __deref_opt_inout_nz
-    #undef __nvapi_undef__deref_opt_inout_nz
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_ecount_nz
-    #undef __deref_opt_inout_ecount_nz
-    #undef __nvapi_undef__deref_opt_inout_ecount_nz
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_bcount_nz
-    #undef __deref_opt_inout_bcount_nz
-    #undef __nvapi_undef__deref_opt_inout_bcount_nz
-#endif
-#ifdef __nvapi_undef__deref_opt_ecount_opt
-    #undef __deref_opt_ecount_opt
-    #undef __nvapi_undef__deref_opt_ecount_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_bcount_opt
-    #undef __deref_opt_bcount_opt
-    #undef __nvapi_undef__deref_opt_bcount_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_opt
-    #undef __deref_opt_out_opt
-    #undef __nvapi_undef__deref_opt_out_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_ecount_opt
-    #undef __deref_opt_out_ecount_opt
-    #undef __nvapi_undef__deref_opt_out_ecount_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_bcount_opt
-    #undef __deref_opt_out_bcount_opt
-    #undef __nvapi_undef__deref_opt_out_bcount_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_ecount_part_opt
-    #undef __deref_opt_out_ecount_part_opt
-    #undef __nvapi_undef__deref_opt_out_ecount_part_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_bcount_part_opt
-    #undef __deref_opt_out_bcount_part_opt
-    #undef __nvapi_undef__deref_opt_out_bcount_part_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_ecount_full_opt
-    #undef __deref_opt_out_ecount_full_opt
-    #undef __nvapi_undef__deref_opt_out_ecount_full_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_bcount_full_opt
-    #undef __deref_opt_out_bcount_full_opt
-    #undef __nvapi_undef__deref_opt_out_bcount_full_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_z_opt
-    #undef __deref_opt_out_z_opt
-    #undef __nvapi_undef__deref_opt_out_z_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_ecount_z_opt
-    #undef __deref_opt_out_ecount_z_opt
-    #undef __nvapi_undef__deref_opt_out_ecount_z_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_bcount_z_opt
-    #undef __deref_opt_out_bcount_z_opt
-    #undef __nvapi_undef__deref_opt_out_bcount_z_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_nz_opt
-    #undef __deref_opt_out_nz_opt
-    #undef __nvapi_undef__deref_opt_out_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_ecount_nz_opt
-    #undef __deref_opt_out_ecount_nz_opt
-    #undef __nvapi_undef__deref_opt_out_ecount_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_out_bcount_nz_opt
-    #undef __deref_opt_out_bcount_nz_opt
-    #undef __nvapi_undef__deref_opt_out_bcount_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_opt
-    #undef __deref_opt_inout_opt
-    #undef __nvapi_undef__deref_opt_inout_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_ecount_opt
-    #undef __deref_opt_inout_ecount_opt
-    #undef __nvapi_undef__deref_opt_inout_ecount_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_bcount_opt
-    #undef __deref_opt_inout_bcount_opt
-    #undef __nvapi_undef__deref_opt_inout_bcount_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_ecount_part_opt
-    #undef __deref_opt_inout_ecount_part_opt
-    #undef __nvapi_undef__deref_opt_inout_ecount_part_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_bcount_part_opt
-    #undef __deref_opt_inout_bcount_part_opt
-    #undef __nvapi_undef__deref_opt_inout_bcount_part_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_ecount_full_opt
-    #undef __deref_opt_inout_ecount_full_opt
-    #undef __nvapi_undef__deref_opt_inout_ecount_full_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_bcount_full_opt
-    #undef __deref_opt_inout_bcount_full_opt
-    #undef __nvapi_undef__deref_opt_inout_bcount_full_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_z_opt
-    #undef __deref_opt_inout_z_opt
-    #undef __nvapi_undef__deref_opt_inout_z_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_ecount_z_opt
-    #undef __deref_opt_inout_ecount_z_opt
-    #undef __nvapi_undef__deref_opt_inout_ecount_z_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_bcount_z_opt
-    #undef __deref_opt_inout_bcount_z_opt
-    #undef __nvapi_undef__deref_opt_inout_bcount_z_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_nz_opt
-    #undef __deref_opt_inout_nz_opt
-    #undef __nvapi_undef__deref_opt_inout_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_ecount_nz_opt
-    #undef __deref_opt_inout_ecount_nz_opt
-    #undef __nvapi_undef__deref_opt_inout_ecount_nz_opt
-#endif
-#ifdef __nvapi_undef__deref_opt_inout_bcount_nz_opt
-    #undef __deref_opt_inout_bcount_nz_opt
-    #undef __nvapi_undef__deref_opt_inout_bcount_nz_opt
-#endif
-#ifdef __nvapi_success
-    #undef __success
-    #undef __nvapi_success
-#endif
-#ifdef __nvapi__Ret_notnull_
-    #undef __nvapi__Ret_notnull_
-    #undef _Ret_notnull_
-#endif
-#ifdef __nvapi__Post_writable_byte_size_
-    #undef __nvapi__Post_writable_byte_size_
-    #undef _Post_writable_byte_size_
-#endif
-#ifdef __nvapi_Outptr_ 
-    #undef __nvapi_Outptr_ 
-    #undef _Outptr_ 
-#endif
-
-#endif // __NVAPI_EMPTY_SAL
 
 
 #ifdef __cplusplus
@@ -12770,3 +10442,5 @@ NVAPI_INTERFACE NvAPI_SYS_GetPhysicalGpuFromDisplayId(NvU32 displayId, NvPhysica
 #pragma pack(pop)
 
 #endif // _NVAPI_H
+
+#include"nvapi_lite_salend.h"
