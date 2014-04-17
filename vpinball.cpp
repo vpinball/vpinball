@@ -497,7 +497,6 @@ void VPinball::InitRegValues()
 
 ///<summary>
 ///Registers a window classes for subsequent use in calls to the CreateWindow or CreateWindowEx function. 
-///TODO: where are thes used?
 ///</summary>
 void VPinball::RegisterClasses()
 {
@@ -519,10 +518,6 @@ void VPinball::RegisterClasses()
    wcex.lpszMenuName = NULL;
    wcex.hIcon = NULL;
    wcex.hbrBackground = HBRUSH(COLOR_BTNFACE+1);
-   RegisterClassEx(&wcex);
-
-   wcex.hbrBackground = HBRUSH(COLOR_WINDOW+1);
-   wcex.lpszClassName = "VPStaticWorkChild";
    RegisterClassEx(&wcex);
 }
 
