@@ -35,6 +35,9 @@ VP 9.9.0 Changelog
 
 - technical note: the minimum version to compile VP is now visual studio 2008 (incl. feature pack)
 
+- updated to latest FreeImage.dll (3.16.0)
+- script editor updated to use latest scintilla (3.4.1)
+
 VP 9.2.1 Changelog
 ------------------------
 - this is the final release to be based on DirectX 7
