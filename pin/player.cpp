@@ -206,6 +206,13 @@ Player::Player()
 		vsync = 0; // The default
 	m_fVSync = vsync;
 
+    int maxPrerenderedFrames;
+    hr = GetRegInt("Player", "MaxPrerenderedFrames", &maxPrerenderedFrames);
+    if (hr != S_OK)
+        maxPrerenderedFrames = 2; // The default
+    m_fMaxPrerenderedFrames = maxPrerenderedFrames;
+
+
     hr = GetRegInt("Player", "FXAA", &m_fFXAA);
     if (hr != S_OK)
       m_fFXAA = 0; // The default = off
@@ -968,7 +975,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 #endif
 
     // TODO: the limit should be a GUI option; 0 means disable limiting of drawahead queue
-    m_limiter.Init(2);
+    m_limiter.Init(m_fMaxPrerenderedFrames);
 
 	Render();
 
