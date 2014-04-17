@@ -291,7 +291,7 @@ void Textbox::RenderSetup(const RenderDevice* _pd3dDevice)
     m_pIFontPlay->get_Size(&size);
     // I choose 912 because that was the original playing size I tested with,
     // and this way I don't have to change my tables
-    size.int64 = size.int64 / 912 * ppin3d->m_dwRenderWidth;
+    size.int64 = size.int64 / 1.5f*ppin3d->m_dwRenderHeight * ppin3d->m_dwRenderWidth;
     m_pIFontPlay->put_Size(size);
 
     RenderText();
@@ -332,7 +332,6 @@ void Textbox::RenderText()
         SelectObject(hdc, hbrushold);
         DeleteObject(hbrush);
     }
-
     HFONT hFont;
     m_pIFontPlay->get_hFont(&hFont);
     HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
@@ -362,10 +361,10 @@ void Textbox::RenderText()
 
     rcOut.left = border;
     rcOut.top = border;
-    rcOut.right = m_rect.right - m_rect.left - border * 2;
-    rcOut.bottom = m_rect.bottom - m_rect.top - border * 2;
+    rcOut.right = width - border * 2;
+    rcOut.bottom = height - border * 2;
 
-    DrawText(hdc, m_d.sztext, lstrlen(m_d.sztext), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+    DrawText(hdc, m_d.sztext, lstrlen(m_d.sztext), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK );
 
     GdiFlush();     // make sure everything is drawn
 
