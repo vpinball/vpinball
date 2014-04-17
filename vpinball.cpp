@@ -3619,6 +3619,12 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             vsync = 0;
 		 SetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, vsync, FALSE);
 
+         int maxPrerenderedFrames;
+         hr = GetRegInt("Player", "MaxPrerenderedFrames", &maxPrerenderedFrames);
+         if (hr != S_OK)
+             maxPrerenderedFrames = 2;
+         SetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
+
          hwndCheck = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
          int m_useAA;
          hr = GetRegInt("Player", "USEAA", &m_useAA);

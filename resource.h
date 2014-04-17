@@ -515,6 +515,7 @@
 #define IDC_ALPHA_EDIT                  377
 #define IDC_SIZE_WIDTH                  377
 #define IDC_WIRE_DIAMETER               377
+#define IDC_MAX_PRE_FRAMES              377
 #define IDC_HEIGHT_EDIT                 378
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
