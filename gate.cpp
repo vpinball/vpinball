@@ -381,7 +381,7 @@ void Gate::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
     TRACE_FUNCTION();
 
-    if (!m_d.m_fVisible || !m_phitgate->m_gateanim.m_fVisible)
+    if (!m_phitgate->m_gateanim.m_fVisible)
         return;
 
     RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
@@ -1309,10 +1309,10 @@ STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 }
 
 STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
-{	
+{
    if (g_pplayer)
    {
-      m_phitgate->m_gateanim.m_fVisible = newVal;// && m_d.m_fVisible;
+      m_phitgate->m_gateanim.m_fVisible = newVal;
    }
    else
    {
