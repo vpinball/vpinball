@@ -289,9 +289,7 @@ void Textbox::RenderSetup(const RenderDevice* _pd3dDevice)
 
     CY size;
     m_pIFontPlay->get_Size(&size);
-    // I choose 912 because that was the original playing size I tested with,
-    // and this way I don't have to change my tables
-    size.int64 = size.int64 / 1.5f*ppin3d->m_dwRenderHeight * ppin3d->m_dwRenderWidth;
+    size.int64 = (LONGLONG)(size.int64 / 1.5f*ppin3d->m_dwRenderHeight * ppin3d->m_dwRenderWidth);
     m_pIFontPlay->put_Size(size);
 
     RenderText();
