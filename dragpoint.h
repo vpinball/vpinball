@@ -49,7 +49,7 @@ public:
 // DragPoint
 
 class DragPoint :
-	public IDispatchImpl<IControlPoint, &IID_IControlPoint, &LIBID_VisualPinballLib>,
+	public IDispatchImpl<IControlPoint, &IID_IControlPoint, &LIBID_VPinballLib>,
 	public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<DragPoint,&CLSID_DragPoint>,

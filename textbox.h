@@ -26,7 +26,7 @@ public:
 
 class Textbox :
 	public CComObjectRootEx<CComSingleThreadModel>, 
-	public IDispatchImpl<ITextbox, &IID_ITextbox, &LIBID_VisualPinballLib>,
+	public IDispatchImpl<ITextbox, &IID_ITextbox, &LIBID_VPinballLib>,
 #ifdef VBA
 	public CApcProjectItem<Textbox>,
 #endif
@@ -35,7 +35,7 @@ class Textbox :
 	public CComCoClass<Textbox,&CLSID_Textbox>,	
 	public EventProxy<Textbox, &DIID_ITextboxEvents>,
 	public IConnectionPointContainerImpl<Textbox>,
-	public IProvideClassInfo2Impl<&CLSID_Textbox, &DIID_ITextboxEvents, &LIBID_VisualPinballLib>,
+	public IProvideClassInfo2Impl<&CLSID_Textbox, &DIID_ITextboxEvents, &LIBID_VPinballLib>,
 	public ISelect,
 	public IEditable,
 	public IScriptable,

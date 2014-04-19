@@ -30,11 +30,11 @@ public:
 
 class PinTable;
 
-class VPinball //:// public IVisualPinball, public COleAuto,
+class VPinball //:// public IVPinball, public COleAuto,
 #ifdef VBA
 public CApcHost<VPinball> //,
 #endif
-//public IDispatchImpl<IVisualPinball, &IID_IVisualPinball, &LIBID_VisualPinballLib>
+//public IDispatchImpl<IVPinball, &IID_IVPinball, &LIBID_VPinballLib>
 
 {
 public:
@@ -82,7 +82,7 @@ public:
 	STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
 	STDMETHOD_(ULONG, AddRef)();
 	STDMETHOD_(ULONG, Release)();
-	//inline IDispatch *GetDispatch() {return (IVisualPinball *)this;}
+	//inline IDispatch *GetDispatch() {return (IVPinball *)this;}
 
 	HRESULT CheckTypeInfo(UINT itinfo, LCID lcid);
 	ITypeInfo **GetTinfoClsAddr() { return &m_ptinfoCls; }

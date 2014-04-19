@@ -59,7 +59,7 @@ class Primitive :
 
 
    public CComObjectRootEx<CComSingleThreadModel>,
-   public IDispatchImpl<IPrimitive, &IID_IPrimitive, &LIBID_VisualPinballLib>,
+   public IDispatchImpl<IPrimitive, &IID_IPrimitive, &LIBID_VPinballLib>,
    //public CComObjectRoot,
    public CComCoClass<Primitive,&CLSID_Primitive>,
 #ifdef VBA
@@ -67,7 +67,7 @@ class Primitive :
 #endif
    public EventProxy<Primitive, &DIID_IPrimitiveEvents>,
    public IConnectionPointContainerImpl<Primitive>,
-   public IProvideClassInfo2Impl<&CLSID_Primitive, &DIID_IPrimitiveEvents, &LIBID_VisualPinballLib>,
+   public IProvideClassInfo2Impl<&CLSID_Primitive, &DIID_IPrimitiveEvents, &LIBID_VPinballLib>,
 
    public ISelect,
    public IEditable,

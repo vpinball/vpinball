@@ -153,7 +153,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
     HRESULT hRes = CoInitialize(NULL);
 #endif
     _ASSERTE(SUCCEEDED(hRes));
-    _Module.Init(ObjectMap, hInstance, &LIBID_VisualPinballLib);
+    _Module.Init(ObjectMap, hInstance, &LIBID_VPinballLib);
 
 	bool fFile = false;
 	bool fPlay = false;
