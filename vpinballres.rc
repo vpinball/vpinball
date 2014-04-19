@@ -1,0 +1,12 @@
+
+#ifdef IMGERMAN
+#include "vpinball_ger.rc"
+#elif IMSPANISH2
+#include "vpinball_spa.rc"
+#elif IMFRENCH
+#include "vpinball_fre.rc"
+#else
+#include "vpinball_eng.rc"
+#endif
+
+
