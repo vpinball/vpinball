@@ -1,6 +1,5 @@
 #pragma once
 
-#include "stdafx.h"
 #include "pin/ball.h"
 #include "pin/collide.h"
 

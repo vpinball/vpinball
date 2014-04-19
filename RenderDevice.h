@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include "stdafx.h"
 #include <d3d9.h>
 #include "Material.h"
 #include "Texture.h"
