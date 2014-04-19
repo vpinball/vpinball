@@ -2628,6 +2628,24 @@ void Player::DrawBalls()
             pball->reflectVerts[0].z = pball->reflectVerts[1].z = pball->reflectVerts[2].z = pball->reflectVerts[3].z-3.0f;
         }
 
+        if (pball->fFrozen)
+        {
+            /* HACK:
+             *
+             * Due to the 2D nature of the sprite ball, it gets cut in half when dropped
+             * below the table surface in a kicker. In this case, we pull the ball vertices
+             * a bit closer to the camera to counteract this.
+             */
+            const Vertex3Ds offset = (0.3f * pball->radius) * m_pin3d.m_viewVec;
+
+            for (int i = 0; i < 4; ++i)
+            {
+                rgv3D[i].x -= offset.x;
+                rgv3D[i].y -= offset.y;
+                rgv3D[i].z -= offset.z;
+            }
+        }
+
         // prepare the vertex buffer for all possible options (ball,logo,shadow)
         Vertex3D_NoTex2 *buf;
         Ball::vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
