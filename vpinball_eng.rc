@@ -1820,7 +1820,7 @@ BEGIN
             VALUE "FileVersion", "9, 9, 0, 0"
             VALUE "InternalName", "Visual Pinball"
             VALUE "LegalCopyright", "Copyright 2000-2014"
-            VALUE "OriginalFilename", "VPinball.exe"
+            VALUE "OriginalFilename", "vpinball.exe"
             VALUE "ProductName", "Visual Pinball"
             VALUE "ProductVersion", "9, 9, 0, 0"
         END

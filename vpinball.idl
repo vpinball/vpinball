@@ -1,4 +1,4 @@
-// VPinball.idl : IDL source for VPinball.dll
+// VPinball.idl : IDL source for vpinball.dll
 //
 
 // This file will be processed by the MIDL tool to
@@ -28,7 +28,7 @@ import "ocidl.idl";
 	version(1.0),
 	helpstring("Visual Pinball 0.3 Type Library")
 ]
-library VisualPinballLib
+library VPinballLib
 {
 	importlib("stdole32.tlb");
 	importlib("stdole2.tlb");
@@ -393,9 +393,9 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	interface ITable : IDispatch
 		{
 		//[propget, id(1)]
-		//HRESULT Application([out, retval] IVisualPinball **Application);
+		//HRESULT Application([out, retval] IVPinball **Application);
 		//[propget, id(2)]
-		//HRESULT Parent([out, retval] IVisualPinball **Parent);
+		//HRESULT Parent([out, retval] IVPinball **Parent);
 		[propget, id(3), helpstring("property GlassHeight")] HRESULT GlassHeight([out, retval] float *pVal);
 		[propput, id(3), helpstring("property GlassHeight")] HRESULT GlassHeight([in] float newVal);
 		[propget, id(4), helpstring("property PlayfieldColor")] HRESULT PlayfieldColor([out, retval] OLE_COLOR *pVal);
@@ -812,7 +812,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(7), helpstring("property EndAngle")] HRESULT EndAngle([out, retval] float *pVal);
 		[propput, id(7), helpstring("property EndAngle")] HRESULT EndAngle([in] float newVal);
 		//[propget, id(8)]
-		//HRESULT Application([out, retval] IVisualPinball **Application);
+		//HRESULT Application([out, retval] IVPinball **Application);
 		//[propget, id(9)]
 		//HRESULT Parent([out, retval] ITable **Parent);
 		[propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);

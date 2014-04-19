@@ -24,7 +24,7 @@ public:
 // Trigger
 
 class Trigger : 
-	public IDispatchImpl<ITrigger, &IID_ITrigger, &LIBID_VisualPinballLib>, 
+	public IDispatchImpl<ITrigger, &IID_ITrigger, &LIBID_VPinballLib>, 
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Trigger,&CLSID_Trigger>,
@@ -33,7 +33,7 @@ class Trigger :
 #endif
 	public EventProxy<Trigger, &DIID_ITriggerEvents>,
 	public IConnectionPointContainerImpl<Trigger>,
-	public IProvideClassInfo2Impl<&CLSID_Trigger, &DIID_ITriggerEvents, &LIBID_VisualPinballLib>,
+	public IProvideClassInfo2Impl<&CLSID_Trigger, &DIID_ITriggerEvents, &LIBID_VPinballLib>,
 	public ISelect,
 	public IEditable,
 	public Hitable,

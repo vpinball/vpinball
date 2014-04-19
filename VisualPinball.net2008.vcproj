@@ -74,7 +74,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(DXSDK_DIR)\Lib\x86;&quot;.\lib\&quot;"
@@ -166,7 +166,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;.\lib\"
@@ -260,7 +260,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;.\lib"
@@ -352,7 +352,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(DXSDK_DIR)\Lib\x86;.\lib\"
@@ -444,7 +444,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/NODEFAULTLIB:LIBC&#x0D;&#x0A;/NODEFAULTLIB:LIBCMT&#x0D;&#x0A;/NODEFAULTLIB:LIBCD"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;.\lib\"
@@ -534,7 +534,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;.\lib"
@@ -625,7 +625,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(DXSDK_DIR)\Lib\x86;.\lib\;$(NOINHERIT)"
@@ -719,7 +719,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;.\lib"
@@ -812,7 +812,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;&quot;.\lib\&quot;"
@@ -907,7 +907,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;.\lib\"
@@ -1004,7 +1004,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(DXSDK_DIR)Lib\x86;$(DXSDK_DIR)Lib;.\lib"
@@ -1109,7 +1109,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;.\lib\"
@@ -1214,7 +1214,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib dxguid.lib freeimage.lib dsound.lib winmm.lib dinput.lib nvapi.lib odbc32.lib odbccp32.lib xaudio.lib imm32.lib setupapi.lib hid.lib DongleAPI.lib"
-				OutputFile="$(OutDir)\VPinball.exe"
+				OutputFile="$(OutDir)\vpinball.exe"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;.\lib\"

@@ -28,7 +28,7 @@ class CodeViewer;
 
 class DebuggerModule:
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public IDispatchImpl<IVPDebug, &IID_IVPDebug, &LIBID_VisualPinballLib>,
+	public IDispatchImpl<IVPDebug, &IID_IVPDebug, &LIBID_VPinballLib>,
 	public IScriptable
 	{
 BEGIN_COM_MAP(DebuggerModule)
@@ -73,7 +73,7 @@ public:
 
 class CodeViewer :
 	public CComObjectRoot,
-	//public IDispatchImpl<IDragPoint, &IID_IDragPoint, &LIBID_VisualPinballLib>,
+	//public IDispatchImpl<IDragPoint, &IID_IDragPoint, &LIBID_VPinballLib>,
 	//public CComCoClass<CodeViewer,&CLSID_DragPoint>,
 	//public CComObjectRootEx<CComSingleThreadModel>,
 	public IActiveScriptSite,
@@ -242,12 +242,12 @@ END_COM_MAP()
 	};
 
 class Collection:
-	public IDispatchImpl<ICollection, &IID_ICollection, &LIBID_VisualPinballLib>,
+	public IDispatchImpl<ICollection, &IID_ICollection, &LIBID_VPinballLib>,
 	public CComObjectRoot,
 	public CComCoClass<Collection,&CLSID_Collection>,
 	public EventProxy<Collection, &DIID_ICollectionEvents>,
 	public IConnectionPointContainerImpl<Collection>,
-	public IProvideClassInfo2Impl<&CLSID_Collection, &DIID_ICollectionEvents, &LIBID_VisualPinballLib>,
+	public IProvideClassInfo2Impl<&CLSID_Collection, &DIID_ICollectionEvents, &LIBID_VPinballLib>,
 	public IScriptable,
 	public ILoadable
 	{

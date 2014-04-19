@@ -3,7 +3,7 @@ class PinTable;
 
 class ScriptGlobalTable:
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VisualPinballLib>,
+	public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>,
 	public IScriptable
 	{
 public:

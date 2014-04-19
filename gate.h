@@ -34,7 +34,7 @@ public:
 	};
 
 class Gate :
-	public IDispatchImpl<IGate, &IID_IGate, &LIBID_VisualPinballLib>,
+	public IDispatchImpl<IGate, &IID_IGate, &LIBID_VPinballLib>,
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Gate,&CLSID_Gate>,
@@ -43,7 +43,7 @@ class Gate :
 #endif
 	public EventProxy<Gate, &DIID_IGateEvents>,
 	public IConnectionPointContainerImpl<Gate>,
-	public IProvideClassInfo2Impl<&CLSID_Gate, &DIID_IGateEvents, &LIBID_VisualPinballLib>,
+	public IProvideClassInfo2Impl<&CLSID_Gate, &DIID_IGateEvents, &LIBID_VPinballLib>,
 	public ISelect,
 	public IEditable,
 	public Hitable,

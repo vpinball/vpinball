@@ -48,7 +48,7 @@ typedef struct {
 
 class DispReel :
 	public CComObjectRootEx<CComSingleThreadModel>,
-    public IDispatchImpl<IDispReel, &IID_IDispReel, &LIBID_VisualPinballLib>,
+    public IDispatchImpl<IDispReel, &IID_IDispReel, &LIBID_VPinballLib>,
 #ifdef VBA
     public CApcProjectItem<DispReel>,
 #endif
@@ -57,7 +57,7 @@ class DispReel :
     public CComCoClass<DispReel,&CLSID_DispReel>,
     public EventProxy<DispReel, &DIID_IDispReelEvents>,
     public IConnectionPointContainerImpl<DispReel>,
-    public IProvideClassInfo2Impl<&CLSID_DispReel, &DIID_IDispReelEvents, &LIBID_VisualPinballLib>,
+    public IProvideClassInfo2Impl<&CLSID_DispReel, &DIID_IDispReelEvents, &LIBID_VPinballLib>,
 	public ISelect,
 	public IEditable,
 	public IScriptable,
