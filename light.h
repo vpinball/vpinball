@@ -68,7 +68,7 @@ public:
 // Light
 
 class Light :
-	public IDispatchImpl<ILight, &IID_ILight, &LIBID_VBATESTLib>,
+	public IDispatchImpl<ILight, &IID_ILight, &LIBID_VisualPinballLib>,
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Light,&CLSID_Light>,
@@ -77,7 +77,7 @@ class Light :
 #endif
 	public EventProxy<Light, &DIID_ILightEvents>,
 	public IConnectionPointContainerImpl<Light>,
-	public IProvideClassInfo2Impl<&CLSID_Light, &DIID_ILightEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_Light, &DIID_ILightEvents, &LIBID_VisualPinballLib>,
 	public ISelect,
 	public IEditable,
 	public Hitable,

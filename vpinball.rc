@@ -40,8 +40,8 @@ END
 
 3 TEXTINCLUDE DISCARDABLE 
 BEGIN
-    "1 TYPELIB ""VBATest.tlb""\r\n"
-    "#include ""VBATestRes.rc""\r\n"
+    "1 TYPELIB ""vpinball.tlb""\r\n"
+    "#include ""vpinballres.rc""\r\n"
     "\0"
 END
 
@@ -65,8 +65,8 @@ IDR_COMCONTROL          REGISTRY DISCARDABLE    "ComControl.rgs"
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-1 TYPELIB "VBATest.tlb"
-#include "VBATestRes.rc"
+1 TYPELIB "vpinball.tlb"
+#include "vpinballres.rc"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

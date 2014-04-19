@@ -76,7 +76,7 @@ class PinBinary;
 #include "variant.h"
 #include "vector.h"
 #include "vectorsort.h"
-#include "VBATest.h"
+#include "vpinball_i.h"
 #include "OLEAUTO.h"
 #include "regutil.h"
 

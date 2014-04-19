@@ -1,10 +1,10 @@
 HKCR
 {
-	VBATest.Flipper.1 = s 'Flipper Class'
+	VPinball.Flipper.1 = s 'Flipper Class'
 	{
 		CLSID = s '{68AB2BBC-8209-40F3-B6F4-54F8ADAA0DC7}'
 	}
-	VBATest.Flipper = s 'Flipper Class'
+	VPinball.Flipper = s 'Flipper Class'
 	{
 		CLSID = s '{68AB2BBC-8209-40F3-B6F4-54F8ADAA0DC7}'
 	}
@@ -12,8 +12,8 @@ HKCR
 	{
 		ForceRemove {68AB2BBC-8209-40F3-B6F4-54F8ADAA0DC7} = s 'Flipper Class'
 		{
-			ProgID = s 'VBATest.Flipper.1'
-			VersionIndependentProgID = s 'VBATest.Flipper'
+			ProgID = s 'VPinball.Flipper.1'
+			VersionIndependentProgID = s 'VPinball.Flipper'
 			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
 			LocalServer32 = s '%Module%'
 		}

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -186,7 +186,7 @@
     <ClCompile Include="variant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vbatest.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vpinball.cpp">
@@ -227,24 +227,24 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="vbatest.idl">
+    <Midl Include="vpinball.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="vbatest.rc">
+    <ResourceCompile Include="vpinball.rc">
       <Filter>Source Files</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="vbatest_eng.rc">
+    <ResourceCompile Include="vpinball_eng.rc">
       <Filter>Resource Files\Dialogs</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="vbatest_fre.rc">
+    <ResourceCompile Include="vpinball_fre.rc">
       <Filter>Resource Files\Dialogs</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="vbatest_ger.rc">
+    <ResourceCompile Include="vpinball_ger.rc">
       <Filter>Resource Files\Dialogs</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="vbatest_spa.rc">
+    <ResourceCompile Include="vpinball_spa.rc">
       <Filter>Resource Files\Dialogs</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -513,7 +513,7 @@
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vbatest.h">
+    <ClInclude Include="vpinball_i.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -701,7 +701,7 @@
     <None Include="Trigger.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="VBATest.rgs">
+    <None Include="VPinball.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="wall.cur">

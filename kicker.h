@@ -27,7 +27,7 @@ class KickerHitCircle;
 // Kicker
 
 class Kicker : 
-	public IDispatchImpl<IKicker, &IID_IKicker, &LIBID_VBATESTLib>, 
+	public IDispatchImpl<IKicker, &IID_IKicker, &LIBID_VisualPinballLib>, 
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Kicker,&CLSID_Kicker>,
@@ -36,7 +36,7 @@ class Kicker :
 #endif
 	public EventProxy<Kicker, &DIID_IKickerEvents>,
 	public IConnectionPointContainerImpl<Kicker>,
-	public IProvideClassInfo2Impl<&CLSID_Kicker, &DIID_IKickerEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_Kicker, &DIID_IKickerEvents, &LIBID_VisualPinballLib>,
 	public ISelect,
 	public IEditable,
 	public Hitable,

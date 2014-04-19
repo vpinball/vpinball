@@ -1,4 +1,4 @@
-// VBATest.cpp : Implementation of WinMain
+// VPinball.cpp : Implementation of WinMain
 
 #include "StdAfx.h"
 
@@ -7,7 +7,7 @@
 
 #define  SET_CRT_DEBUG_FIELD(a)   _CrtSetDbgFlag((a) | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))
 
-#include "VBATest_i.c"
+#include "vpinball_i.c"
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
  extern "C" {
@@ -153,7 +153,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
     HRESULT hRes = CoInitialize(NULL);
 #endif
     _ASSERTE(SUCCEEDED(hRes));
-    _Module.Init(ObjectMap, hInstance, &LIBID_VBATESTLib);
+    _Module.Init(ObjectMap, hInstance, &LIBID_VisualPinballLib);
 
 	bool fFile = false;
 	bool fPlay = false;
@@ -168,14 +168,14 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
     {
         if (lstrcmpi(szArglist[i], _T("-UnregServer"))==0 || lstrcmpi(szArglist[i], _T("/UnregServer"))==0)
         {
-            _Module.UpdateRegistryFromResource(IDR_VBATest, FALSE);
+            _Module.UpdateRegistryFromResource(IDR_VPinball, FALSE);
             nRet = _Module.UnregisterServer(TRUE);
             bRun = false;
 			break;
         }
         if (lstrcmpi(szArglist[i], _T("-RegServer"))==0 || lstrcmpi(szArglist[i], _T("/RegServer"))==0)
         {
-            _Module.UpdateRegistryFromResource(IDR_VBATest, TRUE);
+            _Module.UpdateRegistryFromResource(IDR_VPinball, TRUE);
             nRet = _Module.RegisterServer(TRUE);
             bRun = false;
 			break;

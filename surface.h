@@ -44,13 +44,13 @@ public:
 class Surface :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<Surface, &CLSID_Wall>,
-	public IDispatchImpl<IWall, &IID_IWall, &LIBID_VBATESTLib>,
+	public IDispatchImpl<IWall, &IID_IWall, &LIBID_VisualPinballLib>,
 #ifdef VBA
 	public CApcProjectItem<Surface>,
 #endif
 	public EventProxy<Surface, &DIID_IWallEvents>,
 	public IConnectionPointContainerImpl<Surface>,
-	public IProvideClassInfo2Impl<&CLSID_Wall, &DIID_IWallEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_Wall, &DIID_IWallEvents, &LIBID_VisualPinballLib>,
 	public ISelect,
 	public IEditable,
 	public Hitable,

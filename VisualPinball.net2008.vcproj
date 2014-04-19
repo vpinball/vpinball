@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="VBATest"
+	Name="VPinball"
 	ProjectGUID="{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
-	RootNamespace="VBATest"
+	RootNamespace="VPinball"
 	Keyword="AtlProj"
 	TargetFrameworkVersion="131072"
 	>
@@ -41,7 +41,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseUMinSize/VBATest.tlb"
+				TypeLibraryName=".\ReleaseUMinSize/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -132,7 +132,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseMinDependency/VBATest.tlb"
+				TypeLibraryName=".\ReleaseMinDependency/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -226,7 +226,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\VBATest___Win32_ReleaseTestSpanish/VBATest.tlb"
+				TypeLibraryName=".\VPinball___Win32_ReleaseTestSpanish/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -319,7 +319,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseUMinDependency/VBATest.tlb"
+				TypeLibraryName=".\ReleaseUMinDependency/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -410,7 +410,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseMinSize/VBATest.tlb"
+				TypeLibraryName=".\ReleaseMinSize/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -501,7 +501,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\VBATest___Win32_Profile/VBATest.tlb"
+				TypeLibraryName=".\VPinball___Win32_Profile/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -594,7 +594,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\DebugU/VBATest.tlb"
+				TypeLibraryName=".\DebugU/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -685,7 +685,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\VBATest___Win32_ReleaseTestGerman/VBATest.tlb"
+				TypeLibraryName=".\VPinball___Win32_ReleaseTestGerman/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -778,7 +778,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\VBATest___Win32_ReleaseTestFrench/VBATest.tlb"
+				TypeLibraryName=".\VPinball___Win32_ReleaseTestFrench/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -871,7 +871,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\VBATest___Win32_ReleaseTest/VBATest.tlb"
+				TypeLibraryName=".\VPinball___Win32_ReleaseTest/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -969,7 +969,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/VBATest.tlb"
+				TypeLibraryName=".\Debug/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -1071,7 +1071,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseMinDependency/VBATest.tlb"
+				TypeLibraryName=".\ReleaseMinDependency/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -1174,7 +1174,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseMinDependency/VBATest.tlb"
+				TypeLibraryName=".\ReleaseMinDependency/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -8397,7 +8397,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="vbatest.cpp"
+				RelativePath="main.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8535,7 +8535,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="vbatest.idl"
+				RelativePath="vpinball.idl"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8543,9 +8543,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8554,9 +8554,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8565,9 +8565,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8576,9 +8576,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8587,9 +8587,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8598,9 +8598,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8609,9 +8609,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8620,9 +8620,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8631,9 +8631,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8642,9 +8642,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8653,9 +8653,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8664,9 +8664,9 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -8675,14 +8675,14 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\VBATest.tlb"
-						HeaderFileName="vbatest.h"
-						InterfaceIdentifierFileName="VBATest_i.c"
+						TypeLibraryName=".\vpinball.tlb"
+						HeaderFileName="vpinball_i.h"
+						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="vbatest.rc"
+				RelativePath="vpinball.rc"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -10150,7 +10150,7 @@
 				>
 			</File>
 			<File
-				RelativePath="VBATest.rgs"
+				RelativePath="VPinball.rgs"
 				>
 			</File>
 			<File
@@ -10165,7 +10165,7 @@
 				Name="Dialogs"
 				>
 				<File
-					RelativePath=".\vbatest_eng.rc"
+					RelativePath=".\vpinball_eng.rc"
 					>
 					<FileConfiguration
 						Name="Unicode Release MinSize|Win32"
@@ -10273,7 +10273,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\vbatest_fre.rc"
+					RelativePath=".\vpinball_fre.rc"
 					>
 					<FileConfiguration
 						Name="Unicode Release MinSize|Win32"
@@ -10381,7 +10381,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\vbatest_ger.rc"
+					RelativePath=".\vpinball_ger.rc"
 					>
 					<FileConfiguration
 						Name="Unicode Release MinSize|Win32"
@@ -10489,7 +10489,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\vbatest_spa.rc"
+					RelativePath=".\vpinball_spa.rc"
 					>
 					<FileConfiguration
 						Name="Unicode Release MinSize|Win32"
@@ -10610,7 +10610,7 @@
 		/>
 		<Global
 			Name="RESOURCE_FILE"
-			Value="vbatest.rc"
+			Value="vpinball.rc"
 		/>
 	</Globals>
 </VisualStudioProject>

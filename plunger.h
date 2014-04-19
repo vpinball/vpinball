@@ -34,7 +34,7 @@ public:
 // Plunger
 
 class Plunger :
-	public IDispatchImpl<IPlunger, &IID_IPlunger, &LIBID_VBATESTLib>,
+	public IDispatchImpl<IPlunger, &IID_IPlunger, &LIBID_VisualPinballLib>,
 	public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Plunger,&CLSID_Plunger>,
@@ -43,7 +43,7 @@ class Plunger :
 #endif
 	public EventProxy<Plunger, &DIID_IPlungerEvents>,
 	public IConnectionPointContainerImpl<Plunger>,
-	public IProvideClassInfo2Impl<&CLSID_Plunger, &DIID_IPlungerEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_Plunger, &DIID_IPlungerEvents, &LIBID_VisualPinballLib>,
 	//public CComObjectRootEx<CComSingleThreadModel>,
 
 

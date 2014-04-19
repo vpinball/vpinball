@@ -90,7 +90,7 @@ END
 // REGISTRY
 //
 
-IDR_VBATest             REGISTRY                "VBATest.rgs"
+IDR_VPinball             REGISTRY                "VPinball.rgs"
 IDR_SURFACE             REGISTRY                "Surface.rgs"
 IDR_DragPoint           REGISTRY                "DragPoint.rgs"
 IDR_Flipper             REGISTRY                "Flipper.rgs"

@@ -74,7 +74,7 @@ public:
 
 class Bumper :
 	//public CComObjectRootEx<CComSingleThreadModel>,
-	public IDispatchImpl<IBumper, &IID_IBumper, &LIBID_VBATESTLib>,
+	public IDispatchImpl<IBumper, &IID_IBumper, &LIBID_VisualPinballLib>,
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Bumper,&CLSID_Bumper>,
@@ -83,7 +83,7 @@ class Bumper :
 #endif
 	public EventProxy<Bumper, &DIID_IBumperEvents>,
 	public IConnectionPointContainerImpl<Bumper>,
-	public IProvideClassInfo2Impl<&CLSID_Bumper, &DIID_IBumperEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_Bumper, &DIID_IBumperEvents, &LIBID_VisualPinballLib>,
 	public ISelect,
 	public IEditable,
 	public Hitable,

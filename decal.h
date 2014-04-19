@@ -24,7 +24,7 @@ public:
 };
 
 class Decal :
-	public IDispatchImpl<IDecal, &IID_IDecal, &LIBID_VBATESTLib>,
+	public IDispatchImpl<IDecal, &IID_IDecal, &LIBID_VisualPinballLib>,
 	public CComObjectRoot,
 #ifdef VBA
 	public CApcControl<Decal>,

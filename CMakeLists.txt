@@ -156,7 +156,7 @@ set(SOURCES
   timer.cpp
   trigger.cpp
   variant.cpp
-  vbatest.cpp
+  main.cpp
   vpinball.cpp
   wintimer.cpp
   worker.cpp
@@ -264,7 +264,7 @@ set(HEADERS
   )
 
 set(RC_RESOURCE
-  vbatest.rc
+  vpinball.rc
   )
  
 # dummy collection of resources - not used in build (resource compiler takes care of everything)
@@ -279,17 +279,17 @@ set(RC_RESOURCE
 #  lightseq.rgs logo25.bmp logo28.bmp pause1.ico pieventhandler.rgs play1.ico plunger.rgs
 #  Primitive.rgs ramp.rgs spinner.rgs step1.ico sunburst.bmp sunburst3.bmp sunburst4.bmp
 #  surface.rgs tableicon.ico target.bmp textbox.rgs timer.rgs toolbar.bmp toolbardebug.bmp
-#  trigger.rgs vbatest.rgs wall.cur white.bmp
+#  trigger.rgs vpinball.rgs wall.cur white.bmp
 #  )
 
 # generate com interfaces with midl
-ADD_CUSTOM_COMMAND(OUTPUT "${CMAKE_BINARY_DIR}/VBATest.h"
-  "${CMAKE_BINARY_DIR}/VBATest.tlb" "${CMAKE_BINARY_DIR}/VBATest_i.c"
-  COMMAND midl.exe /win32 "${CMAKE_SOURCE_DIR}/vbatest.idl"
-  DEPENDS "${CMAKE_SOURCE_DIR}/vbatest.idl")
+ADD_CUSTOM_COMMAND(OUTPUT "${CMAKE_BINARY_DIR}/vpinball_i.h"
+  "${CMAKE_BINARY_DIR}/vpinball.tlb" "${CMAKE_BINARY_DIR}/vpinball_i.c"
+  COMMAND midl.exe /win32 "${CMAKE_SOURCE_DIR}/vpinball.idl" /h "${CMAKE_BINARY_DIR}/vpinball_i.h"
+  DEPENDS "${CMAKE_SOURCE_DIR}/vpinball.idl")
 
 add_msvc_precompiled_header(stdafx.h stdafx.cpp SOURCES)
-list(APPEND HEADERS "${CMAKE_BINARY_DIR}/VBATest.h")
+list(APPEND HEADERS "${CMAKE_BINARY_DIR}/vpinball_i.h")
 
 include_directories(pin)
 include_directories(media)
