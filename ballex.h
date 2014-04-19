@@ -12,7 +12,7 @@ class Ball;
 class BallEx : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<BallEx, &CLSID_Ball>,
-	public IDispatchImpl<IBall, &IID_IBall, &LIBID_VBATESTLib>,
+	public IDispatchImpl<IBall, &IID_IBall, &LIBID_VisualPinballLib>,
 	public IFireEvents,
 	public IDebugCommands
 {

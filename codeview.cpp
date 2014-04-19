@@ -575,7 +575,7 @@ void CodeViewer::Compile()
    ZeroMemory(&exception, sizeof(exception));
    m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
-   /*const HRESULT hr =*/ m_pScript->AddTypeLib(LIBID_VBATESTLib, 1, 0, 0);
+   /*const HRESULT hr =*/ m_pScript->AddTypeLib(LIBID_VisualPinballLib, 1, 0, 0);
 
    for (int i=0;i<m_vcvd.Size();i++)
    {

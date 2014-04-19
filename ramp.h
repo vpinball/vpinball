@@ -46,7 +46,7 @@ public:
 // Ramp
 
 class Ramp :
-	public IDispatchImpl<IRamp, &IID_IRamp, &LIBID_VBATESTLib>,
+	public IDispatchImpl<IRamp, &IID_IRamp, &LIBID_VisualPinballLib>,
 	public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Ramp,&CLSID_Ramp>,
@@ -55,7 +55,7 @@ class Ramp :
 #endif
 	public EventProxy<Ramp, &DIID_IRampEvents>,
 	public IConnectionPointContainerImpl<Ramp>,
-	public IProvideClassInfo2Impl<&CLSID_Ramp, &DIID_IRampEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_Ramp, &DIID_IRampEvents, &LIBID_VisualPinballLib>,
 	public ISelect,
 	public IEditable,
 	public Hitable,

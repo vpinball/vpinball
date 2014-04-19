@@ -93,7 +93,7 @@ public:
 
 class LightSeq :
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public IDispatchImpl<ILightSeq, &IID_ILightSeq, &LIBID_VBATESTLib>,
+	public IDispatchImpl<ILightSeq, &IID_ILightSeq, &LIBID_VisualPinballLib>,
 	//public ISupportErrorInfo,
 	//public CComObjectRoot,
 	public CComCoClass<LightSeq,&CLSID_LightSeq>,
@@ -101,7 +101,7 @@ class LightSeq :
 	public CApcProjectItem<LightSeq>,
 #endif
 	public IConnectionPointContainerImpl<LightSeq>,
-	public IProvideClassInfo2Impl<&CLSID_LightSeq, &DIID_ILightSeqEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_LightSeq, &DIID_ILightSeqEvents, &LIBID_VisualPinballLib>,
 	public EventProxy<LightSeq, &DIID_ILightSeqEvents>,
 	public ISelect,
 	public IEditable,

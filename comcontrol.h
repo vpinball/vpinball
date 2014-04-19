@@ -75,10 +75,10 @@ public:
 class PinComControl : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<PinComControl, &CLSID_ComControl>,
-	public IDispatchImpl<IComControl, &IID_IComControl, &LIBID_VBATESTLib>,
+	public IDispatchImpl<IComControl, &IID_IComControl, &LIBID_VisualPinballLib>,
 	public EventProxy<PinComControl, &DIID_IComControlEvents>,
 	public IConnectionPointContainerImpl<PinComControl>,
-	public IProvideClassInfo2Impl<&CLSID_ComControl, &DIID_IComControlEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_ComControl, &DIID_IComControlEvents, &LIBID_VisualPinballLib>,
 	public ISelect,
 	public IEditable,
 	public IScriptable,

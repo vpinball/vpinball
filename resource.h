@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by vbatest_eng.rc
+// Used by vpinball_eng.rc
 //
 #define DISPID_Textbox_BackColor        1
 #define DISPID_Textbox_FontColor        2
@@ -56,7 +56,7 @@
 #define DISPID_ROTRA9                   23
 #define DISPID_HEIGHTOFFSET             24
 #define IDS_PROJNAME                    100
-#define IDR_VBATest                     100
+#define IDR_VPinball                     100
 #define IDR_SURFACE                     101
 #define IDS_TB_TIMER                    101
 #define IDS_DRAGPOINT_DESC              102

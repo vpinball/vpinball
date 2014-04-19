@@ -55,7 +55,7 @@ typedef struct {
 
 class PinTable :
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public IDispatchImpl<ITable, &IID_ITable, &LIBID_VBATESTLib>,
+	public IDispatchImpl<ITable, &IID_ITable, &LIBID_VisualPinballLib>,
 #ifdef VBA
 	public CApcProject<PinTable>,
 	public CApcProjectItem<PinTable>,
@@ -65,7 +65,7 @@ class PinTable :
 	// IProvideClassInfo provides an ITypeInfo for the whole coclass
 	// allowing VBScript to get the set of events to sync to.
 	// VBA does not need this interface for some reason
-	public IProvideClassInfo2Impl<&CLSID_Table, &DIID_ITableEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_Table, &DIID_ITableEvents, &LIBID_VisualPinballLib>,
 	public ISelect,
 	public IScriptable,
 	public IScriptableHost,

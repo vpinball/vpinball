@@ -1,8 +1,8 @@
-// VBATest.idl : IDL source for VBATest.dll
+// VPinball.idl : IDL source for VPinball.dll
 //
 
 // This file will be processed by the MIDL tool to
-// produce the type library (VBATest.tlb) and marshalling code.
+// produce the type library (vpinball.tlb) and marshalling code.
 
 //http://support.microsoft.com/kb/241849 - too many methods in interface warning
 #if (__midl >= 501)
@@ -28,7 +28,7 @@ import "ocidl.idl";
 	version(1.0),
 	helpstring("Visual Pinball 0.3 Type Library")
 ]
-library VBATESTLib
+library VisualPinballLib
 {
 	importlib("stdole32.tlb");
 	importlib("stdole2.tlb");

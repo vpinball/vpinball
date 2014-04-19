@@ -1,20 +1,20 @@
 HKCR
 {
-	VBATest.Ball.1 = s 'Ball Class'
+	VPinball.Ball.1 = s 'Ball Class'
 	{
 		CLSID = s '{D4966068-DEDB-4EB9-9AB8-4574CCAA5F1D}'
 	}
-	VBATest.Ball = s 'Ball Class'
+	VPinball.Ball = s 'Ball Class'
 	{
 		CLSID = s '{D4966068-DEDB-4EB9-9AB8-4574CCAA5F1D}'
-		CurVer = s 'VBATest.Ball.1'
+		CurVer = s 'VPinball.Ball.1'
 	}
 	NoRemove CLSID
 	{
 		ForceRemove {D4966068-DEDB-4EB9-9AB8-4574CCAA5F1D} = s 'Ball Class'
 		{
-			ProgID = s 'VBATest.Ball.1'
-			VersionIndependentProgID = s 'VBATest.Ball'
+			ProgID = s 'VPinball.Ball.1'
+			VersionIndependentProgID = s 'VPinball.Ball'
 			ForceRemove 'Programmable'
 			LocalServer32 = s '%MODULE%'
 			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'

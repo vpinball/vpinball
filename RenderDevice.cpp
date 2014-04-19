@@ -604,7 +604,7 @@ void RenderDevice::SetTextureStageState( DWORD p1, D3DTEXTURESTAGESTATETYPE p2, 
 void RenderDevice::SetMaterial( const BaseMaterial * const _material )
 {
 #if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC)
-    // this produces a crash if BaseMaterial isn't proper aligned to 16byte (in vbatest.cpp new/delete is overloaded for that)
+    // this produces a crash if BaseMaterial isn't proper aligned to 16byte (in main.cpp new/delete is overloaded for that)
     if((_mm_movemask_ps(_mm_and_ps(
         _mm_and_ps(_mm_cmpeq_ps(_material->d,materialStateCache.d),_mm_cmpeq_ps(_material->a,materialStateCache.a)),
         _mm_and_ps(_mm_cmpeq_ps(_material->s,materialStateCache.s),_mm_cmpeq_ps(_material->e,materialStateCache.e)))) == 15)

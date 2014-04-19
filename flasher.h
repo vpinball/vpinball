@@ -30,7 +30,7 @@ public:
 // Flasher
 
 class Flasher :
-	public IDispatchImpl<IFlasher, &IID_IFlasher, &LIBID_VBATESTLib>,
+	public IDispatchImpl<IFlasher, &IID_IFlasher, &LIBID_VisualPinballLib>,
 	public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Flasher,&CLSID_Flasher>,
@@ -39,7 +39,7 @@ class Flasher :
 #endif
 	public EventProxy<Flasher, &DIID_IFlasherEvents>,
 	public IConnectionPointContainerImpl<Flasher>,
-	public IProvideClassInfo2Impl<&CLSID_Flasher, &DIID_IFlasherEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_Flasher, &DIID_IFlasherEvents, &LIBID_VisualPinballLib>,
 	public ISelect,
 	public IEditable,
 	public Hitable,

@@ -34,7 +34,7 @@ class VPinball //:// public IVisualPinball, public COleAuto,
 #ifdef VBA
 public CApcHost<VPinball> //,
 #endif
-//public IDispatchImpl<IVisualPinball, &IID_IVisualPinball, &LIBID_VBATESTLib>
+//public IDispatchImpl<IVisualPinball, &IID_IVisualPinball, &LIBID_VisualPinballLib>
 
 {
 public:

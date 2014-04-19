@@ -37,7 +37,7 @@ class HitSpinner;
 // Spinner
 
 class Spinner :
-	public IDispatchImpl<ISpinner, &IID_ISpinner, &LIBID_VBATESTLib>,
+	public IDispatchImpl<ISpinner, &IID_ISpinner, &LIBID_VisualPinballLib>,
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Spinner,&CLSID_Spinner>,
@@ -46,7 +46,7 @@ class Spinner :
 #endif
 	public EventProxy<Spinner, &DIID_ISpinnerEvents>,
 	public IConnectionPointContainerImpl<Spinner>,
-	public IProvideClassInfo2Impl<&CLSID_Spinner, &DIID_ISpinnerEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_Spinner, &DIID_ISpinnerEvents, &LIBID_VisualPinballLib>,
 	public ISelect,
 	public IEditable,
 	public Hitable,

@@ -26,17 +26,17 @@ public:
 
 class Timer :
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public IDispatchImpl<ITimer, &IID_ITimer, &LIBID_VBATESTLib>,
+	public IDispatchImpl<ITimer, &IID_ITimer, &LIBID_VisualPinballLib>,
 	//public ISupportErrorInfo,
 	//public CComObjectRoot,
 	public CComCoClass<Timer,&CLSID_Timer>,
 	//public CComCoClass<Flipper, &CLSID_Flipper>,
-	//public IDispatchImpl<IFlipper, &IID_IFlipper, &LIBID_VBATESTLib>,
+	//public IDispatchImpl<IFlipper, &IID_IFlipper, &LIBID_VisualPinballLib>,
 #ifdef VBA
 	public CApcProjectItem<Timer>,
 #endif
 	public IConnectionPointContainerImpl<Timer>,
-	public IProvideClassInfo2Impl<&CLSID_Timer, &DIID_ITimerEvents, &LIBID_VBATESTLib>,
+	public IProvideClassInfo2Impl<&CLSID_Timer, &DIID_ITimerEvents, &LIBID_VisualPinballLib>,
 	public EventProxy<Timer, &DIID_ITimerEvents>,
 	public ISelect,
 	public IEditable,
