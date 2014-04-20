@@ -3817,8 +3817,11 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   int trail = SendMessage(hwndTrail, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallTrail", REG_DWORD, &trail, 4);
 
-				  int vsync = GetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, NULL, TRUE);
+                  int vsync = GetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, NULL, TRUE);
                   SetRegValue("Player", "AdaptiveVSync", REG_DWORD, &vsync, 4);
+
+                  int maxPrerenderedFrames = GetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, NULL, TRUE);
+                  SetRegValue("Player","MaxPrerenderedFrames", REG_DWORD, &maxPrerenderedFrames, 4);
 
                   HWND hwndFXAA = GetDlgItem(hwndDlg, IDC_FFXAA);
                   int ffxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0);
