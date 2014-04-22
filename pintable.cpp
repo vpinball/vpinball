@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "vpversion.h"
 #include "buildnumber.h"
 #include "resource.h"
 #include "hash.h"
@@ -9364,7 +9365,6 @@ STDMETHODIMP PinTable::StopShake()
 
 STDMETHODIMP PinTable::Version(int *pVal)
 {
-	*pVal = 9900;
-
+	*pVal = VP_VERSION_MAJOR*1000 + VP_VERSION_MINOR*100 + VP_VERSION_REV;
 	return S_OK;
 }
