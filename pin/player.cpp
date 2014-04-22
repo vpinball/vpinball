@@ -2634,9 +2634,10 @@ void Player::DrawBalls()
              *
              * Due to the 2D nature of the sprite ball, it gets cut in half when dropped
              * below the table surface in a kicker. In this case, we pull the ball vertices
-             * a bit closer to the camera to counteract this.
+             * a bit closer to the camera to counteract this. We do it more for angles
+             * around 45° since there the glitch is the strongest.
              */
-            const Vertex3Ds offset = (0.3f * pball->radius) * m_pin3d.m_viewVec;
+            const Vertex3Ds offset = ((0.3f + 0.6f * sn * cs) * pball->radius) * m_pin3d.m_viewVec;
 
             for (int i = 0; i < 4; ++i)
             {
