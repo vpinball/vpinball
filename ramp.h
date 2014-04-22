@@ -89,7 +89,7 @@ STANDARD_EDITABLE_DECLARES(eItemRamp)
 // Remove the comment from the line above if you don't want your object to
 // support aggregation.
 
-DECLARE_REGISTRY_RESOURCEID(IDR_Ramp)
+DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

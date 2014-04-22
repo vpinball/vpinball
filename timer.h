@@ -84,7 +84,7 @@ END_CONNECTION_POINT_MAP()
 // Remove the comment from the line above if you don't want your object to
 // support aggregation.
 
-DECLARE_REGISTRY_RESOURCEID(IDR_Timer)
+DECLARE_REGISTRY_RESOURCEID(IDR_TIMER)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

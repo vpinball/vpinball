@@ -521,7 +521,7 @@
     <None Include="arrow.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Ball.rgs">
+    <None Include="res\ball.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="balltex2.bmp">
@@ -530,13 +530,13 @@
     <None Include="bin00001.bin">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Bumper.rgs">
+    <None Include="res\bumper.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="chevron.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="ComControl.rgs">
+    <None Include="res\comcontrol.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="cur00001.cur">
@@ -596,16 +596,16 @@
     <None Include="cursor1.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="DispReel.rgs">
+    <None Include="res\dispreel.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="DragPoint.rgs">
+    <None Include="res\dragpoint.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Flipper.rgs">
+    <None Include="res\flipper.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Gate.rgs">
+    <None Include="res\gate.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="ico00001.ico">
@@ -626,13 +626,13 @@
     <None Include="IconTrigger.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Kicker.rgs">
+    <None Include="res\kicker.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Light.rgs">
+    <None Include="res\light.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="LightSeq.rgs">
+    <None Include="res\lightseq.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="logo25.bmp">
@@ -644,25 +644,25 @@
     <None Include="pause1.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="PIEventHandler.rgs">
+    <None Include="res\pieventhandler.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="play1.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Plunger.rgs">
+    <None Include="res\plunger.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Primitive.rgs">
+    <None Include="res\primitive.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Ramp.rgs">
+    <None Include="res\ramp.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="registry.bin">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Spinner.rgs">
+    <None Include="res\spinner.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="step1.ico">
@@ -677,7 +677,7 @@
     <None Include="sunburst4.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Surface.rgs">
+    <None Include="res\surface.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="TableIcon.ico">
@@ -686,10 +686,10 @@
     <None Include="target.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Textbox.rgs">
+    <None Include="res\textbox.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Timer.rgs">
+    <None Include="res\timer.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="toolbar.bmp">
@@ -698,10 +698,10 @@
     <None Include="toolbardebug.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Trigger.rgs">
+    <None Include="res\trigger.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="VPinball.rgs">
+    <None Include="res\vpinball.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="wall.cur">
@@ -714,7 +714,7 @@
     <None Include="cur00002.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="flasher.rgs">
+    <None Include="res\flasher.rgs">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

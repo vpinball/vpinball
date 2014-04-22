@@ -97,7 +97,7 @@ STANDARD_EDITABLE_DECLARES(eItemDispReel)
 	virtual void GetCenter(Vertex2D * const pv) const ;
 	virtual void PutCenter(const Vertex2D * const pv);
 
-DECLARE_REGISTRY_RESOURCEID(IDR_DispReel)
+DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

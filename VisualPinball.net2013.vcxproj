@@ -2414,10 +2414,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <None Include="arrow.cur" />
-    <None Include="Ball.rgs" />
+    <None Include="res\ball.rgs" />
     <None Include="bin00001.bin" />
-    <None Include="Bumper.rgs" />
-    <None Include="ComControl.rgs" />
+    <None Include="res\bumper.rgs" />
+    <None Include="res\comcontrol.rgs" />
     <None Include="cur00001.cur" />
     <None Include="cur00002.cur" />
     <None Include="cur_bump.cur" />
@@ -2438,25 +2438,25 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="cur_time.cur" />
     <None Include="cur_wall.cur" />
     <None Include="cursor1.cur" />
-    <None Include="DispReel.rgs" />
-    <None Include="DragPoint.rgs" />
-    <None Include="flasher.rgs" />
-    <None Include="Flipper.rgs" />
-    <None Include="Gate.rgs" />
-    <None Include="Kicker.rgs" />
-    <None Include="Light.rgs" />
-    <None Include="LightSeq.rgs" />
-    <None Include="PIEventHandler.rgs" />
-    <None Include="Plunger.rgs" />
-    <None Include="Primitive.rgs" />
-    <None Include="Ramp.rgs" />
+    <None Include="res\dispreel.rgs" />
+    <None Include="res\dragpoint.rgs" />
+    <None Include="res\flasher.rgs" />
+    <None Include="res\flipper.rgs" />
+    <None Include="res\gate.rgs" />
+    <None Include="res\kicker.rgs" />
+    <None Include="res\light.rgs" />
+    <None Include="res\lightseq.rgs" />
+    <None Include="res\pieventhandler.rgs" />
+    <None Include="res\plunger.rgs" />
+    <None Include="res\primitive.rgs" />
+    <None Include="res\ramp.rgs" />
     <None Include="registry.bin" />
-    <None Include="Spinner.rgs" />
-    <None Include="Surface.rgs" />
-    <None Include="Textbox.rgs" />
-    <None Include="Timer.rgs" />
-    <None Include="Trigger.rgs" />
-    <None Include="VPinball.rgs" />
+    <None Include="res\spinner.rgs" />
+    <None Include="res\surface.rgs" />
+    <None Include="res\textbox.rgs" />
+    <None Include="res\timer.rgs" />
+    <None Include="res\trigger.rgs" />
+    <None Include="res\vpinball.rgs" />
     <None Include="wall.cur" />
     <None Include="BaseTable17.vpt" />
   </ItemGroup>

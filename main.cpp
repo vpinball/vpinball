@@ -168,14 +168,14 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
     {
         if (lstrcmpi(szArglist[i], _T("-UnregServer"))==0 || lstrcmpi(szArglist[i], _T("/UnregServer"))==0)
         {
-            _Module.UpdateRegistryFromResource(IDR_VPinball, FALSE);
+            _Module.UpdateRegistryFromResource(IDR_VPINBALL, FALSE);
             nRet = _Module.UnregisterServer(TRUE);
             bRun = false;
 			break;
         }
         if (lstrcmpi(szArglist[i], _T("-RegServer"))==0 || lstrcmpi(szArglist[i], _T("/RegServer"))==0)
         {
-            _Module.UpdateRegistryFromResource(IDR_VPinball, TRUE);
+            _Module.UpdateRegistryFromResource(IDR_VPINBALL, TRUE);
             nRet = _Module.RegisterServer(TRUE);
             bRun = false;
 			break;
