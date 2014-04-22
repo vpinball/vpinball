@@ -640,6 +640,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[id(35), helpstring("method StartShake")] HRESULT StartShake([defaultvalue(1)] void);
 		[id(36), helpstring("method StopShake")] HRESULT StopShake([defaultvalue(1)] void);
 		[id(37), helpstring("method QuitPlayer")] HRESULT QuitPlayer([defaultvalue(0)] int CloseType);
+
+		[id(38), helpstring("method VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
+		[id(39), helpstring("method VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
+		[id(40), helpstring("method VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
 		}
 
 	[

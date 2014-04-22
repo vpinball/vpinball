@@ -46,6 +46,9 @@ public:
 		STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ long *pVal);
 		STDMETHOD(get_ExitGame)(/*[out, retval]*/ long *pVal);
 		
+        STDMETHOD(VersionMajor)(/*[out, retval]*/ int *pVal);
+        STDMETHOD(VersionMinor)(/*[out, retval]*/ int *pVal);
+        STDMETHOD(VersionRevision)(/*[out, retval]*/ int *pVal);
 
 	void Init(PinTable *pt);
 
