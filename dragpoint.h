@@ -95,7 +95,7 @@ END_COM_MAP()
 // Remove the comment from the line above if you don't want your object to
 // support aggregation.
 
-DECLARE_REGISTRY_RESOURCEID(IDR_DragPoint)
+DECLARE_REGISTRY_RESOURCEID(IDR_DRAG_POINT)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

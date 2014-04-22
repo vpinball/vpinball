@@ -210,7 +210,7 @@ public:
    STANDARD_DISPATCH_DECLARE
    STANDARD_EDITABLE_DECLARES(eItemPrimitive)
 
-   DECLARE_REGISTRY_RESOURCEID(IDR_Primitive)
+   DECLARE_REGISTRY_RESOURCEID(IDR_PRIMITIVE)
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();

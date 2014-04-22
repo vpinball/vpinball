@@ -9898,7 +9898,7 @@
 				>
 			</File>
 			<File
-				RelativePath="Ball.rgs"
+				RelativePath="res\ball.rgs"
 				>
 			</File>
 			<File
@@ -9910,7 +9910,7 @@
 				>
 			</File>
 			<File
-				RelativePath="Bumper.rgs"
+				RelativePath="res\bumper.rgs"
 				>
 			</File>
 			<File
@@ -9918,7 +9918,7 @@
 				>
 			</File>
 			<File
-				RelativePath="ComControl.rgs"
+				RelativePath="res\comcontrol.rgs"
 				>
 			</File>
 			<File
@@ -10002,23 +10002,23 @@
 				>
 			</File>
 			<File
-				RelativePath="DispReel.rgs"
+				RelativePath="res\dispreel.rgs"
 				>
 			</File>
 			<File
-				RelativePath="DragPoint.rgs"
+				RelativePath="res\dragpoint.rgs"
 				>
 			</File>
 			<File
-				RelativePath=".\flasher.rgs"
+				RelativePath="res\flasher.rgs"
 				>
 			</File>
 			<File
-				RelativePath="Flipper.rgs"
+				RelativePath="res\flipper.rgs"
 				>
 			</File>
 			<File
-				RelativePath="Gate.rgs"
+				RelativePath="res\gate.rgs"
 				>
 			</File>
 			<File
@@ -10046,15 +10046,15 @@
 				>
 			</File>
 			<File
-				RelativePath="Kicker.rgs"
+				RelativePath="res\kicker.rgs"
 				>
 			</File>
 			<File
-				RelativePath="Light.rgs"
+				RelativePath="res\light.rgs"
 				>
 			</File>
 			<File
-				RelativePath="LightSeq.rgs"
+				RelativePath="res\lightseq.rgs"
 				>
 			</File>
 			<File
@@ -10070,7 +10070,7 @@
 				>
 			</File>
 			<File
-				RelativePath="PIEventHandler.rgs"
+				RelativePath="res\pieventhandler.rgs"
 				>
 			</File>
 			<File
@@ -10078,15 +10078,15 @@
 				>
 			</File>
 			<File
-				RelativePath="Plunger.rgs"
+				RelativePath="res\plunger.rgs"
 				>
 			</File>
 			<File
-				RelativePath=".\Primitive.rgs"
+				RelativePath="res\primitive.rgs"
 				>
 			</File>
 			<File
-				RelativePath="Ramp.rgs"
+				RelativePath="res\ramp.rgs"
 				>
 			</File>
 			<File
@@ -10094,7 +10094,7 @@
 				>
 			</File>
 			<File
-				RelativePath="Spinner.rgs"
+				RelativePath="res\spinner.rgs"
 				>
 			</File>
 			<File
@@ -10118,7 +10118,7 @@
 				>
 			</File>
 			<File
-				RelativePath="Surface.rgs"
+				RelativePath="res\surface.rgs"
 				>
 			</File>
 			<File
@@ -10130,11 +10130,11 @@
 				>
 			</File>
 			<File
-				RelativePath="Textbox.rgs"
+				RelativePath="res\textbox.rgs"
 				>
 			</File>
 			<File
-				RelativePath="Timer.rgs"
+				RelativePath="res\timer.rgs"
 				>
 			</File>
 			<File
@@ -10146,11 +10146,11 @@
 				>
 			</File>
 			<File
-				RelativePath="Trigger.rgs"
+				RelativePath="res\trigger.rgs"
 				>
 			</File>
 			<File
-				RelativePath="VPinball.rgs"
+				RelativePath="res\vpinball.rgs"
 				>
 			</File>
 			<File

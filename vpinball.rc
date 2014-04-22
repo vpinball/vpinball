@@ -53,8 +53,8 @@ END
 // REGISTRY
 //
 
-IDR_BALL                REGISTRY DISCARDABLE    "Ball.rgs"
-IDR_COMCONTROL          REGISTRY DISCARDABLE    "ComControl.rgs"
+IDR_BALL                REGISTRY DISCARDABLE    "res\\ball.rgs"
+IDR_COM_CONTROL          REGISTRY DISCARDABLE    "res\\comcontrol.rgs"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

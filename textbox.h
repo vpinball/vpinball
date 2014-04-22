@@ -73,7 +73,7 @@ STANDARD_EDITABLE_DECLARES(eItemTextbox)
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
 
-DECLARE_REGISTRY_RESOURCEID(IDR_Textbox)
+DECLARE_REGISTRY_RESOURCEID(IDR_TEXTBOX)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

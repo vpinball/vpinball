@@ -79,7 +79,7 @@ STANDARD_EDITABLE_DECLARES(eItemGate)
 // Remove the comment from the line above if you don't want your object to
 // support aggregation.
 
-DECLARE_REGISTRY_RESOURCEID(IDR_Gate)
+DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 

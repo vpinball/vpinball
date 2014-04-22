@@ -89,7 +89,7 @@ STANDARD_EDITABLE_DECLARES(eItemPlunger)
 
 	void WriteRegDefaults();
 
-DECLARE_REGISTRY_RESOURCEID(IDR_Plunger)
+DECLARE_REGISTRY_RESOURCEID(IDR_PLUNGER)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
