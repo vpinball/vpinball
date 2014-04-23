@@ -543,7 +543,7 @@ void Light::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
     RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 
-    if (m_d.m_state == LightStateBlinking)
+    if (m_realState == LightStateBlinking)
         UpdateBlinker(g_pplayer->m_time_msec);
 
     if (m_d.m_shape == ShapeCustom)
@@ -1015,7 +1015,7 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
 {
     m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
 
-    if (m_d.m_state == LightStateBlinking)
+    if (m_realState == LightStateBlinking)
         RestartBlinker(g_pplayer->m_time_msec);
 
     // VP9COMPAT
