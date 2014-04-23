@@ -118,6 +118,9 @@ PlaySound(string, int loopcount, float volume, float pan, float randompitch, int
 FireKnocker(int Count)
 QuitPlayer(int CloseType)
 Version(int) - returns the Visual Pinball version number (i.e. 9.2.0: 9200)
+VersionMajor - major VP version number
+VersionMinor - minor VP version number
+VersionRevision - VP version revision
 
 
 BUMPER
