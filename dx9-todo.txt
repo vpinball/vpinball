@@ -2,5 +2,4 @@ Things which have to be done before the official DX9 release:
 
 *) fix text reels
 *) add checkbox to use software vertex processing (fixes rendering on some Intel chipsets)
-*) disable MSAA until we fix the flickering
 *) improve GUI for vsync/frame limiting (very unintuitive right now)
