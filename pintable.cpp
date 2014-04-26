@@ -4243,7 +4243,7 @@ void PinTable::DoLButtonDown(int x,int y)
    // object and not being able to use the cursor keys/wheely mouse
    SetFocus(g_pvp->m_hwndWork);
 
-   if ((g_pvp->m_ToolCur == IDC_MAGNIFY) || (ksctrl & 0x80000000))
+   if ((g_pvp->m_ToolCur == ID_TABLE_MAGNIFY) || (ksctrl & 0x80000000))
    {
       if (m_zoom < MAX_ZOOM)
       {
@@ -4306,7 +4306,7 @@ void PinTable::DoRButtonDown(int x,int y)
 
    const int ks = GetKeyState(VK_CONTROL);
 
-   if ((g_pvp->m_ToolCur == IDC_MAGNIFY) || (ks & 0x80000000))
+   if ((g_pvp->m_ToolCur == ID_TABLE_MAGNIFY) || (ks & 0x80000000))
    {
       if (m_zoom > MIN_ZOOM)
       {
@@ -4874,7 +4874,7 @@ void PinTable::DoRButtonUp(int x,int y)
    const int ks = GetKeyState(VK_CONTROL);
 
    // Only bring up context menu if we weren't in magnify mode
-   if (!((g_pvp->m_ToolCur == IDC_MAGNIFY) || (ks & 0x80000000)))
+   if (!((g_pvp->m_ToolCur == ID_TABLE_MAGNIFY) || (ks & 0x80000000)))
    {
       if (m_vmultisel.Size() > 1)
       {
@@ -5574,7 +5574,7 @@ void PinTable::UseTool(int x,int y,int tool)
 
    switch (tool)
    {
-   case IDC_WALL:
+   case ID_INSERT_WALL:
       {
          CComObject<Surface> *psur;
          CComObject<Surface>::CreateInstance(&psur);
@@ -5586,7 +5586,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_TARGET:
+   case ID_INSERT_TARGET:
       {
          CComObject<Surface> *psur;
          CComObject<Surface>::CreateInstance(&psur);
@@ -5598,7 +5598,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
       }
       break;
-   case IDC_FLIPPER:
+   case ID_INSERT_FLIPPER:
       {
          CComObject<Flipper> *pflipper;
          CComObject<Flipper>::CreateInstance(&pflipper);
@@ -5610,7 +5610,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_TIMER:
+   case ID_INSERT_TIMER:
       {
          CComObject<Timer> *ptimer;
          CComObject<Timer>::CreateInstance(&ptimer);
@@ -5622,7 +5622,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_PLUNGER:
+   case ID_INSERT_PLUNGER:
       {
          CComObject<Plunger> *pplunger;
          CComObject<Plunger>::CreateInstance(&pplunger);
@@ -5634,7 +5634,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_TEXTBOX:
+   case ID_INSERT_TEXTBOX:
       {
          CComObject<Textbox> *ptextbox;
          CComObject<Textbox>::CreateInstance(&ptextbox);
@@ -5646,7 +5646,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_COMCONTROL:
+   case ID_INSERT_COM_CONTROL:
       {
          CComObject<PinComControl> *pcomcontrol;
          CComObject<PinComControl>::CreateInstance(&pcomcontrol);
@@ -5666,7 +5666,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_BUMPER:
+   case ID_INSERT_BUMPER:
       {
          CComObject<Bumper> *pbumper;
          CComObject<Bumper>::CreateInstance(&pbumper);
@@ -5678,7 +5678,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_TRIGGER:
+   case ID_INSERT_TRIGGER:
       {
          CComObject<Trigger> *ptrigger;
          CComObject<Trigger>::CreateInstance(&ptrigger);
@@ -5690,7 +5690,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_LIGHT:
+   case ID_INSERT_LIGHT:
       {
          CComObject<Light> *plight;
          CComObject<Light>::CreateInstance(&plight);
@@ -5702,7 +5702,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_KICKER: {
+   case ID_INSERT_KICKER: {
       CComObject<Kicker> *pkicker;
       CComObject<Kicker>::CreateInstance(&pkicker);
       if (pkicker)
@@ -5713,7 +5713,7 @@ void PinTable::UseTool(int x,int y,int tool)
       }
       break;
                     }
-   case IDC_DECAL:
+   case ID_INSERT_DECAL:
       {
          CComObject<Decal> *pdecal;
          CComObject<Decal>::CreateInstance(&pdecal);
@@ -5725,7 +5725,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_PRIMITIVE:
+   case ID_INSERT_PRIMITIVE:
       {
          CComObject<Primitive> *pprimitive;
          CComObject<Primitive>::CreateInstance(&pprimitive);
@@ -5737,7 +5737,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_GATE:
+   case ID_INSERT_GATE:
       {
          CComObject<Gate> *pgate;
          CComObject<Gate>::CreateInstance(&pgate);
@@ -5749,7 +5749,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_SPINNER:
+   case ID_INSERT_SPINNER:
       {
          CComObject<Spinner> *pspinner;
          CComObject<Spinner>::CreateInstance(&pspinner);
@@ -5761,7 +5761,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_RAMP:
+   case ID_INSERT_RAMP:
       {
          CComObject<Ramp> *pramp;
          CComObject<Ramp>::CreateInstance(&pramp);
@@ -5773,7 +5773,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_FLASHER:
+   case ID_INSERT_FLASHER:
       {
          CComObject<Flasher> *pflasher;
          CComObject<Flasher>::CreateInstance(&pflasher);
@@ -5785,7 +5785,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_DISPREEL:
+   case ID_INSERT_DISP_REEL:
       {
          CComObject<DispReel> *pdispreel;
          CComObject<DispReel>::CreateInstance(&pdispreel);
@@ -5797,7 +5797,7 @@ void PinTable::UseTool(int x,int y,int tool)
          }
          break;
       }
-   case IDC_LIGHTSEQ:
+   case ID_INSERT_LIGHT_SEQ:
       {
          CComObject<LightSeq> *plightseq;
          CComObject<LightSeq>::CreateInstance(&plightseq);
@@ -6042,84 +6042,84 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                cursorid = IDC_ARROW;
                break;
 
-            case IDC_MAGNIFY:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_MAGNIFY);
+            case ID_TABLE_MAGNIFY:
+               cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
                break;
 
-            case IDC_WALL:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_WALL);
+            case ID_INSERT_WALL:
+               cursorid = MAKEINTRESOURCE(IDC_WALL);
                break;
 
-            case IDC_LIGHT:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_LIGHT);
+            case ID_INSERT_LIGHT:
+               cursorid = MAKEINTRESOURCE(IDC_LIGHT);
                break;
 
-            case IDC_FLIPPER:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_FLIPPER);
+            case ID_INSERT_FLIPPER:
+               cursorid = MAKEINTRESOURCE(IDC_FLIPPER);
                break;
 
-            case IDC_TRIGGER:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_TRIGGER);
+            case ID_INSERT_TRIGGER:
+               cursorid = MAKEINTRESOURCE(IDC_TRIGGER);
                break;
 
-            case IDC_GATE:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_GATE);
+            case ID_INSERT_GATE:
+               cursorid = MAKEINTRESOURCE(IDC_GATE);
                break;
 
-            case IDC_TIMER:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_TIMER);
+            case ID_INSERT_TIMER:
+               cursorid = MAKEINTRESOURCE(IDC_TIMER);
                break;
 
-            case IDC_PLUNGER:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_PLUNGER);
+            case ID_INSERT_PLUNGER:
+               cursorid = MAKEINTRESOURCE(IDC_PLUNGER);
                break;
 
-            case IDC_TEXTBOX:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_TEXTBOX);
+            case ID_INSERT_TEXTBOX:
+               cursorid = MAKEINTRESOURCE(IDC_TEXTBOX);
                break;
 
-            case IDC_COMCONTROL:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_TEXTBOX);
+            case ID_INSERT_COM_CONTROL:
+               cursorid = MAKEINTRESOURCE(IDC_TEXTBOX);
                break;
 
-            case IDC_BUMPER:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_BUMPER);
+            case ID_INSERT_BUMPER:
+               cursorid = MAKEINTRESOURCE(IDC_BUMPER);
                break;
 
-            case IDC_KICKER:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_KICKER);
+            case ID_INSERT_KICKER:
+               cursorid = MAKEINTRESOURCE(IDC_KICKER);
                break;
 
-            case IDC_TARGET:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_TARGET);
+            case ID_INSERT_TARGET:
+               cursorid = MAKEINTRESOURCE(IDC_TARGET);
                break;
 
-            case IDC_DECAL:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_DECAL);
+            case ID_INSERT_DECAL:
+               cursorid = MAKEINTRESOURCE(IDC_DECAL);
                break;
 
-            case IDC_SPINNER:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_SPINNER);
+            case ID_INSERT_SPINNER:
+               cursorid = MAKEINTRESOURCE(IDC_SPINNER);
                break;
 
-            case IDC_RAMP:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_RAMP);
+            case ID_INSERT_RAMP:
+               cursorid = MAKEINTRESOURCE(IDC_RAMP);
                break;
 
-            case IDC_FLASHER:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_FLASHER);
+            case ID_INSERT_FLASHER:
+               cursorid = MAKEINTRESOURCE(IDC_FLASHER);
                break;
 
-            case IDC_DISPREEL:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_DISPREEL);
+            case ID_INSERT_DISP_REEL:
+               cursorid = MAKEINTRESOURCE(IDC_DISP_REEL);
                break;
 
-            case IDC_LIGHTSEQ:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_LIGHTSEQ);
+            case ID_INSERT_LIGHT_SEQ:
+               cursorid = MAKEINTRESOURCE(IDC_LIGHT_SEQ);
                break;
 
-            case IDC_PRIMITIVE:
-               cursorid = MAKEINTRESOURCE(IDC_CUR_PRIMITIVE);
+            case ID_INSERT_PRIMITIVE:
+               cursorid = MAKEINTRESOURCE(IDC_PRIMITIVE);
                break;
             }
             hcursor = LoadCursor(hinst, cursorid);
@@ -6155,7 +6155,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
       const short x = (short)(lParam & 0xffff);
       const short y = (short)((lParam>>16) & 0xffff);
-      if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == IDC_MAGNIFY))
+      if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
       {
          pt->DoLButtonDown(x,y);
       }

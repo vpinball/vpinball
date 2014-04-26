@@ -557,9 +557,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="arrow.cur">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\ball.rgs">
       <Filter>Resource Files</Filter>
     </None>
@@ -578,61 +575,55 @@
     <None Include="res\comcontrol.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur00001.cur">
+    <None Include="res\gate.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_bump.cur">
+    <None Include="res\kicker.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_deca.cur">
+    <None Include="res\spinner.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_dispdmd.cur">
+    <None Include="res\dispreel.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_dispreel.cur">
+    <None Include="res\trigger.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_dispseg.cur">
+    <None Include="res\timer.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_flip.cur">
+    <None Include="res\target.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_gate.cur">
+    <None Include="res\flipper.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_kick.cur">
+    <None Include="res\lightseq.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_ligh.cur">
+    <None Include="res\textbox.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_lightseq.cur">
+    <None Include="res\primitive.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_plun.cur">
+    <None Include="res\ramp.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_prim.cur">
+    <None Include="res\decal.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_spin.cur">
+    <None Include="res\bumper.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_targ.cur">
+    <None Include="res\plunger.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_text.cur">
+    <None Include="res\wall.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cur_time.cur">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="cur_wall.cur">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="cursor1.cur">
+    <None Include="res\magnify.cur">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\dispreel.rgs">
@@ -743,14 +734,14 @@
     <None Include="res\vpinball.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="wall.cur">
+    <None Include="res\light.cur">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="white.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="BaseTable17.vpt" />
-    <None Include="cur00002.cur">
+    <None Include="res\flasher.cur">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\flasher.rgs">
