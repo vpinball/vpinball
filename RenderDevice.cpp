@@ -255,6 +255,9 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     else
 		params.MultiSampleQuality = min(params.MultiSampleQuality, MultiSampleQualityLevels);
 
+    const int softwareVP = GetRegIntWithDefault("Player", "SoftwareVertexProcessing", 0);
+    const DWORD flags = softwareVP ? D3DCREATE_SOFTWARE_VERTEXPROCESSING : D3DCREATE_HARDWARE_VERTEXPROCESSING;
+
     // Create the D3D device. This optionally goes to the proper fullscreen mode.
     // It also creates the default swap chain (front and back buffer).
 #ifdef USE_D3D9EX
@@ -264,7 +267,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
                m_adapter,
                devtype,
                hwnd,
-               D3DCREATE_HARDWARE_VERTEXPROCESSING /*| D3DCREATE_PUREDEVICE*/,
+               flags /*| D3DCREATE_PUREDEVICE*/,
                &params,
                fullscreen ? &mode : NULL,
                &m_pD3DDevice));
@@ -276,7 +279,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
                m_adapter,
                devtype,
                hwnd,
-               D3DCREATE_HARDWARE_VERTEXPROCESSING /*| D3DCREATE_PUREDEVICE*/,
+               flags /*| D3DCREATE_PUREDEVICE*/,
                &params,
                &m_pD3DDevice));
 

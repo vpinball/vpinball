@@ -274,6 +274,8 @@ BEGIN
     CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,66,91,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,90,155,10
+    CONTROL         "Software vertex processing",IDC_SOFTWARE_VP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,100,155,10
     LTEXT           "FPS limiter",IDC_STATIC,162,136,100,10
     EDITTEXT        IDC_ADAPTIVE_VSYNC,262,134,20,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,192,28,10

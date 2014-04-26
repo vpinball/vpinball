@@ -708,6 +708,7 @@
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_VISUALS_SOUND               581
 #define IDC_TABLEAVSYNC                 585
+#define IDC_SOFTWARE_VP                 586
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -812,7 +813,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        401
+#define _APS_NEXT_RESOURCE_VALUE        601
 #define _APS_NEXT_COMMAND_VALUE         32895
 #define _APS_NEXT_CONTROL_VALUE         426
 #define _APS_NEXT_SYMED_VALUE           188
