@@ -1,35 +1,42 @@
 VP 9.9.0 Changelog
 ------------------------
+
+- rendering engine has been ported to DirectX 9 and now takes much better advantage of 3D hardware
+
+- Region Updates, Region Optimization, Alternate Render are not needed anymore due to the new graphics pipeline and have been removed
+
+- true fullscreen setting has been removed due to incompatibility with VPinMAME. Instead, a windowed fullscreen option has been added to the list of video modes.
+
 - add options for wire ramps (define diameter and distance x/y of wires)
 
-- add currentAngle function to spinner
+- add CurrentAngle function to spinner
 
 - add depth bias option to flasher, light, primitive and ramp to fine tune depth sorting
 
 - add sphere mapping to wired ramps if an image was assigned to a wired ramp
-
-- DX9 port for the graphics by new team member Mukuste
-- region updates and optimizations settings are not needed anymore due to the new graphics pipeline
-- same goes for alternate render
 
 - DX8 port for input handling (currently disabled)
 
 - enable NVIDIA Optimus cards by default
 
 - texture size limit/downscale now respects aspect ratio (currently disabled)
+
 - new video setting: Force anisotropic texture filtering. This results in higher quality results, but can affect performance on lower end cards.
 
 - stereo 3D AA is now basically for free and can always be enabled if stereo 3D output is used
-  Note that the depth/parameters of stereo had to be changed. As a positive sideeffect the two stereo parameters are the same for most tables now,
+  Note that the depth/parameters of stereo had to be changed. As a positive side effect, the two stereo parameters are the same for most tables now,
   so there is now a global setting in the video preferences. These can still be overwritten per table though.
 
 - FXAA now has two modes: Fast and Quality
 
-- adaptive vsync behavior changed:
-  0: disable vsync
-  1: enable/automatic detection of vsync rate
-  if adaptive vsync is set to anything higher than the monitor refresh rate, the engine will limit the FPS to this rate (but of course without using real vsync)
-  the old original behavior had to be disabled for now due to XP compatibility
+- new FPS limiter field in Video Options:
+  0: disable frame limiting
+  1: enable vsync
+  If set to anything higher than the monitor refresh rate, the engine will limit the FPS to this rate (but of course without using real vsync).
+  Adaptive vsync had to be disabled for now for compatibility with Windows XP.
+
+- new field "Maximum prerendered frames" in Video Options:
+  Lowering this value will reduce input lag and sometimes also stutter, but may come at a performance cost.
 
 - Running as administrator is no longer required (except for tables which write high scores to system directories). UAC setting removed from executable.
 
