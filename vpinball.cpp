@@ -3672,12 +3672,11 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 		 sprintf_s(tmp,256,"%f",stereo3DZPD);
  		 SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, tmp);
 
-         hwndCheck = GetDlgItem(hwndDlg, IDC_FORCE_ANISO);
-		 int forceAniso;
-         hr = GetRegInt("Player", "ForceAnisotropicFiltering", &forceAniso);
-		 if (hr != S_OK)
-            forceAniso = fFalse;
-         SendMessage(hwndCheck, BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
+         const bool forceAniso = (GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 0) != 0);
+         SendMessage(GetDlgItem(hwndDlg, IDC_FORCE_ANISO), BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
+
+         const bool softwareVP = (GetRegIntWithDefault("Player", "SoftwareVertexProcessing", 0) != 0);
+         SendMessage(GetDlgItem(hwndDlg, IDC_SOFTWARE_VP), BM_SETCHECK, softwareVP ? BST_CHECKED : BST_UNCHECKED, 0);
 
          int widthcur;
          hr = GetRegInt("Player", "Width", &widthcur);
@@ -3852,6 +3851,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   HWND hwndForceAniso = GetDlgItem(hwndDlg, IDC_FORCE_ANISO);
                   int forceAniso = SendMessage(hwndForceAniso, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "ForceAnisotropicFiltering", REG_DWORD, &forceAniso, 4);
+
+                  HWND hwndSoftwareVP = GetDlgItem(hwndDlg, IDC_SOFTWARE_VP);
+                  int softwareVP = SendMessage(hwndSoftwareVP, BM_GETCHECK, 0, 0);
+                  SetRegValueBool("Player", "SoftwareVertexProcessing", softwareVP != 0);
 
                   HWND hwndAraSlider = GetDlgItem(hwndDlg, IDC_ARASlider);
                   int alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
