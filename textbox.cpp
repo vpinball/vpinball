@@ -99,8 +99,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
 
 void Textbox::WriteRegDefaults()
 	{
-	char strTmp[40];
-	float fTmp;
+	char strTmp[128];
 	
 	SetRegValue("DefaultProps\\TextBox","BackColor", REG_DWORD, &m_d.m_backcolor, 4);
 	SetRegValue("DefaultProps\\TextBox","FontColor", REG_DWORD, &m_d.m_fontcolor, 4);
@@ -119,9 +118,8 @@ void Textbox::WriteRegDefaults()
 	m_pIFont->get_Underline(&fd.fUnderline); 
 	m_pIFont->get_Strikethrough(&fd.fStrikethrough); 
 	
-	fTmp = (float)(fd.cySize.int64 / 10000.0);
-	sprintf_s(strTmp, 40, "%f", fTmp);
-	SetRegValue("DefaultProps\\TextBox","FontSize", REG_SZ, &strTmp,strlen(strTmp));
+	const float fTmp = (float)(fd.cySize.int64 / 10000.0);
+	SetRegValueFloat("DefaultProps\\TextBox","FontSize", fTmp);
 	int charCnt = wcslen(fd.lpstrName) +1;
 	WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
 	SetRegValue("DefaultProps\\TextBox","FontName", REG_SZ, &strTmp,strlen(strTmp));

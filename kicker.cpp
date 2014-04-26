@@ -82,18 +82,13 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
 void Kicker::WriteRegDefaults()
 	{
-	char strTmp[40];
-
 	SetRegValue("DefaultProps\\Kicker","Color",REG_DWORD,&m_d.m_color,4);
 	SetRegValue("DefaultProps\\Kicker","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\Kicker","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	SetRegValue("DefaultProps\\Kicker","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
-	sprintf_s(strTmp, 40, "%f", m_d.m_hit_height);
-	SetRegValue("DefaultProps\\Kicker","HitHeight", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_radius);
-	SetRegValue("DefaultProps\\Kicker","Radius", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
-	SetRegValue("DefaultProps\\Kicker","Scatter", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValueFloat("DefaultProps\\Kicker","HitHeight", m_d.m_hit_height);
+	SetRegValueFloat("DefaultProps\\Kicker","Radius", m_d.m_radius);
+	SetRegValueFloat("DefaultProps\\Kicker","Scatter", m_d.m_scatter);
 	SetRegValue("DefaultProps\\Kicker","KickerType",REG_DWORD,&m_d.m_kickertype,4);
 	SetRegValue("DefaultProps\\Kicker","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
 	}

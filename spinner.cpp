@@ -44,29 +44,18 @@ HRESULT Spinner::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Spinner::WriteRegDefaults()
 {
-   char strTmp[40];
-
-   sprintf_s(strTmp, 40, "%f", m_d.m_length);
-   SetRegValue("DefaultProps\\Spinner","Length", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_rotation);
-   SetRegValue("DefaultProps\\Spinner","Rotation", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Spinner","Length", m_d.m_length);
+   SetRegValueFloat("DefaultProps\\Spinner","Rotation", m_d.m_rotation);
    SetRegValue("DefaultProps\\Spinner","Supports",REG_DWORD,&m_d.m_fSupports,4);
-   sprintf_s(strTmp, 40, "%f", m_d.m_height);
-   SetRegValue("DefaultProps\\Spinner","Height", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_overhang);
-   SetRegValue("DefaultProps\\Spinner","Overhang", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Spinner","Height", m_d.m_height);
+   SetRegValueFloat("DefaultProps\\Spinner","Overhang", m_d.m_overhang);
    SetRegValue("DefaultProps\\Spinner","Color", REG_DWORD, &m_d.m_color, 4);
    SetRegValue("DefaultProps\\Spinner","CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
-   sprintf_s(strTmp, 40, "%f", m_d.m_angleMax);
-   SetRegValue("DefaultProps\\Spinner","AngleMax", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_angleMin);
-   SetRegValue("DefaultProps\\Spinner","AngleMin", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
-   SetRegValue("DefaultProps\\Spinner","Elasticity", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_friction);
-   SetRegValue("DefaultProps\\Spinner","Friction", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
-   SetRegValue("DefaultProps\\Spinner","Scatter", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Spinner","AngleMax", m_d.m_angleMax);
+   SetRegValueFloat("DefaultProps\\Spinner","AngleMin", m_d.m_angleMin);
+   SetRegValueFloat("DefaultProps\\Spinner","Elasticity", m_d.m_elasticity);
+   SetRegValueFloat("DefaultProps\\Spinner","Friction", m_d.m_friction);
+   SetRegValueFloat("DefaultProps\\Spinner","Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Spinner","Visible",REG_DWORD,&m_d.m_fVisible,4);
    SetRegValue("DefaultProps\\Spinner","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Spinner","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);

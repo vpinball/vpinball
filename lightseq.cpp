@@ -69,14 +69,11 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 
 void LightSeq::WriteRegDefaults()
 	{
-	char strTmp[MAXTOKEN];
 	MAKE_ANSIPTR_FROMWIDE(strTmp2, (WCHAR *)m_d.m_wzCollection);
 	SetRegValue("DefaultProps\\LightSequence","UpdateInterval",REG_DWORD,&m_d.m_updateinterval,4);
 	SetRegValue("DefaultProps\\LightSequence","Collection",REG_SZ,strTmp2,66);
-	sprintf_s(strTmp, 40, "%f", m_d.m_vCenter.x);
-	SetRegValue("DefaultProps\\LightSequence","CenterX", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_vCenter.y);
-	SetRegValue("DefaultProps\\LightSequence","CenterY", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValueFloat("DefaultProps\\LightSequence","CenterX", m_d.m_vCenter.x);
+	SetRegValueFloat("DefaultProps\\LightSequence","CenterY", m_d.m_vCenter.y);
 	SetRegValue("DefaultProps\\LightSequence","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\LightSequence","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	}

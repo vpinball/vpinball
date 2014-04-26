@@ -117,18 +117,11 @@ void Bumper::SetDefaults(bool fromMouseClick)
 
 void Bumper::WriteRegDefaults()
 {
-   char strTmp[40];
-
-   sprintf_s(strTmp, 40, "%f", m_d.m_radius);
-   SetRegValue("DefaultProps\\Bumper","Radius", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_force);
-   SetRegValue("DefaultProps\\Bumper","Force", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_heightoffset);
-   SetRegValue("DefaultProps\\Bumper","HeightOffset", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_threshold);
-   SetRegValue("DefaultProps\\Bumper","Threshold", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_overhang);
-   SetRegValue("DefaultProps\\Bumper","Overhang", REG_SZ, &strTmp,strlen(strTmp));	
+   SetRegValueFloat("DefaultProps\\Bumper","Radius", m_d.m_radius);
+   SetRegValueFloat("DefaultProps\\Bumper","Force", m_d.m_force);
+   SetRegValueFloat("DefaultProps\\Bumper","HeightOffset", m_d.m_heightoffset);
+   SetRegValueFloat("DefaultProps\\Bumper","Threshold", m_d.m_threshold);
+   SetRegValueFloat("DefaultProps\\Bumper","Overhang", m_d.m_overhang);
    SetRegValue("DefaultProps\\Bumper","Color", REG_DWORD, &m_d.m_color,4);	
    SetRegValue("DefaultProps\\Bumper","SideColor", REG_DWORD, &m_d.m_sidecolor,4);	
    SetRegValue("DefaultProps\\Bumper","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));	
