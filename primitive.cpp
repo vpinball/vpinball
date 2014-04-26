@@ -152,7 +152,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    hr = GetRegString("DefaultProps\\Primitive","Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage[0] = 0;
-   SetRegValue("DefaultProps\\Primitive","HitEvent", REG_DWORD, &m_d.m_fHitEvent,4);
+
    hr = GetRegStringAsFloat("DefaultProps\\Primitive","HitThreshold", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_threshold = fTmp;
@@ -191,91 +191,53 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
 void Primitive::WriteRegDefaults()
 {
-   char strTmp[40];
-   int iTmp;
-
    SetRegValue("DefaultProps\\Primitive","TopColor",REG_DWORD,&m_d.m_TopColor,4);
    SetRegValue("DefaultProps\\Primitive","SideColor",REG_DWORD,&m_d.m_SideColor,4);
-   iTmp = (m_d.m_TopVisible) ? 1 : 0;
-   SetRegValue("DefaultProps\\Primitive","TopVisible",REG_DWORD,&iTmp,4);
-   iTmp = (m_d.useLighting) ? 1 : 0;
-   SetRegValue("DefaultProps\\Primitive","UseLighting",REG_DWORD,&iTmp,4);
-   iTmp = (m_d.staticRendering) ? 1 : 0;
-   SetRegValue("DefaultProps\\Primitive","StaticRendering",REG_DWORD,&iTmp,4);
-   iTmp = (m_d.sphereMapping) ? 1 : 0;
-   SetRegValue("DefaultProps\\Primitive","SphereMapping",REG_DWORD,&iTmp,4);
+   SetRegValueBool("DefaultProps\\Primitive","TopVisible", m_d.m_TopVisible);
+   SetRegValueBool("DefaultProps\\Primitive","UseLighting", m_d.useLighting);
+   SetRegValueBool("DefaultProps\\Primitive","StaticRendering", m_d.staticRendering);
+   SetRegValueBool("DefaultProps\\Primitive","SphereMapping", m_d.sphereMapping);
+   SetRegValueBool("DefaultProps\\Primitive","DrawTexturesInside", m_d.m_DrawTexturesInside);
 
-   iTmp = (m_d.m_DrawTexturesInside) ? 1 : 0;
-   SetRegValue("DefaultProps\\Primitive","DrawTexturesInside",REG_DWORD,&iTmp,4);
+   SetRegValueFloat("DefaultProps\\Primitive","Position_Z", m_d.m_vPosition.z);
 
-   sprintf_s(strTmp, 40, "%f", m_d.m_vPosition.z);
-   SetRegValue("DefaultProps\\Primitive","Position_Z", REG_SZ, &strTmp,strlen(strTmp));	
+   SetRegValueFloat("DefaultProps\\Primitive","Size_X", m_d.m_vSize.x);
+   SetRegValueFloat("DefaultProps\\Primitive","Size_Y", m_d.m_vSize.y);
+   SetRegValueFloat("DefaultProps\\Primitive","Size_Z", m_d.m_vSize.z);
 
-   sprintf_s(strTmp, 40, "%f", m_d.m_vSize.x);
-   SetRegValue("DefaultProps\\Primitive","Size_X", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vSize.y);
-   SetRegValue("DefaultProps\\Primitive","Size_Y", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vSize.z);
-   SetRegValue("DefaultProps\\Primitive","Size_Z", REG_SZ, &strTmp,strlen(strTmp));	
+   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleXY", m_d.m_vAxisScaleX.y);
+   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleXZ", m_d.m_vAxisScaleX.z);
+   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleYX", m_d.m_vAxisScaleY.x);
+   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleYZ", m_d.m_vAxisScaleY.z);
+   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleZX", m_d.m_vAxisScaleZ.x);
+   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleZY", m_d.m_vAxisScaleZ.y);
 
-   sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleX.y);
-   SetRegValue("DefaultProps\\Primitive","AxisScaleXY", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleX.z);
-   SetRegValue("DefaultProps\\Primitive","AxisScaleXZ", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleY.x);
-   SetRegValue("DefaultProps\\Primitive","AxisScaleYX", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleY.z);
-   SetRegValue("DefaultProps\\Primitive","AxisScaleYZ", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleZ.x);
-   SetRegValue("DefaultProps\\Primitive","AxisScaleZX", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vAxisScaleZ.y);
-   SetRegValue("DefaultProps\\Primitive","AxisScaleZY", REG_SZ, &strTmp,strlen(strTmp));	
-
-   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[0]);
-   SetRegValue("DefaultProps\\Primitive","RotAndTra0", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[1]);
-   SetRegValue("DefaultProps\\Primitive","RotAndTra1", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[2]);
-   SetRegValue("DefaultProps\\Primitive","RotAndTra2", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[3]);
-   SetRegValue("DefaultProps\\Primitive","RotAndTra3", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[4]);
-   SetRegValue("DefaultProps\\Primitive","RotAndTra4", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[5]);
-   SetRegValue("DefaultProps\\Primitive","RotAndTra5", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[6]);
-   SetRegValue("DefaultProps\\Primitive","RotAndTra6", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[7]);
-   SetRegValue("DefaultProps\\Primitive","RotAndTra7", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_aRotAndTra[8]);
-   SetRegValue("DefaultProps\\Primitive","RotAndTra8", REG_SZ, &strTmp,strlen(strTmp));	
+   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra0", m_d.m_aRotAndTra[0]);
+   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra1", m_d.m_aRotAndTra[1]);
+   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra2", m_d.m_aRotAndTra[2]);
+   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra3", m_d.m_aRotAndTra[3]);
+   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra4", m_d.m_aRotAndTra[4]);
+   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra5", m_d.m_aRotAndTra[5]);
+   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra6", m_d.m_aRotAndTra[6]);
+   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra7", m_d.m_aRotAndTra[7]);
+   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra8", m_d.m_aRotAndTra[8]);
    /*
-   sprintf_s(strTmp, 40, "%f", m_d.m_vRotation.x);
-   SetRegValue("DefaultProps\\Primitive","Rotation_X", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vRotation.y);
-   SetRegValue("DefaultProps\\Primitive","Rotation_Y", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vRotation.z);
-   SetRegValue("DefaultProps\\Primitive","Rotation_Z", REG_SZ, &strTmp,strlen(strTmp));	
+   SetRegValueFloat("DefaultProps\\Primitive","Rotation_X", m_d.m_vRotation.x);
+   SetRegValueFloat("DefaultProps\\Primitive","Rotation_Y", m_d.m_vRotation.y);
+   SetRegValueFloat("DefaultProps\\Primitive","Rotation_Z", m_d.m_vRotation.z);
 
-   sprintf_s(strTmp, 40, "%f", m_d.m_vTransposition.x);
-   SetRegValue("DefaultProps\\Primitive","Transposition_X", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vTransposition.y);
-   SetRegValue("DefaultProps\\Primitive","Transposition_Y", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_vTransposition.z);
-   SetRegValue("DefaultProps\\Primitive","Transposition_Z", REG_SZ, &strTmp,strlen(strTmp));	
+   SetRegValueFloat("DefaultProps\\Primitive","Transposition_X", m_d.m_vTransposition.x);
+   SetRegValueFloat("DefaultProps\\Primitive","Transposition_Y", m_d.m_vTransposition.y);
+   SetRegValueFloat("DefaultProps\\Primitive","Transposition_Z", m_d.m_vTransposition.z);
    */
    SetRegValue("DefaultProps\\Primitive","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
-   SetRegValue("DefaultProps\\Primitive","HitEvent", REG_DWORD, &m_d.m_fHitEvent,4);
-   sprintf_s(strTmp, 40, "%f", m_d.m_threshold);
-   SetRegValue("DefaultProps\\Primitive","HitThreshold", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
-   SetRegValue("DefaultProps\\Primitive","Elasticity", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_friction);
-   SetRegValue("DefaultProps\\Primitive","Friction", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
-   SetRegValue("DefaultProps\\Primitive","Scatter", REG_SZ, &strTmp,strlen(strTmp));	
-   SetRegValue("DefaultProps\\Primitive","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
-   SetRegValue("DefaultProps\\Primitive","IsToy",REG_DWORD,&m_d.m_fToy,4);
+   SetRegValueBool("DefaultProps\\Primitive","HitEvent", !!m_d.m_fHitEvent);
+   SetRegValueFloat("DefaultProps\\Primitive","HitThreshold", m_d.m_threshold);
+   SetRegValueFloat("DefaultProps\\Primitive","Elasticity", m_d.m_elasticity);
+   SetRegValueFloat("DefaultProps\\Primitive","Friction", m_d.m_friction);
+   SetRegValueFloat("DefaultProps\\Primitive","Scatter", m_d.m_scatter);
+   SetRegValueBool("DefaultProps\\Primitive","Collidable", m_d.m_fCollidable);
+   SetRegValueBool("DefaultProps\\Primitive","IsToy", m_d.m_fToy);
 }
 
 void Primitive::GetTimers(Vector<HitTimer> * const pvht)

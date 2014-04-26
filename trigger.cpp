@@ -696,16 +696,12 @@ void Trigger::ClearForOverwrite()
 
 void Trigger::WriteRegDefaults()
 {
-   char strTmp[40];
-
    SetRegValue("DefaultProps\\Trigger","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Trigger","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Trigger","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
    SetRegValue("DefaultProps\\Trigger","Visible",REG_DWORD,&m_d.m_fVisible,4);
-   sprintf_s(strTmp, 40, "%f", m_d.m_hit_height);
-   SetRegValue("DefaultProps\\Trigger","HitHeight", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_radius);
-   SetRegValue("DefaultProps\\Trigger","Radius", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Trigger","HitHeight", m_d.m_hit_height);
+   SetRegValueFloat("DefaultProps\\Trigger","Radius", m_d.m_radius);
    SetRegValue("DefaultProps\\Trigger","Shape",REG_DWORD,&m_d.m_shape,4);
    SetRegValue("DefaultProps\\Trigger","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
 }

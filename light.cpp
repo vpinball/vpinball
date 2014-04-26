@@ -219,10 +219,7 @@ void Light::SetDefaults(bool fromMouseClick)
 
 void Light::WriteRegDefaults()
 {
-   char strTmp[MAXTOKEN];
-
-   sprintf_s(strTmp, 40, "%f", m_d.m_radius);
-   SetRegValue("DefaultProps\\Light","Radius", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Light","Radius", m_d.m_radius);
    SetRegValue("DefaultProps\\Light","LightState",REG_DWORD,&m_d.m_state,4);
    SetRegValue("DefaultProps\\Light","Shape",REG_DWORD,&m_d.m_shape,4);
    SetRegValue("DefaultProps\\Light","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
@@ -233,8 +230,7 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","DisplayImage", REG_DWORD, &m_d.m_fDisplayImage,4);
    SetRegValue("DefaultProps\\Light","BlinkPattern", REG_SZ, &m_rgblinkpattern,strlen(m_rgblinkpattern));
    SetRegValue("DefaultProps\\Light","BlinkInterval", REG_DWORD, &m_blinkinterval,4);
-   sprintf_s(strTmp, 40, "%f", m_d.m_borderwidth);
-   SetRegValue("DefaultProps\\Light","BorderWidth", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Light","BorderWidth", m_d.m_borderwidth);
    SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
    SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
    SetRegValue("DefaultProps\\Light","EnableLighting", REG_DWORD, &m_d.m_EnableLighting,4);

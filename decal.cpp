@@ -132,15 +132,9 @@ void Decal::SetDefaults(bool fromMouseClick)
 
 void Decal::WriteRegDefaults()
 {
-   char strTmp[MAXTOKEN];
-   float fTmp;
-
-   sprintf_s(strTmp, 40, "%f", m_d.m_width);
-   SetRegValue("DefaultProps\\Decal","Width", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_height);
-   SetRegValue("DefaultProps\\Decal","Height", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_rotation);
-   SetRegValue("DefaultProps\\Decal","Rotation", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Decal","Width", m_d.m_width);
+   SetRegValueFloat("DefaultProps\\Decal","Height", m_d.m_height);
+   SetRegValueFloat("DefaultProps\\Decal","Rotation", m_d.m_rotation);
    SetRegValue("DefaultProps\\Decal","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
    SetRegValue("DefaultProps\\Decal","DecalType",REG_DWORD,&m_d.m_decaltype,4);
    SetRegValue("DefaultProps\\Decal","Text", REG_SZ, &m_d.m_sztext,strlen(m_d.m_sztext));
@@ -161,12 +155,14 @@ void Decal::WriteRegDefaults()
       m_pIFont->get_Underline(&fd.fUnderline); 
       m_pIFont->get_Strikethrough(&fd.fStrikethrough); 
 
-      fTmp = (float)(fd.cySize.int64 / 10000.0);
-      sprintf_s(strTmp, 40, "%f", fTmp);
-      SetRegValue("DefaultProps\\Decal","FontSize", REG_SZ, &strTmp,strlen(strTmp));
+      const float fTmp = (float)(fd.cySize.int64 / 10000.0);
+      SetRegValueFloat("DefaultProps\\Decal","FontSize", fTmp);
+
       int charCnt = wcslen(fd.lpstrName) +1;
+      char strTmp[MAXTOKEN];
       WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
       SetRegValue("DefaultProps\\Decal","FontName", REG_SZ, &strTmp,strlen(strTmp));
+
       SetRegValue("DefaultProps\\Decal","FontWeight",REG_DWORD,&fd.sWeight,4);
       SetRegValue("DefaultProps\\Decal","FontCharSet",REG_DWORD,&fd.sCharset,4);
       SetRegValue("DefaultProps\\Decal","FontItalic",REG_DWORD,&fd.fItalic,4);

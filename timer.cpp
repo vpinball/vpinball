@@ -41,8 +41,8 @@ void Timer::SetDefaults(bool fromMouseClick)
 
 void Timer::WriteRegDefaults()
 	{
-	SetRegValue("DefaultProps\\Timer","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
-	SetRegValue("DefaultProps\\Timer","TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
+	SetRegValueBool("DefaultProps\\Timer","TimerEnabled", !!m_d.m_tdr.m_fTimerEnabled);
+	SetRegValueInt("DefaultProps\\Timer","TimerInterval", m_d.m_tdr.m_TimerInterval);
 	}
 
 void Timer::SetObjectPos()

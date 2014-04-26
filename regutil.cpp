@@ -111,6 +111,12 @@ HRESULT SetRegValue(const char *szKey, const char *szValue, DWORD type, void *pv
 	return (RetVal == ERROR_SUCCESS) ? S_OK : E_FAIL;	
 }
 
+HRESULT SetRegValueBool(const char *szKey, const char *szValue, bool val)
+{
+    DWORD dwval = val ? 1 : 0;
+    return SetRegValue(szKey, szValue, REG_DWORD, &dwval, sizeof(DWORD));
+}
+
 HRESULT SetRegValueInt(const char *szKey, const char *szValue, int val)
 {
     return SetRegValue(szKey, szValue, REG_DWORD, &val, sizeof(DWORD));

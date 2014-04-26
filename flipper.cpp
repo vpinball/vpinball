@@ -147,43 +147,26 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
 void Flipper::WriteRegDefaults()
 {
-   char strTmp[MAXTOKEN];
-
-   sprintf_s(strTmp, 40, "%f", m_d.m_BaseRadius);
-   SetRegValue("DefaultProps\\Flipper","BaseRadius", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_EndRadius);
-   SetRegValue("DefaultProps\\Flipper","EndRadius", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_StartAngle);
-   SetRegValue("DefaultProps\\Flipper","StartAngle", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_EndAngle);
-   SetRegValue("DefaultProps\\Flipper","EndAngle", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_FlipperRadiusMax);
-   SetRegValue("DefaultProps\\Flipper","Length", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_FlipperRadiusMin);
-   SetRegValue("DefaultProps\\Flipper","MaxDifLength", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_recoil);
-   SetRegValue("DefaultProps\\Flipper","RecoilVelocity", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_return);
-   SetRegValue("DefaultProps\\Flipper","ReturnStrength", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_force);
-   SetRegValue("DefaultProps\\Flipper","Speed", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
-   SetRegValue("DefaultProps\\Flipper","Elasticity", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", RADTOANG(m_d.m_scatterangle));
-   SetRegValue("DefaultProps\\Flipper","ScatterAngle", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Flipper","BaseRadius", m_d.m_BaseRadius);
+   SetRegValueFloat("DefaultProps\\Flipper","EndRadius", m_d.m_EndRadius);
+   SetRegValueFloat("DefaultProps\\Flipper","StartAngle", m_d.m_StartAngle);
+   SetRegValueFloat("DefaultProps\\Flipper","EndAngle", m_d.m_EndAngle);
+   SetRegValueFloat("DefaultProps\\Flipper","Length", m_d.m_FlipperRadiusMax);
+   SetRegValueFloat("DefaultProps\\Flipper","MaxDifLength", m_d.m_FlipperRadiusMin);
+   SetRegValueFloat("DefaultProps\\Flipper","RecoilVelocity", m_d.m_recoil);
+   SetRegValueFloat("DefaultProps\\Flipper","ReturnStrength", m_d.m_return);
+   SetRegValueFloat("DefaultProps\\Flipper","Speed", m_d.m_force);
+   SetRegValueFloat("DefaultProps\\Flipper","Elasticity", m_d.m_elasticity);
+   SetRegValueFloat("DefaultProps\\Flipper","ScatterAngle", RADTOANG(m_d.m_scatterangle));
    SetRegValue("DefaultProps\\Flipper","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Flipper","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Flipper","Color", REG_DWORD, &m_d.m_color, 4);
    SetRegValue("DefaultProps\\Flipper","RubberColor", REG_DWORD, &m_d.m_rubbercolor, 4);
    SetRegValue("DefaultProps\\Flipper","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
-   sprintf_s(strTmp, 40, "%f", m_d.m_strength);
-   SetRegValue("DefaultProps\\Flipper","Strength", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_powerlaw);
-   SetRegValue("DefaultProps\\Flipper","PowerLaw", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_obliquecorrection);
-   SetRegValue("DefaultProps\\Flipper","ObliqueCorrection", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_height);
-   SetRegValue("DefaultProps\\Flipper","Height", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Flipper","Strength", m_d.m_strength);
+   SetRegValueFloat("DefaultProps\\Flipper","PowerLaw", m_d.m_powerlaw);
+   SetRegValueFloat("DefaultProps\\Flipper","ObliqueCorrection", m_d.m_obliquecorrection);
+   SetRegValueFloat("DefaultProps\\Flipper","Height", m_d.m_height);
    SetRegValue("DefaultProps\\Flipper","RubberThickness", REG_DWORD, &m_d.m_rubberthickness, 4);
    SetRegValue("DefaultProps\\Flipper","RubberHeight", REG_DWORD, &m_d.m_rubberheight, 4);
    SetRegValue("DefaultProps\\Flipper","RubberWidth", REG_DWORD, &m_d.m_rubberwidth, 4);

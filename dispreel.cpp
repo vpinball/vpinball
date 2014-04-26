@@ -320,7 +320,6 @@ void DispReel::SetDefaults(bool fromMouseClick)
 void DispReel::WriteRegDefaults()
 	{
 	char strTmp[MAXTOKEN];
-	float fTmp;
 
 	SetRegValue("DefaultProps\\EMReel","ReelType",REG_DWORD,&m_d.m_reeltype,4);
 	SetRegValue("DefaultProps\\EMReel","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
@@ -329,14 +328,10 @@ void DispReel::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Decal","ImagesPerRow",REG_DWORD,&m_d.m_imagesPerGridRow ,4);
 	SetRegValue("DefaultProps\\Decal","Transparent",REG_DWORD,&m_d.m_fTransparent,4);
 	SetRegValue("DefaultProps\\Decal","ReelCount",REG_DWORD,&m_d.m_reelcount ,4);
-	sprintf_s(strTmp, 40, "%f", m_d.m_width);
-	SetRegValue("DefaultProps\\EMReel","Width", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_height);
-	SetRegValue("DefaultProps\\EMReel","Height", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_reelspacing);
-	SetRegValue("DefaultProps\\EMReel","ReelSPacing", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_motorsteps);
-	SetRegValue("DefaultProps\\EMReel","MotorSteps", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValueFloat("DefaultProps\\EMReel","Width", m_d.m_width);
+	SetRegValueFloat("DefaultProps\\EMReel","Height", m_d.m_height);
+	SetRegValueFloat("DefaultProps\\EMReel","ReelSpacing", m_d.m_reelspacing);
+	SetRegValueFloat("DefaultProps\\EMReel","MotorSteps", m_d.m_motorsteps);
 	SetRegValue("DefaultProps\\Decal","DigitRange",REG_DWORD,&m_d.m_digitrange,4);
 	SetRegValue("DefaultProps\\Decal","UpdateInterval",REG_DWORD,&m_d.m_updateinterval,4);
 	SetRegValue("DefaultProps\\EMReel","BackColor",REG_DWORD,&m_d.m_backcolor,4);
@@ -357,7 +352,7 @@ void DispReel::WriteRegDefaults()
 		m_pIFont->get_Underline(&fd.fUnderline); 
 		m_pIFont->get_Strikethrough(&fd.fStrikethrough); 
 		
-		fTmp = (float)(fd.cySize.int64 / 10000.0);
+		const float fTmp = (float)(fd.cySize.int64 / 10000.0);
 		sprintf_s(strTmp, 40, "%f", fTmp);
 		SetRegValue("DefaultProps\\EMReel","FontSize", REG_SZ, &strTmp,strlen(strTmp));
 		int charCnt = wcslen(fd.lpstrName) +1;

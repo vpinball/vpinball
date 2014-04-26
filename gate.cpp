@@ -147,31 +147,21 @@ void Gate::SetDefaults(bool fromMouseClick)
 
 void Gate::WriteRegDefaults()
 {
-   char strTmp[MAXTOKEN];
-
-   sprintf_s(strTmp, 40, "%f", m_d.m_length);
-   SetRegValue("DefaultProps\\Gate","Length", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_height);
-   SetRegValue("DefaultProps\\Gate","Height", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_rotation);
-   SetRegValue("DefaultProps\\Gate","Rotation", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Gate","Length", m_d.m_length);
+   SetRegValueFloat("DefaultProps\\Gate","Height", m_d.m_height);
+   SetRegValueFloat("DefaultProps\\Gate","Rotation", m_d.m_rotation);
    SetRegValue("DefaultProps\\Gate","Supports",REG_DWORD,&m_d.m_fSupports,4);
    SetRegValue("DefaultProps\\Gate","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
-   sprintf_s(strTmp, 40, "%f", m_d.m_angleMin);
-   SetRegValue("DefaultProps\\Gate","AngleMin", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_angleMax);
-   SetRegValue("DefaultProps\\Gate","AngleMax", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Gate","AngleMin", m_d.m_angleMin);
+   SetRegValueFloat("DefaultProps\\Gate","AngleMax", m_d.m_angleMax);
    SetRegValue("DefaultProps\\Gate","Visible",REG_DWORD,&m_d.m_fVisible,4);
    SetRegValue("DefaultProps\\Gate","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValue("DefaultProps\\Gate","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Gate","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Gate","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
-   sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
-   SetRegValue("DefaultProps\\Gate","Elasticity", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_friction);
-   SetRegValue("DefaultProps\\Gate","Friction", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
-   SetRegValue("DefaultProps\\Gate","Scatter", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Gate","Elasticity", m_d.m_elasticity);
+   SetRegValueFloat("DefaultProps\\Gate","Friction", m_d.m_friction);
+   SetRegValueFloat("DefaultProps\\Gate","Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Gate","ImageFront", REG_SZ, &m_d.m_szImageFront,strlen(m_d.m_szImageFront));
    SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,strlen(m_d.m_szImageBack));
    SetRegValue("DefaultProps\\Gate","EnableLighting",REG_DWORD,&m_d.m_fEnableLighting,4);

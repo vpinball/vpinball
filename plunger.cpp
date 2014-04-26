@@ -145,18 +145,11 @@ void Plunger::SetDefaults(bool fromMouseClick)
 
 void Plunger::WriteRegDefaults()
 	{
-	char strTmp[40];
-
-	sprintf_s(strTmp, 40, "%f", m_d.m_height);
-	SetRegValue("DefaultProps\\Plunger","Height", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_width);
-	SetRegValue("DefaultProps\\Plunger","Width", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_stroke);
-	SetRegValue("DefaultProps\\Plunger","Stroke", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_speedPull);
-	SetRegValue("DefaultProps\\Plunger","PullSpeed", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_speedFire);
-	SetRegValue("DefaultProps\\Plunger","ReleaseSpeed", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValueFloat("DefaultProps\\Plunger","Height", m_d.m_height);
+	SetRegValueFloat("DefaultProps\\Plunger","Width", m_d.m_width);
+	SetRegValueFloat("DefaultProps\\Plunger","Stroke", m_d.m_stroke);
+	SetRegValueFloat("DefaultProps\\Plunger","PullSpeed", m_d.m_speedPull);
+	SetRegValueFloat("DefaultProps\\Plunger","ReleaseSpeed", m_d.m_speedFire);
 	SetRegValue("DefaultProps\\Plunger","PlungerType",REG_DWORD,&m_d.m_type,4);
 	SetRegValue("DefaultProps\\Plunger","Color",REG_DWORD,&m_d.m_color,4);
 	SetRegValue("DefaultProps\\Plunger","Image", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
@@ -165,15 +158,11 @@ void Plunger::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Plunger","Surface", REG_SZ, &m_d.m_szSurface, strlen(m_d.m_szSurface));
 	SetRegValue("DefaultProps\\Plunger","MechPlunger",REG_DWORD, &m_d.m_mechPlunger,4);
 	SetRegValue("DefaultProps\\Plunger","AutoPlunger",REG_DWORD, &m_d.m_autoPlunger,4);
-	sprintf_s(strTmp, 40, "%f", m_d.m_mechStrength);
-	SetRegValue("DefaultProps\\Plunger","MechStrength", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_parkPosition);
-	SetRegValue("DefaultProps\\Plunger","ParkPosition", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValueFloat("DefaultProps\\Plunger","MechStrength", m_d.m_mechStrength);
+	SetRegValueFloat("DefaultProps\\Plunger","ParkPosition", m_d.m_parkPosition);
 	SetRegValue("DefaultProps\\Plunger","Visible",REG_DWORD, &m_d.m_fVisible,4);
-	sprintf_s(strTmp, 40, "%f", m_d.m_scatterVelocity);
-	SetRegValue("DefaultProps\\Plunger","ScatterVelocity", REG_SZ, &strTmp,strlen(strTmp));
-	sprintf_s(strTmp, 40, "%f", m_d.m_breakOverVelocity);
-	SetRegValue("DefaultProps\\Plunger","BreakOverVelocity", REG_SZ, &strTmp,strlen(strTmp));
+	SetRegValueFloat("DefaultProps\\Plunger","ScatterVelocity", m_d.m_scatterVelocity);
+	SetRegValueFloat("DefaultProps\\Plunger","BreakOverVelocity", m_d.m_breakOverVelocity);
 	}
 
 void Plunger::PreRender(Sur * const psur)

@@ -126,28 +126,20 @@ void Flasher::SetDefaults(bool fromMouseClick)
 
 void Flasher::WriteRegDefaults()
 {
-   char strTmp[40];
-
-   sprintf_s(strTmp, 40, "%f", m_d.m_height);
-   SetRegValue("DefaultProps\\Flasher","Height", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_sizeX);
-   SetRegValue("DefaultProps\\Flasher","SizeX", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_sizeY);
-   SetRegValue("DefaultProps\\Flasher","SizeY", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_rotX);
-   SetRegValue("DefaultProps\\Flasher","RotX", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_rotY);
-   SetRegValue("DefaultProps\\Flasher","RotY", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_rotZ);
-   SetRegValue("DefaultProps\\Flasher","RotZ", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Flasher","Height", m_d.m_height);
+   SetRegValueFloat("DefaultProps\\Flasher","SizeX", m_d.m_sizeX);
+   SetRegValueFloat("DefaultProps\\Flasher","SizeY", m_d.m_sizeY);
+   SetRegValueFloat("DefaultProps\\Flasher","RotX", m_d.m_rotX);
+   SetRegValueFloat("DefaultProps\\Flasher","RotY", m_d.m_rotY);
+   SetRegValueFloat("DefaultProps\\Flasher","RotZ", m_d.m_rotZ);
    SetRegValue("DefaultProps\\Flasher","Color",REG_DWORD,&m_d.m_color,4);
-   SetRegValue("DefaultProps\\Flasher","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValueBool("DefaultProps\\Flasher","TimerEnabled",!!m_d.m_tdr.m_fTimerEnabled);
    SetRegValue("DefaultProps\\Flasher","TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
    SetRegValue("DefaultProps\\Flasher","Image", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
    SetRegValue("DefaultProps\\Flasher","Alpha",REG_DWORD,&m_d.m_fAlpha,4);
-   SetRegValue("DefaultProps\\Flasher","Visible",REG_DWORD,&m_d.m_IsVisible,4);
-   SetRegValue("DefaultProps\\Flasher","AddBlend",REG_DWORD,&m_d.m_fAddBlend,4);
-   SetRegValue("DefaultProps\\Flasher","DisplayTexture", REG_DWORD, &m_d.m_fDisplayTexture,4);
+   SetRegValueBool("DefaultProps\\Flasher","Visible",m_d.m_IsVisible);
+   SetRegValueBool("DefaultProps\\Flasher","AddBlend",m_d.m_fAddBlend);
+   SetRegValueBool("DefaultProps\\Flasher","DisplayTexture",!!m_d.m_fDisplayTexture);
 
 }
 

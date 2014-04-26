@@ -251,49 +251,35 @@ void Ramp::SetDefaults(bool fromMouseClick)
 
 void Ramp::WriteRegDefaults()
 {
-   char strTmp[40];
-
-   sprintf_s(strTmp, 40, "%f", m_d.m_heightbottom);
-   SetRegValue("DefaultProps\\Ramp","HeightBottom", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_heighttop);
-   SetRegValue("DefaultProps\\Ramp","HeightTop", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_widthbottom);
-   SetRegValue("DefaultProps\\Ramp","WidthBottom", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_widthtop);
-   SetRegValue("DefaultProps\\Ramp","WidthTop", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueFloat("DefaultProps\\Ramp","HeightBottom", m_d.m_heightbottom);
+   SetRegValueFloat("DefaultProps\\Ramp","HeightTop", m_d.m_heighttop);
+   SetRegValueFloat("DefaultProps\\Ramp","WidthBottom", m_d.m_widthbottom);
+   SetRegValueFloat("DefaultProps\\Ramp","WidthTop", m_d.m_widthtop);
    SetRegValue("DefaultProps\\Ramp","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValue("DefaultProps\\Ramp","RampType",REG_DWORD,&m_d.m_type,4);
    SetRegValue("DefaultProps\\Ramp","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Ramp","TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
    SetRegValue("DefaultProps\\Ramp","Image", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
    SetRegValue("DefaultProps\\Ramp","ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
-   SetRegValue("DefaultProps\\Ramp","ImageWalls",REG_DWORD,&m_d.m_fImageWalls,4);
-   SetRegValue("DefaultProps\\Ramp","CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
-   SetRegValue("DefaultProps\\Ramp","Acrylic",REG_DWORD,&m_d.m_fAcrylic,4);
-   SetRegValue("DefaultProps\\Ramp","Alpha",REG_DWORD,&m_d.m_fAlpha,4);
-   sprintf_s(strTmp, 40, "%f", m_d.m_leftwallheight);
-   SetRegValue("DefaultProps\\Ramp","LeftWallHeight", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_rightwallheight);
-   SetRegValue("DefaultProps\\Ramp","RightWallHeight", REG_SZ, &strTmp,strlen(strTmp));
-   SetRegValue("DefaultProps\\Ramp","LeftWallHeightVisible",REG_DWORD,&m_d.m_leftwallheightvisible,4);
-   SetRegValue("DefaultProps\\Ramp","RightWallHeightVisible",REG_DWORD,&m_d.m_rightwallheightvisible,4);
-   sprintf_s(strTmp, 40, "%f", m_d.m_elasticity);
-   SetRegValue("DefaultProps\\Ramp","Elasticity", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_friction);
-   SetRegValue("DefaultProps\\Ramp","Friction", REG_SZ, &strTmp,strlen(strTmp));	
-   sprintf_s(strTmp, 40, "%f", m_d.m_scatter);
-   SetRegValue("DefaultProps\\Ramp","Scatter", REG_SZ, &strTmp,strlen(strTmp));	
-   SetRegValue("DefaultProps\\Ramp","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
-   SetRegValue("DefaultProps\\Ramp","Visible",REG_DWORD,&m_d.m_IsVisible,4);
-   SetRegValue("DefaultProps\\Ramp","Modify3DStereo",REG_DWORD,&m_d.m_fModify3DStereo,4);
-   SetRegValue("DefaultProps\\Ramp","AddBlend",REG_DWORD,&m_d.m_fAddBlend,4);
-   SetRegValue("DefaultProps\\Ramp","EnableLighingOnImage",REG_DWORD,&m_d.m_enableLightingImage,4);
-   sprintf_s(strTmp, 40, "%f", m_d.m_wireDiameter);
-   SetRegValue("DefaultProps\\Ramp","WireDiameter", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_wireDistanceX);
-   SetRegValue("DefaultProps\\Ramp","WireDistanceX", REG_SZ, &strTmp,strlen(strTmp));
-   sprintf_s(strTmp, 40, "%f", m_d.m_wireDistanceY);
-   SetRegValue("DefaultProps\\Ramp","WireDistanceY", REG_SZ, &strTmp,strlen(strTmp));
+   SetRegValueBool("DefaultProps\\Ramp","ImageWalls",m_d.m_fImageWalls);
+   SetRegValueBool("DefaultProps\\Ramp","CastsShadow",m_d.m_fCastsShadow);
+   SetRegValueBool("DefaultProps\\Ramp","Acrylic",m_d.m_fAcrylic);
+   SetRegValueBool("DefaultProps\\Ramp","Alpha",m_d.m_fAlpha);
+   SetRegValueFloat("DefaultProps\\Ramp","LeftWallHeight", m_d.m_leftwallheight);
+   SetRegValueFloat("DefaultProps\\Ramp","RightWallHeight", m_d.m_rightwallheight);
+   SetRegValueFloat("DefaultProps\\Ramp","LeftWallHeightVisible",m_d.m_leftwallheightvisible);
+   SetRegValueFloat("DefaultProps\\Ramp","RightWallHeightVisible",m_d.m_rightwallheightvisible);
+   SetRegValueFloat("DefaultProps\\Ramp","Elasticity", m_d.m_elasticity);
+   SetRegValueFloat("DefaultProps\\Ramp","Friction", m_d.m_friction);
+   SetRegValueFloat("DefaultProps\\Ramp","Scatter", m_d.m_scatter);
+   SetRegValueBool("DefaultProps\\Ramp","Collidable",m_d.m_fCollidable);
+   SetRegValueBool("DefaultProps\\Ramp","Visible",m_d.m_IsVisible);
+   SetRegValueBool("DefaultProps\\Ramp","Modify3DStereo",m_d.m_fModify3DStereo);
+   SetRegValueBool("DefaultProps\\Ramp","AddBlend",m_d.m_fAddBlend);
+   SetRegValueBool("DefaultProps\\Ramp","EnableLighingOnImage",m_d.m_enableLightingImage);
+   SetRegValueFloat("DefaultProps\\Ramp","WireDiameter", m_d.m_wireDiameter);
+   SetRegValueFloat("DefaultProps\\Ramp","WireDistanceX", m_d.m_wireDistanceX);
+   SetRegValueFloat("DefaultProps\\Ramp","WireDistanceY", m_d.m_wireDistanceY);
 }
 
 void Ramp::PreRender(Sur * const psur)
