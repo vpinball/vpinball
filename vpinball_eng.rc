@@ -267,7 +267,7 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,16,232,127,10
     COMBOBOX        IDC_MonitorCombo,73,242,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Draw Ball &Shadows",IDC_SHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,77,10
-    CONTROL         "Draw Ball &Decals",IDC_DECAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,30,70,10
+    CONTROL         "Draw Ball &Decals",IDC_DECAL_BUTTON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,30,70,10
     CONTROL         "&Antialias Ball",IDC_ANTIALIAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,42,55,10
     CONTROL         "Reflect Ball on Playfield",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,54,91,10
@@ -356,7 +356,7 @@ BEGIN
     COMBOBOX        IDC_JOYADDCREDIT2COMBO,132,80,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "",IDC_STATIC,190,56,54,39
     PUSHBUTTON      "Plunger",IDC_PLUNGERBUTTON,192,56,50,14
-    CTEXT           "",IDC_PLUNGER,192,70,50,8,SS_CENTERIMAGE
+    CTEXT           "",IDC_PLUNGER_TEXT,192,70,50,8,SS_CENTERIMAGE
     COMBOBOX        IDC_JOYPLUNGERCOMBO,192,80,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "",IDC_STATIC,12,95,54,39
     PUSHBUTTON      "Exit Game",IDC_EXITGAMEBUTTON,14,95,50,14
@@ -1902,25 +1902,25 @@ BEGIN
     END
     POPUP "&Insert"
     BEGIN
-        MENUITEM "&Wall\tCtrl+W",               IDC_WALL
-        MENUITEM "&Gate\tCtrl+G",               IDC_GATE
-        MENUITEM "&Ramp\tCtrl+R",               IDC_RAMP
-        MENUITEM "Fla&sher\tCtrl+H",            IDC_FLASHER
-        MENUITEM "&Flipper\tCtrl+F",            IDC_FLIPPER
-        MENUITEM "&Plunger\tCtrl+P",            IDC_PLUNGER
-        MENUITEM "&Bumper\tCtrl+B",             IDC_BUMPER
-        MENUITEM "Sp&inner\tCtrl+I",            IDC_SPINNER
-        MENUITEM "Ti&mer\tCtrl+M",              IDC_TIMER
-        MENUITEM "&Trigger\tCtrl+T",            IDC_TRIGGER
-        MENUITEM "&Light\tCtrl+L",              IDC_LIGHT
-        MENUITEM "&Kicker\tCtrl+K",             IDC_KICKER
-        MENUITEM "T&arget\tCtrl+A",             IDC_TARGET
-        MENUITEM "&Decal\tCtrl+D",              IDC_DECAL
-        MENUITEM "T&extbox\tCtrl+E",            IDC_TEXTBOX
-        MENUITEM "EM Reel\tCtrl+Y",             IDC_DISPREEL
-        MENUITEM "Light Se&quencer\tCtrl+Q",    IDC_LIGHTSEQ
-        MENUITEM "Primitive/Ob&ject\tCtrl+J",   IDC_PRIMITIVE
-        MENUITEM "ActiveX Control",             IDC_COMCONTROL
+        MENUITEM "&Wall\tCtrl+W",               ID_INSERT_WALL
+        MENUITEM "&Gate\tCtrl+G",               ID_INSERT_GATE
+        MENUITEM "&Ramp\tCtrl+R",               ID_INSERT_RAMP
+        MENUITEM "Fla&sher\tCtrl+H",            ID_INSERT_FLASHER
+        MENUITEM "&Flipper\tCtrl+F",            ID_INSERT_FLIPPER
+        MENUITEM "&Plunger\tCtrl+P",            ID_INSERT_PLUNGER
+        MENUITEM "&Bumper\tCtrl+B",             ID_INSERT_BUMPER
+        MENUITEM "Sp&inner\tCtrl+I",            ID_INSERT_SPINNER
+        MENUITEM "Ti&mer\tCtrl+M",              ID_INSERT_TIMER
+        MENUITEM "&Trigger\tCtrl+T",            ID_INSERT_TRIGGER
+        MENUITEM "&Light\tCtrl+L",              ID_INSERT_LIGHT
+        MENUITEM "&Kicker\tCtrl+K",             ID_INSERT_KICKER
+        MENUITEM "T&arget\tCtrl+A",             ID_INSERT_TARGET
+        MENUITEM "&Decal\tCtrl+D",              ID_INSERT_DECAL
+        MENUITEM "T&extbox\tCtrl+E",            ID_INSERT_TEXTBOX
+        MENUITEM "EM Reel\tCtrl+Y",             ID_INSERT_DISP_REEL
+        MENUITEM "Light Se&quencer\tCtrl+Q",    ID_INSERT_LIGHT_SEQ
+        MENUITEM "Primitive/Ob&ject\tCtrl+J",   ID_INSERT_PRIMITIVE
+        MENUITEM "ActiveX Control",             ID_INSERT_COM_CONTROL
     END
     POPUP "&Table"
     BEGIN
@@ -1933,7 +1933,7 @@ BEGIN
         MENUITEM "&Dimensions Manager...",      ID_TABLE_DIMENSIONMANAGER
         MENUITEM "&Collection Manager...",      ID_TABLE_COLLECTIONMANAGER
         MENUITEM SEPARATOR
-        MENUITEM "&Magnify",                    IDC_MAGNIFY
+        MENUITEM "&Magnify",                    ID_TABLE_MAGNIFY
     END
     POPUP "&Preferences"
     BEGIN
@@ -2066,31 +2066,31 @@ BEGIN
     "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
-    "B",            IDC_BUMPER,             VIRTKEY, CONTROL, NOINVERT
+    "B",            ID_INSERT_BUMPER,             VIRTKEY, CONTROL, NOINVERT
     "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
-    "D",            IDC_DECAL,              VIRTKEY, CONTROL, NOINVERT
-    "Y",            IDC_DISPREEL,           VIRTKEY, CONTROL, NOINVERT
-    "F",            IDC_FLIPPER,            VIRTKEY, CONTROL, NOINVERT
-    "G",            IDC_GATE,               VIRTKEY, CONTROL, NOINVERT
-    "K",            IDC_KICKER,             VIRTKEY, CONTROL, NOINVERT
-    "L",            IDC_LIGHT,              VIRTKEY, CONTROL, NOINVERT
-    "Q",            IDC_LIGHTSEQ,           VIRTKEY, CONTROL, NOINVERT
+    "D",            ID_INSERT_DECAL,              VIRTKEY, CONTROL, NOINVERT
+    "Y",            ID_INSERT_DISP_REEL,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_INSERT_FLIPPER,            VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_INSERT_GATE,               VIRTKEY, CONTROL, NOINVERT
+    "K",            ID_INSERT_KICKER,             VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_INSERT_LIGHT,              VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_INSERT_LIGHT_SEQ,           VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTEAT,            VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "P",            IDC_PLUNGER,            VIRTKEY, CONTROL, NOINVERT
-    "J",            IDC_PRIMITIVE,          VIRTKEY, CONTROL, NOINVERT
-    "R",            IDC_RAMP,               VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_INSERT_PLUNGER,            VIRTKEY, CONTROL, NOINVERT
+    "J",            ID_INSERT_PRIMITIVE,          VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_INSERT_RAMP,               VIRTKEY, CONTROL, NOINVERT
     VK_ESCAPE,      IDC_SELECT,             VIRTKEY, NOINVERT
-    "I",            IDC_SPINNER,            VIRTKEY, CONTROL, NOINVERT
-    "A",            IDC_TARGET,             VIRTKEY, CONTROL, NOINVERT
-    "E",            IDC_TEXTBOX,            VIRTKEY, CONTROL, NOINVERT
-    "M",            IDC_TIMER,              VIRTKEY, CONTROL, NOINVERT
-    "T",            IDC_TRIGGER,            VIRTKEY, CONTROL, NOINVERT
-    "W",            IDC_WALL,               VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_INSERT_SPINNER,            VIRTKEY, CONTROL, NOINVERT
+    "A",            ID_INSERT_TARGET,             VIRTKEY, CONTROL, NOINVERT
+    "E",            ID_INSERT_TEXTBOX,            VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_INSERT_TIMER,              VIRTKEY, CONTROL, NOINVERT
+    "T",            ID_INSERT_TRIGGER,            VIRTKEY, CONTROL, NOINVERT
+    "W",            ID_INSERT_WALL,               VIRTKEY, CONTROL, NOINVERT
     "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
     "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
-    "H",            IDC_FLASHER,            VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_INSERT_FLASHER,            VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_CODEVIEWACCEL ACCELERATORS 
@@ -2124,28 +2124,25 @@ IDI_STEP                ICON                    "pause1.ico"
 // Cursor
 //
 
-IDC_CUR_MAGNIFY         CURSOR                  "cursor1.cur"
-IDC_POINTER             CURSOR                  "arrow.cur"
-IDC_CUR_LIGHT           CURSOR                  "wall.cur"
-IDC_CUR_WALL            CURSOR                  "cur_wall.cur"
-IDC_CUR_FLIPPER         CURSOR                  "cur_ligh.cur"
-IDC_CUR_TRIGGER         CURSOR                  "cur_flip.cur"
-IDC_CUR_GATE            CURSOR                  "cur00001.cur"
-IDC_CUR_TIMER           CURSOR                  "cur_gate.cur"
-IDC_CUR_PLUNGER         CURSOR                  "cur_time.cur"
-IDC_CUR_TEXTBOX         CURSOR                  "cur_plun.cur"
-IDC_CUR_BUMPER          CURSOR                  "cur_text.cur"
-IDC_CUR_KICKER          CURSOR                  "cur_bump.cur"
-IDC_CUR_TARGET          CURSOR                  "cur_kick.cur"
-IDC_CUR_DECAL           CURSOR                  "cur_targ.cur"
-IDC_CUR_SPINNER         CURSOR                  "cur_deca.cur"
-IDC_CUR_RAMP            CURSOR                  "cur_spin.cur"
-IDC_CUR_DISPREEL        CURSOR                  "cur_dispreel.cur"
-IDC_CUR_DISPSEGMENT     CURSOR                  "cur_dispseg.cur"
-IDC_CUR_DISPDMD         CURSOR                  "cur_dispdmd.cur"
-IDC_CUR_LIGHTSEQ        CURSOR                  "cur_lightseq.cur"
-IDC_CUR_PRIMITIVE       CURSOR                  "cur_prim.cur"
-IDC_CUR_FLASHER         CURSOR                  "cur00002.cur"
+IDC_MAGNIFY         CURSOR                  "res\\magnify.cur"
+IDC_LIGHT           CURSOR                  "res\\light.cur"
+IDC_WALL            CURSOR                  "res\\wall.cur"
+IDC_FLIPPER         CURSOR                  "res\\flipper.cur"
+IDC_TRIGGER         CURSOR                  "res\\trigger.cur"
+IDC_GATE            CURSOR                  "res\\gate.cur"
+IDC_TIMER           CURSOR                  "res\\timer.cur"
+IDC_PLUNGER         CURSOR                  "res\\plunger.cur"
+IDC_TEXTBOX         CURSOR                  "res\\textbox.cur"
+IDC_BUMPER          CURSOR                  "res\\bumper.cur"
+IDC_KICKER          CURSOR                  "res\\kicker.cur"
+IDC_TARGET          CURSOR                  "res\\target.cur"
+IDC_DECAL           CURSOR                  "res\\decal.cur"
+IDC_SPINNER         CURSOR                  "res\\spinner.cur"
+IDC_RAMP            CURSOR                  "res\\ramp.cur"
+IDC_DISP_REEL       CURSOR                  "res\\dispreel.cur"
+IDC_LIGHT_SEQ       CURSOR                  "res\\lightseq.cur"
+IDC_PRIMITIVE       CURSOR                  "res\\primitive.cur"
+IDC_FLASHER         CURSOR                  "res\\flasher.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //

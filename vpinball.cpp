@@ -58,7 +58,7 @@ INT_PTR   iString;
 
 TBBUTTON const g_tbbuttonMain[] = {
    // icon number,
-   {14, IDC_MAGNIFY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_MAGNIFY, 0},
+   {14, ID_TABLE_MAGNIFY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_MAGNIFY, 0},
    {0, IDC_SELECT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP | TBSTYLE_DROPDOWN, 0, 0, IDS_TB_SELECT, 1},
    {13, ID_EDIT_PROPERTIES, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, IDS_TB_PROPERTIES, 2},
    {18, ID_EDIT_SCRIPT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, IDS_TB_SCRIPT, 3},
@@ -68,24 +68,24 @@ TBBUTTON const g_tbbuttonMain[] = {
 
 TBBUTTON const g_tbbuttonPalette[] = {
    // icon number,
-   {1, IDC_WALL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_WALL, 0},
-   {15, IDC_GATE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_GATE, 1},
-   {17, IDC_RAMP, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_RAMP, 2},
-   {3, IDC_FLIPPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLIPPER, 3},
-   {5, IDC_PLUNGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PLUNGER, 4},
-   {7, IDC_BUMPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_BUMPER, 5},
-   {16, IDC_SPINNER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_SPINNER, 6},
-   {4, IDC_TIMER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TIMER, 7},
-   {8, IDC_TRIGGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TRIGGER, 8},
-   {9, IDC_LIGHT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHT, 9},
-   {10, IDC_KICKER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_KICKER, 10},
-   {11, IDC_TARGET, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TARGET, 11},
-   {12, IDC_DECAL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DECAL, 12},
-   {6, IDC_TEXTBOX, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TEXTBOX, 13},
-   {20, IDC_DISPREEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DISPREEL, 14},
-   {21, IDC_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHTSEQ, 15},
-   {22, IDC_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16},
-   {35, IDC_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLASHER, 17},
+   {1, ID_INSERT_WALL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_WALL, 0},
+   {15, ID_INSERT_GATE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_GATE, 1},
+   {17, ID_INSERT_RAMP, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_RAMP, 2},
+   {3, ID_INSERT_FLIPPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLIPPER, 3},
+   {5, ID_INSERT_PLUNGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PLUNGER, 4},
+   {7, ID_INSERT_BUMPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_BUMPER, 5},
+   {16, ID_INSERT_SPINNER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_SPINNER, 6},
+   {4, ID_INSERT_TIMER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TIMER, 7},
+   {8, ID_INSERT_TRIGGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TRIGGER, 8},
+   {9, ID_INSERT_LIGHT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHT, 9},
+   {10, ID_INSERT_KICKER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_KICKER, 10},
+   {11, ID_INSERT_TARGET, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TARGET, 11},
+   {12, ID_INSERT_DECAL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DECAL, 12},
+   {6, ID_INSERT_TEXTBOX, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TEXTBOX, 13},
+   {20, ID_INSERT_DISP_REEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DISPREEL, 14},
+   {21, ID_INSERT_LIGHT_SEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHTSEQ, 15},
+   {22, ID_INSERT_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16},
+   {35, ID_INSERT_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLASHER, 17},
 };
 
 TBBUTTON const g_tbbuttonLayers[] = {
@@ -902,31 +902,31 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          break;
       }
    case IDC_SELECT:
-   case IDC_MAGNIFY:
-   case IDC_WALL:
-   case IDC_FLIPPER:
-   case IDC_TIMER:
-   case IDC_PLUNGER:
-   case IDC_TEXTBOX:
-   case IDC_BUMPER:
-   case IDC_TRIGGER:
-   case IDC_LIGHT:
-   case IDC_KICKER:
-   case IDC_TARGET:
-   case IDC_DECAL:
-   case IDC_GATE:
-   case IDC_SPINNER:
-   case IDC_RAMP:
-   case IDC_FLASHER:
-   case IDC_DISPREEL:
-   case IDC_LIGHTSEQ:
-   case IDC_PRIMITIVE:
-   case IDC_COMCONTROL:
+   case ID_TABLE_MAGNIFY:
+   case ID_INSERT_WALL:
+   case ID_INSERT_FLIPPER:
+   case ID_INSERT_TIMER:
+   case ID_INSERT_PLUNGER:
+   case ID_INSERT_TEXTBOX:
+   case ID_INSERT_BUMPER:
+   case ID_INSERT_TRIGGER:
+   case ID_INSERT_LIGHT:
+   case ID_INSERT_KICKER:
+   case ID_INSERT_TARGET:
+   case ID_INSERT_DECAL:
+   case ID_INSERT_GATE:
+   case ID_INSERT_SPINNER:
+   case ID_INSERT_RAMP:
+   case ID_INSERT_FLASHER:
+   case ID_INSERT_DISP_REEL:
+   case ID_INSERT_LIGHT_SEQ:
+   case ID_INSERT_PRIMITIVE:
+   case ID_INSERT_COM_CONTROL:
       {
          switch (code)
          {
          case IDC_SELECT:
-         case IDC_MAGNIFY:
+         case ID_TABLE_MAGNIFY:
             SendMessage(m_hwndToolbarPalette,TB_CHECKBUTTON,m_ToolCur,MAKELONG(FALSE,0));
             SendMessage(m_hwndToolbarMain,TB_CHECKBUTTON,code,MAKELONG(TRUE,0));
             break;
@@ -939,7 +939,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
          m_ToolCur = code;// - IDC_SELECT;
 
-         //HCURSOR hcur = LoadCursor(g_hinst, MAKEINTRESOURCE(IDC_MAGNIFY));
+         //HCURSOR hcur = LoadCursor(g_hinst, MAKEINTRESOURCE(ID_TABLE_MAGNIFY));
          //SetCursor(hcur);
 
          if (notify == 1) // accelerator - mouse can be over table already
@@ -1421,30 +1421,30 @@ void VPinball::setLayerStatus( int layerNumber )
 }
 
 const int rgToolEnable[24][2] = {
-   IDC_WALL, 1,
-   IDC_GATE, 1,
-   IDC_RAMP, 1,
-   IDC_FLASHER, 1,
-   IDC_FLIPPER, 1,
-   IDC_PLUNGER, 1,
-   IDC_BUMPER, 1,
-   IDC_SPINNER, 1,
-   IDC_TIMER, 3,
-   IDC_TRIGGER, 1,
-   IDC_LIGHT, 3,
-   IDC_KICKER, 1,
-   IDC_TARGET, 1,
-   IDC_DECAL, 3,
-   IDC_TEXTBOX, 2,
-   IDC_DISPREEL, 2,
-   IDC_LIGHTSEQ, 3,
-   IDC_PRIMITIVE, 1,
-   IDC_COMCONTROL, 2,
+   ID_INSERT_WALL, 1,
+   ID_INSERT_GATE, 1,
+   ID_INSERT_RAMP, 1,
+   ID_INSERT_FLASHER, 1,
+   ID_INSERT_FLIPPER, 1,
+   ID_INSERT_PLUNGER, 1,
+   ID_INSERT_BUMPER, 1,
+   ID_INSERT_SPINNER, 1,
+   ID_INSERT_TIMER, 3,
+   ID_INSERT_TRIGGER, 1,
+   ID_INSERT_LIGHT, 3,
+   ID_INSERT_KICKER, 1,
+   ID_INSERT_TARGET, 1,
+   ID_INSERT_DECAL, 3,
+   ID_INSERT_TEXTBOX, 2,
+   ID_INSERT_DISP_REEL, 2,
+   ID_INSERT_LIGHT_SEQ, 3,
+   ID_INSERT_PRIMITIVE, 1,
+   ID_INSERT_COM_CONTROL, 2,
    //>>> these five are handled separately (see below code)
    ID_EDIT_SCRIPT, 0,
    ID_TABLE_PLAY, 0,
    ID_EDIT_BACKGLASSVIEW, 0,
-   IDC_MAGNIFY, 0,
+   ID_TABLE_MAGNIFY, 0,
    IDC_SELECT, 0
 };
 
@@ -1801,7 +1801,7 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, ID_EDIT_UNDO, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_TABLE_PLAY, MF_BYCOMMAND | MF_ENABLED);
-      EnableMenuItem(hmenu, IDC_MAGNIFY, MF_BYCOMMAND | MF_ENABLED);
+      EnableMenuItem(hmenu, ID_TABLE_MAGNIFY, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_SEARCH, MF_BYCOMMAND | MF_ENABLED );
       EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_HIT, MF_BYCOMMAND | MF_ENABLED );
@@ -1873,7 +1873,7 @@ void VPinball::SetEnableMenuItems()
       //EnableMenuItem(hmenu, ID_TABLE_FONTMANAGER, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_TABLE_COLLECTIONMANAGER, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_GRAYED);
-      EnableMenuItem(hmenu, IDC_MAGNIFY, MF_BYCOMMAND | MF_GRAYED);
+      EnableMenuItem(hmenu, ID_TABLE_MAGNIFY, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_EDIT_SEARCH, MF_BYCOMMAND | MF_GRAYED );
       EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_HIT, MF_BYCOMMAND | MF_GRAYED );
       EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_SELECT, MF_BYCOMMAND | MF_GRAYED );
@@ -3580,7 +3580,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             shadow = fTrue;
          SendMessage(hwndCheck, BM_SETCHECK, shadow ? BST_CHECKED : BST_UNCHECKED, 0);
 
-         hwndCheck = GetDlgItem(hwndDlg, IDC_DECAL);
+         hwndCheck = GetDlgItem(hwndDlg, IDC_DECAL_BUTTON);
          int decal;
          hr = GetRegInt("Player", "BallDecals", &decal);
          if (hr != S_OK)
@@ -3800,7 +3800,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   int shadow = SendMessage(hwndShadows, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallShadows", REG_DWORD, &shadow, 4);
 
-                  HWND hwndDecals = GetDlgItem(hwndDlg, IDC_DECAL);
+                  HWND hwndDecals = GetDlgItem(hwndDlg, IDC_DECAL_BUTTON);
                   int decal = SendMessage(hwndDecals, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallDecals", REG_DWORD, &decal, 4);
 
@@ -5476,7 +5476,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          hr = GetRegInt("Player","PlungerKey", &key);
          if (hr != S_OK || key > 0xdd)
             key = DIK_RETURN;
-         hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGER);
+         hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGER_TEXT);
          SetWindowText(hwndControl, rgszKeyName[key]);
          SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
@@ -5779,7 +5779,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         break;
 
                      case IDC_PLUNGERBUTTON:
-                        hwndKeyWindow = GetDlgItem(hwndDlg, IDC_PLUNGER);
+                        hwndKeyWindow = GetDlgItem(hwndDlg, IDC_PLUNGER_TEXT);
                         break;
 
                      case IDC_ADDCREDITBUTTON:
@@ -6156,7 +6156,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "CTiltKey", REG_DWORD, &key, 4);
 
-                  hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGER);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGER_TEXT);
                   key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
                   SetRegValue("Player", "PlungerKey", REG_DWORD, &key, 4);
 

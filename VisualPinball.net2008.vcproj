@@ -41,7 +41,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseUMinSize/vpinball.tlb"
+				TypeLibraryName="ReleaseUMinSize/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -132,7 +132,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseMinDependency/vpinball.tlb"
+				TypeLibraryName="ReleaseMinDependency/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -226,7 +226,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\VPinball___Win32_ReleaseTestSpanish/vpinball.tlb"
+				TypeLibraryName="VPinball___Win32_ReleaseTestSpanish/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -319,7 +319,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseUMinDependency/vpinball.tlb"
+				TypeLibraryName="ReleaseUMinDependency/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -410,7 +410,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseMinSize/vpinball.tlb"
+				TypeLibraryName="ReleaseMinSize/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -501,7 +501,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\VPinball___Win32_Profile/vpinball.tlb"
+				TypeLibraryName="VPinball___Win32_Profile/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -594,7 +594,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\DebugU/vpinball.tlb"
+				TypeLibraryName="DebugU/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -685,7 +685,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\VPinball___Win32_ReleaseTestGerman/vpinball.tlb"
+				TypeLibraryName="VPinball___Win32_ReleaseTestGerman/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -778,7 +778,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\VPinball___Win32_ReleaseTestFrench/vpinball.tlb"
+				TypeLibraryName="VPinball___Win32_ReleaseTestFrench/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -871,7 +871,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\VPinball___Win32_ReleaseTest/vpinball.tlb"
+				TypeLibraryName="VPinball___Win32_ReleaseTest/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -969,7 +969,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/vpinball.tlb"
+				TypeLibraryName="Debug/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -1071,7 +1071,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseMinDependency/vpinball.tlb"
+				TypeLibraryName="ReleaseMinDependency/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -1174,7 +1174,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\ReleaseMinDependency/vpinball.tlb"
+				TypeLibraryName="ReleaseMinDependency/vpinball.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -3332,7 +3332,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\flasher.cpp"
+				RelativePath="flasher.cpp"
 				>
 			</File>
 			<File
@@ -3612,11 +3612,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\hash.cpp"
+				RelativePath="hash.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\hid.cpp"
+				RelativePath="hid.cpp"
 				>
 				<FileConfiguration
 					Name="ReleaseTest|Win32"
@@ -4456,7 +4456,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\kdtree.cpp"
+				RelativePath="kdtree.cpp"
 				>
 			</File>
 			<File
@@ -5150,7 +5150,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\math\matrix.cpp"
+				RelativePath="math\matrix.cpp"
 				>
 			</File>
 			<File
@@ -5430,7 +5430,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\mixer.cpp"
+				RelativePath="mixer.cpp"
 				>
 				<FileConfiguration
 					Name="ReleaseTest|Win32"
@@ -5442,7 +5442,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\objloader.cpp"
+				RelativePath="objloader.cpp"
 				>
 			</File>
 			<File
@@ -6550,7 +6550,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\plumb.cpp"
+				RelativePath="plumb.cpp"
 				>
 				<FileConfiguration
 					Name="ReleaseTest|Win32"
@@ -6700,7 +6700,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\primitive.cpp"
+				RelativePath="primitive.cpp"
 				>
 			</File>
 			<File
@@ -6842,7 +6842,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\quadtree.cpp"
+				RelativePath="quadtree.cpp"
 				>
 			</File>
 			<File
@@ -7122,7 +7122,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\RenderDevice.cpp"
+				RelativePath="RenderDevice.cpp"
 				>
 			</File>
 			<File
@@ -7264,7 +7264,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\slintf.cpp"
+				RelativePath="slintf.cpp"
 				>
 				<FileConfiguration
 					Name="ReleaseTest|Win32"
@@ -7979,7 +7979,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\Texture.cpp"
+				RelativePath="Texture.cpp"
 				>
 			</File>
 			<File
@@ -8543,7 +8543,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8554,7 +8554,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8565,7 +8565,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8576,7 +8576,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8587,7 +8587,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8598,7 +8598,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8609,7 +8609,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8620,7 +8620,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8631,7 +8631,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8642,7 +8642,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8653,7 +8653,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8664,7 +8664,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -8675,7 +8675,7 @@
 					<Tool
 						Name="VCMIDLTool"
 						GenerateStublessProxies="true"
-						TypeLibraryName=".\vpinball.tlb"
+						TypeLibraryName="vpinball.tlb"
 						HeaderFileName="vpinball_i.h"
 						InterfaceIdentifierFileName="vpinball_i.c"
 					/>
@@ -9079,7 +9079,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\wintimer.cpp"
+				RelativePath="wintimer.cpp"
 				>
 				<FileConfiguration
 					Name="ReleaseTest|Win32"
@@ -9380,11 +9380,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\buildnum.h"
+				RelativePath="buildnum.h"
 				>
 			</File>
 			<File
-				RelativePath=".\buildnumber.h"
+				RelativePath="buildnumber.h"
 				>
 			</File>
 			<File
@@ -9420,7 +9420,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\display.h"
+				RelativePath="display.h"
 				>
 			</File>
 			<File
@@ -9432,7 +9432,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DongleAPI.h"
+				RelativePath="DongleAPI.h"
 				>
 			</File>
 			<File
@@ -9456,7 +9456,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\flasher.h"
+				RelativePath="flasher.h"
 				>
 			</File>
 			<File
@@ -9464,7 +9464,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\freeimage.h"
+				RelativePath="freeimage.h"
 				>
 			</File>
 			<File
@@ -9472,7 +9472,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\hash.h"
+				RelativePath="hash.h"
 				>
 			</File>
 			<File
@@ -9480,19 +9480,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\hid.h"
+				RelativePath="hid.h"
 				>
 			</File>
 			<File
-				RelativePath=".\hidpi.h"
+				RelativePath="hidpi.h"
 				>
 			</File>
 			<File
-				RelativePath=".\hidsdi.h"
+				RelativePath="hidsdi.h"
 				>
 			</File>
 			<File
-				RelativePath=".\hidusage.h"
+				RelativePath="hidusage.h"
 				>
 			</File>
 			<File
@@ -9532,7 +9532,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\kdtree.h"
+				RelativePath="kdtree.h"
 				>
 			</File>
 			<File
@@ -9560,11 +9560,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Material.h"
+				RelativePath="Material.h"
 				>
 			</File>
 			<File
-				RelativePath=".\math\matrix.h"
+				RelativePath="math\matrix.h"
 				>
 			</File>
 			<File
@@ -9576,7 +9576,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\mixer.h"
+				RelativePath="mixer.h"
 				>
 			</File>
 			<File
@@ -9588,7 +9588,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\physconst.h"
+				RelativePath="physconst.h"
 				>
 			</File>
 			<File
@@ -9612,7 +9612,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\pintypes.h"
+				RelativePath="pintypes.h"
 				>
 			</File>
 			<File
@@ -9624,7 +9624,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\plumb.h"
+				RelativePath="plumb.h"
 				>
 			</File>
 			<File
@@ -9632,7 +9632,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\primitive.h"
+				RelativePath="primitive.h"
 				>
 			</File>
 			<File
@@ -9640,7 +9640,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\quadtree.h"
+				RelativePath="quadtree.h"
 				>
 			</File>
 			<File
@@ -9652,11 +9652,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\RenderDevice.h"
+				RelativePath="RenderDevice.h"
 				>
 			</File>
 			<File
-				RelativePath=".\resource.h"
+				RelativePath="\resource.h"
 				>
 				<FileConfiguration
 					Name="ReleaseTest|Win32"
@@ -9679,7 +9679,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\slintf.h"
+				RelativePath="slintf.h"
 				>
 			</File>
 			<File
@@ -9691,7 +9691,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\stereo3D.h"
+				RelativePath="stereo3D.h"
 				>
 			</File>
 			<File
@@ -9703,7 +9703,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SVNRevision.h"
+				RelativePath="SVNRevision.h"
 				>
 			</File>
 			<File
@@ -9715,7 +9715,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Texture.h"
+				RelativePath="Texture.h"
 				>
 			</File>
 			<File
@@ -9723,7 +9723,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\trace.h"
+				RelativePath="trace.h"
 				>
 			</File>
 			<File
@@ -9877,7 +9877,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\wintimer.h"
+				RelativePath="wintimer.h"
 				>
 			</File>
 			<File
@@ -9894,10 +9894,6 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="arrow.cur"
-				>
-			</File>
-			<File
 				RelativePath="res\ball.rgs"
 				>
 			</File>
@@ -9906,7 +9902,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\bin00001.bin"
+				RelativePath="bin00001.bin"
 				>
 			</File>
 			<File
@@ -9914,7 +9910,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\chevron.bmp"
+				RelativePath="chevron.bmp"
 				>
 			</File>
 			<File
@@ -9922,83 +9918,75 @@
 				>
 			</File>
 			<File
-				RelativePath="cur00001.cur"
+				RelativePath="res\gate.cur"
 				>
 			</File>
 			<File
-				RelativePath=".\cur00002.cur"
+				RelativePath="res\flasher.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_bump.cur"
+				RelativePath="res\kicker.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_deca.cur"
+				RelativePath="res\spinner.cur"
 				>
 			</File>
 			<File
-				RelativePath=".\cur_dispdmd.cur"
+				RelativePath="res\dispreel.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_dispreel.cur"
+				RelativePath="res\trigger.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_dispseg.cur"
+				RelativePath="res\timer.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_flip.cur"
+				RelativePath="res\target.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_gate.cur"
+				RelativePath="res\flipper.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_kick.cur"
+				RelativePath="res\lightseq.cur"
 				>
 			</File>
 			<File
-				RelativePath=".\cur_ligh.cur"
+				RelativePath="res\textbox.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_lightseq.cur"
+				RelativePath="res\primitive.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_plun.cur"
+				RelativePath="res\ramp.cur"
 				>
 			</File>
 			<File
-				RelativePath=".\cur_prim.cur"
+				RelativePath="res\decal.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_spin.cur"
+				RelativePath="res\bumper.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_targ.cur"
+				RelativePath="res\plunger.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_text.cur"
+				RelativePath="res\wall.cur"
 				>
 			</File>
 			<File
-				RelativePath="cur_time.cur"
-				>
-			</File>
-			<File
-				RelativePath="cur_wall.cur"
-				>
-			</File>
-			<File
-				RelativePath="cursor1.cur"
+				RelativePath="res\magnify.cur"
 				>
 			</File>
 			<File
@@ -10066,7 +10054,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\pause1.ico"
+				RelativePath="pause1.ico"
 				>
 			</File>
 			<File
@@ -10074,7 +10062,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\play1.ico"
+				RelativePath="play1.ico"
 				>
 			</File>
 			<File
@@ -10090,7 +10078,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\registry.bin"
+				RelativePath="registry.bin"
 				>
 			</File>
 			<File
@@ -10098,7 +10086,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\step1.ico"
+				RelativePath="step1.ico"
 				>
 			</File>
 			<File
@@ -10114,7 +10102,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\sunburst5.bmp"
+				RelativePath="sunburst5.bmp"
 				>
 			</File>
 			<File
@@ -10126,7 +10114,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\target.bmp"
+				RelativePath="target.bmp"
 				>
 			</File>
 			<File
@@ -10142,7 +10130,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\toolbardebug.bmp"
+				RelativePath="toolbardebug.bmp"
 				>
 			</File>
 			<File
@@ -10154,7 +10142,7 @@
 				>
 			</File>
 			<File
-				RelativePath="wall.cur"
+				RelativePath="res\light.cur"
 				>
 			</File>
 			<File
@@ -10165,7 +10153,7 @@
 				Name="Dialogs"
 				>
 				<File
-					RelativePath=".\vpinball_eng.rc"
+					RelativePath="vpinball_eng.rc"
 					>
 					<FileConfiguration
 						Name="Unicode Release MinSize|Win32"
@@ -10273,7 +10261,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\vpinball_fre.rc"
+					RelativePath="vpinball_fre.rc"
 					>
 					<FileConfiguration
 						Name="Unicode Release MinSize|Win32"
@@ -10381,7 +10369,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\vpinball_ger.rc"
+					RelativePath="vpinball_ger.rc"
 					>
 					<FileConfiguration
 						Name="Unicode Release MinSize|Win32"
@@ -10489,7 +10477,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\vpinball_spa.rc"
+					RelativePath="vpinball_spa.rc"
 					>
 					<FileConfiguration
 						Name="Unicode Release MinSize|Win32"
