@@ -353,7 +353,7 @@ void CodeViewer::Create()
    wcex.style = CS_DBLCLKS;
    wcex.lpfnWndProc = (WNDPROC) CodeViewWndProc;
    wcex.hInstance = g_hinst;
-   wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_SCRIPTICON));
+   wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_SCRIPT));
    wcex.lpszClassName = "CVFrame";
    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
    wcex.lpszMenuName = MAKEINTRESOURCE(IDR_SCRIPTMENU);//NULL;
