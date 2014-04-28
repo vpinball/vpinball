@@ -270,16 +270,16 @@ set(RC_RESOURCE
 # dummy collection of resources - not used in build (resource compiler takes care of everything)
 # (only listed for completeness)
 #set(RESOURCES
-#  res/ball.rgs balltex2.bmp basetable17.vpt res/bumper.rgs chevron.bmp res/comcontrol.rgs
+#  res/ball.rgs res/ball.bmp res/table.vpt res/bumper.rgs res/chevron.bmp res/comcontrol.rgs
 #  res/gate.cur res/magnify.cur res/kicker.cur res/spinner.cur res/dispreel.cur
 #  res/trigger.cur res/timer.cur res/target.cur res/flipper.cur res/lightseq.cur
 #  res/textbox.cur res/primitive.cur res/ramp.cur res/decal.cur res/bumper.cur res/plunger.cur
-#  res/wall.cur res/dispreel.rgs res/dragpoint.rgs res/flipper.rgs res/gate.rgs ico00001.ico icon1.ico
-#  iconflipper.bmp iconlight.bmp icontimer.bmp icontrigger.bmp res/kicker.rgs res/light.rgs
-#  res/lightseq.rgs logo25.bmp logo28.bmp pause1.ico res/pieventhandler.rgs play1.ico res/plunger.rgs
-#  res/primitive.rgs res/ramp.rgs res/spinner.rgs step1.ico sunburst.bmp sunburst3.bmp sunburst4.bmp
-#  res/surface.rgs tableicon.ico target.bmp res/textbox.rgs res/timer.rgs toolbar.bmp toolbardebug.bmp
-#  res/trigger.rgs res/vpinball.rgs res/light.cur white.bmp
+#  res/wall.cur res/dispreel.rgs res/dragpoint.rgs res/flipper.rgs res/gate.rgs res/script.ico res/vpinball.ico
+#  res/flipper.bmp res/light.bmp res/timer.bmp res/trigger.bmp res/kicker.rgs res/light.rgs
+#  res/lightseq.rgs res/logo.bmp res/step.ico res/pieventhandler.rgs res/pause.ico res/plunger.rgs
+#  res/primitive.rgs res/ramp.rgs res/spinner.rgs res/play.ico res/sunburst.bmp res/sunburst2.bmp
+#  res/surface.rgs res/table.ico target.bmp res/textbox.rgs res/timer.rgs res/toolbar.bmp toolbardebug.bmp
+#  res/trigger.rgs res/vpinball.rgs res/light.cur res/white.bmp
 #  )
 
 # generate com interfaces with midl

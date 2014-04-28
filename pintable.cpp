@@ -1086,7 +1086,7 @@ void PinTable::Init(VPinball *pvp)
 
 #ifdef NEWFROMRES
    // Get our new table resource, get it to be opened as a storage, and open it like a normal file
-   HRSRC hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_TABLE_NEW), "TABLE");
+   HRSRC hrsrc = FindResource(NULL, MAKEINTRESOURCE(IDR_TABLE), "TABLE");
    HGLOBAL hglobal = LoadResource(NULL, hrsrc);
    char *pchar = (char *)LockResource(hglobal);
    DWORD size = SizeofResource(NULL, hrsrc);
@@ -1846,7 +1846,7 @@ void PinTable::CreateTableWindow()
    wcex.lpfnWndProc = TableWndProc;
    wcex.hInstance = g_hinst;
    wcex.lpszClassName = "PinTable";
-   wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_TABLEICON));
+   wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_TABLE));
    wcex.hCursor = NULL;//LoadCursor(NULL, IDC_ARROW);
    wcex.hbrBackground = NULL;
    //wcex.lpszMenuName = MAKEINTRESOURCE(IDR_APPMENU);

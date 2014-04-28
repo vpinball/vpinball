@@ -249,14 +249,17 @@ END
 // Bitmap
 //
 
-IDB_TB_SELECT           BITMAP                  "toolbar.bmp"
-IDB_ICON_TRIGGER        BITMAP                  "IconTrigger.bmp"
-IDB_ICON_TIMER          BITMAP                  "IconTimer.bmp"
-IDB_ICON_FLIPPER        BITMAP                  "IconFlipper.bmp"
-IDB_ICON_LIGHT          BITMAP                  "IconLight.bmp"
-IDB_BALLTEXTURE         BITMAP                  "balltex2.bmp"
-IDB_WHITE               BITMAP                  "white.bmp"
-IDB_SUNBURST3           BITMAP                  "sunburst.bmp"
+IDB_TOOLBAR             BITMAP                  "res\\toolbar.bmp"
+IDB_TRIGGER             BITMAP                  "res\\trigger.bmp"
+IDB_TIMER               BITMAP                  "res\\timer.bmp"
+IDB_FLIPPER             BITMAP                  "res\\flipper.bmp"
+IDB_LIGHT               BITMAP                  "res\\light.bmp"
+IDB_BALL                BITMAP                  "res\\ball.bmp"
+IDB_WHITE               BITMAP                  "res\\white.bmp"
+IDB_SUNBURST            BITMAP                  "res\\sunburst.bmp"
+IDB_SUNBURST2           BITMAP                  "res\\sunburst2.bmp"
+IDB_LOGO                BITMAP                  "res\\logo.bmp"
+IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1416,16 +1419,19 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_APPICON             ICON                    "icon1.ico"
-IDI_SCRIPTICON          ICON                    "ico00001.ico"
-IDI_TABLEICON           ICON                    "TableIcon.ico"
+IDI_VPINBALL             ICON                    "res\\vpinball.ico"
+IDI_SCRIPT               ICON                    "res\\script.ico"
+IDI_TABLE                ICON                    "res\\table.ico"
+IDI_PLAY                 ICON                    "res\\play.ico"
+IDI_PAUSE                ICON                    "res\\pause.ico"
+IDI_STEP                 ICON                    "res\\step.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // TABLE
 //
 
-IDR_TABLE_NEW           TABLE                   "BaseTable17.vpt"
+IDR_TABLE           TABLE                   "res\\table.vpt"
 
 /////////////////////////////////////////////////////////////////////////////
 //

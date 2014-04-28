@@ -560,7 +560,7 @@
     <None Include="res\ball.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="balltex2.bmp">
+    <None Include="res\ball.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="bin00001.bin">
@@ -569,7 +569,7 @@
     <None Include="res\bumper.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="chevron.bmp">
+    <None Include="res\chevron.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\comcontrol.rgs">
@@ -638,22 +638,22 @@
     <None Include="res\gate.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="ico00001.ico">
+    <None Include="res\script.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icon1.ico">
+    <None Include="res\vpinball.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="IconFlipper.bmp">
+    <None Include="res\flipper.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="IconLight.bmp">
+    <None Include="res\light.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="IconTimer.bmp">
+    <None Include="res\timer.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="IconTrigger.bmp">
+    <None Include="res\trigger.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\kicker.rgs">
@@ -665,19 +665,16 @@
     <None Include="res\lightseq.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="logo25.bmp">
+    <None Include="res\logo.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="logo28.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="pause1.ico">
+    <None Include="res\step.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\pieventhandler.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="play1.ico">
+    <None Include="res\pause.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\plunger.rgs">
@@ -695,22 +692,19 @@
     <None Include="res\spinner.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="step1.ico">
+    <None Include="res\play.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="sunburst.bmp">
+    <None Include="res\sunburst.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="sunburst3.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="sunburst4.bmp">
+    <None Include="res\sunburst2.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\surface.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="TableIcon.ico">
+    <None Include="res\table.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="target.bmp">
@@ -722,7 +716,7 @@
     <None Include="res\timer.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="toolbar.bmp">
+    <None Include="res\toolbar.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="toolbardebug.bmp">
@@ -737,10 +731,10 @@
     <None Include="res\light.cur">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="white.bmp">
+    <None Include="res\white.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="BaseTable17.vpt" />
+    <None Include="res\table.vpt" />
     <None Include="res\flasher.cur">
       <Filter>Resource Files</Filter>
     </None>

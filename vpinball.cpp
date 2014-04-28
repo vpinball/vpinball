@@ -102,10 +102,10 @@ TBBUTTON const g_tbbuttonLayers[] = {
 
 #ifdef VBA
 MiniBitmapID const g_rgminibitmap[] = {
-   {L"{44D58C78-14BA-47F3-B82C-425853ABB698}", IDB_ICON_TRIGGER}, // Trigger
-   {L"{A0B914E6-56A8-4CC1-A846-45FFF4D8CA17}", IDB_ICON_TIMER}, // Timer
-   {L"{68AB2BBC-8209-40F3-B6F4-54F8ADAA0DC7}", IDB_ICON_FLIPPER}, // Flipper
-   {L"{31DD37E7-DB9B-4AB1-94C9-FAA06B252DFA}", IDB_ICON_LIGHT}, // Light
+   {L"{44D58C78-14BA-47F3-B82C-425853ABB698}", IDB_TRIGGER}, // Trigger
+   {L"{A0B914E6-56A8-4CC1-A846-45FFF4D8CA17}", IDB_TIMER}, // Timer
+   {L"{68AB2BBC-8209-40F3-B6F4-54F8ADAA0DC7}", IDB_FLIPPER}, // Flipper
+   {L"{31DD37E7-DB9B-4AB1-94C9-FAA06B252DFA}", IDB_LIGHT}, // Light
    NULL, -1,
 };
 #endif
@@ -506,7 +506,7 @@ void VPinball::RegisterClasses()
    wcex.style = CS_DBLCLKS;//CS_NOCLOSE | CS_OWNDC;
    wcex.lpfnWndProc = (WNDPROC) VPWndProc;
    wcex.hInstance = g_hinst;
-   wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_APPICON));
+   wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_VPINBALL));
    wcex.lpszClassName = "VPinball";
    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
    wcex.lpszMenuName = MAKEINTRESOURCE(IDR_APPMENU);
@@ -551,7 +551,7 @@ HWND VPinball::CreateLayerToolbar(HWND hwndParent)
 {
    HWND hwnd = CreateToolbarEx(hwndParent,
       WS_CHILD | WS_VISIBLE | TBSTYLE_BUTTON | TBSTYLE_WRAPABLE,
-      1, TBCOUNTLAYERS, g_hinst, IDB_TB_SELECT, g_tbbuttonLayers, TBCOUNTLAYERS, 24, 24, 24, 24,
+      1, TBCOUNTLAYERS, g_hinst, IDB_TOOLBAR, g_tbbuttonLayers, TBCOUNTLAYERS, 24, 24, 24, 24,
       sizeof(TBBUTTON));
 
    SendMessage(hwnd, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);
@@ -595,7 +595,7 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 {
    HWND hwnd = CreateToolbarEx(hwndParent,
       WS_CHILD | WS_VISIBLE | TBSTYLE_FLAT | TBSTYLE_WRAPABLE,
-      1, count, g_hinst, IDB_TB_SELECT, p_tbbutton, count, 24, 24, 24, 24,
+      1, count, g_hinst, IDB_TOOLBAR, p_tbbutton, count, 24, 24, 24, 24,
       sizeof(TBBUTTON));
 
    SendMessage(hwnd, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);

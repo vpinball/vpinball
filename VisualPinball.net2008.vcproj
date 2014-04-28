@@ -9898,7 +9898,7 @@
 				>
 			</File>
 			<File
-				RelativePath="balltex2.bmp"
+				RelativePath="res\ball.bmp"
 				>
 			</File>
 			<File
@@ -9910,7 +9910,7 @@
 				>
 			</File>
 			<File
-				RelativePath="chevron.bmp"
+				RelativePath="res\chevron.bmp"
 				>
 			</File>
 			<File
@@ -10010,27 +10010,27 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00001.ico"
+				RelativePath="res\script.ico"
 				>
 			</File>
 			<File
-				RelativePath="icon1.ico"
+				RelativePath="res\vpinball.ico"
 				>
 			</File>
 			<File
-				RelativePath="IconFlipper.bmp"
+				RelativePath="res\flipper.bmp"
 				>
 			</File>
 			<File
-				RelativePath="IconLight.bmp"
+				RelativePath="res\light.bmp"
 				>
 			</File>
 			<File
-				RelativePath="IconTimer.bmp"
+				RelativePath="res\timer.bmp"
 				>
 			</File>
 			<File
-				RelativePath="IconTrigger.bmp"
+				RelativePath="res\trigger.bmp"
 				>
 			</File>
 			<File
@@ -10046,15 +10046,11 @@
 				>
 			</File>
 			<File
-				RelativePath="logo25.bmp"
+				RelativePath="res\logo.bmp"
 				>
 			</File>
 			<File
-				RelativePath="logo28.bmp"
-				>
-			</File>
-			<File
-				RelativePath="pause1.ico"
+				RelativePath="res\step.ico"
 				>
 			</File>
 			<File
@@ -10062,7 +10058,7 @@
 				>
 			</File>
 			<File
-				RelativePath="play1.ico"
+				RelativePath="res\pause.ico"
 				>
 			</File>
 			<File
@@ -10086,23 +10082,15 @@
 				>
 			</File>
 			<File
-				RelativePath="step1.ico"
+				RelativePath="res\play.ico"
 				>
 			</File>
 			<File
-				RelativePath="sunburst.bmp"
+				RelativePath="res\sunburst.bmp"
 				>
 			</File>
 			<File
-				RelativePath="sunburst3.bmp"
-				>
-			</File>
-			<File
-				RelativePath="sunburst4.bmp"
-				>
-			</File>
-			<File
-				RelativePath="sunburst5.bmp"
+				RelativePath="res\sunburst2.bmp"
 				>
 			</File>
 			<File
@@ -10110,7 +10098,7 @@
 				>
 			</File>
 			<File
-				RelativePath="TableIcon.ico"
+				RelativePath="res\table.ico"
 				>
 			</File>
 			<File
@@ -10126,7 +10114,7 @@
 				>
 			</File>
 			<File
-				RelativePath="toolbar.bmp"
+				RelativePath="res\toolbar.bmp"
 				>
 			</File>
 			<File
@@ -10146,7 +10134,7 @@
 				>
 			</File>
 			<File
-				RelativePath="white.bmp"
+				RelativePath="res\white.bmp"
 				>
 			</File>
 			<Filter
@@ -10587,7 +10575,7 @@
 			</Filter>
 		</Filter>
 		<File
-			RelativePath="BaseTable17.vpt"
+			RelativePath="res\table.vpt"
 			>
 		</File>
 	</Files>

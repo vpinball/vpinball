@@ -1113,7 +1113,7 @@ void Player::InitDMDHackWindow()
 	wcex.lpfnWndProc = (WNDPROC) PlayerDMDHackWndProc;
 	wcex.hInstance = g_hinst;
 	wcex.lpszClassName = "VPPlayerDMDHack";
-	wcex.hIcon = LoadIcon ( g_hinst, MAKEINTRESOURCE(IDI_TABLEICON) );
+	wcex.hIcon = LoadIcon ( g_hinst, MAKEINTRESOURCE(IDI_TABLE) );
 	wcex.hCursor = LoadCursor ( NULL, IDC_ARROW );
 	wcex.lpszMenuName = NULL;
 	RegisterClassEx ( &wcex );
@@ -1140,7 +1140,7 @@ void Player::InitWindow()
 	wcex.lpfnWndProc = (WNDPROC) PlayerWndProc;
 	wcex.hInstance = g_hinst;
 	wcex.lpszClassName = "VPPlayer";
-	wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_TABLEICON));
+	wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_TABLE));
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wcex.lpszMenuName = NULL;
 	RegisterClassEx(&wcex);
