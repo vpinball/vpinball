@@ -225,6 +225,9 @@
     <ClCompile Include="quadtree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="math\matrix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl">
@@ -514,6 +517,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vpinball_i.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math\matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

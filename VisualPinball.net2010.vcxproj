@@ -912,6 +912,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
+    <ClCompile Include="math\matrix.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="Pin\ball.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -3623,6 +3624,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="hidusage.h" />
     <ClInclude Include="kdtree.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="math\matrix.h" />
     <ClInclude Include="physconst.h" />
     <ClInclude Include="Pin\ball.h" />
     <ClInclude Include="ballex.h" />
