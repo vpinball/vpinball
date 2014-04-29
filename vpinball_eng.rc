@@ -274,10 +274,12 @@ BEGIN
     CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,66,91,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,90,155,10
-    CONTROL         "Software vertex processing",IDC_SOFTWARE_VP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,100,155,10
     LTEXT           "FPS limiter",IDC_STATIC,162,136,100,10
     EDITTEXT        IDC_ADAPTIVE_VSYNC,262,134,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Max prerendered frames",IDC_STATIC,162,150,77,8
+    EDITTEXT        IDC_MAX_PRE_FRAMES,262,148,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Software vertex processing (for some Intel chips)",IDC_SOFTWARE_VP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,164,175,10
     CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,192,28,10
     CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,202,32,10
     CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,212,32,10
@@ -302,8 +304,6 @@ BEGIN
     LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,238,156,8
     GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,62
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
-    LTEXT           "Max prerendered frames",IDC_STATIC,162,150,77,8
-    EDITTEXT        IDC_MAX_PRE_FRAMES,262,148,20,12,ES_RIGHT | ES_AUTOHSCROLL
 END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
