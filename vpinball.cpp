@@ -1553,10 +1553,10 @@ void VPinball::LoadFile()
    ofn.hInstance = g_hinst;
    ofn.hwndOwner = g_pvp->m_hwnd;
    // TEXT
-   ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt\0";
+   ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt";
    ofn.lpstrFile = szFileName;
    ofn.nMaxFile = _MAX_PATH;
-   ofn.lpstrDefExt = "vpt";
+   ofn.lpstrDefExt = "vpx";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
    const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);

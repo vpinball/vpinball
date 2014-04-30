@@ -1989,10 +1989,10 @@ HRESULT PinTable::Save(BOOL fSaveAs)
       ofn.hInstance = g_hinst;
       ofn.hwndOwner = g_pvp->m_hwnd;
       // TEXT
-      ofn.lpstrFilter = "Visual Pinball Tables (*.vpt)\0*.vpt\0";
+      ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
       ofn.lpstrFile = m_szFileName;
       ofn.nMaxFile = _MAX_PATH;
-      ofn.lpstrDefExt = "vpt";
+      ofn.lpstrDefExt = "vpx";
       ofn.Flags = OFN_OVERWRITEPROMPT;
 
       char szInitialDir[1024];
@@ -2041,6 +2041,11 @@ HRESULT PinTable::Save(BOOL fSaveAs)
    }
    else
    {
+      char *ptr = strstr( m_szFileName, ".vpt");
+      if( ptr!=NULL )
+      {
+          strcpy(ptr,".vpx");
+      }
       MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
 
       STGOPTIONS stg;
