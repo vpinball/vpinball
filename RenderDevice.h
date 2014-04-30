@@ -281,6 +281,11 @@ public:
    unsigned Perf_GetNumStateChanges()      { return m_frameStateChanges; }
    unsigned Perf_GetNumTextureChanges()    { return m_frameTextureChanges; }
 
+   inline IDirect3DDevice9* GetCoreDevice()
+   {
+      return m_pD3DDevice;
+   }
+
 private:
 #ifdef USE_D3D9EX
    IDirect3D9Ex* m_pD3D;

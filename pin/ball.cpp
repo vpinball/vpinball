@@ -16,7 +16,7 @@ Ball::Ball()
    if( vertexBuffer==0 )
    {
       // VB for normal ball and logo(front+back) and shadow
-      g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( 5*4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+      g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( 166, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
       /*
        * Layout of this vertex buffer:
        *  0-3:   ball vertices
@@ -185,17 +185,6 @@ void Ball::Init()
    {
       lstrcpy(m_szImageFront, g_pplayer->m_ptable->m_szBallImageFront);
       m_pinFront = g_pplayer->m_ptable->GetImage(m_szImageFront);
-   }
-
-   if (g_pplayer->m_ptable->m_szBallImageBack[0] == '\0')
-   {
-      m_szImageBack[0] = '\0';
-      m_pinBack = NULL;
-   }
-   else
-   {
-      lstrcpy(m_szImageBack, g_pplayer->m_ptable->m_szBallImageBack);
-      m_pinBack = g_pplayer->m_ptable->GetImage(m_szImageBack);
    }
 
 	RenderSetup();
