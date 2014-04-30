@@ -1,7 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include "vpversion.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -227,8 +226,8 @@ BEGIN
     PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,130,179,93,14,NOT WS_VISIBLE | WS_DISABLED
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,7,198,150,17
     CONTROL         264,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
-    LTEXT           "A Randy Davis Production",IDC_STATIC,13,36,94,23
-    LTEXT           STR(Version VP_VERSION_MAJOR.VP_VERSION_MINOR.VP_VERSION_REV),IDC_STATIC,13,47,121,16
+    LTEXT           "A Randy Davis Production",IDC_STATIC,13,36,94,10
+    LTEXT           "Version 10.0.0",IDC_STATIC,13,47,121,16
     GROUPBOX        "Credits",IDC_STATIC,7,62,216,103
     LTEXT           "Randy Davis - designer, developer",IDC_STATIC,13,77,115,9
     LTEXT           "Noah Fentz - testing",IDC_STATIC,150,77,66,9
@@ -260,7 +259,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Enable Fast FXAA",IDC_FFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,165,90,10
     CONTROL         "Enable Quality FXAA",IDC_QFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,175,90,10
-    CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP | WS_DISABLED,14,185,126,10
+    CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,14,185,126,10
     CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,212,83,10
     CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,222,81,10
     CONTROL         "At Full Screen anti-stretch the Ball",IDC_StretchMonitor,
@@ -1360,26 +1359,24 @@ BEGIN
     LTEXT           "Y",IDC_STATIC,13,249,8,8
 END
 
-IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 170
+IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 151
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        1505,7,18,113,120,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        1508,7,40,113,109,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        1509,7,62,113,112,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&Ball Image:",IDC_STATIC,7,9,74,8
-    LTEXT           "&Front Decal:",IDC_STATIC,7,32,74,8
-    LTEXT           "Bac&k Decal:",IDC_STATIC,7,54,74,8
-    GROUPBOX        "Reflection",IDC_STATIC,7,79,113,42
-    LTEXT           "Enable",IDC_STATIC,11,91,38,8
-    EDITTEXT        IDC_BALL_REFLECTION,41,89,20,12,ES_AUTOHSCROLL
-    LTEXT           "Strength (0..255)",IDC_STATIC,12,105,54,8
-    EDITTEXT        IDC_REFLECTION_EDIT,69,103,31,12,ES_AUTOHSCROLL
-    GROUPBOX        "Trail/Motion Blur",IDC_STATIC,7,124,113,42
-    LTEXT           "Enable",IDC_STATIC,11,136,38,8
-    EDITTEXT        IDC_BALL_TRAIL,41,134,20,12,ES_AUTOHSCROLL
-    LTEXT           "Strength (0..255)",IDC_STATIC,12,150,54,8
-    EDITTEXT        IDC_TRAIL_EDIT,69,148,31,12,ES_AUTOHSCROLL
+    LTEXT           "&Decal:",IDC_STATIC,7,32,74,8
+    GROUPBOX        "Reflection",IDC_STATIC,7,57,113,42
+    LTEXT           "Enable",IDC_STATIC,11,69,25,8
+    EDITTEXT        IDC_BALL_REFLECTION,41,67,20,12,ES_AUTOHSCROLL
+    LTEXT           "Strength (0..255)",IDC_STATIC,12,83,54,8
+    EDITTEXT        IDC_REFLECTION_EDIT,69,81,31,12,ES_AUTOHSCROLL
+    GROUPBOX        "Trail/Motion Blur",IDC_STATIC,7,102,113,42
+    LTEXT           "Enable",IDC_STATIC,11,114,24,8
+    EDITTEXT        IDC_BALL_TRAIL,41,112,20,12,ES_AUTOHSCROLL
+    LTEXT           "Strength (0..255)",IDC_STATIC,12,128,54,8
+    EDITTEXT        IDC_TRAIL_EDIT,69,126,31,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 188
@@ -1803,8 +1800,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION    VP_VERSION_MAJOR, VP_VERSION_MINOR, VP_VERSION_REV, 0
- PRODUCTVERSION VP_VERSION_MAJOR, VP_VERSION_MINOR, VP_VERSION_REV, 0
+ FILEVERSION 10,0,0,0
+ PRODUCTVERSION 10,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1819,13 +1816,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "Visual Pinball " VP_VERSION_STRING
-            VALUE "FileVersion", VP_VERSION_STRING_COMMAS
+            VALUE "FileDescription", "Visual Pinball 10.0.0"
+            VALUE "FileVersion", "10, 0, 0, 0"
             VALUE "InternalName", "Visual Pinball"
             VALUE "LegalCopyright", "Copyright 2000-2014"
             VALUE "OriginalFilename", "vpinball.exe"
             VALUE "ProductName", "Visual Pinball"
-            VALUE "ProductVersion", VP_VERSION_STRING_COMMAS
+            VALUE "ProductVersion", "10, 0, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -2055,6 +2052,13 @@ IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// RCDATA
+//
+
+BALLSHADER.FX           RCDATA                  "shader\\BallShader.fx"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Accelerator
 //
 
@@ -2066,31 +2070,31 @@ BEGIN
     "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
-    "B",            ID_INSERT_BUMPER,             VIRTKEY, CONTROL, NOINVERT
+    "B",            ID_INSERT_BUMPER,       VIRTKEY, CONTROL, NOINVERT
     "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
-    "D",            ID_INSERT_DECAL,              VIRTKEY, CONTROL, NOINVERT
-    "Y",            ID_INSERT_DISP_REEL,           VIRTKEY, CONTROL, NOINVERT
-    "F",            ID_INSERT_FLIPPER,            VIRTKEY, CONTROL, NOINVERT
-    "G",            ID_INSERT_GATE,               VIRTKEY, CONTROL, NOINVERT
-    "K",            ID_INSERT_KICKER,             VIRTKEY, CONTROL, NOINVERT
-    "L",            ID_INSERT_LIGHT,              VIRTKEY, CONTROL, NOINVERT
-    "Q",            ID_INSERT_LIGHT_SEQ,           VIRTKEY, CONTROL, NOINVERT
+    "D",            ID_INSERT_DECAL,        VIRTKEY, CONTROL, NOINVERT
+    "Y",            ID_INSERT_DISP_REEL,    VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_INSERT_FLIPPER,      VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_INSERT_GATE,         VIRTKEY, CONTROL, NOINVERT
+    "K",            ID_INSERT_KICKER,       VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_INSERT_LIGHT,        VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_INSERT_LIGHT_SEQ,    VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTEAT,            VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "P",            ID_INSERT_PLUNGER,            VIRTKEY, CONTROL, NOINVERT
-    "J",            ID_INSERT_PRIMITIVE,          VIRTKEY, CONTROL, NOINVERT
-    "R",            ID_INSERT_RAMP,               VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_INSERT_PLUNGER,      VIRTKEY, CONTROL, NOINVERT
+    "J",            ID_INSERT_PRIMITIVE,    VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_INSERT_RAMP,         VIRTKEY, CONTROL, NOINVERT
     VK_ESCAPE,      IDC_SELECT,             VIRTKEY, NOINVERT
-    "I",            ID_INSERT_SPINNER,            VIRTKEY, CONTROL, NOINVERT
-    "A",            ID_INSERT_TARGET,             VIRTKEY, CONTROL, NOINVERT
-    "E",            ID_INSERT_TEXTBOX,            VIRTKEY, CONTROL, NOINVERT
-    "M",            ID_INSERT_TIMER,              VIRTKEY, CONTROL, NOINVERT
-    "T",            ID_INSERT_TRIGGER,            VIRTKEY, CONTROL, NOINVERT
-    "W",            ID_INSERT_WALL,               VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_INSERT_SPINNER,      VIRTKEY, CONTROL, NOINVERT
+    "A",            ID_INSERT_TARGET,       VIRTKEY, CONTROL, NOINVERT
+    "E",            ID_INSERT_TEXTBOX,      VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_INSERT_TIMER,        VIRTKEY, CONTROL, NOINVERT
+    "T",            ID_INSERT_TRIGGER,      VIRTKEY, CONTROL, NOINVERT
+    "W",            ID_INSERT_WALL,         VIRTKEY, CONTROL, NOINVERT
     "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
     "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
-    "H",            ID_INSERT_FLASHER,            VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_INSERT_FLASHER,      VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_CODEVIEWACCEL ACCELERATORS 
@@ -2112,44 +2116,44 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_VPINBALL             ICON                    "res\\vpinball.ico"
-IDI_SCRIPT               ICON                    "res\\script.ico"
-IDI_TABLE                ICON                    "res\\table.ico"
-IDI_PLAY                 ICON                    "res\\play.ico"
-IDI_PAUSE                ICON                    "res\\pause.ico"
-IDI_STEP                 ICON                    "res\\step.ico"
+IDI_VPINBALL            ICON                    "res\\vpinball.ico"
+IDI_SCRIPT              ICON                    "res\\script.ico"
+IDI_TABLE               ICON                    "res\\table.ico"
+IDI_PLAY                ICON                    "res\\play.ico"
+IDI_PAUSE               ICON                    "res\\pause.ico"
+IDI_STEP                ICON                    "res\\step.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_MAGNIFY         CURSOR                  "res\\magnify.cur"
-IDC_LIGHT           CURSOR                  "res\\light.cur"
-IDC_WALL            CURSOR                  "res\\wall.cur"
-IDC_FLIPPER         CURSOR                  "res\\flipper.cur"
-IDC_TRIGGER         CURSOR                  "res\\trigger.cur"
-IDC_GATE            CURSOR                  "res\\gate.cur"
-IDC_TIMER           CURSOR                  "res\\timer.cur"
-IDC_PLUNGER         CURSOR                  "res\\plunger.cur"
-IDC_TEXTBOX         CURSOR                  "res\\textbox.cur"
-IDC_BUMPER          CURSOR                  "res\\bumper.cur"
-IDC_KICKER          CURSOR                  "res\\kicker.cur"
-IDC_TARGET          CURSOR                  "res\\target.cur"
-IDC_DECAL           CURSOR                  "res\\decal.cur"
-IDC_SPINNER         CURSOR                  "res\\spinner.cur"
-IDC_RAMP            CURSOR                  "res\\ramp.cur"
-IDC_DISP_REEL       CURSOR                  "res\\dispreel.cur"
-IDC_LIGHT_SEQ       CURSOR                  "res\\lightseq.cur"
-IDC_PRIMITIVE       CURSOR                  "res\\primitive.cur"
-IDC_FLASHER         CURSOR                  "res\\flasher.cur"
+IDC_MAGNIFY             CURSOR                  "res\\magnify.cur"
+IDC_LIGHT               CURSOR                  "res\\light.cur"
+IDC_WALL                CURSOR                  "res\\wall.cur"
+IDC_FLIPPER             CURSOR                  "res\\flipper.cur"
+IDC_TRIGGER             CURSOR                  "res\\trigger.cur"
+IDC_GATE                CURSOR                  "res\\gate.cur"
+IDC_TIMER               CURSOR                  "res\\timer.cur"
+IDC_PLUNGER             CURSOR                  "res\\plunger.cur"
+IDC_TEXTBOX             CURSOR                  "res\\textbox.cur"
+IDC_BUMPER              CURSOR                  "res\\bumper.cur"
+IDC_KICKER              CURSOR                  "res\\kicker.cur"
+IDC_TARGET              CURSOR                  "res\\target.cur"
+IDC_DECAL               CURSOR                  "res\\decal.cur"
+IDC_SPINNER             CURSOR                  "res\\spinner.cur"
+IDC_RAMP                CURSOR                  "res\\ramp.cur"
+IDC_DISP_REEL           CURSOR                  "res\\dispreel.cur"
+IDC_LIGHT_SEQ           CURSOR                  "res\\lightseq.cur"
+IDC_PRIMITIVE           CURSOR                  "res\\primitive.cur"
+IDC_FLASHER             CURSOR                  "res\\flasher.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // TABLE
 //
 
-IDR_TABLE           TABLE                   "res\\table.vpt"
+IDR_TABLE               TABLE                   "res\\table.vpt"
 
 /////////////////////////////////////////////////////////////////////////////
 //
