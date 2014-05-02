@@ -168,6 +168,7 @@ public:
 #endif
    Shader      *ballShader;
    IndexBuffer *ballIndexBuffer;
+   VertexBuffer *ballVertexBuffer;
 
 	PinTable *m_ptable;
 

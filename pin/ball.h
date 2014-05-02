@@ -68,13 +68,6 @@ public:
 
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
 
-    Vertex3D_NoTex2 vertices[4];
-    Vertex3D_NoTex2 logoVertices[4];
-    Vertex3D_NoTex2 reflectVerts[4];
-    Vertex3D_NoTex2 logoFrontVerts[4];
-    Vertex3D_NoTex2 logoBackVerts[4];
-
-    static VertexBuffer *vertexBuffer;
     Material shadowMaterial;
     Material logoMaterial;
     Material material;

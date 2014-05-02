@@ -857,7 +857,7 @@ Shader::~Shader()
 bool Shader::Load( char* shaderName, const bool fromFile )
 {
     LPD3DXBUFFER pBufferErrors;
-    DWORD dwShaderFlags = 0;
+    DWORD dwShaderFlags = D3DXSHADER_DEBUG|D3DXSHADER_SKIPOPTIMIZATION;
     HRESULT hr;
     if ( fromFile )
     {
@@ -873,8 +873,8 @@ bool Shader::Load( char* shaderName, const bool fromFile )
     else
     {
         hr = D3DXCreateEffectFromResource(	m_renderDevice->GetCoreDevice(),		// pDevice
-            NULL,			// pSrcFile
-            shaderName,
+            NULL,			
+            shaderName,         // resource name
             NULL,				// pDefines
             NULL,				// pInclude
             dwShaderFlags,		// Flags
@@ -885,6 +885,11 @@ bool Shader::Load( char* shaderName, const bool fromFile )
     }
     if(FAILED(hr) )
     {
+        if ( pBufferErrors )
+        {
+            LPVOID pCompileErrors = pBufferErrors->GetBufferPointer(); 
+            MessageBox(NULL, (const char*)pCompileErrors, "Compile Error", MB_OK|MB_ICONEXCLAMATION);
+        }
         return false;
     }
     return true;
