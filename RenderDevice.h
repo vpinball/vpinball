@@ -2,6 +2,7 @@
 
 #include <map>
 #include <d3d9.h>
+#include <d3dx9.h>
 #include "Material.h"
 #include "Texture.h"
 
@@ -12,6 +13,8 @@ void ReportError(HRESULT hr, const char *file, int line);
 typedef IDirect3DTexture9 D3DTexture;
 typedef D3DVIEWPORT9 ViewPort;
 typedef IDirect3DSurface9 RenderTarget;
+typedef D3DVERTEXELEMENT9 VertexElement;
+typedef IDirect3DVertexDeclaration9 VertexDeclaration;
 
 struct VideoMode
 {
@@ -281,6 +284,16 @@ public:
    unsigned Perf_GetNumStateChanges()      { return m_frameStateChanges; }
    unsigned Perf_GetNumTextureChanges()    { return m_frameTextureChanges; }
 
+   inline void CreateVertexDeclaration( const VertexElement *element, VertexDeclaration **declaration )
+   {
+       m_pD3DDevice->CreateVertexDeclaration( element, declaration );
+   }
+
+   inline void SetVertexDeclaration( VertexDeclaration *declaration )
+   {
+       m_pD3DDevice->SetVertexDeclaration( declaration );
+   }
+
    inline IDirect3DDevice9* GetCoreDevice()
    {
       return m_pD3DDevice;
@@ -327,4 +340,23 @@ private:
 
 public:
    TextureManager m_texMan;
+};
+
+class Shader 
+{
+public:
+    Shader(RenderDevice *renderDevice);
+    ~Shader();
+
+    bool Load( char* shaderName, const bool fromFile );
+    void Unload();
+
+    ID3DXEffect *Core()
+    {
+        return m_shader;
+    }
+
+private:
+    ID3DXEffect* m_shader;
+    RenderDevice *m_renderDevice;
 };

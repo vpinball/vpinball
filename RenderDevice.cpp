@@ -836,3 +836,65 @@ void RenderDevice::GetViewport( ViewPort* p1)
 {
    m_pD3DDevice->GetViewport((D3DVIEWPORT9*)p1);
 }
+
+Shader::Shader(RenderDevice *renderDevice)
+{
+    m_renderDevice = renderDevice;
+    m_shader=0;
+}
+
+Shader::~Shader()
+{
+    if( m_shader )
+    {
+        this->Unload();
+    }
+}
+
+// loads an HLSL effect file
+// if fromFile is true the shaderName should point to the full filename (with path) to the .fx file
+// if fromFile is false the shaderName should be the resource name not the IDC_XX_YY value. Search vpinball_eng.rc for ".fx" to see an example
+bool Shader::Load( char* shaderName, const bool fromFile )
+{
+    LPD3DXBUFFER pBufferErrors;
+    DWORD dwShaderFlags = 0;
+    HRESULT hr;
+    if ( fromFile )
+    {
+        hr = D3DXCreateEffectFromFile(	m_renderDevice->GetCoreDevice(),		// pDevice
+            shaderName,			// pSrcFile
+            NULL,				// pDefines
+            NULL,				// pInclude
+            dwShaderFlags,		// Flags
+            NULL,				// pPool
+            &m_shader,			// ppEffect
+            &pBufferErrors);	// ppCompilationErrors
+    }
+    else
+    {
+        hr = D3DXCreateEffectFromResource(	m_renderDevice->GetCoreDevice(),		// pDevice
+            NULL,			// pSrcFile
+            shaderName,
+            NULL,				// pDefines
+            NULL,				// pInclude
+            dwShaderFlags,		// Flags
+            NULL,				// pPool
+            &m_shader,			// ppEffect
+            &pBufferErrors);	// ppCompilationErrors
+
+    }
+    if(FAILED(hr) )
+    {
+        return false;
+    }
+    return true;
+}
+
+void Shader::Unload()
+{
+    if( !m_shader )
+    {
+        m_shader->Release();
+        m_shader=0;
+    }
+}
