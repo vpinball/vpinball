@@ -3,7 +3,6 @@
 #include "kdtree.h"
 #include "quadtree.h"
 #include <unordered_set>
-#include <d3dx9.h>
 
 #define DEFAULT_PLAYER_WIDTH 1024
 
@@ -167,7 +166,7 @@ public:
 #ifdef ULTRAPIN
 	HWND m_dmdhackhwnd;
 #endif
-   ID3DXEffect*					ballShader;
+   Shader      *ballShader;
    IndexBuffer *ballIndexBuffer;
 
 	PinTable *m_ptable;

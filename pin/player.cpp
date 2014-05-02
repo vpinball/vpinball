@@ -353,7 +353,16 @@ Player::~Player()
         Ball::vertexBuffer->release();
         Ball::vertexBuffer=0;
     }
-
+    if ( ballIndexBuffer )
+    {
+        ballIndexBuffer->release();
+        ballIndexBuffer=0;
+    }
+    if( ballShader )
+    {
+        delete ballShader;
+        ballShader=0;
+    }
 #ifdef LOG
 	if (m_flog)
 		fclose(m_flog);
@@ -664,52 +673,24 @@ static bool CompareHitableDepth(Hitable* h1, Hitable* h2)
     return h1->GetDepth(g_viewDir) >= h2->GetDepth(g_viewDir);
 }
 
-const D3DVERTEXELEMENT9 declaration[] = 
+const VertexElement ballDeclaration[] = 
 {
    { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
    { 0, 3  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
    { 0, 6  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
    D3DDECL_END()
 };
-static LPDIRECT3DVERTEXDECLARATION9 g_pVertexDeclaration	= NULL;
+static VertexDeclaration* g_pBallVertexDeclaration	= NULL;
 
 void Player::InitBallShader()
 {
-   LPD3DXBUFFER pBufferErrors;
-   DWORD dwShaderFlags = 0;
+   ballShader = new Shader(m_pin3d.m_pd3dDevice );
 
-/*
-   HRESULT hr = D3DXCreateEffectFromFile(	m_pin3d.m_pd3dDevice->GetCoreDevice(),		// pDevice
-       "c:\\projects\\vp\\shader\\ballshader.fx",			// pSrcFile
-      NULL,				// pDefines
-      NULL,				// pInclude
-      dwShaderFlags,		// Flags
-      NULL,				// pPool
-      &ballShader,			// ppEffect
-      &pBufferErrors);	// ppCompilationErrors
-*/
+   //ballShader->Load("c:\\shader\\BallShader.fx", true );
 
-   HRESULT hr = D3DXCreateEffectFromResource(	m_pin3d.m_pd3dDevice->GetCoreDevice(),		// pDevice
-      NULL,			// pSrcFile
-     "BallShader.fx",
-      NULL,				// pDefines
-      NULL,				// pInclude
-      dwShaderFlags,		// Flags
-      NULL,				// pPool
-      &ballShader,			// ppEffect
-      &pBufferErrors);	// ppCompilationErrors
+   ballShader->Load("BallShader.fx", false );
 
-   if(FAILED(hr) )
-   {
-      if ( pBufferErrors )
-      {
-         LPVOID pCompileErrors = pBufferErrors->GetBufferPointer(); 
-         MessageBox(NULL, (const char*)pCompileErrors, "Compile Error", 
-            MB_OK|MB_ICONEXCLAMATION);
-      }
-   }
-   m_pin3d.m_pd3dDevice->GetCoreDevice()->CreateVertexDeclaration( declaration, &g_pVertexDeclaration );
-   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetVertexDeclaration( g_pVertexDeclaration );
+   m_pin3d.m_pd3dDevice->CreateVertexDeclaration( ballDeclaration, &g_pBallVertexDeclaration );
 
    D3DMATRIX worldMat;
    D3DMATRIX viewMat;
@@ -722,10 +703,10 @@ void Player::InitBallShader()
    D3DXMATRIX matView(viewMat);
    D3DXMATRIX matWorld(worldMat);
    D3DXMATRIX worldViewProj = matWorld * matView * matProj;
-   ballShader->SetMatrix("matWorldViewProj", &worldViewProj);
-   ballShader->SetMatrix("matProj", &matProj);
-   ballShader->SetMatrix("matView", &matView);
-   ballShader->SetMatrix("matWorld",  &matWorld);
+   ballShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
+   ballShader->Core()->SetMatrix("matProj", &matProj);
+   ballShader->Core()->SetMatrix("matView", &matView);
+   ballShader->Core()->SetMatrix("matWorld",  &matWorld);
    //ballShader->SetMatrix("matWorldI", &matWorldI);
    vector<WORD> indexList;
    indexList.resize(basicBallNumFaces);
@@ -2444,6 +2425,8 @@ void Player::DrawBalls()
    const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 
+   m_pin3d.m_pd3dDevice->SetVertexDeclaration( g_pBallVertexDeclaration );
+
    for (unsigned i=0; i<m_vball.size(); i++)
    {
       Ball * const pball = m_vball[i];
@@ -2470,41 +2453,8 @@ void Player::DrawBalls()
 
       const float radiusX = (pball->radius*0.9f) * m_BallStretchX;
       const float radiusY = (pball->radius*0.9f) * m_BallStretchY;
-/*
-      Vertex3D newBall[basicBallNumVertices];
-      for( unsigned int i=0; i<basicBallNumVertices; i++ )
-      {
-         Vertex3Ds vec(basicBall[i].x,basicBall[i].y,basicBall[i].z);
-         Vertex3Ds nvec(basicBall[i].nx,basicBall[i].ny,basicBall[i].nz);
-         const Vertex3Ds tmp = pball->m_orientation.MultiplyVector(vec);
-         nvec=pball->m_orientation.MultiplyVector(nvec);
-         newBall[i].x = pball->pos.x + tmp.x*radiusX;
-         newBall[i].y = pball->pos.y + tmp.y*radiusY;
-         newBall[i].z = zheight + tmp.z*(pball->radius*0.9f);
-         newBall[i].nx = nvec.x;
-         newBall[i].ny = nvec.y;
-         newBall[i].nz = nvec.z;
-         Vertex3Ds norm(nvec.x, nvec.y, nvec.z);
-         matWorld.MultiplyVectorNoTranslate(norm, norm);
-         norm.Normalize();
-//          newBall[i].tu = 0.5f+basicBall[i].nx*0.5f;
-//          newBall[i].tv = 0.5f+basicBall[i].ny*0.5f;
-         newBall[i].tu = basicBall[i].tu;
-         newBall[i].tv = basicBall[i].tv;
-         if ( norm.y>0.4f )
-         {
-            float xx = pball->pos.x*inv_tablewidth;
-            float yy = pball->pos.y*inv_tableheight;
-            newBall[i].tu2 = xx + norm.x*0.031f;
-            newBall[i].tv2 = yy + norm.y*0.031f;
-         }
-         else
-         {
-            newBall[i].tu2=0.0f;
-            newBall[i].tv2=0.0f;
-         }
-      }
-*/
+
+      // this has to be moved to the shader as well
       Vertex3D_NoTex2 newBall[basicBallNumVertices];
       float minY=40000000.0f;
       float maxY=-40000000.0f;
@@ -2540,7 +2490,7 @@ void Player::DrawBalls()
       Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
       if( playfield )
       {
-          ballShader->SetTexture("Texture1",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(playfield->m_pdsBuffer));
+          ballShader->Core()->SetTexture("Texture1",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(playfield->m_pdsBuffer));
       }
 
       if(pball->m_disableLighting)
@@ -2551,35 +2501,34 @@ void Player::DrawBalls()
 
       // ************************* draw the ball itself ****************************
       m_pin3d.EnableAlphaBlend(1);
-      ballShader->SetFloat("posX", pball->pos.x );
-      ballShader->SetFloat("posY", pball->pos.y );
-      ballShader->SetFloat("sizeY", maxY-minY );
-      ballShader->SetFloat("invTableWidth", inv_tablewidth );
-      ballShader->SetFloat("invTableHeight", inv_tableheight );
-      m_pin3d.m_pd3dDevice->GetCoreDevice()->SetVertexDeclaration(g_pVertexDeclaration);
+      ballShader->Core()->SetFloat("posX", pball->pos.x );
+      ballShader->Core()->SetFloat("posY", pball->pos.y );
+      ballShader->Core()->SetFloat("sizeY", maxY-minY );
+      ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
+      ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
       if ( !pball->m_pin )
-          ballShader->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_pin3d.ballTexture.m_pdsBufferColorKey));
+          ballShader->Core()->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_pin3d.ballTexture.m_pdsBufferColorKey));
       else
-          ballShader->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(pball->m_pin->m_pdsBufferColorKey));
+          ballShader->Core()->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(pball->m_pin->m_pdsBufferColorKey));
 
       if( pball->m_pinFront )
       {
           pball->m_pinFront->CreateAlphaChannel();          
-          ballShader->SetTexture("Texture2",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(pball->m_pinFront->m_pdsBufferColorKey));
+          ballShader->Core()->SetTexture("Texture2",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(pball->m_pinFront->m_pdsBufferColorKey));
       }
       UINT cPasses=0;
       if ( drawReflection )
       {
-          ballShader->SetFloat("reflectionStrength", (float)m_ptable->m_ballReflectionStrength/255.0f );
+          ballShader->Core()->SetFloat("reflectionStrength", (float)m_ptable->m_ballReflectionStrength/255.0f );
           m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
           m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
           m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-          ballShader->SetTechnique("RenderBallReflection");
-          ballShader->Begin(&cPasses,0);
-          ballShader->BeginPass(0);
+          ballShader->Core()->SetTechnique("RenderBallReflection");
+          ballShader->Core()->Begin(&cPasses,0);
+          ballShader->Core()->BeginPass(0);
           m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, pball->vertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
-          ballShader->EndPass();
-          ballShader->End();
+          ballShader->Core()->EndPass();
+          ballShader->Core()->End();
 
           m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
           m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
@@ -2587,18 +2536,18 @@ void Player::DrawBalls()
 
       if ( m_ptable->m_rotation!=270.0f )
       {
-          ballShader->SetTechnique("RenderBall_Desktop");
+          ballShader->Core()->SetTechnique("RenderBall_Desktop");
       }
       else
       {
-          ballShader->SetTechnique("RenderBall_Cabinet");
+          ballShader->Core()->SetTechnique("RenderBall_Cabinet");
       }
       cPasses=0;
-      ballShader->Begin(&cPasses,0);
-      ballShader->BeginPass(0);
+      ballShader->Core()->Begin(&cPasses,0);
+      ballShader->Core()->BeginPass(0);
       m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, pball->vertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
-      ballShader->EndPass();
-      ballShader->End();
+      ballShader->Core()->EndPass();
+      ballShader->Core()->End();
 
       if(pball->m_disableLighting)
       {
