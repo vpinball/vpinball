@@ -7,6 +7,9 @@ float    invTableHeight;
 float    invTableWidth;
 float4   position;
 float    radius;
+float    ballStretchX;
+float    ballStretchY;
+float    inclination;
 float    reflectionStrength;
 
 // this is used for the orientation matrix
@@ -73,7 +76,10 @@ vout vsBall( in vin IN )
 	float4x4 orientation = {m1,m2,m3,float4(0,0,0,0)};
 	float4 pos = IN.position;
 	pos = mul(pos,orientation);
-	pos *= (radius*0.9);
+	pos *= radius;
+	pos.x *= ballStretchX;
+	pos.y *= ballStretchY*cos(inclination);
+	pos.z *= sin(inclination);
 	pos += position;
 	
     //convert to world space and pass along to our output
@@ -101,13 +107,16 @@ vout vsBallReflection( in vin IN )
 {
 	//init our output data to all zeros
 	vout OUT = (vout)0;
-	float sizeY = radius*2*0.9;
+	float sizeY = radius*2;
 
 	// apply spinning and move the ball to it's actual position
 	float4x4 orientation = {m1,m2,m3,float4(0,0,0,0)};
 	float4 pos = IN.position;
 	pos = mul(pos,orientation);
-	pos *= (radius*0.9);
+	pos *= radius;
+	pos.x *= ballStretchX;
+	pos.y *= ballStretchY*cos(inclination);
+	pos.z *= sin(inclination);
 	pos += position;
 
 	// this is no a 100% ball reflection on the table due to the quirky camera setup

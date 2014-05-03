@@ -1345,7 +1345,7 @@ void Player::InitWindow()
 
 	}
 	const float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
-	const float scalebackMonitorY = ((xMonitor + yMonitor)*0.5f)/yMonitor;
+	const float scalebackMonitorY = (((xMonitor + yMonitor)*0.5f)/yMonitor);
 
 	float temprotation = m_ptable->m_rotation;
 	while (temprotation < 0.f)
@@ -1372,7 +1372,7 @@ void Player::InitWindow()
 				}
 				break;
 	}
-
+   m_BallStretchY*=1.2f;
 	m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
     mixer_init( m_hwnd );
@@ -2490,7 +2490,10 @@ void Player::DrawBalls()
       ballShader->Core()->SetVector("m3",&m3);
       D3DXVECTOR4 pos( pball->pos.x, pball->pos.y, zheight, 1.0f );
       ballShader->Core()->SetVector("position", &pos );
-      ballShader->Core()->SetFloat("radius", pball->radius );
+      ballShader->Core()->SetFloat("radius", pball->radius*0.9f );
+      ballShader->Core()->SetFloat("ballStretchX", m_BallStretchX );
+      ballShader->Core()->SetFloat("ballStretchY", m_BallStretchY );
+      ballShader->Core()->SetFloat("inclination", inclination );
       ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
       ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
       if ( !pball->m_pin )
