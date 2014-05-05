@@ -897,7 +897,7 @@ bool Shader::Load( char* shaderName, const bool fromFile )
 
 void Shader::Unload()
 {
-    if( !m_shader )
+    if( m_shader )
     {
         m_shader->Release();
         m_shader=0;
