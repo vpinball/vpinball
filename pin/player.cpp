@@ -704,8 +704,6 @@ void Player::InitBallShader()
    D3DXMATRIX matWorld(worldMat);
    D3DXMATRIX worldViewProj = matWorld * matView * matProj;
    ballShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
-   ballShader->Core()->SetMatrix("matProj", &matProj);
-   ballShader->Core()->SetMatrix("matView", &matView);
    ballShader->Core()->SetMatrix("matWorld",  &matWorld);
    //ballShader->SetMatrix("matWorldI", &matWorldI);
    vector<WORD> indexList;
