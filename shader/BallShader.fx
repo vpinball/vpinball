@@ -1,6 +1,4 @@
-
 float4x4 matWorldViewProj   : WORLDVIEWPROJ;
-float4x4 matWorldI          : WORLDIT;
 float4x4 matWorld           : WORLD;
 float4   diffuseMaterial    = float4(1,1,1,0.1);
 float    invTableHeight;

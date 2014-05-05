@@ -857,11 +857,12 @@ Shader::~Shader()
 bool Shader::Load( char* shaderName, const bool fromFile )
 {
     LPD3DXBUFFER pBufferErrors;
-    DWORD dwShaderFlags = D3DXSHADER_DEBUG|D3DXSHADER_SKIPOPTIMIZATION;
+    DWORD dwShaderFlags = D3DXSHADER_PARTIALPRECISION;
     HRESULT hr;
     if ( fromFile )
     {
-        hr = D3DXCreateEffectFromFile(	m_renderDevice->GetCoreDevice(),		// pDevice
+            dwShaderFlags = D3DXSHADER_DEBUG|D3DXSHADER_SKIPOPTIMIZATION;
+            hr = D3DXCreateEffectFromFile(	m_renderDevice->GetCoreDevice(),		// pDevice
             shaderName,			// pSrcFile
             NULL,				// pDefines
             NULL,				// pInclude
