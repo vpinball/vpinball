@@ -141,6 +141,10 @@ vout vsBallReflection( in vin IN )
 //PIXEL SHADER
 float4 psBallCabinet( in vout IN ) : COLOR
 {
+	// the reflection of the playfield on the ball is another hack at the moment
+	// for a correct reflection we need a dynamic cube map, but generating this is not feasible at the moment 
+	// because of the render pipeline!
+	
 	// flip uv because cabinets are rotated about 270°
 	float u=IN.tex0.x;
 	IN.tex0.x=IN.tex0.y;
@@ -158,9 +162,10 @@ float4 psBallCabinet( in vout IN ) : COLOR
 	float4 playfieldColor = tex2D( texSampler1, uv );
 	
 	// don't map the playfield area completely over the whole ball but only on the lower half
-	if( IN.tex1.x>0.33 )
+	// 0 is in the middle so start a bit later for a discreet reflection
+	if( IN.tex1.x>0.23 )
 	{
-		playfieldColor.a = saturate(IN.tex1.x-0.33);
+		playfieldColor.a = saturate(IN.tex1.x-0.23);
 	}
 	else
 	{
@@ -174,6 +179,10 @@ float4 psBallCabinet( in vout IN ) : COLOR
 
 float4 psBallDesktop( in vout IN ) : COLOR
 {
+	// the reflection of the playfield on the ball is another hack at the moment
+	// for a correct reflection we need a dynamic cube map, but generating this is not feasible at the moment 
+	// because of the render pipeline!
+
 	float4 ballImageColor = tex2D( texSampler0, IN.tex0 );
 	float4 decalColor = tex2D( texSampler2, IN.tex2 );
 	float2 uv = float2(0,0);
@@ -182,15 +191,17 @@ float4 psBallDesktop( in vout IN ) : COLOR
 	uv.x = uv.x + (IN.tex1.x/(IN.tex1.z))*0.03;
 	uv.y = uv.y + (IN.tex1.y/(IN.tex1.z))*0.03;
 	float4 playfieldColor = tex2D( texSampler1, uv );
-	if( IN.tex1.y>0.33 )
+	
+	// don't map the playfield area completely over the whole ball but only on the lower half
+	// 0 is in the middle so start a bit later for a discreet reflection
+	if( IN.tex1.y>0.23 )
 	{
-		playfieldColor.a = saturate(IN.tex1.y-0.33);
+		playfieldColor.a = saturate(IN.tex1.y-0.23);
 	}
 	else
 	{
 		playfieldColor.a = 0;
 	}
-	
 	ballImageColor.a=1.0;
 	playfieldColor *=2;
 	return ((decalColor.a)*decalColor)+(ballImageColor +  (playfieldColor * (playfieldColor.a))/2.9);	
