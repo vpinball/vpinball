@@ -5564,6 +5564,7 @@ void PinTable::OnKeyDown(int key)
                   break;
                }
             }
+            g_pvp->m_sb.RefreshProperties();    // update position fields
          }
          EndUndo();
       }
