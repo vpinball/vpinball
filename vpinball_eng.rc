@@ -1932,15 +1932,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Magnify",                    ID_TABLE_MAGNIFY
     END
-    POPUP "&Preferences"
-    BEGIN
-        MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
-        MENUITEM "&Editor Options...",          ID_EDIT_EDITOROPTIONS
-        MENUITEM "&Keys...",                    ID_EDIT_KEYS
-        MENUITEM "&Security Options...",        ID_PREFERENCES_SECURITYOPTIONS
-        MENUITEM "&Video Options...",           ID_EDIT_VIDEOOPTIONS
-        MENUITEM "&Physics Options...",         ID_EDIT_PHYSICSOPTIONS
-    END
     POPUP "&Layer"
     BEGIN
         MENUITEM "Layer&1",                     ID_LAYER_LAYER1, CHECKED
@@ -1954,6 +1945,15 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Merge All",                  ID_LAYER_MERGEALL
         MENUITEM "&Toggle All",                 ID_LAYER_TOGGLEALL
+    END
+    POPUP "&Preferences"
+    BEGIN
+        MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
+        MENUITEM "&Editor Options...",          ID_EDIT_EDITOROPTIONS
+        MENUITEM "&Keys...",                    ID_EDIT_KEYS
+        MENUITEM "&Security Options...",        ID_PREFERENCES_SECURITYOPTIONS
+        MENUITEM "&Video Options...",           ID_EDIT_VIDEOOPTIONS
+        MENUITEM "&Physics Options...",         ID_EDIT_PHYSICSOPTIONS
     END
     POPUP "&Window"
     BEGIN
