@@ -366,7 +366,6 @@ void VPinball::Init()
    m_fBackglassView = fFalse;						// we are viewing Pinfield and not the backglass at first
 
    SetEnableToolbar();
-   SetEnableMenuItems();
 
    UpdateRecentFileList(NULL);						// update the recent loaded file list
 
@@ -704,25 +703,6 @@ void VPinball::ClearObjectPosCur()
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (long)"");
 }
 
-void VPinball::InitLayerMenu()
-{
-   CComObject<PinTable> *ptCur;
-   HMENU hmenu = GetMenu(m_hwnd);
-
-   CheckMenuItem(hmenu, ID_LAYER_LAYER1, MF_CHECKED);
-   CheckMenuItem(hmenu, ID_LAYER_LAYER2, MF_CHECKED);
-   CheckMenuItem(hmenu, ID_LAYER_LAYER3, MF_CHECKED);
-   CheckMenuItem(hmenu, ID_LAYER_LAYER4, MF_CHECKED);
-   CheckMenuItem(hmenu, ID_LAYER_LAYER5, MF_CHECKED);
-   CheckMenuItem(hmenu, ID_LAYER_LAYER6, MF_CHECKED);
-   CheckMenuItem(hmenu, ID_LAYER_LAYER7, MF_CHECKED);
-   CheckMenuItem(hmenu, ID_LAYER_LAYER8, MF_CHECKED);
-
-   ptCur = GetActiveTable();
-   if( ptCur )
-      for( int i=0;i<8;i++ )
-         ptCur->m_activeLayers[i]=true;
-}
 void VPinball::SetPropSel(Vector<ISelect> *pvsel)
 {
    m_sb.CreateFromDispatch(m_hwnd, pvsel);
@@ -750,7 +730,6 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          //pt = new PinTable(this);
          m_vtable.AddElement(pt);
          SetEnableToolbar();
-         SetEnableMenuItems();
       }
       break;
 
@@ -833,10 +812,6 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
             SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,ID_EDIT_PROPERTIES,(long)&tbinfo);
          }
 
-         // Set menu item to the correct state
-         HMENU hmenuEdit = GetMainMenu(EDITMENU);
-         CheckMenuItem(hmenuEdit, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
-
          m_sb.SetVisible(fShow);
 
          SendMessage(m_hwnd, WM_SIZE, 0, 0);
@@ -870,10 +845,6 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          }
 
          SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,ID_EDIT_BACKGLASSVIEW,(long)&tbinfo);
-
-         // Set menu item to the correct state
-         HMENU hmenuEdit = GetMainMenu(EDITMENU);
-         CheckMenuItem(hmenuEdit, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
 
          m_fBackglassView = fShow;
 
@@ -1025,7 +996,6 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                   {
                      // if the save was succesfull then the permissions take effect immediatly
                      SetEnableToolbar();			// disable any tool bars
-                     SetEnableMenuItems();		// disable any menu bars
                      ptCur->SetDirtyDraw();		// redraw the screen (incase hiding elements)
                      UpdateRecentFileList(ptCur->m_szFileName);
                   }
@@ -1050,7 +1020,6 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
             {
                // re-enable any disabled menu items
                SetEnableToolbar();			// disable any tool bars
-               SetEnableMenuItems();		// disable any menu bars
                ptCur->SetDirtyDraw();		// redraw the screen (incase hiding elements)
             }
          }
@@ -1409,33 +1378,18 @@ void VPinball::setLayerStatus( int layerNumber )
    ptCur = GetActiveTable();
    if( !ptCur || layerNumber>7 ) return;
 
-   HMENU hmenu = GetMenu(m_hwnd);
-   
    TBBUTTONINFO tbinfo;
    ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
    tbinfo.cbSize = sizeof(TBBUTTONINFO);
    tbinfo.dwMask = TBIF_STATE;
-   //+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
-   SendMessage(m_hwndToolbarLayers,TB_GETBUTTONINFO,allLayers[layerNumber],(long)&tbinfo);
+   SendMessage(m_hwndToolbarLayers, TB_GETBUTTONINFO, allLayers[layerNumber], (long)&tbinfo);
 
    if( !ptCur->m_activeLayers[layerNumber] )
-   {
-      CheckMenuItem(hmenu, allLayers[layerNumber], MF_CHECKED);
-      if ( (tbinfo.fsState & TBSTATE_CHECKED) == 0 )
-      {
-         tbinfo.fsState ^= TBSTATE_CHECKED;
-      }
-   }
+       tbinfo.fsState |= TBSTATE_CHECKED;
    else
-   {
-      CheckMenuItem(hmenu, allLayers[layerNumber], MF_UNCHECKED);
-      if ( (tbinfo.fsState & TBSTATE_CHECKED) != 0 )
-      {
-         tbinfo.fsState ^= TBSTATE_CHECKED;
-      }
-   }
+       tbinfo.fsState &= ~TBSTATE_CHECKED;
 
-   SendMessage(m_hwndToolbarLayers,TB_SETBUTTONINFO,allLayers[layerNumber],(long)&tbinfo);
+   SendMessage(m_hwndToolbarLayers, TB_SETBUTTONINFO, allLayers[layerNumber], (long)&tbinfo);
 
    ptCur->SwitchToLayer(layerNumber);
 }
@@ -1546,6 +1500,24 @@ void VPinball::SetEnableToolbar()
       SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,id,(long)&tbinfo);
    }
 
+   if (ptCur)
+   {
+       for (int i=0; i<8; ++i)
+       {
+           TBBUTTONINFO tbinfo;
+           ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
+           tbinfo.cbSize = sizeof(TBBUTTONINFO);
+           tbinfo.dwMask = TBIF_STATE;
+
+           SendMessage(m_hwndToolbarLayers,TB_GETBUTTONINFO,allLayers[i],(long)&tbinfo);
+           if (ptCur->m_activeLayers[i])
+               tbinfo.fsState |= TBSTATE_CHECKED;
+           else
+               tbinfo.fsState &= ~TBSTATE_CHECKED;
+           SendMessage(m_hwndToolbarLayers,TB_SETBUTTONINFO,allLayers[i],(long)&tbinfo);
+       }
+   }
+
    SetEnablePalette();
    ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 2);//redisplay 
 }
@@ -1648,22 +1620,7 @@ void VPinball::LoadFileName(char *szFileName)
       UpdateRecentFileList(szFileName);
    }
 
-   for( int i=0;i<8;i++ )
-   {
-      TBBUTTONINFO tbinfo;
-      ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
-      tbinfo.cbSize = sizeof(TBBUTTONINFO);
-      tbinfo.dwMask = TBIF_STATE;
-      //+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
-      SendMessage(m_hwndToolbarLayers,TB_GETBUTTONINFO,allLayers[i],(long)&tbinfo);
-
-      tbinfo.fsState |= TBSTATE_CHECKED;
-      SendMessage(m_hwndToolbarLayers,TB_SETBUTTONINFO,allLayers[i],(long)&tbinfo);
-   }
-
    SetEnableToolbar();
-   SetEnableMenuItems();					//>>> added by Chris
-   InitLayerMenu();
 }
 
 CComObject<PinTable> *VPinball::GetActiveTable()
@@ -1736,7 +1693,6 @@ BOOL VPinball::CloseTable(PinTable *ppt)
    ppt->Release();
 
    SetEnableToolbar();
-   SetEnableMenuItems();
 
    return fTrue;
 }
@@ -1811,6 +1767,10 @@ void VPinball::SetEnableMenuItems()
 
    // Set menu item to the correct state
    HMENU hmenu = GetMenu(m_hwnd);
+
+   CheckMenuItem(hmenu, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (m_sb.GetVisible() ? MF_CHECKED : MF_UNCHECKED));
+   CheckMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_fBackglassView ? MF_CHECKED : MF_UNCHECKED));
+
    // is there a valid table??
    if (ptCur)
    {
@@ -1865,6 +1825,12 @@ void VPinball::SetEnableMenuItems()
          // table is not protected, disable the unlock feature
          EnableMenuItem(hmenu, IDM_UNLOCKPROTECTED, MF_BYCOMMAND | MF_GRAYED);
       }
+
+      CheckMenuItem(hmenu, ID_VIEW_SOLID,   MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
+      CheckMenuItem(hmenu, ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
+
+      for (int i = 0; i < sizeof(allLayers) / sizeof(allLayers[0]); ++i)
+          CheckMenuItem(hmenu, allLayers[i], MF_BYCOMMAND | (ptCur->m_activeLayers[i] ? MF_CHECKED : MF_UNCHECKED));
    }
    else
    {
@@ -2328,15 +2294,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       break;
 
    case WM_INITMENUPOPUP:
-      {
-          PinTable * pt = g_pvp->GetActiveTable();
-          if (pt)
-          {
-              HMENU hmenu = GetMenu(g_pvp->m_hwnd);
-              CheckMenuItem(hmenu, ID_VIEW_SOLID,   MF_BYCOMMAND | (pt->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
-              CheckMenuItem(hmenu, ID_VIEW_OUTLINE, MF_BYCOMMAND | (pt->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
-          }
-      }
+      g_pvp->SetEnableMenuItems();
       break;
 
 #ifdef VBA

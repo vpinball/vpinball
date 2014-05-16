@@ -114,7 +114,6 @@ public:
 
 	void EnsureWorkerThread();
 	HANDLE PostWorkToWorkerThread(int workid, LPARAM lParam);
-    void InitLayerMenu();
 
 	void SetAutoSaveMinutes(int minutes);
 	static void SetOpenMinimized();

@@ -1889,18 +1889,19 @@ BEGIN
         MENUITEM "&Paste\tCtrl+V",              IDC_PASTE
         MENUITEM "Paste &At\tCtrl+Shift+V",     IDC_PASTEAT
         MENUITEM "&Delete\tDel",                ID_DELETE
+        MENUITEM SEPARATOR
         MENUITEM "Select &Element\tCtrl+Shift+E", ID_EDIT_SEARCH
         MENUITEM "Dra&wing Order (Hit)\tCtrl+Shift+D", ID_EDIT_DRAWINGORDER_HIT
         MENUITEM "Draw&ing Order (Select)\tCtrl+Shift+S", ID_EDIT_DRAWINGORDER_SELECT
-        MENUITEM SEPARATOR
-        MENUITEM "&Options",                    ID_EDIT_PROPERTIES
-        MENUITEM "&Script",                     ID_EDIT_SCRIPT
-        MENUITEM "&Backglass View",             ID_EDIT_BACKGLASSVIEW
     END
     POPUP "&View"
     BEGIN
         MENUITEM "Solid",                       ID_VIEW_SOLID, CHECKED
         MENUITEM "Outline",                     ID_VIEW_OUTLINE
+        MENUITEM SEPARATOR
+        MENUITEM "&Options",                    ID_EDIT_PROPERTIES
+        MENUITEM "&Script",                     ID_EDIT_SCRIPT
+        MENUITEM "&Backglass View",             ID_EDIT_BACKGLASSVIEW
     END
     POPUP "&Insert"
     BEGIN
@@ -1939,7 +1940,7 @@ BEGIN
     END
     POPUP "&Layer"
     BEGIN
-        MENUITEM "Layer&1",                     ID_LAYER_LAYER1, CHECKED
+        MENUITEM "Layer&1",                     ID_LAYER_LAYER1
         MENUITEM "Layer&2",                     ID_LAYER_LAYER2
         MENUITEM "Layer&3",                     ID_LAYER_LAYER3
         MENUITEM "Layer&4",                     ID_LAYER_LAYER4
