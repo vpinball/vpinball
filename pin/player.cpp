@@ -2960,7 +2960,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			g_pplayer = NULL;
 
 			g_pvp->SetEnableToolbar();
-			g_pvp->SetEnableMenuItems();
             mixer_shutdown();
             hid_shutdown();
             // modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)

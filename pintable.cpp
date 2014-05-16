@@ -1140,7 +1140,6 @@ void PinTable::Init(VPinball *pvp)
    InitPostLoad(pvp);
 
    SetCaption(m_szTitle);
-   pvp->InitLayerMenu();
 
 #else
 
@@ -1769,7 +1768,6 @@ void PinTable::Play()
          m_pcv->SetEnabled(fFalse); // Can't edit script while playing
 
          g_pvp->SetEnableToolbar();
-         g_pvp->SetEnableMenuItems();	//>>> added as part of table protection
 
          if (!m_pcv->m_fScriptError && (hr == S_OK))
          {
@@ -6151,9 +6149,8 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
          pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          pt->m_pvp->m_ptableActive = pt;
 
-         // re-evaluate the toolbar/menuitems depending on table permissions
+         // re-evaluate the toolbar depending on table permissions
          g_pvp->SetEnableToolbar();
-         g_pvp->SetEnableMenuItems();
       }
       break;
 
@@ -6343,9 +6340,8 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             pt->SetMyScrollInfo();
             pt->m_fDirtyDraw = fTrue;
             // this window command is called whenever the MDI window changes over
-            // re-evaluate the toolbar/menuitems depending on table permissions
+            // re-evaluate the toolbar depending on table permissions
             g_pvp->SetEnableToolbar();
-            g_pvp->SetEnableMenuItems();
          }
          break;
       }
