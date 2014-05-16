@@ -179,6 +179,9 @@ private:
    VertexBuffer *customMoverVBuffer;
    VertexBuffer *normalMoverVBuffer;
 // ILight
+
+   Texture *GetDisplayTexture();
+
 public:
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Surface)(/*[in]*/ BSTR newVal);

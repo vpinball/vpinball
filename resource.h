@@ -801,6 +801,9 @@
 #define ID_REMOVE_COMMENT               32888
 #define ID_INSERT_FLASHER               32890
 #define ID_TABLE_DIMENSIONMANAGER       32894
+#define ID_VIEW_SOLID                  32895
+#define ID_VIEW_OUTLINE                32896
+
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -809,7 +812,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        601
-#define _APS_NEXT_COMMAND_VALUE         32895
+#define _APS_NEXT_COMMAND_VALUE         32990
 #define _APS_NEXT_CONTROL_VALUE         426
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

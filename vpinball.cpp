@@ -41,8 +41,19 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-//Which column the window menu is, for MDI
-#define WINDOWMENU 6
+// menu locations
+enum {
+    FILEMENU = 0,
+    EDITMENU,
+    VIEWMENU,
+    INSERTMENU,
+    TABLEMENU,
+    LAYERMENU,
+    PREFMENU,
+    WINDOWMENU,
+    HELPMENU,
+    NUM_MENUS
+};
 
 /*
 TBButton:
@@ -717,6 +728,13 @@ void VPinball::SetPropSel(Vector<ISelect> *pvsel)
    m_sb.CreateFromDispatch(m_hwnd, pvsel);
 }
 
+HMENU VPinball::GetMainMenu(int id)
+{
+    HMENU hmenu = GetMenu(m_hwnd);
+    const int count = GetMenuItemCount(hmenu);
+    return GetSubMenu(hmenu, id + (count > NUM_MENUS) ? 1 : 0); // MDI has added its stuff (table icon for first menu item)
+}
+
 void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 {
    CComObject<PinTable> *ptCur;
@@ -816,10 +834,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          }
 
          // Set menu item to the correct state
-         HMENU hmenu = GetMenu(m_hwnd);
-         const int count = GetMenuItemCount(hmenu);
-         HMENU hmenuEdit = GetSubMenu(hmenu, (count > 7) ? 2 // MDI has added it's crap
-				                                         : 1);
+         HMENU hmenuEdit = GetMainMenu(EDITMENU);
          CheckMenuItem(hmenuEdit, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
 
          m_sb.SetVisible(fShow);
@@ -857,11 +872,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,ID_EDIT_BACKGLASSVIEW,(long)&tbinfo);
 
          // Set menu item to the correct state
-         HMENU hmenu = GetMenu(m_hwnd);
-         const int count = GetMenuItemCount(hmenu);
-         HMENU hmenuEdit = GetSubMenu(hmenu, (count > 7) ? 2 // MDI has added it's crap
-				                                         : 1);
-         /*const DWORD foo =*/ CheckMenuItem(hmenuEdit, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
+         HMENU hmenuEdit = GetMainMenu(EDITMENU);
+         CheckMenuItem(hmenuEdit, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (fShow ? MF_CHECKED : MF_UNCHECKED));
 
          m_fBackglassView = fShow;
 
@@ -900,6 +912,14 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
          ShowDrawingOrderDialog(true);
          break;
+      }
+   case ID_VIEW_SOLID:
+   case ID_VIEW_OUTLINE:
+      ptCur = GetActiveTable();
+      if (ptCur)
+      {
+          ptCur->m_renderSolid = (code == ID_VIEW_SOLID);
+          ptCur->SetDirtyDraw();
       }
    case IDC_SELECT:
    case ID_TABLE_MAGNIFY:
@@ -1486,11 +1506,8 @@ void VPinball::SetEnablePalette()
       SendMessage(m_hwndToolbarPalette,TB_SETBUTTONINFO,id,(long)&tbinfo);
 
       // Set menu item
-      HMENU hmenu = GetMenu(m_hwnd);
-      const int count = GetMenuItemCount(hmenu);
-      HMENU hmenuEdit = GetSubMenu(hmenu, (count > 7) ? 3 // MDI has added it's crap
-			                                          : 2);
-      /*const DWORD foo =*/ EnableMenuItem(hmenuEdit, id, MF_BYCOMMAND | (fEnable ? MF_ENABLED : MF_GRAYED));
+      HMENU hmenuInsert = GetMainMenu(INSERTMENU);
+      EnableMenuItem(hmenuInsert, id, MF_BYCOMMAND | (fEnable ? MF_ENABLED : MF_GRAYED));
    }
 }
 
@@ -1933,19 +1950,15 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       MENUITEMINFO menuInfo;
 
       // update the file menu to contain the last n recent loaded files
-      HMENU hmenu = GetMenu(m_hwnd);
-      int count = GetMenuItemCount(hmenu);
-      HMENU hmenuFile = GetSubMenu(hmenu, (count > 8) ? 1 // MDI has added it's stuff (table icon for first menu item)
-			                                          : 0);
+      HMENU hmenuFile = GetMainMenu(FILEMENU);
 
       // delete all the recent file IDM's from this menu
       for (int i=RECENT_FIRST_MENU_IDM; i<=RECENT_LAST_MENU_IDM; i++)
          DeleteMenu(hmenuFile, i, MF_BYCOMMAND);
 
       // get the number of entrys in the file menu
-      count = GetMenuItemCount(hmenuFile);
-      // inset the items before the EXIT menu (assuming it is the last entry)
-      count--;
+      // insert the items before the EXIT menu (assuming it is the last entry)
+      int count = GetMenuItemCount(hmenuFile) - 1;
 
       // set up the menu info block
       ZeroMemory(&menuInfo, sizeof(menuInfo));
@@ -2312,6 +2325,18 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case WM_COMMAND:
       g_pvp->ParseCommand(LOWORD(wParam), (HWND)lParam, HIWORD(wParam));
+      break;
+
+   case WM_INITMENUPOPUP:
+      {
+          PinTable * pt = g_pvp->GetActiveTable();
+          if (pt)
+          {
+              HMENU hmenu = GetMenu(g_pvp->m_hwnd);
+              CheckMenuItem(hmenu, ID_VIEW_SOLID,   MF_BYCOMMAND | (pt->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
+              CheckMenuItem(hmenu, ID_VIEW_OUTLINE, MF_BYCOMMAND | (pt->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
+          }
+      }
       break;
 
 #ifdef VBA

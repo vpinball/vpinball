@@ -508,6 +508,8 @@ public:
 
     FRect3D GetBoundingBox();
 
+    bool RenderSolid()      { return m_renderSolid; }
+
 BEGIN_COM_MAP(PinTable)
 	COM_INTERFACE_ENTRY(ITable)
 	COM_INTERFACE_ENTRY(IDispatch)
@@ -701,6 +703,8 @@ END_CONNECTION_POINT_MAP()
 	bool m_activeLayers[8];
     bool m_toggleAllLayers;   
     bool m_savingActive;
+
+    bool m_renderSolid;
 
 private:
     std::tr1::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
