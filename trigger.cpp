@@ -108,7 +108,7 @@ void Trigger::PreRender(Sur * const psur)
 
    case ShapeCustom:
       {
-         psur->SetFillColor(RGB(200,220,200));
+         psur->SetFillColor(m_ptable->RenderSolid() ? RGB(200,220,200) : -1);
          Vector<RenderVertex> vvertex;
          GetRgVertex(&vvertex);
 

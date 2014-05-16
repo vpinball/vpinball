@@ -358,7 +358,7 @@ void Flipper::PreRender(Sur * const psur)
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   psur->SetFillColor(RGB(192,192,192));
+   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192,192,192) : -1);
    psur->SetBorderColor(-1,false,0);
    psur->SetLineColor(RGB(0,0,0), false, 0);
 
@@ -382,7 +382,7 @@ void Flipper::Render(Sur * const psur)
    Vertex2D rgv[4];
    SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
-   psur->SetFillColor(RGB(192,192,192));
+   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192,192,192) : -1);
    psur->SetBorderColor(-1,false,0);
    psur->SetLineColor(RGB(0,0,0), false, 0);
 

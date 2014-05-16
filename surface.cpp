@@ -463,7 +463,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 
 void Surface::PreRender(Sur * const psur)
 {
-   psur->SetFillColor(RGB(192,192,192));
+   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192,192,192) : -1);
    psur->SetObject(this);
    // Don't want border color to be over-ridden when selected - that will be drawn later
    psur->SetBorderColor(-1,false,0);
@@ -472,7 +472,7 @@ void Surface::PreRender(Sur * const psur)
    GetRgVertex(&vvertex);
 
    Texture *ppi;
-   if (m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
+   if (m_ptable->RenderSolid() && m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
    {
       ppi->EnsureHBitmap();
       if (ppi->m_hbmGDIVersion)

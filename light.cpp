@@ -238,107 +238,77 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","OnImageIsLightmap", REG_DWORD, &m_d.m_OnImageIsLightMap,4);
 }
 
+Texture *Light::GetDisplayTexture()
+{
+    switch (m_d.m_state)
+    {
+        case LightStateOff: return m_ptable->GetImage(m_d.m_szOffImage);
+        case LightStateOn:  return m_ptable->GetImage(m_d.m_szOnImage);
+        default:            return NULL;
+    }
+}
+
 void Light::PreRender(Sur * const psur)
 {
    psur->SetBorderColor(-1,false,0);
-   psur->SetFillColor(m_d.m_color);
+   psur->SetFillColor(m_ptable->RenderSolid() ? m_d.m_color : -1);
    psur->SetObject(this);
+
+   Texture *ppi;
 
    switch (m_d.m_shape)
    {
    case ShapeCircle:
-   default: {
-      if (m_d.m_borderwidth > 0)
-      {
-         psur->SetBorderColor(m_d.m_bordercolor, false, 0); // For off-by-one GDI outline error
-         psur->SetFillColor(m_d.m_bordercolor);
-         psur->SetObject(this);
-         psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_borderwidth);
-      }
-      psur->SetBorderColor(m_d.m_color, false, 0); // For off-by-one GDI outline error
-      psur->SetFillColor(m_d.m_color);
-      psur->SetObject(m_d.m_borderwidth > 0 ? NULL : this);
+   default:
+       if (m_ptable->RenderSolid())
+       {
+           if (m_d.m_borderwidth > 0)
+           {
+               psur->SetBorderColor(m_d.m_bordercolor, false, 0); // For off-by-one GDI outline error
+               psur->SetFillColor(m_d.m_bordercolor);
+               psur->SetObject(this);
+               psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_borderwidth);
+           }
+           psur->SetBorderColor(m_d.m_color, false, 0); // For off-by-one GDI outline error
+           psur->SetFillColor(m_d.m_color);
+           psur->SetObject(m_d.m_borderwidth > 0 ? NULL : this);
 
-      // Check if we should display the image in the editor.
-      if (m_d.m_fDisplayImage)
-      {
-         Texture *ppi;
-         // Get the image.
-         switch (m_d.m_state)
-         {
-         case LightStateOff:	
-            ppi = (m_d.m_szOffImage[0]) ? m_ptable->GetImage(m_d.m_szOffImage) : NULL;
-            break;
-         case LightStateOn:	
-            ppi = (m_d.m_szOnImage[0]) ? m_ptable->GetImage(m_d.m_szOnImage) : NULL;
-            break;
-         default:
-            ppi = NULL;
-            break;
-         }
+           // Check if we should display the image in the editor.
+           if (m_d.m_fDisplayImage && (ppi = GetDisplayTexture()))
+           {
+               ppi->EnsureHBitmap();
+               if (ppi->m_hbmGDIVersion)
+                   // Draw the elipse with an image applied.
+                   psur->EllipseImage(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius, ppi->m_hbmGDIVersion,
+                       m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+           }
+           else
+               psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
+       }
+       else
+           psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
+       break;
 
-         // Make sure we have an image.
-         if (ppi != NULL)
-         {
-            ppi->EnsureHBitmap();
-            if (ppi->m_hbmGDIVersion)
-               // Draw the elipse with an image applied.
-               psur->EllipseImage(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
-         }
-         else
-            // Error.  Just draw the ellipse.
-            psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
-      }
-      else
-         // Draw the ellipse.
-         psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
+   case ShapeCustom:
+       Vector<RenderVertex> vvertex;
+       GetRgVertex(&vvertex);
 
-	  break;
-   }
-
-   case ShapeCustom: {
-      Vector<RenderVertex> vvertex;
-      GetRgVertex(&vvertex);
-
-      // Check if we should display the image in the editor.
-      if (m_d.m_fDisplayImage)
-      {
-         Texture *ppi;
-         // Get the image.
-         switch (m_d.m_state)
-         {
-         case LightStateOff:	
-            ppi = (m_d.m_szOffImage[0]) ? m_ptable->GetImage(m_d.m_szOffImage) : NULL;
-            break;
-         case LightStateOn:	
-            ppi = (m_d.m_szOnImage[0]) ? m_ptable->GetImage(m_d.m_szOnImage) : NULL;
-            break;
-         default:
-            ppi = NULL;
-            break;
-         }
-
-         // Make sure we have an image.
-         if (ppi != NULL)
-         {
-            ppi->EnsureHBitmap();
-            if (ppi->m_hbmGDIVersion)
+       // Check if we should display the image in the editor.
+       if (m_ptable->RenderSolid() && m_d.m_fDisplayImage && (ppi = GetDisplayTexture()))
+       {
+           ppi->EnsureHBitmap();
+           if (ppi->m_hbmGDIVersion)
                // Draw the polygon with an image applied.
-               psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
-         }
-         else
-            // Error. Just draw the polygon.
-            psur->Polygon(vvertex);
-      }
-      else
-         // Draw the polygon.
-         psur->Polygon(vvertex);
+               psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion,
+                   m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+       }
+       else
+           psur->Polygon(vvertex);
 
-      for (int i=0;i<vvertex.Size();i++)
-         delete vvertex.ElementAt(i);
+       for (int i=0;i<vvertex.Size();i++)
+           delete vvertex.ElementAt(i);
 
-      break;
-   }
+       break;
    }
 }
 

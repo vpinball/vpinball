@@ -1897,6 +1897,11 @@ BEGIN
         MENUITEM "&Script",                     ID_EDIT_SCRIPT
         MENUITEM "&Backglass View",             ID_EDIT_BACKGLASSVIEW
     END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Solid",                       ID_VIEW_SOLID, CHECKED
+        MENUITEM "Outline",                     ID_VIEW_OUTLINE
+    END
     POPUP "&Insert"
     BEGIN
         MENUITEM "&Wall\tCtrl+W",               ID_INSERT_WALL

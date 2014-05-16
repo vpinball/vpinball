@@ -155,7 +155,7 @@ STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)
 void Bumper::PreRender(Sur * const psur)
 {
    psur->SetBorderColor(-1,false,0);
-   psur->SetFillColor(m_d.m_color);
+   psur->SetFillColor(m_ptable->RenderSolid() ? m_d.m_color : -1);
    psur->SetObject(this);
 
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);

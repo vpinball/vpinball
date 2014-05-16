@@ -179,6 +179,8 @@ public:
 	int m_autosaveTime;
 	static bool m_open_minimized;
 
+    HMENU GetMainMenu(int id);
+
 private:
 	char m_szRecentTableList[LAST_OPENED_TABLE_COUNT+1][MAX_PATH];
 
