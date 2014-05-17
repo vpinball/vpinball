@@ -925,11 +925,8 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
 void PinProjection::SetFieldOfView(float rFOV, float raspect, float rznear, float rzfar)
 {
     SetupProjectionMatrix(rFOV, raspect, rznear, rzfar);
-
-    m_matView.SetIdentity();
-	m_matView._33 = -1.0f;
-
-	m_matWorld.SetIdentity();
+    m_matView.RotateXMatrix(M_PI);  // convert Z=out to Z=in (D3D coordinate system)
+    m_matWorld.SetIdentity();
 }
 
 void PinProjection::SetupProjectionMatrix(float rFOV, float raspect, float rznear, float rzfar)
@@ -944,7 +941,7 @@ void PinProjection::SetupProjectionMatrix(float rFOV, float raspect, float rznea
         const float zdist = rzfar - rznear;
 
         m_matProj._11 = (float)(1.0 / xrange);
-        m_matProj._22 = -(float)(1.0 / yrange);
+        m_matProj._22 = (float)(1.0 / yrange);
         m_matProj._33 = (float)(1.0 / zdist);
         m_matProj._43 = (float)(-rznear / zdist);
         m_matProj._44 = 1.0f;
@@ -958,7 +955,7 @@ void PinProjection::SetupProjectionMatrix(float rFOV, float raspect, float rznea
         const float Q = rzfar / ( rzfar - rznear );
 
         m_matProj._11 = (float)(1.0 / xrange);
-        m_matProj._22 = -(float)(1.0 / yrange);
+        m_matProj._22 = (float)(1.0 / yrange);
         m_matProj._33 = (float)Q;
         m_matProj._43 = (float)(-Q*rznear);
         m_matProj._34 = 1.0f;
