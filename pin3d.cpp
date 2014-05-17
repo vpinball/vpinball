@@ -389,7 +389,7 @@ void Pin3D::InitLayout()
 	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
 
-	const float aspect = 4.0f/3.0f;//((GPINFLOAT)m_dwRenderWidth)/m_dwRenderHeight;
+	const float aspect = 4.0f/3.0f;//((float)m_dwRenderWidth)/m_dwRenderHeight;
 
     m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_xlatez, g_pplayer->m_ptable->m_layback);
     m_proj.SetFieldOfView(FOV, aspect, m_proj.m_rznear, m_proj.m_rzfar);

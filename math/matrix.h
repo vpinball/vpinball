@@ -151,27 +151,27 @@ public:
         _33 = sz;
     }
 
-    void RotateXMatrix(const GPINFLOAT x)
+    void RotateXMatrix(float x)
     {
         SetIdentity();
-        _22 = _33 = (float)cos(x);
-        _23 = (float)sin(x);
+        _22 = _33 = cosf(x);
+        _23 = sin(x);
         _32 = -_23;
     }
 
-    void RotateYMatrix(const GPINFLOAT y)
+    void RotateYMatrix(float y)
     {
         SetIdentity();
-        _11 = _33 = (float)cos(y);
-        _31 = (float)sin(y);
+        _11 = _33 = cosf(y);
+        _31 = sinf(y);
         _13 = -_31;
     }
 
-    void RotateZMatrix(const GPINFLOAT z)
+    void RotateZMatrix(float z)
     {
         SetIdentity();
-        _11 = _22 = (float)cos(z);
-        _12 = (float)sin(z);
+        _11 = _22 = cosf(z);
+        _12 = sinf(z);
         _21 = -_12;
     }
 
