@@ -23,13 +23,13 @@ class PinProjection
 public:
 	void Scale(const float x, const float y, const float z);
 	void Multiply(const Matrix3D& mat);
-	void Rotate(const GPINFLOAT x, const GPINFLOAT y, const GPINFLOAT z);
+	void Rotate(float x, float y, float z);
 	void Translate(const float x, const float y, const float z);
-	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, const GPINFLOAT aspect, const GPINFLOAT rotation, const GPINFLOAT inclination, const GPINFLOAT FOV, const float xlatez);
+	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
 	void CacheTransform();      // compute m_matrixTotal = m_World * m_View * m_Proj
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
-	void SetFieldOfView(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar);
-	void SetupProjectionMatrix(const GPINFLOAT rFOV, const GPINFLOAT raspect, const GPINFLOAT rznear, const GPINFLOAT rzfar);
+	void SetFieldOfView(float rFOV, float raspect, float rznear, float rzfar);
+	void SetupProjectionMatrix(float rFOV, float raspect, float rznear, float rzfar);
 
     void ComputeNearFarPlane(const Vector<Vertex3Ds>& verts);
 
@@ -40,7 +40,7 @@ public:
 
 	RECT m_rcviewport;
 
-	GPINFLOAT m_rznear, m_rzfar;
+	float m_rznear, m_rzfar;
 	Vertex3Ds m_vertexcamera;
 	};
 
@@ -54,7 +54,7 @@ public:
 
 	void InitLayout();
 
-	void TransformVertices(const Vertex3D_NoTex2 * rgv,     const WORD * rgi, int count, Vertex2D * rgvout) const;
+	void TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int count, Vertex2D * rgvout) const;
 
    Vertex3Ds Unproject( Vertex3Ds *point );
    Vertex3Ds Get3DPointFrom2D( POINT *p );
@@ -114,8 +114,6 @@ public:
 	int m_dwRenderWidth;
 	int m_dwRenderHeight;
 
-	float skewX;
-	float skewY;
 	HWND m_hwnd;
 
     Vertex3Ds m_viewVec;        // direction the camera is facing
@@ -130,3 +128,5 @@ private:
     std::map<int, MemTexture*> m_xvShadowMap;
 
 };
+
+Matrix3D ComputeLaybackTransform(float layback);
