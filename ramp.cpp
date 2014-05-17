@@ -1211,7 +1211,7 @@ void Ramp::RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgi
 
 void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
 {
-   Matrix3D matWorld = g_pplayer->m_pin3d.GetWorldTransform();
+   Matrix3D matView = g_pplayer->m_pin3d.GetViewTransform();
 
    const int numVertices = (rampVertex - 1)*32;
    pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &staticVertexBuffer);
@@ -1381,7 +1381,7 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       for( int k=0;k<16;k++ )
       {
           Vertex3Ds norm(rgv3D[k].nx, rgv3D[k].ny, rgv3D[k].nz);
-          matWorld.MultiplyVectorNoTranslate(norm, norm);
+          matView.MultiplyVectorNoTranslate(norm, norm);
           rgv3D[k].tu = 0.5f + norm.x*0.5f;
           rgv3D[k].tv = 0.5f + norm.y*0.5f;
       }

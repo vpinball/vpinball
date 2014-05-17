@@ -789,10 +789,9 @@ void Primitive::UpdateMesh()
    objMesh = objMeshOrg;
    if ( m_d.sphereMapping )
    {
-      Matrix3D matWorld = g_pplayer->m_pin3d.GetWorldTransform();
-      matWorld.Multiply(rotMatrix, rotMatrix);
-      // TODO/BUG: this should get the entire world-view matrix and then compute
-      // the inverse transpose of the rotational part
+      Matrix3D matView = g_pplayer->m_pin3d.GetViewTransform();
+      matView.Multiply(rotMatrix, rotMatrix);
+      // TODO/BUG: this should compute the inverse transpose of the rotational part
    }
 
    for (unsigned i = 0; i < objMeshOrg.size(); i++)
