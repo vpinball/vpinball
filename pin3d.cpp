@@ -275,21 +275,17 @@ void Pin3D::InitLights()
 {
 	for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
     {
-        if(g_pplayer->m_ptable->m_Light[i].enabled)
+        const LightSource& lgts = g_pplayer->m_ptable->m_Light[i];
+
+        if (lgts.enabled)
         {
             BaseLight light;
-            light.setType((g_pplayer->m_ptable->m_Light[i].type == LIGHT_DIRECTIONAL) ? D3DLIGHT_DIRECTIONAL
-                    : ((g_pplayer->m_ptable->m_Light[i].type == LIGHT_POINT) ? D3DLIGHT_POINT : D3DLIGHT_SPOT));
-            light.setAmbient( (float)(g_pplayer->m_ptable->m_Light[i].ambient & 255) * (float)(1.0/255.0),
-                    (float)(g_pplayer->m_ptable->m_Light[i].ambient & 65280) * (float)(1.0/65280.0),
-                    (float)(g_pplayer->m_ptable->m_Light[i].ambient & 16711680) * (float)(1.0/16711680.0));
-            light.setDiffuse( (float)(g_pplayer->m_ptable->m_Light[i].diffuse & 255) * (float)(1.0/255.0),
-                    (float)(g_pplayer->m_ptable->m_Light[i].diffuse & 65280) * (float)(1.0/65280.0),
-                    (float)(g_pplayer->m_ptable->m_Light[i].diffuse & 16711680) * (float)(1.0/16711680.0));
-            light.setSpecular((float)(g_pplayer->m_ptable->m_Light[i].specular & 255) * (float)(1.0/255.0),
-                    (float)(g_pplayer->m_ptable->m_Light[i].specular & 65280) * (float)(1.0/65280.0),
-                    (float)(g_pplayer->m_ptable->m_Light[i].specular & 16711680) * (float)(1.0/16711680.0));
-            light.setRange( /*(light.getType() == D3DLIGHT_POINT) ? g_pplayer->m_ptable->m_Light[i].pointRange :*/
+            light.setType((lgts.type == LIGHT_DIRECTIONAL) ? D3DLIGHT_DIRECTIONAL
+                    : ((lgts.type == LIGHT_POINT) ? D3DLIGHT_POINT : D3DLIGHT_SPOT));
+            light.setAmbient(COLORREF_to_D3DCOLOR(lgts.ambient));
+            light.setDiffuse(COLORREF_to_D3DCOLOR(lgts.diffuse));
+            light.setSpecular(COLORREF_to_D3DCOLOR(lgts.specular));
+            light.setRange( /*(light.getType() == D3DLIGHT_POINT) ? lgts.pointRange :*/
                     /* DX9 D3DLIGHT_RANGE_MAX */ 1e6f); //!!  expose?
 
             if((light.getType() == D3DLIGHT_POINT) || (light.getType() == D3DLIGHT_SPOT))
@@ -297,14 +293,14 @@ void Pin3D::InitLights()
 
             if(light.getType() == D3DLIGHT_SPOT)
             {
-                light.setFalloff( /*g_pplayer->m_ptable->m_Light[i].spotExponent;*/ 1.0f ); //!!  expose?
-                light.setPhi    ( /*g_pplayer->m_ptable->m_Light[i].spotMin*/ (float)(60*M_PI/180.0) ); //!!  expose?
-                light.setTheta  ( /*g_pplayer->m_ptable->m_Light[i].spotMax*/ (float)(20*M_PI/180.0) ); //!!  expose?
+                light.setFalloff( /*lgts.spotExponent;*/ 1.0f ); //!!  expose?
+                light.setPhi    ( /*lgts.spotMin*/ (float)(60*M_PI/180.0) ); //!!  expose?
+                light.setTheta  ( /*lgts.spotMax*/ (float)(20*M_PI/180.0) ); //!!  expose?
             }
 
             // transform dir & pos with world trafo to be always aligned with table (so that user trafos don't change the lighting!)
-            if((g_pplayer->m_ptable->m_Light[i].dir.x == 0.0f) && (g_pplayer->m_ptable->m_Light[i].dir.y == 0.0f) &&
-                    (g_pplayer->m_ptable->m_Light[i].dir.z == 0.0f) && (i < 2) && (light.getType() == D3DLIGHT_DIRECTIONAL))
+            if((lgts.dir.x == 0.0f) && (lgts.dir.y == 0.0f) &&
+                    (lgts.dir.z == 0.0f) && (i < 2) && (light.getType() == D3DLIGHT_DIRECTIONAL))
             {
                 // backwards compatibilty
                 light.setAmbient(0.1f, 0.1f, 0.1f);
@@ -331,12 +327,10 @@ void Pin3D::InitLights()
             }
             else 
             {
-                const Vertex3Ds dir = g_pplayer->m_ptable->m_Light[i].dir;
-                light.setDirection(dir.x, dir.y, dir.z);
+                light.setDirection(lgts.dir.x, lgts.dir.y, lgts.dir.z);
             }
 
-            const Vertex3Ds pos = g_pplayer->m_ptable->m_Light[i].pos;
-            light.setPosition(pos.x, pos.y, pos.z);
+            light.setPosition(lgts.pos.x, lgts.pos.y, lgts.pos.z);
 
             m_pd3dDevice->SetLight(i, &light);
             if (light.getAmbient().r  > 0.0f || light.getAmbient().g  > 0.0f || light.getAmbient().b  > 0.0f ||
