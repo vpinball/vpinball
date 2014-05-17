@@ -70,6 +70,13 @@ private:
 };
 
 
+static void SetFromD3DCOLOR(D3DCOLORVALUE& cv, D3DCOLOR c)
+{
+    cv.r = (float)(c & 16711680) * (float)(1.0/16711680.0);
+    cv.g = (float)(c & 65280) * (float)(1.0/65280.0);
+    cv.b = (float)(c & 255) * (float)(1.0/255.0);
+}
+
 // adds simple setters and getters on top of D3DLIGHT9, for compatibility
 struct BaseLight : public D3DLIGHT9
 {
@@ -91,17 +98,29 @@ struct BaseLight : public D3DLIGHT9
         Diffuse.g = g;
         Diffuse.b = b;
     }
+    void setDiffuse(D3DCOLOR c)
+    {
+        SetFromD3DCOLOR(Diffuse, c);
+    }
     void setSpecular(float r, float g, float b)
     {
         Specular.r = r;
         Specular.g = g;
         Specular.b = b;
     }
+    void setSpecular(D3DCOLOR c)
+    {
+        SetFromD3DCOLOR(Specular, c);
+    }
     void setAmbient(float r, float g, float b)
     {
         Ambient.r = r;
         Ambient.g = g;
         Ambient.b = b;
+    }
+    void setAmbient(D3DCOLOR c)
+    {
+        SetFromD3DCOLOR(Ambient, c);
     }
     void setPosition(float x, float y, float z)
     {
