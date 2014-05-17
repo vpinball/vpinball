@@ -225,7 +225,7 @@ public:
 
 	int m_nudgetime;
 
-	GPINFLOAT m_pixelaspectratio;
+	float m_pixelaspectratio;
 
 	int m_fVSync; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
     int m_fMaxPrerenderedFrames;

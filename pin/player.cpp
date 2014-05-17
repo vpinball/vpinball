@@ -782,11 +782,11 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	if (m_fFullScreen)
 		{
 		SetWindowPos(m_hwnd, NULL, 0, 0, m_screenwidth, m_screenheight, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
-		m_pixelaspectratio = ((GPINFLOAT)m_screenwidth / (GPINFLOAT)m_screenheight) / (4.0/3.0);
+		m_pixelaspectratio = ((float)m_screenwidth / (float)m_screenheight) / (4.0f/3.0f);
 		}
 	else
 		{
-		m_pixelaspectratio = ((GPINFLOAT)m_width / (GPINFLOAT)m_height) / (4.0/3.0);
+		m_pixelaspectratio = ((float)m_width / (float)m_height) / (4.0f/3.0f);
 		}
 
 	m_pininput.Init(m_hwnd);

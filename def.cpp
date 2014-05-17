@@ -12,7 +12,7 @@ float sz2f(char *sz)
 
 	VariantChangeType(&var, &var, 0, VT_R8); 
 
-	const GPINFLOAT r = V_R8(&var);
+	const double r = V_R8(&var);
 	return (float)r;
 	}
 

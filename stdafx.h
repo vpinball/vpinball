@@ -55,8 +55,6 @@
 //#define DEBUG_FPS
 //#define EVENTIME 1
 
-#define GPINFLOAT double
-
 //
 
 #if !defined(AFX_STDAFX_H__35BEBBA5_0A4C_4321_A65C_AFFE89589F15__INCLUDED_)
