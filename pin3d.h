@@ -21,10 +21,11 @@ enum
 class PinProjection
 	{
 public:
-	void Scale(const float x, const float y, const float z);
-	void Multiply(const Matrix3D& mat);
-	void Rotate(float x, float y, float z);
-	void Translate(const float x, const float y, const float z);
+	void ScaleView(const float x, const float y, const float z);
+	void MultiplyView(const Matrix3D& mat);
+	void RotateView(float x, float y, float z);
+	void TranslateView(const float x, const float y, const float z);
+
 	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
 	void CacheTransform();      // compute m_matrixTotal = m_World * m_View * m_Proj
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;

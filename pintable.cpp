@@ -1489,11 +1489,11 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, m_xlatez, m_layback);
    pinproj.SetFieldOfView(FOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
 
-   pinproj.Scale(m_scalex, m_scaley, 1.0f);
-   pinproj.Translate(m_xlatex-pinproj.m_vertexcamera.x, m_xlatey-pinproj.m_vertexcamera.y, -pinproj.m_vertexcamera.z);
-   pinproj.Rotate(0, 0, rotation);
-   pinproj.Rotate(inclination, 0, 0);
-   pinproj.Multiply(ComputeLaybackTransform(m_layback));
+   pinproj.ScaleView(m_scalex, m_scaley, 1.0f);
+   pinproj.TranslateView(m_xlatex-pinproj.m_vertexcamera.x, m_xlatey-pinproj.m_vertexcamera.y, -pinproj.m_vertexcamera.z);
+   pinproj.RotateView(0, 0, rotation);
+   pinproj.RotateView(inclination, 0, 0);
+   pinproj.MultiplyView(ComputeLaybackTransform(m_layback));
 
    pinproj.CacheTransform();
 

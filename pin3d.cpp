@@ -273,9 +273,6 @@ void Pin3D::DrawBackground()
 
 void Pin3D::InitLights()
 {
-	const float sn = sinf(ANGTORAD(g_pplayer->m_ptable->m_inclination) + (float)(M_PI - (M_PI*3.0/16.0)));
-	const float cs = cosf(ANGTORAD(g_pplayer->m_ptable->m_inclination) + (float)(M_PI - (M_PI*3.0/16.0)));
-
 	for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
     {
         if(g_pplayer->m_ptable->m_Light[i].enabled)
@@ -317,6 +314,9 @@ void Pin3D::InitLights()
                 light.setAttenuation1(0.0f);
                 light.setAttenuation2(0.0f);
 
+                const float sn = sinf((float)(M_PI - (M_PI*3.0/16.0)));
+                const float cs = cosf((float)(M_PI - (M_PI*3.0/16.0)));
+
                 if ( i==0 )
                 {
                     light.setDirection(5.0f, sn * 21.0f, cs * -21.0f);
@@ -331,12 +331,12 @@ void Pin3D::InitLights()
             }
             else 
             {
-                const Vertex3Ds tmp = m_proj.m_matWorld.MultiplyVectorNoTranslate(g_pplayer->m_ptable->m_Light[i].dir);
-                light.setDirection(tmp.x, tmp.y, tmp.z);
+                const Vertex3Ds dir = g_pplayer->m_ptable->m_Light[i].dir;
+                light.setDirection(dir.x, dir.y, dir.z);
             }
 
-            const Vertex3Ds tmp = m_proj.m_matWorld.MultiplyVector(g_pplayer->m_ptable->m_Light[i].pos);
-            light.setPosition(tmp.x, tmp.y, tmp.z);
+            const Vertex3Ds pos = g_pplayer->m_ptable->m_Light[i].pos;
+            light.setPosition(pos.x, pos.y, pos.z);
 
             m_pd3dDevice->SetLight(i, &light);
             if (light.getAmbient().r  > 0.0f || light.getAmbient().g  > 0.0f || light.getAmbient().b  > 0.0f ||
@@ -394,11 +394,11 @@ void Pin3D::InitLayout()
     m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_xlatez, g_pplayer->m_ptable->m_layback);
     m_proj.SetFieldOfView(FOV, aspect, m_proj.m_rznear, m_proj.m_rzfar);
 
-    m_proj.Scale(g_pplayer->m_ptable->m_scalex, g_pplayer->m_ptable->m_scaley, 1.0f);
-    m_proj.Translate(g_pplayer->m_ptable->m_xlatex-m_proj.m_vertexcamera.x, g_pplayer->m_ptable->m_xlatey-m_proj.m_vertexcamera.y, -m_proj.m_vertexcamera.z);
-    m_proj.Rotate(0, 0, rotation);
-    m_proj.Rotate(inclination, 0, 0);
-    m_proj.Multiply(ComputeLaybackTransform(g_pplayer->m_ptable->m_layback));
+    m_proj.ScaleView(g_pplayer->m_ptable->m_scalex, g_pplayer->m_ptable->m_scaley, 1.0f);
+    m_proj.TranslateView(g_pplayer->m_ptable->m_xlatex-m_proj.m_vertexcamera.x, g_pplayer->m_ptable->m_xlatey-m_proj.m_vertexcamera.y, -m_proj.m_vertexcamera.z);
+    m_proj.RotateView(0, 0, rotation);
+    m_proj.RotateView(inclination, 0, 0);
+    m_proj.MultiplyView(ComputeLaybackTransform(g_pplayer->m_ptable->m_layback));
 
     // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
     m_proj.ComputeNearFarPlane(vvertex3D);
@@ -414,11 +414,11 @@ void Pin3D::InitLayout()
 	m_proj.CacheTransform();
 
     // Compute view vector
-    Matrix3D temp, worldViewRot;
-    m_proj.m_matView.Multiply( m_proj.m_matWorld, temp );   // TODO: use only view matrix once the camera transform is put there
+    Matrix3D temp, viewRot;
+    temp = m_proj.m_matView;
     temp.Invert();
-    temp.GetRotationPart( worldViewRot );
-    worldViewRot.MultiplyVector(Vertex3Ds(0, 0, 1), m_viewVec);
+    temp.GetRotationPart( viewRot );
+    viewRot.MultiplyVector(Vertex3Ds(0, 0, 1), m_viewVec);
     m_viewVec.Normalize();
 
 	InitLights();
@@ -787,33 +787,33 @@ Vertex3Ds Pin3D::Get3DPointFrom2D( POINT *p )
    return vertex;
 }
 
-void PinProjection::Rotate(float x, float y, float z)
+void PinProjection::RotateView(float x, float y, float z)
 {
 	Matrix3D matRotateX, matRotateY, matRotateZ;
 
 	matRotateX.RotateXMatrix(x);
-	m_matWorld.Multiply(matRotateX, m_matWorld);
+	m_matView.Multiply(matRotateX, m_matView);
 	matRotateY.RotateYMatrix(y);
-	m_matWorld.Multiply(matRotateY, m_matWorld);
+	m_matView.Multiply(matRotateY, m_matView);
 	matRotateZ.RotateZMatrix(z);
-	m_matWorld.Multiply(matRotateZ, m_matWorld);        // matWorld = rotZ * rotY * rotX * origMatWorld
+	m_matView.Multiply(matRotateZ, m_matView);        // matView = rotZ * rotY * rotX * origMatView
 }
 
-void PinProjection::Translate(const float x, const float y, const float z)
+void PinProjection::TranslateView(const float x, const float y, const float z)
 {
 	Matrix3D matTrans;
 	matTrans.SetTranslation(x, y, z);
-	m_matWorld.Multiply(matTrans, m_matWorld);
+	m_matView.Multiply(matTrans, m_matView);
 }
 
-void PinProjection::Scale(const float x, const float y, const float z)
+void PinProjection::ScaleView(const float x, const float y, const float z)
 {
-	m_matWorld.Scale( x, y, z );
+	m_matView.Scale( x, y, z );
 }
 
-void PinProjection::Multiply(const Matrix3D& mat)
+void PinProjection::MultiplyView(const Matrix3D& mat)
 {
-	m_matWorld.Multiply(mat, m_matWorld);
+	m_matView.Multiply(mat, m_matView);
 }
 
 void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
@@ -925,7 +925,7 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
 void PinProjection::SetFieldOfView(float rFOV, float raspect, float rznear, float rzfar)
 {
     SetupProjectionMatrix(rFOV, raspect, rznear, rzfar);
-    m_matView.RotateXMatrix(M_PI);  // convert Z=out to Z=in (D3D coordinate system)
+    m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
     m_matWorld.SetIdentity();
 }
 

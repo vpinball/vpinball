@@ -2423,7 +2423,6 @@ void Player::DrawBalls()
    m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
    m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-   Matrix3D matWorld = g_pplayer->m_pin3d.GetWorldTransform();
 
    const float inclination = ANGTORAD(g_pplayer->m_ptable->m_inclination);
 
