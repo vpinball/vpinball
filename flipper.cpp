@@ -816,8 +816,8 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, float angle, float he
     {
         // set normal according to cylinder surface
         const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
-        rgv3D[l].nx = rgv3D[l+16].nx = /* VP9COMPAT + */ -sinf(anglel);
-        rgv3D[l].ny = rgv3D[l+16].ny = /* VP9COMPAT - */ +cosf(anglel);
+        rgv3D[l].nx = rgv3D[l+16].nx = +sinf(anglel);
+        rgv3D[l].ny = rgv3D[l+16].ny = -cosf(anglel);
         rgv3D[l].nz = rgv3D[l+16].nz = 0.0f;
 
         memcpy( &buf[offset], &rgv3D[l], sizeof(Vertex3D));
@@ -856,8 +856,8 @@ void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, float angle, float he
     for (int l=0;l<16;l++)
     {
         const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
-        rgv3D[l].nx = rgv3D[l+16].nx = /* VP9COMPAT + */ -sinf(anglel);
-        rgv3D[l].ny = rgv3D[l+16].ny = /* VP9COMPAT - */ +cosf(anglel);
+        rgv3D[l].nx = rgv3D[l+16].nx = +sinf(anglel);
+        rgv3D[l].ny = rgv3D[l+16].ny = -cosf(anglel);
         rgv3D[l].nz = rgv3D[l+16].nz = 0.0f;
 
         memcpy( &buf[offset], &rgv3D[l], sizeof(Vertex3D));

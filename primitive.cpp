@@ -805,16 +805,6 @@ void Primitive::UpdateMesh()
          tempVert->tv = 0.5f + norm.y*0.5f;
       }
       TransformVertex(*tempVert);
-      /* HACK/VP9COMPAT:
-       * In VP9, all the normals are the wrong way around, so we also
-       * have to flip them on imported meshes for now.
-       */
-      if (!m_d.sphereMapping)
-      {
-          tempVert->nx *= -1.0f;
-          tempVert->ny *= -1.0f;
-          tempVert->nz *= -1.0f;
-      }
    }
 
    Vertex3D_NoTex2 *buf;

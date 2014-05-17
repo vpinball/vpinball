@@ -917,12 +917,12 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
             verts[offset+3].tv = 1.0f;
          }
 
-         verts[offset].nx = verts[offset+1].nx = -vnormal[0].x;
-         verts[offset].ny = verts[offset+1].ny = vnormal[0].y;
+         verts[offset].nx = verts[offset+1].nx = vnormal[0].x;
+         verts[offset].ny = verts[offset+1].ny = -vnormal[0].y;
          verts[offset].nz = verts[offset+1].nz = 0;
 
-         verts[offset+2].nx = verts[offset+3].nx = -vnormal[1].x;
-         verts[offset+2].ny = verts[offset+3].ny = vnormal[1].y;
+         verts[offset+2].nx = verts[offset+3].nx = vnormal[1].x;
+         verts[offset+2].ny = verts[offset+3].ny = -vnormal[1].y;
          verts[offset+2].nz = verts[offset+3].nz = 0;
       }
    }
