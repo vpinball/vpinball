@@ -892,6 +892,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
           ptCur->m_renderSolid = (code == ID_VIEW_SOLID);
           ptCur->SetDirtyDraw();
       }
+      break;
    case IDC_SELECT:
    case ID_TABLE_MAGNIFY:
    case ID_INSERT_WALL:
