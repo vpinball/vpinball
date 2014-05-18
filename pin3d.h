@@ -105,6 +105,8 @@ public:
 	RenderTarget* m_pddsStatic;
 	RenderTarget* m_pddsStaticZ;
 
+   RenderTarget* m_bloomTexture;
+
 	Texture ballTexture;
 	MemTexture *ballShadowTexture;
 	Texture lightTexture[2]; // 0=bumper, 1=lights
