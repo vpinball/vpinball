@@ -162,6 +162,7 @@ public:
 	BOOL m_fAlwaysDrawDragPoints;
 	int m_DeadZ;
 	BOOL m_fAlwaysDrawLightCenters;
+    int m_gridSize;
 
 	int m_securitylevel;
 

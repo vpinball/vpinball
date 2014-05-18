@@ -1145,7 +1145,6 @@ void PinTable::Init(VPinball *pvp)
 
    m_szFileName[0] = 0;
    m_szBlueprintFileName[0] = 0;
-   m_gridsize = 50;
 
    //m_ptinfoCls = NULL;
    //m_ptinfoInt = NULL;
@@ -1402,23 +1401,25 @@ void PinTable::Render(Sur * const psur)
       rrb.x = min(rrb.x, frect.right);
       rrb.y = min(rrb.y, frect.bottom);
 
-      const int beginx = (int)(rlt.x / m_gridsize);
-      const float lenx = (rrb.x - rlt.x) / m_gridsize;//(((rc.right - rc.left)/m_zoom));
-      const int beginy = (int)(rlt.y / m_gridsize);
-      const float leny = (rrb.y - rlt.y) / m_gridsize;//(((rc.bottom - rc.top)/m_zoom));
+      const float gridsize = (float)g_pvp->m_gridSize;
+
+      const int beginx = (int)(rlt.x / gridsize);
+      const float lenx = (rrb.x - rlt.x) / gridsize;//(((rc.right - rc.left)/m_zoom));
+      const int beginy = (int)(rlt.y / gridsize);
+      const float leny = (rrb.y - rlt.y) / gridsize;//(((rc.bottom - rc.top)/m_zoom));
 
       psur->SetObject(NULL); // Don't hit test gridlines
 
       psur->SetLineColor(RGB(190,220,240), false, 0);
       for (int i=0;i<(lenx+1);i++)
       {
-         const float x = (beginx+i)*m_gridsize;
+         const float x = (beginx+i)*gridsize;
          psur->Line(x, rlt.y, x, rrb.y);
       }
 
       for (int i=0;i<(leny+1);i++)
       {
-         const float y = (beginy+i)*m_gridsize;
+         const float y = (beginy+i)*gridsize;
          psur->Line(rlt.x, y, rrb.x, y);
       }
    }
@@ -2615,7 +2616,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 #ifdef VBA
    bw.WriteInt(FID(PIID), ApcProjectItem.ID());
 #endif
-   bw.WriteFloat(FID(GRSZ), m_gridsize);
    bw.WriteFloat(FID(LEFT), m_left);
    bw.WriteFloat(FID(TOPX), m_top);
    bw.WriteFloat(FID(RGHT), m_right);
@@ -2666,7 +2666,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteString(FID(SSHT), m_szScreenShot);
 
-   bw.WriteBool(FID(FGRD), m_fGrid);
    bw.WriteBool(FID(FBCK), m_fBackdrop);
 
    bw.WriteFloat(FID(GLAS), m_glassheight);
@@ -3318,10 +3317,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetInt(&((int *)pbr->m_pdata)[0]);
    }
-   else if (id == FID(GRSZ))
-   {
-      pbr->GetFloat(&m_gridsize);
-   }
    else if (id == FID(LEFT))
    {
       pbr->GetFloat(&m_left);
@@ -3494,10 +3489,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SSHT))
    {
       pbr->GetString(m_szScreenShot);
-   }
-   else if (id == FID(FGRD))
-   {
-      pbr->GetBool(&m_fGrid);
    }
    else if (id == FID(FBCK))
    {
@@ -4104,28 +4095,6 @@ void PinTable::SetCollectionName(Collection *pcol, char *szName, HWND hwndList, 
       }
       WideStrCopy(wzT, pcol->m_wzName);
    }
-}
-
-STDMETHODIMP PinTable::get_GridSize(float *pgs)
-{
-   *pgs = m_gridsize;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_GridSize(float gs)
-{
-   STARTUNDO
-
-   if (gs < 1)
-     gs = 1;
-
-   m_gridsize = gs;
-
-   SetDirtyDraw();
-
-   STOPUNDO
-
-   return S_OK;
 }
 
 void PinTable::SetZoom(float zoom)
@@ -5941,9 +5910,6 @@ void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
       pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
       pvproppane->AddElement(pproppane);
 
-      pproppane = new PropertyPane(IDD_PROPTABLE_EDITOR, IDS_EDITOR);
-      pvproppane->AddElement(pproppane);
-
       pproppane = new PropertyPane(IDD_PROPTABLE_VISUALS, IDS_VISUALS_SOUND);
       pvproppane->AddElement(pproppane);
 
@@ -5959,9 +5925,6 @@ void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    else
    {
       PropertyPane *pproppane;
-
-      pproppane = new PropertyPane(IDD_PROPTABLE_EDITOR, IDS_EDITOR);
-      pvproppane->AddElement(pproppane);
 
       pproppane = new PropertyPane(IDD_PROPBACKGLASS_VISUALS, IDS_VISUALS);
       pvproppane->AddElement(pproppane);

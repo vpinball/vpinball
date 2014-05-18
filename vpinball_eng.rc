@@ -561,6 +561,8 @@ BEGIN
     CONTROL         "&Draw Light Center Cross",IDC_DRAW_LIGHTCENTERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,102,10
     CONTROL         "Auto-&Save Tables Every",IDC_AUTOSAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,33,93,10
     EDITTEXT        IDC_AUTOSAVE_MINUTES,102,32,25,11,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Grid size",IDC_STATIC,7,47,50,8
+    EDITTEXT        IDC_GRID_SIZE,60,45,27,12,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,67,77,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,128,77,50,14
     LTEXT           "minutes",IDC_STATIC,132,33,25,8
@@ -1283,16 +1285,6 @@ BEGIN
     CONTROL         "Overwrite Global Settings",IDC_GLOBAL_ALPHA_ACC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,140,95,10
 END
 
-IDD_PROPTABLE_EDITOR DIALOGEX 0, 0, 125, 38
-STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    CONTROL         "Show &Grid",106,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,50,10
-    EDITTEXT        DISPID_Table_GridSize,89,6,27,12,ES_AUTOHSCROLL
-    CONTROL         "&Display Image in Editor",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,91,14
-    LTEXT           "Grid Si&ze",-1,57,8,30,9
-END
-
 IDD_PROPTABLE_PHYSICS DIALOGEX 0, 0, 125, 105
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1898,6 +1890,9 @@ BEGIN
     BEGIN
         MENUITEM "Solid",                       ID_VIEW_SOLID, CHECKED
         MENUITEM "Outline",                     ID_VIEW_OUTLINE
+        MENUITEM SEPARATOR
+        MENUITEM "&Grid",                       ID_VIEW_GRID, CHECKED
+        MENUITEM "Back&drop",                   ID_VIEW_BACKDROP, CHECKED
         MENUITEM SEPARATOR
         MENUITEM "&Options",                    ID_EDIT_PROPERTIES
         MENUITEM "&Script",                     ID_EDIT_SCRIPT
