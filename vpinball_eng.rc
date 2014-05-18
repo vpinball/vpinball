@@ -2057,7 +2057,7 @@ IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
 //
 
 BALLSHADER.FX           RCDATA                  "shader\\BallShader.fx"
-
+LIGHTINSERT.FX          RCDATA 					"shader\\LightInsert.fx"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Accelerator
