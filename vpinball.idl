@@ -449,8 +449,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Table_Width), helpstring("property Width")] HRESULT Width([in] float newVal);
 		[propget, id(DISPID_Table_Height), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
 		[propput, id(DISPID_Table_Height), helpstring("property Height")] HRESULT Height([in] float newVal);
-		[propget, id(DISPID_Table_GridSize), helpstring("property GridSize")] HRESULT GridSize([out, retval] float *pVal);
-		[propput, id(DISPID_Table_GridSize), helpstring("property GridSize")] HRESULT GridSize([in] float newVal);
 		[propget, id(DISPID_Table_Inclination), helpstring("property Inclination")] HRESULT Inclination([out, retval] float *pVal);
 		[propput, id(DISPID_Table_Inclination), helpstring("property Inclination")] HRESULT Inclination([in] float newVal);
 		[propget, id(DISPID_Table_Layback), helpstring("property Layback")] HRESULT Layback([out, retval] float *pVal);

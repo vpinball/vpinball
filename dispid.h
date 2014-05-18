@@ -1,7 +1,6 @@
 #pragma once
 // Table
 
-#define DISPID_Table_GridSize 109
 #define DISPID_Table_Inclination 104
 #define DISPID_Table_FieldOfView 105
 #define DISPID_Table_Layback 1040

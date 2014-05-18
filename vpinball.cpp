@@ -459,38 +459,24 @@ void VPinball::InitRegValues()
 {
    HRESULT hr;
 
-   hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
-   if (hr != S_OK)
-      m_DeadZ = 0; // default value
-   SetRegValue("Player", "DeadZone", REG_DWORD, &m_DeadZ, 4);
+   m_DeadZ = GetRegIntWithDefault("Player", "DeadZone", 0);
+   SetRegValueInt("Player", "DeadZone", m_DeadZ);
 
-   hr = GetRegInt("Editor", "ShowDragPoints", &m_fAlwaysDrawDragPoints);
-   if (hr != S_OK)
-      m_fAlwaysDrawDragPoints = fFalse; // default value
+   m_fAlwaysDrawDragPoints = GetRegIntWithDefault("Editor", "ShowDragPoints", fFalse);
+   m_fAlwaysDrawLightCenters = GetRegIntWithDefault("Editor", "DrawLightCenters", fFalse);
+   m_gridSize = GetRegIntWithDefault("Editor", "GridSize", 50);
 
-   hr = GetRegInt("Editor", "DrawLightCenters", &m_fAlwaysDrawLightCenters);
-   if (hr != S_OK)
-      m_fAlwaysDrawLightCenters = fFalse; // default value
-
-    BOOL fAutoSave;
-   hr = GetRegInt("Editor", "AutoSaveOn", &fAutoSave);
-   if (hr != S_OK)
-      fAutoSave = fTrue; // default value
+   BOOL fAutoSave = GetRegIntWithDefault("Editor", "AutoSaveOn", fTrue);
 
    if (fAutoSave)
    {
-      int autosavetime;
-      hr = GetRegInt("Editor", "AutoSaveTime", &autosavetime);
-      if (hr != S_OK)
-         autosavetime = AUTOSAVE_DEFAULT_TIME;
-      SetAutoSaveMinutes(autosavetime);
+      m_autosaveTime = GetRegIntWithDefault("Editor", "AutoSaveTime", AUTOSAVE_DEFAULT_TIME);
+      SetAutoSaveMinutes(m_autosaveTime);
    }
    else
       m_autosaveTime = -1;
 
-   hr = GetRegInt("Player", "SecurityLevel", &m_securitylevel);
-   if (hr != S_OK)
-      m_securitylevel = DEFAULT_SECURITY_LEVEL;
+   m_securitylevel = GetRegIntWithDefault("Player", "SecurityLevel", DEFAULT_SECURITY_LEVEL);
 
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
@@ -892,6 +878,16 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
           ptCur->m_renderSolid = (code == ID_VIEW_SOLID);
           ptCur->SetDirtyDraw();
       }
+      break;
+   case ID_VIEW_GRID:
+      ptCur = GetActiveTable();
+      if (ptCur)
+          ptCur->put_DisplayGrid( !ptCur->m_fGrid );
+      break;
+   case ID_VIEW_BACKDROP:
+      ptCur = GetActiveTable();
+      if (ptCur)
+          ptCur->put_DisplayBackdrop( !ptCur->m_fBackdrop );
       break;
    case IDC_SELECT:
    case ID_TABLE_MAGNIFY:
@@ -1829,6 +1825,9 @@ void VPinball::SetEnableMenuItems()
 
       CheckMenuItem(hmenu, ID_VIEW_SOLID,   MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
       CheckMenuItem(hmenu, ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
+
+      CheckMenuItem(hmenu, ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_fGrid ? MF_CHECKED : MF_UNCHECKED));
+      CheckMenuItem(hmenu, ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_fBackdrop ? MF_CHECKED : MF_UNCHECKED));
 
       for (int i = 0; i < sizeof(allLayers) / sizeof(allLayers[0]); ++i)
           CheckMenuItem(hmenu, allLayers[i], MF_BYCOMMAND | (ptCur->m_activeLayers[i] ? MF_CHECKED : MF_UNCHECKED));
@@ -6955,37 +6954,26 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
             (rcMain.bottom + rcMain.top)/2 - (rcDlg.bottom - rcDlg.top)/2,
             0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-         HRESULT hr;
          HWND hwndControl;
 
 		 // drag points
-         int fdrawpoints = 0;
-         hr = GetRegInt("Editor", "ShowDragPoints", &fdrawpoints);
-         if (hr != S_OK)
-            fdrawpoints = 0; // The default (draw points)
+         int fdrawpoints = GetRegIntWithDefault("Editor", "ShowDragPoints", 0);
          hwndControl = GetDlgItem(hwndDlg, IDC_DRAW_DRAGPOINTS);
          SendMessage(hwndControl, BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
 
          // light centers
-         int fdrawcenters = 0;
-         hr = GetRegInt("Editor", "DrawLightCenters", &fdrawcenters);
-         if (hr != S_OK)
-            fdrawcenters = 0; // The default (don't draw centers)
+         int fdrawcenters = GetRegIntWithDefault("Editor", "DrawLightCenters", 0);
          hwndControl = GetDlgItem(hwndDlg, IDC_DRAW_LIGHTCENTERS);
          SendMessage(hwndControl, BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
 
-         int fautosave = 0;
-         hr = GetRegInt("Editor", "AutoSaveOn", &fautosave);
-         if (hr != S_OK)
-            fautosave = 1;
+         int fautosave = GetRegIntWithDefault("Editor", "AutoSaveOn", 1);
          SendDlgItemMessage(hwndDlg, IDC_AUTOSAVE, BM_SETCHECK, fautosave ? BST_CHECKED : BST_UNCHECKED, 0);
 
-         int fautosavetime = 0;
-         hr = GetRegInt("Editor", "AutoSaveTime", &fautosavetime);
-         if (hr != S_OK)
-            fautosavetime = AUTOSAVE_DEFAULT_TIME;
+         int fautosavetime = GetRegIntWithDefault("Editor", "AutoSaveTime", AUTOSAVE_DEFAULT_TIME);
          SetDlgItemInt(hwndDlg, IDC_AUTOSAVE_MINUTES, fautosavetime, FALSE);
 
+         int gridsize = GetRegIntWithDefault("Editor", "GridSize", 50);
+         SetDlgItemInt(hwndDlg, IDC_GRID_SIZE, gridsize, FALSE);
       }
 
       return TRUE;
@@ -7000,28 +6988,25 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
             {
             case IDOK:
                {
-                  HWND hwndControl;
-                  int checked;
+                  bool checked;
+
                   // drag points
-                  int fdrawpoints;
-                  hwndControl = GetDlgItem(hwndDlg, IDC_DRAW_DRAGPOINTS);
-                  checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
-                  fdrawpoints = (checked == BST_CHECKED) ? 1:0;
-                  SetRegValue("Editor", "ShowDragPoints", REG_DWORD, &fdrawpoints, 4);
+                  checked = (SendDlgItemMessage(hwndDlg, IDC_DRAW_DRAGPOINTS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+                  SetRegValueBool("Editor", "ShowDragPoints", checked);
 
                   // light centers
-                  hwndControl = GetDlgItem(hwndDlg, IDC_DRAW_LIGHTCENTERS);
-                  checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
-                  fdrawpoints = (checked == BST_CHECKED) ? 1:0;
-                  SetRegValue("Editor", "DrawLightCenters", REG_DWORD, &fdrawpoints, 4);
+                  checked = (SendDlgItemMessage(hwndDlg, IDC_DRAW_LIGHTCENTERS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+                  SetRegValueBool("Editor", "DrawLightCenters", checked);
 
-                  int fautosave = SendDlgItemMessage(hwndDlg, IDC_AUTOSAVE, BM_GETCHECK, 0, 0);
-                  SetRegValue("Editor", "AutoSaveOn", REG_DWORD, &fautosave, 4);
+                  // auto save
+                  checked = (SendDlgItemMessage(hwndDlg, IDC_AUTOSAVE_MINUTES, BM_GETCHECK, 0, 0) == BST_CHECKED);
+                  SetRegValueBool("Editor", "AutoSaveOn", checked);
 
-                  int autosavetime = GetDlgItemInt(hwndDlg, IDC_AUTOSAVE_MINUTES, NULL, TRUE);
-                  if (autosavetime < 0)
-                     autosavetime = 0;
-                  SetRegValue("Editor", "AutoSaveTime", REG_DWORD, &autosavetime, 4);
+                  int autosavetime = GetDlgItemInt(hwndDlg, IDC_AUTOSAVE_MINUTES, NULL, FALSE);
+                  SetRegValueInt("Editor", "AutoSaveTime", autosavetime);
+
+                  int gridsize = GetDlgItemInt(hwndDlg, IDC_GRID_SIZE, NULL, FALSE);
+                  SetRegValueInt("Editor", "GridSize", gridsize);
 
                   // Go through and reset the autosave time on all the tables
                   g_pvp->SetAutoSaveMinutes(autosavetime);

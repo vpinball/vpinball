@@ -476,7 +476,6 @@
 #define IDD_PROPDISPREEL_POSITION       356
 #define IDD_PROPDISPREEL_STATE          357
 #define IDD_PROPTABLE_VISUALS           358
-#define IDD_PROPTABLE_EDITOR            359
 #define IDC_GUIDE2                      359
 #define IDD_PROPTABLE_PHYSICS           360
 #define IDC_EDITSIZE                    360
@@ -803,6 +802,9 @@
 #define ID_TABLE_DIMENSIONMANAGER       32894
 #define ID_VIEW_SOLID                  32895
 #define ID_VIEW_OUTLINE                32896
+#define ID_VIEW_GRID                    32897
+#define ID_VIEW_BACKDROP                32898
+#define IDC_GRID_SIZE                   32899
 
 #define DZVALUE                         65535
 #define DZName                          65535

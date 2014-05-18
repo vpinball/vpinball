@@ -290,9 +290,6 @@ public:
 
     STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
 
-	STDMETHOD(get_GridSize)(float *pgs);
-	STDMETHOD(put_GridSize)(float gs);
-
 	/////////////////////////////////////////////
 
 	PinTable();
@@ -533,7 +530,6 @@ END_CONNECTION_POINT_MAP()
 
 	HWND m_hwnd;
 	VPinball *m_pvp;
-	float m_gridsize;
 	float m_offsetx;
 	float m_offsety;
 	float m_zoom;
