@@ -359,6 +359,8 @@ private:
 
 public:
    TextureManager m_texMan;
+
+   static VertexDeclaration* m_pVertexNormalTexelDeclaration;
 };
 
 class Shader 

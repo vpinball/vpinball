@@ -673,15 +673,6 @@ static bool CompareHitableDepth(Hitable* h1, Hitable* h2)
     return h1->GetDepth(g_viewDir) >= h2->GetDepth(g_viewDir);
 }
 
-const VertexElement ballDeclaration[] = 
-{
-   { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
-   { 0, 3  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
-   { 0, 6  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
-   D3DDECL_END()
-};
-static VertexDeclaration* g_pBallVertexDeclaration	= NULL;
-
 void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dDevice );
@@ -689,8 +680,6 @@ void Player::InitBallShader()
 //   ballShader->Load("c:\\projects\\vp\\shader\\BallShader.fx", true );
 
    ballShader->Load("BallShader.fx", false );
-
-   m_pin3d.m_pd3dDevice->CreateVertexDeclaration( ballDeclaration, &g_pBallVertexDeclaration );
 
    D3DMATRIX worldMat;
    D3DMATRIX viewMat;
@@ -2431,7 +2420,7 @@ void Player::DrawBalls()
    const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 
-   m_pin3d.m_pd3dDevice->SetVertexDeclaration( g_pBallVertexDeclaration );
+   m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexNormalTexelDeclaration );
 
    for (unsigned i=0; i<m_vball.size(); i++)
    {

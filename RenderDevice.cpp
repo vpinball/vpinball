@@ -4,6 +4,15 @@
 
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 
+const VertexElement VertexNormalTexelElement[] = 
+{
+   { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
+   { 0, 3  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
+   { 0, 6  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
+   D3DDECL_END()
+};
+VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration	= NULL;
+
 
 void ReportError(const HRESULT hr, const char *file, const int line)
 {
@@ -311,6 +320,9 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     m_curDrawCalls = m_frameDrawCalls = 0;
     m_curStateChanges = m_frameStateChanges = 0;
     m_curTextureChanges = m_frameTextureChanges = 0;
+
+    CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
+
 }
 
 #include <d3dx9.h> //!! meh
