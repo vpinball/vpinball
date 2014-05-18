@@ -13,7 +13,16 @@ const VertexElement VertexNormalTexelElement[] =
 };
 VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration	= NULL;
 
+const VertexElement VertexNormalTexelTexelElement[] = 
+{
+   { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
+   { 0, 3  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
+   { 0, 6  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
+   { 0, 8  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex1
+   D3DDECL_END()
+};
 
+VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;
 void ReportError(const HRESULT hr, const char *file, const int line)
 {
     char msg[128];
@@ -321,7 +330,9 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     m_curStateChanges = m_frameStateChanges = 0;
     m_curTextureChanges = m_frameTextureChanges = 0;
 
+    // create default vertex declarations for shaders
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
+    CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
 
 }
 
