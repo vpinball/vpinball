@@ -8,6 +8,8 @@ Surface::Surface()
    m_d.m_fSlingshotAnimation = fTrue;
    m_d.m_fInner = fTrue;
    m_d.m_fEnableLighting = fTrue;
+   m_d.m_transparent = false;
+   m_d.m_opacity = 255;
    slingshotVBuffer=0;
    sideVBuffer = 0;
    topVBuffer = 0;
@@ -803,7 +805,7 @@ void Surface::PostRenderStatic(const RenderDevice* pd3dDevice)
     if (m_d.m_sidecolor == 0 && m_d.m_topcolor == 0)
         return;
 
-    if (m_d.m_fDroppable)
+    if (m_d.m_fDroppable || m_d.m_transparent)
     {
         if (!m_fIsDropped)
         {
@@ -1199,7 +1201,7 @@ void Surface::FreeBuffers()
 
 void Surface::RenderStatic(const RenderDevice* pd3dDevice)
 {
-   if (!m_d.m_fDroppable)
+   if (!m_d.m_fDroppable && !m_d.m_transparent)
    {
       RenderWallsAtHeight( (RenderDevice*)pd3dDevice, fFalse);
       g_pplayer->m_pin3d.SetTexture(NULL);
@@ -1234,12 +1236,17 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 {
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
+    D3DCOLOR tfactor = 0xffffffff;
+
+    // render side
+
     if(!m_d.m_fEnableLighting)
     {
        pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
        // replace Diffuse arg by constant color
        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);      
-       pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_sidecolor));
+       tfactor = COLORREF_to_D3DCOLOR(m_d.m_sidecolor);
+       pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, tfactor);
     }
 
     Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
@@ -1258,8 +1265,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
         }
         g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
-
-        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
         g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
     }
     else
@@ -1267,7 +1272,15 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
     pd3dDevice->SetMaterial(sideMaterial);
 
-    // Render side
+    if (m_d.m_transparent)
+    {
+        ppin3d->EnableAlphaBlend( 1, FALSE );
+        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
+        tfactor = (m_d.m_opacity << 24) | (tfactor & 0xffffff);
+    }
+
+    pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, tfactor);
 
     if (!fDrop && m_d.m_fSideVisible && (numVertices > 0)) // Don't need to render walls if dropped
     {
@@ -1296,7 +1309,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             }
 
             g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
-            pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
             g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
         }
         else
@@ -1308,8 +1320,18 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         else
         {
             ppin3d->DisableLightMap();
-            pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_topcolor));
+            tfactor = COLORREF_to_D3DCOLOR(m_d.m_topcolor);
         }
+
+        if (m_d.m_transparent)
+        {
+            ppin3d->EnableAlphaBlend( 1, FALSE );
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
+            tfactor = (m_d.m_opacity << 24) | (tfactor & 0xffffff);
+        }
+
+        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, tfactor);
 
         if(numPolys > 0)
         {
@@ -1317,16 +1339,14 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         }
     }
 
+    // reset render states
     ppin3d->DisableLightMap();
+    ppin3d->DisableAlphaBlend();
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-
-    if(!m_d.m_fEnableLighting)
-    {
-        // reset render states
-        pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
-    }
+    pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+    pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
 }
 
 void Surface::DoCommand(int icmd, int x, int y)
@@ -2213,6 +2233,37 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 
    return S_OK;
 }
+
+STDMETHODIMP Surface::get_Transparent(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_transparent);
+   return S_OK;
+}
+
+STDMETHODIMP Surface::put_Transparent(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+   m_d.m_transparent = !!newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Surface::get_Opacity(int *pVal)
+{
+   *pVal = m_d.m_opacity;
+   return S_OK;
+}
+
+STDMETHODIMP Surface::put_Opacity(int newVal)
+{
+   STARTUNDO
+   m_d.m_opacity = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
 
 /////////////////////////////////////////////////////////////
 
