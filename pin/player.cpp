@@ -694,6 +694,17 @@ void Player::InitBallShader()
    D3DXMATRIX worldViewProj = matWorld * matView * matProj;
    ballShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
    ballShader->Core()->SetMatrix("matWorld",  &matWorld);
+
+   const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
+   const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
+   const float inclination = ANGTORAD(g_pplayer->m_ptable->m_inclination);
+
+   ballShader->Core()->SetFloat("ballStretchX", m_BallStretchX );
+   ballShader->Core()->SetFloat("ballStretchY", m_BallStretchY );
+   ballShader->Core()->SetFloat("inclination", inclination );
+   ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
+   ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
+
    //ballShader->SetMatrix("matWorldI", &matWorldI);
    vector<WORD> indexList;
    indexList.resize(basicBallNumFaces);
@@ -2413,13 +2424,6 @@ void Player::DrawBalls()
    m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
    m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
-   const float inclination = ANGTORAD(g_pplayer->m_ptable->m_inclination);
-
-   const float sn = sinf(inclination);
-   const float cs = cosf(inclination);
-   const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
-   const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
-
    m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexNormalTexelDeclaration );
 
    for (unsigned i=0; i<m_vball.size(); i++)
@@ -2477,11 +2481,6 @@ void Player::DrawBalls()
       D3DXVECTOR4 pos( pball->pos.x, pball->pos.y, zheight, 1.0f );
       ballShader->Core()->SetVector("position", &pos );
       ballShader->Core()->SetFloat("radius", pball->radius*0.9f );
-      ballShader->Core()->SetFloat("ballStretchX", m_BallStretchX );
-      ballShader->Core()->SetFloat("ballStretchY", m_BallStretchY );
-      ballShader->Core()->SetFloat("inclination", inclination );
-      ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
-      ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
       if ( !pball->m_pin )
           ballShader->Core()->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_pin3d.ballTexture.m_pdsBufferColorKey));
       else
