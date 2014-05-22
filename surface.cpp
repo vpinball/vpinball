@@ -2069,7 +2069,7 @@ STDMETHODIMP Surface::get_Opacity(int *pVal)
 STDMETHODIMP Surface::put_Opacity(int newVal)
 {
    STARTUNDO
-   m_d.m_opacity = newVal;
+   m_d.m_opacity = clamp(newVal, 0, 255);
    STOPUNDO
 
    return S_OK;
