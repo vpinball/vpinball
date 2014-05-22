@@ -677,7 +677,7 @@ void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dDevice );
 
-//   ballShader->Load("c:\\projects\\vp\\shader\\BallShader.fx", true );
+   //ballShader->Load("c:\\projects\\vp9_dx9\\shader\\BallShader.fx", true );
 
    ballShader->Load("BallShader.fx", false );
 
@@ -699,8 +699,6 @@ void Player::InitBallShader()
    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
    const float inclination = ANGTORAD(g_pplayer->m_ptable->m_inclination);
 
-   ballShader->Core()->SetFloat("ballStretchX", m_BallStretchX );
-   ballShader->Core()->SetFloat("ballStretchY", m_BallStretchY );
    ballShader->Core()->SetFloat("inclination", inclination );
    ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
    ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
@@ -2480,7 +2478,7 @@ void Player::DrawBalls()
       ballShader->Core()->SetVector("m3",&m3);
       D3DXVECTOR4 pos( pball->pos.x, pball->pos.y, zheight, 1.0f );
       ballShader->Core()->SetVector("position", &pos );
-      ballShader->Core()->SetFloat("radius", pball->radius*0.9f );
+      ballShader->Core()->SetFloat("radius", pball->radius*1.3f );
       if ( !pball->m_pin )
           ballShader->Core()->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_pin3d.ballTexture.m_pdsBufferColorKey));
       else
