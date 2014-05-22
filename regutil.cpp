@@ -89,8 +89,13 @@ float GetRegStringAsFloatWithDefault(const char *szKey, const char *szValue, flo
     return SUCCEEDED(hr) ? val : def;
 }
 
+bool GetRegBoolWithDefault(const char *szKey, const char *szValue, bool def)
+{
+    return !!GetRegIntWithDefault(szKey, szValue, def);
+}
 
-HRESULT SetRegValue(const char *szKey, const char *szValue, DWORD type, void *pvalue, DWORD size)
+
+HRESULT SetRegValue(const char *szKey, const char *szValue, DWORD type, const void *pvalue, DWORD size)
 {
 	char szPath[1024];
 	lstrcpy(szPath, VP_REGKEY);
@@ -127,4 +132,9 @@ HRESULT SetRegValueFloat(const char *szKey, const char *szValue, float val)
     char buf[40];
     sprintf_s(buf, 40, "%f", val);
     return SetRegValue(szKey, szValue, REG_SZ, buf, strlen(buf));
+}
+
+HRESULT SetRegValueString(const char *szKey, const char *szValue, const char *val)
+{
+    return SetRegValue(szKey, szValue, REG_SZ, val, strlen(val));
 }

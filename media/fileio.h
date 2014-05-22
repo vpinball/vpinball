@@ -49,6 +49,7 @@ public:
 	HRESULT GetWideString(WCHAR *wzvalue);
 	HRESULT GetFloat(float *pvalue);
 	HRESULT GetBool(BOOL *pfvalue);
+	HRESULT GetBool(bool *pvalue);
 	HRESULT GetStruct(void *pvalue, int size);
 	HRESULT GetVector3(Vertex3Ds* vec);
 	HRESULT GetVector3Padded(Vertex3Ds* vec);

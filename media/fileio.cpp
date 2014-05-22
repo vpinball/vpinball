@@ -385,6 +385,14 @@ HRESULT BiffReader::GetBool(BOOL *pfvalue)
 	return ReadBytes(pfvalue, sizeof(BOOL), &read);
 	}
 
+HRESULT BiffReader::GetBool(bool *pvalue)
+	{
+    BOOL val;
+    HRESULT hr = GetBool(&val);
+    *pvalue = !!val;
+    return hr;
+	}
+
 HRESULT BiffReader::GetStruct(void *pvalue, int size)
 	{
 	m_bytesinrecordremaining -= size;
