@@ -7,9 +7,11 @@ HRESULT GetRegValue(const char *szKey, const char *szValue, DWORD *ptype, void *
 
 int GetRegIntWithDefault(const char *szKey, const char *szValue, int def);
 float GetRegStringAsFloatWithDefault(const char *szKey, const char *szValue, float def);
+bool GetRegBoolWithDefault(const char *szKey, const char *szValue, bool def);
 
-HRESULT SetRegValue(const char *szKey, const char *szValue, DWORD type, void *pvalue, DWORD size);
+HRESULT SetRegValue(const char *szKey, const char *szValue, DWORD type, const void *pvalue, DWORD size);
 
 HRESULT SetRegValueBool(const char *szKey, const char *szValue, bool val);
 HRESULT SetRegValueInt(const char *szKey, const char *szValue, int val);
 HRESULT SetRegValueFloat(const char *szKey, const char *szValue, float val);
+HRESULT SetRegValueString(const char *szKey, const char *szValue, const char *val);

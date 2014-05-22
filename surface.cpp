@@ -81,50 +81,54 @@ void Surface::WriteRegDefaults()
 {
    const char * strKeyName = IsWall ? "DefaultProps\\Wall" : "DefaultProps\\Target";
 
-   SetRegValue(strKeyName,"TimerEnabled", REG_DWORD, &m_d.m_tdr.m_fTimerEnabled,4);
-   SetRegValue(strKeyName,"TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValue(strKeyName,"HitEvent", REG_DWORD, &m_d.m_fHitEvent,4);
+   SetRegValueBool(strKeyName,"TimerEnabled", !!m_d.m_tdr.m_fTimerEnabled);
+   SetRegValueInt(strKeyName,"TimerInterval", m_d.m_tdr.m_TimerInterval);
+   SetRegValueBool(strKeyName,"HitEvent", !!m_d.m_fHitEvent);
    SetRegValueFloat(strKeyName,"HitThreshold", m_d.m_threshold);
    SetRegValueFloat(strKeyName,"SlingshotThreshold", m_d.m_slingshot_threshold);
-   SetRegValue(strKeyName,"SideColor", REG_DWORD, &m_d.m_sidecolor, 4);
-   SetRegValue(strKeyName,"TopImage", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
-   SetRegValue(strKeyName,"SideImage", REG_SZ, &m_d.m_szSideImage, strlen(m_d.m_szImage));
-   SetRegValue(strKeyName,"SlingshotColor", REG_DWORD, &m_d.m_slingshotColor, 4);
-   SetRegValue(strKeyName,"TopColor", REG_DWORD, &m_d.m_topcolor, 4);
-   SetRegValue(strKeyName,"Droppable", REG_DWORD, &m_d.m_fDroppable,4);
-   SetRegValue(strKeyName,"Flipbook", REG_DWORD, &m_d.m_fFlipbook,4);
-   SetRegValue(strKeyName,"CastsShadow", REG_DWORD, &m_d.m_fCastsShadow,4);
+   SetRegValueString(strKeyName,"TopImage", m_d.m_szImage);
+   SetRegValueString(strKeyName,"SideImage", m_d.m_szSideImage);
+   SetRegValueInt(strKeyName,"SlingshotColor", m_d.m_slingshotColor);
+   SetRegValueInt(strKeyName,"SideColor", m_d.m_sidecolor);
+   SetRegValueInt(strKeyName,"TopColor", m_d.m_topcolor);
+   SetRegValueBool(strKeyName,"Droppable", !!m_d.m_fDroppable);
+   SetRegValueBool(strKeyName,"Flipbook", !!m_d.m_fFlipbook);
+   SetRegValueBool(strKeyName,"CastsShadow", !!m_d.m_fCastsShadow);
    SetRegValueFloat(strKeyName,"HeightBottom", m_d.m_heightbottom);
    SetRegValueFloat(strKeyName,"HeightTop", m_d.m_heighttop);
-   SetRegValue(strKeyName,"DisplayTexture", REG_DWORD, &m_d.m_fDisplayTexture,4);
+   SetRegValueBool(strKeyName,"DisplayTexture", !!m_d.m_fDisplayTexture);
    SetRegValueFloat(strKeyName,"SlingshotForce", m_d.m_slingshotforce);
-   SetRegValue(strKeyName,"SlingshotAnimation", REG_DWORD, &m_d.m_fSlingshotAnimation,4);
+   SetRegValueBool(strKeyName,"SlingshotAnimation", !!m_d.m_fSlingshotAnimation);
    SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
-   SetRegValue(strKeyName,"Visible", REG_DWORD, &m_d.m_fVisible,4);
-   SetRegValue(strKeyName,"SideVisible", REG_DWORD, &m_d.m_fSideVisible,4);
-   SetRegValue(strKeyName,"Collidable", REG_DWORD, &m_d.m_fCollidable,4);
-   SetRegValue(strKeyName,"EnableLighting", REG_DWORD, &m_d.m_fEnableLighting,4);
+   SetRegValueBool(strKeyName,"Visible", !!m_d.m_fVisible);
+   SetRegValueBool(strKeyName,"SideVisible", !!m_d.m_fSideVisible);
+   SetRegValueBool(strKeyName,"Collidable", !!m_d.m_fCollidable);
+   SetRegValueBool(strKeyName,"EnableLighting", !!m_d.m_fEnableLighting);
+   SetRegValueBool(strKeyName,"Transparent", m_d.m_transparent);
+   SetRegValueInt(strKeyName,"Opacity", m_d.m_opacity);
 }
 
 
 HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float y, bool fromMouseClick)
 {
+   static const char strKeyName[] = "DefaultProps\\Target";
+
    m_ptable = ptable;
    IsWall = false;
    float width = 30.0f, length=6.0f, fTmp;
    int iTmp;
 
-   HRESULT hr = GetRegStringAsFloat("DefaultProps\\Target", "Width", &fTmp);
+   HRESULT hr = GetRegStringAsFloat(strKeyName, "Width", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       width = fTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Target", "Length", &fTmp);
+   hr = GetRegStringAsFloat(strKeyName, "Length", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       length = fTmp;
 
-   hr = GetRegInt("DefaultProps\\Target", "EnableLighting", &iTmp);
+   hr = GetRegInt(strKeyName, "EnableLighting", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fEnableLighting = (iTmp == 0) ? false : true;
    else
@@ -167,299 +171,96 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    //SetDefaults();
    //Set seperate defaults for targets (SetDefaults sets the Wall defaults)
 
-   hr = GetRegInt("DefaultProps\\Target","TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = (iTmp == 0) ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? GetRegIntWithDefault(strKeyName,"TimerInterval", 100) : 100;
+   m_d.m_fHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"HitEvent", true) : true;
+   m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HitThreshold", 2.0f) : 2.0f;
+   m_d.m_slingshot_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"SlingshotThreshold", 0.0f) : 0.0f;
+   m_d.m_fInner = fTrue; //!! Deprecated, do not use anymore
 
-   hr = GetRegInt("DefaultProps\\Target","TimerInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_TimerInterval = iTmp;
-   else
-      m_d.m_tdr.m_TimerInterval = 100;
-
-   hr = GetRegInt("DefaultProps\\Target","HitEvent", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fHitEvent = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fHitEvent = fTrue;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Target","HitThreshold", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_threshold = fTmp;
-   else
-      m_d.m_threshold = 2.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Target","SlingshotThreshold", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_slingshot_threshold = fTmp;
-   else
-      m_d.m_slingshot_threshold = 0.0f;
-
-   //!! Deprecated, do not use anymore
-   m_d.m_fInner = fTrue;
-
-   hr = GetRegInt("DefaultProps\\Target","SideColor", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_sidecolor = iTmp;
-   else
-      m_d.m_sidecolor = RGB(127,127,127);
-
-   hr = GetRegString("DefaultProps\\Target","TopImage", m_d.m_szImage, MAXTOKEN);
+   hr = GetRegString(strKeyName,"TopImage", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   hr = GetRegString("DefaultProps\\Target","SideImage", m_d.m_szSideImage, MAXTOKEN);
+   hr = GetRegString(strKeyName,"SideImage", m_d.m_szSideImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSideImage[0] = 0;
 
-   hr = GetRegInt("DefaultProps\\Target","SlingshotColor", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_slingshotColor = iTmp;
-   else
-      m_d.m_slingshotColor = RGB(242,242,242);
+   m_d.m_sidecolor = fromMouseClick ? GetRegIntWithDefault(strKeyName,"SideColor", RGB(127,127,127)) : RGB(127,127,127);
+   m_d.m_slingshotColor = fromMouseClick ? GetRegIntWithDefault(strKeyName,"SlingshotColor", RGB(242,242,242)) : RGB(242,242,242);
+   m_d.m_topcolor = fromMouseClick ? GetRegIntWithDefault(strKeyName,"TopColor", RGB(127,127,127)) : RGB(127,127,127);
 
-   hr = GetRegInt("DefaultProps\\Target","TopColor", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_topcolor = iTmp;
-   else
-      m_d.m_topcolor = RGB(127,127,127);
+   m_d.m_fDroppable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Droppable", false) : false;
+   m_d.m_fFlipbook = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Flipbook", false) : false;
+   m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
 
-   hr = GetRegInt("DefaultProps\\Target","Droppable", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fDroppable = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fDroppable = fFalse;
+   m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightBottom", 0.0f) : 0.0f;
+   m_d.m_heighttop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightTop", 50.0f) : 50.0f;
 
-   hr = GetRegInt("DefaultProps\\Target","Flipbook", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fFlipbook = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fFlipbook = fFalse;
+   m_d.m_fDisplayTexture = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"DisplayTexture", false) : false;
+   m_d.m_slingshotforce = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"SlingshotForce", 80.0f) : 80.0f;
+   m_d.m_fSlingshotAnimation = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SlingshotAnimation", true) : true;
 
-   hr = GetRegInt("DefaultProps\\Target","CastsShadow", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fCastsShadow = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fCastsShadow = fTrue;
+   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0) : 0;
+   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Target","HeightBottom", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_heightbottom = fTmp;
-   else
-      m_d.m_heightbottom = 0;
+   m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
+   m_d.m_fSideVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SideVisible", true) : true;
+   m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Target","HeightTop", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_heighttop = fTmp;
-   else
-      m_d.m_heighttop = 50.0f;
-
-   hr = GetRegInt("DefaultProps\\Target","DisplayTexture", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fDisplayTexture = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fDisplayTexture = fFalse;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Target","SlingshotForce", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_slingshotforce = fTmp;
-   else
-      m_d.m_slingshotforce = 80.0f;
-
-   hr = GetRegInt("DefaultProps\\Target","SlingshotAnimation", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fSlingshotAnimation = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fSlingshotAnimation = fTrue;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Target","Elasticity", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_elasticity = fTmp;
-   else
-      m_d.m_elasticity = 0.3f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Target","Friction", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_friction = fTmp;
-   else
-      m_d.m_friction = 0;	//zero uses global value
-
-   hr = GetRegStringAsFloat("DefaultProps\\Target","Scatter", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scatter = fTmp;
-   else
-      m_d.m_scatter = 0;	//zero uses global value
-
-   hr = GetRegInt("DefaultProps\\Target","Visible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fVisible = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fVisible = fTrue;
-
-   hr = GetRegInt("DefaultProps\\Target","SideVisible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fSideVisible = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fSideVisible = fTrue;
-
-   hr = GetRegInt("DefaultProps\\Target","Collidable", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fCollidable = (iTmp == 0) ? fFalse : fTrue;
-   else
-      m_d.m_fCollidable = fTrue;
+   m_d.m_transparent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Transparent", false) : false;
+   m_d.m_opacity = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Opacity", 255) : 255;
 
    return InitVBA(fTrue, 0, NULL);
 }
 
 void Surface::SetDefaults(bool fromMouseClick)
 {
-   int iTmp;
-   float fTmp;
+   static const char strKeyName[] = "DefaultProps\\Wall";
 
-   HRESULT hr = GetRegInt("DefaultProps\\Wall","TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = (iTmp == 0) ? false : true;
-   else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
+   HRESULT hr;
 
-   hr = GetRegInt("DefaultProps\\Wall","TimerInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_TimerInterval = iTmp;
-   else
-      m_d.m_tdr.m_TimerInterval = 100;
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? GetRegIntWithDefault(strKeyName,"TimerInterval", 100) : 100;
+   m_d.m_fHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"HitEvent", false) : false;
+   m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HitThreshold", 2.0f) : 2.0f;
+   m_d.m_slingshot_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"SlingshotThreshold", 0.0f) : 0.0f;
+   m_d.m_fInner = fTrue; //!! Deprecated, do not use anymore
 
-   hr = GetRegInt("DefaultProps\\Wall","HitEvent", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fHitEvent = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fHitEvent = fFalse;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Wall","HitThreshold", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_threshold = fTmp;
-   else
-      m_d.m_threshold = 2.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Wall","SlingshotThreshold", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_slingshot_threshold = fTmp;
-   else
-      m_d.m_slingshot_threshold = 0.0f;
-
-   //!! Deprecated, do not use anymore
-   m_d.m_fInner = fTrue;
-
-   hr = GetRegInt("DefaultProps\\Wall","SideColor", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_sidecolor = iTmp;
-   else
-      m_d.m_sidecolor = RGB(255,255,255);
-
-   hr = GetRegString("DefaultProps\\Wall","TopImage", m_d.m_szImage, MAXTOKEN);
+   hr = GetRegString(strKeyName,"TopImage", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   hr = GetRegString("DefaultProps\\Wall","SideImage", m_d.m_szSideImage, MAXTOKEN);
+   hr = GetRegString(strKeyName,"SideImage", m_d.m_szSideImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSideImage[0] = 0;
 
-   hr = GetRegInt("DefaultProps\\Wall","SlingshotColor", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_slingshotColor = iTmp;
-   else
-      m_d.m_slingshotColor = RGB(242,242,242);
+   m_d.m_sidecolor = fromMouseClick ? GetRegIntWithDefault(strKeyName,"SideColor", RGB(255,255,255)) : RGB(255,255,255);
+   m_d.m_slingshotColor = fromMouseClick ? GetRegIntWithDefault(strKeyName,"SlingshotColor", RGB(242,242,242)) : RGB(242,242,242);
+   m_d.m_topcolor = fromMouseClick ? GetRegIntWithDefault(strKeyName,"TopColor", RGB(63,63,63)) : RGB(63,63,63);
 
-   hr = GetRegInt("DefaultProps\\Wall","TopColor", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_topcolor = iTmp;
-   else
-      m_d.m_topcolor = RGB(63,63,63);
+   m_d.m_fDroppable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Droppable", false) : false;
+   m_d.m_fFlipbook = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Flipbook", false) : false;
+   m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
 
-   hr = GetRegInt("DefaultProps\\Wall","Droppable", &iTmp);
-   if ((hr == S_OK)  && fromMouseClick)
-      m_d.m_fDroppable = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fDroppable = fFalse;
+   m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightBottom", 0.0f) : 0.0f;
+   m_d.m_heighttop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightTop", 50.0f) : 50.0f;
 
-   hr = GetRegInt("DefaultProps\\Wall","Flipbook", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fFlipbook = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fFlipbook = fFalse;
+   m_d.m_fDisplayTexture = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"DisplayTexture", false) : false;
+   m_d.m_slingshotforce = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"SlingshotForce", 80.0f) : 80.0f;
+   m_d.m_fSlingshotAnimation = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SlingshotAnimation", true) : true;
 
-   hr = GetRegInt("DefaultProps\\Wall","CastsShadow", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fCastsShadow = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fCastsShadow = fTrue;
+   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0) : 0;
+   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Wall","HeightBottom", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_heightbottom = fTmp;
-   else
-      m_d.m_heightbottom = 0;
+   m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
+   m_d.m_fSideVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SideVisible", true) : true;
+   m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Wall","HeightTop", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_heighttop = fTmp;
-   else
-      m_d.m_heighttop = 50.0f;
-
-   hr = GetRegInt("DefaultProps\\Wall","DisplayTexture", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fDisplayTexture = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fDisplayTexture = fFalse;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Wall","SlingshotForce", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_slingshotforce = fTmp;
-   else
-      m_d.m_slingshotforce = 80.0f;
-
-   hr = GetRegInt("DefaultProps\\Wall","SlingshotAnimation", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fSlingshotAnimation = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fSlingshotAnimation = fTrue;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Wall","Elasticity", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_elasticity = fTmp;
-   else
-      m_d.m_elasticity = 0.3f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Wall","Friction", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_friction = fTmp;
-   else
-      m_d.m_friction = 0;	//zero uses global value
-
-   hr = GetRegStringAsFloat("DefaultProps\\Wall","Scatter", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scatter = fTmp;
-   else
-      m_d.m_scatter = 0;	//zero uses global value
-
-   hr = GetRegInt("DefaultProps\\Wall","Visible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fVisible = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fVisible = fTrue;
-
-   hr = GetRegInt("DefaultProps\\Wall","SideVisible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fSideVisible = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fSideVisible = fTrue;
-
-   hr = GetRegInt("DefaultProps\\Wall","Collidable", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fCollidable = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fCollidable = fTrue;
+   m_d.m_transparent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Transparent", false) : false;
+   m_d.m_opacity = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Opacity", 255) : 255;
 }
 
 
@@ -1488,6 +1289,8 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(SLGA), m_d.m_fSlingshotAnimation);
    bw.WriteBool(FID(SVBL), m_d.m_fSideVisible);
    bw.WriteBool(FID(ELIT), m_d.m_fEnableLighting);
+   bw.WriteBool(FID(TRSP), m_d.m_transparent);
+   bw.WriteInt(FID(OPAC), m_d.m_opacity);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1712,6 +1515,14 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SVBL))
    {
       pbr->GetBool(&m_d.m_fSideVisible);
+   }
+   else if (id == FID(TRSP))
+   {
+      pbr->GetBool(&m_d.m_transparent);
+   }
+   else if (id == FID(OPAC))
+   {
+      pbr->GetInt(&m_d.m_opacity);
    }
    else
    {
