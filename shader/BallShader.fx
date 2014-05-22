@@ -5,8 +5,6 @@ float    invTableHeight;
 float    invTableWidth;
 float4   position;
 float    radius;
-float    ballStretchX;
-float    ballStretchY;
 float    inclination;
 float    reflectionStrength;
 
@@ -75,8 +73,8 @@ vout vsBall( in vin IN )
 	float4 pos = IN.position;
 	pos = mul(pos,orientation);
 	pos *= radius;
-	pos.x *= ballStretchX;
-	pos.y *= ballStretchY*cos(inclination);
+	pos.x *= sin(inclination);
+	pos.y *= cos(inclination);
 	pos.z *= sin(inclination);
 	pos += position;
 	
@@ -112,14 +110,14 @@ vout vsBallReflection( in vin IN )
 	float4 pos = IN.position;
 	pos = mul(pos,orientation);
 	pos *= radius;
-	pos.x *= ballStretchX;
-	pos.y *= ballStretchY*cos(inclination);
+	pos.x *= sin(inclination);
+	pos.y *= cos(inclination);
 	pos.z *= sin(inclination);
 	pos += position;
 
 	// this is no a 100% ball reflection on the table due to the quirky camera setup
 	// the ball is moved a bit down and rendered again
-	pos.y += sizeY*0.4;
+	pos.y += sizeY*0.25;
 	pos.z = (pos.z*0.5)-10;
     //convert to world space and pass along to our output
     OUT.position    = mul(pos, matWorldViewProj);
@@ -194,9 +192,9 @@ float4 psBallDesktop( in vout IN ) : COLOR
 	
 	// don't map the playfield area completely over the whole ball but only on the lower half
 	// 0 is in the middle so start a bit later for a discreet reflection
-	if( IN.tex1.y>0.23 )
+	if( IN.tex1.y>0.33 )
 	{
-		playfieldColor.a = saturate(IN.tex1.y-0.23);
+		playfieldColor.a = saturate(IN.tex1.y-0.33);
 	}
 	else
 	{
