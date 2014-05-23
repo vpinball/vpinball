@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -714,31 +714,23 @@ BEGIN
     LTEXT           "User &Value",IDC_STATIC,7,40,38,9
 END
 
-IDD_PROPLIGHT_VISUALS DIALOGEX 0, 0, 125, 197
+IDD_PROPLIGHT_VISUALS DIALOGEX 0, 0, 125, 127
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    COMBOBOX        1503,34,7,84,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        1,51,23,40,12,ES_AUTOHSCROLL
-    CONTROL         "Custom2",3,"ColorControl",WS_TABSTOP,51,38,40,14
-    EDITTEXT        12,51,55,40,12,ES_AUTOHSCROLL
-    CONTROL         "Custom2",11,"ColorControl",WS_TABSTOP,51,69,40,14
-    COMBOBOX        DISPID_Image,7,92,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        DISPID_Image2,7,119,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Display &Image in Editor",13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,149,87,10
-    CONTROL         "Enable Lighting 'Off Image'",IDC_ENABLE_OFF_LIGHTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,160,100,10
-    CONTROL         "Enable Lighting 'On Image'",IDC_ENABLELIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,172,100,10
-    CONTROL         "'On Image' Is Lightmap",IDC_ON_LIGHT_LIGHTMAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,183,87,10
-    LTEXT           "&Color",IDC_STATIC,7,41,43,8
-    LTEXT           "&Radius",IDC_STATIC,7,25,43,8
-    LTEXT           "Border &Width",IDC_STATIC,7,57,42,8
-    LTEXT           "Border Co&lor",IDC_STATIC,7,72,40,8
-    LTEXT           "S&hape",IDC_STATIC,7,9,22,8
-    LTEXT           "O&n Image:",IDC_STATIC,7,109,37,8
-    LTEXT           "O&ff Image:",IDC_STATIC,7,83,37,8
-    LTEXT           "Depth Bias",IDC_STATIC,7,137,36,8
-    EDITTEXT        IDC_DEPTH_BIAS,43,135,36,12,ES_AUTOHSCROLL
+    EDITTEXT        1,51,3,40,12,ES_AUTOHSCROLL
+    CONTROL         "Custom2",3,"ColorControl",WS_TABSTOP,51,50,40,14
+    EDITTEXT        12,51,17,40,12,ES_AUTOHSCROLL
+    COMBOBOX        DISPID_Image,7,79,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Display &Image in Editor",13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,95,87,10
+    LTEXT           "&Color",IDC_STATIC,7,53,43,8
+    LTEXT           "&Radius",IDC_STATIC,7,5,43,8
+    LTEXT           "Intensity",IDC_STATIC,7,19,27,8
+    LTEXT           "O&ff Image:",IDC_STATIC,7,70,37,8
+    LTEXT           "Depth Bias",IDC_STATIC,7,109,36,8
+    EDITTEXT        IDC_DEPTH_BIAS,43,107,36,12,ES_AUTOHSCROLL
+    LTEXT           "Fade Speed",IDC_STATIC,7,34,40,8
+    EDITTEXT        IDC_FADE_SPEED,51,32,40,14,ES_AUTOHSCROLL
 END
 
 IDD_PROPLIGHT_POSITION DIALOGEX 0, 0, 125, 65
@@ -2055,7 +2047,8 @@ IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
 //
 
 BALLSHADER.FX           RCDATA                  "shader\\BallShader.fx"
-LIGHTINSERT.FX          RCDATA 					"shader\\LightInsert.fx"
+LIGHTINSERT.FX          RCDATA                  "shader\\LightInsert.fx"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Accelerator
@@ -2339,7 +2332,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
