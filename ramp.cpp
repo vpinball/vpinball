@@ -2379,23 +2379,20 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Ramp::get_IsVisible(VARIANT_BOOL *pVal) //temporary value of object
+STDMETHODIMP Ramp::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
    return S_OK;
 }
 
-STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
+STDMETHODIMP Ramp::put_Visible(VARIANT_BOOL newVal)
 {
-   if (!g_pplayer )
-   {
-      STARTUNDO
-      m_d.m_fVisible = VBTOF(newVal);			// set visibility
-	  STOPUNDO
-   }
+    STARTUNDO
+    m_d.m_fVisible = VBTOF(newVal);
+    STOPUNDO
 
-   return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Ramp::get_EnableLightingImage(VARIANT_BOOL *pVal)

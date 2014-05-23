@@ -203,8 +203,8 @@ public:
 	STDMETHOD(put_Transparent)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_IsVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_IsVisible)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Opacity)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Opacity)(/*[in]*/ int newVal);
 

@@ -765,14 +765,14 @@ STDMETHODIMP Flasher::put_Alpha(long newVal)
 }
 
 
-STDMETHODIMP Flasher::get_IsVisible(VARIANT_BOOL *pVal) //temporary value of object
+STDMETHODIMP Flasher::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_IsVisible);
 
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_IsVisible(VARIANT_BOOL newVal)
+STDMETHODIMP Flasher::put_Visible(VARIANT_BOOL newVal)
 {	
 //   if (!g_pplayer )
    {
