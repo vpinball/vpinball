@@ -9,10 +9,13 @@
 #include "RenderDevice.h"
 
 class LightData
-	{
+{
 public:
 	Vertex2D m_vCenter;
 	float m_radius;
+   float m_intensity;
+   float m_fadeSpeed;
+   float m_currentIntensity;
 	LightState m_state;
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
@@ -31,9 +34,8 @@ public:
 	BOOL m_fDisplayImage;
 	BOOL m_EnableLighting;
    BOOL m_EnableOffLighting;
-   BOOL m_OnImageIsLightMap;
-    float m_depthBias;      // for determining depth sorting
-	};
+   float m_depthBias;      // for determining depth sorting
+};
 
 class LightCenter : public ISelect
 	{
@@ -146,13 +148,14 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 	virtual void DrawFrame(BOOL fOn)  { }
     void PostRenderStaticCustom(RenderDevice* pd3dDevice);
 
-    virtual bool IsTransparent()    { return m_d.m_OnImageIsLightMap != FALSE; }
+    virtual bool IsTransparent()    { return TRUE; }
     virtual float GetDepth(const Vertex3Ds& viewDir)
       { return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; }
 
 	void WriteRegDefaults();
    void FreeBuffers();
 
+   void     InitShape();
 	void		lockLight();
 	void		unLockLight();
 	void		setLightStateBypass(const LightState newVal);
@@ -163,6 +166,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 	LightData m_d;
 	LightState 	m_realState;
 
+   static Shader   *m_pInsertShader;
 	// Run-time
 private:
     float m_surfaceHeight;
@@ -185,16 +189,14 @@ private:
 public:
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Surface)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_BorderWidth)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_BorderWidth)(/*[in]*/ float newVal);
+	STDMETHOD(get_Intensity)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Intensity)(/*[in]*/ float newVal);
 	STDMETHOD(get_BorderColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_BorderColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_BlinkInterval)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(put_BlinkInterval)(/*[in]*/ long newVal);
 	STDMETHOD(get_BlinkPattern)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_BlinkPattern)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_Shape)(/*[out, retval]*/ Shape *pVal);
-	STDMETHOD(put_Shape)(/*[in]*/ Shape newVal);
 	STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Y)(/*[in]*/ float newVal);
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
@@ -215,10 +217,10 @@ public:
    STDMETHOD(put_EnableLighting)(/*[in]*/ int newVal);
    STDMETHOD(get_EnableOffLighting)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_EnableOffLighting)(/*[in]*/ int newVal);
-   STDMETHOD(get_OnImageIsLightmap)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_OnImageIsLightmap)(/*[in]*/ int newVal);
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
+   STDMETHOD(get_FadeSpeed)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_FadeSpeed)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

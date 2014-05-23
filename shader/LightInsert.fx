@@ -3,6 +3,7 @@ float4x4 matWorld           : WORLD;
 float4   diffuseMaterial    = float4(1,1,1,1);
 float4   lightCenter;
 float    maxRange;
+float    intensity=1;
 
 texture OffTexture;
 sampler2D texSampler0 : TEXUNIT0 = sampler_state
@@ -44,27 +45,81 @@ vout VS( in vin IN )
 	OUT.normal = normalize( mul(IN.normal, matWorld) );
 	return OUT;
 }
+float4 Screen (float4 cBase, float4 cBlend)
+{
+	return (1 - (1 - cBase) * (1 - cBlend));
+}
+float4 Multiply (float4 cBase, float4 cBlend)
+{
+	return (cBase * cBlend);
+}
+float4 Overlay (float4 cBase, float4 cBlend)
+{
+	// Vectorized (easier for compiler)
+	float4 cNew;
+	
+	// overlay has two output possbilities
+	// which is taken is decided if pixel value
+	// is below half or not
 
+	cNew = step(0.5,cBase);
+	
+	// we pick either solution
+	// depending on pixel
+	
+	// first is case of < 0.5
+	// second is case for >= 0.5
+	
+	// interpolate between the two, 
+	// using color as influence value
+	cNew= lerp((cBase*cBlend*2),(1.0-(2.0*(1.0-cBase)*(1.0-cBlend))),cNew);
+
+	cNew.a = 1.0;
+	return cNew;
+}
 //PIXEL SHADER
-float4 PS( in vout IN ) : COLOR
+float4 PS_WithTexel(in vout IN ) : COLOR
 {	
 	float len = length(lightCenter.xyz-IN.worldPos.xyz);
 	float f=0;//maxRange*0.01;
 	float intens = 1-saturate((len-f)/maxRange);
 	
 	intens = pow(intens,2);
-	float4 result = saturate(diffuseMaterial*intens);
-	result.a = intens;
+	float4 result = saturate((diffuseMaterial*intens)*intensity);	
+	result.a = intens;	
 	float4 texel = tex2D( texSampler0, IN.tex0 );
-	return result +texel*texel.a;
+	result = Overlay( texel, result );
+    return Screen( texel, result );
 }
 
-technique BasicLight
+float4 PS_WithoutTexel(in vout IN ) : COLOR
+{	
+	float len = length(lightCenter.xyz-IN.worldPos.xyz);
+	float f=0;//maxRange*0.01;
+	float intens = 1-saturate((len-f)/maxRange);
+	
+	intens = pow(intens,2);
+	float4 result = saturate((diffuseMaterial*intens)*intensity);	
+	result.a = intens;	
+	float4 color=diffuseMaterial*0.2;
+    return Screen( color, result );
+}
+
+technique BasicLightWithTexture
 {
 	pass p0 
 	{		
-		vertexshader = compile vs_2_0 VS();
-		pixelshader  = compile ps_2_0 PS();
+		vertexshader = compile vs_3_0 VS();
+		pixelshader  = compile ps_3_0 PS_WithTexel();
+
+	}
+}
+technique BasicLightWithoutTexture
+{
+	pass p0 
+	{		
+		vertexshader = compile vs_3_0 VS();
+		pixelshader  = compile ps_3_0 PS_WithoutTexel();
 
 	}
 }

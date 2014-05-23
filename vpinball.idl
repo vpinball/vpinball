@@ -1214,16 +1214,14 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_X), helpstring("property X")] HRESULT X([in] float newVal);
 		[propget, id(DISPID_Y), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
 		[propput, id(DISPID_Y), helpstring("property Y")] HRESULT Y([in] float newVal);
-		[propget, id(DISPID_Shape), helpstring("property Shape")] HRESULT Shape([out, retval] Shape *pVal);
-		[propput, id(DISPID_Shape), helpstring("property Shape")] HRESULT Shape([in] Shape newVal);
 		[propget, id(9), helpstring("property BlinkPattern")] HRESULT BlinkPattern([out, retval] BSTR *pVal);
 		[propput, id(9), helpstring("property BlinkPattern")] HRESULT BlinkPattern([in] BSTR newVal);
 		[propget, id(DISPID_Light_BlinkInterval), helpstring("property BlinkInterval")] HRESULT BlinkInterval([out, retval] long *pVal);
 		[propput, id(DISPID_Light_BlinkInterval), helpstring("property BlinkInterval")] HRESULT BlinkInterval([in] long newVal);
 		[propget, id(11), helpstring("property BorderColor")] HRESULT BorderColor([out, retval] OLE_COLOR *pVal);
 		[propput, id(11), helpstring("property BorderColor")] HRESULT BorderColor([in] OLE_COLOR newVal);
-		[propget, id(12), helpstring("property BorderWidth")] HRESULT BorderWidth([out, retval] float *pVal);
-		[propput, id(12), helpstring("property BorderWidth")] HRESULT BorderWidth([in] float newVal);
+		[propget, id(12), helpstring("property Intensity")] HRESULT Intensity([out, retval] float *pVal);
+		[propput, id(12), helpstring("property Intensity")] HRESULT Intensity([in] float newVal);
 		[propget, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([in] BSTR newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
@@ -1240,10 +1238,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(394), helpstring("property EnableOffLighting")] HRESULT EnableOffLighting([in] int newVal);
 		[propget, id(557), helpstring("property EnableLighting")] HRESULT EnableLighting([out, retval] int *pVal);
 		[propput, id(557), helpstring("property EnableLighting")] HRESULT EnableLighting([in] int newVal);
-		[propget, id(398), helpstring("property OnImageIsLightmap")] HRESULT OnImageIsLightmap([out, retval] int *pVal);
-		[propput, id(398), helpstring("property OnImageIsLightmap")] HRESULT OnImageIsLightmap([in] int newVal);
 		[propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
 		[propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);
+		[propget, id(377), helpstring("property FadeSpeed")] HRESULT FadeSpeed([out, retval] float *pVal);
+		[propput, id(377), helpstring("property FadeSpeed")] HRESULT FadeSpeed([in] float newVal);
 	};
 
 	[
