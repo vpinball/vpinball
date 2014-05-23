@@ -1714,10 +1714,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(11), helpstring("property RightWallHeight")] HRESULT RightWallHeight([in] float newVal);
 		[propget, id(378), helpstring("property Solid")] HRESULT Solid([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(378), helpstring("property Solid")] HRESULT Solid([in] VARIANT_BOOL newVal);
-		[propget, id(379), helpstring("property Acrylic")] HRESULT Acrylic([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(379), helpstring("property Acrylic")] HRESULT Acrylic([in] VARIANT_BOOL newVal);
-		[propget, id(380), helpstring("property Alpha")] HRESULT Alpha([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(380), helpstring("property Alpha")] HRESULT Alpha([in] VARIANT_BOOL newVal);
+		[propget, id(18), helpstring("property Transparent")] HRESULT Transparent([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(18), helpstring("property Transparent")] HRESULT Transparent([in] VARIANT_BOOL newVal);
+		[propget, id(19), helpstring("property Opacity")] HRESULT Opacity([out, retval] int *pVal);
+		[propput, id(19), helpstring("property Opacity")] HRESULT Opacity([in] int newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
@@ -1739,17 +1739,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(114), helpstring("property Friction")] HRESULT Friction([in] float newVal);
 		[propget, id(115), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
 		[propput, id(115), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
-
-		[propget, id(554), helpstring("property Modify3DStereo")] HRESULT Modify3DStereo([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(554), helpstring("property Modify3DStereo")] HRESULT Modify3DStereo([in] VARIANT_BOOL newVal);
-
-	    //!! deprecated
-		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
-		[id(1584), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();
-
-		[propget, id(556), helpstring("property AddBlend")] HRESULT AddBlend([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(556), helpstring("property AddBlend")] HRESULT AddBlend([in] VARIANT_BOOL newVal);
 
         [propget, id(394), helpstring("property EnableLightingImage")] HRESULT EnableLightingImage([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(394), helpstring("property EnableLightingImage")] HRESULT EnableLightingImage([in] VARIANT_BOOL newVal);

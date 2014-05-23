@@ -4,7 +4,7 @@ Ramp::Ramp()
 {
    m_menuid = IDR_SURFACEMENU;
    m_d.m_fCollidable = true;
-   m_d.m_IsVisible = true;
+   m_d.m_fVisible = true;
    staticVertexBuffer = 0;
    dynamicVertexBuffer = 0;
    dynamicIndexBuffer = 0;
@@ -31,15 +31,9 @@ Ramp::~Ramp()
 HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
-   m_d.m_IsVisible = true;
+   m_d.m_fVisible = true;
 
-   HRESULT hr;
-   float fTmp;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp", "Length", &fTmp);
-   float length = 200.0f;
-   if (hr == S_OK)
-      length = fTmp*0.5f;
+   float length = 0.5f * GetRegStringAsFloatWithDefault("DefaultProps\\Ramp", "Length", 400.0f);
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -69,217 +63,80 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Ramp::SetDefaults(bool fromMouseClick)
 {
+   static const char strKeyName[] = "DefaultProps\\Ramp";
+
    HRESULT hr;
-   float fTmp;
-   int iTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","HeightBottom", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_heightbottom = fTmp;
-   else
-      m_d.m_heightbottom = 0;
+   m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightBottom", 0.0f) : 0.0f;
+   m_d.m_heighttop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightTop", 50.0f) : 50.0f;
+   m_d.m_widthbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WidthBottom", 75.0f) : 75.0f;
+   m_d.m_widthtop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WidthTop", 60.0f) : 60.0f;
+   m_d.m_color = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Color", RGB(50,200,50)) : RGB(50,200,50);
+   m_d.m_type = fromMouseClick ? (RampType)GetRegIntWithDefault(strKeyName,"RampType", RampTypeFlat) : RampTypeFlat;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","HeightTop", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_heighttop = fTmp;
-   else
-      m_d.m_heighttop = 100.0f;
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? GetRegIntWithDefault(strKeyName,"TimerInterval", 100) : 100;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","WidthBottom", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_widthbottom = fTmp;
-   else
-      m_d.m_widthbottom = 75.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","WidthTop", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_widthtop = fTmp;
-   else
-      m_d.m_widthtop = 60.0f;
-
-   hr = GetRegInt("DefaultProps\\Ramp","Color", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_color = iTmp;
-   else
-      m_d.m_color = RGB(50,200,50);
-
-   hr = GetRegInt("DefaultProps\\Ramp","RampType", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_type = (enum RampType)iTmp;
-   else
-      m_d.m_type = RampTypeFlat;
-
-   hr = GetRegInt("DefaultProps\\Ramp","TimerEnabled", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
-   else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
-
-   hr = GetRegInt("DefaultProps\\Ramp","TimerInterval", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_TimerInterval = iTmp;
-   else
-      m_d.m_tdr.m_TimerInterval = 100;
-
-   hr = GetRegString("DefaultProps\\Ramp","Image", m_d.m_szImage, MAXTOKEN);
+   hr = GetRegString(strKeyName,"Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   hr = GetRegInt("DefaultProps\\Ramp","ImageMode", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_imagealignment = (enum RampImageAlignment)iTmp;
-   else
-      m_d.m_imagealignment = ImageModeWorld;
+   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)GetRegIntWithDefault(strKeyName,"ImageMode", ImageModeWorld) : ImageModeWorld;
+   m_d.m_fImageWalls = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"ImageWalls", true) : true;
+   m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
+   m_d.m_transparent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Transparent", false) : false;
+   m_d.m_opacity = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Opacity", 255) : 255;
 
-   hr = GetRegInt("DefaultProps\\Ramp","ImageWalls", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fImageWalls = iTmp == 0 ? false : true;
-   else
-      m_d.m_fImageWalls = true;
+   m_d.m_leftwallheight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"LeftWallHeight", 62.0f) : 62.0f;
+   m_d.m_rightwallheight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RightWallHeight", 62.0f) : 62.0f;
+   m_d.m_leftwallheightvisible = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"LeftWallHeightVisible", 30.0f) : 30.0f;
+   m_d.m_rightwallheightvisible = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RightWallHeightVisible", 30.0f) : 30.0f;
 
-   hr = GetRegInt("DefaultProps\\Ramp","CastsShadow", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fCastsShadow = iTmp == 0 ? false : true;
-   else
-      m_d.m_fCastsShadow = true;
+   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0) : 0;
+   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
-   hr = GetRegInt("DefaultProps\\Ramp","Acrylic", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fAcrylic = iTmp == 0 ? false : true;
-   else
-      m_d.m_fAcrylic = false;
+   m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
+   m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
 
-   hr = GetRegInt("DefaultProps\\Ramp","Alpha", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fAlpha = iTmp == 0 ? false : true;
-   else
-      m_d.m_fAlpha = false;
-   if (m_d.m_fAlpha) 
-      m_d.m_fAcrylic = true;   // A alpha Ramp is automatically acrylic.
+   m_d.m_enableLightingImage = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"EnableLightingOnImage", true) : true;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","LeftWallHeight", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_leftwallheight = fTmp;
-   else
-      m_d.m_leftwallheight = 62.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","RightWallHeight", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_rightwallheight = fTmp;
-   else
-      m_d.m_rightwallheight = 62.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","LeftWallHeightVisible", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_leftwallheightvisible = fTmp;
-   else
-      m_d.m_leftwallheightvisible = 30.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","RightWallHeightVisible", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_rightwallheightvisible = fTmp;
-   else
-      m_d.m_rightwallheightvisible = 30.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","Elasticity", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_elasticity = fTmp;
-   else
-      m_d.m_elasticity = 0.3f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","Friction", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_friction = fTmp;
-   else
-      m_d.m_friction = 0;	//zero uses global value
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","Scatter", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scatter = fTmp;
-   else
-      m_d.m_scatter = 0;	//zero uses global value
-
-   hr = GetRegInt("DefaultProps\\Ramp","Collidable", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fCollidable = iTmp == 0 ? false : true;
-   else
-      m_d.m_fCollidable = true;
-
-   hr = GetRegInt("DefaultProps\\Ramp","Visible", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_IsVisible = iTmp == 0 ? false : true;
-   else
-      m_d.m_IsVisible = true;
-
-   hr = GetRegInt("DefaultProps\\Ramp","Modify3DStereo", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fModify3DStereo = iTmp == 0 ? false : true;
-   else
-      m_d.m_fModify3DStereo = true;
-
-   hr = GetRegInt("DefaultProps\\Ramp","AddBlend", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fAddBlend = iTmp == 0 ? false : true;
-   else
-      m_d.m_fAddBlend = false;
-
-   hr = GetRegInt("DefaultProps\\Ramp","EnableLightingOnImage", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_enableLightingImage = iTmp == 0 ? false : true;
-   else
-      m_d.m_enableLightingImage = true;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","WireDiameter", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-       m_d.m_wireDiameter = fTmp;
-   else
-       m_d.m_wireDiameter = 6.0f;	
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","WireDistanceX", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-       m_d.m_wireDistanceX = fTmp;
-   else
-       m_d.m_wireDistanceX = 38.0f;	
-
-   hr = GetRegStringAsFloat("DefaultProps\\Ramp","WireDistanceY", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-       m_d.m_wireDistanceY = fTmp;
-   else
-       m_d.m_wireDistanceY = 88.0f;	
-
+   m_d.m_wireDiameter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDiameter", 60.0f) : 60.0f;
+   m_d.m_wireDistanceX = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDistanceX", 38.0f) : 38.0f;
+   m_d.m_wireDistanceY = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDistanceY", 88.0f) : 88.0f;
 }
 
 void Ramp::WriteRegDefaults()
 {
-   SetRegValueFloat("DefaultProps\\Ramp","HeightBottom", m_d.m_heightbottom);
-   SetRegValueFloat("DefaultProps\\Ramp","HeightTop", m_d.m_heighttop);
-   SetRegValueFloat("DefaultProps\\Ramp","WidthBottom", m_d.m_widthbottom);
-   SetRegValueFloat("DefaultProps\\Ramp","WidthTop", m_d.m_widthtop);
-   SetRegValue("DefaultProps\\Ramp","Color",REG_DWORD,&m_d.m_color,4);
-   SetRegValue("DefaultProps\\Ramp","RampType",REG_DWORD,&m_d.m_type,4);
-   SetRegValue("DefaultProps\\Ramp","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
-   SetRegValue("DefaultProps\\Ramp","TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
-   SetRegValue("DefaultProps\\Ramp","Image", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
-   SetRegValue("DefaultProps\\Ramp","ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
-   SetRegValueBool("DefaultProps\\Ramp","ImageWalls",m_d.m_fImageWalls);
-   SetRegValueBool("DefaultProps\\Ramp","CastsShadow",m_d.m_fCastsShadow);
-   SetRegValueBool("DefaultProps\\Ramp","Acrylic",m_d.m_fAcrylic);
-   SetRegValueBool("DefaultProps\\Ramp","Alpha",m_d.m_fAlpha);
-   SetRegValueFloat("DefaultProps\\Ramp","LeftWallHeight", m_d.m_leftwallheight);
-   SetRegValueFloat("DefaultProps\\Ramp","RightWallHeight", m_d.m_rightwallheight);
-   SetRegValueFloat("DefaultProps\\Ramp","LeftWallHeightVisible",m_d.m_leftwallheightvisible);
-   SetRegValueFloat("DefaultProps\\Ramp","RightWallHeightVisible",m_d.m_rightwallheightvisible);
-   SetRegValueFloat("DefaultProps\\Ramp","Elasticity", m_d.m_elasticity);
-   SetRegValueFloat("DefaultProps\\Ramp","Friction", m_d.m_friction);
-   SetRegValueFloat("DefaultProps\\Ramp","Scatter", m_d.m_scatter);
-   SetRegValueBool("DefaultProps\\Ramp","Collidable",m_d.m_fCollidable);
-   SetRegValueBool("DefaultProps\\Ramp","Visible",m_d.m_IsVisible);
-   SetRegValueBool("DefaultProps\\Ramp","Modify3DStereo",m_d.m_fModify3DStereo);
-   SetRegValueBool("DefaultProps\\Ramp","AddBlend",m_d.m_fAddBlend);
-   SetRegValueBool("DefaultProps\\Ramp","EnableLighingOnImage",m_d.m_enableLightingImage);
-   SetRegValueFloat("DefaultProps\\Ramp","WireDiameter", m_d.m_wireDiameter);
-   SetRegValueFloat("DefaultProps\\Ramp","WireDistanceX", m_d.m_wireDistanceX);
-   SetRegValueFloat("DefaultProps\\Ramp","WireDistanceY", m_d.m_wireDistanceY);
+   static const char strKeyName[] = "DefaultProps\\Ramp";
+
+   SetRegValueFloat(strKeyName,"HeightBottom", m_d.m_heightbottom);
+   SetRegValueFloat(strKeyName,"HeightTop", m_d.m_heighttop);
+   SetRegValueFloat(strKeyName,"WidthBottom", m_d.m_widthbottom);
+   SetRegValueFloat(strKeyName,"WidthTop", m_d.m_widthtop);
+   SetRegValueInt(strKeyName,"Color", m_d.m_color);
+   SetRegValueInt(strKeyName,"RampType", m_d.m_type);
+   SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
+   SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
+   SetRegValue(strKeyName,"ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
+   SetRegValueBool(strKeyName,"ImageWalls",m_d.m_fImageWalls);
+   SetRegValueBool(strKeyName,"CastsShadow",m_d.m_fCastsShadow);
+   SetRegValueBool(strKeyName,"Transparent",m_d.m_transparent);
+   SetRegValueInt(strKeyName,"Opacity", m_d.m_opacity);
+   SetRegValueFloat(strKeyName,"LeftWallHeight", m_d.m_leftwallheight);
+   SetRegValueFloat(strKeyName,"RightWallHeight", m_d.m_rightwallheight);
+   SetRegValueFloat(strKeyName,"LeftWallHeightVisible",m_d.m_leftwallheightvisible);
+   SetRegValueFloat(strKeyName,"RightWallHeightVisible",m_d.m_rightwallheightvisible);
+   SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
+   SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
+   SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
+   SetRegValueBool(strKeyName,"Collidable",m_d.m_fCollidable);
+   SetRegValueBool(strKeyName,"Visible",m_d.m_fVisible);
+   SetRegValueBool(strKeyName,"EnableLighingOnImage",m_d.m_enableLightingImage);
+   SetRegValueFloat(strKeyName,"WireDiameter", m_d.m_wireDiameter);
+   SetRegValueFloat(strKeyName,"WireDistanceX", m_d.m_wireDistanceX);
+   SetRegValueFloat(strKeyName,"WireDistanceY", m_d.m_wireDistanceY);
 }
 
 void Ramp::PreRender(Sur * const psur)
@@ -393,7 +250,7 @@ void Ramp::RenderBlueprint(Sur *psur)
 
 void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 {
-   if (!m_d.m_fCastsShadow || !m_ptable->m_fRenderShadows || !m_d.m_IsVisible) 
+   if (!m_d.m_fCastsShadow || !m_ptable->m_fRenderShadows || !m_d.m_fVisible) 
       return; //skip render if not visible
 
    psur->SetFillColor(RGB(0,0,0));
@@ -692,7 +549,7 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
       rendv2.x = pdp2->m_v.x;
       rendv2.y = pdp2->m_v.y;
 
-      if (m_d.m_fAlpha)
+      if (m_d.m_transparent)
          RecurseSmoothLineWithAccuracy(&cc, 0, 1, &rendv1, &rendv2, pvv, alphaRampsAccuracyValue);
       else
          RecurseSmoothLine(&cc, 0, 1, &rendv1, &rendv2, pvv);
@@ -1447,33 +1304,14 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
       {
          if (m_d.m_imagealignment == ImageModeWorld)
          {
-            // Check if this is an acrylic.
-            if (m_d.m_fAcrylic)
-            {
-               Vertex2D rgvOut[4];
-               // Transform vertecies into screen coordinates.
-               g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
-
-               // Calculate texture coordinate for each vertex.
-               for (int r=0; r<4; r++)
-               {
-                  // Set texture coordinates so that there is a 1 to 1 correspondence
-                  // between texels and pixels.  This is the best case for screen door transparency.
-                  rgv3D[r].tu = rgvOut[r].x * inv_width; 
-                  rgv3D[r].tv = rgvOut[r].y * inv_height; 
-               }
-            }
-            else
-            {
-               rgv3D[0].tu = rgv3D[0].x * inv_width2;
-               rgv3D[0].tv = rgv3D[0].y * inv_height2;
-               rgv3D[1].tu = rgv3D[1].x * inv_width2;
-               rgv3D[1].tv = rgv3D[1].y * inv_height2;
-               rgv3D[2].tu = rgv3D[2].x * inv_width2;
-               rgv3D[2].tv = rgv3D[2].y * inv_height2;
-               rgv3D[3].tu = rgv3D[3].x * inv_width2;
-               rgv3D[3].tv = rgv3D[3].y * inv_height2;
-            }
+            rgv3D[0].tu = rgv3D[0].x * inv_width2;
+            rgv3D[0].tv = rgv3D[0].y * inv_height2;
+            rgv3D[1].tu = rgv3D[1].x * inv_width2;
+            rgv3D[1].tv = rgv3D[1].y * inv_height2;
+            rgv3D[2].tu = rgv3D[2].x * inv_width2;
+            rgv3D[2].tv = rgv3D[2].y * inv_height2;
+            rgv3D[3].tu = rgv3D[3].x * inv_width2;
+            rgv3D[3].tv = rgv3D[3].y * inv_height2;
          }
          else
          {
@@ -1517,34 +1355,15 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
       {
          if (m_d.m_imagealignment == ImageModeWorld)
          {
-            // Check if this is an acrylic.
-            if (m_d.m_fAcrylic)
-            {
-               Vertex2D rgvOut[4];
-               // Transform vertices into screen coordinates.
-               g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
+            rgv3D[0].tu = rgv3D[0].x * inv_width2;
+            rgv3D[0].tv = rgv3D[0].y * inv_height2;
+            rgv3D[2].tu = rgv3D[2].x * inv_width2;
+            rgv3D[2].tv = rgv3D[2].y * inv_height2;
 
-               // Calculate texture coordinate for each vertex.
-               for (int r=0; r<4; r++)
-               {
-                  // Set texture coordinates so that there is a 1 to 1 correspondence
-                  // between texels and pixels.  This is the best case for screen door transparency.
-                  rgv3D[r].tu = rgvOut[r].x * inv_width; 
-                  rgv3D[r].tv = rgvOut[r].y * inv_height; 
-               }
-            }
-            else
-            {
-               rgv3D[0].tu = rgv3D[0].x * inv_width2;
-               rgv3D[0].tv = rgv3D[0].y * inv_height2;
-               rgv3D[2].tu = rgv3D[2].x * inv_width2;
-               rgv3D[2].tv = rgv3D[2].y * inv_height2;
-
-               rgv3D[1].tu = rgv3D[0].tu;
-               rgv3D[1].tv = rgv3D[0].tv;
-               rgv3D[3].tu = rgv3D[2].tu;
-               rgv3D[3].tv = rgv3D[2].tv;
-            }
+            rgv3D[1].tu = rgv3D[0].tu;
+            rgv3D[1].tv = rgv3D[0].tv;
+            rgv3D[3].tu = rgv3D[2].tu;
+            rgv3D[3].tv = rgv3D[2].tv;
          }
          else
          {
@@ -1595,34 +1414,15 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
       {
          if (m_d.m_imagealignment == ImageModeWorld)
          {
-            // Check if this is an acrylic.
-            if (m_d.m_fAcrylic)
-            {
-               Vertex2D rgvOut[4];
-               // Transform vertices into screen coordinates.
-               g_pplayer->m_pin3d.TransformVertices(rgv3D, NULL, 4, rgvOut);
+            rgv3D[0].tu = rgv3D[0].x * inv_width2;
+            rgv3D[0].tv = rgv3D[0].y * inv_height2;
+            rgv3D[2].tu = rgv3D[2].x * inv_width2;
+            rgv3D[2].tv = rgv3D[2].y * inv_height2;
 
-               // Calculate texture coordinate for each vertex.
-               for (int r=0; r<4; r++)
-               {
-                  // Set texture coordinates so that there is a 1 to 1 correspondence
-                  // between texels and pixels.  This is the best case for screen door transparency.
-                  rgv3D[r].tu = rgvOut[r].x * inv_width; 
-                  rgv3D[r].tv = rgvOut[r].y * inv_height; 
-               }
-            }
-            else
-            {
-               rgv3D[0].tu = rgv3D[0].x * inv_width2;
-               rgv3D[0].tv = rgv3D[0].y * inv_height2;
-               rgv3D[2].tu = rgv3D[2].x * inv_width2;
-               rgv3D[2].tv = rgv3D[2].y * inv_height2;
-
-               rgv3D[1].tu = rgv3D[0].tu;
-               rgv3D[1].tv = rgv3D[0].tv;
-               rgv3D[3].tu = rgv3D[2].tu;
-               rgv3D[3].tv = rgv3D[2].tv;
-            }
+            rgv3D[1].tu = rgv3D[0].tu;
+            rgv3D[1].tv = rgv3D[0].tv;
+            rgv3D[3].tu = rgv3D[2].tu;
+            rgv3D[3].tv = rgv3D[2].tv;
          }
          else
          {
@@ -1663,23 +1463,19 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
 
    solidMaterial.setColor( 1.0f, m_d.m_color );
 
-   if( !staticVertexBuffer && m_d.m_IsVisible && !m_d.m_fAlpha )
+   if( !staticVertexBuffer && m_d.m_fVisible && !m_d.m_transparent )
    {
       if (isHabitrail())
          prepareHabitrail( pd3dDevice );
       else
          prepareStatic( pd3dDevice );
    }
-   else if( !dynamicVertexBuffer && m_d.m_IsVisible && m_d.m_fAlpha )
+   else if( !dynamicVertexBuffer && m_d.m_fVisible && m_d.m_transparent )
    {
       if (isHabitrail())
-      {
          prepareHabitrail( pd3dDevice );
-      }
       else
-      {
           GenerateVertexBuffer(pd3dDevice);
-      }
    }
 
    delete[] rgvInit;
@@ -1690,10 +1486,10 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
 void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
 {	
    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
-   if (!m_d.m_IsVisible) return;		// return if no Visible
+   if (!m_d.m_fVisible) return;		// return if no Visible
 
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
-   if (m_d.m_fAlpha) return;
+   if (m_d.m_transparent) return;
 
    /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
     * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
@@ -1724,29 +1520,13 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
          {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
          }
-       ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
+       ppin3d->EnableAlphaBlend( 1, false );
 
-       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fModify3DStereo || (g_pplayer->m_fStereo3D == 0) || !g_pplayer->m_fStereo3Denabled); // do not update z if just a fake ramp (f.e. flasher fakes, etc)
+       ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-         // Check if this is an acrylic.
-         if (m_d.m_fAcrylic)
-         {
-            // Set a high threshold for writing transparent pixels to the z buffer.  
-            // This allows some of the ball's pixels to write when under the ramp... 
-            // giving the illusion of transparency (screen door). 
-            ppin3d->EnableAlphaTestReference(127);
-            // Make sure our textures tile.
-            pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
-
-            // Turn off texture filtering.
-            ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_POINT );
-         }
-         else
-            ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
-         pd3dDevice->SetMaterial(textureMaterial);
-         if ( !m_d.m_enableLightingImage )
-            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+       pd3dDevice->SetMaterial(textureMaterial);
+       if ( !m_d.m_enableLightingImage )
+           pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
       }
       else
          pd3dDevice->SetMaterial(solidMaterial);
@@ -1781,7 +1561,6 @@ void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
 
       ppin3d->SetTexture(NULL);
 
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
       ppin3d->DisableAlphaBlend();
 
@@ -1834,8 +1613,6 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteBool(FID(IMGW), m_d.m_fImageWalls);
    bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
-   bw.WriteBool(FID(ACRY), m_d.m_fAcrylic);
-   bw.WriteBool(FID(ALPH), m_d.m_fAlpha);
    bw.WriteFloat(FID(WLHL), m_d.m_leftwallheight);
    bw.WriteFloat(FID(WLHR), m_d.m_rightwallheight);
    bw.WriteFloat(FID(WVHL), m_d.m_leftwallheightvisible);
@@ -1844,14 +1621,14 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
-   bw.WriteBool(FID(RVIS), m_d.m_IsVisible);
-   bw.WriteBool(FID(MSTE), m_d.m_fModify3DStereo);
-   bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
+   bw.WriteBool(FID(RVIS), m_d.m_fVisible);
    bw.WriteBool(FID(ERLI), m_d.m_enableLightingImage);
    bw.WriteFloat(FID(RADB), m_d.m_depthBias);
    bw.WriteFloat(FID(RADI), m_d.m_wireDiameter);
    bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
    bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
+   bw.WriteBool(FID(ALPH), m_d.m_transparent);
+   bw.WriteInt(FID(OPAC), m_d.m_opacity);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1925,28 +1702,11 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(IMGW))
    {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_fImageWalls = (iTmp==1);
+      pbr->GetBool(&m_d.m_fImageWalls);
    }
    else if (id == FID(CSHD))
    {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_fCastsShadow = (iTmp==1);
-   }
-   else if (id == FID(ACRY))
-   {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_fAcrylic = (iTmp==1);
-      m_d.m_fAlpha = false; // Alpha is read after acrylic //!! uhoh
-   }
-   else if (id == FID(ALPH))
-   {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_fAlpha = (iTmp==1);
+      pbr->GetBool(&m_d.m_fCastsShadow);
    }
    else if (id == FID(NAME))
    {
@@ -1982,33 +1742,15 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(CLDRP))
    {
-	  BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_fCollidable = (iTmp==1);
+      pbr->GetBool(&m_d.m_fCollidable);
    }
    else if (id == FID(RVIS))
    {
-	  BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_IsVisible = (iTmp==1);
-   }
-   else if (id == FID(MSTE))
-   {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_fModify3DStereo = (iTmp==1);
-   }
-   else if (id == FID(ADDB))
-   {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_fAddBlend = (iTmp==1);
+      pbr->GetBool(&m_d.m_fVisible);
    }
    else if (id == FID(ERLI))
    {
-	  BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_enableLightingImage = (iTmp==1);
+      pbr->GetBool(&m_d.m_enableLightingImage);
    }
    else if (id == FID(RADB))
    {
@@ -2025,6 +1767,14 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RADY))
    {
        pbr->GetFloat(&m_d.m_wireDistanceY);
+   }
+   else if (id == FID(ALPH))
+   {
+      pbr->GetInt(&m_d.m_transparent);
+   }
+   else if (id == FID(OPAC))
+   {
+      pbr->GetInt(&m_d.m_opacity);
    }
    else
    {
@@ -2401,37 +2151,31 @@ STDMETHODIMP Ramp::put_CastsShadow(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Ramp::get_Acrylic(VARIANT_BOOL *pVal)
+STDMETHODIMP Ramp::get_Transparent(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fAcrylic) && !(VARIANT_BOOL)FTOVB(m_d.m_fAlpha);
-
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_transparent);
    return S_OK;
 }
 
-STDMETHODIMP Ramp::put_Acrylic(VARIANT_BOOL newVal)
+STDMETHODIMP Ramp::put_Transparent(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   
-   m_d.m_fAcrylic = VBTOF(newVal);
-   m_d.m_fAlpha = false;
-   
+   m_d.m_transparent = !!VBTOF(newVal);
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP Ramp::get_Alpha(VARIANT_BOOL *pVal)
+STDMETHODIMP Ramp::get_Opacity(int *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fAlpha);
+   *pVal = m_d.m_opacity;
    return S_OK;
 }
 
-STDMETHODIMP Ramp::put_Alpha(VARIANT_BOOL newVal)
+STDMETHODIMP Ramp::put_Opacity(int newVal)
 {
    STARTUNDO
-
-   m_d.m_fAlpha = VBTOF(newVal);
-   
+   m_d.m_opacity = clamp(newVal, 0, 255);
    STOPUNDO
 
    return S_OK;
@@ -2439,7 +2183,7 @@ STDMETHODIMP Ramp::put_Alpha(VARIANT_BOOL newVal)
 
 STDMETHODIMP Ramp::get_Solid(VARIANT_BOOL *pVal)
 {
-   *pVal = !(VARIANT_BOOL)FTOVB(m_d.m_fAlpha) && !(VARIANT_BOOL)FTOVB(m_d.m_fAcrylic);
+   *pVal = !FTOVB(!m_d.m_transparent);
    
    return S_OK;
 }
@@ -2449,8 +2193,7 @@ STDMETHODIMP Ramp::put_Solid(VARIANT_BOOL newVal)
    STARTUNDO
   
    if (VBTOF(newVal)) {
-      m_d.m_fAlpha = false;
-      m_d.m_fAcrylic = false;
+      m_d.m_transparent = false;
    }
    
    STOPUNDO
@@ -2638,7 +2381,7 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
 
 STDMETHODIMP Ramp::get_IsVisible(VARIANT_BOOL *pVal) //temporary value of object
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_IsVisible);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
    return S_OK;
 }
@@ -2648,65 +2391,9 @@ STDMETHODIMP Ramp::put_IsVisible(VARIANT_BOOL newVal)
    if (!g_pplayer )
    {
       STARTUNDO
-      m_d.m_IsVisible = VBTOF(newVal);			// set visibility
+      m_d.m_fVisible = VBTOF(newVal);			// set visibility
 	  STOPUNDO
    }
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::get_Modify3DStereo(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fModify3DStereo);
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::put_Modify3DStereo(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-   m_d.m_fModify3DStereo = VBTOF(newVal);
-   
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::get_UpdateRegions(VARIANT_BOOL *pVal)
-{
-   //!! deprecated
-   *pVal = (VARIANT_BOOL)FTOVB(false);
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::put_UpdateRegions(VARIANT_BOOL newVal)
-{
-   //!! deprecated
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::TriggerSingleUpdate() 
-{
-   //!! deprecated
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::get_AddBlend(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fAddBlend);
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::put_AddBlend(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   
-   m_d.m_fAddBlend = VBTOF(newVal);
-   
-   STOPUNDO
 
    return S_OK;
 }
@@ -2819,14 +2506,13 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
 // Also has less drawing calls by bundling seperate calls.
 void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
-    TRACE_FUNCTION();
+   TRACE_FUNCTION();
 
-    // TODO: optimize
+   // don't render if invisible or not a transparent ramp
+   if (!m_d.m_fVisible || !m_d.m_transparent)
+       return;
+
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-   // Don't render if invisible.
-   if((!m_d.m_IsVisible) ||		
-      // Don't render non-Alphas. 
-      (!m_d.m_fAlpha)) return;
 
    if ( m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f )
    {
@@ -2845,7 +2531,7 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       RenderStaticHabitrail(pd3dDevice);
    }
    else
-   {	
+   {
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
@@ -2853,9 +2539,6 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
       {
          pin->CreateAlphaChannel();
          pin->Set( ePictureTexture );
-         ppin3d->EnableAlphaBlend( 1, m_d.m_fAddBlend );
-
-         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, m_d.m_fAddBlend ? FALSE : ((m_d.m_fModify3DStereo || (g_pplayer->m_fStereo3D == 0) || !g_pplayer->m_fStereo3Denabled))); // do not update z if just a fake ramp (f.e. flasher fakes, etc) or additive blend
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
@@ -2871,6 +2554,11 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);
+
+      ppin3d->EnableAlphaBlend( 1, false );
+      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
+      pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, (m_d.m_opacity << 24) | 0xffffff);
 
       unsigned int offset=0;
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, (rampVertex-1)*6);
@@ -2902,9 +2590,10 @@ void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
         }
 	  }
 
-      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
       ppin3d->DisableAlphaBlend();
+      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+      pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
 
       if ( !m_d.m_enableLightingImage && pin!=NULL )
          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
