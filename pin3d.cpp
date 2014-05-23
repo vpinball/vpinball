@@ -443,7 +443,7 @@ void Pin3D::RenderPlayfieldGraphics()
 	{
 		rgv[i].nx = 0;
 		rgv[i].ny = 0;
-		rgv[i].nz = -1.0f;
+		rgv[i].nz = 1.0f;
 
 		rgv[i].tv = (i&2) ? 1.0f : 0.f;
 		rgv[i].tu = (i==1 || i==2) ? 1.0f : 0.f;

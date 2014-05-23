@@ -7615,7 +7615,7 @@ STDMETHODIMP PinTable::put_Light0PY(float newVal)
 
 STDMETHODIMP PinTable::get_Light0PZ(float *pVal)
 {
-   *pVal = -m_Light[0].pos.z; // transform from local
+   *pVal = m_Light[0].pos.z;
 
    return S_OK;
 }
@@ -7624,7 +7624,7 @@ STDMETHODIMP PinTable::put_Light0PZ(float newVal)
 {
    STARTUNDO
 
-   m_Light[0].pos.z = -newVal; // transform to local
+   m_Light[0].pos.z = newVal;
 
    STOPUNDO
 
@@ -7669,7 +7669,7 @@ STDMETHODIMP PinTable::put_Light0DY(float newVal)
 
 STDMETHODIMP PinTable::get_Light0DZ(float *pVal)
 {
-   *pVal = -m_Light[0].dir.z; // transform from local
+   *pVal = m_Light[0].dir.z;
 
    return S_OK;
 }
@@ -7678,7 +7678,7 @@ STDMETHODIMP PinTable::put_Light0DZ(float newVal)
 {
    STARTUNDO
 
-   m_Light[0].dir.z = -newVal; // transform to local
+   m_Light[0].dir.z = newVal;
 
    STOPUNDO
 
@@ -7795,7 +7795,7 @@ STDMETHODIMP PinTable::put_Light1PY(float newVal)
 
 STDMETHODIMP PinTable::get_Light1PZ(float *pVal)
 {
-   *pVal = -m_Light[1].pos.z; // transform from local
+   *pVal = m_Light[1].pos.z;
 
    return S_OK;
 }
@@ -7804,7 +7804,7 @@ STDMETHODIMP PinTable::put_Light1PZ(float newVal)
 {
    STARTUNDO
 
-   m_Light[1].pos.z = -newVal; // transform to local
+   m_Light[1].pos.z = newVal;
 
    STOPUNDO
 
@@ -7849,7 +7849,7 @@ STDMETHODIMP PinTable::put_Light1DY(float newVal)
 
 STDMETHODIMP PinTable::get_Light1DZ(float *pVal)
 {
-   *pVal = -m_Light[1].dir.z; // transform from local
+   *pVal = m_Light[1].dir.z;
 
    return S_OK;
 }
@@ -7858,7 +7858,7 @@ STDMETHODIMP PinTable::put_Light1DZ(float newVal)
 {
    STARTUNDO
 
-   m_Light[1].dir.z = -newVal; // transform to local
+   m_Light[1].dir.z = newVal;
 
    STOPUNDO
 

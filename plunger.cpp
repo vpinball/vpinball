@@ -454,16 +454,16 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
             const float tv = (float)i*inv_scale;    // tv in range [0,1]
             ptr[0].x = m_d.m_v.x;               ptr[0].nx = 0.0f;          ptr[0].tu = 0.0f;
             ptr[0].y = m_d.m_v.y;               ptr[0].ny = 0.0f;          ptr[0].tv = tv;
-            ptr[0].z = m_d.m_width+zheight;     ptr[0].nz = -1.0f;
+            ptr[0].z = m_d.m_width+zheight;     ptr[0].nz = 1.0f;
             ptr[1].x = m_d.m_v.x;               ptr[1].nx = 0.0f;          ptr[1].tu = 0.0f;
             ptr[1].y = height;                  ptr[1].ny = 0.0f;          ptr[1].tv = 0.0f;
-            ptr[1].z = m_d.m_width+zheight;     ptr[1].nz = -1.0f;
+            ptr[1].z = m_d.m_width+zheight;     ptr[1].nz = 1.0f;
             ptr[2].x = m_d.m_v.x+m_d.m_width;   ptr[2].nx = 0.0f;          ptr[2].tu = 1.0f;
             ptr[2].y = height;                  ptr[2].ny = 0.0f;          ptr[2].tv = 0.0f;
-            ptr[2].z = m_d.m_width+zheight;     ptr[2].nz = -1.0f;
+            ptr[2].z = m_d.m_width+zheight;     ptr[2].nz = 1.0f;
             ptr[3].x = m_d.m_v.x+m_d.m_width;   ptr[3].nx = 0.0f;          ptr[3].tu = 1.0f;
             ptr[3].y = m_d.m_v.y;               ptr[3].ny = 0.0f;          ptr[3].tv = tv;
-            ptr[3].z = m_d.m_width+zheight;     ptr[3].nz = -1.0f;
+            ptr[3].z = m_d.m_width+zheight;     ptr[3].nz = 1.0f;
             memcpy( &buf[vbOffset], ptr, 4*sizeof(Vertex3D_NoTex2));
             vbOffset += 4;
          }
