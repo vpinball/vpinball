@@ -652,9 +652,9 @@ void Light::PrepareStaticCustom()
 
       if (!m_fBackglass)
       {
-         staticCustomVertex[k  ].nx = 0;    staticCustomVertex[k  ].ny = 0;    staticCustomVertex[k  ].nz = -1.0f;
-         staticCustomVertex[k+1].nx = 0;    staticCustomVertex[k+1].ny = 0;    staticCustomVertex[k+1].nz = -1.0f;
-         staticCustomVertex[k+2].nx = 0;    staticCustomVertex[k+2].ny = 0;    staticCustomVertex[k+2].nz = -1.0f;
+         staticCustomVertex[k  ].nx = 0;    staticCustomVertex[k  ].ny = 0;    staticCustomVertex[k  ].nz = 1.0f;
+         staticCustomVertex[k+1].nx = 0;    staticCustomVertex[k+1].ny = 0;    staticCustomVertex[k+1].nz = 1.0f;
+         staticCustomVertex[k+2].nx = 0;    staticCustomVertex[k+2].ny = 0;    staticCustomVertex[k+2].nz = 1.0f;
 
          ppin3d->CalcShadowCoordinates(&staticCustomVertex[k],3);
       }
@@ -742,9 +742,9 @@ void Light::PrepareMoversCustom()
 
          if(!m_fBackglass)
          {
-            customMoverVertex[i][k  ].nx = 0; customMoverVertex[i][k  ].ny = 0; customMoverVertex[i][k  ].nz = -1.0f;
-            customMoverVertex[i][k+1].nx = 0; customMoverVertex[i][k+1].ny = 0; customMoverVertex[i][k+1].nz = -1.0f;
-            customMoverVertex[i][k+2].nx = 0; customMoverVertex[i][k+2].ny = 0; customMoverVertex[i][k+2].nz = -1.0f;
+            customMoverVertex[i][k  ].nx = 0; customMoverVertex[i][k  ].ny = 0; customMoverVertex[i][k  ].nz = 1.0f;
+            customMoverVertex[i][k+1].nx = 0; customMoverVertex[i][k+1].ny = 0; customMoverVertex[i][k+1].nz = 1.0f;
+            customMoverVertex[i][k+2].nx = 0; customMoverVertex[i][k+2].ny = 0; customMoverVertex[i][k+2].nz = 1.0f;
          }
 
          for (int l=0;l<3;l++)

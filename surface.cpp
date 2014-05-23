@@ -828,10 +828,10 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
             {
                vertsTop[0][l].nx = 0;
                vertsTop[0][l].ny = 0;
-               vertsTop[0][l].nz = -1.0f;
+               vertsTop[0][l].nz = 1.0f;
                vertsTop[1][l].nx = 0;
                vertsTop[1][l].ny = 0;
-               vertsTop[1][l].nz = -1.0f;
+               vertsTop[1][l].nz = 1.0f;
             }
          }
          delete vtri.ElementAt(i);

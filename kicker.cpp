@@ -301,7 +301,7 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
 
             vertices[48].nx = 0;
             vertices[48].ny = 0;
-            vertices[48].nz = -1.0f;
+            vertices[48].nz = 1.0f;
          }
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, vertices+16, 49-16, rgi, 3*16);
 
