@@ -538,7 +538,7 @@ PinTable::PinTable()
       m_activeLayers[i]=true;
    m_toggleAllLayers=false;
    m_savingActive=false;
-   m_renderSolid = true;
+   m_renderSolid = GetRegBoolWithDefault("Editor", "RenderSolid", true);
 
    m_vmultisel.AddElement((ISelect *)this);
    m_undo.m_ptable = this;
