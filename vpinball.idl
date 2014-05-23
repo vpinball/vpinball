@@ -1730,8 +1730,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(111), helpstring("property Collidable")] HRESULT Collidable([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(111), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
 
-		[propget, id(112), helpstring("property IsVisible")] HRESULT IsVisible([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(112), helpstring("property IsVisible")] HRESULT IsVisible([in] VARIANT_BOOL newVal);
+		[propget, id(112), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(112), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
 
 		[propget, id(114), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
 		[propput, id(114), helpstring("property Friction")] HRESULT Friction([in] float newVal);
@@ -1796,8 +1796,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 
-		[propget, id(112), helpstring("property IsVisible")] HRESULT IsVisible([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(112), helpstring("property IsVisible")] HRESULT IsVisible([in] VARIANT_BOOL newVal);
+		[propget, id(112), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(112), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
 
 	    //!! deprecated
 		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
