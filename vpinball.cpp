@@ -877,6 +877,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       {
           ptCur->m_renderSolid = (code == ID_VIEW_SOLID);
           ptCur->SetDirtyDraw();
+          SetRegValueBool("Editor", "RenderSolid", ptCur->m_renderSolid);
       }
       break;
    case ID_VIEW_GRID:
