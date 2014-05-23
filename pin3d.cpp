@@ -315,11 +315,11 @@ void Pin3D::InitLights()
 
                 if ( i==0 )
                 {
-                    light.setDirection(5.0f, sn * 21.0f, cs * -21.0f);
+                    light.setDirection(5.0f, sn * 21.0f, cs * 21.0f);
                 }
                 else
                 {
-                    light.setDirection(-8.0f, sn * 11.0f, cs * -11.0f); 
+                    light.setDirection(-8.0f, sn * 11.0f, cs * 11.0f); 
                     light.setDiffuse(0.6f, 0.6f, 0.6f);
                     light.setSpecular(1.0f, 1.0f, 1.0f);
                 }
