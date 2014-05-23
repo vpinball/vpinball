@@ -31,14 +31,13 @@ public:
     float m_wireDistanceY;
 
 	bool m_fCollidable;
-	bool m_IsVisible;
-	bool m_fModify3DStereo;
-	bool m_fAddBlend;
+	bool m_fVisible;
     bool m_enableLightingImage;
 	bool m_fImageWalls;
 	bool m_fCastsShadow;
 	bool m_fAcrylic;
-	bool m_fAlpha;
+	bool m_transparent;
+    int m_opacity;
     float m_depthBias;      // for determining depth sorting (alpha ramps only)
 };
 
@@ -123,7 +122,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
 
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
 
-    virtual bool IsTransparent()    { return m_d.m_fAlpha; }
+    virtual bool IsTransparent()    { return m_d.m_transparent; }
     virtual float GetDepth(const Vertex3Ds& viewDir);
 
 	void WriteRegDefaults();
@@ -194,36 +193,26 @@ public:
 	STDMETHOD(put_HeightTop)(/*[in]*/ float newVal);
 	STDMETHOD(get_HeightBottom)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_HeightBottom)(/*[in]*/ float newVal);
-//>>> added by chris
+
 	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
-//<<<
-	STDMETHOD(get_Acrylic)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Acrylic)(/*[in]*/ VARIANT_BOOL newVal);
+
 	STDMETHOD(get_Solid)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Solid)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Alpha)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Alpha)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_Transparent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Transparent)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_IsVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_IsVisible)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_Opacity)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_Opacity)(/*[in]*/ int newVal);
 
 	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
 	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
 
-	STDMETHOD(get_Modify3DStereo)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Modify3DStereo)(/*[in]*/ VARIANT_BOOL newVal);
-
-	//!! deprecated
-	STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_UpdateRegions)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(TriggerSingleUpdate)();
-
-	STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_EnableLightingImage)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_EnableLightingImage)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
