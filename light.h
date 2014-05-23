@@ -175,6 +175,7 @@ private:
 
 //>>> Added By Chris
 	bool		m_fLockedByLS;
+   bool     m_roundLight;
 //<<<
    int staticCustomVertexNum;
    int customMoverVertexNum;

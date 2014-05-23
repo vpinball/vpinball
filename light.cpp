@@ -77,6 +77,7 @@ Light::Light() : m_lightcenter(this)
    m_d.m_szOnImage[0]=0;
    m_d.m_depthBias = 0.0f;
    m_d.m_shape = ShapeCustom;
+   m_roundLight=false;
 }
 
 Light::~Light()
@@ -253,39 +254,17 @@ void Light::PreRender(Sur * const psur)
 
    Texture *ppi;
 
+   // workaround for the old round light object
+   // after loading m_roundLight is true if an pre VP10 table was loaded
+   // init the round light to the new custom one
+   if( m_roundLight )
+   {
+      InitShape();
+      m_roundLight=false;
+   }
    switch (m_d.m_shape)
    {
-   case ShapeCircle:
    default:
-       if (m_ptable->RenderSolid())
-       {
-           if (m_d.m_borderwidth > 0)
-           {
-               psur->SetBorderColor(m_d.m_bordercolor, false, 0); // For off-by-one GDI outline error
-               psur->SetFillColor(m_d.m_bordercolor);
-               psur->SetObject(this);
-               psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_borderwidth);
-           }
-           psur->SetBorderColor(m_d.m_color, false, 0); // For off-by-one GDI outline error
-           psur->SetFillColor(m_d.m_color);
-           psur->SetObject(m_d.m_borderwidth > 0 ? NULL : this);
-
-           // Check if we should display the image in the editor.
-           if (m_d.m_fDisplayImage && (ppi = GetDisplayTexture()))
-           {
-               ppi->EnsureHBitmap();
-               if (ppi->m_hbmGDIVersion)
-                   // Draw the elipse with an image applied.
-                   psur->EllipseImage(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius, ppi->m_hbmGDIVersion,
-                       m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
-           }
-           else
-               psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
-       }
-       else
-           psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
-       break;
-
    case ShapeCustom:
        Vector<RenderVertex> vvertex;
        GetRgVertex(&vvertex);
@@ -1059,6 +1038,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(TMIN))
    {
       pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
+   }
+   else if (id == FID(SHAP))
+   {
+      m_roundLight=true;
    }
    else if (id == FID(BPAT))
    {
