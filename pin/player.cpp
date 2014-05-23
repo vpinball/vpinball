@@ -677,7 +677,7 @@ void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dDevice );
 
-   //ballShader->Load("c:\\projects\\vp9_dx9\\shader\\BallShader.fx", true );
+//   ballShader->Load("c:\\projects\\vp9_dx9\\shader\\BallShader.fx", true );
 
    ballShader->Load("BallShader.fx", false );
 
@@ -699,7 +699,7 @@ void Player::InitBallShader()
    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
    const float inclination = ANGTORAD(g_pplayer->m_ptable->m_inclination);
 
-   ballShader->Core()->SetFloat("inclination", inclination );
+   ballShader->Core()->SetFloat("inclination", 1.0f/*inclination */);
    ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
    ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
 
