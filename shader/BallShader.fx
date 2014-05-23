@@ -5,8 +5,9 @@ float    invTableHeight;
 float    invTableWidth;
 float4   position;
 float    radius;
-float    inclination;
 float    reflectionStrength;
+float    ballStretchX;
+float    ballStretchY;
 
 // this is used for the orientation matrix
 float4   m1;
@@ -73,9 +74,8 @@ vout vsBall( in vin IN )
 	float4 pos = IN.position;
 	pos = mul(pos,orientation);
 	pos *= radius;
-	pos.x *= sin(inclination);
-	pos.y *= cos(inclination);
-	pos.z *= sin(inclination);
+	pos.x *= ballStretchX;
+	pos.y *= ballStretchY;
 	pos += position;
 	
     //convert to world space and pass along to our output
@@ -110,9 +110,8 @@ vout vsBallReflection( in vin IN )
 	float4 pos = IN.position;
 	pos = mul(pos,orientation);
 	pos *= radius;
-	pos.x *= sin(inclination);
-	pos.y *= cos(inclination);
-	pos.z *= sin(inclination);
+	pos.x *= ballStretchX;
+	pos.y *= ballStretchY;
 	pos += position;
 
 	// this is no a 100% ball reflection on the table due to the quirky camera setup
