@@ -8,29 +8,6 @@ public:
 	int a,b,c;
 };
 
-class ObjFrame
-{
-public:
-	inline ObjFrame() {
-		rc.left = -42; // init with nonsense offscreen values
-		rc.top = -42;
-		rc.right = -23;
-		rc.bottom = -23;
-
-		pdds = NULL;
-		pddsZBuffer = NULL;
-	}
-	
-	inline ~ObjFrame() {
-        delete pdds;
-        delete pddsZBuffer;
-	}
-
-	RECT rc;
-	BaseTexture* pdds;
-	BaseTexture* pddsZBuffer;
-	};
-
 class CatmullCurve
 {
 public:	
