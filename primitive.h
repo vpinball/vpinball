@@ -8,6 +8,20 @@
 #include "resource.h"
 
 
+class Mesh
+{
+public:
+    std::vector<Vertex3D_NoTex2> m_vertices;
+    std::vector<WORD> m_indices;
+
+    void Clear();
+    bool LoadWavefrontObj(const char *fname, bool flipTV, bool convertToLeftHanded);
+    void SaveWavefrontObj(const char *fname, const char *description=NULL);
+
+    unsigned NumVertices() const    { return m_vertices.size(); }
+    unsigned NumIndices() const     { return m_indices.size(); }
+};
+
 // Indices for RotAndTra:
 //     RotX = 0
 //     RotY = 1
@@ -44,7 +58,7 @@ public:
    float m_scatter;
 
    bool use3DMesh;
-   bool m_TopVisible;
+   bool m_fVisible;
    bool m_DrawTexturesInside;
    bool useLighting;
    bool staticRendering;
@@ -62,9 +76,6 @@ class Primitive :
    public IDispatchImpl<IPrimitive, &IID_IPrimitive, &LIBID_VPinballLib>,
    //public CComObjectRoot,
    public CComCoClass<Primitive,&CLSID_Primitive>,
-#ifdef VBA
-   public CApcProjectItem<Primitive>,
-#endif
    public EventProxy<Primitive, &DIID_IPrimitiveEvents>,
    public IConnectionPointContainerImpl<Primitive>,
    public IProvideClassInfo2Impl<&CLSID_Primitive, &DIID_IPrimitiveEvents, &LIBID_VPinballLib>,
@@ -88,8 +99,8 @@ public:
    STDMETHOD(get_DrawTexturesInside)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DrawTexturesInside)(/*[in]*/ VARIANT_BOOL newVal);
 
-   STDMETHOD(get_TopVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_TopVisible)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 
    //!! deprecated
    STDMETHOD(get_UpdateRegions)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -227,10 +238,6 @@ public:
 
    //virtual IScriptable *GetScriptable() {return NULL;}
 
-#ifdef VBA
-   virtual IApcControl *GetIApcControl() {return ApcControl.GetApcControl();}
-#endif
-
    PinTable *m_ptable;
 
    //!! here starts the more general primitive stuff:
@@ -241,9 +248,8 @@ public:
    virtual bool IsTransparent();
    virtual float GetDepth(const Vertex3Ds& viewDir);
 
-   std::vector<Vertex3D_NoTex2> objMeshOrg;
+   Mesh m_mesh;
    std::vector<Vertex3D_NoTex2> objMesh;
-   std::vector<WORD> indexList;
 
    PrimitiveData m_d;
 
@@ -253,8 +259,9 @@ private:        // private member functions
    int numVertices;         // only used during loading
 
    void RecalculateMatrices();
-   void RecalculateVertices();
+   void TransformVertices();
    void UpdateMesh();
+   void UpdateEditorView();
 
    bool BrowseFor3DMeshFile();
    void RenderObject( RenderDevice *pd3dDevice);

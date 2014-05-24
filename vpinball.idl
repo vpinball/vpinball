@@ -1375,8 +1375,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		//[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
 		[propget, id(101), helpstring("property Sides")] HRESULT Sides([out, retval] int *pVal);
 		[propput, id(101), helpstring("property Sides")] HRESULT Sides([in] int newVal);
-		[propget, id(103), helpstring("property Top Visible")] HRESULT TopVisible([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(103), helpstring("property Top Visible")] HRESULT TopVisible([in] VARIANT_BOOL newVal);
+		[propget, id(103), helpstring("property Top Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(103), helpstring("property Top Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
 		[propget, id(102), helpstring("property Top Color")] HRESULT TopColor([out, retval] OLE_COLOR *pVal);
 		[propput, id(102), helpstring("property Top Color")] HRESULT TopColor([in] OLE_COLOR newVal);
 		[propget, id(104), helpstring("property Side Color")] HRESULT SideColor([out, retval] OLE_COLOR *pVal);

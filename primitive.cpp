@@ -4,6 +4,43 @@
 
 #include "stdafx.h" 
 
+// defined in objloader.cpp
+extern bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHanded );
+extern void WaveFrontObj_GetVertices( std::vector<Vertex3D_NoTex2>& verts );
+extern void WaveFrontObj_GetIndices( std::vector<WORD>& list );
+extern void WaveFrontObj_Save(const char *filename, const char *description, const Mesh& mesh);
+//
+
+
+void Mesh::Clear()
+{
+    m_vertices.clear();
+    m_indices.clear();
+}
+
+bool Mesh::LoadWavefrontObj(const char *fname, bool flipTV, bool convertToLeftHanded)
+{
+    Clear();
+
+    if (WaveFrontObj_Load(fname, flipTV, convertToLeftHanded))
+    {
+        WaveFrontObj_GetVertices(m_vertices);
+        WaveFrontObj_GetIndices(m_indices);
+        return true;
+    }
+    else
+        return false;
+}
+
+void Mesh::SaveWavefrontObj(const char *fname, const char *description)
+{
+    if (description == NULL)
+        description = fname;
+
+    WaveFrontObj_Save(fname, description, *this);
+}
+
+
 Primitive::Primitive()
 {
    vertexBuffer = 0;
@@ -41,203 +78,141 @@ HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitVBA(fTrue, 0, NULL);
 
+   if( !m_d.use3DMesh )
+      CalculateBuiltinOriginal();
+
+   UpdateEditorView();
+
    return S_OK;
 }
 
 void Primitive::SetDefaults(bool fromMouseClick)
 {
+   static const char strKeyName[] = "DefaultProps\\Primitive";
+
    HRESULT hr;
-   int iTmp;
-   float fTmp;
 
    m_d.use3DMesh=false;
    m_d.meshFileName[0]=0;
 
    // sides
-   hr = GetRegInt("DefaultProps\\Primitive","Sides", &iTmp);
-   m_d.m_Sides = (hr == S_OK) && fromMouseClick ? iTmp : 4;
+   m_d.m_Sides = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Sides", 4) : 4;
    if(m_d.m_Sides > Max_Primitive_Sides)
       m_d.m_Sides = Max_Primitive_Sides;
 
    // colors
-   hr = GetRegInt("DefaultProps\\Primitive", "TopColor", &iTmp);
-   m_d.m_TopColor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(100,100,100);
-   hr = GetRegInt("DefaultProps\\Primitive", "SideColor", &iTmp);
-   m_d.m_SideColor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(150,150,150);
+   m_d.m_TopColor = fromMouseClick ? GetRegIntWithDefault(strKeyName, "TopColor", RGB(100,100,100)) : RGB(100,100,100);
+   m_d.m_SideColor = fromMouseClick ? GetRegIntWithDefault(strKeyName, "SideColor", RGB(150,150,150)) : RGB(150,150,150);
 
-   // visible
-   hr = GetRegInt("DefaultProps\\Primitive", "TopVisible", &iTmp);
-   m_d.m_TopVisible = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
-
-   // lighting on/off
-   hr = GetRegInt("DefaultProps\\Primitive", "UseLighting", &iTmp);
-   m_d.useLighting = (hr == S_OK) && fromMouseClick ? (iTmp==1) : false;
-
-   hr = GetRegInt("DefaultProps\\Primitive", "StaticRendering", &iTmp);
-   m_d.staticRendering = (hr == S_OK) && fromMouseClick ? (iTmp==1) : false;
-
-   hr = GetRegInt("DefaultProps\\Primitive", "SphereMapping", &iTmp);
-   m_d.sphereMapping = (hr == S_OK) && fromMouseClick ? (iTmp==1) : false;
-
-   // Draw Textures inside
-   hr = GetRegInt("DefaultProps\\Primitive", "DrawTexturesInside", &iTmp);
-   m_d.m_DrawTexturesInside = (hr == S_OK) && fromMouseClick ? (iTmp==1) : true;
+   m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
+   m_d.useLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "UseLighting", false) : false;
+   m_d.staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "StaticRendering", true) : true;
+   m_d.sphereMapping = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "SphereMapping", false) : false;
+   m_d.m_DrawTexturesInside = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
 
    // Position (X and Y is already set by the click of the user)
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Position_Z", &fTmp);
-   m_d.m_vPosition.z = (hr == S_OK) && fromMouseClick ? fTmp : 0;
+   m_d.m_vPosition.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Position_Z", 0.0f) : 0.0f;
 
    // Size
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Size_X", &fTmp);
-   m_d.m_vSize.x = (hr == S_OK) && fromMouseClick ? fTmp : 100;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Size_Y", &fTmp);
-   m_d.m_vSize.y = (hr == S_OK) && fromMouseClick ? fTmp : 100;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Size_Z", &fTmp);
-   m_d.m_vSize.z = (hr == S_OK) && fromMouseClick ? fTmp : 100;
+   m_d.m_vSize.x = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_X", 100.0f) : 100.0f;
+   m_d.m_vSize.y = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_Y", 100.0f) : 100.0f;
+   m_d.m_vSize.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_Z", 100.0f) : 100.0f;
 
    // Axis Scale
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_X_Y", &fTmp);
-   m_d.m_vAxisScaleX.y = (hr == S_OK) && fromMouseClick ? fTmp : 1;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_X_Z", &fTmp);
-   m_d.m_vAxisScaleX.z = (hr == S_OK) && fromMouseClick ? fTmp : 1;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_Y_X", &fTmp);
-   m_d.m_vAxisScaleY.x = (hr == S_OK) && fromMouseClick ? fTmp : 1;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_Y_Z", &fTmp);
-   m_d.m_vAxisScaleY.z = (hr == S_OK) && fromMouseClick ? fTmp : 1;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_Z_X", &fTmp);
-   m_d.m_vAxisScaleZ.x = (hr == S_OK) && fromMouseClick ? fTmp : 1;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","AxisScale_Z_Y", &fTmp);
-   m_d.m_vAxisScaleZ.y = (hr == S_OK) && fromMouseClick ? fTmp : 1;
    m_d.m_vAxisScaleX.x = 1.0f;
    m_d.m_vAxisScaleY.y = 1.0f;
    m_d.m_vAxisScaleZ.z = 1.0f;
+   m_d.m_vAxisScaleX.y = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_X_Y", 1.0f) : 1.0f;
+   m_d.m_vAxisScaleX.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_X_Z", 1.0f) : 1.0f;
+   m_d.m_vAxisScaleY.x = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_Y_X", 1.0f) : 1.0f;
+   m_d.m_vAxisScaleY.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_Y_Z", 1.0f) : 1.0f;
+   m_d.m_vAxisScaleZ.x = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_Z_X", 1.0f) : 1.0f;
+   m_d.m_vAxisScaleZ.y = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_Z_Y", 1.0f) : 1.0f;
 
    // Rotation and Transposition
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra0", &fTmp);
-   m_d.m_aRotAndTra[0] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra1", &fTmp);
-   m_d.m_aRotAndTra[1] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra2", &fTmp);
-   m_d.m_aRotAndTra[2] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra3", &fTmp);
-   m_d.m_aRotAndTra[3] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra4", &fTmp);
-   m_d.m_aRotAndTra[4] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra5", &fTmp);
-   m_d.m_aRotAndTra[5] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra6", &fTmp);
-   m_d.m_aRotAndTra[6] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra7", &fTmp);
-   m_d.m_aRotAndTra[7] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","RotAndTra8", &fTmp);
-   m_d.m_aRotAndTra[8] = (hr == S_OK) && fromMouseClick ? fTmp : 0;
+   m_d.m_aRotAndTra[0] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra0", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[1] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra1", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[2] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra2", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[3] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra3", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[4] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra4", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[5] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra5", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[6] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra6", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[7] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra7", 0.0f) : 0.0f;
+   m_d.m_aRotAndTra[8] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra8", 0.0f) : 0.0f;
 
    /*
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Rotation_X", &fTmp);
+   hr = GetRegStringAsFloat(strKeyName,"Rotation_X", &fTmp);
    m_d.m_vRotation.x = (hr == S_OK) ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Rotation_Y", &fTmp);
+   hr = GetRegStringAsFloat(strKeyName,"Rotation_Y", &fTmp);
    m_d.m_vRotation.y = (hr == S_OK) ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Rotation_Z", &fTmp);
+   hr = GetRegStringAsFloat(strKeyName,"Rotation_Z", &fTmp);
    m_d.m_vRotation.z = (hr == S_OK) ? fTmp : 0;
 
    //Transposition
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Transposition_X", &fTmp);
+   hr = GetRegStringAsFloat(strKeyName,"Transposition_X", &fTmp);
    m_d.m_vTransposition.x = (hr == S_OK) ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Transposition_Y", &fTmp);
+   hr = GetRegStringAsFloat(strKeyName,"Transposition_Y", &fTmp);
    m_d.m_vTransposition.y = (hr == S_OK) ? fTmp : 0;
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Transposition_Z", &fTmp);
+   hr = GetRegStringAsFloat(strKeyName,"Transposition_Z", &fTmp);
    m_d.m_vTransposition.z = (hr == S_OK) ? fTmp : 0;
    */
 
-   hr = GetRegString("DefaultProps\\Primitive","Image", m_d.m_szImage, MAXTOKEN);
+   hr = GetRegString(strKeyName,"Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","HitThreshold", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_threshold = fTmp;
-   else
-      m_d.m_threshold = 2.0f;
+   m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HitThreshold", 2.0f) : 2.0f;
+   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
+   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0) : 0;
+   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Elasticity", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_elasticity = fTmp;
-   else
-      m_d.m_elasticity = 0.3f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Friction", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_friction = fTmp;
-   else
-      m_d.m_friction = 0;	//zero uses global value
-
-   hr = GetRegStringAsFloat("DefaultProps\\Primitive","Scatter", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scatter = fTmp;
-   else
-      m_d.m_scatter = 0;	//zero uses global value
-
-   hr = GetRegInt("DefaultProps\\Primitive","Collidable", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fCollidable = iTmp == 0 ? false : true;
-   else
-      m_d.m_fCollidable = false;
-   hr = GetRegInt("DefaultProps\\Primitive","IsToy", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fToy= iTmp == 0 ? false : true;
-   else
-      m_d.m_fToy = true;
+   m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
+   m_d.m_fToy = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsToy", false) : false;
 }
 
 void Primitive::WriteRegDefaults()
 {
-   SetRegValue("DefaultProps\\Primitive","TopColor",REG_DWORD,&m_d.m_TopColor,4);
-   SetRegValue("DefaultProps\\Primitive","SideColor",REG_DWORD,&m_d.m_SideColor,4);
-   SetRegValueBool("DefaultProps\\Primitive","TopVisible", m_d.m_TopVisible);
-   SetRegValueBool("DefaultProps\\Primitive","UseLighting", m_d.useLighting);
-   SetRegValueBool("DefaultProps\\Primitive","StaticRendering", m_d.staticRendering);
-   SetRegValueBool("DefaultProps\\Primitive","SphereMapping", m_d.sphereMapping);
-   SetRegValueBool("DefaultProps\\Primitive","DrawTexturesInside", m_d.m_DrawTexturesInside);
+   static const char strKeyName[] = "DefaultProps\\Primitive";
 
-   SetRegValueFloat("DefaultProps\\Primitive","Position_Z", m_d.m_vPosition.z);
+   SetRegValueInt(strKeyName,"TopColor", m_d.m_TopColor);
+   SetRegValueInt(strKeyName,"SideColor", m_d.m_SideColor);
+   SetRegValueBool(strKeyName,"Visible", m_d.m_fVisible);
+   SetRegValueBool(strKeyName,"UseLighting", m_d.useLighting);
+   SetRegValueBool(strKeyName,"StaticRendering", m_d.staticRendering);
+   SetRegValueBool(strKeyName,"SphereMapping", m_d.sphereMapping);
+   SetRegValueBool(strKeyName,"DrawTexturesInside", m_d.m_DrawTexturesInside);
 
-   SetRegValueFloat("DefaultProps\\Primitive","Size_X", m_d.m_vSize.x);
-   SetRegValueFloat("DefaultProps\\Primitive","Size_Y", m_d.m_vSize.y);
-   SetRegValueFloat("DefaultProps\\Primitive","Size_Z", m_d.m_vSize.z);
+   SetRegValueFloat(strKeyName,"Position_Z", m_d.m_vPosition.z);
 
-   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleXY", m_d.m_vAxisScaleX.y);
-   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleXZ", m_d.m_vAxisScaleX.z);
-   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleYX", m_d.m_vAxisScaleY.x);
-   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleYZ", m_d.m_vAxisScaleY.z);
-   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleZX", m_d.m_vAxisScaleZ.x);
-   SetRegValueFloat("DefaultProps\\Primitive","AxisScaleZY", m_d.m_vAxisScaleZ.y);
+   SetRegValueFloat(strKeyName,"Size_X", m_d.m_vSize.x);
+   SetRegValueFloat(strKeyName,"Size_Y", m_d.m_vSize.y);
+   SetRegValueFloat(strKeyName,"Size_Z", m_d.m_vSize.z);
 
-   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra0", m_d.m_aRotAndTra[0]);
-   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra1", m_d.m_aRotAndTra[1]);
-   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra2", m_d.m_aRotAndTra[2]);
-   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra3", m_d.m_aRotAndTra[3]);
-   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra4", m_d.m_aRotAndTra[4]);
-   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra5", m_d.m_aRotAndTra[5]);
-   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra6", m_d.m_aRotAndTra[6]);
-   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra7", m_d.m_aRotAndTra[7]);
-   SetRegValueFloat("DefaultProps\\Primitive","RotAndTra8", m_d.m_aRotAndTra[8]);
-   /*
-   SetRegValueFloat("DefaultProps\\Primitive","Rotation_X", m_d.m_vRotation.x);
-   SetRegValueFloat("DefaultProps\\Primitive","Rotation_Y", m_d.m_vRotation.y);
-   SetRegValueFloat("DefaultProps\\Primitive","Rotation_Z", m_d.m_vRotation.z);
+   SetRegValueFloat(strKeyName,"AxisScaleXY", m_d.m_vAxisScaleX.y);
+   SetRegValueFloat(strKeyName,"AxisScaleXZ", m_d.m_vAxisScaleX.z);
+   SetRegValueFloat(strKeyName,"AxisScaleYX", m_d.m_vAxisScaleY.x);
+   SetRegValueFloat(strKeyName,"AxisScaleYZ", m_d.m_vAxisScaleY.z);
+   SetRegValueFloat(strKeyName,"AxisScaleZX", m_d.m_vAxisScaleZ.x);
+   SetRegValueFloat(strKeyName,"AxisScaleZY", m_d.m_vAxisScaleZ.y);
 
-   SetRegValueFloat("DefaultProps\\Primitive","Transposition_X", m_d.m_vTransposition.x);
-   SetRegValueFloat("DefaultProps\\Primitive","Transposition_Y", m_d.m_vTransposition.y);
-   SetRegValueFloat("DefaultProps\\Primitive","Transposition_Z", m_d.m_vTransposition.z);
-   */
-   SetRegValue("DefaultProps\\Primitive","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
-   SetRegValueBool("DefaultProps\\Primitive","HitEvent", !!m_d.m_fHitEvent);
-   SetRegValueFloat("DefaultProps\\Primitive","HitThreshold", m_d.m_threshold);
-   SetRegValueFloat("DefaultProps\\Primitive","Elasticity", m_d.m_elasticity);
-   SetRegValueFloat("DefaultProps\\Primitive","Friction", m_d.m_friction);
-   SetRegValueFloat("DefaultProps\\Primitive","Scatter", m_d.m_scatter);
-   SetRegValueBool("DefaultProps\\Primitive","Collidable", m_d.m_fCollidable);
-   SetRegValueBool("DefaultProps\\Primitive","IsToy", m_d.m_fToy);
+   SetRegValueFloat(strKeyName,"RotAndTra0", m_d.m_aRotAndTra[0]);
+   SetRegValueFloat(strKeyName,"RotAndTra1", m_d.m_aRotAndTra[1]);
+   SetRegValueFloat(strKeyName,"RotAndTra2", m_d.m_aRotAndTra[2]);
+   SetRegValueFloat(strKeyName,"RotAndTra3", m_d.m_aRotAndTra[3]);
+   SetRegValueFloat(strKeyName,"RotAndTra4", m_d.m_aRotAndTra[4]);
+   SetRegValueFloat(strKeyName,"RotAndTra5", m_d.m_aRotAndTra[5]);
+   SetRegValueFloat(strKeyName,"RotAndTra6", m_d.m_aRotAndTra[6]);
+   SetRegValueFloat(strKeyName,"RotAndTra7", m_d.m_aRotAndTra[7]);
+   SetRegValueFloat(strKeyName,"RotAndTra8", m_d.m_aRotAndTra[8]);
+
+   SetRegValueString(strKeyName,"Image", m_d.m_szImage);
+   SetRegValueBool(strKeyName,"HitEvent", !!m_d.m_fHitEvent);
+   SetRegValueFloat(strKeyName,"HitThreshold", m_d.m_threshold);
+   SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
+   SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
+   SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
+   SetRegValueBool(strKeyName,"Collidable", m_d.m_fCollidable);
+   SetRegValueBool(strKeyName,"IsToy", m_d.m_fToy);
 }
 
 void Primitive::GetTimers(Vector<HitTimer> * const pvht)
@@ -247,19 +222,19 @@ void Primitive::GetTimers(Vector<HitTimer> * const pvht)
 
 void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   if( !m_d.use3DMesh || m_d.m_fToy )
+   if (m_d.m_fToy)
       return;
 
    RecalculateMatrices();
-   RecalculateVertices();
+   TransformVertices();
    HitTriangle *ph3dpolyOld = NULL;
 
-   for( unsigned i=0; i<indexList.size(); i+=3 )
+   for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
    {
       Vertex3Ds rgv3D[3];
-      rgv3D[0] = vertices[ indexList[i  ] ];
-      rgv3D[1] = vertices[ indexList[i+1] ];
-      rgv3D[2] = vertices[ indexList[i+2] ];
+      rgv3D[0] = vertices[ m_mesh.m_indices[i  ] ];
+      rgv3D[1] = vertices[ m_mesh.m_indices[i+1] ];
+      rgv3D[2] = vertices[ m_mesh.m_indices[i+2] ];
       HitTriangle * const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
       ph3dpoly->m_elasticity = m_d.m_elasticity;
       ph3dpoly->SetFriction(m_d.m_friction);
@@ -378,52 +353,14 @@ void Primitive::RecalculateMatrices()
 }
 
 // recalculate vertices for editor display
-void Primitive::RecalculateVertices()
+void Primitive::TransformVertices()
 {
-   vertices.clear();
+    vertices.resize( m_mesh.NumVertices() );
 
-   if( !m_d.use3DMesh )
-   {
-      vertices.resize(2 * m_d.m_Sides);
-
-      const float outerRadius = -0.5f/cosf((float)M_PI/(float)m_d.m_Sides);
-      const float addAngle = (float)(2.0*M_PI)/(float)m_d.m_Sides;
-	  const float offsAngle = (float)M_PI/(float)m_d.m_Sides;
-      for (int i = 0; i < m_d.m_Sides; ++i)
-      {
-         Vertex3Ds topVert, bottomVert;
-
-		 const float currentAngle = addAngle*(float)i + offsAngle;
-         topVert.x = sinf(currentAngle)*outerRadius;
-         topVert.y = cosf(currentAngle)*outerRadius * (1.0f+(m_d.m_vAxisScaleX.y - 1.0f)*(topVert.x+0.5f));
-         topVert.z =                           0.5f * (1.0f+(m_d.m_vAxisScaleX.z - 1.0f)*(topVert.x+0.5f));
-
-         topVert.x *= 1.0f+(m_d.m_vAxisScaleY.x - 1.0f)*(topVert.y+0.5f);
-         topVert.z *= 1.0f+(m_d.m_vAxisScaleY.z - 1.0f)*(topVert.y+0.5f);
-         bottomVert.z = -topVert.z;
-
-         const float tmp = topVert.x;
-         topVert.x    = tmp * (1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(topVert.z+0.5f));
-         bottomVert.x = tmp * (1.0f+(m_d.m_vAxisScaleZ.x - 1.0f)*(0.5f-topVert.z));
-
-         const float tmp2 = topVert.y;
-         topVert.y    = tmp2 * (1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(topVert.z+0.5f));
-         bottomVert.y = tmp2 * (1.0f+(m_d.m_vAxisScaleZ.y - 1.0f)*(0.5f-topVert.z));
-
-         fullMatrix.MultiplyVector(topVert, topVert);
-         fullMatrix.MultiplyVector(bottomVert, bottomVert);
-         vertices[i] = topVert;
-         vertices[i + m_d.m_Sides] = bottomVert;
-      }
-   }
-   else
-   {
-      vertices.resize( objMeshOrg.size() );
-      for( unsigned i=0; i<objMeshOrg.size(); i++ )
-      {
-         fullMatrix.MultiplyVector(objMeshOrg[i], vertices[i]);
-      }
-   }
+    for( unsigned i=0; i<m_mesh.NumVertices(); i++ )
+    {
+        fullMatrix.MultiplyVector(m_mesh.m_vertices[i], vertices[i]);
+    }
 }
 
 //////////////////////////////
@@ -433,53 +370,39 @@ void Primitive::RecalculateVertices()
 //2d
 void Primitive::PreRender(Sur * const psur)
 {
-   /*
-   psur->SetBorderColor(-1,false,0);
-   psur->SetFillColor(m_d.m_TopColor);
-   psur->SetObject(this);
-
-   psur->Line(m_d.m_vPosition.x -10.0f, m_d.m_vPosition.y,m_d.m_vPosition.x +10.0f, m_d.m_vPosition.y);
-   psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y -10.0f,m_d.m_vPosition.x, m_d.m_vPosition.y +10.0f);
-   */
 }
 
 void Primitive::Render(Sur * const psur)
 {
-   RecalculateMatrices();
-   RecalculateVertices();
-   //psur->SetBorderColor(RGB(0,0,0),false,2);
    psur->SetLineColor(RGB(0,0,0),false,1);
-   //psur->SetFillColor(-1);
    psur->SetObject(this);
-   //psur->SetObject(NULL);
-   if( !m_d.use3DMesh )
+
+   if( m_mesh.NumVertices() <= 100)     // small mesh: draw all triangles
    {
-      for (int i = 0; i < m_d.m_Sides; i++)
+      for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
       {
-         const int inext = ((i+1) == m_d.m_Sides) ? 0 : i+1;
-         const Vertex3Ds * const topVert = &vertices[i];
-         const Vertex3Ds * const nextTopVert = &vertices[inext];
-         psur->Line(topVert->x, topVert->y, nextTopVert->x, nextTopVert->y);
-         const Vertex3Ds * const bottomVert = &vertices[i + m_d.m_Sides];
-         const Vertex3Ds * const nextBottomVert = &vertices[inext + m_d.m_Sides];
-         psur->Line(bottomVert->x, bottomVert->y, nextBottomVert->x, nextBottomVert->y);
-         psur->Line(bottomVert->x, bottomVert->y, topVert->x, topVert->y);
-      }
-      psur->Line(m_d.m_vPosition.x -20.0f, m_d.m_vPosition.y,m_d.m_vPosition.x +20.0f, m_d.m_vPosition.y);
-      psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y -20.0f,m_d.m_vPosition.x, m_d.m_vPosition.y +20.0f);
-   }
-   else
-   {
-      //just draw a simple mesh layout not the entire mesh for performance reasons
-      for( unsigned i=0; i<indexList.size(); i+=3 )
-      {
-         const Vertex3Ds * const A = &vertices[ indexList[i]  ];
-         const Vertex3Ds * const B = &vertices[ indexList[i+1]];
-         psur->Line( A->x,A->y,B->x,B->y);
-         //psur->Line( B->x,B->y,C->x,C->y);
-         //psur->Line( C->x,C->y,A->x,A->y);
+         const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]  ];
+         const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
+         const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i+2]];
+         psur->Line(A->x,A->y, B->x,B->y);
+         psur->Line(B->x,B->y, C->x,C->y);
+         psur->Line(C->x,C->y, A->x,A->y);
       }
    }
+   else     // large mesh: draw a simplified mesh for performance reasons
+   {
+      for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
+      {
+         const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]  ];
+         const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
+         psur->Line(A->x,A->y, B->x,B->y);
+      }
+   }
+
+   // draw center marker
+   psur->SetLineColor(RGB(128,128,128),false,1);
+   psur->Line(m_d.m_vPosition.x -10.0f, m_d.m_vPosition.y,m_d.m_vPosition.x +10.0f, m_d.m_vPosition.y);
+   psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y -10.0f,m_d.m_vPosition.x, m_d.m_vPosition.y +10.0f);
 }
 
 void Primitive::CalculateBuiltinOriginal()
@@ -493,35 +416,35 @@ void Primitive::CalculateBuiltinOriginal()
    float maxX = -FLT_MAX;
    float maxY = -FLT_MAX;
 
-   objMeshOrg.resize(4*m_d.m_Sides + 2);
+   m_mesh.m_vertices.resize(4*m_d.m_Sides + 2);
 
    Vertex3D_NoTex2 *middle;
-   middle = &objMeshOrg[0]; // middle point top
+   middle = &m_mesh.m_vertices[0]; // middle point top
    middle->x = 0.0f;
    middle->y = 0.0f;
    middle->z = 0.5f;
-   middle = &objMeshOrg[m_d.m_Sides+1]; // middle point bottom
+   middle = &m_mesh.m_vertices[m_d.m_Sides+1]; // middle point bottom
    middle->x = 0.0f;
    middle->y = 0.0f;
    middle->z = -0.5f;
    for (int i = 0; i < m_d.m_Sides; ++i)
    {
       // calculate Top
-      Vertex3D_NoTex2 * const topVert = &objMeshOrg[i+1]; // top point at side
+      Vertex3D_NoTex2 * const topVert = &m_mesh.m_vertices[i+1]; // top point at side
       const float currentAngle = addAngle*(float)i + offsAngle;
       topVert->x = sinf(currentAngle)*outerRadius;
       topVert->y = cosf(currentAngle)*outerRadius;		
       topVert->z = 0.5f;
 
       // calculate bottom
-      Vertex3D_NoTex2 * const bottomVert = &objMeshOrg[i+1 + m_d.m_Sides+1]; // bottompoint at side
+      Vertex3D_NoTex2 * const bottomVert = &m_mesh.m_vertices[i+1 + m_d.m_Sides+1]; // bottompoint at side
       bottomVert->x = topVert->x;
       bottomVert->y = topVert->y;
       bottomVert->z = -0.5f;
 
       // calculate sides
-      objMeshOrg[m_d.m_Sides*2 + 2 + i] = *topVert; // sideTopVert
-      objMeshOrg[m_d.m_Sides*3 + 2 + i] = *bottomVert; // sideBottomVert
+      m_mesh.m_vertices[m_d.m_Sides*2 + 2 + i] = *topVert; // sideTopVert
+      m_mesh.m_vertices[m_d.m_Sides*3 + 2 + i] = *bottomVert; // sideBottomVert
 
       // calculate bounds for X and Y
       if (topVert->x < minX)
@@ -535,10 +458,10 @@ void Primitive::CalculateBuiltinOriginal()
    }
 
    // these have to be replaced for image mapping
-   middle = &objMeshOrg[0]; // middle point top
+   middle = &m_mesh.m_vertices[0]; // middle point top
    middle->tu = 0.25f;   // /4
    middle->tv = 0.25f;   // /4
-   middle = &objMeshOrg[m_d.m_Sides+1]; // middle point bottom
+   middle = &m_mesh.m_vertices[m_d.m_Sides+1]; // middle point bottom
    middle->tu = (float)(0.25*3.); // /4*3
    middle->tv = 0.25f;   // /4
    const float invx = 0.5f/(maxX-minX);
@@ -546,16 +469,16 @@ void Primitive::CalculateBuiltinOriginal()
    const float invs = 1.0f/(float)m_d.m_Sides;
    for (int i = 0; i < m_d.m_Sides; i++)
    {
-      Vertex3D_NoTex2 * const topVert = &objMeshOrg[i+1]; // top point at side
+      Vertex3D_NoTex2 * const topVert = &m_mesh.m_vertices[i+1]; // top point at side
       topVert->tu = (topVert->x - minX)*invx;
       topVert->tv = (topVert->y - minY)*invy;
 
-      Vertex3D_NoTex2 * const bottomVert = &objMeshOrg[i+1 + m_d.m_Sides+1]; // bottompoint at side
+      Vertex3D_NoTex2 * const bottomVert = &m_mesh.m_vertices[i+1 + m_d.m_Sides+1]; // bottompoint at side
       bottomVert->tu = topVert->tu+0.5f;
       bottomVert->tv = topVert->tv;
 
-      Vertex3D_NoTex2 * const sideTopVert = &objMeshOrg[m_d.m_Sides*2 + 2 + i];
-      Vertex3D_NoTex2 * const sideBottomVert = &objMeshOrg[m_d.m_Sides*3 + 2 + i];
+      Vertex3D_NoTex2 * const sideTopVert = &m_mesh.m_vertices[m_d.m_Sides*2 + 2 + i];
+      Vertex3D_NoTex2 * const sideBottomVert = &m_mesh.m_vertices[m_d.m_Sides*3 + 2 + i];
 
       sideTopVert->tu = (float)i*invs;
       sideTopVert->tv = 0.5f;
@@ -576,80 +499,86 @@ void Primitive::CalculateBuiltinOriginal()
    //   check if anti culling is enabled:
    if (m_d.m_DrawTexturesInside)
    {
-      indexList.resize(m_d.m_Sides*24);
+      m_mesh.m_indices.resize(m_d.m_Sides*24);
       // yes: draw everything twice
       // restore indices
       for (int i = 0; i < m_d.m_Sides; i++)
       {
          const int tmp = (i == m_d.m_Sides-1) ? 1 : (i+2); // wrapping around
          // top
-         indexList[i*6  ] = 0;
-         indexList[i*6+1] = i + 1;
-         indexList[i*6+2] = tmp;
-         indexList[i*6+3] = 0;
-         indexList[i*6+4] = tmp;
-         indexList[i*6+5] = i + 1;
+         m_mesh.m_indices[i*6  ] = 0;
+         m_mesh.m_indices[i*6+1] = i + 1;
+         m_mesh.m_indices[i*6+2] = tmp;
+         m_mesh.m_indices[i*6+3] = 0;
+         m_mesh.m_indices[i*6+4] = tmp;
+         m_mesh.m_indices[i*6+5] = i + 1;
 
          const int tmp2 = tmp+1;
          // bottom
-         indexList[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
-         indexList[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + tmp2;
-         indexList[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + 2 + i;
-         indexList[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides + 1;
-         indexList[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides + 2 + i;
-         indexList[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides + tmp2;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + tmp2;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + 2 + i;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides + 1;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides + 2 + i;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides + tmp2;
+
          // sides
-         indexList[12 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
-         indexList[12 * (i + m_d.m_Sides) + 1] = m_d.m_Sides*2 + 2 + i;
-         indexList[12 * (i + m_d.m_Sides) + 2] = m_d.m_Sides*3 + 2 + i;
-         indexList[12 * (i + m_d.m_Sides) + 3] = m_d.m_Sides*2 + tmp2;
-         indexList[12 * (i + m_d.m_Sides) + 4] = m_d.m_Sides*3 + 2 + i;
-         indexList[12 * (i + m_d.m_Sides) + 5] = m_d.m_Sides*3 + tmp2;
-         indexList[12 * (i + m_d.m_Sides) + 6] = m_d.m_Sides*2 + tmp2;
-         indexList[12 * (i + m_d.m_Sides) + 7] = m_d.m_Sides*3 + 2 + i;
-         indexList[12 * (i + m_d.m_Sides) + 8] = m_d.m_Sides*2 + 2 + i;
-         indexList[12 * (i + m_d.m_Sides) + 9] = m_d.m_Sides*2 + tmp2;
-         indexList[12 * (i + m_d.m_Sides) + 10]= m_d.m_Sides*3 + tmp2;
-         indexList[12 * (i + m_d.m_Sides) + 11]= m_d.m_Sides*3 + 2 + i;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 1] = m_d.m_Sides*2 + 2 + i;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 2] = m_d.m_Sides*3 + 2 + i;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 3] = m_d.m_Sides*2 + tmp2;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 4] = m_d.m_Sides*3 + 2 + i;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 5] = m_d.m_Sides*3 + tmp2;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 6] = m_d.m_Sides*2 + tmp2;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 7] = m_d.m_Sides*3 + 2 + i;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 8] = m_d.m_Sides*2 + 2 + i;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 9] = m_d.m_Sides*2 + tmp2;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 10]= m_d.m_Sides*3 + tmp2;
+         m_mesh.m_indices[12 * (i + m_d.m_Sides) + 11]= m_d.m_Sides*3 + 2 + i;
       }
    } else {
       // no: only out-facing polygons
       // restore indices
-      indexList.resize(m_d.m_Sides*12);
+      m_mesh.m_indices.resize(m_d.m_Sides*12);
       for (int i = 0; i < m_d.m_Sides; i++)
       {
          const int tmp = (i == m_d.m_Sides-1) ? 1 : (i+2); // wrapping around
          // top
-         indexList[i*3  ] = 0;
-         indexList[i*3+2] = i + 1;
-         indexList[i*3+1] = tmp;
+         m_mesh.m_indices[i*3  ] = 0;
+         m_mesh.m_indices[i*3+2] = i + 1;
+         m_mesh.m_indices[i*3+1] = tmp;
+
+         SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[i+3], 3);
 
          const int tmp2 = tmp+1;
          // bottom
-         indexList[3 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
-         indexList[3 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 2 + i;
-         indexList[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + tmp2;
+         m_mesh.m_indices[3 * (i + m_d.m_Sides)    ] = m_d.m_Sides + 1;
+         m_mesh.m_indices[3 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 2 + i;
+         m_mesh.m_indices[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + tmp2;
+
+         SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[3*(i+m_d.m_Sides)], 3);
 
          // sides
-         indexList[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
-         indexList[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides*3 + 2 + i;
-         indexList[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides*2 + 2 + i;
-         indexList[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides*2 + tmp2;
-         indexList[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides*3 + tmp2;
-         indexList[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides*3 + 2 + i;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides*3 + 2 + i;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides*2 + 2 + i;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides*2 + tmp2;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides*3 + tmp2;
+         m_mesh.m_indices[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides*3 + 2 + i;
       }
    }
+
+   // BUG: SetNormal only works for plane polygons
+   //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[0], m_mesh.NumIndices());
 }
 
+#if 0
 void Primitive::UpdateMeshBuiltin()
 {
    // 1 copy vertices
-   objMesh = objMeshOrg;
+   objMesh = m_mesh.m_vertices;
 
    // 2 apply matrix trafo
-   // BUG: SetNormal only works for plane polygons
-   SetNormal( &objMesh[0], &indexList[0], indexList.size(), NULL, NULL, 0 );
-
    for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
    {
       TransformVertex( objMesh[i] );
@@ -693,12 +622,12 @@ void Primitive::UpdateMeshBuiltin()
       {
          //!! this is wrong!
          builtin_depth[i] = 
-            zMultiplicator*objMesh[indexList[i*3  ]].z+
-            zMultiplicator*objMesh[indexList[i*3+1]].z+
-            zMultiplicator*objMesh[indexList[i*3+2]].z+
-            yMultiplicator*objMesh[indexList[i*3  ]].y+
-            yMultiplicator*objMesh[indexList[i*3+1]].y+
-            yMultiplicator*objMesh[indexList[i*3+2]].y;
+            zMultiplicator*objMesh[m_mesh.m_indices[i*3  ]].z+
+            zMultiplicator*objMesh[m_mesh.m_indices[i*3+1]].z+
+            zMultiplicator*objMesh[m_mesh.m_indices[i*3+2]].z+
+            yMultiplicator*objMesh[m_mesh.m_indices[i*3  ]].y+
+            yMultiplicator*objMesh[m_mesh.m_indices[i*3+1]].y+
+            yMultiplicator*objMesh[m_mesh.m_indices[i*3+2]].y;
       }
    } else {
       const float zM13 = (float)(1.0/3.0) * zMultiplicator;
@@ -707,13 +636,13 @@ void Primitive::UpdateMeshBuiltin()
       for (int i = 0; i < m_d.m_Sides * 2; i++)
       {
          builtin_depth[i] = 
-            (objMesh[indexList[i*6  ]].z+
-             objMesh[indexList[i*6+1]].z+
-             objMesh[indexList[i*6+2]].z) 
+            (objMesh[m_mesh.m_indices[i*6  ]].z+
+             objMesh[m_mesh.m_indices[i*6+1]].z+
+             objMesh[m_mesh.m_indices[i*6+2]].z) 
             * zM13 +
-            (objMesh[indexList[i*6  ]].y+
-             objMesh[indexList[i*6+1]].y+
-             objMesh[indexList[i*6+2]].y) 
+            (objMesh[m_mesh.m_indices[i*6  ]].y+
+             objMesh[m_mesh.m_indices[i*6+1]].y+
+             objMesh[m_mesh.m_indices[i*6+2]].y) 
             * yM13;
       }
 
@@ -723,11 +652,11 @@ void Primitive::UpdateMeshBuiltin()
       {
          builtin_depth[i*2] = 
          builtin_depth[i*2+1] = 
-            (objMesh[indexList[i*12  ]].z+
-             objMesh[indexList[i*12+1]].z)
+            (objMesh[m_mesh.m_indices[i*12  ]].z+
+             objMesh[m_mesh.m_indices[i*12+1]].z)
             * zM05 +
-            (objMesh[indexList[i*12  ]].y+
-             objMesh[indexList[i*12+1]].y)
+            (objMesh[m_mesh.m_indices[i*12  ]].y+
+             objMesh[m_mesh.m_indices[i*12+1]].y)
             * yM05;
       }
    }
@@ -744,20 +673,20 @@ void Primitive::UpdateMeshBuiltin()
             const float tempDepth = builtin_depth[i];
             int tempIndices[6];
             for (int tempI = 0; tempI < 6; tempI++)
-               tempIndices[tempI] = indexList[i*6 + tempI];
+               tempIndices[tempI] = m_mesh.m_indices[i*6 + tempI];
 
             int j = i;
             while ((j >= inc) && (builtin_depth[j-inc] > tempDepth))
             {
                builtin_depth[j] = builtin_depth[j-inc];
                for (int tempI = 0; tempI < 6; tempI++)
-                  indexList[j*6+tempI] = indexList[(j-inc)*6 + tempI];
+                  m_mesh.m_indices[j*6+tempI] = m_mesh.m_indices[(j-inc)*6 + tempI];
                j -= inc;
             }
 
             builtin_depth[j] = tempDepth;
             for (int tempI = 0; tempI < 6; tempI++)
-               indexList[j*6+tempI] = tempIndices[tempI];
+               m_mesh.m_indices[j*6+tempI] = tempIndices[tempI];
          }
 
          if(inc == 2)
@@ -769,6 +698,7 @@ void Primitive::UpdateMeshBuiltin()
    //}
 #endif
 }
+#endif
 
 void Primitive::TransformVertex(Vertex3D_NoTex2& v) const
 {
@@ -786,7 +716,8 @@ void Primitive::TransformVertex(Vertex3D_NoTex2& v) const
 
 void Primitive::UpdateMesh()
 {
-   objMesh = objMeshOrg;
+   objMesh = m_mesh.m_vertices;
+
    if ( m_d.sphereMapping )
    {
       Matrix3D matView = g_pplayer->m_pin3d.GetViewTransform();
@@ -794,7 +725,7 @@ void Primitive::UpdateMesh()
       // TODO/BUG: this should compute the inverse transpose of the rotational part
    }
 
-   for (unsigned i = 0; i < objMeshOrg.size(); i++)
+   for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
    {
       Vertex3D_NoTex2 * const tempVert = &objMesh[i];
       if ( m_d.sphereMapping )
@@ -813,105 +744,94 @@ void Primitive::UpdateMesh()
    vertexBuffer->unlock();
 }
 
+void Primitive::UpdateEditorView()
+{
+    RecalculateMatrices();
+    TransformVertices();
+}
+
 void Primitive::RenderObject( RenderDevice *pd3dDevice )
 {
-   RecalculateMatrices();
+    RecalculateMatrices();
 
-   if (m_d.m_TopVisible)
-   {
-      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+    if (vertexBufferRegenerate)
+    {
+        vertexBufferRegenerate = false;
+        UpdateMesh();
+    }
 
-      if (pin)
-      {
-         pin->CreateAlphaChannel();
-         pin->Set( ePictureTexture );
-         g_pplayer->m_pin3d.EnableAlphaBlend(1, fFalse);
-         g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
-      }
-      else
-      {
-         g_pplayer->m_pin3d.SetTexture(NULL);
-         if( vertexBufferRegenerate )
+    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+
+    if (pin)
+    {
+        pin->CreateAlphaChannel();
+        pin->Set( ePictureTexture );
+        g_pplayer->m_pin3d.EnableAlphaBlend(1, fFalse);
+        g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
+    }
+    else
+    {
+        g_pplayer->m_pin3d.SetTexture(NULL);
+        if( vertexBufferRegenerate )
             material.setColor( 1.0f, m_d.m_TopColor );
-      }
+    }
 
-      pd3dDevice->SetMaterial(material);
+    pd3dDevice->SetMaterial(material);
 
-      if (vertexBufferRegenerate)
-      {
-         vertexBufferRegenerate = false;
+    if ( !m_d.useLighting )
+    {
+        // disable lighting is a default setting
+        // it could look odd if you switch lighting on on non mesh primitives
+        pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+        // VP9COMPAT: in VP10, the following should be enabled
+        //pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
+        //pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_TopColor));
+    }
 
-         if( m_d.use3DMesh )
-            UpdateMesh();
-         else
-            UpdateMeshBuiltin();
-      }
+    // set transform
+    Matrix3D matOrig, matNew;
+    matOrig = g_pplayer->m_pin3d.GetWorldTransform();
+    //matTemp.SetScaling(1.0f, 1.0f, m_ptable->m_zScale); // TODO: z-scaling? causes distortions
+    //matNew.Multiply(matTemp, matNew);
+    matOrig.Multiply(fullMatrix, matNew);
+    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
 
-      if ( !m_d.useLighting )
-      {
-          // disable lighting is a default setting
-          // it could look odd if you switch lighting on on non mesh primitives
-          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
-          // VP9COMPAT: in VP10, the following should be enabled
-          //pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-          //pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_TopColor));
-      }
+    // draw the mesh
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices() );
 
-      // set transform
-      Matrix3D matOrig, matNew;
-      matOrig = g_pplayer->m_pin3d.GetWorldTransform();
-      //matTemp.SetScaling(1.0f, 1.0f, m_ptable->m_zScale); // TODO: z-scaling? causes distortions
-      //matNew.Multiply(matTemp, matNew);
-      matOrig.Multiply(fullMatrix, matNew);
-      pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
-      
-      // draw the mesh
-      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, objMeshOrg.size(), indexBuffer, 0, indexList.size() );
+    // reset transform
+    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
 
-      // reset transform
-      pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+    // reset render states
+    if ( !m_d.useLighting )
+    {
+        pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
+    }
 
-      // reset render states
-      if ( !m_d.useLighting )
-      {
-          pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-          pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-          pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
-      }
-
-      g_pplayer->m_pin3d.DisableAlphaBlend();
-   }
+    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
 void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
 {
     TRACE_FUNCTION();
-   if ( m_d.staticRendering )
+   if ( m_d.staticRendering || !m_d.m_fVisible )
       return;
 
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    RenderObject( pd3dDevice );
 }
 
-// defined in objloader.cpp
-extern bool WaveFrontObj_Load( char *filename, bool flipTv, bool convertToLeftHanded );
-extern void WaveFrontObj_GetVertices( std::vector<Vertex3D_NoTex2>& objMesh );
-extern void WaveFrontObj_GetIndices( std::vector<WORD>& list );
-extern void WaveFrontObj_Save( char *filename, Primitive *mesh );
-//
-
 void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
 {
    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 
-   if( !m_d.use3DMesh )
-      CalculateBuiltinOriginal();
-
    if( !vertexBuffer )
-      pd3dDevice->CreateVertexBuffer( objMeshOrg.size(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+      pd3dDevice->CreateVertexBuffer( m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
 
-   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indexList );
+   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer( m_mesh.m_indices );
 
    // make sure alpha channel is set up
    Texture * const tex = m_ptable->GetImage(m_d.m_szImage);
@@ -968,9 +888,6 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
 {
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-   bw.WriteInt(FID(PIID), ApcControl.ID());
-#endif
    /*
     * Someone decided that it was a good idea to write these vectors including
     * the fourth padding float that they used to have, so now we have to write
@@ -995,8 +912,8 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteInt(FID(TCOL), m_d.m_TopColor);
    bw.WriteInt(FID(SCOL), m_d.m_SideColor);
-   bw.WriteInt(FID(TVIS), (m_d.m_TopVisible) ? 1 : 0);
-   bw.WriteInt(FID(DTXI), (m_d.m_DrawTexturesInside) ? 1 : 0);
+   bw.WriteBool(FID(TVIS), m_d.m_fVisible);
+   bw.WriteBool(FID(DTXI), m_d.m_DrawTexturesInside);
    bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
    bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
@@ -1004,17 +921,17 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
    bw.WriteBool(FID(ISTO), m_d.m_fToy);
-   bw.WriteInt(FID(ENLI), (m_d.useLighting) ? 1 : 0);
-   bw.WriteInt(FID(U3DM), (m_d.use3DMesh) ? 1 : 0 );
-   bw.WriteInt(FID(STRE), (m_d.staticRendering) ? 1 : 0 );
-   bw.WriteInt(FID(EVMP), (m_d.sphereMapping) ? 1 : 0 );
+   bw.WriteBool(FID(ENLI), m_d.useLighting);
+   bw.WriteBool(FID(U3DM), m_d.use3DMesh);
+   bw.WriteBool(FID(STRE), m_d.staticRendering);
+   bw.WriteBool(FID(EVMP), m_d.sphereMapping);
    if( m_d.use3DMesh )
    {
       bw.WriteString( FID(M3DN), m_d.meshFileName);
-      bw.WriteInt( FID(M3VN), (int)objMeshOrg.size() );
-      bw.WriteStruct( FID(M3DX), &objMeshOrg[0], sizeof(Vertex3D_NoTex2)*objMeshOrg.size());
-      bw.WriteInt( FID(M3FN), indexList.size() );
-      bw.WriteStruct( FID(M3DI), &indexList[0], sizeof(WORD)*indexList.size() );
+      bw.WriteInt( FID(M3VN), m_mesh.NumVertices() );
+      bw.WriteStruct( FID(M3DX), &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
+      bw.WriteInt( FID(M3FN), m_mesh.NumIndices() );
+      bw.WriteStruct( FID(M3DI), &m_mesh.m_indices[0], sizeof(WORD)*m_mesh.NumIndices() );
    }
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
 
@@ -1121,15 +1038,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(TVIS))
    {
-      int iTmp;
-      pbr->GetInt(&iTmp);
-      m_d.m_TopVisible = (iTmp==1);
+      pbr->GetBool(&m_d.m_fVisible);
    }
    else if (id == FID(DTXI))
    {
-      int iTmp;
-      pbr->GetInt(&iTmp);
-      m_d.m_DrawTexturesInside = (iTmp==1);
+      pbr->GetBool(&m_d.m_DrawTexturesInside);
    }
    else if (id == FID(HTEV))
    {
@@ -1153,39 +1066,27 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(CLDRP))
    {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_fCollidable = (iTmp==1);
+      pbr->GetBool(&m_d.m_fCollidable);
    }
    else if (id == FID(ISTO))
    {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      m_d.m_fToy = (iTmp==1);
+      pbr->GetBool(&m_d.m_fToy);
    }
    else if (id == FID(ENLI))
    {
-      int iTmp;
-      pbr->GetInt(&iTmp);
-      m_d.useLighting = (iTmp==1);
+      pbr->GetBool(&m_d.useLighting);
    }
    else if (id == FID(STRE))
    {
-      int iTmp;
-      pbr->GetInt(&iTmp);
-      m_d.staticRendering = (iTmp==1);
+      pbr->GetBool(&m_d.staticRendering);
    }
    else if (id == FID(EVMP))
    {
-      int iTmp;
-      pbr->GetInt(&iTmp);
-      m_d.sphereMapping = (iTmp==1);
+      pbr->GetBool(&m_d.sphereMapping);
    }
    else if ( id == FID(U3DM))
    {
-      int iTmp;
-      pbr->GetInt(&iTmp);
-      m_d.use3DMesh = (iTmp==1);
+      pbr->GetBool(&m_d.use3DMesh);
    }
    else if ( id == FID(M3DN))
    {
@@ -1198,9 +1099,9 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if( id == FID(M3DX) )
    {
       objMesh.clear();
-      objMeshOrg.clear();
-      objMeshOrg.resize(numVertices);
-      pbr->GetStruct( &objMeshOrg[0], sizeof(Vertex3D_NoTex2)*numVertices);
+      m_mesh.m_vertices.clear();
+      m_mesh.m_vertices.resize(numVertices);
+      pbr->GetStruct( &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices);
    }
    else if( id == FID(M3FN) )
    {
@@ -1208,8 +1109,8 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if( id == FID(M3DI) )
    {
-      indexList.resize( numIndices );
-      pbr->GetStruct( &indexList[0], sizeof(WORD)*numIndices);
+      m_mesh.m_indices.resize( numIndices );
+      pbr->GetStruct( &m_mesh.m_indices[0], sizeof(WORD)*numIndices);
    }
    else if (id == FID(PIDB))
    {
@@ -1225,7 +1126,8 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Primitive::InitPostLoad()
 {
-   return S_OK;
+    UpdateEditorView();
+    return S_OK;
 }
 
 bool Primitive::BrowseFor3DMeshFile()
@@ -1258,13 +1160,7 @@ bool Primitive::BrowseFor3DMeshFile()
       ofn.lpstrInitialDir = szFoo;
    }
 
-#ifdef VBA
-   ApcHost->BeginModalDialog();
-#endif
    const int ret = GetOpenFileName(&ofn);
-#ifdef VBA
-   ApcHost->EndModalDialog();
-#endif
    string filename(ofn.lpstrFile);
    int index = filename.find_last_of("\\");
    if( index!=-1 )
@@ -1277,10 +1173,8 @@ bool Primitive::BrowseFor3DMeshFile()
    {
       return false;
    }
-   objMeshOrg.clear();
+   m_mesh.Clear();
    objMesh.clear();
-   numVertices = numIndices = 0;
-   indexList.clear();
    m_d.use3DMesh=false;
    if( vertexBuffer )
    {
@@ -1302,11 +1196,10 @@ bool Primitive::BrowseFor3DMeshFile()
          flipTV=true;
       }
    }
-   if ( WaveFrontObj_Load(ofn.lpstrFile, flipTV, convertToLeftHanded) )
+   if (m_mesh.LoadWavefrontObj(ofn.lpstrFile, flipTV, convertToLeftHanded))
    {
       m_d.use3DMesh=true;
-      WaveFrontObj_GetVertices( objMeshOrg );
-      WaveFrontObj_GetIndices( indexList );
+      UpdateEditorView();
       return true;
    }
    return false;
@@ -1352,7 +1245,6 @@ STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
    STARTUNDO
 
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.meshFileName, 256, NULL, NULL);
-   vertexBufferRegenerate = true;
 
    STOPUNDO
    return S_OK;
@@ -1377,11 +1269,6 @@ void Primitive::ExportMesh()
    char szInitialDir[1024];
    szFileName[0] = '\0';
 
-   if ( !m_d.use3DMesh )
-   {
-      ShowError("This primitive isn't a 3D Mesh!");
-      return;
-   }
    OPENFILENAME ofn;
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
@@ -1406,18 +1293,12 @@ void Primitive::ExportMesh()
       ofn.lpstrInitialDir = szFoo;
    }
 
-#ifdef VBA
-   ApcHost->BeginModalDialog();
-#endif
    const int ret = GetSaveFileName(&ofn);
-#ifdef VBA
-   ApcHost->EndModalDialog();
-#endif
    if(ret == 0)
    {
       return;
    }
-   WaveFrontObj_Save( ofn.lpstrFile, this );
+   m_mesh.SaveWavefrontObj(ofn.lpstrFile, m_d.use3DMesh ? m_d.meshFileName : "Primitive");
 }
 
 bool Primitive::IsTransparent()
@@ -1440,19 +1321,26 @@ STDMETHODIMP Primitive::get_Sides(int *pVal)
 
 STDMETHODIMP Primitive::put_Sides(int newVal)
 {
-   if ((newVal <= Max_Primitive_Sides) && (m_d.m_Sides != newVal))
-   {
-      STARTUNDO
+    if (newVal > Max_Primitive_Sides)
+        newVal = Max_Primitive_Sides;
 
-      m_d.m_Sides = newVal;
-      vertexBufferRegenerate = true;
-      RecalculateMatrices();
-	  RecalculateVertices();
+    if (m_d.m_Sides != newVal)
+    {
+        STARTUNDO
 
-      STOPUNDO
-   }
+        m_d.m_Sides = newVal;
+        if (!m_d.use3DMesh)
+        {
+            vertexBufferRegenerate = true;
+            CalculateBuiltinOriginal();
+            RecalculateMatrices();
+            TransformVertices();
+        }
 
-   return S_OK;
+        STOPUNDO
+    }
+
+    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_TopColor(OLE_COLOR *pVal)
@@ -1467,10 +1355,7 @@ STDMETHODIMP Primitive::put_TopColor(OLE_COLOR newVal)
    if(m_d.m_TopColor != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_TopColor = newVal;
-	   vertexBufferRegenerate = true;
-
 	   STOPUNDO
    }
 
@@ -1489,27 +1374,24 @@ STDMETHODIMP Primitive::put_SideColor(OLE_COLOR newVal)
    if( m_d.m_SideColor != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_SideColor = newVal;
-	   vertexBufferRegenerate = true;
-
 	   STOPUNDO
    }
 
    return S_OK;
 }
 
-STDMETHODIMP Primitive::get_TopVisible(VARIANT_BOOL *pVal)
+STDMETHODIMP Primitive::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_TopVisible);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
    return S_OK;
 }
 
-STDMETHODIMP Primitive::put_TopVisible(VARIANT_BOOL newVal)
+STDMETHODIMP Primitive::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_d.m_TopVisible = VBTOF(newVal);
+   m_d.m_fVisible = VBTOF(newVal);
    STOPUNDO
    return S_OK;
 }
@@ -1548,10 +1430,11 @@ STDMETHODIMP Primitive::put_X(float newVal)
    if(m_d.m_vPosition.x != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_vPosition.x = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1569,10 +1452,11 @@ STDMETHODIMP Primitive::put_Y(float newVal)
    if(m_d.m_vPosition.y != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_vPosition.y = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1590,10 +1474,11 @@ STDMETHODIMP Primitive::put_Z(float newVal)
    if(m_d.m_vPosition.z != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_vPosition.z = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1611,10 +1496,11 @@ STDMETHODIMP Primitive::put_Size_X(float newVal)
    if(m_d.m_vSize.x != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_vSize.x = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1632,10 +1518,11 @@ STDMETHODIMP Primitive::put_Size_Y(float newVal)
    if(m_d.m_vSize.y != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_vSize.y = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1653,10 +1540,11 @@ STDMETHODIMP Primitive::put_Size_Z(float newVal)
    if(m_d.m_vSize.z != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_vSize.z = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1679,6 +1567,9 @@ STDMETHODIMP Primitive::put_AxisScaleX_Y(float newVal)
 	   vertexBufferRegenerate = true;
 
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1701,6 +1592,9 @@ STDMETHODIMP Primitive::put_AxisScaleX_Z(float newVal)
 	   vertexBufferRegenerate = true;
 
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1723,6 +1617,9 @@ STDMETHODIMP Primitive::put_AxisScaleY_X(float newVal)
 	   vertexBufferRegenerate = true;
 
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1745,6 +1642,9 @@ STDMETHODIMP Primitive::put_AxisScaleY_Z(float newVal)
 	   vertexBufferRegenerate = true;
 
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1767,6 +1667,9 @@ STDMETHODIMP Primitive::put_AxisScaleZ_X(float newVal)
 	   vertexBufferRegenerate = true;
 
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1789,6 +1692,9 @@ STDMETHODIMP Primitive::put_AxisScaleZ_Y(float newVal)
 	   vertexBufferRegenerate = true;
 
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1815,10 +1721,11 @@ STDMETHODIMP Primitive::put_RotX(float newVal)
    if(m_d.m_aRotAndTra[0] != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_aRotAndTra[0] = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1845,10 +1752,11 @@ STDMETHODIMP Primitive::put_RotY(float newVal)
    if(m_d.m_aRotAndTra[1] != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_aRotAndTra[1] = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1875,10 +1783,11 @@ STDMETHODIMP Primitive::put_RotZ(float newVal)
    if(m_d.m_aRotAndTra[2] != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_aRotAndTra[2] = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1905,10 +1814,11 @@ STDMETHODIMP Primitive::put_TransX(float newVal)
    if(m_d.m_aRotAndTra[3] != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_aRotAndTra[3] = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1935,10 +1845,11 @@ STDMETHODIMP Primitive::put_TransY(float newVal)
    if(m_d.m_aRotAndTra[4] != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_aRotAndTra[4] = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1965,10 +1876,11 @@ STDMETHODIMP Primitive::put_TransZ(float newVal)
    if(m_d.m_aRotAndTra[5] != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_aRotAndTra[5] = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1995,10 +1907,11 @@ STDMETHODIMP Primitive::put_ObjRotX(float newVal)
    if(m_d.m_aRotAndTra[6] != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_aRotAndTra[6] = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -2025,10 +1938,11 @@ STDMETHODIMP Primitive::put_ObjRotY(float newVal)
    if(m_d.m_aRotAndTra[7] != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_aRotAndTra[7] = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -2055,10 +1969,11 @@ STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
    if(m_d.m_aRotAndTra[8] != newVal)
    {
 	   STARTUNDO
-
 	   m_d.m_aRotAndTra[8] = newVal;
-
 	   STOPUNDO
+
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
