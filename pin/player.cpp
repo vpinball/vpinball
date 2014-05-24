@@ -2478,7 +2478,7 @@ void Player::DrawBalls()
       ballShader->Core()->SetVector("m3",&m3);
       D3DXVECTOR4 pos( pball->pos.x, pball->pos.y, zheight, 1.0f );
       ballShader->Core()->SetVector("position", &pos );
-      ballShader->Core()->SetFloat("radius", pball->radius*0.9f );
+      ballShader->Core()->SetFloat("radius", pball->radius );
       if ( !pball->m_pin )
           ballShader->Core()->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_pin3d.ballTexture.m_pdsBufferColorKey));
       else
