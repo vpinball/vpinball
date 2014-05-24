@@ -305,12 +305,12 @@ public:
 
    inline void CreateVertexDeclaration( const VertexElement *element, VertexDeclaration **declaration )
    {
-       m_pD3DDevice->CreateVertexDeclaration( element, declaration );
+       CHECKD3D(m_pD3DDevice->CreateVertexDeclaration( element, declaration ));
    }
 
    inline void SetVertexDeclaration( VertexDeclaration *declaration )
    {
-       m_pD3DDevice->SetVertexDeclaration( declaration );
+       CHECKD3D(m_pD3DDevice->SetVertexDeclaration( declaration ));
    }
 
    inline IDirect3DDevice9* GetCoreDevice()
