@@ -1,21 +1,18 @@
 #include "stdafx.h"
 
-struct MyVector
-{
-   float x,y,z;
-};
 struct MyPoly
 {
-   int vi0,ti0,ni0, fi0;
-   int vi1,ti1,ni1, fi1;
-   int vi2,ti2,ni2, fi2;
+   int vi0,ti0,ni0;
+   int vi1,ti1,ni1;
+   int vi2,ti2,ni2;
 };
-vector<MyVector> tmpVerts;
-vector<MyVector> tmpNorms;
-vector<MyVector> tmpTexel;
-vector<MyPoly> tmpFaces;
-vector<Vertex3D> verts;
-vector<int> faces;
+
+static vector<Vertex3Ds> tmpVerts;
+static vector<Vertex3Ds> tmpNorms;
+static vector<Vertex2D> tmpTexel;
+static vector<MyPoly> tmpFaces;
+static vector<Vertex3D> verts;
+static vector<int> faces;
 
 static int isInList( const int vi, const int ti, const int ni )
 {
@@ -91,7 +88,7 @@ static void NormalizeNormals()
    }
 }
 
-bool WaveFrontObj_Load( char *filename, bool flipTv, bool convertToLeftHanded )
+bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHanded )
 {
    FILE *f;
    fopen_s(&f,filename,"r");
@@ -109,7 +106,7 @@ bool WaveFrontObj_Load( char *filename, bool flipTv, bool convertToLeftHanded )
    while ( 1 )
    {
       char lineHeader[128];
-      int res = fscanf_s(f,"%s", lineHeader );
+      int res = fscanf_s(f,"%s", lineHeader, 128 );
       if( res==EOF ) 
       {
          fclose(f);
@@ -118,7 +115,7 @@ bool WaveFrontObj_Load( char *filename, bool flipTv, bool convertToLeftHanded )
 
       if( strcmp( lineHeader,"v") == 0 )
       {
-         MyVector tmp;
+         Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n",&tmp.x, &tmp.y, &tmp.z );
          if ( convertToLeftHanded )
             tmp.z*=-1.0f;
@@ -126,7 +123,7 @@ bool WaveFrontObj_Load( char *filename, bool flipTv, bool convertToLeftHanded )
       }
       if( strcmp( lineHeader,"vt") == 0 )
       {
-         MyVector tmp;
+         Vertex2D tmp;
          fscanf_s(f, "%f %f\n",&tmp.x, &tmp.y );
          if ( flipTv || convertToLeftHanded )
          {
@@ -136,7 +133,7 @@ bool WaveFrontObj_Load( char *filename, bool flipTv, bool convertToLeftHanded )
       }
       if( strcmp( lineHeader,"vn") == 0 )
       {
-         MyVector tmp;
+         Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n",&tmp.x, &tmp.y, &tmp.z );
          if ( convertToLeftHanded )
             tmp.z*=-1;
@@ -169,7 +166,6 @@ bool WaveFrontObj_Load( char *filename, bool flipTv, bool convertToLeftHanded )
             return false;
          }
          MyPoly tmpFace;
-         tmpFace.fi0 = tmpFace.fi1 = tmpFace.fi2 = -1;
          int matches=0;
          if ( convertToLeftHanded )
          {
@@ -297,7 +293,7 @@ void WaveFrontObj_GetIndices( std::vector<WORD>& list ) // clears temporary stor
 }
 
 // exporting a mesh to a Wavefront .OBJ file. The mesh is converted into right-handed coordinate system (VP uses left-handed)
-void WaveFrontObj_Save( char *filename, Primitive *mesh )
+void WaveFrontObj_Save(const char *filename, const char *description, const Mesh& mesh)
 {
    FILE *f;
    fopen_s(&f,filename,"wt");
@@ -305,27 +301,27 @@ void WaveFrontObj_Save( char *filename, Primitive *mesh )
       return ;
 
    fprintf_s(f,"# Visual Pinball OBJ file\n");
-   fprintf_s(f,"# numVerts: %u numFaces: %u\n", mesh->objMeshOrg.size(), mesh->indexList.size() );
-   fprintf_s(f,"o %s\n",mesh->m_d.meshFileName );
-   for( unsigned i=0; i<mesh->objMeshOrg.size(); i++ )
+   fprintf_s(f,"# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices() );
+   fprintf_s(f,"o %s\n", description );
+   for( unsigned i=0; i<mesh.NumVertices(); i++ )
    {
-      fprintf_s(f,"v %f %f %f\n", mesh->objMeshOrg[i].x, mesh->objMeshOrg[i].y, -mesh->objMeshOrg[i].z );
+      fprintf_s(f,"v %f %f %f\n", mesh.m_vertices[i].x, mesh.m_vertices[i].y, -mesh.m_vertices[i].z );
    }
-   for( unsigned i=0; i<mesh->objMeshOrg.size(); i++ )
+   for( unsigned i=0; i<mesh.NumVertices(); i++ )
    {
-      fprintf_s(f,"vn %f %f %f\n",mesh->objMeshOrg[i].nx, mesh->objMeshOrg[i].ny, mesh->objMeshOrg[i].nz );
+      fprintf_s(f,"vn %f %f %f\n",mesh.m_vertices[i].nx, mesh.m_vertices[i].ny, mesh.m_vertices[i].nz );
    }
-   for( unsigned i=0; i<mesh->objMeshOrg.size(); i++ )
+   for( unsigned i=0; i<mesh.NumVertices(); i++ )
    {
-      float tv = 1.f-mesh->objMeshOrg[i].tv;
-      fprintf_s(f,"vt %f %f\n", mesh->objMeshOrg[i].tu, tv );
+      float tv = 1.f-mesh.m_vertices[i].tv;
+      fprintf_s(f,"vt %f %f\n", mesh.m_vertices[i].tu, tv );
    }
 
-   for( unsigned i=0; i<mesh->indexList.size(); i+=3 )
+   for( unsigned i=0; i<mesh.NumIndices(); i+=3 )
    {
-      fprintf_s(f,"f %i/%i/%i %i/%i/%i %i/%i/%i\n", mesh->indexList[i+2]+1, mesh->indexList[i+2]+1, mesh->indexList[i+2]+1
-                                                  , mesh->indexList[i+1]+1, mesh->indexList[i+1]+1, mesh->indexList[i+1]+1
-                                                  , mesh->indexList[i  ]+1, mesh->indexList[i  ]+1, mesh->indexList[i  ]+1 );
+      fprintf_s(f,"f %i/%i/%i %i/%i/%i %i/%i/%i\n", mesh.m_indices[i+2]+1, mesh.m_indices[i+2]+1, mesh.m_indices[i+2]+1
+                                                  , mesh.m_indices[i+1]+1, mesh.m_indices[i+1]+1, mesh.m_indices[i+1]+1
+                                                  , mesh.m_indices[i  ]+1, mesh.m_indices[i  ]+1, mesh.m_indices[i  ]+1 );
    }
    fclose(f);
 }
