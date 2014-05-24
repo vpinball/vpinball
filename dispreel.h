@@ -101,7 +101,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-    void        RenderText();
     bool        RenderAnimation();
 
 	void WriteRegDefaults();
@@ -119,7 +118,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
 private:
     // rendering information (after scaling to render resolution)
     IFont       *m_pIFontPlay;     // Our font, scaled to match play window resolution
-    Vector<ObjFrame>    m_vreelframe;     // the generated reel frame which contains the individual reel graphics
 
 	COLORREF	m_rgbImageTransparent;
 
@@ -190,7 +188,6 @@ public:
     STDMETHOD(SpinReel)(/*[in]*/ long ReelNumber, /*[in]*/ long PulseCount);
 
 private:
-	void    UpdateObjFrame();
     float   getBoxWidth() const;
     float   getBoxHeight() const;
     void    SetVerticesForReel(int reelNum, int digit, Vertex3D_NoTex2 * v);
