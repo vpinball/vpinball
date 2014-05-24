@@ -146,7 +146,7 @@ void Flasher::WriteRegDefaults()
 void Flasher::PreRender(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
-   psur->SetFillColor(m_d.m_color);
+   psur->SetFillColor(m_ptable->RenderSolid() ? m_d.m_color : -1);
    psur->SetBorderColor(-1,false,0);
    psur->SetObject(this);
 

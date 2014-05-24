@@ -198,7 +198,7 @@ void Decal::PreRender(Sur * const psur)
    if( !m_fBackglass || GetPTable()->GetDecalsEnabled() )
    {
       psur->SetBorderColor(-1,false,0);
-      psur->SetFillColor(RGB(0,0,255));
+      psur->SetFillColor(m_ptable->RenderSolid() ? RGB(0,0,255) : -1);
       psur->SetObject(this);
 
       const float halfwidth = m_realwidth/*m_d.m_width*/ * 0.5f;
