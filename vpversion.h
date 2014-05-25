@@ -1,7 +1,7 @@
 #pragma once
 
-#define VP_VERSION_MAJOR    9
-#define VP_VERSION_MINOR    9
+#define VP_VERSION_MAJOR    10
+#define VP_VERSION_MINOR    0
 #define VP_VERSION_REV      0
 
 #define _STR(x)    #x
