@@ -540,7 +540,8 @@ PinTable::PinTable()
    m_savingActive=false;
    m_renderSolid = GetRegBoolWithDefault("Editor", "RenderSolid", true);
 
-   m_vmultisel.AddElement((ISelect *)this);
+   ClearMultiSel();
+
    m_undo.m_ptable = this;
    m_fGrid = fTrue;
    m_fBackdrop = fTrue;
@@ -4213,7 +4214,7 @@ void PinTable::DoLButtonDown(int x,int y)
    {
       ISelect * const pisel = HitTest(x,y);
 
-      const BOOL fAdd = ((ksshift & 0x80000000) != 0);
+      const bool fAdd = ((ksshift & 0x80000000) != 0);
 
       if (pisel == (ISelect *)this && fAdd)
       {
@@ -4225,7 +4226,7 @@ void PinTable::DoLButtonDown(int x,int y)
          return;
       }
 
-      AddMultiSel(pisel, fAdd, fTrue);
+      AddMultiSel(pisel, fAdd);
 
       for (int i=0;i<m_vmultisel.Size();i++)
       {
@@ -4272,7 +4273,7 @@ void PinTable::DoRButtonDown(int x,int y)
    else
    {
       //SetSel(HitTest(x,y));
-      AddMultiSel(HitTest(x,y), fFalse, fTrue);
+      AddMultiSel(HitTest(x,y), false);
    }
 }
 
@@ -5038,7 +5039,7 @@ void PinTable::SelectItem(IScriptable *piscript)
    ISelect * const pisel = piscript->GetISelect();
    if (pisel)
    {
-      AddMultiSel(pisel, fFalse, fTrue);
+      AddMultiSel(pisel, false);
    }
 }
 
@@ -5128,7 +5129,7 @@ void PinTable::Uncreate(IEditable *pie)
 {
    if (pie->GetISelect()->m_selectstate != eNotSelected)
    {
-      AddMultiSel(pie->GetISelect(), fTrue, fTrue); // Remove the item from the multi-select list
+      AddMultiSel(pie->GetISelect(), true); // Remove the item from the multi-select list
    }
 
    pie->GetISelect()->Uncreate();
@@ -5289,7 +5290,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
          peditNew->InitPostLoad();
          peditNew->m_fBackglass = g_pvp->m_fBackglassView;
 
-         AddMultiSel(peditNew->GetISelect(), (i == g_pvp->m_vstmclipboard.Size()-1) ? fFalse : fTrue, fTrue);
+         AddMultiSel(peditNew->GetISelect(), (i == g_pvp->m_vstmclipboard.Size()-1) ? false : true);
          cpasted++;
       }
    }
@@ -5366,10 +5367,29 @@ IScriptable *PinTable::GetScriptable()
    return (IScriptable *)this;
 }
 
+void PinTable::ClearMultiSel(ISelect* newSel)
+{
+    for (int i=0;i<m_vmultisel.Size();i++)
+        m_vmultisel.ElementAt(i)->m_selectstate = eNotSelected;
+
+    m_vmultisel.RemoveAllElements();
+
+    if (newSel == NULL)
+        newSel = this;
+    m_vmultisel.AddElement(newSel);
+    newSel->m_selectstate = eSelected;
+}
+
+bool PinTable::MultiSelIsEmpty()
+{
+    // empty selection means only the table itself is selected
+    return (m_vmultisel.Size() == 1 && m_vmultisel.ElementAt(0) == this);
+}
+
 // fUpdate tells us whether to go ahead and change the UI
 // based on the new selection, or whether more stuff is coming
 // down the pipe (speeds up drag-selection)
-void PinTable::AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate)
+void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate)
 {
    int index = m_vmultisel.IndexOf(psel);
 
@@ -5380,27 +5400,21 @@ void PinTable::AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate)
       _ASSERTE(psel->m_selectstate == eNotSelected);
       // If we non-shift click on an element outside the multi-select group, delete the old group
       // If the table is currently selected, deselect it - the table can not be part of a multi-select
-      if (!fAdd || (m_vmultisel.ElementAt(0) == (ISelect *)this))
+      if (!fAdd || MultiSelIsEmpty())
       {
-         for (int i=0;i<m_vmultisel.Size();i++)
-         {
-            m_vmultisel.ElementAt(i)->m_selectstate = eNotSelected;
-         }
-
-         m_vmultisel.RemoveAllElements();
-
-         m_vmultisel.AddElement(psel);
+          ClearMultiSel(psel);
       }
       else
       {
          // Make this new selection the primary one for the group
          m_vmultisel.ElementAt(0)->m_selectstate = eMultiSelected;
-
          m_vmultisel.InsertElementAt(psel, 0);
       }
 
       psel->m_selectstate = eSelected;
-      SetDirtyDraw();
+
+      if (fUpdate)
+          SetDirtyDraw();
    }
    else if (fAdd) // Take the element off the list
    {
@@ -5414,7 +5428,9 @@ void PinTable::AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate)
       }
       // The main element might have changed
       m_vmultisel.ElementAt(0)->m_selectstate = eSelected;
-      SetDirtyDraw();
+
+      if (fUpdate)
+          SetDirtyDraw();
    }
    else if (m_vmultisel.ElementAt(0) != psel) // Object already in list - no change to selection, only to primary
    {
@@ -5422,13 +5438,13 @@ void PinTable::AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate)
 
       // Make this new selection the primary one for the group
       m_vmultisel.ElementAt(0)->m_selectstate = eMultiSelected;
-
       m_vmultisel.RemoveElementAt(index);
-
       m_vmultisel.InsertElementAt(psel, 0);
 
       psel->m_selectstate = eSelected;
-      SetDirtyDraw();
+
+      if (fUpdate)
+          SetDirtyDraw();
    }
 
    if (fUpdate)
@@ -5448,11 +5464,11 @@ void PinTable::OnDelete()
 
    for (int i=0;i<m_vmultisel.Size();i++)
    {
-      // Can't delete these items yet - AddMultiSel will try to mark them as unselected
+      // Can't delete these items yet - ClearMultiSel() will try to mark them as unselected
       m_vseldelete.AddElement(m_vmultisel.ElementAt(i));
    }
 
-   AddMultiSel((ISelect *)this, fFalse, fTrue); // Will get rid of the multi-selection
+   ClearMultiSel();
 
    for (int i=0;i<m_vseldelete.Size();i++)
    {
@@ -5767,7 +5783,7 @@ void PinTable::UseTool(int x,int y,int tool)
    {
       pie->m_fBackglass = g_pvp->m_fBackglassView;
       m_vedit.AddElement(pie);
-      AddMultiSel(pie->GetISelect(), fFalse, fTrue);
+      AddMultiSel(pie->GetISelect(), false);
       BeginUndo();
       m_undo.MarkForCreate(pie);
       EndUndo();
@@ -5826,7 +5842,9 @@ void PinTable::OnLButtonUp(int x, int y)
          Render(phrs);
 
          const int ksshift = GetKeyState(VK_SHIFT);
-         const BOOL fAdd = ((ksshift & 0x80000000) != 0);
+         const bool fAdd = ((ksshift & 0x80000000) != 0);
+         if (!fAdd)
+             ClearMultiSel();
 
          int minlevel = INT_MAX;
 
@@ -5837,30 +5855,13 @@ void PinTable::OnLButtonUp(int x, int y)
 
          if (vsel.Size() > 0)
          {
-            BOOL fFirstAdd = fTrue;
-
             for (int i=0;i<vsel.Size();i++)
             {
                if (vsel.ElementAt(i)->GetSelectLevel() == minlevel)
                {
-                  if (fFirstAdd)
-                  {
-                     // If the shift key is not down, adding the first
-                     // element will clear the previously selected group
-                     AddMultiSel(vsel.ElementAt(i), fAdd, fFalse);
-                     fFirstAdd = fFalse;
-                  }
-                  else
-                  {
-                     AddMultiSel(vsel.ElementAt(i), fTrue, fFalse);
-                  }
+                   AddMultiSel(vsel.ElementAt(i), true, (i == vsel.Size() - 1));       // only update on the last item
                }
             }
-
-            // We told the UI to not update in AddMultiSel because
-            // we were potentially adding a bunch of things.
-            // So we have to update it manually here.
-            g_pvp->SetPropSel(&m_vmultisel);
          }
 
          delete phrs;
@@ -5868,8 +5869,6 @@ void PinTable::OnLButtonUp(int x, int y)
          ReleaseDC(m_hwnd, hdc);
       }
    }
-
-   SetDirtyDraw();
 }
 
 void PinTable::OnMouseMove(int x, int y)

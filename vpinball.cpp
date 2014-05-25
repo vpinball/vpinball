@@ -847,7 +847,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          {
             if (!ptCur->CheckPermissions(DISABLE_TABLEVIEW))
                // Set selection to something in the new view (unless hiding table elements)
-               ptCur->AddMultiSel((ISelect *)ptCur, fFalse, fTrue);
+               ptCur->AddMultiSel((ISelect *)ptCur, false);
          }
 
          SetEnableToolbar();
@@ -2383,7 +2383,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                   GetCursorPos(&mousept);
 
                   const int ksshift = GetKeyState(VK_SHIFT);
-                  const BOOL fAdd = ((ksshift & 0x80000000) != 0);
+                  const bool fAdd = ((ksshift & 0x80000000) != 0);
 
                   const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | 16384/*TPM_NOANIMATION*/, mousept.x, mousept.y, hwnd, NULL);
 
@@ -2393,10 +2393,10 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                      {
                         Collection * const pcol = pt->m_vcollection.ElementAt(icmd & 0x7fffffff);
                         for (int i=0;i<pcol->m_visel.Size();i++)
-                           pt->AddMultiSel(pcol->m_visel.ElementAt(i), i == 0 ? fAdd : TRUE, TRUE);
+                           pt->AddMultiSel(pcol->m_visel.ElementAt(i), i == 0 ? fAdd : true);
                      }
                      else
-                        pt->AddMultiSel(pt->m_vedit.ElementAt(icmd-1)->GetISelect(), fAdd, TRUE);
+                        pt->AddMultiSel(pt->m_vedit.ElementAt(icmd-1)->GetISelect(), fAdd);
                   }
                   DestroyMenu(hmenu);
                }
@@ -7338,6 +7338,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                SendMessage(listBox, LB_GETSELITEMS, count, (LPARAM)rgsel);
 
                PinTable *pt = g_pvp->GetActiveTable();
+               pt->ClearMultiSel();
                for (int i=0;i<count;i++)
                {
                   const int len = SendMessage(listBox, LB_GETTEXTLEN, rgsel[i], 0);
@@ -7346,7 +7347,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   IScriptable * const piscript = (IScriptable *)SendMessage(listBox, LB_GETITEMDATA, rgsel[i], 0);
                   ISelect * const pisel = piscript->GetISelect();
                   if (pisel)
-                     pt->AddMultiSel(pisel, fTrue, fTrue);
+                     pt->AddMultiSel(pisel, true);
                }
                delete[] rgsel;
                EndDialog(hwndDlg, TRUE);
