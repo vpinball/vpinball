@@ -711,11 +711,11 @@ void Player::InitBallShader()
    ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer( indexList );
 
    // VB for normal ball 
-   m_pin3d.m_pd3dDevice->CreateVertexBuffer( 166, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &ballVertexBuffer );
+   m_pin3d.m_pd3dDevice->CreateVertexBuffer( 166, 0, MY_D3DFVF_NOTEX2_VERTEX, &ballVertexBuffer );
 
-   // prepare the vertex buffer for all possible options (ball,logo,shadow)
+   // load precomputed ball vertices into vertex buffer
    Vertex3D_NoTex2 *buf;
-   ballVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY | VertexBuffer::DISCARDCONTENTS);
+   ballVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    memcpy( buf, basicBall, sizeof(Vertex3D_NoTex2)*basicBallNumVertices );
    ballVertexBuffer->unlock();
 
