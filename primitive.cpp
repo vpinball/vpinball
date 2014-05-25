@@ -1126,7 +1126,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Primitive::InitPostLoad()
 {
+    if( !m_d.use3DMesh )
+        CalculateBuiltinOriginal();
+
     UpdateEditorView();
+
     return S_OK;
 }
 
