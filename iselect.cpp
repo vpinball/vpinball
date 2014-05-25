@@ -124,7 +124,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
        int i = (icmd & 0x00FF0000)>>16;
        ISelect * const pisel = currentTable->m_allHitElements.ElementAt(i);
 
-       const BOOL fAdd = ((ksshift & 0x80000000) != 0);
+       const bool fAdd = ((ksshift & 0x80000000) != 0);
 
        if (pisel == (ISelect *)currentTable && fAdd)
        {

@@ -406,7 +406,10 @@ public:
 
 	void TransformPoint(int x, int y, Vertex2D *pv);
 
-	void AddMultiSel(ISelect *psel, BOOL fAdd, BOOL fUpdate);
+    void ClearMultiSel(ISelect *newSel = NULL);
+    bool MultiSelIsEmpty();
+	void AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate=true);
+
 	void BeginAutoSaveCounter();
 	void EndAutoSaveCounter();
 	void AutoSave();
