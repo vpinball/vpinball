@@ -4,6 +4,7 @@
 #include "resource.h"
 #include "hash.h"
 #include <algorithm>
+#include <atlsafe.h>
 
 #define HASHLENGTH 16
 
@@ -531,6 +532,33 @@ STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(long *pVal)
    *pVal = BUILD_NUMBER;
    return S_OK;
 }
+
+STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
+{
+    if (!pVal || !g_pplayer)
+        return E_POINTER;
+
+    CComSafeArray<VARIANT> balls(g_pplayer->m_vball.size());
+
+    for (unsigned i = 0; i < g_pplayer->m_vball.size(); ++i)
+    {
+        BallEx *pballex = g_pplayer->m_vball[i]->m_pballex;
+
+        if (!pballex)
+            return E_POINTER;
+
+        CComVariant v = static_cast<IDispatch*>(pballex);
+        v.Detach(&balls[(int)i]);
+    }
+
+    *pVal = balls.Detach();
+
+    return S_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 PinTable::PinTable()
 {

@@ -50,6 +50,8 @@ public:
         STDMETHOD(VersionMinor)(/*[out, retval]*/ int *pVal);
         STDMETHOD(VersionRevision)(/*[out, retval]*/ int *pVal);
 
+        STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
+
 	void Init(PinTable *pt);
 
 	virtual IDispatch *GetDispatch();
