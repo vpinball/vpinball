@@ -38,10 +38,10 @@
 #include"nvapi_lite_surround.h"
 #include"nvapi_lite_stereo.h"
 #include"nvapi_lite_d3dext.h"
-
+ 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Date: Feb 23, 2014 
+// Date: May 2, 2014 
 // File: nvapi.h
 //
 // NvAPI provides an interface to NVIDIA devices. This file contains the 
@@ -3276,6 +3276,8 @@ NVAPI_INTERFACE NvAPI_GPU_GetTachReading(NvPhysicalGpuHandle hPhysicalGPU, NvU32
 //! SUPPORTED OS:  Windows XP and higher
 //!
 //!
+//! TCC_SUPPORTED
+//!
 //! \param [in]      hPhysicalGpu      A handle identifying the physical GPU for which ECC 
 //!                                    status information is to be retrieved.
 //! \param [out]     pECCStatusInfo    A pointer to an ECC status structure.
@@ -3330,6 +3332,8 @@ NVAPI_INTERFACE NvAPI_GPU_GetECCStatusInfo(NvPhysicalGpuHandle hPhysicalGpu,
 //! SUPPORTED OS:  Windows XP and higher
 //!
 //!
+//! TCC_SUPPORTED
+//!
 //! \param [in]      hPhysicalGpu  A handle identifying the physical GPU for
 //!                                which ECC error information is to be
 //!                                retrieved.
@@ -3380,6 +3384,8 @@ NVAPI_INTERFACE NvAPI_GPU_GetECCErrorInfo(NvPhysicalGpuHandle hPhysicalGpu,
 //!
 //! SUPPORTED OS:  Windows XP and higher
 //!
+//!
+//! TCC_SUPPORTED
 //!
 //! \param [in]     hPhysicalGpu     A handle identifying the physical GPU for
 //!                                  which ECC error information is to be
@@ -6851,6 +6857,7 @@ NVAPI_INTERFACE NvAPI_GSync_GetStatusParameters(NvGSyncDeviceHandle hNvGSyncDevi
 
 
 
+
 #if defined(_D3D9_H_)
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -7116,6 +7123,118 @@ NVAPI_INTERFACE NvAPI_D3D9_VideoSetStereoInfo(IDirect3DDevice9 *pDev,
 
 
 
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_IsNvShaderExtnOpCodeSupported
+//
+//!   DESCRIPTION: This function checks if a nv HLSL shader extension opcode is 
+//!                supported on current hardware. List of opcodes is in nvShaderExtnEnums.h
+//!                To use Nvidia HLSL extensions the application must include nvHLSLExtns.h 
+//!                in the hlsl shader code. See nvHLSLExtns.h for more details on supported opcodes.
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \param [in]        pDev         The device on which to query for support,
+//!                                 should be a ID3D11Device+ device
+//! \param [in]        opCode       the opcode to check
+//! \param [out]       pSupported   true if supported, false otherwise
+//!
+//! RETURN STATUS:     This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!                    If there are return error codes with specific meaning for this API, they are listed below.
+//! \retval ::         NVAPI_OK if the call succeeded
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(__in  IUnknown *pDev,
+                                                          __in  NvU32 opCode,
+													      __out bool *pSupported);
+
+#endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_SetNvShaderExtnSlot
+//
+//!   DESCRIPTION: This function sets the fake UAV slot that is used by Nvidia HLSL
+//!                shader extensions. All createShader calls made to the driver after
+//!                setting this slot would treat writes/reads to this UAV in a 
+//!                different way. Applications are expected to bind null UAV to this slot.
+//!                The same slot is used for all shader stages.
+//!                To disable shader extensions the app may set this uav slot
+//!                to some value that is bigger than the max allowed slot index
+//!                e.g, 128 or 0xFFFFFFFF.
+//!                To use Nvidia HLSL extensions the application must include nvHLSLExtns.h 
+//!                in the hlsl shader code. See nvHLSLExtns.h for more details.
+//!
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \param [in]        pDev         The device for which to set the extension slot
+//!                                 should be a ID3D11Device+ device
+//! \param [in]        uavSlot      the uav slot to use
+//!
+//! RETURN STATUS:     This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!                    If there are return error codes with specific meaning for this API, they are listed below.
+//! \retval ::         NVAPI_OK    : success, the uavSlot was set sucessfully
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_SetNvShaderExtnSlot(__in IUnknown *pDev,
+                                                __in NvU32 uavSlot);
+
+#endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_BeginUAVOverlap
+//
+//!   DESCRIPTION: Causes the driver to skip synchronization that is normally needed when accessing UAVs.
+//!                Applications must use this with caution otherwise this might cause data hazards when
+//!                multiple draw calls/compute shader launches are accessing same memory locations
+//!
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \param [in]        *pDeviceOrContext     pointer to D3D11 device, or D3D11 device context
+//!
+//! RETURN STATUS:     This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!                    If there are return error codes with specific meaning for this API, they are listed below.
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_BeginUAVOverlap(__in  IUnknown *pDeviceOrContext);
+
+#endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_EndUAVOverlap
+//
+//!   DESCRIPTION: Re-enables driver synchronization between calls that access same UAVs
+//!                See NvAPI_D3D_BeginUAVOverlap for more details.
+//!
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \param [in]        *pDeviceOrContext     pointer to D3D11 device, or D3D11 device context
+//!
+//! RETURN STATUS:     This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!                    If there are return error codes with specific meaning for this API, they are listed below.
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_EndUAVOverlap(__in  IUnknown *pDeviceOrContext);
+
+#endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+//-----------------------------------------------------------------------------
+// Private Direct3D11 APIs
+//-----------------------------------------------------------------------------
 #if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__)
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -7138,6 +7257,31 @@ NVAPI_INTERFACE NvAPI_D3D_SetFPSIndicatorState(IUnknown *pDev, NvU8 doEnable);
 
 #endif //if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__)
 
+
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+#if defined (__cplusplus) && ( defined(__d3d10_h__) || defined(__d3d10_1_h__) ||defined(__d3d11_h__) ) 
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D1x_DisableShaderDiskCache
+//
+//! DESCRIPTION: Disables driver managed caching of shader compilations to disk
+//!
+//! \param [in]    pDevice               Device to disabled the shader disk cache on
+//!
+//!
+//! \retval ::NVAPI_OK                   Shader disk cache was disabled
+//! \retval ::NVAPI_ERROR                The operation failed.
+//! \retval ::NVAPI_INVALID_ARGUMENT     Argument passed in is invalid.
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D1x_DisableShaderDiskCache(IUnknown *pDevice);
+
+#endif //defined(__cplusplus) && ( defined(__d3d10_h__) || defined(__d3d10_1_h__) ||defined(__d3d11_h__) )
+
+/////////////////////////////////////////////////////////////////////////
+// Video Input Output (VIO) API
+/////////////////////////////////////////////////////////////////////////
 
 
 
