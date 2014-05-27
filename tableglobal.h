@@ -52,6 +52,7 @@ public:
 
         STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
         STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);
+        STDMETHOD(GetElementByName)(/*[in]*/ BSTR name, /*[out, retval]*/ IDispatch* *pVal);
 
 	void Init(PinTable *pt);
 
