@@ -59,7 +59,7 @@ public:
         m_curIdx = 0;
     }
 
-    ~FrameQueueLimiter()
+    void Shutdown()
     {
         for (unsigned i = 0; i < m_buffers.size(); ++i)
         {
@@ -113,6 +113,8 @@ public:
 #endif
 	void InitKeys();
 	void InitRegValues();
+
+    void Shutdown();
 
 	virtual IEditable *GetIEditable() { return (IEditable*)this; }
 

@@ -165,7 +165,7 @@ public:
     }
     void release(void)
     {
-        while ( this->Release()!=0 );
+        this->Release();
     }
 private:
     VertexBuffer();     // disable default constructor
@@ -196,7 +196,7 @@ public:
     }
     void release(void)
     {
-        while ( this->Release()!=0 );
+        this->Release();
     }
 private:
     IndexBuffer();      // disable default constructor
@@ -330,7 +330,7 @@ private:
 #endif
 
    IDirect3DSurface9* m_pBackBuffer;
-   CComPtr<IndexBuffer> m_dynIndexBuffer;      // workaround for DrawIndexedPrimitiveVB
+   IndexBuffer* m_dynIndexBuffer;      // workaround for DrawIndexedPrimitiveVB
 
    UINT m_adapter;      // index of the display adapter to use
 

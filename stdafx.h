@@ -10,7 +10,7 @@
 #endif
 
 //#define DEBUG_XXX // helps to detect out-of-bounds access, needs to link dbghelp.lib then
-#define SLINTF    // enable debug console output
+//#define SLINTF    // enable debug console output
 
 //#define ULTRAPIN       // define to enable deprecated UltraPin functionality
 //#define DONGLE_SUPPORT // define to enable deprecated UltraPin dongle (Remember to run hdd32.exe (HASP dongle driver setup) on host)
