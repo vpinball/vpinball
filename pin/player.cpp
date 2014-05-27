@@ -312,6 +312,25 @@ Player::Player()
 
 Player::~Player()
 {
+}
+
+void Player::Shutdown()
+{
+    m_pininput.UnInit();
+
+    SAFE_RELEASE(ballVertexBuffer);
+    SAFE_RELEASE(ballIndexBuffer);
+    if (ballShader)
+    {
+        delete ballShader;
+        ballShader=0;
+    }
+#ifdef _DEBUGPHYSICS
+    SAFE_RELEASE(m_ballDebugPoints);
+#endif
+
+    m_limiter.Shutdown();
+
 	for (unsigned i=0; i < m_vhitables.size(); ++i)
 	{
         m_vhitables[i]->EndPlay();
@@ -348,21 +367,6 @@ Player::~Player()
 
 	m_vball.clear();
 
-	if ( ballVertexBuffer!=0 )
-    {
-        ballVertexBuffer->release();
-        ballVertexBuffer=0;
-    }
-    if ( ballIndexBuffer )
-    {
-        ballIndexBuffer->release();
-        ballIndexBuffer=0;
-    }
-    if( ballShader )
-    {
-        delete ballShader;
-        ballShader=0;
-    }
 #ifdef LOG
 	if (m_flog)
 		fclose(m_flog);
@@ -2938,8 +2942,9 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
 				}
             PinTable * const playedTable = g_pplayer->m_ptable;
+
 			g_pplayer->m_ptable->StopPlaying();
-			g_pplayer->m_pininput.UnInit();
+            g_pplayer->Shutdown();
 
 			delete g_pplayer; // needs to be deleted here, as code below relies on it being NULL
 			g_pplayer = NULL;
