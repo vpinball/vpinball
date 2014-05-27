@@ -346,6 +346,27 @@ static D3DTexture* dest_cache = NULL;
 static IDirect3DPixelShader9 *gShader = NULL; //!! meh
 static const char * shader_cache = NULL;
 
+
+#ifdef _DEBUG
+static void CheckForD3DLeak(IDirect3DDevice9* d3d)
+{
+    IDirect3DSwapChain9 *swapChain;
+    CHECKD3D(d3d->GetSwapChain(0, &swapChain));
+
+    D3DPRESENT_PARAMETERS pp;
+    CHECKD3D(swapChain->GetPresentParameters(&pp));
+    swapChain->Release();
+
+    // idea: device can't be reset if there are still allocated resources
+    HRESULT hr = d3d->Reset(&pp);
+    if (FAILED(hr))
+    {
+        MessageBox(0, "WARNING! Direct3D resource leak detected!", "Visual Pinball", MB_ICONWARNING);
+    }
+}
+#endif
+
+
 RenderDevice::~RenderDevice()
 {
 	if(src_cache != NULL)
@@ -375,6 +396,11 @@ RenderDevice::~RenderDevice()
     m_texMan.UnloadAll();
 
 	SAFE_RELEASE(m_pBackBuffer);
+
+#ifdef _DEBUG
+    CheckForD3DLeak(m_pD3DDevice);
+#endif
+
     m_pD3DDevice->Release();
     m_pD3D->Release();
 }
