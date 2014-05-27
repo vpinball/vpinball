@@ -578,6 +578,30 @@ STDMETHODIMP ScriptGlobalTable::GetElements(LPSAFEARRAY *pVal)
     return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
+{
+    if (!pVal || !g_pplayer)
+        return E_POINTER;
+
+    PinTable *pt = g_pplayer->m_ptable;
+
+    for (int i = 0; i < pt->m_vedit.Size(); ++i)
+    {
+        IEditable *pie = pt->m_vedit.ElementAt(i);
+
+        if (wcscmp(name, pie->GetScriptable()->m_wzName) == 0)
+        {
+            IDispatch *id = pie->GetISelect()->GetDispatch();
+            id->AddRef();
+            *pVal = id;
+
+            return S_OK;
+        }
+    }
+
+    *pVal = NULL;
+    return S_OK;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
