@@ -556,6 +556,28 @@ STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
     return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::GetElements(LPSAFEARRAY *pVal)
+{
+    if (!pVal || !g_pplayer)
+        return E_POINTER;
+
+    PinTable *pt = g_pplayer->m_ptable;
+
+    CComSafeArray<VARIANT> objs(pt->m_vedit.Size());
+
+    for (int i = 0; i < pt->m_vedit.Size(); ++i)
+    {
+        IEditable *pie = pt->m_vedit.ElementAt(i);
+
+        CComVariant v = pie->GetISelect()->GetDispatch();
+        v.Detach(&objs[i]);
+    }
+
+    *pVal = objs.Detach();
+
+    return S_OK;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

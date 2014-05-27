@@ -51,6 +51,7 @@ public:
         STDMETHOD(VersionRevision)(/*[out, retval]*/ int *pVal);
 
         STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
+        STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);
 
 	void Init(PinTable *pt);
 
