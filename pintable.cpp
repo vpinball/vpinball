@@ -5943,6 +5943,8 @@ void PinTable::OnLButtonUp(int x, int y)
          ReleaseDC(m_hwnd, hdc);
       }
    }
+
+   SetDirtyDraw();
 }
 
 void PinTable::OnMouseMove(int x, int y)
