@@ -17,18 +17,15 @@ enum ItemTypeEnum
 	eItemTable,
 	eItemLightCenter,
 	eItemDragPoint,
-	eItemCollection,
 	eItemDispReel,
 	eItemLightSeq,
 	eItemPrimitive,
-   eItemFlasher,
+	eItemFlasher,
 	eItemLightSeqCenter,
 	eItemComControl,
 	eItemTypeCount,
 	eItemPad = 0xffffffff // Force enum to be 32 bits
 	};
-
-int rgTypeStringIndex[];
 
 class Sur;
 
@@ -76,6 +73,8 @@ public:
 	virtual PinTable *GetPTable()=0;
 
 	virtual HRESULT GetTypeName(BSTR *pVal);
+    static void GetTypeNameForType(int type, WCHAR * buf);
+
 	virtual IDispatch *GetDispatch()=0;
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane)=0;
 	virtual ItemTypeEnum GetItemType() = 0;

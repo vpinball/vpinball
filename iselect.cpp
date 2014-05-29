@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 
 // this table must be kept in sync with the ISelectable ItemTypeEnum table
-int rgTypeStringIndex[] = {
+static int rgTypeStringIndex[] = {
 	IDS_TB_WALL, //eItemSurface,
 	IDS_TB_FLIPPER, //eItemFlipper,
 	IDS_TB_TIMER, //eItemTimer,
@@ -18,14 +18,15 @@ int rgTypeStringIndex[] = {
 	IDS_TABLE, //eItemTable,
 	IDS_TB_LIGHT, //eItemLightCenter,
 	IDS_CONTROLPOINT, //eItemDragPoint,
-	IDS_COLLECTION, //eItemCollection,
-   IDS_TB_DISPREEL, //eItemDispReel,
+	IDS_TB_DISPREEL, //eItemDispReel,
 	IDS_TB_LIGHTSEQ, //eItemLightSeq,
-	IDS_TB_PRIMITIVE, //eItemPrimitive	
-   IDS_TB_FLASHER, //eItemFlasher
+	IDS_TB_PRIMITIVE, //eItemPrimitive
+	IDS_TB_FLASHER, //eItemFlasher
 	IDS_TB_LIGHTSEQ, //light seq center
 	IDS_TB_COMCONTROL, //eItemComControl
     };
+
+
 
 ISelect::ISelect()
 	{
@@ -341,17 +342,18 @@ void ISelect::Translate(Vertex2D *pvOffset)
 	}
 
 HRESULT ISelect::GetTypeName(BSTR *pVal)
-	{
-	WCHAR wzName[128];
-
-	LocalString ls(rgTypeStringIndex[GetItemType()]);
-
-	MultiByteToWideChar(CP_ACP, 0, ls.m_szbuffer, -1, wzName, 128);
-
-	*pVal = SysAllocString(wzName);
-
+{
+    WCHAR buf[256];
+    GetTypeNameForType(GetItemType(), buf);
+	*pVal = SysAllocString(buf);
 	return S_OK;
-	}
+}
+
+void ISelect::GetTypeNameForType(int type, WCHAR * buf)
+{
+    LoadStringW(g_hinst, rgTypeStringIndex[type], buf, 256);
+}
+
 BOOL ISelect::LoadToken(int id, BiffReader *pbr)
 	{
 	if (id == FID(LOCK))
