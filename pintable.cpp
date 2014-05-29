@@ -5374,6 +5374,8 @@ void PinTable::OnDelete()
       DeleteFromLayer( m_vseldelete.ElementAt(i)->GetIEditable() );
       m_vseldelete.ElementAt(i)->Delete();
    }
+
+   SetDirtyDraw();
 }
 
 void PinTable::OnKeyDown(int key)
