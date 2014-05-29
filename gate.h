@@ -72,8 +72,7 @@ BEGIN_CONNECTION_POINT_MAP(Gate)
 	CONNECTION_POINT_ENTRY(DIID_IGateEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_DISPATCH_DECLARE
-STANDARD_EDITABLE_DECLARES(eItemGate)
+STANDARD_EDITABLE_DECLARES(Gate, eItemGate)
 
 //DECLARE_NOT_AGGREGATABLE(Gate)
 // Remove the comment from the line above if you don't want your object to
@@ -83,7 +82,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void MoveOffset(const float dx, const float dy);

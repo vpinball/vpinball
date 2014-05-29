@@ -74,14 +74,12 @@ BEGIN_CONNECTION_POINT_MAP(Spinner)
 	CONNECTION_POINT_ENTRY(DIID_ISpinnerEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_DISPATCH_DECLARE
-STANDARD_EDITABLE_DECLARES(eItemSpinner)
+STANDARD_EDITABLE_DECLARES(Spinner, eItemSpinner)
 
 DECLARE_REGISTRY_RESOURCEID(IDR_SPINNER)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void MoveOffset(const float dx, const float dy);

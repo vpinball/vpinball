@@ -75,10 +75,8 @@ END_CONNECTION_POINT_MAP()
 	Plunger();
 	virtual ~Plunger();
 
-STANDARD_DISPATCH_DECLARE
-STANDARD_EDITABLE_DECLARES(eItemPlunger)
+STANDARD_EDITABLE_DECLARES(Plunger, eItemPlunger)
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void MoveOffset(const float dx, const float dy);

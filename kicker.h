@@ -65,14 +65,12 @@ BEGIN_CONNECTION_POINT_MAP(Kicker)
 	CONNECTION_POINT_ENTRY(DIID_IKickerEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_DISPATCH_DECLARE
-STANDARD_EDITABLE_DECLARES(eItemKicker)
+STANDARD_EDITABLE_DECLARES(Kicker, eItemKicker)
 
 DECLARE_REGISTRY_RESOURCEID(IDR_KICKER)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void MoveOffset(const float dx, const float dy);

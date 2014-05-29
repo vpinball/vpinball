@@ -64,7 +64,6 @@ BEGIN_CONNECTION_POINT_MAP(Timer)
 	CONNECTION_POINT_ENTRY(DIID_ITimerEvents)
 END_CONNECTION_POINT_MAP()
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void MoveOffset(const float dx, const float dy);
@@ -77,8 +76,7 @@ END_CONNECTION_POINT_MAP()
 
 	void WriteRegDefaults();
 
-	STANDARD_DISPATCH_DECLARE
-	STANDARD_EDITABLE_DECLARES(eItemTimer)
+	STANDARD_EDITABLE_DECLARES(Timer, eItemTimer)
 
 //DECLARE_NOT_AGGREGATABLE(Timer)
 // Remove the comment from the line above if you don't want your object to

@@ -1,4 +1,5 @@
 #pragma once
+
 class Hitable;
 class Collection;
 
@@ -40,59 +41,6 @@ public:
 		GetIEditable()->SetDirtyDraw(); \
 		}
 
-extern const WCHAR rgwzTypeName[][18];
-
-///////////////////////////
-/////// Begin VBA defines
-///////////////////////////
-
-#ifdef VBA
-
-#define APCPROJECTUNDEFINE ApcProjectItem.Undefine();
-
-#define APCCONTROLUNDEFINE ApcControl.Undefine();
-
-#define PUTAPCITEMNAME \
-	GetIApcProjectItem()->put_Name(newVal);
-
-#define INITVBANODISPATCH \
-	virtual EventProxyBase *GetEventProxyBase() {return NULL;} \
-	virtual IApcProjectItem *GetIApcProjectItem() {return NULL;}
-
-#define INITVBA \
-	virtual IApcProjectItem *GetIApcProjectItem() {return ApcProjectItem.GetApcProjectItem();} \
-	virtual IApcControl *GetIApcControl() {return NULL;} \
-	virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName) \
-		{ \
-		if (fNew) \
-			{ \
-			WCHAR wzUniqueName[128]; \
-			if (!wzName) \
-				{ \
-				GetPTable()->GetUniqueName(ItemType, wzUniqueName); \
-				WideStrCopy(wzUniqueName, (WCHAR *)m_wzName);/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
-				} \
-			HRESULT hr = ApcProjectItem.Define(GetPTable()->ApcProject, GetDispatch(), axTypeHostProjectItem/*axTypeHostClass*/, wzName ? wzName : wzUniqueName, NULL); \
-			InitScript(); \
-			return hr; \
-			} \
-		else \
-			{ \
-			HRESULT hr = ApcProjectItem.Register(GetPTable()->ApcProject, GetDispatch(), id); \
-			InitScript(); \
-			return hr; \
-			} \
-		}
-#else // No VBA
-
-#define PUTAPCITEMNAME
-
-#define INITVBANODISPATCH \
-	virtual EventProxyBase *GetEventProxyBase() {return NULL;} \
-
-#define APCPROJECTUNDEFINE
-
-#define APCCONTROLUNDEFINE
 
 #define INITVBA(ItemType) \
 	virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName) \
@@ -108,32 +56,25 @@ extern const WCHAR rgwzTypeName[][18];
 		InitScript(); \
 		return S_OK; \
 		}
-#endif // VBA
 
-///////////////////////////
-/////// End VBA defines
-///////////////////////////
+// declare and implement some methods for an IEditable which supports scripting
+#define STANDARD_EDITABLE_DECLARES(T, ItemType) \
+	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
+	_STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)
 
-#define STANDARD_EDITABLE_DECLARES(ItemType) \
-	STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType) \
-	STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(ItemType) \
-	virtual void Delete() {IEditable::Delete();}\
-	virtual void Uncreate() {IEditable::Uncreate();}
+// declare and implement some methods for an IEditable which does not support scripting
+#define STANDARD_NOSCRIPT_EDITABLE_DECLARES(T, ItemType) \
+	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
+	virtual EventProxyBase *GetEventProxyBase() {return NULL;} \
+	inline IFireEvents *GetIFireEvents() {return NULL;} \
+	inline IDebugCommands *GetDebugCommands() {return NULL;} \
+	virtual IScriptable *GetScriptable() {return NULL;}
 
-#define STANDARD_NONAPC_EDITABLE_DECLARES(ItemType) \
-	STANDARD_NON_DISPATCH_EDITABLE_DECLARES(ItemType) \
-	STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(ItemType) \
-	virtual void Delete() {GetPTable()->m_vedit.RemoveElement((IEditable *)this); MarkForDelete(); APCCONTROLUNDEFINE} \
-	virtual void Uncreate() {GetPTable()->m_vedit.RemoveElement((IEditable *)this); APCCONTROLUNDEFINE}
-
-#define STANDARD_DISPATCH_DECLARE \
-	inline IDispatch *GetDispatch() {return (IDispatch *)this;} \
-
-#define STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType) \
+// used above, do not invoke directly
+#define _STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType) \
 	inline IFireEvents *GetIFireEvents() {return (IFireEvents *)this;} \
 	inline IDebugCommands *GetDebugCommands() {return NULL;} \
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
-	INITVBA(ItemType) \
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) \
 		{ \
 		*pVal = SysAllocString((WCHAR *)m_wzName); \
@@ -149,7 +90,6 @@ extern const WCHAR rgwzTypeName[][18];
 		if (GetPTable()->m_pcv->ReplaceName(this, newVal) == S_OK) \
 			{ \
 			WideStrCopy(newVal, (WCHAR *)m_wzName);/*lstrcpyW((WCHAR *)m_wzName, newVal);*/ \
-			PUTAPCITEMNAME \
 			return S_OK; \
 			} \
 		return E_FAIL; \
@@ -163,15 +103,26 @@ extern const WCHAR rgwzTypeName[][18];
 	virtual IScriptable *GetScriptable() {return (IScriptable *)this;} \
 	virtual void FireGroupEvent(int dispid) {FireVoidGroupEvent(dispid);}
 
-#define STANDARD_NON_DISPATCH_EDITABLE_DECLARES(ItemType) \
-	inline IDispatch *GetDispatch() {return (IDispatch *)this;} \
-	inline IFireEvents *GetIFireEvents() {return NULL;} \
-	inline IDebugCommands *GetDebugCommands() {return NULL;} \
-	INITVBANODISPATCH
-	//virtual HRESULT InitVBA(BOOL fNew, int id) {return S_OK;}
-
-#define STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(ItemType) \
+// used above, do not invoke directly
+#define _STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
+    static T* COMCreate() \
+    { \
+        CComObject<T> *obj = NULL; \
+        if (FAILED(CComObject<T>::CreateInstance(&obj))) \
+        { \
+            MessageBox(0, "Failed to create COM object.", "Visual Pinball", MB_ICONEXCLAMATION); \
+        } \
+        obj->AddRef(); \
+        return obj; \
+    } \
+    static T* COMCreateAndInit(PinTable *ptable, float x, float y) \
+    { \
+        T *obj = T::COMCreate(); \
+        obj->Init(ptable, x, y, true); \
+        return obj; \
+    } \
 	HRESULT Init(PinTable *ptable, float x, float y, bool fromMouseClick); \
+	INITVBA(ItemType) \
 	virtual void PreRender(Sur * const psur); \
 	virtual void Render(Sur * const psur); \
 	virtual PinTable *GetPTable() {return m_ptable;} \
@@ -179,16 +130,19 @@ extern const WCHAR rgwzTypeName[][18];
 	virtual void GetHitShapesDebug(Vector<HitObject> * const pvho); \
 	virtual void GetTimers(Vector<HitTimer> * const pvht); \
 	virtual void EndPlay(); \
+	virtual void Delete() {IEditable::Delete();} \
+	virtual void Uncreate() {IEditable::Uncreate();} \
 	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey); \
 	virtual ItemTypeEnum GetItemType() {return ItemType;} \
 	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey); \
 	virtual HRESULT InitPostLoad(); \
 	virtual BOOL LoadToken(int id, BiffReader *pbr); \
-	virtual IEditable *GetIEditable() {return (IEditable*)this;} \
-	virtual ISelect *GetISelect() {return (ISelect*)this;} \
-	virtual Hitable *GetIHitable() {return (Hitable *)this;} \
-   virtual void RenderSetup(const RenderDevice* pd3dDevice); \
-   virtual void RenderStatic(const RenderDevice* pd3dDevice); \
+	virtual IDispatch *GetDispatch() {return static_cast<IDispatch *>(this);} \
+	virtual IEditable *GetIEditable() {return static_cast<IEditable*>(this);} \
+	virtual ISelect *GetISelect() {return static_cast<ISelect*>(this);} \
+	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
+    virtual void RenderSetup(const RenderDevice* pd3dDevice); \
+    virtual void RenderStatic(const RenderDevice* pd3dDevice); \
 	virtual void PostRenderStatic(const RenderDevice* pd3dDevice); \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}\
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
@@ -225,10 +179,6 @@ public:
 	virtual Hitable *GetIHitable();
 
 	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
-#ifdef VBA
-	virtual IApcProjectItem *GetIApcProjectItem()=0;
-	virtual IApcControl *GetIApcControl()=0;
-#endif
 	virtual void ClearForOverwrite();
 	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)=0;
 	virtual HRESULT InitPostLoad()=0;
@@ -276,9 +226,5 @@ public:
 	Vector<int> m_viEventCollection;
 	BOOL m_fSingleEvents;
 
-	// For undo - holds VBA stuff that was removed from project
-	//  that we have to put back if we undo
-	WCHAR *m_wzVBAName;
-	WCHAR *m_wzVBACode;
    bool isVisible;
 	};

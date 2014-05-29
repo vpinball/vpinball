@@ -109,14 +109,12 @@ BEGIN_CONNECTION_POINT_MAP(Light)
 	CONNECTION_POINT_ENTRY(DIID_ILightEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_DISPATCH_DECLARE
-STANDARD_EDITABLE_DECLARES(eItemLight)
+STANDARD_EDITABLE_DECLARES(Light, eItemLight)
 
 DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	void RenderOutline(Sur * const psur);

@@ -172,27 +172,6 @@ void Decal::WriteRegDefaults()
 }
 
 
-HRESULT Decal::InitVBA(BOOL fNew, int id, WCHAR *wzName)
-{
-#ifdef VBA
-   HRESULT hr;
-
-   if (fNew)
-   {
-      hr = ApcControl.Define(m_ptable->ApcProjectItem,
-         (IDispatch *)this, axControlNoCodeBehind, NULL);
-   }
-   else
-   {
-      hr = ApcControl.Register(m_ptable->ApcProjectItem, id, (IDispatch *)this, NULL);
-   }
-
-   return hr;
-#else
-   return S_OK;
-#endif
-}
-
 void Decal::PreRender(Sur * const psur)
 {
    if( !m_fBackglass || GetPTable()->GetDecalsEnabled() )

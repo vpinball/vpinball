@@ -2981,11 +2981,9 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                {
                   ULONG read;
                   ItemTypeEnum type;
-                  IEditable *piedit;
                   hr = pstmItem->Read(&type, sizeof(int), &read);
-                  CreateIEditableFromType(type, &piedit);
 
-                  piedit->AddRef();
+                  IEditable *piedit = CreateIEditableFromType(type);
 
                   //AddSpriteProjItem();
                   int id = 0; // VBA id for this item
@@ -3193,124 +3191,68 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    return hr;
 }
 
-HRESULT PinTable::CreateIEditableFromType(int type, IEditable **piedit)
+IEditable* PinTable::CreateIEditableFromType(int type)
 {
-   switch (type)
-   {
-   case eItemSurface: {
-      CComObject<Surface> *psurface;
-      CComObject<Surface>::CreateInstance(&psurface);
-      *piedit = psurface;
-      break;}
+    switch (type)
+    {
+        case eItemSurface:
+            return Surface::COMCreate();
 
-   case eItemFlipper: {
-      CComObject<Flipper> *pflipper;
-      CComObject<Flipper>::CreateInstance(&pflipper);
-      *piedit = pflipper;
-      break;}
+        case eItemFlipper:
+            return Flipper::COMCreate();
 
-   case eItemTimer: {
-      CComObject<Timer> *ptimer;
-      CComObject<Timer>::CreateInstance(&ptimer);
-      *piedit = ptimer;
-      break;}
+        case eItemTimer:
+            return Timer::COMCreate();
 
-   case eItemPlunger: {
-      CComObject<Plunger> *pplunger;
-      CComObject<Plunger>::CreateInstance(&pplunger);
-      *piedit = pplunger;
-      break;}
+        case eItemPlunger:
+            return Plunger::COMCreate();
 
-   case eItemTextbox: {
-      CComObject<Textbox> *ptextbox;
-      CComObject<Textbox>::CreateInstance(&ptextbox);
-      *piedit = ptextbox;
-      break;}
+        case eItemTextbox:
+            return Textbox::COMCreate();
 
-   case eItemComControl: {
-      CComObject<PinComControl> *pcomcontrol;
-      CComObject<PinComControl>::CreateInstance(&pcomcontrol);
-      *piedit = pcomcontrol;
-      break;}
+        case eItemComControl:
+            return PinComControl::COMCreate();
 
-   case eItemDispReel: {
-      CComObject<DispReel> *pdispreel;
-      CComObject<DispReel>::CreateInstance(&pdispreel);
-      *piedit = pdispreel;
-      break;}
+        case eItemDispReel:
+            return DispReel::COMCreate();
 
-   case eItemLightSeq: {
-      CComObject<LightSeq> *plightseq;
-      CComObject<LightSeq>::CreateInstance(&plightseq);
-      *piedit = plightseq;
-      break;}
+        case eItemLightSeq:
+            return LightSeq::COMCreate();
 
-   case eItemBumper: {
-      CComObject<Bumper> *pbumper;
-      CComObject<Bumper>::CreateInstance(&pbumper);
-      *piedit = pbumper;
-      break;}
+        case eItemBumper:
+            return Bumper::COMCreate();
 
-   case eItemTrigger: {
-      CComObject<Trigger> *ptrigger;
-      CComObject<Trigger>::CreateInstance(&ptrigger);
-      *piedit = ptrigger;
-      break;}
+        case eItemTrigger:
+            return Trigger::COMCreate();
 
-   case eItemLight: {
-      CComObject<Light> *plight;
-      CComObject<Light>::CreateInstance(&plight);
-      *piedit = plight;
-      break;}
+        case eItemLight:
+            return Light::COMCreate();
 
-   case eItemKicker: {
-      CComObject<Kicker> *pkicker;
-      CComObject<Kicker>::CreateInstance(&pkicker);
-      *piedit = pkicker;
-      break;}
+        case eItemKicker:
+            return Kicker::COMCreate();
 
-   case eItemDecal: {
-      CComObject<Decal> *pdecal;
-      CComObject<Decal>::CreateInstance(&pdecal);
-      *piedit = pdecal;
-      break;}
+        case eItemDecal:
+            return Decal::COMCreate();
 
-   case eItemGate: {
-      CComObject<Gate> *pgate;
-      CComObject<Gate>::CreateInstance(&pgate);
-      *piedit = pgate;
-      break;}
+        case eItemGate:
+            return Gate::COMCreate();
 
-   case eItemSpinner: {
-      CComObject<Spinner> *pspinner;
-      CComObject<Spinner>::CreateInstance(&pspinner);
-      *piedit = pspinner;
-      break;}
+        case eItemSpinner:
+            return Spinner::COMCreate();
 
-   case eItemRamp: {
-      CComObject<Ramp> *pramp;
-      CComObject<Ramp>::CreateInstance(&pramp);
-      *piedit = pramp;
-      break;}
+        case eItemRamp:
+            return Ramp::COMCreate();
 
-   case eItemPrimitive: {
-      CComObject<Primitive> *pprimitive;
-      CComObject<Primitive>::CreateInstance(&pprimitive);
-      *piedit = pprimitive;
-      break;}
+        case eItemPrimitive:
+            return Primitive::COMCreate();
 
-   case eItemFlasher: {
-      CComObject<Flasher> *pflasher;
-      CComObject<Flasher>::CreateInstance(&pflasher);
-      *piedit = pflasher;
-      break;}
+        case eItemFlasher:
+            return Flasher::COMCreate();
 
-   default:
-      _ASSERTE(fFalse);
-      break;
-   }
-
-   return S_OK;
+        default:
+            assert(false && "Invalid IEditable type");
+            return NULL;
+    }
 }
 
 void PinTable::SetLoadDefaults()
@@ -5301,7 +5243,6 @@ int rgItemViewAllowed[] =
 
 void PinTable::Paste(BOOL fAtLocation, int x, int y)
 {
-   IEditable *peditNew;
    BOOL fError = fFalse;
    int viewflag;
    int cpasted = 0;
@@ -5346,8 +5287,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
       }
       else
       {
-         CreateIEditableFromType(type, &peditNew);
-         peditNew->AddRef();
+         IEditable *peditNew = CreateIEditableFromType(type);
 
          int id;
          peditNew->InitLoad(pstm, this, &id, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
@@ -5618,83 +5558,99 @@ void PinTable::UseTool(int x,int y,int tool)
    {
    case ID_INSERT_WALL:
       {
-         CComObject<Surface> *psur;
-         CComObject<Surface>::CreateInstance(&psur);
-         if (psur)
-         {
-            psur->AddRef();
-            psur->Init(this, v.x, v.y, true);
-            pie = (IEditable *)psur;
-         }
+         pie = Surface::COMCreateAndInit(this, v.x, v.y);
          break;
       }
    case ID_INSERT_TARGET:
       {
-         CComObject<Surface> *psur;
-         CComObject<Surface>::CreateInstance(&psur);
-         if (psur)
-         {
-            psur->AddRef();
-            psur->InitTarget(this, v.x, v.y, true);
-            pie = (IEditable *)psur;
-         }
+         pie = Surface::COMCreateAndInit(this, v.x, v.y);
+         break;
       }
-      break;
    case ID_INSERT_FLIPPER:
       {
-         CComObject<Flipper> *pflipper;
-         CComObject<Flipper>::CreateInstance(&pflipper);
-         if (pflipper)
-         {
-            pflipper->AddRef();
-            pflipper->Init(this, v.x, v.y, true);
-            pie = (IEditable *)pflipper;
-         }
+         pie = Flipper::COMCreateAndInit(this, v.x, v.y);
          break;
       }
    case ID_INSERT_TIMER:
       {
-         CComObject<Timer> *ptimer;
-         CComObject<Timer>::CreateInstance(&ptimer);
-         if (ptimer)
-         {
-            ptimer->AddRef();
-            ptimer->Init(this, v.x, v.y, true);
-            pie = (IEditable *)ptimer;
-         }
+         pie = Timer::COMCreateAndInit(this, v.x, v.y);
          break;
       }
    case ID_INSERT_PLUNGER:
       {
-         CComObject<Plunger> *pplunger;
-         CComObject<Plunger>::CreateInstance(&pplunger);
-         if (pplunger)
-         {
-            pplunger->AddRef();
-            pplunger->Init(this, v.x, v.y, true);
-            pie = (IEditable *)pplunger;
-         }
+         pie = Plunger::COMCreateAndInit(this, v.x, v.y);
          break;
       }
    case ID_INSERT_TEXTBOX:
       {
-         CComObject<Textbox> *ptextbox;
-         CComObject<Textbox>::CreateInstance(&ptextbox);
-         if (ptextbox)
-         {
-            ptextbox->AddRef();
-            ptextbox->Init(this, v.x, v.y, true);
-            pie = (IEditable *)ptextbox;
-         }
+         pie = Textbox::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_BUMPER:
+      {
+         pie = Bumper::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_TRIGGER:
+      {
+         pie = Trigger::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_LIGHT:
+      {
+         pie = Light::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_KICKER:
+      {
+          pie = Kicker::COMCreateAndInit(this, v.x, v.y);
+          break;
+      }
+   case ID_INSERT_DECAL:
+      {
+         pie = Decal::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_PRIMITIVE:
+      {
+         pie = Primitive::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_GATE:
+      {
+         pie = Gate::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_SPINNER:
+      {
+         pie = Spinner::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_RAMP:
+      {
+         pie = Ramp::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_FLASHER:
+      {
+         pie = Flasher::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_DISP_REEL:
+      {
+         pie = DispReel::COMCreateAndInit(this, v.x, v.y);
+         break;
+      }
+   case ID_INSERT_LIGHT_SEQ:
+      {
+         pie = LightSeq::COMCreateAndInit(this, v.x, v.y);
          break;
       }
    case ID_INSERT_COM_CONTROL:
       {
-         CComObject<PinComControl> *pcomcontrol;
-         CComObject<PinComControl>::CreateInstance(&pcomcontrol);
+         PinComControl *pcomcontrol = PinComControl::COMCreate();
          if (pcomcontrol)
          {
-            pcomcontrol->AddRef();
             HRESULT hr = pcomcontrol->Init(this, v.x, v.y, true);
             if (hr == E_FAIL)
             {
@@ -5705,149 +5661,6 @@ void PinTable::UseTool(int x,int y,int tool)
             {
                pie = (IEditable *)pcomcontrol;
             }
-         }
-         break;
-      }
-   case ID_INSERT_BUMPER:
-      {
-         CComObject<Bumper> *pbumper;
-         CComObject<Bumper>::CreateInstance(&pbumper);
-         if (pbumper)
-         {
-            pbumper->AddRef();
-            pbumper->Init(this, v.x, v.y, true);
-            pie = (IEditable *)pbumper;
-         }
-         break;
-      }
-   case ID_INSERT_TRIGGER:
-      {
-         CComObject<Trigger> *ptrigger;
-         CComObject<Trigger>::CreateInstance(&ptrigger);
-         if (ptrigger)
-         {
-            ptrigger->AddRef();
-            ptrigger->Init(this, v.x, v.y, true);
-            pie = (IEditable *)ptrigger;
-         }
-         break;
-      }
-   case ID_INSERT_LIGHT:
-      {
-         CComObject<Light> *plight;
-         CComObject<Light>::CreateInstance(&plight);
-         if (plight)
-         {
-            plight->AddRef();
-            plight->Init(this, v.x, v.y, true);
-            pie = (IEditable *)plight;
-         }
-         break;
-      }
-   case ID_INSERT_KICKER: {
-      CComObject<Kicker> *pkicker;
-      CComObject<Kicker>::CreateInstance(&pkicker);
-      if (pkicker)
-      {
-         pkicker->AddRef();
-         pkicker->Init(this, v.x, v.y, true);
-         pie = (IEditable *)pkicker;
-      }
-      break;
-                    }
-   case ID_INSERT_DECAL:
-      {
-         CComObject<Decal> *pdecal;
-         CComObject<Decal>::CreateInstance(&pdecal);
-         if (pdecal)
-         {
-            pdecal->AddRef();
-            pdecal->Init(this, v.x, v.y, true);
-            pie = (IEditable *)pdecal;
-         }
-         break;
-      }
-   case ID_INSERT_PRIMITIVE:
-      {
-         CComObject<Primitive> *pprimitive;
-         CComObject<Primitive>::CreateInstance(&pprimitive);
-         if (pprimitive)
-         {
-            pprimitive->AddRef();
-            pprimitive->Init(this, v.x, v.y, true);
-            pie = (IEditable *)pprimitive;
-         }
-         break;
-      }
-   case ID_INSERT_GATE:
-      {
-         CComObject<Gate> *pgate;
-         CComObject<Gate>::CreateInstance(&pgate);
-         if (pgate)
-         {
-            pgate->AddRef();
-            pgate->Init(this, v.x, v.y, true);
-            pie = (IEditable *)pgate;
-         }
-         break;
-      }
-   case ID_INSERT_SPINNER:
-      {
-         CComObject<Spinner> *pspinner;
-         CComObject<Spinner>::CreateInstance(&pspinner);
-         if (pspinner)
-         {
-            pspinner->AddRef();
-            pspinner->Init(this, v.x, v.y, true);
-            pie = (IEditable *)pspinner;
-         }
-         break;
-      }
-   case ID_INSERT_RAMP:
-      {
-         CComObject<Ramp> *pramp;
-         CComObject<Ramp>::CreateInstance(&pramp);
-         if (pramp)
-         {
-            pramp->AddRef();
-            pramp->Init(this, v.x, v.y, true);
-            pie = (IEditable *)pramp;
-         }
-         break;
-      }
-   case ID_INSERT_FLASHER:
-      {
-         CComObject<Flasher> *pflasher;
-         CComObject<Flasher>::CreateInstance(&pflasher);
-         if (pflasher)
-         {
-            pflasher->AddRef();
-            pflasher->Init(this, v.x, v.y, true);
-            pie = (IEditable *)pflasher;
-         }
-         break;
-      }
-   case ID_INSERT_DISP_REEL:
-      {
-         CComObject<DispReel> *pdispreel;
-         CComObject<DispReel>::CreateInstance(&pdispreel);
-         if (pdispreel)
-         {
-            pdispreel->AddRef();
-            pdispreel->Init(this, v.x, v.y, true);
-            pie = (IEditable *)pdispreel;
-         }
-         break;
-      }
-   case ID_INSERT_LIGHT_SEQ:
-      {
-         CComObject<LightSeq> *plightseq;
-         CComObject<LightSeq>::CreateInstance(&plightseq);
-         if (plightseq)
-         {
-            plightseq->AddRef();
-            plightseq->Init(this, v.x, v.y, true);
-            pie = (IEditable *)plightseq;
          }
          break;
       }

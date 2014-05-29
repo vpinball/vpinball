@@ -14,8 +14,6 @@ public:
 		FireDispID(dispid, &dispparams);
 	}	
 
-	void FireBallEvent(int dispid, Ball *pball);
-
 	void FireVoidEventParm(int dispid, float parm)
 	{
 		CComVariant rgvar[1] = {  CComVariant(parm)};

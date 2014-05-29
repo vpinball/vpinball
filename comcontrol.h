@@ -108,7 +108,7 @@ BEGIN_CONNECTION_POINT_MAP(PinComControl)
 	CONNECTION_POINT_ENTRY(DIID_IComControlEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_EDITABLE_DECLARES(eItemComControl)
+STANDARD_EDITABLE_DECLARES(PinComControl, eItemComControl)
 
 	// *** IProvideClassInfo methods ***
 	/*STDMETHOD(GetClassInfo)(ITypeInfo** pptinfoOut);
@@ -127,8 +127,6 @@ STANDARD_EDITABLE_DECLARES(eItemComControl)
 	virtual void PutCenter(const Vertex2D * const pv);
 
 	void FireVoidGroupEvent(int dispid) {} // Since we have no events right now
-
-	inline IDispatch *GetDispatch() {return (IDispatch *)m_pdispextender;}
 
 	void CreateControl(IStream *pstm);
 	void CreateControlDialogTemplate();

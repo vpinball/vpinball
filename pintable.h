@@ -429,7 +429,7 @@ public:
 	HRESULT LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version);
 	HRESULT LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
 	HRESULT LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-	HRESULT CreateIEditableFromType(int type, IEditable **piedit);
+	IEditable* CreateIEditableFromType(int type);
 	virtual IEditable *GetIEditable() {return (IEditable *)this;}
 	virtual void Delete() {} // Can't delete table itself
 	virtual void Uncreate() {}

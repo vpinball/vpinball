@@ -218,8 +218,7 @@ public:
    END_CONNECTION_POINT_MAP()
 
 
-   STANDARD_DISPATCH_DECLARE
-   STANDARD_EDITABLE_DECLARES(eItemPrimitive)
+   STANDARD_EDITABLE_DECLARES(Primitive, eItemPrimitive)
 
    DECLARE_REGISTRY_RESOURCEID(IDR_PRIMITIVE)
 
@@ -233,7 +232,6 @@ public:
 
    //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
    void WriteRegDefaults();
-   //virtual HRESULT GetTypeName(BSTR *pVal);
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
    //virtual IScriptable *GetScriptable() {return NULL;}
