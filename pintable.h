@@ -587,10 +587,6 @@ END_CONNECTION_POINT_MAP()
     U32 m_tblExitConfirm;           // msecs for esc button to be pressed to exit completely
 	float m_globalDifficulty;		// Table Difficulty Level
 
-#ifdef ULTRAPIN
-    U32 m_timeout;                  // 0 means no timeout, otherwise in units of msecs when the table timeout should occur
-#endif
-
 	int m_jolt_amount;
 	int m_tilt_amount;
 	int m_DeadZ;

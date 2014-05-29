@@ -833,22 +833,6 @@ void PinInput::autostart( const U32 msecs, const U32 retry_msecs, const U32 curr
 	}
 }
 
-#ifdef ULTRAPIN
-void PinInput::autoexit( const U32 msecs )
-{
-	if ( !VPinball::m_open_minimized ||
-		 !g_pplayer ||
-		( msecs == 0 ) ||
-		// Check if we have not started.
-		 !started() )
-		return;
-
-	// Check if we can exit.
-	if (started())	// No coins queued for entry.
-		ExitApp();
-}
-#endif
-
 void PinInput::button_exit( const U32 msecs, const U32 curr_time_msec )
 {
 	// Don't allow button exit until after game has been running for 1 second.
@@ -945,10 +929,6 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 		// Update autocoin (use autostart seconds to define when nvram is ready).
 		autocoin( m_ptable->m_tblAutoStart, curr_time_msec );
 
-#ifdef ULTRAPIN
-		// Update autoexit.
-		autoexit( m_ptable->m_timeout );
-#endif
 		button_exit( m_ptable->m_tblExitConfirm, curr_time_msec );
 
 		// Update tilt.
