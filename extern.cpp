@@ -13,37 +13,6 @@ void ShowError(char *sz)
 
 void ExitApp()
 {
-#ifdef ULTRAPIN
-	bool	fe_shutdown_message_sent;
-	int		retries;
-	HWND	hFrontEndWnd;
-
-	// Check if we need to send a message to the front end.
-	fe_shutdown_message_sent = false;
-	retries = 0;
-	while ( (fe_shutdown_message_sent == false) &&
-		    (retries < 100) )
-	{
-		// Find the front end window.
-		hFrontEndWnd = FindWindow( NULL, "Ultrapin (plfe)" );
-		if ( hFrontEndWnd != NULL )
-		{
-			// Send the message to the front end.
-			if ( SendMessage( hFrontEndWnd, WM_USER, WINDOWMESSAGE_VPINBALLSHUTDOWN, 0 ) )
-			{
-				fe_shutdown_message_sent = true;
-			}
-			else
-			{
-				// Sleep.
-				Sleep ( 500 );
-			}
-		}
-
-		retries++;
-	}
-#endif
-
     // Quit nicely.
     if( g_pvp )
     {

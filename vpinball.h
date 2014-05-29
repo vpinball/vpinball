@@ -11,9 +11,6 @@
 #define BEYOND_FILE_FORMAT_VERSION 701
 
 #define	WINDOWMESSAGE_ADDUNITS			5150			// Message ID to request the game window to add units (coins).
-#ifdef ULTRAPIN
- #define WINDOWMESSAGE_VPINBALLSHUTDOWN	86				// Message ID indicating that VPinball is shutting down. (sent to "Ultrapin (plfe)")
-#endif
 
 #define DEFAULT_SECURITY_LEVEL 0
 

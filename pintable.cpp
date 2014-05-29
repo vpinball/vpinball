@@ -707,13 +707,6 @@ PinTable::PinTable()
    if (hr == S_OK)
 	   m_globalDifficulty = (float)tmp*(float)(1.0/100.0);
 
-#ifdef ULTRAPIN
-   m_timeout = 0;								// easy by default
-   hr = GetRegInt("Player", "Timeout", &tmp);
-   if (hr == S_OK)
-	   m_timeout = tmp*1000/60;
-#endif
-
    m_tblAccelerometer = fTrue;							// true if electronic accelerometer enabled
    hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
    m_tblAccelerometer = m_tblAccelerometer != fFalse;

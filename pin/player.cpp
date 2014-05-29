@@ -117,9 +117,6 @@ inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 
 
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-#ifdef ULTRAPIN
-LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-#endif
 
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -754,12 +751,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	SetWindowText(hwndProgressName, "Initalizing Visuals...");
 
 	InitWindow();
-#ifdef ULTRAPIN
-	InitDMDHackWindow();
-#endif
-
 	InitKeys();
-
 	InitRegValues();
 
 	int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
@@ -790,41 +782,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		}
 
 	m_pininput.Init(m_hwnd);
-
-#ifdef ULTRAPIN
-	// Initialize light hack states.
-	for (int i=0; i<LIGHTHACK_MAX; i++)
-	{
-		m_LastUpdateTime[i] = 0;
-		m_LightHackReadyForDrawLightHackFn[i] = FALSE;
-
-		m_LightHackCurrentState[i] = FALSE;
-		m_LightHackPreviousState[i] = FALSE;
-
-		m_LightHackCurrentAnimState[i] = FALSE;
-		m_LightHackPreviousAnimState[i] = FALSE;
-	}
-
-	m_LightHackX[LIGHTHACK_FIREPOWER_P1] = 2372;
-	m_LightHackY[LIGHTHACK_FIREPOWER_P1] = 512;
-	m_LightHackWidth[LIGHTHACK_FIREPOWER_P1] = 86;
-	m_LightHackHeight[LIGHTHACK_FIREPOWER_P1] = 512;
-
-	m_LightHackX[LIGHTHACK_FIREPOWER_P2] = 2372;
-	m_LightHackY[LIGHTHACK_FIREPOWER_P2] = 0;
-	m_LightHackWidth[LIGHTHACK_FIREPOWER_P2] = 86;
-	m_LightHackHeight[LIGHTHACK_FIREPOWER_P2] = 512;
-
-	m_LightHackX[LIGHTHACK_FIREPOWER_P3] = 2458;
-	m_LightHackY[LIGHTHACK_FIREPOWER_P3] = 512;
-	m_LightHackWidth[LIGHTHACK_FIREPOWER_P3] = 86;
-	m_LightHackHeight[LIGHTHACK_FIREPOWER_P3] = 512;
-
-	m_LightHackX[LIGHTHACK_FIREPOWER_P4] = 2458;
-	m_LightHackY[LIGHTHACK_FIREPOWER_P4] = 0;
-	m_LightHackWidth[LIGHTHACK_FIREPOWER_P4] = 86;
-	m_LightHackHeight[LIGHTHACK_FIREPOWER_P4] = 512;
-#endif
 
 	m_pin3d.InitLayout();
 
@@ -1010,17 +967,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	SetWindowText(hwndProgressName, "Starting...");
 
-	// Check if we should show the window.
-	// Show if we don't have a front end, or autostart is not enabled.
-	const HWND hFrontEndWnd = FindWindow( NULL, "Ultrapin (plfe)" );
-	if ( (hFrontEndWnd == NULL) || 
-		 (!m_ptable->m_tblAutoStartEnabled) )
-	{
-		// Show the window.
-		ShowWindow(m_hwnd, SW_SHOW);
-		SetForegroundWindow(m_hwnd);
-		SetFocus(m_hwnd);
-	}
+    // Show the window.
+    ShowWindow(m_hwnd, SW_SHOW);
+    SetForegroundWindow(m_hwnd);
+    SetFocus(m_hwnd);
 
 	// Call Init -- TODO: what's the relation to ptable->FireVoidEvent() above?
 	for (unsigned i=0; i < m_vhitables.size(); ++i)
@@ -1157,35 +1107,6 @@ void Player::DestroyBall(Ball *pball)
 		m_pactiveballDebug = (!m_vball.empty()) ? m_vball.front() : NULL;
 }
 
-#ifdef ULTRAPIN
-void Player::InitDMDHackWindow()
-{
-	// Define the window.
-	WNDCLASSEX wcex;
-	ZeroMemory( &wcex, sizeof ( WNDCLASSEX ) );
-	wcex.cbSize = sizeof ( WNDCLASSEX );
-	wcex.style = 0;
-	wcex.lpfnWndProc = (WNDPROC) PlayerDMDHackWndProc;
-	wcex.hInstance = g_hinst;
-	wcex.lpszClassName = "VPPlayerDMDHack";
-	wcex.hIcon = LoadIcon ( g_hinst, MAKEINTRESOURCE(IDI_TABLE) );
-	wcex.hCursor = LoadCursor ( NULL, IDC_ARROW );
-	wcex.lpszMenuName = NULL;
-	RegisterClassEx ( &wcex );
-
-	// Place window in top-left corner.
-	const int x = 0;
-	const int y = 0;
-
-	// Set the width and height.
-	const int width = 200;
-	const int height = 100;
-
-	// TEXT
-	m_dmdhackhwnd = ::CreateWindowEx( (WS_EX_TOPMOST), "VPPlayerDMDHack", "Visual Pinball Player DMD Hack", (WS_POPUP | WS_CLIPCHILDREN), x, y, width, height, NULL, NULL, g_hinst, 0);
-}
-#endif
-
 void Player::InitWindow()
 {
 	WNDCLASSEX wcex;
@@ -1259,28 +1180,14 @@ void Player::InitWindow()
 	const int captionheight = GetSystemMetrics(SM_CYCAPTION);
 
 	if (!m_fFullScreen && (screenheight - m_height >= (captionheight*2))) // We have enough room for a frame
-	{
-#ifdef ULTRAPIN
-		// Check if we have a front end.
-		if ( FindWindow( NULL, "Ultrapin (plfe)" ) != NULL )
-		{
-			windowflagsex = WS_EX_TOPMOST;
+    {
+        // Add a pretty window border and standard control boxes.
+        windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
+        windowflagsex = WS_EX_OVERLAPPEDWINDOW;
 
-			// Place window in top-left corner.
-			x = 0;
-			y = 0;
-		}
-		else
-#endif
-		{
-			// Add a pretty window border and standard control boxes.
-			windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
-			windowflagsex = WS_EX_OVERLAPPEDWINDOW;
-
-			y -= captionheight;
-			m_height += captionheight;
-		}
-	}
+        y -= captionheight;
+        m_height += captionheight;
+    }
 
 	int ballStretchMode;
 	hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
@@ -2178,11 +2085,6 @@ void Player::Render()
     }
 #endif
 
-#ifdef ULTRAPIN
-    // Draw hack lights.
-    DrawLightHack();
-#endif
-
     // Update music stream
     if (m_pxap)
     {
@@ -2842,66 +2744,6 @@ void Player::DoDebugObjectMenu(int x, int y)
 	UnpauseMusic();
 }
 
-#ifdef ULTRAPIN
-LRESULT CALLBACK PlayerDMDHackWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch ( uMsg )
-	{
-        case MM_MIXM_CONTROL_CHANGE:
-            break;
-
-		case WM_CLOSE:
-			break;
-
-		case WM_DESTROY:
-			break;
-
-		case WM_PAINT:
-			PAINTSTRUCT Paint;
-
-			// Fill the window with black.
-			BeginPaint ( hwnd, &Paint );
-			PatBlt ( Paint.hdc,0, 0, 86, 512, BLACKNESS ); 
-			EndPaint ( hwnd, &Paint );
-			break;
-
-		case WM_KEYDOWN:
-			break;
-
-		case WM_MOUSEMOVE:
-			break;
-
-		case WM_MOVE:
-			break;
-
-		case WM_LBUTTONDOWN:
-			break;
-
-		case WM_RBUTTONDOWN:
-			break;
-
-		case WM_RBUTTONUP:
-			break;
-
-		case WM_ACTIVATE:
-			break;
-
-		case WM_ENABLE:
-			break;
-
-		case WM_EXITMENULOOP:
-			break;
-
-		case WM_SETCURSOR:
-			break;
-
-		case WM_USER:
-			break;
-	}
-
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-#endif
 
 LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -2912,10 +2754,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
             break;
 
 		case WM_CLOSE:
-#ifdef ULTRAPIN
-			// Close the DMD hack window.
-			SendMessage(g_pplayer->m_dmdhackhwnd, WM_CLOSE, 0, 0);
-#endif
 			break;
 
 		case WM_DESTROY:
@@ -3487,101 +3325,3 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 
 #endif
 
-#ifdef ULTRAPIN
-// Performs special draws... ok, hacks!
-// These are to address shortcomings in not having
-// a proper backglass display that can be animated.
-void Player::DrawLightHack ()
-{
-	// Check the state of all lights.
-	for ( int i=0; i<LIGHTHACK_MAX; i++ )
-	{
-		if ( m_LightHackReadyForDrawLightHackFn[i] )
-		{
-			// Process based on the type of light.
-			switch ( i )
-			{
-				case LIGHTHACK_FIREPOWER_P1:
-				case LIGHTHACK_FIREPOWER_P2:
-				case LIGHTHACK_FIREPOWER_P3:
-				case LIGHTHACK_FIREPOWER_P4:
-					// Check if the light is on.
-					if ( m_LightHackCurrentState[i] )
-					{
-						// Update the blink animation.
-						m_LightHackCurrentAnimState[i] = ( (msec() & 256) > 0 );
-
-               //						// Check if the state changed.
-               //						if ( m_LightHackPreviousState[i] != m_LightHackCurrentState[i] )
-               //						{
-               //							// Initialize the animation.
-               //							m_LightHackPreviousAnimState[i] = FALSE;
-               //							m_LightHackCurrentAnimState[i] = TRUE;
-               //						}
-
-						// Check if the animation state changed.
-						if ( m_LightHackPreviousAnimState[i] != m_LightHackCurrentAnimState[i] )
-						{
-							// Check if we are on.
-							if ( m_LightHackCurrentAnimState[i] )
-							{
-								// Show the window.
-								SetWindowPos ( m_dmdhackhwnd, HWND_TOPMOST, m_LightHackX[i], m_LightHackY[i], m_LightHackWidth[i], m_LightHackHeight[i], (SWP_SHOWWINDOW | SWP_NOACTIVATE) );
- 							}
-							else
-							{
-								// Hide the window.
-								ShowWindow ( m_dmdhackhwnd, SW_HIDE );
-							}
-						}
-						m_LightHackPreviousAnimState[i] = m_LightHackCurrentAnimState[i];
-					}
-					else
-					{
-						// Check if the state changed.
-						if ( m_LightHackPreviousState[i] != m_LightHackCurrentState[i] )
-						{
-							// Hide the window.
-							ShowWindow ( m_dmdhackhwnd, SW_HIDE );
-						}
-
-						// Check if the state changed.
-						if ( (m_LightHackCurrentAnimState[i]) ||
-							 (m_LightHackPreviousAnimState[i]) )
-						{
-							// Hide the window.
-							ShowWindow ( m_dmdhackhwnd, SW_HIDE );
-							m_LightHackCurrentAnimState[i] = FALSE;
-							m_LightHackPreviousAnimState[i] = FALSE;
-						}
-					}
-					m_LightHackPreviousState[i] = m_LightHackCurrentState[i];
-					break;
-
-				case LIGHTHACK_BK2K_R:
-				case LIGHTHACK_BK2K_A:
-				case LIGHTHACK_BK2K_N:
-				case LIGHTHACK_BK2K_S:
-				case LIGHTHACK_BK2K_O:
-				case LIGHTHACK_BK2K_M:
-					break;
-			}
-
-			// Clear the light state.  If it's really on, it will be refreshed by Surface::put_IsDropped().
-			m_LightHackCurrentState[i] = FALSE;
-			m_LightHackReadyForDrawLightHackFn[i] = FALSE;
-		}
-		else
-		{
-			// Check if we got an update from IsDropped a while ago, but never updated the visual.
-			// This happens when the light changes state from on to off.
-			if ( (m_LightHackPreviousState[i]) &&
-				 ((msec() - m_LastUpdateTime[i]) > 500) )
-			{
-				// Flag that it's safe to update.  We'll update on the next frame.
-				m_LightHackReadyForDrawLightHackFn[i] = TRUE;
-			}
-		}
-	}
-}
-#endif

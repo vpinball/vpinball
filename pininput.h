@@ -47,9 +47,6 @@ public:
 	const DIDEVICEOBJECTDATA *GetTail ( /*const U32 curr_sim_msec*/ );
 
     void autostart( const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec );
-#ifdef ULTRAPIN
-    void autoexit( const U32 msecs );
-#endif
 	void autocoin( const U32 msecs, const U32 curr_time_msec );
     void button_exit( const U32 msecs, const U32 curr_time_msec );
 
