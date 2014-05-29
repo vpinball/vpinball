@@ -103,9 +103,6 @@ ePlungerKey};
 //
 
 #include "..\stereo3D.h"
-#ifdef DONGLE_SUPPORT
- #include "..\DongleAPI.h"
-#endif
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
 #define RESIZE_FROM_EXPAND WM_USER+101
@@ -1035,14 +1032,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	if (m_fDetectScriptHang)
 		g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
-
-#ifdef DONGLE_SUPPORT
-	if ( get_dongle_status() != DONGLE_STATUS_OK )
-	{
-		// Exit the application.
-		ExitApp();
-	}
-#endif
 
     // TODO: the limit should be a GUI option; 0 means disable limiting of drawahead queue
     m_limiter.Init(m_fMaxPrerenderedFrames);
@@ -3496,56 +3485,6 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 		}
 }
 
-#endif
-
-#ifdef DONGLE_SUPPORT
-int get_dongle_status()
-{
-	//Initialize.
-	int Status = DONGLE_STATUS_NOTFOUND;
-
-	// Check for HASP dongle.
-	if ( DongleAPI_IsValid() )
-	{
-		char GameName[1024];
-		char Version[1024];
-		char Region[1024];
-		char RegionLabel[1024];
-		char CabLabel[1024];
-		char Cab[1024];
-		long SerialNumber = 0;
-
-		// Get attributes.
-		strcpy ( GameName, DongleAPI_GetGameName() );
-		strcpy ( Version, DongleAPI_GetVersion() );
-		strcpy ( Region, DongleAPI_GetRegion() );
-		strcpy ( RegionLabel, DongleAPI_GetRegionLabel() );
-		strcpy ( CabLabel, DongleAPI_GetCabLabel() );
-		strcpy ( Cab, DongleAPI_GetCab() );
-		SerialNumber = DongleAPI_GetSerialNumber();
-
-		// Check if this dongle unlocks this revision of UltraPin.
-		if ( (strcmp ( GameName, "UPCOIN" ) == 0) &&
-			 (strcmp ( Version, "1.0" ) == 0) &&
-			 (strcmp ( RegionLabel, "CTRY" ) == 0) &&
-			 (strcmp ( Region, "US" ) == 0) )
-		{
-			// Correct dongle.
-			Status = DONGLE_STATUS_OK;
-		}
-		else
-		{
-			// Incorrect dongle.
-			Status = DONGLE_STATUS_INCORRECT;
-		}
-	}
-	else
-	{
-		// Dongle not found.
-		Status = DONGLE_STATUS_NOTFOUND;
-	}
-	return ( Status );
-}
 #endif
 
 #ifdef ULTRAPIN
