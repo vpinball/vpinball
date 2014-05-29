@@ -97,9 +97,6 @@ class LightSeq :
 	//public ISupportErrorInfo,
 	//public CComObjectRoot,
 	public CComCoClass<LightSeq,&CLSID_LightSeq>,
-#ifdef VBA
-	public CApcProjectItem<LightSeq>,
-#endif
 	public IConnectionPointContainerImpl<LightSeq>,
 	public IProvideClassInfo2Impl<&CLSID_LightSeq, &DIID_ILightSeqEvents, &LIBID_VPinballLib>,
 	public EventProxy<LightSeq, &DIID_ILightSeqEvents>,

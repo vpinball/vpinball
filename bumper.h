@@ -78,9 +78,6 @@ class Bumper :
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Bumper,&CLSID_Bumper>,
-#ifdef VBA
-	public CApcProjectItem<Bumper>,
-#endif
 	public EventProxy<Bumper, &DIID_IBumperEvents>,
 	public IConnectionPointContainerImpl<Bumper>,
 	public IProvideClassInfo2Impl<&CLSID_Bumper, &DIID_IBumperEvents, &LIBID_VPinballLib>,

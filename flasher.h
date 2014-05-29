@@ -34,9 +34,6 @@ class Flasher :
 	public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Flasher,&CLSID_Flasher>,
-#ifdef VBA
-	public CApcProjectItem<Flasher>,
-#endif
 	public EventProxy<Flasher, &DIID_IFlasherEvents>,
 	public IConnectionPointContainerImpl<Flasher>,
 	public IProvideClassInfo2Impl<&CLSID_Flasher, &DIID_IFlasherEvents, &LIBID_VPinballLib>,

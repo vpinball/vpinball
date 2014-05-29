@@ -873,9 +873,6 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 {
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-   bw.WriteInt(FID(PIID), ApcProjectItem.ID());
-#endif
    bw.WriteStruct(FID(VCEN), &m_d.m_Center, sizeof(Vertex2D));
    bw.WriteFloat(FID(BASR), m_d.m_BaseRadius);
    bw.WriteFloat(FID(ENDR), m_d.m_EndRadius);

@@ -467,9 +467,6 @@ HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 	{
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
-#endif
 	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex2D));
     bw.WriteWideString(FID(COLC), (WCHAR *)m_d.m_wzCollection);
 	bw.WriteFloat(FID(CTRX), m_d.m_vCenter.x);

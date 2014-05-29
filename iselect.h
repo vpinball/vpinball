@@ -74,10 +74,6 @@ public:
 	virtual void SetLockedFormat(Sur *psur);
 
 	virtual PinTable *GetPTable()=0;
-#ifdef VBA
-	virtual IApcProjectItem *GetIApcProjectItem()=0;
-	virtual IApcControl *GetIApcControl()=0;
-#endif
 
 	virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual IDispatch *GetDispatch()=0;

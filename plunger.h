@@ -38,9 +38,6 @@ class Plunger :
 	public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Plunger,&CLSID_Plunger>,
-#ifdef VBA
-	public CApcProjectItem<Plunger>,
-#endif
 	public EventProxy<Plunger, &DIID_IPlungerEvents>,
 	public IConnectionPointContainerImpl<Plunger>,
 	public IProvideClassInfo2Impl<&CLSID_Plunger, &DIID_IPlungerEvents, &LIBID_VPinballLib>,

@@ -49,9 +49,6 @@ typedef struct {
 class DispReel :
 	public CComObjectRootEx<CComSingleThreadModel>,
     public IDispatchImpl<IDispReel, &IID_IDispReel, &LIBID_VPinballLib>,
-#ifdef VBA
-    public CApcProjectItem<DispReel>,
-#endif
 	//public ISupportErrorInfo,
 	//public CComObjectRoot,
     public CComCoClass<DispReel,&CLSID_DispReel>,

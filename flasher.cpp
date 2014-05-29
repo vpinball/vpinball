@@ -351,9 +351,6 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 {
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-   bw.WriteInt(FID(PIID), ApcProjectItem.ID());
-#endif
    bw.WriteFloat(FID(FHEI), m_d.m_height);
    bw.WriteFloat(FID(FSIX), m_d.m_sizeX);
    bw.WriteFloat(FID(FSIY), m_d.m_sizeY);

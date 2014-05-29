@@ -59,9 +59,6 @@ class Flipper :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<Flipper, &CLSID_Flipper>,
 	public IDispatchImpl<IFlipper, &IID_IFlipper, &LIBID_VPinballLib>,
-#ifdef VBA
-	public CApcProjectItem<Flipper>,
-#endif
 	public IConnectionPointContainerImpl<Flipper>,
 	public IProvideClassInfo2Impl<&CLSID_Flipper, &DIID_IFlipperEvents, &LIBID_VPinballLib>,
 	public EventProxy<Flipper, &DIID_IFlipperEvents>,

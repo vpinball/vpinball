@@ -1186,10 +1186,6 @@ void PinTable::Init(VPinball *pvp)
       m_rgcolorcustom[i] = RGB(0,0,0);
    }
 
-#ifdef VBA
-   m_pStg = pis;
-#endif
-
    //pilb->Release();
 
    //LoadGameFromFilename("d:\\gdk\\data\\tables\\newsave\\basetable6.vpt");
@@ -1739,11 +1735,6 @@ void PinTable::Play()
    // TEXT
    SetWindowText(hwndStatusName, "Compiling Script...");
 
-#ifdef VBA
-   ApcProject.GetApcProject()->Compile(&foo);
-#endif
-
-
    SendMessage(hwndProgressBar, PBM_SETPOS, 20, 0);
    SetWindowText(hwndStatusName, "Backing Up Table State...");
    BackupForPlay();
@@ -1918,33 +1909,11 @@ void PinTable::CreateTableWindow()
 HRESULT PinTable::InitVBA()
 {
    HRESULT hr = S_OK;
-#ifdef VBA
-   if (SUCCEEDED(hr = StgCreateDocfile(NULL, STGM_TRANSACTED | STGM_READWRITE
-      | STGM_SHARE_EXCLUSIVE | STGM_CREATE | STGM_DELETEONRELEASE, 0, &m_pStg)))
-   {
-      if (SUCCEEDED(hr = ApcProject.Create(m_pvp->ApcHost, axProjectNormal,
-         L"Table")) && SUCCEEDED(hr = ApcProject.InitNew(m_pStg)))
-      {
-      }
-   }
-
-   if (hr != S_OK)
-      ShowError("Could not create VBA Project.");
-
-   hr = ApcProjectItem.Define(ApcProject, GetDispatch(), axTypeHostProjectItem, L"Table", NULL);
-
-   if (hr != S_OK)
-      ShowError("Could not create VBA ProjectItem Table.");
-#endif
    return hr;
 }
 
 void PinTable::CloseVBA()
 {
-   //CHECK_SIGNATURE(SIG_Game);
-#ifdef VBA
-   ApcProject.Close();
-#endif
 }
 
 
@@ -2026,11 +1995,6 @@ void PinTable::AutoSave()
 HRESULT PinTable::Save(BOOL fSaveAs)
 {
    IStorage* pstgRoot;
-
-#ifdef VBA
-   pstgRoot = m_pStg;
-#endif
-
 
    // Get file name if needed
    if(fSaveAs)
@@ -2688,9 +2652,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 {
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-   bw.WriteInt(FID(PIID), ApcProjectItem.ID());
-#endif
    bw.WriteFloat(FID(LEFT), m_left);
    bw.WriteFloat(FID(TOPX), m_top);
    bw.WriteFloat(FID(RGHT), m_right);
@@ -3146,30 +3107,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    DestroyWindow(hwndProgressBar);
    //DestroyWindow(hwndProgressDialog);
 
-#ifdef VBA
-   if(FAILED(hr)) return hr;
-
-   //Now do the vba stuff
-   if(SUCCEEDED(hr = ApcProject.Open(g_pvp->ApcHost, axProjectNormal)))
-   {
-      if(SUCCEEDED(hr = ApcProject.Load(pstgRoot)))
-      {
-         if(!SUCCEEDED(hr = ApcProject.FinishLoading()))
-         {
-            ShowError("Some parts of the table could not be loaded.");
-            hr = S_OK; // Load the parts that were okay
-         }
-         m_pStg = pstgRoot;
-
-         MAKE_WIDEPTR_FROMANSI(wszFileName, m_szFileName);
-         BSTR bstrFileName = SysAllocString(wszFileName);
-         ApcProject->APC_PUT(DisplayName)(bstrFileName);
-         SysFreeString(bstrFileName);
-      }
-   }
-#else
    pstgRoot->Release();
-#endif
 
    g_pvp->SetActionCur("");
 
@@ -3314,10 +3252,6 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
    BiffReader br(pstm, this, rgi, version, hcrypthash, hcryptkey);
 
    br.Load();
-
-#ifdef VBA
-   ApcProjectItem.Register(ApcProject, GetDispatch(), rgi[0]);
-#endif
 
    csubobj = rgi[1];
    csounds = rgi[2];
@@ -4594,40 +4528,22 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ROTATE:
       {
-#ifdef VBA
-         g_pvp->ApcHost->BeginModalDialog();
-#endif
          DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE),
             g_pvp->m_hwnd, RotateProc, (long)(ISelect *)this);
-#ifdef VBA
-         g_pvp->ApcHost->EndModalDialog();
-#endif
       }
       break;
 
    case ID_WALLMENU_SCALE:
       {
-#ifdef VBA
-         g_pvp->ApcHost->BeginModalDialog();
-#endif
          DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE),
             g_pvp->m_hwnd, ScaleProc, (long)(ISelect *)this);
-#ifdef VBA
-         g_pvp->ApcHost->EndModalDialog();
-#endif
       }
       break;
 
    case ID_WALLMENU_TRANSLATE:
       {
-#ifdef VBA
-         g_pvp->ApcHost->BeginModalDialog();
-#endif
          DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE),
             g_pvp->m_hwnd, TranslateProc, (long)(ISelect *)this);
-#ifdef VBA
-         g_pvp->ApcHost->EndModalDialog();
-#endif
       }
       break;
    case ID_ASSIGNTO_LAYER1:
@@ -4886,28 +4802,8 @@ void PinTable::DoMouseMove(int x,int y)
 
 void PinTable::DoLDoubleClick(int x, int y)
 {
-#ifdef VBA
-   IApcProjectItem *papi;
-   papi = m_pselcur->GetIApcProjectItem();
-   if (papi)
-   {
-      papi->ViewEventHandler(NULL);
-   }
-   else // No code, but if its a control then it will have properties
-   {
-      IApcControl *pac;
-      pac = m_pselcur->GetIApcControl();
-      if (pac)
-      {
-         IApcPropertiesWindow *papw;
-         g_pvp->ApcHost->get_PropertiesWindow(&papw);
-         papw->put_Visible(VARIANT_TRUE);
-      }
-   }
-#else
    //g_pvp->m_sb.SetVisible(fTrue);
    //SendMessage(g_pvp->m_hwnd, WM_SIZE, 0, 0);
-#endif
 }
 
 void PinTable::ExportBlueprint()
@@ -4929,13 +4825,7 @@ void PinTable::ExportBlueprint()
       ofn.lpstrDefExt = "bmp";
       ofn.Flags = OFN_OVERWRITEPROMPT;
 
-#ifdef VBA
-      g_pvp->ApcHost->BeginModalDialog();
-#endif
       int ret = GetSaveFileName(&ofn);
-#ifdef VBA
-      g_pvp->ApcHost->EndModalDialog();
-#endif
 
       // user cancelled
       if(ret == 0)
@@ -6208,28 +6098,24 @@ STDMETHODIMP PinTable::get_Name(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_Name(BSTR newVal)
 {
-   //GetIApcProjectItem()->put_Name(newVal);
+    //GetIApcProjectItem()->put_Name(newVal);
 
-   STARTUNDO
+    STARTUNDO
 
-      if ((lstrlenW(newVal) > 32) || (lstrlenW(newVal) < 1))
-      {
-         return E_FAIL;
-      }
+    if ((lstrlenW(newVal) > 32) || (lstrlenW(newVal) < 1))
+    {
+        return E_FAIL;
+    }
 
-      if (m_pcv->ReplaceName((IScriptable *)this, newVal) == S_OK)
-      {
-         WideStrCopy(newVal, (WCHAR *)m_wzName);
-         //lstrcpyW((WCHAR *)m_wzName, newVal);
-      }
+    if (m_pcv->ReplaceName((IScriptable *)this, newVal) == S_OK)
+    {
+        WideStrCopy(newVal, (WCHAR *)m_wzName);
+        //lstrcpyW((WCHAR *)m_wzName, newVal);
+    }
 
-#ifdef VBA
-      GetIApcProjectItem()->put_Name(newVal);
-#endif
+    STOPUNDO
 
-      STOPUNDO
-
-         return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Inclination(float *pVal)
@@ -7007,11 +6893,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
             if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface|| (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp))
             {
                CComBSTR bstr;
-#ifdef VBA
-               m_vedit.ElementAt(ivar)->GetIApcProjectItem()->get_Name(&bstr);
-#else
                m_vedit.ElementAt(ivar)->GetScriptable()->get_Name(&bstr);
-#endif
 
                DWORD cwch = lstrlenW(bstr)+1;
                //wzDst = ::SysAllocString(bstr);
@@ -7121,11 +7003,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
          else
          {
             CComBSTR bstr;
-#ifdef VBA
-            m_vedit.ElementAt(dwCookie)->GetIApcProjectItem()->get_Name(&bstr);
-#else
             m_vedit.ElementAt(dwCookie)->GetScriptable()->get_Name(&bstr);
-#endif
 
             DWORD cwch = lstrlenW(bstr)+1;
             //wzDst = ::SysAllocString(bstr);
@@ -7160,11 +7038,7 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
       if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
       {
          CComBSTR bstr;
-#ifdef VBA
-         item->GetIApcProjectItem()->get_Name(&bstr);
-#else
          item->GetScriptable()->get_Name(&bstr);
-#endif
          if (!WzSzStrCmp(bstr, szName))
          {
             IEditable * const piedit = item;
@@ -8542,13 +8416,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 		ofn.lpstrInitialDir = szFoo;
 	}
 
-#ifdef VBA
-	ApcHost->BeginModalDialog();
-#endif
 	const int ret = GetOpenFileName(&ofn);
-#ifdef VBA
-	ApcHost->EndModalDialog();
-#endif
 	if(ret == 0)
 		return S_OK;
 
@@ -8637,13 +8505,7 @@ STDMETHODIMP PinTable::ExportPhysics()
 		ofn.lpstrInitialDir = szFoo;
 	}
 
-#ifdef VBA
-	ApcHost->BeginModalDialog();
-#endif
 	const int ret = GetSaveFileName(&ofn);
-#ifdef VBA
-	ApcHost->EndModalDialog();
-#endif
 	if(ret == 0)
 		return S_OK;
 

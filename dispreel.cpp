@@ -839,9 +839,6 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 {
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
-#endif
 	bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex2D));
 	bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
     bw.WriteInt(FID(TYPE), m_d.m_reeltype);

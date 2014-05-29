@@ -6,17 +6,10 @@
 
 #include <atlcom.h>
 
-#ifdef VBA
-#define APC_IMPORT_MIDL
-#endif
 
 #include <atlbase.h>
 #include <atlhost.h>
 
-#ifdef VBA
-#include <apcCpp.h>
-using namespace MSAPC;
-#endif
 
 #include <assert.h>
 

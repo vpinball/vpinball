@@ -28,9 +28,6 @@ class Trigger :
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Trigger,&CLSID_Trigger>,
-#ifdef VBA
-	public CApcProjectItem<Trigger>,	
-#endif
 	public EventProxy<Trigger, &DIID_ITriggerEvents>,
 	public IConnectionPointContainerImpl<Trigger>,
 	public IProvideClassInfo2Impl<&CLSID_Trigger, &DIID_ITriggerEvents, &LIBID_VPinballLib>,

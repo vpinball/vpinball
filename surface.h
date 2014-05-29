@@ -47,9 +47,6 @@ class Surface :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<Surface, &CLSID_Wall>,
 	public IDispatchImpl<IWall, &IID_IWall, &LIBID_VPinballLib>,
-#ifdef VBA
-	public CApcProjectItem<Surface>,
-#endif
 	public EventProxy<Surface, &DIID_IWallEvents>,
 	public IConnectionPointContainerImpl<Surface>,
 	public IProvideClassInfo2Impl<&CLSID_Wall, &DIID_IWallEvents, &LIBID_VPinballLib>,

@@ -19,23 +19,11 @@
 
 #define LAST_OPENED_TABLE_COUNT	8
 
-#ifdef VBA
-class MiniBitmapID
-	{
-public:
-	WCHAR *wzGUID;
-	int resid;
-	};
-#endif
 
 class PinTable;
 
 class VPinball //:// public IVPinball, public COleAuto,
-#ifdef VBA
-public CApcHost<VPinball> //,
-#endif
 //public IDispatchImpl<IVPinball, &IID_IVPinball, &LIBID_VPinballLib>
-
 {
 public:
 	VPinball();
@@ -49,9 +37,6 @@ public:
     HWND CreateLayerToolbar(HWND hwndParent);
 	HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent);
 	void CreateMDIClient();
-#ifdef VBA
-	void InitVBA();
-#endif
 	HRESULT AddMiniBitmaps();
 
 	void ParseCommand(int code, HWND hwnd, int notify);
@@ -98,12 +83,6 @@ public:
 	HRESULT MainMsgLoop();
 	HRESULT ApcHost_OnIdle(BOOL* pfContinue);
 	HRESULT ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed);
-#ifdef VBA
-	// IApcEvents
-	HRESULT ApcHost_BeforePause();
-	HRESULT ApcHost_AfterPause();
-	HRESULT ShowIDE();
-#endif
 
 	BOOL CloseTable(PinTable *ppt);
 
@@ -127,11 +106,6 @@ public:
 
 	Vector< CComObject<PinTable> > m_vtable;
 	CComObject<PinTable> *m_ptableActive;
-
-#ifdef VBA
-	// From VBA APC
-	int m_lcidVBA;
-#endif
 
 	HWND m_hwndSideBar;
     HWND m_hwndSideBarScroll;
@@ -188,10 +162,6 @@ private:
 	DWORD m_workerthreadid;
 
     HMODULE m_scintillaDll;
-
-#ifdef VBA
-	bool m_fDebugging; // Whether VBA is currently in debugging mode
-#endif
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

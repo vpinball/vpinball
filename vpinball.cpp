@@ -111,16 +111,6 @@ TBBUTTON const g_tbbuttonLayers[] = {
    {31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 8},
 };
 
-#ifdef VBA
-MiniBitmapID const g_rgminibitmap[] = {
-   {L"{44D58C78-14BA-47F3-B82C-425853ABB698}", IDB_TRIGGER}, // Trigger
-   {L"{A0B914E6-56A8-4CC1-A846-45FFF4D8CA17}", IDB_TIMER}, // Timer
-   {L"{68AB2BBC-8209-40F3-B6F4-54F8ADAA0DC7}", IDB_FLIPPER}, // Flipper
-   {L"{31DD37E7-DB9B-4AB1-94C9-FAA06B252DFA}", IDB_LIGHT}, // Light
-   NULL, -1,
-};
-#endif
-
 const int allLayers[8]=
 {
    ID_LAYER_LAYER1,
@@ -245,10 +235,6 @@ void VPinball::Init()
 {
    m_NextTableID = 1;
 
-#ifdef VBA
-   m_lcidVBA = 1033;											//local ID: english - used when creating VBA APC Host
-#endif
-
    m_ptableActive = NULL;
    m_hwndSideBar = NULL;										//Handle for left Sidebar
    m_hwndWork = NULL;											//Handle for Workarea
@@ -343,10 +329,6 @@ void VPinball::Init()
    InitTools();										// eventually show smartbrowser
 
    InitRegValues();									// get default values from registry
-
-#ifdef VBA
-   InitVBA();										// Create APC VBA host
-#endif
 
    int DSidx1 = 0, DSidx2 =0;
    GetRegInt("Player", "SoundDevice", &DSidx1);
@@ -753,13 +735,6 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 
    case ID_EDIT_PROPERTIES:
       {
-#ifdef VBAPropBrowser
-         IApcPropertiesWindow *papw;
-         g_pvp->ApcHost->get_PropertiesWindow(&papw);
-         short fVisible;
-         papw->get_Visible(&fVisible);
-         papw->put_Visible(!fVisible);
-#endif
          BOOL fShow = fFalse;
 
          if(!g_pplayer) fShow = m_sb.GetVisible(); // Get the current display state 
@@ -1171,14 +1146,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          ptCur = GetActiveTable();
          if (ptCur)
          {
-#ifdef VBA
-            ApcHost->BeginModalDialog();
-#endif
             /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TABLEINFO),
                m_hwnd, TableInfoProc, (long)ptCur);
-#ifdef VBA
-            ApcHost->EndModalDialog();
-#endif
          }
       }
       break;
@@ -1192,13 +1161,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                ShowPermissionError();
             else
             {
-#ifdef VBA
-               ApcHost->BeginModalDialog();
-#endif
                /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SOUNDDIALOG),m_hwnd, SoundManagerProc, (long)ptCur);
-#ifdef VBA
-               ApcHost->EndModalDialog();
-#endif					
             }
          }
       }
@@ -1213,15 +1176,9 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                ShowPermissionError();
             else
             {
-#ifdef VBA
-               ApcHost->BeginModalDialog();
-#endif
                /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_IMAGEDIALOG), m_hwnd, ImageManagerProc, (long)ptCur);
                m_sb.PopulateDropdowns(); // May need to update list of images
                m_sb.RefreshProperties();
-#ifdef VBA
-               ApcHost->EndModalDialog();
-#endif
             }
          }
       }
@@ -1236,14 +1193,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                ShowPermissionError();
             else
             {
-#ifdef VBA
-               ApcHost->BeginModalDialog();
-#endif
                /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG),
                   m_hwnd, FontManagerProc, (long)ptCur);
-#ifdef VBA
-               ApcHost->EndModalDialog();
-#endif
             }
          }
       }
@@ -1258,13 +1209,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                ShowPermissionError();
             else
             {
-#ifdef VBA
-               ApcHost->BeginModalDialog();
-#endif
                DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DIMENSION_CALCULATOR), m_hwnd, DimensionProc, (long)ptCur);
-#ifdef VBA
-               ApcHost->EndModalDialog();
-#endif
             }
          }
       }
@@ -1279,17 +1224,11 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                ShowPermissionError();
             else
             {
-#ifdef VBA
-               ApcHost->BeginModalDialog();
-#endif
                /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COLLECTDIALOG),
                   m_hwnd, CollectManagerProc, (long)ptCur);
 
                m_sb.PopulateDropdowns(); // May need to update list of collections
                m_sb.RefreshProperties();
-#ifdef VBA
-               ApcHost->EndModalDialog();
-#endif
             }
          }
       }
@@ -1356,14 +1295,8 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       }
    case ID_HELP_ABOUT:
       {
-#ifdef VBA
-         ApcHost->BeginModalDialog();
-#endif
          /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ABOUT),
             m_hwnd, AboutProc, 0);
-#ifdef VBA
-         ApcHost->EndModalDialog();
-#endif
       }
       break;
    }
@@ -1559,13 +1492,7 @@ void VPinball::LoadFile()
       ofn.lpstrInitialDir = szFoo;
    }
 
-#ifdef VBA
-   ApcHost->BeginModalDialog();
-#endif
    const int ret = GetOpenFileName(&ofn);
-#ifdef VBA
-   ApcHost->EndModalDialog();
-#endif
 
    if(ret == 0)
       return;
@@ -1682,10 +1609,6 @@ BOOL VPinball::CloseTable(PinTable *ppt)
    if (m_sb.GetBaseISel() && (ppt == m_sb.GetBaseISel()->GetPTable()))
       SetPropSel(NULL);
 
-#ifdef VBA
-   ppt->CloseVBA();
-   ppt->m_pStg->Release();
-#endif
    m_vtable.RemoveElement(ppt);
    ppt->m_pcv->CleanUpScriptEngine();
    ppt->Release();
@@ -1695,61 +1618,10 @@ BOOL VPinball::CloseTable(PinTable *ppt)
    return fTrue;
 }
 
-#ifdef VBA
-void VPinball::InitVBA()
-{   
-   m_fDebugging = false;
-   m_ptinfoCls       = NULL;
-   m_ptinfoInt       = NULL;
-
-   HRESULT hr = S_OK;
-
-   BSTR bstrLicKey = SysAllocString(wszEvalLicKey);
-   hr = ApcHost.Create(m_hwnd, L"Visual Pinball", GetDispatch(), bstrLicKey, m_lcidVBA);
-   SysFreeString(bstrLicKey);
-
-   if (hr != S_OK)
-      ShowError("Could not create VBA.");
-
-   AddMiniBitmaps();
-}
-#endif
 
 HRESULT VPinball::AddMiniBitmaps()
 {
-#ifdef VBA
-   IApcMiniBitmaps* pBmps;
-   HRESULT hr;
-   if(SUCCEEDED(hr = ApcHost->APC_GET(MiniBitmaps)(&pBmps)))
-   {
-      PICTDESC pd;
-      IPictureDisp* pDisp;
-      pd.cbSizeofstruct = sizeof(PICTDESC);
-      pd.picType = PICTYPE_BITMAP;
-      pd.bmp.hpal = NULL;
-
-      int i=0;
-      while (g_rgminibitmap[i].resid != -1)
-      {
-         pd.bmp.hbitmap = LoadBitmap(g_hinst, MAKEINTRESOURCE(g_rgminibitmap[i].resid));
-
-         if(SUCCEEDED(hr = OleCreatePictureIndirect(&pd, IID_IPictureDisp, TRUE, (LPVOID*)&pDisp)))
-         {
-            hr = pBmps->APC_RAW(Add)(g_rgminibitmap[i].wzGUID, pDisp, (::OLE_COLOR)RGB(255,0,255), NULL);
-
-            pDisp->Release();
-            pDisp = NULL;
-         }
-         i++;
-      }
-
-      pBmps->Release();
-   }
-
-   return hr;
-#else
    return S_OK;
-#endif
 }
 
 //>>> added by Chris
@@ -2027,9 +1899,6 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 
 HRESULT VPinball::MainMsgLoop()
 {
-#ifdef VBA
-   return ApcHost.MessageLoop();
-#else
    BOOL fConsumed;
    MSG msg;
 
@@ -2057,52 +1926,15 @@ HRESULT VPinball::MainMsgLoop()
    }
 
    return S_OK;
-#endif
 }
 
 HRESULT VPinball::ApcHost_OnIdle(BOOL* pfContinue)
 {
-#ifdef VBA
-   ApcHost.OnIdle(pfContinue);
+    g_pplayer->Render();
+    *pfContinue = TRUE;
 
-   if (!m_fDebugging)
-#endif
-   {
-      g_pplayer->Render();
-      *pfContinue = TRUE;
-   }
-
-   return S_OK;
+    return S_OK;
 }
-
-#ifdef VBA
-HRESULT VPinball::ApcHost_BeforePause()
-{
-   m_fDebugging = true;
-   if (g_pplayer)
-      g_pplayer->m_fNoTimeCorrect = fTrue; // So ball doesn't jump ahead next frame
-   return S_OK;
-}
-
-HRESULT VPinball::ApcHost_AfterPause()
-{
-   m_fDebugging = false;
-   return S_OK;
-}
-
-HRESULT VPinball::ShowIDE()
-{
-   IApcIde *pIDE = NULL;
-   VARIANT_BOOL vbVisible = VARIANT_TRUE;
-   HRESULT hr;
-   if(SUCCEEDED(hr = ApcHost->APC_GET(Ide)(&pIDE)))
-   {
-      hr = pIDE->APC_PUT(Visible)(vbVisible);
-      pIDE->Release();
-   }
-   return hr;
-}
-#endif
 
 STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
 {
@@ -2159,44 +1991,34 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
    case WM_CLOSE:
       {
-         BOOL fCanClose;
          PinTable *ptable = g_pvp->GetActiveTable();
          if ( ptable )
          {
             while( ptable->m_savingActive )
                Sleep(1000);
          }
-#ifdef VBA
-         g_pvp->ApcHost.WmClose(fCanClose);
-#else
          if (g_pplayer)
             SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
 
-         fCanClose = fTrue;
-#endif
+         BOOL fCanClose = g_pvp->FCanClose();
          if (fCanClose)
          {
-            fCanClose = g_pvp->FCanClose();
-            if (fCanClose)
-            {
-               WINDOWPLACEMENT winpl;
-               winpl.length = sizeof(winpl);
+             WINDOWPLACEMENT winpl;
+             winpl.length = sizeof(winpl);
 
-               if (GetWindowPlacement(hwnd, &winpl))
-               {
-                  SetRegValue("Editor", "WindowLeft", REG_DWORD, &winpl.rcNormalPosition.left, 4);
-                  SetRegValue("Editor", "WindowTop", REG_DWORD, &winpl.rcNormalPosition.top, 4);
-                  SetRegValue("Editor", "WindowRight", REG_DWORD, &winpl.rcNormalPosition.right, 4);
-                  SetRegValue("Editor", "WindowBottom", REG_DWORD, &winpl.rcNormalPosition.bottom, 4);
+             if (GetWindowPlacement(hwnd, &winpl))
+             {
+                 SetRegValue("Editor", "WindowLeft", REG_DWORD, &winpl.rcNormalPosition.left, 4);
+                 SetRegValue("Editor", "WindowTop", REG_DWORD, &winpl.rcNormalPosition.top, 4);
+                 SetRegValue("Editor", "WindowRight", REG_DWORD, &winpl.rcNormalPosition.right, 4);
+                 SetRegValue("Editor", "WindowBottom", REG_DWORD, &winpl.rcNormalPosition.bottom, 4);
 
-                  BOOL fMaximized = IsZoomed(hwnd);
-                  SetRegValue("Editor", "WindowMaximized", REG_DWORD, &fMaximized, 4);
-               }
+                 BOOL fMaximized = IsZoomed(hwnd);
+                 SetRegValue("Editor", "WindowMaximized", REG_DWORD, &fMaximized, 4);
+             }
 
-               DestroyWindow(hwnd);
-            }
+             DestroyWindow(hwnd);
          }
-
          return 0;
       }
       break;
@@ -2298,15 +2120,6 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       g_pvp->SetEnableMenuItems();
       break;
 
-#ifdef VBA
-   case WM_ACTIVATE:
-      g_pvp->ApcHost.WmActivate(wParam);
-      break;
-
-   case WM_ENABLE:
-      g_pvp->ApcHost.WmEnable(wParam);
-      break;
-#endif
    }
 
    return g_pvp ? DefFrameProc(hwnd, g_pvp->m_hwndWork, uMsg, wParam, lParam) : 0;
@@ -6725,13 +6538,7 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 				  ofn.lpstrInitialDir = szFoo;
 			   }
 
-#ifdef VBA
-			   ApcHost->BeginModalDialog();
-#endif
 			   const int ret = GetOpenFileName(&ofn);
-#ifdef VBA
-			   ApcHost->EndModalDialog();
-#endif
 			   if(ret == 0)
 				  break;
 
@@ -6823,13 +6630,7 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 				  ofn.lpstrInitialDir = szFoo;
 			   }
 
-#ifdef VBA
-			   ApcHost->BeginModalDialog();
-#endif
 			   const int ret = GetSaveFileName(&ofn);
-#ifdef VBA
-			   ApcHost->EndModalDialog();
-#endif
 			   if(ret == 0)
 				  break;
 
