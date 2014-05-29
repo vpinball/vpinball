@@ -27,9 +27,6 @@ public:
 class Textbox :
 	public CComObjectRootEx<CComSingleThreadModel>, 
 	public IDispatchImpl<ITextbox, &IID_ITextbox, &LIBID_VPinballLib>,
-#ifdef VBA
-	public CApcProjectItem<Textbox>,
-#endif
 	//public ISupportErrorInfo,
 	//public CComObjectRoot,
 	public CComCoClass<Textbox,&CLSID_Textbox>,	

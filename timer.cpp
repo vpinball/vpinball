@@ -227,9 +227,6 @@ HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 	{
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
-#endif
 	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex2D));
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);

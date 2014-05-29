@@ -41,9 +41,6 @@ class Spinner :
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Spinner,&CLSID_Spinner>,
-#ifdef VBA
-	public CApcProjectItem<Spinner>,
-#endif
 	public EventProxy<Spinner, &DIID_ISpinnerEvents>,
 	public IConnectionPointContainerImpl<Spinner>,
 	public IProvideClassInfo2Impl<&CLSID_Spinner, &DIID_ISpinnerEvents, &LIBID_VPinballLib>,

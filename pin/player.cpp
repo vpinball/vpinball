@@ -3047,13 +3047,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_ACTIVATE:
-#ifdef VBA
-			g_pvp->ApcHost.WmActivate(wParam);
-			break;
-
-		case WM_ENABLE:
-			g_pvp->ApcHost.WmEnable(wParam);
-#else	
 			if (wParam != WA_INACTIVE)
 				{
 				g_pplayer->m_fGameWindowActive = true;
@@ -3067,7 +3060,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				g_pplayer->m_fPause = true;
 				}
 			g_pplayer->RecomputePauseState();
-#endif
 			break;
 
 		case WM_EXITMENULOOP:

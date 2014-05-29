@@ -32,9 +32,6 @@ class Timer :
 	public CComCoClass<Timer,&CLSID_Timer>,
 	//public CComCoClass<Flipper, &CLSID_Flipper>,
 	//public IDispatchImpl<IFlipper, &IID_IFlipper, &LIBID_VPinballLib>,
-#ifdef VBA
-	public CApcProjectItem<Timer>,
-#endif
 	public IConnectionPointContainerImpl<Timer>,
 	public IProvideClassInfo2Impl<&CLSID_Timer, &DIID_ITimerEvents, &LIBID_VPinballLib>,
 	public EventProxy<Timer, &DIID_ITimerEvents>,

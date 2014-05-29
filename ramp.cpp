@@ -1597,9 +1597,6 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
 {
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-   bw.WriteInt(FID(PIID), ApcProjectItem.ID());
-#endif
    bw.WriteFloat(FID(HTBT), m_d.m_heightbottom);
    bw.WriteFloat(FID(HTTP), m_d.m_heighttop);
    bw.WriteFloat(FID(WDBT), m_d.m_widthbottom);

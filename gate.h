@@ -38,9 +38,6 @@ class Gate :
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Gate,&CLSID_Gate>,
-#ifdef VBA
-	public CApcProjectItem<Gate>,
-#endif
 	public EventProxy<Gate, &DIID_IGateEvents>,
 	public IConnectionPointContainerImpl<Gate>,
 	public IProvideClassInfo2Impl<&CLSID_Gate, &DIID_IGateEvents, &LIBID_VPinballLib>,

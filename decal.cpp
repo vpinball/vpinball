@@ -617,9 +617,6 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 {
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-   bw.WriteInt(FID(PIID), ApcControl.ID());
-#endif
    bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
    bw.WriteFloat(FID(WDTH), m_d.m_width);
    bw.WriteFloat(FID(HIGH), m_d.m_height);

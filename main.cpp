@@ -283,9 +283,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 		// VBA APC handles message loop (bastards)
 		g_pvp->MainMsgLoop();
 
-#ifdef VBA
-		g_pvp->ApcHost.Destroy();
-#endif
 		g_pvp->Release();
 
 		DestroyAcceleratorTable(g_haccel);

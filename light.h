@@ -74,9 +74,6 @@ class Light :
 	//public ISupportErrorInfo,
 	public CComObjectRoot,
 	public CComCoClass<Light,&CLSID_Light>,
-#ifdef VBA
-	public CApcProjectItem<Light>,
-#endif
 	public EventProxy<Light, &DIID_ILightEvents>,
 	public IConnectionPointContainerImpl<Light>,
 	public IProvideClassInfo2Impl<&CLSID_Light, &DIID_ILightEvents, &LIBID_VPinballLib>,

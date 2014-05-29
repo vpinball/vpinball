@@ -56,10 +56,6 @@ typedef struct {
 class PinTable :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public IDispatchImpl<ITable, &IID_ITable, &LIBID_VPinballLib>,
-#ifdef VBA
-	public CApcProject<PinTable>,
-	public CApcProjectItem<PinTable>,
-#endif
 	public IConnectionPointContainerImpl<PinTable>,
 	public EventProxy<PinTable, &DIID_ITableEvents>,
 	// IProvideClassInfo provides an ITypeInfo for the whole coclass
@@ -526,10 +522,6 @@ END_CONNECTION_POINT_MAP()
 	char m_szFileName[_MAX_PATH];
 	char m_szBlueprintFileName[_MAX_PATH];
 	char m_szTitle[1024];
-
-#ifdef VBA
-	IStorage* m_pStg;
-#endif
 
 	HWND m_hwnd;
 	VPinball *m_pvp;

@@ -664,9 +664,6 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 {
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-   bw.WriteInt(FID(PIID), ApcProjectItem.ID());
-#endif
    bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
    bw.WriteFloat(FID(RADI), m_d.m_radius);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);

@@ -550,9 +550,6 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	{
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-	bw.WriteInt(FID(PIID), ApcProjectItem.ID());
-#endif
 	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex2D));
 	bw.WriteFloat(FID(WDTH), m_d.m_width);
 	bw.WriteFloat(FID(HIGH), m_d.m_height);

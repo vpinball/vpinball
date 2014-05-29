@@ -1262,10 +1262,6 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 {
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-#ifdef VBA
-   bw.WriteInt(FID(PIID), ApcProjectItem.ID());
-#endif
-
    bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
    bw.WriteBool(FID(DROP), m_d.m_fDroppable);
    bw.WriteBool(FID(FLIP), m_d.m_fFlipbook);
