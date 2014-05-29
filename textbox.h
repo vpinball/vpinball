@@ -61,10 +61,8 @@ BEGIN_CONNECTION_POINT_MAP(Textbox)
 	CONNECTION_POINT_ENTRY(DIID_ITextboxEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_DISPATCH_DECLARE
-STANDARD_EDITABLE_DECLARES(eItemTextbox)
+STANDARD_EDITABLE_DECLARES(Textbox, eItemTextbox)
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void MoveOffset(const float dx, const float dy);

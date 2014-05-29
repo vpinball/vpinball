@@ -65,8 +65,7 @@ BEGIN_CONNECTION_POINT_MAP(Flasher)
 	CONNECTION_POINT_ENTRY(DIID_IFlasherEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_DISPATCH_DECLARE
-STANDARD_EDITABLE_DECLARES(eItemFlasher)
+STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher)
 
 //DECLARE_NOT_AGGREGATABLE(Flasher)
 // Remove the comment from the line above if you don't want your object to
@@ -76,7 +75,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void RenderBlueprint(Sur *psur);

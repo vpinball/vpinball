@@ -68,8 +68,7 @@ public:
 
 	HRESULT InitTarget(PinTable * const ptable, const float x, const float y, bool fromMouseClick);
 
-	STANDARD_DISPATCH_DECLARE
-	STANDARD_EDITABLE_DECLARES(eItemSurface)
+	STANDARD_EDITABLE_DECLARES(Surface, eItemSurface)
 
 BEGIN_COM_MAP(Surface)
 	COM_INTERFACE_ENTRY(IWall)

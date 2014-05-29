@@ -76,11 +76,7 @@ public:
 	virtual void SetSelectFormat(Sur *psur);
 	virtual void SetMultiSelectFormat(Sur *psur);
 	virtual PinTable *GetPTable() {return m_pihdp->GetIEditable()->GetPTable();}
-#ifdef VBA
-	virtual IApcProjectItem *GetIApcProjectItem() {return m_pihdp->GetIEditable()->GetIApcProjectItem();}
-#endif
 	virtual IEditable *GetIEditable() {return m_pihdp->GetIEditable();}
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual IDispatch *GetDispatch();
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
@@ -98,10 +94,6 @@ END_COM_MAP()
 DECLARE_REGISTRY_RESOURCEID(IDR_DRAG_POINT)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
-
-#ifdef VBA
-	virtual IApcControl *GetIApcControl() {return NULL;}
-#endif
 
 	virtual void Delete();
 	virtual void Uncreate();

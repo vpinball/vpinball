@@ -110,8 +110,7 @@ END_COM_MAP()
 // Remove the comment from the line above if you don't want your object to
 // support aggregation.
 
-STANDARD_DISPATCH_DECLARE
-STANDARD_EDITABLE_DECLARES(eItemBumper)
+STANDARD_EDITABLE_DECLARES(Bumper, eItemBumper)
 
 BEGIN_CONNECTION_POINT_MAP(Bumper)
 	CONNECTION_POINT_ENTRY(DIID_IBumperEvents)
@@ -126,7 +125,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 	virtual void SetObjectPos();
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	// Multi-object manipulation

@@ -78,11 +78,9 @@ public:
 
 	void SetVertices(float basex, float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-	STANDARD_DISPATCH_DECLARE
-	STANDARD_EDITABLE_DECLARES(eItemFlipper)
+	STANDARD_EDITABLE_DECLARES(Flipper, eItemFlipper)
 
 BEGIN_COM_MAP(Flipper)
 	COM_INTERFACE_ENTRY(IFlipper)

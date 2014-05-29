@@ -85,10 +85,8 @@ BEGIN_CONNECTION_POINT_MAP(DispReel)
     CONNECTION_POINT_ENTRY(DIID_IDispReelEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_DISPATCH_DECLARE
-STANDARD_EDITABLE_DECLARES(eItemDispReel)
+STANDARD_EDITABLE_DECLARES(DispReel, eItemDispReel)
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	virtual void MoveOffset(const float dx, const float dy);

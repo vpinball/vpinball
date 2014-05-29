@@ -81,8 +81,7 @@ BEGIN_CONNECTION_POINT_MAP(Ramp)
 	CONNECTION_POINT_ENTRY(DIID_IRampEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_DISPATCH_DECLARE
-STANDARD_EDITABLE_DECLARES(eItemRamp)
+STANDARD_EDITABLE_DECLARES(Ramp, eItemRamp)
 
 //DECLARE_NOT_AGGREGATABLE(Ramp)
 // Remove the comment from the line above if you don't want your object to
@@ -92,7 +91,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	void RenderOutline(Sur * const psur);

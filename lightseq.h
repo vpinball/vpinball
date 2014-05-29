@@ -131,7 +131,6 @@ BEGIN_CONNECTION_POINT_MAP(LightSeq)
 	CONNECTION_POINT_ENTRY(DIID_ILightSeqEvents)
 END_CONNECTION_POINT_MAP()
 
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	void RenderOutline(Sur * const psur);
@@ -145,8 +144,7 @@ END_CONNECTION_POINT_MAP()
 
 	void WriteRegDefaults();
 
-	STANDARD_DISPATCH_DECLARE
-	STANDARD_EDITABLE_DECLARES(eItemLightSeq)
+	STANDARD_EDITABLE_DECLARES(LightSeq, eItemLightSeq)
 
 //DECLARE_NOT_AGGREGATABLE(LightSeq)
 // Remove the comment from the line above if you don't want your object to

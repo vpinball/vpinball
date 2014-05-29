@@ -26,9 +26,6 @@ public:
 class Decal :
 	public IDispatchImpl<IDecal, &IID_IDecal, &LIBID_VPinballLib>,
 	public CComObjectRoot,
-#ifdef VBA
-	public CApcControl<Decal>,
-#endif
 	public ISelect,
 	public IEditable,
 	public Hitable,
@@ -71,7 +68,7 @@ BEGIN_COM_MAP(Decal)
 	COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
 END_COM_MAP()
 
-STANDARD_NONAPC_EDITABLE_DECLARES(eItemDecal)
+STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal)
 
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
@@ -83,20 +80,12 @@ STANDARD_NONAPC_EDITABLE_DECLARES(eItemDecal)
 
 	STDMETHOD(get_Name)(BSTR *pVal) {return E_FAIL;}
 
-	virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
 	void WriteRegDefaults();
-	//virtual HRESULT GetTypeName(BSTR *pVal);
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
 	void EnsureSize();
 	HFONT GetFont();
 	void GetTextSize(int * const px, int * const py);
-
-	virtual IScriptable *GetScriptable() {return NULL;}
-
-#ifdef VBA
-	virtual IApcControl *GetIApcControl() {return ApcControl.GetApcControl();}
-#endif
 
 private:
     void RenderText();
