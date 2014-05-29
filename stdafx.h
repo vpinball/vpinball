@@ -13,7 +13,6 @@
 //#define SLINTF    // enable debug console output
 
 //#define ULTRAPIN       // define to enable deprecated UltraPin functionality
-//#define DONGLE_SUPPORT // define to enable deprecated UltraPin dongle (Remember to run hdd32.exe (HASP dongle driver setup) on host)
 
 #define EDITOR_BG_WIDTH 1000
 #define EDITOR_BG_HEIGHT 750

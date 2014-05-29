@@ -430,16 +430,3 @@ enum
 };
 #endif
 
-#ifdef DONGLE_SUPPORT
-enum
-{
-	// Halt application.
-	DONGLE_STATUS_NOTFOUND			= 0,
-	DONGLE_STATUS_INCORRECT,
-
-	// Run application.
-	DONGLE_STATUS_OK
-};
-
-int get_dongle_status();
-#endif

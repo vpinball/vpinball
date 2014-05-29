@@ -187,7 +187,6 @@ set(HEADERS
   display.h
   dispreel.h
   disputil.h
-  DongleAPI.h
   dragpoint.h
   eventproxy.h
   extern.h

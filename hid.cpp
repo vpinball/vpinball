@@ -116,9 +116,6 @@ static HANDLE hid_connect (U32 vendorID, U32 productID, U32 *versionNumber=NULL)
 
         index++;
     }
-#ifdef DONGLE_SUPPORT
-	exit(0);  // no ushock 
-#endif
 
     return INVALID_HANDLE_VALUE;
 }
