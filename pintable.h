@@ -466,6 +466,7 @@ public:
 
 	bool IsNameUnique(WCHAR *wzName);
 	void GetUniqueName(int type, WCHAR *wzUniqueName);
+	void GetUniqueName(WCHAR *prefix, WCHAR *wzUniqueName);
 	void GetUniqueNamePasting(int type, WCHAR *wzUniqueName);
 
 	float GetSurfaceHeight(char *szName, float x, float y);

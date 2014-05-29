@@ -109,6 +109,14 @@ LocalString::LocalString(const int resid)
 		m_szbuffer[0] = 0;
 	}
 
+LocalStringW::LocalStringW(int resid)
+{
+    if(resid > 0)
+        LoadStringW(g_hinst, resid, this->str, 256);
+    else
+        str[0] = 0;
+}
+
 WCHAR *MakeWide(char *sz)
 	{
 	const int len = lstrlen(sz);

@@ -1318,15 +1318,17 @@ bool PinTable::IsNameUnique(WCHAR *wzName)
 
 void PinTable::GetUniqueName(int type, WCHAR *wzUniqueName)
 {
+    WCHAR wzRoot[128];
+    ISelect::GetTypeNameForType(type, wzRoot);
+    GetUniqueName(wzRoot, wzUniqueName);
+}
+
+void PinTable::GetUniqueName(WCHAR *wzRoot, WCHAR *wzUniqueName)
+{
    int suffix = 1;
-   BOOL fFound = fFalse;
-   WCHAR wzRoot[128];
+   bool fFound = false;
    WCHAR wzName[128];
    WCHAR wzSuffix[10];
-
-   LocalString ls(rgTypeStringIndex[type]);
-
-   MultiByteToWideChar(CP_ACP, 0, ls.m_szbuffer, -1, wzRoot, 128);
 
    while (!fFound)
    {
@@ -1336,7 +1338,7 @@ void PinTable::GetUniqueName(int type, WCHAR *wzUniqueName)
 
       if (m_pcv->m_vcvd.GetSortedIndex(wzName) == -1)
       {
-         fFound = fTrue;
+         fFound = true;
       }
       else
       {
@@ -1350,7 +1352,7 @@ void PinTable::GetUniqueName(int type, WCHAR *wzUniqueName)
 void PinTable::GetUniqueNamePasting(int type, WCHAR *wzUniqueName)
 {
    int suffix = 1;
-   BOOL fFound = fFalse;
+   bool fFound = false;
    WCHAR wzName[MAXNAMEBUFFER];
    WCHAR wzSuffix[10];
 
@@ -1372,7 +1374,7 @@ void PinTable::GetUniqueNamePasting(int type, WCHAR *wzUniqueName)
 
          if (m_pcv->m_vcvd.GetSortedIndex(wzName) == -1)
          {
-            fFound = fTrue;
+            fFound = true;
          }
          else
          {
@@ -3901,7 +3903,8 @@ void PinTable::NewCollection(HWND hwndListView, BOOL fFromSelection)
    CComObject<Collection>::CreateInstance(&pcol);
    pcol->AddRef();
 
-   GetUniqueName(eItemCollection, wzT);
+   LocalStringW prefix(IDS_COLLECTION);
+   GetUniqueName(prefix.str, wzT);
 
    WideStrCopy(wzT, pcol->m_wzName);
 
@@ -5096,7 +5099,7 @@ void PinTable::Copy()
 // value gets and'ed with 1(table view) or 2(backglass view)
 // if you want to allow an element to be copy'n past for only table view use 1
 // for only backglass view 2 and for both use 3
-int rgItemViewAllowed[] =
+static int rgItemViewAllowed[] =
 {
    1, //eItemSurface
    1, //eItemFlipper
@@ -5114,7 +5117,6 @@ int rgItemViewAllowed[] =
    0, //eItemTable
    0, //eItemLightCenter
    0, //eItemDragPoint
-   0, //eItemCollection
    2, //eItemDispReel
    3, //eItemLightSeq
    1, //eItemPrimitve
@@ -5659,15 +5661,10 @@ void PinTable::OnMouseMove(int x, int y)
 
 HRESULT PinTable::GetTypeName(BSTR *pVal)
 {
-   WCHAR wzName[128];
-
    int stringid = (!g_pvp->m_fBackglassView) ? IDS_TABLE : IDS_TB_BACKGLASS;
 
-   LocalString ls(stringid);
-
-   MultiByteToWideChar(CP_ACP, 0, ls.m_szbuffer, -1, wzName, 128);
-
-   *pVal = SysAllocString(wzName);
+   LocalStringW ls(stringid);
+   *pVal = SysAllocString(ls.str);
 
    return S_OK;
 }

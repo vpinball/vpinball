@@ -243,6 +243,14 @@ public:
    char m_szbuffer[256];
 };
 
+class LocalStringW
+{
+public:
+    LocalStringW(int resid);
+
+    WCHAR str[256];
+};
+
 #define M_PI 3.1415926535897932384626433832795
 
 #define ANGTORAD(x) ((x) *(float)(M_PI/180.0))
