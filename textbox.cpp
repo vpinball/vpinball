@@ -205,14 +205,13 @@ void Textbox::EndPlay()
     IEditable::EndPlay();
 }
 
-void Textbox::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
     if (!m_texture)
         return;
 
-    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
@@ -244,7 +243,7 @@ void Textbox::PostRenderStatic(const RenderDevice* _pd3dDevice)
     pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 }
 
-void Textbox::RenderSetup(const RenderDevice* _pd3dDevice)
+void Textbox::RenderSetup(RenderDevice* pd3dDevice)
 {
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -293,7 +292,7 @@ void Textbox::RenderSetup(const RenderDevice* _pd3dDevice)
     RenderText();
 }
 
-void Textbox::RenderStatic(const RenderDevice* pd3dDevice)
+void Textbox::RenderStatic(RenderDevice* pd3dDevice)
 {
 }
 	

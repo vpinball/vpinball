@@ -324,14 +324,13 @@ static const WORD rgiSpinner5[4] = {4,5,7,6};      // top
 static const WORD rgiSpinner6[4] = {0,4,6,2};      // left
 static const WORD rgiSpinner7[4] = {1,3,7,5};      // right
 
-void Spinner::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
     if (!m_phitspinner->m_spinneranim.m_fVisible)
         return;
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-    RenderDevice *pd3dDevice = (RenderDevice*)_pd3dDevice;
 
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
@@ -587,9 +586,9 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
    idxBuf = pd3dDevice->CreateAndFillIndexBuffer(24, idx);
 }
 
-void Spinner::RenderSetup(const RenderDevice* _pd3dDevice)
+void Spinner::RenderSetup(RenderDevice* pd3dDevice)
 {
-   PrepareStatic( (RenderDevice*)_pd3dDevice );
+   PrepareStatic( pd3dDevice );
    Texture* const pinback = m_ptable->GetImage(m_d.m_szImageBack);
    Texture* const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
    solidMaterial.setColor( 1.0f, m_d.m_color );
@@ -602,14 +601,12 @@ void Spinner::RenderSetup(const RenderDevice* _pd3dDevice)
    {
       pinfront->CreateAlphaChannel();
    }
-   PrepareMovers( (RenderDevice*)_pd3dDevice );
+   PrepareMovers( pd3dDevice );
 }
 
-void Spinner::RenderStatic(const RenderDevice* _pd3dDevice)
+void Spinner::RenderStatic(RenderDevice* pd3dDevice)
 {
    if(!m_d.m_fSupports) return;
-
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 

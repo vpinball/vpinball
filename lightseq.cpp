@@ -241,11 +241,11 @@ void LightSeq::EndPlay()
 	IEditable::EndPlay();
 }
 
-void LightSeq::PostRenderStatic(const RenderDevice* pd3dDevice)
+void LightSeq::PostRenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
-void LightSeq::RenderSetup(const RenderDevice* _pd3dDevice)
+void LightSeq::RenderSetup(RenderDevice* pd3dDevice)
 {
 	// zero pointers as a safe guard
 	m_pcollection = NULL;
@@ -360,7 +360,7 @@ void LightSeq::RenderSetup(const RenderDevice* _pd3dDevice)
 	}
 }
 
-void LightSeq::RenderStatic(const RenderDevice* pd3dDevice)
+void LightSeq::RenderStatic(RenderDevice* pd3dDevice)
 {
 }
 

@@ -259,11 +259,10 @@ void Plunger::PutCenter(const Vertex2D * const pv)
 	m_ptable->SetDirtyDraw();
 	}
 
-void Plunger::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
     // TODO: get rid of frame stuff
-    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
     if (!m_d.m_fVisible)
         return;
 
@@ -376,10 +375,8 @@ const float rgPlunger[][2]=
 
 #define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
 
-void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
+void Plunger::RenderSetup(RenderDevice* pd3dDevice )
 {
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
-
    const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y);
    const float stroke = m_d.m_stroke;
    const float beginy = m_d.m_v.y;
@@ -527,7 +524,7 @@ void Plunger::RenderSetup(const RenderDevice* _pd3dDevice )
    material.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
 }
 
-void Plunger::RenderStatic(const RenderDevice* pd3dDevice)
+void Plunger::RenderStatic(RenderDevice* pd3dDevice)
 	{
 	}
 

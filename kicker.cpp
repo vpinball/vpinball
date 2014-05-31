@@ -166,11 +166,11 @@ void Kicker::EndPlay()
    IEditable::EndPlay();
 }
 
-void Kicker::PostRenderStatic(const RenderDevice* pd3dDevice)
+void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
-void Kicker::RenderSetup(const RenderDevice* _pd3dDevice)
+void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 {
    if ((m_d.m_kickertype == KickerInvisible) || (m_d.m_kickertype == KickerHidden))
       return;
@@ -342,7 +342,7 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
    ppin3d->DisableLightMap();
 }
 
-void Kicker::RenderStatic(const RenderDevice* _pd3dDevice)
+void Kicker::RenderStatic(RenderDevice* pd3dDevice)
 {
 }
 

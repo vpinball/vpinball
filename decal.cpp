@@ -436,15 +436,14 @@ void Decal::EndPlay()
    }
 }
 
-void Decal::PostRenderStatic(const RenderDevice* pd3dDevice)
+void Decal::PostRenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
-void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
+void Decal::RenderSetup(RenderDevice* pd3dDevice )
 {
    RenderText();
 
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Vertex3D_NoTex2 vertices[4];
 
@@ -527,12 +526,11 @@ void Decal::RenderSetup(const RenderDevice* _pd3dDevice )
    vertexBuffer->unlock();
 }
 
-void Decal::RenderStatic(const RenderDevice* _pd3dDevice)
+void Decal::RenderStatic(RenderDevice* pd3dDevice)
 {
    if( m_fBackglass && !GetPTable()->GetDecalsEnabled())
        return;
 
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    pd3dDevice->SetMaterial(material);
