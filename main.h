@@ -126,7 +126,6 @@ class PinBinary;
 #include "textbox.h"
 #include "dispreel.h"
 #include "lightseq.h"
-#include "comcontrol.h"
 #include "bumper.h"
 #include "Trigger.h"
 #include "Light.h"

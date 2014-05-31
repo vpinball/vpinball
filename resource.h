@@ -206,7 +206,6 @@
 #define IDS_STATE                       184
 #define IDS_PHYSICS                     185
 #define IDS_TB_PRIMITIVE                186
-#define IDR_COM_CONTROL                 187
 #define IDS_POSITION_TRANSLATION        188
 #define IDS_DRAWING_ORDER_SELECT        200
 #define IDR_APPMENU                     201
@@ -465,7 +464,6 @@
 #define IDC_CUSTOMLIST                  349
 #define IDS_STEP                        349
 #define IDD_PROPLIGHTSEQ_POSITION       350
-#define IDS_TB_COMCONTROL               350
 #define IDD_PROPLIGHTSEQ_STATE          351
 #define IDC_STEPAMOUNT                  351
 #define IDD_PROPTEXTBOX_VISUALS         352
@@ -767,7 +765,6 @@
 #define IDC_PASTEAT                     32836
 #define ID_TABLE_TABLEINFO              32838
 #define ID_PREFERENCES_SECURITYOPTIONS  32839
-#define ID_INSERT_COMCONTROL            32840
 #define ID_INSERT_PRIMITIVE             32842
 #define ID_LAYER_LAYER1                 32849
 #define ID_LAYER_LAYER2                 32850
