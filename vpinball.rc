@@ -54,7 +54,6 @@ END
 //
 
 IDR_BALL                REGISTRY DISCARDABLE    "res\\ball.rgs"
-IDR_COM_CONTROL          REGISTRY DISCARDABLE    "res\\comcontrol.rgs"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

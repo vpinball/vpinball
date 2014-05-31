@@ -691,7 +691,7 @@ void Player::InitBallShader()
    D3DXMATRIX matWorld(worldMat);
    D3DXMATRIX worldViewProj = matWorld * matView * matProj;
    ballShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
-   ballShader->Core()->SetMatrix("matWorld",  &matWorld);
+   ballShader->Core()->SetMatrix("matWorld",  &matView);
 
    const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
@@ -702,6 +702,8 @@ void Player::InitBallShader()
    ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
    ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
 
+   D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 0 );
+   ballShader->Core()->SetVector("camera", &cam);
    //ballShader->SetMatrix("matWorldI", &matWorldI);
    vector<WORD> indexList;
    indexList.resize(basicBallNumFaces);
@@ -2401,14 +2403,7 @@ void Player::DrawBalls()
           m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
       }
 
-      if ( m_ptable->m_rotation!=270.0f )
-      {
-          ballShader->Core()->SetTechnique("RenderBall_Desktop");
-      }
-      else
-      {
-          ballShader->Core()->SetTechnique("RenderBall_Cabinet");
-      }
+      ballShader->Core()->SetTechnique("RenderBall");
       cPasses=0;
       ballShader->Core()->Begin(&cPasses,0);
       ballShader->Core()->BeginPass(0);
