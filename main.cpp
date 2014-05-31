@@ -49,7 +49,7 @@ void operator delete[]( void *address )
 
 const DWORD dwPause = 1000; // time to wait for threads to finish up
 
-CExeModule _Module;
+CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
 END_OBJECT_MAP()
