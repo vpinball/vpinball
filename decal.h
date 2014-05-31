@@ -68,7 +68,7 @@ BEGIN_COM_MAP(Decal)
 	COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
 END_COM_MAP()
 
-STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal)
+STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal, DECAL, VIEW_PLAYFIELD | VIEW_BACKGLASS)
 
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();

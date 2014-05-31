@@ -72,7 +72,7 @@ END_CONNECTION_POINT_MAP()
 	Plunger();
 	virtual ~Plunger();
 
-STANDARD_EDITABLE_DECLARES(Plunger, eItemPlunger)
+STANDARD_EDITABLE_DECLARES(Plunger, eItemPlunger, PLUNGER, 1)
 
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 

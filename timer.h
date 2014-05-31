@@ -73,7 +73,7 @@ END_CONNECTION_POINT_MAP()
 
 	void WriteRegDefaults();
 
-	STANDARD_EDITABLE_DECLARES(Timer, eItemTimer)
+	STANDARD_EDITABLE_DECLARES(Timer, eItemTimer, TIMER, 3)
 
 //DECLARE_NOT_AGGREGATABLE(Timer)
 // Remove the comment from the line above if you don't want your object to

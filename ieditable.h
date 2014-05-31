@@ -57,13 +57,20 @@ public:
 		return S_OK; \
 		}
 
+// Explanation for AllowedViews:
+// Value gets and'ed with 1 (table view) or 2 (backglass view).
+// If you want to allow an element to be pasted only into the table view, use 1,
+// for only backglass view, use 2, and for both, use 3.
+
 // declare and implement some methods for an IEditable which supports scripting
-#define STANDARD_EDITABLE_DECLARES(T, ItemType) \
+#define STANDARD_EDITABLE_DECLARES(T, ItemType, ResName, AllowedViews) \
+	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
 	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
 	_STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)
 
 // declare and implement some methods for an IEditable which does not support scripting
-#define STANDARD_NOSCRIPT_EDITABLE_DECLARES(T, ItemType) \
+#define STANDARD_NOSCRIPT_EDITABLE_DECLARES(T, ItemType, ResName, AllowedViews) \
+	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
 	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
 	virtual EventProxyBase *GetEventProxyBase() {return NULL;} \
 	inline IFireEvents *GetIFireEvents() {return NULL;} \
@@ -71,7 +78,7 @@ public:
 	virtual IScriptable *GetScriptable() {return NULL;}
 
 // used above, do not invoke directly
-#define _STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType) \
+#define _STANDARD_DISPATCH_EDITABLE_DECLARES(itemType) \
 	inline IFireEvents *GetIFireEvents() {return (IFireEvents *)this;} \
 	inline IDebugCommands *GetDebugCommands() {return NULL;} \
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
@@ -115,7 +122,8 @@ public:
         obj->AddRef(); \
         return obj; \
     } \
-    static T* COMCreateAndInit(PinTable *ptable, float x, float y) \
+    static IEditable* COMCreateEditable()   { return static_cast<IEditable*>(COMCreate()); } \
+    static IEditable* COMCreateAndInit(PinTable *ptable, float x, float y) \
     { \
         T *obj = T::COMCreate(); \
         obj->Init(ptable, x, y, true); \
@@ -149,6 +157,14 @@ public:
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
 	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut) {return GetPTable()->GetPredefinedValue(dispID, dwCookie, pVarOut, this);} \
 	virtual void SetDefaults(bool fromMouseClick);
+
+#define _STANDARD_EDITABLE_CONSTANTS(ItTy, ResName, AllwdViews) \
+    static const ItemTypeEnum ItemType = ItTy; \
+    static const int TypeNameID = IDS_TB_##ResName; \
+    static const int ToolID = ID_INSERT_##ResName; \
+    static const int CursorID = IDC_##ResName; \
+    static const unsigned AllowedViews = AllwdViews;
+
 
 class ShadowSur;
 

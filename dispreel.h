@@ -82,7 +82,7 @@ BEGIN_CONNECTION_POINT_MAP(DispReel)
     CONNECTION_POINT_ENTRY(DIID_IDispReelEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_EDITABLE_DECLARES(DispReel, eItemDispReel)
+STANDARD_EDITABLE_DECLARES(DispReel, eItemDispReel, DISPREEL, 2)
 
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 

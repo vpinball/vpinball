@@ -107,7 +107,7 @@ END_COM_MAP()
 // Remove the comment from the line above if you don't want your object to
 // support aggregation.
 
-STANDARD_EDITABLE_DECLARES(Bumper, eItemBumper)
+STANDARD_EDITABLE_DECLARES(Bumper, eItemBumper, BUMPER, 1)
 
 BEGIN_CONNECTION_POINT_MAP(Bumper)
 	CONNECTION_POINT_ENTRY(DIID_IBumperEvents)

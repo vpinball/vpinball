@@ -1,4 +1,6 @@
 #pragma once
+
+// NB: these are used for file I/O and must not be changed/reordered!
 enum ItemTypeEnum
 	{
 	eItemSurface,
@@ -17,6 +19,7 @@ enum ItemTypeEnum
 	eItemTable,
 	eItemLightCenter,
 	eItemDragPoint,
+	eItemCollection,
 	eItemDispReel,
 	eItemLightSeq,
 	eItemPrimitive,
@@ -24,7 +27,7 @@ enum ItemTypeEnum
 	eItemLightSeqCenter,
 	eItemComControl,
 	eItemTypeCount,
-	eItemPad = 0xffffffff // Force enum to be 32 bits
+	eItemInvalid = 0xffffffff // Force enum to be 32 bits
 	};
 
 class Sur;
@@ -73,7 +76,7 @@ public:
 	virtual PinTable *GetPTable()=0;
 
 	virtual HRESULT GetTypeName(BSTR *pVal);
-    static void GetTypeNameForType(int type, WCHAR * buf);
+    static void GetTypeNameForType(ItemTypeEnum type, WCHAR * buf);
 
 	virtual IDispatch *GetDispatch()=0;
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane)=0;

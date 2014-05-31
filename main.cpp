@@ -133,6 +133,8 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 	return argv;
 }
 
+std::map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
+
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
 	// disable auto-rotate on tablets
@@ -266,6 +268,27 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 		iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
 		iccex.dwICC = ICC_COOL_CLASSES;
 		InitCommonControlsEx(&iccex);
+
+        {
+            EditableRegistry::RegisterEditable<Bumper>();
+            EditableRegistry::RegisterEditable<Decal>();
+            EditableRegistry::RegisterEditable<DispReel>();
+            EditableRegistry::RegisterEditable<Flasher>();
+            EditableRegistry::RegisterEditable<Flipper>();
+            EditableRegistry::RegisterEditable<Gate>();
+            EditableRegistry::RegisterEditable<Kicker>();
+            EditableRegistry::RegisterEditable<Light>();
+            EditableRegistry::RegisterEditable<LightSeq>();
+            EditableRegistry::RegisterEditable<PinComControl>();
+            EditableRegistry::RegisterEditable<Plunger>();
+            EditableRegistry::RegisterEditable<Primitive>();
+            EditableRegistry::RegisterEditable<Ramp>();
+            EditableRegistry::RegisterEditable<Spinner>();
+            EditableRegistry::RegisterEditable<Surface>();
+            EditableRegistry::RegisterEditable<Textbox>();
+            EditableRegistry::RegisterEditable<Timer>();
+            EditableRegistry::RegisterEditable<Trigger>();
+        }
 
 		g_pvp = new VPinball();
 		g_pvp->AddRef();

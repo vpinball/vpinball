@@ -1316,7 +1316,7 @@ bool PinTable::IsNameUnique(WCHAR *wzName)
 }
 
 
-void PinTable::GetUniqueName(int type, WCHAR *wzUniqueName)
+void PinTable::GetUniqueName(ItemTypeEnum type, WCHAR *wzUniqueName)
 {
     WCHAR wzRoot[128];
     ISelect::GetTypeNameForType(type, wzRoot);
@@ -1622,7 +1622,7 @@ void PinTable::Paint(HDC hdc)
 
    if (m_fDirtyDraw)
    {
-      Sur * const psur = new PaintSur(hdc2, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, m_vmultisel.ElementAt(0)/*m_pselcur*/);
+      Sur * const psur = new PaintSur(hdc2, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, GetSelectedItem());
       Render(psur);
 
       delete psur;
@@ -2939,7 +2939,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   ItemTypeEnum type;
                   hr = pstmItem->Read(&type, sizeof(int), &read);
 
-                  IEditable *piedit = CreateIEditableFromType(type);
+                  IEditable *piedit = EditableRegistry::Create(type);
 
                   //AddSpriteProjItem();
                   int id = 0; // VBA id for this item
@@ -3122,70 +3122,6 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    }
 
    return hr;
-}
-
-IEditable* PinTable::CreateIEditableFromType(int type)
-{
-    switch (type)
-    {
-        case eItemSurface:
-            return Surface::COMCreate();
-
-        case eItemFlipper:
-            return Flipper::COMCreate();
-
-        case eItemTimer:
-            return Timer::COMCreate();
-
-        case eItemPlunger:
-            return Plunger::COMCreate();
-
-        case eItemTextbox:
-            return Textbox::COMCreate();
-
-        case eItemComControl:
-            return PinComControl::COMCreate();
-
-        case eItemDispReel:
-            return DispReel::COMCreate();
-
-        case eItemLightSeq:
-            return LightSeq::COMCreate();
-
-        case eItemBumper:
-            return Bumper::COMCreate();
-
-        case eItemTrigger:
-            return Trigger::COMCreate();
-
-        case eItemLight:
-            return Light::COMCreate();
-
-        case eItemKicker:
-            return Kicker::COMCreate();
-
-        case eItemDecal:
-            return Decal::COMCreate();
-
-        case eItemGate:
-            return Gate::COMCreate();
-
-        case eItemSpinner:
-            return Spinner::COMCreate();
-
-        case eItemRamp:
-            return Ramp::COMCreate();
-
-        case eItemPrimitive:
-            return Primitive::COMCreate();
-
-        case eItemFlasher:
-            return Flasher::COMCreate();
-
-        default:
-            assert(false && "Invalid IEditable type");
-            return NULL;
-    }
 }
 
 void PinTable::SetLoadDefaults()
@@ -3908,7 +3844,7 @@ void PinTable::NewCollection(HWND hwndListView, BOOL fFromSelection)
 
    WideStrCopy(wzT, pcol->m_wzName);
 
-   if (fFromSelection && (m_vmultisel.ElementAt(0) != this))
+   if (fFromSelection && !MultiSelIsEmpty())
    {
       for (int i=0;i<m_vmultisel.Size();i++)
       {
@@ -4749,7 +4685,7 @@ void PinTable::PutCenter(const Vertex2D * const pv)
 
 void PinTable::DoRButtonUp(int x,int y)
 {
-   m_vmultisel.ElementAt(0)->OnRButtonUp(x,y);
+   GetSelectedItem()->OnRButtonUp(x,y);
 
    const int ks = GetKeyState(VK_CONTROL);
 
@@ -4760,18 +4696,13 @@ void PinTable::DoRButtonUp(int x,int y)
       {
          DoContextMenu(x, y, IDR_MULTIMENU, this);
       }
+      else if (!MultiSelIsEmpty())
+      {
+         DoContextMenu(x, y, GetSelectedItem()->m_menuid, GetSelectedItem());
+      }
       else
       {
-         if (m_vmultisel.ElementAt(0) != this)
-         {
-            // No right click menu for main table object
-            DoContextMenu(x, y, m_vmultisel.ElementAt(0)->m_menuid, m_vmultisel.ElementAt(0));
-            //m_vmultisel.ElementAt(0)->OnRButtonDown(x,y,m_hwnd);
-         }
-         else
-         {
-            DoContextMenu(x, y, IDR_TABLEMENU, m_vmultisel.ElementAt(0));
-         }
+         DoContextMenu(x, y, IDR_TABLEMENU, this);
       }
    }
 }
@@ -5068,7 +4999,7 @@ void PinTable::Copy()
    Vector<IStream> vstm;
    ULONG writ = 0;
 
-   if (m_vmultisel.ElementAt(0) == (ISelect *)this) // Can't copy table
+   if (MultiSelIsEmpty()) // Can't copy table
    {
       return;
    }
@@ -5082,12 +5013,14 @@ void PinTable::Copy()
       IStream *pstm;
       CreateStreamOnHGlobal(hglobal, TRUE, &pstm);
 
+      IEditable *pe = m_vmultisel.ElementAt(i)->GetIEditable();
+
       //////// BUG!  With multi-select, if you have multiple dragpoints on
       //////// a surface selected, the surface will get copied multiple times
-      const int type = m_vmultisel.ElementAt(i)->GetIEditable()->GetItemType();
+      const int type = pe->GetItemType();
       pstm->Write(&type, sizeof(int), &writ);
 
-      m_vmultisel.ElementAt(i)->GetIEditable()->SaveData(pstm, NULL, NULL);
+      pe->SaveData(pstm, NULL, NULL);
 
       vstm.AddElement(pstm);
    }
@@ -5095,41 +5028,9 @@ void PinTable::Copy()
    g_pvp->SetClipboard(&vstm);
 }
 
-// BUG - in sync with list in ISelect.h
-// value gets and'ed with 1(table view) or 2(backglass view)
-// if you want to allow an element to be copy'n past for only table view use 1
-// for only backglass view 2 and for both use 3
-static int rgItemViewAllowed[] =
-{
-   1, //eItemSurface
-   1, //eItemFlipper
-   3, //eItemTimer
-   1, //eItemPlunger
-   2, //eItemTextbox
-   1, //eItemBumper
-   1, //eItemTrigger
-   3, //eItemLight
-   1, //eItemKicker
-   3, //eItemDecal
-   1, //eItemGate
-   1, //eItemSpinner
-   1, //eItemRamp
-   0, //eItemTable
-   0, //eItemLightCenter
-   0, //eItemDragPoint
-   2, //eItemDispReel
-   3, //eItemLightSeq
-   1, //eItemPrimitve
-   1, //eItemFlasher
-   0, //eItemLightSeqCenter
-   1, //eItemComControl
-   2, //eItemTypeCount
-};
-
 void PinTable::Paste(BOOL fAtLocation, int x, int y)
 {
    BOOL fError = fFalse;
-   int viewflag;
    int cpasted = 0;
 
    if (CheckPermissions(DISABLE_CUTCOPYPASTE))
@@ -5138,14 +5039,7 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
       return;
    }
 
-   if (g_pvp->m_fBackglassView)
-   {
-      viewflag = 2;
-   }
-   else
-   {
-      viewflag = 1;
-   }
+   const unsigned viewflag = (g_pvp->m_fBackglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
 
    IStream* pstm;
 
@@ -5163,16 +5057,16 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
       pstm->Seek(foo, STREAM_SEEK_SET, NULL);
 
       ULONG writ = 0;
-      int type;
+      ItemTypeEnum type;
       /*const HRESULT hr =*/ pstm->Read(&type, sizeof(int), &writ);
 
-      if (!(rgItemViewAllowed[type] & viewflag))
+      if (!(EditableRegistry::GetAllowedViews(type) & viewflag))
       {
          fError = fTrue;
       }
       else
       {
-         IEditable *peditNew = CreateIEditableFromType(type);
+         IEditable *peditNew = EditableRegistry::Create(type);
 
          int id;
          peditNew->InitLoad(pstm, this, &id, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
@@ -5441,116 +5335,17 @@ void PinTable::UseTool(int x,int y,int tool)
    TransformPoint(x,y,&v);
    IEditable *pie = NULL;
 
-   switch (tool)
+   // special case for target which is a special kind of wall
+   if (tool == ID_INSERT_TARGET)
    {
-   case ID_INSERT_WALL:
-      {
-         pie = Surface::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_TARGET:
-      {
-         pie = Surface::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_FLIPPER:
-      {
-         pie = Flipper::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_TIMER:
-      {
-         pie = Timer::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_PLUNGER:
-      {
-         pie = Plunger::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_TEXTBOX:
-      {
-         pie = Textbox::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_BUMPER:
-      {
-         pie = Bumper::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_TRIGGER:
-      {
-         pie = Trigger::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_LIGHT:
-      {
-         pie = Light::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_KICKER:
-      {
-          pie = Kicker::COMCreateAndInit(this, v.x, v.y);
-          break;
-      }
-   case ID_INSERT_DECAL:
-      {
-         pie = Decal::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_PRIMITIVE:
-      {
-         pie = Primitive::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_GATE:
-      {
-         pie = Gate::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_SPINNER:
-      {
-         pie = Spinner::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_RAMP:
-      {
-         pie = Ramp::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_FLASHER:
-      {
-         pie = Flasher::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_DISP_REEL:
-      {
-         pie = DispReel::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_LIGHT_SEQ:
-      {
-         pie = LightSeq::COMCreateAndInit(this, v.x, v.y);
-         break;
-      }
-   case ID_INSERT_COM_CONTROL:
-      {
-         PinComControl *pcomcontrol = PinComControl::COMCreate();
-         if (pcomcontrol)
-         {
-            HRESULT hr = pcomcontrol->Init(this, v.x, v.y, true);
-            if (hr == E_FAIL)
-            {
-               pie = NULL;
-               pcomcontrol->Release();
-            }
-            else
-            {
-               pie = (IEditable *)pcomcontrol;
-            }
-         }
-         break;
-      }
+       Surface* psurf = Surface::COMCreate();
+       psurf->InitTarget(this, v.x, v.y, true);
+       pie = psurf;
+   }
+   else
+   {
+       ItemTypeEnum type = EditableRegistry::TypeFromToolID(tool);
+       pie = EditableRegistry::CreateAndInit(type, this, v.x, v.y);
    }
 
    if (pie)
@@ -5747,98 +5542,26 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       {
          if (LOWORD(lParam) == HTCLIENT)
          {
-            HCURSOR hcursor;
             char *cursorid;
             HINSTANCE hinst = g_hinst;
-            switch (g_pvp->m_ToolCur)
+
+            // special case for targets which are particular walls
+            if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
             {
-            default:
-            case IDC_SELECT:
-               hinst = NULL;
-               cursorid = IDC_ARROW;
-               break;
-
-            case ID_TABLE_MAGNIFY:
-               cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
-               break;
-
-            case ID_INSERT_WALL:
-               cursorid = MAKEINTRESOURCE(IDC_WALL);
-               break;
-
-            case ID_INSERT_LIGHT:
-               cursorid = MAKEINTRESOURCE(IDC_LIGHT);
-               break;
-
-            case ID_INSERT_FLIPPER:
-               cursorid = MAKEINTRESOURCE(IDC_FLIPPER);
-               break;
-
-            case ID_INSERT_TRIGGER:
-               cursorid = MAKEINTRESOURCE(IDC_TRIGGER);
-               break;
-
-            case ID_INSERT_GATE:
-               cursorid = MAKEINTRESOURCE(IDC_GATE);
-               break;
-
-            case ID_INSERT_TIMER:
-               cursorid = MAKEINTRESOURCE(IDC_TIMER);
-               break;
-
-            case ID_INSERT_PLUNGER:
-               cursorid = MAKEINTRESOURCE(IDC_PLUNGER);
-               break;
-
-            case ID_INSERT_TEXTBOX:
-               cursorid = MAKEINTRESOURCE(IDC_TEXTBOX);
-               break;
-
-            case ID_INSERT_COM_CONTROL:
-               cursorid = MAKEINTRESOURCE(IDC_TEXTBOX);
-               break;
-
-            case ID_INSERT_BUMPER:
-               cursorid = MAKEINTRESOURCE(IDC_BUMPER);
-               break;
-
-            case ID_INSERT_KICKER:
-               cursorid = MAKEINTRESOURCE(IDC_KICKER);
-               break;
-
-            case ID_INSERT_TARGET:
-               cursorid = MAKEINTRESOURCE(IDC_TARGET);
-               break;
-
-            case ID_INSERT_DECAL:
-               cursorid = MAKEINTRESOURCE(IDC_DECAL);
-               break;
-
-            case ID_INSERT_SPINNER:
-               cursorid = MAKEINTRESOURCE(IDC_SPINNER);
-               break;
-
-            case ID_INSERT_RAMP:
-               cursorid = MAKEINTRESOURCE(IDC_RAMP);
-               break;
-
-            case ID_INSERT_FLASHER:
-               cursorid = MAKEINTRESOURCE(IDC_FLASHER);
-               break;
-
-            case ID_INSERT_DISP_REEL:
-               cursorid = MAKEINTRESOURCE(IDC_DISP_REEL);
-               break;
-
-            case ID_INSERT_LIGHT_SEQ:
-               cursorid = MAKEINTRESOURCE(IDC_LIGHT_SEQ);
-               break;
-
-            case ID_INSERT_PRIMITIVE:
-               cursorid = MAKEINTRESOURCE(IDC_PRIMITIVE);
-               break;
+                cursorid = MAKEINTRESOURCE(IDC_TARGET);
             }
-            hcursor = LoadCursor(hinst, cursorid);
+            else
+            {
+                ItemTypeEnum type = EditableRegistry::TypeFromToolID(g_pvp->m_ToolCur);
+                if (type != eItemInvalid)
+                    cursorid = MAKEINTRESOURCE(EditableRegistry::GetCursorID(type));
+                else
+                {
+                    hinst = NULL;
+                    cursorid = IDC_ARROW;
+                }
+            }
+            HCURSOR hcursor = LoadCursor(hinst, cursorid);
             SetCursor(hcursor);
             return TRUE;
          }

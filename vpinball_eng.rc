@@ -1906,10 +1906,10 @@ BEGIN
         MENUITEM "T&arget\tCtrl+A",             ID_INSERT_TARGET
         MENUITEM "&Decal\tCtrl+D",              ID_INSERT_DECAL
         MENUITEM "T&extbox\tCtrl+E",            ID_INSERT_TEXTBOX
-        MENUITEM "EM Reel\tCtrl+Y",             ID_INSERT_DISP_REEL
-        MENUITEM "Light Se&quencer\tCtrl+Q",    ID_INSERT_LIGHT_SEQ
+        MENUITEM "EM Reel\tCtrl+Y",             ID_INSERT_DISPREEL
+        MENUITEM "Light Se&quencer\tCtrl+Q",    ID_INSERT_LIGHTSEQ
         MENUITEM "Primitive/Ob&ject\tCtrl+J",   ID_INSERT_PRIMITIVE
-        MENUITEM "ActiveX Control",             ID_INSERT_COM_CONTROL
+        MENUITEM "ActiveX Control",             ID_INSERT_COMCONTROL
     END
     POPUP "&Table"
     BEGIN
@@ -2066,12 +2066,12 @@ BEGIN
     "B",            ID_INSERT_BUMPER,       VIRTKEY, CONTROL, NOINVERT
     "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
     "D",            ID_INSERT_DECAL,        VIRTKEY, CONTROL, NOINVERT
-    "Y",            ID_INSERT_DISP_REEL,    VIRTKEY, CONTROL, NOINVERT
+    "Y",            ID_INSERT_DISPREEL,     VIRTKEY, CONTROL, NOINVERT
     "F",            ID_INSERT_FLIPPER,      VIRTKEY, CONTROL, NOINVERT
     "G",            ID_INSERT_GATE,         VIRTKEY, CONTROL, NOINVERT
     "K",            ID_INSERT_KICKER,       VIRTKEY, CONTROL, NOINVERT
     "L",            ID_INSERT_LIGHT,        VIRTKEY, CONTROL, NOINVERT
-    "Q",            ID_INSERT_LIGHT_SEQ,    VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_INSERT_LIGHTSEQ,     VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTEAT,            VIRTKEY, SHIFT, CONTROL, NOINVERT
     "P",            ID_INSERT_PLUNGER,      VIRTKEY, CONTROL, NOINVERT
@@ -2136,8 +2136,8 @@ IDC_TARGET              CURSOR                  "res\\target.cur"
 IDC_DECAL               CURSOR                  "res\\decal.cur"
 IDC_SPINNER             CURSOR                  "res\\spinner.cur"
 IDC_RAMP                CURSOR                  "res\\ramp.cur"
-IDC_DISP_REEL           CURSOR                  "res\\dispreel.cur"
-IDC_LIGHT_SEQ           CURSOR                  "res\\lightseq.cur"
+IDC_DISPREEL            CURSOR                  "res\\dispreel.cur"
+IDC_LIGHTSEQ            CURSOR                  "res\\lightseq.cur"
 IDC_PRIMITIVE           CURSOR                  "res\\primitive.cur"
 IDC_FLASHER             CURSOR                  "res\\flasher.cur"
 
