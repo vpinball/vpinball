@@ -78,7 +78,7 @@ BEGIN_CONNECTION_POINT_MAP(Ramp)
 	CONNECTION_POINT_ENTRY(DIID_IRampEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_EDITABLE_DECLARES(Ramp, eItemRamp)
+STANDARD_EDITABLE_DECLARES(Ramp, eItemRamp, RAMP, 1)
 
 //DECLARE_NOT_AGGREGATABLE(Ramp)
 // Remove the comment from the line above if you don't want your object to

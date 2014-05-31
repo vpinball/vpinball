@@ -67,7 +67,7 @@ INT_PTR   iString;
 } TBBUTTON, *PTBBUTTON, *LPTBBUTTON;
 */
 
-TBBUTTON const g_tbbuttonMain[] = {
+static TBBUTTON const g_tbbuttonMain[] = {
    // icon number,
    {14, ID_TABLE_MAGNIFY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_MAGNIFY, 0},
    {0, IDC_SELECT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP | TBSTYLE_DROPDOWN, 0, 0, IDS_TB_SELECT, 1},
@@ -77,7 +77,7 @@ TBBUTTON const g_tbbuttonMain[] = {
    {2, ID_TABLE_PLAY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, IDS_TB_PLAY, 5},
 };
 
-TBBUTTON const g_tbbuttonPalette[] = {
+static TBBUTTON const g_tbbuttonPalette[] = {
    // icon number,
    {1, ID_INSERT_WALL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_WALL, 0},
    {15, ID_INSERT_GATE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_GATE, 1},
@@ -93,13 +93,13 @@ TBBUTTON const g_tbbuttonPalette[] = {
    {11, ID_INSERT_TARGET, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TARGET, 11},
    {12, ID_INSERT_DECAL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DECAL, 12},
    {6, ID_INSERT_TEXTBOX, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TEXTBOX, 13},
-   {20, ID_INSERT_DISP_REEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DISPREEL, 14},
-   {21, ID_INSERT_LIGHT_SEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHTSEQ, 15},
+   {20, ID_INSERT_DISPREEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DISPREEL, 14},
+   {21, ID_INSERT_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHTSEQ, 15},
    {22, ID_INSERT_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16},
    {35, ID_INSERT_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLASHER, 17},
 };
 
-TBBUTTON const g_tbbuttonLayers[] = {
+static TBBUTTON const g_tbbuttonLayers[] = {
    {23, ID_LAYER_LAYER1, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0},
    {24, ID_LAYER_LAYER2, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 1},
    {25, ID_LAYER_LAYER3, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 2},
@@ -111,7 +111,7 @@ TBBUTTON const g_tbbuttonLayers[] = {
    {31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 8},
 };
 
-const int allLayers[8]=
+static const int allLayers[8]=
 {
    ID_LAYER_LAYER1,
    ID_LAYER_LAYER2,
@@ -687,6 +687,24 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
 {
    CComObject<PinTable> *ptCur;
 
+   // check if it's an Editable tool
+   ItemTypeEnum type = (code == ID_INSERT_TARGET ? eItemSurface : EditableRegistry::TypeFromToolID(code));
+   if (type != eItemInvalid)
+   {
+       SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, m_ToolCur, MAKELONG(FALSE,0));
+       SendMessage(m_hwndToolbarPalette, TB_CHECKBUTTON, code, MAKELONG(TRUE,0));
+
+       m_ToolCur = code;
+
+       if (notify == 1) // accelerator - mouse can be over table already
+       {
+           POINT pt;
+           GetCursorPos(&pt);
+           SetCursorPos(pt.x, pt.y);
+       }
+       return;
+   }
+
    switch (code)
    {
    case IDM_NEW:
@@ -715,7 +733,6 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       break;
 
    case ID_TABLE_PLAY:
-      //				MessageBox(g_pvp->m_hwnd, FreeImage_GetCopyrightMessage(), "Error", MB_OK | MB_ICONEXCLAMATION); //ADDED BDS
       DoPlay();
       break;
 
@@ -760,7 +777,6 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
             ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
             tbinfo.cbSize = sizeof(TBBUTTONINFO);
             tbinfo.dwMask = TBIF_STATE;
-            //+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
             SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,ID_EDIT_PROPERTIES,(long)&tbinfo);
 
             if(notify == 2) fShow = (tbinfo.fsState & TBSTATE_CHECKED) != 0;
@@ -792,20 +808,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       {
          const BOOL fShow = !m_fBackglassView;
 
-         TBBUTTONINFO tbinfo;
-         ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
-         tbinfo.cbSize = sizeof(TBBUTTONINFO);
-         tbinfo.dwMask = TBIF_STATE;
-         //+++ Modified by Chris ID_EDIT_PROPERTIES is now on m_hwndToolbarMain
-         SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,ID_EDIT_BACKGLASSVIEW,(long)&tbinfo);
-
-         // Set toolbar button to the correct state
-         if (fShow ^ ((tbinfo.fsState & TBSTATE_CHECKED) != 0))
-         {
-            tbinfo.fsState ^= TBSTATE_CHECKED;
-         }
-
-         SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,ID_EDIT_BACKGLASSVIEW,(long)&tbinfo);
+         SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_BACKGLASSVIEW, MAKELONG(fShow,0));
 
          m_fBackglassView = fShow;
 
@@ -867,51 +870,18 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       break;
    case IDC_SELECT:
    case ID_TABLE_MAGNIFY:
-   case ID_INSERT_WALL:
-   case ID_INSERT_FLIPPER:
-   case ID_INSERT_TIMER:
-   case ID_INSERT_PLUNGER:
-   case ID_INSERT_TEXTBOX:
-   case ID_INSERT_BUMPER:
-   case ID_INSERT_TRIGGER:
-   case ID_INSERT_LIGHT:
-   case ID_INSERT_KICKER:
-   case ID_INSERT_TARGET:
-   case ID_INSERT_DECAL:
-   case ID_INSERT_GATE:
-   case ID_INSERT_SPINNER:
-   case ID_INSERT_RAMP:
-   case ID_INSERT_FLASHER:
-   case ID_INSERT_DISP_REEL:
-   case ID_INSERT_LIGHT_SEQ:
-   case ID_INSERT_PRIMITIVE:
-   case ID_INSERT_COM_CONTROL:
       {
-         switch (code)
-         {
-         case IDC_SELECT:
-         case ID_TABLE_MAGNIFY:
-            SendMessage(m_hwndToolbarPalette,TB_CHECKBUTTON,m_ToolCur,MAKELONG(FALSE,0));
-            SendMessage(m_hwndToolbarMain,TB_CHECKBUTTON,code,MAKELONG(TRUE,0));
-            break;
+          SendMessage(m_hwndToolbarPalette,TB_CHECKBUTTON,m_ToolCur,MAKELONG(FALSE,0));
+          SendMessage(m_hwndToolbarMain,TB_CHECKBUTTON,code,MAKELONG(TRUE,0));
 
-         default:
-            SendMessage(m_hwndToolbarMain,TB_CHECKBUTTON,m_ToolCur,MAKELONG(FALSE,0));
-            SendMessage(m_hwndToolbarPalette,TB_CHECKBUTTON,code,MAKELONG(TRUE,0));
-            break;
-         }
+          m_ToolCur = code;
 
-         m_ToolCur = code;// - IDC_SELECT;
-
-         //HCURSOR hcur = LoadCursor(g_hinst, MAKEINTRESOURCE(ID_TABLE_MAGNIFY));
-         //SetCursor(hcur);
-
-         if (notify == 1) // accelerator - mouse can be over table already
-         {
-            POINT pt;
-            GetCursorPos(&pt);
-            SetCursorPos(pt.x, pt.y);
-         }
+          if (notify == 1) // accelerator - mouse can be over table already
+          {
+              POINT pt;
+              GetCursorPos(&pt);
+              SetCursorPos(pt.x, pt.y);
+          }
       }
       break;
 
@@ -998,9 +968,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          }
       }
       break;
-      //<<<
 
-      //>>> added by Chris 
    case RECENT_FIRST_MENU_IDM:
    case RECENT_FIRST_MENU_IDM+1:
    case RECENT_FIRST_MENU_IDM+2:
@@ -1018,7 +986,6 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          LoadFileName(szFileName);
       }
       break;
-      //<<<
 
    case IDM_OPEN:
       LoadFile();
@@ -1309,49 +1276,11 @@ void VPinball::setLayerStatus( int layerNumber )
    ptCur = GetActiveTable();
    if( !ptCur || layerNumber>7 ) return;
 
-   TBBUTTONINFO tbinfo;
-   ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
-   tbinfo.cbSize = sizeof(TBBUTTONINFO);
-   tbinfo.dwMask = TBIF_STATE;
-   SendMessage(m_hwndToolbarLayers, TB_GETBUTTONINFO, allLayers[layerNumber], (long)&tbinfo);
-
-   if( !ptCur->m_activeLayers[layerNumber] )
-       tbinfo.fsState |= TBSTATE_CHECKED;
-   else
-       tbinfo.fsState &= ~TBSTATE_CHECKED;
-
-   SendMessage(m_hwndToolbarLayers, TB_SETBUTTONINFO, allLayers[layerNumber], (long)&tbinfo);
+   SendMessage(m_hwndToolbarLayers, TB_CHECKBUTTON, allLayers[layerNumber], MAKELONG(( !ptCur->m_activeLayers[layerNumber] ), 0));
 
    ptCur->SwitchToLayer(layerNumber);
 }
 
-const int rgToolEnable[24][2] = {
-   ID_INSERT_WALL, 1,
-   ID_INSERT_GATE, 1,
-   ID_INSERT_RAMP, 1,
-   ID_INSERT_FLASHER, 1,
-   ID_INSERT_FLIPPER, 1,
-   ID_INSERT_PLUNGER, 1,
-   ID_INSERT_BUMPER, 1,
-   ID_INSERT_SPINNER, 1,
-   ID_INSERT_TIMER, 3,
-   ID_INSERT_TRIGGER, 1,
-   ID_INSERT_LIGHT, 3,
-   ID_INSERT_KICKER, 1,
-   ID_INSERT_TARGET, 1,
-   ID_INSERT_DECAL, 3,
-   ID_INSERT_TEXTBOX, 2,
-   ID_INSERT_DISP_REEL, 2,
-   ID_INSERT_LIGHT_SEQ, 3,
-   ID_INSERT_PRIMITIVE, 1,
-   ID_INSERT_COM_CONTROL, 2,
-   //>>> these five are handled separately (see below code)
-   ID_EDIT_SCRIPT, 0,
-   ID_TABLE_PLAY, 0,
-   ID_EDIT_BACKGLASSVIEW, 0,
-   ID_TABLE_MAGNIFY, 0,
-   IDC_SELECT, 0
-};
 
 void VPinball::SetEnablePalette()
 {
@@ -1367,30 +1296,22 @@ void VPinball::SetEnablePalette()
          fTableActive = false;
    }
 
-   const int state = (m_fBackglassView ? 2 : 1);
+   const unsigned state = (m_fBackglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
 
-   for (unsigned int i=0;i<TBCOUNTPALETTE;i++)		//<<< changed by Chris from 0->14 to 0->15
+   for (unsigned int i=0; i<TBCOUNTPALETTE; ++i)
    {
-      const int id = rgToolEnable[i][0];
-      const int enablecode = rgToolEnable[i][1];
+      const int id = g_tbbuttonPalette[i].idCommand;
 
-      const BOOL fEnable = fTableActive && ((enablecode & state) != 0);
+      // Targets don't have their own Editable type, they're just surfaces
+      ItemTypeEnum type = (id == ID_INSERT_TARGET ? eItemSurface : EditableRegistry::TypeFromToolID(id));
+      const unsigned int enablecode = EditableRegistry::GetAllowedViews(type);
+
+      const bool fEnable = fTableActive && ((enablecode & state) != 0);
 
       // Set toolbar state
-      TBBUTTONINFO tbinfo;
-      ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
-      tbinfo.cbSize = sizeof(TBBUTTONINFO);
-      tbinfo.dwMask = TBIF_STATE;
-      SendMessage(m_hwndToolbarPalette,TB_GETBUTTONINFO,id,(long)&tbinfo);
+      SendMessage(m_hwndToolbarPalette, TB_ENABLEBUTTON, id, MAKELONG(fEnable,0));
 
-      if (fEnable ^ ((tbinfo.fsState & TBSTATE_ENABLED) != 0))
-      {
-         tbinfo.fsState ^= TBSTATE_ENABLED;
-      }
-
-      SendMessage(m_hwndToolbarPalette,TB_SETBUTTONINFO,id,(long)&tbinfo);
-
-      // Set menu item
+      // Set menu item state
       HMENU hmenuInsert = GetMainMenu(INSERTMENU);
       EnableMenuItem(hmenuInsert, id, MF_BYCOMMAND | (fEnable ? MF_ENABLED : MF_GRAYED));
    }
@@ -1403,49 +1324,36 @@ void VPinball::SetEnableToolbar()
 
    const bool fTableActive = (ptCur != NULL) && !g_pplayer;
 
-   //int state = (m_fBackglassView ? 2 : 1);
+   static const int toolList[] = {
+       ID_TABLE_MAGNIFY,
+       IDC_SELECT,
+       ID_EDIT_PROPERTIES,
+       ID_EDIT_SCRIPT,
+       ID_EDIT_BACKGLASSVIEW,
+       ID_TABLE_PLAY
+   };
 
-   for (unsigned int i=TBCOUNTPALETTE;i<(TBCOUNTPALETTE+5);i++)
+   for (unsigned int i = 0; i < 6; ++i)
    {
-      const int id = rgToolEnable[i][0];
-      BOOL fEnable = fTableActive;
+      const int id = toolList[i];
+      bool fEnable = fTableActive;
 
       if (ptCur)
       {
          if ((id == ID_EDIT_SCRIPT) && ptCur->CheckPermissions(DISABLE_SCRIPT_EDITING))
-            fEnable = fFalse;
+            fEnable = false;
       }
 
       // Set toolbar state
-      TBBUTTONINFO tbinfo;
-      ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
-      tbinfo.cbSize = sizeof(TBBUTTONINFO);
-      tbinfo.dwMask = TBIF_STATE;
-      SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,id,(long)&tbinfo);
-
-      if (fEnable ^ ((tbinfo.fsState & TBSTATE_ENABLED) != 0))
-      {
-         tbinfo.fsState ^= TBSTATE_ENABLED;
-      }
-
-      SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,id,(long)&tbinfo);
+      SendMessage(m_hwndToolbarMain, TB_ENABLEBUTTON, id, MAKELONG(fEnable,0));
    }
 
+   // set layer button states
    if (ptCur)
    {
        for (int i=0; i<8; ++i)
        {
-           TBBUTTONINFO tbinfo;
-           ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
-           tbinfo.cbSize = sizeof(TBBUTTONINFO);
-           tbinfo.dwMask = TBIF_STATE;
-
-           SendMessage(m_hwndToolbarLayers,TB_GETBUTTONINFO,allLayers[i],(long)&tbinfo);
-           if (ptCur->m_activeLayers[i])
-               tbinfo.fsState |= TBSTATE_CHECKED;
-           else
-               tbinfo.fsState &= ~TBSTATE_CHECKED;
-           SendMessage(m_hwndToolbarLayers,TB_SETBUTTONINFO,allLayers[i],(long)&tbinfo);
+           SendMessage(m_hwndToolbarLayers, TB_CHECKBUTTON, allLayers[i], MAKELONG(ptCur->m_activeLayers[i], 0));
        }
    }
 
@@ -1497,11 +1405,6 @@ void VPinball::LoadFile()
    if(ret == 0)
       return;
 
-   //>>> moved by chris down into loadfilename()
-   //	strcpy(szInitialDir, szFileName);
-   //	szInitialDir[ofn.nFileOffset] = 0;
-   //	hr = SetRegValue("RecentDir","LoadDir", REG_SZ, szInitialDir, strlen(szInitialDir));
-   //<<<
    LoadFileName(szFileName);
 }
 
@@ -1624,7 +1527,6 @@ HRESULT VPinball::AddMiniBitmaps()
    return S_OK;
 }
 
-//>>> added by Chris
 void VPinball::ShowPermissionError()
 {
    LocalString ls(IDS_PERMISSION_ERROR);
@@ -1735,9 +1637,7 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, ID_EDIT_DRAWINGORDER_SELECT, MF_BYCOMMAND | MF_GRAYED );
    }
 }
-//<<<
 
-//>>> added by Chris
 void VPinball::UpdateRecentFileList(char *szfilename)
 {
    // if the loaded file name is not null then add it to the top of the list
@@ -1836,7 +1736,6 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       DrawMenuBar(m_hwnd);
    }
 }
-//<<<
 
 HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 {

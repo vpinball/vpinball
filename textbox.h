@@ -58,7 +58,7 @@ BEGIN_CONNECTION_POINT_MAP(Textbox)
 	CONNECTION_POINT_ENTRY(DIID_ITextboxEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_EDITABLE_DECLARES(Textbox, eItemTextbox)
+STANDARD_EDITABLE_DECLARES(Textbox, eItemTextbox, TEXTBOX, 2)
 
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 

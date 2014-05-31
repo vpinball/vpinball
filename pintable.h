@@ -8,6 +8,9 @@
 #include <unordered_map>
 #include "hash.h"
 
+#define VIEW_PLAYFIELD 1
+#define VIEW_BACKGLASS 2
+
 #define MIN_ZOOM 0.126f // purposely make them offset from powers to 2 to account for roundoff error
 #define MAX_ZOOM 63.9f
 
@@ -404,6 +407,7 @@ public:
 
     void ClearMultiSel(ISelect *newSel = NULL);
     bool MultiSelIsEmpty();
+    ISelect *GetSelectedItem()      { return m_vmultisel.ElementAt(0); }
 	void AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate=true);
 
 	void BeginAutoSaveCounter();
@@ -425,7 +429,6 @@ public:
 	HRESULT LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version);
 	HRESULT LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
 	HRESULT LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-	IEditable* CreateIEditableFromType(int type);
 	virtual IEditable *GetIEditable() {return (IEditable *)this;}
 	virtual void Delete() {} // Can't delete table itself
 	virtual void Uncreate() {}
@@ -465,7 +468,7 @@ public:
 	void GetViewRect(FRect *pfrect);
 
 	bool IsNameUnique(WCHAR *wzName);
-	void GetUniqueName(int type, WCHAR *wzUniqueName);
+	void GetUniqueName(ItemTypeEnum type, WCHAR *wzUniqueName);
 	void GetUniqueName(WCHAR *prefix, WCHAR *wzUniqueName);
 	void GetUniqueNamePasting(int type, WCHAR *wzUniqueName);
 

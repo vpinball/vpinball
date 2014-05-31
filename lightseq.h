@@ -141,7 +141,7 @@ END_CONNECTION_POINT_MAP()
 
 	void WriteRegDefaults();
 
-	STANDARD_EDITABLE_DECLARES(LightSeq, eItemLightSeq)
+	STANDARD_EDITABLE_DECLARES(LightSeq, eItemLightSeq, LIGHTSEQ, 3)
 
 //DECLARE_NOT_AGGREGATABLE(LightSeq)
 // Remove the comment from the line above if you don't want your object to

@@ -1,32 +1,5 @@
 #include "StdAfx.h"
 
-// this table must be kept in sync with the ISelectable ItemTypeEnum table
-static int rgTypeStringIndex[] = {
-	IDS_TB_WALL, //eItemSurface,
-	IDS_TB_FLIPPER, //eItemFlipper,
-	IDS_TB_TIMER, //eItemTimer,
-	IDS_TB_PLUNGER, //eItemPlunger,
-	IDS_TB_TEXTBOX, //eItemTextbox,
-	IDS_TB_BUMPER, //eItemBumper,
-	IDS_TB_TRIGGER, //eItemTrigger,
-	IDS_TB_LIGHT, //eItemLight,
-	IDS_TB_KICKER, //eItemKicker,
-	IDS_TB_DECAL, //eItemDecal,
-	IDS_TB_GATE, //eItemGate,
-	IDS_TB_SPINNER, //eItemSpinner,
-	IDS_TB_RAMP, //eItemRamp,
-	IDS_TABLE, //eItemTable,
-	IDS_TB_LIGHT, //eItemLightCenter,
-	IDS_CONTROLPOINT, //eItemDragPoint,
-	IDS_TB_DISPREEL, //eItemDispReel,
-	IDS_TB_LIGHTSEQ, //eItemLightSeq,
-	IDS_TB_PRIMITIVE, //eItemPrimitive
-	IDS_TB_FLASHER, //eItemFlasher
-	IDS_TB_LIGHTSEQ, //light seq center
-	IDS_TB_COMCONTROL, //eItemComControl
-    };
-
-
 
 ISelect::ISelect()
 	{
@@ -349,9 +322,21 @@ HRESULT ISelect::GetTypeName(BSTR *pVal)
 	return S_OK;
 }
 
-void ISelect::GetTypeNameForType(int type, WCHAR * buf)
+void ISelect::GetTypeNameForType(ItemTypeEnum type, WCHAR * buf)
 {
-    LoadStringW(g_hinst, rgTypeStringIndex[type], buf, 256);
+    int strID = 0;
+
+    switch (type)
+    {
+        case eItemTable:        strID = IDS_TABLE; break;
+        case eItemLightCenter:  strID = IDS_TB_LIGHT; break;
+        case eItemDragPoint:    strID = IDS_CONTROLPOINT; break;
+        case eItemLightSeqCenter: strID = IDS_TB_LIGHTSEQ; break;
+        default:
+            strID = EditableRegistry::GetTypeNameStringID(type); break;
+    }
+
+    LoadStringW(g_hinst, strID, buf, 256);
 }
 
 BOOL ISelect::LoadToken(int id, BiffReader *pbr)

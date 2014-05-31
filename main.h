@@ -150,3 +150,5 @@ class PinBinary;
 #include "trace.h"
 
 #include "extern.h"
+
+#include "editablereg.h"

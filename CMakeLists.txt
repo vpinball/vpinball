@@ -188,6 +188,7 @@ set(HEADERS
   dispreel.h
   disputil.h
   dragpoint.h
+  editablereg.h
   eventproxy.h
   extern.h
   flipper.h

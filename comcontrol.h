@@ -108,7 +108,9 @@ BEGIN_CONNECTION_POINT_MAP(PinComControl)
 	CONNECTION_POINT_ENTRY(DIID_IComControlEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_EDITABLE_DECLARES(PinComControl, eItemComControl)
+#define IDC_COMCONTROL IDC_PRIMITIVE // HACK! TODO: remove
+
+STANDARD_EDITABLE_DECLARES(PinComControl, eItemComControl, COMCONTROL, 1)
 
 	// *** IProvideClassInfo methods ***
 	/*STDMETHOD(GetClassInfo)(ITypeInfo** pptinfoOut);

@@ -187,10 +187,10 @@
 #define IDS_SETASDEFAULT                167
 #define IDR_BALL                        167
 #define IDS_FINDFAILED2                 168
-#define ID_INSERT_DISP_REEL             168
+#define ID_INSERT_DISPREEL              168
 #define IDS_CONTROLPOINT                169
 #define IDS_CORRUPTFILE                 171
-#define IDC_DISP_REEL                   171
+#define IDC_DISPREEL                    171
 #define IDS_UNSECURECONTROL1            172
 #define IDC_CUR_DISPLCDSEG              172
 #define IDS_UNSECURECONTROL2            173
@@ -375,9 +375,9 @@
 #define IDC_INLIST                      310
 #define IDC_FIRE                        311
 #define IDC_SUPPRESS                    312
-#define ID_INSERT_LIGHT_SEQ             313
+#define ID_INSERT_LIGHTSEQ              313
 #define IDS_TB_LIGHTSEQ                 314
-#define IDC_LIGHT_SEQ                   315
+#define IDC_LIGHTSEQ                    315
 #define IDS_REPLACEALL                  315
 #define IDD_PROPLIGHTSEQ                316
 #define IDS_REPLACEALL2                 316
@@ -767,7 +767,7 @@
 #define IDC_PASTEAT                     32836
 #define ID_TABLE_TABLEINFO              32838
 #define ID_PREFERENCES_SECURITYOPTIONS  32839
-#define ID_INSERT_COM_CONTROL           32840
+#define ID_INSERT_COMCONTROL            32840
 #define ID_INSERT_PRIMITIVE             32842
 #define ID_LAYER_LAYER1                 32849
 #define ID_LAYER_LAYER2                 32850
