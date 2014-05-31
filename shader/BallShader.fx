@@ -8,6 +8,7 @@ float    radius;
 float    reflectionStrength;
 float    ballStretchX;
 float    ballStretchY;
+float4   camera;
 
 // this is used for the orientation matrix
 float4   m1;
@@ -58,7 +59,7 @@ struct vin
 struct vout
 {
     float4 position	   : POSITION0;
-    float2 tex0        : TEXCOORD0;
+    float3 tex0        : TEXCOORD0;
 	float4 tex1        : TEXCOORD1;
 	float2 tex2        : TEXCOORD2;
 };
@@ -76,6 +77,7 @@ vout vsBall( in vin IN )
 	pos *= radius;
 	pos.x *= ballStretchX;
 	pos.y *= ballStretchY;
+	float4 v = mul(pos,matWorld);
 	pos += position;
 	
     //convert to world space and pass along to our output
@@ -85,16 +87,11 @@ vout vsBall( in vin IN )
 	float4 npos = float4(IN.normal,0.0);
 	npos = mul(npos,orientation);
     float4 normal = normalize(mul(npos, matWorld));
-	float4 norm = mul(npos, matWorld);
-
-	float l = length(norm.xyz);
-	norm = norm/l;
-    float2 uv=normal.xy;
-	uv.x = 0.5+uv.x*0.5;
-	uv.y = 0.5+uv.y*0.5;
+	float4 eye = normalize(v);
+	float4 r=normalize(reflect(eye,normal));
     //pass along texture info
-	OUT.tex0		= uv;
-	OUT.tex1        = norm;
+	OUT.tex0		= r.xyz;
+	OUT.tex1        = r;
 	OUT.tex2        = IN.tex0;
 	return OUT;
 }
@@ -116,7 +113,7 @@ vout vsBallReflection( in vin IN )
 
 	// this is no a 100% ball reflection on the table due to the quirky camera setup
 	// the ball is moved a bit down and rendered again
-	pos.y += sizeY*0.25;
+	pos.y += sizeY*0.35;
 	pos.z = (pos.z*0.5)-10;
     //convert to world space and pass along to our output
     OUT.position    = mul(pos, matWorldViewProj);
@@ -124,89 +121,52 @@ vout vsBallReflection( in vin IN )
 	float4 npos = float4(IN.normal,0.0);
 	npos = mul(npos,orientation);
     float4 normal = normalize(mul(npos, matWorld));
+	float4 eye = normalize(pos);
+	float4 r=normalize(reflect(eye,normal));
 
-    float2 uv=normal.xy;
-	uv.x = 0.5+uv.x*0.5;
-	uv.y = 0.5+uv.y*0.5;
     //pass along texture info
-	OUT.tex0		= uv;
+	OUT.tex0		= r.xyz;
 	OUT.tex1	    = pos;
 	return OUT;
 }
 
 
 //PIXEL SHADER
-float4 psBallCabinet( in vout IN ) : COLOR
+float4 psBall( in vout IN ) : COLOR
 {
 	// the reflection of the playfield on the ball is another hack at the moment
 	// for a correct reflection we need a dynamic cube map, but generating this is not feasible at the moment 
 	// because of the render pipeline!
-	
-	// flip uv because cabinets are rotated about 270°
-	float u=IN.tex0.x;
-	IN.tex0.x=IN.tex0.y;
-	IN.tex0.y=u;
-	float4 ballImageColor = tex2D( texSampler0, IN.tex0 );
-	float4 decalColor = tex2D( texSampler2, IN.tex2 );
 	float2 uv = float2(0,0);
-	// this isn't real reflection because creating a cube map for every movement would be too slow
-	// instead the texture coordinates must be changed to map only a small area of the 
-	// playfield image at the ball's current location
-	uv.x = position.x * invTableWidth;
+	uv.x = IN.tex0.x*0.5+0.5;
+	uv.y = IN.tex0.y*0.5+0.5;
+	float4 ballImageColor = tex2D( texSampler0, uv );
+	float4 decalColor = tex2D( texSampler2, IN.tex2 );
+	
+/*	uv.x = position.x * invTableWidth;
 	uv.y = position.y * invTableHeight;
-	uv.x = uv.x + (IN.tex1.y/(IN.tex1.z))*0.03;
-	uv.y = uv.y + (IN.tex1.x/(IN.tex1.z))*0.03;
+	uv.x = uv.x + (IN.tex1.x/(1+IN.tex1.z))*0.05;
+	uv.y = uv.y + (IN.tex1.y/(1+IN.tex1.z))*0.05;
 	float4 playfieldColor = tex2D( texSampler1, uv );
 	
-	// don't map the playfield area completely over the whole ball but only on the lower half
-	// 0 is in the middle so start a bit later for a discreet reflection
-	if( IN.tex1.x>0.23 )
+	if( IN.tex1.y>0.0 )
 	{
-		playfieldColor.a = saturate(IN.tex1.x-0.23);
+		playfieldColor.a = saturate(IN.tex1.y)*0.5;
 	}
 	else
 	{
 		playfieldColor.a = 0;
 	}
-	
+	return ((decalColor.a)*decalColor)+(ballImageColor +  (playfieldColor * playfieldColor.a));	
+*/	
 	ballImageColor.a=1.0;
-	playfieldColor *=2;
-	return ((decalColor.a)*decalColor)+(ballImageColor +  (playfieldColor * (playfieldColor.a))/2.9);	
-}
-
-float4 psBallDesktop( in vout IN ) : COLOR
-{
-	// the reflection of the playfield on the ball is another hack at the moment
-	// for a correct reflection we need a dynamic cube map, but generating this is not feasible at the moment 
-	// because of the render pipeline!
-
-	float4 ballImageColor = tex2D( texSampler0, IN.tex0 );
-	float4 decalColor = tex2D( texSampler2, IN.tex2 );
-	float2 uv = float2(0,0);
-	uv.x = position.x * invTableWidth;
-	uv.y = position.y * invTableHeight;
-	uv.x = uv.x + (IN.tex1.x/(IN.tex1.z))*0.03;
-	uv.y = uv.y + (IN.tex1.y/(IN.tex1.z))*0.03;
-	float4 playfieldColor = tex2D( texSampler1, uv );
-	
-	// don't map the playfield area completely over the whole ball but only on the lower half
-	// 0 is in the middle so start a bit later for a discreet reflection
-	if( IN.tex1.y>0.33 )
-	{
-		playfieldColor.a = saturate(IN.tex1.y-0.33);
-	}
-	else
-	{
-		playfieldColor.a = 0;
-	}
-	ballImageColor.a=1.0;
-	playfieldColor *=2;
-	return ((decalColor.a)*decalColor)+(ballImageColor +  (playfieldColor * (playfieldColor.a))/2.9);	
+	return ((decalColor.a)*decalColor)+ballImageColor;	
 }
 
 
 float4 psBallReflection( in vout IN ) : COLOR
 {
+	float2 uv = IN.tex0.xy*0.5+0.5;
 	float4 ballImageColor = tex2D( texSampler0, IN.tex0 );
 	float sizeY = radius*2*0.9;
 	float alpha = ((IN.tex1.y-position.y)/(sizeY*0.4));
@@ -215,22 +175,12 @@ float4 psBallReflection( in vout IN ) : COLOR
 }
 
 //------------------------------------
-technique RenderBall_Desktop
+technique RenderBall
 {
 	pass p0 
 	{		
 		vertexshader = compile vs_2_0 vsBall();
-		pixelshader  = compile ps_2_0 psBallDesktop();
-
-	}
-}
-
-technique RenderBall_Cabinet
-{
-	pass p0 
-	{		
-		vertexshader = compile vs_2_0 vsBall();
-		pixelshader  = compile ps_2_0 psBallCabinet();
+		pixelshader  = compile ps_2_0 psBall();
 
 	}
 }
