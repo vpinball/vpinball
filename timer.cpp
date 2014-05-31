@@ -135,16 +135,16 @@ void Timer::EndPlay()
 	IEditable::EndPlay();
 	}
 
-void Timer::PostRenderStatic(const RenderDevice* pd3dDevice)
+void Timer::PostRenderStatic(RenderDevice* pd3dDevice)
 	{
 	}
 
-void Timer::RenderSetup(const RenderDevice* _pd3dDevice)
+void Timer::RenderSetup(RenderDevice* pd3dDevice)
 {
 
 }
 
-void Timer::RenderStatic(const RenderDevice* pd3dDevice)
+void Timer::RenderStatic(RenderDevice* pd3dDevice)
 	{
 	}
 	

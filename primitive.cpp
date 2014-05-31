@@ -814,20 +814,17 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
-void Primitive::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Primitive::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
    if ( m_d.staticRendering || !m_d.m_fVisible )
       return;
 
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    RenderObject( pd3dDevice );
 }
 
-void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
+void Primitive::RenderSetup( RenderDevice* pd3dDevice )
 {
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
-
    if( !vertexBuffer )
       pd3dDevice->CreateVertexBuffer( m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
 
@@ -839,11 +836,10 @@ void Primitive::RenderSetup( const RenderDevice* _pd3dDevice )
        tex->CreateAlphaChannel();
 }
 
-void Primitive::RenderStatic(const RenderDevice* _pd3dDevice)
+void Primitive::RenderStatic(RenderDevice* pd3dDevice)
 {
    if( m_d.staticRendering )
    {
-      RenderDevice *pd3dDevice = (RenderDevice*)_pd3dDevice;
       RenderObject(pd3dDevice);
       g_pplayer->m_pin3d.SetTexture(NULL);
    }

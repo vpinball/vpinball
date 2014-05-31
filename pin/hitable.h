@@ -9,9 +9,9 @@ public:
 	virtual EventProxyBase *GetEventProxyBase() = 0;
 	virtual void EndPlay() = 0;
 	virtual void PreRenderStatic( RenderDevice* pd3dDevice) { }
-	virtual void RenderStatic( const RenderDevice* pd3dDevice) = 0;
-	virtual void PostRenderStatic( const RenderDevice* pd3dDevice) = 0;
-    virtual void RenderSetup( const RenderDevice* _pd3dDevice) = 0;
+	virtual void RenderStatic(RenderDevice* pd3dDevice) = 0;
+	virtual void PostRenderStatic(RenderDevice* pd3dDevice) = 0;
+    virtual void RenderSetup(RenderDevice* pd3dDevice) = 0;
 
     virtual bool IsTransparent()                        { return false; }
     virtual float GetDepth(const Vertex3Ds& viewDir)    { return 0.0f; }

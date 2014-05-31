@@ -471,7 +471,7 @@ void Light::ClearForOverwrite()
 //static const WORD rgiLightStatic0[3] = {0,1,2};
 static const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 
-void Light::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
     /* HACK / VP9COMPAT:
@@ -487,8 +487,6 @@ void Light::PostRenderStatic(const RenderDevice* _pd3dDevice)
 
     if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
         return;
-
-    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 
     if (m_realState == LightStateBlinking)
         UpdateBlinker(g_pplayer->m_time_msec);
@@ -830,7 +828,7 @@ void Light::PrepareMoversCustom()
       delete vtri.ElementAt(i);
 }
 
-void Light::RenderSetup(const RenderDevice* _pd3dDevice)
+void Light::RenderSetup(RenderDevice* pd3dDevice)
 {
     m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
 
@@ -876,7 +874,7 @@ void Light::RenderSetup(const RenderDevice* _pd3dDevice)
     PrepareMoversCustom();
 }
 
-void Light::RenderStatic(const RenderDevice* _pd3dDevice)
+void Light::RenderStatic(RenderDevice* pd3dDevice)
 {
     if (m_d.m_borderwidth > 0)
     {
@@ -888,7 +886,6 @@ void Light::RenderStatic(const RenderDevice* _pd3dDevice)
         Material mtrl;
         mtrl.setColor( 1.0f, m_d.m_bordercolor );
 
-        RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
         pd3dDevice->SetMaterial(mtrl);
 
         if((!m_fBackglass) || GetPTable()->GetDecalsEnabled())

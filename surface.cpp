@@ -594,7 +594,7 @@ void Surface::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Surface::PostRenderStatic(const RenderDevice* pd3dDevice)
+void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
@@ -944,9 +944,8 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
        slingIBuffer = pd3dDevice->CreateAndFillIndexBuffer(36, rgisling);
 }
 
-void Surface::RenderSetup(const RenderDevice* _pd3dDevice)
+void Surface::RenderSetup(RenderDevice* pd3dDevice)
 {
-   RenderDevice *pd3dDevice = (RenderDevice*)_pd3dDevice;
    float oldBottomHeight = m_d.m_heightbottom;
    float oldTopHeight = m_d.m_heighttop;
 
@@ -1004,7 +1003,7 @@ void Surface::FreeBuffers()
    }
 }
 
-void Surface::RenderStatic(const RenderDevice* pd3dDevice)
+void Surface::RenderStatic(RenderDevice* pd3dDevice)
 {
    if (!m_d.m_fDroppable && !m_d.m_transparent)
    {

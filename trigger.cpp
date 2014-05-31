@@ -410,11 +410,11 @@ static const WORD rgtriggerface[][5] = {
 };
 
 
-void Trigger::PostRenderStatic(const RenderDevice* pd3dDevice)
+void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
-void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
+void Trigger::RenderSetup(RenderDevice* pd3dDevice)
 {
    if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
       return;
@@ -476,12 +476,11 @@ void Trigger::RenderSetup(const RenderDevice* _pd3dDevice)
 
 }
 
-void Trigger::RenderStatic(const RenderDevice* _pd3dDevice)
+void Trigger::RenderStatic(RenderDevice* pd3dDevice)
 {
    if (!m_d.m_fVisible || m_d.m_shape == ShapeCustom)
       return;
 
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    ppin3d->EnableLightMap(height);

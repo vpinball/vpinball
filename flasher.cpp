@@ -289,10 +289,8 @@ void Flasher::EndPlay()
 	}
 }
 
-void Flasher::RenderSetup(const RenderDevice* _pd3dDevice)
+void Flasher::RenderSetup(RenderDevice* pd3dDevice)
 {
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
-
    pd3dDevice->CreateVertexBuffer(4, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &dynamicVertexBuffer);
    NumVideoBytes += 4*sizeof(Vertex3D_NoLighting);     
    solidMaterial.setColor( 1.0f, m_d.m_color );
@@ -330,7 +328,7 @@ void Flasher::RenderSetup(const RenderDevice* _pd3dDevice)
    vertices[3].tv = 1.0f;
 }
 
-void Flasher::RenderStatic(const RenderDevice* _pd3dDevice)
+void Flasher::RenderStatic(RenderDevice* pd3dDevice)
 {	
 }
 
@@ -866,10 +864,9 @@ STDMETHODIMP Flasher::put_DepthBias(float newVal)
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
-void Flasher::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    // Don't render if invisible.
    if(!m_d.m_IsVisible) 
       return;

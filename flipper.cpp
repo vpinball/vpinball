@@ -588,7 +588,7 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
    return S_OK;
 }
 
-void Flipper::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
     /* HACK / VP9COMPAT:
@@ -606,7 +606,6 @@ void Flipper::PostRenderStatic(const RenderDevice* _pd3dDevice)
     if (m_phitflipper == NULL && !m_d.m_fVisible)
         return;
 
-    RenderDevice* const pd3dDevice = (RenderDevice*)_pd3dDevice;
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
     pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -647,11 +646,10 @@ void Flipper::PostRenderStatic(const RenderDevice* _pd3dDevice)
 }
 
 
-void Flipper::RenderSetup(const RenderDevice* _pd3dDevice)
+void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 {
     const unsigned long numVertices= 108*2; //*2 for flipper plus rubber
     // 12 + 16 + 32 + 16 + 32
-    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
     _ASSERTE(m_phitflipper);
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -729,17 +727,16 @@ void Flipper::RenderSetup(const RenderDevice* _pd3dDevice)
     vertexBuffer->unlock();
 }
 
-void Flipper::RenderStatic(const RenderDevice* pd3dDevice)
+void Flipper::RenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
 static const WORD rgiFlipper1[4] = {0,4,5,1};
 static const WORD rgiFlipper2[4] = {2,6,7,3};
 
-void Flipper::RenderAtThickness(RenderDevice* _pd3dDevice, float angle, float height,
+void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float height,
                                 float baseradius, float endradius, float flipperheight, Vertex3D* buf)
 {
-    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     Vertex2D vendcenter;

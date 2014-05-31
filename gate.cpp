@@ -367,14 +367,13 @@ static const WORD rgiGate5[4] = {4,5,7,6};      // top
 static const WORD rgiGate6[4] = {0,4,6,2};      // left
 static const WORD rgiGate7[4] = {1,3,7,5};      // right
 
-void Gate::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
     if (!m_phitgate->m_gateanim.m_fVisible)
         return;
 
-    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
@@ -647,19 +646,18 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
     vtxBuf->unlock();
 }
 
-void Gate::RenderSetup(const RenderDevice* _pd3dDevice)
+void Gate::RenderSetup(RenderDevice* pd3dDevice)
 {
    solidMaterial.setColor( 1.0f, m_d.m_color );
-   PrepareStatic((RenderDevice*)_pd3dDevice);
-   PrepareMovers((RenderDevice*)_pd3dDevice);
+   PrepareStatic(pd3dDevice);
+   PrepareMovers(pd3dDevice);
 
    static const WORD idx[24] = {0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
-   idxBuf = ((RenderDevice*)_pd3dDevice)->CreateAndFillIndexBuffer(24, idx);
+   idxBuf = pd3dDevice->CreateAndFillIndexBuffer(24, idx);
 }
 
-void Gate::RenderStatic(const RenderDevice* _pd3dDevice) // only the support structures are rendered here
+void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures are rendered here
 {
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
    if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
 
    pd3dDevice->SetMaterial(staticMaterial);

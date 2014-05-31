@@ -1455,10 +1455,8 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
 }
 
 
-void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
+void Ramp::RenderSetup(RenderDevice* pd3dDevice)
 {
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
-
    rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit);
 
    solidMaterial.setColor( 1.0f, m_d.m_color );
@@ -1483,9 +1481,8 @@ void Ramp::RenderSetup(const RenderDevice* _pd3dDevice)
    delete[] rgratioInit;
 }
 
-void Ramp::RenderStatic(const RenderDevice* _pd3dDevice)
+void Ramp::RenderStatic(RenderDevice* pd3dDevice)
 {	
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
    if (!m_d.m_fVisible) return;		// return if no Visible
 
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
@@ -2498,15 +2495,13 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
-void Ramp::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 
    // don't render if invisible or not a transparent ramp
    if (!m_d.m_fVisible || !m_d.m_transparent)
        return;
-
-   RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
 
    if ( m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f )
    {

@@ -269,7 +269,7 @@ void Bumper::EndPlay()
 }
 
 
-void Bumper::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
@@ -279,7 +279,6 @@ void Bumper::PostRenderStatic(const RenderDevice* _pd3dDevice)
     if (m_d.m_color == 0 && m_d.m_sidecolor == 0)
         return;
 
-    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
     if(!m_d.m_fVisible)	return;
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -354,7 +353,7 @@ void Bumper::PostRenderStatic(const RenderDevice* _pd3dDevice)
     }
 }
 
-void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
+void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 {
     if (m_d.m_state == LightStateBlinking)
         RestartBlinker(g_pplayer->m_time_msec);
@@ -497,7 +496,6 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
       allIndices.push_back( k+3 );
    }
 
-   RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
 
    if (idxBuf)
        idxBuf->release();
@@ -537,7 +535,7 @@ void Bumper::RenderSetup(const RenderDevice* _pd3dDevice )
    m_fDisabled = fFalse;
 }
 
-void Bumper::RenderStatic(const RenderDevice* _pd3dDevice)
+void Bumper::RenderStatic(RenderDevice* pd3dDevice)
 {
 }
 

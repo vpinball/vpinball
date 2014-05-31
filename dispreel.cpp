@@ -509,13 +509,12 @@ void DispReel::EndPlay()
 	IEditable::EndPlay();
 }
 
-void DispReel::PostRenderStatic(const RenderDevice* _pd3dDevice)
+void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
     if (!GetPTable()->GetEMReelsEnabled())
         return;
 
-    RenderDevice* pd3dDevice = (RenderDevice*)_pd3dDevice;
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
@@ -575,9 +574,8 @@ void DispReel::PostRenderStatic(const RenderDevice* _pd3dDevice)
     pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 }
 
-void DispReel::RenderSetup(const RenderDevice* _pd3dDevice)
+void DispReel::RenderSetup(RenderDevice* pd3dDevice)
 {
-    RenderDevice* pd3dDevice=(RenderDevice*)_pd3dDevice;
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     //if ( vertexBuffer==NULL )
@@ -697,7 +695,7 @@ void DispReel::RenderSetup(const RenderDevice* _pd3dDevice)
     m_fforceupdate = false;
 }
 
-void DispReel::RenderStatic(const RenderDevice* pd3dDevice)
+void DispReel::RenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
