@@ -25,7 +25,6 @@ enum ItemTypeEnum
 	eItemPrimitive,
 	eItemFlasher,
 	eItemLightSeqCenter,
-	eItemComControl,
 	eItemTypeCount,
 	eItemInvalid = 0xffffffff // Force enum to be 32 bits
 	};

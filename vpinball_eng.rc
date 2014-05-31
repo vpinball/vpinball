@@ -1909,7 +1909,6 @@ BEGIN
         MENUITEM "EM Reel\tCtrl+Y",             ID_INSERT_DISPREEL
         MENUITEM "Light Se&quencer\tCtrl+Q",    ID_INSERT_LIGHTSEQ
         MENUITEM "Primitive/Ob&ject\tCtrl+J",   ID_INSERT_PRIMITIVE
-        MENUITEM "ActiveX Control",             ID_INSERT_COMCONTROL
     END
     POPUP "&Table"
     BEGIN
@@ -2330,7 +2329,6 @@ BEGIN
     IDS_PLAY                "Play"
     IDS_PAUSE               "Pause"
     IDS_STEP                "Step"
-    IDS_TB_COMCONTROL       "ActiveX"
 END
 
 #endif    // Englisch (USA) resources

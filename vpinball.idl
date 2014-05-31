@@ -2005,54 +2005,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[id(DISPID_LightSeqEvents_PlayDone)]  void PlayDone();
 	}
 
-	[
-		object,
-		uuid(46F8D548-1C32-41E2-A4CD-E25D4B253851),
-		dual,
-		helpstring("IComControl Interface"),
-		pointer_default(unique)
-	]
-	interface IComControl : IDispatch
-	{
-		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
-		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
-		[propget, id(60000), helpstring("property X")] HRESULT X([out, retval] float *pVal);
-		[propput, id(60000), helpstring("property X")] HRESULT X([in] float newVal);
-		[propget, id(60001), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
-		[propput, id(60001), helpstring("property Y")] HRESULT Y([in] float newVal);
-		[propget, id(60002), helpstring("property Width")] HRESULT Width([out, retval] float *pVal);
-		[propput, id(60002), helpstring("property Width")] HRESULT Width([in] float newVal);
-		[propget, id(60003), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
-		[propput, id(60003), helpstring("property Height")] HRESULT Height([in] float newVal);
-		[propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
-		[propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
-		[propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
-		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
-		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
-	};
-
-	[
-	uuid(59030739-04C4-4f5d-87D5-4A0193EDD519),
-	]
-	dispinterface IComControlEvents
-	{
-	properties:
-	methods:
-		[id(DISPID_GameEvents_Init)]  void Init();
-		[id(DISPID_TimerEvents_Timer)]  void Timer();
-	}
-
-	[
-	uuid(532AEBB0-9C1F-4247-9ED5-A3723FA61787),
-	]
-	dispinterface IFooEvents
-	{
-	properties:
-	methods:
-		[id(500)]  void Goo();
-	}
-
 	////////////////////////////////////
 	////////////////////////////////////
 	//////// CoClasses
@@ -2245,16 +2197,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	{
 		[default] interface ILightSeq;
 		[default, source]  dispinterface ILightSeqEvents;
-	};
-
-	[
-		uuid(5ACACC30-D0D9-44BF-9EA2-92C6C9D083A0),
-		helpstring("ComControl Class")
-	]
-	coclass ComControl
-	{
-		[default] interface IComControl;
-		[default, source]  dispinterface IComControlEvents;
 	};
 
 	[

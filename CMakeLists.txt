@@ -106,7 +106,6 @@ set(SOURCES
   ballex.cpp
   bumper.cpp
   codeview.cpp
-  comcontrol.cpp
   decal.cpp
   def.cpp
   dispreel.cpp
@@ -180,7 +179,6 @@ set(HEADERS
   buildnumber.h
   bumper.h
   codeview.h
-  comcontrol.h
   decal.h
   def.h
   dispid.h
@@ -270,7 +268,7 @@ set(RC_RESOURCE
 # dummy collection of resources - not used in build (resource compiler takes care of everything)
 # (only listed for completeness)
 #set(RESOURCES
-#  res/ball.rgs res/ball.bmp res/table.vpt res/bumper.rgs res/chevron.bmp res/comcontrol.rgs
+#  res/ball.rgs res/ball.bmp res/table.vpt res/bumper.rgs res/chevron.bmp
 #  res/gate.cur res/magnify.cur res/kicker.cur res/spinner.cur res/dispreel.cur
 #  res/trigger.cur res/timer.cur res/target.cur res/flipper.cur res/lightseq.cur
 #  res/textbox.cur res/primitive.cur res/ramp.cur res/decal.cur res/bumper.cur res/plunger.cur

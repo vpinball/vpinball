@@ -22,7 +22,6 @@
 #include "BallEx.h"
 #include "DispReel.h"
 #include "LightSeq.h"
-#include "ComControl.h"
 
 BEGIN_OBJECT_MAP(ObjectMap)
 OBJECT_ENTRY(CLSID_Wall, Surface)
@@ -43,5 +42,4 @@ OBJECT_ENTRY(CLSID_Flasher, Flasher)
 OBJECT_ENTRY(CLSID_Ball, BallEx)
 OBJECT_ENTRY(CLSID_DispReel, DispReel)
 OBJECT_ENTRY(CLSID_LightSeq, LightSeq)
-OBJECT_ENTRY(CLSID_ComControl, PinComControl)
 END_OBJECT_MAP()
