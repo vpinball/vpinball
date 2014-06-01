@@ -56,7 +56,7 @@ class DragPoint :
 	public ISelect
 {
 public:
-	DragPoint() {}
+	DragPoint() { m_v.z = 0; }
 
 	void Init(IHaveDragPoints *pihdp, float x, float y);
 
@@ -108,12 +108,14 @@ public:
 	STDMETHOD(put_IsAutoTextureCoordinate)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Smooth)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Smooth)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Y)(/*[in]*/ float newVal);
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
+	STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Y)(/*[in]*/ float newVal);
+	STDMETHOD(get_Z)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Z)(/*[in]*/ float newVal);
 
-	Vertex2D m_v;
+	Vertex3Ds m_v;
 	BOOL m_fSmooth;
 	BOOL m_fSlingshot;
 	BOOL m_fAutoTexture;

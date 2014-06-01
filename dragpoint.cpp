@@ -17,12 +17,11 @@ void IHaveDragPoints::GetPointCenter(Vertex2D * const pv) const
 
    for (int i=0;i<m_vdpoint.Size();i++)
    {
-      const Vertex2D v = m_vdpoint.ElementAt(i)->m_v;
+      const Vertex3Ds& v = m_vdpoint.ElementAt(i)->m_v;
       minx = min(minx, v.x);
       maxx = max(maxx, v.x);
       miny = min(miny, v.y);
       maxy = max(maxy, v.y);
-
    }
 
    pv->x = (maxx+minx)*0.5f;
@@ -258,8 +257,8 @@ void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> * const pvv)
       const CComObject<DragPoint> * const pdp0 = pdp1->m_fSmooth ? m_vdpoint.ElementAt((i == 0) ? (cpoint-1) : (i-1)) : pdp1;
       const CComObject<DragPoint> * const pdp3 = pdp2->m_fSmooth ? m_vdpoint.ElementAt((i < cpoint-2) ? (i+2) : ((i+2)-cpoint)) : pdp2;
 
-      CatmullCurve cc;
-      cc.SetCurve(&pdp0->m_v, &pdp1->m_v, &pdp2->m_v, &pdp3->m_v);
+      CatmullCurve2D cc;
+      cc.SetCurve(pdp0->m_v.xy(), pdp1->m_v.xy(), pdp2->m_v.xy(), pdp3->m_v.xy());
 
       RenderVertex rendv1, rendv2; // Create these to add the special properties
 
@@ -407,6 +406,7 @@ HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash, HCR
       bw.WriteTag(FID(DPNT));
       CComObject<DragPoint> *pdp = m_vdpoint.ElementAt(i);
       bw.WriteStruct(FID(VCEN), &(pdp->m_v), sizeof(Vertex2D));
+      bw.WriteFloat(FID(POSZ), pdp->m_v.z);
       bw.WriteBool(FID(SMTH), pdp->m_fSmooth);
       bw.WriteBool(FID(SLNG), pdp->m_fSlingshot);
       bw.WriteBool(FID(ATEX), pdp->m_fAutoTexture);
@@ -446,6 +446,7 @@ void DragPoint::Init(IHaveDragPoints *pihdp, float x, float y)
    m_fSlingshot = fFalse;
    m_v.x = x;
    m_v.y = y;
+   m_v.z = 0;
    m_fAutoTexture = fTrue;
    m_texturecoord = 0.0;
 
@@ -479,12 +480,14 @@ void DragPoint::MoveOffset(const float dx, const float dy)
 
 void DragPoint::GetCenter(Vertex2D * const pv) const
 {
-   *pv = m_v;
+   pv->x = m_v.x;
+   pv->y = m_v.y;
 }
 
 void DragPoint::PutCenter(const Vertex2D * const pv)
 {
-   m_v = *pv;
+   m_v.x = pv->x;
+   m_v.y = pv->y;
 
    m_pihdp->GetIEditable()->SetDirtyDraw();
 }
@@ -591,6 +594,10 @@ BOOL DragPoint::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetStruct(&m_v, sizeof(Vertex2D));
    }
+   else if (id == FID(POSZ))
+   {
+      pbr->GetFloat(&m_v.z);
+   }
    else if (id == FID(SMTH))
    {
       pbr->GetBool(&m_fSmooth);
@@ -655,6 +662,24 @@ STDMETHODIMP DragPoint::put_Y(float newVal)
    STARTUNDOSELECT
 
       m_v.y = newVal;
+
+   STOPUNDOSELECT
+
+      return S_OK;
+}
+
+STDMETHODIMP DragPoint::get_Z(float *pVal)
+{
+   *pVal = m_v.z;
+
+   return S_OK;
+}
+
+STDMETHODIMP DragPoint::put_Z(float newVal)
+{
+   STARTUNDOSELECT
+
+      m_v.z = newVal;
 
    STOPUNDOSELECT
 

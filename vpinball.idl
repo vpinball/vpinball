@@ -787,6 +787,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(1), helpstring("property X")] HRESULT X([in] float newVal);
 		[propget, id(2), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
 		[propput, id(2), helpstring("property Y")] HRESULT Y([in] float newVal);
+		[propget, id(6), helpstring("property Z")] HRESULT Z([out, retval] float *pVal);
+		[propput, id(6), helpstring("property Z")] HRESULT Z([in] float newVal);
 		[propget, id(3), helpstring("property Smooth")] HRESULT Smooth([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(3), helpstring("property Smooth")] HRESULT Smooth([in] VARIANT_BOOL newVal);
 		[propget, id(4), helpstring("property IsAutoTextureCoordinate")] HRESULT IsAutoTextureCoordinate([out, retval] VARIANT_BOOL *pVal);

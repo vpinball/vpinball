@@ -214,6 +214,10 @@ public:
    {
        return x == 0 && y == 0 && z == 0;
    }
+
+   // access the x/y components as a 2D vector
+   Vertex2D& xy()               { return *(reinterpret_cast<Vertex2D*>(&x)); }
+   const Vertex2D& xy() const   { return *(reinterpret_cast<const Vertex2D*>(&x)); }
 };
 
 
