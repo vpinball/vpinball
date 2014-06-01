@@ -486,6 +486,7 @@
 #define IDC_ELEMENT_LIST                362
 #define IDC_DRAWING_ORDER_LIST          362
 #define IDD_PROPPOINT_POSITION          363
+#define IDD_PROPPOINT_POSITION_WITHZ    601
 #define IDD_PROPPOINT_VISUALS           364
 #define IDC_HANGDETECT                  364
 #define IDD_SECURITY_OPTIONS            365
@@ -810,7 +811,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        601
+#define _APS_NEXT_RESOURCE_VALUE        602
 #define _APS_NEXT_COMMAND_VALUE         32990
 #define _APS_NEXT_CONTROL_VALUE         426
 #define _APS_NEXT_SYMED_VALUE           188

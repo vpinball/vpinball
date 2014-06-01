@@ -1,12 +1,12 @@
 #include "StdAfx.h"
 
-void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv)
+void RecurseSmoothLine(const CatmullCurve2D * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv)
 	{
         RecurseSmoothLineWithAccuracy(pcc, t1, t2, pvt1, pvt2, pvv, 1.0 / (0.5 * 0.5));
 	}
 
 
-void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy)
+void RecurseSmoothLineWithAccuracy(const CatmullCurve2D * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy)
 	{
 	const float tMid = (t1+t2)*0.5f;
 	RenderVertex vmid;

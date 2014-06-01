@@ -122,6 +122,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
 
 	void WriteRegDefaults();
 
+    // IHaveDragPoints
+    virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
+    // end IHaveDragPoints
+
 	PinTable *m_ptable;
 
 	RampData m_d;

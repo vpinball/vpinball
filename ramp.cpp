@@ -139,6 +139,18 @@ void Ramp::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"WireDistanceY", m_d.m_wireDistanceY);
 }
 
+void Ramp::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
+{
+   PropertyPane *pproppane;
+
+   pproppane = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);
+   pvproppane->AddElement(pproppane);
+
+   pproppane = new PropertyPane(IDD_PROPPOINT_POSITION_WITHZ, IDS_POSITION);
+   pvproppane->AddElement(pproppane);
+}
+
+
 void Ramp::PreRender(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
@@ -535,8 +547,9 @@ void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
       const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt(i+1);
       const CComObject<DragPoint> * const pdp0 = m_vdpoint.ElementAt((i>0 && pdp1->m_fSmooth) ? i-1 : i);
       const CComObject<DragPoint> * const pdp3 = m_vdpoint.ElementAt((i<cpoint-2 && pdp2->m_fSmooth) ? i+2 : (i+1));
-      CatmullCurve cc;
-      cc.SetCurve(&pdp0->m_v, &pdp1->m_v, &pdp2->m_v, &pdp3->m_v);
+
+      CatmullCurve2D cc;
+      cc.SetCurve(pdp0->m_v.xy(), pdp1->m_v.xy(), pdp2->m_v.xy(), pdp3->m_v.xy());
 
       RenderVertex rendv1;
       rendv1.x = pdp1->m_v.x;

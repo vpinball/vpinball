@@ -8,24 +8,72 @@ public:
 	int a,b,c;
 };
 
-inline void InitCatmullCoeffs(float x1, float x2, float x3, float x4, float &c0, float &c1, float &c2, float &c3)
+/*
+ * Compute coefficients for a cubic polynomial
+ *   p(s) = c0 + c1*s + c2*s^2 + c3*s^3
+ * such that
+ *   p(0) = x0, p(1) = x1
+ *  and
+ *   p'(0) = t0, p'(1) = t1.
+ */
+inline void InitCubicSplineCoeffs(float x0, float x1, float t0, float t1,
+        float &c0, float &c1, float &c2, float &c3)
 {
-    c0 = x2;
-    c1 = 0.5f * (x3 - x1);
-    c2 = 0.5f * (2*x1 - 5*x2 + 4*x3 - x4);
-    c3 = 0.5f * (3.0f*(x2-x3) - x1 + x4);
+    c0 = x0;
+    c1 = t0;
+    c2 = -3*x0 + 3*x1 - 2*t0 - t1;
+    c3 = 2*x0 - 2*x1 + t0 + t1;
 }
 
-class CatmullCurve
+// standard uniform Catmull-Rom splines with tension 0.5
+inline void InitCatmullCoeffs(float x0, float x1, float x2, float x3,
+        float &c0, float &c1, float &c2, float &c3)
+{
+    InitCubicSplineCoeffs(x1, x2, 0.5f*(x2-x0), 0.5f*(x3-x1),
+            c0, c1, c2, c3);
+}
+
+// nonuniform Catmull-Rom splines; see
+//  http://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline
+//  http://www.cemyuksel.com/research/catmullrom_param/catmullrom.pdf
+//  P. J. Barry and R. N. Goldman: A recursive evaluation algorithm for a class of Catmull-Rom splines
+//
+inline void InitNonuniformCatmullCoeffs(float x0, float x1, float x2, float x3, float dt0, float dt1, float dt2,
+        float &c0, float &c1, float &c2, float &c3)
+{
+    // compute tangents when parameterized in [t1,t2]
+    float t1 = (x1 - x0) / dt0 - (x2 - x0) / (dt0 + dt1) + (x2 - x1) / dt1;
+    float t2 = (x2 - x1) / dt1 - (x3 - x1) / (dt1 + dt2) + (x3 - x2) / dt2;
+
+    // rescale tangents for parametrization in [0,1]
+    t1 *= dt1;
+    t2 *= dt1;
+
+    InitCubicSplineCoeffs(x1, x2, t1, t2,  c0, c1, c2, c3);
+}
+
+// This uses centripetal Catmull-Rom splines for avoiding cusps and smoother results overall
+class CatmullCurve2D
 {
 public:	
-	void SetCurve(const Vertex2D * const pv0, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3)
+	void SetCurve(const Vertex2D& v0, const Vertex2D& v1, const Vertex2D& v2, const Vertex2D& v3)
 	{
-		InitCatmullCoeffs(pv0->x, pv1->x, pv2->x, pv3->x, cx0, cx1, cx2, cx3);
-		InitCatmullCoeffs(pv0->y, pv1->y, pv2->y, pv3->y, cy0, cy1, cy2, cy3);
+        float dt0 = powf((v1 - v0).LengthSquared(), 0.25f);
+        float dt1 = powf((v2 - v1).LengthSquared(), 0.25f);
+        float dt2 = powf((v3 - v2).LengthSquared(), 0.25f);
+
+        // check for repeated control points
+        if (dt1 < 1e-4f)    dt1 = 1.0f;
+        if (dt0 < 1e-4f)    dt0 = dt1;
+        if (dt2 < 1e-4f)    dt2 = dt1;
+
+		InitNonuniformCatmullCoeffs(v0.x, v1.x, v2.x, v3.x, dt0, dt1, dt2,
+                cx0, cx1, cx2, cx3);
+		InitNonuniformCatmullCoeffs(v0.y, v1.y, v2.y, v3.y, dt0, dt1, dt2,
+                cy0, cy1, cy2, cy3);
 	}
 
-	void GetPointAt(const float t, Vertex2D * const pv) const
+	void GetPointAt(float t, Vertex2D * pv) const
 	{
 		const float t2 = t*t;
 		const float t3 = t2*t;
@@ -35,8 +83,8 @@ public:
 	}
 
 private:	
-	float cx0,cx1,cx2,cx3;
-	float cy0,cy1,cy2,cy3;
+	float cx0, cx1, cx2, cx3;
+	float cy0, cy1, cy2, cy3;
 };
 
 class RenderVertex : public Vertex2D
@@ -67,8 +115,8 @@ void SetHUDVertices(VtxType * const rgv, const int count)
 		}
 	}
 
-void RecurseSmoothLine(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv);
-void RecurseSmoothLineWithAccuracy(const CatmullCurve * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy);
+void RecurseSmoothLine(const CatmullCurve2D * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv);
+void RecurseSmoothLineWithAccuracy(const CatmullCurve2D * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy);
 
 
 inline float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
