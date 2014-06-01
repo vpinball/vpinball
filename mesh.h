@@ -8,39 +8,35 @@ public:
 	int a,b,c;
 };
 
+inline void InitCatmullCoeffs(float x1, float x2, float x3, float x4, float &c0, float &c1, float &c2, float &c3)
+{
+    c0 = x2;
+    c1 = 0.5f * (x3 - x1);
+    c2 = 0.5f * (2*x1 - 5*x2 + 4*x3 - x4);
+    c3 = 0.5f * (3.0f*(x2-x3) - x1 + x4);
+}
+
 class CatmullCurve
 {
 public:	
-	inline void SetCurve(const Vertex2D * const pv0, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3)
+	void SetCurve(const Vertex2D * const pv0, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3)
 	{
-		x1=pv0->x;
-		x2=pv1->x;
-		x3=pv2->x;
-		x4=pv3->x;
-		y1=pv0->y;
-		y2=pv1->y;
-		y3=pv2->y;
-		y4=pv3->y;
+		InitCatmullCoeffs(pv0->x, pv1->x, pv2->x, pv3->x, cx0, cx1, cx2, cx3);
+		InitCatmullCoeffs(pv0->y, pv1->y, pv2->y, pv3->y, cy0, cy1, cy2, cy3);
 	}
 
-	inline void GetPointAt(const float t, Vertex2D * const pv) const
+	void GetPointAt(const float t, Vertex2D * const pv) const
 	{
 		const float t2 = t*t;
 		const float t3 = t2*t;
-		pv->x = 0.5f * ((3.0f*(x2-x3) -x1 + x4)*t3
-			+ (x1+x1 -5.0f*x2 + 4.0f*x3 - x4)*t2
-			+ (x3 - x1)*t
-			+ x2+x2);
 
-		pv->y = 0.5f * ((3.0f*(y2-y3) -y1 + y4)*t3
-			+ (y1+y1 -5.0f*y2 + 4.0f*y3 - y4)*t2
-			+ (y3-y1)*t
-			+ y2+y2);
+		pv->x = cx3 * t3 + cx2 * t2 + cx1 * t + cx0;
+		pv->y = cy3 * t3 + cy2 * t2 + cy1 * t + cy0;
 	}
 
 private:	
-	float x1,x2,x3,x4;
-	float y1,y2,y3,y4;
+	float cx0,cx1,cx2,cx3;
+	float cy0,cy1,cy2,cy3;
 };
 
 class RenderVertex : public Vertex2D
