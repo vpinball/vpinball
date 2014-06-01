@@ -5545,9 +5545,13 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             char *cursorid;
             HINSTANCE hinst = g_hinst;
 
-            // special case for targets which are particular walls
-            if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
+            if (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY)
             {
+                cursorid = MAKEINTRESOURCE(IDC_MAGNIFY);
+            }
+            else if (g_pvp->m_ToolCur == ID_INSERT_TARGET)
+            {
+                // special case for targets, which are particular walls
                 cursorid = MAKEINTRESOURCE(IDC_TARGET);
             }
             else
