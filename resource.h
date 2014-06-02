@@ -2,6 +2,8 @@
 // Microsoft Visual C++ generated include file.
 // Used by vpinball_eng.rc
 //
+#define VP_VERSION_MINOR                0
+#define VP_VERSION_REV                  0
 #define DISPID_Textbox_BackColor        1
 #define DISPID_Textbox_FontColor        2
 #define DISPID_Light_State              2
@@ -25,6 +27,7 @@
 #define DISPID_Surface_FaceColor        10
 #define DISPID_Light_BlinkInterval      10
 #define DISPID_AXISSCALE_XZ             10
+#define VP_VERSION_MAJOR                10
 #define DISPID_AXISSCALE_YX             11
 #define DISPID_Decal_Font               12
 #define DISPID_ROTATION_X               12
@@ -486,7 +489,6 @@
 #define IDC_ELEMENT_LIST                362
 #define IDC_DRAWING_ORDER_LIST          362
 #define IDD_PROPPOINT_POSITION          363
-#define IDD_PROPPOINT_POSITION_WITHZ    601
 #define IDD_PROPPOINT_VISUALS           364
 #define IDC_HANGDETECT                  364
 #define IDD_SECURITY_OPTIONS            365
@@ -550,6 +552,7 @@
 #define IDC_ENABLE_MOUSE_PLAYER         394
 #define IDC_ENABLED                     394
 #define IDC_FLIPPER_ENABLED             394
+#define IDC_LIGHT_TYPE_CHECKBOX         340
 #define IDC_PRIMITIVE_IS_TOY            395
 #define IDC_ENABLE_FXAA                 395
 #define IDR_REGISTRY4                   395
@@ -706,6 +709,7 @@
 #define IDS_VISUALS_SOUND               581
 #define IDC_TABLEAVSYNC                 585
 #define IDC_SOFTWARE_VP                 586
+#define IDD_PROPPOINT_POSITION_WITHZ    601
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601

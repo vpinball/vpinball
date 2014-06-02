@@ -4,6 +4,8 @@ float4   diffuseMaterial    = float4(1,1,1,1);
 float4   lightCenter;
 float    maxRange;
 float    intensity=1;
+float4   camera;
+float4 ambient = float4( 0.1f, 0.0f, 0.0f, 1.0f );
 
 texture OffTexture;
 sampler2D texSampler0 : TEXUNIT0 = sampler_state
@@ -27,7 +29,7 @@ struct vout
 {
     float4 position	   : POSITION0;
     float2 tex0        : TEXCOORD0;
-	float2 tex1        : TEXCOORD1;
+	float4 viewDir     : TEXCOORD1;
 	float4 worldPos    : TEXCOORD2;
 	float3 normal      : TEXCOORD3;
 };
@@ -40,9 +42,9 @@ vout VS( in vin IN )
 	float4 worldPos = IN.position; //mul(IN.position, matWorld);
 
 	OUT.tex0 = IN.tex0;
-	OUT.tex1 = IN.tex1;
 	OUT.worldPos = worldPos;
 	OUT.normal = normalize( mul(IN.normal, matWorld) );
+	OUT.viewDir = camera-worldPos;
 	return OUT;
 }
 float4 Screen (float4 cBase, float4 cBlend)
@@ -105,13 +107,25 @@ float4 PS_WithoutTexel(in vout IN ) : COLOR
     return Screen( color, result );
 }
 
+float4 PS_BulbLight( in vout IN ) : COLOR
+{
+	float len = length(lightCenter.xyz-IN.worldPos.xyz);
+	float f=0;//maxRange*0.01;
+	float intens = 1-saturate((len-f)/maxRange);
+	
+	intens = pow(intens,2);
+	float4 result = saturate((diffuseMaterial*intens)*intensity);	
+	float4 texel = tex2D( texSampler0, IN.tex0 );
+	result.a = intens;	
+	return result;
+}
+
 technique BasicLightWithTexture
 {
 	pass p0 
 	{		
 		vertexshader = compile vs_3_0 VS();
 		pixelshader  = compile ps_3_0 PS_WithTexel();
-
 	}
 }
 technique BasicLightWithoutTexture
@@ -121,5 +135,19 @@ technique BasicLightWithoutTexture
 		vertexshader = compile vs_3_0 VS();
 		pixelshader  = compile ps_3_0 PS_WithoutTexel();
 
+	}
+}
+
+technique BulbLight
+{
+	pass p0 
+	{		
+		vertexshader = compile vs_3_0 VS();
+		pixelshader  = compile ps_3_0 PS_BulbLight();
+		SrcBlend=ONE;
+		DestBlend=ONE;
+		AlphaTestEnable=true;
+		AlphaBlendEnable=true;
+		BlendOp=Add;
 	}
 }

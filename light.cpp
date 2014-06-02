@@ -214,6 +214,11 @@ void Light::SetDefaults(bool fromMouseClick)
       m_d.m_fadeSpeed = fTmp;
    else
       m_d.m_fadeSpeed = 0.2f;
+   hr = GetRegInt("DefaultProps\\Light","Bulb", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_BulbLight = iTmp;
+   else
+       m_d.m_BulbLight = fFalse;
 }
 
 void Light::WriteRegDefaults()
@@ -234,6 +239,7 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","EnableOffLighting", REG_DWORD, &m_d.m_EnableOffLighting,4);
    SetRegValueFloat("DefaultProps\\Light","FadeSpeed", m_d.m_fadeSpeed);
    SetRegValueFloat("DefaultProps\\Light","Intensity", m_d.m_intensity);
+   SetRegValue("DefaultProps\\Light","Bulb", REG_DWORD, &m_d.m_BulbLight,4);
 }
 
 Texture *Light::GetDisplayTexture()
@@ -521,17 +527,24 @@ void Light::PostRenderStaticCustom(RenderDevice* pd3dDevice)
    pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelTexelDeclaration);
     ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
     Texture *offTexel=NULL;
-    if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
+    if ( !m_d.m_BulbLight )
     {
-       m_pInsertShader->Core()->SetTechnique("BasicLightWithTexture");
-       if ( offTexel->m_pdsBufferColorKey )
-         m_pInsertShader->Core()->SetTexture("OffTexture",ppin3d->m_pd3dDevice->m_texMan.LoadTexture(offTexel->m_pdsBufferColorKey));
-       else if (offTexel->m_pdsBuffer )
-          m_pInsertShader->Core()->SetTexture("OffTexture",ppin3d->m_pd3dDevice->m_texMan.LoadTexture(offTexel->m_pdsBuffer));
+        if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
+        {
+            m_pInsertShader->Core()->SetTechnique("BasicLightWithTexture");
+            if ( offTexel->m_pdsBufferColorKey )
+                m_pInsertShader->Core()->SetTexture("OffTexture",ppin3d->m_pd3dDevice->m_texMan.LoadTexture(offTexel->m_pdsBufferColorKey));
+            else if (offTexel->m_pdsBuffer )
+                m_pInsertShader->Core()->SetTexture("OffTexture",ppin3d->m_pd3dDevice->m_texMan.LoadTexture(offTexel->m_pdsBuffer));
+        }
+        else
+        {
+            m_pInsertShader->Core()->SetTechnique("BasicLightWithoutTexture");
+        }
     }
     else
     {
-       m_pInsertShader->Core()->SetTechnique("BasicLightWithoutTexture");
+        m_pInsertShader->Core()->SetTechnique("BulbLight");
     }
     UINT cPasses=0;
     D3DXVECTOR4 center(m_d.m_vCenter.x, m_d.m_vCenter.y, m_surfaceHeight+0.05f, 0.0f);
@@ -852,7 +865,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
     if( m_pInsertShader==NULL )
     {
       m_pInsertShader = new Shader(g_pplayer->m_pin3d.m_pd3dDevice);
-//      m_pInsertShader->Load("c:\\projects\\vp9_dx9\\shader\\LightInsert.fx",true );
+//      m_pInsertShader->Load("c:\\projects\\vp\\shader\\LightInsert.fx",true );
       m_pInsertShader->Load("LightInsert.fx",false );
       D3DMATRIX worldMat;
       D3DMATRIX viewMat;
@@ -866,7 +879,9 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
       D3DXMATRIX matWorld(worldMat);
       D3DXMATRIX worldViewProj = matWorld * matView * matProj;
       m_pInsertShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
-      m_pInsertShader->Core()->SetMatrix("matWorld",  &matWorld);
+      m_pInsertShader->Core()->SetMatrix("matWorld",  &matView);
+      D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 0 );
+      m_pInsertShader->Core()->SetVector("camera", &cam);
     }
 
     m_d.m_currentIntensity = 0.0f;
@@ -945,6 +960,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteBool(FID(ENOL), m_d.m_EnableOffLighting);
    bw.WriteFloat(FID(LIDB), m_d.m_depthBias);
    bw.WriteFloat(FID(FASP), m_d.m_fadeSpeed);
+   bw.WriteBool(FID(BULT), m_d.m_BulbLight);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1079,7 +1095,11 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FASP))
    {
-      pbr->GetFloat(&m_d.m_fadeSpeed);
+       pbr->GetFloat(&m_d.m_fadeSpeed);
+   }
+   else if (id == FID(BULT))
+   {
+       pbr->GetBool(&m_d.m_BulbLight);
    }
    else
    {
@@ -1499,6 +1519,8 @@ STDMETHODIMP Light::put_OffImage(BSTR newVal)
    return S_OK;
 }
 
+
+
 STDMETHODIMP Light::get_OnImage(BSTR *pVal)
 {
    WCHAR wz[512];
@@ -1609,6 +1631,24 @@ STDMETHODIMP Light::put_FadeSpeed(float newVal)
    STOPUNDO
 
       return S_OK;
+}
+
+STDMETHODIMP Light::get_Bulb(int *pVal)
+{
+    *pVal = m_d.m_BulbLight;
+
+    return S_OK;
+}
+
+STDMETHODIMP Light::put_Bulb(int newVal)
+{
+    STARTUNDO
+
+        m_d.m_BulbLight = newVal;
+
+    STOPUNDO
+
+    return S_OK;
 }
 
 void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)

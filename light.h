@@ -20,6 +20,7 @@ public:
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
 	Shape m_shape;
+    BOOL m_BulbLight;
 	//char m_rgblinkpattern[33];
 	//int m_blinkinterval;
 	float m_borderwidth;
@@ -217,6 +218,8 @@ public:
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
    STDMETHOD(get_FadeSpeed)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_FadeSpeed)(/*[in]*/ float newVal);
+   STDMETHOD(get_Bulb)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_Bulb)(/*[in]*/ int newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)
