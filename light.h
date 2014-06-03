@@ -12,10 +12,11 @@ class LightData
 {
 public:
 	Vertex2D m_vCenter;
-	float m_radius;
-   float m_intensity;
-   float m_fadeSpeed;
-   float m_currentIntensity;
+	float m_falloff;
+    BOOL  m_ShowFalloff;
+    float m_intensity;
+    float m_fadeSpeed;
+    float m_currentIntensity;
 	LightState m_state;
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
@@ -202,8 +203,8 @@ public:
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_State)(/*[out, retval]*/ LightState *pVal);
 	STDMETHOD(put_State)(/*[in]*/ LightState newVal);
-	STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Radius)(/*[in]*/ float newVal);
+	STDMETHOD(get_Falloff)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Falloff)(/*[in]*/ float newVal);
 	STDMETHOD(get_OffImage)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_OffImage)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_OnImage)(/*[out, retval]*/ BSTR *pVal);
@@ -220,6 +221,8 @@ public:
    STDMETHOD(put_FadeSpeed)(/*[in]*/ float newVal);
    STDMETHOD(get_Bulb)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_Bulb)(/*[in]*/ int newVal);
+   STDMETHOD(get_ShowFalloff)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_ShowFalloff)(/*[in]*/ int newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

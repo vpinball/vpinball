@@ -1207,8 +1207,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	]
 	interface ILight : IDispatch
 	{
-		[propget, id(1), helpstring("property Radius")] HRESULT Radius([out, retval] float *pVal);
-		[propput, id(1), helpstring("property Radius")] HRESULT Radius([in] float newVal);
+		[propget, id(1), helpstring("property Falloff")] HRESULT Falloff([out, retval] float *pVal);
+		[propput, id(1), helpstring("property Falloff")] HRESULT Falloff([in] float newVal);
 		[propget, id(DISPID_Light_State), helpstring("property State")] HRESULT State([out, retval] LightState *pVal);
 		[propput, id(DISPID_Light_State), helpstring("property State")] HRESULT State([in] LightState newVal);
 		[propget, id(3), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
@@ -1251,6 +1251,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(377), helpstring("property FadeSpeed")] HRESULT FadeSpeed([in] float newVal);
 		[propget, id(340), helpstring("property Bulb")] HRESULT Bulb([out, retval] int *pVal);
 		[propput, id(340), helpstring("property Bulb")] HRESULT Bulb([in] int newVal);
+		[propget, id(341), helpstring("property ShowFalloff")] HRESULT ShowFalloff([out, retval] int *pVal);
+		[propput, id(341), helpstring("property ShowFalloff")] HRESULT ShowFalloff([in] int newVal);
 	};
 
 	[

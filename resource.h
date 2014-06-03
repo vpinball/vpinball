@@ -431,6 +431,7 @@
 #define IDS_MAKEACTIVEBALL              340
 #define IDC_MonitorCombo                340
 #define IDC_FUNCTIONLIST                340
+#define IDC_LIGHT_TYPE_CHECKBOX         340
 #define IDC_COMBO2                      341
 #define IDD_PROPSPINNER_VISUALS         341
 #define IDS_DEBUGNOCONVERT              341
@@ -552,7 +553,7 @@
 #define IDC_ENABLE_MOUSE_PLAYER         394
 #define IDC_ENABLED                     394
 #define IDC_FLIPPER_ENABLED             394
-#define IDC_LIGHT_TYPE_CHECKBOX         340
+#define IDC_FALLOFF_CHECKBOX            341
 #define IDC_PRIMITIVE_IS_TOY            395
 #define IDC_ENABLE_FXAA                 395
 #define IDR_REGISTRY4                   395
