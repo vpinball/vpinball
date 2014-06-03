@@ -87,6 +87,46 @@ private:
 	float cy0, cy1, cy2, cy3;
 };
 
+
+class CatmullCurve3D
+{
+public:	
+	void SetCurve(const Vertex3Ds& v0, const Vertex3Ds& v1, const Vertex3Ds& v2, const Vertex3Ds& v3)
+	{
+        float dt0 = powf((v1 - v0).LengthSquared(), 0.25f);
+        float dt1 = powf((v2 - v1).LengthSquared(), 0.25f);
+        float dt2 = powf((v3 - v2).LengthSquared(), 0.25f);
+
+        // check for repeated control points
+        if (dt1 < 1e-4f)    dt1 = 1.0f;
+        if (dt0 < 1e-4f)    dt0 = dt1;
+        if (dt2 < 1e-4f)    dt2 = dt1;
+
+		InitNonuniformCatmullCoeffs(v0.x, v1.x, v2.x, v3.x, dt0, dt1, dt2,
+                cx0, cx1, cx2, cx3);
+		InitNonuniformCatmullCoeffs(v0.y, v1.y, v2.y, v3.y, dt0, dt1, dt2,
+                cy0, cy1, cy2, cy3);
+		InitNonuniformCatmullCoeffs(v0.z, v1.z, v2.z, v3.z, dt0, dt1, dt2,
+                cz0, cz1, cz2, cz3);
+	}
+
+	void GetPointAt(float t, Vertex3Ds * pv) const
+	{
+		const float t2 = t*t;
+		const float t3 = t2*t;
+
+		pv->x = cx3 * t3 + cx2 * t2 + cx1 * t + cx0;
+		pv->y = cy3 * t3 + cy2 * t2 + cy1 * t + cy0;
+		pv->z = cz3 * t3 + cz2 * t2 + cz1 * t + cz0;
+	}
+
+private:	
+	float cx0, cx1, cx2, cx3;
+	float cy0, cy1, cy2, cy3;
+	float cz0, cz1, cz2, cz3;
+};
+
+
 class RenderVertex : public Vertex2D
 {
 public:
