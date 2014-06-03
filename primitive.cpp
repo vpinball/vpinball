@@ -374,8 +374,6 @@ void Primitive::PreRender(Sur * const psur)
 
 void Primitive::Render(Sur * const psur)
 {
-   RecalculateMatrices();
-   TransformVertices();
    psur->SetLineColor(RGB(0,0,0),false,1);
    psur->SetObject(this);
 
@@ -861,6 +859,7 @@ void Primitive::MoveOffset(const float dx, const float dy)
    m_d.m_vPosition.x += dx;
    m_d.m_vPosition.y += dy;
 
+   UpdateEditorView();
    m_ptable->SetDirtyDraw();
 }
 
@@ -875,6 +874,7 @@ void Primitive::PutCenter(const Vertex2D * const pv)
    m_d.m_vPosition.x = pv->x;
    m_d.m_vPosition.y = pv->y;
 
+   UpdateEditorView();
    m_ptable->SetDirtyDraw();
 }
 
