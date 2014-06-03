@@ -374,6 +374,8 @@ void Primitive::PreRender(Sur * const psur)
 
 void Primitive::Render(Sur * const psur)
 {
+   RecalculateMatrices();
+   TransformVertices();
    psur->SetLineColor(RGB(0,0,0),false,1);
    psur->SetObject(this);
 
