@@ -32,4 +32,7 @@ public:
 	ISelect *m_psel;
 
 	bool m_fNullBorder;
+
+private:
+    std::vector<POINT> m_ptCache;
 	};

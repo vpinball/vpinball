@@ -391,12 +391,24 @@ void Primitive::Render(Sur * const psur)
    }
    else     // large mesh: draw a simplified mesh for performance reasons
    {
-      for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
-      {
-         const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]  ];
-         const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
-         psur->Line(A->x,A->y, B->x,B->y);
-      }
+       const unsigned numPts = m_mesh.NumIndices() / 3 + 1;
+       m_drawVertices.clear();
+       m_drawVertices.reserve(numPts);
+
+       if (numPts > 0)
+       {
+           const Vertex3Ds * const A = &vertices[m_mesh.m_indices[0]];
+           m_drawVertices.push_back(A->xy());
+       }
+
+       for (unsigned i=0; i<m_mesh.NumIndices(); i+=3)
+       {
+           const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]  ];
+           const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
+           m_drawVertices.push_back(B->xy());
+       }
+
+       psur->Polyline(&m_drawVertices[0], m_drawVertices.size());
    }
 
    // draw center marker

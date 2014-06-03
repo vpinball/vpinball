@@ -319,6 +319,7 @@ private:        // private data members
 
    // Vertices for editor display
    std::vector<Vertex3Ds> vertices;
+   std::vector<Vertex2D> m_drawVertices;
 
    Matrix3D fullMatrix, rotMatrix;
 
