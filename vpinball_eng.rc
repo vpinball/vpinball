@@ -2158,7 +2158,7 @@ IDC_FLASHER             CURSOR                  "res\\flasher.cur"
 // TABLE
 //
 
-IDR_TABLE               TABLE                   "res\\table.vpt"
+IDR_TABLE               TABLE                   "res\\table.vpx"
 
 /////////////////////////////////////////////////////////////////////////////
 //
