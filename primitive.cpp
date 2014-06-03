@@ -949,6 +949,7 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
    m_ptable = ptable;
 
    br.Load();
+   UpdateEditorView();
    return S_OK;
 }
 
