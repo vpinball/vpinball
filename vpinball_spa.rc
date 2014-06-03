@@ -1404,7 +1404,7 @@ IDI_STEP                 ICON                    "res\\step.ico"
 // TABLE
 //
 
-IDR_TABLE           TABLE                   "res\\table.vpt"
+IDR_TABLE           TABLE                   "res\\table.vpx"
 
 /////////////////////////////////////////////////////////////////////////////
 //
